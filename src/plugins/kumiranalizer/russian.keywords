@@ -1,0 +1,55 @@
+# Syntax:
+#
+# CONTEXT = KEYWORDS
+# KEYWORDS = VARIANT1 [ |VARIANT2 [ ... |VARIANTn ] ]
+#
+begin module = исп
+end module = кон_исп|кон\s+исп
+use module = использовать
+algorhitm header = алг
+begin algorhitm implementation = нач
+end algorhitm implementation = кон
+algorhitm pre-condition = дано
+algorhitm post-condition = надо
+assertion = утв
+begin loop = нц
+end loop = кц
+conditional end loop = кц_при|кц\s+при
+'for' loop type = для
+'times' loop type = раз
+'while' loop type = пока
+for loop 'from' = от
+for loop 'to' = до
+for loop 'step' = шаг
+loop break and algorhitm return = выход
+if = если
+then = то
+else = иначе
+end of 'if' or 'switch' statement = все|всё
+switch = выбор
+case = при
+terminal input = ввод
+terminal output = вывод
+file input = Фввод
+file output = Фвывод
+new line symbol = нс
+logical 'not' = не
+logical 'and' = и
+logical 'or' = или
+'write only' parameter modifier = рез
+'read only' parameter modifier = арг
+'read and write' parameter modifier = арг\s*рез
+'true' constant value = да
+'false' constant value = нет
+integer type name = цел
+floating point type name = вещ
+character type name = сим
+string type name = лит
+boolean type name = лог
+integer array type name = цел\s*таб
+floating point array type name = вещ\s*таб
+character array type name = сим\s*таб
+string array type name = лит\s*таб
+boolean array type name = лог\s*таб
+include text = ВКЛЮЧИТЬ
+

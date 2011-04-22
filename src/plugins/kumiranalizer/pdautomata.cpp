@@ -1,0 +1,792 @@
+#include "pdautomata.h"
+#include "pdautomata_p.h"
+#include "abstractsyntaxtree/ast.h"
+#include "interfaces/lexemtype.h"
+
+#define isTerminal(x) QRegExp(QString::fromUtf8("[a-z|а-я][a-z|а-я|_]*")).exactMatch(x)
+#define isNeterminal(x) QRegExp(QString::fromUtf8("[А-Я|A-Z][А-Я|A-Z|1-9|_*]*")).exactMatch(x)
+#define isNagruzka(x) ( x.startsWith("{") && x.endsWith("}") )
+
+namespace KumirAnalizer {
+
+void prepareRules(const QStringList &files, QString &out, const QList<int> &priors);
+QString terminalByCode(int code);
+bool isCorrectTerminal(const QString &terminal);
+
+PDAutomata::PDAutomata(QObject *parent) :
+    QObject(parent)
+{
+    d = new PDAutomataPrivate();
+    d->q = this;
+    QString rulesPath; // TODO set me
+    d->loadRules(rulesPath);
+}
+
+void PDAutomata::init(QList<Statement> * statements, AST::AST *ast, AST::Algorhitm * algorhitm)
+{
+    d->source = statements;
+    d->ast = ast;
+    d->algorhitm = algorhitm;
+    if (!algorhitm) {
+        d->ast->clear();
+    }
+    else {
+        algorhitm->impl.preStatements.clear();
+        algorhitm->impl.postStatements.clear();
+        algorhitm->impl.bodyStatements.clear();
+    }
+}
+
+void PDAutomataPrivate::matchScript(const QString &text, QList<Script> & scripts)
+{
+    QStringList statements = text.split(";");
+    foreach (QString s, statements) {
+        Script script;
+        s = s.simplified();
+        int op_br = s.indexOf("(");
+        int cl_br = s.lastIndexOf(")");
+        Q_ASSERT(op_br!=-1);
+        Q_ASSERT(cl_br!=-1);
+        const QString name = s.left(op_br).trimmed();
+        const QString argline = s.mid(op_br, cl_br);
+        const QStringList args = argline.split(",");
+        bool found = false;
+        for (int i=0; i<metaObject()->methodCount(); i++) {
+            QMetaMethod m = metaObject()->method(i);
+            QString m_signature = m.signature();
+            int spacePos = m_signature.indexOf(" ");
+            int brPos = m_signature.indexOf("(");
+            QString m_name = m_signature.mid(spacePos+1, brPos-2);
+            if (name==m_name) {
+                found = true;
+                script.method = m;
+                Q_ASSERT(args.size()==m.parameterTypes().size());
+                break;
+            }
+        }
+        Q_ASSERT(found);
+        for (int i=0; i<args.size(); i++) {
+            script.arguments << QVariant(args[i]);
+        }
+        scripts << script;
+    }
+}
+
+void PDAutomataPrivate::loadRules(const QString &rulesRoot)
+{
+    QDir rulesDir(rulesRoot);
+    QStringList rulesFileList = rulesDir.entryList(QStringList() << "*.rules2");
+    QString normalizedRules;
+    QList<int> priorities;
+    for (int i=0; i<rulesFileList.count(); i++) {
+        QString absName = rulesDir.absoluteFilePath(rulesFileList[i]);
+        rulesFileList[i] = absName;
+        priorities << i;
+    }
+    prepareRules(rulesFileList, normalizedRules, priorities);
+
+    QStringList lines = normalizedRules.split("\n");
+
+    QString leftPart;
+    QString rightPart;
+    QString script;
+    QString terminal;
+
+    int lineNo = 0;
+    i_maxPriorityValue = 0;
+    foreach ( QString line, lines ) {
+        lineNo ++;
+        // Обработка комментария
+        if ( line.trimmed().startsWith("#") || line.trimmed().isEmpty() )
+            continue;
+
+        // Выделение приоритета
+        QString prior_s;
+
+        int bracket_p = line.lastIndexOf("[");
+        if ( bracket_p == -1 ) {
+            return; // ошибка: нет приоритета
+        }
+        else {
+            prior_s = line.mid(bracket_p);
+            line = line.left(bracket_p).trimmed();
+        }
+
+        prior_s = prior_s.remove("[").remove("]").trimmed();
+        bool ok;
+        int prior = prior_s.toInt(&ok);
+        if ( ! ok )
+            return; // ошибка: приоритет -- не целое число
+        // Выделение левой части
+        int arrow_p = line.indexOf("->");
+        if ( arrow_p == -1 )
+            return; // ошибка: неправильный формат правила
+        leftPart = line.left(arrow_p).trimmed();
+        if ( leftPart.isEmpty() ) {
+            return; // ошибка: пустая левая часть
+        }
+        // Выделение правой части и скрипта
+        rightPart = line.mid(arrow_p+2).trimmed();
+        int script_p = rightPart.indexOf(":");
+        if ( script_p != -1 ) {
+            script = rightPart.mid(script_p+1).trimmed();
+            rightPart = rightPart.left(script_p).trimmed();
+        }
+        else {
+            script = ""; // очистка, т.к. могло что-то остаться от пред. строки
+        }
+        // Выделение терминала в правой части
+        int space_p = rightPart.indexOf(' ');
+        if ( space_p == -1 ) {
+            if ( rightPart.startsWith("0") ) {
+                // Правило \epsilon
+                terminal = "";
+                rightPart = "";
+            }
+            else {
+                bool isCorrect = true;
+                for ( int j=0; j<terminal.length(); j++ ) {
+                    if (!( terminal[j]=='_' || ( terminal[j].isLetter() && terminal[j].isLower() ) )) {
+                        isCorrect = false;
+                        break;
+                    }
+                }
+                if ( isCorrect ) {
+                    terminal = rightPart;
+                    rightPart = "";
+                }
+                else
+                    return ; // ошибка: всего один ксимвол в правой части (не \epsilon и не терминал)
+            }
+        }
+        else {
+            terminal = rightPart.left(space_p);
+            bool isCorrect = true;
+            for ( int j=0; j<terminal.length(); j++ ) {
+                if (!( terminal[j]=='_' || ( terminal[j].isLetter() && terminal[j].isLower() ) )) {
+                    isCorrect = false;
+                    break;
+                }
+            }
+            if ( !isCorrect )
+                return ; // ошибка: первый ксимвол в правой части -- нетерминал
+            rightPart = rightPart.mid(space_p+1).trimmed();
+        }
+        i_maxPriorityValue = qMax(i_maxPriorityValue, prior);
+
+        // Добавляем в таблицу правил
+        if ( terminal.isEmpty() ) {
+            LexemType allLines[] = {
+                LxTypeEmpty,
+                LxTypeDoc,
+                LxNameClass,
+                LxPriModule,
+                LxPriEndModule,
+                LxPriAlgHeader,
+                LxPriAlgBegin,
+                LxPriAlgEnd,
+                LxPriPre,
+                LxPriPost,
+                LxPriIf,
+                LxPriThen,
+                LxPriElse,
+                LxPriFi,
+                LxPriSwitch,
+                LxPriCase,
+                LxPriLoop,
+                LxPriEndLoop,
+                LxPriInput,
+                LxPriOutput,
+                LxPriFinput,
+                LxPriFoutput,
+                LxPriAssign,
+                LxPriAssert,
+                LxPriImport,
+                LxPriExit,
+                LexemType(0xFFFFFFFF)
+            };
+
+            int j = 0;
+            do {
+                QString key;
+                RuleRightPart rule;
+                if ( allLines[j] != 0 )
+                    key = terminalByCode(allLines[j]) + "/" + leftPart;
+                else
+                    key = "end/" + leftPart;
+                Q_ASSERT ( ! key.startsWith("/") );
+                rule.nonTerminals = QStringList();
+                rule.isEpsilon = true;
+                rule.priority = prior;
+                matchScript(script, rule.scripts);
+                if ( matrix.contains(key) ) {
+                    // Добавляем \epsilon-правило только если нет других правил
+                    // c тем же приоритетом
+                    bool allowToAdd = true;
+                    Rules rulesList = matrix[key];
+                    foreach ( RuleRightPart rule, rulesList ) {
+                        if ( rule.priority == prior ) {
+                            allowToAdd = false;
+                            break;
+                        }
+                    }
+                    if ( allowToAdd )
+                        matrix[key].append(rule);
+                }
+                else {
+                    Rules newRulesList;
+                    newRulesList.append(rule);
+                    matrix[key] = newRulesList;
+                }
+                j++;
+            } while ( allLines[j] != 0xFFFFFFFF );
+        }
+        else {
+            // Случай обычного правила
+            QString key;
+            Q_ASSERT( isCorrectTerminal(terminal) );
+            key = terminal + "/" + leftPart;
+            RuleRightPart rule;
+            rule.nonTerminals = rightPart.isEmpty()? QStringList() : rightPart.split(" ");
+            rule.isEpsilon = false;
+            rule.priority = prior;
+            matchScript(script, rule.scripts);
+            if ( matrix.contains(key) ) {
+                matrix[key].append(rule);
+                // Удаляем \epsilon-правило, если оно там есть
+                // и имеет тот же приоритет
+                for ( int j=matrix[key].count()-1; j>=0; j-- ) {
+                    if ( matrix[key][j].isEpsilon && matrix[key][j].priority==prior )
+                        matrix[key].removeAt(j);
+                }
+            }
+            else {
+                Rules newRulesList;
+                newRulesList.append(rule);
+                matrix[key] = newRulesList;
+            }
+        }
+    }
+    qDebug() << "fff";
+    foreach ( QString key, matrix.keys() ) {
+        Rules rulesList = matrix[key];
+        qSort(rulesList);
+        matrix[key] = rulesList;
+    }
+    qDebug() << "End load rules";
+}
+
+void prepareRules(const QStringList &files, QString &out, const QList<int> &priors)
+{
+    int iskNet = 0;
+
+    if (files.isEmpty())
+    {
+        qDebug()<<QString::fromUtf8("Нет .rules-файлов");
+        return;
+    }
+
+    QBuffer filIn1;
+    filIn1.open(QIODevice::WriteOnly);
+
+    QTextStream sIn1(&filIn1);
+    sIn1.setCodec("UTF-8");
+
+
+    int fileNum = -1;
+    foreach ( QString ifn, files ) {
+
+        ++fileNum;
+        QFile filIn(ifn);
+
+        filIn.open(QIODevice::ReadOnly);
+
+        QTextStream sIn(&filIn);
+        sIn.setCodec("UTF-8");
+
+
+        for( ; !sIn.atEnd() ; )
+        {
+            QString str(sIn.readLine().trimmed());
+            int openFig = 0;
+            int i = 0;
+            do
+            {
+                for( ; i<str.length(); ++i)
+                {
+                    if (str.at(i)=='{') ++openFig;
+                    if (str.at(i)=='}') --openFig;
+                }
+                if (openFig==0)
+                {
+                    if (!str.startsWith("#") && !str.isEmpty())
+                    {
+                        sIn1 << str << " [" << priors[fileNum] << "]\n";
+                    }
+                    break;
+                }
+                else
+                {
+                    if (!sIn.atEnd())
+                    {
+                        str += sIn.readLine();
+                    }
+                    else
+                    {
+                        sIn1 << "Syntax error in {}:\n";
+                        sIn1 << str << endl;
+                        return;
+                    }
+                }
+            } while (true);
+        }
+        filIn.close();
+    }
+
+    filIn1.close();
+
+    QBuffer filIn;
+    filIn.setData(filIn1.data());
+    filIn.open(QIODevice::ReadOnly);
+    QTextStream sIn(&filIn);
+    sIn.setCodec("UTF-8");
+
+
+    QStringList pravila1;
+    for( ; !sIn.atEnd() ; )
+    {
+        QString str(sIn.readLine().trimmed());
+        int i = str.indexOf('#');
+        if (i!=-1)
+        {
+            str.truncate(i);
+        }
+        str.trimmed();
+        if (!str.isEmpty())
+        {
+            pravila1 << str;
+        }
+    }
+
+    pravila1.sort();
+
+
+    QStringList nagruzki1;
+    QList<int> priorities;
+    for(int i=0; i<pravila1.size(); ++i)
+    {
+        QString str = pravila1[i];
+        int d = str.indexOf(':');
+        int d1 = str.lastIndexOf(':');
+        if (d!=d1)
+        {
+            qDebug()<<QString::fromUtf8("Два двоеточия в строке: ")<<str<<endl;
+            return;
+        }
+        int e = str.lastIndexOf('[');
+        if (e==-1)
+        {
+            qDebug()<<QString::fromUtf8("Не задан приоритет строки: ")<<str<<endl;
+            return;
+        }
+        if (d!=-1)
+        {
+            nagruzki1 << str.mid(d+1, e-d-1);
+            pravila1[i].truncate(d);
+        }
+        else
+        {
+            nagruzki1 << QString();
+            pravila1[i].truncate(e);
+        }
+        QString p(str.mid(e).trimmed());
+        if (!p.startsWith("[") && !p.endsWith("]"))
+        {
+            qDebug()<<QString::fromUtf8("Ошибка задания приоритета в строке: ")<<str<<endl;
+            return;
+        }
+        priorities << p.mid(1,p.length()-2).toInt();
+    }
+
+    QList<QStringList> pravila;
+    foreach(QString s, pravila1)
+    {
+        pravila << s.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        if (!isNeterminal(pravila.last()[0]) || pravila.last()[1]!="->" || pravila.last().count()<3)
+        {
+            qDebug()<<QString::fromUtf8("Ошибка в левой части: ")<<pravila.last().join(" ")<<endl;
+            return;
+        }
+    }
+
+    for(int i=0; i<nagruzki1.size(); ++i)
+    {
+        if (nagruzki1[i].isEmpty())
+        {
+            for(int j=0; j<pravila[i].size(); ++j)
+            {
+                if (isTerminal(pravila[i][j]))
+                    nagruzki1[i] += "{}";
+            }
+        }
+    }
+
+    QList<QStringList> nagruzki;
+    int ind = 0;
+    foreach(QString s, nagruzki1)
+    {
+        QStringList rez;
+        int countNagr = 0;
+        int i, j;
+        for(i=0; i<s.length()-1; )
+        {
+            j = i+1;
+            int openFig = 0;
+            if (s.at(i)=='{')
+            {
+                openFig = 1;
+                for( ; j<s.length(); ++j)
+                {
+                    if (s.at(j)=='{') ++openFig;
+                    if (s.at(j)=='}') --openFig;
+                    if (openFig==0) break;
+                }
+                rez << s.mid(i,j-i+1);
+                ++countNagr;
+            }
+            i=j;
+        }
+        int countTerm = 0;
+        foreach(QString str, pravila[ind])
+        {
+            if (isTerminal(str))
+                ++countTerm;
+        }
+        if (countTerm != countNagr)
+        {
+            qDebug() << QString::fromUtf8("Не совпадает число терминалов и нагрузок: ") << pravila[ind].join(" ") << " : " << s;
+            return;
+        }
+        nagruzki << rez;
+        ++ind;
+    }
+
+    int c;
+
+
+    QStringList sorts;
+
+    for(bool flag = true ; flag ;)
+    {
+        QString s;
+        for(int i=0; i<pravila.size(); ++i)
+        {
+            s += pravila[i][0];
+            s += " ";
+            s += pravila[i][2];
+            s += " ; ";
+        }
+        if (sorts.indexOf(s)!=-1)
+        {
+            qDebug() << QString::fromUtf8("Данная грамматика является леворекурсивной\n");
+            return;
+        }
+        else
+        {
+            sorts << s;
+        }
+        flag = false;
+        for(int i=1; i<pravila.size(); ++i)
+        {
+            for(int j=0; j<i; ++j)
+            {
+                if (isNeterminal(pravila[i][2]) && pravila[i][2]==pravila[j][0])
+                {
+                    QString s1(pravila[j][0]);
+                    QString s2(pravila[i][0]);
+
+                    int k1, k2;
+                    for(int k = pravila.size()-1; k>=0; --k)
+                    {
+                        if (pravila[k][0]==s1)
+                            k1 = k;
+                        if (pravila[k][0]==s2)
+                            k2 = k;
+                    }
+                    for(int shift = 0 ; pravila[k2+shift][0]==s2 ; ++shift)
+                    {
+                        pravila.move(k2+shift,k1+shift);
+                        nagruzki.move(k2+shift,k1+shift);
+                        priorities.move(k2+shift,k1+shift);
+                    }
+                    flag = true;
+                }
+            }
+        }
+    }
+
+
+
+    for(int i=pravila.size()-1; i>=0; --i)
+    {
+        QList<QStringList> add;
+        QList<QStringList> addNagr;
+        QList<int> addPriors;
+        for(int j=i+1; j<pravila.size(); ++j)
+        {
+            if (pravila[j][0]==pravila[i][2] && (isTerminal(pravila[j][2]) || isNeterminal(pravila[j][2])))
+            {
+                QStringList sl;
+                sl << pravila[i][0] << "->" << pravila[j].mid(2, pravila[j].size()-2) << pravila[i].mid(3, pravila[i].size()-3);
+                add << sl;
+                sl.clear();
+                sl << nagruzki[j] << nagruzki[i];
+                addNagr << sl;
+                int a = priorities[i];
+                int b = priorities[j];
+                addPriors << (a>b ? a:b);
+            }
+        }
+        for(int j=0; j<add.size(); ++j)
+        {
+            pravila.insert(i+j+1, add[j]);
+            nagruzki.insert(i+j+1, addNagr[j]);
+            priorities.insert(i+j+1, addPriors[j]);
+        }
+        if (add.size()>0)
+        {
+            pravila.removeAt(i);
+            nagruzki.removeAt(i);
+            priorities.removeAt(i);
+        }
+    }
+
+
+    for(int i=pravila.size()-1; i>=0; --i)
+    {
+        QList<int> nirps;
+        for(int j=2; j<pravila[i].size(); ++j)
+            if (isTerminal(pravila[i][j]))
+                nirps << j;
+        if (nirps.size()>1)
+        {
+            nirps << pravila[i].size();
+            QList<QStringList> add;
+            QList<QStringList> addNagr;
+            QList<int> addPriors;
+            bool flag = false;
+            for(int j=0; j<nirps.size()-1; ++j)
+            {
+                QStringList sl;
+                QStringList slNagr;
+                if (!flag)
+                {
+                    sl << pravila[i][0];
+                    flag = true;
+                }
+                else
+                    sl << QString::number(iskNet);
+                sl << "->" << pravila[i].mid(nirps[j], nirps[j+1]-nirps[j]);
+                slNagr << nagruzki[i][j];
+                if (j<nirps.size()-2)
+                {
+                    ++iskNet;
+                    sl << QString::number(iskNet);
+                }
+                add << sl;
+                addNagr << slNagr;
+                addPriors << priorities[i];
+            }
+            for(int j=0; j<add.size(); ++j)
+            {
+                pravila.insert(i+j+1, add[j]);
+                nagruzki.insert(i+j+1, addNagr[j]);
+                priorities.insert(i+j+1, addPriors[j]);
+            }
+            if (add.size()>0)
+            {
+                pravila.removeAt(i);
+                nagruzki.removeAt(i);
+                priorities.removeAt(i);
+            }
+        }
+    }
+
+
+    for(c=0; c<pravila.size(); ++c)
+    {
+        QStringList sl(pravila[c]);
+        QString pravilo( sl.join(" ") );
+        QString nagruzka( nagruzki[c].join(" ") );
+        int priority = priorities[c];
+        for(int j=c+1; j<pravila.size(); )
+        {
+            QString pravilo1( pravila[j].join(" ") );
+            QString nagruzka1( nagruzki[j].join(" ") );
+            int priority1 = priorities[j];
+            if (pravilo==pravilo1)
+            {
+                if (nagruzka==nagruzka1 && priority==priority1)
+                {
+                    pravila.removeAt(j);
+                    nagruzki.removeAt(j);
+                    priorities.removeAt(j);
+                }
+                else
+                {
+                    qDebug() << "Dva pravila s raznoj nagruzkoj ili raznymi prioritetami:";
+                    qDebug() << pravilo << " : " << nagruzka << " [" << priority << "]";
+                    qDebug() << pravilo1 << " : " << nagruzka1 << " [" << priority1 << "]";
+                    ++j;
+                }
+            }
+            else
+            {
+                ++j;
+            }
+        }
+    }
+
+    c = 0;
+    foreach(QStringList sl, pravila)
+    {
+        foreach(QString s, sl)
+        {
+            out += s + " ";
+        }
+        if (!nagruzki[c].isEmpty())
+        {
+            out += ":";
+        }
+        foreach(QString s, nagruzki[c])
+        {
+            out += " " + s;
+        }
+        out += QString(" [") + QString::number(priorities[c]) + "]\n";
+        ++c;
+    }
+    out += "\n";
+}
+
+QString terminalByCode(int code)
+{
+    switch ( code ) {
+    case LxNameClass:
+        return QString::fromUtf8("перем");
+    case LxPriAlgHeader:
+        return QString::fromUtf8("алг");
+    case LxPriAlgBegin:
+        return QString::fromUtf8("нач");
+    case LxPriAlgEnd:
+        return QString::fromUtf8("кон");
+    case LxPriLoop:
+        return QString::fromUtf8("нц");
+    case LxPriEndLoop:
+        return QString::fromUtf8("кц");
+    case LxPriElse:
+        return QString::fromUtf8("иначе");
+    case LxPriExit:
+        return QString::fromUtf8("выход");
+    case LxPriIf:
+        return QString::fromUtf8("если");
+    case LxPriThen:
+        return QString::fromUtf8("то");
+    case LxPriFi:
+        return QString::fromUtf8("все");
+    case LxPriSwitch:
+        return QString::fromUtf8("выбор");
+    case LxPriCase:
+        return QString::fromUtf8("при");
+    case LxPriAssign:
+        return QString::fromUtf8("присваивание");
+    case LxPriOutput:
+        return QString::fromUtf8("вывод");
+    case LxPriAssert:
+        return QString::fromUtf8("утв");
+    case LxPriPre:
+        return QString::fromUtf8("дано");
+    case LxPriPost:
+        return QString::fromUtf8("надо");
+    case LxPriInput:
+        return QString::fromUtf8("ввод");
+    case LxPriModule:
+        return QString::fromUtf8("исп");
+    case LxPriEndModule:
+        return QString::fromUtf8("кон_исп");
+    case LxPriImport:
+        return QString::fromUtf8("использовать");
+    case LxPriFinput:
+        return QString::fromUtf8("ф_ввод");
+    case LxPriFoutput:
+        return QString::fromUtf8("ф_вывод");
+    case LxTypeDoc:
+        return QString::fromUtf8("строка_документации");
+    case LexemType(0xFFFFFFFF):
+        return "begin";
+    default:
+        return QString(" ");
+    }
+}
+
+bool isCorrectTerminal(const QString &terminal)
+{
+    if (
+            terminal == QString::fromUtf8("перем")
+            ||
+            terminal == QString::fromUtf8("алг")
+            ||
+            terminal == QString::fromUtf8("нач")
+            ||
+            terminal == QString::fromUtf8("кон")
+            ||
+            terminal == QString::fromUtf8("нц")
+            ||
+            terminal == QString::fromUtf8("кц")
+            ||
+            terminal == QString::fromUtf8("иначе")
+            ||
+            terminal == QString::fromUtf8("выход")
+            ||
+            terminal == QString::fromUtf8("если")
+            ||
+            terminal == QString::fromUtf8("то")
+            ||
+            terminal == QString::fromUtf8("все")
+            ||
+            terminal == QString::fromUtf8("выбор")
+            ||
+            terminal == QString::fromUtf8("при")
+            ||
+            terminal == QString::fromUtf8("присваивание")
+            ||
+            terminal == QString::fromUtf8("вывод")
+            ||
+            terminal == QString::fromUtf8("утв")
+            ||
+            terminal == QString::fromUtf8("дано")
+            ||
+            terminal == QString::fromUtf8("надо")
+            ||
+            terminal == QString::fromUtf8("ввод")
+            ||
+            terminal == QString::fromUtf8("исп")
+            ||
+            terminal == QString::fromUtf8("использовать")
+            ||
+            terminal == QString::fromUtf8("кон_исп")
+            ||
+            terminal == QString::fromUtf8("ф_ввод")
+            ||
+            terminal == QString::fromUtf8("ф_вывод")
+            ||
+            terminal == QString::fromUtf8("строка_документации")
+            ||
+            terminal == "end"
+            ||
+            terminal == "begin"
+            ) return true;
+    else
+        return false;
+}
+
+} // namespace KumirAnalizer

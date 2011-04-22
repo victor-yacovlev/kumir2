@@ -1,0 +1,406 @@
+#include "pluginmanager.h"
+#include "kplugin.h"
+#include <QScriptEngine>
+
+namespace ExtensionSystem {
+
+struct PluginRequest {
+    QString name;
+    bool start;
+    QStringList arguments;
+};
+
+struct PluginManagerPrivate {
+    QList<KPlugin*> objects;
+    QString path;
+    QString sharePath;
+    QList<PluginSpec> specs;
+    QList<KPlugin::State> states;
+    QList<QSettings*> settings;
+    QList<PluginRequest> requests;
+    QString mainPluginName;
+
+    QString parsePluginsRequest(const QString &templ, QList<PluginRequest> & plugins, QStringList & names);
+    QString loadSpecs(const QStringList &names, QScriptEngine * engine);
+    QString makeDependencies(const QString &entryPoint,
+                             const QString &minVersion,
+                             const QString &maxVersion,
+                             QStringList &orderedList);
+    QString reorderSpecsAndCreateStates(const QStringList & orderedList);
+    QString loadPlugins();
+};
+
+PluginManager::PluginManager()
+    : QObject()
+    , d(new PluginManagerPrivate)
+{
+    m_instance = this;
+}
+
+void PluginManager::setPluginPath(const QString &path)
+{
+    d->path = path;
+}
+
+void PluginManager::setSharePath(const QString &path)
+{
+    d->sharePath = path;
+}
+
+QString PluginManagerPrivate::reorderSpecsAndCreateStates(const QStringList &orderedList)
+{
+    QList<PluginSpec> newSpecs;
+    for (int i=0; i<orderedList.size(); i++) {
+        bool found = false;
+        PluginSpec spec;
+        for (int j=0; j<specs.size(); j++) {
+            if (specs[j].name==orderedList[i]) {
+                spec = specs[j];
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            return "Spec not loaded for plugin " + orderedList[i];
+        }
+        newSpecs << spec;
+        objects << 0;
+        states << KPlugin::Disabled;
+        settings << 0;
+    }
+    specs = newSpecs;
+    return "";
+}
+
+QString PluginManagerPrivate::parsePluginsRequest(const QString &templ, QList<PluginRequest> &plugins, QStringList & names)
+{
+    if (templ.trimmed().isEmpty()) {
+        return "Plugins template is empty";
+    }
+    bool inBr = false;
+    PluginRequest cur;
+    QString argument;
+    cur.start = false;
+    for (int i=0 ; i<templ.size(); i++) {
+        if (templ[i]=='&' && cur.name.isEmpty() && !inBr) {
+            cur.start = true;
+        }
+        else if (templ[i]=='(' && !inBr) {
+            inBr = true;
+        }
+        else if (templ[i]==')' && inBr) {
+            inBr = true;
+            cur.arguments << argument;
+            argument = "";
+        }
+        else if (templ[i]==',' && inBr) {
+            cur.arguments << argument;
+            argument = "";
+        }
+        else if (templ[i]==',' && !inBr) {
+            plugins << cur;
+            cur.start = false;
+            cur.arguments.clear();
+            cur.name = "";
+        }
+        else if (inBr) {
+            argument += templ[i];
+        }
+        else {
+            cur.name += templ[i];
+        }
+    }
+    plugins << cur;
+    int starts = 0;
+    for (int i=0; i<plugins.size(); i++) {
+        if (plugins[i].start) {
+            starts ++;
+            mainPluginName = plugins[i].name;
+        }
+        names << cur.name;
+    }
+    if (starts>1) {
+        return "More than one entry point defined in plugins template";
+    }
+    if (starts==0) {
+        return "Entry point is not defined in plugins template";
+    }
+    return "";
+}
+
+QString PluginManagerPrivate::loadSpecs(const QStringList &names, QScriptEngine * engine)
+{
+    for (int i=0; i<names.size(); i++) {
+        bool loaded = false;
+        for (int j=0; j<specs.size(); j++) {
+            if (specs[j].name==names[i]) {
+                loaded = true;
+                break;
+            }
+        }
+        if (loaded)
+            continue;
+        const QString fileName = path+"/"+names[i]+".pluginspec";
+        PluginSpec spec;
+#ifdef QT_NO_DEBUG
+#ifdef Q_OS_WIN
+        spec.libraryFileName = QString("%1/%2.dll").arg(path).arg(names[i]);
+#endif
+#ifdef Q_OS_UNIX
+        spec.libraryFileName = QString("%1/lib%2.so").arg(path).arg(names[i]);
+#endif
+#ifdef Q_OS_MAC
+        spec.libraryFileName = QString("%1/lib%2.dylib").arg(path).arg(names[i]);
+#endif
+#else
+#ifdef Q_OS_WIN
+        spec.libraryFileName = QString("%1/%2d.dll").arg(path).arg(names[i]);
+#endif
+#ifdef Q_OS_UNIX
+        spec.libraryFileName = QString("%1/lib%2.so").arg(path).arg(names[i]);
+#endif
+#ifdef Q_OS_MAC
+        spec.libraryFileName = QString("%1/lib%2_debug.dylib").arg(path).arg(names[i]);
+#endif
+#endif
+        QString error = readSpecFromFile(fileName, spec, engine);
+        if (!error.isEmpty()) {
+            return error;
+        }
+        specs << spec;
+        QStringList deps;
+        for (int j=0; j<spec.dependencies.size(); j++) {
+            deps << spec.dependencies[j].name;
+        }
+        error = loadSpecs(deps, engine);
+        if (!error.isEmpty()) {
+            return error;
+        }
+    }
+    return "";
+}
+
+QString PluginManagerPrivate::loadPlugins()
+{
+    for (int i=0; i<specs.size(); i++) {
+        QPluginLoader loader(specs[i].libraryFileName);
+        if (!loader.load()) {
+            return QString("Can't load module %1: %2")
+                    .arg(specs[i].name)
+                    .arg(loader.errorString());
+        }
+        KPlugin * plugin = qobject_cast<KPlugin*>(loader.instance());
+        if (!plugin) {
+            return QString("Plugin %1 is not valid (does not implement interface KPlugin)");
+            loader.unload();
+        }
+        objects[i] = plugin;
+        states[i] = KPlugin::Loaded;
+        settings[i] = new QSettings("kumir2", specs[i].name);
+        settings[i]->setIniCodec("UTF-8");
+    }
+    return "";
+}
+
+QString PluginManagerPrivate::makeDependencies(const QString &entryPoint,
+                                               const QString &minVersion,
+                                               const QString &maxVersion,
+                                               QStringList &orderedList)
+{
+    if (orderedList.contains(entryPoint)) {
+        return "";
+    }
+    orderedList.prepend(entryPoint);
+    PluginSpec spec;
+    bool found = false;
+    for (int i=0; i<specs.size(); i++) {
+        if (specs[i].provides.contains(entryPoint)) {
+            spec = specs[i];
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        return "Spec not loaded for "+entryPoint;
+    }
+    if (!minVersion.isEmpty()) {
+        if (spec.version<minVersion) {
+            return QString("Plugin %1 version too old: %2, but required at least %3")
+                    .arg(entryPoint)
+                    .arg(spec.version)
+                    .arg(minVersion);
+        }
+    }
+    if (!maxVersion.isEmpty()) {
+        if (spec.version>maxVersion) {
+            return QString("Plugin %1 version too new: %2, but required not greater %3")
+                    .arg(entryPoint)
+                    .arg(spec.version)
+                    .arg(maxVersion);
+        }
+    }
+    for (int i=0; i<spec.dependencies.size(); i++) {
+        Dependency dep = spec.dependencies[i];
+        QString error = makeDependencies(dep.name, dep.minVersion, dep.maxVersion, orderedList);
+        if (!error.isEmpty()) {
+            return error;
+        }
+    }
+    return "";
+}
+
+QString PluginManager::loadPluginsByTemplate(const QString &templ)
+{
+    QList<PluginRequest> requests;
+    QStringList names;
+    QString error = "";
+    error = d->parsePluginsRequest(templ, requests, names);
+    if (!error.isEmpty())
+        return error;
+    QScriptEngine engine;
+    engine.evaluate("var data = null;\n");
+    error = d->loadSpecs(names, &engine);
+    if (!error.isEmpty())
+        return error;
+
+    // orderedList will contain names in order of load and initialization
+    QStringList orderedList;
+    // make dependencies for entry point plugin first
+    error = d->makeDependencies(d->mainPluginName,"","",orderedList);
+    if (!error.isEmpty())
+        return error;
+    // make dependencies for other requests
+    for (int i=0; i<requests.size(); i++) {
+        error = d->makeDependencies(requests[i].name,"","",orderedList);
+        if (!error.isEmpty())
+            return error;
+    }
+    error = d->reorderSpecsAndCreateStates(orderedList);
+    if (!error.isEmpty())
+        return error;
+    error = d->loadPlugins();
+    if (!error.isEmpty())
+        return error;
+    d->requests = requests;
+    return "";
+}
+
+bool PluginManager::isGuiRequired() const
+{
+    for (int i=0; i<d->specs.size(); i++) {
+        if (d->specs[i].gui) {
+            return true;
+        }
+    }
+    return false;
+}
+
+QString PluginManager::initializePlugins()
+{
+    Q_ASSERT(d->specs.size()==d->objects.size());
+    for (int i=0; i<d->objects.size(); i++) {
+        const QString name = d->specs[i].name;
+        QStringList arguments;
+        for (int j=0; j<d->requests.size(); j++) {
+            if (d->requests[j].name==name) {
+                arguments = d->requests[j].arguments;
+            }
+        }
+        QString error = d->objects[i]->initialize(arguments);
+        if (!error.isEmpty()) {
+            return QString("Error initializing %1: %2")
+                    .arg(name)
+                    .arg(error);
+        }
+        d->states[i] = KPlugin::Initialized;
+    }
+    return "";
+}
+
+
+QString PluginManager::start()
+{
+    KPlugin * p = d->objects.last();
+    p->start();
+    d->states[d->states.size()-1] = KPlugin::Started;
+    return "";
+}
+
+PluginSpec PluginManager::specByObject(const KPlugin *p) const
+{
+    Q_ASSERT(d->specs.size()==d->objects.size());
+    for (int i=0; i<d->specs.size(); i++) {
+        if (d->objects[i]==p) {
+            return d->specs[i];
+        }
+    }
+    return PluginSpec();
+}
+
+KPlugin * PluginManager::dependentPlugin(const QString &name, const KPlugin *p) const
+{
+    PluginSpec spec;
+    Q_ASSERT(d->specs.size()==d->objects.size());
+    for (int i=0; i<d->specs.size(); i++) {
+        if (d->objects[i]==p) {
+            spec = d->specs[i];
+        }
+    }
+    bool hasDep = false;
+    for (int i=0; i<spec.dependencies.size(); i++) {
+        if (spec.dependencies[i].name==name) {
+            hasDep = true;
+            break;
+        }
+    }
+    if (!hasDep) {
+        return 0;
+    }
+    for (int i=0; i<d->specs.size(); i++) {
+        if (d->specs[i].name==name) {
+            return d->objects[i];
+        }
+    }
+    return 0;
+}
+
+KPlugin::State PluginManager::stateByObject(const KPlugin *p) const
+{
+    Q_ASSERT(d->states.size()==d->objects.size());
+    for (int i=0; i<d->objects.size(); i++) {
+        if (d->objects[i]==p) {
+            return d->states[i];
+        }
+    }
+    return KPlugin::Disabled;
+}
+
+QSettings * PluginManager::settingsByObject(const KPlugin *p) const
+{
+    Q_ASSERT(d->settings.size()==d->objects.size());
+    for (int i=0; i<d->objects.size(); i++) {
+        if (d->objects[i]==p) {
+            return d->settings[i];
+        }
+    }
+    return 0;
+}
+
+PluginManager * PluginManager::m_instance = 0;
+
+PluginManager * PluginManager::instance()
+{
+    return m_instance;
+}
+
+void PluginManager::shutdown()
+{
+    for (int i=d->objects.size()-1; i>=0; i--) {
+        KPlugin * p = d->objects[i];
+        p->stop();
+        d->states[i] = KPlugin::Stopped;
+        d->settings[i]->sync();
+    }
+}
+
+} // namespace ExtensionSystem

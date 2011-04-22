@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/kumiranalizer">
+        <file>russian.keywords</file>
+        <file>english.keywords</file>
+        <file>french.keywords</file>
+    </qresource>
+</RCC>
