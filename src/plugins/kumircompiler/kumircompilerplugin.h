@@ -2,10 +2,8 @@
 #define KUMIRCOMPILERPLUGIN_H
 
 #include <extensionsystem/kplugin.h>
+#include "interfaces/analizerinterface.h"
 
-namespace KumirAnalizer {
-class Analizer;
-}
 
 namespace KumirCompiler {
 
@@ -21,6 +19,8 @@ public:
     QString initialize(const QStringList &arguments);
     void start();
     void stop();
+private:
+    Shared::AnalizerInterface * m_analizer;
 
 };
 

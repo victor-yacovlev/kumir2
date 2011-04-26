@@ -17,7 +17,7 @@ public:
     virtual QList<LineProp> lineProperties(int documentId) const = 0;
     virtual QList<int> lineIndents(int documentId) const = 0;
     virtual QStringList imports(int documentId) const = 0;
-    virtual const AST::AST * abstractSyntaxTree(int documentId) const = 0;
+    virtual const AST::Data * abstractSyntaxTree(int documentId) const = 0;
 };
 
 }

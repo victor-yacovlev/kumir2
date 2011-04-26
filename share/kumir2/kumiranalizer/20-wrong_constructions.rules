@@ -1,0 +1,32 @@
+﻿ТО -> иначе ФРАГМЕНТ_АЛГОРИТМА* все : { 
+	setCurrentError(2200701); 
+	processCorrectElse(); 
+} { 
+	processCorrectFi(); 
+}
+
+ФРАГМЕНТ_АЛГОРИТМА* -> алг : { setCurrentError(1103); appendSimpleLine(); }
+ФРАГМЕНТ_АЛГОРИТМА* -> нач : { setCurrentError(2200008); appendSimpleLine(); }
+ФРАГМЕНТ_АЛГОРИТМА* -> исп : { setCurrentError(2200009); appendSimpleLine(); }
+ФРАГМЕНТ_АЛГОРИТМА* -> кон_исп : { setCurrentError(2200010); appendSimpleLine(); }
+
+ЛИШНИЙ_НАЧ_У_ИСПОЛНИТЕЛЯ -> нач : { setCurrentError(2200001); appendSimpleLine(); }
+
+КОНЕЦ_ИСПОЛНИТЕЛЯ -> end : { setModuleBeginError(1140); }
+
+ИСПОЛНИТЕЛЬ* -> алг МУСОР_МЕЖДУ_АЛГ_НАЧ ДОКУМЕНТАЦИЯ ДАНО_НАДО ТЕЛО_АЛГОРИТМА : { setCurrentError(2200801); processCorrectAlgHeader(); }
+
+АЛГОРИТМ* -> если МУСОР_МЕЖДУ_ЕСЛИ_ТО ТО : { setCurrentError(2200802); processCorrectIf(); }
+АЛГОРИТМ* -> выбор МУСОР_МЕЖДУ_ВЫБОР_ПРИ при ФРАГМЕНТ_АЛГОРИТМА* ПРИ* ИНАЧЕ_ВСЕ : { setCurrentError(2200803); processCorrectSwitch(); } { processCorrectCase(); }
+АЛГОРИТМ* -> алг ФРАГМЕНТ_АЛГОРИТМА* КОНЕЦ_АЛГОРИТМА : { setCurrentError(2200101); setCurrentIndentRank(0, +1);  processCorrectAlgHeader(); }
+
+ФРАГМЕНТ_АЛГОРИТМА* -> алг нач ФРАГМЕНТ_АЛГОРИТМА* кон : {
+  setCurrentError(2200902); 
+  appendSimpleLine();
+} {
+  setCurrentError(2200902);
+  appendSimpleLine();
+} {
+  setCurrentError(2200902);
+  appendSimpleLine();
+}

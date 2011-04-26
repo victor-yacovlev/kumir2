@@ -6,6 +6,12 @@
 #include "lexem.h"
 #include "interfaces/error.h"
 
+namespace AST {
+struct Statement;
+struct Module;
+struct Algorhitm;
+}
+
 namespace KumirAnalizer {
 
 struct Statement
@@ -15,6 +21,9 @@ struct Statement
     Shared::Error error;
     QPoint indentRank;
     Shared::LexemType type;
+    struct AST::Statement * statement;
+    struct AST::Algorhitm * alg;
+    struct AST::Module * mod;
 };
 
 }

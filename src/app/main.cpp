@@ -34,6 +34,8 @@ int main(int argc, char **argv)
     gui = gui && getenv("DISPLAY")!=0;
 #endif
     QApplication * app = new QApplication(argc, argv, gui);
+    const QString sharePath = QDir(app->applicationDirPath()+SHARE_PATH).canonicalPath();
+    app->setProperty("sharePath", sharePath);
     QSettings::setDefaultFormat(QSettings::IniFormat);
     QSettings::setPath(QSettings::IniFormat, QSettings::SystemScope, SHARE_PATH);
     app->addLibraryPath(PLUGINS_PATH);
@@ -83,7 +85,12 @@ int main(int argc, char **argv)
         delete app;
         return 1;
     }
-    int ret = app->exec();
+    int ret = 0;
+    if (manager->isGuiRequired())
+        ret = app->exec();
+    else {
+        manager->shutdown();
+    }
     delete manager;
     delete app;
     return ret;

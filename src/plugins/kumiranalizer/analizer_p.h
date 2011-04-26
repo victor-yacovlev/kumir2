@@ -6,8 +6,13 @@
 #include "interfaces/lexemtype.h"
 #include "interfaces/error.h"
 #include "interfaces/lineprop.h"
+#include "abstractsyntaxtree/ast.h"
 
 #include <QtCore>
+
+
+
+typedef AST::Data AST_Data;
 
 namespace KumirAnalizer {
 
@@ -25,7 +30,8 @@ struct AnalizerPrivate
 
     class Analizer * q;
     class Lexer * lexer;
-    class AST * ast;
+    class PDAutomata * pdAutomata;
+    AST_Data * ast;
 
     QString sourceText;
     QList<Statement> statements;

@@ -14,9 +14,11 @@ struct Script {
     QList<QVariant> arguments;
 };
 
+typedef QList<Script> * ScriptListPtr;
+
 struct RuleRightPart {
     QStringList nonTerminals;
-    QList<Script> scripts;
+    ScriptListPtr script;
     bool isEpsilon;
     int priority;
     inline bool operator< (const RuleRightPart &other) const {
@@ -29,6 +31,12 @@ typedef QList<RuleRightPart> Rules;
 
 typedef QMap<QString,Rules> Matrix;
 
+struct PDStackElem {
+        QString nonTerminal;
+        int iterateStart;
+        int priority;
+};
+
 class PDAutomataPrivate:
         public QObject
 {
@@ -37,20 +45,41 @@ public:
 
     void loadRules(const QString &rulesRoot);
     class PDAutomata * q;
-    AST::AST * ast;
+    AST::Data * ast;
     AST::Algorhitm * algorhitm;
 
     Matrix matrix;
     QList<Statement> * source;
+    bool allowSkipParts;
 
-    int i_maxPriorityValue;
+    int currentPosition;
+    QVector<ScriptListPtr> scripts;
+    QStack<PDStackElem> stack;
 
-    void matchScript(const QString &text, QList<Script> & scripts);
+    QStack<int> history_currentPosition;
+    QStack< QVector<ScriptListPtr> > history_scripts;
+    QStack< QStack<PDStackElem> > history_stack;
 
+    QVector<ScriptListPtr> fixedScripts;
+    QVector<int> nextPointers;
+
+    AST::Module * currentModule;
+    AST::Algorhitm * currentAlgorhitm;
+    QList<AST::Statement*> currentContext;
+
+    int maxPriorityValue;
+
+    void matchScript(const QString &text, ScriptListPtr & scripts);
+
+    int errorsCount;
 
 public slots:
+    void addDummyAlgHeader();
+    void setCurrentError(int value);
+    void setModuleBeginError(int value);
+    void setCurrentIndentRank(int start, int end);
     void setError(int value);
-    void processCorrentEndOfLoop();
+    void processCorrectEndOfLoop();
     void processAlgEndInsteadOfLoopEnd();
     void processCorrectCase();
     void processCorrectIf();
@@ -62,8 +91,7 @@ public slots:
     void processCorrectAlgHeader();
     void processCorrectAlgBegin();
     void processCorrectDocLine();
-    void processCorrectInputRestrictionLine();
-    void processCorrectOutputRestrictionLine();
+    void processCorrectRestrictionLine();
     void processCorrectAlgEnd();
     void processCorrectModuleBegin();
     void processCorrectModuleEnd();
@@ -75,6 +103,14 @@ public slots:
     void setCorrespondingIfBroken();
     void setExtraOpenKeywordError(int kw);
     void setExtraCloseKeywordError(int kw);
+
+    void setTooManyErrors();
+    void finalizeIterativeRule(const PDStackElem & stackElem);
+    void nextStep();
+    void saveData();
+    void restoreData();
+    void popHistory();
+    void clearDataHistory();
 
 };
 

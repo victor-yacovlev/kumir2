@@ -15,7 +15,7 @@ namespace AST {
 struct Variable {
 
     /** One array dimension is calculable by two expressions */
-    typedef QPair<struct Expression, struct Expression> Bound;
+    typedef QPair<struct Expression *, struct Expression *> Bound;
 
     /** Variable name, may be empty (for constant) */
     QString name;
@@ -35,7 +35,15 @@ struct Variable {
     /** Constant or pre-initialized initial value */
     QVariant initialValue;
 
+    explicit Variable();
+    explicit Variable(const struct Variable * src);
+    void updateReferences(const struct Variable * src,
+                          const struct Data * srcData,
+                          const struct Data * data);
+    ~Variable();
 };
+
+
 
 }
 

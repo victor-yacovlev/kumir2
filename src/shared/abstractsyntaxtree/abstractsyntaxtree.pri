@@ -5,3 +5,7 @@ HEADERS += ../../shared/abstractsyntaxtree/ast.h \
     ../../shared/abstractsyntaxtree/ast_expression.h \
     ../../shared/abstractsyntaxtree/ast_variable.h \
     ../../shared/abstractsyntaxtree/ast_variabletype.h
+isEmpty(ABSTRACTSYNTAXTREE_PRO) {
+    LIBS *= -l$$qtLibraryTarget(AbstractSyntaxTree)
+}
+

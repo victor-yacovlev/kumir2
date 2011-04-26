@@ -62,7 +62,7 @@ public:
     QList<Shared::LineProp> lineProperties(int documentId) const;
     QList<int> lineIndents(int documentId) const;
     QStringList imports(int documentId) const;
-    const AST::AST * abstractSyntaxTree(int documentId) const;
+    const AST::Data * abstractSyntaxTree(int documentId) const;
 
 protected:
     QString initialize(const QStringList &arguments);

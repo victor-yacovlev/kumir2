@@ -26,5 +26,4 @@ SOURCES += kumiranalizerplugin.cpp \
 
 OTHER_FILES += KumirAnalizer.pluginspec
 
-RESOURCES += \
-    keywords.qrc
+RESOURCES +=

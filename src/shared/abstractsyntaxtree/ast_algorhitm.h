@@ -8,6 +8,13 @@
 #include "ast_statement.h"
 #include "ast_variable.h"
 
+#undef ABSTRACTSYNTAXTREE_EXPORT
+#ifdef ABSTRACTSYNTAXTREE_LIBRARY
+#define ABSTRACTSYNTAXTREE_EXPORT Q_DECL_EXPORT
+#else
+#define ABSTRACTSYNTAXTREE_EXPORT Q_DECL_IMPORT
+#endif
+
 namespace AST {
 
 /** Specific algorhitm types */
@@ -23,6 +30,22 @@ enum AlgorhitmType {
     AlgorhitmTypeTesting
 };
 
+/** Algorhitm implementation type */
+enum AlgorhitmImplementationType {
+
+    /** Kumir-compiler algorhitm */
+    AlgorhitmCompiled,
+
+    /** External or builtin algorhitm */
+    AlgorhitmExternal
+
+};
+
+/** External reference for out-of module algorhitm */
+struct AlgorhitmExternalReference {
+    QString moduleName;
+};
+
 /** Algorhitm public header */
 struct AlgorhitmHeader {
 
@@ -31,6 +54,12 @@ struct AlgorhitmHeader {
 
     /** Algorhitm special type */
     enum AlgorhitmType specialType;
+
+    /** Algorhitm implementation type*/
+    enum AlgorhitmImplementationType implType;
+
+    /** Algorhitm external reference, if defined */
+    struct AlgorhitmExternalReference external;
 
     /** Return type */
     enum VariableBaseType returnType;
@@ -44,26 +73,39 @@ struct AlgorhitmHeader {
 struct AlgorhitmImplementation {
 
     /** Local variables and constants table */
-    QList<struct Variable> localVariables;
+    QList<struct Variable *> locals;
 
     /** Statements of pre-condition block (russian: dano) */
-    QList<struct Statement> preStatements;
+    QList<struct Statement *> pre;
 
     /** Statements of pre-condition block (russian: nado) */
-    QList<struct Statement> postStatements;
+    QList<struct Statement *> post;
 
     /** Statements of algorhitm body */
-    QList<struct Statement> bodyStatements;
+    QList<struct Statement *> body;
+
+    /** Begin line number of algorhitm declaration */
+    int lineNoStart;
+
+    /** End line number of algorhotm declaration */
+    int lineNoEnd;
 };
 
 /** Algorhitm representation */
-struct Algorhitm {
+struct ABSTRACTSYNTAXTREE_EXPORT Algorhitm {
 
     /** Public header for use in module etc. */
     struct AlgorhitmHeader header;
 
     /** Internal representation */
     struct AlgorhitmImplementation impl;
+
+    explicit Algorhitm();
+    explicit Algorhitm(const struct Algorhitm * src);
+    void updateReferences(const struct Algorhitm * src,
+                          const struct Data * srcData,
+                          const struct Data * data);
+    ~Algorhitm();
 };
 
 }

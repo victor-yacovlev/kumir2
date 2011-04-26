@@ -3,6 +3,7 @@
 #include "interfaces/error.h"
 #include "interfaces/lexemtype.h"
 #include "lexer.h"
+#include "pdautomata.h"
 
 using namespace Shared;
 
@@ -22,12 +23,16 @@ Analizer::Analizer(QObject *parent) :
 AnalizerPrivate::AnalizerPrivate(Analizer *qq)
 {
     q = qq;
+    ast = new AST::Data();
     lexer = new Lexer(q);
+    pdAutomata = new PDAutomata(q);
 }
 
 AnalizerPrivate::~AnalizerPrivate()
 {
     delete lexer;
+    delete pdAutomata;
+    delete ast;
 }
 
 Analizer::~Analizer()
@@ -180,6 +185,9 @@ void AnalizerPrivate::doCompilation(const AnalizeSubject &whatToCompile)
 {
     Q_UNUSED(whatToCompile);
     // At this moment we compile everething
+    pdAutomata->init(&statements, ast, 0);
+    pdAutomata->process();
+    pdAutomata->postProcess();
 }
 
 } // namespace KumirAnalizer

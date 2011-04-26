@@ -56,8 +56,8 @@ QString KumirAnalizerPlugin::initialize(const QStringList &arguments)
     QLocale::Language language = QLocale::Russian;
 
     Q_FOREACH (const QString &arg, arguments) {
-        if (arg.startsWith("--language")) {
-            const QString lang = arg.mid(10);
+        if (arg.startsWith("language=")) {
+            const QString lang = arg.mid(9);
             const QLocale loc(lang);
             if (loc.language()!=QLocale::C) {
                 language = loc.language();
@@ -137,7 +137,7 @@ QStringList KumirAnalizerPlugin::imports(int documentId) const
     return m_analizers[documentId]->imports();
 }
 
-const AST::AST * KumirAnalizerPlugin::abstractSyntaxTree(int documentId) const
+const AST::Data * KumirAnalizerPlugin::abstractSyntaxTree(int documentId) const
 {
     Q_CHECK_PTR(m_analizers[documentId]);
     return m_analizers[documentId]->abstractSyntaxTree();

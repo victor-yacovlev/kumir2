@@ -71,7 +71,7 @@ public slots:
     /**
       * Get (for read only!) abstract syntax tree pointer
       */
-    const AST::AST * abstractSyntaxTree() const;
+    const AST::Data * abstractSyntaxTree() const;
 
 private:
     class AnalizerPrivate * d;

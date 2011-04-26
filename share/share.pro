@@ -1,2 +1,2 @@
 TEMPLATE=subdirs
-SUBDIRS=
+SUBDIRS=kumir2/static.pro

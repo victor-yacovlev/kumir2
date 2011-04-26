@@ -60,7 +60,8 @@ void addToMap(QHash<QString,LexemType> & map,
 void Lexer::setLanguage(const QLocale::Language &language)
 {
     const QString langName = QLocale::languageToString(language);
-    const QString fileName = ":/kumiranalizer/"+langName+".keywords";
+    const QString resourcesRoot = qApp->property("sharePath").toString()+"/kumiranalizer/";
+    const QString fileName = resourcesRoot+langName.toLower()+".keywords";
     LexerPrivate::initNormalizator(fileName);
 }
 
@@ -535,6 +536,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                     lexems << lx;
                 }
             }
+            prev = cur + rxCompound.matchedLength();
         } // end if cur!=-1
         else {
             if (inLit) {
@@ -542,7 +544,17 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                 lexems.last().error = BAD_KAVICHKA;
             }
             else {
-                lexems.last().data += text.mid(prev+1);
+                Lexem lx = lexems.last();
+                if (lx.type==LxTypeComment || lx.type==LxTypeDoc)
+                    lexems.last().data += text.mid(prev+1);
+                else {
+                    Lexem llx;
+                    llx.error = 0;
+                    llx.type = LxTypeName;
+                    llx.pos = prev + 1;
+                    llx.data = text.mid(prev+1);
+                    lexems << llx;
+                }
             }
             break;
         }
@@ -554,6 +566,16 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
         }
         else {
             lexems[i].size += 2;
+        }
+    }
+    QList<Lexem>::iterator it = lexems.begin();
+    while (it!=lexems.end()) {
+        Lexem lx = (*it);
+        if (lx.data.isEmpty()) {
+            it = lexems.erase(it);
+        }
+        else {
+            it ++;
         }
     }
     searchNumericConstants(lexems);

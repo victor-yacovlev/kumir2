@@ -1,0 +1,4 @@
+АЛГОРИТМ* -> алг : { setCurrentError(2200212); appendSimpleLine(); }
+АЛГОРИТМ* -> если : { setCurrentError(2200500); appendSimpleLine(); }
+АЛГОРИТМ* -> кон : { setCurrentError(2200500); appendSimpleLine(); }
+ИСПОЛНИТЕЛЬ* -> нач : { setCurrentError(2200500); appendSimpleLine(); }

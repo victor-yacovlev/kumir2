@@ -3,7 +3,12 @@
 
 #include <QList>
 
-#include "ast_expression.h"
+#undef ABSTRACTSYNTAXTREE_EXPORT
+#ifdef ABSTRACTSYNTAXTREE_LIBRARY
+#define ABSTRACTSYNTAXTREE_EXPORT Q_DECL_EXPORT
+#else
+#define ABSTRACTSYNTAXTREE_EXPORT Q_DECL_IMPORT
+#endif
 
 namespace AST {
 
@@ -20,6 +25,9 @@ enum StatementType {
     /** Assert, pre-condition of post-condition,
       * depending on context */
     StAssert,
+
+    /** Array-variable initialization */
+    StVarInitialize,
 
     /** Terminal input */
     StInput,
@@ -69,25 +77,25 @@ struct LoopSpec {
     struct Variable * forVariable;
 
     /** "for" loop "from" value */
-    struct Expression fromValue;
+    struct Expression * fromValue;
 
     /** "for" loop "to" value */
-    struct Expression toValue;
+    struct Expression * toValue;
 
     /** "for" loop "step" value */
-    struct Expression stepValue;
+    struct Expression * stepValue;
 
     /** "while" loop condition value */
-    struct Expression whileCondition;
+    struct Expression * whileCondition;
 
     /** "times" loop value */
-    struct Expression timesValue;
+    struct Expression * timesValue;
 
     /** Optional condition for loop end */
-    struct Expression endCondition;
+    struct Expression * endCondition;
 
     /** Loop body */
-    QList<struct Statement> body;
+    QList<struct Statement * > body;
 
     /** Loop end line number in source program */
     int endLineNo;
@@ -97,17 +105,17 @@ struct LoopSpec {
 struct ConditionSpec {
 
     /** Condition; empty for "else" block */
-    struct Expression condition;
+    struct Expression * condition;
 
     /** Conditional body */
-    QList<struct Statement> body;
+    QList<struct Statement * > body;
 
     /** Block begin line number in source program */
     int startLineNo;
 };
 
 /** Evaluable statement */
-struct Statement {
+struct ABSTRACTSYNTAXTREE_EXPORT Statement {
 
     /** Statement kind */
     StatementType type;
@@ -120,13 +128,23 @@ struct Statement {
 
     /** List of top-level expressions for all
       * statement kinds except StLoop, StIfThenElse and StSwitchCaseElse */
-    QList<struct Expression> expressions;
+    QList<struct Expression * > expressions;
+
+    /** Variable references list, defined only if type==StVarInitialize */
+    QList<struct Variable * > variables;
 
     /** Loop specific-part, defined only if type==StLoop */
     struct LoopSpec loop;
 
     /** Conditional blocks, defined only if type==StIfThenElse or type==StSwitchCaseElse */
     QList<struct ConditionSpec> conditionals;
+
+    explicit Statement();
+    explicit Statement(const struct Statement * src);
+    void updateReferences(const struct Statement * src,
+                          const struct Data * srcData,
+                          const struct Data * data);
+    ~Statement();
 };
 
 

@@ -68,11 +68,19 @@ struct Expression {
       * 4. Function arguments expressions in case of kind==StFunctionCall
       * 5. Expressions list of size len(operators)+1 in case of kind==StSubexpression
       */
-    QList<struct Expression> operands;
+    QList<struct Expression *> operands;
 
     /** List of operators in case of kind==StSubexpression, emty otherwise */
     QList<enum ExpressionOperator> operators;
+
+    explicit Expression();
+    explicit Expression(const struct Expression * src);
+    void updateReferences(const struct Expression * src,
+                          const struct Data * srcData,
+                          const struct Data * data);
+    ~Expression();
 };
+
 
 }
 

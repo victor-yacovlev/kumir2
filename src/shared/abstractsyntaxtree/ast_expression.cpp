@@ -1,0 +1,105 @@
+#include "ast_expression.h"
+#include "ast_module.h"
+#include "ast_algorhitm.h"
+#include "ast.h"
+
+namespace AST {
+
+Expression::Expression()
+{
+    kind = ExprNone;
+    type = TypeNone;
+    variable = NULL;
+    function = NULL;
+}
+
+Expression::Expression(const struct Expression * src)
+{
+    kind = src->kind;
+    type = src->type;
+    for (int i=0; i<src->operands.size(); i++) {
+        operands << new Expression(src->operands[i]);
+    }
+    operators = src->operators;
+}
+
+void Expression::updateReferences(const Expression *src, const Data *srcData, const Data *data)
+{
+    if (src->variable) {
+        int modId = -1;
+        int varId = -1;
+        int algId = -1;
+        for (int i=0; i<srcData->modules.size(); i++) {
+            modId = i;
+            algId = -1;
+            varId = -1;
+            struct Module * mod = srcData->modules[i];
+            for (int j=0; j<mod->impl.globals.size(); j++) {
+                if (mod->impl.globals[j]==src->variable) {
+                    varId = j;
+                    break;
+                }
+            }
+            if (varId!=-1)
+                break;
+            for (int j=0; j<mod->impl.algorhitms.size(); j++) {
+                struct Algorhitm * alg = mod->impl.algorhitms[j];
+                algId = j;
+                for (int k=0; k<alg->impl.locals.size(); k++) {
+                    if (alg->impl.locals[k]==src->variable) {
+                        varId = k;
+                        break;
+                    }
+                }
+                if (varId>-1)
+                    break;
+            }
+            if (varId>-1)
+                break;
+        }
+        Q_ASSERT(modId>-1);
+        Q_ASSERT(varId>-1);
+        variable = algId>-1
+                ? data->modules[modId]->impl.algorhitms[algId]->impl.locals[varId]
+                : data->modules[modId]->impl.globals[varId];
+    }
+    else {
+        variable = NULL;
+    }
+    if (src->function) {
+        int modId = -1;
+        int algId = -1;
+        for (int i=0; i<srcData->modules.size(); i++) {
+            struct Module * mod = srcData->modules[i];
+            modId = i;
+            for (int j=0; j<mod->impl.algorhitms.size(); j++) {
+                if (mod->impl.algorhitms[j]==src->function) {
+                    algId = j;
+                    break;
+                }
+            }
+            if (algId>-1)
+                break;
+        }
+        Q_ASSERT(modId>-1);
+        Q_ASSERT(algId>-1);
+        function = data->modules[modId]->impl.algorhitms[algId];
+    }
+    else {
+        function = NULL;
+    }
+    for (int i=0; i<operands.size(); i++) {
+        operands[i]->updateReferences(src->operands[i], srcData, data);
+    }
+}
+
+Expression::~Expression()
+{
+    for (int i=0; i<operands.size(); i++) {
+        if (operands[i])
+            delete operands[i];
+    }
+}
+
+}
+

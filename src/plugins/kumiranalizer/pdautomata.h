@@ -5,14 +5,17 @@
 #include "statement.h"
 #include "interfaces/error.h"
 #include "abstractsyntaxtree/ast.h"
+#include "abstractsyntaxtree/ast_algorhitm.h"
+#include "abstractsyntaxtree/ast_statement.h"
 
 using namespace Shared;
 
-namespace AST {
-    struct Algorhitm;
-}
+typedef AST::Data AST_Data;
+typedef AST::Algorhitm AST_Algorhitm;
+typedef AST::Statement AST_Statement;
 
 namespace KumirAnalizer {
+
 
 class PDAutomata : public QObject
 {
@@ -28,8 +31,8 @@ public:
       *        whole AST
       */
     void init(QList<Statement> * statements
-              , AST::AST * ast
-              , AST::Algorhitm *algorhitm);
+              , AST_Data * ast
+              , AST_Algorhitm *algorhitm);
 
     /** Direct automata stage.
       * @returns 0 on allow; 1 on deny; 2 on limit exception
@@ -42,7 +45,7 @@ public:
     /** List of syntax errors */
     QList<Error> errors() const;
 
-    static AST::Statement createSimpleAstStatement(const Statement &st);
+    static AST_Statement createSimpleAstStatement(const Statement &st);
 
 private:
     class PDAutomataPrivate * d;
