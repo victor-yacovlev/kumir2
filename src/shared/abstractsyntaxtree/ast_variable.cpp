@@ -41,6 +41,45 @@ Variable::~Variable()
     }
 }
 
+extern QString addIndent(const QString & source, int count);
+
+QString boundDump(const Variable::Bound & bound) {
+    QString result = "{\n";
+    result += "\tleft: "+addIndent(bound.first->dump(), 1);
+    result += ",\n\tright: "+addIndent(bound.second->dump(), 1);
+    result += "\n}";
+    return result;
+}
+
+QString Variable::dump() const
+{
+    QString result = "{";
+    result += "\tname: \""+name+"\",\n";
+    result += "\tbaseType: "+AST::dump(baseType)+",\n";
+    result += "\tdimension: "+QString::number(dimension);
+    if (accessType!=AccessRegular)
+        result == ",\n\taccessType: "+AST::dump(accessType);
+    if (dimension>0) {
+        result += ",\n\tbounds: [\n";
+        for (int i=0; i<bounds.size(); i++) {
+            result += addIndent(boundDump(bounds[i]), 2);
+            if (i<bounds.size()-1) {
+                result += ",";
+            }
+            result += "\n";
+        }
+        result += "]"; // end bounds
+    }
+    if (initialValue.isValid()) {
+        result += ",\n\tinitialValue: ";
+        if (initialValue.type()==QVariant::String || initialValue.type()==QVariant::Char)
+            result += "\""+initialValue.toString()+"\"";
+        else
+            result += initialValue.toString();
+    }
+    result += "\n}";
+    return result;
+}
 
 }
 

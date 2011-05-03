@@ -1,7 +1,8 @@
 #include "lexer.h"
 #include "lexer_p.h"
 #include "interfaces/lexemtype.h"
-#include "error_constants.h"
+#include "errormessages/errormessages.h"
+
 
 using namespace Shared;
 
@@ -24,7 +25,7 @@ int Lexer::splitIntoStatements(const QString &text
     const QStringList lines = text.split("\n");
     for (int i=0; i<lines.size(); i++) {
         const QString line = lines[i];
-        QList<Lexem> lexems;
+        QList<Lexem*> lexems;
         d->splitLineIntoLexems(line, lexems);
         QList<Statement> sts;
         d->groupLexemsByStatements(lexems, sts);
@@ -34,9 +35,9 @@ int Lexer::splitIntoStatements(const QString &text
         statements << sts;
         LineProp lp(line.size(), LxTypeEmpty);
         for (int j=0; j<lexems.size(); j++) {
-            Lexem lx = lexems[j];
-            for (int p=lx.pos; p<lx.pos+lx.data.length(); p++) {
-                lp[p] = lx.type;
+            Lexem * lx = lexems[j];
+            for (int p=lx->pos; p<lx->pos+lx->data.length(); p++) {
+                lp[p] = lx->type;
             }
         }
         props << lp;
@@ -55,6 +56,18 @@ void addToMap(QHash<QString,LexemType> & map,
         variant.remove("_");
         map[variant] = type;
     }
+}
+
+QString Lexer::classNameByBaseType(const AST::VariableBaseType &type) const
+{
+    QString result;
+    for (int i=0; i<d->baseTypes.keys().size(); i++) {
+        if (d->baseTypes[d->baseTypes.keys()[i]]==type) {
+            result = d->baseTypes.keys()[i];
+            break;
+        }
+    }
+    return result;
 }
 
 void Lexer::setLanguage(const QLocale::Language &language)
@@ -96,6 +109,9 @@ void LexerPrivate::initNormalizator(const QString &fileName)
                     keyWords << value;
 //                    useKwd = new QString(value);
                     addToMap(kwdMap, value, LxPriImport);
+                }
+                else if (context=="function return value") {
+                    retvalKeyword = value;
                 }
                 else if (context=="algorhitm header") {
                     keyWords << value;
@@ -231,50 +247,67 @@ void LexerPrivate::initNormalizator(const QString &fileName)
                 }
                 else if (context=="'true' constant value") {
                     constNames << value;
+                    boolConstantValues.insert(value, true);
                     addToMap(kwdMap, value, LxConstBoolTrue);
                 }
                 else if (context=="'false' constant value") {
                     constNames << value;
+                    boolConstantValues.insert(value, false);
                     addToMap(kwdMap, value, LxConstBoolFalse);
                 }
                 else if (context=="integer type name") {
                     typeNames << value;
+                    baseTypes.insert(value, AST::TypeInteger);
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="floating point type name") {
                     typeNames << value;
+                    baseTypes.insert(value, AST::TypeReal);
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="character type name") {
                     typeNames << value;
+                    baseTypes.insert(value, AST::TypeCharect);
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="string type name") {
                     typeNames << value;
+                    baseTypes.insert(value, AST::TypeString);
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="boolean type name") {
                     typeNames << value;
+                    baseTypes.insert(value, AST::TypeBoolean);
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="integer array type name") {
                     typeNames << value;
+                    baseTypes.insert(value, AST::TypeInteger);
+                    arrayTypes.insert(value);
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="floating point array type name") {
                     typeNames << value;
+                    baseTypes.insert(value, AST::TypeReal);
+                    arrayTypes.insert(value);
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="character array type name") {
                     typeNames << value;
+                    baseTypes.insert(value, AST::TypeCharect);
+                    arrayTypes.insert(value);
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="string array type name") {
                     typeNames << value;
+                    baseTypes.insert(value, AST::TypeString);
+                    arrayTypes.insert(value);
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="boolean array type name") {
                     typeNames << value;
+                    baseTypes.insert(value, AST::TypeBoolean);
+                    arrayTypes.insert(value);
                     addToMap(kwdMap, value, LxNameClass);
                 }
 
@@ -282,8 +315,35 @@ void LexerPrivate::initNormalizator(const QString &fileName)
         }
     }
 
+    operators << "\\+";
+    kwdMap["+"] = LxOperPlus;
+
+    operators << "-";
+    kwdMap["-"] = LxOperMinus;
+
     operators << "\\*\\*";
     kwdMap["**"] = LxOperPower;
+
+    operators << "\\(";
+    kwdMap["("] = LxOperLeftBr;
+
+    operators << "\\)";
+    kwdMap[")"] = LxOperRightBr;
+
+    operators << "\\[";
+    kwdMap["["] = LxOperLeftSqBr;
+
+    operators << "\\]";
+    kwdMap["]"] = LxOperRightSqBr;
+
+    operators << ",";
+    kwdMap[","] = LxOperComa;
+
+    operators << ":";
+    kwdMap[":"] = LxOperColon;
+
+    operators << "\\*";
+    kwdMap["*"] = LxOperAsterisk;
 
     operators << ">=";
     kwdMap[">="] = LxOperGreaterOrEqual;
@@ -412,35 +472,37 @@ bool isHexIntegerConstant(const QString &s)  {
 }
 
 
-void searchNumericConstants(QList<Lexem> & lexems) {
-    QList<Lexem>::iterator it = lexems.begin();
-    QList<Lexem>::iterator itt;
+void searchNumericConstants(QList<Lexem*> & lexems) {
+    QList<Lexem*>::iterator it = lexems.begin();
+    QList<Lexem*>::iterator itt;
     while (it!=lexems.end()) {
-        if ( (*it).type==LxTypeName ) {
+        if ( (*it)->type==LxTypeName ) {
             itt = it + 1;
-            const QString s = (*it).data;
+            const QString s = (*it)->data;
             if (isDecimalIntegerConstant(s) || isHexIntegerConstant(s)) {
-                (*it).type=LxConstInteger;
+                (*it)->type=LxConstInteger;
             }
             else if (isDecimalRealConstant(s)) {
-                (*it).type=LxConstReal;
+                (*it)->type=LxConstReal;
             }
             else if (isExpRealConstant(s)) {
-                (*it).type=LxConstReal;
-                (*it).data.replace(QString::fromUtf8("е"), "E");
-                (*it).data.replace(QString::fromUtf8("Е"), "E");
-                (*it).data.replace("e", "E");
-                if ( (*it).data[(*it).data.length()]=='E' ) {
+                (*it)->type=LxConstReal;
+                (*it)->data.replace(QString::fromUtf8("е"), "E");
+                (*it)->data.replace(QString::fromUtf8("Е"), "E");
+                (*it)->data.replace("e", "E");
+                if ( (*it)->data[(*it)->data.length()]=='E' ) {
                     if (itt!=lexems.end()) {
-                        if ( (*itt).type==LxOperPlus || (*itt).type==LxOperMinus ) {
-                            (*it).data += (*itt).data;
-                            (*it).size += (*itt).size;
+                        if ( (*itt)->type==LxOperPlus || (*itt)->type==LxOperMinus ) {
+                            (*it)->data += (*itt)->data;
+                            (*it)->size += (*itt)->size;
+                            delete *itt;
                             itt = lexems.erase(itt);
                             if (itt!=lexems.end()) {
-                                const QString ss = (*itt).data;
+                                const QString ss = (*itt)->data;
                                 if (isDecimalRealConstant(ss)) {
-                                    (*it).data += (*itt).data;
-                                    (*it).size += (*itt).size;
+                                    (*it)->data += (*itt)->data;
+                                    (*it)->size += (*itt)->size;
+                                    delete *itt;
                                     lexems.erase(itt);
                                 }
                             }
@@ -448,8 +510,8 @@ void searchNumericConstants(QList<Lexem> & lexems) {
                     }
                 }
                 else {
-                    if ( !(*it).data.contains("+") && !(*it).data.contains("-") ) {
-                        (*it).data.replace("E","E+");
+                    if ( !(*it)->data.contains("+") && !(*it)->data.contains("-") ) {
+                        (*it)->data.replace("E","E+");
                     }
                 }
             }
@@ -459,7 +521,7 @@ void searchNumericConstants(QList<Lexem> & lexems) {
 }
 
 void LexerPrivate::splitLineIntoLexems(const QString &text
-                                       , QList<Lexem> &lexems
+                                       , QList<Lexem*> &lexems
                                        ) const
 {
     lexems.clear();
@@ -472,18 +534,17 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
         return;
     }
     forever {
-        cur = rxCompound.indexIn(text, prev+1);
+        cur = rxCompound.indexIn(text, qMax(0,prev));
         if (cur!=-1) {
-            if (cur-prev>1) {
+            if ( (cur-prev>1&&prev==-1) || (cur-prev>0&&prev>=0) ) {
                 if (inLit) {
-                    lexems.last().data += text.mid(prev+1, cur-prev);
+                    lexems.last()->data += text.mid(prev+1, cur-prev);
                 }
                 else {
-                    Lexem lx;
-                    lx.error = 0;
-                    lx.pos = prev+1;
-                    lx.type = LxTypeName;
-                    lx.data = text.mid(prev+1, cur-prev);
+                    Lexem * lx = new Lexem;
+                    lx->pos = qMax(prev, 0);
+                    lx->type = LxTypeName;
+                    lx->data = text.mid(qMax(prev,0), prev>=0? cur-prev : cur-prev-1);
                     lexems << lx;
                 }
             }
@@ -493,46 +554,42 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                     inLit = false;
                 }
                 else {
-                    lexems.last().data += symb;
+                    lexems.last()->data += symb;
                 }
 
             }
             else {
                 if (symb=="|") {
-                    Lexem lx;
-                    lx.error = 0;
-                    lx.type = LxTypeComment;
-                    lx.data = text.mid(cur+1);
-                    lx.pos = cur+1;
+                    Lexem * lx = new Lexem;
+                    lx->type = LxTypeComment;
+                    lx->data = text.mid(cur+1);
+                    lx->pos = cur+1;
                     lexems << lx;
                     break;
                 }
                 else if (symb=="#") {
-                    Lexem lx;
-                    lx.error = 0;
-                    lx.type = LxTypeDoc;
-                    lx.data = text.mid(cur+1);
-                    lx.pos = cur+1;
+                    Lexem * lx = new Lexem;
+                    lx->type = LxTypeDoc;
+                    lx->data = text.mid(cur+1);
+                    lx->pos = cur+1;
                     lexems << lx;
                     break;
                 }
                 else if (symb=="\"" || symb=="'") {
                     litSimb = symb[0];
-                    Lexem lx;
-                    lx.error = 0;
-                    lx.type = LxConstLiteral;
-                    lx.pos = cur;
+                    Lexem * lx = new Lexem;
+                    lx->type = LxConstLiteral;
+                    lx->pos = cur;
                     inLit = true;
                 }
                 else {
                     QString simplifiedSymb = symb;
                     simplifiedSymb.remove(' ');
                     simplifiedSymb.remove('_');
-                    Lexem lx;
-                    lx.error = 0;
-                    lx.type = kwdMap[simplifiedSymb];
-                    lx.data = symb;
-                    lx.pos = cur;
+                    Lexem * lx = new Lexem;
+                    lx->type = kwdMap[simplifiedSymb];
+                    lx->data = symb;
+                    lx->pos = cur;
                     lexems << lx;
                 }
             }
@@ -540,19 +597,18 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
         } // end if cur!=-1
         else {
             if (inLit) {
-                lexems.last().data += text.mid(prev+1);
-                lexems.last().error = BAD_KAVICHKA;
+                lexems.last()->data += text.mid(prev+1);
+                lexems.last()->error = _("Unpaired quote");
             }
             else {
-                Lexem lx = lexems.last();
-                if (lx.type==LxTypeComment || lx.type==LxTypeDoc)
-                    lexems.last().data += text.mid(prev+1);
+                Lexem * lx = lexems.last();
+                if (lx->type==LxTypeComment || lx->type==LxTypeDoc)
+                    lexems.last()->data += text.mid(prev+1);
                 else {
-                    Lexem llx;
-                    llx.error = 0;
-                    llx.type = LxTypeName;
-                    llx.pos = prev + 1;
-                    llx.data = text.mid(prev+1);
+                    Lexem * llx = new Lexem;
+                    llx->type = LxTypeName;
+                    llx->pos = qMax(prev, 0);
+                    llx->data = text.mid(prev);
                     lexems << llx;
                 }
             }
@@ -560,18 +616,19 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
         }
     }
     for (int i=0; i<lexems.size(); i++) {
-        lexems[i].size = lexems[i].data.size();
-        if (lexems[i].type!=LxConstLiteral) {
-            lexems[i].data = lexems[i].data.simplified();
+        lexems[i]->size = lexems[i]->data.size();
+        if (lexems[i]->type!=LxConstLiteral) {
+            lexems[i]->data = lexems[i]->data.simplified();
         }
         else {
-            lexems[i].size += 2;
+            lexems[i]->size += 2;
         }
     }
-    QList<Lexem>::iterator it = lexems.begin();
+    QList<Lexem*>::iterator it = lexems.begin();
     while (it!=lexems.end()) {
-        Lexem lx = (*it);
-        if (lx.data.isEmpty()) {
+        Lexem * lx = (*it);
+        if (lx->data.isEmpty()) {
+            delete lx;
             it = lexems.erase(it);
         }
         else {
@@ -581,15 +638,15 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
     searchNumericConstants(lexems);
 }
 
-void popFirstStatement(QList<Lexem> & lexems, Statement & result );
-void popFirstStatementByKeyword(QList<Lexem> & lexems, Statement & result );
+void popFirstStatement(QList<Lexem*> & lexems, Statement & result );
+void popFirstStatementByKeyword(QList<Lexem*> & lexems, Statement & result );
 
 void LexerPrivate::groupLexemsByStatements(
-    const QList<Lexem> &lexems
+    const QList<Lexem*> &lexems
     , QList<Statement> &statements
     ) const
 {
-    QList<Lexem> lexemsCopy = lexems;
+    QList<Lexem*> lexemsCopy = lexems;
     while (lexemsCopy.size()>0) {
         Statement statement;
         popFirstStatement(lexemsCopy, statement);
@@ -598,21 +655,21 @@ void LexerPrivate::groupLexemsByStatements(
     }
 }
 
-void popFirstStatement(QList<Lexem> & lexems, Statement & result )
+void popFirstStatement(QList<Lexem*> & lexems, Statement & result )
 {
     if (lexems.isEmpty())
         return;
-    if (lexems[0].type==LxOperSemicolon) {
+    if (lexems[0]->type==LxOperSemicolon) {
         // Semicolons are delemiters. Just skip them.
         lexems.pop_front();
     }
-    else if (lexems[0].type==LxTypeComment || lexems[0].type==LxTypeDoc) {
+    else if (lexems[0]->type==LxTypeComment || lexems[0]->type==LxTypeDoc) {
         // Comments and docstrings are newline-endian lexems
         result.data << lexems[0];
-        result.type = lexems[0].type;
+        result.type = lexems[0]->type;
         lexems.pop_front();
     }
-    else if (lexems[0].type & LxTypePrimaryKwd || lexems[0].type==LxNameClass) {
+    else if (lexems[0]->type & LxTypePrimaryKwd || lexems[0]->type==LxNameClass) {
         // Statement type can be determined by primary keyword
         popFirstStatementByKeyword(lexems, result);
     }
@@ -620,8 +677,10 @@ void popFirstStatement(QList<Lexem> & lexems, Statement & result )
         // Generic assignment (or algothitm call) statement
         result.type = LxPriAssign;
         while (lexems.size()>0) {
-            Lexem lx = lexems[0];
-            if (lx.type==LxOperSemicolon || lx.type & LxTypePrimaryKwd || lexems[0].type==LxNameClass) {
+            Lexem * lx = lexems[0];
+            if (lx->type==LxOperSemicolon
+                    || ( lx->type & LxTypePrimaryKwd && lx->type!=LxPriAssign )
+                    || lexems[0]->type==LxNameClass) {
                 // end of statement
                 break;
             }
@@ -631,100 +690,100 @@ void popFirstStatement(QList<Lexem> & lexems, Statement & result )
     }
 }
 
-void popModuleStatement(QList<Lexem> & lexems, Statement &result);
-void popEndModuleStatement(QList<Lexem> & lexems, Statement &result);
-void popAlgHeaderStatement(QList<Lexem> & lexems, Statement &result);
-void popAlgBeginStatement(QList<Lexem> & lexems, Statement &result);
-void popAlgEndStatement(QList<Lexem> & lexems, Statement &result);
-void popPreStatement(QList<Lexem> & lexems, Statement &result);
-void popPostStatement(QList<Lexem> & lexems, Statement &result);
-void popIfStatement(QList<Lexem> & lexems, Statement &result);
-void popThenStatement(QList<Lexem> & lexems, Statement &result);
-void popElseStatement(QList<Lexem> & lexems, Statement &result);
-void popFiStatement(QList<Lexem> & lexems, Statement &result);
-void popSwitchStatement(QList<Lexem> & lexems, Statement &result);
-void popCaseStatement(QList<Lexem> & lexems, Statement &result);
-void popLoopStatement(QList<Lexem> & lexems, Statement &result);
-void popEndLoopStatement(QList<Lexem> & lexems, Statement &result);
-void popInputStatement(QList<Lexem> & lexems, Statement &result);
-void popOutputStatement(QList<Lexem> & lexems, Statement &result);
-void popFinputStatement(QList<Lexem> & lexems, Statement &result);
-void popFoutputStatement(QList<Lexem> & lexems, Statement &result);
-void popAssertStatement(QList<Lexem> & lexems, Statement &result);
-void popImportStatement(QList<Lexem> & lexems, Statement &result);
-void popExitStatement(QList<Lexem> & lexems, Statement &result);
-void popVarDeclStatement(QList<Lexem> & lexems, Statement &result);
+void popModuleStatement(QList<Lexem*> & lexems, Statement &result);
+void popEndModuleStatement(QList<Lexem*> & lexems, Statement &result);
+void popAlgHeaderStatement(QList<Lexem*> & lexems, Statement &result);
+void popAlgBeginStatement(QList<Lexem*> & lexems, Statement &result);
+void popAlgEndStatement(QList<Lexem*> & lexems, Statement &result);
+void popPreStatement(QList<Lexem*> & lexems, Statement &result);
+void popPostStatement(QList<Lexem*> & lexems, Statement &result);
+void popIfStatement(QList<Lexem*> & lexems, Statement &result);
+void popThenStatement(QList<Lexem*> & lexems, Statement &result);
+void popElseStatement(QList<Lexem*> & lexems, Statement &result);
+void popFiStatement(QList<Lexem*> & lexems, Statement &result);
+void popSwitchStatement(QList<Lexem*> & lexems, Statement &result);
+void popCaseStatement(QList<Lexem*> & lexems, Statement &result);
+void popLoopStatement(QList<Lexem*> & lexems, Statement &result);
+void popEndLoopStatement(QList<Lexem*> & lexems, Statement &result);
+void popInputStatement(QList<Lexem*> & lexems, Statement &result);
+void popOutputStatement(QList<Lexem*> & lexems, Statement &result);
+void popFinputStatement(QList<Lexem*> & lexems, Statement &result);
+void popFoutputStatement(QList<Lexem*> & lexems, Statement &result);
+void popAssertStatement(QList<Lexem*> & lexems, Statement &result);
+void popImportStatement(QList<Lexem*> & lexems, Statement &result);
+void popExitStatement(QList<Lexem*> & lexems, Statement &result);
+void popVarDeclStatement(QList<Lexem*> & lexems, Statement &result);
 
-void popFirstStatementByKeyword(QList<Lexem> &lexems, Statement &result)
+void popFirstStatementByKeyword(QList<Lexem*> &lexems, Statement &result)
 {
     Q_ASSERT(!lexems.isEmpty());
-    if (lexems[0].type==LxPriModule) {
+    if (lexems[0]->type==LxPriModule) {
         popModuleStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriEndModule) {
+    else if (lexems[0]->type==LxPriEndModule) {
         popEndModuleStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriAlgHeader) {
+    else if (lexems[0]->type==LxPriAlgHeader) {
         popAlgHeaderStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriAlgBegin) {
+    else if (lexems[0]->type==LxPriAlgBegin) {
         popAlgBeginStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriAlgEnd) {
+    else if (lexems[0]->type==LxPriAlgEnd) {
         popAlgEndStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriPre) {
+    else if (lexems[0]->type==LxPriPre) {
         popPreStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriPost) {
+    else if (lexems[0]->type==LxPriPost) {
         popPostStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriIf) {
+    else if (lexems[0]->type==LxPriIf) {
         popIfStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriThen) {
+    else if (lexems[0]->type==LxPriThen) {
         popThenStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriElse) {
+    else if (lexems[0]->type==LxPriElse) {
         popElseStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriFi) {
+    else if (lexems[0]->type==LxPriFi) {
         popFiStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriSwitch) {
+    else if (lexems[0]->type==LxPriSwitch) {
         popSwitchStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriCase) {
+    else if (lexems[0]->type==LxPriCase) {
         popCaseStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriLoop) {
+    else if (lexems[0]->type==LxPriLoop) {
         popLoopStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriEndLoop) {
+    else if (lexems[0]->type==LxPriEndLoop) {
         popEndLoopStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriInput) {
+    else if (lexems[0]->type==LxPriInput) {
         popInputStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriOutput) {
+    else if (lexems[0]->type==LxPriOutput) {
         popOutputStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriFinput) {
+    else if (lexems[0]->type==LxPriFinput) {
         popFinputStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriFoutput) {
+    else if (lexems[0]->type==LxPriFoutput) {
         popFoutputStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriAssert) {
+    else if (lexems[0]->type==LxPriAssert) {
         popAssertStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriImport) {
+    else if (lexems[0]->type==LxPriImport) {
         popImportStatement(lexems, result);
     }
-    else if (lexems[0].type==LxPriExit) {
+    else if (lexems[0]->type==LxPriExit) {
         popExitStatement(lexems, result);
     }
-    else if (lexems[0].type==LxNameClass) {
+    else if (lexems[0]->type==LxNameClass) {
         popVarDeclStatement(lexems, result);
     }
     else {
@@ -732,149 +791,149 @@ void popFirstStatementByKeyword(QList<Lexem> &lexems, Statement &result)
     }
 }
 
-void popLexemsUntilPrimaryKeyword(QList<Lexem> & lexems, Statement &result)
+void popLexemsUntilPrimaryKeyword(QList<Lexem*> & lexems, Statement &result)
 {
     while (lexems.size()>0) {
-        Lexem lx = lexems[0];
-        if (lx.type==LxOperSemicolon || lx.type & LxTypePrimaryKwd)
+        Lexem * lx = lexems[0];
+        if (lx->type==LxOperSemicolon || lx->type & LxTypePrimaryKwd)
             break;
         lexems.pop_front();
         result.data << lx;
     }
 }
 
-void popLexemsUntilPrimaryKeywordOrVarDecl(QList<Lexem> &lexems, Statement &result)
+void popLexemsUntilPrimaryKeywordOrVarDecl(QList<Lexem*> &lexems, Statement &result)
 {
     while (lexems.size()>0) {
-        Lexem lx = lexems[0];
-        if (lx.type==LxOperSemicolon || lx.type & LxTypePrimaryKwd || lx.type==LxNameClass)
+        Lexem * lx = lexems[0];
+        if (lx->type==LxOperSemicolon || lx->type & LxTypePrimaryKwd || lx->type==LxNameClass)
             break;
         lexems.pop_front();
         result.data << lx;
     }
 }
 
-void popModuleStatement(QList<Lexem> & lexems, Statement &result)
+void popModuleStatement(QList<Lexem*> & lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popEndModuleStatement(QList<Lexem> &lexems, Statement &result)
+void popEndModuleStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popAlgHeaderStatement(QList<Lexem> &lexems, Statement &result)
+void popAlgHeaderStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeyword(lexems, result);
 }
 
-void popAlgBeginStatement(QList<Lexem> &lexems, Statement &result)
+void popAlgBeginStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popAlgEndStatement(QList<Lexem> &lexems, Statement &result)
+void popAlgEndStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popPreStatement(QList<Lexem> &lexems, Statement &result)
+void popPreStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeyword(lexems, result);
 }
 
-void popPostStatement(QList<Lexem> &lexems, Statement &result)
+void popPostStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeyword(lexems, result);
 }
 
-void popIfStatement(QList<Lexem> &lexems, Statement &result)
+void popIfStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popThenStatement(QList<Lexem> &lexems, Statement &result)
+void popThenStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popElseStatement(QList<Lexem> &lexems, Statement &result)
+void popElseStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popFiStatement(QList<Lexem> &lexems, Statement &result)
+void popFiStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popSwitchStatement(QList<Lexem> &lexems, Statement &result)
+void popSwitchStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeyword(lexems, result);
 }
 
-void popCaseStatement(QList<Lexem> &lexems, Statement &result)
+void popCaseStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeyword(lexems, result);
 }
 
-void popLoopStatement(QList<Lexem> &lexems, Statement &result)
+void popLoopStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeyword(lexems, result);
 }
 
-void popEndLoopStatement(QList<Lexem> &lexems, Statement &result)
+void popEndLoopStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     if (lexems.size()>0) {
-        Lexem lx = lexems[0];
-        if (lx.type==LxPriCase) {
-            lx.type = LxSecIf;
+        Lexem * lx = lexems[0];
+        if (lx->type==LxPriCase) {
+            lx->type = LxSecIf;
             result.data << lx;
             lexems.pop_front();
         }
@@ -882,57 +941,57 @@ void popEndLoopStatement(QList<Lexem> &lexems, Statement &result)
     popLexemsUntilPrimaryKeyword(lexems, result);
 }
 
-void popInputStatement(QList<Lexem> &lexems, Statement &result)
+void popInputStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popOutputStatement(QList<Lexem> &lexems, Statement &result)
+void popOutputStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popFinputStatement(QList<Lexem> &lexems, Statement &result)
+void popFinputStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popFoutputStatement(QList<Lexem> &lexems, Statement &result)
+void popFoutputStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popAssertStatement(QList<Lexem> &lexems, Statement &result)
+void popAssertStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popImportStatement(QList<Lexem> &lexems, Statement &result)
+void popImportStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popVarDeclStatement(QList<Lexem> &lexems, Statement &result)
+void popVarDeclStatement(QList<Lexem*> &lexems, Statement &result)
 {
-    result.type = lexems[0].type;
+    result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeyword(lexems, result);
@@ -949,6 +1008,140 @@ QRegExp LexerPrivate::rxCompound = QRegExp();
 QRegExp LexerPrivate::rxKeyWords = QRegExp();
 QRegExp LexerPrivate::rxConst = QRegExp();
 QRegExp LexerPrivate::rxTypes = QRegExp();
+QHash<QString,AST::VariableBaseType> LexerPrivate::baseTypes = QHash<QString, AST::VariableBaseType>();
+QHash<QString,bool> LexerPrivate::boolConstantValues = QHash<QString,bool>();
+QSet<QString> LexerPrivate::arrayTypes = QSet<QString>();
+QString LexerPrivate::retvalKeyword = QString();
+
+QString Lexer::testName(const QString &name)
+{
+    if ( name.isEmpty() )
+        return 0;
+
+    /*
+        TN_BAD_NAME_1 "Плохой символ в имени"
+        TN_BAD_NAME_1A "Плохой символ в имени"
+        TN_BAD_NAME_2 "Имя не может нач. с цифры"
+        TN_BAD_NAME_3 "Ключевое слово в имени"
+        TN_BAD_NAME_4 "Непарная \""
+        */
+
+    QString pattern = QString::fromUtf8("[+\\-=:*&?/><#%()\\^$.,");
+//    if (!m_allowHiddenNames)
+//        pattern += "!";
+    pattern += QString::fromUtf8("|№\\[\\]{}~`\\\\]");
+
+    QRegExp rxSym = QRegExp (pattern);
+
+    Q_ASSERT ( rxSym.isValid() );
+
+    int st = 0;
+    while  ( ( st < name.length() )&& ( name[st]==' ' || name[st] == '\t' ) ) {
+        st ++ ;
+    }
+
+    if ( name[st].isDigit() )
+    {
+        return _("Name starts with digit");
+    }
+
+    if ( name.count ( "\"" ) % 2 )
+    {
+        return _("Name contains quotation symbol");
+    }
+
+    QRegExp rxKwd = QRegExp(trUtf8("\\bзнач\\b|\\bтаб\\b"));
+
+    int ps; // позиция первого найденного неправильного символа
+    int pks; // позиция первого найденного ксимвола
+
+    ps = rxSym.indexIn ( name );
+    QString found = rxSym.cap();
+    QRegExp KS = QRegExp ( "[\\x3E8-\\x3EF]+|[\\x1100-\\x1200]+" );
+    pks = KS.indexIn ( name );
+
+    QString error = 0;
+
+    if ( ps != -1 )
+    {
+        error = _("Bad symbol in name");
+    }
+
+    if ( pks != -1 )
+    {
+        QChar debug = name[pks];
+        ushort debug_code = debug.unicode();
+        Q_UNUSED(debug_code);
+        if ( error > 0 )
+        {
+            if ( pks < ps )
+            {
+                error = _("Name contains keyword");
+            }
+        }
+        else
+        {
+            error = _("Name contains keyword");
+        }
+    }
+
+
+    pks = rxKwd.indexIn(name);
+
+    if ( pks != -1 )
+    {
+        QChar debug = name[pks];
+        ushort debug_code = debug.unicode();
+        Q_UNUSED(debug_code);
+        if ( error > 0 )
+        {
+            if ( pks < ps )
+            {
+                error = _("Name contains keyword");
+            }
+        }
+        else
+        {
+            error = _("Name contains keyword");
+        }
+    }
+
+
+    return error;
+
+    if ( name.contains ( "\"" ) && !name.startsWith ( "\"" ) && ( name.count ( "\"" ) % 2 ) ==0 )
+    {
+        return _("Error contains unpaired quote");
+    }
+    return error;
+}
+
+AST::VariableBaseType Lexer::baseTypeByClassName(const QString &clazz) const
+{
+    if (d->baseTypes.contains(clazz)) {
+        return d->baseTypes[clazz];
+    }
+    else {
+        return AST::TypeNone;
+    }
+}
+
+bool Lexer::isArrayClassName(const QString &clazz) const
+{
+    return d->arrayTypes.contains(clazz);
+}
+
+bool Lexer::boolConstantValue(const QString &val) const
+{
+    Q_ASSERT(d->boolConstantValues.contains(val));
+    return d->boolConstantValues[val];
+}
+
+bool Lexer::isReturnVariable(const QString &name) const
+{
+    return name==d->retvalKeyword;
+}
+
 
 
 }

@@ -16,14 +16,16 @@ namespace KumirAnalizer {
 
 struct Statement
 {
-    QList<Lexem> data;
+    QList<Lexem*> data;
     int realLineNumber;
-    Shared::Error error;
     QPoint indentRank;
     Shared::LexemType type;
     struct AST::Statement * statement;
     struct AST::Algorhitm * alg;
     struct AST::Module * mod;
+    int conditionalIndex;
+    bool hasError() const;
+    explicit Statement();
 };
 
 }

@@ -2,6 +2,7 @@
 #include "pdautomata_p.h"
 #include "abstractsyntaxtree/ast.h"
 #include "interfaces/lexemtype.h"
+#include "errormessages/errormessages.h"
 
 #define isTerminal(x) QRegExp(QString::fromUtf8("[a-z|а-я][a-z|а-я|_]*")).exactMatch(x)
 #define isNeterminal(x) QRegExp(QString::fromUtf8("[А-Я|A-Z][А-Я|A-Z|1-9|_*]*")).exactMatch(x)
@@ -316,13 +317,13 @@ void PDAutomataPrivate::loadRules(const QString &rulesRoot)
             }
         }
     }
-    qDebug() << "fff";
+//    qDebug() << "fff";
     foreach ( QString key, matrix.keys() ) {
         Rules rulesList = matrix[key];
         qSort(rulesList);
         matrix[key] = rulesList;
     }
-    qDebug() << "End load rules";
+//    qDebug() << "End load rules";
 }
 
 int PDAutomata::process()
@@ -795,9 +796,9 @@ void prepareRules(const QStringList &files, QString &out, const QList<int> &prio
                 }
                 else
                 {
-                    qDebug() << "Dva pravila s raznoj nagruzkoj ili raznymi prioritetami:";
-                    qDebug() << pravilo << " : " << nagruzka << " [" << priority << "]";
-                    qDebug() << pravilo1 << " : " << nagruzka1 << " [" << priority1 << "]";
+//                    qDebug() << "Dva pravila s raznoj nagruzkoj ili raznymi prioritetami:";
+//                    qDebug() << pravilo << " : " << nagruzka << " [" << priority << "]";
+//                    qDebug() << pravilo1 << " : " << nagruzka1 << " [" << priority1 << "]";
                     ++j;
                 }
             }
@@ -982,8 +983,30 @@ void PDAutomataPrivate::nextStep()
 
 void PDAutomata::postProcess()
 {
-    d->currentModule = new AST::Module();
+    d->currentContext.clear();
     d->currentPosition = 0;
+    if (!d->algorhitm) {
+        d->currentModule = new AST::Module();
+        d->currentAlgorhitm = 0;
+        d->currentContext.push(&(d->currentModule->impl.initializerBody));
+    }
+    else {
+        AST::Module * mod = 0;
+        for (int i=0; i<d->ast->modules.size(); i++) {
+            for (int j=0; j<d->ast->modules[i]->impl.algorhitms.size(); j++) {
+                if (d->algorhitm==d->ast->modules[i]->impl.algorhitms[j]) {
+                    mod = d->ast->modules[i];
+                    break;
+                }
+            }
+            if (mod)
+                break;
+        }
+        d->currentModule = mod;
+        d->currentContext.push(&(d->algorhitm->impl.body));
+        d->currentAlgorhitm = d->algorhitm;
+    }
+
     for (int i=0; i<d->scripts.size(); i++) {
         ScriptListPtr scripts = d->scripts[i];
         if (!scripts) {
@@ -1022,6 +1045,9 @@ void PDAutomata::postProcess()
     if (d->currentModule) {
         d->ast->modules << d->currentModule;
     }
+    if (!d->algorhitm) {
+        d->source->pop_front();
+    }
 }
 
 void PDAutomataPrivate::setCurrentIndentRank(int start, int end)
@@ -1029,12 +1055,15 @@ void PDAutomataPrivate::setCurrentIndentRank(int start, int end)
     (*source)[currentPosition].indentRank = QPoint(start, end);
 }
 
+void PDAutomataPrivate::setCurrentError(const QString &value)
+{
+    for (int i=0; i<(*source)[currentPosition].data.size(); i++) {
+        (*source)[currentPosition].data[i]->error = value;
+    }
+}
+
 void PDAutomataPrivate::processCorrectAlgHeader()
 {
-    if (currentContext.size()>0 && currentModule->impl.algorhitms.isEmpty()) {
-        currentModule->impl.initializerBody = currentContext;
-    }
-    currentContext.clear();
     AST::Algorhitm * alg = new AST::Algorhitm;
     alg->impl.lineNoStart = (*source)[currentPosition].realLineNumber;
     currentModule->impl.algorhitms << alg;
@@ -1048,6 +1077,7 @@ void PDAutomataPrivate::processCorrectAlgBegin()
     setCurrentIndentRank(  0, +1);
     (*source)[currentPosition].mod = currentModule;
     (*source)[currentPosition].alg = currentAlgorhitm;
+    currentContext.push(&(currentAlgorhitm->impl.body));
 }
 
 void PDAutomataPrivate::appendSimpleLine()
@@ -1083,11 +1113,12 @@ void PDAutomataPrivate::appendSimpleLine()
         break;
     }
     statement->lineNo = (*source)[currentPosition].realLineNumber;
-    if ( (*source)[currentPosition].error.code ) {
+    if ( (*source)[currentPosition].data[0]->error.size()>0 ) {
         statement->type = AST::StError;
-        statement->error = (*source)[currentPosition].error.code;
+        statement->error = (*source)[currentPosition].data[0]->error;
     }
-    currentContext << statement;
+    if (!currentContext.isEmpty())
+        currentContext.top()->append(statement);
     (*source)[currentPosition].mod = currentModule;
     (*source)[currentPosition].alg = currentAlgorhitm;
     (*source)[currentPosition].statement = statement;
@@ -1095,16 +1126,318 @@ void PDAutomataPrivate::appendSimpleLine()
 
 void PDAutomataPrivate::processCorrectAlgEnd()
 {
-    if (currentAlgorhitm && currentContext.size()>0) {
-        currentAlgorhitm->impl.body = currentContext;
-    }
+    setCurrentIndentRank(-1,  0);
     if (currentAlgorhitm) {
         currentAlgorhitm->impl.lineNoEnd = (*source)[currentPosition].realLineNumber;
     }
-    currentContext.clear();
+    currentContext.pop();
     (*source)[currentPosition].mod = currentModule;
     (*source)[currentPosition].alg = currentAlgorhitm;
     currentAlgorhitm = 0;
+}
+
+void PDAutomataPrivate::addDummyAlgHeader()
+{
+    // nothind to do
+}
+
+void PDAutomataPrivate::setModuleBeginError(int value)
+{
+    for (int i=0; i<source->size(); i++) {
+        if ((*source)[i].mod == currentModule && (*source)[i].type==LxPriModule) {
+            for (int a=0; a<(*source)[currentPosition].data.size(); a++) {
+                (*source)[currentPosition].data[a]->error = value;
+            }
+            (*source)[i].indentRank = QPoint(0, 0);
+        }
+    }
+}
+
+void PDAutomataPrivate::processCorrectEndOfLoop()
+{
+    setCurrentIndentRank(-1,  0);
+    currentContext.pop();
+    Q_ASSERT(currentContext.size()>0);
+    Q_ASSERT(currentContext.top()->last()->type==AST::StLoop);
+    currentContext.top()->last()->loop.endLineNo = (*source)[currentPosition].realLineNumber;
+    (*source)[currentPosition].mod = currentModule;
+    (*source)[currentPosition].alg = currentAlgorhitm;
+    (*source)[currentPosition].statement = currentContext.top()->last();
+}
+
+void PDAutomataPrivate::processAlgEndInsteadOfLoopEnd()
+{
+    setCurrentIndentRank(-1, 0);
+    setCurrentError(_("'end' instead of 'endloop'"));
+    currentContext.pop();
+    Q_ASSERT(currentContext.size()>0);
+    Q_ASSERT(currentContext.top()->last()->type==AST::StLoop);
+    currentContext.top()->last()->loop.endLineNo = (*source)[currentPosition].realLineNumber;
+    (*source)[currentPosition].mod = currentModule;
+    (*source)[currentPosition].alg = currentAlgorhitm;
+    (*source)[currentPosition].statement = currentContext.top()->last();
+}
+
+void PDAutomataPrivate::processCorrectCase()
+{
+    setCurrentIndentRank(-1, +1);
+    currentContext.pop();
+    Q_ASSERT(currentContext.size()>0);
+    Q_ASSERT(currentContext.top()->last()->type==AST::StSwitchCaseElse);
+    AST::ConditionSpec cond;
+    cond.startLineNo = (*source)[currentPosition].realLineNumber;
+    cond.condition = 0;
+    (*source)[currentPosition].mod = currentModule;
+    (*source)[currentPosition].alg = currentAlgorhitm;
+    (*source)[currentPosition].statement = currentContext.top()->last();
+    (*source)[currentPosition].conditionalIndex = currentContext.top()->last()->conditionals.size();
+    currentContext.top()->last()->conditionals << cond;
+    currentContext.push(&(currentContext.top()->last()->conditionals.last().body));
+}
+
+void PDAutomataPrivate::processCorrectIf()
+{
+    setCurrentIndentRank(0, +2);
+    AST::Statement * st = new AST::Statement;
+    st->type = AST::StIfThenElse;
+    st->lineNo = (*source)[currentPosition].realLineNumber;
+    currentContext.top()->append(st);
+    (*source)[currentPosition].mod = currentModule;
+    (*source)[currentPosition].alg = currentAlgorhitm;
+    (*source)[currentPosition].statement = currentContext.top()->last();
+}
+
+void PDAutomataPrivate::processCorrectThen()
+{
+    setCurrentIndentRank(-1, +1);
+    Q_ASSERT(currentContext.size()>0);
+    Q_ASSERT(currentContext.top()->last()->type==AST::StIfThenElse);
+    AST::ConditionSpec cond;
+    cond.startLineNo = (*source)[currentPosition].realLineNumber;
+    cond.condition = 0;
+    (*source)[currentPosition].mod = currentModule;
+    (*source)[currentPosition].alg = currentAlgorhitm;
+    (*source)[currentPosition].statement = currentContext.top()->last();
+    (*source)[currentPosition].conditionalIndex = currentContext.top()->last()->conditionals.size();
+    currentContext.top()->last()->conditionals << cond;
+    currentContext.push(&(currentContext.top()->last()->conditionals.last().body));
+}
+
+void PDAutomataPrivate::processCorrectFi()
+{
+    currentContext.pop();
+    Q_ASSERT(currentContext.size()>0);
+    Q_ASSERT(currentContext.top()->last()->type==AST::StIfThenElse
+             || currentContext.top()->last()->type==AST::StSwitchCaseElse);
+    if (currentContext.top()->last()->conditionals.size()>0) {
+        setCurrentIndentRank(-2, 0);
+    }
+    else {
+        setCurrentIndentRank(0, 0);
+        setCurrentError(_("Extra 'fi'"));
+    }
+    (*source)[currentPosition].mod = currentModule;
+    (*source)[currentPosition].alg = currentAlgorhitm;
+    (*source)[currentPosition].statement = currentContext.top()->last();
+}
+
+void PDAutomataPrivate::processCorrectElse()
+{
+    setCurrentIndentRank(-1, +1);
+    currentContext.pop();
+    Q_ASSERT(currentContext.size()>0);
+    Q_ASSERT(currentContext.top()->last()->type==AST::StIfThenElse
+             || currentContext.top()->last()->type==AST::StSwitchCaseElse);
+    AST::ConditionSpec cond;
+    cond.startLineNo = (*source)[currentPosition].realLineNumber;
+    cond.condition = 0;
+    (*source)[currentPosition].mod = currentModule;
+    (*source)[currentPosition].alg = currentAlgorhitm;
+    (*source)[currentPosition].statement = currentContext.top()->last();
+    (*source)[currentPosition].conditionalIndex = currentContext.top()->last()->conditionals.size();
+    currentContext.top()->last()->conditionals << cond;
+    currentContext.push(&(currentContext.top()->last()->conditionals.last().body));
+}
+
+void PDAutomataPrivate::processCorrectSwitch()
+{
+    setCurrentIndentRank(0, +2);
+    AST::Statement * st = new AST::Statement;
+    st->type = AST::StSwitchCaseElse;
+    st->lineNo = (*source)[currentPosition].realLineNumber;
+    currentContext.top()->append(st);
+    (*source)[currentPosition].mod = currentModule;
+    (*source)[currentPosition].alg = currentAlgorhitm;
+    (*source)[currentPosition].statement = currentContext.top()->last();
+}
+
+void PDAutomataPrivate::processCorrectBeginOfLoop()
+{
+    setCurrentIndentRank(0, +1);
+    AST::Statement * st = new AST::Statement;
+    st->type = AST::StLoop;
+    st->lineNo = (*source)[currentPosition].realLineNumber;
+    (*source)[currentPosition].mod = currentModule;
+    (*source)[currentPosition].alg = currentAlgorhitm;
+    (*source)[currentPosition].statement = st;
+
+}
+
+void PDAutomataPrivate::processCorrectDocLine()
+{
+    // TODO implement me
+}
+
+void PDAutomataPrivate::processCorrectRestrictionLine()
+{
+    AST::Statement * st = new AST::Statement;
+    st->type = AST::StAssert;
+    st->lineNo = (*source)[currentPosition].realLineNumber;
+    (*source)[currentPosition].mod = currentModule;
+    (*source)[currentPosition].alg = currentAlgorhitm;
+    (*source)[currentPosition].statement = st;
+    Q_CHECK_PTR(currentAlgorhitm);
+    if ( (*source)[currentPosition].type==LxPriPre ) {
+        currentAlgorhitm->impl.pre.append(st);
+    }
+    else {
+        currentAlgorhitm->impl.post.append(st);
+    }
+}
+
+void PDAutomataPrivate::processCorrectModuleBegin()
+{
+    setCurrentIndentRank(0, +1);
+    (*source)[currentPosition].mod = currentModule;
+    if (currentModule) {
+        ast->modules << currentModule;
+    }
+    currentModule = new AST::Module;
+}
+
+void PDAutomataPrivate::processCorrectModuleEnd()
+{
+    setCurrentIndentRank(-1, 0);
+    (*source)[currentPosition].mod = currentModule;
+    if (currentModule) {
+        ast->modules << currentModule;
+    }
+    currentModule = 0;
+}
+
+void PDAutomataPrivate::processCorrectLoad()
+{
+    // nothing to do
+}
+
+void PDAutomataPrivate::setGarbageAlgError()
+{
+    setCurrentError(_("Garbabe"));
+    appendSimpleLine();
+}
+
+void PDAutomataPrivate::setGarbageIfThenError()
+{
+    setCurrentError(_("Garbabe"));
+    appendSimpleLine();
+}
+
+void PDAutomataPrivate::setGarbageSwitchCaseError()
+{
+    setCurrentError(_("Garbabe"));
+    appendSimpleLine();
+}
+
+void PDAutomataPrivate::setCorrespondingIfBroken()
+{
+    Q_ASSERT(currentContext.size()>1);
+    AST::Statement * st = currentContext.at(currentContext.size()-2)->last();
+    Q_ASSERT(st->type==AST::StIfThenElse);
+    st->type = AST::StError;
+    st->error = _("Broken if statement");
+    for (int i=0; i<source->size(); i++) {
+        if ( (*source)[i].statement==st ) {
+            for (int a=0; a<(*source)[i].data.size(); a++) {
+                (*source)[i].data[a]->error = _("Broken if statement");
+            }
+            break;
+        }
+    }
+
+}
+
+void PDAutomataPrivate::setExtraOpenKeywordError(const QString &kw)
+{
+    if (kw==QString::fromUtf8("если")) {
+        setCurrentIndentRank(0,0);
+        setCurrentError(_("Extra 'if'"));
+    }
+    else if (kw==QString::fromUtf8("то")) {
+        setCurrentIndentRank(-1,-1);
+        setCurrentError(_("Extra 'then'"));
+    }
+    else if (kw==QString::fromUtf8("выбор")) {
+        setCurrentError(_("Extra 'switch'"));
+    }
+    else if (kw==QString::fromUtf8("при")) {
+        setCurrentError(_("Extra 'case'"));
+    }
+    else if (kw==QString::fromUtf8("нц")) {
+        setCurrentIndentRank(0,0);
+        setCurrentError(_("Extra 'loop'"));
+    }
+    else if (kw==QString::fromUtf8("нач")) {
+        setCurrentError(_("Extra 'begin'"));
+    }
+    else if (kw==QString::fromUtf8("иначе")) {
+        setCurrentIndentRank(-1,-1);
+        setCurrentError(_("Extra 'else'"));
+    }
+    else if (kw==QString::fromUtf8("исп")) {
+        setCurrentIndentRank(0,0);
+        setCurrentError(_("Extra 'module'"));
+    }
+    appendSimpleLine();
+    (*source)[currentPosition].alg = currentAlgorhitm;
+    (*source)[currentPosition].mod = currentModule;
+    (*source)[currentPosition].statement = currentContext.top()->last();
+}
+
+void PDAutomataPrivate::setExtraCloseKeywordError(const QString &kw)
+{
+    if (kw==QString::fromUtf8("все")) {
+        setCurrentError(_("Extra 'fi'"));
+    }
+    else if (kw==QString::fromUtf8("кц")) {
+        setCurrentError(_("Extra 'endloop'"));
+    }
+    else if (kw==QString::fromUtf8("кон")) {
+        setCurrentError(_("Extra 'end'"));
+    }
+    else if (kw==QString::fromUtf8("иначе")) {
+        setCurrentError(_("Extra 'else'"));
+    }
+    else if (kw==QString::fromUtf8("ограничение_алгоритма")) {
+        setCurrentError(_("Extra statement"));
+    }
+    else if (kw==QString::fromUtf8("строка_документации")) {
+        setCurrentError(_("Extra docstring"));
+    }
+    else if (kw==QString::fromUtf8("выбор")) {
+        setCurrentError(_("Extra 'switch'"));
+    }
+    else if (kw==QString::fromUtf8("при")) {
+        setCurrentError(_("Extra 'case'"));
+    }
+    else if (kw==QString::fromUtf8("если")) {
+        setCurrentError(_("Extra 'if'"));
+    }
+    else if (kw==QString::fromUtf8("то")) {
+        setCurrentError(_("Extra 'then'"));
+    }
+    else {
+        setCurrentError(_("Program structure error"));
+    }
 }
 
 } // namespace KumirAnalizer

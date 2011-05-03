@@ -44,11 +44,43 @@ enum VariableAccessType {
     AccessArgumentOut,
 
     /** Algorhitm in/out-reference argument (russian: argrez) */
-    AccessArgumentInOut,
+    AccessArgumentInOut
 
-    /** Constant value, defined at compile-time */
-    AccessConstant
 };
+
+#include <QString>
+
+inline QString dump(const enum VariableBaseType & type)
+{
+    if (type==TypeNone)
+        return "\"void\"";
+    else if (type==TypeInteger)
+        return "\"int\"";
+    else if (type==TypeReal)
+        return "\"float\"";
+    else if (type==TypeCharect)
+        return "\"char\"";
+    else if (type==TypeString)
+        return "\"string\"";
+    else if (type==TypeBoolean)
+        return "\"bool\"";
+    else {
+        int id = type & 0x00FF;
+        return QString("\"custom_%1\"").arg(id);
+    }
+}
+
+inline QString dump(const enum VariableAccessType & type)
+{
+    if (type==AccessArgumentIn)
+        return "in-argument";
+    else if (type==AccessArgumentOut)
+        return "out-argument";
+    else if (type==AccessArgumentInOut)
+        return "in/out-argument";
+    else
+        return "regular";
+}
 
 }
 

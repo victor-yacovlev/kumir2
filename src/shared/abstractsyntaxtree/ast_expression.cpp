@@ -8,19 +8,23 @@ namespace AST {
 Expression::Expression()
 {
     kind = ExprNone;
-    type = TypeNone;
+    baseType = TypeNone;
     variable = NULL;
     function = NULL;
+    constant = QVariant::Invalid;
+    dimension = 0;
 }
 
 Expression::Expression(const struct Expression * src)
 {
     kind = src->kind;
-    type = src->type;
+    baseType = src->baseType;
+    constant = src->constant;
+    dimension = src->dimension;
     for (int i=0; i<src->operands.size(); i++) {
         operands << new Expression(src->operands[i]);
     }
-    operators = src->operators;
+    operatorr = src->operatorr;
 }
 
 void Expression::updateReferences(const Expression *src, const Data *srcData, const Data *data)
@@ -99,6 +103,102 @@ Expression::~Expression()
         if (operands[i])
             delete operands[i];
     }
+}
+
+extern QString addIndent(const QString & source, int count);
+QString dumpKind(const enum ExpressionType & kind) {
+    if (kind==ExprVariable) {
+        return "\"variable\"";
+    }
+    else if (kind==ExprConst) {
+        return "\"constant\"";
+    }
+    else if (kind==ExprArrayElement) {
+        return "\"element\"";
+    }
+    else if (kind==ExprFunctionCall) {
+        return "\"function\"";
+    }
+    else if (kind==ExprSubexpression) {
+        return "\"subexpression\"";
+    }
+    else {
+        return "";
+    }
+}
+
+QString dumpOperator(const enum ExpressionOperator op)
+{
+    if (op==OpSumm)
+        return "+";
+    else if (op==OpSubstract)
+        return "-";
+    else if (op==OpMultiply)
+        return "*";
+    else if (op==OpDivision)
+        return "/";
+    else if (op==OpPower)
+        return "**";
+    else if (op==OpNot)
+        return "!";
+    else if (op==OpAnd)
+        return "&&";
+    else if (op==OpOr)
+        return "||";
+    else if (op==OpEqual)
+        return "==";
+    else if (op==OpNotEqual)
+        return "!=";
+    else if (op==OpLess)
+        return "<";
+    else if (op==OpGreater)
+        return ">";
+    else if (op==OpLessOrEqual)
+        return "<=";
+    else if (op==OpGreaterOrEqual)
+        return ">=";
+    else
+        return "";
+}
+
+QString Expression::dump() const
+{
+    QString result = "{\n";
+    result += "\tkind: "+dumpKind(kind);
+    result += "\ttype: "+AST::dump(baseType);
+    if (kind==ExprConst) {
+        result += "\tconstant: ";
+        if (constant.type()==QVariant::String || constant.type()==QVariant::Char)
+            result += "\""+constant.toString()+"\"";
+        else
+            result += constant.toString();
+        result += ";\n";
+    }
+    else if (kind==ExprVariable) {
+        result +=" \tvariable: \""+variable->name+"\";\n";
+    }
+    else if (kind==ExprFunctionCall) {
+        result += "\tfunction: \""+function->header.name+"\",\n";
+    }
+    else if (kind==ExprArrayElement) {
+        result += "t\element: \""+variable->name+"\",\n";
+    }
+    else if (kind==ExprSubexpression) {
+        result += "\toperator: \""+dumpOperator(operatorr)+"\",\n";
+    }
+    if (kind==ExprFunctionCall || kind==ExprArrayElement || kind==ExprSubexpression) {
+        result += "\toperands: [\n";
+        for (int i=0; i<operands.size(); i++) {
+            result += addIndent(operands[i]->dump(), 2);
+            if (i<operands.size()-1) {
+                result += ",";
+            }
+            result += "\n";
+        }
+        result += "\t]\n";
+    }
+    result += "}"; // end expression
+    return result;
 }
 
 }

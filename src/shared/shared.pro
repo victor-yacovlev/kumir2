@@ -1,3 +1,3 @@
 TEMPLATE=subdirs
 CONFIG+=ordered
-SUBDIRS=extensionsystem abstractsyntaxtree
+SUBDIRS=extensionsystem abstractsyntaxtree errormessages

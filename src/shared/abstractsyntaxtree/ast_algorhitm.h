@@ -67,6 +67,9 @@ struct AlgorhitmHeader {
     /** Formal arguments, represented as
       * references to corresponding local variables */
     QList<struct Variable *> arguments;
+
+    /** True, if algorhitm header contains non-critical error */
+    bool broken;
 };
 
 /** Algorhitm body (private to other components) */
@@ -105,6 +108,7 @@ struct ABSTRACTSYNTAXTREE_EXPORT Algorhitm {
     void updateReferences(const struct Algorhitm * src,
                           const struct Data * srcData,
                           const struct Data * data);
+    QString dump() const;
     ~Algorhitm();
 };
 

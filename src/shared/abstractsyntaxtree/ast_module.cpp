@@ -2,15 +2,23 @@
 #include "ast_module.h"
 #include "ast_algorhitm.h"
 
+#include <QtCore>
+
 namespace AST {
 
 Module::Module()
 {
     header.type = ModTypeUser;
+    header.enabled = false;
+    impl.startLineNo = -1;
+    impl.endLineNo = -1;
 }
 
 Module::Module( const struct Module * src )
 {
+    header.enabled = src->header.enabled;
+    impl.startLineNo = src->impl.startLineNo;
+    impl.endLineNo = src->impl.endLineNo;
     for (int i=0; i<src->impl.globals.size(); i++) {
         impl.globals << new Variable(src->impl.globals[i]);
     }
@@ -71,6 +79,78 @@ Module::~Module()
         if (impl.globals[i])
             delete impl.initializerBody[i];
     }
+}
+
+extern QString addIndent(const QString & source, int count)
+{
+    QStringList lines = source.trimmed().split("\n");
+    QString result;
+    for (int i=0; i<lines.size(); i++) {
+        for (int j=0; j<count; j++) {
+            result += "\t";
+        }
+        result += lines[i];
+        if (i<lines.size()-1) {
+            result += "\n";
+        }
+    }
+    return result;
+}
+
+QString Module::dump() const
+{
+    QString result;
+    result = "{\n";
+    result += "\theader: \{\n";
+    result += "\t\tuses: [";
+    for (int i=0; i<header.uses.size(); i++) {
+        if (i>0)
+            result += ", ";
+        result += "\""+header.uses.toList()[i]+"\"";
+    }
+    result += "],\n"; // end uses
+    result += "\t\talgorhitms: [\n";
+    for (int i=0; i<header.algorhitms.size(); i++) {
+        result += "\t\t\t\""+header.algorhitms[i]->header.name+"\"";
+        if (i<header.algorhitms.size()-1)
+            result += ",";
+        result += "\n";
+    }
+    result += "\t\t]\n"; // end public algorhitms
+
+    result += "\t},\n"; // end header
+
+    result += "\timplementation: {\n";
+    result += "\t\tglobals: [\n";
+    for (int i=0; i<impl.globals.size(); i++) {
+        result += addIndent(impl.globals[i]->dump(), 3);
+        if (i<impl.globals.size()-1) {
+            result += ",";
+        }
+        result += "\n";
+    }
+    result += "\t\t],\n"; // end globals
+    result += "\t\tinitializer: [\n";
+    for (int i=0; i<impl.initializerBody.size(); i++) {
+        result += addIndent(impl.initializerBody[i]->dump(), 3);
+        if (i<impl.initializerBody.size()-1) {
+            result += ",";
+        }
+        result += "\n";
+    }
+    result += "\t\t],\n"; // end initializer
+    result += "\t\talgorhitms: [\n";
+    for (int i=0; i<impl.algorhitms.size(); i++) {
+        result += addIndent(impl.algorhitms[i]->dump(), 3);
+        if (i<impl.algorhitms.size()-1) {
+            result += ",";
+        }
+        result += "\n";
+    }
+    result += "\t\t]\n"; // end algorhitms implementation
+    result += "\t}\n"; // end implementation
+    result += "}\n"; // end module
+    return result;
 }
 
 }

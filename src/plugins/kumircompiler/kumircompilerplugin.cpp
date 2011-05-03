@@ -53,6 +53,20 @@ void KumirCompilerPlugin::start()
             int id = m_analizer->newDocument();
             m_analizer->setSourceText(id, data);
             QList<Shared::Error> errors = m_analizer->errors(id);
+            const AST::Data * ast = m_analizer->abstractSyntaxTree(id);
+            const QString baseName = QFileInfo(filename).baseName();
+            for (int i=0; i<ast->modules.size(); i++) {
+                const QString fileName = baseName+"_"+ast->modules[i]->header.name+".isp";
+                QFile ff(fileName);
+                if (ff.open(QIODevice::ReadOnly|QIODevice::Text)) {
+                    QTextStream ots(&ff);
+                    ots.setCodec("UTF-8");
+                    QString modJs = ast->modules[i]->dump();
+                    modJs.replace("\t","  ");
+                    ots << modJs;
+                    ff.close();;
+                }
+            }
             for (int i=0; i<errors.size(); i++) {
                 Shared::Error e = errors[i];
                 std::cerr << filename.toLocal8Bit().data() << ":" << e.line << ": Error " << e.code << std::endl;

@@ -11,7 +11,7 @@ namespace KumirAnalizer {
         QString data;
         int pos;
         int size;
-        int error;
+        QString error;
     };
 
 }

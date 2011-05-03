@@ -4,6 +4,7 @@
 #include "interfaces/lexemtype.h"
 #include "lexer.h"
 #include "pdautomata.h"
+#include "syntaxanalizer.h"
 
 using namespace Shared;
 
@@ -26,6 +27,7 @@ AnalizerPrivate::AnalizerPrivate(Analizer *qq)
     ast = new AST::Data();
     lexer = new Lexer(q);
     pdAutomata = new PDAutomata(q);
+    analizer = new SyntaxAnalizer(lexer, q);
 }
 
 AnalizerPrivate::~AnalizerPrivate()
@@ -50,7 +52,7 @@ void Analizer::setSourceText(const QString &text)
                                   );
     d->sourceText = text;
     d->doCompilation(AnalizerPrivate::SubjWholeText);
-    emit finished();
+
 }
 
 void Analizer::changeSourceText(int pos, int len, const QString &repl)
@@ -100,7 +102,7 @@ void Analizer::changeSourceText(int pos, int len, const QString &repl)
     AnalizerPrivate::AnalizeSubject newSubject = d->analizeSubject(newStatements);
     AnalizerPrivate::AnalizeSubject subject = oldSubject * newSubject;
     d->doCompilation(subject);
-    emit finished();
+
 }
 
 extern AnalizerPrivate::AnalizeSubject operator * ( const AnalizerPrivate::AnalizeSubject &first
@@ -115,11 +117,11 @@ extern AnalizerPrivate::AnalizeSubject operator * ( const AnalizerPrivate::Anali
 }
 
 
-AnalizerPrivate::AnalizeSubject AnalizerPrivate::analizeSubject(const QList<Lexem> &lexems, int startLineNo) const
+AnalizerPrivate::AnalizeSubject AnalizerPrivate::analizeSubject(const QList<Lexem*> &lexems, int startLineNo) const
 {
     QList<Shared::LexemType> lexemTypes;
-    foreach (const Lexem & lx, lexems) {
-        lexemTypes << lx.type;
+    foreach (const Lexem * lx, lexems) {
+        lexemTypes << lx->type;
     }
     return analizeSubject(lexemTypes, startLineNo);
 }
@@ -129,8 +131,8 @@ AnalizerPrivate::AnalizeSubject AnalizerPrivate::analizeSubject(const QList<Stat
     QList<Shared::LexemType> lexemTypes;
     int startLineNo = statements.isEmpty()? 0 : statements[0].realLineNumber;
     foreach (const Statement &st, statements) {
-        foreach (const Lexem & lx, st.data) {
-            lexemTypes << lx.type;
+        foreach (const Lexem * lx, st.data) {
+            lexemTypes << lx->type;
         }
     }
     return analizeSubject(lexemTypes, startLineNo);
@@ -188,6 +190,11 @@ void AnalizerPrivate::doCompilation(const AnalizeSubject &whatToCompile)
     pdAutomata->init(&statements, ast, 0);
     pdAutomata->process();
     pdAutomata->postProcess();
+    analizer->init(&statements, ast, 0);
+    analizer->buildTables();
+    // TODO load unresolved imports here
+    analizer->processAnalisys();
+
 }
 
 } // namespace KumirAnalizer

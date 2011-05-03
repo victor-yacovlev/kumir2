@@ -52,4 +52,6 @@ character array type name = сим\s*таб
 string array type name = лит\s*таб
 boolean array type name = лог\s*таб
 include text = ВКЛЮЧИТЬ
+function return value = знач
+
 

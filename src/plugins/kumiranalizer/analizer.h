@@ -29,13 +29,6 @@ public:
       */
     static void setSourceLanguage(const QLocale::Language & language);
 
-signals:
-
-    /**
-      * Emits when setSourceText or changeSourceText processing finished
-      */
-    void finished();
-
 public slots:
 
     /**

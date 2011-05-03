@@ -123,8 +123,8 @@ struct ABSTRACTSYNTAXTREE_EXPORT Statement {
     /** Line number in source program */
     int lineNo;
 
-    /** Compile-time error code */
-    int error;
+    /** Compile-time error */
+    QString error;
 
     /** List of top-level expressions for all
       * statement kinds except StLoop, StIfThenElse and StSwitchCaseElse */
@@ -144,6 +144,7 @@ struct ABSTRACTSYNTAXTREE_EXPORT Statement {
     void updateReferences(const struct Statement * src,
                           const struct Data * srcData,
                           const struct Data * data);
+    QString dump() const;
     ~Statement();
 };
 

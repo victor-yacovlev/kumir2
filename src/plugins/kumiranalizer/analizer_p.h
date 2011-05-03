@@ -31,6 +31,7 @@ struct AnalizerPrivate
     class Analizer * q;
     class Lexer * lexer;
     class PDAutomata * pdAutomata;
+    class SyntaxAnalizer * analizer;
     AST_Data * ast;
 
     QString sourceText;
@@ -40,7 +41,7 @@ struct AnalizerPrivate
     QList<int> lineIndents;
 
     AnalizeSubject analizeSubject(const QList<Statement> & statements) const;
-    AnalizeSubject analizeSubject(const QList<Lexem> & lexems, int startLineNo) const;
+    AnalizeSubject analizeSubject(const QList<Lexem*> & lexems, int startLineNo) const;
     AnalizeSubject analizeSubject(const QList<Shared::LexemType> & lexemTypes, int startLineNo) const;
 
     void doCompilation(const AnalizeSubject & whatToCompile);

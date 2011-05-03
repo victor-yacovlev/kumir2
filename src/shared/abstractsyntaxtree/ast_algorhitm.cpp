@@ -1,5 +1,7 @@
 #include "ast_algorhitm.h"
 
+#include <QtCore>
+
 namespace AST {
 
 Algorhitm::Algorhitm()
@@ -8,6 +10,7 @@ Algorhitm::Algorhitm()
     header.returnType = TypeNone;
     header.implType = AlgorhitmCompiled;
     impl.lineNoStart = impl.lineNoEnd = -1;
+    header.broken = false;
 }
 
 Algorhitm::Algorhitm(const Algorhitm *src)
@@ -16,6 +19,7 @@ Algorhitm::Algorhitm(const Algorhitm *src)
     header.returnType = src->header.returnType;
     header.implType = src->header.implType;
     header.name = src->header.name;
+    header.broken = src->header.broken;
     impl.lineNoStart = src->impl.lineNoStart;
     impl.lineNoEnd = src->impl.lineNoEnd;
 
@@ -79,6 +83,77 @@ Algorhitm::~Algorhitm()
         if (impl.body[i])
             delete impl.body[i];
     }
+}
+
+extern QString addIndent(const QString & source, int count);
+
+QString dump(const enum AlgorhitmType & type)
+{
+    if (type==AlgorhitmTypeTeacher) {
+        return "\"teacher\"";
+    }
+    else if (type==AlgorhitmTypeTesting) {
+        return "\"testing\"";
+    }
+    else {
+        return "standart";
+    }
+}
+
+QString Algorhitm::dump() const
+{
+    QString result = "{\n";
+    result += "\theader: {\n";
+    result += "\t\tname: \""+header.name+"\",\n";
+    result += "\t\treturnType: "+AST::dump(header.returnType)+",\n";
+    result += "\t\tspecialType: "+AST::dump(header.specialType)+",\n";
+    result += "\t\targuments: [";
+    for (int i=0; i<header.arguments.size(); i++) {
+        if (i>0) result += ", ";
+        result += header.arguments[i]->name;
+    }
+    result += "],\n"; // end arguments
+    result += QString("\t\tbroken: ")+(header.broken? "true" : "false")+"\n";
+    result += "},\n"; // end header
+    result += "\timplementation: {\n";
+    result += "\t\tlocals: [\n";
+    for (int i=0; i<impl.locals.size(); i++) {
+        result += AST::addIndent(impl.locals[i]->dump(), 3);
+        if (i<impl.locals.size()-1) {
+            result += ",";
+        }
+        result += "\n";
+    }
+    result += "\t\t],\n"; // end locals
+    result += "\t\tpre: [\n";
+    for (int i=0; i<impl.pre.size(); i++) {
+        result += AST::addIndent(impl.pre[i]->dump(), 3);
+        if (i<impl.pre.size()-1) {
+            result += ",";
+        }
+        result += "\n";
+    }
+    result += "\t\t],\n"; // end body
+    result += "\t\tbody: [\n";
+    for (int i=0; i<impl.body.size(); i++) {
+        result += AST::addIndent(impl.body[i]->dump(), 3);
+        if (i<impl.body.size()-1) {
+            result += ",";
+        }
+        result += "\n";
+    }
+    result += "\t\tpost: [\n";
+    for (int i=0; i<impl.post.size(); i++) {
+        result += AST::addIndent(impl.post[i]->dump(), 3);
+        if (i<impl.post.size()-1) {
+            result += ",";
+        }
+        result += "\n";
+    }
+    result += "\t\t],\n"; // end body
+    result += "\t}\n"; // end implementation
+    result += "}\n";
+    return result;
 }
 
 }

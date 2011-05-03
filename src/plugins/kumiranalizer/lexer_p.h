@@ -5,6 +5,7 @@
 #include "interfaces/lexemtype.h"
 #include "statement.h"
 #include "interfaces/error.h"
+#include "abstractsyntaxtree/ast_variabletype.h"
 
 #include <QtCore>
 
@@ -17,13 +18,13 @@ struct LexerPrivate {
       * String "normalization"
       */
     void splitLineIntoLexems(const QString &text
-                             , QList<Lexem> & lexems
+                             , QList<Lexem*> & lexems
                              ) const;
 
     /**
       * SplitFStringList in the terms of Kumir 1.x
       */
-    void groupLexemsByStatements(const QList<Lexem> & lexems
+    void groupLexemsByStatements(const QList<Lexem*> & lexems
                                  , QList<Statement> & statements
                                  ) const;
 
@@ -36,6 +37,10 @@ struct LexerPrivate {
     static QStringList compounds;
 
     static QHash<QString,Shared::LexemType> kwdMap;
+    static QHash<QString,AST::VariableBaseType> baseTypes;
+    static QHash<QString,bool> boolConstantValues;
+    static QSet<QString> arrayTypes;
+    static QString retvalKeyword;
     static QRegExp rxCompound;
     static QRegExp rxKeyWords;
     static QRegExp rxConst;

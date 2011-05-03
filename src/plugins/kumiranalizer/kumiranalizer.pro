@@ -5,6 +5,8 @@ include(../../kumir2plugin.pri)
 include(../../shared/extensionsystem/extensionsystem.pri)
 include(../../shared/interfaces/analizer.pri)
 include(../../shared/abstractsyntaxtree/abstractsyntaxtree.pri)
+include(../../shared/errormessages/errormessages.pri)
+
 
 
 HEADERS += kumiranalizerplugin.h \
@@ -14,15 +16,17 @@ HEADERS += kumiranalizerplugin.h \
     statement.h \
     lexer_p.h \
     lexem.h \
-    error_constants.h \
     pdautomata.h \
-    pdautomata_p.h
+    pdautomata_p.h \
+    syntaxanalizer.h
 
 SOURCES += kumiranalizerplugin.cpp \
     analizer.cpp \
     lexer.cpp \
     statement.cpp \
-    pdautomata.cpp
+    pdautomata.cpp \
+    syntaxanalizer.cpp
+
 
 OTHER_FILES += KumirAnalizer.pluginspec
 

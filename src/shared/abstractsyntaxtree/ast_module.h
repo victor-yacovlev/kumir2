@@ -3,7 +3,7 @@
 
 #include <QString>
 #include <QList>
-#include <QStringList>
+#include <QSet>
 
 
 #undef ABSTRACTSYNTAXTREE_EXPORT
@@ -42,7 +42,10 @@ struct ModuleHeader {
     QList<struct Algorhitm *> algorhitms;
 
     /** List of dependent modules */
-    QStringList uses;
+    QSet<QString> uses;
+
+    /** True, if module is enabled to use */
+    bool enabled;
 };
 
 /** Module body (private to other modules) */
@@ -57,6 +60,12 @@ struct ModuleImplementation {
     /** Body of module initializer (i.e. statements before
       * first algorhitm declaration) */
     QList<struct Statement *> initializerBody;
+
+    /** Module declaration begin real line number */
+    int startLineNo;
+
+    /** Module declaration end real line number */
+    int endLineNo;
 };
 
 
@@ -74,6 +83,9 @@ struct ABSTRACTSYNTAXTREE_EXPORT Module {
     void updateReferences(const struct Module * src,
                           const struct Data * srcData,
                           const struct Data * data);
+
+    QString dump() const;
+    bool load(const QString &data);
     ~Module();
 
 };

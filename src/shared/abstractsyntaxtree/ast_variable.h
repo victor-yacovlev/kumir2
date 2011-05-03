@@ -9,10 +9,17 @@
 #include "ast_variabletype.h"
 #include "ast_expression.h"
 
+#undef ABSTRACTSYNTAXTREE_EXPORT
+#ifdef ABSTRACTSYNTAXTREE_LIBRARY
+#define ABSTRACTSYNTAXTREE_EXPORT Q_DECL_EXPORT
+#else
+#define ABSTRACTSYNTAXTREE_EXPORT Q_DECL_IMPORT
+#endif
+
 namespace AST {
 
 /** Variable element of (locals|globals) table */
-struct Variable {
+struct ABSTRACTSYNTAXTREE_EXPORT Variable {
 
     /** One array dimension is calculable by two expressions */
     typedef QPair<struct Expression *, struct Expression *> Bound;
@@ -40,6 +47,7 @@ struct Variable {
     void updateReferences(const struct Variable * src,
                           const struct Data * srcData,
                           const struct Data * data);
+    QString dump() const;
     ~Variable();
 };
 

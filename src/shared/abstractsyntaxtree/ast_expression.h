@@ -3,8 +3,16 @@
 
 #include <QString>
 #include <QList>
+#include <QVariant>
 
 #include "ast_variabletype.h"
+
+#undef ABSTRACTSYNTAXTREE_EXPORT
+#ifdef ABSTRACTSYNTAXTREE_LIBRARY
+#define ABSTRACTSYNTAXTREE_EXPORT Q_DECL_EXPORT
+#else
+#define ABSTRACTSYNTAXTREE_EXPORT Q_DECL_IMPORT
+#endif
 
 namespace AST {
 
@@ -16,14 +24,14 @@ enum ExpressionType {
       */
     ExprNone,
 
-    /** Variable of constant */
+    /** Variable */
     ExprVariable,
 
-    /** Array of string element */
-    ExprArrayElement,
+    /** Constant */
+    ExprConst,
 
-    /** String (in future - may be array) slice */
-    ExprSlice,
+    /** Array of string element, or slice */
+    ExprArrayElement,
 
     /** Function call */
     ExprFunctionCall,
@@ -34,6 +42,7 @@ enum ExpressionType {
 
 /** Operand delimeter for subexpressions */
 enum ExpressionOperator {
+    OpNone,
     OpSumm,
     OpSubstract,
     OpMultiply,
@@ -41,22 +50,34 @@ enum ExpressionOperator {
     OpPower,
     OpNot,
     OpAnd,
-    OpOr
+    OpOr,
+    OpEqual,
+    OpNotEqual,
+    OpLess,
+    OpGreater,
+    OpLessOrEqual,
+    OpGreaterOrEqual
 };
 
 /** Expression tree-based representation */
-struct Expression {
+struct ABSTRACTSYNTAXTREE_EXPORT Expression {
 
     /** Kind of expression */
     enum ExpressionType kind;
 
-    /** Resulting type of expression */
-    enum VariableBaseType type;
+    /** Resulting base type of expression */
+    enum VariableBaseType baseType;
+
+    /** Resulting dimension of base type */
+    int dimension;
 
     /** Reference to variable in cases of
       * kind==StExprVariable or kind==StArrayElement or kind==StSlice;
       * set to NULL otherwise */
     struct Variable * variable;
+
+    /** Constant value in case of kind==ExprConst */
+    QVariant constant;
 
     /** Reference to algorhitm in case of kind==StFunctionCall;
       * set to NULL otherwise */
@@ -70,14 +91,15 @@ struct Expression {
       */
     QList<struct Expression *> operands;
 
-    /** List of operators in case of kind==StSubexpression, emty otherwise */
-    QList<enum ExpressionOperator> operators;
+    /** Operator in case of kind==StSubexpression, emty otherwise */
+    enum ExpressionOperator operatorr;
 
     explicit Expression();
     explicit Expression(const struct Expression * src);
     void updateReferences(const struct Expression * src,
                           const struct Data * srcData,
                           const struct Data * data);
+    QString dump() const;
     ~Expression();
 };
 

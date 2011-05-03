@@ -65,7 +65,7 @@ public:
 
     AST::Module * currentModule;
     AST::Algorhitm * currentAlgorhitm;
-    QList<AST::Statement*> currentContext;
+    QStack< QList<AST::Statement*> * > currentContext;
 
     int maxPriorityValue;
 
@@ -75,10 +75,9 @@ public:
 
 public slots:
     void addDummyAlgHeader();
-    void setCurrentError(int value);
+    void setCurrentError(const QString & value);
     void setModuleBeginError(int value);
     void setCurrentIndentRank(int start, int end);
-    void setError(int value);
     void processCorrectEndOfLoop();
     void processAlgEndInsteadOfLoopEnd();
     void processCorrectCase();
@@ -101,8 +100,8 @@ public slots:
     void setGarbageIfThenError();
     void setGarbageSwitchCaseError();
     void setCorrespondingIfBroken();
-    void setExtraOpenKeywordError(int kw);
-    void setExtraCloseKeywordError(int kw);
+    void setExtraOpenKeywordError(const QString & kw);
+    void setExtraCloseKeywordError(const QString & kw);
 
     void setTooManyErrors();
     void finalizeIterativeRule(const PDStackElem & stackElem);
