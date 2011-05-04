@@ -45,15 +45,24 @@ int Lexer::splitIntoStatements(const QString &text
     return errorsCount;
 }
 
-void addToMap(QHash<QString,LexemType> & map,
-              const QString &value, const LexemType type)
-{
+QStringList allVariants(const QString & value) {
     QStringList variants = value.split("|");
+    QStringList result;
     foreach (QString variant, variants) {
         variant.remove("\\s+");
         variant.remove("\\s*");
         variant.remove("\\s");
         variant.remove("_");
+        result << variant;
+    }
+    return result;
+}
+
+void addToMap(QHash<QString,LexemType> & map,
+              const QString &value, const LexemType type)
+{
+    QStringList variants = allVariants(value);
+    foreach (QString variant, variants) {
         map[variant] = type;
     }
 }
@@ -281,33 +290,48 @@ void LexerPrivate::initNormalizator(const QString &fileName)
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="integer array type name") {
-                    typeNames << value;
-                    baseTypes.insert(value, AST::TypeInteger);
-                    arrayTypes.insert(value);
+                    QStringList variants = allVariants(value);
+                    foreach (const QString & variant, variants) {
+                        typeNames << variant;
+                        baseTypes.insert(variant, AST::TypeInteger);
+                        arrayTypes.insert(variant);
+                    }
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="floating point array type name") {
-                    typeNames << value;
-                    baseTypes.insert(value, AST::TypeReal);
-                    arrayTypes.insert(value);
+                    QStringList variants = allVariants(value);
+                    foreach (const QString & variant, variants) {
+                        typeNames << variant;
+                        baseTypes.insert(variant, AST::TypeReal);
+                        arrayTypes.insert(variant);
+                    }
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="character array type name") {
-                    typeNames << value;
-                    baseTypes.insert(value, AST::TypeCharect);
-                    arrayTypes.insert(value);
+                    QStringList variants = allVariants(value);
+                    foreach (const QString & variant, variants) {
+                        typeNames << variant;
+                        baseTypes.insert(variant, AST::TypeCharect);
+                        arrayTypes.insert(variant);
+                    }
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="string array type name") {
-                    typeNames << value;
-                    baseTypes.insert(value, AST::TypeString);
-                    arrayTypes.insert(value);
+                    QStringList variants = allVariants(value);
+                    foreach (const QString & variant, variants) {
+                        typeNames << variant;
+                        baseTypes.insert(variant, AST::TypeString);
+                        arrayTypes.insert(variant);
+                    }
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="boolean array type name") {
-                    typeNames << value;
-                    baseTypes.insert(value, AST::TypeBoolean);
-                    arrayTypes.insert(value);
+                    QStringList variants = allVariants(value);
+                    foreach (const QString & variant, variants) {
+                        typeNames << variant;
+                        baseTypes.insert(variant, AST::TypeBoolean);
+                        arrayTypes.insert(variant);
+                    }
                     addToMap(kwdMap, value, LxNameClass);
                 }
 

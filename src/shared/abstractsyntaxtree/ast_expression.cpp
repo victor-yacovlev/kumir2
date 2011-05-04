@@ -191,7 +191,7 @@ QString Expression::dump() const
         result += ",\n\tfunction: \""+function->header.name+"\"";
     }
     else if (kind==ExprArrayElement) {
-        result += ",\n\t\element: \""+variable->name+"\"";
+        result += ",\n\tvariable: \""+variable->name+"\"";
     }
     else if (kind==ExprSubexpression) {
         result += ",\n\toperator: \""+dumpOperator(operatorr)+"\"";

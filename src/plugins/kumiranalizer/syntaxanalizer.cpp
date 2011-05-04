@@ -71,9 +71,10 @@ struct SyntaxAnalizerPrivate
     AST::Expression * parseSimpleName(const QList<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg);
     AST::Expression * parseElementAccess(const QList<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg);
     AST::Expression * makeExpressionTree(const QList<SubexpressionElement> & s);
-    static void splitLexemsByComas(const QList<Lexem *> &s
+    static void splitLexemsByOperator(const QList<Lexem *> &s
+                                      , const LexemType & op
                                    , QList< QList<Lexem*> > & result
-                                   , QList< Lexem* > & comas);
+                                   , QList< Lexem* > & operators);
     static Lexem * findLexemByType(const QList<Lexem*> lxs, LexemType type);
 
 
@@ -97,7 +98,8 @@ void SyntaxAnalizer::init(QList<Statement> *statements, AST_Data *ast, AST_Algor
     d->unresolvedImports.clear();
 }
 
-void SyntaxAnalizerPrivate::splitLexemsByComas(const QList<Lexem *> &s
+void SyntaxAnalizerPrivate::splitLexemsByOperator(const QList<Lexem *> &s
+                                                  , const LexemType & op
                                                , QList< QList<Lexem*> > & result
                                                , QList< Lexem* > & comas)
 {
@@ -107,7 +109,7 @@ void SyntaxAnalizerPrivate::splitLexemsByComas(const QList<Lexem *> &s
     if (!s.isEmpty())
         result << QList<Lexem*>();
     for (int i=0; i<s.size(); i++) {
-        if (s[i]->type==LxOperComa && deep==0) {
+        if (s[i]->type==op && deep==0) {
             result << QList<Lexem*>();
             comas << s[i];
         }
@@ -330,7 +332,7 @@ void SyntaxAnalizerPrivate::parseInputOutputAssertPrePost(int str)
     }
     QList< QList<Lexem*> > groups;
     QList<Lexem*> comas;
-    splitLexemsByComas(st->data.mid(1), groups, comas);
+    splitLexemsByOperator(st->data.mid(1), LxOperComa, groups, comas);
 
     enum GroupType {
         Undefined,
@@ -1057,6 +1059,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
     QString cName = ""; // имя текущей величины
     QList<Lexem*> cBound; // текущая граница массива
     QList<Lexem*> initValue; // значение инициализации
+    QList<AST::Variable::Bound> bounds;
     int deepV = 0; // глубина вложенности {}
     int deep1 = 0; // глубина вложенности [] внутри правой границы
     int deep2 = 0; // глубина вложенности () внутри правой границы
@@ -1197,6 +1200,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
                 var->baseType = cType;
                 var->accessType = group.access;
                 var->dimension = array? dim : 0;
+                var->bounds = bounds;
                 result << var;
                 cName = "";
                 par = tn;
@@ -1207,6 +1211,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
                     par = value;
                     z = curPos+1;
                 }
+                bounds.clear();
             }
             else
             {
@@ -1269,6 +1274,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
                     return result;
                 }
 
+
                 AST::Expression * left = parseExpression(cBound, mod, alg);
 
                 if ( left==0 ) // error
@@ -1293,7 +1299,9 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
                         return result;
                     }
                 }
-                var->bounds.last().first = left;
+                QPair<AST::Expression*,AST::Expression*> bound(0, 0);
+                bounds.append(bound);
+                bounds.last().first = left;
                 cBound.clear();
                 par = rb;
                 arrayBoundStart = curPos;
@@ -1418,7 +1426,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
                 }
                 par = tn;
                 massDeclared = true;
-                var->bounds.last().second = right;
+                bounds.last().second = right;
 
             }
             else if (group.lexems[curPos]->type==LxOperSemicolon) {
@@ -1882,42 +1890,6 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
     return result;
 }
 
-AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg)
-{
-    AST::Expression * result = 0;
-    QString name;
-    Lexem * openBracket = 0;
-    int openBracketIndex = -1;
-    for (int i=0; i<lexems.size(); i++) {
-        if (lexems[i]->type==LxOperLeftSqBr) {
-            openBracket = lexems[i];
-            openBracketIndex = i;
-            break;
-        }
-        else {
-            if (i>0) name += " ";
-            name += lexems[i]->data;
-        }
-    }
-//    QList<AST::Expression*> realArguments;
-//    QList< QList<Lexem*> > arguments;
-//    QList<Lexem*> comas;
-    if (name.isEmpty()) {
-        openBracket->error = _("Array name not specified before '['");
-        return 0;
-    }
-    AST::Variable * variable = 0;
-    if (!findLocalVariable(name, alg, variable)) {
-        if (!findGlobalVariable(name, mod, variable)) {
-            for (int i=0; i<openBracketIndex; i++) {
-                lexems[i]->error = _("Array variable not found");
-            }
-            return 0;
-        }
-    }
-    return result;
-}
-
 
 AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg)
 {
@@ -2003,7 +1975,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
         cb->error = _("Nothing between '(' and ')'");
         return 0;
     }
-    splitLexemsByComas(argLine, arguments, comas);
+    splitLexemsByOperator(argLine, LxOperComa, arguments, comas);
     int diff = arguments.size()>function->header.arguments.size();
     if (diff>0) {
         int errorStartIndex = 0;
@@ -2080,6 +2052,191 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
     result->operands = realArguments;
     return result;
 }
+
+AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg)
+{
+    AST::Expression * result = 0;
+    QString name;
+    Lexem * openBracket = 0;
+    int openBracketIndex = -1;
+    for (int i=0; i<lexems.size(); i++) {
+        if (lexems[i]->type==LxOperLeftSqBr) {
+            openBracket = lexems[i];
+            openBracketIndex = i;
+            break;
+        }
+        else {
+            if (i>0) name += " ";
+            name += lexems[i]->data;
+        }
+    }
+    QList<AST::Expression*> realArguments;
+    QList< QList<Lexem*> > arguments;
+    QList<Lexem*> comas;
+
+    AST::Variable * variable = 0;
+    if (!findVariable(name, mod, alg, variable)) {
+        if (openBracketIndex==-1)
+            openBracketIndex = lexems.size();
+        for (int i=0; i<openBracketIndex; i++) {
+            lexems[i]->error = _("Variable not found");
+        }
+        return 0;
+    }
+
+    if (!openBracket) {
+        // No arguments
+        // Do nothing, because of implemented as other
+        // block type (see parseSimpleName);
+        qWarning() << "!!! Something strange at " << __FILE__ << ", line: " << __LINE__;
+        return 0;
+    }
+
+    //
+    QList<Lexem*> argLine = lexems.mid(openBracketIndex);
+    Lexem * ob = 0;
+    Lexem * cb = 0;
+    int deep = 0;
+    int cbPos = -1;
+    for (int i=0; i<argLine.size(); i++) {
+        if (argLine[i]->type==LxOperLeftSqBr) {
+            ob = argLine[i];
+            deep ++;
+        }
+        if (argLine[i]->type==LxOperRightSqBr) {
+            cb = argLine[i];
+            cbPos = i;
+            deep --;
+        }
+    }
+    if (deep>0) {
+        ob->error = _("Unpaired '['");
+        return 0;
+    }
+    if (deep<0) {
+        for (int i=argLine.size()-1; i>=0; i--) {
+            if (argLine[i]->type==LxOperRightSqBr) {
+                deep--;
+            }
+            if (deep==0) {
+                argLine[i]->error = _("Unpaired ']'");
+                return 0;
+            }
+        }
+    }
+    if ((cbPos+1)<argLine.size()) {
+        for (int i=cbPos+1; i<argLine.size(); i++) {
+            argLine[cbPos]->error = _("Garbage in expression");
+        }
+        return 0;
+    }
+    argLine.pop_back();
+    argLine.pop_front();
+    if (argLine.isEmpty()) {
+        openBracket->error = _("Nothing between '[' and ']'");
+        cb->error = openBracket->error;
+        return 0;
+    }
+    splitLexemsByOperator(argLine, LxOperComa, arguments, comas);
+    int varDimension = variable->dimension;
+    if (variable->baseType==AST::TypeString)
+        varDimension ++;
+    int diff = arguments.size()-varDimension;
+    if (diff>0) {
+        int errorStartIndex = 0;
+        for (int i=comas.size()-1; i>=0; i--) {
+            deep--;
+            if (deep==0) {
+                errorStartIndex = argLine.indexOf(comas[i]);
+            }
+        }
+        for (int i=errorStartIndex; i<cbPos; i++) {
+            argLine[i]->error = _("Extra indeces");
+        }
+        return 0;
+    }
+    if ( ( diff<0 && variable->baseType!=AST::TypeString )
+            || ( diff<-1 && variable->baseType==AST::TypeString )
+            ) {
+        cb->error = _("Not enought indeces");
+        return 0;
+    }
+    for (int i=0; i<arguments.size(); i++) {
+
+        QList<Lexem*> colons;
+        QList< QList<Lexem*> > slice;
+
+        splitLexemsByOperator(arguments[i], LxOperColon, slice, colons);
+
+        if (slice.size()>1 && variable->baseType!=AST::TypeString) {
+            foreach (Lexem * lx, arguments[i]) {
+                lx->error = _("Not a simple index");
+            }
+            return 0;
+        }
+        if (slice.size()>1 && variable->baseType==AST::TypeString && i<arguments.size()-1) {
+            foreach (Lexem * lx, arguments[i]) {
+                lx->error = _("Slice of string array, but not string");
+            }
+            return 0;
+        }
+        if (slice.size()>2) {
+            QString err = _("Extra indeces in slice");
+            for (int a=1; a<colons.size(); a++) {
+                colons[a]->error = err;
+            }
+            for (int b=2; b<slice.size(); b++) {
+                for (int a=0; a<slice[b].size(); a++) {
+                    slice[b][a]->error = err;
+                }
+            }
+            return 0;
+        }
+        for (int j=0 ; j<slice.size(); j++) {
+            AST::Expression * argument = parseExpression(slice[j], mod, alg);
+            if (!argument) {
+                foreach (AST::Expression * a, realArguments) delete a;
+                return 0;
+            }
+            realArguments << argument;
+            AST::VariableBaseType intType = argument->baseType;
+            int intDim = argument->dimension;
+            if (intDim>0) {
+                foreach (Lexem * lx, slice[j])
+                    lx->error = _("Passing table as index");
+                foreach (AST::Expression * a, realArguments) delete a;
+                return 0;
+            }
+            if (intType!=AST::TypeInteger) {
+                foreach (Lexem * lx, slice[j])
+                    lx->error = _("Index is not integer");
+                foreach (AST::Expression * a, realArguments) delete a;
+                return 0;
+            }
+        }
+    } // end for arguments loop
+    result = new AST::Expression;
+    result->kind = AST::ExprArrayElement;
+    if (variable->baseType==AST::TypeString && diff==0) {
+        // Element of string: indeces count == array dimension + 1
+        if (realArguments.size() > arguments.size()) {
+            // String slice -> res type is string
+            result->baseType = AST::TypeString;
+        }
+        else {
+            // String element -> res type is character
+        }
+    }
+    else {
+        // Element of ordinary array
+        result->baseType = variable->baseType;
+    }
+    result->dimension = 0;
+    result->variable = variable;
+    result->operands = realArguments;
+    return result;
+}
+
 
 AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const QList<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg)
 {
