@@ -197,4 +197,9 @@ void AnalizerPrivate::doCompilation(const AnalizeSubject &whatToCompile)
 
 }
 
+const AST::Data * Analizer::abstractSyntaxTree() const
+{
+    return d->ast;
+}
+
 } // namespace KumirAnalizer

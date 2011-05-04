@@ -220,7 +220,7 @@ QString dumpConditionSpec(const struct ConditionSpec & spec)
 QString Statement::dump() const
 {
     QString result = "{\n";
-    result += "\ttype: "+dumpStatementType(type)+",\n";
+    result += "\ttype: \""+dumpStatementType(type)+"\",\n";
     result += "\tlineNo: "+QString::number(lineNo);
     if (type==StError) {
         result += ",\n\terror: \""+error+"\"\n";
@@ -239,14 +239,13 @@ QString Statement::dump() const
         result += "\t]\n";
     }
     else if (type==StVarInitialize) {
-        result += ",\n\tvariables: [\n";
+        result += ",\n\tvariables: [ ";
         for (int i=0; i<variables.size(); i++) {
-            result += addIndent(variables[i]->dump(), 2);
+            result += "\""+variables[i]->name+"\"";
             if (i<variables.size()-1)
-                result += ",";
-            result += "\n";
+                result += ", ";
         }
-        result += "\t]\n";
+        result += " ]\n";
     }
     else if (type==StBreak) {
         result += "\n";
@@ -261,7 +260,7 @@ QString Statement::dump() const
         }
         result += "\t]\n";
     }
-    result += "}";
+    result += "} /* end statement of type '"+dumpStatementType(type)+"' at line "+QString::number(lineNo)+" */";
     return result;
 }
 

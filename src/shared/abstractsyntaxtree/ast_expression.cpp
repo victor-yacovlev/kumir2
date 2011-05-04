@@ -161,33 +161,43 @@ QString dumpOperator(const enum ExpressionOperator op)
         return "";
 }
 
+QString screenString(QString s)
+{
+    s.replace("\\", "\\\\");
+    s.replace("\r", "\\n");
+    s.replace("\n", "\\n");
+    s.replace("\"", "\\\"");
+    return s;
+}
+
 QString Expression::dump() const
 {
     QString result = "{\n";
     result += "\tkind: "+dumpKind(kind);
-    result += "\ttype: "+AST::dump(baseType);
+    result += ",\n\ttype: "+AST::dump(baseType);
     if (kind==ExprConst) {
-        result += "\tconstant: ";
-        if (constant.type()==QVariant::String || constant.type()==QVariant::Char)
-            result += "\""+constant.toString()+"\"";
+        result += ",\n\tconstant: ";
+        if (constant.type()==QVariant::String || constant.type()==QVariant::Char) {
+            result += "\""+screenString(constant.toString())+"\"";
+        }
         else
             result += constant.toString();
-        result += ";\n";
+        result += "\n";
     }
     else if (kind==ExprVariable) {
-        result +=" \tvariable: \""+variable->name+"\";\n";
+        result += ",\n\tvariable: \""+variable->name+"\"\n";
     }
     else if (kind==ExprFunctionCall) {
-        result += "\tfunction: \""+function->header.name+"\",\n";
+        result += ",\n\tfunction: \""+function->header.name+"\"";
     }
     else if (kind==ExprArrayElement) {
-        result += "t\element: \""+variable->name+"\",\n";
+        result += ",\n\t\element: \""+variable->name+"\"";
     }
     else if (kind==ExprSubexpression) {
-        result += "\toperator: \""+dumpOperator(operatorr)+"\",\n";
+        result += ",\n\toperator: \""+dumpOperator(operatorr)+"\"";
     }
     if (kind==ExprFunctionCall || kind==ExprArrayElement || kind==ExprSubexpression) {
-        result += "\toperands: [\n";
+        result += ",\n\toperands: [\n";
         for (int i=0; i<operands.size(); i++) {
             result += addIndent(operands[i]->dump(), 2);
             if (i<operands.size()-1) {
@@ -197,7 +207,7 @@ QString Expression::dump() const
         }
         result += "\t]\n";
     }
-    result += "}"; // end expression
+    result += "} /* end (sub)expression */";
     return result;
 }
 

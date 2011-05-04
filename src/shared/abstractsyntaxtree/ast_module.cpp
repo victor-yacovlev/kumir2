@@ -102,13 +102,15 @@ QString Module::dump() const
     QString result;
     result = "{\n";
     result += "\theader: \{\n";
-    result += "\t\tuses: [";
-    for (int i=0; i<header.uses.size(); i++) {
-        if (i>0)
-            result += ", ";
-        result += "\""+header.uses.toList()[i]+"\"";
+    if (!header.uses.isEmpty()) {
+        result += "\t\tuses: [";
+        for (int i=0; i<header.uses.size(); i++) {
+            if (i>0)
+                result += ", ";
+            result += "\""+header.uses.toList()[i]+"\"";
+        }
+        result += "],\n"; // end uses
     }
-    result += "],\n"; // end uses
     result += "\t\talgorhitms: [\n";
     for (int i=0; i<header.algorhitms.size(); i++) {
         result += "\t\t\t\""+header.algorhitms[i]->header.name+"\"";
@@ -121,24 +123,28 @@ QString Module::dump() const
     result += "\t},\n"; // end header
 
     result += "\timplementation: {\n";
+    if (!impl.globals.isEmpty()) {
     result += "\t\tglobals: [\n";
-    for (int i=0; i<impl.globals.size(); i++) {
-        result += addIndent(impl.globals[i]->dump(), 3);
-        if (i<impl.globals.size()-1) {
-            result += ",";
+        for (int i=0; i<impl.globals.size(); i++) {
+            result += addIndent(impl.globals[i]->dump(), 3);
+            if (i<impl.globals.size()-1) {
+                result += ",";
+            }
+            result += "\n";
         }
-        result += "\n";
+        result += "\t\t],\n"; // end globals
     }
-    result += "\t\t],\n"; // end globals
-    result += "\t\tinitializer: [\n";
-    for (int i=0; i<impl.initializerBody.size(); i++) {
-        result += addIndent(impl.initializerBody[i]->dump(), 3);
-        if (i<impl.initializerBody.size()-1) {
-            result += ",";
+    if (!impl.initializerBody.isEmpty()) {
+        result += "\t\tinitializer: [\n";
+        for (int i=0; i<impl.initializerBody.size(); i++) {
+            result += addIndent(impl.initializerBody[i]->dump(), 3);
+            if (i<impl.initializerBody.size()-1) {
+                result += ",";
+            }
+            result += "\n";
         }
-        result += "\n";
+        result += "\t\t],\n"; // end initializer
     }
-    result += "\t\t],\n"; // end initializer
     result += "\t\talgorhitms: [\n";
     for (int i=0; i<impl.algorhitms.size(); i++) {
         result += addIndent(impl.algorhitms[i]->dump(), 3);

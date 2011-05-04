@@ -53,10 +53,11 @@ QString boundDump(const Variable::Bound & bound) {
 
 QString Variable::dump() const
 {
-    QString result = "{";
+    QString result = "{\n";
     result += "\tname: \""+name+"\",\n";
-    result += "\tbaseType: "+AST::dump(baseType)+",\n";
-    result += "\tdimension: "+QString::number(dimension);
+    result += "\tbaseType: "+AST::dump(baseType);
+    if (dimension>0)
+        result += ",\n\tdimension: "+QString::number(dimension);
     if (accessType!=AccessRegular)
         result == ",\n\taccessType: "+AST::dump(accessType);
     if (dimension>0) {

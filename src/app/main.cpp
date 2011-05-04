@@ -11,6 +11,10 @@
 #  define SHARE_PATH "/../share/kumir2"
 #endif
 
+#ifdef HAS_CONFIGURATION_TEMPLATE
+#include "cofiguration_template.h"
+#endif
+
 void showErrorMessage(const QString & text)
 {
     bool gui = true;
@@ -45,7 +49,7 @@ int main(int argc, char **argv)
     manager->setSharePath(SHARE_PATH);
     QString error;
 
-#ifdef CONFIGURATION_TEMPLATE
+#ifdef HAS_CONFIGURATION_TEMPLATE
     const QString defaultTemplate = CONFIGURATION_TEMPLATE;
 #else
     const QString defaultTemplate = "&KumirCompiler";

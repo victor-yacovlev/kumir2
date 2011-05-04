@@ -2,7 +2,9 @@ TEMPLATE = lib
 TARGET = KumirCppGenerator
 
 include(../../kumir2plugin.pri)
-include(../../plugins/kumiranalizer/kumiranalizer.pri)
+include(../../shared/extensionsystem/extensionsystem.pri)
+include(../../shared/abstractsyntaxtree/abstractsyntaxtree.pri)
+include(../../shared/interfaces/generator.pri)
 
 HEADERS += kumircppgeneratorplugin.h
 

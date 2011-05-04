@@ -43,6 +43,7 @@ void KumirCompilerPlugin::start()
         }
     }
     if (!filename.isEmpty()) {
+        filename = QFileInfo(filename).absoluteFilePath();
         QFile f(filename);
         if (f.open(QIODevice::ReadOnly)) {
             QTextStream ts(&f);
@@ -56,13 +57,15 @@ void KumirCompilerPlugin::start()
             const AST::Data * ast = m_analizer->abstractSyntaxTree(id);
             const QString baseName = QFileInfo(filename).baseName();
             for (int i=0; i<ast->modules.size(); i++) {
-                const QString fileName = baseName+"_"+ast->modules[i]->header.name+".isp";
-                QFile ff(fileName);
-                if (ff.open(QIODevice::ReadOnly|QIODevice::Text)) {
+                const QString outFileName = QFileInfo(filename).dir().absoluteFilePath(
+                            baseName+"_"+ast->modules[i]->header.name+".isp");
+                QFile ff(outFileName);
+                if (ff.open(QIODevice::WriteOnly|QIODevice::Text)) {
                     QTextStream ots(&ff);
                     ots.setCodec("UTF-8");
-                    QString modJs = ast->modules[i]->dump();
-                    modJs.replace("\t","  ");
+                    const AST::Module * module = ast->modules[i];
+                    QString modJs = module->dump();
+                    modJs.replace("\t", "  ");
                     ots << modJs;
                     ff.close();;
                 }

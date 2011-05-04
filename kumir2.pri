@@ -102,9 +102,9 @@ macx {
 } else {
     win32 {
         contains(TEMPLATE, vc.*)|contains(TEMPLATE_PREFIX, vc):vcproj = 1
-        IDE_APP_TARGET   = kumir2
+        IDE_APP_TARGET   = kumir2-ide
     } else {
-        IDE_APP_TARGET   = kumir2
+        IDE_APP_TARGET   = kumir2-ide
     }
     IDE_LIBRARY_PATH = $$IDE_BUILD_TREE/$$IDE_LIBRARY_BASENAME/kumir2
     IDE_PLUGIN_PATH  = $$IDE_LIBRARY_PATH/plugins

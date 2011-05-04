@@ -68,8 +68,9 @@ struct AlgorhitmHeader {
       * references to corresponding local variables */
     QList<struct Variable *> arguments;
 
-    /** True, if algorhitm header contains non-critical error */
-    bool broken;
+    /** Not empty if algorhitm header contains error,
+      * but algorhitm name still reachable */
+    QString error;
 };
 
 /** Algorhitm body (private to other components) */

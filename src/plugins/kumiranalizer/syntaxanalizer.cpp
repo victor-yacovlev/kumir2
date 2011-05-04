@@ -965,6 +965,11 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
     // Заносим алгоритм в таблицу функций
     alg->header.name = name;
 
+    // Make this algorhitm public available (if not private name)
+    if (!name.isEmpty() && !name.startsWith("_")) {
+        mod->header.algorhitms << alg;
+    }
+
     // Если нет аргументов, то всё
 
     if ( argsStartLexem==-1 ) {
@@ -973,7 +978,6 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
 
     // =============== � АЗБО�  А� ГУМЕНТОВ
 
-    alg->header.broken = true;
 
     QList<VariablesGroup> groups;
     if (st->data.last()->type!=LxOperRightBr) {
@@ -1014,7 +1018,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
     if (!currentGroup.lexems.isEmpty())
         groups << currentGroup;
 
-    bool localError = false;
+    QString localError;
 
     for (int i=0; i<groups.size(); i++) {
         QList<AST::Variable*> vars = parseVariables(groups[i], st->mod, st->alg);
@@ -1023,11 +1027,14 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
             alg->impl.locals << vars[j];
         }
         for (int j=0; j<groups[i].lexems.size()-1; j++) {
-            localError = localError || groups[i].lexems[j]->error>0;
+            if (!groups[i].lexems[j]->error.isEmpty()) {
+                localError = groups[i].lexems[j]->error;
+                break;
+            }
         }
     }
 
-    alg->header.broken = localError;
+    alg->header.error = localError;
 }
 
 QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &group, AST::Module *mod, AST::Algorhitm *alg)
@@ -2092,6 +2099,14 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const QList<Lexem *> &l
             result->constant = parseConstant(lexems, type, false, maxDim);
             return result;
         }
+    }
+    if (lexems.size()==1 && lexems[0]->type == LxSecNewline) {
+        result = new AST::Expression;
+        result->kind = AST::ExprConst;
+        result->baseType = AST::TypeCharect;
+        result->dimension = 0;
+        result->constant = QVariant(QChar('\n'));
+        return result;
     }
     else {
         QString name;

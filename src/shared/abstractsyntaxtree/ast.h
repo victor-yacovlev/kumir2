@@ -23,7 +23,6 @@ struct ABSTRACTSYNTAXTREE_EXPORT Data
     ~Data();
 };
 
-
 }
 
 #endif // AST_H

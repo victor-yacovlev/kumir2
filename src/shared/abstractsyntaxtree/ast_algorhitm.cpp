@@ -10,7 +10,6 @@ Algorhitm::Algorhitm()
     header.returnType = TypeNone;
     header.implType = AlgorhitmCompiled;
     impl.lineNoStart = impl.lineNoEnd = -1;
-    header.broken = false;
 }
 
 Algorhitm::Algorhitm(const Algorhitm *src)
@@ -19,7 +18,7 @@ Algorhitm::Algorhitm(const Algorhitm *src)
     header.returnType = src->header.returnType;
     header.implType = src->header.implType;
     header.name = src->header.name;
-    header.broken = src->header.broken;
+    header.error = src->header.error;
     impl.lineNoStart = src->impl.lineNoStart;
     impl.lineNoEnd = src->impl.lineNoEnd;
 
@@ -96,7 +95,7 @@ QString dump(const enum AlgorhitmType & type)
         return "\"testing\"";
     }
     else {
-        return "standart";
+        return "\"standart\"";
     }
 }
 
@@ -106,15 +105,20 @@ QString Algorhitm::dump() const
     result += "\theader: {\n";
     result += "\t\tname: \""+header.name+"\",\n";
     result += "\t\treturnType: "+AST::dump(header.returnType)+",\n";
-    result += "\t\tspecialType: "+AST::dump(header.specialType)+",\n";
-    result += "\t\targuments: [";
-    for (int i=0; i<header.arguments.size(); i++) {
-        if (i>0) result += ", ";
-        result += header.arguments[i]->name;
+    result += "\t\tspecialType: "+AST::dump(header.specialType);
+    if (!header.arguments.isEmpty()) {
+    result += ",\n\t\targuments: [ ";
+        for (int i=0; i<header.arguments.size(); i++) {
+            if (i>0) result += ", ";
+            result += "\""+header.arguments[i]->name+"\"";
+        }
+        result += " ]"; // end arguments
     }
-    result += "],\n"; // end arguments
-    result += QString("\t\tbroken: ")+(header.broken? "true" : "false")+"\n";
-    result += "},\n"; // end header
+    if (!header.error.isEmpty()) {
+        result += ",\n\t\terror: \""+header.error+"\"";
+    }
+    result += "\n";
+    result += "\t},\n";
     result += "\timplementation: {\n";
     result += "\t\tlocals: [\n";
     for (int i=0; i<impl.locals.size(); i++) {
@@ -124,16 +128,18 @@ QString Algorhitm::dump() const
         }
         result += "\n";
     }
-    result += "\t\t],\n"; // end locals
-    result += "\t\tpre: [\n";
-    for (int i=0; i<impl.pre.size(); i++) {
-        result += AST::addIndent(impl.pre[i]->dump(), 3);
-        if (i<impl.pre.size()-1) {
-            result += ",";
+    result += "\t\t] /* end algorhitm '"+header.name+"' locals */,\n";
+    if (!impl.pre.isEmpty()) {
+        result += "\t\tpre: [\n";
+        for (int i=0; i<impl.pre.size(); i++) {
+            result += AST::addIndent(impl.pre[i]->dump(), 3);
+            if (i<impl.pre.size()-1) {
+                result += ",";
+            }
+            result += "\n";
         }
-        result += "\n";
+        result += "\t\t] /* end algorhitm '"+header.name+"' pre-statements */,\n";
     }
-    result += "\t\t],\n"; // end body
     result += "\t\tbody: [\n";
     for (int i=0; i<impl.body.size(); i++) {
         result += AST::addIndent(impl.body[i]->dump(), 3);
@@ -142,17 +148,20 @@ QString Algorhitm::dump() const
         }
         result += "\n";
     }
-    result += "\t\tpost: [\n";
-    for (int i=0; i<impl.post.size(); i++) {
-        result += AST::addIndent(impl.post[i]->dump(), 3);
-        if (i<impl.post.size()-1) {
-            result += ",";
+    result += "\t\t] /* end algorhitm '"+header.name+"' body */";
+    if (!impl.post.isEmpty()) {
+        result += ",\n\t\tpost: [\n";
+        for (int i=0; i<impl.post.size(); i++) {
+            result += AST::addIndent(impl.post[i]->dump(), 3);
+            if (i<impl.post.size()-1) {
+                result += ",";
+            }
+            result += "\n";
         }
-        result += "\n";
+        result += "\t\t] /* end algorhitm '"+header.name+"' post-statements */";
     }
-    result += "\t\t],\n"; // end body
-    result += "\t}\n"; // end implementation
-    result += "}\n";
+    result += "\n\t} /* end algorhitm '"+header.name+"' implementation */\n";
+    result += "} /* end algorhitm '"+header.name+"' */\n";
     return result;
 }
 
