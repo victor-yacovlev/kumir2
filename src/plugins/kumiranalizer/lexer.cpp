@@ -868,6 +868,14 @@ void popAlgEndStatement(QList<Lexem*> &lexems, Statement &result)
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
+void popExitStatement(QList<Lexem*> &lexems, Statement &result)
+{
+    result.type = lexems[0]->type;
+    result.data << lexems[0];
+    lexems.pop_front();
+    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
+}
+
 void popPreStatement(QList<Lexem*> &lexems, Statement &result)
 {
     result.type = lexems[0]->type;

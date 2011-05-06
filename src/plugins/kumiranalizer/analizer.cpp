@@ -189,6 +189,20 @@ QList<LineProp> Analizer::lineProperties() const
     return result;
 }
 
+QStringList Analizer::imports() const
+{
+    QStringList result;
+    for (int i=0; i<d->ast->modules.size(); i++) {
+        for (int j=0; j<d->ast->modules[i]->header.uses.size(); j++) {
+            const QString import = d->ast->modules[i]->header.uses.toList()[j];
+            if (!result.contains(import)) {
+                result << import;
+            }
+        }
+    }
+    return result;
+}
+
 QList<QPoint> Analizer::lineRanks() const
 {
     QList<QPoint> result;

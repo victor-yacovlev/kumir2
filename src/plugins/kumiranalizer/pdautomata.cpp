@@ -1348,6 +1348,12 @@ void PDAutomataPrivate::setGarbageSwitchCaseError()
     appendSimpleLine();
 }
 
+void PDAutomataPrivate::setTooManyErrors()
+{
+
+}
+
+
 void PDAutomataPrivate::setCorrespondingIfBroken()
 {
     Q_ASSERT(currentContext.size()>1);

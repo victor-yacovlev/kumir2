@@ -123,6 +123,15 @@ void SyntaxAnalizerPrivate::splitLexemsByOperator(const QList<Lexem *> &s
     }
 }
 
+Lexem * SyntaxAnalizerPrivate::findLexemByType(const QList<Lexem*> lxs, LexemType type)
+{
+    foreach (Lexem * lx , lxs) {
+        if (lx->type==type)
+            return lx;
+    }
+    return 0;
+}
+
 void SyntaxAnalizer::buildTables()
 {
     if (d->algorhitm)
