@@ -16,6 +16,42 @@ Statement::Statement()
     loop.endLineNo = -1;
 }
 
+Statement::~Statement()
+{
+    for (int i=0; i<expressions.size(); i++) {
+        if (expressions[i])
+            delete expressions[i];
+    }
+    for (int i=0; i<variables.size(); i++) {
+        if (variables[i])
+            delete variables[i];
+    }
+    for (int i=0; i<conditionals.size(); i++) {
+        if (conditionals[i].condition)
+            delete conditionals[i].condition;
+        for (int j=0; j<conditionals[i].body.size(); j++)
+            if (conditionals[i].body[j])
+                delete conditionals[i].body[j];
+    }
+    if (loop.forVariable)
+        delete loop.forVariable;
+    if (loop.fromValue)
+        delete loop.fromValue;
+    if (loop.toValue)
+        delete loop.toValue;
+    if (loop.stepValue)
+        delete loop.stepValue;
+    if (loop.whileCondition)
+        delete loop.whileCondition;
+    if (loop.timesValue)
+        delete loop.timesValue;
+    if (loop.endCondition)
+        delete loop.endCondition;
+    for (int i=0; i<loop.body.size(); i++) {
+        delete loop.body[i];
+    }
+}
+
 Statement::Statement(const Statement *src)
 {
     type = src->type;
