@@ -13,7 +13,7 @@ win32 {
     CONFIG(debug, debug|release):LIBS *= -lExtensionSystemd
     else:LIBS *= -lExtensionSystem
 
-    RC_FILE = kumir2.rc
+#    RC_FILE = kumir2.rc
     target.path = /bin
     INSTALLS += target
 } else:macx {
