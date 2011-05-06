@@ -35,10 +35,10 @@ struct AnalizerPrivate
     AST_Data * ast;
 
     QString sourceText;
+    QList<Lexem*> lexems;
     QList<Statement> statements;
     QList<Shared::Error> errors;
-    QList<Shared::LineProp> lineProperties;
-    QList<int> lineIndents;
+
 
     AnalizeSubject analizeSubject(const QList<Statement> & statements) const;
     AnalizeSubject analizeSubject(const QList<Lexem*> & lexems, int startLineNo) const;

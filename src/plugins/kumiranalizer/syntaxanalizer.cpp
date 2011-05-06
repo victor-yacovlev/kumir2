@@ -972,6 +972,10 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
         mod->header.algorhitms << alg;
     }
 
+    for (int i=nameStartLexem; i<argsStartLexem-1; i++) {
+        st->data[i]->type = LxNameAlg;
+    }
+
     // Если нет аргументов, то всё
 
     if ( argsStartLexem==-1 ) {
@@ -1895,6 +1899,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
 {
     AST::Expression * result = 0;
     QString name;
+    QList<Lexem*> nameLexems;
     Lexem * openBracket = 0;
     int openBracketIndex = -1;
     for (int i=0; i<lexems.size(); i++) {
@@ -1906,6 +1911,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
         else {
             if (i>0) name += " ";
             name += lexems[i]->data;
+            nameLexems << lexems[i];
         }
     }
     QList<AST::Expression*> realArguments;
@@ -1921,6 +1927,8 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
         }
         return 0;
     }
+
+    foreach (Lexem * lx, nameLexems) lx->type = LxNameAlg;
 
     if (!openBracket) {
         // No arguments
@@ -2314,6 +2322,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const QList<Lexem *> &l
                     result->baseType = a->header.returnType;
                     return result;
                 }
+                foreach (Lexem *lx, lexems) lx->type = LxNameAlg;
             }
             else if (findVariable(name, mod, alg, v)) {
                 if (v->dimension>0) {
@@ -2326,6 +2335,9 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const QList<Lexem *> &l
                     result->baseType = v->baseType;
                     return result;
                 }
+            }
+            else {
+                err = _("Name not declared");
             }
         }
         if (!err.isEmpty()) {

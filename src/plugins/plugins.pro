@@ -1,2 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS = kumiranalizer kumircodegenerator kumircppgenerator kumircompiler
+CONFIG += ordered
+SUBDIRS = kumiranalizer kumircodegenerator kumircppgenerator kumircompiler editor

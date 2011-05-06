@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 #ifdef HAS_CONFIGURATION_TEMPLATE
     const QString defaultTemplate = CONFIGURATION_TEMPLATE;
 #else
-    const QString defaultTemplate = "&KumirCompiler";
+    const QString defaultTemplate = "&Editor,KumirAnalizer";
 #endif
     QString templ = defaultTemplate;
     for (int i=1; i<argc; i++) {

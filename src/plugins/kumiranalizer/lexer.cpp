@@ -17,7 +17,6 @@ Lexer::Lexer(QObject *parent) :
 
 int Lexer::splitIntoStatements(const QString &text
                                 , int baseLineNo
-                                , QList<LineProp> &props
                                 , QList<Statement> &statements
                                 ) const
 {
@@ -33,14 +32,6 @@ int Lexer::splitIntoStatements(const QString &text
             sts[j].realLineNumber = baseLineNo + i;
         }
         statements << sts;
-        LineProp lp(line.size(), LxTypeEmpty);
-        for (int j=0; j<lexems.size(); j++) {
-            Lexem * lx = lexems[j];
-            for (int p=lx->pos; p<lx->pos+lx->data.length(); p++) {
-                lp[p] = lx->type;
-            }
-        }
-        props << lp;
     }
     return errorsCount;
 }

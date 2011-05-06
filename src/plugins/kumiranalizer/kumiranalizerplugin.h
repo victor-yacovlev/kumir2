@@ -60,7 +60,7 @@ public:
     void changeSourceText(int documentId, int pos, int len, const QString &repl);
     QList<Shared::Error> errors(int documentId) const;
     QList<Shared::LineProp> lineProperties(int documentId) const;
-    QList<int> lineIndents(int documentId) const;
+    QList<QPoint> lineRanks(int documentId) const;
     QStringList imports(int documentId) const;
     const AST::Data * abstractSyntaxTree(int documentId) const;
 

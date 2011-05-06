@@ -54,7 +54,7 @@ public slots:
     /**
       * Get calculated line indents
       */
-    QList<int> lineIndents() const;
+    QList<QPoint> lineRanks() const;
 
     /**
       * Get module import list

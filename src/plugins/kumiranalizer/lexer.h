@@ -25,7 +25,6 @@ public:
 public slots:
     int splitIntoStatements(const QString &text
                              , int baseLineNo
-                             , QList<Shared::LineProp> &props
                              , QList<Statement> &statements
                              ) const;
 private:

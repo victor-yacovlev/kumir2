@@ -117,7 +117,7 @@ QString PluginManagerPrivate::parsePluginsRequest(const QString &templ, QList<Pl
             starts ++;
             mainPluginName = plugins[i].name;
         }
-        names << cur.name;
+        names << plugins[i].name;
     }
     if (starts>1) {
         return "More than one entry point defined in plugins template";
@@ -216,6 +216,8 @@ QString PluginManagerPrivate::makeDependencies(const QString &entryPoint,
     for (int i=0; i<specs.size(); i++) {
         if (specs[i].provides.contains(entryPoint)) {
             spec = specs[i];
+            orderedList.pop_front();
+            orderedList.prepend(spec.name);
             found = true;
             break;
         }
@@ -357,7 +359,7 @@ KPlugin * PluginManager::dependentPlugin(const QString &name, const KPlugin *p) 
         return 0;
     }
     for (int i=0; i<d->specs.size(); i++) {
-        if (d->specs[i].name==name) {
+        if (d->specs[i].provides.contains(name)) {
             return d->objects[i];
         }
     }

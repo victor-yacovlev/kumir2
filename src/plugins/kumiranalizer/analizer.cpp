@@ -47,7 +47,6 @@ void Analizer::setSourceText(const QString &text)
 {
     d->lexer->splitIntoStatements(text
                                   , 0
-                                  , d->lineProperties
                                   , d->statements
                                   );
     d->sourceText = text;
@@ -80,10 +79,8 @@ void Analizer::changeSourceText(int pos, int len, const QString &repl)
         }
     }
     QList<Statement> newStatements;
-    QList<Shared::LineProp> props;
     d->lexer->splitIntoStatements(repl
                                   , startLine
-                                  , props
                                   , newStatements
                                   );
     int linesOffset = repl.count("\n") - (endLine-startLine);
@@ -93,9 +90,6 @@ void Analizer::changeSourceText(int pos, int len, const QString &repl)
     d->statements = d->statements.mid(0, oldStatementsStart)
             + newStatements
             + d->statements.mid(oldStatementsStart+oldStatements.size());
-    d->lineProperties = d->lineProperties.mid(0, startLine)
-            + props
-            + d->lineProperties.mid(endLine+1);
 
     d->sourceText.replace(pos, len, repl);
     AnalizerPrivate::AnalizeSubject oldSubject = d->analizeSubject(oldStatements);
@@ -175,12 +169,37 @@ QList<Error> Analizer::errors() const
 
 QList<LineProp> Analizer::lineProperties() const
 {
-    return d->lineProperties;
+    QList<LineProp> result;
+    QStringList lines = d->sourceText.split("\n");
+    for (int i=0; i<lines.size(); i++) {
+        result << LineProp(lines[i].size(), LxTypeEmpty);
+    }
+    for (int i=0; i<d->statements.size(); i++) {
+        foreach (const Lexem * lx, d->statements[i].data) {
+            for (int j=lx->pos; j<lx->pos+lx->size; j++) {
+                unsigned int value = lx->type;
+                const unsigned int errorMask = LxTypeError;
+                if (!lx->error.isEmpty()) {
+                    value = value | errorMask;
+                }
+                result[d->statements[i].realLineNumber][j] = LexemType(value);
+            }
+        }
+    }
+    return result;
 }
 
-QList<int> Analizer::lineIndents() const
+QList<QPoint> Analizer::lineRanks() const
 {
-    return d->lineIndents;
+    QList<QPoint> result;
+    QStringList lines = d->sourceText.split("\n");
+    for (int i=0; i<lines.size(); i++) {
+        result << QPoint(0,0);
+    }
+    for (int i=0; i<d->statements.size(); i++) {
+        result[d->statements[i].realLineNumber] = d->statements[i].indentRank;
+    }
+    return result;
 }
 
 void AnalizerPrivate::doCompilation(const AnalizeSubject &whatToCompile)
@@ -194,7 +213,6 @@ void AnalizerPrivate::doCompilation(const AnalizeSubject &whatToCompile)
     analizer->buildTables();
     // TODO load unresolved imports here
     analizer->processAnalisys();
-
 }
 
 const AST::Data * Analizer::abstractSyntaxTree() const

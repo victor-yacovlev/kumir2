@@ -5,6 +5,7 @@ include(../../kumir2plugin.pri)
 include(../../shared/extensionsystem/extensionsystem.pri)
 include(../../shared/interfaces/analizer.pri)
 include(../../shared/abstractsyntaxtree/abstractsyntaxtree.pri)
+CONFIG += generate_messages
 include(../../shared/errormessages/errormessages.pri)
 
 

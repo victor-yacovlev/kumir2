@@ -10,7 +10,8 @@ extern QString readSpecFromFile(const QString &fileName, PluginSpec &spec, QScri
 {
     QFile f(fileName);
     if (!f.open(QIODevice::ReadOnly|QIODevice::Text)) {
-        return "Can't open plugin spec file "+fileName;
+//        return "Can't open plugin spec file "+fileName;
+        return "";
     }
     QString data = "data = "+QString::fromUtf8(f.readAll())+";\n";
     f.close();
@@ -45,7 +46,7 @@ extern QString readSpecFromFile(const QString &fileName, PluginSpec &spec, QScri
     if (toplevel.property("requires").isString()) {
         // Depends by single module name of any version
         Dependency dep;
-        dep.name = toplevel.property("depends").toString().trimmed();
+        dep.name = toplevel.property("requires").toString().trimmed();
         if (!dep.name.isEmpty()) {
             spec.dependencies << dep;
         }

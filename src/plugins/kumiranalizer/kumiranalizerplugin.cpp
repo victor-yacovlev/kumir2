@@ -125,10 +125,10 @@ QList<Shared::LineProp> KumirAnalizerPlugin::lineProperties(int documentId) cons
     return m_analizers[documentId]->lineProperties();
 }
 
-QList<int> KumirAnalizerPlugin::lineIndents(int documentId) const
+QList<QPoint> KumirAnalizerPlugin::lineRanks(int documentId) const
 {
     Q_CHECK_PTR(m_analizers[documentId]);
-    return m_analizers[documentId]->lineIndents();
+    return m_analizers[documentId]->lineRanks();
 }
 
 QStringList KumirAnalizerPlugin::imports(int documentId) const
