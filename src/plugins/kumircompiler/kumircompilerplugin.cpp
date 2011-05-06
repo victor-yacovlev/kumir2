@@ -26,7 +26,7 @@ KumirCompilerPlugin::~KumirCompilerPlugin()
 QString KumirCompilerPlugin::initialize(const QStringList &arguments)
 {
     Q_UNUSED(arguments)
-    m_analizer = dynamic_cast<Shared::AnalizerInterface*>(myDependency("KumirAnalizer"));
+    m_analizer = qobject_cast<Shared::AnalizerInterface*>(myDependency("KumirAnalizer"));
     if (m_analizer)
         return "";
     else

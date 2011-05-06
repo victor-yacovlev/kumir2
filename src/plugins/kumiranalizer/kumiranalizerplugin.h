@@ -49,6 +49,7 @@ class KumirAnalizerPlugin
 
 {
     Q_OBJECT
+    Q_INTERFACES(Shared::AnalizerInterface)
 
 public:
     KumirAnalizerPlugin();

@@ -5,6 +5,8 @@
 #include "lineprop.h"
 #include "abstractsyntaxtree/ast.h"
 
+#include <QtCore>
+
 namespace Shared {
 
 class AnalizerInterface {
@@ -21,5 +23,7 @@ public:
 };
 
 }
+
+Q_DECLARE_INTERFACE(Shared::AnalizerInterface, "kumir2.Analizer");
 
 #endif
