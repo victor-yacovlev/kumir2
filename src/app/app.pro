@@ -5,6 +5,7 @@ TARGET = $$IDE_APP_TARGET
 DESTDIR = $$IDE_APP_PATH
 
 SOURCES += main.cpp
+QT += script
 
 include(../rpath.pri)
 
