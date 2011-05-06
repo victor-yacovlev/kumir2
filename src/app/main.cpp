@@ -52,7 +52,8 @@ int main(int argc, char **argv)
 #ifdef HAS_CONFIGURATION_TEMPLATE
     const QString defaultTemplate = CONFIGURATION_TEMPLATE;
 #else
-    const QString defaultTemplate = "&Editor,KumirAnalizer";
+//    const QString defaultTemplate = "&Editor,KumirAnalizer";
+    const QString defaultTemplate = "&KumirCompiler,KumirCppGenerator,KumirAnalizer";
 #endif
     QString templ = defaultTemplate;
     for (int i=1; i<argc; i++) {
@@ -90,10 +91,16 @@ int main(int argc, char **argv)
         return 1;
     }
     int ret = 0;
-    if (manager->isGuiRequired())
+    app->setProperty("returnCode", 0);
+    if (manager->isGuiRequired()) {
         ret = app->exec();
+        if (ret == 0) {
+            ret = app->property("returnCode").toInt();
+        }
+    }
     else {
         manager->shutdown();
+        ret = app->property("returnCode").toInt();
     }
     delete manager;
     delete app;

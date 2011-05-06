@@ -56,25 +56,27 @@ void KumirCompilerPlugin::start()
             QList<Shared::Error> errors = m_analizer->errors(id);
             const AST::Data * ast = m_analizer->abstractSyntaxTree(id);
             const QString baseName = QFileInfo(filename).baseName();
-            for (int i=0; i<ast->modules.size(); i++) {
-                const QString outFileName = QFileInfo(filename).dir().absoluteFilePath(
-                            baseName+"_"+ast->modules[i]->header.name+".isp");
-                QFile ff(outFileName);
-                if (ff.open(QIODevice::WriteOnly|QIODevice::Text)) {
-                    QTextStream ots(&ff);
-                    ots.setCodec("UTF-8");
-                    const AST::Module * module = ast->modules[i];
-                    QString modJs = module->dump();
-                    modJs.replace("\t", "  ");
-                    ots << modJs;
-                    ff.close();;
-                }
+            const QString outFileName = QFileInfo(filename).dir().absoluteFilePath(
+                        baseName+".dump.json");
+            QFile ff(outFileName);
+            if (ff.open(QIODevice::WriteOnly|QIODevice::Text)) {
+                QTextStream ots(&ff);
+                ots.setCodec("UTF-8");
+                ots.setGenerateByteOrderMark(true);
+                QString modJs = ast->dump();
+                modJs.replace("\t", "  ");
+                ots << modJs;
+                ff.close();;
             }
             for (int i=0; i<errors.size(); i++) {
                 Shared::Error e = errors[i];
                 std::cerr << filename.toLocal8Bit().data() << ":" << e.line << ": Error " << e.code << std::endl;
             }
+            qApp->setProperty("returnCode", errors.isEmpty()? 0 : 1);
         }
+    }
+    else {
+        qApp->setProperty("returnCode", 127);
     }
 }
 

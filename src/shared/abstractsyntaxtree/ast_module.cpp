@@ -102,6 +102,7 @@ QString Module::dump() const
     QString result;
     result = "{\n";
     result += "\theader: \{\n";
+    result += "\t\tname: \""+header.name+"\",\n";
     if (!header.uses.isEmpty()) {
         result += "\t\tuses: [";
         for (int i=0; i<header.uses.size(); i++) {
@@ -154,8 +155,8 @@ QString Module::dump() const
         result += "\n";
     }
     result += "\t\t]\n"; // end algorhitms implementation
-    result += "\t}\n"; // end implementation
-    result += "}\n"; // end module
+    result += "\t}\n";
+    result += "} /* end module '"+header.name+"' */";
     return result;
 }
 

@@ -21,6 +21,7 @@ struct ABSTRACTSYNTAXTREE_EXPORT Data
     explicit Data();
     explicit Data(const Data * src);
     ~Data();
+    QString dump() const;
 };
 
 }
