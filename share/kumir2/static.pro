@@ -42,14 +42,6 @@ DATA_DIRS = kumiranalizer
     copy2build.CONFIG += no_link
     QMAKE_EXTRA_COMPILERS += copy2build
 
-    macx {
-        run_in_term.target = $$IDE_DATA_PATH/runInTerminal.command
-        run_in_term.depends = $$PWD/runInTerminal.command
-        run_in_term.commands = $$QMAKE_COPY \"$<\" \"$@\"
-        QMAKE_EXTRA_TARGETS += run_in_term
-        PRE_TARGETDEPS += $$run_in_term.target
-        QMAKE_CLEAN += $$run_in_term.target
-    }
 }
 
 !macx {
