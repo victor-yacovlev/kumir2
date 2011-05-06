@@ -5,7 +5,7 @@ include(../../kumir2plugin.pri)
 include(../../shared/interfaces/analizer.pri)
 include(../../shared/interfaces/generator.pri)
 include(../../shared/abstractsyntaxtree/abstractsyntaxtree.pri)
-
+QT += script
 HEADERS += kumircompilerplugin.h
 
 SOURCES += kumircompilerplugin.cpp

@@ -1,6 +1,6 @@
 TEMPLATE = lib
 TARGET = KumirCppGenerator
-
+QT += script
 include(../../kumir2plugin.pri)
 include(../../shared/extensionsystem/extensionsystem.pri)
 include(../../shared/abstractsyntaxtree/abstractsyntaxtree.pri)

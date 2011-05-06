@@ -1,6 +1,6 @@
 TEMPLATE = lib
 TARGET = KumirCodeGenerator
-
+QT += script
 include(../../kumir2plugin.pri)
 include(../../plugins/kumiranalizer/kumiranalizer.pri)
 
