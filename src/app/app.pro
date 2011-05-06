@@ -21,9 +21,6 @@ win32 {
     LIBS += -framework CoreFoundation
     ICON = kumir2.icns
     QMAKE_INFO_PLIST = Info.plist
-    FILETYPES.files = profile.icns prifile.icns
-    FILETYPES.path = Contents/Resources
-    QMAKE_BUNDLE_DATA += FILETYPES
 } else {
     LIBS *= -lExtensionSystem
 
