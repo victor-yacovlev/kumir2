@@ -1451,7 +1451,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
             }
         } // endif ( par == rb )
         else if ( par==value ) {
-            if (group.access==AST::AccessRegular) {
+            if (group.access!=AST::AccessRegular) {
                 group.lexems[z-1]->error = _("Initial values should not be specified in algorhitm header");
                 return result;
             }

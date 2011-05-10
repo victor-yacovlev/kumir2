@@ -369,6 +369,9 @@ void LexerPrivate::initNormalizator(const QString &fileName)
     operators << "<>";
     kwdMap["<>"] = LxOperNotEqual;
 
+    operators << "=";
+    kwdMap["="] = LxOperEqual;
+
     operators << "#";
 
 
@@ -456,7 +459,7 @@ static const QString expFormSymbols = QString::fromUtf8("eEеЕ01234567890");
 static const QString hexFormSymbols = QString::fromAscii("0123456789ABCDEFabcdef");
 
 bool isExpRealConstant(const QString &s) {
-    bool result = s.length()>0;
+    bool result = s.length()>0 && s[0].isDigit();
     bool dotFound = false;
     for (int i=0; i<s.length(); i++) {
         if (s[i]=='.') {
@@ -553,7 +556,8 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
         if (cur!=-1) {
             if ( (cur-prev>1&&prev==-1) || (cur-prev>0&&prev>=0) ) {
                 if (inLit) {
-                    lexems.last()->data += text.mid(prev+1, cur-prev);
+                    const QString app = text.mid(prev, cur-prev);
+                    lexems.last()->data += app;
                 }
                 else {
                     Lexem * lx = new Lexem;
@@ -596,6 +600,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                     lx->type = LxConstLiteral;
                     lx->pos = cur;
                     inLit = true;
+                    lexems << lx;
                 }
                 else {
                     QString simplifiedSymb = symb;
@@ -620,11 +625,13 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                 if (lx->type==LxTypeComment || lx->type==LxTypeDoc)
                     lexems.last()->data += text.mid(prev+1);
                 else {
-                    Lexem * llx = new Lexem;
-                    llx->type = LxTypeName;
-                    llx->pos = qMax(prev, 0);
-                    llx->data = text.mid(prev);
-                    lexems << llx;
+                    if (prev<text.length()) {
+                        Lexem * llx = new Lexem;
+                        llx->type = LxTypeName;
+                        llx->pos = qMax(prev, 0);
+                        llx->data = text.mid(prev);
+                        lexems << llx;
+                    }
                 }
             }
             break;
