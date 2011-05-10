@@ -102,6 +102,9 @@ extern QString dumpLexem(const struct Lexem *lx)
     result += "line: "+QString::number(lx->lineNo);
     result += ", pos: "+QString::number(lx->linePos);
     result += ", len: "+QString::number(lx->length);
+    if (!lx->error.isEmpty()) {
+        result += ", error: \""+screenString(lx->error)+"\"";
+    }
     result += ", data: \""+screenString(lx->data)+"\"";
     result += " }";
     return result;
