@@ -11,10 +11,6 @@
 #  define SHARE_PATH "/../share/kumir2"
 #endif
 
-#ifdef HAS_CONFIGURATION_TEMPLATE
-#include "cofiguration_template.h"
-#endif
-
 void showErrorMessage(const QString & text)
 {
     bool gui = true;
@@ -42,7 +38,6 @@ int main(int argc, char **argv)
     app->setProperty("sharePath", sharePath);
     QSettings::setDefaultFormat(QSettings::IniFormat);
     QSettings::setPath(QSettings::IniFormat, QSettings::SystemScope, SHARE_PATH);
-    qDebug()<<PLUGINS_PATH;
     app->addLibraryPath(PLUGINS_PATH);
     ExtensionSystem::PluginManager * manager = new ExtensionSystem::PluginManager;
     QObject::connect (app, SIGNAL(aboutToQuit()), manager, SLOT(shutdown()));
@@ -50,11 +45,10 @@ int main(int argc, char **argv)
     manager->setSharePath(SHARE_PATH);
     QString error;
 
-#ifdef HAS_CONFIGURATION_TEMPLATE
+#ifdef CONFIGURATION_TEMPLATE
     const QString defaultTemplate = CONFIGURATION_TEMPLATE;
 #else
-//    const QString defaultTemplate = "&Editor,KumirAnalizer";
-    const QString defaultTemplate = "&KumirCompiler,KumirCppGenerator,KumirAnalizer";
+#error No default configuration passed to GCC
 #endif
     QString templ = defaultTemplate;
     for (int i=1; i<argc; i++) {

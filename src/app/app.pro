@@ -9,6 +9,11 @@ QT += script
 
 include(../rpath.pri)
 
+# need to avoid using previously compiled main.o from other project
+OBJECTS_DIR = $$OBJECTS_DIR/$$TARGET
+# defines default template for this build
+DEFINES += CONFIGURATION_TEMPLATE=\\\"!Editor,KumirAnalizer\\\"
+
 win32 {
     CONFIG(debug, debug|release):LIBS *= -lExtensionSystemd
     else:LIBS *= -lExtensionSystem

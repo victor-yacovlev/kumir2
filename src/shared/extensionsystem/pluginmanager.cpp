@@ -82,7 +82,7 @@ QString PluginManagerPrivate::parsePluginsRequest(const QString &templ, QList<Pl
     QString argument;
     cur.start = false;
     for (int i=0 ; i<templ.size(); i++) {
-        if (templ[i]=='&' && cur.name.isEmpty() && !inBr) {
+        if (templ[i]=='!' && cur.name.isEmpty() && !inBr) {
             cur.start = true;
         }
         else if (templ[i]=='(' && !inBr) {

@@ -8,16 +8,16 @@ DESTDIR = $$IDE_APP_PATH/Kumir.app/Contents/MacOS/
 }
 
 SOURCES += main.cpp
-DEFINES += HAS_CONFIGUTATION_TEMPLATE
+
 QT += script
 
 
 include(../rpath.pri)
 
-configuration.target = configuration_template.h
-configuration.commands = 'echo static const char \\* CONFIGURATION_TEMPLATE=\\"\\&KumirCompiler,KumirCppGenerator,KumirAnalizer\\";' > configuration_template.h;
-QMAKE_EXTRA_TARGETS += configuration
-PRE_TARGETDEPS += configuration_template.h
+# need to avoid using previously compiled main.o from other project
+OBJECTS_DIR = $$OBJECTS_DIR/$$TARGET
+# defines default template for this build
+DEFINES += CONFIGURATION_TEMPLATE=\\\"!KumirCompiler,KumirCppGenerator,KumirAnalizer\\\"
 
 win32 {
     CONFIG(debug, debug|release):LIBS *= -lExtensionSystemd
