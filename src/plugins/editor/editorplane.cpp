@@ -1,16 +1,21 @@
 #include "editorplane.h"
 #include "textcursor.h"
 #include "textdocument.h"
+#include "clipboard.h"
 
 
 namespace Editor {
 
-EditorPlane::EditorPlane(TextDocument * doc, TextCursor * cursor, QWidget *parent) :
+EditorPlane::EditorPlane(TextDocument * doc
+                         , TextCursor * cursor
+                         , class Clipboard * clipboard
+                         , QWidget *parent) :
     QWidget(parent)
 {
     i_marginWidth = 15;
     m_document = doc;
     m_cursor = cursor;
+    m_clipboard = clipboard;
     connect(m_cursor, SIGNAL(updateRequest()), this, SLOT(updateCursor()));
     connect(m_cursor, SIGNAL(updateRequest(int,int)), this, SLOT(updateText(int,int)));
     setFocusPolicy(Qt::StrongFocus);
@@ -23,6 +28,7 @@ void EditorPlane::paintEvent(QPaintEvent *e)
 {
     QPainter p(this);
     paintBackground(&p, e->rect());
+    paintSelection(&p, e->rect());
     paintText(&p, e->rect());
     paintCursor(&p, e->rect());
     e->accept();
@@ -155,8 +161,21 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
             m_cursor->removePreviousChar();
             process = true;
         }
+        else if (e->matches(QKeySequence::Paste)) {
+            if (m_clipboard->hasContent()) {
+                m_cursor->insertText(m_clipboard->content());
+                process = true;
+            }
+        }
+        else if (e->matches(QKeySequence::Copy)) {
+            if (m_cursor->hasSelection()) {
+                process = true;
+                m_clipboard->push(m_cursor->selectedText());
+            }
+        }
         else if (e->matches(QKeySequence::Delete)) {
-
+            m_cursor->removeCurrentChar();
+            process = true;
         }
         else if (!e->text().isEmpty()) {
             // TODO language switch
@@ -217,6 +236,70 @@ void EditorPlane::paintBackground(QPainter *p, const QRect &rect)
     }
 
     p->restore();
+}
+
+void EditorPlane::paintSelection(QPainter *p, const QRect &rect)
+{
+    p->save();
+    p->setPen(Qt::NoPen);
+    p->setBrush(palette().brush(QPalette::Highlight));
+    QRegion selection = selectionRegion();
+    if (!selection.isEmpty() && selection.intersects(rect)) {
+        p->drawRects(selection.rects());
+    }
+    p->restore();
+}
+
+QRegion EditorPlane::selectionRegion() const
+{
+    QPoint start = m_cursor->selectionStart();
+    QPoint end = m_cursor->selectionEnd();
+    if (start.x()==-1 || end.x()==-1 || start.y()==-1 || end.y()==-1)
+        return QRegion();
+    QRegion result;
+    for (int y=start.y() ; y<=end.y(); y++) {
+        int yy = lineHeight() * y;
+        int xx = 0;
+        int ww = 0;
+        if (y>start.y() && y<end.y()) {
+            // middle lines of selection
+            xx = 0;
+            ww = 0;
+            if (y<m_document->size() && !m_document->at(y).text.isEmpty()) {
+                int indentSpace = charWidth() * 2 * m_document->indentAt(y);
+                int textWidth = charWidth() * m_document->at(y).text.length();
+                ww = indentSpace + textWidth;
+            }
+            else {
+                ww = charWidth() / 2;
+            }
+        }
+        else if (y==start.y() && y==end.y()) {
+            // selection in single line
+            xx = start.x() * charWidth();
+            ww = (end.x()-start.x()) * charWidth();
+        }
+        else if (y==start.y()) {
+            // first line of selection
+            xx = start.x() * charWidth();
+            ww = 0;
+            if (y<m_document->size() && !m_document->at(y).text.isEmpty()) {
+                int indentSpace = charWidth() * 2 * m_document->indentAt(y);
+                int textWidth = charWidth() * m_document->at(y).text.length();
+                ww = indentSpace + textWidth - xx;
+            }
+            else {
+                ww = charWidth() / 2;
+            }
+        }
+        else if (y==end.y()) {
+            // last line of selection
+            xx = 0;
+            ww = end.x() * charWidth();
+        }
+        result += QRect(xx, yy, ww ,lineHeight());
+    }
+    return result;
 }
 
 void EditorPlane::paintText(QPainter *p, const QRect &rect)

@@ -2,6 +2,7 @@
 #include "editorplane.h"
 #include "textcursor.h"
 #include "textdocument.h"
+#include "clipboard.h"
 
 namespace Editor {
 
@@ -15,8 +16,11 @@ public:
     TextCursor * cursor;
     QScrollArea * scrollArea;
     EditorPlane * plane;
+    static Clipboard * clipboard;
     int documentId;
 };
+
+Clipboard * EditorPrivate::clipboard = 0;
 
 Editor::Editor(AnalizerInterface * analizer, int documentId, QWidget *parent) :
     VisualComponent()
@@ -27,11 +31,13 @@ Editor::Editor(AnalizerInterface * analizer, int documentId, QWidget *parent) :
     d->cursor = new TextCursor(d->doc);
     d->analizer = analizer;
     d->documentId = documentId;
+    if (!d->clipboard)
+        d->clipboard = new Clipboard;
     QVBoxLayout * l = new QVBoxLayout;
     l->setContentsMargins(0,0,0,0);
     l->setSpacing(0);
     setLayout(l);
-    d->plane = new EditorPlane(d->doc, d->cursor, this);
+    d->plane = new EditorPlane(d->doc, d->cursor, d->clipboard, this);
     d->scrollArea = new QScrollArea(this);
     d->scrollArea->setWidget(d->plane);
     d->scrollArea->setWidgetResizable(true);

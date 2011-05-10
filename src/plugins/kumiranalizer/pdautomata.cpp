@@ -1278,6 +1278,8 @@ void PDAutomataPrivate::processCorrectBeginOfLoop()
     AST::Statement * st = new AST::Statement;
     st->type = AST::StLoop;
     st->lexems = (*source)[currentPosition].data;
+    currentContext.top()->append(st);
+    currentContext.push(&(currentContext.top()->last()->loop.body));
     (*source)[currentPosition].mod = currentModule;
     (*source)[currentPosition].alg = currentAlgorhitm;
     (*source)[currentPosition].statement = st;

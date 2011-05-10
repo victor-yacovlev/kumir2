@@ -548,6 +548,32 @@ void searchNumericConstants(QList<Lexem*> & lexems) {
     }
 }
 
+void searchEndLoopIf(QList<Lexem*> & lexems) {
+    QList<Lexem*>::iterator it;
+    for (it=lexems.begin(); it!=lexems.end(); ) {
+        Lexem * lx = (*it);
+        Lexem * lxx = 0;
+        if (lx->type==LxPriEndLoop) {
+            if (lx->data.contains("_")) {
+                int underscorePos = lx->data.indexOf("_");
+                QString caseText = lx->data.mid(underscorePos);
+                lx->data = lx->data.left(underscorePos);
+                lx->length -= caseText.length();
+                lxx = new Lexem;
+                lxx->data = caseText;
+                lxx->lineNo = lx->lineNo;
+                lxx->linePos = lx->linePos + lx->length;
+                lxx->length = caseText.length();
+                lxx->type = LxSecIf;
+            }
+        }
+        it++;
+        if (lxx) {
+            it = lexems.insert(it, lxx);
+        }
+    }
+}
+
 void LexerPrivate::splitLineIntoLexems(const QString &text
                                        , QList<Lexem*> &lexems
                                        ) const
@@ -668,6 +694,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
         }
     }
     searchNumericConstants(lexems);
+    searchEndLoopIf(lexems);
 }
 
 void popFirstStatement(QList<Lexem*> & lexems, Statement & result );

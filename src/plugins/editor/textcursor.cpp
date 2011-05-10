@@ -12,8 +12,8 @@ TextCursor::TextCursor(TextDocument * document)
     , b_visible(true)
     , i_row(0)
     , i_column(0)
-    , i_selectionStart(-1)
-    , i_selectionEnd(-1)
+    , p_selectionStart(QPoint(-1,-1))
+    , p_selectionEnd(QPoint(-1,-1))
 {
     i_timerId = startTimer(QApplication::cursorFlashTime()/2);
 }
@@ -35,11 +35,22 @@ bool TextCursor::movePosition(QTextCursor::MoveOperation op, QTextCursor::MoveMo
 {
     b_visible = false;
     updateRequest();
-    Q_UNUSED(m); // TODO implement selection
     bool result = true;
+    if (m==QTextCursor::KeepAnchor) {
+        if (p_selectionStart.y()==-1 || p_selectionEnd.y()==-1) {
+
+        }
+    }
+    else {
+        p_selectionStart = QPoint(-1,-1);
+        p_selectionEnd = QPoint(-1,-1);
+    }
     for (int i=0; i<n; i++) {
         if (op==QTextCursor::NextCell) {
             i_column ++;
+            if (m==QTextCursor::KeepAnchor) {
+
+            }
         }
         else if (op==QTextCursor::PreviousCell) {
             if (i_column==0 && i_row==0)
@@ -87,6 +98,9 @@ bool TextCursor::movePosition(QTextCursor::MoveOperation op, QTextCursor::MoveMo
     }
     b_visible = true;
     emit updateRequest();
+    if (m==QTextCursor::KeepAnchor) {
+        emit updateRequest(-1, -1);
+    }
     return result;
 }
 
@@ -221,6 +235,7 @@ bool TextCursor::removePreviousChar()
                         m_document->at(i_row-1).text.length();
                 (*m_document)[i_row-1].text += curTextLine.text;
                 (*m_document)[i_row-1].highlight += curTextLine.highlight;
+                (*m_document)[i_row-1].indentEnd += curTextLine.indentStart + curTextLine.indentEnd;
                 m_document->removeAt(i_row);
                 i_row--;
             }
@@ -241,15 +256,74 @@ bool TextCursor::removePreviousChar()
     return result;
 }
 
+bool TextCursor::removeCurrentChar()
+{
+    // TODO Undo-redo stack!
+    if (!b_enabled)
+        return false;
+    b_visible = false;
+    emit updateRequest();
+    bool result = true;
+    int fromLineUpdate = -1;
+    int toLineUpdate = -1;
+
+    const int indent = m_document->indentAt(i_row);
+    int textPos = i_column - indent * 2;
+    if (i_row<m_document->size() && textPos<m_document->at(i_row).text.length()) {
+        // remove current char in current line
+        TextLine curTextLine = m_document->at(i_row);
+        (*m_document)[i_row].text =
+                curTextLine.text.left(textPos) +
+                curTextLine.text.mid(textPos+1);
+
+        (*m_document)[i_row].highlight =
+                curTextLine.highlight.mid(0,textPos) +
+                curTextLine.highlight.mid(textPos+1);
+    }
+    else if (i_row<m_document->size()-1) {
+        // remove line delimeter if exists
+        toLineUpdate = -1;
+        TextLine curTextLine = m_document->at(i_row);
+        // if cursor far away from end of line -- fill by spaces
+        while (curTextLine.text.length() < textPos) {
+            curTextLine.text += " ";
+            curTextLine.highlight << Shared::LxTypeEmpty;
+        }
+        TextLine nextTextLine = m_document->at(i_row+1);
+        curTextLine.text += nextTextLine.text;
+        curTextLine.highlight += nextTextLine.highlight;
+        curTextLine.indentEnd += nextTextLine.indentStart + nextTextLine.indentEnd;
+        (*m_document)[i_row] = curTextLine;
+        m_document->removeAt(i_row+1);
+    }
+    else {
+        // nothing to delete
+        result = false;
+    }
+
+    b_visible = true;
+    emit updateRequest();
+    emit updateRequest(fromLineUpdate, toLineUpdate);
+    return result;
+}
+
 void TextCursor::clearUndoRedoStacks()
 {
     // TODO implement me
 }
 
+
 bool TextCursor::isModified() const
 {
     // TODO implement me
     return true;
+}
+
+QString TextCursor::selectedText() const
+{
+    if (!hasSelection())
+        return "";
+    return ""; // TODO implement me
 }
 
 } // namespace Editor

@@ -12,10 +12,12 @@ HEADERS += editorplugin.h \
     editor.h \
     editorplane.h \
     textcursor.h \
-    textdocument.h
+    textdocument.h \
+    clipboard.h
 SOURCES += editorplugin.cpp \
     editor.cpp \
     editorplane.cpp \
-    textcursor.cpp
+    textcursor.cpp \
+    clipboard.cpp
 
 OTHER_FILES += Editor.pluginspec
