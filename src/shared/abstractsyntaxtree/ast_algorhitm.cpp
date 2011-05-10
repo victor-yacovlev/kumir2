@@ -180,7 +180,7 @@ QString Algorhitm::dump() const
         result += "\t\t] /* end algorhitm '"+header.name+"' post-statements */";
     }
     if (!impl.endLexems.isEmpty()) {
-        result += ",\t\tendLexems: [\n";
+        result += ",\n\t\tendLexems: [\n";
         for (int i=0; i<impl.endLexems.size(); i++) {
             result += "\t\t\t"+dumpLexem(impl.endLexems[i]);
             if (i<impl.endLexems.size()-1)
