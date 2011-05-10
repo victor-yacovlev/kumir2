@@ -3,6 +3,9 @@ include(../../kumir2.pri)
 TEMPLATE = app
 TARGET = kumir2-cc
 DESTDIR = $$IDE_APP_PATH
+macx{
+DESTDIR = $$IDE_APP_PATH/Kumir.app/Contents/MacOS/
+}
 
 SOURCES += main.cpp
 DEFINES += HAS_CONFIGUTATION_TEMPLATE

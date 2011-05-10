@@ -359,6 +359,7 @@ KPlugin * PluginManager::dependentPlugin(const QString &name, const KPlugin *p) 
         return 0;
     }
     for (int i=0; i<d->specs.size(); i++) {
+        PluginSpec ss=d->specs[i];
         if (d->specs[i].provides.contains(name)) {
             return d->objects[i];
         }

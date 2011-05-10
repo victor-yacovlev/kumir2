@@ -6,6 +6,8 @@ QT += script
 
 unix:!macx:!freebsd*:LIBS += -ldl
 
+QMAKE_PRL_LIBS = -framework Qt<ModuleDep>
+
 DEFINES += IDE_TEST_DIR=\\\"$$IDE_SOURCE_TREE\\\"
 
 HEADERS += \

@@ -27,6 +27,7 @@ protected:
     virtual void start() = 0;
     virtual void stop() = 0;
     KPlugin * myDependency(const QString & name) const;
+
     QSettings * mySettings() const;
 
 };

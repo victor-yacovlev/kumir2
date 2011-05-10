@@ -42,6 +42,7 @@ int main(int argc, char **argv)
     app->setProperty("sharePath", sharePath);
     QSettings::setDefaultFormat(QSettings::IniFormat);
     QSettings::setPath(QSettings::IniFormat, QSettings::SystemScope, SHARE_PATH);
+    qDebug()<<PLUGINS_PATH;
     app->addLibraryPath(PLUGINS_PATH);
     ExtensionSystem::PluginManager * manager = new ExtensionSystem::PluginManager;
     QObject::connect (app, SIGNAL(aboutToQuit()), manager, SLOT(shutdown()));
