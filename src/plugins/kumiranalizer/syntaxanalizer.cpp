@@ -1876,7 +1876,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
             }
             curPos++;
             if (curPos==lexems.size()) {
-                curPos = 0;
+//                curPos = 0;
             }
             else if (IS_OPERATOR(lexems[curPos]->type)) {
                 oper = lexems[curPos];
