@@ -29,7 +29,8 @@ int Lexer::splitIntoStatements(const QString &text
         QList<Statement> sts;
         d->groupLexemsByStatements(lexems, sts);
         for (int j=0; j<sts.size(); j++) {
-            sts[j].realLineNumber = baseLineNo + i;
+            for (int k=0; k<sts[j].data.size(); k++)
+                sts[j].data[k]->lineNo = baseLineNo + i;
         }
         statements << sts;
     }
@@ -512,14 +513,14 @@ void searchNumericConstants(QList<Lexem*> & lexems) {
                     if (itt!=lexems.end()) {
                         if ( (*itt)->type==LxOperPlus || (*itt)->type==LxOperMinus ) {
                             (*it)->data += (*itt)->data;
-                            (*it)->size += (*itt)->size;
+                            (*it)->length += (*itt)->length;
                             delete *itt;
                             itt = lexems.erase(itt);
                             if (itt!=lexems.end()) {
                                 const QString ss = (*itt)->data;
                                 if (isDecimalRealConstant(ss)) {
                                     (*it)->data += (*itt)->data;
-                                    (*it)->size += (*itt)->size;
+                                    (*it)->length += (*itt)->length;
                                     delete *itt;
                                     lexems.erase(itt);
                                 }
@@ -561,7 +562,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                 }
                 else {
                     Lexem * lx = new Lexem;
-                    lx->pos = qMax(prev, 0);
+                    lx->linePos = qMax(prev, 0);
                     lx->type = LxTypeName;
                     lx->data = text.mid(qMax(prev,0), prev>=0? cur-prev : cur-prev-1);
                     lexems << lx;
@@ -582,7 +583,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                     Lexem * lx = new Lexem;
                     lx->type = LxTypeComment;
                     lx->data = text.mid(cur+1);
-                    lx->pos = cur+1;
+                    lx->linePos = cur+1;
                     lexems << lx;
                     break;
                 }
@@ -590,7 +591,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                     Lexem * lx = new Lexem;
                     lx->type = LxTypeDoc;
                     lx->data = text.mid(cur+1);
-                    lx->pos = cur+1;
+                    lx->linePos = cur+1;
                     lexems << lx;
                     break;
                 }
@@ -598,7 +599,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                     litSimb = symb[0];
                     Lexem * lx = new Lexem;
                     lx->type = LxConstLiteral;
-                    lx->pos = cur;
+                    lx->linePos = cur;
                     inLit = true;
                     lexems << lx;
                 }
@@ -609,7 +610,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                     Lexem * lx = new Lexem;
                     lx->type = kwdMap[simplifiedSymb];
                     lx->data = symb;
-                    lx->pos = cur;
+                    lx->linePos = cur;
                     lexems << lx;
                 }
             }
@@ -628,7 +629,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                     if (prev<text.length()) {
                         Lexem * llx = new Lexem;
                         llx->type = LxTypeName;
-                        llx->pos = qMax(prev, 0);
+                        llx->linePos = qMax(prev, 0);
                         llx->data = text.mid(prev);
                         lexems << llx;
                     }
@@ -638,12 +639,12 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
         }
     }
     for (int i=0; i<lexems.size(); i++) {
-        lexems[i]->size = lexems[i]->data.size();
+        lexems[i]->length = lexems[i]->data.size();
         if (lexems[i]->type!=LxConstLiteral) {
             lexems[i]->data = lexems[i]->data.simplified();
         }
         else {
-            lexems[i]->size += 2;
+            lexems[i]->length += 2;
         }
     }
     QList<Lexem*>::iterator it = lexems.begin();

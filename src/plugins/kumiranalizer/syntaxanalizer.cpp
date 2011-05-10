@@ -1898,6 +1898,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
 
 
     result = makeExpressionTree(subexpression);
+    result->lexems = lexems;
 
 
     return result;

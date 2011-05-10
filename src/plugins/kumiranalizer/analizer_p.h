@@ -1,7 +1,7 @@
 #ifndef ANALIZER_P_H
 #define ANALIZER_P_H
 
-#include "lexem.h"
+#include "abstractsyntaxtree/lexem.h"
 #include "statement.h"
 #include "interfaces/lexemtype.h"
 #include "interfaces/error.h"
@@ -10,7 +10,7 @@
 
 #include <QtCore>
 
-
+using AST::Lexem;
 
 typedef AST::Data AST_Data;
 

@@ -88,11 +88,14 @@ struct AlgorhitmImplementation {
     /** Statements of algorhitm body */
     QList<struct Statement *> body;
 
-    /** Begin line number of algorhitm declaration */
-    int lineNoStart;
+    /** Header lexems */
+    QList<struct Lexem*> headerLexems;
 
-    /** End line number of algorhotm declaration */
-    int lineNoEnd;
+    /** Begin lexems */
+    QList<struct Lexem*> beginLexems;
+
+    /** End lexems */
+    QList<struct Lexem*> endLexems;
 };
 
 /** Algorhitm representation */

@@ -1,6 +1,7 @@
 #include "ast.h"
 #include "ast_module.h"
 #include "ast_algorhitm.h"
+#include "lexem.h"
 
 #include <QtCore>
 
@@ -10,15 +11,11 @@ Module::Module()
 {
     header.type = ModTypeUser;
     header.enabled = false;
-    impl.startLineNo = -1;
-    impl.endLineNo = -1;
 }
 
 Module::Module( const struct Module * src )
 {
     header.enabled = src->header.enabled;
-    impl.startLineNo = src->impl.startLineNo;
-    impl.endLineNo = src->impl.endLineNo;
     for (int i=0; i<src->impl.globals.size(); i++) {
         impl.globals << new Variable(src->impl.globals[i]);
     }
@@ -97,6 +94,19 @@ extern QString addIndent(const QString & source, int count)
     return result;
 }
 
+extern QString screenString(QString s);
+
+extern QString dumpLexem(const struct Lexem *lx)
+{
+    QString result = "{ ";
+    result += "line: "+QString::number(lx->lineNo);
+    result += ", pos: "+QString::number(lx->linePos);
+    result += ", len: "+QString::number(lx->length);
+    result += ", data: \""+screenString(lx->data)+"\"";
+    result += " }";
+    return result;
+}
+
 QString Module::dump() const
 {
     QString result;
@@ -124,6 +134,16 @@ QString Module::dump() const
     result += "\t},\n"; // end header
 
     result += "\timplementation: {\n";
+    if (!impl.beginLexems.isEmpty()) {
+        result += "\tbeginLexems: [\n";
+        for (int i=0; i<impl.beginLexems.size(); i++) {
+            result += "\t\t"+dumpLexem(impl.beginLexems.at(i));
+            if (i<impl.beginLexems.size()-1)
+                result += ",";
+            result += "\n";
+        }
+        result += "\t],\n";
+    }
     if (!impl.globals.isEmpty()) {
     result += "\t\tglobals: [\n";
         for (int i=0; i<impl.globals.size(); i++) {
@@ -154,7 +174,21 @@ QString Module::dump() const
         }
         result += "\n";
     }
-    result += "\t\t]\n"; // end algorhitms implementation
+    result += "\t\t]"; // end algorhitms implementation
+    if (!impl.endLexems.isEmpty()) {
+        result += ",\n";
+        result += "\tendLexems: [\n";
+        for (int i=0; i<impl.endLexems.size(); i++) {
+            result += "\t\t"+dumpLexem(impl.endLexems.at(i));
+            if (i<impl.endLexems.size()-1)
+                result += ",";
+            result += "\n";
+        }
+        result += "\t]\n";
+    }
+    else {
+        result += "\n";
+    }
     result += "\t}\n";
     result += "} /* end module '"+header.name+"' */";
     return result;

@@ -4,7 +4,6 @@ namespace KumirAnalizer {
 
 Statement::Statement()
 {
-    realLineNumber = -1;
     indentRank = QPoint(0,0);
     type = Shared::LxTypeEmpty;
     statement = 0;

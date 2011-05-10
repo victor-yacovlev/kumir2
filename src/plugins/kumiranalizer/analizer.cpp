@@ -71,7 +71,7 @@ void Analizer::changeSourceText(int pos, int len, const QString &repl)
     QList<Statement> oldStatements;
     int oldStatementsStart = -1;
     for (int i=0; i<d->statements.size(); i++) {
-        int line = d->statements[i].realLineNumber;
+        int line = d->statements[i].data.first()->lineNo;
         if (line>=startLine && line<=endLine) {
             if (oldStatementsStart==-1)
                 oldStatementsStart = i;
@@ -85,7 +85,8 @@ void Analizer::changeSourceText(int pos, int len, const QString &repl)
                                   );
     int linesOffset = repl.count("\n") - (endLine-startLine);
     for (int i=oldStatementsStart; i<d->statements.size(); i++) {
-        d->statements[i].realLineNumber += linesOffset;
+        for (int j=0; j<d->statements[i].data.size(); j++)
+            d->statements[i].data[j]->lineNo += linesOffset;
     }
     d->statements = d->statements.mid(0, oldStatementsStart)
             + newStatements
@@ -123,7 +124,7 @@ AnalizerPrivate::AnalizeSubject AnalizerPrivate::analizeSubject(const QList<Lexe
 AnalizerPrivate::AnalizeSubject AnalizerPrivate::analizeSubject(const QList<Statement> &statements) const
 {
     QList<Shared::LexemType> lexemTypes;
-    int startLineNo = statements.isEmpty()? 0 : statements[0].realLineNumber;
+    int startLineNo = statements.isEmpty()? 0 : statements[0].data.first()->lineNo;
     foreach (const Statement &st, statements) {
         foreach (const Lexem * lx, st.data) {
             lexemTypes << lx->type;
@@ -176,13 +177,13 @@ QList<LineProp> Analizer::lineProperties() const
     }
     for (int i=0; i<d->statements.size(); i++) {
         foreach (const Lexem * lx, d->statements[i].data) {
-            for (int j=lx->pos; j<lx->pos+lx->size; j++) {
+            for (int j=lx->linePos; j<lx->linePos+lx->length; j++) {
                 unsigned int value = lx->type;
                 const unsigned int errorMask = LxTypeError;
                 if (!lx->error.isEmpty()) {
                     value = value | errorMask;
                 }
-                result[d->statements[i].realLineNumber][j] = LexemType(value);
+                result[d->statements[i].data.first()->lineNo][j] = LexemType(value);
             }
         }
     }
@@ -211,7 +212,7 @@ QList<QPoint> Analizer::lineRanks() const
         result << QPoint(0,0);
     }
     for (int i=0; i<d->statements.size(); i++) {
-        result[d->statements[i].realLineNumber] = d->statements[i].indentRank;
+        result[d->statements[i].data.first()->lineNo] = d->statements[i].indentRank;
     }
     return result;
 }

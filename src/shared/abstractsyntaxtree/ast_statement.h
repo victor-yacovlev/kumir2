@@ -97,8 +97,8 @@ struct LoopSpec {
     /** Loop body */
     QList<struct Statement * > body;
 
-    /** Loop end line number in source program */
-    int endLineNo;
+    /** Loop end lexems */
+    QList<struct Lexem*> endLexems;
 };
 
 /** "if-then", "case" or "else" sub-block of statement */
@@ -110,8 +110,8 @@ struct ConditionSpec {
     /** Conditional body */
     QList<struct Statement * > body;
 
-    /** Block begin line number in source program */
-    int startLineNo;
+    /** Condition source lexems */
+    QList<struct Lexem*> lexems;
 };
 
 /** Evaluable statement */
@@ -120,8 +120,8 @@ struct ABSTRACTSYNTAXTREE_EXPORT Statement {
     /** Statement kind */
     StatementType type;
 
-    /** Line number in source program */
-    int lineNo;
+    /** Statement source lexems */
+    QList<struct Lexem*>  lexems;
 
     /** Compile-time error */
     QString error;

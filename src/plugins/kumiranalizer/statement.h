@@ -3,7 +3,7 @@
 
 #include <QtCore>
 #include "interfaces/lexemtype.h"
-#include "lexem.h"
+#include "abstractsyntaxtree/lexem.h"
 #include "interfaces/error.h"
 
 namespace AST {
@@ -12,12 +12,13 @@ struct Module;
 struct Algorhitm;
 }
 
+using AST::Lexem;
+
 namespace KumirAnalizer {
 
 struct Statement
 {
     QList<Lexem*> data;
-    int realLineNumber;
     QPoint indentRank;
     Shared::LexemType type;
     struct AST::Statement * statement;

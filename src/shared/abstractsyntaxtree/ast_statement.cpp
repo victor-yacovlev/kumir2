@@ -9,11 +9,9 @@ Statement::Statement()
 {
     type = StError;
     error = "";
-    lineNo = -1;
     loop.type = LoopWhile;
     loop.forVariable = NULL;
     loop.toValue = loop.fromValue = loop.whileCondition = loop.timesValue = loop.endCondition = 0;
-    loop.endLineNo = -1;
 }
 
 Statement::~Statement()
@@ -56,7 +54,6 @@ Statement::Statement(const Statement *src)
 {
     type = src->type;
     error = src->error;
-    lineNo = src->lineNo;
     loop.type = src->loop.type;
     if (src->loop.toValue)
         loop.toValue = new Expression(src->loop.toValue);
@@ -78,7 +75,6 @@ Statement::Statement(const Statement *src)
         loop.endCondition = new Expression(src->loop.endCondition);
     else
         loop.endCondition = 0;
-    loop.endLineNo = src->loop.endLineNo;
 
     for (int i=0; i<src->loop.body.size(); i++) {
         loop.body << new Statement(src->loop.body[i]);
@@ -97,7 +93,6 @@ Statement::Statement(const Statement *src)
         for (int j=0; j<src->conditionals[i].body.size(); i++) {
             c.body << new Statement(src->conditionals[i].body[j]);
         }
-        c.startLineNo = src->conditionals[i].startLineNo;
         conditionals << c;
     }
 }
@@ -170,6 +165,7 @@ void Statement::updateReferences(const Statement *src, const Data *srcData, cons
 }
 
 extern QString addIndent(const QString & source, int count);
+extern QString dumpLexem(const struct Lexem *lx);
 
 QString dumpStatementType(const enum StatementType t)
 {
@@ -208,7 +204,6 @@ QString dumpLoopSpec(const struct LoopSpec & spec)
         result += "\ttype: \"times\",\n";
     else
         result += "\ttype: \"while\",\n";
-    result += "\tendLineNo: "+QString::number(spec.endLineNo)+",\n";
     if (spec.type==LoopFor){
         result += "\tforVariable: \""+spec.forVariable->name+"\",\n";
         result += "\tfromValue: "+addIndent(spec.fromValue->dump(), 1)+",\n";
@@ -229,7 +224,21 @@ QString dumpLoopSpec(const struct LoopSpec & spec)
             result += ",";
         result += "\n";
     }
-    result += "\t]\n";
+    result += "\t]";
+    if (!spec.endLexems.isEmpty()) {
+        result += ",\n";
+        result += "\tendLexems: [\n";
+        for (int i=0; i<spec.endLexems.size(); i++) {
+            result += "\t\t"+dumpLexem(spec.endLexems[i]);
+            if (i<spec.endLexems.size()-1)
+                result += ",";
+            result += "\n";
+        }
+        result += "\t]\n";
+    }
+    else {
+        result += "\n";
+    }
     result += "}";
     return result;
 }
@@ -237,10 +246,19 @@ QString dumpLoopSpec(const struct LoopSpec & spec)
 QString dumpConditionSpec(const struct ConditionSpec & spec)
 {
     QString result = "{\n";
+    if (!spec.lexems.isEmpty()) {
+        result += "\tlexems: [\n";
+        for (int i=0; i<spec.lexems.size(); i++) {
+            result += "\t\t"+dumpLexem(spec.lexems[i]);
+            if (i<spec.lexems.size()-1)
+                result += ",";
+            result += "\n";
+        }
+        result += "\t],\n";
+    }
     if (spec.condition) {
         result += "\tcondition: "+addIndent(spec.condition->dump(), 1)+",\n";
     }
-    result += "\tstartLineNo: "+QString::number(spec.startLineNo)+",\n";
     result += "\tbody: [\n";
     for (int i=0; i<spec.body.size(); i++) {
         result += addIndent(spec.body[i]->dump(), 1);
@@ -253,11 +271,22 @@ QString dumpConditionSpec(const struct ConditionSpec & spec)
     return result;
 }
 
+
+
 QString Statement::dump() const
 {
     QString result = "{\n";
-    result += "\ttype: \""+dumpStatementType(type)+"\",\n";
-    result += "\tlineNo: "+QString::number(lineNo);
+    if (!lexems.isEmpty()) {
+        result += "\tlexems: [\n";
+        for (int i=0; i<lexems.size(); i++) {
+            result += "\t\t"+dumpLexem(lexems[i]);
+            if (i<lexems.size()-1)
+                result += ",";
+            result += "\n";
+        }
+        result += "\t],\n";
+    }
+    result += "\ttype: \""+dumpStatementType(type)+"\"";
     if (type==StError) {
         result += ",\n\terror: \""+error+"\"\n";
     }
@@ -296,7 +325,7 @@ QString Statement::dump() const
         }
         result += "\t]\n";
     }
-    result += "} /* end statement of type '"+dumpStatementType(type)+"' at line "+QString::number(lineNo)+" */";
+    result += "} /* end statement of type '"+dumpStatementType(type)+"' */";
     return result;
 }
 

@@ -1,13 +1,15 @@
 #ifndef LEXER_P_H
 #define LEXER_P_H
 
-#include "lexem.h"
+#include "abstractsyntaxtree/lexem.h"
 #include "interfaces/lexemtype.h"
 #include "statement.h"
 #include "interfaces/error.h"
 #include "abstractsyntaxtree/ast_variabletype.h"
 
 #include <QtCore>
+
+using AST::Lexem;
 
 namespace KumirAnalizer {
 

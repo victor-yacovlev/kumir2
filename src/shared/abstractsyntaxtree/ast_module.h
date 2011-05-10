@@ -61,11 +61,11 @@ struct ModuleImplementation {
       * first algorhitm declaration) */
     QList<struct Statement *> initializerBody;
 
-    /** Module declaration begin real line number */
-    int startLineNo;
+    /** Module begin lexems */
+    QList<struct Lexem*> beginLexems;
 
-    /** Module declaration end real line number */
-    int endLineNo;
+    /** Module end lexems */
+    QList<struct Lexem*> endLexems;
 };
 
 

@@ -161,7 +161,8 @@ QString dumpOperator(const enum ExpressionOperator op)
         return "";
 }
 
-QString screenString(QString s)
+extern QString dumpLexem(const struct Lexem *lx);
+extern QString screenString(QString s)
 {
     s.replace("\\", "\\\\");
     s.replace("\r", "\\n");
@@ -173,6 +174,16 @@ QString screenString(QString s)
 QString Expression::dump() const
 {
     QString result = "{\n";
+    if (!lexems.isEmpty()) {
+        result += "\tlexems: [\n";
+        for (int i=0; i<lexems.size(); i++) {
+            result += "\t\t"+dumpLexem(lexems[i]);
+            if (i<lexems.size()-1)
+                result += ",";
+            result += "\n";
+        }
+        result += "\t],\n";
+    }
     result += "\tkind: "+dumpKind(kind);
     result += ",\n\ttype: "+AST::dump(baseType);
     if (kind==ExprConst) {

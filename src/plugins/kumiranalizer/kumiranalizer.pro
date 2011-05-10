@@ -17,7 +17,6 @@ HEADERS += kumiranalizerplugin.h \
     lexer.h \
     statement.h \
     lexer_p.h \
-    lexem.h \
     pdautomata.h \
     pdautomata_p.h \
     syntaxanalizer.h

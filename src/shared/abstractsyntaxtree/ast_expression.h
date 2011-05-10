@@ -94,6 +94,9 @@ struct ABSTRACTSYNTAXTREE_EXPORT Expression {
     /** Operator in case of kind==StSubexpression, emty otherwise */
     enum ExpressionOperator operatorr;
 
+    /** Expression source lexems */
+    QList<struct Lexem*> lexems;
+
     explicit Expression();
     explicit Expression(const struct Expression * src);
     void updateReferences(const struct Expression * src,

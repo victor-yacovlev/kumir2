@@ -9,7 +9,6 @@ Algorhitm::Algorhitm()
     header.specialType = AlgorhitmTypeRegular;
     header.returnType = TypeNone;
     header.implType = AlgorhitmCompiled;
-    impl.lineNoStart = impl.lineNoEnd = -1;
 }
 
 Algorhitm::Algorhitm(const Algorhitm *src)
@@ -19,8 +18,6 @@ Algorhitm::Algorhitm(const Algorhitm *src)
     header.implType = src->header.implType;
     header.name = src->header.name;
     header.error = src->header.error;
-    impl.lineNoStart = src->impl.lineNoStart;
-    impl.lineNoEnd = src->impl.lineNoEnd;
 
     for (int i=0; i<src->impl.locals.size(); i++) {
         impl.locals << new Variable(src->impl.locals[i]);
@@ -99,6 +96,8 @@ QString dump(const enum AlgorhitmType & type)
     }
 }
 
+extern QString dumpLexem(const struct Lexem *lx);
+
 QString Algorhitm::dump() const
 {
     QString result = "{\n";
@@ -120,6 +119,26 @@ QString Algorhitm::dump() const
     result += "\n";
     result += "\t},\n";
     result += "\timplementation: {\n";
+    if (!impl.headerLexems.isEmpty()) {
+        result += "\t\theaderLexems: [\n";
+        for (int i=0; i<impl.headerLexems.size(); i++) {
+            result += "\t\t\t"+dumpLexem(impl.headerLexems[i]);
+            if (i<impl.headerLexems.size()-1)
+                result += ",";
+            result += "\n";
+        }
+        result += "\t\t],\n";
+    }
+    if (!impl.beginLexems.isEmpty()) {
+        result += "\t\tbeginLexems: [\n";
+        for (int i=0; i<impl.beginLexems.size(); i++) {
+            result += "\t\t\t"+dumpLexem(impl.beginLexems[i]);
+            if (i<impl.beginLexems.size()-1)
+                result += ",";
+            result += "\n";
+        }
+        result += "\t\t],\n";
+    }
     result += "\t\tlocals: [\n";
     for (int i=0; i<impl.locals.size(); i++) {
         result += AST::addIndent(impl.locals[i]->dump(), 3);
@@ -159,6 +178,16 @@ QString Algorhitm::dump() const
             result += "\n";
         }
         result += "\t\t] /* end algorhitm '"+header.name+"' post-statements */";
+    }
+    if (!impl.endLexems.isEmpty()) {
+        result += ",\t\tendLexems: [\n";
+        for (int i=0; i<impl.endLexems.size(); i++) {
+            result += "\t\t\t"+dumpLexem(impl.endLexems[i]);
+            if (i<impl.endLexems.size()-1)
+                result += ",";
+            result += "\n";
+        }
+        result += "\t\t]";
     }
     result += "\n\t} /* end algorhitm '"+header.name+"' implementation */\n";
     result += "} /* end algorhitm '"+header.name+"' */\n";

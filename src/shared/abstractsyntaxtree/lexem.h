@@ -1,16 +1,17 @@
 #ifndef LEXEM_H
 #define LEXEM_H
 
-#include "interfaces/analizerinterface.h"
 #include <QtCore>
+#include "interfaces/lexemtype.h"
 
-namespace KumirAnalizer {
+namespace AST {
 
     struct Lexem {
         Shared::LexemType type;
         QString data;
-        int pos;
-        int size;
+        int lineNo;
+        int linePos;
+        int length;
         QString error;
     };
 
