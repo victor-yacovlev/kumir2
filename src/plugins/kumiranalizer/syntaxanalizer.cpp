@@ -223,6 +223,15 @@ void SyntaxAnalizer::processAnalisys()
         else if (st.type==LxPriLoop) {
             d->parseLoopBegin(i);
         }
+        for (int j=0; j<st.data.size(); j++) {
+            if (!st.data[j]->error.isEmpty()) {
+                if (st.statement) {
+                    st.statement->type = AST::StError;
+                    st.statement->error = st.data[j]->error;
+                    break;
+                }
+            }
+        }
     }
 }
 

@@ -1309,11 +1309,11 @@ void PDAutomataPrivate::processCorrectRestrictionLine()
 void PDAutomataPrivate::processCorrectModuleBegin()
 {
     setCurrentIndentRank(0, +1);
-    (*source)[currentPosition].mod = currentModule;
     if (currentModule) {
         ast->modules << currentModule;
     }
     currentModule = new AST::Module;
+    (*source)[currentPosition].mod = currentModule;
 }
 
 void PDAutomataPrivate::processCorrectModuleEnd()
