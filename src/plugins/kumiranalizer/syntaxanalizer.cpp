@@ -2838,29 +2838,22 @@ AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<Subexpre
         AST::VariableBaseType tailType = tailExpr->baseType;
         static const QSet<LexemType> ComparisonOperators = QSet<LexemType>()
                 << LxOperLess << LxOperLessOrEqual << LxOperEqual << LxOperNotEqual << LxOperGreaterOrEqual << LxOperGreater;
-        bool makeCNF = false;
-        if (IS_NUMERIC(tailType)
-                && headType==AST::TypeBoolean
-                && headExpr
-                && headExpr->kind == AST::ExprSubexpression
-                && ComparisonOperators.contains(s[l].o->type)
-                && rank==1
-                && IS_NUMERIC_LIST(headExpr->operands)
-                )
-        {
-            makeCNF = true;
-        }
-        if (IS_LITERAL(tailType)
-                && headType==AST::TypeBoolean
-                && headExpr
-                && headExpr->kind == AST::ExprSubexpression
-                && ComparisonOperators.contains(s[l].o->type)
-                && rank==1
-                && IS_LITERAL_LIST(headExpr->operands)
-                )
-        {
-            makeCNF = true;
-        }
+
+        bool tailIsNumeric = IS_NUMERIC(tailType);
+        bool headIsBool = headType==AST::TypeBoolean;
+        bool hasHeadExpr = headExpr != NULL;
+        bool headIsSubexpr = hasHeadExpr && headExpr->kind==AST::ExprSubexpression;
+        bool isComparision = ComparisonOperators.contains(s[l].o->type);
+        bool numericOperands = headExpr && IS_NUMERIC_LIST(headExpr->operands);
+        bool tailIsLiteral = IS_LITERAL(tailType);
+        bool literalOperands = IS_LITERAL_LIST(headExpr->operands);
+
+        bool makeCNF = headIsBool && headIsSubexpr && isComparision && (
+                    (tailIsNumeric && numericOperands)
+                    ||
+                    (tailIsLiteral && literalOperands)
+                    );
+
         if (makeCNF) {
             AST::Expression * res = new AST::Expression;
             res->kind = AST::ExprSubexpression;

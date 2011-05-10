@@ -216,7 +216,7 @@ QString Expression::dump() const
             }
             result += "\n";
         }
-        result += "\t]\n";
+        result += "\t] /* end operands */\n";
     }
     result += "} /* end (sub)expression */";
     return result;

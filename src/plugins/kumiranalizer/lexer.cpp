@@ -373,6 +373,12 @@ void LexerPrivate::initNormalizator(const QString &fileName)
     operators << "=";
     kwdMap["="] = LxOperEqual;
 
+    operators << "<";
+    kwdMap["<"] = LxOperLess;
+
+    operators << ">";
+    kwdMap[">"] = LxOperGreater;
+
     operators << "#";
 
 
