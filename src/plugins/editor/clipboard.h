@@ -16,6 +16,11 @@ public slots:
     bool hasContent() const;
     QString content() const;
     void clear();
+    int entriesCount() const;
+signals:
+    void bufferEntriesCountChanged(int c);
+private slots:
+    void checkForChanged();
 private:
     QList<QString> m_data;
     int i_selection;

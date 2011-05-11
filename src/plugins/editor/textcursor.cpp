@@ -12,8 +12,20 @@ TextCursor::TextCursor(TextDocument * document)
     , b_visible(true)
     , i_row(0)
     , i_column(0)
+    , i_prevRow(-1)
+    , i_prevCol(-1)
 {
     i_timerId = startTimer(QApplication::cursorFlashTime()/2);
+    emitPositionChanged();
+}
+
+void TextCursor::emitPositionChanged()
+{
+    if (i_prevRow!=i_row || i_prevCol!=i_column) {
+        i_prevRow = i_row;
+        i_prevCol = i_column;
+        emit positionChanged(i_row, i_column);
+    }
 }
 
 void TextCursor::timerEvent(QTimerEvent *e)
@@ -273,6 +285,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, QTextCursor::MoveMo
     if (m==QTextCursor::KeepAnchor) {
         emit updateRequest(-1, -1);
     }
+    emitPositionChanged();
     Q_ASSERT(i_row>=0);
     Q_ASSERT(i_column>=0);
 }
@@ -375,6 +388,7 @@ void TextCursor::insertText(const QString &text)
     int toLineUpdate = lines.size()>0? -1 : i_row;
 
     emit updateRequest(fromLineUpdate, toLineUpdate);
+    emitPositionChanged();
 }
 
 void TextCursor::removePreviousChar()
@@ -436,6 +450,7 @@ void TextCursor::removePreviousChar()
     b_visible = true;
     emit updateRequest();
     emit updateRequest(fromLineUpdate, toLineUpdate);
+    emitPositionChanged();
 }
 
 void TextCursor::removeCurrentLine()
@@ -452,7 +467,7 @@ void TextCursor::removeCurrentLine()
         emit updateRequest(-1, -1);
         emit updateRequest();
     }
-
+    emitPositionChanged();
 }
 
 void TextCursor::removeLineTail()
@@ -474,6 +489,7 @@ void TextCursor::removeLineTail()
             emit updateRequest();
         }
     }
+    emitPositionChanged();
 }
 
 void TextCursor::removeCurrentChar()
@@ -530,6 +546,7 @@ void TextCursor::removeCurrentChar()
     b_visible = true;
     emit updateRequest();
     emit updateRequest(fromLineUpdate, toLineUpdate);
+    emitPositionChanged();
 }
 
 void TextCursor::clearUndoRedoStacks()
@@ -627,6 +644,7 @@ void TextCursor::removeSelectedText()
 
     emit updateRequest(-1, -1);
     emit updateRequest();
+    emitPositionChanged();
 }
 
 
@@ -671,6 +689,7 @@ void TextCursor::removeSelection()
     }
     if (wasSelection) {
         emit updateRequest(-1, -1);
+        emitPositionChanged();
     }
 }
 

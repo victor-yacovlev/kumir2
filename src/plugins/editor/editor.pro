@@ -14,12 +14,17 @@ HEADERS += editorplugin.h \
     textcursor.h \
     textdocument.h \
     clipboard.h \
-    utils.h
+    utils.h \
+    statusbar.h
 SOURCES += editorplugin.cpp \
     editor.cpp \
     editorplane.cpp \
     textcursor.cpp \
     clipboard.cpp \
-    utils.cpp
+    utils.cpp \
+    statusbar.cpp
 
 OTHER_FILES += Editor.pluginspec
+
+FORMS += \
+    statusbar.ui

@@ -8,6 +8,24 @@ Clipboard::Clipboard(QObject *parent)
     : QObject(parent)
     , i_selection(-1)
 {
+    connect(qApp->clipboard(), SIGNAL(changed(QClipboard::Mode)),
+            this, SLOT(checkForChanged()));
+}
+
+int Clipboard::entriesCount() const
+{
+    int result = m_data.size();
+    QClipboard * cl = QApplication::clipboard();
+    if (cl->mimeData()->hasText()) {
+        if (!m_data.contains(cl->text()))
+            result ++;
+    }
+    return result;
+}
+
+void Clipboard::checkForChanged()
+{
+    emit bufferEntriesCountChanged(entriesCount());
 }
 
 void Clipboard::push(const QString &text)
@@ -52,6 +70,7 @@ QString Clipboard::content() const
 void Clipboard::clear()
 {
     m_data.clear();
+    checkForChanged();
 }
 
 } // namespace Editor

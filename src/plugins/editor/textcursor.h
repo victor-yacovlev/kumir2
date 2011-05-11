@@ -34,11 +34,13 @@ public:
 
 
 signals:
+    void positionChanged(int row, int col);
     void updateRequest();
     void updateRequest(int fromLine, int toLine);
 
 protected:
     void timerEvent(QTimerEvent *e);
+    void emitPositionChanged();
     class TextDocument * m_document;
     EditMode e_mode;
     int i_timerId;
@@ -46,6 +48,8 @@ protected:
     bool b_visible;
     int i_row;
     int i_column;
+    int i_prevRow;
+    int i_prevCol;
 
 };
 

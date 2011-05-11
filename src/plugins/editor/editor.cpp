@@ -4,6 +4,7 @@
 #include "textdocument.h"
 #include "clipboard.h"
 #include "utils.h"
+#include "statusbar.h"
 
 namespace Editor {
 
@@ -17,6 +18,8 @@ public:
     TextCursor * cursor;
     QScrollArea * scrollArea;
     EditorPlane * plane;
+    StatusBar * statusBar;
+    QScrollBar * horizontalScrollBar;
     static Clipboard * clipboard;
     int documentId;
 };
@@ -47,6 +50,16 @@ Editor::Editor(AnalizerInterface * analizer, int documentId, QWidget *parent) :
     d->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     d->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     l->addWidget(d->scrollArea);
+    d->horizontalScrollBar = new QScrollBar(Qt::Horizontal);
+    l->addWidget(d->horizontalScrollBar);
+    d->statusBar = new StatusBar;
+    l->addWidget(d->statusBar);
+    connect(d->cursor, SIGNAL(positionChanged(int,int)),
+            d->statusBar, SLOT(handleCursorPositionChanged(int,int)));
+    d->statusBar->handleCursorPositionChanged(d->cursor->row(), d->cursor->column());
+    connect(d->clipboard, SIGNAL(bufferEntriesCountChanged(int)),
+            d->statusBar, SLOT(handleClipboardChanged(int)));
+    d->statusBar->handleClipboardChanged(d->clipboard->entriesCount());
 }
 
 Editor::~Editor()
@@ -54,6 +67,8 @@ Editor::~Editor()
     delete d->doc;
     d->plane->deleteLater();
     d->scrollArea->deleteLater();
+    d->horizontalScrollBar->deleteLater();
+    d->statusBar->deleteLater();
     delete d;
 }
 
