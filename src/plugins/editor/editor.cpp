@@ -3,6 +3,7 @@
 #include "textcursor.h"
 #include "textdocument.h"
 #include "clipboard.h"
+#include "utils.h"
 
 namespace Editor {
 
@@ -19,6 +20,8 @@ public:
     static Clipboard * clipboard;
     int documentId;
 };
+
+
 
 Clipboard * EditorPrivate::clipboard = 0;
 

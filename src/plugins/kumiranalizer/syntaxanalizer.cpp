@@ -448,16 +448,19 @@ void SyntaxAnalizerPrivate::parseEndLoop(int str)
         st->data[1]->error = _("No condition after 'end if'");
         return;
     }
-    AST::Expression * expr = parseExpression(st->data.mid(2), st->mod, st->alg);
-    if (expr) {
-        if (expr->baseType!=AST::TypeBoolean) {
-            for (int i=2; i<st->data.size(); i++) {
-                st->data[i]->error = _("Condition is not boolean");
+    if (st->data.size()>2) {
+        QList<Lexem*> condLexems = st->data.mid(2);
+        AST::Expression * expr = parseExpression(condLexems, st->mod, st->alg);
+        if (expr) {
+            if (expr->baseType!=AST::TypeBoolean) {
+                for (int i=2; i<st->data.size(); i++) {
+                    st->data[i]->error = _("Condition is not boolean");
+                }
+                delete expr;
             }
-            delete expr;
-        }
-        else {
-            st->statement->loop.endCondition = expr;
+            else {
+                st->statement->loop.endCondition = expr;
+            }
         }
     }
 }
@@ -529,6 +532,7 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
         st->data[0]->error = _("Loop type not specified");
         return;
     }
+    st->statement->loop.type = type;
     if (type==AST::LoopFor) {
         QList<Lexem*> forr;
         QList<Lexem*> from;
@@ -1907,9 +1911,8 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
 
 
     result = makeExpressionTree(subexpression);
-    result->lexems = lexems;
-
-
+    if (result)
+        result->lexems = lexems;
     return result;
 }
 
