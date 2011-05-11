@@ -21,13 +21,14 @@ public:
     QRect cursorRect() const;
 protected:
     void paintEvent(QPaintEvent *);
+    QPoint offset() const;
     void paintBackground(QPainter *p, const QRect &rect);
     void paintCursor(QPainter *p, const QRect &rect);
     void paintText(QPainter *p, const QRect &rect);
     void paintSelection(QPainter *p, const QRect &rect);
+    void paintLineNumbers(QPainter *p, const QRect &rect);
     void keyPressEvent(QKeyEvent *);
     void setProperFormat(QPainter * p, Shared::LexemType type, const QChar &c);
-    QRegion selectionRegion() const;
 protected slots:
     void updateCursor();
     void updateText(int fromLine, int toLine);

@@ -12,6 +12,8 @@ struct TextLine
     int indentStart;
     int indentEnd;
     QList<Shared::LexemType> highlight;
+    QList<bool> selected;
+    bool lineEndSelected;
     QString text;
 };
 
@@ -38,6 +40,11 @@ public:
             textLine.text = line;
             textLine.indentStart = 0;
             textLine.indentEnd = 0;
+            textLine.lineEndSelected = false;
+            for (int j=0; j<line.length(); j++) {
+                textLine.highlight << Shared::LxTypeEmpty;
+                textLine.selected << false;
+            }
             append(textLine);
         }
     }

@@ -24,12 +24,27 @@ EditorPlane::EditorPlane(TextDocument * doc
     setFont(defaultFont);
 }
 
+QPoint EditorPlane::offset() const
+{
+    QPoint lineNumbersOffset(charWidth()*5, 0);
+    QPoint totalOffset = lineNumbersOffset;
+    return totalOffset;
+}
+
 void EditorPlane::paintEvent(QPaintEvent *e)
 {
     QPainter p(this);
     paintBackground(&p, e->rect());
+
+    p.save();
+
+    p.translate(offset());
+
     paintSelection(&p, e->rect());
     paintText(&p, e->rect());
+
+    p.restore();
+    paintLineNumbers(&p, e->rect());
     paintCursor(&p, e->rect());
     e->accept();
 }
@@ -65,10 +80,13 @@ int EditorPlane::lineHeight() const
     return fm.lineSpacing();
 }
 
+
+
 void EditorPlane::paintCursor(QPainter *p, const QRect &rect)
 {
     p->save();
     QRect cr = cursorRect();
+//    qDebug() << "Paint rect: " << rect;
     if (rect.intersects(cr) && m_cursor->isVisible()) {
         p->setPen(Qt::NoPen);
         p->setBrush(QColor(Qt::black));
@@ -82,75 +100,87 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
     bool process = false;
     if (m_cursor->isEnabled()) {
         if (e->matches(QKeySequence::MoveToNextChar)) {
-            m_cursor->movePosition(QTextCursor::NextCell,
-                                   e->modifiers() & Qt::ShiftModifier
-                                   ? QTextCursor::KeepAnchor
-                                   : QTextCursor::MoveAnchor);
+            m_cursor->movePosition(QTextCursor::NextCell, QTextCursor::MoveAnchor);
+            process = true;
+        }
+        else if (e->matches(QKeySequence::SelectNextChar)) {
+            m_cursor->movePosition(QTextCursor::NextCell, QTextCursor::KeepAnchor);
             process = true;
         }
         else if (e->matches(QKeySequence::MoveToPreviousChar)) {
-            m_cursor->movePosition(QTextCursor::PreviousCell,
-                                   e->modifiers() & Qt::ShiftModifier
-                                   ? QTextCursor::KeepAnchor
-                                   : QTextCursor::MoveAnchor);
+            m_cursor->movePosition(QTextCursor::PreviousCell, QTextCursor::MoveAnchor);
             process = true;
         }
-        if (e->matches(QKeySequence::MoveToNextLine)) {
-            m_cursor->movePosition(QTextCursor::NextRow,
-                                   e->modifiers() & Qt::ShiftModifier
-                                   ? QTextCursor::KeepAnchor
-                                   : QTextCursor::MoveAnchor);
+        else if (e->matches(QKeySequence::SelectPreviousChar)) {
+            m_cursor->movePosition(QTextCursor::PreviousCell, QTextCursor::KeepAnchor);
+            process = true;
+        }
+        else if (e->matches(QKeySequence::MoveToNextLine)) {
+            m_cursor->movePosition(QTextCursor::NextRow, QTextCursor::MoveAnchor);
+            process = true;
+        }
+        else if (e->matches(QKeySequence::SelectNextLine)) {
+            m_cursor->movePosition(QTextCursor::NextRow, QTextCursor::KeepAnchor);
             process = true;
         }
         else if (e->matches(QKeySequence::MoveToPreviousLine)) {
-            m_cursor->movePosition(QTextCursor::PreviousRow,
-                                   e->modifiers() & Qt::ShiftModifier
-                                   ? QTextCursor::KeepAnchor
-                                   : QTextCursor::MoveAnchor);
+            m_cursor->movePosition(QTextCursor::PreviousRow, QTextCursor::MoveAnchor);
+            process = true;
+        }
+        else if (e->matches(QKeySequence::SelectPreviousLine)) {
+            m_cursor->movePosition(QTextCursor::PreviousRow, QTextCursor::KeepAnchor);
             process = true;
         }
         else if (e->matches(QKeySequence::MoveToStartOfLine)) {
-            m_cursor->movePosition(QTextCursor::StartOfBlock,
-                                   e->modifiers() & Qt::ShiftModifier
-                                   ? QTextCursor::KeepAnchor
-                                   : QTextCursor::MoveAnchor);
+            m_cursor->movePosition(QTextCursor::StartOfBlock, QTextCursor::MoveAnchor);
+            process = true;
+        }
+        else if (e->matches(QKeySequence::SelectStartOfLine)) {
+            m_cursor->movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
             process = true;
         }
         else if (e->matches(QKeySequence::MoveToEndOfLine)) {
-            m_cursor->movePosition(QTextCursor::EndOfBlock,
-                                   e->modifiers() & Qt::ShiftModifier
-                                   ? QTextCursor::KeepAnchor
-                                   : QTextCursor::MoveAnchor);
+            m_cursor->movePosition(QTextCursor::EndOfBlock, QTextCursor::MoveAnchor);
+            process = true;
+        }
+        else if (e->matches(QKeySequence::SelectEndOfLine)) {
+            m_cursor->movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
             process = true;
         }
         else if (e->matches(QKeySequence::MoveToPreviousPage)) {
             int lines = height()/lineHeight() - 1;
-            m_cursor->movePosition(QTextCursor::PreviousRow,
-                                   e->modifiers() & Qt::ShiftModifier
-                                   ? QTextCursor::KeepAnchor
-                                   : QTextCursor::MoveAnchor, lines);
+            m_cursor->movePosition(QTextCursor::PreviousRow, QTextCursor::MoveAnchor, lines);
+            process = true;
+        }
+        else if (e->matches(QKeySequence::SelectPreviousPage)) {
+            int lines = height()/lineHeight() - 1;
+            m_cursor->movePosition(QTextCursor::PreviousRow, QTextCursor::KeepAnchor, lines);
             process = true;
         }
         else if (e->matches(QKeySequence::MoveToNextPage)) {
             int lines = height()/lineHeight() - 1;
-            m_cursor->movePosition(QTextCursor::NextRow,
-                                   e->modifiers() & Qt::ShiftModifier
-                                   ? QTextCursor::KeepAnchor
-                                   : QTextCursor::MoveAnchor, lines);
+            m_cursor->movePosition(QTextCursor::NextRow, QTextCursor::MoveAnchor, lines);
+            process = true;
+        }
+        else if (e->matches(QKeySequence::SelectNextPage)) {
+            int lines = height()/lineHeight() - 1;
+            m_cursor->movePosition(QTextCursor::NextRow, QTextCursor::KeepAnchor, lines);
             process = true;
         }
         else if (e->matches(QKeySequence::MoveToStartOfDocument)) {
-            m_cursor->movePosition(QTextCursor::Start,
-                                   e->modifiers() & Qt::ShiftModifier
-                                   ? QTextCursor::KeepAnchor
-                                   : QTextCursor::MoveAnchor);
+            m_cursor->movePosition(QTextCursor::Start, QTextCursor::MoveAnchor);
+            process = true;
+        }
+        else if (e->matches(QKeySequence::SelectStartOfDocument)) {
+            m_cursor->movePosition(QTextCursor::Start, QTextCursor::KeepAnchor);
             process = true;
         }
         else if (e->matches(QKeySequence::MoveToEndOfDocument)) {
-            m_cursor->movePosition(QTextCursor::End,
-                                   e->modifiers() & Qt::ShiftModifier
-                                   ? QTextCursor::KeepAnchor
-                                   : QTextCursor::MoveAnchor);
+            m_cursor->movePosition(QTextCursor::End, QTextCursor::MoveAnchor);
+            process = true;
+        }
+        else if (e->matches(QKeySequence::SelectEndOfDocument)) {
+            m_cursor->movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
             process = true;
         }
         else if (e->matches(QKeySequence::InsertParagraphSeparator)) {
@@ -173,6 +203,26 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                 m_clipboard->push(m_cursor->selectedText());
             }
         }
+        else if (e->matches(QKeySequence::Cut)) {
+            if (m_cursor->hasSelection()) {
+                process = true;
+                m_clipboard->push(m_cursor->selectedText());
+                m_cursor->removeSelectedText();
+            }
+        }
+        else if (e->matches(QKeySequence::SelectAll)) {
+            process = true;
+            m_cursor->movePosition(QTextCursor::Start, QTextCursor::MoveAnchor);
+            m_cursor->movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
+        }
+        else if (e->key()==Qt::Key_Y && e->modifiers().testFlag(Qt::ControlModifier)) {
+            process = true;
+            m_cursor->removeCurrentLine();
+        }
+        else if (e->key()==Qt::Key_K && e->modifiers().testFlag(Qt::ControlModifier)) {
+            process = true;
+            m_cursor->removeLineTail();
+        }
         else if (e->matches(QKeySequence::Delete)) {
             m_cursor->removeCurrentChar();
             process = true;
@@ -191,21 +241,26 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
 
 QRect EditorPlane::cursorRect() const
 {
+    QPoint off = offset();
     int row = m_cursor->row();
     int col = m_cursor->column();
     int dX = charWidth();
     int dY = lineHeight();
+    QRect result;
     if (m_cursor->mode()==TextCursor::EM_Overwrite)
-        return QRect(col*dX, row*dY, dX, dY);
+        result = QRect(col*dX, row*dY, dX, dY);
     else
-        return QRect(col*dX, (row+1)*dY-1, dX, 2);
+        result = QRect(col*dX, (row+1)*dY-1, dX, 2);
+    result.translate(off);
+//    qDebug() << "Cursor rect: " << result;
+    return result;
 }
 
 void EditorPlane::paintBackground(QPainter *p, const QRect &rect)
 {
     p->save();
     p->setPen(Qt::NoPen);
-    p->setBrush(QColor(Qt::white));
+    p->setBrush(palette().brush(QPalette::Base));
     p->drawRect(rect);
     p->setPen(QPen(QColor(0,0,255,32),1));
     p->setBrush(Qt::NoBrush);
@@ -243,63 +298,64 @@ void EditorPlane::paintSelection(QPainter *p, const QRect &rect)
     p->save();
     p->setPen(Qt::NoPen);
     p->setBrush(palette().brush(QPalette::Highlight));
-    QRegion selection = selectionRegion();
-    if (!selection.isEmpty() && selection.intersects(rect)) {
-        p->drawRects(selection.rects());
+    int startLine = qMax(0, rect.top() / lineHeight() - 1);
+    int endLine = rect.bottom() / lineHeight() + 1;
+    int lh = lineHeight();
+    int cw = charWidth();
+    bool prevLineSelected = false;
+    for (int i=startLine; i<endLine+1; i++) {
+        if (i<m_document->size()) {
+            int indentSpace = 2 * cw * m_document->indentAt(i);
+            if (prevLineSelected) {
+                p->drawRect(0, i*lh, indentSpace, lh);
+            }
+            for (int j=0; j<m_document->at(i).selected.size(); j++) {
+                if (m_document->at(i).selected[j])
+                    p->drawRect(indentSpace+j*cw, i*lh, cw, lh);
+            }
+            if (m_document->at(i).lineEndSelected) {
+                prevLineSelected = true;
+                int textLength = m_document->at(i).text.length()*cw;
+                int xx = indentSpace + textLength;
+                int ww = widthInChars()*cw-xx;
+                p->drawRect(xx,
+                            i*lh,
+                            ww, lh);
+//                qDebug() << "End line selected at " << i << " x  = " << xx << " w = " << ww;
+            }
+            else {
+                prevLineSelected = false;
+            }
+        }
     }
     p->restore();
 }
 
-QRegion EditorPlane::selectionRegion() const
+void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
 {
-    QPoint start = m_cursor->selectionStart();
-    QPoint end = m_cursor->selectionEnd();
-    if (start.x()==-1 || end.x()==-1 || start.y()==-1 || end.y()==-1)
-        return QRegion();
-    QRegion result;
-    for (int y=start.y() ; y<=end.y(); y++) {
-        int yy = lineHeight() * y;
-        int xx = 0;
-        int ww = 0;
-        if (y>start.y() && y<end.y()) {
-            // middle lines of selection
-            xx = 0;
-            ww = 0;
-            if (y<m_document->size() && !m_document->at(y).text.isEmpty()) {
-                int indentSpace = charWidth() * 2 * m_document->indentAt(y);
-                int textWidth = charWidth() * m_document->at(y).text.length();
-                ww = indentSpace + textWidth;
-            }
-            else {
-                ww = charWidth() / 2;
-            }
+    p->save();
+    int startLine = rect.top() / lineHeight();
+    int endLine = rect.bottom() / lineHeight() + 1;
+    int lh = lineHeight();
+    int cw = charWidth();
+    for (int i=startLine; i<endLine+1; i++) {
+        p->setPen(Qt::NoPen);
+        p->setBrush(palette().brush(QPalette::Window));
+        p->drawRect(0, i*lh, cw*4+cw/2, lh);
+        p->setBrush(palette().brush(QPalette::Base));
+        p->drawRect(cw*4+cw/2, i*lh, cw/2, lh);
+        QColor textColor = QColor(palette().brush(QPalette::WindowText).color());
+        if (i-1>=m_document->size()) {
+            textColor = QColor(Qt::lightGray);
         }
-        else if (y==start.y() && y==end.y()) {
-            // selection in single line
-            xx = start.x() * charWidth();
-            ww = (end.x()-start.x()) * charWidth();
-        }
-        else if (y==start.y()) {
-            // first line of selection
-            xx = start.x() * charWidth();
-            ww = 0;
-            if (y<m_document->size() && !m_document->at(y).text.isEmpty()) {
-                int indentSpace = charWidth() * 2 * m_document->indentAt(y);
-                int textWidth = charWidth() * m_document->at(y).text.length();
-                ww = indentSpace + textWidth - xx;
-            }
-            else {
-                ww = charWidth() / 2;
-            }
-        }
-        else if (y==end.y()) {
-            // last line of selection
-            xx = 0;
-            ww = end.x() * charWidth();
-        }
-        result += QRect(xx, yy, ww ,lineHeight());
+        p->setPen(textColor);
+        QString txt = QString::number(i);
+        int tw = QFontMetrics(font()).width(txt);
+        int xx = cw * 3 - tw;
+        int yy = i * lh;
+        p->drawText(xx, yy, txt);
     }
-    return result;
+    p->restore();
 }
 
 void EditorPlane::paintText(QPainter *p, const QRect &rect)

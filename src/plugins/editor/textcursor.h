@@ -19,13 +19,15 @@ public:
     inline bool isEnabled() const { return b_enabled; }
     inline bool isVisible() const { return b_enabled && b_visible; }
     inline void setEnabled(bool v) { b_enabled = v; emit updateRequest();}
-    inline bool hasSelection() const { return p_selectionStart.x()!=-1 && p_selectionEnd.x()!=-1 && p_selectionStart.y()!=-1 && p_selectionEnd.y()!=-1; }
-    inline QPoint selectionStart() const { return p_selectionStart; }
-    inline QPoint selectionEnd() const { return p_selectionEnd; }
-    bool insertText(const QString &text);
-    bool removePreviousChar();
-    bool removeCurrentChar();
-    bool movePosition(QTextCursor::MoveOperation, QTextCursor::MoveMode, int n=1);
+    bool hasSelection() const;
+    void insertText(const QString &text);
+    void removePreviousChar();
+    void removeCurrentChar();
+    void removeSelection();
+    void removeSelectedText();
+    void removeCurrentLine();
+    void removeLineTail();
+    void movePosition(QTextCursor::MoveOperation, QTextCursor::MoveMode, int n=1);
     void clearUndoRedoStacks();
     bool isModified() const;
     QString selectedText() const;
@@ -44,8 +46,6 @@ protected:
     bool b_visible;
     int i_row;
     int i_column;
-    QPoint p_selectionStart;
-    QPoint p_selectionEnd;
 
 };
 
