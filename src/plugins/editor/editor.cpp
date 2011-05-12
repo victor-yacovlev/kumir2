@@ -22,8 +22,16 @@ public:
     QScrollBar * horizontalScrollBar;
     static Clipboard * clipboard;
     int documentId;
-};
 
+    QAction * copy;
+    QAction * paste;
+    QAction * cut;
+    QAction * selectAll;
+    QAction * deleteLine;
+    QAction * deleteTail;
+
+    void createActions();
+};
 
 
 Clipboard * EditorPrivate::clipboard = 0;
@@ -60,6 +68,46 @@ Editor::Editor(AnalizerInterface * analizer, int documentId, QWidget *parent) :
     connect(d->clipboard, SIGNAL(bufferEntriesCountChanged(int)),
             d->statusBar, SLOT(handleClipboardChanged(int)));
     d->statusBar->handleClipboardChanged(d->clipboard->entriesCount());
+    d->createActions();
+}
+
+void EditorPrivate::createActions()
+{
+    selectAll = new QAction(plane);
+    selectAll->setText(QObject::tr("Select all text in editor"));
+    selectAll->setIcon(QIcon::fromTheme("edit-select-all"));
+    selectAll->setShortcut(QKeySequence(QKeySequence::SelectAll));
+    QObject::connect(selectAll, SIGNAL(triggered()), plane, SLOT(selectAll()));
+
+    copy = new QAction(plane);
+    copy->setText(QObject::tr("Copy selection to clipboard"));
+    copy->setIcon(QIcon::fromTheme("edit-copy"));
+    copy->setShortcut(QKeySequence(QKeySequence::Copy));
+    QObject::connect(copy, SIGNAL(triggered()), plane, SLOT(copy()));
+
+    cut = new QAction(plane);
+    cut->setText(QObject::tr("Cut selection to clipboard"));
+    cut->setIcon(QIcon::fromTheme("edit-cut"));
+    cut->setShortcut(QKeySequence(QKeySequence::Cut));
+    QObject::connect(cut, SIGNAL(triggered()), plane, SLOT(cut()));
+
+    paste = new QAction(plane);
+    paste->setText(QObject::tr("Paste from clipboard"));
+    paste->setIcon(QIcon::fromTheme("edit-paste"));
+    paste->setShortcut(QKeySequence(QKeySequence::Paste));
+    QObject::connect(paste, SIGNAL(triggered()), plane, SLOT(paste()));
+
+    deleteLine = new QAction(plane);
+    deleteLine->setText(QObject::tr("Delete line under cursor"));
+    deleteLine->setIcon(QIcon::fromTheme("edit-delete"));
+    deleteLine->setShortcut(QKeySequence("Ctrl+Y"));
+    QObject::connect(deleteLine, SIGNAL(triggered()), plane, SLOT(removeLine()));
+
+    deleteTail = new QAction(plane);
+    deleteTail->setText(QObject::tr("Delete text from cursor to end of line"));
+    deleteTail->setIcon(QIcon::fromTheme("edit-clear"));
+    deleteTail->setShortcut(QKeySequence("Ctrl+K"));
+    QObject::connect(deleteTail, SIGNAL(triggered()), plane, SLOT(removeLineTail()));
 }
 
 Editor::~Editor()
@@ -74,12 +122,29 @@ Editor::~Editor()
 
 QList<QAction*> Editor::toolbarActions()
 {
-    return QList<QAction*>();
+    QList<QAction*> result;
+    result << d->cut;
+    result << d->copy;
+    result << d->paste;
+    return result;
 }
 
 QList<MenuActionsGroup> Editor::menuActions()
 {
-    return QList<MenuActionsGroup>();
+    QList<MenuActionsGroup> result;
+    MenuActionsGroup edit;
+    QAction * separator = new QAction(this);
+    separator->setSeparator(true);
+    edit.menuText = tr("Edit");
+    edit.actions << d->selectAll;
+    edit.actions << separator;
+    edit.actions << d->cut;
+    edit.actions << d->copy;
+    edit.actions << d->paste;
+    edit.actions << separator;
+    edit.actions << d->deleteLine;
+    edit.actions << d->deleteTail;
+    return result;
 }
 
 void Editor::setText(const QString & text)

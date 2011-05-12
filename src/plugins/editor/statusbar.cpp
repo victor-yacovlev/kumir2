@@ -17,6 +17,11 @@ StatusBar::StatusBar(QWidget *parent) :
     i_timerId = startTimer(500);
 }
 
+void StatusBar::handleTemporaryLayoutSwitched(bool v)
+{
+
+}
+
 void StatusBar::handleClipboardChanged(int cnt)
 {
     QString v;

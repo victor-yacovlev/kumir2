@@ -380,7 +380,7 @@ void TextCursor::insertBlock(const QStringList &block)
                 selected << false;
             }
             if (textEnd+1<line.text.size()) {
-                text += line.text.mid(textEnd+1);
+                text += line.text.mid(textEnd);
             }
 
             if (textEnd+1<line.highlight.size()) {
@@ -415,6 +415,11 @@ void TextCursor::insertBlock(const QStringList &block)
     i_column += block[0].length();
     emit updateRequest(-1, -1);
     emitPositionChanged();
+}
+
+void TextCursor::clearSelectedBlock()
+{
+
 }
 
 void TextCursor::insertText(const QString &text)
