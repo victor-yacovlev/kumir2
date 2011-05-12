@@ -3,6 +3,8 @@
 #include "textdocument.h"
 #include "clipboard.h"
 
+#define RECT_SELECTION_MODIFIER Qt::AltModifier
+
 
 namespace Editor {
 
@@ -41,6 +43,7 @@ void EditorPlane::paintEvent(QPaintEvent *e)
     p.translate(offset());
 
     paintSelection(&p, e->rect());
+    paintRectSelection(&p, e->rect());
     paintText(&p, e->rect());
 
     p.restore();
@@ -100,87 +103,103 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
     bool process = false;
     if (m_cursor->isEnabled()) {
         if (e->matches(QKeySequence::MoveToNextChar)) {
-            m_cursor->movePosition(QTextCursor::NextCell, QTextCursor::MoveAnchor);
+            m_cursor->movePosition(QTextCursor::NextCell, TextCursor::MM_Move);
             process = true;
         }
         else if (e->matches(QKeySequence::SelectNextChar)) {
-            m_cursor->movePosition(QTextCursor::NextCell, QTextCursor::KeepAnchor);
+            m_cursor->movePosition(QTextCursor::NextCell, TextCursor::MM_Select);
+            process = true;
+        }
+        else if (e->key()==Qt::Key_Right && e->modifiers().testFlag(RECT_SELECTION_MODIFIER)) {
+            m_cursor->movePosition(QTextCursor::NextCell, TextCursor::MM_RectSelect);
             process = true;
         }
         else if (e->matches(QKeySequence::MoveToPreviousChar)) {
-            m_cursor->movePosition(QTextCursor::PreviousCell, QTextCursor::MoveAnchor);
+            m_cursor->movePosition(QTextCursor::PreviousCell, TextCursor::MM_Move);
             process = true;
         }
         else if (e->matches(QKeySequence::SelectPreviousChar)) {
-            m_cursor->movePosition(QTextCursor::PreviousCell, QTextCursor::KeepAnchor);
+            m_cursor->movePosition(QTextCursor::PreviousCell, TextCursor::MM_Select);
+            process = true;
+        }
+        else if (e->key()==Qt::Key_Left && e->modifiers().testFlag(RECT_SELECTION_MODIFIER)) {
+            m_cursor->movePosition(QTextCursor::PreviousCell, TextCursor::MM_RectSelect);
             process = true;
         }
         else if (e->matches(QKeySequence::MoveToNextLine)) {
-            m_cursor->movePosition(QTextCursor::NextRow, QTextCursor::MoveAnchor);
+            m_cursor->movePosition(QTextCursor::NextRow, TextCursor::MM_Move);
             process = true;
         }
         else if (e->matches(QKeySequence::SelectNextLine)) {
-            m_cursor->movePosition(QTextCursor::NextRow, QTextCursor::KeepAnchor);
+            m_cursor->movePosition(QTextCursor::NextRow, TextCursor::MM_Select);
+            process = true;
+        }
+        else if (e->key()==Qt::Key_Down && e->modifiers().testFlag(RECT_SELECTION_MODIFIER)) {
+            m_cursor->movePosition(QTextCursor::NextRow, TextCursor::MM_RectSelect);
             process = true;
         }
         else if (e->matches(QKeySequence::MoveToPreviousLine)) {
-            m_cursor->movePosition(QTextCursor::PreviousRow, QTextCursor::MoveAnchor);
+            m_cursor->movePosition(QTextCursor::PreviousRow, TextCursor::MM_Move);
             process = true;
         }
         else if (e->matches(QKeySequence::SelectPreviousLine)) {
-            m_cursor->movePosition(QTextCursor::PreviousRow, QTextCursor::KeepAnchor);
+            m_cursor->movePosition(QTextCursor::PreviousRow, TextCursor::MM_Select);
+            process = true;
+        }
+        else if (e->key()==Qt::Key_Up && e->modifiers().testFlag(RECT_SELECTION_MODIFIER)) {
+            m_cursor->movePosition(QTextCursor::PreviousRow, TextCursor::MM_RectSelect);
             process = true;
         }
         else if (e->matches(QKeySequence::MoveToStartOfLine)) {
-            m_cursor->movePosition(QTextCursor::StartOfBlock, QTextCursor::MoveAnchor);
+            m_cursor->movePosition(QTextCursor::StartOfBlock, TextCursor::MM_Move);
             process = true;
         }
         else if (e->matches(QKeySequence::SelectStartOfLine)) {
-            m_cursor->movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
+            m_cursor->movePosition(QTextCursor::StartOfBlock, TextCursor::MM_Select);
             process = true;
         }
         else if (e->matches(QKeySequence::MoveToEndOfLine)) {
-            m_cursor->movePosition(QTextCursor::EndOfBlock, QTextCursor::MoveAnchor);
+            m_cursor->movePosition(QTextCursor::EndOfBlock, TextCursor::MM_Move);
             process = true;
         }
         else if (e->matches(QKeySequence::SelectEndOfLine)) {
-            m_cursor->movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+            m_cursor->movePosition(QTextCursor::EndOfBlock, TextCursor::MM_Select);
             process = true;
         }
         else if (e->matches(QKeySequence::MoveToPreviousPage)) {
             int lines = height()/lineHeight() - 1;
-            m_cursor->movePosition(QTextCursor::PreviousRow, QTextCursor::MoveAnchor, lines);
+            m_cursor->movePosition(QTextCursor::PreviousRow, TextCursor::MM_Move, lines);
             process = true;
         }
         else if (e->matches(QKeySequence::SelectPreviousPage)) {
             int lines = height()/lineHeight() - 1;
-            m_cursor->movePosition(QTextCursor::PreviousRow, QTextCursor::KeepAnchor, lines);
+            m_cursor->movePosition(QTextCursor::PreviousRow, TextCursor::MM_Select, lines);
             process = true;
         }
         else if (e->matches(QKeySequence::MoveToNextPage)) {
             int lines = height()/lineHeight() - 1;
-            m_cursor->movePosition(QTextCursor::NextRow, QTextCursor::MoveAnchor, lines);
+            m_cursor->movePosition(QTextCursor::NextRow, TextCursor::MM_Move, lines);
             process = true;
         }
         else if (e->matches(QKeySequence::SelectNextPage)) {
             int lines = height()/lineHeight() - 1;
-            m_cursor->movePosition(QTextCursor::NextRow, QTextCursor::KeepAnchor, lines);
+            m_cursor->movePosition(QTextCursor::NextRow, TextCursor::MM_Select, lines);
             process = true;
         }
         else if (e->matches(QKeySequence::MoveToStartOfDocument)) {
-            m_cursor->movePosition(QTextCursor::Start, QTextCursor::MoveAnchor);
+            m_cursor->movePosition(QTextCursor::Start, TextCursor::MM_Move);
             process = true;
         }
         else if (e->matches(QKeySequence::SelectStartOfDocument)) {
-            m_cursor->movePosition(QTextCursor::Start, QTextCursor::KeepAnchor);
+            m_cursor->movePosition(QTextCursor::Start, TextCursor::MM_Select);
             process = true;
         }
         else if (e->matches(QKeySequence::MoveToEndOfDocument)) {
-            m_cursor->movePosition(QTextCursor::End, QTextCursor::MoveAnchor);
+            m_cursor->movePosition(QTextCursor::End, TextCursor::MM_Move);
             process = true;
         }
         else if (e->matches(QKeySequence::SelectEndOfDocument)) {
-            m_cursor->movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
+            m_cursor->movePosition(QTextCursor::End, TextCursor::MM_Select);
             process = true;
         }
         else if (e->matches(QKeySequence::InsertParagraphSeparator)) {
@@ -192,36 +211,28 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
             process = true;
         }
         else if (e->matches(QKeySequence::Paste)) {
-            if (m_clipboard->hasContent()) {
-                m_cursor->insertText(m_clipboard->content());
-                process = true;
-            }
+            process = true;
+            paste();
         }
         else if (e->matches(QKeySequence::Copy)) {
-            if (m_cursor->hasSelection()) {
-                process = true;
-                m_clipboard->push(m_cursor->selectedText());
-            }
+            process = true;
+            copy();
         }
         else if (e->matches(QKeySequence::Cut)) {
-            if (m_cursor->hasSelection()) {
-                process = true;
-                m_clipboard->push(m_cursor->selectedText());
-                m_cursor->removeSelectedText();
-            }
+            process = true;
+            cut();
         }
         else if (e->matches(QKeySequence::SelectAll)) {
             process = true;
-            m_cursor->movePosition(QTextCursor::Start, QTextCursor::MoveAnchor);
-            m_cursor->movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
+            selectAll();
         }
         else if (e->key()==Qt::Key_Y && e->modifiers().testFlag(Qt::ControlModifier)) {
             process = true;
-            m_cursor->removeCurrentLine();
+            removeLine();
         }
         else if (e->key()==Qt::Key_K && e->modifiers().testFlag(Qt::ControlModifier)) {
             process = true;
-            m_cursor->removeLineTail();
+            removeLineTail();
         }
         else if (e->matches(QKeySequence::Delete)) {
             m_cursor->removeCurrentChar();
@@ -237,6 +248,64 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         e->accept();
     else
         e->ignore();
+}
+
+void EditorPlane::selectAll()
+{
+    m_cursor->movePosition(QTextCursor::Start, TextCursor::MM_Move);
+    m_cursor->movePosition(QTextCursor::End, TextCursor::MM_Select);
+}
+
+void EditorPlane::copy()
+{
+    if (m_cursor->hasSelection()) {
+        ClipboardData data;
+        data.text = m_cursor->selectedText();
+        data.type = ClipboardData::Text;
+        m_clipboard->push(data);
+    }
+    else if (m_cursor->hasRectSelection()) {
+        ClipboardData data;
+        data.text = m_cursor->selectedText();
+        data.type = ClipboardData::Block;
+        data.block = m_cursor->rectSelectionText();
+        m_clipboard->push(data);
+    }
+}
+
+void EditorPlane::paste()
+{
+    if (m_clipboard->hasContent()) {
+        ClipboardData data = m_clipboard->content();
+        if (data.type == ClipboardData::Block) {
+            m_cursor->insertBlock(data.block);
+        }
+        else if (data.type == ClipboardData::Text) {
+            m_cursor->insertText(data.text);
+        }
+    }
+}
+
+void EditorPlane::cut()
+{
+    copy();
+    if (m_cursor->hasSelection()) {
+        m_cursor->removeSelectedText();
+    }
+    else if (m_cursor->hasRectSelection()) {
+        m_cursor->clearSelectedBlock();
+    }
+
+}
+
+void EditorPlane::removeLine()
+{
+    m_cursor->removeCurrentLine();
+}
+
+void EditorPlane::removeLineTail()
+{
+    m_cursor->removeLineTail();
 }
 
 QRect EditorPlane::cursorRect() const
@@ -284,11 +353,31 @@ void EditorPlane::paintBackground(QPainter *p, const QRect &rect)
         }
     }
     // draw margin line
-    QRect marginLine = QRect(widthInChars()*dX+1, 0, 2, height()).intersected(rect);
+    QRect marginLine = QRect((widthInChars()+5)*dX+1, 0, 2, height()).intersected(rect);
     if (marginLine.width()>0 && marginLine.height()>0) {
         p->setPen(QPen(QColor(255,0,0,128),2));
-        p->drawLine(widthInChars()*dX+1, 0, widthInChars()*dX+1, height());
+        p->drawLine((widthInChars()+5)*dX+1, 0, (widthInChars()+5)*dX+1, height());
     }
+
+    p->restore();
+}
+
+void EditorPlane::paintRectSelection(QPainter *p, const QRect &)
+{
+    if (!m_cursor->hasRectSelection())
+        return;
+    p->save();
+    p->setPen(QPen(palette().brush(QPalette::Highlight)
+                   , 2
+                   , Qt::SolidLine));
+    p->setBrush(Qt::NoBrush);
+    QRect selRect = m_cursor->selectionRect();
+    QRect r(selRect.left() * charWidth(),
+            selRect.top() * lineHeight(),
+            selRect.width() * charWidth(),
+            selRect.height() * lineHeight());
+
+    p->drawRect(r);
 
     p->restore();
 }
@@ -428,7 +517,7 @@ int EditorPlane::widthInChars() const
     const int marginMinWidth = cw * i_marginWidth;
     const int myWidth = width();
     const int availableWidth = myWidth - marginMinWidth;
-    const int result = availableWidth / cw;
+    const int result = availableWidth / cw - 5;
     return result;
 }
 

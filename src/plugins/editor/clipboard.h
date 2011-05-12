@@ -5,16 +5,23 @@
 
 namespace Editor {
 
+struct ClipboardData {
+    enum Type { Invalid, Text, Block } type;
+    QString text;
+    QStringList block;
+};
+
 class Clipboard : public QObject
 {
     Q_OBJECT
 public:
     explicit Clipboard(QObject *parent = 0);
+    static QString BlockMimeType;
 public slots:
-    void push(const QString & text);
+    void push(const ClipboardData & data);
     void select(int index);
     bool hasContent() const;
-    QString content() const;
+    ClipboardData content() const;
     void clear();
     int entriesCount() const;
 signals:
@@ -22,7 +29,7 @@ signals:
 private slots:
     void checkForChanged();
 private:
-    QList<QString> m_data;
+    QList<ClipboardData> m_data;
     int i_selection;
 
 };

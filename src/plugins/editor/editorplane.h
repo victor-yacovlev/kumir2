@@ -19,6 +19,13 @@ public:
     int charWidth() const;
     int lineHeight() const;
     QRect cursorRect() const;
+public slots:
+    void selectAll();
+    void copy();
+    void paste();
+    void cut();
+    void removeLine();
+    void removeLineTail();
 protected:
     void paintEvent(QPaintEvent *);
     QPoint offset() const;
@@ -26,6 +33,7 @@ protected:
     void paintCursor(QPainter *p, const QRect &rect);
     void paintText(QPainter *p, const QRect &rect);
     void paintSelection(QPainter *p, const QRect &rect);
+    void paintRectSelection(QPainter *p, const QRect &rect);
     void paintLineNumbers(QPainter *p, const QRect &rect);
     void keyPressEvent(QKeyEvent *);
     void setProperFormat(QPainter * p, Shared::LexemType type, const QChar &c);

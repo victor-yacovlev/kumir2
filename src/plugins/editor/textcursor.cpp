@@ -41,18 +41,29 @@ TextCursor::~TextCursor()
         killTimer(i_timerId);
 }
 
-void TextCursor::movePosition(QTextCursor::MoveOperation op, QTextCursor::MoveMode m, int n)
+void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
 {
     b_visible = false;
     updateRequest();
-    if (m==QTextCursor::MoveAnchor) {
+    bool wasRectSelection = hasRectSelection();
+    if (m==MM_Move) {
         removeSelection();
+        rect_selection = QRect(-1, -1, 0, 0);
+    }
+    else if (m==MM_Select) {
+        rect_selection = QRect(-1, -1, 0, 0);
+    }
+    else if (m==MM_RectSelect) {
+        removeSelection();
+        if (!rect_selection.isValid()) {
+            rect_selection = QRect(i_column, i_row, 0, 0);
+        }
     }
     for (int i=0; i<n; i++) {
         if (op==QTextCursor::NextCell) {
-            if (m==QTextCursor::MoveAnchor)
+            if (m==MM_Move)
                 i_column ++;
-            else {
+            else if (m==MM_Select) {
                 int indent = 2 * m_document->indentAt(i_row);
                 if (i_row<m_document->size()) {
                     int textPos = i_column-indent;
@@ -73,10 +84,19 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, QTextCursor::MoveMo
                     }
                 }
             }
+            else if (m==MM_RectSelect) {
+                i_column++;
+                if (i_column>rect_selection.right())
+                    rect_selection.setRight(i_column);
+                else {
+                    rect_selection.setLeft(i_column);
+                }
+                rect_selection.setHeight(qMax(1, rect_selection.height()));
+            }
 
         }
         else if (op==QTextCursor::PreviousCell) {
-            if (m==QTextCursor::MoveAnchor) {
+            if (m==MM_Move) {
                 if (i_column==0 && i_row==0) {}
                 else if (i_column==0 && i_row>0) {
                     i_row --;
@@ -90,7 +110,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, QTextCursor::MoveMo
                 else
                     i_column--;
             }
-            else {
+            else if (m==MM_Select) {
                 int indent = m_document->indentAt(i_row)*2;
                 if (i_column<=indent && i_row==0) {}
                 else if (i_row>=m_document->size()) {
@@ -120,11 +140,23 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, QTextCursor::MoveMo
                     }
                 }
             }
+            else if (m==MM_RectSelect) {
+                if (i_column>0) {
+                    i_column--;
+                    if (i_column<rect_selection.left()) {
+                        rect_selection.setLeft(i_column);
+                    }
+                    else {
+                        rect_selection.setRight(i_column);
+                    }
+                    rect_selection.setHeight(qMax(1, rect_selection.height()));
+                }
+            }
         }
         else if (op==QTextCursor::NextRow) {
-            if (m==QTextCursor::MoveAnchor)
+            if (m==MM_Move)
                 i_row++;
-            else {
+            else if (m==MM_Select) {
                 if (i_row<m_document->size()) {
                     (*m_document)[i_row].lineEndSelected = !(*m_document)[i_row].lineEndSelected ;
                     int textPos = i_column - m_document->indentAt(i_row);
@@ -147,13 +179,22 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, QTextCursor::MoveMo
                     }
                 }
             }
+            else if (m==MM_RectSelect) {
+                i_row++;
+                if (i_row>rect_selection.bottom())
+                    rect_selection.setBottom(i_row);
+                else {
+                    rect_selection.setTop(i_row);
+                }
+                rect_selection.setWidth(qMax(1, rect_selection.width()));
+            }
         }
         else if (op==QTextCursor::PreviousRow) {
             if (i_row==0) {}
             else {
-                if (m==QTextCursor::MoveAnchor)
+                if (m==MM_Move)
                     i_row--;
-                else {
+                else if (m==MM_Select) {
                     if (i_row==0) {
                         int textPos = i_column - m_document->indentAt(i_row);
                         for (int i=0; i<qMin(textPos, m_document->at(i_row).text.length()); i++) {
@@ -181,16 +222,25 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, QTextCursor::MoveMo
                         (*m_document)[i_row].lineEndSelected = ! (*m_document)[i_row].lineEndSelected;
                     }
                 }
+                else if (m==MM_RectSelect) {
+                    i_row--;
+                    if (i_row<rect_selection.top())
+                        rect_selection.setTop(i_row);
+                    else {
+                        rect_selection.setBottom(i_row);
+                    }
+                    rect_selection.setWidth(qMax(1, rect_selection.width()));
+                }
             }
         }
         else if (op==QTextCursor::StartOfBlock) {
-            if (m==QTextCursor::MoveAnchor) {
+            if (m==MM_Move) {
                 if (i_row>=m_document->size())
                     i_column = 0;
                 else
                     i_column = m_document->indentAt(i_row) * 2;
             }
-            else {
+            else if (m==MM_Select) {
                 if (i_row<m_document->size()) {
                     int textPos = i_column - m_document->indentAt(i_row);
                     textPos = qMax(0, textPos);
@@ -206,13 +256,13 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, QTextCursor::MoveMo
             }
         }
         else if (op==QTextCursor::EndOfBlock) {
-            if (m==QTextCursor::MoveAnchor) {
+            if (m==MM_Move) {
                 if (i_row>=m_document->size()) {}
                 else
                     i_column = m_document->indentAt(i_row) * 2 +
                             m_document->at(i_row).text.length();
             }
-            else {
+            else if (m==MM_Select) {
                 if (i_row<m_document->size()) {
                     int textPos = i_column - m_document->indentAt(i_row);
                     textPos = qMax(0, textPos);
@@ -225,11 +275,11 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, QTextCursor::MoveMo
             }
         }
         else if (op==QTextCursor::Start) {
-            if (m==QTextCursor::MoveAnchor) {
+            if (m==MM_Move) {
                 i_row = 0;
                 i_column = 0;
             }
-            else {
+            else if (m==MM_Select) {
                 if (i_row<m_document->size()) {
                     int textPos = i_column - m_document->indentAt(i_row);
                     textPos = qMax(0, textPos);
@@ -253,41 +303,118 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, QTextCursor::MoveMo
             }
         }
         else if (op==QTextCursor::End) {
-            if (m==QTextCursor::MoveAnchor || i_row>=m_document->size()) {
+            if (m==MM_Move) {
                 i_row = m_document->size()-1;
                 i_column = m_document->indentAt(i_row)*2 +
                         m_document->last().text.length();
             }
-            else {
-                int textPos = i_column - m_document->indentAt(i_row);
-                textPos = qMax(0, textPos);
-                for (int i=textPos; i<m_document->at(i_row).text.length(); i++) {
-                    (*m_document)[i_row].selected[i] = !(*m_document)[i_row].selected[i];
+            else if (m==MM_Select) {
+                if (i_row>=m_document->size()) {
+                    i_row = m_document->size()-1;
+                    i_column = m_document->indentAt(i_row)*2 +
+                            m_document->last().text.length();
                 }
-                (*m_document)[i_row].lineEndSelected = !(*m_document)[i_row].lineEndSelected;
-                i_row ++;
-                for ( ; i_row<m_document->size(); i_row++ ) {
-                    for (int i=0; i<m_document->at(i_row).selected.size(); i++) {
+                else {
+                    int textPos = i_column - m_document->indentAt(i_row);
+                    textPos = qMax(0, textPos);
+                    for (int i=textPos; i<m_document->at(i_row).text.length(); i++) {
                         (*m_document)[i_row].selected[i] = !(*m_document)[i_row].selected[i];
                     }
-                    if (i_row<m_document->size()-1) {
-                        (*m_document)[i_row].lineEndSelected = !(*m_document)[i_row].lineEndSelected;
+                    (*m_document)[i_row].lineEndSelected = !(*m_document)[i_row].lineEndSelected;
+                    i_row ++;
+                    for ( ; i_row<m_document->size(); i_row++ ) {
+                        for (int i=0; i<m_document->at(i_row).selected.size(); i++) {
+                            (*m_document)[i_row].selected[i] = !(*m_document)[i_row].selected[i];
+                        }
+                        if (i_row<m_document->size()-1) {
+                            (*m_document)[i_row].lineEndSelected = !(*m_document)[i_row].lineEndSelected;
+                        }
                     }
+                    i_row = m_document->size()-1;
+                    i_column = m_document->indentAt(i_row)*2 +
+                            m_document->last().text.length();
                 }
-                i_row = m_document->size()-1;
-                i_column = m_document->indentAt(i_row)*2 +
-                        m_document->last().text.length();
             }
         }
     }
     b_visible = true;
     emit updateRequest();
-    if (m==QTextCursor::KeepAnchor) {
+    if (m==MM_Select || m==MM_RectSelect || wasRectSelection) {
         emit updateRequest(-1, -1);
     }
     emitPositionChanged();
     Q_ASSERT(i_row>=0);
     Q_ASSERT(i_column>=0);
+}
+
+void TextCursor::insertBlock(const QStringList &block)
+{
+    if (!b_enabled)
+        return;
+    // TODO Undo-redo stack!
+    if (hasSelection())
+        removeSelectedText();
+    if (hasRectSelection())
+        removeSelectedBlock();
+
+    for (int y=i_row; y<i_row+block.size(); y++) {
+        int indent = m_document->indentAt(y);
+        int textStart = i_column - indent;
+        int textEnd = i_column + block[y-i_row].length();
+        if (y<m_document->size()) {
+            TextLine line = m_document->at(y);
+            QString text = line.text.mid(0, textStart).leftJustified(textStart, ' ');
+
+            QList<Shared::LexemType> highlight =
+                    line.highlight.mid(0, qMin(textStart, line.highlight.size()));
+            QList<bool> selected =
+                    line.selected.mid(0, qMin(textStart, line.selected.size()));
+            for (int x=line.highlight.size(); x<textStart; x++) {
+                highlight << Shared::LxTypeEmpty;
+                selected << false;
+            }
+
+            text += block[y-i_row];
+            for (int x=0; x<block[y-i_row].size(); x++) {
+                highlight << Shared::LxTypeEmpty;
+                selected << false;
+            }
+            if (textEnd+1<line.text.size()) {
+                text += line.text.mid(textEnd+1);
+            }
+
+            if (textEnd+1<line.highlight.size()) {
+                highlight += line.highlight.mid(textEnd);
+            }
+            if (textEnd+1<line.selected.size()) {
+                selected += line.selected.mid(textEnd);
+            }
+            line.text = text;
+            line.highlight = highlight;
+            line.selected = selected;
+            (*m_document)[y] = line;
+        }
+        else {
+            TextLine line;
+            line.indentStart = line.indentEnd = 0;
+            line.lineEndSelected = false;
+            line.text.fill(' ', textStart);
+            for (int x=0; x<textStart; x++) {
+                line.highlight << Shared::LxTypeEmpty;
+                line.selected << false;
+            }
+            line.text += block[y-i_row];
+            for (int x=0; x<block[y-i_row].length(); x++) {
+                line.highlight << Shared::LxTypeEmpty;
+                line.selected << false;
+            }
+            m_document->append(line);
+        }
+    }
+    i_row += block.size()-1;
+    i_column += block[0].length();
+    emit updateRequest(-1, -1);
+    emitPositionChanged();
 }
 
 void TextCursor::insertText(const QString &text)
@@ -297,7 +424,9 @@ void TextCursor::insertText(const QString &text)
     // TODO Undo-redo stack!
     if (hasSelection())
         removeSelectedText();
-    removeSelection();
+    if (hasRectSelection())
+        removeSelectedBlock();
+
     int fromLineUpdate = i_row;
     while (i_row>=m_document->size()) {
         TextLine textLine;
@@ -400,6 +529,10 @@ void TextCursor::removePreviousChar()
         removeSelectedText();
         return;
     }
+    if (hasRectSelection()) {
+        removeSelectedBlock();
+        return;
+    }
     removeSelection();
     b_visible = false;
     emit updateRequest();
@@ -499,6 +632,10 @@ void TextCursor::removeCurrentChar()
         return;
     if (hasSelection()) {
         removeSelectedText();
+        return;
+    }
+    if (hasRectSelection()) {
+        removeSelectedBlock();
         return;
     }
     b_visible = false;
@@ -642,11 +779,61 @@ void TextCursor::removeSelectedText()
     i_row = cursorStartLine;
     i_column = m_document->indentAt(i_row)*2 + cursorTextPos;
 
+    removeSelection();
+
     emit updateRequest(-1, -1);
     emit updateRequest();
     emitPositionChanged();
 }
 
+void TextCursor::removeSelectedBlock()
+{
+    if (!b_enabled)
+        return;
+
+    if (!hasRectSelection())
+        return;
+
+    int lineStart = rect_selection.top();
+    int lineEnd = rect_selection.bottom();
+    int startPos = rect_selection.left();
+    int endPos = rect_selection.right();
+
+    lineEnd = qMin(lineEnd+1, m_document->size());
+
+    for (int y=0; y<lineEnd; y++) {
+        int indent = m_document->indentAt(y)*2;
+        int textStart = startPos - indent;
+        int textEnd = endPos - indent + 1;
+        TextLine line = m_document->at(y);
+        textStart = qMin(textStart, line.text.length());
+        textEnd = qMin(textEnd, line.text.length());
+
+        QString text = line.text.mid(0, textStart);
+        if (textEnd < line.text.length())
+            text += line.text.mid(textEnd);
+        QList<Shared::LexemType> highlight = line.highlight.mid(0, textStart);
+        if (textEnd < line.highlight.size())
+            highlight += line.highlight.mid(textEnd);
+        QList<bool> selected = line.selected.mid(0, textStart);
+        if (textEnd < line.selected.size())
+            selected += line.selected.mid(textEnd);
+
+        line.text = text;
+        line.highlight = highlight;
+        line.selected = selected;
+        if (line.text.trimmed().isEmpty())
+            line.indentStart = line.indentEnd = 0;
+
+        (*m_document)[y] = line;
+    }
+    i_row = lineStart;
+    i_column = startPos;
+    rect_selection = QRect(-1, -1, 0, 0);
+    emit updateRequest(-1, -1);
+    emit updateRequest();
+    emitPositionChanged();
+}
 
 bool TextCursor::hasSelection() const
 {
@@ -665,13 +852,58 @@ bool TextCursor::hasSelection() const
 QString TextCursor::selectedText() const
 {
     QString result;
-    for (int i=0; i<m_document->size(); i++) {
-        for (int j=0; j<m_document->at(i).text.length(); j++) {
-            if (m_document->at(i).selected[j])
-                result += m_document->at(i).text[j];
+    if (hasSelection()) {
+        for (int i=0; i<m_document->size(); i++) {
+            for (int j=0; j<m_document->at(i).text.length(); j++) {
+                if (m_document->at(i).selected[j])
+                    result += m_document->at(i).text[j];
+            }
+            if (m_document->at(i).lineEndSelected)
+                result += "\n";
         }
-        if (m_document->at(i).lineEndSelected)
-            result += "\n";
+    }
+    else if (hasRectSelection()) {
+        int startLine = rect_selection.top();
+        int endLine = qMin(m_document->size(), rect_selection.bottom()+1);
+        int startPos = rect_selection.left();
+        int endPos = rect_selection.right();
+        for (int i=startLine; i<endLine; i++) {
+            TextLine line = m_document->at(i);
+            int indent = m_document->indentAt(i);
+            int textStart = startPos - indent * 2;
+            int textEnd = endPos - indent * 2;
+            textStart = qMin(textStart, line.text.length());
+            textEnd = qMin(textEnd, line.text.length());
+            result += line.text.mid(textStart, textEnd-textStart);
+            if (i<endLine-1) {
+                result += "\n";
+            }
+        }
+    }
+    return result;
+}
+
+QStringList TextCursor::rectSelectionText() const
+{
+    QStringList result;
+    if (hasRectSelection()) {
+        int startLine = rect_selection.top();
+        int endLine = qMin(m_document->size(), rect_selection.bottom()+1);
+        int startPos = rect_selection.left();
+        int endPos = rect_selection.right()+1;
+        for (int i=startLine; i<endLine; i++) {
+            TextLine line = m_document->at(i);
+            int indent = m_document->indentAt(i);
+            int textStart = startPos - indent * 2;
+            int textEnd = endPos - indent * 2;
+            textStart = qMin(textStart, line.text.length());
+            textEnd = qMin(textEnd, line.text.length());
+            textStart = qMax(0, textStart);
+            textEnd = qMax(0, textEnd);
+            QString text = line.text.mid(textStart, textEnd-textStart);
+            int w = rect_selection.width();
+            result << text.leftJustified(w, ' ');
+        }
     }
     return result;
 }
