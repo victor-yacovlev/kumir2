@@ -1661,7 +1661,7 @@ enum BlockType {
     SubExpression
 } ;
 
-#define IS_OPERATOR(x) (x & LxTypeOperator || x==LxSecOr || x==LxSecAnd || x==LxSecNot )
+#define IS_OPERATOR(x) (x & LxTypeOperator || x==LxSecOr || x==LxSecAnd/* || x==LxSecNot */)
 
 AST::Expression * SyntaxAnalizerPrivate::parseExpression(
     QList<Lexem *> lexems
@@ -1904,7 +1904,12 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 subexpression << oper;
         } // end if (blockType==SubExpression)
         else if (blockType==None) {
-            qDebug() << "Check me: " << __FILE__ << ", line: " << __LINE__;
+            if (oper->type==LxOperPlus || oper->type==LxOperMinus) {
+                subexpression << oper;
+            }
+            else {
+                qDebug() << "Check me: " << __FILE__ << ", line: " << __LINE__;
+            }
         }
 
     }
@@ -2374,10 +2379,11 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const QList<Lexem *> &l
 
 
 
-int findOperatorByPriority(const QList<SubexpressionElement> & s, int &rank)
+int findOperatorByPriority(const QList<SubexpressionElement> & s)
 {
     int result = -1;
     static const QList<QSet <LexemType> > Omega = QList<QSet<LexemType> >()
+            << ( QSet<LexemType>() << LxSecNot )
             << ( QSet<LexemType>() << LxSecOr << LxSecAnd )
             << ( QSet<LexemType>() << LxOperNotEqual << LxOperEqual << LxOperGreater << LxOperGreaterOrEqual << LxOperLess << LxOperLessOrEqual )
             << ( QSet<LexemType>() << LxOperPlus << LxOperMinus )
@@ -2392,7 +2398,6 @@ int findOperatorByPriority(const QList<SubexpressionElement> & s, int &rank)
         }
         if (result!=-1) {
             break;
-            rank = i;
         }
     }
     return result;
@@ -2459,6 +2464,12 @@ AST::VariableBaseType resType(AST::VariableBaseType a
 {
     if(a==AST::TypeNone)
     {
+        if (b==AST::TypeInteger && (op==AST::OpSumm || op==AST::OpSubstract) )
+            return AST::TypeInteger;
+        if (b==AST::TypeReal && (op==AST::OpSumm || op==AST::OpSubstract) )
+            return AST::TypeReal;
+        if (b==AST::TypeBoolean && op==AST::OpNot )
+            return AST::TypeBoolean;
         return AST::TypeNone;
     }
 
@@ -2813,8 +2824,7 @@ AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<Subexpre
 {
     if (s.isEmpty())
         return 0;
-    int rank;
-    int l = findOperatorByPriority(s, rank);
+    int l = findOperatorByPriority(s);
     if (l==-1) {
         for (int i=0; i<s.size(); i++) {
             if (s[i].e)
@@ -2858,7 +2868,7 @@ AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<Subexpre
         bool isComparision = ComparisonOperators.contains(s[l].o->type);
         bool numericOperands = headExpr && IS_NUMERIC_LIST(headExpr->operands);
         bool tailIsLiteral = IS_LITERAL(tailType);
-        bool literalOperands = IS_LITERAL_LIST(headExpr->operands);
+        bool literalOperands = headExpr && IS_LITERAL_LIST(headExpr->operands);
 
         bool makeCNF = headIsBool && headIsSubexpr && isComparision && (
                     (tailIsNumeric && numericOperands)
@@ -2881,6 +2891,29 @@ AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<Subexpre
             res->operands << subRes;
             return res;
         }
+        else if (!headExpr && tailExpr->kind==AST::ExprConst) {
+            // Merge unary +, - and 'not' into constant
+            if (s[l].o->type==LxOperMinus) {
+                if (tailExpr->baseType==AST::TypeInteger) {
+                    tailExpr->constant = QVariant(0-tailExpr->constant.toInt());
+                }
+                else if (tailExpr->baseType==AST::TypeReal) {
+                    tailExpr->constant = QVariant(0.0-tailExpr->constant.toDouble());
+                }
+                else {
+                    s[l].o->error = _("Can't -%1", lexer->classNameByBaseType(tailExpr->baseType));
+                }
+            }
+            else if (s[l].o->type==LxSecNot) {
+                if (tailExpr->baseType==AST::TypeBoolean) {
+                    tailExpr->constant = QVariant( ! tailExpr->constant.toBool());
+                }
+                else {
+                    s[l].o->error = _("Can't not %1", lexer->classNameByBaseType(tailExpr->baseType));
+                }
+            }
+            return tailExpr;
+        }
         else {
             AST::ExpressionOperator operation = operatorByLexem(s[l].o);
             AST::VariableBaseType rt = resType(headType, tailType, operation);
@@ -2899,7 +2932,9 @@ AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<Subexpre
             AST::Expression * res = new AST::Expression;
             res->kind = AST::ExprSubexpression;
             res->baseType = rt;
-            res->operands << headExpr << tailExpr;
+            if (headExpr)
+                res->operands << headExpr;
+            res->operands << tailExpr;
             res->operatorr = operation;
             return res;
         }

@@ -205,9 +205,12 @@ QString dumpLoopSpec(const struct LoopSpec & spec)
     else
         result += "\ttype: \"while\",\n";
     if (spec.type==LoopFor){
-        result += "\tforVariable: \""+spec.forVariable->name+"\",\n";
-        result += "\tfromValue: "+addIndent(spec.fromValue->dump(), 1)+",\n";
-        result += "\ttoValue: "+addIndent(spec.toValue->dump(), 1)+",\n";
+        if (spec.forVariable)
+            result += "\tforVariable: \""+spec.forVariable->name+"\",\n";
+        if (spec.fromValue)
+            result += "\tfromValue: "+addIndent(spec.fromValue->dump(), 1)+",\n";
+        if (spec.toValue)
+            result += "\ttoValue: "+addIndent(spec.toValue->dump(), 1)+",\n";
         if (spec.stepValue)
             result += "\tstepValue: "+addIndent(spec.stepValue->dump(), 1)+",\n";
     }
