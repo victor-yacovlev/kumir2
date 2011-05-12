@@ -3,6 +3,7 @@
 
 #include "editorplugin.h"
 #include "editor.h"
+#include "editorstandalonewindow.h"
 
 namespace Editor {
 
@@ -66,6 +67,28 @@ void EditorPlugin::closeDocument(int documentId)
     d->editors[documentId] = ed;
 }
 
+QString EditorPlugin::saveDocument(int documentId, const QString &fileName)
+{
+    Q_ASSERT(documentId>=0);
+    Q_ASSERT(documentId<d->editors.size());
+    Q_CHECK_PTR(d->editors[documentId].first);
+    Q_CHECK_PTR(d->editors[documentId].second);
+    Ed ed = d->editors[documentId];
+    Editor * editor = ed.second;
+    QFile f(fileName);
+    if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        QTextStream ts;
+        ts.setCodec("UTF-8");
+        ts.setGenerateByteOrderMark(true);
+        ts << editor->text();
+        f.close();
+    }
+    else {
+        return tr("Can't open file %1 for writing").arg(fileName);
+    }
+    return "";
+}
+
 QString EditorPlugin::initialize(const QStringList &arguments)
 {
     Q_UNUSED(arguments);
@@ -81,20 +104,8 @@ void EditorPlugin::start()
             filename = arg;
         }
     }
-    QString startText;
-    if (!filename.isEmpty()) {
-        filename = QFileInfo(filename).absoluteFilePath();
-        QFile f(filename);
-        if (f.open(QIODevice::ReadOnly)) {
-            QTextStream ts(&f);
-            ts.setCodec("UTF-16");
-            startText = ts.readAll();
-            f.close();
-        }
-    }
-
-    QPair<int, VisualComponent*> doc = newDocument("Analizer", startText);
-    VisualComponent * w = doc.second;
+    EditorStandaloneWindow * w = new EditorStandaloneWindow(this, filename);
+    qApp->setQuitOnLastWindowClosed(true);
     w->resize(QSize(1000, 400));
     w->show();
 }

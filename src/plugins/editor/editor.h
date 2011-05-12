@@ -17,6 +17,7 @@ public:
     QList<QAction*> toolbarActions();
     QList<Shared::MenuActionsGroup> menuActions();
     void setText(const QString &text);
+    QString text() const;
     bool isModified() const;
     void setNotModified();
 

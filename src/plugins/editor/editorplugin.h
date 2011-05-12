@@ -21,6 +21,7 @@ public:
     void closeDocument(int documentId);
     bool hasUnsavedChanges(int documentId) const;
     void setDocumentChangesSaved(int documentId);
+    QString saveDocument(int documentId, const QString & fileName);
     Shared::AnalizerInterface * analizer(int documentId);
 protected:
     QString initialize(const QStringList &arguments);

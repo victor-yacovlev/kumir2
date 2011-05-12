@@ -71,6 +71,17 @@ Editor::Editor(AnalizerInterface * analizer, int documentId, QWidget *parent) :
     d->createActions();
 }
 
+QString Editor::text() const
+{
+    QString result;
+    for (int i=0; i<d->doc->size(); i++) {
+        result += d->doc->at(i).text;
+        if (i<d->doc->size()-1)
+            result += "\n";
+    }
+    return result;
+}
+
 void EditorPrivate::createActions()
 {
     selectAll = new QAction(plane);
@@ -144,6 +155,7 @@ QList<MenuActionsGroup> Editor::menuActions()
     edit.actions << separator;
     edit.actions << d->deleteLine;
     edit.actions << d->deleteTail;
+    result << edit;
     return result;
 }
 
