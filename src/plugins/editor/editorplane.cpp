@@ -496,39 +496,59 @@ void EditorPlane::setProperFormat(QPainter *p, Shared::LexemType type, const QCh
 {
     QFont f = font();
     QColor c = Qt::black;
-    if (type & Shared::LxTypePrimaryKwd || type & Shared::LxTypeSecondaryKwd) {
+
+    const quint32 t = type;
+
+    static const quint32 PriKwd = Shared::LxTypePrimaryKwd;
+    static const quint32 SecKwd = Shared::LxTypeSecondaryKwd;
+    static const quint32 NameClass = Shared::LxNameClass;
+    static const quint32 NameAlg = Shared::LxNameAlg;
+    static const quint32 NameModule = Shared::LxNameModule;
+    static const quint32 ConstLiteral = Shared::LxConstLiteral;
+    static const quint32 TypeConstant = Shared::LxTypeConstant;
+    static const quint32 TypeDoc = Shared::LxTypeDoc;
+    static const quint32 TypeComment = Shared::LxTypeComment;
+
+    const quint32 priKwd = PriKwd & t;
+    const quint32 secKwd = SecKwd & t;
+    const quint32 nameClass = NameClass & t;
+    const quint32 nameAlg = NameAlg & t;
+    const quint32 nameModule = NameModule & t;
+    const quint32 literalConstant = ConstLiteral & t;
+    const quint32 constant = TypeConstant & t;
+    const quint32 doc = TypeDoc & t;
+    const quint32 comment = TypeComment & t;
+
+    if (priKwd || secKwd) {
         c = m_settings->value(SettingsPage::KeyColorKw, SettingsPage::DefaultColorKw).toString();
         f.setBold(m_settings->value(SettingsPage::KeyBoldKw, SettingsPage::DefaultBoldKw).toBool());
     }
-    if (type & Shared::LxNameClass) {
+    if (nameClass) {
         c = m_settings->value(SettingsPage::KeyColorType,  SettingsPage::DefaultColorType).toString();
         f.setBold(m_settings->value(SettingsPage::KeyBoldType, SettingsPage::DefaultBoldType).toBool());
     }
-    else if (type & Shared::LxNameAlg) {
+    else if (nameAlg) {
         c = m_settings->value(SettingsPage::KeyColorAlg,  SettingsPage::DefaultColorAlg).toString();
         f.setBold(m_settings->value(SettingsPage::KeyBoldAlg, SettingsPage::DefaultBoldAlg).toBool());
     }
-    else if (type & Shared::LxNameModule) {
+    else if (nameModule) {
         c = m_settings->value(SettingsPage::KeyColorMod,  SettingsPage::DefaultColorMod).toString();
         f.setBold(m_settings->value(SettingsPage::KeyBoldMod, SettingsPage::DefaultBoldMod).toBool());
     }
-    else if (type & Shared::LxConstInteger
-             || type & Shared::LxConstReal
-             || type & Shared::LxConstBoolFalse
-             || type & Shared::LxConstBoolTrue)
+    else if (literalConstant) {
+        c = m_settings->value(SettingsPage::KeyColorLiteral,  SettingsPage::DefaultColorLiteral).toString();
+        f.setBold(m_settings->value(SettingsPage::KeyBoldLiteral, SettingsPage::DefaultBoldLiteral).toBool());
+    }
+    else if (constant)
     {
         c = m_settings->value(SettingsPage::KeyColorNumeric,  SettingsPage::DefaultColorNumeric).toString();
         f.setBold(m_settings->value(SettingsPage::KeyBoldNumeric, SettingsPage::DefaultBoldNumeric).toBool());
     }
-    else if (type & Shared::LxConstLiteral) {
-        c = m_settings->value(SettingsPage::KeyColorLiteral,  SettingsPage::DefaultColorLiteral).toString();
-        f.setBold(m_settings->value(SettingsPage::KeyBoldLiteral, SettingsPage::DefaultBoldLiteral).toBool());
-    }
-    else if (type & Shared::LxTypeDoc) {
+    else if (doc) {
         c = m_settings->value(SettingsPage::KeyColorDoc,  SettingsPage::DefaultColorDoc).toString();
         f.setBold(m_settings->value(SettingsPage::KeyBoldDoc, SettingsPage::DefaultBoldDoc).toBool());
     }
-    else if (type & Shared::LxTypeComment) {
+    else if (comment) {
         c = m_settings->value(SettingsPage::KeyColorComment,  SettingsPage::DefaultColorComment).toString();
         f.setBold(m_settings->value(SettingsPage::KeyBoldComment, SettingsPage::DefaultBoldComment).toBool());
     }
