@@ -8,7 +8,6 @@ StatusBar::StatusBar(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::StatusBar)
 {
-    b_temporaryLayoutSwitched = false;
     ui->setupUi(this);
     s_gotoLineTemplateText = ui->gotoLineButton->text();
     s_clipboardTemplateText = ui->selectBufferButton->text();
@@ -17,10 +16,6 @@ StatusBar::StatusBar(QWidget *parent) :
     i_timerId = startTimer(500);
 }
 
-void StatusBar::handleTemporaryLayoutSwitched(bool v)
-{
-    b_temporaryLayoutSwitched = v;
-}
 
 void StatusBar::handleClipboardChanged(int cnt)
 {
@@ -43,7 +38,7 @@ void StatusBar::handleClipboardChanged(int cnt)
 void StatusBar::timerEvent(QTimerEvent *e)
 {
     bool russian = Utils::isRussianLayout();
-    if (b_temporaryLayoutSwitched)
+    if (Utils::temporaryLayoutSwitch)
         russian = !russian;
     bool capsLock = Utils::isCapsLock();
     ui->capsLock->setText(s_capsLockTemplateText.arg(capsLock? tr("On") : tr("Off")));

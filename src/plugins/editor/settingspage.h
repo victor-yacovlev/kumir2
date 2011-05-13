@@ -59,6 +59,10 @@ public:
 
     static QString defaultFontFamily();
     static int defaultFontSize;
+
+    static QString KeyTempSwitchLayoutButton;
+    static quint32 DefaultTempSwitchLayoutButton;
+
 public slots:
     void accept();
     void init();

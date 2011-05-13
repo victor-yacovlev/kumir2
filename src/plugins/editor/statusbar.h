@@ -18,7 +18,6 @@ public:
     ~StatusBar();
 public slots:
     void handleCursorPositionChanged(int row, int col);
-    void handleTemporaryLayoutSwitched(bool v);
     void handleClipboardChanged(int cnt);
 protected:
     void timerEvent(QTimerEvent *e);
@@ -29,7 +28,6 @@ private:
     QString s_keyboardLayoutTemplateText;
     QString s_capsLockTemplateText;
     QString s_clipboardTemplateText;
-    bool b_temporaryLayoutSwitched;
 };
 
 

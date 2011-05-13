@@ -37,11 +37,11 @@ protected:
     void paintRectSelection(QPainter *p, const QRect &rect);
     void paintLineNumbers(QPainter *p, const QRect &rect);
     void keyPressEvent(QKeyEvent *);
+    void keyReleaseEvent(QKeyEvent *);
     void setProperFormat(QPainter * p, Shared::LexemType type, const QChar &c);
 protected slots:
     void updateCursor();
     void updateText(int fromLine, int toLine);
-
 private:
     int i_marginWidth;
     int i_timerId;

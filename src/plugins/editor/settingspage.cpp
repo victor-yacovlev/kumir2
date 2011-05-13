@@ -42,6 +42,9 @@ bool SettingsPage::DefaultBoldMod = true;
 bool SettingsPage::DefaultBoldDoc = true;
 bool SettingsPage::DefaultBoldComment = false;
 
+QString SettingsPage::KeyTempSwitchLayoutButton = "Keyboard/TemporarySwitchLayoutButton";
+quint32 SettingsPage::DefaultTempSwitchLayoutButton = Qt::Key_Alt;
+
 
 QString SettingsPage::defaultFontFamily()
 {
@@ -103,6 +106,21 @@ void SettingsPage::accept()
     m_settings->setValue(KeyFontName, ui->fontFamily->currentFont().family());
     m_settings->setValue(KeyFontSize, ui->fontSize->value());
 
+    const QString layoutSwitchKey = ui->layoutSwitchKey->currentText();
+
+    if (layoutSwitchKey=="AltGr")
+        m_settings->setValue(KeyTempSwitchLayoutButton, quint32(Qt::Key_AltGr));
+    else if (layoutSwitchKey=="Meta")
+        m_settings->setValue(KeyTempSwitchLayoutButton, quint32(Qt::Key_Meta));
+    else if (layoutSwitchKey=="Menu")
+        m_settings->setValue(KeyTempSwitchLayoutButton, quint32(Qt::Key_Menu));
+    else if (layoutSwitchKey=="ScrollLock")
+        m_settings->setValue(KeyTempSwitchLayoutButton, quint32(Qt::Key_ScrollLock));
+    else if (layoutSwitchKey=="Pause")
+        m_settings->setValue(KeyTempSwitchLayoutButton, quint32(Qt::Key_Pause));
+    else
+        m_settings->setValue(KeyTempSwitchLayoutButton, quint32(Qt::Key_Alt));
+
     emit settingsChanged();
 }
 
@@ -130,6 +148,28 @@ void SettingsPage::init()
     f.setFamily(m_settings->value(KeyFontName, defaultFontFamily()).toString());
     ui->fontFamily->setCurrentFont(f);
     ui->fontSize->setValue(m_settings->value(KeyFontSize, defaultFontSize).toInt());
+
+    Qt::Key key = Qt::Key(m_settings->value(KeyTempSwitchLayoutButton, DefaultTempSwitchLayoutButton).toUInt());
+    QString keyText = "Alt";
+    if (key==Qt::Key_AltGr)
+        keyText = "AltGr";
+    else if (key==Qt::Key_Meta)
+        keyText = "Meta";
+    else if (key==Qt::Key_Menu)
+        keyText = "Menu";
+    else if (key==Qt::Key_ScrollLock)
+        keyText = "ScrollLock";
+    else if (key==Qt::Key_Pause)
+        keyText = "Pause";
+
+    int index = 0;
+    for (int i=0; i<ui->layoutSwitchKey->count(); i++) {
+        if (ui->layoutSwitchKey->itemText(i)==keyText) {
+            index = i;
+            break;
+        }
+    }
+    ui->layoutSwitchKey->setCurrentIndex(index);
 
     updateFontPreview();
 }

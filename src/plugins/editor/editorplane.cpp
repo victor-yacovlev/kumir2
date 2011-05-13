@@ -3,6 +3,7 @@
 #include "textdocument.h"
 #include "clipboard.h"
 #include "settingspage.h"
+#include "utils.h"
 
 #define RECT_SELECTION_MODIFIER Qt::AltModifier
 
@@ -100,6 +101,25 @@ void EditorPlane::paintCursor(QPainter *p, const QRect &rect)
         p->drawRect(cr);
     }
     p->restore();
+}
+
+void EditorPlane::keyReleaseEvent(QKeyEvent *e)
+{
+    Qt::Key tempSwichLayoutKey = Qt::Key(
+                m_settings->value(
+                    SettingsPage::KeyTempSwitchLayoutButton
+                    , SettingsPage::DefaultTempSwitchLayoutButton)
+                .toUInt()
+                );
+    if (e->key()==tempSwichLayoutKey) {
+        Utils::temporaryLayoutSwitch = false;
+    }
+    if (m_cursor->isEnabled()) {
+        e->accept();
+    }
+    else {
+        e->ignore();
+    }
 }
 
 void EditorPlane::keyPressEvent(QKeyEvent *e)
@@ -243,10 +263,22 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
             process = true;
         }
         else if (!e->text().isEmpty()) {
-            // TODO language switch
-            m_cursor->insertText(e->text());
+            m_cursor->insertText(Utils::textByKey(Qt::Key(e->key())
+                                                  , e->text()
+                                                  , e->modifiers().testFlag(Qt::ShiftModifier)));
             process = true;
         }
+
+        Qt::Key tempSwichLayoutKey = Qt::Key(
+                    m_settings->value(
+                        SettingsPage::KeyTempSwitchLayoutButton
+                        , SettingsPage::DefaultTempSwitchLayoutButton)
+                    .toUInt()
+                    );
+        if (e->key()==tempSwichLayoutKey) {
+            Utils::temporaryLayoutSwitch = true;
+        }
+
     }
     if (process)
         e->accept();

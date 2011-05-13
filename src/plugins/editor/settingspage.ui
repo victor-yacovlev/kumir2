@@ -6,14 +6,64 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>334</width>
-    <height>502</height>
+    <width>332</width>
+    <height>566</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Keyboard</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_11">
+      <item>
+       <widget class="QLabel" name="label_12">
+        <property name="text">
+         <string>Key to temporary switch layout:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="layoutSwitchKey">
+        <item>
+         <property name="text">
+          <string notr="true">Alt</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string notr="true">AltGr</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string notr="true">Meta</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string notr="true">Menu</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string notr="true">ScrollLock</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string notr="true">Pause</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">

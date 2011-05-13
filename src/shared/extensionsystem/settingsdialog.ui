@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>556</width>
-    <height>415</height>
+    <width>718</width>
+    <height>422</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,6 +43,9 @@
      </item>
      <item>
       <widget class="QScrollArea" name="scrollArea">
+       <property name="horizontalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
        <property name="widgetResizable">
         <bool>true</bool>
        </property>
@@ -51,8 +54,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>332</width>
-          <height>364</height>
+          <width>494</width>
+          <height>371</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">
