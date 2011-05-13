@@ -269,8 +269,8 @@ QString dumpConditionSpec(const struct ConditionSpec & spec)
             result += ",";
         result += "\n";
     }
-    result += "\t]\n";
-    result += "}";
+    result += "\t] /* end conditional body */ \n";
+    result += "} /* end conditional element */ ";
     return result;
 }
 

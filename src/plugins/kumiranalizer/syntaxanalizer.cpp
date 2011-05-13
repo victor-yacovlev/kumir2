@@ -208,7 +208,6 @@ void SyntaxAnalizer::processAnalisys()
                  ||st.type==LxPriElse
                  ||st.type==LxPriFi
                  ||st.type==LxPriSwitch
-                 ||st.type==LxPriCase
                  ||st.type==LxPriExit
                  )
         {
@@ -217,7 +216,7 @@ void SyntaxAnalizer::processAnalisys()
         else if (st.type==LxPriEndLoop) {
             d->parseEndLoop(i);
         }
-        else if (st.type==LxPriIf) {
+        else if (st.type==LxPriIf||st.type==LxPriCase) {
             d->parseIfCase(i);
         }
         else if (st.type==LxPriLoop) {

@@ -1270,6 +1270,11 @@ void PDAutomataPrivate::processCorrectSwitch()
     (*source)[currentPosition].mod = currentModule;
     (*source)[currentPosition].alg = currentAlgorhitm;
     (*source)[currentPosition].statement = currentContext.top()->last();
+
+    // Push dummy case statement into context for
+    // correct processing of first 'case' statement
+
+    currentContext.push(0);
 }
 
 void PDAutomataPrivate::processCorrectBeginOfLoop()

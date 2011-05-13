@@ -50,7 +50,7 @@ void KumirCompilerPlugin::start()
             ts.setCodec("UTF-16");
             QString data = ts.readAll();
             f.close();
-//            data = QString::fromUtf8("алг \nнач\nцел а,б,а б\nа:=а+б*1\nкон\n");
+//            data = QString::fromUtf8("алг \nнач\nвыбор \nпри 1=1  и да:\nпри да или нет:\nиначе\nвывод 1\nвсе \nкон\n");
             int id = m_analizer->newDocument();
             m_analizer->setSourceText(id, data);
             QList<Shared::Error> errors = m_analizer->errors(id);
