@@ -199,7 +199,7 @@ QString Expression::dump() const
         result += ",\n\tvariable: \""+variable->name+"\"\n";
     }
     else if (kind==ExprFunctionCall) {
-        result += ",\n\tfunction: \""+function->header.name+"\"";
+        result += ",\n\talgorhitm: \""+function->header.name+"\"";
     }
     else if (kind==ExprArrayElement) {
         result += ",\n\tvariable: \""+variable->name+"\"";

@@ -1092,9 +1092,25 @@ void PDAutomataPrivate::appendSimpleLine()
     case LxPriAssert:
         statement->type = AST::StAssert;
         break;
-    case LxNameClass:
-        statement->type = AST::StVarInitialize;
-        break;
+    case LxNameClass: {
+            // Check for we are in algorhitm top or module top
+            if (currentContext.size()>1) {
+                QList<AST::Statement*> * body = currentContext[currentContext.size()-2];
+                if (!body->isEmpty()) {
+                    AST::Statement * st = body->last();
+                    if (st->type==AST::StLoop
+                            || st->type==AST::StIfThenElse
+                            || st->type==AST::StSwitchCaseElse)
+                    {
+                        foreach (Lexem *lx, statement->lexems) {
+                            lx->error = _("Can't declare variables at this level");
+                        }
+                    }
+                }
+            }
+            statement->type = AST::StVarInitialize;
+            break;
+    }
     case LxPriInput:
         statement->type = AST::StInput;
         break;
@@ -1306,10 +1322,12 @@ void PDAutomataPrivate::processCorrectRestrictionLine()
     (*source)[currentPosition].statement = st;
     Q_CHECK_PTR(currentAlgorhitm);
     if ( (*source)[currentPosition].type==LxPriPre ) {
-        currentAlgorhitm->impl.pre.append(st);
+        if ( (*source)[currentPosition].data.size()>1 )
+            currentAlgorhitm->impl.pre.append(st);
     }
     else {
-        currentAlgorhitm->impl.post.append(st);
+        if ( (*source)[currentPosition].data.size()>1 )
+            currentAlgorhitm->impl.post.append(st);
     }
 }
 

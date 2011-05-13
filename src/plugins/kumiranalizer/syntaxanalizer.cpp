@@ -340,7 +340,8 @@ void SyntaxAnalizerPrivate::parseInputOutputAssertPrePost(int str)
         return;
     }
     if (st->data.size()==1) {
-        st->data[0]->error = _("No expressions after '%1'", st->data[0]->data);
+        if (st->data[0]->type!=LxPriPre && st->data[0]->type!=LxPriPost)
+            st->data[0]->error = _("No expressions after '%1'", st->data[0]->data);
         return;
     }
     if (st->data.last()->type==LxOperComa) {

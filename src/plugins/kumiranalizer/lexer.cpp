@@ -284,45 +284,60 @@ void LexerPrivate::initNormalizator(const QString &fileName)
                 else if (context=="integer array type name") {
                     QStringList variants = allVariants(value);
                     foreach (const QString & variant, variants) {
-                        typeNames << variant;
                         baseTypes.insert(variant, AST::TypeInteger);
                         arrayTypes.insert(variant);
+                    }
+                    variants = value.split("|");
+                    foreach (const QString & variant, variants) {
+                        typeNames << variant;
                     }
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="floating point array type name") {
                     QStringList variants = allVariants(value);
                     foreach (const QString & variant, variants) {
-                        typeNames << variant;
                         baseTypes.insert(variant, AST::TypeReal);
                         arrayTypes.insert(variant);
+                    }
+                    variants = value.split("|");
+                    foreach (const QString & variant, variants) {
+                        typeNames << variant;
                     }
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="character array type name") {
                     QStringList variants = allVariants(value);
                     foreach (const QString & variant, variants) {
-                        typeNames << variant;
                         baseTypes.insert(variant, AST::TypeCharect);
                         arrayTypes.insert(variant);
+                    }
+                    variants = value.split("|");
+                    foreach (const QString & variant, variants) {
+                        typeNames << variant;
                     }
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="string array type name") {
                     QStringList variants = allVariants(value);
                     foreach (const QString & variant, variants) {
-                        typeNames << variant;
                         baseTypes.insert(variant, AST::TypeString);
                         arrayTypes.insert(variant);
+                    }
+                    variants = value.split("|");
+                    foreach (const QString & variant, variants) {
+                        typeNames << variant;
                     }
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="boolean array type name") {
                     QStringList variants = allVariants(value);
                     foreach (const QString & variant, variants) {
-                        typeNames << variant;
                         baseTypes.insert(variant, AST::TypeBoolean);
                         arrayTypes.insert(variant);
+                    }
+                    variants = value.split("|");
+                    foreach (const QString & variant, variants) {
+                        typeNames << variant;
                     }
                     addToMap(kwdMap, value, LxNameClass);
                 }
@@ -584,7 +599,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
     QChar litSimb;
     int cur = 0;
     int prev = -1;
-    if (text.isEmpty()) {
+    if (text.trimmed().isEmpty()) {
         return;
     }
     forever {
@@ -1185,8 +1200,10 @@ QString Lexer::testName(const QString &name)
 
 AST::VariableBaseType Lexer::baseTypeByClassName(const QString &clazz) const
 {
-    if (d->baseTypes.contains(clazz)) {
-        return d->baseTypes[clazz];
+    QString normName = clazz;
+    normName.remove(" ");
+    if (d->baseTypes.contains(normName)) {
+        return d->baseTypes[normName];
     }
     else {
         return AST::TypeNone;
@@ -1195,7 +1212,9 @@ AST::VariableBaseType Lexer::baseTypeByClassName(const QString &clazz) const
 
 bool Lexer::isArrayClassName(const QString &clazz) const
 {
-    return d->arrayTypes.contains(clazz);
+    QString normName = clazz;
+    normName.remove(" ");
+    return d->arrayTypes.contains(normName);
 }
 
 bool Lexer::boolConstantValue(const QString &val) const
