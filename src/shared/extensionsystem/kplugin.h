@@ -10,14 +10,14 @@
 #define EXTENSIONSYSTEM_EXPORT Q_DECL_IMPORT
 #endif
 
-class QDialog;
+class QWidget;
 class QIcon;
 
 namespace ExtensionSystem {
 
 struct SettingsEditorPage {
     inline SettingsEditorPage() { settingsPage = 0; settingsGroupIcon = 0; }
-    QDialog * settingsPage;
+    QWidget * settingsPage;
     QString settingsGroupName;
     QIcon * settingsGroupIcon;
 };

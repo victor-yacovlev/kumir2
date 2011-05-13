@@ -19,7 +19,7 @@ StatusBar::StatusBar(QWidget *parent) :
 
 void StatusBar::handleTemporaryLayoutSwitched(bool v)
 {
-
+    b_temporaryLayoutSwitched = v;
 }
 
 void StatusBar::handleClipboardChanged(int cnt)

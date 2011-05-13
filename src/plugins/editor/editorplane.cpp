@@ -2,6 +2,7 @@
 #include "textcursor.h"
 #include "textdocument.h"
 #include "clipboard.h"
+#include "settingspage.h"
 
 #define RECT_SELECTION_MODIFIER Qt::AltModifier
 
@@ -23,8 +24,9 @@ EditorPlane::EditorPlane(TextDocument * doc
     connect(m_cursor, SIGNAL(updateRequest()), this, SLOT(updateCursor()));
     connect(m_cursor, SIGNAL(updateRequest(int,int)), this, SLOT(updateText(int,int)));
     setFocusPolicy(Qt::StrongFocus);
-    QFont defaultFont("DejaVu Sans Mono");
-    defaultFont.setPointSize(12);
+    QFont defaultFont;
+    defaultFont.setFamily(m_settings->value(SettingsPage::KeyFontName, SettingsPage::defaultFontFamily()).toString());
+    defaultFont.setPointSize(m_settings->value(SettingsPage::KeyFontSize, SettingsPage::defaultFontSize).toInt());
     setFont(defaultFont);
 }
 
@@ -494,18 +496,43 @@ void EditorPlane::setProperFormat(QPainter *p, Shared::LexemType type, const QCh
 {
     QFont f = font();
     QColor c = Qt::black;
-    if (type & Shared::LxTypePrimaryKwd || type & Shared::LxTypeSecondaryKwd || type == Shared::LxNameClass) {
-        f.setBold(true);
+    if (type & Shared::LxTypePrimaryKwd || type & Shared::LxTypeSecondaryKwd) {
+        c = m_settings->value(SettingsPage::KeyColorKw, SettingsPage::DefaultColorKw).toString();
+        f.setBold(m_settings->value(SettingsPage::KeyBoldKw, SettingsPage::DefaultBoldKw).toBool());
     }
-    if (type == Shared::LxNameClass) {
-        c = Qt::magenta;
+    if (type & Shared::LxNameClass) {
+        c = m_settings->value(SettingsPage::KeyColorType,  SettingsPage::DefaultColorType).toString();
+        f.setBold(m_settings->value(SettingsPage::KeyBoldType, SettingsPage::DefaultBoldType).toBool());
     }
-    else if (type == Shared::LxNameAlg) {
-        c = Qt::blue;
+    else if (type & Shared::LxNameAlg) {
+        c = m_settings->value(SettingsPage::KeyColorAlg,  SettingsPage::DefaultColorAlg).toString();
+        f.setBold(m_settings->value(SettingsPage::KeyBoldAlg, SettingsPage::DefaultBoldAlg).toBool());
     }
-    else if (type == Shared::LxNameModule) {
-        c = Qt::green;
+    else if (type & Shared::LxNameModule) {
+        c = m_settings->value(SettingsPage::KeyColorMod,  SettingsPage::DefaultColorMod).toString();
+        f.setBold(m_settings->value(SettingsPage::KeyBoldMod, SettingsPage::DefaultBoldMod).toBool());
     }
+    else if (type & Shared::LxConstInteger
+             || type & Shared::LxConstReal
+             || type & Shared::LxConstBoolFalse
+             || type & Shared::LxConstBoolTrue)
+    {
+        c = m_settings->value(SettingsPage::KeyColorNumeric,  SettingsPage::DefaultColorNumeric).toString();
+        f.setBold(m_settings->value(SettingsPage::KeyBoldNumeric, SettingsPage::DefaultBoldNumeric).toBool());
+    }
+    else if (type & Shared::LxConstLiteral) {
+        c = m_settings->value(SettingsPage::KeyColorLiteral,  SettingsPage::DefaultColorLiteral).toString();
+        f.setBold(m_settings->value(SettingsPage::KeyBoldLiteral, SettingsPage::DefaultBoldLiteral).toBool());
+    }
+    else if (type & Shared::LxTypeDoc) {
+        c = m_settings->value(SettingsPage::KeyColorDoc,  SettingsPage::DefaultColorDoc).toString();
+        f.setBold(m_settings->value(SettingsPage::KeyBoldDoc, SettingsPage::DefaultBoldDoc).toBool());
+    }
+    else if (type & Shared::LxTypeComment) {
+        c = m_settings->value(SettingsPage::KeyColorComment,  SettingsPage::DefaultColorComment).toString();
+        f.setBold(m_settings->value(SettingsPage::KeyBoldComment, SettingsPage::DefaultBoldComment).toBool());
+    }
+
     if (ch!='\0' && ch.isLetter() && ch.toAscii()!='\0') {
         f.setItalic(true);
     }

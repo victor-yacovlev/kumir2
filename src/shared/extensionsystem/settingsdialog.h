@@ -27,7 +27,7 @@ private slots:
 
 private:
     Ui::SettingsDialog *ui;
-    QList<QDialog*> l_pluginPages;
+    QList<QWidget*> l_pluginPages;
 };
 
 

@@ -37,7 +37,8 @@ int main(int argc, char **argv)
     const QString sharePath = QDir(app->applicationDirPath()+SHARE_PATH).canonicalPath();
     app->setProperty("sharePath", sharePath);
     QSettings::setDefaultFormat(QSettings::IniFormat);
-    QSettings::setPath(QSettings::IniFormat, QSettings::SystemScope, SHARE_PATH);
+//    const QString settingsPath = QDir(app->applicationDirPath()+QString(SHARE_PATH)+"/default_settings").canonicalPath();
+//    QSettings::setPath(QSettings::IniFormat, QSettings::SystemScope, settingsPath);
     app->addLibraryPath(PLUGINS_PATH);
     ExtensionSystem::PluginManager * manager = new ExtensionSystem::PluginManager;
     QObject::connect (app, SIGNAL(aboutToQuit()), manager, SLOT(shutdown()));

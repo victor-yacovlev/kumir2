@@ -17,14 +17,41 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 void SettingsDialog::accept()
 {
     for (int i=0; i<l_pluginPages.size(); i++) {
-        l_pluginPages[i]->accept();
+        const QMetaObject * mo = l_pluginPages[i]->metaObject();
+        QMetaMethod m;
+        bool found = false;
+        for (int j=0; j<mo->methodCount(); j++) {
+            const QString signature = mo->method(j).signature();
+            if (signature=="accept()") {
+                m = mo->method(j);
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            m.invoke(l_pluginPages[i]);
+        }
     }
+    QDialog::accept();
 }
 
 int SettingsDialog::exec()
 {
     for (int i=0; i<l_pluginPages.size(); i++) {
-        l_pluginPages[i]->exec();
+        const QMetaObject * mo = l_pluginPages[i]->metaObject();
+        QMetaMethod m;
+        bool found = false;
+        for (int j=0; j<mo->methodCount(); j++) {
+            const QString signature = mo->method(j).signature();
+            if (signature=="init()") {
+                m = mo->method(j);
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            m.invoke(l_pluginPages[i]);
+        }
     }
     return QDialog::exec();
 }

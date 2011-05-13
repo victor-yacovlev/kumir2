@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>Editor::SettingsPage</class>
- <widget class="QDialog" name="Editor::SettingsPage">
+ <widget class="QWidget" name="Editor::SettingsPage">
   <property name="geometry">
    <rect>
     <x>0</x>
