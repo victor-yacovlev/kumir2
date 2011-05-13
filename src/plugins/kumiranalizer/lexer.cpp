@@ -519,33 +519,39 @@ void searchNumericConstants(QList<Lexem*> & lexems) {
     QList<Lexem*>::iterator it = lexems.begin();
     QList<Lexem*>::iterator itt;
     while (it!=lexems.end()) {
-        if ( (*it)->type==LxTypeName ) {
+        Lexem * lx = (*it);
+        if ( lx->type==LxTypeName ) {
             itt = it + 1;
-            const QString s = (*it)->data;
+            const QString s = lx->data;
             if (isDecimalIntegerConstant(s) || isHexIntegerConstant(s)) {
-                (*it)->type=LxConstInteger;
+                lx->type=LxConstInteger;
             }
             else if (isDecimalRealConstant(s)) {
-                (*it)->type=LxConstReal;
+                lx->type=LxConstReal;
             }
             else if (isExpRealConstant(s)) {
-                (*it)->type=LxConstReal;
-                (*it)->data.replace(QString::fromUtf8("е"), "E");
-                (*it)->data.replace(QString::fromUtf8("Е"), "E");
-                (*it)->data.replace("e", "E");
-                if ( (*it)->data[(*it)->data.length()]=='E' ) {
+                lx->type=LxConstReal;
+                lx->data.replace(QString::fromUtf8("е"), "e");
+                lx->data.replace(QString::fromUtf8("Е"), "e");
+                lx->data.replace("E", "e");
+                const QString d = lx->data;
+                if ( d.endsWith('e') ) {
                     if (itt!=lexems.end()) {
-                        if ( (*itt)->type==LxOperPlus || (*itt)->type==LxOperMinus ) {
-                            (*it)->data += (*itt)->data;
-                            (*it)->length += (*itt)->length;
-                            delete *itt;
+                        Lexem * lxx = (*itt);
+                        if ( lxx->type==LxOperPlus || lxx->type==LxOperMinus ) {
+                            lx->data += lxx->data;
+                            lx->length += lxx->length;
+                            delete lxx;
+                            lxx = 0;
                             itt = lexems.erase(itt);
                             if (itt!=lexems.end()) {
-                                const QString ss = (*itt)->data;
+                                lxx = (*itt);
+                                const QString ss = lxx->data;
                                 if (isDecimalRealConstant(ss)) {
-                                    (*it)->data += (*itt)->data;
-                                    (*it)->length += (*itt)->length;
-                                    delete *itt;
+                                    lx->data += lxx->data;
+                                    lx->length += lxx->length;
+                                    delete lxx;
+                                    lxx = 0;
                                     lexems.erase(itt);
                                 }
                             }
@@ -553,8 +559,8 @@ void searchNumericConstants(QList<Lexem*> & lexems) {
                     }
                 }
                 else {
-                    if ( !(*it)->data.contains("+") && !(*it)->data.contains("-") ) {
-                        (*it)->data.replace("E","E+");
+                    if ( !lx->data.contains("+") && !lx->data.contains("-") ) {
+                        lx->data.replace("e","e+");
                     }
                 }
             }

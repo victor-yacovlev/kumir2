@@ -325,12 +325,6 @@ void SyntaxAnalizerPrivate::parseVarDecl(int str)
         st->statement->type = AST::StVarInitialize;
         st->statement->variables = vars;
     }
-    if (alg) {
-        alg->impl.locals.append(vars);
-    }
-    else {
-        mod->impl.globals.append(vars);
-    }
 }
 
 void SyntaxAnalizerPrivate::parseInputOutputAssertPrePost(int str)
@@ -1052,7 +1046,6 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
         QList<AST::Variable*> vars = parseVariables(groups[i], st->mod, st->alg);
         for (int j=0; j<vars.size(); j++) {
             alg->header.arguments << vars[j];
-            alg->impl.locals << vars[j];
         }
         for (int j=0; j<groups[i].lexems.size()-1; j++) {
             if (!groups[i].lexems[j]->error.isEmpty()) {
@@ -1228,6 +1221,10 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
                 var->dimension = array? dim : 0;
                 var->bounds = bounds;
                 result << var;
+                if (alg)
+                    alg->impl.locals << var;
+                else
+                    mod->impl.globals << var;
                 cName = "";
                 par = tn;
                 dim = 0;
