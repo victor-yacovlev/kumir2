@@ -46,5 +46,5 @@ CONFIG += plugin plugin_with_soname
 }
 
 TARGET = $$qtLibraryTarget($$TARGET)
-QT -= gui
+# QT -= gui
 
