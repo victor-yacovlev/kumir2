@@ -497,7 +497,7 @@ void EditorPlane::setProperFormat(QPainter *p, Shared::LexemType type, const QCh
     QFont f = font();
     QColor c = Qt::black;
 
-    const quint32 t = type;
+    const quint32 t = (type << 1) >> 1; // remove error flag
 
     static const quint32 PriKwd = Shared::LxTypePrimaryKwd;
     static const quint32 SecKwd = Shared::LxTypeSecondaryKwd;
@@ -511,13 +511,13 @@ void EditorPlane::setProperFormat(QPainter *p, Shared::LexemType type, const QCh
 
     const quint32 priKwd = PriKwd & t;
     const quint32 secKwd = SecKwd & t;
-    const quint32 nameClass = NameClass & t;
-    const quint32 nameAlg = NameAlg & t;
-    const quint32 nameModule = NameModule & t;
-    const quint32 literalConstant = ConstLiteral & t;
+    const quint32 nameClass = NameClass == t;
+    const quint32 nameAlg = NameAlg == t;
+    const quint32 nameModule = NameModule == t;
+    const quint32 literalConstant = ConstLiteral == t;
     const quint32 constant = TypeConstant & t;
-    const quint32 doc = TypeDoc & t;
-    const quint32 comment = TypeComment & t;
+    const quint32 doc = TypeDoc == t;
+    const quint32 comment = TypeComment == t;
 
     if (priKwd || secKwd) {
         c = m_settings->value(SettingsPage::KeyColorKw, SettingsPage::DefaultColorKw).toString();
