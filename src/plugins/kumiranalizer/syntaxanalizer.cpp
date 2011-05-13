@@ -1404,7 +1404,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
                 cBound.clear();
                 par = lb;
                 arrayBoundStart = curPos;
-                var->bounds.last().second = right;
+                bounds.last().second = right;
             }
             else if (group.lexems[curPos]->type==LxOperRightSqBr && deep1==0)
             {
