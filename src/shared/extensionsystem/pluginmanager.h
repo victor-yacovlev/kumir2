@@ -59,6 +59,11 @@ public:
 
 public slots:
 
+    /** Show settings for all modules
+      * @param parent widget, which blocks until dialog is closed
+      */
+    void showSettingsDialog();
+
     /** Stops all plugins in reverse-order of creation */
     void shutdown();
 

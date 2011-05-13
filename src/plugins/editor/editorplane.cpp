@@ -11,6 +11,7 @@ namespace Editor {
 EditorPlane::EditorPlane(TextDocument * doc
                          , TextCursor * cursor
                          , class Clipboard * clipboard
+                         , QSettings * settings
                          , QWidget *parent) :
     QWidget(parent)
 {
@@ -18,6 +19,7 @@ EditorPlane::EditorPlane(TextDocument * doc
     m_document = doc;
     m_cursor = cursor;
     m_clipboard = clipboard;
+    m_settings = settings;
     connect(m_cursor, SIGNAL(updateRequest()), this, SLOT(updateCursor()));
     connect(m_cursor, SIGNAL(updateRequest(int,int)), this, SLOT(updateText(int,int)));
     setFocusPolicy(Qt::StrongFocus);

@@ -10,7 +10,17 @@
 #define EXTENSIONSYSTEM_EXPORT Q_DECL_IMPORT
 #endif
 
+class QDialog;
+class QIcon;
+
 namespace ExtensionSystem {
+
+struct SettingsEditorPage {
+    inline SettingsEditorPage() { settingsPage = 0; settingsGroupIcon = 0; }
+    QDialog * settingsPage;
+    QString settingsGroupName;
+    QIcon * settingsGroupIcon;
+};
 
 class EXTENSIONSYSTEM_EXPORT KPlugin : public QObject
 {
@@ -21,6 +31,7 @@ public:
     KPlugin();
     PluginSpec pluginSpec() const;
     State state() const;
+    inline virtual SettingsEditorPage settingsEditorPage() { return SettingsEditorPage(); }
     virtual ~KPlugin();
 protected:
     virtual QString initialize(const QStringList &arguments) = 0;

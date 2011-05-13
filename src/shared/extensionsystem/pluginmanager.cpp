@@ -1,6 +1,7 @@
 #include "pluginmanager.h"
 #include "kplugin.h"
 #include <QScriptEngine>
+#include "settingsdialog.h"
 
 namespace ExtensionSystem {
 
@@ -20,6 +21,8 @@ struct PluginManagerPrivate {
     QList<PluginRequest> requests;
     QString mainPluginName;
 
+    SettingsDialog * settingsDialog;
+
     QString parsePluginsRequest(const QString &templ, QList<PluginRequest> & plugins, QStringList & names);
     QString loadSpecs(const QStringList &names, QScriptEngine * engine);
     QString makeDependencies(const QString &entryPoint,
@@ -27,6 +30,7 @@ struct PluginManagerPrivate {
                              const QString &maxVersion,
                              QStringList &orderedList);
     QString reorderSpecsAndCreateStates(const QStringList & orderedList);
+    void createSettingsDialog();
     QString loadPlugins();
 };
 
@@ -35,6 +39,26 @@ PluginManager::PluginManager()
     , d(new PluginManagerPrivate)
 {
     m_instance = this;
+}
+
+void PluginManagerPrivate::createSettingsDialog()
+{
+#ifdef Q_WS_X11
+    bool gui = getenv("DISPLAY")!=0;
+    if (!gui)
+        return;
+#endif
+    settingsDialog = new SettingsDialog;
+    for (int i=0; i<objects.size(); i++) {
+        settingsDialog->addPage(objects[i]->settingsEditorPage());
+    }
+}
+
+void PluginManager::showSettingsDialog()
+{
+    if (d->settingsDialog) {
+        d->settingsDialog->exec();
+    }
 }
 
 void PluginManager::setPluginPath(const QString &path)
@@ -316,6 +340,7 @@ QString PluginManager::initializePlugins()
         }
         d->states[i] = KPlugin::Initialized;
     }
+    d->createSettingsDialog();
     return "";
 }
 

@@ -21,6 +21,7 @@ public:
     StatusBar * statusBar;
     QScrollBar * horizontalScrollBar;
     static Clipboard * clipboard;
+    QSettings * settings;
     int documentId;
 
     QAction * copy;
@@ -36,7 +37,7 @@ public:
 
 Clipboard * EditorPrivate::clipboard = 0;
 
-Editor::Editor(AnalizerInterface * analizer, int documentId, QWidget *parent) :
+Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentId, QWidget *parent) :
     VisualComponent()
 {
     setParent(parent);
@@ -45,13 +46,14 @@ Editor::Editor(AnalizerInterface * analizer, int documentId, QWidget *parent) :
     d->cursor = new TextCursor(d->doc);
     d->analizer = analizer;
     d->documentId = documentId;
+    d->settings = settings;
     if (!d->clipboard)
         d->clipboard = new Clipboard;
     QVBoxLayout * l = new QVBoxLayout;
     l->setContentsMargins(0,0,0,0);
     l->setSpacing(0);
     setLayout(l);
-    d->plane = new EditorPlane(d->doc, d->cursor, d->clipboard, this);
+    d->plane = new EditorPlane(d->doc, d->cursor, d->clipboard, d->settings, this);
     d->scrollArea = new QScrollArea(this);
     d->scrollArea->setWidget(d->plane);
     d->scrollArea->setWidgetResizable(true);

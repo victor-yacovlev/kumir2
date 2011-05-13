@@ -14,6 +14,7 @@ public:
     explicit EditorPlane(class TextDocument * doc
                          , class TextCursor * cursor
                          , class Clipboard * clipboard
+                         , QSettings * settings
                          , QWidget *parent = 0);
     int widthInChars() const;
     int charWidth() const;
@@ -47,6 +48,7 @@ private:
     class TextDocument * m_document;
     class TextCursor * m_cursor;
     class Clipboard * m_clipboard;
+    QSettings * m_settings;
 
 
 };

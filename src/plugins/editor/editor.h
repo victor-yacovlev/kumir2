@@ -12,7 +12,7 @@ class Editor
 {
     Q_OBJECT
 public:
-    explicit Editor(Shared::AnalizerInterface * analizer = 0, int documentId = 0, QWidget *parent = 0);
+    explicit Editor(QSettings * settings = 0, Shared::AnalizerInterface * analizer = 0, int documentId = 0, QWidget *parent = 0);
     ~Editor();
     QList<QAction*> toolbarActions();
     QList<Shared::MenuActionsGroup> menuActions();

@@ -19,6 +19,7 @@ public:
                                                      , const QString &initialText = "");
 
     void closeDocument(int documentId);
+    ExtensionSystem::SettingsEditorPage settingsEditorPage();
     bool hasUnsavedChanges(int documentId) const;
     void setDocumentChangesSaved(int documentId);
     QString saveDocument(int documentId, const QString & fileName);

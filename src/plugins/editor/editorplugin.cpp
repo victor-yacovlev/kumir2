@@ -4,6 +4,7 @@
 #include "editorplugin.h"
 #include "editor.h"
 #include "editorstandalonewindow.h"
+#include "settingspage.h"
 
 namespace Editor {
 
@@ -39,7 +40,7 @@ QPair<int, VisualComponent*> EditorPlugin::newDocument(const QString &analizerNa
     AnalizerInterface * a = dynamic_cast<AnalizerInterface*>( dep );
     Q_CHECK_PTR(a);
     int docId = a->newDocument();
-    Editor * w = new Editor(a,docId,0);
+    Editor * w = new Editor(mySettings(), a, docId, 0);
     w->setText(initialText);
     int index = 0;
     for (int i=0; i<d->editors.size(); i++) {
@@ -104,10 +105,17 @@ void EditorPlugin::start()
             filename = arg;
         }
     }
-    EditorStandaloneWindow * w = new EditorStandaloneWindow(this, filename);
+    EditorStandaloneWindow * w = new EditorStandaloneWindow(this, mySettings(), filename);
     qApp->setQuitOnLastWindowClosed(true);
-    w->resize(QSize(1000, 400));
     w->show();
+}
+
+ExtensionSystem::SettingsEditorPage EditorPlugin::settingsEditorPage()
+{
+    ExtensionSystem::SettingsEditorPage page;
+    page.settingsGroupName = tr("Editor");
+    page.settingsPage = new SettingsPage(mySettings());
+    return page;
 }
 
 void EditorPlugin::stop()

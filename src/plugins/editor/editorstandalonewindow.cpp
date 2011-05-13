@@ -1,15 +1,20 @@
 #include "editorstandalonewindow.h"
 #include "editorplugin.h"
+#include "extensionsystem/pluginmanager.h"
 
 namespace Editor {
 
+QString EditorStandaloneWindow::RecentPathSettingsKey = "Paths/RecentFile";
+QString EditorStandaloneWindow::WindowRectSettingsKey = "Geometry/StandaloneWindow";
+
 EditorStandaloneWindow::EditorStandaloneWindow(class EditorPlugin * plugin
+                                               , QSettings * settings
                                                , const QString &startTextFileName
-                                               ) :
-    QMainWindow(0)
+                                               )
+    : QMainWindow(0)
+    , m_settings(settings)
 {
-
-
+    loadSettings();
 
     QMenu * file = menuBar()->addMenu(tr("File"));
 
@@ -45,9 +50,19 @@ EditorStandaloneWindow::EditorStandaloneWindow(class EditorPlugin * plugin
 
     file->addSeparator();
 
+    QAction * prefs = new QAction(this);
+    prefs->setShortcut(QKeySequence(QKeySequence::Preferences));
+    prefs->setMenuRole(QAction::PreferencesRole);
+    prefs->setText(tr("Preferences..."));
+    connect(prefs, SIGNAL(triggered()), this, SLOT(showSettings()));
+    file->addAction(prefs);
+
+    file->addSeparator();
+
     QAction * ex = new QAction(this);
     ex->setShortcut(QKeySequence(QKeySequence::Quit));
     ex->setText(tr("Exit"));
+    ex->setMenuRole(QAction::QuitRole);
     connect(ex, SIGNAL(triggered()), qApp, SLOT(quit()));
     file->addAction(ex);
 
@@ -61,6 +76,31 @@ EditorStandaloneWindow::EditorStandaloneWindow(class EditorPlugin * plugin
     else {
         newProgram();
     }
+}
+
+void EditorStandaloneWindow::closeEvent(QCloseEvent *e)
+{
+    saveSettings();
+    e->accept();
+}
+
+void EditorStandaloneWindow::showSettings()
+{
+    ExtensionSystem::PluginManager::instance()->showSettingsDialog();
+}
+
+
+void EditorStandaloneWindow::loadSettings()
+{
+    QRect r = m_settings->value(WindowRectSettingsKey, QRect(0,0,800,600)).toRect();
+    resize(r.size());
+    move(r.topLeft());
+}
+
+void EditorStandaloneWindow::saveSettings()
+{
+    QRect r(pos(), size());
+    m_settings->setValue(WindowRectSettingsKey, r);
 }
 
 void EditorStandaloneWindow::newProgram()
@@ -108,14 +148,15 @@ QString EditorStandaloneWindow::saveToFile(const QString &fileName)
 
 void EditorStandaloneWindow::openDocument()
 {
+    QString recentPath = m_settings->value(RecentPathSettingsKey, QDir::currentPath()).toString();
     QString fileName = QFileDialog::getOpenFileName( this
                                                     ,tr("Load Kumir program...")
-                                                    ,QDir::currentPath()
+                                                    ,recentPath
                                                     ,tr("Kumir programs (*.kum)")
                                                     );
     if (!fileName.isEmpty()) {
+        m_settings->setValue(RecentPathSettingsKey, fileName);
         if (loadFromFile(fileName)) {
-
         }
         else {
             QMessageBox::warning(this, tr("Error"), tr("Can't load file %1").arg(fileName));
@@ -137,12 +178,14 @@ void EditorStandaloneWindow::saveDocument()
 
 void EditorStandaloneWindow::saveDocumentAs()
 {
+    QString recentPath = m_settings->value(RecentPathSettingsKey, QDir::currentPath()).toString();
     QString fileName = QFileDialog::getSaveFileName(this
                                                     , tr("Save Kumir program...")
-                                                    , QDir::currentPath()
+                                                    , recentPath
                                                     , tr("Kumir programs (*.kum)")
                                                     );
     if (!fileName.isEmpty()) {
+        m_settings->setValue(RecentPathSettingsKey, fileName);
         QString error = saveToFile(s_fileName);
         if (!error.isEmpty()) {
             QMessageBox::warning(this, tr("Error"), error);
