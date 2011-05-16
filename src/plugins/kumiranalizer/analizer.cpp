@@ -45,6 +45,12 @@ Analizer::~Analizer()
 
 void Analizer::setSourceText(const QString &text)
 {
+    for (int i=0; i<d->statements.size(); i++) {
+        for (int j=0; j<d->statements[i].data.size(); j++) {
+            delete d->statements[i].data[j];
+        }
+    }
+    d->statements.clear();
     d->lexer->splitIntoStatements(text
                                   , 0
                                   , d->statements
@@ -54,49 +60,64 @@ void Analizer::setSourceText(const QString &text)
 
 }
 
-void Analizer::changeSourceText(int pos, int len, const QString &repl)
+void Analizer::changeSourceText(const QList<int> & removedLineNumbers, const QStringList & newLines)
 {
-    int startLine = d->sourceText.left(pos).count("\n");
-    int endLine = d->sourceText.left(pos+len).count("\n");
-    QList<Shared::Error>::iterator errorsIterator = d->errors.begin();
-    while (errorsIterator!=d->errors.end()) {
-        int line = (*errorsIterator).line;
-        if (line>=startLine || line<=endLine) {
-            errorsIterator = d->errors.erase(errorsIterator);
-        }
-        else {
-            errorsIterator ++;
-        }
-    }
-    QList<Statement> oldStatements;
-    int oldStatementsStart = -1;
-    for (int i=0; i<d->statements.size(); i++) {
-        int line = d->statements[i].data.first()->lineNo;
-        if (line>=startLine && line<=endLine) {
-            if (oldStatementsStart==-1)
-                oldStatementsStart = i;
-            oldStatements << d->statements[i];
-        }
-    }
-    QList<Statement> newStatements;
-    d->lexer->splitIntoStatements(repl
-                                  , startLine
-                                  , newStatements
-                                  );
-    int linesOffset = repl.count("\n") - (endLine-startLine);
-    for (int i=oldStatementsStart; i<d->statements.size(); i++) {
-        for (int j=0; j<d->statements[i].data.size(); j++)
-            d->statements[i].data[j]->lineNo += linesOffset;
-    }
-    d->statements = d->statements.mid(0, oldStatementsStart)
-            + newStatements
-            + d->statements.mid(oldStatementsStart+oldStatements.size());
+//    int startLine = d->sourceText.left(pos).count("\n");
+//    int endLine = d->sourceText.left(pos+len).count("\n");
+//    QList<Shared::Error>::iterator errorsIterator = d->errors.begin();
+//    while (errorsIterator!=d->errors.end()) {
+//        int line = (*errorsIterator).line;
+//        if (line>=startLine || line<=endLine) {
+//            errorsIterator = d->errors.erase(errorsIterator);
+//        }
+//        else {
+//            errorsIterator ++;
+//        }
+//    }
+//    QList<Statement> oldStatements;
+//    int oldStatementsStart = -1;
+//    for (int i=0; i<d->statements.size(); i++) {
+//        int line = d->statements[i].data.first()->lineNo;
+//        if (line>=startLine && line<=endLine) {
+//            if (oldStatementsStart==-1)
+//                oldStatementsStart = i;
+//            oldStatements << d->statements[i];
+//        }
+//    }
+//    QList<Statement> newStatements;
+//    d->lexer->splitIntoStatements(repl
+//                                  , startLine
+//                                  , newStatements
+//                                  );
+//    int linesOffset = repl.count("\n") - (endLine-startLine);
+//    for (int i=oldStatementsStart; i<d->statements.size(); i++) {
+//        for (int j=0; j<d->statements[i].data.size(); j++)
+//            d->statements[i].data[j]->lineNo += linesOffset;
+//    }
+//    d->statements = d->statements.mid(0, oldStatementsStart)
+//            + newStatements
+//            + d->statements.mid(oldStatementsStart+oldStatements.size());
 
-    d->sourceText.replace(pos, len, repl);
-    AnalizerPrivate::AnalizeSubject oldSubject = d->analizeSubject(oldStatements);
-    AnalizerPrivate::AnalizeSubject newSubject = d->analizeSubject(newStatements);
-    AnalizerPrivate::AnalizeSubject subject = oldSubject * newSubject;
-    d->doCompilation(subject);
+//    d->sourceText.replace(pos, len, repl);
+//    AnalizerPrivate::AnalizeSubject oldSubject = d->analizeSubject(oldStatements);
+//    AnalizerPrivate::AnalizeSubject newSubject = d->analizeSubject(newStatements);
+//    AnalizerPrivate::AnalizeSubject subject = oldSubject * newSubject;
+//    d->doCompilation(subject);
+    QStringList oldLines = d->sourceText.split("\n");
+    QStringList n;
+    if (removedLineNumbers.isEmpty()) {
+        n = oldLines + newLines;
+    }
+    else {
+        n = oldLines.mid(0, removedLineNumbers.first());
+        n += newLines;
+        if (removedLineNumbers.last()+1<oldLines.size()) {
+            n += oldLines.mid(removedLineNumbers.last()+1);
+        }
+    }
+    QString nt = n.join("\n");
+    qDebug() << "New text is: \n" << nt;
+    setSourceText(nt);
 
 }
 
@@ -165,7 +186,20 @@ AnalizerPrivate::AnalizeSubject AnalizerPrivate::analizeSubject(const QList<Shar
 
 QList<Error> Analizer::errors() const
 {
-    return d->errors;
+    QList<Error> result;
+    for (int i=0; i<d->statements.size(); i++) {
+        foreach (const Lexem * lx, d->statements[i].data) {
+            if (!lx->error.isEmpty()) {
+                Error err;
+                err.line = lx->lineNo;
+                err.start = lx->linePos;
+                err.len = lx->length;
+                err.code = lx->error;
+                result << err;
+            }
+        }
+    }
+    return result;
 }
 
 QList<LineProp> Analizer::lineProperties() const
@@ -175,6 +209,9 @@ QList<LineProp> Analizer::lineProperties() const
     for (int i=0; i<lines.size(); i++) {
         result << LineProp(lines[i].size(), LxTypeEmpty);
     }
+    if (d->sourceText.endsWith("\n")) {
+        result << LineProp(0, LxTypeEmpty);
+    }
     for (int i=0; i<d->statements.size(); i++) {
         foreach (const Lexem * lx, d->statements[i].data) {
             for (int j=lx->linePos; j<lx->linePos+lx->length; j++) {
@@ -183,7 +220,8 @@ QList<LineProp> Analizer::lineProperties() const
                 if (!lx->error.isEmpty()) {
                     value = value | errorMask;
                 }
-                result[d->statements[i].data.first()->lineNo][j] = LexemType(value);
+                const int lineNo = lx->lineNo;
+                result[lineNo][j] = LexemType(value);
             }
         }
     }

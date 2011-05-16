@@ -107,10 +107,10 @@ void KumirAnalizerPlugin::setSourceText(int documentId, const QString &text)
     m_analizers[documentId]->setSourceText(text);
 }
 
-void KumirAnalizerPlugin::changeSourceText(int documentId, int pos, int len, const QString &repl)
+void KumirAnalizerPlugin::changeSourceText(int documentId, const QList<int> & removedLineNumbers, const QStringList & newLines)
 {
     Q_CHECK_PTR(m_analizers[documentId]);
-    m_analizers[documentId]->changeSourceText(pos, len, repl);
+    m_analizers[documentId]->changeSourceText(removedLineNumbers, newLines);
 }
 
 QList<Shared::Error> KumirAnalizerPlugin::errors(int documentId) const

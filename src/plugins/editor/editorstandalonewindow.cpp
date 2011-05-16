@@ -213,6 +213,7 @@ void EditorStandaloneWindow::setupEditor()
         menu->addActions(m.actions);
     }
     setCentralWidget(m_editor);
+    m_editor->setFocus();
 }
 
 } // namespace Editor

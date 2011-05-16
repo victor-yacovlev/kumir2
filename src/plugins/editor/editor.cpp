@@ -10,17 +10,42 @@ namespace Editor {
 
 using namespace Shared;
 
-class EditorPrivate
+class ScrollBar
+        : public QScrollBar
 {
+public:
+    inline explicit ScrollBar(Qt::Orientation orientation, QWidget * parent) : QScrollBar(orientation, parent) {}
+protected:
+    inline void paintEvent(QPaintEvent *e)
+    {
+        if (isEnabled()) {
+            QScrollBar::paintEvent(e);
+        }
+        else {
+            QPainter p (this);
+            p.setPen(Qt::NoPen);
+            p.setBrush(palette().brush(QPalette::Window));
+            p.drawRect(e->rect());
+            e->accept();
+        }
+    }
+
+};
+
+
+class EditorPrivate
+        : public QObject
+{
+    Q_OBJECT;
 public:
     AnalizerInterface * analizer;
     TextDocument * doc;
     TextCursor * cursor;
-    QScrollArea * scrollArea;
     EditorPlane * plane;
     StatusBar * statusBar;
-    QScrollBar * horizontalScrollBar;
     static Clipboard * clipboard;
+    QScrollBar * horizontalScrollBar;
+    QScrollBar * verticalScrollBar;
     QSettings * settings;
     int documentId;
 
@@ -32,8 +57,37 @@ public:
     QAction * deleteTail;
 
     void createActions();
+    void updateFromAnalizer();
+public slots:
+    void handleLineAndTextChanged(const QList<int> &, const QList<int> &);
 };
 
+
+void EditorPrivate::handleLineAndTextChanged(const QList<int> &r, const QList<int> &n)
+{
+    if (!analizer) {
+        return;
+    }
+    QStringList newLines;
+    foreach (int l, n) {
+        newLines << doc->at(l).text;
+    }
+    qDebug() << "Removed " << r.count() << " lines, inserted " << n.count() << " lines";
+    analizer->changeSourceText(documentId, r, newLines);
+    updateFromAnalizer();
+}
+
+void EditorPrivate::updateFromAnalizer()
+{
+    QList<Shared::LineProp> props = analizer->lineProperties(documentId);
+    QList<QPoint> ranks = analizer->lineRanks(documentId);
+    for (int i=0; i<doc->size(); i++) {
+        (*doc)[i].indentStart = ranks[i].x();
+        (*doc)[i].indentEnd = ranks[i].y();
+        (*doc)[i].highlight = props[i].toList();
+    }
+    plane->update();
+}
 
 Clipboard * EditorPrivate::clipboard = 0;
 
@@ -49,21 +103,10 @@ Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentI
     d->settings = settings;
     if (!d->clipboard)
         d->clipboard = new Clipboard;
-    QVBoxLayout * l = new QVBoxLayout;
-    l->setContentsMargins(0,0,0,0);
-    l->setSpacing(0);
-    setLayout(l);
-    d->plane = new EditorPlane(d->doc, d->cursor, d->clipboard, d->settings, this);
-    d->scrollArea = new QScrollArea(this);
-    d->scrollArea->setWidget(d->plane);
-    d->scrollArea->setWidgetResizable(true);
-    d->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    d->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    l->addWidget(d->scrollArea);
-    d->horizontalScrollBar = new QScrollBar(Qt::Horizontal);
-    l->addWidget(d->horizontalScrollBar);
+    d->horizontalScrollBar = new ScrollBar(Qt::Horizontal, this);
+    d->verticalScrollBar = new ScrollBar(Qt::Vertical, this);
+    d->plane = new EditorPlane(d->doc, d->cursor, d->clipboard, d->settings, d->horizontalScrollBar, d->verticalScrollBar, this);
     d->statusBar = new StatusBar;
-    l->addWidget(d->statusBar);
     connect(d->cursor, SIGNAL(positionChanged(int,int)),
             d->statusBar, SLOT(handleCursorPositionChanged(int,int)));
     d->statusBar->handleCursorPositionChanged(d->cursor->row(), d->cursor->column());
@@ -71,7 +114,21 @@ Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentI
             d->statusBar, SLOT(handleClipboardChanged(int)));
     d->statusBar->handleClipboardChanged(d->clipboard->entriesCount());
     d->createActions();
+
+    connect(d->cursor, SIGNAL(lineAndTextChanged(QList<int>,QList<int>)),
+            d, SLOT(handleLineAndTextChanged(QList<int>,QList<int>)));
+
+    QGridLayout * l = new QGridLayout();
+    l->setContentsMargins(0,0,0,0);
+    l->setSpacing(0);
+    setLayout(l);
+    l->addWidget(d->plane, 0, 0);
+    l->addWidget(d->verticalScrollBar, 0, 1);
+    l->addWidget(d->horizontalScrollBar, 1, 0);
+    l->addWidget(d->statusBar, 2, 0, 1, 2);
 }
+
+
 
 QString Editor::text() const
 {
@@ -127,8 +184,6 @@ Editor::~Editor()
 {
     delete d->doc;
     d->plane->deleteLater();
-    d->scrollArea->deleteLater();
-    d->horizontalScrollBar->deleteLater();
     d->statusBar->deleteLater();
     delete d;
 }
@@ -166,15 +221,9 @@ void Editor::setText(const QString & text)
     d->doc->setPlainText(text);
     if (d->analizer) {
         d->analizer->setSourceText(d->documentId, text);
-        QList<Shared::LineProp> props = d->analizer->lineProperties(d->documentId);
-        QList<QPoint> ranks = d->analizer->lineRanks(d->documentId);
-        for (int i=0; i<d->doc->size(); i++) {
-            (*d->doc)[i].indentStart = ranks[i].x();
-            (*d->doc)[i].indentEnd = ranks[i].y();
-            (*d->doc)[i].highlight = props[i].toList();
-        }
+        d->updateFromAnalizer();
     }
-    update();
+    d->plane->update();
 }
 
 void Editor::setNotModified()
@@ -188,3 +237,5 @@ bool Editor::isModified() const
 }
 
 } // namespace Editor
+
+#include "editor.moc"

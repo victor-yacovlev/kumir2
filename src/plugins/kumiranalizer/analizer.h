@@ -39,7 +39,7 @@ public slots:
     /**
       * Changes current program source text
       */
-    void changeSourceText(int pos, int len, const QString &repl);
+    void changeSourceText(const QList<int> & removedLineNumbers, const QStringList & newLines);
 
     /**
       * Get all analizer errors

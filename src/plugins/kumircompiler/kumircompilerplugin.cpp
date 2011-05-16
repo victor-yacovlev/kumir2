@@ -70,7 +70,7 @@ void KumirCompilerPlugin::start()
             }
             for (int i=0; i<errors.size(); i++) {
                 Shared::Error e = errors[i];
-                std::cerr << filename.toLocal8Bit().data() << ":" << e.line << ": Error " << e.code << std::endl;
+                std::cerr << filename.toLocal8Bit().data() << ":" << e.line << ": Error " << e.code.toLocal8Bit().data() << std::endl;
             }
             qApp->setProperty("returnCode", errors.isEmpty()? 0 : 1);
         }

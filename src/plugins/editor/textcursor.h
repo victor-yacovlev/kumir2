@@ -31,7 +31,6 @@ public:
     void removeCurrentChar();
     void removeSelection();
     void removeSelectedText();
-    void removeSelectedBlock();
     void removeCurrentLine();
     void removeLineTail();
     void movePosition(QTextCursor::MoveOperation, MoveMode, int n=1);
@@ -42,13 +41,19 @@ public:
 
 signals:
     void positionChanged(int row, int col);
+    void lineAndTextChanged(const QList<int> &, const QList<int> & );
     void updateRequest();
     void updateRequest(int fromLine, int toLine);
 
+
 protected:
+
+    void removeSelectedBlock();
     void timerEvent(QTimerEvent *e);
     void emitPositionChanged();
     class TextDocument * m_document;
+    QList <int> l_removedLines;
+    QList <int> l_newLines;
     EditMode e_mode;
     int i_timerId;
     bool b_enabled;

@@ -14,6 +14,8 @@ EditorPlane::EditorPlane(TextDocument * doc
                          , TextCursor * cursor
                          , class Clipboard * clipboard
                          , QSettings * settings
+                         , QScrollBar * horizontalSB
+                         , QScrollBar * verticalSB
                          , QWidget *parent) :
     QWidget(parent)
 {
@@ -22,6 +24,8 @@ EditorPlane::EditorPlane(TextDocument * doc
     m_cursor = cursor;
     m_clipboard = clipboard;
     m_settings = settings;
+    m_horizontalScrollBar = horizontalSB;
+    m_verticalScrollBar = verticalSB;
     connect(m_cursor, SIGNAL(updateRequest()), this, SLOT(updateCursor()));
     connect(m_cursor, SIGNAL(updateRequest(int,int)), this, SLOT(updateText(int,int)));
     setFocusPolicy(Qt::StrongFocus);
@@ -29,23 +33,116 @@ EditorPlane::EditorPlane(TextDocument * doc
     defaultFont.setFamily(m_settings->value(SettingsPage::KeyFontName, SettingsPage::defaultFontFamily()).toString());
     defaultFont.setPointSize(m_settings->value(SettingsPage::KeyFontSize, SettingsPage::defaultFontSize).toInt());
     setFont(defaultFont);
+    connect(horizontalSB, SIGNAL(valueChanged(int)), this, SLOT(update()));
+    connect(verticalSB, SIGNAL(valueChanged(int)), this, SLOT(update()));
+    updateScrollBars();
 }
 
 QPoint EditorPlane::offset() const
 {
-    QPoint lineNumbersOffset(charWidth()*5, 0);
-    QPoint totalOffset = lineNumbersOffset;
+    QPoint lineNumbersOffset (charWidth()*5 , 0);
+    QPoint scrollOffset(0,0);
+    if (m_horizontalScrollBar->isEnabled()) {
+        int valX = m_horizontalScrollBar->value();
+        valX = ( valX / charWidth() ) * charWidth();
+        scrollOffset.setX(-valX);
+    }
+    if (m_verticalScrollBar->isEnabled()) {
+        int valY = m_verticalScrollBar->value();
+        valY = ( valY / lineHeight() ) * lineHeight();
+        scrollOffset.setY(-valY);
+    }
+    QPoint totalOffset = lineNumbersOffset + scrollOffset;
     return totalOffset;
+}
+
+void EditorPlane::updateScrollBars()
+{
+    QPoint prevOffset = offset();
+    int w = 1;
+    int h = 1;
+    for (int i=0 ; i<m_document->size(); i++) {
+        int indent = m_document->indentAt(i) * 2;
+        int tl = m_document->at(i).text.length();
+        w = qMax(w, indent+tl+1);
+    }
+    w = qMax(w, m_cursor->column()+1);
+    h = qMax(m_document->size()+1, m_cursor->row()+2);
+
+    QSize contentSize (w*charWidth(), h*lineHeight());
+    QSize viewportSize (widthInChars() * charWidth(), height());
+    if (contentSize.width()<=viewportSize.width()) {
+        m_horizontalScrollBar->setEnabled(false);
+    }
+    else {
+        m_horizontalScrollBar->setEnabled(true);
+        m_horizontalScrollBar->setRange(0, contentSize.width()-viewportSize.width());
+        m_horizontalScrollBar->setSingleStep(charWidth());
+        m_horizontalScrollBar->setPageStep(charWidth() * 8);
+    }
+    if (contentSize.height()<=viewportSize.height()) {
+        m_verticalScrollBar->setEnabled(false);
+    }
+    else {
+        m_verticalScrollBar->setEnabled(true);
+        m_verticalScrollBar->setRange(0, contentSize.height()-viewportSize.height());
+        m_verticalScrollBar->setSingleStep(lineHeight());
+        m_verticalScrollBar->setPageStep(lineHeight() * 8);
+    }
+    if (prevOffset!=offset())
+        update();
+}
+
+void EditorPlane::ensureCursorVisible()
+{
+    QRect cr(5 + m_cursor->column(),
+             m_cursor->row(),
+             2,
+             2
+                );
+    QRect vr;
+    vr.setLeft(m_horizontalScrollBar->isEnabled()? m_horizontalScrollBar->value()/charWidth() : 0);
+    vr.setTop(m_verticalScrollBar->isEnabled()? m_verticalScrollBar->value()/lineHeight() : 0);
+    vr.setSize(QSize(widthInChars(), height()/lineHeight()));
+//    qDebug() << "CR: " << cr;
+//    qDebug() << "VR: " << vr;
+    if (cr.left()>vr.right()) {
+//        qDebug() << "A";
+        int v = 6+m_cursor->column();
+        m_horizontalScrollBar->setValue(v * charWidth());
+    }
+    else if (cr.right()<vr.left()) {
+//        qDebug() << "B";
+        int v = 4+m_cursor->column();
+        m_horizontalScrollBar->setValue(v * charWidth());
+    }
+    if (cr.top()>vr.bottom()) {
+//        qDebug() << "C";
+        int v = m_cursor->row()+1;
+        m_verticalScrollBar->setValue(v*lineHeight());
+    }
+    else if (cr.bottom()<vr.top()) {
+//        qDebug() << "D";
+        int v = m_cursor->row()-1;
+        m_verticalScrollBar->setValue(v*lineHeight());
+    }
+}
+
+void EditorPlane::findCursor()
+{
+    updateScrollBars();
+    ensureCursorVisible();
 }
 
 void EditorPlane::paintEvent(QPaintEvent *e)
 {
+//    qDebug() << "My size : " << size();
     QPainter p(this);
     paintBackground(&p, e->rect());
 
     p.save();
 
-    p.translate(offset());
+    p.translate( offset() );
 
     paintSelection(&p, e->rect());
     paintRectSelection(&p, e->rect());
@@ -65,7 +162,8 @@ int EditorPlane::charWidth() const
 
 void EditorPlane::updateCursor()
 {
-    update(cursorRect());
+//    update(cursorRect());
+    update();
 }
 
 void EditorPlane::updateText(int fromLine, int toLine)
@@ -94,6 +192,8 @@ void EditorPlane::paintCursor(QPainter *p, const QRect &rect)
 {
     p->save();
     QRect cr = cursorRect();
+    cr.translate(offset());
+
 //    qDebug() << "Paint rect: " << rect;
     if (rect.intersects(cr) && m_cursor->isVisible()) {
         p->setPen(Qt::NoPen);
@@ -102,6 +202,8 @@ void EditorPlane::paintCursor(QPainter *p, const QRect &rect)
     }
     p->restore();
 }
+
+
 
 void EditorPlane::keyReleaseEvent(QKeyEvent *e)
 {
@@ -278,7 +380,7 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         if (e->key()==tempSwichLayoutKey) {
             Utils::temporaryLayoutSwitch = true;
         }
-
+        findCursor();
     }
     if (process)
         e->accept();
@@ -320,6 +422,7 @@ void EditorPlane::paste()
             m_cursor->insertText(data.text);
         }
     }
+    findCursor();
 }
 
 void EditorPlane::cut()
@@ -331,22 +434,24 @@ void EditorPlane::cut()
     else if (m_cursor->hasRectSelection()) {
         m_cursor->clearSelectedBlock();
     }
-
+    findCursor();
 }
 
 void EditorPlane::removeLine()
 {
     m_cursor->removeCurrentLine();
+    findCursor();
 }
 
 void EditorPlane::removeLineTail()
 {
     m_cursor->removeLineTail();
+    findCursor();
 }
 
 QRect EditorPlane::cursorRect() const
 {
-    QPoint off = offset();
+//    QPoint off = offset();
     int row = m_cursor->row();
     int col = m_cursor->column();
     int dX = charWidth();
@@ -356,7 +461,7 @@ QRect EditorPlane::cursorRect() const
         result = QRect(col*dX, row*dY, dX, dY);
     else
         result = QRect(col*dX, (row+1)*dY-1, dX, 2);
-    result.translate(off);
+//    result.translate( off );
 //    qDebug() << "Cursor rect: " << result;
     return result;
 }
@@ -470,11 +575,11 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
         p->setBrush(palette().brush(QPalette::Base));
         p->drawRect(cw*4+cw/2, i*lh, cw/2, lh);
         QColor textColor = QColor(palette().brush(QPalette::WindowText).color());
-        if (i-1>=m_document->size()) {
+        if (i-1-offset().y()/lineHeight()>=m_document->size()) {
             textColor = QColor(Qt::lightGray);
         }
         p->setPen(textColor);
-        QString txt = QString::number(i);
+        QString txt = QString::number(i - (offset().y()/lineHeight()));
         int tw = QFontMetrics(font()).width(txt);
         int xx = cw * 3 - tw;
         int yy = i * lh;
@@ -486,9 +591,9 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
 void EditorPlane::paintText(QPainter *p, const QRect &rect)
 {
     p->save();
-    int startLine = rect.top() / lineHeight();
-    int endLine = rect.bottom() / lineHeight() + 1;
-    for (int i=startLine; i<endLine+1; i++) {
+    int startLine = rect.top()-offset().y() / lineHeight() - 1;
+    int endLine = rect.bottom()-offset().y() / lineHeight() + 1;
+    for (int i=qMax(startLine, 0); i<endLine+1; i++) {
         int indent = m_document->indentAt(i);
         int y =  ( i + 1 )* lineHeight();
         p->setBrush(QColor(Qt::black));
@@ -501,7 +606,7 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
             p->drawRect(dotRect);
         }
     }
-    for (int i=startLine; i<qMin(endLine+1, m_document->size()); i++) {
+    for (int i=qMax(startLine, 0); i<qMin(endLine+1, m_document->size()); i++) {
         int indent = m_document->indentAt(i);
         int y =  ( i + 1 )* lineHeight();
         QList<Shared::LexemType> highlight = m_document->at(i).highlight;

@@ -37,7 +37,6 @@ struct AnalizerPrivate
     QString sourceText;
     QList<Lexem*> lexems;
     QList<Statement> statements;
-    QList<Shared::Error> errors;
 
 
     AnalizeSubject analizeSubject(const QList<Statement> & statements) const;

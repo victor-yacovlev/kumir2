@@ -14,6 +14,7 @@ StatusBar::StatusBar(QWidget *parent) :
     s_keyboardLayoutTemplateText = ui->keyboardLayout->text();
     s_capsLockTemplateText = ui->capsLock->text();
     i_timerId = startTimer(500);
+    setMaximumHeight(32);
 }
 
 

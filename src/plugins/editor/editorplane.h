@@ -15,10 +15,13 @@ public:
                          , class TextCursor * cursor
                          , class Clipboard * clipboard
                          , QSettings * settings
+                         , QScrollBar * horizontalSB
+                         , QScrollBar * verticalSB
                          , QWidget *parent = 0);
     int widthInChars() const;
     int charWidth() const;
     int lineHeight() const;
+    inline int marginCharactersCount() const { return i_marginWidth; }
     QRect cursorRect() const;
 public slots:
     void selectAll();
@@ -28,6 +31,10 @@ public slots:
     void removeLine();
     void removeLineTail();
 protected:
+    void updateScrollBars();
+    void findCursor();
+    void ensureCursorVisible();
+    void updateOffset();
     void paintEvent(QPaintEvent *);
     QPoint offset() const;
     void paintBackground(QPainter *p, const QRect &rect);
@@ -49,6 +56,8 @@ private:
     class TextCursor * m_cursor;
     class Clipboard * m_clipboard;
     QSettings * m_settings;
+    QScrollBar * m_verticalScrollBar;
+    QScrollBar * m_horizontalScrollBar;
 
 
 };

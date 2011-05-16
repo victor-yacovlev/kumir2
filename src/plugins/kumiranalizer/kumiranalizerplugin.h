@@ -58,7 +58,7 @@ public:
     int newDocument();
     void dropDocument(int documentId);
     void setSourceText(int documentId, const QString &text);
-    void changeSourceText(int documentId, int pos, int len, const QString &repl);
+    void changeSourceText(int documentId, const QList<int> & removedLineNumbers, const QStringList & newLines);
     QList<Shared::Error> errors(int documentId) const;
     QList<Shared::LineProp> lineProperties(int documentId) const;
     QList<QPoint> lineRanks(int documentId) const;

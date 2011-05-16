@@ -21,10 +21,21 @@ TextCursor::TextCursor(TextDocument * document)
 
 void TextCursor::emitPositionChanged()
 {
+    bool compileRequest = l_removedLines.size()>1 || l_newLines.size()>1;
     if (i_prevRow!=i_row || i_prevCol!=i_column) {
+        if (i_prevRow!=i_row && i_prevRow!=-1) {
+            if (l_removedLines.size()>0 || l_newLines.size()>0) {
+                compileRequest = true;
+            }
+        }
         i_prevRow = i_row;
         i_prevCol = i_column;
         emit positionChanged(i_row, i_column);
+    }
+    if (compileRequest) {
+        emit lineAndTextChanged(l_removedLines, l_newLines);
+        l_removedLines.clear();
+        l_newLines.clear();
     }
 }
 
@@ -427,10 +438,12 @@ void TextCursor::insertText(const QString &text)
     if (!b_enabled)
         return;
     // TODO Undo-redo stack!
-    if (hasSelection())
+    if (hasSelection()) {
         removeSelectedText();
-    if (hasRectSelection())
+    }
+    if (hasRectSelection()) {
         removeSelectedBlock();
+    }
 
     int fromLineUpdate = i_row;
     while (i_row>=m_document->size()) {
@@ -438,6 +451,8 @@ void TextCursor::insertText(const QString &text)
         textLine.indentStart = 0;
         textLine.indentEnd = 0;
         textLine.lineEndSelected = false;
+        if (!l_newLines.contains(m_document->size()))
+            l_newLines << m_document->size();
         m_document->append(textLine);
     }
     const int indent = m_document->indentAt(i_row);
@@ -452,6 +467,11 @@ void TextCursor::insertText(const QString &text)
 
     int textPos = i_column - indent * 2;
 
+    if (i_row<m_document->size() && !l_removedLines.contains(i_row))
+        l_removedLines << i_row;
+    if (i_row<m_document->size() && !l_newLines.contains(i_row))
+        l_newLines << i_row;
+
     // fill with spaces if need
     if (m_document->at(i_row).text.length()<textPos) {
         TextLine line = m_document->at(i_row);
@@ -465,6 +485,11 @@ void TextCursor::insertText(const QString &text)
     }
 
     QStringList lines = text.split("\n");
+    for (int i=1; i<lines.count(); i++) {
+        if (!l_newLines.contains(i_row+i)) {
+            l_newLines << i_row+i;
+        }
+    }
 
     // detect highlight at current cursor position
     Shared::LexemType curType = Shared::LxTypeEmpty;
@@ -532,10 +557,12 @@ void TextCursor::removePreviousChar()
         return;
     if (hasSelection()) {
         removeSelectedText();
+        emitPositionChanged();
         return;
     }
     if (hasRectSelection()) {
         removeSelectedBlock();
+        emitPositionChanged();
         return;
     }
     removeSelection();
@@ -561,6 +588,12 @@ void TextCursor::removePreviousChar()
                     curTextLine.highlight.mid(textPos);
 
             (*m_document)[i_row].selected.pop_back();
+            if (!l_removedLines.contains(i_row)) {
+                l_removedLines << i_row;
+            }
+            if (!l_newLines.contains(i_row)) {
+                l_newLines << i_row;
+            }
         }
         i_column --;
     }
@@ -577,6 +610,15 @@ void TextCursor::removePreviousChar()
                 (*m_document)[i_row-1].indentEnd += curTextLine.indentStart + curTextLine.indentEnd;
                 m_document->removeAt(i_row);
                 i_row--;
+                if (!l_removedLines.contains(i_row)) {
+                    l_removedLines << i_row;
+                }
+                if (!l_removedLines.contains(i_row+1)) {
+                    l_removedLines << i_row+1;
+                }
+                if (!l_newLines.contains(i_row)) {
+                    l_newLines << i_row;
+                }
             }
             else {
                 i_row--;
@@ -597,10 +639,14 @@ void TextCursor::removeCurrentLine()
         return;
     if (hasSelection()) {
         removeSelectedText();
+        emitPositionChanged();
         return;
     }
 
     if (i_row<m_document->size()) {
+        if (!l_removedLines.contains(i_row)) {
+            l_removedLines << i_row;
+        }
         m_document->removeAt(i_row);
         emit updateRequest(-1, -1);
         emit updateRequest();
@@ -614,10 +660,17 @@ void TextCursor::removeLineTail()
         return;
     if (hasSelection()) {
         removeSelectedText();
+        emitPositionChanged();
         return;
     }
 
     if (i_row<m_document->size()) {
+        if (!l_removedLines.contains(i_row)) {
+            l_removedLines << i_row;
+        }
+        if (!l_newLines.contains(i_row)) {
+            l_newLines << i_row;
+        }
         int textPos = i_column - m_document->indentAt(i_row)*2;
         if (textPos<m_document->at(i_row).text.length()) {
             (*m_document)[i_row].text = (*m_document)[i_row].text.mid(0, textPos);
@@ -637,10 +690,12 @@ void TextCursor::removeCurrentChar()
         return;
     if (hasSelection()) {
         removeSelectedText();
+        emitPositionChanged();
         return;
     }
     if (hasRectSelection()) {
         removeSelectedBlock();
+        emitPositionChanged();
         return;
     }
     b_visible = false;
@@ -663,13 +718,27 @@ void TextCursor::removeCurrentChar()
                 curTextLine.highlight.mid(textPos+1);
 
         (*m_document)[i_row].selected.pop_back();
-
+        if (!l_removedLines.contains(i_row)) {
+            l_removedLines << i_row;
+        }
+        if (!l_newLines.contains(i_row)) {
+            l_newLines << i_row;
+        }
 
     }
     else if (i_row<m_document->size()-1) {
         // remove line delimeter if exists
         toLineUpdate = -1;
         TextLine curTextLine = m_document->at(i_row);
+        if (!l_removedLines.contains(i_row)) {
+            l_removedLines << i_row;
+        }
+        if (!l_removedLines.contains(i_row+1)) {
+            l_removedLines << i_row+1;
+        }
+        if (!l_newLines.contains(i_row)) {
+            l_newLines << i_row;
+        }
         // if cursor far away from end of line -- fill by spaces
         while (curTextLine.text.length() < textPos) {
             curTextLine.text += " ";
@@ -736,16 +805,28 @@ void TextCursor::removeSelectedText()
 
     // Remove selected text inside lines
 
+    int selectionLineStart = -1;
+    int selectionLineEnd = -1;
+
     for (int i=0; i<m_document->size(); i++) {
         int start = -1;
         int end = -1;
         for (int j=0; j<m_document->at(i).selected.size(); j++) {
             bool v = m_document->at(i).selected[j];
             if (v) {
+                if (selectionLineStart==-1) {
+                    selectionLineStart = i;
+                }
+                selectionLineEnd = qMax(selectionLineEnd, i);
                 if (start==-1) {
                     start = j;
                 }
                 end = qMax(j, end);
+            }
+            if (m_document->at(i).lineEndSelected) {
+                if (selectionLineStart==-1)
+                    selectionLineStart = i;
+                selectionLineEnd = qMax(i+1, selectionLineEnd);
             }
         }
         if (start!=-1) {
@@ -757,6 +838,7 @@ void TextCursor::removeSelectedText()
                     + (*m_document)[i].selected.mid(end+1);
         }
     }
+
 
     // Remove lines
 
@@ -779,6 +861,13 @@ void TextCursor::removeSelectedText()
         }
     }
 
+
+    for (int i=selectionLineStart; i<=selectionLineEnd; i++) {
+        if (!l_removedLines.contains(i)) {
+            l_removedLines << i;
+        }
+    }
+
     // Move cursor
 
     i_row = cursorStartLine;
@@ -788,7 +877,7 @@ void TextCursor::removeSelectedText()
 
     emit updateRequest(-1, -1);
     emit updateRequest();
-    emitPositionChanged();
+
 }
 
 void TextCursor::removeSelectedBlock()
@@ -803,6 +892,11 @@ void TextCursor::removeSelectedBlock()
     int lineEnd = rect_selection.bottom();
     int startPos = rect_selection.left();
     int endPos = rect_selection.right();
+
+    for (int i=lineStart; i<=lineEnd; i++) {
+        if (!l_removedLines.contains(i))
+            l_removedLines << i;
+    }
 
     lineEnd = qMin(lineEnd+1, m_document->size());
 
