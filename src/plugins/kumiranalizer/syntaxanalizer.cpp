@@ -2380,8 +2380,9 @@ int findOperatorByPriority(const QList<SubexpressionElement> & s)
 {
     int result = -1;
     static const QList<QSet <LexemType> > Omega = QList<QSet<LexemType> >()
+            << ( QSet<LexemType>() << LxSecOr )
+            << ( QSet<LexemType>() << LxSecAnd )
             << ( QSet<LexemType>() << LxSecNot )
-            << ( QSet<LexemType>() << LxSecOr << LxSecAnd )
             << ( QSet<LexemType>() << LxOperNotEqual << LxOperEqual << LxOperGreater << LxOperGreaterOrEqual << LxOperLess << LxOperLessOrEqual )
             << ( QSet<LexemType>() << LxOperPlus << LxOperMinus )
             << ( QSet<LexemType>() << LxOperAsterisk << LxOperSlash )
