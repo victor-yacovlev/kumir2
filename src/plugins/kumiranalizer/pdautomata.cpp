@@ -1141,6 +1141,43 @@ void PDAutomataPrivate::appendSimpleLine()
     (*source)[currentPosition].statement = statement;
 }
 
+AST::Statement * PDAutomata::createSimpleAstStatement(Statement &st)
+{
+    AST::Statement * statement = new AST::Statement;
+    switch ( st.type ) {
+    case LxPriAssign:
+        statement->type = AST::StAssign;
+        break;
+    case LxPriAssert:
+        statement->type = AST::StAssert;
+        break;
+    case LxPriInput:
+        statement->type = AST::StInput;
+        break;
+    case LxPriOutput:
+        statement->type = AST::StOutput;
+        break;
+    case LxPriFinput:
+        statement->type = AST::StFileInput;
+        break;
+    case LxPriFoutput:
+        statement->type = AST::StFileOutput;
+        break;
+    case LxPriExit:
+        statement->type = AST::StBreak;
+        break;
+    default:
+        statement->type = AST::StError;
+        break;
+    }
+    if (st.hasError()) {
+        statement->type = AST::StError;
+        statement->error = st.data[0]->error;
+        st.statement = statement;
+    }
+    return statement;
+}
+
 void PDAutomataPrivate::processCorrectAlgEnd()
 {
     setCurrentIndentRank(-1,  0);

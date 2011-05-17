@@ -43,81 +43,86 @@ Analizer::~Analizer()
 }
 
 
-void Analizer::setSourceText(const QString &text)
-{
-    for (int i=0; i<d->statements.size(); i++) {
-        for (int j=0; j<d->statements[i].data.size(); j++) {
-            delete d->statements[i].data[j];
-        }
-    }
-    d->statements.clear();
-    d->lexer->splitIntoStatements(text
-                                  , 0
-                                  , d->statements
-                                  );
-    d->sourceText = text;
-    d->doCompilation(AnalizerPrivate::SubjWholeText);
-
-}
-
 void Analizer::changeSourceText(const QList<int> & removedLineNumbers, const QStringList & newLines)
 {
-//    int startLine = d->sourceText.left(pos).count("\n");
-//    int endLine = d->sourceText.left(pos+len).count("\n");
-//    QList<Shared::Error>::iterator errorsIterator = d->errors.begin();
-//    while (errorsIterator!=d->errors.end()) {
-//        int line = (*errorsIterator).line;
-//        if (line>=startLine || line<=endLine) {
-//            errorsIterator = d->errors.erase(errorsIterator);
-//        }
-//        else {
-//            errorsIterator ++;
-//        }
-//    }
-//    QList<Statement> oldStatements;
-//    int oldStatementsStart = -1;
-//    for (int i=0; i<d->statements.size(); i++) {
-//        int line = d->statements[i].data.first()->lineNo;
-//        if (line>=startLine && line<=endLine) {
-//            if (oldStatementsStart==-1)
-//                oldStatementsStart = i;
-//            oldStatements << d->statements[i];
-//        }
-//    }
-//    QList<Statement> newStatements;
-//    d->lexer->splitIntoStatements(repl
-//                                  , startLine
-//                                  , newStatements
-//                                  );
-//    int linesOffset = repl.count("\n") - (endLine-startLine);
-//    for (int i=oldStatementsStart; i<d->statements.size(); i++) {
-//        for (int j=0; j<d->statements[i].data.size(); j++)
-//            d->statements[i].data[j]->lineNo += linesOffset;
-//    }
-//    d->statements = d->statements.mid(0, oldStatementsStart)
-//            + newStatements
-//            + d->statements.mid(oldStatementsStart+oldStatements.size());
-
-//    d->sourceText.replace(pos, len, repl);
-//    AnalizerPrivate::AnalizeSubject oldSubject = d->analizeSubject(oldStatements);
-//    AnalizerPrivate::AnalizeSubject newSubject = d->analizeSubject(newStatements);
-//    AnalizerPrivate::AnalizeSubject subject = oldSubject * newSubject;
-//    d->doCompilation(subject);
-    QStringList oldLines = d->sourceText.split("\n");
-    QStringList n;
-    if (removedLineNumbers.isEmpty()) {
-        n = oldLines + newLines;
+    QList<Statement>::iterator it = d->statements.begin();
+    QList<Statement> removedStatements;
+    QList<Statement> newStatements;
+    QList<Statement>::iterator insertPos = d->statements.end();
+    int lineStart = 0;
+    int lineEnd = 99999999;
+    if (!removedLineNumbers.isEmpty()) {
+        // We assume this set is sorted in ascending order
+        lineStart = removedLineNumbers.first();
+        lineEnd = removedLineNumbers.last();
     }
-    else {
-        n = oldLines.mid(0, removedLineNumbers.first());
-        n += newLines;
-        if (removedLineNumbers.last()+1<oldLines.size()) {
-            n += oldLines.mid(removedLineNumbers.last()+1);
+    while (it!=d->statements.end()) {
+        Statement st = (*it);
+        bool remove = false;
+        bool insert = false;
+        foreach (const Lexem * lx, st.data) {
+            if ( (lx->lineNo>=lineStart) && (insertPos==d->statements.end())) {
+                insert = true;
+            }
+            if (lx->lineNo>=lineStart && lx->lineNo<=lineEnd) {
+                remove = true;
+                break;
+            }
+        }
+
+        if (remove) {
+            removedStatements << st;
+            it = d->statements.erase(it);
+        }
+        if (insert) {
+            insertPos = it;
+        }
+        if (!remove) {
+            it++;
         }
     }
-    QString nt = n.join("\n");
-    qDebug() << "New text is: \n" << nt;
-    setSourceText(nt);
+
+
+    QStringList newSourceText = d->sourceText.mid(0, lineStart) + newLines;
+    if (lineEnd+1<d->sourceText.size()) {
+        newSourceText += d->sourceText.mid(lineEnd+1);
+    }
+    d->sourceText = newSourceText;
+
+    d->lexer->splitIntoStatements(newLines, lineStart, newStatements);
+
+    AnalizerPrivate::AnalizeSubject subjByOld =
+            d->analizeSubject(removedStatements);
+
+    AnalizerPrivate::AnalizeSubject subjByNew =
+            d->analizeSubject(newStatements);
+
+    AnalizerPrivate::AnalizeSubject subject = subjByOld * subjByNew;
+
+    Statement fordebug;
+    if (insertPos!=d->statements.end())
+         fordebug = (*insertPos);
+    Q_UNUSED(fordebug);
+
+    for (QList<Statement>::iterator it=insertPos; it!=d->statements.end(); it++) {
+        Statement st = (*it);
+        foreach (Lexem * lx, st.data) {
+            lx->lineNo += newLines.size() - removedLineNumbers.size();
+        }
+    }
+
+    for (int i=0 ; i<newStatements.size(); i++) {
+        insertPos = d->statements.insert(insertPos, newStatements[i]);
+        insertPos ++;
+    }
+
+    d->doCompilation(subject, removedStatements, newStatements, d->statements);
+
+    foreach (Statement st, removedStatements) {
+        foreach (Lexem * lx, st.data) {
+            delete lx;
+        }
+    }
 
 }
 
@@ -133,56 +138,69 @@ extern AnalizerPrivate::AnalizeSubject operator * ( const AnalizerPrivate::Anali
 }
 
 
-AnalizerPrivate::AnalizeSubject AnalizerPrivate::analizeSubject(const QList<Lexem*> &lexems, int startLineNo) const
-{
-    QList<Shared::LexemType> lexemTypes;
-    foreach (const Lexem * lx, lexems) {
-        lexemTypes << lx->type;
-    }
-    return analizeSubject(lexemTypes, startLineNo);
-}
-
 AnalizerPrivate::AnalizeSubject AnalizerPrivate::analizeSubject(const QList<Statement> &statements) const
 {
-    QList<Shared::LexemType> lexemTypes;
-    int startLineNo = statements.isEmpty()? 0 : statements[0].data.first()->lineNo;
+//    QList<Shared::LexemType> lexemTypes;
+//    int startLineNo = statements.isEmpty()? 0 : statements[0].data.first()->lineNo;
+    AnalizeSubject result = SubjStatements;
     foreach (const Statement &st, statements) {
-        foreach (const Lexem * lx, st.data) {
-            lexemTypes << lx->type;
-        }
-    }
-    return analizeSubject(lexemTypes, startLineNo);
-}
-
-AnalizerPrivate::AnalizeSubject AnalizerPrivate::analizeSubject(const QList<Shared::LexemType> &lexemTypes, int startLineNo) const
-{
-    Q_UNUSED(startLineNo); // TODO check algorhitm range by startLineNo
-    // Current implementation deals only in two modes:
-    //  - whole text;
-    //  - modified statements.
-    foreach (const LexemType & lt, lexemTypes) {
-        if ( ( lt & LxNameClass)
-                || ( lt & LxPriImport)
-                || ( lt & LxPriModule)
-                || ( lt & LxPriEndModule)
-                || ( lt & LxPriAlgHeader)
-                || ( lt & LxPriAlgBegin)
-                || ( lt & LxPriAlgEnd)
-                || ( lt & LxPriIf)
-                || ( lt & LxPriThen)
-                || ( lt & LxPriElse)
-                || ( lt & LxPriFi)
-                || ( lt & LxPriSwitch)
-                || ( lt & LxPriCase)
-                || ( lt & LxPriLoop)
-                || ( lt & LxPriEndLoop)
-                )
+        LexemType lt = st.type;
+        if ( ( lt == LxPriImport)
+                || ( lt == LxPriModule)
+                || ( lt == LxPriEndModule)
+                || ( lt == LxPriAlgHeader)
+                || ( lt == LxPriAlgBegin)
+                || ( lt == LxPriAlgEnd)
+                || ( lt == LxPriIf)
+                || ( lt == LxPriThen)
+                || ( lt == LxPriElse)
+                || ( lt == LxPriFi)
+                || ( lt == LxPriSwitch)
+                || ( lt == LxPriCase)
+                || ( lt == LxPriLoop)
+                || ( lt == LxPriEndLoop)
+                || ( lt == LxPriPre)
+                || ( lt == LxPriPost)
+             )
         {
             return SubjWholeText;
         }
+        if (lt & LxNameClass) {
+            if (findAlgorhitmByPos(ast, st.data.first()->lineNo)) {
+                if (result==SubjAlgorhtitm)
+                    return SubjWholeText; // more that one algorhitm affected
+                result = SubjAlgorhtitm;
+            }
+        }
     }
-    return SubjStatements;
+    return result;
 }
+
+AST::Algorhitm * AnalizerPrivate::findAlgorhitmByPos(AST::Data * data, int pos)
+{
+    if (pos==-1) {
+        return 0;
+    }
+    foreach (AST::Module * mod, data->modules) {
+        foreach (AST::Algorhitm * alg, mod->impl.algorhitms) {
+            QList<Lexem*> begin = alg->impl.beginLexems;
+            QList<Lexem*> end = alg->impl.endLexems;
+            if (!begin.isEmpty() && !end.isEmpty()) {
+                int algBegin = begin.first()->lineNo;
+                int algEnd = end.first()->lineNo;
+                if (algBegin!=-1 && algEnd!=-1) {
+                    if (pos>algBegin && pos<algEnd) {
+                        return alg;
+                    }
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+
 
 QList<Error> Analizer::errors() const
 {
@@ -205,13 +223,13 @@ QList<Error> Analizer::errors() const
 QList<LineProp> Analizer::lineProperties() const
 {
     QList<LineProp> result;
-    QStringList lines = d->sourceText.split("\n");
+    QStringList lines = d->sourceText;
     for (int i=0; i<lines.size(); i++) {
         result << LineProp(lines[i].size(), LxTypeEmpty);
     }
-    if (d->sourceText.endsWith("\n")) {
-        result << LineProp(0, LxTypeEmpty);
-    }
+
+    result << LineProp(0, LxTypeEmpty);
+
     for (int i=0; i<d->statements.size(); i++) {
         foreach (const Lexem * lx, d->statements[i].data) {
             for (int j=lx->linePos; j<lx->linePos+lx->length; j++) {
@@ -245,26 +263,136 @@ QStringList Analizer::imports() const
 QList<QPoint> Analizer::lineRanks() const
 {
     QList<QPoint> result;
-    QStringList lines = d->sourceText.split("\n");
+    QStringList lines = d->sourceText;
     for (int i=0; i<lines.size(); i++) {
         result << QPoint(0,0);
     }
     for (int i=0; i<d->statements.size(); i++) {
-        result[d->statements[i].data.first()->lineNo] = d->statements[i].indentRank;
+        Q_ASSERT (!d->statements[i].data.isEmpty());
+        const Lexem * lx = d->statements[i].data.first();
+        const int lineNo = lx->lineNo;
+        const QPoint rank = d->statements[i].indentRank;
+        result[lineNo] = rank;
     }
     return result;
 }
 
-void AnalizerPrivate::doCompilation(const AnalizeSubject &whatToCompile)
+bool AnalizerPrivate::findInstructionsBlock(
+    AST::Data *data
+    , const QList<Statement> statements
+    , LAS &lst
+    , LASI &begin
+    , LASI &end
+    , AST::Module *&mod
+    , AST::Algorhitm *&alg)
 {
-    Q_UNUSED(whatToCompile);
-    // At this moment we compile everething
-    pdAutomata->init(&statements, ast, 0);
-    pdAutomata->process();
-    pdAutomata->postProcess();
-    analizer->init(&statements, ast, 0);
-    analizer->buildTables();
-    // TODO load unresolved imports here
+    if (statements.isEmpty())
+        return false;
+    bool found = false;
+    Statement first = statements.first();
+    Statement last = statements.last();
+    foreach (AST::Module * module, data->modules) {
+        for (LASI it = module->impl.initializerBody.begin();
+             it != module->impl.initializerBody.end();
+             it++)
+        {
+            AST::Statement * st = (*it);
+            if (st==first.statement) {
+                mod = module;
+                alg = 0;
+                lst = module->impl.initializerBody;
+                begin = it;
+                found = true;
+            }
+            if (st==last.statement) {
+                end = it + 1;
+            }
+        }
+        if (!found) {
+            foreach (AST::Algorhitm * algorhitm, module->impl.algorhitms) {
+                for (LASI it = algorhitm->impl.body.begin();
+                     it != algorhitm->impl.body.end();
+                     it++)
+                {
+                    AST::Statement * st = (*it);
+                    if (st==first.statement) {
+                        mod = module;
+                        alg = 0;
+                        lst = module->impl.initializerBody;
+                        begin = it;
+                        found = true;
+                    }
+                    if (st==last.statement) {
+                        end = it + 1;
+                    }
+                }
+            }
+        }
+    }
+    return found;
+}
+
+void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
+                                    , QList<Statement> & oldStatements
+                                    , QList<Statement> & newStatements
+                                    , QList<Statement> & allStatements
+                                    )
+{
+    if (ast->modules.isEmpty())
+        whatToCompile = SubjWholeText;
+    AST::Algorhitm * alg = 0;
+    if (whatToCompile==SubjWholeText) {
+        pdAutomata->init(&allStatements, ast, alg);
+        pdAutomata->process();
+        pdAutomata->postProcess();
+    }
+    else if (whatToCompile==SubjAlgorhtitm) {
+        Q_ASSERT(!newStatements.isEmpty());
+        const Statement firstStatement = newStatements.first();
+        Q_ASSERT(!firstStatement.data.isEmpty());
+        const Lexem * lx = firstStatement.data.first();
+        const int linePos = lx->lineNo;
+        alg = findAlgorhitmByPos(ast, linePos);
+        Q_CHECK_PTR(alg);
+        pdAutomata->init(&newStatements, ast, alg);
+        pdAutomata->process();
+        pdAutomata->postProcess();
+    }
+    else {
+        LAS lst;
+        LASI begin, end;
+        AST::Module * module = 0;
+        AST::Algorhitm * algorhitm = 0;
+        bool found = findInstructionsBlock(
+                    ast,
+                    oldStatements,
+                    lst, begin, end,
+                    module, algorhitm);
+        if (found) {
+            for (LASI it = begin; it!=end; it++) {
+                delete (*it);
+            }
+            lst.erase(begin, end);
+            LASI insertPos = end;
+            for (int i=0; i<newStatements.size(); i++) {
+                AST::Statement * instruction
+                        = PDAutomata::createSimpleAstStatement(newStatements[i]);
+                newStatements[i].mod = module;
+                newStatements[i].alg = algorhitm;
+                insertPos = lst.insert(insertPos, instruction);
+                insertPos ++;
+            }
+        }
+        else {
+            pdAutomata->init(&newStatements, ast, alg);
+            pdAutomata->process();
+            pdAutomata->postProcess();
+        }
+    }
+    analizer->init(&newStatements, ast, alg);
+    if (whatToCompile!=SubjStatements)
+        analizer->buildTables();
+
     analizer->processAnalisys();
 }
 

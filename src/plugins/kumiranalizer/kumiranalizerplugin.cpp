@@ -104,7 +104,7 @@ void KumirAnalizerPlugin::dropDocument(int documentId)
 void KumirAnalizerPlugin::setSourceText(int documentId, const QString &text)
 {
     Q_CHECK_PTR(m_analizers[documentId]);
-    m_analizers[documentId]->setSourceText(text);
+    m_analizers[documentId]->changeSourceText(QList<int>(), text.split("\n"));
 }
 
 void KumirAnalizerPlugin::changeSourceText(int documentId, const QList<int> & removedLineNumbers, const QStringList & newLines)

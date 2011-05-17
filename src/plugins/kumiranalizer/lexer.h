@@ -23,7 +23,7 @@ public:
     bool boolConstantValue(const QString &val) const;
     bool isReturnVariable(const QString & name) const;
 public slots:
-    int splitIntoStatements(const QString &text
+    int splitIntoStatements(const QStringList &lines
                              , int baseLineNo
                              , QList<Statement> &statements
                              ) const;

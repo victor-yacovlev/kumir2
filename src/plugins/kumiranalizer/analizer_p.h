@@ -16,6 +16,9 @@ typedef AST::Data AST_Data;
 
 namespace KumirAnalizer {
 
+typedef QList<AST::Statement*> LAS;
+typedef QList<AST::Statement*>::iterator LASI;
+
 struct AnalizerPrivate
 {
 
@@ -34,21 +37,45 @@ struct AnalizerPrivate
     class SyntaxAnalizer * analizer;
     AST_Data * ast;
 
-    QString sourceText;
-    QList<Lexem*> lexems;
+    QStringList sourceText;
     QList<Statement> statements;
 
+    /** Find algorhitm in AST by real line number */
+    static AST::Algorhitm * findAlgorhitmByPos(AST::Data * data, int pos);
+
+    /** Find begin/end iterators in AST instructions list,
+      * containing provided lexem groups
+      * @param IN data - AST
+      * @param IN statements - list of lexem groups
+      * @param OUT lst - list of AST instructions
+      * @param OUT begin - begin iterator
+      * @param OUT end - end iterator
+      * @param OUT mod - module reference
+      * @param OUT alg - algorhitm reference
+      * @return true on found, false if not found
+      */
+    static bool findInstructionsBlock(AST::Data * data
+                                      , const QList<Statement> statements
+                                      , LAS & lst
+                                      , LASI & begin
+                                      , LASI & end
+                                      , AST::Module* & mod
+                                      , AST::Algorhitm* & alg
+                                      );
 
     AnalizeSubject analizeSubject(const QList<Statement> & statements) const;
-    AnalizeSubject analizeSubject(const QList<Lexem*> & lexems, int startLineNo) const;
-    AnalizeSubject analizeSubject(const QList<Shared::LexemType> & lexemTypes, int startLineNo) const;
 
-    void doCompilation(const AnalizeSubject & whatToCompile);
+
+    void doCompilation(AnalizeSubject whatToCompile
+                       , QList<Statement> & oldStatements
+                       , QList<Statement> & newStatements
+                       , QList<Statement> & allStatements
+                       );
 
 };
 
 extern AnalizerPrivate::AnalizeSubject operator * ( const AnalizerPrivate::AnalizeSubject &first
-                                                  , const AnalizerPrivate::AnalizeSubject &second );
+                                                   , const AnalizerPrivate::AnalizeSubject &second );
 
 
 }

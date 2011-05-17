@@ -45,7 +45,7 @@ public:
     /** List of syntax errors */
     QList<Error> errors() const;
 
-    static AST_Statement createSimpleAstStatement(const Statement &st);
+    static AST_Statement * createSimpleAstStatement(Statement &st);
 
 private:
     class PDAutomataPrivate * d;

@@ -13,14 +13,9 @@ class Analizer : public QObject
 {
     Q_OBJECT
 public:
-    /**
-      * Constructor
-      */
+
     explicit Analizer(QObject * = 0);
 
-    /**
-      * Destructor
-      */
     ~Analizer();
 
     /**
@@ -31,39 +26,16 @@ public:
 
 public slots:
 
-    /**
-      * Sets initial source program text
-      */
-    void setSourceText(const QString &text);
-
-    /**
-      * Changes current program source text
-      */
     void changeSourceText(const QList<int> & removedLineNumbers, const QStringList & newLines);
 
-    /**
-      * Get all analizer errors
-      */
     QList<Shared::Error> errors() const;
 
-    /**
-      * Get line properties (as bitmasks) for syntax highlighting etc.
-      */
     QList<Shared::LineProp> lineProperties() const;
 
-    /**
-      * Get calculated line indents
-      */
     QList<QPoint> lineRanks() const;
 
-    /**
-      * Get module import list
-      */
     QStringList imports() const;
 
-    /**
-      * Get (for read only!) abstract syntax tree pointer
-      */
     const AST::Data * abstractSyntaxTree() const;
 
 private:

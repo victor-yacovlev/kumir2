@@ -15,13 +15,12 @@ Lexer::Lexer(QObject *parent) :
     d->q = this;
 }
 
-int Lexer::splitIntoStatements(const QString &text
+int Lexer::splitIntoStatements(const QStringList &lines
                                 , int baseLineNo
                                 , QList<Statement> &statements
                                 ) const
 {
     int errorsCount = 0;
-    const QStringList lines = text.split("\n");
     for (int i=0; i<lines.size(); i++) {
         const QString line = lines[i];
         QList<Lexem*> lexems;
