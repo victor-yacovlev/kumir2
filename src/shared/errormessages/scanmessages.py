@@ -130,18 +130,29 @@ def writeTable(database, filename):
     f.close()
 
 if __name__=="__main__":
-    allfiles = os.listdir(sys.argv[1])
+    if len(sys.argv)<4:
+        sys.stderr.write("Usage: "+sys.argv[0]+" DB_FILE OUT_FILE WORK_DIR\n")
+        sys.exit(127)
+    db_file = sys.argv[1]
+    out_file = sys.argv[2]
+    work_dir = sys.argv[3]
+    #sys.stderr.write("db_file: "+db_file+"\n")
+    #sys.stderr.write("out_file: "+out_file+"\n")
+    #sys.stderr.write("work_dir: "+work_dir+"\n")
+    allfiles = os.listdir(work_dir)
     cppfiles = filter(lambda x: x.endswith(".cpp") and not x.startswith("moc_") and not x.startswith("ui_"), allfiles)
-    cpppaths = map(lambda x: sys.argv[1]+"/"+x, cppfiles)
+    cpppaths = map(lambda x: work_dir+"/"+x, cppfiles)
     allkeys = []
     for filename in cpppaths:
         allkeys += readCxx(filename)
-    database = readTable(sys.argv[2])
+    database = readTable(db_file)
 
     changes = 0
     changes += cleanUnusedKeys(database, allkeys)
     changes += addNewKeys(database, allkeys)
 
     if changes>0:
-        writeTable(database, sys.argv[2])
+        writeTable(database, db_file)
+
+    writeTable(database, out_file)
 
