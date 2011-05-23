@@ -25,7 +25,7 @@ public:
 public slots:
     int splitIntoStatements(const QStringList &lines
                              , int baseLineNo
-                             , QList<Statement> &statements
+                             , QList<Statement*> &statements
                              ) const;
 private:
     class LexerPrivate * d;

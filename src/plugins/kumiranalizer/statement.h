@@ -18,6 +18,7 @@ namespace KumirAnalizer {
 
 struct Statement
 {
+    inline Statement(Shared::LexemType lt) { type=lt; alg=0; mod=0; statement=0; conditionalIndex=0; }
     QList<Lexem*> data;
     QPoint indentRank;
     Shared::LexemType type;

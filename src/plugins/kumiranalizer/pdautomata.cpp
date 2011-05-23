@@ -12,6 +12,14 @@
 
 namespace KumirAnalizer {
 
+AST::Module * moduleOfAlgorhitm(AST::Data * data, AST::Algorhitm * alg) {
+    foreach (AST::Module * mod, data->modules) {
+        if (mod->impl.algorhitms.contains(alg)) {
+            return mod;
+        }
+    }
+    return 0;
+}
 
 void prepareRules(const QStringList &files, QString &out, const QList<int> &priors);
 QString terminalByCode(int code);
@@ -26,10 +34,9 @@ PDAutomata::PDAutomata(QObject *parent) :
     d->loadRules(rulesPath);
 }
 
-void PDAutomata::init(QList<Statement> * statements, AST::Data *ast, AST::Algorhitm * algorhitm)
+void PDAutomata::init(QList<Statement*> * statements, AST::Data *ast, AST::Algorhitm * algorhitm)
 {
-    Statement begin;
-    begin.type = LexemType(0xFFFFFFFF);
+    static Statement * begin = new Statement(LexemType(0xFFFFFFFF));
     d->source = statements;
     d->source->prepend(begin);
     d->ast = ast;
@@ -49,11 +56,13 @@ void PDAutomata::init(QList<Statement> * statements, AST::Data *ast, AST::Algorh
         algorhitm->impl.pre.clear();
         algorhitm->impl.post.clear();
         algorhitm->impl.body.clear();
+        algorhitm->impl.locals.clear();
+        algorhitm->header.arguments.clear();
     }
 
     d->errorsCount = 0;
     for (int i=0; i<statements->size(); i++) {
-        (*statements)[i].indentRank = QPoint(0,0);
+        statements->at(i)->indentRank = QPoint(0,0);
     }
     d->currentPosition = 0;
     d->stack.clear();
@@ -345,8 +354,8 @@ int PDAutomata::process()
         if ( d->currentPosition > d->source->count() )
             break;
         if ( d->currentPosition < d->source->count() && d->currentPosition >= 0 ) {
-            const Statement & st = d->source->at(d->currentPosition);
-            currentTerminal = terminalByCode(st.type);
+            const Statement * st = d->source->at(d->currentPosition);
+            currentTerminal = terminalByCode(st->type);
         }
         else {
             currentTerminal = "end";
@@ -1042,50 +1051,56 @@ void PDAutomata::postProcess()
         }
         d->currentPosition ++;
     }
-    if (d->currentModule) {
+    if (d->currentModule && !d->algorhitm) {
         d->ast->modules << d->currentModule;
     }
-    if (!d->algorhitm) {
-        d->source->pop_front();
-    }
+
+    d->source->pop_front();
+
 }
 
 void PDAutomataPrivate::setCurrentIndentRank(int start, int end)
 {
-    (*source)[currentPosition].indentRank = QPoint(start, end);
+    source->at(currentPosition)->indentRank = QPoint(start, end);
 }
 
 void PDAutomataPrivate::setCurrentError(const QString &value)
 {
-    for (int i=0; i<(*source)[currentPosition].data.size(); i++) {
-        (*source)[currentPosition].data[i]->error = value;
+    for (int i=0; i<source->at(currentPosition)->data.size(); i++) {
+        source->at(currentPosition)->data[i]->error = value;
     }
 }
 
 void PDAutomataPrivate::processCorrectAlgHeader()
 {
-    AST::Algorhitm * alg = new AST::Algorhitm;
-    alg->impl.headerLexems = (*source)[currentPosition].data;
-    currentModule->impl.algorhitms << alg;
+    AST::Algorhitm * alg = algorhitm? algorhitm : new AST::Algorhitm;
+    alg->impl.headerLexems = source->at(currentPosition)->data;
     currentAlgorhitm = alg;
-    (*source)[currentPosition].mod = currentModule;
-    (*source)[currentPosition].alg = alg;
+    if (algorhitm) {
+        source->at(currentPosition)->mod = moduleOfAlgorhitm(ast, algorhitm);
+        currentModule = source->at(currentPosition)->mod;
+    }
+    else {
+        currentModule->impl.algorhitms << alg;
+        source->at(currentPosition)->mod = currentModule;
+    }
+    source->at(currentPosition)->alg = alg;
 }
 
 void PDAutomataPrivate::processCorrectAlgBegin()
 {
     setCurrentIndentRank(  0, +1);
-    currentAlgorhitm->impl.beginLexems = (*source)[currentPosition].data;
-    (*source)[currentPosition].mod = currentModule;
-    (*source)[currentPosition].alg = currentAlgorhitm;
+    currentAlgorhitm->impl.beginLexems = source->at(currentPosition)->data;
+    source->at(currentPosition)->mod = currentModule;
+    source->at(currentPosition)->alg = currentAlgorhitm;
     currentContext.push(&(currentAlgorhitm->impl.body));
 }
 
 void PDAutomataPrivate::appendSimpleLine()
 {
     AST::Statement * statement = new AST::Statement;
-    statement->lexems = (*source)[currentPosition].data;
-    switch ( (*source)[currentPosition].type ) {
+    statement->lexems = source->at(currentPosition)->data;
+    switch ( source->at(currentPosition)->type ) {
     case LxPriAssign:
         statement->type = AST::StAssign;
         break;
@@ -1130,21 +1145,21 @@ void PDAutomataPrivate::appendSimpleLine()
         statement->type = AST::StError;
         break;
     }
-    if ( (*source)[currentPosition].data[0]->error.size()>0 ) {
+    if ( source->at(currentPosition)->data[0]->error.size()>0 ) {
         statement->type = AST::StError;
-        statement->error = (*source)[currentPosition].data[0]->error;
+        statement->error = source->at(currentPosition)->data[0]->error;
     }
     if (!currentContext.isEmpty())
         currentContext.top()->append(statement);
-    (*source)[currentPosition].mod = currentModule;
-    (*source)[currentPosition].alg = currentAlgorhitm;
-    (*source)[currentPosition].statement = statement;
+    source->at(currentPosition)->mod = currentModule;
+    source->at(currentPosition)->alg = currentAlgorhitm;
+    source->at(currentPosition)->statement = statement;
 }
 
-AST::Statement * PDAutomata::createSimpleAstStatement(Statement &st)
+AST::Statement * PDAutomata::createSimpleAstStatement(Statement * st)
 {
     AST::Statement * statement = new AST::Statement;
-    switch ( st.type ) {
+    switch ( st->type ) {
     case LxPriAssign:
         statement->type = AST::StAssign;
         break;
@@ -1170,10 +1185,10 @@ AST::Statement * PDAutomata::createSimpleAstStatement(Statement &st)
         statement->type = AST::StError;
         break;
     }
-    if (st.hasError()) {
+    if (st->hasError()) {
         statement->type = AST::StError;
-        statement->error = st.data[0]->error;
-        st.statement = statement;
+        statement->error = st->data[0]->error;
+        st->statement = statement;
     }
     return statement;
 }
@@ -1182,11 +1197,11 @@ void PDAutomataPrivate::processCorrectAlgEnd()
 {
     setCurrentIndentRank(-1,  0);
     if (currentAlgorhitm) {
-        currentAlgorhitm->impl.endLexems = (*source)[currentPosition].data;
+        currentAlgorhitm->impl.endLexems = source->at(currentPosition)->data;
     }
     currentContext.pop();
-    (*source)[currentPosition].mod = currentModule;
-    (*source)[currentPosition].alg = currentAlgorhitm;
+    source->at(currentPosition)->mod = currentModule;
+    source->at(currentPosition)->alg = currentAlgorhitm;
     currentAlgorhitm = 0;
 }
 
@@ -1198,11 +1213,11 @@ void PDAutomataPrivate::addDummyAlgHeader()
 void PDAutomataPrivate::setModuleBeginError(int value)
 {
     for (int i=0; i<source->size(); i++) {
-        if ((*source)[i].mod == currentModule && (*source)[i].type==LxPriModule) {
-            for (int a=0; a<(*source)[currentPosition].data.size(); a++) {
-                (*source)[currentPosition].data[a]->error = value;
+        if ((*source)[i]->mod == currentModule && (*source)[i]->type==LxPriModule) {
+            for (int a=0; a<source->at(currentPosition)->data.size(); a++) {
+                source->at(currentPosition)->data[a]->error = value;
             }
-            (*source)[i].indentRank = QPoint(0, 0);
+            (*source)[i]->indentRank = QPoint(0, 0);
         }
     }
 }
@@ -1213,10 +1228,10 @@ void PDAutomataPrivate::processCorrectEndOfLoop()
     currentContext.pop();
     Q_ASSERT(currentContext.size()>0);
     Q_ASSERT(currentContext.top()->last()->type==AST::StLoop);
-    currentContext.top()->last()->loop.endLexems = (*source)[currentPosition].data;
-    (*source)[currentPosition].mod = currentModule;
-    (*source)[currentPosition].alg = currentAlgorhitm;
-    (*source)[currentPosition].statement = currentContext.top()->last();
+    currentContext.top()->last()->loop.endLexems = source->at(currentPosition)->data;
+    source->at(currentPosition)->mod = currentModule;
+    source->at(currentPosition)->alg = currentAlgorhitm;
+    source->at(currentPosition)->statement = currentContext.top()->last();
 }
 
 void PDAutomataPrivate::processAlgEndInsteadOfLoopEnd()
@@ -1226,10 +1241,10 @@ void PDAutomataPrivate::processAlgEndInsteadOfLoopEnd()
     currentContext.pop();
     Q_ASSERT(currentContext.size()>0);
     Q_ASSERT(currentContext.top()->last()->type==AST::StLoop);
-    currentContext.top()->last()->loop.endLexems = (*source)[currentPosition].data;
-    (*source)[currentPosition].mod = currentModule;
-    (*source)[currentPosition].alg = currentAlgorhitm;
-    (*source)[currentPosition].statement = currentContext.top()->last();
+    currentContext.top()->last()->loop.endLexems = source->at(currentPosition)->data;
+    source->at(currentPosition)->mod = currentModule;
+    source->at(currentPosition)->alg = currentAlgorhitm;
+    source->at(currentPosition)->statement = currentContext.top()->last();
 }
 
 void PDAutomataPrivate::processCorrectCase()
@@ -1239,12 +1254,12 @@ void PDAutomataPrivate::processCorrectCase()
     Q_ASSERT(currentContext.size()>0);
     Q_ASSERT(currentContext.top()->last()->type==AST::StSwitchCaseElse);
     AST::ConditionSpec cond;
-    cond.lexems = (*source)[currentPosition].data;
+    cond.lexems = source->at(currentPosition)->data;
     cond.condition = 0;
-    (*source)[currentPosition].mod = currentModule;
-    (*source)[currentPosition].alg = currentAlgorhitm;
-    (*source)[currentPosition].statement = currentContext.top()->last();
-    (*source)[currentPosition].conditionalIndex = currentContext.top()->last()->conditionals.size();
+    source->at(currentPosition)->mod = currentModule;
+    source->at(currentPosition)->alg = currentAlgorhitm;
+    source->at(currentPosition)->statement = currentContext.top()->last();
+    source->at(currentPosition)->conditionalIndex = currentContext.top()->last()->conditionals.size();
     currentContext.top()->last()->conditionals << cond;
     currentContext.push(&(currentContext.top()->last()->conditionals.last().body));
 }
@@ -1254,11 +1269,11 @@ void PDAutomataPrivate::processCorrectIf()
     setCurrentIndentRank(0, +2);
     AST::Statement * st = new AST::Statement;
     st->type = AST::StIfThenElse;
-    st->lexems = (*source)[currentPosition].data;
+    st->lexems = source->at(currentPosition)->data;
     currentContext.top()->append(st);
-    (*source)[currentPosition].mod = currentModule;
-    (*source)[currentPosition].alg = currentAlgorhitm;
-    (*source)[currentPosition].statement = currentContext.top()->last();
+    source->at(currentPosition)->mod = currentModule;
+    source->at(currentPosition)->alg = currentAlgorhitm;
+    source->at(currentPosition)->statement = currentContext.top()->last();
 }
 
 void PDAutomataPrivate::processCorrectThen()
@@ -1267,12 +1282,12 @@ void PDAutomataPrivate::processCorrectThen()
     Q_ASSERT(currentContext.size()>0);
     Q_ASSERT(currentContext.top()->last()->type==AST::StIfThenElse);
     AST::ConditionSpec cond;
-    cond.lexems = (*source)[currentPosition].data;
+    cond.lexems = source->at(currentPosition)->data;
     cond.condition = 0;
-    (*source)[currentPosition].mod = currentModule;
-    (*source)[currentPosition].alg = currentAlgorhitm;
-    (*source)[currentPosition].statement = currentContext.top()->last();
-    (*source)[currentPosition].conditionalIndex = currentContext.top()->last()->conditionals.size();
+    source->at(currentPosition)->mod = currentModule;
+    source->at(currentPosition)->alg = currentAlgorhitm;
+    source->at(currentPosition)->statement = currentContext.top()->last();
+    source->at(currentPosition)->conditionalIndex = currentContext.top()->last()->conditionals.size();
     currentContext.top()->last()->conditionals << cond;
     currentContext.push(&(currentContext.top()->last()->conditionals.last().body));
 }
@@ -1290,9 +1305,9 @@ void PDAutomataPrivate::processCorrectFi()
         setCurrentIndentRank(0, 0);
         setCurrentError(_("Extra 'fi'"));
     }
-    (*source)[currentPosition].mod = currentModule;
-    (*source)[currentPosition].alg = currentAlgorhitm;
-    (*source)[currentPosition].statement = currentContext.top()->last();
+    source->at(currentPosition)->mod = currentModule;
+    source->at(currentPosition)->alg = currentAlgorhitm;
+    source->at(currentPosition)->statement = currentContext.top()->last();
 }
 
 void PDAutomataPrivate::processCorrectElse()
@@ -1303,12 +1318,12 @@ void PDAutomataPrivate::processCorrectElse()
     Q_ASSERT(currentContext.top()->last()->type==AST::StIfThenElse
              || currentContext.top()->last()->type==AST::StSwitchCaseElse);
     AST::ConditionSpec cond;
-    cond.lexems = (*source)[currentPosition].data;
+    cond.lexems = source->at(currentPosition)->data;
     cond.condition = 0;
-    (*source)[currentPosition].mod = currentModule;
-    (*source)[currentPosition].alg = currentAlgorhitm;
-    (*source)[currentPosition].statement = currentContext.top()->last();
-    (*source)[currentPosition].conditionalIndex = currentContext.top()->last()->conditionals.size();
+    source->at(currentPosition)->mod = currentModule;
+    source->at(currentPosition)->alg = currentAlgorhitm;
+    source->at(currentPosition)->statement = currentContext.top()->last();
+    source->at(currentPosition)->conditionalIndex = currentContext.top()->last()->conditionals.size();
     currentContext.top()->last()->conditionals << cond;
     currentContext.push(&(currentContext.top()->last()->conditionals.last().body));
 }
@@ -1318,11 +1333,11 @@ void PDAutomataPrivate::processCorrectSwitch()
     setCurrentIndentRank(0, +2);
     AST::Statement * st = new AST::Statement;
     st->type = AST::StSwitchCaseElse;
-    st->lexems = (*source)[currentPosition].data;
+    st->lexems = source->at(currentPosition)->data;
     currentContext.top()->append(st);
-    (*source)[currentPosition].mod = currentModule;
-    (*source)[currentPosition].alg = currentAlgorhitm;
-    (*source)[currentPosition].statement = currentContext.top()->last();
+    source->at(currentPosition)->mod = currentModule;
+    source->at(currentPosition)->alg = currentAlgorhitm;
+    source->at(currentPosition)->statement = currentContext.top()->last();
 
     // Push dummy case statement into context for
     // correct processing of first 'case' statement
@@ -1335,12 +1350,12 @@ void PDAutomataPrivate::processCorrectBeginOfLoop()
     setCurrentIndentRank(0, +1);
     AST::Statement * st = new AST::Statement;
     st->type = AST::StLoop;
-    st->lexems = (*source)[currentPosition].data;
+    st->lexems = source->at(currentPosition)->data;
     currentContext.top()->append(st);
     currentContext.push(&(currentContext.top()->last()->loop.body));
-    (*source)[currentPosition].mod = currentModule;
-    (*source)[currentPosition].alg = currentAlgorhitm;
-    (*source)[currentPosition].statement = st;
+    source->at(currentPosition)->mod = currentModule;
+    source->at(currentPosition)->alg = currentAlgorhitm;
+    source->at(currentPosition)->statement = st;
 
 }
 
@@ -1353,17 +1368,17 @@ void PDAutomataPrivate::processCorrectRestrictionLine()
 {
     AST::Statement * st = new AST::Statement;
     st->type = AST::StAssert;
-    st->lexems = (*source)[currentPosition].data;
-    (*source)[currentPosition].mod = currentModule;
-    (*source)[currentPosition].alg = currentAlgorhitm;
-    (*source)[currentPosition].statement = st;
+    st->lexems = source->at(currentPosition)->data;
+    source->at(currentPosition)->mod = currentModule;
+    source->at(currentPosition)->alg = currentAlgorhitm;
+    source->at(currentPosition)->statement = st;
     Q_CHECK_PTR(currentAlgorhitm);
-    if ( (*source)[currentPosition].type==LxPriPre ) {
-        if ( (*source)[currentPosition].data.size()>1 )
+    if ( source->at(currentPosition)->type==LxPriPre ) {
+        if ( source->at(currentPosition)->data.size()>1 )
             currentAlgorhitm->impl.pre.append(st);
     }
     else {
-        if ( (*source)[currentPosition].data.size()>1 )
+        if ( source->at(currentPosition)->data.size()>1 )
             currentAlgorhitm->impl.post.append(st);
     }
 }
@@ -1375,14 +1390,14 @@ void PDAutomataPrivate::processCorrectModuleBegin()
         ast->modules << currentModule;
     }
     currentModule = new AST::Module;
-    (*source)[currentPosition].mod = currentModule;
+    source->at(currentPosition)->mod = currentModule;
 }
 
 void PDAutomataPrivate::processCorrectModuleEnd()
 {
     setCurrentIndentRank(-1, 0);
-    (*source)[currentPosition].mod = currentModule;
-    if (currentModule) {
+    source->at(currentPosition)->mod = currentModule;
+    if (currentModule && !algorhitm) {
         ast->modules << currentModule;
     }
     currentModule = 0;
@@ -1425,9 +1440,9 @@ void PDAutomataPrivate::setCorrespondingIfBroken()
     st->type = AST::StError;
     st->error = _("Broken if statement");
     for (int i=0; i<source->size(); i++) {
-        if ( (*source)[i].statement==st ) {
-            for (int a=0; a<(*source)[i].data.size(); a++) {
-                (*source)[i].data[a]->error = _("Broken if statement");
+        if ( (*source)[i]->statement==st ) {
+            for (int a=0; a<(*source)[i]->data.size(); a++) {
+                (*source)[i]->data[a]->error = _("Broken if statement");
             }
             break;
         }
@@ -1467,9 +1482,9 @@ void PDAutomataPrivate::setExtraOpenKeywordError(const QString &kw)
         setCurrentError(_("Extra 'module'"));
     }
     appendSimpleLine();
-    (*source)[currentPosition].alg = currentAlgorhitm;
-    (*source)[currentPosition].mod = currentModule;
-    (*source)[currentPosition].statement = currentContext.top()->last();
+    source->at(currentPosition)->alg = currentAlgorhitm;
+    source->at(currentPosition)->mod = currentModule;
+    source->at(currentPosition)->statement = currentContext.top()->last();
 }
 
 void PDAutomataPrivate::setExtraCloseKeywordError(const QString &kw)

@@ -38,6 +38,8 @@ protected:
     void paintEvent(QPaintEvent *);
     QPoint offset() const;
     void paintBackground(QPainter *p, const QRect &rect);
+    void paintMarginBackground(QPainter *p, const QRect & rect);
+    void paintMarginText(QPainter *p, const QRect & rect);
     void paintCursor(QPainter *p, const QRect &rect);
     void paintText(QPainter *p, const QRect &rect);
     void paintSelection(QPainter *p, const QRect &rect);

@@ -33,6 +33,7 @@
 
 #include "kumiranalizerplugin.h"
 #include "analizer.h"
+#include "errormessages/errormessages.h"
 
 #include <QtCore>
 
@@ -67,6 +68,7 @@ QString KumirAnalizerPlugin::initialize(const QStringList &arguments)
     }
 
     Analizer::setSourceLanguage(language);
+    ErrorMessages::loadMessages("KumirAnalizer");
 
     return "";
 }

@@ -28,7 +28,7 @@ struct SyntaxAnalizerPrivate
     Lexer * lexer;
     AST::Data * ast;
     AST::Algorhitm * algorhitm;
-    QList<Statement> * statements;
+    QList<Statement*> * statements;
     QSet<QString> unresolvedImports;
 
     void parseImport(int str);
@@ -90,7 +90,7 @@ SyntaxAnalizer::SyntaxAnalizer(Lexer * lexer, QObject *parent) :
     d->lexer = lexer;
 }
 
-void SyntaxAnalizer::init(QList<Statement> *statements, AST_Data *ast, AST_Algorhitm *algorhitm)
+void SyntaxAnalizer::init(QList<Statement*> *statements, AST_Data *ast, AST_Algorhitm *algorhitm)
 {
     d->ast = ast;
     d->algorhitm = algorhitm;
@@ -134,15 +134,15 @@ Lexem * SyntaxAnalizerPrivate::findLexemByType(const QList<Lexem*> lxs, LexemTyp
 
 void SyntaxAnalizer::buildTables()
 {
-    if (d->algorhitm)
-        return; // Nothing to build if we analize just one algorhitm
+//    if (d->algorhitm)
+//        return; // Nothing to build if we analize just one algorhitm
 
     for (int i=0; i<d->statements->size(); i++) {
-        const Statement & st = d->statements->at(i);
-        if (st.type==LxPriModule) {
+        const Statement * st = d->statements->at(i);
+        if (st->type==LxPriModule) {
             d->parseModuleHeader(i);
         }
-        if (st.type==LxPriImport) {
+        if (st->type==LxPriImport) {
             d->parseImport(i);
         }
     }
@@ -173,11 +173,11 @@ void SyntaxAnalizer::buildTables()
     }
 
     for (int i=0; i<d->statements->size(); i++) {
-        const Statement & st = d->statements->at(i);
-        if (st.type==LxPriAlgHeader) {
+        const Statement * st = d->statements->at(i);
+        if (st->type==LxPriAlgHeader) {
             d->parseAlgHeader(i);
         }
-        else if (st.type==LxNameClass) {
+        else if (st->type==LxNameClass) {
             d->parseVarDecl(i);
         }
     }
@@ -186,47 +186,47 @@ void SyntaxAnalizer::buildTables()
 void SyntaxAnalizer::processAnalisys()
 {
     for (int i=0; i<d->statements->size(); i++) {
-        const Statement & st = d->statements->at(i);
-        if (st.type==LxPriAssign) {
+        const Statement * st = d->statements->at(i);
+        if (st->type==LxPriAssign) {
             d->parseAssignment(i);
         }
-        else if (st.type==LxPriInput
-                 || st.type==LxPriFinput
-                 || st.type==LxPriOutput
-                 || st.type==LxPriFoutput
-                 || st.type==LxPriAssert
-                 || st.type==LxPriPre
-                 || st.type==LxPriPost
+        else if (st->type==LxPriInput
+                 || st->type==LxPriFinput
+                 || st->type==LxPriOutput
+                 || st->type==LxPriFoutput
+                 || st->type==LxPriAssert
+                 || st->type==LxPriPre
+                 || st->type==LxPriPost
                  )
         {
             d->parseInputOutputAssertPrePost(i);
         }
-        else if (st.type==LxPriEndModule
-                 ||st.type==LxPriAlgBegin
-                 ||st.type==LxPriAlgEnd
-                 ||st.type==LxPriThen
-                 ||st.type==LxPriElse
-                 ||st.type==LxPriFi
-                 ||st.type==LxPriSwitch
-                 ||st.type==LxPriExit
+        else if (st->type==LxPriEndModule
+                 ||st->type==LxPriAlgBegin
+                 ||st->type==LxPriAlgEnd
+                 ||st->type==LxPriThen
+                 ||st->type==LxPriElse
+                 ||st->type==LxPriFi
+                 ||st->type==LxPriSwitch
+                 ||st->type==LxPriExit
                  )
         {
             d->parseOneLexemInstruction(i);
         }
-        else if (st.type==LxPriEndLoop) {
+        else if (st->type==LxPriEndLoop) {
             d->parseEndLoop(i);
         }
-        else if (st.type==LxPriIf||st.type==LxPriCase) {
+        else if (st->type==LxPriIf||st->type==LxPriCase) {
             d->parseIfCase(i);
         }
-        else if (st.type==LxPriLoop) {
+        else if (st->type==LxPriLoop) {
             d->parseLoopBegin(i);
         }
-        for (int j=0; j<st.data.size(); j++) {
-            if (!st.data[j]->error.isEmpty()) {
-                if (st.statement) {
-                    st.statement->type = AST::StError;
-                    st.statement->error = st.data[j]->error;
+        for (int j=0; j<st->data.size(); j++) {
+            if (!st->data[j]->error.isEmpty()) {
+                if (st->statement) {
+                    st->statement->type = AST::StError;
+                    st->statement->error = st->data[j]->error;
                     break;
                 }
             }
@@ -236,9 +236,9 @@ void SyntaxAnalizer::processAnalisys()
 
 void SyntaxAnalizerPrivate::parseImport(int str)
 {
-    if (statements->at(str).hasError())
+    if (statements->at(str)->hasError())
         return;
-    Statement * st = &( (*statements)[str] );
+    Statement * st = statements->at(str);
     if (st->data.size()<2) {
         Q_ASSERT(st->data.size()==1);
         st->data[0]->error = _("No module name");
@@ -267,9 +267,9 @@ void SyntaxAnalizerPrivate::parseImport(int str)
 
 void SyntaxAnalizerPrivate::parseModuleHeader(int str)
 {
-    if (statements->at(str).hasError())
+    if (statements->at(str)->hasError())
         return;
-    Statement * st = &( (*statements)[str] );
+    Statement * st = statements->at(str);
     if (st->data.size()<2) {
         Q_ASSERT(st->data.size()==1);
         st->data[0]->error = _("No module name");
@@ -299,7 +299,7 @@ void SyntaxAnalizerPrivate::parseModuleHeader(int str)
 
 void SyntaxAnalizerPrivate::parseVarDecl(int str)
 {
-    Statement * st = &( (*statements)[str] );
+    Statement * st = statements->at(str);
     if (st->hasError())
         return;
     AST::Algorhitm * alg = st->alg;
@@ -329,7 +329,7 @@ void SyntaxAnalizerPrivate::parseVarDecl(int str)
 
 void SyntaxAnalizerPrivate::parseInputOutputAssertPrePost(int str)
 {
-    Statement * st = &( (*statements)[str] );
+    Statement * st = statements->at(str);
     if (st->hasError()) {
         return;
     }
@@ -417,7 +417,7 @@ void SyntaxAnalizerPrivate::parseInputOutputAssertPrePost(int str)
 
 void SyntaxAnalizerPrivate::parseOneLexemInstruction(int str)
 {
-    Statement * st = &( (*statements)[str] );
+    Statement * st = statements->at(str);
     if (st->hasError()) {
         return;
     }
@@ -428,7 +428,7 @@ void SyntaxAnalizerPrivate::parseOneLexemInstruction(int str)
 
 void SyntaxAnalizerPrivate::parseEndLoop(int str)
 {
-    Statement * st = &( (*statements)[str] );
+    Statement * st = statements->at(str);
     if (st->hasError()) {
         return;
     }
@@ -461,7 +461,7 @@ void SyntaxAnalizerPrivate::parseEndLoop(int str)
 
 void SyntaxAnalizerPrivate::parseIfCase(int str)
 {
-    Statement * st = &( (*statements)[str] );
+    Statement * st = statements->at(str);
     if (st->hasError()) {
         return;
     }
@@ -505,7 +505,7 @@ void SyntaxAnalizerPrivate::parseIfCase(int str)
 
 void SyntaxAnalizerPrivate::parseLoopBegin(int str)
 {
-    Statement * st = &( (*statements)[str] );
+    Statement * st = statements->at(str);
     if (st->hasError()) {
         return;
     }
@@ -708,7 +708,7 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
 
 void SyntaxAnalizerPrivate::parseAssignment(int str)
 {
-    Statement * st = &( (*statements)[str] );
+    Statement * st = statements->at(str);
     if (st->hasError()) {
         return;
     }
@@ -875,7 +875,7 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
 
 void SyntaxAnalizerPrivate::parseAlgHeader(int str)
 {
-    Statement * st = &( (*statements)[str] );
+    Statement * st = statements->at(str);
     if (st->hasError())
         return;
     AST::Algorhitm * alg = st->alg;

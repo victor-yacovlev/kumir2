@@ -17,7 +17,7 @@ Lexer::Lexer(QObject *parent) :
 
 int Lexer::splitIntoStatements(const QStringList &lines
                                 , int baseLineNo
-                                , QList<Statement> &statements
+                                , QList<Statement*> &statements
                                 ) const
 {
     int errorsCount = 0;
@@ -25,11 +25,11 @@ int Lexer::splitIntoStatements(const QStringList &lines
         const QString line = lines[i];
         QList<Lexem*> lexems;
         d->splitLineIntoLexems(line, lexems);
-        QList<Statement> sts;
+        QList<Statement*> sts;
         d->groupLexemsByStatements(lexems, sts);
         for (int j=0; j<sts.size(); j++) {
-            for (int k=0; k<sts[j].data.size(); k++)
-                sts[j].data[k]->lineNo = baseLineNo + i;
+            for (int k=0; k<sts[j]->data.size(); k++)
+                sts[j]->data[k]->lineNo = baseLineNo + i;
         }
         statements << sts;
     }
@@ -677,17 +677,26 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                 lexems.last()->error = _("Unpaired quote");
             }
             else {
-                Lexem * lx = lexems.last();
-                if (lx->type==LxTypeComment || lx->type==LxTypeDoc)
-                    lexems.last()->data += text.mid(prev+1);
-                else {
-                    if (prev<text.length()) {
-                        Lexem * llx = new Lexem;
-                        llx->type = LxTypeName;
-                        llx->linePos = qMax(prev, 0);
-                        llx->data = text.mid(prev);
-                        lexems << llx;
+                if (!lexems.isEmpty()) {
+                    Lexem * lx = lexems.last();
+                    if (lx->type==LxTypeComment || lx->type==LxTypeDoc)
+                        lexems.last()->data += text.mid(prev+1);
+                    else {
+                        if (prev<text.length()) {
+                            Lexem * llx = new Lexem;
+                            llx->type = LxTypeName;
+                            llx->linePos = qMax(prev, 0);
+                            llx->data = text.mid(prev);
+                            lexems << llx;
+                        }
                     }
+                }
+                else {
+                    Lexem * lx = new Lexem;
+                    lx->type = LxTypeName;
+                    lx->linePos = 0;
+                    lx->data = text;
+                    lexems << lx;
                 }
             }
             break;
@@ -696,6 +705,15 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
     for (int i=0; i<lexems.size(); i++) {
         lexems[i]->length = lexems[i]->data.size();
         if (lexems[i]->type!=LxConstLiteral) {
+            while (lexems[i]->data.startsWith(' ')) {
+                lexems[i]->data = lexems[i]->data.mid(1);
+                lexems[i]->length--;
+                lexems[i]->linePos++;
+            }
+            while (lexems[i]->data.endsWith(' ')) {
+                lexems[i]->data = lexems[i]->data.mid(0, lexems[i]->data.length()-1);
+                lexems[i]->length--;
+            }
             lexems[i]->data = lexems[i]->data.simplified();
         }
         else {
@@ -722,7 +740,7 @@ void popFirstStatementByKeyword(QList<Lexem*> & lexems, Statement & result );
 
 void LexerPrivate::groupLexemsByStatements(
     const QList<Lexem*> &lexems
-    , QList<Statement> &statements
+    , QList<Statement*> &statements
     ) const
 {
     QList<Lexem*> lexemsCopy = lexems;
@@ -730,7 +748,7 @@ void LexerPrivate::groupLexemsByStatements(
         Statement statement;
         popFirstStatement(lexemsCopy, statement);
         if (statement.data.size()>0)
-            statements << statement;
+            statements << new Statement(statement);
     }
 }
 

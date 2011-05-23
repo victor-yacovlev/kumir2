@@ -30,7 +30,7 @@ public:
       *        analize subject algorhitn, otherwise analizes to
       *        whole AST
       */
-    void init(QList<Statement> * statements
+    void init(QList<Statement*> * statements
               , AST_Data * ast
               , AST_Algorhitm *algorhitm);
 
@@ -45,7 +45,7 @@ public:
     /** List of syntax errors */
     QList<Error> errors() const;
 
-    static AST_Statement * createSimpleAstStatement(Statement &st);
+    static AST_Statement * createSimpleAstStatement(Statement * st);
 
 private:
     class PDAutomataPrivate * d;

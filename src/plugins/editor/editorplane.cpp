@@ -151,6 +151,11 @@ void EditorPlane::paintEvent(QPaintEvent *e)
     p.restore();
     paintLineNumbers(&p, e->rect());
     paintCursor(&p, e->rect());
+
+    paintMarginBackground(&p, e->rect());
+
+    paintMarginText(&p, e->rect());
+
     e->accept();
 }
 
@@ -466,6 +471,43 @@ QRect EditorPlane::cursorRect() const
     return result;
 }
 
+void EditorPlane::paintMarginBackground(QPainter *p, const QRect &rect)
+{
+    p->save();
+    p->setPen(Qt::NoPen);
+    p->setBrush(palette().brush(QPalette::Base));
+    const int dX = charWidth();
+    const int dY = lineHeight();
+    int marginLeft = (widthInChars()+5)*dX+1;
+    QRect marginLine = QRect(marginLeft, 0, 2, height()).intersected(rect);
+    p->drawRect(rect.intersected(QRect(marginLeft, 0, width()-marginLeft, height())));
+    p->setPen(QPen(QColor(0,0,255,32),1));
+    p->setBrush(Qt::NoBrush);
+    if (true) {
+        // draw horizontal lines
+        QRect lineRect;
+        for (int y=dY; y<height(); y += dY) {
+            lineRect = QRect(marginLeft, y, width(), 1).intersected(rect);
+            if (lineRect.width()>0 && lineRect.height()>0) {
+                p->drawLine(lineRect.topLeft(), lineRect.topRight());
+            }
+        }
+        // draw vertical lines
+//        for (int x=dX; x<width(); x+= dX) {
+//            lineRect = QRect(x, 0, 1, height()).intersected(rect);
+//            if (lineRect.width()>0 && lineRect.height()>0) {
+//                p->drawLine(lineRect.topLeft(), lineRect.bottomLeft());
+//            }
+//        }
+    }
+    // draw margin line
+    if (marginLine.width()>0 && marginLine.height()>0) {
+        p->setPen(QPen(QColor(255,0,0,128),2));
+        p->drawLine((widthInChars()+5)*dX+1, 0, (widthInChars()+5)*dX+1, height());
+    }
+    p->restore();
+}
+
 void EditorPlane::paintBackground(QPainter *p, const QRect &rect)
 {
     p->save();
@@ -492,12 +534,6 @@ void EditorPlane::paintBackground(QPainter *p, const QRect &rect)
                 p->drawLine(lineRect.topLeft(), lineRect.bottomLeft());
             }
         }
-    }
-    // draw margin line
-    QRect marginLine = QRect((widthInChars()+5)*dX+1, 0, 2, height()).intersected(rect);
-    if (marginLine.width()>0 && marginLine.height()>0) {
-        p->setPen(QPen(QColor(255,0,0,128),2));
-        p->drawLine((widthInChars()+5)*dX+1, 0, (widthInChars()+5)*dX+1, height());
     }
 
     p->restore();
@@ -588,6 +624,27 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
     p->restore();
 }
 
+void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
+{
+    p->save();
+    p->setPen(QColor(Qt::red));
+    const int dX = charWidth();
+    const int dY = lineHeight();
+    int marginLeft = (widthInChars()+5)*dX+1;
+    int startLine = rect.top()-offset().y() / lineHeight() - 1;
+    int endLine = rect.bottom()-offset().y() / lineHeight() + 1;
+    for (int i=qMax(startLine, 0); i<endLine+1; i++) {
+        int y =  ( i + 1 )* dY;
+        if (i<m_document->size() && m_document->at(i).errors.size()>0) {
+            const QString errText = m_document->at(i).errors.size()>1
+                        ? "> "+m_document->at(i).errors[0]
+                        : m_document->at(i).errors[0];
+            p->drawText(marginLeft+4, y, errText);
+        }
+    }
+    p->restore();
+}
+
 void EditorPlane::paintText(QPainter *p, const QRect &rect)
 {
     p->save();
@@ -623,6 +680,10 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
                 offset += (charWidth()-charW)/2;
             }
             p->drawText(offset, y,  QString(m_document->at(i).text[j]));
+            if (curType & Shared::LxTypeError) {
+                p->setPen(QColor(Qt::red));
+                p->drawLine(offset, y+2, offset+charWidth(), y+2);
+            }
         }
 
     }

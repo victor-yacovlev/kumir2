@@ -16,8 +16,7 @@ typedef AST::Data AST_Data;
 
 namespace KumirAnalizer {
 
-typedef QList<AST::Statement*> LAS;
-typedef QList<AST::Statement*>::iterator LASI;
+typedef QList<AST::Statement*> * LAS;
 
 struct AnalizerPrivate
 {
@@ -38,7 +37,8 @@ struct AnalizerPrivate
     AST_Data * ast;
 
     QStringList sourceText;
-    QList<Statement> statements;
+    QList<Statement*> statements;
+    static QLocale::Language nativeLanguage;
 
     /** Find algorhitm in AST by real line number */
     static AST::Algorhitm * findAlgorhitmByPos(AST::Data * data, int pos);
@@ -55,21 +55,41 @@ struct AnalizerPrivate
       * @return true on found, false if not found
       */
     static bool findInstructionsBlock(AST::Data * data
-                                      , const QList<Statement> statements
+                                      , const QList<Statement*> statements
                                       , LAS & lst
-                                      , LASI & begin
-                                      , LASI & end
+                                      , int & begin
+                                      , int & end
+                                      , AST::Module* & mod
+                                      , AST::Algorhitm* & alg
+                                      );
+    /** Find context of AST instructions list,
+      * containing provided lexem groups
+      * @param IN data - AST
+      * @param IN statements - list of lexem groups
+      * @param IN pos - position, where lexems inserted
+      * @param OUT lst - list of AST instructions
+      * @param OUT outPos - position, where statements to be insert
+      * @param OUT mod - module reference
+      * @param OUT alg - algorhitm reference
+      * @return true on found, false if not found
+      */
+    static bool findInstructionsBlock(AST::Data * data
+                                      , const QList<Statement*> statements
+                                      , const QList<Statement*>::iterator & pos
+                                      , LAS & lst
+                                      , int & outPos
                                       , AST::Module* & mod
                                       , AST::Algorhitm* & alg
                                       );
 
-    AnalizeSubject analizeSubject(const QList<Statement> & statements) const;
+    AnalizeSubject analizeSubject(const QList<Statement*> & statements) const;
 
 
     void doCompilation(AnalizeSubject whatToCompile
-                       , QList<Statement> & oldStatements
-                       , QList<Statement> & newStatements
-                       , QList<Statement> & allStatements
+                       , QList<Statement*> & oldStatements
+                       , QList<Statement*> & newStatements
+                       , QList<Statement*> & allStatements
+                       , QList<Statement*>::iterator & whereInserted
                        );
 
 };

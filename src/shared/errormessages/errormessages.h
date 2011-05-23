@@ -32,8 +32,7 @@ inline QString _(const char * x, const QString &a, const QString &b, const QStri
 
 namespace ErrorMessages {
 
-    extern bool loadMessages(const QString &plugin
-                             , const QString &fileName);
+    extern bool loadMessages(const QString &plugin);
 
     extern QString message(const QString &plugin
                            , const QLocale::Language &language

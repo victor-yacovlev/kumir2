@@ -27,7 +27,7 @@ struct LexerPrivate {
       * SplitFStringList in the terms of Kumir 1.x
       */
     void groupLexemsByStatements(const QList<Lexem*> & lexems
-                                 , QList<Statement> & statements
+                                 , QList<Statement*> & statements
                                  ) const;
 
     static void initNormalizator(const QString &fileName);

@@ -72,7 +72,7 @@ void EditorPrivate::handleLineAndTextChanged(const QList<int> &r, const QList<in
     foreach (int l, n) {
         newLines << doc->at(l).text;
     }
-    qDebug() << "Removed " << r.count() << " lines, inserted " << n.count() << " lines";
+//    qDebug() << "Removed " << r.count() << " lines, inserted " << n.count() << " lines";
     analizer->changeSourceText(documentId, r, newLines);
     updateFromAnalizer();
 }
@@ -81,10 +81,19 @@ void EditorPrivate::updateFromAnalizer()
 {
     QList<Shared::LineProp> props = analizer->lineProperties(documentId);
     QList<QPoint> ranks = analizer->lineRanks(documentId);
+    QList<Error> errors = analizer->errors(documentId);
     for (int i=0; i<doc->size(); i++) {
         (*doc)[i].indentStart = ranks[i].x();
         (*doc)[i].indentEnd = ranks[i].y();
         (*doc)[i].highlight = props[i].toList();
+        (*doc)[i].errors.clear();
+    }
+    for (int i=0; i<errors.size(); i++) {
+        Error err = errors[i];
+        int lineNo = err.line;
+        if (lineNo>=0) {
+            (*doc)[lineNo].errors << err.code;
+        }
     }
     plane->update();
 }

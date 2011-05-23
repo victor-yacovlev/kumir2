@@ -15,6 +15,7 @@ struct TextLine
     QList<bool> selected;
     bool lineEndSelected;
     QString text;
+    QStringList errors;
 };
 
 class TextDocument:
