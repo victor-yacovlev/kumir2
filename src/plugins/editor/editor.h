@@ -20,7 +20,8 @@ public:
     QString text() const;
     bool isModified() const;
     void setNotModified();
-
+signals:
+    void urlsDragAndDropped(const QList<QUrl> &);
 private:
     void focusInEvent(QFocusEvent *e);
     class EditorPrivate * d;

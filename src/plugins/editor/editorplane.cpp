@@ -680,31 +680,37 @@ void EditorPlane::dragEventHandler(QDragMoveEvent *e)
         if (e->source()==this) {
             e->setDropAction(Qt::MoveAction);
         }
-        int col = (e->pos().x()-offset().x())/charWidth();
-        int row = (e->pos().y()-offset().y())/lineHeight();
-        col = qMax(col, 0);
-        row = qMax(row, 0);
-        if (e->mimeData()->hasFormat(Clipboard::BlockMimeType)) {
-            pnt_dropPosCorner = QPoint(col, row);
-            if (col>widthInChars()-1) {
-                i_marginAlpha = 64;
-            }
-            else {
-                i_marginAlpha = 255;
-            }
-        }
-        else if (e->mimeData()->hasText()) {
-            pnt_dropPosMarker = QPoint(col, row);
-            if (col>widthInChars()-1) {
-                i_marginAlpha = 64;
-            }
-            else {
-                i_marginAlpha = 255;
-            }
-        }
-        else {
+        if (e->mimeData()->hasUrls()) {
             i_marginAlpha = 255;
             pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
+        }
+        else{
+            int col = (e->pos().x()-offset().x())/charWidth();
+            int row = (e->pos().y()-offset().y())/lineHeight();
+            col = qMax(col, 0);
+            row = qMax(row, 0);
+            if (e->mimeData()->hasFormat(Clipboard::BlockMimeType)) {
+                pnt_dropPosCorner = QPoint(col, row);
+                if (col>widthInChars()-1) {
+                    i_marginAlpha = 64;
+                }
+                else {
+                    i_marginAlpha = 255;
+                }
+            }
+            else if (e->mimeData()->hasText()) {
+                pnt_dropPosMarker = QPoint(col, row);
+                if (col>widthInChars()-1) {
+                    i_marginAlpha = 64;
+                }
+                else {
+                    i_marginAlpha = 255;
+                }
+            }
+            else {
+                i_marginAlpha = 255;
+                pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
+            }
         }
         update();
         e->accept();
@@ -750,7 +756,24 @@ void EditorPlane::dropEvent(QDropEvent *e)
         dropIntoSelection = r.contains(col, row);
     }
     if (e->mimeData()->hasUrls()) {
-        // TODO implement file open
+        QList<QUrl> urls = e->mimeData()->urls();
+        QList<QUrl> validUrls;
+        foreach (QUrl url, urls) {
+            const QString fileName = url.toLocalFile();
+            bool valid = false;
+            foreach (QRegExp rx, rxFilenamePattern) {
+                if (rx.exactMatch(fileName)) {
+                    valid = true;
+                    break;
+                }
+            }
+            if (valid) {
+                validUrls << url;
+            }
+        }
+        if (!validUrls.isEmpty()) {
+            emit urlsDragAndDropped(validUrls);
+        }
         e->accept();
         return;
     }

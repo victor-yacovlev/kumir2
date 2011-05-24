@@ -16,6 +16,8 @@ class VisualComponent:
 public:
     virtual QList<QAction*> toolbarActions() = 0;
     virtual QList<MenuActionsGroup> menuActions() = 0;
+signals:
+    void urlsDragAndDropped(const QList<QUrl> &);
 };
 
 }

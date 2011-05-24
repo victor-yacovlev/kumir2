@@ -146,6 +146,7 @@ Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentI
     l->addWidget(d->verticalScrollBar, 0, 1);
     l->addWidget(d->horizontalScrollBar, 1, 0);
     l->addWidget(d->statusBar, 2, 0, 1, 2);
+    connect(d->plane, SIGNAL(urlsDragAndDropped(QList<QUrl>)), this, SIGNAL(urlsDragAndDropped(QList<QUrl>)));
 }
 
 

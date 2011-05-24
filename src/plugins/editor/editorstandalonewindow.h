@@ -32,6 +32,7 @@ public slots:
 private slots:
     void loadSettings();
     void saveSettings();
+    void loadFileFromDrop(const QList<QUrl> &urls);
 
 protected:
     void closeEvent(QCloseEvent * e);

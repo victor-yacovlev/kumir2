@@ -103,8 +103,17 @@ void EditorStandaloneWindow::saveSettings()
     m_settings->setValue(WindowRectSettingsKey, r);
 }
 
+void EditorStandaloneWindow::loadFileFromDrop(const QList<QUrl> &urls)
+{
+    if (urls.isEmpty())
+        return;
+    const QString fileName = urls.first().toLocalFile();
+    loadFromFile(fileName);
+}
+
 void EditorStandaloneWindow::newProgram()
 {
+    setWindowTitle(tr("Kumir Editor"));
     if (i_analizerId!=-1)
         m_plugin->closeDocument(i_analizerId);
     i_analizerId = -1;
@@ -118,6 +127,7 @@ void EditorStandaloneWindow::newProgram()
 bool EditorStandaloneWindow::loadFromFile(const QString &fileName)
 {
     QFile f (fileName);
+    setWindowTitle(tr("Kumir Editor"));
     if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
         QTextStream ts(&f);
         ts.setCodec("UTF-16");
@@ -134,6 +144,7 @@ bool EditorStandaloneWindow::loadFromFile(const QString &fileName)
         i_analizerId = p.first;
         m_editor = p.second;
         setupEditor();
+        setWindowTitle(QFileInfo(s_fileName).fileName()+" - "+tr("Kumir Editor"));
         return true;
     }
     else {
@@ -213,6 +224,7 @@ void EditorStandaloneWindow::setupEditor()
         menu->addActions(m.actions);
     }
     setCentralWidget(m_editor);
+    connect(m_editor, SIGNAL(urlsDragAndDropped(QList<QUrl>)), this, SLOT(loadFileFromDrop(QList<QUrl>)));
     m_editor->setFocus(Qt::ActiveWindowFocusReason);
 }
 

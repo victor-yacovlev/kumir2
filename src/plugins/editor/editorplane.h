@@ -86,7 +86,8 @@ private:
     QPoint pnt_dropPosMarker;
     QPoint pnt_dropPosCorner;
     int i_marginAlpha;
-
+signals:
+    void urlsDragAndDropped(const QList<QUrl> &);
 
 };
 
