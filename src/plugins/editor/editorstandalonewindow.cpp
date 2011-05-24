@@ -71,7 +71,7 @@ EditorStandaloneWindow::EditorStandaloneWindow(class EditorPlugin * plugin
     m_editor = 0;
     m_plugin = plugin;
 
-    if (!startTextFileName.isEmpty() && loadFromFile(s_fileName)) {
+    if (!startTextFileName.isEmpty() && loadFromFile(startTextFileName)) {
     }
     else {
         newProgram();

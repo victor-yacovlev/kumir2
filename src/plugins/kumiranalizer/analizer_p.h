@@ -75,7 +75,7 @@ struct AnalizerPrivate
       */
     static bool findInstructionsBlock(AST::Data * data
                                       , const QList<Statement*> statements
-                                      , const QList<Statement*>::iterator & pos
+                                      , int pos
                                       , LAS & lst
                                       , int & outPos
                                       , AST::Module* & mod
@@ -89,7 +89,7 @@ struct AnalizerPrivate
                        , QList<Statement*> & oldStatements
                        , QList<Statement*> & newStatements
                        , QList<Statement*> & allStatements
-                       , QList<Statement*>::iterator & whereInserted
+                       , int whereInserted
                        );
 
 };

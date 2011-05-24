@@ -13,13 +13,16 @@ namespace Editor {
 EditorPlane::EditorPlane(TextDocument * doc
                          , TextCursor * cursor
                          , class Clipboard * clipboard
+                         , const QList<QRegExp> &fileNamesToOpen
                          , QSettings * settings
                          , QScrollBar * horizontalSB
                          , QScrollBar * verticalSB
                          , QWidget *parent) :
     QWidget(parent)
 {
+    rxFilenamePattern = fileNamesToOpen;
     i_marginWidth = 15;
+    i_marginAlpha = 255;
     m_document = doc;
     m_cursor = cursor;
     m_clipboard = clipboard;
@@ -36,6 +39,183 @@ EditorPlane::EditorPlane(TextDocument * doc
     connect(horizontalSB, SIGNAL(valueChanged(int)), this, SLOT(update()));
     connect(verticalSB, SIGNAL(valueChanged(int)), this, SLOT(update()));
     updateScrollBars();
+    initMouseCursor();
+    setMouseTracking(true);
+    setAcceptDrops(true);
+    pnt_marginPress = pnt_textPress = pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
+    b_selectionInProgress = false;
+}
+
+void EditorPlane::paintDropPosition(QPainter *p)
+{
+    p->save();
+    p->setPen(QPen(QColor(Qt::black), 2, Qt::SolidLine));
+    if (pnt_dropPosMarker.x()!=-1000 && pnt_dropPosMarker.y()!=-1000) {
+        int cw = charWidth();
+        int lh = lineHeight();
+        int x = offset().x() + cw * pnt_dropPosMarker.x();
+        int y = offset().y() + lh * pnt_dropPosMarker.y();
+        p->drawLine(x, y, x, y+lh);
+    }
+    if (pnt_dropPosCorner.x()!=-1000 && pnt_dropPosCorner.y()!=-1000) {
+        int cw = charWidth();
+        int lh = lineHeight();
+        int x = offset().x() + cw * pnt_dropPosCorner.x();
+        int y = offset().y() + lh * pnt_dropPosCorner.y();
+        p->drawLine(x, y, x, y+lh);
+        p->drawLine(x, y, x+cw, y);
+    }
+    p->restore();
+}
+
+
+
+void EditorPlane::mousePressEvent(QMouseEvent *e)
+{
+    int ln = charWidth() * 5;
+    int mn = (widthInChars()+5)* charWidth();
+    //    qDebug() << "ln = " << ln;
+    //    qDebug() << "mn = " << mn;
+    //    qDebug() << "x  = " << e->pos().x();
+    m_cursor->setViewMode(TextCursor::VM_Hidden);
+    pnt_marginPress = pnt_textPress = QPoint(-1000, -1000);
+    if (e->pos().x()>=(mn-2) && e->pos().x()<=(mn+2)) {
+        // Begin drag margin line
+        pnt_marginPress = e->pos();
+    }
+    else if (e->pos().x()>ln && e->pos().x()<(mn-2)) {
+        // Move cursor and (possible) begin selection
+        pnt_textPress = e->pos();
+        int realX = e->pos().x() - offset().x();
+        int realY = e->pos().y() - offset().y();
+        int textX = realX/charWidth();
+        int textY = realY/lineHeight();
+        m_cursor->moveTo(textY, textX);
+        pos_textPress = QPoint(textX, textY);
+        update();
+    }
+    e->accept();
+}
+
+void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
+{
+    if (pnt_marginPress.x()!=-1000 && pnt_marginPress.y()!=-1000) {
+        int x = pnt_marginPress.x();
+        int cw = charWidth();
+        x = (x/cw)*cw;
+        int marginAbsoluteWidth = width()-x;
+        i_marginWidth = marginAbsoluteWidth / cw;
+        updateScrollBars();
+        update();
+        pnt_marginPress = QPoint(-1000, -1000);
+    }
+    if (b_selectionInProgress) {
+        b_selectionInProgress = false;
+    }
+    else {
+        m_cursor->removeSelection();
+        m_cursor->removeRectSelection();
+    }
+    m_cursor->setViewMode(TextCursor::VM_Blinking);
+    e->accept();
+}
+
+void EditorPlane::mouseMoveEvent(QMouseEvent *e)
+{
+    int ln = charWidth() * 5;
+    int mn = ln + widthInChars() * charWidth();
+    if (e->pos().x()<ln) {
+//        QApplication::setOverrideCursor(Qt::ArrowCursor);
+        QApplication::restoreOverrideCursor();
+    }
+    else if (e->pos().x()<=mn-2) {
+        QApplication::restoreOverrideCursor();
+    }
+    else if (e->pos().x()<=mn+2) {
+        QApplication::setOverrideCursor(Qt::SplitHCursor);
+    }
+    else {
+//        QApplication::setOverrideCursor(Qt::ArrowCursor);
+        QApplication::restoreOverrideCursor();
+    }
+    if (pnt_marginPress.x()!=-1000 && pnt_marginPress.y()!=-1000) {
+        pnt_marginPress = e->pos();
+        update();
+    }
+    else if (e->pos().x()>ln && e->pos().x()<mn-2 && e->buttons().testFlag(Qt::LeftButton)) {
+        int dX = e->pos().x() - pnt_textPress.x();
+        int dY = e->pos().y() - pnt_textPress.y();
+        qreal distance = sqrt(dX*dX+dY*dY);
+        qreal therehold = QApplication::startDragDistance();
+        if (distance>=therehold) {
+            bool sel = m_cursor->hasSelection();
+            bool rsel = m_cursor->hasRectSelection();
+//            qDebug() << "sel = " << sel;
+//            qDebug() << "rsel = " << rsel;
+            bool nothingSelected = !sel && !rsel;
+//            qDebug() << "nothingSelected = " << nothingSelected;
+            if (b_selectionInProgress || nothingSelected ) {
+                b_selectionInProgress = true;
+                int cw = charWidth();
+                int lh = lineHeight();
+                int realX = e->pos().x() - offset().x();
+                int realY = e->pos().y() - offset().y();
+                int textX = realX/cw;
+                int textY = realY/lh;
+                textX = qMax(textX, 0);
+                textY = qMax(textY, 0);
+                if (e->modifiers().testFlag(Qt::ShiftModifier)) {
+                    QApplication::restoreOverrideCursor();
+                    QApplication::setOverrideCursor(Qt::CrossCursor);
+                    m_cursor->selectRangeBlock(pos_textPress.y(), pos_textPress.x(), textY, textX);
+                }
+                else {
+                    QApplication::restoreOverrideCursor();
+                    m_cursor->selectRangeText(pos_textPress.y(), pos_textPress.x(), textY, textX);
+                }
+                update();
+            }
+            else if (rsel || sel) {
+                QMimeData * data = new QMimeData;
+                if (sel) {
+                    data->setText(m_cursor->selectedText());
+                }
+                if (rsel) {
+                    data->setText(m_cursor->selectedText());
+                    data->setData(
+                                Clipboard::BlockMimeType
+                                , m_cursor->rectSelectionText().join("\n").toUtf8());
+                }
+                QDrag * drag = new QDrag(this);
+                drag->setMimeData(data);
+                Qt::DropAction result = drag->exec(Qt::CopyAction|Qt::MoveAction, Qt::CopyAction);
+                if (result==Qt::MoveAction && drag->target()!=this) {
+                    if (sel) {
+                        m_cursor->removeSelectedText();
+                    }
+                    else if (rsel) {
+                        m_cursor->removeSelectedBlock();
+                    }
+                }
+            }
+        }
+    }
+    e->accept();
+}
+
+void EditorPlane::initMouseCursor()
+{
+//    QRect r0(0,0,charWidth(),lineHeight());
+//    QRect r1(0,0,charWidth()-1,lineHeight()-1);
+//    QImage img(r0.size(), QImage::Format_ARGB32);
+//    img.fill(0);
+//    QPainter p(&img);
+//    p.setPen(QPen(QColor(Qt::black)));
+//    p.drawRect(r1);
+//    p.end();
+//    QCursor c(QPixmap::fromImage(img));
+    QCursor c(Qt::IBeamCursor);
+    setCursor(c);
 }
 
 QPoint EditorPlane::offset() const
@@ -156,7 +336,24 @@ void EditorPlane::paintEvent(QPaintEvent *e)
 
     paintMarginText(&p, e->rect());
 
+    paintNewMarginLine(&p);
+    paintDropPosition(&p);
+
     e->accept();
+}
+
+void EditorPlane::paintNewMarginLine(QPainter *p)
+{
+    p->save();
+    p->setPen(QColor(Qt::black));
+    p->setBrush(Qt::NoBrush);
+    int x = pnt_marginPress.x();
+    int cw = charWidth();
+    QRect marginLineRect(0,0,4,height());
+    x = ( x / cw ) * cw;
+    marginLineRect.translate(x,0);
+    p->drawRect(marginLineRect);
+    p->restore();
 }
 
 int EditorPlane::charWidth() const
@@ -437,9 +634,207 @@ void EditorPlane::cut()
         m_cursor->removeSelectedText();
     }
     else if (m_cursor->hasRectSelection()) {
-        m_cursor->clearSelectedBlock();
+        m_cursor->removeRectSelection();
     }
     findCursor();
+}
+
+bool EditorPlane::canDrop(const QPoint &pos, const QMimeData *data) const
+{
+    if (!m_cursor->isEnabled()) {
+        return false;
+    }
+    bool result = false;
+    if (data->hasUrls()) {
+        foreach (const QUrl &url, data->urls()) {
+            const QString filename = url.toLocalFile();
+            foreach (const QRegExp &rx, rxFilenamePattern) {
+                if (rx.exactMatch(filename)) {
+                    result = true;
+                }
+            }
+        }
+    }
+    if (data->hasText() || data->hasFormat(Clipboard::BlockMimeType)) {
+//        int ln = charWidth() * 5;
+//        int mn = ln + widthInChars() * charWidth();
+//        if (pos.x()>ln && pos.x()<mn) {
+//            result = true;
+//        }
+        Q_UNUSED(pos);
+        result = true;
+    }
+
+    return result;
+}
+
+
+void EditorPlane::dragEventHandler(QDragMoveEvent *e)
+{
+    m_cursor->setViewMode(TextCursor::VM_Hidden);
+    if (canDrop(e->pos(), e->mimeData())) {
+        if (e->source()==this) {
+            e->setDropAction(Qt::MoveAction);
+        }
+        int col = (e->pos().x()-offset().x())/charWidth();
+        int row = (e->pos().y()-offset().y())/lineHeight();
+        col = qMax(col, 0);
+        row = qMax(row, 0);
+        if (e->mimeData()->hasFormat(Clipboard::BlockMimeType)) {
+            pnt_dropPosCorner = QPoint(col, row);
+            if (col>widthInChars()-1) {
+                i_marginAlpha = 64;
+            }
+            else {
+                i_marginAlpha = 255;
+            }
+        }
+        else if (e->mimeData()->hasText()) {
+            pnt_dropPosMarker = QPoint(col, row);
+            if (col>widthInChars()-1) {
+                i_marginAlpha = 64;
+            }
+            else {
+                i_marginAlpha = 255;
+            }
+        }
+        else {
+            i_marginAlpha = 255;
+            pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
+        }
+        update();
+        e->accept();
+    }
+    else {
+        e->ignore();
+    }
+}
+
+void EditorPlane::dropEvent(QDropEvent *e)
+{
+    m_cursor->setViewMode(TextCursor::VM_Blinking);
+    pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
+    i_marginAlpha = 255;
+    bool dropIntoSelection = false;
+    int col = (e->pos().x()-offset().x())/charWidth();
+    int row = (e->pos().y()-offset().y())/lineHeight();
+    col = qMax(col, 0);
+    row = qMax(row, 0);
+    int fromRow, fromCol, toRow, toCol;
+    if (m_cursor->hasSelection()) {
+        m_cursor->selectionBounds(fromRow, fromCol, toRow, toCol);
+        if (row>fromRow && row<toRow) {
+            dropIntoSelection = true;
+        }
+        if (fromRow==toRow) {
+            if (row==fromRow && col>=fromCol && col <toCol) {
+                dropIntoSelection = true;
+            }
+        }
+        else {
+            if (row==fromRow && col>=fromCol) {
+                dropIntoSelection = true;
+            }
+            if (row==toRow && col<toCol) {
+                dropIntoSelection = true;
+            }
+        }
+    }
+    QRect r;
+    if (m_cursor->hasRectSelection()) {
+        r = m_cursor->selectionRect();
+        dropIntoSelection = r.contains(col, row);
+    }
+    if (e->mimeData()->hasUrls()) {
+        // TODO implement file open
+        e->accept();
+        return;
+    }
+    else if (e->mimeData()->hasFormat(Clipboard::BlockMimeType) || e->mimeData()->hasText()) {
+        if (dropIntoSelection && e->source()==this) {
+            // Do nothing - drop into dragged source
+            e->accept();
+            return;
+        }
+    }
+    if (e->source()==this) {
+        e->setDropAction(Qt::MoveAction);
+    }
+    e->accept();
+    QStringList lines;
+    QString text;
+    m_cursor->setEmitCompilationBlocked(true);
+    if (e->mimeData()->hasFormat(Clipboard::BlockMimeType)) {
+        lines = QString::fromUtf8(e->mimeData()->data(Clipboard::BlockMimeType)).split("\n");
+    }
+    else if (e->mimeData()->hasText()) {
+        text = e->mimeData()->text();
+    }
+
+    if (dropIntoSelection) {
+        if (m_cursor->hasSelection()) {
+            m_cursor->removeSelectedText();
+        }
+        if (m_cursor->hasRectSelection()) {
+            m_cursor->removeSelectedBlock();
+        }
+    }
+    else {
+        if (e->source()==this) {
+            if (m_cursor->hasSelection()) {
+                m_cursor->removeSelectedText();
+                if (row>=toRow) {
+                    row -= text.count("\n");
+                    if (row==toRow && col>=toCol) {
+                        col -= text.split("\n").last().size();
+                    }
+                }
+            }
+            if (m_cursor->hasRectSelection()) {
+                m_cursor->removeSelectedBlock();
+//                if (row>=r.bottom()) {
+//                    row -= r.height();
+//                }
+            }
+
+        }
+        else {
+            if (m_cursor->hasSelection()) {
+                m_cursor->removeSelection();
+            }
+            if (m_cursor->hasRectSelection()) {
+                m_cursor->removeRectSelection();
+            }
+        }
+    }
+    m_cursor->moveTo(row, col);
+    m_cursor->setEmitCompilationBlocked(false);
+    if (e->mimeData()->hasFormat(Clipboard::BlockMimeType)) {
+        m_cursor->insertBlock(lines);
+    }
+    else if (e->mimeData()->hasText()) {
+        m_cursor->insertText(text);
+    }
+    update();
+}
+
+void EditorPlane::dragLeaveEvent(QDragLeaveEvent *e)
+{
+    m_cursor->setViewMode(TextCursor::VM_Blinking);
+    pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
+    i_marginAlpha = 255;
+    update();
+    e->accept();
+}
+
+void EditorPlane::dragMoveEvent(QDragMoveEvent *e)
+{
+    dragEventHandler(e);
+}
+
+void EditorPlane::dragEnterEvent(QDragEnterEvent *e)
+{
+    dragEventHandler(e);
 }
 
 void EditorPlane::removeLine()
@@ -475,13 +870,16 @@ void EditorPlane::paintMarginBackground(QPainter *p, const QRect &rect)
 {
     p->save();
     p->setPen(Qt::NoPen);
-    p->setBrush(palette().brush(QPalette::Base));
+    QColor bgColor = palette().brush(QPalette::Base).color();
+    bgColor.setAlpha(i_marginAlpha);
+    p->setBrush(bgColor);
+
     const int dX = charWidth();
     const int dY = lineHeight();
     int marginLeft = (widthInChars()+5)*dX+1;
     QRect marginLine = QRect(marginLeft, 0, 2, height()).intersected(rect);
     p->drawRect(rect.intersected(QRect(marginLeft, 0, width()-marginLeft, height())));
-    p->setPen(QPen(QColor(0,0,255,32),1));
+    p->setPen(QPen(QColor(0,0,255,32*i_marginAlpha/256),1));
     p->setBrush(Qt::NoBrush);
     if (true) {
         // draw horizontal lines
@@ -502,7 +900,7 @@ void EditorPlane::paintMarginBackground(QPainter *p, const QRect &rect)
     }
     // draw margin line
     if (marginLine.width()>0 && marginLine.height()>0) {
-        p->setPen(QPen(QColor(255,0,0,128),2));
+        p->setPen(QPen(QColor(255,0,0,128*i_marginAlpha/256),2));
         p->drawLine((widthInChars()+5)*dX+1, 0, (widthInChars()+5)*dX+1, height());
     }
     p->restore();
@@ -512,7 +910,7 @@ void EditorPlane::paintBackground(QPainter *p, const QRect &rect)
 {
     p->save();
     p->setPen(Qt::NoPen);
-    p->setBrush(palette().brush(QPalette::Base));
+    p->setBrush(palette().brush(QPalette::Base).color());
     p->drawRect(rect);
     p->setPen(QPen(QColor(0,0,255,32),1));
     p->setBrush(Qt::NoBrush);
@@ -549,10 +947,10 @@ void EditorPlane::paintRectSelection(QPainter *p, const QRect &)
                    , Qt::SolidLine));
     p->setBrush(Qt::NoBrush);
     QRect selRect = m_cursor->selectionRect();
-    QRect r(selRect.left() * charWidth(),
-            selRect.top() * lineHeight(),
-            selRect.width() * charWidth(),
-            selRect.height() * lineHeight());
+    QRect r(selRect.left() * charWidth() + 1,
+            selRect.top() * lineHeight() + 1,
+            selRect.width() * charWidth() - 2,
+            selRect.height() * lineHeight() -2 );
 
     p->drawRect(r);
 
@@ -627,7 +1025,9 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
 void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
 {
     p->save();
-    p->setPen(QColor(Qt::red));
+    QColor textColor(Qt::red);
+    textColor.setAlpha(i_marginAlpha);
+    p->setPen(textColor);
     const int dX = charWidth();
     const int dY = lineHeight();
     int marginLeft = (widthInChars()+5)*dX+1;

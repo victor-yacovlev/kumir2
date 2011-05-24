@@ -58,7 +58,10 @@ bool Clipboard::hasContent() const
 {
     if (i_selection==-1) {
         QClipboard * cl = QApplication::clipboard();
-        return cl->mimeData()->hasText() || cl->mimeData()->hasFormat(BlockMimeType);
+        const QMimeData * data = cl->mimeData();
+        bool text = data->hasText();
+        bool block = data->hasFormat(BlockMimeType);
+        return text || block;
     }
     else {
         return i_selection < m_data.size();
@@ -70,6 +73,7 @@ ClipboardData Clipboard::content() const
     if (i_selection==-1 || i_selection>=m_data.size()) {
         QClipboard * cl = QApplication::clipboard();
         ClipboardData result;
+        result.type = ClipboardData::Invalid;
         if (cl->mimeData()->hasText()) {
             result.type = ClipboardData::Text;
             result.text = cl->mimeData()->text();
@@ -78,10 +82,7 @@ ClipboardData Clipboard::content() const
             result.type = ClipboardData::Block;
             const QByteArray & raw = cl->mimeData()->data(BlockMimeType);
             result.block = QString::fromUtf8(raw).split("\n");
-        }
-        else {
-            result.type = ClipboardData::Invalid;
-        }
+        }        
         return result;
     }
     else {

@@ -118,7 +118,8 @@ Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentI
         d->clipboard = new Clipboard;
     d->horizontalScrollBar = new ScrollBar(Qt::Horizontal, this);
     d->verticalScrollBar = new ScrollBar(Qt::Vertical, this);
-    d->plane = new EditorPlane(d->doc, d->cursor, d->clipboard, d->settings, d->horizontalScrollBar, d->verticalScrollBar, this);
+    QList<QRegExp> fileNamesToOpen = d->analizer->supportedFileNamePattern();
+    d->plane = new EditorPlane(d->doc, d->cursor, d->clipboard, fileNamesToOpen, d->settings, d->horizontalScrollBar, d->verticalScrollBar, this);
     d->statusBar = new StatusBar;
     connect(d->cursor, SIGNAL(positionChanged(int,int)),
             d->statusBar, SLOT(handleCursorPositionChanged(int,int)));

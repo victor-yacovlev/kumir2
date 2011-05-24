@@ -7,6 +7,7 @@ TextCursor::TextCursor(TextDocument * document)
     : QObject(0)
     , m_document(document)
     , e_mode(EM_Insert)
+    , e_viewMode(VM_Blinking)
     , i_timerId(-1)
     , b_enabled(true)
     , b_visible(true)
@@ -17,6 +18,18 @@ TextCursor::TextCursor(TextDocument * document)
 {
     i_timerId = startTimer(QApplication::cursorFlashTime()/2);
     emitPositionChanged();
+    b_emitCompilationBlocked = false;
+    rect_selection = QRect(-1,-1,0,0);
+}
+
+void TextCursor::setViewMode(ViewMode mode)
+{
+    e_viewMode = mode;
+    if (mode==VM_Hidden)
+        b_visible = false;
+    else if (mode==VM_Visible)
+        b_visible = true;
+    emit updateRequest();
 }
 
 void TextCursor::emitPositionChanged()
@@ -32,7 +45,7 @@ void TextCursor::emitPositionChanged()
         i_prevCol = i_column;
         emit positionChanged(i_row, i_column);
     }
-    if (compileRequest) {
+    if (compileRequest && !b_emitCompilationBlocked) {
         emit lineAndTextChanged(l_removedLines, l_newLines);
         l_removedLines.clear();
         l_newLines.clear();
@@ -41,15 +54,163 @@ void TextCursor::emitPositionChanged()
 
 void TextCursor::timerEvent(QTimerEvent *e)
 {
-    b_visible = !b_visible;
+    if (e_viewMode==VM_Blinking) {
+        b_visible = !b_visible;
+    }
+    else if (e_viewMode==VM_Hidden) {
+        b_visible = false;
+    }
+    else if (e_viewMode==VM_Visible) {
+        b_visible = true;
+    }
     emit updateRequest();
     e->accept();
+
 }
 
 TextCursor::~TextCursor()
 {
     if (i_timerId!=-1)
         killTimer(i_timerId);
+}
+
+void TextCursor::moveTo(int row, int col)
+{
+    b_visible = false;
+    updateRequest();
+    i_row = qMax(0, row);
+    i_column = qMax(0, col);
+    if (e_viewMode!=VM_Hidden) {
+        b_visible = true;
+        updateRequest();
+    }
+    emitPositionChanged();
+}
+
+void TextCursor::selectRangeText(int fromRow, int fromCol, int toRow, int toCol)
+{
+    b_visible = false;
+    updateRequest();
+
+    int endX = toCol;
+    int endY = toRow;
+
+    removeSelection();
+    rect_selection = QRect(-1,-1,0,0);
+
+    bool leftToRight = true;
+
+    if (toRow<fromRow) {
+        leftToRight = false;
+        int tmp = toRow;
+        toRow = fromRow;
+        fromRow = tmp;
+    }
+    else if (toRow==fromRow) {
+        leftToRight = toCol > fromCol;
+    }
+
+    for (int i=fromRow+1; i<toRow; i++) {
+        if (i<m_document->size()) {
+            TextLine tl = m_document->at(i);
+            for (int j=0; j<tl.text.size(); j++) {
+                tl.selected[j] = true;
+            }
+            tl.lineEndSelected = true;
+            (*m_document)[i] = tl;
+        }
+    }
+    if (leftToRight) {
+        if (fromRow<m_document->size()) {
+            TextLine tl = m_document->at(fromRow);
+            int indent = m_document->indentAt(fromRow)*2;
+            int start = fromCol - indent;
+            int end = (fromRow==toRow)? toCol-indent : tl.text.size();
+            start = qMax(0,start);
+            start = qMin(start, tl.selected.size());
+            end = qMax(0,end);
+            end = qMin(end, tl.selected.size());
+            for (int j=start; j<end; j++) {
+                tl.selected[j] = true;
+            }
+            tl.lineEndSelected = (fromRow!=toRow);
+            (*m_document)[fromRow] = tl;
+        }
+        if (toRow<m_document->size()) {
+            TextLine tl = m_document->at(toRow);
+            int indent = m_document->indentAt(toRow)*2;
+            int start = (fromRow==toRow)? toCol-indent : 0;
+            int end = toCol - indent;
+            start = qMax(0,start);
+            start = qMin(start, tl.selected.size());
+            end = qMax(0,end);
+            end = qMin(end, tl.selected.size());
+            for (int j=start; j<end; j++) {
+                tl.selected[j] = true;
+            }
+            (*m_document)[toRow] = tl;
+        }
+    }
+    else {
+        if (fromRow<m_document->size()) {
+            TextLine tl = m_document->at(fromRow);
+            int indent = m_document->indentAt(fromRow)*2;
+            int start = toCol - indent;
+            int end = (fromRow==toRow)? fromCol-indent : tl.text.size();
+            start = qMax(0,start);
+            start = qMin(start, tl.selected.size());
+            end = qMax(0,end);
+            end = qMin(end, tl.selected.size());
+            for (int j=start; j<end; j++) {
+                tl.selected[j] = true;
+            }
+            tl.lineEndSelected = (fromRow!=toRow);
+            (*m_document)[fromRow] = tl;
+        }
+        if (toRow<m_document->size()) {
+            TextLine tl = m_document->at(toRow);
+            int indent = m_document->indentAt(toRow)*2;
+            int start = (fromRow==toRow)? fromCol-indent : 0;
+            int end = fromCol - indent;
+            start = qMax(0,start);
+            start = qMin(start, tl.selected.size());
+            end = qMax(0,end);
+            end = qMin(end, tl.selected.size());
+            for (int j=start; j<end; j++) {
+                tl.selected[j] = true;
+            }
+            (*m_document)[toRow] = tl;
+        }
+    }
+    i_row = endY;
+    i_column = endX;
+    if (e_viewMode!=VM_Hidden) {
+        b_visible = true;
+    }
+    updateRequest();
+    emitPositionChanged();
+}
+
+void TextCursor::selectRangeBlock(int fromRow, int fromCol, int toRow, int toCol)
+{
+    b_visible = false;
+    updateRequest();
+
+    removeSelection();
+    rect_selection = QRect(qMin(fromCol, toCol),
+                           qMin(fromRow, toRow),
+                           abs(fromCol-toCol)+1,
+                           abs(fromRow-toRow)+1
+                           );
+
+    i_row = toRow;
+    i_column = toCol;
+
+    if (e_viewMode!=VM_Hidden) {
+        b_visible = true;
+    }
+    updateRequest();
+    emitPositionChanged();
 }
 
 void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
@@ -404,6 +565,10 @@ void TextCursor::insertBlock(const QStringList &block)
             line.highlight = highlight;
             line.selected = selected;
             (*m_document)[y] = line;
+            if (!l_removedLines.contains(y))
+                l_removedLines << y;
+            if (!l_newLines.contains(y))
+                l_newLines << y;
         }
         else {
             TextLine line;
@@ -420,6 +585,8 @@ void TextCursor::insertBlock(const QStringList &block)
                 line.selected << false;
             }
             m_document->append(line);
+            if (!l_newLines.contains(y))
+                l_newLines << y;
         }
     }
     i_row += block.size()-1;
@@ -428,9 +595,10 @@ void TextCursor::insertBlock(const QStringList &block)
     emitPositionChanged();
 }
 
-void TextCursor::clearSelectedBlock()
+void TextCursor::removeRectSelection()
 {
-
+    rect_selection = QRect(-1, -1, 0, 0);
+    emit updateRequest();
 }
 
 void TextCursor::insertText(const QString &text)
@@ -900,7 +1068,7 @@ void TextCursor::removeSelectedBlock()
 
     lineEnd = qMin(lineEnd+1, m_document->size());
 
-    for (int y=0; y<lineEnd; y++) {
+    for (int y=lineStart; y<lineEnd; y++) {
         int indent = m_document->indentAt(y)*2;
         int textStart = startPos - indent;
         int textEnd = endPos - indent + 1;
@@ -1007,16 +1175,55 @@ QStringList TextCursor::rectSelectionText() const
     return result;
 }
 
+void TextCursor::selectionBounds(int &fromRow, int &fromCol, int &toRow, int &toCol) const
+{
+    fromRow = fromCol = toRow = toCol = -1;
+    if (!hasSelection())
+        return;
+    for (int i=0; i<m_document->size(); i++) {
+        const TextLine tl = m_document->at(i);
+        if (tl.selected.contains(true) || tl.lineEndSelected) {
+            if (fromRow==-1)
+                fromRow = i;
+        }
+        if (!tl.lineEndSelected) {
+            if (fromRow!=-1) {
+                toRow = i;
+                break;
+            }
+        }
+    }
+    const TextLine first = m_document->at(fromRow);
+    fromCol = first.selected.indexOf(true);
+    if (fromCol==-1)
+        fromCol = first.selected.size();
+    fromCol += 2 * m_document->indentAt(fromRow);
+
+    if (toRow!=-1) {
+        const TextLine last = m_document->at(toRow);
+        toCol = last.selected.lastIndexOf(true);
+        if (toCol==-1)
+            toCol=0;
+        toCol += 2 * m_document->indentAt(toRow);
+    }
+    else {
+        toRow = m_document->size();
+        toCol = 0;
+    }
+}
+
 void TextCursor::removeSelection()
 {
     bool wasSelection = false;
     for (int i=0; i<m_document->size(); i++) {
-        wasSelection = wasSelection || (*m_document)[i].lineEndSelected;
-        (*m_document)[i].lineEndSelected = false;
-        for (int j=0; j<m_document->at(i).text.length(); j++) {
-            wasSelection = wasSelection || (*m_document)[i].selected[j];
-            (*m_document)[i].selected[j] = false;
+        TextLine tl = m_document->at(i);
+        wasSelection = wasSelection || tl.lineEndSelected;
+        tl.lineEndSelected = false;
+        for (int j=0; j<tl.selected.length(); j++) {
+            wasSelection = wasSelection || tl.selected[j];
+            tl.selected[j] = false;
         }
+        (*m_document)[i] = tl;
     }
     if (wasSelection) {
         emit updateRequest(-1, -1);

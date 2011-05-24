@@ -14,6 +14,7 @@ public:
     explicit EditorPlane(class TextDocument * doc
                          , class TextCursor * cursor
                          , class Clipboard * clipboard
+                         , const QList<QRegExp> &fileNamePattern
                          , QSettings * settings
                          , QScrollBar * horizontalSB
                          , QScrollBar * verticalSB
@@ -31,6 +32,16 @@ public slots:
     void removeLine();
     void removeLineTail();
 protected:
+    void dragEventHandler(QDragMoveEvent * e);
+    void dragEnterEvent(QDragEnterEvent *e);
+    void dragMoveEvent(QDragMoveEvent *e);
+    void dragLeaveEvent(QDragLeaveEvent *);
+    void dropEvent(QDropEvent *e);
+    bool canDrop(const QPoint &pos, const QMimeData * data) const;
+    void mouseMoveEvent(QMouseEvent *e);
+    void mousePressEvent(QMouseEvent *e);
+    void mouseReleaseEvent(QMouseEvent *e);
+    void initMouseCursor();
     void updateScrollBars();
     void findCursor();
     void ensureCursorVisible();
@@ -45,6 +56,8 @@ protected:
     void paintSelection(QPainter *p, const QRect &rect);
     void paintRectSelection(QPainter *p, const QRect &rect);
     void paintLineNumbers(QPainter *p, const QRect &rect);
+    void paintNewMarginLine(QPainter *p);
+    void paintDropPosition(QPainter *p);
     void keyPressEvent(QKeyEvent *);
     void keyReleaseEvent(QKeyEvent *);
     void setProperFormat(QPainter * p, Shared::LexemType type, const QChar &c);
@@ -57,9 +70,18 @@ private:
     class TextDocument * m_document;
     class TextCursor * m_cursor;
     class Clipboard * m_clipboard;
+    QList<QRegExp> rxFilenamePattern;
     QSettings * m_settings;
     QScrollBar * m_verticalScrollBar;
     QScrollBar * m_horizontalScrollBar;
+    QPoint pnt_marginPress;
+    QPoint pnt_textPress;
+    QPoint pos_textPress;
+    bool b_selectionInProgress;
+
+    QPoint pnt_dropPosMarker;
+    QPoint pnt_dropPosCorner;
+    int i_marginAlpha;
 
 
 };

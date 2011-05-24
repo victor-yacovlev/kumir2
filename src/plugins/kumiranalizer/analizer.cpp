@@ -49,10 +49,9 @@ Analizer::~Analizer()
 
 void Analizer::changeSourceText(const QList<int> & removedLineNumbers, const QStringList & newLines)
 {
-    QList<Statement*>::iterator it = d->statements.begin();
     QList<Statement*> removedStatements;
     QList<Statement*> newStatements;
-    QList<Statement*>::iterator insertPos = d->statements.end();
+    int insertPos = d->statements.size();
     int lineStart = 0;
     int lineEnd = 99999999;
     if (!removedLineNumbers.isEmpty()) {
@@ -60,12 +59,13 @@ void Analizer::changeSourceText(const QList<int> & removedLineNumbers, const QSt
         lineStart = removedLineNumbers.first();
         lineEnd = removedLineNumbers.last();
     }
-    while (it!=d->statements.end()) {
-        Statement * st = (*it);
+    int it = 0;
+    while (it<d->statements.size()) {
+        Statement * st = d->statements[it];
         bool remove = false;
         bool insert = false;
         foreach (const Lexem * lx, st->data) {
-            if ( (lx->lineNo>=lineStart) && (insertPos==d->statements.end())) {
+            if ( (lx->lineNo>=lineStart) && (insertPos==d->statements.size())) {
                 insert = true;
             }
             if (lx->lineNo>=lineStart && lx->lineNo<=lineEnd) {
@@ -73,10 +73,9 @@ void Analizer::changeSourceText(const QList<int> & removedLineNumbers, const QSt
                 break;
             }
         }
-
         if (remove) {
             removedStatements << st;
-            it = d->statements.erase(it);
+            d->statements.removeAt(it);
         }
         if (insert) {
             insertPos = it;
@@ -86,6 +85,7 @@ void Analizer::changeSourceText(const QList<int> & removedLineNumbers, const QSt
         }
     }
 
+    lineStart = qMin(d->sourceText.size(), lineStart);
 
     QStringList newSourceText = d->sourceText.mid(0, lineStart) + newLines;
     if (lineEnd+1<d->sourceText.size()) {
@@ -103,20 +103,15 @@ void Analizer::changeSourceText(const QList<int> & removedLineNumbers, const QSt
 
     AnalizerPrivate::AnalizeSubject subject = subjByOld * subjByNew;
 
-    Statement * fordebug;
-    if (insertPos!=d->statements.end())
-        fordebug = (*insertPos);
-    Q_UNUSED(fordebug);
-
-    for (QList<Statement*>::iterator it=insertPos; it!=d->statements.end(); it++) {
-        Statement * st = (*it);
+    for (int i=insertPos; i<d->statements.size(); i++) {
+        Statement * st = d->statements[i];
         foreach (Lexem * lx, st->data) {
             lx->lineNo += newLines.size() - removedLineNumbers.size();
         }
     }
 
     for (int i=0 ; i<newStatements.size(); i++) {
-        insertPos = d->statements.insert(insertPos, newStatements[i]);
+        d->statements.insert(insertPos, newStatements[i]);
         insertPos ++;
     }
 
@@ -383,7 +378,7 @@ bool AnalizerPrivate::findInstructionsBlock(
 bool AnalizerPrivate::findInstructionsBlock(
     AST::Data *data
     , const QList<Statement *> statements
-    , const QList<Statement *>::iterator &pos
+    , int pos
     , LAS &lst, int &outPos
     , AST::Module *&mod
     , AST::Algorhitm *&alg
@@ -391,14 +386,14 @@ bool AnalizerPrivate::findInstructionsBlock(
 {
     if (statements.isEmpty())
         return false;
-    QList<Statement *>::iterator searchByPos;
-    if (pos==statements.begin())
-        searchByPos = pos + 1;
-    else if (pos==statements.end())
+    int searchByPos;
+//    if (pos==0)
+//        searchByPos = pos + 1;
+    if (pos==statements.size())
         searchByPos = pos - 1;
     else
         searchByPos = pos;
-    QList<Statement*> nearbyStatements = QList<Statement*>() << (*searchByPos);
+    QList<Statement*> nearbyStatements = QList<Statement*>() << statements[searchByPos];
     int dummy = -999;
     return findInstructionsBlock(data, nearbyStatements, lst, dummy, outPos, mod, alg);
 }
@@ -408,7 +403,7 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
                                     , QList<Statement*> & oldStatements
                                     , QList<Statement*> & newStatements
                                     , QList<Statement*> & allStatements
-                                    , QList<Statement*>::iterator & whereInserted
+                                    , int whereInserted
                                     )
 {
     if (ast->modules.isEmpty())
@@ -434,8 +429,14 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
     }
     else if (whatToCompile==SubjAlgorhtitm) {
 
-        Q_ASSERT(!newStatements.isEmpty());
-        const Statement * firstStatement = newStatements.first();
+        Q_ASSERT(!newStatements.isEmpty() || !oldStatements.isEmpty());
+        Statement * firstStatement = 0;
+        if (newStatements.isEmpty()) {
+            firstStatement = oldStatements.first();
+        }
+        else {
+            firstStatement = newStatements.first();
+        }
         Q_ASSERT(!firstStatement->data.isEmpty());
         const Lexem * lx = firstStatement->data.first();
         const int linePos = lx->lineNo;

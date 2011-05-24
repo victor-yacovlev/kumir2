@@ -11,20 +11,27 @@ class TextCursor : public QObject
 public:
     enum EditMode { EM_Insert, EM_Overwrite };
     enum MoveMode { MM_Move, MM_Select, MM_RectSelect };
+    enum ViewMode { VM_Blinking, VM_Hidden, VM_Visible };
     explicit TextCursor(class TextDocument * document);
+    inline void setEmitCompilationBlocked(bool v) { b_emitCompilationBlocked = v; }
     ~TextCursor();
     inline int row() const { return i_row; }
     inline int column() const { return i_column; }
+    void moveTo(int row, int col);
+    void selectRangeBlock(int fromRow, int fromCol, int toRow, int toCol);
+    void selectRangeText(int fromRow, int fromCol, int toRow, int toCol);
     inline EditMode mode() const { return e_mode; }
     inline void setMode(EditMode m) { e_mode = m; emit updateRequest();}
     inline bool isEnabled() const { return b_enabled; }
     inline bool isVisible() const { return b_enabled && b_visible; }
+    void setViewMode(ViewMode mode);
     inline void setEnabled(bool v) { b_enabled = v; emit updateRequest();}
     bool hasSelection() const;
     inline bool hasRectSelection() const { return rect_selection.x()!=-1 && rect_selection.y()!=-1; }
     inline QRect selectionRect() const { return rect_selection; }
+    void selectionBounds(int &fromRow, int &fromCol, int &toRow, int &toCol) const;
     QStringList rectSelectionText() const;
-    void clearSelectedBlock();
+    void removeRectSelection();
     void insertText(const QString &text);
     void insertBlock(const QStringList & block);
     void removePreviousChar();
@@ -37,6 +44,7 @@ public:
     void clearUndoRedoStacks();
     bool isModified() const;
     QString selectedText() const;
+    void removeSelectedBlock();
 
 
 signals:
@@ -48,13 +56,13 @@ signals:
 
 protected:
 
-    void removeSelectedBlock();
     void timerEvent(QTimerEvent *e);
     void emitPositionChanged();
     class TextDocument * m_document;
     QList <int> l_removedLines;
     QList <int> l_newLines;
     EditMode e_mode;
+    ViewMode e_viewMode;
     int i_timerId;
     bool b_enabled;
     bool b_visible;
@@ -63,6 +71,7 @@ protected:
     int i_prevRow;
     int i_prevCol;
     QRect rect_selection;
+    bool b_emitCompilationBlocked;
 
 };
 
