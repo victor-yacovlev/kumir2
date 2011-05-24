@@ -9,12 +9,17 @@
 
 namespace Shared {
 
+struct ChangeTextTransaction {
+    QSet<int> removedLineNumbers;
+    QStringList newLines;
+};
+
 class AnalizerInterface {
 public:
     virtual int newDocument() = 0;
     virtual void dropDocument(int documentId) = 0;
     virtual void setSourceText(int documentId, const QString &text) = 0;
-    virtual void changeSourceText(int documentId, const QList<int> & removedLineNumbers, const QStringList & newLines) = 0;
+    virtual void changeSourceText(int documentId, const QList<ChangeTextTransaction> & changes) = 0;
     virtual QList<Error> errors(int documentId) const = 0;
     virtual QList<LineProp> lineProperties(int documentId) const = 0;
     virtual QList<QPoint> lineRanks(int documentId) const = 0;

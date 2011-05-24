@@ -835,13 +835,14 @@ void EditorPlane::dropEvent(QDropEvent *e)
         }
     }
     m_cursor->moveTo(row, col);
-    m_cursor->setEmitCompilationBlocked(false);
     if (e->mimeData()->hasFormat(Clipboard::BlockMimeType)) {
         m_cursor->insertBlock(lines);
     }
     else if (e->mimeData()->hasText()) {
         m_cursor->insertText(text);
     }
+    m_cursor->setEmitCompilationBlocked(false);
+    m_cursor->emitCompilationRequest();
     update();
 }
 

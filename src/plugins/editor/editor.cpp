@@ -59,7 +59,7 @@ public:
     void createActions();
     void updateFromAnalizer();
 public slots:
-    void handleLineAndTextChanged(const QList<int> &, const QList<int> &);
+    void handleLineAndTextChanged(const QStack<Shared::ChangeTextTransaction> & changes);
 };
 
 
@@ -69,17 +69,12 @@ void Editor::focusInEvent(QFocusEvent *e)
     d->plane->setFocus();
 }
 
-void EditorPrivate::handleLineAndTextChanged(const QList<int> &r, const QList<int> &n)
+void EditorPrivate::handleLineAndTextChanged(const QStack<Shared::ChangeTextTransaction> & changes)
 {
     if (!analizer) {
         return;
     }
-    QStringList newLines;
-    foreach (int l, n) {
-        newLines << doc->at(l).text;
-    }
-//    qDebug() << "Removed " << r.count() << " lines, inserted " << n.count() << " lines";
-    analizer->changeSourceText(documentId, r, newLines);
+    analizer->changeSourceText(documentId, changes.toList());
     updateFromAnalizer();
 }
 
@@ -135,8 +130,8 @@ Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentI
     d->statusBar->handleClipboardChanged(d->clipboard->entriesCount());
     d->createActions();
 
-    connect(d->cursor, SIGNAL(lineAndTextChanged(QList<int>,QList<int>)),
-            d, SLOT(handleLineAndTextChanged(QList<int>,QList<int>)));
+    connect(d->cursor, SIGNAL(lineAndTextChanged(QStack<Shared::ChangeTextTransaction>)),
+            d, SLOT(handleLineAndTextChanged(QStack<Shared::ChangeTextTransaction>)));
 
     QGridLayout * l = new QGridLayout();
     l->setContentsMargins(0,0,0,0);

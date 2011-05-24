@@ -3,6 +3,8 @@
 
 #include <QtGui>
 
+#include "interfaces/analizerinterface.h"
+
 namespace Editor {
 
 class TextCursor : public QObject
@@ -45,22 +47,28 @@ public:
     bool isModified() const;
     QString selectedText() const;
     void removeSelectedBlock();
+    void emitCompilationRequest();
 
 
 signals:
     void positionChanged(int row, int col);
-    void lineAndTextChanged(const QList<int> &, const QList<int> & );
+    void lineAndTextChanged(const QStack<Shared::ChangeTextTransaction> & changes);
     void updateRequest();
     void updateRequest(int fromLine, int toLine);
 
 
 protected:
 
+    bool forceCompileRequest() const;
+    void addLineToRemove(int no);
+    void addLineToNew(int no);
+    void pushTransaction();
     void timerEvent(QTimerEvent *e);
     void emitPositionChanged();
     class TextDocument * m_document;
-    QList <int> l_removedLines;
-    QList <int> l_newLines;
+    QStack<Shared::ChangeTextTransaction> l_changes;
+    QSet<int> l_remLines;
+    QSet<int> l_nLines;
     EditMode e_mode;
     ViewMode e_viewMode;
     int i_timerId;

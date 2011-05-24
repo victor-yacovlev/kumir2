@@ -106,13 +106,15 @@ void KumirAnalizerPlugin::dropDocument(int documentId)
 void KumirAnalizerPlugin::setSourceText(int documentId, const QString &text)
 {
     Q_CHECK_PTR(m_analizers[documentId]);
-    m_analizers[documentId]->changeSourceText(QList<int>(), text.split("\n"));
+    Shared::ChangeTextTransaction change;
+    change.newLines = text.split("\n");
+    m_analizers[documentId]->changeSourceText(QList<Shared::ChangeTextTransaction>() << change);
 }
 
-void KumirAnalizerPlugin::changeSourceText(int documentId, const QList<int> & removedLineNumbers, const QStringList & newLines)
+void KumirAnalizerPlugin::changeSourceText(int documentId, const QList<Shared::ChangeTextTransaction> & changes)
 {
     Q_CHECK_PTR(m_analizers[documentId]);
-    m_analizers[documentId]->changeSourceText(removedLineNumbers, newLines);
+    m_analizers[documentId]->changeSourceText(changes);
 }
 
 QList<Shared::Error> KumirAnalizerPlugin::errors(int documentId) const

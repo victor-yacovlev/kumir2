@@ -46,12 +46,21 @@ Analizer::~Analizer()
     delete d;
 }
 
+void Analizer::changeSourceText(const QList<ChangeTextTransaction> & changes)
+{
+    for (int i=0; i<changes.size(); i++) {
+        d->compileTransaction(changes[i]);
+    }
+}
 
-void Analizer::changeSourceText(const QList<int> & removedLineNumbers, const QStringList & newLines)
+
+void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
 {
     QList<Statement*> removedStatements;
     QList<Statement*> newStatements;
-    int insertPos = d->statements.size();
+    QList<int> removedLineNumbers = changes.removedLineNumbers.toList();
+    QStringList newLines = changes.newLines;
+    int insertPos = statements.size();
     int lineStart = 0;
     int lineEnd = 99999999;
     if (!removedLineNumbers.isEmpty()) {
@@ -60,12 +69,12 @@ void Analizer::changeSourceText(const QList<int> & removedLineNumbers, const QSt
         lineEnd = removedLineNumbers.last();
     }
     int it = 0;
-    while (it<d->statements.size()) {
-        Statement * st = d->statements[it];
+    while (it<statements.size() && !removedLineNumbers.isEmpty()) {
+        Statement * st = statements[it];
         bool remove = false;
         bool insert = false;
         foreach (const Lexem * lx, st->data) {
-            if ( (lx->lineNo>=lineStart) && (insertPos==d->statements.size())) {
+            if ( (lx->lineNo>=lineStart) && (insertPos==statements.size())) {
                 insert = true;
             }
             if (lx->lineNo>=lineStart && lx->lineNo<=lineEnd) {
@@ -75,7 +84,7 @@ void Analizer::changeSourceText(const QList<int> & removedLineNumbers, const QSt
         }
         if (remove) {
             removedStatements << st;
-            d->statements.removeAt(it);
+            statements.removeAt(it);
         }
         if (insert) {
             insertPos = it;
@@ -85,37 +94,45 @@ void Analizer::changeSourceText(const QList<int> & removedLineNumbers, const QSt
         }
     }
 
-    lineStart = qMin(d->sourceText.size(), lineStart);
+    lineStart = qMin(sourceText.size(), lineStart);
 
-    QStringList newSourceText = d->sourceText.mid(0, lineStart) + newLines;
-    if (lineEnd+1<d->sourceText.size()) {
-        newSourceText += d->sourceText.mid(lineEnd+1);
+    QStringList newSourceText;
+    if (!removedLineNumbers.isEmpty()) {
+        newSourceText = sourceText.mid(0, lineStart) + newLines;
+        if (lineEnd+1<sourceText.size()) {
+            newSourceText += sourceText.mid(lineEnd+1);
+        }
     }
-    d->sourceText = newSourceText;
+    else {
+        newSourceText = sourceText + newLines;
+        insertPos = statements.size();
+        lineStart = sourceText.size();
+    }
+    sourceText = newSourceText;
 
-    d->lexer->splitIntoStatements(newLines, lineStart, newStatements);
+    lexer->splitIntoStatements(newLines, lineStart, newStatements);
 
     AnalizerPrivate::AnalizeSubject subjByOld =
-            d->analizeSubject(removedStatements);
+            analizeSubject(removedStatements);
 
     AnalizerPrivate::AnalizeSubject subjByNew =
-            d->analizeSubject(newStatements);
+            analizeSubject(newStatements);
 
     AnalizerPrivate::AnalizeSubject subject = subjByOld * subjByNew;
 
-    for (int i=insertPos; i<d->statements.size(); i++) {
-        Statement * st = d->statements[i];
+    for (int i=insertPos; i<statements.size(); i++) {
+        Statement * st = statements[i];
         foreach (Lexem * lx, st->data) {
             lx->lineNo += newLines.size() - removedLineNumbers.size();
         }
     }
 
     for (int i=0 ; i<newStatements.size(); i++) {
-        d->statements.insert(insertPos, newStatements[i]);
+        statements.insert(insertPos, newStatements[i]);
         insertPos ++;
     }
 
-    d->doCompilation(subject, removedStatements, newStatements, d->statements, insertPos);
+    doCompilation(subject, removedStatements, newStatements, statements, insertPos);
 
     foreach (Statement * st, removedStatements) {
         foreach (Lexem * lx, st->data) {
@@ -170,6 +187,10 @@ AnalizerPrivate::AnalizeSubject AnalizerPrivate::analizeSubject(const QList<Stat
                 if (result==SubjAlgorhtitm)
                     return SubjWholeText; // more that one algorhitm affected
                 result = SubjAlgorhtitm;
+            }
+            else {
+                // Global variable
+                return SubjWholeText;
             }
         }
     }

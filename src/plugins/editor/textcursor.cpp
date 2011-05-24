@@ -32,23 +32,27 @@ void TextCursor::setViewMode(ViewMode mode)
     emit updateRequest();
 }
 
+void TextCursor::emitCompilationRequest()
+{
+    if (!l_changes.isEmpty()) {
+        emit lineAndTextChanged(l_changes);
+        l_changes.clear();
+    }
+}
+
 void TextCursor::emitPositionChanged()
 {
-    bool compileRequest = l_removedLines.size()>1 || l_newLines.size()>1;
+    bool compileRequest = forceCompileRequest();
     if (i_prevRow!=i_row || i_prevCol!=i_column) {
         if (i_prevRow!=i_row && i_prevRow!=-1) {
-            if (l_removedLines.size()>0 || l_newLines.size()>0) {
-                compileRequest = true;
-            }
+            compileRequest = !l_changes.isEmpty();
         }
         i_prevRow = i_row;
         i_prevCol = i_column;
         emit positionChanged(i_row, i_column);
     }
     if (compileRequest && !b_emitCompilationBlocked) {
-        emit lineAndTextChanged(l_removedLines, l_newLines);
-        l_removedLines.clear();
-        l_newLines.clear();
+        emitCompilationRequest();
     }
 }
 
@@ -565,10 +569,8 @@ void TextCursor::insertBlock(const QStringList &block)
             line.highlight = highlight;
             line.selected = selected;
             (*m_document)[y] = line;
-            if (!l_removedLines.contains(y))
-                l_removedLines << y;
-            if (!l_newLines.contains(y))
-                l_newLines << y;
+            addLineToRemove(y);
+            addLineToNew(y);
         }
         else {
             TextLine line;
@@ -585,13 +587,13 @@ void TextCursor::insertBlock(const QStringList &block)
                 line.selected << false;
             }
             m_document->append(line);
-            if (!l_newLines.contains(y))
-                l_newLines << y;
+            addLineToNew(y);
         }
     }
     i_row += block.size()-1;
     i_column += block[0].length();
     emit updateRequest(-1, -1);
+    pushTransaction();
     emitPositionChanged();
 }
 
@@ -619,8 +621,7 @@ void TextCursor::insertText(const QString &text)
         textLine.indentStart = 0;
         textLine.indentEnd = 0;
         textLine.lineEndSelected = false;
-        if (!l_newLines.contains(m_document->size()))
-            l_newLines << m_document->size();
+        addLineToNew(m_document->size());
         m_document->append(textLine);
     }
     const int indent = m_document->indentAt(i_row);
@@ -635,10 +636,10 @@ void TextCursor::insertText(const QString &text)
 
     int textPos = i_column - indent * 2;
 
-    if (i_row<m_document->size() && !l_removedLines.contains(i_row))
-        l_removedLines << i_row;
-    if (i_row<m_document->size() && !l_newLines.contains(i_row))
-        l_newLines << i_row;
+    if (i_row<m_document->size()) {
+        addLineToRemove(i_row);
+        addLineToNew(i_row);
+    }
 
     // fill with spaces if need
     if (m_document->at(i_row).text.length()<textPos) {
@@ -654,9 +655,7 @@ void TextCursor::insertText(const QString &text)
 
     QStringList lines = text.split("\n");
     for (int i=1; i<lines.count(); i++) {
-        if (!l_newLines.contains(i_row+i)) {
-            l_newLines << i_row+i;
-        }
+        addLineToNew(i_row+1);
     }
 
     // detect highlight at current cursor position
@@ -715,6 +714,7 @@ void TextCursor::insertText(const QString &text)
     int toLineUpdate = lines.size()>0? -1 : i_row;
 
     emit updateRequest(fromLineUpdate, toLineUpdate);
+    pushTransaction();
     emitPositionChanged();
 }
 
@@ -756,12 +756,8 @@ void TextCursor::removePreviousChar()
                     curTextLine.highlight.mid(textPos);
 
             (*m_document)[i_row].selected.pop_back();
-            if (!l_removedLines.contains(i_row)) {
-                l_removedLines << i_row;
-            }
-            if (!l_newLines.contains(i_row)) {
-                l_newLines << i_row;
-            }
+            addLineToRemove(i_row);
+            addLineToNew(i_row);
         }
         i_column --;
     }
@@ -778,15 +774,9 @@ void TextCursor::removePreviousChar()
                 (*m_document)[i_row-1].indentEnd += curTextLine.indentStart + curTextLine.indentEnd;
                 m_document->removeAt(i_row);
                 i_row--;
-                if (!l_removedLines.contains(i_row)) {
-                    l_removedLines << i_row;
-                }
-                if (!l_removedLines.contains(i_row+1)) {
-                    l_removedLines << i_row+1;
-                }
-                if (!l_newLines.contains(i_row)) {
-                    l_newLines << i_row;
-                }
+                addLineToRemove(i_row);
+                addLineToRemove(i_row+1);
+                addLineToNew(i_row);
             }
             else {
                 i_row--;
@@ -798,6 +788,7 @@ void TextCursor::removePreviousChar()
     b_visible = true;
     emit updateRequest();
     emit updateRequest(fromLineUpdate, toLineUpdate);
+    pushTransaction();
     emitPositionChanged();
 }
 
@@ -812,13 +803,12 @@ void TextCursor::removeCurrentLine()
     }
 
     if (i_row<m_document->size()) {
-        if (!l_removedLines.contains(i_row)) {
-            l_removedLines << i_row;
-        }
+        addLineToRemove(i_row);
         m_document->removeAt(i_row);
         emit updateRequest(-1, -1);
         emit updateRequest();
     }
+    pushTransaction();
     emitPositionChanged();
 }
 
@@ -833,12 +823,8 @@ void TextCursor::removeLineTail()
     }
 
     if (i_row<m_document->size()) {
-        if (!l_removedLines.contains(i_row)) {
-            l_removedLines << i_row;
-        }
-        if (!l_newLines.contains(i_row)) {
-            l_newLines << i_row;
-        }
+        addLineToRemove(i_row);
+        addLineToNew(i_row);
         int textPos = i_column - m_document->indentAt(i_row)*2;
         if (textPos<m_document->at(i_row).text.length()) {
             (*m_document)[i_row].text = (*m_document)[i_row].text.mid(0, textPos);
@@ -848,6 +834,7 @@ void TextCursor::removeLineTail()
             emit updateRequest();
         }
     }
+    pushTransaction();
     emitPositionChanged();
 }
 
@@ -886,27 +873,18 @@ void TextCursor::removeCurrentChar()
                 curTextLine.highlight.mid(textPos+1);
 
         (*m_document)[i_row].selected.pop_back();
-        if (!l_removedLines.contains(i_row)) {
-            l_removedLines << i_row;
-        }
-        if (!l_newLines.contains(i_row)) {
-            l_newLines << i_row;
-        }
+        addLineToRemove(i_row);
+        addLineToNew(i_row);
 
     }
     else if (i_row<m_document->size()-1) {
         // remove line delimeter if exists
         toLineUpdate = -1;
         TextLine curTextLine = m_document->at(i_row);
-        if (!l_removedLines.contains(i_row)) {
-            l_removedLines << i_row;
-        }
-        if (!l_removedLines.contains(i_row+1)) {
-            l_removedLines << i_row+1;
-        }
-        if (!l_newLines.contains(i_row)) {
-            l_newLines << i_row;
-        }
+        addLineToRemove(i_row);
+        addLineToRemove(i_row+1);
+        addLineToNew(i_row);
+
         // if cursor far away from end of line -- fill by spaces
         while (curTextLine.text.length() < textPos) {
             curTextLine.text += " ";
@@ -925,6 +903,7 @@ void TextCursor::removeCurrentChar()
     b_visible = true;
     emit updateRequest();
     emit updateRequest(fromLineUpdate, toLineUpdate);
+    pushTransaction();
     emitPositionChanged();
 }
 
@@ -1031,9 +1010,7 @@ void TextCursor::removeSelectedText()
 
 
     for (int i=selectionLineStart; i<=selectionLineEnd; i++) {
-        if (!l_removedLines.contains(i)) {
-            l_removedLines << i;
-        }
+        addLineToRemove(i);
     }
 
     // Move cursor
@@ -1042,7 +1019,7 @@ void TextCursor::removeSelectedText()
     i_column = m_document->indentAt(i_row)*2 + cursorTextPos;
 
     removeSelection();
-
+    pushTransaction();
     emit updateRequest(-1, -1);
     emit updateRequest();
 
@@ -1062,8 +1039,8 @@ void TextCursor::removeSelectedBlock()
     int endPos = rect_selection.right();
 
     for (int i=lineStart; i<=lineEnd; i++) {
-        if (!l_removedLines.contains(i))
-            l_removedLines << i;
+        addLineToRemove(i);
+        addLineToNew(i);
     }
 
     lineEnd = qMin(lineEnd+1, m_document->size());
@@ -1099,6 +1076,7 @@ void TextCursor::removeSelectedBlock()
     rect_selection = QRect(-1, -1, 0, 0);
     emit updateRequest(-1, -1);
     emit updateRequest();
+    pushTransaction();
     emitPositionChanged();
 }
 
@@ -1230,5 +1208,43 @@ void TextCursor::removeSelection()
         emitPositionChanged();
     }
 }
+
+void TextCursor::addLineToNew(int no)
+{
+    l_nLines.insert(no);
+}
+
+void TextCursor::addLineToRemove(int no)
+{
+    l_remLines.insert(no);
+}
+
+void TextCursor::pushTransaction()
+{
+    Shared::ChangeTextTransaction trans;
+    trans.removedLineNumbers = l_remLines;
+    QList<int> numbers = l_nLines.toList();
+    for (int i=0; i<numbers.count(); i++) {
+        int lineNo = numbers[i];
+        const QString text = m_document->at(lineNo).text;
+        trans.newLines << text;
+    }
+    l_nLines.clear();
+    l_remLines.clear();
+    l_changes.push(trans);
+}
+
+bool TextCursor::forceCompileRequest() const
+{
+    bool result = false;
+    for (int i=0; i<l_changes.size(); i++) {
+        if (l_changes[i].newLines.size()>1 || l_changes[i].removedLineNumbers.size()>1) {
+            result = true;
+            break;
+        }
+    }
+    return result;
+}
+
 
 } // namespace Editor

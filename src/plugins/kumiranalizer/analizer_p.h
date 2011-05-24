@@ -7,6 +7,7 @@
 #include "interfaces/error.h"
 #include "interfaces/lineprop.h"
 #include "abstractsyntaxtree/ast.h"
+#include "interfaces/analizerinterface.h"
 
 #include <QtCore>
 
@@ -39,6 +40,8 @@ struct AnalizerPrivate
     QStringList sourceText;
     QList<Statement*> statements;
     static QLocale::Language nativeLanguage;
+
+    void compileTransaction(const Shared::ChangeTextTransaction &changes);
 
     /** Find algorhitm in AST by real line number */
     static AST::Algorhitm * findAlgorhitmByPos(AST::Data * data, int pos);

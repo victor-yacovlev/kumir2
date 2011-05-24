@@ -4,6 +4,7 @@
 #include "interfaces/error.h"
 #include "interfaces/lineprop.h"
 #include "abstractsyntaxtree/ast.h"
+#include "interfaces/analizerinterface.h"
 
 #include <QtCore>
 
@@ -26,7 +27,7 @@ public:
 
 public slots:
 
-    void changeSourceText(const QList<int> & removedLineNumbers, const QStringList & newLines);
+    void changeSourceText(const QList<Shared::ChangeTextTransaction> & changes);
 
     QList<Shared::Error> errors() const;
 
