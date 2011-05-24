@@ -22,8 +22,10 @@ public:
     int widthInChars() const;
     int charWidth() const;
     int lineHeight() const;
-    inline int marginCharactersCount() const { return i_marginWidth; }
+    inline int marginCharactersCount() const { return m_settings->value(MarginWidthKey, MarginWidthDefault).toInt(); }
     QRect cursorRect() const;
+    static QString MarginWidthKey;
+    static int MarginWidthDefault;
 public slots:
     void selectAll();
     void copy();
@@ -37,6 +39,9 @@ protected:
     void dragMoveEvent(QDragMoveEvent *e);
     void dragLeaveEvent(QDragLeaveEvent *);
     void dropEvent(QDropEvent *e);
+    void resizeEvent(QResizeEvent *e);
+    void focusInEvent(QFocusEvent *e);
+    void focusOutEvent(QFocusEvent *e);
     bool canDrop(const QPoint &pos, const QMimeData * data) const;
     void mouseMoveEvent(QMouseEvent *e);
     void mousePressEvent(QMouseEvent *e);
@@ -65,7 +70,6 @@ protected slots:
     void updateCursor();
     void updateText(int fromLine, int toLine);
 private:
-    int i_marginWidth;
     int i_timerId;
     class TextDocument * m_document;
     class TextCursor * m_cursor;

@@ -10,6 +10,9 @@
 
 namespace Editor {
 
+QString EditorPlane::MarginWidthKey = "MarginWidth";
+int EditorPlane::MarginWidthDefault = 15;
+
 EditorPlane::EditorPlane(TextDocument * doc
                          , TextCursor * cursor
                          , class Clipboard * clipboard
@@ -21,7 +24,6 @@ EditorPlane::EditorPlane(TextDocument * doc
     QWidget(parent)
 {
     rxFilenamePattern = fileNamesToOpen;
-    i_marginWidth = 15;
     i_marginAlpha = 255;
     m_document = doc;
     m_cursor = cursor;
@@ -42,6 +44,7 @@ EditorPlane::EditorPlane(TextDocument * doc
     initMouseCursor();
     setMouseTracking(true);
     setAcceptDrops(true);
+    setFocusPolicy(Qt::StrongFocus);
     pnt_marginPress = pnt_textPress = pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
     b_selectionInProgress = false;
 }
@@ -104,7 +107,8 @@ void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
         int cw = charWidth();
         x = (x/cw)*cw;
         int marginAbsoluteWidth = width()-x;
-        i_marginWidth = marginAbsoluteWidth / cw;
+        int marginWidth = marginAbsoluteWidth / cw;
+        m_settings->setValue(MarginWidthKey, marginWidth);
         updateScrollBars();
         update();
         pnt_marginPress = QPoint(-1000, -1000);
@@ -837,6 +841,28 @@ void EditorPlane::dragEnterEvent(QDragEnterEvent *e)
     dragEventHandler(e);
 }
 
+void EditorPlane::resizeEvent(QResizeEvent *e)
+{
+    QWidget::resizeEvent(e);
+    updateScrollBars();
+}
+
+void EditorPlane::focusInEvent(QFocusEvent *e)
+{
+    QWidget::focusInEvent(e);
+    if (m_cursor->isEnabled()) {
+        m_cursor->setViewMode(TextCursor::VM_Blinking);
+    }
+}
+
+void EditorPlane::focusOutEvent(QFocusEvent *e)
+{
+    QWidget::focusOutEvent(e);
+    if (m_cursor->isEnabled()) {
+        m_cursor->setViewMode(TextCursor::VM_Hidden);
+    }
+}
+
 void EditorPlane::removeLine()
 {
     m_cursor->removeCurrentLine();
@@ -1161,7 +1187,7 @@ void EditorPlane::setProperFormat(QPainter *p, Shared::LexemType type, const QCh
 int EditorPlane::widthInChars() const
 {
     const int cw = charWidth();
-    const int marginMinWidth = cw * i_marginWidth;
+    const int marginMinWidth = cw * m_settings->value(MarginWidthKey, MarginWidthDefault).toInt();;
     const int myWidth = width();
     const int availableWidth = myWidth - marginMinWidth;
     const int result = availableWidth / cw - 5;

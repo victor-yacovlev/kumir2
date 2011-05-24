@@ -213,7 +213,7 @@ void EditorStandaloneWindow::setupEditor()
         menu->addActions(m.actions);
     }
     setCentralWidget(m_editor);
-    m_editor->setFocus();
+    m_editor->setFocus(Qt::ActiveWindowFocusReason);
 }
 
 } // namespace Editor

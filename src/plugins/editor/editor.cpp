@@ -63,6 +63,12 @@ public slots:
 };
 
 
+void Editor::focusInEvent(QFocusEvent *e)
+{
+    VisualComponent::focusInEvent(e);
+    d->plane->setFocus();
+}
+
 void EditorPrivate::handleLineAndTextChanged(const QList<int> &r, const QList<int> &n)
 {
     if (!analizer) {

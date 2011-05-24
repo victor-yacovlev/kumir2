@@ -22,6 +22,7 @@ public:
     void setNotModified();
 
 private:
+    void focusInEvent(QFocusEvent *e);
     class EditorPrivate * d;
 
 };
