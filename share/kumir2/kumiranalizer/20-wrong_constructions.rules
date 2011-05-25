@@ -1,32 +1,32 @@
 ﻿ТО -> иначе ФРАГМЕНТ_АЛГОРИТМА* все : { 
-	setCurrentError(2200701); 
+	setCurrentError("No 'then' before else..fi"); 
 	processCorrectElse(); 
 } { 
 	processCorrectFi(); 
 }
 
-ФРАГМЕНТ_АЛГОРИТМА* -> алг : { setCurrentError(1103); appendSimpleLine(); }
-ФРАГМЕНТ_АЛГОРИТМА* -> нач : { setCurrentError(2200008); appendSimpleLine(); }
-ФРАГМЕНТ_АЛГОРИТМА* -> исп : { setCurrentError(2200009); appendSimpleLine(); }
-ФРАГМЕНТ_АЛГОРИТМА* -> кон_исп : { setCurrentError(2200010); appendSimpleLine(); }
+ФРАГМЕНТ_АЛГОРИТМА* -> алг : { setCurrentError("Algorhitm header in algorhitm body"); appendSimpleLine(); }
+ФРАГМЕНТ_АЛГОРИТМА* -> нач : { setCurrentError("Begin in algorhitm body"); appendSimpleLine(); }
+ФРАГМЕНТ_АЛГОРИТМА* -> исп : { setCurrentError("Module in algorhitm body"); appendSimpleLine(); }
+ФРАГМЕНТ_АЛГОРИТМА* -> кон_исп : { setCurrentError("End module in algorhitm body"); appendSimpleLine(); }
 
-ЛИШНИЙ_НАЧ_У_ИСПОЛНИТЕЛЯ -> нач : { setCurrentError(2200001); appendSimpleLine(); }
+ЛИШНИЙ_НАЧ_У_ИСПОЛНИТЕЛЯ -> нач : { setCurrentError("Extra 'begin'"); appendSimpleLine(); }
 
-КОНЕЦ_ИСПОЛНИТЕЛЯ -> end : { setModuleBeginError(1140); }
+КОНЕЦ_ИСПОЛНИТЕЛЯ -> end : { setModuleBeginError("No paired 'end module'"); }
 
-ИСПОЛНИТЕЛЬ* -> алг МУСОР_МЕЖДУ_АЛГ_НАЧ ДОКУМЕНТАЦИЯ ДАНО_НАДО ТЕЛО_АЛГОРИТМА : { setCurrentError(2200801); processCorrectAlgHeader(); }
+ИСПОЛНИТЕЛЬ* -> алг МУСОР_МЕЖДУ_АЛГ_НАЧ ДОКУМЕНТАЦИЯ ДАНО_НАДО ТЕЛО_АЛГОРИТМА : { setCurrentError("Garbage after algorhitm header"); processCorrectAlgHeader(); }
 
-АЛГОРИТМ* -> если МУСОР_МЕЖДУ_ЕСЛИ_ТО ТО : { setCurrentError(2200802); processCorrectIf(); }
-АЛГОРИТМ* -> выбор МУСОР_МЕЖДУ_ВЫБОР_ПРИ при ФРАГМЕНТ_АЛГОРИТМА* ПРИ* ИНАЧЕ_ВСЕ : { setCurrentError(2200803); processCorrectSwitch(); } { processCorrectCase(); }
-АЛГОРИТМ* -> алг ФРАГМЕНТ_АЛГОРИТМА* КОНЕЦ_АЛГОРИТМА : { setCurrentError(2200101); setCurrentIndentRank(0, +1);  processCorrectAlgHeader(); }
+АЛГОРИТМ* -> если МУСОР_МЕЖДУ_ЕСЛИ_ТО ТО : { setCurrentError("Garbage after 'if' statement"); processCorrectIf(); }
+АЛГОРИТМ* -> выбор МУСОР_МЕЖДУ_ВЫБОР_ПРИ при ФРАГМЕНТ_АЛГОРИТМА* ПРИ* ИНАЧЕ_ВСЕ : { setCurrentError("Garbage after 'switch' statement"); processCorrectSwitch(); } { processCorrectCase(); }
+АЛГОРИТМ* -> алг ФРАГМЕНТ_АЛГОРИТМА* КОНЕЦ_АЛГОРИТМА : { setCurrentError("No 'begin' after header"); setCurrentIndentRank(0, +1);  processCorrectAlgHeader(); }
 
 ФРАГМЕНТ_АЛГОРИТМА* -> алг нач ФРАГМЕНТ_АЛГОРИТМА* кон : {
-  setCurrentError(2200902); 
+  setCurrentError("Inner algorhitm"); 
   appendSimpleLine();
 } {
-  setCurrentError(2200902);
+  setCurrentError("Inner algorhitm");
   appendSimpleLine();
 } {
-  setCurrentError(2200902);
+  setCurrentError("Inner algorhitm");
   appendSimpleLine();
 }

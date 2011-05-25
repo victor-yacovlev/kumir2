@@ -7,57 +7,57 @@
 ФРАГМЕНТ_АЛГОРИТМА* -> строка_документации : { setExtraCloseKeywordError("строка_документации"); }
 ФРАГМЕНТ_АЛГОРИТМА* -> при : { setExtraCloseKeywordError("при"); }
 ФРАГМЕНТ_АЛГОРИТМА* -> то : { setExtraCloseKeywordError("то"); }
-ФРАГМЕНТ_АЛГОРИТМА* -> использовать : { setCurrentError(2200504); appendSimpleLine(); } 
+ФРАГМЕНТ_АЛГОРИТМА* -> использовать : { setCurrentError("Misplaced import"); appendSimpleLine(); } 
 
-ЛИНЕЙНАЯ_СТРОКА* -> выбор : { setCurrentError(2200500); appendSimpleLine(); } 
-ЛИНЕЙНАЯ_СТРОКА* -> при : { setCurrentError(2200500); appendSimpleLine(); } 
-ЛИНЕЙНАЯ_СТРОКА* -> если : { setCurrentError(2200500); appendSimpleLine(); } 
-ЛИНЕЙНАЯ_СТРОКА* -> все : { setCurrentError(2200500); appendSimpleLine(); } 
-ЛИНЕЙНАЯ_СТРОКА* -> иначе : { setCurrentError(2200500); appendSimpleLine(); } 
-ЛИНЕЙНАЯ_СТРОКА* -> нц : { setCurrentError(2200500); appendSimpleLine(); } 
-ЛИНЕЙНАЯ_СТРОКА* -> кц : { setCurrentError(2200500); appendSimpleLine(); } 
-ЛИНЕЙНАЯ_СТРОКА* -> кон : { setCurrentError(2200500); appendSimpleLine(); } 
-ЛИНЕЙНАЯ_СТРОКА* -> использовать : { setCurrentError(2200504); appendSimpleLine(); } 
+ЛИНЕЙНАЯ_СТРОКА* -> выбор : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+ЛИНЕЙНАЯ_СТРОКА* -> при : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+ЛИНЕЙНАЯ_СТРОКА* -> если : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+ЛИНЕЙНАЯ_СТРОКА* -> все : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+ЛИНЕЙНАЯ_СТРОКА* -> иначе : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+ЛИНЕЙНАЯ_СТРОКА* -> нц : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+ЛИНЕЙНАЯ_СТРОКА* -> кц : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+ЛИНЕЙНАЯ_СТРОКА* -> кон : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+ЛИНЕЙНАЯ_СТРОКА* -> использовать : { setCurrentError("Misplaced import"); appendSimpleLine(); } 
 
-ИСПОЛНИТЕЛЬ* -> кон : { setCurrentError(2200500); appendSimpleLine(); }
+ИСПОЛНИТЕЛЬ* -> кон : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
 
-АЛГОРИТМ* -> при : { setCurrentError(2200500); appendSimpleLine(); } 
-АЛГОРИТМ* -> все : { setCurrentError(2200500); appendSimpleLine(); } 
-АЛГОРИТМ* -> кц : { setCurrentError(2200500); appendSimpleLine(); } 
-АЛГОРИТМ* -> кон : { setCurrentError(2200500); appendSimpleLine(); }
-АЛГОРИТМ* -> ограничение_алгоритма : { setCurrentError(2200500); appendSimpleLine(); } 
-АЛГОРИТМ* -> строка_документации : { setCurrentError(2200500); appendSimpleLine(); } 
-АЛГОРИТМ* -> нач ФРАГМЕНТ_АЛГОРИТМА* КОНЕЦ_АЛГОРИТМА : { setCurrentError(2200404); addDummyAlgHeader(); processCorrectAlgBegin(); }
+АЛГОРИТМ* -> при : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+АЛГОРИТМ* -> все : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+АЛГОРИТМ* -> кц : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+АЛГОРИТМ* -> кон : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
+АЛГОРИТМ* -> ограничение_алгоритма : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+АЛГОРИТМ* -> строка_документации : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+АЛГОРИТМ* -> нач ФРАГМЕНТ_АЛГОРИТМА* КОНЕЦ_АЛГОРИТМА : { setCurrentError("No algorhitm header"); addDummyAlgHeader(); processCorrectAlgBegin(); }
 
-ИСПОЛНИТЕЛЬ* -> кон_исп : { setCurrentError(1126); appendSimpleLine(); } 
+ИСПОЛНИТЕЛЬ* -> кон_исп : { setCurrentError("No pairing 'begin module'"); appendSimpleLine(); } 
 
-АЛГОРИТМ* -> алг ДОКУМЕНТАЦИЯ ДАНО_НАДО end : { setCurrentError(1129); appendSimpleLine(); } {} 
-АЛГОРИТМ* -> алг алг МУСОР_МЕЖДУ_АЛГ_НАЧ ДОКУМЕНТАЦИЯ ДАНО_НАДО ТЕЛО_АЛГОРИТМА : { setCurrentError(1129); appendSimpleLine(); } { processCorrectAlgHeader(); }
-АЛГОРИТМ* -> ограничение_алгоритма : { setCurrentError(2200500); appendSimpleLine(); }
+АЛГОРИТМ* -> алг ДОКУМЕНТАЦИЯ ДАНО_НАДО end : { setCurrentError("Algorhitm not implemented"); appendSimpleLine(); } {} 
+АЛГОРИТМ* -> алг алг МУСОР_МЕЖДУ_АЛГ_НАЧ ДОКУМЕНТАЦИЯ ДАНО_НАДО ТЕЛО_АЛГОРИТМА : { setCurrentError("Algorhitm not implemented"); appendSimpleLine(); } { processCorrectAlgHeader(); }
+АЛГОРИТМ* -> ограничение_алгоритма : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
 
-ИСПОЛНИТЕЛЬ* -> простое_предложение : { setCurrentError(2200804); appendSimpleLine(); }
+ИСПОЛНИТЕЛЬ* -> простое_предложение : { setCurrentError("Instruction out of algorhitm"); appendSimpleLine(); }
 
-ОШИБОЧНАЯ_ЗАГРУЗКА* -> использовать : { setCurrentError(2200901); appendSimpleLine(); }
-СТРОКА_ВНЕ_АЛГОРИТМА* -> использовать : { setCurrentError(2200901); appendSimpleLine(); }
-СТРОКА_ВНЕ_АЛГОРИТМА* -> нц : { setCurrentError(2200500); appendSimpleLine(); } 
-СТРОКА_ВНЕ_АЛГОРИТМА* -> кц : { setCurrentError(2200500); appendSimpleLine(); } 
-СТРОКА_ВНЕ_АЛГОРИТМА* -> если : { setCurrentError(2200500); appendSimpleLine(); } 
-СТРОКА_ВНЕ_АЛГОРИТМА* -> то : { setCurrentError(2200500); appendSimpleLine(); } 
-СТРОКА_ВНЕ_АЛГОРИТМА* -> иначе : { setCurrentError(2200500); appendSimpleLine(); } 
-СТРОКА_ВНЕ_АЛГОРИТМА* -> все : { setCurrentError(2200500); appendSimpleLine(); }
+ОШИБОЧНАЯ_ЗАГРУЗКА* -> использовать : { setCurrentError("Misplaced import"); appendSimpleLine(); }
+СТРОКА_ВНЕ_АЛГОРИТМА* -> использовать : { setCurrentError("Misplaced import"); appendSimpleLine(); }
+СТРОКА_ВНЕ_АЛГОРИТМА* -> нц : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+СТРОКА_ВНЕ_АЛГОРИТМА* -> кц : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+СТРОКА_ВНЕ_АЛГОРИТМА* -> если : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+СТРОКА_ВНЕ_АЛГОРИТМА* -> то : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+СТРОКА_ВНЕ_АЛГОРИТМА* -> иначе : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
+СТРОКА_ВНЕ_АЛГОРИТМА* -> все : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
 
-СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> нц : { setCurrentError(2200500); appendSimpleLine(); }
-СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> кц : { setCurrentError(2200500); appendSimpleLine(); }
-СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> если : { setCurrentError(2200500); appendSimpleLine(); }
-СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> то : { setCurrentError(2200500); appendSimpleLine(); }
-СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> иначе : { setCurrentError(2200500); appendSimpleLine(); }
-СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> все : { setCurrentError(2200500); appendSimpleLine(); } 
+СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> нц : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
+СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> кц : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
+СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> если : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
+СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> то : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
+СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> иначе : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
+СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> все : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); } 
 
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> использовать : { setCurrentError(2200500); appendSimpleLine(); }
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> нц : { setCurrentError(2200500); appendSimpleLine(); }
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> кц : { setCurrentError(2200500); appendSimpleLine(); }
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> если : { setCurrentError(2200500); appendSimpleLine(); }
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> то : { setCurrentError(2200500); appendSimpleLine(); }
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> иначе : { setCurrentError(2200500); appendSimpleLine(); }
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> все : { setCurrentError(2200500); appendSimpleLine(); }
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> простое_предложение : { setCurrentError(2200500); appendSimpleLine(); }
+МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> использовать : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
+МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> нц : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
+МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> кц : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
+МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> если : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
+МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> то : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
+МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> иначе : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
+МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> все : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
+МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> простое_предложение : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
