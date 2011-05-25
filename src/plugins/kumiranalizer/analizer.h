@@ -15,7 +15,7 @@ class Analizer : public QObject
     Q_OBJECT
 public:
 
-    explicit Analizer(QObject * = 0);
+    explicit Analizer(class KumirAnalizerPlugin * plugin);
 
     ~Analizer();
 

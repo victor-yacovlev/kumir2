@@ -40,12 +40,12 @@ QString KumirCppGeneratorPlugin::initialize(const QStringList &arguments)
     return "";
 }
 
-void KumirCppGeneratorPrivate::addModule(const AST::Module *module)
+void KumirCppGeneratorPrivate::addModule(const AST::Module *)
 {
 
 }
 
-void KumirCppGeneratorPrivate::compileModule(const AST::Module *module)
+void KumirCppGeneratorPrivate::compileModule(const AST::Module *)
 {
 
 }

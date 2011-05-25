@@ -8,6 +8,7 @@
 #include "interfaces/lineprop.h"
 #include "abstractsyntaxtree/ast.h"
 #include "interfaces/analizerinterface.h"
+#include "interfaces/actorinterface.h"
 
 #include <QtCore>
 
@@ -22,7 +23,7 @@ typedef QList<AST::Statement*> * LAS;
 struct AnalizerPrivate
 {
 
-    explicit AnalizerPrivate(class Analizer *);
+    explicit AnalizerPrivate(class KumirAnalizerPlugin * plugin, class Analizer *);
     ~AnalizerPrivate();
 
     enum AnalizeSubject {
@@ -36,6 +37,11 @@ struct AnalizerPrivate
     class PDAutomata * pdAutomata;
     class SyntaxAnalizer * analizer;
     AST_Data * ast;
+
+    static QString StandartFunctionsModuleName;
+
+    void createModuleFromActor(const Shared::ActorInterface * actor);
+
 
     QStringList sourceText;
     QList<Statement*> statements;

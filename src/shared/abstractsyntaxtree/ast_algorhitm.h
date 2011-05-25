@@ -44,6 +44,7 @@ enum AlgorhitmImplementationType {
 /** External reference for out-of module algorhitm */
 struct AlgorhitmExternalReference {
     QString moduleName;
+    int id;
 };
 
 /** Algorhitm public header */

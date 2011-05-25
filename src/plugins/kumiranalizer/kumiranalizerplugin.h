@@ -50,7 +50,7 @@ class KumirAnalizerPlugin
 {
     Q_OBJECT
     Q_INTERFACES(Shared::AnalizerInterface)
-
+    friend class AnalizerPrivate;
 public:
     KumirAnalizerPlugin();
     ~KumirAnalizerPlugin();

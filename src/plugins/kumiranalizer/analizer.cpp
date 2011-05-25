@@ -6,6 +6,7 @@
 #include "pdautomata.h"
 #include "syntaxanalizer.h"
 #include "errormessages/errormessages.h"
+#include "kumiranalizerplugin.h"
 
 using namespace Shared;
 
@@ -19,19 +20,22 @@ void Analizer::setSourceLanguage(const QLocale::Language &language)
     AnalizerPrivate::nativeLanguage = language;
 }
 
-Analizer::Analizer(QObject *parent) :
-    QObject(parent)
+Analizer::Analizer(KumirAnalizerPlugin * plugin) :
+    QObject(plugin)
 {
-    d = new AnalizerPrivate(this);
+    d = new AnalizerPrivate(plugin, this);
 }
 
-AnalizerPrivate::AnalizerPrivate(Analizer *qq)
+AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin, Analizer *qq)
 {
     q = qq;
     ast = new AST::Data();
     lexer = new Lexer(q);
     pdAutomata = new PDAutomata(q);
     analizer = new SyntaxAnalizer(lexer, q);
+    ActorInterface * stdFunct = qobject_cast<ActorInterface*>(plugin->myDependency("st_funct"));
+    Q_ASSERT_X(stdFunct, "constructor AnalizerPrivate", "Can't' load st_func module");
+    createModuleFromActor(stdFunct);
 }
 
 AnalizerPrivate::~AnalizerPrivate()
@@ -143,6 +147,42 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
         delete st;
     }
 
+}
+
+QString AnalizerPrivate::StandartFunctionsModuleName = "Standart functions";
+
+void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor)
+{
+    AST::Module * mod = new AST::Module();
+    mod->header.type = AST::ModTypeExternal;
+    mod->header.name = actor->name();
+    mod->header.enabled = mod->header.name==StandartFunctionsModuleName;
+    ast->modules << mod;
+    for (int i=0; i<actor->funcList().size(); i++) {
+        AST::Algorhitm * alg = new AST::Algorhitm;
+        alg->header.implType = AST::AlgorhitmExternal;
+        alg->header.external.moduleName = actor->name();
+        alg->header.external.id = actor->funcList()[i].id;
+        QList<Statement*> sts;
+        lexer->splitIntoStatements(QStringList() << actor->funcList()[i].kumirHeader, -1, sts);
+        Q_ASSERT_X(sts.size()==1
+                   , "AnalizerPrivate::createModuleFromActor"
+                   , QString("Algorhitm %1 in module %2 has syntax error").arg(actor->funcList()[i].kumirHeader).arg(actor->name()).toLocal8Bit().data());
+        alg->impl.headerLexems = sts[0]->data;
+        sts[0]->alg = alg;
+        sts[0]->mod = mod;
+        analizer->init(&sts, ast, alg);
+        analizer->buildTables();
+        foreach (const Lexem *lx, sts[0]->data) {
+            if (!lx->error.isEmpty()) {
+                Q_ASSERT_X(sts.size()==1
+                           , "AnalizerPrivate::createModuleFromActor"
+                           , QString("Algorhitm %1 in module %2 has syntax error").arg(actor->funcList()[i].kumirHeader).arg(actor->name()).toLocal8Bit().data());
+            }
+            delete lx;
+        }
+        delete sts[0];
+    }
 }
 
 extern AnalizerPrivate::AnalizeSubject operator * ( const AnalizerPrivate::AnalizeSubject &first
