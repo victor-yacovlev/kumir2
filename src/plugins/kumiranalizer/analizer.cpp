@@ -120,10 +120,12 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
 
     AnalizerPrivate::AnalizeSubject subject = subjByOld * subjByNew;
 
+    int tailLineNumbersOffset = newLines.size() - removedLineNumbers.size();
+
     for (int i=insertPos; i<statements.size(); i++) {
         Statement * st = statements[i];
         foreach (Lexem * lx, st->data) {
-            lx->lineNo += newLines.size() - removedLineNumbers.size();
+            lx->lineNo += tailLineNumbersOffset;
         }
     }
 

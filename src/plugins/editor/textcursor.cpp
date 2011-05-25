@@ -655,7 +655,7 @@ void TextCursor::insertText(const QString &text)
 
     QStringList lines = text.split("\n");
     for (int i=1; i<lines.count(); i++) {
-        addLineToNew(i_row+1);
+        addLineToNew(i_row+i);
     }
 
     // detect highlight at current cursor position
@@ -983,6 +983,7 @@ void TextCursor::removeSelectedText()
                     + (*m_document)[i].highlight.mid(end+1);
             (*m_document)[i].selected = (*m_document)[i].selected.mid(0, start)
                     + (*m_document)[i].selected.mid(end+1);
+            addLineToRemove(i);
         }
     }
 
@@ -1010,8 +1011,11 @@ void TextCursor::removeSelectedText()
 
 
     for (int i=selectionLineStart; i<=selectionLineEnd; i++) {
-        addLineToRemove(i);
+        if (i<m_document->size())
+            addLineToRemove(i);
     }
+
+    addLineToNew(selectionLineStart);
 
     // Move cursor
 
@@ -1103,7 +1107,7 @@ QString TextCursor::selectedText() const
                 if (m_document->at(i).selected[j])
                     result += m_document->at(i).text[j];
             }
-            if (m_document->at(i).lineEndSelected)
+            if (m_document->at(i).lineEndSelected && i<m_document->size()-1)
                 result += "\n";
         }
     }

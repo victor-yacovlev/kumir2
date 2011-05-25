@@ -84,14 +84,16 @@ void EditorPrivate::updateFromAnalizer()
     QList<QPoint> ranks = analizer->lineRanks(documentId);
     QList<Error> errors = analizer->errors(documentId);
     for (int i=0; i<doc->size(); i++) {
+        TextLine tl = doc->at(i);
         if (i<ranks.size()) {
-            (*doc)[i].indentStart = ranks[i].x();
-            (*doc)[i].indentEnd = ranks[i].y();
+            tl.indentStart = ranks[i].x();
+            tl.indentEnd = ranks[i].y();
         }
         if (i<props.size()) {
-            (*doc)[i].highlight = props[i].toList();
+            tl.highlight = props[i].toList();
         }
-        (*doc)[i].errors.clear();
+        tl.errors.clear();
+        (*doc)[i] = tl;
     }
     for (int i=0; i<errors.size(); i++) {
         Error err = errors[i];
