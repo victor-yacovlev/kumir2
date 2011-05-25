@@ -55,9 +55,6 @@ private:
 
 namespace st_funct {
 
-#define CHAR wchar_t
-#define STRING wchar_t *
-#define BOOL unsigned char
 
 EXTERN_FUNC_DECL void __init__();
 
@@ -65,7 +62,7 @@ EXTERN_FUNC_DECL double abs(double x);
 EXTERN_FUNC_DECL double arccos(double x);
 EXTERN_FUNC_DECL double arcctg(double x);
 EXTERN_FUNC_DECL double arcsin(double x);
-EXTERN_FUNC_DECL double argtg(double x);
+EXTERN_FUNC_DECL double arctg(double x);
 EXTERN_FUNC_DECL double cos(double x);
 EXTERN_FUNC_DECL double ctg(double x);
 EXTERN_FUNC_DECL void delay(int s);
@@ -92,14 +89,14 @@ EXTERN_FUNC_DECL double MAXREAL();
 EXTERN_FUNC_DECL int MAXINT();
 EXTERN_FUNC_DECL wchar_t* real_to_string(double x);
 EXTERN_FUNC_DECL int time();
-EXTERN_FUNC_DECL int length(STRING s);
-EXTERN_FUNC_DECL int code(CHAR);
-EXTERN_FUNC_DECL double string_to_real(STRING s, BOOL *success);
-EXTERN_FUNC_DECL int string_to_int(STRING s, BOOL *success);
-EXTERN_FUNC_DECL CHAR symbol(int n);
-EXTERN_FUNC_DECL CHAR symbol2(int n);
-EXTERN_FUNC_DECL STRING int_to_string(int x);
-EXTERN_FUNC_DECL int unicode(CHAR c);
+EXTERN_FUNC_DECL int length(wchar_t * s);
+EXTERN_FUNC_DECL int code(wchar_t c);
+EXTERN_FUNC_DECL double string_to_real(wchar_t * s, unsigned char *success);
+EXTERN_FUNC_DECL int string_to_int(wchar_t * s, unsigned char *success);
+EXTERN_FUNC_DECL wchar_t symbol(int n);
+EXTERN_FUNC_DECL wchar_t symbol2(int n);
+EXTERN_FUNC_DECL wchar_t * int_to_string(int x);
+EXTERN_FUNC_DECL int unicode(wchar_t c);
 
 
 }
