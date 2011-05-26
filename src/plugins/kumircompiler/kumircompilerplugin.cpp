@@ -3,6 +3,7 @@
 #include <QtCore>
 #include "kumiranalizer/analizer.h"
 #include "kumiranalizer/kumiranalizerplugin.h"
+#include "interfaces/generatorinterface.h"
 
 #include <iostream>
 
@@ -72,6 +73,10 @@ void KumirCompilerPlugin::start()
                 Shared::Error e = errors[i];
                 std::cerr << filename.toLocal8Bit().data() << ":" << e.line << ": Error " << e.code.toLocal8Bit().data() << std::endl;
             }
+            Shared::GeneratorInterface * generator =
+                    qobject_cast<Shared::GeneratorInterface*>(myDependency("Generator"));
+            Q_CHECK_PTR(generator);
+            generator->generateExecuable(ast, 0);
             qApp->setProperty("returnCode", errors.isEmpty()? 0 : 1);
         }
     }

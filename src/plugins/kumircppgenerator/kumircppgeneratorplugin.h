@@ -12,18 +12,18 @@ class KumirCppGeneratorPlugin
         , public Shared::GeneratorInterface
 {
     Q_OBJECT
-
+    Q_INTERFACES(Shared::GeneratorInterface)
 public:
     KumirCppGeneratorPlugin();
     ~KumirCppGeneratorPlugin();
 
     QString initialize(const QStringList &arguments);
-    void generateExecuable(const AST::Data *tree
-                           , QIODevice *out
-                           , Shared::GeneratorType &outType);
+    Shared::GeneratorType generateExecuable(
+        const AST::Data *tree
+        , QIODevice *out);
+private:
     void start();
     void stop();
-private:
     struct KumirCppGeneratorPrivate * d;
 
 };

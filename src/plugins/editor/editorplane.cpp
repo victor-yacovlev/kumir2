@@ -1086,9 +1086,10 @@ void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
     for (int i=qMax(startLine, 0); i<endLine+1; i++) {
         int y =  ( i + 1 )* dY;
         if (i<m_document->size() && m_document->at(i).errors.size()>0) {
-            const QString errText = m_document->at(i).errors.size()>1
-                        ? "> "+m_document->at(i).errors[0]
-                        : m_document->at(i).errors[0];
+//            const QString errText = m_document->at(i).errors.size()>1
+//                        ? "> "+m_document->at(i).errors[0]
+//                        : m_document->at(i).errors[0];
+            const QString errText = m_document->at(i).errors[0];
             p->drawText(marginLeft+4, y, errText);
         }
     }

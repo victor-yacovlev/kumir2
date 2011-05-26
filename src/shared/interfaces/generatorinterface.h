@@ -6,17 +6,20 @@
 namespace Shared {
 
 enum GeneratorType {
+    GenError,
     GenNativeExecuable,
     GenNotNativeExecuable
 };
 
 class GeneratorInterface {
 public:
-    virtual void generateExecuable(const AST::Data * tree
-                                   , QIODevice * out
-                                   , enum GeneratorType & outType) = 0;
+    virtual enum GeneratorType generateExecuable(
+            const AST::Data * tree
+            , QIODevice * out) = 0;
 };
 
 }
+
+Q_DECLARE_INTERFACE(Shared::GeneratorInterface, "kumir2.generator")
 
 #endif

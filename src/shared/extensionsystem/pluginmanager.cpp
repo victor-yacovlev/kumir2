@@ -374,8 +374,15 @@ KPlugin * PluginManager::dependentPlugin(const QString &name, const KPlugin *p) 
         }
     }
     bool hasDep = false;
+    QSet<QString> depAliases;
     for (int i=0; i<spec.dependencies.size(); i++) {
-        if (spec.dependencies[i].name==name) {
+        for (int j=0; j<d->specs.size(); j++) {
+            if (d->specs[j].provides.contains(spec.dependencies[i].name))
+                depAliases |= QSet<QString>::fromList(d->specs[j].provides);
+        }
+    }
+    for (int i=0; i<spec.dependencies.size(); i++) {
+        if (depAliases.contains(spec.dependencies[i].name)) {
             hasDep = true;
             break;
         }

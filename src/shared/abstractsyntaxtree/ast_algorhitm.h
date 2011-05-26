@@ -53,6 +53,10 @@ struct AlgorhitmHeader {
     /** Algorhitm name, may be empty (for first algorhitm) */
     QString name;
 
+    QString cHeader;
+
+    QString pascalHeader;
+
     /** Algorhitm special type */
     enum AlgorhitmType specialType;
 
