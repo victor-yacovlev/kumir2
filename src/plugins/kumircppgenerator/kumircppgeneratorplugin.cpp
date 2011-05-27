@@ -858,6 +858,7 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
     foreach (QString fw, frameworksDir.entryList()) {
         if (fw=="." || fw=="..")
             continue;
+        ldPaths << fw+"/Versions/4";
         fw.remove(".framework");
         frameworksOpts << "-framework "+fw;
     }
@@ -876,7 +877,7 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
 #ifdef Q_OS_MAC
     command += " -F"+frameworksPath;
     command += " -L"+frameworksPath;
-    command += " -Wl,-install_name,"+ldPaths.join(":");
+    command += " -Wl,-install_name="+ldPaths.join(":");
     command += frameworksOpts.join(" ");
 #else
     command += " -Wl,-rpath="+ldPaths.join(":");
