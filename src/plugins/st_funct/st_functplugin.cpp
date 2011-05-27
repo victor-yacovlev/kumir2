@@ -271,7 +271,7 @@ QList<Alg>  St_functPlugin::funcList() const
 
 QString St_functPlugin::libraryLinkageName() const
 {
-    return "-lm -lst_funct -lExtensionSystem -lQtCore -lQtGui -lQtScript";
+    return "-lm -lst_funct -lExtensionSystem";// -lQtCore -lQtGui -lQtScript";
 }
 
 QString St_functPlugin::name(ProgrammingLanguage pl, QLocale::Language nl) const
