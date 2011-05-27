@@ -851,18 +851,18 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
     ldPaths << QDir::cleanPath(QFileInfo(pluginSpec().libraryFileName).absoluteDir().path());
     ldPaths << QDir::cleanPath(QFileInfo(pluginSpec().libraryFileName).absoluteDir().path()+"/../");
 
-#ifdef Q_OS_MAC
+//#ifdef Q_OS_MAC
     const QString frameworksPath = QDir::cleanPath(qApp->applicationDirPath()+"/../Frameworks/");
-//    const QDir frameworksDir(frameworksPath);
-//    foreach (QString fw, frameworksDir.entryList()) {
-//        if (fw=="." || fw=="..")
-//            continue;
-//        const QString qtFrameworkPath = frameworksPath+"/"+fw+"/Versions/4";
-//        if (QFile::exists(qtFrameworkPath))
-//            ldPaths << qtFrameworkPath;
-//    }
+    const QDir frameworksDir(frameworksPath);
+    QStringList frameworksOpts;
+    foreach (QString fw, frameworksDir.entryList()) {
+        if (fw=="." || fw=="..")
+            continue;
+        fw.remove(".framework");
+        frameworksOpts << "-framework "+fw;
+    }
 
-#endif
+//#endif
 
 
     QFile::remove("__kumir__.h");
@@ -877,6 +877,7 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
     command += " -F"+frameworksPath;
     command += " -L"+frameworksPath;
     command += " -Wl,-install_name,"+ldPaths.join(":");
+    command += frameworksOpts.join(" ");
 #else
     command += " -Wl,-rpath="+ldPaths.join(":");
 #endif
