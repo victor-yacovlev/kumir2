@@ -875,6 +875,7 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
 #endif
 #ifdef Q_OS_MAC
     command += " -F"+frameworksPath;
+    command += " -L"+frameworksPath;
     command += " -Wl,-install_name,"+ldPaths.join(":");
 #else
     command += " -Wl,-rpath="+ldPaths.join(":");
