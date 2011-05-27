@@ -34,6 +34,9 @@ QString KumirCompilerPlugin::initialize(const QStringList &arguments)
         return "Could not find KumirAnalizer interface";
 }
 
+#include <iostream>
+
+
 void KumirCompilerPlugin::start()
 {
     QString filename;
@@ -43,7 +46,7 @@ void KumirCompilerPlugin::start()
             filename = arg;
         }
     }
-    if (!filename.isEmpty()) {
+    if (!filename.isEmpty() && !qApp->arguments().contains("-h") && !qApp->arguments().contains("-help") && !qApp->arguments().contains("--help") && !qApp->arguments().contains("/?")) {
         filename = QFileInfo(filename).absoluteFilePath();
         QFile f(filename);
         if (f.open(QIODevice::ReadOnly)) {
@@ -60,7 +63,7 @@ void KumirCompilerPlugin::start()
             const QString outFileName = QFileInfo(filename).dir().absoluteFilePath(
                         baseName+".dump.json");
             QFile ff(outFileName);
-            if (ff.open(QIODevice::WriteOnly|QIODevice::Text)) {
+            if (qApp->arguments().contains("-J") && ff.open(QIODevice::WriteOnly|QIODevice::Text)) {
                 QTextStream ots(&ff);
                 ots.setCodec("UTF-8");
                 ots.setGenerateByteOrderMark(true);
@@ -81,7 +84,12 @@ void KumirCompilerPlugin::start()
 #else
             const QString suffix = ".bin";
 #endif
-            const QString outBinFileName = QFileInfo(filename).dir().absoluteFilePath(baseName+suffix);
+            QString outBinFileName = QFileInfo(filename).dir().absoluteFilePath(baseName+suffix);
+            foreach (QString arg, qApp->arguments()) {
+                if (arg.startsWith("-o=")) {
+                    outBinFileName = arg.mid(3);
+                }
+            }
             QFile binOut(outBinFileName);
             binOut.open(QIODevice::WriteOnly);
             Shared::GeneratorType res = generator->generateExecuable(ast, &binOut);
@@ -95,6 +103,19 @@ void KumirCompilerPlugin::start()
         }
     }
     else {
+#ifdef Q_OS_WIN32
+        const char * suffix = ".exe";
+#else
+        const char * suffix = ".bin";
+#endif
+        std::cerr << "Usage:" << std::endl;
+        std::cerr << "\t" << qApp->argv()[0] << " [-J] [-S] [-V] [-o=OUTFILE" << suffix <<"] FILENAME.kum" << std::endl;
+        std::cerr << std::endl;
+        std::cerr << "\t-J\t\tIf present, generates internal AST in JSON file" << std::endl;
+        std::cerr << "\t-S\t\tIf present, keeps generated C-code on disk" << std::endl;
+        std::cerr << "\t-V\t\tIf present, displays verbose information" << std::endl;
+        std::cerr << "\t-o OUTFILE" << suffix << "\tOutput file name (default: FILENAME" << suffix << ")" << std::endl;
+        std::cerr << "\tFILENAME.kum\tKumir program input file name" << std::endl;
         qApp->setProperty("returnCode", 127);
     }
 }

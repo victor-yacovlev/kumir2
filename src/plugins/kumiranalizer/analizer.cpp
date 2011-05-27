@@ -474,12 +474,12 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
 {
     if (ast->modules.isEmpty())
         whatToCompile = SubjWholeText;
-    if (whatToCompile==SubjStatements)
-        qDebug() << "Analize some statements";
-    else if (whatToCompile==SubjAlgorhtitm)
-        qDebug() << "Analize one algorhitm";
-    else
-        qDebug() << "Analize whole text";
+//    if (whatToCompile==SubjStatements)
+//        qDebug() << "Analize some statements";
+//    else if (whatToCompile==SubjAlgorhtitm)
+//        qDebug() << "Analize one algorhitm";
+//    else
+//        qDebug() << "Analize whole text";
     QList<Statement*> analizingStatements;
     AST::Algorhitm * alg = 0;
     if (whatToCompile==SubjWholeText) {

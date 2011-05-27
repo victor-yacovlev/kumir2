@@ -5,8 +5,8 @@
 #include "abstractsyntaxtree/ast_expression.h"
 #include "nameprovider.h"
 
-
 #include <QtCore>
+#include <iostream>
 
 
 namespace KumirCppGenerator {
@@ -400,7 +400,9 @@ void KumirCppGeneratorPrivate::createModuleSource(const AST::Module *module)
 QString KumirCppGeneratorPrivate::makeMain() const
 {
     QString result;
+    result += "#include <locale.h>\n";
     result += "int main(int argc, char** argv) {\n";
+    result += "  setlocale(LC_CTYPE, \"ru_RU.UTF-8\");\n";
     QString firstAlgName;
     for (int i=0; i<modules.size(); i++) {
         Module * m = modules[i];
@@ -766,6 +768,8 @@ void KumirCppGeneratorPlugin::stop()
 
 }
 
+
+
 Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
     const AST::Data *tree
     , QIODevice *out)
@@ -791,6 +795,7 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
         QDir::setCurrent(buildDir);
     }
     QSet<QString> cFiles;
+    QSet<QString> hFiles;
     QSet<QString> libs;
     for (int i=0; i<d->modules.size(); i++) {
         const QString hFileName = d->modules[i]->cNamespace.isEmpty()
@@ -803,6 +808,7 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
         if (h.open(QIODevice::WriteOnly | QIODevice::Text)) {
             h.write(d->modules[i]->headerData.toLocal8Bit());
             h.close();
+            hFiles.insert(hFileName);
         }
         QFile c(cFileName);
         if (c.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -815,6 +821,8 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
         }
     }
     cFiles.insert("__kumir__.c");
+    hFiles.insert("__kumir__.h");
+
     const QString includePath = qApp->property("sharePath").toString()+"/kumircppgenerator/";
     QString gccOutName;
 #ifdef Q_OS_WIN32
@@ -843,7 +851,9 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
         command += " "+lib;
     }
     command += " "+QStringList(cFiles.toList()).join(" ");
-    qDebug() << command;
+    if (qApp->arguments().contains("-V")) {
+        std::cout << command.toLocal8Bit().data() << std::endl;
+    }
     QProcess::execute(command);
     Shared::GeneratorType result = Shared::GenError;
     if (out && QFile::exists(gccOutName)) {
@@ -854,9 +864,24 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
 
         }
         result = Shared::GenNativeExecuable;
+        QFile::remove(gccOutName);
+    }
+    if (!qApp->arguments().contains("-S")) {
+        foreach (QString fn, cFiles.toList()) {
+            QFile::remove(fn);
+        }
+        foreach (QString fn, hFiles.toList()) {
+            QFile::remove(fn);
+        }
     }
     if (out && out->metaObject()->className()==QString("QFile")) {
         QDir::setCurrent("..");
+        if (!qApp->arguments().contains("-S")) {
+            QFile * f = qobject_cast<QFile*>(out);
+            const QString fileName = QFileInfo(*f).fileName();
+            const QString buildDir = "build-"+fileName;
+            QDir::current().rmdir(buildDir);
+        }
     }
     return result;
 }
