@@ -858,7 +858,7 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
     foreach (QString fw, frameworksDir.entryList()) {
         if (fw=="." || fw=="..")
             continue;
-        ldPaths << fw+"/Versions/4";
+        ldPaths << frameworksPath+"/"+fw+"/Versions/4";
         fw.remove(".framework");
         frameworksOpts << "-framework "+fw;
     }
