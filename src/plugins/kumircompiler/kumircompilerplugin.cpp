@@ -106,8 +106,8 @@ void KumirCompilerPlugin::start()
             QDir::current().mkpath(bundleDir+"/Contents/MacOS");
             QDir::current().mkpath(bundleDir+"/Contents/Frameworks");
             QDir::current().mkpath(bundleDir+"/Contents/PlugIns");
-            QProcess::execute("cp -R "+frameworksPath+"/*"+" "+bundleDir+"/Contents/Frameworks/");
-            QProcess::execute("cp -R "+pluginsPath+"/*"+" "+bundleDir+"/Contents/PlugIns/");
+            QProcess::execute("cp -R "+frameworksPath+" "+bundleDir+"/Contents/Frameworks");
+            QProcess::execute("cp -R "+pluginsPath+" "+bundleDir+"/Contents/PlugIns");
             outBinFileName = outBinFileName.left(outBinFileName.length()-4);
             outBinFileName = bundleDir+"/Contents/MacOS/"+outBinFileName;
 
