@@ -108,9 +108,16 @@ void KumirCompilerPlugin::start()
 //            QDir::current().mkpath(bundleDir+"/Contents/PlugIns");
             QProcess::execute("cp -R "+frameworksPath+" "+bundleDir+"/Contents/");
             QProcess::execute("cp -R "+pluginsPath+" "+bundleDir+"/Contents/");
-            outBinFileName = outBinFileName.left(outBinFileName.length()-4);
+            outBinFileName = baseName;
+            foreach (QString arg, qApp->arguments()) {
+                if (arg.startsWith("-o=")) {
+                    outBinFileName = arg.mid(3);
+                }
+            }
+            if (outBinFileName.endsWith(".app"))
+                outBinFileName = outBinFileName.left(outBinFileName.length()-4);
             outBinFileName = bundleDir+"/Contents/MacOS/"+outBinFileName;
-            std::cout << outBinFileName.toLocal8Bit().data();
+            std::cout << outBinFileName.toLocal8Bit().data() << std::endl;
 //#endif
             QFile binOut(outBinFileName);
             binOut.open(QIODevice::WriteOnly);
