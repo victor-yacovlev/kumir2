@@ -48,11 +48,11 @@ QString NameProvider::findVariable(
     const QString &algName,
     const QString &varName) const
 {
-    if (!algName.isEmpty()) {
+//    if (!algName.isEmpty()) {
         const QString key = modName+"::"+algName;
         if (m_database.contains(key) && m_database[key].contains(varName))
             return m_database[key][varName];
-    }
+//    }
     return m_database[modName][varName];
 }
 
@@ -74,7 +74,6 @@ QString NameProvider::addName(const QString &name, const QString &ns)
                                       << "do"
                                       << "case"
                                       << "switch"
-                                      << "namespace"
                                       << "main"
                                       << "struct"
                                       << "enum"
@@ -90,9 +89,6 @@ QString NameProvider::addName(const QString &name, const QString &ns)
     int index = 1;
     QString cName = cNameBase;
     QMap<QString,QString> nsDb = m_database[ns];
-    if (cName.startsWith("__")) {
-        cName += "_1";
-    }
     while (nsDb.contains(cName) || reservedNames.contains(cName)) {
         cName = cNameBase+"_"+QString::number(index);
         index++;
@@ -140,6 +136,7 @@ QString NameProvider::suggestCName(const QString &name)
         else if (c.toLower()==QString::fromUtf8("ь")[0]) cc = "";
         else if (c.toLower()==QString::fromUtf8("ъ")[0]) cc = "";
         else if (c.toLower()==QString::fromUtf8(" ")[0]) cc = "_";
+        else if (c.toLower()==QString::fromUtf8(":")[0]) cc = "_";
         else cc = c;
         result += cc;
     }

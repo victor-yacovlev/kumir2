@@ -157,12 +157,15 @@ void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor
     mod->header.type = AST::ModTypeExternal;
     mod->header.name = actor->name();
     mod->header.enabled = mod->header.name==StandartFunctionsModuleName;
+    mod->header.cReference.nameSpace = actor->name(Shared::PL_C);
+    mod->header.cReference.libraryBaseName = actor->libraryLinkageName();
     ast->modules << mod;
     for (int i=0; i<actor->funcList().size(); i++) {
         AST::Algorhitm * alg = new AST::Algorhitm;
         alg->header.implType = AST::AlgorhitmExternal;
         alg->header.external.moduleName = actor->name();
         alg->header.external.id = actor->funcList()[i].id;
+        alg->header.cHeader = actor->funcList()[i].cHeader;
         QList<Statement*> sts;
         lexer->splitIntoStatements(QStringList() << actor->funcList()[i].kumirHeader, -1, sts);
         Q_ASSERT_X(sts.size()==1

@@ -11,9 +11,10 @@
 
 using namespace Shared;
 
+static wchar_t __error__st_funct[256];
+
 namespace st_funct {
 
-static wchar_t __error__[256];
 
 St_functPlugin::St_functPlugin()
 {
@@ -32,235 +33,235 @@ QList<Alg>  St_functPlugin::funcList() const
     Alg cur_alg;
 
     cur_alg.kumirHeader=trUtf8("алг вещ abs(вещ x)");
-    cur_alg.cHeader = "double abs(double x)";
+    cur_alg.cHeader = "double abs__st_funct(double x)";
     cur_alg.pascalHeader = "function abs(x: real): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ arccos(вещ x)");
-    cur_alg.cHeader = "double arccos(double x)";
+    cur_alg.cHeader = "double arccos__st_funct(double x)";
     cur_alg.pascalHeader = "function arccos(x: real): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ arcctg(вещ x)");
-    cur_alg.cHeader = "double arcctg(double x)";
+    cur_alg.cHeader = "double arcctg__st_funct(double x)";
     cur_alg.pascalHeader = "function arcctg(x: real): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ arcsin(вещ x)");
-    cur_alg.cHeader = "double arcsin(double x)";
+    cur_alg.cHeader = "double arcsin__st_funct(double x)";
     cur_alg.pascalHeader = "function arcsin(x: real): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ arctg(вещ x)");
-    cur_alg.cHeader = "double arctg(double x)";
+    cur_alg.cHeader = "double arctg__st_funct(double x)";
     cur_alg.pascalHeader = "function arctg(x: real): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ cos(вещ x)");
-    cur_alg.cHeader = "double cos(double x)";
+    cur_alg.cHeader = "double cos__st_funct(double x)";
     cur_alg.pascalHeader = "function cos(x: real): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ ctg(вещ x)");
-    cur_alg.cHeader = "double ctg(double x)";
+    cur_alg.cHeader = "double ctg__st_funct(double x)";
     cur_alg.pascalHeader = "function ctg(x: real): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг delay(цел x)");
-    cur_alg.cHeader = "void delay(int x)";
+    cur_alg.cHeader = "void delay__st_funct(int x)";
     cur_alg.pascalHeader = "procedure delay(x: integer)";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел div(цел x, цел y)");
-    cur_alg.cHeader = "int div(int x, int y)";
+    cur_alg.cHeader = "int div__st_funct(int x, int y)";
     cur_alg.pascalHeader = "function div(x, y: integer): integer";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ exp(вещ x)");
-    cur_alg.cHeader = "double exp(double x)";
+    cur_alg.cHeader = "double exp__st_funct(double x)";
     cur_alg.pascalHeader = "function exp(x: real): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел iabs(цел x)");
-    cur_alg.cHeader = "int iabs(int x)";
+    cur_alg.cHeader = "int iabs__st_funct(int x)";
     cur_alg.pascalHeader = "function iabs(x: integer): integer";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел imax(цел x, цел y)");
-    cur_alg.cHeader = "int imax(int x, int y)";
+    cur_alg.cHeader = "int imax__st_funct(int x, int y)";
     cur_alg.pascalHeader = "function imax(x, y: integer): integer";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел imin(цел x, цел y)");
-    cur_alg.cHeader = "int imin(int x, int y)";
+    cur_alg.cHeader = "int imin__st_funct(int x, int y)";
     cur_alg.pascalHeader = "function imin(x, y: integer): integer";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел int(вещ x)");
-    cur_alg.cHeader = "int int_(double x)";
+    cur_alg.cHeader = "int int__st_funct(double x)";
     cur_alg.pascalHeader = "function int(x: real): integer";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел irand(цел x, цел y)");
-    cur_alg.cHeader = "int irand(int x, int y)";
+    cur_alg.cHeader = "int irand__st_funct(int x, int y)";
     cur_alg.pascalHeader = "function irand(x, y: integer): integer";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел irnd(цел x, цел y)");
-    cur_alg.cHeader = "int irnd(int x, int y)";
+    cur_alg.cHeader = "int irnd__st_funct(int x, int y)";
     cur_alg.pascalHeader = "function irnd(x, y: integer): integer";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ lg(вещ x)");
-    cur_alg.cHeader = "double lg(double x)";
+    cur_alg.cHeader = "double lg__st_funct(double x)";
     cur_alg.pascalHeader = "function lg(x: real): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ ln(вещ x)");
-    cur_alg.cHeader = "double ln(double x)";
+    cur_alg.cHeader = "double ln__st_funct(double x)";
     cur_alg.pascalHeader = "function ln(x: real): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ max(вещ x, вещ y)");
-    cur_alg.cHeader = "double max(double x, double y)";
+    cur_alg.cHeader = "double max__st_funct(double x, double y)";
     cur_alg.pascalHeader = "function max(x,y: real): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ min(вещ x, вещ y)");
-    cur_alg.cHeader = "double min(double x, double y)";
+    cur_alg.cHeader = "double min__st_funct(double x, double y)";
     cur_alg.pascalHeader = "function min(x,y: real): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел mod(цел x, цел y)");
-    cur_alg.cHeader = "int mod(int x, int y)";
+    cur_alg.cHeader = "int mod__st_funct(int x, int y)";
     cur_alg.pascalHeader = "function mod(x,y: integer): integer";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ rand(вещ x, вещ y)");
-    cur_alg.cHeader = "double rand(double x, double y)";
+    cur_alg.cHeader = "double rand__st_funct(double x, double y)";
     cur_alg.pascalHeader = "function rand(x,y: real): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ rnd(вещ x)");
-    cur_alg.cHeader = "double rnd(double x)";
+    cur_alg.cHeader = "double rnd__st_funct(double x)";
     cur_alg.pascalHeader = "function rnd(x: real): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел sign(вещ x)");
-    cur_alg.cHeader = "int sign(double x)";
+    cur_alg.cHeader = "int sign__st_funct(double x)";
     cur_alg.pascalHeader = "function sign(x: real): integer";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ sin(вещ x)");
-    cur_alg.cHeader = "double sin(double x)";
+    cur_alg.cHeader = "double sin__st_funct(double x)";
     cur_alg.pascalHeader = "function sin(x: real): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ sqrt(вещ x)");
-    cur_alg.cHeader = "double sqrt(double x)";
+    cur_alg.cHeader = "double sqrt__st_funct(double x)";
     cur_alg.pascalHeader = "function sqrt(x: real): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ tg(вещ x)");
-    cur_alg.cHeader = "double tg(double x)";
+    cur_alg.cHeader = "double tg__st_funct(double x)";
     cur_alg.pascalHeader = "function tg(x: real): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ МАКСВЕЩ");
-    cur_alg.cHeader = "double MAXREAL()";
+    cur_alg.cHeader = "double MAXREAL__st_funct()";
     cur_alg.pascalHeader = "function MAXREAL: real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел МАКСЦЕЛ");
-    cur_alg.cHeader = "int MAXINT()";
+    cur_alg.cHeader = "int MAXINT__st_funct()";
     cur_alg.pascalHeader = "function MAXREAL: integer";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг лит вещ_в_лит(вещ x)");
-    cur_alg.cHeader = "STRING real_to_string(double x)";
+    cur_alg.cHeader = "wchar_t* real_to_string__st_funct(double x)";
     cur_alg.pascalHeader = "function real_to_string(double x): string";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел время");
-    cur_alg.cHeader = "int time()";
+    cur_alg.cHeader = "int time__st_funct()";
     cur_alg.pascalHeader = "function time: integer";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел длин(лит s)");
-    cur_alg.cHeader = "int length(STRING s)";
+    cur_alg.cHeader = "int length__st_funct(wchar_t* s)";
     cur_alg.pascalHeader = "function length(s: string): integer";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел код(сим ch)");
-    cur_alg.cHeader = "int code(CHAR ch)";
+    cur_alg.cHeader = "int code__st_funct(wchar_t ch)";
     cur_alg.pascalHeader = "function code(ch: charect): integer";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ лит_в_вещ(лит s, рез лог success)");
-    cur_alg.cHeader = "double string_to_real(STRING s, BOOL *success)";
+    cur_alg.cHeader = "double string_to_real__st_funct(wchar_t* s, unsigned char *success)";
     cur_alg.pascalHeader = "function string_to_real(s: string; var success: boolean): real";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел лит_в_цел(лит s, рез лог success)");
-    cur_alg.cHeader = "int string_to_int(STRING s, BOOL *success)";
+    cur_alg.cHeader = "int string_to_int__st_funct(wchar_t * s, unsigned char *success)";
     cur_alg.pascalHeader = "function string_to_int(s: string; var success: boolean): integer";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг сим символ(цел n)");
-    cur_alg.cHeader = "CHAR symbol(int n)";
+    cur_alg.cHeader = "wchar_t symbol__st_funct(int n)";
     cur_alg.pascalHeader = "function symbol(n: integer): char";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг сим символ2(цел n)");
-    cur_alg.cHeader = "CHAR symbol2(int n)";
+    cur_alg.cHeader = "wchar_t symbol2__st_funct(int n)";
     cur_alg.pascalHeader = "function symbol2(n: integer): char";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг лит цел_в_лит(цел n)");
-    cur_alg.cHeader = "STRING int_to_string(int n)";
+    cur_alg.cHeader = "wchar_t * int_to_string__st_funct(int n)";
     cur_alg.pascalHeader = "function int_to_string(n: integer): string";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел юникод(сим ch)");
-    cur_alg.cHeader = "int unicode(CHAR ch)";
+    cur_alg.cHeader = "int unicode__st_funct(wchar_t ch)";
     cur_alg.pascalHeader = "function unicode(ch: char): integer";
     cur_alg.id=tmpL.size();
     tmpL.append(cur_alg);
@@ -268,9 +269,30 @@ QList<Alg>  St_functPlugin::funcList() const
     return tmpL;
 }
 
-QString St_functPlugin::name() const
+QString St_functPlugin::libraryLinkageName() const
 {
-    return "Standart functions";
+    return "-lst_funct -lExtensionSystem";
+}
+
+QString St_functPlugin::name(ProgrammingLanguage pl, QLocale::Language nl) const
+{
+    if (pl==PL_Kumir) {
+        if (nl==QLocale::Russian) {
+            return QString::fromUtf8("Стандартные функции");
+        }
+        else {
+            return "Standart functions";
+        }
+    }
+    else if (pl==PL_C) {
+        return "st_funct";
+    }
+    else if (pl==PL_Pascal) {
+        return "KumirStandartFunctions";
+    }
+    else {
+        return "";
+    }
 }
 
 QVariant St_functPlugin::result() const
@@ -281,123 +303,123 @@ QVariant St_functPlugin::result() const
 
 void  St_functPlugin::runFunct(const QString & name,const QList<QVariant> &args)
 {
-    __error__[0] = L'\0';
+    __error__st_funct[0] = L'\0';
     optResults.clear();
 
     if (name==tr("abs")) {
-        Res = QVariant(st_funct::abs(args[0].toDouble()));
+        Res = QVariant(abs__st_funct(args[0].toDouble()));
     }
     else if (name==tr("arccos")) {
-        Res = QVariant(st_funct::arccos(args[0].toDouble()));
+        Res = QVariant(arccos__st_funct(args[0].toDouble()));
     }
     else if (name==tr("arcctg")) {
-        Res = QVariant(st_funct::arcctg(args[0].toDouble()));
+        Res = QVariant(arcctg__st_funct(args[0].toDouble()));
     }
     else if (name==tr("arcsin")) {
-        Res = QVariant(st_funct::arcsin(args[0].toDouble()));
+        Res = QVariant(arcsin__st_funct(args[0].toDouble()));
     }
     else if (name==tr("arctg")) {
-        Res = QVariant(st_funct::arctg(args[0].toDouble()));
+        Res = QVariant(arctg__st_funct(args[0].toDouble()));
     }
     else if (name==tr("cos")) {
-        Res = QVariant(st_funct::cos(args[0].toDouble()));
+        Res = QVariant(cos__st_funct(args[0].toDouble()));
     }
     else if (name==tr("ctg")) {
-        Res = QVariant(st_funct::ctg(args[0].toDouble()));
+        Res = QVariant(ctg__st_funct(args[0].toDouble()));
     }
     else if (name==tr("delay")) {
         Res = QVariant::Invalid;
-        st_funct::delay(args[0].toInt());
+        delay__st_funct(args[0].toInt());
     }
     else if (name==tr("div")) {
-        Res = QVariant(st_funct::div(args[0].toInt(), args[1].toInt()));
+        Res = QVariant(div__st_funct(args[0].toInt(), args[1].toInt()));
     }
     else if (name==tr("exp")) {
-        Res = QVariant(st_funct::exp(args[0].toDouble()));
+        Res = QVariant(exp__st_funct(args[0].toDouble()));
     }
     else if (name==tr("iabs")) {
-        Res = QVariant(st_funct::iabs(args[0].toInt()));
+        Res = QVariant(iabs__st_funct(args[0].toInt()));
     }
     else if (name==tr("imin")) {
-        Res = QVariant(st_funct::imin(args[0].toInt(), args[1].toInt()));
+        Res = QVariant(imin__st_funct(args[0].toInt(), args[1].toInt()));
     }
     else if (name==tr("imax")) {
-        Res = QVariant(st_funct::imax(args[0].toInt(), args[1].toInt()));
+        Res = QVariant(imax__st_funct(args[0].toInt(), args[1].toInt()));
     }
     else if (name==tr("int")) {
-        Res = QVariant(st_funct::int_(args[0].toDouble()));
+        Res = QVariant(int__st_funct(args[0].toDouble()));
     }
     else if (name==tr("irand")) {
-        Res = QVariant(st_funct::irand(args[0].toInt(), args[1].toInt()));
+        Res = QVariant(irand__st_funct(args[0].toInt(), args[1].toInt()));
     }
     else if (name==tr("irnd")) {
-        Res = QVariant(st_funct::irnd(args[0].toInt()));
+        Res = QVariant(irnd__st_funct(args[0].toInt()));
     }
     else if (name==tr("lg")) {
-        Res = QVariant(st_funct::lg(args[0].toDouble()));
+        Res = QVariant(lg__st_funct(args[0].toDouble()));
     }
     else if (name==tr("ln")) {
-        Res = QVariant(st_funct::ln(args[0].toDouble()));
+        Res = QVariant(ln__st_funct(args[0].toDouble()));
     }
     else if (name==tr("max")) {
-        Res = QVariant(st_funct::max(args[0].toDouble(), args[1].toDouble()));
+        Res = QVariant(max__st_funct(args[0].toDouble(), args[1].toDouble()));
     }
     else if (name==tr("min")) {
-        Res = QVariant(st_funct::min(args[0].toDouble(), args[1].toDouble()));
+        Res = QVariant(min__st_funct(args[0].toDouble(), args[1].toDouble()));
     }
     else if (name==tr("mod")) {
-        Res = QVariant(st_funct::mod(args[0].toInt(), args[1].toInt()));
+        Res = QVariant(mod__st_funct(args[0].toInt(), args[1].toInt()));
     }
     else if (name==tr("rand")) {
-        Res = QVariant(st_funct::rand(args[0].toDouble(), args[1].toDouble()));
+        Res = QVariant(rand__st_funct(args[0].toDouble(), args[1].toDouble()));
     }
     else if (name==tr("rnd")) {
-        Res = QVariant(st_funct::rnd(args[0].toDouble()));
+        Res = QVariant(rnd__st_funct(args[0].toDouble()));
     }
     else if (name==tr("sign")) {
-        Res = QVariant(st_funct::sign(args[0].toDouble()));
+        Res = QVariant(sign__st_funct(args[0].toDouble()));
     }
     else if (name==tr("sin")) {
-        Res = QVariant(st_funct::sin(args[0].toDouble()));
+        Res = QVariant(sin__st_funct(args[0].toDouble()));
     }
     else if (name==tr("sqrt")) {
-        Res = QVariant(st_funct::sqrt(args[0].toDouble()));
+        Res = QVariant(sqrt__st_funct(args[0].toDouble()));
     }
     else if (name==tr("tg")) {
-        Res = QVariant(st_funct::tg(args[0].toDouble()));
+        Res = QVariant(tg__st_funct(args[0].toDouble()));
     }
     else if (name==trUtf8("МАКСВЕЩ")) {
-        Res = QVariant(st_funct::MAXREAL());
+        Res = QVariant(MAXREAL__st_funct());
     }
     else if (name==trUtf8("МАКСЦЕЛ")) {
-        Res = QVariant(st_funct::MAXINT());
+        Res = QVariant(MAXINT__st_funct());
     }
     else if (name==trUtf8("вещ_в_лит")) {
-        wchar_t * buffer = st_funct::real_to_string(args[0].toDouble());
+        wchar_t * buffer = real_to_string__st_funct(args[0].toDouble());
         Res = QVariant(QString::fromWCharArray(buffer));
         free(buffer);
     }
     else if (name==trUtf8("время")) {
-        Res = QVariant(st_funct::time());
+        Res = QVariant(time__st_funct());
     }
     else if (name==trUtf8("длин")) {
         wchar_t * buffer = (wchar_t*)calloc(args[0].toString().size()+1, sizeof(wchar_t));
         args[0].toString().toWCharArray(buffer);
         buffer[args[0].toString().length()] = L'\0';
-        Res = QVariant(st_funct::length(buffer));
+        Res = QVariant(length__st_funct(buffer));
         free(buffer);
     }
     else if (name==trUtf8("код")) {
         wchar_t buffer[1];
         args[0].toString().toWCharArray(buffer);
-        Res = QVariant(st_funct::code(buffer[0]));
+        Res = QVariant(code__st_funct(buffer[0]));
     }
     else if (name==trUtf8("лит_в_вещ")) {
         wchar_t * buffer = (wchar_t*)calloc(args[0].toString().size()+1, sizeof(wchar_t));
         args[0].toString().toWCharArray(buffer);
         buffer[args[0].toString().length()] = L'\0';
         unsigned char success;
-        Res = QVariant(st_funct::string_to_real(buffer, &success));
+        Res = QVariant(string_to_real__st_funct(buffer, &success));
         optResults << QVariant(success==1? true : false);
         free(buffer);
     }
@@ -406,27 +428,27 @@ void  St_functPlugin::runFunct(const QString & name,const QList<QVariant> &args)
         args[0].toString().toWCharArray(buffer);
         buffer[args[0].toString().length()] = L'\0';
         unsigned char success;
-        Res = QVariant(st_funct::string_to_int(buffer, &success));
+        Res = QVariant(string_to_int__st_funct(buffer, &success));
         optResults << QVariant(success==1? true : false);
         free(buffer);
     }
     else if (name==trUtf8("символ")) {
         wchar_t buffer[1];
-        buffer[0] = st_funct::symbol(args[0].toInt());
+        buffer[0] = symbol__st_funct(args[0].toInt());
         Res = QVariant(QString::fromWCharArray(buffer, 1).at(0));
     }
     else if (name==trUtf8("символ2")) {
         wchar_t buffer[1];
-        buffer[0] = st_funct::symbol2(args[0].toInt());
+        buffer[0] = symbol2__st_funct(args[0].toInt());
         Res = QVariant(QString::fromWCharArray(buffer, 1).at(0));
     }
     else if (name==trUtf8("юникод")) {
         wchar_t buffer[1];
         args[0].toString().toWCharArray(buffer);
-        Res = QVariant(st_funct::unicode(buffer[0]));
+        Res = QVariant(unicode__st_funct(buffer[0]));
     }
 
-    errText = QString::fromWCharArray(__error__);
+    errText = QString::fromWCharArray(__error__st_funct);
 }
 
 QList<QVariant> St_functPlugin::algOptResults() const
@@ -442,7 +464,7 @@ QWidget* St_functPlugin::mainWidget()
 void St_functPlugin::reset()
 {
     errText="";
-    __init__();
+    __init__st_funct();
 }
 
 QString St_functPlugin::errorText() const
@@ -463,38 +485,39 @@ void St_functPlugin::stop()
 {
 }
 
+} // end namespace st_funct
 
 
 // ------------------ Functions implementation
 
-static QTextCodec * __koi8Codec__ = 0;
+static QTextCodec * __koi8Codec__st_funct = 0;
 
-EXTERN_FUNC_DECL void __init__()
+EXTERN_FUNC_DECL void __init__st_funct()
 {
-    if (__koi8Codec__==0) {
-        __koi8Codec__ = QTextCodec::codecForName("KOI8-R");
+    if (__koi8Codec__st_funct==0) {
+        __koi8Codec__st_funct = QTextCodec::codecForName("KOI8-R");
     }
 }
 
-void __abort__(const QString &error)
+void __abort__st_funct(const QString &error)
 {
-    error.toWCharArray(__error__);
-    __error__[error.length()] = L'\0';
+    error.toWCharArray(__error__st_funct);
+    __error__st_funct[error.length()] = L'\0';
 #ifdef ABORT_ON_ERROR
     qFatal(error.toLocal8Bit().data());
 #endif
 }
 
 
-EXTERN_FUNC_DECL double abs(double x)
+EXTERN_FUNC_DECL double abs__st_funct(double x)
 {
     return ::fabs(x);
 }
 
-EXTERN_FUNC_DECL double arccos(double x)
+EXTERN_FUNC_DECL double arccos__st_funct(double x)
 {
     if (::fabs(x)>1) {
-        __abort__(QObject::tr("Bad inverse trigonometric argument", "StFuncError"));
+        __abort__st_funct(QObject::tr("Bad inverse trigonometric argument", "StFuncError"));
         return 0;
     }
     else {
@@ -502,10 +525,10 @@ EXTERN_FUNC_DECL double arccos(double x)
     }
 }
 
-EXTERN_FUNC_DECL double arcctg(double x)
+EXTERN_FUNC_DECL double arcctg__st_funct(double x)
 {
     if (::fabs(x)==0.0) {
-        __abort__(QObject::tr("Bad inverse trigonometric argument", "StFuncError"));
+        __abort__st_funct(QObject::tr("Bad inverse trigonometric argument", "StFuncError"));
         return 0;
     }
     else {
@@ -513,10 +536,10 @@ EXTERN_FUNC_DECL double arcctg(double x)
     }
 }
 
-EXTERN_FUNC_DECL double arcsin(double x)
+EXTERN_FUNC_DECL double arcsin__st_funct(double x)
 {
     if (::fabs(x)>1) {
-        __abort__(QObject::tr("Bad inverse trigonometric argument", "StFuncError"));
+        __abort__st_funct(QObject::tr("Bad inverse trigonometric argument", "StFuncError"));
         return 0;
     }
     else {
@@ -524,20 +547,20 @@ EXTERN_FUNC_DECL double arcsin(double x)
     }
 }
 
-EXTERN_FUNC_DECL double arctg(double x)
+EXTERN_FUNC_DECL double arctg__st_funct(double x)
 {
     return ::atan(x);
 }
 
-EXTERN_FUNC_DECL double cos(double x)
+EXTERN_FUNC_DECL double cos__st_funct(double x)
 {
     return ::cos(x);
 }
 
-EXTERN_FUNC_DECL double ctg(double x)
+EXTERN_FUNC_DECL double ctg__st_funct(double x)
 {
     if (::fabs(x)==0.0) {
-        __abort__(QObject::tr("Bad inverse trigonometric argument", "StFuncError"));
+        __abort__st_funct(QObject::tr("Bad inverse trigonometric argument", "StFuncError"));
         return 0;
     }
     else {
@@ -545,15 +568,15 @@ EXTERN_FUNC_DECL double ctg(double x)
     }
 }
 
-EXTERN_FUNC_DECL void delay(int)
+EXTERN_FUNC_DECL void delay__st_funct(int)
 {
     // TODO implement is need
 }
 
-EXTERN_FUNC_DECL int div(int x, int y)
+EXTERN_FUNC_DECL int div__st_funct(int x, int y)
 {
     if (y<=0) {
-        __abort__(QObject::tr("Division by not natural number", "StFuncError"));
+        __abort__st_funct(QObject::tr("Division by not natural number", "StFuncError"));
         return 0;
     }
     else {
@@ -565,14 +588,14 @@ EXTERN_FUNC_DECL int div(int x, int y)
     }
 }
 
-EXTERN_FUNC_DECL double exp(double x)
+EXTERN_FUNC_DECL double exp__st_funct(double x)
 {
     if (isnan(::exp(x))) {
-        __abort__(QObject::tr("Function result is not a number", "StFuncError"));
+        __abort__st_funct(QObject::tr("Function result is not a number", "StFuncError"));
         return 0;
     }
     else if (isinf(::exp(x))) {
-        __abort__(QObject::tr("Function result is infinity value", "StFuncError"));
+        __abort__st_funct(QObject::tr("Function result is infinity value", "StFuncError"));
         return 0;
     }
     else {
@@ -580,31 +603,31 @@ EXTERN_FUNC_DECL double exp(double x)
     }
 }
 
-EXTERN_FUNC_DECL int iabs(int x)
+EXTERN_FUNC_DECL int iabs__st_funct(int x)
 {
     return qAbs(x);
 }
 
-EXTERN_FUNC_DECL int imax(int x, int y)
+EXTERN_FUNC_DECL int imax__st_funct(int x, int y)
 {
     return qMax(x, y);
 }
 
-EXTERN_FUNC_DECL int imin(int x, int y)
+EXTERN_FUNC_DECL int imin__st_funct(int x, int y)
 {
     return qMin(x, y);
 }
 
-EXTERN_FUNC_DECL int int_(double x)
+EXTERN_FUNC_DECL int int__st_funct(double x)
 {
     // TODO check for integer overflow
     return int(floor(x));
 }
 
-EXTERN_FUNC_DECL int irand(int a, int b)
+EXTERN_FUNC_DECL int irand__st_funct(int a, int b)
 {
     if (a>b) {
-        __abort__(QObject::tr("Invalid range", "StFuncError"));
+        __abort__st_funct(QObject::tr("Invalid range", "StFuncError"));
         return 0;
     }
     else {
@@ -614,17 +637,17 @@ EXTERN_FUNC_DECL int irand(int a, int b)
     }
 }
 
-EXTERN_FUNC_DECL int irnd(int x)
+EXTERN_FUNC_DECL int irnd__st_funct(int x)
 {
     int rndValue = qrand();
     qreal scale = qreal(x)/qreal(RAND_MAX);
     return qMin(x, 1+int(scale*rndValue));
 }
 
-EXTERN_FUNC_DECL double lg(double x)
+EXTERN_FUNC_DECL double lg__st_funct(double x)
 {
     if (x<=0.0) {
-        __abort__(QObject::tr("Lg function argument must be > 0", "StFuncError"));
+        __abort__st_funct(QObject::tr("Lg function argument must be > 0", "StFuncError"));
         return 0;
     }
     else {
@@ -632,10 +655,10 @@ EXTERN_FUNC_DECL double lg(double x)
     }
 }
 
-EXTERN_FUNC_DECL double ln(double x)
+EXTERN_FUNC_DECL double ln__st_funct(double x)
 {
     if (x<=0.0) {
-        __abort__(QObject::tr("Ln function argument must be > 0", "StFuncError"));
+        __abort__st_funct(QObject::tr("Ln function argument must be > 0", "StFuncError"));
         return 0;
     }
     else {
@@ -643,20 +666,20 @@ EXTERN_FUNC_DECL double ln(double x)
     }
 }
 
-EXTERN_FUNC_DECL double max(double x, double y)
+EXTERN_FUNC_DECL double max__st_funct(double x, double y)
 {
     return qMax(x, y);
 }
 
-EXTERN_FUNC_DECL double min(double x, double y)
+EXTERN_FUNC_DECL double min__st_funct(double x, double y)
 {
     return qMin(x, y);
 }
 
-EXTERN_FUNC_DECL int mod(int x, int y)
+EXTERN_FUNC_DECL int mod__st_funct(int x, int y)
 {
     if (y<=0) {
-        __abort__(QObject::tr("Division by not natural number", "StFuncError"));
+        __abort__st_funct(QObject::tr("Division by not natural number", "StFuncError"));
         return 0;
     }
     else {
@@ -666,10 +689,10 @@ EXTERN_FUNC_DECL int mod(int x, int y)
     }
 }
 
-EXTERN_FUNC_DECL double rand(double a, double b)
+EXTERN_FUNC_DECL double rand__st_funct(double a, double b)
 {
     if (a>b) {
-        __abort__(QObject::tr("Invalid range", "StFuncError"));
+        __abort__st_funct(QObject::tr("Invalid range", "StFuncError"));
         return 0;
     }
     else {
@@ -679,14 +702,14 @@ EXTERN_FUNC_DECL double rand(double a, double b)
     }
 }
 
-EXTERN_FUNC_DECL double rnd(double x)
+EXTERN_FUNC_DECL double rnd__st_funct(double x)
 {
     int rndValue = qrand();
     qreal stdValue = qreal(rndValue)/qreal(RAND_MAX);
     return x * stdValue;
 }
 
-EXTERN_FUNC_DECL int sign(double x)
+EXTERN_FUNC_DECL int sign__st_funct(double x)
 {
     if (::fabs(x)<REAL_COMPARE_PRECISION) {
         return 0;
@@ -699,15 +722,15 @@ EXTERN_FUNC_DECL int sign(double x)
     }
 }
 
-EXTERN_FUNC_DECL double sin(double x)
+EXTERN_FUNC_DECL double sin__st_funct(double x)
 {
     return ::sin(x);
 }
 
-EXTERN_FUNC_DECL double sqrt(double x)
+EXTERN_FUNC_DECL double sqrt__st_funct(double x)
 {
     if (x<0) {
-        __abort__(QObject::tr("Square root of negative value", "StFuncError"));
+        __abort__st_funct(QObject::tr("Square root of negative value", "StFuncError"));
         return 0;
     }
     else {
@@ -715,22 +738,22 @@ EXTERN_FUNC_DECL double sqrt(double x)
     }
 }
 
-EXTERN_FUNC_DECL double tg(double x)
+EXTERN_FUNC_DECL double tg__st_funct(double x)
 {
     return ::tan(x);
 }
 
-EXTERN_FUNC_DECL double MAXREAL()
+EXTERN_FUNC_DECL double MAXREAL__st_funct()
 {
     return 1.797693e+308;
 }
 
-EXTERN_FUNC_DECL int MAXINT()
+EXTERN_FUNC_DECL int MAXINT__st_funct()
 {
     return int(89884656743115795386465259539451236680898848947115328636715040578866337902750481566354238661203768010560056939935696678829394884407208311246423715319737062188883946712432742638151109800623047059726541476042502884419075341171231440736956555270413618581675255342293149119973622969239858152417678164812112068608.);
 }
 
-EXTERN_FUNC_DECL wchar_t* real_to_string(double x)
+EXTERN_FUNC_DECL wchar_t* real_to_string__st_funct(double x)
 {
     QString result = QString("%1").arg(x, 0,'f');
     QStringList pair = result.split(".",QString::KeepEmptyParts);
@@ -748,7 +771,7 @@ EXTERN_FUNC_DECL wchar_t* real_to_string(double x)
     return buffer;
 }
 
-EXTERN_FUNC_DECL int time()
+EXTERN_FUNC_DECL int time__st_funct()
 {
     QTime t = QTime::currentTime();
     int sec = t.hour()*3600 + t.minute()*60 + t.second();
@@ -757,26 +780,26 @@ EXTERN_FUNC_DECL int time()
     return csec;
 }
 
-EXTERN_FUNC_DECL int length(wchar_t * s)
+EXTERN_FUNC_DECL int length__st_funct(wchar_t * s)
 {
     QString ss = QString::fromWCharArray(s);
     return ss.length();
 }
-EXTERN_FUNC_DECL int code(wchar_t ch)
+EXTERN_FUNC_DECL int code__st_funct(wchar_t ch)
 {
     const wchar_t buffer[1] = { ch };
     const QString str = QString::fromWCharArray(buffer, 1);
-    if (ch!='\0' && !__koi8Codec__->canEncode(str)) {
-        __abort__(QObject::tr("Symbol out of the KOI8-R range", "StFuncError"));
+    if (ch!='\0' && !__koi8Codec__st_funct->canEncode(str)) {
+        __abort__st_funct(QObject::tr("Symbol out of the KOI8-R range", "StFuncError"));
         return 0;
     }
     else {
-        QByteArray koi8Data = __koi8Codec__->fromUnicode(str);
+        QByteArray koi8Data = __koi8Codec__st_funct->fromUnicode(str);
         return int(koi8Data.at(0));
     }
 }
 
-EXTERN_FUNC_DECL double string_to_real(wchar_t * s, unsigned char * success)
+EXTERN_FUNC_DECL double string_to_real__st_funct(wchar_t * s, unsigned char * success)
 {
     QString str = QString::fromWCharArray(s);
     bool ok = false;
@@ -785,7 +808,7 @@ EXTERN_FUNC_DECL double string_to_real(wchar_t * s, unsigned char * success)
     return res;
 }
 
-EXTERN_FUNC_DECL int string_to_int(wchar_t* s, unsigned char *success)
+EXTERN_FUNC_DECL int string_to_int__st_funct(wchar_t* s, unsigned char *success)
 {
     QString str = QString::fromWCharArray(s);
     bool ok = false;
@@ -794,10 +817,10 @@ EXTERN_FUNC_DECL int string_to_int(wchar_t* s, unsigned char *success)
     return res;
 }
 
-EXTERN_FUNC_DECL wchar_t symbol(int n)
+EXTERN_FUNC_DECL wchar_t symbol__st_funct(int n)
 {
     if (n<0 || n>255) {
-        __abort__(QObject::tr("Code out of range [0..255]", "StFuncError"));
+        __abort__st_funct(QObject::tr("Code out of range [0..255]", "StFuncError"));
         return 0;
     }
     else {
@@ -1042,14 +1065,14 @@ EXTERN_FUNC_DECL wchar_t symbol(int n)
     }
 }
 
-EXTERN_FUNC_DECL wchar_t symbol2(int n)
+EXTERN_FUNC_DECL wchar_t symbol2__st_funct(int n)
 {
     QChar ch(n);
     static const QString cyrillic =
             QString::fromUtf8("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЮЭЯ");
     bool valid = n < 128 || cyrillic.contains(ch.toUpper());
     if (!valid) {
-        __abort__(QObject::tr("Resulting character is not allowed in Russian languange", "StFuncError"));
+        __abort__st_funct(QObject::tr("Resulting character is not allowed in Russian languange", "StFuncError"));
         return L'\0';
     }
     else {
@@ -1060,7 +1083,7 @@ EXTERN_FUNC_DECL wchar_t symbol2(int n)
 
 }
 
-EXTERN_FUNC_DECL wchar_t * int_to_string(int x)
+EXTERN_FUNC_DECL wchar_t * int_to_string__st_funct(int x)
 {
     QString result = QString::number(x);
     wchar_t * buffer = (wchar_t*)calloc(result.length()+1, sizeof(wchar_t));
@@ -1068,13 +1091,13 @@ EXTERN_FUNC_DECL wchar_t * int_to_string(int x)
     return buffer;
 }
 
-EXTERN_FUNC_DECL int unicode(wchar_t c)
+EXTERN_FUNC_DECL int unicode__st_funct(wchar_t c)
 {
     const wchar_t buffer[1] = { c };
     return QString::fromWCharArray(buffer, 1)[0].unicode();
 }
 
 
-} // end namespace st_funct
+
 
 Q_EXPORT_PLUGIN(st_funct::St_functPlugin)

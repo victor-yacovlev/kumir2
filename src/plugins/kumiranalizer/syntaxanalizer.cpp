@@ -181,6 +181,7 @@ void SyntaxAnalizer::buildTables()
             d->parseVarDecl(i);
         }
     }
+    d->ast->modules[0]->header.enabled = true;
 }
 
 void SyntaxAnalizer::processAnalisys()

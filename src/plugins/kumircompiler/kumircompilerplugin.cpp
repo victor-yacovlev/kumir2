@@ -76,7 +76,21 @@ void KumirCompilerPlugin::start()
             Shared::GeneratorInterface * generator =
                     qobject_cast<Shared::GeneratorInterface*>(myDependency("Generator"));
             Q_CHECK_PTR(generator);
-            generator->generateExecuable(ast, 0);
+#ifdef Q_OS_WIN32
+            const QString suffix = ".exe";
+#else
+            const QString suffix = ".bin";
+#endif
+            const QString outBinFileName = QFileInfo(filename).dir().absoluteFilePath(baseName+suffix);
+            QFile binOut(outBinFileName);
+            binOut.open(QIODevice::WriteOnly);
+            Shared::GeneratorType res = generator->generateExecuable(ast, &binOut);
+            binOut.close();
+            if (res==Shared::GenNativeExecuable && QFile::exists(outBinFileName)) {
+                QFile::Permissions ps = binOut.permissions();
+                ps |= QFile::ExeGroup | QFile::ExeOwner | QFile::ExeOther;
+                QFile::setPermissions(outBinFileName, ps);
+            }
             qApp->setProperty("returnCode", errors.isEmpty()? 0 : 1);
         }
     }

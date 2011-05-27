@@ -27,6 +27,11 @@ public:
 public slots:
     inline void reset() { m_database.clear(); }
     QString addName(const QString & name, const QString & ns);
+    inline void insertName(const QString & name, const QString & ns)
+    {
+        m_database[ns][name] = name;
+    }
+
 private:
     static QString suggestCName(const QString &name);
     NamesDatabase m_database;
