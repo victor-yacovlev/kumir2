@@ -840,18 +840,18 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
 
     const QString includePath = qApp->property("sharePath").toString()+"/kumircppgenerator/";
     QString gccOutName;
+    gccOutName = "out.bin";
 #ifdef Q_OS_WIN32
     gccOutName = "out.exe";
-#else
-    gccOutName = "out.bin";
 #endif
+
 
     QStringList ldPaths;
 
     ldPaths << QDir::cleanPath(QFileInfo(pluginSpec().libraryFileName).absoluteDir().path());
     ldPaths << QDir::cleanPath(QFileInfo(pluginSpec().libraryFileName).absoluteDir().path()+"/../");
 
-//#ifdef Q_OS_MAC
+#ifdef Q_OS_MAC
     const QString frameworksPath = QDir::cleanPath(qApp->applicationDirPath()+"/../Frameworks/");
     const QDir frameworksDir(frameworksPath);
     QStringList frameworksOpts;
@@ -863,7 +863,7 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
         frameworksOpts << " -framework "+fw;
     }
 
-//#endif
+#endif
 
 
     QFile::remove("__kumir__.h");

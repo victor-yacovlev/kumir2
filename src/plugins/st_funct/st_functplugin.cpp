@@ -269,9 +269,9 @@ QList<Alg>  St_functPlugin::funcList() const
     return tmpL;
 }
 
-QString St_functPlugin::libraryLinkageName() const
+QString St_functPlugin::libraryLinkageOptions() const
 {
-    return "-lm -lst_funct -lExtensionSystem";// -lQtCore -lQtGui -lQtScript";
+    return "-lm -lst_funct -lExtensionSystem";
 }
 
 QString St_functPlugin::name(ProgrammingLanguage pl, QLocale::Language nl) const
