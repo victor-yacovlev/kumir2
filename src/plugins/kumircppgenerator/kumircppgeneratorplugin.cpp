@@ -860,7 +860,7 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
             continue;
         ldPaths << frameworksPath+"/"+fw+"/Versions/4";
         fw.remove(".framework");
-        frameworksOpts << "-framework "+fw;
+        frameworksOpts << " -framework "+fw;
     }
 
 //#endif
