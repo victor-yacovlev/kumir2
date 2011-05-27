@@ -852,15 +852,15 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
     ldPaths << QDir::cleanPath(QFileInfo(pluginSpec().libraryFileName).absoluteDir().path()+"/../");
 
 #ifdef Q_OS_MAC
-    const QString frameworksPath = QDir::cleanPath(qApp->applicationDirPath()+"/../Frameworks/");
-    const QDir frameworksDir(frameworksPath);
-    foreach (QString fw, frameworksDir.entryList()) {
-        if (fw=="." || fw=="..")
-            continue;
-        const QString qtFrameworkPath = frameworksPath+"/"+fw+"/Versions/4";
-        if (QFile::exists(qtFrameworkPath))
-            ldPaths << qtFrameworkPath;
-    }
+//    const QString frameworksPath = QDir::cleanPath(qApp->applicationDirPath()+"/../Frameworks/");
+//    const QDir frameworksDir(frameworksPath);
+//    foreach (QString fw, frameworksDir.entryList()) {
+//        if (fw=="." || fw=="..")
+//            continue;
+//        const QString qtFrameworkPath = frameworksPath+"/"+fw+"/Versions/4";
+//        if (QFile::exists(qtFrameworkPath))
+//            ldPaths << qtFrameworkPath;
+//    }
 
 #endif
 
