@@ -846,10 +846,19 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
     gccOutName = "out.bin";
 #endif
 
-    const QString additionalLibraryPath1
-            = QDir::cleanPath(QFileInfo(pluginSpec().libraryFileName).absoluteDir().path());
-    const QString additionalLibraryPath2
-            = QDir::cleanPath(QFileInfo(pluginSpec().libraryFileName).absoluteDir().path()+"/../");
+    QStringList ldPaths;
+
+    ldPaths << QDir::cleanPath(QFileInfo(pluginSpec().libraryFileName).absoluteDir().path());
+    ldPaths << QDir::cleanPath(QFileInfo(pluginSpec().libraryFileName).absoluteDir().path()+"/../");
+
+#ifdef Q_OS_MAC
+    const QString frameworksPath = QDir::cleanPath(qApp->applicationDirPath()+"/../Frameworks/");
+    const QDir frameworksDir(frameworksPath);
+    foreach (QString fw, frameworksDir.entryList()) {
+        ldPaths << frameworksPath+"/"+fw+"/Versions/4/";
+    }
+
+#endif
 
 
     QFile::remove("__kumir__.h");
@@ -861,15 +870,16 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
     command = "mingw32-gcc";
 #endif
 #ifdef Q_OS_MAC
-    command += " -Wl,-install_name,"+additionalLibraryPath1;
+    command += " -Wl,-install_name,"+ldPaths.join(":");
 #else
-    command += " -Wl,-rpath="+additionalLibraryPath1+":"+additionalLibraryPath2;
+    command += " -Wl,-rpath="+ldPaths.join(":");
 #endif
     command += " -o "+gccOutName;
     command += " --std=c99";
     command += " -Werror";
-    command += " -L"+additionalLibraryPath2;
-    command += " -L"+additionalLibraryPath1;
+    foreach (const QString L, ldPaths) {
+        command += " -L"+L;
+    }
     foreach (const QString lib, libs.toList()) {
         command += " "+lib;
     }
