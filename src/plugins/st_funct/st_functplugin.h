@@ -23,7 +23,7 @@ public:
 
     QList<Alg>  funcList() const ; // List of public functions;
     QString name(ProgrammingLanguage pl = PL_Kumir, QLocale::Language nl = QLocale::Russian) const;
-    QString libraryLinkageName() const;
+    QString libraryLinkageOptions() const;
     QVariant     result() const;
     void   runFunct(const QString &alg, const QList<QVariant> &params);
     QList<QVariant> algOptResults() const;//optional results

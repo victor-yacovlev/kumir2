@@ -158,7 +158,7 @@ void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor
     mod->header.name = actor->name();
     mod->header.enabled = mod->header.name==StandartFunctionsModuleName;
     mod->header.cReference.nameSpace = actor->name(Shared::PL_C);
-    mod->header.cReference.libraryBaseName = actor->libraryLinkageName();
+    mod->header.cReference.libraryBaseName = actor->libraryLinkageOptions();
     ast->modules << mod;
     for (int i=0; i<actor->funcList().size(); i++) {
         AST::Algorhitm * alg = new AST::Algorhitm;
