@@ -816,8 +816,17 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
             c.close();
             cFiles.insert(cFileName);
         }
+        std::cout << "aaa " << d->modules[i]->cLibrary.toLocal8Bit().data() << std::endl;
         if (!d->modules[i]->cLibrary.isEmpty()) {
-            libs.insert(d->modules[i]->cLibrary);
+    	    QString libName = d->modules[i]->cLibrary;
+        #ifdef Q_OS_MAC
+    	    #ifndef QT_NO_DEBUG
+    		libName += "_debug";
+    	    #endif    	    
+        #else
+    	    qDebug() << libName;
+            libs.insert(libName);
+        #endif
         }
     }
     cFiles.insert("__kumir__.c");
@@ -845,7 +854,11 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
 #ifdef Q_OS_WIN32
     command = "mingw32-gcc";
 #endif
+#ifdef Q_OS_MAC
+    command += " -Wl,-install_name,"+additionalLibraryPath1;
+#else
     command += " -Wl,-rpath="+additionalLibraryPath1+":"+additionalLibraryPath2;
+#endif
     command += " -o "+gccOutName;
     command += " --std=c99";
     command += " -Werror";
