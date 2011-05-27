@@ -641,7 +641,7 @@ QString KumirCppGeneratorPrivate::makeStLoop(
         QString from = makeExpression(loop.fromValue, algorhitm, module);
         QString to = makeExpression(loop.toValue, algorhitm, module);
         QString step = loop.stepValue? makeExpression(loop.stepValue, algorhitm, module) : "1";
-        result += QString("for (%1=%2; %1<=%3; %1+=%4) {\n")
+        result += QString("for (%1=%2; %4>=0? %1<=%3 : %1>=%3; %1+=%4 ) {\n")
                 .arg(var).arg(from).arg(to).arg(step);
     }
     else if (loop.type==AST::LoopWhile) {
@@ -842,9 +842,13 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
     QFile::copy(includePath+"/__kumir__.h", "__kumir__.h");
     QFile::copy(includePath+"/__kumir__.c", "__kumir__.c");
     QString command = "gcc";
+#ifdef Q_OS_WIN32
+    command = "mingw32-gcc";
+#endif
     command += " -Wl,-rpath="+additionalLibraryPath1+":"+additionalLibraryPath2;
     command += " -o "+gccOutName;
     command += " --std=c99";
+    command += " -Werror";
     command += " -L"+additionalLibraryPath2;
     command += " -L"+additionalLibraryPath1;
     foreach (const QString lib, libs.toList()) {
