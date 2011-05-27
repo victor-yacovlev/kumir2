@@ -110,7 +110,7 @@ void KumirCompilerPlugin::start()
             QProcess::execute("cp -R "+pluginsPath+" "+bundleDir+"/Contents/");
             outBinFileName = outBinFileName.left(outBinFileName.length()-4);
             outBinFileName = bundleDir+"/Contents/MacOS/"+outBinFileName;
-
+            std::cout << outBinFileName.toLocal8Bit().data();
 //#endif
             QFile binOut(outBinFileName);
             binOut.open(QIODevice::WriteOnly);
