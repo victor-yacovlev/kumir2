@@ -874,6 +874,7 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
     command = "mingw32-gcc";
 #endif
 #ifdef Q_OS_MAC
+    command += " -F"+frameworksPath;
     command += " -Wl,-install_name,"+ldPaths.join(":");
 #else
     command += " -Wl,-rpath="+ldPaths.join(":");
