@@ -816,17 +816,23 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
             c.close();
             cFiles.insert(cFileName);
         }
-        std::cout << "aaa " << d->modules[i]->cLibrary.toLocal8Bit().data() << std::endl;
+
         if (!d->modules[i]->cLibrary.isEmpty()) {
-    	    QString libName = d->modules[i]->cLibrary;
-        #ifdef Q_OS_MAC
-    	    #ifndef QT_NO_DEBUG
-    		libName += "_debug";
-    	    #endif    	    
-        #else
-    	    qDebug() << libName;
-            libs.insert(libName);
-        #endif
+            QStringList libNames = d->modules[i]->cLibrary.split(QRegExp("\\s+"));
+            foreach (QString libName, libNames) {
+#ifdef Q_OS_MAC
+#ifndef QT_NO_DEBUG
+                    libName += "_debug";
+#endif
+#endif
+#ifdef Q_OS_WIN32
+#ifndef QT_NO_DEBUG
+                    libName += "d";
+#endif
+#endif
+                qDebug() << libName;
+                libs.insert(libName);
+            }
         }
     }
     cFiles.insert("__kumir__.c");
