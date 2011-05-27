@@ -49,7 +49,7 @@ QStringList readCSVRow(const QString &line)
 extern bool loadMessages(const QString &plugin)
 {
     const QString fileName = qApp->property("sharePath").toString()
-            + "/" + plugin + ".messages.csv";
+            + "/" + plugin.toLower() + "/messages.csv";
     QFile f(fileName);
 
     if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
