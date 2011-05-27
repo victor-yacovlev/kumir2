@@ -97,7 +97,7 @@ void KumirCompilerPlugin::start()
             if (!outBinFileName.endsWith(".exe"))
                 outBinFileName += ".exe";
 #endif
-//#ifdef Q_OS_MAC
+#ifdef Q_OS_MAC
             if (!outBinFileName.endsWith(".app"))
                 outBinFileName += ".app";
             QString bundleDir = outBinFileName;
@@ -117,8 +117,8 @@ void KumirCompilerPlugin::start()
             if (outBinFileName.endsWith(".app"))
                 outBinFileName = outBinFileName.left(outBinFileName.length()-4);
             outBinFileName = bundleDir+"/Contents/MacOS/"+outBinFileName;
-            std::cout << outBinFileName.toLocal8Bit().data() << std::endl;
-//#endif
+//            std::cout << outBinFileName.toLocal8Bit().data() << std::endl;
+#endif
             QFile binOut(outBinFileName);
             binOut.open(QIODevice::WriteOnly);
             Shared::GeneratorType res = generator->generateExecuable(ast, &binOut);

@@ -830,7 +830,7 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
                     libName += "d";
 #endif
 #endif
-                qDebug() << libName;
+//                qDebug() << libName;
                 libs.insert(libName);
             }
         }
