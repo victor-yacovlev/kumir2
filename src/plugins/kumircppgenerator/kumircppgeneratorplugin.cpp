@@ -855,7 +855,11 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
     const QString frameworksPath = QDir::cleanPath(qApp->applicationDirPath()+"/../Frameworks/");
     const QDir frameworksDir(frameworksPath);
     foreach (QString fw, frameworksDir.entryList()) {
-        ldPaths << frameworksPath+"/"+fw+"/Versions/4/";
+        if (fw=="." || fw=="..")
+            continue;
+        const QString qtFrameworkPath = frameworksPath+"/"+fw+"/Versions/4/";
+        if (QFile::exists(qtFrameworkPath))
+            ldPaths << qtFrameworkPath;
     }
 
 #endif
