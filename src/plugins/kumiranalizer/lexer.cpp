@@ -396,6 +396,9 @@ void LexerPrivate::initNormalizator(const QString &fileName)
     operators << "/";
     kwdMap["/"] = LxOperSlash;
 
+    operators << ";";
+    kwdMap[";"] = LxOperSemicolon;
+
     operators << "#";
 
 

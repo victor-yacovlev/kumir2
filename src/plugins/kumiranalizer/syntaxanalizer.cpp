@@ -28,7 +28,7 @@ struct SyntaxAnalizerPrivate
     Lexer * lexer;
     AST::Data * ast;
     AST::Algorhitm * algorhitm;
-    QList<Statement*> * statements;
+    QList<Statement> statements;
     QSet<QString> unresolvedImports;
 
     void parseImport(int str);
@@ -86,15 +86,31 @@ SyntaxAnalizer::SyntaxAnalizer(Lexer * lexer, QObject *parent) :
     d = new SyntaxAnalizerPrivate;
     d->ast = 0;
     d->algorhitm = 0;
-    d->statements = 0;
     d->lexer = lexer;
 }
 
-void SyntaxAnalizer::init(QList<Statement*> *statements, AST_Data *ast, AST_Algorhitm *algorhitm)
+void SyntaxAnalizer::init(const QList<Statement*> &statements, AST_Data *ast, AST_Algorhitm *algorhitm)
 {
     d->ast = ast;
     d->algorhitm = algorhitm;
-    d->statements = statements;
+    d->statements.clear();
+    foreach (Statement * st, statements) {
+        if (st->type!=LxTypeComment) {
+            Statement sst;
+            sst.type = st->type;
+            sst.statement = st->statement;
+            sst.alg = st->alg;
+            sst.mod = st->mod;
+            sst.conditionalIndex = st->conditionalIndex;
+            foreach (Lexem * lx, st->data) {
+                if (lx->type!=LxTypeComment)
+                    sst.data << lx;
+            }
+
+            d->statements << sst;
+        }
+    }
+
     d->unresolvedImports.clear();
 }
 
@@ -137,12 +153,12 @@ void SyntaxAnalizer::buildTables()
 //    if (d->algorhitm)
 //        return; // Nothing to build if we analize just one algorhitm
 
-    for (int i=0; i<d->statements->size(); i++) {
-        const Statement * st = d->statements->at(i);
-        if (st->type==LxPriModule) {
+    for (int i=0; i<d->statements.size(); i++) {
+        const Statement & st = d->statements[i];
+        if (st.type==LxPriModule) {
             d->parseModuleHeader(i);
         }
-        if (st->type==LxPriImport) {
+        if (st.type==LxPriImport) {
             d->parseImport(i);
         }
     }
@@ -172,12 +188,12 @@ void SyntaxAnalizer::buildTables()
             break;
     }
 
-    for (int i=0; i<d->statements->size(); i++) {
-        const Statement * st = d->statements->at(i);
-        if (st->type==LxPriAlgHeader) {
+    for (int i=0; i<d->statements.size(); i++) {
+        const Statement & st = d->statements[i];
+        if (st.type==LxPriAlgHeader) {
             d->parseAlgHeader(i);
         }
-        else if (st->type==LxNameClass) {
+        else if (st.type==LxNameClass) {
             d->parseVarDecl(i);
         }
     }
@@ -186,48 +202,48 @@ void SyntaxAnalizer::buildTables()
 
 void SyntaxAnalizer::processAnalisys()
 {
-    for (int i=0; i<d->statements->size(); i++) {
-        const Statement * st = d->statements->at(i);
-        if (st->type==LxPriAssign) {
+    for (int i=0; i<d->statements.size(); i++) {
+        const Statement & st = d->statements[i];
+        if (st.type==LxPriAssign) {
             d->parseAssignment(i);
         }
-        else if (st->type==LxPriInput
-                 || st->type==LxPriFinput
-                 || st->type==LxPriOutput
-                 || st->type==LxPriFoutput
-                 || st->type==LxPriAssert
-                 || st->type==LxPriPre
-                 || st->type==LxPriPost
+        else if (st.type==LxPriInput
+                 || st.type==LxPriFinput
+                 || st.type==LxPriOutput
+                 || st.type==LxPriFoutput
+                 || st.type==LxPriAssert
+                 || st.type==LxPriPre
+                 || st.type==LxPriPost
                  )
         {
             d->parseInputOutputAssertPrePost(i);
         }
-        else if (st->type==LxPriEndModule
-                 ||st->type==LxPriAlgBegin
-                 ||st->type==LxPriAlgEnd
-                 ||st->type==LxPriThen
-                 ||st->type==LxPriElse
-                 ||st->type==LxPriFi
-                 ||st->type==LxPriSwitch
-                 ||st->type==LxPriExit
+        else if (st.type==LxPriEndModule
+                 ||st.type==LxPriAlgBegin
+                 ||st.type==LxPriAlgEnd
+                 ||st.type==LxPriThen
+                 ||st.type==LxPriElse
+                 ||st.type==LxPriFi
+                 ||st.type==LxPriSwitch
+                 ||st.type==LxPriExit
                  )
         {
             d->parseOneLexemInstruction(i);
         }
-        else if (st->type==LxPriEndLoop) {
+        else if (st.type==LxPriEndLoop) {
             d->parseEndLoop(i);
         }
-        else if (st->type==LxPriIf||st->type==LxPriCase) {
+        else if (st.type==LxPriIf||st.type==LxPriCase) {
             d->parseIfCase(i);
         }
-        else if (st->type==LxPriLoop) {
+        else if (st.type==LxPriLoop) {
             d->parseLoopBegin(i);
         }
-        for (int j=0; j<st->data.size(); j++) {
-            if (!st->data[j]->error.isEmpty()) {
-                if (st->statement) {
-                    st->statement->type = AST::StError;
-                    st->statement->error = st->data[j]->error;
+        for (int j=0; j<st.data.size(); j++) {
+            if (!st.data[j]->error.isEmpty()) {
+                if (st.statement) {
+                    st.statement->type = AST::StError;
+                    st.statement->error = st.data[j]->error;
                     break;
                 }
             }
@@ -237,78 +253,80 @@ void SyntaxAnalizer::processAnalisys()
 
 void SyntaxAnalizerPrivate::parseImport(int str)
 {
-    if (statements->at(str)->hasError())
+    if (statements[str].hasError())
         return;
-    Statement * st = statements->at(str);
-    if (st->data.size()<2) {
-        Q_ASSERT(st->data.size()==1);
-        st->data[0]->error = _("No module name");
+    Statement & st = statements[str];
+    if (st.data.size()<2) {
+        Q_ASSERT(st.data.size()==1);
+        st.data[0]->error = _("No module name");
         return;
     }
-    if (st->data.size()>2) {
-        for (int i=2; i<st->data.size(); i++) {
-            st->data[i]->error = _("Garbage afrer module name");
+    if (st.data.size()>2) {
+        for (int i=2; i<st.data.size(); i++) {
+            st.data[i]->error = _("Garbage afrer module name");
         }
         return;
     }
-    if (st->data[1]->data.isEmpty()) {
-        st->data[1]->error = _("No module name");
+    if (st.data[1]->data.isEmpty()) {
+        st.data[1]->error = _("No module name");
         return;
     }
-    QString localError = lexer->testName(st->data[1]->data);
+    QString localError = lexer->testName(st.data[1]->data);
     if (localError.size()>0) {
-        st->data[1]->error = localError;
+        st.data[1]->error = localError;
         return;
     }
-    AST::Module * mod = st->mod;
+    AST::Module * mod = st.mod;
     Q_CHECK_PTR(mod);
-    st->data[1]->type = LxNameModule;
-    mod->header.uses.insert(st->data[1]->data.simplified());
+    st.data[1]->type = LxNameModule;
+    mod->header.uses.insert(st.data[1]->data.simplified());
 }
 
 void SyntaxAnalizerPrivate::parseModuleHeader(int str)
 {
-    if (statements->at(str)->hasError())
+    if (statements[str].hasError())
         return;
-    Statement * st = statements->at(str);
-    if (st->data.size()<2) {
-        Q_ASSERT(st->data.size()==1);
-        st->data[0]->error = _("No module name");
+    const Statement & st = statements[str];
+    if (st.data.size()<2) {
+        Q_ASSERT(st.data.size()==1);
+        st.data[0]->error = _("No module name");
         return;
     }
-    if (st->data.size()>2) {
-        for (int i=2; i<st->data.size(); i++) {
-            st->data[i]->error = _("Garbage afrer module name");
+    if (st.data.size()>2) {
+        for (int i=2; i<st.data.size(); i++) {
+            st.data[i]->error = _("Garbage afrer module name");
         }
         return;
     }
-    if (st->data[1]->data.isEmpty()) {
-        st->data[1]->error = _("No module name");
+    if (st.data[1]->data.isEmpty()) {
+        st.data[1]->error = _("No module name");
         return;
     }
-    QString localError = lexer->testName(st->data[1]->data);
+    QString localError = lexer->testName(st.data[1]->data);
     if (localError.size()>0) {
-        st->data[1]->error = localError;
+        st.data[1]->error = localError;
         return;
     }
-    AST::Module * mod = st->mod;
+    AST::Module * mod = st.mod;
     Q_CHECK_PTR(mod);
-    st->data[1]->type = LxNameModule;
-    mod->header.name = st->data[1]->data.simplified();
+    st.data[1]->type = LxNameModule;
+    mod->header.name = st.data[1]->data.simplified();
 }
 
 
 void SyntaxAnalizerPrivate::parseVarDecl(int str)
 {
-    Statement * st = statements->at(str);
-    if (st->hasError())
+    const Statement & st = statements[str];
+    if (st.hasError())
         return;
-    AST::Algorhitm * alg = st->alg;
-    AST::Module * mod = st->mod;
+    AST::Algorhitm * alg = st.alg;
+    AST::Module * mod = st.mod;
     VariablesGroup group;
     group.access = AST::AccessRegular;
-    for (int i=0; i<st->data.size(); i++) {
-        group.lexems << st->data[i];
+    for (int i=0; i<st.data.size(); i++) {
+        if (st.data[i]->type & LxTypeComment)
+            break;
+        group.lexems << st.data[i];
     }
     QList<AST::Variable*> vars = parseVariables(group, mod, alg);
     QString error;
@@ -319,33 +337,33 @@ void SyntaxAnalizerPrivate::parseVarDecl(int str)
         }
     }
     if (!error.isEmpty()) {
-        st->statement->type = AST::StError;
-        st->statement->error = error;
+        st.statement->type = AST::StError;
+        st.statement->error = error;
     }
     else {
-        st->statement->type = AST::StVarInitialize;
-        st->statement->variables = vars;
+        st.statement->type = AST::StVarInitialize;
+        st.statement->variables = vars;
     }
 }
 
 void SyntaxAnalizerPrivate::parseInputOutputAssertPrePost(int str)
 {
-    Statement * st = statements->at(str);
-    if (st->hasError()) {
+    const Statement & st = statements[str];
+    if (st.hasError()) {
         return;
     }
-    if (st->data.size()==1) {
-        if (st->data[0]->type!=LxPriPre && st->data[0]->type!=LxPriPost)
-            st->data[0]->error = _("No expressions after '%1'", st->data[0]->data);
+    if (st.data.size()==1) {
+        if (st.data[0]->type!=LxPriPre && st.data[0]->type!=LxPriPost)
+            st.data[0]->error = _("No expressions after '%1'", st.data[0]->data);
         return;
     }
-    if (st->data.last()->type==LxOperComa) {
-        st->data.last()->error = _("Statement ends with coma");
+    if (st.data.last()->type==LxOperComa) {
+        st.data.last()->error = _("Statement ends with coma");
         return;
     }
     QList< QList<Lexem*> > groups;
     QList<Lexem*> comas;
-    splitLexemsByOperator(st->data.mid(1), LxOperComa, groups, comas);
+    splitLexemsByOperator(st.data.mid(1), LxOperComa, groups, comas);
 
     enum GroupType {
         Undefined,
@@ -357,14 +375,14 @@ void SyntaxAnalizerPrivate::parseInputOutputAssertPrePost(int str)
 
     for (int i=0 ; i<groups.size(); i++) {
 
-        if (i==0 && (st->type==LxPriFinput || st->type==LxPriFoutput))
+        if (i==0 && (st.type==LxPriFinput || st.type==LxPriFoutput))
             groupType = FileHandle;
-        else if (st->type==LxPriInput || st->type==LxPriFinput)
+        else if (st.type==LxPriInput || st.type==LxPriFinput)
             groupType = InputExpression;
-        else if (st->type==LxPriOutput || st->type==LxPriFoutput)
+        else if (st.type==LxPriOutput || st.type==LxPriFoutput)
             groupType = OutputExpression;
 
-        AST::Expression * expr = parseExpression(groups[i], st->mod, st->alg);
+        AST::Expression * expr = parseExpression(groups[i], st.mod, st.alg);
         if (!expr) {
             return;
         }
@@ -412,49 +430,49 @@ void SyntaxAnalizerPrivate::parseInputOutputAssertPrePost(int str)
             delete expr;
             return;
         }
-        st->statement->expressions << expr;
+        st.statement->expressions << expr;
     }
 }
 
 void SyntaxAnalizerPrivate::parseOneLexemInstruction(int str)
 {
-    Statement * st = statements->at(str);
-    if (st->hasError()) {
+    const Statement & st = statements[str];
+    if (st.hasError()) {
         return;
     }
-    for (int i=1; i<st->data.size(); i++) {
-        st->data[i]->error = _("Garbage at end of line");
+    for (int i=1; i<st.data.size(); i++) {
+        st.data[i]->error = _("Garbage at end of line");
     }
 }
 
 void SyntaxAnalizerPrivate::parseEndLoop(int str)
 {
-    Statement * st = statements->at(str);
-    if (st->hasError()) {
+    const Statement & st = statements[str];
+    if (st.hasError()) {
         return;
     }
-    if (st->data.size()>1 && st->data[1]->type!=LxSecIf) {
-        for (int i=1; i<st->data.size(); i++) {
-            st->data[i]->error = _("Garbage at end of line");
+    if (st.data.size()>1 && st.data[1]->type!=LxSecIf) {
+        for (int i=1; i<st.data.size(); i++) {
+            st.data[i]->error = _("Garbage at end of line");
         }
         return;
     }
-    if (st->data.size()==2 && st->data[1]->type==LxSecIf) {
-        st->data[1]->error = _("No condition after 'end if'");
+    if (st.data.size()==2 && st.data[1]->type==LxSecIf) {
+        st.data[1]->error = _("No condition after 'end if'");
         return;
     }
-    if (st->data.size()>2) {
-        QList<Lexem*> condLexems = st->data.mid(2);
-        AST::Expression * expr = parseExpression(condLexems, st->mod, st->alg);
+    if (st.data.size()>2) {
+        QList<Lexem*> condLexems = st.data.mid(2);
+        AST::Expression * expr = parseExpression(condLexems, st.mod, st.alg);
         if (expr) {
             if (expr->baseType!=AST::TypeBoolean) {
-                for (int i=2; i<st->data.size(); i++) {
-                    st->data[i]->error = _("Condition is not boolean");
+                for (int i=2; i<st.data.size(); i++) {
+                    st.data[i]->error = _("Condition is not boolean");
                 }
                 delete expr;
             }
             else {
-                st->statement->loop.endCondition = expr;
+                st.statement->loop.endCondition = expr;
             }
         }
     }
@@ -462,35 +480,35 @@ void SyntaxAnalizerPrivate::parseEndLoop(int str)
 
 void SyntaxAnalizerPrivate::parseIfCase(int str)
 {
-    Statement * st = statements->at(str);
-    if (st->hasError()) {
+    const Statement & st = statements[str];
+    if (st.hasError()) {
         return;
     }
-    if (st->type==LxPriIf && st->data.size()==1) {
-        st->data[0]->error = _("No condition after 'if'");
+    if (st.type==LxPriIf && st.data.size()==1) {
+        st.data[0]->error = _("No condition after 'if'");
         return;
     }
-    if (st->type==LxPriCase && st->data.size()==1) {
-        st->data[0]->error = _("No condition after 'case'");
+    if (st.type==LxPriCase && st.data.size()==1) {
+        st.data[0]->error = _("No condition after 'case'");
         return;
     }
-    if (st->type==LxPriCase && st->data.size()==2 && st->data[1]->type==LxOperColon) {
-        st->data[0]->error = _("No condition between 'case' and colon");
-        st->data[1]->error = _("No condition between 'case' and colon");
+    if (st.type==LxPriCase && st.data.size()==2 && st.data[1]->type==LxOperColon) {
+        st.data[0]->error = _("No condition between 'case' and colon");
+        st.data[1]->error = _("No condition between 'case' and colon");
         return;
     }
-    if (st->type==LxPriCase && st->data.last()->type!=LxOperColon) {
-        for (int i=0; i<st->data.size(); i++) {
-            st->data[i]->error = _("No colon after condition");
+    if (st.type==LxPriCase && st.data.last()->type!=LxOperColon) {
+        for (int i=0; i<st.data.size(); i++) {
+            st.data[i]->error = _("No colon after condition");
         }
         return;
     }
     QList<Lexem*> cond;
-    if (st->type==LxPriCase)
-        cond = st->data.mid(1, st->data.length()-2);
+    if (st.type==LxPriCase)
+        cond = st.data.mid(1, st.data.length()-2);
     else
-        cond = st->data.mid(1);
-    AST::Expression * expr = parseExpression(cond, st->mod, st->alg);
+        cond = st.data.mid(1);
+    AST::Expression * expr = parseExpression(cond, st.mod, st.alg);
     if (expr) {
         if (expr->baseType!=AST::TypeBoolean) {
             for (int i=0; i<cond.size(); i++) {
@@ -499,44 +517,44 @@ void SyntaxAnalizerPrivate::parseIfCase(int str)
             delete expr;
         }
         else {
-            st->statement->conditionals[st->conditionalIndex].condition = expr;
+            st.statement->conditionals[st.conditionalIndex].condition = expr;
         }
     }
 }
 
 void SyntaxAnalizerPrivate::parseLoopBegin(int str)
 {
-    Statement * st = statements->at(str);
-    if (st->hasError()) {
+    const Statement & st = statements[str];
+    if (st.hasError()) {
         return;
     }
     AST::LoopType type = AST::LoopWhile;
-    if (st->data.size()==1) {
+    if (st.data.size()==1) {
         type = AST::LoopWhile;
     }
-    else if (st->data.size()>1 && st->data[1]->type==LxSecFor) {
+    else if (st.data.size()>1 && st.data[1]->type==LxSecFor) {
         type = AST::LoopFor;
     }
-    else if (st->data.size()>1 && st->data[1]->type==LxSecWhile) {
+    else if (st.data.size()>1 && st.data[1]->type==LxSecWhile) {
         type = AST::LoopWhile;
     }
-    else if (findLexemByType(st->data, LxSecTimes)) {
+    else if (findLexemByType(st.data, LxSecTimes)) {
         type = AST::LoopTimes;
     }
     else {
-        st->data[0]->error = _("Loop type not specified");
+        st.data[0]->error = _("Loop type not specified");
         return;
     }
-    st->statement->loop.type = type;
+    st.statement->loop.type = type;
     if (type==AST::LoopFor) {
         QList<Lexem*> forr;
         QList<Lexem*> from;
         QList<Lexem*> to;
         QList<Lexem*> step;
-        Lexem * forLexem = st->data[1];
-        Lexem * fromLexem = findLexemByType(st->data, LxSecFrom);
-        Lexem * toLexem = findLexemByType(st->data, LxSecTo);
-        Lexem * stepLexem = findLexemByType(st->data, LxSecStep);
+        Lexem * forLexem = st.data[1];
+        Lexem * fromLexem = findLexemByType(st.data, LxSecFrom);
+        Lexem * toLexem = findLexemByType(st.data, LxSecTo);
+        Lexem * stepLexem = findLexemByType(st.data, LxSecStep);
         if (!fromLexem) {
             forLexem->error = _("No loop variable");
             return;
@@ -548,24 +566,24 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
         if (!toLexem) {
             forLexem->error = _("No loop 'to' value");
         }
-        int forIndex = st->data.indexOf(forLexem);
-        int fromIndex = st->data.indexOf(fromLexem);
-        int toIndex = st->data.indexOf(toLexem);
-        int stepIndex = st->data.indexOf(stepLexem);
+        int forIndex = st.data.indexOf(forLexem);
+        int fromIndex = st.data.indexOf(fromLexem);
+        int toIndex = st.data.indexOf(toLexem);
+        int stepIndex = st.data.indexOf(stepLexem);
         if (stepIndex==-1) {
-            stepIndex = st->data.size();
+            stepIndex = st.data.size();
         }
         for (int i=forIndex+1; i<fromIndex; i++ ) {
-            forr << st->data[i];
+            forr << st.data[i];
         }
         for (int i=fromIndex+1; i<toIndex; i++) {
-            from << st->data[i];
+            from << st.data[i];
         }
         for (int i=toIndex+1; i<stepIndex; i++) {
-            to << st->data[i];
+            to << st.data[i];
         }
-        for (int i=stepIndex+1; i<st->data.size(); i++) {
-            step << st->data[i];
+        for (int i=stepIndex+1; i<st.data.size(); i++) {
+            step << st.data[i];
         }
         if (forr.isEmpty()) {
             forLexem->error = _("No for-loop variable");
@@ -586,10 +604,10 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
         for (int i=0; i<forr.size(); i++) {
             if (i>0) name += " "; name += forr[i]->data;
         }
-        if (findLocalVariable(name, st->alg, st->statement->loop.forVariable)) {
+        if (findLocalVariable(name, st.alg, st.statement->loop.forVariable)) {
 
         }
-        else if (findGlobalVariable(name, st->mod, st->statement->loop.forVariable)) {
+        else if (findGlobalVariable(name, st.mod, st.statement->loop.forVariable)) {
 
         }
         else if (forr.size()==1 && forr[0]->type & LxTypeConstant) {
@@ -600,12 +618,12 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
             foreach (Lexem *l, forr) l->error = _("Variable not found");
             return;
         }
-        if (st->statement->loop.forVariable->baseType!=AST::TypeInteger
-                || st->statement->loop.forVariable->dimension>0) {
+        if (st.statement->loop.forVariable->baseType!=AST::TypeInteger
+                || st.statement->loop.forVariable->dimension>0) {
             foreach (Lexem *l, forr) l->error = _("Not integer for-loop variable");
             return;
         }
-        AST::Expression * fromExpr = parseExpression(from, st->mod, st->alg);
+        AST::Expression * fromExpr = parseExpression(from, st.mod, st.alg);
         if (!fromExpr) {
             return;
         }
@@ -614,7 +632,7 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
             delete fromExpr;
             return;
         }
-        AST::Expression * toExpr = parseExpression(to, st->mod, st->alg);
+        AST::Expression * toExpr = parseExpression(to, st.mod, st.alg);
         if (!toExpr) {
             delete fromExpr;
             return;
@@ -625,7 +643,7 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
             delete toExpr;
             return;
         }
-        AST::Expression * stepExpr = stepLexem? parseExpression(step, st->mod, st->alg) : 0;
+        AST::Expression * stepExpr = stepLexem? parseExpression(step, st.mod, st.alg) : 0;
         if (stepLexem && !stepExpr) {
             delete fromExpr;
             delete toExpr;
@@ -638,37 +656,37 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
             delete stepExpr;
             return;
         }
-        st->statement->loop.fromValue = fromExpr;
-        st->statement->loop.toValue = toExpr;
-        st->statement->loop.stepValue = stepExpr;
+        st.statement->loop.fromValue = fromExpr;
+        st.statement->loop.toValue = toExpr;
+        st.statement->loop.stepValue = stepExpr;
 
     } // end if (type==AST::LoopFor)
     else if (type==AST::LoopTimes) {
         QList<Lexem*> times;
         bool timesFound = false;
         bool err = false;
-        for (int i=1; i<st->data.size(); i++) {
-            if (st->data[i]->type==LxSecTimes) {
+        for (int i=1; i<st.data.size(); i++) {
+            if (st.data[i]->type==LxSecTimes) {
                 timesFound = true;
                 if (times.isEmpty()) {
                     err = true;
-                    st->data[i]->error = _("Times value not specified");
+                    st.data[i]->error = _("Times value not specified");
                     break;
                 }
             }
             else {
                 if (timesFound) {
                     err = true;
-                    st->data[i]->error = _("Garbage at the end of statement");
+                    st.data[i]->error = _("Garbage at the end of statement");
                 }
                 else {
-                    times << st->data[i];
+                    times << st.data[i];
                 }
             }
         }
         if (err)
             return;
-        AST::Expression * timesExpr = parseExpression(times, st->mod, st->alg);
+        AST::Expression * timesExpr = parseExpression(times, st.mod, st.alg);
         if (!timesExpr)
             return;
         else if (timesExpr->baseType!=AST::TypeInteger) {
@@ -676,65 +694,65 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
             delete timesExpr;
             return;
         }
-        st->statement->loop.timesValue = timesExpr;
+        st.statement->loop.timesValue = timesExpr;
     } // end if (type==AST::LoopTimes)
     else if (type==AST::LoopWhile) {
-        if (st->data.size()==1) {
+        if (st.data.size()==1) {
             // Forever loop
             AST::Expression * foreverr = new AST::Expression;
             foreverr->baseType = AST::TypeBoolean;
             foreverr->kind = AST::ExprConst;
             foreverr->constant = QVariant(true);
-            st->statement->loop.whileCondition = foreverr;
+            st.statement->loop.whileCondition = foreverr;
         }
         else {
             // While condition loop
-            QList<Lexem*> cond = st->data.mid(2);
+            QList<Lexem*> cond = st.data.mid(2);
             if (cond.isEmpty()) {
-                st->data[1]->error = _("No condition after 'loop while'");
+                st.data[1]->error = _("No condition after 'loop while'");
                 return;
             }
-            AST::Expression * condExpr = parseExpression(cond, st->mod, st->alg);
+            AST::Expression * condExpr = parseExpression(cond, st.mod, st.alg);
             if (!condExpr)
                 return;
-            else if (condExpr->baseType!=AST::TypeInteger) {
+            else if (condExpr->baseType!=AST::TypeBoolean) {
                 foreach (Lexem * l, cond) l->error = _("Condition is not boolean");
                 delete condExpr;
                 return;
             }
-            st->statement->loop.whileCondition = condExpr;
+            st.statement->loop.whileCondition = condExpr;
         }
     } // end if (type==AST::LoopWhile)
 }
 
 void SyntaxAnalizerPrivate::parseAssignment(int str)
 {
-    Statement * st = statements->at(str);
-    if (st->hasError()) {
+    const Statement & st = statements[str];
+    if (st.hasError()) {
         return;
     }
-    AST::Algorhitm * alg = st->alg;
-    AST::Module * mod = st->mod;
+    AST::Algorhitm * alg = st.alg;
+    AST::Module * mod = st.mod;
     Q_CHECK_PTR(mod);
     QList<Lexem*> left;
     QList<Lexem*> right;
     Lexem * assignOp = 0;
     int assignCount = 0;
-    for (int i=0; i<st->data.size(); i++) {
-        if (st->data[i]->type==LxPriAssign) {
+    for (int i=0; i<st.data.size(); i++) {
+        if (st.data[i]->type==LxPriAssign) {
             if (assignCount==1) {
-                st->data[i]->error = _("Too many ':=' operators");
+                st.data[i]->error = _("Too many ':=' operators");
                 return;
             }
             assignCount++;
-            assignOp = st->data[i];
+            assignOp = st.data[i];
         }
         else {
             if (assignCount==0) {
-                left << st->data[i];
+                left << st.data[i];
             }
             else {
-                right << st->data[i];
+                right << st.data[i];
             }
         }
     }
@@ -868,54 +886,54 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
             return;
         }
     }
-    st->statement->type = AST::StAssign;
-    st->statement->expressions << rightExpr;
+    st.statement->type = AST::StAssign;
+    st.statement->expressions << rightExpr;
     if (leftExpr)
-        st->statement->expressions << leftExpr;
+        st.statement->expressions << leftExpr;
 }
 
 void SyntaxAnalizerPrivate::parseAlgHeader(int str)
 {
-    Statement * st = statements->at(str);
-    if (st->hasError())
+    const Statement & st = statements[str];
+    if (st.hasError())
         return;
-    AST::Algorhitm * alg = st->alg;
-    AST::Module * mod = st->mod;
+    AST::Algorhitm * alg = st.alg;
+    AST::Module * mod = st.mod;
     Q_CHECK_PTR(alg);
     Q_CHECK_PTR(mod);
     QString name;
     bool isFirst = mod->header.name.isEmpty() && mod->impl.algorhitms.indexOf(alg)==0;
     int argsStartLexem = -1;
     int nameStartLexem = 1;
-    if (st->data.size()>1 && st->data[1]->type==LxNameClass) {
+    if (st.data.size()>1 && st.data[1]->type==LxNameClass) {
         nameStartLexem = 2;
-        alg->header.returnType = lexer->baseTypeByClassName(st->data[1]->data);
-        if (lexer->isArrayClassName(st->data[1]->data)) {
-            st->data[1]->error = _("Algorhitms can't return array");
+        alg->header.returnType = lexer->baseTypeByClassName(st.data[1]->data);
+        if (lexer->isArrayClassName(st.data[1]->data)) {
+            st.data[1]->error = _("Algorhitms can't return array");
             return;
         }
 
     }
-    for (int i=nameStartLexem; i<st->data.size(); i++) {
-        if (st->data[i]->type == LxTypeName) {
+    for (int i=nameStartLexem; i<st.data.size(); i++) {
+        if (st.data[i]->type == LxTypeName) {
             if (i>nameStartLexem)
                 name += " ";
-            name += st->data[i]->data;
-            st->data[i]->type=LxNameAlg;
+            name += st.data[i]->data;
+            st.data[i]->type=LxNameAlg;
         }
-        else if (st->data[i]->type == LxOperLeftBr ) {
+        else if (st.data[i]->type == LxOperLeftBr ) {
             argsStartLexem = i+1;
             break;
         }
-        else if (st->data[i]->type==LxNameClass
-                 || st->data[i]->type & LxTypePrimaryKwd
-                 || st->data[i]->type & LxTypeSecondaryKwd)
+        else if (st.data[i]->type==LxNameClass
+                 || st.data[i]->type & LxTypePrimaryKwd
+                 || st.data[i]->type & LxTypeSecondaryKwd)
         {
-            st->data[i]->error = _("Keyword in name");
+            st.data[i]->error = _("Keyword in name");
             return;
         }
         else {
-            st->data[i]->error = _("Operator in name");
+            st.data[i]->error = _("Operator in name");
             return;
         }
     }
@@ -926,13 +944,13 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
         {
             if ( argsStartLexem!=-1 )
             {
-                for (int i=argsStartLexem-1; i<st->data.size(); i++)
-                    st->data[i]->error = _("Extra arguments");
+                for (int i=argsStartLexem-1; i<st.data.size(); i++)
+                    st.data[i]->error = _("Extra arguments");
                 return;
             }
             if ( alg->header.returnType!=AST::TypeNone )
             {
-                st->data[0]->error = _("First unnamed algorhitm should not return anything");
+                st.data[0]->error = _("First unnamed algorhitm should not return anything");
                 return;
             }
         }
@@ -942,8 +960,8 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
         // если алгоритм не первый, обязательно должно быть имя, иначе -- ошибка
         if ( name.isEmpty() )
         {
-            for (int i=0; i<st->data.size(); i++) {
-                st->data[i]->error = _("No algorhitm name");
+            for (int i=0; i<st.data.size(); i++) {
+                st.data[i]->error = _("No algorhitm name");
             }
             return ;
         }
@@ -951,11 +969,11 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
 
     // Проверяем на повторное описание алгоритма
     AST::Algorhitm * aa;
-    if (findAlgorhitm(name,st->mod,aa))
+    if (findAlgorhitm(name,st.mod,aa))
     {
-        for (int i=1; i<st->data.size(); i++) {
-            if (st->data[i]->type==LxNameAlg)
-                st->data[i]->error = _("The name is used by other algorhitm");
+        for (int i=1; i<st.data.size(); i++) {
+            if (st.data[i]->type==LxNameAlg)
+                st.data[i]->error = _("The name is used by other algorhitm");
         }
         return ;
     }
@@ -963,10 +981,10 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
     // Проверяем на наличие переменной с таким же именем
 
     AST::Variable * vv;
-    if (findGlobalVariable(name, st->mod, vv)) {
-        for (int i=1; i<st->data.size(); i++) {
-            if (st->data[i]->type==LxNameAlg)
-                st->data[i]->error = _("The name is used by global variable");
+    if (findGlobalVariable(name, st.mod, vv)) {
+        for (int i=1; i<st.data.size(); i++) {
+            if (st.data[i]->type==LxNameAlg)
+                st.data[i]->error = _("The name is used by global variable");
         }
         return ;
     }
@@ -990,7 +1008,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
     }
 
     for (int i=nameStartLexem; i<argsStartLexem-1; i++) {
-        st->data[i]->type = LxNameAlg;
+        st.data[i]->type = LxNameAlg;
     }
 
     // Если нет аргументов, то всё
@@ -1003,20 +1021,22 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
 
 
     QList<VariablesGroup> groups;
-    if (st->data.last()->type!=LxOperRightBr) {
-        st->data[0]->error= _("Unpaired '('");
+    if (st.data.last()->type!=LxOperRightBr) {
+        st.data[0]->error= _("Unpaired '('");
         return;
     }
     VariablesGroup currentGroup;
     currentGroup.access = AST::AccessArgumentIn;
-    for (int i=argsStartLexem; i<st->data.size()-1; i++) {
-        LexemType type = st->data[i]->type;
+    for (int i=argsStartLexem; i<st.data.size()-1; i++) {
+        if (st.data[i]->type==LxTypeComment)
+            break;
+        LexemType type = st.data[i]->type;
         if (type==LxSecIn || type==LxSecOut || type==LxSecInout) {
-            if (currentGroup.lexems.last()->type==LxOperComa) {
+            if (!currentGroup.lexems.isEmpty() && currentGroup.lexems.last()->type==LxOperComa) {
                 currentGroup.lexems.pop_back();
             }
             else if (!currentGroup.lexems.isEmpty()) {
-                st->data[i]->error = _("No coma before %1", st->data[i]->data);
+                st.data[i]->error = _("No coma before %1", st.data[i]->data);
                 return;
             }
             if (type==LxSecIn)
@@ -1031,11 +1051,11 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
             }
         }
         else if (type==LxPriAlgHeader) {
-            st->data[i]->error = _("'arg' instead of 'alg'");
+            st.data[i]->error = _("'arg' instead of 'alg'");
             return;
         }
         else {
-            currentGroup.lexems << st->data[i];
+            currentGroup.lexems << st.data[i];
         }
     }
     if (!currentGroup.lexems.isEmpty())
@@ -1044,7 +1064,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
     QString localError;
 
     for (int i=0; i<groups.size(); i++) {
-        QList<AST::Variable*> vars = parseVariables(groups[i], st->mod, st->alg);
+        QList<AST::Variable*> vars = parseVariables(groups[i], st.mod, st.alg);
         for (int j=0; j<vars.size(); j++) {
             alg->header.arguments << vars[j];
         }
@@ -2109,10 +2129,40 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
 
     AST::Variable * variable = 0;
     if (!findVariable(name, mod, alg, variable)) {
+        if (lexer->isReturnVariable(name)) {
+            if (!alg || alg->header.returnType==AST::TypeNone) {
+                if (openBracketIndex==-1)
+                    openBracketIndex = lexems.size();
+                for (int i=0; i<openBracketIndex; i++) {
+                    if (!alg) {
+                        lexems[i]->error = _("Access to return value outside of algorhitm");
+                    }
+                    else {
+                        lexems[i]->error = _("This algorhitm has no return value");
+                    }
+                }
+                return 0;
+            }
+            else {
+                bool found = findLocalVariable(alg->header.name, alg, variable);
+                Q_ASSERT(found);
+            }
+        }
+        else {
+            if (openBracketIndex==-1)
+                openBracketIndex = lexems.size();
+            for (int i=0; i<openBracketIndex; i++) {
+                lexems[i]->error = _("Variable not found");
+            }
+            return 0;
+        }
+    }
+
+    if (lexer->isReturnVariable(name) && alg->header.returnType!=AST::TypeString) {
         if (openBracketIndex==-1)
             openBracketIndex = lexems.size();
         for (int i=0; i<openBracketIndex; i++) {
-            lexems[i]->error = _("Variable not found");
+            lexems[i]->error = _("Return valus is not a string");
         }
         return 0;
     }
@@ -2258,6 +2308,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
         }
         else {
             // String element -> res type is character
+            result->baseType = AST::TypeCharect;
         }
     }
     else {

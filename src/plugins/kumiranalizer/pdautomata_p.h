@@ -49,7 +49,7 @@ public:
     AST::Algorhitm * algorhitm;
 
     Matrix matrix;
-    QList<Statement*> * source;
+    QList<Statement*> source;
     bool allowSkipParts;
 
     int currentPosition;

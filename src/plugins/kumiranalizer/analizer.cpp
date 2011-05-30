@@ -174,7 +174,7 @@ void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor
         alg->impl.headerLexems = sts[0]->data;
         sts[0]->alg = alg;
         sts[0]->mod = mod;
-        analizer->init(&sts, ast, alg);
+        analizer->init(sts, ast, alg);
         analizer->buildTables();
         foreach (const Lexem *lx, sts[0]->data) {
             if (!lx->error.isEmpty()) {
@@ -489,7 +489,7 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
             }
         }
         analizingStatements = allStatements;
-        pdAutomata->init(&analizingStatements, ast, alg);
+        pdAutomata->init(analizingStatements, ast, alg);
         pdAutomata->process();
         pdAutomata->postProcess();
     }
@@ -517,7 +517,7 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
                 analizingStatements << allStatements[i];
             }
         }
-        pdAutomata->init(&analizingStatements, ast, alg);
+        pdAutomata->init(analizingStatements, ast, alg);
         pdAutomata->process();
         pdAutomata->postProcess();
     }
@@ -558,13 +558,13 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
             }
         }
         else {
-            pdAutomata->init(&newStatements, ast, alg);
+            pdAutomata->init(newStatements, ast, alg);
             pdAutomata->process();
             pdAutomata->postProcess();
         }
         analizingStatements = newStatements;
     }
-    analizer->init(&analizingStatements, ast, alg);
+    analizer->init(analizingStatements, ast, alg);
     if (whatToCompile!=SubjStatements)
         analizer->buildTables();
 

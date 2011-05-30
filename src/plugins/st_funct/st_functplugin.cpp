@@ -492,7 +492,7 @@ void St_functPlugin::stop()
 
 static QTextCodec * __koi8Codec__st_funct = 0;
 
-EXTERN_FUNC_DECL void __init__st_funct()
+extern "C" void __init__st_funct()
 {
     if (__koi8Codec__st_funct==0) {
         __koi8Codec__st_funct = QTextCodec::codecForName("KOI8-R");
@@ -509,12 +509,12 @@ void __abort__st_funct(const QString &error)
 }
 
 
-EXTERN_FUNC_DECL double abs__st_funct(double x)
+extern "C" double abs__st_funct(double x)
 {
     return ::fabs(x);
 }
 
-EXTERN_FUNC_DECL double arccos__st_funct(double x)
+extern "C" double arccos__st_funct(double x)
 {
     if (::fabs(x)>1) {
         __abort__st_funct(QObject::tr("Bad inverse trigonometric argument", "StFuncError"));
@@ -525,7 +525,7 @@ EXTERN_FUNC_DECL double arccos__st_funct(double x)
     }
 }
 
-EXTERN_FUNC_DECL double arcctg__st_funct(double x)
+extern "C" double arcctg__st_funct(double x)
 {
     if (::fabs(x)==0.0) {
         __abort__st_funct(QObject::tr("Bad inverse trigonometric argument", "StFuncError"));
@@ -536,7 +536,7 @@ EXTERN_FUNC_DECL double arcctg__st_funct(double x)
     }
 }
 
-EXTERN_FUNC_DECL double arcsin__st_funct(double x)
+extern "C" double arcsin__st_funct(double x)
 {
     if (::fabs(x)>1) {
         __abort__st_funct(QObject::tr("Bad inverse trigonometric argument", "StFuncError"));
@@ -547,17 +547,17 @@ EXTERN_FUNC_DECL double arcsin__st_funct(double x)
     }
 }
 
-EXTERN_FUNC_DECL double arctg__st_funct(double x)
+extern "C" double arctg__st_funct(double x)
 {
     return ::atan(x);
 }
 
-EXTERN_FUNC_DECL double cos__st_funct(double x)
+extern "C" double cos__st_funct(double x)
 {
     return ::cos(x);
 }
 
-EXTERN_FUNC_DECL double ctg__st_funct(double x)
+extern "C" double ctg__st_funct(double x)
 {
     if (::fabs(x)==0.0) {
         __abort__st_funct(QObject::tr("Bad inverse trigonometric argument", "StFuncError"));
@@ -568,12 +568,12 @@ EXTERN_FUNC_DECL double ctg__st_funct(double x)
     }
 }
 
-EXTERN_FUNC_DECL void delay__st_funct(int)
+extern "C" void delay__st_funct(int)
 {
     // TODO implement is need
 }
 
-EXTERN_FUNC_DECL int div__st_funct(int x, int y)
+extern "C" int div__st_funct(int x, int y)
 {
     if (y<=0) {
         __abort__st_funct(QObject::tr("Division by not natural number", "StFuncError"));
@@ -588,7 +588,7 @@ EXTERN_FUNC_DECL int div__st_funct(int x, int y)
     }
 }
 
-EXTERN_FUNC_DECL double exp__st_funct(double x)
+extern "C" double exp__st_funct(double x)
 {
     if (isnan(::exp(x))) {
         __abort__st_funct(QObject::tr("Function result is not a number", "StFuncError"));
@@ -603,28 +603,28 @@ EXTERN_FUNC_DECL double exp__st_funct(double x)
     }
 }
 
-EXTERN_FUNC_DECL int iabs__st_funct(int x)
+extern "C" int iabs__st_funct(int x)
 {
     return qAbs(x);
 }
 
-EXTERN_FUNC_DECL int imax__st_funct(int x, int y)
+extern "C" int imax__st_funct(int x, int y)
 {
     return qMax(x, y);
 }
 
-EXTERN_FUNC_DECL int imin__st_funct(int x, int y)
+extern "C" int imin__st_funct(int x, int y)
 {
     return qMin(x, y);
 }
 
-EXTERN_FUNC_DECL int int__st_funct(double x)
+extern "C" int int__st_funct(double x)
 {
     // TODO check for integer overflow
     return int(floor(x));
 }
 
-EXTERN_FUNC_DECL int irand__st_funct(int a, int b)
+extern "C" int irand__st_funct(int a, int b)
 {
     if (a>b) {
         __abort__st_funct(QObject::tr("Invalid range", "StFuncError"));
@@ -637,14 +637,14 @@ EXTERN_FUNC_DECL int irand__st_funct(int a, int b)
     }
 }
 
-EXTERN_FUNC_DECL int irnd__st_funct(int x)
+extern "C" int irnd__st_funct(int x)
 {
     int rndValue = qrand();
     qreal scale = qreal(x)/qreal(RAND_MAX);
     return qMin(x, 1+int(scale*rndValue));
 }
 
-EXTERN_FUNC_DECL double lg__st_funct(double x)
+extern "C" double lg__st_funct(double x)
 {
     if (x<=0.0) {
         __abort__st_funct(QObject::tr("Lg function argument must be > 0", "StFuncError"));
@@ -655,7 +655,7 @@ EXTERN_FUNC_DECL double lg__st_funct(double x)
     }
 }
 
-EXTERN_FUNC_DECL double ln__st_funct(double x)
+extern "C" double ln__st_funct(double x)
 {
     if (x<=0.0) {
         __abort__st_funct(QObject::tr("Ln function argument must be > 0", "StFuncError"));
@@ -666,17 +666,17 @@ EXTERN_FUNC_DECL double ln__st_funct(double x)
     }
 }
 
-EXTERN_FUNC_DECL double max__st_funct(double x, double y)
+extern "C" double max__st_funct(double x, double y)
 {
     return qMax(x, y);
 }
 
-EXTERN_FUNC_DECL double min__st_funct(double x, double y)
+extern "C" double min__st_funct(double x, double y)
 {
     return qMin(x, y);
 }
 
-EXTERN_FUNC_DECL int mod__st_funct(int x, int y)
+extern "C" int mod__st_funct(int x, int y)
 {
     if (y<=0) {
         __abort__st_funct(QObject::tr("Division by not natural number", "StFuncError"));
@@ -689,7 +689,7 @@ EXTERN_FUNC_DECL int mod__st_funct(int x, int y)
     }
 }
 
-EXTERN_FUNC_DECL double rand__st_funct(double a, double b)
+extern "C" double rand__st_funct(double a, double b)
 {
     if (a>b) {
         __abort__st_funct(QObject::tr("Invalid range", "StFuncError"));
@@ -702,14 +702,14 @@ EXTERN_FUNC_DECL double rand__st_funct(double a, double b)
     }
 }
 
-EXTERN_FUNC_DECL double rnd__st_funct(double x)
+extern "C" double rnd__st_funct(double x)
 {
     int rndValue = qrand();
     qreal stdValue = qreal(rndValue)/qreal(RAND_MAX);
     return x * stdValue;
 }
 
-EXTERN_FUNC_DECL int sign__st_funct(double x)
+extern "C" int sign__st_funct(double x)
 {
     if (::fabs(x)<REAL_COMPARE_PRECISION) {
         return 0;
@@ -722,12 +722,12 @@ EXTERN_FUNC_DECL int sign__st_funct(double x)
     }
 }
 
-EXTERN_FUNC_DECL double sin__st_funct(double x)
+extern "C" double sin__st_funct(double x)
 {
     return ::sin(x);
 }
 
-EXTERN_FUNC_DECL double sqrt__st_funct(double x)
+extern "C" double sqrt__st_funct(double x)
 {
     if (x<0) {
         __abort__st_funct(QObject::tr("Square root of negative value", "StFuncError"));
@@ -738,22 +738,22 @@ EXTERN_FUNC_DECL double sqrt__st_funct(double x)
     }
 }
 
-EXTERN_FUNC_DECL double tg__st_funct(double x)
+extern "C" double tg__st_funct(double x)
 {
     return ::tan(x);
 }
 
-EXTERN_FUNC_DECL double MAXREAL__st_funct()
+extern "C" double MAXREAL__st_funct()
 {
     return 1.797693e+308;
 }
 
-EXTERN_FUNC_DECL int MAXINT__st_funct()
+extern "C" int MAXINT__st_funct()
 {
     return int(89884656743115795386465259539451236680898848947115328636715040578866337902750481566354238661203768010560056939935696678829394884407208311246423715319737062188883946712432742638151109800623047059726541476042502884419075341171231440736956555270413618581675255342293149119973622969239858152417678164812112068608.);
 }
 
-EXTERN_FUNC_DECL wchar_t* real_to_string__st_funct(double x)
+extern "C" wchar_t* real_to_string__st_funct(double x)
 {
     QString result = QString("%1").arg(x, 0,'f');
     QStringList pair = result.split(".",QString::KeepEmptyParts);
@@ -771,7 +771,7 @@ EXTERN_FUNC_DECL wchar_t* real_to_string__st_funct(double x)
     return buffer;
 }
 
-EXTERN_FUNC_DECL int time__st_funct()
+extern "C" int time__st_funct()
 {
     QTime t = QTime::currentTime();
     int sec = t.hour()*3600 + t.minute()*60 + t.second();
@@ -780,12 +780,12 @@ EXTERN_FUNC_DECL int time__st_funct()
     return csec;
 }
 
-EXTERN_FUNC_DECL int length__st_funct(wchar_t * s)
+extern "C" int length__st_funct(wchar_t * s)
 {
     QString ss = QString::fromWCharArray(s);
     return ss.length();
 }
-EXTERN_FUNC_DECL int code__st_funct(wchar_t ch)
+extern "C" int code__st_funct(wchar_t ch)
 {
     const wchar_t buffer[1] = { ch };
     const QString str = QString::fromWCharArray(buffer, 1);
@@ -799,7 +799,7 @@ EXTERN_FUNC_DECL int code__st_funct(wchar_t ch)
     }
 }
 
-EXTERN_FUNC_DECL double string_to_real__st_funct(wchar_t * s, unsigned char * success)
+extern "C" double string_to_real__st_funct(wchar_t * s, unsigned char * success)
 {
     QString str = QString::fromWCharArray(s);
     bool ok = false;
@@ -808,7 +808,7 @@ EXTERN_FUNC_DECL double string_to_real__st_funct(wchar_t * s, unsigned char * su
     return res;
 }
 
-EXTERN_FUNC_DECL int string_to_int__st_funct(wchar_t* s, unsigned char *success)
+extern "C" int string_to_int__st_funct(wchar_t* s, unsigned char *success)
 {
     QString str = QString::fromWCharArray(s);
     bool ok = false;
@@ -817,7 +817,7 @@ EXTERN_FUNC_DECL int string_to_int__st_funct(wchar_t* s, unsigned char *success)
     return res;
 }
 
-EXTERN_FUNC_DECL wchar_t symbol__st_funct(int n)
+extern "C" wchar_t symbol__st_funct(int n)
 {
     if (n<0 || n>255) {
         __abort__st_funct(QObject::tr("Code out of range [0..255]", "StFuncError"));
@@ -1065,7 +1065,7 @@ EXTERN_FUNC_DECL wchar_t symbol__st_funct(int n)
     }
 }
 
-EXTERN_FUNC_DECL wchar_t symbol2__st_funct(int n)
+extern "C" wchar_t symbol2__st_funct(int n)
 {
     QChar ch(n);
     static const QString cyrillic =
@@ -1083,7 +1083,7 @@ EXTERN_FUNC_DECL wchar_t symbol2__st_funct(int n)
 
 }
 
-EXTERN_FUNC_DECL wchar_t * int_to_string__st_funct(int x)
+extern "C" wchar_t * int_to_string__st_funct(int x)
 {
     QString result = QString::number(x);
     wchar_t * buffer = (wchar_t*)calloc(result.length()+1, sizeof(wchar_t));
@@ -1091,13 +1091,99 @@ EXTERN_FUNC_DECL wchar_t * int_to_string__st_funct(int x)
     return buffer;
 }
 
-EXTERN_FUNC_DECL int unicode__st_funct(wchar_t c)
+extern "C" int unicode__st_funct(wchar_t c)
 {
     const wchar_t buffer[1] = { c };
     return QString::fromWCharArray(buffer, 1)[0].unicode();
 }
 
+struct __array__ {
+    int dim;
+    int lefts[3];
+    int rights[3];
+    int sizes[3];
+    void * data;
+    char type;
+};
 
+struct GC_element
+{
+    QList<wchar_t*> strings;
+    QList<struct __array__*> arrays;
+};
+
+static QStack<GC_element> GarbageCollector;
+
+extern "C" void __init_garbage_collector__()
+{
+    GarbageCollector.clear();
+    __garbage_collector_begin_algorhitm__();
+}
+
+extern "C" void __free_garbage_collector__()
+{
+    while (!GarbageCollector.isEmpty()) {
+        __garbage_collector_end_algorhitm__();
+    }
+}
+
+extern "C" void __garbage_collector_begin_algorhitm__()
+{
+    GC_element newContext;
+    GarbageCollector.push(newContext);
+}
+
+extern "C" void __garbage_collector_register_string__(wchar_t * s)
+{
+    GarbageCollector.last().strings << s;
+}
+
+extern "C" void __garbage_collector_register_array__(struct __array__ * a)
+{
+    GarbageCollector.last().arrays << a;
+}
+
+extern "C" void __garbage_collector_set_return_value__(wchar_t * s)
+{
+    Q_ASSERT(GarbageCollector.size()>=2);
+    if (GarbageCollector.last().strings.contains(s)) {
+        GarbageCollector.last().strings.removeAll(s);
+        GarbageCollector[GarbageCollector.size()-2].strings << s;
+    }
+}
+
+extern "C" void __garbage_collector_end_algorhitm__()
+{
+    GC_element context = GarbageCollector.pop();
+    for (int i=0; i<context.arrays.size(); i++) {
+        __array__ * a = context.arrays[i];
+        void * va = a->data;
+        if (a->type=='i') {
+            int * ia = (int*)(va);
+            free(ia);
+        }
+        if (a->type=='r') {
+            double * ra = (double*)(va);
+            free(ra);
+        }
+        if (a->type=='b') {
+            unsigned char * ba = (unsigned char*)(va);
+            free(ba);
+        }
+        if (a->type=='c') {
+            wchar_t * ca = (wchar_t*)(va);
+            free(ca);
+        }
+        if (a->type=='s') {
+            wchar_t ** sa = (wchar_t**)(va);
+            free(sa);
+        }
+    }
+    for (int i=0; i<context.strings.size(); i++) {
+        wchar_t * s = context.strings[i];
+        free(s);
+    }
+}
 
 
 Q_EXPORT_PLUGIN(st_funct::St_functPlugin)

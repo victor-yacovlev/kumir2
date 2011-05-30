@@ -32,13 +32,16 @@ struct KumirCppGeneratorPrivate {
                                   const QString &moduleName);
     QString makeExpression(const AST::Expression * expr,
                            const AST::Algorhitm * algorhitm,
-                           const AST::Module * module) const;
+                           const AST::Module * module,
+                           bool lvalue
+                           ) const;
     QString makeConstant(AST::VariableBaseType type,
                          const QVariant & value) const;
     QString makeArrayElement(const AST::Variable * var,
                              const QList<AST::Expression *> & expr,
                              const AST::Algorhitm * algorhitm,
-                             const AST::Module * module) const;
+                             const AST::Module * module,
+                             bool lvalue) const;
     QString makeFunctionCall(const AST::Algorhitm * function,
                              const QList<AST::Expression *> & args,
                              const AST::Algorhitm * algorhitm,
@@ -151,19 +154,78 @@ QString KumirCppGeneratorPrivate::createAlgorhitmHeader(const AST::Algorhitm *al
 QString KumirCppGeneratorPrivate::makeExpression(
     const AST::Expression *expr,
     const AST::Algorhitm * algorhitm,
-    const AST::Module * module) const
+    const AST::Module * module,
+    bool lvalue
+    ) const
 {
+    bool addEqual = lvalue;
     const QString modName = module->header.name;
     const QString algName = algorhitm? algorhitm->header.name : "";
     QString result;
     if (expr->kind==AST::ExprVariable) {
-        result = nameProvider->findVariable(modName, algName, expr->variable->name);
+        if (expr->variable->name==algName)
+            result = "__retval_of_"+nameProvider->name(algName, "");
+        else {
+            result = nameProvider->findVariable(modName, algName, expr->variable->name);
+            if (expr->variable->accessType==AST::AccessArgumentInOut || expr->variable->accessType==AST::AccessArgumentOut)
+                result = "(*"+result+")";
+        }
     }
     else if (expr->kind==AST::ExprConst) {
         result = makeConstant(expr->baseType, expr->constant);
     }
     else if (expr->kind==AST::ExprArrayElement) {
-        result = makeArrayElement(expr->variable, expr->operands, algorhitm, module);
+        int dimVar = expr->variable->dimension;
+        int dimReal = expr->operands.size();
+        int diff = dimReal - dimVar;
+        QList<AST::Expression*> arrOperands = expr->operands.mid(0,dimVar);
+        QString arrayElement;
+        if (dimVar>0)
+            arrayElement = makeArrayElement(expr->variable, arrOperands, algorhitm, module, lvalue);
+        else {
+            if (expr->variable->name==algName)
+                arrayElement = "__retval_of_"+nameProvider->name(algName, "");
+            else
+                arrayElement = nameProvider->findVariable(modName, algName, expr->variable->name);
+        }
+        if (expr->variable->accessType==AST::AccessArgumentInOut || expr->variable->accessType==AST::AccessArgumentOut)
+            arrayElement = "(*"+arrayElement+")";
+        Q_ASSERT(diff==0 || diff==1 || diff==2);
+        if (diff==2) {
+            addEqual = false;
+            // string slice
+            if (lvalue) {
+                result = "__set_slice_%2__(&"+arrayElement+", "
+                        +makeExpression(expr->operands[expr->operands.size()-2], algorhitm, module, false)
+                        +", "
+                        +makeExpression(expr->operands[expr->operands.size()-1], algorhitm, module, false)
+                        +", %1)";
+            }
+            else {
+                result = "__get_slice__("+arrayElement+", "
+                        +makeExpression(expr->operands[expr->operands.size()-2], algorhitm, module, false)
+                        +", "
+                        +makeExpression(expr->operands[expr->operands.size()-1], algorhitm, module, false)
+                        +")";
+            }
+        }
+        else if (diff==1) {
+            // string element
+            if (lvalue) {
+                result = "__set_char_at__("+arrayElement+", "
+                        +makeExpression(expr->operands[expr->operands.size()-1], algorhitm, module, false)
+                        +", %1)";
+            }
+            else {
+                result = "__get_char_at__("+arrayElement+", "
+                        +makeExpression(expr->operands[expr->operands.size()-1], algorhitm, module, false)
+                        +")";
+            }
+        }
+        else {
+            // regular table access
+            result = arrayElement;
+        }
     }
     else if (expr->kind==AST::ExprFunctionCall) {
         result = makeFunctionCall(expr->function, expr->operands, algorhitm, module);
@@ -172,6 +234,12 @@ QString KumirCppGeneratorPrivate::makeExpression(
         result = makeSubExpression(expr->operands, expr->operatorr, algorhitm, module);
     }
 
+    if (lvalue) {
+        if (addEqual)
+            result += " = %3 %1 %4;";
+        else
+            result += ";";
+    }
     return result;
 }
 
@@ -192,7 +260,7 @@ QString screenString(QString s)
             result += "\\\"";
         }
         else if (s[i].unicode()>127) {
-            result += "\\0x"+QString::number(s[i].unicode(), 16);
+            result += "\\x"+QString::number(s[i].unicode(), 16);
         }
         else {
             result += s[i];
@@ -225,8 +293,10 @@ QString KumirCppGeneratorPrivate::makeArrayElement(
     const AST::Variable *var,
     const QList<AST::Expression *> & expr,
     const AST::Algorhitm * algorhitm,
-    const AST::Module * module) const
+    const AST::Module * module,
+    bool lvalue) const
 {
+    Q_UNUSED(lvalue);
     const QString modName = module->header.name;
     const QString algName = algorhitm? algorhitm->header.name : "";
     QString cName = nameProvider->findVariable(modName, algName, var->name);
@@ -234,7 +304,7 @@ QString KumirCppGeneratorPrivate::makeArrayElement(
     QStringList indeces;
     for (int i=0; i<3; i++) {
         if (i<expr.size())
-            indeces << makeExpression(expr[i], algorhitm, module);
+            indeces << makeExpression(expr[i], algorhitm, module, false);
         else
             indeces << "-1";
     }
@@ -254,10 +324,32 @@ QString KumirCppGeneratorPrivate::makeFunctionCall(
     const AST::Module * module) const
 {
     const QString modName = module->header.name;
-    const QString cName = nameProvider->name(function->header.name, modName);
+    QString cName = nameProvider->name(function->header.name, modName);
+    if (function->header.implType==AST::AlgorhitmExternal) {
+        QString cHeader = function->header.cHeader;
+        Q_ASSERT_X(!cHeader.isEmpty(),
+                   "C-generator: makeFunctionCall",
+                   QString("Has no C-header for %1:%2")
+                   .arg(function->header.external.moduleName)
+                   .arg(function->header.name)
+                   .toLocal8Bit().data());
+        int spacePos = cHeader.indexOf(" ");
+        int brPos = cHeader.indexOf("(");
+        Q_ASSERT_X(spacePos!=-1 && brPos!=-1 && brPos > spacePos,
+                   "C-generator: makeFunctionCall",
+                   QString("Invalid C-header for %1:%2")
+                   .arg(function->header.external.moduleName)
+                   .arg(function->header.name)
+                   .toLocal8Bit().data());
+        cName = cHeader.mid(spacePos+1, brPos-spacePos-1);
+    }
     QStringList arguments;
     for (int i=0; i<args.size(); i++) {
-        arguments << makeExpression(args[i], algorhitm, module);
+        QString a = makeExpression(args[i], algorhitm, module, false);
+        if (function->header.arguments[i]->accessType==AST::AccessArgumentInOut||
+                function->header.arguments[i]->accessType==AST::AccessArgumentOut)
+            a = "&("+a+")";
+        arguments << a;
     }
     return cName+"("+arguments.join(", ")+")";
 }
@@ -274,7 +366,7 @@ QString KumirCppGeneratorPrivate::makeSubExpression(
         Q_ASSERT(op==AST::OpNot || op==AST::OpSubstract);
         result += "(";
         result += nameProvider->operatorName(op);
-        result += makeExpression(operands[0], algorhitm, module);
+        result += makeExpression(operands[0], algorhitm, module, false);
         result += ")";
     }
     else {
@@ -285,23 +377,25 @@ QString KumirCppGeneratorPrivate::makeSubExpression(
             else {
                 result += "__integer_power__(";
             }
-            result += makeExpression(operands[0], algorhitm, module);
+            result += makeExpression(operands[0], algorhitm, module, false);
             result += ", ";
-            result += makeExpression(operands[1], algorhitm, module);
+            result += makeExpression(operands[1], algorhitm, module, false);
             result += ")";
         }
         else if (op==AST::OpSumm && (operands[0]->baseType==AST::TypeCharect || operands[0]->baseType==AST::TypeString)) {
-            result += "__concatenate__(";
-            result += makeExpression(operands[0], algorhitm, module);
+            QString ft = operands[0]->baseType==AST::TypeCharect? "c" : "s";
+            QString st = operands[1]->baseType==AST::TypeCharect? "c" : "s";
+            result += "__concatenate_"+ft+st+"__(";
+            result += makeExpression(operands[0], algorhitm, module, false);
             result += ", ";
-            result += makeExpression(operands[1], algorhitm, module);
+            result += makeExpression(operands[1], algorhitm, module, false);
             result += ")";
         }
         else {
             result += "(";
-            result += makeExpression(operands[0], algorhitm, module);
+            result += makeExpression(operands[0], algorhitm, module, false);
             result += nameProvider->operatorName(op);
-            result += makeExpression(operands[1], algorhitm, module);
+            result += makeExpression(operands[1], algorhitm, module, false);
             result += ")";
         }
     }
@@ -325,7 +419,8 @@ void KumirCppGeneratorPrivate::createModuleHeader(const AST::Module *module)
 //        mod->headerData += QString("namespace %1 {\n\n").arg(mod->cNamespace);
         mod->headerData += "extern void __init__"+mod->cNamespace+"();\n";
     }
-    foreach (const AST::Algorhitm * alg, module->header.algorhitms) {
+    for (int i=0; i<module->header.algorhitms.size(); i++) {
+        const AST::Algorhitm * alg = module->header.algorhitms[i];
         if (module->header.type==AST::ModTypeExternal) {
             mod->headerData += "extern "+alg->header.cHeader+";\n";
         }
@@ -369,14 +464,14 @@ void KumirCppGeneratorPrivate::createModuleSource(const AST::Module *module)
 //    }
 
     for (int i=0; i<module->impl.globals.size(); i++) {
-        QString cName = nameProvider->addName(mod->cNamespace+"::"+module->impl.globals[i]->name
+        QString cName = nameProvider->addName(module->impl.globals[i]->name
                                               , module->header.name);
         QString cType = nameProvider->baseTypeName(module->impl.globals[i]->baseType);
         if (module->impl.globals[i]->dimension>0) {
-            cType = QString("__array__<%1>").arg(cType);
+            cType = QString("struct __array__");
         }
         mod->sourceData += QString("static %1 %3;\n")
-                .arg(cType).arg(cName)+";\n";
+                .arg(cType).arg(cName);
     }
 
     mod->sourceData += "\n";
@@ -402,7 +497,12 @@ QString KumirCppGeneratorPrivate::makeMain() const
     QString result;
     result += "#include <locale.h>\n";
     result += "int main(int argc, char** argv) {\n";
+    result += "  __init_garbage_collector__();\n";
+    result += "#ifndef WIN32\n";
     result += "  setlocale(LC_CTYPE, \"ru_RU.UTF-8\");\n";
+    result += "#else\n";
+    result += "  setlocale(LC_CTYPE, \"ru_RU.CP866\");\n";
+    result += "#endif\n";
     QString firstAlgName;
     for (int i=0; i<modules.size(); i++) {
         Module * m = modules[i];
@@ -427,6 +527,7 @@ QString KumirCppGeneratorPrivate::makeMain() const
     if (!entryPoint.isEmpty()) {
         result += "  "+entryPoint+"();\n";
     }
+    result += "  __free_garbage_collector__();\n";
     result += "  return 0;\n";
     result += "}\n";
     return result;
@@ -464,27 +565,42 @@ QString KumirCppGeneratorPrivate::makeAlgorhitm(
         header = "extern "+mod->algorhitmHeaders[alg->header.name];
     }
     QString result = header + "\n{\n";
+    result += "  __garbage_collector_begin_algorhitm__();\n";
     for (int i=0; i<alg->impl.locals.size(); i++) {
-        QString locName = alg->impl.locals[i]->name;
-        if (locName==alg->header.name) {
-            locName = "__retval_of_"+locName;
-        }
-        const QString cName = nameProvider->addName(locName, modName+"::"+alg->header.name);
-        QString cType = nameProvider->baseTypeName(alg->impl.locals[i]->baseType);
-        if (alg->impl.locals[i]->dimension>0) {
-            cType = QString("__array__<%1>").arg(cType);
-        }
-        if (alg->impl.locals[i]->accessType==AST::AccessRegular ||
-                (alg->impl.locals[i]->accessType==AST::AccessArgumentIn &&
-                 alg->impl.locals[i]->dimension>0
-                 ))
-        {
-            result += "  "+cType+" "+cName+";\n";
+        if (alg->impl.locals[i]->accessType==AST::AccessRegular) {
+            QString locName = alg->impl.locals[i]->name;
+            if (locName==alg->header.name) {
+                locName = "__retval_of_"+locName;
+            }
+            const QString cName = nameProvider->addName(locName, modName+"::"+alg->header.name);
+            QString cType = nameProvider->baseTypeName(alg->impl.locals[i]->baseType);
+            if (alg->impl.locals[i]->dimension>0) {
+                cType = QString("struct __array__");
+            }
+            if (alg->impl.locals[i]->accessType==AST::AccessRegular ||
+                    (alg->impl.locals[i]->accessType==AST::AccessArgumentIn &&
+                     alg->impl.locals[i]->dimension>0
+                     ))
+            {
+                result += "  "+cType+" "+cName+";\n";
+            }
         }
     }
     result += addIndent(makeBody(alg->impl.pre , 0, alg, module))+"\n";
     result += addIndent(makeBody(alg->impl.body, 0, alg, module))+"\n";
     result += addIndent(makeBody(alg->impl.post, 0, alg, module))+"\n";
+    if (alg->header.returnType==AST::TypeString)
+        result += "  __garbage_collector_set_return_value__(__retval_of_"+nameProvider->name(alg->header.name,"")+");\n";
+    for (int i=0; i<alg->header.arguments.size(); i++) {
+        AST::Variable * var = alg->header.arguments[i];
+        if (var->accessType==AST::AccessArgumentOut || var->accessType==AST::AccessArgumentInOut) {
+            if (var->baseType==AST::TypeString && var->dimension==0)
+                result += "  __garbage_collector_set_return_value__(*"+nameProvider->findVariable(module->header.name, alg->header.name, var->name)+");\n";
+        }
+    }
+    result += "  __garbage_collector_end_algorhitm__();\n";
+    if (alg->header.returnType!=AST::TypeNone)
+        result += "  return __retval_of_"+nameProvider->name(alg->header.name,"")+";\n";
     result += "}\n";
     return result;
 }
@@ -541,11 +657,32 @@ QString KumirCppGeneratorPrivate::makeStAssign(
     const AST::Module * module) const
 {
     Q_ASSERT(exprs.size()==1 || exprs.size()==2);
-    const QString right = makeExpression(exprs[0], algorhitm, module);
+    const QString right = makeExpression(exprs[0], algorhitm, module, false);
+    QString rt;
+    if (exprs[0]->baseType==AST::TypeString)
+        rt = "s";
+    else if (exprs[0]->baseType==AST::TypeCharect)
+        rt = "c";
+    else if (exprs[0]->baseType==AST::TypeBoolean)
+        rt = "b";
+    else if (exprs[0]->baseType==AST::TypeInteger)
+        rt = "i";
+    else if (exprs[0]->baseType==AST::TypeReal)
+        rt = "r";
     QString result;
     if (exprs.size()==2) {
-        const QString left = makeExpression(exprs[1], algorhitm, module);
-        result = left + " = " + right + ";\n";
+        const QString left = makeExpression(exprs[1], algorhitm, module, true);
+        result = left.arg(right)+"\n";
+        if (result.contains("%2"))
+            result.replace("%2", rt);
+        if (exprs[0]->baseType==AST::TypeCharect && exprs[1]->baseType==AST::TypeString) {
+            result.replace("%3", "__string_of_char__(");
+            result.replace("%4", ")");
+        }
+        result.replace("%3", "");
+        result.replace("%4", "");
+
+
     }
     else {
         result = right + ";\n";
@@ -560,7 +697,7 @@ QString KumirCppGeneratorPrivate::makeStAssert(
 {
     QString result;
     for (int i=0; i<exprs.size(); i++) {
-        const QString e = makeExpression(exprs[i], algorhitm, module);
+        const QString e = makeExpression(exprs[i], algorhitm, module, false);
         const QString text = QObject::tr("Assertion false");
         int lineNo = -1;
         result += "if ( !("+e+") ) {\n";
@@ -588,8 +725,8 @@ QString KumirCppGeneratorPrivate::makeStInput(
         else if (exprs[i]->baseType==AST::TypeCharect)
             format += "%c";
         else if (exprs[i]->baseType==AST::TypeString)
-            format += "%s";
-        es << makeExpression(exprs[i], algorhitm, module);
+            format += "%ls";
+        es << makeExpression(exprs[i], algorhitm, module, false);
     }
     result = "wscanf(" + makeConstant(AST::TypeString, format)+", "+
             es.join(", ")+");\n";
@@ -614,8 +751,8 @@ QString KumirCppGeneratorPrivate::makeStOutput(
         else if (exprs[i]->baseType==AST::TypeCharect)
             format += "%c";
         else if (exprs[i]->baseType==AST::TypeString)
-            format += "%s";
-        es << makeExpression(exprs[i], algorhitm, module);
+            format += "%ls";
+        es << makeExpression(exprs[i], algorhitm, module, false);
     }
     result = "wprintf(" + makeConstant(AST::TypeString, format)+", "+
             es.join(", ")+");\n";
@@ -632,26 +769,26 @@ QString KumirCppGeneratorPrivate::makeStLoop(
     if (loop.type==AST::LoopTimes) {
         result += QString("for (int __counter_%1__=0; __counter_%1__<%2; __counter_%1__++) {\n")
                 .arg(deep)
-                .arg(makeExpression(loop.timesValue, algorhitm, module));
+                .arg(makeExpression(loop.timesValue, algorhitm, module, false));
     }
     else if (loop.type==AST::LoopFor) {
         const QString modName = module->header.name;
         const QString algName = algorhitm? algorhitm->header.name : "";
         QString var = nameProvider->findVariable(modName, algName, loop.forVariable->name);
-        QString from = makeExpression(loop.fromValue, algorhitm, module);
-        QString to = makeExpression(loop.toValue, algorhitm, module);
-        QString step = loop.stepValue? makeExpression(loop.stepValue, algorhitm, module) : "1";
+        QString from = makeExpression(loop.fromValue, algorhitm, module, false);
+        QString to = makeExpression(loop.toValue, algorhitm, module,false);
+        QString step = loop.stepValue? makeExpression(loop.stepValue, algorhitm, module,false) : "1";
         result += QString("for (%1=%2; %4>=0? %1<=%3 : %1>=%3; %1+=%4 ) {\n")
                 .arg(var).arg(from).arg(to).arg(step);
     }
     else if (loop.type==AST::LoopWhile) {
-        QString cond = makeExpression(loop.whileCondition, algorhitm, module);
+        QString cond = makeExpression(loop.whileCondition, algorhitm, module,false);
         result += QString("while (%1) {\n").arg(cond);
     }
     result += addIndent(makeBody(loop.body, deep+1, algorhitm, module))+"\n";
     if (loop.endCondition) {
-        QString cond = makeExpression(loop.endCondition, algorhitm, module);
-        result += "  if (%1) break;\n";
+        QString cond = makeExpression(loop.endCondition, algorhitm, module,false);
+        result += QString("  if (%1) break;\n").arg(cond);
     }
     result += "}\n";
     return result;
@@ -665,7 +802,7 @@ QString KumirCppGeneratorPrivate::makeStIfThenElse(
 {
     QString result;
     for (int i=0; i<conds.size(); i++) {
-        const QString c = conds[i].condition? makeExpression(conds[i].condition, algorhitm, module) : "";
+        const QString c = conds[i].condition? makeExpression(conds[i].condition, algorhitm, module, false) : "";
         if (i==0) {
             result += "if ("+c+") {\n";
         }
@@ -733,8 +870,8 @@ QString KumirCppGeneratorPrivate::makeStVarInitialize(
                 result += QString("%1.lefts[%2] = %3;\n%1.rights[%2] = %4;\n")
                         .arg(cName)
                         .arg(i)
-                        .arg(makeExpression(var->bounds[i].first, algorhitm, module))
-                        .arg(makeExpression(var->bounds[i].second, algorhitm, module));
+                        .arg(makeExpression(var->bounds[i].first, algorhitm, module, false))
+                        .arg(makeExpression(var->bounds[i].second, algorhitm, module, false));
             }
             result += "__allocate_array__(&"+cName+");\n";
         }
@@ -747,8 +884,8 @@ QString KumirCppGeneratorPrivate::makeStVarInitialize(
                 result += QString("%1.lefts[%2] = %3;\n%1.rights[%2] = %4;\n")
                         .arg(cName)
                         .arg(i)
-                        .arg(makeExpression(var->bounds[i].first, algorhitm, module))
-                        .arg(makeExpression(var->bounds[i].second, algorhitm, module));
+                        .arg(makeExpression(var->bounds[i].first, algorhitm, module, false))
+                        .arg(makeExpression(var->bounds[i].second, algorhitm, module, false));
             }
             result += "__copy_array__(&"+cName+", &__src_of_"+cName+"__);";
 
