@@ -1152,6 +1152,25 @@ extern "C" void __garbage_collector_set_return_value__(wchar_t * s)
     }
 }
 
+extern "C" void __garbage_collector_set_return_array__(struct __array__ * a)
+{
+    Q_ASSERT(GarbageCollector.size()>=2);
+    if (a->type=='s') {
+        wchar_t ** sd = (wchar_t**)(a->data);
+        int size = 1;
+        for (int i=0; i<a->dim; i++) {
+            size *= a->sizes[i];
+        }
+        for (int i=0; i<size; i++) {
+            wchar_t * s = sd[i];
+            if (GarbageCollector.last().strings.contains(s)) {
+                GarbageCollector.last().strings.removeAll(s);
+                GarbageCollector[GarbageCollector.size()-2].strings << s;
+            }
+        }
+    }
+}
+
 extern "C" void __garbage_collector_end_algorhitm__()
 {
     GC_element context = GarbageCollector.pop();

@@ -134,10 +134,10 @@ extern wchar_t* __concatenate_cc__(wchar_t ch1, wchar_t ch2)
 extern void __abort__(const wchar_t * message, int lineNo)
 {
     if (lineNo!=-1) {
-        wprintf(L"RUNTIME ERROR AT LINE %i: %s\n", lineNo, message);
+        wprintf(L"RUNTIME ERROR AT LINE %i: %ls\n", lineNo, message);
     }
     else {
-        wprintf(L"RUNTIME ERROR: %s\n", message);
+        wprintf(L"RUNTIME ERROR: %ls\n", message);
     }
     __free_garbage_collector__();
     exit(1);

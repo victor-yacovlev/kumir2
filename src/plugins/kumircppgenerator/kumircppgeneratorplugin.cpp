@@ -594,8 +594,11 @@ QString KumirCppGeneratorPrivate::makeAlgorhitm(
     for (int i=0; i<alg->header.arguments.size(); i++) {
         AST::Variable * var = alg->header.arguments[i];
         if (var->accessType==AST::AccessArgumentOut || var->accessType==AST::AccessArgumentInOut) {
+            const QString & varName = nameProvider->findVariable(module->header.name, alg->header.name, var->name);
             if (var->baseType==AST::TypeString && var->dimension==0)
-                result += "  __garbage_collector_set_return_value__(*"+nameProvider->findVariable(module->header.name, alg->header.name, var->name)+");\n";
+                result += "  __garbage_collector_set_return_value__(*"+varName+");\n";
+            if (var->dimension>0)
+                result += "  __garbage_collector_set_return_array__("+varName+");\n";
         }
     }
     result += "  __garbage_collector_end_algorhitm__();\n";

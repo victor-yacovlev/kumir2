@@ -43,6 +43,7 @@ extern void __garbage_collector_begin_algorhitm__();
 extern void __garbage_collector_register_string__(wchar_t * s);
 extern void __garbage_collector_register_array__(struct __array__ * a);
 extern void __garbage_collector_set_return_value__(wchar_t * s);
+extern void __garbage_collector_set_return_array__(struct __array__ * s);
 extern void __garbage_collector_end_algorhitm__();
 
 #endif
