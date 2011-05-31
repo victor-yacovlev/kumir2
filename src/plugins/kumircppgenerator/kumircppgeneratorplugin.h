@@ -18,7 +18,7 @@ public:
     ~KumirCppGeneratorPlugin();
 
     QString initialize(const QStringList &arguments);
-    Shared::GeneratorType generateExecuable(
+    Shared::GeneratorResult generateExecuable(
         const AST::Data *tree
         , QIODevice *out);
 private:

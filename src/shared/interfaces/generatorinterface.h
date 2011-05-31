@@ -11,9 +11,16 @@ enum GeneratorType {
     GenNotNativeExecuable
 };
 
+struct GeneratorResult {
+    GeneratorType type;
+    QStringList usedLibs;
+    QStringList usedQtLibs;
+};
+
+
 class GeneratorInterface {
 public:
-    virtual enum GeneratorType generateExecuable(
+    virtual GeneratorResult generateExecuable(
             const AST::Data * tree
             , QIODevice * out) = 0;
 };

@@ -15,7 +15,8 @@ namespace KumirCppGenerator {
 struct Module {
     QString name;
     QString cNamespace;
-    QString cLibrary;
+    QStringList cLibraries;
+    QStringList qtLibraries;
     QString headerData;
     QString sourceData;
     QMap<QString,QString> algorhitmHeaders;
@@ -115,7 +116,8 @@ void KumirCppGeneratorPrivate::addModule(const AST::Module *module)
     mod->name = module->header.name;
     if (module->header.type==AST::ModTypeExternal) {
         mod->cNamespace = module->header.cReference.nameSpace;
-        mod->cLibrary = module->header.cReference.libraryBaseName;
+        mod->cLibraries = module->header.cReference.moduleLibraries;
+        mod->qtLibraries = module->header.cReference.usedQtLibraries;
     }
     else {
         if (!module->header.name.isEmpty()) {
@@ -501,7 +503,7 @@ QString KumirCppGeneratorPrivate::makeMain() const
     result += "#ifndef WIN32\n";
     result += "  setlocale(LC_CTYPE, \"ru_RU.UTF-8\");\n";
     result += "#else\n";
-    result += "  setlocale(LC_CTYPE, \"ru_RU.CP866\");\n";
+    result += "  setlocale(LC_CTYPE, \".1251\");\n";
     result += "#endif\n";
     QString firstAlgName;
     for (int i=0; i<modules.size(); i++) {
@@ -910,7 +912,7 @@ void KumirCppGeneratorPlugin::stop()
 
 
 
-Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
+Shared::GeneratorResult KumirCppGeneratorPlugin::generateExecuable(
     const AST::Data *tree
     , QIODevice *out)
 {
@@ -937,6 +939,7 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
     QSet<QString> cFiles;
     QSet<QString> hFiles;
     QSet<QString> libs;
+    QSet<QString> qtLibs;
     for (int i=0; i<d->modules.size(); i++) {
         const QString hFileName = d->modules[i]->cNamespace.isEmpty()
                 ? QString("main.h")
@@ -956,9 +959,9 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
             c.close();
             cFiles.insert(cFileName);
         }
+        if (!d->modules[i]->cLibraries.isEmpty()) {
+            QStringList libNames = d->modules[i]->cLibraries;
 
-        if (!d->modules[i]->cLibrary.isEmpty()) {
-            QStringList libNames = d->modules[i]->cLibrary.split(QRegExp("\\s+"));
             foreach (QString libName, libNames) {
 #ifdef Q_OS_MAC
 #ifndef QT_NO_DEBUG
@@ -970,8 +973,10 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
                     libName += "d";
 #endif
 #endif
-//                qDebug() << libName;
                 libs.insert(libName);
+            }
+            foreach (QString qtLibName, d->modules[i]->qtLibraries) {
+                qtLibs.insert(qtLibName);
             }
         }
     }
@@ -988,22 +993,30 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
 
     QStringList ldPaths;
 
-//    ldPaths << QDir::cleanPath(QFileInfo(pluginSpec().libraryFileName).absoluteDir().path());
     ldPaths << QDir::cleanPath(QFileInfo(pluginSpec().libraryFileName).absoluteDir().path()+"/../");
 
-#ifdef Q_OS_MAC
-    const QString frameworksPath = QDir::cleanPath(qApp->applicationDirPath()+"/../Frameworks/");
-    const QDir frameworksDir(frameworksPath);
     QStringList frameworksOpts;
-    foreach (QString fw, frameworksDir.entryList()) {
-        if (fw=="." || fw=="..")
-            continue;
-//        ldPaths << frameworksPath+"/"+fw+"/Versions/4";
-        fw.remove(".framework");
+    foreach (QString fw, qtLibs) {
         frameworksOpts << " -framework "+fw;
     }
 
+    QStringList dlls;
+    foreach (QString fw, qtLibs) {
+#ifndef QT_NO_DEBUG
+        dlls << fw+"4d.dll";
+#else
+        dlls << fw+"4.dll";
 #endif
+    }
+    foreach (QString l, libs.toList()) {
+#ifndef QT_NO_DEBUG
+        dlls << l+"d.dll";
+#else
+        dlls << l+".dll";
+#endif
+    }
+
+    dlls << "mingwm10.dll" << "libgcc_s_dw2-1.dll";
 
 
     QFile::remove("__kumir__.h");
@@ -1012,9 +1025,9 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
     QFile::copy(includePath+"/__kumir__.c", "__kumir__.c");
     QString command = "gcc";
 #ifdef Q_OS_WIN32
-    const QString mingwBinPath = QDir::toNativeSeparators(QDir::cleanPath(qApp->applicationDirPath()+"/../lib/mingw/bin"));
-    command = mingwBinPath+"\\mingw32-gcc";
+    command += ".exe";
 #endif
+
 #ifdef Q_OS_MAC
     command += " -F"+frameworksPath;
     command += " -L"+frameworksPath;
@@ -1027,20 +1040,67 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
     command += " --std=c99";
     command += " -Werror";
     command += " -g";
+#ifdef Q_OS_WIN32
+    command += " -DWIN32";
+    command += " -Wl,-enable-auto-import";
+    command += " -Wl,-enable-runtime-pseudo-reloc";
+    command += " -mthreads";
+    command += " -L"+QCoreApplication::applicationDirPath();
+#endif
     foreach (const QString L, ldPaths) {
         command += " -L"+L;
     }
-    foreach (const QString lib, libs.toList()) {
-        command += " "+lib;
-    }
-    command += " -lm";
+
     command += " "+QStringList(cFiles.toList()).join(" ");
+
+    foreach (const QString lib, libs.toList()) {
+        command += " -l"+lib;
+#ifndef QT_NO_DEBUG
+#ifdef Q_OS_WIN32
+        command += "d";
+#endif
+#ifdef Q_OS_MAC
+        command += "_debug";
+#endif
+#endif
+    }
+//#ifdef Q_OS_WIN32
+//    foreach (const QString lib, qtLibs.toList()) {
+//        command += " -l"+lib+"4";
+//#ifndef QT_NO_DEBUG
+//        command += "d";
+//#endif
+//    }
+//#endif
+    command += " -lm";
+
     if (qApp->arguments().contains("-V")) {
         std::cout << command.toLocal8Bit().data() << std::endl;
     }
-    int procResult = QProcess::execute(command);
-    Q_ASSERT_X(procResult!=-2, "KumirCppGenerator", "Can't launch gcc!");
-    Shared::GeneratorType result = Shared::GenError;
+    QProcess * proc = new QProcess(this);
+    proc->setProcessChannelMode(QProcess::SeparateChannels);
+#ifdef Q_OS_WIN32
+    const QString mingwBinPath = QDir::toNativeSeparators(QDir::cleanPath(qApp->applicationDirPath()+"/../lib/mingw/bin"));
+//    std::cout << mingwBinPath.toLocal8Bit().data() << std::endl;
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert("PATH", env.value("Path")+";"+mingwBinPath);
+    command = mingwBinPath+"\\"+command;
+    proc->setProcessEnvironment(env);
+#endif
+
+    proc->start(command);
+
+    proc->waitForFinished();
+    proc->waitForReadyRead();
+
+    if (qApp->arguments().contains("-V")) {
+//        std::cout << proc->errorString().toLocal8Bit().data();
+        std::cout << proc->readAllStandardError().data();
+        std::cout << proc->readAllStandardOutput().data();
+    }
+
+    Shared::GeneratorResult result;
+    result.type = Shared::GenError;
     if (out && QFile::exists(gccOutName)) {
         QFile outF(gccOutName);
         if (outF.open(QIODevice::ReadOnly)) {
@@ -1048,8 +1108,9 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
             outF.close();
 
         }
-        result = Shared::GenNativeExecuable;
-        QFile::remove(gccOutName);
+        result.type = Shared::GenNativeExecuable;
+        if (!qApp->arguments().contains("-S"))
+            QFile::remove(gccOutName);
     }
     if (!qApp->arguments().contains("-S")) {
         foreach (QString fn, cFiles.toList()) {
@@ -1068,6 +1129,9 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
             QDir::current().rmdir(buildDir);
         }
     }
+    proc->deleteLater();
+    result.usedLibs = libs.toList();
+    result.usedQtLibs = qtLibs.toList();
     return result;
 }
 

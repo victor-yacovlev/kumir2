@@ -4,6 +4,7 @@
 #include <QString>
 #include <QList>
 #include <QSet>
+#include <QStringList>
 
 
 #undef ABSTRACTSYNTAXTREE_EXPORT
@@ -30,7 +31,8 @@ enum ModuleType {
 
 struct ExternalModuleReference {
     QString nameSpace;
-    QString libraryBaseName;
+    QStringList moduleLibraries;
+    QStringList usedQtLibraries;
 };
 
 /** Module public header */

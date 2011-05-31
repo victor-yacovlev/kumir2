@@ -3,6 +3,7 @@
 
 #include "st_functplugin.h"
 #include "stdlib/kumstdlib.h"
+#include "stdlib/genericinputoutput.h"
 
 using namespace Shared;
 
@@ -262,9 +263,14 @@ QList<Alg>  St_functPlugin::funcList() const
     return tmpL;
 }
 
-QString St_functPlugin::libraryLinkageOptions() const
+QStringList St_functPlugin::actorLibraries() const
 {
-    return "-lKumirStdLib";
+    return QStringList() << "KumirStdLib";
+}
+
+QStringList St_functPlugin::usedQtLibraries() const
+{
+    return QStringList() << "QtCore";
 }
 
 QString St_functPlugin::name(ProgrammingLanguage pl, QLocale::Language nl) const
@@ -295,7 +301,7 @@ QVariant St_functPlugin::result() const
 }
 
 void  St_functPlugin::runFunct(const QString & name,const QList<QVariant> &args)
-{
+{    
     optResults.clear();
 
     if (name==tr("abs")) {
@@ -478,7 +484,6 @@ void St_functPlugin::stop()
 }
 
 } // end namespace st_funct
-
 
 
 Q_EXPORT_PLUGIN(st_funct::St_functPlugin)

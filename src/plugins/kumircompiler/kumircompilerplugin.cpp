@@ -120,9 +120,21 @@ void KumirCompilerPlugin::start()
 #endif
             QFile binOut(outBinFileName);
             binOut.open(QIODevice::WriteOnly);
-            Shared::GeneratorType res = generator->generateExecuable(ast, &binOut);
+            Shared::GeneratorResult res = generator->generateExecuable(ast, &binOut);
             binOut.close();
-            if (res==Shared::GenNativeExecuable && QFile::exists(outBinFileName)) {
+#ifdef Q_OS_WIN32
+            foreach (QString qtLib, res.usedQtLibs) {
+                QString dllName = qtLib+"4";
+#ifndef QT_NO_DEBUG
+                dllName += "d";
+#endif
+                dllName += ".dll";
+                if (!QFile::exists(dllName)) {
+                    QFile::copy(QCoreApplication::applicationDirPath()+"/"+dllName, dllName);
+                }
+            }
+#endif
+            if (res.type==Shared::GenNativeExecuable && QFile::exists(outBinFileName)) {
                 QFile::Permissions ps = binOut.permissions();
                 ps |= QFile::ExeGroup | QFile::ExeOwner | QFile::ExeOther;
                 QFile::setPermissions(outBinFileName, ps);
