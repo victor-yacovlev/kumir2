@@ -720,18 +720,18 @@ QString KumirCppGeneratorPrivate::makeStInput(
     QStringList es;
     for (int i=0; i<exprs.size(); i++) {
         if (exprs[i]->baseType==AST::TypeInteger)
-            format += "%d";
+            format += "i";
         else if (exprs[i]->baseType==AST::TypeReal)
-            format += "%f";
+            format += "r";
         else if (exprs[i]->baseType==AST::TypeBoolean)
-            format += "%d";
+            format += "b";
         else if (exprs[i]->baseType==AST::TypeCharect)
-            format += "%c";
+            format += "c";
         else if (exprs[i]->baseType==AST::TypeString)
-            format += "%ls";
-        es << makeExpression(exprs[i], algorhitm, module, false);
+            format += "s";
+        es << "&("+makeExpression(exprs[i], algorhitm, module, false)+")";
     }
-    result = "wscanf(" + makeConstant(AST::TypeString, format)+", "+
+    result = "__input__st_funct(\""+format+"\", "+QString::number(es.size())+", "+
             es.join(", ")+");\n";
     return result;
 }
@@ -746,18 +746,18 @@ QString KumirCppGeneratorPrivate::makeStOutput(
     QStringList es;
     for (int i=0; i<exprs.size(); i++) {
         if (exprs[i]->baseType==AST::TypeInteger)
-            format += "%d";
+            format += "i";
         else if (exprs[i]->baseType==AST::TypeReal)
-            format += "%f";
+            format += "r";
         else if (exprs[i]->baseType==AST::TypeBoolean)
-            format += "%d";
+            format += "b";
         else if (exprs[i]->baseType==AST::TypeCharect)
-            format += "%c";
+            format += "c";
         else if (exprs[i]->baseType==AST::TypeString)
-            format += "%ls";
+            format += "s";
         es << makeExpression(exprs[i], algorhitm, module, false);
     }
-    result = "wprintf(" + makeConstant(AST::TypeString, format)+", "+
+    result = "__output__st_funct(\""+format+"\", "+QString::number(es.size())+", "+
             es.join(", ")+");\n";
     return result;
 }
@@ -1025,6 +1025,7 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
     command += " -o "+gccOutName;
     command += " --std=c99";
     command += " -Werror";
+    command += " -g";
     foreach (const QString L, ldPaths) {
         command += " -L"+L;
     }

@@ -1,6 +1,7 @@
 #include "__kumir__.h"
 #include <stdlib.h>
 #include <wchar.h>
+#include <stdio.h>
 
 
 extern void __allocate_array__(struct __array__ * arr)
@@ -134,10 +135,10 @@ extern wchar_t* __concatenate_cc__(wchar_t ch1, wchar_t ch2)
 extern void __abort__(const wchar_t * message, int lineNo)
 {
     if (lineNo!=-1) {
-        wprintf(L"RUNTIME ERROR AT LINE %i: %ls\n", lineNo, message);
+        fwprintf(stderr, L"RUNTIME ERROR AT LINE %i: %ls\n", lineNo, message);
     }
     else {
-        wprintf(L"RUNTIME ERROR: %ls\n", message);
+        fwprintf(stderr, L"RUNTIME ERROR: %ls\n", message);
     }
     __free_garbage_collector__();
     exit(1);
