@@ -1012,7 +1012,8 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
     QFile::copy(includePath+"/__kumir__.c", "__kumir__.c");
     QString command = "gcc";
 #ifdef Q_OS_WIN32
-    command = "mingw32-gcc";
+    const QString mingwBinPath = QDir::toNativeSeparators(QDir::cleanPath(qApp->applicationDirPath()+"/../lib/mingw/bin"));
+    command = mingwBinPath+"\\mingw32-gcc";
 #endif
 #ifdef Q_OS_MAC
     command += " -F"+frameworksPath;
@@ -1032,11 +1033,13 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
     foreach (const QString lib, libs.toList()) {
         command += " "+lib;
     }
+    command += " -lm";
     command += " "+QStringList(cFiles.toList()).join(" ");
     if (qApp->arguments().contains("-V")) {
         std::cout << command.toLocal8Bit().data() << std::endl;
     }
-    QProcess::execute(command);
+    int procResult = QProcess::execute(command);
+    Q_ASSERT_X(procResult!=-2, "KumirCppGenerator", "Can't launch gcc!");
     Shared::GeneratorType result = Shared::GenError;
     if (out && QFile::exists(gccOutName)) {
         QFile outF(gccOutName);

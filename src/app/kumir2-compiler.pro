@@ -24,6 +24,7 @@ win32 {
     else:LIBS *= -lExtensionSystem
     target.path = /bin
     INSTALLS += target
+    CONFIG += console
 } else:macx {
     CONFIG -= app_bundle
     CONFIG(debug, debug|release):LIBS *= -lExtensionSystem_debug
