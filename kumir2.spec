@@ -37,7 +37,7 @@ Name:		kumir2
 Summary:	Kumir education system
 License:	GPL2
 Group:		Education
-Version:	1.99.0+%{alphaversion}
+Version:	1.99.0+alpha%{alphaversion}
 Release:	%{release}
 BuildRoot:	%{_tmppath}/%{name}-%{version}
 BuildRequires:	python
