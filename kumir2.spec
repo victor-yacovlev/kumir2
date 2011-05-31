@@ -97,7 +97,7 @@ qmake
 make
 
 %install
-make install
+make INSTALL_ROOT=$RPM_BUILD_ROOT/%{_prefix} install
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -112,7 +112,7 @@ Contains kumir2 extension system skeleton and other libraries
 %files libs
 %defattr(-,root,root)
 %dir %{_libdir}/kumir2
-%{%_libdir}/kumir2/*.so*
+%{_libdir}/kumir2/*.so*
 
 
 %post libs -p /sbin/ldconfig
@@ -130,8 +130,8 @@ Kumir language analizer
 %files module-KumirAnalizer
 %defattr(-,root,root)
 %dir %{_libdir}/kumir2/plugins
-%{%_libdir}/kumir2/plugins/libKumirAnalizer.so
-%{%_libdir}/kumir2/plugins/KumirAnalizer.pluginspec
+%{_libdir}/kumir2/plugins/libKumirAnalizer.so
+%{_libdir}/kumir2/plugins/KumirAnalizer.pluginspec
 %dir %{_datadir}/kumir2/kumiranalizer
 %{_datadir}/kumir2/kumiranalizer/*
 
@@ -148,8 +148,8 @@ Generator of execuables by Kumir language AST (via gcc toolchain)
 %files module-KumirCppGenerator
 %defattr(-,root,root)
 %dir %{_libdir}/kumir2/plugins
-%{%_libdir}/kumir2/plugins/libKumirCppGenerator.so
-%{%_libdir}/kumir2/plugins/KumirCppGenerator.pluginspec
+%{_libdir}/kumir2/plugins/libKumirCppGenerator.so
+%{_libdir}/kumir2/plugins/KumirCppGenerator.pluginspec
 %dir %{_datadir}/kumir2/kumircppgenerator/
 %{_datadir}/kumir2/kumircppgenerator/*
 
@@ -165,8 +165,8 @@ Generator of bytecode to be evaluated by Kumir VM
 %files module-KumirCodeGenerator
 %defattr(-,root,root)
 %dir %{_libdir}/kumir2/plugins
-%{%_libdir}/kumir2/plugins/libKumirCodeGenerator.so
-%{%_libdir}/kumir2/plugins/KumirCodeGenerator.pluginspec
+%{_libdir}/kumir2/plugins/libKumirCodeGenerator.so
+%{_libdir}/kumir2/plugins/KumirCodeGenerator.pluginspec
 
 
 %package module-KumirCompiler
@@ -181,8 +181,8 @@ Provides ability to compile Kumir programs
 %files module-KumirCompiler
 %defattr(-,root,root)
 %dir %{_libdir}/kumir2/plugins
-%{%_libdir}/kumir2/plugins/libKumirCompiler.so
-%{%_libdir}/kumir2/plugins/KumirCompiler.pluginspec
+%{_libdir}/kumir2/plugins/libKumirCompiler.so
+%{_libdir}/kumir2/plugins/KumirCompiler.pluginspec
 
 %package module-st_funct
 Summary:	Kumir Standart Library
@@ -194,8 +194,8 @@ Standart library module
 %files module-st_funct
 %defattr(-,root,root)
 %dir %{_libdir}/kumir2/plugins
-%{%_libdir}/kumir2/plugins/libst_funct.so
-%{%_libdir}/kumir2/plugins/st_funct.pluginspec
+%{_libdir}/kumir2/plugins/libst_funct.so
+%{_libdir}/kumir2/plugins/st_funct.pluginspec
 
 %package module-Editor
 Summary:	Kumir program editor
@@ -208,8 +208,8 @@ Kumir program editor module
 %files module-Editor
 %defattr(-,root,root)
 %dir %{_libdir}/kumir2/plugins
-%{%_libdir}/kumir2/plugins/libEditor.so
-%{%_libdir}/kumir2/plugins/Editor.pluginspec
+%{_libdir}/kumir2/plugins/libEditor.so
+%{_libdir}/kumir2/plugins/Editor.pluginspec
 
 %package launcher-cc
 Summary:	Kumir to native execuable compiler tool
