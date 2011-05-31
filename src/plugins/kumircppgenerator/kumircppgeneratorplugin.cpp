@@ -988,7 +988,7 @@ Shared::GeneratorType KumirCppGeneratorPlugin::generateExecuable(
 
     QStringList ldPaths;
 
-    ldPaths << QDir::cleanPath(QFileInfo(pluginSpec().libraryFileName).absoluteDir().path());
+//    ldPaths << QDir::cleanPath(QFileInfo(pluginSpec().libraryFileName).absoluteDir().path());
     ldPaths << QDir::cleanPath(QFileInfo(pluginSpec().libraryFileName).absoluteDir().path()+"/../");
 
 #ifdef Q_OS_MAC

@@ -3,8 +3,6 @@
 
 #include <QtCore>
 
-namespace st_funct {
-
 class GenericInputOutput : public QObject
 {
 public:
@@ -63,8 +61,6 @@ private:
     static class GenericInputOutput * m_instance;
 
 };
-
-} // namespace st_funct
 
 extern "C" void __input__st_funct(const char * format, int args, ...);
 extern "C" void __output__st_funct(const char * format, int args, ...);

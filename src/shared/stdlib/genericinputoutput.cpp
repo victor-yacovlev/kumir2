@@ -1,6 +1,5 @@
 #include "genericinputoutput.h"
 
-namespace st_funct {
 
 GenericInputOutput::GenericInputOutput(QObject *parent) :
     QObject(parent)
@@ -517,16 +516,13 @@ GenericInputOutput* GenericInputOutput::instance()
     return m_instance;
 }
 
-
-} // namespace st_funct
-
 #include <stdarg.h>
 #include <wchar.h>
 
 extern "C" void __input__st_funct(const char * format, int args, ...)
 {
     const QString fmt = QString::fromLatin1(format);
-    st_funct::GenericInputOutput * inp = st_funct::GenericInputOutput::instance();
+    GenericInputOutput * inp = GenericInputOutput::instance();
     inp->doInput(fmt);
     wchar_t buffer[4096];
     wchar_t err[256];
@@ -582,23 +578,23 @@ extern "C" void __output__st_funct(const char * format, int args, ...)
     for (int i=0; i<args; i++) {
         if (fmt[i]=='i') {
             int v = va_arg(vl, int);
-            result += st_funct::GenericInputOutput::output(v);
+            result += GenericInputOutput::output(v);
         }
         else if (fmt[i]=='r') {
             double v = va_arg(vl, double);
-            result += st_funct::GenericInputOutput::output(v);
+            result += GenericInputOutput::output(v);
         }
         else if (fmt[i]=='c') {
             wchar_t v = va_arg(vl, int);
-            result += st_funct::GenericInputOutput::output(v);
+            result += GenericInputOutput::output(v);
         }
         else if (fmt[i]=='s') {
             wchar_t * v = va_arg(vl, wchar_t*);
-            result += st_funct::GenericInputOutput::output(v);
+            result += GenericInputOutput::output(v);
         }
         else if (fmt[i]=='b') {
             unsigned char v = va_arg(vl, int);
-            result += st_funct::GenericInputOutput::output(v);
+            result += GenericInputOutput::output(v);
         }
     }
     va_end(vl);
