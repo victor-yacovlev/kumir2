@@ -1,2 +1,2 @@
 LIBS *= -l$$qtLibraryTarget(KumirStdLib)
-HEADERS += kumstdlib.h genericinputoutput.h
+HEADERS += ../../shared/stdlib/kumstdlib.h ../../shared/stdlib/genericinputoutput.h

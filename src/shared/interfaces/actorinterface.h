@@ -2,6 +2,9 @@
 #define ACTORINTERFACE_H
 #include <QtCore>
 //Kumir actor interface
+
+#include "visualcomponent.h"
+
 namespace Shared
 {
 
@@ -27,11 +30,14 @@ public:
     virtual QVariant     result() const =0;
     virtual QStringList actorLibraries() const = 0;
     virtual QStringList usedQtLibraries() const = 0;
+    virtual bool requiresGui() const = 0;
     virtual void   runFunct(const QString & alg,const QList<QVariant> &params)=0;
     virtual QList<QVariant> algOptResults() const =0;//optional results
-    virtual QWidget* mainWidget()=0;
+    virtual VisualComponent* mainWidget()=0;
     virtual void reset() = 0;
     virtual QString errorText() const = 0;
+signals:
+    void sync();
 };
 
 }

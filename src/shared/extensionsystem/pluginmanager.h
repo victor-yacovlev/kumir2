@@ -57,6 +57,9 @@ public:
     /** Returns plugin dependency by name */
     KPlugin * dependentPlugin(const QString &name, const class KPlugin * p) const;
 
+    /** Return all plugins matched by regexp */
+    QList<KPlugin*> loadedPlugins(const QRegExp & rx = QRegExp("*", Qt::CaseSensitive, QRegExp::Wildcard));
+
 public slots:
 
     /** Show settings for all modules

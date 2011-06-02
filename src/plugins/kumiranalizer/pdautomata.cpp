@@ -1409,7 +1409,8 @@ void PDAutomataPrivate::processCorrectModuleEnd()
 
 void PDAutomataPrivate::processCorrectLoad()
 {
-    // nothing to do
+    source[currentPosition]->mod = currentModule;
+    source[currentPosition]->alg = 0;
 }
 
 void PDAutomataPrivate::setGarbageAlgError()

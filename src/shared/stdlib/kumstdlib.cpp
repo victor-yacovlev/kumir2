@@ -6,7 +6,7 @@
 
 static wchar_t __error__st_funct[256];
 
-extern QString __get_error_st_funct()
+extern QString __get_error__st_funct()
 {
     return QString::fromWCharArray(__error__st_funct);
 }

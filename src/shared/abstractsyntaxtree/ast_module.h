@@ -33,6 +33,7 @@ struct ExternalModuleReference {
     QString nameSpace;
     QStringList moduleLibraries;
     QStringList usedQtLibraries;
+    bool requiresGuiEventLoop;
 };
 
 /** Module public header */

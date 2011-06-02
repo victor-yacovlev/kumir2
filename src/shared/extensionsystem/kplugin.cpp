@@ -8,6 +8,11 @@ KPlugin::KPlugin()
 {
 }
 
+QList<KPlugin*> KPlugin::loadedPlugins(const QRegExp &rx)
+{
+    return PluginManager::instance()->loadedPlugins(rx);
+}
+
 PluginSpec KPlugin::pluginSpec() const
 {
     return PluginManager::instance()->specByObject(this);

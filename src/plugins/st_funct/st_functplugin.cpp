@@ -446,7 +446,8 @@ void  St_functPlugin::runFunct(const QString & name,const QList<QVariant> &args)
         Res = QVariant(unicode__st_funct(buffer[0]));
     }
 
-    errText = __get_error_st_funct();
+    errText = __get_error__st_funct();
+    emit sync();
 }
 
 QList<QVariant> St_functPlugin::algOptResults() const
@@ -454,7 +455,7 @@ QList<QVariant> St_functPlugin::algOptResults() const
     return QList<QVariant>();
 }
 
-QWidget* St_functPlugin::mainWidget()
+VisualComponent* St_functPlugin::mainWidget()
 {
     return 0;
 }

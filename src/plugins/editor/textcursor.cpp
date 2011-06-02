@@ -970,11 +970,11 @@ void TextCursor::removeSelectedText()
                 }
                 end = qMax(j, end);
             }
-            if (m_document->at(i).lineEndSelected) {
-                if (selectionLineStart==-1)
-                    selectionLineStart = i;
-                selectionLineEnd = qMax(i+1, selectionLineEnd);
-            }
+        }
+        if (m_document->at(i).lineEndSelected) {
+            if (selectionLineStart==-1)
+                selectionLineStart = i;
+            selectionLineEnd = qMax(i+1, selectionLineEnd);
         }
         if (start!=-1) {
             (*m_document)[i].text = (*m_document)[i].text.mid(0, start)
@@ -983,8 +983,9 @@ void TextCursor::removeSelectedText()
                     + (*m_document)[i].highlight.mid(end+1);
             (*m_document)[i].selected = (*m_document)[i].selected.mid(0, start)
                     + (*m_document)[i].selected.mid(end+1);
-            addLineToRemove(i);
         }
+        if (i>=selectionLineStart && i<=selectionLineEnd)
+            addLineToRemove(i);
     }
 
 
@@ -1009,11 +1010,6 @@ void TextCursor::removeSelectedText()
         }
     }
 
-
-    for (int i=selectionLineStart; i<=selectionLineEnd; i++) {
-        if (i<m_document->size())
-            addLineToRemove(i);
-    }
 
     addLineToNew(selectionLineStart);
 

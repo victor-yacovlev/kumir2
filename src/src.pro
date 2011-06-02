@@ -5,4 +5,5 @@ SUBDIRS = \
     shared \
     app \
     app/kumir2-compiler.pro \
-    plugins
+    plugins \
+    actors

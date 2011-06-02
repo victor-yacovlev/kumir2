@@ -36,6 +36,14 @@ AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin, Analizer *qq)
     ActorInterface * stdFunct = qobject_cast<ActorInterface*>(plugin->myDependency("st_funct"));
     Q_ASSERT_X(stdFunct, "constructor AnalizerPrivate", "Can't' load st_func module");
     createModuleFromActor(stdFunct);
+    QList<ExtensionSystem::KPlugin*> actors = plugin->loadedPlugins(QRegExp("Actor*", Qt::CaseSensitive, QRegExp::Wildcard));
+    foreach (ExtensionSystem::KPlugin * obj, actors) {
+        ActorInterface * actor = qobject_cast<ActorInterface*>(obj);
+        if (actor) {
+            qDebug() << "Loading actor " << actor->name();
+            createModuleFromActor(actor);
+        }
+    }
 }
 
 AnalizerPrivate::~AnalizerPrivate()

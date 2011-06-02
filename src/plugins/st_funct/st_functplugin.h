@@ -24,10 +24,11 @@ public:
     QString name(ProgrammingLanguage pl = PL_Kumir, QLocale::Language nl = QLocale::Russian) const;
     QStringList actorLibraries() const;
     QStringList usedQtLibraries() const;
+    inline bool requiresGui() const { return false; }
     QVariant     result() const;
     void   runFunct(const QString &alg, const QList<QVariant> &params);
     QList<QVariant> algOptResults() const;//optional results
-    QWidget* mainWidget();
+    VisualComponent* mainWidget();
     void reset();
     QString errorText() const;
 

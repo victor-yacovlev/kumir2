@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ActorPainter::PainterWindow</class>
+ <widget class="QWidget" name="ActorPainter::PainterWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>685</width>
+    <height>559</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <item row="0" column="1">
+      <widget class="PainterRuler" name="horizontalRuler" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>24</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="PainterRuler" name="verticalRuler" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>24</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QScrollArea" name="scrollArea">
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <widget class="PainterView" name="view">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>643</width>
+          <height>488</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="statusBar">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="zoomLabel">
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="text">
+        <string>100%</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+  <action name="actionNew">
+   <property name="text">
+    <string>Новый лист...</string>
+   </property>
+  </action>
+  <action name="actionLoad_image">
+   <property name="text">
+    <string>Загрузить...</string>
+   </property>
+  </action>
+  <action name="actionSave_image">
+   <property name="text">
+    <string>Сохранить копию</string>
+   </property>
+  </action>
+  <action name="actionSave_image_as">
+   <property name="text">
+    <string>Сохранить копию как...</string>
+   </property>
+  </action>
+  <action name="actionReset">
+   <property name="text">
+    <string>Вернуть к исходному</string>
+   </property>
+  </action>
+  <action name="actionOriginal_size">
+   <property name="text">
+    <string>Масштаб 100%</string>
+   </property>
+  </action>
+  <action name="actionHalf_size">
+   <property name="text">
+    <string>Масштаб 50%</string>
+   </property>
+  </action>
+  <action name="actionFit_width">
+   <property name="text">
+    <string>Масштаб по ширине</string>
+   </property>
+  </action>
+  <action name="actionFit_height">
+   <property name="text">
+    <string>Масштаб по высоте</string>
+   </property>
+  </action>
+  <action name="actionFit_both">
+   <property name="text">
+    <string>Масштаб по окну</string>
+   </property>
+  </action>
+  <action name="actionHTML">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>#RRGGBB</string>
+   </property>
+  </action>
+  <action name="actionRGB">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>R, G, B</string>
+   </property>
+  </action>
+  <action name="actionCMYK">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C, M, Y, K</string>
+   </property>
+  </action>
+  <action name="actionHSL">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>H, S, L</string>
+   </property>
+  </action>
+  <action name="actionHSV">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>H, S, V</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PainterView</class>
+   <extends>QWidget</extends>
+   <header location="global">painterview.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PainterRuler</class>
+   <extends>QWidget</extends>
+   <header location="global">painterruler.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

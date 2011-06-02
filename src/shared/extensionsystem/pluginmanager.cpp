@@ -136,6 +136,30 @@ QString PluginManagerPrivate::parsePluginsRequest(const QString &templ, QList<Pl
     }
     plugins << cur;
     int starts = 0;
+
+    for (QList<PluginRequest>::iterator it=plugins.begin(); it!=plugins.end(); ) {
+        PluginRequest p = (*it);
+        if (p.name.contains("*") || p.name.contains("?")) {
+            if (p.start) {
+                return "Entry point defined for masked by * name in plugins template";
+            }
+            QDir dir(path);
+            QStringList entries = dir.entryList(QStringList() << p.name+".pluginspec", QDir::Files);
+            it = plugins.erase(it);
+            foreach (const QString & e, entries) {
+                PluginRequest pp;
+                pp.name = e.left(e.size()-11);
+                pp.arguments = p.arguments;
+                pp.start = false;
+                plugins.insert(it, pp);
+                it++;
+            }
+        }
+        else {
+            it++;
+        }
+    }
+
     for (int i=0; i<plugins.size(); i++) {
         if (plugins[i].start) {
             starts ++;
@@ -143,6 +167,7 @@ QString PluginManagerPrivate::parsePluginsRequest(const QString &templ, QList<Pl
         }
         names << plugins[i].name;
     }
+
     if (starts>1) {
         return "More than one entry point defined in plugins template";
     }
@@ -344,6 +369,17 @@ QString PluginManager::initializePlugins()
     return "";
 }
 
+
+QList<KPlugin*> PluginManager::loadedPlugins(const QRegExp &rx)
+{
+    QList<KPlugin*> result;
+    for (int i=0; i<d->specs.size(); i++) {
+        if (rx.exactMatch(d->specs[i].name)) {
+            result << d->objects[i];
+        }
+    }
+    return result;
+}
 
 QString PluginManager::start()
 {

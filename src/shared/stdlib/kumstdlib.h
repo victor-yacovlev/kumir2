@@ -1,7 +1,7 @@
 #ifndef STDLIB_H
 #define STDLIB_H
 
-extern QString __get_error_st_funct();
+extern QString __get_error__st_funct();
 
 extern "C" void __init_garbage_collector__();
 extern "C" void __free_garbage_collector__();
