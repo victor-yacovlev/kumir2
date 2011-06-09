@@ -2,9 +2,10 @@
 #define PAINTERWINDOW_H
 
 #include <QtGui>
-#include "interfaces/visualcomponent.h"
+#include "extensionsystem/visualcomponent.h"
 
-using namespace Shared;
+
+using namespace ExtensionSystem;
 
 namespace ActorPainter {
 

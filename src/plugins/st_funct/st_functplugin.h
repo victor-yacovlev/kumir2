@@ -28,7 +28,7 @@ public:
     QVariant     result() const;
     void   runFunct(const QString &alg, const QList<QVariant> &params);
     QList<QVariant> algOptResults() const;//optional results
-    VisualComponent* mainWidget();
+    ExtensionSystem::VisualComponent* mainWidget();
     void reset();
     QString errorText() const;
 

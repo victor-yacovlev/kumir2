@@ -11,11 +11,13 @@ class EditorPlugin
         , public Shared::EditorInterface
 
 {
+    Q_OBJECT
+    Q_INTERFACES(Shared::EditorInterface)
 public:
     EditorPlugin();
     ~EditorPlugin();
 
-    QPair<int, Shared::VisualComponent*> newDocument(const QString &analizerName = "Analizer"
+    QPair<int, ExtensionSystem::VisualComponent*> newDocument(const QString &analizerName = "Analizer"
                                                      , const QString &initialText = "");
 
     void closeDocument(int documentId);

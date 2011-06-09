@@ -2,7 +2,7 @@
 #define EDITORSTANDALONEWINDOW_H
 
 #include <QtGui>
-#include "interfaces/visualcomponent.h"
+#include "extensionsystem/visualcomponent.h"
 #include "settingspage.h"
 
 
@@ -41,7 +41,7 @@ private:
 
     void setupEditor();
     int i_analizerId;
-    class Shared::VisualComponent * m_editor;
+    class ExtensionSystem::VisualComponent * m_editor;
     class EditorPlugin * m_plugin;
     QSettings * m_settings;
     QString s_fileName;

@@ -18,6 +18,7 @@ public:
                          , QSettings * settings
                          , QScrollBar * horizontalSB
                          , QScrollBar * verticalSB
+                         , bool hasAnalizer
                          , QWidget *parent = 0);
     int widthInChars() const;
     int charWidth() const;
@@ -86,6 +87,7 @@ private:
     QPoint pnt_dropPosMarker;
     QPoint pnt_dropPosCorner;
     int i_marginAlpha;
+    bool b_hasAnalizer;
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
 

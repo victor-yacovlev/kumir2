@@ -14,7 +14,8 @@ HEADERS += \
     kplugin.h \
     pluginspec.h \
     pluginmanager.h \
-    settingsdialog.h
+    settingsdialog.h \
+    visualcomponent.h
 
 SOURCES += \
     kplugin.cpp \

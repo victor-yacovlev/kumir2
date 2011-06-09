@@ -41,7 +41,7 @@ protected:
 
     QSettings * mySettings() const;
 
-    QList<KPlugin*> loadedPlugins(const QRegExp &rx = QRegExp("*", Qt::CaseSensitive, QRegExp::Wildcard));
+    QList<KPlugin*> loadedPlugins(const QString &pattern = "*");
 
 };
 

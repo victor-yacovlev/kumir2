@@ -370,9 +370,10 @@ QString PluginManager::initializePlugins()
 }
 
 
-QList<KPlugin*> PluginManager::loadedPlugins(const QRegExp &rx)
+QList<KPlugin*> PluginManager::loadedPlugins(const QString &pattern)
 {
     QList<KPlugin*> result;
+    const QRegExp rx = QRegExp(pattern, Qt::CaseSensitive, QRegExp::Wildcard);
     for (int i=0; i<d->specs.size(); i++) {
         if (rx.exactMatch(d->specs[i].name)) {
             result << d->objects[i];

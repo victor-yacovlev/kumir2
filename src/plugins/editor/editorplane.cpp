@@ -20,6 +20,7 @@ EditorPlane::EditorPlane(TextDocument * doc
                          , QSettings * settings
                          , QScrollBar * horizontalSB
                          , QScrollBar * verticalSB
+                         , bool hasAnalizer
                          , QWidget *parent) :
     QWidget(parent)
 {
@@ -31,6 +32,7 @@ EditorPlane::EditorPlane(TextDocument * doc
     m_settings = settings;
     m_horizontalScrollBar = horizontalSB;
     m_verticalScrollBar = verticalSB;
+    b_hasAnalizer = hasAnalizer;
     connect(m_cursor, SIGNAL(updateRequest()), this, SLOT(updateCursor()));
     connect(m_cursor, SIGNAL(updateRequest(int,int)), this, SLOT(updateText(int,int)));
     setFocusPolicy(Qt::StrongFocus);
@@ -82,7 +84,7 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
     //    qDebug() << "x  = " << e->pos().x();
     m_cursor->setViewMode(TextCursor::VM_Hidden);
     pnt_marginPress = pnt_textPress = QPoint(-1000, -1000);
-    if (e->pos().x()>=(mn-2) && e->pos().x()<=(mn+2)) {
+    if (b_hasAnalizer && e->pos().x()>=(mn-2) && e->pos().x()<=(mn+2)) {
         // Begin drag margin line
         pnt_marginPress = e->pos();
     }
@@ -135,7 +137,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
     else if (e->pos().x()<=mn-2) {
         QApplication::restoreOverrideCursor();
     }
-    else if (e->pos().x()<=mn+2) {
+    else if (b_hasAnalizer && e->pos().x()<=mn+2) {
         QApplication::setOverrideCursor(Qt::SplitHCursor);
     }
     else {
@@ -336,11 +338,13 @@ void EditorPlane::paintEvent(QPaintEvent *e)
     paintLineNumbers(&p, e->rect());
     paintCursor(&p, e->rect());
 
-    paintMarginBackground(&p, e->rect());
+    if (b_hasAnalizer) {
+        paintMarginBackground(&p, e->rect());
 
-    paintMarginText(&p, e->rect());
+        paintMarginText(&p, e->rect());
 
-    paintNewMarginLine(&p);
+        paintNewMarginLine(&p);
+    }
     paintDropPosition(&p);
 
     e->accept();
@@ -1212,7 +1216,9 @@ void EditorPlane::setProperFormat(QPainter *p, Shared::LexemType type, const QCh
 int EditorPlane::widthInChars() const
 {
     const int cw = charWidth();
-    const int marginMinWidth = cw * m_settings->value(MarginWidthKey, MarginWidthDefault).toInt();;
+    int marginMinWidth = cw * m_settings->value(MarginWidthKey, MarginWidthDefault).toInt();;
+    if (!b_hasAnalizer)
+        marginMinWidth = 0;
     const int myWidth = width();
     const int availableWidth = myWidth - marginMinWidth;
     const int result = availableWidth / cw - 5;

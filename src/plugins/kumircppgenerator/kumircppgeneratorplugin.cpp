@@ -25,6 +25,7 @@ struct Module {
 struct KumirCppGeneratorPrivate {
     QList<Module*> modules;
     NameProvider * nameProvider;
+    bool requireGui;
     const AST::Data * ast;
     void addModule(const AST::Module * module);
     void createModuleHeader(const AST::Module * module);
@@ -112,12 +113,15 @@ QString KumirCppGeneratorPlugin::initialize(const QStringList &arguments)
 
 void KumirCppGeneratorPrivate::addModule(const AST::Module *module)
 {
+    if (!module->header.enabled)
+        return;
     Module * mod = new Module;
     mod->name = module->header.name;
     if (module->header.type==AST::ModTypeExternal) {
         mod->cNamespace = module->header.cReference.nameSpace;
         mod->cLibraries = module->header.cReference.moduleLibraries;
         mod->qtLibraries = module->header.cReference.usedQtLibraries;
+        requireGui |= module->header.cReference.requiresGuiEventLoop;
     }
     else {
         if (!module->header.name.isEmpty()) {
@@ -498,7 +502,10 @@ QString KumirCppGeneratorPrivate::makeMain() const
 {
     QString result;
     result += "#include <locale.h>\n";
-    result += "int main(int argc, char** argv) {\n";
+    if (!requireGui)
+        result += "int main(int argc, char** argv) {\n";
+    else
+        result += "void __main_program__() {\n";
     result += "  __init_garbage_collector__();\n";
     result += "#ifndef WIN32\n";
     result += "  setlocale(LC_CTYPE, \"ru_RU.UTF-8\");\n";
@@ -530,8 +537,18 @@ QString KumirCppGeneratorPrivate::makeMain() const
         result += "  "+entryPoint+"();\n";
     }
     result += "  __free_garbage_collector__();\n";
-    result += "  return 0;\n";
+    if (!requireGui)
+        result += "  return 0;\n";
     result += "}\n";
+    if (requireGui) {
+        result += "\n";
+        result += "extern void __main_gui__( int argc, char *argv[], void(*func)() );\n\n";
+        result += "int main(int argc, char *argv[]) {\n";
+        result += "  __main_gui__(argc, argv, __main_program__);\n";
+        result += "  return 0;\n";
+        result += "}\n";
+    }
+
     return result;
 }
 
@@ -917,6 +934,7 @@ Shared::GeneratorResult KumirCppGeneratorPlugin::generateExecuable(
     , QIODevice *out)
 {
     d->ast = tree;
+    d->requireGui = false;
     for (int i=0; i<tree->modules.size(); i++) {
         if (tree->modules[i]->header.enabled)
             d->addModule(tree->modules[i]);
@@ -1047,11 +1065,25 @@ Shared::GeneratorResult KumirCppGeneratorPlugin::generateExecuable(
     command += " -mthreads";
     command += " -L"+QCoreApplication::applicationDirPath();
 #endif
+
     foreach (const QString L, ldPaths) {
         command += " -L"+L;
     }
 
     command += " "+QStringList(cFiles.toList()).join(" ");
+
+    if (d->requireGui) {
+        QString libName = "KumirGuiRunner";
+#ifndef QT_NO_DEBUG
+#ifdef Q_OS_MAC
+        libName += "_debug";
+#endif
+#ifdef Q_OS_WIN32
+        libName += "d";
+#endif
+#endif
+        command += " -l"+libName;
+    }
 
     foreach (const QString lib, libs.toList()) {
         command += " -l"+lib;
@@ -1090,7 +1122,7 @@ Shared::GeneratorResult KumirCppGeneratorPlugin::generateExecuable(
 
     proc->start(command);
 
-    proc->waitForFinished();
+    proc->waitForFinished(10000);
     proc->waitForReadyRead();
 
     if (qApp->arguments().contains("-V")) {

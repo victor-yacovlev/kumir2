@@ -102,21 +102,23 @@ make INSTALL_ROOT=$RPM_BUILD_ROOT/%{_prefix} install
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%package libs
+%package shared-libs
 Summary:	Shared libraries for various Kumir components
 
-%description libs
+%description shared-libs
 Contains kumir2 extension system skeleton and other libraries
 
 
-%files libs
+%files shared-libs
 %defattr(-,root,root)
 %dir %{_libdir}/kumir2
-%{_libdir}/kumir2/*.so*
+%{_libdir}/kumir2/libAbstractSyntaxTree.so*
+%{_libdir}/kumir2/libErrorMessages.so*
+%{_libdir}/kumir2/libExtensionSystem.so*
 
 
-%post libs -p /sbin/ldconfig
-%postun libs -p /sbin/ldconfig
+%post shared-libs -p /sbin/ldconfig
+%postun shared-libs -p /sbin/ldconfig
 
 %package module-KumirAnalizer
 Summary:	Kumir language analizer
@@ -139,7 +141,6 @@ Kumir language analizer
 Summary:	Kumir AST to native execuable translator
 Provides:	kumir2-module-Generator
 Requires:	kumir2-libs
-Requires:	kumir2-module-st_funct
 Requires:	gcc >= 4
 
 %description module-KumirCppGenerator
@@ -183,6 +184,22 @@ Provides ability to compile Kumir programs
 %dir %{_libdir}/kumir2/plugins
 %{_libdir}/kumir2/plugins/libKumirCompiler.so
 %{_libdir}/kumir2/plugins/KumirCompiler.pluginspec
+
+%package runtime
+Summary:	Libraries required to run Kumir-compiled programs
+
+%description
+This package is required in order to distribute Kumir-compiled
+programs without Kumir system itself.
+
+%files runtime
+%defattr(-,root,root)
+%dir %{_libdir}/kumir2
+%{_libdir}/kumir2/libKumirStdLib.so*
+%{_libdir}/kumir2/libKumirGuiRunner.so*
+
+%post runtime -p /sbin/ldconfig
+%postun runtime -p /sbin/ldconfig
 
 %package module-st_funct
 Summary:	Kumir Standart Library

@@ -33,13 +33,17 @@ EditorPlugin::~EditorPlugin()
     delete d;
 }
 
-QPair<int, VisualComponent*> EditorPlugin::newDocument(const QString &analizerName, const QString &initialText)
+QPair<int, ExtensionSystem::VisualComponent*> EditorPlugin::newDocument(const QString &analizerName, const QString &initialText)
 {
-    QObject * dep = myDependency(analizerName);
-    Q_CHECK_PTR(dep);
-    AnalizerInterface * a = dynamic_cast<AnalizerInterface*>( dep );
-    Q_CHECK_PTR(a);
-    int docId = a->newDocument();
+    AnalizerInterface * a = 0;
+    int docId = -1;
+    if (!analizerName.isEmpty()) {
+        QObject * dep = myDependency(analizerName);
+        Q_CHECK_PTR(dep);
+        a = dynamic_cast<AnalizerInterface*>( dep );
+        Q_CHECK_PTR(a);
+        docId = a->newDocument();
+    }
     Editor * w = new Editor(mySettings(), a, docId, 0);
     w->setText(initialText);
     int index = 0;
@@ -51,7 +55,7 @@ QPair<int, VisualComponent*> EditorPlugin::newDocument(const QString &analizerNa
     }
     Ed ed(a, w);
     d->editors[index] = ed;
-    return QPair<int, VisualComponent*>(index, w);
+    return QPair<int, ExtensionSystem::VisualComponent*>(index, w);
 }
 
 void EditorPlugin::closeDocument(int documentId)

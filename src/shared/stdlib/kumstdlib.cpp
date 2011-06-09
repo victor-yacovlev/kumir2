@@ -37,6 +37,50 @@ void __abort__st_funct(const QString &error)
 }
 
 
+extern "C" double __safe_div_rr__(double a, double b)
+{
+    if (b==0.0) {
+        QObject::tr("Division by zero", "StFuncError");
+        return 0.0;
+    }
+    else {
+        return a / b;
+    }
+}
+
+extern "C" double __safe_div_ri__(double a, int b)
+{
+    if (b==0) {
+        QObject::tr("Division by zero", "StFuncError");
+        return 0.0;
+    }
+    else {
+        return a / b;
+    }
+}
+
+extern "C" double __safe_div_ir__(int a, double b)
+{
+    if (b==0.0) {
+        QObject::tr("Division by zero", "StFuncError");
+        return 0.0;
+    }
+    else {
+        return a / b;
+    }
+}
+
+extern "C" double __safe_div_ii__(int a, int b)
+{
+    if (b==0) {
+        QObject::tr("Division by zero", "StFuncError");
+        return 0.0;
+    }
+    else {
+        return ( (double) a ) / ( (double) b );
+    }
+}
+
 extern "C" double abs__st_funct(double x)
 {
     return ::fabs(x);

@@ -4,7 +4,7 @@
 #include <QtCore>
 #include <QtGui>
 
-#include "interfaces/visualcomponent.h"
+#include "extensionsystem/visualcomponent.h"
 
 namespace ActorPainter {
 
@@ -17,7 +17,7 @@ public:
     static PainterWorker* instance();
     static PainterWorker* instance(QSettings * settings, QObject * parent);
     inline QString error() const { return lastError; }
-    Shared::VisualComponent * mainWidget();
+    ExtensionSystem::VisualComponent * mainWidget();
 public slots:
     void reset();
     void setPen(int width, const QString &cs);
@@ -59,7 +59,7 @@ private slots:
     void drawLine(int x0, int y0, int x1, int y1);
     void drawPolygon(const QVector<QPoint> &points);
 
-    void handleResetRequest();
+
     void handleNewImageRequest(int w, int h, const QString &bg, bool useTemplate, const QString &fileName);
     void handleLoadImageRequest(const QString &fileName);
 private:

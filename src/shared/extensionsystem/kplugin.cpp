@@ -8,9 +8,9 @@ KPlugin::KPlugin()
 {
 }
 
-QList<KPlugin*> KPlugin::loadedPlugins(const QRegExp &rx)
+QList<KPlugin*> KPlugin::loadedPlugins(const QString &pattern)
 {
-    return PluginManager::instance()->loadedPlugins(rx);
+    return PluginManager::instance()->loadedPlugins(pattern);
 }
 
 PluginSpec KPlugin::pluginSpec() const

@@ -2,20 +2,20 @@
 #define EDITOR_H
 
 #include <QtGui>
-#include "interfaces/visualcomponent.h"
+#include "extensionsystem/visualcomponent.h"
 #include "interfaces/analizerinterface.h"
 
 namespace Editor {
 
 class Editor
-        : public Shared::VisualComponent
+        : public ExtensionSystem::VisualComponent
 {
     Q_OBJECT
 public:
     explicit Editor(QSettings * settings = 0, Shared::AnalizerInterface * analizer = 0, int documentId = 0, QWidget *parent = 0);
     ~Editor();
     QList<QAction*> toolbarActions();
-    QList<Shared::MenuActionsGroup> menuActions();
+    QList<ExtensionSystem::MenuActionsGroup> menuActions();
     void setText(const QString &text);
     QString text() const;
     bool isModified() const;

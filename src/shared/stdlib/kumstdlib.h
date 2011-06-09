@@ -12,6 +12,11 @@ extern "C" void __garbage_collector_register_array__(struct __array__ * a);
 extern "C" void __garbage_collector_set_return_value__(wchar_t * s);
 extern "C" void __garbage_collector_end_algorhitm__();
 
+extern "C" double __safe_div_rr__(double a, double b);
+extern "C" double __safe_div_ri__(double a, int b);
+extern "C" double __safe_div_ir__(int a, double b);
+extern "C" double __safe_div_ii__(int a, int b);
+
 extern "C" void __init__st_funct();
 extern "C" double abs__st_funct(double x);
 extern "C" double arccos__st_funct(double x);
@@ -52,5 +57,7 @@ extern "C" wchar_t symbol__st_funct(int n);
 extern "C" wchar_t symbol2__st_funct(int n);
 extern "C" wchar_t * int_to_string__st_funct(int x);
 extern "C" int unicode__st_funct(wchar_t c);
+
+
 
 #endif

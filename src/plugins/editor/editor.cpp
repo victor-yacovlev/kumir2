@@ -225,8 +225,10 @@ Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentI
         d->clipboard = new Clipboard;
     d->horizontalScrollBar = new ScrollBar(Qt::Horizontal, this);
     d->verticalScrollBar = new ScrollBar(Qt::Vertical, this);
-    QList<QRegExp> fileNamesToOpen = d->analizer->supportedFileNamePattern();
-    d->plane = new EditorPlane(d->doc, d->cursor, d->clipboard, fileNamesToOpen, d->settings, d->horizontalScrollBar, d->verticalScrollBar, this);
+    QList<QRegExp> fileNamesToOpen = QList<QRegExp>() << QRegExp("*", Qt::CaseSensitive, QRegExp::Wildcard);
+    if (d->analizer)
+        fileNamesToOpen = d->analizer->supportedFileNamePattern();
+    d->plane = new EditorPlane(d->doc, d->cursor, d->clipboard, fileNamesToOpen, d->settings, d->horizontalScrollBar, d->verticalScrollBar, d->analizer!=NULL, this);
     d->statusBar = new StatusBar;
     connect(d->cursor, SIGNAL(positionChanged(int,int)),
             d->statusBar, SLOT(handleCursorPositionChanged(int,int)));
@@ -319,10 +321,10 @@ QList<QAction*> Editor::toolbarActions()
     return result;
 }
 
-QList<MenuActionsGroup> Editor::menuActions()
+QList<ExtensionSystem::MenuActionsGroup> Editor::menuActions()
 {
-    QList<MenuActionsGroup> result;
-    MenuActionsGroup edit;
+    QList<ExtensionSystem::MenuActionsGroup> result;
+    ExtensionSystem::MenuActionsGroup edit;
     QAction * separator = new QAction(this);
     separator->setSeparator(true);
     edit.menuText = tr("Edit");

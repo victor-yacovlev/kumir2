@@ -3,7 +3,7 @@
 #include <QtCore>
 //Kumir actor interface
 
-#include "visualcomponent.h"
+#include "extensionsystem/visualcomponent.h"
 
 namespace Shared
 {
@@ -33,7 +33,7 @@ public:
     virtual bool requiresGui() const = 0;
     virtual void   runFunct(const QString & alg,const QList<QVariant> &params)=0;
     virtual QList<QVariant> algOptResults() const =0;//optional results
-    virtual VisualComponent* mainWidget()=0;
+    virtual ExtensionSystem::VisualComponent* mainWidget()=0;
     virtual void reset() = 0;
     virtual QString errorText() const = 0;
 signals:

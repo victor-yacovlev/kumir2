@@ -58,7 +58,7 @@ public:
     KPlugin * dependentPlugin(const QString &name, const class KPlugin * p) const;
 
     /** Return all plugins matched by regexp */
-    QList<KPlugin*> loadedPlugins(const QRegExp & rx = QRegExp("*", Qt::CaseSensitive, QRegExp::Wildcard));
+    QList<KPlugin*> loadedPlugins(const QString & pattern = "*");
 
 public slots:
 

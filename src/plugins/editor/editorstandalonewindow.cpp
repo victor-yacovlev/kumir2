@@ -118,7 +118,7 @@ void EditorStandaloneWindow::newProgram()
         m_plugin->closeDocument(i_analizerId);
     i_analizerId = -1;
     m_editor = 0;
-    QPair<int,Shared::VisualComponent*> p = m_plugin->newDocument("Analizer","");
+    QPair<int,ExtensionSystem::VisualComponent*> p = m_plugin->newDocument("Analizer","");
     i_analizerId = p.first;
     m_editor = p.second;
     setupEditor();
@@ -140,7 +140,7 @@ bool EditorStandaloneWindow::loadFromFile(const QString &fileName)
         }
         i_analizerId = -1;
         m_editor = 0;
-        QPair<int,Shared::VisualComponent*> p = m_plugin->newDocument("Analizer", data);
+        QPair<int,ExtensionSystem::VisualComponent*> p = m_plugin->newDocument("Analizer", data);
         i_analizerId = p.first;
         m_editor = p.second;
         setupEditor();
@@ -209,8 +209,8 @@ void EditorStandaloneWindow::saveDocumentAs()
 
 void EditorStandaloneWindow::setupEditor()
 {
-    QList<Shared::MenuActionsGroup> menus = m_editor->menuActions();
-    foreach (const Shared::MenuActionsGroup & m, menus) {
+    QList<ExtensionSystem::MenuActionsGroup> menus = m_editor->menuActions();
+    foreach (const ExtensionSystem::MenuActionsGroup & m, menus) {
         QMenu * menu = 0;
         for (int i=0; i<menuBar()->children().size(); i++) {
             QMenu * mm = qobject_cast<QMenu*>(menuBar()->children().at(i));

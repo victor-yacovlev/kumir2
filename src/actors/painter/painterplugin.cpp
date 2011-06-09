@@ -8,6 +8,7 @@ PainterPlugin::PainterPlugin() :
     KPlugin()
 {
     m_mainWidget = 0;
+    __create2__ActorPainter(mySettings(), this);
 }
 
 QList<Alg> PainterPlugin::funcList() const
@@ -426,7 +427,7 @@ void PainterPlugin::runFunct(const QString &alg, const QList<QVariant> &params)
 
 void PainterPlugin::reset()
 {
-    __init2__ActorPainter(mySettings(), this);
+    __init__ActorPainter();
 }
 
 QString PainterPlugin::initialize(const QStringList &)
@@ -447,7 +448,7 @@ void PainterPlugin::stop()
 VisualComponent * PainterPlugin::mainWidget()
 {
     if (!m_mainWidget) {
-        __init2__ActorPainter(mySettings(), this);
+        __create2__ActorPainter(mySettings(), this);
         m_mainWidget = __mainWidget__ActorPainter();
     }
     return m_mainWidget;

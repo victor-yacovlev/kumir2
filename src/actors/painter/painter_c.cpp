@@ -4,6 +4,9 @@
 
 static wchar_t __error__ActorPainter[256];
 
+extern void __connect_to_kumir__(const QString &moduleName, const QString & key);
+extern void __create_window_for__(ExtensionSystem::VisualComponent * component);
+
 extern QString __get_error__ActorPainter()
 {
     return QString::fromWCharArray(__error__ActorPainter);
@@ -14,18 +17,36 @@ static ActorPainter::PainterWorker * p;
 extern "C" void __init__ActorPainter()
 {
     __error__ActorPainter[0] = L'\0';
-    p = ActorPainter::PainterWorker::instance();
     p->reset();
 }
 
-extern void __init__ActorPainter2(class QSettings *s, class QObject * parent)
+extern "C" void __create__ActorPainter()
 {
-    __error__ActorPainter[0] = L'\0';
-    p = ActorPainter::PainterWorker::instance(s, parent);
-    p->reset();
+    p = ActorPainter::PainterWorker::instance();
+    bool connectToKumir = false;
+    QString shmKey;
+    foreach (const QString & arg, qApp->arguments()) {
+        if (arg.startsWith("--attach=")) {
+            shmKey = arg.mid(9);
+            connectToKumir = true;
+            break;
+        }
+    }
+    if (connectToKumir) {
+        __connect_to_kumir__("ActorPainter", shmKey);
+    }
+    else {
+        __create_window_for__(p->mainWidget());
+    }
 }
 
-extern class Shared::VisualComponent * __mainWidget__ActorPainter()
+
+extern void __create2__ActorPainter(class QSettings *s, class QObject * parent)
+{
+    p = ActorPainter::PainterWorker::instance(s, parent);
+}
+
+extern class ExtensionSystem::VisualComponent * __mainWidget__ActorPainter()
 {
     return p->mainWidget();
 }

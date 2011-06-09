@@ -9,7 +9,7 @@ DESTDIR = $$IDE_LIBRARY_PATH
 include(rpath.pri)
 
 TARGET = $$qtLibraryTarget($$TARGET)
-
+INCLUDEPATH += $$IDE_SOURCE_TREE/src/shared
 #contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
 
 !macx {

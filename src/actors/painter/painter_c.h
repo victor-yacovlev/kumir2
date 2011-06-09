@@ -12,13 +12,14 @@ struct __array__ {
     char type;
 };
 
-namespace Shared { class VisualComponent; }
+namespace ExtensionSystem { class VisualComponent; }
 
 extern QString __get_error__ActorPainter();
 
 extern "C" void __init__ActorPainter();
-extern void __init2__ActorPainter(class QSettings *s, class QObject * parent);
-extern class Shared::VisualComponent * __mainWidget__ActorPainter();
+extern "C" void __create__ActorPainter();
+extern void __create2__ActorPainter(class QSettings *s, class QObject * parent);
+extern class ExtensionSystem::VisualComponent * __mainWidget__ActorPainter();
 
 extern "C" void setPen__ActorPainter(int width, const wchar_t * ss);
 extern "C" void setDensity__ActorPainter(int dens);

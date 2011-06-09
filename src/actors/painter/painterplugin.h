@@ -6,6 +6,7 @@
 #include "interfaces/actorinterface.h"
 
 using namespace Shared;
+using namespace ExtensionSystem;
 
 namespace ActorPainter {
 

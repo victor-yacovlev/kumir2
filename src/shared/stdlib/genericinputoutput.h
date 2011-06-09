@@ -3,7 +3,15 @@
 
 #include <QtCore>
 
-class GenericInputOutput : public QObject
+#ifdef STDLIB_LIBRARY
+#define STDLIB_EXPORT Q_DECL_EXPORT
+#else
+#define STDLIB_EXPORT Q_DECL_IMPORT
+#endif
+
+namespace StdLib {
+
+class STDLIB_EXPORT GenericInputOutput : public QObject
 {
 public:
     explicit GenericInputOutput(QObject *parent = 0);
@@ -61,6 +69,8 @@ private:
     static class GenericInputOutput * m_instance;
 
 };
+
+}
 
 extern "C" void __input__st_funct(const char * format, int args, ...);
 extern "C" void __output__st_funct(const char * format, int args, ...);
