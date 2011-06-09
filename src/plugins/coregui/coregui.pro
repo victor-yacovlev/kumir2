@@ -12,12 +12,14 @@ OTHER_FILES += CoreGUI.pluginspec
 HEADERS += \
     mainwindow.h \
     plugin.h \
-    switchworkspacedialog.h
+    switchworkspacedialog.h \
+    tabwidget.h
 
 SOURCES += \
     mainwindow.cpp \
     plugin.cpp \
-    switchworkspacedialog.cpp
+    switchworkspacedialog.cpp \
+    tabwidget.cpp
 
 FORMS += \
     mainwindow.ui \

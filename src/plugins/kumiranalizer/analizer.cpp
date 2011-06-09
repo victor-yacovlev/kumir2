@@ -40,7 +40,7 @@ AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin, Analizer *qq)
     foreach (QObject *o, actors) {
         ActorInterface * actor = qobject_cast<ActorInterface*>(o);
         if (actor) {
-            qDebug() << "Loading actor " << actor->name();
+//            qDebug() << "Loading actor " << actor->name();
             createModuleFromActor(actor);
         }
     }

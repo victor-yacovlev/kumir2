@@ -28,17 +28,28 @@ public:
     void addCentralComponent(const QString & title, VisualComponent * c);
     ~MainWindow();
 public slots:
-    void loadFromFile(const QString &fileName);
+    void loadFromUrl(const QUrl & url);
     void restoreSession();
     void newProgram();
     void newText();
+    void fileOpen();
 
 private slots:
     void handleMenuAccess();
+    void updateToolBar();
+
 
 private:
     QString suggestNewFileName(const QString &suffix) const;
     void createTopLevelMenus(VisualComponent * c, bool tabDependent);
+    bool checkForSaved(VisualComponent * c);
+    static QIcon actionIcon(const QString & name);
+
+    QActionGroup * gr_fileActions;
+    QActionGroup * gr_kumirActions;
+    QActionGroup * gr_pascalActions;
+    QActionGroup * gr_otherActions;
+
 
     Ui::MainWindow *ui;
     Plugin *m_plugin;

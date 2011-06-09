@@ -17,6 +17,7 @@ Plugin::Plugin() :
 QString Plugin::InitialTextKey = "InitialText";
 QString Plugin::SessionFilesListKey = "Session/Files";
 QString Plugin::SessionTabIndexKey = "Session/TabIndex";
+QString Plugin::RecentFileKey = "History/FileDialog";
 
 QString Plugin::initialize(const QStringList &)
 {

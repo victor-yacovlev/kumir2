@@ -23,6 +23,7 @@ public:
     static QString InitialTextKey;
     static QString SessionFilesListKey;
     static QString SessionTabIndexKey;
+    static QString RecentFileKey;
 protected:
     QString initialize(const QStringList &arguments);
     void start();

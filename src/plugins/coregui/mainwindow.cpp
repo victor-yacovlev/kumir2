@@ -10,12 +10,34 @@ MainWindow::MainWindow(Plugin * p) :
     m_plugin(p)
 {
     ui->setupUi(this);
+
+    ui->menuNew->setIcon(actionIcon("document-new"));
+    ui->actionOpen->setIcon(actionIcon("document-open"));
+    ui->actionSave->setIcon(actionIcon("document-save"));
+
     ui->menuFile->setWindowTitle(ui->menuFile->title());
     ui->menuHelp->setWindowTitle(ui->menuHelp->title());
 
     connect(ui->actionNewProgram, SIGNAL(triggered()), this, SLOT(newProgram()));
     connect(ui->actionNewText, SIGNAL(triggered()), this, SLOT(newText()));
+    connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(fileOpen()));
 
+    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(updateToolBar()));
+
+    gr_fileActions = new QActionGroup(this);
+    gr_fileActions->addAction(ui->actionSave);
+
+    gr_kumirActions = new QActionGroup(this);
+    gr_pascalActions = new QActionGroup(this);
+
+    gr_otherActions = new QActionGroup(this);
+
+}
+
+QIcon MainWindow::actionIcon(const QString &name)
+{
+    const QString iconsPath = qApp->property("sharePath").toString()+"/coregui/icons/";
+    return QIcon::fromTheme(name, QIcon(iconsPath+name+".png"));
 }
 
 MainWindow::~MainWindow()
@@ -77,10 +99,29 @@ QString MainWindow::suggestNewFileName(const QString &suffix) const
     return result+suffix;
 }
 
+
 void MainWindow::addCentralComponent(const QString &title, VisualComponent *c)
 {
     ui->tabWidget->addTab(c, title);
     createTopLevelMenus(c, true);
+}
+
+void MainWindow::updateToolBar()
+{
+    ui->toolBar->clear();
+    ui->toolBar->addActions(gr_fileActions->actions());
+    ui->toolBar->addSeparator();
+    VisualComponent * vc = qobject_cast<VisualComponent*>(ui->tabWidget->currentWidget());
+    if (vc) {
+        ui->toolBar->addActions(vc->toolbarActions());
+        ui->toolBar->addSeparator();
+        if (vc->property("fileName").toString().endsWith(".kum")) {
+            ui->toolBar->addActions(gr_kumirActions->actions());
+            ui->toolBar->addSeparator();
+        }
+    }
+    ui->toolBar->addActions(gr_otherActions->actions());
+
 }
 
 void MainWindow::createTopLevelMenus(VisualComponent *c, bool tabDependent)
@@ -145,7 +186,7 @@ void MainWindow::restoreSession()
     int tabIndex = m_plugin->mySettings()->value(Plugin::SessionTabIndexKey, 0).toInt();
     tabIndex = qMax(0, qMin(sessionFiles.size()-1, tabIndex));
     for (int i=0; i<sessionFiles.size(); i++) {
-        loadFromFile(sessionFiles[i]);
+        loadFromUrl(QUrl::fromLocalFile(QDir::current().absoluteFilePath(sessionFiles[i])));
     }
     if (sessionFiles.isEmpty()) {
         newProgram();
@@ -153,9 +194,38 @@ void MainWindow::restoreSession()
     ui->tabWidget->setCurrentIndex(tabIndex);
 }
 
-void MainWindow::loadFromFile(const QString &)
+void MainWindow::fileOpen()
 {
+    const QString recent = m_plugin->mySettings()->value(Plugin::RecentFileKey, QDir::currentPath()).toString();
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Load file..."),
+                                                    recent,
+                                                    QString(tr("Kumir programs (*.kum);;Pascal programs (*.pas *.pp);;Web pages (*.html *.htm);;Text files (*.txt);;All files (*)"))
+                                                    );
+    if (!fileName.isEmpty()) {
+        m_plugin->mySettings()->setValue(Plugin::RecentFileKey, fileName);
+        loadFromUrl(QUrl::fromLocalFile(fileName));
+    }
+}
 
+void MainWindow::loadFromUrl(const QUrl & url)
+{
+    enum Type { Text, Kumir, Pascal, WWW } type;
+    if (url.scheme().startsWith("file")) {
+        const QString fileName = url.toLocalFile();
+        const QString suffix = QFileInfo(fileName).suffix();
+        if (suffix=="kum")
+            type = Kumir;
+        else if (suffix=="pas" || suffix=="pp")
+            type = Pascal;
+        else if (suffix=="html" || suffix=="htm")
+            type = WWW;
+        else
+            type = Text;
+    }
+    else {
+        type = WWW;
+    }
 }
 
 } // namespace CoreGUI
