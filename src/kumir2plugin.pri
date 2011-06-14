@@ -11,6 +11,8 @@ isEmpty(TARGET) {
     error("kumir2plugin.pri: You must provide a TARGET")
 }
 
+TRANSLATIONS += ../../../share/kumir2/translations/$${TARGET}_ru.ts
+
 PLUGINSPECS = $${_PRO_FILE_PWD_}/$${TARGET}.pluginspec
 copy2build.input = PLUGINSPECS
 copy2build.output = $$DESTDIR/${QMAKE_FUNC_FILE_IN_stripSrcDir}

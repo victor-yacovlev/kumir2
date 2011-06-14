@@ -19,13 +19,16 @@ namespace Ui {
     class MainWindow;
 }
 
+
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
+    enum DocumentType { Text, Kumir, Pascal, WWW };
     explicit MainWindow(Plugin * p);
-    void addCentralComponent(const QString & title, VisualComponent * c);
+    void addCentralComponent(const QString & title, VisualComponent * c, DocumentType type, bool enableToolbar);
     ~MainWindow();
 public slots:
     QStringList recentFiles(bool fullPaths) const;
@@ -36,14 +39,17 @@ public slots:
     void newProgram();
     void newText();
     void fileOpen();
+    void closeCurrentTab();
+    void closeTab(int index);
 
 private slots:
     void handleMenuAccess();
-    void updateToolBar();
     void addToRecent(const QString &fileName);
 
 
 private:
+    void showEvent(QShowEvent *);
+    void closeEvent(QCloseEvent *);
     QString suggestNewFileName(const QString &suffix) const;
     void createTopLevelMenus(VisualComponent * c, bool tabDependent);
     bool checkForSaved(VisualComponent * c);

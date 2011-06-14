@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Начало работы</title>
+    
+    <style type="text/css">
+    body {
+        background-color: rgb(200,200,200);
+        font-family: sans-serif;
+    }
+    #header {
+        display: block;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        right: 20px;
+        height: 50px;
+        background-color: green;
+        color: white;
+        font-weight: bold;
+        padding-top: 8px;
+        font-size: 30px;
+        text-align: center;
+        border: 1px solid white;
+        
+    }
+    #start {
+        display: block;
+        position: fixed;
+        top: 70px;
+        left: 20px;
+        right: 20px;
+        bottom: 20px;
+        background-color: rgb(240,240,255);
+        font-size: 18px;
+        border: 1px solid white;
+        padding: 5px;
+    }
+    
+    #start a {
+        text-decoration: none;
+        color: green;
+    }
+    
+    #start a:hover {
+        text-decoration: underline;
+    }
+    
+    .group {
+        width: 50%;
+        display: table-cell;
+        border: 1px solid lightgray;
+        padding: 5px;
+    }
+    
+    .group h2 {
+        font-size: 24px;
+        text-decoration: underline;
+        font-variant: small-caps;
+        text-align: center;
+    }
+    
+    .group:hover {
+        background-color: white;
+    }
+    
+    </style>
+    
+    
+    
+</head>
+
+<body>
+    
+<div id="header">
+    КуМир 2.0
+</div>
+<div id="start">
+    <div style="display: table;width:100%;">
+        <div style="display: table-row;">
+            <div class="group">
+                <h2>Начало работы</h2>
+                <ul>
+                    <li>
+                        <a href="" onclick="mainWindow.newProgram()">Новая программа</a>
+                    </li>
+                    <li>
+                        <a href="" onclick="mainWindow.newText()">Новый текст</a>
+                    </li>
+                    <li>
+                        <a href="" onclick="mainWindow.fileOpen()">Загрузить из файла...</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="group">
+                <h2>Недавние файлы</h2>
+                <script type="text/javascript">
+                var recentFiles = mainWindow.recentFiles(false);
+                if (recentFiles.length==0) {
+                    document.write("<span class='empty'>Нет файлов</span>");
+                }
+                else {
+                    document.write("<ul>\n");
+                    for (var i=0; i<recentFiles.length; i++) {
+                        var line = "<a href='' onclick='mainWindow.loadRecentFile("+i+")'>"+recentFiles[i]+"</a>";
+                        document.write("<li>"+line+"</li>\n");
+                    }
+                    document.write("</ul>\n");
+                }
+                </script>
+            </div>
+        </div>
+        <div style="display: table-row;">
+            <div class="group">
+                <h2>Информация</h2>
+                <ul>
+                    <li>
+                        <a href="whatsnew-2.0.html">Что нового в КуМир-2</a>
+                    </li>
+                    <li>
+                        <a href="reference.html">Руководство пользователя</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="group">
+                <h2>КуМир в сети</h2>
+                <ul>
+                    <li>
+                        <a href="http://www.niisi.ru/kumir/">Официальный сайт</a>
+                    </li>
+                    <li>
+                        <a href="http://www.kumir.su/cgi-bin/mwf/forum_show.pl">Форум</a>
+                    </li>
+                    <li>
+                        <a href="http://lpm.org.ru/kumir/">Свежие версии</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

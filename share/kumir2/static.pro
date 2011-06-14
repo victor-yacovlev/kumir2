@@ -32,6 +32,7 @@ DATA_DIRS = kumiranalizer kumircppgenerator coregui
         win32:files ~= s|\\\\|/|g
         for(file, files):!exists($$file/*):FILES += $$file
     }
+    
 
     copy2build.input = FILES
     copy2build.output = $$IDE_DATA_PATH/${QMAKE_FUNC_FILE_IN_stripSrcDir}
@@ -43,6 +44,8 @@ DATA_DIRS = kumiranalizer kumircppgenerator coregui
     QMAKE_EXTRA_COMPILERS += copy2build
 
 }
+
+system(python translations/run_lrelease.py $$PWD/translations $$IDE_DATA_PATH/translations)
 
 !macx {
     for(data_dir, DATA_DIRS) {

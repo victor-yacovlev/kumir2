@@ -26,6 +26,7 @@ public:
     static QString SessionTabIndexKey;
     static QString RecentFileKey;
     static QString RecentFilesKey;
+    static QString MainWindowGeometryKey;
 protected:
     QString initialize(const QStringList &arguments);
     void start();

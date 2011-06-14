@@ -16,7 +16,7 @@
     <message>
         <location filename="../../../src/plugins/browser/component.cpp" line="35"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>Редактирование</translation>
     </message>
 </context>
 </TS>

@@ -26,6 +26,11 @@ void showErrorMessage(const QString & text)
     }
 }
 
+QString getLanguage()
+{
+    return "ru"; // TODO implement sometime in future...
+}
+
 
 int main(int argc, char **argv)
 { 
@@ -35,7 +40,19 @@ int main(int argc, char **argv)
 #endif
     QApplication * app = new QApplication(argc, argv, gui);
     const QString sharePath = QDir(app->applicationDirPath()+SHARE_PATH).canonicalPath();
+    QDir translationsDir(sharePath+"/translations");
+    QStringList ts_files = translationsDir.entryList(QStringList() << "*_"+getLanguage()+".qm");
+    foreach (QString tsname, ts_files) {
+        tsname = tsname.mid(0, tsname.length()-3);
+        QTranslator * tr = new QTranslator(app);
+        if (tr->load(tsname, sharePath+"/translations")) {
+//            qDebug() << "Loaded " << tsname;
+            app->installTranslator(tr);
+        }
+    }
+
     app->setProperty("sharePath", sharePath);
+
     QSettings::setDefaultFormat(QSettings::IniFormat);
 //    const QString settingsPath = QDir(app->applicationDirPath()+QString(SHARE_PATH)+"/default_settings").canonicalPath();
 //    QSettings::setPath(QSettings::IniFormat, QSettings::SystemScope, settingsPath);

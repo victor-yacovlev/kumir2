@@ -8,7 +8,12 @@ DESTDIR = $$IDE_LIBRARY_PATH
 
 include(rpath.pri)
 
+TRANSLATIONS += ../../../share/kumir2/translations/$${TARGET}_ru.ts
+
 TARGET = $$qtLibraryTarget($$TARGET)
+
+
+
 INCLUDEPATH += $$IDE_SOURCE_TREE/src/shared
 #contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
 

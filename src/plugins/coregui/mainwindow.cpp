@@ -7,6 +7,55 @@
 
 namespace CoreGUI {
 
+class TabWidgetElement
+        : public QWidget
+{
+    Q_OBJECT
+public:
+    inline explicit TabWidgetElement(VisualComponent * c
+                                     , bool enableToolBar
+                                     , MainWindow::DocumentType type
+                                     , QActionGroup * gr_fileActions
+                                     , QActionGroup * gr_kumirActions
+                                     , QActionGroup * gr_pascalActions
+                                     , QActionGroup * gr_otherActions
+                                     )
+        : QWidget()
+        , component(c)
+    {
+        setProperty("uncloseable", c->property("uncloseable"));
+        QVBoxLayout * l = new QVBoxLayout;
+        l->setContentsMargins(0,0,0,0);
+        l->setSpacing(0);
+        setLayout(l);
+        if (enableToolBar) {
+            QToolBar * tb = new QToolBar(this);
+            l->addWidget(tb);
+            if (type!=MainWindow::WWW) {
+                tb->addActions(gr_fileActions->actions());
+            }
+            tb->addSeparator();
+            foreach (QAction * a, c->toolbarActions())
+                tb->addAction(a);
+            if (type==MainWindow::Kumir) {
+                tb->addSeparator();
+                tb->addActions(gr_kumirActions->actions());
+            }
+            if (type==MainWindow::Pascal) {
+                tb->addSeparator();
+                tb->addActions(gr_pascalActions->actions());
+            }
+            if (!gr_otherActions->actions().isEmpty()) {
+                tb->addSeparator();
+                tb->addActions(gr_otherActions->actions());
+            }
+
+        }
+        l->addWidget(c);
+    }
+    VisualComponent * component;
+};
+
 MainWindow::MainWindow(Plugin * p) :
     QMainWindow(0),
     ui(new Ui::MainWindow),
@@ -24,8 +73,8 @@ MainWindow::MainWindow(Plugin * p) :
     connect(ui->actionNewProgram, SIGNAL(triggered()), this, SLOT(newProgram()));
     connect(ui->actionNewText, SIGNAL(triggered()), this, SLOT(newText()));
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(fileOpen()));
-
-    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(updateToolBar()));
+    connect(ui->actionClose, SIGNAL(triggered()), this, SLOT(closeCurrentTab()));
+    connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTab(int)));
 
     gr_fileActions = new QActionGroup(this);
     gr_fileActions->addAction(ui->actionSave);
@@ -35,6 +84,35 @@ MainWindow::MainWindow(Plugin * p) :
 
     gr_otherActions = new QActionGroup(this);
 
+}
+
+void MainWindow::closeCurrentTab()
+{
+    closeTab(ui->tabWidget->currentIndex());
+}
+
+void MainWindow::closeTab(int index)
+{
+    QWidget * w = ui->tabWidget->widget(index);
+    ui->tabWidget->removeTab(index);
+    w->deleteLater();
+}
+
+void MainWindow::closeEvent(QCloseEvent *e)
+{
+    QRect r(pos(), size());
+    m_plugin->mySettings()->setValue(Plugin::MainWindowGeometryKey, r);
+    e->accept();
+}
+
+void MainWindow::showEvent(QShowEvent *e)
+{
+    QRect r = m_plugin->mySettings()->value(Plugin::MainWindowGeometryKey, QRect(-1,-1,0,0)).toRect();
+    if (r.width()>0) {
+        resize(r.size());
+        move(r.topLeft());
+    }
+    e->accept();
 }
 
 QIcon MainWindow::actionIcon(const QString &name)
@@ -53,12 +131,15 @@ void MainWindow::newProgram()
     QObject * o = m_plugin->myDependency("Analizer");
     QString defaultText;
     QString suffix = ".txt";
+    DocumentType type = Text;
     if (QString(o->metaObject()->className()).toLower().contains("kumir")) {
         defaultText = QString::fromUtf8("алг\nнач\n\nкон");
         suffix = ".kum";
+        type = Kumir;
     }
     else if (QString(o->metaObject()->className()).toLower().contains("pascal")) {
         defaultText = "program;\n\nbegin\n\t\nend.";
+        type = Pascal;
         suffix = ".pas";
     }
     const QString initialText = m_plugin->mySettings()->value(Plugin::InitialTextKey, defaultText).toString();
@@ -68,7 +149,7 @@ void MainWindow::newProgram()
     vc->setProperty("documentId", id);
     QString fileName = suggestNewFileName(suffix);
     vc->setProperty("fileName", fileName);
-    addCentralComponent(fileName, vc);
+    addCentralComponent(fileName, vc, type, true);
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
     ui->tabWidget->currentWidget()->setFocus();
 }
@@ -81,7 +162,7 @@ void MainWindow::newText()
     vc->setProperty("documentId", id);
     QString fileName = suggestNewFileName(".txt");
     vc->setProperty("fileName", fileName);
-    addCentralComponent(fileName, vc);
+    addCentralComponent(fileName, vc, Text, true);
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
     ui->tabWidget->currentWidget()->setFocus();
 }
@@ -103,29 +184,14 @@ QString MainWindow::suggestNewFileName(const QString &suffix) const
 }
 
 
-void MainWindow::addCentralComponent(const QString &title, VisualComponent *c)
+void MainWindow::addCentralComponent(const QString &title, VisualComponent *c, DocumentType type, bool enableToolBar)
 {
-    ui->tabWidget->addTab(c, title);
+    TabWidgetElement * element = new TabWidgetElement(c,enableToolBar,type,gr_fileActions,gr_kumirActions,gr_pascalActions,gr_otherActions);
+    ui->tabWidget->addTab(element, title);
     createTopLevelMenus(c, true);
 }
 
-void MainWindow::updateToolBar()
-{
-    ui->toolBar->clear();
-    ui->toolBar->addActions(gr_fileActions->actions());
-    ui->toolBar->addSeparator();
-    VisualComponent * vc = qobject_cast<VisualComponent*>(ui->tabWidget->currentWidget());
-    if (vc) {
-        ui->toolBar->addActions(vc->toolbarActions());
-        ui->toolBar->addSeparator();
-        if (vc->property("fileName").toString().endsWith(".kum")) {
-            ui->toolBar->addActions(gr_kumirActions->actions());
-            ui->toolBar->addSeparator();
-        }
-    }
-    ui->toolBar->addActions(gr_otherActions->actions());
 
-}
 
 void MainWindow::createTopLevelMenus(VisualComponent *c, bool tabDependent)
 {
@@ -148,7 +214,7 @@ void MainWindow::createTopLevelMenus(VisualComponent *c, bool tabDependent)
         if (!found) {
             QMenu * menu = new QMenu(title, menuBar());
             menu->setWindowTitle(menu->title());
-            menu->setTearOffEnabled(true);
+//            menu->setTearOffEnabled(true);
             if (tabDependent)
                 connect(menu, SIGNAL(aboutToShow()), this, SLOT(handleMenuAccess()));
             else {
@@ -168,8 +234,10 @@ void MainWindow::handleMenuAccess()
     menu->clear();
     QWidget * currentTabWidget = ui->tabWidget->currentWidget();
     VisualComponent * vc = 0;
-    if (currentTabWidget)
-        vc = qobject_cast<VisualComponent*>(currentTabWidget);
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
+    if (!twe)
+        return;
+    vc = twe->component;
     if (vc) {
         MenuActionsGroup group;
         for (int i=0; i<vc->menuActions().size(); i++) {
@@ -193,7 +261,7 @@ void MainWindow::restoreSession()
         loadFromUrl(QUrl::fromLocalFile(QDir::current().absoluteFilePath(sessionFiles[i])));
     }
     if (sessionFiles.isEmpty()) {
-        addCentralComponent(tr("Start"), m_plugin->m_startPage);
+        addCentralComponent(tr("Start"), m_plugin->m_startPage, WWW, false);
     }
     ui->tabWidget->setCurrentIndex(tabIndex);
 }
@@ -245,7 +313,7 @@ void MainWindow::loadRecentFile(int index)
 
 void MainWindow::loadFromUrl(const QUrl & url)
 {
-    enum Type { Text, Kumir, Pascal, WWW } type;
+    DocumentType type;
     if (url.scheme().startsWith("file")) {
         const QString fileName = url.toLocalFile();
         const QString suffix = QFileInfo(fileName).suffix();
@@ -280,7 +348,7 @@ void MainWindow::loadFromUrl(const QUrl & url)
             vc->setProperty("documentId", id);
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
-            addCentralComponent(fileName, vc);
+            addCentralComponent(fileName, vc, Kumir, true);
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
         }
@@ -298,7 +366,7 @@ void MainWindow::loadFromUrl(const QUrl & url)
             vc->setProperty("documentId", id);
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
-            addCentralComponent(fileName, vc);
+            addCentralComponent(fileName, vc, Pascal, true);
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
         }
@@ -316,7 +384,7 @@ void MainWindow::loadFromUrl(const QUrl & url)
             vc->setProperty("documentId", id);
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
-            addCentralComponent(fileName, vc);
+            addCentralComponent(fileName, vc, Text, true);
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
         }
@@ -327,3 +395,5 @@ void MainWindow::loadFromUrl(const QUrl & url)
 }
 
 } // namespace CoreGUI
+
+#include "mainwindow.moc"

@@ -20,9 +20,11 @@ QString Plugin::SessionFilesListKey = "Session/Files";
 QString Plugin::SessionTabIndexKey = "Session/TabIndex";
 QString Plugin::RecentFileKey = "History/FileDialog";
 QString Plugin::RecentFilesKey = "History/RecentFiles";
+QString Plugin::MainWindowGeometryKey = "Geometry/MainWindow";
 
 QString Plugin::initialize(const QStringList &)
 {
+    QApplication::setWindowIcon(QIcon(QApplication::instance()->property("sharePath").toString()+"/coregui/kumir2-icon.png"));
     QString workspaceDir;
     m_workspaceDialog = new SwitchWorkspaceDialog(mySettings());
     if (mySettings()->value(SwitchWorkspaceDialog::SkipChooseWorkspaceKey, false).toBool()) {

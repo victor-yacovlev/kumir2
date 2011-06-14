@@ -15,6 +15,7 @@ StatusBar::StatusBar(QWidget *parent) :
     s_capsLockTemplateText = ui->capsLock->text();
     i_timerId = startTimer(500);
     setMaximumHeight(32);
+    ui->selectBufferButton->setVisible(false);
 }
 
 
