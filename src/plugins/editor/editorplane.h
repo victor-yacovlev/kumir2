@@ -37,6 +37,7 @@ public slots:
 protected:
     static QPolygon errorUnderline(int x, int y, int len);
     void dragEventHandler(QDragMoveEvent * e);
+    void wheelEvent(QWheelEvent *);
     void dragEnterEvent(QDragEnterEvent *e);
     void dragMoveEvent(QDragMoveEvent *e);
     void dragLeaveEvent(QDragLeaveEvent *);
@@ -52,7 +53,7 @@ protected:
     void updateScrollBars();
     void findCursor();
     void ensureCursorVisible();
-    void updateOffset();
+//    void updateOffset();
     void paintEvent(QPaintEvent *);
     QPoint offset() const;
     void paintBackground(QPainter *p, const QRect &rect);

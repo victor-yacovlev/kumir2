@@ -299,6 +299,7 @@ QStringList MainWindow::recentFiles(bool fullPaths) const
 void MainWindow::addToRecent(const QString &fileName)
 {
     QStringList r = m_plugin->mySettings()->value(Plugin::RecentFilesKey).toStringList();
+    r.removeAll(fileName);
     r.prepend(fileName);
     r = r.mid(0, qMax(5, r.size()));
     m_plugin->mySettings()->setValue(Plugin::RecentFilesKey, r);

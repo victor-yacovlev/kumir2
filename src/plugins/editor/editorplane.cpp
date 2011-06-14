@@ -1079,6 +1079,23 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
     p->restore();
 }
 
+void EditorPlane::wheelEvent(QWheelEvent *e)
+{
+    if (!m_verticalScrollBar->isEnabled() && e->orientation()==Qt::Vertical) {
+        e->ignore();
+        return;
+    }
+    if (!m_horizontalScrollBar->isEnabled() && e->orientation()==Qt::Horizontal) {
+        e->ignore();
+        return;
+    }
+    int degrees = e->delta() / 8;
+    int steps = degrees / 15;
+    QScrollBar * sb = e->orientation()==Qt::Vertical? m_verticalScrollBar : m_horizontalScrollBar;
+    sb->setValue(sb->value()-steps*sb->singleStep()*3);
+
+}
+
 void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
 {
     p->save();
