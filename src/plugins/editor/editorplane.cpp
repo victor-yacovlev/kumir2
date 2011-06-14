@@ -1097,7 +1097,7 @@ void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
 //                        ? "> "+m_document->at(i).errors[0]
 //                        : m_document->at(i).errors[0];
             const QString errText = m_document->at(i).errors[0];
-            p->drawText(marginLeft+4, y, errText);
+            p->drawText(marginLeft+4, y+offset().y(), errText);
         }
     }
     p->restore();
@@ -1140,12 +1140,25 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
             p->drawText(offset, y,  QString(m_document->at(i).text[j]));
             if (curType & Shared::LxTypeError) {
                 p->setPen(QColor(Qt::red));
-                p->drawLine(offset, y+2, offset+charWidth(), y+2);
+                QPolygon pp = errorUnderline(offset, y+2, charWidth());
+//                p->drawLine(offset, y+2, offset+charWidth(), y+2);
+                p->drawPolyline(pp);
             }
         }
 
     }
     p->restore();
+}
+
+QPolygon EditorPlane::errorUnderline(int x, int y, int len)
+{
+    QVector<QPoint> points = QVector<QPoint>(5);
+    points[0] = QPoint(x,y);
+    points[1] = QPoint(x+len/4, y+2);
+    points[2] = QPoint(x+len/2, y);
+    points[3] = QPoint(x+len/4*3, y+2);
+    points[4] = QPoint(x+len,y);
+    return QPolygon(points);
 }
 
 void EditorPlane::setProperFormat(QPainter *p, Shared::LexemType type, const QChar &ch)

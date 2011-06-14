@@ -35,6 +35,7 @@ public slots:
     void removeLine();
     void removeLineTail();
 protected:
+    static QPolygon errorUnderline(int x, int y, int len);
     void dragEventHandler(QDragMoveEvent * e);
     void dragEnterEvent(QDragEnterEvent *e);
     void dragMoveEvent(QDragMoveEvent *e);
