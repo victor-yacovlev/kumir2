@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.0" language="ru_RU">
+<context>
+    <name>ExtensionSystem::SettingsDialog</name>
+    <message>
+        <location filename="../../../src/shared/extensionsystem/settingsdialog.ui" line="14"/>
+        <source>Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+</TS>
