@@ -2,6 +2,9 @@
 #include "ui_mainwindow.h"
 #include "extensionsystem/visualcomponent.h"
 
+
+#include <algorithm>
+
 namespace CoreGUI {
 
 MainWindow::MainWindow(Plugin * p) :
@@ -133,16 +136,17 @@ void MainWindow::createTopLevelMenus(VisualComponent *c, bool tabDependent)
             menus << m;
     }
     for (int i=0; i<c->menuActions().size(); i++) {
-        const QString title = c->menuActions()[i].menuText;
+        const QString title = c->menuActions()[i].menuText.trimmed();
         bool found = false;
         for (int j=0; j<menus.size(); j++) {
-            if (menus[j]->title().trimmed()==title.trimmed()) {
+            const QString menuTitle = menus[j]->title().trimmed();
+            if (menuTitle==title) {
                 found = true;
                 break;
             }
         }
         if (!found) {
-            QMenu * menu = new QMenu(title, this);
+            QMenu * menu = new QMenu(title, menuBar());
             menu->setWindowTitle(menu->title());
             menu->setTearOffEnabled(true);
             if (tabDependent)
@@ -189,7 +193,7 @@ void MainWindow::restoreSession()
         loadFromUrl(QUrl::fromLocalFile(QDir::current().absoluteFilePath(sessionFiles[i])));
     }
     if (sessionFiles.isEmpty()) {
-        newProgram();
+        addCentralComponent(tr("Start"), m_plugin->m_startPage);
     }
     ui->tabWidget->setCurrentIndex(tabIndex);
 }
@@ -204,8 +208,39 @@ void MainWindow::fileOpen()
                                                     );
     if (!fileName.isEmpty()) {
         m_plugin->mySettings()->setValue(Plugin::RecentFileKey, fileName);
+        addToRecent(fileName);
         loadFromUrl(QUrl::fromLocalFile(fileName));
     }
+}
+
+QStringList MainWindow::recentFiles(bool fullPaths) const
+{
+    QStringList r = m_plugin->mySettings()->value(Plugin::RecentFilesKey).toStringList();
+    if (fullPaths)
+        return r;
+    else {
+        QStringList result;
+        foreach (const QString & s, r) {
+            result << QFileInfo(s).fileName();
+        }
+
+        return result;
+    }
+}
+
+void MainWindow::addToRecent(const QString &fileName)
+{
+    QStringList r = m_plugin->mySettings()->value(Plugin::RecentFilesKey).toStringList();
+    r.prepend(fileName);
+    r = r.mid(0, qMax(5, r.size()));
+    m_plugin->mySettings()->setValue(Plugin::RecentFilesKey, r);
+}
+
+void MainWindow::loadRecentFile(int index)
+{
+    QStringList r = recentFiles(true);
+    if (index>=0 && index<r.size())
+        loadFromUrl("file://"+r[index]);
 }
 
 void MainWindow::loadFromUrl(const QUrl & url)
@@ -225,6 +260,69 @@ void MainWindow::loadFromUrl(const QUrl & url)
     }
     else {
         type = WWW;
+    }
+    if (type==Kumir) {
+        QFile f(url.toLocalFile());
+        if (f.open(QIODevice::Text|QIODevice::ReadOnly)) {
+            QTextStream ts(&f);
+            ts.setCodec("UTF-16LE");
+            ts.setAutoDetectUnicode(true);
+            QStringList lines = ts.readAll().split("\n");
+            for (int i=0; i<lines.size(); i++) {
+                while (lines[i].startsWith(".")||lines[i].startsWith(" ")) {
+                    lines[i] = lines[i].mid(1);
+                }
+            }
+            f.close();
+            QPair<int, VisualComponent*> doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", lines.join("\n"));
+            VisualComponent* vc = doc.second;
+            int id = doc.first;
+            vc->setProperty("documentId", id);
+            QString fileName = QFileInfo(url.toLocalFile()).fileName();
+            vc->setProperty("fileName", url.toLocalFile());
+            addCentralComponent(fileName, vc);
+            ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
+            ui->tabWidget->currentWidget()->setFocus();
+        }
+    }
+    else if (type==Pascal) {
+        QFile f(url.toLocalFile());
+        if (f.open(QIODevice::Text|QIODevice::ReadOnly)) {
+            QTextStream ts(&f);
+            ts.setAutoDetectUnicode(true);
+            QString data = ts.readAll();
+            f.close();
+            QPair<int, VisualComponent*> doc = m_plugin->plugin_editor->newDocument("PascalAnalizer", data);
+            VisualComponent* vc = doc.second;
+            int id = doc.first;
+            vc->setProperty("documentId", id);
+            QString fileName = QFileInfo(url.toLocalFile()).fileName();
+            vc->setProperty("fileName", url.toLocalFile());
+            addCentralComponent(fileName, vc);
+            ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
+            ui->tabWidget->currentWidget()->setFocus();
+        }
+    }
+    else if (type==Text) {
+        QFile f(url.toLocalFile());
+        if (f.open(QIODevice::Text|QIODevice::ReadOnly)) {
+            QTextStream ts(&f);
+            ts.setAutoDetectUnicode(true);
+            QString data = ts.readAll();
+            f.close();
+            QPair<int, VisualComponent*> doc = m_plugin->plugin_editor->newDocument("", data);
+            VisualComponent* vc = doc.second;
+            int id = doc.first;
+            vc->setProperty("documentId", id);
+            QString fileName = QFileInfo(url.toLocalFile()).fileName();
+            vc->setProperty("fileName", url.toLocalFile());
+            addCentralComponent(fileName, vc);
+            ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
+            ui->tabWidget->currentWidget()->setFocus();
+        }
+    }
+    else if (type==WWW) {
+        // TODO implement me
     }
 }
 

@@ -34,9 +34,9 @@ public:
     inline virtual SettingsEditorPage settingsEditorPage() { return SettingsEditorPage(); }
     virtual ~KPlugin();
 protected:
-    virtual QString initialize(const QStringList &arguments) = 0;
-    virtual void start() = 0;
-    virtual void stop() = 0;
+    inline virtual QString initialize(const QStringList &arguments) { Q_UNUSED(arguments); return ""; }
+    inline virtual void start() {}
+    inline virtual void stop() {}
     KPlugin * myDependency(const QString & name) const;
 
     QSettings * mySettings() const;

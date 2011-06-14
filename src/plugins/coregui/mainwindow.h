@@ -28,6 +28,9 @@ public:
     void addCentralComponent(const QString & title, VisualComponent * c);
     ~MainWindow();
 public slots:
+    QStringList recentFiles(bool fullPaths) const;
+    void loadRecentFile(int index);
+    inline void loadFromUrl(const QString &s) { loadFromUrl(QUrl(s)); }
     void loadFromUrl(const QUrl & url);
     void restoreSession();
     void newProgram();
@@ -37,6 +40,7 @@ public slots:
 private slots:
     void handleMenuAccess();
     void updateToolBar();
+    void addToRecent(const QString &fileName);
 
 
 private:

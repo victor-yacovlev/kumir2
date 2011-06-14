@@ -8,10 +8,12 @@ include(../../shared/extensionsystem/extensionsystem.pri)
 OTHER_FILES += Browser.pluginspec
 
 HEADERS += \
-    component.h
+    component.h \
+    plugin.h
 
 SOURCES += \
-    component.cpp
+    component.cpp \
+    plugin.cpp
 
 FORMS += \
     component.ui

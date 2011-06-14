@@ -1,7 +1,8 @@
 #ifndef COREGUI_TABWIDGET_H
 #define COREGUI_TABWIDGET_H
 
-#include <QTabWidget>
+#include <QtCore>
+#include <QtGui>
 
 namespace CoreGUI {
 
@@ -14,9 +15,14 @@ public:
 signals:
 
 public slots:
+private slots:
+    void handleCloseButtonPressed();
+    void handleCurrentChanged(int);
 private:
+
     void tabInserted(int index);
     void tabRemoved(int index);
+    QAction *a_closeCurrentTab;
 
 };
 

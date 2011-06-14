@@ -915,7 +915,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
 
     }
     for (int i=nameStartLexem; i<st.data.size(); i++) {
-        if (st.data[i]->type == LxTypeName) {
+        if (st.data[i]->type & LxTypeName) {
             if (i>nameStartLexem)
                 name += " ";
             name += st.data[i]->data;

@@ -5,6 +5,7 @@
 #include <QtGui>
 #include "extensionsystem/kplugin.h"
 #include "interfaces/editorinterface.h"
+#include "interfaces/browserinterface.h"
 #include "interfaces/generatorinterface.h"
 #include "interfaces/actorinterface.h"
 #include "switchworkspacedialog.h"
@@ -24,6 +25,7 @@ public:
     static QString SessionFilesListKey;
     static QString SessionTabIndexKey;
     static QString RecentFileKey;
+    static QString RecentFilesKey;
 protected:
     QString initialize(const QStringList &arguments);
     void start();
@@ -33,8 +35,10 @@ protected:
     EditorInterface * plugin_editor;
     GeneratorInterface * plugin_CppGenerator;
     GeneratorInterface * plugin_BytecodeGenerator;
+    BrowserInterface * plugin_browser;
     QList<ActorInterface*> l_plugin_actors;
     SwitchWorkspaceDialog * m_workspaceDialog;
+    ExtensionSystem::VisualComponent * m_startPage;
 
 };
 

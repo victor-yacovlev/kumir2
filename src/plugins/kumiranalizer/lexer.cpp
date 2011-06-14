@@ -990,7 +990,7 @@ void popThenStatement(QList<Lexem*> &lexems, Statement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
+//    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
 void popElseStatement(QList<Lexem*> &lexems, Statement &result)
@@ -998,7 +998,7 @@ void popElseStatement(QList<Lexem*> &lexems, Statement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
+//    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
 void popFiStatement(QList<Lexem*> &lexems, Statement &result)
