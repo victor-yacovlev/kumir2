@@ -59,6 +59,6 @@ private:
 
 } // namespace GuiRunner
 
-extern "C" unsigned char __connected_to_kumir__();
+extern "C" STDLIB_EXPORT unsigned char __connected_to_kumir__();
 
 #endif // GUIRUNNER_CONNECTOR_H

@@ -2146,6 +2146,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
             else {
                 bool found = findLocalVariable(alg->header.name, alg, variable);
                 Q_ASSERT(found);
+                Q_UNUSED(found);
             }
         }
         else {
@@ -2379,6 +2380,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const QList<Lexem *> &l
             if (err.isEmpty()) {
                 bool found = findLocalVariable(alg->header.name, alg, v);
                 Q_ASSERT(found);
+                Q_UNUSED(found);
                 result = new AST::Expression;
                 result->kind = AST::ExprVariable;
                 result->baseType = alg->header.returnType;

@@ -101,7 +101,7 @@ void Connector::run()
         int pagesCount = ba_buffer->size() / PAGE_SIZE + 1;
         int offset = 0;
         for (currentPage = 0; currentPage < pagesCount; currentPage++) {
-            offset = frame.currentPage * PAGE_SIZE;
+            offset = currentPage * PAGE_SIZE;
             frameBuffer = ba_buffer->mid(offset, PAGE_SIZE);
             waitForStatus(IM_NoMessage);
             currentFrame()->type = IM_Program;

@@ -37,7 +37,7 @@ public:
     virtual void reset() = 0;
     virtual QString errorText() const = 0;
 signals:
-    void sync();
+    virtual void sync() = 0;
 };
 
 }

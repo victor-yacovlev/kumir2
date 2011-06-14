@@ -31,7 +31,8 @@ public:
     ExtensionSystem::VisualComponent* mainWidget();
     void reset();
     QString errorText() const;
-
+signals:
+    void sync();
 protected:
     QString initialize(const QStringList &arguments);
     void start();

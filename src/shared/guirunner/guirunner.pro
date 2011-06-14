@@ -3,6 +3,8 @@ TARGET = KumirGuiRunner
 DEFINES += GUIRUNNER_LIBRARY
 include(../../kumir2library.pri)
 include(../../rpath.pri)
+include(../stdlib/stdlib.pri)
+
 
 QT += gui
 

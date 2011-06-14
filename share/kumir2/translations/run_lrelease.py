@@ -17,8 +17,8 @@ if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
 for f in ts_files:
-    src = os.path.normpath(src_dir+"/"+f)
-    out = os.path.normpath(out_dir+"/"+f[:-3]+".qm")
+    src = src_dir+"/"+f
+    out = out_dir+"/"+f[:-3]+".qm"
     cmd = LRELEASE+" "+src+" -qm "+out
     proc = subprocess.Popen(shlex.split(cmd))
     proc.wait()

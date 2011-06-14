@@ -2,6 +2,7 @@ TEMPLATE = lib
 TARGET = ActorPainterC
 include(../../kumir2library.pri)
 include(../../rpath.pri)
+include(../../shared/stdlib/stdlib.pri)
 
 QT += gui
 

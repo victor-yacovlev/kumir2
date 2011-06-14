@@ -5,7 +5,6 @@ QT += script
 include(../../kumir2plugin.pri)
 include(../../shared/extensionsystem/extensionsystem.pri)
 
-QMAKE_CXXFLAGS += -std=c++0x
 
 QT += gui
 
