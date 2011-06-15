@@ -53,6 +53,11 @@ int main(int argc, char **argv)
 
     app->setProperty("sharePath", sharePath);
 
+#ifndef Q_WS_X11
+    QIcon::setThemeSearchPaths(sharePath+"/icons/");
+    QIcon::setThemeName("oxygen");
+#endif
+
     QSettings::setDefaultFormat(QSettings::IniFormat);
 //    const QString settingsPath = QDir(app->applicationDirPath()+QString(SHARE_PATH)+"/default_settings").canonicalPath();
 //    QSettings::setPath(QSettings::IniFormat, QSettings::SystemScope, settingsPath);
