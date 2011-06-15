@@ -80,6 +80,7 @@ MainWindow::MainWindow(Plugin * p) :
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(fileOpen()));
     connect(ui->actionClose, SIGNAL(triggered()), this, SLOT(closeCurrentTab()));
     connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTab(int)));
+    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupMenus()));
 
     gr_fileActions = new QActionGroup(this);
     gr_fileActions->addAction(ui->actionSave);
@@ -192,8 +193,8 @@ QString MainWindow::suggestNewFileName(const QString &suffix) const
 void MainWindow::addCentralComponent(const QString &title, QWidget *c, const QList<QAction*> & toolbarActions, const QList<QMenu*> & menus, DocumentType type, bool enableToolBar)
 {
     TabWidgetElement * element = new TabWidgetElement(c,enableToolBar,toolbarActions,menus,type,gr_fileActions,gr_kumirActions,gr_pascalActions,gr_otherActions);
-    ui->tabWidget->addTab(element, title);
     createTopLevelMenus(menus, true);
+    ui->tabWidget->addTab(element, title);
 }
 
 
@@ -220,8 +221,8 @@ void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
             QMenu * menu = new QMenu(title, menuBar());
             menu->setWindowTitle(menu->title());
 //            menu->setTearOffEnabled(true);
-            if (tabDependent)
-                connect(menu, SIGNAL(aboutToShow()), this, SLOT(handleMenuAccess()));
+            if (tabDependent) {
+            }
             else {
                 QList<QAction*> actions;
                 for (int k=0; k<c[i]->children().size(); k++) {
@@ -236,35 +237,30 @@ void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
     }
 }
 
-void MainWindow::handleMenuAccess()
+
+void MainWindow::setupMenus()
 {
-    QMenu * menu = qobject_cast<QMenu*>(sender());
-    menu->clear();
     QWidget * currentTabWidget = ui->tabWidget->currentWidget();
 
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
-    if (!twe)
-        return;
-    QList<QMenu*> menus = twe->menus;
-    QMenu * m = 0;
-    for (int i=0; i<menus.size(); i++) {
-        if (menus[i]->title().trimmed()==menu->title().trimmed()) {
-            m = menus[i];
-            break;
+    QList<QMenu*> menus;
+    for (int i=0; i<menuBar()->children().size(); i++) {
+        QMenu * m = qobject_cast<QMenu*>(menuBar()->children()[i]);
+        if (m)
+            menus << m;
+    }
+    for (int i=0; i<twe->menus.size(); i++) {
+        QMenu * tabMenu = twe->menus[i];
+        QMenu * myMenu = 0;
+        for (int j=0; j<menus.size(); j++) {
+            if (tabMenu->title().trimmed()==menus[j]->title().trimmed()) {
+                myMenu = menus[j];
+                break;
+            }
         }
+        Q_CHECK_PTR(myMenu);
+        myMenu->menuAction()->setMenu(tabMenu);
     }
-    if (m) {
-        for (int i=0; i<m->children().size(); i++) {
-            QAction * a = qobject_cast<QAction*>(m->children()[i]);
-            if (a)
-                menu->addAction(a);
-        }
-    }
-    else {
-        QAction * dummy = menu->addAction(tr("No actions for this tab"));
-        dummy->setEnabled(false);
-    }
-
 }
 
 void MainWindow::restoreSession()

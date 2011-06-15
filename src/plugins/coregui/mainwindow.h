@@ -43,7 +43,7 @@ public slots:
     void closeTab(int index);
 
 private slots:
-    void handleMenuAccess();
+    void setupMenus();
     void addToRecent(const QString &fileName);
 
 
