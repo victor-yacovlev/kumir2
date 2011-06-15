@@ -1,3 +1,7 @@
+* Tue Jun 14 2011 - Victor Yacovlev <victor@lpm.org.ru>
+- GUI preliminary implementation
+- Ported Standard functions and Painter modules from Kumir 1.x
+
 * Tue May 31 2011 - Victor Yacovlev <victor@lpm.org.ru>
 - Initial build for testing
 - Almoust ready C-generator and analizer

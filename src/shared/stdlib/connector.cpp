@@ -137,9 +137,23 @@ void Connector::run()
     }
 }
 
+
+}
+
 extern "C" unsigned char __connected_to_kumir__()
 {
     return StdLib::Connector::connectedToKumir? 1 : 0;
 }
 
-} // namespace GuiRunner
+extern void __connect_to_kumir__(const QString & key)
+{
+    StdLib::Connector::instance()->connectTo(key);
+}
+
+extern void __show_actor_window__(const QString & moduleName)
+{
+    QVariantList message;
+    message << "show";
+    message << moduleName;
+    StdLib::Connector::instance()->sendRequest(message);
+}

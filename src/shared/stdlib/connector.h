@@ -60,5 +60,7 @@ private:
 } // namespace GuiRunner
 
 extern "C" STDLIB_EXPORT unsigned char __connected_to_kumir__();
+extern STDLIB_EXPORT void __connect_to_kumir__(const QString & key);
+extern STDLIB_EXPORT void __show_actor_window__(const QString & moduleName);
 
 #endif // GUIRUNNER_CONNECTOR_H

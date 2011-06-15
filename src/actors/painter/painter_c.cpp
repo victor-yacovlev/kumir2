@@ -4,7 +4,8 @@
 
 static wchar_t __error__ActorPainter[256];
 
-extern void __connect_to_kumir__(const QString &moduleName, const QString & key);
+extern void __connect_to_kumir__(const QString & key);
+extern void __show_actor_window__(const QString & moduleName);
 extern void __create_window_for__(QWidget * component, const QList<class QMenu*> & menus);
 
 extern QString __get_error__ActorPainter()
@@ -33,7 +34,8 @@ extern "C" void __create__ActorPainter()
         }
     }
     if (connectToKumir) {
-        __connect_to_kumir__("ActorPainter", shmKey);
+        __connect_to_kumir__(shmKey);
+        __show_actor_window__("ActorPainter");
     }
     else {
         __create_window_for__(p->mainWidget(), p->menus());

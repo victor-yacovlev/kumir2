@@ -76,6 +76,11 @@ QWidget * PainterWorker::mainWidget()
     return m_mainWidget;
 }
 
+QList<QMenu*> PainterWorker::menus()
+{
+    return m_mainWidget->menuActions();
+}
+
 void PainterWorker::drawEllipse(int x0, int y0, int x1, int y1)
 {
     canvasLock->lock();

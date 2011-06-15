@@ -35,6 +35,12 @@ public:
     virtual QList<class QMenu *> menus() = 0;
     virtual void reset() = 0;
     virtual QString errorText() const = 0;
+/* NOTE: signals should not be declared virtual in interfaces
+         to provide compatibility with GCC 3.x (aka MinGW),
+         but them MUST be implemented in actor class
+signals:
+    void sync();
+*/
 };
 
 }

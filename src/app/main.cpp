@@ -53,8 +53,10 @@ int main(int argc, char **argv)
 
     app->setProperty("sharePath", sharePath);
 
-#ifndef Q_WS_X11
-    QIcon::setThemeSearchPaths(sharePath+"/icons/");
+#ifdef Q_OS_WIN32
+    const QString shareIcons = QDir::cleanPath(QApplication::applicationDirPath()+"/../share/icons/");
+    qDebug() << shareIcons;
+    QIcon::setThemeSearchPaths(QStringList() << shareIcons);
     QIcon::setThemeName("oxygen");
 #endif
 
