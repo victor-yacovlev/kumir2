@@ -33,7 +33,7 @@ EditorPlugin::~EditorPlugin()
     delete d;
 }
 
-QPair<int, ExtensionSystem::VisualComponent*> EditorPlugin::newDocument(const QString &analizerName, const QString &initialText)
+Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, const QString &initialText)
 {
     AnalizerInterface * a = 0;
     int docId = -1;
@@ -55,7 +55,12 @@ QPair<int, ExtensionSystem::VisualComponent*> EditorPlugin::newDocument(const QS
     }
     Ed ed(a, w);
     d->editors[index] = ed;
-    return QPair<int, ExtensionSystem::VisualComponent*>(index, w);
+    Shared::EditorComponent result;
+    result.id = index;
+    result.widget = w;
+    result.menus = w->menuActions();
+    result.toolbarActions = w->toolbarActions();
+    return result;
 }
 
 void EditorPlugin::closeDocument(int documentId)

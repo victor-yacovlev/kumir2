@@ -9,7 +9,7 @@ extern "C" void __main_gui__( int argc, char *argv[],
                               void(*main_funct)() );
 
 
-extern void __create_window_for__(ExtensionSystem::VisualComponent * component);
+extern void __create_window_for__(QWidget * widget, const QList<QMenu*> & menus);
 
 
 #endif // GUIRUNNER_H

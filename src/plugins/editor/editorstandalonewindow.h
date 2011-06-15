@@ -2,8 +2,8 @@
 #define EDITORSTANDALONEWINDOW_H
 
 #include <QtGui>
-#include "extensionsystem/visualcomponent.h"
 #include "settingspage.h"
+#include "interfaces/editorinterface.h"
 
 
 namespace Editor {
@@ -40,8 +40,7 @@ protected:
 private:
 
     void setupEditor();
-    int i_analizerId;
-    class ExtensionSystem::VisualComponent * m_editor;
+    struct Shared::EditorComponent m_editor;
     class EditorPlugin * m_plugin;
     QSettings * m_settings;
     QString s_fileName;

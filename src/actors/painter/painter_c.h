@@ -2,6 +2,7 @@
 #define PAINTER_C_H
 
 #include <wchar.h>
+#include <QList>
 
 struct __array__ {
     int dim;
@@ -12,14 +13,14 @@ struct __array__ {
     char type;
 };
 
-namespace ExtensionSystem { class VisualComponent; }
 
 extern QString __get_error__ActorPainter();
 
 extern "C" void __init__ActorPainter();
 extern "C" void __create__ActorPainter();
 extern void __create2__ActorPainter(class QSettings *s, class QObject * parent);
-extern class ExtensionSystem::VisualComponent * __mainWidget__ActorPainter();
+extern class QWidget * __mainWidget__ActorPainter();
+extern QList<class QMenu*> __menus__ActorPainter();
 
 extern "C" void setPen__ActorPainter(int width, const wchar_t * ss);
 extern "C" void setDensity__ActorPainter(int dens);

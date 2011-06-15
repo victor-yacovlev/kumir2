@@ -8,7 +8,7 @@
 namespace ActorPainter {
 
 PainterWindow::PainterWindow(QSettings * settings, QWidget *parent) :
-    VisualComponent(),
+    QWidget(),
     ui(new Ui::PainterWindow),
     m_settings(settings)
 {
@@ -250,7 +250,7 @@ void PainterWindow::closeEvent(QCloseEvent *event)
     m_settings->setValue("Plugins/Painter/WindowGeometry",saveGeometry());
     m_settings->setValue("Plugins/Painter/ViewZoom", ui->view->zoom());
     m_settings->setValue("Plugins/Painter/ShowColorMode",e_showColorMode);
-    VisualComponent::closeEvent(event);
+    QWidget::closeEvent(event);
 }
 
 void PainterWindow::hideEvent(QHideEvent *event)
@@ -259,7 +259,7 @@ void PainterWindow::hideEvent(QHideEvent *event)
     s.setValue("Plugins/Painter/WindowGeometry",saveGeometry());
     s.setValue("Plugins/Painter/ViewZoom", ui->view->zoom());
     s.setValue("Plugins/Painter/ShowColorMode",e_showColorMode);
-    VisualComponent::hideEvent(event);
+    QWidget::hideEvent(event);
 }
 
 void PainterWindow::handleScale()
@@ -307,41 +307,35 @@ PainterWindow::~PainterWindow()
     delete ui;
 }
 
-QList<MenuActionsGroup> PainterWindow::menuActions()
+QList<QMenu*> PainterWindow::menuActions()
 {
-    MenuActionsGroup page;
-    MenuActionsGroup zoom;
-    MenuActionsGroup sbar;
 
-    page.menuText = tr("Page");
-    zoom.menuText = tr("Zoom");
-    sbar.menuText = tr("Statusbar colour representation");
+    QMenu * page = new QMenu(tr("Page"));
+    QMenu * zoom = new QMenu(tr("Zoom"));
+    QMenu * sbar = new QMenu(tr("Statusbar"));
 
-    QAction * sep = new QAction(this);
-    sep->setSeparator(true);
+    page->addAction(ui->actionNew);
+    page->addAction(ui->actionLoad_image);
+    page->addSeparator();
+    page->addAction(ui->actionReset);
+    page->addSeparator();
+    page->addAction(ui->actionSave_image);
+    page->addAction(ui->actionSave_image_as);
 
-    page.actions << ui->actionNew;
-    page.actions << ui->actionLoad_image;
-    page.actions << sep;
-    page.actions << ui->actionReset;
-    page.actions << sep;
-    page.actions << ui->actionSave_image;
-    page.actions << ui->actionSave_image_as;
+    zoom->addAction(ui->actionHalf_size);
+    zoom->addAction(ui->actionOriginal_size);
+    zoom->addSeparator();
+    zoom->addAction(ui->actionFit_width);
+    zoom->addAction(ui->actionFit_height);
+    zoom->addAction(ui->actionFit_both);
 
-    zoom.actions << ui->actionHalf_size;
-    zoom.actions << ui->actionOriginal_size;
-    zoom.actions << sep;
-    zoom.actions << ui->actionFit_width;
-    zoom.actions << ui->actionFit_height;
-    zoom.actions << ui->actionFit_both;
+    sbar->addAction(ui->actionHTML);
+    sbar->addAction(ui->actionRGB);
+    sbar->addAction(ui->actionCMYK);
+    sbar->addAction(ui->actionHSL);
+    sbar->addAction(ui->actionHSV);
 
-    sbar.actions << ui->actionHTML;
-    sbar.actions << ui->actionRGB;
-    sbar.actions << ui->actionCMYK;
-    sbar.actions << ui->actionHSL;
-    sbar.actions << ui->actionHSV;
-
-    return QList<MenuActionsGroup>() << page << zoom << sbar;
+    return QList<QMenu*>() << page << zoom << sbar;
 }
 
 QList<QAction*> PainterWindow::toolbarActions()

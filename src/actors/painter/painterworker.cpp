@@ -71,7 +71,7 @@ void PainterWorker::handleLoadImageRequest(const QString &fileName)
     delete oldCanvas2;
 }
 
-ExtensionSystem::VisualComponent * PainterWorker::mainWidget()
+QWidget * PainterWorker::mainWidget()
 {
     return m_mainWidget;
 }

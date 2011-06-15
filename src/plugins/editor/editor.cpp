@@ -67,7 +67,7 @@ public slots:
 
 void Editor::focusInEvent(QFocusEvent *e)
 {
-    VisualComponent::focusInEvent(e);
+    QWidget::focusInEvent(e);
     d->plane->setFocus();
 }
 
@@ -212,7 +212,7 @@ void EditorPrivate::updateFromAnalizer()
 Clipboard * EditorPrivate::clipboard = 0;
 
 Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentId, QWidget *parent) :
-    VisualComponent()
+    QWidget()
 {
     setParent(parent);
     d = new EditorPrivate;
@@ -321,21 +321,19 @@ QList<QAction*> Editor::toolbarActions()
     return result;
 }
 
-QList<ExtensionSystem::MenuActionsGroup> Editor::menuActions()
+QList<QMenu*> Editor::menuActions()
 {
-    QList<ExtensionSystem::MenuActionsGroup> result;
-    ExtensionSystem::MenuActionsGroup edit;
-    QAction * separator = new QAction(this);
-    separator->setSeparator(true);
-    edit.menuText = tr("Edit");
-    edit.actions << d->selectAll;
-    edit.actions << separator;
-    edit.actions << d->cut;
-    edit.actions << d->copy;
-    edit.actions << d->paste;
-    edit.actions << separator;
-    edit.actions << d->deleteLine;
-    edit.actions << d->deleteTail;
+    QList<QMenu*> result;
+    QMenu * edit = new QMenu(tr("Edit"), 0);
+    edit->addAction(d->selectAll);
+    edit->addSeparator();
+    edit->addAction(d->cut);
+    edit->addAction(d->copy);
+    edit->addAction(d->paste);
+    edit->addSeparator();
+    edit->addAction(d->deleteLine);
+    edit->addAction(d->deleteTail);
+
     result << edit;
     return result;
 }

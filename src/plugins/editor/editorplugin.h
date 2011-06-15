@@ -17,7 +17,7 @@ public:
     EditorPlugin();
     ~EditorPlugin();
 
-    QPair<int, ExtensionSystem::VisualComponent*> newDocument(const QString &analizerName = "Analizer"
+    struct Shared::EditorComponent newDocument(const QString &analizerName = "Analizer"
                                                      , const QString &initialText = "");
 
     void closeDocument(int documentId);

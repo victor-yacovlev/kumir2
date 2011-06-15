@@ -28,7 +28,8 @@ public:
     QVariant     result() const;
     void   runFunct(const QString &alg, const QList<QVariant> &params);
     QList<QVariant> algOptResults() const;//optional results
-    ExtensionSystem::VisualComponent* mainWidget();
+    inline class QWidget* mainWidget() { return 0; }
+    inline QList<class QMenu*> menus() { return QList<class QMenu*>(); }
     void reset();
     QString errorText() const;
 signals:

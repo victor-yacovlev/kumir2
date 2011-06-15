@@ -1,15 +1,22 @@
 #ifndef BROWSER_INTERFACE
 #define BROWSER_INTERFACE
 
-#include "extensionsystem/visualcomponent.h"
+#include <QtCore>
+#include <QtGui>
 
 namespace Shared
 {
 
+struct BrowserComponent {
+    QWidget * widget;
+    QList<QAction*> toolbarActions;
+    QList<QMenu*> menus;
+};
+
 class BrowserInterface
 {
 public:
-    virtual ExtensionSystem::VisualComponent * createBrowser(const QUrl & url, const QMap<QString, QObject*> manageableObjects) = 0;
+    virtual BrowserComponent createBrowser(const QUrl & url, const QMap<QString, QObject*> manageableObjects) = 0;
 signals:
     void openNewDocumentRequest(const QUrl &url);
 };

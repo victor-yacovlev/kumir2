@@ -3,7 +3,7 @@
 
 #include <QtCore>
 
-namespace GuiRunner {
+namespace StdLib {
 
 class UserProgramThread
         : public QThread
@@ -22,6 +22,6 @@ private:
     bool b_started;
 };
 
-} // namespace GuiRunner
+}
 
-#endif // GUIRUNNER_USERPROGRAMTHREAD_H
+#endif

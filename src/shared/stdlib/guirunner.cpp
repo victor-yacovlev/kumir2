@@ -22,15 +22,15 @@ extern "C" void __main_gui__( int argc, char *argv[],
         StdLib::Connector::instance()->connectTo(key);
     }
     (*creator_funct)();
-    GuiRunner::UserProgramThread * thread = new GuiRunner::UserProgramThread(a, main_funct);
+    StdLib::UserProgramThread * thread = new StdLib::UserProgramThread(a, main_funct);
     a->exec();
     delete thread;
     delete a;
 }
 
 
-extern void __create_window_for__(ExtensionSystem::VisualComponent * component)
+extern void __create_window_for__(QWidget * widget, const QList<QMenu*> & menus)
 {
-    GuiRunner::ActorWindow * w = new GuiRunner::ActorWindow(component);
+    StdLib::ActorWindow * w = new StdLib::ActorWindow(widget, menus);
     w->show();
 }

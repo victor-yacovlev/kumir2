@@ -2,10 +2,8 @@
 #define PAINTERWINDOW_H
 
 #include <QtGui>
-#include "extensionsystem/visualcomponent.h"
 
 
-using namespace ExtensionSystem;
 
 namespace ActorPainter {
 
@@ -13,7 +11,7 @@ namespace Ui {
     class PainterWindow;
 }
 
-class PainterWindow : public VisualComponent
+class PainterWindow : public QWidget
 {
     Q_OBJECT
 
@@ -21,7 +19,7 @@ public:
     explicit PainterWindow(QSettings * settings, QWidget *parent = 0);
     void setCanvas(QImage * canvas, QMutex * locker);
     QWidget * view();
-    QList<MenuActionsGroup> menuActions();
+    QList<QMenu*> menuActions();
     QList<QAction*> toolbarActions();
     ~PainterWindow();
 public slots:

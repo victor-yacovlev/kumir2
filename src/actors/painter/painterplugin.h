@@ -26,7 +26,8 @@ public:
     inline bool requiresGui() const { return true; }
     void   runFunct(const QString & alg,const QList<QVariant> &params);
     inline QList<QVariant> algOptResults() const { return l_optResults; }
-    VisualComponent* mainWidget();
+    QWidget* mainWidget();
+    QList<QMenu*> menus();
     void reset();
     QString errorText() const;
 protected:
@@ -36,7 +37,8 @@ protected:
 private:
     QVariantList l_optResults;
     QVariant v_result;
-    VisualComponent * m_mainWidget;
+    QWidget * m_mainWidget;
+    QList<QMenu*> l_menus;
 };
 
 } // namespace ActorPainter

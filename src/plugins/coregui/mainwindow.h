@@ -28,7 +28,7 @@ class MainWindow : public QMainWindow
 public:
     enum DocumentType { Text, Kumir, Pascal, WWW };
     explicit MainWindow(Plugin * p);
-    void addCentralComponent(const QString & title, VisualComponent * c, DocumentType type, bool enableToolbar);
+    void addCentralComponent(const QString &title, QWidget *c, const QList<QAction*> & toolbarActions, const QList<QMenu*> & menus, DocumentType type, bool enableToolBar);
     ~MainWindow();
 public slots:
     QStringList recentFiles(bool fullPaths) const;
@@ -51,7 +51,7 @@ private:
     void showEvent(QShowEvent *);
     void closeEvent(QCloseEvent *);
     QString suggestNewFileName(const QString &suffix) const;
-    void createTopLevelMenus(VisualComponent * c, bool tabDependent);
+    void createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent);
     bool checkForSaved(VisualComponent * c);
     static QIcon actionIcon(const QString & name);
 

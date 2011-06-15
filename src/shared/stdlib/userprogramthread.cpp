@@ -1,7 +1,7 @@
 #include "userprogramthread.h"
 #include <iostream>
 
-namespace GuiRunner {
+namespace StdLib {
 
 
 UserProgramThread::UserProgramThread( QObject *parent, void(*func)() )

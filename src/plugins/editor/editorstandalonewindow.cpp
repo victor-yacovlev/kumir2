@@ -67,8 +67,8 @@ EditorStandaloneWindow::EditorStandaloneWindow(class EditorPlugin * plugin
     file->addAction(ex);
 
 
-    i_analizerId = -1;
-    m_editor = 0;
+    m_editor.id = -1;
+    m_editor.widget = 0;
     m_plugin = plugin;
 
     if (!startTextFileName.isEmpty() && loadFromFile(startTextFileName)) {
@@ -114,13 +114,10 @@ void EditorStandaloneWindow::loadFileFromDrop(const QList<QUrl> &urls)
 void EditorStandaloneWindow::newProgram()
 {
     setWindowTitle(tr("Kumir Editor"));
-    if (i_analizerId!=-1)
-        m_plugin->closeDocument(i_analizerId);
-    i_analizerId = -1;
-    m_editor = 0;
-    QPair<int,ExtensionSystem::VisualComponent*> p = m_plugin->newDocument("Analizer","");
-    i_analizerId = p.first;
-    m_editor = p.second;
+    if (m_editor.id!=-1)
+        m_plugin->closeDocument(m_editor.id);
+    Shared::EditorComponent p = m_plugin->newDocument("Analizer","");
+    m_editor = p;
     setupEditor();
 }
 
@@ -135,14 +132,11 @@ bool EditorStandaloneWindow::loadFromFile(const QString &fileName)
         QString data = ts.readAll();
         f.close();
         s_fileName = fileName;
-        if (i_analizerId!=-1) {
-            m_plugin->closeDocument(i_analizerId);
+        if (m_editor.id) {
+            m_plugin->closeDocument(m_editor.id);
         }
-        i_analizerId = -1;
-        m_editor = 0;
-        QPair<int,ExtensionSystem::VisualComponent*> p = m_plugin->newDocument("Analizer", data);
-        i_analizerId = p.first;
-        m_editor = p.second;
+        m_editor = m_plugin->newDocument("Analizer", data);
+
         setupEditor();
         setWindowTitle(QFileInfo(s_fileName).fileName()+" - "+tr("Kumir Editor"));
         return true;
@@ -154,7 +148,7 @@ bool EditorStandaloneWindow::loadFromFile(const QString &fileName)
 
 QString EditorStandaloneWindow::saveToFile(const QString &fileName)
 {
-    return m_plugin->saveDocument(i_analizerId, fileName);
+    return m_plugin->saveDocument(m_editor.id, fileName);
 }
 
 void EditorStandaloneWindow::openDocument()
@@ -209,23 +203,13 @@ void EditorStandaloneWindow::saveDocumentAs()
 
 void EditorStandaloneWindow::setupEditor()
 {
-    QList<ExtensionSystem::MenuActionsGroup> menus = m_editor->menuActions();
-    foreach (const ExtensionSystem::MenuActionsGroup & m, menus) {
-        QMenu * menu = 0;
-        for (int i=0; i<menuBar()->children().size(); i++) {
-            QMenu * mm = qobject_cast<QMenu*>(menuBar()->children().at(i));
-            if (mm && mm->title()==m.menuText) {
-                menu = mm;
-                break;
-            }
-        }
-        if (!menu)
-            menu = menuBar()->addMenu(m.menuText);
-        menu->addActions(m.actions);
+    QList<QMenu*> menus = m_editor.menus;
+    menuBar()->clear();
+    foreach (QMenu* m, menus) {
+        menuBar()->addMenu(m);
     }
-    setCentralWidget(m_editor);
-    connect(m_editor, SIGNAL(urlsDragAndDropped(QList<QUrl>)), this, SLOT(loadFileFromDrop(QList<QUrl>)));
-    m_editor->setFocus(Qt::ActiveWindowFocusReason);
+    setCentralWidget(m_editor.widget);
+    m_editor.widget->setFocus(Qt::ActiveWindowFocusReason);
 }
 
 } // namespace Editor

@@ -445,13 +445,24 @@ void PainterPlugin::stop()
 
 }
 
-VisualComponent * PainterPlugin::mainWidget()
+QWidget * PainterPlugin::mainWidget()
 {
     if (!m_mainWidget) {
         __create2__ActorPainter(mySettings(), this);
         m_mainWidget = __mainWidget__ActorPainter();
+        l_menus = __menus__ActorPainter();
     }
     return m_mainWidget;
+}
+
+QList<QMenu*> PainterPlugin::menus()
+{
+    if (!m_mainWidget) {
+        __create2__ActorPainter(mySettings(), this);
+        m_mainWidget = __mainWidget__ActorPainter();
+        l_menus = __menus__ActorPainter();
+    }
+    return l_menus;
 }
 
 } // namespace ActorPainter

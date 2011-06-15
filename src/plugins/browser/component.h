@@ -5,8 +5,6 @@
 #include <QtGui>
 #include <QtWebKit>
 
-#include "extensionsystem/visualcomponent.h"
-
 namespace Browser {
 
 namespace Ui {
@@ -14,7 +12,7 @@ namespace Ui {
 }
 
 class Component
-        : public ExtensionSystem::VisualComponent
+        : public QWidget
 {
     Q_OBJECT
 
@@ -23,7 +21,7 @@ public:
     inline void setManageableObjects(const QMap<QString, QObject*> &os) {m_manageableObjects = os; }
     ~Component();
     QList<QAction*> toolbarActions();
-    QList<ExtensionSystem::MenuActionsGroup> menuActions();
+    QList<QMenu*> menuActions();
 public slots:
     void go(const QUrl & url);
 private:

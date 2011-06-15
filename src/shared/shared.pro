@@ -1,3 +1,3 @@
 TEMPLATE=subdirs
 CONFIG+=ordered
-SUBDIRS=extensionsystem abstractsyntaxtree errormessages stdlib guirunner
+SUBDIRS=extensionsystem abstractsyntaxtree errormessages stdlib

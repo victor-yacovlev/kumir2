@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "extensionsystem/visualcomponent.h"
 
 
 #include <algorithm>
@@ -12,8 +11,10 @@ class TabWidgetElement
 {
     Q_OBJECT
 public:
-    inline explicit TabWidgetElement(VisualComponent * c
+    inline explicit TabWidgetElement(QWidget * w
                                      , bool enableToolBar
+                                     , QList<QAction*> toolbarActions
+                                     , QList<QMenu*> ms
                                      , MainWindow::DocumentType type
                                      , QActionGroup * gr_fileActions
                                      , QActionGroup * gr_kumirActions
@@ -21,9 +22,12 @@ public:
                                      , QActionGroup * gr_otherActions
                                      )
         : QWidget()
-        , component(c)
+        , component(w)
+        , menus(ms)
     {
-        setProperty("uncloseable", c->property("uncloseable"));
+        setProperty("uncloseable", w->property("uncloseable"));
+        setProperty("documentId", w->property("documentId"));
+        setProperty("fileName", w->property("fileName"));
         QVBoxLayout * l = new QVBoxLayout;
         l->setContentsMargins(0,0,0,0);
         l->setSpacing(0);
@@ -35,7 +39,7 @@ public:
                 tb->addActions(gr_fileActions->actions());
             }
             tb->addSeparator();
-            foreach (QAction * a, c->toolbarActions())
+            foreach (QAction * a, toolbarActions)
                 tb->addAction(a);
             if (type==MainWindow::Kumir) {
                 tb->addSeparator();
@@ -51,9 +55,10 @@ public:
             }
 
         }
-        l->addWidget(c);
+        l->addWidget(w);
     }
-    VisualComponent * component;
+    QWidget * component;
+    QList<QMenu*> menus;
 };
 
 MainWindow::MainWindow(Plugin * p) :
@@ -143,26 +148,26 @@ void MainWindow::newProgram()
         suffix = ".pas";
     }
     const QString initialText = m_plugin->mySettings()->value(Plugin::InitialTextKey, defaultText).toString();
-    QPair<int, VisualComponent*> doc = m_plugin->plugin_editor->newDocument("Analizer", initialText);
-    VisualComponent* vc = doc.second;
-    int id = doc.first;
+    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("Analizer", initialText);
+    QWidget* vc = doc.widget;
+    int id = doc.id;
     vc->setProperty("documentId", id);
     QString fileName = suggestNewFileName(suffix);
     vc->setProperty("fileName", fileName);
-    addCentralComponent(fileName, vc, type, true);
+    addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, type, true);
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
     ui->tabWidget->currentWidget()->setFocus();
 }
 
 void MainWindow::newText()
 {
-    QPair<int, VisualComponent*> doc = m_plugin->plugin_editor->newDocument("", "");
-    VisualComponent* vc = doc.second;
-    int id = doc.first;
+    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("", "");
+    QWidget * vc = doc.widget;
+    int id = doc.id;
     vc->setProperty("documentId", id);
     QString fileName = suggestNewFileName(".txt");
     vc->setProperty("fileName", fileName);
-    addCentralComponent(fileName, vc, Text, true);
+    addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, Text, true);
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
     ui->tabWidget->currentWidget()->setFocus();
 }
@@ -184,16 +189,16 @@ QString MainWindow::suggestNewFileName(const QString &suffix) const
 }
 
 
-void MainWindow::addCentralComponent(const QString &title, VisualComponent *c, DocumentType type, bool enableToolBar)
+void MainWindow::addCentralComponent(const QString &title, QWidget *c, const QList<QAction*> & toolbarActions, const QList<QMenu*> & menus, DocumentType type, bool enableToolBar)
 {
-    TabWidgetElement * element = new TabWidgetElement(c,enableToolBar,type,gr_fileActions,gr_kumirActions,gr_pascalActions,gr_otherActions);
+    TabWidgetElement * element = new TabWidgetElement(c,enableToolBar,toolbarActions,menus,type,gr_fileActions,gr_kumirActions,gr_pascalActions,gr_otherActions);
     ui->tabWidget->addTab(element, title);
-    createTopLevelMenus(c, true);
+    createTopLevelMenus(menus, true);
 }
 
 
 
-void MainWindow::createTopLevelMenus(VisualComponent *c, bool tabDependent)
+void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
 {
     QList<QMenu*> menus;
     for (int i=0; i<menuBar()->children().size(); i++) {
@@ -201,8 +206,8 @@ void MainWindow::createTopLevelMenus(VisualComponent *c, bool tabDependent)
         if (m)
             menus << m;
     }
-    for (int i=0; i<c->menuActions().size(); i++) {
-        const QString title = c->menuActions()[i].menuText.trimmed();
+    for (int i=0; i<c.size(); i++) {
+        const QString title = c[i]->title().trimmed();
         bool found = false;
         for (int j=0; j<menus.size(); j++) {
             const QString menuTitle = menus[j]->title().trimmed();
@@ -218,10 +223,13 @@ void MainWindow::createTopLevelMenus(VisualComponent *c, bool tabDependent)
             if (tabDependent)
                 connect(menu, SIGNAL(aboutToShow()), this, SLOT(handleMenuAccess()));
             else {
-                for (int k=0; k<c->menuActions()[i].actions.size(); k++) {
-                    QAction * act = c->menuActions()[i].actions[k];
-                    menu->addAction(act);
+                QList<QAction*> actions;
+                for (int k=0; k<c[i]->children().size(); k++) {
+                    QAction * a = qobject_cast<QAction*>(c[i]->children()[k]);
+                    if (a)
+                        actions << a;
                 }
+                menu->addActions(actions);
             }
             menuBar()->insertMenu(menus.last()->menuAction(), menu);
         }
@@ -233,23 +241,30 @@ void MainWindow::handleMenuAccess()
     QMenu * menu = qobject_cast<QMenu*>(sender());
     menu->clear();
     QWidget * currentTabWidget = ui->tabWidget->currentWidget();
-    VisualComponent * vc = 0;
+
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
     if (!twe)
         return;
-    vc = twe->component;
-    if (vc) {
-        MenuActionsGroup group;
-        for (int i=0; i<vc->menuActions().size(); i++) {
-            if (menu->title()==vc->menuActions()[i].menuText) {
-                group = vc->menuActions()[i];
-                break;
-            }
-        }
-        for (int i=0; i<group.actions.size(); i++) {
-            menu->addAction(group.actions[i]);
+    QList<QMenu*> menus = twe->menus;
+    QMenu * m = 0;
+    for (int i=0; i<menus.size(); i++) {
+        if (menus[i]->title().trimmed()==menu->title().trimmed()) {
+            m = menus[i];
+            break;
         }
     }
+    if (m) {
+        for (int i=0; i<m->children().size(); i++) {
+            QAction * a = qobject_cast<QAction*>(m->children()[i]);
+            if (a)
+                menu->addAction(a);
+        }
+    }
+    else {
+        QAction * dummy = menu->addAction(tr("No actions for this tab"));
+        dummy->setEnabled(false);
+    }
+
 }
 
 void MainWindow::restoreSession()
@@ -261,7 +276,7 @@ void MainWindow::restoreSession()
         loadFromUrl(QUrl::fromLocalFile(QDir::current().absoluteFilePath(sessionFiles[i])));
     }
     if (sessionFiles.isEmpty()) {
-        addCentralComponent(tr("Start"), m_plugin->m_startPage, WWW, false);
+        addCentralComponent(tr("Start"), m_plugin->m_startPage.widget, m_plugin->m_startPage.toolbarActions, m_plugin->m_startPage.menus, WWW, false);
     }
     ui->tabWidget->setCurrentIndex(tabIndex);
 }
@@ -343,13 +358,13 @@ void MainWindow::loadFromUrl(const QUrl & url)
                 }
             }
             f.close();
-            QPair<int, VisualComponent*> doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", lines.join("\n"));
-            VisualComponent* vc = doc.second;
-            int id = doc.first;
+            EditorComponent doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", lines.join("\n"));
+            QWidget * vc = doc.widget;
+            int id = doc.id;
             vc->setProperty("documentId", id);
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
-            addCentralComponent(fileName, vc, Kumir, true);
+            addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, Kumir, true);
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
         }
@@ -361,13 +376,13 @@ void MainWindow::loadFromUrl(const QUrl & url)
             ts.setAutoDetectUnicode(true);
             QString data = ts.readAll();
             f.close();
-            QPair<int, VisualComponent*> doc = m_plugin->plugin_editor->newDocument("PascalAnalizer", data);
-            VisualComponent* vc = doc.second;
-            int id = doc.first;
+            EditorComponent doc = m_plugin->plugin_editor->newDocument("PascalAnalizer", data);
+            QWidget* vc = doc.widget;
+            int id = doc.id;
             vc->setProperty("documentId", id);
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
-            addCentralComponent(fileName, vc, Pascal, true);
+            addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, Pascal, true);
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
         }
@@ -379,13 +394,13 @@ void MainWindow::loadFromUrl(const QUrl & url)
             ts.setAutoDetectUnicode(true);
             QString data = ts.readAll();
             f.close();
-            QPair<int, VisualComponent*> doc = m_plugin->plugin_editor->newDocument("", data);
-            VisualComponent* vc = doc.second;
-            int id = doc.first;
+            EditorComponent doc = m_plugin->plugin_editor->newDocument("", data);
+            QWidget* vc = doc.widget;
+            int id = doc.id;
             vc->setProperty("documentId", id);
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
-            addCentralComponent(fileName, vc, Text, true);
+            addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, Text, true);
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
         }

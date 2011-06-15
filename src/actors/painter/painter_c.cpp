@@ -5,7 +5,7 @@
 static wchar_t __error__ActorPainter[256];
 
 extern void __connect_to_kumir__(const QString &moduleName, const QString & key);
-extern void __create_window_for__(ExtensionSystem::VisualComponent * component);
+extern void __create_window_for__(QWidget * component, const QList<class QMenu*> & menus);
 
 extern QString __get_error__ActorPainter()
 {
@@ -36,7 +36,7 @@ extern "C" void __create__ActorPainter()
         __connect_to_kumir__("ActorPainter", shmKey);
     }
     else {
-        __create_window_for__(p->mainWidget());
+        __create_window_for__(p->mainWidget(), p->menus());
     }
 }
 
@@ -46,9 +46,14 @@ extern void __create2__ActorPainter(class QSettings *s, class QObject * parent)
     p = ActorPainter::PainterWorker::instance(s, parent);
 }
 
-extern class ExtensionSystem::VisualComponent * __mainWidget__ActorPainter()
+extern class QWidget * __mainWidget__ActorPainter()
 {
     return p->mainWidget();
+}
+
+extern QList<class QMenu*> __menus__ActorPainter()
+{
+    return p->menus();
 }
 
 extern "C" void setPen__ActorPainter(int width, const wchar_t * ss)

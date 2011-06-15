@@ -14,7 +14,7 @@ class Plugin
     Q_INTERFACES(Shared::BrowserInterface)
 public:
     Plugin();
-    ExtensionSystem::VisualComponent * createBrowser(const QUrl &url, const QMap<QString, QObject *> manageableObjects);
+    Shared::BrowserComponent createBrowser(const QUrl &url, const QMap<QString, QObject *> manageableObjects);
 };
 
 } // namespace Browser

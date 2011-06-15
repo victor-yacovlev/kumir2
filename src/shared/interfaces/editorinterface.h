@@ -1,16 +1,22 @@
 #ifndef EDITOR_INTERFACE
 #define EDITOR_INTERFACE
 
-#include "extensionsystem/visualcomponent.h"
 #include "interfaces/analizerinterface.h"
 
 namespace Shared
 {
 
+struct EditorComponent {
+    int id;
+    class QWidget * widget;
+    QList<class QMenu*> menus;
+    QList<class QAction*> toolbarActions;
+};
+
 class EditorInterface
 {
 public:
-    virtual QPair<int, ExtensionSystem::VisualComponent*> newDocument(const QString & analizerName = "Analizer",
+    virtual struct EditorComponent newDocument(const QString & analizerName = "Analizer",
                                                      const QString & initialText = "") = 0;
     virtual void closeDocument(int documentId) = 0;
     virtual bool hasUnsavedChanges(int documentId) const = 0;

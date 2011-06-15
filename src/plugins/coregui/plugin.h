@@ -39,7 +39,7 @@ protected:
     BrowserInterface * plugin_browser;
     QList<ActorInterface*> l_plugin_actors;
     SwitchWorkspaceDialog * m_workspaceDialog;
-    ExtensionSystem::VisualComponent * m_startPage;
+    Shared::BrowserComponent m_startPage;
 
 };
 

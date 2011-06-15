@@ -455,10 +455,7 @@ QList<QVariant> St_functPlugin::algOptResults() const
     return QList<QVariant>();
 }
 
-ExtensionSystem::VisualComponent* St_functPlugin::mainWidget()
-{
-    return 0;
-}
+
 
 void St_functPlugin::reset()
 {

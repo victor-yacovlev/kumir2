@@ -4,8 +4,6 @@
 #include <QtCore>
 #include <QtGui>
 
-#include "extensionsystem/visualcomponent.h"
-
 namespace ActorPainter {
 
 class PainterWorker
@@ -17,7 +15,9 @@ public:
     static PainterWorker* instance();
     static PainterWorker* instance(QSettings * settings, QObject * parent);
     inline QString error() const { return lastError; }
-    ExtensionSystem::VisualComponent * mainWidget();
+    QWidget * mainWidget();
+    QList<QAction*> toolbarActions();
+    QList<QMenu*> menus();
 public slots:
     void reset();
     void setPen(int width, const QString &cs);

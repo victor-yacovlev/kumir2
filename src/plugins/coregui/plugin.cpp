@@ -55,7 +55,7 @@ QString Plugin::initialize(const QStringList &)
     QMap<QString,QObject*> objects;
     objects["mainWindow"] = m_mainWindow;
     m_startPage = plugin_browser->createBrowser(QUrl::fromLocalFile(browserEntryPoint), objects);
-    m_startPage->setProperty("uncloseable", true);
+    m_startPage.widget->setProperty("uncloseable", true);
     m_mainWindow->restoreSession();
     return "";
 }
