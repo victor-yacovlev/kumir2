@@ -38,6 +38,9 @@ public:
         setLayout(l);
         if (enableToolBar) {
             QToolBar * tb = new QToolBar(this);
+#ifndef Q_OS_MAC
+            tb->setStyleSheet("QToolBar { border: 0px }");
+#endif
             l->addWidget(tb);
             if (type!=MainWindow::WWW) {
                 tb->addActions(gr_fileActions->actions());

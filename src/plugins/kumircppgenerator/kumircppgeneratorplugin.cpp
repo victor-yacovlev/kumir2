@@ -1120,7 +1120,7 @@ Shared::GeneratorResult KumirCppGeneratorPlugin::generateExecuable(
     QProcess * proc = new QProcess(this);
     proc->setProcessChannelMode(QProcess::SeparateChannels);
 #ifdef Q_OS_WIN32
-    const QString mingwBinPath = QDir::toNativeSeparators(QDir::cleanPath(qApp->applicationDirPath()+"/../lib/mingw/bin"));
+    const QString mingwBinPath = QDir::toNativeSeparators(QDir::cleanPath(qApp->applicationDirPath()+"/../mingw/bin"));
 //    std::cout << mingwBinPath.toLocal8Bit().data() << std::endl;
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     env.insert("PATH", env.value("Path")+";"+mingwBinPath);
@@ -1133,7 +1133,7 @@ Shared::GeneratorResult KumirCppGeneratorPlugin::generateExecuable(
     proc->waitForFinished(10000);
     proc->waitForReadyRead();
 
-    if (qApp->arguments().contains("-V")) {
+    if (qApp->arguments().contains("-V") || qApp->arguments()[0]!="kumir2-cc") {
 //        std::cout << proc->errorString().toLocal8Bit().data();
         std::cout << proc->readAllStandardError().data();
         std::cout << proc->readAllStandardOutput().data();
