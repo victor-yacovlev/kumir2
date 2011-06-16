@@ -26,6 +26,9 @@ public slots:
     void saveAll();
     void editLast();
 
+protected:
+    void focusInEvent(QFocusEvent *);
+
 private:
     QList<class OneSession*> l_sessions;
     QScrollBar * sb_vertical;

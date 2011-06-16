@@ -72,6 +72,12 @@ Terminal::Terminal(QWidget *parent) :
 //    error("this is error");
 }
 
+void Terminal::focusInEvent(QFocusEvent *e)
+{
+    QWidget::focusInEvent(e);
+    m_plane->setFocus();
+}
+
 void Terminal::clear()
 {
     for (int i=0; i<l_sessions.size(); i++) {
