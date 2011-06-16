@@ -17,7 +17,12 @@ Plane::Plane(Terminal *parent)
 void Plane::paintEvent(QPaintEvent *e)
 {
     QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setRenderHint(QPainter::TextAntialiasing, true);
 
+    p.setPen(QPen(hasFocus()? palette().brush(QPalette::Highlight) : palette().brush(QPalette::Window), 1));
+    p.setBrush(QColor(100,100,100));
+    p.drawRect(0,0,width(), height());
 
     QPoint offset = pnt_offset;
     int y = sessionMargin;
@@ -32,10 +37,9 @@ void Plane::paintEvent(QPaintEvent *e)
             session->draw(&p, width()-2*sessionMargin);
             p.restore();
         }
+        y += sessionSize.height() + sessionMargin;
     }
-    p.setPen(QPen(hasFocus()? palette().brush(QPalette::Highlight) : palette().brush(QPalette::Window), 1));
-    p.setBrush(QColor(240,240,240));
-    p.drawRect(0,0,width(), height());
+
     p.end();
     e->accept();
 }

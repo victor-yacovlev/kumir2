@@ -87,9 +87,12 @@ void OneSession::draw(QPainter *p, int realWidth)
 {
     const QSize atom = charSize();
     QSize sz = visibleSize();
+    p->save();
     if (i_fixedWidth==-1)
         sz.setWidth(realWidth);
-    p->save();
+    else {
+        p->translate((realWidth-sz.width())/2, 0);
+    }
     p->setPen(Qt::NoPen);
     p->setBrush(QColor(Qt::black));
     p->drawRect(shadowOffset, shadowOffset,
@@ -115,10 +118,10 @@ void OneSession::draw(QPainter *p, int realWidth)
               .arg(s_fileName)
             : "";
     p->setFont(smallFont);
-    p->setPen(QColor(Qt::gray));
-    p->drawText(headerPadding, headerPadding, header);
+    p->setPen(QColor(Qt::darkGray));
+    p->drawText(headerPadding, headerPadding+QFontMetrics(smallFont).height(), header);
     int x = bodyPadding;
-    int y = 2 * headerPadding + atom.height() + bodyPadding;
+    int y = 2 * headerPadding + 2 * atom.height() + bodyPadding;
 
     Q_ASSERT(m_lines.size()==m_props.size());
     p->setFont(m_font);
@@ -137,10 +140,11 @@ void OneSession::draw(QPainter *p, int realWidth)
             x += atom.width();
         }
         y += atom.height();
+        x = bodyPadding;
     }
     if (!footer.isEmpty()) {
         p->setFont(smallFont);
-        p->setPen(QColor(Qt::gray));
+        p->setPen(QColor(Qt::darkGray));
         p->drawText(headerPadding,
                     sz.height()-lineWidth-shadowOffset-headerPadding,
                     footer);

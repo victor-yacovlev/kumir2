@@ -112,7 +112,13 @@ void KumirProgram::fastRun()
     }
     bool ok = !mustRegenerate;
     if (mustRegenerate) {
+
         QFile exeFile(exeFileName);
+        if (exeFile.exists()) {
+            if (!exeFile.remove()) {
+                qDebug() << "Can't remove existing file " << exeFileName;
+            }
+        }
         if (exeFile.open(QIODevice::WriteOnly)) {
             GeneratorResult res = plugin_cppGenerator->generateExecuable(m_ast, &exeFile);
             if (res.type==Shared::GenError) {

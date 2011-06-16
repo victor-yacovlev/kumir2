@@ -57,16 +57,16 @@ QString Plugin::initialize(const QStringList &)
     foreach (QObject * o, actors) {
         ActorInterface * actor = qobject_cast<ActorInterface*>(o);
         l_plugin_actors << actor;
-        if (actor->mainWidget()) {
-            QWidget * actorWidget = actor->mainWidget();
-            QList<QMenu*> actorMenus = actor->menus();
-            bool priv = o->property("privilegedActor").toBool();
-            m_mainWindow->addSecondaryComponent(actor->name(),
-                                                actorWidget,
-                                                QList<QAction*>(),
-                                                actorMenus,
-                                                priv? MainWindow::StandardActor : MainWindow::WorldActor);
-        }
+//        if (actor->mainWidget()) {
+//            QWidget * actorWidget = actor->mainWidget();
+//            QList<QMenu*> actorMenus = actor->menus();
+//            bool priv = o->property("privilegedActor").toBool();
+//            m_mainWindow->addSecondaryComponent(actor->name(),
+//                                                actorWidget,
+//                                                QList<QAction*>(),
+//                                                actorMenus,
+//                                                priv? MainWindow::StandardActor : MainWindow::WorldActor);
+//        }
     }
     m_kumirProgram = new KumirProgram(this);
     m_kumirProgram->setBytecodeGenerator(plugin_BytecodeGenerator);

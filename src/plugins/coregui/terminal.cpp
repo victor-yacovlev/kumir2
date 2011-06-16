@@ -66,6 +66,10 @@ Terminal::Terminal(QWidget *parent) :
 
     tb->addAction(a_clear);
 
+//    start("debug");
+//    output("this is output");
+//    output("this is another output");
+//    error("this is error");
 }
 
 void Terminal::clear()
@@ -88,31 +92,37 @@ void Terminal::start(const QString & fileName)
 
 void Terminal::finish()
 {
-    Q_ASSERT(!l_sessions.isEmpty());
+    if (l_sessions.isEmpty())
+        l_sessions << new OneSession(80,"unknown", this);
+
     l_sessions.last()->finish();
 }
 
 void Terminal::terminate()
 {
-    Q_ASSERT(!l_sessions.isEmpty());
+    if (l_sessions.isEmpty())
+        l_sessions << new OneSession(80,"unknown", this);
     l_sessions.last()->terminate();
 }
 
 void Terminal::output(const QString & text)
 {
-    Q_ASSERT(!l_sessions.isEmpty());
+    if (l_sessions.isEmpty())
+        l_sessions << new OneSession(80,"unknown", this);
     l_sessions.last()->output(text);
 }
 
 void Terminal::input(const QString & format)
 {
-    Q_ASSERT(!l_sessions.isEmpty());
+    if (l_sessions.isEmpty())
+        l_sessions << new OneSession(80,"unknown", this);
     l_sessions.last()->input(format);
 }
 
 void Terminal::error(const QString & message)
 {
-    Q_ASSERT(!l_sessions.isEmpty());
+    if (l_sessions.isEmpty())
+        l_sessions << new OneSession(80,"unknown", this);
     l_sessions.last()->error(message);
 }
 

@@ -91,7 +91,11 @@ void Connector::waitForStatus(MessageSender s)
         }
         else {
             shm->unlock();
+#ifdef Q_OS_WIN32
             msleep(100);
+#else
+            msleep(30);
+#endif
         }
     }
 }
@@ -131,12 +135,17 @@ void Connector::run()
             int currentFramePage = currentFrame()->currentPage;
             frameBuffer.setRawData(currentFrame()->data, currentFrameSize);
             ba_buffer->append(frameBuffer);
-            currentFrame()->type = e_me;
-            currentFrame()->currentSize = okReply.size();
-            currentFrame()->currentPage = 0;
-            currentFrame()->pagesCount = 1;
-            qMemCopy(currentFrame()->data, okReply.data(), okReply.size() * sizeof(char));
             bool done = currentFramePage >= (currentFramePagesCount-1);
+            if (done && e_me==IM_Kumir) {
+                currentFrame()->type = e_me;
+                currentFrame()->currentSize = okReply.size();
+                currentFrame()->currentPage = 0;
+                currentFrame()->pagesCount = 1;
+                qMemCopy(currentFrame()->data, okReply.data(), okReply.size() * sizeof(char));
+            }
+            else {
+                currentFrame()->type = IM_NoMessage;
+            }
             shm->unlock();
             if (done) {
                 if (e_otherSender==IM_Kumir)
