@@ -8,7 +8,11 @@
 #include "interfaces/browserinterface.h"
 #include "interfaces/generatorinterface.h"
 #include "interfaces/actorinterface.h"
+#include "terminal.h"
 #include "switchworkspacedialog.h"
+#include "kumirprogram.h"
+
+using Terminal::Terminal;
 
 namespace CoreGUI {
 
@@ -39,7 +43,9 @@ protected:
     BrowserInterface * plugin_browser;
     QList<ActorInterface*> l_plugin_actors;
     SwitchWorkspaceDialog * m_workspaceDialog;
-    Shared::BrowserComponent m_startPage;
+    BrowserComponent m_startPage;
+    Terminal * m_terminal;
+    KumirProgram * m_kumirProgram;
 
 };
 

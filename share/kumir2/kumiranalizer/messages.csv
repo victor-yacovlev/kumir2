@@ -45,7 +45,7 @@
 "No pairing ')'";;;;;
 "Unpaired '('";;;;;
 "End module in algorhitm body";;;;;
-"Extra 'loop'";;;;;
+"Extra 'loop'";"Нет парного “кц”";;;;
 "Recursive declaration of bound";;;;;
 "Name not declared";"Имя не объявлено";;;;
 "Extra array bound";;;;;

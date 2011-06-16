@@ -24,11 +24,25 @@ namespace Ui {
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+    Q_ENUMS(DocumentType DockWindowType)
 
 public:
     enum DocumentType { Text, Kumir, Pascal, WWW };
+    enum DockWindowType { Terminal, StandardActor, WorldActor, Control, Other };
     explicit MainWindow(Plugin * p);
-    void addCentralComponent(const QString &title, QWidget *c, const QList<QAction*> & toolbarActions, const QList<QMenu*> & menus, DocumentType type, bool enableToolBar);
+
+    void addCentralComponent(const QString &title
+                             , QWidget *c
+                             , const QList<QAction*> & toolbarActions
+                             , const QList<QMenu*> & menus
+                             , DocumentType type
+                             , bool enableToolBar);
+
+    void addSecondaryComponent(const QString & title
+                               , QWidget * c
+                               , const QList<QAction*> & toolbarActions
+                               , const QList<QMenu*> & menus
+                               , DockWindowType type);
     ~MainWindow();
 public slots:
     QStringList recentFiles(bool fullPaths) const;
@@ -44,6 +58,7 @@ public slots:
 
 private slots:
     void setupMenus();
+    void setupProgram();
     void addToRecent(const QString &fileName);
 
 
@@ -56,8 +71,6 @@ private:
     static QIcon actionIcon(const QString & name);
 
     QActionGroup * gr_fileActions;
-    QActionGroup * gr_kumirActions;
-    QActionGroup * gr_pascalActions;
     QActionGroup * gr_otherActions;
 
 

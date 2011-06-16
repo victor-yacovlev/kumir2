@@ -1,10 +1,13 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "kumirprogram.h"
+
 
 #include <algorithm>
 
 namespace CoreGUI {
+
 
 class TabWidgetElement
         : public QWidget
@@ -15,15 +18,16 @@ public:
                                      , bool enableToolBar
                                      , QList<QAction*> toolbarActions
                                      , QList<QMenu*> ms
-                                     , MainWindow::DocumentType type
+                                     , MainWindow::DocumentType t
                                      , QActionGroup * gr_fileActions
-                                     , QActionGroup * gr_kumirActions
-                                     , QActionGroup * gr_pascalActions
                                      , QActionGroup * gr_otherActions
+                                     , class KumirProgram * kumir
+                                     , class PascalProgram * pascal
                                      )
         : QWidget()
         , component(w)
         , menus(ms)
+        , type(t)
     {
         setProperty("uncloseable", w->property("uncloseable"));
         setProperty("documentId", w->property("documentId"));
@@ -43,11 +47,12 @@ public:
                 tb->addAction(a);
             if (type==MainWindow::Kumir) {
                 tb->addSeparator();
-                tb->addActions(gr_kumirActions->actions());
+                tb->addActions(kumir->actions()->actions());
             }
             if (type==MainWindow::Pascal) {
                 tb->addSeparator();
-                tb->addActions(gr_pascalActions->actions());
+                Q_UNUSED(pascal);
+//                tb->addActions(pascal->actions()->actions());
             }
             if (!gr_otherActions->actions().isEmpty()) {
                 tb->addSeparator();
@@ -59,6 +64,12 @@ public:
     }
     QWidget * component;
     QList<QMenu*> menus;
+    MainWindow::DocumentType type;
+protected:
+    inline void focusInEvent(QFocusEvent *e) {
+        QWidget::focusInEvent(e);
+        component->setFocus();
+    }
 };
 
 MainWindow::MainWindow(Plugin * p) :
@@ -81,12 +92,10 @@ MainWindow::MainWindow(Plugin * p) :
     connect(ui->actionClose, SIGNAL(triggered()), this, SLOT(closeCurrentTab()));
     connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTab(int)));
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupMenus()));
+    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupProgram()));
 
     gr_fileActions = new QActionGroup(this);
     gr_fileActions->addAction(ui->actionSave);
-
-    gr_kumirActions = new QActionGroup(this);
-    gr_pascalActions = new QActionGroup(this);
 
     gr_otherActions = new QActionGroup(this);
 
@@ -154,7 +163,7 @@ void MainWindow::newProgram()
     int id = doc.id;
     vc->setProperty("documentId", id);
     QString fileName = suggestNewFileName(suffix);
-    vc->setProperty("fileName", fileName);
+    vc->setProperty("fileName", QDir::current().absoluteFilePath(fileName));
     addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, type, true);
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
     ui->tabWidget->currentWidget()->setFocus();
@@ -190,11 +199,41 @@ QString MainWindow::suggestNewFileName(const QString &suffix) const
 }
 
 
-void MainWindow::addCentralComponent(const QString &title, QWidget *c, const QList<QAction*> & toolbarActions, const QList<QMenu*> & menus, DocumentType type, bool enableToolBar)
+void MainWindow::addCentralComponent(
+    const QString &title
+    , QWidget *c
+    , const QList<QAction*> & toolbarActions
+    , const QList<QMenu*> & menus
+    , DocumentType type
+    , bool enableToolBar)
 {
-    TabWidgetElement * element = new TabWidgetElement(c,enableToolBar,toolbarActions,menus,type,gr_fileActions,gr_kumirActions,gr_pascalActions,gr_otherActions);
+    class KumirProgram * kumir = 0;
+    class PascalProgram * pascal = 0;
+    if (type==Kumir) {
+        kumir = m_plugin->m_kumirProgram;
+    }
+    TabWidgetElement * element = new TabWidgetElement(c,enableToolBar,toolbarActions,menus,type,gr_fileActions,gr_otherActions,kumir,pascal);
     createTopLevelMenus(menus, true);
     ui->tabWidget->addTab(element, title);
+}
+
+void MainWindow::addSecondaryComponent(const QString & title
+                           , QWidget * c
+                           , const QList<QAction*> & toolbarActions
+                           , const QList<QMenu*> & menus
+                           , DockWindowType type)
+{
+    QDockWidget * dock = new QDockWidget(title, this);
+    dock->setWidget(c);
+    Q_UNUSED(toolbarActions);
+    Q_UNUSED(menus);
+    if (type==Terminal) {
+        addDockWidget(Qt::BottomDockWidgetArea, dock);
+    }
+    else {
+        dock->setFloating(true);
+    }
+    dock->setVisible(type==Terminal);
 }
 
 
@@ -237,6 +276,19 @@ void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
     }
 }
 
+void MainWindow::setupProgram()
+{
+    QWidget * currentTabWidget = ui->tabWidget->currentWidget();
+
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
+    if (twe->type==Kumir) {
+        const int id = twe->property("documentId").toInt();
+        const QString fileName = twe->property("fileName").toString();
+        const AST::Data * ast = m_plugin->plugin_editor->analizer(id)->abstractSyntaxTree(id);
+        m_plugin->m_kumirProgram->setAST(ast);
+        m_plugin->m_kumirProgram->setSourceFileName(fileName);
+    }
+}
 
 void MainWindow::setupMenus()
 {

@@ -8,7 +8,7 @@ Connector::Connector()
     shm = new QSharedMemory(this);
     ba_buffer = new QByteArray;
     e_state = CS_Idle;
-    e_otherSender = IM_NoMessage;
+    e_me = e_otherSender = IM_NoMessage;
     InterprocessMessage f;
     PAGE_SIZE = sizeof(f.data) / sizeof(char);
 }
@@ -31,6 +31,7 @@ void Connector::connectTo(const QString &key)
         qFatal(QString("Can't attach to Kumir: %1").arg(shm->errorString()).toLocal8Bit().data());
     }
     e_otherSender = IM_Kumir;
+    e_me = IM_Program;
     connectedToKumir = true;
 }
 
@@ -40,9 +41,13 @@ void Connector::listenFor(const QString &key)
     if (!shm->create(sizeof(InterprocessMessage))) {
         qFatal(QString("Can't listen SHM: %1").arg(shm->errorString()).toLocal8Bit().data());
     }
+    qDebug() << "Listening for " << key;
     e_otherSender = IM_Program;
+    e_me = IM_Kumir;
     currentFrame()->type = IM_NoMessage;
     ba_buffer->clear();
+    connect(this, SIGNAL(requestReceived(QVariantList)), this, SLOT(handleStandardRequest(QVariantList)));
+    e_state = CS_Receiving;
     start();
 }
 
@@ -114,12 +119,24 @@ void Connector::run()
         e_state = CS_Idle;
     }
     else if (e_state==CS_Receiving) {
+        QByteArray okReply;
+        QDataStream b(&okReply, QIODevice::WriteOnly);
+        QVariantList okMessage;
+        okMessage << "ok";
+        b << okMessage;
         forever {
             waitForStatus(e_otherSender);
-            frameBuffer.setRawData(currentFrame()->data, currentFrame()->currentSize);
+            int currentFrameSize = currentFrame()->currentSize;
+            int currentFramePagesCount = currentFrame()->pagesCount;
+            int currentFramePage = currentFrame()->currentPage;
+            frameBuffer.setRawData(currentFrame()->data, currentFrameSize);
             ba_buffer->append(frameBuffer);
-            currentFrame()->type = IM_NoMessage;
-            bool done = currentFrame()->currentPage >= currentFrame()->pagesCount;
+            currentFrame()->type = e_me;
+            currentFrame()->currentSize = okReply.size();
+            currentFrame()->currentPage = 0;
+            currentFrame()->pagesCount = 1;
+            qMemCopy(currentFrame()->data, okReply.data(), okReply.size() * sizeof(char));
+            bool done = currentFramePage >= (currentFramePagesCount-1);
             shm->unlock();
             if (done) {
                 if (e_otherSender==IM_Kumir)
@@ -137,12 +154,44 @@ void Connector::run()
     }
 }
 
+void Connector::handleStandardRequest(const QVariantList &message)
+{
+    if (message.size()>0) {
+        const QString operation = message[0].toString().toLower().trimmed();
+        if (operation=="input") {
+            Q_ASSERT(message.size()==2);
+            emit inputFormatReceived(message[1].toString());
+        }
+        else if (operation=="output") {
+            Q_ASSERT(message.size()==2);
+            emit outputTextReceived(message[1].toString());
+        }
+        else if (operation=="error") {
+            Q_ASSERT(message.size()==3);
+            emit errorReceived(message[1].toInt());
+            emit errorMessageReceived(message[2].toString());
+        }
+    }
+}
 
 }
 
 extern "C" unsigned char __connected_to_kumir__()
 {
     return StdLib::Connector::connectedToKumir? 1 : 0;
+}
+
+extern "C" STDLIB_EXPORT void __try_connect_to_kumir__(int argc, char* *argv)
+{
+    for (int i=1; i<argc; i++) {
+        const QString arg = QString::fromAscii(argv[i]);
+        if (arg.startsWith("--key=")) {
+            const QString key = arg.mid(6);
+            qDebug() << "Connecting to kumir with key = "  << key;
+            __connect_to_kumir__(arg.mid(6));
+            break;
+        }
+    }
 }
 
 extern void __connect_to_kumir__(const QString & key)

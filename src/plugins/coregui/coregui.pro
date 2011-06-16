@@ -4,6 +4,7 @@ TARGET = CoreGUI
 QT += script
 include(../../kumir2plugin.pri)
 include(../../shared/extensionsystem/extensionsystem.pri)
+include(../../shared/stdlib/stdlib.pri)
 
 
 QT += gui
@@ -14,13 +15,21 @@ HEADERS += \
     mainwindow.h \
     plugin.h \
     switchworkspacedialog.h \
-    tabwidget.h
+    tabwidget.h \
+    kumirprogram.h \
+    terminal.h \
+    terminal_onesession.h \
+    terminal_plane.h
 
 SOURCES += \
     mainwindow.cpp \
     plugin.cpp \
     switchworkspacedialog.cpp \
-    tabwidget.cpp
+    tabwidget.cpp \
+    kumirprogram.cpp \
+    terminal.cpp \
+    terminal_onesession.cpp \
+    terminal_plane.cpp
 
 FORMS += \
     mainwindow.ui \

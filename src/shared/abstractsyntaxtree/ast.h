@@ -2,6 +2,7 @@
 #define AST_H
 
 #include <QList>
+#include <QDateTime>
 
 #include "ast_module.h"
 
@@ -17,6 +18,7 @@ namespace AST {
 struct ABSTRACTSYNTAXTREE_EXPORT Data
 {
     QList<struct Module*> modules;
+    QDateTime lastModified;
 
     explicit Data();
     explicit Data(const Data * src);

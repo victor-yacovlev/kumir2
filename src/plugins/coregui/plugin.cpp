@@ -47,10 +47,31 @@ QString Plugin::initialize(const QStringList &)
         return "Can't load editor plugin!";
     if (!plugin_CppGenerator)
         return "Can't load c-generator plugin!";
+    m_terminal = new Terminal(0);
+    m_mainWindow->addSecondaryComponent(tr("Input/Output terminal"),
+                                        m_terminal,
+                                        QList<QAction*>(),
+                                        QList<QMenu*>(),
+                                        MainWindow::Terminal);
     QList<ExtensionSystem::KPlugin*> actors = loadedPlugins("Actor*");
     foreach (QObject * o, actors) {
-        l_plugin_actors << qobject_cast<ActorInterface*>(o);
+        ActorInterface * actor = qobject_cast<ActorInterface*>(o);
+        l_plugin_actors << actor;
+        if (actor->mainWidget()) {
+            QWidget * actorWidget = actor->mainWidget();
+            QList<QMenu*> actorMenus = actor->menus();
+            bool priv = o->property("privilegedActor").toBool();
+            m_mainWindow->addSecondaryComponent(actor->name(),
+                                                actorWidget,
+                                                QList<QAction*>(),
+                                                actorMenus,
+                                                priv? MainWindow::StandardActor : MainWindow::WorldActor);
+        }
     }
+    m_kumirProgram = new KumirProgram(this);
+    m_kumirProgram->setBytecodeGenerator(plugin_BytecodeGenerator);
+    m_kumirProgram->setCppGenerator(plugin_CppGenerator);
+    m_kumirProgram->setTerminal(m_terminal);
     const QString browserEntryPoint = QApplication::instance()->property("sharePath").toString()+"/coregui/startpage/russian/index.html";
     QMap<QString,QObject*> objects;
     objects["mainWindow"] = m_mainWindow;

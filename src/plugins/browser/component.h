@@ -27,6 +27,8 @@ public slots:
 private:
     Ui::Component *ui;
     QMap<QString, QObject*> m_manageableObjects;
+    QAction * a_separator;
+    QMenu * menu_edit;
 
 private slots:
     void addJavaScriptObjects();

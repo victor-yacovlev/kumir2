@@ -12,39 +12,46 @@ Component::Component() :
 #ifdef QT_DEBUG
     ui->webView->page()->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
 #endif
+    ui->webView->pageAction(QWebPage::Back)->setText(tr("Go back"));
+    ui->webView->pageAction(QWebPage::Forward)->setText(tr("Go forward"));
+    ui->webView->pageAction(QWebPage::Stop)->setText(tr("Stop"));
+    ui->webView->pageAction(QWebPage::Reload)->setText(tr("Reload"));
+    ui->webView->pageAction(QWebPage::Cut)->setText(tr("Cut"));
+    ui->webView->pageAction(QWebPage::Copy)->setText(tr("Copy"));
+    ui->webView->pageAction(QWebPage::Paste)->setText(tr("Paste"));
+    
+    ui->webView->pageAction(QWebPage::Cut)->setIcon(QIcon::fromTheme("edit-cut"));
+    ui->webView->pageAction(QWebPage::Copy)->setIcon(QIcon::fromTheme("edit-copy"));
+    ui->webView->pageAction(QWebPage::Paste)->setIcon(QIcon::fromTheme("edit-paste"));
+    
+    a_separator = new QAction(this);
+    a_separator->setSeparator(true);
+    
+    menu_edit = new QMenu(tr("Edit"));
+    
+    menu_edit->addAction(ui->webView->pageAction(QWebPage::Back));
+    menu_edit->addAction(ui->webView->pageAction(QWebPage::Forward));
+    menu_edit->addAction(ui->webView->pageAction(QWebPage::Reload));
+    menu_edit->addAction(ui->webView->pageAction(QWebPage::Stop));
+    menu_edit->addSeparator();
+    menu_edit->addAction(ui->webView->pageAction(QWebPage::Cut));
+    menu_edit->addAction(ui->webView->pageAction(QWebPage::Copy));
+    menu_edit->addAction(ui->webView->pageAction(QWebPage::Paste));
 }
 
 QList<QAction*> Component::toolbarActions()
 {
     QList<QAction*> result;
     result << ui->webView->pageAction(QWebPage::Back);
-    QAction * separator = new QAction(this);
-    separator->setSeparator(true);
-    result << separator;
+    result << a_separator;
     result << ui->webView->pageAction(QWebPage::Copy);
-    result.last()->setIcon(QIcon::fromTheme("edit-copy"));
     return result;
 }
 
 QList<QMenu*> Component::menuActions()
 {
     QList<QMenu*> result;
-    QMenu * edit = new QMenu(tr("Edit"));
-    edit->addAction(ui->webView->pageAction(QWebPage::Back));
-    edit->addAction(ui->webView->pageAction(QWebPage::Forward));
-    edit->addAction(ui->webView->pageAction(QWebPage::Reload));
-    edit->addAction(ui->webView->pageAction(QWebPage::Stop));
-    edit->addSeparator();
-    QAction * cut = ui->webView->pageAction(QWebPage::Cut);
-    cut->setIcon(QIcon::fromTheme("edit-cut"));
-    edit->addAction(cut);
-    QAction * copy = ui->webView->pageAction(QWebPage::Copy);
-    copy->setIcon(QIcon::fromTheme("edit-copy"));
-    edit->addAction(copy);
-    QAction * paste = ui->webView->pageAction(QWebPage::Paste);
-    paste->setIcon(QIcon::fromTheme("edit-paste"));
-    edit->addAction(paste);
-    result << edit;
+    result << menu_edit;
     return result;
 }
 

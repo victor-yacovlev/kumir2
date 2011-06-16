@@ -38,9 +38,15 @@ public:
     void listenFor(const QString &key);
     static bool connectedToKumir;
 public slots:
-    QVariantList sendRequest(const QVariantList & arguments);
+    QVariantList sendRequest(const QVariantList & message);
 signals:
-    void requestReceived(const QVariantList & arguments);
+    void requestReceived(const QVariantList & message);
+    void outputTextReceived(const QString & text);
+    void errorMessageReceived(const QString & message);
+    void inputFormatReceived(const QString & format);
+    void errorReceived(int lineNo);
+protected slots:
+    void handleStandardRequest(const QVariantList & message);
 protected:
     void run();
     void waitForStatus(MessageSender s);
@@ -53,6 +59,7 @@ private:
     QSharedMemory * shm;
     QByteArray * ba_buffer;
     enum MessageSender e_otherSender;
+    enum MessageSender e_me;
     static Connector * m_instance;
 };
 
@@ -60,6 +67,7 @@ private:
 } // namespace GuiRunner
 
 extern "C" STDLIB_EXPORT unsigned char __connected_to_kumir__();
+extern "C" STDLIB_EXPORT void __try_connect_to_kumir__(int argc, char* *argv);
 extern STDLIB_EXPORT void __connect_to_kumir__(const QString & key);
 extern STDLIB_EXPORT void __show_actor_window__(const QString & moduleName);
 

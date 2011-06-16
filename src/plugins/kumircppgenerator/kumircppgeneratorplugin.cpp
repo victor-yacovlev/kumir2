@@ -502,8 +502,11 @@ QString KumirCppGeneratorPrivate::makeMain() const
 {
     QString result;
     result += "#include <locale.h>\n";
-    if (!requireGui)
+    if (!requireGui) {
+        result += "extern void __try_connect_to_kumir__(int argc, char** argv);\n";
         result += "int main(int argc, char** argv) {\n";
+        result += "  __try_connect_to_kumir__(argc, argv);\n";
+    }
     else
         result += "void __main_program__() {\n";
     result += "  __init_garbage_collector__();\n";
@@ -935,6 +938,11 @@ Shared::GeneratorResult KumirCppGeneratorPlugin::generateExecuable(
 {
     d->ast = tree;
     d->requireGui = false;
+    d->nameProvider->reset();
+    for (int i=0; i<d->modules.size(); i++) {
+        delete d->modules[i];
+    }
+    d->modules.clear();
     for (int i=0; i<tree->modules.size(); i++) {
         if (tree->modules[i]->header.enabled)
             d->addModule(tree->modules[i]);
@@ -1137,7 +1145,7 @@ Shared::GeneratorResult KumirCppGeneratorPlugin::generateExecuable(
         QFile outF(gccOutName);
         if (outF.open(QIODevice::ReadOnly)) {
             out->write(outF.readAll());
-            outF.close();
+            outF.flush();
 
         }
         result.type = Shared::GenNativeExecuable;
