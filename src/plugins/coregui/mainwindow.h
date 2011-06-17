@@ -60,6 +60,7 @@ private slots:
     void setupMenus();
     void setupProgram();
     void addToRecent(const QString &fileName);
+    void handleTabTitleChange(const QString & title);
 
 
 private:

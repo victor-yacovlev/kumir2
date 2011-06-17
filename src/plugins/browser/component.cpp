@@ -78,12 +78,12 @@ void Component::addJavaScriptObjects()
 void Component::go(const QUrl &url)
 {
     ui->webView->setUrl(url);
-    ui->webView->history()->clear();
+//    ui->webView->history()->clear();
     ui->webView->pageAction(QWebPage::Back)->setEnabled(false);
-    for (int i=0; i<ui->webView->history()->items().count(); i++) {
-        QWebHistoryItem item = ui->webView->history()->items()[i];
-        qDebug() << item.url();
-    }
+//    for (int i=0; i<ui->webView->history()->items().count(); i++) {
+//        QWebHistoryItem item = ui->webView->history()->items()[i];
+//        qDebug() << item.url();
+//    }
 }
 
 
@@ -96,7 +96,9 @@ void Component::handleLoadStarted()
 void Component::handleLoadFinished()
 {
     int hc = ui->webView->history()->count();
-    qDebug() << hc;
+//    qDebug() << hc;
+    const QString title = ui->webView->title();
+    emit titleChanged(title);
     a_goBack->setEnabled(hc>2);
     a_reloadStop->setText(tr("Reload"));
     a_reloadStop->setIcon(ui->webView->pageAction(QWebPage::Reload)->icon());

@@ -32,6 +32,9 @@ public:
         setProperty("uncloseable", w->property("uncloseable"));
         setProperty("documentId", w->property("documentId"));
         setProperty("fileName", w->property("fileName"));
+        if (type==MainWindow::WWW) {
+            connect(w, SIGNAL(titleChanged(QString)), this, SIGNAL(changeTitle(QString)));
+        }
         QVBoxLayout * l = new QVBoxLayout;
         l->setContentsMargins(0,0,0,0);
         l->setSpacing(0);
@@ -68,6 +71,8 @@ public:
     QWidget * component;
     QList<QMenu*> menus;
     MainWindow::DocumentType type;
+signals:
+    void changeTitle(const QString & txt);
 protected:
     inline void focusInEvent(QFocusEvent *e) {
         QWidget::focusInEvent(e);
@@ -102,6 +107,13 @@ MainWindow::MainWindow(Plugin * p) :
 
     gr_otherActions = new QActionGroup(this);
 
+}
+
+void MainWindow::handleTabTitleChange(const QString &title)
+{
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(sender());
+    int index = ui->tabWidget->indexOf(twe);
+    ui->tabWidget->setTabText(index, title);
 }
 
 void MainWindow::closeCurrentTab()
@@ -216,6 +228,7 @@ void MainWindow::addCentralComponent(
         kumir = m_plugin->m_kumirProgram;
     }
     TabWidgetElement * element = new TabWidgetElement(c,enableToolBar,toolbarActions,menus,type,gr_fileActions,gr_otherActions,kumir,pascal);
+    connect(element, SIGNAL(changeTitle(QString)), this, SLOT(handleTabTitleChange(QString)));
     createTopLevelMenus(menus, true);
     ui->tabWidget->addTab(element, title);
 }
