@@ -23,13 +23,25 @@ Component::Component() :
     ui->webView->pageAction(QWebPage::Cut)->setIcon(QIcon::fromTheme("edit-cut"));
     ui->webView->pageAction(QWebPage::Copy)->setIcon(QIcon::fromTheme("edit-copy"));
     ui->webView->pageAction(QWebPage::Paste)->setIcon(QIcon::fromTheme("edit-paste"));
+
+    connect(ui->webView, SIGNAL(titleChanged(QString)), this, SIGNAL(titleChanged(QString)));
+    connect(ui->webView->page(), SIGNAL(loadStarted()), this, SLOT(handleLoadStarted()));
+    connect(ui->webView->page(), SIGNAL(loadFinished(bool)), this, SLOT(handleLoadFinished()));
+
+    a_goBack = new QAction(tr("Go back"), this);
+    a_goBack->setIcon(ui->webView->pageAction(QWebPage::Back)->icon());
+    connect(a_goBack, SIGNAL(triggered()), ui->webView->pageAction(QWebPage::Back), SLOT(trigger()));
+    a_goBack->setEnabled(false);
+
+    a_reloadStop = new QAction(this);
+    connect(a_reloadStop, SIGNAL(triggered()), this, SLOT(handleReloadStop()));
     
     a_separator = new QAction(this);
     a_separator->setSeparator(true);
     
     menu_edit = new QMenu(tr("Edit"));
     
-    menu_edit->addAction(ui->webView->pageAction(QWebPage::Back));
+    menu_edit->addAction(a_goBack);
     menu_edit->addAction(ui->webView->pageAction(QWebPage::Forward));
     menu_edit->addAction(ui->webView->pageAction(QWebPage::Reload));
     menu_edit->addAction(ui->webView->pageAction(QWebPage::Stop));
@@ -42,9 +54,9 @@ Component::Component() :
 QList<QAction*> Component::toolbarActions()
 {
     QList<QAction*> result;
-    result << ui->webView->pageAction(QWebPage::Back);
-    result << a_separator;
-    result << ui->webView->pageAction(QWebPage::Copy);
+    result << a_goBack;
+    result << ui->webView->pageAction(QWebPage::Forward);
+    result << a_reloadStop;
     return result;
 }
 
@@ -66,6 +78,38 @@ void Component::addJavaScriptObjects()
 void Component::go(const QUrl &url)
 {
     ui->webView->setUrl(url);
+    ui->webView->history()->clear();
+    ui->webView->pageAction(QWebPage::Back)->setEnabled(false);
+    for (int i=0; i<ui->webView->history()->items().count(); i++) {
+        QWebHistoryItem item = ui->webView->history()->items()[i];
+        qDebug() << item.url();
+    }
+}
+
+
+void Component::handleLoadStarted()
+{
+    a_reloadStop->setText(tr("Stop"));
+    a_reloadStop->setIcon(ui->webView->pageAction(QWebPage::Stop)->icon());
+}
+
+void Component::handleLoadFinished()
+{
+    int hc = ui->webView->history()->count();
+    qDebug() << hc;
+    a_goBack->setEnabled(hc>2);
+    a_reloadStop->setText(tr("Reload"));
+    a_reloadStop->setIcon(ui->webView->pageAction(QWebPage::Reload)->icon());
+}
+
+void Component::handleReloadStop()
+{
+    if (a_reloadStop->text()==tr("Reload")) {
+        ui->webView->pageAction(QWebPage::Reload)->trigger();
+    }
+    else {
+        ui->webView->pageAction(QWebPage::Stop)->trigger();
+    }
 }
 
 Component::~Component()

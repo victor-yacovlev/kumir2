@@ -73,9 +73,8 @@ QString Plugin::initialize(const QStringList &)
     m_kumirProgram->setCppGenerator(plugin_CppGenerator);
     m_kumirProgram->setTerminal(m_terminal);
     const QString browserEntryPoint = QApplication::instance()->property("sharePath").toString()+"/coregui/startpage/russian/index.html";
-    QMap<QString,QObject*> objects;
-    objects["mainWindow"] = m_mainWindow;
-    m_startPage = plugin_browser->createBrowser(QUrl::fromLocalFile(browserEntryPoint), objects);
+    m_browserObjects["mainWindow"] = m_mainWindow;
+    m_startPage = plugin_browser->createBrowser(QUrl::fromLocalFile(browserEntryPoint), m_browserObjects);
     m_startPage.widget->setProperty("uncloseable", true);
     m_mainWindow->restoreSession();
     return "";

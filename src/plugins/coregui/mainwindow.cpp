@@ -457,7 +457,10 @@ void MainWindow::loadFromUrl(const QUrl & url)
         }
     }
     else if (type==WWW) {
-        // TODO implement me
+        BrowserComponent browser = m_plugin->plugin_browser->createBrowser(url, m_plugin->m_browserObjects);
+        addCentralComponent(url.toString(), browser.widget, browser.toolbarActions, browser.menus, WWW, true);
+        ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
+        ui->tabWidget->currentWidget()->setFocus();
     }
 }
 

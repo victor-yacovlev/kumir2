@@ -45,6 +45,7 @@ protected:
     SwitchWorkspaceDialog * m_workspaceDialog;
     BrowserComponent m_startPage;
     Terminal * m_terminal;
+    QMap<QString,QObject*> m_browserObjects;
     KumirProgram * m_kumirProgram;
 
 };

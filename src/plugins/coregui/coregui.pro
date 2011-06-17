@@ -19,7 +19,8 @@ HEADERS += \
     kumirprogram.h \
     terminal.h \
     terminal_onesession.h \
-    terminal_plane.h
+    terminal_plane.h \
+    tabbar.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -29,8 +30,12 @@ SOURCES += \
     kumirprogram.cpp \
     terminal.cpp \
     terminal_onesession.cpp \
-    terminal_plane.cpp
+    terminal_plane.cpp \
+    tabbar.cpp
 
 FORMS += \
     mainwindow.ui \
     switchworkspacedialog.ui
+
+RESOURCES += \
+    resources.qrc

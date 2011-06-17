@@ -21,20 +21,20 @@ StatusBar::StatusBar(QWidget *parent) :
 
 void StatusBar::handleClipboardChanged(int cnt)
 {
-    QString v;
-    if (cnt==0)
-        v = tr("Empty");
-    else if (cnt==1)
-        v = tr("%1 text", "One").arg(cnt);
-    else if ( cnt%10==1 && cnt!=11 && cnt!=1)
-        v = tr("%1 texts", "1, 21, 31, etc").arg(cnt);
-    else if ( ( cnt%10==2 && cnt!=12 ) ||
-             ( cnt%10==3 && cnt!=13 ) ||
-             ( cnt%10==4 && cnt!=14 ) )
-        v = tr("%1 texts", "2, 3, 4, 22, 23, 24, etc").arg(cnt);
-    else
-        v = tr("%1 texts", "Generic numerical").arg(cnt);
-    ui->selectBufferButton->setText(s_clipboardTemplateText.arg(v));
+//    QString v;
+//    if (cnt==0)
+//        v = tr("Empty");
+//    else if (cnt==1)
+//        v = tr("%1 text", "One").arg(cnt);
+//    else if ( cnt%10==1 && cnt!=11 && cnt!=1)
+//        v = tr("%1 texts", "1, 21, 31, etc").arg(cnt);
+//    else if ( ( cnt%10==2 && cnt!=12 ) ||
+//             ( cnt%10==3 && cnt!=13 ) ||
+//             ( cnt%10==4 && cnt!=14 ) )
+//        v = tr("%1 texts", "2, 3, 4, 22, 23, 24, etc").arg(cnt);
+//    else
+//        v = tr("%1 texts", "Generic numerical").arg(cnt);
+//    ui->selectBufferButton->setText(s_clipboardTemplateText.arg(v));
 }
 
 void StatusBar::timerEvent(QTimerEvent *e)

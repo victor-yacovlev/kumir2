@@ -28,10 +28,18 @@ private:
     Ui::Component *ui;
     QMap<QString, QObject*> m_manageableObjects;
     QAction * a_separator;
+    QAction * a_goBack;
+    QAction * a_reloadStop;
+
     QMenu * menu_edit;
+signals:
+    void titleChanged(const QString & title);
 
 private slots:
     void addJavaScriptObjects();
+    void handleReloadStop();
+    void handleLoadStarted();
+    void handleLoadFinished();
 };
 
 
