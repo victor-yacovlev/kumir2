@@ -72,7 +72,7 @@ private:
 
 }
 
-extern "C" void __input__st_funct(const char * format, int args, ...);
-extern "C" void __output__st_funct(const char * format, int args, ...);
+extern "C" STDLIB_EXPORT void __input__st_funct(const char * format, int args, ...);
+extern "C" STDLIB_EXPORT void __output__st_funct(const char * format, int args, ...);
 
 #endif // ST_FUNCT_GENERICINPUT_H

@@ -270,7 +270,7 @@ QStringList St_functPlugin::actorLibraries() const
 
 QStringList St_functPlugin::usedQtLibraries() const
 {
-    return QStringList() << "QtCore";
+    return QStringList() << "QtCore" << "QtGui";
 }
 
 QString St_functPlugin::name(ProgrammingLanguage pl, QLocale::Language nl) const
