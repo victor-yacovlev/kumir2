@@ -338,12 +338,7 @@ QString PluginManager::loadPluginsByTemplate(const QString &templ)
 
 bool PluginManager::isGuiRequired() const
 {
-    for (int i=0; i<d->specs.size(); i++) {
-        if (d->specs[i].gui) {
-            return true;
-        }
-    }
-    return false;
+    return d->specs.last().gui;
 }
 
 QString PluginManager::initializePlugins()

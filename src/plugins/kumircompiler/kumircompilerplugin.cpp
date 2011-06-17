@@ -153,7 +153,6 @@ void KumirCompilerPlugin::start()
         std::cerr << "\tFILENAME.kum\tKumir program input file name" << std::endl;
         qApp->setProperty("returnCode", 127);
     }
-    qApp->quit();
 }
 
 void KumirCompilerPlugin::stop()

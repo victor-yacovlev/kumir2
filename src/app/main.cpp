@@ -103,6 +103,7 @@ int main(int argc, char **argv)
         delete app;
         return 1;
     }
+    app->setProperty("returnCode", 0);
     error = manager->start();
     if (!error.isEmpty()) {
         showErrorMessage(error);
@@ -111,7 +112,6 @@ int main(int argc, char **argv)
         return 1;
     }
     int ret = 0;
-    app->setProperty("returnCode", 0);
     if (manager->isGuiRequired()) {
         ret = app->exec();
         if (ret == 0) {
