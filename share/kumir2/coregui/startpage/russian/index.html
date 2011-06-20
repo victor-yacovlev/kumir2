@@ -112,13 +112,10 @@
                     <a href="" onclick="mainWindow.showHelp()">Руководство пользователя</a>
                 </li>
             </ul>
-            <h2>Недавние файлы</h2>
             <script type="text/javascript">
             var recentFiles = mainWindow.recentFiles(false);
-            if (recentFiles.length==0) {
-                document.write("<span class='empty'>Нет файлов</span>");
-            }
-            else {
+            if (recentFiles.length>0) {
+                document.write("<h2>Недавние файлы</h2>\n");
                 document.write("<ul>\n");
                 for (var i=0; i<recentFiles.length; i++) {
                     var line = "<a href='' onclick='mainWindow.loadRecentFile("+i+")'>"+recentFiles[i]+"</a>";

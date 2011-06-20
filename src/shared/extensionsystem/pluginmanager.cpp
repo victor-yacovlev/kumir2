@@ -41,8 +41,17 @@ PluginManager::PluginManager()
     m_instance = this;
 }
 
+PluginManager::~PluginManager()
+{
+    if (d->settingsDialog)
+        d->settingsDialog->deleteLater();
+    d->settingsDialog = 0;
+    delete d;
+}
+
 void PluginManagerPrivate::createSettingsDialog()
 {
+    settingsDialog = 0;
 #ifdef Q_WS_X11
     bool gui = getenv("DISPLAY")!=0;
     if (!gui)
@@ -467,6 +476,15 @@ void PluginManager::shutdown()
         p->stop();
         d->states[i] = KPlugin::Stopped;
         d->settings[i]->sync();
+    }
+}
+
+void PluginManager::changeWorkingDirectory(const QString &path)
+{
+    for (int i=0; i<d->objects.size(); i++) {
+        KPlugin * p = d->objects[i];
+        d->settings[i]->sync();
+        p->changeCurrentDirectory(path);
     }
 }
 

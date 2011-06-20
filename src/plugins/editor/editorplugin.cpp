@@ -67,10 +67,8 @@ void EditorPlugin::closeDocument(int documentId)
 {
     Q_ASSERT(documentId>=0);
     Q_ASSERT(documentId<d->editors.size());
-    Q_CHECK_PTR(d->editors[documentId].first);
     Q_CHECK_PTR(d->editors[documentId].second);
     Ed ed = d->editors[documentId];
-//    delete ed.first;
     ed.second->deleteLater();
     ed.first = 0;
     ed.second = 0;
@@ -81,7 +79,6 @@ QString EditorPlugin::saveDocument(int documentId, const QString &fileName)
 {
     Q_ASSERT(documentId>=0);
     Q_ASSERT(documentId<d->editors.size());
-    Q_CHECK_PTR(d->editors[documentId].first);
     Q_CHECK_PTR(d->editors[documentId].second);
     Ed ed = d->editors[documentId];
     Editor * editor = ed.second;

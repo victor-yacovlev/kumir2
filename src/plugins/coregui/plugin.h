@@ -25,6 +25,7 @@ class Plugin
     Q_OBJECT
 public:
     explicit Plugin();
+    ~Plugin();
     static QString InitialTextKey;
     static QString SessionFilesListKey;
     static QString SessionTabIndexKey;

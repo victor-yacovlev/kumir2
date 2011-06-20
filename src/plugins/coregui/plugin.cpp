@@ -1,6 +1,7 @@
 #include "plugin.h"
 #include "mainwindow.h"
 #include "switchworkspacedialog.h"
+#include "extensionsystem/pluginmanager.h"
 
 
 
@@ -38,6 +39,7 @@ QString Plugin::initialize(const QStringList &)
     }
     QDir::root().mkpath(workspaceDir);
     QDir::setCurrent(workspaceDir);
+    ExtensionSystem::PluginManager::instance()->changeWorkingDirectory(workspaceDir);
     m_mainWindow = new MainWindow(this);
     plugin_editor = qobject_cast<EditorInterface*>(myDependency("Editor"));
     plugin_CppGenerator = qobject_cast<GeneratorInterface*>(myDependency("KumirCppGenerator"));
@@ -88,6 +90,11 @@ void Plugin::start()
 void Plugin::stop()
 {
     m_mainWindow->close();
+}
+
+Plugin::~Plugin()
+{
+    m_startPage.widget->deleteLater();
 }
 
 } // namespace CoreGUI

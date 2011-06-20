@@ -8,6 +8,7 @@ namespace Browser {
 class Dir : public QObject
 {
     Q_OBJECT
+    friend class Plugin;
 public:
     explicit Dir(QObject *parent = 0);
 

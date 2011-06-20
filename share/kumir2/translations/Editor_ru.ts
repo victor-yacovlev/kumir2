@@ -12,12 +12,12 @@
 <context>
     <name>Editor::EditorPlugin</name>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="92"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="99"/>
         <source>Can&apos;t open file %1 for writing</source>
         <translation>Не могу открыть %1 для записи</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="120"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="127"/>
         <source>Editor</source>
         <translation>Редактор</translation>
     </message>
@@ -61,36 +61,36 @@
     </message>
     <message>
         <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="116"/>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="130"/>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="147"/>
+        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="127"/>
+        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="141"/>
         <source>Kumir Editor</source>
         <translation>Редактор Кумир</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="164"/>
+        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="158"/>
         <source>Load Kumir program...</source>
         <translation>Загрузить Кумир-программу...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="166"/>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="196"/>
+        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="160"/>
+        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="190"/>
         <source>Kumir programs (*.kum)</source>
         <translation>Кумир-программы (*.kum)</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="173"/>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="185"/>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="202"/>
+        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="167"/>
+        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="179"/>
+        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="196"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="173"/>
+        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="167"/>
         <source>Can&apos;t load file %1</source>
         <translation>Не могу загрузить файл %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="194"/>
+        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="188"/>
         <source>Save Kumir program...</source>
         <translation>Сохранить Кумир-программу...</translation>
     </message>
@@ -228,51 +228,46 @@
         <translation>Буфер обмена</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/statusbar.cpp" line="25"/>
         <source>Empty</source>
-        <translation>Пусто</translation>
+        <translation type="obsolete">Пусто</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/statusbar.cpp" line="27"/>
         <source>%1 text</source>
         <comment>One</comment>
-        <translation>%1 текст</translation>
+        <translation type="obsolete">%1 текст</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/statusbar.cpp" line="29"/>
         <source>%1 texts</source>
         <comment>1, 21, 31, etc</comment>
-        <translation>%1 текст</translation>
+        <translation type="obsolete">%1 текст</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/statusbar.cpp" line="33"/>
         <source>%1 texts</source>
         <comment>2, 3, 4, 22, 23, 24, etc</comment>
-        <translation>%1 текста</translation>
+        <translation type="obsolete">%1 текста</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/statusbar.cpp" line="35"/>
         <source>%1 texts</source>
         <comment>Generic numerical</comment>
-        <translation>%1 текстов</translation>
+        <translation type="obsolete">%1 текстов</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/statusbar.cpp" line="45"/>
+        <location filename="../../../src/plugins/editor/statusbar.cpp" line="46"/>
         <source>On</source>
         <translation>ВКЛ</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/statusbar.cpp" line="45"/>
+        <location filename="../../../src/plugins/editor/statusbar.cpp" line="46"/>
         <source>Off</source>
         <translation>ВЫКЛ</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/statusbar.cpp" line="46"/>
+        <location filename="../../../src/plugins/editor/statusbar.cpp" line="47"/>
         <source>Rus</source>
         <translation>РУС</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/statusbar.cpp" line="46"/>
+        <location filename="../../../src/plugins/editor/statusbar.cpp" line="47"/>
         <source>Lat</source>
         <translation>ЛАТ</translation>
     </message>
@@ -280,32 +275,32 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="271"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="274"/>
         <source>Select all text in editor</source>
         <translation>Выбрать весь текст</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="277"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="280"/>
         <source>Copy selection to clipboard</source>
         <translation>Скопировать в буфер обмена</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="283"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="286"/>
         <source>Cut selection to clipboard</source>
         <translation>Выоезать в буфер обмена</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="289"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="292"/>
         <source>Paste from clipboard</source>
         <translation>Вставить из буфера обмена</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="295"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="298"/>
         <source>Delete line under cursor</source>
         <translation>Удалить строку</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="301"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="304"/>
         <source>Delete text from cursor to end of line</source>
         <translation>Удалить текст до конца строки</translation>
     </message>

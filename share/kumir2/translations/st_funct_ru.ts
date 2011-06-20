@@ -2,19 +2,6 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="ru_RU">
 <context>
-    <name>StdLib::GenericInputOutput</name>
-    <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.h" line="23"/>
-        <source>yes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.h" line="23"/>
-        <source>no</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>st_funct::St_functPlugin</name>
     <message utf8="true">
         <location filename="../../../src/plugins/st_funct/st_functplugin.cpp" line="29"/>

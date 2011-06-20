@@ -176,15 +176,23 @@ void MainWindow::closeCurrentTab()
 
 void MainWindow::closeTab(int index)
 {
-    QWidget * w = ui->tabWidget->widget(index);
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(index));
+    if (twe->type!=WWW) {
+        int documentId = twe->property("documentId").toInt();
+        m_plugin->plugin_editor->closeDocument(documentId);
+    }
     ui->tabWidget->removeTab(index);
-    w->deleteLater();
+
 }
 
 void MainWindow::closeEvent(QCloseEvent *e)
 {
     QRect r(pos(), size());
     m_plugin->mySettings()->setValue(Plugin::MainWindowGeometryKey, r);
+    // TODO check for unsaved changes
+    while (ui->tabWidget->count()>1) {
+        closeTab(ui->tabWidget->count()-1);
+    }
     e->accept();
 }
 
@@ -232,9 +240,9 @@ void MainWindow::newProgram()
     vc->setProperty("documentId", id);
     QString fileName = suggestNewFileName(suffix);
     vc->setProperty("fileName", QDir::current().absoluteFilePath(fileName));
-    addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, type, true);
-    ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
-    ui->tabWidget->currentWidget()->setFocus();
+    TabWidgetElement * e = addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, type, true);
+    ui->tabWidget->setCurrentWidget(e);
+    e->setFocus();
 }
 
 void MainWindow::newText()
@@ -245,9 +253,9 @@ void MainWindow::newText()
     vc->setProperty("documentId", id);
     QString fileName = suggestNewFileName(".txt");
     vc->setProperty("fileName", fileName);
-    addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, Text, true);
-    ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
-    ui->tabWidget->currentWidget()->setFocus();
+    TabWidgetElement * e = addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, Text, true);
+    ui->tabWidget->setCurrentWidget(e);
+    e->setFocus();
 }
 
 QString MainWindow::suggestNewFileName(const QString &suffix) const
@@ -267,7 +275,7 @@ QString MainWindow::suggestNewFileName(const QString &suffix) const
 }
 
 
-void MainWindow::addCentralComponent(
+TabWidgetElement * MainWindow::addCentralComponent(
     const QString &title
     , QWidget *c
     , const QList<QAction*> & toolbarActions
@@ -284,6 +292,7 @@ void MainWindow::addCentralComponent(
     connect(element, SIGNAL(changeTitle(QString)), this, SLOT(handleTabTitleChange(QString)));
     createTopLevelMenus(menus, true);
     ui->tabWidget->addTab(element, title);
+    return element;
 }
 
 void MainWindow::addSecondaryComponent(const QString & title

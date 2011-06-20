@@ -14,7 +14,12 @@ class Plugin
     Q_INTERFACES(Shared::BrowserInterface)
 public:
     Plugin();
+    ~Plugin();
     Shared::BrowserComponent createBrowser(const QUrl &url, const QMap<QString, QObject *> manageableObjects);
+protected:
+    void changeCurrentDirectory(const QString &path);
+private:
+    class Dir * m_directory;
 };
 
 } // namespace Browser

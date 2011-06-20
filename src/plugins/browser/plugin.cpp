@@ -6,13 +6,24 @@ namespace Browser {
 
 Plugin::Plugin()
 {
+    m_directory = new Dir(this);
+}
+
+Plugin::~Plugin()
+{
+    m_directory->deleteLater();
+}
+
+void Plugin::changeCurrentDirectory(const QString &path)
+{
+    m_directory->m_dir = QDir(path);
 }
 
 Shared::BrowserComponent Plugin::createBrowser(const QUrl &url, const QMap<QString, QObject *> manageableObjects)
 {
     Component * c = new Component();
     QMap<QString,QObject*> objs = manageableObjects;
-    objs["directory"] = new Dir(this);
+    objs["directory"] = m_directory;
     c->setManageableObjects(objs);
     c->go(url);
     Shared::BrowserComponent result;

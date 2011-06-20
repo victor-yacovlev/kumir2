@@ -227,4 +227,14 @@
         <translation type="unfinished"></translation>
     </message>
 </context>
+<context>
+    <name>StdLib::UserProgramThread</name>
+    <message>
+        <location filename="../../../src/shared/stdlib/userprogramthread.cpp" line="29"/>
+        <source>
+Evaluation finished. Close all windows to exit program.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
 </TS>

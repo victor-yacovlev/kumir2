@@ -224,52 +224,52 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/actors/painter/painterwindow.cpp" line="316"/>
+        <location filename="../../../src/actors/painter/painterwindow.cpp" line="313"/>
         <source>Page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/actors/painter/painterwindow.cpp" line="317"/>
+        <location filename="../../../src/actors/painter/painterwindow.cpp" line="314"/>
         <source>Zoom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/actors/painter/painterwindow.cpp" line="318"/>
-        <source>Statusbar colour representation</source>
+        <location filename="../../../src/actors/painter/painterwindow.cpp" line="315"/>
+        <source>Statusbar</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>ActorPainter::PainterWorker</name>
     <message>
-        <location filename="../../../src/actors/painter/painterworker.cpp" line="228"/>
-        <location filename="../../../src/actors/painter/painterworker.cpp" line="273"/>
-        <location filename="../../../src/actors/painter/painterworker.cpp" line="291"/>
+        <location filename="../../../src/actors/painter/painterworker.cpp" line="233"/>
+        <location filename="../../../src/actors/painter/painterworker.cpp" line="278"/>
+        <location filename="../../../src/actors/painter/painterworker.cpp" line="296"/>
         <source>Invalid color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/actors/painter/painterworker.cpp" line="340"/>
+        <location filename="../../../src/actors/painter/painterworker.cpp" line="345"/>
         <source>Invalid points number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/actors/painter/painterworker.cpp" line="379"/>
+        <location filename="../../../src/actors/painter/painterworker.cpp" line="384"/>
         <source>Page size is too small</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/actors/painter/painterworker.cpp" line="382"/>
+        <location filename="../../../src/actors/painter/painterworker.cpp" line="387"/>
         <source>Page size is too large (max. 3000 px)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/actors/painter/painterworker.cpp" line="392"/>
+        <location filename="../../../src/actors/painter/painterworker.cpp" line="397"/>
         <source>File not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/actors/painter/painterworker.cpp" line="407"/>
+        <location filename="../../../src/actors/painter/painterworker.cpp" line="412"/>
         <source>Can&apos;t open file for writing</source>
         <translation type="unfinished"></translation>
     </message>

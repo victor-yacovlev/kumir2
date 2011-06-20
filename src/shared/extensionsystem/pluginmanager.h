@@ -17,6 +17,7 @@ class EXTENSIONSYSTEM_EXPORT PluginManager : public QObject
     Q_OBJECT
 public:
     explicit PluginManager();
+    ~PluginManager();
     static PluginManager * instance();
 
     /** Set path to search plugins */
@@ -24,6 +25,8 @@ public:
 
     /** Set path to search settings etc. */
     void setSharePath(const QString &path);
+
+    void changeWorkingDirectory(const QString & path);
 
     /** Loads plugins by given template in form:
       *

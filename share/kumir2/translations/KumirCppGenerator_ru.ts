@@ -4,7 +4,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../../src/plugins/kumircppgenerator/kumircppgeneratorplugin.cpp" line="723"/>
+        <location filename="../../../src/plugins/kumircppgenerator/kumircppgeneratorplugin.cpp" line="726"/>
         <source>Assertion false</source>
         <translation type="unfinished"></translation>
     </message>

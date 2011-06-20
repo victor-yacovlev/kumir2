@@ -34,6 +34,7 @@ public:
     inline virtual SettingsEditorPage settingsEditorPage() { return SettingsEditorPage(); }
     virtual ~KPlugin();
 protected:
+    inline virtual void changeCurrentDirectory(const QString & path) { Q_UNUSED(path); }
     inline virtual QString initialize(const QStringList &arguments) { Q_UNUSED(arguments); return ""; }
     inline virtual void start() {}
     inline virtual void stop() {}

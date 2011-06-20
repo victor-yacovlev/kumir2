@@ -65,6 +65,7 @@ void SettingsDialog::addPage(const SettingsEditorPage &page)
 {
     if (!page.settingsPage)
         return;
+    page.settingsPage->setParent(this);
     QListWidgetItem * item = new QListWidgetItem(ui->listWidget);
     item->setText(page.settingsGroupName);
     if (page.settingsGroupIcon)

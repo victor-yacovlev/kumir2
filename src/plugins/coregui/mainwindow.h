@@ -31,7 +31,7 @@ public:
     enum DockWindowType { Terminal, StandardActor, WorldActor, Control, Other };
     explicit MainWindow(Plugin * p);
 
-    void addCentralComponent(const QString &title
+    class TabWidgetElement * addCentralComponent(const QString &title
                              , QWidget *c
                              , const QList<QAction*> & toolbarActions
                              , const QList<QMenu*> & menus
