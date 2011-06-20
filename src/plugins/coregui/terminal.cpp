@@ -89,7 +89,7 @@ void Terminal::clear()
 
 void Terminal::start(const QString & fileName)
 {
-    int fixedWidth = 80;
+    int fixedWidth = -1;
     OneSession * session = new OneSession(fixedWidth, QFileInfo(fileName).fileName(), this);
     connect(session, SIGNAL(updateRequest()), m_plane, SLOT(update()));
     l_sessions << session;
@@ -99,37 +99,42 @@ void Terminal::start(const QString & fileName)
 void Terminal::finish()
 {
     if (l_sessions.isEmpty())
-        l_sessions << new OneSession(80,"unknown", this);
+        l_sessions << new OneSession(-1,"unknown", this);
 
     l_sessions.last()->finish();
+    m_plane->updateScrollBars();
 }
 
 void Terminal::terminate()
 {
     if (l_sessions.isEmpty())
-        l_sessions << new OneSession(80,"unknown", this);
+        l_sessions << new OneSession(-1,"unknown", this);
     l_sessions.last()->terminate();
+    m_plane->updateScrollBars();
 }
 
 void Terminal::output(const QString & text)
 {
     if (l_sessions.isEmpty())
-        l_sessions << new OneSession(80,"unknown", this);
+        l_sessions << new OneSession(-1,"unknown", this);
     l_sessions.last()->output(text);
+    m_plane->updateScrollBars();
 }
 
 void Terminal::input(const QString & format)
 {
     if (l_sessions.isEmpty())
-        l_sessions << new OneSession(80,"unknown", this);
+        l_sessions << new OneSession(-1,"unknown", this);
     l_sessions.last()->input(format);
+    m_plane->updateScrollBars();
 }
 
 void Terminal::error(const QString & message)
 {
     if (l_sessions.isEmpty())
-        l_sessions << new OneSession(80,"unknown", this);
+        l_sessions << new OneSession(-1,"unknown", this);
     l_sessions.last()->error(message);
+    m_plane->updateScrollBars();
 }
 
 void Terminal::saveAll()

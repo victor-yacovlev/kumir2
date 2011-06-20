@@ -18,9 +18,11 @@ public:
 signals:
 
 public slots:
+    void updateScrollBars();
 
 protected:
     void paintEvent(QPaintEvent *e);
+    void resizeEvent(QResizeEvent *e);
 
 private:
     Terminal * m_terminal;
