@@ -32,6 +32,7 @@ public:
         setProperty("uncloseable", w->property("uncloseable"));
         setProperty("documentId", w->property("documentId"));
         setProperty("fileName", w->property("fileName"));
+        setProperty("realFileName", w->property("realFileName"));
         if (type==MainWindow::WWW) {
             connect(w, SIGNAL(titleChanged(QString)), this, SIGNAL(changeTitle(QString)));
         }
@@ -99,14 +100,66 @@ MainWindow::MainWindow(Plugin * p) :
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(fileOpen()));
     connect(ui->actionClose, SIGNAL(triggered()), this, SLOT(closeCurrentTab()));
     connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTab(int)));
-    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupMenus()));
-    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupProgram()));
+    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupActionsForTab()));
+    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupContentForTab()));
 
     gr_fileActions = new QActionGroup(this);
     gr_fileActions->addAction(ui->actionSave);
+    connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(saveCurrentFile()));
+    connect(ui->actionSave_as, SIGNAL(triggered()), this, SLOT(saveCurrentFileAs()));
 
     gr_otherActions = new QActionGroup(this);
 
+}
+
+void MainWindow::saveCurrentFile()
+{
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+    const QString fileName = twe->property("realFileName").toString();
+    if (fileName.isEmpty()) {
+        saveCurrentFileAs();
+    }
+    else {
+        saveCurrentFileTo(fileName);
+    }
+}
+
+void MainWindow::saveCurrentFileAs()
+{
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+    QString fileName = twe->property("fileName").toString();
+    QStringList filter;
+    if (twe->type==Kumir) {
+        filter << tr("Kumir programs (*.kum)");
+    }
+    if (twe->type==Pascal) {
+        filter << tr("Pascal programs (*.pas *.pp");
+    }
+    if (twe->type==Text) {
+        filter << tr("Text files (*.txt)");
+    }
+    filter << tr("All files (*)");
+    fileName = QFileDialog::getSaveFileName(this, tr("Save file"), fileName, filter.join(";;"));
+    if (!fileName.isEmpty()) {
+        if (twe->type==Kumir && !fileName.endsWith(".kum"))
+            fileName += ".kum";
+        if (twe->type==Pascal && !(fileName.endsWith(".pas") || fileName.endsWith(".pp")))
+            fileName += ".pas";
+        saveCurrentFileTo(fileName);
+        m_plugin->mySettings()->setValue(Plugin::RecentFileKey, fileName);
+        twe->setProperty("fileName", fileName);
+        twe->setProperty("realFileName", fileName);
+        int index = ui->tabWidget->indexOf(twe);
+        ui->tabWidget->setTabText(index, QFileInfo(fileName).fileName());
+        addToRecent(fileName);
+    }
+}
+
+void MainWindow::saveCurrentFileTo(const QString &fileName)
+{
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+    int documentId = twe->property("documentId").toInt();
+    m_plugin->plugin_editor->saveDocument(documentId, fileName);
 }
 
 void MainWindow::handleTabTitleChange(const QString &title)
@@ -292,7 +345,7 @@ void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
     }
 }
 
-void MainWindow::setupProgram()
+void MainWindow::setupContentForTab()
 {
     QWidget * currentTabWidget = ui->tabWidget->currentWidget();
 
@@ -306,11 +359,13 @@ void MainWindow::setupProgram()
     }
 }
 
-void MainWindow::setupMenus()
+void MainWindow::setupActionsForTab()
 {
     QWidget * currentTabWidget = ui->tabWidget->currentWidget();
 
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
+    ui->actionSave->setEnabled(twe->type!=WWW);
+    ui->actionSave_as->setEnabled(twe->type!=WWW);
     QList<QMenu*> menus;
     for (int i=0; i<menuBar()->children().size(); i++) {
         QMenu * m = qobject_cast<QMenu*>(menuBar()->children()[i]);
@@ -428,6 +483,7 @@ void MainWindow::loadFromUrl(const QUrl & url)
             vc->setProperty("documentId", id);
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
+            vc->setProperty("realFileName", url.toLocalFile());
             addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, Kumir, true);
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
@@ -446,6 +502,7 @@ void MainWindow::loadFromUrl(const QUrl & url)
             vc->setProperty("documentId", id);
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
+            vc->setProperty("realFileName", url.toLocalFile());
             addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, Pascal, true);
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
@@ -464,6 +521,7 @@ void MainWindow::loadFromUrl(const QUrl & url)
             vc->setProperty("documentId", id);
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
+            vc->setProperty("realFileName", url.toLocalFile());
             addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, Text, true);
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();

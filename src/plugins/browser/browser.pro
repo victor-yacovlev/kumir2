@@ -9,11 +9,15 @@ OTHER_FILES += Browser.pluginspec
 
 HEADERS += \
     component.h \
-    plugin.h
+    plugin.h \
+    webpage.h \
+    dir.h
 
 SOURCES += \
     component.cpp \
-    plugin.cpp
+    plugin.cpp \
+    webpage.cpp \
+    dir.cpp
 
 FORMS += \
     component.ui

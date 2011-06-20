@@ -49,6 +49,9 @@ public slots:
     void loadRecentFile(int index);
     inline void loadFromUrl(const QString &s) { loadFromUrl(QUrl(s)); }
     void loadFromUrl(const QUrl & url);
+    void saveCurrentFile();
+    void saveCurrentFileAs();
+    void saveCurrentFileTo(const QString & fileName);
     void restoreSession();
     void newProgram();
     void newText();
@@ -57,8 +60,8 @@ public slots:
     void closeTab(int index);
 
 private slots:
-    void setupMenus();
-    void setupProgram();
+    void setupActionsForTab();
+    void setupContentForTab();
     void addToRecent(const QString &fileName);
     void handleTabTitleChange(const QString & title);
 

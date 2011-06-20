@@ -1,5 +1,6 @@
 #include "plugin.h"
 #include "component.h"
+#include "dir.h"
 
 namespace Browser {
 
@@ -10,7 +11,9 @@ Plugin::Plugin()
 Shared::BrowserComponent Plugin::createBrowser(const QUrl &url, const QMap<QString, QObject *> manageableObjects)
 {
     Component * c = new Component();
-    c->setManageableObjects(manageableObjects);
+    QMap<QString,QObject*> objs = manageableObjects;
+    objs["directory"] = new Dir(this);
+    c->setManageableObjects(objs);
     c->go(url);
     Shared::BrowserComponent result;
     result.widget = c;

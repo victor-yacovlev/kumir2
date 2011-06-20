@@ -3,19 +3,29 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="refresh" content="onshow">
     <title>Начало работы</title>
     
     <style type="text/css">
     body {
         background-color: rgb(240,240,255);
         font-family: sans-serif;
+        padding: 0px;
+    }
+    
+    hr {
+        color: green;
+        background-color: green;
+        height: 1px;
+        border: 0px none;
+        width: 80%
     }
     #header {
         display: block;
         position: absolute;
-        top: 10px;
-        left: 10px;
-        right: 10px;
+        top: 0px;
+        left: 5px;
+        right: 5px;
         height: 30px;
         background-color: green;
         color: white;
@@ -30,12 +40,14 @@
         display: block;
         position: absolute;
         top: 40px;
-        left: 10px;
-        right: 10px;
+        right: 5px;
+        left: 5px;
+        
         background-color: rgb(240,240,255);
+        line-height: 20px;
         font-size: 16px;
         border: 1px solid white;
-        padding: 3px;
+        
     }
     
     #start a {
@@ -78,67 +90,84 @@
     КуМир 2.0
 </div>
 <div id="start">
-    <div style="display: table;width:100%;">
-        <div style="display: table-row;">
-            <div class="group">
-                <h2>Начало работы</h2>
-                <ul>
-                    <li>
-                        <a href="" onclick="mainWindow.newProgram()">Новая программа</a>
-                    </li>
-                    <li>
-                        <a href="" onclick="mainWindow.newText()">Новый текст</a>
-                    </li>
-                    <li>
-                        <a href="" onclick="mainWindow.fileOpen()">Загрузить из файла...</a>
-                    </li>
-                </ul>
-            </div>
-            <div class="group">
-                <h2>Недавние файлы</h2>
-                <script type="text/javascript">
-                var recentFiles = mainWindow.recentFiles(false);
-                if (recentFiles.length==0) {
-                    document.write("<span class='empty'>Нет файлов</span>");
+    <div style="display: table; width: 100%">
+    <div style="display: table-row; width: 100%;">
+        <div class="group">
+            <h2>Начало работы</h2>
+            <ul>
+                <li>
+                    <a href="" onclick="mainWindow.newProgram()">Новая программа</a>
+                </li>
+                <li>
+                    <a href="" onclick="mainWindow.newText()">Новый текст</a>
+                </li>
+                <li>
+                    <a href="" onclick="mainWindow.fileOpen()">Загрузить из файла...</a>
+                </li>
+                
+            </ul>
+            
+            <ul>
+                <li>
+                    <a href="" onclick="mainWindow.showHelp()">Руководство пользователя</a>
+                </li>
+            </ul>
+            <h2>Недавние файлы</h2>
+            <script type="text/javascript">
+            var recentFiles = mainWindow.recentFiles(false);
+            if (recentFiles.length==0) {
+                document.write("<span class='empty'>Нет файлов</span>");
+            }
+            else {
+                document.write("<ul>\n");
+                for (var i=0; i<recentFiles.length; i++) {
+                    var line = "<a href='' onclick='mainWindow.loadRecentFile("+i+")'>"+recentFiles[i]+"</a>";
+                    document.write("<li>"+line+"</li>\n");
                 }
-                else {
-                    document.write("<ul>\n");
-                    for (var i=0; i<recentFiles.length; i++) {
-                        var line = "<a href='' onclick='mainWindow.loadRecentFile("+i+")'>"+recentFiles[i]+"</a>";
-                        document.write("<li>"+line+"</li>\n");
+                document.write("</ul>\n");
+            }
+            </script>
+        
+        </div>
+        <div class="group">
+            <h2>Файлы рабочего каталога</h2>
+            <div id="workspace_files">
+            </div>
+            <script type="text/javascript">
+                function loadWorkspaceFiles(dirname) {
+                    directory.open(dirname);
+                    reloadWorkspaceFiles();
+                }
+                function reloadWorkspaceFiles() {
+                    var text = "<ul>\n";
+                    var dirs = directory.dirs();
+                    for (var i=0; i<dirs.length; i++) {
+                        var a = dirs[i];
+                        text += '<li><a href="" onclick="loadWorkspaceFiles(\''+a+'\')">[ '+a+" ]</a></li>\n";
                     }
-                    document.write("</ul>\n");
+                    var files = directory.files("*");
+                    for (var i=0; i<files.length; i++) {
+                        var a = files[i];
+                        var openCommand = "";
+                        var dotPos = a.lastIndexOf(".");
+                        if (dotPos>-1) {
+                            var suffix = a.substring(dotPos+1).toLowerCase();
+                            if (suffix=="kum" || suffix=="txt" || suffix=="pas" || suffix=="html" || suffix=="htm") {
+                                openCommand = 'mainWindow.loadFromUrl(directory.resolveUrl(\''+a+'\'))';
+                            }
+                        }
+                        text += '<li><a href="" onclick="'+openCommand+'">'+a+"</a></li>\n";
+                    }
+                    text += "</ul>"
+                    document.getElementById("workspace_files").innerHTML = text;
                 }
-                </script>
-            </div>
+                loadWorkspaceFiles("");
+                function updateContents() {
+                    reloadWorkspaceFiles();
+                }
+            </script>
         </div>
-        <div style="display: table-row;">
-            <div class="group">
-                <h2>Информация</h2>
-                <ul>
-                    <li>
-                        <a href="whatsnew-2.0.html">Что нового в КуМир-2</a>
-                    </li>
-                    <li>
-                        <a href="reference.html">Руководство пользователя</a>
-                    </li>
-                </ul>
-            </div>
-            <div class="group">
-                <h2>КуМир в сети</h2>
-                <ul>
-                    <li>
-                        <a href="" onclick="mainWindow.loadFromUrl('http://www.niisi.ru/kumir/')">Официальный сайт</a>
-                    </li>
-                    <li>
-                        <a href="" onclick="mainWindow.loadFromUrl('http://www.kumir.su/cgi-bin/mwf/forum_show.pl')">Форум</a>
-                    </li>
-                    <li>
-                        <a href="" onclick="mainWindow.loadFromUrl('http://lpm.org.ru/kumir/')">Свежие версии</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
+    </div>
     </div>
 </div>
 

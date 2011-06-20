@@ -24,6 +24,8 @@ public:
     QList<QMenu*> menuActions();
 public slots:
     void go(const QUrl & url);
+protected:
+    void showEvent(QShowEvent *e);
 private:
     Ui::Component *ui;
     QMap<QString, QObject*> m_manageableObjects;

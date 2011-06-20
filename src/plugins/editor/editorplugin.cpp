@@ -86,10 +86,12 @@ QString EditorPlugin::saveDocument(int documentId, const QString &fileName)
     Ed ed = d->editors[documentId];
     Editor * editor = ed.second;
     QFile f(fileName);
-    if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
-        QTextStream ts;
-        ts.setCodec("UTF-8");
-        ts.setGenerateByteOrderMark(true);
+    if (f.open(QIODevice::WriteOnly|QIODevice::Text)) {
+        QTextStream ts(&f);
+        if (analizer(documentId)) {
+            ts.setCodec("UTF-8");
+            ts.setGenerateByteOrderMark(true);
+        }
         ts << editor->text();
         f.close();
     }

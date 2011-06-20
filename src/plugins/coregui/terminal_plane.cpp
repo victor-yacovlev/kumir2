@@ -104,9 +104,10 @@ void Plane::paintEvent(QPaintEvent *e)
     for (int i=0; i<m_terminal->l_sessions.size(); i++) {
         OneSession * session = m_terminal->l_sessions[i];
         const QSize sessionSize = session->visibleSize(width()-2*sessionMargin);
-        const QRect sessionRect(QPoint(0, y-sessionMargin), sessionSize+QSize(2*sessionMargin, 2*sessionMargin));
+        const QRect sessionRect = QRect(QPoint(sessionMargin, y), sessionSize).translated(off);
         const QRect myRect(off, size());
         if (myRect.intersects(sessionRect)) {
+
             p.save();
             p.translate(sessionMargin+off.x(), y+off.y());
             session->draw(&p, width()-2*sessionMargin);

@@ -1,5 +1,6 @@
 #include "component.h"
 #include "ui_component.h"
+#include "webpage.h"
 
 namespace Browser {
 
@@ -8,6 +9,7 @@ Component::Component() :
     ui(new Ui::Component)
 {
     ui->setupUi(this);
+    ui->webView->setPage(new WebPage);
     connect(ui->webView->page()->mainFrame(), SIGNAL(javaScriptWindowObjectCleared()), this, SLOT(addJavaScriptObjects()));
 #ifdef QT_DEBUG
     ui->webView->page()->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
@@ -86,6 +88,14 @@ void Component::go(const QUrl &url)
 //    }
 }
 
+
+void Component::showEvent(QShowEvent *e)
+{
+    if (ui->webView->page()->mainFrame()->metaData().contains("refresh", "onshow")) {
+        ui->webView->page()->mainFrame()->evaluateJavaScript("updateContents()");
+    }
+    QWidget::showEvent(e);
+}
 
 void Component::handleLoadStarted()
 {
