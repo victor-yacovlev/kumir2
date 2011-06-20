@@ -23,10 +23,11 @@ public slots:
 protected:
     void paintEvent(QPaintEvent *e);
     void resizeEvent(QResizeEvent *e);
+    void wheelEvent(QWheelEvent *e);
+    QPoint offset() const;
 
 private:
     Terminal * m_terminal;
-    QPoint pnt_offset;
 };
 
 } // namespace Terminal

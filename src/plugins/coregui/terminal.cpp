@@ -16,10 +16,6 @@ protected:
             QScrollBar::paintEvent(e);
         }
         else {
-            QPainter p (this);
-            p.setPen(Qt::NoPen);
-            p.setBrush(palette().brush(QPalette::Window));
-            p.drawRect(e->rect());
             e->accept();
         }
     }
@@ -65,6 +61,10 @@ Terminal::Terminal(QWidget *parent) :
     connect(a_clear, SIGNAL(triggered()), this, SLOT(clear()));
 
     tb->addAction(a_clear);
+    m_plane->updateScrollBars();
+
+    connect(sb_vertical,SIGNAL(valueChanged(int)),m_plane, SLOT(update()));
+    connect(sb_horizontal,SIGNAL(valueChanged(int)),m_plane, SLOT(update()));
 
 //    start("debug");
 //    output("this is output");

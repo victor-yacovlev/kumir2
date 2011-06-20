@@ -22,10 +22,6 @@ protected:
             QScrollBar::paintEvent(e);
         }
         else {
-            QPainter p (this);
-            p.setPen(Qt::NoPen);
-            p.setBrush(palette().brush(QPalette::Window));
-            p.drawRect(e->rect());
             e->accept();
         }
     }

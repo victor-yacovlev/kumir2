@@ -39,16 +39,24 @@ QSize OneSession::charSize() const
     return QSize(fm.width('m'), fm.height());
 }
 
-QSize OneSession::visibleSize() const
+int OneSession::widthInChars(int realWidth) const
+{
+    QSize atom = charSize();
+    return (realWidth-2*bodyPadding-lineWidth-shadowOffset)/atom.width();
+}
+
+QSize OneSession::visibleSize(int realWidth) const
 {
     QSize atom = charSize();
     QSize body;
     if (i_fixedWidth==-1) {
         int maxLineLength = 0;
+        int linesCount = 0;
+        int maxChars = widthInChars(realWidth);
         foreach (const QString & s, m_lines) {
             maxLineLength = qMax(s.length(), maxLineLength);
+            linesCount += 1+(s.length())/maxChars;
         }
-        int linesCount = m_lines.size();
         body = QSize(maxLineLength*atom.width(), linesCount*atom.height());
     }
     else {
@@ -86,7 +94,7 @@ QString OneSession::plainText() const
 void OneSession::draw(QPainter *p, int realWidth)
 {
     const QSize atom = charSize();
-    QSize sz = visibleSize();
+    QSize sz = visibleSize(realWidth);
     p->save();
     if (i_fixedWidth==-1)
         sz.setWidth(realWidth);
@@ -138,6 +146,13 @@ void OneSession::draw(QPainter *p, int realWidth)
                 p->setPen(QColor(Qt::black));
             p->drawText(x,y,QString(text[j]));
             x += atom.width();
+            if (i_fixedWidth==-1) {
+                int lw = widthInChars(realWidth);
+                if (j % lw==0 && j>0) {
+                    x = bodyPadding;
+                    y += atom.height();
+                }
+            }
         }
         y += atom.height();
         x = bodyPadding;

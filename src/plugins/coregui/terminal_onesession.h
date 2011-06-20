@@ -20,7 +20,7 @@ class OneSession
     Q_OBJECT
 public:
     OneSession(int fixedWidth, const QString & fileName, QObject * parent);
-    QSize visibleSize() const;
+    QSize visibleSize(int realWidth) const;
     QString plainText() const;
     inline QString fileName() const { return s_fileName; }
     inline QDateTime startTime() const { return m_startTime; }
@@ -29,6 +29,7 @@ public:
     void draw(QPainter * p, int realWidth);
     inline void setFont(const QFont &font) { m_font = font; }
     inline QFont font() const { return m_font; }
+    int widthInChars(int realWidth) const;
 public slots:
     void output(const QString & text);
     void input(const QString & format);
