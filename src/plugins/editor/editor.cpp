@@ -5,6 +5,8 @@
 #include "clipboard.h"
 #include "utils.h"
 #include "statusbar.h"
+#include "macro.h"
+#include "settingspage.h"
 
 namespace Editor {
 
@@ -59,13 +61,89 @@ public:
     QAction * deleteLine;
     QAction * deleteTail;
 
+    QMenu * menu_edit;
+    QMenu * menu_insert;
+
+    QList<Macro> systemMacros;
+    QList<Macro> userMacros;
+
+    void loadMacros();
+    void updateInsertMenu();
     void createActions();
     void updateFromAnalizer();
     static QList<Shared::ChangeTextTransaction> mergeTransactions(QList<Shared::ChangeTextTransaction>);
     static bool mergeTransaction(Shared::ChangeTextTransaction & one, const Shared::ChangeTextTransaction & other);
 public slots:
     void handleLineAndTextChanged(const QStack<Shared::ChangeTextTransaction> & changes);
+    void playMacro();
 };
+
+void EditorPrivate::loadMacros()
+{
+    const QString sharePath = QCoreApplication::instance()->property("sharePath").toString();
+    const QString systemMacrosPath = sharePath+"/editor/macros.json";
+    systemMacros = loadFromFile(systemMacrosPath);
+}
+
+void EditorPrivate::updateInsertMenu()
+{
+    menu_insert->clear();
+    for (int i=0; i<systemMacros.size(); i++) {
+        Macro m = systemMacros[i];
+        QKeySequence ks(
+                    settings->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()
+                    +", "+QString(m.key)
+                    );
+        m.action = new QAction(m.title, menu_insert);
+        m.action->setShortcut(ks);
+        systemMacros[i].action = m.action;
+        menu_insert->addAction(m.action);
+        connect(m.action, SIGNAL(triggered()), this, SLOT(playMacro()));
+    }
+    if (!userMacros.isEmpty())
+        menu_insert->addSeparator();
+    for (int i=0; i<userMacros.size(); i++) {
+        Macro m = userMacros[i];
+        QKeySequence ks(
+                    settings->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()
+                    +", "+QString(m.key)
+                    );
+        m.action = new QAction(m.title, menu_insert);
+        m.action->setShortcut(ks);
+        userMacros[i].action = m.action;
+        menu_insert->addAction(m.action);
+        connect(m.action, SIGNAL(triggered()), this, SLOT(playMacro()));
+    }
+}
+
+void EditorPrivate::playMacro()
+{
+    QAction * a = qobject_cast<QAction*>(sender());
+    Q_CHECK_PTR(a);
+    Macro m;
+    bool found = false;
+    foreach (Macro mm, systemMacros) {
+        if (mm.action==a) {
+            found = true;
+            m = mm;
+            break;
+        }
+    }
+    if (!found) {
+        foreach (Macro mm, userMacros) {
+            if (mm.action==a) {
+                found = true;
+                m = mm;
+                break;
+            }
+        }
+    }
+    if (found) {
+        for (int i=0; i<m.commands.size(); i++) {
+            cursor->evaluateCommand(m.commands[i]);
+        }
+    }
+}
 
 
 void Editor::focusInEvent(QFocusEvent *e)
@@ -219,13 +297,13 @@ Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentI
 {
     setParent(parent);
     d = new EditorPrivate;
+    if (!d->clipboard)
+        d->clipboard = new Clipboard;
     d->doc = new TextDocument;
-    d->cursor = new TextCursor(d->doc);
+    d->cursor = new TextCursor(d->doc, d->clipboard);
     d->analizer = analizer;
     d->documentId = documentId;
     d->settings = settings;
-    if (!d->clipboard)
-        d->clipboard = new Clipboard;
     d->horizontalScrollBar = new ScrollBar(Qt::Horizontal, this);
     d->verticalScrollBar = new ScrollBar(Qt::Vertical, this);
     QList<QRegExp> fileNamesToOpen = QList<QRegExp>() << QRegExp("*", Qt::CaseSensitive, QRegExp::Wildcard);
@@ -253,6 +331,8 @@ Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentI
     l->addWidget(d->horizontalScrollBar, 1, 0);
     l->addWidget(d->statusBar, 2, 0, 1, 2);
     connect(d->plane, SIGNAL(urlsDragAndDropped(QList<QUrl>)), this, SIGNAL(urlsDragAndDropped(QList<QUrl>)));
+    d->loadMacros();
+    d->updateInsertMenu();
 }
 
 
@@ -305,6 +385,18 @@ void EditorPrivate::createActions()
     deleteTail->setIcon(QIcon::fromTheme("edit-clear"));
     deleteTail->setShortcut(QKeySequence("Ctrl+K"));
     QObject::connect(deleteTail, SIGNAL(triggered()), plane, SLOT(removeLineTail()));
+
+    menu_edit = new QMenu(tr("Edit"), 0);
+    menu_edit->addAction(selectAll);
+    menu_edit->addSeparator();
+    menu_edit->addAction(cut);
+    menu_edit->addAction(copy);
+    menu_edit->addAction(paste);
+    menu_edit->addSeparator();
+    menu_edit->addAction(deleteLine);
+    menu_edit->addAction(deleteTail);
+
+    menu_insert = new QMenu(tr("Insert"), 0);
 }
 
 Editor::~Editor()
@@ -327,17 +419,7 @@ QList<QAction*> Editor::toolbarActions()
 QList<QMenu*> Editor::menuActions()
 {
     QList<QMenu*> result;
-    QMenu * edit = new QMenu(tr("Edit"), 0);
-    edit->addAction(d->selectAll);
-    edit->addSeparator();
-    edit->addAction(d->cut);
-    edit->addAction(d->copy);
-    edit->addAction(d->paste);
-    edit->addSeparator();
-    edit->addAction(d->deleteLine);
-    edit->addAction(d->deleteTail);
-
-    result << edit;
+    result << d->menu_edit << d->menu_insert;
     return result;
 }
 

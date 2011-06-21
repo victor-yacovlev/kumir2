@@ -23,7 +23,7 @@ isEmpty(vcproj) {
     QMAKE_EXTRA_COMPILERS += phony_src
 }
 
-DATA_DIRS = kumiranalizer kumircppgenerator coregui
+DATA_DIRS = kumiranalizer kumircppgenerator coregui editor
 
 !isEmpty(copydata) {
 

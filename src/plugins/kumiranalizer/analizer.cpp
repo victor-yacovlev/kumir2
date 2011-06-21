@@ -214,7 +214,8 @@ AnalizerPrivate::AnalizeSubject AnalizerPrivate::analizeSubject(const QList<Stat
 {
     //    QList<Shared::LexemType> lexemTypes;
     //    int startLineNo = statements.isEmpty()? 0 : statements[0].data.first()->lineNo;
-    AnalizeSubject result = SubjStatements;
+//    AnalizeSubject result = SubjStatements;
+    AnalizeSubject result = SubjAlgorhtitm;
     foreach (const Statement * st, statements) {
         LexemType lt = st->type;
         if ( ( lt == LxPriImport)

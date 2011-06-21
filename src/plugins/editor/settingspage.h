@@ -61,6 +61,8 @@ public:
     static int defaultFontSize;
 
     static QString KeyTempSwitchLayoutButton;
+    static QString KeyPlayMacroShortcut;
+    static QString DefaultPlayMacroShortcut;
     static quint32 DefaultTempSwitchLayoutButton;
 
 public slots:

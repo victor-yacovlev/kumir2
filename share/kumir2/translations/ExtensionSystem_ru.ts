@@ -6,7 +6,7 @@
     <message>
         <location filename="../../../src/shared/extensionsystem/settingsdialog.ui" line="14"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Настройки</translation>
     </message>
 </context>
 </TS>

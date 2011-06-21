@@ -45,6 +45,9 @@ bool SettingsPage::DefaultBoldComment = false;
 QString SettingsPage::KeyTempSwitchLayoutButton = "Keyboard/TemporarySwitchLayoutButton";
 quint32 SettingsPage::DefaultTempSwitchLayoutButton = Qt::Key_Alt;
 
+QString SettingsPage::KeyPlayMacroShortcut = "Keyboard/PlayMacroShortcut";
+QString SettingsPage::DefaultPlayMacroShortcut = "Esc";
+
 
 QString SettingsPage::defaultFontFamily()
 {
@@ -121,6 +124,9 @@ void SettingsPage::accept()
     else
         m_settings->setValue(KeyTempSwitchLayoutButton, quint32(Qt::Key_Alt));
 
+    const QString play = ui->macroPlayKey->currentText();
+    m_settings->setValue(KeyPlayMacroShortcut, play);
+
     emit settingsChanged();
 }
 
@@ -170,6 +176,16 @@ void SettingsPage::init()
         }
     }
     ui->layoutSwitchKey->setCurrentIndex(index);
+
+    QString play = m_settings->value(KeyPlayMacroShortcut, DefaultPlayMacroShortcut).toString();
+    index = 0;
+    for (int i=0; i<ui->macroPlayKey->count(); i++) {
+        if (ui->macroPlayKey->itemText(i)==play) {
+            index = i;
+            break;
+        }
+    }
+    ui->macroPlayKey->setCurrentIndex(index);
 
     updateFontPreview();
 }

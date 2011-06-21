@@ -58,6 +58,7 @@ public slots:
     void fileOpen();
     void closeCurrentTab();
     void closeTab(int index);
+    void showPreferences();
 
 private slots:
     void setupActionsForTab();

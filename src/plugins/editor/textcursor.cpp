@@ -1,11 +1,13 @@
 #include "textcursor.h"
 #include "textdocument.h"
+#include "clipboard.h"
 
 namespace Editor {
 
-TextCursor::TextCursor(TextDocument * document)
+TextCursor::TextCursor(TextDocument * document, Clipboard * clipboard)
     : QObject(0)
     , m_document(document)
+    , m_clipboard(clipboard)
     , e_mode(EM_Insert)
     , e_viewMode(VM_Hidden)
     , i_timerId(-1)
@@ -76,6 +78,141 @@ TextCursor::~TextCursor()
 {
     if (i_timerId!=-1)
         killTimer(i_timerId);
+}
+
+void TextCursor::evaluateCommand(const KeyCommand &command)
+{
+    switch (command.type) {
+    case KeyCommand::MoveToNextChar:
+        movePosition(QTextCursor::NextCell, TextCursor::MM_Move);
+        break;
+    case KeyCommand::SelectNextChar:
+        movePosition(QTextCursor::NextCell, TextCursor::MM_Select);
+        break;
+    case KeyCommand::SelectNextColumn:
+        movePosition(QTextCursor::NextCell, TextCursor::MM_RectSelect);
+        break;
+    case KeyCommand::MoveToPreviousChar:
+        movePosition(QTextCursor::PreviousCell, TextCursor::MM_Move);
+        break;
+    case KeyCommand::SelectPreviousChar:
+        movePosition(QTextCursor::PreviousCell, TextCursor::MM_Select);
+        break;
+    case KeyCommand::SelectPreviousColumn:
+        movePosition(QTextCursor::PreviousCell, TextCursor::MM_RectSelect);
+        break;
+    case KeyCommand::MoveToNextLine:
+        movePosition(QTextCursor::NextRow, TextCursor::MM_Move);
+        break;
+    case KeyCommand::SelectNextLine:
+        movePosition(QTextCursor::NextRow, TextCursor::MM_Select);
+        break;
+    case KeyCommand::SelectNextRow:
+        movePosition(QTextCursor::NextRow, TextCursor::MM_RectSelect);
+        break;
+    case KeyCommand::MoveToPreviousLine:
+        movePosition(QTextCursor::PreviousRow, TextCursor::MM_Move);
+        break;
+    case KeyCommand::SelectPreviousLine:
+        movePosition(QTextCursor::PreviousRow, TextCursor::MM_Select);
+        break;
+    case KeyCommand::SelectPreviousRow:
+        movePosition(QTextCursor::PreviousRow, TextCursor::MM_RectSelect);
+        break;
+    case KeyCommand::MoveToStartOfLine:
+        movePosition(QTextCursor::StartOfBlock, TextCursor::MM_Move);
+        break;
+    case KeyCommand::SelectStartOfLine:
+        movePosition(QTextCursor::StartOfBlock, TextCursor::MM_Select);
+        break;
+    case KeyCommand::MoveToEndOfLine:
+        movePosition(QTextCursor::EndOfBlock, TextCursor::MM_Move);
+        break;
+    case KeyCommand::SelectEndOfLine:
+        movePosition(QTextCursor::EndOfBlock, TextCursor::MM_Select);
+        break;
+    case KeyCommand::MoveToPreviousPage:
+        movePosition(QTextCursor::PreviousRow, TextCursor::MM_Move, 10);
+        break;
+    case KeyCommand::SelectPreviousPage:
+        movePosition(QTextCursor::PreviousRow, TextCursor::MM_Select, 10);
+        break;
+    case KeyCommand::MoveToNextPage:
+        movePosition(QTextCursor::NextRow, TextCursor::MM_Move, 10);
+        break;
+    case KeyCommand::SelectNextPage:
+        movePosition(QTextCursor::NextRow, TextCursor::MM_Select, 10);
+        break;
+    case KeyCommand::MoveToStartOfDocument:
+        movePosition(QTextCursor::Start, TextCursor::MM_Move);
+        break;
+    case KeyCommand::SelectStartOfDocument:
+        movePosition(QTextCursor::Start, TextCursor::MM_Select);
+        break;
+    case KeyCommand::MoveToEndOfDocument:
+        movePosition(QTextCursor::End, TextCursor::MM_Move);
+        break;
+    case KeyCommand::SelectEndOfDocument:
+        movePosition(QTextCursor::End, TextCursor::MM_Select);
+        break;
+    case KeyCommand::SelectAll:
+        movePosition(QTextCursor::Start, TextCursor::MM_Move);
+        movePosition(QTextCursor::End, TextCursor::MM_Select);
+        break;
+    case KeyCommand::Copy:
+        if (hasSelection()) {
+            ClipboardData data;
+            data.text = selectedText();
+            data.type = ClipboardData::Text;
+            m_clipboard->push(data);
+        }
+        else if (hasRectSelection()) {
+            ClipboardData data;
+            data.text = selectedText();
+            data.type = ClipboardData::Block;
+            data.block = rectSelectionText();
+            m_clipboard->push(data);
+        }
+        break;
+
+    case KeyCommand::InsertText:
+        insertText(command.text);
+        break;
+    case KeyCommand::Backspace:
+        removePreviousChar();
+        break;
+    case KeyCommand::Delete:
+        removeCurrentChar();
+        break;
+    case KeyCommand::RemoveLine:
+        removeCurrentLine();
+        break;
+    case KeyCommand::RemoveTail:
+        removeLineTail();
+        break;
+    case KeyCommand::Cut:
+        evaluateCommand(KeyCommand::Copy);
+        if (hasSelection()) {
+            removeSelectedText();
+        }
+        else if (hasRectSelection()) {
+            removeRectSelection();
+        }
+        break;
+    case KeyCommand::Paste:
+        if (m_clipboard->hasContent()) {
+            ClipboardData data = m_clipboard->content();
+            if (data.type == ClipboardData::Block) {
+                insertBlock(data.block);
+            }
+            else if (data.type == ClipboardData::Text) {
+                insertText(data.text);
+            }
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 void TextCursor::moveTo(int row, int col)
@@ -744,7 +881,7 @@ void TextCursor::removePreviousChar()
     if (textPos>0) {
         // remove previous char in current line
         if ( i_row<m_document->size() &&
-                textPos <= m_document->at(i_row).text.length())
+             textPos <= m_document->at(i_row).text.length())
         {
             TextLine curTextLine = m_document->at(i_row);
             (*m_document)[i_row].text =

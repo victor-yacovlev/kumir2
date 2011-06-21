@@ -142,7 +142,7 @@
                         var a = dirs[i];
                         text += '<li><a href="" onclick="loadWorkspaceFiles(\''+a+'\')">[ '+a+" ]</a></li>\n";
                     }
-                    var files = directory.files("*");
+                    var files = directory.files("*.kum;*.pas;*.pp;*.txt");
                     for (var i=0; i<files.length; i++) {
                         var a = files[i];
                         var openCommand = "";

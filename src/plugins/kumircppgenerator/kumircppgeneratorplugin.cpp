@@ -1153,6 +1153,7 @@ Shared::GeneratorResult KumirCppGeneratorPlugin::generateExecuable(
             QFile::remove(gccOutName);
     }
     if (!qApp->arguments().contains("-S")) {
+//    if (false) {
         foreach (QString fn, cFiles.toList()) {
             QFile::remove(fn);
         }

@@ -439,149 +439,110 @@ void EditorPlane::keyReleaseEvent(QKeyEvent *e)
 
 void EditorPlane::keyPressEvent(QKeyEvent *e)
 {
-    bool process = false;
     if (m_cursor->isEnabled()) {
         if (e->matches(QKeySequence::MoveToNextChar)) {
-            m_cursor->movePosition(QTextCursor::NextCell, TextCursor::MM_Move);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::MoveToNextChar);
         }
         else if (e->matches(QKeySequence::SelectNextChar)) {
-            m_cursor->movePosition(QTextCursor::NextCell, TextCursor::MM_Select);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::SelectNextChar);
         }
         else if (e->key()==Qt::Key_Right && e->modifiers().testFlag(RECT_SELECTION_MODIFIER)) {
-            m_cursor->movePosition(QTextCursor::NextCell, TextCursor::MM_RectSelect);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::SelectNextColumn);
         }
         else if (e->matches(QKeySequence::MoveToPreviousChar)) {
-            m_cursor->movePosition(QTextCursor::PreviousCell, TextCursor::MM_Move);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::MoveToPreviousChar);
         }
         else if (e->matches(QKeySequence::SelectPreviousChar)) {
-            m_cursor->movePosition(QTextCursor::PreviousCell, TextCursor::MM_Select);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::SelectPreviousChar);
         }
         else if (e->key()==Qt::Key_Left && e->modifiers().testFlag(RECT_SELECTION_MODIFIER)) {
-            m_cursor->movePosition(QTextCursor::PreviousCell, TextCursor::MM_RectSelect);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::SelectPreviousColumn);
         }
         else if (e->matches(QKeySequence::MoveToNextLine)) {
-            m_cursor->movePosition(QTextCursor::NextRow, TextCursor::MM_Move);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::MoveToNextLine);
         }
         else if (e->matches(QKeySequence::SelectNextLine)) {
-            m_cursor->movePosition(QTextCursor::NextRow, TextCursor::MM_Select);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::SelectNextLine);
         }
         else if (e->key()==Qt::Key_Down && e->modifiers().testFlag(RECT_SELECTION_MODIFIER)) {
-            m_cursor->movePosition(QTextCursor::NextRow, TextCursor::MM_RectSelect);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::SelectNextRow);
         }
         else if (e->matches(QKeySequence::MoveToPreviousLine)) {
-            m_cursor->movePosition(QTextCursor::PreviousRow, TextCursor::MM_Move);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::MoveToPreviousLine);
         }
         else if (e->matches(QKeySequence::SelectPreviousLine)) {
-            m_cursor->movePosition(QTextCursor::PreviousRow, TextCursor::MM_Select);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::SelectPreviousLine);
         }
         else if (e->key()==Qt::Key_Up && e->modifiers().testFlag(RECT_SELECTION_MODIFIER)) {
-            m_cursor->movePosition(QTextCursor::PreviousRow, TextCursor::MM_RectSelect);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::SelectPreviousRow);
         }
         else if (e->matches(QKeySequence::MoveToStartOfLine)) {
-            m_cursor->movePosition(QTextCursor::StartOfBlock, TextCursor::MM_Move);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::MoveToStartOfLine);
         }
         else if (e->matches(QKeySequence::SelectStartOfLine)) {
-            m_cursor->movePosition(QTextCursor::StartOfBlock, TextCursor::MM_Select);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::SelectStartOfLine);
         }
         else if (e->matches(QKeySequence::MoveToEndOfLine)) {
-            m_cursor->movePosition(QTextCursor::EndOfBlock, TextCursor::MM_Move);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::MoveToEndOfLine);
         }
         else if (e->matches(QKeySequence::SelectEndOfLine)) {
-            m_cursor->movePosition(QTextCursor::EndOfBlock, TextCursor::MM_Select);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::SelectEndOfLine);
         }
         else if (e->matches(QKeySequence::MoveToPreviousPage)) {
-            int lines = height()/lineHeight() - 1;
-            m_cursor->movePosition(QTextCursor::PreviousRow, TextCursor::MM_Move, lines);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::MoveToPreviousPage);
         }
         else if (e->matches(QKeySequence::SelectPreviousPage)) {
-            int lines = height()/lineHeight() - 1;
-            m_cursor->movePosition(QTextCursor::PreviousRow, TextCursor::MM_Select, lines);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::SelectPreviousPage);
         }
         else if (e->matches(QKeySequence::MoveToNextPage)) {
-            int lines = height()/lineHeight() - 1;
-            m_cursor->movePosition(QTextCursor::NextRow, TextCursor::MM_Move, lines);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::MoveToNextPage);
         }
         else if (e->matches(QKeySequence::SelectNextPage)) {
-            int lines = height()/lineHeight() - 1;
-            m_cursor->movePosition(QTextCursor::NextRow, TextCursor::MM_Select, lines);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::SelectNextPage);
         }
         else if (e->matches(QKeySequence::MoveToStartOfDocument)) {
-            m_cursor->movePosition(QTextCursor::Start, TextCursor::MM_Move);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::MoveToStartOfDocument);
         }
         else if (e->matches(QKeySequence::SelectStartOfDocument)) {
-            m_cursor->movePosition(QTextCursor::Start, TextCursor::MM_Select);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::SelectStartOfDocument);
         }
         else if (e->matches(QKeySequence::MoveToEndOfDocument)) {
-            m_cursor->movePosition(QTextCursor::End, TextCursor::MM_Move);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::MoveToEndOfDocument);
         }
         else if (e->matches(QKeySequence::SelectEndOfDocument)) {
-            m_cursor->movePosition(QTextCursor::End, TextCursor::MM_Select);
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::SelectEndOfDocument);
         }
         else if (e->matches(QKeySequence::InsertParagraphSeparator)) {
-            m_cursor->insertText("\n");
-            process = true;
+            m_cursor->evaluateCommand("\n");
         }
         else if (e->key()==Qt::Key_Backspace && e->modifiers()==0) {
-            m_cursor->removePreviousChar();
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::Backspace);
         }
         else if (e->matches(QKeySequence::Paste)) {
-            process = true;
-            paste();
+            m_cursor->evaluateCommand(KeyCommand::Paste);
         }
         else if (e->matches(QKeySequence::Copy)) {
-            process = true;
-            copy();
+            m_cursor->evaluateCommand(KeyCommand::Copy);
         }
         else if (e->matches(QKeySequence::Cut)) {
-            process = true;
-            cut();
+            m_cursor->evaluateCommand(KeyCommand::Cut);
         }
         else if (e->matches(QKeySequence::SelectAll)) {
-            process = true;
-            selectAll();
+            m_cursor->evaluateCommand(KeyCommand::SelectAll);
         }
         else if (e->key()==Qt::Key_Y && e->modifiers().testFlag(Qt::ControlModifier)) {
-            process = true;
-            removeLine();
+            m_cursor->evaluateCommand(KeyCommand::RemoveLine);
         }
         else if (e->key()==Qt::Key_K && e->modifiers().testFlag(Qt::ControlModifier)) {
-            process = true;
-            removeLineTail();
+            m_cursor->evaluateCommand(KeyCommand::RemoveTail);
         }
         else if (e->matches(QKeySequence::Delete)) {
-            m_cursor->removeCurrentChar();
-            process = true;
+            m_cursor->evaluateCommand(KeyCommand::Delete);
         }
         else if (!e->text().isEmpty()) {
-            m_cursor->insertText(Utils::textByKey(Qt::Key(e->key())
-                                                  , e->text()
-                                                  , e->modifiers().testFlag(Qt::ShiftModifier)));
-            process = true;
+            m_cursor->evaluateCommand(Utils::textByKey(Qt::Key(e->key())
+                                                       , e->text()
+                                                       , e->modifiers().testFlag(Qt::ShiftModifier)));
         }
 
         Qt::Key tempSwichLayoutKey = Qt::Key(
@@ -595,58 +556,28 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         }
         findCursor();
     }
-    if (process)
-        e->accept();
-    else
-        e->ignore();
+    e->accept();
 }
 
 void EditorPlane::selectAll()
 {
-    m_cursor->movePosition(QTextCursor::Start, TextCursor::MM_Move);
-    m_cursor->movePosition(QTextCursor::End, TextCursor::MM_Select);
+    m_cursor->evaluateCommand(KeyCommand::SelectAll);
 }
 
 void EditorPlane::copy()
 {
-    if (m_cursor->hasSelection()) {
-        ClipboardData data;
-        data.text = m_cursor->selectedText();
-        data.type = ClipboardData::Text;
-        m_clipboard->push(data);
-    }
-    else if (m_cursor->hasRectSelection()) {
-        ClipboardData data;
-        data.text = m_cursor->selectedText();
-        data.type = ClipboardData::Block;
-        data.block = m_cursor->rectSelectionText();
-        m_clipboard->push(data);
-    }
+    m_cursor->evaluateCommand(KeyCommand::Copy);
 }
 
 void EditorPlane::paste()
 {
-    if (m_clipboard->hasContent()) {
-        ClipboardData data = m_clipboard->content();
-        if (data.type == ClipboardData::Block) {
-            m_cursor->insertBlock(data.block);
-        }
-        else if (data.type == ClipboardData::Text) {
-            m_cursor->insertText(data.text);
-        }
-    }
+    m_cursor->evaluateCommand(KeyCommand::Paste);
     findCursor();
 }
 
 void EditorPlane::cut()
 {
-    copy();
-    if (m_cursor->hasSelection()) {
-        m_cursor->removeSelectedText();
-    }
-    else if (m_cursor->hasRectSelection()) {
-        m_cursor->removeRectSelection();
-    }
+    m_cursor->evaluateCommand(KeyCommand::Cut);
     findCursor();
 }
 
@@ -896,13 +827,13 @@ void EditorPlane::focusOutEvent(QFocusEvent *e)
 
 void EditorPlane::removeLine()
 {
-    m_cursor->removeCurrentLine();
+    m_cursor->evaluateCommand(KeyCommand::RemoveLine);
     findCursor();
 }
 
 void EditorPlane::removeLineTail()
 {
-    m_cursor->removeLineTail();
+    m_cursor->evaluateCommand(KeyCommand::RemoveTail);
     findCursor();
 }
 

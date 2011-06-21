@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "extensionsystem/pluginmanager.h"
 
 #include "kumirprogram.h"
 
@@ -103,6 +104,8 @@ MainWindow::MainWindow(Plugin * p) :
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupActionsForTab()));
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupContentForTab()));
 
+    connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(showPreferences()));
+
     gr_fileActions = new QActionGroup(this);
     gr_fileActions->addAction(ui->actionSave);
     connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(saveCurrentFile()));
@@ -183,6 +186,11 @@ void MainWindow::closeTab(int index)
     }
     ui->tabWidget->removeTab(index);
 
+}
+
+void MainWindow::showPreferences()
+{
+    ExtensionSystem::PluginManager::instance()->showSettingsDialog();
 }
 
 void MainWindow::closeEvent(QCloseEvent *e)

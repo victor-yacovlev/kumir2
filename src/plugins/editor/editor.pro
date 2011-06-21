@@ -17,7 +17,9 @@ HEADERS += editorplugin.h \
     utils.h \
     statusbar.h \
     editorstandalonewindow.h \
-    settingspage.h
+    settingspage.h \
+    macro.h \
+    keycommand.h
 SOURCES += editorplugin.cpp \
     editor.cpp \
     editorplane.cpp \
@@ -26,7 +28,9 @@ SOURCES += editorplugin.cpp \
     utils.cpp \
     statusbar.cpp \
     editorstandalonewindow.cpp \
-    settingspage.cpp
+    settingspage.cpp \
+    macro.cpp \
+    keycommand.cpp
 
 OTHER_FILES += Editor.pluginspec
 
