@@ -20,6 +20,7 @@ struct Module {
     QString headerData;
     QString sourceData;
     QMap<QString,QString> algorhitmHeaders;
+    bool requireGui;
 };
 
 struct KumirCppGeneratorPrivate {
@@ -121,9 +122,11 @@ void KumirCppGeneratorPrivate::addModule(const AST::Module *module)
         mod->cNamespace = module->header.cReference.nameSpace;
         mod->cLibraries = module->header.cReference.moduleLibraries;
         mod->qtLibraries = module->header.cReference.usedQtLibraries;
-        requireGui |= module->header.cReference.requiresGuiEventLoop;
+        mod->requireGui = module->header.cReference.requiresGuiEventLoop;
+        requireGui |= mod->requireGui;
     }
     else {
+        mod->requireGui = false;
         if (!module->header.name.isEmpty()) {
             mod->cNamespace = nameProvider->addName(module->header.name, "");
         }
@@ -423,6 +426,7 @@ void KumirCppGeneratorPrivate::createModuleHeader(const AST::Module *module)
             .arg(mod->cNamespace.isEmpty()? "MAIN" : mod->cNamespace.toUpper());
     if (!mod->cNamespace.isEmpty()) {
 //        mod->headerData += QString("namespace %1 {\n\n").arg(mod->cNamespace);
+        mod->headerData += "extern void __create__"+mod->cNamespace+"();\n";
         mod->headerData += "extern void __init__"+mod->cNamespace+"();\n";
     }
     for (int i=0; i<module->header.algorhitms.size(); i++) {
@@ -516,6 +520,7 @@ QString KumirCppGeneratorPrivate::makeMain() const
     result += "  setlocale(LC_CTYPE, \".1251\");\n";
     result += "#endif\n";
     QString firstAlgName;
+
     for (int i=0; i<modules.size(); i++) {
         Module * m = modules[i];
         if (m->cNamespace.isEmpty()) {
@@ -525,6 +530,7 @@ QString KumirCppGeneratorPrivate::makeMain() const
             result += "  __init__"+m->cNamespace+"();\n";
         }
     }
+
     QString entryPoint;
     for (int i=0; i<ast->modules.size(); i++) {
         if (ast->modules[i]->header.type==AST::ModTypeUser &&
@@ -545,9 +551,17 @@ QString KumirCppGeneratorPrivate::makeMain() const
     result += "}\n";
     if (requireGui) {
         result += "\n";
-        result += "extern void __main_gui__( int argc, char *argv[], void(*func)() );\n\n";
+        result += "void __prepare__gui__() {\n";
+        for (int i=0; i<modules.size(); i++) {
+            Module * m = modules[i];
+            if (m->requireGui) {
+                result += "  __create__"+m->cNamespace+"();\n";
+            }
+        }
+        result += "}\n\n";
+        result += "extern void __main_gui__( int argc, char *argv[], void(*creat)(), void(*func)() );\n\n";
         result += "int main(int argc, char *argv[]) {\n";
-        result += "  __main_gui__(argc, argv, __main_program__);\n";
+        result += "  __main_gui__(argc, argv, __prepare__gui__, __main_program__);\n";
         result += "  return 0;\n";
         result += "}\n";
     }

@@ -180,6 +180,20 @@ void Connector::handleStandardRequest(const QVariantList &message)
             emit errorReceived(message[1].toInt());
             emit errorMessageReceived(message[2].toString());
         }
+        else if (operation=="reset") {
+            Q_ASSERT(message.size()==2);
+            emit resetActorReceived(message[1].toString());
+        }
+        else if (operation=="run") {
+            Q_ASSERT(message.size()>=3);
+            const QString actor = message[1].toString();
+            const QString command = message[2].toString();
+            QVariantList arguments;
+            if (message.size()>3) {
+                arguments = message.mid(3);
+            }
+            emit actorCommandReceived(actor, command, arguments);
+        }
     }
 }
 
@@ -208,10 +222,34 @@ extern void __connect_to_kumir__(const QString & key)
     StdLib::Connector::instance()->connectTo(key);
 }
 
-extern void __show_actor_window__(const QString & moduleName)
+extern void __reset_actor__(const QString & moduleName)
 {
     QVariantList message;
-    message << "show";
+    message << "reset";
     message << moduleName;
     StdLib::Connector::instance()->sendRequest(message);
+}
+
+extern ActorResponse __run_actor_command__(
+    const QString & actor,
+    const QString & command,
+    const QVariantList & arguments
+    )
+{
+    QVariantList message;
+    message << "reset";
+    message << actor;
+    message << command;
+    message += arguments;
+    QVariantList response = StdLib::Connector::instance()->sendRequest(message);
+    Q_ASSERT(response.size()>=1);
+    ActorResponse result;
+    result.error = response[0].toString();
+    if (response.size()>1) {
+        result.result = response[1];
+    }
+    if (response.size()>2) {
+        result.res = response.mid(2);
+    }
+    return result;
 }

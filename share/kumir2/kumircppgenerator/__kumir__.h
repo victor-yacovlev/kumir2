@@ -17,7 +17,6 @@ struct __array__ {
 };
 
 extern void __allocate_array__(struct __array__ * arr);
-extern void __copy_array__(struct __array__ *dst, struct __array__ *src);
 extern void* __element__(struct __array__ * arr, int i0, int i1, int i2);
 extern void __abort__(const wchar_t * message, int lineNo);
 

@@ -7,7 +7,7 @@
 #include "guirunner.h"
 
 
-extern "C" void __main_gui__( int argc, char *argv[],
+extern "C" int __main_gui__( int argc, char *argv[],
                               void(*creator_funct)(),
                               void(*main_funct)() )
 {
@@ -23,9 +23,10 @@ extern "C" void __main_gui__( int argc, char *argv[],
     }
     (*creator_funct)();
     StdLib::UserProgramThread * thread = new StdLib::UserProgramThread(a, main_funct);
-    a->exec();
+    int result = a->exec();
     delete thread;
     delete a;
+    return result;
 }
 
 

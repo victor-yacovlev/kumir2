@@ -10,7 +10,7 @@
 #define STDLIB_EXPORT Q_DECL_IMPORT
 #endif
 
-extern "C" STDLIB_EXPORT void __main_gui__( int argc, char *argv[],
+extern "C" STDLIB_EXPORT int __main_gui__( int argc, char *argv[],
                               void(*creator_functs)(),
                               void(*main_funct)() );
 

@@ -37,6 +37,7 @@ public:
     void connectTo(const QString &key);
     void listenFor(const QString &key);
     static bool connectedToKumir;
+
 public slots:
     QVariantList sendRequest(const QVariantList & message);
 signals:
@@ -45,6 +46,8 @@ signals:
     void errorMessageReceived(const QString & message);
     void inputFormatReceived(const QString & format);
     void errorReceived(int lineNo);
+    void resetActorReceived(const QString & name);
+    void actorCommandReceived(const QString & actorName, const QString & command, const QVariantList & arguments);
 protected slots:
     void handleStandardRequest(const QVariantList & message);
 protected:
@@ -52,6 +55,7 @@ protected:
     void waitForStatus(MessageSender s);
     InterprocessMessage * currentFrame();
 private:
+
 
 
     static int PAGE_SIZE;
@@ -66,9 +70,13 @@ private:
 
 } // namespace GuiRunner
 
+struct ActorResponse { QString error; QVariant result; QVariantList res; };
+
 extern "C" STDLIB_EXPORT unsigned char __connected_to_kumir__();
 extern "C" STDLIB_EXPORT void __try_connect_to_kumir__(int argc, char* *argv);
 extern STDLIB_EXPORT void __connect_to_kumir__(const QString & key);
-extern STDLIB_EXPORT void __show_actor_window__(const QString & moduleName);
+extern STDLIB_EXPORT void __reset_actor__(const QString & moduleName);
+extern STDLIB_EXPORT ActorResponse __run_actor_command__(const QString &actor, const QString & command, const QVariantList & arguments);
+
 
 #endif // GUIRUNNER_CONNECTOR_H

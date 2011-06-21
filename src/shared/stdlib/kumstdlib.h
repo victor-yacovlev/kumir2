@@ -7,7 +7,38 @@
 #define STDLIB_EXPORT Q_DECL_IMPORT
 #endif
 
+#include <QtCore>
+
+struct __array__ {
+    int dim;
+    int lefts[3];
+    int rights[3];
+    int sizes[3];
+    void * data;
+    char type;
+};
+
 extern STDLIB_EXPORT QString __get_error__st_funct();
+
+extern "C" STDLIB_EXPORT void __allocate_array__(struct __array__ * arr);
+extern "C" STDLIB_EXPORT void* __element__(struct __array__ * arr, int i0, int i1, int i2);
+
+extern "C" STDLIB_EXPORT wchar_t* __string_from_constant__(const wchar_t * str);
+extern "C" STDLIB_EXPORT wchar_t* __concatenate_ss__(const wchar_t * s1, const wchar_t * s2);
+extern "C" STDLIB_EXPORT wchar_t* __concatenate_sc__(const wchar_t * s, wchar_t ch);
+extern "C" STDLIB_EXPORT wchar_t* __concatenate_cs__(wchar_t ch, const wchar_t * s);
+extern "C" STDLIB_EXPORT wchar_t* __concatenate_cc__(wchar_t ch1, wchar_t ch2);
+
+extern "C" STDLIB_EXPORT wchar_t __get_char_at__(const wchar_t * s, int index);
+extern "C" STDLIB_EXPORT void __set_char_at__(wchar_t * s, int index, wchar_t ch);
+
+extern "C" STDLIB_EXPORT wchar_t* __get_slice__(const wchar_t * s, int start, int end);
+extern "C" STDLIB_EXPORT void __set_slice_s__(wchar_t ** s, int start, int end, const wchar_t * ss);
+extern "C" STDLIB_EXPORT void __set_slice_c__(wchar_t ** s, int start, int end, wchar_t ch);
+
+extern "C" STDLIB_EXPORT wchar_t* __string_of_char__(wchar_t ch);
+
+extern "C" STDLIB_EXPORT void __abort__(const wchar_t * message, int lineNo);
 
 extern "C" STDLIB_EXPORT void __init_garbage_collector__();
 extern "C" STDLIB_EXPORT void __free_garbage_collector__();
