@@ -65,7 +65,7 @@ QList<QAction*> Component::toolbarActions()
 QList<QMenu*> Component::menuActions()
 {
     QList<QMenu*> result;
-    result << menu_edit;
+//    result << menu_edit;
     return result;
 }
 

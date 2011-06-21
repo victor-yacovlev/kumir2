@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "dockwidget.h"
 #include "extensionsystem/pluginmanager.h"
 
 #include "kumirprogram.h"
@@ -60,7 +61,7 @@ public:
             if (type==MainWindow::Pascal) {
                 tb->addSeparator();
                 Q_UNUSED(pascal);
-//                tb->addActions(pascal->actions()->actions());
+                //                tb->addActions(pascal->actions()->actions());
             }
             if (!gr_otherActions->actions().isEmpty()) {
                 tb->addSeparator();
@@ -106,14 +107,29 @@ MainWindow::MainWindow(Plugin * p) :
 
     connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(showPreferences()));
 
-    gr_fileActions = new QActionGroup(this);
+        gr_fileActions = new QActionGroup(this);
     gr_fileActions->addAction(ui->actionSave);
     connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(saveCurrentFile()));
     connect(ui->actionSave_as, SIGNAL(triggered()), this, SLOT(saveCurrentFileAs()));
 
     gr_otherActions = new QActionGroup(this);
 
+    a_notAvailable = new QAction(this);
+    a_notAvailable->setText(tr("No actions for this tab"));
+    a_notAvailable->setEnabled(false);
+
+    menu_empty = new QMenu(this);
+    menu_empty->addAction(a_notAvailable);
+
+
+    setCorner(Qt::BottomRightCorner, Qt::BottomDockWidgetArea);
+    setCorner(Qt::BottomLeftCorner, Qt::BottomDockWidgetArea);
+    setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
+    setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
+
 }
+
+
 
 void MainWindow::saveCurrentFile()
 {
@@ -124,6 +140,75 @@ void MainWindow::saveCurrentFile()
     }
     else {
         saveCurrentFileTo(fileName);
+    }
+}
+
+void MainWindow::setupActionsForTab()
+{
+    QWidget * currentTabWidget = ui->tabWidget->currentWidget();
+
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
+    ui->actionSave->setEnabled(twe->type!=WWW);
+    ui->actionSave_as->setEnabled(twe->type!=WWW);
+
+    prepareEditMenu();
+    prepareInsertMenu();
+    prepareRunMenu();
+}
+
+void MainWindow::prepareRunMenu()
+{
+    ui->menuRun->clear();
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+    if (twe->type==Kumir) {
+        ui->menuRun->addActions(m_plugin->m_kumirProgram->actions()->actions());
+    }
+    else {
+        ui->menuRun->addAction(a_notAvailable);
+    }
+}
+
+void MainWindow::prepareEditMenu()
+{
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+    QMenu * tabMenu = 0;
+
+    if (twe->type!=WWW) {
+        for (int i=0; i<twe->menus.size(); i++) {
+            if (twe->menus[i]->title().trimmed()==ui->menuEdit->title().trimmed()) {
+                tabMenu = twe->menus[i];
+                break;
+            }
+        }
+    }
+
+    if (tabMenu) {
+        ui->menuEdit->menuAction()->setMenu(tabMenu);
+    }
+    else {
+        ui->menuEdit->menuAction()->setMenu(menu_empty);
+    }
+}
+
+void MainWindow::prepareInsertMenu()
+{
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+    QMenu * tabMenu = 0;
+
+    if (twe->type!=WWW) {
+        for (int i=0; i<twe->menus.size(); i++) {
+            if (twe->menus[i]->title().trimmed()==ui->menuInsert->title().trimmed()) {
+                tabMenu = twe->menus[i];
+                break;
+            }
+        }
+    }
+
+    if (tabMenu) {
+        ui->menuInsert->menuAction()->setMenu(tabMenu);
+    }
+    else {
+        ui->menuInsert->menuAction()->setMenu(menu_empty);
     }
 }
 
@@ -197,10 +282,17 @@ void MainWindow::closeEvent(QCloseEvent *e)
 {
     QRect r(pos(), size());
     m_plugin->mySettings()->setValue(Plugin::MainWindowGeometryKey, r);
+//    m_plugin->mySettings()->setValue(Plugin::MainWindowStateKey, saveState());
+
     // TODO check for unsaved changes
     while (ui->tabWidget->count()>1) {
         closeTab(ui->tabWidget->count()-1);
     }
+    for (int i=0; i<l_dockWindows.size(); i++) {
+        l_dockWindows[i]->saveState(m_plugin->mySettings());
+    }
+
+    l_dockWindows.clear();
     e->accept();
 }
 
@@ -211,6 +303,11 @@ void MainWindow::showEvent(QShowEvent *e)
         resize(r.size());
         move(r.topLeft());
     }
+    for (int i=0; i<l_dockWindows.size(); i++) {
+        l_dockWindows[i]->restoreState(m_plugin->mySettings(), this, i==0);
+//        addDockWidget(Qt::BottomDockWidgetArea, l_dockWindows[i]);
+    }
+//    restoreState(m_plugin->mySettings()->value(Plugin::MainWindowStateKey).toByteArray());
     e->accept();
 }
 
@@ -304,22 +401,22 @@ TabWidgetElement * MainWindow::addCentralComponent(
 }
 
 void MainWindow::addSecondaryComponent(const QString & title
-                           , QWidget * c
-                           , const QList<QAction*> & toolbarActions
-                           , const QList<QMenu*> & menus
-                           , DockWindowType type)
+                                       , QWidget * c
+                                       , const QList<QAction*> & toolbarActions
+                                       , const QList<QAction*> & menuActions
+                                       , DockWindowType type)
 {
-    QDockWidget * dock = new QDockWidget(title, this);
+    DockWidget * dock = new DockWidget(title, this);
     dock->setWidget(c);
     Q_UNUSED(toolbarActions);
-    Q_UNUSED(menus);
-    if (type==Terminal) {
-        addDockWidget(Qt::BottomDockWidgetArea, dock);
+    Q_UNUSED(type);
+    l_dockWindows << dock;
+    ui->menuWindow->addAction(dock->toggleViewAction());
+    if (type!=Terminal) {
+        QMenu * componentMenu = new QMenu(title, this);
+        componentMenu->addActions(menuActions);
+        ui->menubar->insertMenu(ui->menuWindow->menuAction(), componentMenu);
     }
-    else {
-        dock->setFloating(true);
-    }
-    dock->setVisible(type==Terminal);
 }
 
 
@@ -345,7 +442,7 @@ void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
         if (!found) {
             QMenu * menu = new QMenu(title, menuBar());
             menu->setWindowTitle(menu->title());
-//            menu->setTearOffEnabled(true);
+            //            menu->setTearOffEnabled(true);
             if (tabDependent) {
             }
             else {
@@ -357,7 +454,7 @@ void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
                 }
                 menu->addActions(actions);
             }
-            menuBar()->insertMenu(menus.last()->menuAction(), menu);
+            menuBar()->insertMenu(ui->menuWindow->menuAction(), menu);
         }
     }
 }
@@ -376,32 +473,7 @@ void MainWindow::setupContentForTab()
     }
 }
 
-void MainWindow::setupActionsForTab()
-{
-    QWidget * currentTabWidget = ui->tabWidget->currentWidget();
 
-    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
-    ui->actionSave->setEnabled(twe->type!=WWW);
-    ui->actionSave_as->setEnabled(twe->type!=WWW);
-    QList<QMenu*> menus;
-    for (int i=0; i<menuBar()->children().size(); i++) {
-        QMenu * m = qobject_cast<QMenu*>(menuBar()->children()[i]);
-        if (m)
-            menus << m;
-    }
-    for (int i=0; i<twe->menus.size(); i++) {
-        QMenu * tabMenu = twe->menus[i];
-        QMenu * myMenu = 0;
-        for (int j=0; j<menus.size(); j++) {
-            if (tabMenu->title().trimmed()==menus[j]->title().trimmed()) {
-                myMenu = menus[j];
-                break;
-            }
-        }
-        Q_CHECK_PTR(myMenu);
-        myMenu->menuAction()->setMenu(tabMenu);
-    }
-}
 
 void MainWindow::restoreSession()
 {

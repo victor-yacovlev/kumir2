@@ -76,7 +76,7 @@ QWidget * PainterWorker::mainWidget()
     return m_mainWidget;
 }
 
-QList<QMenu*> PainterWorker::menus()
+QList<QAction*> PainterWorker::menuActions()
 {
     return m_mainWidget->menuActions();
 }

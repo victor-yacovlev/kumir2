@@ -307,35 +307,39 @@ PainterWindow::~PainterWindow()
     delete ui;
 }
 
-QList<QMenu*> PainterWindow::menuActions()
+QList<QAction*> PainterWindow::menuActions()
 {
 
-    QMenu * page = new QMenu(tr("Page"));
-    QMenu * zoom = new QMenu(tr("Zoom"));
-    QMenu * sbar = new QMenu(tr("Statusbar"));
+    QAction * sep1 = new QAction(this);
+    QAction * sep2 = new QAction(this);
+//    QAction * sep3 = new QAction(this);
+    sep1->setSeparator(true);
+    sep2->setSeparator(true);
+//    sep3->setSeparator(true);
 
-    page->addAction(ui->actionNew);
-    page->addAction(ui->actionLoad_image);
-    page->addSeparator();
-    page->addAction(ui->actionReset);
-    page->addSeparator();
-    page->addAction(ui->actionSave_image);
-    page->addAction(ui->actionSave_image_as);
+    QList<QAction*> result;
 
-    zoom->addAction(ui->actionHalf_size);
-    zoom->addAction(ui->actionOriginal_size);
-    zoom->addSeparator();
-    zoom->addAction(ui->actionFit_width);
-    zoom->addAction(ui->actionFit_height);
-    zoom->addAction(ui->actionFit_both);
+    result << ui->actionNew;
+    result << ui->actionLoad_image;
+    result << ui->actionReset;
+    result << ui->actionSave_image;
+    result << ui->actionSave_image_as;
+    result << sep1;
 
-    sbar->addAction(ui->actionHTML);
-    sbar->addAction(ui->actionRGB);
-    sbar->addAction(ui->actionCMYK);
-    sbar->addAction(ui->actionHSL);
-    sbar->addAction(ui->actionHSV);
+    result << ui->actionHalf_size;
+    result << ui->actionOriginal_size;
+    result << ui->actionFit_width;
+    result << ui->actionFit_height;
+    result << ui->actionFit_both;
+    result << sep2;
 
-    return QList<QMenu*>() << page << zoom << sbar;
+    result << ui->actionHTML;
+    result << ui->actionRGB;
+    result << ui->actionCMYK;
+    result << ui->actionHSL;
+    result << ui->actionHSV;
+
+    return result;
 }
 
 QList<QAction*> PainterWindow::toolbarActions()

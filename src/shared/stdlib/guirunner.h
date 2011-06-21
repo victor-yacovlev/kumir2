@@ -15,7 +15,7 @@ extern "C" STDLIB_EXPORT void __main_gui__( int argc, char *argv[],
                               void(*main_funct)() );
 
 
-extern STDLIB_EXPORT void __create_window_for__(QWidget * widget, const QList<QMenu*> & menus);
+extern STDLIB_EXPORT void __create_window_for__(QWidget * widget, const QList<QAction*> & menus);
 
 
 #endif // GUIRUNNER_H

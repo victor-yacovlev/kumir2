@@ -19,7 +19,7 @@ public:
     explicit PainterWindow(QSettings * settings, QWidget *parent = 0);
     void setCanvas(QImage * canvas, QMutex * locker);
     QWidget * view();
-    QList<QMenu*> menuActions();
+    QList<QAction*> menuActions();
     QList<QAction*> toolbarActions();
     ~PainterWindow();
 public slots:

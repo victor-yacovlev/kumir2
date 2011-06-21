@@ -32,7 +32,7 @@ public:
     virtual void   runFunct(const QString & alg,const QList<QVariant> &params)=0;
     virtual QList<QVariant> algOptResults() const =0;//optional results
     virtual class QWidget * mainWidget()=0;
-    virtual QList<class QMenu *> menus() = 0;
+    virtual QList<class QAction *> menuActions() = 0;
     virtual void reset() = 0;
     virtual QString errorText() const = 0;
 /* NOTE: signals should not be declared virtual in interfaces

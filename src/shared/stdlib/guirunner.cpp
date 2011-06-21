@@ -29,7 +29,7 @@ extern "C" void __main_gui__( int argc, char *argv[],
 }
 
 
-extern void __create_window_for__(QWidget * widget, const QList<QMenu*> & menus)
+extern void __create_window_for__(QWidget * widget, const QList<QAction*> & menus)
 {
     StdLib::ActorWindow * w = new StdLib::ActorWindow(widget, menus);
     w->show();

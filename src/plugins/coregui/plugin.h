@@ -32,6 +32,11 @@ public:
     static QString RecentFileKey;
     static QString RecentFilesKey;
     static QString MainWindowGeometryKey;
+    static QString MainWindowStateKey;
+    static QString DockVisibleKey;
+    static QString DockFloatingKey;
+    static QString DockGeometryKey;
+    static QString DockSideKey;
 protected:
     QString initialize(const QStringList &arguments);
     void start();

@@ -16,13 +16,11 @@ protected:
             QScrollBar::paintEvent(e);
         }
         else {
-#ifdef Q_OS_WIN32
             QPainter p(this);
             p.setPen(Qt::NoPen);
-            p.setBrush(palette().brush(QPalette::Window));
+            p.setBrush(palette().brush(QPalette::Normal, QPalette::Window));
             p.drawRect(e->rect());
             p.end();
-#endif
             e->accept();
         }
     }
@@ -32,6 +30,8 @@ protected:
 Terminal::Terminal(QWidget *parent) :
     QWidget(parent)
 {
+    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    setMinimumWidth(450);
     QGridLayout * l = new QGridLayout();
     setLayout(l);
     m_plane = new Plane(this);

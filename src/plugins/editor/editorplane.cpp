@@ -1081,6 +1081,10 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
                 curType = highlight[j];
             }
             setProperFormat(p, curType, m_document->at(i).text[j]);
+            if (m_document->at(i).selected[j]) {
+                p->setPen(palette().brush(QPalette::HighlightedText).color());
+            }
+
             int charW = QFontMetrics(p->font()).width(m_document->at(i).text[j]);
             if (charW<charWidth()) {
                 offset += (charWidth()-charW)/2;

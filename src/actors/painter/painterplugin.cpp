@@ -450,17 +450,17 @@ QWidget * PainterPlugin::mainWidget()
     if (!m_mainWidget) {
         __create2__ActorPainter(mySettings(), this);
         m_mainWidget = __mainWidget__ActorPainter();
-        l_menus = __menus__ActorPainter();
+        l_menus = __menuActions__ActorPainter();
     }
     return m_mainWidget;
 }
 
-QList<QMenu*> PainterPlugin::menus()
+QList<QAction*> PainterPlugin::menuActions()
 {
     if (!m_mainWidget) {
         __create2__ActorPainter(mySettings(), this);
         m_mainWidget = __mainWidget__ActorPainter();
-        l_menus = __menus__ActorPainter();
+        l_menus = __menuActions__ActorPainter();
     }
     return l_menus;
 }

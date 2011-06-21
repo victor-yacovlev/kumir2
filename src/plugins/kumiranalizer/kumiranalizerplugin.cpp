@@ -108,7 +108,8 @@ void KumirAnalizerPlugin::setSourceText(int documentId, const QString &text)
     Q_CHECK_PTR(m_analizers[documentId]);
     Shared::ChangeTextTransaction change;
     change.newLines = text.split("\n");
-    m_analizers[documentId]->changeSourceText(QList<Shared::ChangeTextTransaction>() << change);
+    if (!text.trimmed().isEmpty())
+        m_analizers[documentId]->changeSourceText(QList<Shared::ChangeTextTransaction>() << change);
 }
 
 void KumirAnalizerPlugin::changeSourceText(int documentId, const QList<Shared::ChangeTextTransaction> & changes)

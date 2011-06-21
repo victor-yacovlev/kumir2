@@ -27,7 +27,7 @@ public:
     void   runFunct(const QString & alg,const QList<QVariant> &params);
     inline QList<QVariant> algOptResults() const { return l_optResults; }
     QWidget* mainWidget();
-    QList<QMenu*> menus();
+    QList<QAction*> menuActions();
     void reset();
     QString errorText() const;
 signals:
@@ -40,7 +40,7 @@ private:
     QVariantList l_optResults;
     QVariant v_result;
     QWidget * m_mainWidget;
-    QList<QMenu*> l_menus;
+    QList<QAction*> l_menus;
 };
 
 } // namespace ActorPainter

@@ -22,6 +22,11 @@ QString Plugin::SessionTabIndexKey = "Session/TabIndex";
 QString Plugin::RecentFileKey = "History/FileDialog";
 QString Plugin::RecentFilesKey = "History/RecentFiles";
 QString Plugin::MainWindowGeometryKey = "Geometry/MainWindow";
+QString Plugin::MainWindowStateKey = "State/MainWindow";
+QString Plugin::DockVisibleKey = "DockWindow/Visible";
+QString Plugin::DockFloatingKey = "DockWindow/Floating";
+QString Plugin::DockGeometryKey = "DockWindow/Geometry";
+QString Plugin::DockSideKey = "DockWindow/Side";
 
 QString Plugin::initialize(const QStringList &)
 {
@@ -53,22 +58,22 @@ QString Plugin::initialize(const QStringList &)
     m_mainWindow->addSecondaryComponent(tr("Input/Output terminal"),
                                         m_terminal,
                                         QList<QAction*>(),
-                                        QList<QMenu*>(),
+                                        QList<QAction*>(),
                                         MainWindow::Terminal);
     QList<ExtensionSystem::KPlugin*> actors = loadedPlugins("Actor*");
     foreach (QObject * o, actors) {
         ActorInterface * actor = qobject_cast<ActorInterface*>(o);
         l_plugin_actors << actor;
-//        if (actor->mainWidget()) {
-//            QWidget * actorWidget = actor->mainWidget();
-//            QList<QMenu*> actorMenus = actor->menus();
-//            bool priv = o->property("privilegedActor").toBool();
-//            m_mainWindow->addSecondaryComponent(actor->name(),
-//                                                actorWidget,
-//                                                QList<QAction*>(),
-//                                                actorMenus,
-//                                                priv? MainWindow::StandardActor : MainWindow::WorldActor);
-//        }
+        if (actor->mainWidget()) {
+            QWidget * actorWidget = actor->mainWidget();
+            QList<QAction*> actorMenus = actor->menuActions();
+            bool priv = o->property("privilegedActor").toBool();
+            m_mainWindow->addSecondaryComponent(actor->name(),
+                                                actorWidget,
+                                                QList<QAction*>(),
+                                                actorMenus,
+                                                priv? MainWindow::StandardActor : MainWindow::WorldActor);
+        }
     }
     m_kumirProgram = new KumirProgram(this);
     m_kumirProgram->setBytecodeGenerator(plugin_BytecodeGenerator);

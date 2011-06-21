@@ -2,14 +2,13 @@
 
 namespace StdLib {
 
-ActorWindow::ActorWindow(QWidget * widget, const QList<QMenu*> & menus) :
+ActorWindow::ActorWindow(QWidget * widget, const QList<QAction*> & actions) :
     QMainWindow(0)
 {
     setWindowTitle(qApp->arguments()[0]);
     setCentralWidget(widget);
-    for (int i=0; i<menus.size(); i++) {
-        menuBar()->addMenu(menus[i]);
-    }
+    QMenu * menu = menuBar()->addMenu(tr("Actions"));
+    menu->addActions(actions);
 }
 
 } // namespace GuiRunner

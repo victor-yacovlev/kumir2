@@ -29,7 +29,7 @@ public:
     void   runFunct(const QString &alg, const QList<QVariant> &params);
     QList<QVariant> algOptResults() const;//optional results
     inline class QWidget* mainWidget() { return 0; }
-    inline QList<class QMenu*> menus() { return QList<class QMenu*>(); }
+    inline QList<class QAction*> menuActions() { return QList<class QAction*>(); }
     void reset();
     QString errorText() const;
 signals:

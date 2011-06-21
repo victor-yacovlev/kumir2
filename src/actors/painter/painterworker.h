@@ -16,7 +16,7 @@ public:
     static PainterWorker* instance(QSettings * settings, QObject * parent);
     inline QString error() const { return lastError; }
     QWidget * mainWidget();
-    QList<QMenu*> menus();
+    QList<QAction*> menuActions();
 public slots:
     void reset();
     void setPen(int width, const QString &cs);

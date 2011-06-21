@@ -20,7 +20,7 @@ extern "C" void __init__ActorPainter();
 extern "C" void __create__ActorPainter();
 extern void __create2__ActorPainter(class QSettings *s, class QObject * parent);
 extern class QWidget * __mainWidget__ActorPainter();
-extern QList<class QMenu*> __menus__ActorPainter();
+extern QList<class QAction*> __menuActions__ActorPainter();
 
 extern "C" void setPen__ActorPainter(int width, const wchar_t * ss);
 extern "C" void setDensity__ActorPainter(int dens);

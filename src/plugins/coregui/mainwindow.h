@@ -41,7 +41,7 @@ public:
     void addSecondaryComponent(const QString & title
                                , QWidget * c
                                , const QList<QAction*> & toolbarActions
-                               , const QList<QMenu*> & menus
+                               , const QList<QAction*> & menuActions
                                , DockWindowType type);
     ~MainWindow();
 public slots:
@@ -61,6 +61,9 @@ public slots:
     void showPreferences();
 
 private slots:
+    void prepareRunMenu();
+    void prepareEditMenu();
+    void prepareInsertMenu();
     void setupActionsForTab();
     void setupContentForTab();
     void addToRecent(const QString &fileName);
@@ -68,6 +71,9 @@ private slots:
 
 
 private:
+    QAction * a_notAvailable;
+    QList<class DockWidget*> l_dockWindows;
+    QMenu * menu_empty;
     void showEvent(QShowEvent *);
     void closeEvent(QCloseEvent *);
     QString suggestNewFileName(const QString &suffix) const;
