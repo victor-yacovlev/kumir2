@@ -546,6 +546,7 @@ QString KumirCppGeneratorPrivate::makeMain() const
         result += "  "+entryPoint+"();\n";
     }
     result += "  __free_garbage_collector__();\n";
+    result += "  __wait_for_output_queue_flushed__();\n";
     if (!requireGui)
         result += "  return 0;\n";
     result += "}\n";
@@ -994,7 +995,7 @@ Shared::GeneratorResult KumirCppGeneratorPlugin::generateExecuable(
             hFiles.insert(hFileName);
         }
         QFile c(cFileName);
-        if (c.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        if (!d->modules[i]->sourceData.isEmpty() && c.open(QIODevice::WriteOnly | QIODevice::Text)) {
             c.write(d->modules[i]->sourceData.toLocal8Bit());
             c.close();
             cFiles.insert(cFileName);
@@ -1020,7 +1021,7 @@ Shared::GeneratorResult KumirCppGeneratorPlugin::generateExecuable(
             }
         }
     }
-    cFiles.insert("__kumir__.c");
+
     hFiles.insert("__kumir__.h");
 
     const QString includePath = qApp->property("sharePath").toString()+"/kumircppgenerator/";
@@ -1060,9 +1061,9 @@ Shared::GeneratorResult KumirCppGeneratorPlugin::generateExecuable(
 
 
     QFile::remove("__kumir__.h");
-    QFile::remove("__kumir__.c");
+
     QFile::copy(includePath+"/__kumir__.h", "__kumir__.h");
-    QFile::copy(includePath+"/__kumir__.c", "__kumir__.c");
+
     QString command = "gcc";
 #ifdef Q_OS_WIN32
     command += ".exe";

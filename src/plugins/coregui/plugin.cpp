@@ -95,6 +95,7 @@ void Plugin::start()
 void Plugin::stop()
 {
     m_mainWindow->close();
+    StdLib::Connector::instance()->stopListen();
 }
 
 Plugin::~Plugin()

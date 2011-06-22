@@ -6,14 +6,16 @@ Connector::Connector()
     : QThread()
 {
     shm = new QSharedMemory(this);
-    ba_buffer = new QByteArray;
     e_state = CS_Idle;
     e_me = e_otherSender = IM_NoMessage;
-    InterprocessMessage f;
-    PAGE_SIZE = sizeof(f.data) / sizeof(char);
+    mutex_reply = new QMutex;
+    mutex_request = new QMutex;
+    mutex_stopOnEmpty = new QMutex;
+    mutex_stopServing = new QMutex;
+    b_stopOnEmpty = false;
+    b_stopServing = false;
 }
 
-int Connector::PAGE_SIZE = 0;
 bool Connector::connectedToKumir = false;
 
 Connector* Connector::instance() {
@@ -32,7 +34,9 @@ void Connector::connectTo(const QString &key)
     }
     e_otherSender = IM_Kumir;
     e_me = IM_Program;
+    e_state = CS_Sending;
     connectedToKumir = true;
+    start();
 }
 
 void Connector::listenFor(const QString &key)
@@ -45,33 +49,9 @@ void Connector::listenFor(const QString &key)
     e_otherSender = IM_Program;
     e_me = IM_Kumir;
     currentFrame()->type = IM_NoMessage;
-    ba_buffer->clear();
     connect(this, SIGNAL(requestReceived(QVariantList)), this, SLOT(handleStandardRequest(QVariantList)));
     e_state = CS_Receiving;
     start();
-}
-
-
-QVariantList Connector::sendRequest(const QVariantList &arguments)
-{
-    Q_ASSERT(e_state==CS_Idle);
-    Q_ASSERT(!isRunning());
-    ba_buffer->clear();
-    QDataStream outbox(ba_buffer, QIODevice::WriteOnly);
-    outbox << arguments;
-    e_state = CS_Sending;
-    start();
-    wait();
-    Q_ASSERT(e_state==CS_Idle);
-    Q_ASSERT(!isRunning());
-    e_state = CS_Receiving;
-    ba_buffer->clear();
-    start();
-    wait();
-    QDataStream inbox(ba_buffer, QIODevice::ReadOnly);
-    QVariantList response;
-    inbox >> response;
-    return response;
 }
 
 
@@ -91,75 +71,193 @@ void Connector::waitForStatus(MessageSender s)
         }
         else {
             shm->unlock();
-#ifdef Q_OS_WIN32
-            msleep(100);
-#else
+            mutex_stopServing->lock();
+            bool stop = b_stopServing;
+            mutex_stopServing->unlock();
+            if (stop)
+                return;
             msleep(30);
-#endif
+        }
+    }
+}
+
+void Connector::waitForReply()
+{
+    forever {
+        mutex_reply->lock();
+        if (!l_replyBuffer.isEmpty()) {
+            return;
+        }
+        else {
+            mutex_reply->unlock();
+            mutex_stopServing->lock();
+            bool stop = b_stopServing;
+            mutex_stopServing->unlock();
+            if (stop)
+                return;
+            msleep(30);
+        }
+    }
+}
+
+void Connector::waitForRequest()
+{
+    forever {
+        mutex_request->lock();
+        if (!q_requestBuffer.isEmpty()) {
+            return;
+        }
+        else {
+            mutex_request->unlock();
+            mutex_stopOnEmpty->lock();
+            bool stop = b_stopOnEmpty;
+            mutex_stopOnEmpty->unlock();
+            if (stop)
+                return;
+            msleep(1);
+        }
+    }
+}
+
+void Connector::sendReply(const QVariantList &message)
+{
+    QMutexLocker l(mutex_reply);
+    l_replyBuffer = message;
+}
+
+void Connector::sendAsynchronousRequest(const QVariantList &message)
+{
+    Request req;
+    req.data = message;
+    req.replyRequired = false;
+    QMutexLocker l(mutex_request);
+    q_requestBuffer.enqueue(req);
+}
+
+QVariantList Connector::sendSynchronousRequest(const QVariantList &message)
+{
+    Request req;
+    req.data = message;
+    req.replyRequired = true;
+    mutex_request->lock();
+    q_requestBuffer.enqueue(req);
+    mutex_request->unlock();
+    mutex_reply->lock();
+    l_replyBuffer.clear();
+    mutex_reply->unlock();
+    waitForReply();
+    QVariantList result = l_replyBuffer;
+    mutex_reply->unlock();
+    return result;
+}
+
+void Connector::listenWorker()
+{
+    QByteArray buffer;
+    forever {
+        waitForStatus(e_otherSender);
+        mutex_stopServing->lock();
+        bool stop = b_stopServing;
+        mutex_stopServing->unlock();
+        if (stop) {
+            shm->unlock();
+            return;
+        }
+        int messageSize = currentFrame()->messageSize;
+        buffer.setRawData(currentFrame()->data, messageSize);
+        if (!currentFrame()->replyRequired) {
+            currentFrame()->type = IM_NoMessage;
+            shm->unlock();
+        }
+
+        QDataStream ds(&buffer, QIODevice::ReadOnly);
+        QVariantList response;
+        ds >> response;
+        buffer.clear();
+        emit requestReceived(response);
+        if (currentFrame()->replyRequired) {
+            waitForReply();
+            mutex_stopServing->lock();
+            bool stop = b_stopServing;
+            mutex_stopServing->unlock();
+            if (stop) {
+                shm->unlock();
+                return;
+            }
+            QDataStream os(&buffer, QIODevice::WriteOnly);
+            os << l_replyBuffer;
+            l_replyBuffer.clear();
+            mutex_reply->unlock();
+            currentFrame()->type = e_me;
+            currentFrame()->messageSize = buffer.size();
+            qMemCopy(currentFrame()->data, buffer, buffer.size()*sizeof(char));
+            shm->unlock();
+        }
+    }
+}
+
+void Connector::waitForEmptyAndStop()
+{
+    mutex_stopOnEmpty->lock();
+    b_stopOnEmpty = true;
+    mutex_stopOnEmpty->unlock();
+    wait();
+    shm->detach();
+}
+
+void Connector::stopListen()
+{
+    mutex_stopServing->lock();
+    b_stopServing = true;
+    mutex_stopServing->unlock();
+    wait();
+    shm->detach();
+}
+
+void Connector::requestWorker()
+{
+    QByteArray buffer;
+    forever {
+        waitForRequest();
+        mutex_stopOnEmpty->lock();
+        bool stop = b_stopOnEmpty && q_requestBuffer.isEmpty();
+        mutex_stopOnEmpty->unlock();
+        if (stop)
+            return;
+        QDataStream out(&buffer, QIODevice::WriteOnly);
+        Request req = q_requestBuffer.dequeue();
+        out << req.data;
+        mutex_request->unlock();
+        waitForStatus(IM_NoMessage);
+        currentFrame()->messageSize = buffer.size();
+        currentFrame()->type = e_me;
+        qMemCopy(currentFrame()->data, buffer, buffer.size()*sizeof(char));
+        buffer.clear();
+        currentFrame()->replyRequired = req.replyRequired;
+        shm->unlock();
+        if (req.replyRequired) {
+            waitForStatus(e_otherSender);
+            int messageSize = currentFrame()->messageSize;
+            buffer.setRawData(currentFrame()->data, messageSize);
+            currentFrame()->type = IM_NoMessage;
+            shm->unlock();
+            QDataStream ds(&buffer, QIODevice::WriteOnly);
+            mutex_reply->lock();
+            l_replyBuffer.clear();
+            ds >> l_replyBuffer;
+            mutex_reply->unlock();
+            buffer.clear();
         }
     }
 }
 
 void Connector::run()
 {
-    QByteArray frameBuffer;
     if (e_state==CS_Sending) {
-        InterprocessMessage frame;
-        frame.pagesCount = ba_buffer->size() / PAGE_SIZE + 1;
-        int currentPage = 0;
-        int pagesCount = ba_buffer->size() / PAGE_SIZE + 1;
-        int offset = 0;
-        for (currentPage = 0; currentPage < pagesCount; currentPage++) {
-            offset = currentPage * PAGE_SIZE;
-            frameBuffer = ba_buffer->mid(offset, PAGE_SIZE);
-            waitForStatus(IM_NoMessage);
-            currentFrame()->type = IM_Program;
-            currentFrame()->currentPage = currentPage;
-            currentFrame()->currentSize = frameBuffer.size();
-            currentFrame()->pagesCount = pagesCount;
-            qMemCopy(currentFrame()->data, frameBuffer.data(), frameBuffer.size() * sizeof(char));
-            shm->unlock();
-        }
-        e_state = CS_Idle;
+        requestWorker();
     }
     else if (e_state==CS_Receiving) {
-        QByteArray okReply;
-        QDataStream b(&okReply, QIODevice::WriteOnly);
-        QVariantList okMessage;
-        okMessage << "ok";
-        b << okMessage;
-        forever {
-            waitForStatus(e_otherSender);
-            int currentFrameSize = currentFrame()->currentSize;
-            int currentFramePagesCount = currentFrame()->pagesCount;
-            int currentFramePage = currentFrame()->currentPage;
-            frameBuffer.setRawData(currentFrame()->data, currentFrameSize);
-            ba_buffer->append(frameBuffer);
-            bool done = currentFramePage >= (currentFramePagesCount-1);
-            if (done && e_me==IM_Kumir) {
-                currentFrame()->type = e_me;
-                currentFrame()->currentSize = okReply.size();
-                currentFrame()->currentPage = 0;
-                currentFrame()->pagesCount = 1;
-                qMemCopy(currentFrame()->data, okReply.data(), okReply.size() * sizeof(char));
-            }
-            else {
-                currentFrame()->type = IM_NoMessage;
-            }
-            shm->unlock();
-            if (done) {
-                if (e_otherSender==IM_Kumir)
-                    break;
-                else {
-                    QDataStream ds(ba_buffer, QIODevice::ReadOnly);
-                    QVariantList response;
-                    ds >> response;
-                    ba_buffer->clear();
-                    emit requestReceived(response);
-                }
-            }
-        }
-        e_state = CS_Idle;
+        listenWorker();
     }
 }
 
@@ -204,7 +302,7 @@ extern "C" unsigned char __connected_to_kumir__()
     return StdLib::Connector::connectedToKumir? 1 : 0;
 }
 
-extern "C" STDLIB_EXPORT void __try_connect_to_kumir__(int argc, char* *argv)
+extern "C" void __try_connect_to_kumir__(int argc, char* *argv)
 {
     for (int i=1; i<argc; i++) {
         const QString arg = QString::fromAscii(argv[i]);
@@ -227,7 +325,7 @@ extern void __reset_actor__(const QString & moduleName)
     QVariantList message;
     message << "reset";
     message << moduleName;
-    StdLib::Connector::instance()->sendRequest(message);
+    StdLib::Connector::instance()->sendAsynchronousRequest(message);
 }
 
 extern ActorResponse __run_actor_command__(
@@ -237,11 +335,11 @@ extern ActorResponse __run_actor_command__(
     )
 {
     QVariantList message;
-    message << "reset";
+    message << "run";
     message << actor;
     message << command;
     message += arguments;
-    QVariantList response = StdLib::Connector::instance()->sendRequest(message);
+    QVariantList response = StdLib::Connector::instance()->sendSynchronousRequest(message);
     Q_ASSERT(response.size()>=1);
     ActorResponse result;
     result.error = response[0].toString();
@@ -252,4 +350,11 @@ extern ActorResponse __run_actor_command__(
         result.res = response.mid(2);
     }
     return result;
+}
+
+extern "C" void __wait_for_output_queue_flushed__()
+{
+    if (__connected_to_kumir__()) {
+        StdLib::Connector::instance()->waitForEmptyAndStop();
+    }
 }

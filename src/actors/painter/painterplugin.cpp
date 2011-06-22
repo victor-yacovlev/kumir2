@@ -1,5 +1,7 @@
 #include "painterplugin.h"
 #include "painter_c.h"
+#include "stdlib/kumstdlib.h"
+
 
 
 namespace ActorPainter {

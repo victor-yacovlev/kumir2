@@ -4,14 +4,6 @@
 #include <wchar.h>
 #include <QList>
 
-struct __array__ {
-    int dim;
-    int lefts[3];
-    int rights[3];
-    int sizes[3];
-    void * data;
-    char type;
-};
 
 
 extern QString __get_error__ActorPainter();

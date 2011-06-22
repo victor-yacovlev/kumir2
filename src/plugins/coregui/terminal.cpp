@@ -125,6 +125,7 @@ void Terminal::output(const QString & text)
     if (l_sessions.isEmpty())
         l_sessions << new OneSession(-1,"unknown", this);
     l_sessions.last()->output(text);
+    qDebug() << "output " << text;
     m_plane->updateScrollBars();
 }
 

@@ -544,7 +544,7 @@ extern "C" void __input__st_funct(const char * format, int args, ...)
         } while (!ok);
     }
     else {
-        result = StdLib::Connector::instance()->sendRequest(QVariantList() << QString("input") << fmt);
+        result = StdLib::Connector::instance()->sendSynchronousRequest(QVariantList() << QString("input") << fmt);
     }
     va_list vl;
     va_start(vl, args);
@@ -615,6 +615,6 @@ extern "C" void __output__st_funct(const char * format, int args, ...)
         free(buffer);
     }
     else {
-        StdLib::Connector::instance()->sendRequest(QVariantList() << QString("output") << result);
+        StdLib::Connector::instance()->sendAsynchronousRequest(QVariantList() << QString("output") << result);
     }
 }
