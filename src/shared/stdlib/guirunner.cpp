@@ -22,8 +22,16 @@ extern "C" int __main_gui__( int argc, char *argv[],
         StdLib::Connector::instance()->connectTo(key);
     }
     (*creator_funct)();
-    StdLib::UserProgramThread * thread = new StdLib::UserProgramThread(a, main_funct);
-    int result = a->exec();
+    StdLib::UserProgramThread * thread = new StdLib::UserProgramThread(a, main_funct, !key.isEmpty());
+    int result = 0;
+    if (!key.isEmpty()) {
+        thread->start();
+        thread->wait();
+        result = 0;
+    }
+    else {
+        result = a->exec();
+    }
     delete thread;
     delete a;
     return result;

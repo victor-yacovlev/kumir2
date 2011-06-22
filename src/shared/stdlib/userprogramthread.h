@@ -9,7 +9,7 @@ class UserProgramThread
         : public QThread
 {
 public:
-    explicit UserProgramThread( QObject *parent, void(*func)() );
+    explicit UserProgramThread( QObject *parent, void(*func)(), bool connectMode );
     ~UserProgramThread();
 
 protected:
@@ -20,6 +20,7 @@ private:
     void (*m_func)();
     int i_timerId;
     bool b_started;
+    bool b_connectMode;
 };
 
 }

@@ -20,6 +20,7 @@ public:
                                      , bool enableToolBar
                                      , QList<QAction*> toolbarActions
                                      , QList<QMenu*> ms
+                                     , QList<QWidget*> sws
                                      , MainWindow::DocumentType t
                                      , QActionGroup * gr_fileActions
                                      , QActionGroup * gr_otherActions
@@ -29,12 +30,15 @@ public:
         : QWidget()
         , component(w)
         , menus(ms)
+        , statusbarWidgets(sws)
         , type(t)
+        , documentId(-1)
     {
         setProperty("uncloseable", w->property("uncloseable"));
         setProperty("documentId", w->property("documentId"));
         setProperty("fileName", w->property("fileName"));
         setProperty("realFileName", w->property("realFileName"));
+        documentId = w->property("documentId").toInt();
         if (type==MainWindow::WWW) {
             connect(w, SIGNAL(titleChanged(QString)), this, SIGNAL(changeTitle(QString)));
         }
@@ -73,7 +77,9 @@ public:
     }
     QWidget * component;
     QList<QMenu*> menus;
+    QList<QWidget*> statusbarWidgets;
     MainWindow::DocumentType type;
+    int documentId;
 signals:
     void changeTitle(const QString & txt);
 protected:
@@ -104,6 +110,8 @@ MainWindow::MainWindow(Plugin * p) :
     connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTab(int)));
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupActionsForTab()));
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupContentForTab()));
+    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupStatusbarForTab()));
+    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(checkCounterValue()));
 
     connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(showPreferences()));
 
@@ -127,9 +135,76 @@ MainWindow::MainWindow(Plugin * p) :
     setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
     setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 
+    statusBar()->setStyleSheet("QStatusBar { border-top: 1px solid darkgray; }");
+
+    statusBar()->addWidget(m_plugin->m_kumirStateLabel);
+    statusBar()->addWidget(m_plugin->m_genericCounterLabel);
+    m_plugin->m_kumirStateLabel->setFixedWidth(120);
+    m_plugin->m_kumirStateLabel->setStyleSheet(StatusbarWidgetCSS);
+    m_plugin->m_kumirStateLabel->setAlignment(Qt::AlignCenter);
+    m_plugin->m_genericCounterLabel->setFixedWidth(120);
+    m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS);
+    m_plugin->m_genericCounterLabel->setAlignment(Qt::AlignCenter);
+    m_message = new QLabel(this);
+    m_message->setAlignment(Qt::AlignCenter);
+    m_message->setStyleSheet(StatusbarWidgetCSS);
+    statusBar()->addWidget(m_message, 1);
+
+    i_timerId = startTimer(1000);
 }
 
+QString MainWindow::StatusbarWidgetCSS =
+"QLabel {"
+"   font-size: 15px;"
+"   padding: 4px;"
+"}"
+;
 
+void MainWindow::checkCounterValue()
+{
+    ExtensionSystem::GlobalState state = ExtensionSystem::PluginManager::instance()->currentGlobalState();
+    if (state==ExtensionSystem::GS_Unlocked) {
+        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+        if (twe->type==Kumir || twe->type==Pascal) {
+            int id = twe->documentId;
+            quint32 errorsCount = m_plugin->plugin_editor->errorsCount(id);
+            if (errorsCount==0) {
+                m_plugin->m_genericCounterLabel->setText(tr("No errors"));
+                m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS);
+            }
+            else {
+                m_plugin->m_genericCounterLabel->setText(tr("Errors: %1").arg(errorsCount));
+                m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS+
+                                                               "QLabel {"
+                                                               "    color: red;"
+                                                               "}"
+                                                               );
+            }
+        }
+        else {
+            m_plugin->m_genericCounterLabel->setText("");
+        }
+    }
+    else {
+        // TODO steps done
+    }
+}
+
+void MainWindow::showMessage(const QString &text)
+{
+    m_message->setText(text);
+}
+
+void MainWindow::clearMessage()
+{
+    m_message->setText("");
+}
+
+void MainWindow::timerEvent(QTimerEvent *e)
+{
+    checkCounterValue();
+    e->accept();
+}
 
 void MainWindow::saveCurrentFile()
 {
@@ -154,6 +229,21 @@ void MainWindow::setupActionsForTab()
     prepareEditMenu();
     prepareInsertMenu();
     prepareRunMenu();
+}
+
+void MainWindow::setupStatusbarForTab()
+{
+    foreach (QWidget * w, l_tabDependentStatusbarWidgets) {
+        statusBar()->removeWidget(w);
+    }
+    QWidget * currentTabWidget = ui->tabWidget->currentWidget();
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
+    foreach (QWidget * w, twe->statusbarWidgets) {
+        l_tabDependentStatusbarWidgets << w;
+        w->setStyleSheet(StatusbarWidgetCSS);
+        statusBar()->addPermanentWidget(w);
+        w->show();
+    }
 }
 
 void MainWindow::prepareRunMenu()
@@ -345,7 +435,14 @@ void MainWindow::newProgram()
     vc->setProperty("documentId", id);
     QString fileName = suggestNewFileName(suffix);
     vc->setProperty("fileName", QDir::current().absoluteFilePath(fileName));
-    TabWidgetElement * e = addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, type, true);
+    TabWidgetElement * e = addCentralComponent(
+                fileName,
+                vc,
+                doc.toolbarActions,
+                doc.menus,
+                doc.statusbarWidgets,
+                type,
+                true);
     ui->tabWidget->setCurrentWidget(e);
     e->setFocus();
 }
@@ -358,7 +455,14 @@ void MainWindow::newText()
     vc->setProperty("documentId", id);
     QString fileName = suggestNewFileName(".txt");
     vc->setProperty("fileName", fileName);
-    TabWidgetElement * e = addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, Text, true);
+    TabWidgetElement * e = addCentralComponent(
+                fileName,
+                vc,
+                doc.toolbarActions,
+                doc.menus,
+                doc.statusbarWidgets,
+                Text,
+                true);
     ui->tabWidget->setCurrentWidget(e);
     e->setFocus();
 }
@@ -385,6 +489,7 @@ TabWidgetElement * MainWindow::addCentralComponent(
     , QWidget *c
     , const QList<QAction*> & toolbarActions
     , const QList<QMenu*> & menus
+    , const QList<QWidget*> & statusbarWidgets
     , DocumentType type
     , bool enableToolBar)
 {
@@ -393,14 +498,25 @@ TabWidgetElement * MainWindow::addCentralComponent(
     if (type==Kumir) {
         kumir = m_plugin->m_kumirProgram;
     }
-    TabWidgetElement * element = new TabWidgetElement(c,enableToolBar,toolbarActions,menus,type,gr_fileActions,gr_otherActions,kumir,pascal);
+    TabWidgetElement * element = new TabWidgetElement(
+                c,
+                enableToolBar,
+                toolbarActions,
+                menus,
+                statusbarWidgets,
+                type,
+                gr_fileActions,
+                gr_otherActions,
+                kumir,
+                pascal
+                );
     connect(element, SIGNAL(changeTitle(QString)), this, SLOT(handleTabTitleChange(QString)));
     createTopLevelMenus(menus, true);
     ui->tabWidget->addTab(element, title);
     return element;
 }
 
-void MainWindow::addSecondaryComponent(const QString & title
+QDockWidget * MainWindow::addSecondaryComponent(const QString & title
                                        , QWidget * c
                                        , const QList<QAction*> & toolbarActions
                                        , const QList<QAction*> & menuActions
@@ -417,6 +533,7 @@ void MainWindow::addSecondaryComponent(const QString & title
         componentMenu->addActions(menuActions);
         ui->menubar->insertMenu(ui->menuWindow->menuAction(), componentMenu);
     }
+    return dock;
 }
 
 
@@ -484,7 +601,14 @@ void MainWindow::restoreSession()
         loadFromUrl(QUrl::fromLocalFile(QDir::current().absoluteFilePath(sessionFiles[i])));
     }
     if (sessionFiles.isEmpty()) {
-        addCentralComponent(tr("Start"), m_plugin->m_startPage.widget, m_plugin->m_startPage.toolbarActions, m_plugin->m_startPage.menus, WWW, false);
+        addCentralComponent(
+                    tr("Start"),
+                    m_plugin->m_startPage.widget,
+                    m_plugin->m_startPage.toolbarActions,
+                    m_plugin->m_startPage.menus,
+                    QList<QWidget*>(),
+                    WWW,
+                    false);
     }
     ui->tabWidget->setCurrentIndex(tabIndex);
 }
@@ -573,7 +697,14 @@ void MainWindow::loadFromUrl(const QUrl & url)
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
             vc->setProperty("realFileName", url.toLocalFile());
-            addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, Kumir, true);
+            addCentralComponent(
+                        fileName,
+                        vc,
+                        doc.toolbarActions,
+                        doc.menus,
+                        doc.statusbarWidgets,
+                        Kumir,
+                        true);
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
         }
@@ -592,7 +723,14 @@ void MainWindow::loadFromUrl(const QUrl & url)
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
             vc->setProperty("realFileName", url.toLocalFile());
-            addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, Pascal, true);
+            addCentralComponent(
+                        fileName,
+                        vc,
+                        doc.toolbarActions,
+                        doc.menus,
+                        doc.statusbarWidgets,
+                        Pascal,
+                        true);
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
         }
@@ -611,14 +749,28 @@ void MainWindow::loadFromUrl(const QUrl & url)
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
             vc->setProperty("realFileName", url.toLocalFile());
-            addCentralComponent(fileName, vc, doc.toolbarActions, doc.menus, Text, true);
+            addCentralComponent(
+                        fileName,
+                        vc,
+                        doc.toolbarActions,
+                        doc.menus,
+                        doc.statusbarWidgets,
+                        Text,
+                        true);
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
         }
     }
     else if (type==WWW) {
         BrowserComponent browser = m_plugin->plugin_browser->createBrowser(url, m_plugin->m_browserObjects);
-        addCentralComponent(url.toString(), browser.widget, browser.toolbarActions, browser.menus, WWW, true);
+        addCentralComponent(
+                    url.toString(),
+                    browser.widget,
+                    browser.toolbarActions,
+                    browser.menus,
+                    QList<QWidget*>(),
+                    WWW,
+                    true);
         ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
         ui->tabWidget->currentWidget()->setFocus();
     }

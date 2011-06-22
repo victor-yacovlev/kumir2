@@ -241,7 +241,7 @@ void Connector::requestWorker()
             buffer.setRawData(currentFrame()->data, messageSize);
             currentFrame()->type = IM_NoMessage;
             shm->unlock();
-            QDataStream ds(&buffer, QIODevice::WriteOnly);
+            QDataStream ds(&buffer, QIODevice::ReadOnly);
             mutex_reply->lock();
             l_replyBuffer.clear();
             ds >> l_replyBuffer;

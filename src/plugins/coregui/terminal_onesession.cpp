@@ -101,14 +101,15 @@ void OneSession::draw(QPainter *p, int realWidth)
     else {
         p->translate((realWidth-sz.width())/2, 0);
     }
-    p->setPen(Qt::NoPen);
-    p->setBrush(QColor(Qt::black));
-    p->drawRect(shadowOffset, shadowOffset,
-                sz.width()-shadowOffset-lineWidth,
-                sz.height()-shadowOffset-lineWidth);
-    p->setPen(QPen(QColor(Qt::black),lineWidth));
-    p->setBrush(QColor(Qt::white));
-    p->drawRect(0,0,sz.width()-shadowOffset, sz.height()-shadowOffset);
+
+//    p->setPen(Qt::NoPen);
+//    p->setBrush(QColor(Qt::black));
+//    p->drawRect(shadowOffset, shadowOffset,
+//                sz.width()-shadowOffset-lineWidth,
+//                sz.height()-shadowOffset-lineWidth);
+//    p->setPen(QPen(QColor(Qt::black),lineWidth));
+//    p->setBrush(QColor(Qt::white));
+//    p->drawRect(0,0,sz.width()-shadowOffset, sz.height()-shadowOffset);
 
     QFont smallFont = m_font;
     smallFont.setPointSize(m_font.pointSize()-2);
@@ -163,6 +164,8 @@ void OneSession::draw(QPainter *p, int realWidth)
         p->drawText(headerPadding,
                     sz.height()-lineWidth-shadowOffset-headerPadding,
                     footer);
+        p->setPen(QColor(Qt::darkGray));
+        p->drawLine(bodyPadding, sz.height()-headerPadding, sz.width()-bodyPadding, sz.height()-headerPadding);
     }
     p->restore();
 }

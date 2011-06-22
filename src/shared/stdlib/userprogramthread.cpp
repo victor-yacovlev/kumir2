@@ -4,15 +4,17 @@
 namespace StdLib {
 
 
-UserProgramThread::UserProgramThread( QObject *parent, void(*func)() )
+UserProgramThread::UserProgramThread( QObject *parent, void(*func)(), bool connectMode )
     : QThread(parent)
 {
     m_func = func;
-    i_timerId = startTimer(500);
+    b_connectMode = connectMode;
+    i_timerId = connectMode? -1 : startTimer(500);
     b_started = false;
 }
 UserProgramThread::~UserProgramThread() {
-    killTimer(i_timerId);
+    if (i_timerId!=-1)
+        killTimer(i_timerId);
 }
 
 
@@ -26,7 +28,8 @@ void UserProgramThread::timerEvent(QTimerEvent *e) {
 
 void UserProgramThread::run() {
     (*m_func)();
-    std::cerr << tr("\nEvaluation finished. Close all windows to exit program.\n").toLocal8Bit().data();
+    if (!b_connectMode)
+        std::cerr << tr("\nEvaluation finished. Close all windows to exit program.\n").toLocal8Bit().data();
 }
 
 

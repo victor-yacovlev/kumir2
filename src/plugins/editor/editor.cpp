@@ -4,7 +4,6 @@
 #include "textdocument.h"
 #include "clipboard.h"
 #include "utils.h"
-#include "statusbar.h"
 #include "macro.h"
 #include "settingspage.h"
 
@@ -45,12 +44,15 @@ public:
     TextDocument * doc;
     TextCursor * cursor;
     EditorPlane * plane;
-    StatusBar * statusBar;
+
     static Clipboard * clipboard;
     QScrollBar * horizontalScrollBar;
     QScrollBar * verticalScrollBar;
     QSettings * settings;
     int documentId;
+
+    QLabel * keybStatus;
+    QLabel * positionStatus;
 
     QAction * copy;
     QAction * paste;
@@ -65,16 +67,57 @@ public:
     QList<Macro> systemMacros;
     QList<Macro> userMacros;
 
+    int timerId;
+
     void loadMacros();
     void updateInsertMenu();
     void createActions();
     void updateFromAnalizer();
     static QList<Shared::ChangeTextTransaction> mergeTransactions(QList<Shared::ChangeTextTransaction>);
     static bool mergeTransaction(Shared::ChangeTextTransaction & one, const Shared::ChangeTextTransaction & other);
+    void timerEvent(QTimerEvent *e);
 public slots:
+    void updatePosition(int row, int col);
     void handleLineAndTextChanged(const QStack<Shared::ChangeTextTransaction> & changes);
     void playMacro();
 };
+
+void Editor::lock()
+{
+    d->cursor->setEnabled(false);
+}
+
+void Editor::unlock()
+{
+    d->cursor->setEnabled(true);
+}
+
+QList<QWidget*> Editor::statusbarWidgets()
+{
+    return QList<QWidget*>() << d->positionStatus << d->keybStatus;
+}
+
+void EditorPrivate::timerEvent(QTimerEvent *e)
+{
+    e->accept();
+    if (keybStatus) {
+        bool capsLock = Utils::isCapsLock();
+        bool russian = Utils::isRussianLayout();
+        if (Utils::temporaryLayoutSwitch)
+            russian = !russian;
+        QString abc = russian? QString::fromUtf8("рус") : "lat";
+        if (capsLock)
+            abc = abc.toUpper();
+        if (Utils::temporaryLayoutSwitch)
+            abc += "*";
+        keybStatus->setText(tr("Keys: %1").arg(abc));
+    }
+}
+
+void EditorPrivate::updatePosition(int row, int col)
+{
+    positionStatus->setText(tr("Row: %1, Col: %2").arg(row).arg(col));
+}
 
 void EditorPrivate::loadMacros()
 {
@@ -308,13 +351,17 @@ Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentI
     if (d->analizer)
         fileNamesToOpen = d->analizer->supportedFileNamePattern();
     d->plane = new EditorPlane(d->doc, d->cursor, d->clipboard, fileNamesToOpen, d->settings, d->horizontalScrollBar, d->verticalScrollBar, d->analizer!=NULL, this);
-    d->statusBar = new StatusBar;
+
+    d->keybStatus = new QLabel(0);
+    d->keybStatus->setFixedWidth(90);
+    d->positionStatus = new QLabel(0);
+    d->positionStatus->setFixedWidth(120);
+    d->timerId = d->startTimer(50);
+
     connect(d->cursor, SIGNAL(positionChanged(int,int)),
-            d->statusBar, SLOT(handleCursorPositionChanged(int,int)));
-    d->statusBar->handleCursorPositionChanged(d->cursor->row(), d->cursor->column());
-    connect(d->clipboard, SIGNAL(bufferEntriesCountChanged(int)),
-            d->statusBar, SLOT(handleClipboardChanged(int)));
-    d->statusBar->handleClipboardChanged(d->clipboard->entriesCount());
+            d, SLOT(updatePosition(int,int)));
+    d->updatePosition(d->cursor->row(), d->cursor->column());
+
     d->createActions();
 
     connect(d->cursor, SIGNAL(lineAndTextChanged(QStack<Shared::ChangeTextTransaction>)),
@@ -327,7 +374,6 @@ Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentI
     l->addWidget(d->plane, 0, 0);
     l->addWidget(d->verticalScrollBar, 0, 1);
     l->addWidget(d->horizontalScrollBar, 1, 0);
-    l->addWidget(d->statusBar, 2, 0, 1, 2);
     connect(d->plane, SIGNAL(urlsDragAndDropped(QList<QUrl>)), this, SIGNAL(urlsDragAndDropped(QList<QUrl>)));
     d->loadMacros();
     d->updateInsertMenu();
@@ -401,7 +447,9 @@ Editor::~Editor()
 {
     delete d->doc;
     d->plane->deleteLater();
-    d->statusBar->deleteLater();
+    d->killTimer(d->timerId);
+    d->keybStatus->deleteLater();
+    d->positionStatus->deleteLater();
     delete d;
 }
 

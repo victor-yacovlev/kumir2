@@ -11,6 +11,7 @@ struct EditorComponent {
     class QWidget * widget;
     QList<class QMenu*> menus;
     QList<class QAction*> toolbarActions;
+    QList<class QWidget*> statusbarWidgets;
 };
 
 class EditorInterface
@@ -23,6 +24,7 @@ public:
     virtual void setDocumentChangesSaved(int documentId) = 0;
     virtual QString saveDocument(int documentId, const QString & fileName) = 0;
     virtual AnalizerInterface * analizer(int documentId) = 0;
+    virtual quint32 errorsCount(int documentId) const = 0;
 };
 
 }

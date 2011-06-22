@@ -24,6 +24,7 @@ EditorPlane::EditorPlane(TextDocument * doc
                          , QWidget *parent) :
     QWidget(parent)
 {
+    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     rxFilenamePattern = fileNamesToOpen;
     i_marginAlpha = 255;
     m_document = doc;
@@ -259,18 +260,22 @@ void EditorPlane::updateScrollBars()
     QSize viewportSize (widthInChars() * charWidth(), height());
     if (contentSize.width()<=viewportSize.width()) {
         m_horizontalScrollBar->setEnabled(false);
+        m_horizontalScrollBar->setVisible(false);
     }
     else {
         m_horizontalScrollBar->setEnabled(true);
+        m_horizontalScrollBar->setVisible(true);
         m_horizontalScrollBar->setRange(0, contentSize.width()-viewportSize.width());
         m_horizontalScrollBar->setSingleStep(charWidth());
         m_horizontalScrollBar->setPageStep(charWidth() * 8);
     }
     if (contentSize.height()<=viewportSize.height()) {
         m_verticalScrollBar->setEnabled(false);
+        m_verticalScrollBar->setVisible(false);
     }
     else {
         m_verticalScrollBar->setEnabled(true);
+        m_verticalScrollBar->setVisible(true);
         m_verticalScrollBar->setRange(0, contentSize.height()-viewportSize.height());
         m_verticalScrollBar->setSingleStep(lineHeight());
         m_verticalScrollBar->setPageStep(lineHeight() * 8);

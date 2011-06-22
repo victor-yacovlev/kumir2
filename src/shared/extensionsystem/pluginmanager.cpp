@@ -20,6 +20,7 @@ struct PluginManagerPrivate {
     QList<QSettings*> settings;
     QList<PluginRequest> requests;
     QString mainPluginName;
+    GlobalState globalState;
 
     SettingsDialog * settingsDialog;
 
@@ -39,6 +40,7 @@ PluginManager::PluginManager()
     , d(new PluginManagerPrivate)
 {
     m_instance = this;
+    d->globalState = GS_Unlocked;
 }
 
 PluginManager::~PluginManager()
@@ -386,6 +388,15 @@ QList<KPlugin*> PluginManager::loadedPlugins(const QString &pattern)
     return result;
 }
 
+KPlugin* PluginManager::loadedPlugin(const QString &name)
+{
+    for (int i=0; i<d->specs.size(); i++) {
+        if (d->specs[i].name==name)
+            return d->objects[i];
+    }
+    return 0;
+}
+
 QString PluginManager::start()
 {
     KPlugin * p = d->objects.last();
@@ -486,6 +497,20 @@ void PluginManager::changeWorkingDirectory(const QString &path)
         d->settings[i]->sync();
         p->changeCurrentDirectory(path);
     }
+}
+
+void PluginManager::switchGlobalState(GlobalState state)
+{
+    for (int i=0; i<d->objects.size(); i++) {
+        KPlugin * p = d->objects[i];
+        p->changeGlobalState(d->globalState, state);
+    }
+    d->globalState = state;
+}
+
+GlobalState PluginManager::currentGlobalState() const
+{
+    return d->globalState;
 }
 
 } // namespace ExtensionSystem

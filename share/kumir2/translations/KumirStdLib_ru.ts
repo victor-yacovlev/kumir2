@@ -85,6 +85,14 @@
     </message>
 </context>
 <context>
+    <name>StdLib::ActorWindow</name>
+    <message>
+        <location filename="../../../src/shared/stdlib/actorwindow.cpp" line="10"/>
+        <source>Actions</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>StdLib::GenericInputOutput</name>
     <message>
         <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="194"/>

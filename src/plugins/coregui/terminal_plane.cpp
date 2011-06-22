@@ -11,6 +11,7 @@ Plane::Plane(Terminal *parent)
     , m_terminal(parent)
 {
 
+    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 }
 
 QPoint Plane::offset() const
@@ -38,6 +39,9 @@ void Plane::updateScrollBars()
         QSize ss = s->visibleSize(width()-2*sessionMargin);
         w = qMax(w, sessionMargin*2 + ss.width());
         h += sessionMargin + ss.height();
+        if (i==m_terminal->l_sessions.size()-1) {
+            h += height()-ss.height()-2*sessionMargin;
+        }
     }
 
     QScrollBar * hb = m_terminal->sb_horizontal;
@@ -45,9 +49,11 @@ void Plane::updateScrollBars()
 
     if (w<=width()) {
         hb->setEnabled(false);
+        hb->setVisible(false);
     }
     else {
         hb->setEnabled(true);
+        hb->setVisible(true);
         hb->setRange(0, w - width());
         hb->setSingleStep(width()/3);
         hb->setPageStep(width());
@@ -55,15 +61,19 @@ void Plane::updateScrollBars()
 
     if (h<=height()) {
         vb->setEnabled(false);
+        vb->setVisible(false);
     }
     else {
         QFontMetrics fm(font());
         int dH = fm.height();
         vb->setEnabled(true);
+        vb->setVisible(true);
         vb->setRange(0, h - height());
         vb->setSingleStep(dH);
         vb->setPageStep(height());
     }
+    if (prevOffset!=offset())
+        update();
 
 }
 
@@ -95,8 +105,9 @@ void Plane::paintEvent(QPaintEvent *e)
 //    p.setRenderHint(QPainter::Antialiasing, true);
     p.setRenderHint(QPainter::TextAntialiasing, true);
 
-    p.setPen(QPen(hasFocus()? palette().brush(QPalette::Highlight) : palette().brush(QPalette::Window), 1));
-    p.setBrush(QColor(100,100,100));
+    const QBrush br = hasFocus()? palette().brush(QPalette::Highlight) : palette().brush(QPalette::Window);
+    p.setPen(QPen(br,1));
+    p.setBrush(palette().brush(QPalette::Base));
     p.drawRect(0,0,width(), height());
 
     QPoint off = offset();

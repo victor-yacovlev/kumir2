@@ -223,21 +223,6 @@
         <source>%2 - Painter [%1]</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location filename="../../../src/actors/painter/painterwindow.cpp" line="313"/>
-        <source>Page</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../../src/actors/painter/painterwindow.cpp" line="314"/>
-        <source>Zoom</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../../src/actors/painter/painterwindow.cpp" line="315"/>
-        <source>Statusbar</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>ActorPainter::PainterWorker</name>

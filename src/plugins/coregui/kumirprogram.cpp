@@ -1,9 +1,13 @@
 #include "kumirprogram.h"
+#include "extensionsystem/pluginmanager.h"
+#include "interfaces/actorinterface.h"
 
 namespace CoreGUI {
 
 using Shared::GeneratorResult;
 using Shared::GeneratorType;
+using Shared::ActorInterface;
+using namespace ExtensionSystem;
 
 KumirProgram::KumirProgram(QObject *parent)
     : QObject(parent)
@@ -30,6 +34,11 @@ KumirProgram::KumirProgram(QObject *parent)
 
 
     m_connector = new Connector();
+    connect(m_connector, SIGNAL(actorCommandReceived(QString,QString,QVariantList)),
+            this, SLOT(handleActorCommand(QString,QString,QVariantList)));
+    connect(m_connector, SIGNAL(resetActorReceived(QString)),
+            this, SLOT(handleActorResetRequest(QString)));
+
     const QString key = QString("kumir-%1").arg(QCoreApplication::applicationPid());
     m_connector->listenFor(key);
 
@@ -80,19 +89,30 @@ KumirProgram::KumirProgram(QObject *parent)
 
 }
 
-void KumirProgram::setTerminal(Terminal *t)
+void KumirProgram::setTerminal(Terminal *t, QDockWidget * w)
 {
     m_terminal = t;
+    m_terminalWindow = w;
     connect(m_connector, SIGNAL(inputFormatReceived(QString)),
             m_terminal, SLOT(input(QString)));
+    connect (m_connector, SIGNAL(inputFormatReceived(QString)),
+             m_terminalWindow, SLOT(show()));
     connect(m_connector, SIGNAL(outputTextReceived(QString)),
             m_terminal, SLOT(output(QString)));
     connect(m_connector, SIGNAL(errorMessageReceived(QString)),
             m_terminal, SLOT(error(QString)));
 }
 
+void KumirProgram::addActor(KPlugin *a, QDockWidget *w)
+{
+    connect(a, SIGNAL(sync()), this, SLOT(handleActorCommandFinished()));
+    m_actors[a->pluginSpec().name] = qobject_cast<ActorInterface*>(a);
+    m_actorWindows[a->pluginSpec().name] = w;
+}
+
 void KumirProgram::fastRun()
 {
+    s_endStatus = "";
     if (e_state!=Idle) {
         return;
     }
@@ -102,7 +122,7 @@ void KumirProgram::fastRun()
 #else
     suffix = ".bin";
 #endif
-    const QString exeFileName = s_sourceFileName+suffix;
+    const QString exeFileName = s_sourceFileName.mid(0, s_sourceFileName.length()-4)+suffix;
     bool mustRegenerate = true;
     if (QFile::exists(exeFileName)) {
         QFileInfo fi(exeFileName);
@@ -147,6 +167,7 @@ void KumirProgram::fastRun()
         m_process->start(cmd);
         m_process->waitForStarted();
         e_state = FastRun;
+        PluginManager::instance()->switchGlobalState(GS_Running);
     }
 }
 
@@ -155,6 +176,8 @@ void KumirProgram::handleProcessError(QProcess::ProcessError error)
     qDebug() << "Process error " << error;
     e_state = Idle;
     m_terminal->error(tr("Unknown error"));
+    s_endStatus = tr("Evaluation error");
+    PluginManager::instance()->switchGlobalState(GS_Observe);
 }
 
 void KumirProgram::handleProcessFinished(int exitCode, QProcess::ExitStatus status)
@@ -162,6 +185,8 @@ void KumirProgram::handleProcessFinished(int exitCode, QProcess::ExitStatus stat
     qDebug() << "Process finished with code " << exitCode << " and status " << status;
     e_state = Idle;
     m_terminal->finish();
+    s_endStatus = exitCode==0? tr("Evaluation finished") : tr("Evaluation error");
+    PluginManager::instance()->switchGlobalState(GS_Observe);
 }
 
 void KumirProgram::regularRun()
@@ -187,6 +212,79 @@ void KumirProgram::stepOut()
 void KumirProgram::stop()
 {
 
+}
+
+void KumirProgram::switchGlobalState(GlobalState , GlobalState cur)
+{
+    if (cur==GS_Unlocked || cur==GS_Observe) {
+        a_fastRun->setEnabled(true);
+        a_regularRun->setEnabled(true);
+        a_stepRun->setEnabled(true);
+        a_stepRun->setText(tr("Step run"));
+        a_stepRun->setIcon(QIcon::fromTheme("media-skip-forward"));
+        a_stepIn->setEnabled(false);
+        a_stepOut->setEnabled(false);
+        a_stop->setEnabled(false);
+    }
+    if (cur==GS_Running || cur==GS_Input) {
+        a_fastRun->setEnabled(false);
+        a_regularRun->setEnabled(false);
+        a_stepRun->setEnabled(false);
+        a_stepIn->setEnabled(false);
+        a_stepOut->setEnabled(false);
+        a_stop->setEnabled(true);
+    }
+    if (cur==GS_Pause) {
+        a_fastRun->setEnabled(false);
+        a_regularRun->setEnabled(true);
+        a_stepRun->setEnabled(true);
+        a_stepRun->setText(tr("Step over"));
+        a_stepIn->setIcon(QIcon::fromTheme("debug-step-over"));
+        a_stepIn->setEnabled(true);
+        a_stepOut->setEnabled(true);
+        a_stop->setEnabled(true);
+    }
+}
+
+void KumirProgram::handleActorCommand(
+    const QString &actorName,
+    const QString &command,
+    const QVariantList &arguments)
+{
+    Q_ASSERT(m_actors.contains(actorName));
+    ActorInterface * a = m_actors[actorName];
+    Q_CHECK_PTR(a);
+    a->runFunct(command, arguments);
+}
+
+void KumirProgram::handleActorCommandFinished()
+{
+    QObject * o = sender();
+    Q_CHECK_PTR(o);
+    ActorInterface * a = qobject_cast<ActorInterface*>(o);
+    Q_CHECK_PTR(a);
+    const QString error = a->errorText();
+    const QVariant result = a->result();
+    const QVariantList res = a->algOptResults();
+    if (e_state==FastRun || e_state==Idle) {
+        QVariantList message;
+        message << error;
+        message << result;
+        message += res;
+        m_connector->sendReply(message);
+    }
+}
+
+void KumirProgram::handleActorResetRequest(const QString & actorName)
+{
+    Q_ASSERT(m_actors.contains(actorName));
+    ActorInterface * a = m_actors[actorName];
+    Q_CHECK_PTR(a);
+    a->reset();
+    Q_ASSERT(m_actorWindows.contains(actorName));
+    if (m_actorWindows[actorName]) {
+        m_actorWindows[actorName]->show();
+    }
 }
 
 } // namespace CoreGui

@@ -15,7 +15,6 @@ HEADERS += editorplugin.h \
     textdocument.h \
     clipboard.h \
     utils.h \
-    statusbar.h \
     editorstandalonewindow.h \
     settingspage.h \
     macro.h \
@@ -26,7 +25,6 @@ SOURCES += editorplugin.cpp \
     textcursor.cpp \
     clipboard.cpp \
     utils.cpp \
-    statusbar.cpp \
     editorstandalonewindow.cpp \
     settingspage.cpp \
     macro.cpp \
@@ -35,5 +33,4 @@ SOURCES += editorplugin.cpp \
 OTHER_FILES += Editor.pluginspec
 
 FORMS += \
-    statusbar.ui \
     settingspage.ui

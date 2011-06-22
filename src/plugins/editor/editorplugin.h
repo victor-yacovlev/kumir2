@@ -26,8 +26,10 @@ public:
     void setDocumentChangesSaved(int documentId);
     QString saveDocument(int documentId, const QString & fileName);
     Shared::AnalizerInterface * analizer(int documentId);
+    quint32 errorsCount(int documentId) const;
 protected:
     QString initialize(const QStringList &arguments);
+    void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void start();
     void stop();
 private:

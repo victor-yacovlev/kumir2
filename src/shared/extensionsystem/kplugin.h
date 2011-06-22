@@ -22,6 +22,14 @@ struct SettingsEditorPage {
     QIcon * settingsGroupIcon;
 };
 
+enum GlobalState {
+    GS_Unlocked, // Edit mode
+    GS_Observe, // Observe mode
+    GS_Running, // Running mode
+    GS_Input,  // User input required
+    GS_Pause  // Running paused
+};
+
 class EXTENSIONSYSTEM_EXPORT KPlugin : public QObject
 {
     friend class PluginManager;
@@ -35,6 +43,7 @@ public:
     virtual ~KPlugin();
 protected:
     inline virtual void changeCurrentDirectory(const QString & path) { Q_UNUSED(path); }
+    inline virtual void changeGlobalState(GlobalState old, GlobalState current) { Q_UNUSED(old); Q_UNUSED(current); }
     inline virtual QString initialize(const QStringList &arguments) { Q_UNUSED(arguments); return ""; }
     inline virtual void start() {}
     inline virtual void stop() {}

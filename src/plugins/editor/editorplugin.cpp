@@ -10,7 +10,13 @@ namespace Editor {
 
 using namespace Shared;
 
-typedef QPair<AnalizerInterface*, Editor*> Ed;
+struct Ed {
+    inline Ed() { e = 0; a=0; id =-1; }
+    inline Ed(Editor *ee, AnalizerInterface *aa, int i) { a=aa;e=ee;id=i; }
+    Editor * e;
+    AnalizerInterface * a;
+    int id;
+};
 
 struct EditorPluginPrivate {
     QVector< Ed > editors;
@@ -19,16 +25,14 @@ struct EditorPluginPrivate {
 EditorPlugin::EditorPlugin()
 {
     d = new EditorPluginPrivate;
-    d->editors = QVector< Ed > ( 128, Ed(0,0));
+    d->editors = QVector< Ed > ( 128, Ed(0,0,-1));
 }
 
 EditorPlugin::~EditorPlugin()
 {
     foreach (Ed e, d->editors) {
-        if (e.first)
-            delete e.first;
-        if (e.second)
-            delete e.second;
+        if (e.e)
+            delete e.e;
     }
     delete d;
 }
@@ -48,30 +52,48 @@ Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, c
     w->setText(initialText);
     int index = 0;
     for (int i=0; i<d->editors.size(); i++) {
-        if (d->editors[i].first==0 && d->editors[i].second==0) {
+        if (d->editors[i].e==0 && d->editors[i].a==0) {
             index = i;
             break;
         }
     }
-    Ed ed(a, w);
+    Ed ed(w, a, docId);
     d->editors[index] = ed;
     Shared::EditorComponent result;
     result.id = index;
     result.widget = w;
     result.menus = w->menuActions();
     result.toolbarActions = w->toolbarActions();
+    result.statusbarWidgets = w->statusbarWidgets();
     return result;
+}
+
+quint32 EditorPlugin::errorsCount(int documentId) const
+{
+    Q_ASSERT(documentId>=0);
+    Q_ASSERT(documentId<d->editors.size());
+    Ed ed = d->editors[documentId];
+    if (ed.a) {
+        AnalizerInterface * ai = ed.a;
+        int id = ed.id;
+        return ai->errors(id).size();
+
+    }
+    else {
+        return 0;
+    }
 }
 
 void EditorPlugin::closeDocument(int documentId)
 {
     Q_ASSERT(documentId>=0);
     Q_ASSERT(documentId<d->editors.size());
-    Q_CHECK_PTR(d->editors[documentId].second);
+    Q_CHECK_PTR(d->editors[documentId].e);
     Ed ed = d->editors[documentId];
-    ed.second->deleteLater();
-    ed.first = 0;
-    ed.second = 0;
+    ed.e->deleteLater();
+    ed.e = 0;
+    ed.a = 0;
+    ed.id = -1;
     d->editors[documentId] = ed;
 }
 
@@ -79,9 +101,9 @@ QString EditorPlugin::saveDocument(int documentId, const QString &fileName)
 {
     Q_ASSERT(documentId>=0);
     Q_ASSERT(documentId<d->editors.size());
-    Q_CHECK_PTR(d->editors[documentId].second);
+    Q_CHECK_PTR(d->editors[documentId].e);
     Ed ed = d->editors[documentId];
-    Editor * editor = ed.second;
+    Editor * editor = ed.e;
     QFile f(fileName);
     if (f.open(QIODevice::WriteOnly|QIODevice::Text)) {
         QTextStream ts(&f);
@@ -129,7 +151,7 @@ ExtensionSystem::SettingsEditorPage EditorPlugin::settingsEditorPage()
 void EditorPlugin::stop()
 {
     for (int i=0; i<d->editors.size(); i++) {
-        if (d->editors[i].first || d->editors[i].second)
+        if (d->editors[i].e || d->editors[i].a)
             closeDocument(i);
     }
 }
@@ -138,8 +160,8 @@ bool EditorPlugin::hasUnsavedChanges(int documentId) const
 {
     Q_ASSERT(documentId>=0);
     Q_ASSERT(documentId<d->editors.size());
-    Q_CHECK_PTR(d->editors[documentId].second);
-    Editor * e = d->editors[documentId].second;
+    Q_CHECK_PTR(d->editors[documentId].e);
+    Editor * e = d->editors[documentId].e;
     return e->isModified();
 }
 
@@ -147,8 +169,8 @@ void EditorPlugin::setDocumentChangesSaved(int documentId)
 {
     Q_ASSERT(documentId>=0);
     Q_ASSERT(documentId<d->editors.size());
-    Q_CHECK_PTR(d->editors[documentId].second);
-    Editor * e = d->editors[documentId].second;
+    Q_CHECK_PTR(d->editors[documentId].e);
+    Editor * e = d->editors[documentId].e;
     e->setNotModified();
 }
 
@@ -156,9 +178,35 @@ AnalizerInterface * EditorPlugin::analizer(int documentId)
 {
     Q_ASSERT(documentId>=0);
     Q_ASSERT(documentId<d->editors.size());
-    return d->editors[documentId].first;
+    return d->editors[documentId].a;
+}
+
+void EditorPlugin::changeGlobalState(ExtensionSystem::GlobalState , ExtensionSystem::GlobalState current)
+{
+    if (current==ExtensionSystem::GS_Unlocked || current==ExtensionSystem::GS_Observe) {
+        for (int i=0; i<d->editors.size(); i++) {
+            if (d->editors[i].e) {
+                d->editors[i].e->unlock();
+            }
+            else {
+                break;
+            }
+        }
+    }
+    else {
+        for (int i=0; i<d->editors.size(); i++) {
+            if (d->editors[i].e) {
+                d->editors[i].e->lock();
+            }
+            else {
+                break;
+            }
+        }
+    }
 }
 
 }
 
-Q_EXPORT_PLUGIN(Editor::EditorPlugin);
+
+
+Q_EXPORT_PLUGIN(Editor::EditorPlugin)

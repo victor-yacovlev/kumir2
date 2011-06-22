@@ -15,10 +15,13 @@ public:
     ~Editor();
     QList<QAction*> toolbarActions();
     QList<QMenu*> menuActions();
+    QList<QWidget*> statusbarWidgets();
     void setText(const QString &text);
     QString text() const;
     bool isModified() const;
     void setNotModified();
+    void lock();
+    void unlock();
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
 private:

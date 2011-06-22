@@ -39,10 +39,13 @@ public:
     static QString DockSideKey;
 protected:
     QString initialize(const QStringList &arguments);
+    void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void start();
     void stop();
 
     class MainWindow * m_mainWindow;
+    class QLabel * m_kumirStateLabel;
+    class QLabel * m_genericCounterLabel;
     EditorInterface * plugin_editor;
     GeneratorInterface * plugin_CppGenerator;
     GeneratorInterface * plugin_BytecodeGenerator;

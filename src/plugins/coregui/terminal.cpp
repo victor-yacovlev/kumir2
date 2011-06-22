@@ -100,6 +100,9 @@ void Terminal::start(const QString & fileName)
     OneSession * session = new OneSession(fixedWidth, QFileInfo(fileName).fileName(), this);
     connect(session, SIGNAL(updateRequest()), m_plane, SLOT(update()));
     l_sessions << session;
+    m_plane->updateScrollBars();
+    if (sb_vertical->isEnabled())
+        sb_vertical->setValue(sb_vertical->maximum());
     m_plane->update();
 }
 
@@ -110,6 +113,8 @@ void Terminal::finish()
 
     l_sessions.last()->finish();
     m_plane->updateScrollBars();
+    if (sb_vertical->isEnabled())
+        sb_vertical->setValue(sb_vertical->maximum());
 }
 
 void Terminal::terminate()
@@ -118,6 +123,8 @@ void Terminal::terminate()
         l_sessions << new OneSession(-1,"unknown", this);
     l_sessions.last()->terminate();
     m_plane->updateScrollBars();
+    if (sb_vertical->isEnabled())
+        sb_vertical->setValue(sb_vertical->maximum());
 }
 
 void Terminal::output(const QString & text)
@@ -127,6 +134,8 @@ void Terminal::output(const QString & text)
     l_sessions.last()->output(text);
     qDebug() << "output " << text;
     m_plane->updateScrollBars();
+    if (sb_vertical->isEnabled())
+        sb_vertical->setValue(sb_vertical->maximum());
 }
 
 void Terminal::input(const QString & format)
@@ -135,6 +144,8 @@ void Terminal::input(const QString & format)
         l_sessions << new OneSession(-1,"unknown", this);
     l_sessions.last()->input(format);
     m_plane->updateScrollBars();
+    if (sb_vertical->isEnabled())
+        sb_vertical->setValue(sb_vertical->maximum());
 }
 
 void Terminal::error(const QString & message)
@@ -143,6 +154,8 @@ void Terminal::error(const QString & message)
         l_sessions << new OneSession(-1,"unknown", this);
     l_sessions.last()->error(message);
     m_plane->updateScrollBars();
+    if (sb_vertical->isEnabled())
+        sb_vertical->setValue(sb_vertical->maximum());
 }
 
 void Terminal::saveAll()

@@ -22,25 +22,15 @@ extern "C" void __init__ActorPainter()
     if (__connected_to_kumir__()) {
         __reset_actor__("ActorPainter");
     }
-    p->reset();
+    else {
+        p->reset();
+    }
 }
 
 extern "C" void __create__ActorPainter()
 {
-    p = ActorPainter::PainterWorker::instance();
-    bool connectToKumir = false;
-    QString shmKey;
-    foreach (const QString & arg, qApp->arguments()) {
-        if (arg.startsWith("--attach=")) {
-            shmKey = arg.mid(9);
-            connectToKumir = true;
-            break;
-        }
-    }
-    if (connectToKumir) {
-        __connect_to_kumir__(shmKey);
-    }
-    else {
+    if (!__connected_to_kumir__()) {
+        p = ActorPainter::PainterWorker::instance();
         __create_window_for__(p->mainWidget(), p->menuActions());
     }
 }

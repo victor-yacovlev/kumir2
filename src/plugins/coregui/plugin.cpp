@@ -44,6 +44,8 @@ QString Plugin::initialize(const QStringList &)
     }
     QDir::root().mkpath(workspaceDir);
     QDir::setCurrent(workspaceDir);
+    m_kumirStateLabel = new QLabel();
+    m_genericCounterLabel = new QLabel();
     ExtensionSystem::PluginManager::instance()->changeWorkingDirectory(workspaceDir);
     m_mainWindow = new MainWindow(this);
     plugin_editor = qobject_cast<EditorInterface*>(myDependency("Editor"));
@@ -55,30 +57,32 @@ QString Plugin::initialize(const QStringList &)
     if (!plugin_CppGenerator)
         return "Can't load c-generator plugin!";
     m_terminal = new Terminal(0);
-    m_mainWindow->addSecondaryComponent(tr("Input/Output terminal"),
+    QDockWidget * termWindow = m_mainWindow->addSecondaryComponent(tr("Input/Output terminal"),
                                         m_terminal,
                                         QList<QAction*>(),
                                         QList<QAction*>(),
                                         MainWindow::Terminal);
+    m_kumirProgram = new KumirProgram(this);
+    m_kumirProgram->setBytecodeGenerator(plugin_BytecodeGenerator);
+    m_kumirProgram->setCppGenerator(plugin_CppGenerator);
+    m_kumirProgram->setTerminal(m_terminal, termWindow);
     QList<ExtensionSystem::KPlugin*> actors = loadedPlugins("Actor*");
-    foreach (QObject * o, actors) {
+    foreach (ExtensionSystem::KPlugin* o, actors) {
         ActorInterface * actor = qobject_cast<ActorInterface*>(o);
         l_plugin_actors << actor;
+        QDockWidget * w = 0;
         if (actor->mainWidget()) {
             QWidget * actorWidget = actor->mainWidget();
             QList<QAction*> actorMenus = actor->menuActions();
             bool priv = o->property("privilegedActor").toBool();
-            m_mainWindow->addSecondaryComponent(actor->name(),
+            w = m_mainWindow->addSecondaryComponent(actor->name(),
                                                 actorWidget,
                                                 QList<QAction*>(),
                                                 actorMenus,
                                                 priv? MainWindow::StandardActor : MainWindow::WorldActor);
         }
+        m_kumirProgram->addActor(o, w);
     }
-    m_kumirProgram = new KumirProgram(this);
-    m_kumirProgram->setBytecodeGenerator(plugin_BytecodeGenerator);
-    m_kumirProgram->setCppGenerator(plugin_CppGenerator);
-    m_kumirProgram->setTerminal(m_terminal);
     const QString browserEntryPoint = QApplication::instance()->property("sharePath").toString()+"/coregui/startpage/russian/index.html";
     m_browserObjects["mainWindow"] = m_mainWindow;
     m_startPage = plugin_browser->createBrowser(QUrl::fromLocalFile(browserEntryPoint), m_browserObjects);
@@ -87,14 +91,40 @@ QString Plugin::initialize(const QStringList &)
     return "";
 }
 
+void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState state)
+{
+    if (state==ExtensionSystem::GS_Unlocked) {
+        m_kumirStateLabel->setText(tr("Editing"));
+        m_mainWindow->clearMessage();
+    }
+    else if (state==ExtensionSystem::GS_Observe) {
+        m_kumirStateLabel->setText(tr("Observe"));
+        m_mainWindow->showMessage(m_kumirProgram->endStatus());
+    }
+    else if (state==ExtensionSystem::GS_Running) {
+        m_kumirStateLabel->setText(tr("Running"));
+        m_mainWindow->clearMessage();
+    }
+    else if (state==ExtensionSystem::GS_Pause) {
+        m_kumirStateLabel->setText(tr("Pause"));
+    }
+    else if (state==ExtensionSystem::GS_Input) {
+        m_kumirStateLabel->setText(tr("Pause"));
+    }
+
+    m_kumirProgram->switchGlobalState(old, state);
+
+
+}
+
 void Plugin::start()
 {
+    PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);
     m_mainWindow->show();
 }
 
 void Plugin::stop()
 {
-    m_mainWindow->close();
     StdLib::Connector::instance()->stopListen();
 }
 

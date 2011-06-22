@@ -28,6 +28,10 @@ public:
 
     void changeWorkingDirectory(const QString & path);
 
+    void switchGlobalState(GlobalState state);
+
+    GlobalState currentGlobalState() const;
+
     /** Loads plugins by given template in form:
       *
       *     Plugin1(),Plugin2,*Plugin3,Plugin4(argument1,argument2)
@@ -62,6 +66,9 @@ public:
 
     /** Return all plugins matched by regexp */
     QList<KPlugin*> loadedPlugins(const QString & pattern = "*");
+
+    /** Return plugin by specified name */
+    KPlugin* loadedPlugin(const QString & name);
 
 public slots:
 

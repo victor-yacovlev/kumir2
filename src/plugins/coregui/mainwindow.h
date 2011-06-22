@@ -35,10 +35,11 @@ public:
                              , QWidget *c
                              , const QList<QAction*> & toolbarActions
                              , const QList<QMenu*> & menus
+                             , const QList<QWidget*> & statusbarWidgets
                              , DocumentType type
                              , bool enableToolBar);
 
-    void addSecondaryComponent(const QString & title
+    QDockWidget * addSecondaryComponent(const QString & title
                                , QWidget * c
                                , const QList<QAction*> & toolbarActions
                                , const QList<QAction*> & menuActions
@@ -59,6 +60,8 @@ public slots:
     void closeCurrentTab();
     void closeTab(int index);
     void showPreferences();
+    void showMessage(const QString & text);
+    void clearMessage();
 
 private slots:
     void prepareRunMenu();
@@ -66,13 +69,19 @@ private slots:
     void prepareInsertMenu();
     void setupActionsForTab();
     void setupContentForTab();
+    void setupStatusbarForTab();
+    void checkCounterValue();
     void addToRecent(const QString &fileName);
     void handleTabTitleChange(const QString & title);
 
 
 private:
+    void timerEvent(QTimerEvent *e);
+    int i_timerId;
+
     QAction * a_notAvailable;
     QList<class DockWidget*> l_dockWindows;
+    QList<QWidget*> l_tabDependentStatusbarWidgets;
     QMenu * menu_empty;
     void showEvent(QShowEvent *);
     void closeEvent(QCloseEvent *);
@@ -84,6 +93,9 @@ private:
     QActionGroup * gr_fileActions;
     QActionGroup * gr_otherActions;
 
+    static QString StatusbarWidgetCSS;
+
+    QLabel * m_message;
 
     Ui::MainWindow *ui;
     Plugin *m_plugin;

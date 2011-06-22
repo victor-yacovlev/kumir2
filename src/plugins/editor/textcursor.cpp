@@ -1,6 +1,7 @@
 #include "textcursor.h"
 #include "textdocument.h"
 #include "clipboard.h"
+#include "extensionsystem/pluginmanager.h"
 
 namespace Editor {
 
@@ -213,6 +214,10 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
     default:
         break;
     }
+    if (ExtensionSystem::PluginManager::instance()->currentGlobalState()==ExtensionSystem::GS_Observe
+            && command.type & KeyCommand::CommandModifiesTextMask
+            )
+        ExtensionSystem::PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);
 }
 
 void TextCursor::moveTo(int row, int col)

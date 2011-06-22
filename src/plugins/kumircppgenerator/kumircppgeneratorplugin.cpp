@@ -1095,18 +1095,18 @@ Shared::GeneratorResult KumirCppGeneratorPlugin::generateExecuable(
 
     command += " "+QStringList(cFiles.toList()).join(" ");
 
-    if (d->requireGui) {
-        QString libName = "KumirGuiRunner";
-#ifndef QT_NO_DEBUG
-#ifdef Q_OS_MAC
-        libName += "_debug";
-#endif
-#ifdef Q_OS_WIN32
-        libName += "d";
-#endif
-#endif
-        command += " -l"+libName;
-    }
+//    if (d->requireGui) {
+//        QString libName = "KumirGuiRunner";
+//#ifndef QT_NO_DEBUG
+//#ifdef Q_OS_MAC
+//        libName += "_debug";
+//#endif
+//#ifdef Q_OS_WIN32
+//        libName += "d";
+//#endif
+//#endif
+//        command += " -l"+libName;
+//    }
 
     foreach (const QString lib, libs.toList()) {
         command += " -l"+lib;
