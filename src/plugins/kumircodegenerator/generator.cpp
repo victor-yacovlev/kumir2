@@ -15,6 +15,36 @@ void Generator::reset(const AST::Data *ast, Bytecode::Data *bc)
     m_ast = ast;
     m_bc = bc;
     l_constants.clear();
+    l_externs.clear();
+    l_loopBreaks.clear();
+    l_funcBreaks.clear();
+}
+
+void Generator::generateConstantTable()
+{
+    for (int i=l_constants.size()-1; i>=0; i--) {
+        QPair<Bytecode::ValueType, QVariant> cons = l_constants[i];
+        Bytecode::TableElem e;
+        e.type = Bytecode::EL_CONST;
+        e.vtype = cons.first;
+        e.id = i;
+        e.constantValue = cons.second;
+        m_bc->d.prepend(e);
+    }
+}
+
+void Generator::generateExternTable()
+{
+    for (int i=l_externs.size()-1; i>=0; i--) {
+        QPair<quint8, quint16> ext = l_externs[i];
+        Bytecode::TableElem e;
+        e.type = Bytecode::EL_EXTERN;
+        e.module = ext.first;
+        e.algId = e.id = ext.second;
+        e.moduleName = m_ast->modules[ext.first]->header.cReference.nameSpace;
+        e.name = m_ast->modules[ext.first]->header.algorhitms[ext.second]->header.name;
+        m_bc->d.prepend(e);
+    }
 }
 
 Bytecode::ValueType Generator::valueType(AST::VariableBaseType t)
@@ -79,6 +109,8 @@ Bytecode::InstructionType Generator::operation(AST::ExpressionOperator op)
 
 void Generator::addModule(const AST::Module *mod)
 {
+    if (!mod->header.enabled)
+        return;
     int id = m_ast->modules.indexOf(const_cast<AST::Module*>(mod));
     if (mod->header.type==AST::ModTypeExternal) {
 
@@ -321,13 +353,20 @@ void Generator::findFunction(const AST::Algorhitm *alg, quint8 &module, quint16 
 {
     for (quint8 i=0; i<m_ast->modules.size(); i++) {
         const AST::Module * mod = m_ast->modules[i];
-        for (quint16 j=0; j<mod->impl.algorhitms.size(); j++) {
-            if (alg==mod->impl.algorhitms[j]) {
+        QList<AST::Algorhitm*> table;
+        if (mod->header.type==AST::ModTypeExternal)
+            table = mod->header.algorhitms;
+        else
+            table = mod->impl.algorhitms;
+        for (quint16 j=0; j<table.size(); j++) {
+            if (alg==table[j]) {
                 module = i;
                 id = j;
-                QPair<quint8,quint16> ext(module, id);
-                if (!l_externs.contains(ext))
-                    l_externs << ext;
+                if (mod->header.type==AST::ModTypeExternal) {
+                    QPair<quint8,quint16> ext(module, id);
+                    if (!l_externs.contains(ext))
+                        l_externs << ext;
+                }
                 return;
             }
         }
@@ -752,7 +791,9 @@ void Generator::LOOP(int modId, int algId,
     }
 
     // Found end of loop
-    result[jzIp].arg = result[jzIp2].arg = result.size();
+    result[jzIp].arg = result.size();
+    if (jzIp2!=-1)
+        result[jzIp2].arg = result.size();
 
     // If loop has break statements -- set proper jump for them
     QList< QPair<quint8,quint16> > toRemove;

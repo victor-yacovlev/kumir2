@@ -20,6 +20,7 @@ public:
     void reset(const AST::Data * ast, Bytecode::Data * bc);
     void addModule(const AST::Module * mod);
     void generateConstantTable();
+    void generateExternTable();
 private:
     quint16 constantValue(Bytecode::ValueType type, const QVariant & value);
     void addKumirModule(int id, const AST::Module * mod);

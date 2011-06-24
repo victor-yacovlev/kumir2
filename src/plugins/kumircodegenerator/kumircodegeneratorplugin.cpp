@@ -3,6 +3,7 @@
 #include "bytecode/data.h"
 
 using namespace KumirCodeGenerator;
+using namespace Bytecode;
 
 KumirCodeGeneratorPlugin::KumirCodeGeneratorPlugin()
 {
@@ -35,7 +36,15 @@ GeneratorResult KumirCodeGeneratorPlugin::generateExecuable(
     const AST::Data * tree
     , QIODevice * out)
 {
-    Bytecode::Data data;
+    Data data;
+
+    d->reset(tree, &data);
+    for (int i=0; i<tree->modules.size(); i++) {
+        d->addModule(tree->modules[i]);
+    }
+    d->generateConstantTable();
+    d->generateExternTable();
+
     QDataStream ds(out);
     data.versionMaj = 2;
     data.versionMin = 0;
