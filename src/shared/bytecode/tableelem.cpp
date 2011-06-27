@@ -141,13 +141,14 @@ extern QTextStream& operator<<(QTextStream& ts, const TableElem& e)
     if (e.type==EL_LOCAL || e.type==EL_GLOBAL)
         s += kindToString(e.refvalue)+" ";
 
-    if (e.type==EL_LOCAL || e.type==EL_GLOBAL || e.type==EL_EXTERN || e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING) {
+    if (e.type==EL_LOCAL || e.type==EL_GLOBAL || e.type==EL_EXTERN || e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_INIT || e.type==EL_TESTING) {
         s += QString::number(e.module)+" ";
     }
     if (e.type==EL_LOCAL) {
         s += QString::number(e.algId)+" ";
     }
-    s += QString::number(e.id)+" ";
+    if (e.type!=EL_INIT)
+        s += QString::number(e.id)+" ";
     if (e.type==EL_EXTERN)
         s += e.moduleName;
     else if (e.type==EL_CONST) {
@@ -163,10 +164,11 @@ extern QTextStream& operator<<(QTextStream& ts, const TableElem& e)
     else if (e.type==EL_LOCAL||e.type==EL_GLOBAL||e.type==EL_GLOBAL||e.type==EL_FUNCTION||e.type==EL_MAIN||e.type==EL_FUNCTION) {
         s += "\""+screenString(e.name)+"\" ";
     }
-    else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING) {
+    if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_INIT) {
         s += QString::number(e.instructions.size());
         for (int i=0; i<e.instructions.size(); i++) {
             s += "\n";
+            s += QString::number(i) + ":\t";
             s += instructionToString(e.instructions[i]);
         }
     }
@@ -198,13 +200,14 @@ extern QTextStream& operator>>(QTextStream& ts, TableElem& e)
     if (e.type==EL_LOCAL || e.type==EL_GLOBAL)
         e.refvalue = kindFromString(lexems.takeFirst());
 
-    if (e.type==EL_LOCAL || e.type==EL_GLOBAL || e.type==EL_EXTERN || e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING) {
+    if (e.type==EL_LOCAL || e.type==EL_GLOBAL || e.type==EL_EXTERN || e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_INIT || e.type==EL_TESTING) {
         e.module = quint8(lexems.takeFirst().toUShort());
     }
     if (e.type==EL_LOCAL) {
         e.algId = quint16(lexems.takeFirst().toUInt());
     }
-    e.id = quint16(lexems.takeFirst().toUInt());
+    if (e.type!=EL_INIT)
+        e.id = quint16(lexems.takeFirst().toUInt());
     if (e.type==EL_EXTERN)
         e.moduleName = lexems.takeFirst();
     else if (e.type==EL_CONST) {
@@ -224,7 +227,7 @@ extern QTextStream& operator>>(QTextStream& ts, TableElem& e)
         QString n = lexems.takeFirst();
         e.name = unscreenString(n.mid(1,n.length()-2));
     }
-    if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING) {
+    if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_INIT) {
         int size = lexems.takeFirst().toInt();
         e.instructions = QVector<Instruction>(size);
         int index = 0;
@@ -232,6 +235,8 @@ extern QTextStream& operator>>(QTextStream& ts, TableElem& e)
             QString line = ts.readLine().trimmed();
             if (line.isEmpty() || line.startsWith("#"))
                 continue;
+            int colonPos = line.indexOf(":");
+            line = line.mid(colonPos+1);
             e.instructions[index] = instructionFromString(line);
             index++;
         }
@@ -261,7 +266,7 @@ extern QDataStream& operator<<(QDataStream & ds, const TableElem &e)
         else
             ds << e.constantValue.toString().toUtf8().data();
     }
-    else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING) {
+    else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_INIT) {
         ds << quint16(e.instructions.size());
         for (int i=0; i<e.instructions.size(); i++) {
             ds << toUint32(e.instructions[i]);
@@ -317,10 +322,10 @@ extern QDataStream& operator>>(QDataStream & ds, TableElem &e)
             delete s;
         }
     }
-    else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING) {
+    else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_INIT) {
         quint16 sz;
-        e.instructions = QVector<Instruction>(sz);
         ds >> sz;
+        e.instructions = QVector<Instruction>(sz);
         for (quint16 i=0; i<sz; i++) {
             quint32 instr;
             ds >> instr;

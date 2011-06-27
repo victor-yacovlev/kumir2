@@ -38,6 +38,7 @@ QString typeToString(InstructionType t) {
     else if (t==GEQ) return QString::fromAscii("Geq").toLower();
     else if (t==GEQ) return QString::fromAscii("Geq").toLower();
     else if (t==REF) return QString::fromAscii("Ref").toLower();
+    else if (t==LINE) return QString::fromAscii("Line").toLower();
     else return "nop";
 }
 
@@ -75,6 +76,7 @@ InstructionType typeFromString(const QString & s) {
     else if (s.toLower()==QString::fromAscii("Leq").toLower()) return LEQ;
     else if (s.toLower()==QString::fromAscii("Geq").toLower()) return GEQ;
     else if (s.toLower()==QString::fromAscii("Ref").toLower()) return REF;
+    else if (s.toLower()==QString::fromAscii("Line").toLower()) return LINE;
     else return NOP;
 }
 
@@ -89,7 +91,7 @@ static const QSet<InstructionType> RegisterNoInstructions = QSet<InstructionType
 
 static const QSet<InstructionType> HasValueInstructions = QSet<InstructionType>()
 << CALL << INIT << SETARR << STORE << STOREARR << LOAD << LOADARR
-   << SETMON << UNSETMON << JUMP << JNZ << JZ << POP << PUSH << ERROR << LINE;
+   << SETMON << UNSETMON << JUMP << JNZ << JZ << ERROR << LINE;
 
 
 
@@ -125,16 +127,17 @@ extern quint32 toUint32(const Instruction &instr)
     first = first << 24;
     quint32 second;
     if (ModuleNoInstructions.contains(instr.type))
-        second = instr.module;
+        second = quint8(instr.module);
     else if (RegisterNoInstructions.contains(instr.type))
-        second = instr.registerr;
+        second = quint8(instr.registerr);
     else
-        second = instr.scope;
-    first = second << 16;
+        second = quint8(instr.scope);
+    second = second << 16;
     quint32 last = instr.arg;
     last = last << 16; // Ensure first two bytes are 0x0000
     last = last >> 16;
-    return first | second | last;
+    quint32 result = first | second | last;
+    return result;
 }
 
 extern Instruction instructionFromString(const QString &str)
