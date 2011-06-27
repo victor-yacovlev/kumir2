@@ -1,0 +1,408 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass scrartcl
+\use_default_options true
+\begin_modules
+theorems-std
+\end_modules
+\maintain_unincluded_children false
+\language russian
+\language_package babel
+\inputencoding utf8
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format pdf2
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref true
+\pdf_author "Victor Yacovlev"
+\pdf_bookmarks true
+\pdf_bookmarksnumbered true
+\pdf_bookmarksopen true
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks false
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize a4paper
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language polish
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Спецификация байткода Кумир
+\end_layout
+
+\begin_layout Abstract
+Кумир имеет два режима выполнения: 
+\emph on
+быстрый
+\emph default
+ - используя машинный код, полученный компилятором gcc из промежуточного
+ C99-кода, и 
+\emph on
+стандартный
+\emph default
+ - используя интерпретатор байт-кода.
+ Данный документ описывает используемый байт-код.
+\end_layout
+
+\begin_layout Section
+Основные положения.
+ Структура программы интерпретатора
+\end_layout
+
+\begin_layout Standard
+Программа интерпретатора состоит из:
+\end_layout
+
+\begin_layout Itemize
+таблицы констант;
+\end_layout
+
+\begin_layout Itemize
+таблиц глобальных переменных;
+\end_layout
+
+\begin_layout Itemize
+таблиц локальных переменных;
+\end_layout
+
+\begin_layout Itemize
+таблицы используемых внешних функций;
+\end_layout
+
+\begin_layout Itemize
+программного кода, являющегося набором 
+\emph on
+инструкций
+\emph default
+ для каждого отдельно Кумир-алгоритма.
+\end_layout
+
+\begin_layout Standard
+В программе данные элементы описываются в произвольном порядке.
+ Каждый элемент определяется 
+\emph on
+заголовком
+\emph default
+, данными и, при необходимости -- размером элемента в программе.
+\end_layout
+
+\begin_layout Standard
+Программа может иметь как бинарное, так и текстовое представление.
+ Эти представления эквивалентны, для их преобразования предназначена утилита
+ 
+\noun on
+kumir2-as
+\noun default
+, входящая в поставку Кумир, которая преобразует текстовое представление
+ в бинарное и наоборот.
+\end_layout
+
+\begin_layout Standard
+Формальное описание бинарного и текстового представления кода будет приведено
+ в приложениях.
+\end_layout
+
+\begin_layout Standard
+Для чтения и записи байткода как в текстовом, так и в бинарном виде предназначен
+а библиотека 
+\noun on
+Bytecode
+\noun default
+, входящая в поставку Кумир, которая реализует чтение и запись структуры
+ 
+\noun on
+Bytecode::Data
+\noun default
+ (описана в 
+\family typewriter
+data.h
+\family default
+), используя в качестве источников ввода-вывода потоки 
+\noun on
+QDataStream
+\noun default
+ и 
+\noun on
+QTextStream
+\noun default
+.
+\end_layout
+
+\begin_layout Section
+Элемент программы
+\end_layout
+
+\begin_layout Standard
+Под элементом программы понимаются:
+\end_layout
+
+\begin_layout Itemize
+константа (строковое представление -- 
+\begin_inset Quotes pld
+\end_inset
+
+.constant
+\begin_inset Quotes prd
+\end_inset
+
+, бинарное - 
+\begin_inset Formula $0x03$
+\end_inset
+
+);
+\end_layout
+
+\begin_layout Itemize
+локальная переменная (
+\begin_inset Quotes pld
+\end_inset
+
+.local
+\begin_inset Quotes prd
+\end_inset
+
+, 
+\begin_inset Formula $0x01$
+\end_inset
+
+);
+\end_layout
+
+\begin_layout Itemize
+глобальная переменная (
+\begin_inset Quotes pld
+\end_inset
+
+.global
+\begin_inset Quotes prd
+\end_inset
+
+, 
+\begin_inset Formula $0x02$
+\end_inset
+
+);
+\end_layout
+
+\begin_layout Itemize
+ссылка на внешний алгоритм (
+\begin_inset Quotes pld
+\end_inset
+
+.extern
+\begin_inset Quotes prd
+\end_inset
+
+, 
+\begin_inset Formula $0x05$
+\end_inset
+
+);
+\end_layout
+
+\begin_layout Itemize
+кумир-алгоритм (
+\begin_inset Quotes pld
+\end_inset
+
+.function
+\begin_inset Quotes prd
+\end_inset
+
+, 
+\begin_inset Formula $0x04$
+\end_inset
+
+) и его три частных случая:
+\end_layout
+
+\begin_layout Itemize
+-- главный алгоритм (
+\begin_inset Quotes pld
+\end_inset
+
+.main
+\begin_inset Quotes prd
+\end_inset
+
+, 
+\begin_inset Formula $0x07$
+\end_inset
+
+);
+\end_layout
+
+\begin_layout Itemize
+-- программа до первого алгоритма (
+\begin_inset Quotes pld
+\end_inset
+
+.init
+\begin_inset Quotes prd
+\end_inset
+
+, 
+\begin_inset Formula $0x06$
+\end_inset
+
+);
+\end_layout
+
+\begin_layout Itemize
+-- тестирующий алгоритм (
+\begin_inset Quotes pld
+\end_inset
+
+.testing
+\begin_inset Quotes prd
+\end_inset
+
+, 
+\begin_inset Formula $0x08$
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+Элемент программы - это структура 
+\noun on
+Bytecode::TableElem
+\noun default
+, которая состоит из:
+\end_layout
+
+\begin_layout Itemize
+типа элемента;
+\end_layout
+
+\begin_layout Itemize
+для констант, локальных переменных и глобальных переменных -- базового типа
+ переменной, размерности массива и параметра аргумента (арг, аргрез, рез
+ или простая переменная);
+\end_layout
+
+\begin_layout Itemize
+для переменных, алгоритмов и ссылок на внешние алгоритмы -- номера модуля
+ (исполнителя) -- целое число от 0 до 255;
+\end_layout
+
+\begin_layout Itemize
+для локальных переменных и алгоритмов -- уникального номера алгоритма --
+ целое число от 0 до 65535;
+\end_layout
+
+\begin_layout Itemize
+для констант, переменных, алгоримов и ссылок на внешние алгоритмы -- уникальный
+ номер id -- целое число от 0 до 65535;
+\end_layout
+
+\begin_layout Itemize
+для переменных, алгоритмов и ссылок на внешние алгоритмы -- имя переменной
+ или алгоритма -- Unicode-строка;
+\end_layout
+
+\begin_layout Itemize
+для ссылок на внешние алгоритмы -- имя модуля (plugin'а), реализующего данный
+ модуль -- ASCII-строка;
+\end_layout
+
+\begin_layout Itemize
+для кумир-алгоритмов (включая его частные случаи) -- список 
+\emph on
+инструкций
+\emph default
+.
+\end_layout
+
+\begin_layout Section
+Инструкции
+\end_layout
+
+\begin_layout Standard
+Инструкции интерпретатора имеют фиксированный размер 32 бита.
+\end_layout
+
+\begin_layout Itemize
+Первый байт определяет тип инструкции.
+\end_layout
+
+\begin_layout Itemize
+Второй байт является контекстно-зависимым и может определять:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+номер модуля;
+\end_layout
+
+\begin_layout Itemize
+таблицу для выбора значений (локальная, глобальная или константа);
+\end_layout
+
+\begin_layout Itemize
+номер регистра (ячейки памяти выполнителя).
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Последние два байта определяют контекстно-зависимый аргумент команды.
+\end_layout
+
+\begin_layout Standard
+Описание инструкций приведено в приложении 
+\family typewriter
+instructions.xls
+\family default
+.
+\end_layout
+
+\end_body
+\end_document

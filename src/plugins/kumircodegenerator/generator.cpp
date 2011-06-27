@@ -450,6 +450,11 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
             }
 
         }
+        Bytecode::Instruction numarg;
+        numarg.type = Bytecode::LOAD;
+        numarg.scope = Bytecode::CONST;
+        numarg.arg = constantValue(Bytecode::VT_int, st->operands.size());
+        result << numarg;
         Bytecode::Instruction instr;
         instr.type = Bytecode::CALL;
         findFunction(st->function, instr.module, instr.arg);

@@ -7,7 +7,6 @@ include(../../shared/interfaces/generator.pri)
 include(../../shared/abstractsyntaxtree/abstractsyntaxtree.pri)
 include(../../shared/extensionsystem/extensionsystem.pri)
 include(../../shared/bytecode/bytecode.pri)
-QT += script
 HEADERS += kumirbcompilerplugin.h
 
 SOURCES += kumirbcompilerplugin.cpp
