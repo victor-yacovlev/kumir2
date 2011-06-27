@@ -150,7 +150,7 @@ extern QTextStream& operator<<(QTextStream& ts, const TableElem& e)
     if (e.type!=EL_INIT)
         s += QString::number(e.id)+" ";
     if (e.type==EL_EXTERN)
-        s += e.moduleName;
+        s += e.moduleName + " ";
     else if (e.type==EL_CONST) {
         if (e.constantValue.type()==QVariant::Int)
             s += QString::number(e.constantValue.toInt());
@@ -161,7 +161,7 @@ extern QTextStream& operator<<(QTextStream& ts, const TableElem& e)
         else
             s += "\""+screenString(e.constantValue.toString())+"\"";
     }
-    else if (e.type==EL_LOCAL||e.type==EL_GLOBAL||e.type==EL_GLOBAL||e.type==EL_FUNCTION||e.type==EL_MAIN||e.type==EL_FUNCTION) {
+    if (e.type==EL_LOCAL||e.type==EL_GLOBAL||e.type==EL_GLOBAL||e.type==EL_FUNCTION||e.type==EL_MAIN||e.type==EL_FUNCTION||e.type==EL_EXTERN) {
         s += "\""+screenString(e.name)+"\" ";
     }
     if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_INIT) {
@@ -210,7 +210,7 @@ extern QTextStream& operator>>(QTextStream& ts, TableElem& e)
         e.id = quint16(lexems.takeFirst().toUInt());
     if (e.type==EL_EXTERN)
         e.moduleName = lexems.takeFirst();
-    else if (e.type==EL_CONST) {
+    if (e.type==EL_CONST) {
         QString c = lexems.takeFirst();
         if (e.vtype==VT_int)
             e.constantValue = c.toInt();
@@ -223,7 +223,7 @@ extern QTextStream& operator>>(QTextStream& ts, TableElem& e)
         else if (e.vtype==VT_string)
             e.constantValue = unscreenString(c.mid(1,c.length()-2));
     }
-    else if (e.type==EL_LOCAL||e.type==EL_GLOBAL||e.type==EL_GLOBAL||e.type==EL_FUNCTION||e.type==EL_MAIN||e.type==EL_TESTING) {
+    else if (e.type==EL_LOCAL||e.type==EL_GLOBAL||e.type==EL_GLOBAL||e.type==EL_FUNCTION||e.type==EL_MAIN||e.type==EL_TESTING||e.type==EL_EXTERN) {
         QString n = lexems.takeFirst();
         e.name = unscreenString(n.mid(1,n.length()-2));
     }

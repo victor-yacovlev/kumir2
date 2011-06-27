@@ -451,6 +451,7 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
 
         }
         Bytecode::Instruction instr;
+        instr.type = Bytecode::CALL;
         findFunction(st->function, instr.module, instr.arg);
         result << instr;
     }
