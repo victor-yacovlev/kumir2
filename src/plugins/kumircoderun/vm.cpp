@@ -1,6 +1,8 @@
 #include "vm.h"
 #include "bytecode/instruction.h"
 
+#define EPSILON 0.0000001
+
 using namespace Bytecode;
 
 namespace KumirCodeRun {
@@ -458,6 +460,282 @@ void VM::do_error(quint8 s, quint16 id)
 void VM::do_line(quint16 no)
 {
     // TODO implement me
+}
+
+void VM::do_sum()
+{
+    Variant b = stack_values.pop();
+    Variant a = stack_values.pop();
+    if (a.baseType()==VT_int && a.baseType()==VT_int) {
+        Variant r(a.toInt()+b.toInt());
+        stack_values.push(r);
+    }
+    else if (a.baseType()==VT_float || b.baseType()==VT_float) {
+        Variant r(a.toReal()+b.toReal());
+        stack_values.push(r);
+    }
+    else if (a.baseType()==VT_string || a.baseType()==VT_char) {
+        Variant r(a.toString()+b.toString());
+        stack_values.push(r);
+    }
+    nextIP();
+}
+
+void VM::do_sub()
+{
+    Variant b = stack_values.pop();
+    Variant a = stack_values.pop();
+    if (a.baseType()==VT_int && a.baseType()==VT_int) {
+        Variant r(a.toInt()-b.toInt());
+        stack_values.push(r);
+    }
+    else if (a.baseType()==VT_float || b.baseType()==VT_float) {
+        Variant r(a.toReal()-b.toReal());
+        stack_values.push(r);
+    }
+    nextIP();
+}
+
+void VM::do_mul()
+{
+    Variant b = stack_values.pop();
+    Variant a = stack_values.pop();
+    if (a.baseType()==VT_int && a.baseType()==VT_int) {
+        Variant r(a.toInt()*b.toInt());
+        stack_values.push(r);
+    }
+    else if (a.baseType()==VT_float || b.baseType()==VT_float) {
+        Variant r(a.toReal()*b.toReal());
+        stack_values.push(r);
+    }
+    nextIP();
+}
+
+void VM::do_div()
+{
+    Variant b = stack_values.pop();
+    Variant a = stack_values.pop();
+    if (b.baseType()==VT_int && b.toInt()==0) {
+        s_error = tr("Division by zero");
+    }
+    else if (b.baseType()==VT_float && fabs(b.toReal()) < EPSILON) {
+        s_error = tr("Division by zero");
+    }
+    else {
+        Variant r(a.toReal()/b.toReal());
+        stack_values.push(r);
+    }
+    nextIP();
+}
+
+void VM::do_pow()
+{
+    Variant b = stack_values.pop();
+    Variant a = stack_values.pop();
+    if (b.toReal()<-EPSILON) {
+        s_error = tr("Power to less than zero");
+    }
+    else {
+        Variant r(pow(a.toReal(),b.toReal()));
+        stack_values.push(r);
+    }
+    nextIP();
+}
+
+void VM::do_neg()
+{
+    Variant a = stack_values.pop();
+    if (a.baseType()==VT_bool) {
+        Variant r(!a.toBool());
+        stack_values.push(r);
+    }
+    else if (a.baseType()==VT_int) {
+        Variant r(-a.toInt());
+        stack_values.push(r);
+    }
+    else if (a.baseType()==VT_float) {
+        Variant r(0.0-a.toReal());
+        stack_values.push(r);
+    }
+    nextIP();
+}
+
+void VM::do_and()
+{
+    Variant b = stack_values.pop();
+    Variant a = stack_values.pop();
+    if (a.baseType()==VT_bool && b.baseType()==VT_bool) {
+        Variant r(a.toBool() && b.toBool());
+        stack_values.push(r);
+    }
+    nextIP();
+}
+
+void VM::do_or()
+{
+    Variant b = stack_values.pop();
+    Variant a = stack_values.pop();
+    if (a.baseType()==VT_bool && b.baseType()==VT_bool) {
+        Variant r(a.toBool() || b.toBool());
+        stack_values.push(r);
+    }
+    nextIP();
+}
+
+void VM::do_eq()
+{
+    bool result = false;
+    Variant b = stack_values.pop();
+    Variant a = stack_values.pop();
+    if (b.baseType()==VT_int && a.baseType()==VT_int) {
+        result = a.toInt()==b.toInt();
+    }
+    if (b.baseType()==VT_float && a.baseType()==VT_float) {
+        result = fabs(a.toReal()-b.toReal())<EPSILON;
+    }
+    if (b.baseType()==VT_bool && a.baseType()==VT_bool) {
+        result = a.toBool()==b.toBool();
+    }
+    if ( (a.baseType()==VT_string || a.baseType()==VT_char)
+         &&
+         (b.baseType()==VT_string || b.baseType()==VT_char)
+         )
+    {
+        result = a.toString()==b.toString();
+    }
+    Variant r(result);
+    stack_values.push(r);
+    nextIP();
+}
+
+void VM::do_neq()
+{
+    bool result = false;
+    Variant b = stack_values.pop();
+    Variant a = stack_values.pop();
+    if (b.baseType()==VT_int && a.baseType()==VT_int) {
+        result = a.toInt()==b.toInt();
+    }
+    if (b.baseType()==VT_float && a.baseType()==VT_float) {
+        result = fabs(a.toReal()-b.toReal())<EPSILON;
+    }
+    if (b.baseType()==VT_bool && a.baseType()==VT_bool) {
+        result = a.toBool()==b.toBool();
+    }
+    if ( (a.baseType()==VT_string || a.baseType()==VT_char)
+         &&
+         (b.baseType()==VT_string || b.baseType()==VT_char)
+         )
+    {
+        result = a.toString()==b.toString();
+    }
+    Variant r(!result);
+    stack_values.push(r);
+    nextIP();
+}
+
+void VM::do_ls()
+{
+    bool result = false;
+    Variant b = stack_values.pop();
+    Variant a = stack_values.pop();
+    if (b.baseType()==VT_int && a.baseType()==VT_int) {
+        result = a.toInt()<b.toInt();
+    }
+    if (b.baseType()==VT_float || a.baseType()==VT_float) {
+        result = a.toReal()<b.toReal();
+    }
+    if (b.baseType()==VT_bool && a.baseType()==VT_bool) {
+        result = a.toInt()<b.toInt();
+    }
+    if ( (a.baseType()==VT_string || a.baseType()==VT_char)
+         &&
+         (b.baseType()==VT_string || b.baseType()==VT_char)
+         )
+    {
+        result = a.toString()<b.toString();
+    }
+    Variant r(result);
+    stack_values.push(r);
+    nextIP();
+}
+
+void VM::do_gt()
+{
+    bool result = false;
+    Variant b = stack_values.pop();
+    Variant a = stack_values.pop();
+    if (b.baseType()==VT_int && a.baseType()==VT_int) {
+        result = a.toInt()>b.toInt();
+    }
+    if (b.baseType()==VT_float || a.baseType()==VT_float) {
+        result = a.toReal()>b.toReal();
+    }
+    if (b.baseType()==VT_bool && a.baseType()==VT_bool) {
+        result = a.toInt()>b.toInt();
+    }
+    if ( (a.baseType()==VT_string || a.baseType()==VT_char)
+         &&
+         (b.baseType()==VT_string || b.baseType()==VT_char)
+         )
+    {
+        result = a.toString()>b.toString();
+    }
+    Variant r(result);
+    stack_values.push(r);
+    nextIP();
+}
+
+void VM::do_leq()
+{
+    bool result = false;
+    Variant b = stack_values.pop();
+    Variant a = stack_values.pop();
+    if (b.baseType()==VT_int && a.baseType()==VT_int) {
+        result = a.toInt()<=b.toInt();
+    }
+    if (b.baseType()==VT_float || a.baseType()==VT_float) {
+        result = a.toReal()<=b.toReal();
+    }
+    if (b.baseType()==VT_bool && a.baseType()==VT_bool) {
+        result = a.toInt()<=b.toInt();
+    }
+    if ( (a.baseType()==VT_string || a.baseType()==VT_char)
+         &&
+         (b.baseType()==VT_string || b.baseType()==VT_char)
+         )
+    {
+        result = a.toString()<=b.toString();
+    }
+    Variant r(result);
+    stack_values.push(r);
+    nextIP();
+}
+
+void VM::do_geq()
+{
+    bool result = false;
+    Variant b = stack_values.pop();
+    Variant a = stack_values.pop();
+    if (b.baseType()==VT_int && a.baseType()==VT_int) {
+        result = a.toInt()>b.toInt();
+    }
+    if (b.baseType()==VT_float || a.baseType()==VT_float) {
+        result = a.toReal()>b.toReal();
+    }
+    if (b.baseType()==VT_bool && a.baseType()==VT_bool) {
+        result = a.toInt()>b.toInt();
+    }
+    if ( (a.baseType()==VT_string || a.baseType()==VT_char)
+         &&
+         (b.baseType()==VT_string || b.baseType()==VT_char)
+         )
+    {
+        result = a.toString()>b.toString();
+    }
+    Variant r(result);
+    stack_values.push(r);
+    nextIP();
 }
 
 
