@@ -5,6 +5,7 @@
 #include <QtGui>
 #include "interfaces/generatorinterface.h"
 #include "interfaces/actorinterface.h"
+#include "interfaces/runinterface.h"
 #include "stdlib/connector.h"
 #include "terminal.h"
 #include "extensionsystem/kplugin.h"
@@ -13,6 +14,7 @@ namespace CoreGUI {
 
 using Shared::GeneratorInterface;
 using Shared::ActorInterface;
+using Shared::RunInterface;
 using Terminal::Terminal;
 using StdLib::Connector;
 using namespace ExtensionSystem;
@@ -29,6 +31,7 @@ public:
     inline bool isRunning() const { return e_state!=Idle; }
     inline void setSourceFileName(const QString & s) { s_sourceFileName = s; }
     void setTerminal(Terminal * t, QDockWidget * w);
+    void setBytecodeRun(KPlugin * run);
     void addActor(KPlugin * a, QDockWidget * w);
     inline QString endStatus() const { return s_endStatus; }
 signals:
@@ -47,7 +50,9 @@ public slots:
 private slots:
     void handleProcessFinished(int exitCode, QProcess::ExitStatus);
     void handleProcessError(QProcess::ProcessError);
+    void handleRunnerStopped(int);
 private:
+    void prepareKumirRunner();
     enum State { Idle, FastRun, RegularRun, StepRun } e_state;
     const AST::Data * m_ast;
     QString s_endStatus;
@@ -56,6 +61,7 @@ private:
     QDockWidget * m_terminalWindow;
     GeneratorInterface * plugin_cppGenerator;
     GeneratorInterface * plugin_bytcodeGenerator;
+    RunInterface * plugin_bytecodeRun;
     QAction * a_fastRun;
     QAction * a_regularRun;
     QAction * a_stepRun;

@@ -49,9 +49,10 @@ QString Plugin::initialize(const QStringList &)
     ExtensionSystem::PluginManager::instance()->changeWorkingDirectory(workspaceDir);
     m_mainWindow = new MainWindow(this);
     plugin_editor = qobject_cast<EditorInterface*>(myDependency("Editor"));
+
+    plugin_BytecodeGenerator = qobject_cast<GeneratorInterface*>(myDependency("KumirCodeGenerator"));
     plugin_CppGenerator = qobject_cast<GeneratorInterface*>(myDependency("KumirCppGenerator"));
     plugin_browser = qobject_cast<BrowserInterface*>(myDependency("Browser"));
-//    plugin_BytecodeGenerator = qobject_cast<GeneratorInterface*>(myDependency("KumirBytecodeGenerator"));
     if (!plugin_editor)
         return "Can't load editor plugin!";
     if (!plugin_CppGenerator)
@@ -66,6 +67,11 @@ QString Plugin::initialize(const QStringList &)
     m_kumirProgram->setBytecodeGenerator(plugin_BytecodeGenerator);
     m_kumirProgram->setCppGenerator(plugin_CppGenerator);
     m_kumirProgram->setTerminal(m_terminal, termWindow);
+
+    KPlugin * kumirRunner = myDependency("KumirCodeRun");
+    Q_CHECK_PTR(kumirRunner);
+    m_kumirProgram->setBytecodeRun(kumirRunner);
+
     QList<ExtensionSystem::KPlugin*> actors = loadedPlugins("Actor*");
     foreach (ExtensionSystem::KPlugin* o, actors) {
         ActorInterface * actor = qobject_cast<ActorInterface*>(o);

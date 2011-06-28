@@ -243,10 +243,10 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
         findVariable(moduleId, id, retval, loadRetval.scope, loadRetval.arg);
         ret << loadRetval;
 
-        Bytecode::Instruction retturn;
-        retturn.type = Bytecode::RET;
-        ret << retturn;
     }
+    Bytecode::Instruction retturn;
+    retturn.type = Bytecode::RET;
+    ret << retturn;
 
     QList<Bytecode::Instruction> instrs = pre + body + post + ret;
     func.instructions = instrs.toVector();
@@ -792,6 +792,16 @@ void Generator::LOOP(int modId, int algId,
         result << e;
         jzIp2 = result.size();
         e.type = Bytecode::JZ;
+        e.registerr = 0;
+        result << e;
+    }
+    else {
+        lineNo = st->loop.endLexems[0]->lineNo;
+        l.arg = lineNo;
+        result << l;
+        Bytecode::Instruction e;
+        jzIp2 = result.size();
+        e.type = Bytecode::JUMP;
         e.registerr = 0;
         result << e;
     }

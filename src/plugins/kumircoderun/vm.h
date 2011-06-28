@@ -5,33 +5,48 @@
 #include "variant.h"
 #include "context.h"
 #include "bytecode/tableelem.h"
+#include "bytecode/data.h"
 
 namespace KumirCodeRun {
 
 class VM : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(RunEntryPoint)
 public:
+    enum RunEntryPoint { EP_Main, EP_Testing };
     explicit VM(QObject *parent = 0);
     void reset();
     void evaluateNextInstruction();
     inline bool hasMoreInstructions() const { return !stack_contexts.isEmpty(); }
     inline QString error() const { return s_error; }
+    void loadProgram(const Data & program);
+    inline int deep() const { return stack_contexts.size(); }
+    inline void setEntryPoint(RunEntryPoint e) { e_entryPoint = e; }
+    void pushValueToStack(const QVariant & value);
+    void setResults(const QList<quintptr> & references, const QList<QVariant> & values);
+signals:
+    void lineNoChanged(int lineNo);
+    void functionEntered();
+    void functionLeaved();
+    void inputRequest(const QString & format, const QList<quintptr> & references);
+    void outputRequest(const QString & out);
+    void resetModuleRequest(const QString & actorPluginName);
+    void invokeExternalFunction(const QString & actorPluginName,
+                                const QString & functionName,
+                                const QVariantList & arguments,
+                                const QList<quintptr> & references);
 private:
     QStack<Variant> stack_values;
     QStack<Context> stack_contexts;
-    QVector<Variant> globals;
-    QVector<Variant> constants;
-    QMap< QPair<quint8,quint16>, Bytecode::TableElem > externs;
-    QMap< QPair<quint8,quint16>, Bytecode::TableElem > functions;
-    QMap< QPair<quint8,quint16>, QVector<Variant> > cleanLocalTables;
+    QMap<quint16, Variant> globals;
+    QMap<quint16, Variant> constants;
+    QMap< quint32, Bytecode::TableElem > externs;
+    QMap< quint32, Bytecode::TableElem > functions;
+    QMap< quint32, QVector<Variant> > cleanLocalTables;
     QString s_error;
 
-    QPair< QObject*, QMetaMethod > m_externalFuncHandler;
-    QPair< QObject*, QMetaMethod > m_inputHandler;
-    QPair< QObject*, QMetaMethod > m_outputHandler;
-    QPair< QObject*, QMetaMethod > m_finputHandler;
-    QPair< QObject*, QMetaMethod > m_foutputHandler;
+    RunEntryPoint e_entryPoint;
 
     inline void nextIP() { stack_contexts[stack_contexts.size()-1].IP ++; }
 

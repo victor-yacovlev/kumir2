@@ -75,6 +75,8 @@ private slots:
     void handleTabTitleChange(const QString & title);
 
 
+
+
 private:
     void timerEvent(QTimerEvent *e);
     int i_timerId;

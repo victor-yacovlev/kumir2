@@ -28,6 +28,7 @@ public:
 
     void init();
     inline quint8 dimension() const { return i_dimension; }
+    inline void setDimension(quint8 v) { i_dimension = v; }
 
     void setBounds(const QList<int> & bounds);
     QList<int> bounds() const;
@@ -42,6 +43,7 @@ public:
 
     inline bool isReference() const { return m_reference!=0; }
     inline void setReference(Variant * r) { m_reference = r; }
+    inline Variant * reference() { return m_reference; }
 
     inline int toInt() const { return value().toInt(); }
     inline double toReal() const { return value().toDouble(); }

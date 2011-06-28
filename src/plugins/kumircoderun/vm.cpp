@@ -10,22 +10,141 @@ namespace KumirCodeRun {
 VM::VM(QObject *parent) :
     QObject(parent)
 {
+    e_entryPoint = EP_Main;
 }
+
 
 void VM::reset()
 {
     stack_values.clear();
     stack_contexts.clear();
-    globals.clear();
-    constants.clear();
+    QList<TableElem*> inits;
+    TableElem * testing;
+    TableElem * aMain;
+    QSet<QString> externModules;
+    for (int i=0; i<functions.values().size(); i++) {
+        const TableElem e = functions.values()[i];
+        if (e.type==EL_INIT)
+            inits << &(functions.values()[i]);
+        if (e.type==EL_MAIN)
+            aMain = &(functions.values()[i]);
+        if (e.type==EL_TESTING)
+            testing = &(functions.values()[i]);
+    }
+    for (int i=0; i<externs.values().size(); i++) {
+        const TableElem e = externs.values()[i];
+        externModules.insert(e.moduleName);
+    }
+
+    for (int i=0; i<externModules.toList().size(); i++) {
+        const QString moduleName = externModules.toList()[i];
+        emit resetModuleRequest(moduleName);
+    }
+
+
+    if (e_entryPoint==EP_Main && aMain) {
+        Context c;
+        quint32 mod = aMain->module;
+        quint32 alg = aMain->algId;
+        quint32 key = (mod << 16) | alg;
+        c.locals = cleanLocalTables[key];
+        c.program = aMain->instructions;
+        c.IP = 0;
+        stack_contexts.push(c);
+    }
+
+    if (e_entryPoint==EP_Testing && testing) {
+        Context c;
+        quint32 mod = testing->module;
+        quint32 alg = testing->algId;
+        quint32 key = (mod << 16) | alg;
+        c.locals = cleanLocalTables[key];
+        c.program = testing->instructions;
+        c.IP = 0;
+        stack_contexts.push(c);
+    }
+
+    for (int i=0; i<inits.size(); i++) {
+        if (inits[i]->instructions.size()>0) {
+            Context c;
+            quint32 mod = inits[i]->module;
+            quint32 alg = inits[i]->algId;
+            quint32 key = (mod << 16) | alg;
+            c.locals = cleanLocalTables[key];
+            c.program = inits[i]->instructions;
+            c.IP = 0;
+            stack_contexts.push(c);
+        }
+    }
+
+}
+
+Variant fromTableElem(const TableElem & e)
+{
+    Variant r;
+    r.setDimension(e.dimension);
+    r.setBaseType(e.vtype);
+    if (e.type==EL_CONST)
+        r.setValue(e.constantValue);
+    return r;
+}
+
+void VM::loadProgram(const Data & program)
+{
     externs.clear();
+    functions.clear();
+    cleanLocalTables.clear();
+    QMap< quint64, QList<Variant> > locals;
+    for (int i=0; i<program.d.size(); i++) {
+        const TableElem e = program.d[i];
+        if (e.type==EL_GLOBAL) {
+            globals[e.id] = fromTableElem(e);
+        }
+        else if (e.type==EL_CONST) {
+            constants[e.id] = fromTableElem(e);
+        }
+        else if (e.type==EL_LOCAL) {
+            quint32 key = 0x00000000;
+            quint32 alg = e.algId;
+            quint32 mod = e.module;
+            mod = mod << 16;
+            key = mod | alg;
+            QList<Variant> lcs;
+            if (locals.contains(key))
+                lcs = locals[key];
+            lcs << fromTableElem(e);
+            locals[key] = lcs;
+        }
+        else if (e.type==EL_EXTERN) {
+            quint32 key = 0x00000000;
+            quint32 alg = e.algId;
+            quint32 mod = e.module;
+            mod = mod << 16;
+            key = mod | alg;
+            externs[key] = e;
+        }
+        else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING) {
+            quint32 key = 0x00000000;
+            quint32 alg = e.algId;
+            quint32 mod = e.module;
+            mod = mod << 16;
+            key = mod | alg;
+            functions[key] = e;
+        }
+    }
+    for (int i=0; i<locals.keys().size(); i++) {
+        quint32 key = locals.keys()[i];
+        cleanLocalTables[key] = locals[key].toVector();
+    }
+    reset();
 }
 
 
 void VM::evaluateNextInstruction()
 {
     int ip = stack_contexts.last().IP;
-    Instruction instr = stack_contexts.last().program->at(ip);
+    QVector<Instruction> program = stack_contexts[stack_contexts.size()-1].program;
+    Instruction instr = program[ip];
     switch (instr.type) {
     case CALL:
         do_call(instr.module, instr.arg);
@@ -126,7 +245,10 @@ void VM::evaluateNextInstruction()
 
 void VM::do_call(quint8 mod, quint16 alg)
 {
-    const QPair<quint8, quint16> p(mod, alg);
+    quint32 module = mod << 16;
+    quint32 algorhitm = alg << 16;
+    quint32 p = module | algorhitm;
+
     if (mod==255) {
         int argsCount = stack_values.pop().toInt();
         VariantList args;
@@ -136,16 +258,20 @@ void VM::do_call(quint8 mod, quint16 alg)
         // Special calls
         if (alg==0) {
             // Input
-            // TODO implement me
+            const QString format = args.first().toString();
+            QList<quintptr> references;
+            for (int i=1; i<args.size(); i++) {
+                references << quintptr(args[i].reference());
+            }
+            emit inputRequest(format, references);
         }
         if (alg==1) {
             // Output
-            if (m_outputHandler.first) {
-                m_outputHandler.second.invoke(
-                            m_outputHandler.first,
-                            Q_ARG(VariantList, args)
-                            );
+            QString output;
+            for (int i=0; i<args.size(); i++) {
+                output += args[i].toString();
             }
+            emit outputRequest(output);
         }
         if (alg==2) {
             // File input
@@ -153,43 +279,33 @@ void VM::do_call(quint8 mod, quint16 alg)
         }
         if (alg==3) {
             // File output
-            if (m_foutputHandler.first) {
-                m_foutputHandler.second.invoke(
-                            m_foutputHandler.first,
-                            Q_ARG(VariantList, args)
-                            );
-            }
+
         }
     }
     else if (externs.contains(p)) {
+        QList<quintptr> references;
+        QVariantList arguments;
         int argsCount = stack_values.pop().toInt();
-        VariantList args;
         for (int i=0; i<argsCount; i++) {
-            args << stack_values.pop();
+            arguments << stack_values.pop().value();
+        }
+        int refsCount = stack_values.pop().toInt();
+        for (int i=0; i<refsCount; i++) {
+            references << quintptr(stack_values.pop().reference());
         }
         const TableElem exportElem = externs[p];
         const QString pluginName = exportElem.moduleName;
         const QString algName = exportElem.name;
-        VariantList retval;
-        if (m_externalFuncHandler.first) {
-            m_externalFuncHandler.second.invoke(
-                        m_externalFuncHandler.first,
-                        Qt::DirectConnection,
-                        Q_RETURN_ARG(VariantList, retval),
-                        Q_ARG(QString, pluginName),
-                        Q_ARG(QString, algName)
-                        );
-        }
-        for (int i=0; i<retval.size(); i++) {
-            stack_values.push(retval[i]);
-        }
+        emit invokeExternalFunction(pluginName, algName, arguments, references);
+
     }
     else if (functions.contains(p)) {
         Context c;
         c.IP = -1;
-        c.program = & ( externs[p].instructions );
+        c.program = functions[p].instructions ;
         c.locals = cleanLocalTables[p];
         stack_contexts.push(c);
+        emit functionEntered();
     }
     else {
         s_error = tr("Internal error: don't know what is 'call %1 %2'").arg(mod).arg(alg);
@@ -442,6 +558,7 @@ void VM::do_ret()
     stack_contexts.pop();
     if (!stack_contexts.isEmpty())
         nextIP();
+    emit functionLeaved();
 }
 
 void VM::do_error(quint8 s, quint16 id)
@@ -459,7 +576,8 @@ void VM::do_error(quint8 s, quint16 id)
 
 void VM::do_line(quint16 no)
 {
-    // TODO implement me
+    emit lineNoChanged(no);
+    nextIP();
 }
 
 void VM::do_sum()

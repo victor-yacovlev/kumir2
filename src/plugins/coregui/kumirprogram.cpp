@@ -17,6 +17,7 @@ KumirProgram::KumirProgram(QObject *parent)
     , m_terminal(0)
     , plugin_cppGenerator(0)
     , plugin_bytcodeGenerator(0)
+    , plugin_bytecodeRun(0)
     , a_fastRun(0)
     , a_regularRun(0)
     , a_stepRun(0)
@@ -103,6 +104,19 @@ void KumirProgram::setTerminal(Terminal *t, QDockWidget * w)
             m_terminal, SLOT(error(QString)));
 }
 
+
+
+void KumirProgram::setBytecodeRun(KPlugin *run)
+{
+    plugin_bytecodeRun = qobject_cast<RunInterface*>(run);
+    connect(run, SIGNAL(inputRequest(QString)), m_terminal, SLOT(input(QString)));
+    connect(run, SIGNAL(outputRequest(QString)), m_terminal, SLOT(output(QString)));
+    connect(run, SIGNAL(inputRequest(QString)), m_terminalWindow, SLOT(show()));
+    connect(run, SIGNAL(inputRequest(QString)), m_terminalWindow, SLOT(show()));
+    connect(run, SIGNAL(stopped(int)),
+            this, SLOT(handleRunnerStopped(int)));
+}
+
 void KumirProgram::addActor(KPlugin *a, QDockWidget *w)
 {
     connect(a, SIGNAL(sync()), this, SLOT(handleActorCommandFinished()));
@@ -171,6 +185,78 @@ void KumirProgram::fastRun()
     }
 }
 
+void KumirProgram::regularRun()
+{
+    if (e_state==FastRun)
+        return;
+    s_endStatus = "";
+    if (e_state==Idle)
+        prepareKumirRunner();
+    e_state = RegularRun;
+    PluginManager::instance()->switchGlobalState(GS_Running);
+    plugin_bytecodeRun->runContinuous();
+}
+
+void KumirProgram::prepareKumirRunner()
+{
+    bool mustRegenerate = !m_ast->lastModified.isValid() ||
+            !plugin_bytecodeRun->loadedProgramVersion().isValid() ||
+            m_ast->lastModified > plugin_bytecodeRun->loadedProgramVersion();
+    if (mustRegenerate) {
+        QByteArray bufArray;
+        QBuffer buffer(&bufArray);
+        buffer.open(QIODevice::WriteOnly);
+        GeneratorResult res = plugin_bytcodeGenerator->generateExecuable(m_ast, &buffer);
+        buffer.close();
+        buffer.open(QIODevice::ReadOnly);
+        if (res.type==Shared::GenError) {
+            qDebug() << "Error generating execuable";
+        }
+        else {
+            plugin_bytecodeRun->loadProgram(&buffer, Shared::FormatBinary);
+        }
+        buffer.close();
+    }
+    const QString exeFileName = s_sourceFileName.mid(0, s_sourceFileName.length()-4)+".kum";
+    m_terminal->start(exeFileName);
+}
+
+void KumirProgram::stepRun()
+{
+    if (e_state==FastRun)
+        return;
+    s_endStatus = "";
+    if (e_state==Idle)
+        prepareKumirRunner();
+    e_state = StepRun;
+    PluginManager::instance()->switchGlobalState(GS_Running);
+    plugin_bytecodeRun->runStepOver();
+}
+
+void KumirProgram::stepIn()
+{
+    if (e_state!=StepRun)
+        return;
+    plugin_bytecodeRun->runStepInto();
+}
+
+void KumirProgram::stepOut()
+{
+    if (e_state!=StepRun)
+        return;
+    plugin_bytecodeRun->runStepOut();
+}
+
+void KumirProgram::stop()
+{
+    if (e_state==StepRun || e_state==RegularRun) {
+        plugin_bytecodeRun->terminate();
+    }
+    else if (e_state==FastRun) {
+        m_process->terminate();
+    }
+}
+
 void KumirProgram::handleProcessError(QProcess::ProcessError error)
 {
     qDebug() << "Process error " << error;
@@ -189,30 +275,38 @@ void KumirProgram::handleProcessFinished(int exitCode, QProcess::ExitStatus stat
     PluginManager::instance()->switchGlobalState(GS_Observe);
 }
 
-void KumirProgram::regularRun()
+void KumirProgram::handleRunnerStopped(int rr)
 {
-
+    Shared::RunInterface::StopReason reason = Shared::RunInterface::StopReason (rr);
+    if (reason==Shared::RunInterface::InputRequest) {
+        PluginManager::instance()->switchGlobalState(GS_Input);
+    }
+    else if (reason==Shared::RunInterface::UserInteraction) {
+        PluginManager::instance()->switchGlobalState(GS_Pause);
+        a_stepIn->setEnabled(plugin_bytecodeRun->canStepInto());
+        a_stepOut->setEnabled(plugin_bytecodeRun->canStepOut());
+    }
+    else if (reason==Shared::RunInterface::UserTerminated) {
+        s_endStatus = tr("Evaluation terminated");
+        m_terminal->finish();
+        PluginManager::instance()->switchGlobalState(GS_Observe);
+        e_state = Idle;
+    }
+    else if (reason==Shared::RunInterface::Error) {
+        s_endStatus = tr("Evaluation error");
+        m_terminal->error(plugin_bytecodeRun->error());
+        PluginManager::instance()->switchGlobalState(GS_Observe);
+        e_state = Idle;
+    }
+    else if (reason==Shared::RunInterface::Done) {
+        s_endStatus = tr("Evaluation finished");
+        m_terminal->finish();
+        PluginManager::instance()->switchGlobalState(GS_Observe);
+        e_state = Idle;
+    }
 }
 
-void KumirProgram::stepRun()
-{
 
-}
-
-void KumirProgram::stepIn()
-{
-
-}
-
-void KumirProgram::stepOut()
-{
-
-}
-
-void KumirProgram::stop()
-{
-
-}
 
 void KumirProgram::switchGlobalState(GlobalState , GlobalState cur)
 {

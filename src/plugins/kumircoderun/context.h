@@ -12,7 +12,7 @@ struct Context {
     QVariant registers[256];
     quint16 IP;
     QVector<Variant> locals;
-    QVector<Bytecode::Instruction> * program;
+    QVector<Bytecode::Instruction> program;
 };
 
 } // namespace KumirCodeRun

@@ -17,6 +17,7 @@ struct Data {
     quint8 versionMaj;
     quint8 versionMin;
     quint8 versionRel;
+    QDateTime lastModified;
 };
 
 extern BYTECODE_EXPORT QTextStream& operator<<(QTextStream&, const Data&);

@@ -2,6 +2,8 @@
 
 namespace KumirCodeRun {
 
+QString Variant::error = "";
+
 QVariant Variant::value() const
 {
     if (m_reference)
