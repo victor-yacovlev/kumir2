@@ -680,7 +680,7 @@ void Generator::LOOP(int modId, int algId,
 
     int beginIp = result.size();
     int jzIp = -1;
-    int jzIp2 = -1;
+
 
     if (st->loop.type==AST::LoopWhile) {
         // pass
@@ -790,9 +790,9 @@ void Generator::LOOP(int modId, int algId,
         e.type = Bytecode::POP;
         e.registerr = 0;
         result << e;
-        jzIp2 = result.size();
         e.type = Bytecode::JZ;
         e.registerr = 0;
+        e.arg = beginIp;
         result << e;
     }
     else {
@@ -800,16 +800,14 @@ void Generator::LOOP(int modId, int algId,
         l.arg = lineNo;
         result << l;
         Bytecode::Instruction e;
-        jzIp2 = result.size();
         e.type = Bytecode::JUMP;
         e.registerr = 0;
+        e.arg = beginIp;
         result << e;
     }
 
     // Found end of loop
     result[jzIp].arg = result.size();
-    if (jzIp2!=-1)
-        result[jzIp2].arg = result.size();
 
     // If loop has break statements -- set proper jump for them
     QList< QPair<quint8,quint16> > toRemove;
