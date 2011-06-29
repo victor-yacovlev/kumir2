@@ -36,6 +36,11 @@ int Lexer::splitIntoStatements(const QStringList &lines
     return errorsCount;
 }
 
+void Lexer::splitIntoLexems(const QString &text, QList<Lexem *> &lexems)
+{
+    d->splitLineIntoLexems(text, lexems);
+}
+
 QStringList allVariants(const QString & value) {
     QStringList variants = value.split("|");
     QStringList result;

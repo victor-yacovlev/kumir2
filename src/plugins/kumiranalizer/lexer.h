@@ -27,6 +27,7 @@ public slots:
                              , int baseLineNo
                              , QList<Statement*> &statements
                              ) const;
+    void splitIntoLexems(const QString & text, QList<Lexem*> & lexems);
 private:
     class LexerPrivate * d;
 

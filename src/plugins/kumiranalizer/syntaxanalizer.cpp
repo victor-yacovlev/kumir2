@@ -969,7 +969,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
 
     // Проверяем на повторное описание алгоритма
     AST::Algorhitm * aa;
-    if (findAlgorhitm(name,st.mod,aa))
+    if (findAlgorhitm(name,st.mod,aa) && aa!=alg)
     {
         for (int i=1; i<st.data.size(); i++) {
             if (st.data[i]->type==LxNameAlg)
@@ -1926,7 +1926,9 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 subexpression << oper;
             }
             else {
-                qDebug() << "Check me: " << __FILE__ << ", line: " << __LINE__;
+                oper->error = _("Extra operator");
+                return 0;
+//                qDebug() << "Check me: " << __FILE__ << ", line: " << __LINE__;
             }
         }
 

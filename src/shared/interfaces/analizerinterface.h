@@ -25,6 +25,7 @@ public:
     virtual QList<QPoint> lineRanks(int documentId) const = 0;
     virtual QStringList imports(int documentId) const = 0;
     virtual const AST::Data * abstractSyntaxTree(int documentId) const = 0;
+    virtual LineProp lineProp(int documentId, const QString & text) const = 0;
     inline virtual QList<QRegExp> supportedFileNamePattern() const {
         return QList<QRegExp>()
                 << QRegExp("*",Qt::CaseInsensitive,QRegExp::Wildcard);

@@ -22,6 +22,7 @@ class TextDocument:
         public QList<TextLine>
 {
 public:
+    int documentId;
     inline int indentAt(int lineNo) const
     {
         int result = 0;

@@ -26,6 +26,64 @@ Analizer::Analizer(KumirAnalizerPlugin * plugin) :
     d = new AnalizerPrivate(plugin, this);
 }
 
+LineProp Analizer::lineProp(const QString &text) const
+{
+    QList<Lexem*> lexems;
+    d->lexer->splitIntoLexems(text, lexems);
+    LineProp lp(text.length(), LxTypeEmpty);
+    bool delimFound = false;
+    for (int i=0; i<lexems.size(); i++) {
+        Lexem * lx = lexems[i];
+        if (lx->type==LxTypeName) {
+            if (algorhitmNames().contains(lx->data.trimmed())) {
+                lx->type = LxNameAlg;
+            }
+            else if (moduleNames().contains(lx->data.trimmed())) {
+                lx->type = LxNameModule;
+            }
+            else if (d->lexer->baseTypeByClassName(lx->data.trimmed())!=AST::TypeNone) {
+                lx->type = LxNameClass;
+            }
+            else if (i>0) {
+                if (lexems[0]->type==LxPriAlgHeader && !delimFound)
+                    lx->type = LxNameAlg;
+                else if (lexems[0]->type==LxPriModule && !delimFound)
+                    lx->type = LxNameModule;
+            }
+        }
+        else if (i>0 && !(lx->type & LxTypeName)) {
+            delimFound = true;
+        }
+        for (int k=0; k<lx->length; k++) {
+            lp[lx->linePos+k] = lx->type;
+        }
+    }
+    for (int i=0; i<lexems.size(); i++)
+        delete lexems[i];
+    return lp;
+}
+
+QStringList Analizer::algorhitmNames() const
+{
+    QStringList result;
+    for (int i=0; i<d->ast->modules.size(); i++) {
+        if (d->ast->modules[i]->header.enabled)
+        for (int j=0; j<d->ast->modules[i]->impl.algorhitms.size(); j++) {
+            result << d->ast->modules[i]->impl.algorhitms[j]->header.name;
+        }
+    }
+    return result;
+}
+
+QStringList Analizer::moduleNames() const
+{
+    QStringList result;
+    for (int i=0; i<d->ast->modules.size(); i++) {
+        result << d->ast->modules[i]->header.name;
+    }
+    return result;
+}
+
 AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin, Analizer *qq)
 {
     q = qq;
@@ -146,7 +204,8 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
         insertPos ++;
     }
 
-    doCompilation(subject, removedStatements, newStatements, statements, insertPos);
+    if (removedStatements.size()>0 || newStatements.size()>0)
+        doCompilation(subject, removedStatements, newStatements, statements, insertPos);
 
     foreach (Statement * st, removedStatements) {
         foreach (Lexem * lx, st->data) {

@@ -149,7 +149,11 @@ const AST::Data * KumirAnalizerPlugin::abstractSyntaxTree(int documentId) const
 }
 
 
-
+Shared::LineProp KumirAnalizerPlugin::lineProp(int documentId, const QString &text) const
+{
+    Q_CHECK_PTR(m_analizers[documentId]);
+    return m_analizers[documentId]->lineProp(text);
+}
 
 
 Q_EXPORT_PLUGIN2(KumirAnalizerPlugin, KumirAnalizer::KumirAnalizerPlugin)

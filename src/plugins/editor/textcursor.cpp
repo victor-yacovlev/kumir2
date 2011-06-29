@@ -5,10 +5,11 @@
 
 namespace Editor {
 
-TextCursor::TextCursor(TextDocument * document, Clipboard * clipboard)
+TextCursor::TextCursor(TextDocument * document, Clipboard * clipboard, AnalizerInterface * analizer)
     : QObject(0)
     , m_document(document)
     , m_clipboard(clipboard)
+    , m_analizer(analizer)
     , e_mode(EM_Insert)
     , e_viewMode(VM_Hidden)
     , i_timerId(-1)
@@ -800,13 +801,6 @@ void TextCursor::insertText(const QString &text)
         addLineToNew(i_row+i);
     }
 
-    // detect highlight at current cursor position
-    Shared::LexemType curType = Shared::LxTypeEmpty;
-    if (textPos>0 && textPos-1 < m_document->at(i_row).highlight.size())
-        curType = m_document->at(i_row).highlight[textPos-1];
-    else if (textPos==0 && m_document->at(i_row).highlight.size()>0)
-        curType = m_document->at(i_row).highlight[0];
-
     // cut and store line tail
     QString lastText;
     QList<Shared::LexemType> lastHighlight;
@@ -824,8 +818,11 @@ void TextCursor::insertText(const QString &text)
     // insert head line
     (*m_document)[i_row].text += lines[0];
     for (int i=0; i<lines[0].size(); i++) {
-        (*m_document)[i_row].highlight << curType;
+        (*m_document)[i_row].highlight << LxTypeEmpty;
         (*m_document)[i_row].selected << false;
+    }
+    if (m_analizer) {
+        (*m_document)[i_row].highlight = m_analizer->lineProp(m_document->documentId, m_document->at(i_row).text).toList();
     }
     i_column += lines[0].length();
 
@@ -842,6 +839,9 @@ void TextCursor::insertText(const QString &text)
             textLine.highlight << Shared::LxTypeEmpty;
             textLine.selected << false;
         }
+        if (m_analizer) {
+            textLine.highlight = m_analizer->lineProp(m_document->documentId, textLine.text).toList();
+        }
         m_document->insert(i_row, textLine);
     }
 
@@ -851,7 +851,9 @@ void TextCursor::insertText(const QString &text)
         (*m_document)[i_row].highlight << lastHighlight[i];
         (*m_document)[i_row].selected << false;
     }
-
+    if (m_analizer) {
+        (*m_document)[i_row].highlight = m_analizer->lineProp(m_document->documentId, m_document->at(i_row).text).toList();
+    }
 
     int toLineUpdate = lines.size()>0? -1 : i_row;
 

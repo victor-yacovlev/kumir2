@@ -17,6 +17,7 @@ public:
     QList<QMenu*> menuActions();
     QList<QWidget*> statusbarWidgets();
     void setText(const QString &text);
+    void setDocumentId(int id);
     QString text() const;
     bool isModified() const;
     void setNotModified();

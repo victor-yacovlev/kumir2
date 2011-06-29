@@ -1,7 +1,7 @@
 "Key";"ru";"en";"ua";"by";"kz"
 "Array without index";;;;;
 "No one 'case'";;;;;
-"Broken if statement";;;;;
+"Broken if statement";"Незавершенная конструкция";;;;
 "Too many ':=' operators";;;;;
 "Can't input string slice";;;;;
 "Use of 'not' for non-boolean value";;;;;
@@ -14,7 +14,7 @@
 "Array dimension mismatch";;;;;
 "No pairing 'begin module'";;;;;
 "No condition after 'if'";;;;;
-"The name is used by global variable";;;;;
+"The name is used by global variable";"Имя занято глобальной величиной";;;;
 "Extra variable group specifier: %1";;;;;
 "Array bounds no specified";;;;;
 "Nothing between '(' and ')'";;;;;
@@ -31,7 +31,7 @@
 "Can't boolean:=integer";;;;;
 "Algorhitms can't return array";;;;;
 "Extra operator";;;;;
-"The name is used by other algorhitm";;;;;
+"The name is used by other algorhitm";"Имя занято другим алгоритмом";;;;
 "Garbage after algorhitm header";;;;;
 "Extra 'endloop'";;;;;
 "Extra arguments";;;;;
@@ -51,7 +51,7 @@
 "Extra array bound";;;;;
 "No pairing '['";;;;;
 "Step-value is empty";;;;;
-"No algorhitm name";;;;;
+"No algorhitm name";"Нет имени алгоритма";;;;
 "Variable name is empty";;;;;
 "Assignment to in- argument";;;;;
 "Not enought algorhitm arguments";;;;;
@@ -111,11 +111,11 @@
 "Can't pass this expression as out-argument";;;;;
 "Can't charect:=real";;;;;
 "No right array bound";;;;;
-"Extra 'then'";;;;;
-"No right value of assignment";;;;;
+"Extra 'then'";"Нет “все” после “то”";;;;
+"No right value of assignment";"Нет правой части присваивания";;;;
 "Garbage after 'if' statement";;;;;
 "Extra 'else'";;;;;
-"Extra 'begin'";;;;;
+"Extra 'begin'";"Нет “кон” после “нач”";;;;
 "Extra indeces in slice";;;;;
 "Unpaired '['";;;;;
 "Can't pass this expression as in/out-argumeny";;;;;
@@ -126,7 +126,7 @@
 "Name contains quotation symbol";;;;;
 "Can't charect:=boolean";;;;;
 "Array dimension must not be > 3";;;;;
-"Extra 'if'";;;;;
+"Extra 'if'";"Нет “то” … “все” после “если”";;;;
 "No condition between 'case' and colon";;;;;
 "Assignment of array";;;;;
 "Can't integer:=string";;;;;

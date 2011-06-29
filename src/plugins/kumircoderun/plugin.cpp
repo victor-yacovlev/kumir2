@@ -144,17 +144,17 @@ QString Plugin::initialize(const QStringList &)
 
 bool Plugin::hasMoreInstructions() const
 {
-    return d->vm->hasMoreInstructions();
+    return d->vm->canStepInto();
 }
 
 bool Plugin::canStepOut() const
 {
-    return d->vm->deep() > 0;
+    return d->vm->topStackType()==EL_FUNCTION;
 }
 
 bool Plugin::canStepInto() const
 {
-    return true;
+    return false;
 }
 
 } // namespace KumirCodeRun

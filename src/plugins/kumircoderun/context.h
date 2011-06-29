@@ -5,6 +5,7 @@
 
 #include "variant.h"
 #include "bytecode/instruction.h"
+#include "bytecode/tableelem.h"
 
 namespace KumirCodeRun {
 
@@ -13,6 +14,7 @@ struct Context {
     quint16 IP;
     QVector<Variant> locals;
     QVector<Bytecode::Instruction> program;
+    Bytecode::ElemType type;
 };
 
 } // namespace KumirCodeRun

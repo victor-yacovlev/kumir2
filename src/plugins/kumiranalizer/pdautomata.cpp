@@ -1440,19 +1440,25 @@ void PDAutomataPrivate::setTooManyErrors()
 void PDAutomataPrivate::setCorrespondingIfBroken()
 {
     Q_ASSERT(currentContext.size()>1);
-    AST::Statement * st = currentContext.at(currentContext.size()-2)->last();
-    Q_ASSERT(st->type==AST::StIfThenElse);
-    st->type = AST::StError;
-    st->error = _("Broken if statement");
-    for (int i=0; i<source.size(); i++) {
-        if ( source[i]->statement==st ) {
-            for (int a=0; a<source[i]->data.size(); a++) {
-                source[i]->data[a]->error = _("Broken if statement");
-            }
+    AST::Statement * st = 0;
+    for (int i=currentContext[currentContext.size()-1]->size()-1; i>=0; i--) {
+        if (currentContext[currentContext.size()-1]->at(i)->type==AST::StIfThenElse) {
+            st = currentContext[currentContext.size()-1]->at(i);
             break;
         }
     }
-
+    if (st) {
+        st->type = AST::StError;
+        st->error = _("Broken if statement");
+        for (int i=0; i<source.size(); i++) {
+            if ( source[i]->statement==st ) {
+                for (int a=0; a<source[i]->data.size(); a++) {
+                    source[i]->data[a]->error = _("Broken if statement");
+                }
+                break;
+            }
+        }
+    }
 }
 
 void PDAutomataPrivate::setExtraOpenKeywordError(const QString &kw)

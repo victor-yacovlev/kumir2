@@ -51,6 +51,7 @@ void VM::reset()
         c.locals = cleanLocalTables[key];
         c.program = aMain->instructions;
         c.IP = 0;
+        c.type = EL_MAIN;
         stack_contexts.push(c);
     }
 
@@ -62,6 +63,7 @@ void VM::reset()
         c.locals = cleanLocalTables[key];
         c.program = testing->instructions;
         c.IP = 0;
+        c.type = EL_TESTING;
         stack_contexts.push(c);
     }
 
@@ -74,6 +76,7 @@ void VM::reset()
             c.locals = cleanLocalTables[key];
             c.program = inits[i]->instructions;
             c.IP = 0;
+            c.type = EL_INIT;
             stack_contexts.push(c);
         }
     }
@@ -247,7 +250,7 @@ void VM::evaluateNextInstruction()
 void VM::do_call(quint8 mod, quint16 alg)
 {
     quint32 module = mod << 16;
-    quint32 algorhitm = alg << 16;
+    quint32 algorhitm = alg;
     quint32 p = module | algorhitm;
 
     if (mod==255) {
@@ -305,6 +308,7 @@ void VM::do_call(quint8 mod, quint16 alg)
         c.IP = -1;
         c.program = functions[p].instructions ;
         c.locals = cleanLocalTables[p];
+        c.type = EL_FUNCTION;
         stack_contexts.push(c);
         emit functionEntered();
     }
@@ -857,5 +861,35 @@ void VM::do_geq()
     nextIP();
 }
 
+ElemType VM::topStackType() const
+{
+    if (stack_contexts.isEmpty())
+        return EL_NONE;
+    else
+        return stack_contexts[stack_contexts.size()-1].type;
+}
+
+bool VM::canStepInto() const
+{
+    if (stack_contexts.isEmpty())
+        return false;
+    bool result = false;
+    int ip = stack_contexts[stack_contexts.size()-1].IP+1;
+    for ( ; ip<stack_contexts[stack_contexts.size()-1].program.size(); ip++) {
+        Instruction instr = stack_contexts[stack_contexts.size()-1].program[ip];
+        if (instr.type==LINE || instr.type==JUMP || instr.type==JNZ || instr.type==JZ || instr.type==RET)
+            break;
+        if (instr.type==CALL) {
+            quint32 mod = instr.module;
+            quint32 alg = instr.arg;
+            quint32 key = (mod << 16) | alg;
+            if (functions.contains(key)) {
+                result = true;
+                break;
+            }
+        }
+    }
+    return result;
+}
 
 } // namespace KumirCodeRun

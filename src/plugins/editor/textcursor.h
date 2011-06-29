@@ -6,6 +6,8 @@
 #include "interfaces/analizerinterface.h"
 #include "keycommand.h"
 
+using namespace Shared;
+
 namespace Editor {
 
 class TextCursor : public QObject
@@ -15,7 +17,7 @@ public:
     enum EditMode { EM_Insert, EM_Overwrite };
     enum MoveMode { MM_Move, MM_Select, MM_RectSelect };
     enum ViewMode { VM_Blinking, VM_Hidden, VM_Visible };
-    explicit TextCursor(class TextDocument * document, class Clipboard * clipboard);
+    explicit TextCursor(class TextDocument * document, class Clipboard * clipboard, class AnalizerInterface * analizer);
     inline void setEmitCompilationBlocked(bool v) { b_emitCompilationBlocked = v; }
     ~TextCursor();
     inline int row() const { return i_row; }
@@ -70,6 +72,7 @@ protected:
     void emitPositionChanged();
     class TextDocument * m_document;
     class Clipboard * m_clipboard;
+    class AnalizerInterface * m_analizer;
     QStack<Shared::ChangeTextTransaction> l_changes;
     QSet<int> l_remLines;
     QSet<int> l_nLines;

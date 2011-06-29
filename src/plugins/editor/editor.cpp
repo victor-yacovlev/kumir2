@@ -11,30 +11,6 @@ namespace Editor {
 
 using namespace Shared;
 
-class ScrollBar
-        : public QScrollBar
-{
-public:
-    inline explicit ScrollBar(Qt::Orientation orientation, QWidget * parent) : QScrollBar(orientation, parent) {}
-protected:
-    inline void paintEvent(QPaintEvent *e)
-    {
-        if (isEnabled()) {
-            QScrollBar::paintEvent(e);
-        }
-        else {
-            QPainter p(this);
-            p.setPen(Qt::NoPen);
-            p.setBrush(palette().brush(QPalette::Normal, QPalette::Window));
-            p.drawRect(e->rect());
-            p.end();
-            e->accept();
-        }
-    }
-
-};
-
-
 class EditorPrivate
         : public QObject
 {
@@ -49,7 +25,6 @@ public:
     QScrollBar * horizontalScrollBar;
     QScrollBar * verticalScrollBar;
     QSettings * settings;
-    int documentId;
 
     QLabel * keybStatus;
     QLabel * positionStatus;
@@ -81,6 +56,11 @@ public slots:
     void handleLineAndTextChanged(const QStack<Shared::ChangeTextTransaction> & changes);
     void playMacro();
 };
+
+void Editor::setDocumentId(int id)
+{
+    d->doc->documentId = id;
+}
 
 void Editor::lock()
 {
@@ -305,15 +285,15 @@ void EditorPrivate::handleLineAndTextChanged(const QStack<Shared::ChangeTextTran
     if (!analizer) {
         return;
     }
-    analizer->changeSourceText(documentId, mergeTransactions(changes.toList()));
+    analizer->changeSourceText(doc->documentId, mergeTransactions(changes.toList()));
     updateFromAnalizer();
 }
 
 void EditorPrivate::updateFromAnalizer()
 {
-    QList<Shared::LineProp> props = analizer->lineProperties(documentId);
-    QList<QPoint> ranks = analizer->lineRanks(documentId);
-    QList<Error> errors = analizer->errors(documentId);
+    QList<Shared::LineProp> props = analizer->lineProperties(doc->documentId);
+    QList<QPoint> ranks = analizer->lineRanks(doc->documentId);
+    QList<Error> errors = analizer->errors(doc->documentId);
     for (int i=0; i<doc->size(); i++) {
         TextLine tl = doc->at(i);
         if (i<ranks.size()) {
@@ -346,12 +326,12 @@ Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentI
     if (!d->clipboard)
         d->clipboard = new Clipboard;
     d->doc = new TextDocument;
-    d->cursor = new TextCursor(d->doc, d->clipboard);
+    d->cursor = new TextCursor(d->doc, d->clipboard, analizer);
     d->analizer = analizer;
-    d->documentId = documentId;
+    d->doc->documentId = documentId;
     d->settings = settings;
-    d->horizontalScrollBar = new ScrollBar(Qt::Horizontal, this);
-    d->verticalScrollBar = new ScrollBar(Qt::Vertical, this);
+    d->horizontalScrollBar = new QScrollBar(Qt::Horizontal, this);
+    d->verticalScrollBar = new QScrollBar(Qt::Vertical, this);
     QList<QRegExp> fileNamesToOpen = QList<QRegExp>() << QRegExp("*", Qt::CaseSensitive, QRegExp::Wildcard);
     if (d->analizer)
         fileNamesToOpen = d->analizer->supportedFileNamePattern();
@@ -478,7 +458,7 @@ void Editor::setText(const QString & text)
 {
     d->doc->setPlainText(text);
     if (d->analizer) {
-        d->analizer->setSourceText(d->documentId, text);
+        d->analizer->setSourceText(d->doc->documentId, text);
         d->updateFromAnalizer();
     }
     d->plane->update();

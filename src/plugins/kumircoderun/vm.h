@@ -17,6 +17,8 @@ public:
     enum RunEntryPoint { EP_Main, EP_Testing };
     explicit VM(QObject *parent = 0);
     void reset();
+    ElemType topStackType() const;
+    bool canStepInto() const;
     void evaluateNextInstruction();
     inline bool hasMoreInstructions() const { return !stack_contexts.isEmpty(); }
     inline QString error() const { return s_error; }

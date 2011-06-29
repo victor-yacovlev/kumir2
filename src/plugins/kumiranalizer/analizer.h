@@ -33,6 +33,12 @@ public slots:
 
     QList<Shared::LineProp> lineProperties() const;
 
+    Shared::LineProp lineProp(const QString & text) const;
+
+    QStringList algorhitmNames() const;
+    QStringList moduleNames() const;
+
+
     QList<QPoint> lineRanks() const;
 
     QStringList imports() const;
