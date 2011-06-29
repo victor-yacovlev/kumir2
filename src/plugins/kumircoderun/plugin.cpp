@@ -154,7 +154,7 @@ bool Plugin::canStepOut() const
 
 bool Plugin::canStepInto() const
 {
-    return false;
+    return d->vm->canStepInto();
 }
 
 } // namespace KumirCodeRun

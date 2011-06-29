@@ -15,6 +15,7 @@ struct Context {
     QVector<Variant> locals;
     QVector<Bytecode::Instruction> program;
     Bytecode::ElemType type;
+    int lineNo;
 };
 
 } // namespace KumirCodeRun

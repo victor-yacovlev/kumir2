@@ -52,6 +52,7 @@ void VM::reset()
         c.program = aMain->instructions;
         c.IP = 0;
         c.type = EL_MAIN;
+        c.lineNo = -1;
         stack_contexts.push(c);
     }
 
@@ -64,6 +65,7 @@ void VM::reset()
         c.program = testing->instructions;
         c.IP = 0;
         c.type = EL_TESTING;
+        c.lineNo = -1;
         stack_contexts.push(c);
     }
 
@@ -77,6 +79,7 @@ void VM::reset()
             c.program = inits[i]->instructions;
             c.IP = 0;
             c.type = EL_INIT;
+            c.lineNo = -1;
             stack_contexts.push(c);
         }
     }
@@ -309,6 +312,7 @@ void VM::do_call(quint8 mod, quint16 alg)
         c.program = functions[p].instructions ;
         c.locals = cleanLocalTables[p];
         c.type = EL_FUNCTION;
+        c.lineNo = -1;
         stack_contexts.push(c);
         emit functionEntered();
     }
@@ -561,8 +565,10 @@ void VM::do_pop(quint8 r)
 void VM::do_ret()
 {
     stack_contexts.pop();
-    if (!stack_contexts.isEmpty())
+    if (!stack_contexts.isEmpty()) {
         nextIP();
+        emit lineNoChanged(stack_contexts[stack_contexts.size()-1].lineNo);
+    }
     emit functionLeaved();
 }
 
@@ -582,6 +588,7 @@ void VM::do_error(quint8 s, quint16 id)
 void VM::do_line(quint16 no)
 {
     emit lineNoChanged(no);
+    stack_contexts[stack_contexts.size()-1].lineNo = no;
     nextIP();
 }
 
