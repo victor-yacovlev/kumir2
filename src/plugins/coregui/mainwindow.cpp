@@ -587,6 +587,7 @@ void MainWindow::setupContentForTab()
         const AST::Data * ast = m_plugin->plugin_editor->analizer(id)->abstractSyntaxTree(id);
         m_plugin->m_kumirProgram->setAST(ast);
         m_plugin->m_kumirProgram->setSourceFileName(fileName);
+        m_plugin->m_kumirProgram->setDocumentId(id);
     }
 }
 

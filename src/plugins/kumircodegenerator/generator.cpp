@@ -341,7 +341,7 @@ void Generator::findVariable(int modId, int algId, const AST::Variable * var, By
     }
     const AST::Algorhitm * alg = mod->impl.algorhitms[algId];
     for (quint16 i=0; i<alg->impl.locals.size(); i++) {
-        if (mod->impl.globals.at(i)==var) {
+        if (alg->impl.locals.at(i)==var) {
             scope = Bytecode::LOCAL;
             id = i;
             return;
@@ -686,9 +686,20 @@ void Generator::LOOP(int modId, int algId,
         // pass
     }
     else if (st->loop.type==AST::LoopTimes) {
-        // Push times value to register
+        // Calculate times value
         result << calculate(modId, algId, level, st->loop.timesValue);
         Bytecode::Instruction a;
+
+        // First time increase by 1
+        a.type = Bytecode::LOAD;
+        a.scope = Bytecode::CONST;
+        a.arg = constantValue(Bytecode::VT_int, 1);
+        result << a;
+
+        a.type = Bytecode::SUM;
+        result << a;
+
+        // Store value in register
         a.type = Bytecode::POP;
         a.registerr = level;
         result << a;

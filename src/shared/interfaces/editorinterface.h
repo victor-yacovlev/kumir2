@@ -25,6 +25,9 @@ public:
     virtual QString saveDocument(int documentId, const QString & fileName) = 0;
     virtual AnalizerInterface * analizer(int documentId) = 0;
     virtual quint32 errorsCount(int documentId) const = 0;
+    virtual void highlightLineGreen(int documentId, int lineNo) = 0;
+    virtual void highlightLineRed(int documentId, int lineNo) = 0;
+    virtual void unhighlightLine(int documentId) = 0;
 };
 
 }

@@ -66,6 +66,7 @@ QString Plugin::initialize(const QStringList &)
     m_kumirProgram = new KumirProgram(this);
     m_kumirProgram->setBytecodeGenerator(plugin_BytecodeGenerator);
     m_kumirProgram->setCppGenerator(plugin_CppGenerator);
+    m_kumirProgram->setEditorPlugin(plugin_editor);
     m_kumirProgram->setTerminal(m_terminal, termWindow);
 
     KPlugin * kumirRunner = myDependency("KumirCodeRun");

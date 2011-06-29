@@ -24,6 +24,7 @@ EditorPlane::EditorPlane(TextDocument * doc
                          , QWidget *parent) :
     QWidget(parent)
 {
+    i_highlightedLine = -1;
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     rxFilenamePattern = fileNamesToOpen;
     i_marginAlpha = 255;
@@ -50,6 +51,16 @@ EditorPlane::EditorPlane(TextDocument * doc
     setFocusPolicy(Qt::StrongFocus);
     pnt_marginPress = pnt_textPress = pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
     b_selectionInProgress = false;
+}
+
+void EditorPlane::setLineHighlighted(int lineNo, const QColor &color)
+{
+    i_highlightedLine = lineNo;
+    color_highlightedLine = color;
+    if (lineNo>-1) {
+        ensureHighlightedLineVisible();
+    }
+    update();
 }
 
 void EditorPlane::paintDropPosition(QPainter *p)
@@ -319,6 +330,29 @@ void EditorPlane::ensureCursorVisible()
     }
 }
 
+void EditorPlane::ensureHighlightedLineVisible()
+{
+    QRect cr(0,
+             i_highlightedLine,
+             2,
+             2
+                );
+    QRect vr;
+    vr.setLeft(m_horizontalScrollBar->isEnabled()? m_horizontalScrollBar->value()/charWidth() : 0);
+    vr.setTop(m_verticalScrollBar->isEnabled()? m_verticalScrollBar->value()/lineHeight() : 0);
+    vr.setSize(QSize(widthInChars(), height()/lineHeight()));
+
+    if (cr.top()>vr.bottom()) {
+        int v = m_cursor->row()+1;
+        m_verticalScrollBar->setValue(v*lineHeight());
+    }
+    else if (cr.bottom()<vr.top()) {
+        int v = m_cursor->row()-1;
+        m_verticalScrollBar->setValue(v*lineHeight());
+    }
+}
+
+
 void EditorPlane::findCursor()
 {
     updateScrollBars();
@@ -335,21 +369,73 @@ void EditorPlane::paintEvent(QPaintEvent *e)
 
     p.translate( offset() );
 
+
+    if (i_highlightedLine!=-1)
+    {
+        QRect highlightRect(0, lineHeight()*i_highlightedLine+1,
+                            widthInChars()*charWidth(), lineHeight()+5);
+        QLinearGradient gr(QPointF(0,0),QPointF(0,1));
+        gr.setCoordinateMode(QGradient::ObjectBoundingMode);
+        QColor c1 = color_highlightedLine.lighter();
+        c1.setAlpha(32);
+        QColor c2 = color_highlightedLine.lighter();
+
+        gr.setColorAt(0, c1);
+        gr.setColorAt(1, c2);
+        p.setBrush(gr);
+        p.setPen(Qt::NoPen);
+        p.drawRect(highlightRect);
+        p.setPen(color_highlightedLine);
+        p.drawLine(highlightRect.topLeft(), highlightRect.topRight());
+        p.drawLine(highlightRect.bottomLeft(), highlightRect.bottomRight());
+    }
     paintSelection(&p, e->rect());
     paintRectSelection(&p, e->rect());
     paintText(&p, e->rect());
 
     p.restore();
     paintLineNumbers(&p, e->rect());
+
     paintCursor(&p, e->rect());
 
     if (b_hasAnalizer) {
         paintMarginBackground(&p, e->rect());
 
-        paintMarginText(&p, e->rect());
-
         paintNewMarginLine(&p);
     }
+
+    p.save();
+    p.translate(offset());
+    if (i_highlightedLine!=-1)
+    {
+        QRect highlightRect1(-offset().x(), lineHeight()*i_highlightedLine+1,
+                            5*charWidth(), lineHeight()+5);
+        QRect highlightRect2(charWidth()*widthInChars(), lineHeight()*i_highlightedLine+1,
+                             marginCharactersCount()*widthInChars(), lineHeight()+5);
+        QLinearGradient gr(QPointF(0,0),QPointF(0,1));
+        gr.setCoordinateMode(QGradient::ObjectBoundingMode);
+        QColor c1 = color_highlightedLine.lighter();
+        c1.setAlpha(32);
+        QColor c2 = color_highlightedLine.lighter();
+
+        gr.setColorAt(0, c1);
+        gr.setColorAt(1, c2);
+        p.setBrush(gr);
+        p.setPen(Qt::NoPen);
+        p.drawRect(highlightRect1);
+        p.drawRect(highlightRect2);
+        p.setPen(color_highlightedLine);
+        p.drawLine(highlightRect1.topLeft(), highlightRect1.topRight());
+        p.drawLine(highlightRect1.bottomLeft(), highlightRect1.bottomRight());
+        p.drawLine(highlightRect2.topLeft(), highlightRect2.topRight());
+        p.drawLine(highlightRect2.bottomLeft(), highlightRect2.bottomRight());
+    }
+    p.restore();
+
+    if (b_hasAnalizer) {
+        paintMarginText(&p, e->rect());
+    }
+
     paintDropPosition(&p);
     p.setBrush(Qt::NoBrush);
     const QBrush br = hasFocus()? palette().brush(QPalette::Highlight) : palette().brush(QPalette::Window);
@@ -1088,6 +1174,9 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
             setProperFormat(p, curType, m_document->at(i).text[j]);
             if (m_document->at(i).selected[j]) {
                 p->setPen(palette().brush(QPalette::HighlightedText).color());
+            }
+            if (i_highlightedLine==i) {
+                p->setPen(p->pen().color().darker());
             }
 
             int charW = QFontMetrics(p->font()).width(m_document->at(i).text[j]);

@@ -92,6 +92,11 @@ void Editor::unlock()
     d->cursor->setEnabled(true);
 }
 
+void Editor::setLineHighlighted(int lineNo, const QColor &color)
+{
+    d->plane->setLineHighlighted(lineNo, color);
+}
+
 QList<QWidget*> Editor::statusbarWidgets()
 {
     return QList<QWidget*>() << d->positionStatus << d->keybStatus;

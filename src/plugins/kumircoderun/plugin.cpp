@@ -12,6 +12,7 @@ Plugin::Plugin() :
     connect (d, SIGNAL(output(QString)), this, SLOT(handleOutput(QString)));
     connect (d, SIGNAL(input(QString)), this, SLOT(handleInput(QString)));
     connect (d, SIGNAL(finished()), this, SLOT(handleThreadFinished()));
+    connect (d, SIGNAL(lineChanged(int)), this, SLOT(handleLineChanged(int)));
 }
 
 Plugin::~Plugin()
@@ -21,6 +22,11 @@ Plugin::~Plugin()
         d->wait();
     }
     delete d;
+}
+
+int Plugin::currentLineNo() const
+{
+    return d->lineNo();
 }
 
 bool Plugin::loadProgram(QIODevice *source, Shared::ProgramFormat format)
@@ -49,6 +55,7 @@ void Plugin::runContinuous()
     if (b_done) {
         d->vm->setEntryPoint(VM::EP_Main);
         d->vm->reset();
+        b_done = false;
     }
     d->runContinuous();
 }
@@ -68,6 +75,7 @@ void Plugin::runStepOver()
     if (b_done) {
         d->vm->setEntryPoint(VM::EP_Main);
         d->vm->reset();
+        b_done = false;
     }
     d->runStepOver();
 }
@@ -100,16 +108,24 @@ void Plugin::handleThreadFinished()
 {
     if (!d->vm->error().isEmpty()) {
         emit stopped(Shared::RunInterface::Error);
+        b_done = true;
     }
     else if (d->vm->hasMoreInstructions() && d->stopped()) {
         emit stopped(Shared::RunInterface::UserTerminated);
+        b_done = true;
     }
     else if (d->vm->hasMoreInstructions()) {
         emit stopped(Shared::RunInterface::UserInteraction);
     }
     else {
         emit stopped(Shared::RunInterface::Done);
+        b_done = true;
     }
+}
+
+void Plugin::handleLineChanged(int lineNo)
+{
+    emit lineChanged(lineNo);
 }
 
 void Plugin::handleInput(const QString &format)

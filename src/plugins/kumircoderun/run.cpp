@@ -14,9 +14,9 @@ Run::Run(QObject *parent) :
     mutex_inputDone = new QMutex;
     e_runMode = RM_ToEnd;
 
-    connect(vm, SIGNAL(functionEntered()), this, SLOT(handleDeepChanged()));
-    connect(vm, SIGNAL(functionLeaved()), this, SLOT(handleDeepChanged()));
-    connect(vm, SIGNAL(lineNoChanged(int)), this, SLOT(handleLineChanged(int)));
+    connect(vm, SIGNAL(functionEntered()), this, SLOT(handleDeepChanged()), Qt::DirectConnection);
+    connect(vm, SIGNAL(functionLeaved()), this, SLOT(handleDeepChanged()), Qt::DirectConnection);
+    connect(vm, SIGNAL(lineNoChanged(int)), this, SLOT(handleLineChanged(int)), Qt::DirectConnection);
 
     connect(vm, SIGNAL(inputRequest(QString,QList<quintptr>)),
             this, SLOT(handleInputRequest(QString,QList<quintptr>)), Qt::DirectConnection);
@@ -28,6 +28,10 @@ void Run::stop()
 {
     QMutexLocker l(mutex_stopping);
     b_stopping = true;
+    if (!isRunning()) {
+        emit lineChanged(-1);
+        emit finished();
+    }
 }
 
 void Run::runStepOver()
@@ -127,8 +131,12 @@ void Run::handleLineChanged(int lineNo)
     mutex_stepDone->lock();
     b_stepDone = true;
     mutex_stepDone->unlock();
+    i_lineNo = lineNo;
     if (mustStop())
         emit lineChanged(lineNo);
+    else
+        emit lineChanged(-1);
+
 }
 
 void Run::run()

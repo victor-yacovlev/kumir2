@@ -34,6 +34,7 @@ public slots:
     void cut();
     void removeLine();
     void removeLineTail();
+    void setLineHighlighted(int lineNo, const QColor & color);
 protected:
     static QPolygon errorUnderline(int x, int y, int len);
     void dragEventHandler(QDragMoveEvent * e);
@@ -53,6 +54,7 @@ protected:
     void updateScrollBars();
     void findCursor();
     void ensureCursorVisible();
+    void ensureHighlightedLineVisible();
 //    void updateOffset();
     void paintEvent(QPaintEvent *);
     QPoint offset() const;
@@ -90,6 +92,9 @@ private:
     QPoint pnt_dropPosCorner;
     int i_marginAlpha;
     bool b_hasAnalizer;
+
+    int i_highlightedLine;
+    QColor color_highlightedLine;
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
 

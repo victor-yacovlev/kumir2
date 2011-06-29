@@ -18,6 +18,7 @@ KumirProgram::KumirProgram(QObject *parent)
     , plugin_cppGenerator(0)
     , plugin_bytcodeGenerator(0)
     , plugin_bytecodeRun(0)
+    , plugin_editor(0)
     , a_fastRun(0)
     , a_regularRun(0)
     , a_stepRun(0)
@@ -115,6 +116,7 @@ void KumirProgram::setBytecodeRun(KPlugin *run)
     connect(run, SIGNAL(inputRequest(QString)), m_terminalWindow, SLOT(show()));
     connect(run, SIGNAL(stopped(int)),
             this, SLOT(handleRunnerStopped(int)));
+    connect(run, SIGNAL(lineChanged(int)), this, SLOT(handleLineChanged(int)));
 }
 
 void KumirProgram::addActor(KPlugin *a, QDockWidget *w)
@@ -229,6 +231,7 @@ void KumirProgram::stepRun()
     if (e_state==Idle)
         prepareKumirRunner();
     e_state = StepRun;
+    a_stepRun->setIcon(QIcon::fromTheme("debug-step-over"));
     PluginManager::instance()->switchGlobalState(GS_Running);
     plugin_bytecodeRun->runStepOver();
 }
@@ -295,6 +298,7 @@ void KumirProgram::handleRunnerStopped(int rr)
     else if (reason==Shared::RunInterface::Error) {
         s_endStatus = tr("Evaluation error");
         m_terminal->error(plugin_bytecodeRun->error());
+        plugin_editor->highlightLineRed(i_documentId, plugin_bytecodeRun->currentLineNo());
         PluginManager::instance()->switchGlobalState(GS_Observe);
         e_state = Idle;
     }
@@ -306,6 +310,18 @@ void KumirProgram::handleRunnerStopped(int rr)
     }
 }
 
+void KumirProgram::handleLineChanged(int lineNo)
+{
+    if (lineNo!=-1) {
+        if (plugin_bytecodeRun->error().isEmpty())
+            plugin_editor->highlightLineGreen(i_documentId, lineNo);
+        else
+            plugin_editor->highlightLineRed(i_documentId, lineNo);
+    }
+    else {
+        plugin_editor->unhighlightLine(i_documentId);
+    }
+}
 
 
 void KumirProgram::switchGlobalState(GlobalState , GlobalState cur)
@@ -333,7 +349,7 @@ void KumirProgram::switchGlobalState(GlobalState , GlobalState cur)
         a_regularRun->setEnabled(true);
         a_stepRun->setEnabled(true);
         a_stepRun->setText(tr("Step over"));
-        a_stepIn->setIcon(QIcon::fromTheme("debug-step-over"));
+        a_stepRun->setIcon(QIcon::fromTheme("debug-step-over"));
         a_stepIn->setEnabled(true);
         a_stepOut->setEnabled(true);
         a_stop->setEnabled(true);

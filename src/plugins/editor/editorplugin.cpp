@@ -183,6 +183,10 @@ AnalizerInterface * EditorPlugin::analizer(int documentId)
 
 void EditorPlugin::changeGlobalState(ExtensionSystem::GlobalState , ExtensionSystem::GlobalState current)
 {
+    if (current==ExtensionSystem::GS_Unlocked || current==ExtensionSystem::GS_Running) {
+        for (int i=0; i<d->editors.size(); i++)
+            unhighlightLine(i);
+    }
     if (current==ExtensionSystem::GS_Unlocked || current==ExtensionSystem::GS_Observe) {
         for (int i=0; i<d->editors.size(); i++) {
             if (d->editors[i].e) {
@@ -203,6 +207,24 @@ void EditorPlugin::changeGlobalState(ExtensionSystem::GlobalState , ExtensionSys
             }
         }
     }
+}
+
+void EditorPlugin::highlightLineGreen(int documentId, int lineNo)
+{
+    if (d->editors[documentId].e)
+        d->editors[documentId].e->setLineHighlighted(lineNo, QColor(Qt::darkGreen));
+}
+
+void EditorPlugin::highlightLineRed(int documentId, int lineNo)
+{
+    if (d->editors[documentId].e)
+        d->editors[documentId].e->setLineHighlighted(lineNo, QColor(Qt::red));
+}
+
+void EditorPlugin::unhighlightLine(int documentId)
+{
+    if (d->editors[documentId].e)
+        d->editors[documentId].e->setLineHighlighted(-1, QColor::Invalid);
 }
 
 }

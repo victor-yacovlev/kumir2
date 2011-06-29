@@ -6,6 +6,7 @@
 #include "interfaces/generatorinterface.h"
 #include "interfaces/actorinterface.h"
 #include "interfaces/runinterface.h"
+#include "interfaces/editorinterface.h"
 #include "stdlib/connector.h"
 #include "terminal.h"
 #include "extensionsystem/kplugin.h"
@@ -15,6 +16,7 @@ namespace CoreGUI {
 using Shared::GeneratorInterface;
 using Shared::ActorInterface;
 using Shared::RunInterface;
+using Shared::EditorInterface;
 using Terminal::Terminal;
 using StdLib::Connector;
 using namespace ExtensionSystem;
@@ -26,10 +28,12 @@ public:
     explicit KumirProgram(QObject *parent = 0);
     inline void setCppGenerator(GeneratorInterface * cpp) { plugin_cppGenerator = cpp; }
     inline void setBytecodeGenerator(GeneratorInterface * bc) { plugin_bytcodeGenerator = bc; }
+    inline void setEditorPlugin(EditorInterface * ed) { plugin_editor = ed; }
     inline void setAST(const AST::Data * ast) { m_ast = ast; }
     inline QActionGroup * actions() { return gr_actions; }
     inline bool isRunning() const { return e_state!=Idle; }
     inline void setSourceFileName(const QString & s) { s_sourceFileName = s; }
+    inline void setDocumentId(int id) { i_documentId = id; }
     void setTerminal(Terminal * t, QDockWidget * w);
     void setBytecodeRun(KPlugin * run);
     void addActor(KPlugin * a, QDockWidget * w);
@@ -47,6 +51,7 @@ public slots:
     void handleActorCommandFinished();
     void handleActorCommand(const QString & actorName, const QString & command, const QVariantList & arguments);
     void handleActorResetRequest(const QString & actorName);
+    void handleLineChanged(int lineNo);
 private slots:
     void handleProcessFinished(int exitCode, QProcess::ExitStatus);
     void handleProcessError(QProcess::ProcessError);
@@ -62,6 +67,7 @@ private:
     GeneratorInterface * plugin_cppGenerator;
     GeneratorInterface * plugin_bytcodeGenerator;
     RunInterface * plugin_bytecodeRun;
+    EditorInterface * plugin_editor;
     QAction * a_fastRun;
     QAction * a_regularRun;
     QAction * a_stepRun;
@@ -73,6 +79,7 @@ private:
     Connector * m_connector;
     QMap<QString,QDockWidget*> m_actorWindows;
     QMap<QString,ActorInterface*> m_actors;
+    int i_documentId;
 
 };
 

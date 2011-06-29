@@ -23,6 +23,7 @@ public:
     bool loadProgram(QIODevice * source, Shared::ProgramFormat format);
     bool hasMoreInstructions() const;
     QString error() const;
+    int currentLineNo() const ;
     inline QDateTime loadedProgramVersion() const { return dt_loadedVersion; }
 
 public slots:
@@ -45,6 +46,7 @@ protected slots:
     void handleOutput(const QString & text);
     void handleInput(const QString & format);
     void handleThreadFinished();
+    void handleLineChanged(int lineNo);
 
 
 signals:

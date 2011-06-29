@@ -16,6 +16,7 @@ public:
     explicit Run(QObject *parent = 0);
     VM * vm;
     inline bool stopped() const { return b_stopping; }
+    inline int lineNo() const { return i_lineNo; }
 
 public slots:
     void stop();
@@ -59,6 +60,8 @@ protected :
     bool b_inputDone;
 
     QVariantList list_inputResult;
+
+    int i_lineNo;
 
 
 };

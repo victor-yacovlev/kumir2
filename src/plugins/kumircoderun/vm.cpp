@@ -16,6 +16,7 @@ VM::VM(QObject *parent) :
 
 void VM::reset()
 {
+    s_error = "";
     stack_values.clear();
     stack_contexts.clear();
     QList<TableElem*> inits;
