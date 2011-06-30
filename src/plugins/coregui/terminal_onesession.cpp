@@ -1,5 +1,6 @@
 #include "terminal_onesession.h"
 #include "terminal.h"
+#include "stdlib/genericinputoutput.h"
 
 namespace Terminal {
 
@@ -8,11 +9,15 @@ static const int headerPadding = 4;
 static const int lineWidth = 1;
 static const int shadowOffset = 4;
 
-OneSession::OneSession(int fixedWidth, const QString & fileName, QObject * parent)
+OneSession::OneSession(int fixedWidth, const QString & fileName, QWidget * parent)
     : QObject(parent)
     , s_fileName(fileName)
     , i_fixedWidth(fixedWidth)
 {
+    i_inputLineStart = i_inputPosStart = -1;
+    i_inputCursorPosition = -1;
+    i_timerId = -1;
+    b_inputCursorVisible = false;
     QString defaultFontFamily = "Courier";
 #ifdef Q_WS_X11
     defaultFontFamily = "DejaVu Sans Mono";
@@ -132,6 +137,19 @@ void OneSession::draw(QPainter *p, int realWidth)
     int x = bodyPadding;
     int y = 2 * headerPadding + 2 * atom.height() + bodyPadding;
 
+    if (i_inputCursorPosition!=-1 && b_inputCursorVisible && (qobject_cast<QWidget*>(parent()))->hasFocus()) {
+        int cursorRow = m_lines.size()-1-i_inputLineStart;
+        int cursorCol = cursorRow>0? 0 : i_inputCursorPosition+i_inputPosStart;
+        QRect cursorRect(x + cursorCol * atom.width(),
+                         y + cursorRow * atom.height(),
+                         atom.width(),
+                         2
+                         );
+        p->setPen(Qt::NoPen);
+        p->setBrush(QColor(Qt::black));
+        p->drawRect(cursorRect);
+    }
+
     Q_ASSERT(m_lines.size()==m_props.size());
     p->setFont(m_font);
     for (int i=0; i<m_lines.size(); i++) {
@@ -141,7 +159,7 @@ void OneSession::draw(QPainter *p, int realWidth)
         for (int j=0; j<text.length(); j++) {
             if (prop[j]==CS_Input)
                 p->setPen(QColor(Qt::blue));
-            else if (prop[j]==CS_Error)
+            else if (prop[j]==CS_Error || prop[j]==CS_InputError)
                 p->setPen(QColor(Qt::red));
             else
                 p->setPen(QColor(Qt::black));
@@ -158,6 +176,9 @@ void OneSession::draw(QPainter *p, int realWidth)
         y += atom.height();
         x = bodyPadding;
     }
+
+
+
     if (!footer.isEmpty()) {
         p->setFont(smallFont);
         p->setPen(QColor(Qt::darkGray));
@@ -184,7 +205,8 @@ void OneSession::output(const QString &text)
         }
         if (text[i].unicode()>=32) {
             m_lines[curLine] += text[i];
-            m_props[curLine] << CS_Output;
+            m_props[curLine].append(CS_Output);
+            Q_ASSERT(m_props[curLine].last()==CS_Output);
         }
     }
     emit updateRequest();
@@ -192,7 +214,122 @@ void OneSession::output(const QString &text)
 
 void OneSession::input(const QString &format)
 {
-    // TODO implement me
+    i_inputLineStart = m_lines.size()-1;
+    i_inputPosStart = 0;
+    if (!m_lines.isEmpty()) {
+        i_inputPosStart = m_lines.last().length();
+    }
+    i_inputCursorPosition = 0;
+    b_inputCursorVisible = true;
+    StdLib::GenericInputOutput::instance()->doInput(format);
+    QString msg = tr("INPUT ");
+    QStringList fmts = format.split("%", QString::SkipEmptyParts);
+    for (int i=0; i<fmts.size(); i++) {
+        if (i>0) {
+            msg += ", ";
+        }
+        if (fmts[i]=="s")
+            msg += tr("string");
+        if (fmts[i]=="d")
+            msg += tr("integer");
+        if (fmts[i]=="f")
+            msg += tr("real");
+        if (fmts[i]=="c")
+            msg += tr("charect");
+        if (fmts[i]=="b")
+            msg += tr("boolean");
+    }
+    msg += ".";
+    emit message(msg);
+    i_timerId = startTimer(QApplication::cursorFlashTime()/2);
+    emit updateRequest();
+}
+
+void OneSession::timerEvent(QTimerEvent *e)
+{
+    b_inputCursorVisible = !b_inputCursorVisible;
+    emit updateRequest();
+    e->accept();
+}
+
+void OneSession::changeCursorPosition(quint16 pos)
+{
+    i_inputCursorPosition = pos;
+    b_inputCursorVisible = true;
+    emit updateRequest();
+}
+
+void OneSession::changeInputText(const QString &text)
+{
+    m_lines = m_lines.mid(0, i_inputLineStart+1);
+    m_props = m_props.mid(0, i_inputLineStart+1);
+    if (!m_lines.isEmpty()) {
+        m_lines[m_lines.size()-1] = m_lines[m_lines.size()-1].mid(0,i_inputPosStart);
+        m_props[m_props.size()-1] = m_props[m_props.size()-1].mid(0,i_inputPosStart);
+    }
+    int curCol = i_inputPosStart;
+    int curLine = m_lines.size()-1;
+    for (int i=0; i<text.length(); i++) {
+        bool newLine = curLine<0 || ( i_fixedWidth!=-1 && curCol>=i_fixedWidth );
+        if (newLine) {
+            m_lines.append("");
+            m_props.append(LineProp());
+            curLine ++;
+            curCol = 0;
+        }
+        if (text[i].unicode()>=32) {
+            m_lines[curLine] += text[i];
+            m_props[curLine].append(CS_Input);
+            Q_ASSERT(m_props[curLine].last()==CS_Input);
+        }
+    }
+    emit updateRequest();
+}
+
+void OneSession::tryFinishInput()
+{
+    QString text;
+    for (int i=i_inputLineStart; i<m_lines.size(); i++) {
+        if (i==i_inputLineStart)
+            text += m_lines[i].mid(i_inputPosStart);
+        else
+            text += m_lines[i];
+    }
+    QVector<bool> errmask = QVector<bool>(text.length(), false);
+    QVariantList result;
+    QString error;
+    QSet< QPair<int,int> > errpos;
+    bool ok = StdLib::GenericInputOutput::instance()->tryFinishInput(text, result, errpos, true, error);
+    if (!ok) {
+        emit message(error);
+        for (int i=0; i<errpos.toList().size(); i++) {
+            QPair<int,int> pos = errpos.toList()[i];
+            for (int j=pos.first; j<pos.first+pos.second; j++) {
+                errmask[j] = true;
+            }
+        }
+        int curLine = i_inputLineStart;
+        int curCol = i_inputPosStart;
+        for (int i=0; i<text.length(); i++) {
+            bool newLine = curLine<0 || ( i_fixedWidth!=-1 && curCol>=i_fixedWidth );
+            if (newLine) {
+                curLine ++;
+                curCol = 0;
+            }
+            else {
+                Q_ASSERT(m_props[curLine][curCol]==CS_Input || m_props[curLine][curCol]==CS_InputError);
+                m_props[curLine][curCol] = errmask[i]? CS_InputError : CS_Input;
+                Q_ASSERT(m_props[curLine][curCol]==CS_Input || m_props[curLine][curCol]==CS_InputError);
+                curCol ++;
+            }
+        }
+        emit updateRequest();
+    }
+    else {
+        output("\n");
+        emit message("");
+        emit inputDone(result);
+    }
 }
 
 void OneSession::error(const QString &message)
@@ -209,6 +346,9 @@ void OneSession::error(const QString &message)
 void OneSession::terminate()
 {
     m_endTime = QDateTime::currentDateTime();
+    if (i_timerId!=-1)
+        killTimer(i_timerId);
+    i_inputLineStart = i_inputPosStart = i_inputCursorPosition = -1;
     emit updateRequest();
 }
 

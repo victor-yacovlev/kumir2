@@ -58,6 +58,10 @@ QString Plugin::initialize(const QStringList &)
     if (!plugin_NativeGenerator)
         return "Can't load c-generator plugin!";
     m_terminal = new Terminal(0);
+
+    connect(m_terminal, SIGNAL(message(QString)),
+            m_mainWindow, SLOT(showMessage(QString)));
+
     QDockWidget * termWindow = m_mainWindow->addSecondaryComponent(tr("Input/Output terminal"),
                                         m_terminal,
                                         QList<QAction*>(),

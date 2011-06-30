@@ -32,6 +32,7 @@ enum InstructionType {
     ERROR       = 0x1E, // Abort evaluation
     LINE        = 0x1F, // Emit line number
     REF         = 0x20, // Get reference to variable
+    REFARR      = 0x21, // Get reference to array element
 
 
     // Common operations -- no comments need

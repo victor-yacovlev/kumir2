@@ -281,11 +281,11 @@ void GenericInputOutput::doInput(const QString &format)
         QVariant::Type pType;
         if ( fmt=="s" )
             pType = QVariant::String;
-        if ( fmt=="i" )
+        if ( fmt=="d" )
             pType = QVariant::Int;
         if ( fmt=="c" )
             pType = QVariant::Char;
-        if ( fmt=="r" )
+        if ( fmt=="f" )
             pType = QVariant::Double;
         if ( fmt=="b" )
             pType = QVariant::Bool;
@@ -294,7 +294,11 @@ void GenericInputOutput::doInput(const QString &format)
     inputGarbageStart = -1;
 }
 
-bool GenericInputOutput::tryFinishInput(const QString &txt, QList<QVariant> &result, QString &msg)
+bool GenericInputOutput::tryFinishInput(const QString &txt,
+                                        QList<QVariant> &result,
+                                        QSet< QPair<int,int> > &errpos,
+                                        bool colorize,
+                                        QString &msg)
 {
     msg = "";
     bool ok = validateInput(txt);
@@ -320,9 +324,17 @@ bool GenericInputOutput::tryFinishInput(const QString &txt, QList<QVariant> &res
                     else if ( word.pType == QVariant::Bool )
                         t = tr("boolean");
                     if ( word.valid )
-                        m << t;
-                    else if ( word.text.length()>0 )
-                        m << t;
+                        if (colorize)
+                            m << "<font color='green'><b>"+t+"</b></font>";
+                        else
+                            m << t;
+                    else if ( word.text.length()>0 ) {
+                        if (colorize)
+                            m << "<font color='red'><b>"+t+"</b></font>";
+                        else
+                            m << t;
+                        errpos.insert(QPair<int,int>(word.start, word.text.length()));
+                    }
                     else
                         m << t;
 
@@ -337,30 +349,41 @@ bool GenericInputOutput::tryFinishInput(const QString &txt, QList<QVariant> &res
                 msg += m.join(", ")+".";
                 if ( word.text.length()>0 )
                 {
+                    QString a;
                     if ( word.error == notInteger )
-                        msg += tr("It is not integer.");
+                        a = tr("It is not integer.");
                     else if ( word.error == notReal )
-                        msg += tr("It is not real.");
+                        a = tr("It is not real.");
                     else if ( word.error == notBool )
-                        msg += tr("It is not kumBoolean.");
+                        a = tr("It is not kumBoolean.");
                     else if ( word.error == unpairedQuote )
-                        msg += tr("Unpaired quote.");
+                        a = tr("Unpaired quote.");
                     else if ( word.error == longCharect )
-                        msg += tr("More then one character.");
+                        a = tr("More then one character.");
                     else if ( word.error == quoteMisplace )
-                        msg += tr("Quotes misplaced.");
+                        a = tr("Quotes misplaced.");
                     else if ( word.error == differentQuotes )
-                        msg += tr("Different quotes.");
+                        a = tr("Different quotes.");
+                    if (colorize)
+                        msg += " <font color='red'>"+a+"</font>";
+                    else
+                        msg += " " + a;
+                    errpos.insert(QPair<int,int>(word.start, word.text.length()));
                 }
                 else {
+                    QString a;
                     if ( word.pType==QVariant::Int )
-                        msg += tr("Integer not entered.");
+                        a = tr("Integer not entered.");
                     if ( word.pType==QVariant::Double )
-                        msg += tr("Real not entered.");
+                        a = tr("Real not entered.");
                     if ( word.pType==QVariant::Bool )
-                        msg += tr("Boolean not entered.");
+                        a = tr("Boolean not entered.");
                     if ( word.pType==QVariant::Char )
-                        msg += tr("Charect not entered.");
+                        a = tr("Charect not entered.");
+                    if (colorize)
+                        msg += " <font color='red'>"+a+"</font>";
+                    else
+                        msg += " " + a;
                 }
                 return ok;
             }
@@ -383,9 +406,17 @@ bool GenericInputOutput::tryFinishInput(const QString &txt, QList<QVariant> &res
                 else if ( word.pType == QVariant::Bool )
                     t = tr("boolean");
                 if ( word.valid )
-                    m << t;
-                else if ( word.text.length()>0 )
-                    m << t;
+                    if (colorize)
+                        m << "<font color='green'><b>"+t+"</b></font>";
+                    else
+                        m << t;
+                else if ( word.text.length()>0 ) {
+                    if (colorize)
+                        m << "<font color='red'><b>"+t+"</b></font>";
+                    else
+                        m << t;
+                    errpos.insert(QPair<int,int>(word.start, word.text.length()));
+                }
                 else
                     m << t;
             }
@@ -406,16 +437,21 @@ bool GenericInputOutput::tryFinishInput(const QString &txt, QList<QVariant> &res
             }
             msg += m.join(", ")+".";
             QVariant::Type pType = types[words.count()];
+            QString a;
             if ( pType==QVariant::Int )
-                msg += tr("Integer not entered.");
+                a = tr("Integer not entered.");
             if ( pType==QVariant::Double )
-                msg += tr("Real not entered.");
+                a = tr("Real not entered.");
             if ( pType==QVariant::Bool )
-                msg += tr("Boolean not entered.");
+                a = tr("Boolean not entered.");
             if ( pType==QVariant::Char )
-                msg += tr("Charect not entered.");
+                a = tr("Charect not entered.");
             if ( pType==QVariant::String )
-                msg += tr("String not entered.");
+                a = tr("String not entered.");
+            if (colorize)
+                msg += " <font color='red'>"+a+"</font>";
+            else
+                msg += " "+a;
         }
         if ( inputGarbageStart > -1 ) {
             msg = tr("INPUT ");
@@ -433,15 +469,29 @@ bool GenericInputOutput::tryFinishInput(const QString &txt, QList<QVariant> &res
                 else if ( word.pType == QVariant::Bool )
                     t = tr("boolean");
                 if ( word.valid )
-                    m << t;
-                else if ( word.text.length()>0 )
-                    m << t;
+                    if (colorize)
+                        m << "<font color='green'><b>"+t+"</b></font>";
+                    else
+                        m << t;
+                else if ( word.text.length()>0 ) {
+                    if (colorize)
+                        m << "<font color='red'><b>"+t+"</b></font>";
+                    else
+                        m << t;
+                    errpos.insert(QPair<int,int>(word.start, word.text.length()));
+                }
                 else
                     m << t;
 
             }
             msg += m.join(", ") + ".";
-            msg += tr("Garbage after input string.");
+            const QString a = tr("Garbage after input string.");
+            if (colorize)
+                msg += " <font color='red'>"+a+"</font>";
+            else
+                msg += " "+a;
+            errpos.insert(QPair<int,int>(inputGarbageStart, txt.length()-inputGarbageStart));
+
         }
     }
     return ok;
@@ -536,7 +586,8 @@ extern "C" void __input__st_funct(const char * format, int args, ...)
         bool ok;
         do {
             wscanf(L"%ls", &buffer);
-            ok = inp->tryFinishInput(QString::fromWCharArray(buffer), result, error);
+            QSet<QPair<int,int> > errpos;
+            ok = inp->tryFinishInput(QString::fromWCharArray(buffer), result, errpos, false, error);
             if (!ok) {
                 err[error.toWCharArray(err)] = L'\0';
                 fwprintf(stderr, L"%ls\n", err);

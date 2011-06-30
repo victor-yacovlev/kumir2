@@ -575,14 +575,53 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
     l.arg = lineNo;
     result << l;
 
-    for (int i=st->expressions.size()-1; i>=0; i--) {
-        result << calculate(modId, algId, level, st->expressions[i]);
+    quint16 argsCount;
+
+    if (st->type==AST::StOutput || st->type==AST::StFileOutput) {
+        for (int i=st->expressions.size()-1; i>=0; i--) {
+            result << calculate(modId, algId, level, st->expressions[i]);
+        }
+        argsCount = st->expressions.size();
+    }
+    else {
+        QString format;
+        for (int i=st->expressions.size()-1; i>=0; i--) {
+            AST::Expression * expr = st->expressions[i];
+            Bytecode::Instruction ref;
+            findVariable(modId, algId, expr->variable, ref.scope, ref.arg);
+            if (expr->kind==AST::ExprVariable) {
+                ref.type = Bytecode::REF;
+            }
+            else if (expr->kind==AST::ExprArrayElement) {
+                ref.type = Bytecode::REFARR;
+                for (int j=expr->operands.size(); j>=0; j--) {
+                    result << calculate(modId, algId, level, expr->operands[j]);
+                }
+            }
+            if (expr->baseType==AST::TypeBoolean)
+                format += "%b";
+            else if (expr->baseType==AST::TypeCharect)
+                format += "%c";
+            else if (expr->baseType==AST::TypeInteger)
+                format += "%d";
+            else if (expr->baseType==AST::TypeReal)
+                format += "%f";
+            else
+                format += "%s";
+            result << ref;
+        }
+        Bytecode::Instruction fmt;
+        fmt.type = Bytecode::LOAD;
+        fmt.scope = Bytecode::CONST;
+        fmt.arg = constantValue(Bytecode::VT_string, format);
+        argsCount = st->expressions.size() + 1;
+        result << fmt;
     }
 
     Bytecode::Instruction pushCount;
     pushCount.type = Bytecode::LOAD;
     pushCount.scope = Bytecode::CONST;
-    pushCount.arg = constantValue(Bytecode::VT_int, st->expressions.size());
+    pushCount.arg = constantValue(Bytecode::VT_int, argsCount);
     result << pushCount;
 
     Bytecode::Instruction call;

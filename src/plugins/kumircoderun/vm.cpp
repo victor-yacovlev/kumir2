@@ -235,6 +235,9 @@ void VM::evaluateNextInstruction()
     case REF:
         do_ref(instr.scope, instr.arg);
         break;
+    case REFARR:
+        do_refarr(instr.scope, instr.arg);
+        break;
     case SUM:
         do_sum();
         break;
@@ -524,6 +527,41 @@ void VM::do_ref(quint8 s, quint16 id)
         s_error = tr("Internal error: don't know what is 'ref %1 %2'").arg(s).arg(id);
     }
     if (ref.isReference()) {
+        stack_values.push(ref);
+    }
+    nextIP();
+}
+
+void VM::do_refarr(quint8 s, quint16 id)
+{
+    int dim = 0;
+    if (VariableScope(s)==LOCAL) {
+        dim = stack_contexts[stack_contexts.size()-1].locals[id].dimension();
+    }
+    else if (VariableScope(s)==GLOBAL) {
+        dim = globals[id].dimension();
+    }
+    else if (VariableScope(s)==CONST) {
+        dim = constants[id].dimension();
+    }
+    else {
+        s_error = tr("Internal error: don't know what is 'loadarr %1 %2'").arg(s).arg(id);
+    }
+    if (dim>0) {
+        QList<int> indeces;
+        for (int i=0; i<dim; i++) {
+            indeces << stack_values.pop().toInt();
+        }
+        Variant ref;
+        if (VariableScope(s)==LOCAL) {
+            ref = stack_contexts[stack_contexts.size()-1].locals[id].toReference(indeces);
+        }
+        else if (VariableScope(s)==GLOBAL) {
+            ref = globals[id].toReference(indeces);
+        }
+        else if (VariableScope(s)==CONST) {
+            s_error = tr("Internal error: don't know what is 'ref %1 %2'").arg(s).arg(id);
+        }
         stack_values.push(ref);
     }
     nextIP();
@@ -933,6 +971,19 @@ bool VM::canStepInto() const
         }
     }
     return result;
+}
+
+void VM::setResults(const QList<quintptr> &references,
+                    const QList<QVariant> &values)
+{
+    Q_ASSERT(references.size()==values.size());
+    for (int i=0; i<references.size(); i++) {
+        quintptr ptr = references[i];
+        QVariant value = values[i];
+        Variant * v = (Variant*)(ptr);
+        Q_CHECK_PTR(v);
+        v->setValue(value);
+    }
 }
 
 } // namespace KumirCodeRun

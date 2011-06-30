@@ -55,7 +55,9 @@ LineProp Analizer::lineProp(const QString &text) const
             delimFound = true;
         }
         for (int k=0; k<lx->length; k++) {
-            lp[lx->linePos+k] = lx->type;
+            int index = lx->linePos+k;
+            if (index<lp.size())
+                lp[index] = lx->type;
         }
     }
     for (int i=0; i<lexems.size(); i++)

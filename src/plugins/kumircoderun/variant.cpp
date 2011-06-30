@@ -6,8 +6,10 @@ QString Variant::error = "";
 
 QVariant Variant::value() const
 {
-    if (m_reference)
+    if (m_reference && l_referenceIndeces.isEmpty())
         return m_reference->value();
+    else if (m_reference && l_referenceIndeces.size()>0)
+        return m_reference->value(l_referenceIndeces);
     else {
         return m_value;
     }
@@ -15,8 +17,10 @@ QVariant Variant::value() const
 
 void Variant::setValue(const QVariant &v)
 {
-    if (m_reference)
+    if (m_reference && l_referenceIndeces.isEmpty())
         m_reference->setValue(v);
+    else if (m_reference && l_referenceIndeces.size()>0)
+        m_reference->setValue(l_referenceIndeces, v);
     else {
         m_value = v;
     }
@@ -227,6 +231,19 @@ Variant Variant::toReference()
     else {
         result.m_reference = this;
     }
+    return result;
+}
+
+Variant Variant::toReference(const QList<int> & indeces)
+{
+    Variant result;
+    if (m_reference) {
+        result.m_reference = m_reference;
+    }
+    else {
+        result.m_reference = this;
+    }
+    result.l_referenceIndeces = indeces;
     return result;
 }
 

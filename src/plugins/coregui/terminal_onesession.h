@@ -7,9 +7,10 @@
 namespace Terminal {
 
 enum CharSpec {
-    CS_Output,
-    CS_Input,
-    CS_Error
+    CS_Output       = 0x00,
+    CS_Input        = 0x01,
+    CS_InputError   = 0x11,
+    CS_Error        = 0x10
 };
 
 typedef QList<CharSpec> LineProp;
@@ -19,7 +20,7 @@ class OneSession
 {
     Q_OBJECT
 public:
-    OneSession(int fixedWidth, const QString & fileName, QObject * parent);
+    OneSession(int fixedWidth, const QString & fileName, QWidget * parent);
     QSize visibleSize(int realWidth) const;
     QString plainText() const;
     inline QString fileName() const { return s_fileName; }
@@ -36,9 +37,18 @@ public slots:
     void error(const QString & message);
     void finish();
     void terminate();
+    void tryFinishInput();
+
+    void changeCursorPosition(quint16 pos);
+    void changeInputText(const QString & text);
+
 signals:
     void updateRequest();
+    void message(const QString & txt);
+    void inputDone(const QVariantList &);
 private:
+
+    void timerEvent(QTimerEvent * e);
     QSize charSize() const;
     QStringList m_lines;
     QList<LineProp> m_props;
@@ -47,6 +57,11 @@ private:
     QDateTime m_endTime;
     int i_fixedWidth;
     QFont m_font;
+    int i_inputLineStart;
+    int i_inputPosStart;
+    int i_inputCursorPosition;
+    bool b_inputCursorVisible;
+    int i_timerId;
 
 };
 

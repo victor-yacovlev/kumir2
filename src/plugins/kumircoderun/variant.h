@@ -40,10 +40,12 @@ public:
 
     QVariant value(const QList<int> & indeces) const;
 
-
     inline bool isReference() const { return m_reference!=0; }
     inline void setReference(Variant * r) { m_reference = r; }
     inline Variant * reference() { return m_reference; }
+
+    inline void setReferenceIndeces(const QList<int> &v) { l_referenceIndeces = v; }
+    inline QList<int> referenceIndeces() const { return l_referenceIndeces; }
 
     inline int toInt() const { return value().toInt(); }
     inline double toReal() const { return value().toDouble(); }
@@ -51,6 +53,7 @@ public:
     inline QChar toChar() const { return value().toChar(); }
     inline QString toString() const { return value().toString(); }
     Variant toReference();
+    Variant toReference(const QList<int> & indeces);
     void setValue(const QVariant & value);
     void setValue(int index0, const QVariant & value);
     void setValue(int index0, int index1, const QVariant & value);
@@ -70,6 +73,7 @@ private:
     QList< QPair<int,int> > l_bounds;
     ValueType e_baseType;
     Variant * m_reference;
+    QList<int> l_referenceIndeces;
 
 };
 

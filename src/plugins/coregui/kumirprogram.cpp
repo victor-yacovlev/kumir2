@@ -103,6 +103,19 @@ void KumirProgram::setTerminal(Terminal *t, QDockWidget * w)
             m_terminal, SLOT(output(QString)));
     connect(m_connector, SIGNAL(errorMessageReceived(QString)),
             m_terminal, SLOT(error(QString)));
+    connect(m_terminal, SIGNAL(inputFinished(QVariantList)),
+            this, SLOT(handleInputDone(QVariantList)));
+}
+
+void KumirProgram::handleInputDone(const QVariantList &data)
+{
+    if (e_state==RegularRun || e_state==StepRun) {
+        Q_CHECK_PTR(plugin_bytecodeRun);
+        plugin_bytecodeRun->finishInput(data);
+    }
+    else if (e_state==FastRun && m_process->state()==QProcess::Running) {
+        m_connector->sendReply(data);
+    }
 }
 
 

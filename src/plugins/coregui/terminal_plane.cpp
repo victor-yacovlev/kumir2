@@ -10,8 +10,81 @@ Plane::Plane(Terminal *parent)
     : QWidget(parent)
     , m_terminal(parent)
 {
-
+    b_inputMode = false;
+    i_inputPosition = 0;
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+}
+
+void Plane::keyPressEvent(QKeyEvent *e)
+{
+    if (!b_inputMode) {
+        e->ignore();
+        return;
+    }
+    if (e->matches(QKeySequence::MoveToNextChar)) {
+        i_inputPosition++;
+        emit inputCursorPositionChanged(i_inputPosition);
+        e->accept();
+    }
+    else if (e->matches(QKeySequence::MoveToPreviousChar)) {
+        if (i_inputPosition>0) {
+            i_inputPosition --;
+            emit inputCursorPositionChanged(i_inputPosition);
+            e->accept();
+        }
+    }
+    else if (e->matches(QKeySequence::MoveToStartOfLine)
+             || e->matches(QKeySequence::MoveToStartOfDocument)
+             || e->matches(QKeySequence::MoveToPreviousLine)
+             ) {
+        i_inputPosition = 0;
+        emit inputCursorPositionChanged(i_inputPosition);
+        e->accept();
+    }
+    else if (e->matches(QKeySequence::MoveToEndOfLine)
+             || e->matches(QKeySequence::MoveToEndOfDocument)
+             || e->matches(QKeySequence::MoveToNextLine)
+             ) {
+        i_inputPosition = s_inputText.length();
+        emit inputCursorPositionChanged(i_inputPosition);
+        e->accept();
+    }
+    else if (e->key()==Qt::Key_Backspace) {
+        if (i_inputPosition>0) {
+            if (i_inputPosition>s_inputText.length()) {
+                i_inputPosition = s_inputText.length();
+                emit inputCursorPositionChanged(i_inputPosition);
+            }
+            else {
+                s_inputText.remove(i_inputPosition-1, 1);
+                i_inputPosition --;
+                emit inputCursorPositionChanged(i_inputPosition);
+                emit inputTextChanged(s_inputText);
+            }
+            e->accept();
+        }
+    }
+    else if (e->key()==Qt::Key_Delete) {
+        if (i_inputPosition<s_inputText.length()) {
+            s_inputText.remove(i_inputPosition, 1);
+            emit inputCursorPositionChanged(i_inputPosition);
+            emit inputTextChanged(s_inputText);
+            e->accept();
+        }
+    }
+    else if (e->key()==Qt::Key_Return || e->key()==Qt::Key_Enter) {
+        emit inputFinishRequest();
+        e->accept();
+    }
+    else if (!e->text().isEmpty()) {
+        while (i_inputPosition>s_inputText.length())
+            s_inputText += " ";
+        s_inputText.insert(i_inputPosition, e->text());
+        i_inputPosition += e->text().length();
+        emit inputTextChanged(s_inputText);
+        emit inputCursorPositionChanged(i_inputPosition);
+        e->accept();
+    }
 }
 
 QPoint Plane::offset() const

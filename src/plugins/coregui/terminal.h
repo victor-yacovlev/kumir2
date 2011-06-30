@@ -14,6 +14,8 @@ public:
     explicit Terminal(QWidget *parent = 0);
 signals:
     void openTextEditor(const QString & text);
+    void message(const QString &);
+    void inputFinished(const QVariantList &);
 public slots:
     void clear();
     void start(const QString &fileName);

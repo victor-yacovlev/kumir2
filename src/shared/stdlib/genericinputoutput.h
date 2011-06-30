@@ -16,7 +16,11 @@ class STDLIB_EXPORT GenericInputOutput : public QObject
 public:
     explicit GenericInputOutput(QObject *parent = 0);
     void doInput(const QString &format);
-    bool tryFinishInput(const QString & txt, QList<QVariant> & result, QString & error);
+    bool tryFinishInput(const QString & txt,
+                        QList<QVariant> & result,
+                        QSet< QPair<int,int> > &errpos,
+                        bool colorize,
+                        QString & error);
     static class GenericInputOutput * instance();
     inline static QString output(int v) { return QString::number(v); }
     inline static QString output(double v) { return QString::number(v, 'g', 6); }

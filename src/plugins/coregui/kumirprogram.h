@@ -56,6 +56,7 @@ private slots:
     void handleProcessFinished(int exitCode, QProcess::ExitStatus);
     void handleProcessError(QProcess::ProcessError);
     void handleRunnerStopped(int);
+    void handleInputDone(const QVariantList & data);
 private:
     void prepareKumirRunner();
     enum State { Idle, FastRun, RegularRun, StepRun } e_state;

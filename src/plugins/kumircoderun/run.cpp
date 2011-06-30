@@ -94,6 +94,13 @@ void Run::handleInputRequest(const QString & format, const QList<quintptr> & ref
     vm->setResults(references, result);
 }
 
+void Run::finishInput(const QVariantList &data)
+{
+    QMutexLocker l(mutex_inputDone);
+    b_inputDone = true;
+    list_inputResult = data;
+}
+
 void Run::handleOutputRequest(const QString & out )
 {
     emit output(out);

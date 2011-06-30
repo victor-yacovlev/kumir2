@@ -72,6 +72,7 @@ private:
     void do_error(quint8, quint16);
     void do_line(quint16);
     void do_ref(quint8, quint16);
+    void do_refarr(quint8, quint16);
 
     void do_sum();
     void do_sub();
