@@ -13,9 +13,43 @@ VM::VM(QObject *parent) :
     e_entryPoint = EP_Main;
 }
 
+void VM::setNextCallInto()
+{
+    b_nextCallInto = true;
+}
+
+void VM::setNextCallOut()
+{
+    if (stack_contexts.isEmpty())
+        return;
+    stack_contexts[stack_contexts.size()-1].runMode = CRM_ToEnd;
+}
+
+void VM::setNextCallToEnd()
+{
+    for (int i=0; i<stack_contexts.size(); i++) {
+        stack_contexts[i].runMode = CRM_ToEnd;
+    }
+}
+
+void VM::setNextCallStepOver()
+{
+    if (stack_contexts.isEmpty())
+        return;
+    stack_contexts[stack_contexts.size()-1].runMode = CRM_OneStep;
+}
+
+int VM::currentLineNo() const
+{
+    if (stack_contexts.isEmpty())
+        return -1;
+    else
+        return stack_contexts[stack_contexts.size()-1].lineNo;
+}
 
 void VM::reset()
 {
+    b_nextCallInto = false;
     s_error = "";
     stack_values.clear();
     stack_contexts.clear();
@@ -52,7 +86,7 @@ void VM::reset()
         c.program = aMain->instructions;
         c.IP = 0;
         c.type = EL_MAIN;
-        c.lineNo = -1;
+        c.runMode = CRM_ToEnd;
         stack_contexts.push(c);
     }
 
@@ -65,7 +99,7 @@ void VM::reset()
         c.program = testing->instructions;
         c.IP = 0;
         c.type = EL_TESTING;
-        c.lineNo = -1;
+        c.runMode = CRM_ToEnd;
         stack_contexts.push(c);
     }
 
@@ -79,7 +113,7 @@ void VM::reset()
             c.program = inits[i]->instructions;
             c.IP = 0;
             c.type = EL_INIT;
-            c.lineNo = -1;
+            c.runMode = CRM_ToEnd;
             stack_contexts.push(c);
         }
     }
@@ -312,9 +346,12 @@ void VM::do_call(quint8 mod, quint16 alg)
         c.program = functions[p].instructions ;
         c.locals = cleanLocalTables[p];
         c.type = EL_FUNCTION;
-        c.lineNo = -1;
+        if (b_nextCallInto)
+            c.runMode = CRM_OneStep;
+        else
+            c.runMode = CRM_ToEnd;
         stack_contexts.push(c);
-        emit functionEntered();
+        b_nextCallInto = false;
     }
     else {
         s_error = tr("Internal error: don't know what is 'call %1 %2'").arg(mod).arg(alg);
@@ -567,9 +604,7 @@ void VM::do_ret()
     stack_contexts.pop();
     if (!stack_contexts.isEmpty()) {
         nextIP();
-        emit lineNoChanged(stack_contexts[stack_contexts.size()-1].lineNo);
     }
-    emit functionLeaved();
 }
 
 void VM::do_error(quint8 s, quint16 id)
@@ -587,7 +622,8 @@ void VM::do_error(quint8 s, quint16 id)
 
 void VM::do_line(quint16 no)
 {
-    emit lineNoChanged(no);
+    if (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep)
+        emit lineNoChanged(no);
     stack_contexts[stack_contexts.size()-1].lineNo = no;
     nextIP();
 }

@@ -27,10 +27,13 @@ public:
     inline void setEntryPoint(RunEntryPoint e) { e_entryPoint = e; }
     void pushValueToStack(const QVariant & value);
     void setResults(const QList<quintptr> & references, const QList<QVariant> & values);
+    void setNextCallInto();
+    void setNextCallOut();
+    void setNextCallToEnd();
+    void setNextCallStepOver();
+    int currentLineNo() const;
 signals:
     void lineNoChanged(int lineNo);
-    void functionEntered();
-    void functionLeaved();
     void inputRequest(const QString & format, const QList<quintptr> & references);
     void outputRequest(const QString & out);
     void resetModuleRequest(const QString & actorPluginName);
@@ -47,6 +50,7 @@ private:
     QMap< quint32, Bytecode::TableElem > functions;
     QMap< quint32, QVector<Variant> > cleanLocalTables;
     QString s_error;
+    bool b_nextCallInto;
 
     RunEntryPoint e_entryPoint;
 

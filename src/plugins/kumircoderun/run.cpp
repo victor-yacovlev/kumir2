@@ -6,16 +6,13 @@ Run::Run(QObject *parent) :
     QThread(parent)
 {
     vm = new VM(this);
-    i_functionDeep = i_originFunctionDeep = 0;
+    i_originFunctionDeep = 0;
     b_inputDone = b_stopping = b_stepDone = false;
     mutex_stopping = new QMutex;
     mutex_stepDone = new QMutex;
-    mutex_functionDeep = new QMutex;
     mutex_inputDone = new QMutex;
     e_runMode = RM_ToEnd;
 
-    connect(vm, SIGNAL(functionEntered()), this, SLOT(handleDeepChanged()), Qt::DirectConnection);
-    connect(vm, SIGNAL(functionLeaved()), this, SLOT(handleDeepChanged()), Qt::DirectConnection);
     connect(vm, SIGNAL(lineNoChanged(int)), this, SLOT(handleLineChanged(int)), Qt::DirectConnection);
 
     connect(vm, SIGNAL(inputRequest(QString,QList<quintptr>)),
@@ -37,30 +34,35 @@ void Run::stop()
 void Run::runStepOver()
 {
     b_stepDone = false;
-    i_functionDeep = i_originFunctionDeep = vm->deep();
+//    i_originFunctionDeep = vm->deep();
     e_runMode = RM_StepOver;
+    vm->setNextCallStepOver();
     start();
 }
 
 void Run::runStepIn()
 {
     b_stepDone = false;
-    i_functionDeep = i_originFunctionDeep = vm->deep();
+//    i_originFunctionDeep = vm->deep();
     e_runMode = RM_StepIn;
+    vm->setNextCallInto();
     start();
 }
 
 void Run::runStepOut()
 {
     b_stepDone = false;
-    i_functionDeep = i_originFunctionDeep = vm->deep();
+//    i_originFunctionDeep = vm->deep();
+    emit lineChanged(-1);
     e_runMode = RM_StepOut;
+    vm->setNextCallOut();
     start();
 }
 
 void Run::runContinuous()
 {
     e_runMode = RM_ToEnd;
+    vm->setNextCallToEnd();
     start();
 }
 
@@ -101,37 +103,25 @@ bool Run::mustStop()
 {
     QMutexLocker l1(mutex_stopping);
     QMutexLocker l2(mutex_stepDone);
-    QMutexLocker l3(mutex_functionDeep);
+
 
     if (b_stopping)
         return true;
 
-    if (e_runMode==RM_StepOver) {
-        return b_stepDone && i_functionDeep <= i_originFunctionDeep;
-    }
-    else if (e_runMode==RM_StepIn) {
-        return b_stepDone && i_functionDeep >= i_originFunctionDeep;
-    }
-    else if (e_runMode==RM_StepOut) {
-        return b_stepDone && i_functionDeep < i_originFunctionDeep;
+    if (e_runMode!=RM_ToEnd) {
+        return b_stepDone;
     }
     else {
         return false;
     }
 }
 
-void Run::handleDeepChanged()
-{
-    QMutexLocker l(mutex_functionDeep);
-    i_functionDeep = vm->deep();
-}
 
 void Run::handleLineChanged(int lineNo)
 {
     mutex_stepDone->lock();
     b_stepDone = true;
     mutex_stepDone->unlock();
-    i_lineNo = lineNo;
     if (mustStop())
         emit lineChanged(lineNo);
     else

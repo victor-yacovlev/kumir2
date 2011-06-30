@@ -26,7 +26,7 @@ Plugin::~Plugin()
 
 int Plugin::currentLineNo() const
 {
-    return d->lineNo();
+    return d->vm->currentLineNo();
 }
 
 bool Plugin::loadProgram(QIODevice *source, Shared::ProgramFormat format)
