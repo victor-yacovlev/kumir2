@@ -326,9 +326,11 @@ void OneSession::tryFinishInput()
         emit updateRequest();
     }
     else {
+        i_inputLineStart = i_inputPosStart = i_inputCursorPosition = -1;
         output("\n");
         emit message("");
         emit inputDone(result);
+        emit updateRequest();
     }
 }
 

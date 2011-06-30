@@ -36,6 +36,7 @@ protected:
     void resizeEvent(QResizeEvent *e);
     void wheelEvent(QWheelEvent *e);
     void keyPressEvent(QKeyEvent *e);
+    void mousePressEvent(QMouseEvent *e);
     QPoint offset() const;
 
 private:

@@ -87,6 +87,12 @@ void Plane::keyPressEvent(QKeyEvent *e)
     }
 }
 
+void Plane::mousePressEvent(QMouseEvent *e)
+{
+    setFocus();
+    e->accept();
+}
+
 QPoint Plane::offset() const
 {
     QPoint result(0,0);
