@@ -62,6 +62,8 @@ public slots:
     void showPreferences();
     void showMessage(const QString & text);
     void clearMessage();
+    void setFocusOnCentralWidget();
+
 
 private slots:
     void prepareRunMenu();

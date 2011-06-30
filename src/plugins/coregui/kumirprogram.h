@@ -33,7 +33,7 @@ public:
     inline QActionGroup * actions() { return gr_actions; }
     inline bool isRunning() const { return e_state!=Idle; }
     inline void setSourceFileName(const QString & s) { s_sourceFileName = s; }
-    inline void setDocumentId(int id) { i_documentId = id; }
+    inline void setDocumentId(int id) { if (e_state==Idle) i_documentId = id; }
     void setTerminal(Terminal * t, QDockWidget * w);
     void setBytecodeRun(KPlugin * run);
     void addActor(KPlugin * a, QDockWidget * w);

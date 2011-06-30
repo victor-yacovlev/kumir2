@@ -30,6 +30,12 @@ public slots:
 
 protected:
     void focusInEvent(QFocusEvent *);
+    void focusOutEvent(QFocusEvent *);
+protected slots:
+    void handleInputTextChanged(const QString & text);
+    void handleInputCursorPositionChanged(quint16 pos);
+    void handleInputFinishRequested();
+    void handleInputDone();
 
 private:
     QList<class OneSession*> l_sessions;

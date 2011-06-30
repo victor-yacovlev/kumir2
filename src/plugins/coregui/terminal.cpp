@@ -51,16 +51,55 @@ Terminal::Terminal(QWidget *parent) :
     connect(sb_vertical,SIGNAL(valueChanged(int)),m_plane, SLOT(update()));
     connect(sb_horizontal,SIGNAL(valueChanged(int)),m_plane, SLOT(update()));
 
+
+    connect(m_plane, SIGNAL(inputTextChanged(QString)),
+            this, SLOT(handleInputTextChanged(QString)));
+
+    connect(m_plane, SIGNAL(inputCursorPositionChanged(quint16)),
+            this, SLOT(handleInputCursorPositionChanged(quint16)));
+
+    connect(m_plane, SIGNAL(inputFinishRequest()),
+            this, SLOT(handleInputFinishRequested()));
 //    start("debug");
 //    output("this is output");
 //    output("this is another output");
 //    error("this is error");
 }
 
+void Terminal::handleInputTextChanged(const QString &text)
+{
+    if (l_sessions.isEmpty())
+        return;
+    OneSession * last = l_sessions.last();
+    last->changeInputText(text);
+}
+
+void Terminal::handleInputCursorPositionChanged(quint16 pos)
+{
+    if (l_sessions.isEmpty())
+        return;
+    OneSession * last = l_sessions.last();
+    last->changeCursorPosition(pos);
+}
+
+void Terminal::handleInputFinishRequested()
+{
+    if (l_sessions.isEmpty())
+        return;
+    OneSession * last = l_sessions.last();
+    last->tryFinishInput();
+}
+
 void Terminal::focusInEvent(QFocusEvent *e)
 {
     QWidget::focusInEvent(e);
     m_plane->setFocus();
+}
+
+void Terminal::focusOutEvent(QFocusEvent *e)
+{
+    QWidget::focusOutEvent(e);
+    m_plane->clearFocus();
 }
 
 void Terminal::clear()
@@ -78,6 +117,12 @@ void Terminal::start(const QString & fileName)
     OneSession * session = new OneSession(fixedWidth, QFileInfo(fileName).fileName(), m_plane);
     connect(session, SIGNAL(updateRequest()), m_plane, SLOT(update()));
     l_sessions << session;
+    connect (l_sessions.last(), SIGNAL(inputDone(QVariantList)),
+             this, SIGNAL(inputFinished(QVariantList)));
+    connect (l_sessions.last(), SIGNAL(message(QString)),
+             this, SIGNAL(message(QString)));
+    connect (l_sessions.last(), SIGNAL(inputDone(QVariantList)),
+             this, SLOT(handleInputDone()));
     m_plane->updateScrollBars();
     if (sb_vertical->isEnabled())
         sb_vertical->setValue(sb_vertical->maximum());
@@ -119,20 +164,18 @@ void Terminal::output(const QString & text)
 
 void Terminal::input(const QString & format)
 {
-    if (l_sessions.isEmpty())
+    if (l_sessions.isEmpty()) {
         l_sessions << new OneSession(-1,"unknown", m_plane);
+        connect (l_sessions.last(), SIGNAL(inputDone(QVariantList)),
+                 this, SIGNAL(inputFinished(QVariantList)));
+        connect (l_sessions.last(), SIGNAL(message(QString)),
+                 this, SIGNAL(message(QString)));
+        connect (l_sessions.last(), SIGNAL(inputDone(QVariantList)),
+                 this, SLOT(handleInputDone()));
+    }
     OneSession * lastSession = l_sessions.last();
 
-    connect(m_plane, SIGNAL(inputCursorPositionChanged(quint16)),
-            lastSession, SLOT(changeCursorPosition(quint16)));
-    connect(m_plane, SIGNAL(inputTextChanged(QString)),
-            lastSession, SLOT(changeInputText(QString)));
-    connect(m_plane, SIGNAL(inputFinishRequest()),
-            lastSession, SLOT(tryFinishInput()));
-    connect(lastSession, SIGNAL(message(QString)),
-            this, SIGNAL(message(QString)));
-    connect(lastSession, SIGNAL(inputDone(QVariantList)),
-            this, SIGNAL(inputFinished(QVariantList)));
+
 
     lastSession->input(format);
     m_plane->updateScrollBars();
@@ -141,6 +184,11 @@ void Terminal::input(const QString & format)
     m_plane->setInputMode(true);
 
     m_plane->setFocus();
+}
+
+void Terminal::handleInputDone()
+{
+    m_plane->setInputMode(false);
 }
 
 void Terminal::error(const QString & message)

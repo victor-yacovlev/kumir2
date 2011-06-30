@@ -48,26 +48,56 @@ KumirProgram::KumirProgram(QObject *parent)
     a_fastRun = new QAction(tr("Fast run"), this);
     a_fastRun->setIcon(QIcon::fromTheme("media-seek-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-seek-forward.png")));
     connect(a_fastRun, SIGNAL(triggered()), this, SLOT(fastRun()));
+#ifndef Q_OS_MAC
+    a_fastRun->setShortcut(QKeySequence("Shift+F9"));
+#else
+#error Implement me on Mac!
+#endif
 
     a_regularRun = new QAction(tr("Regular run"), this);
     a_regularRun->setIcon(QIcon::fromTheme("media-playback-start", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-playback-start.png")));
     connect(a_regularRun, SIGNAL(triggered()), this, SLOT(regularRun()));
+#ifndef Q_OS_MAC
+    a_regularRun->setShortcut(QKeySequence("F9"));
+#else
+#error Implement me on Mac!
+#endif
 
     a_stepRun = new QAction(tr("Step run"), this);
     a_stepRun->setIcon(QIcon::fromTheme("media-skip-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-skip-forward.png")));
     connect(a_stepRun, SIGNAL(triggered()), this, SLOT(stepRun()));
+#ifndef Q_OS_MAC
+    a_stepRun->setShortcut(QKeySequence("F8"));
+#else
+#error Implement me on Mac!
+#endif
 
     a_stepIn = new QAction(tr("Step in"), this);
     a_stepIn->setIcon(QIcon::fromTheme("debug-step-into", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-into.png")));
     connect(a_stepIn, SIGNAL(triggered()), this, SLOT(stepIn()));
+#ifndef Q_OS_MAC
+    a_stepIn->setShortcut(QKeySequence("F7"));
+#else
+#error Implement me on Mac!
+#endif
 
     a_stepOut = new QAction(tr("Step out"), this);
     a_stepOut->setIcon(QIcon::fromTheme("debug-step-out", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-out.png")));
     connect(a_stepOut, SIGNAL(triggered()), this, SLOT(stepOut()));
+#ifndef Q_OS_MAC
+    a_stepOut->setShortcut(QKeySequence("Shift+F7"));
+#else
+#error Implement me on Mac!
+#endif
 
     a_stop = new QAction(tr("Stop"), this);
     a_stop->setIcon(QIcon::fromTheme("media-playback-stop", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-playback-stop.png")));
     connect(a_stop, SIGNAL(triggered()), this, SLOT(stop()));
+#ifndef Q_OS_MAC
+    a_stop->setShortcut(QKeySequence("Esc"));
+#else
+#error Implement me on Mac!
+#endif
 
     a_stepIn->setEnabled(false);
     a_stepOut->setEnabled(false);
@@ -116,6 +146,7 @@ void KumirProgram::handleInputDone(const QVariantList &data)
     else if (e_state==FastRun && m_process->state()==QProcess::Running) {
         m_connector->sendReply(data);
     }
+    m_terminal->clearFocus();
 }
 
 
@@ -307,6 +338,7 @@ void KumirProgram::handleRunnerStopped(int rr)
         m_terminal->finish();
         PluginManager::instance()->switchGlobalState(GS_Observe);
         e_state = Idle;
+        m_terminal->clearFocus();
     }
     else if (reason==Shared::RunInterface::Error) {
         s_endStatus = tr("Evaluation error");
@@ -314,13 +346,16 @@ void KumirProgram::handleRunnerStopped(int rr)
         plugin_editor->highlightLineRed(i_documentId, plugin_bytecodeRun->currentLineNo());
         PluginManager::instance()->switchGlobalState(GS_Observe);
         e_state = Idle;
+        m_terminal->clearFocus();
     }
     else if (reason==Shared::RunInterface::Done) {
         s_endStatus = tr("Evaluation finished");
         m_terminal->finish();
         PluginManager::instance()->switchGlobalState(GS_Observe);
         e_state = Idle;
+        m_terminal->clearFocus();
     }
+
 }
 
 void KumirProgram::handleLineChanged(int lineNo)

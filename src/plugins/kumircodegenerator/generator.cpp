@@ -236,6 +236,11 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     }
     l_funcBreaks.clear();
 
+    Bytecode::Instruction line;
+    line.type = Bytecode::LINE;
+    line.arg = alg->impl.endLexems[0]->lineNo;
+    ret << line;
+
     const AST::Variable * retval = returnValue(alg);
     if (retval) {
         Bytecode::Instruction loadRetval;
@@ -244,6 +249,7 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
         ret << loadRetval;
 
     }
+
     Bytecode::Instruction retturn;
     retturn.type = Bytecode::RET;
     ret << retturn;

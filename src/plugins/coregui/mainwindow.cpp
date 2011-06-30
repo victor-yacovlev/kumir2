@@ -200,6 +200,12 @@ void MainWindow::clearMessage()
     m_message->setText("");
 }
 
+void MainWindow::setFocusOnCentralWidget()
+{
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+    twe->component->setFocus();
+}
+
 void MainWindow::timerEvent(QTimerEvent *e)
 {
     checkCounterValue();
@@ -510,11 +516,17 @@ TabWidgetElement * MainWindow::addCentralComponent(
                 kumir,
                 pascal
                 );
+
+
     connect(element, SIGNAL(changeTitle(QString)), this, SLOT(handleTabTitleChange(QString)));
     createTopLevelMenus(menus, true);
     ui->tabWidget->addTab(element, title);
+
+
     return element;
 }
+
+
 
 QDockWidget * MainWindow::addSecondaryComponent(const QString & title
                                        , QWidget * c

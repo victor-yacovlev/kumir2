@@ -76,7 +76,7 @@ void Connector::waitForStatus(MessageSender s)
             mutex_stopServing->unlock();
             if (stop)
                 return;
-            msleep(30);
+            msleep(1);
         }
     }
 }
@@ -95,7 +95,7 @@ void Connector::waitForReply()
             mutex_stopServing->unlock();
             if (stop)
                 return;
-            msleep(30);
+            msleep(1);
         }
     }
 }

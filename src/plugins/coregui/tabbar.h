@@ -17,7 +17,12 @@ protected:
 signals:
 private slots:
     void handleChanged(int index);
+    void switchToTab();
 public slots:
+private:
+    QVector<QIcon> v_activeIcons;
+    QVector<QIcon> v_normalIcons;
+    QVector<QAction*> v_actions;
 
 };
 

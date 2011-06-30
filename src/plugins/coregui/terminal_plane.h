@@ -16,11 +16,6 @@ public:
     explicit Plane(Terminal * parent);
     inline void setInputMode(bool v) {
         b_inputMode = v; s_inputText = ""; i_inputPosition = 0;
-        if (!v) {
-            disconnect(this, SIGNAL(inputTextChanged(QString)), 0, 0);
-            disconnect(this, SIGNAL(inputCursorPositionChanged(quint16)), 0, 0);
-            disconnect(this, SIGNAL(inputFinishRequest()), 0, 0);
-        }
     }
 
 signals:

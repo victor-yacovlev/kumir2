@@ -67,6 +67,9 @@ QString Plugin::initialize(const QStringList &)
                                         QList<QAction*>(),
                                         QList<QAction*>(),
                                         MainWindow::Terminal);
+#ifndef Q_OS_MAC
+    termWindow->toggleViewAction()->setShortcut(QKeySequence("F12"));
+#endif
     m_kumirProgram = new KumirProgram(this);
     m_kumirProgram->setBytecodeGenerator(plugin_BytecodeGenerator);
     m_kumirProgram->setNativeGenerator(plugin_NativeGenerator);
@@ -107,10 +110,12 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
     if (state==ExtensionSystem::GS_Unlocked) {
         m_kumirStateLabel->setText(tr("Editing"));
         m_mainWindow->clearMessage();
+        m_mainWindow->setFocusOnCentralWidget();
     }
     else if (state==ExtensionSystem::GS_Observe) {
         m_kumirStateLabel->setText(tr("Observe"));
         m_mainWindow->showMessage(m_kumirProgram->endStatus());
+        m_mainWindow->setFocusOnCentralWidget();
     }
     else if (state==ExtensionSystem::GS_Running) {
         m_kumirStateLabel->setText(tr("Running"));

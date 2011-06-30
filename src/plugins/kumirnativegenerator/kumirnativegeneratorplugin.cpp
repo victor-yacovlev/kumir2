@@ -757,15 +757,15 @@ QString KumirNativeGeneratorPrivate::makeStInput(
     QStringList es;
     for (int i=0; i<exprs.size(); i++) {
         if (exprs[i]->baseType==AST::TypeInteger)
-            format += "i";
+            format += "%d";
         else if (exprs[i]->baseType==AST::TypeReal)
-            format += "r";
+            format += "%f";
         else if (exprs[i]->baseType==AST::TypeBoolean)
-            format += "b";
+            format += "%b";
         else if (exprs[i]->baseType==AST::TypeCharect)
-            format += "c";
+            format += "%c";
         else if (exprs[i]->baseType==AST::TypeString)
-            format += "s";
+            format += "%s";
         es << "&("+makeExpression(exprs[i], algorhitm, module, false)+")";
     }
     result = "__input__st_funct(\""+format+"\", "+QString::number(es.size())+", "+
