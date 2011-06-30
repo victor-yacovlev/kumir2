@@ -46,27 +46,27 @@ KumirProgram::KumirProgram(QObject *parent)
 
 
     a_fastRun = new QAction(tr("Fast run"), this);
-    a_fastRun->setIcon(QIcon::fromTheme("media-seek-forward"));
+    a_fastRun->setIcon(QIcon::fromTheme("media-seek-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-seek-forward.png")));
     connect(a_fastRun, SIGNAL(triggered()), this, SLOT(fastRun()));
 
     a_regularRun = new QAction(tr("Regular run"), this);
-    a_regularRun->setIcon(QIcon::fromTheme("media-playback-start"));
+    a_regularRun->setIcon(QIcon::fromTheme("media-playback-start", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-playback-start.png")));
     connect(a_regularRun, SIGNAL(triggered()), this, SLOT(regularRun()));
 
     a_stepRun = new QAction(tr("Step run"), this);
-    a_stepRun->setIcon(QIcon::fromTheme("media-skip-forward"));
+    a_stepRun->setIcon(QIcon::fromTheme("media-skip-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-skip-forward.png")));
     connect(a_stepRun, SIGNAL(triggered()), this, SLOT(stepRun()));
 
     a_stepIn = new QAction(tr("Step in"), this);
-    a_stepIn->setIcon(QIcon::fromTheme("debug-step-into"));
+    a_stepIn->setIcon(QIcon::fromTheme("debug-step-into", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-into.png")));
     connect(a_stepIn, SIGNAL(triggered()), this, SLOT(stepIn()));
 
     a_stepOut = new QAction(tr("Step out"), this);
-    a_stepOut->setIcon(QIcon::fromTheme("debug-step-out"));
+    a_stepOut->setIcon(QIcon::fromTheme("debug-step-out", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-out.png")));
     connect(a_stepOut, SIGNAL(triggered()), this, SLOT(stepOut()));
 
     a_stop = new QAction(tr("Stop"), this);
-    a_stop->setIcon(QIcon::fromTheme("media-playback-stop"));
+    a_stop->setIcon(QIcon::fromTheme("media-playback-stop", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-playback-stop.png")));
     connect(a_stop, SIGNAL(triggered()), this, SLOT(stop()));
 
     a_stepIn->setEnabled(false);
@@ -244,7 +244,7 @@ void KumirProgram::stepRun()
     if (e_state==Idle)
         prepareKumirRunner();
     e_state = StepRun;
-    a_stepRun->setIcon(QIcon::fromTheme("debug-step-over"));
+    a_stepRun->setIcon(QIcon::fromTheme("debug-step-over",  QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));
     PluginManager::instance()->switchGlobalState(GS_Running);
     plugin_bytecodeRun->runStepOver();
 }
@@ -344,7 +344,7 @@ void KumirProgram::switchGlobalState(GlobalState , GlobalState cur)
         a_regularRun->setEnabled(true);
         a_stepRun->setEnabled(true);
         a_stepRun->setText(tr("Step run"));
-        a_stepRun->setIcon(QIcon::fromTheme("media-skip-forward"));
+        a_stepRun->setIcon(QIcon::fromTheme("media-skip-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-skip-forward.png")));
         a_stepIn->setEnabled(false);
         a_stepOut->setEnabled(false);
         a_stop->setEnabled(false);
@@ -362,7 +362,7 @@ void KumirProgram::switchGlobalState(GlobalState , GlobalState cur)
         a_regularRun->setEnabled(true);
         a_stepRun->setEnabled(true);
         a_stepRun->setText(tr("Step over"));
-        a_stepRun->setIcon(QIcon::fromTheme("debug-step-over"));
+        a_stepRun->setIcon(QIcon::fromTheme("debug-step-over", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));
         a_stepIn->setEnabled(true);
         a_stepOut->setEnabled(true);
         a_stop->setEnabled(true);

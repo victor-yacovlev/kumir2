@@ -23,26 +23,26 @@ Terminal::Terminal(QWidget *parent) :
     l->addWidget(tb, 0, 0, 2, 1);
 
     a_saveLast = new QAction(tr("Save last output"), this);
-    a_saveLast->setIcon(QIcon::fromTheme("document-save"));
+    a_saveLast->setIcon(QIcon::fromTheme("document-save", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/document-save.png")));
     connect(a_saveLast, SIGNAL(triggered()), this, SLOT(saveLast()));
     tb->addAction(a_saveLast);
 
     a_editLast = new QAction(tr("Open last output in editor"), this);
-    a_editLast->setIcon(QIcon::fromTheme("document-edit"));
+    a_editLast->setIcon(QIcon::fromTheme("document-edit", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/document-edit.png")));
     connect(a_editLast, SIGNAL(triggered()), this, SLOT(editLast()));
     tb->addAction(a_editLast);
 
     tb->addSeparator();
 
     a_saveAll = new QAction(tr("Save all output"), this);
-    a_saveAll->setIcon(QIcon::fromTheme("document-save-all"));
+    a_saveAll->setIcon(QIcon::fromTheme("document-save-all", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/document-save-all.png")));
     connect(a_saveAll, SIGNAL(triggered()), this, SLOT(saveAll()));
     tb->addAction(a_saveAll);
 
     tb->addSeparator();
 
     a_clear = new QAction(tr("Clear output"), this);
-    a_clear->setIcon(QIcon::fromTheme("edit-delete"));
+    a_clear->setIcon(QIcon::fromTheme("edit-delete", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-delete.png")));
     connect(a_clear, SIGNAL(triggered()), this, SLOT(clear()));
 
     tb->addAction(a_clear);

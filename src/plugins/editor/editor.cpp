@@ -381,37 +381,37 @@ void EditorPrivate::createActions()
 {
     selectAll = new QAction(plane);
     selectAll->setText(QObject::tr("Select all text in editor"));
-    selectAll->setIcon(QIcon::fromTheme("edit-select-all"));
+    selectAll->setIcon(QIcon::fromTheme("edit-select-all", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-select-all.png")));
     selectAll->setShortcut(QKeySequence(QKeySequence::SelectAll));
     QObject::connect(selectAll, SIGNAL(triggered()), plane, SLOT(selectAll()));
 
     copy = new QAction(plane);
     copy->setText(QObject::tr("Copy selection to clipboard"));
-    copy->setIcon(QIcon::fromTheme("edit-copy"));
+    copy->setIcon(QIcon::fromTheme("edit-copy", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-copy.png")));
     copy->setShortcut(QKeySequence(QKeySequence::Copy));
     QObject::connect(copy, SIGNAL(triggered()), plane, SLOT(copy()));
 
     cut = new QAction(plane);
     cut->setText(QObject::tr("Cut selection to clipboard"));
-    cut->setIcon(QIcon::fromTheme("edit-cut"));
+    cut->setIcon(QIcon::fromTheme("edit-cut", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-cut.png")));
     cut->setShortcut(QKeySequence(QKeySequence::Cut));
     QObject::connect(cut, SIGNAL(triggered()), plane, SLOT(cut()));
 
     paste = new QAction(plane);
     paste->setText(QObject::tr("Paste from clipboard"));
-    paste->setIcon(QIcon::fromTheme("edit-paste"));
+    paste->setIcon(QIcon::fromTheme("edit-paste", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-paste.png")));
     paste->setShortcut(QKeySequence(QKeySequence::Paste));
     QObject::connect(paste, SIGNAL(triggered()), plane, SLOT(paste()));
 
     deleteLine = new QAction(plane);
     deleteLine->setText(QObject::tr("Delete line under cursor"));
-    deleteLine->setIcon(QIcon::fromTheme("edit-delete"));
+    deleteLine->setIcon(QIcon::fromTheme("edit-delete", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-delete.png")));
     deleteLine->setShortcut(QKeySequence("Ctrl+Y"));
     QObject::connect(deleteLine, SIGNAL(triggered()), plane, SLOT(removeLine()));
 
     deleteTail = new QAction(plane);
     deleteTail->setText(QObject::tr("Delete text from cursor to end of line"));
-    deleteTail->setIcon(QIcon::fromTheme("edit-clear"));
+    deleteTail->setIcon(QIcon::fromTheme("edit-clear", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-clear.png")));
     deleteTail->setShortcut(QKeySequence("Ctrl+K"));
     QObject::connect(deleteTail, SIGNAL(triggered()), plane, SLOT(removeLineTail()));
 

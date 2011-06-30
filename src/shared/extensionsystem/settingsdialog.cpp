@@ -71,7 +71,7 @@ void SettingsDialog::addPage(const SettingsEditorPage &page)
     if (page.settingsGroupIcon)
         item->setIcon(*(page.settingsGroupIcon));
     else
-        item->setIcon(QIcon::fromTheme("preferences-other"));
+        item->setIcon(QIcon::fromTheme("preferences-other", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/preferences-other.png")));
     ui->listWidget->addItem(item);
     ui->stackedWidget->addWidget(page.settingsPage);
     l_pluginPages << page.settingsPage;

@@ -27,7 +27,7 @@ public slots:
 
     void handleInputRequest(const QString & format, const QList<quintptr> & references);
     void handleOutputRequest(const QString & output );
-    void handleDeepChanged();
+
     void handleLineChanged(int lineNo);
     void finishInput(const QVariantList & data);
 

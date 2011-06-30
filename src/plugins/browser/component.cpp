@@ -22,9 +22,9 @@ Component::Component() :
     ui->webView->pageAction(QWebPage::Copy)->setText(tr("Copy"));
     ui->webView->pageAction(QWebPage::Paste)->setText(tr("Paste"));
     
-    ui->webView->pageAction(QWebPage::Cut)->setIcon(QIcon::fromTheme("edit-cut"));
-    ui->webView->pageAction(QWebPage::Copy)->setIcon(QIcon::fromTheme("edit-copy"));
-    ui->webView->pageAction(QWebPage::Paste)->setIcon(QIcon::fromTheme("edit-paste"));
+    ui->webView->pageAction(QWebPage::Cut)->setIcon(QIcon::fromTheme("edit-cut", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-cut.png")));
+    ui->webView->pageAction(QWebPage::Copy)->setIcon(QIcon::fromTheme("edit-copy", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-copy.png")));
+    ui->webView->pageAction(QWebPage::Paste)->setIcon(QIcon::fromTheme("edit-paste", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-paste.png")));
 
     connect(ui->webView, SIGNAL(titleChanged(QString)), this, SIGNAL(titleChanged(QString)));
     connect(ui->webView->page(), SIGNAL(loadStarted()), this, SLOT(handleLoadStarted()));

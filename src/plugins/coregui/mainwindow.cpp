@@ -403,7 +403,7 @@ void MainWindow::showEvent(QShowEvent *e)
 
 QIcon MainWindow::actionIcon(const QString &name)
 {
-    const QString iconsPath = qApp->property("sharePath").toString()+"/coregui/icons/";
+    const QString iconsPath = qApp->property("sharePath").toString()+"/icons/";
     return QIcon::fromTheme(name, QIcon(iconsPath+name+".png"));
 }
 

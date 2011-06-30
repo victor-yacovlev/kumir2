@@ -39,6 +39,9 @@ int main(int argc, char **argv)
     gui = gui && getenv("DISPLAY")!=0;
 #endif
     QApplication * app = new QApplication(argc, argv, gui);
+#ifdef Q_OS_WIN32
+    app->setAttribute(Qt::AA_DontShowIconsInMenus);
+#endif
     const QString sharePath = QDir(app->applicationDirPath()+SHARE_PATH).canonicalPath();
     QDir translationsDir(sharePath+"/translations");
     QStringList ts_files = translationsDir.entryList(QStringList() << "*_"+getLanguage()+".qm");
@@ -52,13 +55,6 @@ int main(int argc, char **argv)
     }
 
     app->setProperty("sharePath", sharePath);
-
-#ifdef Q_OS_WIN32
-    const QString shareIcons = QDir::cleanPath(QApplication::applicationDirPath()+"/../share/icons/");
-    qDebug() << shareIcons;
-    QIcon::setThemeSearchPaths(QStringList() << shareIcons);
-    QIcon::setThemeName("oxygen");
-#endif
 
     QSettings::setDefaultFormat(QSettings::IniFormat);
 //    const QString settingsPath = QDir(app->applicationDirPath()+QString(SHARE_PATH)+"/default_settings").canonicalPath();

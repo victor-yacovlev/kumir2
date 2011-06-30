@@ -20,7 +20,7 @@ EditorStandaloneWindow::EditorStandaloneWindow(class EditorPlugin * plugin
 
     QAction * newP = new QAction(this);
     newP->setShortcut(QKeySequence(QKeySequence::New));
-    newP->setIcon(QIcon::fromTheme("document-new"));
+    newP->setIcon(QIcon::fromTheme("document-new", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/document-new.png")));
     newP->setText(tr("New Kumir program"));
     connect(newP, SIGNAL(triggered()), this, SLOT(newProgram()));
     file->addAction(newP);
@@ -29,21 +29,21 @@ EditorStandaloneWindow::EditorStandaloneWindow(class EditorPlugin * plugin
 
     QAction * load = new QAction(this);
     load->setShortcut(QKeySequence(QKeySequence::Open));
-    load->setIcon(QIcon::fromTheme("document-open"));
+    load->setIcon(QIcon::fromTheme("document-open", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/document-open.png")));
     load->setText(tr("Load..."));
     connect(load, SIGNAL(triggered()), this, SLOT(openDocument()));
     file->addAction(load);
 
     QAction * save = new QAction(this);
     save->setShortcut(QKeySequence(QKeySequence::Save));
-    save->setIcon(QIcon::fromTheme("document-save"));
+    save->setIcon(QIcon::fromTheme("document-save", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/document-save.png")));
     save->setText(tr("Save"));
     connect(save, SIGNAL(triggered()), this, SLOT(saveDocument()));
     file->addAction(save);
 
     QAction * saveAs = new QAction(this);
     saveAs->setShortcut(QKeySequence(QKeySequence::SaveAs));
-    saveAs->setIcon(QIcon::fromTheme("document-save-as"));
+    saveAs->setIcon(QIcon::fromTheme("document-save-as", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/document-save-as.png")));
     saveAs->setText(tr("Save as..."));
     connect(saveAs, SIGNAL(triggered()), this, SLOT(saveDocumentAs()));
     file->addAction(saveAs);
