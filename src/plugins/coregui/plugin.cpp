@@ -12,7 +12,7 @@ Plugin::Plugin() :
 {
     m_mainWindow = 0;
     plugin_editor = 0;
-    plugin_CppGenerator = plugin_BytecodeGenerator = 0;
+    plugin_NativeGenerator = plugin_BytecodeGenerator = 0;
     m_workspaceDialog = 0;
 }
 
@@ -51,11 +51,11 @@ QString Plugin::initialize(const QStringList &)
     plugin_editor = qobject_cast<EditorInterface*>(myDependency("Editor"));
 
     plugin_BytecodeGenerator = qobject_cast<GeneratorInterface*>(myDependency("KumirCodeGenerator"));
-    plugin_CppGenerator = qobject_cast<GeneratorInterface*>(myDependency("KumirCppGenerator"));
+    plugin_NativeGenerator = qobject_cast<GeneratorInterface*>(myDependency("KumirNativeGenerator"));
     plugin_browser = qobject_cast<BrowserInterface*>(myDependency("Browser"));
     if (!plugin_editor)
         return "Can't load editor plugin!";
-    if (!plugin_CppGenerator)
+    if (!plugin_NativeGenerator)
         return "Can't load c-generator plugin!";
     m_terminal = new Terminal(0);
     QDockWidget * termWindow = m_mainWindow->addSecondaryComponent(tr("Input/Output terminal"),
@@ -65,7 +65,7 @@ QString Plugin::initialize(const QStringList &)
                                         MainWindow::Terminal);
     m_kumirProgram = new KumirProgram(this);
     m_kumirProgram->setBytecodeGenerator(plugin_BytecodeGenerator);
-    m_kumirProgram->setCppGenerator(plugin_CppGenerator);
+    m_kumirProgram->setNativeGenerator(plugin_NativeGenerator);
     m_kumirProgram->setEditorPlugin(plugin_editor);
     m_kumirProgram->setTerminal(m_terminal, termWindow);
 

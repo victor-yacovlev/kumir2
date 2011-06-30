@@ -1,7 +1,7 @@
 include(../../kumir2.pri)
 
 TEMPLATE = app
-TARGET = $$IDE_APP_TARGET
+TARGET = kumir2-ide
 DESTDIR = $$IDE_APP_PATH
 
 SOURCES += main.cpp
@@ -12,7 +12,7 @@ include(../rpath.pri)
 # need to avoid using previously compiled main.o from other project
 OBJECTS_DIR = $$OBJECTS_DIR/$$TARGET
 # defines default template for this build
-DEFINES += CONFIGURATION_TEMPLATE=\\\"Editor,Browser,Actor*,KumirAnalizer,KumirCppGenerator,KumirCodeGenerator,KumirCodeRun,!CoreGUI\\\"
+DEFINES += CONFIGURATION_TEMPLATE=\\\"Editor,Browser,Actor*,KumirAnalizer,KumirNativeGenerator,KumirCodeGenerator,KumirCodeRun,!CoreGUI\\\"
 
 win32 {
     CONFIG(debug, debug|release):LIBS *= -lExtensionSystemd

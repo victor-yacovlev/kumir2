@@ -10,7 +10,7 @@
             minVersion: "1.99.0"
         },
         {
-            name: "KumirCppGenerator",
+            name: "KumirNativeGenerator",
             minVersion: "1.99.0"
         }
     ]

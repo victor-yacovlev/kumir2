@@ -5,17 +5,17 @@
 #include "interfaces/generatorinterface.h"
 #include "abstractsyntaxtree/ast.h"
 
-namespace KumirCppGenerator {
+namespace KumirNativeGenerator {
 
-class KumirCppGeneratorPlugin
+class KumirNativeGeneratorPlugin
         : public ExtensionSystem::KPlugin
         , public Shared::GeneratorInterface
 {
     Q_OBJECT
     Q_INTERFACES(Shared::GeneratorInterface)
 public:
-    KumirCppGeneratorPlugin();
-    ~KumirCppGeneratorPlugin();
+    KumirNativeGeneratorPlugin();
+    ~KumirNativeGeneratorPlugin();
 
     QString initialize(const QStringList &arguments);
     Shared::GeneratorResult generateExecuable(
@@ -24,7 +24,7 @@ public:
 private:
     void start();
     void stop();
-    struct KumirCppGeneratorPrivate * d;
+    struct KumirNativeGeneratorPrivate * d;
 
 };
 

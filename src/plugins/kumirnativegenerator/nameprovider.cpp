@@ -1,6 +1,6 @@
 #include "nameprovider.h"
 
-namespace KumirCppGenerator {
+namespace KumirNativeGenerator {
 
 NameProvider::NameProvider(QObject *parent) :
     QObject(parent)

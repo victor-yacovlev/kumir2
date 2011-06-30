@@ -5,7 +5,7 @@
 #include "abstractsyntaxtree/ast_variabletype.h"
 #include "abstractsyntaxtree/ast_expression.h"
 
-namespace KumirCppGenerator {
+namespace KumirNativeGenerator {
 
 typedef QMap<QString, QMap<QString,QString> > NamesDatabase;
 

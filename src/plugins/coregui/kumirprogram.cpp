@@ -15,7 +15,7 @@ KumirProgram::KumirProgram(QObject *parent)
     , m_ast(0)
     , m_process(0)
     , m_terminal(0)
-    , plugin_cppGenerator(0)
+    , plugin_nativeGenerator(0)
     , plugin_bytcodeGenerator(0)
     , plugin_bytecodeRun(0)
     , plugin_editor(0)
@@ -156,7 +156,7 @@ void KumirProgram::fastRun()
             }
         }
         if (exeFile.open(QIODevice::WriteOnly)) {
-            GeneratorResult res = plugin_cppGenerator->generateExecuable(m_ast, &exeFile);
+            GeneratorResult res = plugin_nativeGenerator->generateExecuable(m_ast, &exeFile);
             if (res.type==Shared::GenError) {
                 qDebug() << "Error generating execuable";
             }

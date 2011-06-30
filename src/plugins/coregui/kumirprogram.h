@@ -26,7 +26,7 @@ class KumirProgram : public QObject
     Q_OBJECT
 public:
     explicit KumirProgram(QObject *parent = 0);
-    inline void setCppGenerator(GeneratorInterface * cpp) { plugin_cppGenerator = cpp; }
+    inline void setNativeGenerator(GeneratorInterface * cpp) { plugin_nativeGenerator = cpp; }
     inline void setBytecodeGenerator(GeneratorInterface * bc) { plugin_bytcodeGenerator = bc; }
     inline void setEditorPlugin(EditorInterface * ed) { plugin_editor = ed; }
     inline void setAST(const AST::Data * ast) { m_ast = ast; }
@@ -64,7 +64,7 @@ private:
     QProcess * m_process;
     Terminal * m_terminal;
     QDockWidget * m_terminalWindow;
-    GeneratorInterface * plugin_cppGenerator;
+    GeneratorInterface * plugin_nativeGenerator;
     GeneratorInterface * plugin_bytcodeGenerator;
     RunInterface * plugin_bytecodeRun;
     EditorInterface * plugin_editor;

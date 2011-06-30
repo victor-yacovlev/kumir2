@@ -47,7 +47,7 @@ protected:
     class QLabel * m_kumirStateLabel;
     class QLabel * m_genericCounterLabel;
     EditorInterface * plugin_editor;
-    GeneratorInterface * plugin_CppGenerator;
+    GeneratorInterface * plugin_NativeGenerator;
     GeneratorInterface * plugin_BytecodeGenerator;
     BrowserInterface * plugin_browser;
     QList<ActorInterface*> l_plugin_actors;

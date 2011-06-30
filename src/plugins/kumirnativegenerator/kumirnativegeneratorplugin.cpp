@@ -1,4 +1,4 @@
-#include "kumircppgeneratorplugin.h"
+#include "kumirnativegeneratorplugin.h"
 #include "abstractsyntaxtree/ast_module.h"
 #include "abstractsyntaxtree/ast_algorhitm.h"
 #include "abstractsyntaxtree/ast_variable.h"
@@ -9,7 +9,7 @@
 #include <iostream>
 
 
-namespace KumirCppGenerator {
+namespace KumirNativeGenerator {
 
 
 struct Module {
@@ -23,7 +23,7 @@ struct Module {
     bool requireGui;
 };
 
-struct KumirCppGeneratorPrivate {
+struct KumirNativeGeneratorPrivate {
     QList<Module*> modules;
     NameProvider * nameProvider;
     bool requireGui;
@@ -93,26 +93,26 @@ struct KumirCppGeneratorPrivate {
 
 };
 
-KumirCppGeneratorPlugin::KumirCppGeneratorPlugin()
+KumirNativeGeneratorPlugin::KumirNativeGeneratorPlugin()
 {
-    d = new KumirCppGeneratorPrivate;
+    d = new KumirNativeGeneratorPrivate;
     d->nameProvider = new NameProvider;
 }
 
-KumirCppGeneratorPlugin::~KumirCppGeneratorPlugin()
+KumirNativeGeneratorPlugin::~KumirNativeGeneratorPlugin()
 {
     for (int i=0; i<d->modules.size(); i++)
         delete d->modules[i];
     delete d;
 }
 
-QString KumirCppGeneratorPlugin::initialize(const QStringList &arguments)
+QString KumirNativeGeneratorPlugin::initialize(const QStringList &arguments)
 {
     Q_UNUSED(arguments)
     return "";
 }
 
-void KumirCppGeneratorPrivate::addModule(const AST::Module *module)
+void KumirNativeGeneratorPrivate::addModule(const AST::Module *module)
 {
     if (!module->header.enabled)
         return;
@@ -134,7 +134,7 @@ void KumirCppGeneratorPrivate::addModule(const AST::Module *module)
     modules << mod;
 }
 
-QString KumirCppGeneratorPrivate::createAlgorhitmHeader(const AST::Algorhitm *algorhitm, const QString &moduleName)
+QString KumirNativeGeneratorPrivate::createAlgorhitmHeader(const AST::Algorhitm *algorhitm, const QString &moduleName)
 {
     const QString algName = algorhitm->header.name;
     const QString cName = nameProvider->addName(algName, moduleName);
@@ -160,7 +160,7 @@ QString KumirCppGeneratorPrivate::createAlgorhitmHeader(const AST::Algorhitm *al
     return returnType+" "+cName+"("+args.join(", ")+")";
 }
 
-QString KumirCppGeneratorPrivate::makeExpression(
+QString KumirNativeGeneratorPrivate::makeExpression(
     const AST::Expression *expr,
     const AST::Algorhitm * algorhitm,
     const AST::Module * module,
@@ -278,7 +278,7 @@ QString screenString(QString s)
     return result;
 }
 
-QString KumirCppGeneratorPrivate::makeConstant(
+QString KumirNativeGeneratorPrivate::makeConstant(
     AST::VariableBaseType type,
     const QVariant &value) const
 {
@@ -298,7 +298,7 @@ QString KumirCppGeneratorPrivate::makeConstant(
     return result;
 }
 
-QString KumirCppGeneratorPrivate::makeArrayElement(
+QString KumirNativeGeneratorPrivate::makeArrayElement(
     const AST::Variable *var,
     const QList<AST::Expression *> & expr,
     const AST::Algorhitm * algorhitm,
@@ -326,7 +326,7 @@ QString KumirCppGeneratorPrivate::makeArrayElement(
     return result;
 }
 
-QString KumirCppGeneratorPrivate::makeFunctionCall(
+QString KumirNativeGeneratorPrivate::makeFunctionCall(
     const AST::Algorhitm *function,
     const QList<AST::Expression *> &args,
     const AST::Algorhitm * algorhitm,
@@ -363,7 +363,7 @@ QString KumirCppGeneratorPrivate::makeFunctionCall(
     return cName+"("+arguments.join(", ")+")";
 }
 
-QString KumirCppGeneratorPrivate::makeSubExpression(
+QString KumirNativeGeneratorPrivate::makeSubExpression(
     const QList<AST::Expression *> &operands,
     AST::ExpressionOperator op,
     const AST::Algorhitm * algorhitm,
@@ -412,7 +412,7 @@ QString KumirCppGeneratorPrivate::makeSubExpression(
 }
 
 
-void KumirCppGeneratorPrivate::createModuleHeader(const AST::Module *module)
+void KumirNativeGeneratorPrivate::createModuleHeader(const AST::Module *module)
 {
     Module * mod = 0;
     foreach (Module* m, modules) {
@@ -447,7 +447,7 @@ void KumirCppGeneratorPrivate::createModuleHeader(const AST::Module *module)
     mod->headerData += "\n#endif\n";
 }
 
-void KumirCppGeneratorPrivate::createModuleSource(const AST::Module *module)
+void KumirNativeGeneratorPrivate::createModuleSource(const AST::Module *module)
 {
     Module * mod = 0;
     foreach (Module* m, modules) {
@@ -502,7 +502,7 @@ void KumirCppGeneratorPrivate::createModuleSource(const AST::Module *module)
     mod->sourceData += "\n";
 }
 
-QString KumirCppGeneratorPrivate::makeMain() const
+QString KumirNativeGeneratorPrivate::makeMain() const
 {
     QString result;
     result += "#include <locale.h>\n";
@@ -581,7 +581,7 @@ QString addIndent(const QString &s, int size = 1)
     return lines.join("\n");
 }
 
-QString KumirCppGeneratorPrivate::makeAlgorhitm(
+QString KumirNativeGeneratorPrivate::makeAlgorhitm(
     const AST::Algorhitm *alg
     , const AST::Module * module)
 {
@@ -645,7 +645,7 @@ QString KumirCppGeneratorPrivate::makeAlgorhitm(
     return result;
 }
 
-QString KumirCppGeneratorPrivate::makeInitializator(const AST::Module *module)
+QString KumirNativeGeneratorPrivate::makeInitializator(const AST::Module *module)
 {
     QString result = "extern void __init__()\n{\n";
     result += addIndent(makeBody(module->impl.initializerBody, 0, 0, module));
@@ -653,7 +653,7 @@ QString KumirCppGeneratorPrivate::makeInitializator(const AST::Module *module)
     return result;
 }
 
-QString KumirCppGeneratorPrivate::makeBody(
+QString KumirNativeGeneratorPrivate::makeBody(
     const QList<AST::Statement *> &statements,
     int deep,
     const AST::Algorhitm * algorhitm,
@@ -685,13 +685,13 @@ QString KumirCppGeneratorPrivate::makeBody(
     return result;
 }
 
-QString KumirCppGeneratorPrivate::makeStError(const QString &text, int lineNo) const
+QString KumirNativeGeneratorPrivate::makeStError(const QString &text, int lineNo) const
 {
     const QString textConst = makeConstant(AST::TypeString, text);
     return "__abort__("+textConst+", "+QString::number(lineNo)+");\n";
 }
 
-QString KumirCppGeneratorPrivate::makeStAssign(
+QString KumirNativeGeneratorPrivate::makeStAssign(
     const QList<AST::Expression *> &exprs,
     const AST::Algorhitm * algorhitm,
     const AST::Module * module) const
@@ -730,7 +730,7 @@ QString KumirCppGeneratorPrivate::makeStAssign(
     return result;
 }
 
-QString KumirCppGeneratorPrivate::makeStAssert(
+QString KumirNativeGeneratorPrivate::makeStAssert(
     const QList<AST::Expression *> &exprs,
     const AST::Algorhitm * algorhitm,
     const AST::Module * module) const
@@ -747,7 +747,7 @@ QString KumirCppGeneratorPrivate::makeStAssert(
     return result;
 }
 
-QString KumirCppGeneratorPrivate::makeStInput(
+QString KumirNativeGeneratorPrivate::makeStInput(
     const QList<AST::Expression *> &exprs,
     const AST::Algorhitm * algorhitm,
     const AST::Module * module) const
@@ -773,7 +773,7 @@ QString KumirCppGeneratorPrivate::makeStInput(
     return result;
 }
 
-QString KumirCppGeneratorPrivate::makeStOutput(
+QString KumirNativeGeneratorPrivate::makeStOutput(
     const QList<AST::Expression *> &exprs,
     const AST::Algorhitm * algorhitm,
     const AST::Module * module) const
@@ -799,7 +799,7 @@ QString KumirCppGeneratorPrivate::makeStOutput(
     return result;
 }
 
-QString KumirCppGeneratorPrivate::makeStLoop(
+QString KumirNativeGeneratorPrivate::makeStLoop(
     const AST::LoopSpec &loop,
     int deep,
     const AST::Algorhitm * algorhitm,
@@ -834,7 +834,7 @@ QString KumirCppGeneratorPrivate::makeStLoop(
     return result;
 }
 
-QString KumirCppGeneratorPrivate::makeStIfThenElse(
+QString KumirNativeGeneratorPrivate::makeStIfThenElse(
     const QList<AST::ConditionSpec> &conds,
     int deep,
     const AST::Algorhitm * algorhitm,
@@ -858,7 +858,7 @@ QString KumirCppGeneratorPrivate::makeStIfThenElse(
     return result;
 }
 
-QString KumirCppGeneratorPrivate::makeStBreak(
+QString KumirNativeGeneratorPrivate::makeStBreak(
     int deep,
     const AST::Algorhitm * algorhitm,
     const AST::Module * module) const
@@ -879,7 +879,7 @@ QString KumirCppGeneratorPrivate::makeStBreak(
     }
 }
 
-QString KumirCppGeneratorPrivate::makeStVarInitialize(
+QString KumirNativeGeneratorPrivate::makeStVarInitialize(
     const QList<AST::Variable *> vars,
     const AST::Algorhitm *algorhitm,
     const AST::Module *module) const
@@ -935,19 +935,19 @@ QString KumirCppGeneratorPrivate::makeStVarInitialize(
 }
 
 
-void KumirCppGeneratorPlugin::start()
+void KumirNativeGeneratorPlugin::start()
 {
 
 }
 
-void KumirCppGeneratorPlugin::stop()
+void KumirNativeGeneratorPlugin::stop()
 {
 
 }
 
 
 
-Shared::GeneratorResult KumirCppGeneratorPlugin::generateExecuable(
+Shared::GeneratorResult KumirNativeGeneratorPlugin::generateExecuable(
     const AST::Data *tree
     , QIODevice *out)
 {
@@ -1024,7 +1024,7 @@ Shared::GeneratorResult KumirCppGeneratorPlugin::generateExecuable(
 
     hFiles.insert("__kumir__.h");
 
-    const QString includePath = qApp->property("sharePath").toString()+"/kumircppgenerator/";
+    const QString includePath = qApp->property("sharePath").toString()+"/kumirnativegenerator/";
     QString gccOutName;
     gccOutName = "out.bin";
 #ifdef Q_OS_WIN32
@@ -1193,4 +1193,4 @@ Shared::GeneratorResult KumirCppGeneratorPlugin::generateExecuable(
 
 }
 
-Q_EXPORT_PLUGIN(KumirCppGenerator::KumirCppGeneratorPlugin)
+Q_EXPORT_PLUGIN(KumirNativeGenerator::KumirNativeGeneratorPlugin)

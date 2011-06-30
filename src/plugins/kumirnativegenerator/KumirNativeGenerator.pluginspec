@@ -1,5 +1,5 @@
 {
-    name: "KumirCppGenerator",
+    name: "KumirNativeGenerator",
     version: "1.99.0",
     copyright: "NIISI RAS",
     license: "LGPL2",
