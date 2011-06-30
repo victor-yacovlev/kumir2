@@ -112,11 +112,11 @@ static ValueKind kindFromString(const QString &s)
 
 static QString screenString(QString s)
 {
+    s.replace("\\", "\\\\");
     s.replace("\n", "\\n");
     s.replace("\"", "\\\"");
     s.replace(" ", "\\s");
     s.replace("\t", "\\t");
-    s.replace("\\", "\\\\");
     return s;
 }
 

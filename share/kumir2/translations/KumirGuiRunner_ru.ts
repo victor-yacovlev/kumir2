@@ -8,7 +8,9 @@
         <source>
 Evaluation finished. Close all windows to exit program.
 </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">
+Выполнение завершено. Закройте все окна для выхода из программы.
+</translation>
     </message>
 </context>
 </TS>
