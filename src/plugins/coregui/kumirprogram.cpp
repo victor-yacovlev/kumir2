@@ -50,9 +50,11 @@ KumirProgram::KumirProgram(QObject *parent)
     connect(a_fastRun, SIGNAL(triggered()), this, SLOT(fastRun()));
 #ifndef Q_OS_MAC
     a_fastRun->setShortcut(QKeySequence("Shift+F9"));
+
 #else
 #error Implement me on Mac!
 #endif
+    a_fastRun->setToolTip(a_fastRun->text()+" <b>"+a_fastRun->shortcut().toString()+"</b>");
 
     a_regularRun = new QAction(tr("Regular run"), this);
     a_regularRun->setIcon(QIcon::fromTheme("media-playback-start", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-playback-start.png")));
@@ -62,6 +64,7 @@ KumirProgram::KumirProgram(QObject *parent)
 #else
 #error Implement me on Mac!
 #endif
+    a_regularRun->setToolTip(a_regularRun->text()+" <b>"+a_regularRun->shortcut().toString()+"</b>");
 
     a_stepRun = new QAction(tr("Step run"), this);
     a_stepRun->setIcon(QIcon::fromTheme("media-skip-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-skip-forward.png")));
@@ -71,6 +74,7 @@ KumirProgram::KumirProgram(QObject *parent)
 #else
 #error Implement me on Mac!
 #endif
+    a_stepRun->setToolTip(a_stepRun->text()+" <b>"+a_stepRun->shortcut().toString()+"</b>");
 
     a_stepIn = new QAction(tr("Step in"), this);
     a_stepIn->setIcon(QIcon::fromTheme("debug-step-into", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-into.png")));
@@ -80,6 +84,7 @@ KumirProgram::KumirProgram(QObject *parent)
 #else
 #error Implement me on Mac!
 #endif
+    a_stepIn->setToolTip(a_stepIn->text()+" <b>"+a_stepIn->shortcut().toString()+"</b>");
 
     a_stepOut = new QAction(tr("Step out"), this);
     a_stepOut->setIcon(QIcon::fromTheme("debug-step-out", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-out.png")));
@@ -89,6 +94,7 @@ KumirProgram::KumirProgram(QObject *parent)
 #else
 #error Implement me on Mac!
 #endif
+    a_stepOut->setToolTip(a_stepOut->text()+" <b>"+a_stepOut->shortcut().toString()+"</b>");
 
     a_stop = new QAction(tr("Stop"), this);
     a_stop->setIcon(QIcon::fromTheme("media-playback-stop", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-playback-stop.png")));
@@ -98,6 +104,7 @@ KumirProgram::KumirProgram(QObject *parent)
 #else
 #error Implement me on Mac!
 #endif
+    a_stop->setToolTip(a_stop->text()+" <b>"+a_stop->shortcut().toString()+"</b>");
 
     a_stepIn->setEnabled(false);
     a_stepOut->setEnabled(false);
