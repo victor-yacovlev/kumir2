@@ -49,8 +49,9 @@ TabBar::TabBar(QWidget *parent) :
         pp.setFont(f);
         pp.drawText(3+(12-w)/2, 12, text);
         pp.end();
-        v_activeIcons[i] = QIcon(QPixmap::fromImage(numberImageActive));
         v_normalIcons[i] = QIcon(QPixmap::fromImage(numberImage));
+//        v_activeIcons[i] = QIcon(QPixmap::fromImage(numberImageActive));
+        v_activeIcons[i] = v_normalIcons[i];
         QAction * toggleView = new QAction(this);
 
         if (i==0) {
