@@ -410,7 +410,8 @@ void MainWindow::showPreferences()
 void MainWindow::closeEvent(QCloseEvent *e)
 {
     QRect r(pos(), size());
-    m_plugin->mySettings()->setValue(Plugin::MainWindowGeometryKey, r);
+    QSettings * sett = m_plugin->mySettings();
+    sett->setValue(Plugin::MainWindowGeometryKey, r);
 //    m_plugin->mySettings()->setValue(Plugin::MainWindowStateKey, saveState());
 
     // TODO check for unsaved changes
@@ -418,7 +419,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
         closeTab(ui->tabWidget->count()-1);
     }
     for (int i=0; i<l_dockWindows.size(); i++) {
-        l_dockWindows[i]->saveState(m_plugin->mySettings());
+        l_dockWindows[i]->saveState(sett);
     }
 
     l_dockWindows.clear();
@@ -677,8 +678,16 @@ void MainWindow::fileOpen()
 QStringList MainWindow::recentFiles(bool fullPaths) const
 {
     QStringList r = m_plugin->mySettings()->value(Plugin::RecentFilesKey).toStringList();
-    if (fullPaths)
-        return r;
+    if (fullPaths) {
+        QStringList result;
+        foreach (const QString & s, r) {
+            if (QFileInfo(s).isRelative())
+                result << QDir::current().absoluteFilePath(s);
+            else
+                result << QFileInfo(s).fileName();
+        }
+        return result;
+    }
     else {
         QStringList result;
         foreach (const QString & s, r) {
@@ -692,8 +701,12 @@ QStringList MainWindow::recentFiles(bool fullPaths) const
 void MainWindow::addToRecent(const QString &fileName)
 {
     QStringList r = m_plugin->mySettings()->value(Plugin::RecentFilesKey).toStringList();
-    r.removeAll(fileName);
-    r.prepend(fileName);
+    QString entry;
+    if (fileName.startsWith(QDir::currentPath())) {
+        entry = fileName.mid(QDir::currentPath().length()+1);
+    }
+    r.removeAll(entry);
+    r.prepend(entry);
     r = r.mid(0, qMax(5, r.size()));
     m_plugin->mySettings()->setValue(Plugin::RecentFilesKey, r);
 }

@@ -14,13 +14,16 @@ HEADERS += \
     kplugin.h \
     pluginspec.h \
     pluginmanager.h \
-    settingsdialog.h
+    settingsdialog.h \
+    switchworkspacedialog.h
 
 SOURCES += \
     kplugin.cpp \
     pluginspec.cpp \
     pluginmanager.cpp \
-    settingsdialog.cpp
+    settingsdialog.cpp \
+    switchworkspacedialog.cpp
 
 FORMS += \
-    settingsdialog.ui
+    settingsdialog.ui \
+    switchworkspacedialog.ui

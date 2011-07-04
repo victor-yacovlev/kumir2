@@ -14,7 +14,6 @@ OTHER_FILES += CoreGUI.pluginspec
 HEADERS += \
     mainwindow.h \
     plugin.h \
-    switchworkspacedialog.h \
     tabwidget.h \
     kumirprogram.h \
     terminal.h \
@@ -26,7 +25,6 @@ HEADERS += \
 SOURCES += \
     mainwindow.cpp \
     plugin.cpp \
-    switchworkspacedialog.cpp \
     tabwidget.cpp \
     kumirprogram.cpp \
     terminal.cpp \
@@ -36,8 +34,7 @@ SOURCES += \
     dockwidget.cpp
 
 FORMS += \
-    mainwindow.ui \
-    switchworkspacedialog.ui
+    mainwindow.ui
 
 RESOURCES += \
     resources.qrc

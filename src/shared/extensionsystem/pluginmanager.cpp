@@ -2,6 +2,7 @@
 #include "kplugin.h"
 #include <QScriptEngine>
 #include "settingsdialog.h"
+#include "switchworkspacedialog.h"
 
 namespace ExtensionSystem {
 
@@ -23,6 +24,9 @@ struct PluginManagerPrivate {
     GlobalState globalState;
 
     SettingsDialog * settingsDialog;
+    SwitchWorkspaceDialog * switchWorkspaceDialog;
+    QSettings * mySettings;
+
 
     QString parsePluginsRequest(const QString &templ, QList<PluginRequest> & plugins, QStringList & names);
     QString loadSpecs(const QStringList &names, QScriptEngine * engine);
@@ -33,6 +37,7 @@ struct PluginManagerPrivate {
     QString reorderSpecsAndCreateStates(const QStringList & orderedList);
     void createSettingsDialog();
     QString loadPlugins();
+    void changeWorkingDirectory(const QString &path);
 };
 
 PluginManager::PluginManager()
@@ -41,12 +46,22 @@ PluginManager::PluginManager()
 {
     m_instance = this;
     d->globalState = GS_Unlocked;
+    d->mySettings = new QSettings("kumir2", "ExtensionSystem");
+#ifdef Q_WS_X11
+    bool gui = getenv("DISPLAY")!=0;
+    if (!gui)
+        return;
+#endif
+    d->switchWorkspaceDialog = new SwitchWorkspaceDialog(d->mySettings);
 }
 
 PluginManager::~PluginManager()
 {
+    d->mySettings->deleteLater();
     if (d->settingsDialog)
         d->settingsDialog->deleteLater();
+    if (d->switchWorkspaceDialog)
+        d->switchWorkspaceDialog->deleteLater();
     d->settingsDialog = 0;
     delete d;
 }
@@ -54,6 +69,7 @@ PluginManager::~PluginManager()
 void PluginManagerPrivate::createSettingsDialog()
 {
     settingsDialog = 0;
+
 #ifdef Q_WS_X11
     bool gui = getenv("DISPLAY")!=0;
     if (!gui)
@@ -63,6 +79,7 @@ void PluginManagerPrivate::createSettingsDialog()
     for (int i=0; i<objects.size(); i++) {
         settingsDialog->addPage(objects[i]->settingsEditorPage());
     }
+
 }
 
 void PluginManager::showSettingsDialog()
@@ -71,6 +88,29 @@ void PluginManager::showSettingsDialog()
         d->settingsDialog->exec();
     }
 }
+
+bool PluginManager::showWorkspaceChooseOnLaunch() const
+{
+    return ! d->mySettings->value(SwitchWorkspaceDialog::SkipChooseWorkspaceKey, false).toBool();
+}
+
+void PluginManager::switchToDefaultWorkspace()
+{
+    d->changeWorkingDirectory(d->mySettings->value(SwitchWorkspaceDialog::CurrentWorkspaceKey, QString(QDir::homePath()+"/Kumir/")).toString());
+}
+
+bool PluginManager::showWorkspaceChooseDialog()
+{
+    if (d->switchWorkspaceDialog) {
+        if (d->switchWorkspaceDialog->exec()==QDialog::Accepted) {
+            d->changeWorkingDirectory(d->switchWorkspaceDialog->currentWorkspace());
+            return true;
+        }
+    }
+    return false;
+}
+
+
 
 void PluginManager::setPluginPath(const QString &path)
 {
@@ -490,12 +530,23 @@ void PluginManager::shutdown()
     }
 }
 
-void PluginManager::changeWorkingDirectory(const QString &path)
+void PluginManagerPrivate::changeWorkingDirectory(const QString &path)
 {
-    for (int i=0; i<d->objects.size(); i++) {
-        KPlugin * p = d->objects[i];
-        d->settings[i]->sync();
+    for (int i=0; i<objects.size(); i++) {
+        settings[i]->sync();
+        settings[i]->deleteLater();
+    }
+    QDir::root().mkpath(path);
+    QDir::setCurrent(path);
+    QDir::current().mkdir(".settings");
+    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, path+"/.settings");
+    for (int i=0; i<objects.size(); i++) {
+        KPlugin * p = objects[i];
+        settings[i] = new QSettings(path+"/.settings/"+specs[i].name+".conf", QSettings::IniFormat);
+        settings[i]->setIniCodec("UTF-8");
+        settings[i]->sync();
         p->changeCurrentDirectory(path);
+        p->reloadSettings();
     }
 }
 

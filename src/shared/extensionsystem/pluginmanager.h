@@ -26,7 +26,7 @@ public:
     /** Set path to search settings etc. */
     void setSharePath(const QString &path);
 
-    void changeWorkingDirectory(const QString & path);
+    bool showWorkspaceChooseOnLaunch() const;
 
     void switchGlobalState(GlobalState state);
 
@@ -77,10 +77,15 @@ public slots:
       */
     void showSettingsDialog();
 
+    void switchToDefaultWorkspace();
+
+    bool showWorkspaceChooseDialog();
+
     /** Stops all plugins in reverse-order of creation */
     void shutdown();
 
 private:
+
     static PluginManager * m_instance;
     struct PluginManagerPrivate * d;
 

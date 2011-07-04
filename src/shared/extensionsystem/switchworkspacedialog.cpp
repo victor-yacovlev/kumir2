@@ -1,7 +1,7 @@
 #include "switchworkspacedialog.h"
 #include "ui_switchworkspacedialog.h"
 
-namespace CoreGUI {
+namespace ExtensionSystem {
 
 QString SwitchWorkspaceDialog::WorkspacesListKey = "WorkspacesList";
 QString SwitchWorkspaceDialog::CurrentWorkspaceKey = "CurrentWorkspace";

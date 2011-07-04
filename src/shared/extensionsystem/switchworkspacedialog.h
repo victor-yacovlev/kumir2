@@ -4,7 +4,7 @@
 #include <QtCore>
 #include <QtGui>
 
-namespace CoreGUI {
+namespace ExtensionSystem {
 
 namespace Ui {
     class SwitchWorkspaceDialog;

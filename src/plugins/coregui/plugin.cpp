@@ -1,6 +1,5 @@
 #include "plugin.h"
 #include "mainwindow.h"
-#include "switchworkspacedialog.h"
 #include "extensionsystem/pluginmanager.h"
 
 
@@ -13,7 +12,6 @@ Plugin::Plugin() :
     m_mainWindow = 0;
     plugin_editor = 0;
     plugin_NativeGenerator = plugin_BytecodeGenerator = 0;
-    m_workspaceDialog = 0;
 }
 
 QString Plugin::InitialTextKey = "InitialText";
@@ -31,22 +29,17 @@ QString Plugin::DockSideKey = "DockWindow/Side";
 QString Plugin::initialize(const QStringList &)
 {
     QApplication::setWindowIcon(QIcon(QApplication::instance()->property("sharePath").toString()+"/coregui/kumir2-icon.png"));
-    QString workspaceDir;
-    m_workspaceDialog = new SwitchWorkspaceDialog(mySettings());
-    if (mySettings()->value(SwitchWorkspaceDialog::SkipChooseWorkspaceKey, false).toBool()) {
-        workspaceDir = mySettings()->value(SwitchWorkspaceDialog::CurrentWorkspaceKey, QString(QDir::homePath()+"/Kumir/")).toString();
-    }
-    else {
-        m_workspaceDialog->setCurrentWorkspace(mySettings()->value(SwitchWorkspaceDialog::CurrentWorkspaceKey, QString(QDir::homePath()+"/Kumir/")).toString());
-        if (m_workspaceDialog->exec()==QDialog::Accepted) {
-            workspaceDir = m_workspaceDialog->currentWorkspace();
+    if (ExtensionSystem::PluginManager::instance()->showWorkspaceChooseOnLaunch()) {
+        if (!ExtensionSystem::PluginManager::instance()->showWorkspaceChooseDialog()) {
+            qApp->quit();
         }
     }
-    QDir::root().mkpath(workspaceDir);
-    QDir::setCurrent(workspaceDir);
+    else {
+        ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
+    }
+
     m_kumirStateLabel = new QLabel();
     m_genericCounterLabel = new QLabel();
-    ExtensionSystem::PluginManager::instance()->changeWorkingDirectory(workspaceDir);
     m_mainWindow = new MainWindow(this);
     plugin_editor = qobject_cast<EditorInterface*>(myDependency("Editor"));
 

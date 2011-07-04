@@ -9,7 +9,6 @@
 #include "interfaces/generatorinterface.h"
 #include "interfaces/actorinterface.h"
 #include "terminal.h"
-#include "switchworkspacedialog.h"
 #include "kumirprogram.h"
 
 using Terminal::Terminal;
@@ -53,7 +52,6 @@ protected:
     GeneratorInterface * plugin_BytecodeGenerator;
     BrowserInterface * plugin_browser;
     QList<ActorInterface*> l_plugin_actors;
-    SwitchWorkspaceDialog * m_workspaceDialog;
     BrowserComponent m_startPage;
     Terminal * m_terminal;
     QMap<QString,QObject*> m_browserObjects;
