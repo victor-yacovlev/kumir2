@@ -76,7 +76,7 @@ QString Plugin::initialize(const QStringList &)
     m_kumirProgram->setEditorPlugin(plugin_editor);
     m_kumirProgram->setTerminal(m_terminal, termWindow);
 
-    connect(m_kumirProgram, SIGNAL(giveMeAProgram()), m_mainWindow, SLOT(setupContentForTab()), Qt::DirectConnection);
+    connect(m_kumirProgram, SIGNAL(giveMeAProgram()), this, SLOT(prepareKumirProgramToRun()), Qt::DirectConnection);
 
     KPlugin * kumirRunner = myDependency("KumirCodeRun");
     Q_CHECK_PTR(kumirRunner);
@@ -133,6 +133,11 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
     m_kumirProgram->switchGlobalState(old, state);
 
 
+}
+
+void Plugin::prepareKumirProgramToRun()
+{
+    plugin_editor->ensureAnalized(m_kumirProgram->documentId());
 }
 
 void Plugin::start()

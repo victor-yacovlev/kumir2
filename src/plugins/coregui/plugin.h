@@ -37,6 +37,8 @@ public:
     static QString DockFloatingKey;
     static QString DockGeometryKey;
     static QString DockSideKey;
+protected slots:
+    void prepareKumirProgramToRun();
 protected:
     QString initialize(const QStringList &arguments);
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);

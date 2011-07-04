@@ -50,6 +50,7 @@ public:
     bool isModified() const;
     QString selectedText() const;
     void removeSelectedBlock();
+    inline void flushTransaction() { emitCompilationRequest(); }
     void emitCompilationRequest();
 
     void evaluateCommand(const KeyCommand & command);

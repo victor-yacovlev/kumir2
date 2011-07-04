@@ -247,8 +247,14 @@ void EditorPlugin::unhighlightLine(int documentId)
         d->editors[documentId].e->setLineHighlighted(-1, QColor::Invalid);
 }
 
+void EditorPlugin::ensureAnalized(int documentId)
+{
+    if (d->editors[documentId].a && d->editors[documentId].e) {
+        d->editors[documentId].e->ensureAnalized();
+    }
 }
 
+}
 
 
 Q_EXPORT_PLUGIN(Editor::EditorPlugin)

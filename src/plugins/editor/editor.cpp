@@ -479,6 +479,11 @@ void Editor::setText(const QString & text)
     d->plane->update();
 }
 
+void Editor::ensureAnalized()
+{
+    d->cursor->flushTransaction();
+}
+
 void Editor::setNotModified()
 {
     d->cursor->clearUndoRedoStacks();
