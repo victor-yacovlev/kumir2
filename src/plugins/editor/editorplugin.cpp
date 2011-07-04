@@ -37,6 +37,13 @@ EditorPlugin::~EditorPlugin()
     delete d;
 }
 
+void EditorPlugin::setMarginText(int documentId, int lineNo, const QString & text)
+{
+    Editor * ed = d->editors[documentId].e;
+    Q_CHECK_PTR(ed);
+    ed->setMarginText(lineNo, text);
+}
+
 Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, const QString &initialText)
 {
     AnalizerInterface * a = 0;
@@ -181,11 +188,19 @@ AnalizerInterface * EditorPlugin::analizer(int documentId)
     return d->editors[documentId].a;
 }
 
-void EditorPlugin::changeGlobalState(ExtensionSystem::GlobalState , ExtensionSystem::GlobalState current)
+void EditorPlugin::changeGlobalState(ExtensionSystem::GlobalState prev, ExtensionSystem::GlobalState current)
 {
+
     if (current==ExtensionSystem::GS_Unlocked || current==ExtensionSystem::GS_Running) {
         for (int i=0; i<d->editors.size(); i++)
             unhighlightLine(i);
+    }
+    if (prev==ExtensionSystem::GS_Observe && current!=ExtensionSystem::GS_Observe) {
+        for (int i=0; i<d->editors.size(); i++)
+            if (d->editors[i].e)
+                d->editors[i].e->clearMarginText();
+            else
+                break;
     }
     if (current==ExtensionSystem::GS_Unlocked || current==ExtensionSystem::GS_Observe) {
         for (int i=0; i<d->editors.size(); i++) {

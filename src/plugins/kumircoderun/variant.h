@@ -29,6 +29,8 @@ public:
     void init();
     inline quint8 dimension() const { return i_dimension; }
     inline void setDimension(quint8 v) { i_dimension = v; }
+    inline void setName(const QString & n) { s_name = n; }
+    inline QString name() const { if(m_reference) return m_reference->name(); else return s_name; }
 
     void setBounds(const QList<int> & bounds);
     QList<int> bounds() const;
@@ -51,7 +53,7 @@ public:
     inline double toReal() const { return value().toDouble(); }
     inline bool toBool() const { return value().toBool(); }
     inline QChar toChar() const { return value().toChar(); }
-    inline QString toString() const { return value().toString(); }
+    QString toString() const;
     Variant toReference();
     Variant toReference(const QList<int> & indeces);
     void setValue(const QVariant & value);
@@ -74,6 +76,7 @@ private:
     ValueType e_baseType;
     Variant * m_reference;
     QList<int> l_referenceIndeces;
+    QString s_name;
 
 };
 

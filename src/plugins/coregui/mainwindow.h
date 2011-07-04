@@ -63,6 +63,7 @@ public slots:
     void showMessage(const QString & text);
     void clearMessage();
     void setFocusOnCentralWidget();
+    void changeFocusOnMenubar();
 
 
 private slots:
@@ -81,6 +82,7 @@ private slots:
 
 private:
     void timerEvent(QTimerEvent *e);
+    bool eventFilter(QObject *o, QEvent *e);
     int i_timerId;
 
     QAction * a_notAvailable;

@@ -41,6 +41,7 @@ signals:
     void inputRequest(const QString & format);
     void outputRequest(const QString & output);
     void lineChanged(int lineNo);
+    void marginText(int lineNo, const QString & text);
 */
 };
 

@@ -46,6 +46,24 @@ QVariant Variant::value(int index0) const
     return m_value.toList()[index];
 }
 
+QString Variant::toString() const
+{
+    QString result;
+    switch (e_baseType)
+    {
+    case VT_bool:
+        if (value().toBool())
+            result = QObject::tr("true", "Variant");
+        else
+            result = QObject::tr("false", "Variant");
+        break;
+    default:
+        result = value().toString();
+        break;
+    }
+    return result;
+}
+
 void Variant::setValue(int index0, const QVariant &value)
 {
     if (m_reference)

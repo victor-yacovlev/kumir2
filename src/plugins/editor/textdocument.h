@@ -16,6 +16,7 @@ struct TextLine
     bool lineEndSelected;
     QString text;
     QStringList errors;
+    QString marginText;
 };
 
 class TextDocument:

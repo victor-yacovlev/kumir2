@@ -151,6 +151,9 @@ MainWindow::MainWindow(Plugin * p) :
     statusBar()->addWidget(m_message, 1);
 
     i_timerId = startTimer(1000);
+
+    installEventFilter(this);
+
 }
 
 QString MainWindow::StatusbarWidgetCSS =
@@ -159,6 +162,36 @@ QString MainWindow::StatusbarWidgetCSS =
 "   padding: 4px;"
 "}"
 ;
+
+void MainWindow::changeFocusOnMenubar()
+{
+    QMenu * firstMenu = menuBar()->findChild<QMenu*>();
+    if (!menuBar()->hasFocus()) {
+        menuBar()->setFocus();
+        if (firstMenu) {
+            menuBar()->setActiveAction(firstMenu->menuAction());
+        }
+    }
+    else {
+        menuBar()->setActiveAction(0);
+        setFocusOnCentralWidget();
+    }
+}
+
+bool MainWindow::eventFilter(QObject *o, QEvent *e)
+{
+#ifndef Q_OS_MAC
+    if (o==this && e->type()==QEvent::KeyPress) {
+        QKeyEvent * ke = (QKeyEvent*)(e);
+        if (ke->key()==Qt::Key_F10 && ke->modifiers()==0)
+        {
+            changeFocusOnMenubar();
+            return true;
+        }
+    }
+#endif
+    return false;
+}
 
 void MainWindow::checkCounterValue()
 {

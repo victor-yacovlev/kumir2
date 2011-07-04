@@ -72,6 +72,21 @@ void Editor::unlock()
     d->cursor->setEnabled(true);
 }
 
+void Editor::setMarginText(int lineNo, const QString &text)
+{
+    if (lineNo>=0 && lineNo<d->doc->size())
+        (*d->doc)[lineNo].marginText = text;
+    update();
+}
+
+void Editor::clearMarginText()
+{
+    for (int i=0; i<d->doc->size(); i++) {
+        (*d->doc)[i].marginText = "";
+    }
+    update();
+}
+
 void Editor::setLineHighlighted(int lineNo, const QColor &color)
 {
     d->plane->setLineHighlighted(lineNo, color);

@@ -128,6 +128,11 @@ KumirProgram::KumirProgram(QObject *parent)
 
 }
 
+void KumirProgram::handleMarginTextRequest(int lineNo, const QString &text)
+{
+    plugin_editor->setMarginText(i_documentId, lineNo, text);
+}
+
 void KumirProgram::setTerminal(Terminal *t, QDockWidget * w)
 {
     m_terminal = t;
@@ -168,6 +173,7 @@ void KumirProgram::setBytecodeRun(KPlugin *run)
     connect(run, SIGNAL(stopped(int)),
             this, SLOT(handleRunnerStopped(int)));
     connect(run, SIGNAL(lineChanged(int)), this, SLOT(handleLineChanged(int)));
+    connect(run, SIGNAL(marginText(int,QString)), this, SLOT(handleMarginTextRequest(int,QString)));
 }
 
 void KumirProgram::addActor(KPlugin *a, QDockWidget *w)

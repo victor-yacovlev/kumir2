@@ -41,6 +41,7 @@ signals:
                                 const QString & functionName,
                                 const QVariantList & arguments,
                                 const QList<quintptr> & references);
+    void valueChangeNotice(int lineNo, const QString & text);
 private:
     QStack<Variant> stack_values;
     QStack<Context> stack_contexts;

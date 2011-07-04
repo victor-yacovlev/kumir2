@@ -9,56 +9,56 @@
         <translation>Ускоренное выполнение</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="57"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="59"/>
         <source>Regular run</source>
         <translation>Обычное выполнение</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="66"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="381"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="69"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="394"/>
         <source>Step run</source>
         <translation>Пошаговое выполнение</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="75"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="79"/>
         <source>Step in</source>
         <translation>Шаг внутрь алгоритма</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="84"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="89"/>
         <source>Step out</source>
         <translation>Выход из алгоритма</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="93"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="99"/>
         <source>Stop</source>
         <translation>Остановить выполнение</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="311"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="324"/>
         <source>Unknown error</source>
         <translation>Нераспознанная ошибка</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="312"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="321"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="344"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="325"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="334"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="357"/>
         <source>Evaluation error</source>
         <translation>Ошибка выполнения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="321"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="352"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="334"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="365"/>
         <source>Evaluation finished</source>
         <translation>Выполнение завершено</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="337"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="350"/>
         <source>Evaluation terminated</source>
         <translation>Выполнение прервано</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="399"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="412"/>
         <source>Step over</source>
         <translation>Шаг</translation>
     </message>
@@ -340,8 +340,8 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>CoreGUI::TabBar</name>
     <message>
-        <location filename="../../../src/plugins/coregui/tabbar.cpp" line="101"/>
-        <location filename="../../../src/plugins/coregui/tabbar.cpp" line="103"/>
+        <location filename="../../../src/plugins/coregui/tabbar.cpp" line="102"/>
+        <location filename="../../../src/plugins/coregui/tabbar.cpp" line="104"/>
         <source>&lt;b&gt;Ctrl+%1&lt;/b&gt; activates this tab</source>
         <translation>&lt;b&gt;Ctrl+%1&lt;/b&gt; переключает на эту вкладку</translation>
     </message>

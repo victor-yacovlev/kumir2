@@ -13,6 +13,8 @@ Plugin::Plugin() :
     connect (d, SIGNAL(input(QString)), this, SLOT(handleInput(QString)));
     connect (d, SIGNAL(finished()), this, SLOT(handleThreadFinished()));
     connect (d, SIGNAL(lineChanged(int)), this, SLOT(handleLineChanged(int)));
+    connect (d->vm, SIGNAL(valueChangeNotice(int,QString)),
+             this, SIGNAL(marginText(int,QString)));
 }
 
 Plugin::~Plugin()

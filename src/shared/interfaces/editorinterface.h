@@ -28,6 +28,7 @@ public:
     virtual void highlightLineGreen(int documentId, int lineNo) = 0;
     virtual void highlightLineRed(int documentId, int lineNo) = 0;
     virtual void unhighlightLine(int documentId) = 0;
+    virtual void setMarginText(int documentId, int lineNo, const QString & text) = 0;
 };
 
 }

@@ -125,6 +125,7 @@ Variant fromTableElem(const TableElem & e)
     Variant r;
     r.setDimension(e.dimension);
     r.setBaseType(e.vtype);
+    r.setName(e.name);
     if (e.type==EL_CONST)
         r.setValue(e.constantValue);
     return r;
@@ -407,19 +408,28 @@ void VM::do_setarr(quint8 s, quint16 id)
 void VM::do_store(quint8 s, quint16 id)
 {
     const Variant val = stack_values.top();
+    QString name;
+    const QString svalue = val.toString();
+    const int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
     if (VariableScope(s)==LOCAL) {
         stack_contexts[stack_contexts.size()-1].locals[id].setBaseType(val.baseType());
         stack_contexts[stack_contexts.size()-1].locals[id].setBounds(val.bounds());
         stack_contexts[stack_contexts.size()-1].locals[id].setValue(val.value());
+        name = stack_contexts[stack_contexts.size()-1].locals[id].name();
     }
     else if (VariableScope(s)==GLOBAL) {
         globals[id].setBaseType(val.baseType());
         globals[id].setBounds(val.bounds());
         globals[id].setValue(val.value());
+        name = globals[id].name();
     }
     else {
         s_error = tr("Internal error: don't know what is 'store %1 %2'").arg(s).arg(id);
     }
+    if (lineNo!=-1 &&
+            (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+            )
+        emit valueChangeNotice(lineNo, name+"="+svalue);
     nextIP();
 }
 
@@ -451,11 +461,17 @@ void VM::do_load(quint8 s, quint16 id)
 void VM::do_storearr(quint8 s, quint16 id)
 {
     int dim = 0;
+    QString name;
+    QString svalue;
+    const int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
+    QString sindeces;
     if (VariableScope(s)==LOCAL) {
         dim = stack_contexts[stack_contexts.size()-1].locals[id].dimension();
+        name = stack_contexts[stack_contexts.size()-1].locals[id].name();
     }
     else if (VariableScope(s)==GLOBAL) {
         dim = globals[id].dimension();
+        name = globals[id].name();
     }
     else {
         s_error = tr("Internal error: don't know what is 'storearr %1 %2'").arg(s).arg(id);
@@ -464,8 +480,12 @@ void VM::do_storearr(quint8 s, quint16 id)
         QList<int> indeces;
         for (int i=0; i<dim; i++) {
             indeces << stack_values.pop().toInt();
+            if (!sindeces.isEmpty())
+                sindeces += ",";
+            sindeces += QString::number(indeces.last());
         }
         const Variant val = stack_values.top();
+        svalue = val.toString();
         if (VariableScope(s)==LOCAL) {
             stack_contexts[stack_contexts.size()-1].locals[id].setValue(indeces, val.value());
         }
@@ -473,6 +493,10 @@ void VM::do_storearr(quint8 s, quint16 id)
             globals[id].setValue(indeces, val.value());
         }
     }
+    if (lineNo!=-1 &&
+            (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+            )
+        emit valueChangeNotice(lineNo, name+"["+sindeces+"]="+svalue);
     nextIP();
 }
 
@@ -575,24 +599,36 @@ void VM::do_jump(quint16 ip)
 void VM::do_jnz(quint8 r, quint16 ip)
 {
     bool v = stack_contexts[stack_contexts.size()-1].registers[r].toBool();
+    QString s = v? tr("true") : tr("false");
     if (v) {
         stack_contexts[stack_contexts.size()-1].IP = ip;
     }
     else {
         nextIP();
     }
+    int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
+    if (lineNo!=-1 &&
+            (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+            )
+        emit valueChangeNotice(lineNo, s);
 }
 
 
 void VM::do_jz(quint8 r, quint16 ip)
 {
     bool v = stack_contexts[stack_contexts.size()-1].registers[r].toBool();
+    QString s = v? tr("true") : tr("false");
     if (v) {
         nextIP();
     }
     else {
         stack_contexts[stack_contexts.size()-1].IP = ip;
     }
+    int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
+    if (lineNo!=-1 &&
+            (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+            )
+        emit valueChangeNotice(lineNo, s);
 }
 
 void VM::do_push(quint8 r)
@@ -976,14 +1012,21 @@ bool VM::canStepInto() const
 void VM::setResults(const QList<quintptr> &references,
                     const QList<QVariant> &values)
 {
+    QStringList marginText;
     Q_ASSERT(references.size()==values.size());
     for (int i=0; i<references.size(); i++) {
         quintptr ptr = references[i];
         QVariant value = values[i];
         Variant * v = (Variant*)(ptr);
+        marginText << v->name()+"="+value.toString();
         Q_CHECK_PTR(v);
         v->setValue(value);
     }
+    int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
+    if (lineNo!=-1 &&
+            (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+            )
+        emit valueChangeNotice(lineNo, marginText.join(", "));
 }
 
 } // namespace KumirCodeRun

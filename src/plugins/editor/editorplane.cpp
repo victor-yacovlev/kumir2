@@ -647,7 +647,10 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         }
         findCursor();
     }
-    e->accept();
+    if (e->key()>=Qt::Key_F1 && e->key()<=Qt::Key_F35)
+        e->ignore();
+    else
+        e->accept();
 }
 
 void EditorPlane::selectAll()
@@ -1121,9 +1124,11 @@ void EditorPlane::wheelEvent(QWheelEvent *e)
 void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
 {
     p->save();
-    QColor textColor(Qt::red);
-    textColor.setAlpha(i_marginAlpha);
-    p->setPen(textColor);
+    QColor errorColor(Qt::red);
+    errorColor.setAlpha(i_marginAlpha);
+    QColor marginColor(Qt::black);
+    marginColor.setAlpha(i_marginAlpha);
+
     const int dX = charWidth();
     const int dY = lineHeight();
     int marginLeft = (widthInChars()+5)*dX+1;
@@ -1131,13 +1136,17 @@ void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
     int endLine = rect.bottom()-offset().y() / lineHeight() + 1;
     for (int i=qMax(startLine, 0); i<endLine+1; i++) {
         int y =  ( i + 1 )* dY;
-        if (i<m_document->size() && m_document->at(i).errors.size()>0) {
-//            const QString errText = m_document->at(i).errors.size()>1
-//                        ? "> "+m_document->at(i).errors[0]
-//                        : m_document->at(i).errors[0];
-            const QString errText = m_document->at(i).errors[0];
-            p->drawText(marginLeft+4, y+offset().y(), errText);
+        QString text;
+        if (i<m_document->size() && m_document->at(i).marginText.length()>0) {
+            text = m_document->at(i).marginText;
+            p->setPen(marginColor);
         }
+        else if (i<m_document->size() && m_document->at(i).errors.size()>0) {
+            text = m_document->at(i).errors[0];
+            p->setPen(errorColor);
+        }
+        if (text.length()>0)
+            p->drawText(marginLeft+4, y+offset().y(), text);
     }
     p->restore();
 }

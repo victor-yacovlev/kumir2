@@ -52,6 +52,7 @@ public slots:
     void handleActorCommand(const QString & actorName, const QString & command, const QVariantList & arguments);
     void handleActorResetRequest(const QString & actorName);
     void handleLineChanged(int lineNo);
+    void handleMarginTextRequest(int lineNo, const QString & text);
 private slots:
     void handleProcessFinished(int exitCode, QProcess::ExitStatus);
     void handleProcessError(QProcess::ProcessError);
