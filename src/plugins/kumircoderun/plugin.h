@@ -36,6 +36,12 @@ public slots:
     void terminate();
 
     void finishInput(const QVariantList & message);
+    void finishExternalFunctionCall(
+        const QString & error,
+        const QVariant & retval,
+        const QVariantList & results
+        );
+
 
 protected:
     QString initialize(const QStringList &);
@@ -56,6 +62,7 @@ signals:
     void outputRequest(const QString & output);
     void lineChanged(int lineNo);
     void marginText(int lineNo, const QString & text);
+    void resetModule(const QString &actorPluginName);
 
 
 private:

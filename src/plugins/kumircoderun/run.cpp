@@ -7,10 +7,10 @@ Run::Run(QObject *parent) :
 {
     vm = new VM(this);
     i_originFunctionDeep = 0;
-    b_inputDone = b_stopping = b_stepDone = false;
+    b_interactDone = b_stopping = b_stepDone = false;
     mutex_stopping = new QMutex;
     mutex_stepDone = new QMutex;
-    mutex_inputDone = new QMutex;
+    mutex_interactDone = new QMutex;
     e_runMode = RM_ToEnd;
 
     connect(vm, SIGNAL(lineNoChanged(int)), this, SLOT(handleLineChanged(int)), Qt::DirectConnection);
@@ -18,6 +18,10 @@ Run::Run(QObject *parent) :
     connect(vm, SIGNAL(inputRequest(QString,QList<quintptr>,QList<int>)),
             this, SLOT(handleInputRequest(QString,QList<quintptr>,QList<int>)), Qt::DirectConnection);
     connect(vm, SIGNAL(outputRequest(QString)), this, SLOT(handleOutputRequest(QString)));
+    connect(vm, SIGNAL(invokeExternalFunction(QString,QString,QVariantList,QList<quintptr>,QList<int>)),
+            this, SLOT(handleExternalRequest(QString,QString,QVariantList,QList<quintptr>,QList<int>)),
+            Qt::DirectConnection);
+    connect(vm, SIGNAL(resetModuleRequest(QString)), this, SIGNAL(resetModule(QString)));
 
 }
 
@@ -69,16 +73,16 @@ void Run::runContinuous()
 
 void Run::handleInputRequest(const QString & format, const QList<quintptr> & references, const QList<int> & indeces)
 {
-    mutex_inputDone->lock();
-    b_inputDone = false;
+    mutex_interactDone->lock();
+    b_interactDone = false;
     list_inputResult.clear();
-    mutex_inputDone->unlock();
+    mutex_interactDone->unlock();
     QVariantList result;
     emit input(format);
     forever {
-        mutex_inputDone->lock();
+        mutex_interactDone->lock();
         result = list_inputResult;
-        mutex_inputDone->unlock();
+        mutex_interactDone->unlock();
         if (result.isEmpty()) {
             msleep(1);
         }
@@ -91,14 +95,60 @@ void Run::handleInputRequest(const QString & format, const QList<quintptr> & ref
     if (mustStop())
         return;
     Q_ASSERT(result.size()==references.size());
-    vm->setResults(references, indeces, result);
+    vm->setResults("", references, indeces, result);
+}
+
+void Run::handleExternalRequest(const QString &pluginName,
+                                const QString &functionName,
+                                const QVariantList &arguments,
+                                const QList<quintptr> &references,
+                                const QList<int> &indeces)
+{
+    mutex_interactDone->lock();
+    b_interactDone = false;
+    list_funcResults.clear();
+    v_funcResult = QVariant::Invalid;
+    s_funcError = "";
+    mutex_interactDone->unlock();
+    QVariantList result;
+    emit externalFunctionCall(pluginName, functionName, arguments);
+    bool done = false;
+    forever {
+        mutex_interactDone->lock();
+        done = b_interactDone;
+        mutex_interactDone->unlock();
+        if (!done) {
+            msleep(1);
+        }
+        else {
+            break;
+        }
+        if (mustStop())
+            break;
+    }
+    if (mustStop())
+        return;
+    Q_ASSERT(result.size()==references.size());
+    vm->pushValueToStack(v_funcResult);
+    vm->setResults(s_funcError, references, indeces, list_funcResults);
 }
 
 void Run::finishInput(const QVariantList &data)
 {
-    QMutexLocker l(mutex_inputDone);
-    b_inputDone = true;
+    QMutexLocker l(mutex_interactDone);
+    b_interactDone = true;
     list_inputResult = data;
+}
+
+void Run::finishExternalFunctionCall(const QString & error,
+                                     const QVariant &retval,
+                                     const QVariantList &results)
+{
+    QMutexLocker l(mutex_interactDone);
+    b_interactDone = true;
+    list_funcResults = results;
+    v_funcResult = retval;
+    s_funcError = error;
 }
 
 void Run::handleOutputRequest(const QString & out )

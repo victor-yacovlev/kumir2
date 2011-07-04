@@ -31,6 +31,10 @@ public:
     virtual QString error() const = 0;
 
     virtual void finishInput(const QVariantList & message) = 0;
+    virtual void finishExternalFunctionCall(
+        const QString & error,
+        const QVariant & retval,
+        const QVariantList & results) = 0;
 /*
  * NOTE: signals should not be declared as virtuals in interface, but
  *       must be implemented in derivative classes
@@ -42,6 +46,7 @@ signals:
     void outputRequest(const QString & output);
     void lineChanged(int lineNo);
     void marginText(int lineNo, const QString & text);
+    void resetModule(const QString &actorPluginName);
 */
 };
 

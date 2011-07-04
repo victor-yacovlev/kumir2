@@ -11,10 +11,13 @@ Plugin::Plugin() :
     b_done = false;
     connect (d, SIGNAL(output(QString)), this, SLOT(handleOutput(QString)));
     connect (d, SIGNAL(input(QString)), this, SLOT(handleInput(QString)));
+    connect (d, SIGNAL(externalFunctionCall(QString,QString,QVariantList)),
+             this, SIGNAL(externalRequest(QString,QString,QVariantList)));
     connect (d, SIGNAL(finished()), this, SLOT(handleThreadFinished()));
     connect (d, SIGNAL(lineChanged(int)), this, SLOT(handleLineChanged(int)));
     connect (d->vm, SIGNAL(valueChangeNotice(int,QString)),
              this, SIGNAL(marginText(int,QString)));
+    connect (d->vm, SIGNAL(resetModuleRequest(QString)), this, SIGNAL(resetModule(QString)));
 }
 
 Plugin::~Plugin()
@@ -99,6 +102,13 @@ void Plugin::terminate()
 void Plugin::finishInput(const QVariantList &message)
 {
     d->finishInput(message);
+}
+
+void Plugin::finishExternalFunctionCall(const QString & error,
+                                        const QVariant &retval,
+                                        const QVariantList &results)
+{
+    d->finishExternalFunctionCall(error, retval, results);
 }
 
 void Plugin::handleOutput(const QString &text)

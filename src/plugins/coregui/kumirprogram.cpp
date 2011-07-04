@@ -174,6 +174,9 @@ void KumirProgram::setBytecodeRun(KPlugin *run)
             this, SLOT(handleRunnerStopped(int)));
     connect(run, SIGNAL(lineChanged(int)), this, SLOT(handleLineChanged(int)));
     connect(run, SIGNAL(marginText(int,QString)), this, SLOT(handleMarginTextRequest(int,QString)));
+    connect(run, SIGNAL(externalRequest(QString,QString,QVariantList)),
+            this, SLOT(handleActorCommand(QString,QString,QVariantList)));
+    connect(run, SIGNAL(resetModule(QString)), this, SLOT(handleActorResetRequest(QString)));
 }
 
 void KumirProgram::addActor(KPlugin *a, QDockWidget *w)
@@ -448,6 +451,10 @@ void KumirProgram::handleActorCommandFinished()
         message << result;
         message += res;
         m_connector->sendReply(message);
+    }
+    if (e_state==RegularRun || e_state==StepRun) {
+        Q_CHECK_PTR(plugin_bytecodeRun);
+        plugin_bytecodeRun->finishExternalFunctionCall(error, result, res);
     }
 }
 

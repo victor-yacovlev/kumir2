@@ -26,9 +26,10 @@ public:
     inline int deep() const { return stack_contexts.size(); }
     inline void setEntryPoint(RunEntryPoint e) { e_entryPoint = e; }
     void pushValueToStack(const QVariant & value);
-    void setResults(const QList<quintptr> & references,
-                    const QList<int> & indeces,
-                    const QList<QVariant> & values);
+    void setResults(const QString & error,
+        const QList<quintptr> & references,
+        const QList<int> & indeces,
+        const QList<QVariant> & values);
     void setNextCallInto();
     void setNextCallOut();
     void setNextCallToEnd();

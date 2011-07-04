@@ -33,12 +33,25 @@ public slots:
 
     void handleLineChanged(int lineNo);
     void finishInput(const QVariantList & data);
+    void finishExternalFunctionCall(
+        const QString & error,
+        const QVariant & retval,
+                                    const QVariantList & results);
+    void handleExternalRequest(const QString & pluginName,
+                               const QString & functionName,
+                               const QVariantList & arguments,
+                               const QList<quintptr> & references,
+                               const QList<int> & indeces);
 
 signals:
     void lineChanged(int lineNo);
     void output(const QString & text);
     void error(const QString & message);
     void input(const QString & format);
+    void externalFunctionCall(const QString & pluginName,
+                              const QString & functionName,
+                              const QVariantList & arguments);
+    void resetModule(const QString & pluginName);
 
 protected :
     void run();
@@ -55,10 +68,13 @@ protected :
 
     int i_originFunctionDeep;
 
-    QMutex * mutex_inputDone;
-    bool b_inputDone;
+    QMutex * mutex_interactDone;
+    bool b_interactDone;
 
     QVariantList list_inputResult;
+    QVariantList list_funcResults;
+    QVariant v_funcResult;
+    QString s_funcError;
 
 };
 

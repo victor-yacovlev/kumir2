@@ -53,18 +53,18 @@ void VM::reset()
     s_error = "";
     stack_values.clear();
     stack_contexts.clear();
-    QList<TableElem*> inits;
-    TableElem * testing;
-    TableElem * aMain;
+    QList<TableElem> inits;
+    TableElem testing;
+    TableElem aMain;
     QSet<QString> externModules;
     for (int i=0; i<functions.values().size(); i++) {
         const TableElem e = functions.values()[i];
         if (e.type==EL_INIT)
-            inits << &(functions.values()[i]);
+            inits << functions.values()[i];
         if (e.type==EL_MAIN)
-            aMain = &(functions.values()[i]);
+            aMain = functions.values()[i];
         if (e.type==EL_TESTING)
-            testing = &(functions.values()[i]);
+            testing = functions.values()[i];
     }
     for (int i=0; i<externs.values().size(); i++) {
         const TableElem e = externs.values()[i];
@@ -77,26 +77,26 @@ void VM::reset()
     }
 
 
-    if (e_entryPoint==EP_Main && aMain) {
+    if (e_entryPoint==EP_Main && aMain.type==EL_MAIN) {
         Context c;
-        quint32 mod = aMain->module;
-        quint32 alg = aMain->algId;
+        quint32 mod = aMain.module;
+        quint32 alg = aMain.algId;
         quint32 key = (mod << 16) | alg;
         c.locals = cleanLocalTables[key];
-        c.program = aMain->instructions;
+        c.program = aMain.instructions;
         c.IP = 0;
         c.type = EL_MAIN;
         c.runMode = CRM_ToEnd;
         stack_contexts.push(c);
     }
 
-    if (e_entryPoint==EP_Testing && testing) {
+    if (e_entryPoint==EP_Testing && testing.type==EL_TESTING) {
         Context c;
-        quint32 mod = testing->module;
-        quint32 alg = testing->algId;
+        quint32 mod = testing.module;
+        quint32 alg = testing.algId;
         quint32 key = (mod << 16) | alg;
         c.locals = cleanLocalTables[key];
-        c.program = testing->instructions;
+        c.program = testing.instructions;
         c.IP = 0;
         c.type = EL_TESTING;
         c.runMode = CRM_ToEnd;
@@ -104,13 +104,13 @@ void VM::reset()
     }
 
     for (int i=0; i<inits.size(); i++) {
-        if (inits[i]->instructions.size()>0) {
+        if (inits[i].instructions.size()>0) {
             Context c;
-            quint32 mod = inits[i]->module;
-            quint32 alg = inits[i]->algId;
+            quint32 mod = inits[i].module;
+            quint32 alg = inits[i].algId;
             quint32 key = (mod << 16) | alg;
             c.locals = cleanLocalTables[key];
-            c.program = inits[i]->instructions;
+            c.program = inits[i].instructions;
             c.IP = 0;
             c.type = EL_INIT;
             c.runMode = CRM_ToEnd;
@@ -1009,11 +1009,32 @@ bool VM::canStepInto() const
     return result;
 }
 
-void VM::setResults(const QList<quintptr> &references,
+void VM::pushValueToStack(const QVariant &value)
+{
+    if (value.isValid()) {
+        if (value.type()==QVariant::Int)
+            stack_values.push(Variant(value.toInt()));
+        else if (value.type()==QVariant::Double)
+            stack_values.push(Variant(value.toDouble()));
+        else if (value.type()==QVariant::Bool)
+            stack_values.push(Variant(value.toBool()));
+        else if (value.type()==QVariant::Char)
+            stack_values.push(Variant(value.toChar()));
+        else if (value.type()==QVariant::String)
+            stack_values.push(Variant(value.toString()));
+    }
+}
+
+void VM::setResults(
+    const QString & error,
+    const QList<quintptr> &references,
                     const QList<int> &indeces,
                     const QList<QVariant> &values
                     )
 {
+    s_error = error;
+    if (!error.isEmpty())
+        return;
     int indecesStart = 0;
     QStringList marginText;
     Q_ASSERT(references.size()==values.size());
