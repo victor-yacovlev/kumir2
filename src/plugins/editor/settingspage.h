@@ -15,6 +15,7 @@ class SettingsPage : public QWidget
 
 public:
     explicit SettingsPage(QSettings * settings, QWidget *parent = 0);
+    void changeSettings(QSettings * settings);
     ~SettingsPage();
 
     static QString KeyColorKw;

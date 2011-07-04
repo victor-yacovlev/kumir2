@@ -9,6 +9,7 @@ namespace Editor {
 
 class EditorPlane : public QWidget
 {
+    friend class Editor;
     Q_OBJECT
 public:
     explicit EditorPlane(class TextDocument * doc

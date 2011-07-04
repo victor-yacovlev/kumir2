@@ -638,7 +638,7 @@ void MainWindow::restoreSession(const QByteArray & data)
     }
 //    restoreState(m_plugin->mySettings()->value(Plugin::MainWindowStateKey).toByteArray());
 
-    for (int index=0; index<ui->tabWidget->count(); index++) {
+    for (int index=ui->tabWidget->count()-1; index>=0; index--) {
 
             TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(index));
             if (twe->type!=WWW) {

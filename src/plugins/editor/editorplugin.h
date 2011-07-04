@@ -34,6 +34,7 @@ public:
     void ensureAnalized(int documentId);
     QString saveState(int documentId);
     void restoreState(int documentId, const QString & data);
+    void updateSettings();
 protected:
     QString initialize(const QStringList &arguments);
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);

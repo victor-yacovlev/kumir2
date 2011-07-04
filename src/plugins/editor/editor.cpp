@@ -453,6 +453,12 @@ Editor::~Editor()
     delete d;
 }
 
+void Editor::setSettings(QSettings *s)
+{
+    d->settings = s;
+    d->plane->m_settings = s;
+}
+
 QList<QAction*> Editor::toolbarActions()
 {
     QList<QAction*> result;

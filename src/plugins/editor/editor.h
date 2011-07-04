@@ -14,6 +14,7 @@ public:
     explicit Editor(QSettings * settings = 0, Shared::AnalizerInterface * analizer = 0, int documentId = 0, QWidget *parent = 0);
     ~Editor();
     QList<QAction*> toolbarActions();
+    void setSettings(QSettings * s);
     QList<QMenu*> menuActions();
     QList<QWidget*> statusbarWidgets();
     void setText(const QString &text);

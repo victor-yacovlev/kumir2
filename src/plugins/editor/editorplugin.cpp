@@ -20,12 +20,14 @@ struct Ed {
 
 struct EditorPluginPrivate {
     QVector< Ed > editors;
+    SettingsPage * settingsPage;
 };
 
 EditorPlugin::EditorPlugin()
 {
     d = new EditorPluginPrivate;
     d->editors = QVector< Ed > ( 128, Ed(0,0,-1));
+    d->settingsPage = 0;
 }
 
 EditorPlugin::~EditorPlugin()
@@ -73,6 +75,21 @@ Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, c
     result.toolbarActions = w->toolbarActions();
     result.statusbarWidgets = w->statusbarWidgets();
     return result;
+}
+
+void EditorPlugin::updateSettings()
+{
+    for (int i=0; i<d->editors.size(); i++) {
+        if (d->editors[i].e) {
+            d->editors[i].e->setSettings(mySettings());
+        }
+        else {
+            break;
+        }
+    }
+    if (d->settingsPage) {
+        d->settingsPage->changeSettings(mySettings());
+    }
 }
 
 quint32 EditorPlugin::errorsCount(int documentId) const
@@ -154,9 +171,10 @@ void EditorPlugin::start()
 
 ExtensionSystem::SettingsEditorPage EditorPlugin::settingsEditorPage()
 {
+    d->settingsPage = new SettingsPage(mySettings());
     ExtensionSystem::SettingsEditorPage page;
     page.settingsGroupName = tr("Editor");
-    page.settingsPage = new SettingsPage(mySettings());
+    page.settingsPage = d->settingsPage;
     return page;
 }
 

@@ -567,7 +567,9 @@ void PluginManagerPrivate::changeWorkingDirectory(const QString &path)
         settings[i] = new QSettings(path+"/.settings/"+specs[i].name+".conf", QSettings::IniFormat);
         settings[i]->setIniCodec("UTF-8");
         settings[i]->sync();
+        p->updateSettings();
         p->changeCurrentDirectory(path);
+
         QFile session(path+"/.session/"+specs[i].name+".state");
         QByteArray data;
         if (session.open(QIODevice::ReadOnly)) {

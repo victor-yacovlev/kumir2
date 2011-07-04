@@ -45,6 +45,7 @@ public:
 protected:
     inline virtual QByteArray saveSession() const { return QByteArray(); }
     inline virtual void restoreSession(const QByteArray &) { }
+    inline virtual void updateSettings() { }
     inline virtual void changeCurrentDirectory(const QString & path) { Q_UNUSED(path); }
     inline virtual void changeGlobalState(GlobalState old, GlobalState current) { Q_UNUSED(old); Q_UNUSED(current); }
     inline virtual QString initialize(const QStringList &arguments) { Q_UNUSED(arguments); return ""; }

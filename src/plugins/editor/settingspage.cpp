@@ -214,6 +214,12 @@ QColor SettingsPage::buttonColor(const QToolButton *b) const
     }
 }
 
+void SettingsPage::changeSettings(QSettings *settings)
+{
+    m_settings = settings;
+    init();
+}
+
 SettingsPage::~SettingsPage()
 {
     delete ui;
