@@ -753,6 +753,7 @@ void MainWindow::loadFromUrl(const QUrl & url)
                         true);
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
+            setupContentForTab();
         }
     }
     else if (type==Pascal) {

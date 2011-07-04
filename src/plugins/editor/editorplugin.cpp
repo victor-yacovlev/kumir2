@@ -98,6 +98,11 @@ void EditorPlugin::closeDocument(int documentId)
     Q_CHECK_PTR(d->editors[documentId].e);
     Ed ed = d->editors[documentId];
     ed.e->deleteLater();
+    if (ed.a) {
+        AnalizerInterface * a = ed.a;
+        a->dropDocument(ed.id);
+    }
+
     ed.e = 0;
     ed.a = 0;
     ed.id = -1;

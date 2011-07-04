@@ -20,10 +20,10 @@ Statement::~Statement()
         if (expressions[i])
             delete expressions[i];
     }
-    for (int i=0; i<variables.size(); i++) {
-        if (variables[i])
-            delete variables[i];
-    }
+//    for (int i=0; i<variables.size(); i++) {
+//        if (variables[i])
+//            delete variables[i];
+//    }
     for (int i=0; i<conditionals.size(); i++) {
         if (conditionals[i].condition)
             delete conditionals[i].condition;

@@ -76,6 +76,8 @@ QString Plugin::initialize(const QStringList &)
     m_kumirProgram->setEditorPlugin(plugin_editor);
     m_kumirProgram->setTerminal(m_terminal, termWindow);
 
+    connect(m_kumirProgram, SIGNAL(giveMeAProgram()), m_mainWindow, SLOT(setupContentForTab()), Qt::DirectConnection);
+
     KPlugin * kumirRunner = myDependency("KumirCodeRun");
     Q_CHECK_PTR(kumirRunner);
     m_kumirProgram->setBytecodeRun(kumirRunner);

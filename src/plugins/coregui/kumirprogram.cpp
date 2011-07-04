@@ -189,6 +189,7 @@ void KumirProgram::fastRun()
     if (e_state!=Idle) {
         return;
     }
+    emit giveMeAProgram();
     QString suffix;
 #ifdef Q_OS_WIN32
     suffix = ".exe";
@@ -249,8 +250,10 @@ void KumirProgram::regularRun()
     if (e_state==FastRun)
         return;
     s_endStatus = "";
-    if (e_state==Idle)
+    if (e_state==Idle) {
+        emit giveMeAProgram();
         prepareKumirRunner();
+    }
     e_state = RegularRun;
     PluginManager::instance()->switchGlobalState(GS_Running);
     plugin_bytecodeRun->runContinuous();
@@ -285,8 +288,10 @@ void KumirProgram::stepRun()
     if (e_state==FastRun)
         return;
     s_endStatus = "";
-    if (e_state==Idle)
+    if (e_state==Idle) {
+        emit giveMeAProgram();
         prepareKumirRunner();
+    }
     e_state = StepRun;
     a_stepRun->setIcon(QIcon::fromTheme("debug-step-over",  QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));
     PluginManager::instance()->switchGlobalState(GS_Running);

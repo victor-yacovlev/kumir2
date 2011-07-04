@@ -39,6 +39,7 @@ public:
     void addActor(KPlugin * a, QDockWidget * w);
     inline QString endStatus() const { return s_endStatus; }
 signals:
+    void giveMeAProgram();
 
 public slots:
     void fastRun();
