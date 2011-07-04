@@ -77,7 +77,9 @@ void Variant::setValue(int index0, const QVariant &value)
         return ;
     }
     int index = linearIndex(index0);
-    m_value.toList()[index] = value;
+    QVariantList list = m_value.toList();
+    list[index] = value;
+    m_value = list;
 }
 
 QVariant Variant::value(int index0, int index1) const
@@ -235,8 +237,17 @@ void Variant::setBounds(const QList<int> &bounds)
     if (i_dimension>=3) {
         size *= bounds[5]-bounds[4]+1;
     }
-    while (m_value.toList().size()<size) {
-        m_value.toList().append(QVariant::Invalid);
+    QVariantList data;
+    if (m_value.type()==QVariant::List)
+        data = m_value.toList();
+    while (data.size()<size) {
+        data.append(QVariant::Invalid);
+    }
+    m_value = data;
+    l_bounds.clear();
+    for (int i=0; i<i_dimension; i++) {
+        QPair<int,int> p(bounds[2*i], bounds[2*i+1]);
+        l_bounds << p;
     }
 }
 

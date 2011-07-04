@@ -15,8 +15,8 @@ Run::Run(QObject *parent) :
 
     connect(vm, SIGNAL(lineNoChanged(int)), this, SLOT(handleLineChanged(int)), Qt::DirectConnection);
 
-    connect(vm, SIGNAL(inputRequest(QString,QList<quintptr>)),
-            this, SLOT(handleInputRequest(QString,QList<quintptr>)), Qt::DirectConnection);
+    connect(vm, SIGNAL(inputRequest(QString,QList<quintptr>,QList<int>)),
+            this, SLOT(handleInputRequest(QString,QList<quintptr>,QList<int>)), Qt::DirectConnection);
     connect(vm, SIGNAL(outputRequest(QString)), this, SLOT(handleOutputRequest(QString)));
 
 }
@@ -67,7 +67,7 @@ void Run::runContinuous()
 }
 
 
-void Run::handleInputRequest(const QString & format, const QList<quintptr> & references)
+void Run::handleInputRequest(const QString & format, const QList<quintptr> & references, const QList<int> & indeces)
 {
     mutex_inputDone->lock();
     b_inputDone = false;
@@ -91,7 +91,7 @@ void Run::handleInputRequest(const QString & format, const QList<quintptr> & ref
     if (mustStop())
         return;
     Q_ASSERT(result.size()==references.size());
-    vm->setResults(references, result);
+    vm->setResults(references, indeces, result);
 }
 
 void Run::finishInput(const QVariantList &data)

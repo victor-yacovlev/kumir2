@@ -25,7 +25,10 @@ public slots:
     void runContinuous();
 
 
-    void handleInputRequest(const QString & format, const QList<quintptr> & references);
+    void handleInputRequest(const QString & format,
+                            const QList<quintptr> & references,
+                            const QList<int> & indeces
+                            );
     void handleOutputRequest(const QString & output );
 
     void handleLineChanged(int lineNo);

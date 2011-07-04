@@ -600,7 +600,7 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
             }
             else if (expr->kind==AST::ExprArrayElement) {
                 ref.type = Bytecode::REFARR;
-                for (int j=expr->operands.size(); j>=0; j--) {
+                for (int j=expr->operands.size()-1; j>=0; j--) {
                     result << calculate(modId, algId, level, expr->operands[j]);
                 }
             }

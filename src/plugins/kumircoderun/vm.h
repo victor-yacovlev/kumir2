@@ -26,7 +26,9 @@ public:
     inline int deep() const { return stack_contexts.size(); }
     inline void setEntryPoint(RunEntryPoint e) { e_entryPoint = e; }
     void pushValueToStack(const QVariant & value);
-    void setResults(const QList<quintptr> & references, const QList<QVariant> & values);
+    void setResults(const QList<quintptr> & references,
+                    const QList<int> & indeces,
+                    const QList<QVariant> & values);
     void setNextCallInto();
     void setNextCallOut();
     void setNextCallToEnd();
@@ -34,13 +36,15 @@ public:
     int currentLineNo() const;
 signals:
     void lineNoChanged(int lineNo);
-    void inputRequest(const QString & format, const QList<quintptr> & references);
+    void inputRequest(const QString & format, const QList<quintptr> & references, const QList<int> & indeces);
     void outputRequest(const QString & out);
     void resetModuleRequest(const QString & actorPluginName);
     void invokeExternalFunction(const QString & actorPluginName,
                                 const QString & functionName,
                                 const QVariantList & arguments,
-                                const QList<quintptr> & references);
+                                const QList<quintptr> & references,
+                                const QList<int> & indeces
+                                );
     void valueChangeNotice(int lineNo, const QString & text);
 private:
     QStack<Variant> stack_values;

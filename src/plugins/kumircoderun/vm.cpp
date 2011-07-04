@@ -296,25 +296,24 @@ void VM::do_call(quint8 mod, quint16 alg)
 
     if (mod==255) {
         int argsCount = stack_values.pop().toInt();
-        VariantList args;
-        for (int i=0; i<argsCount; i++) {
-            args << stack_values.pop();
-        }
         // Special calls
         if (alg==0) {
             // Input
-            const QString format = args.first().toString();
+            const QString format = stack_values.pop().toString();
             QList<quintptr> references;
-            for (int i=1; i<args.size(); i++) {
-                references << quintptr(args[i].reference());
+            QList<int> indeces;
+            for (int i=1; i<argsCount; i++) {
+                Variant ref = stack_values.pop();
+                references << quintptr(ref.reference());
+                indeces << ref.referenceIndeces();
             }
-            emit inputRequest(format, references);
+            emit inputRequest(format, references, indeces);
         }
         if (alg==1) {
             // Output
             QString output;
-            for (int i=0; i<args.size(); i++) {
-                output += args[i].toString();
+            for (int i=0; i<argsCount; i++) {
+                output += stack_values.pop().toString();
             }
             emit outputRequest(output);
         }
@@ -330,6 +329,7 @@ void VM::do_call(quint8 mod, quint16 alg)
     else if (externs.contains(p)) {
         QList<quintptr> references;
         QVariantList arguments;
+        QList<int> indeces;
         int argsCount = stack_values.pop().toInt();
         for (int i=0; i<argsCount; i++) {
             arguments << stack_values.pop().value();
@@ -341,7 +341,7 @@ void VM::do_call(quint8 mod, quint16 alg)
         const TableElem exportElem = externs[p];
         const QString pluginName = exportElem.moduleName;
         const QString algName = exportElem.name;
-        emit invokeExternalFunction(pluginName, algName, arguments, references);
+        emit invokeExternalFunction(pluginName, algName, arguments, references, indeces);
 
     }
     else if (functions.contains(p)) {
@@ -1010,18 +1010,35 @@ bool VM::canStepInto() const
 }
 
 void VM::setResults(const QList<quintptr> &references,
-                    const QList<QVariant> &values)
+                    const QList<int> &indeces,
+                    const QList<QVariant> &values
+                    )
 {
+    int indecesStart = 0;
     QStringList marginText;
     Q_ASSERT(references.size()==values.size());
     for (int i=0; i<references.size(); i++) {
         quintptr ptr = references[i];
         QVariant value = values[i];
         Variant * v = (Variant*)(ptr);
-        marginText << v->name()+"="+value.toString();
+        QList<int> inds = indeces.mid(indecesStart, v->dimension());
+        QString mt = v->name();
+        if (inds.size()>0) {
+            mt += "[";
+            for (int j=0; j<inds.size(); j++) {
+                mt += QString::number(inds[j]);
+                if (j<inds.size()-1)
+                    mt+=",";
+            }
+            mt += "]";
+        }
+        mt += "="+value.toString();
+        marginText << mt;
         Q_CHECK_PTR(v);
-        v->setValue(value);
+        v->setValue(inds,value);
+        indecesStart += inds.size();
     }
+    s_error = Variant::error;
     int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
     if (lineNo!=-1 &&
             (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
