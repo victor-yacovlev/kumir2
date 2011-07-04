@@ -40,6 +40,8 @@ protected slots:
     void prepareKumirProgramToRun();
 protected:
     QString initialize(const QStringList &arguments);
+    QByteArray saveSession() const;
+    void restoreSession(const QByteArray &);
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void start();
     void stop();

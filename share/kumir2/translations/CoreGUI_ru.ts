@@ -15,7 +15,7 @@
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="69"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="394"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="402"/>
         <source>Step run</source>
         <translation>Пошаговое выполнение</translation>
     </message>
@@ -35,30 +35,30 @@
         <translation>Остановить выполнение</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="324"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="332"/>
         <source>Unknown error</source>
         <translation>Нераспознанная ошибка</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="325"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="334"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="357"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="333"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="342"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="365"/>
         <source>Evaluation error</source>
         <translation>Ошибка выполнения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="334"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="365"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="342"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="373"/>
         <source>Evaluation finished</source>
         <translation>Выполнение завершено</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="350"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="358"/>
         <source>Evaluation terminated</source>
         <translation>Выполнение прервано</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="412"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="420"/>
         <source>Step over</source>
         <translation>Шаг</translation>
     </message>
@@ -211,52 +211,52 @@
         <translation>Для этой вкладки нет действий</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="172"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="205"/>
         <source>No errors</source>
         <translation>Ошибок нет</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="176"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="209"/>
         <source>Errors: %1</source>
         <translation>Ошибок: %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="317"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="350"/>
         <source>Kumir programs (*.kum)</source>
         <translation>Программы Кумир (*.kum)</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="320"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="353"/>
         <source>Pascal programs (*.pas *.pp</source>
         <translation>Программы Паскаль (*.pas *.pp)</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="323"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="356"/>
         <source>Text files (*.txt)</source>
         <translation>Текстовые файлы (*.txt)</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="325"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="358"/>
         <source>All files (*)</source>
         <translation>Все файлы (*)</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="326"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="359"/>
         <source>Save file</source>
         <translation>Сохранить файл</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="618"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="652"/>
         <source>Start</source>
         <translation>Начало</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="633"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="667"/>
         <source>Load file...</source>
         <translation>Загрузить файл...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="635"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="669"/>
         <source>Kumir programs (*.kum);;Pascal programs (*.pas *.pp);;Web pages (*.html *.htm);;Text files (*.txt);;All files (*)</source>
         <translation>Программы Кумир (*.kum);;Программы Pascal (*.pas *.pp);; Web-страницы (*.html *.htm);;Текстовые файлы (*.txt);;Все файлы (*)</translation>
     </message>
@@ -264,28 +264,28 @@
 <context>
     <name>CoreGUI::Plugin</name>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="65"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="58"/>
         <source>Input/Output terminal</source>
         <translation>Область ввода/вывода</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="111"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="106"/>
         <source>Editing</source>
         <translation>Редактирование</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="116"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="111"/>
         <source>Observe</source>
         <translation>Анализ</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="121"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="116"/>
         <source>Running</source>
         <translation>Выполнение</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="125"/>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="128"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="120"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="123"/>
         <source>Pause</source>
         <translation>Пауза</translation>
     </message>
@@ -293,12 +293,10 @@
 <context>
     <name>CoreGUI::SwitchWorkspaceDialog</name>
     <message>
-        <location filename="../../../src/plugins/coregui/switchworkspacedialog.ui" line="20"/>
         <source>Workspace Launcher</source>
-        <translation>Выбор рабочего каталога Кумир</translation>
+        <translation type="obsolete">Выбор рабочего каталога Кумир</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/switchworkspacedialog.ui" line="44"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
@@ -307,7 +305,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;&quot;&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Kumir stores your programs, data and settings in a folder called a workspace.&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Choose a workspace folder to use for this session.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+        <translation type="obsolete">&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Droid Sans&apos;; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
@@ -317,24 +315,20 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Выберете каталог, который будет использовать Кумир.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/switchworkspacedialog.ui" line="60"/>
         <source>Workspace:</source>
-        <translation>Рабочий каталог:</translation>
+        <translation type="obsolete">Рабочий каталог:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/switchworkspacedialog.ui" line="80"/>
         <source>Browse...</source>
-        <translation>Обзор...</translation>
+        <translation type="obsolete">Обзор...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/switchworkspacedialog.ui" line="89"/>
         <source>Use this as the default and do not ask again</source>
-        <translation>Использовать этот каталог всегда и больше не спрашивать</translation>
+        <translation type="obsolete">Использовать этот каталог всегда и больше не спрашивать</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/switchworkspacedialog.cpp" line="53"/>
         <source>Select directory for use as workspace</source>
-        <translation>Выбор рабочего каталога</translation>
+        <translation type="obsolete">Выбор рабочего каталога</translation>
     </message>
 </context>
 <context>

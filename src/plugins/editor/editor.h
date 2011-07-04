@@ -27,6 +27,8 @@ public:
     void unlock();
     void setLineHighlighted(int lineNo, const QColor & color);
     void ensureAnalized();
+    QString saveState() const;
+    void restoreState(const QString &data);
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
 private:

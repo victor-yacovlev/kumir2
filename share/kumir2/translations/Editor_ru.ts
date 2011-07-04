@@ -11,12 +11,12 @@
 <context>
     <name>Editor::EditorPlugin</name>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="125"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="130"/>
         <source>Can&apos;t open file %1 for writing</source>
         <translation>Не могу открыть %1 для записи</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="153"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="158"/>
         <source>Editor</source>
         <translation>Редактор</translation>
     </message>

@@ -30,6 +30,8 @@ public:
     virtual void unhighlightLine(int documentId) = 0;
     virtual void setMarginText(int documentId, int lineNo, const QString & text) = 0;
     virtual void ensureAnalized(int documentId) = 0;
+    virtual QString saveState(int documentId) = 0;
+    virtual void restoreState(int documentId, const QString & data) = 0;
 };
 
 }

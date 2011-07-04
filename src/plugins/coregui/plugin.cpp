@@ -29,14 +29,7 @@ QString Plugin::DockSideKey = "DockWindow/Side";
 QString Plugin::initialize(const QStringList &)
 {
     QApplication::setWindowIcon(QIcon(QApplication::instance()->property("sharePath").toString()+"/coregui/kumir2-icon.png"));
-    if (ExtensionSystem::PluginManager::instance()->showWorkspaceChooseOnLaunch()) {
-        if (!ExtensionSystem::PluginManager::instance()->showWorkspaceChooseDialog()) {
-            qApp->quit();
-        }
-    }
-    else {
-        ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
-    }
+
 
     m_kumirStateLabel = new QLabel();
     m_genericCounterLabel = new QLabel();
@@ -96,7 +89,7 @@ QString Plugin::initialize(const QStringList &)
     m_browserObjects["mainWindow"] = m_mainWindow;
     m_startPage = plugin_browser->createBrowser(QUrl::fromLocalFile(browserEntryPoint), m_browserObjects);
     m_startPage.widget->setProperty("uncloseable", true);
-    m_mainWindow->restoreSession();
+
     return "";
 }
 
@@ -135,6 +128,14 @@ void Plugin::prepareKumirProgramToRun()
 
 void Plugin::start()
 {
+    if (ExtensionSystem::PluginManager::instance()->showWorkspaceChooseOnLaunch()) {
+        if (!ExtensionSystem::PluginManager::instance()->showWorkspaceChooseDialog()) {
+            qApp->quit();
+        }
+    }
+    else {
+        ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
+    }
     PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);
     m_mainWindow->show();
 }
@@ -142,6 +143,17 @@ void Plugin::start()
 void Plugin::stop()
 {
     StdLib::Connector::instance()->stopListen();
+}
+
+
+QByteArray Plugin::saveSession() const
+{
+    return m_mainWindow->saveSession();
+}
+
+void Plugin::restoreSession(const QByteArray &data)
+{
+    m_mainWindow->restoreSession(data);
 }
 
 Plugin::~Plugin()

@@ -26,6 +26,7 @@ struct PluginManagerPrivate {
     SettingsDialog * settingsDialog;
     SwitchWorkspaceDialog * switchWorkspaceDialog;
     QSettings * mySettings;
+    QString workspacePath;
 
 
     QString parsePluginsRequest(const QString &templ, QList<PluginRequest> & plugins, QStringList & names);
@@ -524,6 +525,16 @@ void PluginManager::shutdown()
 {
     for (int i=d->objects.size()-1; i>=0; i--) {
         KPlugin * p = d->objects[i];
+        if (!d->workspacePath.isEmpty()) {
+            QByteArray sessionData = d->objects[i]->saveSession();
+            if (sessionData.size()>0) {
+                QFile session(d->workspacePath+"/.session/"+d->specs[i].name+".state");
+                if (session.open(QIODevice::WriteOnly)) {
+                    session.write(sessionData);
+                    session.close();
+                }
+            }
+        }
         p->stop();
         d->states[i] = KPlugin::Stopped;
         d->settings[i]->sync();
@@ -535,7 +546,18 @@ void PluginManagerPrivate::changeWorkingDirectory(const QString &path)
     for (int i=0; i<objects.size(); i++) {
         settings[i]->sync();
         settings[i]->deleteLater();
+        if (!workspacePath.isEmpty()) {
+            QByteArray sessionData = objects[i]->saveSession();
+            if (sessionData.size()>0) {
+                QFile session(workspacePath+"/.session/"+specs[i].name+".state");
+                if (session.open(QIODevice::WriteOnly)) {
+                    session.write(sessionData);
+                    session.close();
+                }
+            }
+        }
     }
+    workspacePath = path;
     QDir::root().mkpath(path);
     QDir::setCurrent(path);
     QDir::current().mkdir(".settings");
@@ -546,7 +568,13 @@ void PluginManagerPrivate::changeWorkingDirectory(const QString &path)
         settings[i]->setIniCodec("UTF-8");
         settings[i]->sync();
         p->changeCurrentDirectory(path);
-        p->reloadSettings();
+        QFile session(path+"/.session/"+specs[i].name+".state");
+        QByteArray data;
+        if (session.open(QIODevice::ReadOnly)) {
+            data = session.readAll();
+            session.close();
+        }
+        p->restoreSession(data);
     }
 }
 

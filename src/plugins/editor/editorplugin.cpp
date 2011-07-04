@@ -254,6 +254,20 @@ void EditorPlugin::ensureAnalized(int documentId)
     }
 }
 
+QString EditorPlugin::saveState(int documentId)
+{
+    if (d->editors[documentId].e)
+        return d->editors[documentId].e->saveState();
+    else
+        return "";
+}
+
+void EditorPlugin::restoreState(int documentId, const QString &data)
+{
+    if (d->editors[documentId].e)
+        d->editors[documentId].e->restoreState(data);
+}
+
 }
 
 

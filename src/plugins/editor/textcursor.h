@@ -22,6 +22,8 @@ public:
     ~TextCursor();
     inline int row() const { return i_row; }
     inline int column() const { return i_column; }
+    inline void setRow(int v) { i_row = v; emit updateRequest(); }
+    inline void setColumn(int v) { i_column = v; emit updateRequest(); }
     void moveTo(int row, int col);
     void selectRangeBlock(int fromRow, int fromCol, int toRow, int toCol);
     void selectRangeText(int fromRow, int fromCol, int toRow, int toCol);

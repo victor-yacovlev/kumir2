@@ -105,7 +105,7 @@ void TabBar::handleChanged(int index)
     }
     for (int i=10; i<count(); i++)
         setTabToolTip(i, "");
-    if (index<10)
+    if (index<10 && index>=0)
         setTabIcon(index, v_activeIcons[index]);
 }
 

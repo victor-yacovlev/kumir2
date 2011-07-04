@@ -48,12 +48,13 @@ public:
 public slots:
     QStringList recentFiles(bool fullPaths) const;
     void loadRecentFile(int index);
-    inline void loadFromUrl(const QString &s) { loadFromUrl(QUrl(s)); }
-    void loadFromUrl(const QUrl & url);
+    inline void loadFromUrl(const QString &s) { loadFromUrl(QUrl(s), true); }
+    class TabWidgetElement * loadFromUrl(const QUrl & url, bool addToRecentFiles);
     void saveCurrentFile();
     void saveCurrentFileAs();
     void saveCurrentFileTo(const QString & fileName);
-    void restoreSession();
+    void restoreSession(const QByteArray & data);
+    QByteArray saveSession() const;
     void newProgram();
     void newText();
     void fileOpen();
@@ -64,6 +65,7 @@ public slots:
     void clearMessage();
     void setFocusOnCentralWidget();
     void changeFocusOnMenubar();
+    void switchWorkspace();
 
 
 private slots:
@@ -84,13 +86,13 @@ private:
     void timerEvent(QTimerEvent *e);
     bool eventFilter(QObject *o, QEvent *e);
     int i_timerId;
+    bool b_workspaceSwitching;
 
     QAction * a_notAvailable;
     QList<class DockWidget*> l_dockWindows;
     QList<QWidget*> l_tabDependentStatusbarWidgets;
     QMenu * menu_empty;
-    void showEvent(QShowEvent *);
-    void closeEvent(QCloseEvent *);
+
     QString suggestNewFileName(const QString &suffix) const;
     void createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent);
     bool checkForSaved(VisualComponent * c);

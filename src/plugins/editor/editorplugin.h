@@ -32,6 +32,8 @@ public:
     void unhighlightLine(int documentId);
     void setMarginText(int documentId, int lineNo, const QString & text);
     void ensureAnalized(int documentId);
+    QString saveState(int documentId);
+    void restoreState(int documentId, const QString & data);
 protected:
     QString initialize(const QStringList &arguments);
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);

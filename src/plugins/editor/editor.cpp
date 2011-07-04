@@ -469,6 +469,38 @@ QList<QMenu*> Editor::menuActions()
     return result;
 }
 
+QString Editor::saveState() const
+{
+    QStringList result;
+    result << QString("unsaved=") + (isModified()? "1" : "0");
+    result << QString("cursorX=%1").arg(d->cursor->column());
+    result << QString("cursorY=%1").arg(d->cursor->row());
+    return result.join("\n");
+}
+
+void Editor::restoreState(const QString &data)
+{
+    QStringList lines = data.split("\n", QString::SkipEmptyParts);
+    for (int i=0; i<lines.size(); i++) {
+        if (lines[i].trimmed().isEmpty())
+            continue;
+        QStringList pair = lines[i].split("=");
+        if (pair.size()==2) {
+            const QString key = pair[0].trimmed().toLower();
+            const QString val = pair[0].trimmed();
+            if (key=="unsaved") {
+                // TODO implement me
+            }
+            else if (key=="cursorx") {
+                d->cursor->setColumn(val.toInt());
+            }
+            else if (key=="cursory") {
+                d->cursor->setRow(val.toInt());
+            }
+        }
+    }
+}
+
 void Editor::setText(const QString & text)
 {
     d->doc->setPlainText(text);

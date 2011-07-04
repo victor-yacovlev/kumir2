@@ -70,10 +70,10 @@
     <message>
         <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="34"/>
         <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="72"/>
-        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="88"/>
-        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="108"/>
-        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="124"/>
-        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="144"/>
+        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="90"/>
+        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="110"/>
+        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="126"/>
+        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="146"/>
         <source>Array not initialized</source>
         <comment>Variant</comment>
         <translation>Не заданы границы таблицы</translation>
@@ -81,19 +81,19 @@
     <message>
         <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="38"/>
         <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="76"/>
-        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="92"/>
-        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="112"/>
-        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="128"/>
-        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="148"/>
+        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="94"/>
+        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="114"/>
+        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="130"/>
+        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="150"/>
         <source>Index out of range</source>
         <comment>Variant</comment>
         <translation>Выход за границу таблицы</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="43"/>
-        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="97"/>
-        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="133"/>
-        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="153"/>
+        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="99"/>
+        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="135"/>
+        <location filename="../../../src/plugins/kumircoderun/variant.cpp" line="155"/>
         <source>Array element not defined</source>
         <translation>Элемент таблицы не определен</translation>
     </message>
