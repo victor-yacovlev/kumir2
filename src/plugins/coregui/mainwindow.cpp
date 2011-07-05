@@ -410,11 +410,11 @@ void MainWindow::closeCurrentTab()
 void MainWindow::closeTab(int index)
 {
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(index));
+    ui->tabWidget->removeTab(index);
     if (twe->type!=WWW) {
         int documentId = twe->property("documentId").toInt();
         m_plugin->plugin_editor->closeDocument(documentId);
     }
-    ui->tabWidget->removeTab(index);
 
 }
 

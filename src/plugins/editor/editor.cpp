@@ -57,6 +57,11 @@ public slots:
     void playMacro();
 };
 
+void Editor::unsetAnalizer()
+{
+    d->analizer = 0;
+}
+
 void Editor::setDocumentId(int id)
 {
     d->doc->documentId = id;

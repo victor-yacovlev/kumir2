@@ -114,6 +114,7 @@ void EditorPlugin::closeDocument(int documentId)
     Q_ASSERT(documentId<d->editors.size());
     Q_CHECK_PTR(d->editors[documentId].e);
     Ed ed = d->editors[documentId];
+    ed.e->unsetAnalizer();
     ed.e->deleteLater();
     if (ed.a) {
         AnalizerInterface * a = ed.a;

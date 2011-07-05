@@ -31,8 +31,8 @@ Statement::~Statement()
             if (conditionals[i].body[j])
                 delete conditionals[i].body[j];
     }
-    if (loop.forVariable)
-        delete loop.forVariable;
+//    if (loop.forVariable)
+//        delete loop.forVariable;
     if (loop.fromValue)
         delete loop.fromValue;
     if (loop.toValue)

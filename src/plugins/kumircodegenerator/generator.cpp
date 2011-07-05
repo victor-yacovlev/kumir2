@@ -238,8 +238,10 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
 
     Bytecode::Instruction line;
     line.type = Bytecode::LINE;
-    line.arg = alg->impl.endLexems[0]->lineNo;
-    ret << line;
+    if (alg->impl.endLexems.size()>0) {
+        line.arg = alg->impl.endLexems[0]->lineNo;
+        ret << line;
+    }
 
     const AST::Variable * retval = returnValue(alg);
     if (retval) {

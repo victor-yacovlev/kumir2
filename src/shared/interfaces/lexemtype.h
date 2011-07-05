@@ -105,7 +105,7 @@ namespace Shared {
         LxOperNotEqual          = 0x2200000,
         LxOperSemicolon         = 0x2400000,
         LxOperLeftBrace         = 0x2600000,
-        LxOperRightBrace       	= 0x2800000,
+        LxOperRightBrace       	= 0x2800000
 
     };
 }

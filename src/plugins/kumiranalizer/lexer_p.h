@@ -40,6 +40,7 @@ struct LexerPrivate {
 
     static QHash<QString,Shared::LexemType> kwdMap;
     static QHash<QString,AST::VariableBaseType> baseTypes;
+    static QHash<QString,AST::VariableBaseType> baseTypes0;
     static QHash<QString,bool> boolConstantValues;
     static QSet<QString> arrayTypes;
     static QString retvalKeyword;

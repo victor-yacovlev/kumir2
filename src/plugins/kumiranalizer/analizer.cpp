@@ -381,7 +381,8 @@ QList<LineProp> Analizer::lineProperties() const
                     value = value | errorMask;
                 }
                 const int lineNo = lx->lineNo;
-                result[lineNo][j] = LexemType(value);
+                if (lineNo>=0 && lineNo < result.size() && j>=0 && j<result[lineNo].size())
+                    result[lineNo][j] = LexemType(value);
             }
         }
     }
@@ -557,7 +558,8 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
     if (whatToCompile==SubjWholeText) {
         foreach (Statement * st, allStatements) {
             foreach (Lexem * lx, st->data) {
-                lx->error = "";
+                if (!lx->lexerError)
+                    lx->error = "";
             }
         }
         analizingStatements = allStatements;
@@ -584,7 +586,8 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
         if (findAlgorhitmBounds(allStatements, alg, algBeginIndex, algEndIndex)) {
             for (int i=algBeginIndex; i<=algEndIndex; i++) {
                 foreach (Lexem *olx, allStatements[i]->data) {
-                    olx->error = "";
+                    if (!olx->lexerError)
+                        olx->error = "";
                 }
                 analizingStatements << allStatements[i];
             }

@@ -30,6 +30,7 @@ public:
     void ensureAnalized();
     QString saveState() const;
     void restoreState(const QString &data);
+    void unsetAnalizer();
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
 private:

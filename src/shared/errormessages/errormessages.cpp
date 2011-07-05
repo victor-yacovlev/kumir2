@@ -95,13 +95,41 @@ extern QString message(const QString &plugin
                        , const QString &key)
 {
     Context context(plugin, language);
-    if (database.contains(context) && database[context].contains(key)) {
-        return database[context][key];
+    static const QRegExp arg1("\\\\1=\\{(\\S+)\\}");
+    static const QRegExp arg2("\\\\2=\\{(\\S+)\\}");
+    static const QRegExp arg3("\\\\3=\\{(\\S+)\\}");
+    QString k = key;
+    QStringList arguments;
+    QString result;
+    int p = arg1.indexIn(k);
+    if (p!=-1) {
+        arguments << arg1.cap(1);
+        k.replace(p, arg1.matchedLength(), "%1");
+    }
+    p = arg2.indexIn(k);
+    if (p!=-1) {
+        arguments << arg2.cap(1);
+        k.replace(p, arg2.matchedLength(), "%2");
+    }
+    p = arg3.indexIn(k);
+    if (p!=-1) {
+        arguments << arg3.cap(1);
+        k.replace(p, arg3.matchedLength(), "%3");
+    }
+    if (database.contains(context) && database[context].contains(k)) {
+        result = database[context][k];
     }
     else {
-        qWarning() << "No message entry for " << plugin << " / " << language << " : " << key;
-        return key;
+//        qWarning() << "No message entry for " << plugin << " / " << language << " : " << key;
+        result = k;
     }
+    if (arguments.size()==1)
+        result = result.arg(arguments[0]);
+    else if (arguments.size()==2)
+        result = result.arg(arguments[0]).arg(arguments[1]);
+    else if (arguments.size()==3)
+        result = result.arg(arguments[0]).arg(arguments[1]).arg(arguments[2]);
+    return result;
 }
 
 

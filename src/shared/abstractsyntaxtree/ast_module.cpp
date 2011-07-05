@@ -73,7 +73,7 @@ Module::~Module()
             delete impl.globals[i];
     }
     for (int i=0; i<impl.initializerBody.size(); i++) {
-        if (impl.globals[i])
+        if (impl.initializerBody[i])
             delete impl.initializerBody[i];
     }
 }

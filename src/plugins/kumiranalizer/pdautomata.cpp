@@ -1028,6 +1028,8 @@ void PDAutomata::postProcess()
         if (scripts) {
             for (int j=0; j<scripts->size(); j++) {
                 QMetaMethod m = scripts->at(j).method;
+                const QString sign = m.signature();
+                Q_UNUSED(sign); // Used only for debug
                 const QList<QVariant> & arguments = scripts->at(j).arguments;
                 switch (arguments.size()) {
                 case 1:
@@ -1094,10 +1096,12 @@ void PDAutomataPrivate::processCorrectAlgHeader()
 void PDAutomataPrivate::processCorrectAlgBegin()
 {
     setCurrentIndentRank(  0, +1);
-    currentAlgorhitm->impl.beginLexems = source.at(currentPosition)->data;
-    source.at(currentPosition)->mod = currentModule;
-    source.at(currentPosition)->alg = currentAlgorhitm;
-    currentContext.push(&(currentAlgorhitm->impl.body));
+    if (currentAlgorhitm) {
+        currentAlgorhitm->impl.beginLexems = source.at(currentPosition)->data;
+        source.at(currentPosition)->mod = currentModule;
+        source.at(currentPosition)->alg = currentAlgorhitm;
+        currentContext.push(&(currentAlgorhitm->impl.body));
+    }
 }
 
 void PDAutomataPrivate::appendSimpleLine()
@@ -1218,8 +1222,10 @@ void PDAutomataPrivate::setModuleBeginError(int value)
 {
     for (int i=0; i<source.size(); i++) {
         if (source[i]->mod == currentModule && source[i]->type==LxPriModule) {
-            for (int a=0; a<source.at(currentPosition)->data.size(); a++) {
-                source.at(currentPosition)->data[a]->error = value;
+            if (currentPosition<source.size()) {
+                for (int a=0; a<source.at(currentPosition)->data.size(); a++) {
+                    source.at(currentPosition)->data[a]->error = value;
+                }
             }
             source[i]->indentRank = QPoint(0, 0);
         }
@@ -1376,14 +1382,15 @@ void PDAutomataPrivate::processCorrectRestrictionLine()
     source.at(currentPosition)->mod = currentModule;
     source.at(currentPosition)->alg = currentAlgorhitm;
     source.at(currentPosition)->statement = st;
-    Q_CHECK_PTR(currentAlgorhitm);
-    if ( source.at(currentPosition)->type==LxPriPre ) {
-        if ( source.at(currentPosition)->data.size()>1 )
-            currentAlgorhitm->impl.pre.append(st);
-    }
-    else {
-        if ( source.at(currentPosition)->data.size()>1 )
-            currentAlgorhitm->impl.post.append(st);
+    if (currentAlgorhitm) {
+        if ( source.at(currentPosition)->type==LxPriPre ) {
+            if ( source.at(currentPosition)->data.size()>1 )
+                currentAlgorhitm->impl.pre.append(st);
+        }
+        else {
+            if ( source.at(currentPosition)->data.size()>1 )
+                currentAlgorhitm->impl.post.append(st);
+        }
     }
 }
 
@@ -1415,19 +1422,19 @@ void PDAutomataPrivate::processCorrectLoad()
 
 void PDAutomataPrivate::setGarbageAlgError()
 {
-    setCurrentError(_("Garbabe"));
+    setCurrentError(_("Garbage in algorhitm"));
     appendSimpleLine();
 }
 
 void PDAutomataPrivate::setGarbageIfThenError()
 {
-    setCurrentError(_("Garbabe"));
+    setCurrentError(_("Garbage between if..then"));
     appendSimpleLine();
 }
 
 void PDAutomataPrivate::setGarbageSwitchCaseError()
 {
-    setCurrentError(_("Garbabe"));
+    setCurrentError(_("Garbage between switch..case"));
     appendSimpleLine();
 }
 
@@ -1439,7 +1446,6 @@ void PDAutomataPrivate::setTooManyErrors()
 
 void PDAutomataPrivate::setCorrespondingIfBroken()
 {
-    Q_ASSERT(currentContext.size()>1);
     AST::Statement * st = 0;
     for (int i=currentContext[currentContext.size()-1]->size()-1; i>=0; i--) {
         if (currentContext[currentContext.size()-1]->at(i)->type==AST::StIfThenElse) {

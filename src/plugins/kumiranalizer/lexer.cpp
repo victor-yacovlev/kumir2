@@ -66,9 +66,9 @@ void addToMap(QHash<QString,LexemType> & map,
 QString Lexer::classNameByBaseType(const AST::VariableBaseType &type) const
 {
     QString result;
-    for (int i=0; i<d->baseTypes.keys().size(); i++) {
-        if (d->baseTypes[d->baseTypes.keys()[i]]==type) {
-            result = d->baseTypes.keys()[i];
+    for (int i=0; i<d->baseTypes0.keys().size(); i++) {
+        if (d->baseTypes0[d->baseTypes0.keys()[i]]==type) {
+            result = d->baseTypes0.keys()[i];
             break;
         }
     }
@@ -263,26 +263,31 @@ void LexerPrivate::initNormalizator(const QString &fileName)
                 else if (context=="integer type name") {
                     typeNames << value;
                     baseTypes.insert(value, AST::TypeInteger);
+                    baseTypes0.insert(value, AST::TypeInteger);
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="floating point type name") {
                     typeNames << value;
                     baseTypes.insert(value, AST::TypeReal);
+                    baseTypes0.insert(value, AST::TypeReal);
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="character type name") {
                     typeNames << value;
                     baseTypes.insert(value, AST::TypeCharect);
+                    baseTypes0.insert(value, AST::TypeCharect);
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="string type name") {
                     typeNames << value;
                     baseTypes.insert(value, AST::TypeString);
+                    baseTypes0.insert(value, AST::TypeString);
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="boolean type name") {
                     typeNames << value;
                     baseTypes.insert(value, AST::TypeBoolean);
+                    baseTypes0.insert(value, AST::TypeBoolean);
                     addToMap(kwdMap, value, LxNameClass);
                 }
                 else if (context=="integer array type name") {
@@ -683,6 +688,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
             if (inLit) {
                 lexems.last()->data += text.mid(prev+1);
                 lexems.last()->error = _("Unpaired quote");
+                lexems.last()->lexerError = true;
             }
             else {
                 if (!lexems.isEmpty()) {
@@ -731,7 +737,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
     QList<Lexem*>::iterator it = lexems.begin();
     while (it!=lexems.end()) {
         Lexem * lx = (*it);
-        if (lx->data.isEmpty()) {
+        if (lx->data.isEmpty() && !lx->lexerError && lx->type!=LxConstLiteral) {
             delete lx;
             it = lexems.erase(it);
         }
@@ -819,6 +825,39 @@ void popImportStatement(QList<Lexem*> & lexems, Statement &result);
 void popExitStatement(QList<Lexem*> & lexems, Statement &result);
 void popVarDeclStatement(QList<Lexem*> & lexems, Statement &result);
 
+void popLexemsUntilPrimaryKeyword(QList<Lexem*> & lexems, Statement &result)
+{
+    while (lexems.size()>0) {
+        Lexem * lx = lexems[0];
+        if (lx->type==LxOperSemicolon || lx->type & LxTypePrimaryKwd)
+            break;
+        lexems.pop_front();
+        result.data << lx;
+    }
+}
+
+void popLexemsUntilPrimaryKeywordOrVarDecl(QList<Lexem*> &lexems, Statement &result)
+{
+    while (lexems.size()>0) {
+        Lexem * lx = lexems[0];
+        if (lx->type==LxOperSemicolon || lx->type & LxTypePrimaryKwd || lx->type==LxNameClass)
+            break;
+        lexems.pop_front();
+        result.data << lx;
+    }
+}
+
+void popLexemsUntilSemicolon(QList<Lexem*> &lexems, Statement &result)
+{
+    while (lexems.size()>0) {
+        Lexem * lx = lexems[0];
+        if (lx->type==LxOperSemicolon)
+            break;
+        lexems.pop_front();
+        result.data << lx;
+    }
+}
+
 void popFirstStatementByKeyword(QList<Lexem*> &lexems, Statement &result)
 {
     Q_ASSERT(!lexems.isEmpty());
@@ -892,31 +931,12 @@ void popFirstStatementByKeyword(QList<Lexem*> &lexems, Statement &result)
         popVarDeclStatement(lexems, result);
     }
     else {
-        qFatal("Wrong first statement primary keyword");
+        popLexemsUntilSemicolon(lexems, result);
+        result.type = LxPriAssign;
     }
 }
 
-void popLexemsUntilPrimaryKeyword(QList<Lexem*> & lexems, Statement &result)
-{
-    while (lexems.size()>0) {
-        Lexem * lx = lexems[0];
-        if (lx->type==LxOperSemicolon || lx->type & LxTypePrimaryKwd)
-            break;
-        lexems.pop_front();
-        result.data << lx;
-    }
-}
 
-void popLexemsUntilPrimaryKeywordOrVarDecl(QList<Lexem*> &lexems, Statement &result)
-{
-    while (lexems.size()>0) {
-        Lexem * lx = lexems[0];
-        if (lx->type==LxOperSemicolon || lx->type & LxTypePrimaryKwd || lx->type==LxNameClass)
-            break;
-        lexems.pop_front();
-        result.data << lx;
-    }
-}
 
 void popModuleStatement(QList<Lexem*> & lexems, Statement &result)
 {
@@ -1122,6 +1142,7 @@ QRegExp LexerPrivate::rxKeyWords = QRegExp();
 QRegExp LexerPrivate::rxConst = QRegExp();
 QRegExp LexerPrivate::rxTypes = QRegExp();
 QHash<QString,AST::VariableBaseType> LexerPrivate::baseTypes = QHash<QString, AST::VariableBaseType>();
+QHash<QString,AST::VariableBaseType> LexerPrivate::baseTypes0 = QHash<QString, AST::VariableBaseType>();
 QHash<QString,bool> LexerPrivate::boolConstantValues = QHash<QString,bool>();
 QSet<QString> LexerPrivate::arrayTypes = QSet<QString>();
 QString LexerPrivate::retvalKeyword = QString();
