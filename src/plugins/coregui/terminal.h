@@ -16,6 +16,7 @@ signals:
     void openTextEditor(const QString & text);
     void message(const QString &);
     void inputFinished(const QVariantList &);
+    void showWindowRequest();
 public slots:
     void clear();
     void start(const QString &fileName);

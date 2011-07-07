@@ -337,6 +337,7 @@ void EditorPrivate::updateFromAnalizer()
     QList<Error> errors = analizer->errors(doc->documentId);
     for (int i=0; i<doc->size(); i++) {
         TextLine tl = doc->at(i);
+        int oldIndent = doc->indentAt(i);
         if (i<ranks.size()) {
             tl.indentStart = ranks[i].x();
             tl.indentEnd = ranks[i].y();
@@ -346,6 +347,11 @@ void EditorPrivate::updateFromAnalizer()
         }
         tl.errors.clear();
         (*doc)[i] = tl;
+        int newIndent = doc->indentAt(i);
+        int diffIndent = newIndent - oldIndent;
+        if (cursor->row()==i) {
+            cursor->setColumn(qMax(cursor->column()+diffIndent,0));
+        }
     }
     for (int i=0; i<errors.size(); i++) {
         Error err = errors[i];

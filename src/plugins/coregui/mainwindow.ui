@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>756</width>
-    <height>556</height>
+    <width>754</width>
+    <height>554</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Kumir</string>
   </property>
   <property name="tabShape">
-   <enum>QTabWidget::Rounded</enum>
+   <enum>QTabWidget::Triangular</enum>
   </property>
   <property name="dockNestingEnabled">
    <bool>true</bool>
@@ -53,7 +53,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>756</width>
+     <width>754</width>
      <height>21</height>
     </rect>
    </property>

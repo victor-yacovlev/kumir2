@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "dockwidget.h"
 #include "extensionsystem/pluginmanager.h"
 
 #include "kumirprogram.h"
@@ -551,8 +550,10 @@ QDockWidget * MainWindow::addSecondaryComponent(const QString & title
                                        , const QList<QAction*> & menuActions
                                        , DockWindowType type)
 {
-    DockWidget * dock = new DockWidget(title, this);
+    QDockWidget * dock = new QDockWidget(title, this);
+    dock->setVisible(false);
     dock->setWidget(c);
+    dock->setObjectName(title);
     Q_UNUSED(toolbarActions);
     Q_UNUSED(type);
     l_dockWindows << dock;
@@ -561,6 +562,11 @@ QDockWidget * MainWindow::addSecondaryComponent(const QString & title
         QMenu * componentMenu = new QMenu(title, this);
         componentMenu->addActions(menuActions);
         ui->menubar->insertMenu(ui->menuWindow->menuAction(), componentMenu);
+        dock->setFloating(true);
+    }
+    else {
+        dock->setFloating(false);
+        addDockWidget(Qt::BottomDockWidgetArea, dock, Qt::Horizontal);
     }
     return dock;
 }
@@ -632,8 +638,9 @@ void MainWindow::restoreSession(const QByteArray & data)
         resize(r.size());
         move(r.topLeft());
     }
+    restoreState(m_plugin->mySettings()->value(Plugin::MainWindowStateKey).toByteArray());
     for (int i=0; i<l_dockWindows.size(); i++) {
-        l_dockWindows[i]->restoreState(m_plugin->mySettings(), this, i==0);
+//        l_dockWindows[i]->restoreState(m_plugin->mySettings(), this, i==0);
 //        addDockWidget(Qt::BottomDockWidgetArea, l_dockWindows[i]);
     }
 //    restoreState(m_plugin->mySettings()->value(Plugin::MainWindowStateKey).toByteArray());
@@ -718,6 +725,7 @@ QByteArray MainWindow::saveSession() const
     QRect r(pos(), size());
     QSettings * sett = m_plugin->mySettings();
     sett->setValue(Plugin::MainWindowGeometryKey, r);
+    sett->setValue(Plugin::MainWindowStateKey, saveState());
 
     QByteArray result;
     result.append(quint8(ui->tabWidget->currentIndex()));
@@ -769,9 +777,9 @@ QByteArray MainWindow::saveSession() const
         }
 
     }
-    for (int i=0; i<l_dockWindows.size(); i++) {
-        l_dockWindows[i]->saveState(sett);
-    }
+//    for (int i=0; i<l_dockWindows.size(); i++) {
+//        l_dockWindows[i]->saveState(sett);
+//    }
 
     return result;
 }

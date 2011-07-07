@@ -1181,7 +1181,7 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
                 curType = highlight[j];
             }
             setProperFormat(p, curType, m_document->at(i).text[j]);
-            if (m_document->at(i).selected[j]) {
+            if (j<m_document->at(i).selected.size() && m_document->at(i).selected[j]) {
                 p->setPen(palette().brush(QPalette::HighlightedText).color());
             }
             if (i_highlightedLine==i) {

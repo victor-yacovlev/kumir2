@@ -772,6 +772,8 @@ void TextCursor::insertText(const QString &text)
     // move cursor from protected part
     i_column = qMax(i_column, indent * 2);
 
+    i_column = justifyLeft(text);
+
     // calculate next indent size in case of line insert
     int nextIndent = indent;
     if (i_row<m_document->size())
@@ -860,6 +862,42 @@ void TextCursor::insertText(const QString &text)
     emit updateRequest(fromLineUpdate, toLineUpdate);
     pushTransaction();
     emitPositionChanged();
+}
+
+int TextCursor::justifyLeft(const QString &text) const
+{
+    if (!m_analizer || text.trimmed().isEmpty())
+        return i_column;
+
+    // Emulate text change and get line property
+
+    const int indent = m_document->indentAt(i_row) * 2;
+    int col = i_column;
+    int textPos = col - indent;
+    if (textPos<=0) {
+        return i_column; // Nothing to do
+    }
+    QString s;
+    if (m_document->size()>i_row) {
+        s = m_document->at(i_row).text;
+    }
+    s.insert(textPos, text);
+    LineProp lp = m_analizer->lineProp(m_document->documentId, s);
+    if (lp[textPos]==LxTypeComment || lp[textPos]==LxConstLiteral) {
+        // Do not justify comments and literal constants
+        return i_column;
+    }
+    else {
+        if (textPos>0 && s[textPos-1].isSpace()) {
+            // If typing new word -- press text to left
+            while (textPos>0 && s[textPos-1].isSpace()) {
+                textPos --;
+            }
+            if (textPos>0 && !text[0].isPunct())
+                textPos++; // Do not concatenate to previous word if exists
+        }
+    }
+    return indent + textPos;
 }
 
 void TextCursor::removePreviousChar()

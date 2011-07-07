@@ -650,8 +650,8 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                 if (symb=="|") {
                     Lexem * lx = new Lexem;
                     lx->type = LxTypeComment;
-                    lx->data = text.mid(cur+1);
-                    lx->linePos = cur+1;
+                    lx->data = text.mid(cur);
+                    lx->linePos = cur;
                     lexems << lx;
                     break;
                 }

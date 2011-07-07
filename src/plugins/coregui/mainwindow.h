@@ -89,7 +89,7 @@ private:
     bool b_workspaceSwitching;
 
     QAction * a_notAvailable;
-    QList<class DockWidget*> l_dockWindows;
+    QList<class QDockWidget*> l_dockWindows;
     QList<QWidget*> l_tabDependentStatusbarWidgets;
     QMenu * menu_empty;
 

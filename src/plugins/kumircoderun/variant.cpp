@@ -145,7 +145,9 @@ void Variant::setValue(int index0, int index1, const QVariant &value)
         return ;
     }
     int index = linearIndex(index0, index1);
-    m_value.toList()[index] = value;
+    QVariantList list = m_value.toList();
+    list[index] = value;
+    m_value = list;
 }
 
 QVariant Variant::value(int index0, int index1, int index2) const
@@ -181,11 +183,9 @@ void Variant::setValue(int index0, int index1, int index2, const QVariant &value
         return ;
     }
     int index = linearIndex(index0, index1, index2);
-    if (m_value.toList()[index].type()==QVariant::Invalid) {
-        error = QObject::tr("Array element not defined");
-        return ;
-    }
-    m_value.toList()[index] = value;
+    QVariantList list = m_value.toList();
+    list[index] = value;
+    m_value = list;
 }
 
 QVariant Variant::value(const QList<int> & indeces) const
@@ -229,14 +229,16 @@ int Variant::linearIndex(int a) const
 
 int Variant::linearIndex(int a, int b) const
 {
-    int size0 = l_bounds[0].second-l_bounds[0].first+1;
-    return (a-l_bounds[0].first)*size0 + b-l_bounds[1].first;
+    int size0 = l_bounds[1].second-l_bounds[1].first+1;
+    int offset0 = (a - l_bounds[0].first) * size0;
+    int result = offset0 + b-l_bounds[1].first;
+    return result;
 }
 
 int Variant::linearIndex(int a, int b, int c) const
 {
-    int size0 = l_bounds[0].second-l_bounds[0].first+1;
-    int size1 = l_bounds[1].second-l_bounds[1].first+1;
+    int size0 = l_bounds[1].second-l_bounds[1].first+1;
+    int size1 = l_bounds[2].second-l_bounds[2].first+1;
     return (a-l_bounds[0].first)*size0 + (b-l_bounds[1].first)*size1 + c-l_bounds[2].first;
 }
 

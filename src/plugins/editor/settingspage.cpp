@@ -40,7 +40,7 @@ bool SettingsPage::DefaultBoldLiteral = true;
 bool SettingsPage::DefaultBoldAlg = true;
 bool SettingsPage::DefaultBoldMod = true;
 bool SettingsPage::DefaultBoldDoc = true;
-bool SettingsPage::DefaultBoldComment = false;
+bool SettingsPage::DefaultBoldComment = true;
 
 QString SettingsPage::KeyTempSwitchLayoutButton = "Keyboard/TemporarySwitchLayoutButton";
 quint32 SettingsPage::DefaultTempSwitchLayoutButton = Qt::Key_Alt;

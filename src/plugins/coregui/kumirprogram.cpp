@@ -130,7 +130,8 @@ KumirProgram::KumirProgram(QObject *parent)
 
 void KumirProgram::handleMarginTextRequest(int lineNo, const QString &text)
 {
-    plugin_editor->appendMarginText(i_documentId, lineNo, text);
+    if (lineNo!=-1 && !text.isEmpty())
+        plugin_editor->appendMarginText(i_documentId, lineNo, text);
 }
 
 void KumirProgram::handleMarginClearRequest(int fromLine, int toLine)
@@ -144,14 +145,14 @@ void KumirProgram::setTerminal(Term *t, QDockWidget * w)
     m_terminalWindow = w;
     connect(m_connector, SIGNAL(inputFormatReceived(QString)),
             m_terminal, SLOT(input(QString)));
-    connect (m_connector, SIGNAL(inputFormatReceived(QString)),
-             m_terminalWindow, SLOT(show()));
     connect(m_connector, SIGNAL(outputTextReceived(QString)),
             m_terminal, SLOT(output(QString)));
     connect(m_connector, SIGNAL(errorMessageReceived(QString)),
             m_terminal, SLOT(error(QString)));
     connect(m_terminal, SIGNAL(inputFinished(QVariantList)),
             this, SLOT(handleInputDone(QVariantList)));
+    connect(m_terminal, SIGNAL(showWindowRequest()),
+            m_terminalWindow, SLOT(show()));
 }
 
 void KumirProgram::handleInputDone(const QVariantList &data)

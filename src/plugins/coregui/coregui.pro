@@ -19,8 +19,7 @@ HEADERS += \
     terminal.h \
     terminal_onesession.h \
     terminal_plane.h \
-    tabbar.h \
-    dockwidget.h
+    tabbar.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -30,8 +29,7 @@ SOURCES += \
     terminal.cpp \
     terminal_onesession.cpp \
     terminal_plane.cpp \
-    tabbar.cpp \
-    dockwidget.cpp
+    tabbar.cpp
 
 FORMS += \
     mainwindow.ui

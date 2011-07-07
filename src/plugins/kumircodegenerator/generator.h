@@ -31,6 +31,7 @@ private:
         const QList<AST::Statement*> & statements);
 
     static void shiftInstructions(QList<Bytecode::Instruction> &instrs, int offset);
+    static void setBreakAddress(QList<Bytecode::Instruction> &instrs, int level, int address);
 
     void ERROR(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
     void ASSIGN(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
@@ -56,8 +57,6 @@ private:
     Bytecode::Data * m_bc;
     QList< QPair<Bytecode::ValueType, QVariant> > l_constants;
     QList< QPair<quint8,quint16> > l_externs;
-    QList< QPair<quint8,quint16> > l_loopBreaks;
-    QList< quint16 > l_funcBreaks;
 };
 
 } // namespace KumirCodeGenerator

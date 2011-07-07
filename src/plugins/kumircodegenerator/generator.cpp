@@ -16,8 +16,6 @@ void Generator::reset(const AST::Data *ast, Bytecode::Data *bc)
     m_bc = bc;
     l_constants.clear();
     l_externs.clear();
-    l_loopBreaks.clear();
-    l_funcBreaks.clear();
 }
 
 void Generator::generateConstantTable()
@@ -242,11 +240,8 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
 
     int retIp = argHandle.size() + pre.size() + body.size() + post.size();
 
-    for (int i=0; i<l_funcBreaks.size(); i++) {
-        quint16 ip = l_funcBreaks[i] + offset;
-        body[ip].arg = retIp;
-    }
-    l_funcBreaks.clear();
+    setBreakAddress(body, 0, retIp);
+
 
     Bytecode::Instruction line;
     line.type = Bytecode::LINE;
@@ -414,7 +409,7 @@ void Generator::ASSIGN(int modId, int algId, int level, const AST::Statement *st
             // Load source string
             Bytecode::Instruction load;
             findVariable(modId, algId, lvalue->variable, load.scope, load.arg);
-            load.type = lvalue->dimension>0? Bytecode::LOADARR : Bytecode::LOAD;
+            load.type = lvalue->variable->dimension>0? Bytecode::LOADARR : Bytecode::LOAD;
             for (int i=lvalue->variable->dimension-1; i>=0 ;i--) {
                 result << calculate(modId, algId, level, lvalue->operands[i]);
             }
@@ -461,7 +456,7 @@ void Generator::ASSIGN(int modId, int algId, int level, const AST::Statement *st
 
         Bytecode::Instruction store;
         findVariable(modId, algId, lvalue->variable, store.scope, store.arg);
-        store.type = lvalue->dimension>0? Bytecode::STOREARR : Bytecode::STORE;
+        store.type = lvalue->variable->dimension>0? Bytecode::STOREARR : Bytecode::STORE;
         if (lvalue->kind==AST::ExprArrayElement) {
             for (int i=lvalue->variable->dimension-1; i>=0 ;i--) {
                 result << calculate(modId, algId, level, lvalue->operands[i]);
@@ -855,14 +850,9 @@ void Generator::BREAK(int , int , int level,
     result << l;
 
     Bytecode::Instruction jump;
-    jump.type = Bytecode::JUMP;
-
-    if (level==0) {
-        l_funcBreaks << result.size();
-    }
-    else {
-        l_loopBreaks << QPair<quint8,quint16>(level, result.size());
-    }
+//    jump.type = Bytecode::JUMP;
+    jump.type = Bytecode::InstructionType(127);
+    jump.registerr = level;
 
     result << jump;
 }
@@ -1175,21 +1165,20 @@ void Generator::LOOP(int modId, int algId,
         result[jzIp2].arg = result.size();
     }
 
-    // If loop has break statements -- set proper jump for them
-    QList< QPair<quint8,quint16> > toRemove;
-    for (int i=0; i<l_loopBreaks.size(); i++) {
-        QPair<quint8,quint16> breakIp = l_loopBreaks[i];
-        quint8 lev = breakIp.first;
-        quint16 ip = breakIp.second;
-        if (lev==level) {
-            result[ip].arg = result.size();
-            toRemove << breakIp;
+    setBreakAddress(result, level, result.size());
+
+}
+
+void Generator::setBreakAddress(QList<Bytecode::Instruction> &instrs,
+                                int level,
+                                int address)
+{
+    for (int i=0; i<instrs.size(); i++) {
+        if (int(instrs[i].type)==127 && instrs[i].registerr==level) {
+            instrs[i].type = Bytecode::JUMP;
+            instrs[i].arg = address;
         }
     }
-    for (int i=0; i<toRemove.size(); i++) {
-        l_loopBreaks.removeAll(toRemove[i]);
-    }
-
 }
 
 } // namespace KumirCodeGenerator

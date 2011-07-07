@@ -153,6 +153,7 @@ void Term::terminate()
 
 void Term::output(const QString & text)
 {
+    emit showWindowRequest();
     if (l_sessions.isEmpty())
         l_sessions << new OneSession(-1,"unknown", m_plane);
     l_sessions.last()->output(text);
@@ -164,6 +165,7 @@ void Term::output(const QString & text)
 
 void Term::input(const QString & format)
 {
+    emit showWindowRequest();
     if (l_sessions.isEmpty()) {
         l_sessions << new OneSession(-1,"unknown", m_plane);
         connect (l_sessions.last(), SIGNAL(inputDone(QVariantList)),
@@ -193,6 +195,7 @@ void Term::handleInputDone()
 
 void Term::error(const QString & message)
 {
+    emit showWindowRequest();
     if (l_sessions.isEmpty())
         l_sessions << new OneSession(-1,"unknown", m_plane);
     l_sessions.last()->error(message);

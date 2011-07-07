@@ -67,6 +67,8 @@ signals:
 
 protected:
 
+    int justifyLeft(const QString & text) const;
+
     bool forceCompileRequest() const;
     void addLineToRemove(int no);
     void addLineToNew(int no);
