@@ -6,14 +6,14 @@
 
 namespace Terminal {
 
-class Terminal;
+class Term;
 class OneSession;
 
 class Plane : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Plane(Terminal * parent);
+    explicit Plane(Term * parent);
     inline void setInputMode(bool v) {
         b_inputMode = v; s_inputText = ""; i_inputPosition = 0;
     }
@@ -35,7 +35,7 @@ protected:
     QPoint offset() const;
 
 private:
-    Terminal * m_terminal;
+    Term * m_terminal;
     bool b_inputMode;
     quint16 i_inputPosition;
     QString s_inputText;

@@ -5,7 +5,7 @@
 namespace Terminal {
 
 
-Terminal::Terminal(QWidget *parent) :
+Term::Term(QWidget *parent) :
     QWidget(parent)
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
@@ -66,7 +66,7 @@ Terminal::Terminal(QWidget *parent) :
 //    error("this is error");
 }
 
-void Terminal::handleInputTextChanged(const QString &text)
+void Term::handleInputTextChanged(const QString &text)
 {
     if (l_sessions.isEmpty())
         return;
@@ -74,7 +74,7 @@ void Terminal::handleInputTextChanged(const QString &text)
     last->changeInputText(text);
 }
 
-void Terminal::handleInputCursorPositionChanged(quint16 pos)
+void Term::handleInputCursorPositionChanged(quint16 pos)
 {
     if (l_sessions.isEmpty())
         return;
@@ -82,7 +82,7 @@ void Terminal::handleInputCursorPositionChanged(quint16 pos)
     last->changeCursorPosition(pos);
 }
 
-void Terminal::handleInputFinishRequested()
+void Term::handleInputFinishRequested()
 {
     if (l_sessions.isEmpty())
         return;
@@ -90,19 +90,19 @@ void Terminal::handleInputFinishRequested()
     last->tryFinishInput();
 }
 
-void Terminal::focusInEvent(QFocusEvent *e)
+void Term::focusInEvent(QFocusEvent *e)
 {
     QWidget::focusInEvent(e);
     m_plane->setFocus();
 }
 
-void Terminal::focusOutEvent(QFocusEvent *e)
+void Term::focusOutEvent(QFocusEvent *e)
 {
     QWidget::focusOutEvent(e);
     m_plane->clearFocus();
 }
 
-void Terminal::clear()
+void Term::clear()
 {
     for (int i=0; i<l_sessions.size(); i++) {
         l_sessions[i]->deleteLater();
@@ -111,7 +111,7 @@ void Terminal::clear()
     m_plane->update();
 }
 
-void Terminal::start(const QString & fileName)
+void Term::start(const QString & fileName)
 {
     int fixedWidth = -1;
     OneSession * session = new OneSession(fixedWidth, QFileInfo(fileName).fileName(), m_plane);
@@ -129,7 +129,7 @@ void Terminal::start(const QString & fileName)
     m_plane->update();
 }
 
-void Terminal::finish()
+void Term::finish()
 {
     if (l_sessions.isEmpty())
         l_sessions << new OneSession(-1,"unknown", m_plane);
@@ -140,7 +140,7 @@ void Terminal::finish()
         sb_vertical->setValue(sb_vertical->maximum());
 }
 
-void Terminal::terminate()
+void Term::terminate()
 {
     if (l_sessions.isEmpty())
         l_sessions << new OneSession(-1,"unknown", m_plane);
@@ -151,7 +151,7 @@ void Terminal::terminate()
     m_plane->setInputMode(false);
 }
 
-void Terminal::output(const QString & text)
+void Term::output(const QString & text)
 {
     if (l_sessions.isEmpty())
         l_sessions << new OneSession(-1,"unknown", m_plane);
@@ -162,7 +162,7 @@ void Terminal::output(const QString & text)
         sb_vertical->setValue(sb_vertical->maximum());
 }
 
-void Terminal::input(const QString & format)
+void Term::input(const QString & format)
 {
     if (l_sessions.isEmpty()) {
         l_sessions << new OneSession(-1,"unknown", m_plane);
@@ -186,12 +186,12 @@ void Terminal::input(const QString & format)
     m_plane->setFocus();
 }
 
-void Terminal::handleInputDone()
+void Term::handleInputDone()
 {
     m_plane->setInputMode(false);
 }
 
-void Terminal::error(const QString & message)
+void Term::error(const QString & message)
 {
     if (l_sessions.isEmpty())
         l_sessions << new OneSession(-1,"unknown", m_plane);
@@ -201,17 +201,17 @@ void Terminal::error(const QString & message)
         sb_vertical->setValue(sb_vertical->maximum());
 }
 
-void Terminal::saveAll()
+void Term::saveAll()
 {
     // TODO implement me
 }
 
-void Terminal::saveLast()
+void Term::saveLast()
 {
     // TODO implement me
 }
 
-void Terminal::editLast()
+void Term::editLast()
 {
     Q_ASSERT(!l_sessions.isEmpty());
     emit openTextEditor(l_sessions.last()->plainText());

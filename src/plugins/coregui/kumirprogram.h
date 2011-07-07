@@ -17,7 +17,7 @@ using Shared::GeneratorInterface;
 using Shared::ActorInterface;
 using Shared::RunInterface;
 using Shared::EditorInterface;
-using Terminal::Terminal;
+using Terminal::Term;
 using StdLib::Connector;
 using namespace ExtensionSystem;
 
@@ -35,7 +35,7 @@ public:
     inline void setSourceFileName(const QString & s) { s_sourceFileName = s; }
     inline void setDocumentId(int id) { if (e_state==Idle) i_documentId = id; }
     inline int documentId() const { return i_documentId; }
-    void setTerminal(Terminal * t, QDockWidget * w);
+    void setTerminal(Term * t, QDockWidget * w);
     void setBytecodeRun(KPlugin * run);
     void addActor(KPlugin * a, QDockWidget * w);
     inline QString endStatus() const { return s_endStatus; }
@@ -67,7 +67,7 @@ private:
     const AST::Data * m_ast;
     QString s_endStatus;
     QProcess * m_process;
-    Terminal * m_terminal;
+    Term * m_terminal;
     QDockWidget * m_terminalWindow;
     GeneratorInterface * plugin_nativeGenerator;
     GeneratorInterface * plugin_bytcodeGenerator;

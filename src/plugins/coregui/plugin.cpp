@@ -43,7 +43,7 @@ QString Plugin::initialize(const QStringList &)
         return "Can't load editor plugin!";
     if (!plugin_NativeGenerator)
         return "Can't load c-generator plugin!";
-    m_terminal = new Terminal(0);
+    m_terminal = new Term(0);
 
     connect(m_terminal, SIGNAL(message(QString)),
             m_mainWindow, SLOT(showMessage(QString)));

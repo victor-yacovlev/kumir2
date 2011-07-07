@@ -6,12 +6,12 @@
 
 namespace Terminal {
 
-class Terminal : public QWidget
+class Term : public QWidget
 {
     friend class Plane;
     Q_OBJECT
 public:
-    explicit Terminal(QWidget *parent = 0);
+    explicit Term(QWidget *parent = 0);
 signals:
     void openTextEditor(const QString & text);
     void message(const QString &);

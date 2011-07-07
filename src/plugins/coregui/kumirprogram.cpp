@@ -138,7 +138,7 @@ void KumirProgram::handleMarginClearRequest(int fromLine, int toLine)
     plugin_editor->clearMargin(i_documentId, fromLine, toLine);
 }
 
-void KumirProgram::setTerminal(Terminal *t, QDockWidget * w)
+void KumirProgram::setTerminal(Term *t, QDockWidget * w)
 {
     m_terminal = t;
     m_terminalWindow = w;

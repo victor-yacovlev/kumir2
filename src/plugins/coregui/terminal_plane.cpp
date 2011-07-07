@@ -6,7 +6,7 @@ namespace Terminal {
 
 static int sessionMargin = 4;
 
-Plane::Plane(Terminal *parent)
+Plane::Plane(Term *parent)
     : QWidget(parent)
     , m_terminal(parent)
 {

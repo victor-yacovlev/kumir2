@@ -11,10 +11,10 @@
 #include "terminal.h"
 #include "kumirprogram.h"
 
-using Terminal::Terminal;
 
 namespace CoreGUI {
 
+using namespace Terminal;
 using namespace Shared;
 
 class Plugin
@@ -55,7 +55,7 @@ protected:
     BrowserInterface * plugin_browser;
     QList<ActorInterface*> l_plugin_actors;
     BrowserComponent m_startPage;
-    Terminal * m_terminal;
+    Term * m_terminal;
     QMap<QString,QObject*> m_browserObjects;
     KumirProgram * m_kumirProgram;
 
