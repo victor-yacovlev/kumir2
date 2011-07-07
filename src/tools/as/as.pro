@@ -2,10 +2,13 @@ TEMPLATE = app
 TARGET = kumir2-as
 CONFIG += console
 QT = core
-include(../../shared/bytecode/bytecode.pri)
 include(../../../kumir2.pri)
 include(../../rpath.pri)
 INCLUDEPATH += ../../
-LIBS += -L$$IDE_LIBRARY_PATH
+!macx:LIBS += -L$$IDE_LIBRARY_PATH -lBytecode
+macx {
+    release:LIBS += -L$$IDE_LIBRARY_PATH -lBytecode
+    debug:LIBS += -L$$IDE_LIBRARY_PATH -lBytecode_debug
+}
 DESTDIR = $$IDE_APP_PATH
 SOURCES = main.cpp
