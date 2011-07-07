@@ -151,3 +151,5 @@ win32-msvc* {
     DEFINES += _CRT_SECURE_NO_WARNINGS
 }
 
+HEADERS += \
+    ../../src/shared/interfaces/actorinterface.h

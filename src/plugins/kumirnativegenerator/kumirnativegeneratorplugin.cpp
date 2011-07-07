@@ -1070,6 +1070,7 @@ Shared::GeneratorResult KumirNativeGeneratorPlugin::generateExecuable(
 #endif
 
 #ifdef Q_OS_MAC
+    QString frameworksPath;
     command += " -F"+frameworksPath;
     command += " -L"+frameworksPath;
 //    command += " -Wl,-install_name="+ldPaths.join(":");
