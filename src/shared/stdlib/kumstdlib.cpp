@@ -40,7 +40,7 @@ void __abort__st_funct(const QString &error)
 extern "C" double __safe_div_rr__(double a, double b)
 {
     if (b==0.0) {
-        QObject::tr("Division by zero", "StFuncError");
+        __abort__st_funct(QObject::tr("Division by zero", "StFuncError"));
         return 0.0;
     }
     else {
@@ -51,7 +51,7 @@ extern "C" double __safe_div_rr__(double a, double b)
 extern "C" double __safe_div_ri__(double a, int b)
 {
     if (b==0) {
-        QObject::tr("Division by zero", "StFuncError");
+        __abort__st_funct(QObject::tr("Division by zero", "StFuncError"));
         return 0.0;
     }
     else {
@@ -62,7 +62,7 @@ extern "C" double __safe_div_ri__(double a, int b)
 extern "C" double __safe_div_ir__(int a, double b)
 {
     if (b==0.0) {
-        QObject::tr("Division by zero", "StFuncError");
+        __abort__st_funct(QObject::tr("Division by zero", "StFuncError"));
         return 0.0;
     }
     else {
@@ -73,13 +73,38 @@ extern "C" double __safe_div_ir__(int a, double b)
 extern "C" double __safe_div_ii__(int a, int b)
 {
     if (b==0) {
-        QObject::tr("Division by zero", "StFuncError");
+        __abort__st_funct(QObject::tr("Division by zero", "StFuncError"));
         return 0.0;
     }
     else {
         return ( (double) a ) / ( (double) b );
     }
 }
+
+extern "C" double __real_power__(double a, double b)
+{
+    if (b<0.0) {
+        __abort__st_funct(QObject::tr("Can't power to less than zero", "StFuncError"));
+        return 0.0;
+    }
+    else {
+        return pow(a, b);
+    }
+}
+
+extern "C" int __integer_power__(int a, int b)
+{
+    if (b<0) {
+        __abort__st_funct(QObject::tr("Can't power to less than zero", "StFuncError"));
+        return 0;
+    }
+    else {
+        double val = pow(a,b);
+        val = floor(val);
+        return int(val);
+    }
+}
+
 
 extern "C" double abs__st_funct(double x)
 {

@@ -53,6 +53,8 @@ extern "C" STDLIB_EXPORT double __safe_div_rr__(double a, double b);
 extern "C" STDLIB_EXPORT double __safe_div_ri__(double a, int b);
 extern "C" STDLIB_EXPORT double __safe_div_ir__(int a, double b);
 extern "C" STDLIB_EXPORT double __safe_div_ii__(int a, int b);
+extern "C" STDLIB_EXPORT double __real_power__(double a, double b);
+extern "C" STDLIB_EXPORT int __integer_power__(int a, int b);
 
 extern "C" STDLIB_EXPORT void __init__st_funct();
 extern "C" STDLIB_EXPORT double abs__st_funct(double x);
@@ -94,6 +96,7 @@ extern "C" STDLIB_EXPORT wchar_t symbol__st_funct(int n);
 extern "C" STDLIB_EXPORT wchar_t symbol2__st_funct(int n);
 extern "C" STDLIB_EXPORT wchar_t * int_to_string__st_funct(int x);
 extern "C" STDLIB_EXPORT int unicode__st_funct(wchar_t c);
+
 
 
 

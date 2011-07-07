@@ -201,7 +201,7 @@ QString KumirNativeGeneratorPrivate::makeExpression(
             arrayElement = "(*"+arrayElement+")";
         Q_ASSERT(diff==0 || diff==1 || diff==2);
         if (diff==2) {
-            addEqual = false;
+
             // string slice
             if (lvalue) {
                 result = "__set_slice_%2__(&"+arrayElement+", "
@@ -211,6 +211,7 @@ QString KumirNativeGeneratorPrivate::makeExpression(
                         +", %1)";
             }
             else {
+                addEqual = false;
                 result = "__get_slice__("+arrayElement+", "
                         +makeExpression(expr->operands[expr->operands.size()-2], algorhitm, module, false)
                         +", "
@@ -221,9 +222,11 @@ QString KumirNativeGeneratorPrivate::makeExpression(
         else if (diff==1) {
             // string element
             if (lvalue) {
+                addEqual = false;
                 result = "__set_char_at__("+arrayElement+", "
                         +makeExpression(expr->operands[expr->operands.size()-1], algorhitm, module, false)
                         +", %1)";
+
             }
             else {
                 result = "__get_char_at__("+arrayElement+", "
@@ -293,7 +296,7 @@ QString KumirNativeGeneratorPrivate::makeConstant(
         result = "L'"+screenString(value.toString())+"'";
     }
     else if (type==AST::TypeString) {
-        result = "L\""+screenString(value.toString())+"\"";
+        result = "__string_from_constant__(L\""+screenString(value.toString())+"\")";
     }
     return result;
 }
@@ -395,6 +398,25 @@ QString KumirNativeGeneratorPrivate::makeSubExpression(
             QString ft = operands[0]->baseType==AST::TypeCharect? "c" : "s";
             QString st = operands[1]->baseType==AST::TypeCharect? "c" : "s";
             result += "__concatenate_"+ft+st+"__(";
+            result += makeExpression(operands[0], algorhitm, module, false);
+            result += ", ";
+            result += makeExpression(operands[1], algorhitm, module, false);
+            result += ")";
+        }
+
+        else if (op==AST::OpDivision) {
+            if (operands[0]->baseType==AST::TypeReal && operands[1]->baseType==AST::TypeInteger) {
+                result += "__safe_div_ri__(";
+            }
+            if (operands[0]->baseType==AST::TypeReal && operands[1]->baseType==AST::TypeReal) {
+                result += "__safe_div_rr__(";
+            }
+            if (operands[0]->baseType==AST::TypeInteger && operands[1]->baseType==AST::TypeReal) {
+                result += "__safe_div_ir__(";
+            }
+            if (operands[0]->baseType==AST::TypeInteger && operands[1]->baseType==AST::TypeInteger) {
+                result += "__safe_div_ii__(";
+            }
             result += makeExpression(operands[0], algorhitm, module, false);
             result += ", ";
             result += makeExpression(operands[1], algorhitm, module, false);

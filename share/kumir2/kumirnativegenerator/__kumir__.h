@@ -38,6 +38,13 @@ extern wchar_t* __string_of_char__(wchar_t ch);
 extern void __init_garbage_collector__();
 extern void __free_garbage_collector__();
 
+extern double __safe_div_rr__(double a, double b);
+extern double __safe_div_ri__(double a, int b);
+extern double __safe_div_ir__(int a, double b);
+extern double __safe_div_ii__(int a, int b);
+extern double __real_power__(double a, double b);
+extern int __integer_power__(int a, int b);
+
 extern void __garbage_collector_begin_algorhitm__();
 extern void __garbage_collector_register_string__(wchar_t * s);
 extern void __garbage_collector_register_array__(struct __array__ * a);

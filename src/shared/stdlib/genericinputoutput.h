@@ -23,7 +23,7 @@ public:
                         QString & error);
     static class GenericInputOutput * instance();
     inline static QString output(int v) { return QString::number(v); }
-    inline static QString output(double v) { return QString::number(v, 'g', 6); }
+    inline static QString output(double v) { QString result = QString::number(v, 'g', 6); if (!result.contains(".")) result += ".0"; return result; }
     inline static QString output(bool v) { return v? tr("yes") : tr("no"); }
     inline static QString output(unsigned char v) { return output(v>0); }
     inline static QString output(wchar_t v) { wchar_t buf[1]; buf[0]=v; return QString::fromWCharArray(buf, 1); }
