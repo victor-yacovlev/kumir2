@@ -33,6 +33,8 @@ enum InstructionType {
     LINE        = 0x1F, // Emit line number
     REF         = 0x20, // Get reference to variable
     REFARR      = 0x21, // Get reference to array element
+    SHOWREG     = 0x22, // Show register value at margin
+    CLEARMARG   = 0x23, // Clear margin text from current line to specified
 
 
     // Common operations -- no comments need

@@ -296,8 +296,8 @@ QString St_functPlugin::name(ProgrammingLanguage pl, QLocale::Language nl) const
 
 QVariant St_functPlugin::result() const
 {
-    return QVariant();
-    //return Res;
+//    return QVariant();
+    return Res;
 }
 
 void  St_functPlugin::runFunct(const QString & name,const QList<QVariant> &args)

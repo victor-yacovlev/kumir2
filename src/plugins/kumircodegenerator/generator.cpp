@@ -95,6 +95,8 @@ Bytecode::InstructionType Generator::operation(AST::ExpressionOperator op)
         return Bytecode::OR;
     else if (op==AST::OpEqual)
         return Bytecode::EQ;
+    else if (op==AST::OpNotEqual)
+        return Bytecode::NEQ;
     else if (op==AST::OpLess)
         return Bytecode::LS;
     else if (op==AST::OpGreater)
@@ -185,6 +187,16 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     func.algId = func.id = id;
     func.name = alg->header.name;
     QList<Bytecode::Instruction> argHandle;
+
+    Bytecode::Instruction l;
+    l.type = Bytecode::LINE;
+    l.arg = alg->impl.beginLexems[0]->lineNo;
+    argHandle << l;
+
+    Bytecode::Instruction clearmarg;
+    clearmarg.type = Bytecode::CLEARMARG;
+    clearmarg.arg = alg->impl.endLexems[0]->lineNo;
+    argHandle << clearmarg;
 
     for (int i=alg->header.arguments.size()-1; i>=0; i--) {
         Bytecode::Instruction store;
@@ -392,19 +404,70 @@ void Generator::ASSIGN(int modId, int algId, int level, const AST::Statement *st
     const AST::Expression * rvalue = st->expressions[0];
     result << calculate(modId, algId, level, rvalue);
 
+
     if (st->expressions.size()>1) {
         const AST::Expression * lvalue = st->expressions[1];
-        Bytecode::Instruction store;
-        findVariable(modId, algId, lvalue->variable, store.scope, store.arg);
-        if (lvalue->kind==AST::ExprArrayElement) {
-            for (int i=lvalue->operands.size(); i>=0 ;i--) {
+
+        int diff = lvalue->operands.size()-lvalue->variable->dimension;
+
+        if (diff>0) {
+            // Load source string
+            Bytecode::Instruction load;
+            findVariable(modId, algId, lvalue->variable, load.scope, load.arg);
+            load.type = lvalue->dimension>0? Bytecode::LOADARR : Bytecode::LOAD;
+            for (int i=lvalue->variable->dimension-1; i>=0 ;i--) {
                 result << calculate(modId, algId, level, lvalue->operands[i]);
             }
-            store.type = Bytecode::STOREARR;
+            result << load;
         }
-        else {
-            store.type = Bytecode::STORE;
+
+        if (diff==1) {
+            // Set character
+
+            result << calculate(modId, algId, level,
+                                lvalue->operands[lvalue->operands.count()-1]);
+            Bytecode::Instruction argsCount;
+            argsCount.type = Bytecode::LOAD;
+            argsCount.scope = Bytecode::CONST;
+            argsCount.arg = constantValue(Bytecode::VT_int, 3);
+            result << argsCount;
+
+            Bytecode::Instruction call;
+            call.type = Bytecode::CALL;
+            call.module = 0xff;
+            call.arg = 0x05;
+            result << call;
         }
+
+        if (diff==2) {
+            // Set slice
+
+            result << calculate(modId, algId, level,
+                                lvalue->operands[lvalue->operands.count()-2]);
+            result << calculate(modId, algId, level,
+                                lvalue->operands[lvalue->operands.count()-1]);
+            Bytecode::Instruction argsCount;
+            argsCount.type = Bytecode::LOAD;
+            argsCount.scope = Bytecode::CONST;
+            argsCount.arg = constantValue(Bytecode::VT_int, 4);
+            result << argsCount;
+
+            Bytecode::Instruction call;
+            call.type = Bytecode::CALL;
+            call.module = 0xff;
+            call.arg = 0x07;
+            result << call;
+        }
+
+        Bytecode::Instruction store;
+        findVariable(modId, algId, lvalue->variable, store.scope, store.arg);
+        store.type = lvalue->dimension>0? Bytecode::STOREARR : Bytecode::STORE;
+        if (lvalue->kind==AST::ExprArrayElement) {
+            for (int i=lvalue->variable->dimension-1; i>=0 ;i--) {
+                result << calculate(modId, algId, level, lvalue->operands[i]);
+            }
+        }
+
         result << store;
         Bytecode::Instruction pop;
         pop.type = Bytecode::POP;
@@ -431,13 +494,44 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
         result << instr;
     }
     else if (st->kind==AST::ExprArrayElement) {
-        for (int i=st->operands.size()-1; i>=0; i--) {
-            result << calculate(modId, algId, level, st->operands[i]);
-        }
+
         Bytecode::Instruction instr;
-        instr.type = Bytecode::LOADARR;
         findVariable(modId, algId, st->variable, instr.scope, instr.arg);
+        instr.type = Bytecode::LOAD;
+        if (st->variable->dimension>0) {
+            for (int i=st->variable->dimension-1; i>=0; i--) {
+                result << calculate(modId, algId, level, st->operands[i]);
+            }
+            instr.type = Bytecode::LOADARR;
+        }
         result << instr;
+        int diff = st->operands.size() - st->variable->dimension;
+        Bytecode::Instruction argsCount;
+        argsCount.type = Bytecode::LOAD;
+        argsCount.scope = Bytecode::CONST;
+        Bytecode::Instruction specialFunction;
+        specialFunction.type = Bytecode::CALL;
+        specialFunction.module = 0xff;
+        if (diff==1) {
+            // Get char
+            result << calculate(modId, algId, level,
+                                st->operands[st->operands.count()-1]);
+            argsCount.arg = constantValue(Bytecode::VT_int, 2);
+            result << argsCount;
+            specialFunction.arg = 0x04;
+            result << specialFunction;
+        }
+        else if (diff==2) {
+            // Get slice
+            result << calculate(modId, algId, level,
+                                st->operands[st->operands.count()-2]);
+            result << calculate(modId, algId, level,
+                                st->operands[st->operands.count()-1]);
+            argsCount.arg = constantValue(Bytecode::VT_int, 3);
+            result << argsCount;
+            specialFunction.arg = 0x06;
+            result << specialFunction;
+        }
     }
     else if (st->kind==AST::ExprFunctionCall) {
         const AST::Algorhitm * alg = st->function;
@@ -662,13 +756,20 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
     pop.registerr = 0;
     result << pop;
 
+    Bytecode::Instruction showreg;
+    showreg.type = Bytecode::SHOWREG;
+    showreg.registerr = 0;
+    result << showreg;
+
     int jzIP = result.size();
     Bytecode::Instruction jz;
     jz.type = Bytecode::JZ;
     jz.registerr = 0;
     result << jz;
 
-    result << instructions(modId, algId, level, st->conditionals[0].body);
+    QList<Bytecode::Instruction> thenInstrs = instructions(modId, algId, level, st->conditionals[0].body);
+    shiftInstructions(thenInstrs, result.size());
+    result += thenInstrs;
     result[jzIP].arg = result.size();
 
     if (st->conditionals.size()>1) {
@@ -677,7 +778,9 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
         jump.type = Bytecode::JUMP;
         result << jump;
         result[jzIP].arg = result.size();
-        result << instructions(modId, algId, level, st->conditionals[1].body);
+        QList<Bytecode::Instruction> elseInstrs = instructions(modId, algId, level, st->conditionals[1].body);
+        shiftInstructions(elseInstrs, result.size());
+        result += elseInstrs;
         result[jumpIp].arg = result.size();
     }
 }
@@ -704,13 +807,19 @@ void Generator::SWITCHCASEELSE(int modId, int algId, int level, const AST::State
             pop.type = Bytecode::POP;
             pop.registerr = 0;
             result << pop;
+            Bytecode::Instruction showreg;
+            showreg.type = Bytecode::SHOWREG;
+            showreg.registerr = 0;
+            result << showreg;
             Bytecode::Instruction jz;
             jz.type = Bytecode::JZ;
             jz.registerr = 0;
             lastJzIp = result.size();
             result << jz;
         }
-        result << instructions(modId, algId, level, st->conditionals[i].body);
+        QList<Bytecode::Instruction> instrs = instructions(modId, algId, level, st->conditionals[i].body);
+        shiftInstructions(instrs, result.size());
+        result += instrs;
         if (i<st->conditionals.size()-1) {
             Bytecode::Instruction jump;
             jump.type = Bytecode::JUMP;
@@ -769,61 +878,138 @@ void Generator::LOOP(int modId, int algId,
     Bytecode::Instruction l;
     l.type = Bytecode::LINE;
     l.arg = lineNo;
-    result << l;
+
+    Bytecode::Instruction swreg;
+    swreg.type = Bytecode::SHOWREG;
+    swreg.registerr = level * 2;
+
+    Bytecode::Instruction clmarg;
+    if (st->loop.endLexems.size()>0) {
+        clmarg.type = Bytecode::CLEARMARG;
+        clmarg.arg = st->loop.endLexems[0]->lineNo;
+    }
 
     int beginIp = result.size();
     int jzIp = -1;
 
 
     if (st->loop.type==AST::LoopWhile) {
-        // pass
+        // Highlight line and clear margin
+        if (lineNo!=-1) {
+            result << l;
+        }
+
+        if (st->loop.whileCondition) {
+            // Calculate condition
+            result << calculate(modId, algId, level, st->loop.whileCondition);
+
+            // Check condition result
+            Bytecode::Instruction a;
+            a.type = Bytecode::POP;
+            a.registerr = level * 2;
+            result << a;
+
+            if (lineNo!=-1) {
+                result << swreg;
+            }
+
+            jzIp = result.size();
+            a.type = Bytecode::JZ;
+            a.registerr = level * 2;
+            result << a;
+
+            if (lineNo!=-1) {
+                result << clmarg;
+            }
+        }
+        else {
+            if (lineNo!=-1) {
+                result << clmarg;
+            }
+        }
+
     }
     else if (st->loop.type==AST::LoopTimes) {
+        // Highlight line
+        if (lineNo!=-1) {
+            result << l;
+        }
+
         // Calculate times value
         result << calculate(modId, algId, level, st->loop.timesValue);
         Bytecode::Instruction a;
 
-        // First time increase by 1
-        a.type = Bytecode::LOAD;
-        a.scope = Bytecode::CONST;
-        a.arg = constantValue(Bytecode::VT_int, 1);
-        result << a;
-
-        a.type = Bytecode::SUM;
-        result << a;
-
         // Store value in register
         a.type = Bytecode::POP;
-        a.registerr = level;
+        a.registerr = level * 2 - 1;
         result << a;
+
+        // Store initial value "0" in nearest register
+        a.type = Bytecode::LOAD;
+        a.scope = Bytecode::CONST;
+        a.arg = constantValue(Bytecode::VT_int, 0);
+        result << a;
+
+        a.type = Bytecode::POP;
+        a.registerr = level * 2;
+        result << a;
+
 
         // Make begin
         beginIp = result.size();
-        result << l;
 
-        // Decrease value in register
+        // Highlight line and clear margin
+        if (lineNo!=-1) {
+            result << l;
+            result << clmarg;
+        }
+
+        // Increase value in register
         a.type = Bytecode::PUSH;
-        a.registerr = level;
+        a.registerr = level * 2;
         result << a;
         a.type = Bytecode::LOAD;
         a.scope = Bytecode::CONST;
         a.arg = constantValue(Bytecode::VT_int, 1);
         result << a;
-        a.type = Bytecode::SUB;
+        a.type = Bytecode::SUM;
         result << a;
         a.type = Bytecode::POP;
-        a.registerr = level;
+        a.registerr = level * 2;
+        result << a;
+        a.type = Bytecode::PUSH;
+        a.registerr = level * 2;
         result << a;
 
-        // Check if register value > 0
-        jzIp = result.size();
-        a.type = Bytecode::JZ;
-        a.registerr = level;
+        // Compare value to "times" value
+        a.type = Bytecode::PUSH;
+        a.registerr = level * 2 - 1;
         result << a;
+        a.type = Bytecode::GT;
+        result << a;
+        a.type = Bytecode::POP;
+        a.registerr = 0;
+        result << a;
+
+        // Check if register value > 0 (i.e. "counter" > "times")
+        jzIp = result.size();
+        a.type = Bytecode::JNZ;
+        a.registerr = 0;
+        result << a;
+
+        // Show counter value at margin
+        if (lineNo!=-1) {
+            result << swreg;
+        }
     }
     else if (st->loop.type==AST::LoopFor) {
 
-        // Calculate initial value
+        // Highlight line
+        if (lineNo!=-1) {
+            result << l;
+        }
+
+        // Calculate and forget initial value
         result << calculate(modId, algId, level, st->loop.fromValue);
         if (st->loop.forVariable->dimension>0) {
             for (int i=st->loop.forVariable->dimension-1; i>=0; i--) {
@@ -835,55 +1021,44 @@ void Generator::LOOP(int modId, int algId,
         findVariable(modId, algId, st->loop.forVariable, a.scope, a.arg);
         result << a;
 
-        // Skip first value change by passing JUMP
-        int jumpId = result.size();
-        a.type = Bytecode::JUMP;
+        a.type = Bytecode::POP;
+        a.registerr = 0;
         result << a;
 
-        // Begin
-        beginIp = result.size();
-        result[jumpId].arg = beginIp;
-        result << l;
 
-        // Change variable
+        // First time: Load variable and 'to'-value
         if (st->loop.forVariable->dimension>0) {
             for (int i=st->loop.forVariable->dimension-1; i>=0; i--) {
                 result << calculate(modId, algId, level, st->expressions[i]);
             }
         }
-        a.type = st->loop.forVariable->dimension>0 ? Bytecode::LOADARR : Bytecode::LOAD;
-        findVariable(modId, algId, st->loop.forVariable, a.scope, a.arg);
-        result << a;
-
-        result << calculate(modId, algId, level, st->loop.stepValue);
-        a.type = Bytecode::SUM;
-        result << a;
-
-        if (st->loop.forVariable->dimension>0) {
-            for (int i=st->loop.forVariable->dimension-1; i>=0; i--) {
-                result << calculate(modId, algId, level, st->expressions[i]);
-            }
-        }
-        a.type = st->loop.forVariable->dimension>0 ? Bytecode::STOREARR : Bytecode::STORE;
+        a.type = st->loop.forVariable->dimension>0? Bytecode::LOADARR : Bytecode::LOAD;
         findVariable(modId, algId, st->loop.forVariable, a.scope, a.arg);
         result << a;
 
         result << calculate(modId, algId, level, st->loop.toValue);
+
+        // First time: Compare values and go to end if neccessary
+
         a.type = Bytecode::LEQ;
         result << a;
-
         a.type = Bytecode::POP;
-        a.registerr = level;
+        a.registerr = 0;
+        result << a;
+        a.type = Bytecode::JZ;
+        a.registerr = 0;
+        jzIp = result.size();
         result << a;
 
-        // Check if register value > 0
-        jzIp = result.size();
-        a.type = Bytecode::JZ;
-        a.registerr = level;
-        result << a;
+        // Begin
+        beginIp = result.size();
     }
 
-    result << instructions(modId, algId, level, st->loop.body);
+    QList<Bytecode::Instruction> instrs = instructions(modId, algId, level, st->loop.body);
+    shiftInstructions(instrs, result.size());
+    result += instrs;
+
+    int endJzIp = -1;
 
     if (st->loop.endCondition) {
         lineNo = st->loop.endLexems[0]->lineNo;
@@ -894,24 +1069,111 @@ void Generator::LOOP(int modId, int algId,
         e.type = Bytecode::POP;
         e.registerr = 0;
         result << e;
-        e.type = Bytecode::JZ;
+        // Show counter value at margin
+        if (lineNo!=-1) {
+            result << swreg;
+        }
+        endJzIp = result.size();
+        e.type = Bytecode::JNZ;
         e.registerr = 0;
-        e.arg = beginIp;
         result << e;
-    }
+    }    
     else {
-        lineNo = st->loop.endLexems[0]->lineNo;
-        l.arg = lineNo;
-        result << l;
-        Bytecode::Instruction e;
-        e.type = Bytecode::JUMP;
-        e.registerr = 0;
-        e.arg = beginIp;
-        result << e;
+
     }
 
+    int jzIp2 = -1;
+
+    if (st->loop.type==AST::LoopFor) {
+        // Change loop variable must be done at end of loop!
+        l.arg = st->lexems[0]->lineNo;
+        result << l;
+
+        // Change variable
+        if (st->loop.forVariable->dimension>0) {
+            for (int i=st->loop.forVariable->dimension-1; i>=0; i--) {
+                result << calculate(modId, algId, level, st->expressions[i]);
+            }
+        }
+        Bytecode::Instruction a;
+        a.type = st->loop.forVariable->dimension>0 ? Bytecode::LOADARR : Bytecode::LOAD;
+        findVariable(modId, algId, st->loop.forVariable, a.scope, a.arg);
+        result << a;
+
+        if (st->loop.stepValue) {
+            result << calculate(modId, algId, level, st->loop.stepValue);
+        }
+        else {
+            a.type = Bytecode::LOAD;
+            a.scope = Bytecode::CONST;
+            a.arg = constantValue(Bytecode::VT_int, 1);
+            result << a;
+        }
+        a.type = Bytecode::SUM;
+        result << a;
+        a.type = Bytecode::POP;
+        a.registerr = level * 2;
+        result << a;
+        a.type = Bytecode::PUSH;
+        result << a;
+
+        // Load 'to'-value
+        result << calculate(modId, algId, level, st->loop.toValue);
+
+        // Compare
+
+        a.type = Bytecode::LEQ;
+        result << a;
+        a.type = Bytecode::POP;
+        a.registerr = 0;
+        result << a;
+        a.type = Bytecode::JZ;
+        a.registerr = 0;
+        jzIp2 = result.size();
+        result << a;
+
+        // Clear margin
+        if (lineNo!=-1) {
+            result << clmarg;
+        }
+
+        // Store variable
+
+        a.type = Bytecode::PUSH;
+        a.registerr = level * 2;
+        result << a;
+
+        if (st->loop.forVariable->dimension>0) {
+            for (int i=st->loop.forVariable->dimension-1; i>=0; i--) {
+                result << calculate(modId, algId, level, st->expressions[i]);
+            }
+        }
+        a.type = st->loop.forVariable->dimension>0 ? Bytecode::STOREARR : Bytecode::STORE;
+        findVariable(modId, algId, st->loop.forVariable, a.scope, a.arg);
+        result << a;
+    }
+
+    // Jump to loop begin
+//    lineNo = st->loop.endLexems[0]->lineNo;
+//    l.arg = lineNo;
+//    result << l;
+    Bytecode::Instruction e;
+    e.type = Bytecode::JUMP;
+    e.registerr = 0;
+    e.arg = beginIp;
+    result << e;
+
+
     // Found end of loop
-    result[jzIp].arg = result.size();
+    if (jzIp!=-1) {
+        result[jzIp].arg = result.size();
+    }
+    if (endJzIp!=-1) {
+        result[endJzIp].arg = result.size();
+    }
+    if (jzIp2!=-1) {
+        result[jzIp2].arg = result.size();
+    }
 
     // If loop has break statements -- set proper jump for them
     QList< QPair<quint8,quint16> > toRemove;

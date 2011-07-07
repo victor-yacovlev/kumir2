@@ -54,6 +54,7 @@ public:
     inline bool toBool() const { return value().toBool(); }
     inline QChar toChar() const { return value().toChar(); }
     QString toString() const;
+    QString toString(const QList<int> & indeces) const;
     Variant toReference();
     Variant toReference(const QList<int> & indeces);
     void setValue(const QVariant & value);

@@ -30,7 +30,10 @@ public:
     void highlightLineGreen(int documentId, int lineNo);
     void highlightLineRed(int documentId, int lineNo);
     void unhighlightLine(int documentId);
+    void appendMarginText(int documentId, int lineNo, const QString & text);
     void setMarginText(int documentId, int lineNo, const QString & text);
+    void clearMargin(int documentId);
+    void clearMargin(int documentId, int fromLine, int toLine);
     void ensureAnalized(int documentId);
     QString saveState(int documentId);
     void restoreState(int documentId, const QString & data);

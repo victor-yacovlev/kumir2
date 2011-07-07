@@ -21,8 +21,10 @@ public:
     void setDocumentId(int id);
     QString text() const;
     bool isModified() const;
+    void appendMarginText(int lineNo, const QString & text);
     void setMarginText(int lineNo, const QString & text);
     void clearMarginText();
+    void clearMarginText(int fromLine, int toLine);
     void setNotModified();
     void lock();
     void unlock();

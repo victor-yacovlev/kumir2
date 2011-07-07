@@ -17,6 +17,8 @@ Plugin::Plugin() :
     connect (d, SIGNAL(lineChanged(int)), this, SLOT(handleLineChanged(int)));
     connect (d->vm, SIGNAL(valueChangeNotice(int,QString)),
              this, SIGNAL(marginText(int,QString)));
+    connect (d->vm, SIGNAL(clearMargin(int,int)),
+             this, SIGNAL(clearMargin(int,int)));
     connect (d->vm, SIGNAL(resetModuleRequest(QString)), this, SIGNAL(resetModule(QString)));
 }
 

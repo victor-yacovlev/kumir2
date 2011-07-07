@@ -381,7 +381,7 @@ void SyntaxAnalizerPrivate::parseInputOutputAssertPrePost(int str)
             groupType = InputExpression;
         else if (st.type==LxPriOutput || st.type==LxPriFoutput)
             groupType = OutputExpression;
-        else if (st.type==LxPriAssign || st.type==LxPriPre || st.type==LxPriPost)
+        else if (st.type==LxPriAssert || st.type==LxPriPre || st.type==LxPriPost)
             groupType = AssertionExpression;
 
         AST::Expression * expr = parseExpression(groups[i], st.mod, st.alg);

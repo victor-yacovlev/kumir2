@@ -2,6 +2,7 @@
 #include "bytecode/instruction.h"
 
 #define EPSILON 0.0000001
+#define MAX_RECURSION_SIZE 4000
 
 using namespace Bytecode;
 
@@ -51,6 +52,7 @@ void VM::reset()
 {
     b_nextCallInto = false;
     s_error = "";
+    Variant::error = "";
     stack_values.clear();
     stack_contexts.clear();
     QList<TableElem> inits;
@@ -281,6 +283,12 @@ void VM::evaluateNextInstruction()
     case GEQ:
         do_geq();
         break;
+    case SHOWREG:
+        do_showreg(instr.registerr);
+        break;
+    case CLEARMARG:
+        do_clearmarg(instr.arg);
+        break;
     default:
         nextIP();
         break;
@@ -297,7 +305,7 @@ void VM::do_call(quint8 mod, quint16 alg)
     if (mod==255) {
         int argsCount = stack_values.pop().toInt();
         // Special calls
-        if (alg==0) {
+        if (alg==0x00) {
             // Input
             const QString format = stack_values.pop().toString();
             QList<quintptr> references;
@@ -309,7 +317,7 @@ void VM::do_call(quint8 mod, quint16 alg)
             }
             emit inputRequest(format, references, indeces);
         }
-        if (alg==1) {
+        if (alg==0x01) {
             // Output
             QString output;
             for (int i=0; i<argsCount; i++) {
@@ -317,13 +325,105 @@ void VM::do_call(quint8 mod, quint16 alg)
             }
             emit outputRequest(output);
         }
-        if (alg==2) {
+        if (alg==0x02) {
             // File input
             // TODO implement me
         }
-        if (alg==3) {
+        if (alg==0x03) {
             // File output
 
+        }
+        if (alg==0x04) {
+            // Get char from string
+            Variant second = stack_values.pop();
+            Variant first = stack_values.pop();
+            int index = second.value().toInt();
+            QString s = first.value().toString();
+            s_error = Variant::error;
+            if (s_error.isEmpty()) {
+                if (index<1 || index>s.length()) {
+                    s_error = tr("Index out of string");
+                }
+                else {
+                    QChar result = s[index-1];
+                    Variant r(result);
+                    stack_values.push(r);
+                }
+            }
+        }
+        if (alg==0x05) {
+            // Set char in string
+            Variant third = stack_values.pop();
+            Variant second = stack_values.pop();
+            Variant first = stack_values.pop();
+            int index = third.value().toInt();
+            QString source = second.value().toString();
+            QString ch = first.value().toString();
+            s_error = Variant::error;
+            if (s_error.isEmpty()) {
+                if (index<1 || index>source.length()) {
+                    s_error = tr("Index out of string");
+                }
+                else {
+                    source = source.mid(0,index-1)+ch+source.mid(index);
+                    Variant r(source);
+                    stack_values.push(r);
+                }
+            }
+        }
+        if (alg==0x06) {
+            // Get slice from string
+            Variant third = stack_values.pop();
+            Variant second = stack_values.pop();
+            Variant first = stack_values.pop();
+            int start = second.value().toInt();
+            int end   = third.value().toInt();
+            QString s = first.value().toString();
+            s_error = Variant::error;
+            if (s_error.isEmpty()) {
+                if (start<1 || start>s.length()) {
+                    s_error = tr("Index out of string");
+                }
+                else if (end<1 || end>s.length()) {
+                    s_error = tr("Index out of string");
+                }
+                else if (end<start) {
+                    s_error = tr("Invalid string slice");
+                }
+                else {
+                    QString result = s.mid(start-1, end-start+1);
+                    Variant r(result);
+                    stack_values.push(r);
+                }
+            }
+        }
+        if (alg==0x07) {
+            // Set slice in string
+            Variant fourth = stack_values.pop();
+            Variant third = stack_values.pop();
+            Variant second = stack_values.pop();
+            Variant first = stack_values.pop();
+            int end = fourth.value().toInt();
+            int start = third.value().toInt();
+            QString source = second.value().toString();
+            QString ch = first.value().toString();
+            s_error = Variant::error;
+            if (s_error.isEmpty()) {
+                if (start<1 || start>source.length()) {
+                    s_error = tr("Index out of string");
+                }
+                else if (end<1 || end>source.length()) {
+                    s_error = tr("Index out of string");
+                }
+                else if (end<start) {
+                    s_error = tr("Invalid string slice");
+                }
+                else {
+                    source = source.mid(0,start-1)+ch+source.mid(end);
+                    Variant r(source);
+                    stack_values.push(r);
+                }
+            }
         }
     }
     else if (externs.contains(p)) {
@@ -345,17 +445,22 @@ void VM::do_call(quint8 mod, quint16 alg)
 
     }
     else if (functions.contains(p)) {
-        Context c;
-        c.IP = -1;
-        c.program = functions[p].instructions ;
-        c.locals = cleanLocalTables[p];
-        c.type = EL_FUNCTION;
-        if (b_nextCallInto)
-            c.runMode = CRM_OneStep;
-        else
-            c.runMode = CRM_ToEnd;
-        stack_contexts.push(c);
-        b_nextCallInto = false;
+        if (stack_contexts.size()>=MAX_RECURSION_SIZE) {
+            s_error = tr("Too deep recursion");
+        }
+        else {
+            Context c;
+            c.IP = -1;
+            c.program = functions[p].instructions ;
+            c.locals = cleanLocalTables[p];
+            c.type = EL_FUNCTION;
+            if (b_nextCallInto)
+                c.runMode = CRM_OneStep;
+            else
+                c.runMode = CRM_ToEnd;
+            stack_contexts.push(c);
+            b_nextCallInto = false;
+        }
     }
     else {
         s_error = tr("Internal error: don't know what is 'call %1 %2'").arg(mod).arg(alg);
@@ -409,19 +514,24 @@ void VM::do_store(quint8 s, quint16 id)
 {
     const Variant val = stack_values.top();
     QString name;
-    const QString svalue = val.toString();
+    QString svalue;
     const int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
+    ValueType t = VT_void;
     if (VariableScope(s)==LOCAL) {
-        stack_contexts[stack_contexts.size()-1].locals[id].setBaseType(val.baseType());
+//        stack_contexts[stack_contexts.size()-1].locals[id].setBaseType(val.baseType());
         stack_contexts[stack_contexts.size()-1].locals[id].setBounds(val.bounds());
         stack_contexts[stack_contexts.size()-1].locals[id].setValue(val.value());
         name = stack_contexts[stack_contexts.size()-1].locals[id].name();
+        svalue = stack_contexts[stack_contexts.size()-1].locals[id].toString();
+        t = stack_contexts[stack_contexts.size()-1].locals[id].baseType();
     }
     else if (VariableScope(s)==GLOBAL) {
-        globals[id].setBaseType(val.baseType());
+//        globals[id].setBaseType(val.baseType());
         globals[id].setBounds(val.bounds());
         globals[id].setValue(val.value());
         name = globals[id].name();
+        svalue = globals[id].toString();
+        t = globals[id].baseType();
     }
     else {
         s_error = tr("Internal error: don't know what is 'store %1 %2'").arg(s).arg(id);
@@ -429,7 +539,13 @@ void VM::do_store(quint8 s, quint16 id)
     if (lineNo!=-1 &&
             (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
             )
+    {
+        if (t==VT_string)
+            svalue = "\""+svalue+"\"";
+        if (t==VT_char)
+            svalue = "'"+svalue+"'";
         emit valueChangeNotice(lineNo, name+"="+svalue);
+    }
     nextIP();
 }
 
@@ -454,6 +570,8 @@ void VM::do_load(quint8 s, quint16 id)
     else {
         s_error = tr("Internal error: don't know what is 'load %1 %2'").arg(s).arg(id);
     }
+    if (!Variant::error.isEmpty())
+        s_error = Variant::error;
     stack_values.push(val);
     nextIP();
 }
@@ -485,13 +603,22 @@ void VM::do_storearr(quint8 s, quint16 id)
             sindeces += QString::number(indeces.last());
         }
         const Variant val = stack_values.top();
+        ValueType t = VT_void;
         svalue = val.toString();
         if (VariableScope(s)==LOCAL) {
             stack_contexts[stack_contexts.size()-1].locals[id].setValue(indeces, val.value());
+            t = stack_contexts[stack_contexts.size()-1].locals[id].baseType();
+            svalue = stack_contexts[stack_contexts.size()-1].locals[id].toString(indeces);
         }
         else if (VariableScope(s)==GLOBAL) {
             globals[id].setValue(indeces, val.value());
+            t = globals[id].baseType();
+            svalue = globals[id].toString(indeces);
         }
+        if (t==VT_string)
+            svalue = "\""+svalue+"\"";
+        if (t==VT_char)
+            svalue = "'"+svalue+"'";
     }
     if (lineNo!=-1 &&
             (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
@@ -503,19 +630,23 @@ void VM::do_storearr(quint8 s, quint16 id)
 void VM::do_loadarr(quint8 s, quint16 id)
 {
     int dim = 0;
+    ValueType vt = VT_void;
     if (VariableScope(s)==LOCAL) {
         dim = stack_contexts[stack_contexts.size()-1].locals[id].dimension();
+        vt = stack_contexts[stack_contexts.size()-1].locals[id].baseType();
     }
     else if (VariableScope(s)==GLOBAL) {
         dim = globals[id].dimension();
+        vt = globals[id].baseType();
     }
     else if (VariableScope(s)==CONST) {
         dim = constants[id].dimension();
+        vt = constants[id].baseType();
     }
     else {
         s_error = tr("Internal error: don't know what is 'loadarr %1 %2'").arg(s).arg(id);
     }
-    if (dim>0) {
+    if (dim>0 || vt==VT_string) {
         QList<int> indeces;
         for (int i=0; i<dim; i++) {
             indeces << stack_values.pop().toInt();
@@ -599,36 +730,24 @@ void VM::do_jump(quint16 ip)
 void VM::do_jnz(quint8 r, quint16 ip)
 {
     bool v = stack_contexts[stack_contexts.size()-1].registers[r].toBool();
-    QString s = v? tr("true") : tr("false");
     if (v) {
         stack_contexts[stack_contexts.size()-1].IP = ip;
     }
     else {
         nextIP();
     }
-    int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
-    if (lineNo!=-1 &&
-            (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
-            )
-        emit valueChangeNotice(lineNo, s);
 }
 
 
 void VM::do_jz(quint8 r, quint16 ip)
 {
     bool v = stack_contexts[stack_contexts.size()-1].registers[r].toBool();
-    QString s = v? tr("true") : tr("false");
     if (v) {
         nextIP();
     }
     else {
         stack_contexts[stack_contexts.size()-1].IP = ip;
     }
-    int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
-    if (lineNo!=-1 &&
-            (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
-            )
-        emit valueChangeNotice(lineNo, s);
 }
 
 void VM::do_push(quint8 r)
@@ -673,6 +792,35 @@ void VM::do_pop(quint8 r)
     nextIP();
 }
 
+void VM::do_showreg(quint8 regNo) {
+    const int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
+    if (lineNo!=-1 &&
+            (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+            )
+    {
+        QVariant val = stack_contexts[stack_contexts.size()-1].registers[regNo];
+        if (val.type()==QVariant::Bool) {
+            emit valueChangeNotice(lineNo, val.toBool()? tr("true") : tr("false"));
+        }
+        else {
+            emit valueChangeNotice(lineNo, val.toString());
+        }
+    }
+    nextIP();
+}
+
+void VM::do_clearmarg(quint16 toLine)
+{
+    const int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
+    if (lineNo!=-1 &&
+            (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+            )
+    {
+        emit clearMargin(lineNo, toLine);
+    }
+    nextIP();
+}
+
 void VM::do_ret()
 {
     stack_contexts.pop();
@@ -696,8 +844,10 @@ void VM::do_error(quint8 s, quint16 id)
 
 void VM::do_line(quint16 no)
 {
-    if (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep)
-        emit lineNoChanged(no);
+    if (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep) {
+        if (stack_contexts[stack_contexts.size()-1].lineNo!=no)
+            emit lineNoChanged(no);
+    }
     stack_contexts[stack_contexts.size()-1].lineNo = no;
     nextIP();
 }
@@ -706,7 +856,7 @@ void VM::do_sum()
 {
     Variant b = stack_values.pop();
     Variant a = stack_values.pop();
-    if (a.baseType()==VT_int && a.baseType()==VT_int) {
+    if (a.baseType()==VT_int && b.baseType()==VT_int) {
         Variant r(a.toInt()+b.toInt());
         stack_values.push(r);
     }
@@ -725,7 +875,7 @@ void VM::do_sub()
 {
     Variant b = stack_values.pop();
     Variant a = stack_values.pop();
-    if (a.baseType()==VT_int && a.baseType()==VT_int) {
+    if (a.baseType()==VT_int && b.baseType()==VT_int) {
         Variant r(a.toInt()-b.toInt());
         stack_values.push(r);
     }
@@ -740,7 +890,7 @@ void VM::do_mul()
 {
     Variant b = stack_values.pop();
     Variant a = stack_values.pop();
-    if (a.baseType()==VT_int && a.baseType()==VT_int) {
+    if (a.baseType()==VT_int && b.baseType()==VT_int) {
         Variant r(a.toInt()*b.toInt());
         stack_values.push(r);
     }

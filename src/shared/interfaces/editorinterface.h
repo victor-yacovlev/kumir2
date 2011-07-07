@@ -28,7 +28,10 @@ public:
     virtual void highlightLineGreen(int documentId, int lineNo) = 0;
     virtual void highlightLineRed(int documentId, int lineNo) = 0;
     virtual void unhighlightLine(int documentId) = 0;
+    virtual void appendMarginText(int documentId, int lineNo, const QString & text) = 0;
     virtual void setMarginText(int documentId, int lineNo, const QString & text) = 0;
+    virtual void clearMargin(int documentId) = 0;
+    virtual void clearMargin(int documentId, int fromLine, int toLine) = 0;
     virtual void ensureAnalized(int documentId) = 0;
     virtual QString saveState(int documentId) = 0;
     virtual void restoreState(int documentId, const QString & data) = 0;

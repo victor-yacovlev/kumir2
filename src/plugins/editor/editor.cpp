@@ -77,6 +77,17 @@ void Editor::unlock()
     d->cursor->setEnabled(true);
 }
 
+void Editor::appendMarginText(int lineNo, const QString &text)
+{
+    if (lineNo>=0 && lineNo<d->doc->size()) {
+        if ( ! ((*d->doc)[lineNo].marginText.isEmpty()) ) {
+            (*d->doc)[lineNo].marginText += "; ";
+        }
+        (*d->doc)[lineNo].marginText += text;
+    }
+    update();
+}
+
 void Editor::setMarginText(int lineNo, const QString &text)
 {
     if (lineNo>=0 && lineNo<d->doc->size())
@@ -87,6 +98,16 @@ void Editor::setMarginText(int lineNo, const QString &text)
 void Editor::clearMarginText()
 {
     for (int i=0; i<d->doc->size(); i++) {
+        (*d->doc)[i].marginText = "";
+    }
+    update();
+}
+
+void Editor::clearMarginText(int fromLine, int toLine)
+{
+    int start = qMin(qMax(0, fromLine), d->doc->size()-1);
+    int end = qMin(qMax(0, toLine), d->doc->size()-1);
+    for (int i=start; i<=end; i++) {
         (*d->doc)[i].marginText = "";
     }
     update();

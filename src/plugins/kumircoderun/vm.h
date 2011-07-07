@@ -47,6 +47,7 @@ signals:
                                 const QList<int> & indeces
                                 );
     void valueChangeNotice(int lineNo, const QString & text);
+    void clearMargin(int fromLine, int toLine);
 private:
     QStack<Variant> stack_values;
     QStack<Context> stack_contexts;
@@ -79,6 +80,8 @@ private:
     void do_line(quint16);
     void do_ref(quint8, quint16);
     void do_refarr(quint8, quint16);
+    void do_showreg(quint8);
+    void do_clearmarg(quint16);
 
     void do_sum();
     void do_sub();

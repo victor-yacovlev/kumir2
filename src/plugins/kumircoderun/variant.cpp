@@ -11,6 +11,8 @@ QVariant Variant::value() const
     else if (m_reference && l_referenceIndeces.size()>0)
         return m_reference->value(l_referenceIndeces);
     else {
+        if (m_value==QVariant::Invalid)
+            error = QObject::tr("Variable not initialized", "Variant");
         return m_value;
     }
 }
@@ -57,8 +59,36 @@ QString Variant::toString() const
         else
             result = QObject::tr("false", "Variant");
         break;
+    case VT_float:
+        result = QString::number(value().toDouble(), 'g', 7);
+        if (!result.contains("."))
+            result += ".0";
+        break;
     default:
         result = value().toString();
+        break;
+    }
+    return result;
+}
+
+QString Variant::toString(const QList<int> & indeces) const
+{
+    QString result;
+    switch (e_baseType)
+    {
+    case VT_bool:
+        if (value(indeces).toBool())
+            result = QObject::tr("true", "Variant");
+        else
+            result = QObject::tr("false", "Variant");
+        break;
+    case VT_float:
+        result = QString::number(value(indeces).toDouble(), 'g', 7);
+        if (!result.contains("."))
+            result += ".0";
+        break;
+    default:
+        result = value(indeces).toString();
         break;
     }
     return result;

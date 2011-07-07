@@ -69,6 +69,7 @@ QString Plugin::initialize(const QStringList &)
     m_kumirProgram->setBytecodeRun(kumirRunner);
 
     QList<ExtensionSystem::KPlugin*> actors = loadedPlugins("Actor*");
+    actors += loadedPlugins("st_funct");
     foreach (ExtensionSystem::KPlugin* o, actors) {
         ActorInterface * actor = qobject_cast<ActorInterface*>(o);
         l_plugin_actors << actor;

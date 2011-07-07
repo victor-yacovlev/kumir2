@@ -39,11 +39,32 @@ EditorPlugin::~EditorPlugin()
     delete d;
 }
 
+void EditorPlugin::appendMarginText(int documentId, int lineNo, const QString & text)
+{
+    Editor * ed = d->editors[documentId].e;
+    Q_CHECK_PTR(ed);
+    ed->appendMarginText(lineNo, text);
+}
+
 void EditorPlugin::setMarginText(int documentId, int lineNo, const QString & text)
 {
     Editor * ed = d->editors[documentId].e;
     Q_CHECK_PTR(ed);
     ed->setMarginText(lineNo, text);
+}
+
+void EditorPlugin::clearMargin(int documentId)
+{
+    Editor * ed = d->editors[documentId].e;
+    Q_CHECK_PTR(ed);
+    ed->clearMarginText();
+}
+
+void EditorPlugin::clearMargin(int documentId, int fromLine, int toLine)
+{
+    Editor * ed = d->editors[documentId].e;
+    Q_CHECK_PTR(ed);
+    ed->clearMarginText(fromLine, toLine);
 }
 
 Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, const QString &initialText)
