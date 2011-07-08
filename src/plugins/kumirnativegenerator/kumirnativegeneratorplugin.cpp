@@ -1102,7 +1102,7 @@ Shared::GeneratorResult KumirNativeGeneratorPlugin::generateExecuable(
 #endif
     command += " -o "+gccOutName;
     command += " --std=c99";
-    command += " -Werror";
+//    command += " -Werror";
     command += " -g";
 #ifdef Q_OS_WIN32
     command += " -DWIN32";
