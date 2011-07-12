@@ -214,6 +214,10 @@ void OneSession::output(const QString &text)
 
 void OneSession::input(const QString &format)
 {
+    if (m_lines.isEmpty()) {
+        m_lines << "";
+        m_props << LineProp();
+    }
     i_inputLineStart = m_lines.size()-1;
     i_inputPosStart = 0;
     if (!m_lines.isEmpty()) {

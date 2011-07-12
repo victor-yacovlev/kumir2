@@ -41,8 +41,7 @@ KumirProgram::KumirProgram(QObject *parent)
     connect(m_connector, SIGNAL(resetActorReceived(QString)),
             this, SLOT(handleActorResetRequest(QString)));
 
-    const QString key = QString("kumir-%1").arg(QCoreApplication::applicationPid());
-    m_connector->listenFor(key);
+    m_connector->listenFor(QCoreApplication::applicationPid());
 
 
     a_fastRun = new QAction(tr("Fast run"), this);
@@ -161,7 +160,8 @@ void KumirProgram::handleInputDone(const QVariantList &data)
         Q_CHECK_PTR(plugin_bytecodeRun);
         plugin_bytecodeRun->finishInput(data);
     }
-    else if (e_state==FastRun && m_process->state()==QProcess::Running) {
+//    else if (e_state==FastRun && m_process->state()==QProcess::Running) {
+    else {
         m_connector->sendReply(data);
     }
     m_terminal->clearFocus();
@@ -244,7 +244,7 @@ void KumirProgram::fastRun()
         }
     }
     if (ok) {
-        const QString cmd = QString("%1 --key=kumir-%2")
+        const QString cmd = QString("%1 --key=%2")
                 .arg(exeFileName)
                 .arg(QCoreApplication::applicationPid());
         m_terminal->start(exeFileName);

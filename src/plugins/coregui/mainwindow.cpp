@@ -712,6 +712,7 @@ void MainWindow::restoreSession(const QByteArray & data)
     if (data.size()>0) {
         int tabIndex = quint8(data[0]);
         ui->tabWidget->setCurrentIndex(qMin(tabIndex, ui->tabWidget->count()-1));
+        setupContentForTab();
     }
 
 }

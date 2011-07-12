@@ -12,19 +12,19 @@ extern "C" int __main_gui__( int argc, char *argv[],
                               void(*main_funct)() )
 {
     QApplication * a = new QApplication(argc, argv);
-    QString key;
+    int pid = 0;
     foreach (const QString & arg, a->arguments()) {
         if (arg.startsWith("--key=")) {
-            key = arg.mid(6);
+            pid = arg.mid(6).toInt();
         }
     }
-    if (!key.isEmpty()) {
-        StdLib::Connector::instance()->connectTo(key);
+    if (pid) {
+        StdLib::Connector::instance()->connectTo(pid);
     }
     (*creator_funct)();
-    StdLib::UserProgramThread * thread = new StdLib::UserProgramThread(a, main_funct, !key.isEmpty());
+    StdLib::UserProgramThread * thread = new StdLib::UserProgramThread(a, main_funct, pid);
     int result = 0;
-    if (!key.isEmpty()) {
+    if (pid) {
         thread->start();
         thread->wait();
         result = 0;
