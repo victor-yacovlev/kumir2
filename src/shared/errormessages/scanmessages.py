@@ -202,9 +202,9 @@ if __name__=="__main__":
             work_dirs += [ arg ]
     if db_file is None or out_file is None or len(work_dirs)==0:
         printUsageAndExit()
-#    sys.stderr.write("db_file: "+db_file+"\n")
-#    sys.stderr.write("out_file: "+out_file+"\n")
-#    sys.stderr.write("work_dirs: "+str(work_dirs)+"\n")
+    #sys.stderr.write("db_file: "+db_file+"\n")
+    #sys.stderr.write("out_file: "+out_file+"\n")
+    #sys.stderr.write("work_dirs: "+str(work_dirs)+"\n")
 
     allkeys = set()
 

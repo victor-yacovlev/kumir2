@@ -150,6 +150,3 @@ win32-msvc* {
     #Don't warn about sprintf, fopen etc being 'unsafe'
     DEFINES += _CRT_SECURE_NO_WARNINGS
 }
-
-HEADERS += \
-    ../../src/shared/interfaces/actorinterface.h

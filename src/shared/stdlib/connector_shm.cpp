@@ -36,6 +36,9 @@ bool Connector_SHM::connectTo(int pid)
 
 void Connector_SHM::listenFor(int pid)
 {
+#ifdef Q_OS_MAC
+    return;
+#endif
     QString key = QString("kumir-%1").arg(pid);
     shm->setKey(key);
     if (!shm->create(sizeof(InterprocessMessage))) {

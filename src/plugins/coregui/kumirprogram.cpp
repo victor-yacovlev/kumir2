@@ -51,7 +51,7 @@ KumirProgram::KumirProgram(QObject *parent)
     a_fastRun->setShortcut(QKeySequence("Shift+F9"));
 
 #else
-#error Implement me on Mac!
+    a_fastRun->setShortcut(QKeySequence("Ctrl+R"));
 #endif
     a_fastRun->setToolTip(a_fastRun->text()+" <b>"+a_fastRun->shortcut().toString()+"</b>");
 
@@ -61,7 +61,7 @@ KumirProgram::KumirProgram(QObject *parent)
 #ifndef Q_OS_MAC
     a_regularRun->setShortcut(QKeySequence("F9"));
 #else
-#error Implement me on Mac!
+    a_regularRun->setShortcut(QKeySequence("F5"));
 #endif
     a_regularRun->setToolTip(a_regularRun->text()+" <b>"+a_regularRun->shortcut().toString()+"</b>");
 
@@ -71,7 +71,7 @@ KumirProgram::KumirProgram(QObject *parent)
 #ifndef Q_OS_MAC
     a_stepRun->setShortcut(QKeySequence("F8"));
 #else
-#error Implement me on Mac!
+    a_stepRun->setShortcut(QKeySequence("F6"));
 #endif
     a_stepRun->setToolTip(a_stepRun->text()+" <b>"+a_stepRun->shortcut().toString()+"</b>");
 
@@ -81,7 +81,7 @@ KumirProgram::KumirProgram(QObject *parent)
 #ifndef Q_OS_MAC
     a_stepIn->setShortcut(QKeySequence("F7"));
 #else
-#error Implement me on Mac!
+    a_stepIn->setShortcut(QKeySequence("F7"));
 #endif
     a_stepIn->setToolTip(a_stepIn->text()+" <b>"+a_stepIn->shortcut().toString()+"</b>");
 
@@ -91,7 +91,7 @@ KumirProgram::KumirProgram(QObject *parent)
 #ifndef Q_OS_MAC
     a_stepOut->setShortcut(QKeySequence("Shift+F7"));
 #else
-#error Implement me on Mac!
+    a_stepOut->setShortcut(QKeySequence("Shift+F7"));
 #endif
     a_stepOut->setToolTip(a_stepOut->text()+" <b>"+a_stepOut->shortcut().toString()+"</b>");
 
@@ -101,7 +101,7 @@ KumirProgram::KumirProgram(QObject *parent)
 #ifndef Q_OS_MAC
     a_stop->setShortcut(QKeySequence("Esc"));
 #else
-#error Implement me on Mac!
+    a_stop->setShortcut(QKeySequence("Esc"));
 #endif
     a_stop->setToolTip(a_stop->text()+" <b>"+a_stop->shortcut().toString()+"</b>");
 
