@@ -901,14 +901,24 @@ QString KumirNativeGeneratorPrivate::makeStBreak(
     }
 }
 
-QString KumirNativeGeneratorPrivate::makeStVarInitialize(
+QString KumirNativeGeneratorPrivate:: makeStVarInitialize(
     const QList<AST::Variable *> vars,
     const AST::Algorhitm *algorhitm,
     const AST::Module *module) const
 {
     QString result;
     foreach (const AST::Variable * var, vars) {
-        if (var->accessType==AST::AccessRegular && var->dimension>0) {
+        if (var->initialValue.isValid()) {
+            const QString cName = nameProvider->findVariable(
+                        module->header.name,
+                        algorhitm? algorhitm->header.name : "",
+                        var->name);
+            result += cName + " = "
+                    + makeConstant(var->baseType, var->initialValue)
+                    + ";\n";
+
+        }
+        else if (var->accessType==AST::AccessRegular && var->dimension>0) {
             const QString cName = nameProvider->findVariable(
                         module->header.name,
                         algorhitm? algorhitm->header.name : "",

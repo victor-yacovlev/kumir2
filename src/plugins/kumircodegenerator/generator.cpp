@@ -661,6 +661,23 @@ void Generator::INIT(int modId, int algId, int level, const AST::Statement * st,
         init.type = Bytecode::INIT;
         findVariable(modId, algId, var, init.scope, init.arg);
         result << init;
+        if (var->initialValue.isValid() && var->dimension==0) {
+            Bytecode::Instruction load;
+            load.type = Bytecode::LOAD;
+            load.scope = Bytecode::CONST;
+            load.arg = constantValue(valueType(var->baseType), var->initialValue);
+            result << load;
+            Bytecode::Instruction store = init;
+            store.type = Bytecode::STORE;
+            result << store;
+            Bytecode::Instruction pop;
+            pop.type = Bytecode::POP;
+            pop.registerr = 0;
+            result << pop;
+        }
+        else {
+            // TODO constant values for dimension > 0
+        }
     }
 }
 
