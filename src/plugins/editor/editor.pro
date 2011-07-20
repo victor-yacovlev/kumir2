@@ -34,3 +34,7 @@ OTHER_FILES += Editor.pluginspec
 
 FORMS += \
     settingspage.ui
+
+linux-* {
+    LIBS += -lX11
+}
