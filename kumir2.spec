@@ -4,7 +4,7 @@
 %define relno 0
 %define packager Victor Yacovlev <victor@lpm.org.ru>
 %define is_buildservice 0
-%define alphaversion 1
+%define alphaversion 3
 
 # -----------------------------------------------------------------------------
 
