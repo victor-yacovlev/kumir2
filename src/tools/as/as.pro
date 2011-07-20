@@ -8,16 +8,30 @@ DESTDIR = $$IDE_APP_PATH
 macx{
 DESTDIR = $$IDE_APP_PATH/Kumir.app/Contents/MacOS/
 }
+
+
 CONFIG += console
 macx: CONFIG -= app_bundle
 QT -= gui
 
 INCLUDEPATH += ../../
 
-macx {
-    debug:LIBS += -L$$IDE_LIBRARY_PATH -lBytecode_debug
+win32 {
+    CONFIG(debug, debug|release):LIBS *= -lBytecoded
+    else:LIBS *= -lBytecode
+    target.path = /bin
+    INSTALLS += target
+} else:macx {
+    CONFIG(debug, debug|release):LIBS *= -lBytecode_debug
+    else:LIBS *= -lBytecode
+    LIBS += -framework CoreFoundation
 } else {
-    LIBS += -L$$IDE_LIBRARY_PATH -lBytecode
+    LIBS *= -lBytecode
+
+    target.path  = /bin
+    INSTALLS    += target
 }
+
+
 
 SOURCES = main.cpp
