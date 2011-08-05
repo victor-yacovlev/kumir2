@@ -28,32 +28,7 @@ KumirProgram::KumirProgram(QObject *parent)
     , gr_actions(0)
     , m_connector(0)
 {
-    m_process = new QProcess(this);
-    connect(m_process, SIGNAL(finished(int,QProcess::ExitStatus)),
-            this, SLOT(handleProcessFinished(int,QProcess::ExitStatus)));
-    connect(m_process, SIGNAL(error(QProcess::ProcessError)),
-            this, SLOT(handleProcessError(QProcess::ProcessError)));
 
-
-    m_connector = new Connector();
-    connect(m_connector, SIGNAL(actorCommandReceived(QString,QString,QVariantList)),
-            this, SLOT(handleActorCommand(QString,QString,QVariantList)));
-    connect(m_connector, SIGNAL(resetActorReceived(QString)),
-            this, SLOT(handleActorResetRequest(QString)));
-
-    m_connector->listenFor(QCoreApplication::applicationPid());
-
-
-    a_fastRun = new QAction(tr("Fast run"), this);
-    a_fastRun->setIcon(QIcon::fromTheme("media-seek-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-seek-forward.png")));
-    connect(a_fastRun, SIGNAL(triggered()), this, SLOT(fastRun()));
-#ifndef Q_OS_MAC
-    a_fastRun->setShortcut(QKeySequence("Shift+F9"));
-
-#else
-    a_fastRun->setShortcut(QKeySequence("Ctrl+R"));
-#endif
-    a_fastRun->setToolTip(a_fastRun->text()+" <b>"+a_fastRun->shortcut().toString()+"</b>");
 
     a_regularRun = new QAction(tr("Regular run"), this);
     a_regularRun->setIcon(QIcon::fromTheme("media-playback-start", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-playback-start.png")));
@@ -115,6 +90,18 @@ KumirProgram::KumirProgram(QObject *parent)
     QAction * s2 = new QAction(this);
     s2->setSeparator(true);
 
+    a_fastRun = new QAction(tr("Fast run"), this);
+    a_fastRun->setIcon(QIcon::fromTheme("media-seek-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-seek-forward.png")));
+    connect(a_fastRun, SIGNAL(triggered()), this, SLOT(fastRun()));
+#ifndef Q_OS_MAC
+    a_fastRun->setShortcut(QKeySequence("Shift+F9"));
+
+#else
+    a_fastRun->setShortcut(QKeySequence("Ctrl+R"));
+#endif
+    a_fastRun->setToolTip(a_fastRun->text()+" <b>"+a_fastRun->shortcut().toString()+"</b>");
+
+
     gr_actions = new QActionGroup(this);
     gr_actions->addAction(a_fastRun);
     gr_actions->addAction(a_regularRun);
@@ -130,8 +117,24 @@ KumirProgram::KumirProgram(QObject *parent)
 void KumirProgram::setNativeGenerator(GeneratorInterface *cpp)
 {
     plugin_nativeGenerator = cpp;
-    if (!cpp) {
-        gr_actions->removeAction(a_fastRun);
+    if (cpp) {
+        m_process = new QProcess(this);
+        connect(m_process, SIGNAL(finished(int,QProcess::ExitStatus)),
+                this, SLOT(handleProcessFinished(int,QProcess::ExitStatus)));
+        connect(m_process, SIGNAL(error(QProcess::ProcessError)),
+                this, SLOT(handleProcessError(QProcess::ProcessError)));
+
+
+        m_connector = new Connector();
+        connect(m_connector, SIGNAL(actorCommandReceived(QString,QString,QVariantList)),
+                this, SLOT(handleActorCommand(QString,QString,QVariantList)));
+        connect(m_connector, SIGNAL(resetActorReceived(QString)),
+                this, SLOT(handleActorResetRequest(QString)));
+
+        m_connector->listenFor(QCoreApplication::applicationPid());
+
+    }
+    else {
         a_fastRun->deleteLater();
     }
 }
@@ -151,12 +154,14 @@ void KumirProgram::setTerminal(Term *t, QDockWidget * w)
 {
     m_terminal = t;
     m_terminalWindow = w;
-    connect(m_connector, SIGNAL(inputFormatReceived(QString)),
-            m_terminal, SLOT(input(QString)));
-    connect(m_connector, SIGNAL(outputTextReceived(QString)),
-            m_terminal, SLOT(output(QString)));
-    connect(m_connector, SIGNAL(errorMessageReceived(QString)),
-            m_terminal, SLOT(error(QString)));
+    if (m_connector) {
+        connect(m_connector, SIGNAL(inputFormatReceived(QString)),
+                m_terminal, SLOT(input(QString)));
+        connect(m_connector, SIGNAL(outputTextReceived(QString)),
+                m_terminal, SLOT(output(QString)));
+        connect(m_connector, SIGNAL(errorMessageReceived(QString)),
+                m_terminal, SLOT(error(QString)));
+    }
     connect(m_terminal, SIGNAL(inputFinished(QVariantList)),
             this, SLOT(handleInputDone(QVariantList)));
     connect(m_terminal, SIGNAL(showWindowRequest()),
