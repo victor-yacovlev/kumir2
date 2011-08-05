@@ -11,6 +11,7 @@ class TabWidget : public QTabWidget
     Q_OBJECT
 public:
     explicit TabWidget(QWidget *parent = 0);
+    void disableTabs();
 };
 
 } // namespace CoreGUI

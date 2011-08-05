@@ -9,3 +9,5 @@ SUBDIRS = \
     tools \
     plugins \
     actors
+    
+!macx:SUBDIRS+=app/kumir2-classic.pro

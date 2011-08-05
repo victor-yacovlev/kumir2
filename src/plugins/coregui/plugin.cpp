@@ -12,6 +12,7 @@ Plugin::Plugin() :
     m_mainWindow = 0;
     plugin_editor = 0;
     plugin_NativeGenerator = plugin_BytecodeGenerator = 0;
+    b_nosessions = false;
 }
 
 QString Plugin::InitialTextKey = "InitialText";
@@ -26,10 +27,16 @@ QString Plugin::DockFloatingKey = "DockWindow/Floating";
 QString Plugin::DockGeometryKey = "DockWindow/Geometry";
 QString Plugin::DockSideKey = "DockWindow/Side";
 
-QString Plugin::initialize(const QStringList &)
+QString Plugin::initialize(const QStringList & parameters)
 {
-    QApplication::setWindowIcon(QIcon(QApplication::instance()->property("sharePath").toString()+"/coregui/kumir2-icon.png"));
+    if (parameters.contains("classicicon",Qt::CaseInsensitive)) {
+        QApplication::setWindowIcon(QIcon(QApplication::instance()->property("sharePath").toString()+"/coregui/kumir2-icon-classic.png"));
+    }
+    else {
+        QApplication::setWindowIcon(QIcon(QApplication::instance()->property("sharePath").toString()+"/coregui/kumir2-icon.png"));
+    }
 
+    b_nosessions = parameters.contains("nosessions",Qt::CaseInsensitive);
 
     m_kumirStateLabel = new QLabel();
     m_genericCounterLabel = new QLabel();
@@ -41,8 +48,8 @@ QString Plugin::initialize(const QStringList &)
     plugin_browser = qobject_cast<BrowserInterface*>(myDependency("Browser"));
     if (!plugin_editor)
         return "Can't load editor plugin!";
-    if (!plugin_NativeGenerator)
-        return "Can't load c-generator plugin!";
+//    if (!plugin_NativeGenerator)
+//        return "Can't load c-generator plugin!";
     m_terminal = new Term(0);
 
     connect(m_terminal, SIGNAL(message(QString)),
@@ -86,10 +93,15 @@ QString Plugin::initialize(const QStringList &)
         }
         m_kumirProgram->addActor(o, w);
     }
-    const QString browserEntryPoint = QApplication::instance()->property("sharePath").toString()+"/coregui/startpage/russian/index.html";
-    m_browserObjects["mainWindow"] = m_mainWindow;
-    m_startPage = plugin_browser->createBrowser(QUrl::fromLocalFile(browserEntryPoint), m_browserObjects);
-    m_startPage.widget->setProperty("uncloseable", true);
+    if (!parameters.contains("nostartpage", Qt::CaseInsensitive)) {
+        const QString browserEntryPoint = QApplication::instance()->property("sharePath").toString()+"/coregui/startpage/russian/index.html";
+        m_browserObjects["mainWindow"] = m_mainWindow;
+        m_startPage = plugin_browser->createBrowser(QUrl::fromLocalFile(browserEntryPoint), m_browserObjects);
+        m_startPage.widget->setProperty("uncloseable", true);
+    }
+    if (parameters.contains("notabs", Qt::CaseInsensitive)) {
+        m_mainWindow->disableTabs();
+    }
 
     return "";
 }
@@ -129,7 +141,7 @@ void Plugin::prepareKumirProgramToRun()
 
 void Plugin::start()
 {
-    if (ExtensionSystem::PluginManager::instance()->showWorkspaceChooseOnLaunch()) {
+    if (!b_nosessions && ExtensionSystem::PluginManager::instance()->showWorkspaceChooseOnLaunch()) {
         if (!ExtensionSystem::PluginManager::instance()->showWorkspaceChooseDialog()) {
             qApp->quit();
         }

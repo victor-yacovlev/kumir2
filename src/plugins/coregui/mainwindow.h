@@ -45,6 +45,7 @@ public:
                                , const QList<QAction*> & menuActions
                                , DockWindowType type);
     ~MainWindow();
+    void disableTabs();
 public slots:
     QStringList recentFiles(bool fullPaths) const;
     void loadRecentFile(int index);

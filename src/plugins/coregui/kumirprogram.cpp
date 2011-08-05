@@ -127,6 +127,15 @@ KumirProgram::KumirProgram(QObject *parent)
 
 }
 
+void KumirProgram::setNativeGenerator(GeneratorInterface *cpp)
+{
+    plugin_nativeGenerator = cpp;
+    if (!cpp) {
+        gr_actions->removeAction(a_fastRun);
+        a_fastRun->deleteLater();
+    }
+}
+
 void KumirProgram::handleMarginTextRequest(int lineNo, const QString &text)
 {
     if (lineNo!=-1 && !text.isEmpty())

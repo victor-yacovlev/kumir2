@@ -58,6 +58,7 @@ protected:
     Term * m_terminal;
     QMap<QString,QObject*> m_browserObjects;
     KumirProgram * m_kumirProgram;
+    bool b_nosessions;
 
 };
 

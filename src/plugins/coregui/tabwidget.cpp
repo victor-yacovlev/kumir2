@@ -10,4 +10,10 @@ TabWidget::TabWidget(QWidget *parent) :
     setTabBar(tb);
 }
 
+void TabWidget::disableTabs()
+{
+    tabBar()->setEnabled(false);
+    tabBar()->setVisible(false);
+}
+
 } // namespace CoreGUI

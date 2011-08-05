@@ -629,7 +629,10 @@ void MainWindow::setupContentForTab()
     }
 }
 
-
+void MainWindow::disableTabs()
+{
+    ui->tabWidget->disableTabs();
+}
 
 void MainWindow::restoreSession(const QByteArray & data)
 {
@@ -645,74 +648,80 @@ void MainWindow::restoreSession(const QByteArray & data)
     }
 //    restoreState(m_plugin->mySettings()->value(Plugin::MainWindowStateKey).toByteArray());
 
-    for (int index=ui->tabWidget->count()-1; index>=0; index--) {
-
-            TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(index));
-            if (twe->type!=WWW) {
-                int documentId = twe->property("documentId").toInt();
-                m_plugin->plugin_editor->closeDocument(documentId);
-            }
-            ui->tabWidget->removeTab(index);
-
-
+    if (m_plugin->b_nosessions) {
+        newProgram();
     }
+    else {
 
-    addCentralComponent(
-                tr("Start"),
-                m_plugin->m_startPage.widget,
-                m_plugin->m_startPage.toolbarActions,
-                m_plugin->m_startPage.menus,
-                QList<QWidget*>(),
-                WWW,
-                false);
+        for (int index=ui->tabWidget->count()-1; index>=0; index--) {
 
-    QDir sessionDir(QDir::currentPath()+"/.session");
-    QStringList es = sessionDir.entryList(
-                QStringList() << "*.kum" << "*.pas" << "*.txt" << "*.url",
-                QDir::Files,
-                QDir::Name
-                );
-    for (int i=0; i<es.size(); i++) {
-        const QString e = es[i];
-        if (e.endsWith(".url")) {
-            // TODO implement me
+                TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(index));
+                if (twe->type!=WWW) {
+                    int documentId = twe->property("documentId").toInt();
+                    m_plugin->plugin_editor->closeDocument(documentId);
+                }
+                ui->tabWidget->removeTab(index);
+
+
         }
-        else {
-            TabWidgetElement * twe = loadFromUrl(QUrl::fromLocalFile(sessionDir.absoluteFilePath(e)), false);
-            const QString index = QFileInfo(e).baseName();
-            QFile state(sessionDir.absoluteFilePath(index+".dstate"));
-            if (state.open(QIODevice::ReadOnly|QIODevice::Text)) {
-                QTextStream ts(&state);
-                ts.setCodec("UTF-8");
-                ts.setAutoDetectUnicode(true);
-                QStringList lines = ts.readAll().split("\n", QString::SkipEmptyParts);
-                state.close();
-                for (int j=0; j<lines.size(); j++) {
-                    const QStringList pair = lines[j].split("=");
-                    if (pair.size()==2) {
-                        const QString key = pair[0].trimmed().toLower();
-                        const QString value = pair[1].trimmed();
-                        if (key=="filename") {
-                            twe->setProperty("fileName", value);
-                            twe->component->setProperty("fileName", value);
-                            ui->tabWidget->setTabText(ui->tabWidget->count()-1, QFileInfo(value).fileName());
-                        }
-                        if (key=="realfilename") {
-                            twe->setProperty("realFileName", value);
-                            twe->component->setProperty("realFileName", value);
+
+        addCentralComponent(
+                    tr("Start"),
+                    m_plugin->m_startPage.widget,
+                    m_plugin->m_startPage.toolbarActions,
+                    m_plugin->m_startPage.menus,
+                    QList<QWidget*>(),
+                    WWW,
+                    false);
+
+        QDir sessionDir(QDir::currentPath()+"/.session");
+        QStringList es = sessionDir.entryList(
+                    QStringList() << "*.kum" << "*.pas" << "*.txt" << "*.url",
+                    QDir::Files,
+                    QDir::Name
+                    );
+        for (int i=0; i<es.size(); i++) {
+            const QString e = es[i];
+            if (e.endsWith(".url")) {
+                // TODO implement me
+            }
+            else {
+                TabWidgetElement * twe = loadFromUrl(QUrl::fromLocalFile(sessionDir.absoluteFilePath(e)), false);
+                const QString index = QFileInfo(e).baseName();
+                QFile state(sessionDir.absoluteFilePath(index+".dstate"));
+                if (state.open(QIODevice::ReadOnly|QIODevice::Text)) {
+                    QTextStream ts(&state);
+                    ts.setCodec("UTF-8");
+                    ts.setAutoDetectUnicode(true);
+                    QStringList lines = ts.readAll().split("\n", QString::SkipEmptyParts);
+                    state.close();
+                    for (int j=0; j<lines.size(); j++) {
+                        const QStringList pair = lines[j].split("=");
+                        if (pair.size()==2) {
+                            const QString key = pair[0].trimmed().toLower();
+                            const QString value = pair[1].trimmed();
+                            if (key=="filename") {
+                                twe->setProperty("fileName", value);
+                                twe->component->setProperty("fileName", value);
+                                ui->tabWidget->setTabText(ui->tabWidget->count()-1, QFileInfo(value).fileName());
+                            }
+                            if (key=="realfilename") {
+                                twe->setProperty("realFileName", value);
+                                twe->component->setProperty("realFileName", value);
+                            }
                         }
                     }
+                    int documentId = twe->property("documentId").toInt();
+                    m_plugin->plugin_editor->restoreState(documentId, lines.join("\n"));
                 }
-                int documentId = twe->property("documentId").toInt();
-                m_plugin->plugin_editor->restoreState(documentId, lines.join("\n"));
             }
         }
-    }
 
-    if (data.size()>0) {
-        int tabIndex = quint8(data[0]);
-        ui->tabWidget->setCurrentIndex(qMin(tabIndex, ui->tabWidget->count()-1));
-        setupContentForTab();
+        if (data.size()>0) {
+            int tabIndex = quint8(data[0]);
+            ui->tabWidget->setCurrentIndex(qMin(tabIndex, ui->tabWidget->count()-1));
+            setupContentForTab();
+        }
     }
 
 }
@@ -729,58 +738,62 @@ QByteArray MainWindow::saveSession() const
     sett->setValue(Plugin::MainWindowStateKey, saveState());
 
     QByteArray result;
-    result.append(quint8(ui->tabWidget->currentIndex()));
 
-    QDir::current().mkdir(".session");
-    QDir sessionDir(QDir::currentPath()+"/.session");
-    QStringList es = sessionDir.entryList(
-                QStringList() << "*.kum" << "*.pas" << "*.txt" << "*.url" << ".dstate",
-                QDir::Files,
-                QDir::Name
-                );
-    foreach (const QString e, es) {
-        sessionDir.remove(e);
-    }
+    if (!m_plugin->b_nosessions) {
 
-    for (int i=1; i<ui->tabWidget->count(); i++) {
-        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
-        QString suffix = "txt";
-        if (twe->type==Kumir)
-            suffix = "kum";
-        if (twe->type==Pascal)
-            suffix = "pas";
-        if (twe->type==WWW)
-            suffix = "url";
-        int documentId = twe->property("documentId").toInt();
-        if (twe->type!=WWW) {
-            m_plugin->plugin_editor->saveDocument(documentId, QString(".session/%1.%2").arg(i).arg(suffix));
-            QFile state(QString(".session/%1.dstate").arg(i));
-            if (state.open(QIODevice::WriteOnly|QIODevice::Text)) {
-                QTextStream ts(&state);
-                ts.setCodec("UTF-8");
-                ts.setGenerateByteOrderMark(true);
-                ts << "fileName=" << twe->property("fileName").toString() << "\n";
-                ts << "realFileName=" << twe->property("realFileName").toString() << "\n";
-                ts << m_plugin->plugin_editor->saveState(documentId);
-            }
-            state.close();
-        }
-        else
-        {
-            QFile url(QString(".session/%1.%2").arg(i).arg(suffix));
-            if (url.open(QIODevice::WriteOnly|QIODevice::Text)) {
-                QTextStream ts(&url);
-                ts.setCodec("UTF-8");
-                ts.setGenerateByteOrderMark(true);
-                ts << twe->property("realFileName").toString();
-            }
-            url.close();
+        result.append(quint8(ui->tabWidget->currentIndex()));
+
+        QDir::current().mkdir(".session");
+        QDir sessionDir(QDir::currentPath()+"/.session");
+        QStringList es = sessionDir.entryList(
+                    QStringList() << "*.kum" << "*.pas" << "*.txt" << "*.url" << ".dstate",
+                    QDir::Files,
+                    QDir::Name
+                    );
+        foreach (const QString e, es) {
+            sessionDir.remove(e);
         }
 
+        for (int i=1; i<ui->tabWidget->count(); i++) {
+            TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+            QString suffix = "txt";
+            if (twe->type==Kumir)
+                suffix = "kum";
+            if (twe->type==Pascal)
+                suffix = "pas";
+            if (twe->type==WWW)
+                suffix = "url";
+            int documentId = twe->property("documentId").toInt();
+            if (twe->type!=WWW) {
+                m_plugin->plugin_editor->saveDocument(documentId, QString(".session/%1.%2").arg(i).arg(suffix));
+                QFile state(QString(".session/%1.dstate").arg(i));
+                if (state.open(QIODevice::WriteOnly|QIODevice::Text)) {
+                    QTextStream ts(&state);
+                    ts.setCodec("UTF-8");
+                    ts.setGenerateByteOrderMark(true);
+                    ts << "fileName=" << twe->property("fileName").toString() << "\n";
+                    ts << "realFileName=" << twe->property("realFileName").toString() << "\n";
+                    ts << m_plugin->plugin_editor->saveState(documentId);
+                }
+                state.close();
+            }
+            else
+            {
+                QFile url(QString(".session/%1.%2").arg(i).arg(suffix));
+                if (url.open(QIODevice::WriteOnly|QIODevice::Text)) {
+                    QTextStream ts(&url);
+                    ts.setCodec("UTF-8");
+                    ts.setGenerateByteOrderMark(true);
+                    ts << twe->property("realFileName").toString();
+                }
+                url.close();
+            }
+
+        }
+    //    for (int i=0; i<l_dockWindows.size(); i++) {
+    //        l_dockWindows[i]->saveState(sett);
+    //    }
     }
-//    for (int i=0; i<l_dockWindows.size(); i++) {
-//        l_dockWindows[i]->saveState(sett);
-//    }
 
     return result;
 }
