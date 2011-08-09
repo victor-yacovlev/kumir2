@@ -182,6 +182,7 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
         tl.selected << false;
         tl.highlight << Shared::LxTypeEmpty;
     }
+
     data[line] = tl;
     m_removedLines.insert(line);
     m_newLines.insert(line);
@@ -199,7 +200,8 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
     }
     else {
         // 1. Append fragment to first line
-        data[line].text += lines[0];
+        QString remainder = data[line].text.mid(pos);
+        data[line].text = data[line].text.left(pos)+lines[0];
         while (data[line].selected.size() < data[line].text.length())
             data[line].selected << false;
         while (data[line].highlight.size() < data[line].text.length())
@@ -208,7 +210,7 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
             data[line].highlight = analizer->lineProp(documentId, data[line].text).toList();
 
         // 2. Insert middle lines
-        for (int i=lines.count()-2; i>=1; i--) {
+        for (int i=lines.count()-1; i>=1; i--) {
             TextLine tl;
             tl.text = lines[i];
             for (int j=0; j<tl.text.length(); j++) {
@@ -218,17 +220,17 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
             if (analizer)
                 tl.highlight = analizer->lineProp(documentId, tl.text).toList();
             data.insert(line+1, tl);
-            m_newLines.insert(i);
+            m_newLines.insert(line+i);
         }
 
-        // 3. Prepend fragment to last line
-        if (line+lines.count()-1 >= data.size()) {
-            TextLine last;
-            data.append(last);
-        }
-        m_removedLines.insert(line+1);
-        m_newLines.insert(line);
-        data[line+lines.count()-1].text.prepend(lines.last());
+//        // 3. Prepend fragment to last line
+//        if (line+lines.count()-1 >= data.size()) {
+//            TextLine last;
+//            data.append(last);
+//        }
+//        m_removedLines.insert(line+1);
+//        m_newLines.insert(line);
+        data[line+lines.count()-1].text.prepend(remainder);
         while (data[line+lines.count()-1].selected.size() < data[line+lines.count()-1].text.length())
             data[line+lines.count()-1].selected << false;
         while (data[line+lines.count()-1].highlight.size() < data[line+lines.count()-1].text.length())
@@ -527,7 +529,7 @@ void TextDocument::flushChanges()
     trans.removedLineNumbers = m_removedLines;
     QList<int> ll = m_newLines.toList();
     for (int i=0; i<ll.size(); i++) {
-        m_removedLines.insert(ll.at(i));
+        trans.newLines.append(data[ll.at(i)].text);
     }
     changes.push(trans);
     m_removedLines.clear();
