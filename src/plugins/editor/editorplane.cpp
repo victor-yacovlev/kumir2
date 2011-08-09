@@ -107,6 +107,8 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
         int realY = e->pos().y() - offset().y();
         int textX = realX/charWidth();
         int textY = realY/lineHeight();
+        if (textY != m_cursor->row())
+            m_document->flushTransaction();
         m_cursor->moveTo(textY, textX);
         pos_textPress = QPoint(textX, textY);
         update();
@@ -259,13 +261,13 @@ void EditorPlane::updateScrollBars()
     QPoint prevOffset = offset();
     int w = 1;
     int h = 1;
-    for (int i=0 ; i<m_document->size(); i++) {
+    for (int i=0 ; i<m_document->linesCount(); i++) {
         int indent = m_document->indentAt(i) * 2;
-        int tl = m_document->at(i).text.length();
+        int tl = m_document->textAt(i).length();
         w = qMax(w, indent+tl+1);
     }
     w = qMax(w, m_cursor->column()+1);
-    h = qMax(m_document->size()+1, m_cursor->row()+2);
+    h = qMax(m_document->linesCount()+1, m_cursor->row()+2);
 
     QSize contentSize (w*charWidth(), h*lineHeight());
     QSize viewportSize (widthInChars() * charWidth(), height());
@@ -442,6 +444,7 @@ void EditorPlane::paintEvent(QPaintEvent *e)
     p.setPen(QPen(br,1));
     p.drawRect(0,0,width()-1,height()-1);
     e->accept();
+
 }
 
 void EditorPlane::paintNewMarginLine(QPainter *p)
@@ -629,6 +632,12 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         }
         else if (e->matches(QKeySequence::Delete)) {
             m_cursor->evaluateCommand(KeyCommand::Delete);
+        }
+        else if (e->matches(QKeySequence::Undo)) {
+            m_cursor->undo();
+        }
+        else if (e->matches(QKeySequence::Redo)) {
+            m_cursor->redo();
         }
         else if (!e->text().isEmpty()) {
             m_cursor->evaluateCommand(Utils::textByKey(Qt::Key(e->key())
@@ -822,7 +831,7 @@ void EditorPlane::dropEvent(QDropEvent *e)
     e->accept();
     QStringList lines;
     QString text;
-    m_cursor->setEmitCompilationBlocked(true);
+
     if (e->mimeData()->hasFormat(Clipboard::BlockMimeType)) {
         lines = QString::fromUtf8(e->mimeData()->data(Clipboard::BlockMimeType)).split("\n");
     }
@@ -873,8 +882,9 @@ void EditorPlane::dropEvent(QDropEvent *e)
     else if (e->mimeData()->hasText()) {
         m_cursor->insertText(text);
     }
-    m_cursor->setEmitCompilationBlocked(false);
-    m_cursor->emitCompilationRequest();
+
+    m_document->flushTransaction();
+
     update();
 }
 
@@ -1050,18 +1060,19 @@ void EditorPlane::paintSelection(QPainter *p, const QRect &rect)
     int cw = charWidth();
     bool prevLineSelected = false;
     for (int i=startLine; i<endLine+1; i++) {
-        if (i<m_document->size()) {
+        if (i<m_document->linesCount()) {
             int indentSpace = 2 * cw * m_document->indentAt(i);
             if (prevLineSelected) {
                 p->drawRect(0, i*lh, indentSpace, lh);
             }
-            for (int j=0; j<m_document->at(i).selected.size(); j++) {
-                if (m_document->at(i).selected[j])
+            QList<bool> sm = m_document->selectionMaskAt(i);
+            for (int j=0; j<sm.size(); j++) {
+                if (sm[j])
                     p->drawRect(indentSpace+j*cw, i*lh, cw, lh);
             }
-            if (m_document->at(i).lineEndSelected) {
+            if (m_document->lineEndSelectedAt(i)) {
                 prevLineSelected = true;
-                int textLength = m_document->at(i).text.length()*cw;
+                int textLength = m_document->textAt(i).length()*cw;
                 int xx = indentSpace + textLength;
                 int ww = widthInChars()*cw-xx;
                 p->drawRect(xx,
@@ -1091,7 +1102,7 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
         p->setBrush(palette().brush(QPalette::Base));
         p->drawRect(cw*4+cw/2, i*lh, cw/2, lh);
         QColor textColor = QColor(palette().brush(QPalette::WindowText).color());
-        if (i-1-offset().y()/lineHeight()>=m_document->size()) {
+        if (i-1-offset().y()/lineHeight()>=m_document->linesCount()) {
             textColor = QColor(Qt::lightGray);
         }
         p->setPen(textColor);
@@ -1137,12 +1148,12 @@ void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
     for (int i=qMax(startLine, 0); i<endLine+1; i++) {
         int y =  ( i + 1 )* dY;
         QString text;
-        if (i<m_document->size() && m_document->at(i).marginText.length()>0) {
-            text = m_document->at(i).marginText;
+        if (i<m_document->linesCount() && m_document->marginTextAt(i).length()>0) {
+            text = m_document->marginTextAt(i);
             p->setPen(marginColor);
         }
-        else if (i<m_document->size() && m_document->at(i).errors.size()>0) {
-            text = m_document->at(i).errors[0];
+        else if (i<m_document->linesCount() && m_document->errorsAt(i).size()>0) {
+            text = m_document->errorsAt(i)[0];
             p->setPen(errorColor);
         }
         if (text.length()>0)
@@ -1169,30 +1180,32 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
             p->drawRect(dotRect);
         }
     }
-    for (int i=qMax(startLine, 0); i<qMin(endLine+1, m_document->size()); i++) {
+    for (int i=qMax(startLine, 0); i<qMin(endLine+1, m_document->linesCount()); i++) {
         int indent = m_document->indentAt(i);
         int y =  ( i + 1 )* lineHeight();
-        QList<Shared::LexemType> highlight = m_document->at(i).highlight;
+        QList<Shared::LexemType> highlight = m_document->highlightAt(i);
+        QString text = m_document->textAt(i);
+        QList<bool> sm = m_document->selectionMaskAt(i);
         Shared::LexemType curType = Shared::LexemType(0);
         setProperFormat(p, curType, '.');
-        for (int j=0; j<m_document->at(i).text.size(); j++) {
+        for (int j=0; j<text.size(); j++) {
             int offset = ( indent * 2 + j ) * charWidth();
             if (j<highlight.size()) {
                 curType = highlight[j];
             }
-            setProperFormat(p, curType, m_document->at(i).text[j]);
-            if (j<m_document->at(i).selected.size() && m_document->at(i).selected[j]) {
+            setProperFormat(p, curType, text[j]);
+            if (j<sm.size() && sm[j]) {
                 p->setPen(palette().brush(QPalette::HighlightedText).color());
             }
             if (i_highlightedLine==i) {
                 p->setPen(p->pen().color().darker());
             }
 
-            int charW = QFontMetrics(p->font()).width(m_document->at(i).text[j]);
+            int charW = QFontMetrics(p->font()).width(text[j]);
             if (charW<charWidth()) {
                 offset += (charWidth()-charW)/2;
             }
-            p->drawText(offset, y,  QString(m_document->at(i).text[j]));
+            p->drawText(offset, y,  QString(text[j]));
             if (curType & Shared::LxTypeError) {
                 p->setPen(QColor(Qt::red));
                 QPolygon pp = errorUnderline(offset, y+2, charWidth());

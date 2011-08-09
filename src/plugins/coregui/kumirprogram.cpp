@@ -136,6 +136,7 @@ void KumirProgram::setNativeGenerator(GeneratorInterface *cpp)
     }
     else {
         a_fastRun->deleteLater();
+        a_fastRun = 0;
     }
 }
 
@@ -417,7 +418,8 @@ void KumirProgram::handleLineChanged(int lineNo)
 void KumirProgram::switchGlobalState(GlobalState , GlobalState cur)
 {
     if (cur==GS_Unlocked || cur==GS_Observe) {
-        a_fastRun->setEnabled(true);
+        if (a_fastRun)
+            a_fastRun->setEnabled(true);
         a_regularRun->setEnabled(true);
         a_stepRun->setEnabled(true);
         a_stepRun->setText(tr("Step run"));
@@ -427,7 +429,8 @@ void KumirProgram::switchGlobalState(GlobalState , GlobalState cur)
         a_stop->setEnabled(false);
     }
     if (cur==GS_Running || cur==GS_Input) {
-        a_fastRun->setEnabled(false);
+        if (a_fastRun)
+            a_fastRun->setEnabled(false);
         a_regularRun->setEnabled(false);
         a_stepRun->setEnabled(false);
         a_stepIn->setEnabled(false);
@@ -435,7 +438,8 @@ void KumirProgram::switchGlobalState(GlobalState , GlobalState cur)
         a_stop->setEnabled(true);
     }
     if (cur==GS_Pause) {
-        a_fastRun->setEnabled(false);
+        if (a_fastRun)
+            a_fastRun->setEnabled(false);
         a_regularRun->setEnabled(true);
         a_stepRun->setEnabled(true);
         a_stepRun->setText(tr("Step over"));

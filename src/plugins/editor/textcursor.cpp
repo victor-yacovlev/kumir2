@@ -17,12 +17,11 @@ TextCursor::TextCursor(TextDocument * document, Clipboard * clipboard, AnalizerI
     , b_visible(false)
     , i_row(0)
     , i_column(0)
-    , i_prevRow(-1)
-    , i_prevCol(-1)
+
 {
     i_timerId = startTimer(QApplication::cursorFlashTime()/2);
     emitPositionChanged();
-    b_emitCompilationBlocked = false;
+
     rect_selection = QRect(-1,-1,0,0);
 }
 
@@ -36,28 +35,13 @@ void TextCursor::setViewMode(ViewMode mode)
     emit updateRequest();
 }
 
-void TextCursor::emitCompilationRequest()
-{
-    if (!l_changes.isEmpty()) {
-        emit lineAndTextChanged(l_changes);
-        l_changes.clear();
-    }
-}
+
 
 void TextCursor::emitPositionChanged()
 {
-    bool compileRequest = forceCompileRequest();
-    if (i_prevRow!=i_row || i_prevCol!=i_column) {
-        if (i_prevRow!=i_row && i_prevRow!=-1) {
-            compileRequest = !l_changes.isEmpty();
-        }
-        i_prevRow = i_row;
-        i_prevCol = i_column;
-        emit positionChanged(i_row, i_column);
-    }
-    if (compileRequest && !b_emitCompilationBlocked) {
-        emitCompilationRequest();
-    }
+
+    emit positionChanged(i_row, i_column);
+
 }
 
 void TextCursor::timerEvent(QTimerEvent *e)
@@ -84,6 +68,8 @@ TextCursor::~TextCursor()
 
 void TextCursor::evaluateCommand(const KeyCommand &command)
 {
+    int prevRow = i_row;
+    int prevLines = m_document->linesCount();
     switch (command.type) {
     case KeyCommand::MoveToNextChar:
         movePosition(QTextCursor::NextCell, TextCursor::MM_Move);
@@ -215,6 +201,8 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
     default:
         break;
     }
+    if (prevRow!=i_row || prevLines != m_document->linesCount())
+        m_document->flushTransaction();
     if (ExtensionSystem::PluginManager::instance()->currentGlobalState()==ExtensionSystem::GS_Observe
             && command.type & KeyCommand::CommandModifiesTextMask
             )
@@ -258,75 +246,72 @@ void TextCursor::selectRangeText(int fromRow, int fromCol, int toRow, int toCol)
     }
 
     for (int i=fromRow+1; i<toRow; i++) {
-        if (i<m_document->size()) {
-            TextLine tl = m_document->at(i);
-            for (int j=0; j<tl.text.size(); j++) {
-                tl.selected[j] = true;
+        if (i<m_document->linesCount()) {
+            const QString text = m_document->textAt(i);
+            for (int j=0; j<text.size(); j++) {
+                m_document->setSelected(i,j,true);
             }
-            tl.lineEndSelected = true;
-            (*m_document)[i] = tl;
+            m_document->setEndOfLineSelected(i, true);
         }
     }
     if (leftToRight) {
-        if (fromRow<m_document->size()) {
-            TextLine tl = m_document->at(fromRow);
+        if (fromRow<m_document->linesCount()) {
+            const QString text = m_document->textAt(fromRow);
+            QList<bool> sm = m_document->selectionMaskAt(fromRow);
             int indent = m_document->indentAt(fromRow)*2;
             int start = fromCol - indent;
-            int end = (fromRow==toRow)? toCol-indent : tl.text.size();
+            int end = (fromRow==toRow)? toCol-indent : text.size();
             start = qMax(0,start);
-            start = qMin(start, tl.selected.size());
+            start = qMin(start, sm.size());
             end = qMax(0,end);
-            end = qMin(end, tl.selected.size());
+            end = qMin(end, sm.size());
             for (int j=start; j<end; j++) {
-                tl.selected[j] = true;
+                m_document->setSelected(fromRow, j, true);
             }
-            tl.lineEndSelected = (fromRow!=toRow);
-            (*m_document)[fromRow] = tl;
+            m_document->setEndOfLineSelected(fromRow, fromRow!=toRow);
         }
-        if (toRow<m_document->size()) {
-            TextLine tl = m_document->at(toRow);
+        if (toRow<m_document->linesCount()) {
+            QList<bool> sm = m_document->selectionMaskAt(toRow);
             int indent = m_document->indentAt(toRow)*2;
             int start = (fromRow==toRow)? toCol-indent : 0;
             int end = toCol - indent;
             start = qMax(0,start);
-            start = qMin(start, tl.selected.size());
+            start = qMin(start, sm.size());
             end = qMax(0,end);
-            end = qMin(end, tl.selected.size());
+            end = qMin(end, sm.size());
             for (int j=start; j<end; j++) {
-                tl.selected[j] = true;
+                m_document->setSelected(toRow, j, true);
             }
-            (*m_document)[toRow] = tl;
         }
     }
     else {
-        if (fromRow<m_document->size()) {
-            TextLine tl = m_document->at(fromRow);
+        if (fromRow<m_document->linesCount()) {
+            const QString text = m_document->textAt(fromRow);
+            QList<bool> sm = m_document->selectionMaskAt(fromRow);
             int indent = m_document->indentAt(fromRow)*2;
             int start = toCol - indent;
-            int end = (fromRow==toRow)? fromCol-indent : tl.text.size();
+            int end = (fromRow==toRow)? fromCol-indent : text.size();
             start = qMax(0,start);
-            start = qMin(start, tl.selected.size());
+            start = qMin(start, sm.size());
             end = qMax(0,end);
-            end = qMin(end, tl.selected.size());
+            end = qMin(end, sm.size());
             for (int j=start; j<end; j++) {
-                tl.selected[j] = true;
+                m_document->setSelected(fromRow, j, true);
             }
-            tl.lineEndSelected = (fromRow!=toRow);
-            (*m_document)[fromRow] = tl;
+            m_document->setEndOfLineSelected(fromRow, fromRow!=toRow);
         }
-        if (toRow<m_document->size()) {
-            TextLine tl = m_document->at(toRow);
+        if (toRow<m_document->linesCount()) {
+            QList<bool> sm = m_document->selectionMaskAt(toRow);
             int indent = m_document->indentAt(toRow)*2;
             int start = (fromRow==toRow)? fromCol-indent : 0;
             int end = fromCol - indent;
             start = qMax(0,start);
-            start = qMin(start, tl.selected.size());
+            start = qMin(start, sm.size());
             end = qMax(0,end);
-            end = qMin(end, tl.selected.size());
+            end = qMin(end, sm.size());
             for (int j=start; j<end; j++) {
-                tl.selected[j] = true;
+                m_document->setSelected(toRow, j, true);
             }
-            (*m_document)[toRow] = tl;
         }
     }
     i_row = endY;
@@ -384,19 +369,19 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                 i_column ++;
             else if (m==MM_Select) {
                 int indent = 2 * m_document->indentAt(i_row);
-                if (i_row<m_document->size()) {
+                if (i_row<m_document->linesCount()) {
                     int textPos = i_column-indent;
                     if (textPos<0) {
                         i_column = indent;
                         textPos = 0;
                     }
-                    if (textPos<m_document->at(i_row).text.length()) {
-                        (*m_document)[i_row].selected[textPos] = ! (*m_document)[i_row].selected[textPos];
+                    if (textPos<m_document->textAt(i_row).length()) {
+                        m_document->setSelected(i_row, textPos, !m_document->selectionMaskAt(i_row)[textPos]);
                         i_column++;
                     }
                     else {
-                        if (i_row<m_document->size()) {
-                            (*m_document)[i_row].lineEndSelected = ! (*m_document)[i_row].lineEndSelected;
+                        if (i_row<m_document->linesCount()) {
+                            m_document->setEndOfLineSelected(i_row, !m_document->lineEndSelectedAt(i_row));
                         }
                         i_row++;
                         i_column = m_document->indentAt(i_row)*2;
@@ -421,8 +406,8 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                     i_row --;
                     int indent = m_document->indentAt(i_row) * 2;
                     int textPos = 0;
-                    if (i_row<m_document->size())
-                        textPos = m_document->at(i_row).text.length();
+                    if (i_row<m_document->linesCount())
+                        textPos = m_document->textAt(i_row).length();
                     i_column = indent + textPos;
 
                 }
@@ -432,29 +417,30 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             else if (m==MM_Select) {
                 int indent = m_document->indentAt(i_row)*2;
                 if (i_column<=indent && i_row==0) {}
-                else if (i_row>=m_document->size()) {
-                    i_row = m_document->size()-1;
+                else if (i_row>=m_document->linesCount()) {
+                    i_row = m_document->linesCount()-1;
                     i_column = m_document->indentAt(i_row) * 2
-                            + m_document->at(i_row).text.length();
-                    (*m_document)[i_row].lineEndSelected = ! (*m_document)[i_row].lineEndSelected;
+                            + m_document->textAt(i_row).length();
+                    m_document->setEndOfLineSelected(i_row, !m_document->lineEndSelectedAt(i_row));
                 }
-                else if (i_row<m_document->size()
-                         && i_column>indent+m_document->at(i_row).text.length())
+                else if (i_row<m_document->linesCount()
+                         && i_column>indent+m_document->textAt(i_row).length())
                 {
                     i_column = m_document->indentAt(i_row) * 2
-                            + m_document->at(i_row).text.length()-1;
-                    (*m_document)[i_row].selected.last() = ! (*m_document)[i_row].selected.last();
+                            + m_document->textAt(i_row).length()-1;
+                    m_document->setSelected(i_row, m_document->selectionMaskAt(i_row).size()-1,
+                                            !m_document->selectionMaskAt(i_row).last());
                 }
                 else if (i_column<=indent && i_row>0) {
-                    (*m_document)[i_row-1].lineEndSelected = ! (*m_document)[i_row-1].lineEndSelected;
+                    m_document->setEndOfLineSelected(i_row-1, !m_document->lineEndSelectedAt(i_row-1));
                     i_row --;
-                    i_column = m_document->at(i_row).text.length() +
+                    i_column = m_document->textAt(i_row).length() +
                             m_document->indentAt(i_row) * 2;
                 }
                 else {
                     int textPos = i_column - m_document->indentAt(i_row)*2;
                     if (textPos>0) {
-                        (*m_document)[i_row].selected[textPos-1] = ! (*m_document)[i_row].selected[textPos-1];
+                        m_document->setSelected(i_row, textPos-1, !m_document->selectionMaskAt(i_row)[textPos-1]);
                         i_column --;
                     }
                 }
@@ -476,25 +462,25 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             if (m==MM_Move)
                 i_row++;
             else if (m==MM_Select) {
-                if (i_row<m_document->size()) {
-                    (*m_document)[i_row].lineEndSelected = !(*m_document)[i_row].lineEndSelected ;
+                if (i_row<m_document->linesCount()) {
+                    m_document->setEndOfLineSelected(i_row, !m_document->lineEndSelectedAt(i_row));
                     int textPos = i_column - m_document->indentAt(i_row);
                     if (textPos<0)
                         textPos = 0;
-                    for (int i=textPos; i<m_document->at(i_row).text.length(); i++) {
-                        (*m_document)[i_row].selected[i] = !(*m_document)[i_row].selected[i];
+                    for (int i=textPos; i<m_document->textAt(i_row).length(); i++) {
+                        m_document->setSelected(i_row, i, !m_document->selectionMaskAt(i_row)[i]);
                     }
 
                     i_row++;
                     textPos = i_column - m_document->indentAt(i_row);
                     if (textPos<0)
                         textPos = 0;
-                    if (i_row>=m_document->size())
+                    if (i_row>=m_document->linesCount())
                         textPos = 0;
-                    else if (textPos>m_document->at(i_row).text.length())
-                        textPos = m_document->at(i_row).text.length();
+                    else if (textPos>m_document->textAt(i_row).length())
+                        textPos = m_document->textAt(i_row).length();
                     for (int i=0; i<textPos; i++) {
-                        (*m_document)[i_row].selected[i] = !(*m_document)[i_row].selected[i];
+                        m_document->setSelected(i_row, i, !m_document->selectionMaskAt(i_row)[i]);
                     }
                 }
             }
@@ -516,29 +502,29 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                 else if (m==MM_Select) {
                     if (i_row==0) {
                         int textPos = i_column - m_document->indentAt(i_row);
-                        for (int i=0; i<qMin(textPos, m_document->at(i_row).text.length()); i++) {
-                            (*m_document)[i_row].selected[i] = !(*m_document)[i_row].selected[i];
+                        for (int i=0; i<qMin(textPos, m_document->textAt(i_row).length()); i++) {
+                            m_document->setSelected(i_row, i, !m_document->selectionMaskAt(i_row)[i]);
                         }
                         i_column = m_document->indentAt(0)*2;
                     }
                     else {
                         int textPos = i_column - m_document->indentAt(i_row);
-                        if (i_row<m_document->size()) {
-                            for (int i=0; i<qMin(textPos, m_document->at(i_row).text.length()); i++) {
-                                (*m_document)[i_row].selected[i] = !(*m_document)[i_row].selected[i];
+                        if (i_row<m_document->linesCount()) {
+                            for (int i=0; i<qMin(textPos, m_document->textAt(i_row).length()); i++) {
+                                m_document->setSelected(i_row, i, !m_document->selectionMaskAt(i_row)[i]);
                             }
                             i_row --;
                         }
                         else {
-                            i_row = m_document->size()-1;
+                            i_row = m_document->linesCount()-1;
                         }
                         textPos = i_column - m_document->indentAt(i_row);
                         if (textPos<0)
                             textPos = 0;
-                        for (int i=textPos; i<m_document->at(i_row).text.length(); i++) {
-                            (*m_document)[i_row].selected[i] = !(*m_document)[i_row].selected[i];
+                        for (int i=textPos; i<m_document->textAt(i_row).length(); i++) {
+                            m_document->setSelected(i_row, i, !m_document->selectionMaskAt(i_row)[i]);
                         }
-                        (*m_document)[i_row].lineEndSelected = ! (*m_document)[i_row].lineEndSelected;
+                        m_document->setEndOfLineSelected(i_row, !m_document->lineEndSelectedAt(i_row));
                     }
                 }
                 else if (m==MM_RectSelect) {
@@ -554,18 +540,18 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
         }
         else if (op==QTextCursor::StartOfBlock) {
             if (m==MM_Move) {
-                if (i_row>=m_document->size())
+                if (i_row>=m_document->linesCount())
                     i_column = 0;
                 else
                     i_column = m_document->indentAt(i_row) * 2;
             }
             else if (m==MM_Select) {
-                if (i_row<m_document->size()) {
+                if (i_row<m_document->linesCount()) {
                     int textPos = i_column - m_document->indentAt(i_row);
                     textPos = qMax(0, textPos);
-                    textPos = qMin(m_document->at(i_row).text.length(), textPos);
+                    textPos = qMin(m_document->textAt(i_row).length(), textPos);
                     for (int i=0; i<textPos; i++) {
-                        (*m_document)[i_row].selected[i] = !(*m_document)[i_row].selected[i];
+                        m_document->setSelected(i_row, i, !m_document->selectionMaskAt(i_row)[i]);
                     }
                     i_column = m_document->indentAt(i_row) * 2;
                 }
@@ -576,20 +562,20 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
         }
         else if (op==QTextCursor::EndOfBlock) {
             if (m==MM_Move) {
-                if (i_row>=m_document->size()) {}
+                if (i_row>=m_document->linesCount()) {}
                 else
                     i_column = m_document->indentAt(i_row) * 2 +
-                            m_document->at(i_row).text.length();
+                            m_document->textAt(i_row).length();
             }
             else if (m==MM_Select) {
-                if (i_row<m_document->size()) {
+                if (i_row<m_document->linesCount()) {
                     int textPos = i_column - m_document->indentAt(i_row);
                     textPos = qMax(0, textPos);
-                    for (int i=textPos; i<m_document->at(i_row).text.length(); i++) {
-                        (*m_document)[i_row].selected[i] = !(*m_document)[i_row].selected[i];
+                    for (int i=textPos; i<m_document->textAt(i_row).length(); i++) {
+                        m_document->setSelected(i_row, i, !m_document->selectionMaskAt(i_row)[i]);
                     }
                     i_column = m_document->indentAt(i_row) * 2 +
-                            m_document->at(i_row).text.length();
+                            m_document->textAt(i_row).length();
                 }
             }
         }
@@ -599,23 +585,23 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                 i_column = 0;
             }
             else if (m==MM_Select) {
-                if (i_row<m_document->size()) {
+                if (i_row<m_document->linesCount()) {
                     int textPos = i_column - m_document->indentAt(i_row);
                     textPos = qMax(0, textPos);
-                    textPos = qMin(m_document->at(i_row).text.length(), textPos);
+                    textPos = qMin(m_document->textAt(i_row).length(), textPos);
                     for (int i=0; i<textPos; i++) {
-                        (*m_document)[i_row].selected[i] = !(*m_document)[i_row].selected[i];
+                        m_document->setSelected(i_row, i, !m_document->selectionMaskAt(i_row)[i]);
                     }
                     i_row--;
                 }
                 else {
-                    i_row = m_document->size()-1;
+                    i_row = m_document->linesCount()-1;
                 }
                 for ( ; i_row>=0; i_row-- ) {
-                    for (int i=0; i<m_document->at(i_row).selected.size(); i++) {
-                        (*m_document)[i_row].selected[i] = !(*m_document)[i_row].selected[i];
+                    for (int i=0; i<m_document->selectionMaskAt(i_row).size(); i++) {
+                        m_document->setSelected(i_row, i, !m_document->selectionMaskAt(i_row)[i]);
                     }
-                    (*m_document)[i_row].lineEndSelected = !(*m_document)[i_row].lineEndSelected;
+                    m_document->setEndOfLineSelected(i_row, !m_document->lineEndSelectedAt(i_row));
                 }
                 i_column = 0;
                 i_row = 0;
@@ -623,35 +609,35 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
         }
         else if (op==QTextCursor::End) {
             if (m==MM_Move) {
-                i_row = m_document->size()-1;
+                i_row = m_document->linesCount()-1;
                 i_column = m_document->indentAt(i_row)*2 +
-                        m_document->last().text.length();
+                        m_document->textAt(m_document->linesCount()-1).length();
             }
             else if (m==MM_Select) {
-                if (i_row>=m_document->size()) {
-                    i_row = m_document->size()-1;
+                if (i_row>=m_document->linesCount()) {
+                    i_row = m_document->linesCount()-1;
                     i_column = m_document->indentAt(i_row)*2 +
-                            m_document->last().text.length();
+                            m_document->textAt(m_document->linesCount()-1).length();
                 }
                 else {
                     int textPos = i_column - m_document->indentAt(i_row);
                     textPos = qMax(0, textPos);
-                    for (int i=textPos; i<m_document->at(i_row).text.length(); i++) {
-                        (*m_document)[i_row].selected[i] = !(*m_document)[i_row].selected[i];
+                    for (int i=textPos; i<m_document->textAt(i_row).length(); i++) {
+                        m_document->setSelected(i_row, i, !m_document->selectionMaskAt(i_row)[i]);
                     }
-                    (*m_document)[i_row].lineEndSelected = !(*m_document)[i_row].lineEndSelected;
+                    m_document->setEndOfLineSelected(i_row, !m_document->lineEndSelectedAt(i_row));
                     i_row ++;
-                    for ( ; i_row<m_document->size(); i_row++ ) {
-                        for (int i=0; i<m_document->at(i_row).selected.size(); i++) {
-                            (*m_document)[i_row].selected[i] = !(*m_document)[i_row].selected[i];
+                    for ( ; i_row<m_document->linesCount(); i_row++ ) {
+                        for (int i=0; i<m_document->selectionMaskAt(i_row).size(); i++) {
+                            m_document->setSelected(i_row, i, !m_document->selectionMaskAt(i_row)[i]);
                         }
-                        if (i_row<m_document->size()-1) {
-                            (*m_document)[i_row].lineEndSelected = !(*m_document)[i_row].lineEndSelected;
+                        if (i_row<m_document->linesCount()-1) {
+                            m_document->setEndOfLineSelected(i_row, !m_document->lineEndSelectedAt(i_row));
                         }
                     }
-                    i_row = m_document->size()-1;
+                    i_row = m_document->linesCount()-1;
                     i_column = m_document->indentAt(i_row)*2 +
-                            m_document->last().text.length();
+                            m_document->textAt(m_document->linesCount()-1).length();
                 }
             }
         }
@@ -676,67 +662,10 @@ void TextCursor::insertBlock(const QStringList &block)
     if (hasRectSelection())
         removeSelectedBlock();
 
-    for (int y=i_row; y<i_row+block.size(); y++) {
-        int indent = m_document->indentAt(y);
-        int textStart = i_column - indent;
-        int textEnd = i_column + block[y-i_row].length();
-        if (y<m_document->size()) {
-            TextLine line = m_document->at(y);
-            QString text = line.text.mid(0, textStart).leftJustified(textStart, ' ');
+    m_document->undoStack()->push(new InsertBlockCommand(m_document, this, m_analizer, i_row, i_column, block));
 
-            QList<Shared::LexemType> highlight =
-                    line.highlight.mid(0, qMin(textStart, line.highlight.size()));
-            QList<bool> selected =
-                    line.selected.mid(0, qMin(textStart, line.selected.size()));
-            for (int x=line.highlight.size(); x<textStart; x++) {
-                highlight << Shared::LxTypeEmpty;
-                selected << false;
-            }
-
-            text += block[y-i_row];
-            for (int x=0; x<block[y-i_row].size(); x++) {
-                highlight << Shared::LxTypeEmpty;
-                selected << false;
-            }
-            if (textEnd+1<line.text.size()) {
-                text += line.text.mid(textEnd);
-            }
-
-            if (textEnd+1<line.highlight.size()) {
-                highlight += line.highlight.mid(textEnd);
-            }
-            if (textEnd+1<line.selected.size()) {
-                selected += line.selected.mid(textEnd);
-            }
-            line.text = text;
-            line.highlight = highlight;
-            line.selected = selected;
-            (*m_document)[y] = line;
-            addLineToRemove(y);
-            addLineToNew(y);
-        }
-        else {
-            TextLine line;
-            line.indentStart = line.indentEnd = 0;
-            line.lineEndSelected = false;
-            line.text.fill(' ', textStart);
-            for (int x=0; x<textStart; x++) {
-                line.highlight << Shared::LxTypeEmpty;
-                line.selected << false;
-            }
-            line.text += block[y-i_row];
-            for (int x=0; x<block[y-i_row].length(); x++) {
-                line.highlight << Shared::LxTypeEmpty;
-                line.selected << false;
-            }
-            m_document->append(line);
-            addLineToNew(y);
-        }
-    }
-    i_row += block.size()-1;
-    i_column += block[0].length();
     emit updateRequest(-1, -1);
-    pushTransaction();
+
     emitPositionChanged();
 }
 
@@ -759,14 +688,7 @@ void TextCursor::insertText(const QString &text)
     }
 
     int fromLineUpdate = i_row;
-    while (i_row>=m_document->size()) {
-        TextLine textLine;
-        textLine.indentStart = 0;
-        textLine.indentEnd = 0;
-        textLine.lineEndSelected = false;
-        addLineToNew(m_document->size());
-        m_document->append(textLine);
-    }
+
     const int indent = m_document->indentAt(i_row);
 
     // move cursor from protected part
@@ -774,93 +696,13 @@ void TextCursor::insertText(const QString &text)
 
     i_column = justifyLeft(text);
 
-    // calculate next indent size in case of line insert
-    int nextIndent = indent;
-    if (i_row<m_document->size())
-        nextIndent += m_document->at(i_row).indentEnd;
-
     int textPos = i_column - indent * 2;
+    m_document->undoStack()->push(new InsertCommand(m_document, this, m_analizer, i_row, textPos, text));
 
-    if (i_row<m_document->size()) {
-        addLineToRemove(i_row);
-        addLineToNew(i_row);
-    }
-
-    // fill with spaces if need
-    if (m_document->at(i_row).text.length()<textPos) {
-        TextLine line = m_document->at(i_row);
-        int spacesCount = textPos - line.text.size();
-        for (int i=0; i<spacesCount; i++) {
-            line.text += " ";
-            line.highlight << Shared::LxTypeEmpty;
-            line.selected << false;
-        }
-        (*m_document)[i_row] = line;
-    }
-
-    QStringList lines = text.split("\n");
-    for (int i=1; i<lines.count(); i++) {
-        addLineToNew(i_row+i);
-    }
-
-    // cut and store line tail
-    QString lastText;
-    QList<Shared::LexemType> lastHighlight;
-
-    if (textPos < m_document->at(i_row).text.length()) {
-        TextLine textLine = m_document->at(i_row);
-        lastText = textLine.text.mid(textPos);
-        lastHighlight = textLine.highlight.mid(textPos);
-        textLine.text = textLine.text.left(textPos);
-        textLine.highlight = textLine.highlight.mid(0, textPos);
-        textLine.selected = textLine.selected.mid(0, textPos);
-        (*m_document)[i_row] = textLine;
-    }
-
-    // insert head line
-    (*m_document)[i_row].text += lines[0];
-    for (int i=0; i<lines[0].size(); i++) {
-        (*m_document)[i_row].highlight << LxTypeEmpty;
-        (*m_document)[i_row].selected << false;
-    }
-    if (m_analizer) {
-        (*m_document)[i_row].highlight = m_analizer->lineProp(m_document->documentId, m_document->at(i_row).text).toList();
-    }
-    i_column += lines[0].length();
-
-    // insert tail lines
-    for (int i=1; i<lines.size(); i++) {
-        i_row ++;
-        i_column = nextIndent * 2 + lines[i].length();
-        TextLine textLine;
-        textLine.indentStart = 0;
-        textLine.indentEnd = 0;
-        textLine.lineEndSelected = false;
-        textLine.text = lines[i];
-        for (int j=0; j<lines[i].length(); j++) {
-            textLine.highlight << Shared::LxTypeEmpty;
-            textLine.selected << false;
-        }
-        if (m_analizer) {
-            textLine.highlight = m_analizer->lineProp(m_document->documentId, textLine.text).toList();
-        }
-        m_document->insert(i_row, textLine);
-    }
-
-    // insert remainder
-    (*m_document)[i_row].text += lastText;
-    for (int i=0; i<lastHighlight.size(); i++) {
-        (*m_document)[i_row].highlight << lastHighlight[i];
-        (*m_document)[i_row].selected << false;
-    }
-    if (m_analizer) {
-        (*m_document)[i_row].highlight = m_analizer->lineProp(m_document->documentId, m_document->at(i_row).text).toList();
-    }
-
-    int toLineUpdate = lines.size()>0? -1 : i_row;
+    int toLineUpdate = -1;
 
     emit updateRequest(fromLineUpdate, toLineUpdate);
-    pushTransaction();
+
     emitPositionChanged();
 }
 
@@ -878,8 +720,8 @@ int TextCursor::justifyLeft(const QString &text) const
         return i_column; // Nothing to do
     }
     QString s;
-    if (m_document->size()>i_row) {
-        s = m_document->at(i_row).text;
+    if (m_document->linesCount()>i_row) {
+        s = m_document->textAt(i_row);
     }
     s.insert(textPos, text);
     LineProp lp = m_analizer->lineProp(m_document->documentId, s);
@@ -925,44 +767,17 @@ void TextCursor::removePreviousChar()
     int textPos = i_column - indent * 2;
     if (textPos>0) {
         // remove previous char in current line
-        if ( i_row<m_document->size() &&
-             textPos <= m_document->at(i_row).text.length())
+        if ( i_row<m_document->linesCount() &&
+             textPos <= m_document->textAt(i_row).length())
         {
-            TextLine curTextLine = m_document->at(i_row);
-            (*m_document)[i_row].text =
-                    curTextLine.text.left(textPos-1) +
-                    curTextLine.text.mid(textPos);
-
-            (*m_document)[i_row].highlight =
-                    curTextLine.highlight.mid(0,textPos-1) +
-                    curTextLine.highlight.mid(textPos);
-
-            (*m_document)[i_row].selected.pop_back();
-            addLineToRemove(i_row);
-            addLineToNew(i_row);
+            m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, textPos-1, 1, false));
         }
-        i_column --;
     }
     else {
         // remove current line and set cursor to end of previous line
         if (i_row>0) {
-            if (i_row<m_document->size()) {
-                toLineUpdate = -1;
-                TextLine curTextLine = m_document->at(i_row);
-                i_column = m_document->indentAt(i_row-1)*2 +
-                        m_document->at(i_row-1).text.length();
-                (*m_document)[i_row-1].text += curTextLine.text;
-                (*m_document)[i_row-1].highlight += curTextLine.highlight;
-                (*m_document)[i_row-1].indentEnd += curTextLine.indentStart + curTextLine.indentEnd;
-                m_document->removeAt(i_row);
-                i_row--;
-                addLineToRemove(i_row);
-                addLineToRemove(i_row+1);
-                addLineToNew(i_row);
-            }
-            else {
-                i_row--;
-                i_column = m_document->indentAt(i_row)*2;
+            if (i_row<m_document->linesCount()) {
+                m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, 0, 1, false));
             }
         }
     }
@@ -970,7 +785,7 @@ void TextCursor::removePreviousChar()
     b_visible = true;
     emit updateRequest();
     emit updateRequest(fromLineUpdate, toLineUpdate);
-    pushTransaction();
+
     emitPositionChanged();
 }
 
@@ -984,13 +799,12 @@ void TextCursor::removeCurrentLine()
         return;
     }
 
-    if (i_row<m_document->size()) {
-        addLineToRemove(i_row);
-        m_document->removeAt(i_row);
+    if (i_row<m_document->linesCount()) {
+        new RemoveCommand(m_document, this, m_analizer, i_row, 0, m_document->textAt(i_row).length()+1, true);
         emit updateRequest(-1, -1);
         emit updateRequest();
     }
-    pushTransaction();
+
     emitPositionChanged();
 }
 
@@ -1004,19 +818,16 @@ void TextCursor::removeLineTail()
         return;
     }
 
-    if (i_row<m_document->size()) {
-        addLineToRemove(i_row);
-        addLineToNew(i_row);
+    if (i_row<m_document->linesCount()) {
+
         int textPos = i_column - m_document->indentAt(i_row)*2;
-        if (textPos<m_document->at(i_row).text.length()) {
-            (*m_document)[i_row].text = (*m_document)[i_row].text.mid(0, textPos);
-            (*m_document)[i_row].highlight = (*m_document)[i_row].highlight.mid(0, textPos);
-            (*m_document)[i_row].selected = (*m_document)[i_row].selected.mid(0, textPos);
+        if (textPos<m_document->textAt(i_row).length()) {
+            m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, textPos, m_document->textAt(i_row).length()-textPos, true));
             emit updateRequest(-1, -1);
             emit updateRequest();
         }
     }
-    pushTransaction();
+
     emitPositionChanged();
 }
 
@@ -1043,49 +854,12 @@ void TextCursor::removeCurrentChar()
 
     const int indent = m_document->indentAt(i_row);
     int textPos = i_column - indent * 2;
-    if (i_row<m_document->size() && textPos<m_document->at(i_row).text.length()) {
-        // remove current char in current line
-        TextLine curTextLine = m_document->at(i_row);
-        (*m_document)[i_row].text =
-                curTextLine.text.left(textPos) +
-                curTextLine.text.mid(textPos+1);
-
-        (*m_document)[i_row].highlight =
-                curTextLine.highlight.mid(0,textPos) +
-                curTextLine.highlight.mid(textPos+1);
-
-        (*m_document)[i_row].selected.pop_back();
-        addLineToRemove(i_row);
-        addLineToNew(i_row);
-
-    }
-    else if (i_row<m_document->size()-1) {
-        // remove line delimeter if exists
-        toLineUpdate = -1;
-        TextLine curTextLine = m_document->at(i_row);
-        addLineToRemove(i_row);
-        addLineToRemove(i_row+1);
-        addLineToNew(i_row);
-
-        // if cursor far away from end of line -- fill by spaces
-        while (curTextLine.text.length() < textPos) {
-            curTextLine.text += " ";
-            curTextLine.highlight << Shared::LxTypeEmpty;
-            curTextLine.selected << false;
-        }
-        TextLine nextTextLine = m_document->at(i_row+1);
-        curTextLine.text += nextTextLine.text;
-        curTextLine.highlight += nextTextLine.highlight;
-        curTextLine.selected += nextTextLine.selected;
-        curTextLine.indentEnd += nextTextLine.indentStart + nextTextLine.indentEnd;
-        (*m_document)[i_row] = curTextLine;
-        m_document->removeAt(i_row+1);
-    }
+    m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, textPos, 1, true));
 
     b_visible = true;
     emit updateRequest();
     emit updateRequest(fromLineUpdate, toLineUpdate);
-    pushTransaction();
+
     emitPositionChanged();
 }
 
@@ -1114,19 +888,20 @@ void TextCursor::removeSelectedText()
     int cursorStartLine = -1;
     int cursorTextPos = -1;
 
-    for (int i=0; i<m_document->size(); i++) {
-        const TextLine line = m_document->at(i);
-        if (line.lineEndSelected && cursorStartLine==-1)
+    for (int i=0; i<m_document->linesCount(); i++) {
+
+        if (m_document->lineEndSelectedAt(i) && cursorStartLine==-1)
             cursorStartLine = i;
-        for (int j=0; j<line.selected.size(); j++) {
-            if (line.selected[j] && cursorTextPos==-1)
+        QList<bool> sm = m_document->selectionMaskAt(i);
+        for (int j=0; j<sm.size(); j++) {
+            if (sm[j] && cursorTextPos==-1)
                 cursorTextPos = j;
-            if (line.selected[j] && cursorStartLine==-1)
+            if (sm[j] && cursorStartLine==-1)
                 cursorStartLine = i;
         }
         if (cursorStartLine!=-1) {
             if (cursorTextPos==-1) {
-                cursorTextPos = line.text.length();
+                cursorTextPos = m_document->textAt(i).length();
             }
             break;
         }
@@ -1137,63 +912,45 @@ void TextCursor::removeSelectedText()
     int selectionLineStart = -1;
     int selectionLineEnd = -1;
 
-    for (int i=0; i<m_document->size(); i++) {
+    int lineStart = -1;
+    int posStart = -1;
+    int count = 0;
+
+    for (int i=0; i<m_document->linesCount(); i++) {
         int start = -1;
         int end = -1;
-        for (int j=0; j<m_document->at(i).selected.size(); j++) {
-            bool v = m_document->at(i).selected[j];
+        QList<bool> sm = m_document->selectionMaskAt(i);
+        for (int j=0; j<sm.size(); j++) {
+            bool v = sm[j];
             if (v) {
                 if (selectionLineStart==-1) {
                     selectionLineStart = i;
+                    lineStart = i;
+                    posStart = j;
                 }
                 selectionLineEnd = qMax(selectionLineEnd, i);
                 if (start==-1) {
                     start = j;
                 }
                 end = qMax(j, end);
+                count ++;
             }
         }
-        if (m_document->at(i).lineEndSelected) {
-            if (selectionLineStart==-1)
+        if (m_document->lineEndSelectedAt(i)) {
+            if (selectionLineStart==-1) {
                 selectionLineStart = i;
+                lineStart = i;
+                posStart = m_document->textAt(i).length();
+            }
+            count ++;
             selectionLineEnd = qMax(i+1, selectionLineEnd);
         }
-        if (start!=-1) {
-            (*m_document)[i].text = (*m_document)[i].text.mid(0, start)
-                    + (*m_document)[i].text.mid(end+1);
-            (*m_document)[i].highlight = (*m_document)[i].highlight.mid(0, start)
-                    + (*m_document)[i].highlight.mid(end+1);
-            (*m_document)[i].selected = (*m_document)[i].selected.mid(0, start)
-                    + (*m_document)[i].selected.mid(end+1);
-        }
-        if (i>=selectionLineStart && i<=selectionLineEnd)
-            addLineToRemove(i);
     }
 
 
-    // Remove lines
-
-    QList<TextLine>::iterator it = m_document->begin();
-    bool removeNextLine = false;
-    while (it!=m_document->end()) {
-        if (removeNextLine) {
-            removeNextLine = (*it).lineEndSelected;
-            QList<TextLine>::iterator prev = it - 1;
-            (*prev).text += (*it).text;
-            (*prev).highlight += (*it).highlight;
-            (*prev).selected += (*it).selected;
-            (*prev).indentEnd += (*it).indentStart + (*it).indentEnd;
-            (*prev).lineEndSelected = false;
-            it = m_document->erase(it);
-        }
-        else {
-            removeNextLine = (*it).lineEndSelected;
-            it ++;
-        }
+    if (count>0) {
+        m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, lineStart, posStart, count, true));
     }
-
-
-    addLineToNew(selectionLineStart);
 
     // Move cursor
 
@@ -1201,7 +958,7 @@ void TextCursor::removeSelectedText()
     i_column = m_document->indentAt(i_row)*2 + cursorTextPos;
 
     removeSelection();
-    pushTransaction();
+
     emit updateRequest(-1, -1);
     emit updateRequest();
 
@@ -1216,61 +973,26 @@ void TextCursor::removeSelectedBlock()
         return;
 
     int lineStart = rect_selection.top();
-    int lineEnd = rect_selection.bottom();
     int startPos = rect_selection.left();
-    int endPos = rect_selection.right();
 
-    for (int i=lineStart; i<=lineEnd; i++) {
-        addLineToRemove(i);
-        addLineToNew(i);
-    }
+    m_document->undoStack()->push(new RemoveBlockCommand(m_document, this, m_analizer, rect_selection));
 
-    lineEnd = qMin(lineEnd+1, m_document->size());
-
-    for (int y=lineStart; y<lineEnd; y++) {
-        int indent = m_document->indentAt(y)*2;
-        int textStart = startPos - indent;
-        int textEnd = endPos - indent + 1;
-        TextLine line = m_document->at(y);
-        textStart = qMin(textStart, line.text.length());
-        textEnd = qMin(textEnd, line.text.length());
-
-        QString text = line.text.mid(0, textStart);
-        if (textEnd < line.text.length())
-            text += line.text.mid(textEnd);
-        QList<Shared::LexemType> highlight = line.highlight.mid(0, textStart);
-        if (textEnd < line.highlight.size())
-            highlight += line.highlight.mid(textEnd);
-        QList<bool> selected = line.selected.mid(0, textStart);
-        if (textEnd < line.selected.size())
-            selected += line.selected.mid(textEnd);
-
-        line.text = text;
-        line.highlight = highlight;
-        line.selected = selected;
-        if (line.text.trimmed().isEmpty())
-            line.indentStart = line.indentEnd = 0;
-
-        (*m_document)[y] = line;
-    }
     i_row = lineStart;
     i_column = startPos;
     rect_selection = QRect(-1, -1, 0, 0);
     emit updateRequest(-1, -1);
     emit updateRequest();
-    pushTransaction();
+
     emitPositionChanged();
 }
 
 bool TextCursor::hasSelection() const
 {
-    for (int i=0; i<m_document->size(); i++) {
-        if (m_document->at(i).lineEndSelected)
+    for (int i=0; i<m_document->linesCount(); i++) {
+        if (m_document->lineEndSelectedAt(i))
             return true;
-        for (int j=0; j<m_document->at(i).selected.size(); j++) {
-            if (m_document->at(i).selected[j])
-                return true;
-        }
+        if (m_document->selectionMaskAt(i).contains(true))
+            return true;
     }
     return false;
 }
@@ -1280,28 +1002,30 @@ QString TextCursor::selectedText() const
 {
     QString result;
     if (hasSelection()) {
-        for (int i=0; i<m_document->size(); i++) {
-            for (int j=0; j<m_document->at(i).text.length(); j++) {
-                if (m_document->at(i).selected[j])
-                    result += m_document->at(i).text[j];
+        for (int i=0; i<m_document->linesCount(); i++) {
+            const QList<bool> sm = m_document->selectionMaskAt(i);
+            const QString text = m_document->textAt(i);
+            Q_ASSERT(text.length()==sm.size());
+            for (int j=0; j<text.length(); j++) {
+                if (sm[j])
+                    result += text[j];
             }
-            if (m_document->at(i).lineEndSelected && i<m_document->size()-1)
+            if (m_document->lineEndSelectedAt(i) && i<m_document->linesCount()-1)
                 result += "\n";
         }
     }
     else if (hasRectSelection()) {
         int startLine = rect_selection.top();
-        int endLine = qMin(m_document->size(), rect_selection.bottom()+1);
+        int endLine = qMin(m_document->linesCount(), rect_selection.bottom()+1);
         int startPos = rect_selection.left();
         int endPos = rect_selection.right();
         for (int i=startLine; i<endLine; i++) {
-            TextLine line = m_document->at(i);
             int indent = m_document->indentAt(i);
             int textStart = startPos - indent * 2;
             int textEnd = endPos - indent * 2;
-            textStart = qMin(textStart, line.text.length());
-            textEnd = qMin(textEnd, line.text.length());
-            result += line.text.mid(textStart, textEnd-textStart);
+            textStart = qMin(textStart, m_document->textAt(i).length());
+            textEnd = qMin(textEnd, m_document->textAt(i).length());
+            result += m_document->textAt(i).mid(textStart, textEnd-textStart);
             if (i<endLine-1) {
                 result += "\n";
             }
@@ -1315,19 +1039,18 @@ QStringList TextCursor::rectSelectionText() const
     QStringList result;
     if (hasRectSelection()) {
         int startLine = rect_selection.top();
-        int endLine = qMin(m_document->size(), rect_selection.bottom()+1);
+        int endLine = qMin(m_document->linesCount(), rect_selection.bottom()+1);
         int startPos = rect_selection.left();
         int endPos = rect_selection.right()+1;
         for (int i=startLine; i<endLine; i++) {
-            TextLine line = m_document->at(i);
             int indent = m_document->indentAt(i);
             int textStart = startPos - indent * 2;
             int textEnd = endPos - indent * 2;
-            textStart = qMin(textStart, line.text.length());
-            textEnd = qMin(textEnd, line.text.length());
+            textStart = qMin(textStart, m_document->textAt(i).length());
+            textEnd = qMin(textEnd, m_document->textAt(i).length());
             textStart = qMax(0, textStart);
             textEnd = qMax(0, textEnd);
-            QString text = line.text.mid(textStart, textEnd-textStart);
+            QString text = m_document->textAt(i).mid(textStart, textEnd-textStart);
             int w = rect_selection.width();
             result << text.leftJustified(w, ' ');
         }
@@ -1340,92 +1063,57 @@ void TextCursor::selectionBounds(int &fromRow, int &fromCol, int &toRow, int &to
     fromRow = fromCol = toRow = toCol = -1;
     if (!hasSelection())
         return;
-    for (int i=0; i<m_document->size(); i++) {
-        const TextLine tl = m_document->at(i);
-        if (tl.selected.contains(true) || tl.lineEndSelected) {
+    for (int i=0; i<m_document->linesCount(); i++) {
+        if (m_document->selectionMaskAt(i).contains(true) || m_document->lineEndSelectedAt(i)) {
             if (fromRow==-1)
                 fromRow = i;
         }
-        if (!tl.lineEndSelected) {
+        if (!m_document->lineEndSelectedAt(i)) {
             if (fromRow!=-1) {
                 toRow = i;
                 break;
             }
         }
     }
-    const TextLine first = m_document->at(fromRow);
-    fromCol = first.selected.indexOf(true);
+    const QList<bool> first = m_document->selectionMaskAt(fromRow);
+    fromCol = first.indexOf(true);
     if (fromCol==-1)
-        fromCol = first.selected.size();
+        fromCol = first.size();
     fromCol += 2 * m_document->indentAt(fromRow);
 
     if (toRow!=-1) {
-        const TextLine last = m_document->at(toRow);
-        toCol = last.selected.lastIndexOf(true);
+        const QList<bool> last = m_document->selectionMaskAt(toRow);
+        toCol = last.lastIndexOf(true);
         if (toCol==-1)
             toCol=0;
         toCol += 2 * m_document->indentAt(toRow);
     }
     else {
-        toRow = m_document->size();
+        toRow = m_document->linesCount();
         toCol = 0;
     }
 }
 
 void TextCursor::removeSelection()
 {
-    bool wasSelection = false;
-    for (int i=0; i<m_document->size(); i++) {
-        TextLine tl = m_document->at(i);
-        wasSelection = wasSelection || tl.lineEndSelected;
-        tl.lineEndSelected = false;
-        for (int j=0; j<tl.selected.length(); j++) {
-            wasSelection = wasSelection || tl.selected[j];
-            tl.selected[j] = false;
-        }
-        (*m_document)[i] = tl;
-    }
-    if (wasSelection) {
-        emit updateRequest(-1, -1);
-        emitPositionChanged();
+    m_document->removeSelection();
+    emit updateRequest(-1, -1);
+    emitPositionChanged();
+
+}
+
+void TextCursor::undo()
+{
+    if (b_enabled) {
+        m_document->undoStack()->undo();
     }
 }
 
-void TextCursor::addLineToNew(int no)
+void TextCursor::redo()
 {
-    l_nLines.insert(no);
-}
-
-void TextCursor::addLineToRemove(int no)
-{
-    l_remLines.insert(no);
-}
-
-void TextCursor::pushTransaction()
-{
-    Shared::ChangeTextTransaction trans;
-    trans.removedLineNumbers = l_remLines;
-    QList<int> numbers = l_nLines.toList();
-    for (int i=0; i<numbers.count(); i++) {
-        int lineNo = numbers[i];
-        const QString text = m_document->at(lineNo).text;
-        trans.newLines << text;
+    if (b_enabled) {
+        m_document->undoStack()->redo();
     }
-    l_nLines.clear();
-    l_remLines.clear();
-    l_changes.push(trans);
-}
-
-bool TextCursor::forceCompileRequest() const
-{
-    bool result = false;
-    for (int i=0; i<l_changes.size(); i++) {
-        if (l_changes[i].newLines.size()>1 || l_changes[i].removedLineNumbers.size()>1) {
-            result = true;
-            break;
-        }
-    }
-    return result;
 }
 
 

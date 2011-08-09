@@ -36,8 +36,13 @@ public:
     QAction * deleteLine;
     QAction * deleteTail;
 
+    QAction * undo;
+    QAction * redo;
+
     QMenu * menu_edit;
     QMenu * menu_insert;
+
+    QAction * separator;
 
     QList<Macro> systemMacros;
     QList<Macro> userMacros;
@@ -79,36 +84,36 @@ void Editor::unlock()
 
 void Editor::appendMarginText(int lineNo, const QString &text)
 {
-    if (lineNo>=0 && lineNo<d->doc->size()) {
-        if ( ! ((*d->doc)[lineNo].marginText.isEmpty()) ) {
-            (*d->doc)[lineNo].marginText += "; ";
+    if (lineNo>=0 && lineNo<d->doc->linesCount()) {
+        if (!d->doc->marginTextAt(lineNo).isEmpty()) {
+            d->doc->setMarginTextAt(lineNo, d->doc->marginTextAt(lineNo)+"; ");
         }
-        (*d->doc)[lineNo].marginText += text;
+        d->doc->setMarginTextAt(lineNo, d->doc->marginTextAt(lineNo) + text);
     }
     update();
 }
 
 void Editor::setMarginText(int lineNo, const QString &text)
 {
-    if (lineNo>=0 && lineNo<d->doc->size())
-        (*d->doc)[lineNo].marginText = text;
+    if (lineNo>=0 && lineNo<d->doc->linesCount())
+        d->doc->setMarginTextAt(lineNo, text);
     update();
 }
 
 void Editor::clearMarginText()
 {
-    for (int i=0; i<d->doc->size(); i++) {
-        (*d->doc)[i].marginText = "";
+    for (int i=0; i<d->doc->linesCount(); i++) {
+        d->doc->setMarginTextAt(i, "");
     }
     update();
 }
 
 void Editor::clearMarginText(int fromLine, int toLine)
 {
-    int start = qMin(qMax(0, fromLine), d->doc->size()-1);
-    int end = qMin(qMax(0, toLine), d->doc->size()-1);
+    int start = qMin(qMax(0, fromLine), d->doc->linesCount()-1);
+    int end = qMin(qMax(0, toLine), d->doc->linesCount()-1);
     for (int i=start; i<=end; i++) {
-        (*d->doc)[i].marginText = "";
+        d->doc->setMarginTextAt(i, "");
     }
     update();
 }
@@ -335,18 +340,15 @@ void EditorPrivate::updateFromAnalizer()
     QList<Shared::LineProp> props = analizer->lineProperties(doc->documentId);
     QList<QPoint> ranks = analizer->lineRanks(doc->documentId);
     QList<Error> errors = analizer->errors(doc->documentId);
-    for (int i=0; i<doc->size(); i++) {
-        TextLine tl = doc->at(i);
+    for (int i=0; i<doc->linesCount(); i++) {
         int oldIndent = doc->indentAt(i);
         if (i<ranks.size()) {
-            tl.indentStart = ranks[i].x();
-            tl.indentEnd = ranks[i].y();
+            doc->setIndentRankAt(i, ranks[i]);
         }
         if (i<props.size()) {
-            tl.highlight = props[i].toList();
+            doc->setHighlightAt(i, props[i].toList());
         }
-        tl.errors.clear();
-        (*doc)[i] = tl;
+        doc->clearErrorsAt(i);
         int newIndent = doc->indentAt(i);
         int diffIndent = newIndent - oldIndent;
         if (cursor->row()==i) {
@@ -357,7 +359,7 @@ void EditorPrivate::updateFromAnalizer()
         Error err = errors[i];
         int lineNo = err.line;
         if (lineNo>=0) {
-            (*doc)[lineNo].errors << err.code;
+            doc->setErrorsAt(lineNo, doc->errorsAt(lineNo) << err.code);
         }
     }
     plane->update();
@@ -372,7 +374,7 @@ Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentI
     d = new EditorPrivate;
     if (!d->clipboard)
         d->clipboard = new Clipboard;
-    d->doc = new TextDocument;
+    d->doc = new TextDocument(this);
     d->cursor = new TextCursor(d->doc, d->clipboard, analizer);
     d->analizer = analizer;
     d->doc->documentId = documentId;
@@ -396,7 +398,7 @@ Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentI
 
     d->createActions();
 
-    connect(d->cursor, SIGNAL(lineAndTextChanged(QStack<Shared::ChangeTextTransaction>)),
+    connect(d->doc, SIGNAL(compilationRequest(QStack<Shared::ChangeTextTransaction>)),
             d, SLOT(handleLineAndTextChanged(QStack<Shared::ChangeTextTransaction>)));
 
     QGridLayout * l = new QGridLayout();
@@ -415,13 +417,7 @@ Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentI
 
 QString Editor::text() const
 {
-    QString result;
-    for (int i=0; i<d->doc->size(); i++) {
-        result += d->doc->at(i).text;
-        if (i<d->doc->size()-1)
-            result += "\n";
-    }
-    return result;
+    return d->doc->toPlainText();
 }
 
 void EditorPrivate::createActions()
@@ -462,6 +458,19 @@ void EditorPrivate::createActions()
     deleteTail->setShortcut(QKeySequence("Ctrl+K"));
     QObject::connect(deleteTail, SIGNAL(triggered()), plane, SLOT(removeLineTail()));
 
+    undo = doc->undoStack()->createUndoAction(this);
+//    undo->setText(QObject::tr("Undo last action"));
+    undo->setIcon(QIcon::fromTheme("edit-undo", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-undo.png")));
+    undo->setShortcut(QKeySequence::Undo);
+
+    redo = doc->undoStack()->createRedoAction(this);
+//    redo->setText(QObject::tr("Redo last undoed action"));
+    redo->setIcon(QIcon::fromTheme("edit-redo", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-redo.png")));
+    redo->setShortcut(QKeySequence::Redo);
+
+    separator = new QAction(this);
+    separator->setSeparator(true);
+
     menu_edit = new QMenu(tr("Edit"), 0);
     menu_edit->addAction(selectAll);
     menu_edit->addSeparator();
@@ -471,6 +480,9 @@ void EditorPrivate::createActions()
     menu_edit->addSeparator();
     menu_edit->addAction(deleteLine);
     menu_edit->addAction(deleteTail);
+    menu_edit->addSeparator();
+    menu_edit->addAction(undo);
+    menu_edit->addAction(redo);
 
     menu_insert = new QMenu(tr("Insert"), 0);
 }
@@ -497,6 +509,10 @@ QList<QAction*> Editor::toolbarActions()
     result << d->cut;
     result << d->copy;
     result << d->paste;
+    result << d->separator;
+    result << d->undo;
+    result << d->redo;
+
     return result;
 }
 
@@ -551,7 +567,7 @@ void Editor::setText(const QString & text)
 
 void Editor::ensureAnalized()
 {
-    d->cursor->flushTransaction();
+    d->doc->flushTransaction();
 }
 
 void Editor::setNotModified()

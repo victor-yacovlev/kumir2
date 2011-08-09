@@ -28,7 +28,8 @@ SOURCES += editorplugin.cpp \
     editorstandalonewindow.cpp \
     settingspage.cpp \
     macro.cpp \
-    keycommand.cpp
+    keycommand.cpp \
+    textdocument.cpp
 
 OTHER_FILES += Editor.pluginspec
 

@@ -18,7 +18,7 @@ public:
     enum MoveMode { MM_Move, MM_Select, MM_RectSelect };
     enum ViewMode { VM_Blinking, VM_Hidden, VM_Visible };
     explicit TextCursor(class TextDocument * document, class Clipboard * clipboard, class AnalizerInterface * analizer);
-    inline void setEmitCompilationBlocked(bool v) { b_emitCompilationBlocked = v; }
+
     ~TextCursor();
     inline int row() const { return i_row; }
     inline int column() const { return i_column; }
@@ -52,15 +52,14 @@ public:
     bool isModified() const;
     QString selectedText() const;
     void removeSelectedBlock();
-    inline void flushTransaction() { emitCompilationRequest(); }
-    void emitCompilationRequest();
-
     void evaluateCommand(const KeyCommand & command);
+
+    void undo();
+    void redo();
 
 
 signals:
     void positionChanged(int row, int col);
-    void lineAndTextChanged(const QStack<Shared::ChangeTextTransaction> & changes);
     void updateRequest();
     void updateRequest(int fromLine, int toLine);
 
@@ -69,18 +68,11 @@ protected:
 
     int justifyLeft(const QString & text) const;
 
-    bool forceCompileRequest() const;
-    void addLineToRemove(int no);
-    void addLineToNew(int no);
-    void pushTransaction();
     void timerEvent(QTimerEvent *e);
     void emitPositionChanged();
     class TextDocument * m_document;
     class Clipboard * m_clipboard;
     class AnalizerInterface * m_analizer;
-    QStack<Shared::ChangeTextTransaction> l_changes;
-    QSet<int> l_remLines;
-    QSet<int> l_nLines;
     EditMode e_mode;
     ViewMode e_viewMode;
     int i_timerId;
@@ -88,10 +80,8 @@ protected:
     bool b_visible;
     int i_row;
     int i_column;
-    int i_prevRow;
-    int i_prevCol;
+
     QRect rect_selection;
-    bool b_emitCompilationBlocked;
 
 };
 
