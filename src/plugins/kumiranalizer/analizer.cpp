@@ -128,8 +128,8 @@ void Analizer::changeSourceText(const QList<ChangeTextTransaction> & changes)
 
 void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
 {
-    qDebug() << changes.removedLineNumbers;
-    qDebug() << changes.newLines;
+//    qDebug() << changes.removedLineNumbers;
+//    qDebug() << changes.newLines;
     QList<Statement*> removedStatements;
     QList<Statement*> newStatements;
     QList<int> removedLineNumbers = changes.removedLineNumbers.toList();
