@@ -436,37 +436,39 @@ MainWindow::~MainWindow()
 
 void MainWindow::newProgram()
 {
-    QObject * o = m_plugin->myDependency("Analizer");
-    QString defaultText;
-    QString suffix = ".txt";
-    DocumentType type = Text;
-    if (QString(o->metaObject()->className()).toLower().contains("kumir")) {
-        defaultText = QString::fromUtf8("алг\nнач\n\nкон");
-        suffix = ".kum";
-        type = Kumir;
-    }
-    else if (QString(o->metaObject()->className()).toLower().contains("pascal")) {
-        defaultText = "program;\n\nbegin\n\t\nend.";
-        type = Pascal;
-        suffix = ".pas";
-    }
-    const QString initialText = m_plugin->mySettings()->value(Plugin::InitialTextKey, defaultText).toString();
-    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("Analizer", initialText);
-    QWidget* vc = doc.widget;
-    int id = doc.id;
-    vc->setProperty("documentId", id);
-    QString fileName = suggestNewFileName(suffix);
-    vc->setProperty("fileName", QDir::current().absoluteFilePath(fileName));
-    TabWidgetElement * e = addCentralComponent(
-                fileName,
-                vc,
-                doc.toolbarActions,
-                doc.menus,
-                doc.statusbarWidgets,
-                type,
-                true);
-    ui->tabWidget->setCurrentWidget(e);
-    e->setFocus();
+
+        QObject * o = m_plugin->myDependency("Analizer");
+        QString defaultText;
+        QString suffix = ".txt";
+        DocumentType type = Text;
+        if (QString(o->metaObject()->className()).toLower().contains("kumir")) {
+            defaultText = QString::fromUtf8("алг\nнач\n\nкон");
+            suffix = ".kum";
+            type = Kumir;
+        }
+        else if (QString(o->metaObject()->className()).toLower().contains("pascal")) {
+            defaultText = "program;\n\nbegin\n\t\nend.";
+            type = Pascal;
+            suffix = ".pas";
+        }
+        const QString initialText = m_plugin->mySettings()->value(Plugin::InitialTextKey, defaultText).toString();
+        Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("Analizer", initialText);
+        QWidget* vc = doc.widget;
+        int id = doc.id;
+        vc->setProperty("documentId", id);
+        QString fileName = suggestNewFileName(suffix);
+        vc->setProperty("fileName", QDir::current().absoluteFilePath(fileName));
+        TabWidgetElement * e = addCentralComponent(
+                    fileName,
+                    vc,
+                    doc.toolbarActions,
+                    doc.menus,
+                    doc.statusbarWidgets,
+                    type,
+                    true);
+        ui->tabWidget->setCurrentWidget(e);
+        e->setFocus();
+
 }
 
 void MainWindow::newText()
@@ -622,7 +624,9 @@ void MainWindow::setupContentForTab()
     if (twe->type==Kumir) {
         const int id = twe->property("documentId").toInt();
         const QString fileName = twe->property("fileName").toString();
-        const AST::Data * ast = m_plugin->plugin_editor->analizer(id)->abstractSyntaxTree(id);
+        const AnalizerInterface * analizer = m_plugin->plugin_editor->analizer(id);
+        int analizerId = m_plugin->plugin_editor->analizerDocumentId(id);
+        const AST::Data * ast = analizer->abstractSyntaxTree(analizerId);
         m_plugin->m_kumirProgram->setAST(ast);
         m_plugin->m_kumirProgram->setSourceFileName(fileName);
         m_plugin->m_kumirProgram->setDocumentId(id);

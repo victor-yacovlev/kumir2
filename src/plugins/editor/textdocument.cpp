@@ -483,7 +483,6 @@ int TextDocument::indentAt(int lineNo) const
 
 void TextDocument::setPlainText(const QString &text)
 {
-    qDebug() << "TextDocument::setPlainText";
     QStringList lines = text.split("\n");
     foreach (const QString &line, lines) {
         TextLine textLine;
@@ -497,7 +496,6 @@ void TextDocument::setPlainText(const QString &text)
         }
         data.append(textLine);
     }
-    qDebug() << "TextDocument::setPlainText -- OK";
 }
 
 QString TextDocument::toPlainText() const

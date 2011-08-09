@@ -20,6 +20,7 @@ public:
     struct Shared::EditorComponent newDocument(const QString &analizerName = "Analizer"
                                                      , const QString &initialText = "");
 
+    int analizerDocumentId(int editorDocumentId) const;
     void closeDocument(int documentId);
     ExtensionSystem::SettingsEditorPage settingsEditorPage();
     bool hasUnsavedChanges(int documentId) const;

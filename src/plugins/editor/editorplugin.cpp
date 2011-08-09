@@ -98,6 +98,12 @@ Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, c
     return result;
 }
 
+int EditorPlugin::analizerDocumentId(int editorDocumentId) const
+{
+    Ed ed = d->editors[editorDocumentId];
+    return ed.id;
+}
+
 void EditorPlugin::updateSettings()
 {
     for (int i=0; i<d->editors.size(); i++) {

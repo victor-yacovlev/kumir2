@@ -120,11 +120,9 @@ Analizer::~Analizer()
 
 void Analizer::changeSourceText(const QList<ChangeTextTransaction> & changes)
 {
-    qDebug() << "Analizer::changeSourceText";
     for (int i=0; i<changes.size(); i++) {
         d->compileTransaction(changes[i]);
     }
-    qDebug() << "Analizer::changeSourceText -- OK";
 }
 
 

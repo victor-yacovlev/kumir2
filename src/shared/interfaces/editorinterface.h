@@ -20,6 +20,7 @@ public:
     virtual struct EditorComponent newDocument(const QString & analizerName = "Analizer",
                                                      const QString & initialText = "") = 0;
     virtual void closeDocument(int documentId) = 0;
+    virtual int analizerDocumentId(int editorDocumentId) const = 0;
     virtual bool hasUnsavedChanges(int documentId) const = 0;
     virtual void setDocumentChangesSaved(int documentId) = 0;
     virtual QString saveDocument(int documentId, const QString & fileName) = 0;
