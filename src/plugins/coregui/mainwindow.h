@@ -80,6 +80,7 @@ private slots:
     void setupStatusbarForTab();
     void checkCounterValue();
     void addToRecent(const QString &fileName);
+    void handleDocumentCleanChanged(bool v);
     void handleTabTitleChange(const QString & title);
 
 
@@ -102,6 +103,8 @@ private:
 
     QActionGroup * gr_fileActions;
     QActionGroup * gr_otherActions;
+
+
 
     static QString StatusbarWidgetCSS;
 

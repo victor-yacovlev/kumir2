@@ -42,6 +42,9 @@ public:
         if (type==MainWindow::WWW) {
             connect(w, SIGNAL(titleChanged(QString)), this, SIGNAL(changeTitle(QString)));
         }
+        else {
+            connect(w, SIGNAL(documentCleanChanged(bool)), this, SIGNAL(documentCleanChanged(bool)));
+        }
         QVBoxLayout * l = new QVBoxLayout;
         l->setContentsMargins(0,0,0,0);
         l->setSpacing(0);
@@ -82,6 +85,7 @@ public:
     int documentId;
 signals:
     void changeTitle(const QString & txt);
+    void documentCleanChanged(bool v);
 protected:
     inline void focusInEvent(QFocusEvent *e) {
         QWidget::focusInEvent(e);
@@ -398,12 +402,26 @@ bool MainWindow::saveCurrentFileTo(const QString &fileName)
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
     int documentId = twe->property("documentId").toInt();
     QString error = m_plugin->plugin_editor->saveDocument(documentId, fileName);
-    if (error.isEmpty())
+    if (error.isEmpty()) {
+        m_plugin->plugin_editor->setDocumentChangesSaved(documentId);
         return true;
+    }
     else {
         QMessageBox::critical(this, tr("Can't save file"), error);
         return false;
     }
+}
+
+void MainWindow::handleDocumentCleanChanged(bool v)
+{
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(sender());
+    int index = ui->tabWidget->indexOf(twe);
+    QString text = ui->tabWidget->tabText(index);
+    if (text.endsWith("*"))
+        text = text.left(text.length()-1);
+    if (!v)
+        text += "*";
+    ui->tabWidget->setTabText(index, text);
 }
 
 void MainWindow::handleTabTitleChange(const QString &title)
@@ -549,6 +567,7 @@ TabWidgetElement * MainWindow::addCentralComponent(
 
 
     connect(element, SIGNAL(changeTitle(QString)), this, SLOT(handleTabTitleChange(QString)));
+    connect(element, SIGNAL(documentCleanChanged(bool)), this, SLOT(handleDocumentCleanChanged(bool)));
     createTopLevelMenus(menus, true);
     ui->tabWidget->addTab(element, title);
 
@@ -722,7 +741,6 @@ void MainWindow::restoreSession()
                 }
                 EditorComponent doc = m_plugin->plugin_editor->newDocument(analizerName, "");
                 QByteArray editorSession = f.readAll();
-                m_plugin->plugin_editor->restoreState(doc.id, editorSession);
                 QWidget * vc = doc.widget;
                 vc->setProperty("documentId", doc.id);
                 TabWidgetElement * twe = addCentralComponent(
@@ -739,6 +757,8 @@ void MainWindow::restoreSession()
                 twe->setProperty("realFileName", url);
                 twe->component->setProperty("realFileName", url);
                 ui->tabWidget->setTabText(ui->tabWidget->count()-1, QFileInfo(title).fileName());
+                m_plugin->plugin_editor->restoreState(doc.id, editorSession);
+
             }
             f.close();
             if (e.endsWith("-active.document"))

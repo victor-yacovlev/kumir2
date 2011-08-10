@@ -863,17 +863,6 @@ void TextCursor::removeCurrentChar()
     emitPositionChanged();
 }
 
-void TextCursor::clearUndoRedoStacks()
-{
-    // TODO implement me
-}
-
-
-bool TextCursor::isModified() const
-{
-    // TODO implement me
-    return true;
-}
 
 void TextCursor::removeSelectedText()
 {

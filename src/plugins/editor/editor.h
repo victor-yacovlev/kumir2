@@ -32,6 +32,7 @@ public:
     void clearMarginText();
     void clearMarginText(int fromLine, int toLine);
     void setNotModified();
+    void checkForClean();
     void lock();
     void unlock();
     void setLineHighlighted(int lineNo, const QColor & color);
@@ -44,6 +45,7 @@ public slots:
     void redo();
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
+    void documentCleanChanged(bool v);
 private:
     void focusInEvent(QFocusEvent *e);
     class EditorPrivate * d;

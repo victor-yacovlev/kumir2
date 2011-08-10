@@ -403,6 +403,8 @@ Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentI
     connect(d->doc, SIGNAL(compilationRequest(QStack<Shared::ChangeTextTransaction>)),
             d, SLOT(handleLineAndTextChanged(QStack<Shared::ChangeTextTransaction>)));
 
+    connect(d->doc->undoStack(), SIGNAL(cleanChanged(bool)), this, SIGNAL(documentCleanChanged(bool)));
+
     QGridLayout * l = new QGridLayout();
     l->setContentsMargins(0,0,0,0);
     l->setSpacing(0);
@@ -618,6 +620,7 @@ void Editor::restoreState(const QByteArray &data)
     else {
         qWarning() << "Can't restore state: not enought data";
     }
+    checkForClean();
 }
 
 void Editor::setText(const QString & text)
@@ -628,6 +631,7 @@ void Editor::setText(const QString & text)
         d->updateFromAnalizer();
     }
     d->plane->update();
+    checkForClean();
 }
 
 void Editor::ensureAnalized()
@@ -637,12 +641,18 @@ void Editor::ensureAnalized()
 
 void Editor::setNotModified()
 {
-    d->cursor->clearUndoRedoStacks();
+    d->doc->undoStack()->setClean();
+    emit documentCleanChanged(true);
 }
 
 bool Editor::isModified() const
 {
-    return d->cursor->isModified();
+    return ! d->doc->undoStack()->isClean();
+}
+
+void Editor::checkForClean()
+{
+    emit documentCleanChanged(d->doc->undoStack()->isClean());
 }
 
 QDataStream & operator<< (QDataStream & stream, const Editor & editor)
@@ -677,6 +687,7 @@ QDataStream & operator<< (QDataStream & stream, const Editor & editor)
             stream << (*removeCommand);
         }
     }
+
     return stream;
 }
 

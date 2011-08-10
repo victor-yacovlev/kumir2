@@ -48,8 +48,7 @@ public:
     void removeCurrentLine();
     void removeLineTail();
     void movePosition(QTextCursor::MoveOperation, MoveMode, int n=1);
-    void clearUndoRedoStacks();
-    bool isModified() const;
+
     QString selectedText() const;
     void removeSelectedBlock();
     void evaluateCommand(const KeyCommand & command);
