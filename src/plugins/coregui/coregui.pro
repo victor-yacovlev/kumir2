@@ -19,7 +19,8 @@ HEADERS += \
     terminal.h \
     terminal_onesession.h \
     terminal_plane.h \
-    tabbar.h
+    tabbar.h \
+    confirmclosedialod.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -29,10 +30,12 @@ SOURCES += \
     terminal.cpp \
     terminal_onesession.cpp \
     terminal_plane.cpp \
-    tabbar.cpp
+    tabbar.cpp \
+    confirmclosedialod.cpp
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    confirmclosedialod.ui
 
 RESOURCES += \
     resources.qrc

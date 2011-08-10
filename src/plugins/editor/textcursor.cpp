@@ -1104,17 +1104,48 @@ void TextCursor::removeSelection()
 
 void TextCursor::undo()
 {
+    int prevRow = i_row;
+    int prevLines = m_document->linesCount();
     if (b_enabled) {
         m_document->undoStack()->undo();
     }
+    if (prevRow!=i_row || prevLines!=m_document->linesCount()) {
+        m_document->flushTransaction();
+    }
+    emit undoAvailable(b_enabled && m_document->undoStack()->canUndo());
+    emit redoAvailable(b_enabled && m_document->undoStack()->canRedo());
 }
 
 void TextCursor::redo()
 {
+    int prevRow = i_row;
+    int prevLines = m_document->linesCount();
     if (b_enabled) {
         m_document->undoStack()->redo();
     }
+    if (prevRow!=i_row || prevLines!=m_document->linesCount()) {
+        m_document->flushTransaction();
+    }
+    emit undoAvailable(b_enabled && m_document->undoStack()->canUndo());
+    emit redoAvailable(b_enabled && m_document->undoStack()->canRedo());
 }
 
+void TextCursor::handleRedoChanged(bool v)
+{
+    emit redoAvailable(b_enabled && v);
+}
+
+void TextCursor::handleUndoChanged(bool v)
+{
+    emit undoAvailable(b_enabled && v);
+}
+
+void TextCursor::setEnabled(bool v)
+{
+     b_enabled = v;
+     emit updateRequest();
+     emit undoAvailable(b_enabled && m_document->undoStack()->canUndo());
+     emit redoAvailable(b_enabled && m_document->undoStack()->canRedo());
+}
 
 } // namespace Editor

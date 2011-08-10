@@ -15,8 +15,18 @@ InsertCommand::InsertCommand(TextDocument *doc, class TextCursor * cursor, Share
     blankLines = blankChars = 0;
 }
 
+InsertCommand::InsertCommand(TextDocument *doc, TextCursor *cursor, Shared::AnalizerInterface *analizer)
+{
+    this->doc = doc;
+    this->cursor = cursor;
+    this->analizer = analizer;
+    line = pos = blankLines = blankChars = 0;
+}
+
 void InsertCommand::redo()
 {
+    if (TextDocument::noUndoRedo)
+        return;
     cursorRow = cursor->row();
     cursorCol = cursor->column();
     doc->insertText(text, analizer, line, pos, blankLines, blankChars);
@@ -33,6 +43,8 @@ void InsertCommand::redo()
 
 void InsertCommand::undo()
 {
+    if (TextDocument::noUndoRedo)
+        return;
     QString txt;
     doc->removeText(txt, analizer, line, pos, blankLines, blankChars, text.length());
     Q_ASSERT(txt==text);
@@ -90,8 +102,19 @@ RemoveCommand::RemoveCommand(
     this->keepKursor = keepCursor;
 }
 
+RemoveCommand::RemoveCommand(TextDocument *doc, TextCursor *cursor, Shared::AnalizerInterface *analizer)
+{
+    this->doc = doc;
+    this->cursor = cursor;
+    this->analizer = analizer;
+    line = pos = count = 0;
+    keepKursor = true;
+}
+
 void RemoveCommand::redo()
 {
+    if (TextDocument::noUndoRedo)
+        return;
     cursorRow = cursor->row();
     cursorCol = cursor->column();
     removedText.clear();
@@ -114,6 +137,8 @@ void RemoveCommand::redo()
 
 void RemoveCommand::undo()
 {
+    if (TextDocument::noUndoRedo)
+        return;
     int blankLines, blankChars;
     doc->insertText(removedText, analizer, line, pos, blankLines, blankChars);
     cursor->setRow(cursorRow);
@@ -165,6 +190,8 @@ TextDocument::TextDocument(QObject *parent)
 {
 
 }
+
+bool TextDocument::noUndoRedo = false;
 
 void TextDocument::insertText(const QString &text, const Shared::AnalizerInterface * analizer, int line, int pos, int &blankLines, int &blankChars)
 {
@@ -253,10 +280,21 @@ InsertBlockCommand::InsertBlockCommand(
     this->doc = doc;
     this->cursor = cursor;
     this->analizer = analizer;
+    addedLines = 0;
+}
+
+InsertBlockCommand::InsertBlockCommand(TextDocument *doc, TextCursor *cursor, Shared::AnalizerInterface *analizer)
+{
+    this->doc = doc;
+    this->cursor = cursor;
+    this->analizer = analizer;
+    addedLines =row = column = 0;
 }
 
 void InsertBlockCommand::redo()
 {
+    if (TextDocument::noUndoRedo)
+        return;
     addedLines = 0;
     previousLines.clear();
     // 1. Ensure we have enought space
@@ -305,6 +343,8 @@ void InsertBlockCommand::redo()
 
 void InsertBlockCommand::undo()
 {
+    if (TextDocument::noUndoRedo)
+        return;
     // 1. Restore old lines
     Q_ASSERT(block.size()==previousLines.size());
     for (int i=0; i<block.size(); i++) {
@@ -352,8 +392,17 @@ RemoveBlockCommand::RemoveBlockCommand(TextDocument *doc,
     this->block = block;
 }
 
+RemoveBlockCommand::RemoveBlockCommand(TextDocument *doc, TextCursor *cursor, Shared::AnalizerInterface *analizer)
+{
+    this->doc = doc;
+    this->cursor = cursor;
+    this->analizer = analizer;
+}
+
 void RemoveBlockCommand::redo()
 {
+    if (TextDocument::noUndoRedo)
+        return;
     int top = block.top();
     int bottom = block.bottom()+1;
     int left = block.left();
@@ -387,6 +436,8 @@ void RemoveBlockCommand::redo()
 
 void RemoveBlockCommand::undo()
 {
+    if (TextDocument::noUndoRedo)
+        return;
     int top = block.top();
     int bottom = block.bottom()+1;
     bottom = qMin(bottom, doc->data.size());
@@ -485,6 +536,7 @@ int TextDocument::indentAt(int lineNo) const
 
 void TextDocument::setPlainText(const QString &text)
 {
+    data.clear();
     QStringList lines = text.split("\n");
     foreach (const QString &line, lines) {
         TextLine textLine;
@@ -542,6 +594,97 @@ void TextDocument::flushTransaction()
     if (!changes.isEmpty())
         emit compilationRequest(changes);
     changes.clear();
+}
+
+QDataStream & operator<< (QDataStream & stream, const InsertCommand & command)
+{
+    stream << command.line;
+    stream << command.pos;
+    stream << command.blankLines;
+    stream << command.blankChars;
+    stream << command.cursorRow;
+    stream << command.cursorCol;
+    stream << command.text;
+    return stream;
+}
+
+QDataStream & operator>> (QDataStream & stream, InsertCommand & command)
+{
+    stream >> command.line;
+    stream >> command.pos;
+    stream >> command.blankLines;
+    stream >> command.blankChars;
+    stream >> command.cursorRow;
+    stream >> command.cursorCol;
+    stream >> command.text;
+    return stream;
+}
+
+QDataStream & operator<< (QDataStream & stream, const RemoveCommand & command)
+{
+    stream << command.line;
+    stream << command.pos;
+    stream << command.count;
+    stream << command.keepKursor;
+    stream << command.cursorRow;
+    stream << command.cursorCol;
+    stream << command.removedText;
+    return stream;
+}
+
+QDataStream & operator>> (QDataStream & stream, RemoveCommand & command)
+{
+    stream >> command.line;
+    stream >> command.pos;
+    stream >> command.count;
+    stream >> command.keepKursor;
+    stream >> command.cursorRow;
+    stream >> command.cursorCol;
+    stream >> command.removedText;
+    return stream;
+}
+
+QDataStream & operator<< (QDataStream & stream, const InsertBlockCommand & command)
+{
+    stream << command.row;
+    stream << command.column;
+    stream << command.addedLines;
+    stream << command.cursorRow;
+    stream << command.cursorCol;
+    stream << command.block;
+    stream << command.previousLines;
+    return stream;
+}
+
+QDataStream & operator>> (QDataStream & stream, InsertBlockCommand & command)
+{
+    stream >> command.row;
+    stream >> command.column;
+    stream >> command.addedLines;
+    stream >> command.addedLines;
+    stream >> command.cursorRow;
+    stream >> command.cursorCol;
+    stream >> command.block;
+    stream >> command.previousLines;
+    return stream;
+}
+
+QDataStream & operator<< (QDataStream & stream, const RemoveBlockCommand & command)
+{
+    stream << command.cursorRow;
+    stream << command.cursorCol;
+    stream << command.block;
+    stream << command.previousLines;
+    return stream;
+}
+
+QDataStream & operator>> (QDataStream & stream, RemoveBlockCommand & command)
+{
+    stream >> command.cursorRow;
+    stream >> command.cursorCol;
+    stream >> command.block;
+    stream >> command.previousLines;
+    return stream;
 }
 
 

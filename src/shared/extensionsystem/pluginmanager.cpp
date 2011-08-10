@@ -526,14 +526,7 @@ void PluginManager::shutdown()
     for (int i=d->objects.size()-1; i>=0; i--) {
         KPlugin * p = d->objects[i];
         if (!d->workspacePath.isEmpty()) {
-            QByteArray sessionData = d->objects[i]->saveSession();
-            if (sessionData.size()>0) {
-                QFile session(d->workspacePath+"/.session/"+d->specs[i].name+".state");
-                if (session.open(QIODevice::WriteOnly)) {
-                    session.write(sessionData);
-                    session.close();
-                }
-            }
+            d->objects[i]->saveSession();
         }
         p->stop();
         d->states[i] = KPlugin::Stopped;
@@ -547,14 +540,7 @@ void PluginManagerPrivate::changeWorkingDirectory(const QString &path)
         settings[i]->sync();
         settings[i]->deleteLater();
         if (!workspacePath.isEmpty()) {
-            QByteArray sessionData = objects[i]->saveSession();
-            if (sessionData.size()>0) {
-                QFile session(workspacePath+"/.session/"+specs[i].name+".state");
-                if (session.open(QIODevice::WriteOnly)) {
-                    session.write(sessionData);
-                    session.close();
-                }
-            }
+            objects[i]->saveSession();
         }
     }
     workspacePath = path;
@@ -567,16 +553,10 @@ void PluginManagerPrivate::changeWorkingDirectory(const QString &path)
         settings[i] = new QSettings(path+"/.settings/"+specs[i].name+".conf", QSettings::IniFormat);
         settings[i]->setIniCodec("UTF-8");
         settings[i]->sync();
-        p->updateSettings();
+
         p->changeCurrentDirectory(path);
 
-        QFile session(path+"/.session/"+specs[i].name+".state");
-        QByteArray data;
-        if (session.open(QIODevice::ReadOnly)) {
-            data = session.readAll();
-            session.close();
-        }
-        p->restoreSession(data);
+        p->restoreSession();
     }
 }
 

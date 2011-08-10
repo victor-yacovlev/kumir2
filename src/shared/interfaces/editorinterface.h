@@ -34,8 +34,8 @@ public:
     virtual void clearMargin(int documentId) = 0;
     virtual void clearMargin(int documentId, int fromLine, int toLine) = 0;
     virtual void ensureAnalized(int documentId) = 0;
-    virtual QString saveState(int documentId) = 0;
-    virtual void restoreState(int documentId, const QString & data) = 0;
+    virtual QByteArray saveState(int documentId) = 0;
+    virtual void restoreState(int documentId, const QByteArray & data) = 0;
 };
 
 }

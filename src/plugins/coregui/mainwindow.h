@@ -51,11 +51,13 @@ public slots:
     void loadRecentFile(int index);
     inline void loadFromUrl(const QString &s) { loadFromUrl(QUrl(s), true); }
     class TabWidgetElement * loadFromUrl(const QUrl & url, bool addToRecentFiles);
-    void saveCurrentFile();
-    void saveCurrentFileAs();
-    void saveCurrentFileTo(const QString & fileName);
-    void restoreSession(const QByteArray & data);
-    QByteArray saveSession() const;
+    bool saveCurrentFile();
+    bool saveCurrentFileAs();
+    bool saveCurrentFileTo(const QString & fileName);
+    void restoreSession();
+    void saveSession() const;
+    void loadSettings();
+    void saveSettings();
     void newProgram();
     void newText();
     void fileOpen();
@@ -81,11 +83,10 @@ private slots:
     void handleTabTitleChange(const QString & title);
 
 
-
-
 private:
     void timerEvent(QTimerEvent *e);
     bool eventFilter(QObject *o, QEvent *e);
+    void closeEvent(QCloseEvent *e);
     int i_timerId;
     bool b_workspaceSwitching;
 

@@ -159,14 +159,19 @@ void Plugin::stop()
 }
 
 
-QByteArray Plugin::saveSession() const
+void Plugin::saveSession() const
 {
-    return m_mainWindow->saveSession();
+    m_mainWindow->saveSettings();
 }
 
-void Plugin::restoreSession(const QByteArray &data)
+
+void Plugin::restoreSession()
 {
-    m_mainWindow->restoreSession(data);
+    m_mainWindow->loadSettings();
+    if (!b_nosessions)
+        m_mainWindow->restoreSession();
+    else
+        m_mainWindow->newProgram();
 }
 
 Plugin::~Plugin()

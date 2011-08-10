@@ -300,7 +300,7 @@ void EditorPlugin::ensureAnalized(int documentId)
     }
 }
 
-QString EditorPlugin::saveState(int documentId)
+QByteArray EditorPlugin::saveState(int documentId)
 {
     if (d->editors[documentId].e)
         return d->editors[documentId].e->saveState();
@@ -308,7 +308,7 @@ QString EditorPlugin::saveState(int documentId)
         return "";
 }
 
-void EditorPlugin::restoreState(int documentId, const QString &data)
+void EditorPlugin::restoreState(int documentId, const QByteArray &data)
 {
     if (d->editors[documentId].e)
         d->editors[documentId].e->restoreState(data);

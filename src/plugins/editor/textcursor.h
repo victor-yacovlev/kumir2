@@ -32,7 +32,7 @@ public:
     inline bool isEnabled() const { return b_enabled; }
     inline bool isVisible() const { return b_enabled && b_visible; }
     void setViewMode(ViewMode mode);
-    inline void setEnabled(bool v) { b_enabled = v; emit updateRequest();}
+    void setEnabled(bool v);
     bool hasSelection() const;
     inline bool hasRectSelection() const { return rect_selection.x()!=-1 && rect_selection.y()!=-1; }
     inline QRect selectionRect() const { return rect_selection; }
@@ -53,15 +53,19 @@ public:
     QString selectedText() const;
     void removeSelectedBlock();
     void evaluateCommand(const KeyCommand & command);
-
+public slots:
     void undo();
     void redo();
+    void handleUndoChanged(bool v);
+    void handleRedoChanged(bool v);
 
 
 signals:
     void positionChanged(int row, int col);
     void updateRequest();
     void updateRequest(int fromLine, int toLine);
+    void undoAvailable(bool);
+    void redoAvailable(bool);
 
 
 protected:

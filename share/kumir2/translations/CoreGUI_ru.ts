@@ -2,63 +2,106 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="ru_RU">
 <context>
+    <name>CoreGUI::ConfirmCloseDialod</name>
+    <message>
+        <location filename="../../../src/plugins/coregui/confirmclosedialod.ui" line="17"/>
+        <source>Confirm quit</source>
+        <translation>Подвтерждение выхода</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/confirmclosedialod.ui" line="28"/>
+        <source>Do one of the following on quit:</source>
+        <translation>Перед выходом из Кумир:</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/confirmclosedialod.ui" line="48"/>
+        <source>Do not save files, but save state to be restored on next launch</source>
+        <translation>Сохранить состояние редактирования, но не сохранять файлы</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/confirmclosedialod.ui" line="55"/>
+        <source>Save all opened files and close them</source>
+        <translation>Сохранить и закрыть все открытые файлы</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/confirmclosedialod.ui" line="62"/>
+        <source>Save unsaved file</source>
+        <translation>Сохранить файл</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/confirmclosedialod.ui" line="69"/>
+        <source>Save nothing and quit</source>
+        <translation>Выйти без сохранения</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/confirmclosedialod.ui" line="83"/>
+        <source>Cancel quit</source>
+        <translation>Отменить выход</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/confirmclosedialod.ui" line="86"/>
+        <source>Esc</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
     <name>CoreGUI::KumirProgram</name>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="48"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="93"/>
         <source>Fast run</source>
         <translation>Ускоренное выполнение</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="59"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="33"/>
         <source>Regular run</source>
         <translation>Обычное выполнение</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="69"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="402"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="43"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="425"/>
         <source>Step run</source>
         <translation>Пошаговое выполнение</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="79"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="53"/>
         <source>Step in</source>
         <translation>Шаг внутрь алгоритма</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="89"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="63"/>
         <source>Step out</source>
         <translation>Выход из алгоритма</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="99"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="73"/>
         <source>Stop</source>
         <translation>Остановить выполнение</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="332"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="354"/>
         <source>Unknown error</source>
         <translation>Нераспознанная ошибка</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="333"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="342"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="365"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="355"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="364"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="387"/>
         <source>Evaluation error</source>
         <translation>Ошибка выполнения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="342"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="373"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="364"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="395"/>
         <source>Evaluation finished</source>
         <translation>Выполнение завершено</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="358"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="380"/>
         <source>Evaluation terminated</source>
         <translation>Выполнение прервано</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="420"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="445"/>
         <source>Step over</source>
         <translation>Шаг</translation>
     </message>
@@ -206,57 +249,62 @@
         <translation>Настройки...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="126"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="131"/>
         <source>No actions for this tab</source>
         <translation>Для этой вкладки нет действий</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="205"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="214"/>
         <source>No errors</source>
         <translation>Ошибок нет</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="209"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="218"/>
         <source>Errors: %1</source>
         <translation>Ошибок: %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="350"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="368"/>
         <source>Kumir programs (*.kum)</source>
         <translation>Программы Кумир (*.kum)</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="353"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="371"/>
         <source>Pascal programs (*.pas *.pp</source>
         <translation>Программы Паскаль (*.pas *.pp)</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="356"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="374"/>
         <source>Text files (*.txt)</source>
         <translation>Текстовые файлы (*.txt)</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="358"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="376"/>
         <source>All files (*)</source>
         <translation>Все файлы (*)</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="359"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="377"/>
         <source>Save file</source>
         <translation>Сохранить файл</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="652"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="404"/>
+        <source>Can&apos;t save file</source>
+        <translation>Не могу сохранить файл</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="686"/>
         <source>Start</source>
         <translation>Начало</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="667"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="841"/>
         <source>Load file...</source>
         <translation>Загрузить файл...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="669"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="843"/>
         <source>Kumir programs (*.kum);;Pascal programs (*.pas *.pp);;Web pages (*.html *.htm);;Text files (*.txt);;All files (*)</source>
         <translation>Программы Кумир (*.kum);;Программы Pascal (*.pas *.pp);; Web-страницы (*.html *.htm);;Текстовые файлы (*.txt);;Все файлы (*)</translation>
     </message>
@@ -269,23 +317,23 @@
         <translation>Область ввода/вывода</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="106"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="112"/>
         <source>Editing</source>
         <translation>Редактирование</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="111"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="117"/>
         <source>Observe</source>
         <translation>Анализ</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="116"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="122"/>
         <source>Running</source>
         <translation>Выполнение</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="120"/>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="123"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="126"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="129"/>
         <source>Pause</source>
         <translation>Пауза</translation>
     </message>
@@ -362,43 +410,43 @@ p, li { white-space: pre-wrap; }
         <translation>&gt;&gt; %1:%2:%3 - %4 - Выполнение завершено</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="225"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="229"/>
         <source>INPUT </source>
         <translation>ВВОД </translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="232"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="236"/>
         <source>string</source>
         <translation>лит</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="234"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="238"/>
         <source>integer</source>
         <translation>цел</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="236"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="240"/>
         <source>real</source>
         <translation>вещ</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="238"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="242"/>
         <source>charect</source>
         <translation>сим</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="240"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="244"/>
         <source>boolean</source>
         <translation>лог</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="339"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="343"/>
         <source>RUNTIME ERROR: %1</source>
         <translation>ОШИБКА ВЫПОЛНЕНИЯ: %1</translation>
     </message>
 </context>
 <context>
-    <name>Terminal::Terminal</name>
+    <name>Terminal::Term</name>
     <message>
         <location filename="../../../src/plugins/coregui/terminal.cpp" line="25"/>
         <source>Save last output</source>
@@ -418,6 +466,25 @@ p, li { white-space: pre-wrap; }
         <location filename="../../../src/plugins/coregui/terminal.cpp" line="44"/>
         <source>Clear output</source>
         <translation>Очистить область ввода/вывода</translation>
+    </message>
+</context>
+<context>
+    <name>Terminal::Terminal</name>
+    <message>
+        <source>Save last output</source>
+        <translation type="obsolete">Сохранить последний вывод</translation>
+    </message>
+    <message>
+        <source>Open last output in editor</source>
+        <translation type="obsolete">Открыть последний вывод в редакторе</translation>
+    </message>
+    <message>
+        <source>Save all output</source>
+        <translation type="obsolete">Сохранить весь вывод</translation>
+    </message>
+    <message>
+        <source>Clear output</source>
+        <translation type="obsolete">Очистить область ввода/вывода</translation>
     </message>
 </context>
 </TS>

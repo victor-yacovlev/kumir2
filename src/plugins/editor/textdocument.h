@@ -20,12 +20,15 @@ public:
                            int pos,
                            const QString & text
                            );
+    explicit InsertCommand(class TextDocument * doc,
+                           class TextCursor * cursor,
+                           Shared::AnalizerInterface * analizer);
     void redo();
     void undo();
     inline int id() const { return 1; }
     bool mergeWith(const QUndoCommand *other);
 
-private:
+//private:
     class TextDocument * doc;
     class TextCursor * cursor;
     Shared::AnalizerInterface * analizer;
@@ -51,12 +54,15 @@ public:
                            int count,
                            bool keepCursor
                            );
+    explicit RemoveCommand(class TextDocument * doc,
+                           class TextCursor * cursor,
+                           Shared::AnalizerInterface * analizer);
     void redo();
     void undo();
     inline int id() const { return 2; }
     bool mergeWith(const QUndoCommand *other);
 
-private:
+//private:
     class TextDocument * doc;
     class TextCursor * cursor;
     Shared::AnalizerInterface * analizer;
@@ -80,10 +86,14 @@ public:
                                 int row,
                                 int column,
                                 const QStringList & block);
+    explicit InsertBlockCommand(class TextDocument * doc,
+                           class TextCursor * cursor,
+                           Shared::AnalizerInterface * analizer);
     void redo();
     void undo();
+    inline int id() const { return 3; }
 
-private:
+//private:
     class TextDocument * doc;
     class TextCursor * cursor;
     Shared::AnalizerInterface * analizer;
@@ -104,10 +114,14 @@ public:
                                 class TextCursor * cursor,
                                 Shared::AnalizerInterface * analizer,
                                 const QRect & block);
+    explicit RemoveBlockCommand(class TextDocument * doc,
+                           class TextCursor * cursor,
+                           Shared::AnalizerInterface * analizer);
     void redo();
     void undo();
+    inline int id() const { return 4; }
 
-private:
+//private:
     class TextDocument * doc;
     class TextCursor * cursor;
     Shared::AnalizerInterface * analizer;
@@ -116,6 +130,16 @@ private:
     int cursorCol;
     QStringList previousLines;
 };
+
+QDataStream & operator<< (QDataStream & stream, const InsertCommand & command);
+QDataStream & operator<< (QDataStream & stream, const RemoveCommand & command);
+QDataStream & operator<< (QDataStream & stream, const InsertBlockCommand & command);
+QDataStream & operator<< (QDataStream & stream, const RemoveBlockCommand & command);
+
+QDataStream & operator>> (QDataStream & stream, InsertCommand & command);
+QDataStream & operator>> (QDataStream & stream, RemoveCommand & command);
+QDataStream & operator>> (QDataStream & stream, InsertBlockCommand & command);
+QDataStream & operator>> (QDataStream & stream, RemoveBlockCommand & command);
 
 struct TextLine
 {
@@ -142,6 +166,12 @@ class TextDocument
     friend class InsertBlockCommand;
     friend class RemoveBlockCommand;
 public:
+    // Flag, set on restore session.
+    // If present, do not actually undo/redo
+    // while pushing actions into undo-stack.
+    // Becomes false after session restore done.
+    static bool noUndoRedo;
+
     explicit TextDocument(QObject * parent);
     int documentId;
     int indentAt(int lineNo) const;
@@ -163,6 +193,7 @@ public:
     inline void setSelected(int line, int pos, bool v) { data[line].selected[pos] = v; }
     inline void setEndOfLineSelected(int line, bool v) { data[line].lineEndSelected = v; }
     void evaluateCommand(const QUndoCommand & cmd);
+    inline const QUndoStack * undoStack() const { return m_undoStack; }
     inline QUndoStack * undoStack() { return m_undoStack; }
     void removeSelection();
     void flushChanges();
@@ -181,7 +212,6 @@ private:
     QUndoStack * m_undoStack;
     QList<TextLine> data;
 };
-
 
 }
 

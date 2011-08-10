@@ -16,6 +16,7 @@ class EditorPrivate
 {
     Q_OBJECT;
 public:
+    class Editor * q;
     AnalizerInterface * analizer;
     TextDocument * doc;
     TextCursor * cursor;
@@ -372,6 +373,7 @@ Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentI
 {
     setParent(parent);
     d = new EditorPrivate;
+    d->q = this;
     if (!d->clipboard)
         d->clipboard = new Clipboard;
     d->doc = new TextDocument(this);
@@ -411,6 +413,9 @@ Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentI
     connect(d->plane, SIGNAL(urlsDragAndDropped(QList<QUrl>)), this, SIGNAL(urlsDragAndDropped(QList<QUrl>)));
     d->loadMacros();
     d->updateInsertMenu();
+
+    connect(d->doc->undoStack(), SIGNAL(canRedoChanged(bool)), d->cursor, SLOT(handleRedoChanged(bool)));
+    connect(d->doc->undoStack(), SIGNAL(canUndoChanged(bool)), d->cursor, SLOT(handleUndoChanged(bool)));
 }
 
 
@@ -458,15 +463,21 @@ void EditorPrivate::createActions()
     deleteTail->setShortcut(QKeySequence("Ctrl+K"));
     QObject::connect(deleteTail, SIGNAL(triggered()), plane, SLOT(removeLineTail()));
 
-    undo = doc->undoStack()->createUndoAction(this);
-//    undo->setText(QObject::tr("Undo last action"));
+    undo = new QAction(plane);
+    undo->setEnabled(false);
+    undo->setText(QObject::tr("Undo last action"));
     undo->setIcon(QIcon::fromTheme("edit-undo", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-undo.png")));
     undo->setShortcut(QKeySequence::Undo);
+    connect(cursor, SIGNAL(undoAvailable(bool)), undo, SLOT(setEnabled(bool)));
+    QObject::connect(undo, SIGNAL(triggered()), q, SLOT(undo()));
 
-    redo = doc->undoStack()->createRedoAction(this);
-//    redo->setText(QObject::tr("Redo last undoed action"));
+    redo = new QAction(plane);
+    redo->setEnabled(false);
+    redo->setText(QObject::tr("Redo last undoed action"));
     redo->setIcon(QIcon::fromTheme("edit-redo", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-redo.png")));
     redo->setShortcut(QKeySequence::Redo);
+    connect(cursor, SIGNAL(redoAvailable(bool)), redo, SLOT(setEnabled(bool)));
+    QObject::connect(redo, SIGNAL(triggered()), q, SLOT(redo()));
 
     separator = new QAction(this);
     separator->setSeparator(true);
@@ -485,6 +496,26 @@ void EditorPrivate::createActions()
     menu_edit->addAction(redo);
 
     menu_insert = new QMenu(tr("Insert"), 0);
+}
+
+const TextCursor * Editor::cursor() const
+{
+    return d->cursor;
+}
+
+const TextDocument * Editor::document() const
+{
+    return d->doc;
+}
+
+TextCursor * Editor::cursor()
+{
+    return d->cursor;
+}
+
+TextDocument * Editor::document()
+{
+    return d->doc;
 }
 
 Editor::~Editor()
@@ -516,6 +547,16 @@ QList<QAction*> Editor::toolbarActions()
     return result;
 }
 
+void Editor::undo()
+{
+    d->cursor->undo();
+}
+
+void Editor::redo()
+{
+    d->cursor->redo();
+}
+
 QList<QMenu*> Editor::menuActions()
 {
     QList<QMenu*> result;
@@ -523,35 +564,49 @@ QList<QMenu*> Editor::menuActions()
     return result;
 }
 
-QString Editor::saveState() const
+QByteArray Editor::saveState() const
 {
-    QStringList result;
-    result << QString("unsaved=") + (isModified()? "1" : "0");
-    result << QString("cursorX=%1").arg(d->cursor->column());
-    result << QString("cursorY=%1").arg(d->cursor->row());
-    return result.join("\n");
+    QBuffer buffer;
+    buffer.open(QIODevice::WriteOnly);
+    QDataStream stream(&buffer);
+    stream << (*this);
+    QByteArray data = buffer.data();
+    QByteArray md5 = QCryptographicHash::hash(data, QCryptographicHash::Md5);
+    QByteArray version =
+            QCoreApplication::instance()->applicationVersion().leftJustified(20, ' ')
+            .toAscii();
+    return md5 + version + data;
 }
 
-void Editor::restoreState(const QString &data)
+void Editor::restoreState(const QByteArray &data)
 {
-    QStringList lines = data.split("\n", QString::SkipEmptyParts);
-    for (int i=0; i<lines.size(); i++) {
-        if (lines[i].trimmed().isEmpty())
-            continue;
-        QStringList pair = lines[i].split("=");
-        if (pair.size()==2) {
-            const QString key = pair[0].trimmed().toLower();
-            const QString val = pair[0].trimmed();
-            if (key=="unsaved") {
-                // TODO implement me
-            }
-            else if (key=="cursorx") {
-                d->cursor->setColumn(val.toInt());
-            }
-            else if (key=="cursory") {
-                d->cursor->setRow(val.toInt());
+    if (data.size()>=36) {
+        QByteArray checksum = data.mid(0,16);
+        QString version = QString::fromAscii(data.mid(16,20)).trimmed();
+        QString myVersion = QCoreApplication::instance()->applicationVersion();
+        QByteArray d = data.mid(36);
+        QByteArray md5 = QCryptographicHash::hash(d, QCryptographicHash::Md5);
+        bool equal = true;
+        for (int i=0; i<16; i++) {
+            if (checksum[i]!=md5[i]) {
+                equal = false;
+                break;
             }
         }
+        if (version>myVersion) {
+            qWarning() << "Can't restore state: version mismatch (my: "
+                       << myVersion << ", required: " << version << ")";
+        }
+        else if (!equal) {
+            qWarning() << "Can't restore state: MD5 checksum mismatch";
+        }
+        else {
+            QDataStream stream(d);
+            stream >> (*this);
+        }
+    }
+    else {
+        qWarning() << "Can't restore state: not enought data";
     }
 }
 
@@ -578,6 +633,94 @@ void Editor::setNotModified()
 bool Editor::isModified() const
 {
     return d->cursor->isModified();
+}
+
+QDataStream & operator<< (QDataStream & stream, const Editor & editor)
+{
+    stream << editor.text();
+    stream << editor.cursor()->row();
+    stream << editor.cursor()->column();
+    stream << editor.document()->undoStack()->count();
+    stream << editor.document()->undoStack()->cleanIndex();
+    stream << editor.document()->undoStack()->index();
+    for (int i=0; i<editor.document()->undoStack()->count(); i++) {
+        const QUndoCommand * cmd = editor.document()->undoStack()->command(i);
+        stream << cmd->id();
+        if (cmd->id()==1) {
+            const InsertCommand * insertCommand =
+                    static_cast<const InsertCommand*>(cmd);
+            stream << (*insertCommand);
+        }
+        if (cmd->id()==2) {
+            const RemoveCommand * removeCommand =
+                    static_cast<const RemoveCommand*>(cmd);
+            stream << (*removeCommand);
+        }
+        if (cmd->id()==3) {
+            const InsertBlockCommand * insertCommand =
+                    static_cast<const InsertBlockCommand*>(cmd);
+            stream << (*insertCommand);
+        }
+        if (cmd->id()==4) {
+            const RemoveBlockCommand * removeCommand =
+                    static_cast<const RemoveBlockCommand*>(cmd);
+            stream << (*removeCommand);
+        }
+    }
+    return stream;
+}
+
+QDataStream & operator>> (QDataStream & stream, Editor & editor)
+{
+    QString txt;
+    int row, col;
+    stream >> txt;
+    stream >> row;
+    stream >> col;
+    editor.setText(txt);
+    editor.cursor()->setRow(row);
+    editor.cursor()->setColumn(col);
+    int undoCount, cleanIndex, undoIndex;
+    stream >> undoCount >> cleanIndex >> undoIndex;
+    QUndoStack * undo = editor.document()->undoStack();
+    TextDocument::noUndoRedo = true;
+    for (int i=0; i<undoCount; i++) {
+        if (i==cleanIndex)
+            undo->setClean();
+        int id;
+        stream >> id;
+        if (id==1) {
+            InsertCommand * cmd = new InsertCommand(editor.document(),
+                                                    editor.cursor(),
+                                                    editor.analizer());
+            stream >> (*cmd);
+            undo->push(cmd);
+        }
+        if (id==2) {
+            RemoveCommand * cmd = new RemoveCommand(editor.document(),
+                                                    editor.cursor(),
+                                                    editor.analizer());
+            stream >> (*cmd);
+            undo->push(cmd);
+        }
+        if (id==3) {
+            InsertBlockCommand * cmd = new InsertBlockCommand(editor.document(),
+                                                    editor.cursor(),
+                                                    editor.analizer());
+            stream >> (*cmd);
+            undo->push(cmd);
+        }
+        if (id==4) {
+            RemoveBlockCommand * cmd = new RemoveBlockCommand(editor.document(),
+                                                    editor.cursor(),
+                                                    editor.analizer());
+            stream >> (*cmd);
+            undo->push(cmd);
+        }
+    }
+    undo->setIndex(undoIndex);
+    TextDocument::noUndoRedo = false;
+    return stream;
 }
 
 } // namespace Editor

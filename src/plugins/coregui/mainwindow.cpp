@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "extensionsystem/pluginmanager.h"
+#include "confirmclosedialod.h"
 
 #include "kumirprogram.h"
 
@@ -119,7 +120,7 @@ MainWindow::MainWindow(Plugin * p) :
 
     connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(showPreferences()));
 
-        gr_fileActions = new QActionGroup(this);
+    gr_fileActions = new QActionGroup(this);
     gr_fileActions->addAction(ui->actionSave);
     connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(saveCurrentFile()));
     connect(ui->actionSave_as, SIGNAL(triggered()), this, SLOT(saveCurrentFileAs()));
@@ -253,15 +254,17 @@ void MainWindow::timerEvent(QTimerEvent *e)
     e->accept();
 }
 
-void MainWindow::saveCurrentFile()
+bool MainWindow::saveCurrentFile()
 {
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+    if (twe->type==WWW)
+        return true;
     const QString fileName = twe->property("realFileName").toString();
     if (fileName.isEmpty()) {
-        saveCurrentFileAs();
+        return saveCurrentFileAs();
     }
     else {
-        saveCurrentFileTo(fileName);
+        return saveCurrentFileTo(fileName);
     }
 }
 
@@ -356,7 +359,7 @@ void MainWindow::prepareInsertMenu()
     }
 }
 
-void MainWindow::saveCurrentFileAs()
+bool MainWindow::saveCurrentFileAs()
 {
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
     QString fileName = twe->property("fileName").toString();
@@ -377,21 +380,30 @@ void MainWindow::saveCurrentFileAs()
             fileName += ".kum";
         if (twe->type==Pascal && !(fileName.endsWith(".pas") || fileName.endsWith(".pp")))
             fileName += ".pas";
-        saveCurrentFileTo(fileName);
-        m_plugin->mySettings()->setValue(Plugin::RecentFileKey, fileName);
-        twe->setProperty("fileName", fileName);
-        twe->setProperty("realFileName", fileName);
-        int index = ui->tabWidget->indexOf(twe);
-        ui->tabWidget->setTabText(index, QFileInfo(fileName).fileName());
-        addToRecent(fileName);
+        if (saveCurrentFileTo(fileName)) {
+            m_plugin->mySettings()->setValue(Plugin::RecentFileKey, fileName);
+            twe->setProperty("fileName", fileName);
+            twe->setProperty("realFileName", fileName);
+            int index = ui->tabWidget->indexOf(twe);
+            ui->tabWidget->setTabText(index, QFileInfo(fileName).fileName());
+            addToRecent(fileName);
+            return true;
+        }
     }
+    return false;
 }
 
-void MainWindow::saveCurrentFileTo(const QString &fileName)
+bool MainWindow::saveCurrentFileTo(const QString &fileName)
 {
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
     int documentId = twe->property("documentId").toInt();
-    m_plugin->plugin_editor->saveDocument(documentId, fileName);
+    QString error = m_plugin->plugin_editor->saveDocument(documentId, fileName);
+    if (error.isEmpty())
+        return true;
+    else {
+        QMessageBox::critical(this, tr("Can't save file"), error);
+        return false;
+    }
 }
 
 void MainWindow::handleTabTitleChange(const QString &title)
@@ -437,37 +449,37 @@ MainWindow::~MainWindow()
 void MainWindow::newProgram()
 {
 
-        QObject * o = m_plugin->myDependency("Analizer");
-        QString defaultText;
-        QString suffix = ".txt";
-        DocumentType type = Text;
-        if (QString(o->metaObject()->className()).toLower().contains("kumir")) {
-            defaultText = QString::fromUtf8("алг\nнач\n\nкон");
-            suffix = ".kum";
-            type = Kumir;
-        }
-        else if (QString(o->metaObject()->className()).toLower().contains("pascal")) {
-            defaultText = "program;\n\nbegin\n\t\nend.";
-            type = Pascal;
-            suffix = ".pas";
-        }
-        const QString initialText = m_plugin->mySettings()->value(Plugin::InitialTextKey, defaultText).toString();
-        Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("Analizer", initialText);
-        QWidget* vc = doc.widget;
-        int id = doc.id;
-        vc->setProperty("documentId", id);
-        QString fileName = suggestNewFileName(suffix);
-        vc->setProperty("fileName", QDir::current().absoluteFilePath(fileName));
-        TabWidgetElement * e = addCentralComponent(
-                    fileName,
-                    vc,
-                    doc.toolbarActions,
-                    doc.menus,
-                    doc.statusbarWidgets,
-                    type,
-                    true);
-        ui->tabWidget->setCurrentWidget(e);
-        e->setFocus();
+    QObject * o = m_plugin->myDependency("Analizer");
+    QString defaultText;
+    QString suffix = ".txt";
+    DocumentType type = Text;
+    if (QString(o->metaObject()->className()).toLower().contains("kumir")) {
+        defaultText = QString::fromUtf8("алг\nнач\n\nкон");
+        suffix = ".kum";
+        type = Kumir;
+    }
+    else if (QString(o->metaObject()->className()).toLower().contains("pascal")) {
+        defaultText = "program;\n\nbegin\n\t\nend.";
+        type = Pascal;
+        suffix = ".pas";
+    }
+    const QString initialText = m_plugin->mySettings()->value(Plugin::InitialTextKey, defaultText).toString();
+    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("Analizer", initialText);
+    QWidget* vc = doc.widget;
+    int id = doc.id;
+    vc->setProperty("documentId", id);
+    QString fileName = suggestNewFileName(suffix);
+    vc->setProperty("fileName", QDir::current().absoluteFilePath(fileName));
+    TabWidgetElement * e = addCentralComponent(
+                fileName,
+                vc,
+                doc.toolbarActions,
+                doc.menus,
+                doc.statusbarWidgets,
+                type,
+                true);
+    ui->tabWidget->setCurrentWidget(e);
+    e->setFocus();
 
 }
 
@@ -547,10 +559,10 @@ TabWidgetElement * MainWindow::addCentralComponent(
 
 
 QDockWidget * MainWindow::addSecondaryComponent(const QString & title
-                                       , QWidget * c
-                                       , const QList<QAction*> & toolbarActions
-                                       , const QList<QAction*> & menuActions
-                                       , DockWindowType type)
+                                                , QWidget * c
+                                                , const QList<QAction*> & toolbarActions
+                                                , const QList<QAction*> & menuActions
+                                                , DockWindowType type)
 {
     QDockWidget * dock = new QDockWidget(title, this);
     dock->setVisible(false);
@@ -638,7 +650,7 @@ void MainWindow::disableTabs()
     ui->tabWidget->disableTabs();
 }
 
-void MainWindow::restoreSession(const QByteArray & data)
+void MainWindow::loadSettings()
 {
     QRect r = m_plugin->mySettings()->value(Plugin::MainWindowGeometryKey, QRect(-1,-1,0,0)).toRect();
     if (r.width()>0) {
@@ -646,160 +658,180 @@ void MainWindow::restoreSession(const QByteArray & data)
         move(r.topLeft());
     }
     restoreState(m_plugin->mySettings()->value(Plugin::MainWindowStateKey).toByteArray());
-    for (int i=0; i<l_dockWindows.size(); i++) {
-//        l_dockWindows[i]->restoreState(m_plugin->mySettings(), this, i==0);
-//        addDockWidget(Qt::BottomDockWidgetArea, l_dockWindows[i]);
-    }
-//    restoreState(m_plugin->mySettings()->value(Plugin::MainWindowStateKey).toByteArray());
+}
 
-    if (m_plugin->b_nosessions) {
-        newProgram();
-    }
-    else {
+void MainWindow::saveSettings()
+{
+    QRect r(pos(), size());
+    QSettings * sett = m_plugin->mySettings();
+    sett->setValue(Plugin::MainWindowGeometryKey, r);
+    sett->setValue(Plugin::MainWindowStateKey, saveState());
+}
 
-        for (int index=ui->tabWidget->count()-1; index>=0; index--) {
+void MainWindow::restoreSession()
+{
+    int sessionIndex = 0;
 
-                TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(index));
-                if (twe->type!=WWW) {
-                    int documentId = twe->property("documentId").toInt();
-                    m_plugin->plugin_editor->closeDocument(documentId);
-                }
-                ui->tabWidget->removeTab(index);
+    for (int index=ui->tabWidget->count()-1; index>=0; index--) {
 
-
+        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(index));
+        if (twe->type!=WWW) {
+            int documentId = twe->property("documentId").toInt();
+            m_plugin->plugin_editor->closeDocument(documentId);
         }
+        ui->tabWidget->removeTab(index);
+    }
 
-        addCentralComponent(
-                    tr("Start"),
-                    m_plugin->m_startPage.widget,
-                    m_plugin->m_startPage.toolbarActions,
-                    m_plugin->m_startPage.menus,
-                    QList<QWidget*>(),
-                    WWW,
-                    false);
+    addCentralComponent(
+                tr("Start"),
+                m_plugin->m_startPage.widget,
+                m_plugin->m_startPage.toolbarActions,
+                m_plugin->m_startPage.menus,
+                QList<QWidget*>(),
+                WWW,
+                false);
 
-        QDir sessionDir(QDir::currentPath()+"/.session");
-        QStringList es = sessionDir.entryList(
-                    QStringList() << "*.kum" << "*.pas" << "*.txt" << "*.url",
-                    QDir::Files,
-                    QDir::Name
-                    );
-        for (int i=0; i<es.size(); i++) {
-            const QString e = es[i];
-            if (e.endsWith(".url")) {
+    QDir sessionDir(QDir::currentPath()+"/.session");
+    QStringList es = sessionDir.entryList(
+                QStringList() << "*.document",
+                QDir::Files,
+                QDir::Name
+                );
+
+    for (int i=0; i<es.size(); i++) {
+        const QString e = es[i];
+        QFile f(sessionDir.absoluteFilePath(e));
+        if (f.open(QIODevice::ReadOnly)) {
+            QDataStream stream(&f);
+            QString type, title;
+            QString url;
+            stream >> type >> title >> url;
+            if (type.toLower()=="url") {
                 // TODO implement me
             }
             else {
-                TabWidgetElement * twe = loadFromUrl(QUrl::fromLocalFile(sessionDir.absoluteFilePath(e)), false);
-                const QString index = QFileInfo(e).baseName();
-                QFile state(sessionDir.absoluteFilePath(index+".dstate"));
-                if (state.open(QIODevice::ReadOnly|QIODevice::Text)) {
-                    QTextStream ts(&state);
-                    ts.setCodec("UTF-8");
-                    ts.setAutoDetectUnicode(true);
-                    QStringList lines = ts.readAll().split("\n", QString::SkipEmptyParts);
-                    state.close();
-                    for (int j=0; j<lines.size(); j++) {
-                        const QStringList pair = lines[j].split("=");
-                        if (pair.size()==2) {
-                            const QString key = pair[0].trimmed().toLower();
-                            const QString value = pair[1].trimmed();
-                            if (key=="filename") {
-                                twe->setProperty("fileName", value);
-                                twe->component->setProperty("fileName", value);
-                                ui->tabWidget->setTabText(ui->tabWidget->count()-1, QFileInfo(value).fileName());
-                            }
-                            if (key=="realfilename") {
-                                twe->setProperty("realFileName", value);
-                                twe->component->setProperty("realFileName", value);
-                            }
-                        }
-                    }
-                    int documentId = twe->property("documentId").toInt();
-                    m_plugin->plugin_editor->restoreState(documentId, lines.join("\n"));
+                QString analizerName;
+                DocumentType doctype = Text;
+                if (type.toLower()=="kumir") {
+                    analizerName = "KumirAnalizer";
+                    doctype = Kumir;
                 }
+                else if (type.toLower()=="pascal") {
+                    analizerName = "PascalAnalizer";
+                    doctype = Pascal;
+                }
+                EditorComponent doc = m_plugin->plugin_editor->newDocument(analizerName, "");
+                QByteArray editorSession = f.readAll();
+                m_plugin->plugin_editor->restoreState(doc.id, editorSession);
+                QWidget * vc = doc.widget;
+                vc->setProperty("documentId", doc.id);
+                TabWidgetElement * twe = addCentralComponent(
+                            title,
+                            vc,
+                            doc.toolbarActions,
+                            doc.menus,
+                            doc.statusbarWidgets,
+                            doctype,
+                            true
+                            );
+                twe->setProperty("fileName", title);
+                twe->component->setProperty("fileName", title);
+                twe->setProperty("realFileName", url);
+                twe->component->setProperty("realFileName", url);
+                ui->tabWidget->setTabText(ui->tabWidget->count()-1, QFileInfo(title).fileName());
             }
-        }
-
-        if (data.size()>0) {
-            int tabIndex = quint8(data[0]);
-            ui->tabWidget->setCurrentIndex(qMin(tabIndex, ui->tabWidget->count()-1));
-            setupContentForTab();
+            f.close();
+            if (e.endsWith("-active.document"))
+                sessionIndex = i+1;
         }
     }
 
+    ui->tabWidget->setCurrentIndex(sessionIndex);
+    setupContentForTab();
+
+}
+
+void MainWindow::closeEvent(QCloseEvent *e)
+{
+    ConfirmCloseDialod dialog(!m_plugin->b_nosessions, this);
+    dialog.exec();
+    if (dialog.result()==ConfirmCloseDialod::Cancel) {
+        e->ignore();
+    }
+    else if (dialog.result()==ConfirmCloseDialod::SaveNothing) {
+        if (!m_plugin->b_nosessions) {
+            QDir sessionDir(QDir::currentPath()+"/.session");
+            QStringList es = sessionDir.entryList(
+                        QStringList() << "*.document",
+                        QDir::Files,
+                        QDir::Name
+                        );
+            foreach (const QString e, es) {
+                sessionDir.remove(e);
+            }
+            QDir::current().remove(".session");
+        }
+        e->accept();
+    }
+    else if (dialog.result()==ConfirmCloseDialod::SaveSession) {
+        saveSession();
+        e->accept();
+    }
+    else if (dialog.result()==ConfirmCloseDialod::SaveFiles) {
+        for (int i=0; i<ui->tabWidget->count(); i++) {
+            ui->tabWidget->setCurrentIndex(i);
+            if (!saveCurrentFile()) {
+                e->ignore();
+                return;
+            }
+        }
+        e->accept();
+    }
 }
 
 void MainWindow::switchWorkspace() {
     ExtensionSystem::PluginManager::instance()->showWorkspaceChooseDialog();
 }
 
-QByteArray MainWindow::saveSession() const
+void MainWindow::saveSession() const
 {
-    QRect r(pos(), size());
-    QSettings * sett = m_plugin->mySettings();
-    sett->setValue(Plugin::MainWindowGeometryKey, r);
-    sett->setValue(Plugin::MainWindowStateKey, saveState());
-
-    QByteArray result;
-
-    if (!m_plugin->b_nosessions) {
-
-        result.append(quint8(ui->tabWidget->currentIndex()));
-
-        QDir::current().mkdir(".session");
-        QDir sessionDir(QDir::currentPath()+"/.session");
-        QStringList es = sessionDir.entryList(
-                    QStringList() << "*.kum" << "*.pas" << "*.txt" << "*.url" << ".dstate",
-                    QDir::Files,
-                    QDir::Name
-                    );
-        foreach (const QString e, es) {
-            sessionDir.remove(e);
-        }
-
-        for (int i=1; i<ui->tabWidget->count(); i++) {
-            TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
-            QString suffix = "txt";
-            if (twe->type==Kumir)
-                suffix = "kum";
-            if (twe->type==Pascal)
-                suffix = "pas";
-            if (twe->type==WWW)
-                suffix = "url";
-            int documentId = twe->property("documentId").toInt();
-            if (twe->type!=WWW) {
-                m_plugin->plugin_editor->saveDocument(documentId, QString(".session/%1.%2").arg(i).arg(suffix));
-                QFile state(QString(".session/%1.dstate").arg(i));
-                if (state.open(QIODevice::WriteOnly|QIODevice::Text)) {
-                    QTextStream ts(&state);
-                    ts.setCodec("UTF-8");
-                    ts.setGenerateByteOrderMark(true);
-                    ts << "fileName=" << twe->property("fileName").toString() << "\n";
-                    ts << "realFileName=" << twe->property("realFileName").toString() << "\n";
-                    ts << m_plugin->plugin_editor->saveState(documentId);
-                }
-                state.close();
-            }
-            else
-            {
-                QFile url(QString(".session/%1.%2").arg(i).arg(suffix));
-                if (url.open(QIODevice::WriteOnly|QIODevice::Text)) {
-                    QTextStream ts(&url);
-                    ts.setCodec("UTF-8");
-                    ts.setGenerateByteOrderMark(true);
-                    ts << twe->property("realFileName").toString();
-                }
-                url.close();
-            }
-
-        }
-    //    for (int i=0; i<l_dockWindows.size(); i++) {
-    //        l_dockWindows[i]->saveState(sett);
-    //    }
+    QDir::current().mkpath(".session");
+    QDir sessionDir(QDir::currentPath()+"/.session");
+    QStringList es = sessionDir.entryList(
+                QStringList() << "*.document",
+                QDir::Files,
+                QDir::Name
+                );
+    foreach (const QString e, es) {
+        sessionDir.remove(e);
     }
-
-    return result;
+    for (int i=1; i<ui->tabWidget->count(); i++) {
+        const QString sessionFileName = QString("%1%2.document")
+                .arg(i, 2, 10, QChar('0'))
+                .arg(i==ui->tabWidget->currentIndex()? "-active" : "");
+        QFile sessionFile(sessionDir.absoluteFilePath(sessionFileName));
+        if (sessionFile.open(QIODevice::WriteOnly)) {
+            QDataStream stream(&sessionFile);
+            TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+            if (twe->type==Kumir)
+                stream << QString("kumir");
+            else if (twe->type==Pascal)
+                stream << QString("pascal");
+            else if (twe->type==WWW)
+                stream << QString("www");
+            else
+                stream << QString("text");
+            QString title = twe->property("fileName").toString();
+            QString fileName = twe->property("realFileName").toString();
+            stream << title;
+            stream << fileName;
+            if (twe->documentId!=-1 && twe->type!=WWW) {
+                QByteArray editorSession = m_plugin->plugin_editor->saveState(twe->documentId);
+                sessionFile.write(editorSession);
+            }
+            sessionFile.close();
+        }
+    }
 }
 
 void MainWindow::fileOpen()

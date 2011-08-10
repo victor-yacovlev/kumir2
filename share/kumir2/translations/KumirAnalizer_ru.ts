@@ -4,7 +4,7 @@
 <context>
     <name>KumirAnalizer::Lexer</name>
     <message utf8="true">
-        <location filename="../../../src/plugins/kumiranalizer/lexer.cpp" line="1166"/>
+        <location filename="../../../src/plugins/kumiranalizer/lexer.cpp" line="1187"/>
         <source>\bзнач\b|\bтаб\b</source>
         <translation type="unfinished"></translation>
     </message>

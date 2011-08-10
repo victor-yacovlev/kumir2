@@ -20,6 +20,12 @@ public:
     void setText(const QString &text);
     void setDocumentId(int id);
     QString text() const;
+    const class TextCursor * cursor() const;
+    const class TextDocument * document() const;
+    const Shared::AnalizerInterface * analizer() const;
+    Shared::AnalizerInterface * analizer();
+    class TextCursor * cursor();
+    class TextDocument * document();
     bool isModified() const;
     void appendMarginText(int lineNo, const QString & text);
     void setMarginText(int lineNo, const QString & text);
@@ -30,9 +36,12 @@ public:
     void unlock();
     void setLineHighlighted(int lineNo, const QColor & color);
     void ensureAnalized();
-    QString saveState() const;
-    void restoreState(const QString &data);
+    QByteArray saveState() const;
+    void restoreState(const QByteArray &data);
     void unsetAnalizer();
+public slots:
+    void undo();
+    void redo();
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
 private:
@@ -41,6 +50,9 @@ private:
 
 
 };
+
+QDataStream & operator<< (QDataStream & stream, const Editor & editor);
+QDataStream & operator>> (QDataStream & stream, Editor & editor);
 
 } // namespace Editor
 

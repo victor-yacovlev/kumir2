@@ -36,8 +36,8 @@ public:
     void clearMargin(int documentId);
     void clearMargin(int documentId, int fromLine, int toLine);
     void ensureAnalized(int documentId);
-    QString saveState(int documentId);
-    void restoreState(int documentId, const QString & data);
+    QByteArray saveState(int documentId);
+    void restoreState(int documentId, const QByteArray & data);
     void updateSettings();
 protected:
     QString initialize(const QStringList &arguments);

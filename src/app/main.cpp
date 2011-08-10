@@ -1,6 +1,8 @@
 #include <QtCore>
 #include <QtGui>
 
+#include "../VERSION.h"
+
 #include "extensionsystem/pluginmanager.h"
 
 #ifdef Q_OS_MAC
@@ -42,6 +44,18 @@ int main(int argc, char **argv)
 #ifdef Q_OS_WIN32
     app->setAttribute(Qt::AA_DontShowIconsInMenus);
 #endif
+    QString versionStatus;
+    if (VERSION_BETA)
+        versionStatus = QString("beta%1").arg(VERSION_BETA, 2, 10, QChar('0'));
+    else if (VERSION_ALPHA)
+        versionStatus = QString("alpha%1").arg(VERSION_ALPHA, 2, 10, QChar('0'));
+    else
+        versionStatus = QString("release");
+    app->setApplicationVersion(QString("%1.%2.%3-%4")
+                               .arg(VERSION_MAJOR)
+                               .arg(VERSION_MINOR)
+                               .arg(VERSION_RELEASE)
+                               .arg(versionStatus));
     const QString sharePath = QDir(app->applicationDirPath()+SHARE_PATH).canonicalPath();
     QDir translationsDir(sharePath+"/translations");
     QStringList ts_files = translationsDir.entryList(QStringList() << "*_"+getLanguage()+".qm");
