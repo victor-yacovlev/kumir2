@@ -518,6 +518,16 @@ TextDocument * Editor::document()
     return d->doc;
 }
 
+const Shared::AnalizerInterface * Editor::analizer() const
+{
+    return d->analizer;
+}
+
+Shared::AnalizerInterface * Editor::analizer()
+{
+    return d->analizer;
+}
+
 Editor::~Editor()
 {
     delete d->doc;
