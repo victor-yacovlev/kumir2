@@ -199,8 +199,8 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
     while (data.size()<=line) {
         blankLines ++;
         TextLine tl;
+        tl.inserted = true;
         data.append(tl);
-        m_newLines.insert(data.size()-1);
     }
     TextLine tl = data[line];
     while (pos>tl.text.length()) {
@@ -209,10 +209,8 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
         tl.selected << false;
         tl.highlight << Shared::LxTypeEmpty;
     }
-
+    tl.changed = true;
     data[line] = tl;
-    m_removedLines.insert(line);
-    m_newLines.insert(line);
     const QStringList lines = text.split("\n", QString::KeepEmptyParts);
     if (lines.size()==1) {
         // Insert text fragment into line
@@ -239,6 +237,8 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
         // 2. Insert middle lines
         for (int i=lines.count()-1; i>=1; i--) {
             TextLine tl;
+            tl.changed = true;
+            tl.inserted = true;
             tl.text = lines[i];
             for (int j=0; j<tl.text.length(); j++) {
                 tl.selected << false;
@@ -247,7 +247,6 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
             if (analizer)
                 tl.highlight = analizer->lineProp(documentId, tl.text).toList();
             data.insert(line+1, tl);
-            m_newLines.insert(line+i);
         }
 
 //        // 3. Prepend fragment to last line
@@ -258,6 +257,7 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
 //        m_removedLines.insert(line+1);
 //        m_newLines.insert(line);
         data[line+lines.count()-1].text.prepend(remainder);
+        data[line+lines.count()-1].changed = true;
         while (data[line+lines.count()-1].selected.size() < data[line+lines.count()-1].text.length())
             data[line+lines.count()-1].selected << false;
         while (data[line+lines.count()-1].highlight.size() < data[line+lines.count()-1].text.length())
@@ -301,8 +301,9 @@ void InsertBlockCommand::redo()
     while (doc->data.size()<row+block.size()) {
         addedLines ++;
         TextLine tl;
+        tl.changed = true;
+        tl.inserted = true;
         doc->data.append(tl);
-        doc->m_newLines.insert(doc->data.size()-1);
     }
 
     // 2. Save old lines
@@ -313,6 +314,7 @@ void InsertBlockCommand::redo()
     // 3. Insert block
     for (int i=0; i<block.size(); i++) {
         TextLine tl = doc->data[row+i];
+        tl.changed = true;
         int textPos = column - 2 * doc->indentAt(row+i);
         while (textPos>tl.text.length())
             tl.text += " ";
@@ -331,8 +333,6 @@ void InsertBlockCommand::redo()
             }
         }
         doc->data[row+i] = tl;
-        doc->m_newLines.insert(row+i);
-        doc->m_removedLines.insert(row+i);
     }
     cursorRow = cursor->row();
     cursorCol = cursor->column();
@@ -349,6 +349,7 @@ void InsertBlockCommand::undo()
     Q_ASSERT(block.size()==previousLines.size());
     for (int i=0; i<block.size(); i++) {
         TextLine tl = doc->data[row+i];
+        tl.changed = true;
         tl.text = previousLines[i];
         tl.selected.clear();
         tl.highlight.clear();
@@ -364,8 +365,6 @@ void InsertBlockCommand::undo()
             }
         }
         doc->data[row+i] = tl;
-        doc->m_newLines.insert(row+i);
-        doc->m_removedLines.insert(row+i);
     }
 
     // 2. Remove added lines
@@ -415,6 +414,7 @@ void RemoveBlockCommand::redo()
         int textPos = left - doc->indentAt(i)*2;
 
         tl.text = tl.text.remove(textPos, right-left);
+        tl.changed = true;
 
         tl.selected.clear();
         tl.highlight.clear();
@@ -425,8 +425,7 @@ void RemoveBlockCommand::redo()
         else for (int j=0; j<tl.text.length(); j++)
             tl.highlight << Shared::LxTypeEmpty;
         doc->data[i] = tl;
-        doc->m_newLines.insert(i);
-        doc->m_removedLines.insert(i);
+
     }
     cursorRow = cursor->row();
     cursorCol = cursor->column();
@@ -452,9 +451,9 @@ void RemoveBlockCommand::undo()
             tl.highlight = analizer->lineProp(doc->documentId, tl.text).toList();
         else for (int j=0; j<tl.text.length(); j++)
             tl.highlight << Shared::LxTypeEmpty;
+        tl.changed = true;
         doc->data[i] = tl;
-        doc->m_newLines.insert(i);
-        doc->m_removedLines.insert(i);
+
     }
 
     doc->checkForCompilationRequest(QPoint(cursor->row(), cursor->column()));
@@ -474,11 +473,10 @@ void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterf
 {
     int cnt = count;
     int p = pos;
-    m_removedLines.insert(line);
-    m_newLines.insert(line);
-    int counter = line;
+    int removedCounter = line;
     while (cnt>0) {
         TextLine tl = data[line];
+        tl.changed = true;
         int thisLineRemoveCount = qMin(cnt, tl.text.length() - p);
         Q_ASSERT(thisLineRemoveCount>=0);
         removedText += tl.text.mid(p, thisLineRemoveCount);
@@ -490,18 +488,19 @@ void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterf
         cnt -= thisLineRemoveCount;
         if (cnt>0) {
             if (line+1 < data.size()) {
+                removedCounter ++;
                 TextLine next = data[line+1];
                 data.removeAt(line+1);
+                m_removedLines.insert(removedCounter);
                 tl.text += next.text;
                 tl.selected += next.selected;
                 tl.highlight += next.highlight;
                 removedText += "\n";
-                m_removedLines.insert(counter);
             }
             else {
                 data.removeAt(line);
             }
-            counter ++;
+
             cnt --;
         }
         if (line < data.size()) {
@@ -512,6 +511,7 @@ void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterf
     }
     if (line < data.size()) {
         data[line].text.remove(0, blankChars);
+        data[line].changed = true;
         for (int i=0; i<blankChars; i++) {
             data[line].selected.pop_front();
             data[line].highlight.pop_front();
@@ -566,7 +566,15 @@ QString TextDocument::toPlainText() const
 void TextDocument::checkForCompilationRequest(const QPoint &cursorPosition)
 {
     if (cursorPosition.y()!=lastCursorPos.y()) {
-        if (!m_removedLines.isEmpty() || !m_newLines.isEmpty()) {
+        bool hasChangedLines = false;
+        for (int i=0; i<data.size(); i++) {
+            if (data[i].changed) {
+                hasChangedLines = true;
+                break;
+            }
+        }
+        bool hasRemovedLines = !m_removedLines.isEmpty();
+        if (!hasChangedLines || !hasRemovedLines) {
             lastCursorPos = cursorPosition;
             flushChanges();
         }
@@ -575,17 +583,23 @@ void TextDocument::checkForCompilationRequest(const QPoint &cursorPosition)
 
 void TextDocument::flushChanges()
 {
-    if (m_removedLines.isEmpty() || m_newLines.isEmpty())
-        return;
     Shared::ChangeTextTransaction trans;
     trans.removedLineNumbers = m_removedLines;
-    QList<int> ll = m_newLines.toList();
-    for (int i=0; i<ll.size(); i++) {
-        trans.newLines.append(data[ll.at(i)].text);
+    for (int i=0; i<data.size(); i++) {
+        if (data[i].inserted) {
+            trans.newLines.append(data[i].text);
+        }
+        else if (data[i].changed) {
+            trans.removedLineNumbers.insert(i);
+            trans.newLines.append(data[i].text);
+        }
+        data[i].changed = false;
+        data[i].inserted = false;
     }
-    changes.push(trans);
+    if (!trans.removedLineNumbers.isEmpty() || !trans.newLines.isEmpty())
+        changes.push(trans);
     m_removedLines.clear();
-    m_newLines.clear();
+
 }
 
 void TextDocument::flushTransaction()

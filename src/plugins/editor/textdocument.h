@@ -146,6 +146,8 @@ struct TextLine
     inline explicit TextLine() {
         indentStart = indentEnd = 0;
         lineEndSelected = false;
+        changed = false;
+        inserted = false;
     }
     int indentStart;
     int indentEnd;
@@ -155,6 +157,8 @@ struct TextLine
     QString text;
     QStringList errors;
     QString marginText;
+    bool changed;
+    bool inserted;
 };
 
 class TextDocument
@@ -206,7 +210,6 @@ protected:
     void checkForCompilationRequest(const QPoint & cursorPosition);
 private:
     QSet<int> m_removedLines;
-    QSet<int> m_newLines;
     QStack<Shared::ChangeTextTransaction> changes;
     QPoint lastCursorPos;
     QUndoStack * m_undoStack;
