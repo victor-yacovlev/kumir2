@@ -422,7 +422,7 @@ void PainterPlugin::runFunct(const QString &alg, const QList<QVariant> &params)
         free(buffer);
     }
     else {
-        qFatal(QString("Unknown method: %1").arg(alg).toLocal8Bit().data());
+        qDebug() << "Unknown method: %1" << alg;
     }
     emit sync();
 }
