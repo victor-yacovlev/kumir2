@@ -29,6 +29,13 @@ QString Plugin::DockSideKey = "DockWindow/Side";
 
 QString Plugin::initialize(const QStringList & parameters)
 {
+    const QStringList BlacklistedThemes = QStringList()
+            << "iaora-kde" << "iaora-qt";
+    const QString currentStyleName = qApp->style()->objectName().toLower();
+//    qDebug() << currentStyleName;
+    if (BlacklistedThemes.contains(currentStyleName)) {
+        qApp->setStyle("Cleanlooks");
+    }
     if (parameters.contains("classicicon",Qt::CaseInsensitive)) {
         QApplication::setWindowIcon(QIcon(QApplication::instance()->property("sharePath").toString()+"/coregui/kumir2-icon-classic.png"));
     }

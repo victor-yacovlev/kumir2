@@ -6,11 +6,24 @@ TabBar::TabBar(QWidget *parent) :
     QTabBar(parent)
 {
     setTabsClosable(true);
+//    const QString backgroundColor = palette().brush(QPalette::Window).color().name();
+//    const QString highlightColor  = palette().brush(QPalette::Active, QPalette::Highlight).color().name();
     static const char * css =
+//            "QTabBar {"
+//            "  background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 %2, stop: 1.0 white);"
+//            "}"
             "QTabBar::tab {"
             "  min-width: 18ex;"
             "  height: 28px;"
             "  text-align: right;"
+//            "  border-top: 1px solid black;"
+//            "  border-top-left-radius: 8px;"
+//            "  border-top-right-radius: 8px;"
+//            "  border-left: 1px solid black;"
+//            "  border-right: 1px solid black;"
+            "}"
+            "QTabBar::tab:selected {"
+//            "  background-color: white;"
             "}"
             "QTabBar::close-button {"
             "  image: url(:/coregui/close-tab.png);"
