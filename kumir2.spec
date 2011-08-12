@@ -392,7 +392,7 @@ Kumir IDE for high school applications
 %files professional
 %defattr(-,root,root)
 %{_bindir}/kumir2-ide
-%{_datadir}/applications/kumir2.desktop
+%{_datadir}/applications/kumir2-professional.desktop
 %dir %{_datadir}/icons/hicolor
 %dir %{_datadir}/icons/hicolor/scalable
 %dir %{_datadir}/icons/hicolor/scalable/apps
@@ -404,11 +404,11 @@ Kumir IDE for high school applications
 %dir %{_datadir}/icons/hicolor/48x48/apps
 %{_datadir}/icons/hicolor/*/apps/kumir2.*
 
-%post professional -p
+%post professional
 %update_icon_cache hicolor
 %icon_theme_cache_post hicolor
 
-%postun professional -p
+%postun professional
 %update_icon_cache hicolor
 %icon_theme_cache_post hicolor
 
@@ -428,7 +428,7 @@ Kumir IDE for school applications
 %files standard
 %defattr(-,root,root)
 %{_bindir}/kumir2-classic
-%{_datadir}/applications/kumir2-classic.desktop
+%{_datadir}/applications/kumir2-standard.desktop
 %dir %{_datadir}/icons/hicolor
 %dir %{_datadir}/icons/hicolor/scalable
 %dir %{_datadir}/icons/hicolor/scalable/apps
@@ -440,11 +440,11 @@ Kumir IDE for school applications
 %dir %{_datadir}/icons/hicolor/48x48/apps
 %{_datadir}/icons/hicolor/*/apps/kumir2-classic.*
 
-%post standard -p
+%post standard
 %update_icon_cache hicolor
 %icon_theme_cache_post hicolor
 
-%postun standard -p
+%postun standard
 %update_icon_cache hicolor
 %icon_theme_cache_post hicolor
 

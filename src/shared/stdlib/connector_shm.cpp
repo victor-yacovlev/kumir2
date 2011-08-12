@@ -22,7 +22,9 @@ bool Connector_SHM::connectTo(int pid)
     QString key = QString("kumir-%1").arg(pid);
     shm->setKey(key);
     if (!shm->attach()) {
-        qFatal(QString("Can't attach to Kumir: %1").arg(shm->errorString()).toLocal8Bit().data());
+        QString err = QString::fromAscii("Can't attach to Kumir: ")
+                +shm->errorString();
+        qFatal(err.toLocal8Bit().data());
         return false;
     }
     e_otherSender = IM_Kumir;
@@ -42,7 +44,9 @@ void Connector_SHM::listenFor(int pid)
     QString key = QString("kumir-%1").arg(pid);
     shm->setKey(key);
     if (!shm->create(sizeof(InterprocessMessage))) {
-        qFatal(QString("Can't listen SHM: %1").arg(shm->errorString()).toLocal8Bit().data());
+        QString err = QString::fromAscii("Can't listen SHM: ")
+                +shm->errorString();
+        qFatal(err.toLocal8Bit().data());
     }
     qDebug() << "Listening for " << key;
     e_otherSender = IM_Program;
@@ -227,7 +231,7 @@ void Connector_SHM::listenWorker()
             return;
         }
         int messageSize = currentFrame()->messageSize;
-        buffer.setRawData(currentFrame()->data, messageSize);
+        buffer = QByteArray(currentFrame()->data, messageSize);
         if (!currentFrame()->replyRequired) {
             currentFrame()->type = IM_NoMessage;
             shm->unlock();
@@ -301,7 +305,7 @@ void Connector_SHM::requestWorker()
         if (req.replyRequired) {
             waitForStatus(e_otherSender);
             int messageSize = currentFrame()->messageSize;
-            buffer.setRawData(currentFrame()->data, messageSize);
+            buffer = QByteArray(currentFrame()->data, messageSize);
             currentFrame()->type = IM_NoMessage;
             shm->unlock();
             QDataStream ds(&buffer, QIODevice::ReadOnly);
