@@ -4,7 +4,7 @@
 %define relno 0
 %define packager Victor Yacovlev <victor@lpm.org.ru>
 %define is_buildservice 0
-%define alphaversion 3
+%define alphaversion 4
 
 # -----------------------------------------------------------------------------
 
@@ -98,6 +98,12 @@ make
 
 %install
 make INSTALL_ROOT=$RPM_BUILD_ROOT/%{_prefix} install
+mkdir -p $RPM_BUILD_ROOT/%{_prefix}/share/kumir2/translations
+cp share/kumir2/translations/*.qm $RPM_BUILD_ROOT/%{_prefix}/share/kumir2/translations/
+mkdir -p $RPM_BUILD_ROOT/%{_datadir}/icons/
+cp -R app_icons/linux/* $RPM_BUILD_ROOT/%{_datadir}/icons/
+mkdir -p $RPM_BUILD_ROOT/%{_datadir}/applications/
+cp *.desktop $RPM_BUILD_ROOT/%{_datadir}/applications/
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -121,7 +127,7 @@ Contains kumir2 extension system skeleton and other libraries
 %{_datadir}/kumir2/icons/*
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/AbstractSyntaxTree*.qm
-%{_datadir}/kumir2/translations/Bytecode*.qm
+#%{_datadir}/kumir2/translations/Bytecode*.qm
 %{_datadir}/kumir2/translations/ErrorMessages*.qm
 %{_datadir}/kumir2/translations/ExtensionSystem*.qm
 
@@ -219,10 +225,26 @@ Provides ability to bytecode-compile Kumir programs
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/KumirBCompiler*.qm
 
+%package module-KumirCodeRun
+Summary:	Kumir bytecode interpreter module
+Requires:	kumir2-common
+Requires:	kumir2-module-st_funct
+
+%description module-KumirCodeRun
+Intepreter of Kumir-2 bytecode
+
+%files module-KumirCodeRun
+%defattr(-,root,root)
+%dir %{_libdir}/kumir2/plugins
+%{_libdir}/kumir2/plugins/libKumirCodeRun.so
+%{_libdir}/kumir2/plugins/KumirCodeRun.pluginspec
+%dir %{_datadir}/kumir2/translations
+%{_datadir}/kumir2/translations/KumirCodeRun*.qm
+
 %package libs
 Summary:	Libraries required to run Kumir-compiled programs
 
-%description
+%description libs
 This package is required in order to distribute Kumir-compiled
 programs without Kumir system itself.
 
@@ -230,10 +252,10 @@ programs without Kumir system itself.
 %defattr(-,root,root)
 %dir %{_libdir}/kumir2
 %{_libdir}/kumir2/libKumirStdLib.so*
-%{_libdir}/kumir2/libKumirGuiRunner.so*
+#%{_libdir}/kumir2/libKumirGuiRunner.so*
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/KumirStdLib*.qm
-%{_datadir}/kumir2/translations/KumirGuiRunner*.qm
+#%{_datadir}/kumir2/translations/KumirGuiRunner*.qm
 
 %post libs -p /sbin/ldconfig
 %postun libs -p /sbin/ldconfig
@@ -272,13 +294,6 @@ Kumir program editor module
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/Editor*.qm
 
-%files module-Editor
-%defattr(-,root,root)
-%dir %{_libdir}/kumir2/plugins
-%{_libdir}/kumir2/plugins/libEditor.so
-%{_libdir}/kumir2/plugins/Editor.pluginspec
-%dir %{_datadir}/kumir2/translations
-%{_datadir}/kumir2/translations/Editor*.qm
 
 %package module-Browser
 Summary:	Kumir Webkit browser
@@ -296,25 +311,25 @@ WebKit browser
 %{_datadir}/kumir2/translations/Browser*.qm
 
 
-%package module-CoreGui
+%package module-CoreGUI
 Summary:	GUI for Kumir
 Requires:	kumir2-module-Analizer
 Requires:	kumir2-module-Generator
 Requires:	kumir2-module-Editor
 Requires:	kumir2-module-Browser
 
-%description module-CoreGui
+%description module-CoreGUI
 GUI for Kumir
 
-%files module-CoreGui
+%files module-CoreGUI
 %defattr(-,root,root)
 %dir %{_libdir}/kumir2/plugins
-%{_libdir}/kumir2/plugins/libCoreGui.so
-%{_libdir}/kumir2/plugins/CoreGui.pluginspec
+%{_libdir}/kumir2/plugins/libCoreGUI.so
+%{_libdir}/kumir2/plugins/CoreGUI.pluginspec
 %dir %{_datadir}/kumir2/coregui
-%{_datadir}/kumir2/coregui
+%{_datadir}/kumir2/coregui/*
 %dir %{_datadir}/kumir2/translations
-%{_datadir}/kumir2/translations/CoreGui*.qm
+%{_datadir}/kumir2/translations/CoreGUI*.qm
 
 
 %package utils-cc
@@ -342,7 +357,7 @@ Requires:	kumir2-module-KumirBCompiler
 A tool to compile kumir-programs into portable execuable bytecode
 Run "kumir2-bc --help" for more information
 
-%files utils-as
+%files utils-bc
 %defattr(-,root,root)
 %{_bindir}/kumir2-bc
 %dir %{_datadir}/kumir2/translations
@@ -367,6 +382,7 @@ Requires:	kumir2-module-CoreGui
 Requires:	kumir2-module-Editor
 Requires:	kumir2-module-KumirAnalizer
 Requires:	kumir2-module-KumirCodeGenerator
+Requires:	kumir2-module-KumirCodeRun
 Requires:	kumir2-module-KumirNativeGenerator
 Requires:	kumir2-module-st_funct
 
@@ -376,6 +392,61 @@ Kumir IDE for high school applications
 %files professional
 %defattr(-,root,root)
 %{_bindir}/kumir2-ide
+%{_datadir}/applications/kumir2.desktop
+%dir %{_datadir}/icons/hicolor
+%dir %{_datadir}/icons/hicolor/scalable
+%dir %{_datadir}/icons/hicolor/scalable/apps
+%dir %{_datadir}/icons/hicolor/128x128
+%dir %{_datadir}/icons/hicolor/128x128/apps
+%dir %{_datadir}/icons/hicolor/64x64
+%dir %{_datadir}/icons/hicolor/64x64/apps
+%dir %{_datadir}/icons/hicolor/48x48
+%dir %{_datadir}/icons/hicolor/48x48/apps
+%{_datadir}/icons/hicolor/*/apps/kumir2.*
+
+%post professional -p
+%update_icon_cache hicolor
+%icon_theme_cache_post hicolor
+
+%postun professional -p
+%update_icon_cache hicolor
+%icon_theme_cache_post hicolor
+
+%package standard
+Summary:	Kumir Standard Edition
+Requires:	kumir2-libs
+Requires:	kumir2-module-CoreGui
+Requires:	kumir2-module-Editor
+Requires:	kumir2-module-KumirAnalizer
+Requires:	kumir2-module-KumirCodeGenerator
+Requires:	kumir2-module-KumirCodeRun
+Requires:	kumir2-module-st_funct
+
+%description standard
+Kumir IDE for school applications
+
+%files standard
+%defattr(-,root,root)
+%{_bindir}/kumir2-classic
+%{_datadir}/applications/kumir2-classic.desktop
+%dir %{_datadir}/icons/hicolor
+%dir %{_datadir}/icons/hicolor/scalable
+%dir %{_datadir}/icons/hicolor/scalable/apps
+%dir %{_datadir}/icons/hicolor/128x128
+%dir %{_datadir}/icons/hicolor/128x128/apps
+%dir %{_datadir}/icons/hicolor/64x64
+%dir %{_datadir}/icons/hicolor/64x64/apps
+%dir %{_datadir}/icons/hicolor/48x48
+%dir %{_datadir}/icons/hicolor/48x48/apps
+%{_datadir}/icons/hicolor/*/apps/kumir2-classic.*
+
+%post standard -p
+%update_icon_cache hicolor
+%icon_theme_cache_post hicolor
+
+%postun standard -p
+%update_icon_cache hicolor
+%icon_theme_cache_post hicolor
 
 %package libs-painter
 Summary:	Actor Painter runtime libraries
@@ -389,6 +460,8 @@ using actor Painter
 %defattr(-,root,root)
 %dir %{_libdir}/kumir2
 %{_libdir}/kumir2/libActorPainterC.so*
+%dir %{_datadir}/kumir2/translations
+%{_datadir}/kumir2/translations/ActorPainterC_*.qm
 
 %post libs-painter -p /sbin/ldconfig
 %postun libs-painter -p /sbin/ldconfig
@@ -407,3 +480,17 @@ Actor Painter adds raster-painting feauteres for Kumir
 %dir %{_libdir}/kumir2/plugins
 %{_libdir}/kumir2/plugins/libActorPainter.so
 %{_libdir}/kumir2/plugins/ActorPainter.pluginspec
+%dir %{_datadir}/kumir2/translations
+%{_datadir}/kumir2/translations/ActorPainter_*.qm
+
+%changelog
+* Thu Aug 11 2011 - Victor Yacovlev <victor@lpm.org.ru>
+- Ready for preliminary testing
+
+* Wed Jul 20 2011 - Victor Yacovlev <victor@lpm.org.ru>
+- Usable functionality
+
+* Tue May 31 2011 - Victor Yacovlev <victor@lpm.org.ru>
+- Initial build for testing
+- Almoust ready C-generator and analizer
+- Editor is launchable

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Exec=kumir2-classic %U
+Icon=kumir2-classic
+Name=Kumir Standard Edition
+Name[ru]=Кумир
+Categories=Qt;KDE;Education;X-KDE-Edu-Misc;Math;

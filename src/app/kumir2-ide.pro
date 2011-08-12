@@ -26,7 +26,7 @@ win32 {
     CONFIG(debug, debug|release):LIBS *= -lExtensionSystem_debug
     else:LIBS *= -lExtensionSystem
     LIBS += -framework CoreFoundation
-    ICON = kumir2.icns
+    ICON = ../../app_icons/mac/kumir2.icns
     QMAKE_INFO_PLIST = Info.plist
 } else {
     LIBS *= -lExtensionSystem
