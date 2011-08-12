@@ -464,7 +464,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             else if (m==MM_Select) {
                 if (i_row<m_document->linesCount()) {
                     m_document->setEndOfLineSelected(i_row, !m_document->lineEndSelectedAt(i_row));
-                    int textPos = i_column - m_document->indentAt(i_row);
+                    int textPos = i_column - m_document->indentAt(i_row) * 2;
                     if (textPos<0)
                         textPos = 0;
                     for (int i=textPos; i<m_document->textAt(i_row).length(); i++) {
@@ -472,7 +472,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                     }
 
                     i_row++;
-                    textPos = i_column - m_document->indentAt(i_row);
+                    textPos = i_column - m_document->indentAt(i_row) * 2;
                     if (textPos<0)
                         textPos = 0;
                     if (i_row>=m_document->linesCount())
@@ -501,14 +501,14 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                     i_row--;
                 else if (m==MM_Select) {
                     if (i_row==0) {
-                        int textPos = i_column - m_document->indentAt(i_row);
+                        int textPos = i_column - m_document->indentAt(i_row) * 2;
                         for (int i=0; i<qMin(textPos, m_document->textAt(i_row).length()); i++) {
                             m_document->setSelected(i_row, i, !m_document->selectionMaskAt(i_row)[i]);
                         }
                         i_column = m_document->indentAt(0)*2;
                     }
                     else {
-                        int textPos = i_column - m_document->indentAt(i_row);
+                        int textPos = i_column - m_document->indentAt(i_row) * 2;
                         if (i_row<m_document->linesCount()) {
                             for (int i=0; i<qMin(textPos, m_document->textAt(i_row).length()); i++) {
                                 m_document->setSelected(i_row, i, !m_document->selectionMaskAt(i_row)[i]);
@@ -518,7 +518,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                         else {
                             i_row = m_document->linesCount()-1;
                         }
-                        textPos = i_column - m_document->indentAt(i_row);
+                        textPos = i_column - m_document->indentAt(i_row) * 2;
                         if (textPos<0)
                             textPos = 0;
                         for (int i=textPos; i<m_document->textAt(i_row).length(); i++) {
@@ -569,7 +569,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             }
             else if (m==MM_Select) {
                 if (i_row<m_document->linesCount()) {
-                    int textPos = i_column - m_document->indentAt(i_row);
+                    int textPos = i_column - m_document->indentAt(i_row) * 2;
                     textPos = qMax(0, textPos);
                     for (int i=textPos; i<m_document->textAt(i_row).length(); i++) {
                         m_document->setSelected(i_row, i, !m_document->selectionMaskAt(i_row)[i]);
@@ -586,7 +586,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             }
             else if (m==MM_Select) {
                 if (i_row<m_document->linesCount()) {
-                    int textPos = i_column - m_document->indentAt(i_row);
+                    int textPos = i_column - m_document->indentAt(i_row) * 2;
                     textPos = qMax(0, textPos);
                     textPos = qMin(m_document->textAt(i_row).length(), textPos);
                     for (int i=0; i<textPos; i++) {
@@ -780,7 +780,7 @@ void TextCursor::removePreviousChar()
         // remove current line and set cursor to end of previous line
         if (i_row>0) {
             if (i_row<m_document->linesCount()) {
-                m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, 0, 1, false));
+                m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row-1, m_document->textAt(i_row-1).length(), 1, false));
             }
         }
     }

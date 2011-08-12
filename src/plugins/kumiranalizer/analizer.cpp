@@ -583,7 +583,10 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
         const Lexem * lx = firstStatement->data.first();
         const int linePos = lx->lineNo;
         alg = findAlgorhitmByPos(ast, linePos);
-        Q_CHECK_PTR(alg);
+//        Q_CHECK_PTR(alg);
+        if (!alg) {
+            return;
+        }
         int algBeginIndex = -1, algEndIndex = -1;
         if (findAlgorhitmBounds(allStatements, alg, algBeginIndex, algEndIndex)) {
             for (int i=algBeginIndex; i<=algEndIndex; i++) {

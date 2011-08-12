@@ -33,7 +33,7 @@ void InsertCommand::redo()
     QStringList lines = text.split("\n", QString::KeepEmptyParts);
     if (lines.size()>1) {
         cursor->setRow(cursor->row()+lines.size()-1);
-        cursor->setColumn(lines.last().length() + doc->indentAt(cursor->row()));
+        cursor->setColumn(lines.last().length() + doc->indentAt(cursor->row())*2);
     }
     else {
         cursor->setColumn(cursor->column()+text.length());
@@ -118,7 +118,7 @@ void RemoveCommand::redo()
     cursorRow = cursor->row();
     cursorCol = cursor->column();
     removedText.clear();
-    doc->removeText(removedText, analizer, line, pos, 0, 0, count);
+
     if (!keepKursor) {
         for (int i=0; i<count; i++) {
             int indent = doc->indentAt(cursor->row()) * 2;
@@ -132,6 +132,7 @@ void RemoveCommand::redo()
             }
         }
     }
+    doc->removeText(removedText, analizer, line, pos, 0, 0, count);
     doc->checkForCompilationRequest(QPoint(cursor->row(), cursor->column()));
 }
 
