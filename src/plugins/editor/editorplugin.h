@@ -42,6 +42,7 @@ public:
 protected:
     QString initialize(const QStringList &arguments);
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
+    inline void changeCurrentDirectory(const QString & path) { Q_UNUSED(path); updateSettings(); }
     void start();
     void stop();
 private:

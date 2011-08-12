@@ -310,6 +310,7 @@ QByteArray EditorPlugin::saveState(int documentId)
 
 void EditorPlugin::restoreState(int documentId, const QByteArray &data)
 {
+
     if (d->editors[documentId].e)
         d->editors[documentId].e->restoreState(data);
 }
