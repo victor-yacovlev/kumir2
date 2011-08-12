@@ -24,7 +24,7 @@ bool Connector_SHM::connectTo(int pid)
     if (!shm->attach()) {
         QString err = QString::fromAscii("Can't attach to Kumir: ")
                 +shm->errorString();
-        qFatal(err.toLocal8Bit().data());
+        qWarning() << err;
         return false;
     }
     e_otherSender = IM_Kumir;
@@ -46,7 +46,8 @@ void Connector_SHM::listenFor(int pid)
     if (!shm->create(sizeof(InterprocessMessage))) {
         QString err = QString::fromAscii("Can't listen SHM: ")
                 +shm->errorString();
-        qFatal(err.toLocal8Bit().data());
+        qWarning() << err;
+        return;
     }
     qDebug() << "Listening for " << key;
     e_otherSender = IM_Program;
