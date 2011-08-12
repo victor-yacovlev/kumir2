@@ -253,6 +253,18 @@ void KumirProgram::fastRun()
             perms |= QFile::ExeGroup;
             perms |= QFile::ExeOther;
             exeFile.setPermissions(perms);
+#ifdef Q_OS_WIN32
+            for (int i=0; i<res.usedQtLibs.count(); i++) {
+                QString libName = res.usedQtLibs[i];
+                if (libName.startsWith("Qt")) {
+                    libName += "4";
+                }
+                if (!QFile::exists(libName+".dll") && QFile::exists(QCoreApplication::applicationDirPath()+"/"+libName+".dll")) {
+                    QFile::copy(QCoreApplication::applicationDirPath()+"/"+libName+".dll",
+                                libName+".dll");
+                }
+            }
+#endif
         }
         else {
             qDebug() << "Can't open file for writing: " << exeFileName;

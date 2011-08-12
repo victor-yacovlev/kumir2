@@ -1221,6 +1221,11 @@ Shared::GeneratorResult KumirNativeGeneratorPlugin::generateExecuable(
     proc->deleteLater();
     result.usedLibs = libs.toList();
     result.usedQtLibs = qtLibs.toList();
+#ifdef Q_OS_WIN32
+    result.usedQtLibs += "libgcc_s_dw2-1";
+    result.usedQtLibs += "mingwm10";
+#endif
+    qDebug() << result.usedQtLibs;
     return result;
 }
 
