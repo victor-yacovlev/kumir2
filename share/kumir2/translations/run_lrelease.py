@@ -6,6 +6,9 @@ import shlex
 
 LRELEASE = "lrelease"
 
+if os.name=='posix' and os.path.exists('/etc/fedora-release'):
+    LRELEASE = "lrelease-qt4"
+
 src_dir = sys.argv[1]
 out_dir = sys.argv[2]
 
