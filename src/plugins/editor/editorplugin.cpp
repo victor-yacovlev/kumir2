@@ -74,7 +74,7 @@ Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, c
     if (!analizerName.isEmpty()) {
         QObject * dep = myDependency(analizerName);
         Q_CHECK_PTR(dep);
-        a = dynamic_cast<AnalizerInterface*>( dep );
+        a = qobject_cast<AnalizerInterface*>( dep );
         Q_CHECK_PTR(a);
         docId = a->newDocument();
     }

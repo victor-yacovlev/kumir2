@@ -471,18 +471,21 @@ void MainWindow::newProgram()
     QString defaultText;
     QString suffix = ".txt";
     DocumentType type = Text;
+    QString analizerPluginName;
     if (QString(o->metaObject()->className()).toLower().contains("kumir")) {
         defaultText = QString::fromUtf8("алг\nнач\n\nкон");
+        analizerPluginName = "KumirAnalizer";
         suffix = ".kum";
         type = Kumir;
     }
     else if (QString(o->metaObject()->className()).toLower().contains("pascal")) {
         defaultText = "program;\n\nbegin\n\t\nend.";
+        analizerPluginName = "PascalAnalizer";
         type = Pascal;
         suffix = ".pas";
     }
     const QString initialText = m_plugin->mySettings()->value(Plugin::InitialTextKey, defaultText).toString();
-    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("Analizer", initialText);
+    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument(analizerPluginName, initialText);
     QWidget* vc = doc.widget;
     int id = doc.id;
     vc->setProperty("documentId", id);
