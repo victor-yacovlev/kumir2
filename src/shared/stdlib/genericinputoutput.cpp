@@ -572,12 +572,14 @@ GenericInputOutput* GenericInputOutput::instance()
 
 #include <stdarg.h>
 #include <wchar.h>
+//#include <iostream>
 
 extern "C" void __input__st_funct(const char * format, int args, ...)
 {
     const QString fmt = QString::fromLatin1(format);
     QList<QVariant> result;
     if ( ! __connected_to_kumir__()) {
+//        std::cerr << "Not connected to kumir\n";
         StdLib::GenericInputOutput * inp = StdLib::GenericInputOutput::instance();
         inp->doInput(fmt);
         wchar_t buffer[4096];
@@ -595,6 +597,7 @@ extern "C" void __input__st_funct(const char * format, int args, ...)
         } while (!ok);
     }
     else {
+//        std::cerr << "Connected to kumir\n";
         result = StdLib::Connector::instance()->input(fmt);
     }
     va_list vl;

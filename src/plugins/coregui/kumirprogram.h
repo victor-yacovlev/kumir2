@@ -39,6 +39,7 @@ public:
     void setBytecodeRun(KPlugin * run);
     void addActor(KPlugin * a, QDockWidget * w);
     inline QString endStatus() const { return s_endStatus; }
+    ~KumirProgram();
 signals:
     void giveMeAProgram();
 

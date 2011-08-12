@@ -8,6 +8,10 @@ DESTDIR = $$IDE_APP_PATH
 SOURCES += main.cpp
 QT += script
 
+win32 {
+#    CONFIG += console
+}
+
 include(../rpath.pri)
 
 # need to avoid using previously compiled main.o from other project

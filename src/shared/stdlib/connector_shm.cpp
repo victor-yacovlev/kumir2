@@ -129,6 +129,12 @@ Connector_SHM::InterprocessMessage * Connector_SHM::currentFrame()
     return static_cast<InterprocessMessage*>(shm->data());
 }
 
+#ifdef Q_OS_WIN32
+#define INTERVAL 50
+#else
+#define INTERVAL 1
+#endif
+
 void Connector_SHM::waitForStatus(MessageSender s)
 {
     forever {
@@ -144,7 +150,7 @@ void Connector_SHM::waitForStatus(MessageSender s)
             mutex_stopServing->unlock();
             if (stop)
                 return;
-            msleep(1);
+            msleep(INTERVAL);
         }
     }
 }
@@ -163,7 +169,7 @@ void Connector_SHM::waitForReply()
             mutex_stopServing->unlock();
             if (stop)
                 return;
-            msleep(1);
+            msleep(INTERVAL);
         }
     }
 }
@@ -182,7 +188,7 @@ void Connector_SHM::waitForRequest()
             mutex_stopOnEmpty->unlock();
             if (stop)
                 return;
-            msleep(1);
+            msleep(INTERVAL);
         }
     }
 }

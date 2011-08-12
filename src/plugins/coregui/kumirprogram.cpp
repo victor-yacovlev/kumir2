@@ -507,4 +507,11 @@ void KumirProgram::handleActorResetRequest(const QString & actorName)
     }
 }
 
+KumirProgram::~KumirProgram()
+{
+    if (m_process && m_process->state()!=QProcess::NotRunning) {
+        m_process->kill();
+    }
+}
+
 } // namespace CoreGui
