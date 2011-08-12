@@ -30,7 +30,7 @@ QString Plugin::DockSideKey = "DockWindow/Side";
 QString Plugin::initialize(const QStringList & parameters)
 {
     const QStringList BlacklistedThemes = QStringList()
-            << "iaora-kde" << "iaora-qt";
+            << "iaorakde" << "iaoraqt" << "iaora";
     const QString currentStyleName = qApp->style()->objectName().toLower();
 //    qDebug() << currentStyleName;
     if (BlacklistedThemes.contains(currentStyleName)) {
