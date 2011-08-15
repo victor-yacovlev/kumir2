@@ -25,6 +25,7 @@ public:
     QString error() const;
     int currentLineNo() const ;
     inline QDateTime loadedProgramVersion() const { return dt_loadedVersion; }
+    bool isGuiRequired() const;
 
 public slots:
 
@@ -44,6 +45,7 @@ public slots:
 
 
 protected:
+    void start();
     QString initialize(const QStringList &);
     QDateTime dt_loadedVersion;
     bool b_done;

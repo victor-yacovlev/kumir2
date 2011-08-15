@@ -20,7 +20,8 @@ public:
     ElemType topStackType() const;
     bool canStepInto() const;
     void evaluateNextInstruction();
-    inline bool hasMoreInstructions() const { return !stack_contexts.isEmpty(); }
+    QStringList usedActors() const;
+    inline bool hasMoreInstructions() const { return !stack_contexts.isEmpty() && stack_contexts[0].IP < stack_contexts[0].program.size(); }
     inline QString error() const { return s_error; }
     void loadProgram(const Data & program);
     inline int deep() const { return stack_contexts.size(); }

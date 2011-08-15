@@ -15,6 +15,7 @@ public:
     enum RunMode { RM_StepOver, RM_ToEnd, RM_StepOut, RM_StepIn };
     explicit Run(QObject *parent = 0);
     VM * vm;
+    bool programLoaded;
     inline bool stopped() const { return b_stopping; }
 
 public slots:

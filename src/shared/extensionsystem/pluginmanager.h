@@ -66,9 +66,13 @@ public:
 
     /** Return all plugins matched by regexp */
     QList<KPlugin*> loadedPlugins(const QString & pattern = "*");
+    QList<const KPlugin*> loadedConstPlugins(const QString & pattern = "*") const;
 
     /** Return plugin by specified name */
     KPlugin* loadedPlugin(const QString & name);
+
+    /** Module to start */
+    KPlugin * startupModule();
 
 public slots:
 

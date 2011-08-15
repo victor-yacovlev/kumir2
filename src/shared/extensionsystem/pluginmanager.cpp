@@ -390,7 +390,9 @@ QString PluginManager::loadPluginsByTemplate(const QString &templ)
 
 bool PluginManager::isGuiRequired() const
 {
-    return d->specs.last().gui;
+    KPlugin * runtimePlugin = qobject_cast<KPlugin*>(d->objects.last());
+    Q_CHECK_PTR(runtimePlugin);
+    return runtimePlugin->isGuiRequired();
 }
 
 QString PluginManager::initializePlugins()
@@ -416,6 +418,17 @@ QString PluginManager::initializePlugins()
     return "";
 }
 
+QList<const KPlugin*> PluginManager::loadedConstPlugins(const QString &pattern) const
+{
+    QList<const KPlugin*> result;
+    const QRegExp rx = QRegExp(pattern, Qt::CaseSensitive, QRegExp::Wildcard);
+    for (int i=0; i<d->specs.size(); i++) {
+        if (rx.exactMatch(d->specs[i].name)) {
+            result << d->objects[i];
+        }
+    }
+    return result;
+}
 
 QList<KPlugin*> PluginManager::loadedPlugins(const QString &pattern)
 {
@@ -436,6 +449,11 @@ KPlugin* PluginManager::loadedPlugin(const QString &name)
             return d->objects[i];
     }
     return 0;
+}
+
+KPlugin* PluginManager::startupModule()
+{
+    return d->objects.last();
 }
 
 QString PluginManager::start()

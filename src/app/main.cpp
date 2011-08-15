@@ -113,6 +113,14 @@ int main(int argc, char **argv)
         delete app;
         return 1;
     }
+    // GUI requirement may be changed as result of plugins initialization,
+    // so check it again
+    if (!gui && manager->isGuiRequired()) {
+        showErrorMessage("Requires X11 session to run this configuration");
+        delete manager;
+        delete app;
+        return 1;
+    }
     app->setProperty("returnCode", 0);
     error = manager->start();
     if (!error.isEmpty()) {

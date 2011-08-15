@@ -180,9 +180,18 @@ void VM::loadProgram(const Data & program)
         quint32 key = locals.keys()[i];
         cleanLocalTables[key] = locals[key].toVector();
     }
-    reset();
+//    reset();
 }
 
+QStringList VM::usedActors() const
+{
+    QStringList result;
+    for (int i=0; i<externs.values().size(); i++) {
+        const QString moduleName = externs.values()[i].moduleName;
+        result << moduleName;
+    }
+    return result;
+}
 
 void VM::evaluateNextInstruction()
 {

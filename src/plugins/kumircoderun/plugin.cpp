@@ -1,6 +1,9 @@
 #include "plugin.h"
 #include "variant.h"
 #include "run.h"
+#include "extensionsystem/pluginmanager.h"
+#include "stdlib/genericinputoutput.h"
+#include <iostream>
 
 namespace KumirCodeRun {
 
@@ -20,6 +23,22 @@ Plugin::Plugin() :
     connect (d->vm, SIGNAL(clearMargin(int,int)),
              this, SIGNAL(clearMargin(int,int)));
     connect (d->vm, SIGNAL(resetModuleRequest(QString)), this, SIGNAL(resetModule(QString)));
+}
+
+bool Plugin::isGuiRequired() const
+{
+    QStringList actors = d->vm->usedActors();
+    const QList<const KPlugin *> modules = loadedPlugins();
+    for (int i=0; i<actors.size(); i++) {
+        const QString actorName = actors[i];
+        for (int j=0; j<modules.size(); j++) {
+            if (modules[j]->pluginSpec().name==actorName) {
+                if (modules[j]->isGuiRequired())
+                    return true;
+            }
+        }
+    }
+    return false;
 }
 
 Plugin::~Plugin()
@@ -49,6 +68,7 @@ bool Plugin::loadProgram(QIODevice *source, Shared::ProgramFormat format)
     }
     d->vm->loadProgram(data);
     dt_loadedVersion = data.lastModified;
+    d->programLoaded = true;
     return true;
 }
 
@@ -115,7 +135,12 @@ void Plugin::finishExternalFunctionCall(const QString & error,
 
 void Plugin::handleOutput(const QString &text)
 {
-    emit outputRequest(text);
+    if (ExtensionSystem::PluginManager::instance()->startupModule()==this) {
+        std::cout << text.toLocal8Bit().data();
+    }
+    else {
+        emit outputRequest(text);
+    }
 }
 
 void Plugin::handleThreadFinished()
@@ -144,16 +169,83 @@ void Plugin::handleLineChanged(int lineNo)
 
 void Plugin::handleInput(const QString &format)
 {
-    emit stopped(Shared::RunInterface::UserInteraction);
-    emit inputRequest(format);
+    if (ExtensionSystem::PluginManager::instance()->startupModule()==this) {
+        QList<QVariant> result;
+        StdLib::GenericInputOutput * inp = StdLib::GenericInputOutput::instance();
+        inp->doInput(format);
+        wchar_t buffer[4096];
+        wchar_t err[256];
+        QString error;
+        bool ok;
+        do {
+            wscanf(L"%ls", &buffer);
+            QSet<QPair<int,int> > errpos;
+            ok = inp->tryFinishInput(QString::fromWCharArray(buffer), result, errpos, false, error);
+            if (!ok) {
+                err[error.toWCharArray(err)] = L'\0';
+                fwprintf(stderr, L"%ls\n", err);
+            }
+        } while (!ok);
+        d->finishInput(result);
+    }
+    else {
+        emit stopped(Shared::RunInterface::UserInteraction);
+        emit inputRequest(format);
+    }
 }
 
 QString Plugin::initialize(const QStringList &)
 {
+    d->programLoaded = false;
     qRegisterMetaType<Variant>("KumirCodeRun::Variant");
     qRegisterMetaType<VariantList>("KumirCodeRun::VariantList");
     qRegisterMetaType<Shared::RunInterface::StopReason>("Shared::RunInterface::StopReason");
+
+    if (ExtensionSystem::PluginManager::instance()->startupModule()==this) {
+        QString fileName;
+        QStringList programArguments;
+        for (int i=1; i<qApp->arguments().size(); i++) {
+            const QString arg = qApp->arguments()[i];
+            if (fileName.isEmpty()) {
+                if (!arg.startsWith("-")) {
+                    fileName = arg;
+                }
+            }
+            else {
+                programArguments << arg;
+            }
+        }
+        if (!fileName.isEmpty()) {
+            QFile f(fileName);
+            if (f.open(QIODevice::ReadOnly))
+                loadProgram(&f, fileName.endsWith(".ks")? Shared::FormatText : Shared::FormatBinary);
+        }
+    }
+
     return "";
+}
+
+void Plugin::start()
+{
+    if (d->programLoaded) {
+        d->vm->reset();
+        while (d->vm->hasMoreInstructions()) {
+            d->vm->evaluateNextInstruction();
+        }
+        if (error().isEmpty()) {
+            qApp->setProperty("returnCode", 0);
+        }
+        else {
+            std::cerr << error().toLocal8Bit().data() << "\n";
+            qApp->setProperty("returnCode", 1);
+        }
+    }
+    else {
+        std::cerr << "Usage:\n\t" << qApp->arguments().at(0).toLocal8Bit().data() << " PROGRAM.kod|PROGRAM.ks [PROGRAM_ARGUMENTS]\n\n";
+        std::cerr << "\tPROGRAM.kod or PROGRAM.ks  Kumir portable bytecode file name\n";
+        std::cerr << "\tPROGRAM_ARGUMENTS          Optional parameters passed to kumir program\n";
+        qApp->setProperty("returnCode", 127);
+    }
 }
 
 bool Plugin::hasMoreInstructions() const

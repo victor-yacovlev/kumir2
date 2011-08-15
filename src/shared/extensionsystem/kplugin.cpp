@@ -13,6 +13,12 @@ QList<KPlugin*> KPlugin::loadedPlugins(const QString &pattern)
     return PluginManager::instance()->loadedPlugins(pattern);
 }
 
+QList<const KPlugin*> KPlugin::loadedPlugins(const QString &pattern) const
+{
+    const QList<const KPlugin*> result = PluginManager::instance()->loadedConstPlugins(pattern);
+    return result;
+}
+
 PluginSpec KPlugin::pluginSpec() const
 {
     return PluginManager::instance()->specByObject(this);

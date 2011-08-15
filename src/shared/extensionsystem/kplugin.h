@@ -40,6 +40,7 @@ public:
     KPlugin();
     PluginSpec pluginSpec() const;
     State state() const;
+    inline virtual bool isGuiRequired() const { return pluginSpec().gui; } // Can be overridden in special cases
     inline virtual SettingsEditorPage settingsEditorPage() { return SettingsEditorPage(); }
     virtual ~KPlugin();
 protected:
@@ -55,6 +56,7 @@ protected:
     QSettings * mySettings() const;
 
     QList<KPlugin*> loadedPlugins(const QString &pattern = "*");
+    QList<const KPlugin*> loadedPlugins(const QString &pattern = "*") const;
 
 };
 

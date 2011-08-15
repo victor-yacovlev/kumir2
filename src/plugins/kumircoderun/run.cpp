@@ -5,6 +5,7 @@ namespace KumirCodeRun {
 Run::Run(QObject *parent) :
     QThread(parent)
 {
+    programLoaded = false;
     vm = new VM(this);
     i_originFunctionDeep = 0;
     b_interactDone = b_stopping = b_stepDone = false;

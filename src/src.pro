@@ -6,6 +6,7 @@ SUBDIRS = \
     app/kumir2-ide.pro \
     app/kumir2-cc.pro \
     app/kumir2-bc.pro \
+    app/kumir2-run.pro \
     tools \
     plugins \
     actors
