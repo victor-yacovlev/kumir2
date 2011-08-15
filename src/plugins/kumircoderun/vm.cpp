@@ -1,5 +1,7 @@
 #include "vm.h"
 #include "bytecode/instruction.h"
+#include "stdlib/integeroverflowchecker.h"
+#include "stdlib/doubleoverflowchecker.h"
 
 #define EPSILON 0.0000001
 #define MAX_RECURSION_SIZE 4000
@@ -868,10 +870,16 @@ void VM::do_sum()
     if (a.baseType()==VT_int && b.baseType()==VT_int) {
         Variant r(a.toInt()+b.toInt());
         stack_values.push(r);
+        if (!StdLib::IntegerOverflowChecker::checkSumm(a.toInt(), b.toInt())) {
+            s_error = tr("Integer overflow while trying to summ");
+        }
     }
     else if (a.baseType()==VT_float || b.baseType()==VT_float) {
         Variant r(a.toReal()+b.toReal());
         stack_values.push(r);
+        if (!StdLib::DoubleOverflowChecker::checkSumm(a.toReal(), b.toReal())) {
+            s_error = tr("Double overflow while trying to summ");
+        }
     }
     else if (a.baseType()==VT_string || a.baseType()==VT_char) {
         Variant r(a.toString()+b.toString());
@@ -887,10 +895,16 @@ void VM::do_sub()
     if (a.baseType()==VT_int && b.baseType()==VT_int) {
         Variant r(a.toInt()-b.toInt());
         stack_values.push(r);
+        if (!StdLib::IntegerOverflowChecker::checkDiff(a.toInt(), b.toInt())) {
+            s_error = tr("Integer overflow while trying to subtract");
+        }
     }
     else if (a.baseType()==VT_float || b.baseType()==VT_float) {
         Variant r(a.toReal()-b.toReal());
         stack_values.push(r);
+        if (!StdLib::DoubleOverflowChecker::checkDiff(a.toReal(), b.toReal())) {
+            s_error = tr("Double overflow while trying to subtract");
+        }
     }
     nextIP();
 }
@@ -902,10 +916,16 @@ void VM::do_mul()
     if (a.baseType()==VT_int && b.baseType()==VT_int) {
         Variant r(a.toInt()*b.toInt());
         stack_values.push(r);
+        if (!StdLib::IntegerOverflowChecker::checkProd(a.toInt(), b.toInt())) {
+            s_error = tr("Integer overflow while trying to multiply");
+        }
     }
     else if (a.baseType()==VT_float || b.baseType()==VT_float) {
         Variant r(a.toReal()*b.toReal());
         stack_values.push(r);
+        if (!StdLib::DoubleOverflowChecker::checkProd(a.toReal(), b.toReal())) {
+            s_error = tr("Double overflow while trying to multiply");
+        }
     }
     nextIP();
 }
@@ -931,12 +951,32 @@ void VM::do_pow()
 {
     Variant b = stack_values.pop();
     Variant a = stack_values.pop();
+    if (a.baseType()==VT_int && b.baseType()==VT_int) {
+        if (s_error.isEmpty() && !StdLib::IntegerOverflowChecker::checkPower(a.toInt(), b.toInt())) {
+            s_error = tr("Integer overflow while trying to power");
+        }
+    }
+    else {
+        if (s_error.isEmpty() && !StdLib::DoubleOverflowChecker::checkProd(a.toReal(), b.toReal())) {
+            s_error = tr("Double overflow while trying to power");
+        }
+    }
     if (b.toReal()<-EPSILON) {
         s_error = tr("Power to less than zero");
     }
     else {
         Variant r(pow(a.toReal(),b.toReal()));
         stack_values.push(r);
+    }
+    if (a.baseType()==VT_int && b.baseType()==VT_int) {
+        if (s_error.isEmpty() && !StdLib::IntegerOverflowChecker::checkPower(a.toInt(), b.toInt())) {
+            s_error = tr("Integer overflow while trying to power");
+        }
+    }
+    else {
+        if (s_error.isEmpty() && !StdLib::DoubleOverflowChecker::checkProd(a.toReal(), b.toReal())) {
+            s_error = tr("Double overflow while trying to power");
+        }
     }
     nextIP();
 }

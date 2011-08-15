@@ -6,10 +6,14 @@ DEFINES += STDLIB_LIBRARY
 include(../../kumir2library.pri)
 include(../../rpath.pri)
 HEADERS = \
-    kumstdlib.h genericinputoutput.h connector.h guirunner.h actorwindow.h userprogramthread.h
+    kumstdlib.h genericinputoutput.h connector.h guirunner.h actorwindow.h userprogramthread.h \
+    integeroverflowchecker.h \
+    doubleoverflowchecker.h
 
 SOURCES = \
-    kumstdlib.cpp genericinputoutput.cpp connector.cpp guirunner.cpp actorwindow.cpp userprogramthread.cpp
+    kumstdlib.cpp genericinputoutput.cpp connector.cpp guirunner.cpp actorwindow.cpp userprogramthread.cpp \
+    integeroverflowchecker.cpp \
+    doubleoverflowchecker.cpp
 
 
 QT += gui

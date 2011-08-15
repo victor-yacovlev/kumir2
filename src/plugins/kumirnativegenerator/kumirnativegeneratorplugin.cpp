@@ -1225,7 +1225,7 @@ Shared::GeneratorResult KumirNativeGeneratorPlugin::generateExecuable(
     result.usedQtLibs += "libgcc_s_dw2-1";
     result.usedQtLibs += "mingwm10";
 #endif
-    qDebug() << result.usedQtLibs;
+//    qDebug() << result.usedQtLibs;
     return result;
 }
 

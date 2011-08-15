@@ -236,6 +236,13 @@ void Plugin::start()
             qApp->setProperty("returnCode", 0);
         }
         else {
+            if (d->vm->currentLineNo()==-1) {
+                std::cerr << tr("RUNTIME ERROR: ").toLocal8Bit().data();
+            }
+            else {
+                std::cerr << tr("RUNTIME ERROR AT LINE ").toLocal8Bit().data();
+                std::cerr << d->vm->currentLineNo() << ": ";
+            }
             std::cerr << error().toLocal8Bit().data() << "\n";
             qApp->setProperty("returnCode", 1);
         }
