@@ -4,7 +4,7 @@
 %define relno 0
 %define packager Victor Yacovlev <victor@lpm.org.ru>
 %define is_buildservice 0
-%define alphaversion 4
+%define alphaversion 6
 
 # -----------------------------------------------------------------------------
 
@@ -90,6 +90,7 @@ qmake
 %endif
 %if %{is_fedora}
 qmake-qt4
+lrelease-qt4 share/kumir2/translations/*.ts
 %endif
 %if %{is_mandriva}
 qmake
@@ -349,7 +350,7 @@ Run "kumir2-cc --help" for more information
 
 
 %package utils-bc
-Summary:	Kumir to bytecode execuable compiler tool
+Summary:	Kumir to portable bytecode execuable compiler tool
 Requires:	kumir2-common
 Requires:	kumir2-module-KumirBCompiler
 
@@ -375,10 +376,23 @@ Run "kumir2-as --help" for more information
 %defattr(-,root,root)
 %{_bindir}/kumir2-as
 
+%package utils-run
+Summary:	Kumir portable bytecode interpreter
+Requires:	kumir2-common
+Requires:	kumir2-module-KumirCodeRun
+Requires:	kumir2-module-st_funct
+
+%description utils-run
+Standalone kumir programs launcher
+
+%files utils-run
+%defattr(-,root,root)
+%{_bindir}/kumir2-run
+
 %package professional
 Summary:	Kumir Professional Edition
 Requires:	kumir2-libs
-Requires:	kumir2-module-CoreGui
+Requires:	kumir2-module-CoreGUI
 Requires:	kumir2-module-Editor
 Requires:	kumir2-module-KumirAnalizer
 Requires:	kumir2-module-KumirCodeGenerator
@@ -415,7 +429,7 @@ Kumir IDE for high school applications
 %package standard
 Summary:	Kumir Standard Edition
 Requires:	kumir2-libs
-Requires:	kumir2-module-CoreGui
+Requires:	kumir2-module-CoreGUI
 Requires:	kumir2-module-Editor
 Requires:	kumir2-module-KumirAnalizer
 Requires:	kumir2-module-KumirCodeGenerator
