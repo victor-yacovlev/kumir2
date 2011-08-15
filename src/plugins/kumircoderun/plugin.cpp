@@ -4,6 +4,7 @@
 #include "extensionsystem/pluginmanager.h"
 #include "stdlib/genericinputoutput.h"
 #include <iostream>
+#include <locale.h>
 
 namespace KumirCodeRun {
 
@@ -136,7 +137,11 @@ void Plugin::finishExternalFunctionCall(const QString & error,
 void Plugin::handleOutput(const QString &text)
 {
     if (ExtensionSystem::PluginManager::instance()->startupModule()==this) {
-        std::cout << text.toLocal8Bit().data();
+        wchar_t * buffer = (wchar_t*)calloc(text.length()+1, sizeof(wchar_t));
+        text.toWCharArray(buffer);
+        buffer[text.length()] = L'\0';
+        wprintf(L"%ls", buffer);
+        free(buffer);
     }
     else {
         emit outputRequest(text);
@@ -202,6 +207,11 @@ QString Plugin::initialize(const QStringList &)
     qRegisterMetaType<Shared::RunInterface::StopReason>("Shared::RunInterface::StopReason");
 
     if (ExtensionSystem::PluginManager::instance()->startupModule()==this) {
+#ifndef Q_OS_WIN32
+        setlocale(LC_CTYPE, "ru_RU.UTF-8");
+#else
+        setlocale(LC_CTYPE, ".1251");
+#endif
         QString fileName;
         QStringList programArguments;
         for (int i=1; i<qApp->arguments().size(); i++) {
@@ -236,14 +246,20 @@ void Plugin::start()
             qApp->setProperty("returnCode", 0);
         }
         else {
+            QString message;
             if (d->vm->currentLineNo()==-1) {
-                std::cerr << tr("RUNTIME ERROR: ").toLocal8Bit().data();
+                message = tr("RUNTIME ERROR: ");
             }
             else {
-                std::cerr << tr("RUNTIME ERROR AT LINE ").toLocal8Bit().data();
-                std::cerr << d->vm->currentLineNo() << ": ";
+                message = tr("RUNTIME ERROR AT LINE ");
+                message += QString::number(d->vm->currentLineNo())+": ";
             }
-            std::cerr << error().toLocal8Bit().data() << "\n";
+            message += error()+"\n";
+            wchar_t * buffer = (wchar_t*)calloc(message.length()+1, sizeof(wchar_t));
+            message.toWCharArray(buffer);
+            buffer[message.length()] = L'\0';
+            fwprintf(stderr, L"%ls", buffer);
+            free(buffer);
             qApp->setProperty("returnCode", 1);
         }
     }
