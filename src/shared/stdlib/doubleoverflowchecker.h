@@ -14,12 +14,18 @@
 
 #include <QtCore>
 
+#ifdef STDLIB_LIBRARY
+#define STDLIB_EXPORT Q_DECL_EXPORT
+#else
+#define STDLIB_EXPORT Q_DECL_IMPORT
+#endif
+
 namespace StdLib {
 
 /**
  @author Виктор Яковлев <V.Yacovlev@gmail.com>
  */
-class DoubleOverflowChecker
+class STDLIB_EXPORT DoubleOverflowChecker
 {
 public:
     /**

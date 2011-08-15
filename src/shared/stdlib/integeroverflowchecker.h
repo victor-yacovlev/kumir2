@@ -14,12 +14,19 @@
 
 #include <QtCore>
 
+
+#ifdef STDLIB_LIBRARY
+#define STDLIB_EXPORT Q_DECL_EXPORT
+#else
+#define STDLIB_EXPORT Q_DECL_IMPORT
+#endif
+
 namespace StdLib {
 
 /**
         @author Виктор Яковлев <victor@lpm.org.ru>
 */
-class IntegerOverflowChecker
+class STDLIB_EXPORT IntegerOverflowChecker
 {
 public:
     /**
