@@ -72,12 +72,13 @@ isEmpty(TEST):CONFIG(debug, debug|release) {
 
 
 isEmpty(IDE_LIBRARY_BASENAME) {
-    linux-g++-64 {
-        IDE_LIBRARY_BASENAME = lib64
+    IDE_LIBRARY_BASENAME = lib    
+    linux-*: {
+	ARCH = $$system(arch)
+        message($$ARCH)
+        contains(ARCH,x86_64): IDE_LIBRARY_BASENAME = lib64
     }
-    else {
-        IDE_LIBRARY_BASENAME = lib
-    }
+    message($$IDE_LIBRARY_BASENAME)
 }
 
 DEFINES += IDE_LIBRARY_BASENAME=\\\"$$IDE_LIBRARY_BASENAME\\\"
