@@ -161,6 +161,9 @@ MainWindow::MainWindow(Plugin * p) :
 
     i_timerId = startTimer(1000);
 
+    connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(showAbout()));
+    connect(ui->actionUsage, SIGNAL(triggered()), this, SLOT(showUserManual()));
+
     installEventFilter(this);
 
 }
@@ -855,6 +858,18 @@ void MainWindow::saveSession() const
             sessionFile.close();
         }
     }
+}
+
+void MainWindow::showAbout()
+{
+    loadFromUrl(QUrl::fromLocalFile(qApp->property("sharePath").toString()+
+                                    "/coregui/about/russian/index.html"), false);
+}
+
+void MainWindow::showUserManual()
+{
+    loadFromUrl(QUrl::fromLocalFile(qApp->property("sharePath").toString()+
+                                    "/coregui/usermanual/russian/index.html"), false);
 }
 
 void MainWindow::fileOpen()

@@ -24,6 +24,7 @@ Shared::BrowserComponent Plugin::createBrowser(const QUrl &url, const QMap<QStri
     Component * c = new Component();
     QMap<QString,QObject*> objs = manageableObjects;
     objs["directory"] = m_directory;
+    objs["application"] = qApp;
     c->setManageableObjects(objs);
     c->go(url);
     Shared::BrowserComponent result;

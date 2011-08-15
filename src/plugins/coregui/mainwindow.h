@@ -69,7 +69,8 @@ public slots:
     void setFocusOnCentralWidget();
     void changeFocusOnMenubar();
     void switchWorkspace();
-
+    void showAbout();
+    void showUserManual();
 
 private slots:
     void prepareRunMenu();
