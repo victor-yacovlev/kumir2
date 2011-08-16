@@ -515,7 +515,7 @@ void MainWindow::newText()
 
 void MainWindow::newText(const QString &fileName, const QString & text)
 {
-    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("", text);
+    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("", text, true);
     QWidget * vc = doc.widget;
     int id = doc.id;
     vc->setProperty("documentId", id);
@@ -529,6 +529,11 @@ void MainWindow::newText(const QString &fileName, const QString & text)
                 Text,
                 true);
     ui->tabWidget->setCurrentWidget(e);
+    if (!text.isEmpty()) {
+        ui->tabWidget->setTabText(ui->tabWidget->currentIndex(),
+                                  ui->tabWidget->tabText(ui->tabWidget->currentIndex())
+                                  +"*");
+    }
     e->setFocus();
 }
 

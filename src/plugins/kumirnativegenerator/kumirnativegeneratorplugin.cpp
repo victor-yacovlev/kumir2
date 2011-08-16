@@ -1005,7 +1005,7 @@ Shared::GeneratorResult KumirNativeGeneratorPlugin::generateExecuable(
     if (out && out->metaObject()->className()==QString("QFile")) {
         QFile * f = qobject_cast<QFile*>(out);
         const QString fileName = QFileInfo(*f).fileName();
-        const QString buildDir = "build-"+fileName;
+        const QString buildDir = ".build-"+fileName;
         QDir::current().mkdir(buildDir);
         QDir::setCurrent(buildDir);
     }
@@ -1214,7 +1214,7 @@ Shared::GeneratorResult KumirNativeGeneratorPlugin::generateExecuable(
         if (!qApp->arguments().contains("-S")) {
             QFile * f = qobject_cast<QFile*>(out);
             const QString fileName = QFileInfo(*f).fileName();
-            const QString buildDir = "build-"+fileName;
+            const QString buildDir = ".build-"+fileName;
             QDir::current().rmdir(buildDir);
         }
     }

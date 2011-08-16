@@ -11,6 +11,12 @@ Dir::Dir(QObject *parent) :
 QStringList Dir::files(const QString &filter)
 {
     QStringList result = m_dir.entryList(filter.split(";"), QDir::Files);
+    QStringList filtered;
+    for (int i=0; i<result.size(); i++) {
+        if (!result[i].startsWith(".")) {
+            filtered << result[i];
+        }
+    }
     return result;
 }
 
@@ -20,7 +26,13 @@ QStringList Dir::dirs()
     result.removeAll(".");
     if (m_dir==QDir::current())
         result.removeAll("..");
-    return result;
+    QStringList filtered;
+    for (int i=0; i<result.size(); i++) {
+        if (!result[i].startsWith(".")) {
+            filtered << result[i];
+        }
+    }
+    return filtered;
 }
 
 QString Dir::resolveUrl(const QString &entry)

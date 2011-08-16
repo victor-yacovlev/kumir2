@@ -11,7 +11,7 @@ class Editor
 {
     Q_OBJECT
 public:
-    explicit Editor(QSettings * settings = 0, Shared::AnalizerInterface * analizer = 0, int documentId = 0, QWidget *parent = 0);
+    explicit Editor(bool initiallyNotSaved = false, QSettings * settings = 0, Shared::AnalizerInterface * analizer = 0, int documentId = 0, QWidget *parent = 0);
     ~Editor();
     QList<QAction*> toolbarActions();
     void setSettings(QSettings * s);
@@ -40,6 +40,8 @@ public:
     QByteArray saveState() const;
     void restoreState(const QByteArray &data);
     void unsetAnalizer();
+    bool forceNotSavedFlag() const;
+    void setForceNotSavedFlag(bool v);
 public slots:
     void undo();
     void redo();

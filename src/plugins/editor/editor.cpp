@@ -50,6 +50,8 @@ public:
 
     int timerId;
 
+    bool notSaved;
+
     void loadMacros();
     void updateInsertMenu();
     void createActions();
@@ -368,12 +370,13 @@ void EditorPrivate::updateFromAnalizer()
 
 Clipboard * EditorPrivate::clipboard = 0;
 
-Editor::Editor(QSettings * settings, AnalizerInterface * analizer, int documentId, QWidget *parent) :
+Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface * analizer, int documentId, QWidget *parent) :
     QWidget()
 {
     setParent(parent);
     d = new EditorPrivate;
     d->q = this;
+    d->notSaved = initiallyNotSaved;
     if (!d->clipboard)
         d->clipboard = new Clipboard;
     d->doc = new TextDocument(this);
@@ -605,7 +608,7 @@ void Editor::restoreState(const QByteArray &data)
                 break;
             }
         }
-        if (version>myVersion) {
+        if (version>myVersion || (myVersion.contains("alpha") && myVersion!=version)) {
             qWarning() << "Can't restore state: version mismatch (my: "
                        << myVersion << ", required: " << version << ")";
         }
@@ -642,17 +645,29 @@ void Editor::ensureAnalized()
 void Editor::setNotModified()
 {
     d->doc->undoStack()->setClean();
+    d->notSaved = false;
     emit documentCleanChanged(true);
 }
 
 bool Editor::isModified() const
 {
-    return ! d->doc->undoStack()->isClean();
+    return d->notSaved || ! d->doc->undoStack()->isClean();
 }
 
 void Editor::checkForClean()
 {
-    emit documentCleanChanged(d->doc->undoStack()->isClean());
+    emit documentCleanChanged(!isModified());
+}
+
+bool Editor::forceNotSavedFlag() const
+{
+    return d->notSaved;
+}
+
+void Editor::setForceNotSavedFlag(bool v)
+{
+    d->notSaved = v;
+    checkForClean();
 }
 
 QDataStream & operator<< (QDataStream & stream, const Editor & editor)
@@ -660,6 +675,7 @@ QDataStream & operator<< (QDataStream & stream, const Editor & editor)
     stream << editor.text();
     stream << editor.cursor()->row();
     stream << editor.cursor()->column();
+    stream << quint8(editor.forceNotSavedFlag());
     stream << editor.document()->undoStack()->count();
     stream << editor.document()->undoStack()->cleanIndex();
     stream << editor.document()->undoStack()->index();
@@ -701,6 +717,9 @@ QDataStream & operator>> (QDataStream & stream, Editor & editor)
     editor.setText(txt);
     editor.cursor()->setRow(row);
     editor.cursor()->setColumn(col);
+    quint8 notsaved;
+    stream >> notsaved;
+    editor.setForceNotSavedFlag(bool(notsaved));
     int undoCount, cleanIndex, undoIndex;
     stream >> undoCount >> cleanIndex >> undoIndex;
     QUndoStack * undo = editor.document()->undoStack();

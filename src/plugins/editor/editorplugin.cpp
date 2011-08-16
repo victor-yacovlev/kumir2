@@ -67,7 +67,7 @@ void EditorPlugin::clearMargin(int documentId, int fromLine, int toLine)
     ed->clearMarginText(fromLine, toLine);
 }
 
-Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, const QString &initialText)
+Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, const QString &initialText, bool initiallyNotSaved)
 {
     AnalizerInterface * a = 0;
     int docId = -1;
@@ -78,7 +78,7 @@ Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, c
         Q_CHECK_PTR(a);
         docId = a->newDocument();
     }
-    Editor * w = new Editor(mySettings(), a, docId, 0);
+    Editor * w = new Editor(initiallyNotSaved, mySettings(), a, docId, 0);
     w->setText(initialText);
     int index = 0;
     for (int i=0; i<d->editors.size(); i++) {
