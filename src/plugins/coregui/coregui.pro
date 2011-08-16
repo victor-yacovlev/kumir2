@@ -20,7 +20,8 @@ HEADERS += \
     terminal_onesession.h \
     terminal_plane.h \
     tabbar.h \
-    confirmclosedialod.h
+    confirmclosedialod.h \
+    kumirvariableswindow.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -31,11 +32,13 @@ SOURCES += \
     terminal_onesession.cpp \
     terminal_plane.cpp \
     tabbar.cpp \
-    confirmclosedialod.cpp
+    confirmclosedialod.cpp \
+    kumirvariableswindow.cpp
 
 FORMS += \
     mainwindow.ui \
-    confirmclosedialod.ui
+    confirmclosedialod.ui \
+    kumirvariableswindow.ui
 
 RESOURCES += \
     resources.qrc

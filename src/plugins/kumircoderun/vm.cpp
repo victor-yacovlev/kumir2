@@ -98,6 +98,8 @@ void VM::reset()
         c.IP = 0;
         c.type = EL_MAIN;
         c.runMode = CRM_ToEnd;
+        c.algId = aMain.algId;
+        c.moduleId = aMain.module;
         stack_contexts.push(c);
     }
 
@@ -111,6 +113,8 @@ void VM::reset()
         c.IP = 0;
         c.type = EL_TESTING;
         c.runMode = CRM_ToEnd;
+        c.algId = testing.algId;
+        c.moduleId = testing.module;
         stack_contexts.push(c);
     }
 
@@ -125,6 +129,8 @@ void VM::reset()
             c.IP = 0;
             c.type = EL_INIT;
             c.runMode = CRM_ToEnd;
+            c.moduleId = inits[i].module;
+            c.algId = -1;
             stack_contexts.push(c);
         }
     }
@@ -476,6 +482,8 @@ void VM::do_call(quint8 mod, quint16 alg)
                 c.runMode = CRM_OneStep;
             else
                 c.runMode = CRM_ToEnd;
+            c.moduleId = functions[p].module;
+            c.algId = functions[p].algId;
             stack_contexts.push(c);
             b_nextCallInto = false;
         }
@@ -524,6 +532,9 @@ void VM::do_setarr(quint8 s, quint16 id)
             globals[id].setBounds(bounds);
         }
         s_error = Variant::error;
+        if (!b_blindMode && s_error.isEmpty()) {
+
+        }
     }
     nextIP();
 }

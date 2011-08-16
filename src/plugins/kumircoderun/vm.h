@@ -50,6 +50,7 @@ signals:
                                 const QList<int> & indeces
                                 );
     void valueChangeNotice(int lineNo, const QString & text);
+
     void clearMargin(int fromLine, int toLine);
 private:
     QStack<Variant> stack_values;
