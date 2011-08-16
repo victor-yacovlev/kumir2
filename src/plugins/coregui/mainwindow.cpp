@@ -509,14 +509,19 @@ void MainWindow::newProgram()
 
 void MainWindow::newText()
 {
-    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("", "");
+    QString fileName = suggestNewFileName(".txt");
+    newText(fileName, "");
+}
+
+void MainWindow::newText(const QString &fileName, const QString & text)
+{
+    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("", text);
     QWidget * vc = doc.widget;
     int id = doc.id;
     vc->setProperty("documentId", id);
-    QString fileName = suggestNewFileName(".txt");
     vc->setProperty("fileName", fileName);
     TabWidgetElement * e = addCentralComponent(
-                fileName,
+                QFileInfo(fileName).fileName(),
                 vc,
                 doc.toolbarActions,
                 doc.menus,

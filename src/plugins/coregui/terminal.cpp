@@ -10,25 +10,27 @@ Term::Term(QWidget *parent) :
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     setMinimumWidth(450);
-    QGridLayout * l = new QGridLayout();
+    QGridLayout * l = m_layout = new QGridLayout();
     setLayout(l);
     m_plane = new Plane(this);
-    l->addWidget(m_plane, 0, 1, 1, 1);
+    l->addWidget(m_plane, 1, 1, 1, 1);
     sb_vertical = new QScrollBar(Qt::Vertical, this);
-    l->addWidget(sb_vertical, 0, 2, 1, 1);
+    l->addWidget(sb_vertical, 1, 2, 1, 1);
     sb_horizontal = new QScrollBar(Qt::Horizontal, this);
-    l->addWidget(sb_horizontal, 1, 1, 1, 1);
-    QToolBar * tb = new QToolBar(this);
+    l->addWidget(sb_horizontal, 2, 1, 1, 1);
+    QToolBar * tb = m_toolBar = new QToolBar(this);
     tb->setOrientation(Qt::Vertical);
-    l->addWidget(tb, 0, 0, 2, 1);
+    l->addWidget(tb, 1, 0, 2, 1);
 
     a_saveLast = new QAction(tr("Save last output"), this);
     a_saveLast->setIcon(QIcon::fromTheme("document-save", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/document-save.png")));
+    a_saveLast->setEnabled(false);
     connect(a_saveLast, SIGNAL(triggered()), this, SLOT(saveLast()));
     tb->addAction(a_saveLast);
 
     a_editLast = new QAction(tr("Open last output in editor"), this);
     a_editLast->setIcon(QIcon::fromTheme("document-edit", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/document-edit.png")));
+    a_editLast->setEnabled(false);
     connect(a_editLast, SIGNAL(triggered()), this, SLOT(editLast()));
     tb->addAction(a_editLast);
 
@@ -36,6 +38,7 @@ Term::Term(QWidget *parent) :
 
     a_saveAll = new QAction(tr("Save all output"), this);
     a_saveAll->setIcon(QIcon::fromTheme("document-save-all", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/document-save-all.png")));
+    a_saveAll->setEnabled(false);
     connect(a_saveAll, SIGNAL(triggered()), this, SLOT(saveAll()));
     tb->addAction(a_saveAll);
 
@@ -43,6 +46,7 @@ Term::Term(QWidget *parent) :
 
     a_clear = new QAction(tr("Clear output"), this);
     a_clear->setIcon(QIcon::fromTheme("edit-delete", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-delete.png")));
+    a_clear->setEnabled(false);
     connect(a_clear, SIGNAL(triggered()), this, SLOT(clear()));
 
     tb->addAction(a_clear);
@@ -64,6 +68,37 @@ Term::Term(QWidget *parent) :
 //    output("this is output");
 //    output("this is another output");
 //    error("this is error");
+
+}
+
+void Term::resizeEvent(QResizeEvent *e)
+{
+    const QSize sz = e->size();
+    if (sz.width()>sz.height()) {
+        m_toolBar->setOrientation(Qt::Vertical);
+        m_layout->addWidget(m_toolBar, 1, 0, 1, 1);
+    }
+    else {
+        m_toolBar->setOrientation(Qt::Horizontal);
+        m_layout->addWidget(m_toolBar, 0, 1, 1, 1);
+    }
+    e->accept();
+}
+
+void Term::changeGlobalState(ExtensionSystem::GlobalState , ExtensionSystem::GlobalState current)
+{
+    if (current==ExtensionSystem::GS_Unlocked || current==ExtensionSystem::GS_Observe) {
+        a_saveAll->setEnabled(l_sessions.size()>0);
+        a_saveLast->setEnabled(l_sessions.size()>0);
+        a_editLast->setEnabled(l_sessions.size()>0);
+        a_clear->setEnabled(l_sessions.size()>0);
+    }
+    else {
+        a_saveAll->setEnabled(false);
+        a_saveLast->setEnabled(false);
+        a_editLast->setEnabled(false);
+        a_clear->setEnabled(false);
+    }
 }
 
 void Term::handleInputTextChanged(const QString &text)
@@ -109,6 +144,10 @@ void Term::clear()
     }
     l_sessions.clear();
     m_plane->update();
+    a_saveAll->setEnabled(false);
+    a_saveLast->setEnabled(false);
+    a_editLast->setEnabled(false);
+    a_clear->setEnabled(false);
 }
 
 void Term::start(const QString & fileName)
@@ -204,20 +243,54 @@ void Term::error(const QString & message)
         sb_vertical->setValue(sb_vertical->maximum());
 }
 
+
 void Term::saveAll()
 {
-    // TODO implement me
+    const QString suggestedFileName = QDir::current().absoluteFilePath("output-all.txt");
+    QString allText;
+    for (int i=0; i<l_sessions.size(); i++) {
+        allText += l_sessions[i]->plainText(true);
+    }
+    saveText(suggestedFileName, allText);
 }
 
 void Term::saveLast()
 {
-    // TODO implement me
+    QString suggestedFileName = QDir::current().absoluteFilePath(l_sessions.last()->fileName());
+    suggestedFileName = suggestedFileName.left(suggestedFileName.length()-4)+"-out.txt";
+    saveText(suggestedFileName, l_sessions.last()->plainText(false));
+}
+
+void Term::saveText(const QString &suggestedFileName, const QString &text)
+{
+    QString fileName = QFileDialog::getSaveFileName(
+                this,
+                tr("Save output..."),
+                suggestedFileName,
+                tr("Text files (*.txt);;All files (*)"));
+    if (!fileName.isEmpty()) {
+        QFile f(fileName);
+        if (f.open(QIODevice::WriteOnly)) {
+            QTextStream ts(&f);
+            ts.setCodec("UTF-8");
+            ts.setGenerateByteOrderMark(true);
+            ts << text;
+            f.close();
+        }
+        else {
+            QMessageBox::critical(this,
+                                  tr("Can't save output"),
+                                  tr("The file you selected can not be written"));
+        }
+    }
 }
 
 void Term::editLast()
 {
     Q_ASSERT(!l_sessions.isEmpty());
-    emit openTextEditor(l_sessions.last()->plainText());
+    QString suggestedFileName = QDir::current().absoluteFilePath(l_sessions.last()->fileName());
+    suggestedFileName = suggestedFileName.left(suggestedFileName.length()-4)+"-out.txt";
+    emit openTextEditor(suggestedFileName, l_sessions.last()->plainText(false));
 }
 
 } // namespace Terminal

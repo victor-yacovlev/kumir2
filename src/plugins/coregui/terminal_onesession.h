@@ -22,7 +22,7 @@ class OneSession
 public:
     OneSession(int fixedWidth, const QString & fileName, QWidget * parent);
     QSize visibleSize(int realWidth) const;
-    QString plainText() const;
+    QString plainText(bool footer_header) const;
     inline QString fileName() const { return s_fileName; }
     inline QDateTime startTime() const { return m_startTime; }
     inline QDateTime endTime() const { return m_endTime; }

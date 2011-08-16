@@ -772,8 +772,12 @@ void TextCursor::removePreviousChar()
         {
             m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, textPos-1, 1, false));
         }
-        else if (textPos>m_document->textAt(i_row).length()) {
+        else if (i_row<m_document->linesCount() && textPos>m_document->textAt(i_row).length()) {
             movePosition(QTextCursor::PreviousCell, TextCursor::MM_Move);
+        }
+        else {
+            i_row --;
+            i_column = 2 * m_document->indentAt(i_row);
         }
     }
     else {

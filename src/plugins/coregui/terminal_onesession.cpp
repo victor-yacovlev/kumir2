@@ -78,7 +78,7 @@ QSize OneSession::visibleSize(int realWidth) const
                  body.height()+headerHeight+footerHeight+lineWidth+shadowOffset);
 }
 
-QString OneSession::plainText() const
+QString OneSession::plainText(bool footer_header) const
 {
     const QString body = m_lines.join("\n");
     const QString header = tr(">> %1:%2:%3 - %4 - Process started")
@@ -93,7 +93,11 @@ QString OneSession::plainText() const
               .arg(m_startTime.time().second())
               .arg(s_fileName)
             : "";
-    return header + "\n" + body + "\n" + footer;
+    if (footer_header)
+        return header + "\n" + body + "\n" + footer+"\n";
+    else
+        return body;
+
 }
 
 void OneSession::draw(QPainter *p, int realWidth)

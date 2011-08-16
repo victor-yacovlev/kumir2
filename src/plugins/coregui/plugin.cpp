@@ -110,6 +110,9 @@ QString Plugin::initialize(const QStringList & parameters)
         m_mainWindow->disableTabs();
     }
 
+    connect(m_terminal, SIGNAL(openTextEditor(QString,QString)),
+            m_mainWindow, SLOT(newText(QString,QString)));
+
     return "";
 }
 
@@ -137,6 +140,7 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
     }
 
     m_kumirProgram->switchGlobalState(old, state);
+    m_terminal->changeGlobalState(old, state);
 
 
 }

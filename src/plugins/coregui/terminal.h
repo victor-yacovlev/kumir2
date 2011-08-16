@@ -4,6 +4,8 @@
 #include <QtCore>
 #include <QtGui>
 
+#include "extensionsystem/kplugin.h"
+
 namespace Terminal {
 
 class Term : public QWidget
@@ -13,7 +15,7 @@ class Term : public QWidget
 public:
     explicit Term(QWidget *parent = 0);
 signals:
-    void openTextEditor(const QString & text);
+    void openTextEditor(const QString & suggestedFileName, const QString & text);
     void message(const QString &);
     void inputFinished(const QVariantList &);
     void showWindowRequest();
@@ -28,10 +30,14 @@ public slots:
     void saveLast();
     void saveAll();
     void editLast();
+    void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
 
 protected:
     void focusInEvent(QFocusEvent *);
     void focusOutEvent(QFocusEvent *);
+    void resizeEvent(QResizeEvent *);
+    void saveText(const QString & suggestedFileName, const QString & text);
+
 protected slots:
     void handleInputTextChanged(const QString & text);
     void handleInputCursorPositionChanged(quint16 pos);
@@ -47,6 +53,9 @@ private:
     QAction * a_saveLast;
     QAction * a_editLast;
     QAction * a_clear;
+    QToolBar * m_toolBar;
+    QGridLayout * m_layout;
+
 
 };
 

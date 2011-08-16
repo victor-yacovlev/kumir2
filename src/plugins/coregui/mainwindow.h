@@ -60,6 +60,7 @@ public slots:
     void saveSettings();
     void newProgram();
     void newText();
+    void newText(const QString &fileName, const QString &text);
     void fileOpen();
     void closeCurrentTab();
     void closeTab(int index);

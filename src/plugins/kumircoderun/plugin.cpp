@@ -12,7 +12,7 @@ Plugin::Plugin() :
     ExtensionSystem::KPlugin()
 {
     d = new Run(this);
-    b_done = false;
+    b_done = true;
     connect (d, SIGNAL(output(QString)), this, SLOT(handleOutput(QString)));
     connect (d, SIGNAL(input(QString)), this, SLOT(handleInput(QString)));
     connect (d, SIGNAL(externalFunctionCall(QString,QString,QVariantList)),
