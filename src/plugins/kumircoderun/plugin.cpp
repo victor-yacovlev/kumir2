@@ -88,6 +88,16 @@ void Plugin::runContinuous()
     d->runContinuous();
 }
 
+void Plugin::runBlind()
+{
+    if (b_done) {
+        d->vm->setEntryPoint(VM::EP_Main);
+        d->vm->reset();
+        b_done = false;
+    }
+    d->runBlind();
+}
+
 void Plugin::runStepInto()
 {
     d->runStepIn();

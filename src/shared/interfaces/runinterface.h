@@ -19,7 +19,7 @@ public:
 
     virtual bool canStepInto() const = 0;
     virtual bool canStepOut() const = 0;
-
+    virtual void runBlind() = 0;
     virtual void runContinuous() = 0;
     virtual void runStepOver() = 0;
     virtual void runStepInto() = 0;

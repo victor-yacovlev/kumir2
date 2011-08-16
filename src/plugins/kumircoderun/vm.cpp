@@ -14,6 +14,7 @@ VM::VM(QObject *parent) :
     QObject(parent)
 {
     e_entryPoint = EP_Main;
+    b_blindMode = false;
 }
 
 void VM::setNextCallInto()
@@ -50,8 +51,14 @@ int VM::currentLineNo() const
         return stack_contexts[stack_contexts.size()-1].lineNo;
 }
 
+void VM::setBlindMode(bool bl)
+{
+    b_blindMode = bl;
+}
+
 void VM::reset()
 {
+    b_blindMode = false;
     b_nextCallInto = false;
     s_error = "";
     Variant::error = "";
@@ -549,6 +556,7 @@ void VM::do_store(quint8 s, quint16 id)
     }
     if (lineNo!=-1 &&
             (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+            && !b_blindMode
             )
     {
         if (t==VT_string)
@@ -633,6 +641,7 @@ void VM::do_storearr(quint8 s, quint16 id)
     }
     if (lineNo!=-1 &&
             (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+            && !b_blindMode
             )
         emit valueChangeNotice(lineNo, name+"["+sindeces+"]="+svalue);
     nextIP();
@@ -804,17 +813,20 @@ void VM::do_pop(quint8 r)
 }
 
 void VM::do_showreg(quint8 regNo) {
-    const int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
-    if (lineNo!=-1 &&
-            (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
-            )
-    {
-        QVariant val = stack_contexts[stack_contexts.size()-1].registers[regNo];
-        if (val.type()==QVariant::Bool) {
-            emit valueChangeNotice(lineNo, val.toBool()? tr("true") : tr("false"));
-        }
-        else {
-            emit valueChangeNotice(lineNo, val.toString());
+    if (!b_blindMode) {
+        const int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
+        if (lineNo!=-1 &&
+                (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+                && !b_blindMode
+                )
+        {
+            QVariant val = stack_contexts[stack_contexts.size()-1].registers[regNo];
+            if (val.type()==QVariant::Bool) {
+                emit valueChangeNotice(lineNo, val.toBool()? tr("true") : tr("false"));
+            }
+            else {
+                emit valueChangeNotice(lineNo, val.toString());
+            }
         }
     }
     nextIP();
@@ -855,7 +867,7 @@ void VM::do_error(quint8 s, quint16 id)
 
 void VM::do_line(quint16 no)
 {
-    if (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep) {
+    if (!b_blindMode && stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep) {
         if (stack_contexts[stack_contexts.size()-1].lineNo!=no)
             emit lineNoChanged(no);
     }
@@ -1262,6 +1274,7 @@ void VM::setResults(
     int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
     if (lineNo!=-1 &&
             (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+            && !b_blindMode
             )
         emit valueChangeNotice(lineNo, marginText.join(", "));
 }

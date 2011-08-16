@@ -21,6 +21,8 @@ public:
     bool canStepInto() const;
     void evaluateNextInstruction();
     QStringList usedActors() const;
+    inline bool isBlindMode() const { return b_blindMode; }
+    void setBlindMode(bool bl);
     inline bool hasMoreInstructions() const { return !stack_contexts.isEmpty() && stack_contexts[0].IP < stack_contexts[0].program.size(); }
     inline QString error() const { return s_error; }
     void loadProgram(const Data & program);
@@ -98,6 +100,8 @@ private:
     void do_gt();
     void do_leq();
     void do_geq();
+
+    bool b_blindMode;
 
 };
 

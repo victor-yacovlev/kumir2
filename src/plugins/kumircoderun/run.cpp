@@ -64,6 +64,14 @@ void Run::runStepOut()
     start();
 }
 
+void Run::runBlind()
+{
+    e_runMode = RM_ToEnd;
+    vm->setBlindMode(true);
+    vm->setNextCallToEnd();
+    start();
+}
+
 void Run::runContinuous()
 {
     e_runMode = RM_ToEnd;

@@ -23,6 +23,7 @@ public slots:
     void runStepOver();
     void runStepIn();
     void runStepOut();
+    void runBlind();
     void runContinuous();
 
 
@@ -76,6 +77,7 @@ protected :
     QVariantList list_funcResults;
     QVariant v_funcResult;
     QString s_funcError;
+
 
 };
 

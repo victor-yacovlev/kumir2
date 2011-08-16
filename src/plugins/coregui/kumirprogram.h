@@ -45,6 +45,7 @@ signals:
 
 public slots:
     void fastRun();
+    void blindRun();
     void regularRun();
     void stepRun();
     void stepIn();
@@ -75,6 +76,7 @@ private:
     RunInterface * plugin_bytecodeRun;
     EditorInterface * plugin_editor;
     QAction * a_fastRun;
+    QAction * a_blindRun;
     QAction * a_regularRun;
     QAction * a_stepRun;
     QAction * a_stepIn;

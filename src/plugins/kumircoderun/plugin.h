@@ -28,7 +28,7 @@ public:
     bool isGuiRequired() const;
 
 public slots:
-
+    void runBlind();
     void runContinuous();
     void runStepOver();
     void runStepInto();

@@ -20,6 +20,7 @@ KumirProgram::KumirProgram(QObject *parent)
     , plugin_bytecodeRun(0)
     , plugin_editor(0)
     , a_fastRun(0)
+    , a_blindRun(0)
     , a_regularRun(0)
     , a_stepRun(0)
     , a_stepIn(0)
@@ -91,19 +92,31 @@ KumirProgram::KumirProgram(QObject *parent)
     s2->setSeparator(true);
 
     a_fastRun = new QAction(tr("Fast run"), this);
-    a_fastRun->setIcon(QIcon::fromTheme("media-seek-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-seek-forward.png")));
+    a_fastRun->setIcon(QIcon::fromTheme("system-run", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/system-run.png")));
     connect(a_fastRun, SIGNAL(triggered()), this, SLOT(fastRun()));
 #ifndef Q_OS_MAC
-    a_fastRun->setShortcut(QKeySequence("Shift+F9"));
+    a_fastRun->setShortcut(QKeySequence("Ctrl+Shift+F9"));
 
 #else
-    a_fastRun->setShortcut(QKeySequence("Ctrl+R"));
+    a_fastRun->setShortcut(QKeySequence("Ctrl+Shift+R"));
 #endif
     a_fastRun->setToolTip(a_fastRun->text()+" <b>"+a_fastRun->shortcut().toString()+"</b>");
+
+    a_blindRun = new QAction(tr("Blind run"), this);
+    a_blindRun->setIcon(QIcon::fromTheme("media-seek-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-seek-forward.png")));
+    connect(a_blindRun, SIGNAL(triggered()), this, SLOT(blindRun()));
+#ifndef Q_OS_MAC
+    a_blindRun->setShortcut(QKeySequence("Shift+F9"));
+
+#else
+    a_blindRun->setShortcut(QKeySequence("Ctrl+R"));
+#endif
+    a_blindRun->setToolTip(a_blindRun->text()+" <b>"+a_blindRun->shortcut().toString()+"</b>");
 
 
     gr_actions = new QActionGroup(this);
     gr_actions->addAction(a_fastRun);
+    gr_actions->addAction(a_blindRun);
     gr_actions->addAction(a_regularRun);
     gr_actions->addAction(s1);
     gr_actions->addAction(a_stepRun);
@@ -280,6 +293,20 @@ void KumirProgram::fastRun()
         e_state = FastRun;
         PluginManager::instance()->switchGlobalState(GS_Running);
     }
+}
+
+void KumirProgram::blindRun()
+{
+    if (e_state==FastRun)
+        return;
+    s_endStatus = "";
+    if (e_state==Idle) {
+        emit giveMeAProgram();
+        prepareKumirRunner();
+    }
+    e_state = RegularRun;
+    PluginManager::instance()->switchGlobalState(GS_Running);
+    plugin_bytecodeRun->runBlind();
 }
 
 void KumirProgram::regularRun()
