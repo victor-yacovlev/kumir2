@@ -144,7 +144,7 @@ MainWindow::MainWindow(Plugin * p) :
     setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
     setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 
-    statusBar()->setStyleSheet("QStatusBar { border-top: 1px solid darkgray; }");
+    statusBar()->setStyleSheet("QStatusBar { border-top: 1px solid darkgray; } ");
 
     statusBar()->addWidget(m_plugin->m_kumirStateLabel);
     statusBar()->addWidget(m_plugin->m_genericCounterLabel);
@@ -170,7 +170,7 @@ MainWindow::MainWindow(Plugin * p) :
 
 QString MainWindow::StatusbarWidgetCSS =
 "QLabel {"
-"   font-size: 15px;"
+"   font-size: 12px;"
 "   padding: 4px;"
 "}"
 ;
