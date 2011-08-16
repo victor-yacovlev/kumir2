@@ -21,7 +21,8 @@ HEADERS += \
     terminal_plane.h \
     tabbar.h \
     confirmclosedialod.h \
-    kumirvariableswindow.h
+    kumirvariableswindow.h \
+    tableviewer.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -33,7 +34,8 @@ SOURCES += \
     terminal_plane.cpp \
     tabbar.cpp \
     confirmclosedialod.cpp \
-    kumirvariableswindow.cpp
+    kumirvariableswindow.cpp \
+    tableviewer.cpp
 
 FORMS += \
     mainwindow.ui \
