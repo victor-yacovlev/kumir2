@@ -29,6 +29,12 @@ public:
     virtual bool hasMoreInstructions() const = 0;
     virtual int currentLineNo() const = 0;
     virtual QString error() const = 0;
+    // Get variable value or QVariant::Invalid if not initialized
+    virtual QVariant value(int moduleId, int algorhitmId, int variableId) const = 0;
+    // Get array bounds or empty list if not initialized
+    virtual QList<int> bounds(int moduleId, int algorhitmId, int variableId) const = 0;
+    // Get triple  { module id, algorhitm id, variable id } for reference target or empty list if not initialized
+    virtual QList<int> reference(int moduleId, int algorhitmId, int variableId) const = 0;
 
     virtual void finishInput(const QVariantList & message) = 0;
     virtual void finishExternalFunctionCall(

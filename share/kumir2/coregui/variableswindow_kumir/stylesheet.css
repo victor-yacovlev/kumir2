@@ -1,0 +1,83 @@
+body {
+    background: #999999;
+}
+.module {
+    display: block;
+    left: 5px;
+    right: 5px;
+}
+
+.table_body {
+    display: block;
+    min-height: 32px;
+}
+
+.module, .table_view {
+    margin-bottom: 10px;
+    background: #FFFFFF;
+    padding: 3px;
+    font-size: 12px;
+}
+.modulename, .table_title {
+    border-bottom: 1px solid black;
+    font-weight: bold;
+    font-size: 14px;
+}
+.algorhitm, .globals {
+    padding-top: 5px;
+}
+.algorhitmtitle, .globalstitle {
+    font-weight: bold;
+    text-align: center;
+    font-style: italic;
+}
+.values {
+    text-align: center;
+    border: 1px solid black;
+    width: 100%;
+}
+.valuesheader {
+    background: green;
+    font-weight: bold;
+    color: yellow;
+    border-bottom: 1px solid black;
+}
+
+.even {
+    background: white;
+}
+
+.odd {
+    background: #DDDDDD;
+}
+
+.undefined_value {
+    color: gray;
+    font-style: italic;
+}
+
+.varname_header {
+    min-width: 100px;
+    max-width: 200px;
+}
+
+.vartype_header {
+    min-width: 80px;
+    max-width: 80px;
+}
+
+.varvalue_header {
+    min-width: 100px;
+    max-width: 200px;
+}
+
+.values td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.values a {
+    color: blue;
+    text-decoration: none;
+}

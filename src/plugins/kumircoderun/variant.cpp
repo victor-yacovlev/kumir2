@@ -4,6 +4,28 @@ namespace KumirCodeRun {
 
 QString Variant::error = "";
 
+bool Variant::hasValue() const
+{
+    if (m_reference && l_referenceIndeces.isEmpty())
+        return m_reference->hasValue();
+    else if (m_reference && l_referenceIndeces.size()>0)
+        return m_reference->hasValue(l_referenceIndeces);
+    else
+        return m_value.isValid();
+}
+
+bool Variant::hasValue(const QList<int> & indeces) const
+{
+    if (indeces.size()==1)
+        return hasValue(indeces[0]);
+    else if (indeces.size()==2)
+        return hasValue(indeces[0], indeces[1]);
+    else if (indeces.size()==3)
+        return hasValue(indeces[0], indeces[1], indeces[2]);
+    else
+        return hasValue();
+}
+
 QVariant Variant::value() const
 {
     if (m_reference && l_referenceIndeces.isEmpty())
@@ -46,6 +68,20 @@ QVariant Variant::value(int index0) const
         return QVariant::Invalid;
     }
     return m_value.toList()[index];
+}
+
+bool Variant::hasValue(int index0) const
+{
+    if (m_reference)
+        return m_reference->hasValue(index0);
+    if (m_value.type()==QVariant::Invalid || l_bounds.size()<1) {
+        return false;
+    }
+    if (index0<l_bounds[0].first || index0>l_bounds[0].second) {
+        return false;
+    }
+    int index = linearIndex(index0);
+    return m_value.isValid() && m_value.toList()[index].isValid();
 }
 
 QString Variant::toString() const
@@ -115,7 +151,24 @@ void Variant::setValue(int index0, const QVariant &value)
 QVariant Variant::value(int index0, int index1) const
 {
     if (m_reference)
-        return m_reference->value(index0, index1);
+        return m_reference->hasValue(index0, index1);
+    if (m_value.type()==QVariant::Invalid || l_bounds.size()<2) {
+        return false;
+    }
+    if (index0<l_bounds[0].first || index0>l_bounds[0].second || index1<l_bounds[1].first || index1>l_bounds[1].second) {
+        return false;
+    }
+    int index = linearIndex(index0, index1);
+    if (m_value.toList()[index].type()==QVariant::Invalid) {
+        return false;
+    }
+    return m_value.toList()[index];
+}
+
+bool Variant::hasValue(int index0, int index1) const
+{
+    if (m_reference)
+        return m_reference->hasValue(index0, index1);
     if (m_value.type()==QVariant::Invalid || l_bounds.size()<2) {
         error = QObject::tr("Array not initialized", "Variant");
         return QVariant::Invalid;
@@ -125,11 +178,7 @@ QVariant Variant::value(int index0, int index1) const
         return QVariant::Invalid;
     }
     int index = linearIndex(index0, index1);
-    if (m_value.toList()[index].type()==QVariant::Invalid) {
-        error = QObject::tr("Array element not defined");
-        return QVariant::Invalid;
-    }
-    return m_value.toList()[index];
+    return m_value.isValid() && m_value.toList()[index].isValid();
 }
 
 void Variant::setValue(int index0, int index1, const QVariant &value)
@@ -168,6 +217,20 @@ QVariant Variant::value(int index0, int index1, int index2) const
         return QVariant::Invalid;
     }
     return m_value.toList()[index];
+}
+
+bool Variant::hasValue(int index0, int index1, int index2) const
+{
+    if (m_reference)
+        return m_reference->hasValue(index0, index1, index2);
+    if (m_value.type()==QVariant::Invalid || l_bounds.size()<3) {
+        return false;
+    }
+    if (index0<l_bounds[0].first || index0>l_bounds[0].second || index1<l_bounds[1].first || index1>l_bounds[1].second|| index2<l_bounds[2].first || index2>l_bounds[2].second) {
+        return false;
+    }
+    int index = linearIndex(index0, index1, index2);
+    return m_value.isValid() && m_value.toList()[index].isValid();
 }
 
 void Variant::setValue(int index0, int index1, int index2, const QVariant &value)

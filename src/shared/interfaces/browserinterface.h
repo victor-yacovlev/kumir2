@@ -17,12 +17,11 @@ class BrowserInterface
 {
 public:
     virtual BrowserComponent createBrowser(const QUrl & url, const QMap<QString, QObject*> manageableObjects) = 0;
-signals:
-    void openNewDocumentRequest(const QUrl &url);
 };
 
 }
 
+Q_DECLARE_METATYPE(Shared::BrowserComponent)
 Q_DECLARE_INTERFACE(Shared::BrowserInterface, "kumir2.browser")
 
 #endif

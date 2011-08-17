@@ -29,7 +29,7 @@ public:
     void setNativeGenerator(GeneratorInterface * cpp);
     inline void setBytecodeGenerator(GeneratorInterface * bc) { plugin_bytcodeGenerator = bc; }
     inline void setEditorPlugin(EditorInterface * ed) { plugin_editor = ed; }
-    inline void setAST(const AST::Data * ast) { m_ast = ast; }
+    void setAST(const AST::Data * ast);
     inline QActionGroup * actions() { return gr_actions; }
     inline bool isRunning() const { return e_state!=Idle; }
     inline void setSourceFileName(const QString & s) { s_sourceFileName = s; }
@@ -40,6 +40,7 @@ public:
     void addActor(KPlugin * a, QDockWidget * w);
     inline QString endStatus() const { return s_endStatus; }
     ~KumirProgram();
+    class KumirVariablesWebObject * variablesWebObject();
 signals:
     void giveMeAProgram();
 
@@ -88,6 +89,7 @@ private:
     QMap<QString,QDockWidget*> m_actorWindows;
     QMap<QString,ActorInterface*> m_actors;
     int i_documentId;
+    class KumirVariablesWebObject * m_variablesWebObject;
 
 };
 

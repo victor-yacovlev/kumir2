@@ -6,6 +6,7 @@
 #include "kumirprogram.h"
 
 
+
 #include <algorithm>
 
 namespace CoreGUI {
@@ -604,13 +605,16 @@ QDockWidget * MainWindow::addSecondaryComponent(const QString & title
     dock->setWidget(c);
     dock->setObjectName(title);
     Q_UNUSED(toolbarActions);
-    Q_UNUSED(type);
-    l_dockWindows << dock;
-    ui->menuWindow->addAction(dock->toggleViewAction());
+    if (type!=SubControl) {
+        ui->menuWindow->addAction(dock->toggleViewAction());
+        l_dockWindows << dock;
+    }
     if (type!=Terminal) {
-        QMenu * componentMenu = new QMenu(title, this);
-        componentMenu->addActions(menuActions);
-        ui->menubar->insertMenu(ui->menuWindow->menuAction(), componentMenu);
+        if (type!=SubControl && type!=Control) {
+            QMenu * componentMenu = new QMenu(title, this);
+            componentMenu->addActions(menuActions);
+            ui->menubar->insertMenu(ui->menuWindow->menuAction(), componentMenu);
+        }
         dock->setFloating(true);
     }
     else {

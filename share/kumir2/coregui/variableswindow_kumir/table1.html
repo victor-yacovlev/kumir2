@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Table</title>
+    <script type="text/javascript">
+    var MY_HASH = "";
+    function loadTable() {
+        var url = window.location.href;
+        variablesObject.test(url);
+        url.match(/\?(.+)$/);
+        var params = RegExp.$1;
+        var query = params.split("=");
+        MY_HASH = query[1];
+        updateRoot();
+        var tableTitle = variablesObject.tableTitle(MY_HASH);
+        document.title = tableTitle;
+        document.getElementById("table_title").innerHTML = tableTitle;
+    }
+    function updateRoot() {
+        
+    }
+    function updateIDs(myHash) {
+        MY_HASH = "" + myHash;
+        updateRoot();
+    }
+    </script>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css">
+</head>
+
+<body onload="loadTable()">
+    <div class="table_view">    
+        <div id="table_title" class="table_title">
+        </div>
+        <div id="table_body" class="table_body">
+        </div>
+    </div>
+
+</body>
+</html>

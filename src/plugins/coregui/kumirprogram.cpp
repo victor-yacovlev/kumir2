@@ -1,6 +1,7 @@
 #include "kumirprogram.h"
 #include "extensionsystem/pluginmanager.h"
 #include "interfaces/actorinterface.h"
+#include "kumirvariableswebobject.h"
 
 namespace CoreGUI {
 
@@ -28,6 +29,7 @@ KumirProgram::KumirProgram(QObject *parent)
     , a_stop(0)
     , gr_actions(0)
     , m_connector(0)
+    , m_variablesWebObject(0)
 {
 
 
@@ -125,6 +127,19 @@ KumirProgram::KumirProgram(QObject *parent)
     gr_actions->addAction(s2);
     gr_actions->addAction(a_stop);
 
+    m_variablesWebObject = new KumirVariablesWebObject(this);
+
+}
+
+void KumirProgram::setAST(const AST::Data *ast)
+{
+    m_ast = ast;
+    m_variablesWebObject->setProgram(m_ast);
+}
+
+KumirVariablesWebObject * KumirProgram::variablesWebObject()
+{
+    return m_variablesWebObject;
 }
 
 void KumirProgram::setNativeGenerator(GeneratorInterface *cpp)
@@ -157,6 +172,7 @@ void KumirProgram::handleMarginTextRequest(int lineNo, const QString &text)
 {
     if (lineNo!=-1 && !text.isEmpty())
         plugin_editor->appendMarginText(i_documentId, lineNo, text);
+    m_variablesWebObject->refreshRoot();
 }
 
 void KumirProgram::handleMarginClearRequest(int fromLine, int toLine)
@@ -223,6 +239,7 @@ void KumirProgram::addActor(KPlugin *a, QDockWidget *w)
 
 void KumirProgram::fastRun()
 {
+
     s_endStatus = "";
     if (e_state!=Idle) {
         return;
@@ -297,6 +314,7 @@ void KumirProgram::fastRun()
 
 void KumirProgram::blindRun()
 {
+
     if (e_state==FastRun)
         return;
     s_endStatus = "";
@@ -311,6 +329,7 @@ void KumirProgram::blindRun()
 
 void KumirProgram::regularRun()
 {
+
     if (e_state==FastRun)
         return;
     s_endStatus = "";
@@ -344,6 +363,7 @@ void KumirProgram::prepareKumirRunner()
         buffer.close();
     }
     const QString exeFileName = s_sourceFileName.mid(0, s_sourceFileName.length()-4)+".kum";
+    m_variablesWebObject->setProgram(m_ast);
     m_terminal->start(exeFileName);
 }
 
@@ -454,7 +474,7 @@ void KumirProgram::handleLineChanged(int lineNo)
 }
 
 
-void KumirProgram::switchGlobalState(GlobalState , GlobalState cur)
+void KumirProgram::switchGlobalState(GlobalState prev, GlobalState cur)
 {
     if (cur==GS_Unlocked || cur==GS_Observe) {
         if (a_fastRun)
@@ -487,6 +507,13 @@ void KumirProgram::switchGlobalState(GlobalState , GlobalState cur)
         a_stepOut->setEnabled(true);
         a_stop->setEnabled(true);
     }
+    if (prev==GS_Unlocked && cur==GS_Running) {
+        m_variablesWebObject->reset(plugin_bytecodeRun);
+    }
+    if (cur==GS_Unlocked) {
+        m_variablesWebObject->reset(0);
+    }
+
 }
 
 void KumirProgram::handleActorCommand(

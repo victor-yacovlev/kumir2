@@ -27,6 +27,13 @@ public:
     inline QDateTime loadedProgramVersion() const { return dt_loadedVersion; }
     bool isGuiRequired() const;
 
+    QVariant value(int moduleId, int algorhitmId, int variableId) const;
+
+    QList<int> bounds(int moduleId, int algorhitmId, int variableId) const;
+
+    QList<int> reference(int moduleId, int algorhitmId, int variableId) const;
+
+
 public slots:
     void runBlind();
     void runContinuous();

@@ -1,15 +1,44 @@
 #include "component.h"
 #include "ui_component.h"
 #include "webpage.h"
+#include "plugin.h"
 
 namespace Browser {
 
-Component::Component() :
+static QString screenString(QString s)
+{
+    s.replace("\\", "\\\\");
+    s.replace("\"", "\\\"");
+    s.replace("\n", "\\n");
+    return s;
+}
+
+void Component::evaluateCommand(const QString &method, const QVariantList &arguments)
+{
+    QString js = method + "(";
+    for (int i=0; i<arguments.size(); i++) {
+        QVariant arg = arguments[i];
+        if (arg.type()==QVariant::Char || arg.type()==QVariant::String) {
+            js += "\""+screenString(arg.toString())+"\"";
+        }
+        else if (arg.type()==QVariant::Bool) {
+            js += arg.toBool() ? "true" : "false";
+        }
+        else {
+            js += arg.toString();
+        }
+    }
+    js += ")";
+    ui->webView->page()->currentFrame()->evaluateJavaScript(js);
+}
+
+Component::Component(class Plugin * plugin) :
     QWidget(),
     ui(new Ui::Component)
 {
+    m_plugin = plugin;
     ui->setupUi(this);
-    ui->webView->setPage(new WebPage);
+    ui->webView->setPage(new WebPage(this));
     connect(ui->webView->page()->mainFrame(), SIGNAL(javaScriptWindowObjectCleared()), this, SLOT(addJavaScriptObjects()));
 #ifdef QT_DEBUG
     ui->webView->page()->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
@@ -51,6 +80,7 @@ Component::Component() :
     menu_edit->addAction(ui->webView->pageAction(QWebPage::Cut));
     menu_edit->addAction(ui->webView->pageAction(QWebPage::Copy));
     menu_edit->addAction(ui->webView->pageAction(QWebPage::Paste));
+
 }
 
 QList<QAction*> Component::toolbarActions()
@@ -127,6 +157,14 @@ void Component::handleReloadStop()
 Component::~Component()
 {
     delete ui;
+}
+
+QWebPage * Component::createChildPage()
+{
+    Shared::BrowserComponent bc = m_plugin->createBrowser(QUrl(), m_manageableObjects);
+    emit newWindowCreated(bc);
+    Component * cw = qobject_cast<Component*>(bc.widget);
+    return cw->ui->webView->page();
 }
 
 } // namespace Browser

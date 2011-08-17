@@ -38,6 +38,12 @@ public:
     void setNextCallToEnd();
     void setNextCallStepOver();
     int currentLineNo() const;
+
+    QVariant value(int moduleId, int algorhitmId, int variableId) const;
+
+    QList<int> bounds(int moduleId, int algorhitmId, int variableId) const;
+
+    QList<int> reference(int moduleId, int algorhitmId, int variableId) const;
 signals:
     void lineNoChanged(int lineNo);
     void inputRequest(const QString & format, const QList<quintptr> & references, const QList<int> & indeces);
@@ -53,9 +59,10 @@ signals:
 
     void clearMargin(int fromLine, int toLine);
 private:
+    int contextByIds(int moduleId, int algorhitmId) const;
     QStack<Variant> stack_values;
     QStack<Context> stack_contexts;
-    QMap<quint16, Variant> globals;
+    QMap< QPair<quint8,quint16>, Variant> globals;
     QMap<quint16, Variant> constants;
     QMap< quint32, Bytecode::TableElem > externs;
     QMap< quint32, Bytecode::TableElem > functions;

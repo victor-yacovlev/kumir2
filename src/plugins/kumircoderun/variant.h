@@ -35,6 +35,12 @@ public:
     void setBounds(const QList<int> & bounds);
     QList<int> bounds() const;
 
+    bool hasValue() const;
+    bool hasValue(const QList<int> & indeces) const;
+    bool hasValue(int index0) const;
+    bool hasValue(int index0, int index1) const;
+    bool hasValue(int index0, int index1, int index2) const;
+
     QVariant value() const;
     QVariant value(int index0) const;
     QVariant value(int index0, int index1) const;

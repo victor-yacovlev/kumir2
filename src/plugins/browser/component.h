@@ -5,6 +5,8 @@
 #include <QtGui>
 #include <QtWebKit>
 
+#include "interfaces/browserinterface.h"
+
 namespace Browser {
 
 namespace Ui {
@@ -17,13 +19,16 @@ class Component
     Q_OBJECT
 
 public:
-    explicit Component();
+    explicit Component(class Plugin * plugin);
     inline void setManageableObjects(const QMap<QString, QObject*> &os) {m_manageableObjects = os; }
+    QWebPage * createChildPage();
     ~Component();
     QList<QAction*> toolbarActions();
     QList<QMenu*> menuActions();
+
 public slots:
     void go(const QUrl & url);
+    void evaluateCommand(const QString & method, const QVariantList & arguments);
 protected:
     void showEvent(QShowEvent *e);
 private:
@@ -34,8 +39,11 @@ private:
     QAction * a_reloadStop;
 
     QMenu * menu_edit;
+    class Plugin * m_plugin;
+
 signals:
     void titleChanged(const QString & title);
+    void newWindowCreated(const Shared::BrowserComponent &);
 
 private slots:
     void addJavaScriptObjects();

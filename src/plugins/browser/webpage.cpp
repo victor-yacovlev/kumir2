@@ -1,9 +1,11 @@
 #include "webpage.h"
+#include "component.h"
 
 namespace Browser {
 
-WebPage::WebPage(QWidget *parent) :
-    QWebPage(parent)
+WebPage::WebPage(Component * component, QWidget *parent)
+    : QWebPage(parent)
+    , m_component(component)
 {
 
 }
@@ -24,6 +26,10 @@ QObject * WebPage::createPlugin(const QString &classid, const QUrl &url, const Q
     return result;
 }
 
+QWebPage * WebPage::createWindow(WebWindowType)
+{
+    return m_component->createChildPage();
+}
 
 
 } // namespace Browser

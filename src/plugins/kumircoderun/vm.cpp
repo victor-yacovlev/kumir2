@@ -157,7 +157,7 @@ void VM::loadProgram(const Data & program)
     for (int i=0; i<program.d.size(); i++) {
         const TableElem e = program.d[i];
         if (e.type==EL_GLOBAL) {
-            globals[e.id] = fromTableElem(e);
+            globals[QPair<quint8,quint16>(e.module,e.id)] = fromTableElem(e);
         }
         else if (e.type==EL_CONST) {
             constants[e.id] = fromTableElem(e);
@@ -500,7 +500,7 @@ void VM::do_init(quint8 s, quint16 id)
         stack_contexts[stack_contexts.size()-1].locals[id].init();
     }
     else if (VariableScope(s)==GLOBAL) {
-        globals[id].init();
+        globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].init();
     }
     else {
         s_error = tr("Internal error: don't know what is 'init %1 %2'").arg(s).arg(id);
@@ -516,7 +516,7 @@ void VM::do_setarr(quint8 s, quint16 id)
         dim = stack_contexts[stack_contexts.size()-1].locals[id].dimension();
     }
     else if (VariableScope(s)==GLOBAL) {
-        dim = globals[id].dimension();
+        dim = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].dimension();
     }
     else {
         s_error = tr("Internal error: don't know what is 'init %1 %2'").arg(s).arg(id);
@@ -529,7 +529,7 @@ void VM::do_setarr(quint8 s, quint16 id)
             stack_contexts[stack_contexts.size()-1].locals[id].setBounds(bounds);
         }
         else if (VariableScope(s)==GLOBAL) {
-            globals[id].setBounds(bounds);
+            globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].setBounds(bounds);
         }
         s_error = Variant::error;
         if (!b_blindMode && s_error.isEmpty()) {
@@ -556,11 +556,11 @@ void VM::do_store(quint8 s, quint16 id)
     }
     else if (VariableScope(s)==GLOBAL) {
 //        globals[id].setBaseType(val.baseType());
-        globals[id].setBounds(val.bounds());
-        globals[id].setValue(val.value());
-        name = globals[id].name();
-        svalue = globals[id].toString();
-        t = globals[id].baseType();
+        globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].setBounds(val.bounds());
+        globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].setValue(val.value());
+        name = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].name();
+        svalue = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].toString();
+        t = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].baseType();
     }
     else {
         s_error = tr("Internal error: don't know what is 'store %1 %2'").arg(s).arg(id);
@@ -588,9 +588,9 @@ void VM::do_load(quint8 s, quint16 id)
         val.setValue(stack_contexts[stack_contexts.size()-1].locals[id].value());
     }
     else if (VariableScope(s)==GLOBAL) {
-        val.setBaseType(globals[id].baseType());
-        val.setBounds(globals[id].bounds());
-        val.setValue(globals[id].value());
+        val.setBaseType(globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].baseType());
+        val.setBounds(globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].bounds());
+        val.setValue(globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].value());
     }
     else if (VariableScope(s)==CONST) {
         val.setBaseType(constants[id].baseType());
@@ -618,8 +618,8 @@ void VM::do_storearr(quint8 s, quint16 id)
         name = stack_contexts[stack_contexts.size()-1].locals[id].name();
     }
     else if (VariableScope(s)==GLOBAL) {
-        dim = globals[id].dimension();
-        name = globals[id].name();
+        dim = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].dimension();
+        name = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].name();
     }
     else {
         s_error = tr("Internal error: don't know what is 'storearr %1 %2'").arg(s).arg(id);
@@ -641,9 +641,9 @@ void VM::do_storearr(quint8 s, quint16 id)
             svalue = stack_contexts[stack_contexts.size()-1].locals[id].toString(indeces);
         }
         else if (VariableScope(s)==GLOBAL) {
-            globals[id].setValue(indeces, val.value());
-            t = globals[id].baseType();
-            svalue = globals[id].toString(indeces);
+            globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].setValue(indeces, val.value());
+            t = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].baseType();
+            svalue = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].toString(indeces);
         }
         if (t==VT_string)
             svalue = "\""+svalue+"\"";
@@ -667,8 +667,8 @@ void VM::do_loadarr(quint8 s, quint16 id)
         vt = stack_contexts[stack_contexts.size()-1].locals[id].baseType();
     }
     else if (VariableScope(s)==GLOBAL) {
-        dim = globals[id].dimension();
-        vt = globals[id].baseType();
+        dim = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].dimension();
+        vt = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].baseType();
     }
     else if (VariableScope(s)==CONST) {
         dim = constants[id].dimension();
@@ -688,8 +688,8 @@ void VM::do_loadarr(quint8 s, quint16 id)
             val.setValue(stack_contexts[stack_contexts.size()-1].locals[id].value(indeces));
         }
         else if (VariableScope(s)==GLOBAL) {
-            val.setBaseType(globals[id].baseType());
-            val.setValue(globals[id].value(indeces));
+            val.setBaseType(globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].baseType());
+            val.setValue(globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].value(indeces));
         }
         else if (VariableScope(s)==CONST) {
             val.setBaseType(constants[id].baseType());
@@ -707,7 +707,7 @@ void VM::do_ref(quint8 s, quint16 id)
         ref = stack_contexts[stack_contexts.size()-1].locals[id].toReference();
     }
     else if (VariableScope(s)==GLOBAL) {
-        ref = globals[id].toReference();
+        ref = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].toReference();
     }
     else {
         s_error = tr("Internal error: don't know what is 'ref %1 %2'").arg(s).arg(id);
@@ -725,7 +725,7 @@ void VM::do_refarr(quint8 s, quint16 id)
         dim = stack_contexts[stack_contexts.size()-1].locals[id].dimension();
     }
     else if (VariableScope(s)==GLOBAL) {
-        dim = globals[id].dimension();
+        dim = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].dimension();
     }
     else if (VariableScope(s)==CONST) {
         dim = constants[id].dimension();
@@ -743,7 +743,7 @@ void VM::do_refarr(quint8 s, quint16 id)
             ref = stack_contexts[stack_contexts.size()-1].locals[id].toReference(indeces);
         }
         else if (VariableScope(s)==GLOBAL) {
-            ref = globals[id].toReference(indeces);
+            ref = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].toReference(indeces);
         }
         else if (VariableScope(s)==CONST) {
             s_error = tr("Internal error: don't know what is 'ref %1 %2'").arg(s).arg(id);
@@ -869,7 +869,7 @@ void VM::do_error(quint8 s, quint16 id)
         s_error = stack_contexts[stack_contexts.size()-1].locals[id].toString();
     }
     else if (VariableScope(s)==GLOBAL) {
-        s_error = globals[id].toString();
+        s_error = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].toString();
     }
     else if (VariableScope(s)==CONST) {
         s_error = constants[id].toString();
@@ -1288,6 +1288,74 @@ void VM::setResults(
             && !b_blindMode
             )
         emit valueChangeNotice(lineNo, marginText.join(", "));
+}
+
+int VM::contextByIds(int moduleId, int algorhitmId) const
+{
+    for (int i=stack_contexts.size()-1; i>=0; i--) {
+        if (stack_contexts[i].algId==algorhitmId && stack_contexts[i].moduleId==moduleId)
+            return i;
+    }
+    return -1;
+}
+
+QVariant VM::value(int moduleId, int algorhitmId, int variableId) const
+{
+    QVariant result;
+    if (algorhitmId==-1 && moduleId!=-1 && variableId!=-1) {
+        QPair<quint8,quint16> index;
+        index.first = moduleId;
+        index.second = variableId;
+        if (globals.contains(index)) {
+            if (globals[index].hasValue())
+                result = globals[index].value();
+        }
+    }
+    else if (algorhitmId!=-1 && moduleId!=-1 && variableId!=-1) {
+        int context = contextByIds(moduleId, algorhitmId);
+
+        if (context>-1 && stack_contexts.at(context).locals[variableId].hasValue()) {
+            result = stack_contexts.at(context).locals[variableId].value();
+        }
+
+    }
+    return result;
+}
+
+QList<int> VM::bounds(int moduleId, int algorhitmId, int variableId) const
+{
+    QList<int> result;
+    if (algorhitmId==-1 && moduleId!=-1 && variableId!=-1) {
+        QPair<quint8,quint16> index;
+        index.first = moduleId;
+        index.second = variableId;
+        if (globals.contains(index)) {
+            result = globals[index].bounds();
+        }
+    }
+    else if (algorhitmId!=-1 && moduleId!=-1 && variableId!=-1) {
+        int stack_index = -1;
+        for (int i=stack_contexts.size()-1; i>=0; i--) {
+            if (stack_contexts[i].algId==algorhitmId && stack_contexts[i].moduleId==moduleId) {
+                stack_index = i;
+                break;
+            }
+        }
+        if (stack_index!=-1) {
+            if (variableId<stack_contexts[stack_index].locals.size()) {
+                result = stack_contexts[stack_index].locals[variableId].bounds();
+            }
+
+        }
+    }
+    return result;
+}
+
+QList<int> VM::reference(int moduleId, int algorhitmId, int variableId) const
+{
+    QList<int> result;
+    // TODO implement me
+    return result;
 }
 
 } // namespace KumirCodeRun

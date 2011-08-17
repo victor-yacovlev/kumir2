@@ -26,7 +26,7 @@ struct Context {
     QVector<Bytecode::Instruction> program;
     Bytecode::ElemType type;
     ContextRunMode runMode;
-    int moduleId;
+    quint8 moduleId;
     int algId;
     int lineNo;
 };

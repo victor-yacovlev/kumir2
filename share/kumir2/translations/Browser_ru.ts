@@ -14,46 +14,46 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/browser/component.cpp" line="17"/>
-        <location filename="../../../src/plugins/browser/component.cpp" line="33"/>
+        <location filename="../../../src/plugins/browser/component.cpp" line="46"/>
+        <location filename="../../../src/plugins/browser/component.cpp" line="62"/>
         <source>Go back</source>
         <translation>Назад</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/browser/component.cpp" line="18"/>
+        <location filename="../../../src/plugins/browser/component.cpp" line="47"/>
         <source>Go forward</source>
         <translation>Вперед</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/browser/component.cpp" line="19"/>
-        <location filename="../../../src/plugins/browser/component.cpp" line="102"/>
+        <location filename="../../../src/plugins/browser/component.cpp" line="48"/>
+        <location filename="../../../src/plugins/browser/component.cpp" line="132"/>
         <source>Stop</source>
         <translation>Остановить загрузку</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/browser/component.cpp" line="20"/>
-        <location filename="../../../src/plugins/browser/component.cpp" line="113"/>
-        <location filename="../../../src/plugins/browser/component.cpp" line="119"/>
+        <location filename="../../../src/plugins/browser/component.cpp" line="49"/>
+        <location filename="../../../src/plugins/browser/component.cpp" line="143"/>
+        <location filename="../../../src/plugins/browser/component.cpp" line="149"/>
         <source>Reload</source>
         <translation>Перезагрузить страницу</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/browser/component.cpp" line="21"/>
+        <location filename="../../../src/plugins/browser/component.cpp" line="50"/>
         <source>Cut</source>
         <translation>Вырезать</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/browser/component.cpp" line="22"/>
+        <location filename="../../../src/plugins/browser/component.cpp" line="51"/>
         <source>Copy</source>
         <translation>Скопировать</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/browser/component.cpp" line="23"/>
+        <location filename="../../../src/plugins/browser/component.cpp" line="52"/>
         <source>Paste</source>
         <translation>Вставить</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/browser/component.cpp" line="44"/>
+        <location filename="../../../src/plugins/browser/component.cpp" line="73"/>
         <source>Edit</source>
         <translation>Редактирование</translation>
     </message>

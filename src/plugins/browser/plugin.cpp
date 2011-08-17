@@ -19,14 +19,21 @@ void Plugin::changeCurrentDirectory(const QString &path)
     m_directory->m_dir = QDir(path);
 }
 
+QString Plugin::initialize(const QStringList &)
+{
+    qRegisterMetaType<Shared::BrowserComponent>("BrowserComponent");
+    return "";
+}
+
 Shared::BrowserComponent Plugin::createBrowser(const QUrl &url, const QMap<QString, QObject *> manageableObjects)
 {
-    Component * c = new Component();
+    Component * c = new Component(this);
     QMap<QString,QObject*> objs = manageableObjects;
     objs["directory"] = m_directory;
     objs["application"] = qApp;
     c->setManageableObjects(objs);
-    c->go(url);
+    if (!url.isEmpty())
+        c->go(url);
     Shared::BrowserComponent result;
     result.widget = c;
     result.toolbarActions = c->toolbarActions();

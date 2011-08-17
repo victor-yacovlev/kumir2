@@ -17,6 +17,7 @@ public:
     ~Plugin();
     Shared::BrowserComponent createBrowser(const QUrl &url, const QMap<QString, QObject *> manageableObjects);
 protected:
+    QString initialize(const QStringList &);
     void changeCurrentDirectory(const QString &path);
 private:
     class Dir * m_directory;

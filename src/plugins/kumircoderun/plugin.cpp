@@ -296,7 +296,23 @@ bool Plugin::canStepInto() const
     return d->vm->canStepInto();
 }
 
-} // namespace KumirCodeRun
 
+
+QVariant Plugin::value(int moduleId, int algorhitmId, int variableId) const
+{
+    return d->vm->value(moduleId, algorhitmId, variableId);
+}
+
+QList<int> Plugin::bounds(int moduleId, int algorhitmId, int variableId) const
+{
+    return d->vm->bounds(moduleId, algorhitmId, variableId);
+}
+
+QList<int> Plugin::reference(int moduleId, int algorhitmId, int variableId) const
+{
+    return d->vm->reference(moduleId, algorhitmId, variableId);
+}
+
+} // namespace KumirCodeRun
 
 Q_EXPORT_PLUGIN(KumirCodeRun::Plugin)

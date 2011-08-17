@@ -28,7 +28,7 @@ class MainWindow : public QMainWindow
 
 public:
     enum DocumentType { Text, Kumir, Pascal, WWW };
-    enum DockWindowType { Terminal, StandardActor, WorldActor, Control, Other };
+    enum DockWindowType { Terminal, StandardActor, WorldActor, Control, SubControl, Other };
     explicit MainWindow(Plugin * p);
 
     class TabWidgetElement * addCentralComponent(const QString &title
@@ -95,6 +95,7 @@ private:
 
     QAction * a_notAvailable;
     QList<class QDockWidget*> l_dockWindows;
+
     QList<QWidget*> l_tabDependentStatusbarWidgets;
     QMenu * menu_empty;
 
