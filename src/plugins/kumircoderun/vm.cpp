@@ -15,6 +15,7 @@ VM::VM(QObject *parent) :
 {
     e_entryPoint = EP_Main;
     b_blindMode = false;
+    m_dontTouchMe = new QMutex;
 }
 
 void VM::setNextCallInto()
@@ -45,6 +46,7 @@ void VM::setNextCallStepOver()
 
 int VM::currentLineNo() const
 {
+    QMutexLocker l(m_dontTouchMe);
     if (stack_contexts.isEmpty())
         return -1;
     else
@@ -210,6 +212,7 @@ QStringList VM::usedActors() const
 
 void VM::evaluateNextInstruction()
 {
+    QMutexLocker l(m_dontTouchMe);
     int ip = stack_contexts.last().IP;
     QVector<Instruction> program = stack_contexts[stack_contexts.size()-1].program;
     Instruction instr = program[ip];
@@ -522,18 +525,38 @@ void VM::do_setarr(quint8 s, quint16 id)
         s_error = tr("Internal error: don't know what is 'init %1 %2'").arg(s).arg(id);
     }
     if (dim>0) {
+        QString name;
         for (int i=0; i<dim*2; i++) {
             bounds << stack_values.pop().toInt();
         }
         if (VariableScope(s)==LOCAL) {
             stack_contexts[stack_contexts.size()-1].locals[id].setBounds(bounds);
+            name = stack_contexts[stack_contexts.size()-1].locals[id].name();
         }
         else if (VariableScope(s)==GLOBAL) {
             globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].setBounds(bounds);
+            name = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].name();
         }
         s_error = Variant::error;
         if (!b_blindMode && s_error.isEmpty()) {
 
+        }
+        const int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
+        if (lineNo!=-1 &&
+                (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+                && !b_blindMode
+                )
+        {
+            QString boundsText;
+            for (int i=0; i<dim; i++) {
+                boundsText += QString::number(bounds[i*2]);
+                boundsText += ":";
+                boundsText += QString::number(bounds[i*2+1]);
+                if (i<dim-1) {
+                    boundsText += ",";
+                }
+            }
+            emit valueChangeNotice(lineNo, name+"["+boundsText+"]");
         }
     }
     nextIP();
@@ -1301,6 +1324,7 @@ int VM::contextByIds(int moduleId, int algorhitmId) const
 
 QVariant VM::value(int moduleId, int algorhitmId, int variableId) const
 {
+    QMutexLocker l(m_dontTouchMe);
     QVariant result;
     if (algorhitmId==-1 && moduleId!=-1 && variableId!=-1) {
         QPair<quint8,quint16> index;
@@ -1324,6 +1348,7 @@ QVariant VM::value(int moduleId, int algorhitmId, int variableId) const
 
 QList<int> VM::bounds(int moduleId, int algorhitmId, int variableId) const
 {
+    QMutexLocker l(m_dontTouchMe);
     QList<int> result;
     if (algorhitmId==-1 && moduleId!=-1 && variableId!=-1) {
         QPair<quint8,quint16> index;
@@ -1353,6 +1378,7 @@ QList<int> VM::bounds(int moduleId, int algorhitmId, int variableId) const
 
 QList<int> VM::reference(int moduleId, int algorhitmId, int variableId) const
 {
+    QMutexLocker l(m_dontTouchMe);
     QList<int> result;
     // TODO implement me
     return result;

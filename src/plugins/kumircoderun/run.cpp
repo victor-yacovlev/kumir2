@@ -39,6 +39,7 @@ void Run::stop()
 void Run::runStepOver()
 {
     b_stepDone = false;
+    b_stopping = false;
 //    i_originFunctionDeep = vm->deep();
     e_runMode = RM_StepOver;
     vm->setNextCallStepOver();
@@ -75,6 +76,7 @@ void Run::runBlind()
 void Run::runContinuous()
 {
     e_runMode = RM_ToEnd;
+    b_stopping = false;
     vm->setNextCallToEnd();
     start();
 }

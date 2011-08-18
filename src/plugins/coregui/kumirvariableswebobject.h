@@ -31,6 +31,11 @@ public slots:
     QString rootPage() const;
     QString modulePage(int index) const;
     QString tableTitle(const QString & hashValue) const;
+    QString tablePage(const QString & hashValue) const;
+    QString tablePage(const QString & hashValue, int pageNo) const;
+    int tablePagesCount(const QString & hashValue) const;
+    int tablePagesStartIndex(const QString & hashValue) const;
+    QString unavailableTableText() const;
     int modulesCount() const;
     void reset(const Shared::RunInterface * runner);
     void setProgram(const AST::Data * ast);
@@ -39,6 +44,9 @@ public slots:
     void openTableWindow(int dimension, int moduleId, int algorhitmId, int variableId);
     void checkUnusedWindows();
 private:
+    static QString table1D(const QList<int> & bounds, const QVariant & vl);
+    static QString table2D(const QList<int> & bounds, const QVariant & vl);
+    static QString table3D(const QList<int> & bounds, const QVariant & vl);
     QString valuesTable(int moduleId, int algId, const QList<AST::Variable*> values) const;
     const AST::Variable * findVariable(
         const QString & moduleName,
@@ -47,8 +55,8 @@ private:
         bool global,
         int &modId, int &algId, int &varId
         ) const;
-    static QString makeTableValue(int moduleId, int algorhitmId, int variableId, int dimension, const QVariant value);
-    static QString makeArr(const QVariant & value);
+    QString makeTableValue(int dim, int moduleId, int algorhitmId, int variableId, int dimension, const QVariant value) const;
+    static QString makeArr(int dim, const QList<int> & bounds, const QVariant & value);
 
     QList<AST::Module*> l_userModules;
     QList<int> l_userModulesIds;

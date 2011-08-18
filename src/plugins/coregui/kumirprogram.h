@@ -65,6 +65,7 @@ private slots:
     void handleRunnerStopped(int);
     void handleInputDone(const QVariantList & data);
 private:
+    void timerEvent(QTimerEvent *e);
     void prepareKumirRunner();
     enum State { Idle, FastRun, RegularRun, StepRun } e_state;
     const AST::Data * m_ast;
@@ -89,8 +90,9 @@ private:
     QMap<QString,QDockWidget*> m_actorWindows;
     QMap<QString,ActorInterface*> m_actors;
     int i_documentId;
+    bool b_blind;
     class KumirVariablesWebObject * m_variablesWebObject;
-
+    int i_timerId;
 };
 
 } // namespace CoreGui

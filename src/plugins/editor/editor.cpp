@@ -78,11 +78,31 @@ void Editor::setDocumentId(int id)
 void Editor::lock()
 {
     d->cursor->setEnabled(false);
+    d->cut->setEnabled(false);
+    d->paste->setEnabled(false);
+    d->deleteLine->setEnabled(false);
+    d->deleteTail->setEnabled(false);
+    for (int i=0; i<d->userMacros.size(); i++) {
+        d->userMacros[i].action->setEnabled(false);
+    }
+    for (int i=0; i<d->systemMacros.size(); i++) {
+        d->systemMacros[i].action->setEnabled(false);
+    }
 }
 
 void Editor::unlock()
 {
     d->cursor->setEnabled(true);
+    d->paste->setEnabled(d->clipboard->hasContent());
+    d->cut->setEnabled(true);
+    d->deleteLine->setEnabled(true);
+    d->deleteTail->setEnabled(true);
+    for (int i=0; i<d->userMacros.size(); i++) {
+        d->userMacros[i].action->setEnabled(true);
+    }
+    for (int i=0; i<d->systemMacros.size(); i++) {
+        d->systemMacros[i].action->setEnabled(true);
+    }
 }
 
 void Editor::appendMarginText(int lineNo, const QString &text)

@@ -31,7 +31,7 @@ KumirProgram::KumirProgram(QObject *parent)
     , m_connector(0)
     , m_variablesWebObject(0)
 {
-
+    b_blind = false;
 
     a_regularRun = new QAction(tr("Regular run"), this);
     a_regularRun->setIcon(QIcon::fromTheme("media-playback-start", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-playback-start.png")));
@@ -128,7 +128,7 @@ KumirProgram::KumirProgram(QObject *parent)
     gr_actions->addAction(a_stop);
 
     m_variablesWebObject = new KumirVariablesWebObject(this);
-
+    i_timerId = startTimer(1000);
 }
 
 void KumirProgram::setAST(const AST::Data *ast)
@@ -172,7 +172,8 @@ void KumirProgram::handleMarginTextRequest(int lineNo, const QString &text)
 {
     if (lineNo!=-1 && !text.isEmpty())
         plugin_editor->appendMarginText(i_documentId, lineNo, text);
-    m_variablesWebObject->refreshRoot();
+    if (e_state==StepRun)
+        m_variablesWebObject->refreshRoot();
 }
 
 void KumirProgram::handleMarginClearRequest(int fromLine, int toLine)
@@ -245,6 +246,7 @@ void KumirProgram::fastRun()
         return;
     }
     emit giveMeAProgram();
+
     QString suffix;
 #ifdef Q_OS_WIN32
     suffix = ".exe";
@@ -317,6 +319,7 @@ void KumirProgram::blindRun()
 
     if (e_state==FastRun)
         return;
+    b_blind = true;
     s_endStatus = "";
     if (e_state==Idle) {
         emit giveMeAProgram();
@@ -332,6 +335,7 @@ void KumirProgram::regularRun()
 
     if (e_state==FastRun)
         return;
+    b_blind = false;
     s_endStatus = "";
     if (e_state==Idle) {
         emit giveMeAProgram();
@@ -339,6 +343,7 @@ void KumirProgram::regularRun()
     }
     e_state = RegularRun;
     PluginManager::instance()->switchGlobalState(GS_Running);
+    m_variablesWebObject->reset(plugin_bytecodeRun);
     plugin_bytecodeRun->runContinuous();
 }
 
@@ -375,6 +380,7 @@ void KumirProgram::stepRun()
     if (e_state==Idle) {
         emit giveMeAProgram();
         prepareKumirRunner();
+        m_variablesWebObject->reset(plugin_bytecodeRun);
     }
     e_state = StepRun;
     a_stepRun->setIcon(QIcon::fromTheme("debug-step-over",  QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));
@@ -426,6 +432,7 @@ void KumirProgram::handleProcessFinished(int exitCode, QProcess::ExitStatus stat
 
 void KumirProgram::handleRunnerStopped(int rr)
 {
+
     Shared::RunInterface::StopReason reason = Shared::RunInterface::StopReason (rr);
     if (reason==Shared::RunInterface::InputRequest) {
         PluginManager::instance()->switchGlobalState(GS_Input);
@@ -458,6 +465,10 @@ void KumirProgram::handleRunnerStopped(int rr)
         m_terminal->clearFocus();
     }
 
+    if (e_state==Idle) {
+        m_variablesWebObject->reset(0);
+    }
+
 }
 
 void KumirProgram::handleLineChanged(int lineNo)
@@ -479,6 +490,7 @@ void KumirProgram::switchGlobalState(GlobalState prev, GlobalState cur)
     if (cur==GS_Unlocked || cur==GS_Observe) {
         if (a_fastRun)
             a_fastRun->setEnabled(true);
+        a_blindRun->setEnabled(true);
         a_regularRun->setEnabled(true);
         a_stepRun->setEnabled(true);
         a_stepRun->setText(tr("Step run"));
@@ -490,6 +502,7 @@ void KumirProgram::switchGlobalState(GlobalState prev, GlobalState cur)
     if (cur==GS_Running || cur==GS_Input) {
         if (a_fastRun)
             a_fastRun->setEnabled(false);
+        a_blindRun->setEnabled(false);
         a_regularRun->setEnabled(false);
         a_stepRun->setEnabled(false);
         a_stepIn->setEnabled(false);
@@ -499,6 +512,7 @@ void KumirProgram::switchGlobalState(GlobalState prev, GlobalState cur)
     if (cur==GS_Pause) {
         if (a_fastRun)
             a_fastRun->setEnabled(false);
+        a_blindRun->setEnabled(true);
         a_regularRun->setEnabled(true);
         a_stepRun->setEnabled(true);
         a_stepRun->setText(tr("Step over"));
@@ -561,11 +575,20 @@ void KumirProgram::handleActorResetRequest(const QString & actorName)
     }
 }
 
+void KumirProgram::timerEvent(QTimerEvent *e)
+{
+    if (e_state==RegularRun && !b_blind) {
+        m_variablesWebObject->refreshRoot();
+    }
+    e->accept();
+}
+
 KumirProgram::~KumirProgram()
 {
     if (m_process && m_process->state()!=QProcess::NotRunning) {
         m_process->kill();
     }
+    killTimer(i_timerId);
 }
 
 } // namespace CoreGui

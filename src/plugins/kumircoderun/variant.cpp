@@ -302,7 +302,7 @@ int Variant::linearIndex(int a, int b, int c) const
 {
     int size0 = l_bounds[1].second-l_bounds[1].first+1;
     int size1 = l_bounds[2].second-l_bounds[2].first+1;
-    return (a-l_bounds[0].first)*size0 + (b-l_bounds[1].first)*size1 + c-l_bounds[2].first;
+    return (a-l_bounds[0].first)*size0*size1 + (b-l_bounds[1].first)*size1 + c-l_bounds[2].first;
 }
 
 void Variant::init()

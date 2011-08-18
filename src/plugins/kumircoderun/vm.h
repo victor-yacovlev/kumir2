@@ -110,6 +110,7 @@ private:
     void do_geq();
 
     bool b_blindMode;
+    QMutex * m_dontTouchMe;
 
 };
 

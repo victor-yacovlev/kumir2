@@ -53,29 +53,69 @@ int KumirVariablesWebObject::modulesCount() const
     return l_userModules.size();
 }
 
-QString KumirVariablesWebObject::makeArr(const QVariant & value)
+QString KumirVariablesWebObject::makeArr(int dim, const QList<int> & bounds, const QVariant & value)
 {
     QString result;
-    if (value.type()==QVariant::List) {
-        result = "{ ";
-        for (int i=0; i<value.toList().size(); i++) {
-            result += makeArr(value.toList().at(i));
-            if (i<value.toList().size()-1)
-                result += ", ";
+
+    QList<int> openBrackets;
+    QList<int> closeBrackets;
+
+    if (dim==1) {
+        openBrackets << 0;
+        closeBrackets << value.toList().size();
+    }
+    else if (dim==2) {
+        openBrackets << 0;
+        closeBrackets << value.toList().size();
+        int rows = bounds[1]-bounds[0]+1;
+        int columns = bounds[3]-bounds[2]+1;
+        for (int i=0; i<rows; i++) {
+            openBrackets << i * columns;
+            closeBrackets << (i+1) * columns;
         }
-        result += "}";
     }
-    else {
-        if (value.isValid())
-            result = value.toString();
-        else
-            result = QString::fromAscii(
-                        "<span class=\"undefined_value\">"
-                        "%1"
-                        "</span>"
-                        )
-                    .arg("?");
+    else if (dim==3) {
+        openBrackets << 0;
+        closeBrackets << value.toList().size();
+        int pages = bounds[1]-bounds[0]+1;
+        int rows = bounds[3]-bounds[2]+1;
+        int columns = bounds[5]-bounds[4]+1;
+        for (int p=0; p<pages; p++) {
+            int pageStart = p * rows * columns;
+            int pageEnd = (p+1) * rows * columns;
+            openBrackets << pageStart;
+            closeBrackets << pageEnd;
+            for (int r=0; r<rows; r++) {
+                int rowStart = pageStart + r * columns;
+                int rowEnd = pageStart + (r+1) * columns;
+                openBrackets << rowStart;
+                closeBrackets << rowEnd;
+            }
+        }
     }
+
+    for (int i=0; i<value.toList().size()+1; i++) {
+        for (int k=0; k<openBrackets.count(i); k++) {
+            result += "{ ";
+        }
+        if (i<value.toList().size()) {
+            if (value.toList()[i].isValid())
+                result += value.toList()[i].toString();
+            else
+                result += QString::fromAscii(
+                            "<span class=\"undefined_value\">"
+                            "%1"
+                            "</span>"
+                            )
+                        .arg("?");
+        }
+        for (int k=0; k<closeBrackets.count(i+1); k++) {
+            result += " }";
+        }
+        if (i<value.toList().size()-1)
+            result += ", ";
+    }
+
 
     return result;
 }
@@ -86,11 +126,13 @@ void KumirVariablesWebObject::test(const QString & aaa)
 }
 
 QString KumirVariablesWebObject::makeTableValue(
+    int dim,
     int moduleId, int algorhitmId, int variableId, // These used for hyperlink
     int dimension, const QVariant value // These used for screen value
-    )
+    ) const
 {
-    QString screenValue = makeArr(value);
+    QList<int> bounds = m_runner->bounds(moduleId, algorhitmId, variableId);
+    QString screenValue = makeArr(dim, bounds, value);
 //    if (screenValue.length()>200)
 //        screenValue = screenValue.left(200);
     const QString hyperlink = QString::fromAscii(
@@ -185,7 +227,7 @@ QString KumirVariablesWebObject::valuesTable(int moduleId, int algId, const QLis
             screenValue = tr("undefined");
         }
         else if (var->dimension>0) {
-            screenValue = makeTableValue(moduleId, algId, i, var->dimension, value);
+            screenValue = makeTableValue(var->dimension, moduleId, algId, i, var->dimension, value);
         }
         else {
             screenValue = value.toString();
@@ -384,6 +426,241 @@ QString KumirVariablesWebObject::tableTitle(const QString &hashValue) const
         result = tr("Unknown table");
     }
     return result;
+}
+
+QString KumirVariablesWebObject::tablePage(const QString &hashValue) const
+{
+    uint hash = hashValue.toUInt();
+    QString index;
+    foreach (const QString &k, l_openedChildData.keys()) {
+        if (l_openedChildData[k].hash==hash) {
+            index = k;
+            break;
+        }
+    }
+    QString result;
+    if (!index.isEmpty()) {
+        int modId, algId, varId;
+        const AST::Variable * var = findVariable(
+                    l_openedChildData[index].moduleName,
+                    l_openedChildData[index].algorhitmName,
+                    l_openedChildData[index].variableName,
+                    l_openedChildData[index].global,
+                    modId, algId, varId
+                    );
+        if (var && m_runner) {
+            QList<int> bounds = m_runner->bounds(modId, algId, varId);
+            if (bounds.size()==var->dimension*2) {
+                if (var->dimension==1) {
+                    result = table1D(bounds, m_runner->value(modId, algId, varId));
+                }
+                else if (var->dimension==2) {
+                    result = table2D(bounds, m_runner->value(modId, algId, varId));
+                }
+                else if (var->dimension==3) {
+                    result = table3D(bounds, m_runner->value(modId, algId, varId));
+                }
+            }
+            else {
+                result = QString::fromAscii(
+                            "<div class=\"not_initialized\">"
+                            "%1"
+                            "</div>\n"
+                            ).arg(unavailableTableText());
+            }
+        }
+        else if (!m_runner) {
+            result = QString::fromAscii(
+                        "<div class=\"not_initialized\">"
+                        "%1"
+                        "</div>\n"
+                        ).arg(unavailableTableText());
+        }
+    }
+    return result;
+}
+
+QString KumirVariablesWebObject::tablePage(const QString &hashValue, int pageNo) const
+{
+    uint hash = hashValue.toUInt();
+    QString index;
+    foreach (const QString &k, l_openedChildData.keys()) {
+        if (l_openedChildData[k].hash==hash) {
+            index = k;
+            break;
+        }
+    }
+    QString result = unavailableTableText();
+    if (!index.isEmpty()) {
+        int modId, algId, varId;
+        const AST::Variable * var = findVariable(
+                    l_openedChildData[index].moduleName,
+                    l_openedChildData[index].algorhitmName,
+                    l_openedChildData[index].variableName,
+                    l_openedChildData[index].global,
+                    modId, algId, varId
+                    );
+        if (var && m_runner) {
+            QList<int> bounds = m_runner->bounds(modId, algId, varId);
+            if (bounds.size()==var->dimension*2) {
+                int pages = bounds[1]-bounds[0]+1;
+                int rows  = bounds[3]-bounds[2]+1;
+                int cols  = bounds[5]-bounds[4]+1;
+                int pageSize = rows * cols;
+                if (pageNo < pages) {
+                    result = "";
+                    QVariantList list1D = m_runner->value(modId, algId, varId).toList();
+                    int offset = pageNo * pageSize;
+                    QVariantList pageList = list1D.mid(offset, pageSize);
+                    return table2D(bounds.mid(2), pageList);
+                }
+            }
+        }
+    }
+    return result;
+}
+
+QString KumirVariablesWebObject::unavailableTableText() const
+{
+    if (m_runner) {
+        return tr("The table is not initialized yet");
+    }
+    else {
+        return tr("Yout must run program as regular or step run to show table values");
+    }
+}
+
+int KumirVariablesWebObject::tablePagesCount(const QString &hashValue) const
+{
+    uint hash = hashValue.toUInt();
+    QString index;
+    foreach (const QString &k, l_openedChildData.keys()) {
+        if (l_openedChildData[k].hash==hash) {
+            index = k;
+            break;
+        }
+    }
+    int modId, algId, varId;
+    findVariable(l_openedChildData[index].moduleName,
+                 l_openedChildData[index].algorhitmName,
+                 l_openedChildData[index].variableName,
+                 l_openedChildData[index].global,
+                 modId, algId, varId);
+    if (m_runner && modId!=-1 && varId!=-1) {
+        QList<int> bounds = m_runner->bounds(modId, algId, varId);
+        if (bounds.size()==6) {
+            return bounds[1]-bounds[0]+1;
+        }
+        else {
+            return 0;
+        }
+    }
+    else {
+        return 0;
+    }
+}
+
+int KumirVariablesWebObject::tablePagesStartIndex(const QString &hashValue) const
+{
+    uint hash = hashValue.toUInt();
+    QString index;
+    foreach (const QString &k, l_openedChildData.keys()) {
+        if (l_openedChildData[k].hash==hash) {
+            index = k;
+            break;
+        }
+    }
+    int modId, algId, varId;
+    findVariable(l_openedChildData[index].moduleName,
+                 l_openedChildData[index].algorhitmName,
+                 l_openedChildData[index].variableName,
+                 l_openedChildData[index].global,
+                 modId, algId, varId);
+    if (m_runner && modId!=-1 && varId!=-1) {
+        QList<int> bounds = m_runner->bounds(modId, algId, varId);
+        if (bounds.size()==6) {
+            return bounds[0];
+        }
+        else {
+            return 0;
+        }
+    }
+    else {
+        return 0;
+    }
+}
+
+QString KumirVariablesWebObject::table1D(const QList<int> &bounds, const QVariant &vl)
+{
+    int size = bounds[1]-bounds[0]+1;
+
+    QString tableData;
+    QVariantList list1D = vl.toList();
+    tableData += "<tr class=\"tableview_header\">";
+    for (int i=0; i<size; i++) {
+        tableData += QString::fromAscii(
+                    "<td>%1</td>"
+                    ).arg(bounds[0]+i);
+    }
+    tableData += "</tr>\n";
+    tableData += "<tr class=\"tableview_values even\">";
+    for (int i=0; i<size; i++) {
+        tableData += QString::fromAscii(
+                    "<td>%1</td>"
+                    ).arg(list1D[i].isValid()
+                          ? list1D[i].toString()
+                          : "&nbsp;");
+    }
+    tableData += "</tr>\n";
+    return QString::fromAscii(
+                "<table class=\"tableview_1d\">\n"
+                "%1"
+                "</table>\n"
+                ).arg(tableData);
+}
+
+QString KumirVariablesWebObject::table2D(const QList<int> &bounds, const QVariant &value)
+{
+
+    int rows = bounds[1]-bounds[0]+1;
+    int columns = bounds[3]-bounds[2]+1;
+
+    QVariantList list1D = value.toList();
+
+    QString tableData;
+    tableData += "<tr class=\"tableview_header\"><td>&nbsp;</td>";
+    for (int i=0; i<columns; i++) {
+        tableData += QString::fromAscii(
+                    "<td>%1</td>"
+                    ).arg(bounds[0]+i);
+    }
+    tableData += "</tr>\n";
+    for (int r=0; r<rows; r++) {
+        tableData += QString::fromAscii(
+                    "<tr class=\"tableview_values %1\">"
+                    "<td class=\"tableview_row_header\">%2</td>"
+                    )
+                .arg(r%2? "odd" : "even")
+                .arg(bounds[2]+r);
+        for (int c=0; c<columns; c++) {
+            tableData += QString::fromAscii(
+                        "<td>%1</td>"
+                        ).arg(list1D[r*columns+c].isValid()
+                              ? list1D[r*columns+c].toString()
+                              : "&nbsp;");
+        }
+        tableData += "</tr>\n";
+    }
+    return QString::fromAscii(
+                "<table class=\"tableview_2d\">\n"
+                "%1"
+                "</table>\n"
+                ).arg(tableData);
+}
+
+QString KumirVariablesWebObject::table3D(const QList<int> &bounds, const QVariant &vl)
+{
+    return "";
 }
 
 } // namespace CoreGUI

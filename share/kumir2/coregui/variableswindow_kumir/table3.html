@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Table</title>
+    <script type="text/javascript">
+    var MY_HASH = "";
+    var CURRENT_PAGE = -1;
+    function loadTable() {
+        var url = window.location.href;
+        // variablesObject.test(url);
+        url.match(/\?(.+)$/);
+        var params = RegExp.$1;
+        var query = params.split("=");
+        MY_HASH = query[1];
+        updateRoot();
+        var tableTitle = variablesObject.tableTitle(MY_HASH);
+        document.title = tableTitle;
+        document.getElementById("table_title").innerHTML = tableTitle;
+    }
+    function updateRoot() {
+        var pagesCount = variablesObject.tablePagesCount(MY_HASH);
+        var pagesStart = variablesObject.tablePagesStartIndex(MY_HASH);
+        var pager = document.getElementById("pager");
+        var tableBody = document.getElementById("table_body");
+        var notice = document.getElementById("notavailable");
+        if (pagesCount==0) {
+            pager.className = "hidden";
+            notice.innerHTML = variablesObject.unavailableTableText();
+            notice.className = "not_initialized";
+            tableBody.className = "table_body hidden";
+        }
+        else {
+            var prevPage = CURRENT_PAGE;
+            pager.className = "";
+            var pagerData = "";
+            notice.className = "hidden";
+            tableBody.className = "table_body";
+            if (CURRENT_PAGE>=pagesCount) {
+                CURRENT_PAGE = pagesCount-1;
+            }
+            if (CURRENT_PAGE<0) {
+                CURRENT_PAGE = 0;
+            }
+            for (var i=0; i<pagesCount; i++) {
+                pagerData += "<a href=\"#\" id=\"button"+i+"\" onclick=\"showPage("+i+")\">";
+                pagerData += pagesStart+i;
+                pagerData += "</a> ";
+            }
+            document.getElementById("pager_body").innerHTML = pagerData;
+            
+            showPage(CURRENT_PAGE);
+        }
+    }
+    function updateIDs(myHash) {
+        MY_HASH = "" + myHash;
+        updateRoot();
+    }
+    function showPage(pageNo) {
+        if (CURRENT_PAGE!=-1) {
+            var prevBtn = document.getElementById("button"+CURRENT_PAGE);
+            if (prevBtn!=null) {
+                prevBtn.className = "";
+            }
+        }
+        CURRENT_PAGE = pageNo;
+        var tableBody = document.getElementById("table_body");
+        tableBody.innerHTML = variablesObject.tablePage(MY_HASH, CURRENT_PAGE);
+        var btn = document.getElementById("button"+pageNo);
+        btn.className = "pressed";
+        
+    }
+    </script>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css">
+</head>
+
+<body onload="loadTable()">
+    <div class="table_view3">    
+        <div id="table_title" class="table_title">
+        </div>
+        <div id="table_body" class="table_body">
+        </div>
+        <div id="notavailable" class="table_body hidden">
+        </div>
+    </div>
+    <div id="pager">
+        <div id="pager_header">
+            Pages:
+        </div>
+        <div id="pager_body">
+        </div>
+    </div>
+
+</body>
+</html>
