@@ -17,16 +17,16 @@ QT -= gui
 INCLUDEPATH += ../../
 
 win32 {
-    CONFIG(debug, debug|release):LIBS *= -lBytecoded
-    else:LIBS *= -lBytecode
+    CONFIG(debug, debug|release):LIBS *= -lDataFormatsd
+    else:LIBS *= -lDataFormats
     target.path = /bin
     INSTALLS += target
 } else:macx {
-    CONFIG(debug, debug|release):LIBS *= -lBytecode_debug
-    else:LIBS *= -lBytecode
+    CONFIG(debug, debug|release):LIBS *= -lDataFormats_debug
+    else:LIBS *= -lDataFormats
     LIBS += -framework CoreFoundation
 } else {
-    LIBS *= -lBytecode
+    LIBS *= -lDataFormats
 
     target.path  = /bin
     INSTALLS    += target

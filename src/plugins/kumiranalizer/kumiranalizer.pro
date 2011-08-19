@@ -4,7 +4,7 @@ TARGET = KumirAnalizer
 include(../../kumir2plugin.pri)
 include(../../shared/extensionsystem/extensionsystem.pri)
 include(../../shared/interfaces/analizer.pri)
-include(../../shared/abstractsyntaxtree/abstractsyntaxtree.pri)
+include(../../shared/dataformats/dataformats.pri)
 CONFIG += generate_messages
 QT += script
 EXTRA_MESSAGES_DIRS = $${IDE_SOURCE_TREE}/share/kumir2/kumiranalizer

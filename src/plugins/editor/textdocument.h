@@ -6,6 +6,7 @@
 
 #include "interfaces/lexemtype.h"
 #include "interfaces/analizerinterface.h"
+#include "dataformats/kumfile.h"
 
 namespace Editor {
 
@@ -148,12 +149,16 @@ struct TextLine
         lineEndSelected = false;
         changed = false;
         inserted = false;
+        protecteed = false;
+        hidden = false;
     }
     int indentStart;
     int indentEnd;
     QList<Shared::LexemType> highlight;
     QList<bool> selected;
     bool lineEndSelected;
+    bool protecteed;
+    bool hidden;
     QString text;
     QStringList errors;
     QString marginText;
@@ -179,8 +184,11 @@ public:
     explicit TextDocument(QObject * parent);
     int documentId;
     int indentAt(int lineNo) const;
+    inline bool isProtected(int lineNo) const { return data[lineNo].protecteed; }
+    inline bool isHidden(int lineNo) const { return data[lineNo].hidden; }
     inline int linesCount() const { return data.size(); }
-    QString toPlainText() const;
+    KumFile::Data toKumFile() const;
+    void setKumFile(const KumFile::Data & data);
     inline QString textAt(int index) const { return data[index].text; }
     inline QString marginTextAt(int index) const { return data[index].marginText; }
     inline QList<bool> selectionMaskAt(int index) const { return data[index].selected; }
@@ -193,7 +201,7 @@ public:
     inline void setErrorsAt(int index, const QStringList & errs) { data[index].errors = errs; }
     inline QStringList errorsAt(int index) const { return data[index].errors; }
     inline void clearErrorsAt(int index) { data[index].errors.clear(); }
-    void setPlainText(const QString &text);
+
     inline void setSelected(int line, int pos, bool v) { data[line].selected[pos] = v; }
     inline void setEndOfLineSelected(int line, bool v) { data[line].lineEndSelected = v; }
     void evaluateCommand(const QUndoCommand & cmd);

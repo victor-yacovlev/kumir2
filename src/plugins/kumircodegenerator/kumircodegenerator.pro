@@ -4,7 +4,7 @@ QT += script
 include(../../kumir2plugin.pri)
 include(../../plugins/kumiranalizer/kumiranalizer.pri)
 include(../../shared/errormessages/errormessages.pri)
-include(../../shared/bytecode/bytecode.pri)
+include(../../shared/dataformats/dataformats.pri)
 
 HEADERS += kumircodegeneratorplugin.h \
     generator.h

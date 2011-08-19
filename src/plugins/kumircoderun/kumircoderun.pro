@@ -3,7 +3,7 @@ TARGET = KumirCodeRun
 
 include(../../kumir2plugin.pri)
 include(../../shared/extensionsystem/extensionsystem.pri)
-include(../../shared/bytecode/bytecode.pri)
+include(../../shared/dataformats/dataformats.pri)
 
 #win32 {
 #    LIBS += -L../../../bin -lKumirStdLib

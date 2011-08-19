@@ -4,7 +4,7 @@
 #include "interfaces/lineprop.h"
 #include "statement.h"
 #include "interfaces/error.h"
-#include "abstractsyntaxtree/ast_variabletype.h"
+#include "dataformats/ast_variabletype.h"
 
 #include <QtCore>
 

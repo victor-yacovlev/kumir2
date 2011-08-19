@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include "interfaces/analizerinterface.h"
+#include "dataformats/kumfile.h"
 
 namespace Editor {
 
@@ -13,13 +14,17 @@ class Editor
 public:
     explicit Editor(bool initiallyNotSaved = false, QSettings * settings = 0, Shared::AnalizerInterface * analizer = 0, int documentId = 0, QWidget *parent = 0);
     ~Editor();
+    void setTeacherMode(bool v);
+    bool isTeacherMode() const;
     QList<QAction*> toolbarActions();
     void setSettings(QSettings * s);
     QList<QMenu*> menuActions();
     QList<QWidget*> statusbarWidgets();
-    void setText(const QString &text);
+    KumFile::Data toKumFile() const;
+    void setKumFile(const KumFile::Data & data);
+
     void setDocumentId(int id);
-    QString text() const;
+
     const class TextCursor * cursor() const;
     const class TextDocument * document() const;
     const Shared::AnalizerInterface * analizer() const;

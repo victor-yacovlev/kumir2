@@ -3,12 +3,12 @@
 
 #include <QtCore>
 
-#include "abstractsyntaxtree/ast.h"
-#include "abstractsyntaxtree/ast_variable.h"
-#include "abstractsyntaxtree/ast_algorhitm.h"
-#include "abstractsyntaxtree/lexem.h"
+#include "dataformats/ast.h"
+#include "dataformats/ast_variable.h"
+#include "dataformats/ast_algorhitm.h"
+#include "dataformats/lexem.h"
 #include "errormessages/errormessages.h"
-#include "bytecode/data.h"
+#include "dataformats/bytecode.h"
 
 namespace KumirCodeGenerator {
 

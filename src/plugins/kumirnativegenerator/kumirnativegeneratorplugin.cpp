@@ -1,8 +1,8 @@
 #include "kumirnativegeneratorplugin.h"
-#include "abstractsyntaxtree/ast_module.h"
-#include "abstractsyntaxtree/ast_algorhitm.h"
-#include "abstractsyntaxtree/ast_variable.h"
-#include "abstractsyntaxtree/ast_expression.h"
+#include "dataformats/ast_module.h"
+#include "dataformats/ast_algorhitm.h"
+#include "dataformats/ast_variable.h"
+#include "dataformats/ast_expression.h"
 #include "nameprovider.h"
 
 #include <QtCore>

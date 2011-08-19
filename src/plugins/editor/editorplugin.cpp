@@ -21,6 +21,7 @@ struct Ed {
 struct EditorPluginPrivate {
     QVector< Ed > editors;
     SettingsPage * settingsPage;
+    bool teacherMode;
 };
 
 EditorPlugin::EditorPlugin()
@@ -28,6 +29,7 @@ EditorPlugin::EditorPlugin()
     d = new EditorPluginPrivate;
     d->editors = QVector< Ed > ( 128, Ed(0,0,-1));
     d->settingsPage = 0;
+    d->teacherMode = false;
 }
 
 EditorPlugin::~EditorPlugin()
@@ -79,7 +81,8 @@ Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, c
         docId = a->newDocument();
     }
     Editor * w = new Editor(initiallyNotSaved, mySettings(), a, docId, 0);
-    w->setText(initialText);
+    w->setTeacherMode(d->teacherMode);
+    w->setKumFile(KumFile::fromString(initialText));
     int index = 0;
     for (int i=0; i<d->editors.size(); i++) {
         if (d->editors[i].e==0 && d->editors[i].a==0) {
@@ -164,11 +167,7 @@ QString EditorPlugin::saveDocument(int documentId, const QString &fileName)
     QFile f(fileName);
     if (f.open(QIODevice::WriteOnly|QIODevice::Text)) {
         QTextStream ts(&f);
-        if (analizer(documentId)) {
-            ts.setCodec("UTF-8");
-            ts.setGenerateByteOrderMark(true);
-        }
-        ts << editor->text();
+        ts << editor->toKumFile();
         f.close();
     }
     else {
@@ -179,7 +178,10 @@ QString EditorPlugin::saveDocument(int documentId, const QString &fileName)
 
 QString EditorPlugin::initialize(const QStringList &arguments)
 {
-    Q_UNUSED(arguments);
+    if (arguments.contains("teacher"))
+        d->teacherMode = true;
+    else
+        d->teacherMode = false;
     return 0;
 }
 

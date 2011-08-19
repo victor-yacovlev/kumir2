@@ -4,9 +4,9 @@
 #include <QtCore>
 #include "statement.h"
 #include "interfaces/error.h"
-#include "abstractsyntaxtree/ast.h"
-#include "abstractsyntaxtree/ast_algorhitm.h"
-#include "abstractsyntaxtree/ast_statement.h"
+#include "dataformats/ast.h"
+#include "dataformats/ast_algorhitm.h"
+#include "dataformats/ast_statement.h"
 
 using namespace Shared;
 

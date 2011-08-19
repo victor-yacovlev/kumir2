@@ -1,9 +1,9 @@
 #ifndef BYTECODE_DATA_H
 #define BYTECODE_DATA_H
 
-#include "tableelem.h"
+#include "bc_tableelem.h"
 
-#ifdef BYTECODE_LIBRARY
+#ifdef DATAFORMATS_LIBRARY
 #   define BYTECODE_EXPORT Q_DECL_EXPORT
 #else
 #   define BYTECODE_EXPORT Q_DECL_IMPORT

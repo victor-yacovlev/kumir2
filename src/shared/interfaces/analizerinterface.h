@@ -3,7 +3,7 @@
 
 #include "error.h"
 #include "lineprop.h"
-#include "abstractsyntaxtree/ast.h"
+#include "dataformats/ast.h"
 
 #include <QtCore>
 
@@ -19,6 +19,7 @@ public:
     virtual int newDocument() = 0;
     virtual void dropDocument(int documentId) = 0;
     virtual void setSourceText(int documentId, const QString &text) = 0;
+    virtual void setHiddenText(int documentId, const QString &text) = 0;
     virtual void changeSourceText(int documentId, const QList<ChangeTextTransaction> & changes) = 0;
     virtual QList<Error> errors(int documentId) const = 0;
     virtual QList<LineProp> lineProperties(int documentId) const = 0;

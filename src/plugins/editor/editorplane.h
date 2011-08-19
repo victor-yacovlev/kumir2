@@ -28,6 +28,8 @@ public:
     QRect cursorRect() const;
     static QString MarginWidthKey;
     static int MarginWidthDefault;
+    void setTeacherMode(bool v);
+    inline bool isTeacherMode() const { return b_teacherMode; }
 public slots:
     void selectAll();
     void copy();
@@ -58,6 +60,7 @@ protected:
     void ensureHighlightedLineVisible();
 //    void updateOffset();
     void paintEvent(QPaintEvent *);
+    void paintLockSymbol(QPainter * p, bool colored, const QRect & r);
     QPoint offset() const;
     void paintBackground(QPainter *p, const QRect &rect);
     void paintMarginBackground(QPainter *p, const QRect & rect);
@@ -93,6 +96,7 @@ private:
     QPoint pnt_dropPosCorner;
     int i_marginAlpha;
     bool b_hasAnalizer;
+    bool b_teacherMode;
 
     int i_highlightedLine;
     QColor color_highlightedLine;

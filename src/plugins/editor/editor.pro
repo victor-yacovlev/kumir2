@@ -5,6 +5,7 @@ QT += script
 include(../../kumir2plugin.pri)
 include(../../shared/extensionsystem/extensionsystem.pri)
 include(../../shared/errormessages/errormessages.pri)
+include(../../shared/dataformats/dataformats.pri)
 
 QT += gui
 

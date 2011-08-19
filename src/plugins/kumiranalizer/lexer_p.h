@@ -1,11 +1,11 @@
 #ifndef LEXER_P_H
 #define LEXER_P_H
 
-#include "abstractsyntaxtree/lexem.h"
+#include "dataformats/lexem.h"
 #include "interfaces/lexemtype.h"
 #include "statement.h"
 #include "interfaces/error.h"
-#include "abstractsyntaxtree/ast_variabletype.h"
+#include "dataformats/ast_variabletype.h"
 
 #include <QtCore>
 

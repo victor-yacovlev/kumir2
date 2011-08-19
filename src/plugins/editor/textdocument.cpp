@@ -535,11 +535,12 @@ int TextDocument::indentAt(int lineNo) const
     return qMax(result, 0);
 }
 
-void TextDocument::setPlainText(const QString &text)
+void TextDocument::setKumFile(const KumFile::Data &d)
 {
     data.clear();
-    QStringList lines = text.split("\n");
-    foreach (const QString &line, lines) {
+    QStringList lines = d.visibleText.split("\n");
+    for (int i=0; i<lines.count(); i++) {
+        const QString line = lines[i];
         TextLine textLine;
         textLine.text = line;
         textLine.indentStart = 0;
@@ -549,20 +550,45 @@ void TextDocument::setPlainText(const QString &text)
             textLine.highlight << Shared::LxTypeEmpty;
             textLine.selected << false;
         }
+        textLine.protecteed = d.protectedLineNumbers.contains(i);
+        textLine.hidden = false;
         data.append(textLine);
     }
+    lines = d.hiddenText.split("\n");
+    for (int i=0; i<lines.count(); i++) {
+        const QString line = lines[i];
+        TextLine textLine;
+        textLine.text = line;
+        textLine.indentStart = 0;
+        textLine.indentEnd = 0;
+        textLine.lineEndSelected = false;
+        for (int j=0; j<line.length(); j++) {
+            textLine.highlight << Shared::LxTypeEmpty;
+            textLine.selected << false;
+        }
+        textLine.protecteed = false;
+        textLine.hidden = true;
+        data.append(textLine);
+    }
+
 }
 
-QString TextDocument::toPlainText() const
+KumFile::Data TextDocument::toKumFile() const
 {
-    QString result;
+    KumFile::Data result;
     for (int i=0; i<data.size(); i++) {
-        if (i>0)
-            result += "\n";
-        result += data[i].text;
+        if (data[i].hidden) {
+            result.hiddenText += data[i].text + "\n";
+        }
+        else {
+            result.visibleText += data[i].text + "\n";
+            if (data[i].protecteed)
+                result.protectedLineNumbers.insert(i);
+        }
     }
     return result;
 }
+
 
 void TextDocument::checkForCompilationRequest(const QPoint &cursorPosition)
 {

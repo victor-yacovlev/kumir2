@@ -3,7 +3,7 @@
 
 #include <QtCore>
 #include "interfaces/lexemtype.h"
-#include "abstractsyntaxtree/lexem.h"
+#include "dataformats/lexem.h"
 #include "interfaces/error.h"
 
 namespace AST {

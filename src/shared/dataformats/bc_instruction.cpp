@@ -1,4 +1,4 @@
-#include "instruction.h"
+#include "bc_instruction.h"
 
 namespace Bytecode {
 

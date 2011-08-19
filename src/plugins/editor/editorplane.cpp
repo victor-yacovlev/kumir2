@@ -7,6 +7,7 @@
 
 #define RECT_SELECTION_MODIFIER Qt::AltModifier
 
+#define LOCK_SYMBOL_WIDTH 20
 
 namespace Editor {
 
@@ -51,6 +52,11 @@ EditorPlane::EditorPlane(TextDocument * doc
     setFocusPolicy(Qt::StrongFocus);
     pnt_marginPress = pnt_textPress = pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
     b_selectionInProgress = false;
+}
+
+void EditorPlane::setTeacherMode(bool v)
+{
+    b_teacherMode = v;
 }
 
 void EditorPlane::setLineHighlighted(int lineNo, const QColor &color)
@@ -241,6 +247,7 @@ void EditorPlane::initMouseCursor()
 QPoint EditorPlane::offset() const
 {
     QPoint lineNumbersOffset (charWidth()*5 , 0);
+    QPoint lockSymbolOffset (b_teacherMode? LOCK_SYMBOL_WIDTH : 0, 0);
     QPoint scrollOffset(0,0);
     if (m_horizontalScrollBar->isEnabled()) {
         int valX = m_horizontalScrollBar->value();
@@ -252,7 +259,7 @@ QPoint EditorPlane::offset() const
         valY = ( valY / lineHeight() ) * lineHeight();
         scrollOffset.setY(-valY);
     }
-    QPoint totalOffset = lineNumbersOffset + scrollOffset;
+    QPoint totalOffset = lineNumbersOffset + scrollOffset + lockSymbolOffset;
     return totalOffset;
 }
 
@@ -1095,12 +1102,13 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
     int endLine = rect.bottom() / lineHeight() + 1;
     int lh = lineHeight();
     int cw = charWidth();
+    int lockOffset = b_teacherMode? LOCK_SYMBOL_WIDTH : 0;
     for (int i=startLine; i<endLine+1; i++) {
         p->setPen(Qt::NoPen);
         p->setBrush(palette().brush(QPalette::Window));
-        p->drawRect(0, i*lh, cw*4+cw/2, lh);
+        p->drawRect(0, i*lh, cw*4+cw/2+lockOffset, lh);
         p->setBrush(palette().brush(QPalette::Base));
-        p->drawRect(cw*4+cw/2, i*lh, cw/2, lh);
+        p->drawRect(cw*4+cw/2+lockOffset, i*lh, cw/2, lh);
         QColor textColor = QColor(palette().brush(QPalette::WindowText).color());
         if (i-1-offset().y()/lineHeight()>=m_document->linesCount()) {
             textColor = QColor(Qt::lightGray);
@@ -1108,10 +1116,50 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
         p->setPen(textColor);
         QString txt = QString::number(i - (offset().y()/lineHeight()));
         int tw = QFontMetrics(font()).width(txt);
-        int xx = cw * 3 - tw;
-        int yy = i * lh;
+        int xx = cw * 3 - tw + lockOffset;
+        int yy = i * lh-2;
         p->drawText(xx, yy, txt);
+        if (i<m_document->linesCount() && m_document->isProtected(i))
+            paintLockSymbol(p, false, QRect(0, i*lh, LOCK_SYMBOL_WIDTH, lh));
     }
+    p->restore();
+}
+
+void EditorPlane::paintLockSymbol(QPainter *p, bool colored, const QRect &r)
+{
+    p->save();
+    p->setRenderHint(QPainter::Antialiasing, true);
+    int W = r.width()-8;
+    int H = r.height();
+    int S = qMin(W, H);
+    W = H = S;
+    int X = r.left() + (r.width()-W)/2 + 2;
+    int Y = r.top() + (r.height()-H)/2+2;
+    p->setPen(QPen(QColor(Qt::black),1));
+
+    if (colored) {
+        p->setBrush(QColor(Qt::gray));
+    }
+    else {
+        p->setBrush(Qt::NoBrush);
+    }
+    QPainterPath path;
+    path.moveTo(X+W/8., Y+H/2.);
+    path.arcTo(QRectF(X+W/8., Y, 0.75*W, H), 0, 180);
+    path.lineTo(X+0.75*W, Y+H/2.);
+    path.arcTo(QRectF(X+W/4., Y+H/8., .5*W, H), 0, 180);
+    path.lineTo(X+W/8., Y+H/2.);
+    path.closeSubpath();
+    p->drawPath(path);
+    if (colored) {
+        p->setBrush(QColor(Qt::yellow));
+    }
+    else {
+        p->setBrush(Qt::NoBrush);
+    }
+    p->drawRect(X,Y+H/2,W,H/2);
+
+    p->drawPoint(QPoint(X+W/2, Y+H/4*3));
     p->restore();
 }
 
@@ -1304,7 +1352,8 @@ int EditorPlane::widthInChars() const
     if (!b_hasAnalizer)
         marginMinWidth = 0;
     const int myWidth = width();
-    const int availableWidth = myWidth - marginMinWidth;
+    const int lockSymbolWidth = b_teacherMode? LOCK_SYMBOL_WIDTH : 0;
+    const int availableWidth = myWidth - marginMinWidth - lockSymbolWidth;
     const int result = availableWidth / cw - 5;
     return result;
 }

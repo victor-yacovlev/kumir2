@@ -3,7 +3,7 @@
 
 #include <QtCore>
 #include "vm.h"
-#include "bytecode/data.h"
+#include "dataformats/bytecode.h"
 #include "variant.h"
 
 namespace KumirCodeRun {

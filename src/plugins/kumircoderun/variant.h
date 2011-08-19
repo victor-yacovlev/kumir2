@@ -2,7 +2,7 @@
 #define KUMIRCODERUN_VARIANT_H
 
 #include <QtCore>
-#include "bytecode/tableelem.h"
+#include "dataformats/bc_tableelem.h"
 
 using namespace Bytecode;
 

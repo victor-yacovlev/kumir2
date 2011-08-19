@@ -4,8 +4,8 @@
 #include <QtCore>
 
 #include "variant.h"
-#include "bytecode/instruction.h"
-#include "bytecode/tableelem.h"
+#include "dataformats/bc_instruction.h"
+#include "dataformats/bc_tableelem.h"
 
 namespace KumirCodeRun {
 

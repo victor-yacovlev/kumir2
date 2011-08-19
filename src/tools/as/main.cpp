@@ -1,7 +1,7 @@
 #include <QtCore>
 #include <iostream>
 
-#include "shared/bytecode/data.h"
+#include "shared/dataformats/bytecode.h"
 
 int usage(const char * programName)
 {

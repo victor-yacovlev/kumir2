@@ -1,6 +1,6 @@
 #include "pdautomata.h"
 #include "pdautomata_p.h"
-#include "abstractsyntaxtree/ast.h"
+#include "dataformats/ast.h"
 #include "interfaces/lexemtype.h"
 #include "errormessages/errormessages.h"
 

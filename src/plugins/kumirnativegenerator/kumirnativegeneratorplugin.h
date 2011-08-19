@@ -3,7 +3,7 @@
 
 #include "extensionsystem/kplugin.h"
 #include "interfaces/generatorinterface.h"
-#include "abstractsyntaxtree/ast.h"
+#include "dataformats/ast.h"
 
 namespace KumirNativeGenerator {
 

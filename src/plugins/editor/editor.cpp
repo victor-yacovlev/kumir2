@@ -48,6 +48,8 @@ public:
     QList<Macro> systemMacros;
     QList<Macro> userMacros;
 
+    bool teacherMode;
+
     int timerId;
 
     bool notSaved;
@@ -64,6 +66,18 @@ public slots:
     void handleLineAndTextChanged(const QStack<Shared::ChangeTextTransaction> & changes);
     void playMacro();
 };
+
+
+void Editor::setTeacherMode(bool v)
+{
+    d->teacherMode = v;
+    d->plane->setTeacherMode(v);
+}
+
+bool Editor::isTeacherMode() const
+{
+    return d->teacherMode;
+}
 
 void Editor::unsetAnalizer()
 {
@@ -396,6 +410,7 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
     setParent(parent);
     d = new EditorPrivate;
     d->q = this;
+    d->teacherMode = false;
     d->notSaved = initiallyNotSaved;
     if (!d->clipboard)
         d->clipboard = new Clipboard;
@@ -443,12 +458,6 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
     connect(d->doc->undoStack(), SIGNAL(canUndoChanged(bool)), d->cursor, SLOT(handleUndoChanged(bool)));
 }
 
-
-
-QString Editor::text() const
-{
-    return d->doc->toPlainText();
-}
 
 void EditorPrivate::createActions()
 {
@@ -646,11 +655,12 @@ void Editor::restoreState(const QByteArray &data)
     checkForClean();
 }
 
-void Editor::setText(const QString & text)
+void Editor::setKumFile(const KumFile::Data &data)
 {
-    d->doc->setPlainText(text);
+    d->doc->setKumFile(data);
     if (d->analizer) {
-        d->analizer->setSourceText(d->doc->documentId, text);
+        d->analizer->setSourceText(d->doc->documentId, data.visibleText);
+        d->analizer->setHiddenText(d->doc->documentId, data.hiddenText);
         d->updateFromAnalizer();
     }
     d->plane->update();
@@ -692,7 +702,7 @@ void Editor::setForceNotSavedFlag(bool v)
 
 QDataStream & operator<< (QDataStream & stream, const Editor & editor)
 {
-    stream << editor.text();
+    stream << KumFile::toString(editor.toKumFile());
     stream << editor.cursor()->row();
     stream << editor.cursor()->column();
     stream << quint8(editor.forceNotSavedFlag());
@@ -734,7 +744,7 @@ QDataStream & operator>> (QDataStream & stream, Editor & editor)
     stream >> txt;
     stream >> row;
     stream >> col;
-    editor.setText(txt);
+    editor.setKumFile(KumFile::fromString(txt));
     editor.cursor()->setRow(row);
     editor.cursor()->setColumn(col);
     quint8 notsaved;

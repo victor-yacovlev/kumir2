@@ -1,4 +1,4 @@
-#include "data.h"
+#include "bytecode.h"
 
 namespace Bytecode {
 

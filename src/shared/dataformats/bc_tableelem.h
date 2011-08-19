@@ -2,9 +2,10 @@
 #define BYTECODE_TABLEELEM_H
 
 #include <QtCore>
-#include "instruction.h"
+#include "bc_instruction.h"
 
-#ifdef BYTECODE_LIBRARY
+#undef BYTECODE_EXPORT
+#ifdef DATAFORMATS_LIBRARY
 #   define BYTECODE_EXPORT Q_DECL_EXPORT
 #else
 #   define BYTECODE_EXPORT Q_DECL_IMPORT

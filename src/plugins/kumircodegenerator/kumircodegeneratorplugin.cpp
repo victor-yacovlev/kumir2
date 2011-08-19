@@ -1,6 +1,6 @@
 #include "generator.h"
 #include "kumircodegeneratorplugin.h"
-#include "bytecode/data.h"
+#include "dataformats/bytecode.h"
 
 using namespace KumirCodeGenerator;
 using namespace Bytecode;

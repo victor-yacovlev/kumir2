@@ -4,7 +4,7 @@
 #include "kumiranalizer/analizer.h"
 #include "kumiranalizer/kumiranalizerplugin.h"
 #include "interfaces/generatorinterface.h"
-#include "bytecode/data.h"
+#include "dataformats/bytecode.h"
 
 #include <iostream>
 

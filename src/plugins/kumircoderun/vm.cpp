@@ -1,5 +1,5 @@
 #include "vm.h"
-#include "bytecode/instruction.h"
+#include "dataformats/bc_instruction.h"
 #include "stdlib/integeroverflowchecker.h"
 #include "stdlib/doubleoverflowchecker.h"
 

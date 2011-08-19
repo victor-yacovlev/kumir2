@@ -112,6 +112,12 @@ void KumirAnalizerPlugin::setSourceText(int documentId, const QString &text)
         m_analizers[documentId]->changeSourceText(QList<Shared::ChangeTextTransaction>() << change);
 }
 
+void KumirAnalizerPlugin::setHiddenText(int documentId, const QString &text)
+{
+    Q_CHECK_PTR(m_analizers[documentId]);
+    // TODO implement me!
+}
+
 void KumirAnalizerPlugin::changeSourceText(int documentId, const QList<Shared::ChangeTextTransaction> & changes)
 {
     Q_CHECK_PTR(m_analizers[documentId]);

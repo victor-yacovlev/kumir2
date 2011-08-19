@@ -3,7 +3,7 @@
 
 #include <QtCore>
 
-#ifdef BYTECODE_LIBRARY
+#ifdef DATAFORMATS_LIBRARY
 #   define BYTECODE_EXPORT Q_DECL_EXPORT
 #else
 #   define BYTECODE_EXPORT Q_DECL_IMPORT

@@ -1,12 +1,12 @@
 #ifndef ANALIZER_P_H
 #define ANALIZER_P_H
 
-#include "abstractsyntaxtree/lexem.h"
+#include "dataformats/lexem.h"
 #include "statement.h"
 #include "interfaces/lexemtype.h"
 #include "interfaces/error.h"
 #include "interfaces/lineprop.h"
-#include "abstractsyntaxtree/ast.h"
+#include "dataformats/ast.h"
 #include "interfaces/analizerinterface.h"
 #include "interfaces/actorinterface.h"
 

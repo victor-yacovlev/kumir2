@@ -4,8 +4,8 @@
 #include <QtCore>
 #include "statement.h"
 
-#include "abstractsyntaxtree/ast.h"
-#include "abstractsyntaxtree/ast_algorhitm.h"
+#include "dataformats/ast.h"
+#include "dataformats/ast_algorhitm.h"
 
 typedef AST::Data AST_Data;
 typedef AST::Algorhitm AST_Algorhitm;

@@ -165,7 +165,7 @@ QString PluginManagerPrivate::parsePluginsRequest(const QString &templ, QList<Pl
             inBr = true;
         }
         else if (templ[i]==')' && inBr) {
-            inBr = true;
+            inBr = false;
             cur.arguments << argument;
             argument = "";
         }

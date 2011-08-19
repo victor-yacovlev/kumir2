@@ -2,8 +2,8 @@
 #define KUMIRCPPGENERATOR_NAMEPROVIDER_H
 
 #include <QtCore>
-#include "abstractsyntaxtree/ast_variabletype.h"
-#include "abstractsyntaxtree/ast_expression.h"
+#include "dataformats/ast_variabletype.h"
+#include "dataformats/ast_expression.h"
 
 namespace KumirNativeGenerator {
 

@@ -3,7 +3,7 @@
 
 #include <QtCore>
 #include "statement.h"
-#include "abstractsyntaxtree/ast.h"
+#include "dataformats/ast.h"
 
 using namespace Shared;
 

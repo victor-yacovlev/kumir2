@@ -1,3 +1,3 @@
 TEMPLATE=subdirs
 CONFIG+=ordered
-SUBDIRS=extensionsystem abstractsyntaxtree bytecode errormessages stdlib
+SUBDIRS=extensionsystem dataformats errormessages stdlib

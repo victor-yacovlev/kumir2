@@ -1,7 +1,7 @@
 #include "syntaxanalizer.h"
 #include "lexer.h"
 
-#include "abstractsyntaxtree/ast_variable.h"
+#include "dataformats/ast_variable.h"
 #include "errormessages/errormessages.h"
 
 #define BADNAME_KEYWORD TN_BAD_NAME_3

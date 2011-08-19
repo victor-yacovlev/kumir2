@@ -1,7 +1,7 @@
 #ifndef GENERATOR_INTERFACE_H
 #define GENERATOR_INTERFACE_H
 
-#include "abstractsyntaxtree/ast.h"
+#include "dataformats/ast.h"
 
 namespace Shared {
 

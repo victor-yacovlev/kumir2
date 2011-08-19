@@ -11,4 +11,5 @@ SUBDIRS = \
     plugins \
     actors
     
-!macx:SUBDIRS+=app/kumir2-classic.pro
+!macx:SUBDIRS+=app/kumir2-classic.pro app/kumir2-teacher.pro
+

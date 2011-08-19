@@ -2,8 +2,8 @@
 #define COREGUI_KUMIRVARIABLESWEBOBJECT_H
 
 #include <QtCore>
-#include "abstractsyntaxtree/ast.h"
-#include "abstractsyntaxtree/ast_variable.h"
+#include "dataformats/ast.h"
+#include "dataformats/ast_variable.h"
 #include "interfaces/runinterface.h"
 #include "interfaces/browserinterface.h"
 

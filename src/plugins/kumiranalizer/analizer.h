@@ -3,7 +3,7 @@
 
 #include "interfaces/error.h"
 #include "interfaces/lineprop.h"
-#include "abstractsyntaxtree/ast.h"
+#include "dataformats/ast.h"
 #include "interfaces/analizerinterface.h"
 
 #include <QtCore>
