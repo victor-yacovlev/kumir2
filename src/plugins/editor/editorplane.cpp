@@ -1,6 +1,7 @@
 #include "editorplane.h"
 #include "textcursor.h"
 #include "textdocument.h"
+#include "editcommands.h"
 #include "clipboard.h"
 #include "settingspage.h"
 #include "utils.h"
@@ -26,6 +27,7 @@ EditorPlane::EditorPlane(TextDocument * doc
     QWidget(parent)
 {
     i_highlightedLine = -1;
+    i_grayLockSymbolLine = -1;
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     rxFilenamePattern = fileNamesToOpen;
     i_marginAlpha = 255;
@@ -50,7 +52,7 @@ EditorPlane::EditorPlane(TextDocument * doc
     setMouseTracking(true);
     setAcceptDrops(true);
     setFocusPolicy(Qt::StrongFocus);
-    pnt_marginPress = pnt_textPress = pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
+    pnt_delimeterPress = pnt_marginPress = pnt_textPress = pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
     b_selectionInProgress = false;
 }
 
@@ -95,29 +97,59 @@ void EditorPlane::paintDropPosition(QPainter *p)
 
 void EditorPlane::mousePressEvent(QMouseEvent *e)
 {
-    int ln = charWidth() * 5;
-    int mn = (widthInChars()+5)* charWidth();
-    //    qDebug() << "ln = " << ln;
-    //    qDebug() << "mn = " << mn;
-    //    qDebug() << "x  = " << e->pos().x();
+    int lockSymbolWidth = b_teacherMode && b_hasAnalizer ? LOCK_SYMBOL_WIDTH : 0;
+    int ln = charWidth() * 5 + lockSymbolWidth;
+    int wc = widthInChars();
+    int mn = (wc+5)* charWidth()+1;
+//        qDebug() << "wc = " << ln;
+//        qDebug() << "ln = " << ln;
+//        qDebug() << "mn = " << mn;
+//        qDebug() << "x  = " << e->pos().x();
     m_cursor->setViewMode(TextCursor::VM_Hidden);
-    pnt_marginPress = pnt_textPress = QPoint(-1000, -1000);
+    pnt_delimeterPress = pnt_marginPress = pnt_textPress = QPoint(-1000, -1000);
+    if (b_hasAnalizer && b_teacherMode && e->pos().x() < lockSymbolWidth) {
+        int realY = e->pos().y() - offset().y();
+        int textY = qMax(0, realY/lineHeight());
+        if (textY<m_document->linesCount()) {
+            m_document->undoStack()->push(new ToggleLineProtectedCommand(m_document, textY));
+            QApplication::restoreOverrideCursor();
+        }
+    }
     if (b_hasAnalizer && e->pos().x()>=(mn-2) && e->pos().x()<=(mn+2)) {
         // Begin drag margin line
         pnt_marginPress = e->pos();
     }
     else if (e->pos().x()>ln && e->pos().x()<(mn-2)) {
-        // Move cursor and (possible) begin selection
-        pnt_textPress = e->pos();
-        int realX = e->pos().x() - offset().x();
-        int realY = e->pos().y() - offset().y();
-        int textX = realX/charWidth();
-        int textY = realY/lineHeight();
-        if (textY != m_cursor->row())
-            m_document->flushTransaction();
-        m_cursor->moveTo(textY, textX);
-        pos_textPress = QPoint(textX, textY);
-        update();
+        bool moveDelimeterLine = false;
+        if (b_hasAnalizer && b_teacherMode) {
+            int hls = m_document->hiddenLineStart();
+            QRect lr;
+            if (hls==-1) {
+                lr = QRect(charWidth()*5+lockSymbolWidth, height()-lineHeight(), widthInChars()*charWidth(), lineHeight());
+            }
+            else {
+                lr = QRect(charWidth()*5+lockSymbolWidth, lineHeight()*hls-2, widthInChars()*charWidth(), 4);
+            }
+            moveDelimeterLine = lr.contains(e->pos());
+        }
+        if (moveDelimeterLine) {
+            // Move line between visible and teacher text
+            pnt_delimeterPress = e->pos();
+            update();
+        }
+        else {
+            // Move cursor and (possible) begin selection
+            pnt_textPress = e->pos();
+            int realX = e->pos().x() - offset().x();
+            int realY = e->pos().y() - offset().y();
+            int textX = realX/charWidth();
+            int textY = realY/lineHeight();
+            if (textY != m_cursor->row())
+                m_document->flushTransaction();
+            m_cursor->moveTo(textY, textX);
+            pos_textPress = QPoint(textX, textY);
+            update();
+        }
     }
     e->accept();
 }
@@ -126,6 +158,8 @@ void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
 {
     if (pnt_marginPress.x()!=-1000 && pnt_marginPress.y()!=-1000) {
         int x = pnt_marginPress.x();
+        if (b_teacherMode)
+            x += LOCK_SYMBOL_WIDTH;
         int cw = charWidth();
         x = (x/cw)*cw;
         int marginAbsoluteWidth = width()-x;
@@ -134,6 +168,18 @@ void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
         updateScrollBars();
         update();
         pnt_marginPress = QPoint(-1000, -1000);
+    }
+    if (pnt_delimeterPress.x()!=-1000 && pnt_delimeterPress.y()!=-1000) {
+        int y = pnt_delimeterPress.y();
+        int lh = lineHeight();
+        int yy = (y/lh) ;
+        if (y>height()-lh)
+            yy = -1;
+        m_document->undoStack()->push(new ChangeHiddenLineDelimeterCommand(
+                                          m_document,
+                                          yy));
+        update();
+        pnt_delimeterPress = QPoint(-1000, -1000);
     }
     if (b_selectionInProgress) {
         b_selectionInProgress = false;
@@ -148,18 +194,51 @@ void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
 
 void EditorPlane::mouseMoveEvent(QMouseEvent *e)
 {
-    int ln = charWidth() * 5;
-    int mn = ln + widthInChars() * charWidth();
-    if (e->pos().x()<ln) {
+    int lockSymbolWidth = b_teacherMode && b_hasAnalizer ? LOCK_SYMBOL_WIDTH : 0;
+    int ln = charWidth() * 5 + lockSymbolWidth;
+    int mn = ln + widthInChars() * charWidth() - lockSymbolWidth;
+    i_grayLockSymbolLine = -1;
+
+    bool moveDelimeterLine = false;
+    if (b_hasAnalizer && b_teacherMode) {
+        int hls = m_document->hiddenLineStart();
+        QRect lr;
+        if (hls==-1) {
+            lr = QRect(charWidth()*5+lockSymbolWidth, height()-lineHeight(), widthInChars()*charWidth(), lineHeight());
+        }
+        else {
+            lr = QRect(charWidth()*5+lockSymbolWidth, lineHeight()*hls-2, widthInChars()*charWidth(), 4);
+        }
+        moveDelimeterLine = lr.contains(e->pos());
+    }
+
+    if (b_teacherMode && b_hasAnalizer && e->pos().x()<lockSymbolWidth) {
+        int lh = lineHeight();
+        int realY = e->pos().y() - offset().y();
+        int textY = realY/lh;
+        textY = qMax(textY, 0);
+        if (textY<m_document->linesCount()) {
+            i_grayLockSymbolLine = textY;
+//            QApplication::setOverrideCursor(Qt::PointingHandCursor);
+        }
+        else {
+//            QApplication::restoreOverrideCursor();
+        }
+
+    }
+    else if (e->pos().x()<ln) {
 //        QApplication::setOverrideCursor(Qt::ArrowCursor);
         QApplication::restoreOverrideCursor();
     }
     else if (e->pos().x()<=mn-2) {
         QApplication::restoreOverrideCursor();
+        if (moveDelimeterLine)
+           QApplication::setOverrideCursor(Qt::SplitVCursor);
     }
     else if (b_hasAnalizer && e->pos().x()<=mn+2) {
         QApplication::setOverrideCursor(Qt::SplitHCursor);
     }
+
     else {
 //        QApplication::setOverrideCursor(Qt::ArrowCursor);
         QApplication::restoreOverrideCursor();
@@ -168,7 +247,12 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
         pnt_marginPress = e->pos();
         update();
     }
+    else if (pnt_delimeterPress.x()!=-1000 && pnt_delimeterPress.y()!=-1000) {
+        pnt_delimeterPress = e->pos();
+        update();
+    }
     else if (e->pos().x()>ln && e->pos().x()<mn-2 && e->buttons().testFlag(Qt::LeftButton)) {
+        QApplication::restoreOverrideCursor();
         int dX = e->pos().x() - pnt_textPress.x();
         int dY = e->pos().y() - pnt_textPress.y();
         qreal distance = sqrt(dX*dX+dY*dY);
@@ -226,7 +310,10 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
             }
         }
     }
+
+
     e->accept();
+    update();
 }
 
 void EditorPlane::initMouseCursor()
@@ -413,6 +500,8 @@ void EditorPlane::paintEvent(QPaintEvent *e)
         paintNewMarginLine(&p);
     }
 
+
+
     p.save();
     p.translate(offset());
     if (i_highlightedLine!=-1)
@@ -450,8 +539,39 @@ void EditorPlane::paintEvent(QPaintEvent *e)
     const QBrush br = hasFocus()? palette().brush(QPalette::Highlight) : palette().brush(QPalette::Window);
     p.setPen(QPen(br,1));
     p.drawRect(0,0,width()-1,height()-1);
+    if (b_teacherMode && b_hasAnalizer) {
+        p.setPen(Qt::NoPen);
+        QColor hidColor("#797979");
+        hidColor.setAlpha(255);
+        p.setBrush(hidColor);
+//        p.drawRect(0, height()-lineHeight(), (widthInChars()+5)*charWidth(), lineHeight());
+        p.drawRect(0, height()-lineHeight(), width(), lineHeight());
+        paintHiddenTextDelimeterLine(&p);
+        paintNewHiddenDelimeterLine(&p);
+    }
+
     e->accept();
 
+}
+
+void EditorPlane::paintHiddenTextDelimeterLine(QPainter *p)
+{
+    if (b_teacherMode && b_hasAnalizer) {
+        int hiddenLineStart = m_document->hiddenLineStart();
+
+        int x1 = 5*charWidth()+LOCK_SYMBOL_WIDTH;
+        int x2 = (widthInChars()+5)*charWidth();
+        if (hiddenLineStart == -1) {
+            p->setPen(QPen(QColor("white"), 2, Qt::DashLine));
+            p->drawLine(x1, height()-lineHeight()/2, x2, height()-lineHeight()/2);
+        }
+        else {
+            p->setPen(QPen(QColor("black"), 2, Qt::DashLine));
+            int y = lineHeight()*hiddenLineStart;
+            y += offset().y();
+            p->drawLine(x1, y, x2, y);
+        }
+    }
 }
 
 void EditorPlane::paintNewMarginLine(QPainter *p)
@@ -464,6 +584,28 @@ void EditorPlane::paintNewMarginLine(QPainter *p)
     QRect marginLineRect(0,0,4,height());
     x = ( x / cw ) * cw;
     marginLineRect.translate(x,0);
+    p->drawRect(marginLineRect);
+    p->restore();
+}
+
+void EditorPlane::paintNewHiddenDelimeterLine(QPainter *p)
+{
+    p->save();
+    p->setPen(QColor(Qt::black));
+    p->setBrush(Qt::NoBrush);
+    int y = pnt_delimeterPress.y();
+    int lh = lineHeight();
+    int x1 = 5*charWidth()+LOCK_SYMBOL_WIDTH;
+    int x2 = (widthInChars()+5)*charWidth();
+    QRect marginLineRect(x1,0,x2-x1,4);
+    y = ( y / lh ) * lh;
+    if (y>height()-lh) {
+        y += lineHeight()/2-1;
+        QColor cc(Qt::white);
+        cc.setAlpha(64);
+        p->setBrush(cc);
+    }
+    marginLineRect.translate(0,y);
     p->drawRect(marginLineRect);
     p->restore();
 }
@@ -1120,6 +1262,8 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
         int yy = i * lh-2;
         p->drawText(xx, yy, txt);
         if (i<m_document->linesCount() && m_document->isProtected(i))
+            paintLockSymbol(p, true, QRect(0, i*lh, LOCK_SYMBOL_WIDTH, lh));
+        if (i==i_grayLockSymbolLine && i<m_document->linesCount() && !m_document->isProtected(i))
             paintLockSymbol(p, false, QRect(0, i*lh, LOCK_SYMBOL_WIDTH, lh));
     }
     p->restore();
@@ -1135,7 +1279,7 @@ void EditorPlane::paintLockSymbol(QPainter *p, bool colored, const QRect &r)
     W = H = S;
     int X = r.left() + (r.width()-W)/2 + 2;
     int Y = r.top() + (r.height()-H)/2+2;
-    p->setPen(QPen(QColor(Qt::black),1));
+    p->setPen(QPen(QColor(colored? Qt::black : Qt::gray),1));
 
     if (colored) {
         p->setBrush(QColor(Qt::gray));
@@ -1215,6 +1359,35 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
     p->save();
     int startLine = rect.top()-offset().y() / lineHeight() - 1;
     int endLine = rect.bottom()-offset().y() / lineHeight() + 1;
+    int hiddenLineStart = -1;
+    if (b_teacherMode && b_hasAnalizer)
+    for (int i=0; i<m_document->linesCount(); i++) {
+        if (m_document->isHidden(i)) {
+            hiddenLineStart = i;
+            break;
+        }
+    }
+    for (int i=qMax(startLine, 0); i<endLine+1; i++) {
+        int y =  ( i )* lineHeight();
+        bool drawThisRect = false;
+        QRect specialLineRect (0, y, width(), lineHeight());
+        if (i<m_document->linesCount() && m_document->isProtected(i) && !m_document->isHidden(i)) {
+            QColor protColor("#157962");
+            protColor.setAlpha(64);
+            p->setBrush(protColor);
+            drawThisRect = true;
+        }
+        else if (hiddenLineStart!=-1 && i>=hiddenLineStart) {
+            QColor hidColor("black");
+            hidColor.setAlpha(64);
+            p->setBrush(hidColor);
+            drawThisRect = true;
+        }
+        if (drawThisRect) {
+            p->setPen(Qt::NoPen);
+            p->drawRect(specialLineRect);
+        }
+    }
     for (int i=qMax(startLine, 0); i<endLine+1; i++) {
         int indent = m_document->indentAt(i);
         int y =  ( i + 1 )* lineHeight();
@@ -1231,6 +1404,8 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
     for (int i=qMax(startLine, 0); i<qMin(endLine+1, m_document->linesCount()); i++) {
         int indent = m_document->indentAt(i);
         int y =  ( i + 1 )* lineHeight();
+
+
         QList<Shared::LexemType> highlight = m_document->highlightAt(i);
         QString text = m_document->textAt(i);
         QList<bool> sm = m_document->selectionMaskAt(i);
@@ -1352,9 +1527,14 @@ int EditorPlane::widthInChars() const
     if (!b_hasAnalizer)
         marginMinWidth = 0;
     const int myWidth = width();
-    const int lockSymbolWidth = b_teacherMode? LOCK_SYMBOL_WIDTH : 0;
+    const int lockSymbolWidth = (b_hasAnalizer && b_teacherMode)? LOCK_SYMBOL_WIDTH : 0;
     const int availableWidth = myWidth - marginMinWidth - lockSymbolWidth;
     const int result = availableWidth / cw - 5;
+//    qDebug() << "myWidth = " << myWidth;
+//    qDebug() << "marginMinWidth = " << marginMinWidth;
+//    qDebug() << "availableWidth = " << availableWidth;
+//    qDebug() << "charWidth = " << cw;
+//    qDebug() << "widthInChars() = " << result;
     return result;
 }
 

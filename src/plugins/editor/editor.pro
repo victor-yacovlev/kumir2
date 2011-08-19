@@ -19,7 +19,8 @@ HEADERS += editorplugin.h \
     editorstandalonewindow.h \
     settingspage.h \
     macro.h \
-    keycommand.h
+    keycommand.h \
+    editcommands.h
 SOURCES += editorplugin.cpp \
     editor.cpp \
     editorplane.cpp \
@@ -30,7 +31,8 @@ SOURCES += editorplugin.cpp \
     settingspage.cpp \
     macro.cpp \
     keycommand.cpp \
-    textdocument.cpp
+    textdocument.cpp \
+    editcommands.cpp
 
 OTHER_FILES += Editor.pluginspec
 

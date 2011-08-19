@@ -10,137 +10,7 @@
 
 namespace Editor {
 
-class InsertCommand:
-        public QUndoCommand
-{
-public:
-    explicit InsertCommand(class TextDocument * doc,
-                           class TextCursor * cursor,
-                           Shared::AnalizerInterface * analizer,
-                           int line,
-                           int pos,
-                           const QString & text
-                           );
-    explicit InsertCommand(class TextDocument * doc,
-                           class TextCursor * cursor,
-                           Shared::AnalizerInterface * analizer);
-    void redo();
-    void undo();
-    inline int id() const { return 1; }
-    bool mergeWith(const QUndoCommand *other);
 
-//private:
-    class TextDocument * doc;
-    class TextCursor * cursor;
-    Shared::AnalizerInterface * analizer;
-    int line;
-    int pos;
-    QString text;
-    int blankLines;
-    int blankChars;
-    int cursorRow;
-    int cursorCol;
-
-};
-
-class RemoveCommand:
-        public QUndoCommand
-{
-public:
-    explicit RemoveCommand(class TextDocument * doc,
-                           class TextCursor * cursor,
-                           Shared::AnalizerInterface * analizer,
-                           int line,
-                           int pos,
-                           int count,
-                           bool keepCursor
-                           );
-    explicit RemoveCommand(class TextDocument * doc,
-                           class TextCursor * cursor,
-                           Shared::AnalizerInterface * analizer);
-    void redo();
-    void undo();
-    inline int id() const { return 2; }
-    bool mergeWith(const QUndoCommand *other);
-
-//private:
-    class TextDocument * doc;
-    class TextCursor * cursor;
-    Shared::AnalizerInterface * analizer;
-    int line;
-    int pos;
-    int count;
-    bool keepKursor;
-    QString removedText;
-    int cursorRow;
-    int cursorCol;
-
-};
-
-class InsertBlockCommand:
-        public QUndoCommand
-{
-public:
-    explicit InsertBlockCommand(class TextDocument * doc,
-                                class TextCursor * cursor,
-                                Shared::AnalizerInterface * analizer,
-                                int row,
-                                int column,
-                                const QStringList & block);
-    explicit InsertBlockCommand(class TextDocument * doc,
-                           class TextCursor * cursor,
-                           Shared::AnalizerInterface * analizer);
-    void redo();
-    void undo();
-    inline int id() const { return 3; }
-
-//private:
-    class TextDocument * doc;
-    class TextCursor * cursor;
-    Shared::AnalizerInterface * analizer;
-    int row;
-    int column;
-    QStringList block;
-    int cursorRow;
-    int cursorCol;
-    QStringList previousLines;
-    int addedLines;
-};
-
-class RemoveBlockCommand:
-        public QUndoCommand
-{
-public:
-    explicit RemoveBlockCommand(class TextDocument * doc,
-                                class TextCursor * cursor,
-                                Shared::AnalizerInterface * analizer,
-                                const QRect & block);
-    explicit RemoveBlockCommand(class TextDocument * doc,
-                           class TextCursor * cursor,
-                           Shared::AnalizerInterface * analizer);
-    void redo();
-    void undo();
-    inline int id() const { return 4; }
-
-//private:
-    class TextDocument * doc;
-    class TextCursor * cursor;
-    Shared::AnalizerInterface * analizer;
-    QRect block;
-    int cursorRow;
-    int cursorCol;
-    QStringList previousLines;
-};
-
-QDataStream & operator<< (QDataStream & stream, const InsertCommand & command);
-QDataStream & operator<< (QDataStream & stream, const RemoveCommand & command);
-QDataStream & operator<< (QDataStream & stream, const InsertBlockCommand & command);
-QDataStream & operator<< (QDataStream & stream, const RemoveBlockCommand & command);
-
-QDataStream & operator>> (QDataStream & stream, InsertCommand & command);
-QDataStream & operator>> (QDataStream & stream, RemoveCommand & command);
-QDataStream & operator>> (QDataStream & stream, InsertBlockCommand & command);
-QDataStream & operator>> (QDataStream & stream, RemoveBlockCommand & command);
 
 struct TextLine
 {
@@ -185,7 +55,10 @@ public:
     int documentId;
     int indentAt(int lineNo) const;
     inline bool isProtected(int lineNo) const { return data[lineNo].protecteed; }
+    inline void setProtected(int lineNo, bool v) { data[lineNo].protecteed = v; }
     inline bool isHidden(int lineNo) const { return data[lineNo].hidden; }
+    inline void setHidden(int lineNo, bool v) { data[lineNo].hidden = v; }
+    int hiddenLineStart() const;
     inline int linesCount() const { return data.size(); }
     KumFile::Data toKumFile() const;
     void setKumFile(const KumFile::Data & data);

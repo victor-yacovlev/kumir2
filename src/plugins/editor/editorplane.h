@@ -5,6 +5,7 @@
 
 #include "interfaces/lexemtype.h"
 
+
 namespace Editor {
 
 class EditorPlane : public QWidget
@@ -64,13 +65,16 @@ protected:
     QPoint offset() const;
     void paintBackground(QPainter *p, const QRect &rect);
     void paintMarginBackground(QPainter *p, const QRect & rect);
+
     void paintMarginText(QPainter *p, const QRect & rect);
     void paintCursor(QPainter *p, const QRect &rect);
     void paintText(QPainter *p, const QRect &rect);
+    void paintHiddenTextDelimeterLine(QPainter *p);
     void paintSelection(QPainter *p, const QRect &rect);
     void paintRectSelection(QPainter *p, const QRect &rect);
     void paintLineNumbers(QPainter *p, const QRect &rect);
     void paintNewMarginLine(QPainter *p);
+    void paintNewHiddenDelimeterLine(QPainter *p);
     void paintDropPosition(QPainter *p);
     void keyPressEvent(QKeyEvent *);
     void keyReleaseEvent(QKeyEvent *);
@@ -83,11 +87,13 @@ private:
     class TextDocument * m_document;
     class TextCursor * m_cursor;
     class Clipboard * m_clipboard;
+
     QList<QRegExp> rxFilenamePattern;
     QSettings * m_settings;
     QScrollBar * m_verticalScrollBar;
     QScrollBar * m_horizontalScrollBar;
     QPoint pnt_marginPress;
+    QPoint pnt_delimeterPress;
     QPoint pnt_textPress;
     QPoint pos_textPress;
     bool b_selectionInProgress;
@@ -100,6 +106,7 @@ private:
 
     int i_highlightedLine;
     QColor color_highlightedLine;
+    int i_grayLockSymbolLine;
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
 

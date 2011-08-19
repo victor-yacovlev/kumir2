@@ -6,6 +6,7 @@
 #include "utils.h"
 #include "macro.h"
 #include "settingspage.h"
+#include "editcommands.h"
 
 namespace Editor {
 
@@ -667,6 +668,11 @@ void Editor::setKumFile(const KumFile::Data &data)
     checkForClean();
 }
 
+KumFile::Data Editor::toKumFile() const
+{
+    return d->doc->toKumFile();
+}
+
 void Editor::ensureAnalized()
 {
     d->doc->flushTransaction();
@@ -732,6 +738,11 @@ QDataStream & operator<< (QDataStream & stream, const Editor & editor)
                     static_cast<const RemoveBlockCommand*>(cmd);
             stream << (*removeCommand);
         }
+        if (cmd->id()==0xA0) {
+            const ToggleLineProtectedCommand * toggleCommand =
+                    static_cast<const ToggleLineProtectedCommand*>(cmd);
+            stream << (*toggleCommand);
+        }
     }
 
     return stream;
@@ -784,6 +795,11 @@ QDataStream & operator>> (QDataStream & stream, Editor & editor)
             RemoveBlockCommand * cmd = new RemoveBlockCommand(editor.document(),
                                                     editor.cursor(),
                                                     editor.analizer());
+            stream >> (*cmd);
+            undo->push(cmd);
+        }
+        if (id==0xA0) {
+            ToggleLineProtectedCommand * cmd = new ToggleLineProtectedCommand(editor.document(), -1);
             stream >> (*cmd);
             undo->push(cmd);
         }

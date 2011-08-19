@@ -1,6 +1,7 @@
 #include "textcursor.h"
 #include "textdocument.h"
 #include "clipboard.h"
+#include "editcommands.h"
 #include "extensionsystem/pluginmanager.h"
 
 namespace Editor {

@@ -16,6 +16,7 @@ struct Data
     QString visibleText;
     QSet<int> protectedLineNumbers;
     QString hiddenText;
+    bool hasHiddenText;
 
 };
 
