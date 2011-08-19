@@ -206,7 +206,7 @@ void TextDocument::setKumFile(const KumFile::Data &d)
             data.append(textLine);
         }
     }
-
+    forceCompleteRecompilation();
 }
 
 int TextDocument::hiddenLineStart() const
@@ -284,11 +284,41 @@ void TextDocument::flushChanges()
 void TextDocument::flushTransaction()
 {
     flushChanges();
+    bool hiddenChanged = !m_removedHiddenLines.isEmpty();
+    if (!hiddenChanged)
+    for (int i=0; i<data.size(); i++) {
+        if (data[i].changed || data[i].inserted) {
+            if (data[i].hidden) {
+                hiddenChanged = true;
+                break;
+            }
+        }
+    }
+    if (hiddenChanged)
+        forceCompleteRecompilation();
     if (!changes.isEmpty())
         emit compilationRequest(changes);
     changes.clear();
 }
 
+void TextDocument::forceCompleteRecompilation()
+{
+    changes.clear();
+    m_removedLines.clear();
+    m_removedHiddenLines.clear();
+    QStringList visibleText, hiddenText;
+    int hiddenBaseLine = -1;
+    for (int i=0; i<data.size(); i++) {
+        data[i].changed = data[i].inserted = false;
+        if (data[i].hidden && hiddenBaseLine==-1)
+            hiddenBaseLine = i;
+        if (data[i].hidden)
+            hiddenText += data[i].text;
+        else
+            visibleText += data[i].text;
+    }
+    emit completeCompilationRequest(visibleText, hiddenText, hiddenBaseLine);
+}
 
 
 

@@ -64,6 +64,11 @@ public:
     void timerEvent(QTimerEvent *e);
 public slots:
     void updatePosition(int row, int col);
+    void handleCompleteCompilationRequiest(
+        const QStringList & visibleText,
+        const QStringList & hiddenText,
+        int hiddenBaseLine
+        );
     void handleLineAndTextChanged(const QStack<Shared::ChangeTextTransaction> & changes);
     void playMacro();
 };
@@ -364,11 +369,40 @@ QList<Shared::ChangeTextTransaction> EditorPrivate::mergeTransactions(QList<Shar
     return result;
 }
 
+void EditorPrivate::handleCompleteCompilationRequiest(
+    const QStringList & visibleText,
+    const QStringList & hiddenText,
+    int hiddenBaseLine
+    )
+{
+    if (!analizer) {
+        return;
+    }
+    QString vt;
+    for (int i=0; i<visibleText.size(); i++) {
+        vt += visibleText[i];
+        if (i<visibleText.size()-1)
+            vt += "\n";
+    }
+    analizer->setSourceText(doc->documentId, vt);
+    if (teacherMode) {
+        QString ht;
+        for (int i=0; i<hiddenText.size(); i++) {
+            ht += hiddenText[i];
+            if (i<hiddenText.size()-1)
+                ht += "\n";
+        }
+        analizer->setHiddenText(doc->documentId, ht, hiddenBaseLine);
+    }
+    updateFromAnalizer();
+}
+
 void EditorPrivate::handleLineAndTextChanged(const QStack<Shared::ChangeTextTransaction> & changes)
 {
     if (!analizer) {
         return;
     }
+    analizer->setHiddenTextBaseLine(doc->documentId, doc->hiddenLineStart());
     analizer->changeSourceText(doc->documentId, mergeTransactions(changes.toList()));
     updateFromAnalizer();
 }
@@ -661,7 +695,11 @@ void Editor::setKumFile(const KumFile::Data &data)
     d->doc->setKumFile(data);
     if (d->analizer) {
         d->analizer->setSourceText(d->doc->documentId, data.visibleText);
-        d->analizer->setHiddenText(d->doc->documentId, data.hiddenText);
+        int hbl = -1;
+        if (d->teacherMode) {
+            hbl = data.visibleText.split("\n").size();
+        }
+        d->analizer->setHiddenText(d->doc->documentId, data.hiddenText, hbl);
         d->updateFromAnalizer();
     }
     d->plane->update();
@@ -786,15 +824,15 @@ QDataStream & operator>> (QDataStream & stream, Editor & editor)
         }
         if (id==3) {
             InsertBlockCommand * cmd = new InsertBlockCommand(editor.document(),
-                                                    editor.cursor(),
-                                                    editor.analizer());
+                                                              editor.cursor(),
+                                                              editor.analizer());
             stream >> (*cmd);
             undo->push(cmd);
         }
         if (id==4) {
             RemoveBlockCommand * cmd = new RemoveBlockCommand(editor.document(),
-                                                    editor.cursor(),
-                                                    editor.analizer());
+                                                              editor.cursor(),
+                                                              editor.analizer());
             stream >> (*cmd);
             undo->push(cmd);
         }

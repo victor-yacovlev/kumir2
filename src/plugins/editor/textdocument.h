@@ -81,16 +81,21 @@ public:
     inline const QUndoStack * undoStack() const { return m_undoStack; }
     inline QUndoStack * undoStack() { return m_undoStack; }
     void removeSelection();
+    void forceCompleteRecompilation();
     void flushChanges();
     void flushTransaction();
 signals:
     void compilationRequest(const QStack<Shared::ChangeTextTransaction> & changes);
+    void completeCompilationRequest(const QStringList & visibleText,
+                                    const QStringList & hiddenText,
+                                    int hiddenBaseLine);
 protected:
     void insertText(const QString & text, const Shared::AnalizerInterface * analizer, int line, int pos, int &blankLines, int &blankChars);
     void removeText(QString &removedText, const Shared::AnalizerInterface * analizer, int line, int pos, int  blankLines, int  blankChars, int count);
     void checkForCompilationRequest(const QPoint & cursorPosition);
 private:
     QSet<int> m_removedLines;
+    QSet<int> m_removedHiddenLines;
     QStack<Shared::ChangeTextTransaction> changes;
     QPoint lastCursorPos;
     QUndoStack * m_undoStack;

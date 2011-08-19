@@ -58,7 +58,8 @@ public:
     int newDocument();
     void dropDocument(int documentId);
     void setSourceText(int documentId, const QString &text);
-    void setHiddenText(int documentId, const QString &text);
+    void setHiddenText(int documentId, const QString &text, int baseLine);
+    void setHiddenTextBaseLine(int documentId, int baseLine);
     void changeSourceText(int documentId, const QList<Shared::ChangeTextTransaction> & changes);
     Shared::LineProp lineProp(int documentId, const QString & text) const;
     QList<Shared::Error> errors(int documentId) const;
