@@ -23,14 +23,14 @@ win32 {
     CONFIG(debug, debug|release):LIBS *= -lExtensionSystemd
     else:LIBS *= -lExtensionSystem
 
-    RC_FILE = kumir2.rc
+    RC_FILE = kumir2-teacher.rc
     target.path = /bin
     INSTALLS += target
 } else:macx {
     CONFIG(debug, debug|release):LIBS *= -lExtensionSystem_debug
     else:LIBS *= -lExtensionSystem
     LIBS += -framework CoreFoundation
-    ICON = ../../app_icons/mac/kumir2.icns
+    ICON = ../../app_icons/mac/kumir2-teacher.icns
     QMAKE_INFO_PLIST = Info.plist
 } else {
     LIBS *= -lExtensionSystem
@@ -39,4 +39,4 @@ win32 {
     INSTALLS    += target
 }
 
-OTHER_FILES += kumir2.rc Info.plist
+OTHER_FILES += kumir2-teacher.rc Info.plist
