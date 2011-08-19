@@ -37,12 +37,14 @@ QString Plugin::initialize(const QStringList & parameters)
     if (BlacklistedThemes.contains(currentStyleName)) {
         qApp->setStyle("Cleanlooks");
     }
-    if (parameters.contains("classicicon",Qt::CaseInsensitive)) {
-        QApplication::setWindowIcon(QIcon(QApplication::instance()->property("sharePath").toString()+"/coregui/kumir2-icon-classic.png"));
+    QString iconSuffix;
+    for (int i=0; i<parameters.count(); i++) {
+        const QString param = parameters[i];
+        if (param.startsWith("icon=")) {
+            iconSuffix = "-"+param.mid(5);
+        }
     }
-    else {
-        QApplication::setWindowIcon(QIcon(QApplication::instance()->property("sharePath").toString()+"/coregui/kumir2-icon.png"));
-    }
+    QApplication::setWindowIcon(QIcon(QApplication::instance()->property("sharePath").toString()+"/coregui/kumir2-icon"+iconSuffix+".png"));
 
     b_nosessions = parameters.contains("nosessions",Qt::CaseInsensitive);
 
