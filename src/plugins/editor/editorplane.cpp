@@ -1261,10 +1261,12 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
         int xx = cw * 3 - tw + lockOffset;
         int yy = i * lh-2;
         p->drawText(xx, yy, txt);
-        if (i<m_document->linesCount() && m_document->isProtected(i))
-            paintLockSymbol(p, true, QRect(0, i*lh, LOCK_SYMBOL_WIDTH, lh));
-        if (i==i_grayLockSymbolLine && i<m_document->linesCount() && !m_document->isProtected(i))
-            paintLockSymbol(p, false, QRect(0, i*lh, LOCK_SYMBOL_WIDTH, lh));
+        if (b_teacherMode) {
+            if (i<m_document->linesCount() && m_document->isProtected(i))
+                paintLockSymbol(p, true, QRect(0, i*lh, LOCK_SYMBOL_WIDTH, lh));
+            if (i==i_grayLockSymbolLine && i<m_document->linesCount() && !m_document->isProtected(i))
+                paintLockSymbol(p, false, QRect(0, i*lh, LOCK_SYMBOL_WIDTH, lh));
+        }
     }
     p->restore();
 }

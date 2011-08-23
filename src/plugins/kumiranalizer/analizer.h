@@ -28,6 +28,8 @@ public:
 public slots:
 
     void changeSourceText(const QList<Shared::ChangeTextTransaction> & changes);
+    void setHiddenText(const QString & text, int baseLineNo);
+    void setHiddenBaseLine(int lineNo);
 
     QList<Shared::Error> errors() const;
 

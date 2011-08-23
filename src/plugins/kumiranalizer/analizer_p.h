@@ -45,6 +45,14 @@ struct AnalizerPrivate
 
     QStringList sourceText;
     QList<Statement*> statements;
+
+    QString teacherText;
+    QList<Statement*> teacherStatements;
+    int hiddenBaseLine;
+
+    void setHiddenBaseLine(int lineNo);
+    void setHiddenText(const QString & text, int baseLineNo);
+
     static QLocale::Language nativeLanguage;
 
     void compileTransaction(const Shared::ChangeTextTransaction &changes);

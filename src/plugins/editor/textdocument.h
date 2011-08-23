@@ -61,7 +61,7 @@ public:
     int hiddenLineStart() const;
     inline int linesCount() const { return data.size(); }
     KumFile::Data toKumFile() const;
-    void setKumFile(const KumFile::Data & data);
+    void setKumFile(const KumFile::Data & data, bool showHiddenLines);
     inline QString textAt(int index) const { return data[index].text; }
     inline QString marginTextAt(int index) const { return data[index].marginText; }
     inline QList<bool> selectionMaskAt(int index) const { return data[index].selected; }
@@ -100,6 +100,8 @@ private:
     QPoint lastCursorPos;
     QUndoStack * m_undoStack;
     QList<TextLine> data;
+    QString s_hiddenText;
+    bool b_wasHiddenText;
 };
 
 }

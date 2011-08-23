@@ -20,6 +20,7 @@ TextCursor::TextCursor(TextDocument * document, Clipboard * clipboard, AnalizerI
     , i_column(0)
 
 {
+    b_teacher = false;
     i_timerId = startTimer(QApplication::cursorFlashTime()/2);
     emitPositionChanged();
 
@@ -657,7 +658,8 @@ void TextCursor::insertBlock(const QStringList &block)
 {
     if (!b_enabled)
         return;
-    // TODO Undo-redo stack!
+    if (modifiesProtectedLiines())
+        return;
     if (hasSelection())
         removeSelectedText();
     if (hasRectSelection())
@@ -676,17 +678,50 @@ void TextCursor::removeRectSelection()
     emit updateRequest();
 }
 
+bool TextCursor::modifiesProtectedLiines() const
+{
+    if (b_teacher)
+        return false;
+    if (hasRectSelection()) {
+        int lineStart = rect_selection.top();
+        int lineEnd = rect_selection.bottom();
+        lineStart = qMin(qMax(0, lineStart), m_document->linesCount()-1);
+        lineEnd = qMin(qMax(1, lineEnd), m_document->linesCount());
+        for (int i=lineStart; i<lineEnd; i++) {
+            if (m_document->isProtected(i)) {
+                return true;
+            }
+        }
+    }
+    for (int i=0; i<m_document->linesCount(); i++) {
+        if (m_document->isProtected(i)) {
+            if (m_document->lineEndSelectedAt(i))
+                return true;
+            if (i_row==i)
+                return true;
+            if (m_document->selectionMaskAt(i).contains(true))
+                return true;
+        }
+    }
+    return false;
+}
+
 void TextCursor::insertText(const QString &text)
 {
     if (!b_enabled)
         return;
-    // TODO Undo-redo stack!
+
+    if (modifiesProtectedLiines())
+        return;
+
     if (hasSelection()) {
         removeSelectedText();
     }
     if (hasRectSelection()) {
         removeSelectedBlock();
     }
+
+
 
     int fromLineUpdate = i_row;
 
@@ -878,6 +913,9 @@ void TextCursor::removeSelectedText()
         return;
 
     if (!hasSelection())
+        return;
+
+    if (modifiesProtectedLiines())
         return;
 
     // Find where to place cursor after deletion

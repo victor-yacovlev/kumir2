@@ -141,16 +141,31 @@ void Generator::addKumirModule(int id, const AST::Module *mod)
     initElem.module = quint8(id);
     initElem.instructions = instructions(id, -1, 0, mod->impl.initializerBody).toVector();
     m_bc->d.append(initElem);
+    const AST::Module * mainMod = 0;
+    const AST::Algorhitm * mainAlg = 0;
+    int mainModId = -1;
+    int mainAlgorhitmId = -1;
     for (int i=0; i<mod->impl.algorhitms.size() ; i++) {
         const AST::Algorhitm * alg = mod->impl.algorhitms[i];
         Bytecode::ElemType ft = Bytecode::EL_FUNCTION;
         if (mod->header.name.isEmpty() && i==0) {
-            ft = Bytecode::EL_MAIN;
+            if (alg->header.arguments.isEmpty())
+                ft = Bytecode::EL_MAIN;
+            else {
+                mainMod = mod;
+                mainAlg = alg;
+                mainModId = id;
+                mainAlgorhitmId = i;
+                ft = Bytecode::EL_FUNCTION;
+            }
         }
         if (alg->header.specialType==AST::AlgorhitmTypeTesting) {
             ft = Bytecode::EL_TESTING;
         }
         addFunction(i, id, ft, alg);
+    }
+    if (mainMod && mainAlg) {
+        addInputArgumentsMainAlgorhitm(mainModId, mainAlgorhitmId, mainMod, mainAlg);
     }
 }
 
@@ -162,6 +177,169 @@ void Generator::shiftInstructions(QList<Bytecode::Instruction> &instrs, int offs
             instrs[i].arg += offset;
         }
     }
+}
+
+void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, const AST::Module *mod, const AST::Algorhitm *alg)
+{
+    // Generate hidden algorhitm, which will called before main to input arguments
+    int algId = mod->impl.algorhitms.size();
+    QList<Bytecode::Instruction> instrs;
+    Bytecode::Instruction l;
+    l.type = Bytecode::LINE;
+    l.arg = 0xFFFF;
+    instrs << l;
+    QList<quint16> varsToOut;
+    int locOffset = 0;
+
+    // Add function return as local
+    if (alg->header.returnType!=AST::TypeNone) {
+        const AST::Variable * retval = returnValue(alg);
+        Bytecode::TableElem loc;
+        loc.type = Bytecode::EL_LOCAL;
+        loc.module = moduleId;
+        loc.algId = algId;
+        loc.id = 0;
+        loc.name = tr("Function return value");
+        loc.dimension = 0;
+        loc.vtype = valueType(retval->baseType);
+        loc.refvalue = Bytecode::VK_Plain;
+        m_bc->d.append(loc);
+        varsToOut << constantValue(Bytecode::VT_int, 0);
+        locOffset = 1;
+    }
+
+    // Add arguments as locals
+    for (int i=0; i<alg->header.arguments.size(); i++) {
+        const AST::Variable * var = alg->header.arguments[i];
+        Bytecode::TableElem loc;
+        loc.type = Bytecode::EL_LOCAL;
+        loc.module = moduleId;
+        loc.algId = algId;
+        loc.id = locOffset+i;
+        loc.name = var->name;
+        loc.dimension = var->dimension;
+        loc.vtype = valueType(var->baseType);
+        loc.refvalue = Bytecode::VK_Plain;
+        m_bc->d.append(loc);
+
+    }
+
+    for (int i=0; i<alg->header.arguments.size(); i++) {
+        AST::Variable * var = alg->header.arguments[i];
+        // Initialize argument
+        if (var->dimension > 0) {
+            for (int j=var->dimension-1; j>=0 ; j--) {
+                QList<Bytecode::Instruction> initBounds;
+                initBounds << calculate(moduleId, algorhitmId, 0, var->bounds[j].second);
+                initBounds << calculate(moduleId, algorhitmId, 0, var->bounds[j].first);
+                instrs << initBounds;
+            }
+            Bytecode::Instruction bounds;
+            bounds.type = Bytecode::SETARR;
+            bounds.scope = Bytecode::LOCAL;
+            bounds.arg = quint16(i+locOffset);
+            instrs << bounds;
+        }
+        Bytecode::Instruction init;
+        init.type = Bytecode::INIT;
+        init.scope = Bytecode::LOCAL;
+        init.arg = quint16(i+locOffset);
+        instrs << init;
+        if (var->initialValue.isValid() && var->dimension==0) {
+            Bytecode::Instruction load;
+            load.type = Bytecode::LOAD;
+            load.scope = Bytecode::CONST;
+            load.arg = constantValue(valueType(var->baseType), var->initialValue);
+            instrs << load;
+            Bytecode::Instruction store = init;
+            store.type = Bytecode::STORE;
+            instrs << store;
+            Bytecode::Instruction pop;
+            pop.type = Bytecode::POP;
+            pop.registerr = 0;
+            instrs << pop;
+        }
+
+        // If IN of INOUT argument -- require input
+        // This made by special function call
+        if (var->accessType==AST::AccessArgumentIn || var->accessType==AST::AccessArgumentInOut)  {
+            Bytecode::Instruction varId;
+            varId.type = Bytecode::LOAD;
+            varId.scope = Bytecode::CONST;
+            varId.arg = constantValue(Bytecode::VT_int, i+locOffset);
+
+            Bytecode::Instruction call;
+            call.type = Bytecode::CALL;
+            call.module = 0xFF;
+            call.arg = 0xBB01;
+
+            instrs << varId << call;
+        }
+        if (var->accessType==AST::AccessArgumentOut || var->accessType==AST::AccessArgumentInOut) {
+            varsToOut << constantValue(Bytecode::VT_int, i+locOffset);
+        }
+    }
+
+    // Call main (first) algorhitm:
+    //  -- 1) Push arguments
+    for (int i=0; i<alg->header.arguments.size(); i++) {
+        AST::VariableAccessType t = alg->header.arguments[i]->accessType;
+        if (t==AST::AccessArgumentIn) {
+            Bytecode::Instruction load;
+            load.type = Bytecode::LOAD;
+            load.scope = Bytecode::LOCAL;
+            load.arg = quint16(i+locOffset);
+            instrs << load;
+        }
+        else if (t==AST::AccessArgumentOut||t==AST::AccessArgumentInOut) {
+            Bytecode::Instruction ref;
+            ref.type = Bytecode::REF;
+            ref.scope = Bytecode::LOCAL;
+            ref.arg = quint16(i+locOffset);
+            instrs << ref;
+        }
+    }
+    //  -- 2) Call main (first) algorhitm
+    Bytecode::Instruction callInstr;
+    callInstr.type = Bytecode::CALL;
+    findFunction(alg, callInstr.module, callInstr.arg);
+    instrs << callInstr;
+    //  -- 3) Store return value
+    if (alg->header.returnType!=AST::TypeNone) {
+        Bytecode::Instruction storeRetVal;
+        storeRetVal.type = Bytecode::STORE;
+        storeRetVal.scope = Bytecode::LOCAL;
+        storeRetVal.arg = quint16(alg->header.arguments.size());
+        Bytecode::Instruction pop;
+        pop.type = Bytecode::POP;
+        pop.registerr = 0;
+        instrs << storeRetVal << pop;
+    }
+
+    // Show what in result...
+
+    for (int i=0; i<varsToOut.size(); i++) {
+        Bytecode::Instruction arg;
+        arg.type = Bytecode::LOAD;
+        arg.scope = Bytecode::CONST;
+        arg.arg = varsToOut[i];
+        instrs << arg;
+        Bytecode::Instruction callShow;
+        callShow.type = Bytecode::CALL;
+        callShow.module = 0xFF;
+        callShow.arg = 0xBB02;
+        instrs << callShow;
+    }
+
+    Bytecode::TableElem func;
+    func.type = Bytecode::EL_MAIN;
+    func.algId = func.id = algId;
+    func.module = moduleId;
+    func.moduleName = mod->header.name;
+    func.name = "@below_main";
+    func.instructions = instrs.toVector();
+    m_bc->d.append(func);
+
 }
 
 void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const AST::Algorhitm *alg)

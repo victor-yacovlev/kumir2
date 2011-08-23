@@ -422,7 +422,7 @@ void ChangeHiddenLineDelimeterCommand::undo()
 {
     if (TextDocument::noUndoRedo)
         return;
-    doc->setKumFile(prevData);
+    doc->setKumFile(prevData, true);
 }
 
 QDataStream & operator<< (QDataStream & stream, const InsertCommand & command)

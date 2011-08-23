@@ -210,9 +210,17 @@ QStringList VM::usedActors() const
     return result;
 }
 
-void VM::evaluateNextInstruction()
+void VM::setLocalVariableValue(int localId, const QVariant &value)
 {
     QMutexLocker l(m_dontTouchMe);
+    Q_ASSERT(!stack_contexts.isEmpty());
+    Q_ASSERT(localId < stack_contexts[stack_contexts.size()-1].locals.size());
+    stack_contexts[stack_contexts.size()-1].locals[localId].setValue(value);
+}
+
+void VM::evaluateNextInstruction()
+{
+
     int ip = stack_contexts.last().IP;
     QVector<Instruction> program = stack_contexts[stack_contexts.size()-1].program;
     Instruction instr = program[ip];
@@ -321,6 +329,7 @@ void VM::evaluateNextInstruction()
         break;
     }
 
+
 }
 
 void VM::do_call(quint8 mod, quint16 alg)
@@ -329,7 +338,7 @@ void VM::do_call(quint8 mod, quint16 alg)
     quint32 algorhitm = alg;
     quint32 p = module | algorhitm;
 
-    if (mod==255) {
+    if (mod==0xFF) {
         int argsCount = stack_values.pop().toInt();
         // Special calls
         if (alg==0x00) {
@@ -452,8 +461,31 @@ void VM::do_call(quint8 mod, quint16 alg)
                 }
             }
         }
+        if (alg==0xBB01) {
+            m_dontTouchMe->lock();
+            // Input argument
+            int localId = argsCount; // Already removed from stack
+            Q_ASSERT (localId < stack_contexts[stack_contexts.size()-1].locals.size());
+            const QString & varName = stack_contexts[stack_contexts.size()-1].locals[localId].name();
+            QString varFormat;
+            Bytecode::ValueType baseType = stack_contexts[stack_contexts.size()-1].locals[localId].baseType();
+            if (baseType==Bytecode::VT_int)
+                varFormat = "%d";
+            else if (baseType==Bytecode::VT_char)
+                varFormat = "%c";
+            else if (baseType==Bytecode::VT_float)
+                varFormat = "%f";
+            else if (baseType==Bytecode::VT_string)
+                varFormat = "%s";
+            else if (baseType==Bytecode::VT_bool)
+                varFormat = "%b";
+            QList<int> bounds = stack_contexts[stack_contexts.size()-1].locals[localId].bounds();
+            m_dontTouchMe->unlock();
+            emit inputArgumentRequest(localId, varName, varFormat, bounds);
+        }
     }
     else if (externs.contains(p)) {
+        m_dontTouchMe->lock();
         QList<quintptr> references;
         QVariantList arguments;
         QList<int> indeces;
@@ -468,6 +500,7 @@ void VM::do_call(quint8 mod, quint16 alg)
         const TableElem exportElem = externs[p];
         const QString pluginName = exportElem.moduleName;
         const QString algName = exportElem.name;
+        m_dontTouchMe->unlock();
         emit invokeExternalFunction(pluginName, algName, arguments, references, indeces);
 
     }
@@ -476,6 +509,7 @@ void VM::do_call(quint8 mod, quint16 alg)
             s_error = tr("Too deep recursion");
         }
         else {
+            m_dontTouchMe->lock();
             Context c;
             c.IP = -1;
             c.program = functions[p].instructions ;
@@ -489,6 +523,7 @@ void VM::do_call(quint8 mod, quint16 alg)
             c.algId = functions[p].algId;
             stack_contexts.push(c);
             b_nextCallInto = false;
+            m_dontTouchMe->unlock();
         }
     }
     else {
@@ -499,6 +534,7 @@ void VM::do_call(quint8 mod, quint16 alg)
 
 void VM::do_init(quint8 s, quint16 id)
 {
+    QMutexLocker l(m_dontTouchMe);
     if (VariableScope(s)==LOCAL) {
         stack_contexts[stack_contexts.size()-1].locals[id].init();
     }
@@ -513,6 +549,7 @@ void VM::do_init(quint8 s, quint16 id)
 
 void VM::do_setarr(quint8 s, quint16 id)
 {
+    QMutexLocker l(m_dontTouchMe);
     int dim = 0;
     QList<int> bounds;
     if (VariableScope(s)==LOCAL) {
@@ -564,6 +601,7 @@ void VM::do_setarr(quint8 s, quint16 id)
 
 void VM::do_store(quint8 s, quint16 id)
 {
+    QMutexLocker l(m_dontTouchMe);
     const Variant val = stack_values.top();
     QString name;
     QString svalue;
@@ -604,6 +642,7 @@ void VM::do_store(quint8 s, quint16 id)
 
 void VM::do_load(quint8 s, quint16 id)
 {
+    QMutexLocker l(m_dontTouchMe);
     Variant val;
     if (VariableScope(s)==LOCAL) {
         val.setBaseType(stack_contexts[stack_contexts.size()-1].locals[id].baseType());
@@ -631,6 +670,7 @@ void VM::do_load(quint8 s, quint16 id)
 
 void VM::do_storearr(quint8 s, quint16 id)
 {
+    QMutexLocker l(m_dontTouchMe);
     int dim = 0;
     QString name;
     QString svalue;
@@ -683,6 +723,7 @@ void VM::do_storearr(quint8 s, quint16 id)
 
 void VM::do_loadarr(quint8 s, quint16 id)
 {
+    QMutexLocker l(m_dontTouchMe);
     int dim = 0;
     ValueType vt = VT_void;
     if (VariableScope(s)==LOCAL) {
@@ -725,6 +766,7 @@ void VM::do_loadarr(quint8 s, quint16 id)
 
 void VM::do_ref(quint8 s, quint16 id)
 {
+    QMutexLocker l(m_dontTouchMe);
     Variant ref;
     if (VariableScope(s)==LOCAL) {
         ref = stack_contexts[stack_contexts.size()-1].locals[id].toReference();
@@ -743,6 +785,7 @@ void VM::do_ref(quint8 s, quint16 id)
 
 void VM::do_refarr(quint8 s, quint16 id)
 {
+    QMutexLocker l(m_dontTouchMe);
     int dim = 0;
     if (VariableScope(s)==LOCAL) {
         dim = stack_contexts[stack_contexts.size()-1].locals[id].dimension();
@@ -1277,6 +1320,7 @@ void VM::setResults(
                     const QList<QVariant> &values
                     )
 {
+    QMutexLocker l(m_dontTouchMe);
     s_error = error;
     if (!error.isEmpty())
         return;

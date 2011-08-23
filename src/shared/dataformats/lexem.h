@@ -7,9 +7,10 @@
 namespace AST {
 
     struct Lexem {
+        enum ErrorStage { NoError, Lexer, PDAutomata, Tables, Semantics } errorStage;
         inline Lexem() {
             type = Shared::LxTypeEmpty;
-            lineNo = -1; linePos = 0; length = 0; lexerError = false;
+            lineNo = -1; linePos = 0; length = 0; errorStage = NoError;
         }
         Shared::LexemType type;
         QString data;
@@ -17,7 +18,6 @@ namespace AST {
         int linePos;
         int length;
         QString error;
-        bool lexerError;
     };
 
 }

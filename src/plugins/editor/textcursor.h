@@ -24,6 +24,7 @@ public:
     inline int column() const { return i_column; }
     inline void setRow(int v) { i_row = v; emit updateRequest(); }
     inline void setColumn(int v) { i_column = v; emit updateRequest(); }
+    inline void setTeacherMode(bool v) { b_teacher = v; }
     void moveTo(int row, int col);
     void selectRangeBlock(int fromRow, int fromCol, int toRow, int toCol);
     void selectRangeText(int fromRow, int fromCol, int toRow, int toCol);
@@ -70,6 +71,7 @@ signals:
 protected:
 
     int justifyLeft(const QString & text) const;
+    bool modifiesProtectedLiines() const;
 
     void timerEvent(QTimerEvent *e);
     void emitPositionChanged();
@@ -83,6 +85,7 @@ protected:
     bool b_visible;
     int i_row;
     int i_column;
+    bool b_teacher;
 
     QRect rect_selection;
 

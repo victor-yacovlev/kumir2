@@ -89,12 +89,17 @@ SyntaxAnalizer::SyntaxAnalizer(Lexer * lexer, QObject *parent) :
     d->lexer = lexer;
 }
 
-void SyntaxAnalizer::init(const QList<Statement*> &statements, AST_Data *ast, AST_Algorhitm *algorhitm)
+void SyntaxAnalizer::init(
+    const QList<Statement*> &statements,
+    AST_Data *ast,
+    AST_Algorhitm *algorhitm)
 {
     d->ast = ast;
     d->algorhitm = algorhitm;
     d->statements.clear();
-    foreach (Statement * st, statements) {
+    for (int i=0; i<statements.size(); i++) {
+        Statement * st = statements[i];
+        Q_CHECK_PTR(st);
         if (st->type!=LxTypeComment) {
             Statement sst;
             sst.type = st->type;
@@ -102,7 +107,9 @@ void SyntaxAnalizer::init(const QList<Statement*> &statements, AST_Data *ast, AS
             sst.alg = st->alg;
             sst.mod = st->mod;
             sst.conditionalIndex = st->conditionalIndex;
-            foreach (Lexem * lx, st->data) {
+            for (int j=0; j<st->data.size(); j++) {
+                Lexem * lx = st->data[j];
+                Q_CHECK_PTR(lx);
                 if (lx->type!=LxTypeComment)
                     sst.data << lx;
             }
@@ -155,16 +162,23 @@ void SyntaxAnalizer::buildTables()
 
     for (int i=0; i<d->statements.size(); i++) {
         const Statement & st = d->statements[i];
+        bool wasError = st.hasError();
         if (st.type==LxPriModule) {
             d->parseModuleHeader(i);
         }
         if (st.type==LxPriImport) {
             d->parseImport(i);
         }
+        if (!wasError && d->statements[i].hasError()) {
+            foreach (Lexem * lx, d->statements[i].data) {
+                if (!lx->error.isEmpty())
+                    lx->errorStage = Lexem::Tables;
+            }
+        }
     }
 
     for (int i=0; i<d->ast->modules.size(); i++) {
-        if (d->ast->modules[i]->header.type==AST::ModTypeUser)
+        if (d->ast->modules[i]->header.type==AST::ModTypeUser || d->ast->modules[i]->header.type==AST::ModTypeHidden)
             d->ast->modules[i]->header.enabled = true;
         if (d->ast->modules[i]->header.enabled) {
             d->unresolvedImports.unite(d->ast->modules[i]->header.uses);
@@ -190,11 +204,18 @@ void SyntaxAnalizer::buildTables()
 
     for (int i=0; i<d->statements.size(); i++) {
         const Statement & st = d->statements[i];
+        bool wasError = st.hasError();
         if (st.type==LxPriAlgHeader) {
             d->parseAlgHeader(i);
         }
         else if (st.type==LxNameClass) {
             d->parseVarDecl(i);
+        }
+        if (!wasError && d->statements[i].hasError()) {
+            foreach (Lexem * lx, d->statements[i].data) {
+                if (!lx->error.isEmpty())
+                    lx->errorStage = Lexem::Tables;
+            }
         }
     }
     d->ast->modules[0]->header.enabled = true;
@@ -203,7 +224,18 @@ void SyntaxAnalizer::buildTables()
 void SyntaxAnalizer::processAnalisys()
 {
     for (int i=0; i<d->statements.size(); i++) {
+        if (d->statements[i].hasError()) {
+            foreach (Lexem * lx, d->statements[i].data) {
+                if (lx->errorStage == AST::Lexem::Semantics) {
+                    lx->error.clear();
+                    lx->errorStage = AST::Lexem::NoError;
+                }
+            }
+        }
+    }
+    for (int i=0; i<d->statements.size(); i++) {
         const Statement & st = d->statements[i];
+        bool wasError = st.hasError();
         if (st.type==LxPriAssign) {
             d->parseAssignment(i);
         }
@@ -246,6 +278,14 @@ void SyntaxAnalizer::processAnalisys()
                     st.statement->error = st.data[j]->error;
                     break;
                 }
+            }
+        }
+        if (!wasError && d->statements[i].hasError()) {
+            foreach (Lexem * lx, d->statements[i].data) {
+                if (lx->errorStage==AST::Lexem::NoError && !lx->error.isEmpty())  {
+                    lx->errorStage = AST::Lexem::Semantics;
+                }
+
             }
         }
     }
@@ -1067,6 +1107,10 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
         st.data[i]->type = LxNameAlg;
     }
 
+    if (alg->header.specialType==AST::AlgorhitmTypeTeacher && alg->header.name==lexer->testingAlgorhitmName()) {
+        alg->header.specialType = AST::AlgorhitmTypeTesting;
+    }
+
     // Если нет аргументов, то всё
 
     if ( argsStartLexem==-1 ) {
@@ -1666,7 +1710,7 @@ bool SyntaxAnalizerPrivate::findAlgorhitm(const QString &name, const AST::Module
 {
     algorhitm = 0;
     for (int i=0; i<ast->modules.size(); i++) {
-        if (ast->modules[i]->header.enabled) {
+        if (ast->modules[i]->header.enabled || ast->modules[i]->header.type==AST::ModTypeHidden) {
             if (module && module==ast->modules[i]) {
                 // The same module - find includes private members
                 for (int j=0; j<ast->modules[i]->impl.algorhitms.size(); j++) {
@@ -1689,6 +1733,7 @@ bool SyntaxAnalizerPrivate::findAlgorhitm(const QString &name, const AST::Module
             }
         }
     }
+
     return false;
 }
 
@@ -2545,6 +2590,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const QList<Lexem *> &l
         }
         else {
             if (findAlgorhitm(name, mod, a)) {
+                foreach (Lexem *lx, lexems) lx->type = LxNameAlg;
                 if (a->header.arguments.size()>0) {
                     err = _("No arguments");
                 }
@@ -2555,7 +2601,6 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const QList<Lexem *> &l
                     result->baseType = a->header.returnType;
                     return result;
                 }
-                foreach (Lexem *lx, lexems) lx->type = LxNameAlg;
             }
             else if (findVariable(name, mod, alg, v)) {
                 if (v->dimension>0) {

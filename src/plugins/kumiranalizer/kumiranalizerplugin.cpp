@@ -108,21 +108,21 @@ void KumirAnalizerPlugin::setSourceText(int documentId, const QString &text)
     Q_CHECK_PTR(m_analizers[documentId]);
     Shared::ChangeTextTransaction change;
     change.newLines = text.split("\n");
+    change.removedLineNumbers << 999999; // Flag: remove all
     if (!text.trimmed().isEmpty())
         m_analizers[documentId]->changeSourceText(QList<Shared::ChangeTextTransaction>() << change);
 }
 
 void KumirAnalizerPlugin::setHiddenText(int documentId, const QString &text, int baseLine)
 {
-    setHiddenTextBaseLine(documentId, baseLine);
     Q_CHECK_PTR(m_analizers[documentId]);
-    // TODO implement me!
+    m_analizers[documentId]->setHiddenText(text, baseLine);
 }
 
 void KumirAnalizerPlugin::setHiddenTextBaseLine(int documentId, int baseLine)
 {
     Q_CHECK_PTR(m_analizers[documentId]);
-    // TODO implement me!
+    m_analizers[documentId]->setHiddenBaseLine(baseLine);
 }
 
 void KumirAnalizerPlugin::changeSourceText(int documentId, const QList<Shared::ChangeTextTransaction> & changes)

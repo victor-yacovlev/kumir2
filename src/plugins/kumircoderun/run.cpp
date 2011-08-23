@@ -18,6 +18,8 @@ Run::Run(QObject *parent) :
 
     connect(vm, SIGNAL(inputRequest(QString,QList<quintptr>,QList<int>)),
             this, SLOT(handleInputRequest(QString,QList<quintptr>,QList<int>)), Qt::DirectConnection);
+    connect(vm, SIGNAL(inputArgumentRequest(int,QString,QString,QList<int>)),
+            this, SLOT(handleInputArgumentRequest(int,QString,QString,QList<int>)), Qt::DirectConnection);
     connect(vm, SIGNAL(outputRequest(QString)), this, SLOT(handleOutputRequest(QString)));
     connect(vm, SIGNAL(invokeExternalFunction(QString,QString,QVariantList,QList<quintptr>,QList<int>)),
             this, SLOT(handleExternalRequest(QString,QString,QVariantList,QList<quintptr>,QList<int>)),
@@ -95,7 +97,7 @@ void Run::handleInputRequest(const QString & format, const QList<quintptr> & ref
         result = list_inputResult;
         mutex_interactDone->unlock();
         if (result.isEmpty()) {
-            msleep(1);
+            msleep(50);
         }
         else {
             break;
@@ -107,6 +109,95 @@ void Run::handleInputRequest(const QString & format, const QList<quintptr> & ref
         return;
     Q_ASSERT(result.size()==references.size());
     vm->setResults("", references, indeces, result);
+}
+
+void Run::handleInputArgumentRequest(int localId,
+                                     const QString &varName,
+                                     const QString &baseFormat,
+                                     const QList<int> &bounds)
+{
+    QVariantList result;
+    QVariantList localResult;
+    int totalItems = 1;
+    int currentIndex = 0;
+    int dimension = 0;
+    bool inputNext = true;
+    int z = 0;
+    int y = 0;
+    int x = 0;
+    int size0 = 0;
+    int size1 = 0;
+    int size2 = 0;
+    if (bounds.size()==2) {
+        dimension = 1;
+        size0 = bounds[1]-bounds[0]+1;
+        x = bounds[0];
+        totalItems = size0;
+    }
+    else if (bounds.size()==4) {
+        dimension = 2;
+        size0 = bounds[3]-bounds[2]+1;
+        size1 = bounds[1]-bounds[0]+1;
+        x = bounds[0];
+        y = bounds[2];
+        totalItems = size0 * size1;
+    }
+    else if (bounds.size()==6) {
+        dimension = 3;
+        size0 = bounds[5]-bounds[4]+1;
+        size1 = bounds[3]-bounds[2]+1;
+        size2 = bounds[1]-bounds[0]+1;
+        x = bounds[0];
+        y = bounds[2];
+        z = bounds[4];
+        totalItems = size0 * size1 * size2;
+    }
+    forever {
+        if (inputNext) {
+            inputNext = false;
+            mutex_interactDone->lock();
+            b_interactDone = false;
+            list_inputResult.clear();
+            mutex_interactDone->unlock();
+            QString varNameAndIndeces = varName;
+            if (dimension>0) {
+                QStringList indeces;
+                indeces.prepend(QString::number(x+currentIndex%size0));
+                if (dimension>=2)
+                    indeces.prepend(QString::number(y+currentIndex%(size0*size1)));
+                if (dimension==3)
+                    indeces.prepend(QString::number(z+currentIndex%(size0*size1*size2)));
+                varNameAndIndeces += "["+indeces.join(",")+"]";
+            }
+            QString greeting = tr("Please enter %1: ").arg(varNameAndIndeces);
+            emit output(greeting);
+            emit input(baseFormat);
+        }
+        mutex_interactDone->lock();
+        localResult = list_inputResult;
+        mutex_interactDone->unlock();
+        if (localResult.isEmpty()) {
+            msleep(50);
+        }
+        else {
+            result << localResult.at(0);
+            currentIndex++;
+            inputNext = true;
+            if (totalItems==currentIndex) {
+                break;
+            }
+        }
+        if (mustStop())
+            break;
+    }
+    if (mustStop())
+        return;
+    if (dimension==0) {
+        vm->setLocalVariableValue(localId, result.first());
+    }
+    else {
+        vm->setLocalVariableValue(localId, QVariant(result));
+    }
 }
 
 void Run::handleExternalRequest(const QString &pluginName,

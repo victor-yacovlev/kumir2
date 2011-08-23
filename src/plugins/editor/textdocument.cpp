@@ -12,18 +12,21 @@ TextDocument::TextDocument(QObject *parent)
     , documentId(-1)
     , m_undoStack(new QUndoStack(this))
 {
-
+    b_wasHiddenText = false;
 }
 
 bool TextDocument::noUndoRedo = false;
 
 void TextDocument::insertText(const QString &text, const Shared::AnalizerInterface * analizer, int line, int pos, int &blankLines, int &blankChars)
 {
+
     blankLines = blankChars = 0;
+    bool blankLinesAreHidden = data.last().hidden;
     while (data.size()<=line) {
         blankLines ++;
         TextLine tl;
         tl.inserted = true;
+        tl.hidden = blankLinesAreHidden;
         data.append(tl);
     }
     TextLine tl = data[line];
@@ -35,6 +38,7 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
     }
     tl.changed = true;
     data[line] = tl;
+
     const QStringList lines = text.split("\n", QString::KeepEmptyParts);
     if (lines.size()==1) {
         // Insert text fragment into line
@@ -64,6 +68,7 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
             tl.changed = true;
             tl.inserted = true;
             tl.text = lines[i];
+            tl.hidden = data[line].hidden;
             for (int j=0; j<tl.text.length(); j++) {
                 tl.selected << false;
                 tl.highlight << Shared::LxTypeEmpty;
@@ -126,7 +131,10 @@ void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterf
                 removedCounter ++;
                 TextLine next = data[line+1];
                 data.removeAt(line+1);
-                m_removedLines.insert(removedCounter);
+                if (next.hidden)
+                    m_removedHiddenLines.insert(removedCounter);
+                else
+                    m_removedLines.insert(removedCounter);
                 tl.text += next.text;
                 tl.selected += next.selected;
                 tl.highlight += next.highlight;
@@ -169,7 +177,7 @@ int TextDocument::indentAt(int lineNo) const
     return qMax(result, 0);
 }
 
-void TextDocument::setKumFile(const KumFile::Data &d)
+void TextDocument::setKumFile(const KumFile::Data &d, bool showHiddenLines)
 {
     data.clear();
     QStringList lines = d.visibleText.split("\n");
@@ -188,7 +196,7 @@ void TextDocument::setKumFile(const KumFile::Data &d)
         textLine.hidden = false;
         data.append(textLine);
     }
-    if (d.hasHiddenText) {
+    if (d.hasHiddenText && showHiddenLines) {
         lines = d.hiddenText.split("\n");
         for (int i=0; i<lines.count(); i++) {
             const QString line = lines[i];
@@ -205,6 +213,10 @@ void TextDocument::setKumFile(const KumFile::Data &d)
             textLine.hidden = true;
             data.append(textLine);
         }
+    }
+    else if (d.hasHiddenText) {
+        s_hiddenText = d.hiddenText;
+        b_wasHiddenText = true;
     }
     forceCompleteRecompilation();
 }
@@ -238,6 +250,10 @@ KumFile::Data TextDocument::toKumFile() const
                 kumfile.visibleText += "\n";
         }
     }
+    if (b_wasHiddenText) {
+        kumfile.hasHiddenText = true;
+        kumfile.hiddenText = s_hiddenText;
+    }
     return kumfile;
 }
 
@@ -265,15 +281,17 @@ void TextDocument::flushChanges()
     Shared::ChangeTextTransaction trans;
     trans.removedLineNumbers = m_removedLines;
     for (int i=0; i<data.size(); i++) {
-        if (data[i].inserted) {
-            trans.newLines.append(data[i].text);
+        if (!data[i].hidden) {
+            if (data[i].inserted) {
+                trans.newLines.append(data[i].text);
+            }
+            else if (data[i].changed) {
+                trans.removedLineNumbers.insert(i);
+                trans.newLines.append(data[i].text);
+            }
+            data[i].changed = false;
+            data[i].inserted = false;
         }
-        else if (data[i].changed) {
-            trans.removedLineNumbers.insert(i);
-            trans.newLines.append(data[i].text);
-        }
-        data[i].changed = false;
-        data[i].inserted = false;
     }
     if (!trans.removedLineNumbers.isEmpty() || !trans.newLines.isEmpty())
         changes.push(trans);
@@ -283,7 +301,7 @@ void TextDocument::flushChanges()
 
 void TextDocument::flushTransaction()
 {
-    flushChanges();
+
     bool hiddenChanged = !m_removedHiddenLines.isEmpty();
     if (!hiddenChanged)
     for (int i=0; i<data.size(); i++) {
@@ -294,6 +312,7 @@ void TextDocument::flushTransaction()
             }
         }
     }
+    flushChanges();
     if (hiddenChanged)
         forceCompleteRecompilation();
     if (!changes.isEmpty())

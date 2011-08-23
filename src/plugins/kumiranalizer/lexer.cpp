@@ -26,10 +26,11 @@ int Lexer::splitIntoStatements(const QStringList &lines
         QList<Lexem*> lexems;
         d->splitLineIntoLexems(line, lexems);
         QList<Statement*> sts;
-        d->groupLexemsByStatements(lexems, sts);
+        d->groupLexemsByStatements(lexems, sts);        
         for (int j=0; j<sts.size(); j++) {
-            for (int k=0; k<sts[j]->data.size(); k++)
-                sts[j]->data[k]->lineNo = baseLineNo + i;
+            for (int k=0; k<sts[j]->data.size(); k++) {
+                sts[j]->data[k]->lineNo = baseLineNo==-1? -1 : baseLineNo + i;
+            }
         }
         statements << sts;
     }
@@ -688,7 +689,8 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
             if (inLit) {
                 lexems.last()->data += text.mid(prev+1);
                 lexems.last()->error = _("Unpaired quote");
-                lexems.last()->lexerError = true;
+                lexems.last()->errorStage = AST::Lexem::Lexer;
+
             }
             else {
                 if (!lexems.isEmpty()) {
@@ -737,7 +739,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
     QList<Lexem*>::iterator it = lexems.begin();
     while (it!=lexems.end()) {
         Lexem * lx = (*it);
-        if (lx->data.isEmpty() && !lx->lexerError && lx->type!=LxConstLiteral) {
+        if (lx->data.isEmpty() && lx->errorStage!=AST::Lexem::Lexer && lx->type!=LxConstLiteral) {
             delete lx;
             it = lexems.erase(it);
         }
@@ -765,6 +767,8 @@ void LexerPrivate::groupLexemsByStatements(
             statements << new Statement(statement);
     }
 }
+
+
 
 void popFirstStatement(QList<Lexem*> & lexems, Statement & result )
 {
@@ -1280,6 +1284,10 @@ bool Lexer::isReturnVariable(const QString &name) const
     return name==d->retvalKeyword;
 }
 
-
+QString Lexer::testingAlgorhitmName()
+{
+    QString name = tr("@testing");
+    return name;
+}
 
 }

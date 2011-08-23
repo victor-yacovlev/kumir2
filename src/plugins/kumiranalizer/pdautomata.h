@@ -30,7 +30,7 @@ public:
       *        analize subject algorhitn, otherwise analizes to
       *        whole AST
       */
-    void init(const QList<Statement*> & statements
+    void init(bool teacherMode, const QList<Statement*> & statements
               , AST_Data * ast
               , AST_Algorhitm *algorhitm);
 

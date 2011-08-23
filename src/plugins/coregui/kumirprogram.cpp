@@ -134,7 +134,7 @@ KumirProgram::KumirProgram(QObject *parent)
 void KumirProgram::setAST(const AST::Data *ast)
 {
     m_ast = ast;
-    m_variablesWebObject->setProgram(m_ast);
+    m_variablesWebObject->setProgram(m_ast);    
 }
 
 KumirVariablesWebObject * KumirProgram::variablesWebObject()

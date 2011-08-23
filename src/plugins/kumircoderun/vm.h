@@ -33,6 +33,7 @@ public:
         const QList<quintptr> & references,
         const QList<int> & indeces,
         const QList<QVariant> & values);
+    void setLocalVariableValue(int localId, const QVariant & value);
     void setNextCallInto();
     void setNextCallOut();
     void setNextCallToEnd();
@@ -56,6 +57,10 @@ signals:
                                 const QList<int> & indeces
                                 );
     void valueChangeNotice(int lineNo, const QString & text);
+    void inputArgumentRequest(int localId,
+                              const QString & varName,
+                              const QString & baseFormat,
+                              const QList<int> & bounds);
 
     void clearMargin(int fromLine, int toLine);
 private:
@@ -73,6 +78,8 @@ private:
     RunEntryPoint e_entryPoint;
 
     inline void nextIP() { stack_contexts[stack_contexts.size()-1].IP ++; }
+
+
 
     void do_call(quint8, quint16);
     void do_init(quint8, quint16);

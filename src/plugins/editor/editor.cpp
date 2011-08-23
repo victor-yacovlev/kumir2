@@ -78,6 +78,7 @@ void Editor::setTeacherMode(bool v)
 {
     d->teacherMode = v;
     d->plane->setTeacherMode(v);
+    d->cursor->setTeacherMode(v);
 }
 
 bool Editor::isTeacherMode() const
@@ -475,6 +476,8 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
 
     connect(d->doc, SIGNAL(compilationRequest(QStack<Shared::ChangeTextTransaction>)),
             d, SLOT(handleLineAndTextChanged(QStack<Shared::ChangeTextTransaction>)));
+    connect(d->doc, SIGNAL(completeCompilationRequest(QStringList,QStringList,int)),
+            d, SLOT(handleCompleteCompilationRequiest(QStringList,QStringList,int)));
 
     connect(d->doc->undoStack(), SIGNAL(cleanChanged(bool)), this, SIGNAL(documentCleanChanged(bool)));
 
@@ -692,8 +695,9 @@ void Editor::restoreState(const QByteArray &data)
 
 void Editor::setKumFile(const KumFile::Data &data)
 {
-    d->doc->setKumFile(data);
-    if (d->analizer) {
+    d->doc->setKumFile(data, d->teacherMode);
+    if (d->analizer && !d->teacherMode) {
+        // Set hidden part manually, because of editor will not emit hidden text to analizer
         d->analizer->setSourceText(d->doc->documentId, data.visibleText);
         int hbl = -1;
         if (d->teacherMode) {

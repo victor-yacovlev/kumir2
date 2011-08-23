@@ -5,6 +5,7 @@
 #include "kumiranalizer/kumiranalizerplugin.h"
 #include "interfaces/generatorinterface.h"
 #include "dataformats/bytecode.h"
+#include "dataformats/kumfile.h"
 
 #include <iostream>
 
@@ -50,14 +51,17 @@ void KumirBytecodeCompilerPlugin::start()
     if (!filename.isEmpty() && !qApp->arguments().contains("-h") && !qApp->arguments().contains("-help") && !qApp->arguments().contains("--help") && !qApp->arguments().contains("/?")) {
         filename = QFileInfo(filename).absoluteFilePath();
         QFile f(filename);
-        if (f.open(QIODevice::ReadOnly)) {
+        if (f.open(QIODevice::ReadOnly)) {            
             QTextStream ts(&f);
-            ts.setCodec("UTF-16");
-            QString data = ts.readAll();
+            KumFile::Data kumFile;
+            ts >> kumFile;
             f.close();
 
             int id = m_analizer->newDocument();
-            m_analizer->setSourceText(id, data);
+            m_analizer->setSourceText(id, kumFile.visibleText);
+            if (kumFile.hasHiddenText) {
+                m_analizer->setHiddenText(id, kumFile.hiddenText, -1);
+            }
             QList<Shared::Error> errors = m_analizer->errors(id);
             const AST::Data * ast = m_analizer->abstractSyntaxTree(id);
             const QString baseName = QFileInfo(filename).baseName();

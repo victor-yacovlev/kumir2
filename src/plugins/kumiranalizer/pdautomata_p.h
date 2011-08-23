@@ -47,6 +47,7 @@ public:
     class PDAutomata * q;
     AST::Data * ast;
     AST::Algorhitm * algorhitm;
+    bool teacherMode;
 
     Matrix matrix;
     QList<Statement*> source;

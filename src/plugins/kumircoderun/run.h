@@ -31,6 +31,10 @@ public slots:
                             const QList<quintptr> & references,
                             const QList<int> & indeces
                             );
+    void handleInputArgumentRequest(int localId,
+                                    const QString & varName,
+                                    const QString & baseFormat,
+                                    const QList<int> & bounds);
     void handleOutputRequest(const QString & output );
 
     void handleLineChanged(int lineNo);

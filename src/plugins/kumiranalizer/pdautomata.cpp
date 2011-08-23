@@ -34,8 +34,9 @@ PDAutomata::PDAutomata(QObject *parent) :
     d->loadRules(rulesPath);
 }
 
-void PDAutomata::init(const QList<Statement*> & statements, AST::Data *ast, AST::Algorhitm * algorhitm)
+void PDAutomata::init(bool teacherMode, const QList<Statement*> & statements, AST::Data *ast, AST::Algorhitm * algorhitm)
 {
+    d->teacherMode = teacherMode;
     static Statement * begin = new Statement(LexemType(0xFFFFFFFF));
     d->source.clear();
     d->source << begin;
@@ -47,8 +48,9 @@ void PDAutomata::init(const QList<Statement*> & statements, AST::Data *ast, AST:
     d->algorhitm = algorhitm;
     if (!algorhitm) {
         QList<AST::Module*>::iterator it = d->ast->modules.begin();
+        AST::ModuleType moduleToRemove = teacherMode? AST::ModTypeHidden : AST::ModTypeUser;
         while (it!=d->ast->modules.end()) {
-            if ( (*it)->header.type == AST::ModTypeUser ) {
+            if ( (*it)->header.type == moduleToRemove ) {
                 it = d->ast->modules.erase(it);
             }
             else {
@@ -1000,6 +1002,10 @@ void PDAutomata::postProcess()
     d->currentPosition = 0;
     if (!d->algorhitm) {
         d->currentModule = new AST::Module();
+        if (d->teacherMode) {
+            d->currentModule->header.type = AST::ModTypeHidden;
+            d->currentModule->header.name = "@";
+        }
         d->currentAlgorhitm = 0;
         d->currentContext.push(&(d->currentModule->impl.initializerBody));
     }
@@ -1074,12 +1080,16 @@ void PDAutomataPrivate::setCurrentError(const QString &value)
 {
     for (int i=0; i<source[currentPosition]->data.size(); i++) {
         source[currentPosition]->data[i]->error = value;
+        source[currentPosition]->data[i]->errorStage = AST::Lexem::PDAutomata;
     }
+
 }
 
 void PDAutomataPrivate::processCorrectAlgHeader()
 {
     AST::Algorhitm * alg = algorhitm? algorhitm : new AST::Algorhitm;
+    if (teacherMode)
+        alg->header.specialType = AST::AlgorhitmTypeTeacher;
     alg->impl.headerLexems = source[currentPosition]->data;
     currentAlgorhitm = alg;
     if (algorhitm) {
@@ -1127,6 +1137,7 @@ void PDAutomataPrivate::appendSimpleLine()
                     {
                         foreach (Lexem *lx, statement->lexems) {
                             lx->error = _("Can't declare variables at this level");
+                            lx->errorStage = AST::Lexem::PDAutomata;
                         }
                     }
                 }
@@ -1152,6 +1163,17 @@ void PDAutomataPrivate::appendSimpleLine()
     default:
         statement->type = AST::StError;
         break;
+    }
+    if (teacherMode) {
+        if (currentContext.size()<=1) {
+            // Can't do anything out of algorhitms
+            foreach (Lexem * lx, statement->lexems) {
+                lx->error = _("Hidden part must contain only algorhitms");
+                lx->errorStage = AST::Lexem::PDAutomata;
+            }
+
+            statement->type = AST::StError;
+        }
     }
     if ( source.at(currentPosition)->data[0]->error.size()>0 ) {
         statement->type = AST::StError;
@@ -1225,7 +1247,9 @@ void PDAutomataPrivate::setModuleBeginError(int value)
             if (currentPosition<source.size()) {
                 for (int a=0; a<source.at(currentPosition)->data.size(); a++) {
                     source.at(currentPosition)->data[a]->error = value;
+                    source.at(currentPosition)->data[a]->errorStage = AST::Lexem::PDAutomata;
                 }
+
             }
             source[i]->indentRank = QPoint(0, 0);
         }
@@ -1401,6 +1425,7 @@ void PDAutomataPrivate::processCorrectModuleBegin()
         ast->modules << currentModule;
     }
     currentModule = new AST::Module;
+    currentModule->header.type = teacherMode? AST::ModTypeHidden : AST::ModTypeUser;
     source.at(currentPosition)->mod = currentModule;
 }
 
@@ -1460,7 +1485,9 @@ void PDAutomataPrivate::setCorrespondingIfBroken()
             if ( source[i]->statement==st ) {
                 for (int a=0; a<source[i]->data.size(); a++) {
                     source[i]->data[a]->error = _("Broken if statement");
+                    source[i]->data[a]->errorStage = AST::Lexem::PDAutomata;
                 }
+
                 break;
             }
         }

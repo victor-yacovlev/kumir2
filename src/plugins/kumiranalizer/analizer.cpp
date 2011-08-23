@@ -88,11 +88,15 @@ QStringList Analizer::moduleNames() const
 
 AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin, Analizer *qq)
 {
+    hiddenBaseLine = -1;
     q = qq;
     ast = new AST::Data();
     lexer = new Lexer(q);
     pdAutomata = new PDAutomata(q);
     analizer = new SyntaxAnalizer(lexer, q);
+//    qDebug() << lexer->metaObject()->className();
+//    qDebug() << pdAutomata->metaObject()->className();
+//    qDebug() << analizer->metaObject()->className();
     ActorInterface * stdFunct = qobject_cast<ActorInterface*>(plugin->myDependency("st_funct"));
     Q_ASSERT_X(stdFunct, "constructor AnalizerPrivate", "Can't' load st_func module");
     createModuleFromActor(stdFunct);
@@ -104,6 +108,54 @@ AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin, Analizer *qq)
             createModuleFromActor(actor);
         }
     }
+}
+
+void AnalizerPrivate::setHiddenBaseLine(int lineNo)
+{
+    int diff = lineNo - hiddenBaseLine;
+    foreach (Statement * st, teacherStatements) {
+        foreach (Lexem * lx, st->data) {
+            lx->lineNo += diff;
+        }
+    }
+    hiddenBaseLine = lineNo;
+}
+
+void AnalizerPrivate::setHiddenText(const QString &text, int baseLineNo)
+{
+    teacherText = text;
+    hiddenBaseLine = baseLineNo;
+
+    // Clean old teacher algorhitms
+    foreach (Statement * st, teacherStatements) {
+        foreach (Lexem * lx, st->data) {
+            delete lx;
+        }
+        delete st;
+    }
+
+    teacherStatements.clear();
+
+    for (int i=0; i<ast->modules.size(); i++) {
+
+    }
+
+    // Compile teacher algorhitms
+    lexer->splitIntoStatements(text.split("\n"), baseLineNo, teacherStatements);
+
+    // Build structure
+    pdAutomata->init(true, teacherStatements, ast, 0);
+    pdAutomata->process();
+    pdAutomata->postProcess();
+
+    // Build tables for hidden algorhitms
+    analizer->init(teacherStatements, ast, 0);
+    analizer->buildTables();
+
+    // Do complete semantic analisys
+    analizer->init(statements+teacherStatements, ast, 0);
+    analizer->processAnalisys();
+
 }
 
 AnalizerPrivate::~AnalizerPrivate()
@@ -130,6 +182,9 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
 {
 //    qDebug() << changes.removedLineNumbers;
 //    qDebug() << changes.newLines;
+//    qDebug() << lexer->metaObject()->className();
+//    qDebug() << pdAutomata->metaObject()->className();
+//    qDebug() << analizer->metaObject()->className();
     QList<Statement*> removedStatements;
     QList<Statement*> newStatements;
     QList<int> removedLineNumbers = changes.removedLineNumbers.toList();
@@ -138,9 +193,14 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
     int lineStart = 0;
     int lineEnd = 99999999;
     if (!removedLineNumbers.isEmpty()) {
-        // We assume this set is sorted in ascending order
-        lineStart = removedLineNumbers.first();
-        lineEnd = removedLineNumbers.last();
+        if (removedLineNumbers.size()>1 || removedLineNumbers[0]!=999999) {
+            // We assume this set is sorted in ascending order
+            lineStart = removedLineNumbers.first();
+            lineEnd = removedLineNumbers.last();
+        }
+        else {
+            // There was a flag: remove all text
+        }
     }
     int it = 0;
     while (it<statements.size() && !removedLineNumbers.isEmpty()) {
@@ -345,8 +405,9 @@ AST::Algorhitm * AnalizerPrivate::findAlgorhitmByPos(AST::Data * data, int pos)
 QList<Error> Analizer::errors() const
 {
     QList<Error> result;
-    for (int i=0; i<d->statements.size(); i++) {
-        foreach (const Lexem * lx, d->statements[i]->data) {
+    QList<Statement*> all = d->statements + d->teacherStatements;
+    for (int i=0; i<all.size(); i++) {
+        foreach (const Lexem * lx, all[i]->data) {
             if (!lx->error.isEmpty()) {
                 Error err;
                 err.line = lx->lineNo;
@@ -367,15 +428,16 @@ QList<Error> Analizer::errors() const
 QList<LineProp> Analizer::lineProperties() const
 {
     QList<LineProp> result;
-    QStringList lines = d->sourceText;
+    QStringList lines = d->sourceText + d->teacherText.split("\n");
     for (int i=0; i<lines.size(); i++) {
         result << LineProp(lines[i].size(), LxTypeEmpty);
     }
 
     result << LineProp(0, LxTypeEmpty);
+    QList<Statement*> all = d->statements + d->teacherStatements;
 
-    for (int i=0; i<d->statements.size(); i++) {
-        foreach (const Lexem * lx, d->statements[i]->data) {
+    for (int i=0; i<all.size(); i++) {
+        foreach (const Lexem * lx, all[i]->data) {
             for (int j=lx->linePos; j<lx->linePos+lx->length; j++) {
                 unsigned int value = lx->type;
                 const unsigned int errorMask = LxTypeError;
@@ -408,16 +470,18 @@ QStringList Analizer::imports() const
 QList<QPoint> Analizer::lineRanks() const
 {
     QList<QPoint> result;
-    QStringList lines = d->sourceText;
+    QStringList lines = d->sourceText + d->teacherText.split("\n");
     for (int i=0; i<lines.size(); i++) {
         result << QPoint(0,0);
     }
-    for (int i=0; i<d->statements.size(); i++) {
-        Q_ASSERT (!d->statements[i]->data.isEmpty());
-        const Lexem * lx = d->statements[i]->data.first();
+    QList<Statement*> all = d->statements + d->teacherStatements;
+    for (int i=0; i<all.size(); i++) {
+        Q_ASSERT (!all[i]->data.isEmpty());
+        const Lexem * lx = all[i]->data.first();
         const int lineNo = lx->lineNo;
-        const QPoint rank = d->statements[i]->indentRank;
-        result[lineNo] = rank;
+        const QPoint rank = all[i]->indentRank;
+        if (lineNo!=-1)
+            result[lineNo] = rank;
     }
     return result;
 }
@@ -560,12 +624,12 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
     if (whatToCompile==SubjWholeText) {
         foreach (Statement * st, allStatements) {
             foreach (Lexem * lx, st->data) {
-                if (!lx->lexerError)
+                if (lx->errorStage!=AST::Lexem::Lexer)
                     lx->error = "";
             }
         }
         analizingStatements = allStatements;
-        pdAutomata->init(analizingStatements, ast, alg);
+        pdAutomata->init(false, analizingStatements, ast, alg);
         pdAutomata->process();
         pdAutomata->postProcess();
     }
@@ -591,13 +655,13 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
         if (findAlgorhitmBounds(allStatements, alg, algBeginIndex, algEndIndex)) {
             for (int i=algBeginIndex; i<=algEndIndex; i++) {
                 foreach (Lexem *olx, allStatements[i]->data) {
-                    if (!olx->lexerError)
+                    if (olx->errorStage!=AST::Lexem::Lexer)
                         olx->error = "";
                 }
                 analizingStatements << allStatements[i];
             }
         }
-        pdAutomata->init(analizingStatements, ast, alg);
+        pdAutomata->init(false, analizingStatements, ast, alg);
         pdAutomata->process();
         pdAutomata->postProcess();
     }
@@ -638,7 +702,7 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
             }
         }
         else {
-            pdAutomata->init(newStatements, ast, alg);
+            pdAutomata->init(false, newStatements, ast, alg);
             pdAutomata->process();
             pdAutomata->postProcess();
         }
@@ -649,11 +713,22 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
         analizer->buildTables();
 
     analizer->processAnalisys();
+
 }
 
 const AST::Data * Analizer::abstractSyntaxTree() const
 {
     return d->ast;
+}
+
+void Analizer::setHiddenText(const QString &text, int baseLineNo)
+{
+    d->setHiddenText(text, baseLineNo);
+}
+
+void Analizer::setHiddenBaseLine(int lineNo)
+{
+    d->setHiddenBaseLine(lineNo);
 }
 
 } // namespace KumirAnalizer

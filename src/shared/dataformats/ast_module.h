@@ -21,7 +21,10 @@ enum ModuleType {
     /** User module */
     ModTypeUser,
 
-    /** User/teacher module in another file */
+    /** Hidden (e.g. teacher) pseudo-module */
+    ModTypeHidden,
+
+    /** User module in another file */
     ModTypeCached,
 
     /** External or system built-in module */
