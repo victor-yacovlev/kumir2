@@ -783,6 +783,9 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
         }
         Bytecode::Instruction instr;
         instr.type = operation(st->operatorr);
+        if (st->operatorr==AST::OpSubstract && st->operands.size()==1) {
+            instr.type = Bytecode::NEG;
+        }
         result << instr;
     }
     return result;
