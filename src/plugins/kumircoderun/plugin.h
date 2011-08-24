@@ -23,8 +23,10 @@ public:
     bool loadProgram(QIODevice * source, Shared::ProgramFormat format);
     bool hasMoreInstructions() const;
     QString error() const;
+    QVariantList remainingValues() const;
     int currentLineNo() const ;
     inline QDateTime loadedProgramVersion() const { return dt_loadedVersion; }
+
     bool isGuiRequired() const;
 
     QVariant value(int moduleId, int algorhitmId, int variableId) const;

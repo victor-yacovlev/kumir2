@@ -2,6 +2,7 @@
 #include "extensionsystem/pluginmanager.h"
 #include "interfaces/actorinterface.h"
 #include "kumirvariableswebobject.h"
+#include "dataformats/ast_algorhitm.h"
 
 namespace CoreGUI {
 
@@ -23,6 +24,7 @@ KumirProgram::KumirProgram(QObject *parent)
     , a_fastRun(0)
     , a_blindRun(0)
     , a_regularRun(0)
+    , a_testingRun(0)
     , a_stepRun(0)
     , a_stepIn(0)
     , a_stepOut(0)
@@ -30,6 +32,7 @@ KumirProgram::KumirProgram(QObject *parent)
     , gr_actions(0)
     , m_connector(0)
     , m_variablesWebObject(0)
+    , w_mainWidget(0)
 {
     b_blind = false;
 
@@ -42,6 +45,11 @@ KumirProgram::KumirProgram(QObject *parent)
     a_regularRun->setShortcut(QKeySequence("F5"));
 #endif
     a_regularRun->setToolTip(a_regularRun->text()+" <b>"+a_regularRun->shortcut().toString()+"</b>");
+
+    a_testingRun = new QAction(tr("Testing run"), this);
+    connect(a_testingRun, SIGNAL(triggered()), this, SLOT(testingRun()));
+    a_testingRun->setShortcut(QKeySequence("Ctrl+T"));
+    a_testingRun->setToolTip(a_testingRun->text()+" <b>"+a_testingRun->shortcut().toString()+"</b>");
 
     a_stepRun = new QAction(tr("Step run"), this);
     a_stepRun->setIcon(QIcon::fromTheme("media-skip-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-skip-forward.png")));
@@ -120,6 +128,7 @@ KumirProgram::KumirProgram(QObject *parent)
     gr_actions->addAction(a_fastRun);
     gr_actions->addAction(a_blindRun);
     gr_actions->addAction(a_regularRun);
+    gr_actions->addAction(a_testingRun);
     gr_actions->addAction(s1);
     gr_actions->addAction(a_stepRun);
     gr_actions->addAction(a_stepIn);
@@ -330,6 +339,38 @@ void KumirProgram::blindRun()
     plugin_bytecodeRun->runBlind();
 }
 
+void KumirProgram::testingRun()
+{
+    if (e_state==FastRun)
+        return;
+    b_blind = true;
+    s_endStatus = "";
+    if (e_state==Idle) {
+        emit giveMeAProgram();
+        bool hasTestingAlgorhitm = false;
+        for (int i=0; i<m_ast->modules.size(); i++) {
+            if (m_ast->modules[i]->header.type==AST::ModTypeHidden) {
+                for (int j=0; j<m_ast->modules[i]->header.algorhitms.size(); j++) {
+                    if (m_ast->modules[i]->header.algorhitms[j]->header.specialType==AST::AlgorhitmTypeTesting) {
+                        hasTestingAlgorhitm = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (!hasTestingAlgorhitm) {
+            QMessageBox::information(w_mainWidget, a_testingRun->text(),
+                                  tr("This program does not have testing algorhitm")
+                                  );
+            return;
+        }
+        prepareKumirRunner();
+    }
+    e_state = RegularRun;
+    PluginManager::instance()->switchGlobalState(GS_Running);
+    plugin_bytecodeRun->runTesting();
+}
+
 void KumirProgram::regularRun()
 {
 
@@ -492,18 +533,21 @@ void KumirProgram::switchGlobalState(GlobalState prev, GlobalState cur)
             a_fastRun->setEnabled(true);
         a_blindRun->setEnabled(true);
         a_regularRun->setEnabled(true);
+        a_testingRun->setEnabled(true);
         a_stepRun->setEnabled(true);
         a_stepRun->setText(tr("Step run"));
         a_stepRun->setIcon(QIcon::fromTheme("media-skip-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-skip-forward.png")));
         a_stepIn->setEnabled(false);
         a_stepOut->setEnabled(false);
         a_stop->setEnabled(false);
+
     }
     if (cur==GS_Running || cur==GS_Input) {
         if (a_fastRun)
             a_fastRun->setEnabled(false);
         a_blindRun->setEnabled(false);
         a_regularRun->setEnabled(false);
+        a_testingRun->setEnabled(false);
         a_stepRun->setEnabled(false);
         a_stepIn->setEnabled(false);
         a_stepOut->setEnabled(false);
@@ -515,6 +559,7 @@ void KumirProgram::switchGlobalState(GlobalState prev, GlobalState cur)
         a_blindRun->setEnabled(true);
         a_regularRun->setEnabled(true);
         a_stepRun->setEnabled(true);
+        a_testingRun->setEnabled(false);
         a_stepRun->setText(tr("Step over"));
         a_stepRun->setIcon(QIcon::fromTheme("debug-step-over", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));
         a_stepIn->setEnabled(true);

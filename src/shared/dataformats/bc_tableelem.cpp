@@ -18,6 +18,8 @@ static QString typeToString(ElemType t)
         return ".init";
     else if (t==EL_MAIN)
         return ".main";
+    else if (t==EL_BELOWMAIN)
+        return ".belowmain";
     else if (t==EL_TESTING)
         return ".testing";
     else  {
@@ -41,6 +43,8 @@ static ElemType typeFromString(const QString & s)
         return EL_INIT;
     else if (s.toLower()==".main")
         return EL_MAIN;
+    else if (s.toLower()==".belowmain")
+        return EL_BELOWMAIN;
     else if (s.toLower()==".testing")
         return EL_TESTING;
     else {
@@ -141,7 +145,7 @@ extern QTextStream& operator<<(QTextStream& ts, const TableElem& e)
     if (e.type==EL_LOCAL || e.type==EL_GLOBAL)
         s += kindToString(e.refvalue)+" ";
 
-    if (e.type==EL_LOCAL || e.type==EL_GLOBAL || e.type==EL_EXTERN || e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_INIT || e.type==EL_TESTING) {
+    if (e.type==EL_LOCAL || e.type==EL_GLOBAL || e.type==EL_EXTERN || e.type==EL_FUNCTION || e.type==EL_MAIN ||e.type==EL_BELOWMAIN|| e.type==EL_INIT || e.type==EL_TESTING) {
         s += QString::number(e.module)+" ";
     }
     if (e.type==EL_LOCAL) {
@@ -161,10 +165,10 @@ extern QTextStream& operator<<(QTextStream& ts, const TableElem& e)
         else
             s += "\""+screenString(e.constantValue.toString())+"\"";
     }
-    if (e.type==EL_LOCAL||e.type==EL_GLOBAL||e.type==EL_GLOBAL||e.type==EL_FUNCTION||e.type==EL_MAIN||e.type==EL_FUNCTION||e.type==EL_EXTERN) {
+    if (e.type==EL_LOCAL||e.type==EL_GLOBAL||e.type==EL_GLOBAL||e.type==EL_FUNCTION||e.type==EL_MAIN||e.type==EL_BELOWMAIN||e.type==EL_FUNCTION||e.type==EL_EXTERN) {
         s += "\""+screenString(e.name)+"\" ";
     }
-    if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_INIT) {
+    if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING ||e.type==EL_BELOWMAIN|| e.type==EL_INIT) {
         s += QString::number(e.instructions.size());
         for (int i=0; i<e.instructions.size(); i++) {
             s += "\n";
@@ -200,7 +204,7 @@ extern QTextStream& operator>>(QTextStream& ts, TableElem& e)
     if (e.type==EL_LOCAL || e.type==EL_GLOBAL)
         e.refvalue = kindFromString(lexems.takeFirst());
 
-    if (e.type==EL_LOCAL || e.type==EL_GLOBAL || e.type==EL_EXTERN || e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_INIT || e.type==EL_TESTING) {
+    if (e.type==EL_LOCAL || e.type==EL_GLOBAL || e.type==EL_EXTERN || e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_INIT ||e.type==EL_BELOWMAIN|| e.type==EL_TESTING) {
         e.module = quint8(lexems.takeFirst().toUShort());
     }
     if (e.type==EL_LOCAL) {
@@ -223,11 +227,11 @@ extern QTextStream& operator>>(QTextStream& ts, TableElem& e)
         else if (e.vtype==VT_string)
             e.constantValue = unscreenString(c.mid(1,c.length()-2));
     }
-    else if (e.type==EL_LOCAL||e.type==EL_GLOBAL||e.type==EL_GLOBAL||e.type==EL_FUNCTION||e.type==EL_MAIN||e.type==EL_TESTING||e.type==EL_EXTERN) {
+    else if (e.type==EL_LOCAL||e.type==EL_GLOBAL||e.type==EL_GLOBAL||e.type==EL_FUNCTION||e.type==EL_MAIN||e.type==EL_TESTING||e.type==EL_BELOWMAIN||e.type==EL_EXTERN) {
         QString n = lexems.takeFirst();
         e.name = unscreenString(n.mid(1,n.length()-2));
     }
-    if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_INIT) {
+    if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_BELOWMAIN || e.type==EL_INIT) {
         int size = lexems.takeFirst().toInt();
         e.instructions = QVector<Instruction>(size);
         int index = 0;
@@ -253,9 +257,9 @@ extern QDataStream& operator<<(QDataStream & ds, const TableElem &e)
     ds << quint8(e.module);
     ds << quint16(e.algId);
     ds << quint16(e.id);
-    ds << e.name.toUtf8().data();
+    ds << e.name;
     if (e.type==EL_EXTERN)
-        ds << e.moduleName.toAscii().data();
+        ds << e.moduleName;
     else if (e.type==EL_CONST) {
         if (e.constantValue.type()==QVariant::Int)
             ds << qint32(e.constantValue.toInt());
@@ -263,10 +267,11 @@ extern QDataStream& operator<<(QDataStream & ds, const TableElem &e)
             ds << e.constantValue.toDouble();
         else if (e.constantValue.type()==QVariant::Bool)
             ds << quint8(e.constantValue.toBool()? 1 : 0);
-        else
-            ds << e.constantValue.toString().toUtf8().data();
+        else {
+            ds << e.constantValue.toString();
+        }
     }
-    else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_INIT) {
+    else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_BELOWMAIN || e.type==EL_INIT) {
         ds << quint16(e.instructions.size());
         for (int i=0; i<e.instructions.size(); i++) {
             ds << toUint32(e.instructions[i]);
@@ -284,7 +289,7 @@ extern QDataStream& operator>>(QDataStream & ds, TableElem &e)
     quint8 m;
     quint16 a;
     quint16 id;
-    char * s;
+    QString s;
     ds >> t >> v >> d >> r >> m >> a >> id >> s;
     e.type = ElemType(t);
     e.vtype = ValueType(v);
@@ -293,12 +298,10 @@ extern QDataStream& operator>>(QDataStream & ds, TableElem &e)
     e.module = m;
     e.algId = a;
     e.id = id;
-    e.name = QString::fromUtf8(s);
-    delete s;
+    e.name = s;
     if (e.type==EL_EXTERN) {
         ds >> s;
-        e.moduleName = QString::fromAscii(s);
-        delete s;
+        e.moduleName = s;
     }
     else if (e.type==EL_CONST) {
         if (e.vtype==VT_int) {
@@ -318,11 +321,10 @@ extern QDataStream& operator>>(QDataStream & ds, TableElem &e)
         }
         else {
             ds >> s;
-            e.constantValue = QString::fromUtf8(s);
-            delete s;
+            e.constantValue = s;
         }
     }
-    else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_INIT) {
+    else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_BELOWMAIN || e.type==EL_INIT) {
         quint16 sz;
         ds >> sz;
         e.instructions = QVector<Instruction>(sz);

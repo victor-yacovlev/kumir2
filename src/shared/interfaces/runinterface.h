@@ -29,6 +29,7 @@ public:
     virtual bool hasMoreInstructions() const = 0;
     virtual int currentLineNo() const = 0;
     virtual QString error() const = 0;
+    virtual QVariantList remainingValues() const = 0;
     // Get variable value or QVariant::Invalid if not initialized
     virtual QVariant value(int moduleId, int algorhitmId, int variableId) const = 0;
     // Get array bounds or empty list if not initialized

@@ -7,5 +7,9 @@
         <source>Assertion false</source>
         <translation>Утверждение ложно</translation>
     </message>
+    <message>
+        <source>Function return value</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 </TS>

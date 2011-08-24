@@ -39,6 +39,7 @@ public:
     void setNextCallToEnd();
     void setNextCallStepOver();
     int currentLineNo() const;
+    QVariantList remainingValues() const;
 
     QVariant value(int moduleId, int algorhitmId, int variableId) const;
 

@@ -529,37 +529,37 @@ p, li { white-space: pre-wrap; }
         <translation>&gt;&gt; %1:%2:%3 - %4 - Выполнение завершено</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="233"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="235"/>
         <source>INPUT </source>
         <translation>ВВОД </translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="240"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="242"/>
         <source>string</source>
         <translation>лит</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="242"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="244"/>
         <source>integer</source>
         <translation>цел</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="244"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="246"/>
         <source>real</source>
         <translation>вещ</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="246"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="248"/>
         <source>charect</source>
         <translation>сим</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="248"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="250"/>
         <source>boolean</source>
         <translation>лог</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="347"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="349"/>
         <source>RUNTIME ERROR: %1</source>
         <translation>ОШИБКА ВЫПОЛНЕНИЯ: %1</translation>
     </message>

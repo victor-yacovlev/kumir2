@@ -78,6 +78,11 @@ QString Plugin::error() const
     return d->vm->error();
 }
 
+QVariantList Plugin::remainingValues() const
+{
+    return d->vm->remainingValues();
+}
+
 void Plugin::runContinuous()
 {
     if (b_done) {
@@ -124,7 +129,7 @@ void Plugin::runTesting()
         d->vm->setEntryPoint(VM::EP_Testing);
         d->vm->reset();
     }
-    d->runContinuous();
+    d->runBlind();
 }
 
 void Plugin::terminate()

@@ -35,6 +35,7 @@ public:
     inline void setSourceFileName(const QString & s) { s_sourceFileName = s; }
     inline void setDocumentId(int id) { if (e_state==Idle) i_documentId = id; }
     inline int documentId() const { return i_documentId; }
+    inline void setMainWidget(QWidget * w) { w_mainWidget = w; }
     void setTerminal(Term * t, QDockWidget * w);
     void setBytecodeRun(KPlugin * run);
     void addActor(KPlugin * a, QDockWidget * w);
@@ -48,6 +49,7 @@ public slots:
     void fastRun();
     void blindRun();
     void regularRun();
+    void testingRun();
     void stepRun();
     void stepIn();
     void stepOut();
@@ -80,6 +82,7 @@ private:
     QAction * a_fastRun;
     QAction * a_blindRun;
     QAction * a_regularRun;
+    QAction * a_testingRun;
     QAction * a_stepRun;
     QAction * a_stepIn;
     QAction * a_stepOut;
@@ -93,6 +96,7 @@ private:
     bool b_blind;
     class KumirVariablesWebObject * m_variablesWebObject;
     int i_timerId;
+    QWidget * w_mainWidget;
 };
 
 } // namespace CoreGui

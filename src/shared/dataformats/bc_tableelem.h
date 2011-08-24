@@ -22,7 +22,8 @@ enum ElemType {
     EL_EXTERN   = 0x05,      // External module name
     EL_INIT     = 0x06,     // Local defined module initializer
     EL_MAIN     = 0x07,     // Main (usually - first) function
-    EL_TESTING  = 0x08      // Testing function
+    EL_TESTING  = 0x08,      // Testing function
+    EL_BELOWMAIN= 0x09      // Function evaluated below main function
 };
 
 enum ValueType {

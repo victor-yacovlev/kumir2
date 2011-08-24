@@ -74,7 +74,7 @@ void VM::reset()
         const TableElem e = functions.values()[i];
         if (e.type==EL_INIT)
             inits << functions.values()[i];
-        if (e.type==EL_MAIN)
+        if (e.type==EL_MAIN || e.type==EL_BELOWMAIN)
             aMain = functions.values()[i];
         if (e.type==EL_TESTING)
             testing = functions.values()[i];
@@ -90,7 +90,7 @@ void VM::reset()
     }
 
 
-    if (e_entryPoint==EP_Main && aMain.type==EL_MAIN) {
+    if (e_entryPoint==EP_Main && (aMain.type==EL_MAIN || aMain.type==EL_BELOWMAIN) ) {
         Context c;
         quint32 mod = aMain.module;
         quint32 alg = aMain.algId;
@@ -98,7 +98,7 @@ void VM::reset()
         c.locals = cleanLocalTables[key];
         c.program = aMain.instructions;
         c.IP = 0;
-        c.type = EL_MAIN;
+        c.type = aMain.type;
         c.runMode = CRM_ToEnd;
         c.algId = aMain.algId;
         c.moduleId = aMain.module;
@@ -184,7 +184,7 @@ void VM::loadProgram(const Data & program)
             key = mod | alg;
             externs[key] = e;
         }
-        else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING) {
+        else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_BELOWMAIN || e.type==EL_TESTING) {
             quint32 key = 0x00000000;
             quint32 alg = e.algId;
             quint32 mod = e.module;
@@ -514,9 +514,11 @@ void VM::do_call(quint8 mod, quint16 alg)
             c.IP = -1;
             c.program = functions[p].instructions ;
             c.locals = cleanLocalTables[p];
-            c.type = EL_FUNCTION;
+            c.type = functions[p].type;
             if (b_nextCallInto)
                 c.runMode = CRM_OneStep;
+            else if (stack_contexts[stack_contexts.size()-1].type==EL_BELOWMAIN && c.type==EL_MAIN)
+                c.runMode = stack_contexts[stack_contexts.size()-1].runMode;
             else
                 c.runMode = CRM_ToEnd;
             c.moduleId = functions[p].module;
@@ -580,8 +582,9 @@ void VM::do_setarr(quint8 s, quint16 id)
         }
         const int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
         if (lineNo!=-1 &&
-                (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
-                && !b_blindMode
+                (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN) &&
+                !b_blindMode &&
+                stack_contexts[stack_contexts.size()-1].type != EL_BELOWMAIN
                 )
         {
             QString boundsText;
@@ -628,7 +631,9 @@ void VM::do_store(quint8 s, quint16 id)
     }
     if (lineNo!=-1 &&
             (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
-            && !b_blindMode
+            && !b_blindMode &&
+            stack_contexts[stack_contexts.size()-1].type != EL_BELOWMAIN &&
+            val.dimension()==0
             )
     {
         if (t==VT_string)
@@ -639,6 +644,7 @@ void VM::do_store(quint8 s, quint16 id)
     }
     nextIP();
 }
+
 
 void VM::do_load(quint8 s, quint16 id)
 {
@@ -1425,6 +1431,18 @@ QList<int> VM::reference(int moduleId, int algorhitmId, int variableId) const
     QMutexLocker l(m_dontTouchMe);
     QList<int> result;
     // TODO implement me
+    return result;
+}
+
+QVariantList VM::remainingValues() const
+{
+    QVariantList result;
+    for (int i=0; i<stack_values.size(); i++) {
+        if (stack_values[i].hasValue())
+            result << stack_values[i].value();
+        else
+            result << QVariant::Invalid;
+    }
     return result;
 }
 

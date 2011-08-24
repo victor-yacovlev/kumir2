@@ -142,8 +142,10 @@ void OneSession::draw(QPainter *p, int realWidth)
     int y = 2 * headerPadding + 2 * atom.height() + bodyPadding;
 
     if (i_inputCursorPosition!=-1 && b_inputCursorVisible && (qobject_cast<QWidget*>(parent()))->hasFocus()) {
-        int cursorRow = m_lines.size()-1-i_inputLineStart;
-        int cursorCol = cursorRow>0? 0 : i_inputCursorPosition+i_inputPosStart;
+//        int cursorRow = m_lines.size()-1-i_inputLineStart;
+        int cursorRow = i_inputLineStart;
+//        int cursorCol = cursorRow>0? 0 : i_inputCursorPosition+i_inputPosStart;
+        int cursorCol = i_inputCursorPosition+i_inputPosStart;
         QRect cursorRect(x + cursorCol * atom.width(),
                          y + cursorRow * atom.height(),
                          atom.width(),

@@ -236,6 +236,12 @@ void SyntaxAnalizer::processAnalisys()
     for (int i=0; i<d->statements.size(); i++) {
         const Statement & st = d->statements[i];
         bool wasError = st.hasError();
+        if (st.statement) {
+            for (int j=0; j<st.statement->expressions.size(); j++) {
+                delete d->statements[i].statement->expressions[j];
+            }
+            d->statements[i].statement->expressions.clear();
+        }
         if (st.type==LxPriAssign) {
             d->parseAssignment(i);
         }

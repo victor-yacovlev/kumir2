@@ -64,7 +64,11 @@ public:
                 tb->addAction(a);
             if (type==MainWindow::Kumir) {
                 tb->addSeparator();
-                tb->addActions(kumir->actions()->actions());
+                QList<QAction*> acts = kumir->actions()->actions();
+                for (int i=0; i<acts.size(); i++) {
+                    if (acts[i]->isSeparator() || !acts[i]->icon().isNull())
+                        tb->addAction(acts[i]);
+                }
             }
             if (type==MainWindow::Pascal) {
                 tb->addSeparator();

@@ -149,14 +149,13 @@ void Generator::addKumirModule(int id, const AST::Module *mod)
         const AST::Algorhitm * alg = mod->impl.algorhitms[i];
         Bytecode::ElemType ft = Bytecode::EL_FUNCTION;
         if (mod->header.name.isEmpty() && i==0) {
-            if (alg->header.arguments.isEmpty())
-                ft = Bytecode::EL_MAIN;
-            else {
+            ft = Bytecode::EL_MAIN;
+            if (!alg->header.arguments.isEmpty())
+            {
                 mainMod = mod;
                 mainAlg = alg;
                 mainModId = id;
                 mainAlgorhitmId = i;
-                ft = Bytecode::EL_FUNCTION;
             }
         }
         if (alg->header.specialType==AST::AlgorhitmTypeTesting) {
@@ -186,7 +185,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
     QList<Bytecode::Instruction> instrs;
     Bytecode::Instruction l;
     l.type = Bytecode::LINE;
-    l.arg = 0xFFFF;
+    l.arg = alg->impl.headerLexems[0]->lineNo;
     instrs << l;
     QList<quint16> varsToOut;
     int locOffset = 0;
@@ -332,7 +331,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
     }
 
     Bytecode::TableElem func;
-    func.type = Bytecode::EL_MAIN;
+    func.type = Bytecode::EL_BELOWMAIN;
     func.algId = func.id = algId;
     func.module = moduleId;
     func.moduleName = mod->header.name;
@@ -366,7 +365,7 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
 
     Bytecode::Instruction l;
     l.type = Bytecode::LINE;
-    l.arg = alg->impl.beginLexems[0]->lineNo;
+    l.arg = alg->impl.headerLexems[0]->lineNo;
     argHandle << l;
 
     Bytecode::Instruction clearmarg;
@@ -405,6 +404,9 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
             argHandle << init;
         }
     }
+
+    l.arg = alg->impl.beginLexems[0]->lineNo;
+    argHandle << l;
 
     QList<Bytecode::Instruction> pre = instructions(moduleId, id, 0, alg->impl.pre);
     QList<Bytecode::Instruction> body = instructions(moduleId, id, 0, alg->impl.body);

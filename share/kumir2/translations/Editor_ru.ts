@@ -34,12 +34,12 @@
         <translation>Стр: %1, Поз: %2</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="555"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="557"/>
         <source>Edit</source>
         <translation>Редактирование</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="568"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="570"/>
         <source>Insert</source>
         <translation>Вставка</translation>
     </message>
@@ -295,42 +295,42 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="501"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="503"/>
         <source>Select all text in editor</source>
         <translation>Выбрать весь текст</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="507"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="509"/>
         <source>Copy selection to clipboard</source>
         <translation>Скопировать в буфер обмена</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="513"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="515"/>
         <source>Cut selection to clipboard</source>
         <translation>Вырезать в буфер обмена</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="519"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="521"/>
         <source>Paste from clipboard</source>
         <translation>Вставить из буфера обмена</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="525"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="527"/>
         <source>Delete line under cursor</source>
         <translation>Удалить строку</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="531"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="533"/>
         <source>Delete text from cursor to end of line</source>
         <translation>Удалить текст до конца строки</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="538"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="540"/>
         <source>Undo last action</source>
         <translation>Отменить последнее действие</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="546"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="548"/>
         <source>Redo last undoed action</source>
         <translation>Повторить отмененное действие</translation>
     </message>
