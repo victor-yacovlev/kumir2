@@ -62,6 +62,9 @@ signals:
                               const QString & varName,
                               const QString & baseFormat,
                               const QList<int> & bounds);
+    void outputArgumentRequest(const QVariant & value,
+                               const QString & varName,
+                               const QList<int> & bounds);
 
     void clearMargin(int fromLine, int toLine);
 private:

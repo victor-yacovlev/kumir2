@@ -20,6 +20,9 @@ Run::Run(QObject *parent) :
             this, SLOT(handleInputRequest(QString,QList<quintptr>,QList<int>)), Qt::DirectConnection);
     connect(vm, SIGNAL(inputArgumentRequest(int,QString,QString,QList<int>)),
             this, SLOT(handleInputArgumentRequest(int,QString,QString,QList<int>)), Qt::DirectConnection);
+    connect(vm, SIGNAL(outputArgumentRequest(QVariant,QString,QList<int>)),
+            this, SLOT(handleOutputArgumentRequest(QVariant,QString,QList<int>)),
+            Qt::DirectConnection);
     connect(vm, SIGNAL(outputRequest(QString)), this, SLOT(handleOutputRequest(QString)));
     connect(vm, SIGNAL(invokeExternalFunction(QString,QString,QVariantList,QList<quintptr>,QList<int>)),
             this, SLOT(handleExternalRequest(QString,QString,QVariantList,QList<quintptr>,QList<int>)),
@@ -197,6 +200,85 @@ void Run::handleInputArgumentRequest(int localId,
     }
     else {
         vm->setLocalVariableValue(localId, QVariant(result));
+    }
+}
+
+void Run::handleOutputArgumentRequest(const QVariant & value,
+                                     const QString &varName,
+                                     const QList<int> &bounds)
+{
+    if (value.type()!=QVariant::List) {
+        QString out = varName + "=";
+        if (!value.isValid())
+            out += tr("undefined");
+        else if (value.type()==QVariant::String)
+            out += "\""+value.toString()+"\"";
+        else if (value.type()==QVariant::Char)
+            out += "'"+value.toString()+"'";
+        else
+            out += value.toString();
+        out += "\n";
+        emit output(out);
+    }
+    else {
+        const QVariantList & list = value.toList();
+        int totalItems = 1;
+        int currentIndex = 0;
+        int dimension = 0;
+        int z = 0;
+        int y = 0;
+        int x = 0;
+        int size0 = 0;
+        int size1 = 0;
+        int size2 = 0;
+        if (bounds.size()==2) {
+            dimension = 1;
+            size0 = bounds[1]-bounds[0]+1;
+            x = bounds[0];
+            totalItems = size0;
+        }
+        else if (bounds.size()==4) {
+            dimension = 2;
+            size0 = bounds[3]-bounds[2]+1;
+            size1 = bounds[1]-bounds[0]+1;
+            x = bounds[0];
+            y = bounds[2];
+            totalItems = size0 * size1;
+        }
+        else if (bounds.size()==6) {
+            dimension = 3;
+            size0 = bounds[5]-bounds[4]+1;
+            size1 = bounds[3]-bounds[2]+1;
+            size2 = bounds[1]-bounds[0]+1;
+            x = bounds[0];
+            y = bounds[2];
+            z = bounds[4];
+            totalItems = size0 * size1 * size2;
+        }
+        for ( ; currentIndex<totalItems; currentIndex ++) {
+            QString varNameAndIndeces = varName;
+            if (dimension>0) {
+                QStringList indeces;
+                indeces.prepend(QString::number(x+currentIndex%size0));
+                if (dimension>=2)
+                    indeces.prepend(QString::number(y+currentIndex%(size0*size1)));
+                if (dimension==3)
+                    indeces.prepend(QString::number(z+currentIndex%(size0*size1*size2)));
+                varNameAndIndeces += "["+indeces.join(",")+"]";
+            }
+            QString out = varNameAndIndeces + "=";
+            const QVariant & val = list[currentIndex];
+            if (!val.isValid())
+                out += tr("undefined");
+            else if (val.type()==QVariant::String)
+                out += "\""+val.toString()+"\"";
+            else if (val.type()==QVariant::Char)
+                out += "'"+val.toString()+"'";
+            else
+                out += val.toString();
+            out += "\n";
+            emit output(out);
+        }
     }
 }
 

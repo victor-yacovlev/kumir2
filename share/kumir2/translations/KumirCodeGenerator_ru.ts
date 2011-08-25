@@ -9,7 +9,7 @@
     </message>
     <message>
         <source>Function return value</source>
-        <translation type="unfinished"></translation>
+        <translation>Значение функции</translation>
     </message>
 </context>
 </TS>

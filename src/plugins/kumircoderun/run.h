@@ -35,6 +35,9 @@ public slots:
                                     const QString & varName,
                                     const QString & baseFormat,
                                     const QList<int> & bounds);
+    void handleOutputArgumentRequest(const QVariant & value,
+                                    const QString & varName,
+                                    const QList<int> & bounds);
     void handleOutputRequest(const QString & output );
 
     void handleLineChanged(int lineNo);

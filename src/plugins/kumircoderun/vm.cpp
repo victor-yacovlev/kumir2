@@ -361,15 +361,15 @@ void VM::do_call(quint8 mod, quint16 alg)
             }
             emit outputRequest(output);
         }
-        if (alg==0x02) {
+        else if (alg==0x02) {
             // File input
             // TODO implement me
         }
-        if (alg==0x03) {
+        else if (alg==0x03) {
             // File output
 
         }
-        if (alg==0x04) {
+        else if (alg==0x04) {
             // Get char from string
             Variant second = stack_values.pop();
             Variant first = stack_values.pop();
@@ -387,7 +387,7 @@ void VM::do_call(quint8 mod, quint16 alg)
                 }
             }
         }
-        if (alg==0x05) {
+        else if (alg==0x05) {
             // Set char in string
             Variant third = stack_values.pop();
             Variant second = stack_values.pop();
@@ -407,7 +407,7 @@ void VM::do_call(quint8 mod, quint16 alg)
                 }
             }
         }
-        if (alg==0x06) {
+        else if (alg==0x06) {
             // Get slice from string
             Variant third = stack_values.pop();
             Variant second = stack_values.pop();
@@ -433,7 +433,7 @@ void VM::do_call(quint8 mod, quint16 alg)
                 }
             }
         }
-        if (alg==0x07) {
+        else if (alg==0x07) {
             // Set slice in string
             Variant fourth = stack_values.pop();
             Variant third = stack_values.pop();
@@ -461,7 +461,7 @@ void VM::do_call(quint8 mod, quint16 alg)
                 }
             }
         }
-        if (alg==0xBB01) {
+        else if (alg==0xBB01) {
             m_dontTouchMe->lock();
             // Input argument
             int localId = argsCount; // Already removed from stack
@@ -482,6 +482,19 @@ void VM::do_call(quint8 mod, quint16 alg)
             QList<int> bounds = stack_contexts[stack_contexts.size()-1].locals[localId].bounds();
             m_dontTouchMe->unlock();
             emit inputArgumentRequest(localId, varName, varFormat, bounds);
+        }
+        else if (alg==0xBB02) {
+            m_dontTouchMe->lock();
+            // Output argument or return value
+            int localId = argsCount; // Already removed from stack
+            Q_ASSERT (localId < stack_contexts[stack_contexts.size()-1].locals.size());
+            const QString & varName = stack_contexts[stack_contexts.size()-1].locals[localId].name();
+            QList<int> bounds = stack_contexts[stack_contexts.size()-1].locals[localId].bounds();
+            QVariant value = QVariant::Invalid;
+            if (stack_contexts[stack_contexts.size()-1].locals[localId].hasValue())
+                value = stack_contexts[stack_contexts.size()-1].locals[localId].value();
+            m_dontTouchMe->unlock();
+            emit outputArgumentRequest(value, varName, bounds);
         }
     }
     else if (externs.contains(p)) {

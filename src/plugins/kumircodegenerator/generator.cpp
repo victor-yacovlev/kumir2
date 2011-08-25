@@ -308,7 +308,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
         Bytecode::Instruction storeRetVal;
         storeRetVal.type = Bytecode::STORE;
         storeRetVal.scope = Bytecode::LOCAL;
-        storeRetVal.arg = quint16(alg->header.arguments.size());
+        storeRetVal.arg = 0;
         Bytecode::Instruction pop;
         pop.type = Bytecode::POP;
         pop.registerr = 0;
