@@ -8,6 +8,7 @@ namespace Editor {
 struct ClipboardData {
     enum Type { Invalid, Text, Block } type;
     QString text;
+    QString html;
     QStringList block;
 };
 

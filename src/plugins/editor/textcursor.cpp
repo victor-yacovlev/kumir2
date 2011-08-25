@@ -154,6 +154,7 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
             ClipboardData data;
             data.text = selectedText();
             data.type = ClipboardData::Text;
+            data.html = m_document->toHtml(-1, -1);
             m_clipboard->push(data);
         }
         else if (hasRectSelection()) {
@@ -161,6 +162,7 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
             data.text = selectedText();
             data.type = ClipboardData::Block;
             data.block = rectSelectionText();
+            data.html = m_document->toHtml(rect_selection.top(), rect_selection.bottom());
             m_clipboard->push(data);
         }
         break;

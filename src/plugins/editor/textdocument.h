@@ -51,7 +51,7 @@ public:
     // Becomes false after session restore done.
     static bool noUndoRedo;
 
-    explicit TextDocument(QObject * parent);
+    explicit TextDocument(QObject * parent, QSettings * settings);
     int documentId;
     int indentAt(int lineNo) const;
     inline bool isProtected(int lineNo) const { return data[lineNo].protecteed; }
@@ -61,6 +61,8 @@ public:
     int hiddenLineStart() const;
     inline int linesCount() const { return data.size(); }
     KumFile::Data toKumFile() const;
+    QString toHtml(int fromLine = -1, int toLine = -1) const;
+    QString lineToHtml(int lineNo) const;
     void setKumFile(const KumFile::Data & data, bool showHiddenLines);
     inline QString textAt(int index) const { return data[index].text; }
     inline QString marginTextAt(int index) const { return data[index].marginText; }
@@ -102,6 +104,7 @@ private:
     QList<TextLine> data;
     QString s_hiddenText;
     bool b_wasHiddenText;
+    QSettings * m_settings;
 };
 
 }

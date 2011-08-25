@@ -1,16 +1,17 @@
 #include "textdocument.h"
 #include "textcursor.h"
-#
+#include "settingspage.h"
 
 namespace Editor
 {
 
 
 
-TextDocument::TextDocument(QObject *parent)
+TextDocument::TextDocument(QObject *parent, QSettings * settings)
     : QObject(parent)
     , documentId(-1)
     , m_undoStack(new QUndoStack(this))
+    , m_settings(settings)
 {
     b_wasHiddenText = false;
 }
@@ -339,6 +340,183 @@ void TextDocument::forceCompleteRecompilation()
     emit completeCompilationRequest(visibleText, hiddenText, hiddenBaseLine);
 }
 
+QString TextDocument::toHtml(int fromLine, int toLine) const
+{
+    if (fromLine==-1 || toLine==-1) {
+        for (int i=0; i<data.size(); i++) {
+            if (data[i].selected.contains(true)) {
+                fromLine = i;
+                break;
+            }
+        }
+        for (int i=data.size()-1; i>=0; i--) {
+            if (data[i].selected.contains(true)) {
+                toLine = i;
+                break;
+            }
+        }
+    }
+    fromLine = qMax(0, fromLine);
+    toLine = qMin(data.size()-1, toLine);
+    QString result;
+    QStringList programLines;
+    QStringList marginLines;
+    QStringList p_style;
+    p_style << "font-family:'Droid Sans Mono','Consolas','Courier New','Courier','Monospace'";
+    p_style << QString("font-size:10pt");
+    p_style << "margin:0px";
+    p_style << "padding:0px";
 
+    for (int i=fromLine; i<=toLine; i++) {
+        programLines << lineToHtml(i);
+        marginLines << ( data[i].marginText.isEmpty()? (data[i].errors.isEmpty()? "" : data[i].errors[0]) : data[i].marginText );
+    }
+    result = QString::fromAscii(
+                "<table width=\"100%\">"
+                "  <tr>"
+                "    <td width=\"60%\">"
+                "      <p style=\"%1\">%2</p>"
+                "    </td>"
+                "    <td>"
+                "      <p style=\"%1\">%3</p>"
+                "    </td>"
+                "  </tr>"
+                "</table>"
+                )
+            .arg(p_style.join(";")+";")
+            .arg(programLines.join("<br>\n"))
+            .arg(marginLines.join("<br>\n"))
+            ;
+    return result;
+}
+
+struct Chunk {
+    QString text;
+    bool bold;
+    bool italic;
+    bool error;
+    QString color;
+    quint32 format;
+    QString html;
+};
+
+QString TextDocument::lineToHtml(int lineNo) const
+{
+    if (lineNo<0 || lineNo>=data.size())
+        return "";
+    int indent = indentAt(lineNo);
+    QString result;
+    for (int i=0; i<indent; i++) {
+        result += ". ";
+    }
+    QList<Shared::LexemType> highlight = data[lineNo].highlight;
+    QString text = data[lineNo].text;
+    Q_ASSERT(text.length()==highlight.size());
+
+    QList<Chunk> chunks;
+    for (int i=0; i<text.length(); i++) {
+        bool nonLatin = text[i]!='\0' && text[i].isLetter() && text[i].toAscii()!='\0';
+        if (chunks.isEmpty()) {
+            Chunk ch;
+            ch.bold = ch.error = false;
+            ch.italic = nonLatin;
+            ch.format = highlight[i];
+            ch.text += text[i];
+            chunks << ch;
+        }
+        else {
+            if (chunks.last().format==highlight[i] && chunks.last().italic==nonLatin) {
+                chunks.last().text += text[i];
+            }
+            else {
+                Chunk ch;
+                ch.bold = ch.error = false;
+                ch.italic = nonLatin;
+                ch.format = highlight[i];
+                ch.text += text[i];
+                chunks << ch;
+            }
+        }
+    }
+
+    static const quint32 PriKwd = Shared::LxTypePrimaryKwd;
+    static const quint32 SecKwd = Shared::LxTypeSecondaryKwd;
+    static const quint32 NameClass = Shared::LxNameClass;
+    static const quint32 NameAlg = Shared::LxNameAlg;
+    static const quint32 NameModule = Shared::LxNameModule;
+    static const quint32 ConstLiteral = Shared::LxConstLiteral;
+    static const quint32 TypeConstant = Shared::LxTypeConstant;
+    static const quint32 TypeDoc = Shared::LxTypeDoc;
+    static const quint32 TypeComment = Shared::LxTypeComment;
+
+    for (int i=0; i<chunks.size() ;i++) {
+        chunks[i].error = ( chunks[i].format & Shared::LxTypeError ) > 0;
+        chunks[i].format = ( chunks[i].format << 1 ) >> 1;
+        const quint32 priKwd = PriKwd & chunks[i].format;
+        const quint32 secKwd = SecKwd & chunks[i].format;
+        const quint32 nameClass = NameClass == chunks[i].format;
+        const quint32 nameAlg = NameAlg == chunks[i].format;
+        const quint32 nameModule = NameModule == chunks[i].format;
+        const quint32 literalConstant = ConstLiteral == chunks[i].format;
+        const quint32 constant = TypeConstant & chunks[i].format;
+        const quint32 doc = TypeDoc == chunks[i].format;
+        const quint32 comment = TypeComment == chunks[i].format;
+        QColor c = Qt::black;
+        if (priKwd || secKwd) {
+            c = m_settings->value(SettingsPage::KeyColorKw, SettingsPage::DefaultColorKw).toString();
+            chunks[i].bold = m_settings->value(SettingsPage::KeyBoldKw, SettingsPage::DefaultBoldKw).toBool();
+        }
+        if (nameClass) {
+            c = m_settings->value(SettingsPage::KeyColorType,  SettingsPage::DefaultColorType).toString();
+            chunks[i].bold = m_settings->value(SettingsPage::KeyBoldType, SettingsPage::DefaultBoldType).toBool();
+        }
+        else if (nameAlg) {
+            c = m_settings->value(SettingsPage::KeyColorAlg,  SettingsPage::DefaultColorAlg).toString();
+            chunks[i].bold = m_settings->value(SettingsPage::KeyBoldAlg, SettingsPage::DefaultBoldAlg).toBool();
+        }
+        else if (nameModule) {
+            c = m_settings->value(SettingsPage::KeyColorMod,  SettingsPage::DefaultColorMod).toString();
+            chunks[i].bold = m_settings->value(SettingsPage::KeyBoldMod, SettingsPage::DefaultBoldMod).toBool();
+        }
+        else if (literalConstant) {
+            c = m_settings->value(SettingsPage::KeyColorLiteral,  SettingsPage::DefaultColorLiteral).toString();
+            chunks[i].bold = m_settings->value(SettingsPage::KeyBoldLiteral, SettingsPage::DefaultBoldLiteral).toBool();
+        }
+        else if (constant)
+        {
+            c = m_settings->value(SettingsPage::KeyColorNumeric,  SettingsPage::DefaultColorNumeric).toString();
+            chunks[i].bold = m_settings->value(SettingsPage::KeyBoldNumeric, SettingsPage::DefaultBoldNumeric).toBool();
+        }
+        else if (doc) {
+            c = m_settings->value(SettingsPage::KeyColorDoc,  SettingsPage::DefaultColorDoc).toString();
+            chunks[i].bold = m_settings->value(SettingsPage::KeyBoldDoc, SettingsPage::DefaultBoldDoc).toBool();
+        }
+        else if (comment) {
+            c = m_settings->value(SettingsPage::KeyColorComment,  SettingsPage::DefaultColorComment).toString();
+            chunks[i].bold = m_settings->value(SettingsPage::KeyBoldComment, SettingsPage::DefaultBoldComment).toBool();
+        }
+        chunks[i].color = c.name();
+        chunks[i].html = QString::fromAscii(
+                    "<span style=\""
+                    "color: %1;"
+                    "font-weight: %2;"
+                    "font-style: %3;"
+                    "text-decoration: %4;"
+                    "\">"
+                    "%5"
+                    "</span>"
+                    )
+                .arg(chunks[i].color)
+                .arg(chunks[i].bold? "bold" : "normal")
+                .arg(chunks[i].italic? "italic" : "normal")
+                .arg(chunks[i].error? "underline" : "none")
+                .arg(chunks[i].text)
+                ;
+    }
+    for (int i=0; i<chunks.size(); i++) {
+        result += chunks[i].html;
+    }
+    return result;
+}
 
 }

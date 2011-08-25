@@ -450,7 +450,7 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
     d->notSaved = initiallyNotSaved;
     if (!d->clipboard)
         d->clipboard = new Clipboard;
-    d->doc = new TextDocument(this);
+    d->doc = new TextDocument(this, settings);
     d->cursor = new TextCursor(d->doc, d->clipboard, analizer);
     d->analizer = analizer;
     d->doc->documentId = documentId;
