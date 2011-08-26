@@ -168,5 +168,24 @@ Shared::LineProp KumirAnalizerPlugin::lineProp(int documentId, const QString &te
     return m_analizers[documentId]->lineProp(text);
 }
 
+QStringList KumirAnalizerPlugin::algorhitmsAvailableFor(int documentId, int lineNo) const
+{
+    Q_CHECK_PTR(m_analizers[documentId]);
+    return m_analizers[documentId]->algorhitmsAvailableFor(lineNo);
+}
+
+QStringList KumirAnalizerPlugin::globalsAvailableFor(int documentId, int lineNo) const
+{
+    Q_CHECK_PTR(m_analizers[documentId]);
+    return m_analizers[documentId]->globalsAvailableFor(lineNo);
+}
+
+QStringList KumirAnalizerPlugin::localsAvailableFor(int documentId, int lineNo) const
+{
+    Q_CHECK_PTR(m_analizers[documentId]);
+    return m_analizers[documentId]->localsAvailableFor(lineNo);
+}
+
+
 
 Q_EXPORT_PLUGIN2(KumirAnalizerPlugin, KumirAnalizer::KumirAnalizerPlugin)

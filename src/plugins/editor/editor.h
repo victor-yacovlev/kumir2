@@ -53,7 +53,9 @@ public slots:
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
     void documentCleanChanged(bool v);
+
 private:
+
     void focusInEvent(QFocusEvent *e);
     class EditorPrivate * d;
 

@@ -731,4 +731,93 @@ void Analizer::setHiddenBaseLine(int lineNo)
     d->setHiddenBaseLine(lineNo);
 }
 
+const AST::Module * Analizer::findModuleByLine(int lineNo) const
+{
+    if (lineNo==-1)
+        return 0;
+    for (int i=0; i<d->ast->modules.size(); i++) {
+        if (
+                (d->ast->modules[i]->header.type==AST::ModTypeUser || d->ast->modules[i]->header.type==AST::ModTypeHidden)
+                && d->ast->modules[i]->impl.beginLexems.size()>0
+                && d->ast->modules[i]->impl.beginLexems[0]->lineNo>=lineNo
+                && d->ast->modules[i]->impl.endLexems.size()>0
+                && d->ast->modules[i]->impl.endLexems[0]->lineNo<=lineNo
+                )
+            return d->ast->modules[i];
+    }
+    for (int i=0; i<d->ast->modules.size(); i++) {
+        if (
+                (d->ast->modules[i]->header.type==AST::ModTypeUser || d->ast->modules[i]->header.type==AST::ModTypeHidden)
+                && d->ast->modules[i]->header.name.isEmpty()
+                )
+            return d->ast->modules[i];
+    }
+    return 0;
+}
+
+const AST::Algorhitm * Analizer::findAlgorhitmByLine(const AST::Module *mod, int lineNo) const
+{
+    if (!mod || lineNo==-1)
+        return 0;
+    for (int i=0; i<mod->impl.algorhitms.size(); i++) {
+        if (
+                mod->impl.algorhitms[i]->impl.beginLexems.size()>0
+                && mod->impl.algorhitms[i]->impl.beginLexems[0]->lineNo>=lineNo
+                && mod->impl.algorhitms[i]->impl.endLexems.size()>0
+                && mod->impl.algorhitms[i]->impl.endLexems[0]->lineNo<=lineNo
+                )
+            return mod->impl.algorhitms[i];
+    }
+    return 0;
+}
+
+QStringList Analizer::algorhitmsAvailableFor(int lineNo) const
+{
+    QStringList result;
+    for (int i=0; i<d->ast->modules.size(); i++) {
+        if (d->ast->modules[i]->header.enabled) {
+            for (int j=0; j<d->ast->modules[i]->header.algorhitms.size(); j++) {
+                const QString name = d->ast->modules[i]->header.algorhitms[j]->header.name;
+                if (!name.isEmpty() && !result.contains(name))
+                    result << name;
+            }
+        }
+    }
+    const AST::Module * mod = findModuleByLine(lineNo);
+    if (mod) {
+        // Add current module private algorhitms
+        for (int j=0; j<mod->impl.algorhitms.size(); j++) {
+            const QString name = mod->impl.algorhitms[j]->header.name;
+            if (!name.isEmpty() && !result.contains(name))
+                result << name;
+        }
+    }
+
+    return result;
+}
+
+QStringList Analizer::localsAvailableFor(int lineNo) const
+{
+    const AST::Algorhitm * alg = findAlgorhitmByLine(findModuleByLine(lineNo), lineNo);
+    QStringList result;
+    if (alg) {
+        for (int i=0; i<alg->impl.locals.size(); i++) {
+            result << alg->impl.locals[i]->name;
+        }
+    }
+    return result;
+}
+
+QStringList Analizer::globalsAvailableFor(int lineNo) const
+{
+    const AST::Module * mod = findModuleByLine(lineNo);
+    QStringList result;
+    if (mod) {
+        for (int i=0; i<mod->impl.globals.size(); i++) {
+            result << mod->impl.globals[i]->name;
+        }
+    }
+    return result;
+}
+
 } // namespace KumirAnalizer

@@ -4,6 +4,7 @@
 #include <QtGui>
 
 #include "interfaces/lexemtype.h"
+#include "interfaces/analizerinterface.h"
 
 
 namespace Editor {
@@ -14,6 +15,7 @@ class EditorPlane : public QWidget
     Q_OBJECT
 public:
     explicit EditorPlane(class TextDocument * doc
+                         , Shared::AnalizerInterface * analizer
                          , class TextCursor * cursor
                          , class Clipboard * clipboard
                          , const QList<QRegExp> &fileNamePattern
@@ -61,6 +63,7 @@ protected:
     void ensureHighlightedLineVisible();
 //    void updateOffset();
     void paintEvent(QPaintEvent *);
+    bool event(QEvent *e);
     void paintLockSymbol(QPainter * p, bool colored, const QRect & r);
     QPoint offset() const;
     void paintBackground(QPainter *p, const QRect &rect);
@@ -77,11 +80,13 @@ protected:
     void paintNewHiddenDelimeterLine(QPainter *p);
     void paintDropPosition(QPainter *p);
     void keyPressEvent(QKeyEvent *);
+    void doAutocomplete();
     void keyReleaseEvent(QKeyEvent *);
     void setProperFormat(QPainter * p, Shared::LexemType type, const QChar &c);
 protected slots:
     void updateCursor();
     void updateText(int fromLine, int toLine);
+    void finishAutoCompletion(const QString & source, const QString & newtext);
 private:
     int i_timerId;
     class TextDocument * m_document;
@@ -107,6 +112,8 @@ private:
     int i_highlightedLine;
     QColor color_highlightedLine;
     int i_grayLockSymbolLine;
+    class AutoCompleteWidget * m_autocompleteWidget;
+    Shared::AnalizerInterface * m_analizer;
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
 

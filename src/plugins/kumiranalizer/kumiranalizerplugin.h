@@ -67,6 +67,9 @@ public:
     QList<QPoint> lineRanks(int documentId) const;
     QStringList imports(int documentId) const;
     const AST::Data * abstractSyntaxTree(int documentId) const;
+    QStringList algorhitmsAvailableFor(int documentId, int lineNo) const;
+    QStringList globalsAvailableFor(int documentId, int lineNo) const;
+    QStringList localsAvailableFor(int documentId, int lineNo) const;
     inline virtual QList<QRegExp> supportedFileNamePattern() const {
         return QList<QRegExp>()
                 << QRegExp("*.kum",Qt::CaseInsensitive,QRegExp::Wildcard);

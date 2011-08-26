@@ -89,6 +89,7 @@ private slots:
 private:
     void timerEvent(QTimerEvent *e);
     bool eventFilter(QObject *o, QEvent *e);
+
     void closeEvent(QCloseEvent *e);
     int i_timerId;
     bool b_workspaceSwitching;

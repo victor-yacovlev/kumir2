@@ -36,6 +36,7 @@ struct KeyCommand
         SelectAll               = 0x0019,
         Copy                    = 0x001a,
 
+
         InsertText              = 0x1001,
         Backspace               = 0x1002,
         Delete                  = 0x1003,

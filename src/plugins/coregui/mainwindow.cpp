@@ -96,6 +96,7 @@ protected:
         QWidget::focusInEvent(e);
         component->setFocus();
     }
+
 };
 
 MainWindow::MainWindow(Plugin * p) :
@@ -209,6 +210,7 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
 #endif
     return false;
 }
+
 
 void MainWindow::checkCounterValue()
 {

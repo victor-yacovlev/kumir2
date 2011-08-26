@@ -17,4 +17,5 @@ void TabWidget::disableTabs()
     tabBar()->setVisible(false);
 }
 
+
 } // namespace CoreGUI

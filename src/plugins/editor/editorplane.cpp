@@ -5,6 +5,7 @@
 #include "clipboard.h"
 #include "settingspage.h"
 #include "utils.h"
+#include "autocompletewidget.h"
 
 #define RECT_SELECTION_MODIFIER Qt::AltModifier
 
@@ -16,6 +17,7 @@ QString EditorPlane::MarginWidthKey = "MarginWidth";
 int EditorPlane::MarginWidthDefault = 15;
 
 EditorPlane::EditorPlane(TextDocument * doc
+                         , Shared::AnalizerInterface * analizer
                          , TextCursor * cursor
                          , class Clipboard * clipboard
                          , const QList<QRegExp> &fileNamesToOpen
@@ -26,6 +28,7 @@ EditorPlane::EditorPlane(TextDocument * doc
                          , QWidget *parent) :
     QWidget(parent)
 {
+    m_analizer = analizer;
     i_highlightedLine = -1;
     i_grayLockSymbolLine = -1;
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
@@ -54,6 +57,10 @@ EditorPlane::EditorPlane(TextDocument * doc
     setFocusPolicy(Qt::StrongFocus);
     pnt_delimeterPress = pnt_marginPress = pnt_textPress = pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
     b_selectionInProgress = false;
+    m_autocompleteWidget = new AutoCompleteWidget(this);
+    m_autocompleteWidget->setVisible(false);
+    connect(m_autocompleteWidget, SIGNAL(accepted(QString,QString)),
+            this, SLOT(finishAutoCompletion(QString,QString)));
 }
 
 void EditorPlane::setTeacherMode(bool v)
@@ -97,6 +104,8 @@ void EditorPlane::paintDropPosition(QPainter *p)
 
 void EditorPlane::mousePressEvent(QMouseEvent *e)
 {
+    if (m_autocompleteWidget->isVisible())
+        m_autocompleteWidget->reject();
     int lockSymbolWidth = b_teacherMode && b_hasAnalizer ? LOCK_SYMBOL_WIDTH : 0;
     int ln = charWidth() * 5 + lockSymbolWidth;
     int wc = widthInChars();
@@ -680,6 +689,18 @@ void EditorPlane::keyReleaseEvent(QKeyEvent *e)
     }
 }
 
+bool EditorPlane::event(QEvent *e)
+{
+    if (e->type()==QEvent::KeyPress) {
+        QKeyEvent *ke = static_cast<QKeyEvent*>(e);
+        if (ke->key()==Qt::Key_Tab) {
+            keyPressEvent(ke);
+            return true;
+        }
+    }
+    return QWidget::event(e);
+}
+
 void EditorPlane::keyPressEvent(QKeyEvent *e)
 {
     if (m_cursor->isEnabled()) {
@@ -788,6 +809,10 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         else if (e->matches(QKeySequence::Redo)) {
             m_cursor->redo();
         }
+        else if (e->key()==Qt::Key_Tab || ( e->key()==Qt::Key_Space && e->modifiers().testFlag(Qt::ControlModifier) ) ) {
+            if (b_hasAnalizer)
+                doAutocomplete();
+        }
         else if (!e->text().isEmpty()) {
             m_cursor->evaluateCommand(Utils::textByKey(Qt::Key(e->key())
                                                        , e->text()
@@ -809,6 +834,35 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         e->ignore();
     else
         e->accept();
+}
+
+void EditorPlane::doAutocomplete()
+{
+    QString source;
+    QStringList algorhitms = m_analizer->algorhitmsAvailableFor(m_document->documentId, m_cursor->row());
+    QStringList locals = m_analizer->localsAvailableFor(m_document->documentId, m_cursor->row());
+    QStringList globals = m_analizer->globalsAvailableFor(m_document->documentId, m_cursor->row());
+    m_autocompleteWidget->init(font(),
+                               this,
+                               source,
+                               algorhitms,
+                               locals,
+                               globals
+                               );
+    m_cursor->removeSelection();
+    m_cursor->removeRectSelection();
+    m_autocompleteWidget->move(cursorRect().topLeft()+QPoint(5*charWidth(), m_autocompleteWidget->offsetY()));
+    m_autocompleteWidget->setVisible(true);
+    m_autocompleteWidget->setFocus();
+}
+
+void EditorPlane::finishAutoCompletion(const QString &source,
+                                       const QString &newtext)
+{
+    for (int i=0; i<source.length(); i++) {
+        m_cursor->evaluateCommand(KeyCommand::SelectPreviousChar);
+    }
+    m_cursor->evaluateCommand(KeyCommand(newtext));
 }
 
 void EditorPlane::selectAll()

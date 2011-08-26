@@ -460,7 +460,7 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
     QList<QRegExp> fileNamesToOpen = QList<QRegExp>() << QRegExp("*", Qt::CaseSensitive, QRegExp::Wildcard);
     if (d->analizer)
         fileNamesToOpen = d->analizer->supportedFileNamePattern();
-    d->plane = new EditorPlane(d->doc, d->cursor, d->clipboard, fileNamesToOpen, d->settings, d->horizontalScrollBar, d->verticalScrollBar, d->analizer!=NULL, this);
+    d->plane = new EditorPlane(d->doc, d->analizer, d->cursor, d->clipboard, fileNamesToOpen, d->settings, d->horizontalScrollBar, d->verticalScrollBar, d->analizer!=NULL, this);
 
     d->keybStatus = new QLabel(0);
     d->keybStatus->setFixedWidth(90);
@@ -609,6 +609,7 @@ Editor::~Editor()
     d->positionStatus->deleteLater();
     delete d;
 }
+
 
 void Editor::setSettings(QSettings *s)
 {

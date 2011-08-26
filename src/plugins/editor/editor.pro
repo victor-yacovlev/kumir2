@@ -20,7 +20,8 @@ HEADERS += editorplugin.h \
     settingspage.h \
     macro.h \
     keycommand.h \
-    editcommands.h
+    editcommands.h \
+    autocompletewidget.h
 SOURCES += editorplugin.cpp \
     editor.cpp \
     editorplane.cpp \
@@ -32,7 +33,8 @@ SOURCES += editorplugin.cpp \
     macro.cpp \
     keycommand.cpp \
     textdocument.cpp \
-    editcommands.cpp
+    editcommands.cpp \
+    autocompletewidget.cpp
 
 OTHER_FILES += Editor.pluginspec
 

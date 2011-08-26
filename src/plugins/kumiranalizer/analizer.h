@@ -4,6 +4,8 @@
 #include "interfaces/error.h"
 #include "interfaces/lineprop.h"
 #include "dataformats/ast.h"
+#include "dataformats/ast_module.h"
+#include "dataformats/ast_algorhitm.h"
 #include "interfaces/analizerinterface.h"
 
 #include <QtCore>
@@ -31,6 +33,10 @@ public slots:
     void setHiddenText(const QString & text, int baseLineNo);
     void setHiddenBaseLine(int lineNo);
 
+    QStringList algorhitmsAvailableFor(int lineNo) const;
+    QStringList globalsAvailableFor(int lineNo) const;
+    QStringList localsAvailableFor(int lineNo) const;
+
     QList<Shared::Error> errors() const;
 
     QList<Shared::LineProp> lineProperties() const;
@@ -48,6 +54,8 @@ public slots:
     const AST::Data * abstractSyntaxTree() const;
 
 private:
+    const AST::Module * findModuleByLine(int lineNo) const;
+    const AST::Algorhitm * findAlgorhitmByLine(const AST::Module * mod, int lineNo) const;
     class AnalizerPrivate * d;
 
 };
