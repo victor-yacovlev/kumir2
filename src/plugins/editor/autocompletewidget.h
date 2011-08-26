@@ -19,6 +19,7 @@ class AutoCompleteWidget : public QWidget
 public:
     explicit AutoCompleteWidget(QWidget *parent = 0);
     int offsetY() const;
+    int suggestionsCount() const;
 
     void init(const QFont & font,
               QWidget * focusOnCloseWidget,

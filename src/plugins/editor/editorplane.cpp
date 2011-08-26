@@ -842,6 +842,24 @@ void EditorPlane::doAutocomplete()
     QStringList algorhitms = m_analizer->algorhitmsAvailableFor(m_document->documentId, m_cursor->row());
     QStringList locals = m_analizer->localsAvailableFor(m_document->documentId, m_cursor->row());
     QStringList globals = m_analizer->globalsAvailableFor(m_document->documentId, m_cursor->row());
+
+    m_cursor->removeSelection();
+    m_cursor->removeRectSelection();
+
+    if (m_cursor->row()<m_document->linesCount()) {
+        QString line = m_document->textAt(m_cursor->row());
+        int textPos = m_cursor->column() - 2 * m_document->indentAt(m_cursor->row());
+        if (textPos <= line.length()) {
+            for (int i=line.length(); i>0; i--) {
+                QChar ch = line[i-1];
+                if (ch.isLetterOrNumber() || ch=='_' || ch=='%')
+                    source.prepend(ch);
+                else
+                    break;
+            }
+        }
+    }
+
     m_autocompleteWidget->init(font(),
                                this,
                                source,
@@ -849,11 +867,11 @@ void EditorPlane::doAutocomplete()
                                locals,
                                globals
                                );
-    m_cursor->removeSelection();
-    m_cursor->removeRectSelection();
-    m_autocompleteWidget->move(cursorRect().topLeft()+QPoint(5*charWidth(), m_autocompleteWidget->offsetY()));
-    m_autocompleteWidget->setVisible(true);
-    m_autocompleteWidget->setFocus();
+    if (m_autocompleteWidget->suggestionsCount()>0) {
+        m_autocompleteWidget->move(cursorRect().topLeft()+QPoint(5*charWidth(), m_autocompleteWidget->offsetY()));
+        m_autocompleteWidget->setVisible(true);
+        m_autocompleteWidget->setFocus();
+    }
 }
 
 void EditorPlane::finishAutoCompletion(const QString &source,

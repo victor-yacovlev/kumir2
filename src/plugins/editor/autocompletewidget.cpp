@@ -22,6 +22,11 @@ AutoCompleteWidget::AutoCompleteWidget(
     addAction(a);
 }
 
+int AutoCompleteWidget::suggestionsCount() const
+{
+    return l_items.count();
+}
+
 void AutoCompleteWidget::init(
     const QFont &font,
     QWidget * focusOnCloseWidget,
