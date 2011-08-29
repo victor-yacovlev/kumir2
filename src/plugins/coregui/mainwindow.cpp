@@ -51,33 +51,35 @@ public:
         l->setSpacing(0);
         setLayout(l);
         if (enableToolBar) {
-            QToolBar * tb = new QToolBar(this);
+            if (!toolbarActions.isEmpty()) {
+                QToolBar * tb = new QToolBar(this);
 #ifndef Q_OS_MAC
-            tb->setStyleSheet("QToolBar { border: 0px }");
+                tb->setStyleSheet("QToolBar { border: 0px }");
 #endif
-            l->addWidget(tb);
-            if (type!=MainWindow::WWW) {
-                tb->addActions(gr_fileActions->actions());
-            }
-            tb->addSeparator();
-            foreach (QAction * a, toolbarActions)
-                tb->addAction(a);
-            if (type==MainWindow::Kumir) {
-                tb->addSeparator();
-                QList<QAction*> acts = kumir->actions()->actions();
-                for (int i=0; i<acts.size(); i++) {
-                    if (acts[i]->isSeparator() || !acts[i]->icon().isNull())
-                        tb->addAction(acts[i]);
+                l->addWidget(tb);
+                if (type!=MainWindow::WWW) {
+                    tb->addActions(gr_fileActions->actions());
                 }
-            }
-            if (type==MainWindow::Pascal) {
                 tb->addSeparator();
-                Q_UNUSED(pascal);
-                //                tb->addActions(pascal->actions()->actions());
-            }
-            if (!gr_otherActions->actions().isEmpty()) {
-                tb->addSeparator();
-                tb->addActions(gr_otherActions->actions());
+                foreach (QAction * a, toolbarActions)
+                    tb->addAction(a);
+                if (type==MainWindow::Kumir) {
+                    tb->addSeparator();
+                    QList<QAction*> acts = kumir->actions()->actions();
+                    for (int i=0; i<acts.size(); i++) {
+                        if (acts[i]->isSeparator() || !acts[i]->icon().isNull())
+                            tb->addAction(acts[i]);
+                    }
+                }
+                if (type==MainWindow::Pascal) {
+                    tb->addSeparator();
+                    Q_UNUSED(pascal);
+                    //                tb->addActions(pascal->actions()->actions());
+                }
+                if (!gr_otherActions->actions().isEmpty()) {
+                    tb->addSeparator();
+                    tb->addActions(gr_otherActions->actions());
+                }
             }
 
         }

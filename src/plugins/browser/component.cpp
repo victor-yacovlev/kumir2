@@ -87,9 +87,9 @@ Component::Component(class Plugin * plugin) :
 QList<QAction*> Component::toolbarActions()
 {
     QList<QAction*> result;
-    result << a_goBack;
-    result << ui->webView->pageAction(QWebPage::Forward);
-    result << a_reloadStop;
+//    result << a_goBack;
+//    result << ui->webView->pageAction(QWebPage::Forward);
+//    result << a_reloadStop;
     return result;
 }
 
