@@ -1,12 +1,15 @@
 #include "plugin.h"
 #include "component.h"
 #include "dir.h"
+#include "localhostserver.h"
+#include "networkaccessmanager.h"
 
 namespace Browser {
 
 Plugin::Plugin()
 {
     m_directory = new Dir(this);
+    m_networkAccessManager = 0;
 }
 
 Plugin::~Plugin()
@@ -22,6 +25,10 @@ void Plugin::changeCurrentDirectory(const QString &path)
 QString Plugin::initialize(const QStringList &)
 {
     qRegisterMetaType<Shared::BrowserComponent>("BrowserComponent");
+    LocalhostServer * localhost = new LocalhostServer(QDir(qApp->property("sharePath").toString()+"/webapps/"), this);
+    NetworkAccessManager * networkAccessManager = new NetworkAccessManager(this);
+    networkAccessManager->setLocalhostServer(localhost);
+    m_networkAccessManager = networkAccessManager;
     return "";
 }
 

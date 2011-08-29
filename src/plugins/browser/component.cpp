@@ -39,6 +39,7 @@ Component::Component(class Plugin * plugin) :
     m_plugin = plugin;
     ui->setupUi(this);
     ui->webView->setPage(new WebPage(this));
+    ui->webView->page()->setNetworkAccessManager(plugin->networkAccessManager());
     connect(ui->webView->page()->mainFrame(), SIGNAL(javaScriptWindowObjectCleared()), this, SLOT(addJavaScriptObjects()));
 #ifdef QT_DEBUG
     ui->webView->page()->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);

@@ -1,7 +1,7 @@
 TEMPLATE = lib
 TARGET = Browser
 CONFIG += plugin
-QT += script webkit
+QT += script network webkit
 include(../../kumir2plugin.pri)
 include(../../shared/extensionsystem/extensionsystem.pri)
 
@@ -11,13 +11,17 @@ HEADERS += \
     component.h \
     plugin.h \
     webpage.h \
-    dir.h
+    dir.h \
+    localhostserver.h \
+    networkaccessmanager.h
 
 SOURCES += \
     component.cpp \
     plugin.cpp \
     webpage.cpp \
-    dir.cpp
+    dir.cpp \
+    localhostserver.cpp \
+    networkaccessmanager.cpp
 
 FORMS += \
     component.ui
