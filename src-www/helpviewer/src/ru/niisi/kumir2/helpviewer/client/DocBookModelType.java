@@ -1,6 +1,7 @@
 package ru.niisi.kumir2.helpviewer.client;
 
 public enum DocBookModelType {
+	__text__,
 	Book,
 	Article,
 	Chapter,
@@ -13,5 +14,7 @@ public enum DocBookModelType {
 	ProgramListing,
 	OrderedList,
 	ItemizedList,
-	ListItem
+	ListItem,
+	Xref, 
+	Emphasis
 }

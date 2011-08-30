@@ -10,7 +10,7 @@ public class ViewContentPanel extends ScrollPanel implements OpenNodeHandler {
 	
 	public ViewContentPanel() {
 		super();
-		html = new HTML("Welcome!");
+		html = new HTML("");
 		add(html);
 	}
 

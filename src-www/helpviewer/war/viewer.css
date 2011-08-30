@@ -4,6 +4,7 @@ body {
 	margin: 0;
 }
 
+
 .gwt-SplitLayoutPanel-HDragger {
   background: #e7e7e7 url(images/thumb_vertical.png) center center no-repeat;
   cursor: col-resize;
@@ -57,7 +58,7 @@ body {
   cursor: pointer;
 }
 .gwt-Tree .gwt-TreeItem-selected {
-  background: #ebeff9;
+  background: #cccccc;
 }
 .gwt-TreeItem .gwt-RadioButton input,
 .gwt-TreeItem .gwt-CheckBox input {

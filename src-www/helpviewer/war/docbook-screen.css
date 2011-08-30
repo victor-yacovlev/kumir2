@@ -16,8 +16,9 @@
 
 .docbook_screen pre {
 	display: block;
-	background-color: #DDDDDD;
-	padding: 1em;
+	/* background-color: #DDDDDD; */
+	padding-left: 1em;
+	padding-right: 1em;
 	font-family: Droid Sans Mono, DejaVu Sans Mono, Lucida Console, Courier New, Courier, monospace;
 }
 
@@ -66,15 +67,14 @@
 	display:block;
 	margin: 1em;
 	margin-top: 2em;
-	border: 1px solid blue;
+	border: 1px solid gray;
 }
 
 .docbook_screen exampletitle {
 	display: block;
 	font-weight: bold;
-	background-color: lightblue;
-	color: darkblue;
-	border-bottom: 1px solid blue;
+	background-color: lightgray;
+	border-bottom: 1px solid gray;
 	margin: 0;
 	font-style: italic;
 	text-align: center;
@@ -83,13 +83,14 @@
 .docbook_screen .emph_bold {
 	padding: 0;
 	font-weight: bold;
-	font-size: 125%;
-	font-variant: small-caps;
+/*	font-size: 125%;
+	font-variant: small-caps; */
 }
 
 .docbook_screen .emph_italic {
 	padding: 0;
-	font-weight: bold;
+/*	font-weight: bold; */
+	font-style: italic;
 }
 
 .docbook_screen ul {
@@ -101,7 +102,8 @@
 }
 
 .docbook_screen ul, ol {
-	margin-left: 2em;
+	margin-left: 1em;
+	margin-right: 1em;
 }
 
 .docbook_screen li p {
@@ -109,3 +111,23 @@
 	text-indent: 0;
 }
 
+.docbook_screen .tableofcontents {
+	display: block;
+	border-top: 1px solid gray;
+	border-bottom: 1px solid gray;
+	margin-top: 3em;
+}
+
+.docbook_screen .tableofcontents p, .docbook_screen .tableofcontents li {
+	font-weight: bold;
+}
+
+.docbook_screen .tableofcontents a {
+	text-decoration: none;
+	color: darkblue;
+	font-weight: normal;
+}
+
+.docbook_screen .tableofcontents a:hover {
+	text-decoration: underline;
+}
