@@ -70,6 +70,7 @@ public:
     int count;
     bool keepKursor;
     QString removedText;
+    int insertedSpaces;
     int cursorRow;
     int cursorCol;
 

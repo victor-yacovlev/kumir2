@@ -107,7 +107,7 @@ RemoveCommand::RemoveCommand(TextDocument *doc, TextCursor *cursor, Shared::Anal
     this->doc = doc;
     this->cursor = cursor;
     this->analizer = analizer;
-    line = pos = count = 0;
+    line = pos = count = insertedSpaces = 0;
     keepKursor = true;
 }
 
@@ -132,8 +132,23 @@ void RemoveCommand::redo()
             }
         }
     }
-    doc->removeText(removedText, analizer, line, pos, 0, 0, count);
-    doc->checkForCompilationRequest(QPoint(cursor->row(), cursor->column()));
+    if (cursorRow<doc->linesCount()) {
+        QString curLineText = doc->textAt(cursorRow);
+        int indent = doc->indentAt(cursor->row()) * 2;
+        int textPos = cursor->column()-indent;
+        if (textPos<curLineText.length()) {
+            removedText = curLineText.mid(textPos, count);
+        }
+        else {
+            insertedSpaces = textPos-curLineText.length();
+        }
+        if (insertedSpaces) {
+            int bl;
+            doc->insertText(QString().fill(' ',insertedSpaces), analizer, cursorRow, curLineText.length(), bl, bl);
+        }
+        doc->removeText(removedText, analizer, line, pos, 0, 0, count);
+        doc->checkForCompilationRequest(QPoint(cursor->row(), cursor->column()));
+    }
 }
 
 void RemoveCommand::undo()
@@ -142,6 +157,9 @@ void RemoveCommand::undo()
         return;
     int blankLines, blankChars;
     doc->insertText(removedText, analizer, line, pos, blankLines, blankChars);
+    if (insertedSpaces) {
+        doc->removeText(removedText, analizer, line, pos-insertedSpaces, blankLines, blankLines, insertedSpaces);
+    }
     cursor->setRow(cursorRow);
     cursor->setColumn(cursorCol);
     doc->checkForCompilationRequest(QPoint(cursor->row(), cursor->column()));
