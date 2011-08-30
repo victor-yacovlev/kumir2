@@ -4,27 +4,27 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.extjs.gxt.ui.client.Style.LayoutRegion;
-import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.widget.*;
-import com.extjs.gxt.ui.client.widget.layout.BorderLayout;
-import com.extjs.gxt.ui.client.widget.layout.BorderLayoutData;
+import com.google.gwt.user.client.ui.SplitLayoutPanel;
+import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.XMLParser;
 
 
-public class ViewerRoot implements EntryPoint  {
+public class ViewerRoot implements EntryPoint, ResizeHandler  {
 
-	private Viewport viewport = null;
+	private SplitLayoutPanel viewport = null;
 	private ViewContentPanel viewContentPanel = null;
-	private TabPanel tabPanel = null;
+	private TabLayoutPanel tabPanel = null;
 	private TableOfContentsPanel tableOfContentsPanel = null;
 	private IndexPanel indexPanel = null;
 	private List<Document> books = new LinkedList<Document>();
@@ -35,28 +35,21 @@ public class ViewerRoot implements EntryPoint  {
 	}
 	
 	protected void createComponents() {
-		viewport = new Viewport();
-		BorderLayout layout = new BorderLayout();
-		viewport.setLayout(layout);
-		tabPanel = new TabPanel();
-		tabPanel.setStyleAttribute("minimum-width", "240px");
+		viewport = new SplitLayoutPanel();
+		viewport.ensureDebugId("viewport");
+		tabPanel = new TabLayoutPanel(2.5, Unit.EM);
+		tabPanel.setWidth("100%");
+		tabPanel.setAnimationDuration(1000);
+		
+		tabPanel.ensureDebugId("tabpanel");
 		viewContentPanel = new ViewContentPanel();
-		BorderLayoutData westData  = new BorderLayoutData(LayoutRegion.WEST, 240);
-		westData.setSplit(true);
-		westData.setCollapsible(true);
-		westData.setMargins(new Margins(0,5,0,0)); 
-		BorderLayoutData centerData= new BorderLayoutData(LayoutRegion.CENTER);
-		viewport.add(tabPanel, westData);
-		viewport.add(viewContentPanel, centerData);
+		viewport.addWest(tabPanel, 240);
+		viewport.add(viewContentPanel);
 		tableOfContentsPanel = new TableOfContentsPanel();
 		tableOfContentsPanel.addOpenNodeHandler(viewContentPanel);
 		indexPanel = new IndexPanel();
-		TabItem contentsTab = new TabItem("Содержание");
-		contentsTab.add(tableOfContentsPanel);
-		TabItem indexTab = new TabItem("Указатель");
-		indexTab.add(indexPanel);
-		tabPanel.add(contentsTab);
-		tabPanel.add(indexTab);
+		tabPanel.add(tableOfContentsPanel, "Содержание");
+		tabPanel.add(indexPanel, "Указатель");
 	}
 	
 	protected void loadBooksAndArticles() {
@@ -100,8 +93,23 @@ public class ViewerRoot implements EntryPoint  {
 	
 	@Override
 	public void onModuleLoad() {
+		Window.addResizeHandler(this);
+		String w = new Integer(Window.getClientWidth()).toString()+"px";
+		String h = new Integer(Window.getClientHeight()).toString()+"px";
+		viewport.setSize(w, h);
 		RootPanel.get().add(viewport);
+		tabPanel.selectTab(0);
 		loadBooksAndArticles();
+	}
+
+	@Override
+	public void onResize(ResizeEvent event) {
+		if (viewport!=null) {
+			viewport.setSize(
+					new Integer(event.getWidth()).toString()+"px",
+					new Integer(event.getHeight()).toString()+"px"
+					);
+		}
 	}
 
 }

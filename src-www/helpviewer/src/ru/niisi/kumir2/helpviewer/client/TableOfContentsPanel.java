@@ -3,51 +3,48 @@ package ru.niisi.kumir2.helpviewer.client;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.extjs.gxt.ui.client.Style;
-import com.extjs.gxt.ui.client.data.ModelData;
-import com.extjs.gxt.ui.client.event.SelectionChangedEvent;
-import com.extjs.gxt.ui.client.event.SelectionChangedListener;
-import com.extjs.gxt.ui.client.store.TreeStore;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.treepanel.TreePanel;
-import com.extjs.gxt.ui.client.widget.treepanel.TreePanelSelectionModel;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.Tree;
+import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.xml.client.Document;
 
-public class TableOfContentsPanel extends LayoutContainer {
+public class TableOfContentsPanel extends ScrollPanel {
 
 	private List<Document> books = new LinkedList<Document>();
 	private List<Document> articles = new LinkedList<Document>();
-	private TreeStore<ModelData> store = new TreeStore<ModelData>();
-	private TreePanel<ModelData> treePanel = null;
+	private Tree tree = null;
 	
 	public TableOfContentsPanel()
 	{
 		super();
-		treePanel = new TreePanel<ModelData>(store);
-		treePanel.setDisplayProperty("title");
-		treePanel.setAutoHeight(true);
-		treePanel.setStyleAttribute("overflow-x", "hidden");
-		TreePanelSelectionModel<ModelData> sm = treePanel.getSelectionModel();
-		sm.addSelectionChangedListener(new SelectionChangedListener<ModelData>() {
-		
+		tree = new Tree();
+		setWidget(tree);
+		tree.addSelectionHandler(new SelectionHandler<TreeItem>() {
+			
 			@Override
-			public void selectionChanged(SelectionChangedEvent<ModelData> se) {
-				final DocBookModel md = (DocBookModel)se.getSelectedItem();
-				fireEvent(new OpenNodeEvent(md));
+			public void onSelection(SelectionEvent<TreeItem> event) {
+				final TreeItem item = event.getSelectedItem();
+				if (item!=null) {
+					final DocBookModel dbm = (DocBookModel)item;
+					fireEvent(new OpenNodeEvent(dbm));
+				}
+				
 			}
 		});
-		add(treePanel);
-		
 	}
 	
 	public void addBook(final Document book) {
 		books.add(book);
-		store.add(new DocBookModel(book.getDocumentElement()), true);
+		TreeItem bookItem = new DocBookModel(book.getDocumentElement());
+		tree.addItem(bookItem);
 	}
 	
 	public void addArticle(final Document article) {
 		articles.add(article);
-		store.add(new DocBookModel(article.getDocumentElement()), true);
+		TreeItem articleItem = new DocBookModel(article.getDocumentElement());
+		tree.addItem(articleItem);
 	}
 	
 	@SuppressWarnings("unchecked")

@@ -1,18 +1,12 @@
 package ru.niisi.kumir2.helpviewer.client;
 
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
-import com.extjs.gxt.ui.client.core.FastMap;
-import com.extjs.gxt.ui.client.data.ChangeEvent;
-import com.extjs.gxt.ui.client.data.ChangeListener;
-import com.extjs.gxt.ui.client.data.ModelData;
-import com.extjs.gxt.ui.client.data.TreeModel;
+import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.xml.client.*;
 
-public class DocBookModel implements TreeModel {
+public class DocBookModel extends TreeItem {
 	
 	
 	private final static DocBookModelType[] EXPANDABLE_TAGS = { 
@@ -49,6 +43,11 @@ public class DocBookModel implements TreeModel {
 		super();
 	}
 	
+	@Override
+	public String getHTML() {
+		return getTitle();
+	}
+	
 	public DocBookModel(DocBookModel parent, DocBookType docBookType, DocBookModelType modelType, final Element element) {
 		init(parent, docBookType, modelType, element);
 	}
@@ -67,7 +66,10 @@ public class DocBookModel implements TreeModel {
 		return t.trim();
 	}
 	
-	
+	@Override
+	public TreeItem getParentItem() {
+		return parent;
+	}
 	
 	protected void init(DocBookModel parent, DocBookType docBookType, DocBookModelType modelType, final Element element) {
 		this.parent = parent;
@@ -80,10 +82,12 @@ public class DocBookModel implements TreeModel {
 			sectionLevel += 1;
 		}
 		final NodeList nodes = element.getChildNodes();
+		DocBookModel childTreeItem = null;
 		for (int i=0; i<nodes.getLength(); i++){
 			final Node n = nodes.item(i);
 			if (n.getNodeType()==Node.ELEMENT_NODE && n.getNodeName().equalsIgnoreCase("title")) {
 				title = extractStringData((Element)n);
+				setText(title);
 			}
 			else if (n.getNodeType()==Node.ELEMENT_NODE && n.getNodeName().equalsIgnoreCase("subtitle")) {
 				subtitle = extractStringData((Element)n);
@@ -98,10 +102,12 @@ public class DocBookModel implements TreeModel {
 				abstractOrPreface = new DocBookModel(this, docBookType, DocBookModelType.Reference, (Element)n);
 			}
 			else if (n.getNodeType()==Node.ELEMENT_NODE && n.getNodeName().equalsIgnoreCase("chapter")) {
-				children.add(new DocBookModel(this, docBookType, DocBookModelType.Chapter, (Element)n));
+				childTreeItem = new DocBookModel(this, docBookType, DocBookModelType.Chapter, (Element)n); 
+				children.add(childTreeItem);
 			}
 			else if (n.getNodeType()==Node.ELEMENT_NODE && n.getNodeName().equalsIgnoreCase("section")) {
-				children.add(new DocBookModel(this, docBookType, DocBookModelType.Section, (Element)n));
+				childTreeItem = new DocBookModel(this, docBookType, DocBookModelType.Section, (Element)n);
+				children.add(childTreeItem);
 			}
 			else if (n.getNodeType()==Node.ELEMENT_NODE && n.getNodeName().equalsIgnoreCase("para")) {
 				children.add(new DocBookModel(this, docBookType, DocBookModelType.Para, (Element)n));
@@ -123,6 +129,14 @@ public class DocBookModel implements TreeModel {
 			}
 			else {
 				html += n.toString();
+			}
+			if (childTreeItem!=null) {
+				if (modelType==DocBookModelType.Book || modelType==DocBookModelType.Article || modelType==DocBookModelType.Chapter) {
+					addItem(childTreeItem);
+				}
+				else if (modelType==DocBookModelType.Section && sectionLevel<=MAX_SECTION_LEVEL) {
+					addItem(childTreeItem);
+				}
 			}
 		}
 	}
@@ -147,7 +161,7 @@ public class DocBookModel implements TreeModel {
 		return reference;
 	}
 	
-	public String getHTML() {
+	public String getContentHTML() {
 		String result = "";
 		// 0. Add container if need
 		if (modelType==DocBookModelType.Example) {
@@ -211,7 +225,7 @@ public class DocBookModel implements TreeModel {
 		}
 		else {
 			for (final DocBookModel child : children) {
-				result += child.getHTML();
+				result += child.getContentHTML();
 			}
 		}
 		
@@ -242,6 +256,7 @@ public class DocBookModel implements TreeModel {
 
 	private String docBookToHtml(String s) {
 		String result = s;
+		result = result.replace("&semi;", ";");
 		result = result.replace("---", "&mdash;").replace("--", "&ndash;");
 		result = result.replace("role=\"", "class=\"emph_");
 		result = result.replace("<emphasis ", "<span ").replace("</emphasis>","</span>");
@@ -260,129 +275,9 @@ public class DocBookModel implements TreeModel {
 
 	private String generateIndex() {
 		return "";
-	}
+	}	
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <X> X get(String property) {
-		if (property.equalsIgnoreCase("title")) {
-			return (X) getTitle();
-		}
-		return null;
-	}
-
-	@Override
-	public Map<String, Object> getProperties() {
-		Map<String, Object> newMap = new FastMap<Object>();
-		for (String s : getPropertyNames()) {
-			newMap.put(s, get(s));
-		}
-		return newMap;
-	}
-
-	@Override
-	public Collection<String> getPropertyNames() {
-		LinkedList<String> result = new LinkedList<String>();
-		result.add("title");
-		return result;
-	}
-
-	@Override
-	public <X> X remove(String property) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public <X> X set(String property, X value) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void addChangeListener(ChangeListener... listener) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void removeChangeListener(ChangeListener... listener) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void removeChangeListeners() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setSilent(boolean silent) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void notify(ChangeEvent event) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void add(ModelData child) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public ModelData getChild(int index) {
-		return getChildren().get(index);
-	}
-
-	@Override
-	public int getChildCount() {
-		return getChildren().size();
-	}
-
-	@Override
-	public List<ModelData> getChildren() {
-		List<ModelData> result = new LinkedList<ModelData>();
-		for (DocBookModel m : children) {
-			DocBookModelType t = m.getModelType();
-			boolean candidate = false;
-			for (DocBookModelType tt : EXPANDABLE_TAGS) {
-				if (tt==t) {
-					candidate = true;
-					break;
-				}
-			}
-			if (t==DocBookModelType.Section && m.getSectionLevel()>MAX_SECTION_LEVEL+1)
-				candidate = false;
-			if (candidate)
-				result.add(m);
-		}
-		return result;
-		
-	}
-
-	@Override
-	public TreeModel getParent() {
-		return parent;
-	}
-
-	@Override
-	public int indexOf(ModelData child) {
-		return children.indexOf(child);
-	}
-
-	@Override
-	public void insert(ModelData child, int index) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
+	
 	public boolean isLeaf() {
 		for ( DocBookModelType t  : EXPANDABLE_TAGS ) {
 			if (modelType==t) {
@@ -393,24 +288,6 @@ public class DocBookModel implements TreeModel {
 			}
 		}
 		return true;
-	}
-
-	@Override
-	public void remove(ModelData child) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void removeAll() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setParent(TreeModel parent) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	public DocBookType getDocBookType() {

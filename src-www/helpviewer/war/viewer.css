@@ -1,2 +1,66 @@
 @CHARSET "UTF-8";
 
+body {
+	margin: 0;
+}
+
+.gwt-SplitLayoutPanel-HDragger {
+  background: #e7e7e7 url(images/thumb_vertical.png) center center no-repeat;
+  cursor: col-resize;
+}
+.gwt-SplitLayoutPanel-VDragger {
+  background: #e7e7e7 url(images/thumb_horz.png) center center no-repeat;
+  cursor: row-resize;
+}
+
+.gwt-TabLayoutPanel {
+	background-color: #ccc;
+}
+
+.gwt-Label {
+	font-family: Droid Sans, DejaVu Sans, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-weight: bold;
+}
+
+.gwt-Tree {
+	font-family: Droid Sans, DejaVu Sans, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+}
+
+.gwt-TabLayoutPanelContentContainer {
+	background-color: white;
+}
+
+.gwt-TabLayoutPanelTab {
+	  border-collapse: collapse;
+  	  margin-left: 4px;
+  	  padding: 7px 5px 4px 5px;
+	  cursor: pointer;
+	  cursor: hand;
+	  color: #fff;
+	  height: 20px;
+	  text-align: center;
+	  background: #8E8E8E;
+}
+
+.gwt-TabLayoutPanelTab-selected {
+	  background: white;
+	  color: black;
+}
+
+.gwt-Tree .gwt-TreeItem {
+  padding: 1px 0px;
+  margin: 0px;
+  white-space: nowrap;
+  cursor: hand;
+  cursor: pointer;
+}
+.gwt-Tree .gwt-TreeItem-selected {
+  background: #ebeff9;
+}
+.gwt-TreeItem .gwt-RadioButton input,
+.gwt-TreeItem .gwt-CheckBox input {
+  margin-left: 0px;
+}
+

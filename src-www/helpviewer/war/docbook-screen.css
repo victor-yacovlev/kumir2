@@ -85,12 +85,11 @@
 	font-weight: bold;
 	font-size: 125%;
 	font-variant: small-caps;
-	color: darkblue;
 }
 
 .docbook_screen .emph_italic {
 	padding: 0;
-	color: darkblue;
+	font-weight: bold;
 }
 
 .docbook_screen ul {
