@@ -2,6 +2,7 @@
 #include "mainwindow.h"
 #include "extensionsystem/pluginmanager.h"
 #include "kumirvariableswebobject.h"
+#include "ui_mainwindow.h"
 
 
 
@@ -150,6 +151,33 @@ QString Plugin::initialize(const QStringList & parameters)
 
     connect(m_terminal, SIGNAL(openTextEditor(QString,QString)),
             m_mainWindow, SLOT(newText(QString,QString)));
+
+    QDir docsRoot(qApp->property("sharePath").toString()+"/webapps/helpviewer/data/russian/");
+    const QStringList entryList = docsRoot.entryList();
+    QStringList documents;
+    for (int i=0; i<entryList.size(); i++) {
+        const QString entry = entryList[i];
+        if (entry.endsWith(".xml")) {
+            const QString document = "data/russian/"+entry;
+            documents << document;
+        }
+    }
+
+    m_helpBrowser = plugin_browser->createBrowser(
+                QUrl("http://localhost/helpviewer/index.html?documents="+documents.join(",")),
+                m_browserObjects);
+
+    QDockWidget * helpWindow = m_mainWindow->addSecondaryComponent(
+                tr("Help"),
+                m_helpBrowser.widget,
+                QList<QAction*>(),
+                QList<QAction*>(),
+                MainWindow::Control
+                );
+
+    helpWindow->toggleViewAction()->setShortcut(QKeySequence("F1"));
+    connect(m_mainWindow->ui->actionUsage, SIGNAL(triggered()),
+            helpWindow->toggleViewAction(), SLOT(trigger()));
 
     return "";
 }

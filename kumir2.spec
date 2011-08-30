@@ -3,8 +3,8 @@
 
 %define relno 0
 %define packager Victor Yacovlev <victor@lpm.org.ru>
-%define is_buildservice 0
-%define alphaversion 6
+%define is_buildservice 1
+%define alphaversion 9
 
 # -----------------------------------------------------------------------------
 
@@ -41,6 +41,8 @@ Version:	1.99.0+alpha%{alphaversion}
 Release:	%{release}
 BuildRoot:	%{_tmppath}/%{name}-%{version}
 BuildRequires:	python
+BuildRequires:	ant
+BuildRequires:	gwt >= 2.3.0
 %if %{is_suse}
 BuildRequires:	libqt4-devel >= 4.6.0 libQtWebKit-devel >= 4.6.0
 %if %{is_buildservice}
@@ -85,17 +87,24 @@ Second generation of well-known Kumir system
 
 
 %build
+# Run qmake to generate makefiles
 %if %{is_suse}
 qmake
 %endif
 %if %{is_fedora}
 qmake-qt4
+# Fedora has lrelease-qt4 instead of lrelease, so it can't be called from script
 lrelease-qt4 share/kumir2/translations/*.ts
 %endif
 %if %{is_mandriva}
 qmake
 %endif
+# Build binary part
 make
+# Build GWT-applications used by Kumir
+pushd src-www/helpviewer
+ant
+popd
 
 %install
 make INSTALL_ROOT=$RPM_BUILD_ROOT/%{_prefix} install
@@ -105,6 +114,14 @@ mkdir -p $RPM_BUILD_ROOT/%{_datadir}/icons/
 cp -R app_icons/linux/* $RPM_BUILD_ROOT/%{_datadir}/icons/
 mkdir -p $RPM_BUILD_ROOT/%{_datadir}/applications/
 cp *.desktop $RPM_BUILD_ROOT/%{_datadir}/applications/
+# Copy Help Viewer web-application
+mkdir -p $RPM_BUILD_ROOT/%{_prefix}/share/kumir2/webapps/helpviewer/
+cp -R src-www/helpviewer/war/* $RPM_BUILD_ROOT/%{_prefix}/share/kumir2/webapps/helpviewer/
+# Remove unneccesary WEB-INF (we use only client-side part of web-application)
+rm -rf $RPM_BUILD_ROOT/%{_prefix}/share/kumir2/webapps/helpviewer/WEB-INF 
+# Copy DOCBOOK-data for help viewer
+mkdir -p $RPM_BUILD_ROOT/%{_prefix}/share/kumir2/webapps/helpviewer/data/russian
+cp userdocs/*.xml $RPM_BUILD_ROOT/%{_prefix}/share/kumir2/webapps/helpviewer/data/russian/
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -120,15 +137,13 @@ Contains kumir2 extension system skeleton and other libraries
 %files common
 %defattr(-,root,root)
 %dir %{_libdir}/kumir2
-%{_libdir}/kumir2/libAbstractSyntaxTree.so*
 %{_libdir}/kumir2/libErrorMessages.so*
 %{_libdir}/kumir2/libExtensionSystem.so*
-%{_libdir}/kumir2/libBytecode.so*
+%{_libdir}/kumir2/libDataFormats.so*
 %dir %{_datadir}/kumir2/icons
 %{_datadir}/kumir2/icons/*
 %dir %{_datadir}/kumir2/translations
-%{_datadir}/kumir2/translations/AbstractSyntaxTree*.qm
-#%{_datadir}/kumir2/translations/Bytecode*.qm
+#%{_datadir}/kumir2/translations/DataFormats*.qm
 %{_datadir}/kumir2/translations/ErrorMessages*.qm
 %{_datadir}/kumir2/translations/ExtensionSystem*.qm
 
@@ -196,7 +211,7 @@ Generator of bytecode to be evaluated by Kumir VM
 Summary:	Kumir compiler toolchain module
 Requires:	kumir2-common
 Requires:	kumir2-module-KumirAnalizer
-Requires:	kumir2-module-NativeGenerator
+Requires:	kumir2-module-KumirNativeGenerator
 
 %description module-KumirCompiler
 Provides ability to compile Kumir programs
@@ -213,7 +228,7 @@ Provides ability to compile Kumir programs
 Summary:	Kumir bytecode compiler toolchain module
 Requires:	kumir2-common
 Requires:	kumir2-module-KumirAnalizer
-Requires:	kumir2-module-CodeGenerator
+Requires:	kumir2-module-KumirCodeGenerator
 
 %description module-KumirBCompiler
 Provides ability to bytecode-compile Kumir programs
@@ -253,10 +268,8 @@ programs without Kumir system itself.
 %defattr(-,root,root)
 %dir %{_libdir}/kumir2
 %{_libdir}/kumir2/libKumirStdLib.so*
-#%{_libdir}/kumir2/libKumirGuiRunner.so*
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/KumirStdLib*.qm
-#%{_datadir}/kumir2/translations/KumirGuiRunner*.qm
 
 %post libs -p /sbin/ldconfig
 %postun libs -p /sbin/ldconfig
@@ -331,6 +344,8 @@ GUI for Kumir
 %{_datadir}/kumir2/coregui/*
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/CoreGUI*.qm
+%dir %{_datadir}/kumir2/webapps/helpviewer
+%{_datadir}/kumir2/webapps/helpviewer/*
 
 
 %package utils-cc
@@ -426,6 +441,43 @@ Kumir IDE for high school applications
 %update_icon_cache hicolor
 %icon_theme_cache_post hicolor
 
+%package teacher
+Summary:	Kumir Teacher Edition
+Requires:	kumir2-libs
+Requires:	kumir2-module-CoreGUI
+Requires:	kumir2-module-Editor
+Requires:	kumir2-module-KumirAnalizer
+Requires:	kumir2-module-KumirCodeGenerator
+Requires:	kumir2-module-KumirCodeRun
+Requires:	kumir2-module-KumirNativeGenerator
+Requires:	kumir2-module-st_funct
+
+%description teacher
+Kumir IDE for tutors
+
+%files teacher
+%defattr(-,root,root)
+%{_bindir}/kumir2-teacher
+%{_datadir}/applications/kumir2-teacher.desktop
+%dir %{_datadir}/icons/hicolor
+%dir %{_datadir}/icons/hicolor/scalable
+%dir %{_datadir}/icons/hicolor/scalable/apps
+%dir %{_datadir}/icons/hicolor/128x128
+%dir %{_datadir}/icons/hicolor/128x128/apps
+%dir %{_datadir}/icons/hicolor/64x64
+%dir %{_datadir}/icons/hicolor/64x64/apps
+%dir %{_datadir}/icons/hicolor/48x48
+%dir %{_datadir}/icons/hicolor/48x48/apps
+%{_datadir}/icons/hicolor/*/apps/kumir2-teacher.*
+
+%post teacher
+%update_icon_cache hicolor
+%icon_theme_cache_post hicolor
+
+%postun teacher
+%update_icon_cache hicolor
+%icon_theme_cache_post hicolor
+
 %package standard
 Summary:	Kumir Standard Edition
 Requires:	kumir2-libs
@@ -483,7 +535,7 @@ using actor Painter
 %package actor-painter
 Summary:	Actor Painter for Kumir
 Requires:	kumir2-common
-Requires:	libs-painter
+Requires:	kumir2-libs-painter
 
 %description actor-painter
 Actor Painter adds raster-painting feauteres for Kumir
@@ -498,6 +550,19 @@ Actor Painter adds raster-painting feauteres for Kumir
 %{_datadir}/kumir2/translations/ActorPainter_*.qm
 
 %changelog
+* Tue Aug 30 2011 - Victor Yacovlev <victor@lpm.org.ru>
+- Implemented help viewer
+- Implemented code autocompleter
+- Fixed some bugs
+
+* Wed Aug 24 2011 - Victor Yacovlev <victor@lpm.org.ru>
+- Implemented teacher mode
+- Implemented variables view while running
+
+* Mon Aug 15 2011 - Victor Yacovlev <victor@lpm.org.ru>
+- Implemented integer/double overflow checking while running
+- Added kumir2-run tool
+
 * Thu Aug 11 2011 - Victor Yacovlev <victor@lpm.org.ru>
 - Ready for preliminary testing
 

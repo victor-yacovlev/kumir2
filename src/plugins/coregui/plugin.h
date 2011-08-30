@@ -64,6 +64,7 @@ protected:
     Term * m_terminal;
     QMap<QString,QObject*> m_browserObjects;
     KumirProgram * m_kumirProgram;
+    BrowserComponent m_helpBrowser;
     bool b_nosessions;
 
 };

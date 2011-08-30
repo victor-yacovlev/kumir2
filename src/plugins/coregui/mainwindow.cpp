@@ -890,17 +890,7 @@ void MainWindow::showAbout()
 
 void MainWindow::showUserManual()
 {
-    QDir docsRoot(qApp->property("sharePath").toString()+"/webapps/helpviewer/data/russian/");
-    const QStringList entryList = docsRoot.entryList();
-    QStringList documents;
-    for (int i=0; i<entryList.size(); i++) {
-        const QString entry = entryList[i];
-        if (entry.endsWith(".xml")) {
-            const QString document = "data/russian/"+entry;
-            documents << document;
-        }
-    }
-    loadFromUrl(QUrl("http://localhost/helpviewer/index.html?documents="+documents.join(",")), false);
+// Implemented in Plugin class
 }
 
 void MainWindow::fileOpen()

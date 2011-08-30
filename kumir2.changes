@@ -1,6 +1,21 @@
-* Tue Jun 14 2011 - Victor Yacovlev <victor@lpm.org.ru>
-- GUI preliminary implementation
-- Ported Standard functions and Painter modules from Kumir 1.x
+* Tue Aug 30 2011 - Victor Yacovlev <victor@lpm.org.ru>
+- Implemented help viewer
+- Implemented code autocompleter
+- Fixed some bugs
+
+* Wed Aug 24 2011 - Victor Yacovlev <victor@lpm.org.ru>
+- Implemented teacher mode
+- Implemented variables view while running
+
+* Mon Aug 15 2011 - Victor Yacovlev <victor@lpm.org.ru>
+- Implemented integer/double overflow checking while running
+- Added kumir2-run tool
+
+* Thu Aug 11 2011 - Victor Yacovlev <victor@lpm.org.ru>
+- Ready for preliminary testing
+
+* Wed Jul 20 2011 - Victor Yacovlev <victor@lpm.org.ru>
+- Usable functionality
 
 * Tue May 31 2011 - Victor Yacovlev <victor@lpm.org.ru>
 - Initial build for testing

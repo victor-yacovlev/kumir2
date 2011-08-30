@@ -25,6 +25,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
     Q_ENUMS(DocumentType DockWindowType)
+    friend class Plugin;
 
 public:
     enum DocumentType { Text, Kumir, Pascal, WWW };
