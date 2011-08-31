@@ -44,6 +44,7 @@ Component::Component(class Plugin * plugin) :
 #ifdef QT_DEBUG
     ui->webView->page()->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
 #endif
+
     ui->webView->pageAction(QWebPage::Back)->setText(tr("Go back"));
     ui->webView->pageAction(QWebPage::Forward)->setText(tr("Go forward"));
     ui->webView->pageAction(QWebPage::Stop)->setText(tr("Stop"));
@@ -59,6 +60,7 @@ Component::Component(class Plugin * plugin) :
     connect(ui->webView, SIGNAL(titleChanged(QString)), this, SIGNAL(titleChanged(QString)));
     connect(ui->webView->page(), SIGNAL(loadStarted()), this, SLOT(handleLoadStarted()));
     connect(ui->webView->page(), SIGNAL(loadFinished(bool)), this, SLOT(handleLoadFinished()));
+    connect(ui->webView->page(), SIGNAL(printRequested(QWebFrame*)), this, SLOT(handlePrintRequest(QWebFrame*)));
 
     a_goBack = new QAction(tr("Go back"), this);
     a_goBack->setIcon(ui->webView->pageAction(QWebPage::Back)->icon());
@@ -82,14 +84,15 @@ Component::Component(class Plugin * plugin) :
     menu_edit->addAction(ui->webView->pageAction(QWebPage::Copy));
     menu_edit->addAction(ui->webView->pageAction(QWebPage::Paste));
 
+    frame_toPrint = 0;
 }
 
 QList<QAction*> Component::toolbarActions()
 {
     QList<QAction*> result;
-//    result << a_goBack;
-//    result << ui->webView->pageAction(QWebPage::Forward);
-//    result << a_reloadStop;
+    result << a_goBack;
+    result << ui->webView->pageAction(QWebPage::Forward);
+    result << a_reloadStop;
     return result;
 }
 
@@ -152,6 +155,35 @@ void Component::handleReloadStop()
     }
     else {
         ui->webView->pageAction(QWebPage::Stop)->trigger();
+    }
+}
+
+void Component::handlePrintRequest(QWebFrame *frame)
+{
+#if QT_VERSION >= 0x040800
+    frame_toPrint = frame;
+    QPrintPreviewDialog * dialog = new QPrintPreviewDialog(this);
+    connect(dialog, SIGNAL(paintRequested(QPrinter*)),
+            this, SLOT(handlePaintPrinterFrame(QPrinter*)));
+    dialog->exec();
+    dialog->deleteLater();
+    frame_toPrint = 0;
+#else
+    QPrintDialog * dialog = new QPrintDialog(this);
+    if (dialog->exec()==QDialog::Accepted) {
+        QPrinter * printer = dialog->printer();
+        if (printer) {
+            frame->print(printer);
+        }
+    }
+    dialog->deleteLater();
+#endif
+}
+
+void Component::handlePaintPrinterFrame(QPrinter *printer)
+{
+    if (printer && frame_toPrint) {
+        frame_toPrint->print(printer);
     }
 }
 

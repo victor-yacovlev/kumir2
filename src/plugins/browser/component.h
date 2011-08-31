@@ -40,6 +40,7 @@ private:
 
     QMenu * menu_edit;
     class Plugin * m_plugin;
+    QWebFrame * frame_toPrint;
 
 signals:
     void titleChanged(const QString & title);
@@ -50,6 +51,8 @@ private slots:
     void handleReloadStop();
     void handleLoadStarted();
     void handleLoadFinished();
+    void handlePrintRequest(QWebFrame * frame);
+    void handlePaintPrinterFrame(QPrinter * printer);
 };
 
 
