@@ -118,7 +118,8 @@
 	margin-top: 3em;
 }
 
-.docbook_screen .tableofcontents p, .docbook_screen .tableofcontents li {
+
+.docbook_screen .tableofcontents .tocheader {
 	font-weight: bold;
 }
 
@@ -130,4 +131,21 @@
 
 .docbook_screen .tableofcontents a:hover {
 	text-decoration: underline;
+}
+
+.docbook_screen .version_for_print_link a {
+	display: block;
+	width: 100%;
+	text-align: right;
+	font-style: italic;
+	font-weight: bold;
+	font-size: 80%;
+	text-decoration: none;
+	color: gray;
+	border-bottom: 1px dotted gray;
+	margin-bottom: 1em;
+}
+
+.docbook_screen .version_for_print_link a:hover {
+	color: black;
 }

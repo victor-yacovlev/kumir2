@@ -1,0 +1,150 @@
+@CHARSET "UTF-8";
+
+.book p {
+	text-align: justify;
+	text-indent: 1em;
+	margin-top: 1em;
+}
+
+.book a {
+	font-style: italic;
+	text-decoration: none;
+	color: black;
+}
+
+.book pre {
+	display: block;
+	padding-left: 1em;
+	padding-right: 1em;
+	font-family: Droid Sans Mono, DejaVu Sans Mono, Lucida Console, Courier New, Courier, monospace;
+}
+
+.book booktitle, chaptertitle, sectiontitle {
+	display: block;
+	width: 100%;
+	text-align: left;
+	line-height: normal;
+	text-indent: 0;
+	font-weight: bold;
+}
+
+.book booktitle {
+	font-size: 300%;
+	padding-top: 100mm;
+}
+
+	
+
+.book booksubtitle, chaptersubtitle, sectionsubtitle {
+	display: block;
+	width: 100%;
+	text-align: left;
+	font-size: 150%;
+	line-height: normal;
+	font-weight: bold;
+	font-style: italic;
+	margin-top: 2em;
+}
+
+.book chaptertitle {
+	page-break-before: always;
+	font-size: 300%;
+	margin-bottom: 20mm;
+}
+
+.book .tableofcontents .tocheader {
+	display: block;
+	width: 100%;
+	text-align: left;
+	line-height: normal;
+	font-weight: bold;
+	text-indent: 0;
+	page-break-before: always;
+	font-size: 300%;
+	margin-bottom: 20mm;
+}
+
+.book booktitle, booksubtitle {
+	diplay: block;
+	width: 100%;
+	text-align: center;
+}
+
+.book .level0 {
+	font-size: 175%;
+}
+
+.book .level1 {
+	font-size: 150%;
+}
+
+.book .level2 {
+	font-size: 125%;
+}
+
+.book .level3, .book .level4, .book .level5 {
+	font-size: 100%;
+}
+
+.book sectionsubtitle .level1, .level2, .level3, .level4, .level5 {
+	font-size: 100%;
+}
+
+.book example {
+	display:block;
+	margin: 1em;
+	margin-top: 2em;
+	border: 1px solid gray;
+}
+
+.book exampletitle {
+	display: block;
+	font-weight: bold;
+	border-bottom: 1px solid black;
+	margin: 0;
+	font-style: italic;
+	text-align: center;
+}
+
+.book .emph_bold {
+	padding: 0;
+	font-weight: bold;
+}
+
+.book .emph_italic {
+	padding: 0;
+	font-style: italic;
+}
+
+.book ul {
+	list-style-type: disc;
+}
+
+.book ol {
+	list-style-type: decimal;
+}
+
+.book ul, ol {
+	margin-left: 1em;
+	margin-right: 1em;
+}
+
+.book li p {
+	margin-left: 0;
+	text-indent: 0;
+}
+
+.book .tableofcontents {
+	page-break-before: always;
+	display: block;
+	margin-top: 3em;
+}
+
+
+.book .tableofcontents a {
+	text-decoration: none;
+	font-weight: normal;
+	font-style: normal;
+}
+
+

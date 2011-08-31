@@ -3,6 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <title>Справка</title>
+<script type="text/javascript">
+	window.setPrintFrameContents = function (s) {
+		var printframe = document.getElementById("printframe");
+		printframe.contentWindow.setContent(s);
+	}
+	
+	window.doPrintIFrame = function() {
+		var printframe = document.getElementById("printframe");
+		printframe.contentWindow.focus();
+		printframe.contentWindow.print();
+	}
+	
+</script>
 <script type="text/javascript" src="ru.niisi.kumir2.helpviewer.viewer/ru.niisi.kumir2.helpviewer.viewer.nocache.js"></script>
 <link rel="stylesheet" type="text/css" href="viewer.css">
 <link rel="stylesheet" type="text/css" href="docbook-screen.css">

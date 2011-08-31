@@ -12,6 +12,8 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.user.client.ui.Frame;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
@@ -29,6 +31,7 @@ public class ViewerRoot implements EntryPoint, ResizeHandler  {
 	private IndexPanel indexPanel = null;
 	private List<Document> books = new LinkedList<Document>();
 	private List<Document> articles = new LinkedList<Document>();
+	private Frame printFrame;
 	
 	public ViewerRoot() {
 		createComponents();
@@ -39,7 +42,7 @@ public class ViewerRoot implements EntryPoint, ResizeHandler  {
 		viewport.ensureDebugId("viewport");
 		tabPanel = new TabLayoutPanel(2.5, Unit.EM);
 		tabPanel.setWidth("100%");
-		tabPanel.setAnimationDuration(1000);
+		tabPanel.setAnimationDuration(600);
 		
 		tabPanel.ensureDebugId("tabpanel");
 		viewContentPanel = new ViewContentPanel();
@@ -50,6 +53,8 @@ public class ViewerRoot implements EntryPoint, ResizeHandler  {
 		indexPanel = new IndexPanel();
 		tabPanel.add(tableOfContentsPanel, "Содержание");
 		tabPanel.add(indexPanel, "Указатель");
+		printFrame = new Frame("_print.html");
+		printFrame.getElement().setAttribute("id", "printframe");
 	}
 	
 	protected void loadBooksAndArticles() {
@@ -100,6 +105,9 @@ public class ViewerRoot implements EntryPoint, ResizeHandler  {
 		RootPanel.get().add(viewport);
 		tabPanel.selectTab(0);
 		loadBooksAndArticles();
+		printFrame.setSize("210mm", "297mm");
+		printFrame.setVisible(false);
+		RootPanel.get().add(printFrame);
 	}
 
 	@Override

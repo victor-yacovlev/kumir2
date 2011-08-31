@@ -1,0 +1,12 @@
+@CHARSET "UTF-8";
+
+body {
+	font-family: Garamond, Droid Serif, DejaVu Serif, Nimbus Roman, Times New Roman, serif;
+	font-size: 12pt;
+	width: 210mm;
+	height: 297mm;
+	margin-top: 20mm;
+	margin-left: 20mm;
+	margin-left: 30mm;
+	margin-bottom: 30mm;
+}

@@ -244,8 +244,24 @@ public class DocBookModel extends TreeItem {
 		return reference;
 	}
 	
-	public String getContentHTML() {
+	public String getContentHTML(boolean topLevel, boolean printableForm) {
 		String result = "";
+		if (topLevel && !printableForm && (parent==null || parent!=null && !parent.isLeaf()) ) {
+			// Printable version
+			result += "<div class=\"version_for_print_link\">";
+			result += "<a href=\"#\" onclick=\"printThis('"+getDocumentId()+"','"+this.id+"')\">";
+			result += "Распечатать ";
+			if (modelType==DocBookModelType.Section)
+				result += "эту страницу";
+			else if (modelType==DocBookModelType.Chapter)
+				result += "эту главу";
+			else if (modelType==DocBookModelType.Book)
+				result += "эту книгу";
+			else if (modelType==DocBookModelType.Article)
+				result += "эту статью";
+			result += "</a>";
+			result += "</div>";
+		}
 		// 0. Add container if need
 		if (modelType==DocBookModelType.Example) {
 			result += "<example>\n";
@@ -267,12 +283,16 @@ public class DocBookModel extends TreeItem {
 		}
 		else if (modelType==DocBookModelType.Xref) {
 			if (XrefLinkend!=null) {
-				result += generateXref(XrefLinkend, XrefEndTerm);
+				result += generateXref(printableForm, XrefLinkend, XrefEndTerm);
 			}
 		}
 		else if (modelType==DocBookModelType.Emphasis) {
 			result += "<span class=\"emph_"+EmphasisRole+"\">";
 		}
+		else if (modelType==DocBookModelType.Preface || modelType==DocBookModelType.Preface) {
+			result += "<div class=\"abstract\">\n";
+		}
+		
 		// 1. Add title
 		switch (modelType) {
 		case Book:
@@ -295,9 +315,9 @@ public class DocBookModel extends TreeItem {
 			break;
 		case Section:
 			if (title!=null && !title.isEmpty())
-				result += "<sectiontitle class=\"level"+(new Integer(sectionLevel-MAX_SECTION_LEVEL).toString())+"\">"+normalizeText(title)+"</sectiontitle>\n";
+				result += "<sectiontitle class=\"level"+(new Integer(sectionLevel-MAX_SECTION_LEVEL+1).toString())+"\">"+normalizeText(title)+"</sectiontitle>\n";
 			if (subtitle!=null && !subtitle.isEmpty())
-				result += "<sectionsubtitle class=\"level"+(new Integer(sectionLevel-MAX_SECTION_LEVEL).toString())+"\">"+normalizeText(subtitle)+"</chaptersubtitle>\n";
+				result += "<sectionsubtitle class=\"level"+(new Integer(sectionLevel-MAX_SECTION_LEVEL+1).toString())+"\">"+normalizeText(subtitle)+"</chaptersubtitle>\n";
 			break;
 		case Example:
 			if (title!=null && !title.isEmpty())
@@ -309,16 +329,24 @@ public class DocBookModel extends TreeItem {
 		
 		if (modelType==DocBookModelType.Book || modelType==DocBookModelType.Article) {
 			if (abstractOrPreface!=null) {
-				result += abstractOrPreface.getContentHTML();
+				result += abstractOrPreface.getContentHTML(false, printableForm);
+			}
+			if (modelType==DocBookModelType.Article) {
+				result += "<div class=\"article_body\">\n";
 			}
 		}
-		if (!isLeaf()) 
+		
+		if (printableForm && modelType==DocBookModelType.Book) {
+			result += generateIndex(true, printableForm);
+		}
+		
+		if (!isLeaf() && !printableForm) 
 		{
-			result += generateIndex(true);
+			result += generateIndex(true, printableForm);
 		}
 		else {
 			for (final DocBookModel child : children) {
-				result += child.getContentHTML();
+				result += child.getContentHTML(false, printableForm);
 			}
 		}
 		
@@ -353,6 +381,12 @@ public class DocBookModel extends TreeItem {
 		else if (modelType==DocBookModelType.Emphasis) {
 			result += "</span>";
 		}
+		else if (modelType==DocBookModelType.Preface || modelType==DocBookModelType.Abstract) {
+			result += "</div>";
+		}
+		else if (modelType==DocBookModelType.Article) {
+			result += "</div>\n";
+		}
 		
 		return result;
 	}
@@ -361,8 +395,6 @@ public class DocBookModel extends TreeItem {
 		String result = s;
 		result = result.replace("&semi;", ";");
 		result = result.replace("---", "&mdash;").replace("--", "&ndash;");
-		result = result.replace("role=\"", "class=\"emph_");
-		result = result.replace("<emphasis ", "<span ").replace("</emphasis>","</span>");
 		boolean openQuote = true;
 		int qp = 0;
 		do {
@@ -385,7 +417,7 @@ public class DocBookModel extends TreeItem {
 		return result;
 	}
 	
-	protected String generateXref(String linkend, String endterm) {
+	protected String generateXref(boolean printableForm, String linkend, String endterm) {
 		String result = " (см.&nbsp;";
 		String documentId = getDocumentId();
 		result += "<a href=\"#\" onclick=\"openXref('"+documentId+"','"+linkend+"')\">";
@@ -398,7 +430,7 @@ public class DocBookModel extends TreeItem {
 		return result;
 	}
 	
-	protected String generateIndex(boolean toplevel) {
+	protected String generateIndex(boolean toplevel, boolean printableForm) {
 		String result = "";
 		
 		if (modelType==DocBookModelType.__text__)
@@ -410,7 +442,7 @@ public class DocBookModel extends TreeItem {
 		else {
 			if (toplevel) {
 				result += "<div class=\"tableofcontents\">\n";
-				result += "<p>Содержание:</p>\n";
+				result += "<p class=\"tocheader\">Содержание:</p>\n";
 			}
 			if (!toplevel)
 				result += "<p>"+generateAHref()+"</p>\n";
@@ -418,7 +450,7 @@ public class DocBookModel extends TreeItem {
 			for ( DocBookModel child : children ) {
 				if (child.getModelType()!=DocBookModelType.__text__) {
 					result += "<li>";
-					result += child.generateIndex(false);
+					result += child.generateIndex(false, printableForm);
 					result += "</li>";
 				}
 			}
