@@ -21,7 +21,8 @@ HEADERS += \
     terminal_plane.h \
     tabbar.h \
     confirmclosedialod.h \
-    kumirvariableswebobject.h
+    kumirvariableswebobject.h \
+    menubar.h
 
 SOURCES += \
     mainwindow.cpp \

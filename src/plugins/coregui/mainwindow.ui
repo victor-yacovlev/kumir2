@@ -48,13 +48,13 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar">
+  <widget class="MenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
      <width>754</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -222,6 +222,11 @@
    <extends>QTabWidget</extends>
    <header location="global">tabwidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MenuBar</class>
+   <extends>QMenuBar</extends>
+   <header>menubar.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

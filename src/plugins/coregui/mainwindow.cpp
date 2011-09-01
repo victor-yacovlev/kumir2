@@ -11,6 +11,27 @@
 
 namespace CoreGUI {
 
+class MenuBar
+        : public QMenuBar
+{
+protected:
+    inline bool eventFilter(QObject *object, QEvent *event) {
+        bool catched = false;
+        if (object == parent() && object) {
+            if (event->type()==QEvent::KeyRelease) {
+                QKeyEvent *kev = static_cast<QKeyEvent*>(event);
+                if (kev->key() == Qt::Key_Alt || kev->key() == Qt::Key_Meta) {
+                    catched = true;
+                }
+            }
+        }
+        if (catched)
+            return false;
+        else
+            return QMenuBar::eventFilter(object, event);
+    }
+};
+
 
 class TabWidgetElement
         : public QWidget
@@ -173,6 +194,7 @@ MainWindow::MainWindow(Plugin * p) :
     connect(ui->actionUsage, SIGNAL(triggered()), this, SLOT(showUserManual()));
 
     installEventFilter(this);
+    installEventFilter(menuBar());
 
 }
 
@@ -206,6 +228,9 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
         if (ke->key()==Qt::Key_F10 && ke->modifiers()==0)
         {
             changeFocusOnMenubar();
+            return true;
+        }
+        if (ke->key()==Qt::Key_Alt || ke->key()==Qt::Key_AltGr) {
             return true;
         }
     }

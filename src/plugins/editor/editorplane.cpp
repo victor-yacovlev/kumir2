@@ -693,8 +693,11 @@ bool EditorPlane::event(QEvent *e)
 {
     if (e->type()==QEvent::KeyPress) {
         QKeyEvent *ke = static_cast<QKeyEvent*>(e);
-        if (ke->key()==Qt::Key_Tab) {
-            keyPressEvent(ke);
+        if (ke->key()==Qt::Key_Tab || ke->key()==Qt::Key_Alt || ke->key()==Qt::Key_AltGr) {
+            if (ke->type()==QEvent::KeyPress)
+                keyPressEvent(ke);
+            else
+                keyReleaseEvent(ke);
             return true;
         }
     }
