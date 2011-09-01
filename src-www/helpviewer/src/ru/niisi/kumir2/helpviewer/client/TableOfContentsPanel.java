@@ -1,9 +1,5 @@
 package ru.niisi.kumir2.helpviewer.client;
 
-import java.util.LinkedList;
-import java.util.List;
-
-import org.apache.catalina.startup.SetDocBaseRule;
 
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.event.logical.shared.SelectionEvent;

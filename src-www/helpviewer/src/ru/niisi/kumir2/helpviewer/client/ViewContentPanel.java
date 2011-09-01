@@ -1,7 +1,6 @@
 package ru.niisi.kumir2.helpviewer.client;
 
 
-import com.google.gwt.user.client.ui.NamedFrame;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.ScrollPanel;
 
