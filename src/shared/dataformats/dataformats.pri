@@ -8,8 +8,8 @@ HEADERS += ../../shared/dataformats/ast.h \
     ../../shared/dataformats/lexem.h \
     ../../shared/dataformats/bc_instruction.h \
     ../../shared/dataformats/bytecode.h \
-    ../../shared/dataformatd/bc_tableelem.h \
-    ../../shared/dataformatd/kumfile.h
+    ../../shared/dataformats/bc_tableelem.h \
+    ../../shared/dataformats/kumfile.h
 isEmpty(DATAFORMATS_PRO) {
     LIBS *= -l$$qtLibraryTarget(DataFormats)
 }

@@ -5,6 +5,6 @@
 #define VERSION_MINOR 0
 #define VERSION_RELEASE 0
 #define VERSION_BETA 0
-#define VERSION_ALPHA 9
+#define VERSION_ALPHA 10
 
 #endif

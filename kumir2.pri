@@ -75,10 +75,10 @@ isEmpty(IDE_LIBRARY_BASENAME) {
     IDE_LIBRARY_BASENAME = lib    
     linux-*: {
 	ARCH = $$system(arch)
-        message($$ARCH)
+#        message($$ARCH)
         contains(ARCH,x86_64): IDE_LIBRARY_BASENAME = lib64
     }
-    message($$IDE_LIBRARY_BASENAME)
+#    message($$IDE_LIBRARY_BASENAME)
 }
 
 DEFINES += IDE_LIBRARY_BASENAME=\\\"$$IDE_LIBRARY_BASENAME\\\"
