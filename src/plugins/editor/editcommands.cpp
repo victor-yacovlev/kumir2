@@ -443,6 +443,80 @@ void ChangeHiddenLineDelimeterCommand::undo()
     doc->setKumFile(prevData, true);
 }
 
+ToggleCommentCommand::ToggleCommentCommand(class TextDocument * Doc,
+                                           int FromLineInclusive,
+                                           int ToLineInclusive,
+                                           class TextCursor * Cursor,
+                                           Shared::AnalizerInterface * Analizer)
+{
+    doc = Doc;
+    cursor = Cursor;
+    analizer = Analizer;
+    fromLineInclusive = qMax(0, FromLineInclusive);
+    toLineInclusive = qMin(doc->linesCount()-1, ToLineInclusive);
+}
+
+void ToggleCommentCommand::redo()
+{
+    if (TextDocument::noUndoRedo)
+        return;
+    bool uncomment = true;
+    commentedLines.clear();
+    uncommentedLines.clear();
+    for (int i=fromLineInclusive; i<=toLineInclusive; i++) {
+        const QString & line = doc->textAt(i);
+        uncomment = uncomment && (line.startsWith("|"));
+    }
+    if (uncomment) {
+        for (int i=fromLineInclusive; i<=toLineInclusive; i++) {
+            const QString & line = doc->textAt(i);
+            QPair<int,int> p;
+            p.first = i;
+            p.second = 1;
+            for (int j=1; j<line.length(); j++) {
+                if (line[j]==' ') {
+                    p.second ++;
+                }
+            }
+            QString dummy;
+            uncommentedLines.insert(p);
+            doc->removeText(dummy, analizer, i, 0, 0, 0, p.second);
+        }
+    }
+    else {
+        for (int i=fromLineInclusive; i<=toLineInclusive; i++) {
+            int dummy;
+            doc->insertText("| ", analizer, i, 0, dummy, dummy);
+            commentedLines.insert(i);
+        }
+    }
+
+}
+
+void ToggleCommentCommand::undo()
+{
+    if (TextDocument::noUndoRedo)
+        return;
+    if (uncommentedLines.isEmpty()) {
+        // do uncomment
+        foreach (int i, commentedLines.toList()) {
+            QString dummy;
+            doc->removeText(dummy, analizer, i, 0, 0, 0, 2);
+        }
+    }
+    else {
+        // do comment
+        QPair<int,int> p;
+        foreach ( p, uncommentedLines.toList()) {
+            QString c;
+            c.fill(' ', p.second);
+            c[0] = '|';
+            int dummy;
+            doc->insertText(c, analizer, p.first, 0, dummy, dummy);
+        }
+    }
+}
+
 QDataStream & operator<< (QDataStream & stream, const InsertCommand & command)
 {
     stream << command.line;
@@ -559,6 +633,24 @@ QDataStream & operator>> (QDataStream & stream, ChangeHiddenLineDelimeterCommand
     QString s;
     stream >> s;
     command.prevData = KumFile::fromString(s);
+    return stream;
+}
+
+QDataStream & operator<< (QDataStream & stream, const ToggleCommentCommand & command)
+{
+    stream << command.fromLineInclusive;
+    stream << command.toLineInclusive;
+    stream << command.commentedLines;
+    stream << command.uncommentedLines;
+    return stream;
+}
+
+QDataStream & operator>> (QDataStream & stream, ToggleCommentCommand & command)
+{
+    stream >> command.fromLineInclusive;
+    stream >> command.toLineInclusive;
+    stream >> command.commentedLines;
+    stream >> command.uncommentedLines;
     return stream;
 }
 

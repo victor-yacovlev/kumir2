@@ -44,6 +44,7 @@ class TextDocument
     friend class RemoveCommand;
     friend class InsertBlockCommand;
     friend class RemoveBlockCommand;
+    friend class ToggleCommentCommand;
 public:
     // Flag, set on restore session.
     // If present, do not actually undo/redo

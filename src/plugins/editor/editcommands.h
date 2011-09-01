@@ -11,6 +11,8 @@ namespace Editor {
 class InsertCommand:
         public QUndoCommand
 {
+    friend QDataStream & operator<< (QDataStream & stream, const InsertCommand & command);
+    friend QDataStream & operator>> (QDataStream & stream, InsertCommand & command);
 public:
     explicit InsertCommand(class TextDocument * doc,
                            class TextCursor * cursor,
@@ -27,7 +29,7 @@ public:
     inline int id() const { return 1; }
     bool mergeWith(const QUndoCommand *other);
 
-//private:
+private:
     class TextDocument * doc;
     class TextCursor * cursor;
     Shared::AnalizerInterface * analizer;
@@ -44,6 +46,8 @@ public:
 class RemoveCommand:
         public QUndoCommand
 {
+    friend QDataStream & operator<< (QDataStream & stream, const RemoveCommand & command);
+    friend QDataStream & operator>> (QDataStream & stream, RemoveCommand & command);
 public:
     explicit RemoveCommand(class TextDocument * doc,
                            class TextCursor * cursor,
@@ -61,7 +65,7 @@ public:
     inline int id() const { return 2; }
     bool mergeWith(const QUndoCommand *other);
 
-//private:
+private:
     class TextDocument * doc;
     class TextCursor * cursor;
     Shared::AnalizerInterface * analizer;
@@ -79,6 +83,8 @@ public:
 class InsertBlockCommand:
         public QUndoCommand
 {
+    friend QDataStream & operator<< (QDataStream & stream, const InsertBlockCommand & command);
+    friend QDataStream & operator>> (QDataStream & stream, InsertBlockCommand & command);
 public:
     explicit InsertBlockCommand(class TextDocument * doc,
                                 class TextCursor * cursor,
@@ -93,7 +99,7 @@ public:
     void undo();
     inline int id() const { return 3; }
 
-//private:
+private:
     class TextDocument * doc;
     class TextCursor * cursor;
     Shared::AnalizerInterface * analizer;
@@ -109,6 +115,8 @@ public:
 class RemoveBlockCommand:
         public QUndoCommand
 {
+    friend QDataStream & operator<< (QDataStream & stream, const RemoveBlockCommand & command);
+    friend QDataStream & operator>> (QDataStream & stream, RemoveBlockCommand & command);
 public:
     explicit RemoveBlockCommand(class TextDocument * doc,
                                 class TextCursor * cursor,
@@ -121,7 +129,7 @@ public:
     void undo();
     inline int id() const { return 4; }
 
-//private:
+private:
     class TextDocument * doc;
     class TextCursor * cursor;
     Shared::AnalizerInterface * analizer;
@@ -134,12 +142,14 @@ public:
 class ToggleLineProtectedCommand:
         public QUndoCommand
 {
+    friend QDataStream & operator<< (QDataStream & stream, const ToggleLineProtectedCommand & command);
+    friend QDataStream & operator>> (QDataStream & stream, ToggleLineProtectedCommand & command);
 public:
     explicit ToggleLineProtectedCommand(class TextDocument * Doc, int lineNo);
     void redo();
     void undo();
     inline int id() const { return 0xA0; }
-// private:
+private:
     class TextDocument * doc;
     int lineNo;
 
@@ -148,32 +158,44 @@ public:
 class ChangeHiddenLineDelimeterCommand:
         public QUndoCommand
 {
+    friend QDataStream & operator<< (QDataStream & stream, const ChangeHiddenLineDelimeterCommand & command);
+    friend QDataStream & operator>> (QDataStream & stream, ChangeHiddenLineDelimeterCommand & command);
 public:
     explicit ChangeHiddenLineDelimeterCommand(class TextDocument * doc,
                                               int firstHiddenLineNo);
     void redo();
     void undo();
-// private:
+private:
     class TextDocument * doc;
     struct KumFile::Data prevData;
     int firstHiddenLineNo;
 };
 
-
-
-QDataStream & operator<< (QDataStream & stream, const InsertCommand & command);
-QDataStream & operator<< (QDataStream & stream, const RemoveCommand & command);
-QDataStream & operator<< (QDataStream & stream, const InsertBlockCommand & command);
-QDataStream & operator<< (QDataStream & stream, const RemoveBlockCommand & command);
-QDataStream & operator<< (QDataStream & stream, const ToggleLineProtectedCommand & command);
-QDataStream & operator<< (QDataStream & stream, const ChangeHiddenLineDelimeterCommand & command);
-
-QDataStream & operator>> (QDataStream & stream, InsertCommand & command);
-QDataStream & operator>> (QDataStream & stream, RemoveCommand & command);
-QDataStream & operator>> (QDataStream & stream, InsertBlockCommand & command);
-QDataStream & operator>> (QDataStream & stream, RemoveBlockCommand & command);
-QDataStream & operator>> (QDataStream & stream, ToggleLineProtectedCommand & command);
-QDataStream & operator>> (QDataStream & stream, ChangeHiddenLineDelimeterCommand & command);
+class ToggleCommentCommand:
+        public QUndoCommand
+{
+    friend QDataStream & operator<< (QDataStream & stream, const ToggleCommentCommand & command);
+    friend QDataStream & operator>> (QDataStream & stream, ToggleCommentCommand & command);
+public:
+    explicit ToggleCommentCommand(
+        class TextDocument * Doc,
+        int FromLineInclusive,
+        int ToLineInclusive,
+        class TextCursor * cursor,
+        Shared::AnalizerInterface * analizer
+        );
+    void redo();
+    void undo();
+    inline int id() const { return 0xB0; }
+private:
+    class TextDocument * doc;
+    class TextCursor * cursor;
+    Shared::AnalizerInterface * analizer;
+    int fromLineInclusive;
+    int toLineInclusive;
+    QSet<int> commentedLines;
+    QSet< QPair<int,int> > uncommentedLines;
+};
 
 }
 

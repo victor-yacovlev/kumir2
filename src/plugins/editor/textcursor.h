@@ -54,6 +54,7 @@ public:
     void removeSelectedBlock();
     void evaluateCommand(const KeyCommand & command);
 public slots:
+    void toggleComment();
     void undo();
     void redo();
     void handleUndoChanged(bool v);

@@ -68,6 +68,55 @@ TextCursor::~TextCursor()
         killTimer(i_timerId);
 }
 
+void TextCursor::toggleComment()
+{
+    if (!b_enabled)
+        return;
+    if (m_analizer==0)
+        return;
+    if (hasSelection()) {
+        int start = -1;
+        int end = -1;
+        for (int i=0; i<m_document->linesCount(); i++) {
+            if (m_document->lineEndSelectedAt(i) || m_document->selectionMaskAt(i).contains(true)) {
+                if (start==-1) {
+                    start = i;
+                }
+                end = i;
+            }
+        }
+        m_document->undoStack()->push(new ToggleCommentCommand(
+                                          m_document,
+                                          start,
+                                          end,
+                                          this,
+                                          m_analizer
+                                          ));
+    }
+    else if (hasRectSelection()) {
+        int start = rect_selection.top();
+        int end = rect_selection.bottom();
+        m_document->undoStack()->push(new ToggleCommentCommand(
+                                          m_document,
+                                          start,
+                                          end,
+                                          this,
+                                          m_analizer
+                                          ));
+    }
+    else {
+        if (i_row < m_document->linesCount()) {
+            m_document->undoStack()->push(new ToggleCommentCommand(
+                                              m_document,
+                                              i_row,
+                                              i_row,
+                                              this,
+                                              m_analizer
+                                              ));
+        }
+    }
+}
+
 void TextCursor::evaluateCommand(const KeyCommand &command)
 {
     int prevRow = i_row;
@@ -201,6 +250,9 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
                 insertText(data.text);
             }
         }
+        break;
+    case KeyCommand::ToggleComment:
+        toggleComment();
         break;
     default:
         break;

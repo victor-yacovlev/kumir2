@@ -37,6 +37,7 @@ public:
     QAction * selectAll;
     QAction * deleteLine;
     QAction * deleteTail;
+    QAction * toggleComment;
 
     QAction * undo;
     QAction * redo;
@@ -551,6 +552,17 @@ void EditorPrivate::createActions()
     connect(cursor, SIGNAL(redoAvailable(bool)), redo, SLOT(setEnabled(bool)));
     QObject::connect(redo, SIGNAL(triggered()), q, SLOT(redo()));
 
+    if (analizer) {
+        toggleComment = new QAction(plane);
+        toggleComment->setText(QObject::tr("(Un)Comment lines"));
+        toggleComment->setShortcut(QKeySequence("Ctrl+/"));
+        QObject::connect(toggleComment, SIGNAL(triggered()),
+                         cursor, SLOT(toggleComment()));
+    }
+    else {
+        toggleComment = 0;
+    }
+
     separator = new QAction(this);
     separator->setSeparator(true);
 
@@ -564,6 +576,10 @@ void EditorPrivate::createActions()
     menu_edit->addAction(deleteLine);
     menu_edit->addAction(deleteTail);
     menu_edit->addSeparator();
+    if (analizer) {
+        menu_edit->addAction(toggleComment);
+        menu_edit->addSeparator();
+    }
     menu_edit->addAction(undo);
     menu_edit->addAction(redo);
 

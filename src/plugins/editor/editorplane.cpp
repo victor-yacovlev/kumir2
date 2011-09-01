@@ -809,6 +809,9 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         else if (e->matches(QKeySequence::Redo)) {
             m_cursor->redo();
         }
+        else if (e->key()==Qt::Key_Slash && e->modifiers().testFlag(Qt::ControlModifier)) {
+            m_cursor->toggleComment();
+        }
         else if (e->key()==Qt::Key_Tab || ( e->key()==Qt::Key_Space && e->modifiers().testFlag(Qt::ControlModifier) ) ) {
             if (b_hasAnalizer)
                 doAutocomplete();
