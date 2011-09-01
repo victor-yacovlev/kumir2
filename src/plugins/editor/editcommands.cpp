@@ -118,6 +118,7 @@ void RemoveCommand::redo()
     cursorRow = cursor->row();
     cursorCol = cursor->column();
     removedText.clear();
+    insertedSpaces = 0;
 
     if (!keepKursor) {
         for (int i=0; i<count; i++) {
