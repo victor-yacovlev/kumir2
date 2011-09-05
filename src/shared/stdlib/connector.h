@@ -24,8 +24,8 @@ public:
 
 public slots:
 
-    void connectTo(int pid);
-    void listenFor(int pid);
+    void connectToKumir(int argc, char* *argv);
+    void listenFor(QProcess * process);
 
     void sendReply(const QVariantList & message);
 
@@ -56,8 +56,8 @@ private:
 #ifdef SHM_METHOD
     class Connector_SHM * d;
 #endif
-#ifdef MAC_METHOD
-    class Connector_MAC * d;
+#ifdef PIPE_METHOD
+    class Connector_PIPE * d;
 #endif
 };
 
@@ -69,7 +69,7 @@ struct ActorResponse { QString error; QVariant result; QVariantList res; };
 extern "C" STDLIB_EXPORT unsigned char __connected_to_kumir__();
 extern "C" STDLIB_EXPORT void __try_connect_to_kumir__(int argc, char* *argv);
 extern "C" STDLIB_EXPORT void __wait_for_output_queue_flushed__();
-extern STDLIB_EXPORT void __connect_to_kumir__(int pid);
+extern STDLIB_EXPORT void __connect_to_kumir__(int argc, char* *argv);
 extern STDLIB_EXPORT void __reset_actor__(const QString & moduleName);
 extern STDLIB_EXPORT ActorResponse __run_actor_command__(const QString &actor, const QString & command, const QVariantList & arguments);
 

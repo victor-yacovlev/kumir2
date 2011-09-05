@@ -12,19 +12,15 @@ extern "C" int __main_gui__( int argc, char *argv[],
                               void(*main_funct)() )
 {
     QApplication * a = new QApplication(argc, argv);
-    int pid = 0;
-    foreach (const QString & arg, a->arguments()) {
-        if (arg.startsWith("--key=")) {
-            pid = arg.mid(6).toInt();
-        }
-    }
-    if (pid) {
-        StdLib::Connector::instance()->connectTo(pid);
-    }
+    __try_connect_to_kumir__(argc, argv);
     (*creator_funct)();
-    StdLib::UserProgramThread * thread = new StdLib::UserProgramThread(a, main_funct, pid);
+    StdLib::UserProgramThread * thread =
+            new StdLib::UserProgramThread(
+                a,
+                main_funct,
+                __connected_to_kumir__());
     int result = 0;
-    if (pid) {
+    if (__connected_to_kumir__()) {
         thread->start();
         thread->wait();
         result = 0;

@@ -43,8 +43,8 @@ signals:
                               const QVariantList & arguments);
 
 public slots:
-    bool connectTo(int pid);
-    void listenFor(int pid);
+    bool connectTo(int argc, char* *argv);
+    void listenFor(QProcess * process);
 
     void sendReply(const QVariantList & message);
 

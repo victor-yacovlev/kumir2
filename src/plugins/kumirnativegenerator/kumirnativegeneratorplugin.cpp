@@ -1252,6 +1252,7 @@ Shared::GeneratorResult KumirNativeGeneratorPlugin::generateExecuableUsingGCC(
 //    }
 //#endif
     command += " -lm";
+//    command += " -g -O0";
 
     if (qApp->arguments().contains("-V")) {
         std::cout << command.toLocal8Bit().data() << std::endl;

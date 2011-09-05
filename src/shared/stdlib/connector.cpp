@@ -3,8 +3,8 @@
 #ifdef SHM_METHOD
 #   include "connector_shm.h"
 #endif
-#ifdef MAC_METHOD
-#   include "connector_mac.h"
+#ifdef PIPE_METHOD
+#   include "connector_pipe.h"
 #endif
 
 
@@ -18,8 +18,8 @@ Connector::Connector()
 #ifdef SHM_METHOD
     d = new Connector_SHM(this);
 #endif
-#ifdef MAC_METHOD
-    d = new Connector_MAC(this);
+#ifdef PIPE_METHOD
+    d = new Connector_PIPE(this);
 #endif
 
 
@@ -42,14 +42,14 @@ Connector::Connector()
             this, SIGNAL(actorCommandReceived(QString,QString,QVariantList)));
 }
 
-void Connector::listenFor(int pid)
+void Connector::listenFor(QProcess * process)
 {
-    d->listenFor(pid);
+    d->listenFor(process);
 }
 
-void Connector::connectTo(int pid)
+void Connector::connectToKumir(int argc, char* *argv)
 {
-    connectedToKumir = d->connectTo(pid);
+    connectedToKumir = d->connectTo(argc, argv);
 }
 
 
@@ -116,20 +116,12 @@ extern "C" unsigned char __connected_to_kumir__()
 
 extern "C" void __try_connect_to_kumir__(int argc, char* *argv)
 {
-    for (int i=1; i<argc; i++) {
-        const QString arg = QString::fromAscii(argv[i]);
-        if (arg.startsWith("--key=")) {
-            int pid = arg.mid(6).toInt();
-            qDebug() << "Connecting to kumir with ProcessID = "  << pid;
-            __connect_to_kumir__(pid);
-            break;
-        }
-    }
+    __connect_to_kumir__(argc, argv);
 }
 
-extern void __connect_to_kumir__(int pid)
+extern void __connect_to_kumir__(int argc, char* *argv)
 {
-    StdLib::Connector::instance()->connectTo(pid);
+    StdLib::Connector::instance()->connectToKumir(argc, argv);
 }
 
 extern void __reset_actor__(const QString & moduleName)

@@ -17,8 +17,16 @@ Connector_SHM::Connector_SHM(QObject * parent)
 }
 
 
-bool Connector_SHM::connectTo(int pid)
+bool Connector_SHM::connectTo(int argc, char* *argv)
 {
+    QString pid;
+    for (int i=1; i<argc; i++) {
+        if (QString::fromLocal8Bit(argv[i]).startsWith("--key=")) {
+            pid = QString::fromLocal8Bit(argv[i]).mid(6);
+        }
+    }
+    if (pid.isEmpty())
+        return false;
     QString key = QString("kumir-%1").arg(pid);
     shm->setKey(key);
     if (!shm->attach()) {
@@ -36,11 +44,12 @@ bool Connector_SHM::connectTo(int pid)
 
 
 
-void Connector_SHM::listenFor(int pid)
+void Connector_SHM::listenFor(QProcess * )
 {
 #ifdef Q_OS_MAC
     return;
 #endif
+    int pid = qApp->applicationPid();
     QString key = QString("kumir-%1").arg(pid);
     shm->setKey(key);
     if (!shm->create(sizeof(InterprocessMessage))) {

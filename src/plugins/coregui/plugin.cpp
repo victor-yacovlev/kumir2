@@ -252,9 +252,6 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
         m_kumirStateLabel->setText(tr("Pause"));
     }
 
-
-
-
     m_kumirProgram->switchGlobalState(old, state);
     m_terminal->changeGlobalState(old, state);
 

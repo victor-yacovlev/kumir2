@@ -168,7 +168,7 @@ void KumirProgram::setNativeGenerator(GeneratorInterface *cpp)
         connect(m_connector, SIGNAL(resetActorReceived(QString)),
                 this, SLOT(handleActorResetRequest(QString)));
 
-        m_connector->listenFor(QCoreApplication::applicationPid());
+        m_connector->listenFor(m_process);
 
     }
     else {
