@@ -81,7 +81,11 @@ void KumirCompilerPlugin::start()
             }
             for (int i=0; i<errors.size(); i++) {
                 Shared::Error e = errors[i];
-                std::cerr << filename.toLocal8Bit().data() << ":" << e.line << ": Error " << e.code.toLocal8Bit().data() << std::endl;
+                std::cerr << "Error: " <<
+                             QFileInfo(filename).fileName().toLocal8Bit().data() <<
+                             ":" << e.line+1 <<
+                             ":" << e.start+1 << "-" << e.start+e.len <<
+                             ": " << e.code.toLocal8Bit().data() << std::endl;
             }
             Shared::GeneratorInterface * generator =
                     qobject_cast<Shared::GeneratorInterface*>(myDependency("Generator"));
