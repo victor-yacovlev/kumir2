@@ -192,7 +192,7 @@ void EditorPrivate::timerEvent(QTimerEvent *e)
 
 void EditorPrivate::updatePosition(int row, int col)
 {
-    positionStatus->setText(tr("Row: %1, Col: %2").arg(row).arg(col));
+    positionStatus->setText(tr("Row: %1, Col: %2").arg(row+1).arg(col+1));
 }
 
 void EditorPrivate::loadMacros()
