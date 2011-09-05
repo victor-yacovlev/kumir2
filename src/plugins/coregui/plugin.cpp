@@ -178,6 +178,8 @@ QString Plugin::initialize(const QStringList & parameters)
     helpWindow->toggleViewAction()->setShortcut(QKeySequence("F1"));
     connect(m_mainWindow->ui->actionUsage, SIGNAL(triggered()),
             helpWindow->toggleViewAction(), SLOT(trigger()));
+    connect(helpWindow->toggleViewAction(), SIGNAL(toggled(bool)),
+            m_mainWindow->ui->actionUsage, SLOT(setChecked(bool)));
 
     return "";
 }
