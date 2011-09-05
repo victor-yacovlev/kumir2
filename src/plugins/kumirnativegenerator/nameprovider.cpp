@@ -99,6 +99,9 @@ QString NameProvider::addName(const QString &name, const QString &ns)
 
 QString NameProvider::suggestCName(const QString &name)
 {
+    if (name=="@") {
+        return "__teacher_module__";
+    }
     QString result;
     foreach (QChar c, name) {
         QString cc;

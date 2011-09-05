@@ -5,6 +5,10 @@
 #include "dataformats/ast_expression.h"
 #include "nameprovider.h"
 
+#ifdef USE_CLANG
+#include "clangcompiler.h"
+#endif
+
 #include <QtCore>
 #include <iostream>
 
@@ -24,6 +28,9 @@ struct Module {
 };
 
 struct KumirNativeGeneratorPrivate {
+#ifdef USE_CLANG
+    class CLangCompiler * clang;
+#endif
     QList<Module*> modules;
     NameProvider * nameProvider;
     bool requireGui;
@@ -97,6 +104,9 @@ KumirNativeGeneratorPlugin::KumirNativeGeneratorPlugin()
 {
     d = new KumirNativeGeneratorPrivate;
     d->nameProvider = new NameProvider;
+#ifdef USE_CLANG
+    d->clang = new CLangCompiler;
+#endif
 }
 
 KumirNativeGeneratorPlugin::~KumirNativeGeneratorPlugin()
@@ -669,7 +679,11 @@ QString KumirNativeGeneratorPrivate::makeAlgorhitm(
 
 QString KumirNativeGeneratorPrivate::makeInitializator(const AST::Module *module)
 {
-    QString result = "extern void __init__()\n{\n";
+    QString moduleName = module->header.name;
+    if (module->header.type==AST::ModTypeHidden) {
+        moduleName = "__teacher_module__";
+    }
+    QString result = QString("extern void __init__%1()\n{\n").arg(moduleName);
     result += addIndent(makeBody(module->impl.initializerBody, 0, 0, module));
     result += "\n}\n";
     return result;
@@ -977,9 +991,86 @@ void KumirNativeGeneratorPlugin::stop()
 
 }
 
+#ifdef USE_CLANG
+
+Shared::GeneratorResult KumirNativeGeneratorPlugin::generateExecuableUsingCLang(const AST::Data *tree, QIODevice *out)
+{
+    Shared::GeneratorResult res;
+
+    // Reset
+    d->ast = tree;
+    d->requireGui = false;
+    d->modules.clear();
+    d->clang->reset();
 
 
-Shared::GeneratorResult KumirNativeGeneratorPlugin::generateExecuable(
+    // Generate C-code
+    for (int i=0; i<tree->modules.size(); i++) {
+        if (tree->modules[i]->header.enabled)
+            d->addModule(tree->modules[i]);
+    }
+    for (int i=0; i<tree->modules.size(); i++) {
+        if (tree->modules[i]->header.enabled)
+            d->createModuleHeader(tree->modules[i]);
+    }
+    for (int i=0; i<tree->modules.size(); i++) {
+        if (tree->modules[i]->header.enabled && tree->modules[i]->header.type!=AST::ModTypeExternal)
+            d->createModuleSource(tree->modules[i]);
+    }
+    QList<NamedData> headers, sources;
+    for (int i=0; i<d->modules.size(); i++) {
+        const QString hFileName = d->modules[i]->cNamespace.isEmpty()
+                ? QString("main.h")
+                : d->modules[i]->cNamespace+".h";
+        const QString cFileName = d->modules[i]->cNamespace.isEmpty()
+                ? QString("main.c")
+                : d->modules[i]->cNamespace+".c";
+        NamedData cpp, hpp;
+        hpp.first = hFileName;
+        cpp.first = cFileName;
+        hpp.second = d->modules[i]->headerData;
+        cpp.second = d->modules[i]->sourceData;
+        headers << hpp;
+        sources << cpp;
+    }
+
+    // Add stdlib header
+    QFile stdLibHeaderFile(qApp->property("sharePath").toString()+"/kumirnativegenerator/__kumir__.h");
+    if (stdLibHeaderFile.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        const QByteArray stdLibHeaderData = stdLibHeaderFile.readAll();
+        NamedData stdLib;
+        stdLib.first = "__kumir__.h";
+        stdLib.second = QString::fromUtf8(stdLibHeaderData);
+        headers << stdLib;
+    }
+
+    // Compile using CLang
+    d->clang->doCompilation(headers, sources);
+    if (!d->clang->lastError().isEmpty()) {
+        qDebug() << d->clang->lastError();
+        res.type = Shared::GenError;
+        return res;
+    }
+
+    // Make linkage using CLang
+    d->clang->doLinkage();
+    if (!d->clang->lastError().isEmpty()) {
+        qDebug() << d->clang->lastError();
+        res.type = Shared::GenError;
+        return res;
+    }
+
+    QByteArray result = d->clang->getResult();
+    out->write(result);
+
+    res.type = Shared::GenNativeExecuable;
+    return res;
+}
+
+#endif
+
+
+Shared::GeneratorResult KumirNativeGeneratorPlugin::generateExecuableUsingGCC(
     const AST::Data *tree
     , QIODevice *out)
 {
@@ -1193,7 +1284,7 @@ Shared::GeneratorResult KumirNativeGeneratorPlugin::generateExecuable(
         QFile outF(gccOutName);
         if (outF.open(QIODevice::ReadOnly)) {
             out->write(outF.readAll());
-            outF.flush();
+            outF.close();
 
         }
         result.type = Shared::GenNativeExecuable;

@@ -18,13 +18,28 @@ public:
     ~KumirNativeGeneratorPlugin();
 
     QString initialize(const QStringList &arguments);
-    Shared::GeneratorResult generateExecuable(
+#ifdef USE_CLANG
+    inline Shared::GeneratorResult generateExecuable(
         const AST::Data *tree
-        , QIODevice *out);
+        , QIODevice *out) { return generateExecuableUsingCLang(tree, out); }
+#else
+    inline Shared::GeneratorResult generateExecuable(
+        const AST::Data *tree
+        , QIODevice *out) { return generateExecuableUsingGCC(tree, out); }
+#endif
 private:
+#ifdef USE_CLANG
+    Shared::GeneratorResult generateExecuableUsingCLang(
+        const AST::Data * tree,
+        QIODevice * out);
+#endif
+    Shared::GeneratorResult generateExecuableUsingGCC(
+        const AST::Data *tree,
+        QIODevice *out);
     void start();
     void stop();
     struct KumirNativeGeneratorPrivate * d;
+
 
 };
 
