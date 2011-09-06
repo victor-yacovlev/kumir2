@@ -1,5 +1,4 @@
 #include "connector_pipe.h"
-#include <stdio.h>
 #include <iostream>
 namespace StdLib {
 
@@ -14,6 +13,7 @@ Connector_PIPE::Connector_PIPE(QObject *parent) :
     e_inMessageType = Undefined;
     e_outMessageType = Undefined;
     mutex_stopping = new QMutex;
+    mutex_reply = new QMutex;
     b_stopping = false;
 }
 
@@ -75,9 +75,10 @@ QVariantList Connector_PIPE::input(const QString &format)
     ds << format;
     flushOutBuffer();
     QVariantList result;
-    fprintf(stderr, "Waiting for reply...\n");
+//    fprintf(stderr, "Waiting for reply...\n");
+//    fprintf(stderr, "Process is running: %s\n", isRunning()? "yes" : "no");
     waitForReply();
-    fprintf(stderr, "...reply received\n");
+//    fprintf(stderr, "...reply received\n");
     QDataStream di(ba_in, QIODevice::ReadOnly);
     di >> result;
 
@@ -131,7 +132,7 @@ void Connector_PIPE::listenFor(QProcess *process)
     m_process = process;
     process->setProcessChannelMode(QProcess::SeparateChannels);
     process->setReadChannel(QProcess::StandardOutput);
-    process->setStandardErrorFile("log.err");
+//    process->setStandardErrorFile("log.err");
     stopListen();
     text_in = new QTextStream(process);
     text_out = new QTextStream(process);
@@ -149,11 +150,13 @@ void Connector_PIPE::listenFor(QProcess *process)
 void Connector_PIPE::run()
 {
     forever {
-        QMutexLocker l(mutex_stopping);
-        if (b_stopping)
+        mutex_stopping->lock();
+        if (b_stopping) {
+            mutex_stopping->unlock();
             return;
+        }
+        mutex_stopping->unlock();
         msleep(INTERVAL);
-        fprintf(stderr, "aaa\n");
         handleProcessReadyReadStandardOutput();
     }
 }
@@ -193,12 +196,16 @@ void Connector_PIPE::handleProcessReadyReadStandardOutput()
 void Connector_PIPE::waitForReply()
 {
     forever {
+//        fprintf(stderr, "aaa\n");
         mutex_reply->lock();
+//        fprintf(stderr, "bbb\n");
         if (b_replyReceived) {
             mutex_reply->unlock();
+//            fprintf(stderr, "Reply received\n");
             return;
         }
         else {
+//            fprintf(stderr, "Reply NOT received\n");
             mutex_reply->unlock();
             msleep(INTERVAL);
         }
