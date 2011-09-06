@@ -86,7 +86,11 @@ void PluginManagerPrivate::createSettingsDialog()
 void PluginManager::showSettingsDialog()
 {
     if (d->settingsDialog) {
-        d->settingsDialog->exec();
+        if (d->settingsDialog->exec()==QDialog::Accepted) {
+            for (int i=0; i<d->objects.size(); i++) {
+                d->objects[i]->updateSettings();
+            }
+        }
     }
 }
 

@@ -28,6 +28,7 @@ EditorPlane::EditorPlane(TextDocument * doc
                          , QWidget *parent) :
     QWidget(parent)
 {
+
     m_analizer = analizer;
     i_highlightedLine = -1;
     i_grayLockSymbolLine = -1;
@@ -61,6 +62,7 @@ EditorPlane::EditorPlane(TextDocument * doc
     m_autocompleteWidget->setVisible(false);
     connect(m_autocompleteWidget, SIGNAL(accepted(QString,QString)),
             this, SLOT(finishAutoCompletion(QString,QString)));
+    qApp->installEventFilter(this);
 }
 
 void EditorPlane::setTeacherMode(bool v)
@@ -201,6 +203,18 @@ void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
     e->accept();
 }
 
+bool EditorPlane::eventFilter(QObject *, QEvent *event)
+{
+    if (event->type()==QEvent::MouseMove) {
+        QMouseEvent * mouseEvent = static_cast<QMouseEvent*>(event);
+        if (mouseEvent->button()==Qt::LeftButton) {
+            mouseMoveEvent(mouseEvent);
+            return true;
+        }
+    }
+    return false;
+}
+
 void EditorPlane::mouseMoveEvent(QMouseEvent *e)
 {
     int lockSymbolWidth = b_teacherMode && b_hasAnalizer ? LOCK_SYMBOL_WIDTH : 0;
@@ -260,7 +274,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
         pnt_delimeterPress = e->pos();
         update();
     }
-    else if (e->pos().x()>ln && e->pos().x()<mn-2 && e->buttons().testFlag(Qt::LeftButton)) {
+    else if (b_selectionInProgress || (e->pos().x()>ln && e->pos().x()<mn-2 && e->buttons().testFlag(Qt::LeftButton))) {
         QApplication::restoreOverrideCursor();
         int dX = e->pos().x() - pnt_textPress.x();
         int dY = e->pos().y() - pnt_textPress.y();
@@ -1389,6 +1403,29 @@ void EditorPlane::paintLockSymbol(QPainter *p, bool colored, const QRect &r)
 
 void EditorPlane::wheelEvent(QWheelEvent *e)
 {
+    if (e->modifiers().testFlag(Qt::ControlModifier)) {
+        static const int minSize = 8;
+        static const int maxSize = 36;
+        QFont fnt = font();
+        int currentSize = fnt.pointSize();
+        int degrees = e->delta() / 8;
+        int steps = degrees / 15;
+        if (currentSize<=minSize && steps<0 ) {
+            e->ignore();
+            return;
+        }
+        if (currentSize>=maxSize && steps>0) {
+            e->ignore();
+            return;
+        }
+        currentSize += steps;
+        currentSize = qMin(maxSize, qMax(minSize, currentSize));
+        fnt.setPointSize(currentSize);
+        m_settings->setValue(SettingsPage::KeyFontSize, currentSize);
+        setFont(fnt);
+        update();
+
+    }
     if (!m_verticalScrollBar->isEnabled() && e->orientation()==Qt::Vertical) {
         e->ignore();
         return;

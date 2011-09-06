@@ -798,6 +798,7 @@ void TextCursor::insertText(const QString &text)
 
 int TextCursor::justifyLeft(const QString &text) const
 {
+    return i_column;
     if (!m_analizer || text.trimmed().isEmpty())
         return i_column;
 
@@ -897,7 +898,7 @@ void TextCursor::removeCurrentLine()
     }
 
     if (i_row<m_document->linesCount()) {
-        new RemoveCommand(m_document, this, m_analizer, i_row, 0, m_document->textAt(i_row).length()+1, true);
+        m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, 0, m_document->textAt(i_row).length()+1, true));
         emit updateRequest(-1, -1);
         emit updateRequest();
     }
@@ -951,6 +952,10 @@ void TextCursor::removeCurrentChar()
 
     const int indent = m_document->indentAt(i_row);
     int textPos = i_column - indent * 2;
+    if (i_row<m_document->linesCount())
+        return;
+    if (textPos>=m_document->textAt(i_row).length() && i_row<m_document->linesCount()+1)
+        return;
     m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, textPos, 1, true));
 
     b_visible = true;

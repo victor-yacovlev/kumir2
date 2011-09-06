@@ -51,6 +51,7 @@ protected:
     inline virtual QString initialize(const QStringList &arguments) { Q_UNUSED(arguments); return ""; }
     inline virtual void start() {}
     inline virtual void stop() {}
+    inline virtual void updateSettings() { }
     KPlugin * myDependency(const QString & name) const;
 
     QSettings * mySettings() const;

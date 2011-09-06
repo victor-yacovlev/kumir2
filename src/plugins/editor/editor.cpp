@@ -631,6 +631,11 @@ void Editor::setSettings(QSettings *s)
 {
     d->settings = s;
     d->plane->m_settings = s;
+    QFont defaultFont;
+    defaultFont.setFamily(s->value(SettingsPage::KeyFontName, SettingsPage::defaultFontFamily()).toString());
+    defaultFont.setPointSize(s->value(SettingsPage::KeyFontSize, SettingsPage::defaultFontSize).toInt());
+    d->plane->setFont(defaultFont);
+    d->plane->update();
 }
 
 QList<QAction*> Editor::toolbarActions()
