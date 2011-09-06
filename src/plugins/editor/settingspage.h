@@ -38,6 +38,9 @@ public:
     static QString KeyFontName;
     static QString KeyFontSize;
 
+    static QString KeyForcePressTextToLeft;
+    static bool DefaultForcePressTextToLeft;
+
     static QString DefaultColorKw;
     static QString DefaultColorType;
     static QString DefaultColorNumeric;

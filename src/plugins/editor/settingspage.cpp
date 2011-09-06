@@ -48,6 +48,8 @@ quint32 SettingsPage::DefaultTempSwitchLayoutButton = Qt::Key_Alt;
 QString SettingsPage::KeyPlayMacroShortcut = "Keyboard/PlayMacroShortcut";
 QString SettingsPage::DefaultPlayMacroShortcut = "Esc";
 
+QString SettingsPage::KeyForcePressTextToLeft = "Other/PressTextToLeft";
+bool SettingsPage::DefaultForcePressTextToLeft = false;
 
 QString SettingsPage::defaultFontFamily()
 {
@@ -127,6 +129,8 @@ void SettingsPage::accept()
     const QString play = ui->macroPlayKey->currentText();
     m_settings->setValue(KeyPlayMacroShortcut, play);
 
+    m_settings->setValue(KeyForcePressTextToLeft, ui->pressTextLeft->isChecked());
+
     emit settingsChanged();
 }
 
@@ -186,6 +190,8 @@ void SettingsPage::init()
         }
     }
     ui->macroPlayKey->setCurrentIndex(index);
+
+    ui->pressTextLeft->setChecked(m_settings->value(KeyForcePressTextToLeft, DefaultForcePressTextToLeft).toBool());
 
     updateFontPreview();
 }

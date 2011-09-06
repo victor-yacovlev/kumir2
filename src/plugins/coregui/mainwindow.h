@@ -29,7 +29,7 @@ class MainWindow : public QMainWindow
 
 public:
     enum DocumentType { Text, Kumir, Pascal, WWW };
-    enum DockWindowType { Terminal, StandardActor, WorldActor, Control, SubControl, Other };
+    enum DockWindowType { Terminal, Help, StandardActor, WorldActor, Control, SubControl, Other };
     explicit MainWindow(Plugin * p);
 
     class TabWidgetElement * addCentralComponent(const QString &title
@@ -64,7 +64,7 @@ public slots:
     void newText(const QString &fileName, const QString &text);
     void fileOpen();
     void closeCurrentTab();
-    void closeTab(int index);
+    bool closeTab(int index);
     void showPreferences();
     void showMessage(const QString & text);
     void clearMessage();
@@ -109,7 +109,7 @@ private:
     QActionGroup * gr_fileActions;
     QActionGroup * gr_otherActions;
 
-
+    bool b_notabs;
 
     static QString StatusbarWidgetCSS;
 

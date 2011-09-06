@@ -29,6 +29,21 @@ ConfirmCloseDialod::~ConfirmCloseDialod()
     delete ui;
 }
 
+void ConfirmCloseDialod::setMainText(const QString &text)
+{
+    ui->label->setText(text);
+}
+
+void ConfirmCloseDialod::setCancelText(const QString &text)
+{
+    ui->btnCancel->setText(text);
+}
+
+void ConfirmCloseDialod::setDiscardText(const QString &text)
+{
+    ui->btnDontSave->setText(text);
+}
+
 void ConfirmCloseDialod::handleButtonClicked()
 {
     if (sender()==ui->btnSaveFiles || sender()==ui->btnSaveOneFile)

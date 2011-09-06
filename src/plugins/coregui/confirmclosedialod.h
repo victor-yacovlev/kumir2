@@ -17,6 +17,9 @@ public:
     explicit ConfirmCloseDialod(bool sessionMode, QWidget *parent = 0);
     ~ConfirmCloseDialod();
     inline Result result() const { return e_result; }
+    void setMainText(const QString & text);
+    void setCancelText(const QString & text);
+    void setDiscardText(const QString & text);
 private slots:
     void handleButtonClicked();
 private:

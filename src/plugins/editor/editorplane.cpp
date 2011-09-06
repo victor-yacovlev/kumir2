@@ -282,7 +282,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
         qreal therehold = QApplication::startDragDistance();
         if (distance>=therehold) {
             bool sel = m_cursor->hasSelection();
-            bool rsel = m_cursor->hasRectSelection();
+            bool rsel = m_analizer==0 && m_cursor->hasRectSelection();
 //            qDebug() << "sel = " << sel;
 //            qDebug() << "rsel = " << rsel;
             bool nothingSelected = !sel && !rsel;
@@ -297,7 +297,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
                 int textY = realY/lh;
                 textX = qMax(textX, 0);
                 textY = qMax(textY, 0);
-                if (e->modifiers().testFlag(Qt::ShiftModifier)) {
+                if (m_analizer==0 && e->modifiers().testFlag(Qt::ShiftModifier)) {
                     QApplication::restoreOverrideCursor();
                     QApplication::setOverrideCursor(Qt::CrossCursor);
                     m_cursor->selectRangeBlock(pos_textPress.y(), pos_textPress.x(), textY, textX);
@@ -313,7 +313,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
                 if (sel) {
                     data->setText(m_cursor->selectedText());
                 }
-                if (rsel) {
+                if (m_analizer==0 && rsel) {
                     data->setText(m_cursor->selectedText());
                     data->setData(
                                 Clipboard::BlockMimeType

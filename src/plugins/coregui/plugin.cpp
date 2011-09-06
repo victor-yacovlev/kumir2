@@ -172,7 +172,7 @@ QString Plugin::initialize(const QStringList & parameters)
                 m_helpBrowser.widget,
                 QList<QAction*>(),
                 QList<QAction*>(),
-                MainWindow::Control
+                MainWindow::Help
                 );
 
     helpWindow->toggleViewAction()->setShortcut(QKeySequence("F1"));

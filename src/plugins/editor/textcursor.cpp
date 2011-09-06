@@ -3,6 +3,7 @@
 #include "clipboard.h"
 #include "editcommands.h"
 #include "extensionsystem/pluginmanager.h"
+#include "settingspage.h"
 
 namespace Editor {
 
@@ -784,7 +785,8 @@ void TextCursor::insertText(const QString &text)
     // move cursor from protected part
     i_column = qMax(i_column, indent * 2);
 
-    i_column = justifyLeft(text);
+    if (m_document->m_settings->value(SettingsPage::KeyForcePressTextToLeft, SettingsPage::DefaultForcePressTextToLeft).toBool())
+        i_column = justifyLeft(text);
 
     int textPos = i_column - indent * 2;
     m_document->undoStack()->push(new InsertCommand(m_document, this, m_analizer, i_row, textPos, text));
@@ -798,7 +800,7 @@ void TextCursor::insertText(const QString &text)
 
 int TextCursor::justifyLeft(const QString &text) const
 {
-    return i_column;
+
     if (!m_analizer || text.trimmed().isEmpty())
         return i_column;
 

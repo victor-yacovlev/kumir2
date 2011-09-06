@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>331</width>
-    <height>585</height>
+    <width>343</width>
+    <height>707</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -538,6 +538,22 @@
          </widget>
         </item>
        </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_4">
+     <property name="title">
+      <string>Other</string>
+     </property>
+     <layout class="QVBoxLayout" name="_2">
+      <item>
+       <widget class="QCheckBox" name="pressTextLeft">
+        <property name="text">
+         <string>Force press program text to the left</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

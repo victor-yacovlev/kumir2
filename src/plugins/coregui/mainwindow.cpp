@@ -11,27 +11,6 @@
 
 namespace CoreGUI {
 
-class MenuBar
-        : public QMenuBar
-{
-protected:
-    inline bool eventFilter(QObject *object, QEvent *event) {
-        bool catched = false;
-        if (object == parent() && object) {
-            if (event->type()==QEvent::KeyRelease) {
-                QKeyEvent *kev = static_cast<QKeyEvent*>(event);
-                if (kev->key() == Qt::Key_Alt || kev->key() == Qt::Key_Meta) {
-                    catched = true;
-                }
-            }
-        }
-        if (catched)
-            return false;
-        else
-            return QMenuBar::eventFilter(object, event);
-    }
-};
-
 
 class TabWidgetElement
         : public QWidget
@@ -127,6 +106,7 @@ MainWindow::MainWindow(Plugin * p) :
     ui(new Ui::MainWindow),
     m_plugin(p)
 {
+    b_notabs = false;
     b_workspaceSwitching = false;
     ui->setupUi(this);
 
@@ -473,13 +453,54 @@ void MainWindow::closeCurrentTab()
     closeTab(ui->tabWidget->currentIndex());
 }
 
-void MainWindow::closeTab(int index)
+bool MainWindow::closeTab(int index)
 {
+    if (index==-1 || index>=ui->tabWidget->count())
+        return true;
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(index));
-    ui->tabWidget->removeTab(index);
     if (twe->type!=WWW) {
         int documentId = twe->property("documentId").toInt();
-        m_plugin->plugin_editor->closeDocument(documentId);
+        bool notSaved = m_plugin->plugin_editor->hasUnsavedChanges(documentId);
+        ConfirmCloseDialod::Result r;
+        if (!notSaved) {
+            r = ConfirmCloseDialod::SaveNothing;
+        }
+        else {
+            ui->tabWidget->setCurrentIndex(index);
+            ConfirmCloseDialod dialog(false, this);
+            dialog.setMainText(b_notabs
+                               ? tr("Before creating new program:")
+                               : tr("Before closing tab:")
+                                   );
+            dialog.setCancelText(b_notabs
+                               ? tr("Cancel \"New program\"")
+                               : tr("Cancel tab close"));
+            dialog.setDiscardText(tr("Close without saving"));
+            dialog.exec();
+            r = dialog.result();
+        }
+        if (r==ConfirmCloseDialod::SaveNothing) {
+            m_plugin->plugin_editor->closeDocument(documentId);
+            ui->tabWidget->removeTab(index);
+            return true;
+        }
+        else if (r==ConfirmCloseDialod::SaveFiles) {
+            if (saveCurrentFile()) {
+                m_plugin->plugin_editor->closeDocument(documentId);
+                ui->tabWidget->removeTab(index);
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+    else {
+        ui->tabWidget->removeTab(index);
+        return true;
     }
 
 }
@@ -503,7 +524,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::newProgram()
 {
-
+    if (b_notabs && !closeTab(ui->tabWidget->currentIndex())) {
+        return;
+    }
     QObject * o = m_plugin->myDependency("Analizer");
     QString defaultText;
     QString suffix = ".txt";
@@ -638,12 +661,12 @@ QDockWidget * MainWindow::addSecondaryComponent(const QString & title
     dock->setWidget(c);
     dock->setObjectName(title);
     Q_UNUSED(toolbarActions);
-    if (type!=SubControl) {
+    if (type!=SubControl && type!=Help) {
         ui->menuWindow->addAction(dock->toggleViewAction());
         l_dockWindows << dock;
     }
     if (type!=Terminal) {
-        if (type!=SubControl && type!=Control) {
+        if (type!=SubControl && type!=Control && type!=Help) {
             QMenu * componentMenu = new QMenu(title, this);
             componentMenu->addActions(menuActions);
             ui->menubar->insertMenu(ui->menuWindow->menuAction(), componentMenu);
@@ -720,6 +743,8 @@ void MainWindow::setupContentForTab()
 void MainWindow::disableTabs()
 {
     ui->tabWidget->disableTabs();
+    b_notabs = true;
+//    ui->actionClose->setVisible(false);
 }
 
 void MainWindow::loadSettings()
@@ -826,6 +851,17 @@ void MainWindow::restoreSession()
 
 void MainWindow::closeEvent(QCloseEvent *e)
 {
+    if (m_plugin->b_nosessions && b_notabs) {
+        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+        if (twe->type!=WWW) {
+            int documentId = twe->property("documentId").toInt();
+            bool notSaved = m_plugin->plugin_editor->hasUnsavedChanges(documentId);
+            if (!notSaved) {
+                e->accept();
+                return;
+            }
+        }
+    }
     ConfirmCloseDialod dialog(!m_plugin->b_nosessions, this);
     dialog.exec();
     if (dialog.result()==ConfirmCloseDialod::Cancel) {
