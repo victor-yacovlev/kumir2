@@ -11,6 +11,7 @@
 #include "terminal.h"
 #include "extensionsystem/kplugin.h"
 
+
 namespace CoreGUI {
 
 using Shared::GeneratorInterface;

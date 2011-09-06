@@ -4,8 +4,6 @@
 #include "kumirvariableswebobject.h"
 #include "ui_mainwindow.h"
 
-
-
 namespace CoreGUI {
 
 Plugin::Plugin() :
@@ -33,6 +31,7 @@ QString Plugin::initialize(const QStringList & parameters)
 {
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
+
     const QStringList BlacklistedThemes = QStringList()
             << "iaorakde" << "iaoraqt" << "iaora";
     const QString currentStyleName = qApp->style()->objectName().toLower();

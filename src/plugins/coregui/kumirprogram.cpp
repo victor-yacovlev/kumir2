@@ -319,6 +319,8 @@ void KumirProgram::fastRun()
         m_process->start(cmd);
         m_process->waitForStarted();
         e_state = FastRun;
+        qDebug() << "Started subprocess with PID " << m_process->pid();
+
         PluginManager::instance()->switchGlobalState(GS_Running);
     }
 }
@@ -471,6 +473,7 @@ void KumirProgram::handleProcessFinished(int exitCode, QProcess::ExitStatus stat
     e_state = Idle;
     m_terminal->finish();
     s_endStatus = exitCode==0? tr("Evaluation finished") : tr("Evaluation error");
+
     PluginManager::instance()->switchGlobalState(GS_Observe);
 }
 
