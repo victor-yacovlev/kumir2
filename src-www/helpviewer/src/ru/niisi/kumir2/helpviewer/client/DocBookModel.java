@@ -33,6 +33,8 @@ public class DocBookModel extends TreeItem {
 	private String XrefEndTerm = null;
 	private String EmphasisRole = null;
 	static int generateIdCounter = 0;
+
+	public static boolean printable = false;
 	
 	public DocBookModel(final Element root) {
 		super();
@@ -246,7 +248,7 @@ public class DocBookModel extends TreeItem {
 	
 	public String getContentHTML(boolean topLevel, boolean printableForm) {
 		String result = "";
-		if (topLevel && !printableForm && (parent==null || parent!=null && !parent.isLeaf()) ) {
+		if (printable && topLevel && !printableForm && (parent==null || parent!=null && !parent.isLeaf()) ) {
 			// Printable version
 			result += "<div class=\"version_for_print_link\">";
 			result += "<a href=\"#\" onclick=\"printThis('"+getDocumentId()+"','"+this.id+"')\">";
