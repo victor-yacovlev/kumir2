@@ -110,7 +110,7 @@ MainWindow::MainWindow(Plugin * p) :
     b_workspaceSwitching = false;
     ui->setupUi(this);
 
-    ui->menuNew->setIcon(actionIcon("document-new"));
+    ui->actionNewProgram->setIcon(actionIcon("document-new"));
     ui->actionOpen->setIcon(actionIcon("document-open"));
     ui->actionSave->setIcon(actionIcon("document-save"));
 
@@ -744,7 +744,10 @@ void MainWindow::disableTabs()
 {
     ui->tabWidget->disableTabs();
     b_notabs = true;
-//    ui->actionClose->setVisible(false);
+    ui->actionClose->setVisible(false);
+    ui->actionClose->setEnabled(false);
+    ui->actionNewText->setVisible(false);
+    ui->actionNewText->setEnabled(false);
 }
 
 void MainWindow::loadSettings()

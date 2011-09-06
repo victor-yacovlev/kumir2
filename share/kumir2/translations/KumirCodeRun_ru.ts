@@ -17,9 +17,15 @@
 <context>
     <name>KumirCodeRun::Run</name>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/run.cpp" line="172"/>
+        <location filename="../../../src/plugins/kumircoderun/run.cpp" line="175"/>
         <source>Please enter %1: </source>
         <translation>Введите %1: </translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/kumircoderun/run.cpp" line="213"/>
+        <location filename="../../../src/plugins/kumircoderun/run.cpp" line="272"/>
+        <source>undefined</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -41,108 +47,108 @@
         <translation>Неверная вырезка из строки</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="509"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="522"/>
         <source>Too deep recursion</source>
         <translation>Слишком много вложенных вызовов</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="532"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="545"/>
         <source>Internal error: don&apos;t know what is &apos;call %1 %2&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="547"/>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="564"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="560"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="577"/>
         <source>Internal error: don&apos;t know what is &apos;init %1 %2&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="630"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="643"/>
         <source>Internal error: don&apos;t know what is &apos;store %1 %2&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="669"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="682"/>
         <source>Internal error: don&apos;t know what is &apos;load %1 %2&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="694"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="707"/>
         <source>Internal error: don&apos;t know what is &apos;storearr %1 %2&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="748"/>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="806"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="761"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="819"/>
         <source>Internal error: don&apos;t know what is &apos;loadarr %1 %2&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="784"/>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="821"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="797"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="834"/>
         <source>Internal error: don&apos;t know what is &apos;ref %1 %2&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="908"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="921"/>
         <source>true</source>
         <translation>да</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="908"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="921"/>
         <source>false</source>
         <translation>нет</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="969"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="982"/>
         <source>Integer overflow while trying to summ</source>
         <translation>Целочисленное переполнение при попытке сложения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="976"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="989"/>
         <source>Double overflow while trying to summ</source>
         <translation>Вещественное переполнение при попытке сложения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="994"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1007"/>
         <source>Integer overflow while trying to subtract</source>
         <translation>Целочисленное переполнение при попытке вычитания</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1001"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1014"/>
         <source>Double overflow while trying to subtract</source>
         <translation>Вещественное переполнение при попытке вычитания</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1015"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1028"/>
         <source>Integer overflow while trying to multiply</source>
         <translation>Целочисленное переполнение при попытке умножения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1022"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1035"/>
         <source>Double overflow while trying to multiply</source>
         <translation>Вещественное переполнение при попытке умножения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1033"/>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1036"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1046"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1049"/>
         <source>Division by zero</source>
         <translation>Деление на 0</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1051"/>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1068"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1064"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1081"/>
         <source>Integer overflow while trying to power</source>
         <translation>Целочисленное переполнение при попытке возведения в степень</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1056"/>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1073"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1069"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1086"/>
         <source>Double overflow while trying to power</source>
         <translation>Вещественное переполнение при попытке возведения в степень</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1060"/>
+        <location filename="../../../src/plugins/kumircoderun/vm.cpp" line="1073"/>
         <source>Power to less than zero</source>
         <translation>Возведение в отрицательную степень</translation>
     </message>

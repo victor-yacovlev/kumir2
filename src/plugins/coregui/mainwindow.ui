@@ -64,17 +64,8 @@
     <property name="title">
      <string>File</string>
     </property>
-    <widget class="QMenu" name="menuNew">
-     <property name="tearOffEnabled">
-      <bool>false</bool>
-     </property>
-     <property name="title">
-      <string>New</string>
-     </property>
-     <addaction name="actionNewProgram"/>
-     <addaction name="actionNewText"/>
-    </widget>
-    <addaction name="menuNew"/>
+    <addaction name="actionNewProgram"/>
+    <addaction name="actionNewText"/>
     <addaction name="separator"/>
     <addaction name="actionOpen"/>
     <addaction name="actionRecent_files"/>
@@ -131,7 +122,7 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionNewProgram">
    <property name="text">
-    <string>Program</string>
+    <string>New program</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
@@ -139,7 +130,7 @@
   </action>
   <action name="actionNewText">
    <property name="text">
-    <string>Text</string>
+    <string>New text</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+N</string>

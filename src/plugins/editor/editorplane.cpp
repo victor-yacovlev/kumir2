@@ -727,7 +727,7 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         else if (e->matches(QKeySequence::SelectNextChar)) {
             m_cursor->evaluateCommand(KeyCommand::SelectNextChar);
         }
-        else if (e->key()==Qt::Key_Right && e->modifiers().testFlag(RECT_SELECTION_MODIFIER)) {
+        else if (e->key()==Qt::Key_Right && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && m_analizer==0) {
             m_cursor->evaluateCommand(KeyCommand::SelectNextColumn);
         }
         else if (e->matches(QKeySequence::MoveToPreviousChar)) {
@@ -736,7 +736,7 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         else if (e->matches(QKeySequence::SelectPreviousChar)) {
             m_cursor->evaluateCommand(KeyCommand::SelectPreviousChar);
         }
-        else if (e->key()==Qt::Key_Left && e->modifiers().testFlag(RECT_SELECTION_MODIFIER)) {
+        else if (e->key()==Qt::Key_Left && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && m_analizer==0) {
             m_cursor->evaluateCommand(KeyCommand::SelectPreviousColumn);
         }
         else if (e->matches(QKeySequence::MoveToNextLine)) {
@@ -745,7 +745,7 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         else if (e->matches(QKeySequence::SelectNextLine)) {
             m_cursor->evaluateCommand(KeyCommand::SelectNextLine);
         }
-        else if (e->key()==Qt::Key_Down && e->modifiers().testFlag(RECT_SELECTION_MODIFIER)) {
+        else if (e->key()==Qt::Key_Down && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && m_analizer==0) {
             m_cursor->evaluateCommand(KeyCommand::SelectNextRow);
         }
         else if (e->matches(QKeySequence::MoveToPreviousLine)) {
@@ -754,7 +754,7 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         else if (e->matches(QKeySequence::SelectPreviousLine)) {
             m_cursor->evaluateCommand(KeyCommand::SelectPreviousLine);
         }
-        else if (e->key()==Qt::Key_Up && e->modifiers().testFlag(RECT_SELECTION_MODIFIER)) {
+        else if (e->key()==Qt::Key_Up && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && m_analizer==0) {
             m_cursor->evaluateCommand(KeyCommand::SelectPreviousRow);
         }
         else if (e->matches(QKeySequence::MoveToStartOfLine)) {
