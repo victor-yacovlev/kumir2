@@ -948,8 +948,12 @@ void MainWindow::saveSession() const
 
 void MainWindow::showAbout()
 {
-    loadFromUrl(QUrl::fromLocalFile(qApp->property("sharePath").toString()+
-                                    "/coregui/about/russian/index.html"), false);
+    QMessageBox::information(this,
+                             tr("About"),
+                             tr("Kumir version %1\nUsing Qt version %2")
+                             .arg(qApp->applicationVersion())
+                             .arg(qVersion())
+                             );
 }
 
 void MainWindow::showUserManual()

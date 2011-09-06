@@ -459,12 +459,24 @@
         <translation>Начало</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="964"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="952"/>
+        <source>About</source>
+        <translation>О программе</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="953"/>
+        <source>Kumir version %1
+Using Qt version %2</source>
+        <translation>Кумир версия %1
+Использует Qt версии %2</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="968"/>
         <source>Load file...</source>
         <translation>Загрузить файл...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="966"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="970"/>
         <source>Kumir programs (*.kum);;Pascal programs (*.pas *.pp);;Web pages (*.html *.htm);;Text files (*.txt);;All files (*)</source>
         <translation>Программы Кумир (*.kum);;Программы Pascal (*.pas *.pp);; Web-страницы (*.html *.htm);;Текстовые файлы (*.txt);;Все файлы (*)</translation>
     </message>
