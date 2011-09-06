@@ -249,7 +249,7 @@ void KumirProgram::addActor(KPlugin *a, QDockWidget *w)
 
 void KumirProgram::fastRun()
 {
-
+    b_processUserTerminated = false;
     s_endStatus = "";
     if (e_state!=Idle) {
         return;
@@ -449,12 +449,15 @@ void KumirProgram::stop()
         plugin_bytecodeRun->terminate();
     }
     else if (e_state==FastRun) {
+        b_processUserTerminated = true;
         m_process->terminate();
     }
 }
 
 void KumirProgram::handleProcessError(QProcess::ProcessError error)
 {
+    if (b_processUserTerminated)
+        return;
     qDebug() << "Process error " << error;
     e_state = Idle;
     m_terminal->error(tr("Unknown error"));

@@ -144,7 +144,7 @@ void Connector_PIPE::listenFor(QProcess *process)
 #ifdef Q_OS_WIN32
 #define INTERVAL 50
 #else
-#define INTERVAL 100
+#define INTERVAL 5
 #endif
 
 void Connector_PIPE::run()
@@ -267,6 +267,12 @@ Connector_PIPE::MessageType Connector_PIPE::readMessageType()
     QString aType;
     QString buf;
     forever {
+        mutex_stopping->lock();
+        if (b_stopping) {
+            mutex_stopping->unlock();
+            return Undefined;
+        }
+        mutex_stopping->unlock();
         text_in->device()->waitForReadyRead(5);
         buf = text_in->read(1);
         aType += buf;

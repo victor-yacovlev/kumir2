@@ -31,6 +31,8 @@ QString Plugin::DockSideKey = "DockWindow/Side";
 
 QString Plugin::initialize(const QStringList & parameters)
 {
+    qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
+    qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
     const QStringList BlacklistedThemes = QStringList()
             << "iaorakde" << "iaoraqt" << "iaora";
     const QString currentStyleName = qApp->style()->objectName().toLower();

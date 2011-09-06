@@ -62,7 +62,7 @@ public slots:
     void handleMarginTextRequest(int lineNo, const QString & text);
     void handleMarginClearRequest(int fromLine, int toLine);
 private slots:
-    void handleProcessFinished(int exitCode, QProcess::ExitStatus);
+    void handleProcessFinished(int exitCode, QProcess::ExitStatus status);
     void handleProcessError(QProcess::ProcessError);
     void handleRunnerStopped(int);
     void handleInputDone(const QVariantList & data);
@@ -97,6 +97,7 @@ private:
     class KumirVariablesWebObject * m_variablesWebObject;
     int i_timerId;
     QWidget * w_mainWidget;
+    bool b_processUserTerminated;
 };
 
 } // namespace CoreGui
