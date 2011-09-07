@@ -32,7 +32,7 @@ void KumirCodeGeneratorPlugin::stop()
 
 }
 
-GeneratorResult KumirCodeGeneratorPlugin::generateExecuable(
+StringPair KumirCodeGeneratorPlugin::generateExecuable(
     const AST::Data * tree
     , QIODevice * out)
 {
@@ -45,14 +45,17 @@ GeneratorResult KumirCodeGeneratorPlugin::generateExecuable(
     d->generateConstantTable();
     d->generateExternTable();
 
+    out->open(QIODevice::WriteOnly);
+
     QDataStream ds(out);
     data.versionMaj = 2;
     data.versionMin = 0;
     data.versionRel = 0;
     ds << data;
-    GeneratorResult result;
-    result.type = GenNotNativeExecuable;
-    return result;
+
+    out->close();
+
+    return StringPair("", MIME_BYTECODE_BINARY);
 }
 
 Q_EXPORT_PLUGIN(KumirCodeGeneratorPlugin)

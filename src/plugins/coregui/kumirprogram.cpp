@@ -6,8 +6,6 @@
 
 namespace CoreGUI {
 
-using Shared::GeneratorResult;
-using Shared::GeneratorType;
 using Shared::ActorInterface;
 using namespace ExtensionSystem;
 
@@ -279,37 +277,22 @@ void KumirProgram::fastRun()
                 qDebug() << "Can't remove existing file " << exeFileName;
             }
         }
-        if (exeFile.open(QIODevice::WriteOnly)) {
-            GeneratorResult res = plugin_nativeGenerator->generateExecuable(m_ast, &exeFile);
-            if (res.type==Shared::GenError) {
-                qDebug() << "Error generating execuable";
-            }
-            else {
-                ok = true;
-            }
-            exeFile.close();
-            QFile::Permissions perms = exeFile.permissions();
-            perms |= QFile::ExeOwner;
-            perms |= QFile::ExeUser;
-            perms |= QFile::ExeGroup;
-            perms |= QFile::ExeOther;
-            exeFile.setPermissions(perms);
-#ifdef Q_OS_WIN32
-            for (int i=0; i<res.usedQtLibs.count(); i++) {
-                QString libName = res.usedQtLibs[i];
-                if (libName.startsWith("Qt")) {
-                    libName += "4";
-                }
-                if (!QFile::exists(libName+".dll") && QFile::exists(QCoreApplication::applicationDirPath()+"/"+libName+".dll")) {
-                    QFile::copy(QCoreApplication::applicationDirPath()+"/"+libName+".dll",
-                                libName+".dll");
-                }
-            }
-#endif
+
+        StringPair res = plugin_nativeGenerator->generateExecuable(m_ast, &exeFile);
+        if (!res.first.isEmpty()) {
+            qDebug() << "Error generating execuable: " << res.first;
         }
         else {
-            qDebug() << "Can't open file for writing: " << exeFileName;
+            ok = true;
         }
+        exeFile.close();
+        QFile::Permissions perms = exeFile.permissions();
+        perms |= QFile::ExeOwner;
+        perms |= QFile::ExeUser;
+        perms |= QFile::ExeGroup;
+        perms |= QFile::ExeOther;
+        exeFile.setPermissions(perms);
+
     }
     if (ok) {
         const QString cmd = QString("%1 --key=%2")
@@ -398,12 +381,11 @@ void KumirProgram::prepareKumirRunner()
     if (mustRegenerate) {
         QByteArray bufArray;
         QBuffer buffer(&bufArray);
-        buffer.open(QIODevice::WriteOnly);
-        GeneratorResult res = plugin_bytcodeGenerator->generateExecuable(m_ast, &buffer);
-        buffer.close();
+        StringPair res = plugin_bytcodeGenerator->generateExecuable(m_ast, &buffer);
+
         buffer.open(QIODevice::ReadOnly);
-        if (res.type==Shared::GenError) {
-            qDebug() << "Error generating execuable";
+        if (!res.first.isEmpty()) {
+            qDebug() << "Error generating execuable: " << res.first;
         }
         else {
             plugin_bytecodeRun->loadProgram(&buffer, Shared::FormatBinary);

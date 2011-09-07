@@ -5,13 +5,16 @@
 #include "dataformats/ast_expression.h"
 #include "nameprovider.h"
 
-#ifdef USE_CLANG
-#include "clangcompiler.h"
-#endif
-
 #include <QtCore>
 #include <iostream>
 
+#ifdef USE_LLVM
+#include "llvmbackend.h"
+#endif
+
+#ifdef USE_GCC
+#include "gccbackend.h"
+#endif
 
 namespace KumirNativeGenerator {
 
@@ -28,9 +31,9 @@ struct Module {
 };
 
 struct KumirNativeGeneratorPrivate {
-#ifdef USE_CLANG
-    class CLangCompiler * clang;
-#endif
+
+    AbstractCompilerBackend * backend;
+
     QList<Module*> modules;
     NameProvider * nameProvider;
     bool requireGui;
@@ -104,9 +107,20 @@ KumirNativeGeneratorPlugin::KumirNativeGeneratorPlugin()
 {
     d = new KumirNativeGeneratorPrivate;
     d->nameProvider = new NameProvider;
-#ifdef USE_CLANG
-    d->clang = new CLangCompiler;
+    d->backend = 0;
+#ifdef USE_LLVM
+    d->backend = new LlvmBackend(this);
 #endif
+#ifdef USE_GCC
+    d->backend = new GccBackend(this);
+#endif
+}
+
+void KumirNativeGeneratorPlugin::setTemporaryDir(const QString &path, bool autoclean)
+{
+    if (d->backend) {
+        d->backend->setTemporaryDir(path, autoclean);
+    }
 }
 
 KumirNativeGeneratorPlugin::~KumirNativeGeneratorPlugin()
@@ -991,88 +1005,8 @@ void KumirNativeGeneratorPlugin::stop()
 
 }
 
-#ifdef USE_CLANG
 
-Shared::GeneratorResult KumirNativeGeneratorPlugin::generateExecuableUsingCLang(const AST::Data *tree, QIODevice *out)
-{
-    Shared::GeneratorResult res;
-
-    // Reset
-    d->ast = tree;
-    d->requireGui = false;
-    d->modules.clear();
-    d->clang->reset();
-
-
-    // Generate C-code
-    for (int i=0; i<tree->modules.size(); i++) {
-        if (tree->modules[i]->header.enabled)
-            d->addModule(tree->modules[i]);
-    }
-    for (int i=0; i<tree->modules.size(); i++) {
-        if (tree->modules[i]->header.enabled)
-            d->createModuleHeader(tree->modules[i]);
-    }
-    for (int i=0; i<tree->modules.size(); i++) {
-        if (tree->modules[i]->header.enabled && tree->modules[i]->header.type!=AST::ModTypeExternal)
-            d->createModuleSource(tree->modules[i]);
-    }
-    QList<NamedData> headers, sources;
-    for (int i=0; i<d->modules.size(); i++) {
-        const QString hFileName = d->modules[i]->cNamespace.isEmpty()
-                ? QString("main.h")
-                : d->modules[i]->cNamespace+".h";
-        const QString cFileName = d->modules[i]->cNamespace.isEmpty()
-                ? QString("main.c")
-                : d->modules[i]->cNamespace+".c";
-        NamedData cpp, hpp;
-        hpp.first = hFileName;
-        cpp.first = cFileName;
-        hpp.second = d->modules[i]->headerData;
-        cpp.second = d->modules[i]->sourceData;
-        headers << hpp;
-        sources << cpp;
-    }
-
-    // Add stdlib header
-    QFile stdLibHeaderFile(qApp->property("sharePath").toString()+"/kumirnativegenerator/__kumir__.h");
-    if (stdLibHeaderFile.open(QIODevice::ReadOnly|QIODevice::Text)) {
-        const QByteArray stdLibHeaderData = stdLibHeaderFile.readAll();
-        NamedData stdLib;
-        stdLib.first = "__kumir__.h";
-        stdLib.second = QString::fromUtf8(stdLibHeaderData);
-        headers << stdLib;
-    }
-
-    // Compile using CLang
-    d->clang->doCompilation(headers, sources);
-    if (!d->clang->lastError().isEmpty()) {
-        qDebug() << d->clang->lastError();
-        res.type = Shared::GenError;
-        return res;
-    }
-
-    // Make linkage using CLang
-    d->clang->doLinkage();
-    if (!d->clang->lastError().isEmpty()) {
-        qDebug() << d->clang->lastError();
-        res.type = Shared::GenError;
-        return res;
-    }
-
-    QByteArray result = d->clang->getResult();
-    out->write(result);
-
-    res.type = Shared::GenNativeExecuable;
-    return res;
-}
-
-#endif
-
-
-Shared::GeneratorResult KumirNativeGeneratorPlugin::generateExecuableUsingGCC(
-    const AST::Data *tree
-    , QIODevice *out)
+StringPair KumirNativeGeneratorPlugin::generateExecuable(const AST::Data *tree, QIODevice *out)
 {
     d->ast = tree;
     d->requireGui = false;
@@ -1093,233 +1027,54 @@ Shared::GeneratorResult KumirNativeGeneratorPlugin::generateExecuableUsingGCC(
         if (tree->modules[i]->header.enabled && tree->modules[i]->header.type!=AST::ModTypeExternal)
             d->createModuleSource(tree->modules[i]);
     }
-    if (out && out->metaObject()->className()==QString("QFile")) {
-        QFile * f = qobject_cast<QFile*>(out);
-        const QString fileName = QFileInfo(*f).fileName();
-        const QString buildDir = ".build-"+fileName;
-        QDir::current().mkdir(buildDir);
-        QDir::setCurrent(buildDir);
-    }
-    QSet<QString> cFiles;
-    QSet<QString> hFiles;
-    QSet<QString> libs;
-    QSet<QString> qtLibs;
+    QList<StringPair> headers;
+    QList<StringPair> sources;
+    QStringList systemLibs;
+    QStringList kumirLibs;
     for (int i=0; i<d->modules.size(); i++) {
         const QString hFileName = d->modules[i]->cNamespace.isEmpty()
-                ? QString("main.h")
-                : d->modules[i]->cNamespace+".h";
+                        ? QString("main.h")
+                        : d->modules[i]->cNamespace+".h";
         const QString cFileName = d->modules[i]->cNamespace.isEmpty()
                 ? QString("main.c")
                 : d->modules[i]->cNamespace+".c";
-        QFile h(hFileName);
-        if (h.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            h.write(d->modules[i]->headerData.toLocal8Bit());
-            h.close();
-            hFiles.insert(hFileName);
+        const QString sourceData = d->modules[i]->sourceData;
+        const QString headerData = d->modules[i]->headerData;
+        if (!headerData.trimmed().isEmpty()) {
+            headers << StringPair(hFileName, headerData);
         }
-        QFile c(cFileName);
-        if (!d->modules[i]->sourceData.isEmpty() && c.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            c.write(d->modules[i]->sourceData.toLocal8Bit());
-            c.close();
-            cFiles.insert(cFileName);
+        if (!sourceData.trimmed().isEmpty()) {
+            sources << StringPair(cFileName, sourceData);
         }
-        if (!d->modules[i]->cLibraries.isEmpty()) {
-            QStringList libNames = d->modules[i]->cLibraries;
-
-            foreach (QString libName, libNames) {
-#ifdef Q_OS_MAC
-#ifndef QT_NO_DEBUG
-                    libName += "_debug";
-#endif
-#endif
-#ifdef Q_OS_WIN32
-#ifndef QT_NO_DEBUG
-                    libName += "d";
-#endif
-#endif
-                libs.insert(libName);
+        for (int j=0; j<d->modules[i]->cLibraries.size(); j++) {
+            const QString libName = d->modules[i]->cLibraries[j];
+            if (!kumirLibs.contains(libName)) {
+                kumirLibs << libName;
             }
-            foreach (QString qtLibName, d->modules[i]->qtLibraries) {
-                qtLibs.insert(qtLibName);
+        }
+        for (int j=0; j<d->modules[i]->qtLibraries.size(); j++) {
+            const QString libName = d->modules[i]->qtLibraries[j];
+            if (!systemLibs.contains(libName)) {
+                systemLibs << libName;
             }
         }
     }
 
-    hFiles.insert("__kumir__.h");
-
-    const QString includePath = qApp->property("sharePath").toString()+"/kumirnativegenerator/";
-    QString gccOutName;
-    gccOutName = "out.bin";
-#ifdef Q_OS_WIN32
-    gccOutName = "out.exe";
-#endif
-
-
-    QStringList ldPaths;
-
-    ldPaths << QDir::cleanPath(QFileInfo(pluginSpec().libraryFileName).absoluteDir().path()+"/../");
-
-    QStringList frameworksOpts;
-    foreach (QString fw, qtLibs) {
-        frameworksOpts << " -framework "+fw;
+    if (!d->backend) {
+        return StringPair("No backend available", "");
     }
-
-    QStringList dlls;
-    foreach (QString fw, qtLibs) {
-#ifndef QT_NO_DEBUG
-        dlls << fw+"4d.dll";
-#else
-        dlls << fw+"4.dll";
-#endif
+    else {
+        return StringPair(d->backend->generateExecuable(headers, sources, systemLibs, kumirLibs, out), MIME_NATIVE_EXECUABLE);
     }
-    foreach (QString l, libs.toList()) {
-#ifndef QT_NO_DEBUG
-        dlls << l+"d.dll";
-#else
-        dlls << l+".dll";
-#endif
-    }
-
-    dlls << "mingwm10.dll" << "libgcc_s_dw2-1.dll";
-
-
-    QFile::remove("__kumir__.h");
-
-    QFile::copy(includePath+"/__kumir__.h", "__kumir__.h");
-
-    QString command = "gcc";
-#ifdef Q_OS_WIN32
-    command += ".exe";
-#endif
-
-#ifdef Q_OS_MAC
-    QString frameworksPath;
-    command += " -F"+frameworksPath;
-    command += " -L"+frameworksPath;
-//    command += " -Wl,-install_name="+ldPaths.join(":");
-    command += frameworksOpts.join(" ");
-#else
-    command += " -Wl,-rpath="+ldPaths.join(":");
-#endif
-    command += " -o "+gccOutName;
-    command += " --std=c99";
-//    command += " -Werror";
-    command += " -g";
-#ifdef Q_OS_WIN32
-    command += " -DWIN32";
-    command += " -Wl,-enable-auto-import";
-    command += " -Wl,-enable-runtime-pseudo-reloc";
-    command += " -mthreads";
-    command += " -L"+QCoreApplication::applicationDirPath();
-#endif
-
-    foreach (const QString L, ldPaths) {
-        command += " -L"+L;
-    }
-
-    command += " "+QStringList(cFiles.toList()).join(" ");
-
-//    if (d->requireGui) {
-//        QString libName = "KumirGuiRunner";
-//#ifndef QT_NO_DEBUG
-//#ifdef Q_OS_MAC
-//        libName += "_debug";
-//#endif
-//#ifdef Q_OS_WIN32
-//        libName += "d";
-//#endif
-//#endif
-//        command += " -l"+libName;
-//    }
-
-    foreach (const QString lib, libs.toList()) {
-        command += " -l"+lib;
-#ifndef QT_NO_DEBUG
-#ifdef Q_OS_WIN32
-        command += "d";
-#endif
-#ifdef Q_OS_MAC
-        command += "_debug";
-#endif
-#endif
-    }
-//#ifdef Q_OS_WIN32
-//    foreach (const QString lib, qtLibs.toList()) {
-//        command += " -l"+lib+"4";
-//#ifndef QT_NO_DEBUG
-//        command += "d";
-//#endif
-//    }
-//#endif
-    command += " -lm";
-//    command += " -g -O0";
-
-    if (qApp->arguments().contains("-V")) {
-        std::cout << command.toLocal8Bit().data() << std::endl;
-    }
-    QProcess * proc = new QProcess(this);
-    proc->setProcessChannelMode(QProcess::SeparateChannels);
-#ifdef Q_OS_WIN32
-    const QString mingwBinPath = QDir::toNativeSeparators(QDir::cleanPath(qApp->applicationDirPath()+"/../mingw/bin"));
-    std::cout << mingwBinPath.toLocal8Bit().data() << std::endl;
-    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-    env.insert("PATH", env.value("Path")+";"+mingwBinPath);
-    command = mingwBinPath+"\\"+command;
-    proc->setProcessEnvironment(env);
-#endif
-
-    proc->start(command);
-
-    proc->waitForFinished(10000);
-    proc->waitForReadyRead();
-
-    if (qApp->arguments().contains("-V") || qApp->arguments()[0]!="kumir2-cc") {
-        std::cout << proc->errorString().toLocal8Bit().data();
-        std::cout << proc->readAllStandardError().data();
-        std::cout << proc->readAllStandardOutput().data();
-    }
-
-    Shared::GeneratorResult result;
-    result.type = Shared::GenError;
-    if (out && QFile::exists(gccOutName)) {
-        QFile outF(gccOutName);
-        if (outF.open(QIODevice::ReadOnly)) {
-            out->write(outF.readAll());
-            outF.close();
-
-        }
-        result.type = Shared::GenNativeExecuable;
-        if (!qApp->arguments().contains("-S"))
-            QFile::remove(gccOutName);
-    }
-    if (!qApp->arguments().contains("-S")) {
-//    if (false) {
-        foreach (QString fn, cFiles.toList()) {
-            QFile::remove(fn);
-        }
-        foreach (QString fn, hFiles.toList()) {
-            QFile::remove(fn);
-        }
-    }
-    if (out && out->metaObject()->className()==QString("QFile")) {
-        QDir::setCurrent("..");
-        if (!qApp->arguments().contains("-S")) {
-            QFile * f = qobject_cast<QFile*>(out);
-            const QString fileName = QFileInfo(*f).fileName();
-            const QString buildDir = ".build-"+fileName;
-            QDir::current().rmdir(buildDir);
-        }
-    }
-    proc->deleteLater();
-    result.usedLibs = libs.toList();
-    result.usedQtLibs = qtLibs.toList();
-#ifdef Q_OS_WIN32
-    result.usedQtLibs += "libgcc_s_dw2-1";
-    result.usedQtLibs += "mingwm10";
-#endif
-//    qDebug() << result.usedQtLibs;
-    return result;
 }
+
+void KumirNativeGeneratorPlugin::setVerbose(bool v)
+{
+    if (d->backend) {
+        d->backend->setVerbose(v);
+    }
+}
+
 
 }
 

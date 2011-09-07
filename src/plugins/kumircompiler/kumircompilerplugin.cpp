@@ -90,7 +90,10 @@ void KumirCompilerPlugin::start()
             Shared::GeneratorInterface * generator =
                     qobject_cast<Shared::GeneratorInterface*>(myDependency("Generator"));
             Q_CHECK_PTR(generator);
-
+            if (qApp->arguments().contains("-V"))
+                generator->setVerbose(true);
+            if (qApp->arguments().contains("-S"))
+                generator->setTemporaryDir(QDir::currentPath(), false);
             QString outBinFileName = QFileInfo(filename).dir().absoluteFilePath(baseName+suffix);
             foreach (QString arg, qApp->arguments()) {
                 if (arg.startsWith("-o=")) {
@@ -101,49 +104,19 @@ void KumirCompilerPlugin::start()
             if (!outBinFileName.endsWith(".exe"))
                 outBinFileName += ".exe";
 #endif
-#ifdef Q_OS_MAC
-            if (!outBinFileName.endsWith(".app"))
-                outBinFileName += ".app";
-            QString bundleDir = outBinFileName;
-            const QString frameworksPath = QDir::cleanPath(qApp->applicationDirPath()+"/../Frameworks/");
-            const QString pluginsPath = QDir::cleanPath(qApp->applicationDirPath()+"/../PlugIns/");
-            QDir::current().mkpath(bundleDir+"/Contents/MacOS");
-//            QDir::current().mkpath(bundleDir+"/Contents/Frameworks");
-//            QDir::current().mkpath(bundleDir+"/Contents/PlugIns");
-            QProcess::execute("cp -R "+frameworksPath+" "+bundleDir+"/Contents/");
-            QProcess::execute("cp -R "+pluginsPath+" "+bundleDir+"/Contents/");
-            outBinFileName = baseName;
-            foreach (QString arg, qApp->arguments()) {
-                if (arg.startsWith("-o=")) {
-                    outBinFileName = arg.mid(3);
-                }
-            }
-            if (outBinFileName.endsWith(".app"))
-                outBinFileName = outBinFileName.left(outBinFileName.length()-4);
-            outBinFileName = bundleDir+"/Contents/MacOS/"+outBinFileName;
-#endif
             QFile binOut(outBinFileName);
-            binOut.open(QIODevice::WriteOnly);
-            Shared::GeneratorResult res = generator->generateExecuable(ast, &binOut);
-            binOut.close();
-#ifdef Q_OS_WIN32
-            foreach (QString qtLib, res.usedQtLibs) {
-                QString dllName = qtLib+"4";
-#ifndef QT_NO_DEBUG
-                dllName += "d";
-#endif
-                dllName += ".dll";
-                if (!QFile::exists(dllName)) {
-                    QFile::copy(QCoreApplication::applicationDirPath()+"/"+dllName, dllName);
-                }
+            StringPair res = generator->generateExecuable(ast, &binOut);
+
+            if (!res.first.isEmpty()) {
+                std::cerr << "Error generating execuable: " << res.first.toStdString() << std::endl;
             }
-#endif
-            if (res.type==Shared::GenNativeExecuable && QFile::exists(outBinFileName)) {
+
+            if (res.second==MIME_NATIVE_EXECUABLE && QFile::exists(outBinFileName)) {
                 QFile::Permissions ps = binOut.permissions();
                 ps |= QFile::ExeGroup | QFile::ExeOwner | QFile::ExeOther;
                 QFile::setPermissions(outBinFileName, ps);
             }
-            qApp->setProperty("returnCode", errors.isEmpty()? 0 : 1);
+            qApp->setProperty("returnCode", errors.isEmpty() && res.first.isEmpty() ? 0 : 1);
         }
     }
     else {

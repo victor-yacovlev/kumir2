@@ -20,9 +20,12 @@ public:
     KumirCodeGeneratorPlugin();
     ~KumirCodeGeneratorPlugin();
 
-    GeneratorResult generateExecuable(
+    StringPair generateExecuable(
         const AST::Data * tree
         , QIODevice * out);
+
+    inline void setVerbose(bool) {}
+    inline void setTemporaryDir(const QString &, bool ) {}
 
 protected:
     QString initialize(const QStringList &arguments);

@@ -100,10 +100,11 @@ void KumirBytecodeCompilerPlugin::start()
                 outKodFileName += ".kod";
 
             QFile binOut(outKodFileName);
-            binOut.open(QIODevice::WriteOnly);
-            Shared::GeneratorResult res = generator->generateExecuable(ast, &binOut);
-            binOut.close();
-            if (res.type==Shared::GenNotNativeExecuable && QFile::exists(outKodFileName)) {
+            StringPair res = generator->generateExecuable(ast, &binOut);
+            if (!res.first.isEmpty()) {
+                std::cerr << "Error generating execuable: " << res.first.toStdString() << std::endl;
+            }
+            if (res.second==MIME_BYTECODE_BINARY && QFile::exists(outKodFileName)) {
                 QFile::Permissions ps = binOut.permissions();
                 ps |= QFile::ExeGroup | QFile::ExeOwner | QFile::ExeOther;
                 QFile::setPermissions(outKodFileName, ps);
@@ -122,7 +123,7 @@ void KumirBytecodeCompilerPlugin::start()
                     }
                 }
             }
-            qApp->setProperty("returnCode", errors.isEmpty()? 0 : 1);
+            qApp->setProperty("returnCode", errors.isEmpty() && res.first.isEmpty()? 0 : 1);
         }
     }
     else {

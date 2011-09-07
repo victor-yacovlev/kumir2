@@ -9,25 +9,26 @@ include(../../shared/interfaces/generator.pri)
 
 
 HEADERS += kumirnativegeneratorplugin.h \
-    nameprovider.h
+    nameprovider.h \
+    compilerbackend.h
 
 SOURCES += kumirnativegeneratorplugin.cpp \
     nameprovider.cpp
 
-contains(CONFIG,clang) {
-    LIBS += -lclangFrontendTool -lclangFrontend -lclangDriver \
-           -lclangSerialization -lclangCodeGen -lclangParse -lclangSema \
-           -lclangStaticAnalyzerFrontend -lclangStaticAnalyzerCheckers \
-           -lclangStaticAnalyzerCore \
-           -lclangAnalysis -lclangIndex -lclangRewrite \
-           -lclangAST -lclangLex -lclangBasic
-
+contains(CONFIG,llvm) {
     LIBS += $$system(llvm-config --libs)
-
-    HEADERS += clangcompiler.h
-    SOURCES += clangcompiler.cpp
-    DEFINES += USE_CLANG
-
+    HEADERS += llvmbackend.h
+    SOURCES += llvmbackend.cpp
+    DEFINES += USE_LLVM
+} else {
+    HEADERS += gccbackend.h
+    SOURCES += gccbackend.cpp
+    DEFINES += USE_GCC
 }
 
 OTHER_FILES += KumirNativeGenerator.pluginspec
+
+
+
+
+

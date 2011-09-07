@@ -4,6 +4,7 @@
 #include "extensionsystem/kplugin.h"
 #include "interfaces/generatorinterface.h"
 #include "dataformats/ast.h"
+#include "compilerbackend.h"
 
 namespace KumirNativeGenerator {
 
@@ -18,24 +19,13 @@ public:
     ~KumirNativeGeneratorPlugin();
 
     QString initialize(const QStringList &arguments);
-#ifdef USE_CLANG
-    inline Shared::GeneratorResult generateExecuable(
+    StringPair generateExecuable(
         const AST::Data *tree
-        , QIODevice *out) { return generateExecuableUsingCLang(tree, out); }
-#else
-    inline Shared::GeneratorResult generateExecuable(
-        const AST::Data *tree
-        , QIODevice *out) { return generateExecuableUsingGCC(tree, out); }
-#endif
+        , QIODevice *out);
+    void setVerbose(bool v);
+    void setTemporaryDir(const QString & path, bool autoclean);
+
 private:
-#ifdef USE_CLANG
-    Shared::GeneratorResult generateExecuableUsingCLang(
-        const AST::Data * tree,
-        QIODevice * out);
-#endif
-    Shared::GeneratorResult generateExecuableUsingGCC(
-        const AST::Data *tree,
-        QIODevice *out);
     void start();
     void stop();
     struct KumirNativeGeneratorPrivate * d;
