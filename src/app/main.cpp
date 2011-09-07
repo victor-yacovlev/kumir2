@@ -43,6 +43,10 @@ int main(int argc, char **argv)
     QApplication * app = new QApplication(argc, argv, gui);
 #ifdef Q_OS_WIN32
     app->setAttribute(Qt::AA_DontShowIconsInMenus);
+    app->addLibraryPath(app->applicationDirPath());
+#endif
+#ifndef Q_OS_WIN32
+    app->addLibraryPath(QDir::cleanPath(app->applicationDirPath()+"/../"+IDE_LIBRARY_BASENAME+"/kumir2/"));
 #endif
     QString versionStatus;
     if (VERSION_BETA)

@@ -32,7 +32,7 @@ protected:
                                          const QStringList &kumirLibs);
     static QString debugSystemLib(const QString & n);
     static QString debugKumirLib(const QString & n);
-    static QString libraryPath();
+    static QStringList libraryPaths();
     static QString execuableSuffix();
     static QString llvmCommand();
     QString tempDirName() const;

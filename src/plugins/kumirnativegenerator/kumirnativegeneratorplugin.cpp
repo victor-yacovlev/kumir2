@@ -1006,7 +1006,7 @@ void KumirNativeGeneratorPlugin::stop()
 }
 
 
-StringPair KumirNativeGeneratorPlugin::generateExecuable(const AST::Data *tree, QIODevice *out)
+StringPair KumirNativeGeneratorPlugin::generateExecuable(const AST::Data *tree, QIODevice *out, QStringList *usedDlls)
 {
     d->ast = tree;
     d->requireGui = false;
@@ -1060,12 +1060,46 @@ StringPair KumirNativeGeneratorPlugin::generateExecuable(const AST::Data *tree, 
         }
     }
 
+    if (usedDlls) {
+        *usedDlls = requiredDlls(d->modules);
+    }
+
     if (!d->backend) {
         return StringPair("No backend available", "");
     }
     else {
         return StringPair(d->backend->generateExecuable(headers, sources, systemLibs, kumirLibs, out), MIME_NATIVE_EXECUABLE);
     }
+}
+
+QStringList KumirNativeGeneratorPlugin::requiredDlls(const QList<struct Module*> modules)
+{
+    QStringList result;
+#ifdef Q_OS_WIN32
+    result << "KumirStdLib.dll";
+    result << "mingwm10.dll";
+    result << "libgcc_s_dw2-1.dll";
+#ifdef QT_DEBUG
+    const QString qtSuffix = "4d";
+#else
+    const QString qtSuffix = "4";
+#endif
+    result << "QtCore"+qtSuffix+".dll";
+    result << "QtGui"+qtSuffix+".dll";
+    for (int i=0 ; i<modules.size(); i++) {
+        for (int j=0; j<modules[i]->cLibraries.size(); j++) {
+            const QString fileName = modules[i]->cLibraries[j]+".dll";
+            if (!result.contains(fileName))
+                result << fileName;
+        }
+        for (int j=0; j<modules[i]->qtLibraries.size(); j++) {
+            const QString fileName = modules[i]->qtLibraries[j]+qtSuffix+".dll";
+            if (!result.contains(fileName))
+                result << fileName;
+        }
+    }
+#endif
+    return result;
 }
 
 void KumirNativeGeneratorPlugin::setVerbose(bool v)

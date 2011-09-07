@@ -19,7 +19,7 @@ public:
       */
     virtual QPair<QString,QString> generateExecuable(
             const AST::Data * tree
-            , QIODevice * out) = 0;
+            , QIODevice * out, QStringList * usedDlls = 0) = 0;
     virtual void setVerbose(bool v) = 0;
     virtual void setTemporaryDir(const QString & path, bool autoclean) = 0;
 };

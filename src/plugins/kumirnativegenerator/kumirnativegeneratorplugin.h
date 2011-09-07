@@ -21,11 +21,12 @@ public:
     QString initialize(const QStringList &arguments);
     QPair<QString,QString> generateExecuable(
         const AST::Data *tree
-        , QIODevice *out);
+        , QIODevice *out, QStringList * usedDlls = 0);
     void setVerbose(bool v);
     void setTemporaryDir(const QString & path, bool autoclean);
 
 private:
+    static QStringList requiredDlls(const QList<struct Module*> modules);
     void start();
     void stop();
     struct KumirNativeGeneratorPrivate * d;

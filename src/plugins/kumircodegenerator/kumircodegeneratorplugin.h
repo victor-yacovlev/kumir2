@@ -3,6 +3,7 @@
 
 #include "extensionsystem/kplugin.h"
 #include "interfaces/generatorinterface.h"
+#include "dataformats/bytecode.h"
 
 
 using namespace Shared;
@@ -22,7 +23,7 @@ public:
 
     QPair<QString,QString> generateExecuable(
         const AST::Data * tree
-        , QIODevice * out);
+        , QIODevice * out, QStringList * usedDlls = 0);
 
     inline void setVerbose(bool) {}
     inline void setTemporaryDir(const QString &, bool ) {}

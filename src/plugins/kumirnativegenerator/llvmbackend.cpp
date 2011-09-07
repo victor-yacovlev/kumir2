@@ -7,6 +7,14 @@ LlvmBackend::LlvmBackend(QObject *parent) :
     QObject(parent)
 {
     m_process = new QProcess(this);
+#ifdef Q_OS_WIN32
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    const QString clangBinPath = QDir::toNativeSeparators(QDir::cleanPath(QCoreApplication::applicationDirPath()+"/../clang-mingw/bin/"));
+    qDebug() << clangBinPath;
+    env.insert("PATH", env.value("Path")+";"+
+               clangBinPath);
+    m_process->setProcessEnvironment(env);
+#endif
 #ifdef QT_DEBUG
     setVerbose(true);
 #else
@@ -52,6 +60,7 @@ QString LlvmBackend::generateExecuable(
         std::cerr << command.toLocal8Bit().data() << std::endl;
     }
     m_process->setWorkingDirectory(tempDirName());
+
     m_process->start(command);
     m_process->waitForStarted();
     if (m_process->state()!=QProcess::Running)
@@ -88,6 +97,7 @@ QString LlvmBackend::generateArgumentsLine(
     result << "-g";
 #endif
     result << "-O0";
+    result << "-v";
     result << "-std=c99";
 #ifdef Q_OS_WIN32
     result << "-DWIN32";
@@ -95,7 +105,8 @@ QString LlvmBackend::generateArgumentsLine(
     result << "-Wl,-enable-runtime-pseudo-reloc";
     result << "-mthreads";
 #endif
-    result << QString("-L")+libraryPath();
+    for (int i=0; i<libraryPaths().size(); i++)
+        result << QString("-L")+libraryPaths()[i];
     result << rpath();
     for (int i=0; i<systemLibs.size(); i++) {
         result << "-l"+debugSystemLib(systemLibs[i]);
@@ -110,14 +121,17 @@ QString LlvmBackend::generateArgumentsLine(
     return result.join(" ");
 }
 
-QString LlvmBackend::libraryPath()
+QStringList LlvmBackend::libraryPaths()
 {
+    QStringList result;
 #ifdef Q_OS_WIN32
-    return QCoreApplication::applicationDirPath();
+    result << QDir::cleanPath(QCoreApplication::applicationDirPath()+"/../clang-mingw/lib");
+    result << QCoreApplication::applicationDirPath();
 #endif
 #ifdef Q_OS_UNIX
-    return QDir::cleanPath(QCoreApplication::applicationDirPath()+"/../"+QString::fromLocal8Bit(IDE_LIBRARY_BASENAME)+"/kumir2");
+    result << QDir::cleanPath(QCoreApplication::applicationDirPath()+"/../"+QString::fromLocal8Bit(IDE_LIBRARY_BASENAME)+"/kumir2");
 #endif
+    return result;
 }
 
 QString LlvmBackend::debugSystemLib(const QString & n)
@@ -172,9 +186,9 @@ QString LlvmBackend::debugKumirLib(const QString &n)
 QString LlvmBackend::rpath()
 {
 #ifndef Q_OS_WIN32
-    return "-Wl,-rpath="+libraryPath();
+    return "-Wl,-rpath="+QDir::cleanPath(qApp->applicationDirPath()+"/../"+IDE_LIBRARY_BASENAME+"/kumir2");
 #endif
-    return "";
+  return "";
 }
 
 QString LlvmBackend::execuableSuffix()
@@ -188,9 +202,10 @@ QString LlvmBackend::execuableSuffix()
 QString LlvmBackend::llvmCommand()
 {
 #ifdef Q_OS_WIN32
-    return QDir::cleanPath(QCoreApplication::applicationDirPath()+"/clang.exe");
-#endif
+    return qApp->applicationDirPath()+"/../clang-mingw/bin/clang.exe";
+#else
     return "clang";
+#endif
 }
 
 QString LlvmBackend::tempDirName() const
