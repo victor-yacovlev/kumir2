@@ -15,7 +15,7 @@ win32 {
 include(../rpath.pri)
 
 # need to avoid using previously compiled main.o from other project
-OBJECTS_DIR = $$OBJECTS_DIR/$$TARGET
+OBJECTS_DIR = $$IDE_BUILD_TREE/src/app/$$TARGET
 # defines default template for this build
 DEFINES += CONFIGURATION_TEMPLATE=\\\"Editor\\(teacher\\),Browser,Actor*,KumirAnalizer\\(teacher\\),KumirNativeGenerator,KumirCodeGenerator,KumirCodeRun,!CoreGUI\\(icon=teacher\\)\\\"
 

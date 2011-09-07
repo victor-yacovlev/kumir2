@@ -14,7 +14,7 @@ namespace Ui {
 }
 
 class Component
-        : public QWidget
+        : public QWebView
 {
     Q_OBJECT
 
@@ -32,7 +32,7 @@ public slots:
 protected:
     void showEvent(QShowEvent *e);
 private:
-    Ui::Component *ui;
+
     QMap<QString, QObject*> m_manageableObjects;
     QAction * a_separator;
     QAction * a_goBack;
@@ -43,7 +43,6 @@ private:
     QWebFrame * frame_toPrint;
 
 signals:
-    void titleChanged(const QString & title);
     void newWindowCreated(const Shared::BrowserComponent &);
 
 private slots:

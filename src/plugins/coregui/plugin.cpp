@@ -29,6 +29,7 @@ QString Plugin::DockSideKey = "DockWindow/Side";
 
 QString Plugin::initialize(const QStringList & parameters)
 {
+
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
 
@@ -48,6 +49,7 @@ QString Plugin::initialize(const QStringList & parameters)
     }
     QApplication::setWindowIcon(QIcon(QApplication::instance()->property("sharePath").toString()+"/coregui/kumir2-icon"+iconSuffix+".png"));
 
+
     b_nosessions = parameters.contains("nosessions",Qt::CaseInsensitive);
 
     m_kumirStateLabel = new QLabel();
@@ -63,6 +65,7 @@ QString Plugin::initialize(const QStringList & parameters)
 //    if (!plugin_NativeGenerator)
 //        return "Can't load c-generator plugin!";
     m_terminal = new Term(0);
+
 
     connect(m_terminal, SIGNAL(message(QString)),
             m_mainWindow, SLOT(showMessage(QString)));
@@ -93,9 +96,9 @@ QString Plugin::initialize(const QStringList & parameters)
                     "/coregui/variableswindow_kumir/index.html"
                 ),
                 variablesBrowserObjects);
+    qDebug() << "variables window done";
     connect(m_kumirProgram->variablesWebObject(), SIGNAL(jsRequest(QString,QVariantList)),
             variablesBrowser.widget, SLOT(evaluateCommand(QString,QVariantList)));
-
     variablesBrowser.widget->setMinimumWidth(430);
 
     QDockWidget * variablesWindow = m_mainWindow->addSecondaryComponent(
@@ -140,6 +143,7 @@ QString Plugin::initialize(const QStringList & parameters)
         }
         m_kumirProgram->addActor(o, w);
     }
+
     if (!parameters.contains("nostartpage", Qt::CaseInsensitive)) {
         const QString browserEntryPoint = QApplication::instance()->property("sharePath").toString()+"/coregui/startpage/russian/index.html";
         m_browserObjects["mainWindow"] = m_mainWindow;
@@ -152,6 +156,7 @@ QString Plugin::initialize(const QStringList & parameters)
 
     connect(m_terminal, SIGNAL(openTextEditor(QString,QString)),
             m_mainWindow, SLOT(newText(QString,QString)));
+
 
     QDir docsRoot(qApp->property("sharePath").toString()+"/webapps/helpviewer/data/russian/");
     const QStringList entryList = docsRoot.entryList();
@@ -181,6 +186,7 @@ QString Plugin::initialize(const QStringList & parameters)
             helpWindow->toggleViewAction(), SLOT(trigger()));
     connect(helpWindow->toggleViewAction(), SIGNAL(toggled(bool)),
             m_mainWindow->ui->actionUsage, SLOT(setChecked(bool)));
+
 
     return "";
 }

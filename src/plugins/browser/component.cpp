@@ -29,42 +29,48 @@ void Component::evaluateCommand(const QString &method, const QVariantList &argum
         }
     }
     js += ")";
-    ui->webView->page()->currentFrame()->evaluateJavaScript(js);
+    page()->currentFrame()->evaluateJavaScript(js);
 }
 
 Component::Component(class Plugin * plugin) :
-    QWidget(),
-    ui(new Ui::Component)
+    QWebView()
 {
+    qDebug() << "Component constructor";
     m_plugin = plugin;
-    ui->setupUi(this);
-    ui->webView->setPage(new WebPage(this));
-    ui->webView->page()->setNetworkAccessManager(plugin->networkAccessManager());
-    connect(ui->webView->page()->mainFrame(), SIGNAL(javaScriptWindowObjectCleared()), this, SLOT(addJavaScriptObjects()));
+    qDebug() << "aaa";
+    WebPage * pg = new WebPage();
+    qDebug() << "00";
+    pg->setComponent(this);
+    qDebug() << "AaAa";
+    setPage(pg);
+    qDebug() << "01";
+    page()->setNetworkAccessManager(plugin->networkAccessManager());
+    qDebug() << "02";
+    connect(page()->mainFrame(), SIGNAL(javaScriptWindowObjectCleared()), this, SLOT(addJavaScriptObjects()));
+    qDebug() << "03";
 #ifdef QT_DEBUG
-    ui->webView->page()->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+    page()->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
 #endif
-
-    ui->webView->pageAction(QWebPage::Back)->setText(tr("Go back"));
-    ui->webView->pageAction(QWebPage::Forward)->setText(tr("Go forward"));
-    ui->webView->pageAction(QWebPage::Stop)->setText(tr("Stop"));
-    ui->webView->pageAction(QWebPage::Reload)->setText(tr("Reload"));
-    ui->webView->pageAction(QWebPage::Cut)->setText(tr("Cut"));
-    ui->webView->pageAction(QWebPage::Copy)->setText(tr("Copy"));
-    ui->webView->pageAction(QWebPage::Paste)->setText(tr("Paste"));
-    
-    ui->webView->pageAction(QWebPage::Cut)->setIcon(QIcon::fromTheme("edit-cut", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-cut.png")));
-    ui->webView->pageAction(QWebPage::Copy)->setIcon(QIcon::fromTheme("edit-copy", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-copy.png")));
-    ui->webView->pageAction(QWebPage::Paste)->setIcon(QIcon::fromTheme("edit-paste", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-paste.png")));
-
-    connect(ui->webView, SIGNAL(titleChanged(QString)), this, SIGNAL(titleChanged(QString)));
-    connect(ui->webView->page(), SIGNAL(loadStarted()), this, SLOT(handleLoadStarted()));
-    connect(ui->webView->page(), SIGNAL(loadFinished(bool)), this, SLOT(handleLoadFinished()));
-    connect(ui->webView->page(), SIGNAL(printRequested(QWebFrame*)), this, SLOT(handlePrintRequest(QWebFrame*)));
-
+    qDebug() << "bbb";
+    pageAction(QWebPage::Back)->setText(tr("Go back"));
+    pageAction(QWebPage::Forward)->setText(tr("Go forward"));
+    pageAction(QWebPage::Stop)->setText(tr("Stop"));
+    pageAction(QWebPage::Reload)->setText(tr("Reload"));
+    pageAction(QWebPage::Cut)->setText(tr("Cut"));
+    pageAction(QWebPage::Copy)->setText(tr("Copy"));
+    pageAction(QWebPage::Paste)->setText(tr("Paste"));
+qDebug() << "ccc";
+    pageAction(QWebPage::Cut)->setIcon(QIcon::fromTheme("edit-cut", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-cut.png")));
+    pageAction(QWebPage::Copy)->setIcon(QIcon::fromTheme("edit-copy", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-copy.png")));
+    pageAction(QWebPage::Paste)->setIcon(QIcon::fromTheme("edit-paste", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-paste.png")));
+qDebug() << "ddd";
+    connect(page(), SIGNAL(loadStarted()), this, SLOT(handleLoadStarted()));
+    connect(page(), SIGNAL(loadFinished(bool)), this, SLOT(handleLoadFinished()));
+    connect(page(), SIGNAL(printRequested(QWebFrame*)), this, SLOT(handlePrintRequest(QWebFrame*)));
+qDebug() << "eee";
     a_goBack = new QAction(tr("Go back"), this);
-    a_goBack->setIcon(ui->webView->pageAction(QWebPage::Back)->icon());
-    connect(a_goBack, SIGNAL(triggered()), ui->webView->pageAction(QWebPage::Back), SLOT(trigger()));
+    a_goBack->setIcon(pageAction(QWebPage::Back)->icon());
+    connect(a_goBack, SIGNAL(triggered()), pageAction(QWebPage::Back), SLOT(trigger()));
     a_goBack->setEnabled(false);
 
     a_reloadStop = new QAction(this);
@@ -76,22 +82,23 @@ Component::Component(class Plugin * plugin) :
     menu_edit = new QMenu(tr("Edit"));
     
     menu_edit->addAction(a_goBack);
-    menu_edit->addAction(ui->webView->pageAction(QWebPage::Forward));
-    menu_edit->addAction(ui->webView->pageAction(QWebPage::Reload));
-    menu_edit->addAction(ui->webView->pageAction(QWebPage::Stop));
+    menu_edit->addAction(pageAction(QWebPage::Forward));
+    menu_edit->addAction(pageAction(QWebPage::Reload));
+    menu_edit->addAction(pageAction(QWebPage::Stop));
     menu_edit->addSeparator();
-    menu_edit->addAction(ui->webView->pageAction(QWebPage::Cut));
-    menu_edit->addAction(ui->webView->pageAction(QWebPage::Copy));
-    menu_edit->addAction(ui->webView->pageAction(QWebPage::Paste));
+    menu_edit->addAction(pageAction(QWebPage::Cut));
+    menu_edit->addAction(pageAction(QWebPage::Copy));
+    menu_edit->addAction(pageAction(QWebPage::Paste));
 
     frame_toPrint = 0;
+    qDebug() << "Component constructor done";
 }
 
 QList<QAction*> Component::toolbarActions()
 {
     QList<QAction*> result;
     result << a_goBack;
-    result << ui->webView->pageAction(QWebPage::Forward);
+    result << pageAction(QWebPage::Forward);
     result << a_reloadStop;
     return result;
 }
@@ -107,15 +114,15 @@ void Component::addJavaScriptObjects()
 {
     foreach (const QString & name, m_manageableObjects.keys()) {
         QObject * obj = m_manageableObjects[name];
-        ui->webView->page()->mainFrame()->addToJavaScriptWindowObject(name, obj);
+        page()->mainFrame()->addToJavaScriptWindowObject(name, obj);
     }
 }
 
 void Component::go(const QUrl &url)
 {
-    ui->webView->setUrl(url);
+    setUrl(url);
 //    ui->webView->history()->clear();
-    ui->webView->pageAction(QWebPage::Back)->setEnabled(false);
+    pageAction(QWebPage::Back)->setEnabled(false);
 //    for (int i=0; i<ui->webView->history()->items().count(); i++) {
 //        QWebHistoryItem item = ui->webView->history()->items()[i];
 //        qDebug() << item.url();
@@ -125,8 +132,8 @@ void Component::go(const QUrl &url)
 
 void Component::showEvent(QShowEvent *e)
 {
-    if (ui->webView->page()->mainFrame()->metaData().contains("refresh", "onshow")) {
-        ui->webView->page()->mainFrame()->evaluateJavaScript("updateContents()");
+    if (page()->mainFrame()->metaData().contains("refresh", "onshow")) {
+        page()->mainFrame()->evaluateJavaScript("updateContents()");
     }
     QWidget::showEvent(e);
 }
@@ -134,27 +141,24 @@ void Component::showEvent(QShowEvent *e)
 void Component::handleLoadStarted()
 {
     a_reloadStop->setText(tr("Stop"));
-    a_reloadStop->setIcon(ui->webView->pageAction(QWebPage::Stop)->icon());
+    a_reloadStop->setIcon(pageAction(QWebPage::Stop)->icon());
 }
 
 void Component::handleLoadFinished()
 {
-    int hc = ui->webView->history()->count();
-//    qDebug() << hc;
-    const QString title = ui->webView->title();
-    emit titleChanged(title);
+    int hc = history()->count();
     a_goBack->setEnabled(hc>2);
     a_reloadStop->setText(tr("Reload"));
-    a_reloadStop->setIcon(ui->webView->pageAction(QWebPage::Reload)->icon());
+    a_reloadStop->setIcon(pageAction(QWebPage::Reload)->icon());
 }
 
 void Component::handleReloadStop()
 {
     if (a_reloadStop->text()==tr("Reload")) {
-        ui->webView->pageAction(QWebPage::Reload)->trigger();
+        pageAction(QWebPage::Reload)->trigger();
     }
     else {
-        ui->webView->pageAction(QWebPage::Stop)->trigger();
+        pageAction(QWebPage::Stop)->trigger();
     }
 }
 
@@ -189,7 +193,7 @@ void Component::handlePaintPrinterFrame(QPrinter *printer)
 
 Component::~Component()
 {
-    delete ui;
+
 }
 
 QWebPage * Component::createChildPage()
@@ -197,7 +201,7 @@ QWebPage * Component::createChildPage()
     Shared::BrowserComponent bc = m_plugin->createBrowser(QUrl(), m_manageableObjects);
     emit newWindowCreated(bc);
     Component * cw = qobject_cast<Component*>(bc.widget);
-    return cw->ui->webView->page();
+    return cw->page();
 }
 
 } // namespace Browser

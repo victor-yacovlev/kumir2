@@ -9,7 +9,9 @@ class WebPage : public QWebPage
 {
     Q_OBJECT
 public:
-    explicit WebPage(class Component * component, QWidget *parent = 0);
+    WebPage();
+
+    void setComponent(class Component * v);
 
 protected:
     QObject * createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);

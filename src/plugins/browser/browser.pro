@@ -23,5 +23,5 @@ SOURCES += \
     localhostserver.cpp \
     networkaccessmanager.cpp
 
-FORMS += \
-    component.ui
+FORMS +=
+

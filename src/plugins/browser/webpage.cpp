@@ -3,16 +3,21 @@
 
 namespace Browser {
 
-WebPage::WebPage(Component * component, QWidget *parent)
-    : QWebPage(parent)
-    , m_component(component)
+WebPage::WebPage()
+    : QWebPage()
 {
+    qDebug() << "WebPage constructor";
+    m_component = 0;
+    qDebug() << "WebPage constructor done";
+}
 
+void WebPage::setComponent(Component *v)
+{
+    m_component = v;
 }
 
 QObject * WebPage::createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues)
 {
-
     Q_UNUSED(classid);
     Q_UNUSED(url);
     QWidget * result = 0;
