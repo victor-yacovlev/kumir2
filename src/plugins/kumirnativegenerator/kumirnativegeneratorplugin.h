@@ -19,7 +19,7 @@ public:
     ~KumirNativeGeneratorPlugin();
 
     QString initialize(const QStringList &arguments);
-    StringPair generateExecuable(
+    QPair<QString,QString> generateExecuable(
         const AST::Data *tree
         , QIODevice *out);
     void setVerbose(bool v);

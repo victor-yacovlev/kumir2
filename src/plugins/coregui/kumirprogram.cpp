@@ -278,7 +278,10 @@ void KumirProgram::fastRun()
             }
         }
 
-        StringPair res = plugin_nativeGenerator->generateExecuable(m_ast, &exeFile);
+#ifdef Q_OS_WIN32
+        plugin_nativeGenerator->setVerbose(true);
+#endif
+        QPair<QString,QString> res = plugin_nativeGenerator->generateExecuable(m_ast, &exeFile);
         if (!res.first.isEmpty()) {
             qDebug() << "Error generating execuable: " << res.first;
         }
@@ -381,7 +384,7 @@ void KumirProgram::prepareKumirRunner()
     if (mustRegenerate) {
         QByteArray bufArray;
         QBuffer buffer(&bufArray);
-        StringPair res = plugin_bytcodeGenerator->generateExecuable(m_ast, &buffer);
+        QPair<QString,QString> res = plugin_bytcodeGenerator->generateExecuable(m_ast, &buffer);
 
         buffer.open(QIODevice::ReadOnly);
         if (!res.first.isEmpty()) {

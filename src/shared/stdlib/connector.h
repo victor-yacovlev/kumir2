@@ -9,6 +9,8 @@
 #define STDLIB_EXPORT Q_DECL_IMPORT
 #endif
 
+#include "connector_backend.h"
+
 
 namespace StdLib {
 
@@ -53,12 +55,7 @@ signals:
 
 private:
     static Connector * m_instance;
-#ifdef SHM_METHOD
-    class Connector_SHM * d;
-#endif
-#ifdef PIPE_METHOD
-    class Connector_PIPE * d;
-#endif
+    AbstractConnectorBackend * d;
 };
 
 

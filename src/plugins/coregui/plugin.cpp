@@ -96,7 +96,6 @@ QString Plugin::initialize(const QStringList & parameters)
                     "/coregui/variableswindow_kumir/index.html"
                 ),
                 variablesBrowserObjects);
-    qDebug() << "variables window done";
     connect(m_kumirProgram->variablesWebObject(), SIGNAL(jsRequest(QString,QVariantList)),
             variablesBrowser.widget, SLOT(evaluateCommand(QString,QVariantList)));
     variablesBrowser.widget->setMinimumWidth(430);

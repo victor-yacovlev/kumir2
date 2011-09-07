@@ -32,7 +32,7 @@ void KumirCodeGeneratorPlugin::stop()
 
 }
 
-StringPair KumirCodeGeneratorPlugin::generateExecuable(
+QPair<QString,QString> KumirCodeGeneratorPlugin::generateExecuable(
     const AST::Data * tree
     , QIODevice * out)
 {
@@ -55,7 +55,7 @@ StringPair KumirCodeGeneratorPlugin::generateExecuable(
 
     out->close();
 
-    return StringPair("", MIME_BYTECODE_BINARY);
+    return QPair<QString,QString>("", MIME_BYTECODE_BINARY);
 }
 
 Q_EXPORT_PLUGIN(KumirCodeGeneratorPlugin)

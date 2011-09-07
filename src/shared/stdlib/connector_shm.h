@@ -2,13 +2,13 @@
 #define STDLIB_CONNECTOR_SHM_H
 
 #include <QtCore>
+#include "connector_backend.h"
 
 namespace StdLib {
 
-class Connector_SHM : public QThread
+class Connector_SHM: public AbstractConnectorBackend
 {
     Q_OBJECT
-
     enum MessageSender {
         IM_NoMessage = 0x0000,
         IM_Kumir = 0x0001,

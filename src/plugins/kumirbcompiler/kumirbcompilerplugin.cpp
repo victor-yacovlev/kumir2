@@ -100,7 +100,7 @@ void KumirBytecodeCompilerPlugin::start()
                 outKodFileName += ".kod";
 
             QFile binOut(outKodFileName);
-            StringPair res = generator->generateExecuable(ast, &binOut);
+            QPair<QString,QString> res = generator->generateExecuable(ast, &binOut);
             if (!res.first.isEmpty()) {
                 std::cerr << "Error generating execuable: " << res.first.toStdString() << std::endl;
             }

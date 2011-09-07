@@ -3,7 +3,7 @@
 namespace StdLib {
 
 Connector_SHM::Connector_SHM(QObject * parent)
-    : QThread(parent)
+    : AbstractConnectorBackend(parent)
 {
     shm = new QSharedMemory(this);
     e_state = CS_Idle;

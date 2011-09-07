@@ -3,7 +3,7 @@
 namespace StdLib {
 
 Connector_PIPE::Connector_PIPE(QObject *parent) :
-    QThread(parent)
+    AbstractConnectorBackend(parent)
 {
     m_process = 0;
     ba_in = new QByteArray();

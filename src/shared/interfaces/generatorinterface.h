@@ -3,14 +3,12 @@
 
 #include "dataformats/ast.h"
 
-typedef QPair<QString,QString> StringPair;
-
 namespace Shared {
 
 
-#define MIME_BYTECODE_BINARY    "application/vnd.niisi.kumir2.bytecode.binary"
-#define MIME_BYTECODE_TEXT      "application/vnd.niisi.kumir2.bytecode.text"
-#define MIME_NATIVE_EXECUABLE   "application/octet-stream"
+#define MIME_BYTECODE_BINARY    QString::fromAscii("application/vnd.niisi.kumir2.bytecode.binary")
+#define MIME_BYTECODE_TEXT      QString::fromAscii("application/vnd.niisi.kumir2.bytecode.text")
+#define MIME_NATIVE_EXECUABLE   QString::fromAscii("application/octet-stream")
 
 class GeneratorInterface {
 public:
@@ -19,7 +17,7 @@ public:
       * @param out  OUT: output buffer to write (if QFile - not opened state)
       * @returns pair of string: first is error (or empty), second is mimetype
       */
-    virtual StringPair generateExecuable(
+    virtual QPair<QString,QString> generateExecuable(
             const AST::Data * tree
             , QIODevice * out) = 0;
     virtual void setVerbose(bool v) = 0;

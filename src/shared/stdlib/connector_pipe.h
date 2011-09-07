@@ -2,10 +2,11 @@
 #define STDLIB_CONNECTOR_PIPE_H
 
 #include <QtCore>
+#include "connector_backend.h"
 
 namespace StdLib {
 
-class Connector_PIPE : public QThread
+class Connector_PIPE : public AbstractConnectorBackend
 {
     Q_OBJECT
     Q_ENUMS(MessageType)

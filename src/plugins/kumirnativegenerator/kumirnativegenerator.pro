@@ -16,7 +16,6 @@ SOURCES += kumirnativegeneratorplugin.cpp \
     nameprovider.cpp
 
 contains(CONFIG,llvm) {
-#    LIBS += $$system(llvm-config --libs)
     HEADERS += llvmbackend.h
     SOURCES += llvmbackend.cpp
     DEFINES += USE_LLVM

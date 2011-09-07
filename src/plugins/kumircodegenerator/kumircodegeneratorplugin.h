@@ -20,7 +20,7 @@ public:
     KumirCodeGeneratorPlugin();
     ~KumirCodeGeneratorPlugin();
 
-    StringPair generateExecuable(
+    QPair<QString,QString> generateExecuable(
         const AST::Data * tree
         , QIODevice * out);
 

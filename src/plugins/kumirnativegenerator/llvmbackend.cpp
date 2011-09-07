@@ -79,7 +79,11 @@ QString LlvmBackend::generateArgumentsLine(
 {
     QStringList result;
     result << "-I"+qApp->property("sharePath").toString()+"/kumirnativegenerator/";
+#ifdef Q_OS_WIN32
+    result << "-I"+qApp->property("sharePath").toString()+"/kumirnativegenerator/mingw-include/";
+#else
     result << "-I"+qApp->property("sharePath").toString()+"/kumirnativegenerator/gcc45-include/";
+#endif
 #ifdef QT_DEBUG
     result << "-g";
 #endif

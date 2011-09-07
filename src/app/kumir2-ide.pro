@@ -18,7 +18,7 @@ include(../rpath.pri)
 OBJECTS_DIR = $$IDE_BUILD_TREE/src/app/$$TARGET
 # defines default template for this build
 DEFINES += CONFIGURATION_TEMPLATE=\\\"Editor,Browser,Actor*,KumirAnalizer,KumirNativeGenerator,KumirCodeGenerator,KumirCodeRun,!CoreGUI\\\"
-#DEFINES += CONFIGURATION_TEMPLATE=\\\"Editor,Browser,Actor*,KumirAnalizer,KumirCodeGenerator,KumirCodeRun,!CoreGUI\\\"
+
 
 win32 {
     CONFIG(debug, debug|release):LIBS *= -lExtensionSystemd
