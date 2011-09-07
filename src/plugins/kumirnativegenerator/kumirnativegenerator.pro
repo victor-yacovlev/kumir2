@@ -6,7 +6,7 @@ include(../../shared/extensionsystem/extensionsystem.pri)
 include(../../shared/dataformats/dataformats.pri)
 include(../../shared/interfaces/generator.pri)
 
-
+win32:CONFIG += llvm
 
 HEADERS += kumirnativegeneratorplugin.h \
     nameprovider.h \
@@ -16,7 +16,7 @@ SOURCES += kumirnativegeneratorplugin.cpp \
     nameprovider.cpp
 
 contains(CONFIG,llvm) {
-    LIBS += $$system(llvm-config --libs)
+#    LIBS += $$system(llvm-config --libs)
     HEADERS += llvmbackend.h
     SOURCES += llvmbackend.cpp
     DEFINES += USE_LLVM
@@ -27,6 +27,7 @@ contains(CONFIG,llvm) {
 }
 
 OTHER_FILES += KumirNativeGenerator.pluginspec
+
 
 
 
