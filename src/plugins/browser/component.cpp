@@ -1,5 +1,4 @@
 #include "component.h"
-#include "ui_component.h"
 #include "webpage.h"
 #include "plugin.h"
 
@@ -35,23 +34,15 @@ void Component::evaluateCommand(const QString &method, const QVariantList &argum
 Component::Component(class Plugin * plugin) :
     QWebView()
 {
-    qDebug() << "Component constructor";
     m_plugin = plugin;
-    qDebug() << "aaa";
     WebPage * pg = new WebPage();
-    qDebug() << "00";
     pg->setComponent(this);
-    qDebug() << "AaAa";
     setPage(pg);
-    qDebug() << "01";
     page()->setNetworkAccessManager(plugin->networkAccessManager());
-    qDebug() << "02";
     connect(page()->mainFrame(), SIGNAL(javaScriptWindowObjectCleared()), this, SLOT(addJavaScriptObjects()));
-    qDebug() << "03";
 #ifdef QT_DEBUG
     page()->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
 #endif
-    qDebug() << "bbb";
     pageAction(QWebPage::Back)->setText(tr("Go back"));
     pageAction(QWebPage::Forward)->setText(tr("Go forward"));
     pageAction(QWebPage::Stop)->setText(tr("Stop"));
@@ -59,15 +50,15 @@ Component::Component(class Plugin * plugin) :
     pageAction(QWebPage::Cut)->setText(tr("Cut"));
     pageAction(QWebPage::Copy)->setText(tr("Copy"));
     pageAction(QWebPage::Paste)->setText(tr("Paste"));
-qDebug() << "ccc";
+
     pageAction(QWebPage::Cut)->setIcon(QIcon::fromTheme("edit-cut", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-cut.png")));
     pageAction(QWebPage::Copy)->setIcon(QIcon::fromTheme("edit-copy", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-copy.png")));
     pageAction(QWebPage::Paste)->setIcon(QIcon::fromTheme("edit-paste", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-paste.png")));
-qDebug() << "ddd";
+
     connect(page(), SIGNAL(loadStarted()), this, SLOT(handleLoadStarted()));
     connect(page(), SIGNAL(loadFinished(bool)), this, SLOT(handleLoadFinished()));
     connect(page(), SIGNAL(printRequested(QWebFrame*)), this, SLOT(handlePrintRequest(QWebFrame*)));
-qDebug() << "eee";
+
     a_goBack = new QAction(tr("Go back"), this);
     a_goBack->setIcon(pageAction(QWebPage::Back)->icon());
     connect(a_goBack, SIGNAL(triggered()), pageAction(QWebPage::Back), SLOT(trigger()));
@@ -91,7 +82,7 @@ qDebug() << "eee";
     menu_edit->addAction(pageAction(QWebPage::Paste));
 
     frame_toPrint = 0;
-    qDebug() << "Component constructor done";
+
 }
 
 QList<QAction*> Component::toolbarActions()

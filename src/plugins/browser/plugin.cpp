@@ -34,22 +34,20 @@ QString Plugin::initialize(const QStringList &)
 
 Shared::BrowserComponent Plugin::createBrowser(const QUrl &url, const QMap<QString, QObject *> manageableObjects)
 {
-    qDebug() << "Creating browser for " << url.toString();
     Component * c = new Component(this);
-    qDebug() << "Component created";
     QMap<QString,QObject*> objs = manageableObjects;
     objs["directory"] = m_directory;
     objs["application"] = qApp;
     c->setManageableObjects(objs);
-    qDebug() << "Manageable objects are set";
+
     if (!url.isEmpty())
         c->go(url);
-    qDebug() << "URL set";
+
     Shared::BrowserComponent result;
     result.widget = c;
     result.toolbarActions = c->toolbarActions();
     result.menus = c->menuActions();
-    qDebug() << "Creating browser done.";
+
     return result;
 }
 

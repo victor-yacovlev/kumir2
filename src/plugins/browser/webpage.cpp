@@ -6,9 +6,7 @@ namespace Browser {
 WebPage::WebPage()
     : QWebPage()
 {
-    qDebug() << "WebPage constructor";
     m_component = 0;
-    qDebug() << "WebPage constructor done";
 }
 
 void WebPage::setComponent(Component *v)
