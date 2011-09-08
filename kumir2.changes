@@ -1,3 +1,10 @@
+* Wed Sep 07 2011 - Victor Yacovlev <victor@lpm.org.ru>
+- CLang backend for native code generation
+- Shared memory mechanism for IPC replaced by process streams
+
+* Tue Sep 06 2011 - Victor Yacovlev <victor@lpm.org.ru>
+- Various UI fixes
+
 * Tue Aug 30 2011 - Victor Yacovlev <victor@lpm.org.ru>
 - Implemented help viewer
 - Implemented code autocompleter

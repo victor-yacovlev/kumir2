@@ -3,8 +3,10 @@
 
 %define relno 0
 %define packager Victor Yacovlev <victor@lpm.org.ru>
-%define is_buildservice 1
-%define alphaversion 9
+%define is_buildservice 0
+%define alphaversion 12
+
+%define use_clang_for_native_generator 1
 
 # -----------------------------------------------------------------------------
 
@@ -23,14 +25,20 @@
 
 %if %{is_suse}
     %define release %{relno}.suse%{suse_version}
+    %define QMAKE qmake
+    %define LRELEASE lrelease
 %endif
 
 %if %{is_mandriva}
     %define release %mkrel %{relno}
+    %define QMAKE qmake
+    %define LRELEASE lrelease
 %endif
 
 %if %{is_fedora}
     %define release %{relno}.fc%{fedora}
+    %define QMAKE qmake-qt4
+    %define LRELEASE lrelease-qt4
 %endif
 
 Name:		kumir2
@@ -63,6 +71,7 @@ Requires:	libqtwebkit4 >= 4.6.0
 %if %{is_fedora}
 BuildRequires:	gcc-c++
 BuildRequires:	qt-devel >= 4.6.0
+BuildRequires:	java-1.6.0-openjdk-devel
 Requires:	qt >= 4.6.0
 Requires:	qt-x11 >= 4.6.0
 Requires:	qt-webkit >= 4.6.0
@@ -88,16 +97,14 @@ Second generation of well-known Kumir system
 
 %build
 # Run qmake to generate makefiles
-%if %{is_suse}
-qmake
+%if %{use_clang_for_native_generator}
+%{QMAKE} CONFIG+=llvm
+%else
+%{QMAKE}
 %endif
 %if %{is_fedora}
-qmake-qt4
 # Fedora has lrelease-qt4 instead of lrelease, so it can't be called from script
 lrelease-qt4 share/kumir2/translations/*.ts
-%endif
-%if %{is_mandriva}
-qmake
 %endif
 # Build binary part
 make
@@ -105,7 +112,6 @@ make
 pushd src-www/helpviewer
 ant
 popd
-
 %install
 make INSTALL_ROOT=$RPM_BUILD_ROOT/%{_prefix} install
 mkdir -p $RPM_BUILD_ROOT/%{_prefix}/share/kumir2/translations
@@ -174,6 +180,9 @@ Kumir language analizer
 Summary:	Kumir AST to native execuable translator
 Provides:	kumir2-module-Generator
 Requires:	kumir2-common
+%if %{use_clang_for_native_generator}
+Requires:	/usr/bin/clang
+%endif
 Requires:	gcc >= 4
 
 %description module-KumirNativeGenerator
@@ -550,6 +559,13 @@ Actor Painter adds raster-painting feauteres for Kumir
 %{_datadir}/kumir2/translations/ActorPainter_*.qm
 
 %changelog
+* Wed Sep 07 2011 - Victor Yacovlev <victor@lpm.org.ru>
+- CLang backend for native code generation
+- Shared memory mechanism for IPC replaced by process streams
+
+* Tue Sep 06 2011 - Victor Yacovlev <victor@lpm.org.ru>
+- Various UI fixes
+
 * Tue Aug 30 2011 - Victor Yacovlev <victor@lpm.org.ru>
 - Implemented help viewer
 - Implemented code autocompleter
