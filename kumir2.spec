@@ -340,6 +340,7 @@ Requires:	kumir2-module-Analizer
 Requires:	kumir2-module-Generator
 Requires:	kumir2-module-Editor
 Requires:	kumir2-module-Browser
+Requires:	kumir2-module-KumirCodeRun
 
 %description module-CoreGUI
 GUI for Kumir

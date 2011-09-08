@@ -3,7 +3,11 @@
 
 #include <QtCore>
 #include <QtGui>
-#include <QtWebKit>
+#include <QtWebKit/QWebView>
+#include <QtWebKit/QWebPage>
+#include <QtWebKit/QWebFrame>
+#include <QtWebKit/QWebSettings>
+#include <QtWebKit/QWebHistory>
 
 #include "interfaces/browserinterface.h"
 
