@@ -8,9 +8,8 @@ class NetworkReply
 {
 public :
     explicit NetworkReply(const ServerResponse & response, const QNetworkRequest & request, QObject * parent = 0);
-    inline qint64 bytesAvailable() const { return data.size() - position; }
+    qint64 bytesAvailable() const;
     inline bool isSequential() const { return true; }
-    inline bool isFinished() const { return true; }
     inline void abort() { }
 protected:
     qint64 readData(char *data, qint64 maxlen);
@@ -22,14 +21,18 @@ private:
 
 qint64 NetworkReply::readData(char *buffer, qint64 maxlen)
 {
-    qint64 cnt = qMin<qint64>(maxlen, bytesAvailable());
-//    const char * slice = data.mid(position, cnt).data();
+    qint64 cnt = qMin<qint64>(maxlen, data.size()-position);
     for (int i=0; i<cnt; i++) {
         const char ch = data.at(position+i);
         buffer[i] = ch;
     }
-//    position += cnt;
+    position += cnt;
     return cnt;
+}
+
+qint64 NetworkReply::bytesAvailable() const
+{
+    return data.size();
 }
 
 NetworkReply::NetworkReply(const ServerResponse &response, const QNetworkRequest &, QObject *parent)
@@ -59,7 +62,7 @@ NetworkReply::NetworkReply(const ServerResponse &response, const QNetworkRequest
     setRawHeader(QByteArray("Accept-Ranges"), QByteArray("bytes"));
     setRawHeader(QByteArray("Server"), QByteArray("Kumir Localhost Server ")+qApp->applicationVersion().toAscii());
     setOperation(QNetworkAccessManager::GetOperation);
-//    setError(QNetworkReply::NoError, "");;
+
     QMetaObject::invokeMethod(this, "metaDataChanged", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "downloadProgress", Qt::QueuedConnection,
                               Q_ARG(qint64, data.size()), Q_ARG(qint64, data.size()));
@@ -88,7 +91,6 @@ ServerResponse LocalhostServer::GET(const QUrl &url) {
         QFile f(fileName);
         if (f.open(QIODevice::ReadOnly)) {
             resp.data = f.readAll();
-            qDebug() << "Read file of size " << resp.data.size() << ": " << fileName;
             resp.code = 200;
             f.close();
         }
