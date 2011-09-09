@@ -105,6 +105,7 @@ public class ViewerRoot implements EntryPoint, ResizeHandler  {
 		tabPanel.selectTab(0);
 		final String allowPrintable = Window.Location.getParameter("printable");
 		boolean printable = allowPrintable!=null && allowPrintable.equalsIgnoreCase("true");
+		DocBookModel.printable = printable;
 		loadBooksAndArticles();
 		printFrame.setSize("210mm", "297mm");
 		printFrame.setVisible(false);
