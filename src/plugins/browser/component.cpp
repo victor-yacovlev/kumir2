@@ -1,6 +1,7 @@
 #include "component.h"
 #include "webpage.h"
 #include "plugin.h"
+#include "../../VERSION.h"
 
 namespace Browser {
 
@@ -41,6 +42,9 @@ Component::Component(class Plugin * plugin) :
     page()->setNetworkAccessManager(plugin->networkAccessManager());
     connect(page()->mainFrame(), SIGNAL(javaScriptWindowObjectCleared()), this, SLOT(addJavaScriptObjects()));
 #ifdef QT_DEBUG
+    page()->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+#endif
+#if VERSION_ALPHA > 0
     page()->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
 #endif
     pageAction(QWebPage::Back)->setText(tr("Go back"));

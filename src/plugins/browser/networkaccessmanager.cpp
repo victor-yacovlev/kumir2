@@ -17,6 +17,7 @@ void NetworkAccessManager::setLocalhostServer(LocalhostServer *localhostServer)
 QNetworkReply * NetworkAccessManager::createRequest(Operation op, const QNetworkRequest &request, QIODevice *outgoingData)
 {
     if (request.url().host()=="localhost" && m_localhostServer) {
+        qDebug() << "Serving localhost request: " << request.url().toString();
         return m_localhostServer->serveRequest(this, op, request, outgoingData);
     }
     else {

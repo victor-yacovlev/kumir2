@@ -21,9 +21,10 @@ private:
 
 qint64 NetworkReply::readData(char *buffer, qint64 maxlen)
 {
-    qint64 cnt = qMin(maxlen, bytesAvailable());
+    qint64 cnt = qMin<qint64>(maxlen, bytesAvailable());
     const char * slice = data.mid(position, cnt).data();
-    qMemCopy(buffer, slice, cnt * sizeof(char));
+    memcpy(buffer, slice, cnt);
+//    qMemCopy(buffer, slice, cnt * sizeof(char));
     return cnt;
 }
 
@@ -128,12 +129,16 @@ QNetworkReply * LocalhostServer::serveRequest(QNetworkAccessManager * manager, Q
     if (op==QNetworkAccessManager::PostOperation) {
         QByteArray postData = outgoingData->readAll();
 //        resp = d->POST(request.url(), postData);
+        qDebug() << "Serving POST operation";
         Q_UNUSED(postData); resp = GET(request.url()); // TODO implement POST method
     }
     else {
+        qDebug() << "Serving GET operation";
         resp = GET(request.url());
     }
+    qDebug() << "Creating reply";
     NetworkReply * reply = new NetworkReply(resp, request, manager);
+    qDebug() << "Sending reply";
     return reply;
 }
 

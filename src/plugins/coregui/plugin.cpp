@@ -168,8 +168,12 @@ QString Plugin::initialize(const QStringList & parameters)
         }
     }
 
+//    m_helpBrowser = plugin_browser->createBrowser(
+//                QUrl("http://localhost/helpviewer/index.html?documents="+documents.join(",")),
+//                m_browserObjects);
+
     m_helpBrowser = plugin_browser->createBrowser(
-                QUrl("http://localhost/helpviewer/index.html?documents="+documents.join(",")),
+                QUrl("http://localhost/helpviewer/index.html?documents=data/russian/system.xml,data/russian/language.xml"),
                 m_browserObjects);
 
     QDockWidget * helpWindow = m_mainWindow->addSecondaryComponent(
