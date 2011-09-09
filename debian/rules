@@ -1,0 +1,44 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+#
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+#
+# Modified to make a template file for a multi-binary package with separated
+# build-arch and build-indep targets  by Bill Allombert 2001
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+# This has to be exported to make some magic below work.
+export DH_OPTIONS
+export LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib:/usr/lib/libfakeroot:$(CURDIR)/debian/tmp/usr/lib/kumir2:/usr/lib/kumir2
+
+
+%:
+	dh $@ 
+
+override_dh_auto_configure:
+	qmake
+
+override_dh_auto_build:
+	ant -f src-www/helpviewer/build.xml
+	make
+
+override_dh_auto_install:
+	make install INSTALL_ROOT=$(CURDIR)/debian/tmp/usr
+	mkdir -p $(CURDIR)/debian/tmp/usr/share/kumir2/translations
+	cp share/kumir2/translations/*.qm $(CURDIR)/debian/tmp/usr/share/kumir2/translations/
+	mkdir -p $(CURDIR)/debian/tmp/usr/share/applications
+	cp *.desktop $(CURDIR)/debian/tmp/usr/share/applications/
+	mkdir -p $(CURDIR)/debian/tmp/usr/share/icons/
+	cp -R app_icons/linux/* $(CURDIR)/debian/tmp/usr/share/icons/
+	
+	mkdir -p $(CURDIR)/debian/tmp/usr/share/kumir2/webapps/helpviewer/
+	cp -R src-www/helpviewer/war/* $(CURDIR)/debian/tmp/usr/share/kumir2/webapps/helpviewer/
+	rm -rf $(CURDIR)/debian/tmp/usr/share/kumir2/webapps/helpviewer/WEB-INF 
+	mkdir -p $(CURDIR)/debian/tmp/usr/share/kumir2/webapps/helpviewer/data/russian
+	cp userdocs/*.xml $(CURDIR)/debian/tmp/usr/share/kumir2/webapps/helpviewer/data/russian/

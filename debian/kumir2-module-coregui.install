@@ -1,0 +1,4 @@
+usr/lib/kumir2/plugins/libCoreGUI.so
+usr/lib/kumir2/plugins/CoreGUI.pluginspec
+usr/share/kumir2/coregui/*
+usr/share/kumir2/translations/CoreGUI*.qm

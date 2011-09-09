@@ -1,0 +1,4 @@
+usr/lib/kumir2/plugins/libKumirAnalizer.so
+usr/lib/kumir2/plugins/KumirAnalizer.pluginspec
+usr/share/kumir2/kumiranalizer/*
+usr/share/kumir2/translations/KumirAnalizer*.qm
