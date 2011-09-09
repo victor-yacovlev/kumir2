@@ -28,15 +28,6 @@ public:
 
     explicit Connector_PIPE(QObject *parent = 0);
 
-signals:
-    void outputTextReceived(const QString & text);
-    void errorMessageReceived(const QString & message);
-    void inputFormatReceived(const QString & format);
-    void errorReceived(int lineNo);
-    void resetActorReceived(const QString & name);
-    void actorCommandReceived(const QString & actorName,
-                              const QString & command,
-                              const QVariantList & arguments);
 public slots:
     bool connectTo(int argc, char* *argv);
     void listenFor(QProcess * process);

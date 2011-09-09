@@ -31,16 +31,6 @@ class Connector_SHM: public AbstractConnectorBackend
 public:
     explicit Connector_SHM(QObject *parent = 0);
 
-signals:
-    void requestReceived(const QVariantList & message);
-    void outputTextReceived(const QString & text);
-    void errorMessageReceived(const QString & message);
-    void inputFormatReceived(const QString & format);
-    void errorReceived(int lineNo);
-    void resetActorReceived(const QString & name);
-    void actorCommandReceived(const QString & actorName,
-                              const QString & command,
-                              const QVariantList & arguments);
 
 public slots:
     bool connectTo(int argc, char* *argv);
