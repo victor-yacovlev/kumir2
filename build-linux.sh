@@ -14,7 +14,7 @@ do
     if [ -e src-www/$app/build.xml ]
     then
 	${ANT_BIN} -f src-www/$app/build.xml
-	if [ $? -neq 0 ]
+	if [ $? -ne 0 ]
 	then
 	    echo -n "Error building web app "
 	    echo $app
@@ -42,7 +42,7 @@ fi
 # Run qmake. It also generates translations via python script
 ${QMAKE_BIN} CONFIG+=llvm
 
-if [ $? -neq 0 ]
+if [ $? -ne 0 ]
 then
     echo "Error configuring by qmake"
     exit 2
@@ -51,7 +51,7 @@ fi
 # Build kumir binary
 make
 
-if [ $? -neq 0 ]
+if [ $? -ne 0 ]
 then
     echo "Error building kumir"
     exit 3
@@ -60,4 +60,4 @@ fi
 # Done
 echo "Build success!"
 echo "Now you can install kumir to /usr (or any other) prefix by command:"
-echo "    make install INSTALL_ROOT=/usr"
+echo "    make INSTALL_ROOT=/usr install"
