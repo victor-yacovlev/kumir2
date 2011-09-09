@@ -3,87 +3,44 @@
 
 %define relno 0
 %define packager Victor Yacovlev <victor@lpm.org.ru>
-%define is_buildservice 0
 %define alphaversion 12
-
-%define use_clang_for_native_generator 1
-
-# -----------------------------------------------------------------------------
-
-
 %define release unknown
-
-%if %{is_buildservice}
-    %define is_suse %{defined suse_version}
-    %define is_mandriva %{defined mdkversion}
-    %define is_fedora %{defined fedora}
-%else
-    %define is_suse %(if [ -f /etc/SuSE-release ] ; then echo -n 1; else echo -n 0; fi)
-    %define is_mandriva %(if [ -f /etc/mandriva-release ] ; then echo -n 1; else echo -n 0; fi)
-    %define is_fedora %(if [ -f /etc/fedora-release ] ; then echo -n 1; else echo -n 0; fi)
-%endif
-
-%if %{is_suse}
-    %define release %{relno}.suse%{suse_version}
-    %define QMAKE qmake
-    %define LRELEASE lrelease
-%endif
-
-%if %{is_mandriva}
-    %define release %mkrel %{relno}
-    %define QMAKE qmake
-    %define LRELEASE lrelease
-%endif
-
-%if %{is_fedora}
-    %define release %{relno}.fc%{fedora}
-    %define QMAKE qmake-qt4
-    %define LRELEASE lrelease-qt4
-%endif
 
 Name:		kumir2
 Summary:	Kumir education system
 License:	GPL2
-Group:		Education
+Group:		Productivity/Scientific/Other
 Version:	1.99.0+alpha%{alphaversion}
 Release:	%{release}
 BuildRoot:	%{_tmppath}/%{name}-%{version}
-BuildRequires:	python
-BuildRequires:	ant
-BuildRequires:	gwt >= 2.3.0
-%if %{is_suse}
-BuildRequires:	libqt4-devel >= 4.6.0 libQtWebKit-devel >= 4.6.0
-%if %{is_buildservice}
-BuildRequires:	-post-build-checks -rpmlint-Factory
-%endif
-Requires:	libqt4 >= 4.6.0
-Requires:	libqt4-x11 >= 4.6.0
-Requires:	libQtWebKit4 >= 4.6.0
-%endif
-%if %{is_mandriva}
-BuildRequires:	libqt4-devel >= 4.6.0
-Requires:	libqtcore4 >= 4.6.0
-Requires:	libqtgui4 >= 4.6.0
-Requires:	libqtsvg4 >= 4.6.0
-Requires:	libqtxml4 >= 4.6.0
-Requires:	libqtwebkit4 >= 4.6.0
-%endif
-%if %{is_fedora}
-BuildRequires:	gcc-c++
-BuildRequires:	qt-devel >= 4.6.0
+Requires:	qt >= 4.6
+Requires:	libQtCore.so.4
+Requires:	libQtGui.so.4
+Requires:	libQtXml.so.4
+Requires:	libQtNetwork.so.4
+Requires:	libQtScript.so.4
+Requires:	libQtWebKit.so.4
+BuildRequires:	qt-devel
+BuildRequires:	pkgconfig(QtCore) >= 4.6
+BuildRequires:	pkgconfig(QtGui) >= 4.6
+BuildRequires:	pkgconfig(QtXml) >= 4.6
+BuildRequires:	pkgconfig(QtNetwork) >= 4.6
+BuildRequires:	pkgconfig(QtWebKit) >= 4.6
+BuildRequires:	pkgconfig(QtScript) >= 4.6
 BuildRequires:	java-1.6.0-openjdk-devel
-Requires:	qt >= 4.6.0
-Requires:	qt-x11 >= 4.6.0
-Requires:	qt-webkit >= 4.6.0
-%endif
-%if 0%{?fedora} >= 14
-BuildRequires:	qt-webkit-devel >= 4.6.0
-%endif
+BuildRequires:	gwt >= 2.3
+BuildRequires:	gcc-c++ >= 4
+BuildRequires:	ant
+BuildRequires:	python
 PreReq:		shared-mime-info
 Vendor:		NIISI RAS
-Source:		%{name}-%{version}.tar.gz
+Source:		%{name}_1.99.0alpha%{alphaversion}.orig.tar.gz
 Packager:	%{packager}
 URL:		http://www.niisi.ru/kumir/
+
+%if 0%{?opensuse_bs}
+BuildRequires:	-post-build-checks -rpmlint-Factory
+%endif
 
 %description
 Second generation of well-known Kumir system
@@ -96,22 +53,8 @@ Second generation of well-known Kumir system
 
 
 %build
-# Run qmake to generate makefiles
-%if %{use_clang_for_native_generator}
-%{QMAKE} CONFIG+=llvm
-%else
-%{QMAKE}
-%endif
-%if %{is_fedora}
-# Fedora has lrelease-qt4 instead of lrelease, so it can't be called from script
-lrelease-qt4 share/kumir2/translations/*.ts
-%endif
-# Build binary part
-make
-# Build GWT-applications used by Kumir
-pushd src-www/helpviewer
-ant
-popd
+./build-linux.sh
+
 %install
 make INSTALL_ROOT=$RPM_BUILD_ROOT/%{_prefix} install
 mkdir -p $RPM_BUILD_ROOT/%{_prefix}/share/kumir2/translations
@@ -120,14 +63,6 @@ mkdir -p $RPM_BUILD_ROOT/%{_datadir}/icons/
 cp -R app_icons/linux/* $RPM_BUILD_ROOT/%{_datadir}/icons/
 mkdir -p $RPM_BUILD_ROOT/%{_datadir}/applications/
 cp *.desktop $RPM_BUILD_ROOT/%{_datadir}/applications/
-# Copy Help Viewer web-application
-mkdir -p $RPM_BUILD_ROOT/%{_prefix}/share/kumir2/webapps/helpviewer/
-cp -R src-www/helpviewer/war/* $RPM_BUILD_ROOT/%{_prefix}/share/kumir2/webapps/helpviewer/
-# Remove unneccesary WEB-INF (we use only client-side part of web-application)
-rm -rf $RPM_BUILD_ROOT/%{_prefix}/share/kumir2/webapps/helpviewer/WEB-INF 
-# Copy DOCBOOK-data for help viewer
-mkdir -p $RPM_BUILD_ROOT/%{_prefix}/share/kumir2/webapps/helpviewer/data/russian
-cp userdocs/*.xml $RPM_BUILD_ROOT/%{_prefix}/share/kumir2/webapps/helpviewer/data/russian/
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -180,9 +115,7 @@ Kumir language analizer
 Summary:	Kumir AST to native execuable translator
 Provides:	kumir2-module-Generator
 Requires:	kumir2-common
-%if %{use_clang_for_native_generator}
 Requires:	/usr/bin/clang
-%endif
 Requires:	gcc >= 4
 
 %description module-KumirNativeGenerator
@@ -212,6 +145,7 @@ Generator of bytecode to be evaluated by Kumir VM
 %dir %{_libdir}/kumir2/plugins
 %{_libdir}/kumir2/plugins/libKumirCodeGenerator.so
 %{_libdir}/kumir2/plugins/KumirCodeGenerator.pluginspec
+%dir %{_datadir}/kumir2
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/KumirCodeGenerator*.qm
 
@@ -230,6 +164,7 @@ Provides ability to compile Kumir programs
 %dir %{_libdir}/kumir2/plugins
 %{_libdir}/kumir2/plugins/libKumirCompiler.so
 %{_libdir}/kumir2/plugins/KumirCompiler.pluginspec
+%dir %{_datadir}/kumir2
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/KumirCompiler*.qm
 
@@ -247,6 +182,7 @@ Provides ability to bytecode-compile Kumir programs
 %dir %{_libdir}/kumir2/plugins
 %{_libdir}/kumir2/plugins/libKumirBCompiler.so
 %{_libdir}/kumir2/plugins/KumirBCompiler.pluginspec
+%dir %{_datadir}/kumir2
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/KumirBCompiler*.qm
 
@@ -263,6 +199,7 @@ Intepreter of Kumir-2 bytecode
 %dir %{_libdir}/kumir2/plugins
 %{_libdir}/kumir2/plugins/libKumirCodeRun.so
 %{_libdir}/kumir2/plugins/KumirCodeRun.pluginspec
+%dir %{_datadir}/kumir2
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/KumirCodeRun*.qm
 
@@ -277,6 +214,7 @@ programs without Kumir system itself.
 %defattr(-,root,root)
 %dir %{_libdir}/kumir2
 %{_libdir}/kumir2/libKumirStdLib.so*
+%dir %{_datadir}/kumir2
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/KumirStdLib*.qm
 
@@ -296,6 +234,7 @@ Standart library module
 %dir %{_libdir}/kumir2/plugins
 %{_libdir}/kumir2/plugins/libst_funct.so
 %{_libdir}/kumir2/plugins/st_funct.pluginspec
+%dir %{_datadir}/kumir2
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/st_funct*.qm
 
@@ -314,6 +253,7 @@ Kumir program editor module
 %{_libdir}/kumir2/plugins/Editor.pluginspec
 %dir %{_datadir}/kumir2/editor
 %{_datadir}/kumir2/editor/*
+%dir %{_datadir}/kumir2
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/Editor*.qm
 
@@ -330,6 +270,7 @@ WebKit browser
 %dir %{_libdir}/kumir2/plugins
 %{_libdir}/kumir2/plugins/libBrowser.so
 %{_libdir}/kumir2/plugins/Browser.pluginspec
+%dir %{_datadir}/kumir2
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/Browser*.qm
 
@@ -340,7 +281,6 @@ Requires:	kumir2-module-Analizer
 Requires:	kumir2-module-Generator
 Requires:	kumir2-module-Editor
 Requires:	kumir2-module-Browser
-Requires:	kumir2-module-KumirCodeRun
 
 %description module-CoreGUI
 GUI for Kumir
@@ -352,8 +292,10 @@ GUI for Kumir
 %{_libdir}/kumir2/plugins/CoreGUI.pluginspec
 %dir %{_datadir}/kumir2/coregui
 %{_datadir}/kumir2/coregui/*
+%dir %{_datadir}/kumir2
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/CoreGUI*.qm
+%dir %{_datadir}/kumir2/webapps
 %dir %{_datadir}/kumir2/webapps/helpviewer
 %{_datadir}/kumir2/webapps/helpviewer/*
 
@@ -370,6 +312,7 @@ Run "kumir2-cc --help" for more information
 %files utils-cc
 %defattr(-,root,root)
 %{_bindir}/kumir2-cc
+%dir %{_datadir}/kumir2
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/KumirCompiler*.qm
 
@@ -386,6 +329,7 @@ Run "kumir2-bc --help" for more information
 %files utils-bc
 %defattr(-,root,root)
 %{_bindir}/kumir2-bc
+%dir %{_datadir}/kumir2
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/KumirBCompiler*.qm
 
@@ -424,6 +368,7 @@ Requires:	kumir2-module-KumirCodeGenerator
 Requires:	kumir2-module-KumirCodeRun
 Requires:	kumir2-module-KumirNativeGenerator
 Requires:	kumir2-module-st_funct
+Requires:	/usr/bin/gtk-update-icon-cache
 
 %description professional
 Kumir IDE for high school applications
@@ -431,25 +376,25 @@ Kumir IDE for high school applications
 %files professional
 %defattr(-,root,root)
 %{_bindir}/kumir2-ide
-%{_datadir}/applications/kumir2-professional.desktop
+%dir %{_datadir}/applications
+%dir %{_datadir}/icons
 %dir %{_datadir}/icons/hicolor
-%dir %{_datadir}/icons/hicolor/scalable
-%dir %{_datadir}/icons/hicolor/scalable/apps
 %dir %{_datadir}/icons/hicolor/128x128
 %dir %{_datadir}/icons/hicolor/128x128/apps
+%dir %{_datadir}/icons/hicolor/256x256
+%dir %{_datadir}/icons/hicolor/256x256/apps
 %dir %{_datadir}/icons/hicolor/64x64
 %dir %{_datadir}/icons/hicolor/64x64/apps
-%dir %{_datadir}/icons/hicolor/48x48
-%dir %{_datadir}/icons/hicolor/48x48/apps
+%dir %{_datadir}/icons/hicolor/scalable
+%dir %{_datadir}/icons/hicolor/scalable/apps
+%{_datadir}/applications/kumir2-professional.desktop
 %{_datadir}/icons/hicolor/*/apps/kumir2.*
 
 %post professional
-%update_icon_cache hicolor
-%icon_theme_cache_post hicolor
+gtk-update-icon-cache --quiet --force "hicolor" || true
 
 %postun professional
-%update_icon_cache hicolor
-%icon_theme_cache_post hicolor
+gtk-update-icon-cache --quiet --force "hicolor" || true
 
 %package teacher
 Summary:	Kumir Teacher Edition
@@ -461,6 +406,7 @@ Requires:	kumir2-module-KumirCodeGenerator
 Requires:	kumir2-module-KumirCodeRun
 Requires:	kumir2-module-KumirNativeGenerator
 Requires:	kumir2-module-st_funct
+Requires:	/usr/bin/gtk-update-icon-cache
 
 %description teacher
 Kumir IDE for tutors
@@ -468,25 +414,25 @@ Kumir IDE for tutors
 %files teacher
 %defattr(-,root,root)
 %{_bindir}/kumir2-teacher
-%{_datadir}/applications/kumir2-teacher.desktop
+%dir %{_datadir}/applications
+%dir %{_datadir}/icons
 %dir %{_datadir}/icons/hicolor
-%dir %{_datadir}/icons/hicolor/scalable
-%dir %{_datadir}/icons/hicolor/scalable/apps
 %dir %{_datadir}/icons/hicolor/128x128
 %dir %{_datadir}/icons/hicolor/128x128/apps
+%dir %{_datadir}/icons/hicolor/256x256
+%dir %{_datadir}/icons/hicolor/256x256/apps
 %dir %{_datadir}/icons/hicolor/64x64
 %dir %{_datadir}/icons/hicolor/64x64/apps
-%dir %{_datadir}/icons/hicolor/48x48
-%dir %{_datadir}/icons/hicolor/48x48/apps
+%dir %{_datadir}/icons/hicolor/scalable
+%dir %{_datadir}/icons/hicolor/scalable/apps
+%{_datadir}/applications/kumir2-teacher.desktop
 %{_datadir}/icons/hicolor/*/apps/kumir2-teacher.*
 
 %post teacher
-%update_icon_cache hicolor
-%icon_theme_cache_post hicolor
+gtk-update-icon-cache --quiet --force "hicolor" || true
 
 %postun teacher
-%update_icon_cache hicolor
-%icon_theme_cache_post hicolor
+gtk-update-icon-cache --quiet --force "hicolor" || true
 
 %package standard
 Summary:	Kumir Standard Edition
@@ -497,6 +443,7 @@ Requires:	kumir2-module-KumirAnalizer
 Requires:	kumir2-module-KumirCodeGenerator
 Requires:	kumir2-module-KumirCodeRun
 Requires:	kumir2-module-st_funct
+Requires:	/usr/bin/gtk-update-icon-cache
 
 %description standard
 Kumir IDE for school applications
@@ -504,25 +451,25 @@ Kumir IDE for school applications
 %files standard
 %defattr(-,root,root)
 %{_bindir}/kumir2-classic
-%{_datadir}/applications/kumir2-standard.desktop
+%dir %{_datadir}/applications
+%dir %{_datadir}/icons
 %dir %{_datadir}/icons/hicolor
-%dir %{_datadir}/icons/hicolor/scalable
-%dir %{_datadir}/icons/hicolor/scalable/apps
 %dir %{_datadir}/icons/hicolor/128x128
 %dir %{_datadir}/icons/hicolor/128x128/apps
+%dir %{_datadir}/icons/hicolor/256x256
+%dir %{_datadir}/icons/hicolor/256x256/apps
 %dir %{_datadir}/icons/hicolor/64x64
 %dir %{_datadir}/icons/hicolor/64x64/apps
-%dir %{_datadir}/icons/hicolor/48x48
-%dir %{_datadir}/icons/hicolor/48x48/apps
+%dir %{_datadir}/icons/hicolor/scalable
+%dir %{_datadir}/icons/hicolor/scalable/apps
+%{_datadir}/applications/kumir2-standard.desktop
 %{_datadir}/icons/hicolor/*/apps/kumir2-classic.*
 
 %post standard
-%update_icon_cache hicolor
-%icon_theme_cache_post hicolor
+gtk-update-icon-cache --quiet --force "hicolor" || true
 
 %postun standard
-%update_icon_cache hicolor
-%icon_theme_cache_post hicolor
+gtk-update-icon-cache --quiet --force "hicolor" || true
 
 %package libs-painter
 Summary:	Actor Painter runtime libraries
@@ -556,6 +503,7 @@ Actor Painter adds raster-painting feauteres for Kumir
 %dir %{_libdir}/kumir2/plugins
 %{_libdir}/kumir2/plugins/libActorPainter.so
 %{_libdir}/kumir2/plugins/ActorPainter.pluginspec
+%dir %{_datadir}/kumir2
 %dir %{_datadir}/kumir2/translations
 %{_datadir}/kumir2/translations/ActorPainter_*.qm
 
