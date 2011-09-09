@@ -10,6 +10,7 @@ public :
     explicit NetworkReply(const ServerResponse & response, const QNetworkRequest & request, QObject * parent = 0);
     inline qint64 bytesAvailable() const { return data.size() - position; }
     inline bool isSequential() const { return true; }
+    inline bool isFinished() const { return true; }
     inline void abort() { }
 protected:
     qint64 readData(char *data, qint64 maxlen);
@@ -22,9 +23,12 @@ private:
 qint64 NetworkReply::readData(char *buffer, qint64 maxlen)
 {
     qint64 cnt = qMin<qint64>(maxlen, bytesAvailable());
-    const char * slice = data.mid(position, cnt).data();
-    memcpy(buffer, slice, cnt);
-//    qMemCopy(buffer, slice, cnt * sizeof(char));
+//    const char * slice = data.mid(position, cnt).data();
+    for (int i=0; i<cnt; i++) {
+        const char ch = data.at(position+i);
+        buffer[i] = ch;
+    }
+//    position += cnt;
     return cnt;
 }
 
@@ -52,6 +56,10 @@ NetworkReply::NetworkReply(const ServerResponse &response, const QNetworkRequest
     setHeader(QNetworkRequest::ContentLengthHeader, data.size());
     setHeader(QNetworkRequest::ContentTypeHeader, response.mimeType);
     setHeader(QNetworkRequest::LocationHeader, qualifedUrl);
+    setRawHeader(QByteArray("Accept-Ranges"), QByteArray("bytes"));
+    setRawHeader(QByteArray("Server"), QByteArray("Kumir Localhost Server ")+qApp->applicationVersion().toAscii());
+    setOperation(QNetworkAccessManager::GetOperation);
+//    setError(QNetworkReply::NoError, "");;
     QMetaObject::invokeMethod(this, "metaDataChanged", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "downloadProgress", Qt::QueuedConnection,
                               Q_ARG(qint64, data.size()), Q_ARG(qint64, data.size()));
@@ -80,6 +88,7 @@ ServerResponse LocalhostServer::GET(const QUrl &url) {
         QFile f(fileName);
         if (f.open(QIODevice::ReadOnly)) {
             resp.data = f.readAll();
+            qDebug() << "Read file of size " << resp.data.size() << ": " << fileName;
             resp.code = 200;
             f.close();
         }
@@ -93,16 +102,16 @@ ServerResponse LocalhostServer::GET(const QUrl &url) {
         resp.errorText = "File not found: "+fileName;
     }
     if (fileName.endsWith(".js")) {
-        resp.mimeType = "text/javascript;charset=utf-8";
+        resp.mimeType = "text/javascript";
     }
     else if (fileName.endsWith(".json")) {
-        resp.mimeType = "text/json;charset=utf-8";
+        resp.mimeType = "text/json";
     }
     else if (fileName.endsWith(".svg")) {
         resp.mimeType = "image/svg+xml";
     }
     else if (fileName.endsWith(".css")) {
-        resp.mimeType = "text/css;charset=utf8";
+        resp.mimeType = "text/css";
     }
     else if (fileName.endsWith(".png")) {
         resp.mimeType = "image/png";
@@ -117,7 +126,7 @@ ServerResponse LocalhostServer::GET(const QUrl &url) {
         resp.mimeType = "text/xml";
     }
     else {
-        resp.mimeType = "text/html;charset=utf-8";
+        resp.mimeType = "text/html";
     }
     resp.uri = fileName.mid(m_webAppsRoot.path().length());
     return resp;
@@ -129,16 +138,16 @@ QNetworkReply * LocalhostServer::serveRequest(QNetworkAccessManager * manager, Q
     if (op==QNetworkAccessManager::PostOperation) {
         QByteArray postData = outgoingData->readAll();
 //        resp = d->POST(request.url(), postData);
-        qDebug() << "Serving POST operation";
+//        qDebug() << "Serving POST operation";
         Q_UNUSED(postData); resp = GET(request.url()); // TODO implement POST method
     }
     else {
-        qDebug() << "Serving GET operation";
+//        qDebug() << "Serving GET operation";
         resp = GET(request.url());
     }
-    qDebug() << "Creating reply";
+//    qDebug() << "Creating reply";
     NetworkReply * reply = new NetworkReply(resp, request, manager);
-    qDebug() << "Sending reply";
+//    qDebug() << "Sending reply";
     return reply;
 }
 
