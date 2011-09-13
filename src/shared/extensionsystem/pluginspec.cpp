@@ -4,6 +4,8 @@
 #include <QScriptValue>
 #include <QScriptEngine>
 
+#include "../../VERSION.h"
+
 namespace ExtensionSystem {
 
 extern QString readSpecFromFile(const QString &fileName, PluginSpec &spec, QScriptEngine * engine)
@@ -35,7 +37,7 @@ extern QString readSpecFromFile(const QString &fileName, PluginSpec &spec, QScri
         spec.version = toplevel.property("version").toString().trimmed();
     }
     else {
-        return "Plugin spec file does not have string property 'version': "+fileName;
+        spec.version = QString::fromAscii("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_RELEASE);
     }
     if (toplevel.property("copyright").isString()) {
         spec.copyright = toplevel.property("copyright").toString();

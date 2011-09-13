@@ -1,7 +1,7 @@
 {
     name: "Browser",
-    version: "1.99.0",
-    copyright: "NIISI RAS",
-    license: "LGPL2",
-    gui: true
+    gui: true,
+    summary: {
+        en: "Extended WebKit browser for web-parts of Kumir"
+    }
 }
