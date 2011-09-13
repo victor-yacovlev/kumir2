@@ -77,6 +77,9 @@ isEmpty(IDE_LIBRARY_BASENAME) {
 	ARCH = $$system(arch)
 #        message($$ARCH)
         contains(ARCH,x86_64): IDE_LIBRARY_BASENAME = lib64
+        exists( /etc/debian_version ) {
+	    IDE_LIBRARY_BASENAME = lib
+        }
     }
 #    message($$IDE_LIBRARY_BASENAME)
 }

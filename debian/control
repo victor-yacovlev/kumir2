@@ -2,7 +2,7 @@ Source: kumir2
 Section: science
 Priority: optional
 Maintainer: Victor Yacovlev <victor@lpm.org.ru>
-Build-Depends: debhelper (>= 7.0.50~), libqt4-dev (>= 4.6.0), qt4-qmake, python, ant, gwt
+Build-Depends: debhelper (>= 7.0.50~), libqt4-dev (>= 4.6.0), libqtwebkit-dev (>= 4.6.0), libx11-dev, qt4-qmake, python, ant, gwt
 Standards-Version: 3.9.1
 Homepage: http://www.niisi.ru/kumir/
 
