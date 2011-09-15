@@ -173,7 +173,9 @@ def __scan_plugin(toplevel, specfilename):
             c.name += spec["name"] 
     dirr, basename = os.path.split(specfilename)
     basename = basename.lower()[0:-11]
-    profilename = specfilename.lower()[0:-11]+".pro"
+    if basename.startswith("actor"):
+        basename = basename[5:]
+    profilename = dirr+"/"+basename+".pro"
     target, config, libs, qt = __read_qt_pro_file(profilename)
     c.plugins += [target]
     c.requires_qt = list(qt)
