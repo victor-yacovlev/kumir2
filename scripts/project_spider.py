@@ -137,7 +137,7 @@ def __scan_library(toplevel, specfilename):
     c = Component()
     c.name = spec["packagename"]
     dirr, basename = os.path.split(specfilename)
-    basename = basename.lower()[0:-11]
+    basename = basename.lower()[0:-8]
     profilename = dirr+"/"+basename+".pro"
     target, config, libs, qt = __read_qt_pro_file(profilename)
     c.libs = [target]
@@ -229,7 +229,7 @@ def __scan_application(toplevel, specfilename):
     c = Component()
     c.name = spec["packagename"]
     dirr, basename = os.path.split(specfilename)
-    basename = basename.lower()[0:-11]
+    basename = basename.lower()[0:-8]
     profilename = dirr+"/"+basename+".pro"
     target, libs, config, qt = __read_qt_pro_file(profilename)
     c.binname = target
