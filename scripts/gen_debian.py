@@ -178,6 +178,11 @@ def gen_package_install(component):
         f = f.replace("%bindir%", "usr/bin")
         f = f.replace("%libdir%", "usr/lib")
         result += f+"\n"
+    for f in component.plugins:
+        result += "usr/lib/kumir2/plugins/lib"+f+".so\n"
+        result += "usr/lib/kumir2/plugins/"+f+".pluginspec\n"
+    for f in component.libs:
+        result += "usr/lib/kumir2/lib"+f+".so*\n"
     return result
 
 def gen_install(proj):
