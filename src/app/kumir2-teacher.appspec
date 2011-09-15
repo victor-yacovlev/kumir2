@@ -1,0 +1,12 @@
+{
+    "packagename": "teacher",
+    "requires":	[ "Editor", "Browser", "KumirAnalizer", "KumirCodeGenerator", "KumirCodeRun", "CoreGUI", "KumirNativeGenerator" ],
+    "webapps": [ "helpviewer" ],
+    "desktopfile": "kumir2-teacher.desktop",
+    "summary": {
+	"en": "Kumir teacher edition"
+    },
+    "description": {
+	"en": "Kumir to used by tutors"
+    }
+}

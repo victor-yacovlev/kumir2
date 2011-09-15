@@ -1,0 +1,10 @@
+{
+    "packagename": "utils-bc",
+    "requires":	[ "KumirBCompiler" ],
+    "summary": {
+	"en": "Kumir to portable bytecode execuable compiler tool"
+    },
+    "description": {
+	"en": "A tool to compile kumir-programs into portable execuable bytecode.\nRun \"kumir2-bc --help\" for more information"
+    }
+}

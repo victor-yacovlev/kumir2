@@ -1,0 +1,12 @@
+{
+    "packagename": "professional",
+    "requires":	[ "Editor", "Browser", "KumirAnalizer", "KumirCodeGenerator", "KumirCodeRun", "CoreGUI", "KumirNativeGenerator" ],
+    "webapps": [ "helpviewer" ],
+    "desktopfile": "kumir2-professional.desktop",
+    "summary": {
+	"en": "Kumir professional edition"
+    },
+    "description": {
+	"en": "Kumir for high school applications"
+    }
+}

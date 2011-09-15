@@ -1,9 +1,0 @@
-usr/lib/kumir2/libErrorMessages.so
-usr/lib/kumir2/libErrorMessages.so.*
-usr/lib/kumir2/libDataFormats.so
-usr/lib/kumir2/libDataFormats.so.*
-usr/lib/kumir2/libExtensionSystem.so
-usr/lib/kumir2/libExtensionSystem.so.*
-usr/share/kumir2/icons/*
-usr/share/kumir2/translations/ErrorMessages*.qm
-usr/share/kumir2/translations/ExtensionSystem*.qm

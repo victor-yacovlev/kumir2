@@ -1,30 +1,30 @@
-* Wed Sep 07 2011 - Victor Yacovlev <victor@lpm.org.ru>
+--- 2011/09/07
 - CLang backend for native code generation
 - Shared memory mechanism for IPC replaced by process streams
 
-* Tue Sep 06 2011 - Victor Yacovlev <victor@lpm.org.ru>
+--- 2011/09/06
 - Various UI fixes
 
-* Tue Aug 30 2011 - Victor Yacovlev <victor@lpm.org.ru>
+--- 2011/08/30
 - Implemented help viewer
 - Implemented code autocompleter
 - Fixed some bugs
 
-* Wed Aug 24 2011 - Victor Yacovlev <victor@lpm.org.ru>
+--- 2011/08/24
 - Implemented teacher mode
 - Implemented variables view while running
 
-* Mon Aug 15 2011 - Victor Yacovlev <victor@lpm.org.ru>
+--- 2011/08/15
 - Implemented integer/double overflow checking while running
 - Added kumir2-run tool
 
-* Thu Aug 11 2011 - Victor Yacovlev <victor@lpm.org.ru>
+--- 2011/08/11
 - Ready for preliminary testing
 
-* Wed Jul 20 2011 - Victor Yacovlev <victor@lpm.org.ru>
+--- 2011/07/20
 - Usable functionality
 
-* Tue May 31 2011 - Victor Yacovlev <victor@lpm.org.ru>
+--- 2011/05/31
 - Initial build for testing
 - Almoust ready C-generator and analizer
 - Editor is launchable

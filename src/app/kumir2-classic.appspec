@@ -1,0 +1,12 @@
+{
+    "packagename": "standard",
+    "requires":	[ "Editor", "Browser", "KumirAnalizer", "KumirCodeGenerator", "KumirCodeRun", "CoreGUI" ],
+    "webapps": [ "helpviewer" ],
+    "desktopfile": "kumir2-standard.desktop",
+    "summary": {
+	"en": "Kumir standard edition"
+    },
+    "description": {
+	"en": "Kumir for shools"
+    }
+}
