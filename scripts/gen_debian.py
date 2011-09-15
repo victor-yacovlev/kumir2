@@ -223,14 +223,14 @@ def print_usage_and_exit(errcode):
     sys.exit(errcode)
 
 def __write_file(obs, basename, data):
-    proj_root, scriptname = os.path.split(sys.argv[0])
-    proj_root += "/.."
     if not obs:
-        if not os.path.exists(proj_root+"/debian"):
-            os.mkdir(proj_root+"/debian")
-        prefix = proj_root+"/debian/"
+        if not os.path.exists("debian"):
+            os.mkdir("debian")
+        prefix = "debian/"
     else:
-        prefix = proj_root+"/debian."
+        prefix = "debian."
+    if obs and basename.endswith(".dsc"):
+        prefix = ""
     f = open(prefix+basename, 'w')
     f.write(data)
     f.close()
