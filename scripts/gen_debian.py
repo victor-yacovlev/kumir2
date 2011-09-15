@@ -9,25 +9,31 @@ import stat
 
 
 QT_MIN_VERSION = "4.6.3"
+QTWEBKIT_MIN_VERSION = "2.0.0"
 PACKAGER = None
     
 def gen_changelog(proj):
     WEEKDAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
     MONTH = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    result = "kumir2 ("+proj.version
+    result = ""
+    baseline = "kumir2 ("+proj.version
     if len(proj.version_extra)>0:
-        result += "."+proj.version_extra+") unstable"
+        baseline += "+"+proj.version_extra+") unstable"
     else:
-        result += ") stable"
-    result += "; urgency=low\n"
+        baseline += ") stable"
+    baseline += "; urgency=low\n"
     for entry in proj.changelogs["en"]:
+        result += baseline
         result += "\n"
         lines = entry.contents.split("\n")
         for line in lines:
             line = line.strip()
             if line.startswith("- "):
                 line = "* "+line[2:]
-            result += "  "+line+"\n"
+            if line.startswith("*"):
+                result += "  "+line+"\n"
+            else:
+                result += "\t"+line+"\n"
         result += " -- Kumir Team <kumir@lpm.org.ru>  "
         result += WEEKDAYS[entry.date.weekday()]+", "
         day = str(entry.date.day)
@@ -35,6 +41,7 @@ def gen_changelog(proj):
             day = "0"+day
         result += day + " "
         result += MONTH[entry.date.month-1]
+        result += " "+str(entry.date.year)
         result += " 00:00:00 +0400\n\n"
         
     return result
@@ -53,7 +60,7 @@ def gen_control(proj):
     result += "Maintainer: "+PACKAGER+"\n"
     result += "Standards-Version: 3.9.1\n"
     result += "Homepage: http://www.niisi.ru/kumir/\n"
-    result += "Build-Depends: debhelper (>= 7.0.50~), libqt4-dev (>= 4.6.0), libqtwebkit-dev (>= 4.6.0), libx11-dev, qt4-qmake, python, ant, gwt\n"
+    result += "Build-Depends: debhelper (>= 7.0.50~), libqt4-dev (>= "+QT_MIN_VERSION+"), libqtwebkit-dev (>= "+QTWEBKIT_MIN_VERSION+"), libx11-dev, qt4-qmake, python, ant, gwt\n"
     result += "\n"
     for name, item in proj.components.items():
         name = __debian_name(name)
@@ -62,7 +69,7 @@ def gen_control(proj):
             result += "Architecture: all\n"
         else:
             result += "Architecture: any\n"
-        result += "Depends: ${shlibs:Depends}"
+        result += "Depends: ${shlibs:Depends}, ${misc:depends}"
         qt_req = item.requires_qt
         for qt in qt_req:
             pkg = "libqt4-"+qt[2:].lower()+" (>= "+QT_MIN_VERSION+")"
@@ -93,9 +100,11 @@ def gen_control(proj):
         result += "Description: "+item.summary["en"]+"\n"
         if item.description.has_key("en"):
             desc_lines = item.description["en"].split("\n")
-            for line in desc_lines:
-                line = line.strip()
-                result += "    "+line+"\n"
+        else:
+            desc_lines = ["No description"]
+        for line in desc_lines:
+            line = line.strip()
+            result += "    "+line+"\n"
         result += "\n" 
     return result
 
@@ -190,7 +199,7 @@ def gen_dsc(proj):
     result += "Architecture: any\n"
     result += "Standards-Version: 3.9.1\n"
     result += "Homepage: http://www.niisi.ru/kumir/\n"
-    result += "Build-Depends: debhelper (>= 7.0.50~), libqt4-dev (>= 4.6.0), libqtwebkit-dev (>= 4.6.0), libx11-dev, qt4-qmake, python, ant, gwt\n"
+    result += "Build-Depends: debhelper (>= 7.0.50~), libqt4-dev (>= "+QT_MIN_VERSION+"), libqtwebkit-dev (>= "+QT_MIN_VERSION+"), libx11-dev, qt4-qmake, python, ant, gwt\n"
     binaries = []
     for name, item in proj.components.items():
         name = "kumir2-"+__debian_name(name)
@@ -243,6 +252,7 @@ if __name__ == '__main__':
     proj_root = os.path.abspath(proj_root)
     proj = project_spider.scan_project(proj_root)
     debian_changelog = gen_changelog(proj)
+    debian_copyright = gen_copyright()
     debian_compat = gen_compat()
     debian_control = gen_control(proj)
     debian_rules = gen_rules(proj)
@@ -253,6 +263,7 @@ if __name__ == '__main__':
     __write_file(obs, "compat", debian_compat)
     __write_file(obs, "control", debian_control)
     __write_file(obs, "rules", debian_rules)
+    __write_file(obs, "copyright", debian_copyright)
     if obs:
         __write_file(True, "kumir2.dsc", debian_dsc)
     for name, data in debian_packages:
