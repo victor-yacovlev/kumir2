@@ -282,6 +282,10 @@ if __name__ == '__main__':
     __write_file(obs, "copyright", debian_copyright)
     if obs:
         __write_file(True, "kumir2.dsc", debian_dsc)
-    for name, data in debian_packages:
-        __write_file(obs, name+".install", data)
+    if not all_in_one:
+        for name, data in debian_packages:
+            __write_file(obs, name+".install", data)
+    else:
+        name, data = debian_packages[0]
+        __write_file(obs, "install", data)
     
