@@ -80,7 +80,14 @@ if __name__=="__main__":
         out.write("."+proj.version_extra)
     out.write("\n\n")
     out.write("%build\n")
-    out.write("qmake-qt4 | qmake\n")
+    out.write("""
+    if [ -f /usr/bin/qmake-qt4 ]
+    then
+        qmake-qt4
+    else
+        qmake
+    fi
+    """)
     out.write("make\n")
     
     for name, item in proj.components.items():
