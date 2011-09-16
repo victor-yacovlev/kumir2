@@ -209,8 +209,11 @@ bool EditorPlane::eventFilter(QObject *, QEvent *event)
         QMouseEvent * mouseEvent = static_cast<QMouseEvent*>(event);
         if (mouseEvent->button()==Qt::LeftButton) {
             mouseMoveEvent(mouseEvent);
-            return true;
+//            return true;
         }
+    }
+    else if (event->type()==QEvent::MouseButtonPress) {
+        pnt_textPress = QPoint(-1000,-1000);
     }
     return false;
 }
@@ -279,6 +282,8 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
         int dX = e->pos().x() - pnt_textPress.x();
         int dY = e->pos().y() - pnt_textPress.y();
         qreal distance = sqrt(dX*dX+dY*dY);
+        if (pnt_textPress.x()==-1000 && !b_selectionInProgress)
+            distance = 0;
         qreal therehold = QApplication::startDragDistance();
         if (distance>=therehold) {
             bool sel = m_cursor->hasSelection();
