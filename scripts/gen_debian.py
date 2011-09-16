@@ -64,6 +64,8 @@ def gen_control(proj):
     result += "\n"
     for name, item in proj.components.items():
         name = __debian_name(name)
+        if len(name)==0:
+            name = "kumir2"
         result += "Package: "+name+"\n"
         if item.isweb:
             result += "Architecture: all\n"
