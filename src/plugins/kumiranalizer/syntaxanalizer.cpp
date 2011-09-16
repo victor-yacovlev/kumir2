@@ -1052,7 +1052,8 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
             }
             if ( alg->header.returnType!=AST::TypeNone )
             {
-                st.data[0]->error = _("First unnamed algorhitm should not return anything");
+                st.data[1]->error = _("First unnamed algorhitm should not return anything");
+                alg->header.returnType=AST::TypeNone;
                 return;
             }
         }

@@ -1137,7 +1137,7 @@ void VM::do_eq()
     if (b.baseType()==VT_int && a.baseType()==VT_int) {
         result = a.toInt()==b.toInt();
     }
-    if (b.baseType()==VT_float && a.baseType()==VT_float) {
+    if (b.baseType()==VT_float || a.baseType()==VT_float) {
         result = fabs(a.toReal()-b.toReal())<EPSILON;
     }
     if (b.baseType()==VT_bool && a.baseType()==VT_bool) {
@@ -1150,6 +1150,7 @@ void VM::do_eq()
     {
         result = a.toString()==b.toString();
     }
+
     Variant r(result);
     stack_values.push(r);
     nextIP();
