@@ -188,7 +188,10 @@ def gen_package_install(component):
 def gen_install(proj):
     result = []
     for name, item in proj.components.items():
-        name = "kumir2-"+__debian_name(name)
+        if len(name)>0:
+            name = "kumir2-"+__debian_name(name)
+        else:
+            name = "kumir2"
         result += [(name, gen_package_install(item))]
     return result
 
@@ -207,7 +210,10 @@ def gen_dsc(proj):
     result += "Build-Depends: debhelper (>= 7.0.50~), libqt4-dev (>= "+QT_MIN_VERSION+"), libqtwebkit-dev (>= "+QTWEBKIT_MIN_VERSION+"), libx11-dev, qt4-qmake, python, ant, gwt\n"
     binaries = []
     for name, item in proj.components.items():
-        name = "kumir2-"+__debian_name(name)
+        if len(name)>0:
+            name = "kumir2-"+__debian_name(name)
+        else:
+            name = "kumir2"
         binaries += [name]
     result += "Binary: "+string.join(binaries, ", ")+"\n"
     result += "Files:\n"
@@ -219,7 +225,7 @@ def gen_dsc(proj):
 
 def print_usage_and_exit(errcode):
     sys.stderr.write("Usage: \n")
-    sys.stderr.write("   "+sys.argv[0]+" --packager=\"Your Name <your@e.mail>\" [--buildservice]\n")
+    sys.stderr.write("   "+sys.argv[0]+" --packager=\"Your Name <your@e.mail>\" [--buildservice] [--all-in-one]\n")
     sys.exit(errcode)
 
 def __write_file(obs, basename, data):
@@ -242,6 +248,7 @@ def __write_file(obs, basename, data):
 
 if __name__ == '__main__':
     obs = False
+    all_in_one = False
     for arg in sys.argv:
         if arg.startswith("--help") or arg.startswith("-h"):
             print_usage_and_exit(0)
@@ -249,6 +256,8 @@ if __name__ == '__main__':
             PACKAGER = arg[11:]
         elif arg=="--buildservice":
             obs = True
+        elif arg=="--all-in-one":
+            all_in_one = True
         
     if PACKAGER is None:
         print_usage_and_exit(1)
@@ -256,6 +265,8 @@ if __name__ == '__main__':
     proj_root += "/.."
     proj_root = os.path.abspath(proj_root)
     proj = project_spider.scan_project(proj_root)
+    if all_in_one:
+        proj.mergeIntoAllInOnePackage()
     debian_changelog = gen_changelog(proj)
     debian_copyright = gen_copyright()
     debian_compat = gen_compat()
