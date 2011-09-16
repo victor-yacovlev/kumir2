@@ -19,6 +19,54 @@ class ProjectModel:
             if appname in item.webapps:
                 return name
         return ""
+    
+    def mergeIntoAllInOnePackage(self):
+        all_in_one = Component()
+        all_in_one.summary["en"] = "Kumir 2 Education System"
+        all_in_one.description["en"] = "Second generation of well-known system Kumir"
+        for name, item in self.components.items():
+            for req in item.requires_qt:
+                if not req in all_in_one.requires_qt:
+                    all_in_one.requires_qt += [req]
+            for req in item.requires_other:
+                if not req in all_in_one.requires_other:
+                    all_in_one.requires_other += [req]
+            all_in_one.provides += [name]
+            for prov in item.provides:
+                if not prov in all_in_one.provides:
+                    all_in_one.provides += [prov]
+            for e in item.filesmasks:
+                if not e in all_in_one.filesmasks:
+                    all_in_one.filesmasks += [e]
+            for e in item.dirs:
+                if not e in all_in_one.dirs:
+                    all_in_one.dirs += [e]
+            for e in item.libs:
+                if not e in all_in_one.libs:
+                    all_in_one.libs += [e]
+            for e in item.plugins:
+                if not e in all_in_one.plugins:
+                    all_in_one.plugins += [e]
+            for e in item.buildcmds:
+                if not e in all_in_one.buildcmds:
+                    all_in_one.buildcmds += [e]
+            for e in item.installcmds:
+                if not e in all_in_one.installcmds:
+                    all_in_one.installcmds += [e]
+            for e in item.webapps:
+                if not e in all_in_one.webapps:
+                    all_in_one.webapps += [e]
+            for e in item.bins:
+                if not e in all_in_one.bins:
+                    all_in_one.bins += [e]
+            for e in item.icons:
+                if not e in all_in_one.icons:
+                    all_in_one.icons += [e]
+            for e in item.desktopfiles:
+                if not e in all_in_one.desktopfiles:
+                    all_in_one.desktopfiles += [e]
+        self.components = { "" : all_in_one }
+            
 
 import datetime
 
@@ -42,9 +90,9 @@ class Component:
         self.description = {}
         self.dirs = []
         self.filesmasks = []
-        self.binname = ""
-        self.desktopfile = ""
-        self.icon = ""
+        self.bins = []
+        self.desktopfiles = []
+        self.icons = []
         self.libs = []
         self.plugins = []
         self.buildcmds = []
@@ -70,7 +118,10 @@ def __read_json(filename):
     f = open(filename, 'r')
     data = f.read()
     f.close()
-    return json.loads(data, "utf-8")
+    if os.path.exists("/etc/altlinux-release"):
+        return json.read(data)
+    else:
+        return json.loads(data, "utf-8")
 
 def __read_qt_pro_file(filename):
     f = open(filename, 'r')
@@ -232,7 +283,7 @@ def __scan_application(toplevel, specfilename):
     basename = basename.lower()[0:-8]
     profilename = dirr+"/"+basename+".pro"
     target, libs, config, qt = __read_qt_pro_file(profilename)
-    c.binname = target
+    c.bins += [target]
     if spec.has_key("requires"):
         c.requires_kumir2 = spec["requires"]
     if spec.has_key("webapps"):
@@ -240,9 +291,9 @@ def __scan_application(toplevel, specfilename):
     c.console = "console" in config
     c.filesmasks += ["%bindir%/"+target]
     if spec.has_key("desktopfile"):
-        c.desktopfile = spec["desktopfile"]
-        c.filesmasks += ["%datadir%/applications/"+c.desktopfile]
-        icon = __extract_icon_from_desktop_file(toplevel+"/"+c.desktopfile)
+        c.desktopfiles += [spec["desktopfile"]]
+        c.filesmasks += ["%datadir%/applications/"+spec["desktopfile"]]
+        icon = __extract_icon_from_desktop_file(toplevel+"/"+spec["desktopfile"])
         if len(icon)>0:
             icondirs = __get_icon_dirs(toplevel, icon)
             for f, d in icondirs:
@@ -250,10 +301,10 @@ def __scan_application(toplevel, specfilename):
                 c.filesmasks += ["%datadir%/icons"+d+"/"+f]
                 c.installcmds += ["mkdir -p %datadir%/icons"+d+"/"]
                 c.installcmds += ["cp app_icons/linux"+d+"/"+f+" %datadir%/icons"+d+"/"]
-        c.icon = icon
+        c.icons += [icon]
         c.dirs += ["%datadir%/applications"]
         c.installcmds += ["mkdir -p %datadir%/applications/"]
-        c.installcmds += ["cp "+c.desktopfile+" %datadir%/applications/"]
+        c.installcmds += ["cp "+spec["desktopfile"]+" %datadir%/applications/"]
     if spec.has_key("summary"):
         c.summary = spec["summary"]
     if spec.has_key("description"):
