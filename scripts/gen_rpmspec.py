@@ -78,8 +78,12 @@ BuildRequires:     gcc-c++ >= 4
     out.write("BuildRequires:\t gwt >= 2.3.0\n")
     out.write("BuildRequires:\t gcc-c++ >= 4\n")
     if all_in_one:
-        item = proj.components[""] 
-        out.write("Requires:\t qt >= "+QT_MIN_VERSION+"\n")
+        item = proj.components[""]
+        out.write("%is_fedora\n")
+        out.write("Requires:\t qt4 >= "+QT_MIN_VERSION+"\n")
+        out.write("%else\n")
+        out.write("Requires:\t libqt4 >= "+QT_MIN_VERSION+"\n")
+        out.write("%endif")
         if len(item.icons)>0:
             out.write("Requires:\t/usr/bin/gtk-update-icon-cache\n")
         for qt in item.requires_qt:
@@ -144,7 +148,13 @@ BuildRequires:     gcc-c++ >= 4
             out.write("\n%package\t"+name+"\n")
             out.write("Summary:\t"+item.summary["en"]+"\n")
             out.write("Group:\t"+GROUP+"\n")
-            out.write("Requires:\t qt >= "+QT_MIN_VERSION+"\n")
+
+            out.write("%is_fedora\n")
+            out.write("Requires:\t qt4 >= "+QT_MIN_VERSION+"\n")
+            out.write("%else\n")
+            out.write("Requires:\t libqt4 >= "+QT_MIN_VERSION+"\n")
+            out.write("%endif")
+            
             if item.isweb:
                 out.write("Requires:\tkumir2-module-Browser\n")
                 out.write("BuildArch:\tnoarch\n")
