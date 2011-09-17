@@ -948,11 +948,15 @@ void MainWindow::saveSession() const
 
 void MainWindow::showAbout()
 {
+    QString svnRev = "unknown";
+    if (qApp->property("svnRev").isValid())
+        svnRev = qApp->property("svnRev").toString();
     QMessageBox::information(this,
                              tr("About"),
-                             tr("Kumir version %1\nUsing Qt version %2")
+                             tr("Kumir version %1 (SVN revision: %3)\nUsing Qt version %2")
                              .arg(qApp->applicationVersion())
                              .arg(qVersion())
+                             .arg(svnRev)
                              );
 }
 

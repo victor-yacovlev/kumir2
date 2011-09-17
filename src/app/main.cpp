@@ -60,6 +60,9 @@ int main(int argc, char **argv)
                                .arg(VERSION_MINOR)
                                .arg(VERSION_RELEASE)
                                .arg(versionStatus));
+#ifdef SVN_REV
+    app->setProperty("svnRev", SVN_REV);
+#endif
     const QString sharePath = QDir(app->applicationDirPath()+SHARE_PATH).canonicalPath();
     QDir translationsDir(sharePath+"/translations");
     QStringList ts_files = translationsDir.entryList(QStringList() << "*_"+getLanguage()+".qm");
