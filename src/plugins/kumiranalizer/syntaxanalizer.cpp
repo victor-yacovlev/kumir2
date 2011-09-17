@@ -1323,7 +1323,8 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
                 }
                 QString loc_err = lexer->testName(cName);
                 if (!loc_err.isEmpty()) {
-                    group.lexems[nameStart]->error = loc_err;
+                    for (int k=nameStart; k<curPos; k++)
+                        group.lexems[k]->error = loc_err;
                     return result;
                 }
                 if ( cName.count("\"") || cName.count("'") )
