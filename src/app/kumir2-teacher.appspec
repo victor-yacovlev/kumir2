@@ -6,7 +6,7 @@
     "win32_extradirs": [ "clang-mingw" ],
     "summary": {
 	"en": "Kumir teacher edition",
-        "ru": "Kumir dlja uchitelej"
+        "ru": "Кумир для учителей"
     },
     "description": {
 	"en": "Kumir to used by tutors"

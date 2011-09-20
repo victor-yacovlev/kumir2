@@ -6,7 +6,7 @@
     "win32_extradirs": [ "clang-mingw" ],
     "summary": {
 	"en": "Kumir professional edition",
-        "ru": "Olimpiadnyj Kumir"
+        "ru": "Кумир для олимпиад"
     },
     "description": {
 	"en": "Kumir for high school applications"
