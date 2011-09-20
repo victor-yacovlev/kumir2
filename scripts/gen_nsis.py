@@ -147,7 +147,7 @@ ShowUninstDetails show
         for f in list(sec.files):
             dirr, name = os.path.split(f)
             if dirr!=op:
-                __write("SetOutPath $INSTDIR\\"+dirr+"\n")
+                __write("SetOutPath $INSTDIR"+dirr+"\n")
                 op = dirr
             if f.endswith("*"):
                 __write("File /r \""+f+"\"\n")
