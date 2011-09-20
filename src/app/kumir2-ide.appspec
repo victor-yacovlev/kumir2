@@ -3,8 +3,10 @@
     "requires":	[ "Editor", "Browser", "KumirAnalizer", "KumirCodeGenerator", "KumirCodeRun", "CoreGUI", "KumirNativeGenerator" ],
     "webapps": [ "helpviewer" ],
     "desktopfile": "kumir2-professional.desktop",
+    "win32_extradirs": [ "clang-mingw" ],
     "summary": {
-	"en": "Kumir professional edition"
+	"en": "Kumir professional edition",
+        "ru": "Olimpiadnyj Kumir"
     },
     "description": {
 	"en": "Kumir for high school applications"

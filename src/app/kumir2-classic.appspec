@@ -4,9 +4,10 @@
     "webapps": [ "helpviewer" ],
     "desktopfile": "kumir2-standard.desktop",
     "summary": {
-	"en": "Kumir standard edition"
+	"en": "Kumir standard edition",
+	"ru": "Obychnyj Kumir"
     },
     "description": {
-	"en": "Kumir for shools"
+	"en": "Kumir for schools"
     }
 }

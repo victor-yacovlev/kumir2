@@ -14,6 +14,13 @@ class ProjectModel:
                 return name
         return ""
     
+    def findModuleProvider(self, modname):
+        for name, item in self.components.items():
+            mname = name.replace("module-","").replace("actor-","")
+            if mname==modname:
+                return name
+        return ""
+    
     def findWebAppProvider(self, appname):
         for name, item in self.components.items():
             if appname in item.webapps:
@@ -98,7 +105,9 @@ class Component:
         self.buildcmds = []
         self.installcmds = []
         self.isweb = False
+        self.isconsole = False
         self.webapps = []
+        self.win32_extradirs = []
 
 import json
 import os.path
@@ -114,8 +123,24 @@ QT_LIBS_BY_CONFIG = {
                      "webkit": "QtWebKit"
                      }
 
+def __resolve_simlink(f):
+    if not os.name=="nt":
+        return f
+    ff = open(f)
+    d = ff.read(5)
+    sl = None
+    if d=="link ":
+        text = ff.readline()
+        dirr, name = os.path.split(f)
+        sl = dirr+"/"+text
+    ff.close()
+    if sl:
+        return sl
+    else:
+        return f
+
 def __read_json(filename):
-    f = open(filename, 'r')
+    f = open(__resolve_simlink(filename), 'r')
     data = f.read()
     f.close()
     if os.path.exists("/etc/altlinux-release"):
@@ -145,9 +170,10 @@ def __read_qt_pro_file(filename):
         elif line.startswith("CONFIG"):
             p = line.find("=")
             if p!=-1:
-                conf_line = line[p+1:]
-                confs = line.split()
-                config |= set(confs)
+                conf_line = line[p+1:].strip()
+                if not conf_line.startswith("$") and not conf_line.startswith("#"):
+                    confs = set(line.split())
+                    config |= confs
         elif line.startswith("TARGET"):
             p = line.find("=")
             if p!=-1:
@@ -282,13 +308,15 @@ def __scan_application(toplevel, specfilename):
     dirr, basename = os.path.split(specfilename)
     basename = basename.lower()[0:-8]
     profilename = dirr+"/"+basename+".pro"
-    target, libs, config, qt = __read_qt_pro_file(profilename)
+    target, config, libs, qt = __read_qt_pro_file(profilename)
     c.bins += [target]
+    if spec.has_key("win32_extradirs"):
+        c.win32_extradirs = spec["win32_extradirs"]
     if spec.has_key("requires"):
         c.requires_kumir2 = spec["requires"]
     if spec.has_key("webapps"):
         c.requires_web = spec["webapps"]
-    c.console = "console" in config
+    c.isconsole = "console" in config
     c.filesmasks += ["%bindir%/"+target]
     if spec.has_key("desktopfile"):
         c.desktopfiles += [spec["desktopfile"]]

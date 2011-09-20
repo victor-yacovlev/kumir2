@@ -3,8 +3,10 @@
     "requires":	[ "Editor", "Browser", "KumirAnalizer", "KumirCodeGenerator", "KumirCodeRun", "CoreGUI", "KumirNativeGenerator" ],
     "webapps": [ "helpviewer" ],
     "desktopfile": "kumir2-teacher.desktop",
+    "win32_extradirs": [ "clang-mingw" ],
     "summary": {
-	"en": "Kumir teacher edition"
+	"en": "Kumir teacher edition",
+        "ru": "Kumir dlja uchitelej"
     },
     "description": {
 	"en": "Kumir to used by tutors"

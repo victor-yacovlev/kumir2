@@ -1,8 +1,11 @@
 include(../../kumir2.pri)
 
 TEMPLATE = app
-!macx:TARGET = kumir2-classic
+!macx {
+	TARGET = kumir2-classic
+}
 macx:TARGET = Kumir
+
 DESTDIR = $$IDE_APP_PATH
 
 SOURCES += main.cpp

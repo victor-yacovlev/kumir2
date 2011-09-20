@@ -1,7 +1,9 @@
 include(../../kumir2.pri)
 
 TEMPLATE = app
-!macx:TARGET = kumir2-ide
+!macx {
+	TARGET = kumir2-ide
+}
 macx:TARGET = Kumir
 DESTDIR = $$IDE_APP_PATH
 
