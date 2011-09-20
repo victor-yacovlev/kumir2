@@ -15,7 +15,7 @@ def print_usage_and_exit(errcode):
     sys.exit(errcode)
 
 def __write(data):
-    lines = unicode(data).encode(ENCODING).data.split("\n")
+    lines = unicode(data).encode(ENCODING).split("\n")
     winlines = string.join(lines, "\r\n")
     OUTFILE.write(winlines)
 
