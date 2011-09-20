@@ -48,14 +48,18 @@ def __add_files(component, proj):
             for p in proj.components[provider].libs:
                 r.add("bin\\"+p+".dll")
                 
-    for qt in component.requires_qt:
-        r.add("bin\\"+qt+"4.dll")
+    for web in component.requires_web:
+        provider = proj.findWebAppProvider(web)
+        if len(provider)>0:
+            r |= __add_files(proj.components[provider], proj)
         
     for dirr in component.win32_extradirs:
         r.add(dirr+"\\*")
         
     r.add("bin\\mingwm10.dll")
     r.add("bin\\libgcc_s_dw2-1.dll")
+    r.add("bin\\phonon4.dll")
+    r.add("bin\\Qt*4.dll")
     return r
 
 if __name__=="__main__":
@@ -70,20 +74,20 @@ if __name__=="__main__":
         elif arg.startswith("--out="):
             OUTFILE = open(arg[6:], 'w')
     __write(ur"""
-!define Name "Кумир-2"
+Name "Кумир-2"
 
 
 # General Symbol Definitions
 !define REGKEY "SOFTWARE\Kumir2"
     
-!define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\modern-install-colorful.ico"
+!define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\box-install.ico"
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT HKLM
 !define MUI_STARTMENUPAGE_NODISABLE
 !define MUI_STARTMENUPAGE_REGISTRY_KEY ${REGKEY}
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME StartMenuGroup
 !define MUI_STARTMENUPAGE_DEFAULTFOLDER "НИИСИ РАН\Кумир 2"
-!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall-colorful.ico"
+!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\box-uninstall.ico"
 !define MUI_UNFINISHPAGE_NOAUTOCLOSE
 
 # Included files
@@ -147,6 +151,7 @@ ShowUninstDetails show
             else:
                 __write("File \""+f+"\"\n")
         if len(sec.desktop)>0:
+            __write("CreateDirectory \"$SMPROGRAMS\\$StartMenuGroup\"\n")
             __write("CreateShortcut \"$SMPROGRAMS\\$StartMenuGroup\\"+sec.name+".lnk\" ")
-            __write("\"$INSTDIR"+sec.desktop+"\"\n")
+            __write("\"$INSTDIR\\bin\\"+sec.desktop+".exe\"\n")
         __write("SectionEnd\n")
