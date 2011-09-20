@@ -79,7 +79,7 @@ BuildRequires:     gcc-c++ >= 4
     out.write("BuildRequires:\t gcc-c++ >= 4\n")
     if all_in_one:
         item = proj.components[""]
-        out.write("%{is_fedora}\n")
+        out.write("%if {is_fedora}\n")
         out.write("Requires:\t qt4 >= "+QT_MIN_VERSION+"\n")
         out.write("%else\n")
         out.write("Requires:\t libqt4 >= "+QT_MIN_VERSION+"\n")
@@ -149,7 +149,7 @@ BuildRequires:     gcc-c++ >= 4
             out.write("Summary:\t"+item.summary["en"]+"\n")
             out.write("Group:\t"+GROUP+"\n")
 
-            out.write("%{is_fedora}\n")
+            out.write("%if {is_fedora}\n")
             out.write("Requires:\t qt4 >= "+QT_MIN_VERSION+"\n")
             out.write("%else\n")
             out.write("Requires:\t libqt4 >= "+QT_MIN_VERSION+"\n")
