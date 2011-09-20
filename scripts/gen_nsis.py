@@ -4,6 +4,7 @@
 import project_spider
 import sys
 import os.path
+import string
 
 ENCODING = "CP1251"
 OUTFILE = sys.stdout
@@ -14,7 +15,9 @@ def print_usage_and_exit(errcode):
     sys.exit(errcode)
 
 def __write(data):
-    OUTFILE.write(unicode(data).encode(ENCODING))
+    lines = unicode(data).encode(ENCODING).data.split("\n")
+    winlines = string.join(lines, "\r\n")
+    OUTFILE.write(winlines)
 
 class Section:
     def __init__(self, name, checked):
