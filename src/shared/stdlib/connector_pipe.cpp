@@ -1,5 +1,13 @@
 #include "connector_pipe.h"
 #include <iostream>
+
+#ifdef Q_OS_WIN32
+#define INTERVAL 50
+#else
+#define INTERVAL 5
+#endif
+
+
 namespace StdLib {
 
 Connector_PIPE::Connector_PIPE(QObject *parent) :
@@ -141,11 +149,6 @@ void Connector_PIPE::listenFor(QProcess *process)
     start();
 }
 
-#ifdef Q_OS_WIN32
-#define INTERVAL 50
-#else
-#define INTERVAL 5
-#endif
 
 void Connector_PIPE::run()
 {
@@ -281,6 +284,7 @@ Connector_PIPE::MessageType Connector_PIPE::readMessageType()
         if (buf.trimmed().isEmpty() && !aType.isEmpty()) {
             break;
         }
+        msleep(INTERVAL);
     }
     bool ok = false;
     quint8 no = aType.toUInt(&ok, 16);

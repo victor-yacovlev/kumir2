@@ -51,7 +51,7 @@ public class ViewerRoot implements EntryPoint, ResizeHandler  {
 		tableOfContentsPanel.addOpenNodeHandler(viewContentPanel);
 		indexPanel = new IndexPanel();
 		tabPanel.add(tableOfContentsPanel, "Содержание");
-		tabPanel.add(indexPanel, "Указатель");
+		tabPanel.add(indexPanel, "Поиск");
 		printFrame = new Frame("_print.html");
 		printFrame.getElement().setAttribute("id", "printframe");
 	}
