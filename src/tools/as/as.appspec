@@ -1,0 +1,10 @@
+{
+    "packagename": "utils-as",
+    "requires":	[ ],
+    "summary": {
+	"en": "Kumir bytecode (dis)assembler"
+    },
+    "description": {
+	"en": "A tool to convert kumir bytecode to/from human-readable form"
+    }
+}
