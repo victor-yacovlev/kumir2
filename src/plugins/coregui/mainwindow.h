@@ -75,6 +75,8 @@ public slots:
     void showUserManual();
 
 private slots:
+    void loadRecentFile();
+    void prepareRecentFilesMenu();
     void prepareRunMenu();
     void prepareEditMenu();
     void prepareInsertMenu();

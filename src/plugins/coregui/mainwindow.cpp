@@ -176,6 +176,9 @@ MainWindow::MainWindow(Plugin * p) :
     installEventFilter(this);
     installEventFilter(menuBar());
 
+    ui->actionRecent_files->setMenu(new QMenu());
+    connect(ui->actionRecent_files->menu(), SIGNAL(aboutToShow()), this, SLOT(prepareRecentFilesMenu()));
+
 }
 
 QString MainWindow::StatusbarWidgetCSS =
@@ -319,6 +322,28 @@ void MainWindow::setupStatusbarForTab()
         w->setStyleSheet(StatusbarWidgetCSS);
         statusBar()->addPermanentWidget(w);
         w->show();
+    }
+}
+
+void MainWindow::prepareRecentFilesMenu()
+{
+    ui->actionRecent_files->menu()->clear();
+    QStringList r = m_plugin->mySettings()->value(Plugin::RecentFilesKey).toStringList();
+    for (int i=0; i<r.size(); i++) {
+        if (!r[i].trimmed().isEmpty()) {
+            QAction * a = ui->actionRecent_files->menu()->addAction(r[i]);
+            a->setProperty("index", i);
+            connect(a, SIGNAL(triggered()), this, SLOT(loadRecentFile()));
+        }
+    }
+}
+
+void MainWindow::loadRecentFile()
+{
+    QAction * a = qobject_cast<QAction*>(sender());
+    if (a && a->property("index").isValid()) {
+        int index = a->property("index").toInt();
+        loadRecentFile(index);
     }
 }
 
@@ -748,6 +773,8 @@ void MainWindow::disableTabs()
     ui->actionClose->setEnabled(false);
     ui->actionNewText->setVisible(false);
     ui->actionNewText->setEnabled(false);
+    ui->actionSave_all->setEnabled(false);
+    ui->actionSave_all->setVisible(false);
 }
 
 void MainWindow::loadSettings()
@@ -1012,7 +1039,7 @@ void MainWindow::addToRecent(const QString &fileName)
     }
     r.removeAll(entry);
     r.prepend(entry);
-    r = r.mid(0, qMax(5, r.size()));
+    r = r.mid(0, qMin(10, r.size()));
     m_plugin->mySettings()->setValue(Plugin::RecentFilesKey, r);
 }
 
