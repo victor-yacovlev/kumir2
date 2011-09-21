@@ -33,6 +33,7 @@ public:
     static int MarginWidthDefault;
     void setTeacherMode(bool v);
     inline bool isTeacherMode() const { return b_teacherMode; }
+    void addContextMenuAction(QAction * a);
 public slots:
     void selectAll();
     void copy();
@@ -57,6 +58,7 @@ protected:
     void mousePressEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
     bool eventFilter(QObject *, QEvent *);
+    void contextMenuEvent(QContextMenuEvent *);
     void initMouseCursor();
     void updateScrollBars();
     void findCursor();
@@ -115,6 +117,7 @@ private:
     int i_grayLockSymbolLine;
     class AutoCompleteWidget * m_autocompleteWidget;
     Shared::AnalizerInterface * m_analizer;
+    QList<QAction*> l_contextMenuActions;
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
 

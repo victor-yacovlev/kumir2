@@ -44,3 +44,7 @@ FORMS += \
 linux-* {
     LIBS += -lX11
 }
+
+
+
+

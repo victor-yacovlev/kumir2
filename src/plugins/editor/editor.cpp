@@ -461,6 +461,7 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
     QList<QRegExp> fileNamesToOpen = QList<QRegExp>() << QRegExp("*", Qt::CaseSensitive, QRegExp::Wildcard);
     if (d->analizer)
         fileNamesToOpen = d->analizer->supportedFileNamePattern();
+
     d->plane = new EditorPlane(d->doc, d->analizer, d->cursor, d->clipboard, fileNamesToOpen, d->settings, d->horizontalScrollBar, d->verticalScrollBar, d->analizer!=NULL, this);
 
     d->keybStatus = new QLabel(0);
@@ -474,6 +475,9 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
     d->updatePosition(d->cursor->row(), d->cursor->column());
 
     d->createActions();
+    d->plane->addContextMenuAction(d->cut);
+    d->plane->addContextMenuAction(d->copy);
+    d->plane->addContextMenuAction(d->paste);
 
     connect(d->doc, SIGNAL(compilationRequest(QStack<Shared::ChangeTextTransaction>)),
             d, SLOT(handleLineAndTextChanged(QStack<Shared::ChangeTextTransaction>)));

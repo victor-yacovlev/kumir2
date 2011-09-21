@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "autocompletewidget.h"
 
+
 #define RECT_SELECTION_MODIFIER Qt::AltModifier
 
 #define LOCK_SYMBOL_WIDTH 20
@@ -63,6 +64,12 @@ EditorPlane::EditorPlane(TextDocument * doc
     connect(m_autocompleteWidget, SIGNAL(accepted(QString,QString)),
             this, SLOT(finishAutoCompletion(QString,QString)));
     qApp->installEventFilter(this);
+
+}
+
+void EditorPlane::addContextMenuAction(QAction *a)
+{
+    l_contextMenuActions << a;
 }
 
 void EditorPlane::setTeacherMode(bool v)
@@ -102,7 +109,13 @@ void EditorPlane::paintDropPosition(QPainter *p)
     p->restore();
 }
 
-
+void EditorPlane::contextMenuEvent(QContextMenuEvent *e)
+{
+    QMenu * menu = new QMenu(this);
+    menu->addActions(l_contextMenuActions);
+    menu->exec(e->globalPos());
+    e->accept();
+}
 
 void EditorPlane::mousePressEvent(QMouseEvent *e)
 {
