@@ -22,7 +22,8 @@ HEADERS += \
     tabbar.h \
     confirmclosedialod.h \
     kumirvariableswebobject.h \
-    menubar.h
+    menubar.h \
+    aboutdialog.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -34,15 +35,13 @@ SOURCES += \
     terminal_plane.cpp \
     tabbar.cpp \
     confirmclosedialod.cpp \
-    kumirvariableswebobject.cpp
+    kumirvariableswebobject.cpp \
+    aboutdialog.cpp
 
 FORMS += \
     mainwindow.ui \
-    confirmclosedialod.ui
+    confirmclosedialod.ui \
+    aboutdialog.ui
 
 RESOURCES += \
     resources.qrc
-
-
-
-
