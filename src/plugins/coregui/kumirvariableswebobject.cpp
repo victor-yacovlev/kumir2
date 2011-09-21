@@ -13,10 +13,12 @@ void KumirVariablesWebObject::setProgram(const AST::Data *ast)
 {
     l_userModules.clear();
     l_userModulesIds.clear();
-    for (int i=0; i<ast->modules.size(); i++) {
-        if (ast->modules[i]->header.type==AST::ModTypeUser) {
-            l_userModules << ast->modules[i];
-            l_userModulesIds << i;
+    if (ast) {
+        for (int i=0; i<ast->modules.size(); i++) {
+            if (ast->modules[i]->header.type==AST::ModTypeUser) {
+                l_userModules << ast->modules[i];
+                l_userModulesIds << i;
+            }
         }
     }
     refreshRoot();

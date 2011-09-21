@@ -763,6 +763,9 @@ void MainWindow::setupContentForTab()
         m_plugin->m_kumirProgram->setSourceFileName(fileName);
         m_plugin->m_kumirProgram->setDocumentId(id);
     }
+    else {
+        m_plugin->m_kumirProgram->setAST(0);
+    }
 }
 
 void MainWindow::disableTabs()
