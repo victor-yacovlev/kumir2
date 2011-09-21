@@ -109,7 +109,7 @@ BuildRequires:     gcc-c++ >= 4
     out.write(".tar.gz\n")
     out.write("URL:\thttp://www.niisi.ru/kumir/\n")
     out.write("%if 0%{?opensuse_bs}\n")
-    out.write("%if %{defined otherdist}\n")
+    out.write("%if 0%{?suse_version}\n")
     out.write("BuildRequires:\t-post-build-checks -rpmlint-Factory\n")
     out.write("%endif\n")
     out.write("%endif\n")
