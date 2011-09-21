@@ -35,7 +35,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
     QStringList els = d.entryList();
 #ifdef Q_OS_LINUX
     foreach ( const QString & s, els ) {
-        if (s.endsWith("-release")) {
+        if (s.endsWith("-release") && !s.startsWith("lsb")) {
             QFile f("/etc/"+s);
             if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
                 QStringList lines = QString::fromLocal8Bit(f.readAll()).split("\n");
