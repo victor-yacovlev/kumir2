@@ -56,6 +56,7 @@ BuildRequires:     gcc-c++ >= 4
 """)
     out.write("%if %{is_fedora}\n")
     out.write("BuildRequires:     qt-devel >= "+QT_MIN_VERSION+"\n")
+    out.write("BuildRequires:     qt-webkit-devel >= "+QT_MIN_VERSION+"\n")
     out.write("%else\n")
     out.write("BuildRequires:     libqt4-devel >= "+QT_MIN_VERSION+"\n")
     out.write("%endif\n")
