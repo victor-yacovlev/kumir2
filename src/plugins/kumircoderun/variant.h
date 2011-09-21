@@ -31,6 +31,9 @@ public:
     inline void setDimension(quint8 v) { i_dimension = v; }
     inline void setName(const QString & n) { s_name = n; }
     inline QString name() const { if(m_reference) return m_reference->name(); else return s_name; }
+    inline QString myName() const { return s_name; }
+    inline void setAlgorhitmName(const QString & n) { s_algorhitmName = n; }
+    inline QString algorhitmName() const { if(m_reference) return m_reference->algorhitmName(); else return s_algorhitmName; }
 
     void setBounds(const QList<int> & bounds);
     QList<int> bounds() const;
@@ -84,7 +87,7 @@ private:
     Variant * m_reference;
     QList<int> l_referenceIndeces;
     QString s_name;
-
+    QString s_algorhitmName;
 };
 
 typedef QList<Variant> VariantList;

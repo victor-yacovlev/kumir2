@@ -281,7 +281,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
 
     // Call main (first) algorhitm:
     //  -- 1) Push arguments
-    for (int i=0; i<alg->header.arguments.size(); i++) {
+    for (int i=alg->header.arguments.size()-1; i>=0; i--) {
         AST::VariableAccessType t = alg->header.arguments[i]->accessType;
         if (t==AST::AccessArgumentIn) {
             Bytecode::Instruction load;
@@ -373,10 +373,13 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     clearmarg.arg = alg->impl.endLexems[0]->lineNo;
     argHandle << clearmarg;
 
-    for (int i=alg->header.arguments.size()-1; i>=0; i--) {
+    for (int i=0; i<alg->header.arguments.size(); i++) {
         Bytecode::Instruction store;
-        store.type = Bytecode::STORE;
         const AST::Variable * var = alg->header.arguments[i];
+        if (var->accessType==AST::AccessArgumentIn)
+            store.type = Bytecode::STORE;
+        else
+            store.type = Bytecode::SETREF;
         findVariable(moduleId, id, var, store.scope, store.arg);
         argHandle << store;
         Bytecode::Instruction pop;

@@ -193,6 +193,15 @@ void VM::loadProgram(const Data & program)
             functions[key] = e;
         }
     }
+    for (int i=0; i<functions.keys().size(); i++) {
+        quint32 key = functions.keys()[i];
+        const QString algName = functions[key].name;
+        if (locals.contains(key)) {
+            for (int j=0; j<locals[key].size(); j++) {
+                locals[key][j].setAlgorhitmName(algName);
+            }
+        }
+    }
     for (int i=0; i<locals.keys().size(); i++) {
         quint32 key = locals.keys()[i];
         cleanLocalTables[key] = locals[key].toVector();
@@ -275,6 +284,9 @@ void VM::evaluateNextInstruction()
         break;
     case REFARR:
         do_refarr(instr.scope, instr.arg);
+        break;
+    case SETREF:
+        do_setref(instr.scope, instr.arg);
         break;
     case SUM:
         do_sum();
@@ -623,19 +635,24 @@ void VM::do_store(quint8 s, quint16 id)
     QString svalue;
     const int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
     ValueType t = VT_void;
+    Variant * reference = 0;
     if (VariableScope(s)==LOCAL) {
 //        stack_contexts[stack_contexts.size()-1].locals[id].setBaseType(val.baseType());
+        if (stack_contexts[stack_contexts.size()-1].locals[id].isReference())
+            reference = stack_contexts[stack_contexts.size()-1].locals[id].reference();
         stack_contexts[stack_contexts.size()-1].locals[id].setBounds(val.bounds());
         stack_contexts[stack_contexts.size()-1].locals[id].setValue(val.value());
-        name = stack_contexts[stack_contexts.size()-1].locals[id].name();
+        name = stack_contexts[stack_contexts.size()-1].locals[id].myName();
         svalue = stack_contexts[stack_contexts.size()-1].locals[id].toString();
         t = stack_contexts[stack_contexts.size()-1].locals[id].baseType();
     }
     else if (VariableScope(s)==GLOBAL) {
 //        globals[id].setBaseType(val.baseType());
+        if (globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].isReference())
+            reference = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].reference();
         globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].setBounds(val.bounds());
         globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].setValue(val.value());
-        name = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].name();
+        name = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].myName();
         svalue = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].toString();
         t = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].baseType();
     }
@@ -653,7 +670,14 @@ void VM::do_store(quint8 s, quint16 id)
             svalue = "\""+svalue+"\"";
         if (t==VT_char)
             svalue = "'"+svalue+"'";
-        emit valueChangeNotice(lineNo, name+"="+svalue);
+        QString qn;
+        if (reference && !reference->algorhitmName().startsWith("@")) {
+            qn = reference->algorhitmName().isEmpty()
+                            ? reference->name()
+                            : reference->algorhitmName()+"::"+reference->name();
+            qn += "=";
+        }
+        emit valueChangeNotice(lineNo, qn+name+"="+svalue);
     }
     nextIP();
 }
@@ -798,6 +822,41 @@ void VM::do_ref(quint8 s, quint16 id)
     }
     if (ref.isReference()) {
         stack_values.push(ref);
+    }
+    nextIP();
+}
+
+void VM::do_setref(quint8 s, quint16 id)
+{
+    QMutexLocker l(m_dontTouchMe);
+    Variant ref = stack_values.top();
+    QString name;
+    if (!ref.isReference()) {
+        s_error = tr("Internal error: trying to setref not a reference: 'setref %1 %2'").arg(s).arg(id);
+    }
+    else if (VariableScope(s)==LOCAL) {
+        name = stack_contexts[stack_contexts.size()-1].locals[id].name();
+        stack_contexts[stack_contexts.size()-1].locals[id].setReference(ref.reference());
+    }
+    else if (VariableScope(s)==GLOBAL) {
+        name = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].name();
+        globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].setReference(ref.reference());
+    }
+    else {
+        s_error = tr("Internal error: trying to setref to constant: 'setref %1 %2'").arg(s).arg(id);
+    }
+    const int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
+    if (lineNo!=-1 &&
+            (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+            && !b_blindMode &&
+            stack_contexts[stack_contexts.size()-1].type != EL_BELOWMAIN
+            )
+    {
+        const QString qn = ref.algorhitmName().isEmpty()
+                ? ref.name()
+                : ref.algorhitmName()+"::"+ref.name();
+        if (!qn.startsWith("@"))
+            emit valueChangeNotice(lineNo, name+"=&"+qn);
     }
     nextIP();
 }

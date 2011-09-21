@@ -35,6 +35,7 @@ enum InstructionType {
     REFARR      = 0x21, // Get reference to array element
     SHOWREG     = 0x22, // Show register value at margin
     CLEARMARG   = 0x23, // Clear margin text from current line to specified
+    SETREF      = 0x24, // Set reference value to variable
 
 
     // Common operations -- no comments need

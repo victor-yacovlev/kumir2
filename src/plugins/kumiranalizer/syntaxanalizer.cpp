@@ -1146,16 +1146,16 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
                 st.data[i]->error = _("No coma before %1", st.data[i]->data);
                 return;
             }
+            if (!currentGroup.lexems.isEmpty()) {
+                groups << currentGroup;
+                currentGroup.lexems.clear();
+            }
             if (type==LxSecIn)
                 currentGroup.access = AST::AccessArgumentIn;
             else if (type==LxSecOut)
                 currentGroup.access = AST::AccessArgumentOut;
             else if (type==LxSecInout)
                 currentGroup.access = AST::AccessArgumentInOut;
-            if (!currentGroup.lexems.isEmpty()) {
-                groups << currentGroup;
-                currentGroup.lexems.clear();
-            }
         }
         else if (type==LxPriAlgHeader) {
             st.data[i]->error = _("'arg' instead of 'alg'");

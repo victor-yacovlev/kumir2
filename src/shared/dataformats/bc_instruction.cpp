@@ -42,6 +42,7 @@ QString typeToString(InstructionType t) {
     else if (t==LINE) return QString::fromAscii("Line").toLower();
     else if (t==SHOWREG) return QString::fromAscii("ShowReg").toLower();
     else if (t==CLEARMARG) return QString::fromAscii("ClearMarg").toLower();
+    else if (t==SETREF) return QString::fromAscii("SetRef").toLower();
     else return "nop";
 }
 
@@ -83,11 +84,12 @@ InstructionType typeFromString(const QString & s) {
     else if (s.toLower()==QString::fromAscii("Line").toLower()) return LINE;
     else if (s.toLower()==QString::fromAscii("ShowReg").toLower()) return SHOWREG;
     else if (s.toLower()==QString::fromAscii("ClearMarg").toLower()) return CLEARMARG;
+    else if (s.toLower()==QString::fromAscii("SetRef").toLower()) return SETREF;
     else return NOP;
 }
 
 static const QSet<InstructionType> VariableInstructions = QSet<InstructionType>()
-<< INIT << SETARR << STORE << STOREARR << LOAD << LOADARR << SETMON << UNSETMON << REF << REFARR;
+<< INIT << SETARR << STORE << STOREARR << LOAD << LOADARR << SETMON << UNSETMON << REF << REFARR << SETREF;
 
 static const QSet<InstructionType> ModuleNoInstructions = QSet<InstructionType>()
 << CALL;
@@ -97,7 +99,7 @@ static const QSet<InstructionType> RegisterNoInstructions = QSet<InstructionType
 
 static const QSet<InstructionType> HasValueInstructions = QSet<InstructionType>()
 << CALL << INIT << SETARR << STORE << STOREARR << LOAD << LOADARR
-   << SETMON << UNSETMON << JUMP << JNZ << JZ << ERROR << LINE << REF << REFARR << CLEARMARG;
+   << SETMON << UNSETMON << JUMP << JNZ << JZ << ERROR << LINE << REF << REFARR << CLEARMARG << SETREF;
 
 
 
