@@ -78,6 +78,7 @@ int main(int argc, char **argv)
         p.setPen(QColor(Qt::black));
         p.setBrush(QColor(Qt::black));
         QFont f = p.font();
+
         f.setPixelSize(12);
         p.setFont(f);
         QString v = qApp->applicationVersion();
