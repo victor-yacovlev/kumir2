@@ -1655,7 +1655,7 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
         maxDim = 0;
         ct = testConst(constant, localErr);
         if ( ct==AST::TypeNone ) {
-            for (auto it = constant.begin(); it!=constant.end(); it++) {
+            for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
                 Lexem * lx = *it;
                 lx->error = _("Not a constant value");
             }
@@ -1664,13 +1664,13 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
         else if ( ( ct==pt ) || (ct==AST::TypeInteger && pt==AST::TypeReal) )
         {
             QString val;
-            for (auto it=constant.begin(); it!=constant.end(); it++) {
+            for (std::list<Lexem*>::const_iterator it=constant.begin(); it!=constant.end(); it++) {
                 val += (*it)->data;
             }
             return createConstValue(val, ct);
         }
         else {
-            for (auto it = constant.begin(); it!=constant.end(); it++) {
+            for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
                 Lexem * lx = *it;
                 lx->error = _("Constant type mismatch");
             }
@@ -1699,7 +1699,7 @@ AST::VariableBaseType SyntaxAnalizerPrivate::testConst(const std::list<Lexem*> &
             return AST::TypeString;
     }
     else if (lxs.size()==2) {
-        auto it = lxs.begin();
+        std::list<Lexem*>::const_iterator it = lxs.begin();
         Lexem * llx = *it;
         it++;
         lx = *it;
@@ -2562,12 +2562,12 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
     }
     if (lexems.size()>1 && lexems.front()->type==LxConstLiteral) {
         bool allLiterals = true;
-        for (auto it=lexems.begin(); it!=lexems.end(); it++) {
+        for (std::list<Lexem*>::const_iterator it=lexems.begin(); it!=lexems.end(); it++) {
             allLiterals = allLiterals && (*it)->type==LxConstLiteral;
         }
         if (allLiterals) {
             const QString err = _("Many quotes in constant");
-            for (auto it=lexems.begin(); it!=lexems.end(); it++) {
+            for (std::list<Lexem*>::const_iterator it=lexems.begin(); it!=lexems.end(); it++) {
                 (*it)->error = err;
             }
             return 0;
@@ -2583,7 +2583,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
     }
     else {
         QString name;
-        for (auto it=lexems.begin(); it!=lexems.end(); it++) {
+        for (std::list<Lexem*>::const_iterator it=lexems.begin(); it!=lexems.end(); it++) {
             if (it!=lexems.begin())
                 name += " ";
             name += (*it)->data;
@@ -2591,7 +2591,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
         QString err = lexer->testName(name);
         bool retval = lexer->isReturnVariable(name);
         if (!err.isEmpty() && !retval) {
-            for (auto it=lexems.begin(); it!=lexems.end(); it++) {
+            for (std::list<Lexem*>::const_iterator it=lexems.begin(); it!=lexems.end(); it++) {
                 (*it)->error = err;
             }
             return 0;
@@ -2650,7 +2650,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
             }
         }
         if (!err.isEmpty()) {
-            for (auto it=lexems.begin(); it!=lexems.end(); it++) {
+            for (std::list<Lexem*>::const_iterator it=lexems.begin(); it!=lexems.end(); it++) {
                 (*it)->error = err;
             }
             return 0;

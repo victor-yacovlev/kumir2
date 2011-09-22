@@ -7,7 +7,7 @@ include(../../shared/interfaces/analizer.pri)
 include(../../shared/dataformats/dataformats.pri)
 CONFIG += generate_messages
 QT += script
-QMAKE_CXXFLAGS += -std=c++0x
+
 EXTRA_MESSAGES_DIRS = $${IDE_SOURCE_TREE}/share/kumir2/kumiranalizer
 MSG_FILE = kumiranalizer/messages.csv
 include(../../shared/errormessages/errormessages.pri)
