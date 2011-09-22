@@ -168,6 +168,9 @@ int main(int argc, char **argv)
         return 1;
     }
     int ret = 0;
+    if (splashScreen) {
+        splashScreen->finish(0);
+    }
     if (manager->isGuiRequired()) {
         ret = app->exec();
         if (ret == 0) {
@@ -180,6 +183,9 @@ int main(int argc, char **argv)
     }
     delete manager;
     delete app;
+    if (splashScreen) {
+        delete splashScreen;
+    }
     return ret;
 }
 
