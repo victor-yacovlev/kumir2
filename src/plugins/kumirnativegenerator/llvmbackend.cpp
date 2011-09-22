@@ -9,7 +9,7 @@ LlvmBackend::LlvmBackend(QObject *parent) :
     m_process = new QProcess(this);
 #ifdef Q_OS_WIN32
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-    const QString clangBinPath = QDir::toNativeSeparators(QDir::cleanPath(QCoreApplication::applicationDirPath()+"/../clang-mingw/bin/"));
+    QString clangBinPath = QDir::toNativeSeparators(QDir::cleanPath(QCoreApplication::applicationDirPath()+"/../clang-mingw/bin/"));
     qDebug() << clangBinPath;
     env.insert("PATH", env.value("Path")+";"+
                clangBinPath);
@@ -87,11 +87,11 @@ QString LlvmBackend::generateArgumentsLine(
         const QStringList &kumirLibs)
 {
     QStringList result;
-    result << "-I"+qApp->property("sharePath").toString()+"/kumirnativegenerator/";
+    result << "-I\""+qApp->property("sharePath").toString()+"/kumirnativegenerator/\"";
 #ifdef Q_OS_WIN32
-    result << "-I"+qApp->property("sharePath").toString()+"/kumirnativegenerator/mingw-include/";
+    result << "-I\""+qApp->property("sharePath").toString()+"/kumirnativegenerator/mingw-include/\"";
 #else
-    result << "-I"+qApp->property("sharePath").toString()+"/kumirnativegenerator/gcc45-include/";
+    result << "-I\""+qApp->property("sharePath").toString()+"/kumirnativegenerator/gcc45-include/\"";
 #endif
 #ifdef QT_DEBUG
     result << "-g";
@@ -125,8 +125,8 @@ QStringList LlvmBackend::libraryPaths()
 {
     QStringList result;
 #ifdef Q_OS_WIN32
-    result << QDir::cleanPath(QCoreApplication::applicationDirPath()+"/../clang-mingw/lib");
-    result << QCoreApplication::applicationDirPath();
+    result << "\""+QDir::cleanPath(QCoreApplication::applicationDirPath()+"/../clang-mingw/lib")+"\"";
+    result << "\""+QCoreApplication::applicationDirPath()+"\"";
 #endif
 #ifdef Q_OS_UNIX
     result << QDir::cleanPath(QCoreApplication::applicationDirPath()+"/../"+QString::fromLocal8Bit(IDE_LIBRARY_BASENAME)+"/kumir2");
@@ -201,11 +201,18 @@ QString LlvmBackend::execuableSuffix()
 
 QString LlvmBackend::llvmCommand()
 {
+    QString c;
 #ifdef Q_OS_WIN32
-    return qApp->applicationDirPath()+"/../clang-mingw/bin/clang.exe";
+    c = qApp->applicationDirPath()+"/../clang-mingw/bin/clang.exe";
 #else
-    return "clang";
+    c = "clang";
 #endif
+    c = QDir::toNativeSeparators(c);
+#ifdef Q_OS_WIN32
+    if (c.contains(" "))
+        c = "\""+c+"\"";
+#endif
+    return c;
 }
 
 QString LlvmBackend::tempDirName() const

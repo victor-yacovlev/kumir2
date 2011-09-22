@@ -11,7 +11,7 @@ SOURCES += main.cpp
 QT += script
 
 win32 {
-#    CONFIG += console
+    CONFIG += console
 }
 
 include(../rpath.pri)
