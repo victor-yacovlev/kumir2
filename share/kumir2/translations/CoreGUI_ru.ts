@@ -23,9 +23,14 @@
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Здесь будет краткое описание и текст лицензии&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Droid Sans&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:8pt;&quot;&gt;Здесь будет краткое описание и текст лицензии&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="59"/>
+        <source>Parameter</source>
+        <translation>Параметр</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="49"/>
@@ -33,24 +38,36 @@ p, li { white-space: pre-wrap; }
         <translation>Информация об окружении</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="59"/>
         <source>Qt Version:</source>
-        <translation>Версия Qt</translation>
+        <translation type="obsolete">Версия Qt</translation>
+    </message>
+    <message>
+        <source>Operating system:</source>
+        <translation type="obsolete">Операционная система</translation>
+    </message>
+    <message>
+        <source>Launched binary:</source>
+        <translation type="obsolete">Исполняемый файл:</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="64"/>
-        <source>Operating system:</source>
-        <translation>Операционная система</translation>
-    </message>
-    <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="69"/>
-        <source>Launched binary:</source>
-        <translation>Исполняемый файл:</translation>
-    </message>
-    <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="74"/>
         <source>Value</source>
         <translation>Значение</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="33"/>
+        <source>Qt Version</source>
+        <translation>Версия Qt</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="40"/>
+        <source>Operating System</source>
+        <translation>Система</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="85"/>
+        <source>Execuable Path</source>
+        <translation>Выполняемый файл</translation>
     </message>
 </context>
 <context>

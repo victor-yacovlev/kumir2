@@ -18,6 +18,9 @@ public:
     ~AboutDialog();
 
 private:
+    void addQtVersion();
+    void addOsVersion();
+    void addExecuablePath();
     Ui::AboutDialog *ui;
 };
 

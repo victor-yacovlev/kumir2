@@ -121,6 +121,10 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
 {
     if (m_autocompleteWidget->isVisible())
         m_autocompleteWidget->reject();
+    if (e->button()==Qt::RightButton) {
+        e->accept();
+        return;
+    }
     int lockSymbolWidth = b_teacherMode && b_hasAnalizer ? LOCK_SYMBOL_WIDTH : 0;
     int ln = charWidth() * 5 + lockSymbolWidth;
     int wc = widthInChars();

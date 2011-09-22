@@ -954,7 +954,7 @@ void TextCursor::removeCurrentChar()
 
     const int indent = m_document->indentAt(i_row);
     int textPos = i_column - indent * 2;
-    if (i_row<m_document->linesCount())
+    if (i_row>=m_document->linesCount())
         return;
     if (textPos>=m_document->textAt(i_row).length() && i_row<m_document->linesCount()+1)
         return;

@@ -137,8 +137,9 @@ void RemoveCommand::redo()
         QString curLineText = doc->textAt(cursorRow);
         int indent = doc->indentAt(cursor->row()) * 2;
         int textPos = cursor->column()-indent;
+        removedText = "";
         if (textPos<curLineText.length()) {
-            removedText = curLineText.mid(textPos, count);
+//            removedText = curLineText.mid(textPos, count);
         }
         else {
             insertedSpaces = textPos-curLineText.length();

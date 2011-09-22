@@ -16,8 +16,28 @@ AboutDialog::AboutDialog(QWidget *parent) :
     if (qApp->property("svnRev").isValid())
         svnRev = qApp->property("svnRev").toString();
     ui->label->setText(ui->label->text().arg(qApp->applicationVersion()).arg(svnRev));
-    ui->tableWidget->setColumnCount(1);
-    ui->tableWidget->setItem(0, 0, new QTableWidgetItem(qVersion()));
+
+    ui->tableWidget->setColumnCount(2);
+    ui->tableWidget->setColumnWidth(1, 500);
+    ui->tableWidget->horizontalHeaderItem(1)->setTextAlignment(Qt::AlignLeft);
+
+    addExecuablePath();
+    addOsVersion();
+    addQtVersion();
+
+}
+
+void AboutDialog::addQtVersion()
+{
+    ui->tableWidget->setRowCount(ui->tableWidget->rowCount()+1);
+    ui->tableWidget->setItem(ui->tableWidget->rowCount()-1, 0, new QTableWidgetItem(tr("Qt Version")));
+    ui->tableWidget->setItem(ui->tableWidget->rowCount()-1, 1, new QTableWidgetItem(qVersion()));
+}
+
+void AboutDialog::addOsVersion()
+{
+    ui->tableWidget->setRowCount(ui->tableWidget->rowCount()+1);
+    ui->tableWidget->setItem(ui->tableWidget->rowCount()-1, 0, new QTableWidgetItem(tr("Operating System")));
 #ifdef Q_OS_WIN
     QString winVer = "Windows ";
     if (QSysInfo::windowsVersion()==QSysInfo::WV_XP)
@@ -28,7 +48,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
         winVer += "Vista";
     else if (QSysInfo::windowsVersion()==QSysInfo::WV_WINDOWS7)
         winVer += "7";
-    ui->tableWidget->setItem(1, 0, new QTableWidgetItem(winVer));
+    ui->tableWidget->setItem(1, 1, new QTableWidgetItem(winVer));
 #endif
     QString linuxDist = "Linux";
     QDir d("/etc");
@@ -45,7 +65,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
             }
         }
     }
-    ui->tableWidget->setItem(1, 0, new QTableWidgetItem(linuxDist));
+    ui->tableWidget->setItem(1, 1, new QTableWidgetItem(linuxDist));
 #endif
 #ifdef Q_OS_MAC
     QString macVersion = "MacOS X ";
@@ -55,11 +75,15 @@ AboutDialog::AboutDialog(QWidget *parent) :
         macVersion += "Leopard";
     else if (QSysInfo::macVersion()==QSysInfo::MV_SNOWLEOPARD)
         macVersion += "Snow Leopard";
-    ui->tableWidget->setItem(1, 0, new QTableWidgetItem(macVersion));
+    ui->tableWidget->setItem(1, 1, new QTableWidgetItem(macVersion));
 #endif
+}
 
-    ui->tableWidget->setItem(2, 0, new QTableWidgetItem(qApp->applicationFilePath()));
-
+void AboutDialog::addExecuablePath()
+{
+    ui->tableWidget->setRowCount(ui->tableWidget->rowCount()+1);
+    ui->tableWidget->setItem(ui->tableWidget->rowCount()-1, 0, new QTableWidgetItem(tr("Execuable Path")));
+    ui->tableWidget->setItem(ui->tableWidget->rowCount()-1, 1, new QTableWidgetItem(qApp->applicationFilePath()));
 }
 
 AboutDialog::~AboutDialog()
