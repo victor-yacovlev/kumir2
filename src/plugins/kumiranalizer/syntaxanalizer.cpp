@@ -59,16 +59,16 @@ struct SyntaxAnalizerPrivate
     QList<AST::Variable*> parseVariables(VariablesGroup & group,
                                          AST::Module * mod,
                                          AST::Algorhitm * alg);
-    QVariant parseConstant(const QList<Lexem*> &constant
+    QVariant parseConstant(const std::list<Lexem*> &constant
                            , const AST::VariableBaseType pt
                            , bool array
                            , int& maxDim
                            ) const;
-    AST::VariableBaseType testConst(const Lexem * lx, int &err) const;
-    QVariant createConstValue(const Lexem * lx, const AST::VariableBaseType type) const;
+    AST::VariableBaseType testConst(const std::list<Lexem *> & lxs, int &err) const;
+    QVariant createConstValue(const QString &str, const AST::VariableBaseType type) const;
     AST::Expression * parseFunctionCall(const QList<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg);
 
-    AST::Expression * parseSimpleName(const QList<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg);
+    AST::Expression * parseSimpleName(const std::list<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg);
     AST::Expression * parseElementAccess(const QList<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg);
     AST::Expression * makeExpressionTree(const QList<SubexpressionElement> & s);
     static void splitLexemsByOperator(const QList<Lexem *> &s
@@ -1613,7 +1613,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
                     return result;
                 }
                 int maxDim = 0;
-                QVariant constValue = parseConstant(initValue, var->baseType, var->dimension>0, maxDim);
+                QVariant constValue = parseConstant(initValue.toStdList(), var->baseType, var->dimension>0, maxDim);
                 if (constValue==QVariant::Invalid) {
                     return result;
                 }
@@ -1638,7 +1638,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
     return result;
 }
 
-QVariant SyntaxAnalizerPrivate::parseConstant(const QList<Lexem*> &constant
+QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
                                               , const AST::VariableBaseType pt
                                               , bool array
                                               , int& maxDim
@@ -1647,26 +1647,32 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const QList<Lexem*> &constant
     int localErr = 0;
     AST::VariableBaseType ct;
 
-    if (constant.size()==1 && constant[0]->data.trimmed()=="...") {
-        constant[0]->error = _("Constant value not typed");
+    if (constant.size()==1 && constant.front()->data.trimmed()=="...") {
+        constant.front()->error = _("Constant value not typed");
         return QVariant::Invalid;
     }
     if (!array) {
         maxDim = 0;
-        ct = testConst(constant[0], localErr);
+        ct = testConst(constant, localErr);
         if ( ct==AST::TypeNone ) {
-            for (int a=0; a<constant.size(); a++) {
-                constant[a]->error = _("Not a constant value");
+            for (auto it = constant.begin(); it!=constant.end(); it++) {
+                Lexem * lx = *it;
+                lx->error = _("Not a constant value");
             }
             return QVariant::Invalid;
         }
         else if ( ( ct==pt ) || (ct==AST::TypeInteger && pt==AST::TypeReal) )
         {
-            return createConstValue(constant[0], ct);
+            QString val;
+            for (auto it=constant.begin(); it!=constant.end(); it++) {
+                val += (*it)->data;
+            }
+            return createConstValue(val, ct);
         }
         else {
-            for (int a=0; a<constant.size(); a++) {
-                constant[a]->error = _("Constant type mismatch");
+            for (auto it = constant.begin(); it!=constant.end(); it++) {
+                Lexem * lx = *it;
+                lx->error = _("Constant type mismatch");
             }
             return QVariant::Invalid; // FIXME: type mismatch
         }
@@ -1675,41 +1681,58 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const QList<Lexem*> &constant
     return QVariant::Invalid;
 }
 
-AST::VariableBaseType SyntaxAnalizerPrivate::testConst(const Lexem *lx, int &err) const
+AST::VariableBaseType SyntaxAnalizerPrivate::testConst(const std::list<Lexem*> &lxs, int &err) const
 {
     err = 0;
-    if (lx->type==LxConstInteger)
-        return AST::TypeInteger;
-    if (lx->type==LxConstReal)
-        return AST::TypeReal;
-    if (lx->type==LxConstBoolTrue || lx->type==LxConstBoolFalse)
-        return AST::TypeBoolean;
-    if (lx->type==LxConstLiteral && lx->data.size()==1)
-        return AST::TypeCharect;
-    if (lx->type==LxConstLiteral)
-        return AST::TypeString;
+    Lexem * lx = 0;
+    if (lxs.size()==1) {
+        lx = *lxs.begin();
+        if (lx->type==LxConstInteger)
+            return AST::TypeInteger;
+        if (lx->type==LxConstReal)
+            return AST::TypeReal;
+        if (lx->type==LxConstBoolTrue || lx->type==LxConstBoolFalse)
+            return AST::TypeBoolean;
+        if (lx->type==LxConstLiteral && lx->data.size()==1)
+            return AST::TypeCharect;
+        if (lx->type==LxConstLiteral)
+            return AST::TypeString;
+    }
+    else if (lxs.size()==2) {
+        auto it = lxs.begin();
+        Lexem * llx = *it;
+        it++;
+        lx = *it;
+        if (llx->type==LxOperPlus || llx->type==LxOperMinus) {
+            if (lx->type==LxConstInteger)
+                return AST::TypeInteger;
+            else if (lx->type==LxConstReal)
+                return AST::TypeReal;
+        }
+    }
+
     // TODO implement overflow range checking
     return AST::TypeNone;
 }
 
-QVariant SyntaxAnalizerPrivate::createConstValue(const Lexem *lx
+QVariant SyntaxAnalizerPrivate::createConstValue(const QString & str
                                                  , const AST::VariableBaseType type) const
 {
     QVariant result = QVariant::Invalid;
     if (type==AST::TypeBoolean) {
-        result = QVariant(lexer->boolConstantValue(lx->data));
+        result = QVariant(lexer->boolConstantValue(str));
     }
     else if (type==AST::TypeCharect) {
-        result = QVariant(QChar(lx->data[0]));
+        result = QVariant(QChar(str[0]));
     }
     else if (type==AST::TypeInteger) {
-        result = QVariant(lx->data.toInt());
+        result = QVariant(str.toInt());
     }
     else if (type==AST::TypeReal) {
-        result = QVariant(lx->data.toDouble());
+        result = QVariant(str.toDouble());
     }
     else if (type==AST::TypeString) {
-        result = QVariant(lx->data);
+        result = QVariant(str);
     }
     return result;
 }
@@ -1929,7 +1952,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 subexpression << oper;
         } // end if (blockType==Function)
         else if (blockType==Simple) {
-            AST::Expression * operand = parseSimpleName(block, mod, alg);
+            AST::Expression * operand = parseSimpleName(block.toStdList(), mod, alg);
             if (!operand) {
                 return 0;
             }
@@ -2518,14 +2541,14 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
 }
 
 
-AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const QList<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg)
+AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg)
 {
     AST::Expression * result = 0;
-    if (lexems.size()==1 && lexems[0]->type & LxTypeConstant) {
+    if (lexems.size()==1 && lexems.front()->type & LxTypeConstant) {
         int err = 0;
-        AST::VariableBaseType type = testConst(lexems[0], err);
+        AST::VariableBaseType type = testConst(lexems, err);
         if (err) {
-            lexems[0]->error = err;
+            lexems.front()->error = err;
             return 0;
         }
         else {
@@ -2537,20 +2560,20 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const QList<Lexem *> &l
             return result;
         }
     }
-    if (lexems.size()>1 && lexems[0]->type==LxConstLiteral) {
+    if (lexems.size()>1 && lexems.front()->type==LxConstLiteral) {
         bool allLiterals = true;
-        for (int i=1; i<lexems.size(); i++) {
-            allLiterals = allLiterals && lexems[i]->type==LxConstLiteral;
+        for (auto it=lexems.begin(); it!=lexems.end(); it++) {
+            allLiterals = allLiterals && (*it)->type==LxConstLiteral;
         }
         if (allLiterals) {
             const QString err = _("Many quotes in constant");
-            foreach (Lexem * lx, lexems) {
-                lx->error = err;
+            for (auto it=lexems.begin(); it!=lexems.end(); it++) {
+                (*it)->error = err;
             }
             return 0;
         }
     }
-    if (lexems.size()==1 && lexems[0]->type == LxSecNewline) {
+    if (lexems.size()==1 && lexems.front()->type == LxSecNewline) {
         result = new AST::Expression;
         result->kind = AST::ExprConst;
         result->baseType = AST::TypeCharect;
@@ -2560,16 +2583,16 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const QList<Lexem *> &l
     }
     else {
         QString name;
-        for (int i=0; i<lexems.size(); i++) {
-            if (i>0)
+        for (auto it=lexems.begin(); it!=lexems.end(); it++) {
+            if (it!=lexems.begin())
                 name += " ";
-            name += lexems[i]->data;
+            name += (*it)->data;
         }
         QString err = lexer->testName(name);
         bool retval = lexer->isReturnVariable(name);
         if (!err.isEmpty() && !retval) {
-            for ( int i=0; i<lexems.size(); i++ ) {
-                lexems[i]->error = err;
+            for (auto it=lexems.begin(); it!=lexems.end(); it++) {
+                (*it)->error = err;
             }
             return 0;
         }
@@ -2627,8 +2650,8 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const QList<Lexem *> &l
             }
         }
         if (!err.isEmpty()) {
-            for (int i=0; i<lexems.size(); i++) {
-                lexems[i]->error = err;
+            for (auto it=lexems.begin(); it!=lexems.end(); it++) {
+                (*it)->error = err;
             }
             return 0;
         }
