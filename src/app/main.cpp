@@ -79,13 +79,14 @@ int main(int argc, char **argv)
         p.setBrush(QColor(Qt::black));
         QFont f = p.font();
         f.setPixelSize(12);
+        p.setFont(f);
         QString v = qApp->applicationVersion();
         if (app->property("svnRev").isValid()) {
-            v += " (rev. "+app->property("svnRev").toString();
+            v += " (rev. "+app->property("svnRev").toString()+")";
         }
         int tw = QFontMetrics(f).width(v);
         int th = QFontMetrics(f).height();
-        int x = img.width() - tw;
+        int x = img.width() - tw - 8;
         int y = 8;
         p.drawText(x, y, tw, th, 0, v);
         p.end();
