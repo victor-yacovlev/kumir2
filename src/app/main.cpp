@@ -13,6 +13,7 @@
 #  define SHARE_PATH "/../share/kumir2"
 #endif
 
+
 void showErrorMessage(const QString & text)
 {
     bool gui = true;
@@ -48,6 +49,7 @@ int main(int argc, char **argv)
 #ifndef Q_OS_WIN32
     app->addLibraryPath(QDir::cleanPath(app->applicationDirPath()+"/../"+IDE_LIBRARY_BASENAME+"/kumir2/"));
 #endif
+
     QString versionStatus;
     if (VERSION_BETA)
         versionStatus = QString("beta%1").arg(VERSION_BETA, 2, 10, QChar('0'));
@@ -63,7 +65,36 @@ int main(int argc, char **argv)
 #ifdef SVN_REV
     app->setProperty("svnRev", SVN_REV);
 #endif
+    QSplashScreen * splashScreen = 0;
+
     const QString sharePath = QDir(app->applicationDirPath()+SHARE_PATH).canonicalPath();
+
+#ifdef SPLASHSCREEN
+    if (gui) {
+        QString imgPath = sharePath+QString("/")+SPLASHSCREEN;
+        splashScreen = new QSplashScreen();
+        QImage img(imgPath);
+        QPainter p(&img);
+        p.setPen(QColor(Qt::black));
+        p.setBrush(QColor(Qt::black));
+        QFont f = p.font();
+        f.setPixelSize(12);
+        QString v = qApp->applicationVersion();
+        if (app->property("svnRev").isValid()) {
+            v += " (rev. "+app->property("svnRev").toString();
+        }
+        int tw = QFontMetrics(f).width(v);
+        int th = QFontMetrics(f).height();
+        int x = img.width() - tw;
+        int y = 8;
+        p.drawText(x, y, tw, th, 0, v);
+        p.end();
+        QPixmap px = QPixmap::fromImage(img);
+        splashScreen->setPixmap(px);
+        splashScreen->show();
+    }
+#endif
+
     QDir translationsDir(sharePath+"/translations");
     QStringList ts_files = translationsDir.entryList(QStringList() << "*_"+getLanguage()+".qm");
     foreach (QString tsname, ts_files) {
