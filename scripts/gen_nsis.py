@@ -39,7 +39,7 @@ def __add_files(component, proj):
     for plugin in component.requires_kumir2:
         provider = proj.findModuleProvider(plugin)
         if len(provider)>0:
-            r |= __add_files(proj.components[provider], proj)
+            r = r | __add_files(proj.components[provider], proj)
             for p in proj.components[provider].plugins:
                 r.add("lib\\kumir2\\plugins\\"+p+".dll")
                 r.add("lib\\kumir2\\plugins\\"+p+".pluginspec")
@@ -47,14 +47,14 @@ def __add_files(component, proj):
     for lib in component.requires_libs:
         provider = proj.findLibraryProvider(lib)
         if len(provider)>0:
-            r |= __add_files(proj.components[provider], proj)
+            r = r | __add_files(proj.components[provider], proj)
             for p in proj.components[provider].libs:
                 r.add("bin\\"+p+".dll")
-                
+                        
     for web in component.requires_web:
         provider = proj.findWebAppProvider(web)
         if len(provider)>0:
-            r |= __add_files(proj.components[provider], proj)
+            r = r | __add_files(proj.components[provider], proj)
         
     for dirr in component.win32_extradirs:
         r.add(dirr+"\\*")
@@ -63,6 +63,7 @@ def __add_files(component, proj):
     r.add("bin\\libgcc_s_dw2-1.dll")
     r.add("bin\\phonon4.dll")
     r.add("bin\\Qt*4.dll")
+    
     return r
 
 if __name__=="__main__":
@@ -129,7 +130,7 @@ ShowUninstDetails show
     for name, c in proj.components.items():
         if len(c.bins)>0:
             if c.isconsole:
-                console.files = __add_files(c, proj)
+                console.files = console.files | __add_files(c, proj)
             else:
                 sec = Section(c.summary["ru"], True)
                 sec.files = __add_files(c, proj)
