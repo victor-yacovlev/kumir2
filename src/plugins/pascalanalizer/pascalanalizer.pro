@@ -10,7 +10,7 @@ HEADERS += \
 OTHER_FILES = \
     PascalAnalizer.pluginspec \
 
-LIBS += -lfreepascal
+#LIBS += -lfreepascal
 
 SOURCES += \
     pasplugin.cpp
