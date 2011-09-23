@@ -241,6 +241,8 @@ def __scan_library(toplevel, specfilename):
 
 def __scan_plugin(toplevel, specfilename):
     spec = __read_json(specfilename)
+    if spec.has_key("nodeploy") and spec["nodeploy"]:
+        return None
     c = Component()
     c.name = "module-"+spec["name"]
     srcdir = specfilename[len(toplevel)+5:]
@@ -384,7 +386,8 @@ def __scan_dir(toplevel, dirname):
             result += [libcomponent]
         elif entry.endswith(".pluginspec"):
             plugincomponent = __scan_plugin(toplevel, dirname+"/"+entry) 
-            result += [plugincomponent]
+            if plugincomponent:
+                result += [plugincomponent]
         elif entry.endswith(".appspec"):
             appcomponent = __scan_application(toplevel, dirname+"/"+entry) 
             result += [appcomponent]

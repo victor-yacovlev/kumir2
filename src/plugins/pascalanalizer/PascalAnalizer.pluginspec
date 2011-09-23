@@ -1,4 +1,5 @@
 {
+    "nodeploy": true,
     "name": "PascalAnalizer",
     "provides": [ "Analizer ],
     "summary": {
