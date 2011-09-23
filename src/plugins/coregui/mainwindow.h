@@ -47,6 +47,7 @@ public:
                                , DockWindowType type);
     ~MainWindow();
     void disableTabs();
+    void disablePascalProgram();
 public slots:
     QStringList recentFiles(bool fullPaths) const;
     void loadRecentFile(int index);
@@ -60,6 +61,7 @@ public slots:
     void loadSettings();
     void saveSettings();
     void newProgram();
+    void newPascalProgram();
     void newText();
     void newText(const QString &fileName, const QString &text);
     void fileOpen();

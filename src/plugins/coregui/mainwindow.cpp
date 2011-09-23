@@ -547,30 +547,22 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::disablePascalProgram()
+{
+    ui->actionNew_pascal_program->setEnabled(false);
+    ui->actionNew_pascal_program->setVisible(false);
+}
+
 void MainWindow::newProgram()
 {
     if (b_notabs && !closeTab(ui->tabWidget->currentIndex())) {
         return;
     }
-    QObject * o = m_plugin->myDependency("Analizer");
-    QString defaultText;
-    QString suffix = ".txt";
-    DocumentType type = Text;
-    QString analizerPluginName;
-    if (QString(o->metaObject()->className()).toLower().contains("kumir")) {
-        defaultText = QString::fromUtf8("алг\nнач\n\nкон");
-        analizerPluginName = "KumirAnalizer";
-        suffix = ".kum";
-        type = Kumir;
-    }
-    else if (QString(o->metaObject()->className()).toLower().contains("pascal")) {
-        defaultText = "program;\n\nbegin\n\t\nend.";
-        analizerPluginName = "PascalAnalizer";
-        type = Pascal;
-        suffix = ".pas";
-    }
+    QString defaultText = QString::fromUtf8("алг\nнач\n\nкон");
+    QString suffix = ".kum";
+    DocumentType type = Kumir;
     const QString initialText = m_plugin->mySettings()->value(Plugin::InitialTextKey, defaultText).toString();
-    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument(analizerPluginName, initialText);
+    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", initialText);
     QWidget* vc = doc.widget;
     int id = doc.id;
     vc->setProperty("documentId", id);
@@ -587,6 +579,33 @@ void MainWindow::newProgram()
     ui->tabWidget->setCurrentWidget(e);
     e->setFocus();
 
+}
+
+void MainWindow::newPascalProgram()
+{
+    if (b_notabs && !closeTab(ui->tabWidget->currentIndex())) {
+        return;
+    }
+    QString defaultText = QString::fromUtf8("program;\n\nbegin\n\nend.\n");
+    QString suffix = ".pas";
+    DocumentType type = Pascal;
+    const QString initialText = m_plugin->mySettings()->value(Plugin::InitialTextKey, defaultText).toString();
+    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("PascalAnalizer", initialText);
+    QWidget* vc = doc.widget;
+    int id = doc.id;
+    vc->setProperty("documentId", id);
+    QString fileName = suggestNewFileName(suffix);
+    vc->setProperty("fileName", QDir::current().absoluteFilePath(fileName));
+    TabWidgetElement * e = addCentralComponent(
+                fileName,
+                vc,
+                doc.toolbarActions,
+                doc.menus,
+                doc.statusbarWidgets,
+                type,
+                true);
+    ui->tabWidget->setCurrentWidget(e);
+    e->setFocus();
 }
 
 void MainWindow::newText()

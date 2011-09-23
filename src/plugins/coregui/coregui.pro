@@ -23,7 +23,8 @@ HEADERS += \
     confirmclosedialod.h \
     kumirvariableswebobject.h \
     menubar.h \
-    aboutdialog.h
+    aboutdialog.h \
+    pascalprogram.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -36,7 +37,8 @@ SOURCES += \
     tabbar.cpp \
     confirmclosedialod.cpp \
     kumirvariableswebobject.cpp \
-    aboutdialog.cpp
+    aboutdialog.cpp \
+    pascalprogram.cpp
 
 FORMS += \
     mainwindow.ui \
@@ -45,3 +47,5 @@ FORMS += \
 
 RESOURCES += \
     resources.qrc
+
+

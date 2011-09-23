@@ -186,7 +186,7 @@ int main(int argc, char **argv)
     delete manager;
     delete app;
     if (splashScreen) {
-        delete splashScreen;
+//        delete splashScreen;
     }
     return ret;
 }

@@ -3,7 +3,7 @@
 #include <QSysInfo>
 #include <QtCore>
 #include <QtGui>
-
+#include "extensionsystem/pluginmanager.h"
 
 namespace CoreGUI {
 
@@ -18,13 +18,13 @@ AboutDialog::AboutDialog(QWidget *parent) :
     ui->label->setText(ui->label->text().arg(qApp->applicationVersion()).arg(svnRev));
 
     ui->tableWidget->setColumnCount(2);
-    ui->tableWidget->setColumnWidth(1, 500);
+    ui->tableWidget->setColumnWidth(1, 1000);
     ui->tableWidget->horizontalHeaderItem(1)->setTextAlignment(Qt::AlignLeft);
 
     addExecuablePath();
     addOsVersion();
     addQtVersion();
-
+    addLoadedModules();
 }
 
 void AboutDialog::addQtVersion()
@@ -84,6 +84,19 @@ void AboutDialog::addExecuablePath()
     ui->tableWidget->setRowCount(ui->tableWidget->rowCount()+1);
     ui->tableWidget->setItem(ui->tableWidget->rowCount()-1, 0, new QTableWidgetItem(tr("Execuable Path")));
     ui->tableWidget->setItem(ui->tableWidget->rowCount()-1, 1, new QTableWidgetItem(qApp->applicationFilePath()));
+}
+
+void AboutDialog::addLoadedModules()
+{
+    const ExtensionSystem::PluginManager * pm = ExtensionSystem::PluginManager::instance();
+    QList<const ExtensionSystem::KPlugin*> all = pm->loadedConstPlugins();
+    QStringList names;
+    for (int i=0; i<all.size(); i++) {
+        names << all[i]->pluginSpec().name;
+    }
+    ui->tableWidget->setRowCount(ui->tableWidget->rowCount()+1);
+    ui->tableWidget->setItem(ui->tableWidget->rowCount()-1, 0, new QTableWidgetItem(tr("Loaded Modules")));
+    ui->tableWidget->setItem(ui->tableWidget->rowCount()-1, 1, new QTableWidgetItem(names.join(", ")));
 }
 
 AboutDialog::~AboutDialog()

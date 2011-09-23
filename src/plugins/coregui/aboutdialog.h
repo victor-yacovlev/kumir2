@@ -21,6 +21,7 @@ private:
     void addQtVersion();
     void addOsVersion();
     void addExecuablePath();
+    void addLoadedModules();
     Ui::AboutDialog *ui;
 };
 

@@ -19,6 +19,13 @@ include(../rpath.pri)
 # need to avoid using previously compiled main.o from other project
 OBJECTS_DIR = $$IDE_BUILD_TREE/src/app/$$TARGET
 # defines default template for this build
+
+#contains(CONFIG,with_pascal) {
+#    DEFINES += CONFIGURATION_TEMPLATE=\\\"Editor,Browser,Actor*,KumirAnalizer,PascalAnalizer,KumirNativeGenerator,KumirCodeGenerator,KumirCodeRun,!CoreGUI\\\"
+#}
+#else {
+#    DEFINES += CONFIGURATION_TEMPLATE=\\\"Editor,Browser,Actor*,KumirAnalizer,KumirNativeGenerator,KumirCodeGenerator,KumirCodeRun,!CoreGUI\\\"
+#}
 DEFINES += CONFIGURATION_TEMPLATE=\\\"Editor,Browser,Actor*,KumirAnalizer,KumirNativeGenerator,KumirCodeGenerator,KumirCodeRun,!CoreGUI\\\"
 DEFINES += SPLASHSCREEN=\\\"coregui/splashscreens/professional.png\\\"
 

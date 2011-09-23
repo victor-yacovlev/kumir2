@@ -13,6 +13,8 @@ Plugin::Plugin() :
     plugin_editor = 0;
     plugin_NativeGenerator = plugin_BytecodeGenerator = 0;
     b_nosessions = false;
+    m_kumirProgram = 0;
+    m_pascalProgram = 0;
 }
 
 QString Plugin::InitialTextKey = "InitialText";
@@ -78,6 +80,16 @@ QString Plugin::initialize(const QStringList & parameters)
 #ifndef Q_OS_MAC
     termWindow->toggleViewAction()->setShortcut(QKeySequence("F12"));
 #endif
+
+    if (ExtensionSystem::PluginManager::instance()->loadedConstPlugins("PascalAnaziler").isEmpty()) {
+        m_mainWindow->disablePascalProgram();
+    }
+    else {
+        m_pascalProgram = new PascalProgram(this);
+        m_pascalProgram->setEditorPlugin(plugin_editor);
+        m_pascalProgram->setTerminal(m_terminal, termWindow);
+    }
+
     m_kumirProgram = new KumirProgram(this);
     m_kumirProgram->setBytecodeGenerator(plugin_BytecodeGenerator);
     m_kumirProgram->setNativeGenerator(plugin_NativeGenerator);
