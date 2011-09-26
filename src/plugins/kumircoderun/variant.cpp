@@ -344,6 +344,15 @@ void Variant::setBounds(const QList<int> &bounds)
         QPair<int,int> p(bounds[2*i], bounds[2*i+1]);
         l_bounds << p;
     }
+    if (m_reference) {
+        bool allEqual = true;
+        for (int i=0; i<l_bounds.size(); i++) {
+            allEqual = allEqual && l_bounds[i].first==m_reference->l_bounds[i].first && l_bounds[i].second==m_reference->l_bounds[i].second;
+        }
+        if (!allEqual) {
+            error = QObject::tr("Array bounds mismatch");
+        }
+    }
 }
 
 Variant Variant::toReference()
