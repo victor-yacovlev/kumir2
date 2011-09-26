@@ -319,8 +319,8 @@ void Variant::init()
 
 void Variant::setBounds(const QList<int> &bounds)
 {
-    if (m_reference)
-        return;
+//    if (m_reference)
+//        return;
     int size = 0;
     i_dimension = bounds.size()/2;
     if (i_dimension>=1) {
