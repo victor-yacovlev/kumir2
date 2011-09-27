@@ -1168,7 +1168,7 @@ void PDAutomataPrivate::appendSimpleLine()
         if (currentContext.size()<=1) {
             // Can't do anything out of algorhitms
             foreach (Lexem * lx, statement->lexems) {
-                lx->error = _("Hidden part must contain only algorhitms");
+                lx->error = _("Hidden part must contain only algorithm");
                 lx->errorStage = AST::Lexem::PDAutomata;
             }
 
@@ -1447,7 +1447,7 @@ void PDAutomataPrivate::processCorrectLoad()
 
 void PDAutomataPrivate::setGarbageAlgError()
 {
-    setCurrentError(_("Garbage in algorhitm"));
+    setCurrentError(_("Garbage in algorithm"));
     appendSimpleLine();
 }
 

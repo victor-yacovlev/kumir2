@@ -158,7 +158,7 @@ QString KumirVariablesWebObject::modulePage(int index) const
 
         QString moduleName = mod->header.name;
         if (moduleName.isEmpty())
-            moduleName = tr("User algorhitms and variables");
+            moduleName = tr("User algorithm and variables");
         QString moduleBody;
         if (!mod->impl.globals.isEmpty()) {
             moduleBody = QString::fromAscii(
@@ -173,9 +173,9 @@ QString KumirVariablesWebObject::modulePage(int index) const
             if (!mod->impl.algorhitms[i]->impl.locals.isEmpty()) {
                 QString algorhitmTitle = mod->impl.algorhitms[i]->header.name;
                 if (algorhitmTitle.isEmpty())
-                    algorhitmTitle = tr("Main algorhitm");
+                    algorhitmTitle = tr("Main algorithm");
                 else
-                    algorhitmTitle = tr("Algorhitm \"%1\"").arg(algorhitmTitle);
+                    algorhitmTitle = tr("Algorithm \"%1\"").arg(algorhitmTitle);
                 moduleBody += QString::fromAscii(
                             "<div class=\"algorhitm\">\n"
                             "  <div class=\"algorhitmtitle\">%1</div>\n"

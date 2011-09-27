@@ -452,6 +452,7 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
     if (!d->clipboard)
         d->clipboard = new Clipboard;
     d->doc = new TextDocument(this, settings);
+    d->doc->setAnalizer(analizer);
     d->cursor = new TextCursor(d->doc, d->clipboard, analizer);
     d->analizer = analizer;
     d->doc->documentId = documentId;
@@ -732,6 +733,15 @@ void Editor::setKumFile(const KumFile::Data &data)
         d->analizer->setHiddenText(d->doc->documentId, data.hiddenText, hbl);
         d->updateFromAnalizer();
     }
+    d->plane->update();
+    checkForClean();
+}
+
+void  Editor::setPlainText(const QString & data)
+{
+    d->doc->setPlainText(data);
+    d->analizer->setSourceText(d->doc->documentId, data);
+    d->updateFromAnalizer();
     d->plane->update();
     checkForClean();
 }

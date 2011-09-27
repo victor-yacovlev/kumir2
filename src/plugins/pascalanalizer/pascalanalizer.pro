@@ -5,14 +5,21 @@ include(../../kumir2plugin.pri)
 include(../../shared/extensionsystem/extensionsystem.pri)
 
 HEADERS += \
-    pasplugin.h
+    pasplugin.h \
+    ippc.h
 
 OTHER_FILES = \
     PascalAnalizer.pluginspec \
 
-#LIBS += -lfreepascal
+#LIBS += -L/home/victor/work/kumirfreepascal/compiler -lfreepascal
 
 SOURCES += \
-    pasplugin.cpp
+    pasplugin.cpp \
+    ippc.cpp
+
+
+
+
+
 
 

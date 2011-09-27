@@ -359,7 +359,7 @@ void KumirProgram::testingRun()
         }
         if (!hasTestingAlgorhitm) {
             QMessageBox::information(w_mainWidget, a_testingRun->text(),
-                                  tr("This program does not have testing algorhitm")
+                                  tr("This program does not have testing algorithm")
                                   );
             return;
         }

@@ -81,7 +81,7 @@ QString Plugin::initialize(const QStringList & parameters)
     termWindow->toggleViewAction()->setShortcut(QKeySequence("F12"));
 #endif
 
-    if (ExtensionSystem::PluginManager::instance()->loadedConstPlugins("PascalAnaziler").isEmpty()) {
+    if (ExtensionSystem::PluginManager::instance()->loadedConstPlugins("PascalAnalizer").isEmpty()) {
         m_mainWindow->disablePascalProgram();
     }
     else {

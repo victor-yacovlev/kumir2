@@ -56,6 +56,7 @@ public:
     explicit TextDocument(QObject * parent, QSettings * settings);
     int documentId;
     int indentAt(int lineNo) const;
+    inline void setAnalizer(Shared::AnalizerInterface * a) { m_analizer = a; }
     inline bool isProtected(int lineNo) const { return data[lineNo].protecteed; }
     inline void setProtected(int lineNo, bool v) { data[lineNo].protecteed = v; }
     inline bool isHidden(int lineNo) const { return data[lineNo].hidden; }
@@ -66,6 +67,7 @@ public:
     QString toHtml(int fromLine = -1, int toLine = -1) const;
     QString lineToHtml(int lineNo) const;
     void setKumFile(const KumFile::Data & data, bool showHiddenLines);
+    void setPlainText(const QString & data);
     inline QString textAt(int index) const { return index<data.size()? data[index].text : ""; }
     inline QString marginTextAt(int index) const { return index<data.size()? data[index].marginText : ""; }
     inline QList<bool> selectionMaskAt(int index) const { return index<data.size()? data[index].selected : QList<bool>(); }
@@ -107,6 +109,7 @@ private:
     QString s_hiddenText;
     bool b_wasHiddenText;
     QSettings * m_settings;
+    Shared::AnalizerInterface * m_analizer;
 };
 
 }

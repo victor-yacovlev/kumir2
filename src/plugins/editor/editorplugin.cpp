@@ -82,7 +82,12 @@ Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, c
     }
     Editor * w = new Editor(initiallyNotSaved, mySettings(), a, docId, 0);
     w->setTeacherMode(d->teacherMode);
-    w->setKumFile(KumFile::fromString(initialText));
+    if (analizerName.contains("kumir", Qt::CaseInsensitive)) {
+        w->setKumFile(KumFile::fromString(initialText));
+    }
+    else {
+        w->setPlainText(initialText);
+    }
     int index = 0;
     for (int i=0; i<d->editors.size(); i++) {
         if (d->editors[i].e==0 && d->editors[i].a==0) {

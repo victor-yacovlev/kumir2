@@ -1618,13 +1618,22 @@ void EditorPlane::setProperFormat(QPainter *p, Shared::LexemType type, const QCh
     const quint32 doc = TypeDoc == t;
     const quint32 comment = TypeComment == t;
 
+    QFont::Capitalization caseInsensitiveKw = QFont::AllLowercase;
+    QFont::Capitalization caseInsensitiveType = QFont::AllLowercase;
+
     if (priKwd || secKwd) {
         c = m_settings->value(SettingsPage::KeyColorKw, SettingsPage::DefaultColorKw).toString();
         f.setBold(m_settings->value(SettingsPage::KeyBoldKw, SettingsPage::DefaultBoldKw).toBool());
+        if (m_analizer->caseInsensitiveGrammatic()) {
+            f.setCapitalization(caseInsensitiveKw);
+        }
     }
     if (nameClass) {
         c = m_settings->value(SettingsPage::KeyColorType,  SettingsPage::DefaultColorType).toString();
         f.setBold(m_settings->value(SettingsPage::KeyBoldType, SettingsPage::DefaultBoldType).toBool());
+        if (m_analizer->caseInsensitiveGrammatic()) {
+            f.setCapitalization(caseInsensitiveType);
+        }
     }
     else if (nameAlg) {
         c = m_settings->value(SettingsPage::KeyColorAlg,  SettingsPage::DefaultColorAlg).toString();
@@ -1652,7 +1661,7 @@ void EditorPlane::setProperFormat(QPainter *p, Shared::LexemType type, const QCh
         f.setBold(m_settings->value(SettingsPage::KeyBoldComment, SettingsPage::DefaultBoldComment).toBool());
     }
 
-    if (ch!='\0' && ch.isLetter() && ch.toAscii()!='\0') {
+    if (!m_analizer->primaryAlphabetIsLatin() && ch!='\0' && ch.isLetter() && ch.toAscii()!='\0') {
         f.setItalic(true);
     }
     p->setFont(f);

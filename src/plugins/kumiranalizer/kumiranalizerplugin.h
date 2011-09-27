@@ -55,6 +55,10 @@ public:
     KumirAnalizerPlugin();
     ~KumirAnalizerPlugin();
 
+    inline bool primaryAlphabetIsLatin() const { return false; }
+    inline bool caseInsensitiveGrammatic() const { return false; }
+    inline bool supportPartialCompiling() const { return true; }
+
     int newDocument();
     void dropDocument(int documentId);
     void setSourceText(int documentId, const QString &text);

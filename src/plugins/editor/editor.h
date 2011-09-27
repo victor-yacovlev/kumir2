@@ -22,7 +22,7 @@ public:
     QList<QWidget*> statusbarWidgets();
     KumFile::Data toKumFile() const;
     void setKumFile(const KumFile::Data & data);
-
+    void setPlainText(const QString & data);
     void setDocumentId(int id);
 
     const class TextCursor * cursor() const;

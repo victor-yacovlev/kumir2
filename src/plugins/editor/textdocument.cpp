@@ -13,6 +13,7 @@ TextDocument::TextDocument(QObject *parent, QSettings * settings)
     , m_undoStack(new QUndoStack(this))
     , m_settings(settings)
 {
+    m_analizer = 0;
     b_wasHiddenText = false;
 }
 
@@ -222,6 +223,28 @@ void TextDocument::setKumFile(const KumFile::Data &d, bool showHiddenLines)
     forceCompleteRecompilation();
 }
 
+void TextDocument::setPlainText(const QString &t)
+{
+    data.clear();
+    QStringList lines = t.split("\n");
+    for (int i=0; i<lines.count(); i++) {
+        const QString line = lines[i];
+        TextLine textLine;
+        textLine.text = line;
+        textLine.indentStart = 0;
+        textLine.indentEnd = 0;
+        textLine.lineEndSelected = false;
+        for (int j=0; j<line.length(); j++) {
+            textLine.highlight << Shared::LxTypeEmpty;
+            textLine.selected << false;
+        }
+        textLine.protecteed = false;
+        textLine.hidden = false;
+        data.append(textLine);
+    }
+    forceCompleteRecompilation();
+}
+
 int TextDocument::hiddenLineStart() const
 {
     int result = -1;
@@ -302,7 +325,8 @@ void TextDocument::flushChanges()
 
 void TextDocument::flushTransaction()
 {
-
+    if (!m_analizer)
+        return;
     bool hiddenChanged = !m_removedHiddenLines.isEmpty();
     if (!hiddenChanged)
     for (int i=0; i<data.size(); i++) {
@@ -314,7 +338,7 @@ void TextDocument::flushTransaction()
         }
     }
     flushChanges();
-    if (hiddenChanged)
+    if (hiddenChanged || !m_analizer->supportPartialCompiling())
         forceCompleteRecompilation();
     if (!changes.isEmpty())
         emit compilationRequest(changes);

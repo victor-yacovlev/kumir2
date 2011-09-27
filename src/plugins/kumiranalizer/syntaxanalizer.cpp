@@ -457,7 +457,7 @@ void SyntaxAnalizerPrivate::parseInputOutputAssertPrePost(int str)
                 err = _("Can't input string slice");
             }
             if (expr->kind==AST::ExprVariable && expr->variable->accessType==AST::AccessArgumentIn) {
-                err = _("Can't input algorhitm in- argument");
+                err = _("Can't input algorithm in- argument");
             }
         }
         else if (groupType==OutputExpression) {
@@ -867,7 +867,7 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
             if (rightExpr->kind!=AST::ExprFunctionCall)
                 assignOp->error = _("Assignment of void");
             else {
-                const QString err = _("Assignment of non-returning algorhitm");
+                const QString err = _("Assignment of non-returning algorithm");
                 foreach (Lexem * lx, right) {
                     if (lx->type==LxOperLeftBr)
                         break;
@@ -1052,7 +1052,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
             }
             if ( alg->header.returnType!=AST::TypeNone )
             {
-                st.data[1]->error = _("First unnamed algorhitm should not return anything");
+                st.data[1]->error = _("First unnamed algorithm should not return anything");
                 alg->header.returnType=AST::TypeNone;
                 return;
             }
@@ -1064,7 +1064,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
         if ( name.isEmpty() )
         {
             for (int i=0; i<st.data.size(); i++) {
-                st.data[i]->error = _("No algorhitm name");
+                st.data[i]->error = _("No algorithm name");
             }
             return ;
         }
@@ -1076,7 +1076,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
     {
         for (int i=1; i<st.data.size(); i++) {
             if (st.data[i]->type==LxNameAlg)
-                st.data[i]->error = _("The name is used by other algorhitm");
+                st.data[i]->error = _("The name is used by other algorithm");
         }
         return ;
     }
@@ -1171,7 +1171,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
     QString localError;
 
     if (groups.isEmpty()) {
-        const QString err = _("Extra brackets for algorhitm without arguments");
+        const QString err = _("Extra brackets for algorithm without arguments");
         alg->header.error = st.data[argsStartLexem-1]->error = st.data.last()->error = err;
         return;
     }
@@ -1342,7 +1342,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
                 }
                 AST::Algorhitm * aa;
                 if (findAlgorhitm(cName, mod, aa)) {
-                    group.lexems[nameStart]->error = _("Name is used by algorhitm");
+                    group.lexems[nameStart]->error = _("Name is used by algorithm");
                 }
                 if (array && !massDeclared)
                 {
@@ -1597,7 +1597,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
         } // endif ( par == rb )
         else if ( par==value ) {
             if (group.access!=AST::AccessRegular) {
-                group.lexems[z-1]->error = _("Initial values should not be specified in algorhitm header");
+                group.lexems[z-1]->error = _("Initial values should not be specified in algorithm header");
                 return result;
             }
             if (group.lexems[curPos]->type==LxOperLeftBrace) {
@@ -2201,12 +2201,12 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
             }
         }
         for (int i=errorStartIndex; i<cbPos-1; i++) {
-            argLine[i]->error = _("Extra algorhitm arguments");
+            argLine[i]->error = _("Extra algorithm arguments");
         }
         return 0;
     }
     if (diff<0) {
-        cb->error = _("Not enought algorhitm arguments");
+        cb->error = _("Not enought algorithm arguments");
         return 0;
     }
     for (int i=0; i<arguments.size(); i++) {
@@ -2331,10 +2331,10 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
                     openBracketIndex = lexems.size();
                 for (int i=0; i<openBracketIndex; i++) {
                     if (!alg) {
-                        lexems[i]->error = _("Access to return value outside of algorhitm");
+                        lexems[i]->error = _("Access to return value outside of algorithm");
                     }
                     else {
-                        lexems[i]->error = _("This algorhitm has no return value");
+                        lexems[i]->error = _("This algorithm has no return value");
                     }
                 }
                 return 0;
@@ -2603,10 +2603,10 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
         err = "";
         if (retval) {
             if (!alg) {
-                err = _("Access to return value outside of algorhitm");
+                err = _("Access to return value outside of algorithm");
             }
             if (alg && alg->header.returnType==AST::TypeNone) {
-                err = _("This algorhitm has no return value");
+                err = _("This algorithm has no return value");
             }
             if (err.isEmpty()) {
                 bool found = findLocalVariable(alg->header.name, alg, v);
