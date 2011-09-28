@@ -1,52 +1,55 @@
 #include "ippc.h"
-
+#define READ_TIMEOUT 1
 
 namespace PascalAnalizer {
 
 IPPC::IPPC(const QStringList & unitpaths, QObject *parent) :
-    QProcess(parent)
+    QObject(parent)
 {
-    setOpenMode(QIODevice::ReadWrite | QIODevice::Unbuffered);
-    setProcessChannelMode(QProcess::SeparateChannels);
-    setReadChannel(QProcess::StandardOutput);
+    process = new QProcess(this);
+//    process->setOpenMode(QIODevice::ReadWrite | QIODevice::Unbuffered);
+    process->setProcessChannelMode(QProcess::SeparateChannels);
+    process->setReadChannel(QProcess::StandardOutput);
     codec_oem866 = QTextCodec::codecForName("IBM866");
-    ts.setDevice(this);
+    ts.setDevice(process);
     ts.setCodec(codec_oem866);
     s_command = "ippc";
-    connect(this, SIGNAL(readyReadStandardError()), this, SLOT(handleReadyStdErr()));
-    connect(this, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(handleFinished(int,QProcess::ExitStatus)));
-    connect(this, SIGNAL(error(QProcess::ProcessError)), this, SLOT(handleError(QProcess::ProcessError)));
+    connect(process, SIGNAL(readyReadStandardError()), this, SLOT(handleReadyStdErr()));
+    connect(process, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(handleFinished(int,QProcess::ExitStatus)));
+    connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(handleError(QProcess::ProcessError)));
     ensureProcessRunning();
     foreach (const QString & unitpath, unitpaths) {
         ts << "addunitpath " << unitpath << " \n";
     }
     ts.flush();
-    waitForBytesWritten();
+    process->waitForBytesWritten();
+
 }
 
 IPPC::~IPPC()
 {
-    kill();
-    waitForFinished();
+    process->kill();
+    process->waitForFinished();
+    process->deleteLater();
 }
 
 bool IPPC::ensureProcessRunning()
 {
-    if (state()!=QProcess::Running) {
-        start(s_command);
-        waitForStarted();
+    if (process->state()!=QProcess::Running) {
+        process->start(s_command);
+        process->waitForStarted();
     }
-    if (state()!=QProcess::Running) {
+    if (process->state()!=QProcess::Running) {
         qDebug() << "ippc process is not running!";
-        qDebug() << errorString();
+        qDebug() << process->errorString();
         return false;
     }
     return true;
 }
 
-LineProp IPPC::lineSyntax(const QString &text)
-{
 
+LineProp IPPC::lineSyntax(const QString &text, const Names & names)
+{
     LineProp lp(text.length(), LxTypeEmpty);
     if (text.trimmed().isEmpty()) {
         return lp;
@@ -58,41 +61,105 @@ LineProp IPPC::lineSyntax(const QString &text)
 
     QString command = "linesyntax " + screenString(text) + " \n";
 //    qDebug() << "Wrote: " << command;
+
+
     ts << command;
     ts.flush();
 
-    waitForBytesWritten();
-    waitForReadyRead();
-    QStringList lines = QString::fromAscii(readAllStandardOutput()).split("\n");
+    process->waitForBytesWritten();
+
+    QStringList lines = readAllLines();
+
 //    qDebug() << lines;
-    QVector<LineProp> props = extractLineProps(lines, QStringList() << text);
+    QVector<LineProp> props = extractLineProps(lines, QStringList() << text, names);
     lp = props[0];
     return lp;
 }
 
-IPPC::CheckResult IPPC::processAnalisys(const QString &text)
+QStringList IPPC::readAllLines()
 {
-    CheckResult result;
-    if (text.trimmed().isEmpty())
-        return result;
-    if (!ensureProcessRunning())
-        return result;
-    QString command = "check "+sourceName()+" "+screenString(text)+" \n";
-    qDebug() << "Wrote: " << command;
-    ts << command;
-    ts.flush();
-    waitForBytesWritten();
-    waitForReadyRead();
-    QStringList lines = QString::fromAscii(readAllStandardOutput()).split("\n");
-    qDebug() << lines;
-    const QStringList textLines = text.split("\n", QString::KeepEmptyParts);
-    result.lineProps = extractLineProps(lines, textLines).toList();
-    result.ranks = extractIndentRanks(lines, textLines).toList();
-    result.errors = extractErrors(lines, result.lineProps);
+    QStringList result;
+    QString line;
+    int bufferSize = 0;
+    do {
+        process->waitForReadyRead(READ_TIMEOUT);
+        qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+        bufferSize = process->bytesAvailable();
+        if (process->state()!=QProcess::Running)
+            break;
+        if (bufferSize) {
+            line = codec_oem866->toUnicode(process->readLine()).trimmed();
+            result << line;
+        }
+    } while (line!="end");
     return result;
 }
 
-QVector<LineProp> IPPC::extractLineProps(const QStringList &lines, const QStringList & textLines)
+IPPC::CheckResult IPPC::processAnalisys(const QString &text, const Names &oldNames)
+{
+    CheckResult result;
+    if (text.trimmed().isEmpty()) {
+        return result;
+    }
+    if (!ensureProcessRunning()) {
+        return result;
+    }
+    QString command = "check "+screenString(text)+" \n";
+//    qDebug() << "Wrote: " << command;
+
+
+    ts << command;
+    ts.flush();
+    process->waitForBytesWritten();
+    QStringList lines = readAllLines();
+
+//    qDebug() << lines;
+    const QStringList textLines = text.split("\n", QString::KeepEmptyParts);
+    bool hasError = false;
+    foreach (const QString & line, lines) {
+        if (line.startsWith("error")) {
+            hasError = true;
+            break;
+        }
+    }
+
+    Names names = hasError? oldNames : extractNames(lines);
+    result.lineProps = extractLineProps(lines, textLines, names).toList();
+    result.ranks = extractIndentRanks(lines, textLines).toList();
+    result.errors = extractErrors(lines, result.lineProps);
+    for (int i=0; i<result.errors.size(); i++) {
+        int lineNo = result.errors[i].line;
+        int pos = result.errors[i].start;
+        int len = result.errors[i].len;
+        if (lineNo>=0 && lineNo<result.lineProps.size()) {
+            for (int j=0; j<len; j++) {
+                result.lineProps[lineNo][pos+j] = LexemType(result.lineProps[lineNo][pos+j] | LxTypeError);
+            }
+        }
+    }
+    result.names = names;
+    return result;
+}
+
+IPPC::Names IPPC::extractNames(const QStringList &lines)
+{
+    IPPC::Names result;
+    foreach (const QString & line, lines) {
+        if (line.startsWith("unitname")) {
+            result.units << line.mid(9).toLower();
+        }
+        else if (line.startsWith("procedure")) {
+            result.procedures << line.mid(10).toLower();
+        }
+        else if (line.startsWith("class")) {
+            result.classes << line.mid(6).toLower();
+        }
+    }
+
+    return result;
+}
+
+QVector<LineProp> IPPC::extractLineProps(const QStringList &lines, const QStringList & textLines, const Names &names)
 {
     static const QStringList baseTypes = QStringList()
             << "integer" << "real" << "boolean" << "string" << "char" << "pchar";
@@ -120,9 +187,16 @@ QVector<LineProp> IPPC::extractLineProps(const QStringList &lines, const QString
                     else if (sub.length()>=2 && sub[0]=='\'' && sub[sub.length()-1]=='\'') {
                         pt = LxConstLiteral;
                     }
-                    else if (baseTypes.contains(sub.toLower())) {
+                    else if (baseTypes.contains(sub.toLower()) || names.classes.contains(sub.toLower())) {
                         pt = LxNameClass;
                     }
+                }
+                if (pt==LxTypeName) {
+                    QString sub = textLines[line].mid(pos,len).toLower();
+                    if (names.units.contains(sub))
+                        pt = LxNameModule;
+                    else if (names.procedures.contains(sub))
+                        pt = LxNameAlg;
                 }
                 for (int j=0; j<=len; j++) {
                     index = pos+j;

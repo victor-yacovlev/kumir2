@@ -483,7 +483,7 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
     connect(d->doc, SIGNAL(compilationRequest(QStack<Shared::ChangeTextTransaction>)),
             d, SLOT(handleLineAndTextChanged(QStack<Shared::ChangeTextTransaction>)));
     connect(d->doc, SIGNAL(completeCompilationRequest(QStringList,QStringList,int)),
-            d, SLOT(handleCompleteCompilationRequiest(QStringList,QStringList,int)));
+            d, SLOT(handleCompleteCompilationRequiest(QStringList,QStringList,int)), Qt::DirectConnection);
 
     connect(d->doc->undoStack(), SIGNAL(cleanChanged(bool)), this, SIGNAL(documentCleanChanged(bool)));
 

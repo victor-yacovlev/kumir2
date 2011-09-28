@@ -19,6 +19,7 @@ struct PascalDocument {
     QString text;
     QProcess * fpc;
     IPPC * ippc;
+    IPPC::Names names;
 };
 
 class PasPlugin

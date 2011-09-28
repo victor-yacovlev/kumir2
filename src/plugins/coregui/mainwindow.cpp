@@ -587,15 +587,15 @@ void MainWindow::newPascalProgram()
     if (b_notabs && !closeTab(ui->tabWidget->currentIndex())) {
         return;
     }
-    QString defaultText = QString::fromUtf8("program;\n\nbegin\n\nend.\n");
     QString suffix = ".pas";
+    QString fileName = suggestNewFileName(suffix);
+    QString defaultText = QString::fromUtf8("program %1;\n\nbegin\n\nend.\n").arg(fileName.left(fileName.length()-4));
     DocumentType type = Pascal;
     const QString initialText = m_plugin->mySettings()->value(Plugin::InitialTextKey, defaultText).toString();
     Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("PascalAnalizer", initialText);
     QWidget* vc = doc.widget;
     int id = doc.id;
     vc->setProperty("documentId", id);
-    QString fileName = suggestNewFileName(suffix);
     vc->setProperty("fileName", QDir::current().absoluteFilePath(fileName));
     TabWidgetElement * e = addCentralComponent(
                 fileName,

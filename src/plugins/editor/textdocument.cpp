@@ -338,10 +338,14 @@ void TextDocument::flushTransaction()
         }
     }
     flushChanges();
-    if (hiddenChanged || !m_analizer->supportPartialCompiling())
+    if (hiddenChanged)
         forceCompleteRecompilation();
-    if (!changes.isEmpty())
-        emit compilationRequest(changes);
+    if (!changes.isEmpty()) {
+        if (m_analizer->supportPartialCompiling())
+            emit compilationRequest(changes);
+        else
+            emit forceCompleteRecompilation();
+    }
     changes.clear();
 }
 

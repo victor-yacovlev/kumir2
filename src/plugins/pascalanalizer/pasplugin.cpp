@@ -111,10 +111,11 @@ void PasPlugin::doAnalisys(int documentId)
 {
     Q_CHECK_PTR(v_documents[documentId]);
     PascalDocument * d = v_documents[documentId];
-    IPPC::CheckResult r = d->ippc->processAnalisys(d->text);
+    IPPC::CheckResult r = d->ippc->processAnalisys(d->text, d->names);
     d->lineProps = r.lineProps;
     d->indentRanks = r.ranks;
     d->errors = r.errors;
+    d->names = r.names;
 }
 
 QList<Shared::Error> PasPlugin::errors(int documentId) const
@@ -135,7 +136,7 @@ Shared::LineProp PasPlugin::lineProp(int documentId, const QString &text) const
 {
     Q_CHECK_PTR(v_documents[documentId]);
     PascalDocument * d = v_documents[documentId];
-    return d->ippc->lineSyntax(text);
+    return d->ippc->lineSyntax(text, d->names);
 }
 
 QList<QPoint> PasPlugin::lineRanks(int documentId) const
