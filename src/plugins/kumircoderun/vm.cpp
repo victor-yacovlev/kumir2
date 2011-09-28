@@ -755,6 +755,8 @@ void VM::do_storearr(quint8 s, quint16 id)
             svalue = "\""+svalue+"\"";
         if (t==VT_char)
             svalue = "'"+svalue+"'";
+        if (!Variant::error.isEmpty())
+            s_error = Variant::error;
     }
     if (lineNo!=-1 &&
             (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
