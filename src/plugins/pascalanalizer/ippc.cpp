@@ -48,7 +48,7 @@ bool IPPC::ensureProcessRunning()
 }
 
 
-LineProp IPPC::lineSyntax(const QString &text, const Names & names)
+LineProp IPPC::lineSyntax(const QString &text, const Names & names1, const Names & names2)
 {
     LineProp lp(text.length(), LxTypeEmpty);
     if (text.trimmed().isEmpty()) {
@@ -71,7 +71,7 @@ LineProp IPPC::lineSyntax(const QString &text, const Names & names)
     QStringList lines = readAllLines();
 
 //    qDebug() << lines;
-    QVector<LineProp> props = extractLineProps(lines, QStringList() << text, names);
+    QVector<LineProp> props = extractLineProps(lines, QStringList() << text, names1, names2);
     lp = props[0];
     return lp;
 }
@@ -95,7 +95,7 @@ QStringList IPPC::readAllLines()
     return result;
 }
 
-IPPC::CheckResult IPPC::processAnalisys(const QString &text, const Names &oldNames)
+IPPC::CheckResult IPPC::processAnalisys(const QString &text, const Names &oldNames, const Names & usedNames, bool fetchTables)
 {
     CheckResult result;
     if (text.trimmed().isEmpty()) {
@@ -104,7 +104,8 @@ IPPC::CheckResult IPPC::processAnalisys(const QString &text, const Names &oldNam
     if (!ensureProcessRunning()) {
         return result;
     }
-    QString command = "check "+screenString(text)+" \n";
+    QString command = fetchTables? "checkandgettables " : "check ";
+    command += screenString(text)+" \n";
 //    qDebug() << "Wrote: " << command;
 
 
@@ -123,8 +124,11 @@ IPPC::CheckResult IPPC::processAnalisys(const QString &text, const Names &oldNam
         }
     }
 
-    Names names = hasError? oldNames : extractNames(lines);
-    result.lineProps = extractLineProps(lines, textLines, names).toList();
+    Names newNames1 = extractNames(lines);
+    Names newNames2 = extractUsedNames(lines);
+    Names names1 = hasError? oldNames : newNames1;
+    Names names2 = hasError || !fetchTables? usedNames : newNames2;
+    result.lineProps = extractLineProps(lines, textLines, names1, names2).toList();
     result.ranks = extractIndentRanks(lines, textLines).toList();
     result.errors = extractErrors(lines, result.lineProps);
     for (int i=0; i<result.errors.size(); i++) {
@@ -137,7 +141,8 @@ IPPC::CheckResult IPPC::processAnalisys(const QString &text, const Names &oldNam
             }
         }
     }
-    result.names = names;
+    result.localnames = names1;
+    result.usednames = names2;
     return result;
 }
 
@@ -145,21 +150,39 @@ IPPC::Names IPPC::extractNames(const QStringList &lines)
 {
     IPPC::Names result;
     foreach (const QString & line, lines) {
-        if (line.startsWith("unitname")) {
-            result.units << line.mid(9).toLower();
+        if (line.startsWith("unitname local")) {
+            result.units << line.mid(15).toLower();
         }
-        else if (line.startsWith("procedure")) {
-            result.procedures << line.mid(10).toLower();
+        else if (line.startsWith("procedure local")) {
+            result.procedures << line.mid(16).toLower();
         }
-        else if (line.startsWith("class")) {
-            result.classes << line.mid(6).toLower();
+        else if (line.startsWith("class local")) {
+            result.classes << line.mid(12).toLower();
         }
     }
 
     return result;
 }
 
-QVector<LineProp> IPPC::extractLineProps(const QStringList &lines, const QStringList & textLines, const Names &names)
+IPPC::Names IPPC::extractUsedNames(const QStringList &lines)
+{
+    IPPC::Names result;
+    foreach (const QString & line, lines) {
+        if (line.startsWith("unitname uses")) {
+            result.units << line.mid(14).toLower();
+        }
+        else if (line.startsWith("procedure uses")) {
+            result.procedures << line.mid(15).toLower();
+        }
+        else if (line.startsWith("class uses")) {
+            result.classes << line.mid(11).toLower();
+        }
+    }
+
+    return result;
+}
+
+QVector<LineProp> IPPC::extractLineProps(const QStringList &lines, const QStringList & textLines, const Names &names1, const Names & names2)
 {
     static const QStringList baseTypes = QStringList()
             << "integer" << "real" << "boolean" << "string" << "char" << "pchar";
@@ -184,18 +207,18 @@ QVector<LineProp> IPPC::extractLineProps(const QStringList &lines, const QString
                     if (sub.length()>0 && sub[0].isDigit()) {
                         pt = LxConstInteger;
                     }
-                    else if (sub.length()>=2 && sub[0]=='\'' && sub[sub.length()-1]=='\'') {
+                    else if (sub.length()>=2 && sub[0]=='\'') {
                         pt = LxConstLiteral;
                     }
-                    else if (baseTypes.contains(sub.toLower()) || names.classes.contains(sub.toLower())) {
+                    else if (baseTypes.contains(sub.toLower()) || names1.classes.contains(sub.toLower()) || names2.classes.contains(sub.toLower())) {
                         pt = LxNameClass;
                     }
                 }
                 if (pt==LxTypeName) {
                     QString sub = textLines[line].mid(pos,len).toLower();
-                    if (names.units.contains(sub))
+                    if (names1.units.contains(sub) || names2.units.contains(sub))
                         pt = LxNameModule;
-                    else if (names.procedures.contains(sub))
+                    else if (names1.procedures.contains(sub) || names2.procedures.contains(sub))
                         pt = LxNameAlg;
                 }
                 for (int j=0; j<=len; j++) {
@@ -203,6 +226,8 @@ QVector<LineProp> IPPC::extractLineProps(const QStringList &lines, const QString
                     if (index>=0 && index<textLines[line].length()) {
                         result[line][index] = pt;
                     }
+                    if (pt==LxConstLiteral && pos+len+1<textLines[line].length() && textLines[line][pos+len+1]=='\'')
+                        result[line][pos+len+1] = LxConstLiteral;
                 }
             }
         }

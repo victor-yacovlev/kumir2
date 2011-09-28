@@ -34,6 +34,7 @@ public:
     virtual QStringList algorhitmsAvailableFor(int documentId, int lineNo) const = 0;
     virtual QStringList globalsAvailableFor(int documentId, int lineNo) const = 0;
     virtual QStringList localsAvailableFor(int documentId, int lineNo) const = 0;
+    virtual std::string rawSourceData(int documentId) const = 0;
     inline virtual QList<QRegExp> supportedFileNamePattern() const {
         return QList<QRegExp>()
                 << QRegExp("*",Qt::CaseInsensitive,QRegExp::Wildcard);

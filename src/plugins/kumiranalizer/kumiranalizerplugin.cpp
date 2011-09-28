@@ -168,6 +168,18 @@ Shared::LineProp KumirAnalizerPlugin::lineProp(int documentId, const QString &te
     return m_analizers[documentId]->lineProp(text);
 }
 
+std::string KumirAnalizerPlugin::rawSourceData(int documentId) const
+{
+    Q_CHECK_PTR(m_analizers[documentId]);
+    QString s = m_analizers[documentId]->sourceText();
+    QByteArray ba;
+    QTextStream ts(&ba);
+    ts.setGenerateByteOrderMark(true);
+    ts.setCodec("UTF-8");
+    ts << s;
+    return std::string(ba.constData());
+}
+
 QStringList KumirAnalizerPlugin::algorhitmsAvailableFor(int documentId, int lineNo) const
 {
     Q_CHECK_PTR(m_analizers[documentId]);

@@ -16,10 +16,13 @@ struct PascalDocument {
     QList<LineProp> lineProps;
     QList<QPoint> indentRanks;
     QTemporaryFile * buffer;
-    QString text;
+    QStringList text;
     QProcess * fpc;
     IPPC * ippc;
-    IPPC::Names names;
+    IPPC::Names localnames;
+    IPPC::Names usednames;
+    bool fetchTables;
+
 };
 
 class PasPlugin
@@ -32,7 +35,8 @@ public:
     explicit PasPlugin();
     inline bool primaryAlphabetIsLatin() const { return true; }
     inline bool caseInsensitiveGrammatic() const { return true; }
-    inline bool supportPartialCompiling() const { return false; }
+    inline bool supportPartialCompiling() const { return true; }
+    std::string rawSourceData(int documentId) const;
     int newDocument();
     void dropDocument(int documentId);
     void setSourceText(int documentId, const QString &text);
@@ -60,6 +64,7 @@ protected:
     static QString s_fpcUnitsDir;
 #endif
     QString initialize(const QStringList &arguments);
+    void updateSourceText(int documentId, const Shared::ChangeTextTransaction & changes);
 private:
 
     std::vector<PascalDocument*> v_documents;

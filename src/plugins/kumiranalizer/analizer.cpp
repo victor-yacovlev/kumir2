@@ -26,6 +26,11 @@ Analizer::Analizer(KumirAnalizerPlugin * plugin) :
     d = new AnalizerPrivate(plugin, this);
 }
 
+QString Analizer::sourceText() const
+{
+    return d->sourceText.join("\n")+"\n";
+}
+
 LineProp Analizer::lineProp(const QString &text) const
 {
     QList<Lexem*> lexems;

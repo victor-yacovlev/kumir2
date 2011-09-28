@@ -32,6 +32,7 @@ public slots:
     void changeSourceText(const QList<Shared::ChangeTextTransaction> & changes);
     void setHiddenText(const QString & text, int baseLineNo);
     void setHiddenBaseLine(int lineNo);
+    QString sourceText() const;
 
     QStringList algorhitmsAvailableFor(int lineNo) const;
     QStringList globalsAvailableFor(int lineNo) const;

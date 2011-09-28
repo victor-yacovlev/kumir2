@@ -24,13 +24,14 @@ public:
         QList< LineProp > lineProps;
         QList<Error> errors;
         QList<QPoint> ranks;
-        Names names;
+        Names localnames;
+        Names usednames;
     };
 
     explicit IPPC(const QStringList & unitpaths, QObject *parent = 0);
     ~IPPC();
-    LineProp lineSyntax(const QString & text, const Names & names);
-    CheckResult processAnalisys(const QString & text, const Names & oldNames);
+    LineProp lineSyntax(const QString & text, const Names & names1, const Names & names2);
+    CheckResult processAnalisys(const QString & text, const Names & oldNames, const Names & usedNames, bool fetchTables);
     inline void setSourceName(const QString &s) { s_sourceName = s; }
 signals:
 
@@ -44,10 +45,11 @@ private:
 
     QStringList readAllLines();
     bool ensureProcessRunning();
-    QVector<LineProp> extractLineProps(const QStringList & lines, const QStringList & textLines, const Names & names);
+    QVector<LineProp> extractLineProps(const QStringList & lines, const QStringList & textLines, const Names & names1, const Names & names2);
     QVector<QPoint> extractIndentRanks(const QStringList & lines, const QStringList & textLines);
     QList<Error> extractErrors(const QStringList & lines, const QList<LineProp> &props);
     Names extractNames(const QStringList & lines);
+    Names extractUsedNames(const QStringList & lines);
     QString sourceName() const;
     QString screenString(QString s);
     QString s_sourceName;

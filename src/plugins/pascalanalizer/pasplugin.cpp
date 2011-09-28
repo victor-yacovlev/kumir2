@@ -92,17 +92,68 @@ void PasPlugin::setSourceText(int documentId, const QString &text)
 {
     Q_CHECK_PTR(v_documents[documentId]);
     PascalDocument * d = v_documents[documentId];
-    d->text = text;
+    d->text = text.split("\n", QString::KeepEmptyParts);
+    d->fetchTables = true;
     doAnalisys(documentId);
+}
+
+void PasPlugin::updateSourceText(int documentId, const Shared::ChangeTextTransaction &changes)
+{
+    Q_CHECK_PTR(v_documents[documentId]);
+    PascalDocument * d = v_documents[documentId];
+    QList<int> removedLineNumbers = changes.removedLineNumbers.toList();
+    QStringList newLines = changes.newLines;
+    int lineStart = 0;
+    int lineEnd = 99999999;
+    if (!removedLineNumbers.isEmpty()) {
+        if (removedLineNumbers.size()>1 || removedLineNumbers[0]!=999999) {
+            // We assume this set is sorted in ascending order
+            lineStart = removedLineNumbers.first();
+            lineEnd = removedLineNumbers.last();
+        }
+        else {
+            // There was a flag: remove all text
+        }
+    }
+    // Check for changed
+    QStringList auchtung;
+    auchtung << "uses";
+    auchtung << d->localnames.units;
+    for (int i=0; i<removedLineNumbers.size(); i++) {
+        if (d->fetchTables)
+            break;
+        foreach (const QString & a, auchtung)
+            if (d->text[removedLineNumbers[i]].toLower().contains(a)) {
+                d->fetchTables = true;
+                break;
+            }
+    }
+    for (int i=0; i<newLines.size(); i++) {
+        if (d->fetchTables)
+            break;
+        foreach (const QString & a, auchtung)
+            if (newLines[i].toLower().contains(a)) {
+                d->fetchTables = true;
+                break;
+            }
+    }
+    QStringList newSourceText;
+    if (!removedLineNumbers.isEmpty()) {
+        newSourceText = d->text.mid(0, lineStart) + newLines;
+        if (lineEnd+1<d->text.size()) {
+            newSourceText += d->text.mid(lineEnd+1);
+        }
+    }
+    else {
+        newSourceText = d->text + newLines;
+    }
+    d->text = newSourceText;
 }
 
 void PasPlugin::changeSourceText(int documentId, const QList<Shared::ChangeTextTransaction> &changes)
 {
-    Q_CHECK_PTR(v_documents[documentId]);
-    PascalDocument * d = v_documents[documentId];
     for (int i=0; i<changes.size(); i++) {
-        Shared::ChangeTextTransaction tr = changes[i];
-
+        updateSourceText(documentId, changes.at(i));
     }
     doAnalisys(documentId);
 }
@@ -111,11 +162,14 @@ void PasPlugin::doAnalisys(int documentId)
 {
     Q_CHECK_PTR(v_documents[documentId]);
     PascalDocument * d = v_documents[documentId];
-    IPPC::CheckResult r = d->ippc->processAnalisys(d->text, d->names);
+    IPPC::CheckResult r = d->ippc->processAnalisys(d->text.join("\n"), d->localnames, d->usednames, d->fetchTables);
     d->lineProps = r.lineProps;
     d->indentRanks = r.ranks;
     d->errors = r.errors;
-    d->names = r.names;
+    d->localnames = r.localnames;
+    if (d->fetchTables)
+        d->usednames = r.usednames;
+    d->fetchTables = false;
 }
 
 QList<Shared::Error> PasPlugin::errors(int documentId) const
@@ -136,7 +190,7 @@ Shared::LineProp PasPlugin::lineProp(int documentId, const QString &text) const
 {
     Q_CHECK_PTR(v_documents[documentId]);
     PascalDocument * d = v_documents[documentId];
-    return d->ippc->lineSyntax(text, d->names);
+    return d->ippc->lineSyntax(text, d->localnames, d->usednames);
 }
 
 QList<QPoint> PasPlugin::lineRanks(int documentId) const
@@ -150,20 +204,24 @@ QStringList PasPlugin::imports(int documentId) const
 {
     Q_CHECK_PTR(v_documents[documentId]);
     PascalDocument * d = v_documents[documentId];
-    return QStringList();
+    return d->localnames.units + d->usednames.units;
 }
 
 QStringList PasPlugin::globalsAvailableFor(int documentId, int lineNo) const
 {
-    Q_CHECK_PTR(v_documents[documentId]);
-    PascalDocument * d = v_documents[documentId];
+//    Q_CHECK_PTR(v_documents[documentId]);
+//    PascalDocument * d = v_documents[documentId];
+    Q_UNUSED(lineNo);
+    Q_UNUSED(documentId);
     return QStringList();
 }
 
 QStringList PasPlugin::localsAvailableFor(int documentId, int lineNo) const
 {
-    Q_CHECK_PTR(v_documents[documentId]);
-    PascalDocument * d = v_documents[documentId];
+    Q_UNUSED(lineNo);
+    Q_UNUSED(documentId);
+//    Q_CHECK_PTR(v_documents[documentId]);
+//    PascalDocument * d = v_documents[documentId];
     return QStringList();
 }
 
@@ -172,7 +230,19 @@ QStringList PasPlugin::algorhitmsAvailableFor(int documentId, int lineNo) const
 {
     Q_CHECK_PTR(v_documents[documentId]);
     PascalDocument * d = v_documents[documentId];
-    return QStringList();
+    Q_UNUSED(lineNo);
+    QSet<QString> locals = QSet<QString>::fromList(d->localnames.procedures);
+    QSet<QString> uses = QSet<QString>::fromList(d->usednames.procedures);
+    QSet<QString> u = locals.unite(uses);
+    return u.toList();
+}
+
+std::string PasPlugin::rawSourceData(int documentId) const
+{
+    Q_CHECK_PTR(v_documents[documentId]);
+    PascalDocument * d = v_documents[documentId];
+    QTextCodec * c = QTextCodec::codecForName("IBM866");
+    return std::string(c->fromUnicode(d->text.join("\n")+"\n").data());
 }
 
 } // namespace PascalAnalizer

@@ -65,6 +65,7 @@ public:
     void setHiddenText(int documentId, const QString &text, int baseLine);
     void setHiddenTextBaseLine(int documentId, int baseLine);
     void changeSourceText(int documentId, const QList<Shared::ChangeTextTransaction> & changes);
+    std::string rawSourceData(int documentId) const;
     Shared::LineProp lineProp(int documentId, const QString & text) const;
     QList<Shared::Error> errors(int documentId) const;
     QList<Shared::LineProp> lineProperties(int documentId) const;
