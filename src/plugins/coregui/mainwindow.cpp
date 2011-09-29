@@ -35,6 +35,8 @@ public:
         , type(t)
         , documentId(-1)
     {
+        Q_CHECK_PTR(w);
+        Q_ASSERT(!QString::fromAscii(w->metaObject()->className()).isEmpty());
         setProperty("uncloseable", w->property("uncloseable"));
         setProperty("documentId", w->property("documentId"));
         setProperty("fileName", w->property("fileName"));

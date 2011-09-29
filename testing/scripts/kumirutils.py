@@ -1,4 +1,3 @@
-#!/usr/bin/python2
 # coding=UTF-8
 
 import sys
@@ -23,9 +22,9 @@ for arg in sys.argv:
     if arg.startswith("--timeout="):
         TIMEOUT = int(arg[len("--timeout="):])
 
-SYSTEMENCODING = "UTF-8"
+SYSTEMENCODING = "utf8"
 if os.name=="nt":
-    SYSTEMENCODING = "CP1251"
+    SYSTEMENCODING = "cp1251"
 for arg in sys.argv:
     if arg.startswith("--encoding="):
         KUMIR_DIR = arg[len("--encoding="):]
@@ -36,23 +35,28 @@ class CompileError:
     pos: error position start in line (start from 1)
     length: error length in line
     """
-    def __init__(self, err_string):
+
+    def __init__(self, err_string = ""):
         "Creates error from error string"
-        lexems = err_string.split(":", 5)
-        self.line = int(lexems[2])
-        linepos = lexems[3].split("-")
-        self.pos = int(linepos[0])
-        self.length = int(linepos[1])
-        self.text = unicode(lexems[4], SYSTEMENCODING)
+        self.line = self.pos = self.end = int()
+        self.text = str()
+        if len(err_string)>0:
+            lexems = err_string.split(":", 5)
+            if len(lexems)>4:
+                self.line = int(lexems[2])
+                linepos = lexems[3].split("-")
+                self.pos = int(linepos[0])
+                self.end = int(linepos[1])
+                self.text = str(lexems[4]).strip()
+        
 
     def __str__(self):
-        return json.dumps({
-                "line": self.line,
-                "pos": self.pos,
-                "length": self.length,
-                "text": self.text
-            }, ensure_ascii=False).encode(SYSTEMENCODING)
-
+        s  = "L: "+str(self.line)+", "
+        s += "S: "+str(self.pos)+", "
+        s += "E: "+str(self.end)+", "
+        s += "T: "+self.text
+        return s
+        
 def __binary_path(util):
     "Returns absolute file path to execuable"
     res = KUMIR_DIR+os.path.sep+"bin"+os.path.sep+util
@@ -62,6 +66,7 @@ def __binary_path(util):
 
 def __run_util(args):
     "Starts a process and returns what process returns"
+    # sys.stderr.write("Starting "+str(args)+"\n")
     proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     err = err.strip()
