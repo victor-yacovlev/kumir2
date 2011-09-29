@@ -1179,7 +1179,7 @@ void PDAutomataPrivate::appendSimpleLine()
         statement->type = AST::StError;
         statement->error = source.at(currentPosition)->data[0]->error;
     }
-    if (!currentContext.isEmpty())
+    if (!currentContext.isEmpty() && currentContext.top())
         currentContext.top()->append(statement);
     source.at(currentPosition)->mod = currentModule;
     source.at(currentPosition)->alg = currentAlgorhitm;
@@ -1314,6 +1314,9 @@ void PDAutomataPrivate::processCorrectThen()
 {
     setCurrentIndentRank(-1, +1);
     Q_ASSERT(currentContext.size()>0);
+    while (currentContext.top()->size()>0 && currentContext.top()->last()->type==AST::StError) {
+        currentContext.top()->pop_back();
+    }
     Q_ASSERT(currentContext.top()->last()->type==AST::StIfThenElse);
     AST::ConditionSpec cond;
     cond.lexems = source.at(currentPosition)->data;
