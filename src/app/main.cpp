@@ -14,6 +14,30 @@
 #endif
 
 
+class Application
+        : public QApplication
+{
+public:
+    inline explicit Application(int argc, char * argv[], bool gui)
+        : QApplication(argc, argv, gui) { }
+protected:
+    bool notify(QObject *, QEvent *);
+};
+
+bool Application::notify(QObject *receiver, QEvent *e)
+{
+    bool result = false;
+    try {
+        result = QApplication::notify(receiver, e);
+    }
+    catch (...) {
+        qDebug() << "Caught an exception in event loop!";
+    }
+
+    return result;
+}
+
+
 void showErrorMessage(const QString & text)
 {
     bool gui = true;
@@ -41,7 +65,7 @@ int main(int argc, char **argv)
 #ifdef Q_WS_X11
     gui = gui && getenv("DISPLAY")!=0;
 #endif
-    QApplication * app = new QApplication(argc, argv, gui);
+    QApplication * app = new Application(argc, argv, gui);
 #ifdef Q_OS_WIN32
     app->setAttribute(Qt::AA_DontShowIconsInMenus);
     app->addLibraryPath(app->applicationDirPath());
