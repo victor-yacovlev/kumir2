@@ -272,7 +272,8 @@ void MainWindow::clearMessage()
 void MainWindow::setFocusOnCentralWidget()
 {
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
-    twe->component->setFocus();
+    if (twe)
+        twe->component->setFocus();
 }
 
 void MainWindow::timerEvent(QTimerEvent *e)
@@ -834,14 +835,17 @@ void MainWindow::restoreSession()
         ui->tabWidget->removeTab(index);
     }
 
-    addCentralComponent(
-                tr("Start"),
-                m_plugin->m_startPage.widget,
-                m_plugin->m_startPage.toolbarActions,
-                m_plugin->m_startPage.menus,
-                QList<QWidget*>(),
-                WWW,
-                false);
+    if (m_plugin->m_startPage.widget) {
+
+        addCentralComponent(
+                    tr("Start"),
+                    m_plugin->m_startPage.widget,
+                    m_plugin->m_startPage.toolbarActions,
+                    m_plugin->m_startPage.menus,
+                    QList<QWidget*>(),
+                    WWW,
+                    false);
+    }
 
     QDir sessionDir(QDir::currentPath()+"/.session");
     QStringList es = sessionDir.entryList(

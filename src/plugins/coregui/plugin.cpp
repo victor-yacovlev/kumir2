@@ -15,6 +15,7 @@ Plugin::Plugin() :
     b_nosessions = false;
     m_kumirProgram = 0;
     m_pascalProgram = 0;
+    m_startPage.widget = 0;
 }
 
 QString Plugin::InitialTextKey = "InitialText";
