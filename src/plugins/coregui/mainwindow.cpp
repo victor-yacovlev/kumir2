@@ -4,7 +4,7 @@
 #include "confirmclosedialod.h"
 #include "aboutdialog.h"
 #include "kumirprogram.h"
-
+#include "dataformats/kumfile.h"
 
 
 #include <algorithm>
@@ -1089,16 +1089,14 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
     if (type==Kumir) {
         QFile f(url.toLocalFile());
         if (f.open(QIODevice::Text|QIODevice::ReadOnly)) {
-            QTextStream ts(&f);
-            ts.setCodec("UTF-16LE");
-            ts.setAutoDetectUnicode(true);
-            QStringList lines = ts.readAll().split("\n");
+            QByteArray rawData = f.readAll();
+            f.close();
+            QStringList lines = KumFile::readRawDataAsString(rawData).split("\n");
             for (int i=0; i<lines.size(); i++) {
                 while (lines[i].startsWith(".")||lines[i].startsWith(" ")) {
                     lines[i] = lines[i].mid(1);
                 }
             }
-            f.close();
             EditorComponent doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", lines.join("\n"));
             QWidget * vc = doc.widget;
             int id = doc.id;

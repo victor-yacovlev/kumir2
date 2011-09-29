@@ -171,7 +171,7 @@ QString EditorPlugin::saveDocument(int documentId, const QString &fileName)
     Editor * editor = ed.e;
     QFile f(fileName);
     if (f.open(QIODevice::WriteOnly|QIODevice::Text)) {
-        QTextStream ts(&f);
+        QDataStream ts(&f);
         ts << editor->toKumFile();
         f.close();
     }

@@ -52,7 +52,7 @@ void KumirBytecodeCompilerPlugin::start()
         filename = QFileInfo(filename).absoluteFilePath();
         QFile f(filename);
         if (f.open(QIODevice::ReadOnly)) {            
-            QTextStream ts(&f);
+            QDataStream ts(&f);
             KumFile::Data kumFile;
             ts >> kumFile;
             f.close();

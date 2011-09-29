@@ -4,6 +4,7 @@ TARGET = CoreGUI
 QT += script
 include(../../kumir2plugin.pri)
 include(../../shared/extensionsystem/extensionsystem.pri)
+include(../../shared/dataformats/dataformats.pri)
 include(../../shared/stdlib/stdlib.pri)
 
 

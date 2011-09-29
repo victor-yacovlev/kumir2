@@ -22,10 +22,12 @@ struct Data
 
 KUMFILE_EXPORT QString toString(const Data & data);
 KUMFILE_EXPORT Data fromString(const QString &s);
+KUMFILE_EXPORT QString readRawDataAsString(QByteArray rawData);
 
 } // namespace KumFile
 
-KUMFILE_EXPORT QTextStream & operator<<(QTextStream & stream, const KumFile::Data & data);
-KUMFILE_EXPORT QTextStream & operator>>(QTextStream & stream, KumFile::Data & data);
+
+KUMFILE_EXPORT QDataStream & operator<<(QDataStream & stream, const KumFile::Data & data);
+KUMFILE_EXPORT QDataStream & operator>>(QDataStream & stream, KumFile::Data & data);
 
 #endif // KUMFILE_KUMFILE_H

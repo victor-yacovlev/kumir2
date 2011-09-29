@@ -26,12 +26,16 @@ QString KumFile::toString(const Data &data)
 }
 
 
-QTextStream & operator <<(QTextStream & ts, const KumFile::Data & data)
+QDataStream & operator <<(QDataStream & ds, const KumFile::Data & data)
 {
+    QByteArray buffer;
+    QTextStream ts(&buffer);
     ts.setCodec("UTF-8");
     ts.setGenerateByteOrderMark(true);
     ts << KumFile::toString(data);
-    return ts;
+    ts.flush();
+    ds.writeRawData(buffer.constData(), buffer.size());
+    return ds;
 }
 
 KumFile::Data KumFile::fromString(const QString &s)
@@ -66,12 +70,59 @@ KumFile::Data KumFile::fromString(const QString &s)
     return data;
 }
 
-QTextStream & operator >>(QTextStream & ts, KumFile::Data & data)
+bool hasWrongSymbols(const QString & s) {
+    static const QString CyrillicAlphabet =
+            QString::fromUtf8("абвгдеёжзийклмнопрстуфхцчшщъыьэюя");
+    unsigned short code = 0;
+    foreach (const QChar & ch, s) {
+        code = ch.unicode();
+        if (code==0) {
+            return true;
+        }
+        if (code>127) {
+            if (!CyrillicAlphabet.contains(ch, Qt::CaseInsensitive))
+                return true;
+        }
+    }
+
+    return false;
+}
+
+QString KumFile::readRawDataAsString(QByteArray rawData)
 {
-    ts.setAutoDetectUnicode(true);
-    QString s = ts.readAll();
+    static const QStringList CodecsToTry = QStringList()
+         << "UTF-16" << "UTF-8" << "CP1251" << "KOI8-R" << "IBM866";
+    QTextCodec * currentCodec = 0;
+    QTextDecoder * decoder = 0;
+    QString currentCodecName;
+    QString s;
+    for (int i=0; i<CodecsToTry.size(); i++) {
+        currentCodecName = CodecsToTry[i];
+        currentCodec = QTextCodec::codecForName(currentCodecName.toAscii().constData());
+        decoder = currentCodec->makeDecoder(QTextCodec::ConvertInvalidToNull);
+        s = decoder->toUnicode(rawData);
+        if (!hasWrongSymbols(s)) {
+            return s;
+        }
+    }
+    return "| Incorrect character encoding. I can't load this file\n";
+}
+
+QDataStream & operator >>(QDataStream & ds, KumFile::Data & data)
+{
+    QByteArray buffer;
+    char * bb = (char*)calloc(65536, sizeof(char));
+
+    int cnt = 0;
+    while (!ds.atEnd()) {
+        cnt = ds.readRawData(bb, 65536);
+        if (cnt>0) {
+            buffer.append(bb, cnt);
+        }
+    }
+    const QString s = KumFile::readRawDataAsString(buffer);
     data = KumFile::fromString(s);
-    return ts;
+    return ds;
 }
 
 
