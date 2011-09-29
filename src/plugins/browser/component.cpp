@@ -13,18 +13,6 @@ static QString screenString(QString s)
     return s;
 }
 
-bool Component::event(QEvent *e)
-{
-    bool result = false;
-    try {
-        result = QWebView::event(e);
-    }
-    catch (...) {
-        qDebug() << "Exception in event loop catched in class: " << metaObject()->className();
-    }
-    return result;
-}
-
 void Component::evaluateCommand(const QString &method, const QVariantList &arguments)
 {
     QString js = method + "(";

@@ -17,7 +17,6 @@ public:
     void setComponent(class Component * v);
 
 protected:
-    bool event(QEvent *e);
     QObject * createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
     QWebPage * createWindow(WebWindowType type);
 
