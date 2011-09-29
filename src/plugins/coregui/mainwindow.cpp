@@ -383,7 +383,8 @@ void MainWindow::prepareEditMenu()
         ui->menuEdit->menuAction()->setMenu(tabMenu);
     }
     else {
-        ui->menuEdit->menuAction()->setMenu(menu_empty);
+        ui->menuEdit->clear();
+        ui->menuEdit->addAction(a_notAvailable);
     }
 }
 
@@ -405,7 +406,8 @@ void MainWindow::prepareInsertMenu()
         ui->menuInsert->menuAction()->setMenu(tabMenu);
     }
     else {
-        ui->menuInsert->menuAction()->setMenu(menu_empty);
+        ui->menuInsert->clear();
+        ui->menuInsert->addAction(a_notAvailable);
     }
 }
 
