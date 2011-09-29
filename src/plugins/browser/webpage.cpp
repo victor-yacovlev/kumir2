@@ -14,6 +14,18 @@ void WebPage::setComponent(Component *v)
     m_component = v;
 }
 
+bool WebPage::event(QEvent *e)
+{
+    bool result = false;
+    try {
+        result = QWebPage::event(e);
+    }
+    catch (...) {
+        qDebug() << "Exception in event loop catched in class: " << metaObject()->className();
+    }
+    return result;
+}
+
 QObject * WebPage::createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues)
 {
     Q_UNUSED(classid);
