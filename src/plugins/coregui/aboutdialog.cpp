@@ -69,11 +69,11 @@ void AboutDialog::addOsVersion()
 #endif
 #ifdef Q_OS_MAC
     QString macVersion = "MacOS X ";
-    if (QSysInfo::macVersion()==QSysInfo::MV_TIGER)
+    if (QSysInfo::MacVersion()==QSysInfo::MV_TIGER)
         macVersion += "Tiger";
-    else if (QSysInfo::macVersion()==QSysInfo::MV_LEOPARD)
+    else if (QSysInfo::MacVersion()==QSysInfo::MV_LEOPARD)
         macVersion += "Leopard";
-    else if (QSysInfo::macVersion()==QSysInfo::MV_SNOWLEOPARD)
+    else if (QSysInfo::MacVersion()==QSysInfo::MV_SNOWLEOPARD)
         macVersion += "Snow Leopard";
     ui->tableWidget->setItem(1, 1, new QTableWidgetItem(macVersion));
 #endif
