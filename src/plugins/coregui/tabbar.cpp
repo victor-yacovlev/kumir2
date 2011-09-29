@@ -14,9 +14,7 @@ TabBar::TabBar(QWidget *parent) :
 //            "}"
             "QTabBar::tab {"
             "  min-width: 18ex;"
-        #ifndef Q_OS_MAC
             "  height: 28px;"
-        #endif
             "  text-align: right;"
 //            "  border-top: 1px solid black;"
 //            "  border-top-left-radius: 8px;"
@@ -110,7 +108,6 @@ void TabBar::handleChanged(int index)
         tabButton(0, QTabBar::RightSide)->resize(QSize(0,0));
         tabButton(0, QTabBar::RightSide)->setVisible(false);
     }
-#ifndef Q_OS_MAC
     for (int i=0; i<qMin(count(),10); i++) {
         if (i!=index)
             setTabIcon(i, v_normalIcons[i]);
@@ -123,7 +120,6 @@ void TabBar::handleChanged(int index)
         setTabToolTip(i, "");
     if (index<10 && index>=0)
         setTabIcon(index, v_activeIcons[index]);
-#endif
 }
 
 } // namespace CoreGUI
