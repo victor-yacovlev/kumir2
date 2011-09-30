@@ -51,7 +51,13 @@ enum StatementType {
     StSwitchCaseElse,
 
     /** Loop break of function return statement */
-    StBreak
+    StBreak,
+
+    /** Pause evaluation until key pressed */
+    StPause,
+
+    /** Terminate evaluation unconditionally */
+    StHalt
 };
 
 /** Loop clarification */

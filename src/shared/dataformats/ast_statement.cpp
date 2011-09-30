@@ -191,6 +191,10 @@ QString dumpStatementType(const enum StatementType t)
         return "switchCaseElse";
     else if (t==StBreak)
         return "break";
+    else if (t==StPause)
+        return "pause";
+    else if (t==StHalt)
+        return "halt";
     else
         return "error";
 }

@@ -336,12 +336,29 @@ void VM::evaluateNextInstruction()
     case CLEARMARG:
         do_clearmarg(instr.arg);
         break;
+    case PAUSE:
+        do_pause();
+        break;
+    case HALT:
+        do_halt();
+        break;
     default:
         nextIP();
         break;
     }
 
 
+}
+
+void VM::do_pause()
+{
+
+}
+
+void VM::do_halt()
+{
+    QMutexLocker l(m_dontTouchMe);
+    stack_contexts.clear();
 }
 
 void VM::do_call(quint8 mod, quint16 alg)

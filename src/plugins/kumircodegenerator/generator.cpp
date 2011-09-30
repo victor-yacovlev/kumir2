@@ -494,6 +494,13 @@ QList<Bytecode::Instruction> Generator::instructions(
             break;
         case AST::StBreak:
             BREAK(modId, algId, level, st, result);
+            break;
+        case AST::StPause:
+            PAUSE_STOP(modId, algId, level, st, result);
+            break;
+        case AST::StHalt:
+            PAUSE_STOP(modId, algId, level, st, result);
+            break;
         default:
             break;
         }
@@ -792,6 +799,19 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
         result << instr;
     }
     return result;
+}
+
+void Generator::PAUSE_STOP(int , int , int , const AST::Statement * st, QList<Bytecode::Instruction> & result)
+{
+    int lineNo = st->lexems[0]->lineNo;
+    Bytecode::Instruction l;
+    l.type = Bytecode::LINE;
+    l.arg = lineNo;
+    result << l;
+
+    Bytecode::Instruction a;
+    a.type = st->type==AST::StPause? Bytecode::PAUSE : Bytecode::HALT;
+    result << a;
 }
 
 void Generator::ASSERT(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result)

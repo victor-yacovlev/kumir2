@@ -107,6 +107,14 @@ void LexerPrivate::initNormalizator(const QString &fileName)
                     keyWords << value;
                     addToMap(kwdMap, value, LxPriEndModule);
                 }
+                else if (context=="pause running") {
+                    keyWords << value;
+                    addToMap(kwdMap, value, LxPriPause);
+                }
+                else if (context=="terminate running") {
+                    keyWords << value;
+                    addToMap(kwdMap, value, LxPriHalt);
+                }
                 else if (context=="include text") {
 //                    keyWords << value;
 //                    addToMap(kwdMap, value, KS_INCLUDE);
@@ -827,6 +835,8 @@ void popFoutputStatement(QList<Lexem*> & lexems, Statement &result);
 void popAssertStatement(QList<Lexem*> & lexems, Statement &result);
 void popImportStatement(QList<Lexem*> & lexems, Statement &result);
 void popExitStatement(QList<Lexem*> & lexems, Statement &result);
+void popPauseStatement(QList<Lexem*> & lexems, Statement &result);
+void popHaltStatement(QList<Lexem*> & lexems, Statement &result);
 void popVarDeclStatement(QList<Lexem*> & lexems, Statement &result);
 
 void popLexemsUntilPrimaryKeyword(QList<Lexem*> & lexems, Statement &result)
@@ -931,6 +941,12 @@ void popFirstStatementByKeyword(QList<Lexem*> &lexems, Statement &result)
     else if (lexems[0]->type==LxPriExit) {
         popExitStatement(lexems, result);
     }
+    else if (lexems[0]->type==LxPriPause) {
+        popPauseStatement(lexems, result);
+    }
+    else if (lexems[0]->type==LxPriHalt) {
+        popHaltStatement(lexems, result);
+    }
     else if (lexems[0]->type==LxNameClass) {
         popVarDeclStatement(lexems, result);
     }
@@ -983,6 +999,22 @@ void popAlgEndStatement(QList<Lexem*> &lexems, Statement &result)
 }
 
 void popExitStatement(QList<Lexem*> &lexems, Statement &result)
+{
+    result.type = lexems[0]->type;
+    result.data << lexems[0];
+    lexems.pop_front();
+    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
+}
+
+void popPauseStatement(QList<Lexem*> &lexems, Statement &result)
+{
+    result.type = lexems[0]->type;
+    result.data << lexems[0];
+    lexems.pop_front();
+    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
+}
+
+void popHaltStatement(QList<Lexem*> &lexems, Statement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];

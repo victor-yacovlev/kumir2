@@ -1619,7 +1619,7 @@ void EditorPlane::setProperFormat(QPainter *p, Shared::LexemType type, const QCh
     const quint32 comment = TypeComment == t;
 
     QFont::Capitalization caseInsensitiveKw = QFont::AllLowercase;
-    QFont::Capitalization caseInsensitiveType = QFont::AllLowercase;
+    QFont::Capitalization caseInsensitiveType = QFont::MixedCase;
 
     if (priKwd || secKwd) {
         c = m_settings->value(SettingsPage::KeyColorKw, SettingsPage::DefaultColorKw).toString();
@@ -1661,7 +1661,7 @@ void EditorPlane::setProperFormat(QPainter *p, Shared::LexemType type, const QCh
         f.setBold(m_settings->value(SettingsPage::KeyBoldComment, SettingsPage::DefaultBoldComment).toBool());
     }
 
-    if (!m_analizer->primaryAlphabetIsLatin() && ch!='\0' && ch.isLetter() && ch.toAscii()!='\0') {
+    if (m_analizer && !m_analizer->primaryAlphabetIsLatin() && ch!='\0' && ch.isLetter() && ch.toAscii()!='\0') {
         f.setItalic(true);
     }
     p->setFont(f);

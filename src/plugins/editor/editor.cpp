@@ -740,8 +740,10 @@ void Editor::setKumFile(const KumFile::Data &data)
 void  Editor::setPlainText(const QString & data)
 {
     d->doc->setPlainText(data);
-    d->analizer->setSourceText(d->doc->documentId, data);
-    d->updateFromAnalizer();
+    if (d->analizer) {
+        d->analizer->setSourceText(d->doc->documentId, data);
+        d->updateFromAnalizer();
+    }
     d->plane->update();
     checkForClean();
 }

@@ -41,6 +41,7 @@ public:
         setProperty("documentId", w->property("documentId"));
         setProperty("fileName", w->property("fileName"));
         setProperty("realFileName", w->property("realFileName"));
+        setProperty("title", w->property("title"));
         documentId = w->property("documentId").toInt();
         if (type==MainWindow::WWW) {
             connect(w, SIGNAL(titleChanged(QString)), this, SIGNAL(changeTitle(QString)));
@@ -133,6 +134,7 @@ MainWindow::MainWindow(Plugin * p) :
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupContentForTab()));
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupStatusbarForTab()));
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(checkCounterValue()));
+    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setTitleForTab(int)));
 
     connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(showPreferences()));
 
@@ -288,12 +290,33 @@ bool MainWindow::saveCurrentFile()
     if (twe->type==WWW)
         return true;
     const QString fileName = twe->property("realFileName").toString();
+    bool result = 0;
     if (fileName.isEmpty()) {
-        return saveCurrentFileAs();
+        result = saveCurrentFileAs();
     }
     else {
-        return saveCurrentFileTo(fileName);
+        result = saveCurrentFileTo(fileName);
     }
+    if (result) {
+        twe->setProperty("title", QFileInfo(twe->property("realFileName").toString()).fileName());
+        setTitleForTab(ui->tabWidget->currentIndex());
+    }
+    return result;
+}
+
+void MainWindow::setTitleForTab(int index)
+{
+    if (index<0 || index>=ui->tabWidget->count())
+        return;
+    QWidget * currentTabWidget = ui->tabWidget->widget(index);
+
+    if (!currentTabWidget)
+        return;
+
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
+    QString title = twe->property("title").toString();
+    setWindowTitle(title + " - "+ tr("Kumir"));
+    ui->tabWidget->setTabText(index, title);
 }
 
 void MainWindow::setupActionsForTab()
@@ -436,6 +459,7 @@ bool MainWindow::saveCurrentFileAs()
             m_plugin->mySettings()->setValue(Plugin::RecentFileKey, fileName);
             twe->setProperty("fileName", fileName);
             twe->setProperty("realFileName", fileName);
+            twe->setProperty("title", QFileInfo(fileName).fileName());
             int index = ui->tabWidget->indexOf(twe);
             ui->tabWidget->setTabText(index, QFileInfo(fileName).fileName());
             addToRecent(fileName);
@@ -469,14 +493,16 @@ void MainWindow::handleDocumentCleanChanged(bool v)
         text = text.left(text.length()-1);
     if (!v)
         text += "*";
-    ui->tabWidget->setTabText(index, text);
+    twe->setProperty("title", text);
+    setTitleForTab(index);
 }
 
 void MainWindow::handleTabTitleChange(const QString &title)
 {
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(sender());
     int index = ui->tabWidget->indexOf(twe);
-    ui->tabWidget->setTabText(index, title);
+    twe->setProperty("title", title);
+    setTitleForTab(index);
 }
 
 void MainWindow::closeCurrentTab()
@@ -573,6 +599,7 @@ void MainWindow::newProgram()
     int id = doc.id;
     vc->setProperty("documentId", id);
     QString fileName = suggestNewFileName(suffix);
+    vc->setProperty("title",QFileInfo(fileName).fileName());
     vc->setProperty("fileName", QDir::current().absoluteFilePath(fileName));
     TabWidgetElement * e = addCentralComponent(
                 fileName,
@@ -602,6 +629,7 @@ void MainWindow::newPascalProgram()
     int id = doc.id;
     vc->setProperty("documentId", id);
     vc->setProperty("fileName", QDir::current().absoluteFilePath(fileName));
+    vc->setProperty("title",QFileInfo(fileName).fileName());
     TabWidgetElement * e = addCentralComponent(
                 fileName,
                 vc,
@@ -627,6 +655,7 @@ void MainWindow::newText(const QString &fileName, const QString & text)
     int id = doc.id;
     vc->setProperty("documentId", id);
     vc->setProperty("fileName", fileName);
+    vc->setProperty("title",QFileInfo(fileName).fileName());
     TabWidgetElement * e = addCentralComponent(
                 QFileInfo(fileName).fileName(),
                 vc,
@@ -1112,6 +1141,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
             vc->setProperty("realFileName", url.toLocalFile());
+            vc->setProperty("title", fileName);
             result = addCentralComponent(
                         fileName,
                         vc,
@@ -1138,6 +1168,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             vc->setProperty("documentId", id);
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
+            vc->setProperty("title", fileName);
             vc->setProperty("realFileName", url.toLocalFile());
             result = addCentralComponent(
                         fileName,
@@ -1165,6 +1196,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
             vc->setProperty("realFileName", url.toLocalFile());
+            vc->setProperty("title", fileName);
             result = addCentralComponent(
                         fileName,
                         vc,
@@ -1190,6 +1222,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
         ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
         ui->tabWidget->currentWidget()->setFocus();
     }
+    setTitleForTab(ui->tabWidget->currentIndex());
     return result;
 }
 

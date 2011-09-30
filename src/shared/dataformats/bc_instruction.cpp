@@ -43,6 +43,8 @@ QString typeToString(InstructionType t) {
     else if (t==SHOWREG) return QString::fromAscii("ShowReg").toLower();
     else if (t==CLEARMARG) return QString::fromAscii("ClearMarg").toLower();
     else if (t==SETREF) return QString::fromAscii("SetRef").toLower();
+    else if (t==PAUSE) return QString::fromAscii("Pause").toLower();
+    else if (t==HALT) return QString::fromAscii("Halt").toLower();
     else return "nop";
 }
 
@@ -85,6 +87,8 @@ InstructionType typeFromString(const QString & s) {
     else if (s.toLower()==QString::fromAscii("ShowReg").toLower()) return SHOWREG;
     else if (s.toLower()==QString::fromAscii("ClearMarg").toLower()) return CLEARMARG;
     else if (s.toLower()==QString::fromAscii("SetRef").toLower()) return SETREF;
+    else if (s.toLower()==QString::fromAscii("Pause").toLower()) return PAUSE;
+    else if (s.toLower()==QString::fromAscii("Halt").toLower()) return HALT;
     else return NOP;
 }
 

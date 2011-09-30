@@ -37,6 +37,7 @@ private:
     void ERROR(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
     void ASSIGN(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
     void ASSERT(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
+    void PAUSE_STOP(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
     void INIT(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
     void CALL_SPECIAL(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
     void LOOP(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);

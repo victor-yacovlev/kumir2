@@ -36,6 +36,7 @@ enum InstructionType {
     SHOWREG     = 0x22, // Show register value at margin
     CLEARMARG   = 0x23, // Clear margin text from current line to specified
     SETREF      = 0x24, // Set reference value to variable
+    HALT        = 0x26, // Terminate
 
 
     // Common operations -- no comments need

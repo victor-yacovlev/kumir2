@@ -52,3 +52,5 @@ character array type name = char\s*array
 string array type name = string\s*array
 boolean array type name = bool\s*array
 include text = include
+pause running = pause
+terminate running = halt

@@ -105,6 +105,8 @@ private:
     void do_refarr(quint8, quint16);
     void do_showreg(quint8);
     void do_clearmarg(quint16);
+    void do_pause();
+    void do_halt();
 
     void do_sum();
     void do_sub();

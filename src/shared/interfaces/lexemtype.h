@@ -73,7 +73,9 @@ namespace Shared {
         LxPriAssign	= 0xa000,
         LxPriAssert	= 0xa800,
         LxPriImport	= 0xb000                                                                                                                                             ,
-        LxPriExit	= 0xb800,
+        LxPriExit	= 0xc000,
+        LxPriPause      = 0xc800,
+        LxPriHalt       = 0xd000,
 
 
         // LxTypeConstant values

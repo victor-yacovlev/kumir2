@@ -264,6 +264,8 @@ void SyntaxAnalizer::processAnalisys()
                  ||st.type==LxPriFi
                  ||st.type==LxPriSwitch
                  ||st.type==LxPriExit
+                 ||st.type==LxPriPause
+                 ||st.type==LxPriHalt
                  )
         {
             d->parseOneLexemInstruction(i);

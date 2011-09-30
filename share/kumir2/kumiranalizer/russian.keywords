@@ -53,5 +53,7 @@ string type name = лит
 boolean type name = лог
 include text = ВКЛЮЧИТЬ
 function return value = знач
+pause running = пауза
+terminate running = стоп
 
 

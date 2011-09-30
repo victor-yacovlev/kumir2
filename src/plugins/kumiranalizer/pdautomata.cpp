@@ -268,6 +268,8 @@ void PDAutomataPrivate::loadRules(const QString &rulesRoot)
                 LxPriAssert,
                 LxPriImport,
                 LxPriExit,
+                LxPriPause,
+                LxPriExit,
                 LexemType(0xFFFFFFFF)
             };
 
@@ -896,6 +898,10 @@ QString terminalByCode(int code)
         return QString::fromUtf8("простое_предложение");
     case LxPriFoutput:
         return QString::fromUtf8("простое_предложение");
+    case LxPriPause:
+        return QString::fromUtf8("простое_предложение");
+    case LxPriHalt:
+        return QString::fromUtf8("простое_предложение");
     case LxTypeDoc:
         return QString::fromUtf8("строка_документации");
     case LexemType(0xFFFFFFFF):
@@ -1159,6 +1165,12 @@ void PDAutomataPrivate::appendSimpleLine()
         break;
     case LxPriExit:
         statement->type = AST::StBreak;
+        break;
+    case LxPriPause:
+        statement->type = AST::StPause;
+        break;
+    case LxPriHalt:
+        statement->type = AST::StHalt;
         break;
     default:
         statement->type = AST::StError;
