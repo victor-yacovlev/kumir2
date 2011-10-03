@@ -190,6 +190,7 @@ BuildRequires:     gcc-c++ >= 4
             
             for req in item.requires_other:
                 out.write("Requires:\t"+req+"\n")
+                out.write("BuildRequires:\t"+req+"\n")
         
         if item.description.has_key("en"):
             out.write("\n\n%description "+name+"\n"+item.description["en"]+"\n\n")
