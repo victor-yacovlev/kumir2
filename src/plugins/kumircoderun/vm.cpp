@@ -2,6 +2,7 @@
 #include "dataformats/bc_instruction.h"
 #include "stdlib/integeroverflowchecker.h"
 #include "stdlib/doubleoverflowchecker.h"
+#include "stdlib/genericinputoutput.h"
 
 #define EPSILON 0.0000001
 #define MAX_RECURSION_SIZE 4000
@@ -389,7 +390,38 @@ void VM::do_call(quint8 mod, quint16 alg)
                 references << quintptr(ref.reference());
                 indeces << ref.referenceIndeces();
             }
-            emit inputRequest(format, references, indeces);
+            if (f_input.isOpen()) {
+                StdLib::GenericInputOutput * inp = StdLib::GenericInputOutput::instance();
+                inp->doInput(format);
+                QSet<QPair<int,int> > errpos;
+                QString error;
+                QList<QVariant> result;
+                if (f_input.atEnd()) {
+                    s_error = tr("File %1 reached end").arg(f_input.fileName());
+                    return;
+                }
+                QString line = QString::fromLocal8Bit(f_input.readLine()).trimmed();
+                if (line.isEmpty()) {
+                    s_error = tr("Current line of file %1 is empty").arg(f_input.fileName());
+                    return;
+                }
+                bool ok = inp->tryFinishInput(line, result, errpos, false, error);
+                if (!ok) {
+                    s_error = tr("Input from file %1 error: %2")
+                            .arg(f_input.fileName())
+                            .arg(error);
+                }
+                else {
+                    if (result.size()>references.size()) {
+                        result = result.mid(0,references.size());
+                    }
+                    setResults("",references,indeces,result);
+                }
+
+            }
+            else {
+                emit inputRequest(format, references, indeces);
+            }
         }
         if (alg==0x01) {
             // Output
@@ -397,7 +429,12 @@ void VM::do_call(quint8 mod, quint16 alg)
             for (int i=0; i<argsCount; i++) {
                 output += stack_values.pop().toString();
             }
-            emit outputRequest(output);
+            if (f_output.isOpen()) {
+                f_output.write(output.toLocal8Bit());
+            }
+            else {
+                emit outputRequest(output);
+            }
         }
         else if (alg==0x02) {
             // File input
@@ -496,6 +533,46 @@ void VM::do_call(quint8 mod, quint16 alg)
                     source = source.mid(0,start-1)+ch+source.mid(end);
                     Variant r(source);
                     stack_values.push(r);
+                }
+            }
+        }
+        else if (alg==0x0A01) {
+            Variant sn = stack_values.pop();
+            Variant fn = stack_values.pop();
+            const QString fileName = fn.toString();
+            const QString streamName = sn.toString().toLower().trimmed();
+            if (streamName=="stdin") {
+                f_input.close();
+                if (!fileName.isEmpty()) {
+                    f_input.setFileName(fileName);
+                    if (!f_input.exists()) {
+                        s_error = tr("File not exists: %1")
+                                .arg(QFileInfo(f_input).absoluteFilePath());
+                    }
+                    else {
+                        if (!f_input.open(QIODevice::ReadOnly)) {
+                            s_error = tr("Can't open file %1: Access denied")
+                                    .arg(QFileInfo(f_input).absoluteFilePath());
+                        }
+                    }
+                }
+            }
+            else if (streamName=="stdout") {
+                f_output.close();
+                if (!fileName.isEmpty()) {
+                    QDir d = QFileInfo(f_output).dir();
+                    if (!d.exists()) {
+                        if (!QDir::root().mkpath(d.absolutePath())) {
+                            s_error = tr("Can't create directory %1: Access denied")
+                                    .arg(d.absolutePath());
+                        }
+                    }
+                    if (d.exists()) {
+                        if (!f_output.open(QIODevice::WriteOnly)) {
+                            s_error = tr("Can't open file %1 for writing: Access denied")
+                                    .arg(QFileInfo(f_output).absoluteFilePath());
+                        }
+                    }
                 }
             }
         }

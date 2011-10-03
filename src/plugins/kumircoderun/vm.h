@@ -127,6 +127,9 @@ private:
     bool b_blindMode;
     QMutex * m_dontTouchMe;
 
+    QFile f_input;
+    QFile f_output;
+
 };
 
 } // namespace KumirCodeRun

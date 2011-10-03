@@ -1168,6 +1168,7 @@ void PDAutomataPrivate::appendSimpleLine()
         break;
     case LxPriAssignFile:
         statement->type = AST::StAssignFileStream;
+        break;
     case LxPriExit:
         statement->type = AST::StBreak;
         break;

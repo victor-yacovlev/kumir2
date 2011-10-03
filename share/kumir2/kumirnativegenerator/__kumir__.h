@@ -54,6 +54,7 @@ extern void __garbage_collector_end_algorhitm__();
 
 extern void __input__st_funct(const char * format, int args, ...);
 extern void __output__st_funct(const char * format, int args, ...);
+extern void __assign_stream__st_funct(const wchar_t * streamname, const wchar_t * filename);
 
 extern void __wait_for_output_queue_flushed__();
 

@@ -483,6 +483,9 @@ QList<Bytecode::Instruction> Generator::instructions(
         case AST::StFileOutput:
             CALL_SPECIAL(modId, algId, level, st, result);
             break;
+        case AST::StAssignFileStream:
+            CALL_SPECIAL(modId, algId, level, st, result);
+            break;
         case AST::StLoop:
             LOOP(modId, algId, level+1, st, result);
             break;
@@ -904,8 +907,27 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
         }
         argsCount = st->expressions.size();
     }
+    else if (st->type==AST::StAssignFileStream) {
+        for (int i=st->expressions.size()-1; i>=0; i--) {
+            result << calculate(modId, algId, level, st->expressions[i]);
+        }
+        argsCount = st->expressions.size();
+    }
     else {
         QString format;
+        for (int i=0; i<st->expressions.size(); i++) {
+            AST::Expression * expr = st->expressions[i];
+            if (expr->baseType==AST::TypeBoolean)
+                format += "%b";
+            else if (expr->baseType==AST::TypeCharect)
+                format += "%c";
+            else if (expr->baseType==AST::TypeInteger)
+                format += "%d";
+            else if (expr->baseType==AST::TypeReal)
+                format += "%f";
+            else
+                format += "%s";
+        }
         for (int i=st->expressions.size()-1; i>=0; i--) {
             AST::Expression * expr = st->expressions[i];
             Bytecode::Instruction ref;
@@ -919,16 +941,6 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
                     result << calculate(modId, algId, level, expr->operands[j]);
                 }
             }
-            if (expr->baseType==AST::TypeBoolean)
-                format += "%b";
-            else if (expr->baseType==AST::TypeCharect)
-                format += "%c";
-            else if (expr->baseType==AST::TypeInteger)
-                format += "%d";
-            else if (expr->baseType==AST::TypeReal)
-                format += "%f";
-            else
-                format += "%s";
             result << ref;
         }
         Bytecode::Instruction fmt;
@@ -952,10 +964,13 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
         call.arg = 0x0000;
     else if (st->type==AST::StOutput)
         call.arg = 0x0001;
-    if (st->type==AST::StFileInput)
+    else if (st->type==AST::StFileInput)
         call.arg = 0x0002;
     else if (st->type==AST::StFileOutput)
         call.arg = 0x0003;
+    else if (st->type==AST::StAssignFileStream)
+        call.arg = 0x0A01;
+
     result << call;
 }
 

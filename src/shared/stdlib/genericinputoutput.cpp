@@ -1,5 +1,8 @@
 #include "genericinputoutput.h"
 #include "connector.h"
+#include <stdio.h>
+
+#include "kumstdlib.h"
 
 namespace StdLib {
 
@@ -8,6 +11,8 @@ GenericInputOutput::GenericInputOutput(QObject *parent) :
 {
 }
 
+QFile __output_file__;
+QFile __input_file__;
 
 int GenericInputOutput::prepareString(QString & s)
 {
@@ -273,7 +278,7 @@ void GenericInputOutput::doInput(const QString &format)
 {
     words.clear();
     types.clear();
-    formats = format.split("%");
+    formats = format.split("%",QString::SkipEmptyParts);
     foreach (const QString &fmt, formats )
     {
         if ( fmt.isEmpty() )
@@ -578,7 +583,24 @@ extern "C" void __input__st_funct(const char * format, int args, ...)
 {
     const QString fmt = QString::fromLatin1(format);
     QList<QVariant> result;
-    if ( ! __connected_to_kumir__()) {
+    if (StdLib::__input_file__.isOpen()) {
+        QString line = QString::fromLocal8Bit(StdLib::__input_file__.readLine());
+        StdLib::GenericInputOutput * inp = StdLib::GenericInputOutput::instance();
+        inp->doInput(fmt);
+        QSet<QPair<int,int> > errpos;
+        QString error;
+        bool ok = inp->tryFinishInput(line, result, errpos, false, error);
+        if (!ok) {
+            QString msg = QString::fromAscii("Can't read from file %1: %2\n")
+                    .arg(StdLib::__input_file__.fileName())
+                    .arg(error);
+            wchar_t * msgW = (wchar_t*)calloc(msg.length()+1, sizeof(wchar_t));
+            msg.toWCharArray(msgW);
+            msgW[msg.length()] = L'\0';
+            __abort__(msgW, -1);
+        }
+    }
+    else if ( ! __connected_to_kumir__()) {
 //        std::cerr << "Not connected to kumir\n";
         StdLib::GenericInputOutput * inp = StdLib::GenericInputOutput::instance();
         inp->doInput(fmt);
@@ -661,14 +683,75 @@ extern "C" void __output__st_funct(const char * format, int args, ...)
         }
     }
     va_end(vl);
-    if (!__connected_to_kumir__()) {
-        wchar_t * buffer = (wchar_t*)calloc(result.length()+1, sizeof(wchar_t));
-        result.toWCharArray(buffer);
-        buffer[result.length()] = L'\0';
-        wprintf(L"%ls", buffer);
-        free(buffer);
+    if (StdLib::__output_file__.isOpen()) {
+        StdLib::__output_file__.write(result.toLocal8Bit());
     }
     else {
-        StdLib::Connector::instance()->output(result);
+        if (!__connected_to_kumir__()) {
+            wchar_t * buffer = (wchar_t*)calloc(result.length()+1, sizeof(wchar_t));
+            result.toWCharArray(buffer);
+            buffer[result.length()] = L'\0';
+            wprintf(L"%ls", buffer);
+            free(buffer);
+        }
+        else {
+            StdLib::Connector::instance()->output(result);
+        }
+    }
+}
+
+extern "C" void __assign_stream__st_funct(const wchar_t * streamname, const wchar_t * filename)
+{
+    const QString streamName = QString::fromWCharArray(streamname).toLower().trimmed();
+    const QString fileName = QString::fromWCharArray(filename).trimmed();
+    if (streamName=="stdin") {
+        StdLib::__input_file__.close();
+        if (!fileName.isEmpty()) {
+            StdLib::__input_file__.setFileName(fileName);
+            if (!StdLib::__input_file__.exists()) {
+                QString msg = QString::fromAscii("Input file not exists: %1\n")
+                        .arg(StdLib::__input_file__.fileName())
+                        ;
+                wchar_t * msgW = (wchar_t*)calloc(msg.length()+1, sizeof(wchar_t));
+                msg.toWCharArray(msgW);
+                msgW[msg.length()] = L'\0';
+                __abort__(msgW, -1);
+            }
+            if (!StdLib::__input_file__.open(QIODevice::ReadOnly)) {
+                QString msg = QString::fromAscii("Can't open file %1: Access denied\n")
+                        .arg(StdLib::__input_file__.fileName())
+                        ;
+                wchar_t * msgW = (wchar_t*)calloc(msg.length()+1, sizeof(wchar_t));
+                msg.toWCharArray(msgW);
+                msgW[msg.length()] = L'\0';
+                __abort__(msgW, -1);
+            }
+        }
+    }
+    else if (streamName=="stdout") {
+        StdLib::__output_file__.close();
+        if (!fileName.isEmpty()) {
+            QFileInfo info(fileName);
+            if (!info.dir().exists()) {
+                if (QDir::root().mkpath(info.dir().absolutePath())) {
+                    QString msg = QString::fromAscii("Can't create directory %1: Access denied\n")
+                            .arg(info.dir().absolutePath())
+                            ;
+                    wchar_t * msgW = (wchar_t*)calloc(msg.length()+1, sizeof(wchar_t));
+                    msg.toWCharArray(msgW);
+                    msgW[msg.length()] = L'\0';
+                    __abort__(msgW, -1);
+                }
+            }
+            if (!StdLib::__output_file__.open(QIODevice::WriteOnly)) {
+                QString msg = QString::fromAscii("Can't open output file %1 for writing: Access denied\n")
+                        .arg(info.absoluteFilePath())
+                        ;
+                wchar_t * msgW = (wchar_t*)calloc(msg.length()+1, sizeof(wchar_t));
+                msg.toWCharArray(msgW);
+                msgW[msg.length()] = L'\0';
+                __abort__(msgW, -1);
+            }
+        }
     }
 }

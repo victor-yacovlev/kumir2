@@ -78,5 +78,6 @@ private:
 
 extern "C" STDLIB_EXPORT void __input__st_funct(const char * format, int args, ...);
 extern "C" STDLIB_EXPORT void __output__st_funct(const char * format, int args, ...);
+extern "C" STDLIB_EXPORT void __assign_stream__st_funct(const wchar_t * streamname, const wchar_t * filename);
 
 #endif // ST_FUNCT_GENERICINPUT_H
