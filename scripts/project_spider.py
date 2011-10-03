@@ -245,6 +245,8 @@ def __scan_plugin(toplevel, specfilename):
         return None
     c = Component()
     c.name = "module-"+spec["name"]
+    if spec.has_key("requiresother"):
+	c.requires_other = spec["requiresother"]
     srcdir = specfilename[len(toplevel)+5:]
     if srcdir.startswith("actors"):
         c.name = "actor-"
