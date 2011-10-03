@@ -17,8 +17,30 @@ SOURCES += \
     pasplugin.cpp \
     ippc.cpp
 
+PPCNAME = ppc386
+unix {
+    ARCH = $$system(arch)
+    contains(ARCH,x86_64): PPCNAME = ppcx86_64
+    MAKE = make
+}
+win32 {
+    PPCNAME = ppc386.exe
+    MAKE = mingw32-make
+}
 
 
+ippcbin.target = $$IDE_BUILD_TREE/libexec/kumir2/ippc
+ippcbin.commands = \
+    cd $${_PRO_FILE_PWD_}/ippc/rtl/ && \
+    $$MAKE && \
+    cd $${_PRO_FILE_PWD_}/ippc/compiler/ && \
+    $$MAKE && \
+    $$MAKE && \
+    $$QMAKE_MKDIR $$IDE_BUILD_TREE/libexec/kumir2/ && \
+    $$QMAKE_COPY $${_PRO_FILE_PWD_}/ippc/compiler/$$PPCNAME $$IDE_BUILD_TREE/libexec/kumir2/ippc
+
+QMAKE_EXTRA_TARGETS += ippcbin
+PRE_TARGETDEPS += $$IDE_BUILD_TREE/libexec/kumir2/ippc
 
 
 

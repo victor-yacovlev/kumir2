@@ -13,7 +13,12 @@ IPPC::IPPC(const QStringList & unitpaths, QObject *parent) :
     codec_oem866 = QTextCodec::codecForName("IBM866");
     ts.setDevice(process);
     ts.setCodec(codec_oem866);
-    s_command = "ippc";
+    s_command = qApp->applicationDirPath()+"/../libexec/kumir2/ippc";
+    s_command = QDir::cleanPath(s_command);
+    s_command = QDir::toNativeSeparators(s_command);
+    if (s_command.contains(" ")) {
+        s_command = "\""+s_command+"\"";
+    }
     connect(process, SIGNAL(readyReadStandardError()), this, SLOT(handleReadyStdErr()));
     connect(process, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(handleFinished(int,QProcess::ExitStatus)));
     connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(handleError(QProcess::ProcessError)));
