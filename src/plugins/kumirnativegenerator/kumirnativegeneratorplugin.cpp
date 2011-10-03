@@ -4,6 +4,7 @@
 #include "dataformats/ast_variable.h"
 #include "dataformats/ast_expression.h"
 #include "nameprovider.h"
+#include "dataformats/lexem.h"
 
 #include <QtCore>
 #include <iostream>
@@ -86,6 +87,8 @@ struct KumirNativeGeneratorPrivate {
     QString makeStOutput(const QList<AST::Expression*> & exprs,
                          const AST::Algorhitm * algorhitm,
                          const AST::Module * module) const;
+    QString makeStPause(int lineNo) const;
+    QString makeStHalt(int lineNo) const;
     QString makeStLoop(const AST::LoopSpec &loop,
                        int deep,
                        const AST::Algorhitm * algorhitm,
@@ -731,8 +734,23 @@ QString KumirNativeGeneratorPrivate::makeBody(
             result += makeStIfThenElse(statements[i]->conditionals, deep+1, algorhitm, module);
         else if (statements[i]->type==AST::StBreak)
             result += makeStBreak(deep, algorhitm, module);
+        else if (statements[i]->type==AST::StPause)
+            result += makeStPause(statements[i]->lexems[0]->lineNo);
+        else if (statements[i]->type==AST::StHalt)
+            result += makeStHalt(statements[i]->lexems[0]->lineNo);
     }
     return result;
+}
+
+QString KumirNativeGeneratorPrivate::makeStPause(int lineNo) const
+{
+    Q_UNUSED(lineNo);
+    return "/* PAUSE */\n";
+}
+
+QString KumirNativeGeneratorPrivate::makeStHalt(int lineNo) const
+{
+    return QString::fromAscii("__halt__(%1);\n").arg(lineNo);
 }
 
 QString KumirNativeGeneratorPrivate::makeStError(const QString &text, int lineNo) const

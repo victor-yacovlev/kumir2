@@ -103,7 +103,7 @@ static const QSet<InstructionType> RegisterNoInstructions = QSet<InstructionType
 
 static const QSet<InstructionType> HasValueInstructions = QSet<InstructionType>()
 << CALL << INIT << SETARR << STORE << STOREARR << LOAD << LOADARR
-   << SETMON << UNSETMON << JUMP << JNZ << JZ << ERROR << LINE << REF << REFARR << CLEARMARG << SETREF;
+   << SETMON << UNSETMON << JUMP << JNZ << JZ << ERROR << LINE << REF << REFARR << CLEARMARG << SETREF << HALT << PAUSE;
 
 
 

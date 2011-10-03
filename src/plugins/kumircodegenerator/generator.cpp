@@ -811,6 +811,7 @@ void Generator::PAUSE_STOP(int , int , int , const AST::Statement * st, QList<By
 
     Bytecode::Instruction a;
     a.type = st->type==AST::StPause? Bytecode::PAUSE : Bytecode::HALT;
+    a.arg = lineNo;
     result << a;
 }
 

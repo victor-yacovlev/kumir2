@@ -337,10 +337,10 @@ void VM::evaluateNextInstruction()
         do_clearmarg(instr.arg);
         break;
     case PAUSE:
-        do_pause();
+        do_pause(instr.arg);
         break;
     case HALT:
-        do_halt();
+        do_halt(instr.arg);
         break;
     default:
         nextIP();
@@ -350,14 +350,23 @@ void VM::evaluateNextInstruction()
 
 }
 
-void VM::do_pause()
-{
-
-}
-
-void VM::do_halt()
+void VM::do_pause(quint16 lineNo)
 {
     QMutexLocker l(m_dontTouchMe);
+    stack_contexts[stack_contexts.size()-1].runMode = CRM_OneStep;
+    emit lineNoChanged(lineNo);
+    emit pauseRequest();
+    emit lineNoChanged(lineNo);
+    nextIP();
+}
+
+void VM::do_halt(quint16 lineNo)
+{
+    QMutexLocker l(m_dontTouchMe);
+    if (lineNo==65535)
+        emit outputRequest("\n"+tr("STOP."));
+    else
+        emit outputRequest("\n"+tr("STOP AT LINE %1.").arg(lineNo));
     stack_contexts.clear();
 }
 

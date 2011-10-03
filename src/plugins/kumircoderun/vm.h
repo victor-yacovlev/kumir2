@@ -50,6 +50,7 @@ signals:
     void lineNoChanged(int lineNo);
     void inputRequest(const QString & format, const QList<quintptr> & references, const QList<int> & indeces);
     void outputRequest(const QString & out);
+    void pauseRequest();
     void resetModuleRequest(const QString & actorPluginName);
     void invokeExternalFunction(const QString & actorPluginName,
                                 const QString & functionName,
@@ -105,8 +106,8 @@ private:
     void do_refarr(quint8, quint16);
     void do_showreg(quint8);
     void do_clearmarg(quint16);
-    void do_pause();
-    void do_halt();
+    void do_pause(quint16);
+    void do_halt(quint16);
 
     void do_sum();
     void do_sub();

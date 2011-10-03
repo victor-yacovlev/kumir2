@@ -57,4 +57,6 @@ extern void __output__st_funct(const char * format, int args, ...);
 
 extern void __wait_for_output_queue_flushed__();
 
+extern void __halt__(int lineNo);
+
 #endif

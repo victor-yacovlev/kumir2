@@ -39,6 +39,7 @@ extern "C" STDLIB_EXPORT void __set_slice_c__(wchar_t ** s, int start, int end, 
 extern "C" STDLIB_EXPORT wchar_t* __string_of_char__(wchar_t ch);
 
 extern "C" STDLIB_EXPORT void __abort__(const wchar_t * message, int lineNo);
+extern "C" STDLIB_EXPORT void __halt__(int lineNo) ;
 
 extern "C" STDLIB_EXPORT void __init_garbage_collector__();
 extern "C" STDLIB_EXPORT void __free_garbage_collector__();

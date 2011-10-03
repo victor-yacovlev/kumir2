@@ -13,6 +13,7 @@ Run::Run(QObject *parent) :
     mutex_stepDone = new QMutex;
     mutex_interactDone = new QMutex;
     e_runMode = RM_ToEnd;
+    connect(vm, SIGNAL(pauseRequest()), this, SLOT(handlePauseRequest()), Qt::DirectConnection);
 
     connect(vm, SIGNAL(lineNoChanged(int)), this, SLOT(handleLineChanged(int)), Qt::DirectConnection);
 
@@ -357,6 +358,10 @@ bool Run::mustStop()
     }
 }
 
+void Run::handlePauseRequest()
+{
+    e_runMode = RM_StepOver;
+}
 
 void Run::handleLineChanged(int lineNo)
 {

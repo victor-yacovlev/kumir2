@@ -51,6 +51,7 @@ public slots:
                                const QVariantList & arguments,
                                const QList<quintptr> & references,
                                const QList<int> & indeces);
+    void handlePauseRequest();
 
 signals:
     void lineChanged(int lineNo);
