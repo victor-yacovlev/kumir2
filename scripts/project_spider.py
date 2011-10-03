@@ -108,6 +108,7 @@ class Component:
         self.isconsole = False
         self.webapps = []
         self.win32_extradirs = []
+        self.libexecs = []
 
 import json
 import os.path
@@ -245,6 +246,8 @@ def __scan_plugin(toplevel, specfilename):
         return None
     c = Component()
     c.name = "module-"+spec["name"]
+    if spec.has_key("libexecs"):
+        c.libexecs = spec["libexecs"]
     if spec.has_key("requiresother"):
 	c.requires_other = spec["requiresother"]
     srcdir = specfilename[len(toplevel)+5:]

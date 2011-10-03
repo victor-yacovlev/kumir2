@@ -93,14 +93,21 @@ BuildRequires:     gcc-c++ >= 4
             out.write("Requires:\t"+req+"\n")
 
     qtReqs = set()
+    othReqs = set()
     
     for name, item in proj.components.items():
         qt_req = item.requires_qt
         for req in qt_req:
             qtReqs.add("pkgconfig("+req+")")
+        orq = item.requires_other
+        for o in orq:
+            othReqs.add(o)
     
     for qt_req in qtReqs:
         out.write("BuildRequires:\t"+qt_req+"\n")
+
+    for o_req in othReqs:
+        out.write("BuildRequires:\t"+o_req+"\n")
     
     out.write("Vendor:\t"+VENDOR+"\n")
     out.write("Packager:\t"+PACKAGER+"\n")
@@ -190,7 +197,7 @@ BuildRequires:     gcc-c++ >= 4
             
             for req in item.requires_other:
                 out.write("Requires:\t"+req+"\n")
-                out.write("BuildRequires:\t"+req+"\n")
+
         
         if item.description.has_key("en"):
             out.write("\n\n%description "+name+"\n"+item.description["en"]+"\n\n")
@@ -219,6 +226,10 @@ BuildRequires:     gcc-c++ >= 4
         for plugin in item.plugins:
             out.write("%{_libdir}/kumir2/plugins/lib"+plugin+".so\n")
             out.write("%{_libdir}/kumir2/plugins/"+plugin+".pluginspec\n")
+        if len(item.libexecs)>0:
+            out.write("%dir /usr/libexec/kumir2\n")
+            for lx in item.libexecs:
+                out.write("/usr/libexec/kumir2/"+lx+"\n")
         ldconfig = ""
         if len(item.libs)>0:
             ldconfig = "-p /sbin/ldconfig"
