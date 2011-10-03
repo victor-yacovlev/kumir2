@@ -60,7 +60,7 @@ def gen_control(proj):
     result += "Maintainer: "+PACKAGER+"\n"
     result += "Standards-Version: 3.9.1\n"
     result += "Homepage: http://www.niisi.ru/kumir/\n"
-    result += "Build-Depends: debhelper (>= 7.0.50~), libqt4-dev (>= "+QT_MIN_VERSION+"), libqtwebkit-dev (>= "+QTWEBKIT_MIN_VERSION+"), libx11-dev, qt4-qmake, python, ant, gwt\n"
+    result += "Build-Depends: debhelper (>= 7.0.50~), libqt4-dev (>= "+QT_MIN_VERSION+"), libqtwebkit-dev (>= "+QTWEBKIT_MIN_VERSION+"), libx11-dev, qt4-qmake, python, ant, gwt, fpc\n"
     result += "\n"
     for name, item in proj.components.items():
         name = __debian_name(name)
@@ -99,6 +99,8 @@ def gen_control(proj):
                 result += "."+proj.version_extra
             result += ")"
         result += "\n"
+        for oth in item.requires_other:
+            result += ", "+oth
         result += "Description: "+item.summary["en"]+"\n"
         if item.description.has_key("en"):
             desc_lines = item.description["en"].split("\n")
