@@ -231,6 +231,10 @@ void LexerPrivate::initNormalizator(const QString &fileName)
                     keyWords << value;
                     addToMap(kwdMap, value, LxPriFoutput);
                 }
+                else if (context=="assign stream") {
+                    keyWords << value;
+                    addToMap(kwdMap, value, LxPriAssignFile);
+                }
                 else if (context=="new line symbol") {
                     keyWords << value;
                     addToMap(kwdMap, value, LxSecNewline);
@@ -838,6 +842,7 @@ void popExitStatement(QList<Lexem*> & lexems, Statement &result);
 void popPauseStatement(QList<Lexem*> & lexems, Statement &result);
 void popHaltStatement(QList<Lexem*> & lexems, Statement &result);
 void popVarDeclStatement(QList<Lexem*> & lexems, Statement &result);
+void popAssignFileStatement(QList<Lexem*> & lexems, Statement & result);
 
 void popLexemsUntilPrimaryKeyword(QList<Lexem*> & lexems, Statement &result)
 {
@@ -845,6 +850,19 @@ void popLexemsUntilPrimaryKeyword(QList<Lexem*> & lexems, Statement &result)
         Lexem * lx = lexems[0];
         if (lx->type==LxOperSemicolon || lx->type & LxTypePrimaryKwd)
             break;
+        lexems.pop_front();
+        result.data << lx;
+    }
+}
+
+void popLexemsUntilPrimaryKeywordExclIO(QList<Lexem*> & lexems, Statement &result)
+{
+    while (lexems.size()>0) {
+        Lexem * lx = lexems[0];
+        if (lx->type==LxOperSemicolon || lx->type & LxTypePrimaryKwd) {
+            if (lx->type!=LxPriInput && lx->type!=LxPriOutput)
+                break;
+        }
         lexems.pop_front();
         result.data << lx;
     }
@@ -950,6 +968,9 @@ void popFirstStatementByKeyword(QList<Lexem*> &lexems, Statement &result)
     else if (lexems[0]->type==LxNameClass) {
         popVarDeclStatement(lexems, result);
     }
+    else if (lexems[0]->type==LxPriAssignFile) {
+        popAssignFileStatement(lexems, result);
+    }
     else {
         popLexemsUntilSemicolon(lexems, result);
         result.type = LxPriAssign;
@@ -1020,6 +1041,14 @@ void popHaltStatement(QList<Lexem*> &lexems, Statement &result)
     result.data << lexems[0];
     lexems.pop_front();
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
+}
+
+void popAssignFileStatement(QList<Lexem *> &lexems, Statement &result)
+{
+    result.type = lexems[0]->type;
+    result.data << lexems[0];
+    lexems.pop_front();
+    popLexemsUntilPrimaryKeywordExclIO(lexems, result);
 }
 
 void popPreStatement(QList<Lexem*> &lexems, Statement &result)

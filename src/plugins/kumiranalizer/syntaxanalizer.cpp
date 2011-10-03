@@ -41,6 +41,7 @@ struct SyntaxAnalizerPrivate
     void parseEndLoop(int str);
     void parseIfCase(int str);
     void parseLoopBegin(int str);
+    void parseAssignFileStream(int str);
 
     bool findAlgorhitm(const QString &name
                        , const AST::Module*  module
@@ -256,6 +257,9 @@ void SyntaxAnalizer::processAnalisys()
         {
             d->parseInputOutputAssertPrePost(i);
         }
+        else if (st.type==LxPriAssignFile) {
+            d->parseAssignFileStream(i);
+        }
         else if (st.type==LxPriEndModule
                  ||st.type==LxPriAlgBegin
                  ||st.type==LxPriAlgEnd
@@ -361,6 +365,107 @@ void SyntaxAnalizerPrivate::parseModuleHeader(int str)
     mod->header.name = st.data[1]->data.simplified();
 }
 
+void SyntaxAnalizerPrivate::parseAssignFileStream(int str)
+{
+    const Statement & st = statements[str];
+    if (st.hasError())
+        return;
+    if (st.data.size()==1) {
+        st.data[0]->error = _("What to assign?");
+        return;
+    }
+    int deep = 0;
+    int open = -1;
+    QList<Lexem*> lxs;
+    for (int i=1; i<st.data.size(); i++) {
+        Lexem * lx = st.data[i];
+        if (lx->type==LxOperLeftBr) {
+            deep++;
+            if (lxs.isEmpty()) {
+                open = i;
+            }
+        }
+        else if (lx->type==LxOperRightBr) {
+            deep--;
+            if (deep<0) {
+                lx->error = _("No pairing '('");
+                return;
+            }
+        }
+        lxs << lx;
+    }
+    if (deep>0) {
+        st.data[open]->error = _("No pairing ')'");
+        return;
+    }
+    QList< QList<Lexem*> > groups;
+    QList<Lexem*> comas;
+    if (lxs.first()->type==LxOperLeftBr && lxs.last()->type==LxOperRightBr) {
+        lxs.pop_back();
+        lxs.pop_front();
+    }
+    splitLexemsByOperator(lxs, LxOperComa, groups, comas);
+    AST::Expression * expression = 0;
+    LexemType streamType = LexemType(0);
+    for (int i=0; i<groups.size(); i++) {
+        QList<Lexem*> group = groups[i];
+        if (group.isEmpty()) {
+            if (i>0) {
+                comas[i-1]->error = _("Extra coma");
+                return;
+            }
+        }
+        if (!streamType) {
+            if (group[0]->type==LxPriInput || group[0]->type==LxPriOutput) {
+                if (group.size()>1) {
+                    for (int j=1; j<group.size(); j++) {
+                        group[j]->error = _("Garbage after %1", group[0]->data);
+                    }
+                    return;
+                }
+                streamType = group[0]->type;
+            }
+            else {
+                for (int j=0; j<group.size(); j++) {
+                    group[j]->error = _("Here must be \"input\" or \"output\"");
+                }
+                return;
+            }
+        }
+        else if (!expression) {
+            expression = parseExpression(group, st.mod, st.alg);
+            if (!expression)
+                return;
+            if (expression->baseType==AST::TypeString || expression->baseType==AST::TypeCharect) {
+
+            }
+            else {
+                delete expression;
+                for (int j=0; j<group.size(); j++) {
+                    group[j]->error = _("Must be a file name or empty string");
+                }
+                return;
+            }
+        }
+    }
+    if (groups.size()>2) {
+        delete expression;
+        comas[2]->error = _("It is a garbage");
+        for (int i=2; i<groups.size(); i++) {
+            for (int j=0; j<groups[i].size(); j++) {
+                groups[i][j]->error = comas[2]->error;
+            }
+        }
+        return;
+    }
+    AST::Expression * e0 = new AST::Expression;
+    e0->baseType = AST::TypeString;
+    e0->constant = streamType==LxPriInput? "stdin" : "stdout";
+    e0->kind = AST::ExprConst;
+    e0->dimension = 0;
+    st.statement->expressions.append(e0);
+    st.statement->expressions.append(expression);
+}
 
 void SyntaxAnalizerPrivate::parseVarDecl(int str)
 {

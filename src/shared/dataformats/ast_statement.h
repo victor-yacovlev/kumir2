@@ -41,6 +41,9 @@ enum StatementType {
     /** File output */
     StFileOutput,
 
+    /** Assign file as I/O stream */
+    StAssignFileStream,
+
     /** Loop block */
     StLoop,
 

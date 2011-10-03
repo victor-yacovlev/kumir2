@@ -276,13 +276,19 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
     if (removedStatements.size()>0 || newStatements.size()>0)
         doCompilation(subject, removedStatements, newStatements, statements, insertPos);
 
-    foreach (Statement * st, removedStatements) {
-        foreach (Lexem * lx, st->data) {
-            delete lx;
+    for (int i=0; i<removedStatements.size(); i++) {
+        Statement * st = removedStatements[i];
+        if (st) {
+            for (int j=0; j<st->data.size(); j++) {
+                Lexem * lx = st->data[j];
+                if (lx) {
+                    delete lx;
+                    st->data[j] = 0;
+                }
+            }
+            removedStatements[i] = 0;
         }
-        delete st;
     }
-
 }
 
 QString AnalizerPrivate::StandartFunctionsModuleName = "Standart functions";

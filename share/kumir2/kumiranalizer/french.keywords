@@ -54,3 +54,5 @@ boolean array type name = booléen\s+tableau
 include file = inclusion
 pause running = pause
 terminate running = arrêter
+assign stream = assigner
+
