@@ -11,12 +11,12 @@
 <context>
     <name>Editor::EditorPlugin</name>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="174"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="179"/>
         <source>Can&apos;t open file %1 for writing</source>
         <translation>Не могу открыть %1 для записи</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="206"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="211"/>
         <source>Editor</source>
         <translation>Редактор</translation>
     </message>
@@ -34,12 +34,12 @@
         <translation>Стр: %1, Поз: %2</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="573"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="574"/>
         <source>Edit</source>
         <translation>Редактирование</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="590"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="591"/>
         <source>Insert</source>
         <translation>Вставка</translation>
     </message>
@@ -305,47 +305,47 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="508"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="509"/>
         <source>Select all text in editor</source>
         <translation>Выбрать весь текст</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="514"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="515"/>
         <source>Copy selection to clipboard</source>
         <translation>Скопировать в буфер обмена</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="520"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="521"/>
         <source>Cut selection to clipboard</source>
         <translation>Вырезать в буфер обмена</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="526"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="527"/>
         <source>Paste from clipboard</source>
         <translation>Вставить из буфера обмена</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="532"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="533"/>
         <source>Delete line under cursor</source>
         <translation>Удалить строку</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="538"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="539"/>
         <source>Delete text from cursor to end of line</source>
         <translation>Удалить текст до конца строки</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="545"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="546"/>
         <source>Undo last action</source>
         <translation>Отменить последнее действие</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="553"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="554"/>
         <source>Redo last undoed action</source>
         <translation>Повторить отмененное действие</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="561"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="562"/>
         <source>(Un)Comment lines</source>
         <translation>(Раз)комменировать строки</translation>
     </message>

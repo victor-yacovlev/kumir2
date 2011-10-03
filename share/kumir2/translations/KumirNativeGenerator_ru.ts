@@ -4,7 +4,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../../src/plugins/kumirnativegenerator/kumirnativegeneratorplugin.cpp" line="791"/>
+        <location filename="../../../src/plugins/kumirnativegenerator/kumirnativegeneratorplugin.cpp" line="809"/>
         <source>Assertion false</source>
         <translation type="unfinished">Утверждение ложно</translation>
     </message>
