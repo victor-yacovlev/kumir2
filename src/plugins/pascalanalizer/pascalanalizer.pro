@@ -41,7 +41,7 @@ ippcbin.commands = \
     $$QMAKE_MKDIR $$IDE_BUILD_TREE/libexec/kumir2/ && \
     $$QMAKE_COPY $${_PRO_FILE_PWD_}/ippc/compiler/$$PPCNAME $$IDE_BUILD_TREE/libexec/kumir2/ippc
 ippcbin.files = $$IDE_BUILD_TREE/libexec/kumir2/ippc
-ippcbin.path = libexec/kumir2
+ippcbin.path = $$INSTALL_ROOT/libexec/kumir2
 
 
 QMAKE_EXTRA_TARGETS += ippcbin
