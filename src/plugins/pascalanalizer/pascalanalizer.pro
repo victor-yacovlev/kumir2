@@ -31,14 +31,22 @@ win32 {
 
 ippcbin.target = $$IDE_BUILD_TREE/libexec/kumir2/ippc
 ippcbin.commands = \
+    cd $${_PRO_FILE_PWD_}/ippc/rtl && \
+    fpcmake && \
+    cd $${_PRO_FILE_PWD_}/ippc/compiler && \
+    fpcmake && \
     cd $${_PRO_FILE_PWD_}/ippc/ && \
     $$MAKE rtl FPC=$$PPCNAME && \
     $$MAKE compiler FPC=$$PPCNAME && \
     $$QMAKE_MKDIR $$IDE_BUILD_TREE/libexec/kumir2/ && \
     $$QMAKE_COPY $${_PRO_FILE_PWD_}/ippc/compiler/$$PPCNAME $$IDE_BUILD_TREE/libexec/kumir2/ippc
+ippcbin.files = $$IDE_BUILD_TREE/libexec/kumir2/ippc
+ippcbin.path = libexec/kumir2
+
 
 QMAKE_EXTRA_TARGETS += ippcbin
 PRE_TARGETDEPS += $$IDE_BUILD_TREE/libexec/kumir2/ippc
+INSTALLS += ippcbin
 
 
 
