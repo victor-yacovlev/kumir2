@@ -149,6 +149,7 @@ BuildRequires:     gcc-c++ >= 4
             cmd = cmd.replace("%datadir%", "$RPM_BUILD_ROOT/%{_datadir}")
             cmd = cmd.replace("%bindir%", "$RPM_BUILD_ROOT/%{_bindir}")
             cmd = cmd.replace("%libdir%", "$RPM_BUILD_ROOT/%{_libdir}")
+            cmd = cmd.replace("%libexecdir%", "$RPM_BUILD_ROOT/usr/libexec")
             out.write(cmd+"\n")
     
     out.write("\n%clean\nrm -rf $RPM_BUILD_ROOT\n\n")

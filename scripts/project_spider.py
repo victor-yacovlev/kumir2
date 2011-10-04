@@ -289,6 +289,9 @@ def __scan_plugin(toplevel, specfilename):
                 c.dirs += ["%datadir%/kumir2/translations/"]
                 c.installcmds += ["mkdir -p %datadir%/kumir2/translations/"]
             c.installcmds += ["cp share/kumir2/translations/"+qm+" %datadir%/kumir2/translations/"]
+    for lx in c.libexecs:
+        c.installcmds += ["mkdir -p %libexecdir%/kumir2/"]
+        c.installcmds += ["cp libexec/kumir2/"+lx+" %libexecdir%/kumir2/"]
     if os.path.exists(toplevel+"/share/kumir2/"+basename):
         c.dirs += ["%datadir%/kumir2/"+basename]
         c.filesmasks += ["%datadir%/kumir2/"+basename+"/*"]

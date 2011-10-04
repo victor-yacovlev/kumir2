@@ -174,6 +174,7 @@ override_dh_auto_install:
             cmd = cmd.replace("%datadir%", "$(CURDIR)/debian/tmp/usr/share")
             cmd = cmd.replace("%bindir%", "$(CURDIR)/debian/tmp/usr/bin")
             cmd = cmd.replace("%libdir%", "$(CURDIR)/debian/tmp/usr/lib")
+            cmd = cmd.replace("%libexecdir%", "$(CURDIR)/debian/tmp/usr/libexec")
             result += "    "+cmd+"\n"
     
     return result.replace("    ", "\t")
@@ -184,12 +185,15 @@ def gen_package_install(component):
         f = f.replace("%datadir%", "usr/share")
         f = f.replace("%bindir%", "usr/bin")
         f = f.replace("%libdir%", "usr/lib")
+        f = f.replace("%libexecdir%", "usr/libexec")
         result += f+"\n"
     for f in component.plugins:
         result += "usr/lib/kumir2/plugins/lib"+f+".so\n"
         result += "usr/lib/kumir2/plugins/"+f+".pluginspec\n"
     for f in component.libs:
         result += "usr/lib/kumir2/lib"+f+".so*\n"
+    for f in component.libexecs:
+        result += "usr/libexec/kumir2/"+f+"\n"
     return result
 
 def gen_install(proj):
