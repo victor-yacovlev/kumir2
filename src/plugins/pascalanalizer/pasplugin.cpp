@@ -12,7 +12,15 @@ PasPlugin::PasPlugin() :
 
 QString PasPlugin::initialize(const QStringList &)
 {
+#ifdef Q_OS_UNIX
     s_fpcUnitsDir = probeFPC();
+#endif
+#ifdef Q_OS_WIN32
+    s_fpcUnitsDir = qApp->applicationDirPath()+"/../fpc/units/i386-win32/";
+    s_fpcUnitsDir = QDir::cleanPath(s_fpcUnitsDir);
+    s_fpcUnitsDir = QDir::toNativeSeparators(s_fpcUnitsDir);
+    s_fpcUnitsDir.replace("\\","\\\\");
+#endif
     return "";
 }
 
@@ -33,7 +41,7 @@ int PasPlugin::newDocument()
 #ifdef Q_OS_WIN32
 QString PasPlugin::getRTLUnitPath()
 {
-    QString result = qApp->applicationDirPath()+"/../fpc-ippc/units/i386-win32/rtl";
+    QString result = qApp->applicationDirPath()+"/../fpc/units/i386-win32/rtl";
     result = QDir::cleanPath(result);
     result = QDir::toNativeSeparators(result);
     result.replace("\\","\\\\");
@@ -71,7 +79,6 @@ QString PasPlugin::probeFPC()
     return prefix+fpcVersion+"/units/"+fpcArch+"-"+fpcOS+"/";
 }
 
-QString PasPlugin::s_fpcUnitsDir = "";
 
 QString PasPlugin::getRTLUnitPath()
 {
@@ -79,6 +86,8 @@ QString PasPlugin::getRTLUnitPath()
 }
 
 #endif
+
+QString PasPlugin::s_fpcUnitsDir = "";
 
 void PasPlugin::dropDocument(int documentId)
 {

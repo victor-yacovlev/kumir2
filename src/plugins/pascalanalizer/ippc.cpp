@@ -24,6 +24,7 @@ IPPC::IPPC(const QStringList & unitpaths, QObject *parent) :
     connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(handleError(QProcess::ProcessError)));
     ensureProcessRunning();
     foreach (const QString & unitpath, unitpaths) {
+        qDebug() << "AddUnitPath " << unitpath;
         ts << "addunitpath " << unitpath << " \n";
     }
     ts.flush();

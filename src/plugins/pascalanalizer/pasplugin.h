@@ -61,8 +61,8 @@ public:
 protected:
 #ifdef Q_OS_UNIX
     static QString probeFPC();
-    static QString s_fpcUnitsDir;
 #endif
+    static QString s_fpcUnitsDir;
     QString initialize(const QStringList &arguments);
     void updateSourceText(int documentId, const Shared::ChangeTextTransaction & changes);
 private:
