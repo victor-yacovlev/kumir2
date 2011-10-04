@@ -30,7 +30,7 @@ macx-* {
     FPCMAKE = fpcmake
 }
 
-FPCNAME = PPCNAME
+FPCNAME = $$PPCNAME
 IPPCBIN = ippc
 
 win32 {
