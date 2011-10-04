@@ -98,9 +98,12 @@ def gen_control(proj):
             if len(proj.version_extra)>0:
                 result += "."+proj.version_extra
             result += ")"
-        result += "\n"
+        
         for oth in item.requires_other:
             result += ", "+oth
+
+        result += "\n"
+        
         result += "Description: "+item.summary["en"]+"\n"
         if item.description.has_key("en"):
             desc_lines = item.description["en"].split("\n")
