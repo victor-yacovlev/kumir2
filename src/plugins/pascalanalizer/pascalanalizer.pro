@@ -20,7 +20,7 @@ SOURCES += \
 PPCNAME = ppc386
 linux-* {
     ARCH = $$system(arch)
-    contains(ARCH,x86_64): PPCNAME = ppcx86_64
+    contains(ARCH,x86_64): PPCNAME = ppcx64
     MAKE = make
 }
 win32 {

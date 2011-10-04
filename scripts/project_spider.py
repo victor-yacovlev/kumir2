@@ -72,6 +72,9 @@ class ProjectModel:
             for e in item.desktopfiles:
                 if not e in all_in_one.desktopfiles:
                     all_in_one.desktopfiles += [e]
+            for e in item.libexecs:
+                if not e in all_in_one.libexecs:
+                    all_in_one.libexecs += [e]
         self.components = { "" : all_in_one }
             
 
