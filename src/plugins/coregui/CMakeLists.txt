@@ -52,8 +52,4 @@ add_library(CoreGUI SHARED ${UI_SOURCES} ${MOC_SOURCES} ${SOURCES} ${QRC_SOURCES
 target_link_libraries(CoreGUI ${QT_LIBRARIES} ExtensionSystem DataFormats KumirStdLib)
 
 copyResources(coregui)
-if(WIN32)
-	install(TARGETS CoreGUI DESTINATION ${LIB_BASENAME}/kumir2/plugins)
-else()
-	install(TARGETS CoreGUI LIBRARY DESTINATION ${LIB_BASENAME}/kumir2/plugins)
-endif()
+install(TARGETS CoreGUI DESTINATION ${PLUGINS_DIR})

@@ -6,14 +6,14 @@ include_directories(${CMAKE_SOURCE_DIR}/src/plugins)
 
 
 set(CMAKE_INSTALL_RPATH
-    "$ORIGIN/.."
+    "$ORIGIN/../${LIBS_DIR}"
 )
 
 set(LIBRARY_OUTPUT_PATH ${PLUGIN_OUTPUT_PATH})
 
 macro(copySpecFile pluginName)
     file(COPY ${pluginName}.pluginspec DESTINATION ${PLUGIN_OUTPUT_PATH})
-    install(FILES ${PLUGIN_OUTPUT_PATH}/${pluginName}.pluginspec DESTINATION ${LIB_BASENAME}/kumir2/plugins)
+    install(FILES ${PLUGIN_OUTPUT_PATH}/${pluginName}.pluginspec DESTINATION ${PLUGINS_DIR})
 endmacro(copySpecFile)
 
 macro(handleTranslation pluginName)
@@ -23,7 +23,7 @@ macro(handleTranslation pluginName)
         get_filename_component(basename ${ts_file} NAME_WE)
         set(qm_target ${basename}_qm)
         add_custom_target(${qm_target} ALL ${QT_LRELEASE_EXECUTABLE} -qm ${SHARE_PATH}/translations/${basename}.qm ${ts_file})
-        install(FILES ${SHARE_PATH}/translations/${basename}.qm DESTINATION share/kumir2/translations)
+        install(FILES ${SHARE_PATH}/translations/${basename}.qm DESTINATION ${RESOURCES_DIR}/translations)
     endforeach(ts_file)
 endmacro(handleTranslation)
 
@@ -35,7 +35,7 @@ macro(copyResources pluginDir)
             get_filename_component(subdir ${res} PATH)
             file(MAKE_DIRECTORY ${SHARE_PATH}/${pluginDir}/${subdir})
             file(COPY ${CMAKE_SOURCE_DIR}/share/kumir2/${pluginDir}/${res} DESTINATION ${SHARE_PATH}/${pluginDir}/${subdir})
-            install(FILES ${SHARE_PATH}/${pluginDir}/${res} DESTINATION share/kumir2/${pluginDir}/${subdir})
+            install(FILES ${SHARE_PATH}/${pluginDir}/${res} DESTINATION ${RESOURCES_DIR}/${pluginDir}/${subdir})
         endif()
     endforeach(res)
 endmacro(copyResources)
@@ -48,7 +48,7 @@ macro(copyResourcesExcl pluginDir exclPattern)
             get_filename_component(subdir ${res} PATH)
             file(MAKE_DIRECTORY ${SHARE_PATH}/${pluginDir}/${subdir})
             file(COPY ${CMAKE_SOURCE_DIR}/share/kumir2/${pluginDir}/${res} DESTINATION ${SHARE_PATH}/${pluginDir}/${subdir})
-            install(FILES ${SHARE_PATH}/${pluginDir}/${res} DESTINATION share/kumir2/${pluginDir}/${subdir})
+            install(FILES ${SHARE_PATH}/${pluginDir}/${res} DESTINATION ${RESOURCES_DIR}/${pluginDir}/${subdir})
         endif()
     endforeach(res)
 endmacro(copyResourcesExcl)

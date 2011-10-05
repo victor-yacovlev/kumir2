@@ -1,5 +1,5 @@
 set(CMAKE_INSTALL_RPATH
-    "$ORIGIN/../${LIB_BASENAME}/kumir2/"
+    "$ORIGIN/../${LIBS_DIR}/"
 )
 
 include(kumir2-classic.cmake)

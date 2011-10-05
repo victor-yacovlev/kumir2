@@ -42,8 +42,5 @@ add_library(Editor SHARED ${UI_SOURCES} ${MOC_SOURCES} ${SOURCES})
 target_link_libraries(Editor ${QT_LIBRARIES} ExtensionSystem DataFormats)
 
 copyResources(editor)
-if(WIN32)
-	install(TARGETS Editor DESTINATION ${LIB_BASENAME}/kumir2/plugins)
-else()
-	install(TARGETS Editor LIBRARY DESTINATION ${LIB_BASENAME}/kumir2/plugins)
-endif()
+
+install(TARGETS Editor DESTINATION ${PLUGINS_DIR})

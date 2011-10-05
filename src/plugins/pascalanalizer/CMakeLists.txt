@@ -41,28 +41,23 @@ set(FPC_FLAGS
     -Fu${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/ippc_binary
 )
 
-set(LIBEXEC_DIR ${CMAKE_BINARY_DIR}/libexec)
-file(MAKE_DIRECTORY ${LIBEXEC_DIR})
+file(MAKE_DIRECTORY ${LIBEXECS_PATH})
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/ippc_binary)
 
 
 add_custom_command(
-    OUTPUT ${LIBEXEC_DIR}/ippc
+    OUTPUT ${LIBEXECS_PATH}/ippc
     DEPENDS ${IPPC_SRC}
-    COMMAND ${FPC_COMPILER} ${FPC_FLAGS} -o${LIBEXEC_DIR}/ippc ${CMAKE_CURRENT_SOURCE_DIR}/ippc/compiler/pp.pas
+    COMMAND ${FPC_COMPILER} ${FPC_FLAGS} -o${LIBEXECS_PATH}/ippc ${CMAKE_CURRENT_SOURCE_DIR}/ippc/compiler/pp.pas
 )
 
-add_custom_target(ippc_binary ALL DEPENDS ${LIBEXEC_DIR}/ippc)
+add_custom_target(ippc_binary ALL DEPENDS ${LIBEXECS_PATH}/ippc)
 
-if(WIN32)
-	install(TARGETS PascalAnalizer DESTINATION ${LIB_BASENAME}/kumir2/plugins)
-else()
-	install(TARGETS PascalAnalizer LIBRARY DESTINATION ${LIB_BASENAME}/kumir2/plugins)
-endif()
+install(TARGETS PascalAnalizer DESTINATION ${PLUGINS_DIR})
 
 install(
-    FILES ${LIBEXEC_DIR}/ippc
-    DESTINATION libexec
+    FILES ${LIBEXECS_PATH}/ippc
+    DESTINATION ${LIBEXECS_DIR}
     PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
                 GROUP_EXECUTE GROUP_READ
                 WORLD_EXECUTE WORLD_READ

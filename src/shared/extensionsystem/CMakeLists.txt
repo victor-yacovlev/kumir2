@@ -37,8 +37,5 @@ add_library(ExtensionSystem SHARED  ${UI_HEADERS} ${SOURCES} ${MOC_SOURCES})
 target_link_libraries(ExtensionSystem ${QT_LIBRARIES})
 set_property(TARGET ExtensionSystem APPEND PROPERTY COMPILE_DEFINITIONS EXTENSIONSYSTEM_LIBRARY)
 
-if(WIN32)
-install(TARGETS ExtensionSystem DESTINATION bin)
-else()
-install(TARGETS ExtensionSystem LIBRARY DESTINATION ${LIB_BASENAME}/kumir2)
-endif()
+
+install(TARGETS ExtensionSystem DESTINATION ${LIBS_DIR})

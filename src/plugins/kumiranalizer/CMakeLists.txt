@@ -36,8 +36,4 @@ add_custom_target(
 install(FILES ${CMAKE_BINARY_DIR}/share/kumir2/kumiranalizer/messages.csv DESTINATION share/kumir2/kumiranalizer)
 
 copyResourcesExcl(kumiranalizer .csv)
-if(WIN32)
-	install(TARGETS KumirAnalizer DESTINATION ${LIB_BASENAME}/kumir2/plugins)
-else()
-	install(TARGETS KumirAnalizer LIBRARY DESTINATION ${LIB_BASENAME}/kumir2/plugins)
-endif()
+install(TARGETS KumirAnalizer DESTINATION ${PLUGINS_DIR})

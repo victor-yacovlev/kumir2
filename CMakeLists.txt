@@ -17,22 +17,44 @@ else()
     set(LIB_BASENAME lib)
 endif()
 
+if(WIN32)
+  set(EXEC_DIR bin)
+  set(LIBS_DIR bin)
+  set(LIB_BASENAME lib)
+  set(PLUGINS_DIR lib/kumir2/plugins)
+  set(RESOURCES_DIR share/kumir2)
+  set(LIBEXECS_DIR bin)
+elseif(APPLE)
+  set(EXEC_DIR Kumir.app/Contents/MacOS)
+  set(LIBS_DIR Kumir.app/Contents/PlugIns)
+  set(PLUGINS_DIR Kumir.app/Contents/PlugIns)
+  set(RESOURCES_DIR Kumir.app/Contents/Resources)
+  set(LIBEXECS_DIR Kumir.app/Contents/MacOS)
+else()
+  set(EXEC_DIR bin)
+  set(LIBS_DIR ${LIB_BASENAME}/kumir2)
+  set(PLUGINS_DIR ${LIB_BASENAME}/kumir2/plugins)
+  set(RESOURCES_DIR share/kumir2)
+  set(LIBEXECS_DIR libexec/kumir2)
+endif()
+
 add_definitions(-DIDE_LIBRARY_BASENAME="${LIB_BASENAME}")
 
 set(PLUGIN_OUTPUT_PATH
-    ${CMAKE_BINARY_DIR}/${LIB_BASENAME}/kumir2/plugins
+    ${CMAKE_BINARY_DIR}/${PLUGINS_DIR}
 )
 
-set(SHARE_PATH ${CMAKE_BINARY_DIR}/share/kumir2)
+set(SHARE_PATH ${CMAKE_BINARY_DIR}/${RESOURCES_DIR})
 
 set(LIBRARY_OUTPUT_PATH
-    ${CMAKE_BINARY_DIR}/${LIB_BASENAME}/kumir2
+    ${CMAKE_BINARY_DIR}/${LIBS_DIR}
 )
 
 set(EXECUTABLE_OUTPUT_PATH
-    ${CMAKE_BINARY_DIR}/bin
+    ${CMAKE_BINARY_DIR}/${EXEC_DIR}
 )
 
+set(LIBEXECS_PATH ${CMAKE_BINARY_DIR}/${LIBEXECS_DIR})
 
 add_subdirectory(src)
 add_subdirectory(src-www)

@@ -16,8 +16,5 @@ handleTranslation(KumirCodeGenerator)
 add_library(KumirCodeGenerator SHARED ${MOC_SOURCES} ${SOURCES})
 target_link_libraries(KumirCodeGenerator ${QT_LIBRARIES} ExtensionSystem DataFormats)
 
-if(WIN32)
-	install(TARGETS KumirCodeGenerator DESTINATION ${LIB_BASENAME}/kumir2/plugins)
-else()
-	install(TARGETS KumirCodeGenerator LIBRARY DESTINATION ${LIB_BASENAME}/kumir2/plugins)
-endif()
+install(TARGETS KumirCodeGenerator DESTINATION ${PLUGINS_DIR})
+
