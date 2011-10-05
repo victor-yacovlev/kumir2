@@ -1,0 +1,10 @@
+set(SRC_RES ${CMAKE_SOURCE_DIR}/share/kumir2/icons)
+file(GLOB_RECURSE resfiles RELATIVE ${SRC_RES} ${SRC_RES}/*)
+
+foreach(res IN ITEMS ${resfiles})
+    if(${res} MATCHES .png)
+        get_filename_component(subdir ${res} PATH)
+        file(MAKE_DIRECTORY ${SHARE_PATH}/${pluginDir}/${subdir})
+        file(COPY ${CMAKE_SOURCE_DIR}/share/kumir2/icons/${res} DESTINATION ${SHARE_PATH}/icons/${subdir})
+    endif()
+endforeach(res)

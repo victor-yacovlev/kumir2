@@ -1,0 +1,12 @@
+add_subdirectory(st_funct)
+add_subdirectory(kumiranalizer)
+add_subdirectory(kumircodegenerator)
+add_subdirectory(kumirnativegenerator)
+add_subdirectory(kumircoderun)
+add_subdirectory(kumirbcompiler)
+add_subdirectory(kumircompiler)
+add_subdirectory(browser)
+add_subdirectory(editor)
+add_subdirectory(coregui)
+add_subdirectory(pascalanalizer)
+

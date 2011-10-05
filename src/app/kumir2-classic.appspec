@@ -1,5 +1,6 @@
 {
     "packagename": "standard",
+    "console": false,
     "requires":	[ "Editor", "Browser", "KumirAnalizer", "KumirCodeGenerator", "KumirCodeRun", "CoreGUI" ],
     "webapps": [ "helpviewer" ],
     "desktopfile": "kumir2-standard.desktop",

@@ -1,5 +1,6 @@
 {
     "packagename": "utils-cc",
+    "console": true,
     "requires":	[ "KumirCompiler" ],
     "summary": {
 	"en": "Kumir to native execuable compiler tool"

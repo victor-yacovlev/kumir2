@@ -1,0 +1,1 @@
+This is binary of Google Web Toolkit compiler version 2.4.0

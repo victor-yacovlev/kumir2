@@ -1,0 +1,5 @@
+add_subdirectory(shared)
+add_subdirectory(plugins)
+add_subdirectory(actors)
+add_subdirectory(app)
+add_subdirectory(tools)

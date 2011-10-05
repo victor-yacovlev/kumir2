@@ -1,5 +1,6 @@
 {
     "packagename": "utils-bc",
+    "console": true,
     "requires":	[ "KumirBCompiler" ],
     "summary": {
 	"en": "Kumir to portable bytecode execuable compiler tool"

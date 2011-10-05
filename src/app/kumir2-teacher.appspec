@@ -1,5 +1,6 @@
 {
     "packagename": "teacher",
+    "console": false,
     "requires":	[ "Editor", "Browser", "KumirAnalizer", "KumirCodeGenerator", "KumirCodeRun", "CoreGUI", "KumirNativeGenerator" ],
     "webapps": [ "helpviewer" ],
     "desktopfile": "kumir2-teacher.desktop",

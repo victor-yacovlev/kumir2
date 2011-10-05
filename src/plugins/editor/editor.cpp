@@ -1,4 +1,5 @@
 #include "editor.h"
+#include "editor_p.h"
 #include "editorplane.h"
 #include "textcursor.h"
 #include "textdocument.h"
@@ -8,71 +9,10 @@
 #include "settingspage.h"
 #include "editcommands.h"
 
+
 namespace Editor {
 
 using namespace Shared;
-
-class EditorPrivate
-        : public QObject
-{
-    Q_OBJECT;
-public:
-    class Editor * q;
-    AnalizerInterface * analizer;
-    TextDocument * doc;
-    TextCursor * cursor;
-    EditorPlane * plane;
-
-    static Clipboard * clipboard;
-    QScrollBar * horizontalScrollBar;
-    QScrollBar * verticalScrollBar;
-    QSettings * settings;
-
-    QLabel * keybStatus;
-    QLabel * positionStatus;
-
-    QAction * copy;
-    QAction * paste;
-    QAction * cut;
-    QAction * selectAll;
-    QAction * deleteLine;
-    QAction * deleteTail;
-    QAction * toggleComment;
-
-    QAction * undo;
-    QAction * redo;
-
-    QMenu * menu_edit;
-    QMenu * menu_insert;
-
-    QAction * separator;
-
-    QList<Macro> systemMacros;
-    QList<Macro> userMacros;
-
-    bool teacherMode;
-
-    int timerId;
-
-    bool notSaved;
-
-    void loadMacros();
-    void updateInsertMenu();
-    void createActions();
-    void updateFromAnalizer();
-    static QList<Shared::ChangeTextTransaction> mergeTransactions(QList<Shared::ChangeTextTransaction>);
-    static bool mergeTransaction(Shared::ChangeTextTransaction & one, const Shared::ChangeTextTransaction & other);
-    void timerEvent(QTimerEvent *e);
-public slots:
-    void updatePosition(int row, int col);
-    void handleCompleteCompilationRequiest(
-        const QStringList & visibleText,
-        const QStringList & hiddenText,
-        int hiddenBaseLine
-        );
-    void handleLineAndTextChanged(const QStack<Shared::ChangeTextTransaction> & changes);
-    void playMacro();
-};
 
 
 void Editor::setTeacherMode(bool v)
@@ -891,4 +831,4 @@ QDataStream & operator>> (QDataStream & stream, Editor & editor)
 
 } // namespace Editor
 
-#include "editor.moc"
+
