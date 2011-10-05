@@ -1,21 +1,11 @@
 Prerequirements to build
 ------------------------
 
-1. Python 2.x
-
-    Kumir 2 build infrastructure uses several python scripts.
-    Do the following before running qmake:
-	a) Download and install Python 2.x from http://www.python.org/
-	b) Set PATH system environment to Python2x.exe location
-
-2. Google Web Toolkit
-    
-    Kumir 2 WebKit-based parts use GWT >= 2.3
-    To setup GWT:
-	a) Download and install recent version of Java SE (JDK) from http://www.oracle.com/
-	b) Download and unzip ant build tool from http://ant.apache.org/
-	c) Download and unzip GWT SDK from http://code.google.com/webtoolkit/
-	d) Set PATH system environment to javac.exe, java.exe and ant.bat locations
+0. QtSDK MinGW - http://qt.nokia.com/
+1. Python 2.x - http://www.python.org/
+2. Java Runtime Environment - http://www.oracle.com/
+3. FreePascal Compiler - http://www.freepascal.org/
+4. CMake - http://www.cmake.org/
 
 
 Native generator toolchain
@@ -28,18 +18,15 @@ Precompiled binaries can be downloaded using svn:
     svn export http://lpm.org.ru/svn/kumir2-support/clang-mingw/
 
 
-Building WebKit-baset parts
----------------------------
-
-Run commands on each WebKit part ( ${web_app_name} ):
-    cd ${kumir2_src_root}/src-www/${web_app_name}
-    ant -Dgwt.sdk=${path_to_gwt_sdk}
-    
-Copy all contents of ${web_app_name}/war except directory WEB-INF into
-${kumir2_build_dir}/share/kumir2/webapps/${web_app_name}/
-
-For helpviewer app copy data contents (user documentation stored in *.xml files)
-    from ${kumir2_src_root}/userdocs/
-    to ${kumir2_build_root}/share/kumir2/webapps/helpviewer/data/russian/
-
-
+Building
+--------
+1. Set PATH environment variable pointing to 
+   cmake.exe, qmake.exe, mingw32-make.exe and fpc.exe.
+2. Open terminal and cd to Kumir2 source root.
+3. Type 'mkdir build' and then 'cd build'. This will make build directory.
+4. Type 'cmake -G "MinGW Makefiles" -DCMAKE_INSTALL_PREFIX=C:\kumir2-dist ../'.
+   This will make skeleton of build and Makefiles.
+   C:\kumir2-dist points to place, where kumir files will be copied after pseudo-installation.
+5. Type 'mingw32-make'. Be patient - build process takes a while.
+6. Type 'mingw32-make install'. This will copy kumir files to installation directory
+   (e.g. C:\kumir2-dist)

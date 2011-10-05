@@ -11,6 +11,10 @@ endif()
 
 string(TOLOWER ${CMAKE_SYSTEM_NAME} FPC_SYSTEM_NAME)
 
+if(WIN32)
+	set(FPC_SYSTEM_NAME win32)
+endif(WIN32)
+
 set(FPC_COMMON_FLAGS
     -T${FPC_SYSTEM_NAME}
     -d${FPC_TARGET}

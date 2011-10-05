@@ -12,9 +12,13 @@ set(SOURCE
     src/ru/niisi/kumir2/helpviewer/client/ViewerRoot.java
     src/ru/niisi/kumir2/helpviewer/client/XrefDatabase.java
 )
+if (WIN32)
+	set(GWTC_COMMAND ${CMAKE_SOURCE_DIR}/gwt/gwtc.cmd ${GWT_DEV_JAR} ${GWT_USER_JAR} ${CMAKE_CURRENT_SOURCE_DIR}/src ${SHARE_PATH}/webapps/helpviewer ${GWT_MAIN_MODULE})
+else()
+	set(GWTC ${JAVA_RUNTIME} -cp ${GWT_DEV_JAR}:${GWT_USER_JAR}:${CMAKE_CURRENT_SOURCE_DIR}/src com.google.gwt.dev.Compiler )
+	set(GWTC_COMMAND ${GWTC} ${GWT_MAIN_MODULE} -war ${SHARE_PATH}/webapps/helpviewer)
+endif()
 
-set(GWTC ${JAVA_RUNTIME} -cp ${GWT_DEV_JAR}:${GWT_USER_JAR}:${CMAKE_CURRENT_SOURCE_DIR}/src com.google.gwt.dev.Compiler )
-set(GWTC_COMMAND ${GWTC} ${GWT_MAIN_MODULE} -war ${SHARE_PATH}/webapps/helpviewer)
 
 
 add_custom_command(

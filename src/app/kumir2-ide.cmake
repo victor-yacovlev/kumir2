@@ -8,7 +8,7 @@ set(SPLASHSCREEN
 
 set(SRC main.cpp)
 if(WIN32)
-    list(APPEND SRC kumir2-ide.rc)
+    list(APPEND SRC kumir2.rc)
 endif(WIN32)
 
 add_executable(kumir2-ide WIN32 ${SRC})
