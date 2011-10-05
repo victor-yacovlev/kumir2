@@ -54,7 +54,12 @@ add_custom_command(
 
 add_custom_target(ippc_binary ALL DEPENDS ${LIBEXEC_DIR}/ippc)
 
-install(TARGETS PascalAnalizer LIBRARY DESTINATION ${LIB_BASENAME}/kumir2/plugins)
+if(WIN32)
+	install(TARGETS PascalAnalizer DESTINATION ${LIB_BASENAME}/kumir2/plugins)
+else()
+	install(TARGETS PascalAnalizer LIBRARY DESTINATION ${LIB_BASENAME}/kumir2/plugins)
+endif()
+
 install(
     FILES ${LIBEXEC_DIR}/ippc
     DESTINATION libexec

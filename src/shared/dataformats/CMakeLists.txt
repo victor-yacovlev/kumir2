@@ -18,4 +18,9 @@ set(SOURCES
 add_library(DataFormats SHARED  ${SOURCES})
 target_link_libraries(DataFormats ${QT_LIBRARIES})
 set_property(TARGET DataFormats APPEND PROPERTY COMPILE_DEFINITIONS DATAFORMATS_LIBRARY)
+
+if(WIN32)
+install(TARGETS DataFormats DESTINATION bin)
+else()
 install(TARGETS DataFormats LIBRARY DESTINATION ${LIB_BASENAME}/kumir2)
+endif()

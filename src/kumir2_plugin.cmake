@@ -52,3 +52,5 @@ macro(copyResourcesExcl pluginDir exclPattern)
         endif()
     endforeach(res)
 endmacro(copyResourcesExcl)
+
+
