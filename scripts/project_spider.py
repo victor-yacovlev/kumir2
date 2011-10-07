@@ -32,9 +32,6 @@ class ProjectModel:
         all_in_one.summary["en"] = "Kumir 2 Education System"
         all_in_one.description["en"] = "Second generation of well-known system Kumir"
         for name, item in self.components.items():
-            for req in item.requires_qt:
-                if not req in all_in_one.requires_qt:
-                    all_in_one.requires_qt += [req]
             for req in item.requires_other:
                 if not req in all_in_one.requires_other:
                     all_in_one.requires_other += [req]
@@ -54,12 +51,6 @@ class ProjectModel:
             for e in item.plugins:
                 if not e in all_in_one.plugins:
                     all_in_one.plugins += [e]
-            for e in item.buildcmds:
-                if not e in all_in_one.buildcmds:
-                    all_in_one.buildcmds += [e]
-            for e in item.installcmds:
-                if not e in all_in_one.installcmds:
-                    all_in_one.installcmds += [e]
             for e in item.webapps:
                 if not e in all_in_one.webapps:
                     all_in_one.webapps += [e]
@@ -224,11 +215,6 @@ def __scan_plugin(toplevel, specfilename):
             c.filesmasks += [fullqm]
             if not "%datadir%/kumir2/translations/" in c.dirs:
                 c.dirs += ["%datadir%/kumir2/translations/"]
-                c.installcmds += ["mkdir -p %datadir%/kumir2/translations/"]
-            c.installcmds += ["cp share/kumir2/translations/"+qm+" %datadir%/kumir2/translations/"]
-    for lx in c.libexecs:
-        c.installcmds += ["mkdir -p %libexecdir%/kumir2/"]
-        c.installcmds += ["cp libexec/kumir2/"+lx+" %libexecdir%/kumir2/"]
     if os.path.exists(toplevel+"/share/kumir2/"+basename):
         c.dirs += ["%datadir%/kumir2/"+basename]
         c.filesmasks += ["%datadir%/kumir2/"+basename+"/*"]
@@ -299,8 +285,6 @@ def __scan_webapplication(toplevel, specfilename):
     if spec.has_key("extrafiles"):
         extrafiles = spec["extrafiles"]
         for ef in extrafiles:
-            c.installcmds += ["mkdir -p "+ef["targetdir"]]
-            c.installcmds += ["cp "+ef["source"]+" "+ef["targetdir"]]
             if not ef["targetdir"] in c.dirs:
                 c.dirs += [ef["targetdir"]]
     c.isweb = True
@@ -370,9 +354,6 @@ def __merge_components(lst):
             result[name] = item
         else:
             c = result[name]
-            for r in item.requires_qt:
-                if not r in c.requires_qt:
-                    c.requires_qt += [r]
             for r in item.requires_kumir2:
                 if not r in c.requires_kumir2:
                     c.requires_kumir2 += [r]
@@ -397,12 +378,6 @@ def __merge_components(lst):
             for r in item.plugins:
                 if not r in c.plugins:
                     c.plugins += [r]
-            for r in item.buildcmds:
-                if not r in c.buildcmds:
-                    c.buildcmds += [r]
-            for r in item.installcmds:
-                if not r in c.installcmds:
-                    c.installcmds += [r]
             result[name] = c
     return result
 
