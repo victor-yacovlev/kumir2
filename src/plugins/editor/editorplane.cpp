@@ -298,7 +298,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
         QApplication::restoreOverrideCursor();
         int dX = e->pos().x() - pnt_textPress.x();
         int dY = e->pos().y() - pnt_textPress.y();
-        qreal distance = sqrt(dX*dX+dY*dY);
+        qreal distance = sqrt(double(dX*dX+dY*dY));
         if (pnt_textPress.x()==-1000 && !b_selectionInProgress)
             distance = 0;
         qreal therehold = QApplication::startDragDistance();

@@ -41,40 +41,40 @@ endif()
 add_definitions(-DIDE_LIBRARY_BASENAME="${LIB_BASENAME}")
 
 set(PLUGIN_OUTPUT_PATH
-    ${CMAKE_BINARY_DIR}/${PLUGINS_DIR}
+    ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${PLUGINS_DIR}
 )
 
-set(SHARE_PATH ${CMAKE_BINARY_DIR}/${RESOURCES_DIR})
+set(SHARE_PATH ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${RESOURCES_DIR})
 
 set(LIBRARY_OUTPUT_PATH
-    ${CMAKE_BINARY_DIR}/${LIBS_DIR}
+    ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${LIBS_DIR}
 )
 
 set(EXECUTABLE_OUTPUT_PATH
-    ${CMAKE_BINARY_DIR}/${EXEC_DIR}
+    ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${EXEC_DIR}
 )
 
-set(LIBEXECS_PATH ${CMAKE_BINARY_DIR}/${LIBEXECS_DIR})
+set(LIBEXECS_PATH ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${LIBEXECS_DIR})
 
 add_subdirectory(src)
 add_subdirectory(src-www)
 add_subdirectory(share/kumir2/icons)
 
 if(UNIX AND NOT APPLE)
-    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/share/applications)
-    file(COPY ${CMAKE_SOURCE_DIR}/kumir2-professional.desktop DESTINATION ${CMAKE_BINARY_DIR}/share/applications)
-    file(COPY ${CMAKE_SOURCE_DIR}/kumir2-standard.desktop DESTINATION ${CMAKE_BINARY_DIR}/share/applications)
-    file(COPY ${CMAKE_SOURCE_DIR}/kumir2-teacher.desktop DESTINATION ${CMAKE_BINARY_DIR}/share/applications)
-    install(FILES ${CMAKE_BINARY_DIR}/share/applications/kumir2-professional.desktop DESTINATION share/applications)
-    install(FILES ${CMAKE_BINARY_DIR}/share/applications/kumir2-standard.desktop DESTINATION share/applications)
-    install(FILES ${CMAKE_BINARY_DIR}/share/applications/kumir2-teacher.desktop DESTINATION share/applications)
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications)
+    file(COPY ${CMAKE_SOURCE_DIR}/kumir2-professional.desktop DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications)
+    file(COPY ${CMAKE_SOURCE_DIR}/kumir2-standard.desktop DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications)
+    file(COPY ${CMAKE_SOURCE_DIR}/kumir2-teacher.desktop DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications)
+    install(FILES ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications/kumir2-professional.desktop DESTINATION share/applications)
+    install(FILES ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications/kumir2-standard.desktop DESTINATION share/applications)
+    install(FILES ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications/kumir2-teacher.desktop DESTINATION share/applications)
     file(GLOB_RECURSE icons RELATIVE ${CMAKE_SOURCE_DIR}/app_icons/linux ${CMAKE_SOURCE_DIR}/app_icons/linux/*)
     foreach(icon IN ITEMS ${icons})
         if(NOT ${icon} MATCHES .svn*)
             get_filename_component(subdir ${icon} PATH)
-            file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/share/icons/${subdir})
-            file(COPY ${CMAKE_SOURCE_DIR}/app_icons/linux/${icon} DESTINATION ${CMAKE_BINARY_DIR}/share/icons/${subdir})
-            install(FILES ${CMAKE_BINARY_DIR}/share/icons/${icon} DESTINATION share/icons/${subdir})
+            file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/icons/${subdir})
+            file(COPY ${CMAKE_SOURCE_DIR}/app_icons/linux/${icon} DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/icons/${subdir})
+            install(FILES ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/icons/${icon} DESTINATION share/icons/${subdir})
         endif()
     endforeach(icon)
 endif(UNIX AND NOT APPLE)

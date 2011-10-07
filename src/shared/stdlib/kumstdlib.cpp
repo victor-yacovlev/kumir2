@@ -4,6 +4,12 @@
 #include "kumstdlib.h"
 #include <stdlib.h>
 
+#ifdef Q_CC_MSVC
+#include <float.h>
+#include <xmath.h>
+#define isnan(x) _isnan(x)
+#endif
+
 static wchar_t __error__st_funct[256];
 
 extern QString __get_error__st_funct()

@@ -10,6 +10,5 @@ add_library(ErrorMessages SHARED  ${SOURCES})
 target_link_libraries(ErrorMessages ${QT_LIBRARIES})
 set_property(TARGET ErrorMessages APPEND PROPERTY COMPILE_DEFINITIONS ERRORMESSAGES_LIBRARY)
 
-
 install(TARGETS ErrorMessages DESTINATION ${LIBS_DIR})
 
