@@ -93,6 +93,14 @@ MainWindow::MainWindow(Plugin * p) :
     ui->actionRecent_files->setMenu(new QMenu());
     connect(ui->actionRecent_files->menu(), SIGNAL(aboutToShow()), this, SLOT(prepareRecentFilesMenu()));
 
+    setStyleSheet(
+                "QMainWindow::separator {"
+                "   width: 8px;"
+                "   height: 8px; "
+                "}"
+
+                );
+
 }
 
 QString MainWindow::StatusbarWidgetCSS =
