@@ -90,7 +90,6 @@ class Component:
     
     def __init__(self):
         self.name = ""
-        self.requires_qt = []
         self.requires_kumir2 = []
         self.requires_web = []
         self.requires_libs = []
@@ -105,8 +104,6 @@ class Component:
         self.icons = []
         self.libs = []
         self.plugins = []
-        self.buildcmds = []
-        self.installcmds = []
         self.isweb = False
         self.isconsole = False
         self.webapps = []
@@ -115,17 +112,6 @@ class Component:
 
 import json
 import os.path
-
-QT_LIBS_BY_CONFIG = {
-                     "core": "QtCore",
-                     "gui": "QtGui",
-                     "xml": "QtXml",
-                     "xmlpatterns": "QtXmlPatterns",
-                     "svg": "QtSvg",
-                     "network": "QtNetwork",
-                     "script": "QtScript",
-                     "webkit": "QtWebKit"
-                     }
 
 def __resolve_simlink(f):
     if not os.name=="nt":
@@ -152,54 +138,6 @@ def __read_json(filename):
     else:
         return json.loads(data, "utf-8")
 
-def __read_qt_pro_file(filename):
-    f = open(filename, 'r')
-    lines = f.read().split('\n')
-    f.close()
-    target = ""
-    config = set()
-    libs = set()
-    qt = set(["QtCore", "QtGui"])
-    for line in lines:
-        line = line.strip()
-        if line.startswith("#"):
-            continue
-        if line.startswith("include("):
-            incl = line[8:-1]
-            dirr, name = os.path.split(filename)
-            incl_filename = dirr+"/"+incl
-            i_target, i_config, i_libs, i_qt = __read_qt_pro_file(incl_filename)
-            config |= i_config
-            libs |= i_libs
-        elif line.startswith("CONFIG"):
-            p = line.find("=")
-            if p!=-1:
-                conf_line = line[p+1:].strip()
-                if not conf_line.startswith("$") and not conf_line.startswith("#"):
-                    confs = set(line.split())
-                    config |= confs
-        elif line.startswith("TARGET"):
-            p = line.find("=")
-            if p!=-1:
-                target = line[p+1:].strip()
-        elif line.startswith("LIBS"):
-            p = line.find("=")
-            if p!=-1:
-                lib_line = line[p+1:]
-            entries = lib_line.split()
-            for entry in entries:
-                if entry.startswith("-l$$qtLibraryTarget("):
-                    libname = entry[20:-1]
-                    libs.add(libname)
-        elif line.startswith("QT") and not filename.endswith("kumir2.pri"):
-            p = line.find("=")
-            if p!=-1:
-                qtmodules = line[p+1:].split()
-            for mod in qtmodules:
-                qt.add(QT_LIBS_BY_CONFIG[mod])
-    if target in libs:
-        libs.remove(target)
-    return target, config, libs, qt
 
 def __translations_list(toplevel, basename):
     result = []
@@ -218,12 +156,9 @@ def __scan_library(toplevel, specfilename):
     c = Component()
     c.name = spec["packagename"]
     dirr, basename = os.path.split(specfilename)
+    target = basename[0:-8]
     basename = basename.lower()[0:-8]
-    profilename = dirr+"/"+basename+".pro"
-    target, config, libs, qt = __read_qt_pro_file(profilename)
     c.libs = [target]
-    c.requires_qt = list(qt)
-    c.requires_libs = list(libs)
     if spec.has_key("summary"):
         c.summary = spec["summary"]
     if spec.has_key("description"):
@@ -261,14 +196,16 @@ def __scan_plugin(toplevel, specfilename):
         else:
             c.name += spec["name"] 
     dirr, basename = os.path.split(specfilename)
+    target = basename[0:-11]
     basename = basename.lower()[0:-11]
     if basename.startswith("actor"):
         basename = basename[5:]
     profilename = dirr+"/"+basename+".pro"
-    target, config, libs, qt = __read_qt_pro_file(profilename)
-    c.plugins += [target]
-    c.requires_qt = list(qt)
-    c.requires_libs = list(libs)
+    
+    if spec.has_key("libs"):
+        c.requires_libs = spec["libs"]
+    if not "ExtensionSystem" in c.requires_libs:
+        c.requires_libs += ["ExtensionSystem"]
     if spec.has_key("requires"):
         c.requires_kumir2 = spec["requires"]
     if spec.has_key("provides"):
@@ -319,9 +256,9 @@ def __scan_application(toplevel, specfilename):
     c = Component()
     c.name = spec["packagename"]
     dirr, basename = os.path.split(specfilename)
+    target = basename[0:-8]
     basename = basename.lower()[0:-8]
-    profilename = dirr+"/"+basename+".pro"
-    target, config, libs, qt = __read_qt_pro_file(profilename)
+    
     c.bins += [target]
     if spec.has_key("win32_extradirs"):
         c.win32_extradirs = spec["win32_extradirs"]
@@ -329,7 +266,7 @@ def __scan_application(toplevel, specfilename):
         c.requires_kumir2 = spec["requires"]
     if spec.has_key("webapps"):
         c.requires_web = spec["webapps"]
-    c.isconsole = "console" in config
+    c.isconsole = spec["console"]
     c.filesmasks += ["%bindir%/"+target]
     if spec.has_key("desktopfile"):
         c.desktopfiles += [spec["desktopfile"]]
@@ -340,12 +277,8 @@ def __scan_application(toplevel, specfilename):
             for f, d in icondirs:
                 c.dirs += ["%datadir%/icons"+d]
                 c.filesmasks += ["%datadir%/icons"+d+"/"+f]
-                c.installcmds += ["mkdir -p %datadir%/icons"+d+"/"]
-                c.installcmds += ["cp app_icons/linux"+d+"/"+f+" %datadir%/icons"+d+"/"]
         c.icons += [icon]
         c.dirs += ["%datadir%/applications"]
-        c.installcmds += ["mkdir -p %datadir%/applications/"]
-        c.installcmds += ["cp "+spec["desktopfile"]+" %datadir%/applications/"]
     if spec.has_key("summary"):
         c.summary = spec["summary"]
     if spec.has_key("description"):
@@ -361,14 +294,8 @@ def __scan_webapplication(toplevel, specfilename):
     c.name = spec["packagename"]
     c.webapps += [basename]
     c.dirs += ["%datadir%/kumir2/webapps/"+basename+"/"]
-    c.installcmds += ["mkdir -p %datadir%/kumir2/webapps/"+basename]
     c.filesmasks += ["%datadir%/kumir2/webapps/"+basename+"/*"]
-    if spec["type"]=="gwt":
-        c.buildcmds += ["ant -f "+dirr+"/build.xml"]
-        c.installcmds += ["cp -R src-www/"+basename+"/war/* %datadir%/kumir2/webapps/"+basename]
-        c.installcmds += ["rm -rf %datadir%/kumir2/webapps/"+basename+"/WEB_INF"]
-    else:
-        c.installcmds += ["cp -R src-www/"+basename+"/* %datadir%/kumir2/webapps/"+basename]
+    
     if spec.has_key("extrafiles"):
         extrafiles = spec["extrafiles"]
         for ef in extrafiles:

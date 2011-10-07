@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 QT_MIN_VERSION = "4.6.3"
+QT_MODULES = ["QtCore", "QtGui", "QtXml", "QtWebkit", "QtScript"]
 GROUP = "Productivity/Scientific/Other"
 PACKAGER = None
 VENDOR = "NIISI RAS"
@@ -49,9 +50,8 @@ Name:    kumir2
 Summary:    Kumir education system
 License:    GPL2+
 BuildRequires:     python
-BuildRequires:     ant
 BuildRequires:     java-1.6.0-openjdk-devel
-BuildRequires:     gwt >= 2.3.0
+BuildRequires:     cmake
 BuildRequires:     gcc-c++ >= 4
 """)
     out.write("%if %{is_fedora}\n")
@@ -78,33 +78,28 @@ BuildRequires:     gcc-c++ >= 4
     out.write("BuildRequires:\t java-1.6.0-openjdk-devel\n")
     out.write("BuildRequires:\t gwt >= 2.3.0\n")
     out.write("BuildRequires:\t gcc-c++ >= 4\n")
+    out.write("%if %{is_fedora}\n")
+    out.write("Requires:\t qt4 >= "+QT_MIN_VERSION+"\n")
+    out.write("%else\n")
+    out.write("Requires:\t libqt4 >= "+QT_MIN_VERSION+"\n")
+    out.write("%endif")
+    for qt in QT_MODULES:
+        out.write("Requires:\tlib"+qt+".so.4\n")
+        out.write("BuildRequires:\tpkgconfig("+qt+")\n")
+        
     if all_in_one:
         item = proj.components[""]
-        out.write("%if %{is_fedora}\n")
-        out.write("Requires:\t qt4 >= "+QT_MIN_VERSION+"\n")
-        out.write("%else\n")
-        out.write("Requires:\t libqt4 >= "+QT_MIN_VERSION+"\n")
-        out.write("%endif")
         if len(item.icons)>0:
             out.write("Requires:\t/usr/bin/gtk-update-icon-cache\n")
-        for qt in item.requires_qt:
-            out.write("Requires:\tlib"+qt+".so.4\n")
         for req in item.requires_other:
             out.write("Requires:\t"+req+"\n")
 
-    qtReqs = set()
     othReqs = set()
     
     for name, item in proj.components.items():
-        qt_req = item.requires_qt
-        for req in qt_req:
-            qtReqs.add("pkgconfig("+req+")")
         orq = item.requires_other
         for o in orq:
             othReqs.add(o)
-    
-    for qt_req in qtReqs:
-        out.write("BuildRequires:\t"+qt_req+"\n")
 
     for o_req in othReqs:
         out.write("BuildRequires:\t"+o_req+"\n")
@@ -128,30 +123,15 @@ BuildRequires:     gcc-c++ >= 4
     out.write("\n\n")
     out.write("%build\n")
     out.write("""
-    if [ -f /usr/bin/qmake-qt4 ]
-    then
-        qmake-qt4
-    else
-        qmake
-    fi
+    mkdir build
+    cd build
+    cmake -DCMAKE_INSTALL_PREFIX=$RPM_BUILD_ROOT/%{_prefix} ../
+    make
     """)
-    out.write("make\n")
-    
-    for name, item in proj.components.items():
-        for cmd in item.buildcmds:
-            out.write(cmd+"\n")
         
     out.write("\n%install\n")
-    out.write("make INSTALL_ROOT=$RPM_BUILD_ROOT/%{_prefix} install\n")
-    
-    for name, item in proj.components.items():
-        for cmd in item.installcmds:
-            cmd = cmd.replace("%datadir%", "$RPM_BUILD_ROOT/%{_datadir}")
-            cmd = cmd.replace("%bindir%", "$RPM_BUILD_ROOT/%{_bindir}")
-            cmd = cmd.replace("%libdir%", "$RPM_BUILD_ROOT/%{_libdir}")
-            cmd = cmd.replace("%libexecdir%", "$RPM_BUILD_ROOT/usr/libexec")
-            out.write(cmd+"\n")
-    
+    out.write("make install\n")
+      
     out.write("\n%clean\nrm -rf $RPM_BUILD_ROOT\n\n")
     
     for name, item in proj.components.items():
@@ -171,8 +151,7 @@ BuildRequires:     gcc-c++ >= 4
                 out.write("BuildArch:\tnoarch\n")
             if len(item.icons)>0:
                 out.write("Requires:\t/usr/bin/gtk-update-icon-cache\n")
-            for qt in item.requires_qt:
-                out.write("Requires:\tlib"+qt+".so.4\n")
+         
             for mod in item.requires_kumir2:
                 out.write("Requires:\tkumir2-module-"+mod+" = "+proj.version)
                 if len(proj.version_extra)>0:

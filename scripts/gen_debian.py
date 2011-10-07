@@ -7,6 +7,7 @@ import string
 import os
 import stat
 
+QT_MODULES = ["Core", "Gui", "Xml", "Webkit", "Script"]
 
 QT_MIN_VERSION = "4.6.3"
 QTWEBKIT_MIN_VERSION = "2.0.0"
@@ -60,7 +61,7 @@ def gen_control(proj):
     result += "Maintainer: "+PACKAGER+"\n"
     result += "Standards-Version: 3.9.1\n"
     result += "Homepage: http://www.niisi.ru/kumir/\n"
-    result += "Build-Depends: debhelper (>= 7.0.50~), libqt4-dev (>= "+QT_MIN_VERSION+"), libqtwebkit-dev (>= "+QTWEBKIT_MIN_VERSION+"), libx11-dev, qt4-qmake, python, ant, gwt, fpc\n"
+    result += "Build-Depends: debhelper (>= 7.0.50~), libqt4-dev (>= "+QT_MIN_VERSION+"), libqtwebkit-dev (>= "+QTWEBKIT_MIN_VERSION+"), libx11-dev, qt4-qmake, python, cmake, fpc\n"
     result += "\n"
     for name, item in proj.components.items():
         name = __debian_name(name)
@@ -72,8 +73,7 @@ def gen_control(proj):
         else:
             result += "Architecture: any\n"
         result += "Depends: ${shlibs:Depends}, ${misc:depends}"
-        qt_req = item.requires_qt
-        for qt in qt_req:
+        for qt in QT_MODULES:
             pkg = "libqt4-"+qt[2:].lower()+" (>= "+QT_MIN_VERSION+")"
             result += ", "+pkg
         lib_req = item.requires_libs
@@ -148,35 +148,14 @@ License: GPL-2+
 
 def gen_rules(proj):
     result = """#!/usr/bin/make -f\n
-export DH_VERBOSE=1
-export DH_OPTIONS
 export LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib:/usr/lib/libfakeroot:$(CURDIR)/debian/tmp/usr/lib/kumir2:/usr/lib/kumir2
+include /usr/share/cdbs/1/class/cmake.mk
+
+
 %:
     dh $@
     
-override_dh_auto_configure:
-    qmake
-
-override_dh_auto_build:
-    make
 """
-    for name, item in proj.components.items():
-        buildcmds = item.buildcmds
-        for cmd in buildcmds:
-            result += "    "+cmd+"\n"
-    result += """
-override_dh_auto_install:
-    make install INSTALL_ROOT=$(CURDIR)/debian/tmp/usr
-"""
-    for name, item in proj.components.items():
-        installcmds = item.installcmds
-        for cmd in installcmds:
-            cmd = cmd.replace("%datadir%", "$(CURDIR)/debian/tmp/usr/share")
-            cmd = cmd.replace("%bindir%", "$(CURDIR)/debian/tmp/usr/bin")
-            cmd = cmd.replace("%libdir%", "$(CURDIR)/debian/tmp/usr/lib")
-            cmd = cmd.replace("%libexecdir%", "$(CURDIR)/debian/tmp/usr/libexec")
-            result += "    "+cmd+"\n"
-    
     return result.replace("    ", "\t")
 
 def gen_package_install(component):
@@ -218,7 +197,7 @@ def gen_dsc(proj):
     result += "Architecture: any\n"
     result += "Standards-Version: 3.9.1\n"
     result += "Homepage: http://www.niisi.ru/kumir/\n"
-    result += "Build-Depends: debhelper (>= 7.0.50~), libqt4-dev (>= "+QT_MIN_VERSION+"), libqtwebkit-dev (>= "+QTWEBKIT_MIN_VERSION+"), libx11-dev, qt4-qmake, python, ant, gwt\n"
+    result += "Build-Depends: debhelper (>= 7.0.50~), libqt4-dev (>= "+QT_MIN_VERSION+"), libqtwebkit-dev (>= "+QTWEBKIT_MIN_VERSION+"), libx11-dev, qt4-qmake, python, cmake, fpc\n"
     binaries = []
     for name, item in proj.components.items():
         if len(name)>0:
