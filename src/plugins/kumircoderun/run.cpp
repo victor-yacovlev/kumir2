@@ -387,6 +387,7 @@ void Run::run()
             break;
         }
     }
+    emit aboutToStop();
 }
 
 } // namespace KumirCodeRun

@@ -18,6 +18,7 @@ struct Context {
     inline Context() {
         IP = 0; type = Bytecode::EL_FUNCTION;
         runMode = CRM_ToEnd; lineNo = -1;
+        algId = -1;
     }
 
     QVariant registers[256];

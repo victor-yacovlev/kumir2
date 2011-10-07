@@ -62,7 +62,7 @@ signals:
                               const QString & functionName,
                               const QVariantList & arguments);
     void resetModule(const QString & pluginName);
-
+    void aboutToStop();
 protected :
     void run();
 

@@ -42,6 +42,7 @@ protected slots:
     void handleNewVariablesWindow(const Shared::BrowserComponent & browser);
     void handleCloseVariablesWindow(QWidget * w);
     void handleRaiseVariablesWindow(QWidget * w);
+
 protected:
     QString initialize(const QStringList &arguments);
     void saveSession() const;

@@ -486,6 +486,7 @@ void KumirProgram::handleRunnerStopped(int rr)
         a_stepOut->setEnabled(plugin_bytecodeRun->canStepOut());
     }
     else if (reason==Shared::RunInterface::UserTerminated) {
+        m_variablesWebObject->refreshRoot();
         s_endStatus = tr("Evaluation terminated");
         m_terminal->finish();
         PluginManager::instance()->switchGlobalState(GS_Observe);
@@ -494,6 +495,7 @@ void KumirProgram::handleRunnerStopped(int rr)
     }
     else if (reason==Shared::RunInterface::Error) {
         s_endStatus = tr("Evaluation error");
+        m_variablesWebObject->refreshRoot();
         m_terminal->error(plugin_bytecodeRun->error());
         plugin_editor->highlightLineRed(i_documentId, plugin_bytecodeRun->currentLineNo());
         PluginManager::instance()->switchGlobalState(GS_Observe);
@@ -503,13 +505,14 @@ void KumirProgram::handleRunnerStopped(int rr)
     else if (reason==Shared::RunInterface::Done) {
         s_endStatus = tr("Evaluation finished");
         m_terminal->finish();
+        m_variablesWebObject->refreshRoot();
         PluginManager::instance()->switchGlobalState(GS_Observe);
         e_state = Idle;
         m_terminal->clearFocus();
     }
 
     if (e_state==Idle) {
-        m_variablesWebObject->reset(0);
+//        m_variablesWebObject->reset(0);
     }
 
 }
@@ -568,12 +571,14 @@ void KumirProgram::switchGlobalState(GlobalState prev, GlobalState cur)
         a_stepOut->setEnabled(true);
         a_stop->setEnabled(true);
     }
+
     if (prev==GS_Unlocked && cur==GS_Running) {
         m_variablesWebObject->reset(plugin_bytecodeRun);
     }
     if (cur==GS_Unlocked) {
         m_variablesWebObject->reset(0);
     }
+
 
 }
 

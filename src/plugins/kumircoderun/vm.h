@@ -51,6 +51,7 @@ signals:
     void inputRequest(const QString & format, const QList<quintptr> & references, const QList<int> & indeces);
     void outputRequest(const QString & out);
     void pauseRequest();
+    void contextAboutToPop();
     void resetModuleRequest(const QString & actorPluginName);
     void invokeExternalFunction(const QString & actorPluginName,
                                 const QString & functionName,
@@ -72,6 +73,7 @@ private:
     int contextByIds(int moduleId, int algorhitmId) const;
     QStack<Variant> stack_values;
     QStack<Context> stack_contexts;
+    Context last_context;
     QMap< QPair<quint8,quint16>, Variant> globals;
     QMap<quint16, Variant> constants;
     QMap< quint32, Bytecode::TableElem > externs;

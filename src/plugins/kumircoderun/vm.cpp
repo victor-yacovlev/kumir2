@@ -61,6 +61,7 @@ void VM::setBlindMode(bool bl)
 
 void VM::reset()
 {
+    last_context = Context();
     b_blindMode = false;
     b_nextCallInto = false;
     s_error = "";
@@ -1106,7 +1107,9 @@ void VM::do_clearmarg(quint16 toLine)
 
 void VM::do_ret()
 {
-    stack_contexts.pop();
+
+    last_context = stack_contexts.pop();
+
     if (!stack_contexts.isEmpty()) {
         nextIP();
     }
@@ -1547,6 +1550,8 @@ int VM::contextByIds(int moduleId, int algorhitmId) const
         if (stack_contexts[i].algId==algorhitmId && stack_contexts[i].moduleId==moduleId)
             return i;
     }
+    if (last_context.algId==algorhitmId && last_context.moduleId==moduleId)
+        return -2;
     return -1;
 }
 
@@ -1569,7 +1574,9 @@ QVariant VM::value(int moduleId, int algorhitmId, int variableId) const
         if (context>-1 && stack_contexts.at(context).locals[variableId].hasValue()) {
             result = stack_contexts.at(context).locals[variableId].value();
         }
-
+        else if (context==-2 && last_context.locals[variableId].hasValue()) {
+            result = last_context.locals[variableId].value();
+        }
     }
     return result;
 }
@@ -1587,19 +1594,19 @@ QList<int> VM::bounds(int moduleId, int algorhitmId, int variableId) const
         }
     }
     else if (algorhitmId!=-1 && moduleId!=-1 && variableId!=-1) {
-        int stack_index = -1;
-        for (int i=stack_contexts.size()-1; i>=0; i--) {
-            if (stack_contexts[i].algId==algorhitmId && stack_contexts[i].moduleId==moduleId) {
-                stack_index = i;
-                break;
-            }
-        }
-        if (stack_index!=-1) {
-            if (variableId<stack_contexts[stack_index].locals.size()) {
-                result = stack_contexts[stack_index].locals[variableId].bounds();
-            }
+        int context = contextByIds(moduleId, algorhitmId);
 
+        if (context>-1) {
+            if (variableId<stack_contexts[context].locals.size()) {
+                result = stack_contexts[context].locals[variableId].bounds();
+            }
         }
+        else if (context==-2) {
+            if (variableId<last_context.locals.size()) {
+                result = last_context.locals[variableId].bounds();
+            }
+        }
+
     }
     return result;
 }
