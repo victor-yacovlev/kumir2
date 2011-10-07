@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 QT_MIN_VERSION = "4.6.3"
-QT_MODULES = ["QtCore", "QtGui", "QtXml", "QtWebkit", "QtScript"]
+QT_MODULES = ["QtCore", "QtGui", "QtXml", "QtWebKit", "QtScript"]
 GROUP = "Productivity/Scientific/Other"
 PACKAGER = None
 VENDOR = "NIISI RAS"
