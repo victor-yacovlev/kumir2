@@ -4,15 +4,17 @@ if(NOT APPLE)
         "$ORIGIN/../${LIBS_DIR}/"
     )
 
-    include(kumir2-classic.cmake)
-    include(kumir2-ide.cmake)
-    include(kumir2-teacher.cmake)
-    include(kumir2-cc.cmake)
-    include(kumir2-bc.cmake)
-    include(kumir2-run.cmake)
+    add_subdirectory(kumir2-classic)
+    add_subdirectory(kumir2-ide)
+    add_subdirectory(kumir2-teacher)
 
 endif(NOT APPLE)
 
 if(APPLE)
-    include(kumir2-macx.cmake)
+    add_subdirectory(kumir2-macx)
 endif(APPLE)
+
+add_subdirectory(kumir2-cc)
+add_subdirectory(kumir2-bc)
+add_subdirectory(kumir2-run)
+

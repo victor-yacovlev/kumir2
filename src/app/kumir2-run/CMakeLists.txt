@@ -3,7 +3,7 @@ set(
     "Actor*,st_funct,!KumirCodeRun"
 )
 
-set(SRC main.cpp)
+set(SRC ../main.cpp)
 
 add_executable(kumir2-run WIN32 ${SRC})
 target_link_libraries(kumir2-run ${QT_LIBRARIES} ExtensionSystem)

@@ -7,7 +7,7 @@ set(
     "coregui/splashscreens/teacher.png"
 )
 
-set(SRC main.cpp)
+set(SRC ../main.cpp)
 if(WIN32)
     list(APPEND SRC kumir2-teacher.rc)
 endif(WIN32)

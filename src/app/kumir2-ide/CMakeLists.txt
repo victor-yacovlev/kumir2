@@ -6,7 +6,7 @@ set(SPLASHSCREEN
     SPLASHSCREEN=coregui/splashscreens/professional.png
 )
 
-set(SRC main.cpp)
+set(SRC ../main.cpp)
 if(WIN32)
     list(APPEND SRC kumir2.rc)
 endif(WIN32)
