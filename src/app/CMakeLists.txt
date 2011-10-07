@@ -1,10 +1,18 @@
-set(CMAKE_INSTALL_RPATH
-    "$ORIGIN/../${LIBS_DIR}/"
-)
+if(NOT APPLE)
 
-include(kumir2-classic.cmake)
-include(kumir2-ide.cmake)
-include(kumir2-teacher.cmake)
-include(kumir2-cc.cmake)
-include(kumir2-bc.cmake)
-include(kumir2-run.cmake)
+    set(CMAKE_INSTALL_RPATH
+        "$ORIGIN/../${LIBS_DIR}/"
+    )
+
+    include(kumir2-classic.cmake)
+    include(kumir2-ide.cmake)
+    include(kumir2-teacher.cmake)
+    include(kumir2-cc.cmake)
+    include(kumir2-bc.cmake)
+    include(kumir2-run.cmake)
+
+endif(NOT APPLE)
+
+if(APPLE)
+    include(kumir2-macx.cmake)
+endif(APPLE)
