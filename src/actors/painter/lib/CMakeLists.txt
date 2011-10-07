@@ -1,4 +1,4 @@
-include(../../kumir2_library.cmake)
+include(../../../kumir2_library.cmake)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})

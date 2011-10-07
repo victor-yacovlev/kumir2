@@ -1,2 +1,2 @@
-include(lib.cmake)
-include(module.cmake)
+add_subdirectory(lib)
+add_subdirectory(module)

@@ -1,4 +1,6 @@
-include(../../kumir2_plugin.cmake)
+include(../../../kumir2_plugin.cmake)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../lib/)
 
 set(SOURCES
     painterplugin.cpp
