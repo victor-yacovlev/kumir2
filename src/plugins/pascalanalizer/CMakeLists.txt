@@ -36,13 +36,12 @@ set(FPC_FLAGS
     -Fi${CMAKE_CURRENT_SOURCE_DIR}/ippc/compiler/systems/
     -Fi${CMAKE_CURRENT_SOURCE_DIR}/ippc/compiler/x86
     -Fi${CMAKE_CURRENT_SOURCE_DIR}/ippc/compiler/${FPC_TARGET}
-    -FE${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/ippc_binary
-    -FU${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/ippc_binary
-    -Fu${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/ippc_binary
+    -FE${CMAKE_CURRENT_BINARY_DIR}/
+    -FU${CMAKE_CURRENT_BINARY_DIR}/
+    -Fu${CMAKE_CURRENT_BINARY_DIR}/
 )
 
 file(MAKE_DIRECTORY ${LIBEXECS_PATH})
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/ippc_binary)
 
 
 add_custom_command(

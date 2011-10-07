@@ -4,10 +4,12 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/src/shared)
 include_directories(${CMAKE_SOURCE_DIR}/src/plugins)
 
+if(NOT APPLE)
+    set(CMAKE_INSTALL_RPATH
+        "$ORIGIN/../"
+    )
+endif()
 
-set(CMAKE_INSTALL_RPATH
-    "$ORIGIN/../${LIBS_DIR}"
-)
 
 set(LIBRARY_OUTPUT_PATH ${PLUGIN_OUTPUT_PATH})
 

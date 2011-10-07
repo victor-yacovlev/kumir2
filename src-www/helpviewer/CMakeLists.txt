@@ -33,6 +33,7 @@ add_custom_target(
         DEPENDS ${SHARE_PATH}/webapps/helpviewer/${GWT_MAIN_MODULE}/${GWT_MAIN_MODULE}.nocache.js
 )
 
+
 file(MAKE_DIRECTORY ${SHARE_PATH}/webapps/helpviewer/images)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/war/images/thumb_vertical.png DESTINATION ${SHARE_PATH}/webapps/helpviewer/images)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/war/images/thumb_vertical.png DESTINATION ${SHARE_PATH}/webapps/helpviewer/images)
@@ -48,3 +49,9 @@ file(MAKE_DIRECTORY ${SHARE_PATH}/webapps/helpviewer/data/russian)
 file(COPY ${CMAKE_SOURCE_DIR}/userdocs/language.xml DESTINATION ${SHARE_PATH}/webapps/helpviewer/data/russian)
 file(COPY ${CMAKE_SOURCE_DIR}/userdocs/system.xml DESTINATION ${SHARE_PATH}/webapps/helpviewer/data/russian)
 
+
+install(
+    DIRECTORY ${SHARE_PATH}/webapps/helpviewer/
+    DESTINATION ${RESOURCES_DIR}/webapps/helpviewer/
+    PATTERN "WEB-INF" EXCLUDE
+)
