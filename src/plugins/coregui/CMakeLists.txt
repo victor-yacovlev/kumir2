@@ -27,7 +27,6 @@ set(MOC_HEADERS
     tabbar.h
     confirmclosedialod.h
     kumirvariableswebobject.h
-    menubar.h
     aboutdialog.h
     pascalprogram.h
     tabwidgetelement.h
