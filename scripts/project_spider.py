@@ -165,8 +165,6 @@ def __scan_library(toplevel, specfilename):
             c.filesmasks += [fullqm]
             if not "%datadir%/kumir2/translations/" in c.dirs:
                 c.dirs += ["%datadir%/kumir2/translations/"]
-                c.installcmds += ["mkdir -p %datadir%/kumir2/translations/"]
-            c.installcmds += ["cp share/kumir2/translations/"+qm+" %datadir%/kumir2/translations/"]
     return c
 
 def __scan_plugin(toplevel, specfilename):
