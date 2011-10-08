@@ -1,0 +1,12 @@
+{
+    "packagename": "common",
+    "summary": {
+        "en": "Shared libraried for various Kumir components"
+    },
+    "description": {
+        "en": "Contains kumir2 extension system skeleton and other libraries"
+    },
+    "otherfiles": [
+        "%datadir%/kumir2/icons/*"
+    ]
+}

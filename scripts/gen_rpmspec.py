@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-QT_MIN_VERSION = "4.6.3"
+QT_MIN_VERSION = "4.7.0"
 QT_MODULES = ["QtCore", "QtGui", "QtXml", "QtWebKit", "QtScript"]
 GROUP = "Productivity/Scientific/Other"
 PACKAGER = None

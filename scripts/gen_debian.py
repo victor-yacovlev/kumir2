@@ -9,7 +9,7 @@ import stat
 
 QT_MODULES = ["Core", "Gui", "Xml", "Webkit", "Script"]
 
-QT_MIN_VERSION = "4.6.3"
+QT_MIN_VERSION = "4.7.0"
 QTWEBKIT_MIN_VERSION = "2.0.0"
 PACKAGER = None
     
