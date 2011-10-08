@@ -20,4 +20,6 @@ add_library(DataFormats SHARED  ${SOURCES})
 target_link_libraries(DataFormats ${QT_LIBRARIES})
 set_property(TARGET DataFormats APPEND PROPERTY COMPILE_DEFINITIONS DATAFORMATS_LIBRARY)
 
+handleTranslation(DataFormats)
+
 install(TARGETS DataFormats DESTINATION ${LIBS_DIR})

@@ -46,4 +46,6 @@ add_library(KumirStdLib SHARED ${SOURCES} ${MOC_SOURCES})
 target_link_libraries(KumirStdLib ${QT_LIBRARIES})
 set_property(TARGET KumirStdLib APPEND PROPERTY COMPILE_DEFINITIONS STDLIB_LIBRARY)
 
+handleTranslation(KumirStdLib)
+
 install(TARGETS KumirStdLib DESTINATION ${LIBS_DIR})

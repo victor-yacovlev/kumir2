@@ -37,5 +37,6 @@ add_library(ExtensionSystem SHARED  ${UI_HEADERS} ${SOURCES} ${MOC_SOURCES})
 target_link_libraries(ExtensionSystem ${QT_LIBRARIES})
 set_property(TARGET ExtensionSystem APPEND PROPERTY COMPILE_DEFINITIONS EXTENSIONSYSTEM_LIBRARY)
 
+handleTranslation(ExtensionSystem)
 
 install(TARGETS ExtensionSystem DESTINATION ${LIBS_DIR})
