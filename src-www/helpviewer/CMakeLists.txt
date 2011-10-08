@@ -15,24 +15,26 @@ set(SOURCE
 if (WIN32)
 	set(GWTC_COMMAND ${CMAKE_SOURCE_DIR}/gwt/gwtc.cmd ${GWT_DEV_JAR} ${GWT_USER_JAR} ${CMAKE_CURRENT_SOURCE_DIR}/src ${SHARE_PATH}/webapps/helpviewer ${GWT_MAIN_MODULE})
 else()
-	set(GWTC ${JAVA_RUNTIME} -cp ${GWT_DEV_JAR}:${GWT_USER_JAR}:${CMAKE_CURRENT_SOURCE_DIR}/src com.google.gwt.dev.Compiler )
-	set(GWTC_COMMAND ${GWTC} ${GWT_MAIN_MODULE} -war ${SHARE_PATH}/webapps/helpviewer)
+    set(GWTC_COMMAND ${CMAKE_SOURCE_DIR}/gwt/gwtc.sh ${GWT_DEV_JAR} ${GWT_USER_JAR} ${CMAKE_CURRENT_SOURCE_DIR}/src ${SHARE_PATH}/webapps/helpviewer ${GWT_MAIN_MODULE})
 endif()
 
 
 
+
+add_custom_target(
+    helpviewer
+    ALL
+    #DEPENDS ${SHARE_PATH}/webapps/helpviewer/${GWT_MAIN_MODULE}/${GWT_MAIN_MODULE}.nocache.js
+)
+
+
+
 add_custom_command(
-    OUTPUT ${SHARE_PATH}/webapps/helpviewer/${GWT_MAIN_MODULE}/${GWT_MAIN_MODULE}.nocache.js
+    TARGET helpviewer
+    #OUTPUT ${SHARE_PATH}/webapps/helpviewer/${GWT_MAIN_MODULE}/${GWT_MAIN_MODULE}.nocache.js
     COMMAND ${GWTC_COMMAND}
     DEPENDS ${SOURCE}
 )
-
-add_custom_target(
-        helpviewer_gwt
-        ALL
-        DEPENDS ${SHARE_PATH}/webapps/helpviewer/${GWT_MAIN_MODULE}/${GWT_MAIN_MODULE}.nocache.js
-)
-
 
 file(MAKE_DIRECTORY ${SHARE_PATH}/webapps/helpviewer/images)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/war/images/thumb_vertical.png DESTINATION ${SHARE_PATH}/webapps/helpviewer/images)
