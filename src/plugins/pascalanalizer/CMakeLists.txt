@@ -49,13 +49,12 @@ else()
 	set(IPPC_BIN ippc)
 endif()
 
-add_custom_command(
-    OUTPUT ${LIBEXECS_PATH}/${IPPC_BIN}
+add_custom_target(ippc_bin
     DEPENDS ${IPPC_SRC}
     COMMAND ${FPC_COMPILER} ${FPC_FLAGS} -o${LIBEXECS_PATH}/${IPPC_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/ippc/compiler/pp.pas
 )
 
-add_custom_target(ippc_binary ALL DEPENDS ${LIBEXECS_PATH}/${IPPC_BIN})
+add_dependencies(PascalAnalizer ippc_bin)
 
 install(TARGETS PascalAnalizer DESTINATION ${PLUGINS_DIR})
 
