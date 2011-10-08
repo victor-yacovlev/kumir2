@@ -190,7 +190,7 @@ def __scan_plugin(toplevel, specfilename):
     if basename.startswith("actor"):
         basename = basename[5:]
     profilename = dirr+"/"+basename+".pro"
-    
+    c.plugins += [target]
     if spec.has_key("libs"):
         c.requires_libs = spec["libs"]
     if not "ExtensionSystem" in c.requires_libs:
@@ -228,7 +228,7 @@ def __extract_icon_from_desktop_file(filename):
     return ""
 
 def __get_icon_dirs(toplevel, basename):
-    SIZES = ["128x128", "64x64", "256x256", "scalable"]
+    SIZES = ["48x48", "128x128", "64x64", "256x256", "scalable"]
     result = []
     for size in SIZES:
         if os.path.exists(toplevel+"/app_icons/linux/hicolor/"+size+"/apps/"+basename+".png"):
