@@ -73,16 +73,11 @@ BuildRequires:     gcc-c++ >= 4
     out.write("%if %{defined fedoradist}\n")
     out.write("BuildRequires:\t qt4-devel >= "+QT_MIN_VERSION+"\n")
     out.write("%endif\n")
-    out.write("BuildRequires:\t python\n")
-    out.write("BuildRequires:\t ant\n")
-    out.write("BuildRequires:\t java-1.6.0-openjdk-devel\n")
-    out.write("BuildRequires:\t gwt >= 2.3.0\n")
-    out.write("BuildRequires:\t gcc-c++ >= 4\n")
     out.write("%if %{is_fedora}\n")
     out.write("Requires:\t qt4 >= "+QT_MIN_VERSION+"\n")
     out.write("%else\n")
     out.write("Requires:\t libqt4 >= "+QT_MIN_VERSION+"\n")
-    out.write("%endif")
+    out.write("%endif\n")
     for qt in QT_MODULES:
         out.write("Requires:\tlib"+qt+".so.4\n")
         out.write("BuildRequires:\tpkgconfig("+qt+")\n")
@@ -94,15 +89,17 @@ BuildRequires:     gcc-c++ >= 4
         for req in item.requires_other:
             out.write("Requires:\t"+req+"\n")
 
-    othReqs = set()
-    
-    for name, item in proj.components.items():
-        orq = item.requires_other
-        for o in orq:
-            othReqs.add(o)
-
-    for o_req in othReqs:
-        out.write("BuildRequires:\t"+o_req+"\n")
+    out.write("""
+%if 0%{?opensuse_bs}
+%ifarch x86_64
+Source1:    base.x86_64-linux.tar.gz
+%else
+Source1:    base.i386-linux.tar.gz
+%endif
+%else
+BuildRequires:    fpc
+%endif
+""")
     
     out.write("Vendor:\t"+VENDOR+"\n")
     out.write("Packager:\t"+PACKAGER+"\n")
@@ -120,19 +117,33 @@ BuildRequires:     gcc-c++ >= 4
     out.write("%prep\n%setup -q -n %{name}-"+proj.version)
     if len(proj.version_extra)>0:
         out.write("."+proj.version_extra)
-    out.write("\n\n")
-    out.write("%build\n")
     out.write("""
-    mkdir build
-    cd build
-    cmake -DCMAKE_INSTALL_PREFIX=$RPM_BUILD_ROOT/%{_prefix} ../
-    make
+
+%if 0%{?opensuse_bs}
+mkdir fpc
+cd fpc
+tar xfz %{SOURCE1}
+cd ..
+%endif
+
+
+%build
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=$RPM_BUILD_ROOT/%{_prefix} ../
+make
+cd ..
+
+%install
+cd build
+make install
+cd ..
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
     """)
-        
-    out.write("\n%install\n")
-    out.write("make install\n")
-      
-    out.write("\n%clean\nrm -rf $RPM_BUILD_ROOT\n\n")
+
     
     for name, item in proj.components.items():
         if not all_in_one:
