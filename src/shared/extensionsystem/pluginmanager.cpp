@@ -247,7 +247,7 @@ QString PluginManagerPrivate::loadSpecs(const QStringList &names, QScriptEngine 
             continue;
         const QString fileName = path+"/"+names[i]+".pluginspec";
         PluginSpec spec;
-#ifdef QT_NO_DEBUG
+//#ifdef QT_NO_DEBUG
 #ifdef Q_OS_WIN
         spec.libraryFileName = QString("%1/%2.dll").arg(path).arg(names[i]);
 #endif
@@ -257,17 +257,17 @@ QString PluginManagerPrivate::loadSpecs(const QStringList &names, QScriptEngine 
 #ifdef Q_OS_MAC
         spec.libraryFileName = QString("%1/lib%2.dylib").arg(path).arg(names[i]);
 #endif
-#else
-#ifdef Q_OS_WIN
-        spec.libraryFileName = QString("%1/%2d.dll").arg(path).arg(names[i]);
-#endif
-#ifdef Q_OS_UNIX
-        spec.libraryFileName = QString("%1/lib%2.so").arg(path).arg(names[i]);
-#endif
-#ifdef Q_OS_MAC
-        spec.libraryFileName = QString("%1/lib%2_debug.dylib").arg(path).arg(names[i]);
-#endif
-#endif
+//#else
+//#ifdef Q_OS_WIN
+//        spec.libraryFileName = QString("%1/%2d.dll").arg(path).arg(names[i]);
+//#endif
+//#ifdef Q_OS_UNIX
+//        spec.libraryFileName = QString("%1/lib%2.so").arg(path).arg(names[i]);
+//#endif
+//#ifdef Q_OS_MAC
+//        spec.libraryFileName = QString("%1/lib%2_debug.dylib").arg(path).arg(names[i]);
+//#endif
+//#endif
         QString error = readSpecFromFile(fileName, spec, engine);
         if (!error.isEmpty()) {
             return error;
