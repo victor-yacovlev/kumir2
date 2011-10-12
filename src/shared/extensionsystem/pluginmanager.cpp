@@ -284,11 +284,20 @@ QString PluginManagerPrivate::loadSpecs(const QStringList &names, QScriptEngine 
     }
     return "";
 }
-
+const char* debugStr(QString s)
+    {
+        return qPrintable(s);  
+    };
 QString PluginManagerPrivate::loadPlugins()
 {
+    QString test="dddd";
+    test="ddddd";
+    test="ddddd";
+    test="ddddd";
+    qPrintable(test);
     for (int i=0; i<specs.size(); i++) {
         QPluginLoader loader(specs[i].libraryFileName);
+        qDebug()<<specs[i].libraryFileName;
         if (!loader.load()) {
             return QString("Can't load module %1: %2")
                     .arg(specs[i].name)
