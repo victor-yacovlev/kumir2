@@ -956,7 +956,7 @@ void TextCursor::removeCurrentChar()
     int textPos = i_column - indent * 2;
     if (i_row>=m_document->linesCount())
         return;
-    if (textPos>=m_document->textAt(i_row).length() && i_row<m_document->linesCount()+1)
+    if (textPos>=m_document->textAt(i_row).length() && i_row>=m_document->linesCount()-1)
         return;
     m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, textPos, 1, true));
 
