@@ -721,12 +721,13 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
         }
         if (!toLexem) {
             forLexem->error = _("No loop 'to' value");
+            return;
         }
         int forIndex = st.data.indexOf(forLexem);
         int fromIndex = st.data.indexOf(fromLexem);
         int toIndex = st.data.indexOf(toLexem);
         int stepIndex = st.data.indexOf(stepLexem);
-        if (fromIndex>toIndex) {
+        if (toIndex!=-1 && fromIndex>toIndex) {
             toLexem->error = _("'to' earler then 'from'");
             return;
         }

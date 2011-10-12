@@ -50,7 +50,7 @@ public:
     void disablePascalProgram();
 public slots:
     QStringList recentFiles(bool fullPaths) const;
-    void loadRecentFile(int index);
+    void loadRecentFile(const QString & fullPath);
     inline void loadFromUrl(const QString &s) { loadFromUrl(QUrl(s), true); }
     class TabWidgetElement * loadFromUrl(const QUrl & url, bool addToRecentFiles);
     bool saveCurrentFile();

@@ -277,6 +277,7 @@ void MainWindow::prepareRecentFilesMenu()
         if (!r[i].trimmed().isEmpty()) {
             QAction * a = ui->actionRecent_files->menu()->addAction(r[i]);
             a->setProperty("index", i);
+            a->setProperty("fullPath", r[i]);
             connect(a, SIGNAL(triggered()), this, SLOT(loadRecentFile()));
         }
     }
@@ -286,8 +287,9 @@ void MainWindow::loadRecentFile()
 {
     QAction * a = qobject_cast<QAction*>(sender());
     if (a && a->property("index").isValid()) {
-        int index = a->property("index").toInt();
-        loadRecentFile(index);
+//        int index = a->property("index").toInt();
+        const QString fullPath = a->property("fullPath").toString();
+        loadRecentFile(fullPath);
     }
 }
 
@@ -1003,8 +1005,11 @@ void MainWindow::addToRecent(const QString &fileName)
 {
     QStringList r = m_plugin->mySettings()->value(Plugin::RecentFilesKey).toStringList();
     QString entry;
-    if (fileName.startsWith(QDir::currentPath())) {
+    if (!m_plugin->b_nosessions && fileName.startsWith(QDir::currentPath())) {
         entry = fileName.mid(QDir::currentPath().length()+1);
+    }
+    else {
+        entry = QFileInfo(fileName).absoluteFilePath();
     }
     r.removeAll(entry);
     r.prepend(entry);
@@ -1012,11 +1017,13 @@ void MainWindow::addToRecent(const QString &fileName)
     m_plugin->mySettings()->setValue(Plugin::RecentFilesKey, r);
 }
 
-void MainWindow::loadRecentFile(int index)
+void MainWindow::loadRecentFile(const QString & fullPath)
 {
-    QStringList r = recentFiles(true);
-    if (index>=0 && index<r.size())
-        loadFromUrl("file://"+r[index]);
+//    QStringList r = recentFiles(true);
+//    if (index>=0 && index<r.size())
+//        loadFromUrl("file://"+r[index]);
+    if (!fullPath.isEmpty() && QFile(fullPath).exists())
+        loadFromUrl("file://"+fullPath);
 }
 
 TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFiles)
