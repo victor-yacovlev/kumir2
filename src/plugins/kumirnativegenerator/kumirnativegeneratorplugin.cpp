@@ -9,11 +9,11 @@
 #include <QtCore>
 #include <iostream>
 
-#ifdef USE_LLVM
+#ifdef USE_llvm
 #include "llvmbackend.h"
 #endif
 
-#ifdef USE_GCC
+#ifdef USE_gcc
 #include "gccbackend.h"
 #endif
 
@@ -111,10 +111,10 @@ KumirNativeGeneratorPlugin::KumirNativeGeneratorPlugin()
     d = new KumirNativeGeneratorPrivate;
     d->nameProvider = new NameProvider;
     d->backend = 0;
-#ifdef USE_LLVM
+#ifdef USE_llvm
     d->backend = new LlvmBackend(this);
 #endif
-#ifdef USE_GCC
+#ifdef USE_gcc
     d->backend = new GccBackend(this);
 #endif
 }
@@ -1097,11 +1097,7 @@ QStringList KumirNativeGeneratorPlugin::requiredDlls(const QList<struct Module*>
     result << "KumirStdLib.dll";
     result << "mingwm10.dll";
     result << "libgcc_s_dw2-1.dll";
-#ifdef QT_DEBUG
-    const QString qtSuffix = "4d";
-#else
     const QString qtSuffix = "4";
-#endif
     result << "QtCore"+qtSuffix+".dll";
     result << "QtGui"+qtSuffix+".dll";
     for (int i=0 ; i<modules.size(); i++) {
