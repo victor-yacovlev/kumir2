@@ -1091,7 +1091,21 @@ void PDAutomataPrivate::setCurrentError(const QString &value)
         source[currentPosition]->data[i]->error = value;
         source[currentPosition]->data[i]->errorStage = AST::Lexem::PDAutomata;
     }
+}
 
+void PDAutomataPrivate::setOutOfAlgError()
+{
+    QString value;
+    if (source[currentPosition]->type & LxNameClass) {
+        value = _("Variable declaration out of algorhitm");
+    }
+    else {
+        value = _("Caaaaomplex instruction out of algorhitm");
+    }
+    for (int i=0; i<source[currentPosition]->data.size(); i++) {
+        source[currentPosition]->data[i]->error = value;
+        source[currentPosition]->data[i]->errorStage = AST::Lexem::PDAutomata;
+    }
 }
 
 void PDAutomataPrivate::processCorrectAlgHeader()

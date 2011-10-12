@@ -1,4 +1,4 @@
 АЛГОРИТМ* -> алг : { setCurrentError("No algorhitm implementation"); appendSimpleLine(); }
-АЛГОРИТМ* -> если : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
-АЛГОРИТМ* -> кон : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
-ИСПОЛНИТЕЛЬ* -> нач : { setCurrentError("Complex instruction out of algorhitm"); appendSimpleLine(); }
+АЛГОРИТМ* -> если : { setOutOfAlgError(); appendSimpleLine(); }
+АЛГОРИТМ* -> кон : { setOutOfAlgError(); appendSimpleLine(); }
+ИСПОЛНИТЕЛЬ* -> нач : { setOutOfAlgError(); appendSimpleLine(); }
