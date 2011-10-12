@@ -1100,7 +1100,7 @@ void PDAutomataPrivate::setOutOfAlgError()
         value = _("Variable declaration out of algorhitm");
     }
     else {
-        value = _("Caaaaomplex instruction out of algorhitm");
+        value = _("Instruction out of algorhitm");
     }
     for (int i=0; i<source[currentPosition]->data.size(); i++) {
         source[currentPosition]->data[i]->error = value;
