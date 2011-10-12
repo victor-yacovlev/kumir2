@@ -1258,16 +1258,13 @@ void PDAutomataPrivate::addDummyAlgHeader()
     // nothind to do
 }
 
-void PDAutomataPrivate::setModuleBeginError(int value)
+void PDAutomataPrivate::setModuleBeginError(const QString & value)
 {
     for (int i=0; i<source.size(); i++) {
         if (source[i]->mod == currentModule && source[i]->type==LxPriModule) {
-            if (currentPosition<source.size()) {
-                for (int a=0; a<source.at(currentPosition)->data.size(); a++) {
-                    source.at(currentPosition)->data[a]->error = value;
-                    source.at(currentPosition)->data[a]->errorStage = AST::Lexem::PDAutomata;
-                }
-
+            for (int a=0; a<source[i]->data.size(); a++) {
+                source[i]->data[a]->error = value;
+                source[i]->data[a]->errorStage = AST::Lexem::PDAutomata;
             }
             source[i]->indentRank = QPoint(0, 0);
         }

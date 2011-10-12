@@ -1097,6 +1097,7 @@ QStringList KumirNativeGeneratorPlugin::requiredDlls(const QList<struct Module*>
     result << "KumirStdLib.dll";
     result << "mingwm10.dll";
     result << "libgcc_s_dw2-1.dll";
+    result << "libstdc++-6.dll";
     const QString qtSuffix = "4";
     result << "QtCore"+qtSuffix+".dll";
     result << "QtGui"+qtSuffix+".dll";

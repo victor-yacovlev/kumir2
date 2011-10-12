@@ -139,19 +139,20 @@ def readRules(filename):
 def cleanUnusedKeys(database, keys):
     "Removes non-existing more keys from database"
     count = 0
-    for lang in database.keys():
-        for old_key in database[lang].keys():
-            found = False
-            for new_key in keys:
-                u_new_key = unicode(new_key).strip()
-                u_old_key = unicode(old_key).strip()
-                if u_new_key==u_old_key:
-                    found = True
-                    break
-            if not found:
-                database[lang].pop(old_key)
-                count += 1
-    return count/len(database.keys())
+    return count
+#    for lang in database.keys():
+#        for old_key in database[lang].keys():
+#            found = False
+#            for new_key in keys:
+#                u_new_key = unicode(new_key).strip()
+#                u_old_key = unicode(old_key).strip()
+#                if u_new_key==u_old_key:
+#                    found = True
+#                    break
+#            if not found:
+#                database[lang].pop(old_key)
+#                count += 1
+#    return count/len(database.keys())
 
 def addNewKeys(database, keys):
     "Adds newly appeared keys to database"

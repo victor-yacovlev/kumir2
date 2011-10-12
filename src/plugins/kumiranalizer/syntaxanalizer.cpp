@@ -710,6 +710,7 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
         Lexem * fromLexem = findLexemByType(st.data, LxSecFrom);
         Lexem * toLexem = findLexemByType(st.data, LxSecTo);
         Lexem * stepLexem = findLexemByType(st.data, LxSecStep);
+
         if (!fromLexem) {
             forLexem->error = _("No loop variable");
             return;
@@ -725,6 +726,10 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
         int fromIndex = st.data.indexOf(fromLexem);
         int toIndex = st.data.indexOf(toLexem);
         int stepIndex = st.data.indexOf(stepLexem);
+        if (fromIndex>toIndex) {
+            toLexem->error = _("'to' earler then 'from'");
+            return;
+        }
         if (stepIndex==-1) {
             stepIndex = st.data.size();
         }
@@ -2050,7 +2055,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 oper = lexems[curPos];
             }
             else {
-                lexems[curPos]->error = _("Garbage in expression"); // FIXME garbage error
+                lexems[curPos]->error = _("Forgotten operator after bracket"); // FIXME garbage error
                 delete operand;
                 return 0;
             }
@@ -2112,7 +2117,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 oper = lexems[curPos];
             }
             else {
-                lexems[curPos]->error = _("Garbage in expression"); // FIXME garbage error
+                lexems[curPos]->error = _("Forgotten operator after bracket"); // FIXME garbage error
                 delete operand;
                 return 0;
             }
@@ -2168,7 +2173,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 oper = lexems[curPos];
             }
             else {
-                lexems[curPos]->error = _("Garbage in expression"); // FIXME garbage error
+                lexems[curPos]->error = _("Forgotten operator after bracket"); // FIXME garbage error
                 delete operand;
                 return 0;
             }
