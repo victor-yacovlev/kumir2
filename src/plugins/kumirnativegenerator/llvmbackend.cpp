@@ -114,7 +114,7 @@ QString LlvmBackend::generateArgumentsLine(
     for (int i=0; i<kumirLibs.size(); i++) {
         result << "-l"+debugKumirLib(kumirLibs[i]);
     }
-    result << "-o" << outFileName;
+    result << "-o" << "\""+outFileName+"\"";
     for (int i=0; i<sources.size(); i++) {
         result << sources[i].first;
     }

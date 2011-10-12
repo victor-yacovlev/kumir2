@@ -10,7 +10,7 @@ else()
     set(CONNECTOR_METHOD PIPE)
 endif()
 
-add_definitions(-D${CONNECTOR_METHOD}_METHOD)
+add_definitions(-D${CONNECTOR_METHOD}_METHOD -DSTDLIB_LIBRARY)
 
 set(MOC_HEADERS
     connector.h actorwindow.h
