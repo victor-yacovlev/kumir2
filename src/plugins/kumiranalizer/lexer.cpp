@@ -671,8 +671,8 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                 else if (symb=="#") {
                     Lexem * lx = new Lexem;
                     lx->type = LxTypeDoc;
-                    lx->data = text.mid(cur+1);
-                    lx->linePos = cur+1;
+                    lx->data = text.mid(cur);
+                    lx->linePos = cur;
                     lexems << lx;
                     break;
                 }
@@ -751,7 +751,11 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
     QList<Lexem*>::iterator it = lexems.begin();
     while (it!=lexems.end()) {
         Lexem * lx = (*it);
-        if (lx->data.isEmpty() && lx->errorStage!=AST::Lexem::Lexer && lx->type!=LxConstLiteral) {
+        if (lx->data.isEmpty() &&
+                lx->errorStage!=AST::Lexem::Lexer &&
+                lx->type!=LxConstLiteral &&
+                lx->type!=LxTypeDoc
+                ) {
             delete lx;
             it = lexems.erase(it);
         }
@@ -848,7 +852,7 @@ void popLexemsUntilPrimaryKeyword(QList<Lexem*> & lexems, Statement &result)
 {
     while (lexems.size()>0) {
         Lexem * lx = lexems[0];
-        if (lx->type==LxOperSemicolon || lx->type & LxTypePrimaryKwd)
+        if (lx->type==LxOperSemicolon || lx->type & LxTypePrimaryKwd && lx->type!=LxPriAssign)
             break;
         lexems.pop_front();
         result.data << lx;
@@ -872,7 +876,9 @@ void popLexemsUntilPrimaryKeywordOrVarDecl(QList<Lexem*> &lexems, Statement &res
 {
     while (lexems.size()>0) {
         Lexem * lx = lexems[0];
-        if (lx->type==LxOperSemicolon || lx->type & LxTypePrimaryKwd || lx->type==LxNameClass)
+        if (lx->type==LxOperSemicolon ||
+                (lx->type & LxTypePrimaryKwd && lx->type!=LxPriAssign) ||
+                lx->type==LxNameClass)
             break;
         lexems.pop_front();
         result.data << lx;

@@ -711,6 +711,22 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
         Lexem * toLexem = findLexemByType(st.data, LxSecTo);
         Lexem * stepLexem = findLexemByType(st.data, LxSecStep);
 
+
+        int forIndex = st.data.indexOf(forLexem);
+        int fromIndex = st.data.indexOf(fromLexem);
+        int toIndex = st.data.indexOf(toLexem);
+        int stepIndex = st.data.indexOf(stepLexem);
+
+        if (fromIndex!=-1 && forIndex!=-1 && fromIndex-forIndex==1) {
+            forLexem->error =  _("No loop variable");
+            return;
+        }
+
+        if (toIndex!=-1 && fromIndex>toIndex) {
+            toLexem->error = _("'to' earler then 'from'");
+            return;
+        }
+
         if (!fromLexem) {
             forLexem->error = _("No loop variable");
             return;
@@ -723,14 +739,7 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
             forLexem->error = _("No loop 'to' value");
             return;
         }
-        int forIndex = st.data.indexOf(forLexem);
-        int fromIndex = st.data.indexOf(fromLexem);
-        int toIndex = st.data.indexOf(toLexem);
-        int stepIndex = st.data.indexOf(stepLexem);
-        if (toIndex!=-1 && fromIndex>toIndex) {
-            toLexem->error = _("'to' earler then 'from'");
-            return;
-        }
+
         if (stepIndex==-1) {
             stepIndex = st.data.size();
         }
@@ -1349,8 +1358,16 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
 
         //      Предполагается, что модификатор группы уже задан, поэтому
         //      если встречается арг, рез или аргрез, то это ошибка
-        if (group.lexems[curPos]->type==LxSecIn || group.lexems[curPos]->type==LxSecOut || group.lexems[curPos]->type==LxSecInout) {
-            group.lexems[curPos]->error = _("Extra variable group specifier: %1", group.lexems[curPos]->data);
+        if (group.lexems[curPos]->type==LxSecIn) {
+            group.lexems[curPos]->error = _("Extra variable group in-specifier");
+            return result;
+        }
+        else if (group.lexems[curPos]->type==LxSecOut) {
+            group.lexems[curPos]->error = _("Extra variable group out-specifier");
+            return result;
+        }
+        else if (group.lexems[curPos]->type==LxSecInout) {
+            group.lexems[curPos]->error = _("Extra variable group inout-specifier");
             return result;
         }
         else if ( ( par == type ) || ( par == tn ) )
@@ -1385,6 +1402,10 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
         } // endif ( par == type || par == tn )
         if ( par == name )
         {
+            if (group.lexems[curPos]->type & LxTypeConstant) {
+                group.lexems[curPos]->error = _("Constant can not be a name");
+                return result;
+            }
             if (group.lexems[curPos]->type==LxOperRightSqBr)
             {
                 group.lexems[curPos]->error = _("No pairing '['");
@@ -1930,7 +1951,7 @@ enum BlockType {
     SubExpression
 } ;
 
-#define IS_OPERATOR(x) (x & LxTypeOperator || x==LxOperGreaterOrEqual || x==LxSecOr || x==LxSecAnd/* || x==LxSecNot */)
+#define IS_OPERATOR(x) (x & LxTypeOperator || x==LxOperGreaterOrEqual || x==LxSecOr || x==LxSecAnd || x==LxPriAssign/* || x==LxSecNot */)
 
 AST::Expression * SyntaxAnalizerPrivate::parseExpression(
     QList<Lexem *> lexems
@@ -2244,6 +2265,13 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
             openBracketIndex = lexems.size();
         for (int i=0; i<openBracketIndex; i++) {
             lexems[i]->error = _("Algorhitm not found");
+        }
+        return 0;
+    }
+
+    if (!function->header.error.isEmpty()) {
+        foreach (Lexem * lx, nameLexems) {
+            lx->error = _("This algorhitm is broken");
         }
         return 0;
     }
@@ -2781,7 +2809,7 @@ int findOperatorByPriority(const QList<SubexpressionElement> & s)
             << ( QSet<LexemType>() << LxSecOr )
             << ( QSet<LexemType>() << LxSecAnd )
             << ( QSet<LexemType>() << LxSecNot )
-            << ( QSet<LexemType>() << LxOperNotEqual << LxOperEqual << LxOperGreater << LxOperGreaterOrEqual << LxOperLess << LxOperLessOrEqual )
+            << ( QSet<LexemType>() << LxOperNotEqual << LxOperEqual << LxOperGreater << LxOperGreaterOrEqual << LxOperLess << LxOperLessOrEqual << LxPriAssign)
             << ( QSet<LexemType>() << LxOperPlus << LxOperMinus )
             << ( QSet<LexemType>() << LxOperAsterisk << LxOperSlash )
             << ( QSet<LexemType>() << LxOperPower );
@@ -3228,6 +3256,10 @@ AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<Subexpre
         }
     }
     else {
+        if (s[l].o->type==LxPriAssign) {
+            s[l].o->error = _("':=' or '=' ?");
+            return 0;
+        }
         QList<SubexpressionElement> head = s.mid(0, l);
         QList<SubexpressionElement> tail = s.mid(l+1);
         if (head.isEmpty()) {
@@ -3255,7 +3287,7 @@ AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<Subexpre
         AST::VariableBaseType headType = headExpr? headExpr->baseType : AST::TypeNone;
         AST::VariableBaseType tailType = tailExpr->baseType;
         static const QSet<LexemType> ComparisonOperators = QSet<LexemType>()
-                << LxOperLess << LxOperLessOrEqual << LxOperEqual << LxOperNotEqual << LxOperGreaterOrEqual << LxOperGreater;
+                << LxOperLess << LxOperLessOrEqual << LxOperEqual << LxOperNotEqual << LxOperGreaterOrEqual << LxOperGreater << LxPriAssign;
 
         bool tailIsNumeric = IS_NUMERIC(tailType);
         bool headIsBool = headType==AST::TypeBoolean;
@@ -3283,7 +3315,7 @@ AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<Subexpre
             subRes->baseType = AST::TypeBoolean;
             subRes->operands << new AST::Expression(headExpr->operands.last());
             subRes->operands << tailExpr;
-            subRes->operatorr = operatorByLexem(s[l].o);
+            subRes->operatorr = operatorByLexem(s[l].o);            
             res->operands << subRes;
             return res;
         }
