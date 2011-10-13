@@ -337,6 +337,7 @@ QString PluginManagerPrivate::makeDependencies(const QString &entryPoint,
         }
     }
     if (!found) {
+        qDebug()<<"Spec not loaded for |"+entryPoint+"|";
         return "Spec not loaded for "+entryPoint;
     }
     if (!minVersion.isEmpty()) {
