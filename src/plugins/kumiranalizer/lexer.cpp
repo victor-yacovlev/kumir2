@@ -859,6 +859,17 @@ void popLexemsUntilPrimaryKeyword(QList<Lexem*> & lexems, Statement &result)
     }
 }
 
+void popLexemsUntilSemicolonOrBegin(QList<Lexem*> & lexems, Statement &result)
+{
+    while (lexems.size()>0) {
+        Lexem * lx = lexems[0];
+        if (lx->type==LxOperSemicolon || lx->type==LxPriAlgBegin)
+            break;
+        lexems.pop_front();
+        result.data << lx;
+    }
+}
+
 void popLexemsUntilPrimaryKeywordExclIO(QList<Lexem*> & lexems, Statement &result)
 {
     while (lexems.size()>0) {
@@ -1006,7 +1017,7 @@ void popAlgHeaderStatement(QList<Lexem*> &lexems, Statement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeyword(lexems, result);
+    popLexemsUntilSemicolonOrBegin(lexems, result);
 }
 
 void popAlgBeginStatement(QList<Lexem*> &lexems, Statement &result)

@@ -1304,7 +1304,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
             }
         }
         else if (type==LxPriAlgHeader) {
-            alg->header.error = st.data[i]->error = _("'arg' instead of 'alg'");
+            alg->header.error = st.data[i]->error = _("'alg' instead of 'arg'");
             return;
         }
         else {
@@ -1426,6 +1426,12 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
         } // endif ( par == type || par == tn )
         if ( par == name )
         {
+            if (group.lexems[curPos]->type == LxNameClass) {
+                group.lexems[curPos]->error = cName.isEmpty()
+                        ? _("Extra type")
+                        : _("No coma before type");
+                return result;
+            }
             if (group.lexems[curPos]->type & LxTypeConstant) {
                 group.lexems[curPos]->error = _("Constant can not be a name");
                 return result;
@@ -1451,7 +1457,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
                 {
                     if ( !array )
                     {
-                        for (int a=0; a<group.lexems.size(); a++) {
+                        for (int a=curPos; a<group.lexems.size(); a++) {
                             group.lexems[a]->error = _("Extra array bound");
                             if (group.lexems[a]->type==LxOperRightSqBr)
                                 break;
@@ -1476,7 +1482,10 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
             {
                 if ( cName.trimmed().isEmpty() )
                 {
-                    group.lexems[typePos]->error = _("Variable name is empty");
+                    int index = typePos;
+                    if (nameStart-1>=0)
+                        index = nameStart-1;
+                    group.lexems[index]->error = _("Variable name is empty");
                     return result;
                 }
                 QString loc_err = lexer->testName(cName);
@@ -2368,15 +2377,11 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
     splitLexemsByOperator(argLine, LxOperComa, arguments, comas);
     int diff = arguments.size()>function->header.arguments.size();
     if (diff>0) {
-        int errorStartIndex = 0;
-        for (int i=comas.size()-1; i>=0; i--) {
-            deep--;
-            if (deep==0) {
-                errorStartIndex = argLine.indexOf(comas[i]);
+        for (int i=0; i<diff; i++) {
+            QList<Lexem*> lxs = arguments[arguments.size()-1-i];
+            foreach (Lexem * lx, lxs) {
+                lx->error = _("Extra algorithm arguments");
             }
-        }
-        for (int i=errorStartIndex; i<cbPos-1; i++) {
-            argLine[i]->error = _("Extra algorithm arguments");
         }
         return 0;
     }
