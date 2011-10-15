@@ -502,7 +502,7 @@ bool isDecimalRealConstant(const QString &s) {
             break;
         }
     }
-    return result;
+    return result && s!=".";
 }
 
 static const QString expFormSymbols = QString::fromUtf8("eEеЕ01234567890");
@@ -1198,7 +1198,7 @@ void popVarDeclStatement(QList<Lexem*> &lexems, Statement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeyword(lexems, result);
+    popLexemsUntilSemicolon(lexems, result);
 }
 
 

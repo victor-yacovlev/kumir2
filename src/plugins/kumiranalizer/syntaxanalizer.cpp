@@ -14,6 +14,7 @@ namespace KumirAnalizer {
 struct VariablesGroup {
     QList<Lexem*> lexems;
     AST::VariableAccessType access;
+    bool accessDefined;
 };
 
 struct SubexpressionElement {
@@ -1251,11 +1252,12 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
 
     QList<VariablesGroup> groups;
     if (st.data.last()->type!=LxOperRightBr) {
-        st.data[argsStartLexem-1]->error= _("Unpaired '('");
+        alg->header.error = st.data[argsStartLexem-1]->error= _("Unpaired '('");
         return;
     }
     VariablesGroup currentGroup;
     currentGroup.access = AST::AccessArgumentIn;
+    currentGroup.accessDefined = false;
     for (int i=argsStartLexem; i<st.data.size()-1; i++) {
         if (st.data[i]->type==LxTypeComment)
             break;
@@ -1265,22 +1267,44 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
                 currentGroup.lexems.pop_back();
             }
             else if (!currentGroup.lexems.isEmpty()) {
-                st.data[i]->error = _("No coma before %1", st.data[i]->data);
+                alg->header.error = st.data[i]->error = _("No coma before %1", st.data[i]->data);
                 return;
             }
             if (!currentGroup.lexems.isEmpty()) {
                 groups << currentGroup;
                 currentGroup.lexems.clear();
+                currentGroup.accessDefined = false;
             }
-            if (type==LxSecIn)
-                currentGroup.access = AST::AccessArgumentIn;
-            else if (type==LxSecOut)
-                currentGroup.access = AST::AccessArgumentOut;
-            else if (type==LxSecInout)
-                currentGroup.access = AST::AccessArgumentInOut;
+            if (type==LxSecIn) {
+                if (currentGroup.accessDefined) {
+                    alg->header.error = st.data[i]->error = _("Extra variable group in-specifier");
+                }
+                else {
+                    currentGroup.accessDefined = true;
+                    currentGroup.access = AST::AccessArgumentIn;
+                }
+            }
+            else if (type==LxSecOut) {
+                if (currentGroup.accessDefined) {
+                    alg->header.error = st.data[i]->error = _("Extra variable group out-specifier");
+                }
+                else {
+                    currentGroup.accessDefined = true;
+                    currentGroup.access = AST::AccessArgumentOut;
+                }
+            }
+            else if (type==LxSecInout) {
+                if (currentGroup.accessDefined) {
+                    alg->header.error = st.data[i]->error = _("Extra variable group inout-specifier");
+                }
+                else {
+                    currentGroup.accessDefined = true;
+                    currentGroup.access = AST::AccessArgumentInOut;
+                }
+            }
         }
         else if (type==LxPriAlgHeader) {
-            st.data[i]->error = _("'arg' instead of 'alg'");
+            alg->header.error = st.data[i]->error = _("'arg' instead of 'alg'");
             return;
         }
         else {
@@ -1505,6 +1529,11 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
                 }
                 bounds.clear();
             }
+            else if (group.lexems[curPos]->type & LxTypePrimaryKwd ||
+                     group.lexems[curPos]->type & LxTypeSecondaryKwd) {
+                group.lexems[curPos]->error = _("Name contains keyword");
+                return result;
+            }
             else
             {
                 if (!cName.isEmpty())
@@ -1722,7 +1751,10 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
 
             }
             else if (group.lexems[curPos]->type==LxOperSemicolon) {
-                group.lexems[curPos]->error = _("No pairing ']'");
+                const QString err = _("No pairing ']'");
+
+                 group.lexems[arrayStart]->error = err;
+
                 return result;
             }
             else {
@@ -2173,8 +2205,10 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 }
                 return 0;
             }
-            block.pop_back(); // remove ")"
-            block.pop_front(); // remove "("
+            if (block.first()->type==LxOperLeftBr && block.last()->type==LxOperRightBr) {
+                block.pop_back(); // remove ")"
+                block.pop_front(); // remove "("
+            }
             AST::Expression * operand = parseExpression(block, mod, alg);
             if (!operand) {
                 return 0;
@@ -2724,12 +2758,22 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
     }
     else {
         QString name;
+        bool expCandidate = true;
         for (std::list<Lexem*>::const_iterator it=lexems.begin(); it!=lexems.end(); it++) {
             if (it!=lexems.begin())
                 name += " ";
             name += (*it)->data;
+            expCandidate = expCandidate && (*it)->type==LxConstReal;
         }
-        QString err = lexer->testName(name);
+        QString err;
+        if (expCandidate) {
+            // If exp is correct, then it should be
+            // caught above under condition lexems.size()==1
+            err = _("Wrong E-real number");
+        }
+        else {
+            err = lexer->testName(name);
+        }
         bool retval = lexer->isReturnVariable(name);
         if (!err.isEmpty() && !retval) {
             for (std::list<Lexem*>::const_iterator it=lexems.begin(); it!=lexems.end(); it++) {
