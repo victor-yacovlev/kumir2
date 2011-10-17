@@ -330,7 +330,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="65"/>
         <source>File</source>
-        <translation>Файл</translation>
+        <translation>Программа</translation>
     </message>
     <message>
         <source>New</source>
@@ -377,7 +377,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="126"/>
         <source>New program</source>
-        <translation>Новая программа</translation>
+        <translation>Новая Кумир-программа</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="134"/>
@@ -392,7 +392,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="142"/>
         <source>Open...</source>
-        <translation>Загрузить...</translation>
+        <translation>Открыть программу...</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="145"/>
@@ -407,7 +407,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="155"/>
         <source>Save</source>
-        <translation>Сохранить</translation>
+        <translation>Сохранить программу</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="158"/>
@@ -417,7 +417,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="163"/>
         <source>Save as...</source>
-        <translation>Сохранить как...</translation>
+        <translation>Сохранить программу как...</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="168"/>

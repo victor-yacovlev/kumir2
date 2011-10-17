@@ -211,5 +211,110 @@ QString Utils::textByKey(Qt::Key key, const QString & keyText, bool shiftPressed
     return result;
 }
 
+QChar Utils::latinKey(const QChar &cyrillicKey)
+{
+    if (cyrillicKey.toLower()==QString::fromUtf8("й")[0]) {
+        return 'q';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("ц")[0]) {
+        return 'w';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("у")[0]) {
+        return 'e';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("к")[0]) {
+        return 'r';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("е")[0]) {
+        return 't';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("н")[0]) {
+        return 'y';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("г")[0]) {
+        return 'u';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("ш")[0]) {
+        return 'i';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("щ")[0]) {
+        return 'o';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("з")[0]) {
+        return 'p';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("х")[0]) {
+        return '[';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("ъ")[0]) {
+        return ']';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("ф")[0]) {
+        return 'a';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("ы")[0]) {
+        return 's';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("в")[0]) {
+        return 'd';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("а")[0]) {
+        return 'f';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("п")[0]) {
+        return 'g';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("р")[0]) {
+        return 'h';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("о")[0]) {
+        return 'j';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("л")[0]) {
+        return 'k';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("д")[0]) {
+        return 'l';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("ж")[0]) {
+        return ';';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("э")[0]) {
+        return '\'';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("я")[0]) {
+        return 'z';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("ч")[0]) {
+        return 'x';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("с")[0]) {
+        return 'c';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("м")[0]) {
+        return 'v';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("и")[0]) {
+        return 'b';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("т")[0]) {
+        return 'n';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("ь")[0]) {
+        return 'm';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("б")[0]) {
+        return ',';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("ю")[0]) {
+        return '.';
+    }
+    else if (cyrillicKey.toLower()==QString::fromUtf8("ё")[0]) {
+        return '`';
+    }
+    else {
+        return cyrillicKey.toLower();
+    }
+}
 
 } // namespace Editor

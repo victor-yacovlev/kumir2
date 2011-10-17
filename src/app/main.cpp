@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 #endif
     QApplication * app = new QApplication(argc, argv, gui);
 #ifdef Q_OS_WIN32
-    app->setAttribute(Qt::AA_DontShowIconsInMenus);
+//    app->setAttribute(Qt::AA_DontShowIconsInMenus);
     app->addLibraryPath(app->applicationDirPath());
 #endif
 #ifndef Q_OS_WIN32

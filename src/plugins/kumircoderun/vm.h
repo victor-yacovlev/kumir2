@@ -78,6 +78,7 @@ private:
     QMap<quint16, Variant> constants;
     QMap< quint32, Bytecode::TableElem > externs;
     QMap< quint32, Bytecode::TableElem > functions;
+    QMap< quint8, Bytecode::TableElem > inits;
     QMap< quint32, QVector<Variant> > cleanLocalTables;
     QString s_error;
     bool b_nextCallInto;

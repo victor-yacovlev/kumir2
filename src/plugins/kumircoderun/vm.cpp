@@ -68,14 +68,11 @@ void VM::reset()
     Variant::error = "";
     stack_values.clear();
     stack_contexts.clear();
-    QList<TableElem> inits;
     TableElem testing;
     TableElem aMain;
     QSet<QString> externModules;
     for (int i=0; i<functions.values().size(); i++) {
         const TableElem e = functions.values()[i];
-        if (e.type==EL_INIT)
-            inits << functions.values()[i];
         if (e.type==EL_MAIN || e.type==EL_BELOWMAIN)
             aMain = functions.values()[i];
         if (e.type==EL_TESTING)
@@ -123,17 +120,14 @@ void VM::reset()
     }
 
     for (int i=0; i<inits.size(); i++) {
-        if (inits[i].instructions.size()>0) {
+        quint8 key = inits.keys()[i];
+        if (inits[key].instructions.size()>0) {
             Context c;
-            quint32 mod = inits[i].module;
-            quint32 alg = inits[i].algId;
-            quint32 key = (mod << 16) | alg;
-            c.locals = cleanLocalTables[key];
-            c.program = inits[i].instructions;
+            c.program = inits[key].instructions;
             c.IP = 0;
             c.type = EL_INIT;
             c.runMode = CRM_ToEnd;
-            c.moduleId = inits[i].module;
+            c.moduleId = inits[key].module;
             c.algId = -1;
             stack_contexts.push(c);
         }
@@ -193,6 +187,10 @@ void VM::loadProgram(const Data & program)
             mod = mod << 16;
             key = mod | alg;
             functions[key] = e;
+        }
+        else if (e.type==EL_INIT ) {
+            quint8 key = e.module;
+            inits[key] = e;
         }
     }
     for (int i=0; i<functions.keys().size(); i++) {
@@ -348,7 +346,6 @@ void VM::evaluateNextInstruction()
         nextIP();
         break;
     }
-
 
 }
 

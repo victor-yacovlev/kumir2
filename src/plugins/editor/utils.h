@@ -13,6 +13,7 @@ public:
     static bool isCapsLock();
     static bool temporaryLayoutSwitch;
     static QString textByKey(Qt::Key key, const QString & keyText, bool shiftPressed);
+    static QChar latinKey(const QChar & cyrillicKey);
 };
 
 } // namespace Editor

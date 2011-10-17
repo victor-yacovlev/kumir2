@@ -145,13 +145,11 @@ void EditorPrivate::loadMacros()
 void EditorPrivate::updateInsertMenu()
 {
     menu_insert->clear();
+    const QString escComa = settings->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()+", ";
     for (int i=0; i<systemMacros.size(); i++) {
         Macro m = systemMacros[i];
-        QKeySequence ks(
-                    settings->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()
-                    +", "+QString(m.key)
-                    );
-        m.action = new QAction(m.title, menu_insert);
+        QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
+        m.action = new QAction(m.title+" ("+escComa+m.key+")", menu_insert);
         m.action->setShortcut(ks);
         systemMacros[i].action = m.action;
         menu_insert->addAction(m.action);
@@ -161,11 +159,8 @@ void EditorPrivate::updateInsertMenu()
         menu_insert->addSeparator();
     for (int i=0; i<userMacros.size(); i++) {
         Macro m = userMacros[i];
-        QKeySequence ks(
-                    settings->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()
-                    +", "+QString(m.key)
-                    );
-        m.action = new QAction(m.title, menu_insert);
+        QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
+        m.action = new QAction(m.title+" ("+escComa+m.key+")", menu_insert);
         m.action->setShortcut(ks);
         userMacros[i].action = m.action;
         menu_insert->addAction(m.action);
