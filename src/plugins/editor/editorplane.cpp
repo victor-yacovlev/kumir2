@@ -29,7 +29,7 @@ EditorPlane::EditorPlane(TextDocument * doc
                          , QWidget *parent) :
     QWidget(parent)
 {
-
+    e_backgroundMode = BgLines;
     m_analizer = analizer;
     i_highlightedLine = -1;
     i_grayLockSymbolLine = -1;
@@ -1271,7 +1271,7 @@ void EditorPlane::paintBackground(QPainter *p, const QRect &rect)
     p->setBrush(Qt::NoBrush);
     const int dX = charWidth();
     const int dY = lineHeight();
-    if (true) {
+    if (e_backgroundMode==BgLines || e_backgroundMode==BgCells) {
         // draw horizontal lines
         QRect lineRect;
         for (int y=dY; y<height(); y += dY) {
@@ -1280,7 +1280,10 @@ void EditorPlane::paintBackground(QPainter *p, const QRect &rect)
                 p->drawLine(lineRect.topLeft(), lineRect.topRight());
             }
         }
+    }
+    if (e_backgroundMode==BgCells) {
         // draw vertical lines
+        QRect lineRect;
         for (int x=dX; x<width(); x+= dX) {
             lineRect = QRect(x, 0, 1, height()).intersected(rect);
             if (lineRect.width()>0 && lineRect.height()>0) {
@@ -1567,9 +1570,15 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
             if (charW<charWidth()) {
                 offset += (charWidth()-charW)/2;
             }
-            p->drawText(offset, y,  QString(text[j]));
+            if (curType==LxTypeComment && text[j]=='|') {
+                p->setPen(QPen(p->pen().brush(),2));
+                p->drawLine(offset, y, offset, y-lineHeight()+2);
+            }
+            else {
+                p->drawText(offset, y,  QString(text[j]));
+            }
             if (curType & Shared::LxTypeError) {
-                p->setPen(QColor(Qt::red));
+                p->setPen(QPen(QColor(Qt::red),1));
                 QPolygon pp = errorUnderline(offset, y+2, charWidth());
 //                p->drawLine(offset, y+2, offset+charWidth(), y+2);
                 p->drawPolyline(pp);

@@ -14,6 +14,7 @@ class EditorPlane : public QWidget
     friend class Editor;
     Q_OBJECT
 public:
+    enum BackgroundMode { BgPlain, BgLines, BgCells };
     explicit EditorPlane(class TextDocument * doc
                          , Shared::AnalizerInterface * analizer
                          , class TextCursor * cursor
@@ -27,6 +28,7 @@ public:
     int widthInChars() const;
     int charWidth() const;
     int lineHeight() const;
+    inline void setBackgroundMode(BackgroundMode m) { e_backgroundMode = m; }
     inline int marginCharactersCount() const { return m_settings->value(MarginWidthKey, MarginWidthDefault).toInt(); }
     QRect cursorRect() const;
     static QString MarginWidthKey;
@@ -111,6 +113,8 @@ private:
     int i_marginAlpha;
     bool b_hasAnalizer;
     bool b_teacherMode;
+
+    BackgroundMode e_backgroundMode;
 
     int i_highlightedLine;
     QColor color_highlightedLine;
