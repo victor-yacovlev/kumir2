@@ -142,8 +142,10 @@ void Generator::addKumirModule(int id, const AST::Module *mod)
     initElem.type = Bytecode::EL_INIT;
     initElem.module = quint8(id);
     initElem.instructions = instructions(id, -1, 0, mod->impl.initializerBody).toVector();
-    initElem.instructions << returnFromInit;
-    m_bc->d.append(initElem);
+    if (!initElem.instructions.isEmpty())
+        initElem.instructions << returnFromInit;
+    if (!initElem.instructions.isEmpty())
+        m_bc->d.append(initElem);
     const AST::Module * mainMod = 0;
     const AST::Algorhitm * mainAlg = 0;
     int mainModId = -1;

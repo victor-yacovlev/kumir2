@@ -1458,28 +1458,6 @@ ElemType VM::topStackType() const
         return stack_contexts[stack_contexts.size()-1].type;
 }
 
-bool VM::canStepInto() const
-{
-    if (stack_contexts.isEmpty())
-        return false;
-    bool result = false;
-    int ip = stack_contexts[stack_contexts.size()-1].IP+1;
-    for ( ; ip<stack_contexts[stack_contexts.size()-1].program.size(); ip++) {
-        Instruction instr = stack_contexts[stack_contexts.size()-1].program[ip];
-        if (instr.type==LINE || instr.type==JUMP || instr.type==JNZ || instr.type==JZ || instr.type==RET)
-            break;
-        if (instr.type==CALL) {
-            quint32 mod = instr.module;
-            quint32 alg = instr.arg;
-            quint32 key = (mod << 16) | alg;
-            if (functions.contains(key)) {
-                result = true;
-                break;
-            }
-        }
-    }
-    return result;
-}
 
 void VM::pushValueToStack(const QVariant &value)
 {

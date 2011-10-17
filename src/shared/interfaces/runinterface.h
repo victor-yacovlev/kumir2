@@ -17,7 +17,6 @@ public:
     virtual bool loadProgram(QIODevice * source, ProgramFormat format) = 0;
     virtual QDateTime loadedProgramVersion() const = 0;
 
-    virtual bool canStepInto() const = 0;
     virtual bool canStepOut() const = 0;
     virtual void runBlind() = 0;
     virtual void runContinuous() = 0;

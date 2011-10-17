@@ -18,7 +18,6 @@ public:
     explicit VM(QObject *parent = 0);
     void reset();
     ElemType topStackType() const;
-    bool canStepInto() const;
     void evaluateNextInstruction();
     QStringList usedActors() const;
     inline bool isBlindMode() const { return b_blindMode; }

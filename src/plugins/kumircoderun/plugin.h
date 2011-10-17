@@ -17,7 +17,7 @@ public:
     explicit Plugin();
     ~Plugin();
 
-    bool canStepInto() const;
+
     bool canStepOut() const;
 
     bool loadProgram(QIODevice * source, Shared::ProgramFormat format);

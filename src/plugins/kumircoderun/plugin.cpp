@@ -288,7 +288,7 @@ void Plugin::start()
 
 bool Plugin::hasMoreInstructions() const
 {
-    return d->vm->canStepInto();
+    return d->vm->hasMoreInstructions();
 }
 
 bool Plugin::canStepOut() const
@@ -296,10 +296,7 @@ bool Plugin::canStepOut() const
     return d->vm->topStackType()==EL_FUNCTION;
 }
 
-bool Plugin::canStepInto() const
-{
-    return d->vm->canStepInto();
-}
+
 
 
 

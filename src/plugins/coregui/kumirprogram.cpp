@@ -482,8 +482,8 @@ void KumirProgram::handleRunnerStopped(int rr)
     }
     else if (reason==Shared::RunInterface::UserInteraction) {
         PluginManager::instance()->switchGlobalState(GS_Pause);
-        a_stepIn->setEnabled(plugin_bytecodeRun->canStepInto());
-        a_stepOut->setEnabled(plugin_bytecodeRun->canStepOut());
+//        a_stepIn->setEnabled(plugin_bytecodeRun->canStepInto());
+//        a_stepOut->setEnabled(plugin_bytecodeRun->canStepOut());
     }
     else if (reason==Shared::RunInterface::UserTerminated) {
         m_variablesWebObject->refreshRoot();
