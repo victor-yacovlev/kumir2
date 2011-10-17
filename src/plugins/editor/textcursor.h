@@ -67,6 +67,7 @@ signals:
     void updateRequest(int fromLine, int toLine);
     void undoAvailable(bool);
     void redoAvailable(bool);
+    void signalizeNotEditable();
 
 
 protected:

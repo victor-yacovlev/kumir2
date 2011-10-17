@@ -65,6 +65,11 @@ EditorPlane::EditorPlane(TextDocument * doc
             this, SLOT(finishAutoCompletion(QString,QString)));
     qApp->installEventFilter(this);
 
+    an_dontEdit = new QPropertyAnimation(this, "dontEditState", this);
+    an_dontEdit->setDuration(1000);
+    r_dontEditState = 0.0;
+    img_dontEdit = QImage(qApp->property("sharePath").toString()+"/editor/dontedit.png");
+
 }
 
 void EditorPlane::addContextMenuAction(QAction *a)
@@ -595,6 +600,11 @@ void EditorPlane::paintEvent(QPaintEvent *e)
         paintNewHiddenDelimeterLine(&p);
     }
 
+    p.setOpacity(r_dontEditState);
+    p.drawImage((width()-img_dontEdit.width())/2,
+                (height()-img_dontEdit.height())/2,
+                img_dontEdit);
+    p.setOpacity(1.0);
     e->accept();
 
 }
@@ -1536,7 +1546,8 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
         p->setBrush(QColor(Qt::black));
         for (int j=0; j<indent; j++) {
             const int dotH = lineHeight()/5;
-            const int dotW = charWidth()/5;
+//            const int dotW = charWidth()/5;
+            const int dotW = dotH;
             const int dotX = j * charWidth() * 2 + (charWidth()-dotW);
             const int dotY = y - lineHeight() + (lineHeight()-dotH);
             QRect dotRect(dotX, dotY, dotW, dotH);
@@ -1587,6 +1598,16 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
 
     }
     p->restore();
+}
+
+void EditorPlane::signalizeNotEditable()
+{
+    qDebug() << "AAAAA!!!!";
+    an_dontEdit->stop();
+    an_dontEdit->setStartValue(1.0);
+    an_dontEdit->setEndValue(0.0);
+    r_dontEditState = 1.0;
+    an_dontEdit->start();
 }
 
 QPolygon EditorPlane::errorUnderline(int x, int y, int len)

@@ -440,6 +440,7 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
 
     connect(d->doc->undoStack(), SIGNAL(canRedoChanged(bool)), d->cursor, SLOT(handleRedoChanged(bool)));
     connect(d->doc->undoStack(), SIGNAL(canUndoChanged(bool)), d->cursor, SLOT(handleUndoChanged(bool)));
+    connect(d->cursor, SIGNAL(signalizeNotEditable()), d->plane, SLOT(signalizeNotEditable()));
 }
 
 

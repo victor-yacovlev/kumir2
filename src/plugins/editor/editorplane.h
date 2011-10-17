@@ -13,6 +13,7 @@ class EditorPlane : public QWidget
 {
     friend class Editor;
     Q_OBJECT
+    Q_PROPERTY(qreal dontEditState READ dontEditState WRITE setDontEditState)
 public:
     enum BackgroundMode { BgPlain, BgLines, BgCells };
     explicit EditorPlane(class TextDocument * doc
@@ -30,6 +31,8 @@ public:
     int lineHeight() const;
     inline void setBackgroundMode(BackgroundMode m) { e_backgroundMode = m; }
     inline int marginCharactersCount() const { return m_settings->value(MarginWidthKey, MarginWidthDefault).toInt(); }
+    inline qreal dontEditState() const { return r_dontEditState; }
+    void setDontEditState(qreal v) { r_dontEditState = v; update(); }
     QRect cursorRect() const;
     static QString MarginWidthKey;
     static int MarginWidthDefault;
@@ -44,6 +47,7 @@ public slots:
     void removeLine();
     void removeLineTail();
     void setLineHighlighted(int lineNo, const QColor & color);
+    void signalizeNotEditable();
 protected:
     static QPolygon errorUnderline(int x, int y, int len);
     void dragEventHandler(QDragMoveEvent * e);
@@ -92,6 +96,7 @@ protected slots:
     void updateCursor();
     void updateText(int fromLine, int toLine);
     void finishAutoCompletion(const QString & source, const QString & newtext);
+
 private:
     int i_timerId;
     class TextDocument * m_document;
@@ -113,6 +118,9 @@ private:
     int i_marginAlpha;
     bool b_hasAnalizer;
     bool b_teacherMode;
+    QImage img_dontEdit;
+    qreal r_dontEditState;
+    QPropertyAnimation * an_dontEdit;
 
     BackgroundMode e_backgroundMode;
 

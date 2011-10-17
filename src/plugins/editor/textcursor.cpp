@@ -763,8 +763,10 @@ bool TextCursor::modifiesProtectedLiines() const
 
 void TextCursor::insertText(const QString &text)
 {
-    if (!b_enabled)
+    if (!b_enabled) {
+        emit signalizeNotEditable();
         return;
+    }
 
     if (modifiesProtectedLiines())
         return;
