@@ -165,6 +165,7 @@ void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterf
         for (int i=0; i<blankChars; i++) {
             data[line].selected.pop_front();
             data[line].highlight.pop_front();
+            m_removedLines.insert(i);
         }
     }
     for (int i=0; i<blankLines; i++) {
