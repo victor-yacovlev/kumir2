@@ -156,6 +156,7 @@ void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterf
             if (analizer)
                 tl.highlight = analizer->lineProp(documentId, tl.text).toList();
             data[line] = tl;
+            m_removedLines.insert(removedCounter);
         }
     }
     if (line < data.size()) {
