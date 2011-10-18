@@ -28,7 +28,7 @@ void VM::setNextCallOut()
 {
     if (stack_contexts.isEmpty())
         return;
-    stack_contexts[stack_contexts.size()-1].runMode = CRM_ToEnd;
+    stack_contexts[stack_contexts.size()-1].runMode = CRM_UntilReturn;
 }
 
 void VM::setNextCallToEnd()
@@ -1104,11 +1104,15 @@ void VM::do_clearmarg(quint16 toLine)
 
 void VM::do_ret()
 {
-
-    last_context = stack_contexts.pop();
-
-    if (!stack_contexts.isEmpty()) {
-        nextIP();
+    if (stack_contexts.last().runMode==CRM_UntilReturn) {
+        emit retInstruction(stack_contexts.last().lineNo);
+        stack_contexts[stack_contexts.size()-1].runMode=CRM_ToEnd;
+    }
+    else {
+        last_context = stack_contexts.pop();
+        if (!stack_contexts.isEmpty()) {
+            nextIP();
+        }
     }
 }
 

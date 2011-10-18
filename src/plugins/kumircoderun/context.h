@@ -10,6 +10,7 @@
 namespace KumirCodeRun {
 
 enum ContextRunMode {
+    CRM_UntilReturn,
     CRM_ToEnd,
     CRM_OneStep
 };

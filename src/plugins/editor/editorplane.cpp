@@ -534,6 +534,7 @@ void EditorPlane::paintEvent(QPaintEvent *e)
         p.setPen(color_highlightedLine);
         p.drawLine(highlightRect.topLeft(), highlightRect.topRight());
         p.drawLine(highlightRect.bottomLeft(), highlightRect.bottomRight());
+        p.setPen(Qt::NoPen);
     }
     paintSelection(&p, e->rect());
     paintRectSelection(&p, e->rect());
@@ -1544,6 +1545,7 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
         int indent = m_document->indentAt(i);
         int y =  ( i + 1 )* lineHeight();
         p->setBrush(QColor(Qt::black));
+        p->setPen(Qt::NoPen);
         for (int j=0; j<indent; j++) {
             const int dotH = lineHeight()/5;
 //            const int dotW = charWidth()/5;

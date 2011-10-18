@@ -40,6 +40,7 @@ public slots:
                                     const QList<int> & bounds);
     void handleOutputRequest(const QString & output );
 
+    void handleAlgorhitmDone(int lineNo);
     void handleLineChanged(int lineNo);
     void finishInput(const QVariantList & data);
     void finishExternalFunctionCall(
@@ -75,6 +76,9 @@ protected :
 
     bool b_stepDone;
     QMutex * mutex_stepDone;
+
+    bool b_algDone;
+    QMutex * mutex_algDone;
 
     int i_originFunctionDeep;
 

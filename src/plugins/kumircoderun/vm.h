@@ -46,6 +46,7 @@ public:
 
     QList<int> reference(int moduleId, int algorhitmId, int variableId) const;
 signals:
+    void retInstruction(int lineNo);
     void lineNoChanged(int lineNo);
     void inputRequest(const QString & format, const QList<quintptr> & references, const QList<int> & indeces);
     void outputRequest(const QString & out);

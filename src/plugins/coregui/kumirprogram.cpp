@@ -49,15 +49,15 @@ KumirProgram::KumirProgram(QObject *parent)
     a_testingRun->setShortcut(QKeySequence("Ctrl+T"));
     a_testingRun->setToolTip(a_testingRun->text()+" <b>"+a_testingRun->shortcut().toString()+"</b>");
 
-    a_stepRun = new QAction(tr("Step run"), this);
-    a_stepRun->setIcon(QIcon::fromTheme("media-skip-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-skip-forward.png")));
+    a_stepRun = new QAction(tr("Step over"), this);
+    a_stepRun->setIcon(QIcon::fromTheme("debug-step-over", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));
     connect(a_stepRun, SIGNAL(triggered()), this, SLOT(stepRun()));
 #ifndef Q_OS_MAC
     a_stepRun->setShortcut(QKeySequence("F8"));
 #else
     a_stepRun->setShortcut(QKeySequence("F6"));
 #endif
-    a_stepRun->setToolTip(a_stepRun->text()+" <b>"+a_stepRun->shortcut().toString()+"</b>");
+    a_stepRun->setToolTip(tr("Do big step")+" <b>"+a_stepRun->shortcut().toString()+"</b>");
 
     a_stepIn = new QAction(tr("Step in"), this);
     a_stepIn->setIcon(QIcon::fromTheme("debug-step-into", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-into.png")));
@@ -67,17 +67,17 @@ KumirProgram::KumirProgram(QObject *parent)
 #else
     a_stepIn->setShortcut(QKeySequence("F7"));
 #endif
-    a_stepIn->setToolTip(a_stepIn->text()+" <b>"+a_stepIn->shortcut().toString()+"</b>");
+    a_stepIn->setToolTip(tr("Do small step")+" <b>"+a_stepIn->shortcut().toString()+"</b>");
 
-    a_stepOut = new QAction(tr("Step out"), this);
+    a_stepOut = new QAction(tr("Step to end"), this);
     a_stepOut->setIcon(QIcon::fromTheme("debug-step-out", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-out.png")));
     connect(a_stepOut, SIGNAL(triggered()), this, SLOT(stepOut()));
 #ifndef Q_OS_MAC
-    a_stepOut->setShortcut(QKeySequence("Shift+F7"));
+    a_stepOut->setShortcut(QKeySequence("Shift+F10"));
 #else
-    a_stepOut->setShortcut(QKeySequence("Shift+F7"));
+    a_stepOut->setShortcut(QKeySequence("Shift+F10"));
 #endif
-    a_stepOut->setToolTip(a_stepOut->text()+" <b>"+a_stepOut->shortcut().toString()+"</b>");
+    a_stepOut->setToolTip(tr("Run to end of algorhitm")+" <b>"+a_stepOut->shortcut().toString()+"</b>");
 
     a_stop = new QAction(tr("Stop"), this);
     a_stop->setIcon(QIcon::fromTheme("media-playback-stop", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-playback-stop.png")));
@@ -429,9 +429,12 @@ void KumirProgram::stepRun()
 
 void KumirProgram::stepIn()
 {
-    if (e_state!=StepRun)
-        return;
-    plugin_bytecodeRun->runStepInto();
+    if (e_state!=StepRun) {
+        stepRun();
+    }
+    else {
+        plugin_bytecodeRun->runStepInto();
+    }
 }
 
 void KumirProgram::stepOut()
@@ -492,6 +495,8 @@ void KumirProgram::handleRunnerStopped(int rr)
         PluginManager::instance()->switchGlobalState(GS_Observe);
         e_state = Idle;
         m_terminal->clearFocus();
+
+        plugin_editor->unhighlightLine(i_documentId);
     }
     else if (reason==Shared::RunInterface::Error) {
         s_endStatus = tr("Evaluation error");
@@ -509,6 +514,7 @@ void KumirProgram::handleRunnerStopped(int rr)
         PluginManager::instance()->switchGlobalState(GS_Observe);
         e_state = Idle;
         m_terminal->clearFocus();
+        plugin_editor->unhighlightLine(i_documentId);
     }
 
     if (e_state==Idle) {
@@ -540,9 +546,9 @@ void KumirProgram::switchGlobalState(GlobalState prev, GlobalState cur)
         a_regularRun->setEnabled(true);
         a_testingRun->setEnabled(true);
         a_stepRun->setEnabled(true);
-        a_stepRun->setText(tr("Step run"));
-        a_stepRun->setIcon(QIcon::fromTheme("media-skip-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-skip-forward.png")));
-        a_stepIn->setEnabled(false);
+//        a_stepRun->setText(tr("Step run"));
+//        a_stepRun->setIcon(QIcon::fromTheme("media-skip-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-skip-forward.png")));
+        a_stepIn->setEnabled(true);
         a_stepOut->setEnabled(false);
         a_stop->setEnabled(false);
 
@@ -565,8 +571,8 @@ void KumirProgram::switchGlobalState(GlobalState prev, GlobalState cur)
         a_regularRun->setEnabled(true);
         a_stepRun->setEnabled(true);
         a_testingRun->setEnabled(false);
-        a_stepRun->setText(tr("Step over"));
-        a_stepRun->setIcon(QIcon::fromTheme("debug-step-over", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));
+//        a_stepRun->setText(tr("Step over"));
+//        a_stepRun->setIcon(QIcon::fromTheme("debug-step-over", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));
         a_stepIn->setEnabled(true);
         a_stepOut->setEnabled(true);
         a_stop->setEnabled(true);

@@ -8,14 +8,16 @@ Run::Run(QObject *parent) :
     programLoaded = false;
     vm = new VM(this);
     i_originFunctionDeep = 0;
-    b_interactDone = b_stopping = b_stepDone = false;
+    b_interactDone = b_stopping = b_stepDone = b_algDone = false;
     mutex_stopping = new QMutex;
     mutex_stepDone = new QMutex;
+    mutex_algDone = new QMutex;
     mutex_interactDone = new QMutex;
     e_runMode = RM_ToEnd;
     connect(vm, SIGNAL(pauseRequest()), this, SLOT(handlePauseRequest()), Qt::DirectConnection);
 
     connect(vm, SIGNAL(lineNoChanged(int)), this, SLOT(handleLineChanged(int)), Qt::DirectConnection);
+    connect(vm, SIGNAL(retInstruction(int)), this, SLOT(handleAlgorhitmDone(int)), Qt::DirectConnection);
 
     connect(vm, SIGNAL(inputRequest(QString,QList<quintptr>,QList<int>)),
             this, SLOT(handleInputRequest(QString,QList<quintptr>,QList<int>)), Qt::DirectConnection);
@@ -64,6 +66,7 @@ void Run::runStepIn()
 void Run::runStepOut()
 {
     b_stepDone = false;
+    b_algDone = false;
 //    i_originFunctionDeep = vm->deep();
     emit lineChanged(-1);
     e_runMode = RM_StepOut;
@@ -350,7 +353,10 @@ bool Run::mustStop()
     if (b_stopping)
         return true;
 
-    if (e_runMode!=RM_ToEnd) {
+    if (e_runMode==RM_StepOut) {
+        return b_algDone;
+    }
+    else if (e_runMode!=RM_ToEnd) {
         return b_stepDone;
     }
     else {
@@ -361,6 +367,17 @@ bool Run::mustStop()
 void Run::handlePauseRequest()
 {
     e_runMode = RM_StepOver;
+}
+
+void Run::handleAlgorhitmDone(int lineNo)
+{
+    mutex_algDone->lock();
+    b_algDone = true;
+    mutex_algDone->unlock();
+    if (mustStop())
+        emit lineChanged(lineNo);
+    else
+        emit lineChanged(-1);
 }
 
 void Run::handleLineChanged(int lineNo)
