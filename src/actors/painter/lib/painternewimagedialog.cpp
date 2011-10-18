@@ -142,6 +142,8 @@ bool PainterNewImageDialog::isTemplate() const
 QString PainterNewImageDialog::templateFileName() const
 {
     int index = ui->listWidget->currentRow();
+    if (index==-1)
+        return "";
     Q_ASSERT( index>=0 );
     Q_ASSERT( index<sl_templateFiles.size() );
     return sl_templateFiles[index];
@@ -151,6 +153,8 @@ QString PainterNewImageDialog::templateName() const
 {
     int index = ui->listWidget->currentRow();
     Q_ASSERT( index>=0 );
+    if (index==-1)
+        return "";
     Q_ASSERT( index<sl_templateFiles.size() );
     return sl_templateNames[index];
 }
