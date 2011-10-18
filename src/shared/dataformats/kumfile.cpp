@@ -90,22 +90,26 @@ bool hasWrongSymbols(const QString & s) {
 
 QString KumFile::readRawDataAsString(QByteArray rawData)
 {
-    static const QStringList CodecsToTry = QStringList()
-         << "UTF-16" << "UTF-8" << "CP1251" << "KOI8-R" << "IBM866";
-    QTextCodec * currentCodec = 0;
-    QTextDecoder * decoder = 0;
-    QString currentCodecName;
-    QString s;
-    for (int i=0; i<CodecsToTry.size(); i++) {
-        currentCodecName = CodecsToTry[i];
-        currentCodec = QTextCodec::codecForName(currentCodecName.toAscii().constData());
-        decoder = currentCodec->makeDecoder(QTextCodec::ConvertInvalidToNull);
-        s = decoder->toUnicode(rawData);
-        if (!hasWrongSymbols(s)) {
-            return s;
-        }
-    }
-    return "| Incorrect character encoding. I can't load this file\n";
+    QTextStream ts(rawData, QIODevice::ReadOnly);
+    ts.setCodec("UTF-16");
+    ts.setAutoDetectUnicode(true);
+    return ts.readAll();
+//    static const QStringList CodecsToTry = QStringList()
+//         << "UTF-16" << "UTF-8" << "CP1251" << "KOI8-R" << "IBM866";
+//    QTextCodec * currentCodec = 0;
+//    QTextDecoder * decoder = 0;
+//    QString currentCodecName;
+//    QString s;
+//    for (int i=0; i<CodecsToTry.size(); i++) {
+//        currentCodecName = CodecsToTry[i];
+//        currentCodec = QTextCodec::codecForName(currentCodecName.toAscii().constData());
+//        decoder = currentCodec->makeDecoder(QTextCodec::ConvertInvalidToNull);
+//        s = decoder->toUnicode(rawData);
+//        if (!hasWrongSymbols(s)) {
+//            return s;
+//        }
+//    }
+//    return "| Incorrect character encoding. I can't load this file\n";
 }
 
 QDataStream & operator >>(QDataStream & ds, KumFile::Data & data)

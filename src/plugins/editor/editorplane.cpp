@@ -1131,12 +1131,12 @@ void EditorPlane::dropEvent(QDropEvent *e)
                 m_cursor->removeSelectedText();
                 m_cursor->setRow(toRow);
                 m_cursor->setColumn(toCol);
-                if (row>=toRow) {
-                    row -= text.count("\n");
-                    if (row==toRow && col>=toCol) {
-                        col -= text.split("\n").last().size();
-                    }
-                }
+//                if (row>=toRow) {
+//                    row -= text.count("\n");
+//                    if (row==toRow && col>=toCol) {
+//                        col -= text.split("\n").last().size();
+//                    }
+//                }
             }
             if (m_cursor->hasRectSelection()) {
                 m_cursor->removeSelectedBlock();

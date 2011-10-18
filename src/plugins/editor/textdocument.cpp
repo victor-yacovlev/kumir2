@@ -132,7 +132,6 @@ void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterf
         cnt -= thisLineRemoveCount;
         if (cnt>0) {
             if (line+1 < data.size()) {
-                removedCounter ++;
                 TextLine next = data[line+1];
                 data.removeAt(line+1);
                 if (next.hidden)
@@ -143,9 +142,12 @@ void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterf
                 tl.selected += next.selected;
                 tl.highlight += next.highlight;
                 removedText += "\n";
+                removedCounter ++;
             }
             else {
                 data.removeAt(line);
+                m_removedLines.insert(removedCounter);
+                removedCounter ++;
             }
 
             cnt --;
