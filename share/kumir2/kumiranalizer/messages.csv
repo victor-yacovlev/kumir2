@@ -101,6 +101,7 @@
 "Can't +%1";"Нельзя: +%1";"";"";"";"";
 "Extra docstring";"Здесь не должно быть строк описания";"";"";"";"";
 "Extra brackets for algorithm without arguments";"Нет аргументов – не нужны скобки";"";"";"";"";
+"Assignment to function";"Нельзя присвоить алгоритму";"";"";"";"";
 "Unmatched array dimensions";"Несоответствие размерностей таблиц";"";"";"";"";
 "Operator in name";"Имя содержит оператор";"";"";"";"";
 "Times value not specified";"Сколько раз?";"";"";"";"";
@@ -165,6 +166,7 @@
 "Access to return value outside of algorithm";"Вне алгоритмов не бывает “знач”";"";"";"";"";
 "Can't boolean:=charect";"Нельзя “лог := сим”";"";"";"";"";
 "Can't input array";"Нельзя ввести в таблицу";"";"";"";"";
+"Here must be \input\"" or \""output\""""";"";"";"";"";"";
 "Can't string:=real";"Нельзя “лит := вещ”";"";"";"";"";
 "Forgotten operator after bracket";"Перед выражением пропущен оператор";"";"";"";"";
 "No 'loop' before 'for'";"Перед “для” нет “нц”";"";"";"";"";

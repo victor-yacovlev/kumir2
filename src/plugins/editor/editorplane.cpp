@@ -1124,7 +1124,13 @@ void EditorPlane::dropEvent(QDropEvent *e)
     else {
         if (e->source()==this) {
             if (m_cursor->hasSelection()) {
+                int afromRow, atoRow, afromCol, atoCol;
+                m_cursor->selectionBounds(afromRow, afromCol, atoRow, atoCol);
+                m_cursor->setRow(afromRow);
+                m_cursor->setColumn(afromCol);
                 m_cursor->removeSelectedText();
+                m_cursor->setRow(toRow);
+                m_cursor->setColumn(toCol);
                 if (row>=toRow) {
                     row -= text.count("\n");
                     if (row==toRow && col>=toCol) {

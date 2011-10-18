@@ -1005,7 +1005,13 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
             delete rightExpr;
             return;
         }
-        if (leftExpr->kind==AST::ExprFunctionCall || leftExpr->kind==AST::ExprSubexpression) {
+        if (leftExpr->kind==AST::ExprFunctionCall) {
+            assignOp->error = _("Assignment to function");
+            delete rightExpr;
+            delete leftExpr;
+            return;
+        }
+        if (leftExpr->kind==AST::ExprSubexpression) {
             assignOp->error = _("Assignment to complex expression");
             delete rightExpr;
             delete leftExpr;

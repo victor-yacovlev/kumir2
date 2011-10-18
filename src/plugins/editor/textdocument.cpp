@@ -23,7 +23,9 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
 {
 
     blankLines = blankChars = 0;
-    bool blankLinesAreHidden = data.last().hidden;
+    bool blankLinesAreHidden = false;
+    if (data.size()>0)
+            blankLinesAreHidden = data.last().hidden;
     while (data.size()<=line) {
         blankLines ++;
         TextLine tl;
