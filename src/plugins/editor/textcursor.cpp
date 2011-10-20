@@ -1103,8 +1103,8 @@ QString TextCursor::selectedText() const
         for (int i=0; i<m_document->linesCount(); i++) {
             const QList<bool> sm = m_document->selectionMaskAt(i);
             const QString text = m_document->textAt(i);
-            Q_ASSERT(text.length()==sm.size());
-            for (int j=0; j<text.length(); j++) {
+//            Q_ASSERT(text.length()==sm.size());
+            for (int j=0; j<qMin(text.length(), sm.size()); j++) {
                 if (sm[j])
                     result += text[j];
             }
@@ -1208,7 +1208,7 @@ void TextCursor::undo()
         m_document->undoStack()->undo();
     }
     if (prevRow!=i_row || prevLines!=m_document->linesCount()) {
-        m_document->flushTransaction();
+        m_document->forceCompleteRecompilation();
     }
     emit undoAvailable(b_enabled && m_document->undoStack()->canUndo());
     emit redoAvailable(b_enabled && m_document->undoStack()->canRedo());
@@ -1222,7 +1222,7 @@ void TextCursor::redo()
         m_document->undoStack()->redo();
     }
     if (prevRow!=i_row || prevLines!=m_document->linesCount()) {
-        m_document->flushTransaction();
+        m_document->forceCompleteRecompilation();
     }
     emit undoAvailable(b_enabled && m_document->undoStack()->canUndo());
     emit redoAvailable(b_enabled && m_document->undoStack()->canRedo());

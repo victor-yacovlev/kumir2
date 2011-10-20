@@ -4,88 +4,88 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="43"/>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="54"/>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="65"/>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="76"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="49"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="60"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="71"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="82"/>
         <source>Division by zero</source>
         <comment>StFuncError</comment>
         <translation>Деление на 0</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="87"/>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="98"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="93"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="104"/>
         <source>Can&apos;t power to less than zero</source>
         <comment>StFuncError</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="117"/>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="128"/>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="139"/>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="160"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="123"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="134"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="145"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="166"/>
         <source>Bad inverse trigonometric argument</source>
         <comment>StFuncError</comment>
         <translation>Неверный параметр обратной тригонометрической функции</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="176"/>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="279"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="182"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="285"/>
         <source>Division by not natural number</source>
         <comment>StFuncError</comment>
         <translation>Деление на отрицательное число</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="191"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="197"/>
         <source>Function result is not a number</source>
         <comment>StFuncError</comment>
         <translation>Значение не определено</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="195"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="201"/>
         <source>Function result is infinity value</source>
         <comment>StFuncError</comment>
         <translation>Значение не определено</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="227"/>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="292"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="233"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="298"/>
         <source>Invalid range</source>
         <comment>StFuncError</comment>
         <translation>Неверные границы случайного числа</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="247"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="253"/>
         <source>Lg function argument must be &gt; 0</source>
         <comment>StFuncError</comment>
         <translation>Параметр LG должен быть &gt; 0</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="258"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="264"/>
         <source>Ln function argument must be &gt; 0</source>
         <comment>StFuncError</comment>
         <translation>Параметр LN должен быть &gt; 0</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="330"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="336"/>
         <source>Square root of negative value</source>
         <comment>StFuncError</comment>
         <translation>Параметр SQRT должен быть &gt;= 0</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="390"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="396"/>
         <source>Symbol out of the KOI8-R range</source>
         <comment>StFuncError</comment>
         <translation>Символ вне кодировки КОИ8-Р</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="420"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="426"/>
         <source>Code out of range [0..255]</source>
         <comment>StFuncError</comment>
         <translation>Код должен быть в диапазоне [0..255]</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="672"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="678"/>
         <source>Resulting character is not allowed in Russian languange</source>
         <comment>StFuncError</comment>
         <translation>Получившийся символ отсутствует в русском языке</translation>
@@ -104,13 +104,11 @@
     <message>
         <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="199"/>
         <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="559"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.h" line="27"/>
         <source>yes</source>
         <translation>да</translation>
     </message>
     <message>
         <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="200"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.h" line="27"/>
         <source>no</source>
         <translation>нет</translation>
     </message>

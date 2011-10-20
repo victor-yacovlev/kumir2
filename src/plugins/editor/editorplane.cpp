@@ -1046,6 +1046,7 @@ void EditorPlane::dropEvent(QDropEvent *e)
     col = qMax(col, 0);
     row = qMax(row, 0);
     int fromRow, fromCol, toRow, toCol;
+    m_document->undoStack()->beginMacro("dragndrop");
     if (m_cursor->hasSelection()) {
         m_cursor->selectionBounds(fromRow, fromCol, toRow, toCol);
         if (row>fromRow && row<toRow) {
@@ -1162,8 +1163,9 @@ void EditorPlane::dropEvent(QDropEvent *e)
     else if (e->mimeData()->hasText()) {
         m_cursor->insertText(text);
     }
-
-    m_document->flushTransaction();
+    m_document->undoStack()->endMacro();
+//    m_document->flushTransaction();
+    m_document->forceCompleteRecompilation();
 
     update();
 }

@@ -4,12 +4,12 @@
 <context>
     <name>KumirAnalizer::Lexer</name>
     <message utf8="true">
-        <location filename="../../../src/plugins/kumiranalizer/lexer.cpp" line="1252"/>
+        <location filename="../../../src/plugins/kumiranalizer/lexer.cpp" line="1269"/>
         <source>\bзнач\b|\bтаб\b</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumiranalizer/lexer.cpp" line="1350"/>
+        <location filename="../../../src/plugins/kumiranalizer/lexer.cpp" line="1367"/>
         <source>@testing</source>
         <translation>@тестирование</translation>
     </message>
