@@ -33,7 +33,8 @@ class CompileError:
     """
     line: line number (start from 1)
     pos: error position start in line (start from 1)
-    length: error length in line
+    end: error position end in line
+    text: error text
     """
 
     def __init__(self, err_string = ""):
@@ -66,7 +67,7 @@ def __binary_path(util):
 
 def __run_util(args):
     "Starts a process and returns what process returns"
-    # sys.stderr.write("Starting "+str(args)+"\n")
+    sys.stderr.write("Starting "+str(args)+"\n")
     proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     err = err.strip()
@@ -105,11 +106,15 @@ def __run_program(args, indata):
 def compile_to_bytecode(kumfile):
     "Compiles a kumir program file into kumir bytecode file"
     out, errors = __run_util([__binary_path("kumir2-bc"), kumfile])
+    #print "out=", out
+    #print "errors.text=", str(errors)
+    errors = filter(lambda x: x.startswith("Error: "), errors)
     return map(lambda x: CompileError(x), errors)
 
 def compile_to_native(kumfile):
     "Compiles a kumir program file into native execuable file"
     out, errors = __run_util([__binary_path("kumir2-cc"), kumfile])
+    errors = filter(lambda x: x.startswith("Error: "), errors)
     return map(lambda x: CompileError(x), errors)
 
 def run_bytecode(kodfile, indata):
