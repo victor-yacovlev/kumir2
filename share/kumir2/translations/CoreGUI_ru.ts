@@ -142,7 +142,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="62"/>
         <source>Step in</source>
-        <translation>Шаг внутрь алгоритма</translation>
+        <translation>шаг</translation>
     </message>
     <message>
         <source>Step out</source>
@@ -213,7 +213,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="52"/>
         <source>Step over</source>
-        <translation>Шаг</translation>
+        <translation>ШАГ</translation>
     </message>
 </context>
 <context>

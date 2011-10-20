@@ -429,7 +429,15 @@ QList<Error> Analizer::errors() const
                             AnalizerPrivate::nativeLanguage,
                             lx->error
                             );
-                result << err;
+                if (result.size()>0 && result.last().line==err.line && result.last().code==err.code) {
+                    Error prev = result.last();
+                    result.pop_back();
+                    prev.len = (err.start+err.len-prev.start);
+                    result << prev;
+                }
+                else {
+                    result << err;
+                }
             }
         }
     }
