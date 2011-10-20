@@ -2,6 +2,10 @@ if(WIN32)
 	set(CMAKE_SHARED_LIBRARY_PREFIX "")
 endif()
 
+if (MSVC)
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif(MSVC)
+
 if(MSVC_IDE)
 	set(CMAKE_SHARED_LIBRARY_PREFIX "../")
 	set(CMAKE_IMPORT_LIBRARY_PREFIX "../")
