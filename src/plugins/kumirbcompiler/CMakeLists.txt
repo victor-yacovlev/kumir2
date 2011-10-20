@@ -11,8 +11,8 @@ set(MOC_HEADERS
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 copySpecFile(KumirBCompiler)
-handleTranslation(KumirBCompiler)
 add_library(KumirBCompiler SHARED ${MOC_SOURCES} ${SOURCES})
+handleTranslation(KumirBCompiler)
 target_link_libraries(KumirBCompiler ${QT_LIBRARIES} ExtensionSystem DataFormats)
 
 install(TARGETS KumirBCompiler DESTINATION ${PLUGINS_DIR})

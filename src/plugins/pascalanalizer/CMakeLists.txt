@@ -14,8 +14,8 @@ set(MOC_HEADERS
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 copySpecFile(PascalAnalizer)
-handleTranslation(PascalAnalizer)
 add_library(PascalAnalizer SHARED ${MOC_SOURCES} ${SOURCES})
+handleTranslation(PascalAnalizer)
 target_link_libraries(PascalAnalizer ${QT_LIBRARIES} ExtensionSystem)
 
 file(GLOB IPPC_SRC

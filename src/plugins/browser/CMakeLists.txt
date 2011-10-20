@@ -21,8 +21,8 @@ set(MOC_HEADERS
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 copySpecFile(Browser)
-handleTranslation(Browser)
 add_library(Browser SHARED ${MOC_SOURCES} ${SOURCES})
+handleTranslation(Browser)
 target_link_libraries(Browser ${QT_LIBRARIES} ExtensionSystem)
 
 install(TARGETS Browser DESTINATION ${PLUGINS_DIR})

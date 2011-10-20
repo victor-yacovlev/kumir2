@@ -22,8 +22,8 @@ add_definitions(-DUSE_${BACKEND})
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 copySpecFile(KumirNativeGenerator SHARED ${MOC_SOURCES} ${SOURCES})
-handleTranslation(KumirNativeGenerator)
 add_library(KumirNativeGenerator SHARED ${MOC_SOURCES} ${SOURCES})
+handleTranslation(KumirNativeGenerator)
 target_link_libraries(KumirNativeGenerator ${QT_LIBRARIES} ExtensionSystem DataFormats)
 copyResources(kumirnativegenerator)
 

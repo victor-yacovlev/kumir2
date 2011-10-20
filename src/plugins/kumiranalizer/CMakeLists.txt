@@ -22,8 +22,8 @@ set(MOC_HEADERS
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 copySpecFile(KumirAnalizer)
-handleTranslation(KumirAnalizer)
 add_library(KumirAnalizer SHARED ${MOC_SOURCES} ${SOURCES})
+handleTranslation(KumirAnalizer)
 target_link_libraries(KumirAnalizer ${QT_LIBRARIES} ExtensionSystem ErrorMessages DataFormats)
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/share/kumir2/kumiranalizer)

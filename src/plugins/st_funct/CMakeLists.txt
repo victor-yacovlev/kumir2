@@ -12,8 +12,8 @@ set(SOURCES
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 copySpecFile(st_funct)
-handleTranslation(st_funct)
 add_library(st_funct SHARED ${MOC_SOURCES} ${SOURCES})
+handleTranslation(st_funct)
 target_link_libraries(st_funct ${QT_LIBRARIES} ExtensionSystem KumirStdLib)
 
 install(TARGETS st_funct DESTINATION ${PLUGINS_DIR})

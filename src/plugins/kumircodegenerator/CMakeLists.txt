@@ -12,8 +12,8 @@ set(MOC_HEADERS
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 copySpecFile(KumirCodeGenerator)
-handleTranslation(KumirCodeGenerator)
 add_library(KumirCodeGenerator SHARED ${MOC_SOURCES} ${SOURCES})
+handleTranslation(KumirCodeGenerator)
 target_link_libraries(KumirCodeGenerator ${QT_LIBRARIES} ExtensionSystem DataFormats ErrorMessages)
 
 install(TARGETS KumirCodeGenerator DESTINATION ${PLUGINS_DIR})

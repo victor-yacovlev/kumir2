@@ -37,8 +37,8 @@ set(FORMS
 qt4_wrap_ui(UI_SOURCES ${FORMS})
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 copySpecFile(Editor)
-handleTranslation(Editor)
 add_library(Editor SHARED ${UI_SOURCES} ${MOC_SOURCES} ${SOURCES})
+handleTranslation(Editor)
 target_link_libraries(Editor ${QT_LIBRARIES} ExtensionSystem DataFormats)
 
 copyResources(editor)

@@ -5,9 +5,10 @@ macro(handleTranslation pluginName)
         get_filename_component(basename ${ts_file} NAME_WE)
         set(qm_target ${basename}_qm)
         #add_custom_target(${qm_target} ALL ${QT_LRELEASE_EXECUTABLE} -qm ${SHARE_PATH}/translations/${basename}.qm ${ts_file})
-		add_custom_command(TARGET ${pluginName} POST_BUILD 
-			COMMAND ${QT_LRELEASE_EXECUTABLE} -qm ${SHARE_PATH}/translations/${basename}.qm ${ts_file}
-		)
+        add_custom_command(TARGET ${pluginName} PRE_BUILD
+                COMMAND ${QT_LRELEASE_EXECUTABLE} -qm ${SHARE_PATH}/translations/${basename}.qm ${ts_file}
+                #COMMAND echo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        )
         install(FILES ${SHARE_PATH}/translations/${basename}.qm DESTINATION ${RESOURCES_DIR}/translations/)
     endforeach(ts_file)
 endmacro(handleTranslation)
