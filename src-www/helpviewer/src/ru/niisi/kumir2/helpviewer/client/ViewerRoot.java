@@ -18,6 +18,10 @@ import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.xml.client.Document;
+import com.google.gwt.xml.client.Element;
+import com.google.gwt.xml.client.Node;
+import com.google.gwt.xml.client.NodeList;
+import com.google.gwt.xml.client.Text;
 import com.google.gwt.xml.client.XMLParser;
 
 
@@ -56,6 +60,59 @@ public class ViewerRoot implements EntryPoint, ResizeHandler  {
 		printFrame.getElement().setAttribute("id", "printframe");
 	}
 	
+	protected void loadIncludes(final String baseUrl, final Document doc, final boolean isBook)
+	{
+		NodeList includes = doc.getElementsByTagName("include");
+		if (includes.getLength()==0) {
+			if (isBook) {
+				books.add(doc);
+				tableOfContentsPanel.addBook(doc);
+			}
+			else {
+				articles.add(doc);
+				tableOfContentsPanel.addArticle(doc);
+			}
+		}
+		else {
+			final Element firstInclude = (Element)includes.item(0);
+		
+			String href = firstInclude.getAttribute("href");
+			String baseDir = baseUrl;
+			int slashPos = baseUrl.lastIndexOf('/');
+			if (slashPos!=-1) {
+				baseDir = baseUrl.substring(0, slashPos);
+			}
+			final String absHref = baseDir + "/" + href;
+			RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, absHref);
+			builder.setCallback(new RequestCallback() {
+				
+				@Override
+				public void onResponseReceived(Request request, Response response) {
+					final String docbookData = response.getText();
+					final Document docbookDocument = XMLParser.parse(docbookData);
+					Node n = doc.importNode(docbookDocument.getDocumentElement(), true);
+					doc.getDocumentElement().replaceChild(n, firstInclude);
+					loadIncludes(baseUrl, doc, isBook);
+				}
+				
+				@Override
+				public void onError(Request request, Throwable exception) {
+					Element errorPara = doc.createElement("para");
+					Text errorText = doc.createTextNode("Can't load "+absHref);
+					errorPara.appendChild(errorText);
+					doc.getDocumentElement().replaceChild(errorPara, firstInclude);
+					loadIncludes(baseUrl, doc, isBook);
+				}
+			});
+			try {
+				builder.send();
+			} catch (RequestException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	protected void loadBooksAndArticles() {
 		final String documentList = Window.Location.getParameter("documents");
 		if (documentList==null)
@@ -71,12 +128,10 @@ public class ViewerRoot implements EntryPoint, ResizeHandler  {
 						final String docbookData = response.getText();
 						final Document docbookDocument = XMLParser.parse(docbookData);
 						if (docbookDocument.getDocumentElement().getNodeName().equalsIgnoreCase("book")) {
-							books.add(docbookDocument);
-							tableOfContentsPanel.addBook(docbookDocument);
+							loadIncludes(documentURL, docbookDocument, true);
 						}
 						else if (docbookDocument.getDocumentElement().getNodeName().equalsIgnoreCase("article")) {
-							articles.add(docbookDocument);
-							tableOfContentsPanel.addArticle(docbookDocument);
+							loadIncludes(documentURL, docbookDocument, false);
 						}
 					}
 					
