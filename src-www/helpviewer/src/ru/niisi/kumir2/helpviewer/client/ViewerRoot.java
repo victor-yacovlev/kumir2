@@ -93,7 +93,8 @@ public class ViewerRoot implements EntryPoint, ResizeHandler  {
 					final String docbookData = response.getText();
 					final Document docbookDocument = XMLParser.parse(docbookData);
 					Node n = doc.importNode(docbookDocument.getDocumentElement(), true);
-					doc.getDocumentElement().replaceChild(n, firstInclude);
+//					doc.getDocumentElement().replaceChild(n, firstInclude);
+					firstInclude.getParentNode().replaceChild(n, firstInclude);
 					loadIncludes(baseUrl, doc, isBook);
 				}
 				

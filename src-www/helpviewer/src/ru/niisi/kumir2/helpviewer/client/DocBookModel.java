@@ -370,7 +370,8 @@ public class DocBookModel extends TreeItem {
 		}
 		else {
 			for (final DocBookModel child : children) {
-				result += child.getContentHTML(false, printableForm);
+				if (child.getModelType()!=DocBookModelType.XInfo)
+					result += child.getContentHTML(false, printableForm);
 			}
 		}
 		
