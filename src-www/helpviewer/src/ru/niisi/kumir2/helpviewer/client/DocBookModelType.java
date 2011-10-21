@@ -16,5 +16,8 @@ public enum DocBookModelType {
 	ItemizedList,
 	ListItem,
 	Xref, 
-	Emphasis
+	Emphasis,
+	XInfo,
+	KeywordSet,
+	Keyword
 }

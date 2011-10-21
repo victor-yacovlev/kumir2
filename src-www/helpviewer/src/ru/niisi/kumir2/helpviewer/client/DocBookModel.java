@@ -202,6 +202,28 @@ public class DocBookModel extends TreeItem {
 			else if (n.getNodeType()==Node.ELEMENT_NODE && n.getNodeName().equalsIgnoreCase("emphasis")) {
 				children.add(new DocBookModel(this, docBookType, DocBookModelType.Emphasis, (Element)n));
 			}
+			else if (n.getNodeType()==Node.ELEMENT_NODE && n.getNodeName().toLowerCase().endsWith("info")) {
+				children.add(new DocBookModel(this, docBookType, DocBookModelType.XInfo, (Element)n));
+			}
+			else if (n.getNodeType()==Node.ELEMENT_NODE && n.getNodeName().equalsIgnoreCase("keywordset")) {
+				children.add(new DocBookModel(this, docBookType, DocBookModelType.KeywordSet, (Element)n));
+			}
+			else if (n.getNodeType()==Node.ELEMENT_NODE && n.getNodeName().equalsIgnoreCase("keyword")) {
+				children.add(new DocBookModel(this, docBookType, DocBookModelType.Keyword, (Element)n));
+				String kwd = extractStringData((Element)n).trim().toLowerCase();
+				DocBookModel entry = this;
+				while (entry!=null &&
+						!(entry.modelType==DocBookModelType.Section || entry.modelType==DocBookModelType.Chapter || 
+								entry.modelType==DocBookModelType.Book || entry.modelType==DocBookModelType.Article ||
+								entry.modelType==DocBookModelType.Preface || entry.modelType==DocBookModelType.Abstract)
+						) 
+				{
+					entry = (DocBookModel)(entry.getParentItem());
+				}
+				if (entry!=null && kwd.length()>0) {
+					KeywordsDatabase.addEntry(kwd, entry);
+				}
+			}
 			else if (n.getNodeType()==Node.TEXT_NODE) {
 				children.add(new DocBookModel(this, n.toString()));
 			}
@@ -437,7 +459,8 @@ public class DocBookModel extends TreeItem {
 		
 		if (modelType==DocBookModelType.__text__)
 			return "";
-		
+		if (modelType==DocBookModelType.XInfo)
+			return "";
 		if (isLeaf()) {
 			return generateAHref();
 		}
@@ -450,7 +473,7 @@ public class DocBookModel extends TreeItem {
 				result += "<p>"+generateAHref()+"</p>\n";
 			result += "<ul>\n";
 			for ( DocBookModel child : children ) {
-				if (child.getModelType()!=DocBookModelType.__text__) {
+				if (child.getModelType()!=DocBookModelType.__text__ && child.getModelType()!=DocBookModelType.XInfo) {
 					result += "<li>";
 					result += child.generateIndex(false, printableForm);
 					result += "</li>";
