@@ -46,6 +46,8 @@ KumFile::Data KumFile::fromString(const QString &s)
     int lineNo = -1;
     for (int i=0; i<lines.count(); i++) {
         QString line = lines[i];
+        while (line.startsWith(" "))
+            line.remove(0, 1);
         if (line.endsWith("|@hidden")) {
             data.hasHiddenText = true;
             if (!data.hiddenText.isEmpty() && data.visibleText.isEmpty())
