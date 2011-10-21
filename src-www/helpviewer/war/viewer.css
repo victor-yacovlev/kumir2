@@ -67,3 +67,80 @@ body {
   margin-left: 0px;
 }
 
+#SearchRequestPanel {
+	padding: 10px;
+	/* background-color: #f5f5f5; */
+	width: 100%;
+}
+
+#ScrollPanel {
+	background-color: green;
+	overflow: visible;
+}
+
+#SearchTextBox {
+	padding: 0px;
+	padding-left: 10px;
+	padding-right: 10px;
+	border: 1px solid gray;
+	border-top-left-radius: 7px;
+	border-bottom-left-radius: 7px;
+	background-color: white;
+	height: 24px;
+	font-size: 18px;
+	margin-right: 0;
+	border-right: 0px;
+	width: 140px;
+	
+}
+
+#DoSearchButton {
+	margin-left: 0;
+	border: 1px solid gray;
+	border-top-right-radius: 7px;
+	border-bottom-right-radius: 7px;
+	background-color: #8E8E8E;
+	height: 26px;
+	width: 48px;
+	cursor: pointer;
+	background-image: url(images/search.png);
+	background-repeat: no-repeat;
+	position: absolute;
+	left: 150px;
+	top: 10px;
+	
+}
+
+#DoSearchButton:hover {
+	background-color: #cccccc;
+}
+
+#SearchPanel {
+	
+}
+
+#SearchResults {
+	padding-left: 10px;
+}
+
+.SearchItemClass {
+	
+}
+
+.SearchItemClass .gwt-TreeItem {
+	position: absolute;
+	left: 10px;
+	font-size: 14px;
+	border-bottom: 1px solid gray;
+}
+
+.SearchItemClass .gwt-TreeItem-selected {
+	font-weight: bold;
+	border-bottom: 1px solid black;
+	background: none;
+}
+
+.SearchItemClass:hover .gwt-TreeItem:hover {
+	border-bottom: 1px solid blue;
+	color: blue;
+}
