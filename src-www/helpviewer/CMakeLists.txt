@@ -38,7 +38,7 @@ add_custom_command(
 
 file(MAKE_DIRECTORY ${SHARE_PATH}/webapps/helpviewer/images)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/war/images/thumb_vertical.png DESTINATION ${SHARE_PATH}/webapps/helpviewer/images)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/war/images/thumb_vertical.png DESTINATION ${SHARE_PATH}/webapps/helpviewer/images)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/war/images/search.png DESTINATION ${SHARE_PATH}/webapps/helpviewer/images)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/war/_print.html DESTINATION ${SHARE_PATH}/webapps/helpviewer)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/war/docbook-print-article.css DESTINATION ${SHARE_PATH}/webapps/helpviewer)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/war/docbook-print-book.css DESTINATION ${SHARE_PATH}/webapps/helpviewer)
