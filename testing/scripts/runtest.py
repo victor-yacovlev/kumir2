@@ -1,95 +1,83 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
-from kumirutils import *
-import os, sys, fnmatch
-import shutil
+# coding=UTF-8
 
+import sys
+import os.path
+import os
+import kumirutils
 
-# mask = '.kum'
-TEST_PATH = '/home/victor/off2/' #Path to test dir
-TEST_DIR = ['tErrors']           #List of test dir
-OUT_DIR = 'rOUT'                 #Output dir
-ETALON_DIR = 'new_standards'     #Path to new etalons dir                
-#KUMIR_DIR = '/home/victor/kumir2/build/'
+TEST_DIRS = [ "tErrors" ]
+
 out = sys.stdout
-def find_differences_in_compile_errors(fullname, old, new):
-    for oe in old:
-        line = oe.line
-        ne = None
-        for nne in new:
-            if nne.line==line:
-                ne = nne
-                break
-        if ne is None:
-            out.write("File: "+fullname+"\n")
-            out.write("OLD: "+str(oe)+"\n")
-            out.write("NEW: \n")
-            out.write("===========\n")
+
+def read_standard_errors(filename):
+    f = open(filename, 'r')
+    lines = f.read().split('\n')
+    f.close()
+    result = []
+    for line in lines:
+        if line.strip()=="":
+            continue
+        terms = line.split(',', 4)
+        terms = map(lambda x: x.strip(), terms)
+        err = kumirutils.CompileError()
+        err.line = int(terms[0][2:])
+        err.pos  = int(terms[1][2:])
+        err.end  = int(terms[2][2:])
+        err.text = terms[3][2:].strip()
+        result += [ err ]
+    result.sort(key=lambda x: x.line)
+    return result
+
+def group_errors(lst):
+    result = { }
+    for e in lst:
+        result[e.line] = e
+    return result
+
+def print_difference(old_errors, new_errors):
+    old_db = group_errors(old_errors)
+    new_db = group_errors(new_errors)
+    common = set(old_db.keys()) & set(new_db.keys())
+    old_only = set(old_db.keys()) - common
+    new_only = set(new_db.keys()) - common
+    for line in list(common):
+        e_o = old_db[line]
+        e_n = new_db[line]
+        if e_o.pos!=e_n.pos or e_o.end!=e_n.end or e_o.text!=e_n.text:
+            out.write("Difference!\n")
+            out.write("OLD: "+str(e_o)+"\n")
+            out.write("NEW: "+str(e_n)+"\n")
+            out.write("------------------\n")
+    for line in list(old_only):
+        e = old_db[line]
+        out.write("Lost error!\n")
+        out.write(str(e)+"\n")
+        out.write("------------------\n")
+    for line in list(new_only):
+        e = new_db[line]
+        out.write("New error!\n")
+        out.write(str(e)+"\n")
+        out.write("------------------\n")
+
+def process_dir(dirname):
+    for filename in os.listdir(dirname):
+        if not filename.endswith(".kum"):
+            continue
+        new_errors = kumirutils.compile_to_bytecode(dirname+"/"+filename)
+        gs_name = "new_standards/"+dirname+"/"+filename+".2"
+        if os.path.exists(gs_name):
+            old_errors = read_standard_errors(gs_name)
+            print_difference(old_errors, new_errors)
         else:
-            if ne.pos!=oe.pos or ne.end!=oe.end or ne.text!=oe.text:
-                out.write("File: "+fullname+"\n")
-                out.write("OLD: "+str(oe)+"\n")
-                out.write("NEW: "+str(ne)+"\n")
-                out.write("===========\n")
-    for ne in new:
-        line = ne.line
-        oe = None
-        for ooe in old:
-            if ooe.line==line:
-                oe = ooe
-                break
-        if oe is None:
-            out.write("File: "+fullname+"\n")
-            out.write("OLD: \n")
-            out.write("NEW: "+str(ne)+"\n")
-            out.write("===========\n")
+            out.write("No standard for "+dirname+"/"+filename+"\n")
+            out.write("------------------\n")
 
-os.chdir(TEST_PATH)
-print 'Carent path:', TEST_PATH
-
-for dd in os.listdir(TEST_PATH):
-        if dd == OUT_DIR:
-                shutil.rmtree(dd)
-                print 'Delete', dd
-        else:
-                print dd
-
-#os.open
-
-os.mkdir(OUT_DIR)
-
-for Tdir in TEST_DIR:
-        for Tname in os.listdir(Tdir):
-                if Tname[-3:] == 'kod' :
-                        os.remove(Tdir+'/'+Tname)
-                        print 'File: ', Tname, 'deleted'
-                else:
-                        objerr = compile_to_bytecode(Tdir+'/'+Tname)
-                        #rf = OUT_DIR+'/'+Tname+'.err.txt'
-                        rf = OUT_DIR+'/'+Tname+'.2'
-                        print "Open file: ", rf
-                        f = open (rf, 'w')
-                        for Err in objerr:
-                                #tmpstr = 'L:'+str(Err.line) +', S:'+ str(Err.pos)+ ', E:'+ str(Err.end)+ ', T:'+ Err.text+'\n'
-                                tmpstr = str(Err)+'\n'
-                                f.write (tmpstr)
-                        f.close
-                        print "Close file"
-
-print 'Start compare'
-print 'Carent path:', os.getcwd()
-out = open('newreport.txt', 'w')
-
-for Tname in OUT_DIR:
-        fn = OUT_DIR+os.path.sep+Tname
-        fnew = open (fn, 'r')
-        newlines = fnew.read().split('\n')
-        fnew.close()
-        fe = ETALON_DIR+os.path.sep+Tname 
-        fetalon = open (fe, 'r')
-        etalines = fetalon.read().split('\n')
-        fetalon.close()
-        find_differences_in_compile_errors(Tname, etalines, newlines)
-
-out.close
-# zapusk *.kod
+if __name__=="__main__":
+    for arg in sys.argv:
+        if arg.startswith("--out="):
+            out = open(arg[6:], 'w')
+    for dirname in TEST_DIRS:
+        process_dir(dirname)
+    out.close()

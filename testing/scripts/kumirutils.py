@@ -37,12 +37,18 @@ class CompileError:
     text: error text
     """
 
+    def __init__(self):
+        self.line = int()
+        self.text = str()
+        self.pos = int()
+        self.end = int()
+
     def __init__(self, err_string = ""):
         "Creates error from error string"
         self.line = self.pos = self.end = int()
         self.text = str()
         if len(err_string)>0:
-            lexems = err_string.split(":", 5)
+            lexems = err_string.split(":", 4)
             if len(lexems)>4:
                 self.line = int(lexems[2])
                 linepos = lexems[3].split("-")
