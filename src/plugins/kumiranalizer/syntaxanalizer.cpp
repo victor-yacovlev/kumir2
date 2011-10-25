@@ -1496,7 +1496,10 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
                 }
                 QString loc_err = lexer->testName(cName);
                 if (!loc_err.isEmpty()) {
-                    for (int k=nameStart; k<curPos; k++)
+                    int endPos = curPos;
+                    if (arrayStart>nameStart)
+                        endPos = arrayStart;
+                    for (int k=nameStart; k<endPos; k++)
                         group.lexems[k]->error = loc_err;
                     return result;
                 }

@@ -72,6 +72,8 @@ def process_dir(dirname):
             print_difference(dirname+"/"+filename, old_errors, new_errors)
         else:
             out.write("No standard for "+dirname+"/"+filename+"\n")
+            out.write("Suggestion:\n")
+            for e in new_errors: out.write(str(e)+"\n")
             out.write("------------------\n")
 
 if __name__=="__main__":
