@@ -95,9 +95,9 @@ extern QString message(const QString &plugin
                        , const QString &key)
 {
     Context context(plugin, language);
-    static const QRegExp arg1("\\\\1=\\{(\\S+)\\}");
-    static const QRegExp arg2("\\\\2=\\{(\\S+)\\}");
-    static const QRegExp arg3("\\\\3=\\{(\\S+)\\}");
+    static const QRegExp arg1("\\\\1=\\{(\\S*)\\}");
+    static const QRegExp arg2("\\\\2=\\{(\\S*)\\}");
+    static const QRegExp arg3("\\\\3=\\{(\\S*)\\}");
     QString k = key;
     QStringList arguments;
     QString result;

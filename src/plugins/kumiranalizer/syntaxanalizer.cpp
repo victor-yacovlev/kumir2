@@ -2112,11 +2112,11 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 return 0;
             }
             if (notFlag) {
-                if (operand->baseType!=AST::TypeBoolean) {
-                    delete operand;
-                    notFlag->error = _("Use of 'not' for non-boolean value");
-                    return 0;
-                }
+//                if (operand->baseType!=AST::TypeBoolean) {
+//                    delete operand;
+//                    notFlag->error = _("Use of 'not' for non-boolean value");
+//                    return 0;
+//                }
                 subexpression << notFlag;
             }
             curPos++;
@@ -2141,11 +2141,11 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 return 0;
             }
             if (notFlag) {
-                if (operand->baseType!=AST::TypeBoolean) {
-                    delete operand;
-                    notFlag->error =  _("Use of 'not' for non-boolean value");
-                    return 0;
-                }
+//                if (operand->baseType!=AST::TypeBoolean) {
+//                    delete operand;
+//                    notFlag->error =  _("Use of 'not' for non-boolean value");
+//                    return 0;
+//                }
                 subexpression << notFlag;
             }
             subexpression << operand;
@@ -2174,11 +2174,11 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 return 0;
             }
             if (notFlag) {
-                if (operand->baseType!=AST::TypeBoolean) {
-                    delete operand;
-                    notFlag->error =  _("Use of 'not' for non-boolean value");
-                    return 0;
-                }
+//                if (operand->baseType!=AST::TypeBoolean) {
+//                    delete operand;
+//                    notFlag->error =  _("Use of 'not' for non-boolean value");
+//                    return 0;
+//                }
                 subexpression << notFlag;
             }
             curPos++;
@@ -2232,11 +2232,11 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 return 0;
             }
             if (notFlag) {
-                if (operand->baseType!=AST::TypeBoolean) {
-                    delete operand;
-                    notFlag->error =  _("Use of 'not' for non-boolean value");
-                    return 0;
-                }
+//                if (operand->baseType!=AST::TypeBoolean) {
+//                    delete operand;
+//                    notFlag->error =  _("Use of 'not' for non-boolean value");
+//                    return 0;
+//                }
                 subexpression << notFlag;
             }
             curPos++;
