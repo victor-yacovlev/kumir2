@@ -43,9 +43,9 @@ QString Plugin::initialize(const QStringList & parameters)
     if (BlacklistedThemes.contains(currentStyleName)) {
         qApp->setStyle("Cleanlooks");
     }
-//#ifdef Q_OS_MAC
-//    qApp->setStyle("Cleanlooks");
-//#endif
+#ifdef Q_OS_MAC
+    qApp->setStyle("Cleanlooks");
+#endif
     QString iconSuffix;
     for (int i=0; i<parameters.count(); i++) {
         const QString param = parameters[i];
