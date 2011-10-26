@@ -673,7 +673,12 @@ void SyntaxAnalizerPrivate::parseIfCase(int str)
             delete expr;
         }
         else {
-            st.statement->conditionals[st.conditionalIndex].condition = expr;
+            if (st.conditionalIndex < st.statement->conditionals.size()) {
+                st.statement->conditionals[st.conditionalIndex].condition = expr;
+            }
+            else {
+                delete expr;
+            }
         }
     }
 }

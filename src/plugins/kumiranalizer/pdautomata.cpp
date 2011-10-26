@@ -1361,19 +1361,21 @@ void PDAutomataPrivate::processCorrectThen()
 void PDAutomataPrivate::processCorrectFi()
 {
     currentContext.pop();
-    Q_ASSERT(currentContext.size()>0);
-    Q_ASSERT(currentContext.top()->last()->type==AST::StIfThenElse
-             || currentContext.top()->last()->type==AST::StSwitchCaseElse);
-    if (currentContext.top()->last()->conditionals.size()>0) {
-        setCurrentIndentRank(-2, 0);
+
+    if (currentContext.size()>0 && currentContext.last()->size()>0 && (currentContext.top()->last()->type==AST::StIfThenElse
+                                            || currentContext.top()->last()->type==AST::StSwitchCaseElse))
+    {
+        if (currentContext.top()->last()->conditionals.size()>0) {
+            setCurrentIndentRank(-2, 0);
+        }
+        else {
+            setCurrentIndentRank(0, 0);
+            setCurrentError(_("Extra 'fi'"));
+        }
+        source.at(currentPosition)->mod = currentModule;
+        source.at(currentPosition)->alg = currentAlgorhitm;
+        source.at(currentPosition)->statement = currentContext.top()->last();
     }
-    else {
-        setCurrentIndentRank(0, 0);
-        setCurrentError(_("Extra 'fi'"));
-    }
-    source.at(currentPosition)->mod = currentModule;
-    source.at(currentPosition)->alg = currentAlgorhitm;
-    source.at(currentPosition)->statement = currentContext.top()->last();
 }
 
 void PDAutomataPrivate::processCorrectElse()
@@ -1381,17 +1383,49 @@ void PDAutomataPrivate::processCorrectElse()
     setCurrentIndentRank(-1, +1);
     currentContext.pop();
     Q_ASSERT(currentContext.size()>0);
-    Q_ASSERT(currentContext.top()->last()->type==AST::StIfThenElse
-             || currentContext.top()->last()->type==AST::StSwitchCaseElse);
-    AST::ConditionSpec cond;
-    cond.lexems = source.at(currentPosition)->data;
-    cond.condition = 0;
-    source.at(currentPosition)->mod = currentModule;
-    source.at(currentPosition)->alg = currentAlgorhitm;
-    source.at(currentPosition)->statement = currentContext.top()->last();
-    source.at(currentPosition)->conditionalIndex = currentContext.top()->last()->conditionals.size();
-    currentContext.top()->last()->conditionals << cond;
-    currentContext.push(&(currentContext.top()->last()->conditionals.last().body));
+    if (currentContext.top()->size()>0 && (currentContext.top()->last()->type==AST::StIfThenElse ||
+            currentContext.top()->last()->type==AST::StSwitchCaseElse)
+            )
+    {
+        AST::ConditionSpec cond;
+        cond.lexems = source.at(currentPosition)->data;
+        cond.condition = 0;
+        source.at(currentPosition)->mod = currentModule;
+        source.at(currentPosition)->alg = currentAlgorhitm;
+        source.at(currentPosition)->statement = currentContext.top()->last();
+        source.at(currentPosition)->conditionalIndex = currentContext.top()->last()->conditionals.size();
+        currentContext.top()->last()->conditionals << cond;
+        currentContext.push(&(currentContext.top()->last()->conditionals.last().body));
+    }
+    else {
+        // Error: no if..then
+        AST::Statement * ste = new AST::Statement();
+        ste->type = AST::StError;
+        ste->error = _("No then before else");
+        ste->lexems = source.at(currentPosition)->data;
+        foreach (Lexem * lx, source.at(currentPosition)->data) {
+            lx->error = ste->error;
+        }
+        currentContext.top()->append(ste);
+        AST::Statement * st = new AST::Statement;
+        st->type = AST::StIfThenElse;
+        st->lexems = source.at(currentPosition)->data;
+        source.at(currentPosition)->mod = currentModule;
+        source.at(currentPosition)->alg = currentAlgorhitm;
+        source.at(currentPosition)->statement = currentContext.top()->last();
+        currentContext.top()->append(st);
+
+        AST::ConditionSpec cond;
+        cond.lexems = source.at(currentPosition)->data;
+        cond.condition = 0;
+        source.at(currentPosition)->mod = currentModule;
+        source.at(currentPosition)->alg = currentAlgorhitm;
+        source.at(currentPosition)->statement = currentContext.top()->last();
+        source.at(currentPosition)->conditionalIndex = currentContext.top()->last()->conditionals.size();
+        currentContext.top()->last()->conditionals << cond;
+        currentContext.push(&(currentContext.top()->last()->conditionals.last().body));
+
+    }
 }
 
 void PDAutomataPrivate::processCorrectSwitch()
