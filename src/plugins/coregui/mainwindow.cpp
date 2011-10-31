@@ -1049,7 +1049,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
         addToRecent(url.toLocalFile());
     if (type==Kumir) {
         QFile f(url.toLocalFile());
-        if (f.open(QIODevice::Text|QIODevice::ReadOnly)) {
+        if (f.open(QIODevice::ReadOnly)) {
             QByteArray rawData = f.readAll();
             f.close();
             QStringList lines = KumFile::readRawDataAsString(rawData).split("\n");

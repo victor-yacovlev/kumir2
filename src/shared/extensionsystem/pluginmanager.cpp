@@ -380,6 +380,24 @@ QString PluginManager::loadPluginsByTemplate(const QString &templ)
     if (!error.isEmpty())
         return error;
 
+    bool console = false;
+#ifdef Q_WS_X11
+    console = getenv("DISPLAY")==0;
+#endif
+    if (console) {
+        // Remove GUI plugins
+        QList<PluginSpec>::iterator it;
+        for (it=d->specs.begin(); it!=d->specs.end(); ) {
+            PluginSpec spec = (*it);
+            if (spec.gui) {
+                it = d->specs.erase(it);
+            }
+            else {
+                it++;
+            }
+        }
+    }
+
     // orderedList will contain names in order of load and initialization
     QStringList orderedList;
     // make dependencies for entry point plugin first
