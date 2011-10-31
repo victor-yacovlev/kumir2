@@ -1339,8 +1339,10 @@ void EditorPlane::paintSelection(QPainter *p, const QRect &rect)
     p->save();
     p->setPen(Qt::NoPen);
     p->setBrush(palette().brush(QPalette::Highlight));
-    int startLine = qMax(0, rect.top() / lineHeight() - 1);
-    int endLine = rect.bottom() / lineHeight() + 1;
+    int startLine = 0;
+//    int startLine = qMax(0, rect.top() / lineHeight() - 1);
+//    int endLine = rect.bottom() / lineHeight() + 1;
+    int endLine = m_document->linesCount();
     int lh = lineHeight();
     int cw = charWidth();
     bool prevLineSelected = false;
