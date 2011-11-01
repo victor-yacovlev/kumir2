@@ -8,6 +8,7 @@
 #include <float.h>
 #include <xmath.h>
 #define isnan(x) _isnan(x)
+#define isinf(x) (x==INF)
 #endif
 
 static wchar_t __error__st_funct[256];
@@ -105,7 +106,7 @@ extern "C" int __integer_power__(int a, int b)
         return 0;
     }
     else {
-        double val = pow(a,b);
+        double val = pow((double)a,(double)b);
         val = floor(val);
         return int(val);
     }
@@ -353,7 +354,7 @@ extern "C" double MAXREAL__st_funct()
 
 extern "C" int MAXINT__st_funct()
 {
-    return int(89884656743115795386465259539451236680898848947115328636715040578866337902750481566354238661203768010560056939935696678829394884407208311246423715319737062188883946712432742638151109800623047059726541476042502884419075341171231440736956555270413618581675255342293149119973622969239858152417678164812112068608.);
+    return 0x80000000;
 }
 
 extern "C" wchar_t* real_to_string__st_funct(double x)
@@ -672,7 +673,7 @@ extern "C" wchar_t symbol2__st_funct(int n)
 {
     QChar ch(n);
     static const QString cyrillic =
-            QString::fromUtf8("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЮЭЯ");
+            QString::fromUtf8("АБВГДЕЁЖЗИЙКЛМНОП� СТУФХЦЧШЩЪЫЬЮЭЯ");
     bool valid = n < 128 || cyrillic.contains(ch.toUpper());
     if (!valid) {
         __abort__st_funct(QObject::tr("Resulting character is not allowed in Russian languange", "StFuncError"));
