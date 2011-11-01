@@ -799,19 +799,39 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
         std::list<int> jmps;
         for (int i=0; i<st->operands.size(); i++) {
             result << calculate(modId, algId, level, st->operands[i]);
-            if (st->operatorr==AST::OpAnd) {
+            // Do short circuit calculation for AND and OR operations
+            if (i==0 && (st->operatorr==AST::OpAnd || st->operatorr==AST::OpOr)) {
+                // Simple case: just JZ/JNZ to end
+                Bytecode::Instruction gotoEnd;
+                gotoEnd.registerr = 0;
+                gotoEnd.type = st->operatorr==AST::OpAnd? Bytecode::JZ : Bytecode::JNZ;
                 jmps.push_back(result.size());
-                Bytecode::Instruction jz;
-                jz.type = Bytecode::JZ;
-                jz.registerr = 0;
-                result << jz;
+                result << gotoEnd;
             }
-            else if (st->operatorr==AST::OpOr) {
+            else if (st->operatorr==AST::OpAnd || st->operatorr==AST::OpOr) {
+                // We must remove pre-previous value from stack
+                Bytecode::Instruction gotoCheckNext;
+                gotoCheckNext.registerr = 0;
+                gotoCheckNext.arg = result.size()+6;
+                gotoCheckNext.type = st->operatorr==AST::OpAnd? Bytecode::JNZ : Bytecode::JZ;
+                result << gotoCheckNext;
+                Bytecode::Instruction pop;
+                pop.registerr = 0;
+                pop.type = Bytecode::POP;
+                result << pop << pop;
+                Bytecode::Instruction load;
+                load.type = Bytecode::LOAD;
+                load.scope = Bytecode::CONST;
+                load.arg = constantValue(Bytecode::VT_bool,
+                                         st->operatorr==AST::OpAnd
+                                         ? false
+                                         : true
+                                         );
+                result << load;
                 jmps.push_back(result.size());
-                Bytecode::Instruction jnz;
-                jnz.type = Bytecode::JNZ;
-                jnz.registerr = 0;
-                result << jnz;
+                Bytecode::Instruction gotoEnd;
+                gotoEnd.type = Bytecode::JUMP;
+                result << gotoEnd;
             }
         }
         Bytecode::Instruction instr;
