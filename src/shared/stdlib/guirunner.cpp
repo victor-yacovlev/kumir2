@@ -3,7 +3,7 @@
 #include <iostream>
 #include "userprogramthread.h"
 #include "actorwindow.h"
-#include "stdlib/connector.h"
+#include "connector.h"
 #include "guirunner.h"
 
 
