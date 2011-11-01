@@ -401,11 +401,20 @@ void LexerPrivate::initNormalizator(const QString &fileName)
     operators << ">=";
     kwdMap[">="] = LxOperGreaterOrEqual;
 
+    operators << QString::fromUtf8("≥");
+    kwdMap[QString::fromUtf8("≥")] = LxOperGreaterOrEqual;
+
     operators << "<=";
     kwdMap["<="] = LxOperLessOrEqual;
 
+    operators << QString::fromUtf8("≤");
+    kwdMap[QString::fromUtf8("≤")] = LxOperLessOrEqual;
+
     operators << "<>";
     kwdMap["<>"] = LxOperNotEqual;
+
+    operators << QString::fromUtf8("≠");
+    kwdMap["≠"] = LxOperNotEqual;
 
     operators << "=";
     kwdMap["="] = LxOperEqual;
