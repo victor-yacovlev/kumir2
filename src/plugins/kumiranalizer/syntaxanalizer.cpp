@@ -1516,11 +1516,20 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
                 cName = cName.trimmed();
                 //                if ( cName == QObject::trUtf8("знач") )
                 //                    return PV_ZNACH_NAME;
-                AST::Variable * vv;
-                if (findVariable(cName, mod, alg, vv)) {
-                    group.lexems[nameStart]->error = _("Variable already declared");
-                    return result; // переменная уже объявлена
+                AST::Variable * vv = 0;
+                if (alg) {
+                    if (findLocalVariable(cName, alg, vv)) {
+                        group.lexems[nameStart]->error = _("Variable already declared");
+                        return result; // переменная уже объявлена
+                    }
                 }
+                else {
+                    if (findGlobalVariable(cName, mod, vv)) {
+                        group.lexems[nameStart]->error = _("Variable already declared");
+                        return result; // переменная уже объявлена
+                    }
+                }
+
                 AST::Algorhitm * aa;
                 if (findAlgorhitm(cName, mod, aa)) {
                     group.lexems[nameStart]->error = _("Name is used by algorithm");
