@@ -2398,7 +2398,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
         return 0;
     }
     splitLexemsByOperator(argLine, LxOperComa, arguments, comas);
-    int diff = arguments.size()>function->header.arguments.size();
+    int diff = arguments.size()-function->header.arguments.size();
     if (diff>0) {
         for (int i=0; i<diff; i++) {
             QList<Lexem*> lxs = arguments[arguments.size()-1-i];
