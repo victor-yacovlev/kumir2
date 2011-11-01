@@ -796,8 +796,23 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
         result << instr;
     }
     else if (st->kind==AST::ExprSubexpression) {
+        std::list<int> jmps;
         for (int i=0; i<st->operands.size(); i++) {
             result << calculate(modId, algId, level, st->operands[i]);
+            if (st->operatorr==AST::OpAnd) {
+                jmps.push_back(result.size());
+                Bytecode::Instruction jz;
+                jz.type = Bytecode::JZ;
+                jz.registerr = 0;
+                result << jz;
+            }
+            else if (st->operatorr==AST::OpOr) {
+                jmps.push_back(result.size());
+                Bytecode::Instruction jnz;
+                jnz.type = Bytecode::JNZ;
+                jnz.registerr = 0;
+                result << jnz;
+            }
         }
         Bytecode::Instruction instr;
         instr.type = operation(st->operatorr);
@@ -805,6 +820,10 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
             instr.type = Bytecode::NEG;
         }
         result << instr;
+        for (std::list<int>::iterator it=jmps.begin(); it!=jmps.end(); it++) {
+            int index = *it;
+            result[index].arg = result.size()+1;
+        }
     }
     return result;
 }
