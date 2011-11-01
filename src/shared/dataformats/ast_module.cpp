@@ -114,10 +114,10 @@ QString Module::dump() const
 {
     QString result;
     result = "{\n";
-    result += "\theader: \{\n";
-    result += "\t\tname: \""+header.name+"\",\n";
+    result += "\t\"header\": \{\n";
+    result += "\t\t\"name\": \""+header.name+"\",\n";
     if (!header.uses.isEmpty()) {
-        result += "\t\tuses: [";
+        result += "\t\t\"uses\": [";
         for (int i=0; i<header.uses.size(); i++) {
             if (i>0)
                 result += ", ";
@@ -125,7 +125,7 @@ QString Module::dump() const
         }
         result += "],\n"; // end uses
     }
-    result += "\t\talgorhitms: [\n";
+    result += "\t\t\"algorhitms\": [\n";
     for (int i=0; i<header.algorhitms.size(); i++) {
         result += "\t\t\t\""+header.algorhitms[i]->header.name+"\"";
         if (i<header.algorhitms.size()-1)
@@ -136,19 +136,19 @@ QString Module::dump() const
 
     result += "\t},\n"; // end header
 
-    result += "\timplementation: {\n";
-    if (!impl.beginLexems.isEmpty()) {
-        result += "\tbeginLexems: [\n";
-        for (int i=0; i<impl.beginLexems.size(); i++) {
-            result += "\t\t"+dumpLexem(impl.beginLexems.at(i));
-            if (i<impl.beginLexems.size()-1)
-                result += ",";
-            result += "\n";
-        }
-        result += "\t],\n";
-    }
+    result += "\t\"implementation\": {\n";
+//    if (!impl.beginLexems.isEmpty()) {
+//        result += "\t\"beginLexems\": [\n";
+//        for (int i=0; i<impl.beginLexems.size(); i++) {
+//            result += "\t\t"+dumpLexem(impl.beginLexems.at(i));
+//            if (i<impl.beginLexems.size()-1)
+//                result += ",";
+//            result += "\n";
+//        }
+//        result += "\t],\n";
+//    }
     if (!impl.globals.isEmpty()) {
-    result += "\t\tglobals: [\n";
+    result += "\t\t\"globals\": [\n";
         for (int i=0; i<impl.globals.size(); i++) {
             result += addIndent(impl.globals[i]->dump(), 3);
             if (i<impl.globals.size()-1) {
@@ -159,7 +159,7 @@ QString Module::dump() const
         result += "\t\t],\n"; // end globals
     }
     if (!impl.initializerBody.isEmpty()) {
-        result += "\t\tinitializer: [\n";
+        result += "\t\t\"initializer\": [\n";
         for (int i=0; i<impl.initializerBody.size(); i++) {
             result += addIndent(impl.initializerBody[i]->dump(), 3);
             if (i<impl.initializerBody.size()-1) {
@@ -169,7 +169,7 @@ QString Module::dump() const
         }
         result += "\t\t],\n"; // end initializer
     }
-    result += "\t\talgorhitms: [\n";
+    result += "\t\t\"algorhitms\": [\n";
     for (int i=0; i<impl.algorhitms.size(); i++) {
         result += addIndent(impl.algorhitms[i]->dump(), 3);
         if (i<impl.algorhitms.size()-1) {
@@ -178,20 +178,21 @@ QString Module::dump() const
         result += "\n";
     }
     result += "\t\t]"; // end algorhitms implementation
-    if (!impl.endLexems.isEmpty()) {
-        result += ",\n";
-        result += "\tendLexems: [\n";
-        for (int i=0; i<impl.endLexems.size(); i++) {
-            result += "\t\t"+dumpLexem(impl.endLexems.at(i));
-            if (i<impl.endLexems.size()-1)
-                result += ",";
-            result += "\n";
-        }
-        result += "\t]\n";
-    }
-    else {
-        result += "\n";
-    }
+//    if (!impl.endLexems.isEmpty()) {
+//        result += ",\n";
+//        result += "\t\"endLexems\": [\n";
+//        for (int i=0; i<impl.endLexems.size(); i++) {
+//            result += "\t\t"+dumpLexem(impl.endLexems.at(i));
+//            if (i<impl.endLexems.size()-1)
+//                result += ",";
+//            result += "\n";
+//        }
+//        result += "\t]\n";
+//    }
+//    else {
+//        result += "\n";
+//    }
+    result += "\n";
     result += "\t}\n";
     result += "} /* end module '"+header.name+"' */";
     return result;

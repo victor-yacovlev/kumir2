@@ -174,20 +174,20 @@ extern QString screenString(QString s)
 QString Expression::dump() const
 {
     QString result = "{\n";
-    if (!lexems.isEmpty()) {
-        result += "\tlexems: [\n";
-        for (int i=0; i<lexems.size(); i++) {
-            result += "\t\t"+dumpLexem(lexems[i]);
-            if (i<lexems.size()-1)
-                result += ",";
-            result += "\n";
-        }
-        result += "\t],\n";
-    }
-    result += "\tkind: "+dumpKind(kind);
-    result += ",\n\ttype: "+AST::dump(baseType);
+//    if (!lexems.isEmpty()) {
+//        result += "\t\"lexems\": [\n";
+//        for (int i=0; i<lexems.size(); i++) {
+//            result += "\t\t"+dumpLexem(lexems[i]);
+//            if (i<lexems.size()-1)
+//                result += ",";
+//            result += "\n";
+//        }
+//        result += "\t],\n";
+//    }
+    result += "\t\"kind\": "+dumpKind(kind);
+    result += ",\n\t\"type\": "+AST::dump(baseType);
     if (kind==ExprConst) {
-        result += ",\n\tconstant: ";
+        result += ",\n\t\"constant\": ";
         if (constant.type()==QVariant::String || constant.type()==QVariant::Char) {
             result += "\""+screenString(constant.toString())+"\"";
         }
@@ -196,19 +196,19 @@ QString Expression::dump() const
         result += "\n";
     }
     else if (kind==ExprVariable) {
-        result += ",\n\tvariable: \""+variable->name+"\"\n";
+        result += ",\n\t\"variable\": \""+variable->name+"\"\n";
     }
     else if (kind==ExprFunctionCall) {
-        result += ",\n\talgorhitm: \""+function->header.name+"\"";
+        result += ",\n\t\"algorhitm\": \""+function->header.name+"\"";
     }
     else if (kind==ExprArrayElement) {
-        result += ",\n\tvariable: \""+variable->name+"\"";
+        result += ",\n\t\"variable\": \""+variable->name+"\"";
     }
     else if (kind==ExprSubexpression) {
-        result += ",\n\toperator: \""+dumpOperator(operatorr)+"\"";
+        result += ",\n\t\"operator\": \""+dumpOperator(operatorr)+"\"";
     }
     if (kind==ExprFunctionCall || kind==ExprArrayElement || kind==ExprSubexpression) {
-        result += ",\n\toperands: [\n";
+        result += ",\n\t\"operands\": [\n";
         for (int i=0; i<operands.size(); i++) {
             result += addIndent(operands[i]->dump(), 2);
             if (i<operands.size()-1) {

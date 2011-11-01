@@ -101,12 +101,12 @@ extern QString dumpLexem(const struct Lexem *lx);
 QString Algorhitm::dump() const
 {
     QString result = "{\n";
-    result += "\theader: {\n";
-    result += "\t\tname: \""+header.name+"\",\n";
-    result += "\t\treturnType: "+AST::dump(header.returnType)+",\n";
-    result += "\t\tspecialType: "+AST::dump(header.specialType);
+    result += "\t\"header\": {\n";
+    result += "\t\t\"name\": \""+header.name+"\",\n";
+    result += "\t\t\"returnType\": "+AST::dump(header.returnType)+",\n";
+    result += "\t\t\"specialType\": "+AST::dump(header.specialType);
     if (!header.arguments.isEmpty()) {
-    result += ",\n\t\targuments: [ ";
+    result += ",\n\t\t\"arguments\": [ ";
         for (int i=0; i<header.arguments.size(); i++) {
             if (i>0) result += ", ";
             result += "\""+header.arguments[i]->name+"\"";
@@ -114,32 +114,32 @@ QString Algorhitm::dump() const
         result += " ]"; // end arguments
     }
     if (!header.error.isEmpty()) {
-        result += ",\n\t\terror: \""+header.error+"\"";
+        result += ",\n\t\t\"error\": \""+header.error+"\"";
     }
     result += "\n";
     result += "\t},\n";
-    result += "\timplementation: {\n";
-    if (!impl.headerLexems.isEmpty()) {
-        result += "\t\theaderLexems: [\n";
-        for (int i=0; i<impl.headerLexems.size(); i++) {
-            result += "\t\t\t"+dumpLexem(impl.headerLexems[i]);
-            if (i<impl.headerLexems.size()-1)
-                result += ",";
-            result += "\n";
-        }
-        result += "\t\t],\n";
-    }
-    if (!impl.beginLexems.isEmpty()) {
-        result += "\t\tbeginLexems: [\n";
-        for (int i=0; i<impl.beginLexems.size(); i++) {
-            result += "\t\t\t"+dumpLexem(impl.beginLexems[i]);
-            if (i<impl.beginLexems.size()-1)
-                result += ",";
-            result += "\n";
-        }
-        result += "\t\t],\n";
-    }
-    result += "\t\tlocals: [\n";
+    result += "\t\"implementation\": {\n";
+//    if (!impl.headerLexems.isEmpty()) {
+//        result += "\t\t\"headerLexems\": [\n";
+//        for (int i=0; i<impl.headerLexems.size(); i++) {
+//            result += "\t\t\t"+dumpLexem(impl.headerLexems[i]);
+//            if (i<impl.headerLexems.size()-1)
+//                result += ",";
+//            result += "\n";
+//        }
+//        result += "\t\t],\n";
+//    }
+//    if (!impl.beginLexems.isEmpty()) {
+//        result += "\t\t\"beginLexems\": [\n";
+//        for (int i=0; i<impl.beginLexems.size(); i++) {
+//            result += "\t\t\t"+dumpLexem(impl.beginLexems[i]);
+//            if (i<impl.beginLexems.size()-1)
+//                result += ",";
+//            result += "\n";
+//        }
+//        result += "\t\t],\n";
+//    }
+    result += "\t\t\"locals\": [\n";
     for (int i=0; i<impl.locals.size(); i++) {
         result += AST::addIndent(impl.locals[i]->dump(), 3);
         if (i<impl.locals.size()-1) {
@@ -159,7 +159,7 @@ QString Algorhitm::dump() const
         }
         result += "\t\t] /* end algorhitm '"+header.name+"' pre-statements */,\n";
     }
-    result += "\t\tbody: [\n";
+    result += "\t\t\"body\": [\n";
     for (int i=0; i<impl.body.size(); i++) {
         result += AST::addIndent(impl.body[i]->dump(), 3);
         if (i<impl.body.size()-1) {
@@ -169,7 +169,7 @@ QString Algorhitm::dump() const
     }
     result += "\t\t] /* end algorhitm '"+header.name+"' body */";
     if (!impl.post.isEmpty()) {
-        result += ",\n\t\tpost: [\n";
+        result += ",\n\t\t\"post\": [\n";
         for (int i=0; i<impl.post.size(); i++) {
             result += AST::addIndent(impl.post[i]->dump(), 3);
             if (i<impl.post.size()-1) {
@@ -179,16 +179,16 @@ QString Algorhitm::dump() const
         }
         result += "\t\t] /* end algorhitm '"+header.name+"' post-statements */";
     }
-    if (!impl.endLexems.isEmpty()) {
-        result += ",\n\t\tendLexems: [\n";
-        for (int i=0; i<impl.endLexems.size(); i++) {
-            result += "\t\t\t"+dumpLexem(impl.endLexems[i]);
-            if (i<impl.endLexems.size()-1)
-                result += ",";
-            result += "\n";
-        }
-        result += "\t\t]";
-    }
+//    if (!impl.endLexems.isEmpty()) {
+//        result += ",\n\t\t\"endLexems\": [\n";
+//        for (int i=0; i<impl.endLexems.size(); i++) {
+//            result += "\t\t\t"+dumpLexem(impl.endLexems[i]);
+//            if (i<impl.endLexems.size()-1)
+//                result += ",";
+//            result += "\n";
+//        }
+//        result += "\t\t]";
+//    }
     result += "\n\t} /* end algorhitm '"+header.name+"' implementation */\n";
     result += "} /* end algorhitm '"+header.name+"' */\n";
     return result;

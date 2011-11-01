@@ -2896,7 +2896,16 @@ int findOperatorByPriority(const QList<SubexpressionElement> & s)
 bool IS_NUMERIC_LIST(const QList<AST::Expression*> & list) {
     bool result = true;
     for (int i=0; i<list.size(); i++) {
-        result = result && IS_NUMERIC(list[i]->baseType);
+        bool c = true;
+        if (list[i]->baseType==AST::TypeBoolean &&
+                list[i]->kind==AST::ExprSubexpression)
+        {
+            c = IS_NUMERIC_LIST(list[i]->operands);
+        }
+        else {
+            c = IS_NUMERIC(list[i]->baseType);
+        }
+        result = result && c;
     }
     return result;
 }
@@ -3307,6 +3316,18 @@ AST::VariableBaseType resType(AST::VariableBaseType a
 
 }
 
+AST::Expression * findRightmostCNFSubexpression(AST::Expression * e)
+{
+    static const QSet<AST::ExpressionOperator> ComparisonOperators = QSet<AST::ExpressionOperator>()
+            << AST::OpLess << AST::OpLessOrEqual << AST::OpEqual << AST::OpNotEqual << AST::OpGreaterOrEqual << AST::OpGreater;
+    if (ComparisonOperators.contains(e->operatorr)) {
+        return e->operands.last();
+    }
+    else {
+        return findRightmostCNFSubexpression(e->operands.last());
+    }
+}
+
 AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<SubexpressionElement> & s)
 {
     if (s.isEmpty())
@@ -3376,7 +3397,8 @@ AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<Subexpre
             AST::Expression * subRes = new AST::Expression;
             subRes->kind = AST::ExprSubexpression;
             subRes->baseType = AST::TypeBoolean;
-            subRes->operands << new AST::Expression(headExpr->operands.last());
+//            subRes->operands << new AST::Expression(headExpr->operands.last());
+            subRes->operands << findRightmostCNFSubexpression(new AST::Expression(headExpr));
             subRes->operands << tailExpr;
             subRes->operatorr = operatorByLexem(s[l].o);            
             res->operands << subRes;

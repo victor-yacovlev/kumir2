@@ -203,28 +203,28 @@ QString dumpLoopSpec(const struct LoopSpec & spec)
 {
     QString result = "{\n";
     if (spec.type==LoopFor)
-        result += "\ttype: \"for\",\n";
+        result += "\t\"type\": \"for\",\n";
     else if (spec.type==LoopTimes)
-        result += "\ttype: \"times\",\n";
+        result += "\t\"type\": \"times\",\n";
     else
-        result += "\ttype: \"while\",\n";
+        result += "\t\"type\": \"while\",\n";
     if (spec.type==LoopFor){
         if (spec.forVariable)
-            result += "\tforVariable: \""+spec.forVariable->name+"\",\n";
+            result += "\t\"forVariable\": \""+spec.forVariable->name+"\",\n";
         if (spec.fromValue)
-            result += "\tfromValue: "+addIndent(spec.fromValue->dump(), 1)+",\n";
+            result += "\t\"fromValue\": "+addIndent(spec.fromValue->dump(), 1)+",\n";
         if (spec.toValue)
-            result += "\ttoValue: "+addIndent(spec.toValue->dump(), 1)+",\n";
+            result += "\t\"toValue\": "+addIndent(spec.toValue->dump(), 1)+",\n";
         if (spec.stepValue)
-            result += "\tstepValue: "+addIndent(spec.stepValue->dump(), 1)+",\n";
+            result += "\t\"stepValue\": "+addIndent(spec.stepValue->dump(), 1)+",\n";
     }
     else if (spec.type==LoopTimes)
-        result += "\ttimesValue: "+addIndent(spec.timesValue->dump(), 1)+",\n";
+        result += "\t\"timesValue\": "+addIndent(spec.timesValue->dump(), 1)+",\n";
     else if (spec.type==LoopWhile && spec.whileCondition)
-        result += "\twhileCondition: "+addIndent(spec.whileCondition->dump(), 1)+",\n";
+        result += "\t\"whileCondition\": "+addIndent(spec.whileCondition->dump(), 1)+",\n";
     if (spec.endCondition)
-        result += "\tendCondition: "+addIndent(spec.endCondition->dump(), 1)+",\n";
-    result += "\tbody: [\n";
+        result += "\t\"endCondition\": "+addIndent(spec.endCondition->dump(), 1)+",\n";
+    result += "\t\"body\": [\n";
     for (int i=0; i<spec.body.size(); i++) {
         result += addIndent(spec.body[i]->dump(), 1);
         if (i<spec.body.size()-1)
@@ -232,20 +232,21 @@ QString dumpLoopSpec(const struct LoopSpec & spec)
         result += "\n";
     }
     result += "\t]";
-    if (!spec.endLexems.isEmpty()) {
-        result += ",\n";
-        result += "\tendLexems: [\n";
-        for (int i=0; i<spec.endLexems.size(); i++) {
-            result += "\t\t"+dumpLexem(spec.endLexems[i]);
-            if (i<spec.endLexems.size()-1)
-                result += ",";
-            result += "\n";
-        }
-        result += "\t]\n";
-    }
-    else {
-        result += "\n";
-    }
+//    if (!spec.endLexems.isEmpty()) {
+//        result += ",\n";
+//        result += "\t\"endLexems\": [\n";
+//        for (int i=0; i<spec.endLexems.size(); i++) {
+//            result += "\t\t"+dumpLexem(spec.endLexems[i]);
+//            if (i<spec.endLexems.size()-1)
+//                result += ",";
+//            result += "\n";
+//        }
+//        result += "\t]\n";
+//    }
+//    else {
+//        result += "\n";
+//    }
+    result += "\n";
     result += "}";
     return result;
 }
@@ -253,20 +254,20 @@ QString dumpLoopSpec(const struct LoopSpec & spec)
 QString dumpConditionSpec(const struct ConditionSpec & spec)
 {
     QString result = "{\n";
-    if (!spec.lexems.isEmpty()) {
-        result += "\tlexems: [\n";
-        for (int i=0; i<spec.lexems.size(); i++) {
-            result += "\t\t"+dumpLexem(spec.lexems[i]);
-            if (i<spec.lexems.size()-1)
-                result += ",";
-            result += "\n";
-        }
-        result += "\t],\n";
-    }
+//    if (!spec.lexems.isEmpty()) {
+//        result += "\t\"lexems\": [\n";
+//        for (int i=0; i<spec.lexems.size(); i++) {
+//            result += "\t\t"+dumpLexem(spec.lexems[i]);
+//            if (i<spec.lexems.size()-1)
+//                result += ",";
+//            result += "\n";
+//        }
+//        result += "\t],\n";
+//    }
     if (spec.condition) {
-        result += "\tcondition: "+addIndent(spec.condition->dump(), 1)+",\n";
+        result += "\t\"condition\": "+addIndent(spec.condition->dump(), 1)+",\n";
     }
-    result += "\tbody: [\n";
+    result += "\t\"body\": [\n";
     for (int i=0; i<spec.body.size(); i++) {
         result += addIndent(spec.body[i]->dump(), 1);
         if (i<spec.body.size()-1)
@@ -283,25 +284,25 @@ QString dumpConditionSpec(const struct ConditionSpec & spec)
 QString Statement::dump() const
 {
     QString result = "{\n";
-    if (!lexems.isEmpty()) {
-        result += "\tlexems: [\n";
-        for (int i=0; i<lexems.size(); i++) {
-            result += "\t\t"+dumpLexem(lexems[i]);
-            if (i<lexems.size()-1)
-                result += ",";
-            result += "\n";
-        }
-        result += "\t],\n";
-    }
-    result += "\ttype: \""+dumpStatementType(type)+"\"";
+//    if (!lexems.isEmpty()) {
+//        result += "\t\"lexems\": [\n";
+//        for (int i=0; i<lexems.size(); i++) {
+//            result += "\t\t"+dumpLexem(lexems[i]);
+//            if (i<lexems.size()-1)
+//                result += ",";
+//            result += "\n";
+//        }
+//        result += "\t],\n";
+//    }
+    result += "\t\"type\": \""+dumpStatementType(type)+"\"";
     if (type==StError) {
-        result += ",\n\terror: \""+error+"\"\n";
+        result += ",\n\t\"error\": \""+error+"\"\n";
     }
     else if (type==StLoop) {
-        result += ",\n\tloop: "+addIndent(dumpLoopSpec(loop),1)+"\n";
+        result += ",\n\t\"loop\": "+addIndent(dumpLoopSpec(loop),1)+"\n";
     }
     else if (type==StIfThenElse || type==StSwitchCaseElse) {
-        result += ",\n\tconditionals: [\n";
+        result += ",\n\t\"conditionals\": [\n";
         for (int i=0; i<conditionals.size(); i++) {
             result += addIndent(dumpConditionSpec(conditionals[i]), 2);
             if (i<conditionals.size()-1)
@@ -311,7 +312,7 @@ QString Statement::dump() const
         result += "\t]\n";
     }
     else if (type==StVarInitialize) {
-        result += ",\n\tvariables: [ ";
+        result += ",\n\t\"variables\": [ ";
         for (int i=0; i<variables.size(); i++) {
             result += "\""+variables[i]->name+"\"";
             if (i<variables.size()-1)
@@ -323,7 +324,7 @@ QString Statement::dump() const
         result += "\n";
     }
     else {
-        result += ",\n\texpressions: [\n";
+        result += ",\n\t\"expressions\": [\n";
         for (int i=0; i<expressions.size(); i++) {
             result += addIndent(expressions[i]->dump(), 2);
             if (i<expressions.size()-1)

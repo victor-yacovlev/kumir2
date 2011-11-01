@@ -33,6 +33,8 @@ QString Data::dump() const
 {
     QString result = "[\n";
     for (int i=0; i<modules.size(); i++) {
+        if (modules[i]->header.type==ModTypeExternal)
+            continue;
         result += addIndent(modules[i]->dump(), 1);
         if (i<modules.size()-1) {
             result += ",";

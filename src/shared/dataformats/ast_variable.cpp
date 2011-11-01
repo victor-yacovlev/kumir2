@@ -54,14 +54,14 @@ QString boundDump(const Variable::Bound & bound) {
 QString Variable::dump() const
 {
     QString result = "{\n";
-    result += "\tname: \""+name+"\",\n";
-    result += "\tbaseType: "+AST::dump(baseType);
+    result += "\t\"name\": \""+name+"\",\n";
+    result += "\t\"baseType\": "+AST::dump(baseType);
     if (dimension>0)
-        result += ",\n\tdimension: "+QString::number(dimension);
+        result += ",\n\t\"dimension\": "+QString::number(dimension);
     if (accessType!=AccessRegular)
-        result == ",\n\taccessType: "+AST::dump(accessType);
+        result == ",\n\t\"accessType\": "+AST::dump(accessType);
     if (dimension>0) {
-        result += ",\n\tbounds: [\n";
+        result += ",\n\t\"bounds\": [\n";
         for (int i=0; i<bounds.size(); i++) {
             result += addIndent(boundDump(bounds[i]), 2);
             if (i<bounds.size()-1) {
@@ -72,7 +72,7 @@ QString Variable::dump() const
         result += "]"; // end bounds
     }
     if (initialValue.isValid()) {
-        result += ",\n\tinitialValue: ";
+        result += ",\n\t\"initialValue\": ";
         if (initialValue.type()==QVariant::String || initialValue.type()==QVariant::Char)
             result += "\""+initialValue.toString()+"\"";
         else
