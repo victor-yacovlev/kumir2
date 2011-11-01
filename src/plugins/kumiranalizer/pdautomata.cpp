@@ -99,6 +99,7 @@ void PDAutomataPrivate::matchScript(const QString &text, ScriptListPtr & scripts
             continue;
         Script script;
         s = s.simplified();
+        script.source = s;
         int op_br = s.indexOf("(");
         int cl_br = s.lastIndexOf(")");
         Q_ASSERT(op_br!=-1);
@@ -1520,7 +1521,8 @@ void PDAutomataPrivate::setGarbageAlgError()
 void PDAutomataPrivate::setGarbageIfThenError()
 {
     setCurrentError(_("Garbage between if..then"));
-    appendSimpleLine();
+//    appendSimpleLine();
+    processCorrectThen();
 }
 
 void PDAutomataPrivate::setGarbageSwitchCaseError()

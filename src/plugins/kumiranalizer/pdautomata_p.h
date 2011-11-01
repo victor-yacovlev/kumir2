@@ -12,6 +12,7 @@ namespace KumirAnalizer {
 struct Script {
     QMetaMethod method;
     QList<QVariant> arguments;
+    QString source;
 };
 
 typedef QList<Script> * ScriptListPtr;
