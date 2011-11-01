@@ -595,7 +595,9 @@ void Generator::ASSIGN(int modId, int algId, int level, const AST::Statement *st
     result << l;
 
     const AST::Expression * rvalue = st->expressions[0];
-    result << calculate(modId, algId, level, rvalue);
+    QList<Bytecode::Instruction> rvalueInstructions = calculate(modId, algId, level, rvalue);
+    shiftInstructions(rvalueInstructions, result.size());
+    result << rvalueInstructions;
 
 
     if (st->expressions.size()>1) {
@@ -798,7 +800,9 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
     else if (st->kind==AST::ExprSubexpression) {
         std::list<int> jmps;
         for (int i=0; i<st->operands.size(); i++) {
-            result << calculate(modId, algId, level, st->operands[i]);
+            QList<Bytecode::Instruction> operandInstrs = calculate(modId, algId, level, st->operands[i]);
+            shiftInstructions(operandInstrs, result.size());
+            result << operandInstrs;
             // Do short circuit calculation for AND and OR operations
             if (i==0 && (st->operatorr==AST::OpAnd || st->operatorr==AST::OpOr)) {
                 // Simple case: just JZ/JNZ to end
@@ -842,7 +846,7 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
         result << instr;
         for (std::list<int>::iterator it=jmps.begin(); it!=jmps.end(); it++) {
             int index = *it;
-            result[index].arg = result.size()+1;
+            result[index].arg = result.size();
         }
     }
     return result;
@@ -871,7 +875,10 @@ void Generator::ASSERT(int modId, int algId, int level, const AST::Statement * s
     result << l;
 
     for (int i=0; i<st->expressions.size(); i++) {
-        result << calculate(modId, algId, level, st->expressions[i]);
+        QList<Bytecode::Instruction> exprInstrs;
+        exprInstrs = calculate(modId, algId, level, st->expressions[i]);
+        shiftInstructions(exprInstrs, result.size());
+        result << exprInstrs;
         Bytecode::Instruction pop;
         pop.type = Bytecode::POP;
         pop.registerr = 0;

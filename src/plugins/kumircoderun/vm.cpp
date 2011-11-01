@@ -1139,6 +1139,8 @@ void VM::do_line(quint16 no)
     }
     stack_contexts[stack_contexts.size()-1].lineNo = no;
     nextIP();
+//    qDebug() << "LINE " << no;
+//    qDebug() << stack_values.size();
 }
 
 void VM::do_sum()

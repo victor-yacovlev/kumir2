@@ -499,7 +499,7 @@ QList<QPoint> Analizer::lineRanks() const
         const Lexem * lx = all[i]->data.first();
         const int lineNo = lx->lineNo;
         const QPoint rank = all[i]->indentRank;
-        if (lineNo!=-1) {
+        if (lineNo>=0) {
             if (result[lineNo]==QPoint(0,0))
                 result[lineNo] = rank;
             else {

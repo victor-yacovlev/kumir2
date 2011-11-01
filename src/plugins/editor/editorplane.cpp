@@ -1336,6 +1336,7 @@ void EditorPlane::paintRectSelection(QPainter *p, const QRect &)
 
 void EditorPlane::paintSelection(QPainter *p, const QRect &rect)
 {
+    Q_UNUSED(rect);
     p->save();
     p->setPen(Qt::NoPen);
     p->setBrush(palette().brush(QPalette::Highlight));
