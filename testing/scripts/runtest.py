@@ -7,7 +7,7 @@ import os.path
 import os
 import kumirutils
 
-TEST_DIRS = [ "tErrors" ]
+TEST_DIRS = [ "tErrors","tOur" ]
 
 out = sys.stdout
 
@@ -18,6 +18,8 @@ def read_standard_errors(filename):
     result = []
     for line in lines:
         if line.strip()=="":
+            continue
+        if len(line)>0 and line[0]=='#':
             continue
         terms = line.split(',', 4)
         terms = map(lambda x: x.strip(), terms)
