@@ -58,6 +58,8 @@ int KumirVariablesWebObject::modulesCount() const
 QString KumirVariablesWebObject::makeArr(int dim, const QList<int> & bounds, const QVariant & value)
 {
     QString result;
+    if (dim*2!=bounds.size())
+        return "";
 
     QList<int> openBrackets;
     QList<int> closeBrackets;

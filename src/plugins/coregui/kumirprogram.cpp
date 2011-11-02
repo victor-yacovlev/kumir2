@@ -382,8 +382,8 @@ void KumirProgram::regularRun()
         prepareKumirRunner();
     }
     e_state = RegularRun;
-    PluginManager::instance()->switchGlobalState(GS_Running);
     m_variablesWebObject->reset(plugin_bytecodeRun);
+    PluginManager::instance()->switchGlobalState(GS_Running);
     plugin_bytecodeRun->runContinuous();
 }
 
