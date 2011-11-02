@@ -3,6 +3,8 @@
 
 #include "dataformats/ast_variable.h"
 #include "errormessages/errormessages.h"
+#include "stdlib/integeroverflowchecker.h"
+#include "stdlib/doubleoverflowchecker.h"
 
 #define BADNAME_KEYWORD TN_BAD_NAME_3
 #define BADNAME_OPERATOR TN_BAD_NAME_1
@@ -1864,6 +1866,24 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
             QString val;
             for (std::list<Lexem*>::const_iterator it=constant.begin(); it!=constant.end(); it++) {
                 val += (*it)->data;
+            }
+            if (pt==AST::TypeInteger) {
+                if (!StdLib::IntegerOverflowChecker::checkFromString(val)) {
+                    for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
+                        Lexem * lx = * it;
+                        lx->error = _("Integer constant too big");
+                    }
+                    return QVariant::Invalid;
+                }
+            }
+            else if (pt==AST::TypeReal) {
+                if (!StdLib::DoubleOverflowChecker::checkFromString(val)) {
+                    for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
+                        Lexem * lx = * it;
+                        lx->error = _("Real constant too big");
+                    }
+                    return QVariant::Invalid;
+                }
             }
             return createConstValue(val, ct);
         }

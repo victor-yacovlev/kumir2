@@ -37,6 +37,7 @@
 "Garbage after algorhitm header";"Мусор после “нач”";"";"";"";"";
 "Extra 'endloop'";"Непарный “кц”";"";"";"";"";
 "Extra arguments";"Лишние аргументы";"";"";"";"";
+"Real constant too big";"Слишком большое число";"";"";"";"";
 "No loop 'from' value";"Нет значения после “от”";"";"";"";"";
 "No algorhitm header";"Нет заголовка алгоритма";"";"";"";"";
 "Initial values should not be specified in algorithm header";"Здесь должны быть только величины";"";"";"";"";
@@ -164,6 +165,7 @@
 "Garbage afrer module name";"Мусор после имени исполнителя";"";"";"";"";
 "First unnamed algorithm should not return anything";"Алгоритм без имени ничего не возвращает";"";"";"";"";
 "Not integer for-loop variable";"Величина не целая";"";"";"";"";
+"Integer constant too big";"Слишком большое число";"";"";"";"";
 "bbb";"";"";"";"";"";
 "Access to return value outside of algorithm";"Вне алгоритмов не бывает “знач”";"";"";"";"";
 "Can't boolean:=charect";"Нельзя “лог := сим”";"";"";"";"";
