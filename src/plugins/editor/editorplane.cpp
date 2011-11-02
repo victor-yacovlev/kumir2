@@ -196,6 +196,8 @@ void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
         int cw = charWidth();
         x = (x/cw)*cw;
         int marginAbsoluteWidth = width()-x;
+        marginAbsoluteWidth = qMin(marginAbsoluteWidth, 450);
+        marginAbsoluteWidth = qMax(marginAbsoluteWidth, cw);
         int marginWidth = marginAbsoluteWidth / cw;
         m_settings->setValue(MarginWidthKey, marginWidth);
         updateScrollBars();
@@ -632,16 +634,32 @@ void EditorPlane::paintHiddenTextDelimeterLine(QPainter *p)
 
 void EditorPlane::paintNewMarginLine(QPainter *p)
 {
-    p->save();
-    p->setPen(QColor(Qt::black));
-    p->setBrush(Qt::NoBrush);
-    int x = pnt_marginPress.x();
-    int cw = charWidth();
-    QRect marginLineRect(0,0,4,height());
-    x = ( x / cw ) * cw;
-    marginLineRect.translate(x,0);
-    p->drawRect(marginLineRect);
-    p->restore();
+    if (pnt_marginPress.x()!=-1000 && pnt_marginPress.y()!=-1000) {
+        p->save();
+        p->setPen(QColor(Qt::black));
+        p->setBrush(Qt::NoBrush);
+        int x = pnt_marginPress.x();
+        int cw = charWidth();
+        QRect marginLineRect(0,0,4,height());
+        x = ( x / cw ) * cw;
+        int marginAbsoluteWidth = width()-x;
+//        int userWidth = marginAbsoluteWidth;
+        marginAbsoluteWidth = qMin(marginAbsoluteWidth, 450);
+        marginAbsoluteWidth = qMax(marginAbsoluteWidth, cw);
+
+        marginLineRect.translate(width()-marginAbsoluteWidth-marginLineRect.width()/2,0);
+        p->drawRect(marginLineRect);
+
+//        if (userWidth!=marginAbsoluteWidth) {
+//            p->setPen(QColor(Qt::gray));
+//            p->setBrush(QColor(Qt::gray));
+//            marginLineRect.setLeft(width()-userWidth-marginLineRect.width()/2);
+//            marginLineRect.setRight(marginLineRect.left()+4);
+//            p->drawRect(marginLineRect);
+//        }
+
+        p->restore();
+    }
 }
 
 void EditorPlane::paintNewHiddenDelimeterLine(QPainter *p)
@@ -1490,6 +1508,9 @@ void EditorPlane::wheelEvent(QWheelEvent *e)
 
 void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
 {
+    int marginWidth = m_settings->value(MarginWidthKey, MarginWidthDefault).toInt();
+    if (marginWidth<3)
+        return;
     p->save();
     QColor errorColor(Qt::red);
     errorColor.setAlpha(i_marginAlpha);
