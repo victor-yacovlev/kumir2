@@ -81,6 +81,7 @@
 "No 'begin' after header";"После “алг” нет “нач”";"";"";"";"";
 "This algorhitm is broken";"Алгоритм с ошибкой";"";"";"";"";
 "No operand before non-unary operator";"";"";"";"";"";
+"No such module";"Нет такого исполнителя";"";"";"";"";
 "Extra 'switch'";"Нет ”все” после “выбор”";"";"";"";"";
 "Error contains unpaired quote";"";"";"";"";"";
 "Constant type mismatch";"Несоответствие типа константы";"";"";"";"";

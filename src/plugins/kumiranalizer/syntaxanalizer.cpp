@@ -206,6 +206,32 @@ void SyntaxAnalizer::buildTables()
             break;
     }
 
+    // TODO Find and load unresolved imports!
+
+    // Set errors for imports that could not be resolved
+    for (int i=0; i<d->unresolvedImports.size(); i++) {
+        const QString name = d->unresolvedImports.toList()[i];
+
+        for (int j=0; j<d->statements.size(); j++) {
+            if (d->statements[j].type==Shared::LxPriImport && !d->statements[j].hasError()) {
+                QString nn;
+                for (int k=1; k<d->statements[j].data.size(); k++) {
+                    Lexem * lx = d->statements[j].data[k];
+                    if (!nn.isEmpty())
+                        nn += " ";
+                    nn += lx->data;
+                }
+                if (nn==name) {
+                    const QString error = _("No such module");
+                    for (int k=1; k<d->statements[j].data.size(); k++) {
+                        Lexem * lx = d->statements[j].data[k];
+                        lx->error = error;
+                    }
+                }
+            }
+        }
+    }
+
     for (int i=0; i<d->statements.size(); i++) {
         const Statement & st = d->statements[i];
         bool wasError = st.hasError();

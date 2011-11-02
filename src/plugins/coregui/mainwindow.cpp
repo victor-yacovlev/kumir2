@@ -274,9 +274,12 @@ void MainWindow::prepareRecentFilesMenu()
     ui->actionRecent_files->menu()->clear();
     QStringList r = m_plugin->mySettings()->value(Plugin::RecentFilesKey).toStringList();
     for (int i=0; i<r.size(); i++) {
-        if (!r[i].trimmed().isEmpty()) {
-            QAction * a = ui->actionRecent_files->menu()->addAction(r[i]);
+        QFile f(r[i]);
+        if (!r[i].trimmed().isEmpty() && f.exists()) {
+            QAction * a = ui->actionRecent_files->menu()->addAction(QFileInfo(r[i]).fileName());
             a->setProperty("index", i);
+            if (QFileInfo(r[i]).isRelative())
+                r[i] = QDir::currentPath()+"/"+r[i];
             a->setProperty("fullPath", r[i]);
             connect(a, SIGNAL(triggered()), this, SLOT(loadRecentFile()));
         }
@@ -286,7 +289,7 @@ void MainWindow::prepareRecentFilesMenu()
 void MainWindow::loadRecentFile()
 {
     QAction * a = qobject_cast<QAction*>(sender());
-    if (a && a->property("index").isValid()) {
+    if (a && a->property("fullPath").isValid()) {
 //        int index = a->property("index").toInt();
         const QString fullPath = a->property("fullPath").toString();
         loadRecentFile(fullPath);
@@ -984,17 +987,23 @@ QStringList MainWindow::recentFiles(bool fullPaths) const
     if (fullPaths) {
         QStringList result;
         foreach (const QString & s, r) {
-            if (QFileInfo(s).isRelative())
-                result << QDir::current().absoluteFilePath(s);
-            else
-                result << QFileInfo(s).fileName();
+            QFile f(s);
+            if (f.exists()) {
+                if (QFileInfo(s).isRelative())
+                    result << QDir::current().absoluteFilePath(s);
+                else
+                    result << QFileInfo(s).fileName();
+            }
         }
         return result;
     }
     else {
         QStringList result;
         foreach (const QString & s, r) {
-            result << QFileInfo(s).fileName();
+            QFile f(s);
+            if (f.exists()) {
+                result << QFileInfo(s).fileName();
+            }
         }
 
         return result;
@@ -1005,12 +1014,7 @@ void MainWindow::addToRecent(const QString &fileName)
 {
     QStringList r = m_plugin->mySettings()->value(Plugin::RecentFilesKey).toStringList();
     QString entry;
-    if (!m_plugin->b_nosessions && fileName.startsWith(QDir::currentPath())) {
-        entry = fileName.mid(QDir::currentPath().length()+1);
-    }
-    else {
-        entry = QFileInfo(fileName).absoluteFilePath();
-    }
+    entry = QFileInfo(fileName).absoluteFilePath();
     r.removeAll(entry);
     r.prepend(entry);
     r = r.mid(0, qMin(10, r.size()));
