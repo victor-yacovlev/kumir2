@@ -54,7 +54,7 @@
      <x>0</x>
      <y>0</y>
      <width>754</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -78,6 +78,7 @@
     <addaction name="actionClose"/>
     <addaction name="separator"/>
     <addaction name="actionSwitch_workspace"/>
+    <addaction name="actionRestore_previous_session"/>
     <addaction name="separator"/>
     <addaction name="actionPreferences"/>
     <addaction name="separator"/>
@@ -219,6 +220,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="actionRestore_previous_session">
+   <property name="text">
+    <string>Restore previous session</string>
    </property>
   </action>
  </widget>

@@ -100,6 +100,14 @@ MainWindow::MainWindow(Plugin * p) :
 
                 );
 
+    if (m_plugin->b_nosessions) {
+        ui->actionRestore_previous_session->setEnabled(false);
+        ui->actionRestore_previous_session->setVisible(false);
+    }
+    else {
+        connect(ui->actionRestore_previous_session, SIGNAL(triggered()), this, SLOT(restoreSession()));
+    }
+
 }
 
 QString MainWindow::StatusbarWidgetCSS =
@@ -768,6 +776,28 @@ void MainWindow::saveSettings()
 
 void MainWindow::restoreSession()
 {
+
+    bool hasUnsavedChanges = false;
+    for (int i=0; i<ui->tabWidget->count(); i++) {
+        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+        if (twe->type!=WWW) {
+            int documentId = twe->property("documentId").toInt();
+            hasUnsavedChanges = hasUnsavedChanges || m_plugin->plugin_editor->hasUnsavedChanges(documentId);
+        }
+        if (hasUnsavedChanges)
+            break;
+    }
+
+    if (hasUnsavedChanges) {
+        QMessageBox::StandardButton r = QMessageBox::question(this,
+                                                              tr("Restore previous session"),
+                                                              tr("Are you sure to restore previous session? All unsaved changes will be lost."),
+                                                              QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (r==QMessageBox::No) {
+            return;
+        }
+    }
+
     int sessionIndex = 0;
 
     for (int index=ui->tabWidget->count()-1; index>=0; index--) {
