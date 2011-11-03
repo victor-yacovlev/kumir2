@@ -2,7 +2,6 @@
 #include "ui_mainwindow.h"
 #include "tabwidgetelement.h"
 #include "extensionsystem/pluginmanager.h"
-#include "confirmclosedialod.h"
 #include "aboutdialog.h"
 #include "kumirprogram.h"
 #include "dataformats/kumfile.h"
@@ -440,30 +439,23 @@ bool MainWindow::closeTab(int index)
     if (twe->type!=WWW) {
         int documentId = twe->property("documentId").toInt();
         bool notSaved = m_plugin->plugin_editor->hasUnsavedChanges(documentId);
-        ConfirmCloseDialod::Result r;
+        QMessageBox::StandardButton r;
         if (!notSaved) {
-            r = ConfirmCloseDialod::SaveNothing;
+            r = QMessageBox::Discard;
         }
         else {
             ui->tabWidget->setCurrentIndex(index);
-            ConfirmCloseDialod dialog(false, this);
-            dialog.setMainText(b_notabs
-                               ? tr("Before creating new program:")
-                               : tr("Before closing tab:")
-                                   );
-            dialog.setCancelText(b_notabs
-                               ? tr("Cancel \"New program\"")
-                               : tr("Cancel tab close"));
-            dialog.setDiscardText(tr("Close without saving"));
-            dialog.exec();
-            r = dialog.result();
+            r = QMessageBox::question(this, tr("Close editor"),
+                                      tr("Save current text?"),
+                                      QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+                                      QMessageBox::Save);
         }
-        if (r==ConfirmCloseDialod::SaveNothing) {
+        if (r==QMessageBox::Discard) {
             m_plugin->plugin_editor->closeDocument(documentId);
             ui->tabWidget->removeTab(index);
             return true;
         }
-        else if (r==ConfirmCloseDialod::SaveFiles) {
+        else if (r==QMessageBox::Save) {
             if (saveCurrentFile()) {
                 m_plugin->plugin_editor->closeDocument(documentId);
                 ui->tabWidget->removeTab(index);
@@ -874,31 +866,34 @@ void MainWindow::closeEvent(QCloseEvent *e)
             }
         }
     }
-    ConfirmCloseDialod dialog(!m_plugin->b_nosessions, this);
-    dialog.exec();
-    if (dialog.result()==ConfirmCloseDialod::Cancel) {
-        e->ignore();
-    }
-    else if (dialog.result()==ConfirmCloseDialod::SaveNothing) {
-        if (!m_plugin->b_nosessions) {
-            QDir sessionDir(QDir::currentPath()+"/.session");
-            QStringList es = sessionDir.entryList(
-                        QStringList() << "*.document",
-                        QDir::Files,
-                        QDir::Name
-                        );
-            foreach (const QString e, es) {
-                sessionDir.remove(e);
+    QMessageBox::StandardButton r = QMessageBox::Discard;
+    QStringList unsavedFiles;
+    for (int i=0; i<ui->tabWidget->count(); i++) {
+        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+        if (twe->type!=WWW) {
+            int documentId = twe->property("documentId").toInt();
+            bool notSaved = m_plugin->plugin_editor->hasUnsavedChanges(documentId);
+            if (notSaved) {
+                QString title = ui->tabWidget->tabText(i);
+                if (title.endsWith("*")) {
+                    title = title.left(title.length()-1);
+                }
+                unsavedFiles << "    "+title;
             }
-            QDir::current().remove(".session");
         }
-        e->accept();
     }
-    else if (dialog.result()==ConfirmCloseDialod::SaveSession) {
-        saveSession();
-        e->accept();
+    if (!unsavedFiles.isEmpty()) {
+        QString messageText = tr("The following files have changes:\n%1\nSave them?").arg(unsavedFiles.join("\n"));
+        r =  QMessageBox::question(this, tr("Close Kumir"), messageText,
+                                   QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Save);
     }
-    else if (dialog.result()==ConfirmCloseDialod::SaveFiles) {
+    if (r==QMessageBox::Cancel) {
+        e->ignore();
+        return;
+    }
+
+    if (r==QMessageBox::Save) {
+        // Save files
         for (int i=0; i<ui->tabWidget->count(); i++) {
             ui->tabWidget->setCurrentIndex(i);
             if (!saveCurrentFile()) {
@@ -906,8 +901,28 @@ void MainWindow::closeEvent(QCloseEvent *e)
                 return;
             }
         }
-        e->accept();
     }
+
+    if (!m_plugin->b_nosessions) {
+        // Clear previous session
+
+        QDir sessionDir(QDir::currentPath()+"/.session");
+        QStringList es = sessionDir.entryList(
+                    QStringList() << "*.document",
+                    QDir::Files,
+                    QDir::Name
+                    );
+        foreach (const QString e, es) {
+            sessionDir.remove(e);
+        }
+        QDir::current().remove(".session");
+
+        // Save current session
+        saveSession();
+    }
+
+    e->accept();
+
 }
 
 void MainWindow::switchWorkspace() {

@@ -322,10 +322,12 @@ void Plugin::saveSession() const
 void Plugin::restoreSession()
 {
     m_mainWindow->loadSettings();
-    if (!b_nosessions)
-        m_mainWindow->restoreSession();
-    else
+    if (!b_nosessions) {
+//        m_mainWindow->restoreSession();
+    }
+    else {
         m_mainWindow->newProgram();
+    }
 }
 
 Plugin::~Plugin()

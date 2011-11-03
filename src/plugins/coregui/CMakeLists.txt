@@ -9,7 +9,6 @@ set(SOURCES
     terminal_onesession.cpp
     terminal_plane.cpp
     tabbar.cpp
-    confirmclosedialod.cpp
     kumirvariableswebobject.cpp
     aboutdialog.cpp
     pascalprogram.cpp
@@ -25,7 +24,6 @@ set(MOC_HEADERS
     terminal_onesession.h
     terminal_plane.h
     tabbar.h
-    confirmclosedialod.h
     kumirvariableswebobject.h
     aboutdialog.h
     pascalprogram.h
@@ -34,7 +32,6 @@ set(MOC_HEADERS
 
 set(FORMS
     mainwindow.ui
-    confirmclosedialod.ui
     aboutdialog.ui
 )
 

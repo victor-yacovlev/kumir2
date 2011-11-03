@@ -2,7 +2,7 @@ if(WIN32)
 	set(CMAKE_SHARED_LIBRARY_PREFIX "")
 endif()
 
-if (MSVC)
+if(MSVC)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 	set(CMAKE_CXX_FLAGS "-Zm200 -Zc:wchar_t-")
 endif(MSVC)
