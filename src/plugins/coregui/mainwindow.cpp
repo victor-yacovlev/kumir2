@@ -1151,6 +1151,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
         ui->tabWidget->currentWidget()->setFocus();
     }
     setTitleForTab(ui->tabWidget->currentIndex());
+    ExtensionSystem::PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);
     return result;
 }
 
