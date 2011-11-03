@@ -323,7 +323,17 @@ void Plugin::restoreSession()
 {
     m_mainWindow->loadSettings();
     if (!b_nosessions) {
-//        m_mainWindow->restoreSession();
+        if (m_startPage.widget) {
+            m_mainWindow->addCentralComponent(
+                        tr("Start"),
+                        m_startPage.widget,
+                        m_startPage.toolbarActions,
+                        m_startPage.menus,
+                        QList<QWidget*>(),
+                        MainWindow::WWW,
+                        false
+                        );
+        }
     }
     else {
         m_mainWindow->newProgram();
