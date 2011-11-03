@@ -1595,6 +1595,7 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
 
         QList<Shared::LexemType> highlight = m_document->highlightAt(i);
         QString text = m_document->textAt(i);
+        
         QList<bool> sm = m_document->selectionMaskAt(i);
         Shared::LexemType curType = Shared::LexemType(0);
         setProperFormat(p, curType, '.');
