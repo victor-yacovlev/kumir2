@@ -1347,6 +1347,9 @@ void PDAutomataPrivate::processCorrectThen()
     while (currentContext.top()->size()>0 && currentContext.top()->last()->type==AST::StError) {
         currentContext.top()->pop_back();
     }
+    while (currentContext.top()->size()==0) {
+        currentContext.pop_back();
+    }
     Q_ASSERT(currentContext.top()->last()->type==AST::StIfThenElse);
     AST::ConditionSpec cond;
     cond.lexems = source.at(currentPosition)->data;
