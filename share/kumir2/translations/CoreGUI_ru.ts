@@ -516,7 +516,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="227"/>
         <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="793"/>
         <source>Restore previous session</source>
-        <translation type="unfinished"></translation>
+        <translation>Восстановить предыдущий сеанс</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="57"/>
@@ -566,29 +566,31 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="456"/>
         <source>Close editor</source>
-        <translation type="unfinished"></translation>
+        <translation>Закрытие текста</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="457"/>
         <source>Save current text?</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить текущий текст?</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="794"/>
         <source>Are you sure to restore previous session? All unsaved changes will be lost.</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы уверены, что хотите восстановить предыдущий сеанс? Все открытые файлы будут закрыты без сохранения.</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="916"/>
         <source>The following files have changes:
 %1
 Save them?</source>
-        <translation type="unfinished"></translation>
+        <translation>Это файлы были изменены:
+%1
+Сохранить их?</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="917"/>
         <source>Close Kumir</source>
-        <translation type="unfinished"></translation>
+        <translation>Выход из Кумир</translation>
     </message>
     <message>
         <source>Before creating new program:</source>
@@ -691,7 +693,7 @@ Using Qt version %2</source>
     <message>
         <location filename="../../../src/plugins/coregui/plugin.cpp" line="328"/>
         <source>Start</source>
-        <translation type="unfinished">Начало</translation>
+        <translation>Начало</translation>
     </message>
 </context>
 <context>

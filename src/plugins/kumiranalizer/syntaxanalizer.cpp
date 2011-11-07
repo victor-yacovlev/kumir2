@@ -642,7 +642,12 @@ void SyntaxAnalizerPrivate::parseEndLoop(int str)
         return;
     }
     if (st.data.size()==2 && st.data[1]->type==LxSecIf) {
+
         st.data[1]->error = _("No condition after 'end if'");
+        if (st.data[1]->data.startsWith("_")) {
+            // Mark "endloop_if" first lexem if it's written close to second
+            st.data[0]->error = st.data[1]->error;
+        }
         return;
     }
     if (st.data.size()>2) {
@@ -660,6 +665,7 @@ void SyntaxAnalizerPrivate::parseEndLoop(int str)
             }
         }
     }
+
 }
 
 void SyntaxAnalizerPrivate::parseIfCase(int str)
@@ -2196,6 +2202,10 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 subexpression << oper;
         } // end if (blockType==Function)
         else if (blockType==Simple) {
+            if (block.isEmpty() && notFlag) {
+                notFlag->error = _("Extra 'not'");
+                return 0;
+            }
             AST::Expression * operand = parseSimpleName(block.toStdList(), mod, alg);
             if (!operand) {
                 return 0;
