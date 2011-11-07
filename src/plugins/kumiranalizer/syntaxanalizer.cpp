@@ -2533,7 +2533,12 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
                 || ( intType==AST::TypeCharect && extType==AST::TypeString );
         QString err;
         if (intDim!=extDim) {
-            err = _("Array dimension mismatch");
+            if (intDim==0 || extDim==0) {
+                err = _("Incompatible types");
+            }
+            else {
+                err = _("Array dimension mismatch");
+            }
         }
         if (intType!=extType) {
             if (!allowTypeChange || !typesCompatible)
