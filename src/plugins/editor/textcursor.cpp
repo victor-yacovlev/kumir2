@@ -771,10 +771,15 @@ void TextCursor::insertText(const QString &text)
     if (modifiesProtectedLiines())
         return;
 
-    if (hasSelection()) {
+    bool sel = hasSelection();
+    bool bsel = hasRectSelection();
+
+    if (sel) {
+        m_document->undoStack()->beginMacro("replaceSelectedText");
         removeSelectedText();
     }
-    if (hasRectSelection()) {
+    if (bsel) {
+        m_document->undoStack()->beginMacro("replaceSelectedBlock");
         removeSelectedBlock();
     }
 
@@ -796,6 +801,9 @@ void TextCursor::insertText(const QString &text)
     int toLineUpdate = -1;
 
     emit updateRequest(fromLineUpdate, toLineUpdate);
+
+    if (sel || bsel)
+        m_document->undoStack()->endMacro();
 
     emitPositionChanged();
 }
