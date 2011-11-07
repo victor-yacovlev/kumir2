@@ -2865,6 +2865,10 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
                 name += " ";
             name += (*it)->data;
             expCandidate = expCandidate && (*it)->type==LxConstReal;
+            if ( (*it)->type==LxNameClass ) {
+                (*it)->error = _("Keyword in name");
+                return 0;
+            }
         }
         QString err;
         if (expCandidate) {
