@@ -1086,7 +1086,21 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
             AST::VariableBaseType b = rightExpr->baseType;
             if (a==AST::TypeInteger) {
                 if (b==AST::TypeReal) {
-                    err = _("Can't integer:=real");
+                    if (rightExpr->kind==AST::ExprConst
+                            && !rightExpr->constant.toString().contains(".")
+                            && !rightExpr->constant.toString().toLower().contains("e")
+                            )
+                    {
+                        // Constant became real because of big integer representation
+                        err = _("Integer constant too big");
+                        foreach (Lexem * lx, right) { lx->error = err; }
+                        delete leftExpr;
+                        delete rightExpr;
+                        return;
+                    }
+                    else {
+                        err = _("Can't integer:=real");
+                    }
                 }
                 else if (b==AST::TypeCharect) {
                     err = _("Can't integer:=charect");
@@ -1185,7 +1199,11 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
 
     }
     for (int i=nameStartLexem; i<st.data.size(); i++) {
-        if (st.data[i]->type & LxTypeName) {
+        if (st.data[i]->type==LxNameClass) {
+            st.data[i]->error = _("Name contains keyword");
+            return;
+        }
+        else if (st.data[i]->type & LxTypeName) {
             if (i>nameStartLexem)
                 name += " ";
             name += st.data[i]->data;
@@ -1899,16 +1917,12 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
             for (std::list<Lexem*>::const_iterator it=constant.begin(); it!=constant.end(); it++) {
                 val += (*it)->data;
             }
+            bool integerOverflow = false;
+
             if (pt==AST::TypeInteger) {
-                if (!StdLib::IntegerOverflowChecker::checkFromString(val)) {
-                    for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
-                        Lexem * lx = * it;
-                        lx->error = _("Integer constant too big");
-                    }
-                    return QVariant::Invalid;
-                }
+                integerOverflow = !StdLib::IntegerOverflowChecker::checkFromString(val);
             }
-            else if (pt==AST::TypeReal) {
+            if (pt==AST::TypeReal || integerOverflow) {
                 if (!StdLib::DoubleOverflowChecker::checkFromString(val)) {
                     for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
                         Lexem * lx = * it;
@@ -1916,6 +1930,7 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
                     }
                     return QVariant::Invalid;
                 }
+                ct = AST::TypeReal;
             }
             return createConstValue(val, ct);
         }
@@ -2816,6 +2831,8 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
             result->baseType = type;
             int maxDim = 0;
             result->constant = parseConstant(lexems, type, false, maxDim);
+            if (result->constant.type()==QVariant::Double)
+                result->baseType = AST::TypeReal;
             return result;
         }
     }
