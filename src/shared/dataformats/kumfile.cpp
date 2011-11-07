@@ -95,7 +95,10 @@ QString KumFile::readRawDataAsString(QByteArray rawData)
     QTextStream ts(rawData, QIODevice::ReadOnly);
     ts.setCodec("UTF-16");
     ts.setAutoDetectUnicode(true);
-    return ts.readAll();
+    QString s = ts.readAll();
+    s = s.replace(QChar(13),"");
+    s = s.replace(QChar(9), "    ");
+    return s;
 //    static const QStringList CodecsToTry = QStringList()
 //         << "UTF-16" << "UTF-8" << "CP1251" << "KOI8-R" << "IBM866";
 //    QTextCodec * currentCodec = 0;
