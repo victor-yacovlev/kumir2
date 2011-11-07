@@ -162,7 +162,7 @@ void MainWindow::checkCounterValue()
             return;
         if (twe->type==Kumir || twe->type==Pascal) {
             int id = twe->documentId;
-            quint32 errorsCount = m_plugin->plugin_editor->errorsCount(id);
+            quint32 errorsCount = m_plugin->plugin_editor->errorsLinesCount(id);
             if (errorsCount==0) {
                 m_plugin->m_genericCounterLabel->setText(tr("No errors"));
                 m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS);

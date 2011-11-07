@@ -127,7 +127,7 @@ void EditorPlugin::updateSettings()
     }
 }
 
-quint32 EditorPlugin::errorsCount(int documentId) const
+quint32 EditorPlugin::errorsLinesCount(int documentId) const
 {
     Q_ASSERT(documentId>=0);
     Q_ASSERT(documentId<d->editors.size());
@@ -135,7 +135,14 @@ quint32 EditorPlugin::errorsCount(int documentId) const
     if (ed.a) {
         AnalizerInterface * ai = ed.a;
         int id = ed.id;
-        return ai->errors(id).size();
+        QSet<int> lns;
+        QList<Error> errors = ai->errors(id);
+        foreach (const Error & e, errors) {
+            if (e.line>=0)
+                lns.insert(e.line);
+        }
+
+        return lns.size();
 
     }
     else {

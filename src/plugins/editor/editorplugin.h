@@ -28,7 +28,7 @@ public:
     void setDocumentChangesSaved(int documentId);
     QString saveDocument(int documentId, const QString & fileName);
     Shared::AnalizerInterface * analizer(int documentId);
-    quint32 errorsCount(int documentId) const;
+    quint32 errorsLinesCount(int documentId) const;
     void highlightLineGreen(int documentId, int lineNo);
     void highlightLineRed(int documentId, int lineNo);
     void unhighlightLine(int documentId);
