@@ -601,6 +601,9 @@ void SyntaxAnalizerPrivate::parseInputOutputAssertPrePost(int str)
             if (expr->kind==AST::ExprVariable && expr->variable->accessType==AST::AccessArgumentIn) {
                 err = _("Can't input algorithm in- argument");
             }
+            if (expr->kind==AST::ExprFunctionCall) {
+                err = _("Can't input function");
+            }
         }
         else if (groupType==OutputExpression) {
             // Expression is output variable -- nothing special to check
