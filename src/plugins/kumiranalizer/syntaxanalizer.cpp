@@ -238,9 +238,9 @@ void SyntaxAnalizer::buildTables()
         if (st.type==LxPriAlgHeader) {
             d->parseAlgHeader(i);
         }
-        else if (st.type==LxNameClass) {
-            d->parseVarDecl(i);
-        }
+//        else if (st.type==LxNameClass && st.alg==0) {
+//            d->parseVarDecl(i); // Parse global variables only!
+//        }
         if (!wasError && d->statements[i].hasError()) {
             foreach (Lexem * lx, d->statements[i].data) {
                 if (!lx->error.isEmpty())
@@ -274,6 +274,12 @@ void SyntaxAnalizer::processAnalisys()
         }
         if (st.type==LxPriAssign) {
             d->parseAssignment(i);
+        }
+//        else if (st.type==LxNameClass && st.alg!=0) {
+//            d->parseVarDecl(i); // Parse local variables
+//        }
+        else if (st.type==LxNameClass) {
+            d->parseVarDecl(i);
         }
         else if (st.type==LxPriInput
                  || st.type==LxPriFinput
@@ -2243,6 +2249,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
             for ( ; curPos < lexems.size(); curPos++) {
                 Lexem * clx = lexems[curPos];
                 if (deep==0 && IS_OPERATOR(clx->type) && clx->type!=LxOperLeftSqBr && clx->type!=LxOperRightSqBr) {
+                    curPos--;
                     break;
                 }
                 block << clx;
