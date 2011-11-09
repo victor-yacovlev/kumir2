@@ -2201,7 +2201,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 subexpression << notFlag;
             }
             curPos++;
-            if (curPos==lexems.size()) {
+            if (curPos>=lexems.size()) {
                 oper = 0;
             }
             else if (IS_OPERATOR(lexems[curPos]->type)) {
@@ -2241,14 +2241,15 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
             int deep = 0;
             int openBrPos = curPos;
             for ( ; curPos < lexems.size(); curPos++) {
-                block << lexems[curPos];
-                if (lexems[curPos]->type==LxOperLeftSqBr)
-                    deep++;
-                if (lexems[curPos]->type==LxOperRightSqBr)
-                    deep--;
-                if (deep==0) {
+                Lexem * clx = lexems[curPos];
+                if (deep==0 && IS_OPERATOR(clx->type) && clx->type!=LxOperLeftSqBr && clx->type!=LxOperRightSqBr) {
                     break;
                 }
+                block << clx;
+                if (clx->type==LxOperLeftSqBr)
+                    deep++;
+                if (clx->type==LxOperRightSqBr)
+                    deep--;
             }
             if (deep>0) {
                 lexems[openBrPos]->error = _("No pairing ']'"); // FIXME error code for unmatched open square bracket
@@ -2267,7 +2268,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 subexpression << notFlag;
             }
             curPos++;
-            if (curPos==lexems.size()) {
+            if (curPos>=lexems.size()) {
                 oper = 0;
             }
             else if (IS_OPERATOR(lexems[curPos]->type)) {
@@ -2657,9 +2658,13 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
     Lexem * cb = 0;
     int deep = 0;
     int cbPos = -1;
+    int extraIndecesStart = -1;
     for (int i=0; i<argLine.size(); i++) {
         if (argLine[i]->type==LxOperLeftSqBr) {
             ob = argLine[i];
+            if (deep==0 && i>0) {
+                extraIndecesStart = i;
+            }
             deep ++;
         }
         if (argLine[i]->type==LxOperRightSqBr) {
@@ -2686,6 +2691,13 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
     if ((cbPos+1)<argLine.size()) {
         for (int i=cbPos+1; i<argLine.size(); i++) {
             argLine[cbPos]->error = _("Garbage in expression");
+        }
+        return 0;
+    }
+    if (extraIndecesStart!=-1) {
+        static const QString err = _("Indeces was specified before");
+        for (int i=extraIndecesStart; i<argLine.size(); i++) {
+            argLine[i]->error = err;
         }
         return 0;
     }

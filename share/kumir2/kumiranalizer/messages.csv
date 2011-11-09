@@ -44,6 +44,7 @@
 "Condition if not boolean";"Условие после “если” не логическое";"";"";"";"";
 "Can't declare variables at this level";"Здесь нельзя объявлять величины";"";"";"";"";
 "Extra variable group in-specifier";"Лишний “арг”";"";"";"";"";
+"Indeces was specified before";"Повторное указание индексов";"";"";"";"";
 "From-value not specified";"Нет значения после “от”";"";"";"";"";
 "Right array bound is not integer";"Правая граница таблицы не целая";"";"";"";"";
 "Too many 'not'";"Много “не”";"";"";"";"";
