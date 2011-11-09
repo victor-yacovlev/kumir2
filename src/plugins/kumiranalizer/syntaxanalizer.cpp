@@ -1399,12 +1399,16 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
         for (int j=0; j<vars.size(); j++) {
             alg->header.arguments << vars[j];
         }
+        bool mustStop = false;
         for (int j=0; j<groups[i].lexems.size()-1; j++) {
             if (!groups[i].lexems[j]->error.isEmpty()) {
                 localError = groups[i].lexems[j]->error;
+                mustStop = true;
                 break;
             }
         }
+        if (mustStop)
+            break;
     }
 
     alg->header.error = localError;
