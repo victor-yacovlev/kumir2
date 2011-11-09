@@ -414,7 +414,7 @@ void LexerPrivate::initNormalizator(const QString &fileName)
     kwdMap["<>"] = LxOperNotEqual;
 
     operators << QString::fromUtf8("≠");
-    kwdMap["≠"] = LxOperNotEqual;
+    kwdMap[QString::fromUtf8("≠")] = LxOperNotEqual;
 
     operators << "=";
     kwdMap["="] = LxOperEqual;
