@@ -1941,6 +1941,15 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
                 }
                 ct = AST::TypeReal;
             }
+            if (pt==AST::TypeInteger && integerOverflow) {
+                if (val.startsWith("$")) {
+                    for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
+                        Lexem * lx = * it;
+                        lx->error = _("Integer constant too big");
+                    }
+                    return QVariant::Invalid;
+                }
+            }
             return createConstValue(val, ct);
         }
         else {
