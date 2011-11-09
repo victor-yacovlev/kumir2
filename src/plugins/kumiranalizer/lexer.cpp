@@ -1244,13 +1244,12 @@ QString Lexer::testName(const QString &name)
     if ( name.isEmpty() )
         return 0;
 
-    /*
-        TN_BAD_NAME_1 "Плохой символ в имени"
-        TN_BAD_NAME_1A "Плохой символ в имени"
-        TN_BAD_NAME_2 "Имя не может нач. с цифры"
-        TN_BAD_NAME_3 "Ключевое слово в имени"
-        TN_BAD_NAME_4 "Непарная \""
-        */
+
+    // Check for HEX-constant
+    if (name.startsWith("$")) {
+        // We assume that correct hex constants are gone at lexer stage
+        return _("Wrong hex constant");
+    }
 
     QString pattern = QString::fromUtf8("[+\\-=:*&?/><#%()\\^$.,");
 //    if (!m_allowHiddenNames)

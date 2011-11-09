@@ -107,6 +107,7 @@
 "Extra docstring";"Здесь не должно быть строк описания";"";"";"";"";
 "Extra brackets for algorithm without arguments";"Нет аргументов – не нужны скобки";"";"";"";"";
 "Assignment to function";"Нельзя присвоить алгоритму";"";"";"";"";
+"Wrong hex constant";"Плохая 16-ричная константа";"";"";"";"";
 "Index is not integer";"Индекс – не целое число";"";"";"";"";
 "Operator in name";"Имя содержит оператор";"";"";"";"";
 "Garbage afrer module name";"Мусор после имени исполнителя";"";"";"";"";
