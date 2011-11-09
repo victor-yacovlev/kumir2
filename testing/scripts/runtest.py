@@ -7,7 +7,7 @@ import os.path
 import os
 import kumirutils
 
-TEST_DIRS = [ "tErrors","tOur" ]
+TEST_DIRS = [ "tErrors","tOur","tTOS" ]
 
 out = sys.stdout
 
@@ -43,10 +43,13 @@ def _read_char():
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
     try:
-        tty.retraw(fd)
+        tty.setraw(fd)
         ch = sys.stdin.read(1)
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    if ch=='q':
+        sys.stderr.write("q\nUser terminated.\n")
+        sys.exit(0)
     return ch
 
 def print_difference(filename, old_errors, new_errors):
@@ -81,6 +84,7 @@ def ask_differences(filename, old_errors, new_errors):
     old_only = set(old_db.keys()) - common
     new_only = set(new_db.keys()) - common
     result = []
+    has_changes = False
     for line in list(common):
         e_o = old_db[line]
         e_n = new_db[line]
@@ -96,6 +100,7 @@ def ask_differences(filename, old_errors, new_errors):
                 return None
             elif answer=='n':
                 sys.stderr.write("n\n")
+                has_changes = True
                 result += [e_n]
             else:
                 sys.stderr.write("o\n")
@@ -115,6 +120,7 @@ def ask_differences(filename, old_errors, new_errors):
             sys.stderr.write("s\n")
             return None
         elif answer=='r':
+            has_changes = True
             sys.stderr.write("r\n")
         else:
             sys.stderr.write("k\n")
@@ -125,17 +131,20 @@ def ask_differences(filename, old_errors, new_errors):
         sys.stderr.write("------------------\n")
         sys.stderr.write("New error in "+filename+"\n")
         sys.stderr.write(str(e)+"\n")
-        sys.stderr.write("--- What should I do? ([a]dd error from standard, [k]eep error in standard, [s]kip this file): ")
+        sys.stderr.write("--- What should I do? ([a]dd error to standard, [k]eep standard without this error, [s]kip this file): ")
         answer = _read_char()
         if answer=='s':
             sys.stderr.write("s\n")
             return None
         elif answer=='a':
+            has_changes = True
             sys.stderr.write("a\n")
             result += [e]
         else:
             sys.stderr.write("k\n")
         
+    if has_changes:
+        return result
 
 def write_standard_file(filename, errors):
     f = open(filename, 'w')
@@ -152,14 +161,14 @@ def process_dir(dirname):
         if "-i" in sys.argv:
             if not os.path.exists(gs_name):
                 sys.stderr.write("Standard not exist. Create? ([y]es or [n]o): ")
-                answer = _read_char()
-                
+                answer = _read_char()                
                 if answer=='y':
                     sys.stderr.write("y\n")
                     write_standard_file(gs_name, new_errors)
                 else:
                     sys.stderr.write("n\n")
             else:
+                old_errors = read_standard_errors(gs_name)
                 new_standard_errors = ask_differences(dirname+"/"+filename, old_errors, new_errors)
                 if not new_standard_errors is None:
                     write_standard_file(gs_name, new_standard_errors)
