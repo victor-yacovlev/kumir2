@@ -581,13 +581,13 @@ void searchNumericConstants(QList<Lexem*> & lexems) {
                             if (itt!=lexems.end()) {
                                 lxx = (*itt);
                                 const QString ss = lxx->data;
-                                if (isDecimalRealConstant(ss)) {
+//                                if (isDecimalRealConstant(ss)) {
                                     lx->data += lxx->data;
                                     lx->length += lxx->length;
                                     delete lxx;
                                     lxx = 0;
                                     lexems.erase(itt);
-                                }
+//                                }
                             }
                         }
                     }

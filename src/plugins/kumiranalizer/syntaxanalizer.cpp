@@ -1945,6 +1945,34 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
             if (pt==AST::TypeInteger) {
                 integerOverflow = !StdLib::IntegerOverflowChecker::checkFromString(val);
             }
+            if (ct==AST::TypeReal) {
+                static const QString expFormSymbols = QString::fromUtf8("eEеЕ01234567890");
+                bool result = val.length()>0 && (val[0].isDigit() || val[0]=='.');
+                bool dotFound = false;
+                for (int i=0; i<val.length(); i++) {
+                    if (val[i]=='.') {
+                        if (!dotFound) {
+                            dotFound = true;
+                        }
+                        else {
+                            result = false;
+                            break;
+                        }
+                    }
+                    else if (!expFormSymbols.contains(val[i])) {
+                        result = false;
+                        break;
+                    }
+                }
+                if (!result) {
+                    for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
+                        Lexem * lx = * it;
+                        lx->error = _("Wrong E-real number");
+                        return QVariant::Invalid;
+                    }
+                }
+            }
+
             if (pt==AST::TypeReal || integerOverflow) {
                 if (!StdLib::DoubleOverflowChecker::checkFromString(val)) {
                     for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
@@ -1955,6 +1983,7 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
                 }
                 ct = AST::TypeReal;
             }
+
             if (pt==AST::TypeInteger && integerOverflow) {
                 if (val.startsWith("$")) {
                     for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
