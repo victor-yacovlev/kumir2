@@ -118,7 +118,7 @@ void SyntaxAnalizer::init(
     for (int i=0; i<statements.size(); i++) {
         Statement * st = statements[i];
         Q_CHECK_PTR(st);
-        if (st->type!=LxTypeComment) {
+//        if (st->type!=LxTypeComment) {
             Statement sst;
             sst.type = st->type;
             sst.statement = st->statement;
@@ -133,7 +133,7 @@ void SyntaxAnalizer::init(
             }
 
             d->statements << sst;
-        }
+//        }
     }
 
     d->unresolvedImports.clear();
