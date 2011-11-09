@@ -518,7 +518,7 @@ static const QString expFormSymbols = QString::fromUtf8("eEеЕ01234567890");
 static const QString hexFormSymbols = QString::fromAscii("0123456789ABCDEFabcdef");
 
 bool isExpRealConstant(const QString &s) {
-    bool result = s.length()>0 && s[0].isDigit();
+    bool result = s.length()>0 && (s[0].isDigit() || s[0]=='.');
     bool dotFound = false;
     for (int i=0; i<s.length(); i++) {
         if (s[i]=='.') {
