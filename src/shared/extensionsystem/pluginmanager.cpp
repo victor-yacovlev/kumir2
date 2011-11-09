@@ -384,12 +384,24 @@ QString PluginManager::loadPluginsByTemplate(const QString &templ)
 #ifdef Q_WS_X11
     console = getenv("DISPLAY")==0;
 #endif
+//    console = true; // !!! was here for debug purposes
     if (console) {
         // Remove GUI plugins
         QList<PluginSpec>::iterator it;
         for (it=d->specs.begin(); it!=d->specs.end(); ) {
             PluginSpec spec = (*it);
             if (spec.gui) {
+                names.removeAll(spec.name);
+                QList<PluginRequest>::iterator rit;
+                for (rit=requests.begin(); rit!=requests.end(); ) {
+                    PluginRequest r = *(rit);
+                    if (r.name==spec.name) {
+                        rit = requests.erase(rit);
+                    }
+                    else {
+                        rit ++;
+                    }
+                }
                 it = d->specs.erase(it);
             }
             else {
