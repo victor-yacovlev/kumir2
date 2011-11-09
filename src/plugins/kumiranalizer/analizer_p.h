@@ -50,6 +50,8 @@ struct AnalizerPrivate
     QList<Statement*> teacherStatements;
     int hiddenBaseLine;
 
+    void removeAllVariables(AST::Variable * var);
+
     void setHiddenBaseLine(int lineNo);
     void setHiddenText(const QString & text, int baseLineNo);
 

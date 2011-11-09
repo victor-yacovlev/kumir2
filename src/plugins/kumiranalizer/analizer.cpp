@@ -158,8 +158,17 @@ void AnalizerPrivate::setHiddenText(const QString &text, int baseLineNo)
     analizer->buildTables();
 
     // Do complete semantic analisys
-    analizer->init(statements+teacherStatements, ast, 0);
+    QList<Statement*> statementsToAnalize = statements+teacherStatements;
+
+    foreach (Statement * st, statements) {
+        foreach (AST::Variable * var, st->variables) {
+            removeAllVariables(var);
+        }
+    }
+
+    analizer->init(statementsToAnalize, ast, 0);
     analizer->processAnalisys();
+    analizer->syncStatements();
 
 }
 
@@ -224,6 +233,7 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
         if (remove) {
             removedStatements << st;
             statements.removeAt(it);
+
         }
         if (insert) {
             insertPos = it;
@@ -606,6 +616,8 @@ bool AnalizerPrivate::findInstructionsBlock(
     return found;
 }
 
+
+
 bool AnalizerPrivate::findInstructionsBlock(
     AST::Data *data
     , const QList<Statement *> statements
@@ -629,6 +641,16 @@ bool AnalizerPrivate::findInstructionsBlock(
     return findInstructionsBlock(data, nearbyStatements, lst, dummy, outPos, mod, alg);
 }
 
+void AnalizerPrivate::removeAllVariables(AST::Variable *var)
+{
+    foreach (AST::Module * mod, ast->modules) {
+        mod->impl.globals.removeAll(var);
+        foreach (AST::Algorhitm * alg, mod->impl.algorhitms) {
+            alg->impl.locals.removeAll(var);
+        }
+    }
+    delete var;
+}
 
 void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
                                     , QList<Statement*> & oldStatements
@@ -637,6 +659,12 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
                                     , int whereInserted
                                     )
 {
+    foreach (Statement * st, oldStatements) {
+        foreach (AST::Variable * var, st->variables) {
+            removeAllVariables(var);
+        }
+    }
+
     if (ast->modules.isEmpty())
         whatToCompile = SubjWholeText;
 //    if (whatToCompile==SubjStatements)
@@ -647,20 +675,7 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
 //        qDebug() << "Analize whole text";
     QList<Statement*> analizingStatements;
     AST::Algorhitm * alg = 0;
-    if (whatToCompile==SubjWholeText) {
-        foreach (Statement * st, allStatements) {
-            foreach (Lexem * lx, st->data) {
-                if (lx->errorStage!=AST::Lexem::Lexer)
-                    lx->error = "";
-            }
-        }
-        analizingStatements = allStatements;
-        pdAutomata->init(false, analizingStatements, ast, alg);
-        pdAutomata->process();
-        pdAutomata->postProcess();
-    }
-    else if (whatToCompile==SubjAlgorhtitm) {
-
+    if (whatToCompile==SubjAlgorhtitm) {
         Q_ASSERT(!newStatements.isEmpty() || !oldStatements.isEmpty());
         Statement * firstStatement = 0;
         if (newStatements.isEmpty()) {
@@ -673,10 +688,23 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
         const Lexem * lx = firstStatement->data.first();
         const int linePos = lx->lineNo;
         alg = findAlgorhitmByPos(ast, linePos);
-//        Q_CHECK_PTR(alg);
         if (!alg) {
-            return;
+            whatToCompile = SubjWholeText;
         }
+    }
+    if (whatToCompile==SubjWholeText) {
+        foreach (Statement * st, allStatements) {
+            foreach (Lexem * lx, st->data) {
+                if (lx->errorStage!=AST::Lexem::Lexer)
+                    lx->error = "";
+            }
+        }
+        analizingStatements = allStatements;
+        pdAutomata->init(false, analizingStatements, ast, alg);
+        pdAutomata->process();
+        pdAutomata->postProcess();
+    }
+    else if (alg) {
         int algBeginIndex = -1, algEndIndex = -1;
         if (findAlgorhitmBounds(allStatements, alg, algBeginIndex, algEndIndex)) {
             for (int i=algBeginIndex; i<=algEndIndex; i++) {
@@ -739,7 +767,7 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
         analizer->buildTables();
 
     analizer->processAnalisys();
-
+    analizer->syncStatements();
 }
 
 const AST::Data * Analizer::abstractSyntaxTree() const

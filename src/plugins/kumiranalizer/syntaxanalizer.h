@@ -17,9 +17,10 @@ class SyntaxAnalizer : public QObject
     Q_OBJECT
 public:
     explicit SyntaxAnalizer(class Lexer * lexer, QObject *parent = 0);
-    void init(const QList<Statement*> & statements
+    void init(QList<Statement*> & statements
               , AST_Data * ast
               , AST_Algorhitm *algorhitm);
+    void syncStatements();
     QStringList unresolvedImports() const;
     void buildTables();
     void processAnalisys();

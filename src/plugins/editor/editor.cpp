@@ -666,7 +666,8 @@ void Editor::setKumFile(const KumFile::Data &data)
         if (d->teacherMode) {
             hbl = data.visibleText.split("\n").size();
         }
-        d->analizer->setHiddenText(d->doc->documentId, data.hiddenText, hbl);
+        if (!data.hiddenText.isEmpty())
+            d->analizer->setHiddenText(d->doc->documentId, data.hiddenText, hbl);
         d->updateFromAnalizer();
     }
     d->plane->update();

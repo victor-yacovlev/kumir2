@@ -10,6 +10,7 @@ namespace AST {
 struct Statement;
 struct Module;
 struct Algorhitm;
+struct Variable;
 }
 
 using AST::Lexem;
@@ -25,6 +26,7 @@ struct Statement
     struct AST::Statement * statement;
     struct AST::Algorhitm * alg;
     struct AST::Module * mod;
+    QList<AST::Variable*> variables;
     int conditionalIndex;
     bool hasError() const;
     explicit Statement();

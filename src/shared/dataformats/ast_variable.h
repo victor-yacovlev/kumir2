@@ -8,6 +8,7 @@
 
 #include "ast_variabletype.h"
 #include "ast_expression.h"
+#include "lexem.h"
 
 #undef ABSTRACTSYNTAXTREE_EXPORT
 #ifdef DATAFORMATS_LIBRARY

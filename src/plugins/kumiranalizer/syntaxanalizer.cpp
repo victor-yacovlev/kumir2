@@ -60,7 +60,7 @@ struct SyntaxAnalizerPrivate
                       , const AST::Module * module
                       , const AST::Algorhitm * algorhitm
                       , AST::Variable* & var);
-    QList<AST::Variable*> parseVariables(VariablesGroup & group,
+    QList<AST::Variable*> parseVariables(int statementIndex, VariablesGroup & group,
                                          AST::Module * mod,
                                          AST::Algorhitm * alg);
     QVariant parseConstant(const std::list<Lexem*> &constant
@@ -80,7 +80,9 @@ struct SyntaxAnalizerPrivate
                                    , QList< QList<Lexem*> > & result
                                    , QList< Lexem* > & operators);
     static Lexem * findLexemByType(const QList<Lexem*> lxs, LexemType type);
+    int currentPosition;
 
+    QList<Statement*> originalStatements;
 
 };
 
@@ -91,13 +93,25 @@ SyntaxAnalizer::SyntaxAnalizer(Lexer * lexer, QObject *parent) :
     d->ast = 0;
     d->algorhitm = 0;
     d->lexer = lexer;
+    d->currentPosition = -1;
+}
+
+void SyntaxAnalizer::syncStatements()
+{
+    Q_ASSERT(d->originalStatements.size()==d->statements.size());
+    for (int i=0; i<d->originalStatements.size(); i++) {
+        Q_CHECK_PTR(d->originalStatements[i]);
+        d->originalStatements[i]->variables = d->statements[i].variables;
+    }
 }
 
 void SyntaxAnalizer::init(
-    const QList<Statement*> &statements,
+    QList<Statement*> &statements,
     AST_Data *ast,
     AST_Algorhitm *algorhitm)
 {
+    d->originalStatements = statements;
+    d->currentPosition = statements.size()-1;
     d->ast = ast;
     d->algorhitm = algorhitm;
     d->statements.clear();
@@ -238,9 +252,6 @@ void SyntaxAnalizer::buildTables()
         if (st.type==LxPriAlgHeader) {
             d->parseAlgHeader(i);
         }
-//        else if (st.type==LxNameClass && st.alg==0) {
-//            d->parseVarDecl(i); // Parse global variables only!
-//        }
         if (!wasError && d->statements[i].hasError()) {
             foreach (Lexem * lx, d->statements[i].data) {
                 if (!lx->error.isEmpty())
@@ -264,6 +275,7 @@ void SyntaxAnalizer::processAnalisys()
         }
     }
     for (int i=0; i<d->statements.size(); i++) {
+        d->currentPosition = i;
         const Statement & st = d->statements[i];
         bool wasError = st.hasError();
         if (st.statement) {
@@ -275,9 +287,6 @@ void SyntaxAnalizer::processAnalisys()
         if (st.type==LxPriAssign) {
             d->parseAssignment(i);
         }
-//        else if (st.type==LxNameClass && st.alg!=0) {
-//            d->parseVarDecl(i); // Parse local variables
-//        }
         else if (st.type==LxNameClass) {
             d->parseVarDecl(i);
         }
@@ -516,7 +525,7 @@ void SyntaxAnalizerPrivate::parseVarDecl(int str)
             break;
         group.lexems << st.data[i];
     }
-    QList<AST::Variable*> vars = parseVariables(group, mod, alg);
+    QList<AST::Variable*> vars = parseVariables(str, group, mod, alg);
     QString error;
     for (int i=0; i<group.lexems.size()-1; i++) {
         if (group.lexems[i]->error.size()>0) {
@@ -1395,7 +1404,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
     }
 
     for (int i=0; i<groups.size(); i++) {
-        QList<AST::Variable*> vars = parseVariables(groups[i], st.mod, st.alg);
+        QList<AST::Variable*> vars = parseVariables(str, groups[i], st.mod, st.alg);
         for (int j=0; j<vars.size(); j++) {
             alg->header.arguments << vars[j];
         }
@@ -1414,7 +1423,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
     alg->header.error = localError;
 }
 
-QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &group, AST::Module *mod, AST::Algorhitm *alg)
+QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, VariablesGroup &group, AST::Module *mod, AST::Algorhitm *alg)
 {
     //  Pежим работы автомата-парсера.
     //  type -- разбор типа
@@ -1611,6 +1620,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(VariablesGroup &grou
                 var->dimension = array? dim : 0;
                 var->bounds = bounds;
                 result << var;
+                statements[statementIndex].variables << var;
                 if (alg)
                     alg->impl.locals << var;
                 else
@@ -2062,10 +2072,10 @@ bool SyntaxAnalizerPrivate::findGlobalVariable(const QString &name, const AST::M
         AST::Variable * v = module->impl.globals[i];
         if (v->name==name) {
             var = v;
-            return true;
+            break;
         }
     }
-    return false;
+    return var!=0;
 }
 
 bool SyntaxAnalizerPrivate::findLocalVariable(const QString &name, const AST::Algorhitm *alg, AST::Variable *&var)
@@ -2075,10 +2085,10 @@ bool SyntaxAnalizerPrivate::findLocalVariable(const QString &name, const AST::Al
         AST::Variable * v = alg->impl.locals[i];
         if (v->name==name) {
             var = v;
-            return true;
+            break;
         }
     }
-    return false;
+    return var!=0;
 }
 
 bool SyntaxAnalizerPrivate::findVariable(const QString &name
@@ -2405,6 +2415,10 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
     Lexem * openBracket = 0;
     int openBracketIndex = -1;
     for (int i=0; i<lexems.size(); i++) {
+        if (lexems[i]->type==LxNameClass) {
+            lexems[i]->error = _("Keyword in name");
+            return 0;
+        }
         if (lexems[i]->type==LxOperLeftBr) {
             openBracket = lexems[i];
             openBracketIndex = i;
