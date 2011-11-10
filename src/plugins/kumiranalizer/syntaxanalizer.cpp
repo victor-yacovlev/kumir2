@@ -2900,7 +2900,15 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
     } // end for arguments loop
 
     int diff = arguments.size()-varDimension;
-    if (diff>0) {
+    if (diff>0 && varDimension==0) {
+        for (int i=openBracketIndex; i<lexems.size(); i++) {
+            lexems[i]->error = _("Extra indeces");
+        }
+        if (result)
+            delete result;
+        return 0;
+    }
+    else if (diff>0) {
         int errorStartIndex = 0;
         for (int i=comas.size()-1; i>=0; i--) {
             deep--;
