@@ -2486,7 +2486,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
     Lexem * openBracket = 0;
     int openBracketIndex = -1;
     for (int i=0; i<lexems.size(); i++) {
-        if (lexems[i]->type==LxNameClass) {
+        if (lexems[i]->type==LxNameClass || lexems[i]->type & LxTypePrimaryKwd || lexems[i]->type & LxTypeSecondaryKwd ) {
             lexems[i]->error = _("Keyword in name");
             return 0;
         }
