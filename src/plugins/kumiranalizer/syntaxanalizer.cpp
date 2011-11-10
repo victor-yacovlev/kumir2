@@ -1521,6 +1521,11 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
                         : _("No coma before type");
                 return result;
             }
+            if (group.lexems[curPos]->data==QString::fromAscii("$") || group.lexems[curPos]->data==QString::fromAscii(".")) {
+                group.lexems[curPos]->type = LxTypeEmpty;
+                group.lexems[curPos]->error = _("Bad symbol in name");
+                return result;
+            }
             if (group.lexems[curPos]->type & LxTypeConstant) {
                 group.lexems[curPos]->error = _("Constant can not be a name");
                 return result;
