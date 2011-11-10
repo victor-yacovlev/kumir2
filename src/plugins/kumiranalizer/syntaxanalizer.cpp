@@ -1104,9 +1104,13 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
             AST::VariableBaseType b = rightExpr->baseType;
             if (a==AST::TypeInteger) {
                 if (b==AST::TypeReal) {
+                    QString strValue = QString::number(rightExpr->constant.toDouble(), 'f', 100);
+                    while (strValue.endsWith('0') || strValue.endsWith('.')) {
+                        strValue = strValue.left(strValue.length()-1);
+                    }
                     if (rightExpr->kind==AST::ExprConst
-                            && !rightExpr->constant.toString().contains(".")
-                            && !rightExpr->constant.toString().toLower().contains("e")
+                            && !strValue.contains(".")
+                            && !strValue.toLower().contains("e")
                             )
                     {
                         // Constant became real because of big integer representation
