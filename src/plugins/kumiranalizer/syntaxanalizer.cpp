@@ -1979,7 +1979,7 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
                             break;
                         }
                     }
-                    else if (expFormSymbols.contains(val[i])) {
+                    else if (val[i]=='e') {
                         if (!eFound) {
                             eFound = true;
                         }
