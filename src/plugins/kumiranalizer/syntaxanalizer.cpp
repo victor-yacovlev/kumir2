@@ -2355,9 +2355,16 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 if (lexems[curPos]->type==LxOperRightBr)
                     deep--;
                 if (deep==0) {
+//                    curPos++;
                     break;
                 }
             }
+            if (curPos>=lexems.size()) {
+                oper = 0;
+            }
+//            else if (IS_OPERATOR(lexems[curPos]->type)) {
+//                oper = lexems[curPos];
+//            }
             if (deep>0) {
                 lexems[openBrPos]->error = _("No pairing ')'"); // FIXME error code for unmatched open bracket
                 return 0;
@@ -2389,7 +2396,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
             }
             curPos++;
             if (curPos==lexems.size()) {
-//                curPos = 0;
+                oper = 0;
             }
             else if (IS_OPERATOR(lexems[curPos]->type)) {
                 oper = lexems[curPos];
@@ -2399,9 +2406,15 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 delete operand;
                 return 0;
             }
+            if (oper && oper->type==LxOperComa) {
+                oper->error = _("Extra ','");
+                delete operand;
+                return 0;
+            }
             subexpression << operand;
-            if (oper)
+            if (oper) {
                 subexpression << oper;
+            }
         } // end if (blockType==SubExpression)
         else if (blockType==None) {
             if (oper) {
@@ -2789,26 +2802,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
     int varDimension = variable->dimension;
     if (variable->baseType==AST::TypeString)
         varDimension ++;
-    int diff = arguments.size()-varDimension;
-    if (diff>0) {
-        int errorStartIndex = 0;
-        for (int i=comas.size()-1; i>=0; i--) {
-            deep--;
-//            if (deep==0) {
-                errorStartIndex = argLine.indexOf(comas[i])+1;
-//            }
-        }
-        for (int i=errorStartIndex; i<cbPos-1; i++) {
-            argLine[i]->error = _("Extra indeces");
-        }
-        return 0;
-    }
-    if ( ( diff<0 && variable->baseType!=AST::TypeString )
-            || ( diff<-1 && variable->baseType==AST::TypeString )
-            ) {
-        cb->error = _("Not enought indeces");
-        return 0;
-    }
+
     for (int i=0; i<arguments.size(); i++) {
 
         QList<Lexem*> colons;
@@ -2874,6 +2868,32 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
             }
         }
     } // end for arguments loop
+
+    int diff = arguments.size()-varDimension;
+    if (diff>0) {
+        int errorStartIndex = 0;
+        for (int i=comas.size()-1; i>=0; i--) {
+            deep--;
+//            if (deep==0) {
+                errorStartIndex = argLine.indexOf(comas[i])+1;
+//            }
+        }
+        for (int i=errorStartIndex; i<cbPos-1; i++) {
+            argLine[i]->error = _("Extra indeces");
+        }
+        if (result)
+            delete result;
+        return 0;
+    }
+    if ( ( diff<0 && variable->baseType!=AST::TypeString )
+            || ( diff<-1 && variable->baseType==AST::TypeString )
+            ) {
+        cb->error = _("Not enought indeces");
+        if (result)
+            delete result;
+        return 0;
+    }
+
     result = new AST::Expression;
     result->kind = AST::ExprArrayElement;
     if (variable->baseType==AST::TypeString && diff==0) {
