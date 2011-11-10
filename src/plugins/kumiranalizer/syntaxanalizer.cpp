@@ -2705,10 +2705,19 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
             }
         }
         else {
-            if (openBracketIndex==-1)
-                openBracketIndex = lexems.size();
-            for (int i=0; i<openBracketIndex; i++) {
-                lexems[i]->error = _("Variable not found");
+            AST::Algorhitm * a = 0;
+            if (findAlgorhitm(name, mod,a)) {
+                openBracketIndex = qMax(0, openBracketIndex);
+                for (int i=openBracketIndex; i<lexems.size(); i++) {
+                    lexems[i]->error = _("'[...]' instead of '(...)'");
+                }
+            }
+            else {
+                if (openBracketIndex==-1)
+                    openBracketIndex = lexems.size();
+                for (int i=0; i<openBracketIndex; i++) {
+                    lexems[i]->error = _("Variable not found");
+                }
             }
             return 0;
         }

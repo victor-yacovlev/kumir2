@@ -210,6 +210,7 @@
 "Here must be \"input\" or \"output\"";"";"";"";"";"";
 "Hidden part must contain only algorithm";"Скрытый текст может содержать только алгоритмы";"";"";"";"";
 "Can't string:=integer";"Нельзя “лит := цел”";"";"";"";"";
+"'[...]' instead of '(...)'";"“[...]” вместо “(...)”";"";"";"";"";
 "Assignment to constant value";"Нельзя присвоить константе";"";"";"";"";
 "Can't boolean:=string";"Нельзя “лог := лит”";"";"";"";"";
 "Garbage at end of line";"Мусор в конце строки";"";"";"";"";
