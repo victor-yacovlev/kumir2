@@ -14,6 +14,46 @@
 #endif
 
 
+void GuiMessageOutput(QtMsgType type, const char *msg)
+{
+    switch (type) {
+    case QtDebugMsg:
+        fprintf(stderr, "Debug: %s\n", msg);
+        break;
+    case QtWarningMsg:
+        fprintf(stderr, "Warning: %s\n", msg);
+        break;
+    case QtCriticalMsg:
+        fprintf(stderr, "Critical: %s\n", msg);
+        break;
+    case QtFatalMsg:
+        fprintf(stderr, "Fatal: %s\n", msg);
+        abort();
+    default:
+        break;
+    }
+}
+
+void ConsoleMessageOutput(QtMsgType type, const char *msg)
+{
+    switch (type) {
+    case QtDebugMsg:
+//        fprintf(stderr, "Debug: %s\n", msg);
+        break;
+    case QtWarningMsg:
+//        fprintf(stderr, "Warning: %s\n", msg);
+        break;
+    case QtCriticalMsg:
+        fprintf(stderr, "Critical: %s\n", msg);
+        break;
+    case QtFatalMsg:
+        fprintf(stderr, "Fatal: %s\n", msg);
+        abort();
+    default:
+        break;
+    }
+}
+
 void showErrorMessage(const QString & text)
 {
     bool gui = true;
@@ -69,8 +109,11 @@ int main(int argc, char **argv)
 
     const QString sharePath = QDir(app->applicationDirPath()+SHARE_PATH).canonicalPath();
 
+    bool allowDebugMessages = false;
+
 #ifdef SPLASHSCREEN
     if (gui) {
+        allowDebugMessages = true;
         QString imgPath = sharePath+QString("/")+SPLASHSCREEN;
         splashScreen = new QSplashScreen();
         QImage img(imgPath);
@@ -96,6 +139,13 @@ int main(int argc, char **argv)
         splashScreen->show();
     }
 #endif
+
+    if (allowDebugMessages) {
+        qInstallMsgHandler(GuiMessageOutput);
+    }
+    else {
+        qInstallMsgHandler(ConsoleMessageOutput);
+    }
 
     QDir translationsDir(sharePath+"/translations");
     QStringList ts_files = translationsDir.entryList(QStringList() << "*_"+getLanguage()+".qm");
