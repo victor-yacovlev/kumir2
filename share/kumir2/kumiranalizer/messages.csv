@@ -67,7 +67,7 @@
 "No arguments";"Нет аргументов";"";"";"";"";
 "Extra 'fi'";"Что - “все”?";"";"";"";"";
 "Type not declared before";"Не указан тип";"";"";"";"";
-"Can't input algorithm in- argument";"Нельзя ввести в аргумент";"";"";"";"";
+"bbb";"";"";"";"";"";
 "Extra variable group inout-specifier: %1";"";"";"";"";"";
 "Then-value not specified";"Нет значения после “до”";"";"";"";"";
 "Extra 'module'";"Здесь не должно быть “исп”";"";"";"";"";
@@ -118,6 +118,7 @@
 "Incompatible types";"Плохой тип параметра";"";"";"";"";
 "ccc";"";"";"";"";"";
 "Initial value is empty";"Начальное значение не задано";"";"";"";"";
+"'%1' in algorithm";"“%1” внутри алгоритма";"";"";"";"";
 "Extra variable group in-specifier: %1";"";"";"";"";"";
 "Extra statement";"Строка не на месте";"";"";"";"";
 "Garbage between if..then";"Где “то” после условия?";"";"";"";"";
@@ -172,7 +173,7 @@
 "First unnamed algorithm should not return anything";"Алгоритм без имени ничего не возвращает";"";"";"";"";
 "Not integer for-loop variable";"Величина не целая";"";"";"";"";
 "Integer constant too big";"Слишком большое целое число";"";"";"";"";
-"bbb";"";"";"";"";"";
+"Can't input algorithm in- argument";"Нельзя ввести в аргумент";"";"";"";"";
 "Access to return value outside of algorithm";"Вне алгоритмов не бывает “знач”";"";"";"";"";
 "Can't boolean:=charect";"Нельзя “лог := сим”";"";"";"";"";
 "Can't input array";"Нельзя ввести в таблицу";"";"";"";"";

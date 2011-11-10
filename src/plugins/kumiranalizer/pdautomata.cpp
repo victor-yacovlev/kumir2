@@ -1517,7 +1517,7 @@ void PDAutomataPrivate::processCorrectLoad()
 
 void PDAutomataPrivate::setGarbageAlgError()
 {
-    setCurrentError(_("Garbage in algorithm"));
+    setCurrentError(_("'%1' in algorithm", source[currentPosition]->data.first()->data));
     appendSimpleLine();
 }
 
