@@ -1373,8 +1373,8 @@ void PDAutomataPrivate::processCorrectFi()
             setCurrentIndentRank(-2, 0);
         }
         else {
-            setCurrentIndentRank(0, 0);
-            setCurrentError(_("Extra 'fi'"));
+            setCurrentIndentRank(-2, 0);
+//            setCurrentError(_("Extra 'fi'"));
         }
         source.at(currentPosition)->mod = currentModule;
         source.at(currentPosition)->alg = currentAlgorhitm;
@@ -1614,7 +1614,20 @@ void PDAutomataPrivate::setExtraCloseKeywordError(const QString &kw)
         setCurrentError(_("Extra 'end'"));
     }
     else if (kw==QString::fromUtf8("иначе")) {
-        setCurrentError(_("Extra 'else'"));
+        QString err = _("Extra 'else'");
+        int a = currentPosition-1;
+        while (a>=0) {
+            if (source[a]->hasError() &&
+                    (source[a]->type==LxPriIf || source[a]->type==LxPriSwitch)
+                    ) {
+                err = _("No 'end' after 'else'");
+                break;
+            }
+            else if (source[a]->type==LxPriFi)
+                break;
+            a--;
+        }
+        setCurrentError(err);
     }
     else if (kw==QString::fromUtf8("ограничение_алгоритма")) {
         setCurrentError(_("Extra statement"));

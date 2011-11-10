@@ -90,6 +90,7 @@
 "Passing table as index";"Таблица не может быть индексом";"";"";"";"";
 "No 'then' before else..fi";"Нет “то” перед “иначе”";"";"";"";"";
 "Can't integer:=string";"Нельзя “цел := лит”";"";"";"";"";
+"No 'end' after 'else'";"Нет “все” после “иначе”";"";"";"";"";
 "Garbage at the end of statement";"Мусор в конце выражения";"";"";"";"";
 "Assignment to complex expression";"Нельзя присвоить выражению";"";"";"";"";
 "Can't real:=string";"Нельзя “вещ := лит”";"";"";"";"";
