@@ -1959,6 +1959,7 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
                 bool result = val.length()>0 && (val[0].isDigit() || val[0]=='.');
                 bool dotFound = false;
                 bool signFound = false;
+                bool eFound = false;
                 for (int i=0; i<val.length(); i++) {
                     if (val[i]=='.') {
                         if (!dotFound) {
@@ -1972,6 +1973,15 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
                     else if (val[i]=='+' ||  val[i]=='-') {
                         if (!signFound) {
                             signFound = true;
+                        }
+                        else {
+                            result = false;
+                            break;
+                        }
+                    }
+                    else if (expFormSymbols.contains(val[i])) {
+                        if (!eFound) {
+                            eFound = true;
                         }
                         else {
                             result = false;
