@@ -2315,6 +2315,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
         else if (blockType==Element) {
             int deep = 0;
             int openBrPos = curPos;
+            int closeBrPos = -1;
             for ( ; curPos < lexems.size(); curPos++) {
                 Lexem * clx = lexems[curPos];
                 if (deep==0 && IS_OPERATOR(clx->type) && clx->type!=LxOperLeftSqBr && clx->type!=LxOperRightSqBr) {
@@ -2324,11 +2325,17 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 block << clx;
                 if (clx->type==LxOperLeftSqBr)
                     deep++;
-                if (clx->type==LxOperRightSqBr)
+                if (clx->type==LxOperRightSqBr) {
                     deep--;
+                    closeBrPos = curPos;
+                }
             }
             if (deep>0) {
-                lexems[openBrPos]->error = _("No pairing ']'"); // FIXME error code for unmatched open square bracket
+                lexems[openBrPos]->error = _("No pairing ']'");
+                return 0;
+            }
+            else if (deep<0 && closeBrPos!=-1) {
+                lexems[closeBrPos]->error= _("No pairing '['");
                 return 0;
             }
             AST::Expression * operand = parseElementAccess(block, mod, alg);
