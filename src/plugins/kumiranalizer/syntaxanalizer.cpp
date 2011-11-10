@@ -2746,9 +2746,14 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
         else {
             AST::Algorhitm * a = 0;
             if (findAlgorhitm(name, mod,a)) {
-                openBracketIndex = qMax(0, openBracketIndex);
-                for (int i=openBracketIndex; i<lexems.size(); i++) {
+                int a = qMax(0, openBracketIndex);
+                for (int i=a; i<lexems.size(); i++) {
                     lexems[i]->error = _("'[...]' instead of '(...)'");
+                }
+                if (openBracketIndex==-1)
+                    openBracketIndex = lexems.size();
+                for (int i=0; i<openBracketIndex; i++) {
+                    lexems[i]->type = LxNameAlg;
                 }
             }
             else {
@@ -3051,6 +3056,9 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
 
         err = "";
         if (retval) {
+            for (std::list<Lexem*>::const_iterator it=lexems.begin(); it!=lexems.end(); it++) {
+                (*it)->type = LxTypeSecondaryKwd;
+            }
             if (!alg) {
                 err = _("Access to return value outside of algorithm");
             }
