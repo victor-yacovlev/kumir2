@@ -1953,10 +1953,20 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
                 static const QString expFormSymbols = QString::fromUtf8("eEеЕ01234567890");
                 bool result = val.length()>0 && (val[0].isDigit() || val[0]=='.');
                 bool dotFound = false;
+                bool signFound = false;
                 for (int i=0; i<val.length(); i++) {
                     if (val[i]=='.') {
                         if (!dotFound) {
                             dotFound = true;
+                        }
+                        else {
+                            result = false;
+                            break;
+                        }
+                    }
+                    else if (val[i]=='+' ||  val[i]=='-') {
+                        if (!signFound) {
+                            signFound = true;
                         }
                         else {
                             result = false;
