@@ -2328,8 +2328,11 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                     break;
                 }
                 block << clx;
-                if (clx->type==LxOperLeftSqBr)
+                if (clx->type==LxOperLeftSqBr) {
+                    if (deep==0)
+                        openBrPos = curPos;
                     deep++;
+                }
                 if (clx->type==LxOperRightSqBr) {
                     deep--;
                     closeBrPos = curPos;
