@@ -183,8 +183,9 @@ int main(int argc, char **argv)
         manager->shutdown();
         ret = app->property("returnCode").toInt();
     }
-    delete manager;
-    delete app;
+
+    // delete manager;
+    // delete app;
     if (splashScreen) {
 //        delete splashScreen;
     }
