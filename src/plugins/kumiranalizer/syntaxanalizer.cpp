@@ -2305,6 +2305,17 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
             subexpression << operand;
             if (oper)
                 subexpression << oper;
+            if (subexpression.size()>1 &&
+                    operand->baseType==AST::TypeNone &&
+                    operand->kind==AST::ExprFunctionCall
+            )
+            {
+                for (int i=0; i<block.size(); i++) {
+                    block[i]->error = _("Assignment of non-returning algorithm");
+                }
+                delete operand;
+                return 0;
+            }
         } // end if (blockType==Function)
         else if (blockType==Simple) {
             if (block.isEmpty() && notFlag) {
@@ -2326,6 +2337,17 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
             subexpression << operand;
             if (oper)
                 subexpression << oper;
+            if (subexpression.size()>1 &&
+                    operand->baseType==AST::TypeNone &&
+                    operand->kind==AST::ExprFunctionCall
+            )
+            {
+                for (int i=0; i<block.size(); i++) {
+                    block[i]->error = _("Assignment of non-returning algorithm");
+                }
+                delete operand;
+                return 0;
+            }
         } // end if (blockType==Variable)
         else if (blockType==Element) {
             int deep = 0;
