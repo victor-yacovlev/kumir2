@@ -115,19 +115,39 @@ QList<QWidget*> Editor::statusbarWidgets()
 
 void EditorPrivate::timerEvent(QTimerEvent *e)
 {
-    e->accept();
-    if (keybStatus) {
-        bool capsLock = Utils::isCapsLock();
-        bool russian = Utils::isRussianLayout();
-        if (Utils::temporaryLayoutSwitch)
-            russian = !russian;
-        QString abc = russian? QString::fromUtf8("рус") : "lat";
-        if (capsLock)
-            abc = abc.toUpper();
-        if (Utils::temporaryLayoutSwitch)
-            abc += "*";
-        keybStatus->setText(tr("Keys: %1").arg(abc));
+    if (e->timerId()==timerId) {
+        e->accept();
+        if (keybStatus) {
+            bool capsLock = Utils::isCapsLock();
+            bool russian = Utils::isRussianLayout();
+            if (Utils::temporaryLayoutSwitch)
+                russian = !russian;
+            QString abc = russian? QString::fromUtf8("рус") : "lat";
+            if (capsLock)
+                abc = abc.toUpper();
+            if (Utils::temporaryLayoutSwitch)
+                abc += "*";
+            keybStatus->setText(tr("Keys: %1").arg(abc));
+        }
     }
+    else if (e->timerId()==autoScrollTimerId) {
+        e->accept();
+        if (autoScrollState==-1) {
+            if (verticalScrollBar->value()>0) {
+                verticalScrollBar->setValue(verticalScrollBar->value()-verticalScrollBar->singleStep());
+            }
+        }
+        else if (autoScrollState==1) {
+            if (verticalScrollBar->value()<verticalScrollBar->maximum()) {
+                verticalScrollBar->setValue(verticalScrollBar->value()+verticalScrollBar->singleStep());
+            }
+        }
+    }
+}
+
+void EditorPrivate::handleAutoScrollChange(char a)
+{
+    autoScrollState = a;
 }
 
 void EditorPrivate::updatePosition(int row, int col)
@@ -405,9 +425,15 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
     d->positionStatus = new QLabel(0);
     d->positionStatus->setFixedWidth(120);
     d->timerId = d->startTimer(50);
+    d->autoScrollTimerId = d->startTimer(100);
+    d->autoScrollState = 0;
 
     connect(d->cursor, SIGNAL(positionChanged(int,int)),
             d, SLOT(updatePosition(int,int)));
+
+    connect(d->plane, SIGNAL(requestAutoScroll(char)),
+            d, SLOT(handleAutoScrollChange(char)));
+
     d->updatePosition(d->cursor->row(), d->cursor->column());
 
     d->createActions();

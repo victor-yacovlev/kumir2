@@ -50,6 +50,8 @@ public:
     bool teacherMode;
 
     int timerId;
+    int autoScrollTimerId;
+    char autoScrollState;
 
     bool notSaved;
 
@@ -69,6 +71,7 @@ public slots:
         );
     void handleLineAndTextChanged(const QStack<Shared::ChangeTextTransaction> & changes);
     void playMacro();
+    void handleAutoScrollChange(char a);
 };
 
 }

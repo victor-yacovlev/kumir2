@@ -124,6 +124,7 @@ void EditorPlane::contextMenuEvent(QContextMenuEvent *e)
 
 void EditorPlane::mousePressEvent(QMouseEvent *e)
 {
+    emit requestAutoScroll(0);
     if (m_autocompleteWidget->isVisible())
         m_autocompleteWidget->reject();
     if (e->button()==Qt::RightButton) {
@@ -189,6 +190,7 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
 
 void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
 {
+    emit requestAutoScroll(0);
     if (pnt_marginPress.x()!=-1000 && pnt_marginPress.y()!=-1000) {
         int x = pnt_marginPress.x();
         if (b_teacherMode)
@@ -248,7 +250,6 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
     int ln = charWidth() * 5 + lockSymbolWidth;
     int mn = ln + widthInChars() * charWidth() - lockSymbolWidth;
     i_grayLockSymbolLine = -1;
-
     bool moveDelimeterLine = false;
     if (b_hasAnalizer && b_teacherMode) {
         int hls = m_document->hiddenLineStart();
@@ -302,6 +303,15 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
         update();
     }
     else if (b_selectionInProgress || (e->pos().x()>ln && e->pos().x()<mn-2 && e->buttons().testFlag(Qt::LeftButton))) {
+        if (e->pos().y()<0) {
+            emit requestAutoScroll(-1);
+        }
+        else if (e->pos().y()>height()) {
+            emit requestAutoScroll(+1);
+        }
+        else {
+            emit requestAutoScroll( 0);
+        }
         QApplication::restoreOverrideCursor();
         int dX = e->pos().x() - pnt_textPress.x();
         int dY = e->pos().y() - pnt_textPress.y();
@@ -367,6 +377,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
     e->accept();
     update();
 }
+
 
 void EditorPlane::initMouseCursor()
 {

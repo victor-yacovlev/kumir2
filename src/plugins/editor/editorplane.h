@@ -132,6 +132,7 @@ private:
     QList<QAction*> l_contextMenuActions;
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
+    void requestAutoScroll(char a);
 
 };
 

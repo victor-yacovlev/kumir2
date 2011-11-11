@@ -60,6 +60,7 @@ private:
     class EditorPrivate * d;
 
 
+
 };
 
 QDataStream & operator<< (QDataStream & stream, const Editor & editor);
