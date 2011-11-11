@@ -1034,7 +1034,9 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
     l.arg = lineNo;
     result << l;
 
-    result << calculate(modId, algId, level, st->conditionals[0].condition);
+    QList<Bytecode::Instruction> conditionInstructions = calculate(modId, algId, level, st->conditionals[0].condition);
+    shiftInstructions(conditionInstructions, result.size());
+    result << conditionInstructions;
 
     Bytecode::Instruction pop;
     pop.type = Bytecode::POP;

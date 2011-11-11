@@ -233,6 +233,7 @@ void VM::evaluateNextInstruction()
     int ip = stack_contexts.last().IP;
     QVector<Instruction> program = stack_contexts[stack_contexts.size()-1].program;
     Instruction instr = program[ip];
+    qDebug() << "Evaluating " << ip << ": " << instructionToString(instr);
     switch (instr.type) {
     case CALL:
         do_call(instr.module, instr.arg);
