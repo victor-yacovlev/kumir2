@@ -1553,6 +1553,7 @@ void PDAutomataPrivate::processCorrectModuleBegin()
     currentModule = new AST::Module;
     currentModule->header.type = teacherMode? AST::ModTypeHidden : AST::ModTypeUser;
     source.at(currentPosition)->mod = currentModule;
+    currentContext.push(&(currentModule->impl.initializerBody));
 }
 
 void PDAutomataPrivate::processCorrectModuleEnd()
