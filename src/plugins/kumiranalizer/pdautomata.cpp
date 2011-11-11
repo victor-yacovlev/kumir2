@@ -1121,8 +1121,13 @@ void PDAutomataPrivate::processCorrectAlgHeader()
         currentModule = source.at(currentPosition)->mod;
     }
     else {
-        currentModule->impl.algorhitms << alg;
-        source.at(currentPosition)->mod = currentModule;
+        if (currentModule==0) {
+
+        }
+        else {
+            currentModule->impl.algorhitms << alg;
+            source.at(currentPosition)->mod = currentModule;
+        }
     }
     source.at(currentPosition)->alg = alg;
 }

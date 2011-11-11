@@ -21,7 +21,7 @@
 "Extra variable group specifier: %1";"Лишнее описание группы величин";"";"";"";"";
 "Array bounds no specified";"Нет границ";"";"";"";"";
 "Nothing between '(' and ')'";"Пусто между “(“ и “)”";"";"";"";"";
-"No operands";"";"";"";"";"";
+"No operands";"Только операция";"";"";"";"";
 "File handle is not integer";"Ключ – не целое число";"";"";"";"";
 "No colon after condition";"В конце нет “:”";"";"";"";"";
 "Can't not %1";"Нельзя не %1";"";"";"";"";
