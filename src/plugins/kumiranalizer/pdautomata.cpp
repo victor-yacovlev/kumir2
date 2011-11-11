@@ -1311,6 +1311,57 @@ void PDAutomataPrivate::processAlgEndInsteadOfLoopEnd()
     source.at(currentPosition)->statement = currentContext.top()->last();
 }
 
+void PDAutomataPrivate::processModEndInsteadOfAlgEnd()
+{
+    int a = currentPosition-1;
+    int modDeclPos = -1;
+    int beginPos = -1;
+    int algPos = -1;
+    while (a>=0) {
+        if (source[a]->type==LxPriEndModule && !source[a]->hasError()) {
+            break;
+        }
+        else if (source[a]->type==LxPriAlgBegin) {
+            beginPos = a;
+        }
+        else if (source[a]->type==LxPriAlgHeader) {
+            algPos = a;
+        }
+        else if (source[a]->type==LxPriAlgEnd) {
+            algPos = beginPos = -1;
+            break;
+        }
+        else if (source[a]->type==LxPriEndModule && !source[a]->hasError()) {
+            modDeclPos = -1;
+            break;
+        }
+        else if (source[a]->type==LxPriModule && !source[a]->hasError()) {
+            modDeclPos = a;
+            break;
+        }
+        a--;
+    }
+    processCorrectAlgEnd();
+    processCorrectModuleEnd();
+    if (modDeclPos==-1) {
+        setCurrentError(_("'end_module' instead of 'end'"));
+        setCurrentIndentRank(-1, 0);
+    }
+    else {
+        int pos = qMax(algPos, beginPos);
+        if (pos!=-1) {
+            const QString err = pos==beginPos
+                    ? _("Extra 'begin'")
+                    : _("Algorhitm not implemented");
+            for (int i=0; i<source[pos]->data.size(); i++) {
+                source[pos]->data[i]->error = err;
+                source[pos]->data[i]->errorStage = AST::Lexem::PDAutomata;
+            }
+            setCurrentIndentRank(-2, 0);
+        }
+    }
+}
+
 void PDAutomataPrivate::processCorrectCase()
 {
     setCurrentIndentRank(-1, +1);

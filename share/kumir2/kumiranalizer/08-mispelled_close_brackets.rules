@@ -1,1 +1,2 @@
 КОН_ВМЕСТО_КЦ -> кон ФРАГМЕНТ_АЛГОРИТМА* : { processAlgEndInsteadOfLoopEnd(); }
+КОНЕЦ_АЛГОРИТМА -> кон_исп : { processModEndInsteadOfAlgEnd(); }

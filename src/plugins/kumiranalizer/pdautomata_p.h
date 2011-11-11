@@ -83,6 +83,7 @@ public slots:
     void setCurrentIndentRank(int start, int end);
     void processCorrectEndOfLoop();
     void processAlgEndInsteadOfLoopEnd();
+    void processModEndInsteadOfAlgEnd();
     void processCorrectCase();
     void processCorrectIf();
     void processCorrectThen();
