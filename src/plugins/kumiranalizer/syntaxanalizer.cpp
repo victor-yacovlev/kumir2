@@ -789,6 +789,16 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
             return;
         }
 
+        if (fromIndex==-1 && toIndex!=-1) {
+            toLexem->error = _("No 'from' before 'to'");
+            return;
+        }
+
+        if (fromIndex==-1 && toIndex==-1) {
+            forLexem->error = _("No 'from'..'to'.. after variable");
+            return;
+        }
+
         if (!fromLexem) {
             forLexem->error = _("No loop variable");
             return;
