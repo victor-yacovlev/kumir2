@@ -2098,7 +2098,13 @@ QVariant SyntaxAnalizerPrivate::createConstValue(const QString & str
         result = QVariant(QChar(str[0]));
     }
     else if (type==AST::TypeInteger) {
-        result = QVariant(str.toInt());
+        bool ok;
+        if (str.startsWith("$")) {
+            result = QVariant(str.mid(1).toInt(&ok, 16));
+        }
+        else {
+            result = QVariant(str.toInt());
+        }
     }
     else if (type==AST::TypeReal) {
         result = QVariant(str.toDouble());
