@@ -1107,6 +1107,15 @@ void PDAutomataPrivate::setOutOfAlgError()
         source[currentPosition]->data[i]->error = value;
         source[currentPosition]->data[i]->errorStage = AST::Lexem::PDAutomata;
     }
+
+    bool doNotEvaluate = false;
+
+    if (currentModule)
+        doNotEvaluate = currentModule->impl.algorhitms.size()>0;
+
+    appendSimpleLine();
+    if (!currentContext.isEmpty() && currentContext.top())
+        currentContext.top()->last()->skipErrorEvaluation = doNotEvaluate;
 }
 
 void PDAutomataPrivate::processCorrectAlgHeader()
@@ -1146,6 +1155,7 @@ void PDAutomataPrivate::processCorrectAlgBegin()
 void PDAutomataPrivate::appendSimpleLine()
 {
     AST::Statement * statement = new AST::Statement;
+    statement->skipErrorEvaluation = false;
     statement->lexems = source.at(currentPosition)->data;
     switch ( source.at(currentPosition)->type ) {
     case LxPriAssign:
@@ -1227,6 +1237,7 @@ void PDAutomataPrivate::appendSimpleLine()
 AST::Statement * PDAutomata::createSimpleAstStatement(Statement * st)
 {
     AST::Statement * statement = new AST::Statement;
+    statement->skipErrorEvaluation = false;
     switch ( st->type ) {
     case LxPriAssign:
         statement->type = AST::StAssign;
@@ -1388,6 +1399,7 @@ void PDAutomataPrivate::processCorrectIf()
 {
     setCurrentIndentRank(0, +2);
     AST::Statement * st = new AST::Statement;
+    st->skipErrorEvaluation = false;
     st->type = AST::StIfThenElse;
     st->lexems = source.at(currentPosition)->data;
     currentContext.top()->append(st);
@@ -1460,6 +1472,7 @@ void PDAutomataPrivate::processCorrectElse()
     else {
         // Error: no if..then
         AST::Statement * ste = new AST::Statement();
+        ste->skipErrorEvaluation = false;
         ste->type = AST::StError;
         ste->error = _("No then before else");
         ste->lexems = source.at(currentPosition)->data;
@@ -1468,6 +1481,7 @@ void PDAutomataPrivate::processCorrectElse()
         }
         currentContext.top()->append(ste);
         AST::Statement * st = new AST::Statement;
+        st->skipErrorEvaluation = false;
         st->type = AST::StIfThenElse;
         st->lexems = source.at(currentPosition)->data;
         source.at(currentPosition)->mod = currentModule;
@@ -1492,6 +1506,7 @@ void PDAutomataPrivate::processCorrectSwitch()
 {
     setCurrentIndentRank(0, +2);
     AST::Statement * st = new AST::Statement;
+    st->skipErrorEvaluation = false;
     st->type = AST::StSwitchCaseElse;
     st->lexems = source.at(currentPosition)->data;
     currentContext.top()->append(st);
@@ -1509,6 +1524,7 @@ void PDAutomataPrivate::processCorrectBeginOfLoop()
 {
     setCurrentIndentRank(0, +1);
     AST::Statement * st = new AST::Statement;
+    st->skipErrorEvaluation = false;
     st->type = AST::StLoop;
     st->lexems = source.at(currentPosition)->data;
     currentContext.top()->append(st);
@@ -1527,6 +1543,7 @@ void PDAutomataPrivate::processCorrectDocLine()
 void PDAutomataPrivate::processCorrectRestrictionLine()
 {
     AST::Statement * st = new AST::Statement;
+    st->skipErrorEvaluation = false;
     st->type = AST::StAssert;
     st->lexems = source.at(currentPosition)->data;
     source.at(currentPosition)->mod = currentModule;

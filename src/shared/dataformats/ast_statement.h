@@ -135,6 +135,9 @@ struct ABSTRACTSYNTAXTREE_EXPORT Statement {
     /** Compile-time error */
     QString error;
 
+    /** If error: add to generated code or not */
+    bool skipErrorEvaluation;
+
     /** List of top-level expressions for all
       * statement kinds except StLoop, StIfThenElse and StSwitchCaseElse */
     QList<struct Expression * > expressions;
