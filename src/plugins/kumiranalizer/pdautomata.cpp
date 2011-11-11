@@ -1517,7 +1517,12 @@ void PDAutomataPrivate::processCorrectLoad()
 
 void PDAutomataPrivate::setGarbageAlgError()
 {
-    setCurrentError(_("'%1' in algorithm", source[currentPosition]->data.first()->data));
+    static const QList<LexemType> OutgoingOperationalBrackets =
+            QList<LexemType>() << LxPriImport << LxPriAlgHeader << LxPriModule << LxPriEndModule;
+    if (OutgoingOperationalBrackets.contains(source[currentPosition]->type))
+        setCurrentError(_("'%1' in algorithm", source[currentPosition]->data.first()->data));
+    else
+        setCurrentError(_("Garbage between alg..begin"));
     appendSimpleLine();
 }
 
@@ -1573,7 +1578,21 @@ void PDAutomataPrivate::setExtraOpenKeywordError(const QString &kw)
     }
     else if (kw==QString::fromUtf8("то")) {
         setCurrentIndentRank(-1,-1);
-        setCurrentError(_("Extra 'then'"));
+        QString err = _("Extra 'then'");
+        int a = currentPosition + 1;
+        bool fiFound = false;
+        while (a<source.size()) {
+            if (source[a]->type==LxPriFi && !source[a]->hasError()) {
+                fiFound = true;
+                break;
+            }
+            else if (source[a]->type==LxPriEndModule || source[a]->type==LxPriAlgEnd)
+                break;
+            a++;
+        }
+        if (!fiFound)
+            err = _("No 'end' after 'then'");
+        setCurrentError(err);
     }
     else if (kw==QString::fromUtf8("выбор")) {
         setCurrentError(_("Extra 'switch'"));
