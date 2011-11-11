@@ -1561,10 +1561,15 @@ QVariant VM::value(int moduleId, int algorhitmId, int variableId) const
     else if (algorhitmId!=-1 && moduleId!=-1 && variableId!=-1) {
         int context = contextByIds(moduleId, algorhitmId);
 
-        if (context>-1 && stack_contexts.at(context).locals[variableId].hasValue()) {
+        if (context>-1 &&
+                variableId < stack_contexts.at(context).locals.size() &&
+                stack_contexts.at(context).locals[variableId].hasValue()
+                ) {
             result = stack_contexts.at(context).locals[variableId].value();
         }
-        else if (context==-2 && last_context.locals[variableId].hasValue()) {
+        else if (context==-2 &&
+                 variableId < last_context.locals.size() &&
+                 last_context.locals[variableId].hasValue()) {
             result = last_context.locals[variableId].value();
         }
     }

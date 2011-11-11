@@ -735,6 +735,7 @@ void MainWindow::setupContentForTab()
         const AnalizerInterface * analizer = m_plugin->plugin_editor->analizer(id);
         int analizerId = m_plugin->plugin_editor->analizerDocumentId(id);
         const AST::Data * ast = analizer->abstractSyntaxTree(analizerId);
+        m_plugin->m_kumirProgram->setAST(0);
         m_plugin->m_kumirProgram->setAST(ast);
         m_plugin->m_kumirProgram->setSourceFileName(fileName);
         m_plugin->m_kumirProgram->setDocumentId(id);
