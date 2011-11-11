@@ -1210,28 +1210,28 @@ void TextCursor::removeSelection()
 
 void TextCursor::undo()
 {
-    int prevRow = i_row;
-    int prevLines = m_document->linesCount();
+//    int prevRow = i_row;
+//    int prevLines = m_document->linesCount();
     if (b_enabled) {
         m_document->undoStack()->undo();
     }
-    if (prevRow!=i_row || prevLines!=m_document->linesCount()) {
+//    if (prevRow!=i_row || prevLines!=m_document->linesCount()) {
         m_document->forceCompleteRecompilation();
-    }
+//    }
     emit undoAvailable(b_enabled && m_document->undoStack()->canUndo());
     emit redoAvailable(b_enabled && m_document->undoStack()->canRedo());
 }
 
 void TextCursor::redo()
 {
-    int prevRow = i_row;
-    int prevLines = m_document->linesCount();
+//    int prevRow = i_row;
+//    int prevLines = m_document->linesCount();
     if (b_enabled) {
         m_document->undoStack()->redo();
     }
-    if (prevRow!=i_row || prevLines!=m_document->linesCount()) {
+//    if (prevRow!=i_row || prevLines!=m_document->linesCount()) {
         m_document->forceCompleteRecompilation();
-    }
+//    }
     emit undoAvailable(b_enabled && m_document->undoStack()->canUndo());
     emit redoAvailable(b_enabled && m_document->undoStack()->canRedo());
 }
