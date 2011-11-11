@@ -554,6 +554,9 @@ void SyntaxAnalizerPrivate::parseInputOutputAssertPrePost(int str)
         if (st.data[0]->type==LxPriOutput || st.data[0]->type==LxPriFoutput) {
             err = _("What to output?");
         }
+        if (st.data[0]->type==LxPriInput || st.data[0]->type==LxPriFinput) {
+            err = _("What to input?");
+        }
         if (st.data[0]->type!=LxPriPre && st.data[0]->type!=LxPriPost)
             st.data[0]->error = err;
         return;

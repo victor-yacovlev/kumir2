@@ -24,7 +24,7 @@
 "No operands";"";"";"";"";"";
 "File handle is not integer";"Ключ – не целое число";"";"";"";"";
 "No colon after condition";"В конце нет “:”";"";"";"";"";
-"Algorhitm header in algorhitm body";"Вложенное описание алгоритма";"";"";"";"";
+"Can't not %1";"Нельзя не %1";"";"";"";"";
 "No pairing ']'";"Нет парной “]”";"";"";"";"";
 "Can't integer:=charect";"Нельзя “цел := сим”";"";"";"";"";
 "Can't charect:=integer";"Нельзя “сим := цел”";"";"";"";"";
@@ -128,6 +128,7 @@
 "No 'end' after 'then'";"Нет “все” после “то”";"";"";"";"";
 "Slice of string array, but not string";"Вырезка не из строки, а из таблицы";"";"";"";"";
 "Void argument";"Пустой аргумент";"";"";"";"";
+"What to input?";"Куда вводить?";"";"";"";"";
 "Can't input complex expression";"Нельзя ввести в выражение";"";"";"";"";
 "Left array bound not specified";"Не указана левая граница таблицы";"";"";"";"";
 "Unmatched array dimensions";"Несоответствие размерностей таблиц";"";"";"";"";
@@ -152,7 +153,7 @@
 "Can't pass this expression as in/out-argumeny";"Не величина в аргрез-параметре";"";"";"";"";
 "'end_module' instead of 'end'";"“кон_исп” вместо “кон”";"";"";"";"";
 "Extra 'end'";"Лишний “кон”";"";"";"";"";
-"Can't not %1";"Нельзя не %1";"";"";"";"";
+"Algorhitm header in algorhitm body";"Вложенное описание алгоритма";"";"";"";"";
 "Not a simple index";"Индекс – не число";"";"";"";"";
 "Module in algorhitm body";"“исп” внутри алгоритма";"";"";"";"";
 "Name contains quotation symbol";"Имя содержит кавычку";"";"";"";"";
