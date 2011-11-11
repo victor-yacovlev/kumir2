@@ -502,11 +502,11 @@ void EditorPlane::ensureHighlightedLineVisible()
     vr.setSize(QSize(widthInChars(), height()/lineHeight()));
 
     if (cr.top()>vr.bottom()) {
-        int v = m_cursor->row()+1;
+        int v = i_highlightedLine;
         m_verticalScrollBar->setValue(v*lineHeight());
     }
     else if (cr.bottom()<vr.top()) {
-        int v = m_cursor->row()-1;
+        int v = i_highlightedLine;
         m_verticalScrollBar->setValue(v*lineHeight());
     }
 }
