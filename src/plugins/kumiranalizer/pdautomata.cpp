@@ -1032,7 +1032,7 @@ void PDAutomata::postProcess()
                 break;
         }
         d->currentModule = mod;
-        d->currentContext.push(&(d->algorhitm->impl.body));
+//        d->currentContext.push(&(d->algorhitm->impl.body));
         d->currentAlgorhitm = d->algorhitm;
     }
 

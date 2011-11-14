@@ -14,6 +14,7 @@ using namespace Shared;
 namespace KumirAnalizer {
 
 struct VariablesGroup {
+    Lexem * groupLexem;
     QList<Lexem*> lexems;
     AST::VariableAccessType access;
     bool accessDefined;
@@ -1360,6 +1361,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
     VariablesGroup currentGroup;
     currentGroup.access = AST::AccessArgumentIn;
     currentGroup.accessDefined = false;
+    currentGroup.groupLexem = 0;
     for (int i=argsStartLexem; i<st.data.size()-1; i++) {
         if (st.data[i]->type==LxTypeComment)
             break;
@@ -1404,10 +1406,21 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
                     currentGroup.access = AST::AccessArgumentInOut;
                 }
             }
+            currentGroup.groupLexem = st.data[i];
         }
         else if (type==LxPriAlgHeader) {
             alg->header.error = st.data[i]->error = _("'alg' instead of 'arg'");
             return;
+        }
+        else if (type==LxOperComa && currentGroup.lexems.isEmpty()) {
+            if (currentGroup.groupLexem==0) {
+                alg->header.error = st.data[i]->error = _("Extra ','");
+                return;
+            }
+            else {
+                alg->header.error = currentGroup.groupLexem->error = _("No variables declared after '%1'", currentGroup.groupLexem->data);
+                return;
+            }
         }
         else {
             currentGroup.lexems << st.data[i];
