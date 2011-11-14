@@ -6,7 +6,6 @@ set(SOURCES
     vm.cpp
     variant.cpp
     context.cpp
-    faststack.cpp
 )
 
 set(MOC_HEADERS
