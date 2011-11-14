@@ -528,6 +528,8 @@ void EditorPlane::paintEvent(QPaintEvent *e)
 
     p.translate( offset() );
 
+    paintSelection(&p, e->rect());
+    paintRectSelection(&p, e->rect());
 
     if (i_highlightedLine!=-1)
     {
@@ -549,8 +551,6 @@ void EditorPlane::paintEvent(QPaintEvent *e)
         p.drawLine(highlightRect.bottomLeft(), highlightRect.bottomRight());
         p.setPen(Qt::NoPen);
     }
-    paintSelection(&p, e->rect());
-    paintRectSelection(&p, e->rect());
     paintText(&p, e->rect());
 
     p.restore();
