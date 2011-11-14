@@ -4,6 +4,7 @@
 #include <QtCore>
 #include "variant.h"
 #include "context.h"
+#include "faststack.h"
 #include "dataformats/bc_tableelem.h"
 #include "dataformats/bytecode.h"
 
@@ -22,7 +23,10 @@ public:
     QStringList usedActors() const;
     inline bool isBlindMode() const { return b_blindMode; }
     void setBlindMode(bool bl);
-    inline bool hasMoreInstructions() const { return !stack_contexts.isEmpty() && stack_contexts[0].IP < stack_contexts[0].program.size(); }
+    inline bool hasMoreInstructions() const {
+        return stack_contexts.size()>0 &&
+                stack_contexts.at(0).IP < stack_contexts.at(0).program->size();
+    }
     inline QString error() const { return s_error; }
     void loadProgram(const Data & program);
     inline int deep() const { return stack_contexts.size(); }
@@ -71,13 +75,15 @@ signals:
     void clearMargin(int fromLine, int toLine);
 private:
     int contextByIds(int moduleId, int algorhitmId) const;
-    QStack<Variant> stack_values;
-    QStack<Context> stack_contexts;
+    FastStack<Variant> stack_values;
+    FastStack<Context> stack_contexts;
     Context last_context;
     QMap< QPair<quint8,quint16>, Variant> globals;
     QMap<quint16, Variant> constants;
     QMap< quint32, Bytecode::TableElem > externs;
     QMap< quint32, Bytecode::TableElem > functions;
+    Bytecode::TableElem mainProgram;
+    Bytecode::TableElem testingProgram;
     QMap< quint8, Bytecode::TableElem > inits;
     QMap< quint32, QVector<Variant> > cleanLocalTables;
     QString s_error;
@@ -85,7 +91,7 @@ private:
 
     RunEntryPoint e_entryPoint;
 
-    inline void nextIP() { stack_contexts[stack_contexts.size()-1].IP ++; }
+    inline void nextIP() { stack_contexts.top().IP ++; }
 
 
 

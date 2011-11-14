@@ -17,6 +17,8 @@ VM::VM(QObject *parent) :
     e_entryPoint = EP_Main;
     b_blindMode = false;
     m_dontTouchMe = new QMutex;
+    stack_values.init(100, 100);
+    stack_contexts.init(100, 100);
 }
 
 void VM::setNextCallInto()
@@ -26,32 +28,32 @@ void VM::setNextCallInto()
 
 void VM::setNextCallOut()
 {
-    if (stack_contexts.isEmpty())
+    if (stack_contexts.size()==0)
         return;
-    stack_contexts[stack_contexts.size()-1].runMode = CRM_UntilReturn;
+    stack_contexts.top().runMode = CRM_UntilReturn;
 }
 
 void VM::setNextCallToEnd()
 {
     for (int i=0; i<stack_contexts.size(); i++) {
-        stack_contexts[i].runMode = CRM_ToEnd;
+        stack_contexts.at(i).runMode = CRM_ToEnd;
     }
 }
 
 void VM::setNextCallStepOver()
 {
-    if (stack_contexts.isEmpty())
+    if (stack_contexts.size()==0)
         return;
-    stack_contexts[stack_contexts.size()-1].runMode = CRM_OneStep;
+    stack_contexts.top().runMode = CRM_OneStep;
 }
 
 int VM::currentLineNo() const
 {
     QMutexLocker l(m_dontTouchMe);
-    if (stack_contexts.isEmpty())
+    if (stack_contexts.size()==0)
         return -1;
     else
-        return stack_contexts[stack_contexts.size()-1].lineNo;
+        return stack_contexts.top().lineNo;
 }
 
 void VM::setBlindMode(bool bl)
@@ -66,17 +68,20 @@ void VM::reset()
     b_nextCallInto = false;
     s_error = "";
     Variant::error = "";
-    stack_values.clear();
-    stack_contexts.clear();
-    TableElem testing;
-    TableElem aMain;
+//    stack_values.clear();
+    stack_values.reset();
+//    stack_contexts.clear();
+    stack_contexts.reset();
+    mainProgram.instructions.clear();
+    testingProgram.instructions.clear();
+
     QSet<QString> externModules;
     for (int i=0; i<functions.values().size(); i++) {
         const TableElem e = functions.values()[i];
         if (e.type==EL_MAIN || e.type==EL_BELOWMAIN)
-            aMain = functions.values()[i];
+            mainProgram = functions.values()[i];
         if (e.type==EL_TESTING)
-            testing = functions.values()[i];
+            testingProgram = functions.values()[i];
     }
     for (int i=0; i<externs.values().size(); i++) {
         const TableElem e = externs.values()[i];
@@ -89,33 +94,33 @@ void VM::reset()
     }
 
 
-    if (e_entryPoint==EP_Main && (aMain.type==EL_MAIN || aMain.type==EL_BELOWMAIN) ) {
+    if (e_entryPoint==EP_Main && (mainProgram.type==EL_MAIN || mainProgram.type==EL_BELOWMAIN) ) {
         Context c;
-        quint32 mod = aMain.module;
-        quint32 alg = aMain.algId;
+        quint32 mod = mainProgram.module;
+        quint32 alg = mainProgram.algId;
         quint32 key = (mod << 16) | alg;
         c.locals = cleanLocalTables[key];
-        c.program = aMain.instructions;
+        c.program = &(mainProgram.instructions);
         c.IP = 0;
-        c.type = aMain.type;
+        c.type = mainProgram.type;
         c.runMode = CRM_ToEnd;
-        c.algId = aMain.algId;
-        c.moduleId = aMain.module;
+        c.algId = mainProgram.algId;
+        c.moduleId = mainProgram.module;
         stack_contexts.push(c);
     }
 
-    if (e_entryPoint==EP_Testing && testing.type==EL_TESTING) {
+    if (e_entryPoint==EP_Testing && testingProgram.type==EL_TESTING) {
         Context c;
-        quint32 mod = testing.module;
-        quint32 alg = testing.algId;
+        quint32 mod = testingProgram.module;
+        quint32 alg = testingProgram.algId;
         quint32 key = (mod << 16) | alg;
         c.locals = cleanLocalTables[key];
-        c.program = testing.instructions;
+        c.program = &(testingProgram.instructions);
         c.IP = 0;
         c.type = EL_TESTING;
         c.runMode = CRM_ToEnd;
-        c.algId = testing.algId;
-        c.moduleId = testing.module;
+        c.algId = testingProgram.algId;
+        c.moduleId = testingProgram.module;
         stack_contexts.push(c);
     }
 
@@ -123,7 +128,7 @@ void VM::reset()
         quint8 key = inits.keys()[i];
         if (inits[key].instructions.size()>0) {
             Context c;
-            c.program = inits[key].instructions;
+            c.program = &(inits[key].instructions);
             c.IP = 0;
             c.type = EL_INIT;
             c.runMode = CRM_ToEnd;
@@ -222,17 +227,17 @@ QStringList VM::usedActors() const
 void VM::setLocalVariableValue(int localId, const QVariant &value)
 {
     QMutexLocker l(m_dontTouchMe);
-    Q_ASSERT(!stack_contexts.isEmpty());
-    Q_ASSERT(localId < stack_contexts[stack_contexts.size()-1].locals.size());
-    stack_contexts[stack_contexts.size()-1].locals[localId].setValue(value);
+    Q_ASSERT(stack_contexts.size());
+    Q_ASSERT(localId < stack_contexts.top().locals.size());
+    stack_contexts.top().locals[localId].setValue(value);
 }
 
 void VM::evaluateNextInstruction()
 {
 
-    int ip = stack_contexts.last().IP;
-    QVector<Instruction> program = stack_contexts[stack_contexts.size()-1].program;
-    Instruction instr = program[ip];
+    int ip = stack_contexts.top().IP;
+    const QVector<Instruction> * program = stack_contexts.top().program;
+    const Instruction instr = program->at(ip);
     qDebug() << "Evaluating " << ip << ": " << instructionToString(instr);
     switch (instr.type) {
     case CALL:
@@ -353,7 +358,7 @@ void VM::evaluateNextInstruction()
 void VM::do_pause(quint16 lineNo)
 {
     QMutexLocker l(m_dontTouchMe);
-    stack_contexts[stack_contexts.size()-1].runMode = CRM_OneStep;
+    stack_contexts.top().runMode = CRM_OneStep;
     emit lineNoChanged(lineNo);
     emit pauseRequest();
     emit lineNoChanged(lineNo);
@@ -367,7 +372,7 @@ void VM::do_halt(quint16 lineNo)
         emit outputRequest("\n"+tr("STOP."));
     else
         emit outputRequest("\n"+tr("STOP AT LINE %1.").arg(lineNo));
-    stack_contexts.clear();
+    stack_contexts.reset();
 }
 
 void VM::do_call(quint8 mod, quint16 alg)
@@ -579,10 +584,10 @@ void VM::do_call(quint8 mod, quint16 alg)
             m_dontTouchMe->lock();
             // Input argument
             int localId = argsCount; // Already removed from stack
-            Q_ASSERT (localId < stack_contexts[stack_contexts.size()-1].locals.size());
-            const QString & varName = stack_contexts[stack_contexts.size()-1].locals[localId].name();
+            Q_ASSERT (localId < stack_contexts.top().locals.size());
+            const QString & varName = stack_contexts.top().locals[localId].name();
             QString varFormat;
-            Bytecode::ValueType baseType = stack_contexts[stack_contexts.size()-1].locals[localId].baseType();
+            Bytecode::ValueType baseType = stack_contexts.top().locals[localId].baseType();
             if (baseType==Bytecode::VT_int)
                 varFormat = "%d";
             else if (baseType==Bytecode::VT_char)
@@ -593,7 +598,7 @@ void VM::do_call(quint8 mod, quint16 alg)
                 varFormat = "%s";
             else if (baseType==Bytecode::VT_bool)
                 varFormat = "%b";
-            QList<int> bounds = stack_contexts[stack_contexts.size()-1].locals[localId].bounds();
+            QList<int> bounds = stack_contexts.top().locals[localId].bounds();
             m_dontTouchMe->unlock();
             emit inputArgumentRequest(localId, varName, varFormat, bounds);
         }
@@ -601,12 +606,12 @@ void VM::do_call(quint8 mod, quint16 alg)
             m_dontTouchMe->lock();
             // Output argument or return value
             int localId = argsCount; // Already removed from stack
-            Q_ASSERT (localId < stack_contexts[stack_contexts.size()-1].locals.size());
-            const QString & varName = stack_contexts[stack_contexts.size()-1].locals[localId].name();
-            QList<int> bounds = stack_contexts[stack_contexts.size()-1].locals[localId].bounds();
+            Q_ASSERT (localId < stack_contexts.top().locals.size());
+            const QString & varName = stack_contexts.top().locals[localId].name();
+            QList<int> bounds = stack_contexts.top().locals[localId].bounds();
             QVariant value = QVariant::Invalid;
-            if (stack_contexts[stack_contexts.size()-1].locals[localId].hasValue())
-                value = stack_contexts[stack_contexts.size()-1].locals[localId].value();
+            if (stack_contexts.top().locals[localId].hasValue())
+                value = stack_contexts.top().locals[localId].value();
             m_dontTouchMe->unlock();
             emit outputArgumentRequest(value, varName, bounds);
         }
@@ -639,13 +644,13 @@ void VM::do_call(quint8 mod, quint16 alg)
             m_dontTouchMe->lock();
             Context c;
             c.IP = -1;
-            c.program = functions[p].instructions ;
+            c.program = & (functions[p].instructions );
             c.locals = cleanLocalTables[p];
             c.type = functions[p].type;
             if (b_nextCallInto)
                 c.runMode = CRM_OneStep;
-            else if (stack_contexts[stack_contexts.size()-1].type==EL_BELOWMAIN && c.type==EL_MAIN)
-                c.runMode = stack_contexts[stack_contexts.size()-1].runMode;
+            else if (stack_contexts.top().type==EL_BELOWMAIN && c.type==EL_MAIN)
+                c.runMode = stack_contexts.top().runMode;
             else
                 c.runMode = CRM_ToEnd;
             c.moduleId = functions[p].module;
@@ -665,10 +670,10 @@ void VM::do_init(quint8 s, quint16 id)
 {
     QMutexLocker l(m_dontTouchMe);
     if (VariableScope(s)==LOCAL) {
-        stack_contexts[stack_contexts.size()-1].locals[id].init();
+        stack_contexts.top().locals[id].init();
     }
     else if (VariableScope(s)==GLOBAL) {
-        globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].init();
+        globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].init();
     }
     else {
         s_error = tr("Internal error: don't know what is 'init %1 %2'").arg(s).arg(id);
@@ -682,10 +687,10 @@ void VM::do_setarr(quint8 s, quint16 id)
     int dim = 0;
     QList<int> bounds;
     if (VariableScope(s)==LOCAL) {
-        dim = stack_contexts[stack_contexts.size()-1].locals[id].dimension();
+        dim = stack_contexts.top().locals[id].dimension();
     }
     else if (VariableScope(s)==GLOBAL) {
-        dim = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].dimension();
+        dim = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].dimension();
     }
     else {
         s_error = tr("Internal error: don't know what is 'init %1 %2'").arg(s).arg(id);
@@ -696,22 +701,22 @@ void VM::do_setarr(quint8 s, quint16 id)
             bounds << stack_values.pop().toInt();
         }
         if (VariableScope(s)==LOCAL) {
-            stack_contexts[stack_contexts.size()-1].locals[id].setBounds(bounds);
-            name = stack_contexts[stack_contexts.size()-1].locals[id].name();
+            stack_contexts.top().locals[id].setBounds(bounds);
+            name = stack_contexts.top().locals[id].name();
         }
         else if (VariableScope(s)==GLOBAL) {
-            globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].setBounds(bounds);
-            name = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].name();
+            globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].setBounds(bounds);
+            name = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].name();
         }
         s_error = Variant::error;
         if (!b_blindMode && s_error.isEmpty()) {
 
         }
-        const int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
+        const int lineNo = stack_contexts.top().lineNo;
         if (lineNo!=-1 &&
-                (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN) &&
+                (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN) &&
                 !b_blindMode &&
-                stack_contexts[stack_contexts.size()-1].type != EL_BELOWMAIN
+                stack_contexts.top().type != EL_BELOWMAIN
                 )
         {
             QString boundsText;
@@ -735,36 +740,36 @@ void VM::do_store(quint8 s, quint16 id)
     const Variant val = stack_values.top();
     QString name;
     QString svalue;
-    const int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
+    const int lineNo = stack_contexts.top().lineNo;
     ValueType t = VT_void;
     Variant * reference = 0;
     if (VariableScope(s)==LOCAL) {
-//        stack_contexts[stack_contexts.size()-1].locals[id].setBaseType(val.baseType());
-        if (stack_contexts[stack_contexts.size()-1].locals[id].isReference())
-            reference = stack_contexts[stack_contexts.size()-1].locals[id].reference();
-        stack_contexts[stack_contexts.size()-1].locals[id].setBounds(val.bounds());
-        stack_contexts[stack_contexts.size()-1].locals[id].setValue(val.value());
-        name = stack_contexts[stack_contexts.size()-1].locals[id].myName();
-        svalue = stack_contexts[stack_contexts.size()-1].locals[id].toString();
-        t = stack_contexts[stack_contexts.size()-1].locals[id].baseType();
+//        stack_contexts.top().locals[id].setBaseType(val.baseType());
+        if (stack_contexts.top().locals[id].isReference())
+            reference = stack_contexts.top().locals[id].reference();
+        stack_contexts.top().locals[id].setBounds(val.bounds());
+        stack_contexts.top().locals[id].setValue(val.value());
+        name = stack_contexts.top().locals[id].myName();
+        svalue = stack_contexts.top().locals[id].toString();
+        t = stack_contexts.top().locals[id].baseType();
     }
     else if (VariableScope(s)==GLOBAL) {
 //        globals[id].setBaseType(val.baseType());
-        if (globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].isReference())
-            reference = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].reference();
-        globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].setBounds(val.bounds());
-        globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].setValue(val.value());
-        name = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].myName();
-        svalue = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].toString();
-        t = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].baseType();
+        if (globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].isReference())
+            reference = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].reference();
+        globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].setBounds(val.bounds());
+        globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].setValue(val.value());
+        name = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].myName();
+        svalue = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].toString();
+        t = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].baseType();
     }
     else {
         s_error = tr("Internal error: don't know what is 'store %1 %2'").arg(s).arg(id);
     }
     if (lineNo!=-1 &&
-            (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+            (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN)
             && !b_blindMode &&
-            stack_contexts[stack_contexts.size()-1].type != EL_BELOWMAIN &&
+            stack_contexts.top().type != EL_BELOWMAIN &&
             val.dimension()==0
             )
     {
@@ -790,14 +795,14 @@ void VM::do_load(quint8 s, quint16 id)
     QMutexLocker l(m_dontTouchMe);
     Variant val;
     if (VariableScope(s)==LOCAL) {
-        val.setBaseType(stack_contexts[stack_contexts.size()-1].locals[id].baseType());
-        val.setBounds(stack_contexts[stack_contexts.size()-1].locals[id].bounds());
-        val.setValue(stack_contexts[stack_contexts.size()-1].locals[id].value());
+        val.setBaseType(stack_contexts.top().locals[id].baseType());
+        val.setBounds(stack_contexts.top().locals[id].bounds());
+        val.setValue(stack_contexts.top().locals[id].value());
     }
     else if (VariableScope(s)==GLOBAL) {
-        val.setBaseType(globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].baseType());
-        val.setBounds(globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].bounds());
-        val.setValue(globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].value());
+        val.setBaseType(globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].baseType());
+        val.setBounds(globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].bounds());
+        val.setValue(globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].value());
     }
     else if (VariableScope(s)==CONST) {
         val.setBaseType(constants[id].baseType());
@@ -811,7 +816,7 @@ void VM::do_load(quint8 s, quint16 id)
         s_error = Variant::error;
     stack_values.push(val);
     if (val.dimension()==0)
-        stack_contexts.last().registers[0] = val.value();
+        stack_contexts.top().registers[0] = val.value();
     nextIP();
 }
 
@@ -821,15 +826,15 @@ void VM::do_storearr(quint8 s, quint16 id)
     int dim = 0;
     QString name;
     QString svalue;
-    const int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
+    const int lineNo = stack_contexts.top().lineNo;
     QString sindeces;
     if (VariableScope(s)==LOCAL) {
-        dim = stack_contexts[stack_contexts.size()-1].locals[id].dimension();
-        name = stack_contexts[stack_contexts.size()-1].locals[id].name();
+        dim = stack_contexts.top().locals[id].dimension();
+        name = stack_contexts.top().locals[id].name();
     }
     else if (VariableScope(s)==GLOBAL) {
-        dim = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].dimension();
-        name = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].name();
+        dim = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].dimension();
+        name = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].name();
     }
     else {
         s_error = tr("Internal error: don't know what is 'storearr %1 %2'").arg(s).arg(id);
@@ -846,14 +851,14 @@ void VM::do_storearr(quint8 s, quint16 id)
         ValueType t = VT_void;
         svalue = val.toString();
         if (VariableScope(s)==LOCAL) {
-            stack_contexts[stack_contexts.size()-1].locals[id].setValue(indeces, val.value());
-            t = stack_contexts[stack_contexts.size()-1].locals[id].baseType();
-            svalue = stack_contexts[stack_contexts.size()-1].locals[id].toString(indeces);
+            stack_contexts.top().locals[id].setValue(indeces, val.value());
+            t = stack_contexts.top().locals[id].baseType();
+            svalue = stack_contexts.top().locals[id].toString(indeces);
         }
         else if (VariableScope(s)==GLOBAL) {
-            globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].setValue(indeces, val.value());
-            t = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].baseType();
-            svalue = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].toString(indeces);
+            globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].setValue(indeces, val.value());
+            t = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].baseType();
+            svalue = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].toString(indeces);
         }
         if (t==VT_string)
             svalue = "\""+svalue+"\"";
@@ -863,7 +868,7 @@ void VM::do_storearr(quint8 s, quint16 id)
             s_error = Variant::error;
     }
     if (lineNo!=-1 &&
-            (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+            (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN)
             && !b_blindMode
             )
         emit valueChangeNotice(lineNo, name+"["+sindeces+"]="+svalue);
@@ -876,12 +881,12 @@ void VM::do_loadarr(quint8 s, quint16 id)
     int dim = 0;
     ValueType vt = VT_void;
     if (VariableScope(s)==LOCAL) {
-        dim = stack_contexts[stack_contexts.size()-1].locals[id].dimension();
-        vt = stack_contexts[stack_contexts.size()-1].locals[id].baseType();
+        dim = stack_contexts.top().locals[id].dimension();
+        vt = stack_contexts.top().locals[id].baseType();
     }
     else if (VariableScope(s)==GLOBAL) {
-        dim = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].dimension();
-        vt = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].baseType();
+        dim = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].dimension();
+        vt = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].baseType();
     }
     else if (VariableScope(s)==CONST) {
         dim = constants[id].dimension();
@@ -897,12 +902,12 @@ void VM::do_loadarr(quint8 s, quint16 id)
         }
         Variant val;
         if (VariableScope(s)==LOCAL) {
-            val.setBaseType(stack_contexts[stack_contexts.size()-1].locals[id].baseType());
-            val.setValue(stack_contexts[stack_contexts.size()-1].locals[id].value(indeces));
+            val.setBaseType(stack_contexts.top().locals[id].baseType());
+            val.setValue(stack_contexts.top().locals[id].value(indeces));
         }
         else if (VariableScope(s)==GLOBAL) {
-            val.setBaseType(globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].baseType());
-            val.setValue(globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].value(indeces));
+            val.setBaseType(globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].baseType());
+            val.setValue(globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].value(indeces));
         }
         else if (VariableScope(s)==CONST) {
             val.setBaseType(constants[id].baseType());
@@ -918,10 +923,10 @@ void VM::do_ref(quint8 s, quint16 id)
     QMutexLocker l(m_dontTouchMe);
     Variant ref;
     if (VariableScope(s)==LOCAL) {
-        ref = stack_contexts[stack_contexts.size()-1].locals[id].toReference();
+        ref = stack_contexts.top().locals[id].toReference();
     }
     else if (VariableScope(s)==GLOBAL) {
-        ref = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].toReference();
+        ref = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].toReference();
     }
     else {
         s_error = tr("Internal error: don't know what is 'ref %1 %2'").arg(s).arg(id);
@@ -941,21 +946,21 @@ void VM::do_setref(quint8 s, quint16 id)
         s_error = tr("Internal error: trying to setref not a reference: 'setref %1 %2'").arg(s).arg(id);
     }
     else if (VariableScope(s)==LOCAL) {
-        name = stack_contexts[stack_contexts.size()-1].locals[id].name();
-        stack_contexts[stack_contexts.size()-1].locals[id].setReference(ref.reference());
+        name = stack_contexts.top().locals[id].name();
+        stack_contexts.top().locals[id].setReference(ref.reference());
     }
     else if (VariableScope(s)==GLOBAL) {
-        name = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].name();
-        globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].setReference(ref.reference());
+        name = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].name();
+        globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].setReference(ref.reference());
     }
     else {
         s_error = tr("Internal error: trying to setref to constant: 'setref %1 %2'").arg(s).arg(id);
     }
-    const int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
+    const int lineNo = stack_contexts.top().lineNo;
     if (lineNo!=-1 &&
-            (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+            (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN)
             && !b_blindMode &&
-            stack_contexts[stack_contexts.size()-1].type != EL_BELOWMAIN
+            stack_contexts.top().type != EL_BELOWMAIN
             )
     {
         const QString qn = ref.algorhitmName().isEmpty()
@@ -972,10 +977,10 @@ void VM::do_refarr(quint8 s, quint16 id)
     QMutexLocker l(m_dontTouchMe);
     int dim = 0;
     if (VariableScope(s)==LOCAL) {
-        dim = stack_contexts[stack_contexts.size()-1].locals[id].dimension();
+        dim = stack_contexts.top().locals[id].dimension();
     }
     else if (VariableScope(s)==GLOBAL) {
-        dim = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].dimension();
+        dim = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].dimension();
     }
     else if (VariableScope(s)==CONST) {
         dim = constants[id].dimension();
@@ -990,10 +995,10 @@ void VM::do_refarr(quint8 s, quint16 id)
         }
         Variant ref;
         if (VariableScope(s)==LOCAL) {
-            ref = stack_contexts[stack_contexts.size()-1].locals[id].toReference(indeces);
+            ref = stack_contexts.top().locals[id].toReference(indeces);
         }
         else if (VariableScope(s)==GLOBAL) {
-            ref = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].toReference(indeces);
+            ref = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].toReference(indeces);
         }
         else if (VariableScope(s)==CONST) {
             s_error = tr("Internal error: don't know what is 'ref %1 %2'").arg(s).arg(id);
@@ -1005,14 +1010,14 @@ void VM::do_refarr(quint8 s, quint16 id)
 
 void VM::do_jump(quint16 ip)
 {
-    stack_contexts[stack_contexts.size()-1].IP = ip;
+    stack_contexts.top().IP = ip;
 }
 
 void VM::do_jnz(quint8 r, quint16 ip)
 {
-    bool v = stack_contexts[stack_contexts.size()-1].registers[r].toBool();
+    bool v = stack_contexts.top().registers[r].toBool();
     if (v) {
-        stack_contexts[stack_contexts.size()-1].IP = ip;
+        stack_contexts.top().IP = ip;
     }
     else {
         nextIP();
@@ -1022,32 +1027,32 @@ void VM::do_jnz(quint8 r, quint16 ip)
 
 void VM::do_jz(quint8 r, quint16 ip)
 {
-    bool v = stack_contexts[stack_contexts.size()-1].registers[r].toBool();
+    bool v = stack_contexts.top().registers[r].toBool();
     if (v) {
         nextIP();
     }
     else {
-        stack_contexts[stack_contexts.size()-1].IP = ip;
+        stack_contexts.top().IP = ip;
     }
 }
 
 void VM::do_push(quint8 r)
 {
-    QVariant v = stack_contexts[stack_contexts.size()-1].registers[r];
+    QVariant v = stack_contexts.top().registers[r];
     if (v.type()==QVariant::Int) {
-        stack_values << Variant(v.toInt());
+        stack_values.push(Variant(v.toInt()));
     }
     else if (v.type()==QVariant::Double) {
-        stack_values << Variant(v.toDouble());
+        stack_values.push(Variant(v.toDouble()));
     }
     else if (v.type()==QVariant::Bool) {
-        stack_values << Variant(v.toBool());
+        stack_values.push(Variant(v.toBool()));
     }
     else if (v.type()==QVariant::Char) {
-        stack_values << Variant(v.toChar());
+        stack_values.push(Variant(v.toChar()));
     }
     else if (v.type()==QVariant::String) {
-        stack_values << Variant(v.toString());
+        stack_values.push(Variant(v.toString()));
     }
     nextIP();
 }
@@ -1056,32 +1061,32 @@ void VM::do_pop(quint8 r)
 {
     Variant v = stack_values.pop();
     if (v.baseType()==VT_int) {
-        stack_contexts[stack_contexts.size()-1].registers[r] = v.toInt();
+        stack_contexts.top().registers[r] = v.toInt();
     }
     else if (v.baseType()==VT_float) {
-        stack_contexts[stack_contexts.size()-1].registers[r] = v.toReal();
+        stack_contexts.top().registers[r] = v.toReal();
     }
     else if (v.baseType()==VT_bool) {
-        stack_contexts[stack_contexts.size()-1].registers[r] = v.toBool();
+        stack_contexts.top().registers[r] = v.toBool();
     }
     else if (v.baseType()==VT_char) {
-        stack_contexts[stack_contexts.size()-1].registers[r] = v.toChar();
+        stack_contexts.top().registers[r] = v.toChar();
     }
     else if (v.baseType()==VT_string) {
-        stack_contexts[stack_contexts.size()-1].registers[r] = v.toString();
+        stack_contexts.top().registers[r] = v.toString();
     }
     nextIP();
 }
 
 void VM::do_showreg(quint8 regNo) {
     if (!b_blindMode) {
-        const int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
+        const int lineNo = stack_contexts.top().lineNo;
         if (lineNo!=-1 &&
-                (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+                (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN)
                 && !b_blindMode
                 )
         {
-            QVariant val = stack_contexts[stack_contexts.size()-1].registers[regNo];
+            QVariant val = stack_contexts.top().registers[regNo];
             if (val.type()==QVariant::Bool) {
                 emit valueChangeNotice(lineNo, val.toBool()? tr("true") : tr("false"));
             }
@@ -1095,9 +1100,9 @@ void VM::do_showreg(quint8 regNo) {
 
 void VM::do_clearmarg(quint16 toLine)
 {
-    const int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
+    const int lineNo = stack_contexts.top().lineNo;
     if (lineNo!=-1 &&
-            (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+            (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN)
             )
     {
         emit clearMargin(lineNo, toLine);
@@ -1107,13 +1112,13 @@ void VM::do_clearmarg(quint16 toLine)
 
 void VM::do_ret()
 {
-    if (stack_contexts.last().runMode==CRM_UntilReturn) {
-        emit retInstruction(stack_contexts.last().lineNo);
-        stack_contexts[stack_contexts.size()-1].runMode=CRM_ToEnd;
+    if (stack_contexts.top().runMode==CRM_UntilReturn) {
+        emit retInstruction(stack_contexts.top().lineNo);
+        stack_contexts.top().runMode=CRM_ToEnd;
     }
     else {
         last_context = stack_contexts.pop();
-        if (!stack_contexts.isEmpty()) {
+        if (stack_contexts.size()>0) {
             nextIP();
         }
     }
@@ -1122,10 +1127,10 @@ void VM::do_ret()
 void VM::do_error(quint8 s, quint16 id)
 {
     if (VariableScope(s)==LOCAL) {
-        s_error = stack_contexts[stack_contexts.size()-1].locals[id].toString();
+        s_error = stack_contexts.top().locals[id].toString();
     }
     else if (VariableScope(s)==GLOBAL) {
-        s_error = globals[QPair<quint8,quint16>(stack_contexts.last().moduleId,id)].toString();
+        s_error = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].toString();
     }
     else if (VariableScope(s)==CONST) {
         s_error = constants[id].toString();
@@ -1134,11 +1139,11 @@ void VM::do_error(quint8 s, quint16 id)
 
 void VM::do_line(quint16 no)
 {
-    if (!b_blindMode && stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep) {
-        if (stack_contexts[stack_contexts.size()-1].lineNo!=no)
+    if (!b_blindMode && stack_contexts.top().runMode==CRM_OneStep) {
+        if (stack_contexts.top().lineNo!=no)
             emit lineNoChanged(no);
     }
-    stack_contexts[stack_contexts.size()-1].lineNo = no;
+    stack_contexts.top().lineNo = no;
     nextIP();
 //    qDebug() << "LINE " << no;
 //    qDebug() << stack_values.size();
@@ -1268,7 +1273,7 @@ void VM::do_neg()
     if (a.baseType()==VT_bool) {
         Variant r(!a.toBool());
         stack_values.push(r);
-        stack_contexts.last().registers[0] = QVariant(!a.toBool());
+        stack_contexts.top().registers[0] = QVariant(!a.toBool());
     }
     else if (a.baseType()==VT_int) {
         Variant r(-a.toInt());
@@ -1327,7 +1332,7 @@ void VM::do_eq()
 
     Variant r(result);
     stack_values.push(r);
-    stack_contexts.last().registers[0] = QVariant(result);
+    stack_contexts.top().registers[0] = QVariant(result);
     nextIP();
 }
 
@@ -1354,7 +1359,7 @@ void VM::do_neq()
     }
     Variant r(!result);
     stack_values.push(r);
-    stack_contexts.last().registers[0] = QVariant(result);
+    stack_contexts.top().registers[0] = QVariant(result);
     nextIP();
 }
 
@@ -1381,7 +1386,7 @@ void VM::do_ls()
     }
     Variant r(result);
     stack_values.push(r);
-    stack_contexts.last().registers[0] = QVariant(result);
+    stack_contexts.top().registers[0] = QVariant(result);
     nextIP();
 }
 
@@ -1408,7 +1413,7 @@ void VM::do_gt()
     }
     Variant r(result);
     stack_values.push(r);
-    stack_contexts.last().registers[0] = QVariant(result);
+    stack_contexts.top().registers[0] = QVariant(result);
     nextIP();
 }
 
@@ -1435,7 +1440,7 @@ void VM::do_leq()
     }
     Variant r(result);
     stack_values.push(r);
-    stack_contexts.last().registers[0] = QVariant(result);
+    stack_contexts.top().registers[0] = QVariant(result);
     nextIP();
 }
 
@@ -1462,16 +1467,16 @@ void VM::do_geq()
     }
     Variant r(result);
     stack_values.push(r);
-    stack_contexts.last().registers[0] = QVariant(result);
+    stack_contexts.top().registers[0] = QVariant(result);
     nextIP();
 }
 
 ElemType VM::topStackType() const
 {
-    if (stack_contexts.isEmpty())
+    if (stack_contexts.size()==0)
         return EL_NONE;
     else
-        return stack_contexts[stack_contexts.size()-1].type;
+        return stack_contexts.top().type;
 }
 
 
@@ -1527,9 +1532,9 @@ void VM::setResults(
         indecesStart += inds.size();
     }
     s_error = Variant::error;
-    int lineNo = stack_contexts[stack_contexts.size()-1].lineNo;
+    int lineNo = stack_contexts.top().lineNo;
     if (lineNo!=-1 &&
-            (stack_contexts[stack_contexts.size()-1].runMode==CRM_OneStep || stack_contexts[stack_contexts.size()-1].type==EL_MAIN)
+            (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN)
             && !b_blindMode
             )
         emit valueChangeNotice(lineNo, marginText.join(", "));
@@ -1538,7 +1543,7 @@ void VM::setResults(
 int VM::contextByIds(int moduleId, int algorhitmId) const
 {
     for (int i=stack_contexts.size()-1; i>=0; i--) {
-        if (stack_contexts[i].algId==algorhitmId && stack_contexts[i].moduleId==moduleId)
+        if (stack_contexts.at(i).algId==algorhitmId && stack_contexts.at(i).moduleId==moduleId)
             return i;
     }
     if (last_context.algId==algorhitmId && last_context.moduleId==moduleId)
@@ -1593,8 +1598,8 @@ QList<int> VM::bounds(int moduleId, int algorhitmId, int variableId) const
         int context = contextByIds(moduleId, algorhitmId);
 
         if (context>-1) {
-            if (variableId<stack_contexts[context].locals.size()) {
-                result = stack_contexts[context].locals[variableId].bounds();
+            if (variableId<stack_contexts.at(context).locals.size()) {
+                result = stack_contexts.at(context).locals[variableId].bounds();
             }
         }
         else if (context==-2) {
@@ -1619,8 +1624,8 @@ QVariantList VM::remainingValues() const
 {
     QVariantList result;
     for (int i=0; i<stack_values.size(); i++) {
-        if (stack_values[i].hasValue())
-            result << stack_values[i].value();
+        if (stack_values.at(i).hasValue())
+            result << stack_values.at(i).value();
         else
             result << QVariant::Invalid;
     }

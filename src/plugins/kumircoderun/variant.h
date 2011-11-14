@@ -3,37 +3,60 @@
 
 #include <QtCore>
 #include "dataformats/bc_tableelem.h"
+#include <wchar.h>
+#include <string>
 
 using namespace Bytecode;
 
 namespace KumirCodeRun {
 
+
 class Variant
 {
 public:
-    inline explicit Variant()
-        { m_value = QVariant::Invalid; i_dimension = 0; e_baseType = VT_void; m_reference = 0; }
-    inline explicit Variant(int v)
-        { m_value = v; i_dimension = 0; e_baseType = VT_int; m_reference = 0; }
-    inline explicit Variant(double v)
-        { m_value = v; i_dimension = 0; e_baseType = VT_float; m_reference = 0; }
-    inline explicit Variant(const QChar & v)
-        { m_value = v; i_dimension = 0; e_baseType = VT_char; m_reference = 0; }
-    inline explicit Variant(const QString & v)
-        { m_value = v; i_dimension = 0; e_baseType = VT_string; m_reference = 0; }
-    inline explicit Variant(bool v)
-        { m_value = v; i_dimension = 0; e_baseType = VT_bool; m_reference = 0; }
-    inline explicit Variant(Variant * ref)
-        { m_value = QVariant::Invalid; i_dimension = 0; e_baseType = VT_void; m_reference = ref; }
+    inline explicit Variant() { create(); }
+
+    inline void create()
+    {
+        l_referenceIndeces[3] = 0;
+        l_bounds[6] = 0;
+        m_value = QVariant::Invalid;
+        i_dimension = 0;
+        e_baseType = VT_void;
+        m_reference = 0;
+    }
+
+    inline explicit Variant(int v) { create() ; e_baseType = VT_int; m_value = v; }
+    inline explicit Variant(double v) { create(); e_baseType = VT_float; m_value = v; }
+    inline explicit Variant(const QChar & v) { create(); e_baseType = VT_char; m_value = v; }
+    inline explicit Variant(const QString & v) { create(); e_baseType = VT_string; m_value = v; }
+    inline explicit Variant(bool v) { create(); e_baseType = VT_bool; m_value = v; }
+    inline explicit Variant(Variant * ref) { create(); m_reference = ref; }
 
     void init();
     inline quint8 dimension() const { return i_dimension; }
     inline void setDimension(quint8 v) { i_dimension = v; }
-    inline void setName(const QString & n) { s_name = n; }
-    inline QString name() const { if(m_reference) return m_reference->name(); else return s_name; }
-    inline QString myName() const { return s_name; }
-    inline void setAlgorhitmName(const QString & n) { s_algorhitmName = n; }
-    inline QString algorhitmName() const { if(m_reference) return m_reference->algorhitmName(); else return s_algorhitmName; }
+    inline void setName(const QString & n) {
+        s_name = n.toStdWString();
+    }
+    inline QString name() const {
+        if(m_reference)
+            return m_reference->name();
+        else
+            return QString::fromStdWString(s_name);
+    }
+    inline QString myName() const {
+        return QString::fromStdWString(s_name);
+    }
+    inline void setAlgorhitmName(const QString & n) {
+        s_algorhitmName = n.toStdWString();
+    }
+    inline QString algorhitmName() const {
+        if(m_reference)
+            return m_reference->algorhitmName();
+        else
+            return QString::fromStdWString(s_algorhitmName);
+    }
 
     void setBounds(const QList<int> & bounds);
     QList<int> bounds() const;
@@ -55,8 +78,19 @@ public:
     inline void setReference(Variant * r) { m_reference = r; }
     inline Variant * reference() { return m_reference; }
 
-    inline void setReferenceIndeces(const QList<int> &v) { l_referenceIndeces = v; }
-    inline QList<int> referenceIndeces() const { return l_referenceIndeces; }
+    inline void setReferenceIndeces(const QList<int> &v) {
+        for (int i=0; i<v.size(); i++) {
+            l_referenceIndeces[i] = v[i];
+        }
+        l_referenceIndeces[3] = v.size();
+    }
+    inline QList<int> referenceIndeces() const {
+        QList<int> result;
+        for (int i=0; i<l_referenceIndeces[3]; i++) {
+            result << l_referenceIndeces[i];
+        }
+        return result;
+    }
 
     inline int toInt() const { return value().toInt(); }
     inline double toReal() const { return value().toDouble(); }
@@ -82,12 +116,12 @@ private:
     int linearIndex(int a, int b, int c) const;
     QVariant m_value;
     quint8 i_dimension;
-    QList< QPair<int,int> > l_bounds;
+    int l_bounds[7];
     ValueType e_baseType;
     Variant * m_reference;
-    QList<int> l_referenceIndeces;
-    QString s_name;
-    QString s_algorhitmName;
+    int l_referenceIndeces[4];
+    std::wstring s_name;
+    std::wstring s_algorhitmName;
 };
 
 typedef QList<Variant> VariantList;
