@@ -895,6 +895,7 @@ void VM::do_loadarr(quint8 s, quint16 id)
     else {
         s_error = tr("Internal error: don't know what is 'loadarr %1 %2'").arg(s).arg(id);
     }
+
     if (dim>0 || vt==VT_string) {
         QList<int> indeces;
         for (int i=0; i<dim; i++) {
@@ -915,6 +916,8 @@ void VM::do_loadarr(quint8 s, quint16 id)
         }
         stack_values.push(val);
     }
+    if (!Variant::error.isEmpty())
+        s_error = Variant::error;
     nextIP();
 }
 
