@@ -7,6 +7,7 @@ Run::Run(QObject *parent) :
 {
     programLoaded = false;
     vm = new VM(this);
+
     i_originFunctionDeep = 0;
     b_interactDone = b_stopping = b_stepDone = b_algDone = false;
     mutex_stopping = new QMutex;
@@ -27,8 +28,11 @@ Run::Run(QObject *parent) :
             this, SLOT(handleOutputArgumentRequest(QVariant,QString,QList<int>)),
             Qt::DirectConnection);
     connect(vm, SIGNAL(outputRequest(QString)), this, SLOT(handleOutputRequest(QString)));
-    connect(vm, SIGNAL(invokeExternalFunction(QString,QString,QVariantList,QList<quintptr>,QList<int>)),
-            this, SLOT(handleExternalRequest(QString,QString,QVariantList,QList<quintptr>,QList<int>)),
+//    connect(vm, SIGNAL(invokeExternalFunction(QString,QString,QVariantList,QList<quintptr>,QList<int>)),
+//            this, SLOT(handleExternalRequest(QString,QString,QVariantList,QList<quintptr>,QList<int>)),
+//            Qt::DirectConnection);
+    connect(vm, SIGNAL(invokeExternalFunction(QList<quintptr>)),
+            this, SLOT(handleExternalRequest(QList<quintptr>)),
             Qt::DirectConnection);
     connect(vm, SIGNAL(resetModuleRequest(QString)), this, SIGNAL(resetModule(QString)));
 
@@ -319,6 +323,34 @@ void Run::handleExternalRequest(const QString &pluginName,
     Q_ASSERT(result.size()==references.size());
     vm->pushValueToStack(v_funcResult);
     vm->setResults(s_funcError, references, indeces, list_funcResults);
+}
+
+void Run::handleExternalRequest(const QList<quintptr> &references)
+{
+    bool done = false;
+    forever {
+        mutex_interactDone->lock();
+        done = b_interactDone;
+        mutex_interactDone->unlock();
+        if (!done) {
+            msleep(1);
+        }
+        else {
+            break;
+        }
+        if (mustStop())
+            break;
+    }
+    if (mustStop())
+        return;
+    Q_ASSERT(list_funcResults.size()==references.size());
+    if (v_funcResult.isValid())
+        vm->pushValueToStack(v_funcResult);
+    v_funcResult = QVariant::Invalid;
+    vm->setResults(s_funcError, references, QList<int>(), list_funcResults);
+    list_funcResults.clear();
+    b_interactDone = false;
+    s_funcError.clear();
 }
 
 void Run::finishInput(const QVariantList &data)

@@ -221,6 +221,17 @@ QString Plugin::initialize(const QStringList &)
     qRegisterMetaType<VariantList>("KumirCodeRun::VariantList");
     qRegisterMetaType<Shared::RunInterface::StopReason>("Shared::RunInterface::StopReason");
 
+    const QList<KPlugin*> plugins = loadedPlugins();
+    QList<ActorInterface*> availableActors;
+    foreach (KPlugin * plugin , plugins) {
+        ActorInterface * a = qobject_cast<ActorInterface*>(plugin);
+        if (a) {
+            availableActors << a;
+        }
+    }
+
+    d->vm->setAvailableActors(availableActors);
+
     if (ExtensionSystem::PluginManager::instance()->startupModule()==this) {
 #ifndef Q_OS_WIN32
         setlocale(LC_CTYPE, "ru_RU.UTF-8");

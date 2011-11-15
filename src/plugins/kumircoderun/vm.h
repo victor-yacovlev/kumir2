@@ -7,8 +7,11 @@
 #include "faststack.h"
 #include "dataformats/bc_tableelem.h"
 #include "dataformats/bytecode.h"
+#include "shared/interfaces/actorinterface.h"
 
 namespace KumirCodeRun {
+
+using namespace Shared;
 
 class VM : public QObject
 {
@@ -18,6 +21,7 @@ public:
     enum RunEntryPoint { EP_Main, EP_Testing };
     explicit VM(QObject *parent = 0);
     void reset();
+    void setAvailableActors(const QList<ActorInterface*> & actors);
     ElemType topStackType() const;
     void evaluateNextInstruction();
     QStringList usedActors() const;
@@ -63,6 +67,7 @@ signals:
                                 const QList<quintptr> & references,
                                 const QList<int> & indeces
                                 );
+    void invokeExternalFunction(const QList<quintptr> & references);
     void valueChangeNotice(int lineNo, const QString & text);
     void inputArgumentRequest(int localId,
                               const QString & varName,
@@ -80,7 +85,10 @@ private:
     Context last_context;
     QMap< QPair<quint8,quint16>, Variant> globals;
     QMap<quint16, Variant> constants;
+
     QMap< quint32, Bytecode::TableElem > externs;
+    QMap< quint32, QPair<ActorInterface*,quint32> > externalMethods;
+
     QMap< quint32, Bytecode::TableElem > functions;
     Bytecode::TableElem mainProgram;
     Bytecode::TableElem testingProgram;
@@ -93,6 +101,10 @@ private:
 
     inline void nextIP() { stack_contexts.top().IP ++; }
 
+    QMap< QPair<QString,QString>, QPair<ActorInterface*,quint32> > availableExternalMethods;
+
+
+    void call_externalMethod(ActorInterface * actor, quint32 method);
 
 
     void do_call(quint8, quint16);

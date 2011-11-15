@@ -39,7 +39,8 @@ void Generator::generateExternTable()
         e.type = Bytecode::EL_EXTERN;
         e.module = ext.first;
         e.algId = e.id = ext.second;
-        e.moduleName = m_ast->modules[ext.first]->header.cReference.nameSpace;
+//        e.moduleName = m_ast->modules[ext.first]->header.cReference.nameSpace;
+        e.moduleName = m_ast->modules[ext.first]->header.name;
         e.name = m_ast->modules[ext.first]->header.algorhitms[ext.second]->header.name;
         m_bc->d.prepend(e);
     }

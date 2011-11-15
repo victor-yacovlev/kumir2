@@ -3,6 +3,7 @@
 #include "stdlib/integeroverflowchecker.h"
 #include "stdlib/doubleoverflowchecker.h"
 #include "stdlib/genericinputoutput.h"
+#include "extensionsystem/kplugin.h"
 
 #define EPSILON 0.0000001
 #define MAX_RECURSION_SIZE 4000
@@ -19,6 +20,26 @@ VM::VM(QObject *parent) :
     m_dontTouchMe = new QMutex;
     stack_values.init(100, 100);
     stack_contexts.init(100, 100);
+}
+
+void VM::setAvailableActors(const QList<ActorInterface *> &actors)
+{
+    availableExternalMethods.clear();
+    foreach (ActorInterface * a, actors) {
+        QList<Alg> algorhitms = a->funcList();
+        const QString name = a->name();
+        foreach (Alg aa, algorhitms) {
+            const QString aName = aa.name;
+            const quint32 m = aa.id;
+            QPair<QString,QString> key;
+            key.first = name;
+            key.second = aName;
+            QPair<ActorInterface*,quint32> value;
+            value.first = a;
+            value.second = m;
+            availableExternalMethods.insert(key, value);
+        }
+    }
 }
 
 void VM::setNextCallInto()
@@ -154,6 +175,7 @@ Variant fromTableElem(const TableElem & e)
 void VM::loadProgram(const Data & program)
 {
     externs.clear();
+    externalMethods.clear();
     functions.clear();
     cleanLocalTables.clear();
     QMap< quint64, QList<Variant> > locals;
@@ -184,6 +206,11 @@ void VM::loadProgram(const Data & program)
             mod = mod << 16;
             key = mod | alg;
             externs[key] = e;
+            QPair<QString,QString> qualifedKey;
+            qualifedKey.first = e.moduleName;
+            qualifedKey.second = e.name;
+            Q_ASSERT(availableExternalMethods.contains(qualifedKey));
+            externalMethods.insert(key, availableExternalMethods.value(qualifedKey));
         }
         else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_BELOWMAIN || e.type==EL_TESTING) {
             quint32 key = 0x00000000;
@@ -616,24 +643,26 @@ void VM::do_call(quint8 mod, quint16 alg)
             emit outputArgumentRequest(value, varName, bounds);
         }
     }
-    else if (externs.contains(p)) {
+    else if (externalMethods.contains(p)) {
         m_dontTouchMe->lock();
-        QList<quintptr> references;
-        QVariantList arguments;
-        QList<int> indeces;
-        int argsCount = stack_values.pop().toInt();
-        for (int i=0; i<argsCount; i++) {
-            arguments << stack_values.pop().value();
-        }
-        int refsCount = stack_values.pop().toInt();
-        for (int i=0; i<refsCount; i++) {
-            references << quintptr(stack_values.pop().reference());
-        }
-        const TableElem exportElem = externs[p];
-        const QString pluginName = exportElem.moduleName;
-        const QString algName = exportElem.name;
+        QPair<ActorInterface*,quint32> methodValue = externalMethods[p];
+        call_externalMethod(methodValue.first, methodValue.second);
+//        QList<quintptr> references;
+//        QVariantList arguments;
+//        QList<int> indeces;
+//        int argsCount = stack_values.pop().toInt();
+//        for (int i=0; i<argsCount; i++) {
+//            arguments << stack_values.pop().value();
+//        }
+//        int refsCount = stack_values.pop().toInt();
+//        for (int i=0; i<refsCount; i++) {
+//            references << quintptr(stack_values.pop().reference());
+//        }
+//        const TableElem exportElem = externs[p];
+//        const QString pluginName = exportElem.moduleName;
+//        const QString algName = exportElem.name;
         m_dontTouchMe->unlock();
-        emit invokeExternalFunction(pluginName, algName, arguments, references, indeces);
+//        emit invokeExternalFunction(pluginName, algName, arguments, references, indeces);
 
     }
     else if (functions.contains(p)) {
@@ -664,6 +693,71 @@ void VM::do_call(quint8 mod, quint16 alg)
         s_error = tr("Internal error: don't know what is 'call %1 %2'").arg(mod).arg(alg);
     }
     nextIP();
+}
+
+
+void VM::call_externalMethod(ActorInterface *act, quint32 method)
+{
+    Q_CHECK_PTR(act);
+    int argsCount = stack_values.pop().toInt();
+    QVariant arg1, arg2, arg3, arg4, arg5;
+    EvaluationStatus status;
+    switch (argsCount) {
+    case 0:
+        status = act->evaluate(method);
+        break;
+    case 1:
+        arg1 = stack_values.pop().value();
+        status = act->evaluate(method, arg1);
+        break;
+    case 2:
+        arg1 = stack_values.pop().value();
+        arg2 = stack_values.pop().value();
+        status = act->evaluate(method, arg1, arg2);
+        break;
+    case 3:
+        arg1 = stack_values.pop().value();
+        arg2 = stack_values.pop().value();
+        arg3 = stack_values.pop().value();
+        status = act->evaluate(method, arg1, arg2, arg3);
+        break;
+    case 4:
+        arg1 = stack_values.pop().value();
+        arg2 = stack_values.pop().value();
+        arg3 = stack_values.pop().value();
+        arg4 = stack_values.pop().value();
+        status = act->evaluate(method, arg1, arg2, arg3, arg4);
+        break;
+    case 5:
+        arg1 = stack_values.pop().value();
+        arg2 = stack_values.pop().value();
+        arg3 = stack_values.pop().value();
+        arg4 = stack_values.pop().value();
+        arg5 = stack_values.pop().value();
+        status = act->evaluate(method, arg1, arg2, arg3, arg4, arg5);
+        break;
+    default:
+        break;
+    }
+    int refsCount = stack_values.pop().toInt();
+    QList<quintptr> references;
+    QList<int> indeces;
+    for (int i=0; i<refsCount; i++) {
+        references << quintptr(stack_values.pop().reference());
+    }
+    if (status==ES_Error) {
+        s_error = act->errorText();
+        return;
+    }
+    if (status==ES_StackResult || status==ES_StackRezResult) {
+        pushValueToStack(act->result());
+    }
+    if (status==ES_RezResult || status==ES_StackRezResult) {
+        setResults("", references, indeces, act->algOptResults());
+    }
+    if (status==ES_Async) {
+        emit invokeExternalFunction(references);
+    }
 }
 
 void VM::do_init(quint8 s, quint16 id)

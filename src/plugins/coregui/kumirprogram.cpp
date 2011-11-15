@@ -241,8 +241,9 @@ void KumirProgram::setBytecodeRun(KPlugin *run)
 void KumirProgram::addActor(KPlugin *a, QDockWidget *w)
 {
     connect(a, SIGNAL(sync()), this, SLOT(handleActorCommandFinished()));
-    m_actors[a->pluginSpec().name] = qobject_cast<ActorInterface*>(a);
-    m_actorWindows[a->pluginSpec().name] = w;
+    Shared::ActorInterface * aa = qobject_cast<Shared::ActorInterface*>(a);
+    m_actors[aa->name()] = qobject_cast<ActorInterface*>(a);
+    m_actorWindows[aa->name()] = w;
 }
 
 void KumirProgram::fastRun()

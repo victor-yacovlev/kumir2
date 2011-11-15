@@ -29,239 +29,384 @@ QList<Alg>  St_functPlugin::funcList() const
     cur_alg.kumirHeader=trUtf8("алг вещ abs(вещ x)");
     cur_alg.cHeader = "double abs__st_funct(double x)";
     cur_alg.pascalHeader = "function abs(x: real): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0101;
+    cur_alg.name = trUtf8("abs");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ arccos(вещ x)");
     cur_alg.cHeader = "double arccos__st_funct(double x)";
     cur_alg.pascalHeader = "function arccos(x: real): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0102;
+    cur_alg.name = trUtf8("arccos");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ arcctg(вещ x)");
     cur_alg.cHeader = "double arcctg__st_funct(double x)";
     cur_alg.pascalHeader = "function arcctg(x: real): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0103;
+    cur_alg.name = trUtf8("arcctg");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ arcsin(вещ x)");
     cur_alg.cHeader = "double arcsin__st_funct(double x)";
     cur_alg.pascalHeader = "function arcsin(x: real): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0104;
+    cur_alg.name = trUtf8("arcsin");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ arctg(вещ x)");
     cur_alg.cHeader = "double arctg__st_funct(double x)";
     cur_alg.pascalHeader = "function arctg(x: real): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0105;
+    cur_alg.name = trUtf8("arctg");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ cos(вещ x)");
     cur_alg.cHeader = "double cos__st_funct(double x)";
     cur_alg.pascalHeader = "function cos(x: real): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.name = trUtf8("cos");
+    cur_alg.id=0x0106;
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ ctg(вещ x)");
     cur_alg.cHeader = "double ctg__st_funct(double x)";
     cur_alg.pascalHeader = "function ctg(x: real): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.name = trUtf8("ctg");
+    cur_alg.id=0x0107;
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг delay(цел x)");
     cur_alg.cHeader = "void delay__st_funct(int x)";
     cur_alg.pascalHeader = "procedure delay(x: integer)";
-    cur_alg.id=tmpL.size();
+    cur_alg.name = trUtf8("delay");
+    cur_alg.id=0x0108;
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел div(цел x, цел y)");
     cur_alg.cHeader = "int div__st_funct(int x, int y)";
     cur_alg.pascalHeader = "function div(x, y: integer): integer";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0209;
+    cur_alg.name = trUtf8("div");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ exp(вещ x)");
     cur_alg.cHeader = "double exp__st_funct(double x)";
     cur_alg.pascalHeader = "function exp(x: real): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.name = trUtf8("exp");
+    cur_alg.id=0x010a;
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел iabs(цел x)");
     cur_alg.cHeader = "int iabs__st_funct(int x)";
     cur_alg.pascalHeader = "function iabs(x: integer): integer";
-    cur_alg.id=tmpL.size();
+    cur_alg.name = trUtf8("iabs");
+    cur_alg.id=0x010b;
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел imax(цел x, цел y)");
     cur_alg.cHeader = "int imax__st_funct(int x, int y)";
     cur_alg.pascalHeader = "function imax(x, y: integer): integer";
-    cur_alg.id=tmpL.size();
+    cur_alg.name = trUtf8("imax");
+    cur_alg.id=0x020c;
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел imin(цел x, цел y)");
     cur_alg.cHeader = "int imin__st_funct(int x, int y)";
     cur_alg.pascalHeader = "function imin(x, y: integer): integer";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x020d;
+    cur_alg.name = trUtf8("imin");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел int(вещ x)");
     cur_alg.cHeader = "int int__st_funct(double x)";
     cur_alg.pascalHeader = "function int(x: real): integer";
-    cur_alg.id=tmpL.size();
+    cur_alg.name = trUtf8("int");
+    cur_alg.id=0x010e;
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел irand(цел x, цел y)");
     cur_alg.cHeader = "int irand__st_funct(int x, int y)";
     cur_alg.pascalHeader = "function irand(x, y: integer): integer";
-    cur_alg.id=tmpL.size();
+    cur_alg.name = trUtf8("irand");
+    cur_alg.id=0x020f;
     tmpL.append(cur_alg);
 
-    cur_alg.kumirHeader=trUtf8("алг цел irnd(цел x, цел y)");
-    cur_alg.cHeader = "int irnd__st_funct(int x, int y)";
-    cur_alg.pascalHeader = "function irnd(x, y: integer): integer";
-    cur_alg.id=tmpL.size();
+    cur_alg.kumirHeader=trUtf8("алг цел irnd(цел x)");
+    cur_alg.cHeader = "int irnd__st_funct(int x)";
+    cur_alg.pascalHeader = "function irnd(x: integer): integer";
+    cur_alg.id=0x0110;
+    cur_alg.name = trUtf8("irnd");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ lg(вещ x)");
     cur_alg.cHeader = "double lg__st_funct(double x)";
     cur_alg.pascalHeader = "function lg(x: real): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.name = trUtf8("lg");
+    cur_alg.id=0x0111;
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ ln(вещ x)");
     cur_alg.cHeader = "double ln__st_funct(double x)";
     cur_alg.pascalHeader = "function ln(x: real): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.name = trUtf8("ln");
+    cur_alg.id=0x0112;
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ max(вещ x, вещ y)");
     cur_alg.cHeader = "double max__st_funct(double x, double y)";
     cur_alg.pascalHeader = "function max(x,y: real): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0213;
+    cur_alg.name = trUtf8("max");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ min(вещ x, вещ y)");
     cur_alg.cHeader = "double min__st_funct(double x, double y)";
     cur_alg.pascalHeader = "function min(x,y: real): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.name = trUtf8("min");
+    cur_alg.id=0x0214;
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел mod(цел x, цел y)");
     cur_alg.cHeader = "int mod__st_funct(int x, int y)";
     cur_alg.pascalHeader = "function mod(x,y: integer): integer";
-    cur_alg.id=tmpL.size();
+    cur_alg.name = trUtf8("mod");
+    cur_alg.id=0x0215;
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ rand(вещ x, вещ y)");
     cur_alg.cHeader = "double rand__st_funct(double x, double y)";
     cur_alg.pascalHeader = "function rand(x,y: real): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0216;
+    cur_alg.name = trUtf8("rand");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ rnd(вещ x)");
     cur_alg.cHeader = "double rnd__st_funct(double x)";
     cur_alg.pascalHeader = "function rnd(x: real): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0117;
+    cur_alg.name = trUtf8("rnd");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел sign(вещ x)");
     cur_alg.cHeader = "int sign__st_funct(double x)";
     cur_alg.pascalHeader = "function sign(x: real): integer";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0118;
+    cur_alg.name = trUtf8("sign");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ sin(вещ x)");
     cur_alg.cHeader = "double sin__st_funct(double x)";
     cur_alg.pascalHeader = "function sin(x: real): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0119;
+    cur_alg.name = trUtf8("sin");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ sqrt(вещ x)");
     cur_alg.cHeader = "double sqrt__st_funct(double x)";
     cur_alg.pascalHeader = "function sqrt(x: real): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x011a;
+    cur_alg.name = trUtf8("sqrt");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ tg(вещ x)");
     cur_alg.cHeader = "double tg__st_funct(double x)";
     cur_alg.pascalHeader = "function tg(x: real): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x011b;
+    cur_alg.name = trUtf8("tg");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ МАКСВЕЩ");
     cur_alg.cHeader = "double MAXREAL__st_funct()";
     cur_alg.pascalHeader = "function MAXREAL: real";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x001c;
+    cur_alg.name = trUtf8("МАКСВЕЩ");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел МАКСЦЕЛ");
     cur_alg.cHeader = "int MAXINT__st_funct()";
     cur_alg.pascalHeader = "function MAXREAL: integer";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x001d;
+    cur_alg.name = trUtf8("МАКСЦЕЛ");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг лит вещ_в_лит(вещ x)");
     cur_alg.cHeader = "wchar_t* real_to_string__st_funct(double x)";
     cur_alg.pascalHeader = "function real_to_string(double x): string";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x011e;
+    cur_alg.name = trUtf8("вещ_в_лит");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел время");
     cur_alg.cHeader = "int time__st_funct()";
     cur_alg.pascalHeader = "function time: integer";
-    cur_alg.id=tmpL.size();
+    cur_alg.name = trUtf8("время");
+    cur_alg.id=0x001f;
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел длин(лит s)");
     cur_alg.cHeader = "int length__st_funct(wchar_t* s)";
     cur_alg.pascalHeader = "function length(s: string): integer";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0120;
+    cur_alg.name = trUtf8("длин");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел код(сим ch)");
     cur_alg.cHeader = "int code__st_funct(wchar_t ch)";
     cur_alg.pascalHeader = "function code(ch: charect): integer";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0121;
+    cur_alg.name = trUtf8("код");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг вещ лит_в_вещ(лит s, рез лог success)");
     cur_alg.cHeader = "double string_to_real__st_funct(wchar_t* s, unsigned char *success)";
     cur_alg.pascalHeader = "function string_to_real(s: string; var success: boolean): real";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0122;
+    cur_alg.name = trUtf8("лит_в_вещ");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел лит_в_цел(лит s, рез лог success)");
     cur_alg.cHeader = "int string_to_int__st_funct(wchar_t * s, unsigned char *success)";
     cur_alg.pascalHeader = "function string_to_int(s: string; var success: boolean): integer";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0123;
+    cur_alg.name = trUtf8("лит_в_цел");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг сим символ(цел n)");
     cur_alg.cHeader = "wchar_t symbol__st_funct(int n)";
     cur_alg.pascalHeader = "function symbol(n: integer): char";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0124;
+    cur_alg.name = trUtf8("символ");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг сим символ2(цел n)");
     cur_alg.cHeader = "wchar_t symbol2__st_funct(int n)";
     cur_alg.pascalHeader = "function symbol2(n: integer): char";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0125;
+    cur_alg.name = trUtf8("символ2");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг лит цел_в_лит(цел n)");
     cur_alg.cHeader = "wchar_t * int_to_string__st_funct(int n)";
     cur_alg.pascalHeader = "function int_to_string(n: integer): string";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0126;
+    cur_alg.name = trUtf8("цел_в_лит");
     tmpL.append(cur_alg);
 
     cur_alg.kumirHeader=trUtf8("алг цел юникод(сим ch)");
     cur_alg.cHeader = "int unicode__st_funct(wchar_t ch)";
     cur_alg.pascalHeader = "function unicode(ch: char): integer";
-    cur_alg.id=tmpL.size();
+    cur_alg.id=0x0127;
+    cur_alg.name = trUtf8("юникод");
     tmpL.append(cur_alg);
 
     return tmpL;
 }
+
+EvaluationStatus St_functPlugin::evaluate(quint32 id)
+{
+    switch(id) {
+    case 0x001c:
+        return MaxReal();
+    case 0x001d:
+        return MaxInteger();
+    case 0x001f:
+        return Time();
+    default:
+        qFatal("Unknown method id: %x", id);
+        return ES_Error;
+    }
+}
+
+EvaluationStatus St_functPlugin::evaluate(quint32 id, const QVariant &x)
+{
+    switch(id) {
+    case 0x0101:
+        return Abs(x);
+    case 0x0102:
+        return ArcCos(x);
+    case 0x0103:
+        return ArcCtg(x);
+    case 0x0104:
+        return ArcSin(x);
+    case 0x0105:
+        return ArcTg(x);
+    case 0x0106:
+        return Cos(x);
+    case 0x0107:
+        return Ctg(x);
+    case 0x0108:
+        return Delay(x);
+    case 0x010a:
+        return Exp(x);
+    case 0x010b:
+        return Iabs(x);
+    case 0x010e:
+        return Int(x);
+    case 0x0110:
+        return Irnd(x);
+    case 0x0111:
+        return Lg(x);
+    case 0x0112:
+        return Ln(x);
+    case 0x0117:
+        return Rnd(x);
+    case 0x0118:
+        return Sign(x);
+    case 0x0119:
+        return Sin(x);
+    case 0x011a:
+        return Sqrt(x);
+    case 0x011b:
+        return Tg(x);
+    case 0x011e:
+        return StrOfReal(x);
+    case 0x0120:
+        return Length(x);
+    case 0x0121:
+        return Code(x);
+    case 0x0122:
+        return RealOfString(x);
+    case 0x0123:
+        return IntegerOfString(x);
+    case 0x0124:
+        return Code(x);
+    case 0x0125:
+        return UniSymbol(x);
+    case 0x0126:
+        return StrOfInteger(x);
+    case 0x0127:
+        return Unicode(x);
+    default:
+        qFatal("Unknown method id: %x", id);
+        return ES_Error;
+    }
+}
+
+EvaluationStatus St_functPlugin::evaluate(quint32 id, const QVariant & x, const QVariant & y)
+{
+    switch(id) {
+    case 0x0209:
+        return Div(x,y);
+    case 0x020c:
+        return Imax(x,y);
+    case 0x020d:
+        return Imin(x,y);
+    case 0x020f:
+        return Irand(x,y);
+    case 0x0213:
+        return Max(x,y);
+    case 0x0214:
+        return Min(x,y);
+    case 0x0215:
+        return Mod(x,y);
+    case 0x0216:
+        return Rand(x,y);
+    default:
+        qFatal("Unknown method id: %x", id);
+        return ES_Error;
+    }
+}
+
 
 QStringList St_functPlugin::actorLibraries() const
 {
@@ -480,6 +625,244 @@ void St_functPlugin::start()
 void St_functPlugin::stop()
 {
 }
+
+
+EvaluationStatus St_functPlugin::Abs(const QVariant & x){
+    Res = QVariant(abs__st_funct(x.toDouble()));
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::ArcCos(const QVariant & x){
+    Res = QVariant(arccos__st_funct(x.toDouble()));
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::ArcSin(const QVariant & x){
+    Res = QVariant(arcsin__st_funct(x.toDouble()));
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::ArcCtg(const QVariant & x){
+    Res = QVariant(arcctg__st_funct(x.toDouble()));
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::ArcTg(const QVariant & x){
+    Res = QVariant(arctg__st_funct(x.toDouble()));
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::Cos(const QVariant & x){
+    Res = QVariant(cos__st_funct(x.toDouble()));
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::Ctg(const QVariant & x){
+    Res = QVariant(ctg__st_funct(x.toDouble()));
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::Delay(const QVariant & x){
+    return ES_NoResult;
+    // TODO implement me
+}
+
+EvaluationStatus St_functPlugin::Div(const QVariant & x, const QVariant & y){
+    Res = QVariant(div__st_funct(x.toInt(), y.toInt()));
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::Exp(const QVariant & x){
+    Res = QVariant(exp__st_funct(x.toDouble()));
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::Iabs(const QVariant & x){
+    Res = QVariant(iabs__st_funct(x.toInt()));
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::Imax(const QVariant & x, const QVariant & y){
+    Res = QVariant(imax__st_funct(x.toInt(), y.toInt()));
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::Imin(const QVariant & x, const QVariant & y){
+    Res = QVariant(imin__st_funct(x.toInt(), y.toInt()));
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::Int(const QVariant & x){
+    Res = QVariant(int__st_funct(x.toInt()));
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::Irand(const QVariant & x, const QVariant & y){
+    Res = QVariant(irand__st_funct(x.toInt(), y.toInt()));
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::Irnd(const QVariant & x){
+    Res = QVariant(irnd__st_funct(x.toInt()));
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::Lg(const QVariant & x){
+    Res = QVariant(lg__st_funct(x.toDouble()));
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::Ln(const QVariant & x){
+    Res = QVariant(ln__st_funct(x.toDouble()));
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::Max(const QVariant & x, const QVariant & y){
+    Res = QVariant(max__st_funct(x.toDouble(), y.toDouble()));
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::Min(const QVariant & x, const QVariant & y){
+    Res = QVariant(min__st_funct(x.toDouble(), y.toDouble()));
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::Mod(const QVariant & x, const QVariant & y){
+    Res = QVariant(mod__st_funct(x.toInt(), y.toInt()));
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::Rand(const QVariant & x, const QVariant & y){
+    Res = QVariant(rand__st_funct(x.toDouble(), y.toDouble()));
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::Rnd(const QVariant & x){
+    Res = QVariant(rnd__st_funct(x.toDouble()));
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::Sign(const QVariant & x){
+    Res = QVariant(sign__st_funct(x.toDouble()));
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::Sin(const QVariant & x){
+    Res = QVariant(sin__st_funct(x.toDouble()));
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::Sqrt(const QVariant & x){
+    Res = QVariant(sqrt__st_funct(x.toDouble()));
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::Tg(const QVariant & x){
+    Res = QVariant(tg__st_funct(x.toDouble()));
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::MaxReal(){
+    Res = QVariant(MAXREAL__st_funct());
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::MaxInteger(){
+    Res = QVariant(MAXINT__st_funct());
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::StrOfReal(const QVariant & x){
+    wchar_t * buffer = real_to_string__st_funct(x.toDouble());
+    Res = QVariant(QString::fromWCharArray(buffer));
+    free(buffer);
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::StrOfInteger(const QVariant & x){
+    wchar_t * buffer = int_to_string__st_funct(x.toDouble());
+    Res = QVariant(QString::fromWCharArray(buffer));
+    free(buffer);
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::Time(){
+    Res = QVariant(time__st_funct());
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::Length(const QVariant & x){
+    Res = QVariant(x.toString().length());
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::Code(const QVariant & x){
+    wchar_t buffer[1];
+    x.toString().toWCharArray(buffer);
+    Res = QVariant(code__st_funct(buffer[0]));
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::RealOfString(const QVariant & x){
+    wchar_t * buffer = (wchar_t*)calloc(x.toString().size()+1, sizeof(wchar_t));
+    x.toString().toWCharArray(buffer);
+    buffer[x.toString().length()] = L'\0';
+    unsigned char success;
+    Res = QVariant(string_to_real__st_funct(buffer, &success));
+    optResults << QVariant(success==1? true : false);
+    free(buffer);
+    return ES_StackRezResult;
+}
+
+EvaluationStatus St_functPlugin::IntegerOfString(const QVariant & x){
+    wchar_t * buffer = (wchar_t*)calloc(x.toString().size()+1, sizeof(wchar_t));
+    x.toString().toWCharArray(buffer);
+    buffer[x.toString().length()] = L'\0';
+    unsigned char success;
+    Res = QVariant(string_to_int__st_funct(buffer, &success));
+    optResults << QVariant(success==1? true : false);
+    free(buffer);
+    return ES_StackRezResult;
+}
+
+EvaluationStatus St_functPlugin::Symbol(const QVariant & x){
+    wchar_t buffer[1];
+    buffer[0] = symbol__st_funct(x.toInt());
+    Res = QVariant(QString::fromWCharArray(buffer, 1).at(0));
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::UniSymbol(const QVariant & x){
+    wchar_t buffer[1];
+    buffer[0] = symbol2__st_funct(x.toInt());
+    Res = QVariant(QString::fromWCharArray(buffer, 1).at(0));
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::Unicode(const QVariant & x){
+    wchar_t buffer[1];
+    x.toString().toWCharArray(buffer);
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
 
 } // end namespace st_funct
 

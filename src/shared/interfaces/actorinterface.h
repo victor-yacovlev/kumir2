@@ -7,14 +7,14 @@ namespace Shared
 {
 
 struct Alg {
+    QString name; // Generic name
     QString kumirHeader; // Function header, Kumir syntax.
     QString cHeader; // ASCII function header in C-syntax
     QString pascalHeader; // ASCII function header in Pascal syntax
     QString pythonHeader; // Python 3.x
     QString javaHeader;  // Java
     QString csHeader; // C#
-    int id; // Obsolete!!!!
-    QMetaMethod metaMethod;
+    quint32 id;
 };
 
 enum ProgrammingLanguage {
@@ -52,6 +52,12 @@ public:
     virtual QList<class QAction *> menuActions() = 0;
     virtual void reset() = 0;
     virtual QString errorText() const = 0;
+    virtual EvaluationStatus evaluate(quint32 ) { return ES_Error; }
+    virtual EvaluationStatus evaluate(quint32 , const QVariant &) { return ES_Error; }
+    virtual EvaluationStatus evaluate(quint32 , const QVariant &, const QVariant &) { return ES_Error; }
+    virtual EvaluationStatus evaluate(quint32 , const QVariant &, const QVariant &, const QVariant &) { return ES_Error; }
+    virtual EvaluationStatus evaluate(quint32 , const QVariant &, const QVariant &, const QVariant &, const QVariant &) { return ES_Error; }
+    virtual EvaluationStatus evaluate(quint32 , const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &) { return ES_Error; }
 /* NOTE: signals should not be declared virtual in interfaces
          to provide compatibility with GCC 3.x (aka MinGW),
          but them MUST be implemented in actor class

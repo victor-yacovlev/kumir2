@@ -13,7 +13,7 @@ class Run : public QThread
     Q_OBJECT
 public:
     enum RunMode { RM_StepOver, RM_ToEnd, RM_StepOut, RM_StepIn };
-    explicit Run(QObject *parent = 0);
+    explicit Run(QObject *parent);
     VM * vm;
     bool programLoaded;
     inline bool stopped() const { return b_stopping; }
@@ -52,6 +52,7 @@ public slots:
                                const QVariantList & arguments,
                                const QList<quintptr> & references,
                                const QList<int> & indeces);
+    void handleExternalRequest(const QList<quintptr> & references);
     void handlePauseRequest();
 
 signals:
