@@ -10,13 +10,29 @@ struct Alg {
     QString kumirHeader; // Function header, Kumir syntax.
     QString cHeader; // ASCII function header in C-syntax
     QString pascalHeader; // ASCII function header in Pascal syntax
-    int id; //Function id;
+    QString pythonHeader; // Python 3.x
+    QString javaHeader;  // Java
+    QString csHeader; // C#
+    int id; // Obsolete!!!!
+    QMetaMethod metaMethod;
+    bool async; // Asynchronous call (usually for animated gui methods)
 };
 
 enum ProgrammingLanguage {
     PL_Kumir,
     PL_C,
-    PL_Pascal
+    PL_Pascal,
+    PL_Python,
+    PL_Java,
+    PL_CSharp
+};
+
+enum EvaluationStatus {
+    ES_Error,
+    ES_NoResult,
+    ES_StackResult,
+    ES_RezResult,
+    ES_StackRezResult
 };
 
 
@@ -29,7 +45,7 @@ public:
     virtual QStringList actorLibraries() const = 0;
     virtual QStringList usedQtLibraries() const = 0;
     virtual bool requiresGui() const = 0;
-    virtual void   runFunct(const QString & alg,const QList<QVariant> &params)=0;
+    virtual void   runFunct(const QString & alg,const QList<QVariant> &params)=0; // OBSOLETE !!!!
     virtual QList<QVariant> algOptResults() const =0;//optional results
     virtual class QWidget * mainWidget()=0;
     virtual QList<class QAction *> menuActions() = 0;
