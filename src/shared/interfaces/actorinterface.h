@@ -15,7 +15,6 @@ struct Alg {
     QString csHeader; // C#
     int id; // Obsolete!!!!
     QMetaMethod metaMethod;
-    bool async; // Asynchronous call (usually for animated gui methods)
 };
 
 enum ProgrammingLanguage {
@@ -27,12 +26,14 @@ enum ProgrammingLanguage {
     PL_CSharp
 };
 
+/** This MUST be returned by concrete function slot */
 enum EvaluationStatus {
-    ES_Error,
-    ES_NoResult,
-    ES_StackResult,
-    ES_RezResult,
-    ES_StackRezResult
+    ES_Error, // Evaluation error
+    ES_Async, // Wait for sync signal
+    ES_NoResult, // Succes, but no any result
+    ES_StackResult, // Success, has stack value result
+    ES_RezResult, // Success, has indirect result
+    ES_StackRezResult // Success, has both indirect and stack value result
 };
 
 

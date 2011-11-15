@@ -250,6 +250,9 @@ void SyntaxAnalizer::buildTables()
     for (int i=0; i<d->statements.size(); i++) {
         const Statement & st = d->statements[i];
         bool wasError = st.hasError();
+        if (st.type==LxNameClass && st.alg==0) {
+            d->parseVarDecl(i);
+        }
         if (st.type==LxPriAlgHeader) {
             d->parseAlgHeader(i);
         }
@@ -288,7 +291,7 @@ void SyntaxAnalizer::processAnalisys()
         if (st.type==LxPriAssign) {
             d->parseAssignment(i);
         }
-        else if (st.type==LxNameClass) {
+        else if (st.type==LxNameClass && st.alg) {
             d->parseVarDecl(i);
         }
         else if (st.type==LxPriInput

@@ -32,6 +32,17 @@ public:
     inline QList<class QAction*> menuActions() { return QList<class QAction*>(); }
     void reset();
     QString errorText() const;
+public slots:
+    // Begin function implementations
+
+//    EvaluationResult Abs(const QVariant & x);
+//    EvaluationResult ArcCos(const QVariant & x);
+//    EvaluationResult ArcSin(const QVariant & x);
+//    EvaluationResult ArcCtg(const QVariant & x);
+//    EvaluationResult ArcCtg(const QVariant & x);
+//    EvaluationResult ArcCtg(const QVariant & x);
+
+    // End function implementations
 signals:
     void sync();
 protected:
