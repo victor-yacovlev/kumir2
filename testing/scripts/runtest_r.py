@@ -85,7 +85,7 @@ def process_dir(dirname):
             else:
                 ask_difference(out_gs_name, new_output, "output for "+filename)
             if not os.path.exists(err_gs_name):
-                sys.stderr.write(new_rterror"\n")
+                sys.stderr.write(new_rterror+"\n")
                 sys.stderr.write("Runtime error standard not exist. Create? ([y]es or [n]o): ")
                 answer = _read_char()
                 if answer=='y':

@@ -78,6 +78,10 @@ def print_difference(filename, old_errors, new_errors):
         out.write("------------------\n")
 
 def ask_differences(filename, old_errors, new_errors):
+#    if old_errors:
+#        print "Old: ", reduce(lambda x,y: str(x)+"\n"+str(y), old_errors)
+#    if new_errors:
+#        print "New: ", reduce(lambda x,y: str(x)+"\n"+str(y), new_errors)
     old_db = group_errors(old_errors)
     new_db = group_errors(new_errors)
     common = set(old_db.keys()) & set(new_db.keys())
