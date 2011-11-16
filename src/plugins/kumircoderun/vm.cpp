@@ -265,7 +265,7 @@ void VM::evaluateNextInstruction()
     int ip = stack_contexts.top().IP;
     const QVector<Instruction> * program = stack_contexts.top().program;
     const Instruction instr = program->at(ip);
-    qDebug() << "Evaluating " << ip << ": " << instructionToString(instr);
+//    qDebug() << "Evaluating " << ip << ": " << instructionToString(instr);
     switch (instr.type) {
     case CALL:
         do_call(instr.module, instr.arg);
@@ -1198,7 +1198,7 @@ void VM::do_showreg(quint8 regNo) {
 void VM::do_clearmarg(quint16 toLine)
 {
     const int lineNo = stack_contexts.top().lineNo;
-    if (lineNo!=-1 &&
+    if (!b_blindMode && lineNo!=-1 &&
             (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN)
             )
     {

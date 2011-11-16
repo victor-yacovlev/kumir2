@@ -393,6 +393,7 @@ extern "C" int code__st_funct(wchar_t ch)
 {
     const wchar_t buffer[1] = { ch };
     const QString str = QString::fromWCharArray(buffer, 1);
+    Q_CHECK_PTR(__koi8Codec__st_funct);
     if (ch!='\0' && !__koi8Codec__st_funct->canEncode(str)) {
         __abort__st_funct(QObject::tr("Symbol out of the KOI8-R range", "StFuncError"));
         return 0;
@@ -673,7 +674,7 @@ extern "C" wchar_t symbol2__st_funct(int n)
 {
     QChar ch(n);
     static const QString cyrillic =
-            QString::fromUtf8("АБВГДЕЁЖЗИЙКЛМНОП� СТУФХЦЧШЩЪЫЬЮЭЯ");
+            QString::fromUtf8("АБВГДЕЁЖЗИЙКЛМНОП� СТУФХЦЧШЩЪЫЬЮЭЯ");
     bool valid = n < 128 || cyrillic.contains(ch.toUpper());
     if (!valid) {
         __abort__st_funct(QObject::tr("Resulting character is not allowed in Russian languange", "StFuncError"));

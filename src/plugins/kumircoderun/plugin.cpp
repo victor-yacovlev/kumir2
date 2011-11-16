@@ -265,6 +265,14 @@ void Plugin::start()
 {
     if (d->programLoaded) {
         d->vm->reset();
+        QList<KPlugin*> plugins = loadedPlugins();
+        foreach (KPlugin * p, plugins) {
+            ActorInterface * a = qobject_cast<ActorInterface*>(p);
+            if (a) {
+                a->reset();
+            }
+        }
+
         while (d->vm->hasMoreInstructions()) {
             d->vm->evaluateNextInstruction();
         }
