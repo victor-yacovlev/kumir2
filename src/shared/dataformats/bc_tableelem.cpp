@@ -154,7 +154,7 @@ extern QTextStream& operator<<(QTextStream& ts, const TableElem& e)
     if (e.type!=EL_INIT)
         s += QString::number(e.id)+" ";
     if (e.type==EL_EXTERN)
-        s += e.moduleName + " ";
+        s += "\""+screenString(e.moduleName) + "\" ";
     else if (e.type==EL_CONST) {
         if (e.constantValue.type()==QVariant::Int)
             s += QString::number(e.constantValue.toInt());
@@ -212,8 +212,10 @@ extern QTextStream& operator>>(QTextStream& ts, TableElem& e)
     }
     if (e.type!=EL_INIT)
         e.id = quint16(lexems.takeFirst().toUInt());
-    if (e.type==EL_EXTERN)
-        e.moduleName = lexems.takeFirst();
+    if (e.type==EL_EXTERN) {
+        QString n = lexems.takeFirst();
+        e.moduleName = unscreenString(n.mid(1,n.length()-2));
+    }
     if (e.type==EL_CONST) {
         QString c = lexems.takeFirst();
         if (e.vtype==VT_int)

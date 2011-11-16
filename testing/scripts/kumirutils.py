@@ -63,7 +63,7 @@ class CompileError:
         s += "E: "+str(self.end)+", "
         s += "T: "+self.text
         return s
-        
+    
 def __binary_path(util):
     "Returns absolute file path to execuable"
     res = KUMIR_DIR+os.path.sep+"bin"+os.path.sep+util

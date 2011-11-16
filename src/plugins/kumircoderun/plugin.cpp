@@ -275,6 +275,8 @@ void Plugin::start()
 
         while (d->vm->hasMoreInstructions()) {
             d->vm->evaluateNextInstruction();
+            if (!error().isEmpty())
+                break;
         }
         if (error().isEmpty()) {
             qApp->setProperty("returnCode", 0);
@@ -286,7 +288,7 @@ void Plugin::start()
             }
             else {
                 message = tr("RUNTIME ERROR AT LINE ");
-                message += QString::number(d->vm->currentLineNo())+": ";
+                message += QString::number(d->vm->currentLineNo()+1)+": ";
             }
             message += error()+"\n";
             wchar_t * buffer = (wchar_t*)calloc(message.length()+1, sizeof(wchar_t));
