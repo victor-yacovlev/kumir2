@@ -334,8 +334,16 @@ void SyntaxAnalizer::processAnalisys()
         for (int j=0; j<st.data.size(); j++) {
             if (!st.data[j]->error.isEmpty()) {
                 if (st.statement) {
-                    st.statement->type = AST::StError;
-                    st.statement->error = st.data[j]->error;
+                    if (st.type!=LxPriLoop && st.type!=LxPriEndLoop) {
+                        st.statement->type = AST::StError;
+                        st.statement->error = st.data[j]->error;
+                    }
+                    else if (st.type==LxPriLoop) {
+                        st.statement->loop.beginError = st.data[j]->error;
+                    }
+                    else if (st.type==LxPriEndLoop) {
+                        st.statement->loop.endError = st.data[j]->error;
+                    }
                     break;
                 }
             }

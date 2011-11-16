@@ -1165,6 +1165,17 @@ void Generator::LOOP(int modId, int algId,
     l.type = Bytecode::LINE;
     l.arg = lineNo;
 
+    if (st->loop.beginError.size()>0) {
+        const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->loop.beginError);
+        result << l;
+        Bytecode::Instruction err;
+        err.type = Bytecode::ERROR;
+        err.scope = Bytecode::CONST;
+        err.arg = constantValue(Bytecode::VT_string, error);
+        result << err;
+        return;
+    }
+
     Bytecode::Instruction swreg;
     swreg.type = Bytecode::SHOWREG;
     swreg.registerr = level * 2;
@@ -1209,6 +1220,7 @@ void Generator::LOOP(int modId, int algId,
             }
         }
         else {
+
             if (lineNo!=-1) {
                 result << clmarg;
             }
@@ -1343,6 +1355,23 @@ void Generator::LOOP(int modId, int algId,
     QList<Bytecode::Instruction> instrs = instructions(modId, algId, level, st->loop.body);
     shiftInstructions(instrs, result.size());
     result += instrs;
+
+    bool endsWithError = st->loop.endError.length()>0;
+    if (endsWithError) {
+        const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->loop.endError);
+        Bytecode::Instruction el;
+        el.type = Bytecode::LINE;
+        el.arg = st->loop.endLexems.size()>0
+                ? st->loop.endLexems[0]->lineNo
+                : -1;
+        result << el;
+        Bytecode::Instruction ee;
+        ee.type = Bytecode::ERROR;
+        ee.scope = Bytecode::CONST;
+        ee.arg = constantValue(Bytecode::VT_string, error);
+        result << ee;
+        return;
+    }
 
     int endJzIp = -1;
 

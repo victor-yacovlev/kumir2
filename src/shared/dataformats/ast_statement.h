@@ -108,6 +108,9 @@ struct LoopSpec {
 
     /** Loop end lexems */
     QList<struct Lexem*> endLexems;
+
+    QString beginError;
+    QString endError;
 };
 
 /** "if-then", "case" or "else" sub-block of statement */
