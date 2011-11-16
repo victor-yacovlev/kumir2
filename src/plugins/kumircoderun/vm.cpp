@@ -644,7 +644,6 @@ void VM::do_call(quint8 mod, quint16 alg)
         }
     }
     else if (externalMethods.contains(p)) {
-        m_dontTouchMe->lock();
         QPair<ActorInterface*,quint32> methodValue = externalMethods[p];
         call_externalMethod(methodValue.first, methodValue.second);
 //        QList<quintptr> references;
@@ -661,7 +660,6 @@ void VM::do_call(quint8 mod, quint16 alg)
 //        const TableElem exportElem = externs[p];
 //        const QString pluginName = exportElem.moduleName;
 //        const QString algName = exportElem.name;
-        m_dontTouchMe->unlock();
 //        emit invokeExternalFunction(pluginName, algName, arguments, references, indeces);
 
     }
@@ -699,26 +697,31 @@ void VM::do_call(quint8 mod, quint16 alg)
 void VM::call_externalMethod(ActorInterface *act, quint32 method)
 {
     Q_CHECK_PTR(act);
+    m_dontTouchMe->lock();
     int argsCount = stack_values.pop().toInt();
     QVariant arg1, arg2, arg3, arg4, arg5;
     EvaluationStatus status;
     switch (argsCount) {
     case 0:
+        m_dontTouchMe->unlock();
         status = act->evaluate(method);
         break;
     case 1:
         arg1 = stack_values.pop().value();
+        m_dontTouchMe->unlock();
         status = act->evaluate(method, arg1);
         break;
     case 2:
         arg1 = stack_values.pop().value();
         arg2 = stack_values.pop().value();
+        m_dontTouchMe->unlock();
         status = act->evaluate(method, arg1, arg2);
         break;
     case 3:
         arg1 = stack_values.pop().value();
         arg2 = stack_values.pop().value();
         arg3 = stack_values.pop().value();
+        m_dontTouchMe->unlock();
         status = act->evaluate(method, arg1, arg2, arg3);
         break;
     case 4:
@@ -726,6 +729,7 @@ void VM::call_externalMethod(ActorInterface *act, quint32 method)
         arg2 = stack_values.pop().value();
         arg3 = stack_values.pop().value();
         arg4 = stack_values.pop().value();
+        m_dontTouchMe->unlock();
         status = act->evaluate(method, arg1, arg2, arg3, arg4);
         break;
     case 5:
@@ -734,23 +738,28 @@ void VM::call_externalMethod(ActorInterface *act, quint32 method)
         arg3 = stack_values.pop().value();
         arg4 = stack_values.pop().value();
         arg5 = stack_values.pop().value();
+        m_dontTouchMe->unlock();
         status = act->evaluate(method, arg1, arg2, arg3, arg4, arg5);
         break;
     default:
         break;
     }
+    m_dontTouchMe->lock();
     int refsCount = stack_values.pop().toInt();
     QList<quintptr> references;
     QList<int> indeces;
     for (int i=0; i<refsCount; i++) {
         references << quintptr(stack_values.pop().reference());
     }
+    m_dontTouchMe->unlock();
     if (status==ES_Error) {
         s_error = act->errorText();
         return;
     }
     if (status==ES_StackResult || status==ES_StackRezResult) {
+        m_dontTouchMe->lock();
         pushValueToStack(act->result());
+        m_dontTouchMe->unlock();
     }
     if (status==ES_RezResult || status==ES_StackRezResult) {
         setResults("", references, indeces, act->algOptResults());

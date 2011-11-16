@@ -304,6 +304,7 @@ QList<Alg>  St_functPlugin::funcList() const
 
 EvaluationStatus St_functPlugin::evaluate(quint32 id)
 {
+    optResults.clear();
     switch(id) {
     case 0x001c:
         return MaxReal();
@@ -319,6 +320,7 @@ EvaluationStatus St_functPlugin::evaluate(quint32 id)
 
 EvaluationStatus St_functPlugin::evaluate(quint32 id, const QVariant &x)
 {
+    optResults.clear();
     switch(id) {
     case 0x0101:
         return Abs(x);
@@ -384,6 +386,7 @@ EvaluationStatus St_functPlugin::evaluate(quint32 id, const QVariant &x)
 
 EvaluationStatus St_functPlugin::evaluate(quint32 id, const QVariant & x, const QVariant & y)
 {
+    optResults.clear();
     switch(id) {
     case 0x0209:
         return Div(x,y);
@@ -597,7 +600,8 @@ void  St_functPlugin::runFunct(const QString & name,const QList<QVariant> &args)
 
 QList<QVariant> St_functPlugin::algOptResults() const
 {
-    return QList<QVariant>();
+    QList<QVariant> opts = optResults;
+    return opts;
 }
 
 
@@ -700,7 +704,7 @@ EvaluationStatus St_functPlugin::Imin(const QVariant & x, const QVariant & y){
 }
 
 EvaluationStatus St_functPlugin::Int(const QVariant & x){
-    Res = QVariant(int__st_funct(x.toInt()));
+    Res = QVariant(int__st_funct(x.toDouble()));
     errText = __get_error__st_funct();
     return errText.isEmpty()? ES_StackResult : ES_Error;
 }

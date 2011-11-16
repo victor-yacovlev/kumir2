@@ -21,7 +21,7 @@ extern QString __get_error__st_funct()
 #ifdef Q_OS_WIN32
     #define REAL_COMPARE_PRECISION 0.0000001
 #else
-    #define REAL_COMPARE_PRECISION 0
+    #define REAL_COMPARE_PRECISION 0.0000001
 #endif
 
 static QTextCodec * __koi8Codec__st_funct = 0;
@@ -224,8 +224,8 @@ extern "C" int imin__st_funct(int x, int y)
 
 extern "C" int int__st_funct(double x)
 {
-    // TODO check for integer overflow
-    return int(floor(x));
+    double y = floor(x);
+    return int(y);
 }
 
 extern "C" int irand__st_funct(int a, int b)
