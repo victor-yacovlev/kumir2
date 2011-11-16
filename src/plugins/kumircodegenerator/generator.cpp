@@ -414,8 +414,10 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
         }
     }
 
-    l.arg = alg->impl.beginLexems[0]->lineNo;
-    argHandle << l;
+    if (alg->impl.beginLexems.size()) {
+        l.arg = alg->impl.beginLexems[0]->lineNo;
+        argHandle << l;
+    }
 
     QList<Bytecode::Instruction> pre = instructions(moduleId, id, 0, alg->impl.pre);
     QList<Bytecode::Instruction> body = instructions(moduleId, id, 0, alg->impl.body);

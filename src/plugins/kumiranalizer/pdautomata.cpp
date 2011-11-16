@@ -1227,8 +1227,16 @@ void PDAutomataPrivate::appendSimpleLine()
         statement->type = AST::StError;
         statement->error = source.at(currentPosition)->data[0]->error;
     }
-    if (!currentContext.isEmpty() && currentContext.top())
+    if (!currentContext.isEmpty() && currentContext.top()) {
+        if (statement->type==AST::StError) {
+            if (currentContext.top()==&(currentModule->impl.initializerBody)) {
+                if (currentModule->impl.algorhitms.size()>0) {
+                    statement->skipErrorEvaluation = true;
+                }
+            }
+        }
         currentContext.top()->append(statement);
+    }
     source.at(currentPosition)->mod = currentModule;
     source.at(currentPosition)->alg = currentAlgorhitm;
     source.at(currentPosition)->statement = statement;
