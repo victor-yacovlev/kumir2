@@ -1463,7 +1463,10 @@ void VM::do_neq()
     if (b.baseType()==VT_int && a.baseType()==VT_int) {
         result = a.toInt()==b.toInt();
     }
-    if (b.baseType()==VT_float && a.baseType()==VT_float) {
+    else if (b.baseType()==VT_float && a.baseType()==VT_float) {
+        result = fabs(a.toReal()-b.toReal())<EPSILON;
+    }
+    else if (a.baseType()==VT_float || b.baseType()==VT_float) {
         result = fabs(a.toReal()-b.toReal())<EPSILON;
     }
     if (b.baseType()==VT_bool && a.baseType()==VT_bool) {
@@ -1569,20 +1572,20 @@ void VM::do_geq()
     Variant b = stack_values.pop();
     Variant a = stack_values.pop();
     if (b.baseType()==VT_int && a.baseType()==VT_int) {
-        result = a.toInt()>b.toInt();
+        result = a.toInt()>=b.toInt();
     }
     if (b.baseType()==VT_float || a.baseType()==VT_float) {
-        result = a.toReal()>b.toReal();
+        result = a.toReal()>=b.toReal();
     }
     if (b.baseType()==VT_bool && a.baseType()==VT_bool) {
-        result = a.toInt()>b.toInt();
+        result = a.toInt()>=b.toInt();
     }
     if ( (a.baseType()==VT_string || a.baseType()==VT_char)
          &&
          (b.baseType()==VT_string || b.baseType()==VT_char)
          )
     {
-        result = a.toString()>b.toString();
+        result = a.toString()>=b.toString();
     }
     Variant r(result);
     stack_values.push(r);

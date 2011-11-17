@@ -423,8 +423,11 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     QList<Bytecode::Instruction> body = instructions(moduleId, id, 0, alg->impl.body);
     QList<Bytecode::Instruction> post = instructions(moduleId, id, 0, alg->impl.post);
 
+    shiftInstructions(pre, argHandle.size());
+
     int offset = argHandle.size() + pre.size();
     shiftInstructions(body, offset);
+    offset += body.size();
     shiftInstructions(post, offset);
 
     QList<Bytecode::Instruction> ret;
