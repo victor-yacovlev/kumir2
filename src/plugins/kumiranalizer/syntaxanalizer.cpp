@@ -334,15 +334,20 @@ void SyntaxAnalizer::processAnalisys()
         for (int j=0; j<st.data.size(); j++) {
             if (!st.data[j]->error.isEmpty()) {
                 if (st.statement) {
-                    if (st.type!=LxPriLoop && st.type!=LxPriEndLoop) {
+                    if (st.type==LxPriLoop || st.type==LxPriSwitch) {
+                        st.statement->beginBlockError = st.data[j]->error;
+                    }
+                    else if (st.type==LxPriEndLoop || st.type==LxPriFi) {
+                        st.statement->endBlockError = st.data[j]->error;
+                    }
+                    else if (st.type==LxPriCase) {
+                        if (st.conditionalIndex < st.statement->conditionals.size()) {
+                            st.statement->conditionals[st.conditionalIndex].conditionError = st.data[j]->error;
+                        }
+                    }
+                    else {
                         st.statement->type = AST::StError;
                         st.statement->error = st.data[j]->error;
-                    }
-                    else if (st.type==LxPriLoop) {
-                        st.statement->loop.beginError = st.data[j]->error;
-                    }
-                    else if (st.type==LxPriEndLoop) {
-                        st.statement->loop.endError = st.data[j]->error;
                     }
                     break;
                 }
@@ -739,7 +744,7 @@ void SyntaxAnalizerPrivate::parseIfCase(int str)
     if (expr) {
         if (expr->baseType!=AST::TypeBoolean) {
             for (int i=0; i<cond.size(); i++) {
-                cond[i]->error = _("Condition if not boolean");
+                cond[i]->error = _("Condition after '%1' not boolean", st.data[0]->data);
             }
             delete expr;
         }

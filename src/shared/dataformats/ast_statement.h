@@ -109,8 +109,6 @@ struct LoopSpec {
     /** Loop end lexems */
     QList<struct Lexem*> endLexems;
 
-    QString beginError;
-    QString endError;
 };
 
 /** "if-then", "case" or "else" sub-block of statement */
@@ -124,6 +122,8 @@ struct ConditionSpec {
 
     /** Condition source lexems */
     QList<struct Lexem*> lexems;
+
+    QString conditionError;
 };
 
 /** Evaluable statement */
@@ -137,6 +137,9 @@ struct ABSTRACTSYNTAXTREE_EXPORT Statement {
 
     /** Compile-time error */
     QString error;
+
+    QString beginBlockError;
+    QString endBlockError;
 
     /** If error: add to generated code or not */
     bool skipErrorEvaluation;

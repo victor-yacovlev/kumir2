@@ -1084,6 +1084,17 @@ void Generator::SWITCHCASEELSE(int modId, int algId, int level, const AST::State
     Bytecode::Instruction l;
     l.type = Bytecode::LINE;
 
+    if (st->beginBlockError.size()>0) {
+        const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->beginBlockError);
+        result << l;
+        Bytecode::Instruction err;
+        err.type = Bytecode::ERROR;
+        err.scope = Bytecode::CONST;
+        err.arg = constantValue(Bytecode::VT_string, error);
+        result << err;
+        return;
+    }
+
     int lastJzIp = -1;
     QList<int> jumpIps;
 
@@ -1095,30 +1106,41 @@ void Generator::SWITCHCASEELSE(int modId, int algId, int level, const AST::State
         int lineNo = st->conditionals[i].lexems[0]->lineNo;
         l.arg = lineNo;
         result << l;
-        if (st->conditionals[i].condition) {
-            result << calculate(modId, algId, level, st->conditionals[i].condition);
-            Bytecode::Instruction pop;
-            pop.type = Bytecode::POP;
-            pop.registerr = 0;
-            result << pop;
-            Bytecode::Instruction showreg;
-            showreg.type = Bytecode::SHOWREG;
-            showreg.registerr = 0;
-            result << showreg;
-            Bytecode::Instruction jz;
-            jz.type = Bytecode::JZ;
-            jz.registerr = 0;
-            lastJzIp = result.size();
-            result << jz;
+        if (!st->conditionals[i].conditionError.isEmpty()) {
+            const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->conditionals[i].conditionError);
+            result << l;
+            Bytecode::Instruction err;
+            err.type = Bytecode::ERROR;
+            err.scope = Bytecode::CONST;
+            err.arg = constantValue(Bytecode::VT_string, error);
+            result << err;
         }
-        QList<Bytecode::Instruction> instrs = instructions(modId, algId, level, st->conditionals[i].body);
-        shiftInstructions(instrs, result.size());
-        result += instrs;
-        if (i<st->conditionals.size()-1) {
-            Bytecode::Instruction jump;
-            jump.type = Bytecode::JUMP;
-            jumpIps << result.size();
-            result << jump;
+        else {
+            if (st->conditionals[i].condition) {
+                result << calculate(modId, algId, level, st->conditionals[i].condition);
+                Bytecode::Instruction pop;
+                pop.type = Bytecode::POP;
+                pop.registerr = 0;
+                result << pop;
+                Bytecode::Instruction showreg;
+                showreg.type = Bytecode::SHOWREG;
+                showreg.registerr = 0;
+                result << showreg;
+                Bytecode::Instruction jz;
+                jz.type = Bytecode::JZ;
+                jz.registerr = 0;
+                lastJzIp = result.size();
+                result << jz;
+            }
+            QList<Bytecode::Instruction> instrs = instructions(modId, algId, level, st->conditionals[i].body);
+            shiftInstructions(instrs, result.size());
+            result += instrs;
+            if (i<st->conditionals.size()-1) {
+                Bytecode::Instruction jump;
+                jump.type = Bytecode::JUMP;
+                jumpIps << result.size();
+                result << jump;
+            }
         }
     }
     if (lastJzIp!=-1)
@@ -1168,8 +1190,8 @@ void Generator::LOOP(int modId, int algId,
     l.type = Bytecode::LINE;
     l.arg = lineNo;
 
-    if (st->loop.beginError.size()>0) {
-        const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->loop.beginError);
+    if (st->beginBlockError.size()>0) {
+        const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->beginBlockError);
         result << l;
         Bytecode::Instruction err;
         err.type = Bytecode::ERROR;
@@ -1359,9 +1381,9 @@ void Generator::LOOP(int modId, int algId,
     shiftInstructions(instrs, result.size());
     result += instrs;
 
-    bool endsWithError = st->loop.endError.length()>0;
+    bool endsWithError = st->endBlockError.length()>0;
     if (endsWithError) {
-        const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->loop.endError);
+        const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->endBlockError);
         Bytecode::Instruction el;
         el.type = Bytecode::LINE;
         el.arg = st->loop.endLexems.size()>0
