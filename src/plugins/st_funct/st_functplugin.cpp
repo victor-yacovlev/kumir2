@@ -371,7 +371,7 @@ EvaluationStatus St_functPlugin::evaluate(quint32 id, const QVariant &x)
     case 0x0123:
         return IntegerOfString(x);
     case 0x0124:
-        return Code(x);
+        return Symbol(x);
     case 0x0125:
         return UniSymbol(x);
     case 0x0126:

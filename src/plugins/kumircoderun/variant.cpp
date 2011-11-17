@@ -367,7 +367,7 @@ void Variant::setBounds(const QList<int> &bounds)
         data.append(QVariant::Invalid);
     }
     m_value = data;
-    l_bounds[6] = bounds.size()*2;
+    l_bounds[6] = bounds.size();
     for (int i=0; i<bounds.size(); i++) {
         l_bounds[i] = bounds[i];
     }
