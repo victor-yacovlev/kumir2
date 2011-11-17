@@ -122,7 +122,6 @@ void VM::reset()
         quint32 key = (mod << 16) | alg;
         c.locals = cleanLocalTables[key];
         c.program = &(mainProgram.instructions);
-        c.IP = 0;
         c.type = mainProgram.type;
         c.runMode = CRM_ToEnd;
         c.algId = mainProgram.algId;
@@ -137,7 +136,6 @@ void VM::reset()
         quint32 key = (mod << 16) | alg;
         c.locals = cleanLocalTables[key];
         c.program = &(testingProgram.instructions);
-        c.IP = 0;
         c.type = EL_TESTING;
         c.runMode = CRM_ToEnd;
         c.algId = testingProgram.algId;
@@ -150,7 +148,6 @@ void VM::reset()
         if (inits[key].instructions.size()>0) {
             Context c;
             c.program = &(inits[key].instructions);
-            c.IP = 0;
             c.type = EL_INIT;
             c.runMode = CRM_ToEnd;
             c.moduleId = inits[key].module;
@@ -158,7 +155,7 @@ void VM::reset()
             stack_contexts.push(c);
         }
     }
-
+    nextIP(); // Change from -1 to 0
 }
 
 Variant fromTableElem(const TableElem & e)
@@ -671,7 +668,6 @@ void VM::do_call(quint8 mod, quint16 alg)
         else {
             m_dontTouchMe->lock();
             Context c;
-            c.IP = -1;
             c.program = & (functions[p].instructions );
             c.locals = cleanLocalTables[p];
             c.type = functions[p].type;
@@ -1225,6 +1221,14 @@ void VM::do_ret()
     }
     else {
         last_context = stack_contexts.pop();
+        if (last_context.type==Bytecode::EL_INIT
+                && last_context.runMode == CRM_OneStep
+                )
+        {
+            if (stack_contexts.size()>0) {
+                stack_contexts.top().runMode = CRM_OneStep;
+            }
+        }
         if (stack_contexts.size()>0) {
             nextIP();
         }
@@ -1737,6 +1741,18 @@ QVariantList VM::remainingValues() const
             result << QVariant::Invalid;
     }
     return result;
+}
+
+bool VM::hasMoreInstructions() const
+{
+    if (stack_contexts.size()>0) {
+        const QVector<Bytecode::Instruction> * program = stack_contexts.at(0).program;
+        int IP = stack_contexts.at(0).IP;
+        return IP < program->size();
+    }
+    else {
+        return false;
+    }
 }
 
 } // namespace KumirCodeRun

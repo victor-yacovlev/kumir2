@@ -27,10 +27,7 @@ public:
     QStringList usedActors() const;
     inline bool isBlindMode() const { return b_blindMode; }
     void setBlindMode(bool bl);
-    inline bool hasMoreInstructions() const {
-        return stack_contexts.size()>0 &&
-                stack_contexts.at(0).IP < stack_contexts.at(0).program->size();
-    }
+    bool hasMoreInstructions() const;
     inline QString error() const { return s_error; }
     void loadProgram(const Data & program);
     inline int deep() const { return stack_contexts.size(); }
