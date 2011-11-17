@@ -912,7 +912,9 @@ void VM::do_load(quint8 s, quint16 id)
     else {
         s_error = tr("Internal error: don't know what is 'load %1 %2'").arg(s).arg(id);
     }
-    if (!Variant::error.isEmpty())
+    bool isRetVal = VariableScope(s)==LOCAL
+            && stack_contexts.top().locals[id].algorhitmName()==stack_contexts.top().locals[id].name();
+    if (!Variant::error.isEmpty() && !isRetVal)
         s_error = Variant::error;
     stack_values.push(val);
     if (val.dimension()==0)
@@ -1358,13 +1360,19 @@ void VM::do_pow()
             s_error = tr("Double overflow while trying to power");
         }
     }
-    if (b.toReal()<-EPSILON) {
-        s_error = tr("Power to less than zero");
-    }
-    else {
-        Variant r(pow(a.toReal(),b.toReal()));
+//    if (b.toReal()<-EPSILON && a.toReal()<-EPSILON) {
+//        s_error = tr("Power to less than zero");
+//    }
+//    else {
+    Variant r;
+    double fvalue = pow(a.toReal(), b.toReal());
+    if (a.baseType()==VT_int && b.baseType()==VT_int)
+        r = Variant(int(fvalue));
+    else
+        r = Variant(fvalue);
+
         stack_values.push(r);
-    }
+//    }
     if (a.baseType()==VT_int && b.baseType()==VT_int) {
         if (s_error.isEmpty() && !StdLib::IntegerOverflowChecker::checkPower(a.toInt(), b.toInt())) {
             s_error = tr("Integer overflow while trying to power");

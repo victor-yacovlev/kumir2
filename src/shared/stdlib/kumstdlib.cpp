@@ -90,7 +90,7 @@ extern "C" double __safe_div_ii__(int a, int b)
 
 extern "C" double __real_power__(double a, double b)
 {
-    if (b<0.0) {
+    if (b<0.0 && a<0.0) {
         __abort__st_funct(QObject::tr("Can't power to less than zero", "StFuncError"));
         return 0.0;
     }
@@ -101,7 +101,7 @@ extern "C" double __real_power__(double a, double b)
 
 extern "C" int __integer_power__(int a, int b)
 {
-    if (b<0) {
+    if (b<0 && a<0) {
         __abort__st_funct(QObject::tr("Can't power to less than zero", "StFuncError"));
         return 0;
     }
@@ -400,7 +400,9 @@ extern "C" int code__st_funct(wchar_t ch)
     }
     else {
         QByteArray koi8Data = __koi8Codec__st_funct->fromUnicode(str);
-        return int(koi8Data.at(0));
+        int value = (unsigned char)(koi8Data.at(0));
+
+        return value;
     }
 }
 

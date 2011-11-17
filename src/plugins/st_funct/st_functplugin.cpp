@@ -863,6 +863,7 @@ EvaluationStatus St_functPlugin::UniSymbol(const QVariant & x){
 EvaluationStatus St_functPlugin::Unicode(const QVariant & x){
     wchar_t buffer[1];
     x.toString().toWCharArray(buffer);
+    Res = QVariant(unicode__st_funct(buffer[0]));
     errText = __get_error__st_funct();
     return errText.isEmpty()? ES_StackResult : ES_Error;
 }
