@@ -178,6 +178,7 @@ void VM::loadProgram(const Data & program)
     externalMethods.clear();
     functions.clear();
     cleanLocalTables.clear();
+    inits.clear();
     QMap< quint64, QList<Variant> > locals;
     for (int i=0; i<program.d.size(); i++) {
         const TableElem e = program.d[i];
