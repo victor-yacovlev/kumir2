@@ -242,6 +242,14 @@ void SyntaxAnalizer::buildTables()
                         Lexem * lx = d->statements[j].data[k];
                         lx->error = error;
                     }
+                    if (d->statements[j].mod) {
+                        AST::Module * mod = d->statements[j].mod;
+                        AST::Statement * errStatement = new AST::Statement;
+                        errStatement->type = AST::StError;
+                        errStatement->error = error;
+                        errStatement->lexems = d->statements[j].data;
+                        mod->impl.initializerBody.prepend(errStatement);
+                    }
                 }
             }
         }
