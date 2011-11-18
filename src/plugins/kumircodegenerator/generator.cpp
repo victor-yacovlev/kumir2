@@ -1203,7 +1203,7 @@ void Generator::LOOP(int modId, int algId,
 
     Bytecode::Instruction swreg;
     swreg.type = Bytecode::SHOWREG;
-    swreg.registerr = level * 2;
+    swreg.registerr = level * 5;
 
     Bytecode::Instruction clmarg;
     if (st->loop.endLexems.size()>0) {
@@ -1223,12 +1223,14 @@ void Generator::LOOP(int modId, int algId,
 
         if (st->loop.whileCondition) {
             // Calculate condition
-            result << calculate(modId, algId, level, st->loop.whileCondition);
+            QList<Bytecode::Instruction> whileCondInstructions = calculate(modId, algId, level, st->loop.whileCondition);
+            shiftInstructions(whileCondInstructions, result.size());
+            result << whileCondInstructions;
 
             // Check condition result
             Bytecode::Instruction a;
             a.type = Bytecode::POP;
-            a.registerr = level * 2;
+            a.registerr = level * 5;
             result << a;
 
             if (lineNo!=-1) {
@@ -1237,7 +1239,7 @@ void Generator::LOOP(int modId, int algId,
 
             jzIp = result.size();
             a.type = Bytecode::JZ;
-            a.registerr = level * 2;
+            a.registerr = level * 5;
             result << a;
 
             if (lineNo!=-1) {
@@ -1259,12 +1261,14 @@ void Generator::LOOP(int modId, int algId,
         }
 
         // Calculate times value
-        result << calculate(modId, algId, level, st->loop.timesValue);
+        QList<Bytecode::Instruction> timesValueInstructions = calculate(modId, algId, level, st->loop.timesValue);
+        shiftInstructions(timesValueInstructions, result.size());
+        result << timesValueInstructions;
         Bytecode::Instruction a;
 
         // Store value in register
         a.type = Bytecode::POP;
-        a.registerr = level * 2 - 1;
+        a.registerr = level * 5 - 1;
         result << a;
 
         // Store initial value "0" in nearest register
@@ -1274,7 +1278,7 @@ void Generator::LOOP(int modId, int algId,
         result << a;
 
         a.type = Bytecode::POP;
-        a.registerr = level * 2;
+        a.registerr = level * 5;
         result << a;
 
 
@@ -1289,7 +1293,7 @@ void Generator::LOOP(int modId, int algId,
 
         // Increase value in register
         a.type = Bytecode::PUSH;
-        a.registerr = level * 2;
+        a.registerr = level * 5;
         result << a;
         a.type = Bytecode::LOAD;
         a.scope = Bytecode::CONST;
@@ -1298,15 +1302,15 @@ void Generator::LOOP(int modId, int algId,
         a.type = Bytecode::SUM;
         result << a;
         a.type = Bytecode::POP;
-        a.registerr = level * 2;
+        a.registerr = level * 5;
         result << a;
         a.type = Bytecode::PUSH;
-        a.registerr = level * 2;
+        a.registerr = level * 5;
         result << a;
 
         // Compare value to "times" value
         a.type = Bytecode::PUSH;
-        a.registerr = level * 2 - 1;
+        a.registerr = level * 5 - 1;
         result << a;
         a.type = Bytecode::GT;
         result << a;
@@ -1404,7 +1408,9 @@ void Generator::LOOP(int modId, int algId,
         lineNo = st->loop.endLexems[0]->lineNo;
         l.arg = lineNo;
         result << l;
-        result << calculate(modId, algId, level, st->loop.endCondition);
+        QList<Bytecode::Instruction> endCondInstructions = calculate(modId, algId, level, st->loop.endCondition);
+        shiftInstructions(endCondInstructions, result.size());
+        result << endCondInstructions;
         Bytecode::Instruction e;
         e.type = Bytecode::POP;
         e.registerr = 0;
@@ -1452,7 +1458,7 @@ void Generator::LOOP(int modId, int algId,
         a.type = Bytecode::SUM;
         result << a;
         a.type = Bytecode::POP;
-        a.registerr = level * 2;
+        a.registerr = level * 5;
         result << a;
         a.type = Bytecode::PUSH;
         result << a;
@@ -1480,7 +1486,7 @@ void Generator::LOOP(int modId, int algId,
         // Store variable
 
         a.type = Bytecode::PUSH;
-        a.registerr = level * 2;
+        a.registerr = level * 5;
         result << a;
 
         if (st->loop.forVariable->dimension>0) {
