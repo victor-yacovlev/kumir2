@@ -1749,6 +1749,7 @@ void PDAutomataPrivate::setExtraCloseKeywordError(const QString &kw)
     }
     else if (kw==QString::fromUtf8("строка_документации")) {
         setCurrentError(_("Extra docstring"));
+        appendSimpleLine();
     }
     else if (kw==QString::fromUtf8("выбор")) {
         setCurrentError(_("Extra 'switch'"));
