@@ -131,13 +131,13 @@ extern "C" double arccos__st_funct(double x)
 
 extern "C" double arcctg__st_funct(double x)
 {
-    if (::fabs(x)==0.0) {
-        __abort__st_funct(QObject::tr("Bad inverse trigonometric argument", "StFuncError"));
-        return 0;
-    }
-    else {
+//    if (::fabs(x)==0.0) {
+//        __abort__st_funct(QObject::tr("Bad inverse trigonometric argument", "StFuncError"));
+//        return 0;
+//    }
+//    else {
         return ::atan(1.0/x);
-    }
+//    }
 }
 
 extern "C" double arcsin__st_funct(double x)
