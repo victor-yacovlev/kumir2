@@ -126,6 +126,8 @@ private:
     void do_clearmarg(quint16);
     void do_pause(quint16);
     void do_halt(quint16);
+    void do_ctl(quint8 parameter, quint16 value);
+    void do_inrange();
 
     void do_sum();
     void do_sub();

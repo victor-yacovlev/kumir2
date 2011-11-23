@@ -37,6 +37,8 @@ enum InstructionType {
     CLEARMARG   = 0x23, // Clear margin text from current line to specified
     SETREF      = 0x24, // Set reference value to variable
     HALT        = 0x26, // Terminate
+    CTL         = 0x27, // Control VM behaviour
+    INRANGE     = 0x28, // Pops 4 values ... a, b, c, x from stack and returns c>=0? a<x<=b : a<=x<b
 
 
     // Common operations -- no comments need

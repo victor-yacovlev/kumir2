@@ -3,6 +3,7 @@
 namespace KumirCodeRun {
 
 QString Variant::error = "";
+bool Variant::ignoreUndefinedError = false;
 
 bool Variant::hasValue() const
 {
@@ -50,7 +51,7 @@ QVariant Variant::value() const
         }
     }
     else {
-        if (m_value==QVariant::Invalid)
+        if (m_value==QVariant::Invalid && !ignoreUndefinedError)
             error = QObject::tr("Variable not initialized", "Variant");
         return m_value;
     }

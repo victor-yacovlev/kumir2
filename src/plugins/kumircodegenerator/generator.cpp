@@ -1190,6 +1190,16 @@ void Generator::LOOP(int modId, int algId,
     l.type = Bytecode::LINE;
     l.arg = lineNo;
 
+    Bytecode::Instruction ctlOn;
+    ctlOn.module = 0x00;
+    ctlOn.arg = 0x0001;
+
+    Bytecode::Instruction ctlOff;
+    ctlOff.module = 0x00;
+    ctlOff.arg = 0x0000;
+
+    ctlOn.type = ctlOff.type = Bytecode::CTL;
+
     if (st->beginBlockError.size()>0) {
         const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->beginBlockError);
         result << l;
@@ -1336,46 +1346,94 @@ void Generator::LOOP(int modId, int algId,
             result << l;
         }
 
-        // Calculate and forget initial value
+        // Set 'ignore undefined value' flag
+
+        result << ctlOn;
+
+        // Store variable value if exists
+        Bytecode::Instruction loadOld;
+        loadOld.type = Bytecode::LOAD;
+        findVariable(modId, algId, st->loop.forVariable, loadOld.scope, loadOld.arg);
+        result << loadOld;
+
+        Bytecode::Instruction popOld;
+        popOld.type = Bytecode::POP;
+        popOld.registerr = level * 5 - 1;
+        result << popOld;
+
+        // Unset 'ignore undefined value' flag
+        result << ctlOff;
+
+
+        // Calculate and store to variable its initial value
         result << calculate(modId, algId, level, st->loop.fromValue);
-        if (st->loop.forVariable->dimension>0) {
-            for (int i=st->loop.forVariable->dimension-1; i>=0; i--) {
-                result << calculate(modId, algId, level, st->expressions[i]);
-            }
-        }
+
         Bytecode::Instruction a;
-        a.type = st->loop.forVariable->dimension>0 ? Bytecode::STOREARR : Bytecode::STORE;
+        a.type = Bytecode::STORE;
         findVariable(modId, algId, st->loop.forVariable, a.scope, a.arg);
         result << a;
 
-        a.type = Bytecode::POP;
-        a.registerr = 0;
-        result << a;
+        Bytecode::Instruction popFrom;
+        popFrom.type = Bytecode::POP;
+        popFrom.registerr = level * 5 - 2;
+        result << popFrom;
 
 
-        // First time: Load variable and 'to'-value
-        if (st->loop.forVariable->dimension>0) {
-            for (int i=st->loop.forVariable->dimension-1; i>=0; i--) {
-                result << calculate(modId, algId, level, st->expressions[i]);
-            }
-        }
-        a.type = st->loop.forVariable->dimension>0? Bytecode::LOADARR : Bytecode::LOAD;
-        findVariable(modId, algId, st->loop.forVariable, a.scope, a.arg);
-        result << a;
-
+        // First time: Load 'to'-value and store it in register
         result << calculate(modId, algId, level, st->loop.toValue);
+
+        Bytecode::Instruction popTo;
+        popTo.type = Bytecode::POP;
+        popTo.registerr = level * 5 - 3;
+        result << popTo;
+
+        Bytecode::Instruction pushTo;
+        pushTo.type = Bytecode::PUSH;
+        pushTo.registerr = popTo.registerr;
+        result << pushTo;
+
+        // First time: Load 'step'-value and store it in register
+        if (st->loop.stepValue) {
+            result << calculate(modId, algId, level, st->loop.stepValue);
+        }
+        else {
+            Bytecode::Instruction loadOneStep;
+            loadOneStep.type = Bytecode::LOAD;
+            loadOneStep.scope = Bytecode::CONST;
+            loadOneStep.arg = constantValue(Bytecode::VT_int, 1);
+            result << loadOneStep;
+        }
+
+        Bytecode::Instruction popStep;
+        popStep.type = Bytecode::POP;
+        popStep.registerr = level * 5 - 4;
+        result << popStep;
+
+        Bytecode::Instruction pushStep;
+        pushStep.type = Bytecode::PUSH;
+        pushStep.registerr = level * 5 - 4;
+
 
         // First time: Compare values and go to end if neccessary
 
-        a.type = Bytecode::LEQ;
-        result << a;
-        a.type = Bytecode::POP;
-        a.registerr = 0;
-        result << a;
-        a.type = Bytecode::JZ;
-        a.registerr = 0;
-        jzIp = result.size();
-        result << a;
+        Bytecode::Instruction pushFrom, loadInitial;
+        pushFrom.type = pushTo.type = Bytecode::PUSH;
+        loadInitial.type = Bytecode::LOAD;
+        pushFrom.registerr = level * 5 - 2;
+        pushTo.registerr = level * 5 - 3;
+        findVariable(modId, algId, st->loop.forVariable, loadInitial.scope, loadInitial.arg);
+        result << pushFrom << pushTo << pushStep << loadInitial;
+
+
+        Bytecode::Instruction inRange;
+        inRange.type = Bytecode::INRANGE;
+        result << inRange;
+
+        Bytecode::Instruction gotoEnd;
+        gotoEnd.type = Bytecode::JZ;
+        gotoEnd.registerr = 0;
+        jzIp << result.size();
+        result << gotoEnd;
 
         // Begin
         beginIp = result.size();
@@ -1436,43 +1494,56 @@ void Generator::LOOP(int modId, int algId,
         result << l;
 
         // Change variable
-        if (st->loop.forVariable->dimension>0) {
-            for (int i=st->loop.forVariable->dimension-1; i>=0; i--) {
-                result << calculate(modId, algId, level, st->expressions[i]);
-            }
-        }
+
         Bytecode::Instruction a;
-        a.type = st->loop.forVariable->dimension>0 ? Bytecode::LOADARR : Bytecode::LOAD;
+        a.type = Bytecode::LOAD;
         findVariable(modId, algId, st->loop.forVariable, a.scope, a.arg);
         result << a;
 
-        if (st->loop.stepValue) {
-            result << calculate(modId, algId, level, st->loop.stepValue);
-        }
-        else {
-            a.type = Bytecode::LOAD;
-            a.scope = Bytecode::CONST;
-            a.arg = constantValue(Bytecode::VT_int, 1);
-            result << a;
-        }
+        // Load 'step'-value
+
+        a.type = Bytecode::PUSH;
+        a.registerr = level * 5 - 4;
+        result << a;
+
+        // Calculate new value
         a.type = Bytecode::SUM;
         result << a;
+
         a.type = Bytecode::POP;
         a.registerr = level * 5;
         result << a;
+
+        // Load 'from'-value
         a.type = Bytecode::PUSH;
+        a.registerr = level * 5 - 2;
         result << a;
 
         // Load 'to'-value
-        result << calculate(modId, algId, level, st->loop.toValue);
+        a.type = Bytecode::PUSH;
+        a.registerr = level * 5 - 3;
+        result << a;
+
+        // Load 'step'-value
+        a.type = Bytecode::PUSH;
+        a.registerr = level * 5 - 4;
+        result << a;
+
+        // Load ans store value to variable
+        a.type = Bytecode::PUSH;
+        a.registerr = level * 5;
+        result << a;
+
+        a.type = Bytecode::STORE;
+        findVariable(modId, algId, st->loop.forVariable, a.scope, a.arg);
+        result << a;
+
 
         // Compare
 
-        a.type = Bytecode::LEQ;
+        a.type = Bytecode::INRANGE;
         result << a;
-        a.type = Bytecode::POP;
-        a.registerr = 0;
-        result << a;
+
         a.type = Bytecode::JZ;
         a.registerr = 0;
         jzIp2 = result.size();
@@ -1483,20 +1554,6 @@ void Generator::LOOP(int modId, int algId,
             result << clmarg;
         }
 
-        // Store variable
-
-        a.type = Bytecode::PUSH;
-        a.registerr = level * 5;
-        result << a;
-
-        if (st->loop.forVariable->dimension>0) {
-            for (int i=st->loop.forVariable->dimension-1; i>=0; i--) {
-                result << calculate(modId, algId, level, st->expressions[i]);
-            }
-        }
-        a.type = st->loop.forVariable->dimension>0 ? Bytecode::STOREARR : Bytecode::STORE;
-        findVariable(modId, algId, st->loop.forVariable, a.scope, a.arg);
-        result << a;
     }
 
     // Jump to loop begin
@@ -1519,6 +1576,19 @@ void Generator::LOOP(int modId, int algId,
     }
     if (jzIp2!=-1) {
         result[jzIp2].arg = result.size();
+    }
+
+    if (st->loop.type==AST::LoopFor) {
+        // Restore initial variable value
+        Bytecode::Instruction pushInitial, storeInitial, popVoid;
+        pushInitial.type = Bytecode::PUSH;
+        storeInitial.type = Bytecode::STORE;
+        popVoid.type = Bytecode::POP;
+        pushInitial.registerr = level * 5 - 1;
+        findVariable(modId, algId, st->loop.forVariable, storeInitial.scope, storeInitial.arg);
+        popVoid.registerr = 0;
+
+        result << ctlOn << pushInitial << storeInitial << popVoid << ctlOff;
     }
 
     setBreakAddress(result, level, result.size());

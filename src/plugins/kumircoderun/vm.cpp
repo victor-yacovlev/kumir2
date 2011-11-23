@@ -89,6 +89,7 @@ void VM::reset()
     b_nextCallInto = false;
     s_error = "";
     Variant::error = "";
+    Variant::ignoreUndefinedError = false;
 //    stack_values.clear();
     stack_values.reset();
 //    stack_contexts.clear();
@@ -263,7 +264,7 @@ void VM::evaluateNextInstruction()
     int ip = stack_contexts.top().IP;
     const QVector<Instruction> * program = stack_contexts.top().program;
     const Instruction instr = program->at(ip);
-//    qDebug() << "Evaluating " << ip << ": " << instructionToString(instr);
+    qDebug() << "Evaluating " << ip << ": " << instructionToString(instr);
     switch (instr.type) {
     case CALL:
         do_call(instr.module, instr.arg);
@@ -318,6 +319,12 @@ void VM::evaluateNextInstruction()
         break;
     case SETREF:
         do_setref(instr.scope, instr.arg);
+        break;
+    case CTL:
+        do_ctl(instr.module, instr.arg);
+        break;
+    case INRANGE:
+        do_inrange();
         break;
     case SUM:
         do_sum();
@@ -398,6 +405,33 @@ void VM::do_halt(quint16 lineNo)
     else
         emit outputRequest("\n"+tr("STOP AT LINE %1.").arg(lineNo));
     stack_contexts.reset();
+}
+
+void VM::do_ctl(quint8 parameter, quint16 value)
+{
+    if (parameter==0x00) {
+        Variant::ignoreUndefinedError = value>0;
+    }
+    nextIP();
+}
+
+void VM::do_inrange()
+{
+    Q_ASSERT(stack_values.size()>=4);
+    Variant value = stack_values.pop();
+    Variant step = stack_values.pop();
+    Variant to = stack_values.pop();
+    Variant from = stack_values.pop();
+
+    int iValue = value.toInt();
+    int iStep = step.toInt();
+    int iFrom = from.toInt();
+    int iTo = to.toInt();
+    bool res = iStep>=0
+            ? (iFrom <= iValue) && (iValue <= iTo)
+            : (iFrom >= iValue) && (iValue >= iTo);
+    stack_contexts.top().registers[0].setValue(QVariant(res));
+    nextIP();
 }
 
 void VM::do_call(quint8 mod, quint16 alg)
