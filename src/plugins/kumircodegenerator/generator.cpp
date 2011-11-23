@@ -1356,37 +1356,17 @@ void Generator::LOOP(int modId, int algId,
             result << l;
         }
 
-        // Set 'ignore undefined value' flag
-
-        result << ctlOn;
-
-        // Store variable value if exists
-        Bytecode::Instruction loadOld;
-        loadOld.type = Bytecode::LOAD;
-        findVariable(modId, algId, st->loop.forVariable, loadOld.scope, loadOld.arg);
-        result << loadOld;
-
-        Bytecode::Instruction popOld;
-        popOld.type = Bytecode::POP;
-        popOld.registerr = level * 5 - 1;
-        result << popOld;
-
-        // Unset 'ignore undefined value' flag
-        result << ctlOff;
-
-
-        // Calculate and store to variable its initial value
+        // Calculate 'from'-value
         result << calculate(modId, algId, level, st->loop.fromValue);
-
-        Bytecode::Instruction a;
-        a.type = Bytecode::STORE;
-        findVariable(modId, algId, st->loop.forVariable, a.scope, a.arg);
-        result << a;
 
         Bytecode::Instruction popFrom;
         popFrom.type = Bytecode::POP;
         popFrom.registerr = level * 5 - 2;
         result << popFrom;
+
+        Bytecode::Instruction pushFrom;
+        pushFrom.type = Bytecode::PUSH;
+        pushFrom.registerr = popFrom.registerr;
 
 
         // First time: Load 'to'-value and store it in register
@@ -1400,7 +1380,6 @@ void Generator::LOOP(int modId, int algId,
         Bytecode::Instruction pushTo;
         pushTo.type = Bytecode::PUSH;
         pushTo.registerr = popTo.registerr;
-        result << pushTo;
 
         // First time: Load 'step'-value and store it in register
         if (st->loop.stepValue) {
@@ -1423,50 +1402,40 @@ void Generator::LOOP(int modId, int algId,
         pushStep.type = Bytecode::PUSH;
         pushStep.registerr = level * 5 - 4;
 
-        Bytecode::Instruction pushFrom;
-        pushFrom.type = Bytecode::PUSH;
-        pushFrom.registerr = level * 5 - 2;
 
         // First time: decrease value by 'step', so in will
         // be increased in nearest future
 
-        Bytecode::Instruction loadInitial;
-        loadInitial.type = Bytecode::LOAD;
-        findVariable(modId, algId, st->loop.forVariable, loadInitial.scope, loadInitial.arg);
-        result << loadInitial << pushStep;
-
         Bytecode::Instruction subInitial;
         subInitial.type = Bytecode::SUB;
-        result << subInitial;
+        result << pushFrom << pushStep << subInitial;
 
-        Bytecode::Instruction storeInitial;
-        storeInitial.type = Bytecode::STORE;
-        storeInitial.scope = loadInitial.scope;
-        storeInitial.arg = loadInitial.arg;
-        result << storeInitial;
+        Bytecode::Instruction popCurrent;
+        popCurrent.type = Bytecode::POP;
+        popCurrent.registerr = level * 5;
+
+        Bytecode::Instruction pushCurrent;
+        pushCurrent.type = Bytecode::PUSH;
+        pushCurrent.registerr = popCurrent.registerr;
+
+        result << popCurrent;
 
         Bytecode::Instruction popVoid;
         popVoid.type = Bytecode::POP;
         popVoid.registerr = 0;
-        result << popVoid;
 
         // Begin
         beginIp = result.size();
-
-        // Clear margin
-        if (lineNo!=-1) {
-            result << l << clmarg;
-        }
 
         // Begin of loop -- check if loop variable in corresponding range
         //    a) push variables for INRANGE
         result << pushStep << pushFrom << pushTo;
         //    b) calculate current value and store into variable
-        result << loadInitial << pushStep;
+        result << pushCurrent << pushStep;
         Bytecode::Instruction sum;
         sum.type = Bytecode::SUM;
         result << sum;
-        result << storeInitial;
+        result << popCurrent << pushCurrent;
         //    c) check if variable in range
 
         Bytecode::Instruction inRange;
@@ -1478,6 +1447,17 @@ void Generator::LOOP(int modId, int algId,
         gotoEnd.registerr = 0;
         jzIp = result.size();
         result << gotoEnd;
+
+        // Clear margin
+        if (lineNo!=-1) {
+            result << l << clmarg;
+        }
+
+        // Set variable to current loop value
+        Bytecode::Instruction setVariableValue;
+        setVariableValue.type = Bytecode::STORE;
+        findVariable(modId, algId, st->loop.forVariable, setVariableValue.scope, setVariableValue.arg);
+        result << pushCurrent << setVariableValue << popVoid;
     }
 
     QList<Bytecode::Instruction> instrs = instructions(modId, algId, level, st->loop.body);
@@ -1557,24 +1537,24 @@ void Generator::LOOP(int modId, int algId,
 
     int endPos = result.size();
 
-    if (st->loop.type==AST::LoopFor) {
-        Bytecode::Instruction el;
-        el.type = Bytecode::LINE;
-        el.arg = st->loop.endLexems.size()>0
-                ? st->loop.endLexems[0]->lineNo
-                : -1;
-        result << el;
-        // Restore initial variable value
-        Bytecode::Instruction pushInitial, storeInitial, popVoid;
-        pushInitial.type = Bytecode::PUSH;
-        storeInitial.type = Bytecode::STORE;
-        popVoid.type = Bytecode::POP;
-        pushInitial.registerr = level * 5 - 1;
-        findVariable(modId, algId, st->loop.forVariable, storeInitial.scope, storeInitial.arg);
-        popVoid.registerr = 0;
+//    if (st->loop.type==AST::LoopFor) {
+//        Bytecode::Instruction el;
+//        el.type = Bytecode::LINE;
+//        el.arg = st->loop.endLexems.size()>0
+//                ? st->loop.endLexems[0]->lineNo
+//                : -1;
+//        result << el;
+//        // Restore initial variable value
+//        Bytecode::Instruction pushInitial, storeInitial, popVoid;
+//        pushInitial.type = Bytecode::PUSH;
+//        storeInitial.type = Bytecode::STORE;
+//        popVoid.type = Bytecode::POP;
+//        pushInitial.registerr = level * 5 - 1;
+//        findVariable(modId, algId, st->loop.forVariable, storeInitial.scope, storeInitial.arg);
+//        popVoid.registerr = 0;
 
-        result << ctlOn << pushInitial << storeInitial << popVoid << ctlOff;
-    }
+//        result << ctlOn << pushInitial << storeInitial << popVoid << ctlOff;
+//    }
 
     setBreakAddress(result, level, endPos);
 
