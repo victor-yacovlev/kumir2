@@ -432,6 +432,7 @@ void Run::run()
         }
         vm->evaluateNextInstruction();
         if (!vm->error().isEmpty()) {
+            emit lineChanged(vm->effectiveLineNo());
             emit error(vm->error());
             break;
         }

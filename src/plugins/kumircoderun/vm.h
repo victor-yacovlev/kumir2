@@ -21,6 +21,7 @@ public:
     enum RunEntryPoint { EP_Main, EP_Testing };
     explicit VM(QObject *parent = 0);
     void reset();
+    int effectiveLineNo() const;
     void setAvailableActors(const QList<ActorInterface*> & actors);
     ElemType topStackType() const;
     void evaluateNextInstruction();
@@ -93,6 +94,7 @@ private:
     QMap< quint32, QVector<Variant> > cleanLocalTables;
     QString s_error;
     bool b_nextCallInto;
+    unsigned int i_backtraceSkip;
 
     RunEntryPoint e_entryPoint;
 

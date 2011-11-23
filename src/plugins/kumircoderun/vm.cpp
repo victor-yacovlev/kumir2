@@ -87,6 +87,7 @@ void VM::reset()
     last_context = Context();
     b_blindMode = false;
     b_nextCallInto = false;
+    i_backtraceSkip = 0;
     s_error = "";
     Variant::error = "";
     Variant::ignoreUndefinedError = false;
@@ -407,10 +408,21 @@ void VM::do_halt(quint16 lineNo)
     stack_contexts.reset();
 }
 
+int VM::effectiveLineNo() const
+{
+    if (stack_contexts.size()==0)
+        return -1;
+    int index = qMax(0, int(stack_contexts.size()-1 - i_backtraceSkip));
+    return stack_contexts.at(index).lineNo;
+}
+
 void VM::do_ctl(quint8 parameter, quint16 value)
 {
     if (parameter==0x00) {
         Variant::ignoreUndefinedError = value>0;
+    }
+    else if (parameter==0x01) {
+        i_backtraceSkip = value;
     }
     nextIP();
 }
