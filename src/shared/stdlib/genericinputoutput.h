@@ -13,6 +13,7 @@ namespace StdLib {
 
 class STDLIB_EXPORT GenericInputOutput : public QObject
 {
+    Q_OBJECT
 public:
     explicit GenericInputOutput(QObject *parent = 0);
     void doInput(const QString &format);

@@ -1737,7 +1737,12 @@ void VM::setResults(
             }
             mt += "]";
         }
-        mt += "="+value.toString();
+        if (value.type()==QVariant::Bool) {
+            mt += "="+(value.toBool()? tr("true") : tr("false"));
+        }
+        else {
+            mt += "="+value.toString();
+        }
         marginText << mt;
         Q_CHECK_PTR(v);
         v->setValue(inds,value);

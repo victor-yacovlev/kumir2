@@ -196,8 +196,10 @@ void GenericInputOutput::validate(QList<QVariant::Type> L, QList<InputTerm> S, Q
         if ( l == QVariant::Bool ) {
             t = S[i];
             bool ok;
-            ok = t.text.toLower() == tr("yes");
-            ok = ok || t.text.toLower() == tr("no");
+            const QString YES = tr("yes", "GenericInputOutput");
+            const QString NO = tr("no", "GenericInputOutput");
+            ok = t.text.toLower() == YES;
+            ok = ok || t.text.toLower() == NO;
             t.valid = ok;
             if ( ok )
                 t.error = OK;

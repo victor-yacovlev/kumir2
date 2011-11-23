@@ -16,6 +16,7 @@ set(MOC_HEADERS
     connector.h actorwindow.h
     connector_backend.h
     connector_${CONNECTOR_MODULE}.h
+    genericinputoutput.h
 )
 
 set(HEADERS
