@@ -419,9 +419,9 @@ void VM::do_inrange()
 {
     Q_ASSERT(stack_values.size()>=4);
     Variant value = stack_values.pop();
-    Variant step = stack_values.pop();
     Variant to = stack_values.pop();
     Variant from = stack_values.pop();
+    Variant step = stack_values.pop();
 
     int iValue = value.toInt();
     int iStep = step.toInt();

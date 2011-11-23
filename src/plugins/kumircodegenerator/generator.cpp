@@ -1413,17 +1413,51 @@ void Generator::LOOP(int modId, int algId,
         pushStep.type = Bytecode::PUSH;
         pushStep.registerr = level * 5 - 4;
 
-
-        // First time: Compare values and go to end if neccessary
-
-        Bytecode::Instruction pushFrom, loadInitial;
-        pushFrom.type = pushTo.type = Bytecode::PUSH;
-        loadInitial.type = Bytecode::LOAD;
+        Bytecode::Instruction pushFrom;
+        pushFrom.type = Bytecode::PUSH;
         pushFrom.registerr = level * 5 - 2;
-        pushTo.registerr = level * 5 - 3;
-        findVariable(modId, algId, st->loop.forVariable, loadInitial.scope, loadInitial.arg);
-        result << pushFrom << pushTo << pushStep << loadInitial;
 
+        // First time: decrease value by 'step', so in will
+        // be increased in nearest future
+
+        Bytecode::Instruction loadInitial;
+        loadInitial.type = Bytecode::LOAD;
+        findVariable(modId, algId, st->loop.forVariable, loadInitial.scope, loadInitial.arg);
+        result << loadInitial << pushStep;
+
+        Bytecode::Instruction subInitial;
+        subInitial.type = Bytecode::SUB;
+        result << subInitial;
+
+        Bytecode::Instruction storeInitial;
+        storeInitial.type = Bytecode::STORE;
+        storeInitial.scope = loadInitial.scope;
+        storeInitial.arg = loadInitial.arg;
+        result << storeInitial;
+
+        Bytecode::Instruction popVoid;
+        popVoid.type = Bytecode::POP;
+        popVoid.registerr = 0;
+        result << popVoid;
+
+        // Begin
+        beginIp = result.size();
+
+        // Clear margin
+        if (lineNo!=-1) {
+            result << l << clmarg;
+        }
+
+        // Begin of loop -- check if loop variable in corresponding range
+        //    a) push variables for INRANGE
+        result << pushStep << pushFrom << pushTo;
+        //    b) calculate current value and store into variable
+        result << loadInitial << pushStep;
+        Bytecode::Instruction sum;
+        sum.type = Bytecode::SUM;
+        result << sum;
+        result << storeInitial;
+        //    c) check if variable in range
 
         Bytecode::Instruction inRange;
         inRange.type = Bytecode::INRANGE;
@@ -1432,11 +1466,8 @@ void Generator::LOOP(int modId, int algId,
         Bytecode::Instruction gotoEnd;
         gotoEnd.type = Bytecode::JZ;
         gotoEnd.registerr = 0;
-        jzIp << result.size();
+        jzIp = result.size();
         result << gotoEnd;
-
-        // Begin
-        beginIp = result.size();
     }
 
     QList<Bytecode::Instruction> instrs = instructions(modId, algId, level, st->loop.body);
@@ -1483,78 +1514,15 @@ void Generator::LOOP(int modId, int algId,
         result << e;
     }    
     else {
-
+        Bytecode::Instruction el;
+        el.type = Bytecode::LINE;
+        el.arg = st->loop.endLexems.size()>0
+                ? st->loop.endLexems[0]->lineNo
+                : -1;
+        result << el;
     }
 
     int jzIp2 = -1;
-
-    if (st->loop.type==AST::LoopFor) {
-        // Change loop variable must be done at end of loop!
-        l.arg = st->lexems[0]->lineNo;
-        result << l;
-
-        // Change variable
-
-        Bytecode::Instruction a;
-        a.type = Bytecode::LOAD;
-        findVariable(modId, algId, st->loop.forVariable, a.scope, a.arg);
-        result << a;
-
-        // Load 'step'-value
-
-        a.type = Bytecode::PUSH;
-        a.registerr = level * 5 - 4;
-        result << a;
-
-        // Calculate new value
-        a.type = Bytecode::SUM;
-        result << a;
-
-        a.type = Bytecode::POP;
-        a.registerr = level * 5;
-        result << a;
-
-        // Load 'from'-value
-        a.type = Bytecode::PUSH;
-        a.registerr = level * 5 - 2;
-        result << a;
-
-        // Load 'to'-value
-        a.type = Bytecode::PUSH;
-        a.registerr = level * 5 - 3;
-        result << a;
-
-        // Load 'step'-value
-        a.type = Bytecode::PUSH;
-        a.registerr = level * 5 - 4;
-        result << a;
-
-        // Load ans store value to variable
-        a.type = Bytecode::PUSH;
-        a.registerr = level * 5;
-        result << a;
-
-        a.type = Bytecode::STORE;
-        findVariable(modId, algId, st->loop.forVariable, a.scope, a.arg);
-        result << a;
-
-
-        // Compare
-
-        a.type = Bytecode::INRANGE;
-        result << a;
-
-        a.type = Bytecode::JZ;
-        a.registerr = 0;
-        jzIp2 = result.size();
-        result << a;
-
-        // Clear margin
-        if (lineNo!=-1) {
-            result << clmarg;
-        }
-
-    }
 
     // Jump to loop begin
 //    lineNo = st->loop.endLexems[0]->lineNo;
@@ -1565,7 +1533,6 @@ void Generator::LOOP(int modId, int algId,
     e.registerr = 0;
     e.arg = beginIp;
     result << e;
-
 
     // Found end of loop
     if (jzIp!=-1) {
@@ -1578,7 +1545,15 @@ void Generator::LOOP(int modId, int algId,
         result[jzIp2].arg = result.size();
     }
 
+    int endPos = result.size();
+
     if (st->loop.type==AST::LoopFor) {
+        Bytecode::Instruction el;
+        el.type = Bytecode::LINE;
+        el.arg = st->loop.endLexems.size()>0
+                ? st->loop.endLexems[0]->lineNo
+                : -1;
+        result << el;
         // Restore initial variable value
         Bytecode::Instruction pushInitial, storeInitial, popVoid;
         pushInitial.type = Bytecode::PUSH;
@@ -1591,7 +1566,7 @@ void Generator::LOOP(int modId, int algId,
         result << ctlOn << pushInitial << storeInitial << popVoid << ctlOff;
     }
 
-    setBreakAddress(result, level, result.size());
+    setBreakAddress(result, level, endPos);
 
 }
 
