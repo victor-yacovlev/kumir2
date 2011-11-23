@@ -336,6 +336,10 @@ int Variant::linearIndex(int a, int b, int c) const
 
 void Variant::init()
 {
+    if (m_reference) {
+        m_reference->init();
+        return;
+    }
     if (i_dimension==0) {
         m_value = QVariant::Invalid;
     }
