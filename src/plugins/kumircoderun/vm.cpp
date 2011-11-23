@@ -89,6 +89,7 @@ void VM::reset()
     b_nextCallInto = false;
     i_backtraceSkip = 0;
     s_error = "";
+    register0 = QVariant::Invalid;
     Variant::error = "";
     Variant::ignoreUndefinedError = false;
 //    stack_values.clear();
@@ -265,7 +266,7 @@ void VM::evaluateNextInstruction()
     int ip = stack_contexts.top().IP;
     const QVector<Instruction> * program = stack_contexts.top().program;
     const Instruction instr = program->at(ip);
-    qDebug() << "Evaluating " << ip << ": " << instructionToString(instr);
+//    qDebug() << "Evaluating " << ip << ": " << instructionToString(instr);
     switch (instr.type) {
     case CALL:
         do_call(instr.module, instr.arg);
@@ -442,7 +443,8 @@ void VM::do_inrange()
     bool res = iStep>=0
             ? (iFrom <= iValue) && (iValue <= iTo)
             : (iFrom >= iValue) && (iValue >= iTo);
-    stack_contexts.top().registers[0].setValue(QVariant(res));
+    register0.setValue(res);
+//    stack_contexts.top().registers[0].setValue(QVariant(res));
     nextIP();
 }
 
@@ -964,7 +966,8 @@ void VM::do_load(quint8 s, quint16 id)
         s_error = Variant::error;
     stack_values.push(val);
     if (val.dimension()==0)
-        stack_contexts.top().registers[0] = val.value();
+//        stack_contexts.top().registers[0] = val.value();
+        register0 = val.value();
     nextIP();
 }
 
@@ -1063,6 +1066,16 @@ void VM::do_loadarr(quint8 s, quint16 id)
             val.setValue(constants[id].value(indeces));
         }
         stack_values.push(val);
+        if (val.baseType()==VT_int)
+            register0 = val.toInt();
+        else if (val.baseType()==VT_float)
+            register0 = val.toReal();
+        else if (val.baseType()==VT_char)
+            register0 = val.toChar();
+        else if (val.baseType()==VT_string)
+            register0 = val.toString();
+        else if (val.baseType()==VT_bool)
+            register0 = val.toBool();
     }
     if (!Variant::error.isEmpty())
         s_error = Variant::error;
@@ -1166,7 +1179,12 @@ void VM::do_jump(quint16 ip)
 
 void VM::do_jnz(quint8 r, quint16 ip)
 {
-    bool v = stack_contexts.top().registers[r].toBool();
+    bool v = false;
+    if (r==0)
+        v = register0.toBool();
+    else
+        v = stack_contexts.top().registers[r] > 0;
+//    bool v = stack_contexts.top().registers[r].toBool();
     if (v) {
         stack_contexts.top().IP = ip;
     }
@@ -1178,7 +1196,12 @@ void VM::do_jnz(quint8 r, quint16 ip)
 
 void VM::do_jz(quint8 r, quint16 ip)
 {
-    bool v = stack_contexts.top().registers[r].toBool();
+//    bool v = stack_contexts.top().registers[r].toBool();
+    bool v = false;
+    if (r==0)
+        v = register0.toBool();
+    else
+        v = stack_contexts.top().registers[r] > 0;
     if (v) {
         nextIP();
     }
@@ -1189,7 +1212,11 @@ void VM::do_jz(quint8 r, quint16 ip)
 
 void VM::do_push(quint8 r)
 {
-    QVariant v = stack_contexts.top().registers[r];
+    QVariant v;
+    if (r==0)
+        v = register0;
+    else
+        v = stack_contexts.top().registers[r];
     if (v.type()==QVariant::Int) {
         stack_values.push(Variant(v.toInt()));
     }
@@ -1211,20 +1238,25 @@ void VM::do_push(quint8 r)
 void VM::do_pop(quint8 r)
 {
     Variant v = stack_values.pop();
-    if (v.baseType()==VT_int) {
+    if (r==0) {
+        if (v.baseType()==VT_int) {
+            register0 = v.toInt();
+        }
+        else if (v.baseType()==VT_float) {
+            register0 = v.toReal();
+        }
+        else if (v.baseType()==VT_bool) {
+            register0 = v.toBool();
+        }
+        else if (v.baseType()==VT_char) {
+            register0 = v.toChar();
+        }
+        else if (v.baseType()==VT_string) {
+            register0 = v.toString();
+        }
+    }
+    else {
         stack_contexts.top().registers[r] = v.toInt();
-    }
-    else if (v.baseType()==VT_float) {
-        stack_contexts.top().registers[r] = v.toReal();
-    }
-    else if (v.baseType()==VT_bool) {
-        stack_contexts.top().registers[r] = v.toBool();
-    }
-    else if (v.baseType()==VT_char) {
-        stack_contexts.top().registers[r] = v.toChar();
-    }
-    else if (v.baseType()==VT_string) {
-        stack_contexts.top().registers[r] = v.toString();
     }
     nextIP();
 }
@@ -1237,7 +1269,11 @@ void VM::do_showreg(quint8 regNo) {
                 && !b_blindMode
                 )
         {
-            QVariant val = stack_contexts.top().registers[regNo];
+            QVariant val;
+            if (regNo==0)
+                val = register0;
+            else
+                val = stack_contexts.top().registers[regNo];
             if (val.type()==QVariant::Bool) {
                 emit valueChangeNotice(lineNo, val.toBool()? tr("true") : tr("false"));
             }
@@ -1305,7 +1341,8 @@ void VM::do_line(quint16 no)
     stack_contexts.top().lineNo = no;
     nextIP();
 //    qDebug() << "LINE " << no;
-//    qDebug() << stack_values.size();
+//    qDebug() << "STACK SIZE " << stack_values.size();
+//    qDebug() << "ACCUMULATOR " << register0;
 }
 
 void VM::do_sum()
@@ -1438,7 +1475,8 @@ void VM::do_neg()
     if (a.baseType()==VT_bool) {
         Variant r(!a.toBool());
         stack_values.push(r);
-        stack_contexts.top().registers[0] = QVariant(!a.toBool());
+//        stack_contexts.top().registers[0] = QVariant(!a.toBool());
+        register0 = QVariant(!a.toBool());
     }
     else if (a.baseType()==VT_int) {
         Variant r(-a.toInt());
@@ -1497,7 +1535,8 @@ void VM::do_eq()
 
     Variant r(result);
     stack_values.push(r);
-    stack_contexts.top().registers[0] = QVariant(result);
+//    stack_contexts.top().registers[0] = QVariant(result);
+    register0 = QVariant(result);
     nextIP();
 }
 
@@ -1527,7 +1566,8 @@ void VM::do_neq()
     }
     Variant r(!result);
     stack_values.push(r);
-    stack_contexts.top().registers[0] = QVariant(result);
+//    stack_contexts.top().registers[0] = QVariant(result);
+    register0 = QVariant(result);
     nextIP();
 }
 
@@ -1554,7 +1594,8 @@ void VM::do_ls()
     }
     Variant r(result);
     stack_values.push(r);
-    stack_contexts.top().registers[0] = QVariant(result);
+//    stack_contexts.top().registers[0] = QVariant(result);
+    register0 = QVariant(result);
     nextIP();
 }
 
@@ -1581,7 +1622,8 @@ void VM::do_gt()
     }
     Variant r(result);
     stack_values.push(r);
-    stack_contexts.top().registers[0] = QVariant(result);
+//    stack_contexts.top().registers[0] = QVariant(result);
+    register0 = QVariant(result);
     nextIP();
 }
 
@@ -1608,7 +1650,8 @@ void VM::do_leq()
     }
     Variant r(result);
     stack_values.push(r);
-    stack_contexts.top().registers[0] = QVariant(result);
+//    stack_contexts.top().registers[0] = QVariant(result);
+    register0 = QVariant(result);
     nextIP();
 }
 
@@ -1635,7 +1678,8 @@ void VM::do_geq()
     }
     Variant r(result);
     stack_values.push(r);
-    stack_contexts.top().registers[0] = QVariant(result);
+//    stack_contexts.top().registers[0] = QVariant(result);
+    register0 = QVariant(result);
     nextIP();
 }
 

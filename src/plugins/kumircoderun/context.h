@@ -22,7 +22,7 @@ struct Context {
         algId = -1;
     }
 
-    QVariant registers[256];
+    int registers[201];
     int IP;
     QVector<Variant> locals;
     QVector<Bytecode::Instruction> * program;

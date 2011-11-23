@@ -78,6 +78,7 @@ signals:
     void clearMargin(int fromLine, int toLine);
 private:
     int contextByIds(int moduleId, int algorhitmId) const;
+    QVariant register0;
     FastStack<Variant> stack_values;
     FastStack<Context> stack_contexts;
     Context last_context;

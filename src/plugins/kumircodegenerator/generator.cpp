@@ -833,7 +833,7 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
                 // We must remove pre-previous value from stack
                 Bytecode::Instruction gotoCheckNext;
                 gotoCheckNext.registerr = 0;
-                gotoCheckNext.arg = result.size()+6;
+                gotoCheckNext.arg = result.size()+5;
                 gotoCheckNext.type = st->operatorr==AST::OpAnd? Bytecode::JNZ : Bytecode::JZ;
                 result << gotoCheckNext;
                 Bytecode::Instruction pop;
@@ -1127,7 +1127,9 @@ void Generator::SWITCHCASEELSE(int modId, int algId, int level, const AST::State
         }
         else {
             if (st->conditionals[i].condition) {
-                result << calculate(modId, algId, level, st->conditionals[i].condition);
+                QList<Bytecode::Instruction> condInstrs = calculate(modId, algId, level, st->conditionals[i].condition);
+                shiftInstructions(condInstrs, result.size());
+                result << condInstrs;
                 Bytecode::Instruction pop;
                 pop.type = Bytecode::POP;
                 pop.registerr = 0;
