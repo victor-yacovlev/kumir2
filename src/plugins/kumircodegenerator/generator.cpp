@@ -379,6 +379,14 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     clearmarg.arg = alg->impl.endLexems[0]->lineNo;
     argHandle << clearmarg;
 
+    Bytecode::Instruction ctlOn, ctlOff;
+    ctlOn.type = ctlOff.type = Bytecode::CTL;
+    ctlOn.module = ctlOff.module = 0x01; // Set error stack offset lineno
+    ctlOn.arg = 0x0001;
+    ctlOff.arg = 0x0000;
+
+    argHandle << ctlOn;
+
     for (int i=0; i<alg->header.arguments.size(); i++) {
         Bytecode::Instruction store;
         const AST::Variable * var = alg->header.arguments[i];
@@ -418,6 +426,8 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
         l.arg = alg->impl.beginLexems[0]->lineNo;
         argHandle << l;
     }
+
+    argHandle << ctlOff;
 
     QList<Bytecode::Instruction> pre = instructions(moduleId, id, 0, alg->impl.pre);
     QList<Bytecode::Instruction> body = instructions(moduleId, id, 0, alg->impl.body);
