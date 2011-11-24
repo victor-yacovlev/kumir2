@@ -181,7 +181,7 @@ void Variant::setValue(int index0, const QVariant &value)
 QVariant Variant::value(int index0, int index1) const
 {
     if (m_reference)
-        return m_reference->hasValue(index0, index1);
+        return m_reference->value(index0, index1);
     if (m_value.type()==QVariant::Invalid || l_bounds[6]<2) {
         return false;
     }

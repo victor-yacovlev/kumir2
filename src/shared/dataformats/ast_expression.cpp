@@ -21,6 +21,8 @@ Expression::Expression(const struct Expression * src)
     baseType = src->baseType;
     constant = src->constant;
     dimension = src->dimension;
+    variable = src->variable;
+    function = src->function;
     for (int i=0; i<src->operands.size(); i++) {
         operands << new Expression(src->operands[i]);
     }
