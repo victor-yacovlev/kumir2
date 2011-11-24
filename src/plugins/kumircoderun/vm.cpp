@@ -1511,6 +1511,8 @@ void VM::do_or()
     nextIP();
 }
 
+#define CHAROFSTRING(x) ( x.length()>0? x[0].unicode() : 0x0000 )
+
 void VM::do_eq()
 {
     bool result = false;
@@ -1525,12 +1527,12 @@ void VM::do_eq()
     if (b.baseType()==VT_bool && a.baseType()==VT_bool) {
         result = a.toBool()==b.toBool();
     }
-    if ( (a.baseType()==VT_string || a.baseType()==VT_char)
-         &&
-         (b.baseType()==VT_string || b.baseType()==VT_char)
-         )
+    if (a.baseType()==VT_string || b.baseType()==VT_string)
     {
         result = a.toString()==b.toString();
+    }
+    if (a.baseType()==VT_char && b.baseType()==VT_char) {
+        result = CHAROFSTRING(a.toString()) == CHAROFSTRING(b.toString());
     }
 
     Variant r(result);
@@ -1557,17 +1559,17 @@ void VM::do_neq()
     if (b.baseType()==VT_bool && a.baseType()==VT_bool) {
         result = a.toBool()==b.toBool();
     }
-    if ( (a.baseType()==VT_string || a.baseType()==VT_char)
-         &&
-         (b.baseType()==VT_string || b.baseType()==VT_char)
-         )
+    if (a.baseType()==VT_string || b.baseType()==VT_string)
     {
         result = a.toString()==b.toString();
+    }
+    if (a.baseType()==VT_char && b.baseType()==VT_char) {
+        result = CHAROFSTRING(a.toString()) == CHAROFSTRING(b.toString());
     }
     Variant r(!result);
     stack_values.push(r);
 //    stack_contexts.top().registers[0] = QVariant(result);
-    register0 = QVariant(result);
+    register0 = QVariant(!result);
     nextIP();
 }
 
@@ -1585,12 +1587,12 @@ void VM::do_ls()
     if (b.baseType()==VT_bool && a.baseType()==VT_bool) {
         result = a.toInt()<b.toInt();
     }
-    if ( (a.baseType()==VT_string || a.baseType()==VT_char)
-         &&
-         (b.baseType()==VT_string || b.baseType()==VT_char)
-         )
+    if (a.baseType()==VT_string || b.baseType()==VT_string)
     {
         result = a.toString()<b.toString();
+    }
+    if (a.baseType()==VT_char && b.baseType()==VT_char) {
+        result = CHAROFSTRING(a.toString()) < CHAROFSTRING(b.toString());
     }
     Variant r(result);
     stack_values.push(r);
@@ -1613,12 +1615,12 @@ void VM::do_gt()
     if (b.baseType()==VT_bool && a.baseType()==VT_bool) {
         result = a.toInt()>b.toInt();
     }
-    if ( (a.baseType()==VT_string || a.baseType()==VT_char)
-         &&
-         (b.baseType()==VT_string || b.baseType()==VT_char)
-         )
+    if (a.baseType()==VT_string || b.baseType()==VT_string)
     {
         result = a.toString()>b.toString();
+    }
+    if (a.baseType()==VT_char && b.baseType()==VT_char) {
+        result = CHAROFSTRING(a.toString()) > CHAROFSTRING(b.toString());
     }
     Variant r(result);
     stack_values.push(r);
@@ -1641,12 +1643,12 @@ void VM::do_leq()
     if (b.baseType()==VT_bool && a.baseType()==VT_bool) {
         result = a.toInt()<=b.toInt();
     }
-    if ( (a.baseType()==VT_string || a.baseType()==VT_char)
-         &&
-         (b.baseType()==VT_string || b.baseType()==VT_char)
-         )
+    if (a.baseType()==VT_string || b.baseType()==VT_string)
     {
         result = a.toString()<=b.toString();
+    }
+    if (a.baseType()==VT_char && b.baseType()==VT_char) {
+        result = CHAROFSTRING(a.toString()) <= CHAROFSTRING(b.toString());
     }
     Variant r(result);
     stack_values.push(r);
@@ -1669,12 +1671,12 @@ void VM::do_geq()
     if (b.baseType()==VT_bool && a.baseType()==VT_bool) {
         result = a.toInt()>=b.toInt();
     }
-    if ( (a.baseType()==VT_string || a.baseType()==VT_char)
-         &&
-         (b.baseType()==VT_string || b.baseType()==VT_char)
-         )
+    if (a.baseType()==VT_string || b.baseType()==VT_string)
     {
         result = a.toString()>=b.toString();
+    }
+    if (a.baseType()==VT_char && b.baseType()==VT_char) {
+        result = CHAROFSTRING(a.toString()) >= CHAROFSTRING(b.toString());
     }
     Variant r(result);
     stack_values.push(r);
