@@ -119,7 +119,7 @@ void Plane::updateScrollBars()
         w = qMax(w, sessionMargin*2 + ss.width());
         h += sessionMargin + ss.height();
         if (i==m_terminal->l_sessions.size()-1) {
-            h += height()-ss.height()-2*sessionMargin;
+            h += qMax(0, height()-ss.height()-2*sessionMargin);
         }
     }
 

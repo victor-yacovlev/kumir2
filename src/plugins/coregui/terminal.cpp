@@ -196,7 +196,7 @@ void Term::output(const QString & text)
     if (l_sessions.isEmpty())
         l_sessions << new OneSession(-1,"unknown", m_plane);
     l_sessions.last()->output(text);
-    qDebug() << "output " << text;
+//    qDebug() << "output " << text;
     m_plane->updateScrollBars();
     if (sb_vertical->isEnabled())
         sb_vertical->setValue(sb_vertical->maximum());
