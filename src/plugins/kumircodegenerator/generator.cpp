@@ -1528,6 +1528,7 @@ void Generator::LOOP(int modId, int algId,
         e.registerr = 0;
         result << e;
         // Show counter value at margin
+        swreg.registerr = 0;
         if (lineNo!=-1) {
             result << swreg;
         }
