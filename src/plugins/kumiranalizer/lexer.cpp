@@ -906,6 +906,20 @@ void popLexemsUntilPrimaryKeywordOrVarDecl(QList<Lexem*> &lexems, Statement &res
     }
 }
 
+void popLexemsUntilPrimaryKeywordOrColon(QList<Lexem*> &lexems, Statement &result)
+{
+    while (lexems.size()>0) {
+        Lexem * lx = lexems[0];
+        if (lx->type==LxOperSemicolon ||
+                (lx->type & LxTypePrimaryKwd && lx->type!=LxPriAssign))
+            break;
+        lexems.pop_front();
+        result.data << lx;
+        if (lx->type==LxOperColon)
+            break;
+    }
+}
+
 void popLexemsUntilSemicolon(QList<Lexem*> &lexems, Statement &result)
 {
     while (lexems.size()>0) {
@@ -1139,7 +1153,7 @@ void popCaseStatement(QList<Lexem*> &lexems, Statement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeyword(lexems, result);
+    popLexemsUntilPrimaryKeywordOrColon(lexems, result);
 }
 
 void popLoopStatement(QList<Lexem*> &lexems, Statement &result)
