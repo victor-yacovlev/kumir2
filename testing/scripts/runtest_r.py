@@ -7,7 +7,7 @@ import os.path
 import os
 import kumirutils
 
-TEST_DIRS = [ "tErrors","tOur","tTOS" ]
+TEST_DIRS = [ "tKushnirenko","tKushnirenko_Nov","tOur","tTOS" ]
 
 out = sys.stdout
 

@@ -77,6 +77,8 @@ def __run_util(args):
     proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     err = err.strip()
+    if proc.returncode<0:
+        sys.stderr.write("CRASHED!\n")
     if len(err)>0:
         errors = err.split("\n")
     else:
@@ -92,6 +94,8 @@ class __TimeableProcess:
     def __thread_run(self):
         self.proc = subprocess.Popen(self.args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.out, self.err = self.proc.communicate(self.indata)
+        if self.proc.returncode<0:
+            sys.stderr.write("CRASHED!\n")
     def start(self, args, indata):
         self.args = args
         self.indata = indata
@@ -100,6 +104,7 @@ class __TimeableProcess:
         thread.join(TIMEOUT)
         if thread.is_alive():
             self.proc.kill()
+            sys.stderr.write("KILLED BY TIMEOUT!\n")
             thread.join()
         return self.out, self.err
 
