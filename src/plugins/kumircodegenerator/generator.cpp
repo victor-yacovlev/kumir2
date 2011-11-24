@@ -1071,9 +1071,26 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
     jz.registerr = 0;
     result << jz;
 
-    QList<Bytecode::Instruction> thenInstrs = instructions(modId, algId, level, st->conditionals[0].body);
-    shiftInstructions(thenInstrs, result.size());
-    result += thenInstrs;
+
+    Bytecode::Instruction ll, error;
+    if (st->conditionals[0].conditionError.size()>0) {
+        ll.type = Bytecode::LINE;
+        if (st->conditionals[0].lexems.isEmpty())
+            ll.arg = st->lexems[0]->lineNo;
+        else
+            ll.arg = st->conditionals[0].lexems[0]->lineNo;
+        const QString msg = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->conditionals[0].conditionError);
+        error.type = Bytecode::ERROR;
+        error.scope = Bytecode::CONST;
+        error.arg = constantValue(Bytecode::VT_string, msg);
+        result << ll << error;
+    }
+    else {
+        QList<Bytecode::Instruction> thenInstrs = instructions(modId, algId, level, st->conditionals[0].body);
+        shiftInstructions(thenInstrs, result.size());
+        result += thenInstrs;
+    }
+
     result[jzIP].arg = result.size();
 
     if (st->conditionals.size()>1) {
@@ -1082,9 +1099,23 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
         jump.type = Bytecode::JUMP;
         result << jump;
         result[jzIP].arg = result.size();
-        QList<Bytecode::Instruction> elseInstrs = instructions(modId, algId, level, st->conditionals[1].body);
-        shiftInstructions(elseInstrs, result.size());
-        result += elseInstrs;
+        if (st->conditionals[1].conditionError.size()>0) {
+            const QString msg = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->conditionals[1].conditionError);
+            ll.type = Bytecode::LINE;
+            if (st->conditionals[1].lexems.isEmpty())
+                ll.arg = st->lexems[0]->lineNo;
+            else
+                ll.arg = st->conditionals[1].lexems[0]->lineNo;
+            error.type = Bytecode::ERROR;
+            error.scope = Bytecode::CONST;
+            error.arg = constantValue(Bytecode::VT_string, msg);
+            result << ll << error;
+        }
+        else {
+            QList<Bytecode::Instruction> elseInstrs = instructions(modId, algId, level, st->conditionals[1].body);
+            shiftInstructions(elseInstrs, result.size());
+            result += elseInstrs;
+        }
         result[jumpIp].arg = result.size();
     }
 }

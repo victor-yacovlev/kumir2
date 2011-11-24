@@ -348,7 +348,7 @@ void SyntaxAnalizer::processAnalisys()
                     else if (st.type==LxPriEndLoop || st.type==LxPriFi) {
                         st.statement->endBlockError = st.data[j]->error;
                     }
-                    else if (st.type==LxPriCase) {
+                    else if (st.type==LxPriCase || st.type==LxPriElse) {
                         if (st.conditionalIndex < st.statement->conditionals.size()) {
                             st.statement->conditionals[st.conditionalIndex].conditionError = st.data[j]->error;
                         }

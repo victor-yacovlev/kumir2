@@ -1416,6 +1416,17 @@ void PDAutomataPrivate::processCorrectIf()
     source.at(currentPosition)->statement = currentContext.top()->last();
 }
 
+void PDAutomataPrivate::processCorrectThenIfNotExists()
+{
+    bool foundThen
+            = currentAlgorhitm
+            && currentAlgorhitm->impl.body.size()>0
+            && currentAlgorhitm->impl.body.last()->type==AST::StIfThenElse
+            && currentAlgorhitm->impl.body.last()->conditionals.size()>0;
+    if (!foundThen)
+        processCorrectThen();
+}
+
 void PDAutomataPrivate::processCorrectThen()
 {
     setCurrentIndentRank(-1, +1);
@@ -1461,6 +1472,18 @@ void PDAutomataPrivate::processCorrectFi()
 void PDAutomataPrivate::processCorrectElse()
 {
     setCurrentIndentRank(-1, +1);
+//    bool shouldPopContext = true;
+//    bool thenFound = false;
+//    for (int i=currentPosition-1; i>=0; i--) {
+//        if (source[i]->type==LxPriThen) {
+//            thenFound = true;
+//        }
+//        else if (source[i]->type==LxPriIf) {
+//            shouldPopContext = thenFound;
+//            break;
+//        }
+//    }
+//    if (shouldPopContext)
     currentContext.pop();
     Q_ASSERT(currentContext.size()>0);
     if (currentContext.top()->size()>0 && (currentContext.top()->last()->type==AST::StIfThenElse ||
@@ -1613,6 +1636,7 @@ void PDAutomataPrivate::setGarbageIfThenError()
     setCurrentError(_("Garbage between if..then"));
 //    appendSimpleLine();
     processCorrectThen();
+    appendSimpleLine();
 }
 
 void PDAutomataPrivate::setGarbageSwitchCaseError()

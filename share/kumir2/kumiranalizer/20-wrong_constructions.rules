@@ -1,8 +1,9 @@
 ﻿ТО -> иначе ФРАГМЕНТ_АЛГОРИТМА* все : { 
-	setCurrentError("No 'then' before else..fi"); 
-	processCorrectElse(); 
+   setCurrentError("No 'then' before else..fi"); 
+   processCorrectThen();
+   processCorrectElse(); 
 } { 
-	processCorrectFi(); 
+   processCorrectFi(); 
 }
 
 ФРАГМЕНТ_АЛГОРИТМА* -> алг : { setCurrentError("Algorhitm header in algorhitm body"); appendSimpleLine(); }
