@@ -358,12 +358,24 @@ void Variant::setBounds(const QList<int> &bounds)
     i_dimension = bounds.size()/2;
     if (i_dimension>=1) {
         size = bounds[1]-bounds[0]+1;
+        if (size<=0) {
+            error = QObject::tr("Array of negative size", "Variant");
+            return;
+        }
     }
     if (i_dimension>=2) {
         size *= bounds[3]-bounds[2]+1;
+        if (size<=0) {
+            error = QObject::tr("Array of negative size", "Variant");
+            return;
+        }
     }
     if (i_dimension>=3) {
         size *= bounds[5]-bounds[4]+1;
+        if (size<=0) {
+            error = QObject::tr("Array of negative size", "Variant");
+            return;
+        }
     }
     QVariantList data;
     if (m_value.type()==QVariant::List)
