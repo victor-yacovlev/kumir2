@@ -1159,6 +1159,20 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
         }
         result[jumpIp].arg = result.size();
     }
+
+    if (st->endBlockError.size()>0) {
+        const QString msg = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->endBlockError);
+        ll.type = Bytecode::LINE;
+        if (st->endBlockLexems.size()==0)
+            ll.arg = st->lexems[0]->lineNo;
+        else
+            ll.arg = st->endBlockLexems[0]->lineNo;
+        error.type = Bytecode::ERROR;
+        error.scope = Bytecode::CONST;
+        error.arg = constantValue(Bytecode::VT_string, msg);
+        result << ll << error;
+    }
+
 }
 
 void Generator::SWITCHCASEELSE(int modId, int algId, int level, const AST::Statement *st, QList<Bytecode::Instruction> & result)

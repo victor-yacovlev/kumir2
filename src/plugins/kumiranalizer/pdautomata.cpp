@@ -1474,6 +1474,7 @@ void PDAutomataPrivate::processCorrectFi()
         source.at(currentPosition)->mod = currentModule;
         source.at(currentPosition)->alg = currentAlgorhitm;
         source.at(currentPosition)->statement = currentContext.top()->last();
+        source.at(currentPosition)->statement->endBlockLexems = source.at(currentPosition)->data;
     }
 }
 

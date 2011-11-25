@@ -133,7 +133,8 @@ struct ABSTRACTSYNTAXTREE_EXPORT Statement {
     StatementType type;
 
     /** Statement source lexems */
-    QList<struct Lexem*>  lexems;
+    QList<struct Lexem*> lexems;
+    QList<struct Lexem*> endBlockLexems;
 
     /** Compile-time error */
     QString error;
