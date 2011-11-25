@@ -349,6 +349,28 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
 
 void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const AST::Algorhitm *alg)
 {
+    QString headerError =  "";
+    QString beginError = "";
+
+    if (alg->impl.headerLexems.size()>0) {
+        for (int i=0; i<alg->impl.headerLexems.size();i++) {
+            if (alg->impl.headerLexems[i]->error.size()>0) {
+                headerError = ErrorMessages::message("KumirAnalizer", QLocale::Russian, alg->impl.headerLexems[i]->error);
+                break;
+            }
+        }
+    }
+
+    if (alg->impl.beginLexems.size()>0) {
+        for (int i=0; i<alg->impl.beginLexems.size();i++) {
+            if (alg->impl.beginLexems[i]->error.size()>0) {
+                beginError = ErrorMessages::message("KumirAnalizer", QLocale::Russian, alg->impl.beginLexems[i]->error);
+                break;
+            }
+        }
+    }
+
+
     for (int i=0; i<alg->impl.locals.size(); i++) {
         const AST::Variable * var = alg->impl.locals[i];
         Bytecode::TableElem loc;
@@ -374,10 +396,21 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     l.arg = alg->impl.headerLexems[0]->lineNo;
     argHandle << l;
 
-    Bytecode::Instruction clearmarg;
-    clearmarg.type = Bytecode::CLEARMARG;
-    clearmarg.arg = alg->impl.endLexems[0]->lineNo;
-    argHandle << clearmarg;
+    if (headerError.length()>0) {
+        Bytecode::Instruction err;
+        err.type = Bytecode::ERROR;
+        err.scope = Bytecode::CONST;
+        err.arg = constantValue(Bytecode::VT_string, headerError);
+        argHandle << err;
+    }
+
+    if (alg->impl.endLexems.size()>0) {
+
+        Bytecode::Instruction clearmarg;
+        clearmarg.type = Bytecode::CLEARMARG;
+        clearmarg.arg = alg->impl.endLexems[0]->lineNo;
+        argHandle << clearmarg;
+    }
 
     Bytecode::Instruction ctlOn, ctlOff;
     ctlOn.type = ctlOff.type = Bytecode::CTL;
@@ -425,6 +458,14 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     if (alg->impl.beginLexems.size()) {
         l.arg = alg->impl.beginLexems[0]->lineNo;
         argHandle << l;
+    }
+
+    if (beginError.length()>0) {
+        Bytecode::Instruction err;
+        err.type = Bytecode::ERROR;
+        err.scope = Bytecode::CONST;
+        err.arg = constantValue(Bytecode::VT_string, beginError);
+        argHandle << err;
     }
 
     argHandle << ctlOff;

@@ -1381,6 +1381,14 @@ void PDAutomataPrivate::processModEndInsteadOfAlgEnd()
                 source[pos]->data[i]->error = err;
                 source[pos]->data[i]->errorStage = AST::Lexem::PDAutomata;
             }
+            if (currentContext.size()==1) { // Module initializer
+                AST::Statement * st = new AST::Statement;
+                st->type = AST::StError;
+                st->lexems = source[pos]->data;
+                st->error = err;
+                AST::Module * mod = ast->modules.last();
+                mod->impl.initializerBody.prepend(st);
+            }
             setCurrentIndentRank(-2, 0);
         }
     }
@@ -1712,6 +1720,13 @@ void PDAutomataPrivate::setExtraOpenKeywordError(const QString &kw)
     }
     else if (kw==QString::fromUtf8("нач")) {
         setCurrentError(_("Extra 'begin'"));
+        if (currentAlgorhitm) {
+            AST::Statement * st = new AST::Statement;
+            st->type = AST::StError;
+            st->lexems = source[currentPosition]->data;
+            st->error = _("Extra 'begin'");
+            currentAlgorhitm->impl.body.append(st);
+        }
     }
     else if (kw==QString::fromUtf8("иначе")) {
         setCurrentIndentRank(-1,-1);
@@ -1789,6 +1804,9 @@ void PDAutomataPrivate::setExtraCloseKeywordError(const QString &kw)
     }
     else {
         setCurrentError(_("Program structure error"));
+    }
+    if (currentAlgorhitm) {
+        appendSimpleLine();
     }
 }
 

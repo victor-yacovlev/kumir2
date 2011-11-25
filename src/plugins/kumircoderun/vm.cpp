@@ -161,6 +161,13 @@ void VM::reset()
     nextIP(); // Change from -1 to 0
 }
 
+void VM::nextIP()
+{
+    if (stack_contexts.size()>0) {
+        stack_contexts.top().IP ++;
+    }
+}
+
 Variant fromTableElem(const TableElem & e)
 {
     Variant r;

@@ -99,7 +99,7 @@ private:
 
     RunEntryPoint e_entryPoint;
 
-    inline void nextIP() { stack_contexts.top().IP ++; }
+    void nextIP();
 
     QMap< QPair<QString,QString>, QPair<ActorInterface*,quint32> > availableExternalMethods;
 
