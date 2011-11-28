@@ -88,6 +88,7 @@ public slots:
     void processCorrectIf();
     void processCorrectThen();
     void processCorrectThenIfNotExists();
+    void processCorrectThenIfNotExists2();
     void processCorrectFi();
     void processCorrectElse();
     void processCorrectSwitch();

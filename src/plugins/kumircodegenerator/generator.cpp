@@ -1095,31 +1095,34 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
 
 void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> &result)
 {
+    int jzIP = -1;
     int lineNo = st->lexems[0]->lineNo;
     Bytecode::Instruction l;
     l.type = Bytecode::LINE;
     l.arg = lineNo;
     result << l;
 
-    QList<Bytecode::Instruction> conditionInstructions = calculate(modId, algId, level, st->conditionals[0].condition);
-    shiftInstructions(conditionInstructions, result.size());
-    result << conditionInstructions;
+    if (st->conditionals[0].condition) {
+        QList<Bytecode::Instruction> conditionInstructions = calculate(modId, algId, level, st->conditionals[0].condition);
+        shiftInstructions(conditionInstructions, result.size());
+        result << conditionInstructions;
 
-    Bytecode::Instruction pop;
-    pop.type = Bytecode::POP;
-    pop.registerr = 0;
-    result << pop;
+        Bytecode::Instruction pop;
+        pop.type = Bytecode::POP;
+        pop.registerr = 0;
+        result << pop;
 
-    Bytecode::Instruction showreg;
-    showreg.type = Bytecode::SHOWREG;
-    showreg.registerr = 0;
-    result << showreg;
+        Bytecode::Instruction showreg;
+        showreg.type = Bytecode::SHOWREG;
+        showreg.registerr = 0;
+        result << showreg;
 
-    int jzIP = result.size();
-    Bytecode::Instruction jz;
-    jz.type = Bytecode::JZ;
-    jz.registerr = 0;
-    result << jz;
+        jzIP = result.size();
+        Bytecode::Instruction jz;
+        jz.type = Bytecode::JZ;
+        jz.registerr = 0;
+        result << jz;
+    }
 
 
     Bytecode::Instruction ll, error;
@@ -1141,7 +1144,8 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
         result += thenInstrs;
     }
 
-    result[jzIP].arg = result.size();
+    if (jzIP!=-1)
+        result[jzIP].arg = result.size();
 
     if (st->conditionals.size()>1) {
         int jumpIp = result.size();

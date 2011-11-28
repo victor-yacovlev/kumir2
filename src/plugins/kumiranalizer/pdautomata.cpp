@@ -1448,6 +1448,18 @@ void PDAutomataPrivate::processCorrectThenIfNotExists()
         processCorrectThen();
 }
 
+void PDAutomataPrivate::processCorrectThenIfNotExists2()
+{
+    bool foundThenContext
+            = currentContext.size()>1
+            && currentContext.at(currentContext.size()-2)->size()>0
+            && currentContext.at(currentContext.size()-2)->last()->type == AST::StIfThenElse
+            && currentContext.at(currentContext.size()-2)->last()->conditionals.size()>0;
+    if (!foundThenContext)
+        processCorrectThen();
+}
+
+
 void PDAutomataPrivate::processCorrectThen()
 {
     setCurrentIndentRank(-1, +1);
@@ -1492,6 +1504,7 @@ void PDAutomataPrivate::processCorrectFi()
         source.at(currentPosition)->statement->endBlockLexems = source.at(currentPosition)->data;
     }
 }
+
 
 void PDAutomataPrivate::processCorrectElse()
 {

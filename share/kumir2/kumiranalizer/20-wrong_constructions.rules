@@ -1,4 +1,5 @@
 ﻿ТО -> иначе ФРАГМЕНТ_АЛГОРИТМА* все : { 
+   processCorrectThenIfNotExists2();
    processCorrectElse(); 
    setCurrentError("No 'then' before else..fi"); 
    appendSimpleLine();
