@@ -1038,7 +1038,7 @@ QStringList MainWindow::recentFiles(bool fullPaths) const
                 if (QFileInfo(s).isRelative())
                     result << QDir::current().absoluteFilePath(s);
                 else
-                    result << QFileInfo(s).fileName();
+                    result << QFileInfo(s).absoluteFilePath();
             }
         }
         return result;
@@ -1069,11 +1069,12 @@ void MainWindow::addToRecent(const QString &fileName)
 
 void MainWindow::loadRecentFile(const QString & fullPath)
 {
+    QString fn = fullPath.trimmed();
 //    QStringList r = recentFiles(true);
 //    if (index>=0 && index<r.size())
 //        loadFromUrl("file://"+r[index]);
-    if (!fullPath.isEmpty() && QFile(fullPath).exists())
-        loadFromUrl("file://"+fullPath);
+    if (!fn.isEmpty() && QFile(fn).exists())
+        loadFromUrl("file://"+fn);
 }
 
 TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFiles)

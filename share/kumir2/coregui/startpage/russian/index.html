@@ -114,11 +114,12 @@
             </ul>
             <script type="text/javascript">
             var recentFiles = mainWindow.recentFiles(false);
+	    var recentFilesFP = mainWindow.recentFiles(true);
             if (recentFiles.length>0) {
                 document.write("<h2>Недавние файлы</h2>\n");
                 document.write("<ul>\n");
                 for (var i=0; i<recentFiles.length; i++) {
-                    var line = "<a href='' onclick='mainWindow.loadRecentFile("+i+")'>"+recentFiles[i]+"</a>";
+                    var line = "<a href='' onclick='mainWindow.loadRecentFile(\""+recentFilesFP[i]+"\")'>"+recentFiles[i]+"</a>";
                     document.write("<li>"+line+"</li>\n");
                 }
                 document.write("</ul>\n");
