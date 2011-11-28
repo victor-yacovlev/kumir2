@@ -406,13 +406,13 @@ void VM::do_pause(quint16 lineNo)
     nextIP();
 }
 
-void VM::do_halt(quint16 lineNo)
+void VM::do_halt(quint16)
 {
     QMutexLocker l(m_dontTouchMe);
-    if (lineNo==65535)
+//    if (lineNo==65535)
         emit outputRequest("\n"+tr("STOP."));
-    else
-        emit outputRequest("\n"+tr("STOP AT LINE %1.").arg(lineNo));
+//    else
+//        emit outputRequest("\n"+tr("STOP AT LINE %1.").arg(lineNo));
     stack_contexts.reset();
 }
 

@@ -803,14 +803,14 @@ extern "C" void __garbage_collector_end_algorhitm__()
     }
 }
 
-extern "C" void __halt__(int lineNo)
+extern "C" void __halt__(int)
 {
-    if (lineNo!=-1) {
-        fwprintf(stderr, L"STOP AT LINE %i.\n", lineNo);
-    }
-    else {
+//    if (lineNo!=-1) {
+//        fwprintf(stderr, L"STOP AT LINE %i.\n", lineNo);
+//    }
+//    else {
         fwprintf(stderr, L"STOP.\n");
-    }
+//    }
     __free_garbage_collector__();
     exit(0);
 }
