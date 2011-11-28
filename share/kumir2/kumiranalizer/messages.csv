@@ -171,6 +171,7 @@
 "Extra 'not'";"Лишнее “не”";"";"";"";"";
 "'end' instead of 'endloop'";"“кон” вместо “кц”";"";"";"";"";
 "Keyword in name";"Ключевое слово в имени";"";"";"";"";
+"No 'case' after 'switch'";"Нет “при:” после “выбор”";"";"";"";"";
 "Assignment of non-returning algorithm";"У этого алгоритма нет значения";"";"";"";"";
 "Times value not specified";"Сколько раз?";"";"";"";"";
 "First unnamed algorithm should not return anything";"Алгоритм без имени ничего не возвращает";"";"";"";"";

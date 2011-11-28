@@ -1082,7 +1082,7 @@ void PDAutomata::postProcess()
 }
 
 void PDAutomataPrivate::setCurrentIndentRank(int start, int end)
-{
+{   
     source[currentPosition]->indentRank = QPoint(start, end);
 }
 
@@ -1282,7 +1282,20 @@ AST::Statement * PDAutomata::createSimpleAstStatement(Statement * st)
 
 void PDAutomataPrivate::processCorrectAlgEnd()
 {
-    setCurrentIndentRank(-1,  0);
+    int indentStart = 0;
+    for (int i=currentPosition-1; i>=0; i--) {
+        if (source[i]->type==LxPriAlgBegin) {
+            if (currentContext.size()>0 && currentContext.top()->contains(source[i]->statement)) {
+
+            }
+            else {
+                indentStart = - source[i]->indentRank.y();
+                break;
+            }
+        }
+    }
+
+    setCurrentIndentRank(indentStart,  0);
     if (currentAlgorhitm) {
         currentAlgorhitm->impl.endLexems = source.at(currentPosition)->data;
     }
