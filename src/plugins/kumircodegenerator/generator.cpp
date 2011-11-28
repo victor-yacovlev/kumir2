@@ -1017,13 +1017,17 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
 
     if (st->type==AST::StOutput || st->type==AST::StFileOutput) {
         for (int i=st->expressions.size()-1; i>=0; i--) {
-            result << calculate(modId, algId, level, st->expressions[i]);
+            QList<Bytecode::Instruction> instrs = calculate(modId, algId, level, st->expressions[i]);
+            shiftInstructions(instrs, result.size());
+            result << instrs;
         }
         argsCount = st->expressions.size();
     }
     else if (st->type==AST::StAssignFileStream) {
         for (int i=st->expressions.size()-1; i>=0; i--) {
-            result << calculate(modId, algId, level, st->expressions[i]);
+            QList<Bytecode::Instruction> instrs = calculate(modId, algId, level, st->expressions[i]);
+            shiftInstructions(instrs, result.size());
+            result << instrs;
         }
         argsCount = st->expressions.size();
     }

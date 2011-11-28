@@ -1642,7 +1642,16 @@ void PDAutomataPrivate::setGarbageAlgError()
 
 void PDAutomataPrivate::setGarbageIfThenError()
 {
-    setCurrentError(_("Garbage between if..then"));
+    bool hasThen = false;
+    for (int i=currentPosition+1; i<source.size(); i++) {
+        if (source[i]->type==LxPriThen) {
+            hasThen = true;
+            break;
+        }
+    }
+    const QString error = hasThen? _("Garbage between if..then")
+                                 : _("No 'then' after 'if'");
+    setCurrentError(error);
 //    appendSimpleLine();
     processCorrectThen();
     appendSimpleLine();
