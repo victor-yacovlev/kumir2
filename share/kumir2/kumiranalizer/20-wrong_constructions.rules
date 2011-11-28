@@ -16,7 +16,10 @@
 
 КОНЕЦ_ИСПОЛНИТЕЛЯ -> end : { setModuleBeginError("No paired 'end module'"); }
 
-ИСПОЛНИТЕЛЬ* -> алг МУСОР_МЕЖДУ_АЛГ_НАЧ ДОКУМЕНТАЦИЯ ДАНО_НАДО ТЕЛО_АЛГОРИТМА : { setCurrentError("Garbage after algorhitm header"); processCorrectAlgHeader(); }
+ИСПОЛНИТЕЛЬ* -> алг МУСОР_МЕЖДУ_АЛГ_НАЧ ДОКУМЕНТАЦИЯ ДАНО_НАДО ТЕЛО_АЛГОРИТМА : { 
+    
+    processCorrectAlgHeader(); 
+}
 
 АЛГОРИТМ* -> если МУСОР_МЕЖДУ_ЕСЛИ_ТО ТО : { setCurrentError("Garbage after 'if' statement"); processCorrectIf(); }
 АЛГОРИТМ* -> выбор МУСОР_МЕЖДУ_ВЫБОР_ПРИ при ФРАГМЕНТ_АЛГОРИТМА* ПРИ* ИНАЧЕ_ВСЕ : { setCurrentError("Garbage after 'switch' statement"); processCorrectSwitch(); } { processCorrectCase(); }

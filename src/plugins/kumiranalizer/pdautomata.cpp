@@ -1131,7 +1131,11 @@ void PDAutomataPrivate::processCorrectAlgHeader()
     }
     else {
         if (currentModule==0) {
-
+            AST::Module * lastModule = ast->modules.last();
+            if (lastModule->header.type == AST::ModTypeUser) {
+                lastModule->impl.algorhitms << alg;
+                source.at(currentPosition)->mod = lastModule;
+            }
         }
         else {
             currentModule->impl.algorhitms << alg;
