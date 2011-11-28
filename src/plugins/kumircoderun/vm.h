@@ -15,6 +15,7 @@ using namespace Shared;
 
 class VM : public QObject
 {
+    friend class Plugin;
     Q_OBJECT
     Q_ENUMS(RunEntryPoint)
 public:

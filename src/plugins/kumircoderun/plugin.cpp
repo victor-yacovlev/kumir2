@@ -24,6 +24,7 @@ Plugin::Plugin() :
     connect (d->vm, SIGNAL(clearMargin(int,int)),
              this, SIGNAL(clearMargin(int,int)));
     connect (d->vm, SIGNAL(resetModuleRequest(QString)), this, SIGNAL(resetModule(QString)));
+    b_onlyOneTryToInput = false;
 }
 
 bool Plugin::isGuiRequired() const
@@ -202,11 +203,19 @@ void Plugin::handleInput(const QString &format)
             QSet<QPair<int,int> > errpos;
             ok = inp->tryFinishInput(QString::fromWCharArray(buffer), result, errpos, false, error);
             if (!ok) {
-                err[error.toWCharArray(err)] = L'\0';
-                fwprintf(stderr, L"%ls\n", err);
+                if (!b_onlyOneTryToInput) {
+                    err[error.toWCharArray(err)] = L'\0';
+                    fwprintf(stderr, L"%ls\n", err);
+                }
+                else {
+                    d->vm->s_error = error;
+                    break;
+                }
             }
         } while (!ok);
+
         d->finishInput(result);
+
     }
     else {
         emit stopped(Shared::RunInterface::UserInteraction);
@@ -238,6 +247,7 @@ QString Plugin::initialize(const QStringList &)
 #else
         setlocale(LC_CTYPE, ".1251");
 #endif
+        b_onlyOneTryToInput = qApp->arguments().contains("-p");
         QString fileName;
         QStringList programArguments;
         for (int i=1; i<qApp->arguments().size(); i++) {

@@ -381,6 +381,8 @@ bool Run::mustStop()
     QMutexLocker l1(mutex_stopping);
     QMutexLocker l2(mutex_stepDone);
 
+    if (vm->error().length()>0)
+        return true;
 
     if (b_stopping)
         return true;

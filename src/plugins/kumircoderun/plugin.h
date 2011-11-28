@@ -58,6 +58,7 @@ protected:
     QString initialize(const QStringList &);
     QDateTime dt_loadedVersion;
     bool b_done;
+    bool b_onlyOneTryToInput;
 
 protected slots:
     void handleOutput(const QString & text);
