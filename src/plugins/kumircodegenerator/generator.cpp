@@ -25,6 +25,7 @@ void Generator::generateConstantTable()
         Bytecode::TableElem e;
         e.type = Bytecode::EL_CONST;
         e.vtype = cons.first;
+        e.dimension = 1;
         e.id = i;
         e.constantValue = cons.second;
         m_bc->d.prepend(e);
@@ -941,6 +942,10 @@ void Generator::ASSERT(int modId, int algId, int level, const AST::Statement * s
         pop.type = Bytecode::POP;
         pop.registerr = 0;
         result << pop;
+        Bytecode::Instruction showreg;
+        showreg.type = Bytecode::SHOWREG;
+        showreg.registerr = pop.registerr;
+        result << showreg;
         int ip = result.size(); // pointing to next of calculation (i.e. JNZ instruction)
         int targetIp = ip + 2;
         Bytecode::Instruction jnz;

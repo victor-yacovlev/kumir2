@@ -97,7 +97,7 @@ InstructionType typeFromString(const QString & s) {
 }
 
 static const QSet<InstructionType> VariableInstructions = QSet<InstructionType>()
-<< INIT << SETARR << STORE << STOREARR << LOAD << LOADARR << SETMON << UNSETMON << REF << REFARR << SETREF << CTL;
+<< INIT << SETARR << STORE << STOREARR << LOAD << LOADARR << SETMON << UNSETMON << REF << REFARR << SETREF;
 
 static const QSet<InstructionType> ModuleNoInstructions = QSet<InstructionType>()
 << CALL << CTL;
