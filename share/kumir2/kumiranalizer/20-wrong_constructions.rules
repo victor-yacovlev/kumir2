@@ -1,7 +1,7 @@
 ﻿ТО -> иначе ФРАГМЕНТ_АЛГОРИТМА* все : { 
-   setCurrentError("No 'then' before else..fi"); 
-   processCorrectThen();
    processCorrectElse(); 
+   setCurrentError("No 'then' before else..fi"); 
+   appendSimpleLine();
 } { 
    processCorrectFi(); 
 }

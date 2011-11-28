@@ -1460,13 +1460,15 @@ void PDAutomataPrivate::processCorrectThen()
     }
     Q_ASSERT(currentContext.top()->last()->type==AST::StIfThenElse);
     AST::ConditionSpec cond;
+
     cond.lexems = source.at(currentPosition)->data;
     cond.condition = 0;
     source.at(currentPosition)->mod = currentModule;
     source.at(currentPosition)->alg = currentAlgorhitm;
     source.at(currentPosition)->statement = currentContext.top()->last();
     source.at(currentPosition)->conditionalIndex = currentContext.top()->last()->conditionals.size();
-    currentContext.top()->last()->conditionals << cond;
+    if (currentContext.top()->last()->conditionals.size()==0)
+        currentContext.top()->last()->conditionals << cond;
     currentContext.push(&(currentContext.top()->last()->conditionals.last().body));
 }
 
