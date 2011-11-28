@@ -146,7 +146,7 @@ void VM::reset()
         stack_contexts.push(c);
     }
 
-    for (int i=0; i<inits.size(); i++) {
+    for (int i=inits.size()-1; i>=0; i--) {
         quint8 key = inits.keys()[i];
         if (inits[key].instructions.size()>0) {
             Context c;
