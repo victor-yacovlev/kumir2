@@ -68,6 +68,7 @@ protected:
     KumirProgram * m_kumirProgram;
     PascalProgram * m_pascalProgram;
     BrowserComponent m_helpBrowser;
+
     bool b_nosessions;
 
 };

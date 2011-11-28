@@ -1012,6 +1012,12 @@ void MainWindow::showUserManual()
 // Implemented in Plugin class
 }
 
+void MainWindow::showHelp()
+{
+    if (!ui->actionUsage->isChecked())
+        ui->actionUsage->trigger();
+}
+
 void MainWindow::fileOpen()
 {
     const QString recent = m_plugin->mySettings()->value(Plugin::RecentFileKey, QDir::currentPath()).toString();

@@ -75,6 +75,7 @@ public slots:
     void switchWorkspace();
     void showAbout();
     void showUserManual();
+    void showHelp();
 
 private slots:
     void loadRecentFile();
