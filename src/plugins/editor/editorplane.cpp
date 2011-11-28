@@ -1557,8 +1557,12 @@ void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
 void EditorPlane::paintText(QPainter *p, const QRect &rect)
 {
     p->save();
-    int startLine = rect.top()-offset().y() / lineHeight() - 1;
-    int endLine = rect.bottom()-offset().y() / lineHeight() + 1;
+    const int lh = lineHeight();
+    int deltaY = offset().y();
+    int effectiveRectTop = rect.top() - deltaY;
+    int effectiveRectBottom = rect.bottom() - deltaY;
+    int startLine = qMax(effectiveRectTop/lh - 1, 0);
+    int endLine = qMin(effectiveRectBottom/lh + 1, m_document->linesCount()-1);
     int hiddenLineStart = -1;
     if (b_teacherMode && b_hasAnalizer)
     for (int i=0; i<m_document->linesCount(); i++) {
@@ -1567,6 +1571,11 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
             break;
         }
     }
+//    qDebug() << "START LINE " << startLine;
+//    qDebug() << "END LINE" << endLine;
+//    qDebug() << "Delta Y" << deltaY;
+//    qDebug() << "rect " << rect;
+
     for (int i=qMax(startLine, 0); i<endLine+1; i++) {
         int y =  ( i )* lineHeight();
         bool drawThisRect = false;
