@@ -202,6 +202,7 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
     QList<Statement*> removedStatements;
     QList<Statement*> newStatements;
     QList<int> removedLineNumbers = changes.removedLineNumbers.toList();
+    qSort(removedLineNumbers);
     QStringList newLines = changes.newLines;
     int insertPos = statements.size();
     int lineStart = 0;
