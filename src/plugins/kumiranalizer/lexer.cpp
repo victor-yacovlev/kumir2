@@ -819,7 +819,7 @@ void popFirstStatement(QList<Lexem*> & lexems, Statement & result )
         while (lexems.size()>0) {
             Lexem * lx = lexems[0];
             if (lx->type==LxOperSemicolon
-                    || ( lx->type & LxTypePrimaryKwd && lx->type!=LxPriAssign)
+//                    || ( lx->type & LxTypePrimaryKwd && lx->type!=LxPriAssign)
 //                    || lx->type==LxNameClass
                     ) {
                 // end of statement

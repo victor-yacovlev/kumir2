@@ -3133,6 +3133,51 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
             return 0;
         }
 
+        // Catch keyword in name
+        for (std::list<Lexem*>::const_iterator it=lexems.begin(); it!=lexems.end(); it++) {
+            Lexem* lx = (*it);
+            if (lx->type & LxTypePrimaryKwd || lx->type & LxTypeSecondaryKwd || lx->type==LxNameClass) {
+                lx->error = _("Keyword in name");
+                return 0;
+            }
+        }
+
+        // Catch abrakadabra like 'yes "Something"' or 'yes 3' or 'yes "Something"'
+
+        Lexem * boolConst = 0;
+        Lexem * numericConst = 0;
+        Lexem * stringConst = 0;
+        LexemType prevType = LxTypeEmpty;
+        for (std::list<Lexem*>::const_iterator it = lexems.begin(); it!=lexems.end(); it++) {
+            Lexem * lx = (*it);
+            LexemType curType = lx->type;
+            if (curType==LxConstBoolTrue || curType==LxConstBoolFalse)
+                if (!boolConst)
+                    boolConst = lx;
+            if (curType==LxConstInteger || curType==LxConstReal)
+                if (!numericConst)
+                    numericConst = lx;
+            if (curType==LxConstLiteral)
+                if (!stringConst)
+                    stringConst = lx;
+        }
+
+        if (boolConst) {
+            boolConst->error = _("'%1' can't be part of name", boolConst->data);
+            return 0;
+        }
+
+
+        if (stringConst) {
+            stringConst->error = _("Literal can't be part of name");
+            return 0;
+        }
+
+        if (numericConst && numericConst==(*lexems.begin()) ) {
+            numericConst->error = _("Name starts with digit");
+            return 0;
+        }
+
         AST::Algorhitm * a = 0;
         AST::Variable * v = 0;
 
