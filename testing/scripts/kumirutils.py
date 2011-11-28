@@ -130,7 +130,7 @@ def compile_to_native(kumfile):
 
 def run_bytecode(kodfile, indata):
     "Evaluates kumir bytecode and returns output, then input"
-    return __run_program([__binary_path("kumir2-run"), kodfile], indata)
+    return __run_program([__binary_path("kumir2-run"), "-p", kodfile], indata)
 
 def print_usage_and_exit(errcode):
     sys.stderr.write("""Usage:
