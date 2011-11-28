@@ -1287,14 +1287,30 @@ AST::Statement * PDAutomata::createSimpleAstStatement(Statement * st)
 void PDAutomataPrivate::processCorrectAlgEnd()
 {
     int indentStart = 0;
+    bool beginFound = false;
     for (int i=currentPosition-1; i>=0; i--) {
         if (source[i]->type==LxPriAlgBegin) {
             if (currentContext.size()>0 && currentContext.top()->contains(source[i]->statement)) {
 
             }
             else {
+                beginFound = true;
                 indentStart = - source[i]->indentRank.y();
                 break;
+            }
+        }
+    }
+
+    if (!beginFound) {
+        for (int i=currentPosition-1; i>=0; i--) {
+            if (source[i]->type==LxPriAlgHeader) {
+                if (currentContext.size()>0 && currentContext.top()->contains(source[i]->statement)) {
+
+                }
+                else {
+                    indentStart = - source[i]->indentRank.y();
+                    break;
+                }
             }
         }
     }
