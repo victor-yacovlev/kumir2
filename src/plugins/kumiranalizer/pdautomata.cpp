@@ -1707,8 +1707,29 @@ void PDAutomataPrivate::setGarbageIfThenError()
 
 void PDAutomataPrivate::setGarbageSwitchCaseError()
 {
+    bool pushBackZero = false;
+    if (currentContext.top()==0) {
+        currentContext.pop();
+        pushBackZero = true;
+    }
+    if (currentContext.top()->last()->conditionals.isEmpty()) {
+        AST::ConditionSpec dummyCond;
+        dummyCond.condition = new AST::Expression;
+        dummyCond.condition->kind = AST::ExprConst;
+        dummyCond.condition->baseType = AST::TypeBoolean;
+        dummyCond.condition->constant = QVariant(1);
+        currentContext.top()->last()->conditionals << dummyCond;
+    }
+
+
+    currentContext.push(&(currentContext.top()->last()->conditionals.first().body));
+
     setCurrentError(_("Garbage between switch..case"));
     appendSimpleLine();
+    currentContext.pop();
+    if (pushBackZero) {
+        currentContext.push(0);
+    }
 }
 
 void PDAutomataPrivate::setTooManyErrors()

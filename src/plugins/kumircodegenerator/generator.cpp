@@ -1212,9 +1212,11 @@ void Generator::SWITCHCASEELSE(int modId, int algId, int level, const AST::State
             result[lastJzIp].arg = result.size();
             lastJzIp = -1;
         }
-        int lineNo = st->conditionals[i].lexems[0]->lineNo;
-        l.arg = lineNo;
-        result << l;
+        if (st->conditionals[i].lexems.size()>0) {
+            int lineNo = st->conditionals[i].lexems[0]->lineNo;
+            l.arg = lineNo;
+            result << l;
+        }
         if (!st->conditionals[i].conditionError.isEmpty()) {
             const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->conditionals[i].conditionError);
             result << l;

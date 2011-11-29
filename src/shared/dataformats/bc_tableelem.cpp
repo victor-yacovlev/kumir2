@@ -263,11 +263,11 @@ extern QDataStream& operator<<(QDataStream & ds, const TableElem &e)
     if (e.type==EL_EXTERN)
         ds << e.moduleName;
     else if (e.type==EL_CONST) {
-        if (e.constantValue.type()==QVariant::Int)
+        if (e.vtype==VT_int)
             ds << qint32(e.constantValue.toInt());
-        else if (e.constantValue.type()==QVariant::Double)
+        else if (e.vtype==VT_float)
             ds << e.constantValue.toDouble();
-        else if (e.constantValue.type()==QVariant::Bool)
+        else if (e.vtype==VT_bool)
             ds << quint8(e.constantValue.toBool()? 1 : 0);
         else {
             ds << e.constantValue.toString();
