@@ -1506,7 +1506,16 @@ void PDAutomataPrivate::processCorrectThen()
 
 void PDAutomataPrivate::processCorrectFi()
 {
-    currentContext.pop();
+    bool doPop = true;
+
+    if (currentAlgorhitm && currentContext.last()==&(currentAlgorhitm->impl.body))
+        doPop = false;
+
+    if (currentModule && currentContext.last()==&(currentModule->impl.initializerBody))
+        doPop = false;
+
+    if (doPop)
+        currentContext.pop();
 
     if (currentContext.size()>0 && currentContext.last()->size()>0 && (currentContext.top()->last()->type==AST::StIfThenElse
                                             || currentContext.top()->last()->type==AST::StSwitchCaseElse))
