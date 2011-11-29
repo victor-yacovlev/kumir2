@@ -526,6 +526,7 @@ void KumirProgram::handleRunnerStopped(int rr)
 
 void KumirProgram::handleLineChanged(int lineNo)
 {
+    emit activateDocumentTab(i_documentId);
     if (lineNo!=-1) {
         if (plugin_bytecodeRun->error().isEmpty())
             plugin_editor->highlightLineGreen(i_documentId, lineNo);

@@ -45,6 +45,7 @@ public:
     class KumirVariablesWebObject * variablesWebObject();
 signals:
     void giveMeAProgram();
+    void activateDocumentTab(int documentId);
 
 public slots:
     void fastRun();

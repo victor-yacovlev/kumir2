@@ -76,6 +76,7 @@ public slots:
     void showAbout();
     void showUserManual();
     void showHelp();
+    void activateDocumentTab(int documentId);
 
 private slots:
     void loadRecentFile();

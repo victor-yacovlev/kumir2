@@ -211,6 +211,9 @@ QString Plugin::initialize(const QStringList & parameters)
             m_mainWindow->ui->actionUsage, SLOT(setChecked(bool)));
 
 
+    connect(m_kumirProgram, SIGNAL(activateDocumentTab(int)),
+            m_mainWindow, SLOT(activateDocumentTab(int)));
+
     return "";
 }
 

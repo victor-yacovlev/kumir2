@@ -107,7 +107,6 @@ MainWindow::MainWindow(Plugin * p) :
     else {
         connect(ui->actionRestore_previous_session, SIGNAL(triggered()), this, SLOT(restoreSession()));
     }
-
 }
 
 QString MainWindow::StatusbarWidgetCSS =
@@ -150,6 +149,17 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
     return false;
 }
 
+
+void MainWindow::activateDocumentTab(int documentId)
+{
+    for (int i=0; i<ui->tabWidget->count(); i++) {
+        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+        if (twe && twe->documentId==documentId) {
+            ui->tabWidget->setCurrentIndex(i);
+            return;
+        }
+    }
+}
 
 void MainWindow::checkCounterValue()
 {
