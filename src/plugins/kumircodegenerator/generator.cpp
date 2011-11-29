@@ -444,7 +444,7 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
                 argHandle << calculate(moduleId, id, 0, var->bounds[i].first);
             }
             Bytecode::Instruction bounds;
-            bounds.type = Bytecode::SETARR;
+            bounds.type = Bytecode::UPDARR;
             findVariable(moduleId, id, var, bounds.scope, bounds.arg);
             argHandle << bounds;
         }

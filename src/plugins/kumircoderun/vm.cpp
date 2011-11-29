@@ -284,6 +284,9 @@ void VM::evaluateNextInstruction()
     case SETARR:
         do_setarr(instr.scope, instr.arg);
         break;
+    case UPDARR:
+        do_updarr(instr.scope, instr.arg);
+        break;
     case STORE:
         do_store(instr.scope, instr.arg);
         break;
@@ -837,6 +840,59 @@ void VM::do_init(quint8 s, quint16 id)
 }
 
 void VM::do_setarr(quint8 s, quint16 id)
+{
+    QMutexLocker l(m_dontTouchMe);
+    int dim = 0;
+    QList<int> bounds;
+    if (VariableScope(s)==LOCAL) {
+        dim = stack_contexts.top().locals[id].dimension();
+    }
+    else if (VariableScope(s)==GLOBAL) {
+        dim = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].dimension();
+    }
+    else {
+        s_error = tr("Internal error: don't know what is 'init %1 %2'").arg(s).arg(id);
+    }
+    if (dim>0) {
+        QString name;
+        for (int i=0; i<dim*2; i++) {
+            bounds << stack_values.pop().toInt();
+        }
+        if (VariableScope(s)==LOCAL) {
+            stack_contexts.top().locals[id].setBounds(bounds);
+            name = stack_contexts.top().locals[id].name();
+        }
+        else if (VariableScope(s)==GLOBAL) {
+            globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].setBounds(bounds);
+            name = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].name();
+        }
+        s_error = Variant::error;
+        if (!b_blindMode && s_error.isEmpty()) {
+
+        }
+        const int lineNo = stack_contexts.top().lineNo;
+        if (lineNo!=-1 &&
+                (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN) &&
+                !b_blindMode &&
+                stack_contexts.top().type != EL_BELOWMAIN
+                )
+        {
+            QString boundsText;
+            for (int i=0; i<dim; i++) {
+                boundsText += QString::number(bounds[i*2]);
+                boundsText += ":";
+                boundsText += QString::number(bounds[i*2+1]);
+                if (i<dim-1) {
+                    boundsText += ",";
+                }
+            }
+            emit valueChangeNotice(lineNo, name+"["+boundsText+"]");
+        }
+    }
+    nextIP();
+}
+
+void VM::do_updarr(quint8 s, quint16 id)
 {
     QMutexLocker l(m_dontTouchMe);
     int dim = 0;

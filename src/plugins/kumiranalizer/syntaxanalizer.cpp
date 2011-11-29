@@ -37,7 +37,7 @@ struct SyntaxAnalizerPrivate
 
     void parseImport(int str);
     void parseModuleHeader(int str);
-    void parseAlgHeader(int str);
+    void parseAlgHeader(int str, bool onlyName);
     void parseVarDecl(int str);
     void parseAssignment(int str);
     void parseInputOutputAssertPrePost(int str);
@@ -258,11 +258,25 @@ void SyntaxAnalizer::buildTables()
     for (int i=0; i<d->statements.size(); i++) {
         const Statement & st = d->statements[i];
         bool wasError = st.hasError();
+        if (st.type==LxPriAlgHeader) {
+            d->parseAlgHeader(i, true);
+        }
+        if (!wasError && d->statements[i].hasError()) {
+            foreach (Lexem * lx, d->statements[i].data) {
+                if (!lx->error.isEmpty())
+                    lx->errorStage = Lexem::Tables;
+            }
+        }
+    }
+
+    for (int i=0; i<d->statements.size(); i++) {
+        const Statement & st = d->statements[i];
+        bool wasError = st.hasError();
         if (st.type==LxNameClass && st.alg==0) {
             d->parseVarDecl(i);
         }
         if (st.type==LxPriAlgHeader) {
-            d->parseAlgHeader(i);
+            d->parseAlgHeader(i, false);
         }
         if (!wasError && d->statements[i].hasError()) {
             foreach (Lexem * lx, d->statements[i].data) {
@@ -1240,7 +1254,7 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
         st.statement->expressions << leftExpr;
 }
 
-void SyntaxAnalizerPrivate::parseAlgHeader(int str)
+void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName)
 {
     const Statement & st = statements[str];
     if (st.hasError())
@@ -1354,6 +1368,9 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
 
     // Заносим алгоритм в таблицу функций
     alg->header.name = name;
+
+    if (onlyName)
+        return;
 
     // Make this algorhitm public available (if not private name)
     if (!name.isEmpty() && !name.startsWith("_")) {
@@ -1479,6 +1496,36 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str)
     }
 
     alg->header.error = localError;
+}
+
+bool hasFunction(const AST::Expression * expr, QList<Lexem*> & lexems)
+{
+    if (expr->kind==AST::ExprFunctionCall) {
+        lexems += expr->lexems;
+        return true;
+    }
+    else if (expr->kind==AST::ExprSubexpression) {
+        foreach (const AST::Expression * sub, expr->operands) {
+            if (hasFunction(sub,lexems))
+                return true;
+        }
+    }
+    return false;
+}
+
+bool hasArrayElement(const AST::Expression * expr, QList<Lexem*> & lexems)
+{
+    if (expr->kind==AST::ExprArrayElement) {
+        lexems += expr->lexems;
+        return true;
+    }
+    else if (expr->kind==AST::ExprSubexpression) {
+        foreach (const AST::Expression * sub, expr->operands) {
+            if (hasArrayElement(sub,lexems))
+                return true;
+        }
+    }
+    return false;
 }
 
 QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, VariablesGroup &group, AST::Module *mod, AST::Algorhitm *alg)
@@ -1768,10 +1815,29 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
 
                 AST::Expression * left = parseExpression(cBound, mod, alg);
 
+
                 if ( left==0 ) // error
                 {
                     return result; // ошибка разбора левой границы
                 }
+
+
+                QList<Lexem*> leftFunction;
+                QList<Lexem*> leftArray;
+
+                if (hasFunction(left, leftFunction)) {
+                    foreach ( Lexem * a, leftFunction )
+                        a->error = _("Function in array bound");
+                    delete left;
+                    return result;
+                }
+                if (hasArrayElement(left, leftArray)) {
+                    foreach ( Lexem * a, leftArray )
+                        a->error = _("Array element in array bound");
+                    delete left;
+                    return result;
+                }
+
                 if (left->baseType!=AST::TypeInteger)
                 {
                     for (int a=arrayBoundStart; a<=curPos; a++) {
@@ -1848,6 +1914,24 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
                 {
                     return result; // ошибка разбора левой границы
                 }
+                QList<Lexem*> rightFunction;
+                QList<Lexem*> rightArray;
+
+                if (hasFunction(right, rightFunction)) {
+                    foreach ( Lexem * a, rightFunction )
+                        a->error = _("Function in array bound");
+                    delete right;
+                    return result;
+                }
+
+                if (hasArrayElement(right, rightArray)) {
+                    foreach ( Lexem * a, rightArray )
+                        a->error = _("Array element in array bound");
+                    delete right;
+                    return result;
+                }
+
+
                 if (right->baseType!=AST::TypeInteger)
                 {
                     for (int a=arrayBoundStart; a<=curPos; a++) {
@@ -1896,6 +1980,22 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
                 AST::Expression * right = parseExpression(cBound, mod, alg);
 
                 if (right==0) {
+                    return result;
+                }
+                QList<Lexem*> rightFunction;
+                QList<Lexem*> rightArray;
+
+                if (hasFunction(right, rightFunction)) {
+                    foreach ( Lexem * a, rightFunction )
+                        a->error = _("Function in array bound");
+                    delete right;
+                    return result;
+                }
+
+                if (hasArrayElement(right, rightArray)) {
+                    foreach ( Lexem * a, rightArray )
+                        a->error = _("Array element in array bound");
+                    delete right;
                     return result;
                 }
                 if (right->baseType!=AST::TypeInteger)
@@ -2779,6 +2879,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
     result->dimension = 0;
     result->function = function;
     result->operands = realArguments;
+    result->lexems = lexems;
     return result;
 }
 
@@ -3057,6 +3158,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
     result->dimension = 0;
     result->variable = variable;
     result->operands = realArguments;
+    result->lexems = lexems;
     return result;
 }
 

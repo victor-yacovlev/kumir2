@@ -401,6 +401,57 @@ void Variant::setBounds(const QList<int> &bounds)
     }
 }
 
+void Variant::updateBounds(const QList<int> &bounds)
+{
+//    if (m_reference)
+//        return;
+    int size = 0;
+    i_dimension = bounds.size()/2;
+    if (i_dimension>=1) {
+        size = bounds[1]-bounds[0]+1;
+        if (size<=0) {
+            error = QObject::tr("Array of negative size", "Variant");
+            return;
+        }
+    }
+    if (i_dimension>=2) {
+        size *= bounds[3]-bounds[2]+1;
+        if (size<=0) {
+            error = QObject::tr("Array of negative size", "Variant");
+            return;
+        }
+    }
+    if (i_dimension>=3) {
+        size *= bounds[5]-bounds[4]+1;
+        if (size<=0) {
+            error = QObject::tr("Array of negative size", "Variant");
+            return;
+        }
+    }
+    QVariantList data;
+    if (m_value.type()==QVariant::List)
+        data = m_value.toList();
+    while (data.size()<size) {
+        data.append(QVariant::Invalid);
+    }
+    m_value = data;
+    l_bounds[6] = bounds.size();
+    for (int i=0; i<bounds.size(); i++) {
+        l_bounds[i] = bounds[i];
+    }
+
+    if (m_reference) {
+        bool allEqual = true;
+        for (int i=0; i<l_bounds[6]; i++) {
+            allEqual = allEqual &&
+                    l_bounds[i]==m_reference->l_bounds[i] ;
+        }
+        if (!allEqual) {
+            error = QObject::tr("Array bounds mismatch");
+        }
+    }
+}
+
 Variant Variant::toReference()
 {
     Variant result;

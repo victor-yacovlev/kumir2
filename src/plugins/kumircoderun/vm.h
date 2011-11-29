@@ -111,6 +111,7 @@ private:
     void do_call(quint8, quint16);
     void do_init(quint8, quint16);
     void do_setarr(quint8, quint16);
+    void do_updarr(quint8, quint16);
     void do_store(quint8, quint16);
     void do_storearr(quint8, quint16);
     void do_load(quint8, quint16);

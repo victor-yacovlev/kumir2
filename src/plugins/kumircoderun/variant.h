@@ -63,6 +63,7 @@ public:
     }
 
     void setBounds(const QList<int> & bounds);
+    void updateBounds(const QList<int> & bounds);
     QList<int> bounds() const;
 
     bool hasValue() const;
