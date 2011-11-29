@@ -1705,6 +1705,9 @@ void PDAutomataPrivate::setGarbageIfThenError()
             hasThen = true;
             break;
         }
+        if (source[i]->type==LxPriFi) {
+            break;
+        }
     }
     const QString error = hasThen? _("Garbage between if..then")
                                  : _("No 'then' after 'if'");
