@@ -20,6 +20,7 @@ public:
     {
         l_referenceIndeces[3] = 0;
         l_bounds[6] = 0;
+        l_restrictedBounds[6] = 0;
         m_value = QVariant::Invalid;
         i_dimension = 0;
         e_baseType = VT_void;
@@ -122,6 +123,7 @@ private:
     QVariant m_value;
     quint8 i_dimension;
     int l_bounds[7];
+    int l_restrictedBounds[7];
     ValueType e_baseType;
     Variant * m_reference;
     int l_referenceIndeces[4];

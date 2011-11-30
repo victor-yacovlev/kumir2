@@ -80,39 +80,6 @@ void Variant::setValue(const QVariant &v)
 
 }
 
-QVariant Variant::value(int index0) const
-{
-    if (m_reference)
-        return m_reference->value(index0);
-    if (m_value.type()==QVariant::Invalid || l_bounds[6]<1) {
-        error = QObject::tr("Array not initialized", "Variant");
-        return QVariant::Invalid;
-    }
-    if (index0<l_bounds[0] || index0>l_bounds[1]) {
-        error = QObject::tr("Index out of range", "Variant");
-        return QVariant::Invalid;
-    }
-    int index = linearIndex(index0);
-    if (m_value.toList()[index].type()==QVariant::Invalid) {
-        error = QObject::tr("Array element not defined");
-        return QVariant::Invalid;
-    }
-    return m_value.toList()[index];
-}
-
-bool Variant::hasValue(int index0) const
-{
-    if (m_reference)
-        return m_reference->hasValue(index0);
-    if (m_value.type()==QVariant::Invalid || l_bounds[6]<1) {
-        return false;
-    }
-    if (index0<l_bounds[0] || index0>l_bounds[1]) {
-        return false;
-    }
-    int index = linearIndex(index0);
-    return m_value.isValid() && m_value.toList()[index].isValid();
-}
 
 QString Variant::toString() const
 {
@@ -158,127 +125,6 @@ QString Variant::toString(const QList<int> & indeces) const
         break;
     }
     return result;
-}
-
-void Variant::setValue(int index0, const QVariant &value)
-{
-    if (m_reference)
-        m_reference->setValue(index0, value);
-    if (m_value.type()==QVariant::Invalid || l_bounds[6]<1) {
-        error = QObject::tr("Array not initialized", "Variant");
-        return ;
-    }
-    if (index0<l_bounds[0] || index0>l_bounds[1]) {
-        error = QObject::tr("Index out of range", "Variant");
-        return ;
-    }
-    int index = linearIndex(index0);
-    QVariantList list = m_value.toList();
-    list[index] = value;
-    m_value = list;
-}
-
-QVariant Variant::value(int index0, int index1) const
-{
-    if (m_reference)
-        return m_reference->value(index0, index1);
-    if (m_value.type()==QVariant::Invalid || l_bounds[6]<2) {
-        return false;
-    }
-    if (index0<l_bounds[0] || index0>l_bounds[1] || index1<l_bounds[2] || index1>l_bounds[3]) {
-        return false;
-    }
-    int index = linearIndex(index0, index1);
-    if (m_value.toList()[index].type()==QVariant::Invalid) {
-        return false;
-    }
-    return m_value.toList()[index];
-}
-
-bool Variant::hasValue(int index0, int index1) const
-{
-    if (m_reference)
-        return m_reference->hasValue(index0, index1);
-    if (m_value.type()==QVariant::Invalid || l_bounds[6]<2) {
-        error = QObject::tr("Array not initialized", "Variant");
-        return QVariant::Invalid;
-    }
-    if (index0<l_bounds[0] || index0>l_bounds[1] || index1<l_bounds[2]|| index1>l_bounds[3]) {
-        error = QObject::tr("Index out of range", "Variant");
-        return QVariant::Invalid;
-    }
-    int index = linearIndex(index0, index1);
-    return m_value.isValid() && m_value.toList()[index].isValid();
-}
-
-void Variant::setValue(int index0, int index1, const QVariant &value)
-{
-    if (m_reference)
-        m_reference->setValue(index0, index1, value);
-    if (m_value.type()==QVariant::Invalid || l_bounds[6]<2) {
-        error = QObject::tr("Array not initialized", "Variant");
-        return ;
-    }
-    if (index0<l_bounds[0] || index0>l_bounds[1] || index1<l_bounds[2] || index1>l_bounds[3]) {
-        error = QObject::tr("Index out of range", "Variant");
-        return ;
-    }
-    int index = linearIndex(index0, index1);
-    QVariantList list = m_value.toList();
-    list[index] = value;
-    m_value = list;
-}
-
-QVariant Variant::value(int index0, int index1, int index2) const
-{
-    if (m_reference)
-        return m_reference->value(index0, index1, index2);
-    if (m_value.type()==QVariant::Invalid || l_bounds[6]<3) {
-        error = QObject::tr("Array not initialized", "Variant");
-        return QVariant::Invalid;
-    }
-    if (index0<l_bounds[0] || index0>l_bounds[1] || index1<l_bounds[2] || index1>l_bounds[3]|| index2<l_bounds[4] || index2>l_bounds[5]) {
-        error = QObject::tr("Index out of range", "Variant");
-        return QVariant::Invalid;
-    }
-    int index = linearIndex(index0, index1, index2);
-    if (m_value.toList()[index].type()==QVariant::Invalid) {
-        error = QObject::tr("Array element not defined");
-        return QVariant::Invalid;
-    }
-    return m_value.toList()[index];
-}
-
-bool Variant::hasValue(int index0, int index1, int index2) const
-{
-    if (m_reference)
-        return m_reference->hasValue(index0, index1, index2);
-    if (m_value.type()==QVariant::Invalid || l_bounds[6]<3) {
-        return false;
-    }
-    if (index0<l_bounds[0] || index0>l_bounds[1] || index1<l_bounds[2]|| index1>l_bounds[3]|| index2<l_bounds[4] || index2>l_bounds[5]) {
-        return false;
-    }
-    int index = linearIndex(index0, index1, index2);
-    return m_value.isValid() && m_value.toList()[index].isValid();
-}
-
-void Variant::setValue(int index0, int index1, int index2, const QVariant &value)
-{
-    if (m_reference)
-        m_reference->setValue(index0, index1, index2, value);
-    if (m_value.type()==QVariant::Invalid || l_bounds[6]<3) {
-        error = QObject::tr("Array not initialized", "Variant");
-        return ;
-    }
-    if (index0<l_bounds[0] || index0>l_bounds[1] || index1<l_bounds[2] || index1>l_bounds[3]|| index2<l_bounds[4] || index2>l_bounds[5]) {
-        error = QObject::tr("Index out of range", "Variant");
-        return ;
-    }
-    int index = linearIndex(index0, index1, index2);
-    QVariantList list = m_value.toList();
-    list[index] = value;
-    m_value = list;
 }
 
 QVariant Variant::value(const QList<int> & indeces) const
@@ -334,6 +180,175 @@ int Variant::linearIndex(int a, int b, int c) const
     return (a-l_bounds[0])*size0*size1 + (b-l_bounds[2])*size1 + c-l_bounds[4];
 }
 
+// DIM = 1
+
+bool Variant::hasValue(int index0) const
+{
+    if (m_reference)
+        return m_reference->hasValue(index0);
+    if (m_value.type()==QVariant::Invalid || l_restrictedBounds[6]<1) {
+        return false;
+    }
+    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1]) {
+        return false;
+    }
+    int index = linearIndex(index0);
+    return m_value.isValid() && m_value.toList()[index].isValid();
+}
+
+QVariant Variant::value(int index0) const
+{
+    if (m_reference)
+        return m_reference->value(index0);
+    if (m_value.type()==QVariant::Invalid || l_restrictedBounds[6]<1) {
+        error = QObject::tr("Array not initialized", "Variant");
+        return QVariant::Invalid;
+    }
+    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1]) {
+        static const QString err = QObject::tr("Index out of range", "Variant");
+        error = err;
+        return QVariant::Invalid;
+    }
+    int index = linearIndex(index0);
+    if (m_value.toList()[index].type()==QVariant::Invalid) {
+        error = QObject::tr("Array element not defined");
+        return QVariant::Invalid;
+    }
+    return m_value.toList()[index];
+}
+
+void Variant::setValue(int index0, const QVariant &value)
+{
+    if (!m_reference && (m_value.type()==QVariant::Invalid || l_restrictedBounds[6]<1)) {
+        error = QObject::tr("Array not initialized", "Variant");
+        return ;
+    }
+    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1]) {
+        error = QObject::tr("Index out of range", "Variant");
+        return ;
+    }
+    if (m_reference) {
+        m_reference->setValue(index0, value);
+        return;
+    }
+    int index = linearIndex(index0);
+    QVariantList list = m_value.toList();
+    list[index] = value;
+    m_value = list;
+}
+
+// DIM = 2
+
+bool Variant::hasValue(int index0, int index1) const
+{
+    if (m_reference)
+        return m_reference->hasValue(index0, index1);
+    if (m_value.type()==QVariant::Invalid || l_restrictedBounds[6]<2) {
+        error = QObject::tr("Array not initialized", "Variant");
+        return QVariant::Invalid;
+    }
+    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1] || index1<l_restrictedBounds[2]|| index1>l_restrictedBounds[3]) {
+        error = QObject::tr("Index out of range", "Variant");
+        return QVariant::Invalid;
+    }
+    int index = linearIndex(index0, index1);
+    return m_value.isValid() && m_value.toList()[index].isValid();
+}
+
+QVariant Variant::value(int index0, int index1) const
+{
+    if (m_reference)
+        return m_reference->value(index0, index1);
+    if (m_value.type()==QVariant::Invalid || l_restrictedBounds[6]<2) {
+        return false;
+    }
+    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1] || index1<l_restrictedBounds[2] || index1>l_restrictedBounds[3]) {
+        return false;
+    }
+    int index = linearIndex(index0, index1);
+    if (m_value.toList()[index].type()==QVariant::Invalid) {
+        return false;
+    }
+    return m_value.toList()[index];
+}
+
+void Variant::setValue(int index0, int index1, const QVariant &value)
+{
+    if (!m_reference && (m_value.type()==QVariant::Invalid || l_restrictedBounds[6]<2)) {
+        error = QObject::tr("Array not initialized", "Variant");
+        return ;
+    }
+    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1] || index1<l_restrictedBounds[2] || index1>l_restrictedBounds[3]) {
+        error = QObject::tr("Index out of range", "Variant");
+        return ;
+    }
+    if (m_reference) {
+        m_reference->setValue(index0, index1, value);
+        return;
+    }
+    int index = linearIndex(index0, index1);
+    QVariantList list = m_value.toList();
+    list[index] = value;
+    m_value = list;
+}
+
+
+// DIM = 3
+
+bool Variant::hasValue(int index0, int index1, int index2) const
+{
+    if (m_reference)
+        return m_reference->hasValue(index0, index1, index2);
+    if (m_value.type()==QVariant::Invalid || l_restrictedBounds[6]<3) {
+        return false;
+    }
+    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1] || index1<l_restrictedBounds[2]|| index1>l_restrictedBounds[3]|| index2<l_restrictedBounds[4] || index2>l_restrictedBounds[5]) {
+        return false;
+    }
+    int index = linearIndex(index0, index1, index2);
+    return m_value.isValid() && m_value.toList()[index].isValid();
+}
+
+QVariant Variant::value(int index0, int index1, int index2) const
+{
+    if (m_reference)
+        return m_reference->value(index0, index1, index2);
+    if (m_value.type()==QVariant::Invalid || l_restrictedBounds[6]<3) {
+        error = QObject::tr("Array not initialized", "Variant");
+        return QVariant::Invalid;
+    }
+    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1] || index1<l_restrictedBounds[2] || index1>l_restrictedBounds[3]|| index2<l_restrictedBounds[4] || index2>l_restrictedBounds[5]) {
+        error = QObject::tr("Index out of range", "Variant");
+        return QVariant::Invalid;
+    }
+    int index = linearIndex(index0, index1, index2);
+    if (m_value.toList()[index].type()==QVariant::Invalid) {
+        error = QObject::tr("Array element not defined");
+        return QVariant::Invalid;
+    }
+    return m_value.toList()[index];
+}
+
+void Variant::setValue(int index0, int index1, int index2, const QVariant &value)
+{
+    if (!m_reference && (m_value.type()==QVariant::Invalid || l_restrictedBounds[6]<3)) {
+        error = QObject::tr("Array not initialized", "Variant");
+        return ;
+    }
+    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1] || index1<l_restrictedBounds[2] || index1>l_restrictedBounds[3]|| index2<l_restrictedBounds[4] || index2>l_restrictedBounds[5]) {
+        error = QObject::tr("Index out of range", "Variant");
+        return ;
+    }
+    if (m_reference) {
+        m_reference->setValue(index0, index1, index2, value);
+        return;
+    }
+    int index = linearIndex(index0, index1, index2);
+    QVariantList list = m_value.toList();
+    list[index] = value;
+    m_value = list;
+}
+
 void Variant::init()
 {
     if (m_reference) {
@@ -344,9 +359,31 @@ void Variant::init()
         m_value = QVariant::Invalid;
     }
     else if (m_value.type()==QVariant::List) {
-        for (int i=0; i<m_value.toList().size(); i++) {
-            m_value.toList()[i] = QVariant::Invalid;
+        if (i_dimension==1) {
+            for (int x=l_restrictedBounds[0]; x<=l_restrictedBounds[1]; x++) {
+                int index = linearIndex(x);
+                m_value.toList()[index] = QVariant::Invalid;
+            }
         }
+        else if (i_dimension==2) {
+            for (int y=l_restrictedBounds[2]; y<=l_restrictedBounds[3]; y++) {
+                for (int x=l_restrictedBounds[0]; x<=l_restrictedBounds[1]; x++) {
+                    int index = linearIndex(y, x);
+                    m_value.toList()[index] = QVariant::Invalid;
+                }
+            }
+        }
+        else if (i_dimension==3) {
+            for (int z=l_restrictedBounds[4]; z<=l_restrictedBounds[5]; z++) {
+                for (int y=l_restrictedBounds[2]; y<=l_restrictedBounds[3]; y++) {
+                    for (int x=l_restrictedBounds[0]; x<=l_restrictedBounds[1]; x++) {
+                        int index = linearIndex(z, y, x);
+                        m_value.toList()[index] = QVariant::Invalid;
+                    }
+                }
+            }
+        }
+
     }
 }
 
@@ -389,16 +426,17 @@ void Variant::setBounds(const QList<int> &bounds)
         l_bounds[i] = bounds[i];
     }
 
-    if (m_reference) {
-        bool allEqual = true;
-        for (int i=0; i<l_bounds[6]; i++) {
-            allEqual = allEqual &&
-                    l_bounds[i]==m_reference->l_bounds[i] ;
-        }
-        if (!allEqual) {
-            error = QObject::tr("Array bounds mismatch");
-        }
-    }
+//    if (m_reference) {
+//        bool allEqual = true;
+//        for (int i=0; i<l_bounds[6]; i++) {
+//            allEqual = allEqual &&
+//                    l_bounds[i]==m_reference->l_bounds[i] ;
+//        }
+//        if (!allEqual) {
+//            error = QObject::tr("Array bounds mismatch");
+//        }
+//    }
+    memcpy(l_restrictedBounds, l_bounds, 7*sizeof(int));
 }
 
 void Variant::updateBounds(const QList<int> &bounds)
@@ -428,28 +466,37 @@ void Variant::updateBounds(const QList<int> &bounds)
             return;
         }
     }
-    QVariantList data;
-    if (m_value.type()==QVariant::List)
-        data = m_value.toList();
-    while (data.size()<size) {
-        data.append(QVariant::Invalid);
+//    QVariantList data;
+//    if (m_value.type()==QVariant::List)
+//        data = m_value.toList();
+//    while (data.size()<size) {
+//        data.append(QVariant::Invalid);
+//    }
+//    m_value = data;
+    l_restrictedBounds[6] = bounds.size();
+
+    for (int i=0; i<bounds.size(); i+=2) {
+        l_restrictedBounds[i] = l_bounds[6]
+                ? qMax(l_bounds[i], bounds[i])
+                : bounds[i];
     }
-    m_value = data;
-    l_bounds[6] = bounds.size();
-    for (int i=0; i<bounds.size(); i++) {
-        l_bounds[i] = bounds[i];
+    for (int i=1; i<bounds.size(); i+=2) {
+        l_restrictedBounds[i] = l_bounds[6]
+                ? qMin(l_bounds[i], bounds[i])
+                : bounds[i];
     }
 
-    if (m_reference) {
-        bool allEqual = true;
-        for (int i=0; i<l_bounds[6]; i++) {
-            allEqual = allEqual &&
-                    l_bounds[i]==m_reference->l_bounds[i] ;
-        }
-        if (!allEqual) {
-            error = QObject::tr("Array bounds mismatch");
-        }
-    }
+
+//    if (m_reference) {
+//        bool allEqual = true;
+//        for (int i=0; i<l_bounds[6]; i++) {
+//            allEqual = allEqual &&
+//                    l_bounds[i]==m_reference->l_bounds[i] ;
+//        }
+//        if (!allEqual) {
+//            error = QObject::tr("Array bounds mismatch");
+//        }
+//    }
 }
 
 Variant Variant::toReference()

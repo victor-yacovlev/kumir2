@@ -154,7 +154,7 @@ void MainWindow::activateDocumentTab(int documentId)
 {
     for (int i=0; i<ui->tabWidget->count(); i++) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
-        if (twe && twe->documentId==documentId) {
+        if (twe && twe->type == Kumir && twe->documentId==documentId) {
             ui->tabWidget->setCurrentIndex(i);
             return;
         }

@@ -912,11 +912,11 @@ void VM::do_updarr(quint8 s, quint16 id)
             bounds << stack_values.pop().toInt();
         }
         if (VariableScope(s)==LOCAL) {
-            stack_contexts.top().locals[id].setBounds(bounds);
+            stack_contexts.top().locals[id].updateBounds(bounds);
             name = stack_contexts.top().locals[id].name();
         }
         else if (VariableScope(s)==GLOBAL) {
-            globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].setBounds(bounds);
+            globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].updateBounds(bounds);
             name = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].name();
         }
         s_error = Variant::error;
@@ -1116,29 +1116,33 @@ void VM::do_loadarr(quint8 s, quint16 id)
             indeces << stack_values.pop().toInt();
         }
         Variant val;
+        QVariant vv;
         if (VariableScope(s)==LOCAL) {
             val.setBaseType(stack_contexts.top().locals[id].baseType());
-            val.setValue(stack_contexts.top().locals[id].value(indeces));
+            vv = stack_contexts.top().locals[id].value(indeces);
         }
         else if (VariableScope(s)==GLOBAL) {
             val.setBaseType(globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].baseType());
-            val.setValue(globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].value(indeces));
+            vv = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].value(indeces);
         }
         else if (VariableScope(s)==CONST) {
             val.setBaseType(constants[id].baseType());
-            val.setValue(constants[id].value(indeces));
+            vv = constants[id].value(indeces);
         }
-        stack_values.push(val);
-        if (val.baseType()==VT_int)
-            register0 = val.toInt();
-        else if (val.baseType()==VT_float)
-            register0 = val.toReal();
-        else if (val.baseType()==VT_char)
-            register0 = val.toChar();
-        else if (val.baseType()==VT_string)
-            register0 = val.toString();
-        else if (val.baseType()==VT_bool)
-            register0 = val.toBool();
+        if (vv.isValid()) {
+            val.setValue(vv);
+            stack_values.push(val);
+            if (val.baseType()==VT_int)
+                register0 = val.toInt();
+            else if (val.baseType()==VT_float)
+                register0 = val.toReal();
+            else if (val.baseType()==VT_char)
+                register0 = val.toChar();
+            else if (val.baseType()==VT_string)
+                register0 = val.toString();
+            else if (val.baseType()==VT_bool)
+                register0 = val.toBool();
+        }
     }
     if (!Variant::error.isEmpty())
         s_error = Variant::error;
