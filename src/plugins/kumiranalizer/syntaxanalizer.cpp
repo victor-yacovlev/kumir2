@@ -1500,6 +1500,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName)
 
 bool hasFunction(const AST::Expression * expr, QList<Lexem*> & lexems)
 {
+    return false;
     if (expr->kind==AST::ExprFunctionCall) {
         lexems += expr->lexems;
         return true;
@@ -1515,6 +1516,7 @@ bool hasFunction(const AST::Expression * expr, QList<Lexem*> & lexems)
 
 bool hasArrayElement(const AST::Expression * expr, QList<Lexem*> & lexems)
 {
+    return false;
     if (expr->kind==AST::ExprArrayElement) {
         lexems += expr->lexems;
         return true;
