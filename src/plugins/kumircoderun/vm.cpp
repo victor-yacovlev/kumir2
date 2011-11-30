@@ -978,8 +978,8 @@ void VM::do_store(quint8 s, quint16 id)
         s_error = tr("Internal error: don't know what is 'store %1 %2'").arg(s).arg(id);
     }
     if (lineNo!=-1 &&
-            (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN)
-            && !b_blindMode &&
+//            (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN) &&
+            !b_blindMode &&
             stack_contexts.top().type != EL_BELOWMAIN &&
             val.dimension()==0
             )
@@ -1082,8 +1082,8 @@ void VM::do_storearr(quint8 s, quint16 id)
             s_error = Variant::error;
     }
     if (lineNo!=-1 &&
-            (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN)
-            && !b_blindMode
+//            (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN) &&
+            !b_blindMode
             )
         emit valueChangeNotice(lineNo, name+"["+sindeces+"]="+svalue);
     nextIP();
@@ -1332,8 +1332,8 @@ void VM::do_showreg(quint8 regNo) {
     if (!b_blindMode) {
         const int lineNo = stack_contexts.top().lineNo;
         if (lineNo!=-1 &&
-                (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN)
-                && !b_blindMode
+//                (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN) &&
+                !b_blindMode
                 )
         {
             QVariant val;
@@ -1355,8 +1355,8 @@ void VM::do_showreg(quint8 regNo) {
 void VM::do_clearmarg(quint16 toLine)
 {
     const int lineNo = stack_contexts.top().lineNo;
-    if (!b_blindMode && lineNo!=-1 &&
-            (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN)
+    if (!b_blindMode && lineNo!=-1
+//            (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN)
             )
     {
         emit clearMargin(lineNo, toLine);
