@@ -872,7 +872,7 @@ void VM::do_setarr(quint8 s, quint16 id)
         }
         const int lineNo = stack_contexts.top().lineNo;
         if (lineNo!=-1 &&
-                (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN) &&
+//                (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN) &&
                 !b_blindMode &&
                 stack_contexts.top().type != EL_BELOWMAIN
                 )
@@ -908,16 +908,19 @@ void VM::do_updarr(quint8 s, quint16 id)
     }
     if (dim>0) {
         QString name;
+        QList<int> effectiveBounds;
         for (int i=0; i<dim*2; i++) {
             bounds << stack_values.pop().toInt();
         }
         if (VariableScope(s)==LOCAL) {
             stack_contexts.top().locals[id].updateBounds(bounds);
-            name = stack_contexts.top().locals[id].name();
+            name = stack_contexts.top().locals[id].myName();
+            effectiveBounds = stack_contexts.top().locals[id].effectiveBounds();
         }
         else if (VariableScope(s)==GLOBAL) {
             globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].updateBounds(bounds);
-            name = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].name();
+            name = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].myName();
+            effectiveBounds = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].effectiveBounds();
         }
         s_error = Variant::error;
         if (!b_blindMode && s_error.isEmpty()) {
@@ -925,16 +928,17 @@ void VM::do_updarr(quint8 s, quint16 id)
         }
         const int lineNo = stack_contexts.top().lineNo;
         if (lineNo!=-1 &&
-                (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN) &&
+                //(stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN) &&
                 !b_blindMode &&
                 stack_contexts.top().type != EL_BELOWMAIN
                 )
         {
             QString boundsText;
+
             for (int i=0; i<dim; i++) {
-                boundsText += QString::number(bounds[i*2]);
+                boundsText += QString::number(effectiveBounds[i*2]);
                 boundsText += ":";
-                boundsText += QString::number(bounds[i*2+1]);
+                boundsText += QString::number(effectiveBounds[i*2+1]);
                 if (i<dim-1) {
                     boundsText += ",";
                 }
@@ -1178,19 +1182,19 @@ void VM::do_setref(quint8 s, quint16 id)
     }
     else if (VariableScope(s)==LOCAL) {
         name = stack_contexts.top().locals[id].name();
-        stack_contexts.top().locals[id].setReference(ref.reference());
+        stack_contexts.top().locals[id].setReference(ref.reference(), ref.effectiveBounds());
     }
     else if (VariableScope(s)==GLOBAL) {
         name = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].name();
-        globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].setReference(ref.reference());
+        globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].setReference(ref.reference(), ref.effectiveBounds());
     }
     else {
         s_error = tr("Internal error: trying to setref to constant: 'setref %1 %2'").arg(s).arg(id);
     }
     const int lineNo = stack_contexts.top().lineNo;
     if (lineNo!=-1 &&
-            (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN)
-            && !b_blindMode &&
+            //(stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN) &&
+            !b_blindMode &&
             stack_contexts.top().type != EL_BELOWMAIN
             )
     {

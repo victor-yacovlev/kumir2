@@ -66,6 +66,7 @@ public:
     void setBounds(const QList<int> & bounds);
     void updateBounds(const QList<int> & bounds);
     QList<int> bounds() const;
+    QList<int> effectiveBounds() const;
 
     bool hasValue() const;
     bool hasValue(const QList<int> & indeces) const;
@@ -81,7 +82,13 @@ public:
     QVariant value(const QList<int> & indeces) const;
 
     inline bool isReference() const { return m_reference!=0; }
-    inline void setReference(Variant * r) { m_reference = r; }
+    inline void setReference(Variant * r, const QList<int> & effectiveBounds) {
+        m_reference = r;
+        l_bounds[6] = l_restrictedBounds[6] = effectiveBounds.size();
+        for (int i=0; i<effectiveBounds.size(); i++) {
+            l_bounds[i] = l_restrictedBounds[i] = effectiveBounds[i];
+        }
+    }
     inline Variant * reference() { return m_reference; }
 
     inline void setReferenceIndeces(const QList<int> &v) {

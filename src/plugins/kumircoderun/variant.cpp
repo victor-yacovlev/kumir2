@@ -160,6 +160,15 @@ QList<int> Variant::bounds() const
     return result;
 }
 
+QList<int> Variant::effectiveBounds() const
+{
+    QList<int> result;
+    for (int i=0; i<l_restrictedBounds[6]; i++) {
+        result << l_restrictedBounds[i];
+    }
+    return result;
+}
+
 int Variant::linearIndex(int a) const
 {
     return a-l_bounds[0];
@@ -244,12 +253,10 @@ bool Variant::hasValue(int index0, int index1) const
     if (m_reference)
         return m_reference->hasValue(index0, index1);
     if (m_value.type()==QVariant::Invalid || l_restrictedBounds[6]<2) {
-        error = QObject::tr("Array not initialized", "Variant");
-        return QVariant::Invalid;
+        return false;
     }
     if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1] || index1<l_restrictedBounds[2]|| index1>l_restrictedBounds[3]) {
-        error = QObject::tr("Index out of range", "Variant");
-        return QVariant::Invalid;
+        return false;
     }
     int index = linearIndex(index0, index1);
     return m_value.isValid() && m_value.toList()[index].isValid();
@@ -260,14 +267,17 @@ QVariant Variant::value(int index0, int index1) const
     if (m_reference)
         return m_reference->value(index0, index1);
     if (m_value.type()==QVariant::Invalid || l_restrictedBounds[6]<2) {
-        return false;
+        error = QObject::tr("Array not initialized", "Variant");
+        return QVariant::Invalid;
     }
     if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1] || index1<l_restrictedBounds[2] || index1>l_restrictedBounds[3]) {
-        return false;
+        error = QObject::tr("Index out of range", "Variant");
+        return QVariant::Invalid;
     }
     int index = linearIndex(index0, index1);
     if (m_value.toList()[index].type()==QVariant::Invalid) {
-        return false;
+        error = QObject::tr("Array element not defined");
+        return QVariant::Invalid;
     }
     return m_value.toList()[index];
 }
@@ -508,6 +518,8 @@ Variant Variant::toReference()
     else {
         result.m_reference = this;
     }
+    memcpy(result.l_bounds, l_restrictedBounds, 7*sizeof(int));
+    memcpy(result.l_restrictedBounds, l_restrictedBounds, 7*sizeof(int));
     return result;
 }
 
