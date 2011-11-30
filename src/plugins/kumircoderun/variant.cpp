@@ -366,17 +366,17 @@ void Variant::init()
             }
         }
         else if (i_dimension==2) {
-            for (int y=l_restrictedBounds[2]; y<=l_restrictedBounds[3]; y++) {
-                for (int x=l_restrictedBounds[0]; x<=l_restrictedBounds[1]; x++) {
+            for (int y=l_restrictedBounds[0]; y<=l_restrictedBounds[1]; y++) {
+                for (int x=l_restrictedBounds[2]; x<=l_restrictedBounds[3]; x++) {
                     int index = linearIndex(y, x);
                     m_value.toList()[index] = QVariant::Invalid;
                 }
             }
         }
         else if (i_dimension==3) {
-            for (int z=l_restrictedBounds[4]; z<=l_restrictedBounds[5]; z++) {
+            for (int z=l_restrictedBounds[0]; z<=l_restrictedBounds[1]; z++) {
                 for (int y=l_restrictedBounds[2]; y<=l_restrictedBounds[3]; y++) {
-                    for (int x=l_restrictedBounds[0]; x<=l_restrictedBounds[1]; x++) {
+                    for (int x=l_restrictedBounds[4]; x<=l_restrictedBounds[5]; x++) {
                         int index = linearIndex(z, y, x);
                         m_value.toList()[index] = QVariant::Invalid;
                     }

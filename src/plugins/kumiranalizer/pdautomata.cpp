@@ -1359,13 +1359,18 @@ void PDAutomataPrivate::processAlgEndInsteadOfLoopEnd()
 {
     setCurrentIndentRank(-1, 0);
     setCurrentError(_("'end' instead of 'endloop'"));
-    currentContext.pop();
+//    currentContext.pop();
     Q_ASSERT(currentContext.size()>0);
-    Q_ASSERT(currentContext.top()->last()->type==AST::StLoop);
-    currentContext.top()->last()->loop.endLexems = source.at(currentPosition)->data;
+//    Q_ASSERT(currentContext.top()->last()->type==AST::StLoop);
+    if (currentContext.top()->last()->type==AST::StLoop) {
+        currentContext.top()->last()->loop.endLexems = source.at(currentPosition)->data;
+    }
     source.at(currentPosition)->mod = currentModule;
     source.at(currentPosition)->alg = currentAlgorhitm;
     source.at(currentPosition)->statement = currentContext.top()->last();
+    if (currentContext.top()->last()->type==AST::StLoop) {
+        currentContext.pop();
+    }
 }
 
 void PDAutomataPrivate::processModEndInsteadOfAlgEnd()
