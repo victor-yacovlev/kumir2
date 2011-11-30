@@ -47,7 +47,7 @@ void InsertCommand::undo()
         return;
     QString txt;
     doc->removeText(txt, analizer, line, pos, blankLines, blankChars, text.length());
-    Q_ASSERT(txt==text);
+//    Q_ASSERT(txt==text);
     cursor->setRow(cursorRow);
     cursor->setColumn(cursorCol);
     doc->checkForCompilationRequest(QPoint(cursor->row(), cursor->column()));
