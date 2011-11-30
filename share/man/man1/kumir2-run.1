@@ -1,0 +1,24 @@
+.TH kumir2-run 1 "" "" "Kumir utilities"
+.SH NAME
+kumir2-run \- interpreter of portable Kumir bytecode
+.SH SYNOPSIS
+.B kumir2-run
+[\-p] BYTECODE_FILE.kod [PROGRAM_ARGUMENTS]
+.SH DESCRIPTION
+Runs the Kumir bytecode.
+.SH OPTIONS
+.TP
+.B \-p
+if present, then incorrect program input causes to runtime error but not trying it again 
+.TP
+.BI BYTECODE_FILE.kod
+executable bytecode file name
+.TP
+.BI PROGRAM_ARGUMENTS
+if present and first algorhitm has parameters, these arguments passed to first algorhitm
+.SH NOTICE
+Usually it is not required to explicitly run this command. Generated .kod-files are executable and
+contains link to kumir2-run binary at first "comment" line.
+.SH SEE ALSO
+.BR kumir2-bc (1)
+
