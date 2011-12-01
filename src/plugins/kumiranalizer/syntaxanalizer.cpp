@@ -63,7 +63,7 @@ struct SyntaxAnalizerPrivate
                       , AST::Variable* & var);
     QList<AST::Variable*> parseVariables(int statementIndex, VariablesGroup & group,
                                          AST::Module * mod,
-                                         AST::Algorhitm * alg);
+                                         AST::Algorhitm * alg, bool algHeader);
     QVariant parseConstant(const std::list<Lexem*> &constant
                            , const AST::VariableBaseType pt
                            , bool array
@@ -564,7 +564,7 @@ void SyntaxAnalizerPrivate::parseVarDecl(int str)
             break;
         group.lexems << st.data[i];
     }
-    QList<AST::Variable*> vars = parseVariables(str, group, mod, alg);
+    QList<AST::Variable*> vars = parseVariables(str, group, mod, alg, false);
     QString error;
     for (int i=0; i<group.lexems.size()-1; i++) {
         if (group.lexems[i]->error.size()>0) {
@@ -1479,7 +1479,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName)
     }
 
     for (int i=0; i<groups.size(); i++) {
-        QList<AST::Variable*> vars = parseVariables(str, groups[i], st.mod, st.alg);
+        QList<AST::Variable*> vars = parseVariables(str, groups[i], st.mod, st.alg, true);
         for (int j=0; j<vars.size(); j++) {
             alg->header.arguments << vars[j];
         }
@@ -1500,7 +1500,6 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName)
 
 bool hasFunction(const AST::Expression * expr, QList<Lexem*> & lexems)
 {
-    return false;
     if (expr->kind==AST::ExprFunctionCall) {
         lexems += expr->lexems;
         return true;
@@ -1516,7 +1515,6 @@ bool hasFunction(const AST::Expression * expr, QList<Lexem*> & lexems)
 
 bool hasArrayElement(const AST::Expression * expr, QList<Lexem*> & lexems)
 {
-    return false;
     if (expr->kind==AST::ExprArrayElement) {
         lexems += expr->lexems;
         return true;
@@ -1530,7 +1528,7 @@ bool hasArrayElement(const AST::Expression * expr, QList<Lexem*> & lexems)
     return false;
 }
 
-QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, VariablesGroup &group, AST::Module *mod, AST::Algorhitm *alg)
+QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, VariablesGroup &group, AST::Module *mod, AST::Algorhitm *alg, bool algHeader)
 {
     //  Pежим работы автомата-парсера.
     //  type -- разбор типа
@@ -1823,21 +1821,22 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
                     return result; // ошибка разбора левой границы
                 }
 
+                if (algHeader) {
+                    QList<Lexem*> leftFunction;
+                    QList<Lexem*> leftArray;
 
-                QList<Lexem*> leftFunction;
-                QList<Lexem*> leftArray;
-
-                if (hasFunction(left, leftFunction)) {
-                    foreach ( Lexem * a, leftFunction )
-                        a->error = _("Function in array bound");
-                    delete left;
-                    return result;
-                }
-                if (hasArrayElement(left, leftArray)) {
-                    foreach ( Lexem * a, leftArray )
-                        a->error = _("Array element in array bound");
-                    delete left;
-                    return result;
+                    if (hasFunction(left, leftFunction)) {
+                        foreach ( Lexem * a, leftFunction )
+                            a->error = _("Function in array bound");
+                        delete left;
+                        return result;
+                    }
+                    if (hasArrayElement(left, leftArray)) {
+                        foreach ( Lexem * a, leftArray )
+                            a->error = _("Array element in array bound");
+                        delete left;
+                        return result;
+                    }
                 }
 
                 if (left->baseType!=AST::TypeInteger)
@@ -1916,21 +1915,23 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
                 {
                     return result; // ошибка разбора левой границы
                 }
-                QList<Lexem*> rightFunction;
-                QList<Lexem*> rightArray;
+                if (algHeader) {
+                    QList<Lexem*> rightFunction;
+                    QList<Lexem*> rightArray;
 
-                if (hasFunction(right, rightFunction)) {
-                    foreach ( Lexem * a, rightFunction )
-                        a->error = _("Function in array bound");
-                    delete right;
-                    return result;
-                }
+                    if (hasFunction(right, rightFunction)) {
+                        foreach ( Lexem * a, rightFunction )
+                            a->error = _("Function in array bound");
+                        delete right;
+                        return result;
+                    }
 
-                if (hasArrayElement(right, rightArray)) {
-                    foreach ( Lexem * a, rightArray )
-                        a->error = _("Array element in array bound");
-                    delete right;
-                    return result;
+                    if (hasArrayElement(right, rightArray)) {
+                        foreach ( Lexem * a, rightArray )
+                            a->error = _("Array element in array bound");
+                        delete right;
+                        return result;
+                    }
                 }
 
 
@@ -1984,21 +1985,24 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
                 if (right==0) {
                     return result;
                 }
-                QList<Lexem*> rightFunction;
-                QList<Lexem*> rightArray;
 
-                if (hasFunction(right, rightFunction)) {
-                    foreach ( Lexem * a, rightFunction )
-                        a->error = _("Function in array bound");
-                    delete right;
-                    return result;
-                }
+                if (algHeader) {
+                    QList<Lexem*> rightFunction;
+                    QList<Lexem*> rightArray;
 
-                if (hasArrayElement(right, rightArray)) {
-                    foreach ( Lexem * a, rightArray )
-                        a->error = _("Array element in array bound");
-                    delete right;
-                    return result;
+                    if (hasFunction(right, rightFunction)) {
+                        foreach ( Lexem * a, rightFunction )
+                            a->error = _("Function in array bound");
+                        delete right;
+                        return result;
+                    }
+
+                    if (hasArrayElement(right, rightArray)) {
+                        foreach ( Lexem * a, rightArray )
+                            a->error = _("Array element in array bound");
+                        delete right;
+                        return result;
+                    }
                 }
                 if (right->baseType!=AST::TypeInteger)
                 {
