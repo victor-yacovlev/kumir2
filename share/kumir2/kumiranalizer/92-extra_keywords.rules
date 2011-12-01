@@ -1,4 +1,9 @@
 АЛГОРИТМ* -> алг : { setCurrentError("No algorhitm implementation"); appendSimpleLine(); }
 АЛГОРИТМ* -> если : { setOutOfAlgError();  }
 АЛГОРИТМ* -> кон : { setOutOfAlgError();  }
+АЛГОРИТМ* -> выбор : { setOutOfAlgError();  }
+АЛГОРИТМ* -> при : { setOutOfAlgError();  }
+АЛГОРИТМ* -> все : { setOutOfAlgError();  }
+АЛГОРИТМ* -> нц : { setOutOfAlgError();  }
+АЛГОРИТМ* -> кц : { setOutOfAlgError();  }
 ИСПОЛНИТЕЛЬ* -> нач : { setOutOfAlgError();  }

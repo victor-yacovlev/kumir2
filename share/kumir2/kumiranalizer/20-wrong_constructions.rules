@@ -21,8 +21,8 @@
     processCorrectAlgHeader(); 
 }
 
-АЛГОРИТМ* -> если МУСОР_МЕЖДУ_ЕСЛИ_ТО ТО : { setCurrentError("Garbage after 'if' statement"); processCorrectIf(); }
-АЛГОРИТМ* -> выбор МУСОР_МЕЖДУ_ВЫБОР_ПРИ при ФРАГМЕНТ_АЛГОРИТМА* ПРИ* ИНАЧЕ_ВСЕ : { setCurrentError("Garbage after 'switch' statement"); processCorrectSwitch(); } { processCorrectCase(); }
+#АЛГОРИТМ* -> если МУСОР_МЕЖДУ_ЕСЛИ_ТО ТО : { setCurrentError("Garbage after 'if' statement"); processCorrectIf(); }
+#АЛГОРИТМ* -> выбор МУСОР_МЕЖДУ_ВЫБОР_ПРИ при ФРАГМЕНТ_АЛГОРИТМА* ПРИ* ИНАЧЕ_ВСЕ : { setCurrentError("Garbage after 'switch' statement"); processCorrectSwitch(); } { processCorrectCase(); }
 АЛГОРИТМ* -> алг ФРАГМЕНТ_АЛГОРИТМА* КОНЕЦ_АЛГОРИТМА : { 
     setCurrentError("No 'begin' after header"); 
     setCurrentIndentRank(0, +1);  

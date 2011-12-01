@@ -784,7 +784,7 @@ void SyntaxAnalizerPrivate::parseIfCase(int str)
 void SyntaxAnalizerPrivate::parseLoopBegin(int str)
 {
     const Statement & st = statements[str];
-    if (st.hasError()) {
+    if (st.hasError() || !st.statement) {
         return;
     }
     AST::LoopType type = AST::LoopWhile;
@@ -1257,7 +1257,7 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
 void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName)
 {
     const Statement & st = statements[str];
-    if (st.hasError())
+    if (st.hasError() || !st.mod ||!st.alg)
         return;
     AST::Algorhitm * alg = st.alg;
     AST::Module * mod = st.mod;
