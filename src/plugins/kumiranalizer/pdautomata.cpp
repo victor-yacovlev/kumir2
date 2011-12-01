@@ -1826,20 +1826,30 @@ void PDAutomataPrivate::setExtraOpenKeywordError(const QString &kw)
     }
     else if (kw==QString::fromUtf8("иначе")) {
         setCurrentIndentRank(-1,-1);
-        QString err = _("Extra 'else'");
+        QString err = _("No 'end' after 'else'");
         int a = currentPosition + 1;
-        bool fiFound = false;
-        while (a<source.size()) {
-            if (source[a]->type==LxPriFi && !source[a]->hasError()) {
-                fiFound = true;
+        bool elseFoundForward = false;
+        bool elseFoundBackward = false;
+        for (int i=currentPosition+1; i<source.size(); i++) {
+            if (source[i]->type==LxPriFi || source[i]->type==LxPriAlgEnd)
+                break;
+            if (source[i]->type==LxPriElse) {
+                elseFoundForward =true;
                 break;
             }
-            else if (source[a]->type==LxPriEndModule || source[a]->type==LxPriAlgEnd)
-                break;
-            a++;
         }
-        if (!fiFound)
-            err = _("No 'end' after 'else'");
+        for (int i=currentPosition-1; i>=0; i--) {
+            if (source[i]->type==LxPriElse || source[i]->type==LxPriAlgBegin)
+                break;
+            if (source[i]->type==LxPriElse) {
+                elseFoundBackward =true;
+                break;
+            }
+        }
+        if (elseFoundForward || elseFoundBackward) {
+            err = _("Extra 'else'");
+        }
+
         setCurrentError(err);
     }
     else if (kw==QString::fromUtf8("исп")) {
