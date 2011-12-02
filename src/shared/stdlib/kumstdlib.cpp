@@ -1211,3 +1211,18 @@ extern "C" unsigned char is_file_at_end__st_funct(int file_handle)
         return ts->atEnd()? 1 : 0;
     }
 }
+
+extern "C" void __foutput2__st_funct(int file_handle, wchar_t * data)
+{
+    if (!__opened_files__st_funct.contains(file_handle)) {
+        __abort__st_funct(QObject::tr("File with key %1 not opened", "StFuncError").arg(file_handle));
+        return;
+    }
+    QTextStream * ts = __opened_files__st_funct[file_handle];
+    if (!ts->device()->openMode().testFlag(QIODevice::WriteOnly)) {
+        __abort__st_funct(QObject::tr("File with key %1 opened for reading", "StFuncError").arg(file_handle));
+        return;
+    }
+    QString sData = QString::fromWCharArray(data);
+    (*ts) << sData;
+}

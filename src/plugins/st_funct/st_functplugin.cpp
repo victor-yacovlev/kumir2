@@ -299,6 +299,48 @@ QList<Alg>  St_functPlugin::funcList() const
     cur_alg.name = trUtf8("юникод");
     tmpL.append(cur_alg);
 
+    cur_alg.kumirHeader = trUtf8("алг лог существует файл(лит имя файла");
+    cur_alg.cHeader = "unsigned char is_file_exists__st_funct(wchar_t* file_name)";
+    cur_alg.pascalHeader = "function is_file_exists(filename: string): boolean";
+    cur_alg.id = 0x0128;
+    cur_alg.name = trUtf8("существует файл");
+    tmpL.append(cur_alg);
+
+    cur_alg.kumirHeader = trUtf8("алг цел удалить файл(лит имя файла)");
+    cur_alg.cHeader = "int remove_file__st_funct(wchar_t * file_name)";
+    cur_alg.pascalHeader = "function remove_file(filename: string): integer";
+    cur_alg.id = 0x0129;
+    cur_alg.name = trUtf8("удалить файл");
+    tmpL.append(cur_alg);
+
+    cur_alg.kumirHeader = trUtf8("алг цел кодировка(лит имя кодировки)");
+    cur_alg.cHeader = "void set_file_encoding__st_funct(wchar_t * encoding)";
+    cur_alg.pascalHeader = "procedure set_file_encoding(s: string)";
+    cur_alg.id = 0x012a;
+    cur_alg.name = trUtf8("кодировка");
+    tmpL.append(cur_alg);
+
+    cur_alg.kumirHeader = trUtf8("алг цел открыть на чтение(лит имя файла)");
+    cur_alg.cHeader = "int open_file_r__st_funct(wchar_t * file_name)";
+    cur_alg.pascalHeader = "function open_file_r(filename: string): integer";
+    cur_alg.id = 0x012b;
+    cur_alg.name = trUtf8("открыть на чтение");
+    tmpL.append(cur_alg);
+
+    cur_alg.kumirHeader = trUtf8("алг цел открыть на запись(лит имя файла)");
+    cur_alg.cHeader = "int open_file_w__st_funct(wchar_t * file_name)";
+    cur_alg.pascalHeader = "function open_file_w(filename: string): integer";
+    cur_alg.id = 0x012c;
+    cur_alg.name = trUtf8("открыть на запись");
+    tmpL.append(cur_alg);
+
+    cur_alg.kumirHeader = trUtf8("алг цел открыть на добавление(лит имя файла)");
+    cur_alg.cHeader = "int open_file_a__st_funct(wchar_t * file_name)";
+    cur_alg.pascalHeader = "function open_file_a(filename: string): integer";
+    cur_alg.id = 0x012c;
+    cur_alg.name = trUtf8("открыть на добавление");
+    tmpL.append(cur_alg);
+
     return tmpL;
 }
 
