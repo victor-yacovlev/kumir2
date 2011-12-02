@@ -13,6 +13,9 @@
 
 static wchar_t __error__st_funct[256];
 
+static QMap<int,QTextStream*> __opened_files__st_funct;
+static QString __default_file_encoding__st_funct;
+
 extern QString __get_error__st_funct()
 {
     return QString::fromWCharArray(__error__st_funct);
@@ -32,6 +35,7 @@ extern "C" void __init__st_funct()
     if (__koi8Codec__st_funct==0) {
         __koi8Codec__st_funct = QTextCodec::codecForName("KOI8-R");
     }
+    __default_file_encoding__st_funct = QString::fromAscii("UTF-8");
 }
 
 void __abort__st_funct(const QString &error)
@@ -1054,4 +1058,156 @@ extern "C" wchar_t* __string_of_char__(wchar_t ch)
     result[1] = L'\0';
     __garbage_collector_register_string__(result);
     return result;
+}
+
+
+extern "C" unsigned char is_file_exists__st_funct(wchar_t * file_name)
+{
+    const QString fileName = QString::fromWCharArray(file_name);
+    bool exists = QFile::exists(fileName); // TODO check for file name near program location
+    return exists? 1 : 0;
+}
+
+extern "C" int remove_file__st_funct(wchar_t * file_name)
+{
+    const QString fileName = QString::fromWCharArray(file_name);
+    bool ok = QFile::remove(fileName); // TODO check for file name near program location
+    return ok? 0 : 1; // TODO check for documentation and implement
+}
+
+extern "C" void set_file_encoding__st_funct(wchar_t * encoding)
+{
+    __default_file_encoding__st_funct = QString::fromWCharArray(encoding).toUpper().trimmed();
+    const QStringList validEncodings = QStringList()
+            << "UTF-8" << "UTF8" << "UTF-16" << "UTF16" << "UTF-16"
+            << "WINDOWS" << "WINDOWS-1251" << "CP1251" << "CP-1251" << "ANSI"
+            << "DOS" << "OEM" << "OEM866" << "OEM-866" << "IBM-866" << "IBM866" << "CP866" << "CP-866"
+            << "KOI8" << "KOI8R" << "KOI8-R" << "KOI-8" << "KOI";
+    if (!validEncodings.contains(__default_file_encoding__st_funct)) {
+        __abort__st_funct(QObject::tr("Invalid encoding name", "StFuncError"));
+    }
+    else {
+        if (__default_file_encoding__st_funct=="UTF8")
+            __default_file_encoding__st_funct = "UTF-8";
+        if (__default_file_encoding__st_funct=="UTF-16")
+            __default_file_encoding__st_funct = "UTF-16";
+        if (__default_file_encoding__st_funct=="WINDOWS" ||
+                __default_file_encoding__st_funct=="WINDOWS-1251" ||
+                __default_file_encoding__st_funct=="CP-1251" ||
+                __default_file_encoding__st_funct=="ANSI")
+            __default_file_encoding__st_funct = "CP1251";
+        if (__default_file_encoding__st_funct=="DOS" ||
+                __default_file_encoding__st_funct=="OEM" ||
+                __default_file_encoding__st_funct=="OEM-866" ||
+                __default_file_encoding__st_funct=="IBM-866" ||
+                __default_file_encoding__st_funct=="CP-866" ||
+                __default_file_encoding__st_funct=="OEM866" ||
+                __default_file_encoding__st_funct=="IBM866" ||
+                __default_file_encoding__st_funct=="IBM-866"
+                )
+            __default_file_encoding__st_funct = "CP866";
+        if (__default_file_encoding__st_funct=="KOI" ||
+                __default_file_encoding__st_funct=="KOI8" ||
+                __default_file_encoding__st_funct=="KOI8R" ||
+                __default_file_encoding__st_funct=="KOI-8"
+                )
+            __default_file_encoding__st_funct = "KOI8-R";
+    }
+}
+
+extern "C" int open_file_r__st_funct(wchar_t * file_name)
+{
+    const QString fileName = QString::fromWCharArray(file_name);
+    QFile *f = new QFile(fileName);
+    if (!f->exists()) {
+        delete f;
+        __abort__st_funct(QObject::tr("File not exists: %1", "StFuncError").arg(fileName));
+        return 0;
+    }
+    if (!f->open(QIODevice::ReadOnly)) {
+        delete f;
+        __abort__st_funct(QObject::tr("Can't open file for reading: %1", "StFuncError").arg(fileName));
+        return 0;
+    }
+    QTextStream * ts = new QTextStream(f);
+    ts->setCodec(__default_file_encoding__st_funct.toAscii().data());
+    __opened_files__st_funct[f->handle()] = ts;
+    return f->handle();
+}
+
+extern "C" int open_file_w__st_funct(wchar_t * file_name)
+{
+    const QString fileName = QString::fromWCharArray(file_name);
+    QFile *f = new QFile(fileName);
+    if (!f->open(QIODevice::WriteOnly)) {
+        delete f;
+        __abort__st_funct(QObject::tr("Can't open file for writing: %1", "StFuncError").arg(fileName));
+        return 0;
+    }
+    QTextStream * ts = new QTextStream(f);
+    ts->setCodec(__default_file_encoding__st_funct.toAscii().data());
+    if (__default_file_encoding__st_funct.startsWith("UTF"))
+        ts->setGenerateByteOrderMark(true);
+    __opened_files__st_funct[f->handle()] = ts;
+    return f->handle();
+}
+
+extern "C" int open_file_a__st_funct(wchar_t * file_name)
+{
+    const QString fileName = QString::fromWCharArray(file_name);
+    QFile *f = new QFile(fileName);
+    if (!f->exists()) {
+        delete f;
+        __abort__st_funct(QObject::tr("File not exists: %1", "StFuncError").arg(fileName));
+        return 0;
+    }
+    if (!f->open(QIODevice::WriteOnly|QIODevice::Append)) {
+        delete f;
+        __abort__st_funct(QObject::tr("Can't open file for writing: %1", "StFuncError").arg(fileName));
+        return 0;
+    }
+    QTextStream * ts = new QTextStream(f);
+    ts->setCodec(__default_file_encoding__st_funct.toAscii().data());
+    __opened_files__st_funct[f->handle()] = ts;
+    return f->handle();
+}
+
+extern "C" void close_file__st_funct(int file_handle)
+{
+    if (!__opened_files__st_funct.contains(file_handle)) {
+        __abort__st_funct(QObject::tr("File with key %1 not opened", "StFuncError").arg(file_handle));
+    }
+    else {
+        QTextStream * ts = __opened_files__st_funct[file_handle];
+        QFile * f = qobject_cast<QFile*>(ts->device());
+        f->close();
+        delete ts;
+        delete f;
+        __opened_files__st_funct.remove(file_handle);
+    }
+}
+
+
+extern "C" void reset_file__st_funct(int file_handle)
+{
+    if (!__opened_files__st_funct.contains(file_handle)) {
+        __abort__st_funct(QObject::tr("File with key %1 not opened", "StFuncError").arg(file_handle));
+    }
+    else {
+        QTextStream * ts = __opened_files__st_funct[file_handle];
+        QFile * f = qobject_cast<QFile*>(ts->device());
+        f->reset();
+    }
+}
+
+
+extern "C" unsigned char is_file_at_end__st_funct(int file_handle)
+{
+    if (!__opened_files__st_funct.contains(file_handle)) {
+        __abort__st_funct(QObject::tr("File with key %1 not opened", "StFuncError").arg(file_handle));
+    }
+    else {
+        QTextStream * ts = __opened_files__st_funct[file_handle];
+        return ts->atEnd()? 1 : 0;
+    }
 }

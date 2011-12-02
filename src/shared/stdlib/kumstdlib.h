@@ -98,6 +98,18 @@ extern "C" STDLIB_EXPORT wchar_t symbol2__st_funct(int n);
 extern "C" STDLIB_EXPORT wchar_t * int_to_string__st_funct(int x);
 extern "C" STDLIB_EXPORT int unicode__st_funct(wchar_t c);
 
+extern "C" STDLIB_EXPORT unsigned char is_file_exists__st_funct(wchar_t * file_name);
+extern "C" STDLIB_EXPORT int remove_file__st_funct(wchar_t * file_name);
+extern "C" STDLIB_EXPORT void set_file_encoding__st_funct(wchar_t * encoding);
+extern "C" STDLIB_EXPORT int open_file_r__st_funct(wchar_t * file_name);
+extern "C" STDLIB_EXPORT int open_file_w__st_funct(wchar_t * file_name);
+extern "C" STDLIB_EXPORT int open_file_a__st_funct(wchar_t * file_name);
+extern "C" STDLIB_EXPORT void close_file__st_funct(int file_handle);
+extern "C" STDLIB_EXPORT void reset_file__st_funct(int file_handle);
+extern "C" STDLIB_EXPORT unsigned char is_file_at_end__st_funct(int file_handle);
+extern "C" STDLIB_EXPORT void __foutput2__st_funct(int file_handle, wchar_t * data);
+
+
 
 
 
