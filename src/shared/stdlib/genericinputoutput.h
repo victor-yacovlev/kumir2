@@ -23,12 +23,15 @@ public:
                         bool colorize,
                         QString & error);
     static class GenericInputOutput * instance();
-    inline static QString output(int v) { return QString::number(v); }
-    inline static QString output(double v) { QString result = QString::number(v, 'g', 6); if (!result.contains(".")) result += ".0"; return result; }
-    inline static QString output(bool v) { return v? tr("yes") : tr("no"); }
-    inline static QString output(unsigned char v) { return output(v>0); }
-    inline static QString output(wchar_t v) { wchar_t buf[1]; buf[0]=v; return QString::fromWCharArray(buf, 1); }
-    inline static QString output(wchar_t * v) { return QString::fromWCharArray(v); }
+    static QString output(int v, int width, QString & err);
+    static QString output(double v, int width, int prec, QString & err);
+    static QString output(bool v, int width, QString & err);
+    static QString output(const QString &v, int width, QString & err);
+    inline static QString output(const QChar &v, int width, QString & err) { return output(QString(v), width, err); }
+    inline static QString output(unsigned char v, int width, QString &err) { return output(v>0, width, err); }
+    static QString output(wchar_t v, int width, QString & err) { wchar_t buf[1]; buf[0]=v; return output(QString::fromWCharArray(buf, 1), width, err); }
+    static QString output(wchar_t * v, int width, QString & err) { return output(QString::fromWCharArray(v), width, err); }
+    static QString prepareOutput(const std::string & format, QVariantList vals, QString & err);
 
 private:
     enum InputError {

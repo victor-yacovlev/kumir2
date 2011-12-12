@@ -21,6 +21,12 @@ extern QString __get_error__st_funct()
     return QString::fromWCharArray(__error__st_funct);
 }
 
+extern void __set_error__st_funct(const QString &err)
+{
+    err.toWCharArray(__error__st_funct);
+    __error__st_funct[err.length()] = L'\0';
+}
+
 #ifdef Q_OS_WIN32
     #define REAL_COMPARE_PRECISION 0.0000001
 #else
@@ -1133,6 +1139,22 @@ extern "C" int open_file_r__st_funct(wchar_t * file_name)
     ts->setCodec(__default_file_encoding__st_funct.toAscii().data());
     __opened_files__st_funct[f->handle()] = ts;
     return f->handle();
+}
+
+extern "C" void __check_for_unclosed_files__st_funct(unsigned char noerror)
+{
+    int unclosedFilesCount = __opened_files__st_funct.size();;
+    foreach (const int handle, __opened_files__st_funct.keys()) {
+        QTextStream * ts = __opened_files__st_funct[handle];
+        QFile * f = qobject_cast<QFile*>(ts->device());
+        f->close();
+        delete f;
+        delete ts;
+    }
+    __opened_files__st_funct.clear();
+    if (!noerror && unclosedFilesCount > 0) {
+        __abort__st_funct(QObject::tr("%1 unclosed files remains").arg(unclosedFilesCount));
+    }
 }
 
 extern "C" int open_file_w__st_funct(wchar_t * file_name)

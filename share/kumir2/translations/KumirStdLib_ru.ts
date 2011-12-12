@@ -4,90 +4,136 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="50"/>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="61"/>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="72"/>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="83"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="54"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="65"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="76"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="87"/>
         <source>Division by zero</source>
         <comment>StFuncError</comment>
         <translation>Деление на 0</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="94"/>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="105"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="98"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="109"/>
         <source>Can&apos;t power to less than zero</source>
         <comment>StFuncError</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="124"/>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="146"/>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="167"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="128"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="150"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="171"/>
         <source>Bad inverse trigonometric argument</source>
         <comment>StFuncError</comment>
         <translation>Неверный параметр обратной тригонометрической функции</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="183"/>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="286"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="187"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="290"/>
         <source>Division by not natural number</source>
         <comment>StFuncError</comment>
         <translation>Деление на отрицательное число</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="198"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="202"/>
         <source>Function result is not a number</source>
         <comment>StFuncError</comment>
         <translation>Значение не определено</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="202"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="206"/>
         <source>Function result is infinity value</source>
         <comment>StFuncError</comment>
         <translation>Значение не определено</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="234"/>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="299"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="238"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="303"/>
         <source>Invalid range</source>
         <comment>StFuncError</comment>
         <translation>Неверные границы случайного числа</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="254"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="258"/>
         <source>Lg function argument must be &gt; 0</source>
         <comment>StFuncError</comment>
         <translation>Параметр LG должен быть &gt; 0</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="265"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="269"/>
         <source>Ln function argument must be &gt; 0</source>
         <comment>StFuncError</comment>
         <translation>Параметр LN должен быть &gt; 0</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="337"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="341"/>
         <source>Square root of negative value</source>
         <comment>StFuncError</comment>
         <translation>Параметр SQRT должен быть &gt;= 0</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="398"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="402"/>
         <source>Symbol out of the KOI8-R range</source>
         <comment>StFuncError</comment>
         <translation>Символ вне кодировки КОИ8-Р</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="430"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="434"/>
         <source>Code out of range [0..255]</source>
         <comment>StFuncError</comment>
         <translation>Код должен быть в диапазоне [0..255]</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="682"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="686"/>
         <source>Resulting character is not allowed in Russian languange</source>
         <comment>StFuncError</comment>
         <translation>Получившийся символ отсутствует в русском языке</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="1087"/>
+        <source>Invalid encoding name</source>
+        <comment>StFuncError</comment>
+        <translation>Неверная кодировка</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="1124"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="1177"/>
+        <source>File not exists: %1</source>
+        <comment>StFuncError</comment>
+        <translation>Файл не существует</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="1129"/>
+        <source>Can&apos;t open file for reading: %1</source>
+        <comment>StFuncError</comment>
+        <translation>Не могу открыть файл на чтение</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="1150"/>
+        <source>%1 unclosed files remains</source>
+        <translation>Остались незакрытые файлы</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="1160"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="1182"/>
+        <source>Can&apos;t open file for writing: %1</source>
+        <comment>StFuncError</comment>
+        <translation>Не могу открыть файл на запись</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="1194"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="1210"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="1223"/>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="1234"/>
+        <source>File with key %1 not opened</source>
+        <comment>StFuncError</comment>
+        <translation>Файл с ключем не открыт</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/stdlib/kumstdlib.cpp" line="1239"/>
+        <source>File with key %1 opened for reading</source>
+        <comment>StFuncError</comment>
+        <translation>Файл с ключем открыт только для чтения</translation>
     </message>
 </context>
 <context>

@@ -337,8 +337,29 @@ QList<Alg>  St_functPlugin::funcList() const
     cur_alg.kumirHeader = trUtf8("алг цел открыть на добавление(лит имя файла)");
     cur_alg.cHeader = "int open_file_a__st_funct(wchar_t * file_name)";
     cur_alg.pascalHeader = "function open_file_a(filename: string): integer";
-    cur_alg.id = 0x012c;
+    cur_alg.id = 0x012d;
     cur_alg.name = trUtf8("открыть на добавление");
+    tmpL.append(cur_alg);
+
+    cur_alg.kumirHeader = trUtf8("алг закрыть(цел ключ)");
+    cur_alg.cHeader = "void close_file_a__st_funct(int file_handle)";
+    cur_alg.pascalHeader = "procedure close_file(file_handle: integer)";
+    cur_alg.id = 0x012e;
+    cur_alg.name = trUtf8("закрыть");
+    tmpL.append(cur_alg);
+
+    cur_alg.kumirHeader = trUtf8("алг начать чтение(цел ключ)");
+    cur_alg.cHeader = "void reset_file_a__st_funct(int file_handle)";
+    cur_alg.pascalHeader = "procedure reset_file(file_handle: integer)";
+    cur_alg.id = 0x012f;
+    cur_alg.name = trUtf8("начать чтение");
+    tmpL.append(cur_alg);
+
+    cur_alg.kumirHeader = trUtf8("алг лог конец файла(цел ключ)");
+    cur_alg.cHeader = "unsigned char is_file_at_end__st_funct(int file_handle)";
+    cur_alg.pascalHeader = "function is_file_at_end(file_handle: integer)";
+    cur_alg.id = 0x0130;
+    cur_alg.name = trUtf8("конец файла");
     tmpL.append(cur_alg);
 
     return tmpL;
@@ -420,6 +441,24 @@ EvaluationStatus St_functPlugin::evaluate(quint32 id, const QVariant &x)
         return StrOfInteger(x);
     case 0x0127:
         return Unicode(x);
+    case 0x0128:
+        return FileExists(x);
+    case 0x0129:
+        return FileUnlink(x);
+    case 0x012a:
+        return FileSetEncoding(x);
+    case 0x012b:
+        return FileOpenForRead(x);
+    case 0x012c:
+        return FileOpenForWrite(x);
+    case 0x012d:
+        return FileOpenForAppend(x);
+    case 0x012e:
+        return FileClose(x);
+    case 0x012f:
+        return FileReset(x);
+    case 0x0130:
+        return FileAtEnd(x);
     default:
         qFatal("Unknown method id: %x", id);
         return ES_Error;
@@ -910,6 +949,92 @@ EvaluationStatus St_functPlugin::Unicode(const QVariant & x){
     return errText.isEmpty()? ES_StackResult : ES_Error;
 }
 
+EvaluationStatus St_functPlugin::FileExists(const QVariant &x) {
+    wchar_t * buffer = (wchar_t*)calloc(x.toString().size()+1, sizeof(wchar_t));
+    x.toString().toWCharArray(buffer);
+    buffer[x.toString().length()] = L'\0';
+    unsigned char success;
+    success = is_file_exists__st_funct(buffer);
+    Res = QVariant(success);
+    errText = __get_error__st_funct();
+    free(buffer);
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::FileUnlink(const QVariant &x) {
+    wchar_t * buffer = (wchar_t*)calloc(x.toString().size()+1, sizeof(wchar_t));
+    x.toString().toWCharArray(buffer);
+    buffer[x.toString().length()] = L'\0';
+    int errcode = remove_file__st_funct(buffer);
+    Res = QVariant(errcode);
+    free(buffer);
+    return ES_StackResult;
+}
+
+EvaluationStatus St_functPlugin::FileSetEncoding(const QVariant &x) {
+    wchar_t * buffer = (wchar_t*)calloc(x.toString().size()+1, sizeof(wchar_t));
+    x.toString().toWCharArray(buffer);
+    buffer[x.toString().length()] = L'\0';
+    set_file_encoding__st_funct(buffer);
+    errText = __get_error__st_funct();
+    free(buffer);
+    return errText.isEmpty()? ES_NoResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::FileOpenForRead(const QVariant &x) {
+    wchar_t * buffer = (wchar_t*)calloc(x.toString().size()+1, sizeof(wchar_t));
+    x.toString().toWCharArray(buffer);
+    buffer[x.toString().length()] = L'\0';
+    int handle = open_file_r__st_funct(buffer);
+    Res = QVariant(handle);
+    free(buffer);
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::FileOpenForWrite(const QVariant &x) {
+    wchar_t * buffer = (wchar_t*)calloc(x.toString().size()+1, sizeof(wchar_t));
+    x.toString().toWCharArray(buffer);
+    buffer[x.toString().length()] = L'\0';
+    int handle = open_file_w__st_funct(buffer);
+    Res = QVariant(handle);
+    free(buffer);
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::FileOpenForAppend(const QVariant &x) {
+    wchar_t * buffer = (wchar_t*)calloc(x.toString().size()+1, sizeof(wchar_t));
+    x.toString().toWCharArray(buffer);
+    buffer[x.toString().length()] = L'\0';
+    int handle = open_file_a__st_funct(buffer);
+    Res = QVariant(handle);
+    free(buffer);
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::FileClose(const QVariant &x) {
+    int handle = x.toInt();
+    close_file__st_funct(handle);
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_NoResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::FileReset(const QVariant &x) {
+    int handle = x.toInt();
+    reset_file__st_funct(handle);
+    errText = __get_error__st_funct();
+    return errText.isEmpty()? ES_NoResult : ES_Error;
+}
+
+EvaluationStatus St_functPlugin::FileAtEnd(const QVariant &x) {
+    int handle = x.toInt();
+    unsigned char atend = is_file_at_end__st_funct(handle);
+    errText = __get_error__st_funct();
+    Res = QVariant(atend);
+    return errText.isEmpty()? ES_StackResult : ES_Error;
+}
 
 } // end namespace st_funct
 

@@ -4,6 +4,7 @@
 #include "stdlib/doubleoverflowchecker.h"
 #include "stdlib/genericinputoutput.h"
 #include "extensionsystem/kplugin.h"
+#include "stdlib/kumstdlib.h"
 
 #define EPSILON 0.0000001
 #define MAX_RECURSION_SIZE 4000
@@ -40,6 +41,11 @@ void VM::setAvailableActors(const QList<ActorInterface *> &actors)
             availableExternalMethods.insert(key, value);
         }
     }
+}
+
+void VM::updateStFunctError()
+{
+    s_error = __get_error__st_funct();
 }
 
 void VM::setNextCallInto()
@@ -513,14 +519,39 @@ void VM::do_call(quint8 mod, quint16 alg)
         if (alg==0x01) {
             // Output
             QString output;
+            QVariantList outArgs;
+            std::string format;
             for (int i=0; i<argsCount; i++) {
-                output += stack_values.pop().toString();
+                Variant v = stack_values.pop();
+                if (v.baseType()==VT_int) {
+                    if (i%3==0) format += 'i';
+                    outArgs << v.toInt();
+                }
+                else if (v.baseType()==VT_float) {
+                    if (i%3==0) format += 'r';
+                    outArgs << v.toReal();
+                }
+                else if (v.baseType()==VT_bool) {
+                    if (i%3==0) format += 'b';
+                    outArgs << v.toBool();
+                }
+                else if (v.baseType()==VT_string) {
+                    if (i%3==0) format += 's';
+                    outArgs << v.toString();
+                }
+                else if (v.baseType()==VT_char) {
+                    if (i%3==0) format += 'c';
+                    outArgs << v.toString();
+                }
             }
-            if (f_output.isOpen()) {
-                f_output.write(output.toLocal8Bit());
-            }
-            else {
-                emit outputRequest(output);
+            output = StdLib::GenericInputOutput::prepareOutput(format, outArgs, s_error);
+            if (s_error.isEmpty()) {
+                if (f_output.isOpen()) {
+                    f_output.write(output.toLocal8Bit());
+                }
+                else {
+                    emit outputRequest(output);
+                }
             }
         }
         else if (alg==0x02) {
@@ -528,7 +559,40 @@ void VM::do_call(quint8 mod, quint16 alg)
             // TODO implement me
         }
         else if (alg==0x03) {
-            // File output
+            QString output;
+            QVariantList outArgs;
+            std::string format;
+            for (int i=0; i<argsCount; i++) {
+                Variant v = stack_values.pop();
+                if (v.baseType()==VT_int) {
+                    if (i%3==0) format += 'i';
+                    outArgs << v.toInt();
+                }
+                else if (v.baseType()==VT_float) {
+                    if (i%3==0) format += 'r';
+                    outArgs << v.toReal();
+                }
+                else if (v.baseType()==VT_bool) {
+                    if (i%3==0) format += 'b';
+                    outArgs << v.toBool();
+                }
+                else if (v.baseType()==VT_string) {
+                    if (i%3==0) format += 's';
+                    outArgs << v.toString();
+                }
+                else if (v.baseType()==VT_char) {
+                    if (i%3==0) format += 'c';
+                    outArgs << v.toString();
+                }
+            }
+            output = StdLib::GenericInputOutput::prepareOutput(format, outArgs, s_error);
+            int handle = stack_values.pop().toInt();
+            wchar_t * buffer = (wchar_t*)calloc(output.length()+1, sizeof(wchar_t));
+            output.toWCharArray(buffer);
+            buffer[output.length()] = L'\0';
+            if (s_error.isEmpty())
+                __foutput2__st_funct(handle, buffer);
+            free(buffer);
 
         }
         else if (alg==0x04) {

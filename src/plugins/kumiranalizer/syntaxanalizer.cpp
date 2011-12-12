@@ -1,5 +1,6 @@
 #include "syntaxanalizer.h"
 #include "lexer.h"
+#include <limits>
 
 #include "dataformats/ast_variable.h"
 #include "errormessages/errormessages.h"
@@ -40,7 +41,8 @@ struct SyntaxAnalizerPrivate
     void parseAlgHeader(int str, bool onlyName);
     void parseVarDecl(int str);
     void parseAssignment(int str);
-    void parseInputOutputAssertPrePost(int str);
+    void parseInputAssertPrePost(int str);
+    void parseOutput(int str);
     void parseOneLexemInstruction(int str);
     void parseEndLoop(int str);
     void parseIfCase(int str);
@@ -317,15 +319,20 @@ void SyntaxAnalizer::processAnalisys()
             d->parseVarDecl(i);
         }
         else if (st.type==LxPriInput
-                 || st.type==LxPriFinput
-                 || st.type==LxPriOutput
                  || st.type==LxPriFoutput
                  || st.type==LxPriAssert
                  || st.type==LxPriPre
                  || st.type==LxPriPost
                  )
         {
-            d->parseInputOutputAssertPrePost(i);
+            d->parseInputAssertPrePost(i);
+        }
+        else if (st.type==LxPriFinput
+                 || st.type==LxPriOutput
+
+                 )
+        {
+            d->parseOutput(i);
         }
         else if (st.type==LxPriAssignFile) {
             d->parseAssignFileStream(i);
@@ -582,7 +589,7 @@ void SyntaxAnalizerPrivate::parseVarDecl(int str)
     }
 }
 
-void SyntaxAnalizerPrivate::parseInputOutputAssertPrePost(int str)
+void SyntaxAnalizerPrivate::parseInputAssertPrePost(int str)
 {
     const Statement & st = statements[str];
     if (st.hasError()) {
@@ -679,6 +686,133 @@ void SyntaxAnalizerPrivate::parseInputOutputAssertPrePost(int str)
             return;
         }
         st.statement->expressions << expr;
+    }
+}
+
+void SyntaxAnalizerPrivate::parseOutput(int str)
+{
+    const Statement & st = statements[str];
+    if (st.hasError()) {
+        return;
+    }
+    if (st.data.size()==1) {
+        QString err = _("What to output?");
+        st.data[0]->error = err;
+        return;
+    }
+    if (st.data.last()->type==LxOperComa) {
+        st.data.last()->error = _("Statement ends with coma");
+        return;
+    }
+    QList< QList<Lexem*> > groups;
+    QList<Lexem*> comas;
+    splitLexemsByOperator(st.data.mid(1), LxOperComa, groups, comas);
+
+    enum GroupType {
+        Undefined,
+        FileHandle,
+        InputExpression,
+        OutputExpression,
+        AssertionExpression
+    } groupType = Undefined;
+
+    for (int i=0 ; i<groups.size(); i++) {
+
+        if (i==0 && (st.type==LxPriFinput || st.type==LxPriFoutput))
+            groupType = FileHandle;
+        else
+            groupType = OutputExpression;
+
+        QString err;
+        if (groupType==FileHandle) {
+            // Expression is a file ID
+            AST::Expression * expr = parseExpression(groups[i], st.mod, st.alg);
+            if (!expr) {
+                return;
+            }
+            if (expr->baseType!=AST::TypeInteger) {
+                delete expr;
+                err = _("File handle is not integer");
+                for (int a=0; a<groups[i].size(); a++) {
+                    groups[i][a]->error = err;
+                }
+                return;
+            }
+            st.statement->expressions << expr;
+        }
+        else {
+            QList< QList<Lexem*> > subgroups;
+            QList< Lexem* > colons;
+            splitLexemsByOperator(groups[i], LxOperColon, subgroups, colons);
+            AST::Expression * expr = parseExpression(subgroups[0], st.mod, st.alg);
+            if (!expr) {
+                return;
+            }
+            const int maxSubgroups = expr->baseType==AST::TypeReal? 3 : 2;
+            Q_ASSERT(colons.size() == subgroups.size()-1);
+            if (subgroups.size()>maxSubgroups) {
+                delete expr;
+                err = _("Extra format parameter");
+                for (int j=maxSubgroups-1 ; j<colons.size(); j++) {
+                    colons[j]->error = err;
+                }
+                for (int j=maxSubgroups; j<subgroups.size(); j++) {
+                    foreach (Lexem * lx, subgroups[j]) {
+                        lx->error = err;
+                    }
+                }
+                return;
+            }
+            AST::Expression * expr2 = 0, *expr3 = 0;
+            if (subgroups.size()>1) {
+                expr2 = parseExpression(subgroups[1], st.mod, st.alg);
+                if (!expr2) {
+                    delete expr;
+                    return;
+                }
+                if (expr2->baseType!=AST::TypeInteger) {
+                    err = _("Format parameter not integer");
+                    foreach (Lexem * lx, subgroups[1])
+                        lx->error = err;
+                    delete expr;
+                    delete expr2;
+                    return;
+                }
+            }
+            else {
+                expr2 = new AST::Expression;
+                expr2->baseType = AST::TypeInteger;
+                expr2->dimension = 0;
+                expr2->kind = AST::ExprConst;
+                expr2->constant = QVariant(std::numeric_limits<qint32>::max());
+            }
+            if (subgroups.size()>2) {
+                expr3 = parseExpression(subgroups[2], st.mod, st.alg);
+                if (!expr3) {
+                    delete expr;
+                    delete expr2;
+                    return;
+                }
+                if (expr3->baseType!=AST::TypeInteger) {
+                    err = _("Format parameter not integer");
+                    foreach (Lexem * lx, subgroups[2])
+                        lx->error = err;
+                    delete expr;
+                    delete expr2;
+                    delete expr3;
+                    return;
+                }
+            }
+            else {
+                expr3 = new AST::Expression;
+                expr3->baseType = AST::TypeInteger;
+                expr3->dimension = 0;
+                expr3->kind = AST::ExprConst;
+                expr3->constant = QVariant(6);
+            }
+            st.statement->expressions << expr << expr2 << expr3;
+        }
+
     }
 }
 

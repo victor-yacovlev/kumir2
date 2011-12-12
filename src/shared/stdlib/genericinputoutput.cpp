@@ -1,6 +1,8 @@
 #include "genericinputoutput.h"
 #include "connector.h"
+
 #include <stdio.h>
+#include <limits>
 
 #include "kumstdlib.h"
 
@@ -13,6 +15,104 @@ GenericInputOutput::GenericInputOutput(QObject *parent) :
 
 QFile __output_file__;
 QFile __input_file__;
+
+QString GenericInputOutput::output(int v, int width, QString &err)
+{
+    err = "";
+    if (width<0) {
+        err = tr("Negative field width in format");
+        return "";
+    }
+    QString result = QString::number(v);
+    if (width!=std::numeric_limits<qint32>::max())
+        result = result.rightJustified(width, ' ', true);
+    return result;
+}
+
+QString GenericInputOutput::output(double v, int width, int prec, QString &err)
+{
+    if (width<0) {
+        err = tr("Negative field width in format");
+        return "";
+    }
+    if (prec<0) {
+        err = tr("Negative precision field in format");
+        return "";
+    }
+    QString result = QString::number(v, 'f', prec);
+    if (width!=std::numeric_limits<qint32>::max())
+        result = result.rightJustified(width, ' ', true);
+    return result;
+}
+
+QString GenericInputOutput::output(bool v, int width, QString &err)
+{
+    if (width<0) {
+        err = tr("Negative field width in format");
+        return "";
+    }
+    QString result = v? tr("yes") : tr("no");
+    if (width!=std::numeric_limits<qint32>::max())
+        result = result.rightJustified(width, ' ', true);
+    return result;
+}
+
+QString GenericInputOutput::output(const QString &v, int width, QString &err)
+{
+    if (width<0) {
+        err = tr("Negative field width in format");
+        return "";
+    }
+    QString result = v;
+    if (width!=std::numeric_limits<qint32>::max())
+        result = result.rightJustified(width, ' ', true);
+    return result;
+}
+
+QString GenericInputOutput::prepareOutput(const std::string &format, QVariantList vals, QString &err)
+{
+    err = "";
+    Q_ASSERT(vals.size() == format.length()*3);
+    QString result;
+    for (int i=0; i<format.length(); i++) {
+        if (format[i]=='i') {
+            int v = vals.first().toInt();
+            vals.pop_front();
+            int w = vals.first().toInt();
+            vals.pop_front();
+            vals.pop_front();
+            result += output(v,w,err);
+        }
+        else if (format[i]=='r') {
+            double v = vals.first().toDouble();
+            vals.pop_front();
+            double w = vals.first().toInt();
+            vals.pop_front();
+            double p = vals.first().toInt();
+            vals.pop_front();
+            result += output(v,w,p,err);
+        }
+        else if (format[i]=='s' || format[i]=='c') {
+            QString v = vals.first().toString();
+            vals.pop_front();
+            int w = vals.first().toInt();
+            vals.pop_front();
+            vals.pop_front();
+            result += output(v,w,err);
+        }
+        else if (format[i]=='b') {
+            bool v = vals.first().toBool();
+            vals.pop_front();
+            int w = vals.first().toInt();
+            vals.pop_front();
+            vals.pop_front();
+            result += output(v,w,err);
+        }
+        if (!err.isEmpty())
+            return "";
+    }
+    return result;
+}
 
 int GenericInputOutput::prepareString(QString & s)
 {
@@ -662,43 +762,61 @@ extern "C" void __output__st_funct(const char * format, int args, ...)
     QString fmt = QString::fromLatin1(format);
     va_list vl;
     va_start(vl, args);
-    for (int i=0; i<args; i++) {
+    QString err;
+    for (int i=0; i<fmt.length(); i++) {
         if (fmt[i]=='i') {
             int v = va_arg(vl, int);
-            result += StdLib::GenericInputOutput::output(v);
+            int width = va_arg(vl, int);
+            int prec = va_arg(vl, int);
+            result += StdLib::GenericInputOutput::output(v, width, err);
         }
         else if (fmt[i]=='r') {
             double v = va_arg(vl, double);
-            result += StdLib::GenericInputOutput::output(v);
+            int width = va_arg(vl, int);
+            int prec = va_arg(vl, int);
+            result += StdLib::GenericInputOutput::output(v, width, prec, err);
         }
         else if (fmt[i]=='c') {
             wchar_t v = va_arg(vl, int);
-            result += StdLib::GenericInputOutput::output(v);
+            int width = va_arg(vl, int);
+            int prec = va_arg(vl, int);
+            result += StdLib::GenericInputOutput::output(v, width, err);
         }
         else if (fmt[i]=='s') {
             wchar_t * v = va_arg(vl, wchar_t*);
-            result += StdLib::GenericInputOutput::output(v);
+            int width = va_arg(vl, int);
+            int prec = va_arg(vl, int);
+            result += StdLib::GenericInputOutput::output(v, width, err);
         }
         else if (fmt[i]=='b') {
             unsigned char v = va_arg(vl, int);
-            result += StdLib::GenericInputOutput::output(v);
+            int width = va_arg(vl, int);
+            int prec = va_arg(vl, int);
+            result += StdLib::GenericInputOutput::output(v, width, err);
         }
+        if (!err.isEmpty())
+            break;
     }
     va_end(vl);
-    if (StdLib::__output_file__.isOpen()) {
-        StdLib::__output_file__.write(result.toLocal8Bit());
-    }
-    else {
-        if (!__connected_to_kumir__()) {
-            wchar_t * buffer = (wchar_t*)calloc(result.length()+1, sizeof(wchar_t));
-            result.toWCharArray(buffer);
-            buffer[result.length()] = L'\0';
-            wprintf(L"%ls", buffer);
-            free(buffer);
+    if (err.isEmpty()) {
+        if (StdLib::__output_file__.isOpen()) {
+            StdLib::__output_file__.write(result.toLocal8Bit());
         }
         else {
-            StdLib::Connector::instance()->output(result);
+            if (!__connected_to_kumir__()) {
+                wchar_t * buffer = (wchar_t*)calloc(result.length()+1, sizeof(wchar_t));
+                result.toWCharArray(buffer);
+                buffer[result.length()] = L'\0';
+                wprintf(L"%ls", buffer);
+                free(buffer);
+            }
+            else {
+                StdLib::Connector::instance()->output(result);
+            }
         }
+    }
+    else {
+        __set_error__st_funct(err);
     }
 }
 

@@ -19,6 +19,7 @@ struct __array__ {
 };
 
 extern STDLIB_EXPORT QString __get_error__st_funct();
+extern STDLIB_EXPORT void __set_error__st_funct(const QString & err);
 
 extern "C" STDLIB_EXPORT void __allocate_array__(struct __array__ * arr);
 extern "C" STDLIB_EXPORT void* __element__(struct __array__ * arr, int i0, int i1, int i2);
@@ -108,6 +109,7 @@ extern "C" STDLIB_EXPORT void close_file__st_funct(int file_handle);
 extern "C" STDLIB_EXPORT void reset_file__st_funct(int file_handle);
 extern "C" STDLIB_EXPORT unsigned char is_file_at_end__st_funct(int file_handle);
 extern "C" STDLIB_EXPORT void __foutput2__st_funct(int file_handle, wchar_t * data);
+extern "C" STDLIB_EXPORT void __check_for_unclosed_files__st_funct(unsigned char noerror);
 
 
 

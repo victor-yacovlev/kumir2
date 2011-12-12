@@ -1,4 +1,5 @@
 #include "run.h"
+#include "stdlib/kumstdlib.h"
 
 namespace KumirCodeRun {
 
@@ -438,6 +439,13 @@ void Run::run()
             emit error(vm->error());
             break;
         }
+    }
+    bool wasError = !vm->error().isEmpty();
+    __check_for_unclosed_files__st_funct(b_stopping);
+    vm->updateStFunctError();
+    if (!wasError && !vm->error().isEmpty()) {
+        emit lineChanged(vm->effectiveLineNo());
+        emit error(vm->error());
     }
     emit aboutToStop();
 }

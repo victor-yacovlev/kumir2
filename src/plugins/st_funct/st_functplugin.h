@@ -80,6 +80,17 @@ public slots:
     EvaluationStatus UniSymbol(const QVariant & x);
     EvaluationStatus Unicode(const QVariant & x);
 
+    EvaluationStatus FileExists(const QVariant & x);
+    EvaluationStatus FileUnlink(const QVariant & x);
+    EvaluationStatus FileSetEncoding(const QVariant & x);
+    EvaluationStatus FileOpenForRead(const QVariant & x);
+    EvaluationStatus FileOpenForWrite(const QVariant & x);
+    EvaluationStatus FileOpenForAppend(const QVariant & x);
+    EvaluationStatus FileClose(const QVariant & x);
+    EvaluationStatus FileReset(const QVariant & x);
+    EvaluationStatus FileAtEnd(const QVariant & x);
+
+
     // End function implementations
 signals:
     void sync();

@@ -26,6 +26,7 @@ public:
     void setAvailableActors(const QList<ActorInterface*> & actors);
     ElemType topStackType() const;
     void evaluateNextInstruction();
+    void updateStFunctError();
     QStringList usedActors() const;
     inline bool isBlindMode() const { return b_blindMode; }
     void setBlindMode(bool bl);
