@@ -40,6 +40,8 @@ QString GenericInputOutput::output(double v, int width, int prec, QString &err)
         return "";
     }
     QString result = QString::number(v, 'f', prec);
+    if (result.endsWith("."))
+        result += "0";
     if (width!=std::numeric_limits<qint32>::max())
         result = result.rightJustified(width, ' ', true);
     return result;
