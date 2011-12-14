@@ -1028,8 +1028,10 @@ void VM::do_store(quint8 s, quint16 id)
             reference = stack_contexts.top().locals[id].reference();
         stack_contexts.top().locals[id].setBounds(val.bounds());
         stack_contexts.top().locals[id].setValue(val.value());
-        name = stack_contexts.top().locals[id].myName();
-        svalue = stack_contexts.top().locals[id].toString();
+        if (lineNo!=-1 && !b_blindMode) {
+            name = stack_contexts.top().locals[id].myName();
+            svalue = stack_contexts.top().locals[id].toString();
+        }
         t = stack_contexts.top().locals[id].baseType();
     }
     else if (VariableScope(s)==GLOBAL) {
@@ -1038,8 +1040,10 @@ void VM::do_store(quint8 s, quint16 id)
             reference = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].reference();
         globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].setBounds(val.bounds());
         globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].setValue(val.value());
-        name = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].myName();
-        svalue = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].toString();
+        if (lineNo!=-1 && !b_blindMode) {
+            name = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].myName();
+            svalue = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].toString();
+        }
         t = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].baseType();
     }
     else {
@@ -1135,17 +1139,21 @@ void VM::do_storearr(quint8 s, quint16 id)
         if (VariableScope(s)==LOCAL) {
             stack_contexts.top().locals[id].setValue(indeces, val.value());
             t = stack_contexts.top().locals[id].baseType();
-            svalue = stack_contexts.top().locals[id].toString(indeces);
+            if (lineNo!=-1 && !b_blindMode)
+                svalue = stack_contexts.top().locals[id].toString(indeces);
         }
         else if (VariableScope(s)==GLOBAL) {
             globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].setValue(indeces, val.value());
             t = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].baseType();
-            svalue = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].toString(indeces);
+            if (lineNo!=-1 && !b_blindMode)
+                svalue = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].toString(indeces);
         }
         if (t==VT_string)
-            svalue = "\""+svalue+"\"";
+            if (lineNo!=-1 && !b_blindMode)
+                svalue = "\""+svalue+"\"";
         if (t==VT_char)
-            svalue = "'"+svalue+"'";
+            if (lineNo!=-1 && !b_blindMode)
+                svalue = "'"+svalue+"'";
         if (!Variant::error.isEmpty())
             s_error = Variant::error;
     }
