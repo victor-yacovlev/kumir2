@@ -319,7 +319,7 @@ void SyntaxAnalizer::processAnalisys()
             d->parseVarDecl(i);
         }
         else if (st.type==LxPriInput
-                 || st.type==LxPriFoutput
+                 || st.type==LxPriFinput
                  || st.type==LxPriAssert
                  || st.type==LxPriPre
                  || st.type==LxPriPost
@@ -327,7 +327,7 @@ void SyntaxAnalizer::processAnalisys()
         {
             d->parseInputAssertPrePost(i);
         }
-        else if (st.type==LxPriFinput
+        else if (st.type==LxPriFoutput
                  || st.type==LxPriOutput
 
                  )

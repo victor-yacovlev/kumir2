@@ -559,10 +559,11 @@ void VM::do_call(quint8 mod, quint16 alg)
             // TODO implement me
         }
         else if (alg==0x03) {
+            int handle = stack_values.pop().toInt();
             QString output;
             QVariantList outArgs;
             std::string format;
-            for (int i=0; i<argsCount; i++) {
+            for (int i=0; i<argsCount-1; i++) {
                 Variant v = stack_values.pop();
                 if (v.baseType()==VT_int) {
                     if (i%3==0) format += 'i';
@@ -586,7 +587,6 @@ void VM::do_call(quint8 mod, quint16 alg)
                 }
             }
             output = StdLib::GenericInputOutput::prepareOutput(format, outArgs, s_error);
-            int handle = stack_values.pop().toInt();
             wchar_t * buffer = (wchar_t*)calloc(output.length()+1, sizeof(wchar_t));
             output.toWCharArray(buffer);
             buffer[output.length()] = L'\0';
