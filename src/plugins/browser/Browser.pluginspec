@@ -1,6 +1,6 @@
 {
     "name": "Browser",
-    "gui": true,
+    "gui": 1,
     "summary": {
         "en": "Extended WebKit browser for web-parts of Kumir"
     }

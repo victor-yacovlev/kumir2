@@ -1,7 +1,7 @@
 {
     "name": "ActorPainter",
     "extra_translations": "ActorPainterC",
-    "gui": true,
+    "gui": 1,
     "summary": {
         "en": "Actor Painter for Kumir"
     },

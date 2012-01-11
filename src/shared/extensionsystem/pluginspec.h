@@ -3,15 +3,15 @@
 
 #include <QString>
 #include <QList>
-#include <QtScript/QScriptEngine>
+#include <QStringList>
+// #include <QtScript/QScriptEngine>
+
+#include <string>
+#include <deque>
+#include <wchar.h>
 
 namespace ExtensionSystem {
 
-struct Dependency {
-    QString name;
-    QString minVersion;
-    QString maxVersion;
-};
 
 struct PluginSpec
 {
@@ -22,11 +22,12 @@ struct PluginSpec
     bool gui;
     QString libraryFileName;
     QString specFileName;
-    QList<Dependency> dependencies;
-    QList<QString> provides;
+    QStringList dependencies;
+    QStringList provides;
 };
 
-extern QString readSpecFromFile(const QString &fileName, PluginSpec & spec, QScriptEngine * engine);
+// extern QString readSpecFromFile(const QString &fileName, PluginSpec & spec, QScriptEngine * engine);
+extern QString readSpecFromFile(const QString & fileName, PluginSpec & spec);
 
 } // namespace ExtensionSystem
 

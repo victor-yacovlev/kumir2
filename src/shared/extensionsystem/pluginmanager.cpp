@@ -1,6 +1,6 @@
 #include "pluginmanager.h"
 #include "kplugin.h"
-#include <QScriptEngine>
+//#include <QScriptEngine>
 #include "settingsdialog.h"
 #include "switchworkspacedialog.h"
 
@@ -30,10 +30,8 @@ struct PluginManagerPrivate {
 
 
     QString parsePluginsRequest(const QString &templ, QList<PluginRequest> & plugins, QStringList & names);
-    QString loadSpecs(const QStringList &names, QScriptEngine * engine);
+    QString loadSpecs(const QStringList &names/*, QScriptEngine * engine*/);
     QString makeDependencies(const QString &entryPoint,
-                             const QString &minVersion,
-                             const QString &maxVersion,
                              QStringList &orderedList);
     QString reorderSpecsAndCreateStates(const QStringList & orderedList);
     void createSettingsDialog();
@@ -233,7 +231,7 @@ QString PluginManagerPrivate::parsePluginsRequest(const QString &templ, QList<Pl
     return "";
 }
 
-QString PluginManagerPrivate::loadSpecs(const QStringList &names, QScriptEngine * engine)
+QString PluginManagerPrivate::loadSpecs(const QStringList &names/*, QScriptEngine * engine*/)
 {
     for (int i=0; i<names.size(); i++) {
         bool loaded = false;
@@ -268,16 +266,16 @@ QString PluginManagerPrivate::loadSpecs(const QStringList &names, QScriptEngine 
 //        spec.libraryFileName = QString("%1/lib%2_debug.dylib").arg(path).arg(names[i]);
 //#endif
 //#endif
-        QString error = readSpecFromFile(fileName, spec, engine);
+        QString error = readSpecFromFile(fileName, spec);
         if (!error.isEmpty()) {
             return error;
         }
         specs << spec;
         QStringList deps;
         for (int j=0; j<spec.dependencies.size(); j++) {
-            deps << spec.dependencies[j].name;
+            deps << spec.dependencies[j];
         }
-        error = loadSpecs(deps, engine);
+        error = loadSpecs(deps);
         if (!error.isEmpty()) {
             return error;
         }
@@ -317,8 +315,6 @@ QString PluginManagerPrivate::loadPlugins()
 }
 
 QString PluginManagerPrivate::makeDependencies(const QString &entryPoint,
-                                               const QString &minVersion,
-                                               const QString &maxVersion,
                                                QStringList &orderedList)
 {
     if (orderedList.contains(entryPoint)) {
@@ -340,25 +336,10 @@ QString PluginManagerPrivate::makeDependencies(const QString &entryPoint,
         qDebug()<<"Spec not loaded for |"+entryPoint+"|";
         return "Spec not loaded for "+entryPoint;
     }
-    if (!minVersion.isEmpty()) {
-        if (spec.version<minVersion) {
-            return QString("Plugin %1 version too old: %2, but required at least %3")
-                    .arg(entryPoint)
-                    .arg(spec.version)
-                    .arg(minVersion);
-        }
-    }
-    if (!maxVersion.isEmpty()) {
-        if (spec.version>maxVersion) {
-            return QString("Plugin %1 version too new: %2, but required not greater %3")
-                    .arg(entryPoint)
-                    .arg(spec.version)
-                    .arg(maxVersion);
-        }
-    }
+
     for (int i=0; i<spec.dependencies.size(); i++) {
-        Dependency dep = spec.dependencies[i];
-        QString error = makeDependencies(dep.name, dep.minVersion, dep.maxVersion, orderedList);
+        QString dep = spec.dependencies[i];
+        QString error = makeDependencies(dep, orderedList);
         if (!error.isEmpty()) {
             return error;
         }
@@ -374,9 +355,10 @@ QString PluginManager::loadPluginsByTemplate(const QString &templ)
     error = d->parsePluginsRequest(templ, requests, names);
     if (!error.isEmpty())
         return error;
-    QScriptEngine engine;
-    engine.evaluate("var data = null;\n");
-    error = d->loadSpecs(names, &engine);
+    //QScriptEngine engine;
+    //engine.evaluate("var data = null;\n");
+    //error = d->loadSpecs(names, &engine);
+    error = d->loadSpecs(names);
     if (!error.isEmpty())
         return error;
 
@@ -413,12 +395,12 @@ QString PluginManager::loadPluginsByTemplate(const QString &templ)
     // orderedList will contain names in order of load and initialization
     QStringList orderedList;
     // make dependencies for entry point plugin first
-    error = d->makeDependencies(d->mainPluginName,"","",orderedList);
+    error = d->makeDependencies(d->mainPluginName,orderedList);
     if (!error.isEmpty())
         return error;
     // make dependencies for other requests
     for (int i=0; i<requests.size(); i++) {
-        error = d->makeDependencies(requests[i].name,"","",orderedList);
+        error = d->makeDependencies(requests[i].name,orderedList);
         if (!error.isEmpty())
             return error;
     }
@@ -532,12 +514,12 @@ KPlugin * PluginManager::dependentPlugin(const QString &name, const KPlugin *p) 
     QSet<QString> depAliases;
     for (int i=0; i<spec.dependencies.size(); i++) {
         for (int j=0; j<d->specs.size(); j++) {
-            if (d->specs[j].provides.contains(spec.dependencies[i].name))
+            if (d->specs[j].provides.contains(spec.dependencies[i]))
                 depAliases |= QSet<QString>::fromList(d->specs[j].provides);
         }
     }
     for (int i=0; i<spec.dependencies.size(); i++) {
-        if (depAliases.contains(spec.dependencies[i].name)) {
+        if (depAliases.contains(spec.dependencies[i])) {
             hasDep = true;
             break;
         }

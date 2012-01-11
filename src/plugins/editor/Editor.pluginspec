@@ -1,7 +1,7 @@
 {
     "name": "Editor",
     "requires": [ "Analizer" ],
-    "gui": true,
+    "gui": 1,
     "summary": {
         "en": "Andvanced text editor for Kumir"
     }

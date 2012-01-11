@@ -1,13 +1,55 @@
 #include "pluginspec.h"
 
 #include <QtCore>
-#include <QScriptValue>
-#include <QScriptEngine>
+//#include <QScriptValue>
+//#include <QScriptEngine>
+
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/foreach.hpp>
 
 #include "../../VERSION.h"
 
 namespace ExtensionSystem {
 
+extern QString readSpecFromFile(const QString &fileName, PluginSpec &spec)
+{
+    QFile f(fileName);
+    if (!f.exists()) {
+        //return "Can't open plugin spec file "+fileName;
+        return "";
+    }
+    std::string fn = fileName.toStdString();
+    using boost::property_tree::ptree;
+    using boost::property_tree::json_parser::read_json;
+    ptree pt;
+    read_json(fn, pt);
+    spec.name = QString::fromStdString(pt.get<std::string>("name"));
+    spec.provides << spec.name;
+    spec.version = QString::fromStdString(pt.get<std::string>("version",""));
+    if (spec.version.length()==0)
+        spec.version = QString::fromAscii("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_RELEASE);
+    spec.copyright = QString::fromStdString(pt.get<std::string>("copyright",""));
+    spec.license = QString::fromStdString(pt.get<std::string>("license",""));
+    spec.gui = pt.get<int>("gui", false) > 0;
+
+    if (pt.count("requires")>0)
+    BOOST_FOREACH(ptree::value_type & v,
+                  pt.get_child("requires"))
+    {
+        spec.dependencies << QString::fromStdString(v.second.data());
+    }
+    if (pt.count("provides")>0)
+    BOOST_FOREACH(ptree::value_type & v,
+                  pt.get_child("provides"))
+    {
+        spec.provides << QString::fromStdString(v.second.data());
+    }
+
+    return "";
+}
+
+/*
 extern QString readSpecFromFile(const QString &fileName, PluginSpec &spec, QScriptEngine * engine)
 {
     QFile f(fileName);
@@ -130,5 +172,6 @@ extern QString readSpecFromFile(const QString &fileName, PluginSpec &spec, QScri
     }
     return "";
 }
+*/
 
 } // namespace ExtensionSystem
