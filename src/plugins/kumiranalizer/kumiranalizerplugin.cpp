@@ -68,7 +68,7 @@ QString KumirAnalizerPlugin::initialize(const QStringList &arguments)
     }
 
     Analizer::setSourceLanguage(language);
-    ErrorMessages::loadMessages("KumirAnalizer");
+    Shared::ErrorMessages::loadMessages("KumirAnalizer");
 
     return "";
 }

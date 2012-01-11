@@ -2,14 +2,11 @@
 
 #include <QtCore>
 
-namespace ErrorMessages {
+namespace Shared {
 
-typedef QPair<QString,QLocale::Language> Context;
-typedef QHash<QString,QString> Database;
+QMap<ErrorMessages::Context, ErrorMessages::Database> ErrorMessages::database = QMap<ErrorMessages::Context,ErrorMessages::Database>();
 
-static QMap<Context, Database> database = QMap<Context,Database>();
-
-QStringList readCSVRow(const QString &line)
+QStringList ErrorMessages::readCSVRow(const QString &line)
 {
     QStringList result;
     bool inQuote = false;
@@ -46,7 +43,7 @@ QStringList readCSVRow(const QString &line)
     return result;
 }
 
-extern bool loadMessages(const QString &plugin)
+bool ErrorMessages::loadMessages(const QString &plugin)
 {
     const QString fileName = qApp->property("sharePath").toString()
             + "/" + plugin.toLower() + "/messages.csv";
@@ -90,7 +87,7 @@ extern bool loadMessages(const QString &plugin)
     return true;
 }
 
-extern QString message(const QString &plugin
+QString ErrorMessages::message(const QString &plugin
                        , const QLocale::Language &language
                        , const QString &key)
 {

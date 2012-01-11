@@ -4,6 +4,14 @@
 #include <QString>
 #include <QLocale>
 
+#undef EM_EXPORT
+#ifdef ERRORMESSAGES_LIBRARY
+#define EM_EXPORT Q_DECL_EXPORT
+#else
+#define EM_EXPORT Q_DECL_IMPORT
+#endif
+
+namespace Shared {
 
 inline QString _(const char * x) {
     return QString::fromAscii(x);
@@ -30,13 +38,21 @@ inline QString _(const char * x, const QString &a, const QString &b, const QStri
     return result.arg(a).arg(b).arg(c);
 }
 
-namespace ErrorMessages {
 
-    extern bool loadMessages(const QString &plugin);
+class EM_EXPORT ErrorMessages {
+public:
+    static bool loadMessages(const QString &plugin);
 
-    extern QString message(const QString &plugin
+    static QString message(const QString &plugin
                            , const QLocale::Language &language
                            , const QString &key);
+private:
+    static QStringList readCSVRow(const QString &line);
+    typedef QPair<QString,QLocale::Language> Context;
+    typedef QHash<QString,QString> Database;
+    static QMap<Context, Database> database;
+};
+
 }
 
 #endif

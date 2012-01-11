@@ -6,7 +6,9 @@
 
 #ifdef Q_CC_MSVC
 #include <float.h>
-#include <xmath.h>
+#include <limits>
+// #include <xmath.h>
+#define INF std::numeric_limits<double>::infinity()
 #define isnan(x) _isnan(x)
 #define isinf(x) (x==INF)
 #endif

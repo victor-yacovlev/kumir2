@@ -2,6 +2,8 @@
 
 
 namespace KumirCodeGenerator {
+    
+    using namespace Shared;
 
 Generator::Generator(QObject *parent) :
     QObject(parent)

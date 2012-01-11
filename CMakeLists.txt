@@ -8,6 +8,9 @@ include (${QT_USE_FILE})
 include_directories(${CMAKE_SOURCE_DIR}/src/shared)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
+#if(WIN32)
+#    include_directories(${CMAKE_SOURCE_DIR}/boost_include)
+#endif()
 
 
 

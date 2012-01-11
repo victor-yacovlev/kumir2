@@ -1,5 +1,4 @@
 include(../../kumir2_library.cmake)
-
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(SOURCES
@@ -13,4 +12,3 @@ set_property(TARGET ErrorMessages APPEND PROPERTY COMPILE_DEFINITIONS ERRORMESSA
 handleTranslation(ErrorMessages)
 
 install(TARGETS ErrorMessages DESTINATION ${LIBS_DIR})
-
