@@ -1,5 +1,7 @@
 include(../../kumir2_library.cmake)
 
+find_package(Boost 1.41)
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(MOC_HEADERS
