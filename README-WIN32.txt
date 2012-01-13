@@ -2,10 +2,16 @@ Prerequirements to build
 ------------------------
 
 0. QtSDK MinGW - http://qt.nokia.com/
+	or
+   Microsoft Visual Studio 2010 (Express) +  Qt libraries for MSVC2010
 1. Python 2.x - http://www.python.org/
 2. Java Runtime Environment - http://www.oracle.com/
 3. FreePascal Compiler - http://www.freepascal.org/
 4. CMake - http://www.cmake.org/
+5. BOOST Libraries 
+    - http://www.boostpro.com/ -- prebuilt for MSVC2010
+	or
+    - http://www.boost.org/ -- sources for MinGW	
 
 
 Native generator toolchain
@@ -18,10 +24,10 @@ Precompiled binaries can be downloaded using svn:
     svn export http://lpm.org.ru/svn/kumir2-support/clang-mingw/
 
 
-Building
---------
+Building using MinGW
+--------------------
 1. Set PATH environment variable pointing to 
-   cmake.exe, qmake.exe, mingw32-make.exe and fpc.exe.
+   cmake.exe, qmake.exe, mingw32-make.exe, jam.exe and fpc.exe.
 2. Open terminal and cd to Kumir2 source root.
 3. Type 'mkdir build' and then 'cd build'. This will make build directory.
 4. Type 'cmake -G "MinGW Makefiles" -DCMAKE_INSTALL_PREFIX=C:\kumir2-dist ../'.
