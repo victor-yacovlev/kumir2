@@ -4,7 +4,8 @@ endif()
 
 if(MSVC)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-	set(CMAKE_CXX_FLAGS "-Zm200 -Zc:wchar_t-")
+	set(CMAKE_CXX_FLAGS "-Zm300 -Zc:wchar_t- -EHsc -MD -GR")
+	#set(CMAKE_CXX_FLAGS " -EHsc")
 endif(MSVC)
 
 if(MSVC_IDE)
