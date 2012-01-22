@@ -8,5 +8,5 @@ add_subdirectory(kumircompiler)
 add_subdirectory(browser)
 add_subdirectory(editor)
 add_subdirectory(coregui)
-add_subdirectory(pascalanalizer)
+# add_subdirectory(pascalanalizer)
 
