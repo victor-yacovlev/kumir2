@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QLocale>
+#include <QPair>
 
 #undef EM_EXPORT
 #ifdef ERRORMESSAGES_LIBRARY
