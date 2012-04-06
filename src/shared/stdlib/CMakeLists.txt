@@ -2,49 +2,26 @@ include(../../kumir2_library.cmake)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-if(WIN32)
-    set(CONNECTOR_MODULE shm)
-    set(CONNECTOR_METHOD SHM)
-else()
-    set(CONNECTOR_MODULE pipe)
-    set(CONNECTOR_METHOD PIPE)
-endif()
-
-add_definitions(-D${CONNECTOR_METHOD}_METHOD -DSTDLIB_LIBRARY)
-
-set(MOC_HEADERS
-    connector.h actorwindow.h
-    connector_backend.h
-    connector_${CONNECTOR_MODULE}.h
-    genericinputoutput.h
-)
+add_definitions(-DSTDLIB_LIBRARY)
 
 set(HEADERS
-    connector.h actorwindow.h
-    connector_backend.h
-    doubleoverflowchecher.h
-    integeroverflowchecher.h
-    genericinputoutput.h
-    guirunner.h
-    kumstdlib.h
-    userprogramthread.h
+    kumir_core.h
+    kumir_math.h
+    kumir_string.h
 )
 
 
 set(SOURCES
-    kumstdlib.cpp genericinputoutput.cpp connector.cpp guirunner.cpp actorwindow.cpp userprogramthread.cpp
-    integeroverflowchecker.cpp
-    doubleoverflowchecker.cpp
-    connector_${CONNECTOR_MODULE}.cpp
+    kumir_core.c
+    kumir_math.c
+    kumir_string.c
 )
 
 source_group(Headers FILES ${HEADERS})
 source_group(Sources FILES ${SOURCES})
 
-qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 
-add_library(KumirStdLib SHARED ${SOURCES} ${MOC_SOURCES})
-target_link_libraries(KumirStdLib ${QT_LIBRARIES})
+add_library(KumirStdLib SHARED ${SOURCES})
 set_property(TARGET KumirStdLib APPEND PROPERTY COMPILE_DEFINITIONS STDLIB_LIBRARY)
 
 handleTranslation(KumirStdLib)

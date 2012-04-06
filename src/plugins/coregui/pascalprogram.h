@@ -7,7 +7,6 @@
 #include "interfaces/actorinterface.h"
 #include "interfaces/runinterface.h"
 #include "interfaces/editorinterface.h"
-#include "stdlib/connector.h"
 #include "terminal.h"
 #include "extensionsystem/kplugin.h"
 
@@ -18,7 +17,6 @@ using Shared::ActorInterface;
 using Shared::RunInterface;
 using Shared::EditorInterface;
 using Terminal::Term;
-using StdLib::Connector;
 using namespace ExtensionSystem;
 
 
@@ -52,7 +50,6 @@ private:
     QProcess * m_process;
     Term * m_terminal;
     QDockWidget * m_terminalWindow;
-    Connector * m_connector;
     QActionGroup * gr_actions;
     QString s_sourceFileName;
     int i_documentId;

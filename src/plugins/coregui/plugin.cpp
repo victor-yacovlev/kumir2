@@ -312,7 +312,7 @@ void Plugin::start()
 
 void Plugin::stop()
 {
-    StdLib::Connector::instance()->stopListen();
+
 }
 
 

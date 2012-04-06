@@ -17,13 +17,6 @@ PascalProgram::PascalProgram(QObject *parent) :
             this, SLOT(handleProcessError(QProcess::ProcessError)));
 
 
-    m_connector = new Connector();
-    connect(m_connector, SIGNAL(actorCommandReceived(QString,QString,QVariantList)),
-            this, SLOT(handleActorCommand(QString,QString,QVariantList)));
-    connect(m_connector, SIGNAL(resetActorReceived(QString)),
-            this, SLOT(handleActorResetRequest(QString)));
-
-    m_connector->listenFor(m_process);
 
     a_stop = new QAction(tr("Stop"), this);
     a_stop->setIcon(QIcon::fromTheme("media-playback-stop", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-playback-stop.png")));
@@ -63,14 +56,7 @@ void PascalProgram::setTerminal(Term *t, QDockWidget * w)
 {
     m_terminal = t;
     m_terminalWindow = w;
-    if (m_connector) {
-        connect(m_connector, SIGNAL(inputFormatReceived(QString)),
-                m_terminal, SLOT(input(QString)));
-        connect(m_connector, SIGNAL(outputTextReceived(QString)),
-                m_terminal, SLOT(output(QString)));
-        connect(m_connector, SIGNAL(errorMessageReceived(QString)),
-                m_terminal, SLOT(error(QString)));
-    }
+
     connect(m_terminal, SIGNAL(inputFinished(QVariantList)),
             this, SLOT(handleInputDone(QVariantList)));
     connect(m_terminal, SIGNAL(showWindowRequest()),
