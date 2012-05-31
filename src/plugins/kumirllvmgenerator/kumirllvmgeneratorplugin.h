@@ -5,6 +5,8 @@
 #include "extensionsystem/kplugin.h"
 #include "interfaces/generatorinterface.h"
 #include "dataformats/ast.h"
+#include "dataformats/ast_variable.h"
+#include "dataformats/ast_algorhitm.h"
 #define __STDC_CONSTANT_MACROS
 #define __STDC_LIMIT_MACROS
 #include <llvm/DerivedTypes.h>
@@ -39,10 +41,16 @@ public:
 
 private:
     void prepareContext(llvm::LLVMContext & context);
-    void addKumirModule(llvm::LLVMContext & context,
+    llvm::Module *addKumirModule(llvm::LLVMContext & context,
                         const AST::Data * ast, const AST::Module * module);
+    void addAlgorhitmBody(llvm::LLVMContext & context,
+                          llvm::Module *lmodule,
+                          const AST::Data * ast,
+                          const AST::Module * module,
+                          const AST::Algorhitm * alg);
 
     static QString modulesPath();
+    llvm::Type * makeType(llvm::LLVMContext & context, AST::VariableBaseType, int dimension);
     NameProvider * nameProvider;
 };
 

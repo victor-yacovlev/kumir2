@@ -15,6 +15,7 @@ if(APPLE)
 endif(APPLE)
 
 add_subdirectory(kumir2-cc)
+add_subdirectory(kumir2-lc)
 add_subdirectory(kumir2-bc)
 add_subdirectory(kumir2-run)
 
