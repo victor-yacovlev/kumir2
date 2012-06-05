@@ -16,6 +16,16 @@ set(SOURCES
     autocompletewidget.cpp
 )
 
+set(EXTRA_LIBS
+)
+
+if(APPLE)
+    set(SOURCES ${SOURCES}
+        mac-util.mm
+    )
+    find_library(COCOA_LIBRARY Cocoa)
+    set(EXTRA_LIBS ${COCOA_LIBRARY})
+endif(APPLE)
 
 set(MOC_HEADERS
     editorplugin.h
@@ -39,7 +49,7 @@ qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 copySpecFile(Editor)
 add_library(Editor SHARED ${UI_SOURCES} ${MOC_SOURCES} ${SOURCES})
 handleTranslation(Editor)
-target_link_libraries(Editor ${QT_LIBRARIES} ExtensionSystem DataFormats)
+target_link_libraries(Editor ${QT_LIBRARIES} ${EXTRA_LIBS} ExtensionSystem DataFormats)
 
 copyResources(editor)
 

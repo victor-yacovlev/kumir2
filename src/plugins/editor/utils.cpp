@@ -12,6 +12,9 @@
 #   include <QX11Info>
 #endif
 
+#ifdef Q_OS_MACX
+#   include "mac-util.h"
+#endif
 
 namespace Editor {
 
@@ -25,6 +28,9 @@ bool Utils::isRussianLayout()
 #ifdef Q_OS_WIN32
     HKL l = GetKeyboardLayout(0);
     result = unsigned(l)==0x4190419;
+#endif
+#ifdef Q_OS_MACX
+    result = EditorMacUtil::isRussianLayout();
 #endif
     return result;
 }
@@ -43,172 +49,175 @@ bool Utils::isCapsLock()
 #ifdef Q_OS_WIN32
     result = GetKeyState(VK_CAPITAL)==1;
 #endif
+#ifdef Q_OS_MACX
+    result = EditorMacUtil::isCapsLock();
+#endif
     return result;
 }
 
 bool Utils::temporaryLayoutSwitch = false;
 
-QString Utils::textByKey(Qt::Key key, const QString & keyText, bool shiftPressed)
+QString Utils::textByKey(Qt::Key key, const QString & sourceKeyText, bool shiftPressed)
 {
-    Q_UNUSED(key);
+
     Q_UNUSED(shiftPressed);
-    QString result = keyText;
+    QString keyText = sourceKeyText;
     if (temporaryLayoutSwitch && key==Qt::Key_1) {
-        result = "|";
+        keyText = "|";
     }
     else if (temporaryLayoutSwitch && key==Qt::Key_Equal) {
-        result = ":=";
+        keyText = ":=";
     }
     else if (temporaryLayoutSwitch && isRussianLayout()) {
         if (keyText.toLower()==QString::fromUtf8("й"))
-            result = "q";
+            keyText = "q";
         else if (keyText.toLower()==QString::fromUtf8("ц"))
-            result = "w";
+            keyText = "w";
         else if (keyText.toLower()==QString::fromUtf8("у"))
-            result = "e";
+            keyText = "e";
         else if (keyText.toLower()==QString::fromUtf8("к"))
-            result = "r";
+            keyText = "r";
         else if (keyText.toLower()==QString::fromUtf8("е"))
-            result = "t";
+            keyText = "t";
         else if (keyText.toLower()==QString::fromUtf8("н"))
-            result = "y";
+            keyText = "y";
         else if (keyText.toLower()==QString::fromUtf8("г"))
-            result = "u";
+            keyText = "u";
         else if (keyText.toLower()==QString::fromUtf8("ш"))
-            result = "i";
+            keyText = "i";
         else if (keyText.toLower()==QString::fromUtf8("щ"))
-            result = "o";
+            keyText = "o";
         else if (keyText.toLower()==QString::fromUtf8("з"))
-            result = "p";
+            keyText = "p";
         else if (keyText.toLower()==QString::fromUtf8("х"))
-            result = shiftPressed? "{" : "[";
+            keyText = shiftPressed? "{" : "[";
         else if (keyText.toLower()==QString::fromUtf8("ъ"))
-            result = shiftPressed? "}" : "]";
+            keyText = shiftPressed? "}" : "]";
 
         else if (keyText.toLower()==QString::fromUtf8("ф"))
-            result = "a";
+            keyText = "a";
         else if (keyText.toLower()==QString::fromUtf8("ы"))
-            result = "s";
+            keyText = "s";
         else if (keyText.toLower()==QString::fromUtf8("в"))
-            result = "d";
+            keyText = "d";
         else if (keyText.toLower()==QString::fromUtf8("а"))
-            result = "f";
+            keyText = "f";
         else if (keyText.toLower()==QString::fromUtf8("п"))
-            result = "g";
+            keyText = "g";
         else if (keyText.toLower()==QString::fromUtf8("р"))
-            result = "h";
+            keyText = "h";
         else if (keyText.toLower()==QString::fromUtf8("о"))
-            result = "j";
+            keyText = "j";
         else if (keyText.toLower()==QString::fromUtf8("л"))
-            result = "k";
+            keyText = "k";
         else if (keyText.toLower()==QString::fromUtf8("д"))
-            result = "l";
+            keyText = "l";
         else if (keyText.toLower()==QString::fromUtf8("ж"))
-            result = shiftPressed? ":" : ";";
+            keyText = shiftPressed? ":" : ";";
         else if (keyText.toLower()==QString::fromUtf8("э"))
-            result = shiftPressed? "\"" : "'";
+            keyText = shiftPressed? "\"" : "'";
 
         else if (keyText.toLower()==QString::fromUtf8("я"))
-            result = "z";
+            keyText = "z";
         else if (keyText.toLower()==QString::fromUtf8("ч"))
-            result = "x";
+            keyText = "x";
         else if (keyText.toLower()==QString::fromUtf8("с"))
-            result = "c";
+            keyText = "c";
         else if (keyText.toLower()==QString::fromUtf8("м"))
-            result = "v";
+            keyText = "v";
         else if (keyText.toLower()==QString::fromUtf8("и"))
-            result = "b";
+            keyText = "b";
         else if (keyText.toLower()==QString::fromUtf8("т"))
-            result = "n";
+            keyText = "n";
         else if (keyText.toLower()==QString::fromUtf8("ь"))
-            result = "m";
+            keyText = "m";
         else if (keyText.toLower()==QString::fromUtf8("б"))
-            result = shiftPressed? "<" : ",";
+            keyText = shiftPressed? "<" : ",";
         else if (keyText.toLower()==QString::fromUtf8("ю"))
-            result = shiftPressed? ">" : ".";
+            keyText = shiftPressed? ">" : ".";
         else if (keyText.toLower()==QString::fromUtf8("ё"))
-            result = shiftPressed? "~" : "`";
+            keyText = shiftPressed? "~" : "`";
         else if (keyText=="." || keyText==",")
-            result = shiftPressed? "?" : "/";
+            keyText = shiftPressed? "?" : "/";
 
         if ( (shiftPressed && !isCapsLock()) || (!shiftPressed && isCapsLock()) )
-            result = result.toUpper();
+            keyText = keyText.toUpper();
     }
     else if (temporaryLayoutSwitch && !isRussianLayout()) {
         if (key==Qt::Key_Q)
-            result = QString::fromUtf8("й");
+            keyText = QString::fromUtf8("й");
         else if (key==Qt::Key_W)
-            result = QString::fromUtf8("ц");
+            keyText = QString::fromUtf8("ц");
         else if (key==Qt::Key_E)
-            result = QString::fromUtf8("у");
+            keyText = QString::fromUtf8("у");
         else if (key==Qt::Key_R)
-            result = QString::fromUtf8("к");
+            keyText = QString::fromUtf8("к");
         else if (key==Qt::Key_T)
-            result = QString::fromUtf8("е");
+            keyText = QString::fromUtf8("е");
         else if (key==Qt::Key_Y)
-            result = QString::fromUtf8("н");
+            keyText = QString::fromUtf8("н");
         else if (key==Qt::Key_U)
-            result = QString::fromUtf8("г");
+            keyText = QString::fromUtf8("г");
         else if (key==Qt::Key_I)
-            result = QString::fromUtf8("ш");
+            keyText = QString::fromUtf8("ш");
         else if (key==Qt::Key_O)
-            result = QString::fromUtf8("щ");
+            keyText = QString::fromUtf8("щ");
         else if (key==Qt::Key_P)
-            result = QString::fromUtf8("з");
+            keyText = QString::fromUtf8("з");
         else if (key==Qt::Key_BraceLeft || key==Qt::Key_BracketLeft)
-            result = QString::fromUtf8("х");
+            keyText = QString::fromUtf8("х");
         else if (key==Qt::Key_BraceRight || key==Qt::Key_BracketRight)
-            result = QString::fromUtf8("ъ");
+            keyText = QString::fromUtf8("ъ");
         else if (key==Qt::Key_A)
-            result = QString::fromUtf8("ф");
+            keyText = QString::fromUtf8("ф");
         else if (key==Qt::Key_S)
-            result = QString::fromUtf8("ы");
+            keyText = QString::fromUtf8("ы");
         else if (key==Qt::Key_D)
-            result = QString::fromUtf8("в");
+            keyText = QString::fromUtf8("в");
         else if (key==Qt::Key_F)
-            result = QString::fromUtf8("а");
+            keyText = QString::fromUtf8("а");
         else if (key==Qt::Key_G)
-            result = QString::fromUtf8("п");
+            keyText = QString::fromUtf8("п");
         else if (key==Qt::Key_H)
-            result = QString::fromUtf8("р");
+            keyText = QString::fromUtf8("р");
         else if (key==Qt::Key_J)
-            result = QString::fromUtf8("о");
+            keyText = QString::fromUtf8("о");
         else if (key==Qt::Key_K)
-            result = QString::fromUtf8("л");
+            keyText = QString::fromUtf8("л");
         else if (key==Qt::Key_L)
-            result = QString::fromUtf8("д");
+            keyText = QString::fromUtf8("д");
         else if (key==Qt::Key_Semicolon || key==Qt::Key_Colon)
-            result = QString::fromUtf8("ж");
+            keyText = QString::fromUtf8("ж");
         else if (key==Qt::Key_QuoteDbl || key==Qt::Key_Apostrophe)
-            result = QString::fromUtf8("э");
+            keyText = QString::fromUtf8("э");
         else if (key==Qt::Key_Z)
-            result = QString::fromUtf8("я");
+            keyText = QString::fromUtf8("я");
         else if (key==Qt::Key_X)
-            result = QString::fromUtf8("ч");
+            keyText = QString::fromUtf8("ч");
         else if (key==Qt::Key_C)
-            result = QString::fromUtf8("с");
+            keyText = QString::fromUtf8("с");
         else if (key==Qt::Key_V)
-            result = QString::fromUtf8("м");
+            keyText = QString::fromUtf8("м");
         else if (key==Qt::Key_B)
-            result = QString::fromUtf8("и");
+            keyText = QString::fromUtf8("и");
         else if (key==Qt::Key_N)
-            result = QString::fromUtf8("т");
+            keyText = QString::fromUtf8("т");
         else if (key==Qt::Key_M)
-            result = QString::fromUtf8("ь");
+            keyText = QString::fromUtf8("ь");
         else if (key==Qt::Key_Comma || key==Qt::Key_Less)
-            result = QString::fromUtf8("б");
+            keyText = QString::fromUtf8("б");
         else if (key==Qt::Key_Period || key==Qt::Key_Greater)
-            result = QString::fromUtf8("ю");
+            keyText = QString::fromUtf8("ю");
         else if (key==Qt::Key_QuoteLeft || key==Qt::Key_AsciiTilde)
-            result = QString::fromUtf8("ё");
+            keyText = QString::fromUtf8("ё");
         else if (key==Qt::Key_Slash || key==Qt::Key_Question)
-            result = shiftPressed? "," : ".";
+            keyText = shiftPressed? "," : ".";
 
         if ( (shiftPressed && !isCapsLock()) || (!shiftPressed && isCapsLock()) )
-            result = result.toUpper();
+            keyText = keyText.toUpper();
 
     }
-    return result;
+    return keyText;
 }
 
 QChar Utils::latinKey(const QChar &cyrillicKey)
