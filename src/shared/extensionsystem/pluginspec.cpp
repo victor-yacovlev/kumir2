@@ -8,6 +8,7 @@ namespace ExtensionSystem {
 
 extern QString readSpecFromFile(const QString &fileName, PluginSpec &spec)
 {
+    spec.gui = false;
     QFile f(fileName);
     if (!f.exists()) {
         //return "Can't open plugin spec file "+fileName;

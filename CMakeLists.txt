@@ -1,7 +1,9 @@
 project(Kumir2)
 
 cmake_minimum_required(VERSION 2.8)
-#set(CMAKE_VERBOSE_MAKEFILE on)
+if(APPLE)
+set(CMAKE_VERBOSE_MAKEFILE on)
+endif(APPLE)
 set(QT_USE_QTMAIN 1)
 find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtScript QtNetwork QtXml QtWebKit REQUIRED)
 include (${QT_USE_FILE})
