@@ -1,9 +1,0 @@
-{
-    "packagename": "libs",
-    "summary": {
-        "en": "Libraries required to run Kumir-compiled programs"
-    },
-    "description": {
-        "en": "This package is required in order to distribute Kumir-compiled programs"
-    }
-}

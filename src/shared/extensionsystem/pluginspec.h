@@ -4,7 +4,7 @@
 #include <QString>
 #include <QList>
 #include <QStringList>
-// #include <QtScript/QScriptEngine>
+
 
 #include <string>
 #include <deque>
@@ -16,9 +16,6 @@ namespace ExtensionSystem {
 struct PluginSpec
 {
     QString name;
-    QString version;
-    QString copyright;
-    QString license;
     bool gui;
     QString libraryFileName;
     QString specFileName;
@@ -26,7 +23,6 @@ struct PluginSpec
     QStringList provides;
 };
 
-// extern QString readSpecFromFile(const QString &fileName, PluginSpec & spec, QScriptEngine * engine);
 extern QString readSpecFromFile(const QString & fileName, PluginSpec & spec);
 
 } // namespace ExtensionSystem

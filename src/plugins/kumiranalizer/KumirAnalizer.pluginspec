@@ -1,8 +1,3 @@
-{
-    "name": "KumirAnalizer",
-    "provides": [ "Analizer" ],
-    "requires": [ "st_funct" ],
-    "summary": {
-        "en": "Kumir language analizer"
-    }
-}
+name    = KumirAnalizer
+requires= st_funct
+provides= Analizer
