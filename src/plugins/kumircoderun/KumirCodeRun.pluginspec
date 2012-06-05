@@ -1,8 +1,2 @@
-{
-    "name": "KumirCodeRun",
-    "runnable": true,
-    "requires": [ "st_funct" ],
-    "summary": {
-        "en": "Kumir bytecode interpreter"
-    }
-}
+name    = KumirCodeRun
+requires= st_funct
