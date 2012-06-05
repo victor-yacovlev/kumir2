@@ -14,6 +14,16 @@ set(SOURCES
     pascalprogram.cpp
 )
 
+set(EXTRA_LIBS
+)
+
+if(APPLE)
+    set(SOURCES ${SOURCES}
+        mac-fixes.mm
+    )
+    find_library(COCOA_LIBRARY Cocoa)
+    set(EXTRA_LIBS ${COCOA_LIBRARY})
+endif(APPLE)
 
 set(MOC_HEADERS
     mainwindow.h
@@ -45,7 +55,7 @@ qt4_add_resources(QRC_SOURCES ${RESOURCES})
 copySpecFile(CoreGUI)
 add_library(CoreGUI SHARED ${UI_SOURCES} ${MOC_SOURCES} ${SOURCES} ${QRC_SOURCES})
 handleTranslation(CoreGUI)
-target_link_libraries(CoreGUI ${QT_LIBRARIES} ExtensionSystem DataFormats KumirStdLib)
+target_link_libraries(CoreGUI ${QT_LIBRARIES} ${EXTRA_LIBS} ExtensionSystem DataFormats KumirStdLib)
 
 copyResources(coregui)
 install(TARGETS CoreGUI DESTINATION ${PLUGINS_DIR})
