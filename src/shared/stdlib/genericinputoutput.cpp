@@ -677,6 +677,7 @@ GenericInputOutput* GenericInputOutput::instance()
     return m_instance;
 }
 
+
 }
 
 #include <stdarg.h>

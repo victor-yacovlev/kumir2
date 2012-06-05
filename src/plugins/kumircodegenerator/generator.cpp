@@ -1035,7 +1035,10 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
     }
     else {
         QString format;
-        for (int i=0; i<st->expressions.size(); i++) {
+        int start = 0;
+        if (st->type==AST::StFileInput)
+            start ++;
+        for (int i=start; i<st->expressions.size(); i++) {
             AST::Expression * expr = st->expressions[i];
             if (expr->baseType==AST::TypeBoolean)
                 format += "%b";

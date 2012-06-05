@@ -556,7 +556,44 @@ void VM::do_call(quint8 mod, quint16 alg)
         }
         else if (alg==0x02) {
             // File input
-            // TODO implement me
+            QString format = stack_values.pop().toString();
+            int handle = stack_values.pop().toInt();
+            format.remove("%");
+            QList<quintptr> references;
+            QList<int> indeces;
+            for (int i=0; i<format.length(); i++) {
+                Variant ref = stack_values.pop();
+                references << quintptr(ref.reference());
+                indeces << ref.referenceIndeces();
+            }
+            Q_ASSERT(references.count()==format.length());
+            QList<QVariant> result;
+            for (int i=0; i<format.length(); i++) {
+                if (format[i]=='s') {
+                    const wchar_t * r = __finput2_string__st_funct(handle);
+                    result << QVariant(QString::fromWCharArray(r));
+                }
+                else if (format[i]=='c')
+                    result << QVariant(QChar(__finput2_char__st_funct(handle)));
+                else {
+                    union IntRealBool r = __finput2_int_real_bool__st_funct(handle, format[i].toAscii());
+                    if (format[i]=='b')
+                        result << QVariant(bool(r.boolValue));
+                    else if (format[i]=='d')
+                        result << QVariant(r.intValue);
+                    else
+                        result << QVariant(r.realValue);
+                }
+                s_error = __get_error__st_funct();
+                if (s_error.length()>0)
+                    break;
+            }
+            if (s_error.length()==0) {
+                if (result.size()>references.size()) {
+                    result = result.mid(0,references.size());
+                }
+                setResults("",references,indeces,result);
+            }
         }
         else if (alg==0x03) {
             int handle = stack_values.pop().toInt();

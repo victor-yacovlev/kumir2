@@ -16,6 +16,8 @@
 static wchar_t __error__st_funct[256];
 
 static QMap<int,QTextStream*> __opened_files__st_funct;
+static QMap<int,QFile*> __opened_bin_files__st_funct;
+static QMap<int,QChar> __current_symbols__st_funct;
 static QString __default_file_encoding__st_funct;
 
 extern QString __get_error__st_funct()
@@ -1140,20 +1142,48 @@ extern "C" int open_file_r__st_funct(wchar_t * file_name)
     QTextStream * ts = new QTextStream(f);
     ts->setCodec(__default_file_encoding__st_funct.toAscii().data());
     __opened_files__st_funct[f->handle()] = ts;
+    __current_symbols__st_funct[f->handle()] = QChar('\0');
     return f->handle();
 }
 
-extern "C" void __check_for_unclosed_files__st_funct(unsigned char noerror)
+extern "C" int open_file_rb__st_funct(const wchar_t * file_name)
 {
-    int unclosedFilesCount = __opened_files__st_funct.size();;
-    foreach (const int handle, __opened_files__st_funct.keys()) {
-        QTextStream * ts = __opened_files__st_funct[handle];
-        QFile * f = qobject_cast<QFile*>(ts->device());
-        f->close();
+    const QString fileName = QString::fromWCharArray(file_name);
+    QFile *f = new QFile(fileName);
+    if (!f->exists()) {
         delete f;
-        delete ts;
+        __abort__st_funct(QObject::tr("File not exists: %1", "StFuncError").arg(fileName));
+        return 0;
     }
-    __opened_files__st_funct.clear();
+    if (!f->open(QIODevice::ReadOnly)) {
+        delete f;
+        __abort__st_funct(QObject::tr("Can't open file for reading: %1", "StFuncError").arg(fileName));
+        return 0;
+    }
+    __opened_bin_files__st_funct[f->handle()] = f;
+    return f->handle();
+}
+
+extern "C" void __check_for_unclosed_files__st_funct(unsigned char noerror, unsigned char force_close)
+{
+    int unclosedFilesCount = __opened_files__st_funct.size() + __opened_bin_files__st_funct.size();
+    if (force_close) {
+        foreach (const int handle, __opened_files__st_funct.keys()) {
+            QTextStream * ts = __opened_files__st_funct[handle];
+            QFile * f = qobject_cast<QFile*>(ts->device());
+            f->close();
+            delete f;
+            delete ts;
+        }
+        foreach (const int handle, __opened_bin_files__st_funct.keys()) {
+            QFile * f = __opened_bin_files__st_funct[handle];
+            f->close();
+            delete f;
+        }
+        __opened_files__st_funct.clear();
+        __opened_bin_files__st_funct.clear();
+        __current_symbols__st_funct.clear();
+    }
     if (!noerror && unclosedFilesCount > 0) {
         __abort__st_funct(QObject::tr("%1 unclosed files remains").arg(unclosedFilesCount));
     }
@@ -1173,6 +1203,19 @@ extern "C" int open_file_w__st_funct(wchar_t * file_name)
     if (__default_file_encoding__st_funct.startsWith("UTF"))
         ts->setGenerateByteOrderMark(true);
     __opened_files__st_funct[f->handle()] = ts;
+    return f->handle();
+}
+
+extern "C" int open_file_wb__st_funct(const wchar_t * file_name)
+{
+    const QString fileName = QString::fromWCharArray(file_name);
+    QFile *f = new QFile(fileName);
+    if (!f->open(QIODevice::WriteOnly)) {
+        delete f;
+        __abort__st_funct(QObject::tr("Can't open file for writing: %1", "StFuncError").arg(fileName));
+        return 0;
+    }
+    __opened_bin_files__st_funct[f->handle()] = f;
     return f->handle();
 }
 
@@ -1196,18 +1239,42 @@ extern "C" int open_file_a__st_funct(wchar_t * file_name)
     return f->handle();
 }
 
+extern "C" int open_file_ab__st_funct(const wchar_t * file_name)
+{
+    const QString fileName = QString::fromWCharArray(file_name);
+    QFile *f = new QFile(fileName);
+    if (!f->exists()) {
+        delete f;
+        __abort__st_funct(QObject::tr("File not exists: %1", "StFuncError").arg(fileName));
+        return 0;
+    }
+    if (!f->open(QIODevice::WriteOnly|QIODevice::Append)) {
+        delete f;
+        __abort__st_funct(QObject::tr("Can't open file for writing: %1", "StFuncError").arg(fileName));
+        return 0;
+    }
+    __opened_bin_files__st_funct[f->handle()] = f;
+    return f->handle();
+}
+
+
 extern "C" void close_file__st_funct(int file_handle)
 {
-    if (!__opened_files__st_funct.contains(file_handle)) {
+    if (!__opened_files__st_funct.contains(file_handle) && !__opened_bin_files__st_funct.contains(file_handle)) {
         __abort__st_funct(QObject::tr("File with key %1 not opened", "StFuncError").arg(file_handle));
     }
-    else {
+    else if (__opened_files__st_funct.contains(file_handle)) {
         QTextStream * ts = __opened_files__st_funct[file_handle];
         QFile * f = qobject_cast<QFile*>(ts->device());
         f->close();
         delete ts;
         delete f;
         __opened_files__st_funct.remove(file_handle);
+    }
+    else if (__opened_bin_files__st_funct.contains(file_handle)) {
+        QFile * f = __opened_bin_files__st_funct[file_handle];
+        f->close();
+        delete f;
     }
 }
 
@@ -1250,3 +1317,132 @@ extern "C" void __foutput2__st_funct(int file_handle, wchar_t * data)
     QString sData = QString::fromWCharArray(data);
     (*ts) << sData;
 }
+
+extern "C" union IntRealBool __finput2_int_real_bool__st_funct(int file_handle, char fmt)
+{
+    union IntRealBool result;
+    result.intValue = 0;
+    if (!__opened_files__st_funct.contains(file_handle)) {
+        __abort__st_funct(QObject::tr("File with key %1 not opened", "StFuncError").arg(file_handle));
+        return result;
+    }
+    QTextStream * ts = __opened_files__st_funct[file_handle];
+    if (!ts->device()->openMode().testFlag(QIODevice::ReadOnly)) {
+        __abort__st_funct(QObject::tr("File with key %1 opened for writing", "StFuncError").arg(file_handle));
+        return result;
+    }
+    QChar buff = __current_symbols__st_funct[file_handle];
+    QString lexem;
+    do {
+        if (buff.isNull() || buff.isSpace() || buff=='\n' || buff=='\r') {
+            if (lexem.length()==0) {
+                *ts >> buff;
+                continue;
+            }
+            else {
+                break;
+            }
+        }
+        else {
+            lexem += buff;
+        }
+        *ts >> buff;
+    } while (!ts->atEnd());
+    __current_symbols__st_funct[file_handle] = buff;
+
+    if (ts->atEnd() && lexem.isEmpty()) {
+        __abort__st_funct(QObject::tr("Reached end of file with key %1", "StFuncError").arg(file_handle));
+        return result;
+    }
+    if (fmt=='d') {
+        bool ok;
+        if ( lexem.startsWith("$") ) {
+            lexem.remove(0,1);
+            result.intValue = lexem.toInt(&ok,16);
+        }
+        else {
+            result.intValue = lexem.toInt(&ok);
+        }
+        if (!ok) {
+            __abort__st_funct(QObject::tr("Error reading integer value from file with key %1", "StFuncError").arg(file_handle));
+        }
+    }
+    else if (fmt=='f') {
+        lexem.replace(QString::fromUtf8("Е"),"E");
+        lexem.replace(QString::fromUtf8("е"),"e");
+        lexem.replace("E", "e");
+        bool ok;
+        result.realValue = lexem.toDouble(&ok);
+        if (!ok) {
+            __abort__st_funct(QObject::tr("Error reading floating point value from file with key %1", "StFuncError").arg(file_handle));
+        }
+    }
+    else if (fmt=='b') {
+        lexem = lexem.toUpper();
+        bool ok = lexem==QString::fromUtf8("ДА") || lexem==QString::fromUtf8("НЕТ");
+        if (!ok) {
+            __abort__st_funct(QObject::tr("Error reading floating point value from file with key %1", "StFuncError").arg(file_handle));
+        }
+        result.boolValue = lexem==QString::fromUtf8("ДА")? 1 : 0;
+    }
+    else {
+        qFatal("Unknown format: %c\n", fmt);
+    }
+    return result;
+}
+
+extern "C" wchar_t __finput2_char__st_funct(int file_handle)
+{
+    if (!__opened_files__st_funct.contains(file_handle)) {
+        __abort__st_funct(QObject::tr("File with key %1 not opened", "StFuncError").arg(file_handle));
+        return L'\0';
+    }
+    QTextStream * ts = __opened_files__st_funct[file_handle];
+    if (!ts->device()->openMode().testFlag(QIODevice::ReadOnly)) {
+        __abort__st_funct(QObject::tr("File with key %1 opened for writing", "StFuncError").arg(file_handle));
+        return L'\0';
+    }
+    QChar buff = __current_symbols__st_funct[file_handle];
+    if (buff.isNull() && ts->atEnd()) {
+        __abort__st_funct(QObject::tr("Reached end of file with key %1", "StFuncError").arg(file_handle));
+        return L'\0';
+    }
+    else if (buff.isNull()) {
+        *ts >> buff;
+    }
+    if (ts->atEnd()) {
+        __current_symbols__st_funct[file_handle] = QChar('\0');
+    }
+    else {
+        *ts >> (__current_symbols__st_funct[file_handle]);
+    }
+    return buff.unicode();
+}
+
+extern "C" const wchar_t* __finput2_string__st_funct(int file_handle)
+{
+    if (!__opened_files__st_funct.contains(file_handle)) {
+        __abort__st_funct(QObject::tr("File with key %1 not opened", "StFuncError").arg(file_handle));
+        return 0;
+    }
+    QTextStream * ts = __opened_files__st_funct[file_handle];
+    if (!ts->device()->openMode().testFlag(QIODevice::ReadOnly)) {
+        __abort__st_funct(QObject::tr("File with key %1 opened for writing", "StFuncError").arg(file_handle));
+        return 0;
+    }
+    QString res = ts->readLine();
+    if (!__current_symbols__st_funct[file_handle].isNull())
+        res.prepend(__current_symbols__st_funct[file_handle]);
+    if (res.isNull()) {
+        __abort__st_funct(QObject::tr("Reached end of file with key %1", "StFuncError").arg(file_handle));
+        return 0;
+    }
+    if (ts->atEnd()) {
+        __current_symbols__st_funct[file_handle] = QChar('\0');
+    }
+    else {
+        *ts >> (__current_symbols__st_funct[file_handle]);
+    }
+    return res.toStdWString().c_str();
+}
+

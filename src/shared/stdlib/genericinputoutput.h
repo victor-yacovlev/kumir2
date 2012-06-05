@@ -33,6 +33,7 @@ public:
     static QString output(wchar_t * v, int width, QString & err) { return output(QString::fromWCharArray(v), width, err); }
     static QString prepareOutput(const std::string & format, QVariantList vals, QString & err);
 
+
 private:
     enum InputError {
             OK,

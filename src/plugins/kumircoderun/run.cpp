@@ -441,7 +441,11 @@ void Run::run()
         }
     }
     bool wasError = !vm->error().isEmpty();
-    __check_for_unclosed_files__st_funct(b_stopping);
+    // Unclosed files is an error only if program reached end
+    bool unclosedFilesIsNotError = b_stopping || vm->hasMoreInstructions();
+    // Must close all files if program reached end or user terminated
+    bool closeUnclosedFiles = b_stopping || !vm->hasMoreInstructions();
+    __check_for_unclosed_files__st_funct(unclosedFilesIsNotError, closeUnclosedFiles);
     vm->updateStFunctError();
     if (!wasError && !vm->error().isEmpty()) {
         emit lineChanged(vm->effectiveLineNo());

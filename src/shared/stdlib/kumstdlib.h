@@ -105,12 +105,24 @@ extern "C" STDLIB_EXPORT void set_file_encoding__st_funct(wchar_t * encoding);
 extern "C" STDLIB_EXPORT int open_file_r__st_funct(wchar_t * file_name);
 extern "C" STDLIB_EXPORT int open_file_w__st_funct(wchar_t * file_name);
 extern "C" STDLIB_EXPORT int open_file_a__st_funct(wchar_t * file_name);
+extern "C" STDLIB_EXPORT int open_file_rb__st_funct(const wchar_t *file_name);
+extern "C" STDLIB_EXPORT int open_file_wb__st_funct(const wchar_t *file_name);
+extern "C" STDLIB_EXPORT int open_file_ab__st_funct(const wchar_t *file_name);
 extern "C" STDLIB_EXPORT void close_file__st_funct(int file_handle);
 extern "C" STDLIB_EXPORT void reset_file__st_funct(int file_handle);
 extern "C" STDLIB_EXPORT unsigned char is_file_at_end__st_funct(int file_handle);
 extern "C" STDLIB_EXPORT void __foutput2__st_funct(int file_handle, wchar_t * data);
-extern "C" STDLIB_EXPORT void __check_for_unclosed_files__st_funct(unsigned char noerror);
+extern "C" STDLIB_EXPORT void __check_for_unclosed_files__st_funct(unsigned char noerror, unsigned char force_close);
 
+union IntRealBool {
+    int intValue;
+    double realValue;
+    unsigned char boolValue;
+};
+
+extern "C" STDLIB_EXPORT union IntRealBool __finput2_int_real_bool__st_funct(int file_handle, char fmt);
+extern "C" STDLIB_EXPORT wchar_t __finput2_char__st_funct(int file_handle);
+extern "C" STDLIB_EXPORT const wchar_t * __finput2_string__st_funct(int file_handle);
 
 
 
