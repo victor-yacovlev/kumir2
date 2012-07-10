@@ -58,7 +58,6 @@ public slots:
     void stop();
     void switchGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState cur);
     void handleActorCommandFinished();
-    void handleActorCommand(const QString & actorName, const QString & command, const QVariantList & arguments);
     void handleActorResetRequest(const QString & actorName);
     void handleLineChanged(int lineNo);
     void handleMarginTextRequest(int lineNo, const QString & text);

@@ -32,12 +32,6 @@ enum ModuleType {
 
 };
 
-struct ExternalModuleReference {
-    QString nameSpace;
-    QStringList moduleLibraries;
-    QStringList usedQtLibraries;
-    bool requiresGuiEventLoop;
-};
 
 /** Module public header */
 struct ModuleHeader {
@@ -47,9 +41,6 @@ struct ModuleHeader {
 
     /** Module type */
     enum ModuleType type;
-
-    /** Module build and linkage information */
-    struct ExternalModuleReference cReference;
 
     /** List of public (i.e. not underscore-starting named) algorhitms,
       * represented as references to corresponding functions */

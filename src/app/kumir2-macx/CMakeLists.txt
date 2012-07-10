@@ -1,5 +1,5 @@
 set(CONFIGURATION_TEMPLATE
-    "Editor,Browser,Actor*,KumirAnalizer,KumirNativeGenerator,KumirCodeGenerator,KumirCodeRun,!CoreGUI"
+    "Editor,Browser,Actor*,KumirAnalizer,KumirCodeGenerator,KumirCodeRun,!CoreGUI"
 )
 
 set(SPLASHSCREEN

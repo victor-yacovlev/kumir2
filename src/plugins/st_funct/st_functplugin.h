@@ -20,23 +20,20 @@ public:
     St_functPlugin();
     ~St_functPlugin();
 
-    QList<Alg>  funcList() const ; // List of public functions;
-    QString name(ProgrammingLanguage pl = PL_Kumir, QLocale::Language nl = QLocale::Russian) const;
-    QStringList actorLibraries() const;
-    QStringList usedQtLibraries() const;
+    QStringList  funcList() const ; // List of public functions;
+    QString name() const;
     inline bool requiresGui() const { return false; }
     QVariant     result() const;
-    void   runFunct(const QString &alg, const QList<QVariant> &params);
     QList<QVariant> algOptResults() const;//optional results
     inline class QWidget* mainWidget() { return 0; }
-    inline QList<class QAction*> menuActions() { return QList<class QAction*>(); }
+    inline class QWidget* pultWidget() { return 0; }
+    inline QList<class QMenu*> moduleMenus() const { return QList<class QMenu*>(); }
+    inline void setAnimationEnabled(bool) {}
     void reset();
     QString errorText() const;
 public slots:
 
-    EvaluationStatus evaluate(quint32 id);
-    EvaluationStatus evaluate(quint32 id, const QVariant & x);
-    EvaluationStatus evaluate(quint32 id, const QVariant & x, const QVariant & y);
+    EvaluationStatus evaluate(quint32 id, const QVariantList & args);
 
     // Begin function implementations
 

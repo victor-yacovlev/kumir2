@@ -87,7 +87,7 @@ QString Plugin::initialize(const QStringList & parameters)
     QDockWidget * termWindow = m_mainWindow->addSecondaryComponent(tr("Input/Output terminal"),
                                         m_terminal,
                                         QList<QAction*>(),
-                                        QList<QAction*>(),
+                                        QList<QMenu*>(),
                                         MainWindow::Terminal);
 #ifndef Q_OS_MAC
     termWindow->toggleViewAction()->setShortcut(QKeySequence("F12"));
@@ -128,7 +128,7 @@ QString Plugin::initialize(const QStringList & parameters)
                 tr("Variables"),
                 variablesBrowser.widget,
                 QList<QAction*>(),
-                QList<QAction*>(),
+                QList<QMenu*>(),
                 MainWindow::Control
                 );
 
@@ -156,7 +156,7 @@ QString Plugin::initialize(const QStringList & parameters)
         QDockWidget * w = 0;
         if (actor->mainWidget()) {
             QWidget * actorWidget = actor->mainWidget();
-            QList<QAction*> actorMenus = actor->menuActions();
+            QList<QMenu*> actorMenus = actor->moduleMenus();
             bool priv = o->property("privilegedActor").toBool();
             w = m_mainWindow->addSecondaryComponent(actor->name(),
                                                 actorWidget,
@@ -208,7 +208,7 @@ QString Plugin::initialize(const QStringList & parameters)
                 tr("Help"),
                 m_helpBrowser.widget,
                 QList<QAction*>(),
-                QList<QAction*>(),
+                QList<QMenu*>(),
                 MainWindow::Help
                 );
 
@@ -230,7 +230,7 @@ void Plugin::handleNewVariablesWindow(const Shared::BrowserComponent &browser)
     QDockWidget * window = m_mainWindow->addSecondaryComponent(tr("Variables"),
                                         browser.widget,
                                         QList<QAction*>(),
-                                        QList<QAction*>(),
+                                        QList<QMenu*>(),
                                         MainWindow::SubControl);
     connect(browser.widget, SIGNAL(titleChanged(QString)),
             window, SLOT(setWindowTitle(QString)));

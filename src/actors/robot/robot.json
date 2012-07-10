@@ -1,0 +1,60 @@
+{
+	"name": { "ascii": "Robot", "ru_RU": "Робот" },
+	"methods": [
+		{ "name": {"ascii": "go up", "ru_RU": "вверх" } },
+		{ "name": {"ascii": "go down", "ru_RU": "вниз" } },
+		{ "name": {"ascii": "go left", "ru_RU": "влево" } },
+		{ "name": {"ascii": "go right", "ru_RU": "вправо" } },
+		{ "name": {"ascii": "do paint", "ru_RU": "закрасить" }, "async": false },
+		{
+			"name": {"ascii": "is wall at top", "ru_RU": "сверху стена"},
+			"returnType": "bool"
+		},
+		{ 
+			"name": {"ascii": "is wall at bottom", "ru_RU": "снизу стена"},
+			"returnType": "bool"
+		},
+		{ 
+			"name": {"ascii": "is wall at left", "ru_RU": "слева стена"},
+			"returnType": "bool"
+		},
+		{ 
+			"name": {"ascii": "is wall at right", "ru_RU": "справа стена"},
+			"returnType": "bool"
+		}
+	],
+	"gui": {
+		"windows": [
+			{ "role": "main", "icon": "robot" },
+			{ "role": "pult", "icon": "robot-pult" }
+		],
+		"menus": [
+			{
+				"title": { "ascii": "Robot", "ru_RU": "Робот" },
+				"items": [
+					{
+						"title": {
+							"ascii": "Load Environment...", 
+		                    "ru_RU": "Загрузить обстановку..."
+		                },
+						"icon": "file-open"
+					},
+					{
+						"title": {
+							"ascii": "Revert Environment", 
+		                    "ru_RU": "Вернуть исходную обстановку"
+		                },
+						"icon": "file-revert"
+					},
+					{
+						"title": {
+							"ascii": "Save Environment...", 
+		                    "ru_RU": "Сохранить обстановку..."
+		                },
+						"icon": "file-save-as"
+					}
+				]
+			}
+		]
+	}
+}

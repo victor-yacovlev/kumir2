@@ -43,7 +43,7 @@ public:
     QDockWidget * addSecondaryComponent(const QString & title
                                , QWidget * c
                                , const QList<QAction*> & toolbarActions
-                               , const QList<QAction*> & menuActions
+                               , const QList<QMenu*> & menuActions
                                , DockWindowType type);
     ~MainWindow();
     void disableTabs();

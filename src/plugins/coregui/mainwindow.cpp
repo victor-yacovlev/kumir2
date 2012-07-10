@@ -664,7 +664,7 @@ TabWidgetElement * MainWindow::addCentralComponent(
 QDockWidget * MainWindow::addSecondaryComponent(const QString & title
                                                 , QWidget * c
                                                 , const QList<QAction*> & toolbarActions
-                                                , const QList<QAction*> & menuActions
+                                                , const QList<QMenu*> & menuActions
                                                 , DockWindowType type)
 {
     QDockWidget * dock = new QDockWidget(title, this);
@@ -678,9 +678,9 @@ QDockWidget * MainWindow::addSecondaryComponent(const QString & title
     }
     if (type!=Terminal) {
         if (type!=SubControl && type!=Control && type!=Help) {
-            QMenu * componentMenu = new QMenu(title, this);
-            componentMenu->addActions(menuActions);
-            ui->menubar->insertMenu(ui->menuWindow->menuAction(), componentMenu);
+            for (int i=0; i<menuActions.size(); i++) {
+                ui->menubar->addMenu(menuActions[i]);
+            }
         }
         dock->setFloating(true);
     }

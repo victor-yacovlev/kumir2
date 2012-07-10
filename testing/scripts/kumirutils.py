@@ -7,6 +7,7 @@ import subprocess
 import inspect
 import threading
 import json
+import string
 
 # Assume this file located in ${KUMIR_DIR}/testing/scripts
 KUMIR_DIR = os.path.abspath(inspect.getfile(inspect.currentframe())+os.path.sep+".."+os.path.sep+".."+os.path.sep+"..")
@@ -74,7 +75,11 @@ def __binary_path(util):
 def __run_util(args):
     "Starts a process and returns what process returns"
     sys.stderr.write("Starting "+str(args)+"\n")
-    proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except:
+        sys.stderr.write("Error starting "+string.join(args)+"\n")
+        return "", []
     out, err = proc.communicate()
     err = err.strip()
     if proc.returncode<0:
@@ -92,7 +97,11 @@ class __TimeableProcess:
         self.indata = None
         self.args = None
     def __thread_run(self):
-        self.proc = subprocess.Popen(self.args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        try:
+            self.proc = subprocess.Popen(self.args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except:
+            sys.stderr.write("Error staring "+string.join(self.args)+"\n")
+            return
         self.out, self.err = self.proc.communicate(self.indata)
         if self.proc.returncode<0:
             sys.stderr.write("CRASHED!\n")

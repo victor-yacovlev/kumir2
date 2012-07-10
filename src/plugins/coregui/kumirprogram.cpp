@@ -161,8 +161,7 @@ void KumirProgram::setNativeGenerator(GeneratorInterface *cpp)
 
 
         m_connector = new Connector();
-        connect(m_connector, SIGNAL(actorCommandReceived(QString,QString,QVariantList)),
-                this, SLOT(handleActorCommand(QString,QString,QVariantList)));
+
         connect(m_connector, SIGNAL(resetActorReceived(QString)),
                 this, SLOT(handleActorResetRequest(QString)));
 
@@ -590,16 +589,6 @@ void KumirProgram::switchGlobalState(GlobalState prev, GlobalState cur)
 
 }
 
-void KumirProgram::handleActorCommand(
-    const QString &actorName,
-    const QString &command,
-    const QVariantList &arguments)
-{
-    Q_ASSERT(m_actors.contains(actorName));
-    ActorInterface * a = m_actors[actorName];
-    Q_CHECK_PTR(a);
-    a->runFunct(command, arguments);
-}
 
 void KumirProgram::handleActorCommandFinished()
 {

@@ -1,6 +1,6 @@
 set(
     CONFIGURATION_TEMPLATE
-    "Editor\(teacher\),Browser,Actor*,KumirAnalizer\(teacher\),KumirNativeGenerator,KumirCodeGenerator,KumirCodeRun,!CoreGUI\(icon=teacher\)"
+    "Editor\(teacher\),Browser,Actor*,KumirAnalizer\(teacher\),KumirCodeGenerator,KumirCodeRun,!CoreGUI\(icon=teacher\)"
 )
 set(
     SPLASHSCREEN

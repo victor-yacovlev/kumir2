@@ -23,15 +23,33 @@ VM::VM(QObject *parent) :
     stack_contexts.init(100, 100);
 }
 
+QString extractCorrectAlgName(const QString & kumirHeader) {
+    QString t = kumirHeader;
+    t = t.remove(0,3);
+    t = t.trimmed();
+    if (t.startsWith(QString::fromUtf8("цел"))||
+            t.startsWith(QString::fromUtf8("вещ"))||
+            t.startsWith(QString::fromUtf8("лог"))||
+            t.startsWith(QString::fromUtf8("сим"))||
+            t.startsWith(QString::fromUtf8("лит"))) {
+        t = t.remove(0,3);
+        t = t.trimmed();
+    }
+    int end = t.indexOf("(");
+    if (end!=-1)
+        t = t.left(end);
+    return t.simplified();
+}
+
 void VM::setAvailableActors(const QList<ActorInterface *> &actors)
 {
     availableExternalMethods.clear();
     foreach (ActorInterface * a, actors) {
-        QList<Alg> algorhitms = a->funcList();
+        QStringList algorhitms = a->funcList();
         const QString name = a->name();
-        foreach (Alg aa, algorhitms) {
-            const QString aName = aa.name;
-            const quint32 m = aa.id;
+        for(int i=0; i<algorhitms.size(); i++) {
+            const QString aName = extractCorrectAlgName(algorhitms[i]);
+            const quint32 m = (quint32)i;
             QPair<QString,QString> key;
             key.first = name;
             key.second = aName;
@@ -855,51 +873,12 @@ void VM::call_externalMethod(ActorInterface *act, quint32 method)
     Q_CHECK_PTR(act);
     m_dontTouchMe->lock();
     int argsCount = stack_values.pop().toInt();
-    QVariant arg1, arg2, arg3, arg4, arg5;
-    EvaluationStatus status;
-    switch (argsCount) {
-    case 0:
-        m_dontTouchMe->unlock();
-        status = act->evaluate(method);
-        break;
-    case 1:
-        arg1 = stack_values.pop().value();
-        m_dontTouchMe->unlock();
-        status = act->evaluate(method, arg1);
-        break;
-    case 2:
-        arg1 = stack_values.pop().value();
-        arg2 = stack_values.pop().value();
-        m_dontTouchMe->unlock();
-        status = act->evaluate(method, arg1, arg2);
-        break;
-    case 3:
-        arg1 = stack_values.pop().value();
-        arg2 = stack_values.pop().value();
-        arg3 = stack_values.pop().value();
-        m_dontTouchMe->unlock();
-        status = act->evaluate(method, arg1, arg2, arg3);
-        break;
-    case 4:
-        arg1 = stack_values.pop().value();
-        arg2 = stack_values.pop().value();
-        arg3 = stack_values.pop().value();
-        arg4 = stack_values.pop().value();
-        m_dontTouchMe->unlock();
-        status = act->evaluate(method, arg1, arg2, arg3, arg4);
-        break;
-    case 5:
-        arg1 = stack_values.pop().value();
-        arg2 = stack_values.pop().value();
-        arg3 = stack_values.pop().value();
-        arg4 = stack_values.pop().value();
-        arg5 = stack_values.pop().value();
-        m_dontTouchMe->unlock();
-        status = act->evaluate(method, arg1, arg2, arg3, arg4, arg5);
-        break;
-    default:
-        break;
+    QVariantList args;
+    for (int i=0; i<argsCount; i++) {
+        args << stack_values.pop().value();
     }
+    m_dontTouchMe->unlock();
+    EvaluationStatus status = act->evaluate(method, args);
     m_dontTouchMe->lock();
     int refsCount = stack_values.pop().toInt();
     QList<quintptr> references;

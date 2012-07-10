@@ -310,22 +310,18 @@ void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor
     mod->header.type = AST::ModTypeExternal;
     mod->header.name = actor->name();
     mod->header.enabled = mod->header.name==StandartFunctionsModuleName;
-    mod->header.cReference.nameSpace = actor->name(Shared::PL_C);
-    mod->header.cReference.moduleLibraries = actor->actorLibraries();
-    mod->header.cReference.usedQtLibraries = actor->usedQtLibraries();
-    mod->header.cReference.requiresGuiEventLoop = actor->requiresGui();
+
     ast->modules << mod;
     for (int i=0; i<actor->funcList().size(); i++) {
         AST::Algorhitm * alg = new AST::Algorhitm;
         alg->header.implType = AST::AlgorhitmExternal;
         alg->header.external.moduleName = actor->name();
-        alg->header.external.id = actor->funcList()[i].id;
-        alg->header.cHeader = actor->funcList()[i].cHeader;
+        alg->header.external.id = i;
         QList<Statement*> sts;
-        lexer->splitIntoStatements(QStringList() << actor->funcList()[i].kumirHeader, -1, sts);
+        lexer->splitIntoStatements(QStringList() << actor->funcList()[i], -1, sts);
         Q_ASSERT_X(sts.size()==1
                    , "AnalizerPrivate::createModuleFromActor"
-                   , QString("Algorhitm %1 in module %2 has syntax error").arg(actor->funcList()[i].kumirHeader).arg(actor->name()).toLocal8Bit().data());
+                   , QString("Algorhitm %1 in module %2 has syntax error").arg(actor->funcList()[i]).arg(actor->name()).toLocal8Bit().data());
         alg->impl.headerLexems = sts[0]->data;
         sts[0]->alg = alg;
         sts[0]->mod = mod;
@@ -335,7 +331,7 @@ void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor
             if (!lx->error.isEmpty()) {
                 Q_ASSERT_X(sts.size()==1
                            , "AnalizerPrivate::createModuleFromActor"
-                           , QString("Algorhitm %1 in module %2 has syntax error").arg(actor->funcList()[i].kumirHeader).arg(actor->name()).toLocal8Bit().data());
+                           , QString("Algorhitm %1 in module %2 has syntax error").arg(actor->funcList()[i]).arg(actor->name()).toLocal8Bit().data());
             }
             delete lx;
         }

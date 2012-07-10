@@ -6,25 +6,6 @@
 namespace Shared
 {
 
-struct Alg {
-    QString name; // Generic name
-    QString kumirHeader; // Function header, Kumir syntax.
-    QString cHeader; // ASCII function header in C-syntax
-    QString pascalHeader; // ASCII function header in Pascal syntax
-    QString pythonHeader; // Python 3.x
-    QString javaHeader;  // Java
-    QString csHeader; // C#
-    quint32 id;
-};
-
-enum ProgrammingLanguage {
-    PL_Kumir,
-    PL_C,
-    PL_Pascal,
-    PL_Python,
-    PL_Java,
-    PL_CSharp
-};
 
 /** This MUST be returned by concrete function slot */
 enum EvaluationStatus {
@@ -40,30 +21,17 @@ enum EvaluationStatus {
 class ActorInterface
 {
 public:
-    virtual QList<Alg>  funcList() const =0; // List of public functions;
-    virtual QString name(ProgrammingLanguage pl = PL_Kumir, QLocale::Language nl = QLocale::Russian) const =0;
+    virtual QStringList funcList() const =0; // List of public functions;
+    virtual QString name() const =0;
     virtual QVariant     result() const =0;
-    virtual QStringList actorLibraries() const = 0;
-    virtual QStringList usedQtLibraries() const = 0;
-    virtual bool requiresGui() const = 0;
-    virtual void   runFunct(const QString & alg,const QList<QVariant> &params)=0; // OBSOLETE !!!!
-    virtual QList<QVariant> algOptResults() const =0;//optional results
+    virtual QVariantList algOptResults() const =0;//optional results
     virtual class QWidget * mainWidget()=0;
-    virtual QList<class QAction *> menuActions() = 0;
+    virtual class QWidget * pultWidget()=0;
+    virtual QList<class QMenu*> moduleMenus() const = 0;
     virtual void reset() = 0;
+    virtual void setAnimationEnabled(bool enabled) = 0;
+    virtual EvaluationStatus evaluate(quint32 no, const QVariantList & args) = 0;
     virtual QString errorText() const = 0;
-    virtual EvaluationStatus evaluate(quint32 ) { return ES_Error; }
-    virtual EvaluationStatus evaluate(quint32 , const QVariant &) { return ES_Error; }
-    virtual EvaluationStatus evaluate(quint32 , const QVariant &, const QVariant &) { return ES_Error; }
-    virtual EvaluationStatus evaluate(quint32 , const QVariant &, const QVariant &, const QVariant &) { return ES_Error; }
-    virtual EvaluationStatus evaluate(quint32 , const QVariant &, const QVariant &, const QVariant &, const QVariant &) { return ES_Error; }
-    virtual EvaluationStatus evaluate(quint32 , const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &) { return ES_Error; }
-/* NOTE: signals should not be declared virtual in interfaces
-         to provide compatibility with GCC 3.x (aka MinGW),
-         but them MUST be implemented in actor class
-signals:
-    void sync();
-*/
 };
 
 }
