@@ -1,2 +1,7 @@
 .DS_Store
 CMakeLists.txt.user*
+testing/scripts/*.pyc
+testing/scripts/*.pyo
+scripts/*.pyc
+scripts/*.pyo
+
