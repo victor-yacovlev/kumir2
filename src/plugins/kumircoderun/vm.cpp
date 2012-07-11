@@ -878,6 +878,7 @@ void VM::call_externalMethod(ActorInterface *act, quint32 method)
         args << stack_values.pop().value();
     }
     m_dontTouchMe->unlock();
+    emit beforeExternalFunction();
     EvaluationStatus status = act->evaluate(method, args);
     m_dontTouchMe->lock();
     int refsCount = stack_values.pop().toInt();

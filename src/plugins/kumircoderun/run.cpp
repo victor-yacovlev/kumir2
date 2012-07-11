@@ -35,6 +35,8 @@ Run::Run(QObject *parent) :
     connect(vm, SIGNAL(invokeExternalFunction(QList<quintptr>)),
             this, SLOT(handleExternalRequest(QList<quintptr>)),
             Qt::DirectConnection);
+    connect(vm, SIGNAL(beforeExternalFunction()),
+            this, SLOT(prepareExternalCall()), Qt::DirectConnection);
     connect(vm, SIGNAL(resetModuleRequest(QString)), this, SIGNAL(resetModule(QString)));
 
 }
@@ -324,6 +326,13 @@ void Run::handleExternalRequest(const QString &pluginName,
     Q_ASSERT(result.size()==references.size());
     vm->pushValueToStack(v_funcResult);
     vm->setResults(s_funcError, references, indeces, list_funcResults);
+}
+
+void Run::prepareExternalCall()
+{
+    mutex_interactDone->lock();
+    b_interactDone = false;
+    mutex_interactDone->unlock();
 }
 
 void Run::handleExternalRequest(const QList<quintptr> &references)

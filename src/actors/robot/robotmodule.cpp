@@ -56,6 +56,8 @@ QWidget* RobotModule::pultWidget() const
 void RobotModule::runGoUp()
 {
 	/* TODO implement me */
+    qDebug() << "Robot up";
+    sleep(2);
 	return;
 }
 
@@ -63,6 +65,8 @@ void RobotModule::runGoUp()
 void RobotModule::runGoDown()
 {
 	/* TODO implement me */
+    qDebug() << "Robot down";
+    sleep(2);
 	return;
 }
 
@@ -70,6 +74,8 @@ void RobotModule::runGoDown()
 void RobotModule::runGoLeft()
 {
 	/* TODO implement me */
+    qDebug() << "Robot left";
+    sleep(2);
 	return;
 }
 
@@ -77,6 +83,8 @@ void RobotModule::runGoLeft()
 void RobotModule::runGoRight()
 {
 	/* TODO implement me */
+    qDebug() << "Robot right";
+    sleep(2);
 	return;
 }
 

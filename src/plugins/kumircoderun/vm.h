@@ -60,6 +60,7 @@ signals:
     void outputRequest(const QString & out);
     void pauseRequest();
     void contextAboutToPop();
+    void beforeExternalFunction();
     void resetModuleRequest(const QString & actorPluginName);
     void invokeExternalFunction(const QString & actorPluginName,
                                 const QString & functionName,

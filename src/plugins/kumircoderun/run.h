@@ -54,6 +54,7 @@ public slots:
                                const QList<int> & indeces);
     void handleExternalRequest(const QList<quintptr> & references);
     void handlePauseRequest();
+    void prepareExternalCall();
 
 signals:
     void lineChanged(int lineNo);
