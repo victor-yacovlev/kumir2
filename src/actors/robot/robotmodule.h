@@ -44,6 +44,10 @@ public:
 	QWidget* mainWidget() const;
 	QWidget* pultWidget() const;
 
+private:
+    QWidget* m_mainWidget;
+    QWidget* m_pultWidget;
+
 }; // RobotModule
 	
 } // ActorRobot

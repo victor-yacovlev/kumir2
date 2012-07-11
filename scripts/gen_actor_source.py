@@ -215,7 +215,7 @@ namespace %s {
 
 if update:
     if menus:
-        cpp.write("    const QString currentLocaleName = QLocale::system().name();\n\n")
+        cpp.write("    static const QString currentLocaleName = QLocale().name();\n\n")
 
 def set_item_title(varName, titleDict, setter):
     global cpp

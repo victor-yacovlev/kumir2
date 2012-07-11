@@ -18,6 +18,8 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
 	/* TODO 
 	implement class Constructor
 	*/
+    m_mainWidget = new QWidget();
+    m_pultWidget = new QWidget();
 }
 
 void RobotModule::reset()
@@ -41,7 +43,7 @@ QWidget* RobotModule::mainWidget() const
 	This method should return a pointer to main widget.
 	NOTE: This metod should NOT create main widget -- just return!
 	*/
-	return 0;
+    return m_mainWidget;
 }
 
 QWidget* RobotModule::pultWidget() const
@@ -50,7 +52,7 @@ QWidget* RobotModule::pultWidget() const
 	This method should return a pointer to pult widget.
 	NOTE: This metod should NOT create pult widget -- just return!
 	*/
-	return 0;
+    return m_pultWidget;
 }
 
 void RobotModule::runGoUp()

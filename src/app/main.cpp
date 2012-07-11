@@ -82,6 +82,8 @@ int main(int argc, char **argv)
     gui = gui && getenv("DISPLAY")!=0;
 #endif
     QApplication * app = new QApplication(argc, argv, gui);
+    QLocale russian = QLocale("ru_RU");
+    QLocale::setDefault(russian);
 #ifdef Q_OS_WIN32
 //    app->setAttribute(Qt::AA_DontShowIconsInMenus);
     app->addLibraryPath(app->applicationDirPath());
