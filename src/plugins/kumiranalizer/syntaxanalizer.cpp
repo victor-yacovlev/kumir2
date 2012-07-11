@@ -3389,7 +3389,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
         Lexem * boolConst = 0;
         Lexem * numericConst = 0;
         Lexem * stringConst = 0;
-        LexemType prevType = LxTypeEmpty;
+//        LexemType prevType = LxTypeEmpty;
         for (std::list<Lexem*>::const_iterator it = lexems.begin(); it!=lexems.end(); it++) {
             Lexem * lx = (*it);
             LexemType curType = lx->type;

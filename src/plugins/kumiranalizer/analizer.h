@@ -57,7 +57,7 @@ public slots:
 private:
     const AST::Module * findModuleByLine(int lineNo) const;
     const AST::Algorhitm * findAlgorhitmByLine(const AST::Module * mod, int lineNo) const;
-    class AnalizerPrivate * d;
+    struct AnalizerPrivate * d;
 
 };
 

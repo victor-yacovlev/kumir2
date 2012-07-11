@@ -770,7 +770,7 @@ extern "C" void __output__st_funct(const char * format, int args, ...)
         if (fmt[i]=='i') {
             int v = va_arg(vl, int);
             int width = va_arg(vl, int);
-            int prec = va_arg(vl, int);
+            va_arg(vl, int);
             result += StdLib::GenericInputOutput::output(v, width, err);
         }
         else if (fmt[i]=='r') {
@@ -782,19 +782,19 @@ extern "C" void __output__st_funct(const char * format, int args, ...)
         else if (fmt[i]=='c') {
             wchar_t v = va_arg(vl, int);
             int width = va_arg(vl, int);
-            int prec = va_arg(vl, int);
+            va_arg(vl, int);
             result += StdLib::GenericInputOutput::output(v, width, err);
         }
         else if (fmt[i]=='s') {
             wchar_t * v = va_arg(vl, wchar_t*);
             int width = va_arg(vl, int);
-            int prec = va_arg(vl, int);
+            va_arg(vl, int);
             result += StdLib::GenericInputOutput::output(v, width, err);
         }
         else if (fmt[i]=='b') {
             unsigned char v = va_arg(vl, int);
             int width = va_arg(vl, int);
-            int prec = va_arg(vl, int);
+            va_arg(vl, int);
             result += StdLib::GenericInputOutput::output(v, width, err);
         }
         if (!err.isEmpty())

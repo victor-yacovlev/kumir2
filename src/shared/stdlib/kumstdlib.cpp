@@ -1296,6 +1296,7 @@ extern "C" unsigned char is_file_at_end__st_funct(int file_handle)
 {
     if (!__opened_files__st_funct.contains(file_handle)) {
         __abort__st_funct(QObject::tr("File with key %1 not opened", "StFuncError").arg(file_handle));
+        return 0;
     }
     else {
         QTextStream * ts = __opened_files__st_funct[file_handle];
