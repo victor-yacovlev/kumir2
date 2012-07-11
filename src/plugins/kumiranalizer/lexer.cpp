@@ -867,7 +867,7 @@ void popLexemsUntilPrimaryKeyword(QList<Lexem*> & lexems, Statement &result)
 {
     while (lexems.size()>0) {
         Lexem * lx = lexems[0];
-        if (lx->type==LxOperSemicolon || lx->type & LxTypePrimaryKwd && lx->type!=LxPriAssign)
+        if (lx->type==LxOperSemicolon || (lx->type & LxTypePrimaryKwd && lx->type!=LxPriAssign))
             break;
         lexems.pop_front();
         result.data << lx;

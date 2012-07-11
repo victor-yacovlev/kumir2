@@ -30,7 +30,7 @@ public slots:
                              ) const;
     void splitIntoLexems(const QString & text, QList<Lexem*> & lexems);
 private:
-    class LexerPrivate * d;
+    struct LexerPrivate * d;
 
 };
 

@@ -55,6 +55,7 @@ QVariant Variant::value() const
             error = QObject::tr("Variable not initialized", "Variant");
         return m_value;
     }
+    return QVariant::Invalid;
 }
 
 void Variant::setValue(const QVariant &v)

@@ -542,7 +542,7 @@ void prepareRules(const QStringList &files, QString &out, const QList<int> &prio
         {
             str.truncate(i);
         }
-        str.trimmed();
+        str = str.trimmed();
         if (!str.isEmpty())
         {
             pravila1 << str;
@@ -1827,7 +1827,7 @@ void PDAutomataPrivate::setExtraOpenKeywordError(const QString &kw)
     else if (kw==QString::fromUtf8("иначе")) {
         setCurrentIndentRank(-1,-1);
         QString err = _("No 'end' after 'else'");
-        int a = currentPosition + 1;
+//        int a = currentPosition + 1;
         bool elseFoundForward = false;
         bool elseFoundBackward = false;
         for (int i=currentPosition+1; i<source.size(); i++) {

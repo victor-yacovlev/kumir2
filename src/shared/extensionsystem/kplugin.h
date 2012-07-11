@@ -33,7 +33,7 @@ enum GlobalState {
 class EXTENSIONSYSTEM_EXPORT KPlugin : public QObject
 {
     friend class PluginManager;
-    friend class PluginManagerPrivate;
+    friend struct PluginManagerPrivate;
     Q_OBJECT
 public:
     enum State { Disabled, Loaded, Initialized, Started, Stopped };
