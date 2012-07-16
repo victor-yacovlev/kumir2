@@ -378,6 +378,7 @@ namespace ActorRobot {
         RoboField* field;
         RoboField * startField;
         static  QSettings  *sett; 
+        bool animation;
         
     }; // RobotModule
 

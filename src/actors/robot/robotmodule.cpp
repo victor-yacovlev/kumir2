@@ -1877,7 +1877,7 @@ namespace ActorRobot {
     
     RoboField* RoboField::Clone()
     {
-        RoboField* clone=new RoboField(Parent);
+        RoboField* clone=new RoboField(0);
         clone->setFieldItems(Items);
         clone->robo_x=robo_x;
         clone->robo_y=robo_y;
@@ -2037,16 +2037,19 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
 	/* TODO 
 	implement class Constructor
 	*/
+    animation=true;
     QSettings *s =mySettings();
     sett = s;
     field=new RoboField(0);
     //field->editField();
     field->createField(10,15);
+   
     field->setRoboPos(0,0);
-    field->createRobot();
+      field->createRobot();
     m_mainWidget = new QGraphicsView(field);
     m_pultWidget = new QWidget();
-    field->drawField(20);
+    startField=field->Clone();
+    field->drawField(FIELD_SIZE_SMALL);
 }
 
     
@@ -2055,10 +2058,19 @@ void RobotModule::reset()
 	/* TODO
 	This method is called when actor resets its state before program starts.
 	*/
+    //delete field;
+    field->deleteLater();
+    field=startField->Clone();
+    field->drawField(FIELD_SIZE_SMALL);
+    delete m_mainWidget;
+    m_mainWidget = new QGraphicsView(field);
+    field->drawField(FIELD_SIZE_SMALL);
+    
 }
 
 void RobotModule::setAnimationEnabled(bool enabled)
 {
+    animation=enabled;
 	/* TODO
 	Set internal flag for animation
 	*/
@@ -2087,7 +2099,12 @@ void RobotModule::runGoUp()
 {
 	/* TODO implement me */
     qDebug() << "Robot up";
-    sleep(2);
+     if(!field->stepUp())
+     {
+     field->robot->setCrash(UP_CRASH);    
+     setError(trUtf8("Робот разбился: сверху стена!"));
+     }
+    if(animation)sleep(1);
 	return;
 }
 
@@ -2096,7 +2113,11 @@ void RobotModule::runGoDown()
 {
 	/* TODO implement me */
     qDebug() << "Robot down";
-    sleep(2);
+     if(!field->stepDown())
+     {setError(trUtf8("Робот разбился: снизу стена!"));
+     field->robot->setCrash(DOWN_CRASH);
+     }
+         if(animation)sleep(1);
 	return;
 }
 
@@ -2105,8 +2126,11 @@ void RobotModule::runGoLeft()
 {
 	/* TODO implement me */
     qDebug() << "Robot left";
-    if(!field->stepLeft())setError(trUtf8("Робот разбился: слева стена!"));
-    sleep(2);
+    if(!field->stepLeft()){
+      field->robot->setCrash(LEFT_CRASH);  
+    setError(trUtf8("Робот разбился: слева стена!"));
+    };
+        if(animation)sleep(1);
 	return;
 }
 
@@ -2115,8 +2139,10 @@ void RobotModule::runGoRight()
 {
 	/* TODO implement me */
     qDebug() << "Robot right";
-    if(!field->stepRight())setError(trUtf8("Робот разбился: справа стена!"));
-    sleep(2);
+    if(!field->stepRight()){
+        field->robot->setCrash(RIGHT_CRASH);  
+    setError(trUtf8("Робот разбился: справа стена!"));}
+     if(animation)sleep(1);
 	return;
 }
 
@@ -2131,28 +2157,29 @@ void RobotModule::runDoPaint()
 bool RobotModule::runIsWallAtTop()
 {
 	/* TODO implement me */
-	return false;
+return !field->currentCell()->canUp();    
 }
 
 
 bool RobotModule::runIsWallAtBottom()
 {
 	/* TODO implement me */
-	return false;
+    
+ return !field->currentCell()->canDown();
 }
 
 
 bool RobotModule::runIsWallAtLeft()
 {
 	/* TODO implement me */
-	return false;
+	return !field->currentCell()->canLeft();
 }
 
 
 bool RobotModule::runIsWallAtRight()
 {
 	/* TODO implement me */
-	return false;
+	return !field->currentCell()->canRight();
 }
 
 	
