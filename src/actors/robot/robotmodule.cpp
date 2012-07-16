@@ -9,12 +9,21 @@ You should change it corresponding to functionality.
 #include <QtCore>
 #include <QtGui>
 #include "robotmodule.h"
+#include "extensionsystem/pluginmanager.h"
 
 namespace ActorRobot {
-    QSettings* RobotModule::sett=0;
+
+
+    QSettings * RobotModule::robotSettings()
+    {
+        ExtensionSystem::PluginManager * pluginManager = ExtensionSystem::PluginManager::instance();
+        ExtensionSystem::KPlugin * plugin = pluginManager->loadedPlugins("ActorRobot")[0];
+        return pluginManager->settingsByObject(plugin);
+    }
+
     FieldItm::FieldItm(QWidget *parent, QGraphicsScene *scene)
     {
-        sett=RobotModule::roboSett();
+        sett=RobotModule::robotSettings();
         Q_UNUSED(parent);
         upWallLine = NULL;
         downWallLine = NULL;
@@ -591,7 +600,8 @@ namespace ActorRobot {
 	
     
     {
-        sett=RobotModule::roboSett();
+        sett=RobotModule::robotSettings();
+        QString className = sett->metaObject()->className();
         Parent=parent;
         editMode=false;
         LineColor = QColor(sett->value("Robot/LineColor","#C8C800").toString());
@@ -2038,8 +2048,6 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
 	implement class Constructor
 	*/
     animation=true;
-    QSettings *s =mySettings();
-    sett = s;
     field=new RoboField(0);
     //field->editField();
     field->createField(10,15);

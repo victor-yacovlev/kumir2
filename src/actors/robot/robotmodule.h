@@ -369,15 +369,13 @@ namespace ActorRobot {
         // GUI access methods
         QWidget* mainWidget() const;
         QWidget* pultWidget() const;
-        static QSettings *roboSett() 
-        {return sett;};
+        static QSettings * robotSettings();
         
     private:
         QWidget* m_mainWidget;
         QWidget* m_pultWidget;
         RoboField* field;
         RoboField * startField;
-        static  QSettings  *sett; 
         bool animation;
         
     }; // RobotModule
