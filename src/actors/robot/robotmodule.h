@@ -373,6 +373,7 @@ namespace ActorRobot {
         {return sett;};
         
     private:
+        QString initialize(const QStringList &arguments); 
         QWidget* m_mainWidget;
         QWidget* m_pultWidget;
         RoboField* field;
