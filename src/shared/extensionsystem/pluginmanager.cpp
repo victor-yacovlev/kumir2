@@ -552,6 +552,7 @@ QSettings * PluginManager::settingsByObject(const KPlugin *p) const
     Q_ASSERT(d->settings.size()==d->objects.size());
     for (int i=0; i<d->objects.size(); i++) {
         if (d->objects[i]==p) {
+            qDebug()<<"sett"<<d->settings[i];
             return d->settings[i];
         }
     }

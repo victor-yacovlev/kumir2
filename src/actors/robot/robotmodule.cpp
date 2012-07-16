@@ -11,14 +11,2040 @@ You should change it corresponding to functionality.
 #include "robotmodule.h"
 
 namespace ActorRobot {
+    QSettings* RobotModule::sett=0;
+    FieldItm::FieldItm(QWidget *parent, QGraphicsScene *scene)
+    {
+        sett=RobotModule::roboSett();
+        Q_UNUSED(parent);
+        upWallLine = NULL;
+        downWallLine = NULL;
+        leftWallLine = NULL;
+        rightWallLine = NULL;
+        sepItmUp=NULL;
+        sepItmDown=NULL;
+        sepItmLeft=NULL;
+        sepItmRight=NULL;
+        Scene=scene;
+        upWall=false;
+        downWall=false;
+        leftWall=false;
+        rightWall=false;
+        IsColored=false;
+        mark=false;
+        ColorRect=NULL;
+        upChar=' ';
+        downChar=' ';
+        upCharItm=NULL;
+        downCharItm=NULL;
+        markItm=NULL;
+        
+        font.setPixelSize(8);
+        font.setPointSize(8);
+        font.setStyle(QFont::StyleNormal);
+        font.setBold(true);
+        font.setStyleHint(QFont::SansSerif);
+        radiation=0;
+        temperature=0;
+        font.setWeight(2);
+        TextColor=QColor(sett->value("Robot/TextColor","#FFFFFF").toString());
+    }
+    
+    FieldItm::~FieldItm()
+    {
+        cleanSelf();
+    }
+    
+    void FieldItm::cleanSelf()
+    {
+        if(upWallLine)
+        {
+            if(Scene)
+                Scene->removeItem(upWallLine);
+            if(upWallLine && upWallLine->scene()==Scene)delete upWallLine;
+            upWallLine=NULL;
+        }
+        if(downWallLine)
+        {
+            if(Scene)
+                if(downWallLine && downWallLine->scene()==Scene)        Scene->removeItem(downWallLine);
+            delete downWallLine;
+            downWallLine=NULL;
+        }
+        if(leftWallLine)
+        {
+            if(Scene)
+                Scene->removeItem(leftWallLine);
+            if(leftWallLine && leftWallLine->scene()==Scene)delete leftWallLine;
+            leftWallLine=NULL;
+        }
+        if(rightWallLine)
+        {
+            if(Scene)
+                Scene->removeItem(rightWallLine);
+            if(rightWallLine && rightWallLine->scene()==Scene) delete rightWallLine;
+            rightWallLine=NULL;
+        }
+        if(ColorRect)
+        {
+            if(Scene)
+                Scene->removeItem(ColorRect);
+            delete ColorRect;
+            ColorRect=NULL;
+        }
+        if(upCharItm)
+        {
+            if(Scene)
+                Scene->removeItem(upCharItm);
+            delete upCharItm;
+            upCharItm=NULL;
+        }
+        if(downCharItm)
+        {
+            if(Scene)
+                Scene->removeItem(downCharItm);
+            delete downCharItm;
+            downCharItm=NULL;
+        }
+        if(markItm)
+        {
+            if(Scene)
+                Scene->removeItem(markItm);
+            delete markItm;
+            markItm=NULL;
+        }
+    }
+    
+    void FieldItm::setLeftsepItem(FieldItm *ItmLeft)
+    {
+        sepItmLeft=ItmLeft;
+        ItmLeft->setRightsepItem(this);	//Obratnaya ssilka u soseda
+    }
+    
+    void FieldItm::setRightsepItem(FieldItm *ItmRight)
+    {
+        sepItmRight=ItmRight;
+    }
+    
+    void FieldItm::setUpsepItem(FieldItm *ItmUp)
+    {
+        sepItmUp=ItmUp;
+        ItmUp->setDownsepItem(this);
+    }
+    
+    void FieldItm::setDownsepItem(FieldItm *ItmDown)
+    {
+        sepItmDown=ItmDown;
+    }
+    
+    void FieldItm::setWalls(int wallByte)
+    {
+        if((wallByte & UP_WALL) == UP_WALL)upWall=true;else upWall=false;
+        if((wallByte & DOWN_WALL) == DOWN_WALL)downWall=true; else
+            downWall=false;
+        if((wallByte & LEFT_WALL) == LEFT_WALL)leftWall=true; else leftWall=false;
+        if((wallByte & RIGHT_WALL) == RIGHT_WALL)rightWall=true; else rightWall=false;
+    }
+    
+    int FieldItm::wallByte()
+    {
+        int toret=0;
+        if(upWall)toret+=UP_WALL;
+        if(downWall)toret+=DOWN_WALL;
+        if(leftWall)toret+=LEFT_WALL;
+        if(rightWall)toret+=RIGHT_WALL;
+        return toret;
+    }
+    
+    void FieldItm::setUpLine(QGraphicsLineItem *Line, QPen pen)
+    {
+        upWallLine=Line;
+        upWallLine->setPen(pen);
+        Scene->addItem(upWallLine);
+        upWallLine->setZValue(1);
+    }
+    
+    void FieldItm::showCharMark(qreal upLeftCornerX, qreal upLeftCornerY, int size)
+    {
+        showUpChar(upLeftCornerX,upLeftCornerY,size);
+        showDownChar(upLeftCornerX,upLeftCornerY,size);
+        showMark(upLeftCornerX,upLeftCornerY,size);
+    }
+    
+    void FieldItm::showUpChar(qreal upLeftCornerX, qreal upLeftCornerY, int size)
+    {
+        Q_UNUSED(size);
+        if (upCharItm) {
+            if (Scene)
+                Scene->removeItem(upCharItm);
+            delete upCharItm;
+            upCharItm = NULL;
+        }
+        if (upChar.isPrint() && upChar!=' ') {
+            upCharItm=Scene->addText(upChar,font);
+            upCharItm->setDefaultTextColor(TextColor);
+            upCharItm->setPos(upLeftCornerX+2,upLeftCornerY+2);
+            upCharItm->setZValue(1);
+        }
+    }
+    
+    void FieldItm::showDownChar(qreal upLeftCornerX, qreal upLeftCornerY, int size)
+    {
+        Q_UNUSED(size);
+        if (downCharItm) {
+            if (Scene) {
+                Scene->removeItem(downCharItm);
+            }
+            delete downCharItm;
+            downCharItm = NULL;
+        }
+        if (downChar.isPrint() && downChar!=' ') {
+            downCharItm=Scene->addText(downChar,font);
+            downCharItm->setDefaultTextColor(TextColor);
+            downCharItm->setPos(upLeftCornerX+2,upLeftCornerY+size-16);
+            downCharItm->setZValue(1);
+        }
+    }
+    
+    void FieldItm::showMark(qreal upLeftCornerX, qreal upLeftCornerY, int size)
+    {
+        if(mark)
+        {
+            if (markItm) {
+                if (Scene) {
+                    Scene->removeItem(markItm);
+                }
+                delete markItm;
+                markItm = NULL;
+            }
+            markItm=Scene->addText(QChar(9787),font);
+            markItm->setDefaultTextColor(TextColor);
+            markItm->setPos(upLeftCornerX+size-(size/3)-3,upLeftCornerY-15+size);
+            markItm->setZValue(1);
+        }
+    }
+    
+    void FieldItm::setColorRect(QGraphicsRectItem *Rect)
+    {
+        ColorRect = Rect;
+        ColorRect->setPen(QPen("gray"));
+        ColorRect->setBrush(QBrush(QColor("gray")));
+        
+        Scene->addItem(Rect);
+        
+        Rect->setZValue(0.2);
+        IsColored=true;
+    }
+    
+    void FieldItm::setDownLine(QGraphicsLineItem *Line, QPen pen)
+    {
+        downWallLine=Line;
+        downWallLine->setPen(pen);
+        Scene->addItem(downWallLine);
+        downWallLine->setZValue(1);
+    }
+    
+    void FieldItm::setLeftLine(QGraphicsLineItem *Line, QPen pen)
+    {
+        leftWallLine=Line;
+        leftWallLine->setPen(pen);
+        Scene->addItem(leftWallLine);
+        leftWallLine->setZValue(1);
+    }
+    
+    void FieldItm::setRightLine(QGraphicsLineItem *Line, QPen pen)
+    {
+        rightWallLine=Line;
+        rightWallLine->setPen(pen);
+        Scene->addItem(rightWallLine);
+        
+        rightWallLine->setZValue(1);
+    }
+    
+    bool FieldItm::hasUpWall()
+    {
+        return upWall;
+    }
+    
+    bool FieldItm::hasDownWall()
+    {
+        return downWall;
+    }
+    bool FieldItm::hasLeftWall()
+    {
+        return leftWall;
+    }
+    
+    bool FieldItm::hasRightWall()
+    {
+        return rightWall;
+    }
+    
+    bool FieldItm::canUp()
+    {
+        if(!hasUpSep())return false;
+        return !(upWall || sepItmUp->hasDownWall());
+    }
+    
+    bool FieldItm::canDown()
+    {
+        if(!hasDownSep())return false;
+        return !(downWall || sepItmDown->hasUpWall());
+    }
+    
+    bool FieldItm::canLeft()
+    {
+        if(!hasLeftSep())return false;
+        return !(leftWall || sepItmLeft->hasRightWall());
+    }
+    
+    bool FieldItm::canRight()
+    {
+        if(!hasRightSep())return false;
+        return !(rightWall || sepItmRight->hasLeftWall());
+    }
+    
+    bool FieldItm::hasUpSep()
+    {
+        if(sepItmUp)return true;return false;
+    }
+    
+    bool FieldItm::hasDownSep()
+    {
+        if(sepItmDown)return true;return false;
+    }
+    
+    bool FieldItm::hasLeftSep()
+    {
+        if(sepItmLeft)return true;return false;
+    }
+    
+    bool FieldItm::hasRightSep()
+    {
+        if(sepItmRight)return true;return false;
+    }
+    
+    QGraphicsLineItem* FieldItm::UpWallLine()
+    {
+        return upWallLine;
+    }
+    
+    QGraphicsLineItem* FieldItm::DownWallLine()
+    {
+        return downWallLine;
+    }
+    
+    QGraphicsLineItem* FieldItm::LeftWallLine()
+    {
+        return leftWallLine;
+    }
+    
+    QGraphicsLineItem* FieldItm::RightWallLine()
+    {
+        return rightWallLine;
+    }
+    
+    bool FieldItm::isColored()
+    {
+        return IsColored;
+    }
+    
+    void FieldItm::removeUpWall()
+    {
+        if(upWallLine)
+        {
+            Scene->removeItem(upWallLine);
+            delete upWallLine;
+            upWallLine=NULL;
+            qDebug("UwallRemoved");
+        };
+        upWall=false;
+        if(hasUpSep())if(sepItmUp->hasDownWall())sepItmUp->removeDownWall();
+    }
+    
+    void FieldItm::setUpWall(QGraphicsLineItem *Line, QPen pen)
+    {
+        upWall=true;
+        setUpLine(Line,pen);
+    }
+    
+    void FieldItm::setDownWall(QGraphicsLineItem *Line, QPen pen)
+    {
+        downWall=true;
+        setDownLine(Line,pen);
+    }
+    
+    void FieldItm::removeDownWall()
+    {
+        if(downWallLine)
+        {
+            Scene->removeItem(downWallLine);
+            delete downWallLine;
+            downWallLine=NULL;
+            qDebug("DwallRemoved");
+        };
+        downWall=false;
+        
+        if(hasDownSep())if(sepItmDown->hasUpWall())sepItmDown->removeUpWall();
+    }
+    
+    void FieldItm::removeLeftWall()
+    {
+        if(leftWallLine)
+        {
+            Scene->removeItem(leftWallLine);
+            delete leftWallLine;
+            leftWallLine=NULL;
+            qDebug("LwallRemoved");
+        };
+        leftWall=false;
+        
+        if(hasLeftSep())if(sepItmLeft->hasRightWall())sepItmLeft->removeRightWall();
+    }
+    
+    void FieldItm::removeRightWall()
+    {
+        if(rightWallLine)
+        {
+            QGraphicsScene* debug=rightWallLine->scene();
+            Q_UNUSED(debug);
+            rightWallLine->setVisible(false);
+            Scene->removeItem(rightWallLine);
+            delete rightWallLine;
+            rightWallLine=NULL;
+            qDebug("RwallRemoved");
+        };
+        rightWall=false;
+        
+        if(hasRightSep())if(sepItmRight->hasLeftWall())sepItmRight->removeLeftWall();
+    }
+    
+    void FieldItm::setLeftWall(QGraphicsLineItem *Line, QPen pen)
+    {
+        leftWall=true;
+        setLeftLine(Line,pen);
+    }
+    
+    void FieldItm::setRightWall(QGraphicsLineItem *Line, QPen pen)
+    {
+        rightWall=true;
+        setRightLine(Line,pen);
+    }
+    
+    void FieldItm::removeColor()
+    {
+        
+        if(ColorRect)
+        {
+            Scene->removeItem(ColorRect);
+            delete ColorRect;
+            ColorRect=NULL;
+        };
+        IsColored=false;
+    }
+    
+    void FieldItm::removeMark()
+    {
+        if(markItm)
+        {
+            Scene->removeItem(markItm);
+            delete markItm;
+            markItm=NULL;
+        };
+        mark=false;
+    }
+    
+    void FieldItm::removeUpChar()
+    {
+        if(upCharItm)
+        {
+            Scene->removeItem(upCharItm);
+            delete upCharItm;
+            upCharItm=NULL;
+        };
+        
+        upChar=' ';
+    }
+    
+    void FieldItm::removeDownChar()
+    {
+        if(downCharItm)
+        {
+            Scene->removeItem(downCharItm);
+            delete downCharItm;
+            downCharItm=NULL;
+        };
+        downChar=' ';
+    }
+    
+    bool FieldItm::emptyCell()
+    {
+        return (!upWall && !downWall && !leftWall && !rightWall && !IsColored && !mark)
+        &&(radiation==0)&&(temperature==0)&&(upChar==' ')&&(downChar==' ');
+    }
+    
+    void FieldItm::setScene(QGraphicsScene *scene)
+    {
+        Scene=scene;
+    }
+    
+    void FieldItm::wbWalls()
+    {
+        if(UpWallLine())
+        {
+            wallPen=UpWallLine()->pen();
+            int w=3;
+            if(!hasUpSep())w=4;
+            UpWallLine()->setPen(QPen(QBrush(QColor("blue")),w));
+        };
+        if(DownWallLine())
+        {
+            wallPen=DownWallLine()->pen();
+            int w=3;
+            if(!hasDownSep())w=4;
+            DownWallLine()->setPen(QPen(QBrush(QColor("blue")),w));
+        };
+        if(LeftWallLine())
+        {
+            wallPen=LeftWallLine()->pen();
+            int w=3;
+            if(!hasLeftSep())w=4;
+            LeftWallLine()->setPen(QPen(QBrush(QColor("blue")),w));
+        };
+        if(RightWallLine())
+        {
+            wallPen=RightWallLine()->pen();
+            int w=3;
+            if(!hasRightSep())w=4;
+            RightWallLine()->setPen(QPen(QBrush(QColor("blue")),w));
+        };
+        
+        if(downCharItm)downCharItm->setDefaultTextColor("black");
+        if(upCharItm)upCharItm->setDefaultTextColor("black");
+        if(markItm)markItm->setDefaultTextColor("black");
+    }
+    
+    void FieldItm::colorWalls()
+    {
+        if(UpWallLine())
+        {
+            if(!hasUpSep())wallPen.setWidth(4);else wallPen.setWidth(3);
+            UpWallLine()->setPen(wallPen);
+        };
+        if(DownWallLine())
+        {
+            if(!hasDownSep())wallPen.setWidth(4);else wallPen.setWidth(3);
+            DownWallLine()->setPen(wallPen);
+        };
+        if(LeftWallLine())
+        {
+            if(!hasLeftSep())wallPen.setWidth(4);else wallPen.setWidth(3);
+            LeftWallLine()->setPen(wallPen);
+        };
+        if(RightWallLine())
+        {
+            if(!hasRightSep())wallPen.setWidth(4);else wallPen.setWidth(3);
+            RightWallLine()->setPen(wallPen);
+        };
+        if(downCharItm)downCharItm->setDefaultTextColor("white");
+        if(upCharItm) upCharItm->setDefaultTextColor("white");
+        if(markItm)markItm->setDefaultTextColor("white");
+    }
+    
+    
+    
+    
+    FieldItm* FieldItm::Copy()
+    {
+        FieldItm* copy=new FieldItm();
+        copy->leftWall=leftWall;
+        copy->rightWall=rightWall;
+        copy->upWall=upWall;
+        copy->downWall=downWall;
+        
+        copy->upChar=upChar;
+        copy->downChar=downChar;
+        copy->mark=mark;
+        copy->radiation=radiation;
+        copy->temperature=temperature;
+        copy->IsColored=IsColored;
+        
+        return copy;
+    };
+    
+    RoboField::~RoboField()
+    {
+        destroyField();
+        destroyRobot();
+        destroyNet();
+        destroyScene();
+        for (int i=0; i<Items.size(); i++) {
+            for (int j=0; j<Items[i].size(); j++) {
+                if (Items[i][j])
+                    delete Items[i][j];
+            }
+        }
+        Items.clear();
+    }
+    
+    RoboField::RoboField(QWidget *parent)
+	: QGraphicsScene(parent)
+	
+    
+    {
+        sett=RobotModule::roboSett();
+        Parent=parent;
+        editMode=false;
+        LineColor = QColor(sett->value("Robot/LineColor","#C8C800").toString());
+        WallColor=QColor(sett->value("Robot/WallColor","#C8C800").toString());
+        EditColor=QColor(sett->value("Robot/EditColor","#00008C").toString());
+        NormalColor=QColor(sett->value("Robot/NormalColor","#289628").toString());
+        
+        
+        
+        
+        fieldSize=30;
+        this->setItemIndexMethod(NoIndex);
+        robot=NULL;
+        markMode=true;
+   //     cellDialog=new CellDialog(Parent);
+        // cellDialog=CellDialog::instance();
+      //  cellDialog->setParent(Parent);
+        wasEdit=false;
+    };
+    void RoboField::editField()
+    {
+        editMode=true;
+     //   connect(cellDialog->buttonBox,SIGNAL(accepted()),this,SLOT(cellDialogOk()));
+    };
+    /**
+     * Создание пустого поля робота
+     * @param x количество строк
+     * @param y количество столбцов
+     */
+    void RoboField::createField(int x,int y)
+    {
+        destroyNet();
+        destroyField();
+        destroyRobot();
+        //qDebug("Before items destroy");
+        while (Items.count()>0)Items.removeFirst();
+        //qDebug("After items destroy");
+        for(int i=0;i<x;i++)
+        {
+            QList<FieldItm*> row;
+            for(int j=0;j<y;j++)
+            {
+                
+                row.append(new FieldItm(0,this));
+                FieldItm* thisItm=row.last();
+                if(j>0)thisItm->setLeftsepItem(row[j-1]);//Устанавливаем соседей
+                if(i>0)thisItm->setUpsepItem(Items[i-1].at(j));//Устанавливаем соседей
+            };
+            Items.append(row);
+        };
+        wasEdit=true;
+    };
+    
+    QPoint RoboField::upLeftCorner(int str,int stlb)
+    {
+        int ddx = BORT-2;
+        return QPoint(stlb*fieldSize+ddx,str*fieldSize);
+    };
+    
+    FieldItm* RoboField::getFieldItem(int str,int stlb)
+    {
+        if(rows()<str) {
+            qDebug("RoboField:rows()<str");
+            return NULL;
+        };
+        if(columns()<stlb) {
+            qDebug("RoboField:columns()<str");
+            return NULL;
+        };
+        
+        if (str>=0 && stlb>=0 && str<Items.size() && stlb<Items[str].size())
+            return Items[str].at(stlb);
+        else
+            return NULL;
+        
+    };
+    void RoboField::drawField(uint FieldSize)
+    {
+        if(rows()<1||columns()<1)return;
+        destroyNet();
+        destroyField();
+        // clear();
+        //debug();
+        
+        if(!editMode)Color = NormalColor;//Normal Color
+        else Color=EditColor;//Edit Color
+        this->setBackgroundBrush (QBrush(Color));
+        fieldSize=FieldSize;
+        drawNet();
+        
+        BortLine = QPen(WallColor,4);
+        StLine=QPen(LineColor,3);
+        qDebug()<<"Rows"<<rows()<< "Cols:"<<columns();
+        //if(rows()==2)return;
+        for(int i=0;i<rows();i++) //Cikl po kletkam
+        {
+            QList<FieldItm*>* row=&Items[i];
+            for(int j=0;j<columns();j++)
+            {
+                //Отрисовываем бордюры
+                row->at(j)->setScene(this);
+                if(!row->at(j)->hasUpSep())
+                    row->at(j)->setUpLine(
+                                          new QGraphicsLineItem(upLeftCorner(i,j).x(),
+                                                                upLeftCorner(i,j).y(),
+                                                                upLeftCorner(i,j).x()+fieldSize,
+                                                                upLeftCorner(i,j).y()),BortLine);
+                
+                if(!row->at(j)->hasDownSep())
+                    row->at(j)->setDownLine(
+                                            new QGraphicsLineItem(upLeftCorner(i,j).x(),
+                                                                  upLeftCorner(i,j).y()+fieldSize,
+                                                                  upLeftCorner(i,j).x()+fieldSize,
+                                                                  upLeftCorner(i,j).y()+fieldSize),BortLine);
+                
+                
+                if(!row->at(j)->hasLeftSep())
+                {
+                    row->at(j)->setLeftLine(
+                                            new QGraphicsLineItem(upLeftCorner(i,j).x(),
+                                                                  upLeftCorner(i,j).y(),
+                                                                  upLeftCorner(i,j).x(),
+                                                                  upLeftCorner(i,j).y()+fieldSize),BortLine);
+                    //qDebug()<<"Line "<<row->at(j)->leftWallLine <<"Scene"<<row->at(j)->leftWallLine->scene();
+                };
+                if(!row->at(j)->hasRightSep())
+                    row->at(j)->setRightLine(
+                                             new QGraphicsLineItem(upLeftCorner(i,j).x()+fieldSize,
+                                                                   upLeftCorner(i,j).y(),
+                                                                   upLeftCorner(i,j).x()+fieldSize,
+                                                                   upLeftCorner(i,j).y()+fieldSize),BortLine);
+                if(row->at(j)->hasDownWall())
+                {
+                    row->at(j)->setDownLine(
+                                            new QGraphicsLineItem(upLeftCorner(i,j).x(),
+                                                                  upLeftCorner(i,j).y()+fieldSize,
+                                                                  upLeftCorner(i,j).x()+fieldSize,
+                                                                  upLeftCorner(i,j).y()+fieldSize),StLine);
+                    
+                };
+                if(row->at(j)->hasUpWall())
+                {
+                    row->at(j)->setUpLine(
+                                          new QGraphicsLineItem(upLeftCorner(i,j).x(),
+                                                                upLeftCorner(i,j).y(),
+                                                                upLeftCorner(i,j).x()+fieldSize,
+                                                                upLeftCorner(i,j).y()),StLine);
+                    
+                };
+                if(row->at(j)->hasLeftWall())
+                {
+                    row->at(j)->setLeftLine(
+                                            new QGraphicsLineItem(upLeftCorner(i,j).x(),
+                                                                  upLeftCorner(i,j).y(),
+                                                                  upLeftCorner(i,j).x(),
+                                                                  upLeftCorner(i,j).y()+fieldSize),StLine);
+                    
+                };
+                if(row->at(j)->hasRightWall())
+                {
+                    row->at(j)->setRightLine(
+                                             new QGraphicsLineItem(upLeftCorner(i,j).x()+fieldSize,
+                                                                   upLeftCorner(i,j).y(),
+                                                                   upLeftCorner(i,j).x()+fieldSize,
+                                                                   upLeftCorner(i,j).y()+fieldSize),StLine);
+                    
+                };
+                if(row->at(j)->isColored())
+                {
+                    row->at(j)->setColorRect(
+                                             new QGraphicsRectItem(upLeftCorner(i,j).x(),
+                                                                   upLeftCorner(i,j).y(),
+                                                                   fieldSize,
+                                                                   fieldSize));
+                    
+                };
+                
+                row->at(j)->showCharMark(upLeftCorner(i,j).x(),upLeftCorner(i,j).y(),fieldSize);
+                
+                
+            };
+        };
+        destroyRobot();
+        createRobot();
+    }
+    
+    void RoboField::destroyField()
+    {
+        qDebug()<<"cols"<<columns();
+        for(int i=0;i<columns();i++)
+        {
+            for(int j=0;j<rows();j++)  {
+                FieldItm * itm=getFieldItem(j,i);
+                if(itm)itm->cleanSelf();
+            }
+        };
+        
+        clear();
+        setka.clear();
+        robot=NULL;
+        this->update();
+    }
+    
+    void RoboField::destroyRobot()
+    {
+        if(robot)
+        {
+            removeItem(robot);
+            delete robot;
+            robot=NULL;
+        }
+    }
+    
+    void RoboField::destroyNet()
+    {
+        
+        for(int i=0;i<setka.count();i++)
+            this->removeItem(setka[i]);
+        setka.clear();
+    }
+    
+    void RoboField::destroyScene()
+    {
+        QList<QGraphicsItem*> items=this->items();
+        while(items.count()>0)
+        {
+            this->removeItem(items.first());
+            items=this->items();
+        }
+    }
+    
+    void RoboField::debug()
+    {
+        QList<QGraphicsItem*> items=this->items();
+        for(int i=0;i<items.count();i++)
+            qDebug()<<"Scene debug"<<items[i];
+    }
+    
+    void RoboField::createRobot()
+    {
+        robot=new SimpleRobot();
+        this->addItem(robot);
+        robot->setPos(upLeftCorner(robo_y,robo_x).x(),upLeftCorner(robo_y,robo_x).y());
+        connect(robot,SIGNAL(moved(QPointF)),this,SLOT(roboMoved(QPointF)));
+    }
+    
+    void RoboField::reverseUpWall(int row, int col)
+    {
+        if(!getFieldItem(row,col)->hasUpSep()){
+            return;qDebug("!UpSep");
+        }
+        if(!getFieldItem(row,col)->canUp())
+        {
+            getFieldItem(row,col)->removeUpWall();
+            qDebug("removeUp");
+        } else {
+            getFieldItem(row,col)->setUpWall(new QGraphicsLineItem(upLeftCorner(row,col).x(),
+                                                                   upLeftCorner(row,col).y(),
+                                                                   upLeftCorner(row,col).x()+fieldSize,
+                                                                   upLeftCorner(row,col).y()),StLine);
+        }
+        wasEdit=true;
+    }
+    
+    void RoboField::reverseDownWall(int row, int col)
+    {
+        if(!getFieldItem(row,col)->hasDownSep()) {
+            return;
+        }
+        if(!getFieldItem(row,col)->canDown())
+        {
+            getFieldItem(row,col)->removeDownWall();
+        }
+        else {
+            getFieldItem(row,col)->setDownWall(new QGraphicsLineItem(upLeftCorner(row,col).x(),
+                                                                     upLeftCorner(row,col).y()+fieldSize,
+                                                                     upLeftCorner(row,col).x()+fieldSize,
+                                                                     upLeftCorner(row,col).y()+fieldSize),StLine);
+        }
+        wasEdit=true;
+    }
+    
+    void RoboField::reverseLeftWall(int row, int col)
+    {
+        if(!getFieldItem(row,col)->hasLeftSep())
+            return;
+        if(!getFieldItem(row,col)->canLeft())
+        {
+            getFieldItem(row,col)->removeLeftWall();
+        }
+        else {
+            getFieldItem(row,col)->setLeftWall(new QGraphicsLineItem(upLeftCorner(row,col).x(),
+                                                                     upLeftCorner(row,col).y(),
+                                                                     upLeftCorner(row,col).x(),
+                                                                     upLeftCorner(row,col).y()+fieldSize),StLine);
+        }
+        wasEdit=true;
+    }
+    
+    void RoboField::reverseRightWall(int row, int col)
+    {
+        if(!getFieldItem(row,col)->hasRightSep())
+            return;
+        if(!getFieldItem(row,col)->canRight())
+        {
+            getFieldItem(row,col)->removeRightWall();
+        }
+        else {
+            getFieldItem(row,col)->setRightWall(new QGraphicsLineItem(upLeftCorner(row,col).x()+fieldSize,
+                                                                      upLeftCorner(row,col).y(),
+                                                                      upLeftCorner(row,col).x()+fieldSize,
+                                                                      upLeftCorner(row,col).y()+fieldSize),StLine);
+        }
+        wasEdit=true;
+    }
+    
+    void RoboField::reverseColor(int row, int col)
+    {
+        if(getFieldItem(row,col)->isColored())
+        {
+            getFieldItem(row,col)->removeColor();
+        }else
+        {
+            getFieldItem(row,col)->setColorRect(
+                                                new QGraphicsRectItem(upLeftCorner(row,col).x(),
+                                                                      upLeftCorner(row,col).y(),
+                                                                      fieldSize,
+                                                                      fieldSize));
+        };
+        wasEdit=true;
+    }
+    
+    void RoboField::reverseColorCurrent()
+    {
+        reverseColor(robo_y,robo_x);
+        wasEdit=true;
+    }
+    
+    void RoboField::reverseMark(int row, int col)
+    {
+        if(getFieldItem(row,col)->mark)
+        {
+            getFieldItem(row,col)->removeMark();
+        }
+        else {
+            getFieldItem(row,col)->mark=true;
+            getFieldItem(row,col)->showCharMark(upLeftCorner(row,col).x(),upLeftCorner(row,col).y(),fieldSize);
+        }
+        wasEdit=true;
+    }
+    
+    void RoboField::setRoboPos(int roboX, int roboY)
+    {
+        robo_x=roboX;
+        robo_y=roboY;
+    }
+    
 
+    
+    void RoboField::roboMoved(QPointF pos)
+    {
+        int roboRow=pos.y() / FIELD_SIZE_SMALL;
+        int roboCol=pos.x() / FIELD_SIZE_SMALL;
+        if(roboRow>=rows())roboRow=rows()-1;
+        if(roboRow<0)roboRow=0;
+        if(roboCol>=columns())roboCol=columns()-1;
+        if(roboCol<0)roboCol=0;
+        robot->setPos(upLeftCorner(roboRow,roboCol).x(),upLeftCorner(roboRow,roboCol).y());
+        robo_x=roboCol;robo_y=roboRow;
+        wasEdit=true;
+    };
+    
+    void RoboField::UpdateColors()
+    {
+        LineColor = QColor(sett->value("Robot/LineColor","#C8C800").toString());
+        WallColor=QColor(sett->value("Robot/WallColor","#C8C800").toString());
+        EditColor=QColor(sett->value("Robot/EditColor","#00008C").toString());
+        NormalColor=QColor(sett->value("Robot/NormalColor","#289628").toString());
+        
+        destroyNet();
+        destroyField();
+        drawNet();
+        drawField(FIELD_SIZE_SMALL);
+    };
+    
+    void RoboField::drawNet()
+    {
+        QPen Pen,PenError;
+        int ddx = 3;
+        qDebug()<<"Bort "<<BORT;
+        int infin;
+        
+        
+        
+        Pen = QPen(LineColor,1);
+        PenError = QPen(LineColor,1);
+        infin = 5*BORT+1024;
+        
+        for (int i = -2; i < columns()+2; i++) //Vertikalnie linii
+        {
+            setka.append(this->addLine(i * (int)fieldSize+ddx , 0-infin , i *(int) fieldSize+ddx,infin,Pen ));
+            setka.last()->setZValue(0.5);
+        }
+        
+        for (int i = -2; i < rows()+2; i++)//Horizontalnie linii
+        {
+            setka.append(this->addLine(ddx-infin, i * (int)fieldSize ,infin, i *(int) fieldSize,Pen));
+            setka.last()->setZValue(0.5);
+        }
+        
+        
+    };
+    
+    
+    /**
+     * Загрузка обстановки из файла, отображение не производится.
+     * @param fileName Имя файла
+     * @return Код ошибки
+     * 1 - Ошибка чтения файла
+     * 2 - Пустой файл
+     * 3 - Ошибка чтения размеров обстановки
+     * 4 - Неверные размеры поля
+     * 5 - Пустя строка
+     * 6 - Неверное положение робота
+     * 0< - Ошибка в строке
+     * 10 - Ошибки основного прогона
+     */
+    int RoboField::loadFromFile(QString fileName)
+    {
+        
+        //destroyField();
+        
+        QFileInfo fi(fileName);
+        QString name = fi.fileName();
+        
+        QString Title = QString::fromUtf8("Робот - ") + name;
+        
+        
+        QString tmp = "";
+        QString ctmp;
+        
+        
+        QFile l_File(fileName);
+        
+        
+        
+        
+        int NStrok;
+        NStrok = 0;
+        QString l_String;
+        //	long l_Err;
+        int CurX,CurY;
+        int SizeX, SizeY;
+        destroyField();
+        // Тестовый прогон
+        
+        if  (!l_File.open(QIODevice::ReadOnly))
+        {
+            
+            return 1;
+        }
+        
+        
+        
+        // 1 stroka - razmery polya
+        tmp = l_File.readLine();
+        //QMessageBox::information( 0, "", tmp, 0,0,0);
+        
+        
+        if (tmp.isNull()||tmp.isEmpty())
+        {
+            l_File.close();
+            
+            return 2;
+        }
+        
+        //QMessageBox::information( 0, "", tmp, 0,0,0);
+        
+        while (tmp.left(1) == ";" || tmp == "")
+        {
+            tmp = l_File.readLine();
+            NStrok++;
+            if (tmp.isNull())
+            {
+                return 1;
+            }
+        }
+        tmp = tmp.simplified();
+        QStringList l_List = tmp.split(' ');
+        
+        if (l_List.count() != 2)
+        {
+            l_File.close();
+            
+            
+            return 3;
+        }
+        
+        SizeX = (l_List[0]).toInt();
+        SizeY = (l_List[1]).toInt();
+        
+        if ( (SizeX<= 0) || (SizeY <= 0) )
+        {
+            return 4;
+        }
+        //            field.destroyField();
+        // field.createField(l_List[0].toInt(),l_List[1].toInt());
+        
+        // Вторая строка - положение робота
+        
+        tmp = l_File.readLine();
+        
+        
+        
+        if (tmp.isNull())
+        {
+            l_File.close();
+            
+            return 5;
+        }
+        
+        
+        
+        while (tmp.left(1) == ";" || tmp == "")
+        {
+            tmp = l_File.readLine();
+            NStrok++;
+            if (tmp.isNull())
+            {
+                l_File.close();
+                
+                return 5;
+            }
+        }
+        tmp = tmp.simplified();
+        l_List = tmp.split(' ');
+        
+        // koordinaty robota
+        // proverka
+        if ((l_List[0]).toInt() < 0 || (l_List[1]).toInt() < 0)
+        {
+            
+            
+            l_File.close();return 6;
+        }
+        
+        if ((l_List[0]).toInt() > SizeX || (l_List[1]).toInt() > SizeY )
+        {
+            
+            l_File.close(); return 6;
+        }
+        
+        
+        //	m_DefaultSett = l_Sett;
+        
+        while (!l_File.atEnd())
+        {
+            //l_Err = l_File.readLine(l_String, 255);
+            tmp = QString::fromUtf8(l_File.readLine());
+            NStrok++;
+            if (tmp.isNull())
+            {
+                
+                return 5;
+            }
+            if (tmp.left(1) == ";" || tmp == "")
+            {
+                continue;
+            }
+            tmp = tmp.simplified();
+            l_List = tmp.split(' ');
+            if (l_List.count() == 0)continue;
+            
+            if (l_List.count() > 9 )
+            {
+                
+                l_File.close();
+                return -NStrok;
+            }
+            if(l_List.count()<6)
+            {
+                l_File.close();
+                qDebug("N Lexem<6");
+                return -NStrok;
+            };
+            bool ok;
+            CurX = l_List[0].toInt(&ok);
+            if(!ok)
+            {
+                l_File.close();
+                qDebug("Bad cur X<6");
+                return -NStrok;
+            };
+            
+            CurY = l_List[1].toInt(&ok);
+            
+            if(!ok){
+                l_File.close();
+                qDebug("Bad curY <6");
+                return -NStrok;
+            };
+            
+            if (CurX < 0 || CurX > SizeX || CurY < 0 || CurY > SizeY)
+            {
+                
+                l_File.close(); return -NStrok;
+            }
+            
+            if (l_List[4].toFloat() < 0)
+            {
+                
+                l_File.close(); return -NStrok;
+            }
+            
+            
+            if (l_List[5].toFloat() < MIN_TEMP)
+            {
+                
+                l_File.close(); return -NStrok;
+            }
+            
+            
+            if (l_List.count() >= 7)
+            {
+                
+                QString tmp1 = l_List[6];
+                //dlina lexemy dolzna ravnyatsa 1
+                if (!(tmp1.length() == 1))
+                {
+                    
+                    l_File.close(); return -NStrok;
+                }
+                
+                
+            }
+            
+            
+            if (l_List.count() >= 8)
+            {
+                
+                QString tmp1 = l_List[7];
+                //dlina lexemy dolzna ravnyatsa 1
+                if (!(tmp1.length() == 1))
+                {
+                    l_File.close(); return -NStrok;
+                }
+                
+                
+            }
+            
+        }
+        l_File.close();
+        
+        //реальный прогон
+        //destroyField();
+        
+        if  (!l_File.open(QIODevice::ReadOnly))
+        {
+            
+            return 10;
+        }
+        
+        
+        
+        // 1 stroka - razmery polya
+        tmp = l_File.readLine();
+        
+        if (tmp.isNull())
+        {
+            l_File.close();
+            
+            return 10;
+        }
+        
+        
+        while (tmp.left(1) == ";" || tmp == "")
+        {
+            tmp = QString::fromUtf8(l_File.readLine());
+            NStrok++;
+            if (tmp.isNull())
+            {
+                l_File.close();
+                
+                return 10;
+            }
+        }
+        tmp = tmp.simplified();
+        l_List = tmp.split(' ');
+        
+        if (l_List.count() != 2)
+        {
+            l_File.close();
+            
+            return -NStrok;
+        }
+        
+        SizeX = (l_List[0]).toInt();
+        SizeY = (l_List[1]).toInt();
+        // 	 //NEW ROBO CODE
+        createField(SizeY,SizeX);
+        
+        //END
+        if ((l_List[0]).toInt() <= 0 || (l_List[1]).toInt() <= 0)
+        {
+            
+            l_File.close();
+            return - NStrok;
+        }
+        
+        
+        // Вторая строка - положение робота
+        
+        tmp = l_File.readLine();
+        
+        
+        
+        if (tmp.isNull())
+        {
+            l_File.close();
+            
+            return 10;
+        }
+        
+        
+        
+        while (tmp.left(1) == ";" || tmp == "")
+        {
+            tmp = l_File.readLine();
+            NStrok++;
+            if (tmp.isNull())
+            {
+                l_File.close();
+                
+                return 10;
+            }
+        }
+        tmp = tmp.simplified();
+        l_List = tmp.split(' ');
+        
+        // koordinaty robota
+        
+        if ((l_List[0]).toInt() < 0 || (l_List[1]).toInt() < 0)
+        {
+            
+            l_File.close();return - NStrok;
+        }
+        
+        if ((l_List[0]).toInt() > SizeX || (l_List[1]).toInt() > SizeY )
+        {
+            
+            l_File.close(); return - NStrok;
+        }
+        
+        robo_x = (l_List[0]).toInt();
+        robo_y = (l_List[1]).toInt();
+        
+        //InitialX = m_x;
+        //InitialY = m_y;
+        
+        
+        
+        
+        //	delete []m_FieldDubl;
+        
+        
+        
+        while (!l_File.atEnd())
+        {
+            tmp = QString::fromUtf8(l_File.readLine());
+            NStrok++;
+            if (tmp.isNull())
+            {
+                
+                l_File.close();
+                return 10;
+            }
+            if (tmp.left(1) == ";" || tmp == "")
+            {
+                continue;
+            }
+            tmp = tmp.simplified();
+            l_List = tmp.split(' ');
+            if (l_List.count() == 0)continue;
+            
+            if (l_List.count() > 9)
+            {
+                
+                l_File.close();
+                return -NStrok;
+            }
+            CurX = l_List[0].toInt();
+            CurY = l_List[1].toInt();
+            if (CurX < 0 || CurX > SizeX || CurY < 0 || CurY > SizeY)
+            {
+                
+                l_File.close(); return -NStrok;
+            }
+            // TODO STENI
+            if (getFieldItem(CurY, CurX))
+                getFieldItem(CurY,CurX)->setWalls((l_List[2]).toInt());
+            
+            //		int ix = (l_List[0]).toInt();
+            //		int iy = (l_List[1]).toInt();
+            
+            if (!((l_List[3]).toInt() == 0))
+            {
+                getFieldItem(CurY,CurX)->IsColored = true;
+                // //QMessageBox::information( 0, "","test1" , 0,0,0);
+            }
+            else {
+                if (getFieldItem(CurY,CurX))
+                    getFieldItem(CurY,CurX)->IsColored = false;
+            }
+            qreal radiation = (l_List[4].replace(",",".")).toDouble();
+            if (getFieldItem(CurY,CurX))
+                getFieldItem(CurY,CurX)->radiation=radiation;
+            
+            if (l_List[4].toFloat() < 0)
+            {
+                
+                l_File.close(); return -NStrok;
+            }
+            qreal temperature = (l_List[5].replace(",",".")).toDouble();
+            if (getFieldItem(CurY,CurX))
+                getFieldItem(CurY,CurX)->temperature=temperature;
+            
+            if (l_List[5].toFloat() < MIN_TEMP)
+            {
+                
+                l_File.close(); return -NStrok;
+            }
+            
+            
+            
+            if (l_List.count() >= 7)
+            {
+                
+                QString tmp1 = l_List[6];
+                //dlina lexemy dolzna ravnyatsa 1
+                if (!(tmp1.length() == 1))
+                {
+                    
+                    l_File.close(); return -NStrok;
+                }
+                //qDebug()<<QString::fromUtf8("Тест Up:")<<tmp1[0];
+                if(tmp1[0]!='$') {
+                    if (getFieldItem(CurY,CurX))
+                        getFieldItem(CurY,CurX)->upChar = tmp1[0];
+                }
+                else {
+                    if (getFieldItem(CurY,CurX))
+                        getFieldItem(CurY,CurX)->upChar = ' ' ;
+                }
+            }
+            else
+            {
+                if (getFieldItem(CurY,CurX))
+                    getFieldItem(CurY,CurX)->upChar = ' ' ;
+            }
+            
+            
+            
+            if (l_List.count() >= 8)
+            {
+                
+                QString tmp1 = l_List[7];
+                
+                //dlina lexemy dolzna ravnyatsa 1
+                if (!(tmp1.length() == 1))
+                {
+                    
+                    l_File.close(); return -NStrok;
+                }
+                //qDebug()<<QString::fromUtf8("Тест Down:")<<tmp1[0];
+                if(tmp1[0]!='$') {
+                    if (getFieldItem(CurY,CurX))
+                        getFieldItem(CurY,CurX)->downChar = tmp1[0];
+                }
+                else {
+                    if (getFieldItem(CurY,CurX))
+                        getFieldItem(CurY,CurX)->downChar = ' ' ;
+                }
+            }
+            else
+            {
+                if (getFieldItem(CurY,CurX))
+                    getFieldItem(CurY,CurX)->downChar = ' ' ;
+            }
+            
+            
+            
+            if (l_List.count() >= 9)
+            {
+                
+                QString tmp1 = l_List[8];
+                //dlina lexemy dolzna ravnyatsa 1
+                if (!(tmp1.length() == 1))
+                {
+                    
+                    l_File.close(); return -NStrok;
+                }
+                if(tmp1[0]=='1') {
+                    if (getFieldItem(CurY,CurX))
+                        getFieldItem(CurY,CurX)->mark = true;
+                }
+                else {
+                    if (getFieldItem(CurY,CurX))
+                        getFieldItem(CurY,CurX)->mark = false ;
+                }
+            }
+            else
+            {
+                if (getFieldItem(CurY,CurX))
+                    getFieldItem(CurY,CurX)->mark = false ;
+            }
+            
+            
+            
+            
+            
+            
+        }
+        
+        l_File.close();
+        
+        
+        
+        qDebug() << "File " << fileName ;
+        wasEdit=false;
+        
+        
+        //robot->setZValue(100);
+        return(0);
+        
+        
+        
+    };
+    
+    int RoboField::saveToFile(QString fileName)
+    {
+        QFileInfo fi(fileName);
+        QString name = fi.fileName();
+        
+        qDebug()<<"NewRobot Save file: "<<fileName;
+        //QString Title = QString::fromUtf8("Робот - ") + name;
+        
+        
+        QChar Bukva;
+        char ctmp[200];
+        QFile l_File(fileName);
+        if  (!l_File.open(QIODevice::WriteOnly))
+        {
+            return 1;
+        }
+        
+        l_File.write("; Field Size: x, y\n");
+        
+        //QString l_String;
+        
+        sprintf(ctmp,"%i %i\n", columns(), rows());
+        l_File.write(ctmp);
+        l_File.write("; Robot position: x, y\n");
+        sprintf(ctmp,"%i %i\n", robo_x, robo_y);
+        l_File.write(ctmp );
+        l_File.write("; A set of special Fields: x, y, Wall, Color, Radiation, Temperature, Symbol, Symbol1, Point\n");
+        
+        for (int i = 0; i < rows(); i++)
+        {
+            for (int j = 0; j < columns(); j++)
+            {
+                
+                Bukva = getFieldItem(i,j)->upChar;
+                if(Bukva==' ')Bukva='$';
+                qDebug()<<QString::fromUtf8("Буква")<<Bukva;
+                QChar cc;
+                cc = Bukva;
+                
+                
+                Bukva = getFieldItem(i,j)->downChar;
+                if(Bukva==' '){Bukva='$';qDebug()<<QString::fromUtf8("Буквы нет");}
+                else qDebug()<<QString::fromUtf8("Буква ")<<Bukva;
+                
+                QChar cc1 = Bukva;
+                
+                
+                char cc2[2];
+                cc2[0] = 0;
+                cc2[1] = 0;
+                
+                if(getFieldItem(i,j)->mark)cc2[0] = '1';
+                //char cc = 'g';
+                if (!getFieldItem(i, j)->emptyCell())
+                {
+                    qDebug()<<" i:"<<i << " j:"<< j << " walls:"<<getFieldItem(i, j)->wallByte();
+                    sprintf(ctmp,"%i %i %i %i %f %f ", j, i, getFieldItem(i, j)->wallByte(), getFieldItem(i, j)->IsColored, getFieldItem(i, j)->radiation, getFieldItem(i,j)->temperature);
+                    QString toWrite=QString(ctmp)+cc+" "+cc1+" "+cc2+"\n";
+                    l_File.write(toWrite.toUtf8());
+                    qDebug()<<"ROBOT:WRITE 2 FILE";
+                }
+            }
+        }
+        l_File.write( "; End Of File\n");
+        
+        l_File.close();
+        if (fi.exists())
+        {
+            //QMessageBox::information( 0, "", QString::fromUtf8("файл записан"), 0,0,0);
+            
+        }
+        else
+        {
+            QMessageBox::information( 0, "", QString::fromUtf8("Файл не записан - попробуйте снова!"), 0,0,0);
+            return -1;
+        }
+        
+        //ToDubl();
+        wasEdit=false;
+        return 0;
+        
+    };
+    
+    bool RoboField::stepUp()
+    {
+//        if (m_robot && !property("fromPult").toBool())
+//            m_robot->showHideWindow(true);
+        
+        setProperty("fromPult", false);
+        
+        if(getFieldItem(robo_y,robo_x)->canUp())
+        {
+            robot->setPos( QPointF(robot->pos().x(),
+                                   robot->pos().y() - fieldSize));
+            
+            robo_y--;
+            return true;
+        }else return false;
+    };
+    
+    bool RoboField::stepDown()
+    {
+//        if (m_robot && !property("fromPult").toBool())
+//            m_robot->showHideWindow(true);
+        
+        setProperty("fromPult", false);
+        
+        if(getFieldItem(robo_y,robo_x)->canDown())
+        {
+            robot->moveBy(0,fieldSize);
+            robo_y++;
+            return true;
+        }else return false;
+    };
+    
+    bool RoboField::stepLeft()
+    {
+//        if (m_robot && !property("fromPult").toBool())
+//            m_robot->showHideWindow(true);
+        setProperty("fromPult", false);
+        
+        if(getFieldItem(robo_y,robo_x)->canLeft())
+        {
+            robot->setPos( QPointF(robot->pos().x()-fieldSize,
+                                   robot->pos().y()));
+            robo_x--;
+            return true;
+        }else return false;
+    };
+    
+    bool RoboField::stepRight()
+    {
+//        if (m_robot && !property("fromPult").toBool())
+//            m_robot->showHideWindow(true);
+        setProperty("fromPult", false);
+        
+        if(getFieldItem(robo_y,robo_x)->canRight())
+        {
+            robot->moveBy(fieldSize,0);
+            robo_x++;
+            return true;
+        }else return false;
+    };
+    
+    
+    /**
+     * Обработка событий нажатий кнопок мыши, показ диалога редактирования *клетки
+     * @param mouseEvent
+     */
+    void RoboField::mousePressEvent ( QGraphicsSceneMouseEvent * mouseEvent )
+    {
+        if(!editMode)return;
+        QPointF scenePos=mouseEvent->scenePos();
+        int rowClicked=scenePos.y()/fieldSize;
+        int colClicked=(scenePos.x()-3)/fieldSize;
+        
+        if(mouseEvent->button()==Qt::RightButton)//Диалог редактирования
+        {
+          //  cellDialog->setPos(rowClicked+1,colClicked+1);
+            //         if (robo_y==rowClicked && robo_x==colClicked)cellDialog->setRobot->setChecked(true);
+            //else cellDialog->setRobot->setChecked(false);
+            showCellDialog(getFieldItem(rowClicked,colClicked));
+            return;
+        };
+        
+        bool left,right,up,down;
+        left=false;right=false;up=false;down=false;
+        int upD=fieldSize,downD=fieldSize,leftD=fieldSize,rightD=fieldSize;
+        qreal delta_row=scenePos.y() - rowClicked * fieldSize;
+        qreal delta_col=scenePos.x()- colClicked * fieldSize-3;
+        QGraphicsScene::mousePressEvent(mouseEvent);
+        if(mouseEvent->isAccepted ())return;
+        
+        
+        
+        if((rowClicked>rows()-1)||(rowClicked<0))
+        {mouseEvent->ignore();QGraphicsScene::mousePressEvent(mouseEvent);return;};
+        
+        if((colClicked>columns()-1)||(colClicked<0))
+        {mouseEvent->ignore();QGraphicsScene::mousePressEvent(mouseEvent);return;};
+        
+        qDebug()<<"ScenePos y "<<scenePos.y() <<" sceneposx"<<scenePos.x() << "rowClick:"<<rowClicked << " "<<" colClick:"<<colClicked <<
+        " delta_row" <<delta_row << " delta_col" << delta_col;
+        if(delta_row<=MAX_CLICK_DELTA){up=true;upD=delta_row;qDebug("UP");};
+        
+        if(fieldSize-delta_row<=MAX_CLICK_DELTA){down=true;downD=fieldSize-delta_row;};
+        
+        
+        if(delta_col<=MAX_CLICK_DELTA){left=true;leftD=delta_col;};
+        
+        if(fieldSize-delta_col<=MAX_CLICK_DELTA){right=true;rightD=fieldSize-delta_col;};
+        if(mouseEvent->modifiers ()==Qt::ControlModifier) { markMode=false; } else { markMode=true; }
+        
+        //Углы клетки
+        if ((left)&&(up)) {
+            if(upD<leftD) {
+                left=false;
+            }
+            else  {
+                up=false;
+            }
+        }
+        if((left)&&(down)) {
+            if(downD<leftD) {
+                left=false;
+            }
+            else  {
+                down=false;
+            }
+        }
+        if((right)&&(up)) {
+            if(upD<rightD) {
+                right=false;
+            }
+            else  {
+                up=false;
+            }
+        }
+        if((right)&&(down)) {
+            if(downD<rightD) {
+                right=false;
+            }
+            else  {
+                down=false;
+            }
+        }
+        
+        //Ставим стены
+        if(up){reverseUpWall(rowClicked,colClicked);qDebug("ReversUP");};
+        if(down)reverseDownWall(rowClicked,colClicked);
+        if(left)reverseLeftWall(rowClicked,colClicked);
+        if(right)reverseRightWall(rowClicked,colClicked);
+        if(!up && !down && !right && !left)
+        {
+            if(markMode)reverseColor(rowClicked,colClicked); //Zakraska
+            else //Otmetit tochkoy
+            {
+                reverseMark(rowClicked,colClicked);
+            };
+        };
+//        if(wasEdit)emit was_edit();
+    };
+    
+    
+    void RoboField::showCellDialog(FieldItm * cellClicked)
+    {
+        
+//        qDebug() << "showCellDialog";
+//        QPoint pos = views().first()->pos();
+//        pos = views().first()->mapToGlobal(pos);
+//        qDebug() << "Pos: " << pos;
+//        cellDialog->move(pos);
+//        
+//        cellDialog->setRowCols(rows(),columns());
+//        
+//        
+//        //       cellDialog->mark->setChecked(cellClicked->mark);
+//        
+//        
+//        //       cellDialog->colored->setChecked(cellClicked->IsColored);
+//        
+//        QChar upChar,downChar;
+//        if(cellClicked->upChar == ' ')upChar='_';else upChar=cellClicked->upChar;
+//        if(cellClicked->downChar == ' ')downChar='_';else downChar=cellClicked->downChar;
+//        
+//        cellDialog->upChar->setText(upChar);
+//        cellDialog->downChar->setText(downChar);
+//        
+//        cellDialog->RadSpinBox->setValue(cellClicked->radiation);
+//        cellDialog->TempSpinBox->setValue(cellClicked->temperature);
+//        
+//        cellDialog->show();
+    };
+    
+    void RoboField::cellDialogOk()
+    {
+//        int rowP = cellDialog->row_pos;
+//        int colP = cellDialog->col_pos;
+//        // qDebug()<<"CellDalog:color:"<<cellDialog->colored->isChecked();
+//        //  if(cellDialog->colored->isChecked()!=getFieldItem(rowP,colP)->IsColored)
+//        //{reverseColor(rowP,colP);wasEdit=true;};
+//        
+//        //  if(cellDialog->mark->isChecked()!=getFieldItem(rowP,colP)->mark){reverseMark(rowP,colP);wasEdit=true;};
+//        if(cellDialog->upChar->text()!=getFieldItem(rowP,colP)->upChar)
+//        {
+//            
+//            QString tmp=cellDialog->upChar->text();	    if((tmp.length()==0)||(tmp[0]!='_'))getFieldItem(rowP,colP)->removeUpChar();
+//            if((tmp.length()==1)&&(tmp[0]!='_')){
+//                getFieldItem(rowP,colP)->removeUpChar();
+//                
+//                
+//                
+//                getFieldItem(rowP,colP)->upChar=tmp[0];
+//                getFieldItem(rowP,colP)->showUpChar
+//                (upLeftCorner(rowP,colP).x(),upLeftCorner(rowP,colP).y(),fieldSize);wasEdit=true;};
+//        };
+//        if(cellDialog->downChar->text()!=getFieldItem(rowP,colP)->downChar)
+//        {
+//            QString tmp=cellDialog->downChar->text();
+//            if((tmp.length()==0)||(tmp[0]!='_'))getFieldItem(rowP,colP)->removeDownChar();
+//            if((tmp.length()==1)&&(tmp[0]!='_')){
+//                
+//                getFieldItem(rowP,colP)->removeDownChar();
+//                
+//                getFieldItem(rowP,colP)->downChar=tmp[0];
+//                getFieldItem(rowP,colP)->showDownChar
+//                (upLeftCorner(rowP,colP).x(),upLeftCorner(rowP,colP).y(),fieldSize);wasEdit=true;};
+//        };
+//        if((getFieldItem(rowP,colP)->radiation!=cellDialog->RadSpinBox->value())||
+//           (getFieldItem(rowP,colP)->temperature!=cellDialog->TempSpinBox->value())) wasEdit=true;
+//        getFieldItem(rowP,colP)->radiation=cellDialog->RadSpinBox->value();
+//        getFieldItem(rowP,colP)->temperature=cellDialog->TempSpinBox->value();
+//        /*
+//         if(cellDialog->setRobot->isChecked())
+//         {
+//         robo_y=rowP;
+//         robo_x=colP;
+//         robot->setPos(upLeftCorner(robo_y,robo_x).x(),upLeftCorner(robo_y,robo_x).y());
+//         wasEdit=true;
+//         };*/
+//        
+//        if(wasEdit)emit was_edit();
+    };
+    
+    void RoboField::setFieldItems(QList<QList<FieldItm *> > FieldItems)
+    {
+        
+        Items = QList< QList<FieldItm*> >();
+        for (int i=0; i<FieldItems.size(); i++) {
+            QList<FieldItm*> row;
+            for (int j=0; j<FieldItems[i].size(); j++) {
+                row << NULL;
+            }
+            Items << row;
+        }
+    }
+    
+    void RoboField::setItem(FieldItm *item, uint str, uint stlb)
+    {
+        if (Items[str][stlb]) {
+            delete Items[str][stlb];
+        }
+        Items[str][stlb]=item;
+    }
+    
+    RoboField* RoboField::Clone()
+    {
+        RoboField* clone=new RoboField(Parent);
+        clone->setFieldItems(Items);
+        clone->robo_x=robo_x;
+        clone->robo_y=robo_y;
+        
+        for(int i=0;i<rows();i++)
+        {
+            for(int j=0;j<columns();j++)
+            {
+                clone->setItem(getFieldItem(i,j)->Copy(),i,j);
+                if(j>0)clone->getFieldItem(i,j)->setLeftsepItem(clone->getFieldItem(i,j-1));
+                if(i>0)clone->getFieldItem(i,j)->setUpsepItem(clone->getFieldItem(i-1,j));
+            };
+        };
+        
+        return clone;
+    };
+    
+    
+    
+    void RoboField::wbMode()
+    {
+        
+        this->setBackgroundBrush (QBrush("white"));
+        for(int i=0;i<rows();i++)
+        {
+            for(int j=0;j<columns();j++)
+            {
+                getFieldItem(i,j)->wbWalls();
+            };
+        };
+    };
+    void RoboField::colorMode()
+    {
+        for(int i=0;i<rows();i++)
+        {
+            for(int j=0;j<columns();j++)
+            {
+                getFieldItem(i,j)->colorWalls();
+            };
+        };
+        if(!editMode)Color = QColor(40,150,40);//Normal Color
+        else Color=QColor(0,0,140);//Edit Color
+        this->setBackgroundBrush (QBrush(Color));
+    };
+    
+    
+    
+    
+
+    //+++++++Simple Robot
+    SimpleRobot::SimpleRobot(QGraphicsItem *parent )
+    {
+        Q_UNUSED(parent);
+        setAcceptDrops(true);
+        
+        
+        
+        static const int points[] = {  14,6, 22,14, 14,22, 6,14 };
+        QPolygon polygon;
+        polygon.setPoints(4, points);
+        QPolygonF polygonf = QPolygonF(polygon);
+        Robot = new QGraphicsPolygonItem ( );
+        Robot->setPolygon(polygonf);
+        Robot->setZValue(100);
+        setZValue(100);
+        crash=NO_CRASH;
+        // ainter->drawPolygon(polygonf);
+        //Robot->setPolygon(polygonf);
+    };
+    
+    void SimpleRobot::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
+    {
+        event->setAccepted(event->mimeData()->hasFormat("text/plain"));
+        qDebug("Robo Drag enter");
+    }
+    void SimpleRobot::dragMoveEvent ( QGraphicsSceneDragDropEvent * event )
+    {
+        event->accept();
+        qDebug("Robo Drag");
+    };
+    
+    void SimpleRobot::mousePressEvent ( QGraphicsSceneMouseEvent * event )
+    {
+        event->accept();
+        qDebug()<<"Mouse press" << event->pos();
+    };
+    
+    void SimpleRobot::mouseMoveEvent ( QGraphicsSceneMouseEvent * event )
+    {
+        //qDebug("Mouse move");
+        setPos(event->scenePos());
+        
+    };
+    void SimpleRobot::mouseReleaseEvent ( QGraphicsSceneMouseEvent * event )
+    {
+        //setZValue(100);
+        emit moved(event->scenePos());
+        
+    };
+    QRectF SimpleRobot::boundingRect() const
+    {
+        //     qreal adjust = 0.5;
+        return Robot->boundingRect();
+    };
+    
+    void SimpleRobot::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+                            QWidget *widget)
+    {
+        Q_UNUSED(option); Q_UNUSED(widget);
+        // Body
+        painter->setBrush(QColor("lightgray"));
+        painter->setPen(QPen("black"));
+        
+        static const int points[] = {  14,6, 22,14, 14,22, 6,14 };
+        QVector<QPointF> up_crash,down_crash,left_crash,right_crash ;
+        up_crash << QPointF(14 , 6) << QPointF(10, 11) <<  QPointF(19 ,11);
+        down_crash << QPointF(14 , 22) << QPointF(11, 18) <<  QPointF(18 ,18);
+        left_crash << QPointF(7 , 14) << QPointF(11, 10) <<  QPointF(11 ,18);
+        right_crash << QPointF(22 , 14) << QPointF(18, 10) <<  QPointF(18 ,18);
+        QPolygon polygon;
+        polygon.setPoints(4, points);
+        QPolygonF polygonf = QPolygonF(polygon);
+        
+        painter->drawPolygon(polygonf);
+        if(crash!=NO_CRASH)
+        {
+            qDebug("crash!");
+            QPen noPen(Qt::NoPen);
+            painter->setPen(noPen);
+            painter->setBrush(QColor("red"));
+            if(crash==UP_CRASH)painter->drawPolygon(QPolygonF(up_crash));
+            if(crash==DOWN_CRASH)painter->drawPolygon(QPolygonF(down_crash));
+            if(crash==LEFT_CRASH)painter->drawPolygon(QPolygonF(left_crash));
+            if(crash==RIGHT_CRASH)painter->drawPolygon(QPolygonF(right_crash));
+            
+        };
+    };
+    
+    QGraphicsPolygonItem* SimpleRobot::RoboItem()
+    {
+        return Robot;
+    }
+    
+    void SimpleRobot::setCrash(uint dirct)
+    {
+        crash=dirct;
+        update();
+    }
+    
+    
+    
+    
+    
 RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
 	: RobotModuleBase(parent)
 {
 	/* TODO 
 	implement class Constructor
 	*/
-    m_mainWidget = new QWidget();
+    
+    sett=mySettings();
+    field=new RoboField(m_mainWidget);
+    //field->editField();
+    field->createField(10,15);
+    field->setRoboPos(0,0);
+    field->createRobot();    
+   // m_mainWidget = new QGraphicsView(field);
     m_pultWidget = new QWidget();
 }
 
