@@ -144,7 +144,7 @@ QString PluginManagerPrivate::reorderSpecsAndCreateStates(const QStringList &ord
         newSpecs << spec;
         objects << 0;
         states << KPlugin::Disabled;
-        settings << 0;
+        settings << new QSettings("kumir2", spec.name);
     }
     specs = newSpecs;
     return "";

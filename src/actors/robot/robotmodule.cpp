@@ -2037,21 +2037,18 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
 	/* TODO 
 	implement class Constructor
 	*/
-    
+    QSettings *s =mySettings();
+    sett = s;
+    field=new RoboField(0);
+    //field->editField();
+    field->createField(10,15);
+    field->setRoboPos(0,0);
+    field->createRobot();
+    m_mainWidget = new QGraphicsView(field);
+    m_pultWidget = new QWidget();
     
 }
 
-    
-QString RobotModule::initialize(const QStringList &arguments) { Q_UNUSED(arguments);
-        sett=mySettings();
-        field=new RoboField(m_mainWidget);
-        //field->editField();
-        field->createField(10,15);
-        field->setRoboPos(0,0);
-        field->createRobot();    
-        // m_mainWidget = new QGraphicsView(field);
-        m_pultWidget = new QWidget();
-        return ""; }    
     
 void RobotModule::reset()
 {

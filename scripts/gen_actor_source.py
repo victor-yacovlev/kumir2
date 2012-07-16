@@ -368,6 +368,7 @@ public:
     QVariantList algOptResults() const;
     QString errorText() const;
 protected:
+    QString initialize(const QStringList&);
     void sleep(unsigned long secs);
     void msleep(unsigned long msecs);
     void usleep(unsigned long usecs);
@@ -578,6 +579,10 @@ void $threadClassName::run()
 
 $className::$className()
     : ExtensionSystem::KPlugin()
+{
+}
+
+QString $className::initialize(const QStringList&)
 {
     m_module = new $moduleClassName(this);
     m_asyncRunThread = new $threadClassName(this, m_module);
