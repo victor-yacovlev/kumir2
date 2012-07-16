@@ -5,6 +5,7 @@
 		{ "name": {"ascii": "go down", "ru_RU": "вниз" } },
 		{ "name": {"ascii": "go left", "ru_RU": "влево" } },
 		{ "name": {"ascii": "go right", "ru_RU": "вправо" } },
+	
 		{ "name": {"ascii": "do paint", "ru_RU": "закрасить" }, "async": false },
 		{
 			"name": {"ascii": "is wall at top", "ru_RU": "сверху стена"},
