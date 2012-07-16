@@ -2046,7 +2046,7 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     field->createRobot();
     m_mainWidget = new QGraphicsView(field);
     m_pultWidget = new QWidget();
-    
+    field->drawField(20);
 }
 
     
@@ -2105,6 +2105,7 @@ void RobotModule::runGoLeft()
 {
 	/* TODO implement me */
     qDebug() << "Robot left";
+    if(!field->stepLeft())setError(trUtf8("Робот разбился: слева стена!"));
     sleep(2);
 	return;
 }
@@ -2114,6 +2115,7 @@ void RobotModule::runGoRight()
 {
 	/* TODO implement me */
     qDebug() << "Robot right";
+    if(!field->stepRight())setError(trUtf8("Робот разбился: справа стена!"));
     sleep(2);
 	return;
 }
