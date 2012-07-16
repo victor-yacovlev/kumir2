@@ -63,7 +63,8 @@ void VM::setAvailableActors(const QList<ActorInterface *> &actors)
 
 void VM::updateStFunctError()
 {
-    s_error = __get_error__st_funct();
+    if (s_error.length()==0)
+        s_error = __get_error__st_funct();
 }
 
 void VM::setNextCallInto()
