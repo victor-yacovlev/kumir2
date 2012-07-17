@@ -2068,8 +2068,11 @@ void RobotModule::reset()
 	This method is called when actor resets its state before program starts.
 	*/
     //delete field;
+    field->destroyRobot();
     field->deleteLater();
     field=startField->Clone();
+    field->setRoboPos(startField->robotX(),startField->robotY());
+    field->createRobot();
     field->drawField(FIELD_SIZE_SMALL);
     //delete m_mainWidget;
     view->setScene(field);
@@ -2158,7 +2161,7 @@ void RobotModule::runGoRight()
 
 void RobotModule::runDoPaint()
 {
-	/* TODO implement me */
+	if(!field->currentCell()->IsColored)field->reverseColorCurrent();
 	return;
 }
 

@@ -56,7 +56,7 @@ void Connector::connectToKumir(int argc, char* *argv)
 
 void Connector::sendReply(const QVariantList &message)
 {
-    d->sendReply(message);
+   // d->sendReply(message);
 }
 
 void Connector::output(const QString & text)

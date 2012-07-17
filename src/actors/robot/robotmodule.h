@@ -377,7 +377,7 @@ namespace ActorRobot {
         RoboField* field;
         RoboField * startField;
         bool animation;
-        
+        QGraphicsView * view;
     }; // RobotModule
 
 } // ActorRobot
