@@ -353,6 +353,7 @@ namespace ActorRobot {
         // Reset actor state before program starts
         void reset();
         // Set animation flag
+        void reloadSettings(QSettings *settings);
         void setAnimationEnabled(bool enabled);
         // Actor methods
         void runGoUp();

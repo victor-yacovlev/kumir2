@@ -2080,6 +2080,11 @@ void RobotModule::reset()
     
 }
 
+void RobotModule::reloadSettings(QSettings *settings)
+{
+
+}
+
 void RobotModule::setAnimationEnabled(bool enabled)
 {
     animation=enabled;
