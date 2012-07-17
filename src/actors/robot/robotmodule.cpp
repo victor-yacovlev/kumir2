@@ -2046,7 +2046,8 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
    
     field->setRoboPos(0,0);
       field->createRobot();
-    m_mainWidget = new QGraphicsView(field);
+    view=new QGraphicsView(field);
+    m_mainWidget = view;
     m_pultWidget = new QWidget();
     startField=field->Clone();
     field->drawField(FIELD_SIZE_SMALL);
@@ -2062,8 +2063,8 @@ void RobotModule::reset()
     field->deleteLater();
     field=startField->Clone();
     field->drawField(FIELD_SIZE_SMALL);
-    delete m_mainWidget;
-    m_mainWidget = new QGraphicsView(field);
+    //delete m_mainWidget;
+    view->setScene(field);
     field->drawField(FIELD_SIZE_SMALL);
     
 }
