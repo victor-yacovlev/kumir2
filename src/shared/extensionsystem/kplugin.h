@@ -15,13 +15,6 @@ class QIcon;
 
 namespace ExtensionSystem {
 
-struct SettingsEditorPage {
-    inline SettingsEditorPage() { settingsPage = 0; settingsGroupIcon = 0; }
-    QWidget * settingsPage;
-    QString settingsGroupName;
-    QIcon * settingsGroupIcon;
-};
-
 enum GlobalState {
     GS_Unlocked, // Edit mode
     GS_Observe, // Observe mode
@@ -41,7 +34,7 @@ public:
     PluginSpec pluginSpec() const;
     State state() const;
     inline virtual bool isGuiRequired() const { return pluginSpec().gui; } // Can be overridden in special cases
-    inline virtual SettingsEditorPage settingsEditorPage() { return SettingsEditorPage(); }
+    inline virtual QWidget* settingsEditorPage() { return 0; }
     virtual ~KPlugin();
 protected:
     inline virtual void saveSession() const { }

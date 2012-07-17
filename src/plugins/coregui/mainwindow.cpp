@@ -546,6 +546,35 @@ void MainWindow::newProgram()
 
 }
 
+void MainWindow::newPythonProgram()
+{
+    if (b_notabs && !closeTab(ui->tabWidget->currentIndex())) {
+        return;
+    }
+    QString defaultText = QString::fromUtf8("#!/usr/bin/python3\n#coding=utf-8\n\n");
+    QString suffix = ".py";
+    DocumentType type = Python;
+    const QString initialText = m_plugin->mySettings()->value(Plugin::InitialTextKey, defaultText).toString();
+    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("Python3Language", initialText);
+    QWidget* vc = doc.widget;
+    int id = doc.id;
+    vc->setProperty("documentId", id);
+    QString fileName = suggestNewFileName(suffix);
+    vc->setProperty("title",QFileInfo(fileName).fileName());
+    vc->setProperty("fileName", QDir::current().absoluteFilePath(fileName));
+    TabWidgetElement * e = addCentralComponent(
+                fileName,
+                vc,
+                doc.toolbarActions,
+                doc.menus,
+                doc.statusbarWidgets,
+                type,
+                true);
+    ui->tabWidget->setCurrentWidget(e);
+    e->setFocus();
+
+}
+
 void MainWindow::newPascalProgram()
 {
     if (b_notabs && !closeTab(ui->tabWidget->currentIndex())) {

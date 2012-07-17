@@ -211,13 +211,11 @@ void EditorPlugin::start()
     w->show();
 }
 
-ExtensionSystem::SettingsEditorPage EditorPlugin::settingsEditorPage()
+QWidget* EditorPlugin::settingsEditorPage()
 {
     d->settingsPage = new SettingsPage(mySettings());
-    ExtensionSystem::SettingsEditorPage page;
-    page.settingsGroupName = tr("Editor");
-    page.settingsPage = d->settingsPage;
-    return page;
+    d->settingsPage->setWindowTitle(tr("Editor"));
+    return d->settingsPage;
 }
 
 void EditorPlugin::stop()

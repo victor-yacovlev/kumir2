@@ -1,3 +1,3 @@
 name    = CoreGUI
-requires= Analizer, Editor, Generator, st_funct
+requires= Analizer, Editor, Runner
 gui     = true

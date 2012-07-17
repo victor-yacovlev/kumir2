@@ -57,5 +57,39 @@
 				]
 			}
 		]
+	},
+	"settings": {
+		"TextColor": {
+			"type": "color",
+			"default": "#FFFFFF",
+			"title": {"ascii": "Text color", "ru_RU": "Цвет текста"}
+		},
+		"LineColor": {
+			"type": "color",
+			"default": "#C8C800",
+			"title": {"ascii": "Grid color", "ru_RU": "Цвет сетки"}
+		},
+		"WallColor": {
+			"type": "color",
+			"default": "#C8C800",
+			"title": {"ascii": "Wall color", "ru_RU": "Цвет стен"}
+		},
+		"NormalColor": {
+			"type": "color",
+			"default": "#289628",
+			"title": {"ascii": "Background color", "ru_RU": "Цвет поля"}
+		},
+		"EditColor": {
+			"type": "color",
+			"default": "#00008C",
+			"title": {"ascii": "Background color (edit mode)", "ru_RU": "Цвет поля (редактирование)"}
+		},
+		"CellSize": {
+			"type": "int",
+			"default": 20,
+			"minimum": 10,
+			"maximum": 40,
+			"title": {"ascii": "Cell size", "ru_RU": "Размер клетки"}
+		}
 	}
 }

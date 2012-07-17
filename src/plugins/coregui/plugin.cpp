@@ -145,7 +145,7 @@ QString Plugin::initialize(const QStringList & parameters)
     connect(m_kumirProgram, SIGNAL(giveMeAProgram()), this, SLOT(prepareKumirProgramToRun()), Qt::DirectConnection);
 
     KPlugin * kumirRunner = myDependency("KumirCodeRun");
-    Q_CHECK_PTR(kumirRunner);
+    //Q_CHECK_PTR(kumirRunner);
     m_kumirProgram->setBytecodeRun(kumirRunner);
 
     QList<ExtensionSystem::KPlugin*> actors = loadedPlugins("Actor*");
@@ -347,7 +347,15 @@ void Plugin::restoreSession()
         }
     }
     else {
-        m_mainWindow->newProgram();
+        QObject * dep = myDependency("Analizer");
+        Q_CHECK_PTR(dep);
+        QString analizerName = QString::fromAscii(dep->metaObject()->className());
+        if (analizerName.startsWith("Kumir"))
+            m_mainWindow->newProgram();
+        else if (analizerName.startsWith("Pascal"))
+            m_mainWindow->newPascalProgram();
+        else if (analizerName.startsWith("Python"))
+            m_mainWindow->newPythonProgram();
     }
 }
 

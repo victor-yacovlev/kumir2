@@ -16,7 +16,7 @@ class SettingsDialog : public QDialog
 
 public:
     explicit SettingsDialog(QWidget *parent = 0);
-    void addPage(const SettingsEditorPage & page);
+    void addPage(QWidget* page);
     ~SettingsDialog();
 public slots:
     int exec();

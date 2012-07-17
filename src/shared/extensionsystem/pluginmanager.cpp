@@ -145,6 +145,7 @@ QString PluginManagerPrivate::reorderSpecsAndCreateStates(const QStringList &ord
         objects << 0;
         states << KPlugin::Disabled;
         settings << new QSettings("kumir2", spec.name);
+        settings.last()->setIniCodec("UTF-8");
     }
     specs = newSpecs;
     return "";
@@ -308,8 +309,11 @@ QString PluginManagerPrivate::loadPlugins()
         }
         objects[i] = plugin;
         states[i] = KPlugin::Loaded;
+        if (settings[i])
+            settings[i]->deleteLater();
         settings[i] = new QSettings("kumir2", specs[i].name);
         settings[i]->setIniCodec("UTF-8");
+        plugin->updateSettings();
     }
     return "";
 }
@@ -552,7 +556,7 @@ QSettings * PluginManager::settingsByObject(const KPlugin *p) const
     Q_ASSERT(d->settings.size()==d->objects.size());
     for (int i=0; i<d->objects.size(); i++) {
         if (d->objects[i]==p) {
-            qDebug()<<"sett"<<d->settings[i];
+//            qDebug()<<"sett"<<d->settings[i];
             return d->settings[i];
         }
     }
@@ -595,12 +599,14 @@ void PluginManagerPrivate::changeWorkingDirectory(const QString &path)
     QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, path+"/.settings");
     for (int i=0; i<objects.size(); i++) {
         KPlugin * p = objects[i];
+        if (settings[i])
+            settings[i]->deleteLater();
         settings[i] = new QSettings(path+"/.settings/"+specs[i].name+".conf", QSettings::IniFormat);
         settings[i]->setIniCodec("UTF-8");
         settings[i]->sync();
 
         p->changeCurrentDirectory(path);
-
+        p->updateSettings();
         p->restoreSession();
     }
 }

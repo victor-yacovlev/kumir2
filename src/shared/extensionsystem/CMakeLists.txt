@@ -7,6 +7,7 @@ set(MOC_HEADERS
     pluginmanager.h
     settingsdialog.h
     switchworkspacedialog.h
+    declarativesettingspage.h
 )
 
 set(SOURCES
@@ -15,6 +16,7 @@ set(SOURCES
     pluginmanager.cpp
     settingsdialog.cpp
     switchworkspacedialog.cpp
+    declarativesettingspage.cpp
 )
 
 set(HEADERS

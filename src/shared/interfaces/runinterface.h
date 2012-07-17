@@ -13,7 +13,7 @@ enum ProgramFormat {
 
 class RunInterface {
 public:
-    enum StopReason { Done, UserInteraction, InputRequest, Error, UserTerminated };
+    enum StopReason { SR_Done, SR_UserInteraction, SR_InputRequest, SR_Error, SR_UserTerminated };
     virtual bool loadProgram(QIODevice * source, ProgramFormat format) = 0;
     virtual QDateTime loadedProgramVersion() const = 0;
 

@@ -61,20 +61,20 @@ void SettingsDialog::handleGroupSelected(int index)
     ui->stackedWidget->setCurrentIndex(index);
 }
 
-void SettingsDialog::addPage(const SettingsEditorPage &page)
+void SettingsDialog::addPage(QWidget* page)
 {
-    if (!page.settingsPage)
+    if (!page)
         return;
-    page.settingsPage->setParent(this);
+    page->setParent(this);
     QListWidgetItem * item = new QListWidgetItem(ui->listWidget);
-    item->setText(page.settingsGroupName);
-    if (page.settingsGroupIcon)
-        item->setIcon(*(page.settingsGroupIcon));
-    else
-        item->setIcon(QIcon::fromTheme("preferences-other", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/preferences-other.png")));
+    item->setText(page->windowTitle());
+//    if (page.settingsGroupIcon)
+//        item->setIcon(*(page.settingsGroupIcon));
+//    else
+//        item->setIcon(QIcon::fromTheme("preferences-other", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/preferences-other.png")));
     ui->listWidget->addItem(item);
-    ui->stackedWidget->addWidget(page.settingsPage);
-    l_pluginPages << page.settingsPage;
+    ui->stackedWidget->addWidget(page);
+    l_pluginPages << page;
 
 }
 

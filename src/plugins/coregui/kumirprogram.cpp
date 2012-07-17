@@ -480,15 +480,15 @@ void KumirProgram::handleRunnerStopped(int rr)
 {
 
     Shared::RunInterface::StopReason reason = Shared::RunInterface::StopReason (rr);
-    if (reason==Shared::RunInterface::InputRequest) {
+    if (reason==Shared::RunInterface::SR_InputRequest) {
         PluginManager::instance()->switchGlobalState(GS_Input);
     }
-    else if (reason==Shared::RunInterface::UserInteraction) {
+    else if (reason==Shared::RunInterface::SR_UserInteraction) {
         PluginManager::instance()->switchGlobalState(GS_Pause);
 //        a_stepIn->setEnabled(plugin_bytecodeRun->canStepInto());
 //        a_stepOut->setEnabled(plugin_bytecodeRun->canStepOut());
     }
-    else if (reason==Shared::RunInterface::UserTerminated) {
+    else if (reason==Shared::RunInterface::SR_UserTerminated) {
         m_variablesWebObject->refreshRoot();
         s_endStatus = tr("Evaluation terminated");
         m_terminal->finish();
@@ -498,7 +498,7 @@ void KumirProgram::handleRunnerStopped(int rr)
 
         plugin_editor->unhighlightLine(i_documentId);
     }
-    else if (reason==Shared::RunInterface::Error) {
+    else if (reason==Shared::RunInterface::SR_Error) {
         s_endStatus = tr("Evaluation error");
         m_variablesWebObject->refreshRoot();
         m_terminal->error(plugin_bytecodeRun->error());
@@ -507,7 +507,7 @@ void KumirProgram::handleRunnerStopped(int rr)
         e_state = Idle;
         m_terminal->clearFocus();
     }
-    else if (reason==Shared::RunInterface::Done) {
+    else if (reason==Shared::RunInterface::SR_Done) {
         s_endStatus = tr("Evaluation finished");
         m_terminal->finish();
         m_variablesWebObject->refreshRoot();

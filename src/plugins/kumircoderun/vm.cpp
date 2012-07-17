@@ -4,6 +4,7 @@
 #include "stdlib/doubleoverflowchecker.h"
 #include "stdlib/genericinputoutput.h"
 #include "extensionsystem/kplugin.h"
+#include "extensionsystem/pluginmanager.h"
 #include "stdlib/kumstdlib.h"
 
 #define EPSILON 0.0000001

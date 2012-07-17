@@ -23,7 +23,7 @@ public:
 
     int analizerDocumentId(int editorDocumentId) const;
     void closeDocument(int documentId);
-    ExtensionSystem::SettingsEditorPage settingsEditorPage();
+    QWidget* settingsEditorPage();
     bool hasUnsavedChanges(int documentId) const;
     void setDocumentChangesSaved(int documentId);
     QString saveDocument(int documentId, const QString & fileName);

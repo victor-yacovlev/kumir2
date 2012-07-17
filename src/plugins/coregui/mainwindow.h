@@ -28,7 +28,7 @@ class MainWindow : public QMainWindow
     friend class Plugin;
 
 public:
-    enum DocumentType { Text, Kumir, Pascal, WWW };
+    enum DocumentType { Text, Kumir, Pascal, Python, WWW };
     enum DockWindowType { Terminal, Help, StandardActor, WorldActor, Control, SubControl, Other };
     explicit MainWindow(Plugin * p);
 
@@ -62,6 +62,7 @@ public slots:
     void saveSettings();
     void newProgram();
     void newPascalProgram();
+    void newPythonProgram();
     void newText();
     void newText(const QString &fileName, const QString &text);
     void fileOpen();

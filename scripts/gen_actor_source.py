@@ -117,6 +117,11 @@ if update:
     h.write("    virtual void reset() = 0;\n")
     h.write("    // Set or unset animation\n")
     h.write("    virtual void setAnimationEnabled(bool enabled);\n")
+    h.write("   // Reload settings\n")
+    if "settings" in actor:
+        h.write("   virtual void reloadSettings(QSettings * settings) = 0;\n")
+    else:
+        h.write("   inline void reloadSettings(QSettings * ) {}\n")
     h.write("    // Actor methods\n")
     for method in actor["methods"]:
         try:
@@ -151,6 +156,7 @@ if update:
         h.write("    virtual QWidget* pultWidget() const = 0;\n")
     else:
         h.write("    inline QWidget* pultWidget() const { return 0; }\n")
+
 
 menus = dict()
 
@@ -336,6 +342,7 @@ if update:
 #include <QtCore>
 #include <QtGui>
 #include "extensionsystem/kplugin.h"
+#include "extensionsystem/declarativesettingspage.h"
 #include "interfaces/actorinterface.h"
 
 namespace %s {
@@ -360,6 +367,7 @@ public:
     QWidget* mainWidget();
     QWidget* pultWidget();
     QList<QMenu*> moduleMenus() const;
+    inline QWidget * settingsEditorPage() { return m_settingsPage; }
     // Actor control
     void reset();
     void setAnimationEnabled(bool enabled);
@@ -372,12 +380,16 @@ protected:
     void sleep(unsigned long secs);
     void msleep(unsigned long msecs);
     void usleep(unsigned long usecs);
+private slots:
+    void handleSettingsChanged();
 private:
+    void updateSettings();
     class %s* m_module;
     %s
     QString s_errorText;
     QVariant v_result;
     QVariantList l_optResults;
+    ExtensionSystem::DeclarativeSettingsPage * m_settingsPage;
 signals:
     void sync();
 };
@@ -537,6 +549,50 @@ evaluateMethodsThr += """
         }
     }"""
 
+settingsPageCreation = ""
+if "settings" in actor:
+    settingsPageCreation  = "    QMap<QString,ExtensionSystem::DeclarativeSettingsPage::Entry> entries;\n"
+    settingsPageCreation += "    ExtensionSystem::DeclarativeSettingsPage::Entry entry;\n"
+    for key, value in actor["settings"].items():
+        t = value["type"]
+        title = value["title"]["ru_RU"] # TODO non-russuan lanugage support
+        deflt = value["default"]
+        if t=="int": tp="Integer"
+        if t=="double": tp="Double"
+        if t=="string": tp="String"
+        if t=="char": tp="Char"
+        if t=="bool": tp="Bool"
+        if t=="color": tp="Color"
+        if t=="font": tp="Font"
+        if t in ["string", "color", "font"]:
+            deflt = 'QString::fromUtf8("'+deflt+'")'
+        if t=="char":
+            deflt = 'QString::fromUtf8("'+deflt+'")[0]'
+        deflt = unicode(deflt)
+        settingsPageCreation += "    entry.title = QString::fromUtf8(\"%s\");\n" % title
+        settingsPageCreation += "    entry.type = ExtensionSystem::DeclarativeSettingsPage::%s;\n" % tp
+        settingsPageCreation += "    entry.defaultValue = %s;\n" % deflt
+        if "minimum" in value:
+            settingsPageCreation += "    entry.minimumValue = %s;\n" % unicode(value["minimum"])
+        else:
+            settingsPageCreation += "    entry.minimumValue = QVariant::Invalid;\n"
+        if "maximum" in value:
+            settingsPageCreation += "    entry.maximumValue = %s;\n" % unicode(value["maximum"])
+        else:
+            settingsPageCreation += "    entry.maximumValue = QVariant::Invalid;\n"
+        settingsPageCreation += "    entries[\"%s\"] = entry;\n" % key
+    settingsPageCreation += """
+    m_settingsPage = new ExtensionSystem::DeclarativeSettingsPage(\n
+                                          \"$pluginName\",
+                                          QString::fromUtf8("$actorLocalizedName"),
+                                          mySettings(),
+                                          entries
+                                        );
+    connect(m_settingsPage, SIGNAL(settingsChanged()), this, SLOT(handleSettingsChanged()));
+    """\
+    .replace("$pluginName", actorCPPName+"Plugin") \
+    .replace("$actorLocalizedName", actor["name"]["ru_RU"])
+
 if update:
     cpp = open(cppName, "w")
     cpp.write(DO_NOT_EDIT)
@@ -580,6 +636,9 @@ void $threadClassName::run()
 $className::$className()
     : ExtensionSystem::KPlugin()
 {
+    m_module = 0;
+    m_asyncRunThread = 0;
+    m_settingsPage = 0;
 }
 
 QString $className::initialize(const QStringList&)
@@ -590,6 +649,8 @@ QString $className::initialize(const QStringList&)
         SIGNAL(finished()),
         this,
         SIGNAL(sync()) );
+    
+$settingsPageCreation
 }
 
 QStringList $className::funcList() const
@@ -624,9 +685,25 @@ void $className::reset()
     m_module->reset();
 }
 
+void $className::updateSettings()
+{
+    if (m_settingsPage) {
+        m_settingsPage->setSettingsObject(mySettings());
+    }
+    if (m_module)
+        m_module->reloadSettings(mySettings());
+}
+
+void $className::handleSettingsChanged()
+{
+    if (m_module)
+        m_module->reloadSettings(mySettings());
+}
+
 void $className::setAnimationEnabled(bool enabled)
 {
-    m_module->setAnimationEnabled(enabled);
+    if (m_module)
+        m_module->setAnimationEnabled(enabled);
 }
 
 Shared::EvaluationStatus $className::evaluate(quint32 index, const QVariantList & args)
@@ -689,6 +766,7 @@ Q_EXPORT_PLUGIN($namespace::$className)
     .replace("$threadClassName", actorCPPName+"AsyncRunThread")
     .replace("$threadRunBody", evaluateMethodsThr)
     .replace("$actorName", actor["name"]["ru_RU"])
+    .replace("$settingsPageCreation", settingsPageCreation)
     .encode("utf-8")
     )
     cpp.close()
@@ -731,6 +809,12 @@ actorMethodsForHeader = map(lambda x: "    "+x[0]+" "+x[1]+";\n", actorMethods)
 actorMethodsForHeader = reduce(lambda x,y: x+y, actorMethodsForHeader, "")
 
 className = name_to_cpp(actor["name"], True)+"Module"
+
+settingsIfNeed = ""
+
+if "settings" in actor:
+    settingsIfNeed = "    void reloadSettings(QSettings * settings);\n"
+
 h = open(className.lower()+".h", "w")
 h.write("""/*
 This file is generated, but you can safely change it
@@ -765,6 +849,7 @@ public slots:
     // Actor methods
 $methods
 $guiIfNeed
+$settingsIfNeed
 }; // $className
     
 } // $namespace
@@ -778,6 +863,7 @@ $guiIfNeed
 .replace("$namespace", actorCPPNameSpace)
 .replace("$guiIfNeed", guiIfNeed)
 .replace("$methods", actorMethodsForHeader)
+.replace("$settingsIfNeed", settingsIfNeed)
 )
 h.close()
 
@@ -874,6 +960,16 @@ $returnType $className::$signature
 .replace("$default", default)
 .replace("$signature", signature)
 )
+    
+if "settings" in actor:
+    cpp.write("""
+
+void $className::reloadSettings(QSettings * settings)
+{
+    // TODO handle settings changed
+}
+
+""")
 
 cpp.write("""    
 } // $namespace
@@ -898,7 +994,7 @@ set(MOC_HEADERS
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/$actorNamemodulebase.cpp ${CMAKE_CURRENT_BINARY_DIR}/$actorNamemodulebase.h ${CMAKE_CURRENT_BINARY_DIR}/$actorNameplugin.cpp ${CMAKE_CURRENT_BINARY_DIR}/$actorNameplugin.h ${CMAKE_CURRENT_BINARY_DIR}/$pluginName.pluginspec
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py --update ${CMAKE_CURRENT_SOURCE_DIR}/$jsonName
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/$jsonName
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/$jsonName ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py
 )
 
 add_custom_target($pluginNamePluginSpec ALL ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/$pluginName.pluginspec ${PLUGIN_OUTPUT_PATH}

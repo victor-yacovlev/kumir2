@@ -167,18 +167,18 @@ void Plugin::handleOutput(const QString &text)
 void Plugin::handleThreadFinished()
 {
     if (!d->vm->error().isEmpty()) {
-        emit stopped(Shared::RunInterface::Error);
+        emit stopped(Shared::RunInterface::SR_Error);
         b_done = true;
     }
     else if (d->vm->hasMoreInstructions() && d->stopped()) {
-        emit stopped(Shared::RunInterface::UserTerminated);
+        emit stopped(Shared::RunInterface::SR_UserTerminated);
         b_done = true;
     }
     else if (d->vm->hasMoreInstructions()) {
-        emit stopped(Shared::RunInterface::UserInteraction);
+        emit stopped(Shared::RunInterface::SR_UserInteraction);
     }
     else {
-        emit stopped(Shared::RunInterface::Done);
+        emit stopped(Shared::RunInterface::SR_Done);
         b_done = true;
     }
 }
@@ -218,7 +218,7 @@ void Plugin::handleInput(const QString &format)
 
     }
     else {
-        emit stopped(Shared::RunInterface::UserInteraction);
+        emit stopped(Shared::RunInterface::SR_UserInteraction);
         emit inputRequest(format);
     }
 }
