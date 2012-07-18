@@ -990,7 +990,7 @@ namespace ActorRobot {
     void RoboField::drawNet()
     {
         QPen Pen,PenError;
-        int ddx = 3;
+        int ddx = 2+FIELD_SIZE_SMALL/2;
         qDebug()<<"Bort "<<BORT;
         int infin;
         
@@ -998,21 +998,20 @@ namespace ActorRobot {
         
         Pen = QPen(LineColor,1);
         PenError = QPen(LineColor,1);
-        infin = 5*BORT+1024;
+        infin = 5*BORT+10;
         
-        for (int i = -2; i < columns()+2; i++) //Vertikalnie linii
+        for (int i = -1; i < columns(); i++) //Vertikalnie linii
         {
-            setka.append(this->addLine(i * (int)fieldSize+ddx , 0-infin , i *(int) fieldSize+ddx,infin,Pen ));
+            setka.append(this->addLine(i * FIELD_SIZE_SMALL+ddx+FIELD_SIZE_SMALL/2+1 , -FIELD_SIZE_SMALL , i * FIELD_SIZE_SMALL+ddx+1+FIELD_SIZE_SMALL/2,(rows()+1) * FIELD_SIZE_SMALL,Pen ));
             setka.last()->setZValue(0.5);
         }
         
-        for (int i = -2; i < rows()+2; i++)//Horizontalnie linii
+        for (int i = -1; i < rows(); i++)//Horizontalnie linii
         {
-            setka.append(this->addLine(ddx-infin, i * (int)fieldSize ,infin, i *(int) fieldSize,Pen));
+            setka.append(this->addLine(-FIELD_SIZE_SMALL, i * FIELD_SIZE_SMALL+ddx-3+FIELD_SIZE_SMALL/2 ,(columns()+1 )* FIELD_SIZE_SMALL, i * FIELD_SIZE_SMALL+ddx-3+FIELD_SIZE_SMALL/2,Pen));
             setka.last()->setZValue(0.5);
         }
-        
-        
+       
     };
     
     
@@ -2059,6 +2058,10 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     m_pultWidget = new QWidget();
     startField=field->Clone();
     field->drawField(FIELD_SIZE_SMALL);
+    
+    connect(m_actionRobotLoadEnvironment,SIGNAL(triggered()) , this, SLOT(loadEnv()));
+    
+    
 }
 
     
@@ -2199,5 +2202,98 @@ bool RobotModule::runIsWallAtRight()
 	return !field->currentCell()->canRight();
 }
 
+bool RobotModule::runIsFreeAtTop()
+    {
+        /* TODO implement me */
+        return field->currentCell()->canUp();    
+    }
+    
+    
+bool RobotModule::runIsFreeAtBottom()
+    {
+        /* TODO implement me */
+        
+        return field->currentCell()->canDown();
+    }
+    
+    
+bool RobotModule::runIsFreeAtLeft()
+    {
+        /* TODO implement me */
+        return field->currentCell()->canLeft();
+    }
+    
+    
+bool RobotModule::runIsFreeAtRight()
+    {
+        /* TODO implement me */
+        return field->currentCell()->canRight();
+    }
 	
+
+ int RobotModule::LoadFromFile(QString p_FileName)
+    {
+        if(field->loadFromFile(p_FileName)!=0)return 1;
+        startField=field->Clone();
+        
+     //   ajustWindowSize();//NEW ROBOT
+        
+        QFileInfo fi(p_FileName);
+        QString name = fi.fileName();
+        
+        QString Title = trUtf8("Robot") + " - " + name;
+
+        m_mainWidget->setWindowTitle(Title);
+
+        
+        
+      //  ToDubl();
+        
+        
+      //  SizeX = m_Size_x * m_FieldSize;
+       // SizeY = m_Size_y * m_FieldSize + MenuHigth;
+        
+        
+        
+       // WasEditFlag=false;
+        //delete btnFind;
+        //CreatebtnFind();
+        
+        RobotModule::robotSettings()->setValue("Robot/StartField/File",p_FileName);
+        field->drawField(FIELD_SIZE_SMALL);
+       // if(CurrentRobotMode==ANALYZE_MODE)SetRobotMode(SEE_MODE);
+        qDebug() << "File " << p_FileName ;
+        
+        return(0);
+    }
+    
+void RobotModule::loadEnv()
+    {
+        if(field->WasEdit())
+        {
+            if(QMessageBox::question(mainWidget(), "", QString::fromUtf8("Сохранить изменения?"), QMessageBox::Yes,QMessageBox::No,0) == QMessageBox::Yes)
+            {
+               // SaveToFileActivated();
+                
+            }
+            
+        }
+        
+        
+        
+        //
+        
+        QString	RobotFile=QFileDialog::getOpenFileName(mainWidget(), QString::fromUtf8 ("Открыть файл"), curDir, "(*.fil)");
+        
+        
+        
+        QFileInfo info(RobotFile);
+        QDir dir=info.absoluteDir();
+        
+        
+        if ( RobotFile.isEmpty())return;
+       // CurrentFileName = RobotFile;
+       
+        if( LoadFromFile(RobotFile)!=0)QMessageBox::information( mainWidget(), "", QString::fromUtf8("Ошибка открытия файла! ")+RobotFile, 0,0,0); 
+    }
 } // $namespace

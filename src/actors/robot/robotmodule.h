@@ -365,20 +365,27 @@ namespace ActorRobot {
         bool runIsWallAtBottom();
         bool runIsWallAtLeft();
         bool runIsWallAtRight();
+        bool runIsFreeAtTop();
+        bool runIsFreeAtBottom();
+        bool runIsFreeAtLeft();
+        bool runIsFreeAtRight();
         
     public:
         // GUI access methods
         QWidget* mainWidget() const;
         QWidget* pultWidget() const;
         static QSettings * robotSettings();
-        
+        public slots:
+        void loadEnv();
     private:
+        int LoadFromFile(QString p_FileName);
         QWidget* m_mainWidget;
         QWidget* m_pultWidget;
         RoboField* field;
         RoboField * startField;
         bool animation;
         QGraphicsView * view;
+        QString curDir;
     }; // RobotModule
 
 } // ActorRobot

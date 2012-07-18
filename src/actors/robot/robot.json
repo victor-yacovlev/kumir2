@@ -7,7 +7,7 @@
 		{ "name": {"ascii": "go right", "ru_RU": "вправо" } },
 	
 		{ "name": {"ascii": "do paint", "ru_RU": "закрасить" }, "async": false },
-		{
+	{
 			"name": {"ascii": "is wall at top", "ru_RU": "сверху стена"},
 			"returnType": "bool"
 		},
@@ -21,6 +21,22 @@
 		},
 		{ 
 			"name": {"ascii": "is wall at right", "ru_RU": "справа стена"},
+			"returnType": "bool"
+		},
+		{
+			"name": {"ascii": "is free at top", "ru_RU": "сверху свободно"},
+			"returnType": "bool"
+		},
+		{ 
+			"name": {"ascii": "is free at bottom", "ru_RU": "снизу свободно"},
+			"returnType": "bool"
+		},
+		{ 
+			"name": {"ascii": "is free at left", "ru_RU": "слева свободно"},
+			"returnType": "bool"
+		},
+		{ 
+			"name": {"ascii": "is free at right", "ru_RU": "справа свободно"},
 			"returnType": "bool"
 		}
 	],
