@@ -2058,9 +2058,10 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     m_pultWidget = new QWidget();
     startField=field->Clone();
     field->drawField(FIELD_SIZE_SMALL);
-    
+    field->dropWasEdit();
     connect(m_actionRobotLoadEnvironment,SIGNAL(triggered()) , this, SLOT(loadEnv()));
-    
+    connect(m_actionRobotRevertEnvironment,SIGNAL(triggered()) , this, SLOT(resetEnv()));
+    connect(m_actionRobotSaveEnvironment,SIGNAL(triggered()) , this, SLOT(saveEnv()));
     
 }
 
@@ -2235,7 +2236,7 @@ bool RobotModule::runIsFreeAtRight()
     {
         if(field->loadFromFile(p_FileName)!=0)return 1;
         startField=field->Clone();
-        
+        field->dropWasEdit();
      //   ajustWindowSize();//NEW ROBOT
         
         QFileInfo fi(p_FileName);
@@ -2296,4 +2297,44 @@ void RobotModule::loadEnv()
        
         if( LoadFromFile(RobotFile)!=0)QMessageBox::information( mainWidget(), "", QString::fromUtf8("Ошибка открытия файла! ")+RobotFile, 0,0,0); 
     }
+    void RobotModule::resetEnv()
+    {
+        reset();
+    }
+void RobotModule::saveEnv()
+    {
+        QString	RobotFile=QFileDialog::getSaveFileName(mainWidget(), QString::fromUtf8 ("Сохранить файл"), curDir, "(*.fil)");
+        
+        
+        //QString	RobotFile=dialog.selectedFiles().first();
+        QFileInfo info(RobotFile);
+        QDir dir=info.absoluteDir();
+        curDir=dir.path();
+        if (RobotFile.contains("*") || RobotFile.contains("?"))
+        {
+            QMessageBox::information( 0, "", QString::fromUtf8("Недопустимый символ в имени файла!"), 0,0,0);
+            return;
+        }
+        //QString	RobotFile =  QFileDialog::getSaveFileName(MV,QString::fromUtf8 ("Сохранить в файл"),"/home", "(*.fil)");
+        //if ( RobotFile.isEmpty())return;
+        
+        if(RobotFile.right(4)!=".fil")RobotFile+=".fil";
+        //CurrentFileName = RobotFile;
+        
+        SaveToFile(RobotFile);
+         RobotModule::robotSettings()->setValue("Robot/StartField/File",RobotFile);
+      
+
+    }
+    
+int RobotModule::SaveToFile(QString p_FileName)
+    {
+        
+
+        if(field->saveToFile(p_FileName)!=0){QMessageBox::warning(0, tr("Robot"), QString::fromUtf8("Не удалось сохранить файл"));return 1;};
+        
+     
+        return 0;
+        
+    }    
 } // $namespace
