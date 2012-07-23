@@ -231,13 +231,13 @@ namespace ActorRobot {
         void destroyRobot();
         
         /**
-         * Количество строк поля робота
-         * @return количество строк
+         * –ö–æ–ª–∏—á–µ—Å—Ç–≤–æ —Å—Ç—Ä–æ–∫ –ø–æ–ª—è —Ä–æ–±–æ—Ç–∞
+         * @return –∫–æ–ª–∏—á–µ—Å—Ç–≤–æ —Å—Ç—Ä–æ–∫
          */
         inline int rows() const { return Items.count(); }
         /**
-         * Количество столбцов поля робота
-         * @return количество столбцов
+         * –ö–æ–ª–∏—á–µ—Å—Ç–≤–æ —Å—Ç–æ–ª–±—Ü–æ–≤ –ø–æ–ª—è —Ä–æ–±–æ—Ç–∞
+         * @return –∫–æ–ª–∏—á–µ—Å—Ç–≤–æ —Å—Ç–æ–ª–±—Ü–æ–≤
          */
         inline int columns() const { return Items.isEmpty()? 0 : Items.last().size();  }
         void drawNet();
@@ -254,17 +254,17 @@ namespace ActorRobot {
         void UpdateColors();
         
         /**
-         * Удаляет / ставит верхнюю стену
-         * @param row Ряд
-         * @param col столбец
+         * –£–¥–∞–ª—è–µ—Ç / —Å—Ç–∞–≤–∏—Ç –≤–µ—Ä—Ö–Ω—é—é —Å—Ç–µ–Ω—É
+         * @param row –†—è–¥
+         * @param col —Å—Ç–æ–ª–±–µ—Ü
          *
          */
         void reverseUpWall(int row,int col);
         
         /**
-         * Удаляет / ставит нижнюю стену
-         * @param row Ряд
-         * @param col столбец
+         * –£–¥–∞–ª—è–µ—Ç / —Å—Ç–∞–≤–∏—Ç –Ω–∏–∂–Ω—é—é —Å—Ç–µ–Ω—É
+         * @param row –†—è–¥
+         * @param col —Å—Ç–æ–ª–±–µ—Ü
          *
          */
         void reverseDownWall(int row,int col);
@@ -365,20 +365,30 @@ namespace ActorRobot {
         bool runIsWallAtBottom();
         bool runIsWallAtLeft();
         bool runIsWallAtRight();
+        bool runIsFreeAtTop();
+        bool runIsFreeAtBottom();
+        bool runIsFreeAtLeft();
+        bool runIsFreeAtRight();
         
     public:
         // GUI access methods
         QWidget* mainWidget() const;
         QWidget* pultWidget() const;
         static QSettings * robotSettings();
-        
+        public slots:
+        void loadEnv();
+        void resetEnv();
+        void saveEnv();
     private:
+        int LoadFromFile(QString p_FileName);
+        int SaveToFile(QString p_FileName);
         QWidget* m_mainWidget;
         QWidget* m_pultWidget;
         RoboField* field;
         RoboField * startField;
         bool animation;
         QGraphicsView * view;
+        QString curDir;
     }; // RobotModule
 
 } // ActorRobot
