@@ -1,5 +1,4 @@
 #include "genericinputoutput.h"
-#include "connector.h"
 
 #include <stdio.h>
 #include <limits>
@@ -705,8 +704,7 @@ extern "C" void __input__st_funct(const char * format, int args, ...)
             __abort__(msgW, -1);
         }
     }
-    else if ( ! __connected_to_kumir__()) {
-//        std::cerr << "Not connected to kumir\n";
+    else  {
         StdLib::GenericInputOutput * inp = StdLib::GenericInputOutput::instance();
         inp->doInput(fmt);
         wchar_t buffer[4096];
@@ -723,10 +721,7 @@ extern "C" void __input__st_funct(const char * format, int args, ...)
             }
         } while (!ok);
     }
-    else {
-//        std::cerr << "Connected to kumir\n";
-        result = StdLib::Connector::instance()->input(fmt);
-    }
+
     va_list vl;
     va_start(vl, args);
     for (int i=0; i<args; i++) {
@@ -806,16 +801,11 @@ extern "C" void __output__st_funct(const char * format, int args, ...)
             StdLib::__output_file__.write(result.toLocal8Bit());
         }
         else {
-            if (!__connected_to_kumir__()) {
                 wchar_t * buffer = (wchar_t*)calloc(result.length()+1, sizeof(wchar_t));
                 result.toWCharArray(buffer);
                 buffer[result.length()] = L'\0';
                 wprintf(L"%ls", buffer);
                 free(buffer);
-            }
-            else {
-                StdLib::Connector::instance()->output(result);
-            }
         }
     }
     else {

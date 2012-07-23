@@ -10,7 +10,7 @@
 #include "interfaces/actorinterface.h"
 #include "terminal.h"
 #include "kumirprogram.h"
-#include "pascalprogram.h"
+
 
 
 namespace CoreGUI {
@@ -66,7 +66,6 @@ protected:
     Term * m_terminal;
     QMap<QString,QObject*> m_browserObjects;
     KumirProgram * m_kumirProgram;
-    PascalProgram * m_pascalProgram;
     BrowserComponent m_helpBrowser;
 
     bool b_nosessions;

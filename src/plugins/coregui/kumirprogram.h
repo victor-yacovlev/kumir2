@@ -7,7 +7,6 @@
 #include "interfaces/actorinterface.h"
 #include "interfaces/runinterface.h"
 #include "interfaces/editorinterface.h"
-#include "stdlib/connector.h"
 #include "terminal.h"
 #include "extensionsystem/kplugin.h"
 
@@ -19,7 +18,6 @@ using Shared::ActorInterface;
 using Shared::RunInterface;
 using Shared::EditorInterface;
 using Terminal::Term;
-using StdLib::Connector;
 using namespace ExtensionSystem;
 
 class KumirProgram : public QObject
@@ -90,7 +88,6 @@ private:
     QAction * a_stop;
     QActionGroup * gr_actions;
     QString s_sourceFileName;
-    Connector * m_connector;
     QMap<QString,QDockWidget*> m_actorWindows;
     QMap<QString,ActorInterface*> m_actors;
     int i_documentId;
