@@ -191,8 +191,10 @@ QString PluginManagerPrivate::parsePluginsRequest(const QString &templ, QList<Pl
     }
     plugins << cur;
     int starts = 0;
-
-    for (QList<PluginRequest>::iterator it=plugins.begin(); it!=plugins.end(); ) {
+    // Qt bug !!! Use STL instead and then convert back to QList
+    std::list<PluginRequest> stdPlugins = plugins.toStdList();
+    std::list<PluginRequest>::iterator it=stdPlugins.begin();
+    while (it!=stdPlugins.end()) {
         PluginRequest p = (*it);
         if (p.name.contains("*") || p.name.contains("?")) {
             if (p.start) {
@@ -200,21 +202,20 @@ QString PluginManagerPrivate::parsePluginsRequest(const QString &templ, QList<Pl
             }
             QDir dir(path);
             QStringList entries = dir.entryList(QStringList() << p.name+".pluginspec", QDir::Files);
-            it = plugins.erase(it);
+            it = stdPlugins.erase(it);
             foreach (const QString & e, entries) {
                 PluginRequest pp;
                 pp.name = e.left(e.size()-11);
                 pp.arguments = p.arguments;
                 pp.start = false;
-                plugins.insert(it, pp);
-                it++;
+                stdPlugins.insert(it, pp);
             }
         }
         else {
-            it++;
+            ++it;
         }
     }
-
+    plugins = QList<PluginRequest>::fromStdList(stdPlugins);
     for (int i=0; i<plugins.size(); i++) {
         if (plugins[i].start) {
             starts ++;

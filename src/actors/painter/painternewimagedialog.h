@@ -14,7 +14,7 @@ class PainterNewImageDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit PainterNewImageDialog(QWidget *parent = 0);
+    explicit PainterNewImageDialog(QWidget *parent, class PainterModule * module);
     ~PainterNewImageDialog();
     int w() const;
     int h() const;
@@ -29,6 +29,7 @@ private slots:
     void handleTemplateClicked(QListWidgetItem * item);
 private:
     QString s_color;
+    class PainterModule * m_module;
     Ui::PainterNewImageDialog *ui;
     QStringList sl_templateFiles;
     QStringList sl_templateNames;

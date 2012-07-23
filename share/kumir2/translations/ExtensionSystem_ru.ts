@@ -2,6 +2,14 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="ru_RU">
 <context>
+    <name>ExtensionSystem::DeclarativeSettingsPage</name>
+    <message>
+        <location filename="../../../src/shared/extensionsystem/declarativesettingspage.cpp" line="140"/>
+        <source>Choose color</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ExtensionSystem::SettingsDialog</name>
     <message>
         <location filename="../../../src/shared/extensionsystem/settingsdialog.ui" line="14"/>

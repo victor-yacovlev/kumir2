@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>685</width>
-    <height>559</height>
+    <width>683</width>
+    <height>557</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -56,7 +56,7 @@
           <x>0</x>
           <y>0</y>
           <width>643</width>
-          <height>488</height>
+          <height>487</height>
          </rect>
         </property>
        </widget>
@@ -95,96 +95,6 @@
     </layout>
    </item>
   </layout>
-  <action name="actionNew">
-   <property name="text">
-    <string>Новый лист...</string>
-   </property>
-  </action>
-  <action name="actionLoad_image">
-   <property name="text">
-    <string>Загрузить...</string>
-   </property>
-  </action>
-  <action name="actionSave_image">
-   <property name="text">
-    <string>Сохранить копию</string>
-   </property>
-  </action>
-  <action name="actionSave_image_as">
-   <property name="text">
-    <string>Сохранить копию как...</string>
-   </property>
-  </action>
-  <action name="actionReset">
-   <property name="text">
-    <string>Вернуть к исходному</string>
-   </property>
-  </action>
-  <action name="actionOriginal_size">
-   <property name="text">
-    <string>Масштаб 100%</string>
-   </property>
-  </action>
-  <action name="actionHalf_size">
-   <property name="text">
-    <string>Масштаб 50%</string>
-   </property>
-  </action>
-  <action name="actionFit_width">
-   <property name="text">
-    <string>Масштаб по ширине</string>
-   </property>
-  </action>
-  <action name="actionFit_height">
-   <property name="text">
-    <string>Масштаб по высоте</string>
-   </property>
-  </action>
-  <action name="actionFit_both">
-   <property name="text">
-    <string>Масштаб по окну</string>
-   </property>
-  </action>
-  <action name="actionHTML">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>#RRGGBB</string>
-   </property>
-  </action>
-  <action name="actionRGB">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>R, G, B</string>
-   </property>
-  </action>
-  <action name="actionCMYK">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>C, M, Y, K</string>
-   </property>
-  </action>
-  <action name="actionHSL">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>H, S, L</string>
-   </property>
-  </action>
-  <action name="actionHSV">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>H, S, V</string>
-   </property>
-  </action>
  </widget>
  <customwidgets>
   <customwidget>

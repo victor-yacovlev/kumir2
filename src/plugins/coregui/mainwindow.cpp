@@ -215,7 +215,24 @@ void MainWindow::setFocusOnCentralWidget()
 void MainWindow::timerEvent(QTimerEvent *e)
 {
     checkCounterValue();
+    checkActorWindowTitles();
     e->accept();
+}
+
+void MainWindow::checkActorWindowTitles()
+{
+    QList<const KPlugin*> actors = PluginManager::instance()->loadedConstPlugins("Actor*");
+    foreach (const KPlugin* plugin, actors) {
+        ActorInterface * actor = qobject_cast<ActorInterface*>(plugin);
+        QWidget * mw = actor->mainWidget();
+        if (mw) {
+            foreach (QDockWidget * dw, l_dockWindows) {
+                if (dw->widget()==mw && !mw->windowTitle().isEmpty()) {
+                    dw->setWindowTitle(mw->windowTitle());
+                }
+            }
+        }
+    }
 }
 
 bool MainWindow::saveCurrentFile()
