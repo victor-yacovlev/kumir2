@@ -1,9 +1,0 @@
-{
-    "packagename": "libs-painter",
-    "summary": {
-        "en": "Actor Painter runtime libraries"
-    },
-    "description": {
-        "en": "Libraries required to distribute Kumir-compiled programs using actor Painter"
-    }
-}

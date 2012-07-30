@@ -7,6 +7,8 @@
 
 namespace ActorPainter {
 
+class PainterModule;
+
 namespace Ui {
     class PainterWindow;
 }
@@ -16,21 +18,14 @@ class PainterWindow : public QWidget
     Q_OBJECT
 
 public:
-    explicit PainterWindow(QSettings * settings, QWidget *parent = 0);
+    explicit PainterWindow(PainterModule * module, QWidget *parent = 0);
     void setCanvas(QImage * canvas, QMutex * locker);
     QWidget * view();
-    QList<QAction*> menuActions();
-    QList<QAction*> toolbarActions();
     ~PainterWindow();
 public slots:
     void newImage();
     void loadImage();
-    void saveImage();
     void saveImageAs();
-signals:
-    void newImageRequest(int w, int h, const QString &bg, bool useTemplate, const QString &templateFileName);
-    void loadImageRequest(const QString &fileName);
-    void resetRequest();
 private slots:
     void handleColorTextModeChanged();
     void handleCursorMoved(int x, int y, const QColor &color);
@@ -40,14 +35,12 @@ private slots:
     void reset();
 
 private:
-    void closeEvent(QCloseEvent *event);
-    void hideEvent(QHideEvent *event);
 
     QString e_showColorMode; // values: "HTML", "RGB", "CMYK", "HSL", "HSV"
     Ui::PainterWindow *ui;
     QString s_fileName;
     QString s_templateName;
-    QSettings * m_settings;
+    PainterModule * m_module;
     class PainterNewImageDialog * m_newImageDialog;
 
 };

@@ -2,40 +2,22 @@ include(../../kumir2_library.cmake)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-if(WIN32)
-    set(CONNECTOR_MODULE shm)
-    set(CONNECTOR_METHOD SHM)
-else()
-    set(CONNECTOR_MODULE pipe)
-    set(CONNECTOR_METHOD PIPE)
-endif()
-
-add_definitions(-D${CONNECTOR_METHOD}_METHOD -DSTDLIB_LIBRARY)
-
 set(MOC_HEADERS
-    connector.h actorwindow.h
-    connector_backend.h
-    connector_${CONNECTOR_MODULE}.h
     genericinputoutput.h
 )
 
 set(HEADERS
-    connector.h actorwindow.h
-    connector_backend.h
     doubleoverflowchecher.h
     integeroverflowchecher.h
     genericinputoutput.h
-    guirunner.h
     kumstdlib.h
-    userprogramthread.h
 )
 
 
 set(SOURCES
-    kumstdlib.cpp genericinputoutput.cpp connector.cpp guirunner.cpp actorwindow.cpp userprogramthread.cpp
+    kumstdlib.cpp genericinputoutput.cpp
     integeroverflowchecker.cpp
     doubleoverflowchecker.cpp
-    connector_${CONNECTOR_MODULE}.cpp
 )
 
 source_group(Headers FILES ${HEADERS})

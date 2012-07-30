@@ -17,7 +17,6 @@ Plugin::Plugin() :
     plugin_NativeGenerator = plugin_BytecodeGenerator = 0;
     b_nosessions = false;
     m_kumirProgram = 0;
-    m_pascalProgram = 0;
     m_startPage.widget = 0;
 }
 
@@ -93,14 +92,9 @@ QString Plugin::initialize(const QStringList & parameters)
     termWindow->toggleViewAction()->setShortcut(QKeySequence("F12"));
 #endif
 
-    if (ExtensionSystem::PluginManager::instance()->loadedConstPlugins("PascalAnalizer").isEmpty()) {
-        m_mainWindow->disablePascalProgram();
-    }
-    else {
-        m_pascalProgram = new PascalProgram(this);
-        m_pascalProgram->setEditorPlugin(plugin_editor);
-        m_pascalProgram->setTerminal(m_terminal, termWindow);
-    }
+
+    m_mainWindow->disablePascalProgram();
+
 
     m_kumirProgram = new KumirProgram(this);
     m_kumirProgram->setBytecodeGenerator(plugin_BytecodeGenerator);
@@ -320,7 +314,7 @@ void Plugin::start()
 
 void Plugin::stop()
 {
-    StdLib::Connector::instance()->stopListen();
+
 }
 
 

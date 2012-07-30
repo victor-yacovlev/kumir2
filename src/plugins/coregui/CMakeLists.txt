@@ -11,7 +11,6 @@ set(SOURCES
     tabbar.cpp
     kumirvariableswebobject.cpp
     aboutdialog.cpp
-    pascalprogram.cpp
 )
 
 set(EXTRA_LIBS
@@ -36,7 +35,6 @@ set(MOC_HEADERS
     tabbar.h
     kumirvariableswebobject.h
     aboutdialog.h
-    pascalprogram.h
     tabwidgetelement.h
 )
 

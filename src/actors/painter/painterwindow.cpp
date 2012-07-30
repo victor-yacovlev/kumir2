@@ -2,15 +2,15 @@
 #include "ui_painterwindow.h"
 #include "painternewimagedialog.h"
 #include "paintertools.h"
-
+#include "paintermodule.h"
 
 
 namespace ActorPainter {
 
-PainterWindow::PainterWindow(QSettings * settings, QWidget *parent) :
+PainterWindow::PainterWindow(PainterModule * module, QWidget *parent) :
     QWidget(),
     ui(new Ui::PainterWindow),
-    m_settings(settings)
+    m_module(module)
 {
     setParent(parent);
     setMinimumSize(400, 300);
@@ -24,56 +24,58 @@ PainterWindow::PainterWindow(QSettings * settings, QWidget *parent) :
     connect (ui->scrollArea->verticalScrollBar(), SIGNAL(valueChanged(int)),
              ui->verticalRuler, SLOT(update()));
     connect (ui->view, SIGNAL(cursorOver(int,int,QColor)), this, SLOT(handleCursorMoved(int,int,QColor)));
-    m_newImageDialog = new PainterNewImageDialog(this);
-    connect (ui->actionNew, SIGNAL(triggered()), this, SLOT(newImage()));
-    connect (ui->actionLoad_image, SIGNAL(triggered()), this, SLOT(loadImage()));
-    connect (ui->actionSave_image, SIGNAL(triggered()), this, SLOT(saveImage()));
-    connect (ui->actionSave_image_as, SIGNAL(triggered()), this, SLOT(saveImageAs()));
-    connect (ui->actionReset, SIGNAL(triggered()), this, SLOT(reset()));
+    m_newImageDialog = new PainterNewImageDialog(this, m_module);
+    connect (m_module->m_actionPainterNewPage, SIGNAL(triggered()), this, SLOT(newImage()));
+    connect (m_module->m_actionPainterLoadPage, SIGNAL(triggered()), this, SLOT(loadImage()));
+    connect (m_module->m_actionPainterSaveACopyAs, SIGNAL(triggered()), this, SLOT(saveImageAs()));
+    connect (m_module->m_actionPainterRevertPage, SIGNAL(triggered()), this, SLOT(reset()));
 
-    connect (ui->actionCMYK, SIGNAL(triggered()), this, SLOT(handleColorTextModeChanged()));
-    connect (ui->actionRGB, SIGNAL(triggered()), this, SLOT(handleColorTextModeChanged()));
-    connect (ui->actionHSL, SIGNAL(triggered()), this, SLOT(handleColorTextModeChanged()));
-    connect (ui->actionHSV, SIGNAL(triggered()), this, SLOT(handleColorTextModeChanged()));
-    connect (ui->actionHTML, SIGNAL(triggered()), this, SLOT(handleColorTextModeChanged()));
+    connect (m_module->m_actionPainterColorInStatusBarCMYK, SIGNAL(triggered()), this, SLOT(handleColorTextModeChanged()));
+    connect (m_module->m_actionPainterColorInStatusBarRGB, SIGNAL(triggered()), this, SLOT(handleColorTextModeChanged()));
+    connect (m_module->m_actionPainterColorInStatusBarHSL, SIGNAL(triggered()), this, SLOT(handleColorTextModeChanged()));
+    connect (m_module->m_actionPainterColorInStatusBarHSV, SIGNAL(triggered()), this, SLOT(handleColorTextModeChanged()));
+    connect (m_module->m_actionPainterColorInStatusBarRRGGBB, SIGNAL(triggered()), this, SLOT(handleColorTextModeChanged()));
 
-    QSettings s;
-    restoreGeometry(s.value("Plugins/Painter/WindowGeometry").toByteArray());
+    QSettings * s = m_module->mySettings();
+    restoreGeometry(s->value("WindowGeometry").toByteArray());
     qreal initialZoom = 1.0;
     QRect screenRect = qApp->desktop()->availableGeometry();
     if (screenRect.height()<700)
         initialZoom = 0.5;
-    initialZoom = s.value("Plugins/Painter/ViewZoom",initialZoom).toReal();
-    e_showColorMode = s.value("Plugins/Painter/ShowColorMode","HTML").toString();
+    initialZoom = s->value("ViewZoom",initialZoom).toReal();
+    e_showColorMode = s->value("ShowColorMode","HTML").toString();
     if (e_showColorMode=="HTML")
-        ui->actionHTML->setChecked(true);
+        m_module->m_actionPainterColorInStatusBarRRGGBB->setChecked(true);
     if (e_showColorMode=="RGB")
-        ui->actionRGB->setChecked(true);
+        m_module->m_actionPainterColorInStatusBarRGB->setChecked(true);
     if (e_showColorMode=="CMYK")
-        ui->actionCMYK->setChecked(true);
+        m_module->m_actionPainterColorInStatusBarCMYK->setChecked(true);
     if (e_showColorMode=="HSL")
-        ui->actionHSL->setChecked(true);
+        m_module->m_actionPainterColorInStatusBarHSL->setChecked(true);
     if (e_showColorMode=="HSV")
-        ui->actionHSV->setChecked(true);
+        m_module->m_actionPainterColorInStatusBarHSV->setChecked(true);
     ui->view->setZoom(initialZoom);
     ui->horizontalRuler->setZoom(initialZoom);
     ui->verticalRuler->setZoom(initialZoom);
 
 
-    connect(ui->actionOriginal_size, SIGNAL(triggered()),
+    connect(m_module->m_actionPainterScale100, SIGNAL(triggered()),
             this, SLOT(handleScale()));
-    connect(ui->actionHalf_size, SIGNAL(triggered()),
+    connect(m_module->m_actionPainterFitWidth, SIGNAL(triggered()),
             this, SLOT(handleScale()));
-    connect(ui->actionFit_width, SIGNAL(triggered()),
+    connect(m_module->m_actionPainterFitHeight, SIGNAL(triggered()),
             this, SLOT(handleScale()));
-    connect(ui->actionFit_height, SIGNAL(triggered()),
-            this, SLOT(handleScale()));
-    connect(ui->actionFit_both, SIGNAL(triggered()),
+    connect(m_module->m_actionPainterFitWindow, SIGNAL(triggered()),
             this, SLOT(handleScale()));
 
     handleCursorMoved(-1,-1,"");
     ui->zoomLabel->setText(QString::number(int(ui->view->zoom()*100))+"%");
-
+    static const QString resourcesRoot = QApplication::instance()->property("sharePath").toString()+
+            "/actors/painter/";
+    QSettings templates(QDir(resourcesRoot).absoluteFilePath("templates.ini"), QSettings::IniFormat);
+    templates.setIniCodec("UTF-8");
+    const QString defName = templates.value("Names/default.png", "new page").toString();
+    setWindowTitle(tr("Painter [%1]").arg(defName));
 
 
 }
@@ -145,25 +147,25 @@ void PainterWindow::handleColorTextModeChanged()
 {
     QAction *a = qobject_cast<QAction*>(sender());
     QList<QAction*> as;
-    as << ui->actionCMYK;
-    as << ui->actionHSL;
-    as << ui->actionHSV;
-    as << ui->actionRGB;
-    as << ui->actionHTML;
+    as << m_module->m_actionPainterColorInStatusBarCMYK;
+    as << m_module->m_actionPainterColorInStatusBarHSL;
+    as << m_module->m_actionPainterColorInStatusBarHSV;
+    as << m_module->m_actionPainterColorInStatusBarRGB;
+    as << m_module->m_actionPainterColorInStatusBarRRGGBB;
     as.removeAll(a);
     a->setChecked(true);
     foreach (QAction *aa, as) {
         aa->setChecked(false);
     }
-    if (a==ui->actionCMYK)
+    if (a==m_module->m_actionPainterColorInStatusBarCMYK)
         e_showColorMode = "CMYK";
-    if (a==ui->actionRGB)
+    if (a==m_module->m_actionPainterColorInStatusBarRGB)
         e_showColorMode = "RGB";
-    if (a==ui->actionHSL)
+    if (a==m_module->m_actionPainterColorInStatusBarHSL)
         e_showColorMode = "HSL";
-    if (a==ui->actionHSV)
+    if (a==m_module->m_actionPainterColorInStatusBarHSV)
         e_showColorMode = "HSV";
-    if (a==ui->actionHTML)
+    if (a==m_module->m_actionPainterColorInStatusBarRRGGBB)
         e_showColorMode = "HTML";
 }
 
@@ -174,12 +176,19 @@ void PainterWindow::newImage()
         int h = m_newImageDialog->h();
         s_fileName = "";
         s_templateName = m_newImageDialog->templateFileName();
-        emit newImageRequest(w, h, m_newImageDialog->color(), m_newImageDialog->isTemplate(), s_templateName);
+        static const QString resourcesRoot = QApplication::instance()->property("sharePath").toString()+
+                "/actors/painter/";
+        if (m_newImageDialog->isTemplate()) {
+            m_module->runLoadPage(resourcesRoot+s_templateName);
+        }
+        else {
+            m_module->runNewPage(w, h, m_newImageDialog->color());
+        }
         if (m_newImageDialog->isTemplate()) {
             setWindowTitle(tr("Painter [%1]").arg(m_newImageDialog->templateName()));
         }
         else {
-            setWindowTitle(tr("Painter [новый лист]"));
+            setWindowTitle(tr("Painter [new page]"));
         }
     }
 }
@@ -187,38 +196,30 @@ void PainterWindow::newImage()
 void PainterWindow::loadImage()
 {
     QString searchDir = QDir::homePath();
-    QSettings s;
-    searchDir = s.value("Plugins/Painter/LastDir", searchDir).toString();
+    QSettings * s = m_module->mySettings();
+    searchDir = s->value("LastDir", searchDir).toString();
     QString fn = QFileDialog::getOpenFileName(this,
                                               tr("Load image..."),
                                               searchDir,
                                               tr("Images (*.png)"));
     if (!fn.isEmpty() && QFile::exists(fn)) {
-        emit loadImageRequest(fn);
+        m_module->runLoadPage(fn);
         s_templateName = fn;
-        s.setValue("Plugins/Painter/LastDir", QFileInfo(fn).dir().absolutePath());
+        s->setValue("LastDir", QFileInfo(fn).dir().absolutePath());
         setWindowTitle(tr("Painter [%1]").arg(QFileInfo(fn).fileName()));
     }
 }
 
-void PainterWindow::saveImage()
-{
-    if (s_fileName.isEmpty()) {
-        saveImageAs();
-    }
-    else {
-        saveImageToFile(s_fileName);
-    }
-}
+
 
 void PainterWindow::saveImageAs()
 {
     QString searchDir = QDir::homePath();
-    QSettings s;
+    QSettings * s = m_module->mySettings();
     QString suggestName = s_templateName.isEmpty()?
                           QString::fromUtf8("picture.png") :
                           QString::fromUtf8("copy of ")+QFileInfo(s_templateName).fileName();
-    searchDir = s.value("Plugins/Painter/LastDir", searchDir).toString();
+    searchDir = s->value("LastDir", searchDir).toString();
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save image..."),
                                 searchDir+"/"+suggestName,
                                 tr("Images (*.png)"));
@@ -231,7 +232,7 @@ void PainterWindow::saveImageAs()
         else {
             setWindowTitle(tr("%2 - Painter [%1]").arg(QFileInfo(s_templateName).fileName()).arg(QFileInfo(fileName).fileName()));
         }
-        s.setValue("Plugins/Painter/LastDir", QFileInfo(fileName).dir().absolutePath());
+        s->setValue("LastDir", QFileInfo(fileName).dir().absolutePath());
     }
 }
 
@@ -242,43 +243,25 @@ void PainterWindow::saveImageToFile(const QString &fileName)
 
 void PainterWindow::reset()
 {
-    emit resetRequest();
+    m_module->reset();
 }
 
-void PainterWindow::closeEvent(QCloseEvent *event)
-{
-    m_settings->setValue("Plugins/Painter/WindowGeometry",saveGeometry());
-    m_settings->setValue("Plugins/Painter/ViewZoom", ui->view->zoom());
-    m_settings->setValue("Plugins/Painter/ShowColorMode",e_showColorMode);
-    QWidget::closeEvent(event);
-}
-
-void PainterWindow::hideEvent(QHideEvent *event)
-{
-    QSettings s;
-    s.setValue("Plugins/Painter/WindowGeometry",saveGeometry());
-    s.setValue("Plugins/Painter/ViewZoom", ui->view->zoom());
-    s.setValue("Plugins/Painter/ShowColorMode",e_showColorMode);
-    QWidget::hideEvent(event);
-}
 
 void PainterWindow::handleScale()
 {
     qreal scale = 1.0;
     QAction *act = qobject_cast<QAction*>(sender());
-    if (act==ui->actionHalf_size)
-        scale = 0.5;
-    else if (act==ui->actionFit_width) {
+    if (act==m_module->m_actionPainterFitWidth) {
         qreal imW = ui->view->canvas()->width()+60;
         qreal wW = ui->scrollArea->maximumViewportSize().width();
         scale = wW/imW;
     }
-    else if (act==ui->actionFit_height) {
+    else if (act==m_module->m_actionPainterFitHeight) {
         qreal imH = ui->view->canvas()->height()+60;
         qreal wH = ui->scrollArea->maximumViewportSize().height();
         scale = wH/imH;
     }
-    else if (act==ui->actionFit_both) {
+    else if (act==m_module->m_actionPainterFitWindow) {
         qreal imH = ui->view->canvas()->height()+60;
         qreal wH = ui->scrollArea->maximumViewportSize().height();
         qreal scaleH = wH/imH;
@@ -307,45 +290,7 @@ PainterWindow::~PainterWindow()
     delete ui;
 }
 
-QList<QAction*> PainterWindow::menuActions()
-{
 
-    QAction * sep1 = new QAction(this);
-    QAction * sep2 = new QAction(this);
-//    QAction * sep3 = new QAction(this);
-    sep1->setSeparator(true);
-    sep2->setSeparator(true);
-//    sep3->setSeparator(true);
-
-    QList<QAction*> result;
-
-    result << ui->actionNew;
-    result << ui->actionLoad_image;
-    result << ui->actionReset;
-    result << ui->actionSave_image;
-    result << ui->actionSave_image_as;
-    result << sep1;
-
-    result << ui->actionHalf_size;
-    result << ui->actionOriginal_size;
-    result << ui->actionFit_width;
-    result << ui->actionFit_height;
-    result << ui->actionFit_both;
-    result << sep2;
-
-    result << ui->actionHTML;
-    result << ui->actionRGB;
-    result << ui->actionCMYK;
-    result << ui->actionHSL;
-    result << ui->actionHSV;
-
-    return result;
-}
-
-QList<QAction*> PainterWindow::toolbarActions()
-{
-    return QList<QAction*>();
-}
 
 }
 

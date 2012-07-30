@@ -1,14 +1,16 @@
 #include "painternewimagedialog.h"
 #include "ui_painternewimagedialog.h"
+#include "paintermodule.h"
 #include <QtCore>
 #include <QtGui>
 
 namespace ActorPainter {
 
-PainterNewImageDialog::PainterNewImageDialog(QWidget *parent) :
+PainterNewImageDialog::PainterNewImageDialog(QWidget *parent, PainterModule * module) :
     QDialog(parent),
     ui(new Ui::PainterNewImageDialog)
 {
+    m_module = module;
     ui->setupUi(this);
     ui->scrollable->setLayout(new QVBoxLayout);
     connect(ui->colorBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(handleColorChanged(QString)));
@@ -40,7 +42,8 @@ QString PainterNewImageDialog::color() const
 
 int PainterNewImageDialog::exec()
 {
-    const QString templatesDir = QApplication::applicationDirPath()+"/Addons/painter/resources/";
+    static const QString resourcesRoot = QApplication::instance()->property("sharePath").toString();
+    static const QString templatesDir = resourcesRoot+"/actors/painter/";
     QDir dir(templatesDir);
     sl_templateFiles = dir.entryList(QStringList() << "*.png");
     const QString directory_ini = dir.absoluteFilePath("templates.ini");
@@ -62,13 +65,13 @@ int PainterNewImageDialog::exec()
         s->deleteLater();
     ui->listWidget->clear();
     ui->listWidget->addItems(sl_templateNames);
-    QSettings ss;
+    QSettings * ss = m_module->mySettings();
     const QString defaultPath = dir.absoluteFilePath("default.png");
-    bool useTemplate = ss.value("Plugins/Painter/NewCanvas/UseTemplate", QFile::exists(defaultPath)).toBool();
-    int lastWidth = ss.value("Plugins/Painter/NewCanvas/CustomWidth", 640).toInt();
-    int lastHeight = ss.value("Plugins/Painter/NewCanvas/CustomHeight", 480).toInt();
-    int lastColorIndex = ss.value("Plugins/Painter/NewCanvas/CustomColorIndex", 0).toInt();
-    QString lastFileName = ss.value("Plugins/Painter/NewCanvas/TemplateFileName", "default.png").toString();
+    bool useTemplate = ss->value("NewCanvas/UseTemplate", QFile::exists(defaultPath)).toBool();
+    int lastWidth = ss->value("NewCanvas/CustomWidth", 640).toInt();
+    int lastHeight = ss->value("NewCanvas/CustomHeight", 480).toInt();
+    int lastColorIndex = ss->value("NewCanvas/CustomColorIndex", 0).toInt();
+    QString lastFileName = ss->value("NewCanvas/TemplateFileName", "default.png").toString();
     lastColorIndex = qMax(lastColorIndex, 0);
     lastColorIndex = qMin(lastColorIndex, ui->colorBox->count()-1);
     ui->w->setValue(lastWidth);
@@ -92,12 +95,12 @@ int PainterNewImageDialog::exec()
     }
     int result = QDialog::exec();
     if (result==QDialog::Accepted) {
-        ss.setValue("Plugins/Painter/NewCanvas/UseTemplate", ui->radioButtonTemplate->isChecked());
-        ss.setValue("Plugins/Painter/NewCanvas/CustomWidth", ui->w->value());
-        ss.setValue("Plugins/Painter/NewCanvas/CustomHeight", ui->h->value());
-        ss.setValue("Plugins/Painter/NewCanvas/CustomColorIndex", ui->colorBox->currentIndex());
+        ss->setValue("NewCanvas/UseTemplate", ui->radioButtonTemplate->isChecked());
+        ss->setValue("NewCanvas/CustomWidth", ui->w->value());
+        ss->setValue("NewCanvas/CustomHeight", ui->h->value());
+        ss->setValue("NewCanvas/CustomColorIndex", ui->colorBox->currentIndex());
         if (ui->listWidget->currentRow()!=-1) {
-            ss.setValue("Plugins/Painter/NewCanvas/TemplateFileName", sl_templateFiles.at(ui->listWidget->currentRow()));
+            ss->setValue("NewCanvas/TemplateFileName", sl_templateFiles.at(ui->listWidget->currentRow()));
         }
     }
     return result;
@@ -108,7 +111,8 @@ void PainterNewImageDialog::handleTemplateClicked(QListWidgetItem *item)
     if (item) {
         int index = ui->listWidget->currentRow();
         const QString baseName = sl_templateFiles[index];
-        const QString templatesDir = QApplication::applicationDirPath()+"/Addons/painter/resources/";
+        static const QString resourcesRoot = QApplication::instance()->property("sharePath").toString();
+        static const QString templatesDir = resourcesRoot+"/actors/painter/";
         QDir dir(templatesDir);
         const QString fileName = dir.absoluteFilePath(baseName);
         if (QFile::exists(fileName)) {

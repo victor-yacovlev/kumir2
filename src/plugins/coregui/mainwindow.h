@@ -90,6 +90,7 @@ private slots:
     void setupStatusbarForTab();
     void setTitleForTab(int index);
     void checkCounterValue();
+    void checkActorWindowTitles();
     void addToRecent(const QString &fileName);
     void handleDocumentCleanChanged(bool v);
     void handleTabTitleChange(const QString & title);

@@ -38,7 +38,11 @@ actor = json.load(f)
 f.close()
 
 def name_to_cpp(name, firstUpper = False):
-    ascii = name["ascii"]
+    assert type(name)==dict or type(name)==str or type(name)==unicode
+    if type(name)==dict:
+        ascii = name["ascii"]
+    else:
+        ascii = name
     newName = ""
     nextIsCap = firstUpper
     for c in ascii:
@@ -50,6 +54,7 @@ def name_to_cpp(name, firstUpper = False):
             elif c.upper() in "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_": 
                 newName += c
             nextIsCap = False
+    newName = newName.replace("#","").replace("?","").replace("!","")
     return newName
 
 def basetype_to_qtype(baseType):
@@ -62,7 +67,7 @@ def basetype_to_qtype(baseType):
     else:
         return baseType
 
-def vector_type(baseType): "QVector< "+baseType+" >"
+def vector_type(baseType): return "QVector< "+baseType+" >"
 
 def arg_to_qarg(arg):
     try:
@@ -79,7 +84,7 @@ def arg_to_qarg(arg):
         qtype = "const "+qtype
     if "out" in access or "Q" in qtype:
         qtype += "&"
-    return qtype+name_to_cpp(arg["name"])
+    return qtype+" "+name_to_cpp(arg["name"])
 
 # --------------------------- base class to be subclassed and implemented
 
@@ -383,6 +388,48 @@ protected:
 private slots:
     void handleSettingsChanged();
 private:
+    template <typename T> inline static QVector<T> toVector1(const QVariant & v)
+    {
+        const QVariantList l = v.toList();
+        QVector<T> result;
+        result.resize(l.size());
+        for (int i=0; i<l.size(); i++) {
+            result[i] = qvariant_cast<T>(l[i]);
+        }
+        return result;
+    }
+    template <typename T> inline static QVector< QVector<T> > toVector2(const QVariant & v)
+    {
+        const QVariantList l = v.toList();
+        QVector< QVector<T> > result;
+        result.resize(l.size());
+        for (int i=0; i<l.size(); i++) {
+            const QVariantList ll = l[i].toList();
+            result[i].resize(ll.size());
+            for (int j=0; j<ll.size(); j++) {
+                result[i][j] = qvariant_cast<T>(ll[j]);
+            }
+        }
+        return result;
+    }
+    template <typename T> inline static QVector< QVector< QVector<T> > > toVector3(const QVariant & v)
+    {
+        const QVariantList l = v.toList();
+        QVector< QVector< QVector<T> > > result;
+        result.resize(l.size());
+        for (int i=0; i<l.size(); i++) {
+            const QVariantList ll = l[i].toList();
+            result[i].resize(ll.size());
+            for (int j=0; j<ll.size(); j++) {
+                const QVariantList lll = ll[j].toList();
+                result[i][j].resize(lll.size());
+                for (int k=0; k<lll.size(); k++) {
+                    result[i][j][k] = qvariant_cast<T>(lll[k]);
+                }
+            }
+        }
+        return result;
+    }
     void updateSettings();
     class %s* m_module;
     %s
@@ -422,7 +469,14 @@ def kumir_signature(method, locale="ascii"):
         if method["returnType"]=="bool": res += u"лог "
         if method["returnType"]=="char": res += u"сим "
         if method["returnType"]=="string": res += u"лит "
-    res += method["name"]["ru_RU"]
+    if type(method["name"])==dict:
+        if "ru_RU" in method["name"]:
+            res += method["name"]["ru_RU"]
+        else:
+            res += method["name"]["ascii"]
+    else:
+        assert type(method["name"])==str or type(method["name"])==unicode
+        res += method["name"]
     if method.has_key("arguments"):
         args = list()
         for arg in method["arguments"]:
@@ -442,11 +496,20 @@ def kumir_signature(method, locale="ascii"):
                 if arg["access"]=="in/out": acc=u"аргрез "
             except:
                 pass
-            a = acc+baseType+" "+arg["name"]
+            assert "name" in arg
+            assert type(arg["name"])==unicode or type(arg["name"])==str or type(arg["name"])==dict
+            if type(arg["name"])==unicode or type(arg["name"])==str:
+                argname = arg["name"]
+            elif type(arg["name"])==dict:
+                if "ru_RU" in arg["name"]:
+                    argname = arg["name"]["ru_RU"]
+                else:
+                    argname = arg["name"]["ascii"]
+            a = acc+baseType+" "+argname
             if dim:
                 dummyBounds = ["0:0"] * dim
                 a += "["+string.join(dummyBounds, ",")+"]"
-            arg += [a]
+            args += [a]
         res += "("+string.join(args, ", ")+")"
     return res
 
@@ -465,7 +528,7 @@ def make_method_call(method, fromThread=False):
     else:
         call = "m_module->run"+name_to_cpp(method["name"], True)+"("
         arglines = []
-        optresults = []
+        optresults = ""
         if method.has_key("arguments"):
             for index, arg in enumerate(method["arguments"]):
                 try:
@@ -478,20 +541,22 @@ def make_method_call(method, fromThread=False):
                 if not arg.has_key("access") or "in" in arg["access"]:
                     argline += " = "
                     if fromThread: argline += "l_"
-                    argline +"args[%i]." % index
+                    argvar = "args[%i]" % index
+                    bt = basetype_to_qtype(arg["baseType"])
                     if dim:
-                        argline += "toVector()"
+                        argline += "toVector%i<%s>(%s)" % (dim, bt, argvar)
                     else:
-                        bt = arg["baseType"]
-                        bt = bt[0].upper() + bt[1:]
-                        argline += "to"+bt+"()"
+                        argline += "qvariant_cast<%s>(%s)" % (bt, argvar)
+                    
                 if arg.has_key("access") and "out" in arg["access"]:
-                    optresults += ["x"+str(index+1)]
+                    optresults += "        l_optResults << x"+str(index+1)+";\n"
                 argline += ";"
                 arglines += [argline]
                 if index: call += ", "
                 call += "x"+str(index+1)
         call += ")"
+        if optresults:
+            optresults = "        l_optResults.clear();\n"+optresults
         if method.has_key("returnType") and method["returnType"]!="void":
             call = "v_result = QVariant(%s)" % call
             if fromThread:
@@ -509,6 +574,7 @@ def make_method_call(method, fromThread=False):
             return """ {
             $vardecl
             $call
+            $optresults
             if (s_errorText.length()>0)
                 return Shared::ES_Error;
             return $ret;
@@ -516,7 +582,8 @@ def make_method_call(method, fromThread=False):
         """. \
         replace("$vardecl", string.join(arglines, "\n        ")). \
         replace("$call", call+";"). \
-        replace("$ret", ret)
+        replace("$ret", ret). \
+        replace("$optresults", optresults)
         else:
             return """ {
             $vardecl

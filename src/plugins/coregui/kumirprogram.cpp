@@ -28,7 +28,7 @@ KumirProgram::KumirProgram(QObject *parent)
     , a_stepOut(0)
     , a_stop(0)
     , gr_actions(0)
-    , m_connector(0)
+
     , m_variablesWebObject(0)
     , w_mainWidget(0)
 {
@@ -160,12 +160,7 @@ void KumirProgram::setNativeGenerator(GeneratorInterface *cpp)
                 this, SLOT(handleProcessError(QProcess::ProcessError)));
 
 
-        m_connector = new Connector();
 
-        connect(m_connector, SIGNAL(resetActorReceived(QString)),
-                this, SLOT(handleActorResetRequest(QString)));
-
-        m_connector->listenFor(m_process);
 
     }
     else {
@@ -191,14 +186,7 @@ void KumirProgram::setTerminal(Term *t, QDockWidget * w)
 {
     m_terminal = t;
     m_terminalWindow = w;
-    if (m_connector) {
-        connect(m_connector, SIGNAL(inputFormatReceived(QString)),
-                m_terminal, SLOT(input(QString)));
-        connect(m_connector, SIGNAL(outputTextReceived(QString)),
-                m_terminal, SLOT(output(QString)));
-        connect(m_connector, SIGNAL(errorMessageReceived(QString)),
-                m_terminal, SLOT(error(QString)));
-    }
+
     connect(m_terminal, SIGNAL(inputFinished(QVariantList)),
             this, SLOT(handleInputDone(QVariantList)));
     connect(m_terminal, SIGNAL(showWindowRequest()),
@@ -211,10 +199,7 @@ void KumirProgram::handleInputDone(const QVariantList &data)
         Q_CHECK_PTR(plugin_bytecodeRun);
         plugin_bytecodeRun->finishInput(data);
     }
-//    else if (e_state==FastRun && m_process->state()==QProcess::Running) {
-    else {
-        m_connector->sendReply(data);
-    }
+
     m_terminal->clearFocus();
 }
 
@@ -604,7 +589,7 @@ void KumirProgram::handleActorCommandFinished()
         message << error;
         message << result;
         message += res;
-        m_connector->sendReply(message);
+
     }
     if (e_state==RegularRun || e_state==StepRun) {
         Q_CHECK_PTR(plugin_bytecodeRun);

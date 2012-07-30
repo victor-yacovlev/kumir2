@@ -2,10 +2,9 @@
 
 TS_MODULES = {
         "ExtensionSystem": "src/shared/extensionsystem",
-        "ErrorMessages": "src/shared/errormessages",
         "KumirStdLib": "src/shared/stdlib",
-        "ActorPainterC": "src/actors/painter/lib",
-        "ActorPainter": "src/actors/painter/module",
+        "ActorPainter": "src/actors/painter",
+        "ActorRobot": "src/actors/robot",
         "Browser": "src/plugins/browser",
         "CoreGUI": "src/plugins/coregui",
         "Editor": "src/plugins/editor",
