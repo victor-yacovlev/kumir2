@@ -56,7 +56,20 @@ namespace ActorRobot {
 #define PAUSE_MODE 4
 #define DEFAULT_SIZEX 400
 #define DEFAULT_SIZEY 400    
-    
+    class RobotView:
+    public QGraphicsView
+    {
+      public:
+        RobotView(QGraphicsScene * roboField);
+    protected:
+        void mousePressEvent ( QMouseEvent * event );
+        void mouseReleaseEvent ( QMouseEvent * event );
+        void mouseMoveEvent ( QMouseEvent * event );
+    private:
+        bool pressed;
+        int pressX,pressY;
+        
+    };
    
     
     class SimpleRobot:
@@ -323,6 +336,9 @@ namespace ActorRobot {
     private:
         
         void mousePressEvent ( QGraphicsSceneMouseEvent * mouseEvent );
+        void mouseReleaseEvent ( QGraphicsSceneMouseEvent * mouseEvent );
+        void mouseMoveEvent ( QGraphicsSceneMouseEvent * mouseEvent );
+
         QList<QList<FieldItm * > > Items;
         QList<QGraphicsLineItem*> setka;
         //QGraphicsView * scena;
@@ -336,8 +352,11 @@ namespace ActorRobot {
         bool WasEditFlag;
         //TOOLS
         QPoint upLeftCorner(int str,int stlb);
+        bool pressed;
        // RobotModule *m_robot;
         QSettings* sett;
+        QRectF	oldRect;
+        qreal perssX,pressY;
     };
   
     
@@ -389,6 +408,7 @@ namespace ActorRobot {
         bool animation;
         QGraphicsView * view;
         QString curDir;
+        bool pressed;
     }; // RobotModule
 
 } // ActorRobot

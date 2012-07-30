@@ -600,6 +600,7 @@ namespace ActorRobot {
 	
     
     {
+        pressed=false;
         sett=RobotModule::robotSettings();
         QString className = sett->metaObject()->className();
         Parent=parent;
@@ -1690,7 +1691,14 @@ namespace ActorRobot {
      */
     void RoboField::mousePressEvent ( QGraphicsSceneMouseEvent * mouseEvent )
     {
-        if(!editMode)return;
+        if(!editMode)
+        {
+            pressed=true;
+            oldRect=sceneRect();
+            perssX=mouseEvent->pos().x();
+            pressY=mouseEvent->pos().y();
+              mouseEvent->accept();
+            return;};
         QPointF scenePos=mouseEvent->scenePos();
         int rowClicked=scenePos.y()/fieldSize;
         int colClicked=(scenePos.x()-3)/fieldSize;
@@ -1781,7 +1789,17 @@ namespace ActorRobot {
         };
 //        if(wasEdit)emit was_edit();
     };
-    
+    void RoboField::mouseReleaseEvent ( QGraphicsSceneMouseEvent * mouseEvent )
+    {
+        pressed=true;
+    };
+    void RoboField::mouseMoveEvent ( QGraphicsSceneMouseEvent * mouseEvent )
+    {
+   //  if(pressed)
+     //{
+                 // curV->centerOn(center);
+     //}
+    };   
     
     void RoboField::showCellDialog(FieldItm * cellClicked)
     {
@@ -2047,13 +2065,14 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
 	implement class Constructor
 	*/
     animation=true;
+    pressed=false;
     field=new RoboField(0);
     //field->editField();
     field->createField(10,15);
    
     field->setRoboPos(0,0);
       field->createRobot();
-    view=new QGraphicsView(field);
+    view=new RobotView(field);
     m_mainWidget = view;
     m_pultWidget = new QWidget();
     startField=field->Clone();
@@ -2337,4 +2356,42 @@ int RobotModule::SaveToFile(QString p_FileName)
         return 0;
         
     }    
+    
+    
+
+    RobotView::RobotView(QGraphicsScene * roboField)
+    {
+        QGraphicsView::setScene(roboField);
+        pressed=false;
+        this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+      setCursor(Qt::OpenHandCursor);
+        
+    };
+    void RobotView::mousePressEvent ( QMouseEvent * event )
+    {pressed=true;
+        pressX=event->pos().x();
+        pressY=event->pos().y();
+         setCursor(Qt::ClosedHandCursor);
+    };
+    void RobotView::mouseReleaseEvent ( QMouseEvent * event ){pressed=false;setCursor(Qt::OpenHandCursor);};
+    void RobotView::mouseMoveEvent ( QMouseEvent * event )
+    {if(!pressed)return;
+        
+        QPointF center = mapToScene(viewport()->rect().center());
+        qDebug()<<"==========Move==========";
+        qDebug()<<"Old center:"<<center;
+        qreal diffX=pressX-event->pos().x();
+        qreal diffY=pressY-event->pos().y();
+        if(diffX==0 && diffY==0)return;
+        center.setX(center.x()+diffX);
+        center.setY(center.y()+diffY);
+        qDebug()<<"New center:"<<center<<" DiffX"<<diffX;
+        event->accept();
+        centerOn(center);
+
+        
+    };
+    
+    
 } // $namespace
