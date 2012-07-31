@@ -1,12 +1,19 @@
 #ifndef DECLARATIVE_SETTINGS_PAGE
 #define DECLARATIVE_SETTINGS_PAGE
 
+#ifdef EXTENSIONSYSTEM_LIBRARY
+#define EXTENSIONSYSTEM_EXPORT Q_DECL_EXPORT
+#else
+#define EXTENSIONSYSTEM_EXPORT Q_DECL_IMPORT
+#endif
+
+
 #include <QtCore>
 #include <QtGui>
 
 namespace ExtensionSystem {
 
-class DeclarativeSettingsPage:
+class EXTENSIONSYSTEM_EXPORT DeclarativeSettingsPage:
         public QWidget
 {
     Q_OBJECT
