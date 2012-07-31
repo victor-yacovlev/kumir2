@@ -25,6 +25,11 @@ void prepareRules(const QStringList &files, QString &out, const QList<int> &prio
 QString terminalByCode(int code);
 bool isCorrectTerminal(const QString &terminal);
 
+PDAutomata::~PDAutomata()
+{
+    delete d;
+}
+
 PDAutomata::PDAutomata(QObject *parent) :
     QObject(parent)
 {
@@ -51,6 +56,8 @@ void PDAutomata::init(bool teacherMode, const QList<Statement*> & statements, AS
         AST::ModuleType moduleToRemove = teacherMode? AST::ModTypeHidden : AST::ModTypeUser;
         while (it!=d->ast->modules.end()) {
             if ( (*it)->header.type == moduleToRemove ) {
+                AST::Module * module = (*it);
+                delete module;
                 it = d->ast->modules.erase(it);
             }
             else {
@@ -85,6 +92,19 @@ void PDAutomata::init(bool teacherMode, const QList<Statement*> & statements, AS
         d->nextPointers[i] = i+1;
     }
     d->allowSkipParts = d->source.size() >= MAXIMUM_ERRORS_COUNT;
+}
+
+PDAutomataPrivate::~PDAutomataPrivate()
+{
+    const QStringList keys = matrix.keys();
+    foreach ( const QString & key, keys ) {
+        Rules rules = matrix[key];
+        for (int i=0; i<rules.size(); i++) {
+            RuleRightPart right = rules[i];
+            if (right.script)
+                delete right.script;
+        }
+    }
 }
 
 void PDAutomataPrivate::matchScript(const QString &text, ScriptListPtr & scripts)
@@ -301,6 +321,8 @@ void PDAutomataPrivate::loadRules(const QString &rulesRoot)
                     }
                     if ( allowToAdd )
                         matrix[key].append(rule);
+                    else
+                        delete rule.script;
                 }
                 else {
                     Rules newRulesList;
@@ -325,8 +347,10 @@ void PDAutomataPrivate::loadRules(const QString &rulesRoot)
                 // Удаляем \epsilon-правило, если оно там есть
                 // и имеет тот же приоритет
                 for ( int j=matrix[key].count()-1; j>=0; j-- ) {
-                    if ( matrix[key][j].isEpsilon && matrix[key][j].priority==prior )
+                    if ( matrix[key][j].isEpsilon && matrix[key][j].priority==prior ) {
+                        delete matrix[key][j].script;
                         matrix[key].removeAt(j);
+                    }
                 }
             }
             else {
@@ -1076,8 +1100,26 @@ void PDAutomata::postProcess()
     if (d->currentModule && !d->algorhitm) {
         d->ast->modules << d->currentModule;
     }
-
+    if (!d->algorhitm && d->currentAlgorhitm) {
+        bool foundAlgorhitm = false;
+        for (int i=0; i<d->ast->modules.size(); i++) {
+            AST::Module * module = d->ast->modules[i];
+            foundAlgorhitm = module->impl.algorhitms.contains(d->currentAlgorhitm);
+            if (foundAlgorhitm)
+                break;
+        }
+        if (d->currentModule && !foundAlgorhitm) {
+            foundAlgorhitm = d->currentModule->impl.algorhitms.contains(d->currentAlgorhitm);
+        }
+        if (!foundAlgorhitm)
+            delete d->currentAlgorhitm;
+    }
     d->source.pop_front();
+    if (!d->ast->modules.contains(d->currentModule)) {
+        delete d->currentModule;
+        d->currentModule = 0;
+    }
+    d->currentAlgorhitm = 0;
 
 }
 
@@ -1128,6 +1170,8 @@ void PDAutomataPrivate::processCorrectAlgHeader()
     if (algorhitm) {
         source.at(currentPosition)->mod = moduleOfAlgorhitm(ast, algorhitm);
         currentModule = source.at(currentPosition)->mod;
+        currentAlgorhitm = algorhitm;
+        delete alg;
     }
     else {
         if (currentModule==0) {
@@ -1142,7 +1186,7 @@ void PDAutomataPrivate::processCorrectAlgHeader()
             source.at(currentPosition)->mod = currentModule;
         }
     }
-    source.at(currentPosition)->alg = alg;
+    source.at(currentPosition)->alg = currentAlgorhitm;
 }
 
 void PDAutomataPrivate::processCorrectAlgBegin()

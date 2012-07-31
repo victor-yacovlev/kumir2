@@ -65,16 +65,31 @@ void Module::updateReferences(const Module *src, const Data *srcData, const Data
 Module::~Module()
 {
     for (int i=0; i<impl.algorhitms.size(); i++) {
-        if (impl.algorhitms[i])
+        if (impl.algorhitms[i]) {
+            int header_index = header.algorhitms.indexOf(impl.algorhitms[i]);
+            if (header_index!=-1)
+                header.algorhitms[header_index] = 0;
             delete impl.algorhitms[i];
+            impl.algorhitms[i] = 0;
+        }
+    }
+    for (int i=0; i<header.algorhitms.size(); i++) {
+        if (header.algorhitms[i]) {
+            delete header.algorhitms[i];
+            header.algorhitms[i] = 0;
+        }
     }
     for (int i=0; i<impl.globals.size(); i++) {
-        if (impl.globals[i])
+        if (impl.globals[i]) {
             delete impl.globals[i];
+            impl.globals[i] = 0;
+        }
     }
     for (int i=0; i<impl.initializerBody.size(); i++) {
-        if (impl.initializerBody[i])
+        if (impl.initializerBody[i]) {
             delete impl.initializerBody[i];
+            impl.initializerBody[i] = 0;
+        }
     }
 }
 

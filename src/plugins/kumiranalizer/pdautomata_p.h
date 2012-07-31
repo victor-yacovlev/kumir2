@@ -46,6 +46,7 @@ public:
 
     void loadRules(const QString &rulesRoot);
     class PDAutomata * q;
+    ~PDAutomataPrivate();
     AST::Data * ast;
     AST::Algorhitm * algorhitm;
     bool teacherMode;
