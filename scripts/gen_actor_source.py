@@ -718,6 +718,7 @@ QString $className::initialize(const QStringList&)
         SIGNAL(sync()) );
     
 $settingsPageCreation
+    return QString::fromAscii("");
 }
 
 QStringList $className::funcList() const
