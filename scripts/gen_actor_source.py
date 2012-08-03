@@ -109,7 +109,7 @@ if update:
     h.write("#ifndef "+hName.replace(".","_").upper()+"\n")
     h.write("#define "+hName.replace(".","_").upper()+"\n")
     h.write("#include <QtCore>\n#include <QtGui>\n\n")
-    h.write("namespace ExtensionSystem { class KPlugin; }\n\n")
+    h.write("#include \"extensionsystem/kplugin.h\"\n\n")
 
 
     h.write("namespace %s {\n\n" % actorCPPNameSpace)
@@ -127,6 +127,8 @@ if update:
         h.write("   virtual void reloadSettings(QSettings * settings) = 0;\n")
     else:
         h.write("   inline void reloadSettings(QSettings * ) {}\n")
+    h.write("    // Change global state\n")
+    h.write("    inline virtual void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current) { Q_UNUSED(old); Q_UNUSED(current); }\n")
     h.write("    // Actor methods\n")
     for method in actor["methods"]:
         try:
@@ -385,6 +387,7 @@ protected:
     void sleep(unsigned long secs);
     void msleep(unsigned long msecs);
     void usleep(unsigned long usecs);
+    void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
 private slots:
     void handleSettingsChanged();
 private:
@@ -706,6 +709,11 @@ $className::$className()
     m_module = 0;
     m_asyncRunThread = 0;
     m_settingsPage = 0;
+}
+
+void $className::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current)
+{
+    m_module->changeGlobalState(old, current);
 }
 
 QString $className::initialize(const QStringList&)
