@@ -1045,7 +1045,7 @@ void $className::reloadSettings(QSettings * settings)
     // TODO handle settings changed
 }
 
-""")
+""".replace("$className", className))
 
 cpp.write("""    
 } // $namespace
