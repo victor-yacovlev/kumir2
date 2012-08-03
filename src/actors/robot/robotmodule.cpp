@@ -1817,10 +1817,10 @@ namespace ActorRobot {
     void RoboField::setColorFromSett()
     {
          sett=RobotModule::robotSettings();
-        LineColor = QColor(sett->value("Robot/LineColor","#C8C800").toString());
-        WallColor=QColor(sett->value("Robot/WallColor","#C8C800").toString());
-        EditColor=QColor(sett->value("Robot/EditColor","#00008C").toString());
-        NormalColor=QColor(sett->value("Robot/NormalColor","#289628").toString());
+        LineColor = QColor(sett->value("LineColor","#C8C800").toString());
+        WallColor=QColor(sett->value("WallColor","#C8C800").toString());
+        EditColor=QColor(sett->value("EditColor","#00008C").toString());
+        NormalColor=QColor(sett->value("NormalColor","#289628").toString());
         qDebug()<<"Normal color blue"<<NormalColor.blue ();
         this->setBackgroundBrush (QBrush(NormalColor));
     }
