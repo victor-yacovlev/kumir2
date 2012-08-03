@@ -177,6 +177,22 @@ AnalizerPrivate::~AnalizerPrivate()
     delete lexer;
     delete pdAutomata;
     delete ast;
+    for (int i=0; i<statements.size(); i++) {
+        Statement * statement = statements[i];
+        for (int j=0; j<statement->data.size(); j++) {
+            Lexem * lx = statement->data.at(j);
+            delete lx;
+        }
+        delete statement;
+    }
+    for (int i=0; i<teacherStatements.size(); i++) {
+        Statement * statement = teacherStatements[i];
+        for (int j=0; j<statement->data.size(); j++) {
+            Lexem * lx = statement->data.at(j);
+            delete lx;
+        }
+        delete statement;
+    }
 }
 
 Analizer::~Analizer()
@@ -298,6 +314,7 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
                 }
             }
             removedStatements[i] = 0;
+            delete st;
         }
     }
 }

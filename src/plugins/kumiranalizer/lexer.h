@@ -15,6 +15,7 @@ class Lexer : public QObject
     Q_OBJECT
 public:
     explicit Lexer(QObject *parent = 0);
+    ~Lexer();
     static void setLanguage(const QLocale::Language & language);
     static QString testingAlgorhitmName();
     QString testName( const QString &stroka );

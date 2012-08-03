@@ -15,6 +15,11 @@ Lexer::Lexer(QObject *parent) :
     d->q = this;
 }
 
+Lexer::~Lexer()
+{
+    delete d;
+}
+
 int Lexer::splitIntoStatements(const QStringList &lines
                                 , int baseLineNo
                                 , QList<Statement*> &statements

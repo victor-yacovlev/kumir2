@@ -22,6 +22,7 @@ class PDAutomata : public QObject
     Q_OBJECT
 public:
     explicit PDAutomata(QObject *parent = 0);
+    ~PDAutomata();
 
     /** Automata initialization.
       * @param statements reference to source text
