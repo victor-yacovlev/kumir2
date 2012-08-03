@@ -56,20 +56,7 @@ namespace ActorRobot {
 #define PAUSE_MODE 4
 #define DEFAULT_SIZEX 400
 #define DEFAULT_SIZEY 400    
-    class RobotView:
-    public QGraphicsView
-    {
-      public:
-        RobotView(QGraphicsScene * roboField);
-    protected:
-        void mousePressEvent ( QMouseEvent * event );
-        void mouseReleaseEvent ( QMouseEvent * event );
-        void mouseMoveEvent ( QMouseEvent * event );
-    private:
-        bool pressed;
-        int pressX,pressY;
-        
-    };
+
    
     
     class SimpleRobot:
@@ -188,11 +175,7 @@ namespace ActorRobot {
         void setScene(QGraphicsScene* scene);
         void wbWalls();
         void colorWalls();
-        void setTextColor()
-        {
-            TextColor=QColor(sett->value("Robot/TextColor","#FFFFFF").toString());
-        };
-        
+        void setTextColor();        
     public:
         bool IsColored;
         float radiation;
@@ -260,7 +243,7 @@ namespace ActorRobot {
         void createField(int shirina,int visota);
         FieldItm* getFieldItem(int str,int stlb);
         void debug();
-        
+        void setColorFromSett();
         int loadFromFile(QString fileName);
         int saveToFile(QString fileName);
         void createRobot();
@@ -294,13 +277,18 @@ namespace ActorRobot {
         inline QList<QList<FieldItm * > > FieldItems() { return Items; }
         void setFieldItems(QList<QList<FieldItm * > > FieldItems);
         
-        
+        QPointF roboPosF()
+        {
+            return robot->scenePos () ;
+        };
         bool stepUp();
         bool stepDown();
         bool stepLeft();
         bool stepRight();
         void editField();
-        void setEditMode(bool EditMode) { editMode=EditMode;
+        void setEditMode(bool EditMode) { 
+            editMode=EditMode;
+         //   sett=RobotModule::robotSettings();
             LineColor = QColor(sett->value("Robot/LineColor","#C8C800").toString());
             WallColor=QColor(sett->value("Robot/WallColor","#C8C800").toString());
             EditColor=QColor(sett->value("Robot/EditColor","#00008C").toString());
@@ -359,7 +347,22 @@ namespace ActorRobot {
         qreal perssX,pressY;
     };
   
-    
+    class RobotView:
+    public QGraphicsView
+    {
+    public:
+        RobotView(RoboField * roboField);
+        void  FindRobot();
+    protected:
+        void mousePressEvent ( QMouseEvent * event );
+        void mouseReleaseEvent ( QMouseEvent * event );
+        void mouseMoveEvent ( QMouseEvent * event );
+    private:
+        bool pressed;
+        int pressX,pressY;
+        RoboField* robotField;
+        
+    };
     
     class RobotModule
 	: public RobotModuleBase
@@ -372,7 +375,7 @@ namespace ActorRobot {
         // Reset actor state before program starts
         void reset();
         // Set animation flag
-        void reloadSettings(QSettings *settings);
+       
         void setAnimationEnabled(bool enabled);
         // Actor methods
         void runGoUp();
@@ -395,9 +398,11 @@ namespace ActorRobot {
         QWidget* pultWidget() const;
         static QSettings * robotSettings();
         public slots:
+        void reloadSettings(QSettings * settings);
         void loadEnv();
         void resetEnv();
         void saveEnv();
+        void editEnv();
     private:
         int LoadFromFile(QString p_FileName);
         int SaveToFile(QString p_FileName);

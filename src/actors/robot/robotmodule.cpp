@@ -123,6 +123,17 @@ namespace ActorRobot {
         }
     }
     
+    
+    void FieldItm::setTextColor()
+    {
+        sett=RobotModule::robotSettings();
+        TextColor=QColor(sett->value("Robot/TextColor","#FFFFFF").toString());
+        
+        
+        upCharItm->setDefaultTextColor(TextColor);
+        
+    };
+    
     void FieldItm::setLeftsepItem(FieldItm *ItmLeft)
     {
         sepItmLeft=ItmLeft;
@@ -605,10 +616,10 @@ namespace ActorRobot {
         QString className = sett->metaObject()->className();
         Parent=parent;
         editMode=false;
-        LineColor = QColor(sett->value("Robot/LineColor","#C8C800").toString());
-        WallColor=QColor(sett->value("Robot/WallColor","#C8C800").toString());
-        EditColor=QColor(sett->value("Robot/EditColor","#00008C").toString());
-        NormalColor=QColor(sett->value("Robot/NormalColor","#289628").toString());
+        LineColor = QColor(sett->value("LineColor","#C8C800").toString());
+        WallColor=QColor(sett->value("WallColor","#C8C800").toString());
+        EditColor=QColor(sett->value("EditColor","#00008C").toString());
+        NormalColor=QColor(sett->value("NormalColor","#289628").toString());
         
         
         
@@ -681,6 +692,7 @@ namespace ActorRobot {
     };
     void RoboField::drawField(uint FieldSize)
     {
+        sett=RobotModule::robotSettings();
         if(rows()<1||columns()<1)return;
         destroyNet();
         destroyField();
@@ -977,10 +989,10 @@ namespace ActorRobot {
     
     void RoboField::UpdateColors()
     {
-        LineColor = QColor(sett->value("Robot/LineColor","#C8C800").toString());
-        WallColor=QColor(sett->value("Robot/WallColor","#C8C800").toString());
-        EditColor=QColor(sett->value("Robot/EditColor","#00008C").toString());
-        NormalColor=QColor(sett->value("Robot/NormalColor","#289628").toString());
+        LineColor = QColor(sett->value("LineColor","#C8C800").toString());
+        WallColor=QColor(sett->value("WallColor","#C8C800").toString());
+        EditColor=QColor(sett->value("EditColor","#00008C").toString());
+        NormalColor=QColor(sett->value("NormalColor","#289628").toString());
         
         destroyNet();
         destroyField();
@@ -1801,6 +1813,20 @@ namespace ActorRobot {
      //}
     };   
     
+
+    void RoboField::setColorFromSett()
+    {
+         sett=RobotModule::robotSettings();
+        LineColor = QColor(sett->value("Robot/LineColor","#C8C800").toString());
+        WallColor=QColor(sett->value("Robot/WallColor","#C8C800").toString());
+        EditColor=QColor(sett->value("Robot/EditColor","#00008C").toString());
+        NormalColor=QColor(sett->value("Robot/NormalColor","#289628").toString());
+        qDebug()<<"Normal color blue"<<NormalColor.blue ();
+        this->setBackgroundBrush (QBrush(NormalColor));
+    }
+    
+    
+    
     void RoboField::showCellDialog(FieldItm * cellClicked)
     {
         
@@ -1938,11 +1964,13 @@ namespace ActorRobot {
     };
     void RoboField::colorMode()
     {
+         sett=RobotModule::robotSettings();
         for(int i=0;i<rows();i++)
         {
             for(int j=0;j<columns();j++)
             {
                 getFieldItem(i,j)->colorWalls();
+                getFieldItem(i,j)->setTextColor();
             };
         };
         if(!editMode)Color = QColor(40,150,40);//Normal Color
@@ -2081,8 +2109,8 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     connect(m_actionRobotLoadEnvironment,SIGNAL(triggered()) , this, SLOT(loadEnv()));
     connect(m_actionRobotRevertEnvironment,SIGNAL(triggered()) , this, SLOT(resetEnv()));
     connect(m_actionRobotSaveEnvironment,SIGNAL(triggered()) , this, SLOT(saveEnv()));
-    
-}
+    connect(m_actionRobotEditEnvironment,SIGNAL(triggered()) , this, SLOT(editEnv()));  
+} 
 
     
 void RobotModule::reset()
@@ -2105,7 +2133,8 @@ void RobotModule::reset()
 
 void RobotModule::reloadSettings(QSettings *settings)
 {
-
+    qDebug()<<"reload settings";
+    field->setColorFromSett();
 }
 
 void RobotModule::setAnimationEnabled(bool enabled)
@@ -2286,7 +2315,14 @@ bool RobotModule::runIsFreeAtRight()
         
         return(0);
     }
-    
+void RobotModule::editEnv()
+    {
+       
+        startField->setEditMode(true);
+        
+       // field->setEditMode(true);
+        reset();
+    };    
 void RobotModule::loadEnv()
     {
         if(field->WasEdit())
@@ -2346,6 +2382,9 @@ void RobotModule::saveEnv()
 
     }
     
+    
+
+  
 int RobotModule::SaveToFile(QString p_FileName)
     {
         
@@ -2359,25 +2398,38 @@ int RobotModule::SaveToFile(QString p_FileName)
     
     
 
-    RobotView::RobotView(QGraphicsScene * roboField)
+    RobotView::RobotView(RoboField * roboField)
     {
-        QGraphicsView::setScene(roboField);
+        setScene(roboField);
         pressed=false;
         this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-      setCursor(Qt::OpenHandCursor);
+        setMouseTracking(true);
+        setCursor(Qt::OpenHandCursor);
+        robotField=roboField;
         
     };
     void RobotView::mousePressEvent ( QMouseEvent * event )
-    {pressed=true;
+    {
+        if(robotField->sceneRect().height()> this->height()  &&robotField->sceneRect().width()> this->width())//field > view
+        {
+        pressed=true;
+        setCursor(Qt::ClosedHandCursor);   
+        };
         pressX=event->pos().x();
         pressY=event->pos().y();
-         setCursor(Qt::ClosedHandCursor);
+         
     };
     void RobotView::mouseReleaseEvent ( QMouseEvent * event ){pressed=false;setCursor(Qt::OpenHandCursor);};
     void RobotView::mouseMoveEvent ( QMouseEvent * event )
-    {if(!pressed)return;
-        
+    { setCursor(Qt::ArrowCursor);
+       if(robotField->sceneRect().height()> this->height()  &&robotField->sceneRect().width()> this->width())//field size more then view size
+       {
+        setCursor(Qt::OpenHandCursor);
+            
+       }
+        if(!pressed)return;
+        setCursor(Qt::ClosedHandCursor);
         QPointF center = mapToScene(viewport()->rect().center());
         qDebug()<<"==========Move==========";
         qDebug()<<"Old center:"<<center;
@@ -2388,10 +2440,13 @@ int RobotModule::SaveToFile(QString p_FileName)
         center.setY(center.y()+diffY);
         qDebug()<<"New center:"<<center<<" DiffX"<<diffX;
         event->accept();
-        centerOn(center);
-
+        if(diffX< width() && diffY<height())centerOn(center);
+       // qDebug()<<mapFromScene (robotField->sceneRect())<<robotField->sceneRect().height();
         
     };
-    
+ void RobotView:: FindRobot()
+    {
+        centerOn(robotField->roboPosF());
+    };
     
 } // $namespace

@@ -69,6 +69,13 @@
 		                    "ru_RU": "Сохранить обстановку..."
 		                },
 						"icon": "file-save-as"
+					},
+                    {
+						"title": {
+							"ascii": "Edit Environment...", 
+		                    "ru_RU": "Редактировать обстановку..."
+		                },
+						"icon": "file-save-as"
 					}
 				]
 			}
