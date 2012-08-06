@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>343</width>
-    <height>707</height>
+    <width>372</width>
+    <height>699</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
-    <widget class="QGroupBox" name="groupBox_3">
+    <widget class="Widgets::GroupBox" name="groupKeyboard">
      <property name="title">
       <string>Keyboard</string>
      </property>
@@ -162,7 +162,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="Widgets::GroupBox" name="groupFont">
      <property name="title">
       <string>Font</string>
      </property>
@@ -230,7 +230,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox_2">
+    <widget class="Widgets::GroupBox" name="groupSyntax">
      <property name="title">
       <string>Syntax highlighting</string>
      </property>
@@ -543,7 +543,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox_4">
+    <widget class="Widgets::GroupBox" name="groupOther">
      <property name="title">
       <string>Other</string>
      </property>
@@ -558,8 +558,29 @@
      </layout>
     </widget>
    </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Widgets::GroupBox</class>
+   <extends>QGroupBox</extends>
+   <header location="global">widgets/groupbox.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
