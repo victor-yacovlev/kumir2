@@ -5,10 +5,12 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(SOURCES
     groupbox.cpp
+    cyrillicmenu.cpp
 )
 
 set(MOC_HEADERS
     groupbox.h
+    cyrillicmenu.h
 )
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})

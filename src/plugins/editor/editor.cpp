@@ -8,6 +8,7 @@
 #include "macro.h"
 #include "settingspage.h"
 #include "editcommands.h"
+#include "widgets/cyrillicmenu.h"
 
 
 namespace Editor {
@@ -169,7 +170,7 @@ void EditorPrivate::updateInsertMenu()
     for (int i=0; i<systemMacros.size(); i++) {
         Macro m = systemMacros[i];
         QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
-        m.action = new QAction(m.title+" ("+escComa+m.key+")", menu_insert);
+        m.action = new QAction(m.title, menu_insert);
         m.action->setShortcut(ks);
         systemMacros[i].action = m.action;
         menu_insert->addAction(m.action);
@@ -534,6 +535,9 @@ void EditorPrivate::createActions()
     separator->setSeparator(true);
 
     menu_edit = new QMenu(tr("Edit"), 0);
+    menu_edit->addAction(undo);
+    menu_edit->addAction(redo);
+    menu_edit->addSeparator();
     menu_edit->addAction(selectAll);
     menu_edit->addSeparator();
     menu_edit->addAction(cut);
@@ -545,12 +549,9 @@ void EditorPrivate::createActions()
     menu_edit->addSeparator();
     if (analizer) {
         menu_edit->addAction(toggleComment);
-        menu_edit->addSeparator();
     }
-    menu_edit->addAction(undo);
-    menu_edit->addAction(redo);
 
-    menu_insert = new QMenu(tr("Insert"), 0);
+    menu_insert = new Widgets::CyrillicMenu(tr("Insert"), 0);
 }
 
 const TextCursor * Editor::cursor() const
