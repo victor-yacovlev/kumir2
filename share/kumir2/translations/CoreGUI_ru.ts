@@ -405,7 +405,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="127"/>
         <source>New program</source>
-        <translation>Новая Кумир-программа</translation>
+        <translation>Новая программа</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="135"/>
@@ -420,7 +420,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="143"/>
         <source>Open...</source>
-        <translation>Открыть программу...</translation>
+        <translation>Загрузить программу...</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="146"/>
