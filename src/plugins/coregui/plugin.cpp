@@ -46,7 +46,7 @@ QString Plugin::initialize(const QStringList & parameters)
         qApp->setStyle("Cleanlooks");
     }
 #ifdef Q_OS_MAC
-    qApp->setStyle("Cleanlooks");
+    //qApp->setStyle("Cleanlooks");
 #endif
     QString iconSuffix;
     for (int i=0; i<parameters.count(); i++) {

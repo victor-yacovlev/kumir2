@@ -88,6 +88,9 @@ int main(int argc, char **argv)
 //    app->setAttribute(Qt::AA_DontShowIconsInMenus);
     app->addLibraryPath(app->applicationDirPath());
 #endif
+#ifdef Q_OS_MAC
+   //  app->setAttribute(Qt::AA_DontUseNativeMenuBar, true);
+#endif
 #ifndef Q_OS_WIN32
     app->addLibraryPath(QDir::cleanPath(app->applicationDirPath()+"/../"+IDE_LIBRARY_BASENAME+"/kumir2/"));
 #endif

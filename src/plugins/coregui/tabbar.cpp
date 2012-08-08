@@ -6,24 +6,14 @@ TabBar::TabBar(QWidget *parent) :
     QTabBar(parent)
 {
     setTabsClosable(true);
-//    const QString backgroundColor = palette().brush(QPalette::Window).color().name();
-//    const QString highlightColor  = palette().brush(QPalette::Active, QPalette::Highlight).color().name();
+#ifdef Q_OS_MAC
     static const char * css =
-//            "QTabBar {"
-//            "  background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 %2, stop: 1.0 white);"
-//            "}"
             "QTabBar::tab {"
             "  min-width: 18ex;"
-            "  height: 28px;"
             "  text-align: right;"
-//            "  border-top: 1px solid black;"
-//            "  border-top-left-radius: 8px;"
-//            "  border-top-right-radius: 8px;"
-//            "  border-left: 1px solid black;"
-//            "  border-right: 1px solid black;"
             "}"
             "QTabBar::tab:selected {"
-//            "  background-color: white;"
+            "  background-color: $windowColor;"
             "}"
             "QTabBar::close-button {"
             "  image: url(:/coregui/close-tab.png);"
@@ -32,7 +22,24 @@ TabBar::TabBar(QWidget *parent) :
             "  image: url(:/coregui/close-tab-hovered.png);"
             "}"
             ;
-    setStyleSheet(QString::fromAscii(css));
+#else
+    static const char * css =
+            "QTabBar::tab {"
+            "  min-width: 18ex;"
+            "  height: 28px;"
+            "  text-align: right;"
+            "}"
+            "QTabBar::tab:selected {"
+            "}"
+            "QTabBar::close-button {"
+            "  image: url(:/coregui/close-tab.png);"
+            "}"
+            "QTabBar::close-button:hover {"
+            "  image: url(:/coregui/close-tab-hovered.png);"
+            "}"
+            ;
+#endif
+    setStyleSheet(QString::fromAscii(css).replace("$windowColor", palette().brush(QPalette::Window).color().name()));
     connect(this, SIGNAL(currentChanged(int)), this, SLOT(handleChanged(int)));
     v_activeIcons = QVector<QIcon>(10);
     v_normalIcons = QVector<QIcon>(10);
@@ -108,6 +115,7 @@ void TabBar::handleChanged(int index)
         tabButton(0, QTabBar::RightSide)->resize(QSize(0,0));
         tabButton(0, QTabBar::RightSide)->setVisible(false);
     }
+#ifndef Q_OS_MAC
     for (int i=0; i<qMin(count(),10); i++) {
         if (i!=index)
             setTabIcon(i, v_normalIcons[i]);
@@ -116,6 +124,7 @@ void TabBar::handleChanged(int index)
         else
             setTabToolTip(i, tr("<b>Ctrl+%1</b> activates this tab").arg(i));
     }
+#endif
     for (int i=10; i<count(); i++)
         setTabToolTip(i, "");
     if (index<10 && index>=0)
