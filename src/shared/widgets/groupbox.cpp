@@ -56,7 +56,8 @@ void GroupBox::setCollapsed(bool collapse)
 {
     b_collapsed = collapse;
     foreach ( QWidget * widget, findChildren<QWidget*>() )
-        widget->setHidden(collapse);
+        if (widget->parent()==this)
+            widget->setHidden(collapse);
     setFixedHeight(collapse? 24 : QWIDGETSIZE_MAX);
     update();
 }
