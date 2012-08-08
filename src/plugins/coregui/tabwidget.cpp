@@ -8,7 +8,6 @@ TabWidget::TabWidget(QWidget *parent) :
 {
     TabBar * tb = new TabBar(this);
     setTabBar(tb);
-//    setStyleSheet("background-color: white;");
 }
 
 void TabWidget::disableTabs()

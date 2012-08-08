@@ -100,6 +100,9 @@ MainWindow::MainWindow(Plugin * p) :
 
                 );
 
+#ifdef Q_OS_MAC
+
+#endif
     if (m_plugin->b_nosessions) {
         ui->actionRestore_previous_session->setEnabled(false);
         ui->actionRestore_previous_session->setVisible(false);

@@ -272,7 +272,10 @@ namespace ActorRobot {
         
         void reverseMark(int row,int col);
         
-        
+        bool isEditMode()
+        {
+            return editMode;
+        }
         
         inline QList<QList<FieldItm * > > FieldItems() { return Items; }
         void setFieldItems(QList<QList<FieldItm * > > FieldItems);
@@ -286,13 +289,7 @@ namespace ActorRobot {
         bool stepLeft();
         bool stepRight();
         void editField();
-        void setEditMode(bool EditMode) { 
-            editMode=EditMode;
-         //   sett=RobotModule::robotSettings();
-            LineColor = QColor(sett->value("Robot/LineColor","#C8C800").toString());
-            WallColor=QColor(sett->value("Robot/WallColor","#C8C800").toString());
-            EditColor=QColor(sett->value("Robot/EditColor","#00008C").toString());
-            NormalColor=QColor(sett->value("Robot/NormalColor","#289628").toString());}
+        void setEditMode(bool EditMode);
         void showCellDialog(FieldItm * cellClicked);
         inline FieldItm * currentCell() { return getFieldItem(robo_y,robo_x); }
         inline FieldItm * cellAt(int x,int y) { return getFieldItem(x,y); }
@@ -399,6 +396,7 @@ namespace ActorRobot {
         static QSettings * robotSettings();
         public slots:
         void reloadSettings(QSettings * settings);
+        void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
         void loadEnv();
         void resetEnv();
         void saveEnv();

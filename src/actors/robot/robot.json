@@ -85,7 +85,7 @@
 		"TextColor": {
 			"type": "color",
 			"default": "#FFFFFF",
-			"title": {"ascii": "Text color", "ru_RU": "Цвет текста"}
+			"title": {"ascii": "Text color", "ru_RU": "Цвет смиволов"}
 		},
 		"LineColor": {
 			"type": "color",

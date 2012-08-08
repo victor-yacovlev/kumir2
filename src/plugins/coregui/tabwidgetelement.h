@@ -50,9 +50,21 @@ public:
         if (enableToolBar) {
             if (!toolbarActions.isEmpty()) {
                 QToolBar * tb = new QToolBar(this);
-#ifndef Q_OS_MAC
-                tb->setStyleSheet("QToolBar { border: 0px }");
+#ifdef Q_OS_MAC
+                static const char * css = ""
+                        "QToolBar {"
+                        "   border: 0px;"
+                        "   background-color: $windowColor;"
+                        "}"
+                        "QToolButton {"
+                        "   border: 0px;"
+                        "}"
+                        "";
+#else
+                static const char * css = ""
+                        "QToolBar { border: 0px }";
 #endif
+                tb->setStyleSheet(QString::fromAscii(css).replace("$windowColor",palette().brush(QPalette::Window).color().name()));
                 l->addWidget(tb);
                 if (type!=MainWindow::WWW) {
                     tb->addActions(gr_fileActions->actions());

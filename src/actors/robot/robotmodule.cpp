@@ -633,6 +633,15 @@ namespace ActorRobot {
       //  cellDialog->setParent(Parent);
         wasEdit=false;
     };
+  void RoboField::setEditMode( bool EditMode) 
+    { 
+        editMode=EditMode;
+        sett=RobotModule::robotSettings();
+        LineColor = QColor(sett->value("LineColor","#C8C800").toString());
+        WallColor=QColor(sett->value("WallColor","#C8C800").toString());
+        EditColor=QColor(sett->value("EditColor","#00008C").toString());
+        NormalColor=QColor(sett->value("NormalColor","#289628").toString());
+    }
     void RoboField::editField()
     {
         editMode=true;
@@ -1822,7 +1831,14 @@ namespace ActorRobot {
         EditColor=QColor(sett->value("EditColor","#00008C").toString());
         NormalColor=QColor(sett->value("NormalColor","#289628").toString());
         qDebug()<<"Normal color blue"<<NormalColor.blue ();
-        this->setBackgroundBrush (QBrush(NormalColor));
+       if(!editMode) this->setBackgroundBrush (QBrush(NormalColor));
+            else  this->setBackgroundBrush (QBrush(EditColor));
+        
+        for(int i=0;i<setka.count();i++)
+        {
+            setka.at(i)->setPen(QPen(LineColor));
+        }
+    
     }
     
     
@@ -2131,6 +2147,10 @@ void RobotModule::reset()
     
 }
 
+    void RobotModule::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current){
+    qDebug()<<"RobotModuleBase::changeGlobalState";
+        };    
+    
 void RobotModule::reloadSettings(QSettings *settings)
 {
     qDebug()<<"reload settings";
@@ -2411,6 +2431,7 @@ int RobotModule::SaveToFile(QString p_FileName)
     };
     void RobotView::mousePressEvent ( QMouseEvent * event )
     {
+        if(robotField->isEditMode())return;
         if(robotField->sceneRect().height()> this->height()  &&robotField->sceneRect().width()> this->width())//field > view
         {
         pressed=true;
@@ -2420,13 +2441,20 @@ int RobotModule::SaveToFile(QString p_FileName)
         pressY=event->pos().y();
          
     };
-    void RobotView::mouseReleaseEvent ( QMouseEvent * event ){pressed=false;setCursor(Qt::OpenHandCursor);};
+    
+    void RobotView::mouseReleaseEvent ( QMouseEvent * event )
+    {
+        if(robotField->isEditMode())return;
+        pressed=false;
+        setCursor(Qt::OpenHandCursor);
+    };
+    
     void RobotView::mouseMoveEvent ( QMouseEvent * event )
-    { setCursor(Qt::ArrowCursor);
+    { if(robotField->isEditMode())return;
+        setCursor(Qt::ArrowCursor);
        if(robotField->sceneRect().height()> this->height()  &&robotField->sceneRect().width()> this->width())//field size more then view size
        {
         setCursor(Qt::OpenHandCursor);
-            
        }
         if(!pressed)return;
         setCursor(Qt::ClosedHandCursor);

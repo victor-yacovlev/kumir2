@@ -181,7 +181,7 @@ void EditorPrivate::updateInsertMenu()
     for (int i=0; i<userMacros.size(); i++) {
         Macro m = userMacros[i];
         QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
-        m.action = new QAction(m.title+" ("+escComa+m.key+")", menu_insert);
+        m.action = new QAction(m.title, menu_insert);
         m.action->setShortcut(ks);
         userMacros[i].action = m.action;
         menu_insert->addAction(m.action);
