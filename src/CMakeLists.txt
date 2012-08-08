@@ -24,6 +24,14 @@ if(XCODE)
 	
 endif(XCODE)
 
+add_custom_target(
+    GitInfoHeader ALL
+    ${CMAKE_SOURCE_DIR}/scripts/git_info.py --out=${CMAKE_CURRENT_BINARY_DIR}/GITINFO.h --root=${CMAKE_SOURCE_DIR}
+)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
 add_subdirectory(shared)
 add_subdirectory(plugins)
 #if (NOT WIN32)

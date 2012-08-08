@@ -1,7 +1,8 @@
 #include <QtCore>
 #include <QtGui>
 
-#include "../VERSION.h"
+#include "VERSION.h"
+#include "GITINFO.h"
 
 #include "extensionsystem/pluginmanager.h"
 
@@ -94,22 +95,26 @@ int main(int argc, char **argv)
 #ifndef Q_OS_WIN32
     app->addLibraryPath(QDir::cleanPath(app->applicationDirPath()+"/../"+IDE_LIBRARY_BASENAME+"/kumir2/"));
 #endif
+#ifdef GIT_BRANCH
+    static const QString branch = QString::fromAscii(GIT_BRANCH);
+#else
+    static const QString branch = QString::fromAscii("release");
+#endif
 
-    QString versionStatus;
-    if (VERSION_BETA)
-        versionStatus = QString("beta%1").arg(VERSION_BETA, 2, 10, QChar('0'));
-    else if (VERSION_ALPHA)
-        versionStatus = QString("alpha%1").arg(VERSION_ALPHA, 2, 10, QChar('0'));
-    else
-        versionStatus = QString("release");
+
     app->setApplicationVersion(QString("%1.%2.%3-%4")
                                .arg(VERSION_MAJOR)
                                .arg(VERSION_MINOR)
                                .arg(VERSION_RELEASE)
-                               .arg(versionStatus));
-#ifdef SVN_REV
-    app->setProperty("svnRev", SVN_REV);
+                               .arg(branch));
+
+#ifdef GIT_HASH
+    app->setProperty("gitHash", QString::fromAscii(GIT_HASH));
 #endif
+#ifdef GIT_LAST_MODIFIED
+    app->setProperty("lastModified", QString::fromAscii(GIT_LAST_MODIFIED));
+#endif
+
     QSplashScreen * splashScreen = 0;
 
     const QString sharePath = QDir(app->applicationDirPath()+SHARE_PATH).canonicalPath();

@@ -12,10 +12,12 @@ AboutDialog::AboutDialog(QWidget *parent) :
     ui(new Ui::AboutDialog)
 {
     ui->setupUi(this);
-    QString svnRev = "unknown";
-    if (qApp->property("svnRev").isValid())
-        svnRev = qApp->property("svnRev").toString();
-    ui->label->setText(ui->label->text().arg(qApp->applicationVersion()).arg(svnRev));
+
+    ui->version->setText(qApp->applicationVersion());
+    if (qApp->property("gitHash").isValid())
+        ui->gitHash->setText(qApp->property("gitHash").toString());
+    if (qApp->property("lastModified").isValid())
+        ui->lastModified->setText(qApp->property("lastModified").toString());
 
     ui->tableWidget->setColumnCount(2);
     ui->tableWidget->setColumnWidth(1, 1000);
