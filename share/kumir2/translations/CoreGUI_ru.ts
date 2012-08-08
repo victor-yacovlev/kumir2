@@ -470,7 +470,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="185"/>
         <source>Switch workspace...</source>
-        <translation>Сменить рабочий каталог...</translation>
+        <translation>Выбрать каталог пользователя...</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="190"/>
@@ -700,7 +700,7 @@ Using Qt version %2</source>
     <name>CoreGUI::SwitchWorkspaceDialog</name>
     <message>
         <source>Workspace Launcher</source>
-        <translation type="obsolete">Выбор рабочего каталога Кумир</translation>
+        <translation type="obsolete">Выбор каталога пользователя</translation>
     </message>
     <message>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -722,7 +722,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Workspace:</source>
-        <translation type="obsolete">Рабочий каталог:</translation>
+        <translation type="obsolete">Каталог пользователя:</translation>
     </message>
     <message>
         <source>Browse...</source>
