@@ -32,16 +32,18 @@ void GroupBox::mouseReleaseEvent(QMouseEvent *event)
 void GroupBox::paintEvent(QPaintEvent *event)
 {
     QPainter p(this);
-    p.setRenderHint(QPainter::Antialiasing, true);
-    p.setRenderHint(QPainter::TextAntialiasing, true);
     QRect lineRect(2, 2, width()-4, height()-4);
-    p.drawRoundedRect(lineRect, 6, 6);
-    p.setBrush(palette().brush(QPalette::Base));
-    p.drawEllipse(4,4,16,16);
-    p.setPen(QPen(Qt::black));
-    p.drawLine(6,12,18,12);
-    if (isCollapsed())
-        p.drawLine(12, 6, 12, 18);
+    QStyleOptionFrame frameOpt;
+    frameOpt.rect = lineRect;
+    p.save();
+    style()->drawPrimitive(QStyle::PE_FrameGroupBox, &frameOpt, &p, this);
+    p.restore();
+    QStyleOption btnOpt;
+    btnOpt.state = QStyle::State_Children | (!isCollapsed()? QStyle::State_Open : QStyle::State_None);
+    btnOpt.rect = QRect(4,4,16,16);
+    p.save();
+    style()->drawPrimitive(QStyle::PE_IndicatorBranch, &btnOpt, &p, this);
+    p.restore();
     QFont f = font();
     f.setBold(true);
     p.setFont(f);
