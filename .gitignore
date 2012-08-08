@@ -4,4 +4,6 @@ testing/scripts/*.pyc
 testing/scripts/*.pyo
 scripts/*.pyc
 scripts/*.pyo
+*~
+*.bak
 
