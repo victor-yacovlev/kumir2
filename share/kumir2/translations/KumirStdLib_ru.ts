@@ -176,173 +176,172 @@
 <context>
     <name>StdLib::ActorWindow</name>
     <message>
-        <location filename="../../../src/shared/stdlib/actorwindow.cpp" line="10"/>
         <source>Actions</source>
-        <translation>Действия</translation>
+        <translation type="obsolete">Действия</translation>
     </message>
 </context>
 <context>
     <name>StdLib::GenericInputOutput</name>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="23"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="35"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="53"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="65"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="22"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="34"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="52"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="64"/>
         <source>Negative field width in format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="39"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="38"/>
         <source>Negative precision field in format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="56"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="663"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="55"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="662"/>
         <source>yes</source>
         <translation>да</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="56"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="55"/>
         <source>no</source>
         <translation type="unfinished">нет</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="301"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="300"/>
         <source>yes</source>
         <comment>GenericInputOutput</comment>
         <translation>да</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="302"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="301"/>
         <source>no</source>
         <comment>GenericInputOutput</comment>
         <translation>нет</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="361"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="421"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="503"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="566"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="360"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="420"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="502"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="565"/>
         <source>INPUT </source>
         <translation>ВВОД </translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="366"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="426"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="452"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="508"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="536"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="571"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="365"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="425"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="451"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="507"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="535"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="570"/>
         <source>integer</source>
         <translation>цел</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="368"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="428"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="453"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="510"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="538"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="573"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="367"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="427"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="452"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="509"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="537"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="572"/>
         <source>real</source>
         <translation>вещ</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="370"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="430"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="454"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="512"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="540"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="575"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="369"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="429"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="453"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="511"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="539"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="574"/>
         <source>charect</source>
         <translation>сим</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="372"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="432"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="455"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="514"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="542"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="577"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="371"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="431"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="454"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="513"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="541"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="576"/>
         <source>string</source>
         <translation>лит</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="374"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="434"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="456"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="516"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="544"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="579"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="373"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="433"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="455"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="515"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="543"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="578"/>
         <source>boolean</source>
         <translation>лог</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="463"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="462"/>
         <source>It is not integer.</source>
         <translation>Не целое число</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="465"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="464"/>
         <source>It is not real.</source>
         <translation>Не вещественное число</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="467"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="466"/>
         <source>It is not kumBoolean.</source>
         <translation>Не логическое значение</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="469"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="468"/>
         <source>Unpaired quote.</source>
         <translation>Непарная кавычка</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="471"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="470"/>
         <source>More then one character.</source>
         <translation>Введено больше одного символа</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="473"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="472"/>
         <source>Quotes misplaced.</source>
         <translation>Несовпадающие кавычки</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="475"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="474"/>
         <source>Different quotes.</source>
         <translation>Несовпадающие кавычки</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="485"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="551"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="484"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="550"/>
         <source>Integer not entered.</source>
         <translation>Не введено целое число</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="487"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="553"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="486"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="552"/>
         <source>Real not entered.</source>
         <translation>Не введено вещественное число</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="489"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="555"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="488"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="554"/>
         <source>Boolean not entered.</source>
         <translation>Не введено логическое значение</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="491"/>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="557"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="490"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="556"/>
         <source>Charect not entered.</source>
         <translation>Не введен символ</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="559"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="558"/>
         <source>String not entered.</source>
         <translation>Не введена строка</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="597"/>
+        <location filename="../../../src/shared/stdlib/genericinputoutput.cpp" line="596"/>
         <source>Garbage after input string.</source>
         <translation>Мусор в конце ввода</translation>
     </message>
@@ -350,11 +349,10 @@
 <context>
     <name>StdLib::UserProgramThread</name>
     <message>
-        <location filename="../../../src/shared/stdlib/userprogramthread.cpp" line="32"/>
         <source>
 Evaluation finished. Close all windows to exit program.
 </source>
-        <translation>
+        <translation type="obsolete">
 Выполнение завершено. Закройте все окна для выхода из программы.
 </translation>
     </message>
