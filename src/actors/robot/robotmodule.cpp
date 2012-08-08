@@ -56,6 +56,7 @@ namespace ActorRobot {
         temperature=0;
         font.setWeight(2);
         TextColor=QColor(sett->value("Robot/TextColor","#FFFFFF").toString());
+        
     }
     
     FieldItm::~FieldItm()
@@ -620,8 +621,8 @@ namespace ActorRobot {
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
         EditColor=QColor(sett->value("EditColor","#00008C").toString());
         NormalColor=QColor(sett->value("NormalColor","#289628").toString());
-        
-        
+        showLine=QPen(QColor(0,255,0,125));
+        showLine.setWidth(3);
         
         
         fieldSize=30;
@@ -632,6 +633,8 @@ namespace ActorRobot {
         // cellDialog=CellDialog::instance();
       //  cellDialog->setParent(Parent);
         wasEdit=false;
+        showWall=new QGraphicsLineItem(0,0,0,0);
+        this->addItem(showWall);
     };
   void RoboField::setEditMode( bool EditMode) 
     { 
@@ -939,6 +942,75 @@ namespace ActorRobot {
         }
         wasEdit=true;
     }
+    
+    
+    
+    void RoboField::showUpWall(int row, int col)
+    {
+       
+        this->removeItem(showWall);
+        delete showWall;
+        showWall=new QGraphicsLineItem(upLeftCorner(row,col).x(),
+                                                                   upLeftCorner(row,col).y(),
+                                                                   upLeftCorner(row,col).x()+fieldSize,
+                                                                   upLeftCorner(row,col).y());
+        
+        showWall->setPen(showLine);
+        showWall->setZValue(200);
+
+        this->addItem(showWall);
+    qDebug()<<"Show up wall";
+    }
+    
+    void RoboField::showDownWall(int row, int col)
+    {
+        this->removeItem(showWall);
+        delete showWall;
+        showWall=new QGraphicsLineItem(upLeftCorner(row,col).x(),
+                                                                     upLeftCorner(row,col).y()+fieldSize,
+                                                                     upLeftCorner(row,col).x()+fieldSize,
+                                                                     upLeftCorner(row,col).y()+fieldSize);
+        
+        showWall->setPen(showLine);
+        showWall->setZValue(200);
+        
+        this->addItem(showWall);
+       
+    }
+    
+    void RoboField::showLeftWall(int row, int col)
+    {
+        this->removeItem(showWall);
+        delete showWall;
+        showWall=new QGraphicsLineItem(upLeftCorner(row,col).x(),
+                                                                     upLeftCorner(row,col).y(),
+                                                                     upLeftCorner(row,col).x(),
+                                                                     upLeftCorner(row,col).y()+fieldSize);
+      
+       
+        showWall->setPen(showLine);
+        showWall->setZValue(200);
+        
+        this->addItem(showWall);
+    }
+    
+    void RoboField::showRightWall(int row, int col)
+    {
+        this->removeItem(showWall);
+        delete showWall;
+       showWall=new QGraphicsLineItem(upLeftCorner(row,col).x()+fieldSize,
+                                                                      upLeftCorner(row,col).y(),
+                                                                      upLeftCorner(row,col).x()+fieldSize,
+                                                                      upLeftCorner(row,col).y()+fieldSize);
+        
+        showWall->setPen(showLine);
+        showWall->setZValue(200);
+        
+        this->addItem(showWall);
+    }
+    
+
+    
     
     void RoboField::reverseColor(int row, int col)
     {
@@ -1712,6 +1784,7 @@ namespace ActorRobot {
      */
     void RoboField::mousePressEvent ( QGraphicsSceneMouseEvent * mouseEvent )
     {
+        qDebug()<<" Field Mouse event";
         if(!editMode)
         {
             pressed=true;
@@ -1720,6 +1793,7 @@ namespace ActorRobot {
             pressY=mouseEvent->pos().y();
               mouseEvent->accept();
             return;};
+        qDebug()<<" Edit mouse press event";
         QPointF scenePos=mouseEvent->scenePos();
         int rowClicked=scenePos.y()/fieldSize;
         int colClicked=(scenePos.x()-3)/fieldSize;
@@ -1816,10 +1890,81 @@ namespace ActorRobot {
     };
     void RoboField::mouseMoveEvent ( QGraphicsSceneMouseEvent * mouseEvent )
     {
-   //  if(pressed)
-     //{
-                 // curV->centerOn(center);
-     //}
+        if(!editMode)return;
+     if(!pressed)
+     {
+         QPointF scenePos=mouseEvent->scenePos();
+         int rowClicked=scenePos.y()/fieldSize;  //clicked = mouse cur pos!!
+         int colClicked=(scenePos.x()-3)/fieldSize;
+         
+         bool left,right,up,down;
+         left=false;right=false;up=false;down=false;
+         int upD=fieldSize,downD=fieldSize,leftD=fieldSize,rightD=fieldSize;
+         qreal delta_row=scenePos.y() - rowClicked * fieldSize;
+         qreal delta_col=scenePos.x()- colClicked * fieldSize-3;
+
+         
+         if((rowClicked>rows()-1)||(rowClicked<0))
+         {mouseEvent->ignore();QGraphicsScene::mousePressEvent(mouseEvent);return;};
+         
+         if((colClicked>columns()-1)||(colClicked<0))
+         {mouseEvent->ignore();QGraphicsScene::mousePressEvent(mouseEvent);return;};
+
+      
+         if(delta_row<=MAX_CLICK_DELTA){up=true;upD=delta_row;qDebug("UP");};
+         
+         if(fieldSize-delta_row<=MAX_CLICK_DELTA){down=true;downD=fieldSize-delta_row;};
+         
+         
+         if(delta_col<=MAX_CLICK_DELTA){left=true;leftD=delta_col;};
+         
+         if(fieldSize-delta_col<=MAX_CLICK_DELTA){right=true;rightD=fieldSize-delta_col;};
+         if(mouseEvent->modifiers ()==Qt::ControlModifier) { markMode=false; } else { markMode=true; }
+         
+         //Углы клетки
+         if ((left)&&(up)) {
+             if(upD<leftD) {
+                 left=false;
+             }
+             else  {
+                 up=false;
+             }
+         }
+         if((left)&&(down)) {
+             if(downD<leftD) {
+                 left=false;
+             }
+             else  {
+                 down=false;
+             }
+         }
+         if((right)&&(up)) {
+             if(upD<rightD) {
+                 right=false;
+             }
+             else  {
+                 up=false;
+             }
+         }
+         if((right)&&(down)) {
+             if(downD<rightD) {
+                 right=false;
+             }
+             else  {
+                 down=false;
+             }
+         }
+         
+         //Ставим стены
+         if(up){showUpWall(rowClicked,colClicked);qDebug("ShowUP");};
+         if(down)showDownWall(rowClicked,colClicked);
+         if(left)showLeftWall(rowClicked,colClicked);
+         if(right)showRightWall(rowClicked,colClicked);
+         if(!up && !down && !left && !right)showWall->setVisible(false);
+         
+         
+         
+     }
     };   
     
 
@@ -1950,7 +2095,7 @@ namespace ActorRobot {
         clone->setFieldItems(Items);
         clone->robo_x=robo_x;
         clone->robo_y=robo_y;
-        
+        clone->setEditMode(editMode);
         for(int i=0;i<rows();i++)
         {
             for(int j=0;j<columns();j++)
@@ -2144,6 +2289,7 @@ void RobotModule::reset()
     //delete m_mainWidget;
     view->setScene(field);
     field->drawField(FIELD_SIZE_SMALL);
+    view->setField(field);
     
 }
 
@@ -2340,7 +2486,7 @@ void RobotModule::editEnv()
        
         startField->setEditMode(true);
         
-       // field->setEditMode(true);
+        field->setEditMode(true);
         reset();
     };    
 void RobotModule::loadEnv()
@@ -2431,7 +2577,12 @@ int RobotModule::SaveToFile(QString p_FileName)
     };
     void RobotView::mousePressEvent ( QMouseEvent * event )
     {
-        if(robotField->isEditMode())return;
+        if(robotField->isEditMode())
+        {
+         qDebug()<<"Edit mode;";
+            QGraphicsView::mousePressEvent(event);   
+            return;
+        }
         if(robotField->sceneRect().height()> this->height()  &&robotField->sceneRect().width()> this->width())//field > view
         {
         pressed=true;
@@ -2450,7 +2601,13 @@ int RobotModule::SaveToFile(QString p_FileName)
     };
     
     void RobotView::mouseMoveEvent ( QMouseEvent * event )
-    { if(robotField->isEditMode())return;
+    { if(robotField->isEditMode())
+    {
+        
+        QGraphicsView::mouseMoveEvent(event);
+        return;
+        
+    }
         setCursor(Qt::ArrowCursor);
        if(robotField->sceneRect().height()> this->height()  &&robotField->sceneRect().width()> this->width())//field size more then view size
        {
@@ -2467,7 +2624,7 @@ int RobotModule::SaveToFile(QString p_FileName)
         center.setX(center.x()+diffX);
         center.setY(center.y()+diffY);
         qDebug()<<"New center:"<<center<<" DiffX"<<diffX;
-        event->accept();
+ 
         if(diffX< width() && diffY<height())centerOn(center);
        // qDebug()<<mapFromScene (robotField->sceneRect())<<robotField->sceneRect().height();
         

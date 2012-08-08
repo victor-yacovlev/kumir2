@@ -267,6 +267,21 @@ namespace ActorRobot {
         void reverseLeftWall(int row,int col);
         void reverseRightWall(int row,int col);
         
+        
+        
+        void showUpWall(int row,int col);
+        
+        /**
+         * –£–¥–∞–ª—è–µ—Ç / —Å—Ç–∞–≤–∏—Ç –Ω–∏–∂–Ω—é—é —Å—Ç–µ–Ω—É
+         * @param row –†—è–¥
+         * @param col —Å—Ç–æ–ª–±–µ—Ü
+         *
+         */
+        void showDownWall(int row,int col);
+        void showLeftWall(int row,int col);
+        void showRightWall(int row,int col);
+        
+        
         void reverseColor(int row,int col);
         void reverseColorCurrent();
         
@@ -332,7 +347,7 @@ namespace ActorRobot {
         uint fieldSize;
         uint robo_x,robo_y;
         QWidget *Parent;
-        QPen BortLine,StLine;
+        QPen BortLine,StLine,showLine;
        // CellDialog* cellDialog;
         bool WasEditFlag;
         //TOOLS
@@ -342,6 +357,7 @@ namespace ActorRobot {
         QSettings* sett;
         QRectF	oldRect;
         qreal perssX,pressY;
+        QGraphicsLineItem* showWall;
     };
   
     class RobotView:
@@ -350,10 +366,15 @@ namespace ActorRobot {
     public:
         RobotView(RoboField * roboField);
         void  FindRobot();
+        void setField (RoboField* field)
+        {
+            robotField=field;
+        }
     protected:
         void mousePressEvent ( QMouseEvent * event );
         void mouseReleaseEvent ( QMouseEvent * event );
         void mouseMoveEvent ( QMouseEvent * event );
+       
     private:
         bool pressed;
         int pressX,pressY;
@@ -409,7 +430,7 @@ namespace ActorRobot {
         RoboField* field;
         RoboField * startField;
         bool animation;
-        QGraphicsView * view;
+        RobotView * view;
         QString curDir;
         bool pressed;
     }; // RobotModule
