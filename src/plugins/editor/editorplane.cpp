@@ -29,7 +29,7 @@ EditorPlane::EditorPlane(TextDocument * doc
                          , QWidget *parent) :
     QWidget(parent)
 {
-    e_backgroundMode = BgLines;
+    e_backgroundMode = BgPlain;
     m_analizer = analizer;
     i_highlightedLine = -1;
     i_grayLockSymbolLine = -1;
@@ -1288,7 +1288,7 @@ void EditorPlane::paintMarginBackground(QPainter *p, const QRect &rect)
     p->drawRect(rect.intersected(QRect(marginLeft, 0, width()-marginLeft, height())));
     p->setPen(QPen(QColor(0,0,255,32*i_marginAlpha/256),1));
     p->setBrush(Qt::NoBrush);
-    if (true) {
+    if (e_backgroundMode!=BgPlain) {
         // draw horizontal lines
         QRect lineRect;
         for (int y=dY; y<height(); y += dY) {

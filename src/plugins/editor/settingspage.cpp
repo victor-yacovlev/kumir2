@@ -131,11 +131,21 @@ void SettingsPage::accept()
 
     m_settings->setValue(KeyForcePressTextToLeft, ui->pressTextLeft->isChecked());
 
+    m_settings->setValue("Settings/FontCollapsed", ui->groupFont->isCollapsed());
+    m_settings->setValue("Settings/KeyboardCollapsed", ui->groupKeyboard->isCollapsed());
+    m_settings->setValue("Settings/SyntaxCollapsed", ui->groupSyntax->isCollapsed());
+    m_settings->setValue("Settings/OtherCollapsed", ui->groupOther->isCollapsed());
+
     emit settingsChanged();
 }
 
 void SettingsPage::init()
 {
+    ui->groupFont->setCollapsed(m_settings->value("Settings/FontCollapsed", 1).toBool());
+    ui->groupKeyboard->setCollapsed(m_settings->value("Settings/KeyboardCollapsed", 1).toBool());
+    ui->groupSyntax->setCollapsed(m_settings->value("Settings/SyntaxCollapsed", 1).toBool());
+    ui->groupOther->setCollapsed(m_settings->value("Settings/OtherCollapsed", 1).toBool());
+
     setButtonColor(ui->kwColor, QColor(m_settings->value(KeyColorKw, DefaultColorKw).toString()));
     setButtonColor(ui->typeColor, QColor(m_settings->value(KeyColorType, DefaultColorType).toString()));
     setButtonColor(ui->numericColor, QColor(m_settings->value(KeyColorNumeric, DefaultColorNumeric).toString()));

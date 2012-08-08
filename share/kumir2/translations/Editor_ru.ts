@@ -312,17 +312,17 @@
     <message>
         <location filename="../../../src/plugins/editor/editor.cpp" line="477"/>
         <source>Copy selection to clipboard</source>
-        <translation>Скопировать в буфер обмена</translation>
+        <translation>Скопировать</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/editor/editor.cpp" line="483"/>
         <source>Cut selection to clipboard</source>
-        <translation>Вырезать в буфер обмена</translation>
+        <translation>Вырезать</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/editor/editor.cpp" line="489"/>
         <source>Paste from clipboard</source>
-        <translation>Вставить из буфера обмена</translation>
+        <translation>Вставить</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/editor/editor.cpp" line="495"/>
