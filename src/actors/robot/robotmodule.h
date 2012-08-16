@@ -116,7 +116,8 @@ namespace ActorRobot {
         void setWalls(int wallByte);
         
         int wallByte();
-        
+        void showCharFld(qreal upLeftCornerX,qreal upLeftCornerY,int field_size);
+        void hideCharFld();
         void setUpLine(QGraphicsLineItem* Line,QPen pen);
         
         void showCharMark(qreal upLeftCornerX,qreal upLeftCornerY,int size);
@@ -203,6 +204,9 @@ namespace ActorRobot {
         QGraphicsTextItem * upCharItm;
         QGraphicsTextItem * downCharItm;
         QGraphicsTextItem * markItm;
+        QGraphicsRectItem * upCharFld;
+        QGraphicsRectItem * downCharFld;
+        
         QColor TextColor;
         
         FieldItm* sepItmUp;
@@ -223,7 +227,8 @@ namespace ActorRobot {
     public:
         void drawField(uint cellSize);//TODO Document
         void destroyField();
-        
+        void setTextEditMode(bool flag);
+        void redrawEditFields();
         void destroyRobot();
         
         /**
@@ -248,6 +253,8 @@ namespace ActorRobot {
         int saveToFile(QString fileName);
         void createRobot();
         void UpdateColors();
+        void showCursorUp(int row,int col);
+        void showCursorDown(int row,int col);   
         
         /**
          * –£–¥–∞–ª—è–µ—Ç / —Å—Ç–∞–≤–∏—Ç –≤–µ—Ä—Ö–Ω—é—é —Å—Ç–µ–Ω—É
@@ -327,6 +334,8 @@ namespace ActorRobot {
     slots:
         void roboMoved(QPointF pos);
         void cellDialogOk();
+        void timerTic();
+        
     signals:
         void MousePress(qreal x,qreal y, bool Flag);
        // void was_edit();
@@ -338,7 +347,8 @@ namespace ActorRobot {
         void mousePressEvent ( QGraphicsSceneMouseEvent * mouseEvent );
         void mouseReleaseEvent ( QGraphicsSceneMouseEvent * mouseEvent );
         void mouseMoveEvent ( QGraphicsSceneMouseEvent * mouseEvent );
-
+        void keyPressEvent ( QKeyEvent * keyEvent );  
+        QTimer * timer;
         QList<QList<FieldItm * > > Items;
         QList<QGraphicsLineItem*> setka;
         //QGraphicsView * scena;
@@ -357,19 +367,36 @@ namespace ActorRobot {
         QSettings* sett;
         QRectF	oldRect;
         qreal perssX,pressY;
-        QGraphicsLineItem* showWall;
+        QGraphicsLineItem* showWall,*keyCursor;
+        QPair<int,int> old_cell,clickCell;
+        bool textEditMode,radEditMode;
+        
+          
     };
   
+    
+    
+    
+    
+    
+    
+    
+    
     class RobotView:
     public QGraphicsView
     {
+        Q_OBJECT
     public:
         RobotView(RoboField * roboField);
         void  FindRobot();
+        void showButtons(bool flag);
         void setField (RoboField* field)
         {
             robotField=field;
         }
+    public slots:
+        void changeEditMode();
+        
     protected:
         void mousePressEvent ( QMouseEvent * event );
         void mouseReleaseEvent ( QMouseEvent * event );
@@ -379,6 +406,7 @@ namespace ActorRobot {
         bool pressed;
         int pressX,pressY;
         RoboField* robotField;
+        QToolButton * textEditBtn;
         
     };
     
@@ -433,6 +461,7 @@ namespace ActorRobot {
         RobotView * view;
         QString curDir;
         bool pressed;
+      
     }; // RobotModule
 
 } // ActorRobot
