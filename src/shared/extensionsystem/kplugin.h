@@ -35,6 +35,7 @@ public:
     State state() const;
     inline virtual bool isGuiRequired() const { return pluginSpec().gui; } // Can be overridden in special cases
     inline virtual QWidget* settingsEditorPage() { return 0; }
+    inline QSettings * pluginSettings() const { return mySettings(); }
     virtual ~KPlugin();
 protected:
     inline virtual void saveSession() const { }

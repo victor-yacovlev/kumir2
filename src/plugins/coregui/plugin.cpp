@@ -2,6 +2,7 @@
 #include "mainwindow.h"
 #include "extensionsystem/pluginmanager.h"
 #include "kumirvariableswebobject.h"
+#include "widgets/secondarywindow.h"
 #include "ui_mainwindow.h"
 #ifdef Q_OS_MACX
 #include "mac-fixes.h"
@@ -83,13 +84,15 @@ QString Plugin::initialize(const QStringList & parameters)
     connect(m_terminal, SIGNAL(message(QString)),
             m_mainWindow, SLOT(showMessage(QString)));
 
-    QDockWidget * termWindow = m_mainWindow->addSecondaryComponent(tr("Input/Output terminal"),
-                                        m_terminal,
-                                        QList<QAction*>(),
-                                        QList<QMenu*>(),
-                                        MainWindow::Terminal);
+//    QDockWidget * termWindow = m_mainWindow->addSecondaryComponent(tr("Input/Output terminal"),
+//                                        m_terminal,
+//                                        QList<QAction*>(),
+//                                        QList<QMenu*>(),
+//                                        MainWindow::Terminal);
+    m_mainWindow->ui->bottomWidget->setLayout(new QHBoxLayout);
+    m_mainWindow->ui->bottomWidget->layout()->addWidget(m_terminal);
 #ifndef Q_OS_MAC
-    termWindow->toggleViewAction()->setShortcut(QKeySequence("F12"));
+//    termWindow->toggleViewAction()->setShortcut(QKeySequence("F12"));
 #endif
 
 
@@ -100,7 +103,7 @@ QString Plugin::initialize(const QStringList & parameters)
     m_kumirProgram->setBytecodeGenerator(plugin_BytecodeGenerator);
     m_kumirProgram->setNativeGenerator(plugin_NativeGenerator);
     m_kumirProgram->setEditorPlugin(plugin_editor);
-    m_kumirProgram->setTerminal(m_terminal, termWindow);
+    m_kumirProgram->setTerminal(m_terminal, 0);
 
 
     QMap<QString,QObject*> variablesBrowserObjects;
@@ -147,16 +150,29 @@ QString Plugin::initialize(const QStringList & parameters)
     foreach (ExtensionSystem::KPlugin* o, actors) {
         ActorInterface * actor = qobject_cast<ActorInterface*>(o);
         l_plugin_actors << actor;
-        QDockWidget * w = 0;
+        QWidget * w = 0;
         if (actor->mainWidget()) {
             QWidget * actorWidget = actor->mainWidget();
             QList<QMenu*> actorMenus = actor->moduleMenus();
             bool priv = o->property("privilegedActor").toBool();
-            w = m_mainWindow->addSecondaryComponent(actor->name(),
-                                                actorWidget,
-                                                QList<QAction*>(),
-                                                actorMenus,
-                                                priv? MainWindow::StandardActor : MainWindow::WorldActor);
+//            w = m_mainWindow->addSecondaryComponent(actor->name(),
+//                                                actorWidget,
+//                                                QList<QAction*>(),
+//                                                actorMenus,
+//                                                priv? MainWindow::StandardActor : MainWindow::WorldActor);
+            QWidget * place = new QWidget(m_mainWindow);
+            m_mainWindow->ui->bottomWidget->layout()->addWidget(place);
+            Widgets::SecondaryWindow * actorWindow = new Widgets::SecondaryWindow(
+                        actorWidget,
+                        place,
+                        o->pluginSettings(),
+                        o->pluginSpec().name,
+                        true, true
+                        );
+            actorWindow->setWindowTitle(actor->name());
+            w = actorWindow;
+            m_mainWindow->ui->menuWindow->addAction(actorWindow->toggleViewAction());
+
         }
         m_kumirProgram->addActor(o, w);
     }

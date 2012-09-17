@@ -222,7 +222,7 @@ void KumirProgram::setBytecodeRun(KPlugin *run)
     connect(run, SIGNAL(resetModule(QString)), this, SLOT(handleActorResetRequest(QString)));
 }
 
-void KumirProgram::addActor(KPlugin *a, QDockWidget *w)
+void KumirProgram::addActor(KPlugin *a, QWidget *w)
 {
     connect(a, SIGNAL(sync()), this, SLOT(handleActorCommandFinished()));
     Shared::ActorInterface * aa = qobject_cast<Shared::ActorInterface*>(a);

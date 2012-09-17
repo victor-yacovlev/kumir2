@@ -37,7 +37,7 @@ public:
     inline void setMainWidget(QWidget * w) { w_mainWidget = w; }
     void setTerminal(Term * t, QDockWidget * w);
     void setBytecodeRun(KPlugin * run);
-    void addActor(KPlugin * a, QDockWidget * w);
+    void addActor(KPlugin * a, QWidget * w);
     inline QString endStatus() const { return s_endStatus; }
     ~KumirProgram();
     class KumirVariablesWebObject * variablesWebObject();
@@ -88,7 +88,7 @@ private:
     QAction * a_stop;
     QActionGroup * gr_actions;
     QString s_sourceFileName;
-    QMap<QString,QDockWidget*> m_actorWindows;
+    QMap<QString,QWidget*> m_actorWindows;
     QMap<QString,ActorInterface*> m_actors;
     int i_documentId;
     bool b_blind;

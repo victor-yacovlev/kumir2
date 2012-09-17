@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>754</width>
-    <height>554</height>
+    <width>752</width>
+    <height>552</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,24 +26,18 @@
    <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>6</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
-     <number>0</number>
-    </property>
-    <item>
-     <widget class="CoreGUI::TabWidget" name="tabWidget">
-      <property name="documentMode">
-       <bool>true</bool>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
       </property>
+      <widget class="CoreGUI::TabWidget" name="tabWidget">
+       <property name="documentMode">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QWidget" name="bottomWidget" native="true"/>
      </widget>
     </item>
    </layout>
@@ -53,8 +47,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>754</width>
-     <height>23</height>
+     <width>752</width>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
