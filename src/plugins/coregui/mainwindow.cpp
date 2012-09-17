@@ -218,25 +218,10 @@ void MainWindow::setFocusOnCentralWidget()
 void MainWindow::timerEvent(QTimerEvent *e)
 {
     checkCounterValue();
-    checkActorWindowTitles();
     e->accept();
 }
 
-void MainWindow::checkActorWindowTitles()
-{
-    QList<const KPlugin*> actors = PluginManager::instance()->loadedConstPlugins("Actor*");
-    foreach (const KPlugin* plugin, actors) {
-        ActorInterface * actor = qobject_cast<ActorInterface*>(plugin);
-        QWidget * mw = actor->mainWidget();
-        if (mw) {
-            foreach (QDockWidget * dw, l_dockWindows) {
-                if (dw->widget()==mw && !mw->windowTitle().isEmpty()) {
-                    dw->setWindowTitle(mw->windowTitle());
-                }
-            }
-        }
-    }
-}
+
 
 bool MainWindow::saveCurrentFile()
 {
@@ -707,40 +692,6 @@ TabWidgetElement * MainWindow::addCentralComponent(
 
     return element;
 }
-
-
-
-QDockWidget * MainWindow::addSecondaryComponent(const QString & title
-                                                , QWidget * c
-                                                , const QList<QAction*> & toolbarActions
-                                                , const QList<QMenu*> & menuActions
-                                                , DockWindowType type)
-{
-    QDockWidget * dock = new QDockWidget(title, this);
-    dock->setVisible(false);
-    dock->setWidget(c);
-    dock->setObjectName(title);
-    Q_UNUSED(toolbarActions);
-    if (type!=SubControl && type!=Help) {
-        ui->menuWindow->addAction(dock->toggleViewAction());
-        l_dockWindows << dock;
-    }
-    if (type!=Terminal) {
-        if (type!=SubControl && type!=Control && type!=Help) {
-            for (int i=0; i<menuActions.size(); i++) {
-                ui->menubar->addMenu(menuActions[i]);
-            }
-        }
-        dock->setFloating(true);
-    }
-    else {
-        dock->setFloating(false);
-        addDockWidget(Qt::BottomDockWidgetArea, dock, Qt::Horizontal);
-    }
-    return dock;
-}
-
-
 
 void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
 {

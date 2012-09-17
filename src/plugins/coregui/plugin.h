@@ -62,7 +62,7 @@ protected:
     QList<ActorInterface*> l_plugin_actors;
     BrowserComponent m_startPage;
     QList<Shared::BrowserComponent> l_variablesChildBrowsers;
-    QList<QDockWidget*> l_variablesChildWindows;
+    QList<QWidget*> l_variablesChildWindows;
     Term * m_terminal;
     QMap<QString,QObject*> m_browserObjects;
     KumirProgram * m_kumirProgram;

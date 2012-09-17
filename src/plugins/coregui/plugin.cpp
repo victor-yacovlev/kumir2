@@ -121,13 +121,13 @@ QString Plugin::initialize(const QStringList & parameters)
             variablesBrowser.widget, SLOT(evaluateCommand(QString,QVariantList)));
     variablesBrowser.widget->setMinimumWidth(430);
 
-    QDockWidget * variablesWindow = m_mainWindow->addSecondaryComponent(
-                tr("Variables"),
+    Widgets::SecondaryWindow * variablesWindow = new Widgets::SecondaryWindow(
                 variablesBrowser.widget,
-                QList<QAction*>(),
-                QList<QMenu*>(),
-                MainWindow::Control
-                );
+                0,
+                mySettings(),
+                "Variables");
+
+
 
     connect(m_kumirProgram->variablesWebObject(), SIGNAL(newWindowCreated(Shared::BrowserComponent)),
             this, SLOT(handleNewVariablesWindow(Shared::BrowserComponent)));
@@ -214,13 +214,8 @@ QString Plugin::initialize(const QStringList & parameters)
 //                QUrl("http://localhost/helpviewer/index.html?documents=data/russian/system.xml,data/russian/language.xml&printable=true"),
 //                m_browserObjects);
 
-    QDockWidget * helpWindow = m_mainWindow->addSecondaryComponent(
-                tr("Help"),
-                m_helpBrowser.widget,
-                QList<QAction*>(),
-                QList<QMenu*>(),
-                MainWindow::Help
-                );
+    Widgets::SecondaryWindow * helpWindow = new Widgets::SecondaryWindow(m_helpBrowser.widget,0,mySettings(),"HelpWindow");
+    helpWindow->setWindowTitle(tr("Help"));
 
     helpWindow->toggleViewAction()->setShortcut(QKeySequence("F1"));
     connect(m_mainWindow->ui->actionUsage, SIGNAL(triggered()),
@@ -237,11 +232,11 @@ QString Plugin::initialize(const QStringList & parameters)
 
 void Plugin::handleNewVariablesWindow(const Shared::BrowserComponent &browser)
 {
-    QDockWidget * window = m_mainWindow->addSecondaryComponent(tr("Variables"),
-                                        browser.widget,
-                                        QList<QAction*>(),
-                                        QList<QMenu*>(),
-                                        MainWindow::SubControl);
+    Widgets::SecondaryWindow * window = new Widgets::SecondaryWindow(
+                browser.widget,
+                0,
+                mySettings(),
+                "Variables"+QString::number(l_variablesChildBrowsers.size()));
     connect(browser.widget, SIGNAL(titleChanged(QString)),
             window, SLOT(setWindowTitle(QString)));
     connect(m_kumirProgram->variablesWebObject(), SIGNAL(jsRequest(QString,QVariantList)),
