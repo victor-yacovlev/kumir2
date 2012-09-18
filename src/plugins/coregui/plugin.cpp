@@ -28,6 +28,7 @@ QString Plugin::RecentFileKey = "History/FileDialog";
 QString Plugin::RecentFilesKey = "History/RecentFiles";
 QString Plugin::MainWindowGeometryKey = "Geometry/MainWindow";
 QString Plugin::MainWindowStateKey = "State/MainWindow";
+QString Plugin::MainWindowSplitterStateKey = "State/MainWindowSplitter";
 QString Plugin::DockVisibleKey = "DockWindow/Visible";
 QString Plugin::DockFloatingKey = "DockWindow/Floating";
 QString Plugin::DockGeometryKey = "DockWindow/Geometry";
@@ -81,6 +82,8 @@ QString Plugin::initialize(const QStringList & parameters)
     m_terminal = new Term(0);
 
 
+
+
     connect(m_terminal, SIGNAL(message(QString)),
             m_mainWindow, SLOT(showMessage(QString)));
 
@@ -90,10 +93,32 @@ QString Plugin::initialize(const QStringList & parameters)
 //                                        QList<QMenu*>(),
 //                                        MainWindow::Terminal);
     m_mainWindow->ui->bottomWidget->setLayout(new QHBoxLayout);
-    m_mainWindow->ui->bottomWidget->layout()->addWidget(m_terminal);
+    QSplitter * bottomSplitter = new QSplitter(m_mainWindow->ui->bottomWidget);
+    m_mainWindow->ui->bottomWidget->layout()->setContentsMargins(0,0,0,0);
+//    m_mainWindow->ui->bottomWidget->layout()->addWidget(m_terminal);
+    m_mainWindow->ui->bottomWidget->layout()->addWidget(bottomSplitter);
+    bottomSplitter->setOrientation(Qt::Horizontal);
+    bottomSplitter->addWidget(m_terminal);
 #ifndef Q_OS_MAC
 //    termWindow->toggleViewAction()->setShortcut(QKeySequence("F12"));
 #endif
+
+    QToolButton * btnSaveTerm = new QToolButton(m_mainWindow);
+    btnSaveTerm->setPopupMode(QToolButton::InstantPopup);
+    QMenu * menuSaveTerm = new QMenu(btnSaveTerm);
+    btnSaveTerm->setMenu(menuSaveTerm);
+    btnSaveTerm->setIcon(m_terminal->actionSaveLast()->icon());
+    menuSaveTerm->addAction(m_terminal->actionSaveLast());
+    menuSaveTerm->addAction(m_terminal->actionSaveAll());
+    m_mainWindow->statusBar()->insertWidget(0, btnSaveTerm);
+    QToolButton * btnClearTerm = new QToolButton(m_mainWindow);
+    btnClearTerm->setDefaultAction(m_terminal->actionClear());
+    m_mainWindow->statusBar()->insertWidget(1, btnClearTerm);
+    if (!parameters.contains("notabs",Qt::CaseInsensitive)) {
+        QToolButton * btnEditTerm = new QToolButton(m_mainWindow);
+        btnEditTerm->setDefaultAction(m_terminal->actionEditLast());
+        m_mainWindow->statusBar()->insertWidget(1, btnEditTerm);
+    }
 
 
     m_mainWindow->disablePascalProgram();
@@ -161,7 +186,17 @@ QString Plugin::initialize(const QStringList & parameters)
 //                                                actorMenus,
 //                                                priv? MainWindow::StandardActor : MainWindow::WorldActor);
             QWidget * place = new QWidget(m_mainWindow);
-            m_mainWindow->ui->bottomWidget->layout()->addWidget(place);
+            place->setLayout(new QHBoxLayout);
+            place->layout()->setContentsMargins(0,0,0,0);
+//            QSplitter * splitter = new QSplitter(Qt::Vertical, m_mainWindow);
+//            new QSplitterHandle(Qt::Vertical, splitter);
+//            m_mainWindow->ui->bottomWidget->layout()->addWidget(splitter);
+//            m_mainWindow->ui->bottomWidget->layout()->addWidget(place);
+            bottomSplitter->addWidget(place);
+            place->setVisible(false);
+//            splitter->setVisible(false);
+
+
             Widgets::SecondaryWindow * actorWindow = new Widgets::SecondaryWindow(
                         actorWidget,
                         place,
@@ -172,6 +207,8 @@ QString Plugin::initialize(const QStringList & parameters)
             actorWindow->setWindowTitle(actor->name());
             w = actorWindow;
             m_mainWindow->ui->menuWindow->addAction(actorWindow->toggleViewAction());
+            connect(actorWindow, SIGNAL(docked(bool)), place, SLOT(setVisible(bool)));
+//            connect(actorWindow, SIGNAL(docked(bool)), splitter, SLOT(setVisible(bool)));
 
         }
         m_kumirProgram->addActor(o, w);

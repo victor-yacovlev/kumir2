@@ -33,6 +33,7 @@ public:
     static QString RecentFilesKey;
     static QString MainWindowGeometryKey;
     static QString MainWindowStateKey;
+    static QString MainWindowSplitterStateKey;
     static QString DockVisibleKey;
     static QString DockFloatingKey;
     static QString DockGeometryKey;

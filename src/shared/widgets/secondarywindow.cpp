@@ -234,6 +234,7 @@ void SecondaryWindow::toggleDocked()
         d->lbl_title->setStyle(d->css_titleDocked);
         setParent(d->w_dockPlace);
         d->w_dockPlace->layout()->addWidget(this);
+        emit docked(true);
 
     }
     else {
@@ -249,6 +250,7 @@ void SecondaryWindow::toggleDocked()
         setParent(0);
         move(ps);
         setVisible(true);
+        emit docked(false);
     }
 }
 

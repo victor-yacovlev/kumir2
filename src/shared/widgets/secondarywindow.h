@@ -38,6 +38,8 @@ public slots:
     void setStayOnTop(bool v);
     bool isStayOnTop();
     QAction * toggleViewAction() const;
+signals:
+    void docked(bool);
 protected:
     void closeEvent(QCloseEvent *);
 private:

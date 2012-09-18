@@ -775,6 +775,7 @@ void MainWindow::loadSettings()
         move(r.topLeft());
     }
     restoreState(m_plugin->mySettings()->value(Plugin::MainWindowStateKey).toByteArray());
+    ui->splitter->restoreState(m_plugin->mySettings()->value(Plugin::MainWindowSplitterStateKey).toByteArray());
 }
 
 void MainWindow::saveSettings()
@@ -783,6 +784,7 @@ void MainWindow::saveSettings()
     QSettings * sett = m_plugin->mySettings();
     sett->setValue(Plugin::MainWindowGeometryKey, r);
     sett->setValue(Plugin::MainWindowStateKey, saveState());
+    sett->setValue(Plugin::MainWindowSplitterStateKey, ui->splitter->saveState());
 }
 
 void MainWindow::restoreSession()

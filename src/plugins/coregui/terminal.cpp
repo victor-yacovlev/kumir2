@@ -11,6 +11,7 @@ Term::Term(QWidget *parent) :
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     setMinimumWidth(450);
     QGridLayout * l = m_layout = new QGridLayout();
+    l->setContentsMargins(0,0,0,0);
     setLayout(l);
     m_plane = new Plane(this);
     l->addWidget(m_plane, 1, 1, 1, 1);
@@ -18,38 +19,38 @@ Term::Term(QWidget *parent) :
     l->addWidget(sb_vertical, 1, 2, 1, 1);
     sb_horizontal = new QScrollBar(Qt::Horizontal, this);
     l->addWidget(sb_horizontal, 2, 1, 1, 1);
-    QToolBar * tb = m_toolBar = new QToolBar(this);
-    tb->setOrientation(Qt::Vertical);
-    l->addWidget(tb, 1, 0, 2, 1);
+//    QToolBar * tb = m_toolBar = new QToolBar(this);
+//    tb->setOrientation(Qt::Vertical);
+//    l->addWidget(tb, 1, 0, 2, 1);
 
     a_saveLast = new QAction(tr("Save last output"), this);
     a_saveLast->setIcon(QIcon::fromTheme("document-save", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/document-save.png")));
     a_saveLast->setEnabled(false);
     connect(a_saveLast, SIGNAL(triggered()), this, SLOT(saveLast()));
-    tb->addAction(a_saveLast);
+//    tb->addAction(a_saveLast);
 
     a_editLast = new QAction(tr("Open last output in editor"), this);
     a_editLast->setIcon(QIcon::fromTheme("document-edit", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/document-edit.png")));
     a_editLast->setEnabled(false);
     connect(a_editLast, SIGNAL(triggered()), this, SLOT(editLast()));
-    tb->addAction(a_editLast);
+//    tb->addAction(a_editLast);
 
-    tb->addSeparator();
+//    tb->addSeparator();
 
     a_saveAll = new QAction(tr("Save all output"), this);
     a_saveAll->setIcon(QIcon::fromTheme("document-save-all", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/document-save-all.png")));
     a_saveAll->setEnabled(false);
     connect(a_saveAll, SIGNAL(triggered()), this, SLOT(saveAll()));
-    tb->addAction(a_saveAll);
+//    tb->addAction(a_saveAll);
 
-    tb->addSeparator();
+//    tb->addSeparator();
 
     a_clear = new QAction(tr("Clear output"), this);
     a_clear->setIcon(QIcon::fromTheme("edit-delete", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-delete.png")));
     a_clear->setEnabled(false);
     connect(a_clear, SIGNAL(triggered()), this, SLOT(clear()));
 
-    tb->addAction(a_clear);
+//    tb->addAction(a_clear);
     m_plane->updateScrollBars();
 
     connect(sb_vertical,SIGNAL(valueChanged(int)),m_plane, SLOT(update()));
@@ -73,15 +74,15 @@ Term::Term(QWidget *parent) :
 
 void Term::resizeEvent(QResizeEvent *e)
 {
-    const QSize sz = e->size();
-    if (sz.width()>sz.height()) {
-        m_toolBar->setOrientation(Qt::Vertical);
-        m_layout->addWidget(m_toolBar, 1, 0, 1, 1);
-    }
-    else {
-        m_toolBar->setOrientation(Qt::Horizontal);
-        m_layout->addWidget(m_toolBar, 0, 1, 1, 1);
-    }
+//    const QSize sz = e->size();
+//    if (sz.width()>sz.height()) {
+//        m_toolBar->setOrientation(Qt::Vertical);
+//        m_layout->addWidget(m_toolBar, 1, 0, 1, 1);
+//    }
+//    else {
+//        m_toolBar->setOrientation(Qt::Horizontal);
+//        m_layout->addWidget(m_toolBar, 0, 1, 1, 1);
+//    }
     e->accept();
 }
 
