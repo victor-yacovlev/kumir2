@@ -201,7 +201,7 @@ QString Plugin::initialize(const QStringList & parameters)
             actorWindow->setWindowTitle(actor->name());
             w = actorWindow;
             m_mainWindow->ui->menuWindow->addAction(actorWindow->toggleViewAction());
-            connect(actorWindow, SIGNAL(docked(bool)), place, SLOT(setVisible(bool)));
+
             foreach (QMenu* menu, actorMenus) {
                 m_mainWindow->ui->menubar->addMenu(menu);
             }

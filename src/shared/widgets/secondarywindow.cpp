@@ -138,7 +138,17 @@ SecondaryWindow::SecondaryWindow(QWidget *centralComponent,
     d->init(centralComponent, dockPlace, settings, settingsKey, resizableX, resizableY);
     if (dockPlace)
         dockPlace->installEventFilter(this);
+    connect(d->a_toggleVisible, SIGNAL(triggered(bool)), this, SLOT(checkForPlaceVisible(bool)));
 
+}
+
+void SecondaryWindow::checkForPlaceVisible(bool show)
+{
+    if (show) {
+        if (!isFloating()) {
+            d->w_dockPlace->setVisible(true);
+        }
+    }
 }
 
 bool SecondaryWindow::eventFilter(QObject *obj, QEvent *evt)
@@ -190,6 +200,9 @@ void SecondaryWindow::show()
 void SecondaryWindow::close()
 {  
     setVisible(false);
+    if (!isFloating()) {
+        d->w_dockPlace->setVisible(false);
+    }
 }
 
 void SecondaryWindow::closeEvent(QCloseEvent *e)
@@ -198,7 +211,6 @@ void SecondaryWindow::closeEvent(QCloseEvent *e)
     if (r.width()>0 && r.height()>0)
         d->m_settings->setValue("Windows/"+d->s_settingsKey+"/Geometry",r);
     QWidget::closeEvent(e);
-    emit docked(false);
 }
 
 QAction * SecondaryWindow::toggleViewAction() const
@@ -245,7 +257,7 @@ void SecondaryWindow::toggleDocked()
         d->lbl_title->setStyle(d->css_titleDocked);
         setParent(d->w_dockPlace);
         d->w_dockPlace->layout()->addWidget(this);
-        emit docked(true);
+        d->w_dockPlace->setVisible(true);
 
     }
     else {
@@ -261,7 +273,7 @@ void SecondaryWindow::toggleDocked()
         setParent(0);
         move(ps);
         setVisible(true);
-        emit docked(false);
+        d->w_dockPlace->setVisible(false);
     }
 }
 
@@ -399,7 +411,7 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
                                  q->tr("Close"));
 
     QObject::connect(btn_close, SIGNAL(clicked()),
-                     q, SLOT(hide()));
+                     q, SLOT(close()));
 
     ll->addWidget(btn_close);
 

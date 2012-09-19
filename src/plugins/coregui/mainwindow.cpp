@@ -965,7 +965,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
     }
 
     e->accept();
-
+    qApp->quit();
 }
 
 void MainWindow::switchWorkspace() {

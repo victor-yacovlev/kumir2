@@ -38,11 +38,11 @@ public slots:
     void setStayOnTop(bool v);
     bool isStayOnTop();
     QAction * toggleViewAction() const;
-signals:
-    void docked(bool);
 protected:
     void closeEvent(QCloseEvent *);
     bool eventFilter(QObject *obj, QEvent *evt);
+protected slots:
+    void checkForPlaceVisible(bool show);
 private:
     class SecondaryWindowPrivate *d;
 };
