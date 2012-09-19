@@ -694,9 +694,9 @@
      objecttolerance="10"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2"
-     inkscape:cx="143.87286"
-     inkscape:cy="943.82394"
+     inkscape:zoom="5.6568542"
+     inkscape:cx="214.13693"
+     inkscape:cy="1020.2378"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -886,7 +886,7 @@
          inkscape:export-filename="/home/victor/Work/git/kumir2/share/kumir2/widgets/secondarywindow/oxygen/top1.png"
          id="g4872">
         <rect
-           style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:1;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           style="fill:#999999;fill-opacity:1;stroke:none;stroke-width:1;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
            id="rect3293"
            width="10"
            height="1"
@@ -945,7 +945,7 @@
          id="g4280">
         <path
            sodipodi:type="arc"
-           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           style="fill:none;fill-opacity:1;stroke:#999999;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
            id="path2383-4"
            sodipodi:cx="93.944183"
            sodipodi:cy="162.92287"
@@ -1000,7 +1000,7 @@
          id="g4294">
         <path
            sodipodi:type="arc"
-           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           style="fill:none;fill-opacity:1;stroke:#999999;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
            id="path3177-8"
            sodipodi:cx="93.944183"
            sodipodi:cy="162.92287"
@@ -1040,7 +1040,7 @@
          id="g4298">
         <path
            sodipodi:type="arc"
-           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           style="fill:none;fill-opacity:1;stroke:#999999;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
            id="path3220-2-8"
            sodipodi:cx="93.944183"
            sodipodi:cy="162.92287"
@@ -1088,7 +1088,7 @@
          id="g4304">
         <path
            sodipodi:type="arc"
-           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           style="fill:none;fill-opacity:1;stroke:#999999;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
            id="path3179-6"
            sodipodi:cx="93.944183"
            sodipodi:cy="162.92287"
@@ -1142,7 +1142,7 @@
          id="g4287">
         <path
            sodipodi:type="arc"
-           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           style="fill:none;fill-opacity:1;stroke:#999999;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
            id="path3220-6"
            sodipodi:cx="93.944183"
            sodipodi:cy="162.92287"
@@ -1197,7 +1197,7 @@
          transform="translate(5.496863,55.075697)">
         <path
            sodipodi:type="arc"
-           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           style="fill:none;fill-opacity:1;stroke:#999999;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
            id="path2383-4-8"
            sodipodi:cx="93.944183"
            sodipodi:cy="162.92287"
@@ -1252,7 +1252,7 @@
          transform="translate(5.250002,55.000003)">
         <path
            sodipodi:type="arc"
-           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           style="fill:none;fill-opacity:1;stroke:#999999;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
            id="path3177-8-5"
            sodipodi:cx="93.944183"
            sodipodi:cy="162.92287"
@@ -1292,7 +1292,7 @@
          transform="translate(3.278851,53.319552)">
         <path
            sodipodi:type="arc"
-           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           style="fill:none;fill-opacity:1;stroke:#999999;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
            id="path3220-2-8-5"
            sodipodi:cx="93.944183"
            sodipodi:cy="162.92287"
@@ -1340,7 +1340,7 @@
          transform="translate(4.991171,55.049537)">
         <path
            sodipodi:type="arc"
-           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           style="fill:none;fill-opacity:1;stroke:#999999;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
            id="path3179-6-7"
            sodipodi:cx="93.944183"
            sodipodi:cy="162.92287"
@@ -1394,7 +1394,7 @@
          transform="translate(5.250002,55.000003)">
         <path
            sodipodi:type="arc"
-           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           style="fill:none;fill-opacity:1;stroke:#999999;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
            id="path3220-6-9"
            sodipodi:cx="93.944183"
            sodipodi:cy="162.92287"
@@ -1449,7 +1449,7 @@
          transform="translate(1.2500018,107)">
         <path
            sodipodi:type="arc"
-           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           style="fill:none;fill-opacity:1;stroke:#999999;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
            id="path2383-4-3"
            sodipodi:cx="93.944183"
            sodipodi:cy="162.92287"
@@ -1504,7 +1504,7 @@
          transform="translate(1.2500018,107)">
         <path
            sodipodi:type="arc"
-           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           style="fill:none;fill-opacity:1;stroke:#999999;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
            id="path3177-8-6"
            sodipodi:cx="93.944183"
            sodipodi:cy="162.92287"
@@ -1544,7 +1544,7 @@
          transform="translate(1.2500018,106.94455)">
         <path
            sodipodi:type="arc"
-           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           style="fill:none;fill-opacity:1;stroke:#999999;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
            id="path3220-2-8-0"
            sodipodi:cx="93.944183"
            sodipodi:cy="162.92287"
@@ -1592,7 +1592,7 @@
          transform="translate(1.2500018,107.17454)">
         <path
            sodipodi:type="arc"
-           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           style="fill:none;fill-opacity:1;stroke:#999999;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
            id="path3179-6-2"
            sodipodi:cx="93.944183"
            sodipodi:cy="162.92287"
@@ -1646,7 +1646,7 @@
          transform="translate(1.2500018,107)">
         <path
            sodipodi:type="arc"
-           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           style="fill:none;fill-opacity:1;stroke:#999999;stroke-width:9.99092770000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
            id="path3220-6-6"
            sodipodi:cx="93.944183"
            sodipodi:cy="162.92287"
@@ -1693,7 +1693,7 @@
     </g>
     <g
        id="g4309"
-       inkscape:export-filename="/home/victor/Work/git/kumir2/share/kumir2/widgets/secondarywindow/generic/top_docked0.png"
+       inkscape:export-filename="/home/victor/Work/git/kumir2/share/kumir2/widgets/secondarywindow/oxygen/top_docked0.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90">
       <rect
@@ -1702,7 +1702,7 @@
          height="17.942835"
          width="3.9986842"
          id="rect4154"
-         style="fill:#000000;fill-opacity:0.1254902;stroke:none" />
+         style="fill:#000000;fill-opacity:0.04901961;stroke:none" />
       <g
          transform="matrix(0.1112989,0,0,1,168.85378,-1.6643569)"
          inkscape:export-ydpi="90"
@@ -1764,7 +1764,7 @@
     </g>
     <g
        id="g4300"
-       inkscape:export-filename="/home/victor/Work/git/kumir2/share/kumir2/widgets/secondarywindow/generic/top_docked1.png"
+       inkscape:export-filename="/home/victor/Work/git/kumir2/share/kumir2/widgets/secondarywindow/oxygen/top_docked1.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90">
       <g
@@ -1773,7 +1773,7 @@
          inkscape:export-filename="/home/victor/Work/git/kumir2/share/kumir2/widgets/secondarywindow/generic/top_docked1.png"
          id="g4198">
         <rect
-           style="fill:#000000;fill-opacity:0.1254902;stroke:none"
+           style="fill:#000000;fill-opacity:0.04901961;stroke:none"
            id="rect4154-7"
            width="4"
            height="17.942835"
@@ -1847,7 +1847,7 @@
          height="1"
          width="32"
          id="rect3293-5"
-         style="fill:#000000;fill-opacity:1;stroke:none" />
+         style="fill:#999999;fill-opacity:1;stroke:none" />
       <rect
          transform="matrix(0,-1,1,0,0,0)"
          inkscape:export-ydpi="90"
@@ -1858,7 +1858,7 @@
          height="1"
          width="22"
          id="rect3293-5-5"
-         style="fill:#000000;fill-opacity:1;stroke:none" />
+         style="fill:#999999;fill-opacity:1;stroke:none" />
     </g>
     <g
        id="g4454"
@@ -1893,7 +1893,7 @@
          height="1"
          width="74"
          id="rect3293-5-7"
-         style="fill:#000000;fill-opacity:1;stroke:none" />
+         style="fill:#999999;fill-opacity:1;stroke:none" />
       <rect
          transform="matrix(0,-1,1,0,0,0)"
          inkscape:export-ydpi="90"
@@ -1904,7 +1904,7 @@
          height="1"
          width="22"
          id="rect3293-5-5-8"
-         style="fill:#000000;fill-opacity:1;stroke:none" />
+         style="fill:#999999;fill-opacity:1;stroke:none" />
     </g>
     <g
        id="g4470"
@@ -1932,7 +1932,7 @@
          height="1"
          width="4"
          id="rect3293-4-5"
-         style="fill:#000000;fill-opacity:1;stroke:none" />
+         style="fill:#999999;fill-opacity:1;stroke:none" />
     </g>
     <g
        transform="translate(0.562973,-13.437546)"
@@ -1960,7 +1960,7 @@
          height="1"
          width="4"
          id="rect3293-4-5-2"
-         style="fill:#000000;fill-opacity:1;stroke:none" />
+         style="fill:#999999;fill-opacity:1;stroke:none" />
     </g>
     <g
        transform="translate(0.31297299,-1.6875463)"
@@ -1988,7 +1988,7 @@
          height="1"
          width="4"
          id="rect3293-4-5-1"
-         style="fill:#000000;fill-opacity:1;stroke:none" />
+         style="fill:#999999;fill-opacity:1;stroke:none" />
     </g>
     <g
        id="g4557"
@@ -2005,7 +2005,7 @@
          height="1"
          width="4"
          id="rect3293-4-5-1-7"
-         style="fill:#000000;fill-opacity:1;stroke:none" />
+         style="fill:#999999;fill-opacity:1;stroke:none" />
       <rect
          inkscape:export-ydpi="90"
          inkscape:export-xdpi="90"
@@ -2015,7 +2015,7 @@
          height="1"
          width="4"
          id="rect3293-4-5-1-7-8"
-         style="fill:#000000;fill-opacity:1;stroke:none" />
+         style="fill:#999999;fill-opacity:1;stroke:none" />
     </g>
     <g
        transform="matrix(0,-1,1,0,124.93586,290.52828)"
@@ -2043,7 +2043,7 @@
          height="1"
          width="4"
          id="rect3293-4-5-1-5"
-         style="fill:#000000;fill-opacity:1;stroke:none" />
+         style="fill:#999999;fill-opacity:1;stroke:none" />
     </g>
     <g
        transform="matrix(0,-1,1,0,129.45748,291.87158)"
@@ -2061,7 +2061,7 @@
          height="1"
          width="4"
          id="rect3293-4-5-1-7-6"
-         style="fill:#000000;fill-opacity:1;stroke:none" />
+         style="fill:#999999;fill-opacity:1;stroke:none" />
       <rect
          inkscape:export-ydpi="90"
          inkscape:export-xdpi="90"
@@ -2071,7 +2071,7 @@
          height="1"
          width="4"
          id="rect3293-4-5-1-7-8-6"
-         style="fill:#000000;fill-opacity:1;stroke:none" />
+         style="fill:#999999;fill-opacity:1;stroke:none" />
     </g>
     <g
        id="g4470-0"
@@ -2099,7 +2099,7 @@
          height="1"
          width="4"
          id="rect3293-4-5-0"
-         style="fill:#000000;fill-opacity:1;stroke:none" />
+         style="fill:#999999;fill-opacity:1;stroke:none" />
     </g>
     <g
        transform="matrix(-1,0,0,1,544.40553,-16.156319)"
@@ -2127,7 +2127,7 @@
          height="1"
          width="4"
          id="rect3293-4-5-2-3"
-         style="fill:#000000;fill-opacity:1;stroke:none" />
+         style="fill:#999999;fill-opacity:1;stroke:none" />
     </g>
     <g
        transform="matrix(-1,0,0,1,544.65553,-4.40632)"
@@ -2155,7 +2155,7 @@
          height="1"
          width="4"
          id="rect3293-4-5-1-4"
-         style="fill:#000000;fill-opacity:1;stroke:none" />
+         style="fill:#999999;fill-opacity:1;stroke:none" />
     </g>
   </g>
 </svg>
