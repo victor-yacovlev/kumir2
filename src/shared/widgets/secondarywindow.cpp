@@ -136,7 +136,18 @@ SecondaryWindow::SecondaryWindow(QWidget *centralComponent,
     d = new SecondaryWindowPrivate;
     d->q = this;
     d->init(centralComponent, dockPlace, settings, settingsKey, resizableX, resizableY);
+    if (dockPlace)
+        dockPlace->installEventFilter(this);
 
+}
+
+bool SecondaryWindow::eventFilter(QObject *obj, QEvent *evt)
+{
+    if (obj==d->w_dockPlace && evt->type()==QEvent::Resize && !isFloating()) {
+        QResizeEvent * re = static_cast<QResizeEvent*>(evt);
+        resize(re->size());
+    }
+    return QObject::eventFilter(obj, evt);
 }
 
 void SecondaryWindow::setWindowTitle(const QString &title)
@@ -187,7 +198,7 @@ void SecondaryWindow::closeEvent(QCloseEvent *e)
     if (r.width()>0 && r.height()>0)
         d->m_settings->setValue("Windows/"+d->s_settingsKey+"/Geometry",r);
     QWidget::closeEvent(e);
-
+    emit docked(false);
 }
 
 QAction * SecondaryWindow::toggleViewAction() const

@@ -42,6 +42,7 @@ signals:
     void docked(bool);
 protected:
     void closeEvent(QCloseEvent *);
+    bool eventFilter(QObject *obj, QEvent *evt);
 private:
     class SecondaryWindowPrivate *d;
 };

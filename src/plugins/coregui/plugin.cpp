@@ -188,14 +188,8 @@ QString Plugin::initialize(const QStringList & parameters)
             QWidget * place = new QWidget(m_mainWindow);
             place->setLayout(new QHBoxLayout);
             place->layout()->setContentsMargins(0,0,0,0);
-//            QSplitter * splitter = new QSplitter(Qt::Vertical, m_mainWindow);
-//            new QSplitterHandle(Qt::Vertical, splitter);
-//            m_mainWindow->ui->bottomWidget->layout()->addWidget(splitter);
-//            m_mainWindow->ui->bottomWidget->layout()->addWidget(place);
             bottomSplitter->addWidget(place);
             place->setVisible(false);
-//            splitter->setVisible(false);
-
 
             Widgets::SecondaryWindow * actorWindow = new Widgets::SecondaryWindow(
                         actorWidget,
@@ -208,7 +202,9 @@ QString Plugin::initialize(const QStringList & parameters)
             w = actorWindow;
             m_mainWindow->ui->menuWindow->addAction(actorWindow->toggleViewAction());
             connect(actorWindow, SIGNAL(docked(bool)), place, SLOT(setVisible(bool)));
-//            connect(actorWindow, SIGNAL(docked(bool)), splitter, SLOT(setVisible(bool)));
+            foreach (QMenu* menu, actorMenus) {
+                m_mainWindow->ui->menubar->addMenu(menu);
+            }
 
         }
         m_kumirProgram->addActor(o, w);
