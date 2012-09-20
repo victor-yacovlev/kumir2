@@ -27,6 +27,8 @@ public:
     QList<QVariant> algOptResults() const;//optional results
     inline class QWidget* mainWidget() { return 0; }
     inline class QWidget* pultWidget() { return 0; }
+    inline QString mainIconName() const { return ""; }
+    inline QString pultIconName() const { return ""; }
     inline QList<class QMenu*> moduleMenus() const { return QList<class QMenu*>(); }
     inline void setAnimationEnabled(bool) {}
     void reset();

@@ -52,6 +52,7 @@ MainWindow::MainWindow(Plugin * p) :
     connect(ui->actionSave_as, SIGNAL(triggered()), this, SLOT(saveCurrentFileAs()));
 
     gr_otherActions = new QActionGroup(this);
+    gr_otherActions->setExclusive(false);
 
     a_notAvailable = new QAction(this);
     a_notAvailable->setText(tr("No actions for this tab"));

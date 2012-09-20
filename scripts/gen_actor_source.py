@@ -337,8 +337,24 @@ hName = actorCPPName.lower()+"plugin.h"
 hIfnDef = hName.replace(".","_").upper()
 cppName = actorCPPName.lower()+"plugin.cpp"
 actorHasGui = "false"
+mainIconName = ""
+pultIconName = ""
 if actor.has_key("gui"):
     actorHasGui = "true"
+    if actor["gui"].has_key("windows"):
+        for w in actor["gui"]["windows"]:
+            try:
+                if w["role"]=="main":
+                    mainIconName = w["icon"]
+            except:
+                mainIconName = ""
+            try:
+                if w["role"]=="pult":
+                    pultIconName = w["icon"]
+            except:
+                pultIconName = ""
+
+
 
 if update:
     h = open(hName, "w")
@@ -370,6 +386,8 @@ public:
     // Actor information
     QStringList funcList() const;
     QString name() const;
+    inline QString mainIconName() const { return "%s"; }
+    inline QString pultIconName() const { return "%s"; }
     // Actor GUI access
     QWidget* mainWidget();
     QWidget* pultWidget();
@@ -455,6 +473,8 @@ signals:
     actorCPPName+"AsyncRunThread",
     actorCPPName+"Plugin",
     actorHasGui,
+    mainIconName,
+    pultIconName,
     actorCPPName+"ModuleBase",
     asyncClassDecl,
     actorCPPNameSpace,

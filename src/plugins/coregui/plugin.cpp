@@ -169,7 +169,6 @@ QString Plugin::initialize(const QStringList & parameters)
     KPlugin * kumirRunner = myDependency("KumirCodeRun");
     //Q_CHECK_PTR(kumirRunner);
     m_kumirProgram->setBytecodeRun(kumirRunner);
-
     QList<ExtensionSystem::KPlugin*> actors = loadedPlugins("Actor*");
     actors += loadedPlugins("st_funct");
     foreach (ExtensionSystem::KPlugin* o, actors) {
@@ -205,9 +204,20 @@ QString Plugin::initialize(const QStringList & parameters)
             actorWindow->setWindowTitle(actor->name());
             w = actorWindow;
             m_mainWindow->ui->menuWindow->addAction(actorWindow->toggleViewAction());
+            if (!actor->mainIconName().isEmpty()) {
+                const QString iconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->mainIconName()+".png";
+                const QString smallIconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->mainIconName()+"_22x22.png";
+                QIcon mainIcon = QIcon(iconFileName);
+                if (QFile::exists(smallIconFileName))
+                    mainIcon.addFile(smallIconFileName, QSize(22,22));
+                actorWindow->setWindowIcon(mainIcon);
+                actorWindow->toggleViewAction()->setIcon(mainIcon);
+                m_mainWindow->gr_otherActions->addAction(actorWindow->toggleViewAction());
+
+            }
 
             foreach (QMenu* menu, actorMenus) {
-                m_mainWindow->ui->menubar->addMenu(menu);
+                m_mainWindow->ui->menubar->insertMenu(m_mainWindow->ui->menuHelp->menuAction(), menu);
             }
 
         }
