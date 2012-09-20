@@ -57,6 +57,7 @@ public:
     QString css_titleDocked;
 
     SecondaryWindow *q;
+    bool b_visible;
     QString s_settingsKey;
     QSettings * m_settings;
 
@@ -158,11 +159,29 @@ void SecondaryWindow::checkForPlaceVisible(bool show)
     }
 }
 
-void SecondaryWindow::restoreDockedState()
+void SecondaryWindow::restoreState()
 {
     bool mustDocked = d->m_settings->value("WindowDocked/"+d->s_settingsKey, false).toBool();
-    if (isFloating() && mustDocked)
+    if (isFloating() && mustDocked) {
         toggleDocked();
+    }
+    bool mustVisible = d->m_settings->value("WindowVisible/"+d->s_settingsKey, false).toBool();
+    if (!isFloating()) {
+        setVisible(mustVisible);
+        d->w_dockPlace->setVisible(mustVisible);
+    }
+}
+
+void SecondaryWindow::saveState()
+{
+    QRect r(x(), y(), width(), height());
+    if (r.width()>0 && r.height()>0)
+        d->m_settings->setValue("Windows/"+d->s_settingsKey+"/Geometry",r);
+    if (d->w_dockPlace) {
+        d->m_settings->setValue("DockPlace/"+d->s_settingsKey+"/Size", d->w_dockPlace->size());
+        d->m_settings->setValue("WindowDocked/"+d->s_settingsKey, !isFloating());
+    }
+    d->m_settings->setValue("WindowVisible/"+d->s_settingsKey, d->b_visible);
 }
 
 bool SecondaryWindow::eventFilter(QObject *obj, QEvent *evt)
@@ -223,6 +242,7 @@ void SecondaryWindow::closeEvent(QCloseEvent *e)
         d->m_settings->setValue("DockPlace/"+d->s_settingsKey+"/Size", d->w_dockPlace->size());
         d->m_settings->setValue("WindowDocked/"+d->s_settingsKey, false);
     }
+    d->b_visible = false;
     QWidget::closeEvent(e);
 }
 
@@ -249,10 +269,14 @@ void SecondaryWindow::setVisible(bool visible)
             d->m_settings->setValue("Windows/"+d->s_settingsKey+"/Geometry",r);
         if (d->w_dockPlace) {
             d->m_settings->setValue("DockPlace/"+d->s_settingsKey+"/Size", d->w_dockPlace->size());
-            d->m_settings->setValue("WindowDocked/"+d->s_settingsKey, false);
+            d->m_settings->setValue("WindowDocked/"+d->s_settingsKey, !isFloating());
+            if (!isFloating())
+                d->w_dockPlace->setVisible(false);
         }
     }
     d->a_toggleVisible->setChecked(visible);
+    d->m_settings->setValue("WindowVisible/"+d->s_settingsKey, visible);
+    d->b_visible = visible; // required for saving state
 }
 
 bool SecondaryWindow::isFloating() const
@@ -271,6 +295,8 @@ void SecondaryWindow::toggleDocked()
     }
     d->w_dockPlace->layout()->setContentsMargins(0,0,0,0);
     d->w_dockPlace->layout()->setSpacing(0);
+    bool wasVisible = isVisible();
+    bool wasVisibleFlag = d->m_settings->value("WindowVisible/"+d->s_settingsKey, false).toBool();
     if (isFloating()) {
         setVisible(false);
         d->w_bottomBorder->setVisible(false);
@@ -283,14 +309,14 @@ void SecondaryWindow::toggleDocked()
         QSize dockSize = d->m_settings->value("DockPlace/"+d->s_settingsKey+"/Size",
                                               size()
                                               ).toSize();
-        d->w_dockPlace->setVisible(true);
+        d->w_dockPlace->setVisible(wasVisible);
         setParent(d->w_dockPlace);
         d->w_dockPlace->layout()->addWidget(this);
         d->w_centralWidget->setFixedHeight(QWIDGETSIZE_MAX);
         d->w_centralWidget->setFixedWidth(QWIDGETSIZE_MAX);
         setFixedHeight(QWIDGETSIZE_MAX);
         setFixedWidth(QWIDGETSIZE_MAX);
-        setVisible(true);
+        setVisible(wasVisible);
         d->w_dockPlace->resize(dockSize);
         d->m_settings->setValue("WindowDocked/"+d->s_settingsKey, true);
     }
@@ -308,10 +334,12 @@ void SecondaryWindow::toggleDocked()
         setParent(d->w_mainWindow);
         setWindowFlags(windowFlags() | Qt::Window);
         move(ps);
-        setVisible(true);
+        setVisible(wasVisible);
         d->w_dockPlace->setVisible(false);
         d->m_settings->setValue("WindowDocked/"+d->s_settingsKey, false);
     }
+    d->m_settings->setValue("WindowVisible/"+d->s_settingsKey, wasVisibleFlag); // required for restoring state
+    d->b_visible = wasVisibleFlag; // required for restoring state
     SecondaryWindowButton * btn = static_cast<SecondaryWindowButton*>(d->btn_toggleDocked);
     btn->forceUnhighlight();
 }
@@ -319,6 +347,7 @@ void SecondaryWindow::toggleDocked()
 void SecondaryWindow::setSettingsObject(QSettings *settings)
 {
     d->m_settings = settings;
+    restoreState();
 }
 
 // class SecondaryWindowPrivate
@@ -330,6 +359,7 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
                                const QString &settingsKey,
                                bool resizableX, bool resizableY)
 {
+    b_visible = false;
     w_centralWidget = centralWidget;
     w_dockPlace = placeWidget;
     w_mainWindow = mainWindow;

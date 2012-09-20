@@ -391,6 +391,8 @@ void Plugin::saveSession() const
     m_mainWindow->saveSettings();
     mySettings()->setValue("BottomSplitterGeometry", m_bottomSplitter->saveGeometry());
     mySettings()->setValue("BottomSplitterState", m_bottomSplitter->saveState());
+    foreach (Widgets::SecondaryWindow * secWindow, l_secondaryWindows)
+        secWindow->saveState();
 }
 
 
@@ -422,7 +424,7 @@ void Plugin::restoreSession()
             m_mainWindow->newPythonProgram();
     }
     foreach (Widgets::SecondaryWindow * secWindow, l_secondaryWindows)
-        secWindow->restoreDockedState();
+        secWindow->restoreState();
     m_bottomSplitter->restoreGeometry(mySettings()->value("BottomSplitterGeometry").toByteArray());
     m_bottomSplitter->restoreState(mySettings()->value("BottomSplitterState").toByteArray());
 }

@@ -39,7 +39,8 @@ public slots:
     bool isStayOnTop();
     QAction * toggleViewAction() const;
     void setSettingsObject(QSettings * settings);
-    void restoreDockedState();
+    void restoreState();
+    void saveState();
 protected:
     void closeEvent(QCloseEvent *);
     bool eventFilter(QObject *obj, QEvent *evt);
