@@ -13,7 +13,7 @@ PainterWindow::PainterWindow(PainterModule * module, QWidget *parent) :
     m_module(module)
 {
     setParent(parent);
-    setMinimumSize(400, 300);
+    setMinimumSize(500, 300);
     ui->setupUi(this);
     ui->horizontalRuler->setScrollBar(ui->scrollArea->horizontalScrollBar());
     ui->verticalRuler->setScrollBar(ui->scrollArea->verticalScrollBar());

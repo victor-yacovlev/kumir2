@@ -521,6 +521,8 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
         q->resize(r.size());
         q->move(r.topLeft());
     }
+    if (w_dockPlace)
+        w_dockPlace->setMinimumWidth(w_centralWidget->minimumWidth());
 }
 
 void SecondaryWindowPrivate::timerEvent(QTimerEvent *e)
