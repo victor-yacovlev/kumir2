@@ -87,7 +87,9 @@ MainWindow::MainWindow(Plugin * p) :
     connect(ui->actionUsage, SIGNAL(triggered()), this, SLOT(showUserManual()));
 
     installEventFilter(this);
+#ifndef Q_OS_MAC
     installEventFilter(menuBar());
+#endif
 
     ui->actionRecent_files->setMenu(new QMenu());
     connect(ui->actionRecent_files->menu(), SIGNAL(aboutToShow()), this, SLOT(prepareRecentFilesMenu()));
@@ -121,15 +123,16 @@ QString MainWindow::StatusbarWidgetCSS =
 
 void MainWindow::changeFocusOnMenubar()
 {
-    QMenu * firstMenu = menuBar()->findChild<QMenu*>();
-    if (!menuBar()->hasFocus()) {
-        menuBar()->setFocus();
+    QMenuBar * mb = menuBar();
+    QMenu * firstMenu = mb->findChild<QMenu*>();
+    if (!mb->hasFocus()) {
+        mb->setFocus();
         if (firstMenu) {
-            menuBar()->setActiveAction(firstMenu->menuAction());
+            mb->setActiveAction(firstMenu->menuAction());
         }
     }
     else {
-        menuBar()->setActiveAction(0);
+        mb->setActiveAction(0);
         setFocusOnCentralWidget();
     }
 }
@@ -696,8 +699,9 @@ TabWidgetElement * MainWindow::addCentralComponent(
 void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
 {
     QList<QMenu*> menus;
-    for (int i=0; i<menuBar()->children().size(); i++) {
-        QMenu * m = qobject_cast<QMenu*>(menuBar()->children()[i]);
+    QMenuBar * mb = menuBar();
+    for (int i=0; i<mb->children().size(); i++) {
+        QMenu * m = qobject_cast<QMenu*>(mb->children()[i]);
         if (m)
             menus << m;
     }
@@ -712,7 +716,7 @@ void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
             }
         }
         if (!found) {
-            QMenu * menu = new QMenu(title, menuBar());
+            QMenu * menu = new QMenu(title, mb);
             menu->setWindowTitle(menu->title());
             //            menu->setTearOffEnabled(true);
             if (tabDependent) {
@@ -726,7 +730,7 @@ void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
                 }
                 menu->addActions(actions);
             }
-            menuBar()->insertMenu(ui->menuWindow->menuAction(), menu);
+            mb->insertMenu(ui->menuWindow->menuAction(), menu);
         }
     }
 }

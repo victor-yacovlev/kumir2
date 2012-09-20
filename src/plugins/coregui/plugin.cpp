@@ -43,13 +43,10 @@ QString Plugin::initialize(const QStringList & parameters)
     const QStringList BlacklistedThemes = QStringList()
             << "iaorakde" << "iaoraqt" << "iaora";
     const QString currentStyleName = qApp->style()->objectName().toLower();
-//    qDebug() << currentStyleName;
     if (BlacklistedThemes.contains(currentStyleName)) {
         qApp->setStyle("Cleanlooks");
     }
-#ifdef Q_OS_MAC
-    //qApp->setStyle("Cleanlooks");
-#endif
+
     QString iconSuffix;
     for (int i=0; i<parameters.count(); i++) {
         const QString param = parameters[i];
@@ -79,9 +76,9 @@ QString Plugin::initialize(const QStringList & parameters)
         return "Can't load editor plugin!";
 //    if (!plugin_NativeGenerator)
 //        return "Can't load c-generator plugin!";
-    m_terminal = new Term(0);
-
-
+    m_terminal = new Term(m_mainWindow);
+    m_terminal->sizePolicy().setHorizontalStretch(5);
+    m_terminal->sizePolicy().setHorizontalPolicy(QSizePolicy::Ignored);
 
 
     connect(m_terminal, SIGNAL(message(QString)),
@@ -94,11 +91,13 @@ QString Plugin::initialize(const QStringList & parameters)
 //                                        MainWindow::Terminal);
     m_mainWindow->ui->bottomWidget->setLayout(new QHBoxLayout);
     QSplitter * bottomSplitter = new QSplitter(m_mainWindow->ui->bottomWidget);
+    m_bottomSplitter = bottomSplitter;
     m_mainWindow->ui->bottomWidget->layout()->setContentsMargins(0,0,0,0);
 //    m_mainWindow->ui->bottomWidget->layout()->addWidget(m_terminal);
     m_mainWindow->ui->bottomWidget->layout()->addWidget(bottomSplitter);
     bottomSplitter->setOrientation(Qt::Horizontal);
     bottomSplitter->addWidget(m_terminal);
+
 #ifndef Q_OS_MAC
 //    termWindow->toggleViewAction()->setShortcut(QKeySequence("F12"));
 #endif
@@ -149,6 +148,7 @@ QString Plugin::initialize(const QStringList & parameters)
     Widgets::SecondaryWindow * variablesWindow = new Widgets::SecondaryWindow(
                 variablesBrowser.widget,
                 0,
+                m_mainWindow,
                 mySettings(),
                 "Variables");
 
@@ -188,16 +188,20 @@ QString Plugin::initialize(const QStringList & parameters)
             QWidget * place = new QWidget(m_mainWindow);
             place->setLayout(new QHBoxLayout);
             place->layout()->setContentsMargins(0,0,0,0);
+            place->sizePolicy().setHorizontalStretch(1);
+            place->sizePolicy().setHorizontalPolicy(QSizePolicy::Fixed);
             bottomSplitter->addWidget(place);
             place->setVisible(false);
 
             Widgets::SecondaryWindow * actorWindow = new Widgets::SecondaryWindow(
                         actorWidget,
                         place,
+                        m_mainWindow,
                         o->pluginSettings(),
                         o->pluginSpec().name,
                         true, true
                         );
+            l_secondaryWindows << actorWindow;
             actorWindow->setWindowTitle(actor->name());
             w = actorWindow;
             m_mainWindow->ui->menuWindow->addAction(actorWindow->toggleViewAction());
@@ -247,7 +251,8 @@ QString Plugin::initialize(const QStringList & parameters)
 //                QUrl("http://localhost/helpviewer/index.html?documents=data/russian/system.xml,data/russian/language.xml&printable=true"),
 //                m_browserObjects);
 
-    Widgets::SecondaryWindow * helpWindow = new Widgets::SecondaryWindow(m_helpBrowser.widget,0,mySettings(),"HelpWindow");
+    Widgets::SecondaryWindow * helpWindow = new Widgets::SecondaryWindow(m_helpBrowser.widget,0,m_mainWindow,mySettings(),"HelpWindow");
+    l_secondaryWindows << helpWindow;
     helpWindow->setWindowTitle(tr("Help"));
 
     helpWindow->toggleViewAction()->setShortcut(QKeySequence("F1"));
@@ -263,13 +268,22 @@ QString Plugin::initialize(const QStringList & parameters)
     return "";
 }
 
+void Plugin::updateSettings()
+{
+    foreach (Widgets::SecondaryWindow * window, l_secondaryWindows) {
+        window->setSettingsObject(mySettings());
+    }
+}
+
 void Plugin::handleNewVariablesWindow(const Shared::BrowserComponent &browser)
 {
     Widgets::SecondaryWindow * window = new Widgets::SecondaryWindow(
                 browser.widget,
                 0,
+                m_mainWindow,
                 mySettings(),
                 "Variables"+QString::number(l_variablesChildBrowsers.size()));
+    l_secondaryWindows << window;
     connect(browser.widget, SIGNAL(titleChanged(QString)),
             window, SLOT(setWindowTitle(QString)));
     connect(m_kumirProgram->variablesWebObject(), SIGNAL(jsRequest(QString,QVariantList)),
@@ -365,6 +379,8 @@ void Plugin::stop()
 void Plugin::saveSession() const
 {
     m_mainWindow->saveSettings();
+    mySettings()->setValue("BottomSplitterGeometry", m_bottomSplitter->saveGeometry());
+    mySettings()->setValue("BottomSplitterState", m_bottomSplitter->saveState());
 }
 
 
@@ -395,6 +411,10 @@ void Plugin::restoreSession()
         else if (analizerName.startsWith("Python"))
             m_mainWindow->newPythonProgram();
     }
+    foreach (Widgets::SecondaryWindow * secWindow, l_secondaryWindows)
+        secWindow->restoreDockedState();
+    m_bottomSplitter->restoreGeometry(mySettings()->value("BottomSplitterGeometry").toByteArray());
+    m_bottomSplitter->restoreState(mySettings()->value("BottomSplitterState").toByteArray());
 }
 
 Plugin::~Plugin()

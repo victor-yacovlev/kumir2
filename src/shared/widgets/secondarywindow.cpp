@@ -9,18 +9,24 @@ class SecondaryWindow;
 #define Top 't'
 #define Bottom 'b'
 
+#define STAY_ON_TOP_FLAGS Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::Window
+#define REGULAR_FLAGS Qt::FramelessWindowHint|Qt::Window
+
+
 class SecondaryWindowPrivate :
         public QObject
 {
 public:
     void init(QWidget *centralWidget,
               QWidget *dockPlace,
+              QMainWindow * mainWindow,
               QSettings * settings,
               const QString &settingsKey,
               bool resizableX, bool resizableY);
 
     QWidget* w_centralWidget;
     QWidget* w_dockPlace;
+    QMainWindow * w_mainWindow;
 
     class BorderWidget* w_topBorder;
     class BorderWidget* w_bottomBorder;
@@ -96,6 +102,7 @@ public:
                           const QList<QPixmap*> &pixmaps, const QString &toolTip);
     inline bool isHovered() const { return b_hovered; }
     inline bool isPressed() const { return b_pressed; }
+    inline bool forceUnhighlight() { b_pressed = b_hovered = false; update(); }
 protected:
     void mousePressEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
@@ -128,18 +135,18 @@ protected:
 
 SecondaryWindow::SecondaryWindow(QWidget *centralComponent,
                                  QWidget * dockPlace,
+                                 QMainWindow * mainWindow,
                                  QSettings * settings,
                            const QString &settingsKey,
                            bool resizableX, bool resizableY) :
-        QWidget(0, Qt::FramelessWindowHint)
+        QWidget(mainWindow, REGULAR_FLAGS)
 {
     d = new SecondaryWindowPrivate;
     d->q = this;
-    d->init(centralComponent, dockPlace, settings, settingsKey, resizableX, resizableY);
+    d->init(centralComponent, dockPlace, mainWindow, settings, settingsKey, resizableX, resizableY);
     if (dockPlace)
         dockPlace->installEventFilter(this);
-    connect(d->a_toggleVisible, SIGNAL(triggered(bool)), this, SLOT(checkForPlaceVisible(bool)));
-
+    connect(d->a_toggleVisible, SIGNAL(triggered(bool)), this, SLOT(checkForPlaceVisible(bool)));    
 }
 
 void SecondaryWindow::checkForPlaceVisible(bool show)
@@ -151,11 +158,19 @@ void SecondaryWindow::checkForPlaceVisible(bool show)
     }
 }
 
+void SecondaryWindow::restoreDockedState()
+{
+    bool mustDocked = d->m_settings->value("WindowDocked/"+d->s_settingsKey, false).toBool();
+    if (isFloating() && mustDocked)
+        toggleDocked();
+}
+
 bool SecondaryWindow::eventFilter(QObject *obj, QEvent *evt)
 {
     if (obj==d->w_dockPlace && evt->type()==QEvent::Resize && !isFloating()) {
         QResizeEvent * re = static_cast<QResizeEvent*>(evt);
         resize(re->size());
+//        qDebug() << "REsizing to " << re->size();
     }
     return QObject::eventFilter(obj, evt);
 }
@@ -175,11 +190,11 @@ QString SecondaryWindow::windowTitle()
 void SecondaryWindow::setStayOnTop(bool v)
 {
     if (v) {
-        setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint);
+        setWindowFlags(STAY_ON_TOP_FLAGS);
         setVisible(true);
     }
     else {
-        setWindowFlags(Qt::FramelessWindowHint);
+        setWindowFlags(REGULAR_FLAGS);
         setVisible(true);
     }
     d->w_centralWidget->setFocus();
@@ -189,12 +204,6 @@ void SecondaryWindow::setStayOnTop(bool v)
 bool SecondaryWindow::isStayOnTop()
 {
     return windowFlags() & Qt::WindowStaysOnTopHint;
-}
-
-void SecondaryWindow::show()
-{
-    setVisible(true);
-    d->w_centralWidget->setFocus(Qt::ActiveWindowFocusReason);
 }
 
 void SecondaryWindow::close()
@@ -210,6 +219,10 @@ void SecondaryWindow::closeEvent(QCloseEvent *e)
     QRect r(x(), y(), width(), height());
     if (r.width()>0 && r.height()>0)
         d->m_settings->setValue("Windows/"+d->s_settingsKey+"/Geometry",r);
+    if (d->w_dockPlace) {
+        d->m_settings->setValue("DockPlace/"+d->s_settingsKey+"/Size", d->w_dockPlace->size());
+        d->m_settings->setValue("WindowDocked/"+d->s_settingsKey, false);
+    }
     QWidget::closeEvent(e);
 }
 
@@ -230,12 +243,21 @@ void SecondaryWindow::setVisible(bool visible)
     d->w_centralWidget->setVisible(visible);
     if (visible)
         d->w_centralWidget->setFocus();
+    else {
+        QRect r(x(), y(), width(), height());
+        if (r.width()>0 && r.height()>0)
+            d->m_settings->setValue("Windows/"+d->s_settingsKey+"/Geometry",r);
+        if (d->w_dockPlace) {
+            d->m_settings->setValue("DockPlace/"+d->s_settingsKey+"/Size", d->w_dockPlace->size());
+            d->m_settings->setValue("WindowDocked/"+d->s_settingsKey, false);
+        }
+    }
     d->a_toggleVisible->setChecked(visible);
 }
 
 bool SecondaryWindow::isFloating() const
 {
-    return parentWidget()==0;
+    return parentWidget()==0 || parentWidget()==d->w_mainWindow;
 }
 
 void SecondaryWindow::toggleDocked()
@@ -247,7 +269,10 @@ void SecondaryWindow::toggleDocked()
         l->setContentsMargins(0,0,0,0);
         d->w_dockPlace->setLayout(l);
     }
+    d->w_dockPlace->layout()->setContentsMargins(0,0,0,0);
+    d->w_dockPlace->layout()->setSpacing(0);
     if (isFloating()) {
+        setVisible(false);
         d->w_bottomBorder->setVisible(false);
         d->w_leftBorder->setVisible(false);
         d->w_rightBorder->setVisible(false);
@@ -255,12 +280,22 @@ void SecondaryWindow::toggleDocked()
         d->btn_minimize->setVisible(false);
         d->w_topBorder->switchPixmaps(d->px_topDockedBorder);
         d->lbl_title->setStyle(d->css_titleDocked);
+        QSize dockSize = d->m_settings->value("DockPlace/"+d->s_settingsKey+"/Size",
+                                              size()
+                                              ).toSize();
+        d->w_dockPlace->setVisible(true);
         setParent(d->w_dockPlace);
         d->w_dockPlace->layout()->addWidget(this);
-        d->w_dockPlace->setVisible(true);
-
+        d->w_centralWidget->setFixedHeight(QWIDGETSIZE_MAX);
+        d->w_centralWidget->setFixedWidth(QWIDGETSIZE_MAX);
+        setFixedHeight(QWIDGETSIZE_MAX);
+        setFixedWidth(QWIDGETSIZE_MAX);
+        setVisible(true);
+        d->w_dockPlace->resize(dockSize);
+        d->m_settings->setValue("WindowDocked/"+d->s_settingsKey, true);
     }
     else {
+        d->m_settings->setValue("DockPlace/"+d->s_settingsKey+"/Size", d->w_dockPlace->size());
         QPoint ps = mapToGlobal(pos());
         d->w_bottomBorder->setVisible(true);
         d->w_leftBorder->setVisible(true);
@@ -270,24 +305,34 @@ void SecondaryWindow::toggleDocked()
         d->w_topBorder->switchPixmaps(d->px_topBorder);
         d->lbl_title->setStyle(d->css_title);
         d->w_dockPlace->layout()->removeWidget(this);
-        setParent(0);
+        setParent(d->w_mainWindow);
+        setWindowFlags(windowFlags() | Qt::Window);
         move(ps);
         setVisible(true);
         d->w_dockPlace->setVisible(false);
+        d->m_settings->setValue("WindowDocked/"+d->s_settingsKey, false);
     }
+    SecondaryWindowButton * btn = static_cast<SecondaryWindowButton*>(d->btn_toggleDocked);
+    btn->forceUnhighlight();
 }
 
+void SecondaryWindow::setSettingsObject(QSettings *settings)
+{
+    d->m_settings = settings;
+}
 
 // class SecondaryWindowPrivate
 
 void SecondaryWindowPrivate::init(QWidget *centralWidget,
                                   QWidget *placeWidget,
+                                  QMainWindow * mainWindow,
                                   QSettings * settings,
                                const QString &settingsKey,
                                bool resizableX, bool resizableY)
 {
     w_centralWidget = centralWidget;
     w_dockPlace = placeWidget;
+    w_mainWindow = mainWindow;
     m_settings = settings;
     s_settingsKey = settingsKey;
     QVBoxLayout *l0 = new QVBoxLayout;
@@ -298,6 +343,8 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
     QString pixmapsPath = qApp->property("sharePath").toString()+"/widgets/secondarywindow/";
 
     QString themeName = qApp->style()->objectName().toLower();
+    if (themeName.contains(" "))
+        themeName = themeName.split(" ").at(0);
 
     if (QDir(pixmapsPath+themeName).exists())
         pixmapsPath += themeName+"/";
@@ -358,7 +405,6 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
     QObject::connect ( btn_stayOnTop, SIGNAL(clicked(bool)),
                        q, SLOT( setStayOnTop(bool)) );
 
-    ll->addWidget(btn_stayOnTop);
 
 
     QFile labelStyleFile(pixmapsPath+"title.properties");
@@ -379,7 +425,6 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
 
     lbl_title = new SecondaryWindowTitle(w_topBorder, css_title);
 
-    ll->addWidget(lbl_title);
 
 
 
@@ -391,7 +436,6 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
     QObject::connect ( btn_minimize, SIGNAL(clicked()),
                        q, SLOT(showMinimized()) );
 
-    ll->addWidget(btn_minimize);
 
     if (placeWidget) {
         btn_toggleDocked = new SecondaryWindowButton(w_topBorder, false,
@@ -402,7 +446,6 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
         QObject::connect ( btn_toggleDocked, SIGNAL(clicked()),
                            q, SLOT(toggleDocked()) );
 
-        ll->addWidget(btn_toggleDocked);
     }
 
     btn_close = new SecondaryWindowButton(w_topBorder, false,
@@ -413,7 +456,23 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
     QObject::connect(btn_close, SIGNAL(clicked()),
                      q, SLOT(close()));
 
+#ifndef Q_OS_MAC
+    // Buttons at right to title
+    ll->addWidget(btn_stayOnTop);
+    ll->addWidget(lbl_title);
+    ll->addWidget(btn_minimize);
+    if (placeWidget)
+        ll->addWidget(btn_toggleDocked);
     ll->addWidget(btn_close);
+#else
+    // Buttons at left to title
+    ll->addWidget(btn_close);
+    if (placeWidget)
+        ll->addWidget(btn_toggleDocked);
+    ll->addWidget(btn_minimize);
+    ll->addWidget(lbl_title);
+    ll->addWidget(btn_stayOnTop);
+#endif
 
     int maxButtonHeight = qMax(btn_stayOnTop->height(),
                                qMax(btn_minimize->height(), btn_close->height()));
@@ -444,16 +503,16 @@ void SecondaryWindowPrivate::timerEvent(QTimerEvent *e)
     if (newTitle!=oldTitle && !newTitle.trimmed().isEmpty()) {
         q->setWindowTitle(newTitle);
     }
-    QSize newSize;
-    newSize.setWidth(w_leftBorder->width()+
-                     w_centralWidget->width()+
-                     w_rightBorder->width());
-    newSize.setHeight(w_topBorder->height()+
-                      w_centralWidget->height()+
-                      w_bottomBorder->height());
-    if (q->size()!=newSize) {
-        q->resize(newSize);
-    }
+//    QSize newSize;
+//    newSize.setWidth(w_leftBorder->width()+
+//                     w_centralWidget->width()+
+//                     w_rightBorder->width());
+//    newSize.setHeight(w_topBorder->height()+
+//                      w_centralWidget->height()+
+//                      w_bottomBorder->height());
+//    if (q->size()!=newSize) {
+//        q->resize(newSize);
+//    }
 //    qDebug() << "Custom window central widget size: " << w_centralWidget->size();
 //    qDebug() << "This size" << q->size();
 }
@@ -644,6 +703,7 @@ SecondaryWindowButton::SecondaryWindowButton(QWidget *parent, bool checkable,
     setText(name);
     setCheckable(checkable);
     setToolTip(toolTip);
+    setMouseTracking(true);
     px = pixmaps;
     b_pressed = b_hovered = false;
     int maxW = 0, maxH = 0;
@@ -663,7 +723,7 @@ void SecondaryWindowButton::paintEvent(QPaintEvent *e)
         index = 2;
     }
     else if (isHovered()) {
-        index = 0;
+        index = 1;
     }
     else {
         index = 0;
@@ -688,12 +748,14 @@ void SecondaryWindowButton::enterEvent(QEvent *e)
 {
     e->accept();
     b_hovered = true;
+    update();
 }
 
 void SecondaryWindowButton::leaveEvent(QEvent *e)
 {
     e->accept();
     b_hovered = false;
+    update();
 }
 
 void SecondaryWindowButton::mousePressEvent(QMouseEvent *e)

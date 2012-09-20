@@ -8,6 +8,7 @@
 #include "interfaces/browserinterface.h"
 #include "interfaces/generatorinterface.h"
 #include "interfaces/actorinterface.h"
+#include "widgets/secondarywindow.h"
 #include "terminal.h"
 #include "kumirprogram.h"
 
@@ -48,10 +49,10 @@ protected:
     QString initialize(const QStringList &arguments);
     void saveSession() const;
     void restoreSession();
-
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void start();
     void stop();
+    void updateSettings();
 
     class MainWindow * m_mainWindow;
     class QLabel * m_kumirStateLabel;
@@ -63,11 +64,13 @@ protected:
     QList<ActorInterface*> l_plugin_actors;
     BrowserComponent m_startPage;
     QList<Shared::BrowserComponent> l_variablesChildBrowsers;
+    QList<Widgets::SecondaryWindow*> l_secondaryWindows;
     QList<QWidget*> l_variablesChildWindows;
     Term * m_terminal;
     QMap<QString,QObject*> m_browserObjects;
     KumirProgram * m_kumirProgram;
     BrowserComponent m_helpBrowser;
+    QSplitter * m_bottomSplitter;
 
     bool b_nosessions;
 

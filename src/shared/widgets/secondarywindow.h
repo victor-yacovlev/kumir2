@@ -23,12 +23,12 @@ class WIDGETS_EXPORT SecondaryWindow :
 public:
     explicit SecondaryWindow(QWidget *centralComponent,
                           QWidget * dockPlace,
+                             QMainWindow * mainWindow,
                              QSettings * settings,
                           const QString &settingsKey,
                           bool resizableX = true, bool resizableY = true);
 public slots:
     void setWindowTitle(const QString &);
-    void show();
     void close();
     void setVisible(bool visible);
     void showMinimized();
@@ -38,6 +38,8 @@ public slots:
     void setStayOnTop(bool v);
     bool isStayOnTop();
     QAction * toggleViewAction() const;
+    void setSettingsObject(QSettings * settings);
+    void restoreDockedState();
 protected:
     void closeEvent(QCloseEvent *);
     bool eventFilter(QObject *obj, QEvent *evt);
