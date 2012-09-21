@@ -26,14 +26,14 @@ add_library(KumirAnalizer SHARED ${MOC_SOURCES} ${SOURCES})
 handleTranslation(KumirAnalizer)
 target_link_libraries(KumirAnalizer ${QT_LIBRARIES} KumirStdLib ExtensionSystem ErrorMessages DataFormats)
 
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/share/kumir2/kumiranalizer)
+file(MAKE_DIRECTORY ${SHARE_PATH}/kumiranalizer)
 
 add_custom_target(
     KumirAnalizer_messages ALL
     ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/shared/errormessages/scanmessages.py --db=${CMAKE_SOURCE_DIR}/share/kumir2/kumiranalizer/messages.csv --out=${SHARE_PATH}/kumiranalizer/messages.csv ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/share/kumir2/kumiranalizer
 )
 
-install(FILES ${CMAKE_BINARY_DIR}/share/kumir2/kumiranalizer/messages.csv DESTINATION share/kumir2/kumiranalizer)
+install(FILES ${SHARE_PATH}/kumiranalizer/messages.csv DESTINATION share/kumir2/kumiranalizer)
 
 copyResourcesExcl(kumiranalizer .csv)
 install(TARGETS KumirAnalizer DESTINATION ${PLUGINS_DIR})
