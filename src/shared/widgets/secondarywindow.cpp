@@ -9,8 +9,13 @@ class SecondaryWindow;
 #define Top 't'
 #define Bottom 'b'
 
+#ifdef Q_OS_MAC
 #define STAY_ON_TOP_FLAGS Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::Window
 #define REGULAR_FLAGS Qt::FramelessWindowHint|Qt::Window
+#else
+#define STAY_ON_TOP_FLAGS Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint
+#define REGULAR_FLAGS Qt::FramelessWindowHint
+#endif
 
 
 class SecondaryWindowPrivate :
@@ -140,7 +145,11 @@ SecondaryWindow::SecondaryWindow(QWidget *centralComponent,
                                  QSettings * settings,
                            const QString &settingsKey,
                            bool resizableX, bool resizableY) :
+#ifdef Q_OS_MAC
         QWidget(mainWindow, REGULAR_FLAGS)
+#else
+	QWidget(0, REGULAR_FLAGS)
+#endif
 {
     d = new SecondaryWindowPrivate;
     d->q = this;
@@ -331,8 +340,12 @@ void SecondaryWindow::toggleDocked()
         d->w_topBorder->switchPixmaps(d->px_topBorder);
         d->lbl_title->setStyle(d->css_title);
         d->w_dockPlace->layout()->removeWidget(this);
+#ifdef Q_OS_MAC
         setParent(d->w_mainWindow);
-        setWindowFlags(windowFlags() | Qt::Window);
+#else
+		setParent(0);
+#endif
+        //setWindowFlags(windowFlags() | Qt::Window);
         move(ps);
         setVisible(wasVisible);
         d->w_dockPlace->setVisible(false);
