@@ -220,6 +220,28 @@ QString Plugin::initialize(const QStringList & parameters)
                 m_mainWindow->ui->menubar->insertMenu(m_mainWindow->ui->menuHelp->menuAction(), menu);
             }
 
+            if (actor->pultWidget()) {
+                Widgets::SecondaryWindow * pultWindow = new Widgets::SecondaryWindow(
+                            actor->pultWidget(),
+                            NULL,
+                            m_mainWindow,
+                            mySettings(),
+                            actor->name()+"Pult", false, false);
+                l_secondaryWindows << pultWindow;
+                pultWindow->setWindowTitle(actor->name()+" - "+tr("Remote Control"));
+                m_mainWindow->ui->menuWindow->addAction(pultWindow->toggleViewAction());
+                if (!actor->pultIconName().isEmpty()) {
+                    const QString iconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->pultIconName()+".png";
+                    const QString smallIconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->pultIconName()+"_22x22.png";
+                    QIcon pultIcon = QIcon(iconFileName);
+                    if (QFile::exists(smallIconFileName))
+                        pultIcon.addFile(smallIconFileName, QSize(22,22));
+                    pultWindow->setWindowIcon(pultIcon);
+                    pultWindow->toggleViewAction()->setIcon(pultIcon);
+                    m_mainWindow->gr_otherActions->addAction(pultWindow->toggleViewAction());
+                }
+            }
+
         }
         m_kumirProgram->addActor(o, w);
     }
