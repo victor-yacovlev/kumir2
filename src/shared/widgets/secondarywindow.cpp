@@ -103,7 +103,7 @@ public:
                           const QList<QPixmap*> &pixmaps, const QString &toolTip);
     inline bool isHovered() const { return b_hovered; }
     inline bool isPressed() const { return b_pressed; }
-    inline bool forceUnhighlight() { b_pressed = b_hovered = false; update(); }
+    inline void forceUnhighlight() { b_pressed = b_hovered = false; update(); }
 protected:
     void mousePressEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
