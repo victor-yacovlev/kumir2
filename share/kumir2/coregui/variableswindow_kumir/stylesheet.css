@@ -1,5 +1,6 @@
 body {
     background: #999999;
+    font-family: sans-serif;
 }
 .module {
     display: block;
@@ -16,12 +17,12 @@ body {
     margin-bottom: 10px;
     background: #FFFFFF;
     padding: 3px;
-    font-size: 12px;
+    font-size: 14px;
 }
 .modulename, .table_title {
     border-bottom: 1px solid black;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 16px;
     margin-bottom: 4px;
 }
 .algorhitm, .globals {
@@ -96,7 +97,7 @@ body {
     text-align: center;
     color: gray;
     font-style: italic;
-    font-size: 14px;
+    font-size: 16px;
     vertical-align: middle;
     padding-bottom: 20px;
 }
