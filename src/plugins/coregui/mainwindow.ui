@@ -93,6 +93,7 @@
      <string>Help</string>
     </property>
     <addaction name="actionUsage"/>
+    <addaction name="actionVariables"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -202,10 +203,13 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Usage...</string>
+    <string>Manuals</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="actionAbout">
@@ -232,6 +236,20 @@
   <action name="actionRestore_previous_session">
    <property name="text">
     <string>Restore previous session</string>
+   </property>
+  </action>
+  <action name="actionVariables">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Variables</string>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
  </widget>

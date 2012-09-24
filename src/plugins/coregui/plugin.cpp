@@ -152,6 +152,8 @@ QString Plugin::initialize(const QStringList & parameters)
                 mySettings(),
                 "Variables");
 
+    variablesWindow->setWindowTitle(tr("Variables"));
+
 
 
     connect(m_kumirProgram->variablesWebObject(), SIGNAL(newWindowCreated(Shared::BrowserComponent)),
@@ -162,10 +164,16 @@ QString Plugin::initialize(const QStringList & parameters)
             this, SLOT(handleRaiseVariablesWindow(QWidget*)));
 
 
-    variablesWindow->toggleViewAction()->setShortcut(QKeySequence("F2"));
+    connect(m_mainWindow->ui->actionVariables, SIGNAL(triggered()),
+            variablesWindow->toggleViewAction(), SLOT(trigger()));
+
+    l_secondaryWindows << variablesWindow;
+
 
     connect(m_kumirProgram, SIGNAL(giveMeAProgram()), this, SLOT(prepareKumirProgramToRun()), Qt::DirectConnection);
 
+    QStringList documents; // for help browser
+    documents << "data/russian/system.xml" << "data/russian/language.xml";
     KPlugin * kumirRunner = myDependency("KumirCodeRun");
     //Q_CHECK_PTR(kumirRunner);
     m_kumirProgram->setBytecodeRun(kumirRunner);
@@ -244,6 +252,10 @@ QString Plugin::initialize(const QStringList & parameters)
 
         }
         m_kumirProgram->addActor(o, w);
+        QString docBookFileName = qApp->property("sharePath").toString()+"/webapps/helpviewer/data/russian/"+o->pluginSpec().name+".xml";
+        if (QFile::exists(docBookFileName)) {
+            documents << "data/russian/"+o->pluginSpec().name+".xml";
+        }
     }
 
     if (!parameters.contains("nostartpage", Qt::CaseInsensitive)) {
@@ -262,14 +274,15 @@ QString Plugin::initialize(const QStringList & parameters)
 
     QDir docsRoot(qApp->property("sharePath").toString()+"/webapps/helpviewer/data/russian/");
     const QStringList entryList = docsRoot.entryList();
-    QStringList documents;
-    for (int i=0; i<entryList.size(); i++) {
-        const QString entry = entryList[i];
-        if (entry.endsWith(".xml")) {
-            const QString document = "data/russian/"+entry;
-            documents << document;
-        }
-    }
+
+
+//    for (int i=0; i<entryList.size(); i++) {
+//        const QString entry = entryList[i];
+//        if (entry.endsWith(".xml")) {
+//            const QString document = "data/russian/"+entry;
+//            documents << document;
+//        }
+//    }
 
     m_helpBrowser = plugin_browser->createBrowser(
                 QUrl("http://localhost/helpviewer/index.html?documents="+documents.join(",")),
