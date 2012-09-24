@@ -313,7 +313,7 @@ public class DocBookModel extends TreeItem {
 		else if (modelType==DocBookModelType.Emphasis) {
 			result += "<span class=\"emph_"+EmphasisRole+"\">";
 		}
-		else if (modelType==DocBookModelType.Preface || modelType==DocBookModelType.Preface) {
+		else if (modelType==DocBookModelType.Abstract || modelType==DocBookModelType.Preface) {
 			result += "<div class=\"abstract\">\n";
 		}
 		
@@ -370,8 +370,11 @@ public class DocBookModel extends TreeItem {
 		}
 		else {
 			for (final DocBookModel child : children) {
-				if (child.getModelType()!=DocBookModelType.XInfo)
-					result += child.getContentHTML(false, printableForm);
+				final DocBookModelType childType = child.getModelType();
+				if (childType!=DocBookModelType.XInfo) {
+					final String childContent = child.getContentHTML(false, printableForm);
+					result += childContent;
+				}
 			}
 		}
 		
@@ -401,7 +404,7 @@ public class DocBookModel extends TreeItem {
 			result += "</p>";
 		}
 		else if (modelType==DocBookModelType.ProgramListing) {
-			result += "</p>";
+			result += "</pre>";
 		}
 		else if (modelType==DocBookModelType.Emphasis) {
 			result += "</span>";

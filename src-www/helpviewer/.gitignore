@@ -1,2 +1,3 @@
 .gwt/*
 war/WEB-INF/*
+war/test/*
