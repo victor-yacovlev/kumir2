@@ -82,15 +82,15 @@ QString OneSession::plainText(bool footer_header) const
 {
     const QString body = m_lines.join("\n");
     const QString header = tr(">> %1:%2:%3 - %4 - Process started")
-            .arg(m_startTime.time().hour())
-            .arg(m_startTime.time().minute())
-            .arg(m_startTime.time().second())
+            .arg(m_startTime.time().hour(), 2, 10, QChar(' '))
+            .arg(m_startTime.time().minute(), 2, 10, QChar('0'))
+            .arg(m_startTime.time().second(), 2, 10, QChar('0'))
             .arg(s_fileName);
     const QString footer = m_endTime.isValid()
             ? tr(">> %1:%2:%3 - %4 - Process finished")
-              .arg(m_startTime.time().hour())
-              .arg(m_startTime.time().minute())
-              .arg(m_startTime.time().second())
+              .arg(m_endTime.time().hour(), 2, 10, QChar(' '))
+              .arg(m_endTime.time().minute(), 2, 10, QChar('0'))
+              .arg(m_endTime.time().second(), 2, 10, QChar('0'))
               .arg(s_fileName)
             : "";
     if (footer_header)
@@ -124,15 +124,15 @@ void OneSession::draw(QPainter *p, int realWidth)
     smallFont.setPointSize(m_font.pointSize()-2);
     smallFont.setItalic(true);
     const QString header = tr(">> %1:%2:%3 - %4 - Process started")
-            .arg(m_startTime.time().hour())
-            .arg(m_startTime.time().minute())
-            .arg(m_startTime.time().second())
+            .arg(m_startTime.time().hour(), 2, 10, QChar(' '))
+            .arg(m_startTime.time().minute(), 2, 10, QChar('0'))
+            .arg(m_startTime.time().second(), 2, 10, QChar('0'))
             .arg(s_fileName);
     const QString footer = m_endTime.isValid()
             ? tr(">> %1:%2:%3 - %4 - Process finished")
-              .arg(m_startTime.time().hour())
-              .arg(m_startTime.time().minute())
-              .arg(m_startTime.time().second())
+              .arg(m_endTime.time().hour(), 2, 10, QChar(' '))
+              .arg(m_endTime.time().minute(), 2, 10, QChar('0'))
+              .arg(m_endTime.time().second(), 2, 10, QChar('0'))
               .arg(s_fileName)
             : "";
     p->setFont(smallFont);
