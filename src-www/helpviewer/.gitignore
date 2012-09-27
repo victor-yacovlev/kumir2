@@ -1,3 +1,5 @@
 .gwt/*
 war/WEB-INF/*
 war/test/*
+gwt-unitCache
+war/*.log

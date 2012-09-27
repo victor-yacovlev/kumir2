@@ -32,8 +32,7 @@ public class ViewerRoot implements EntryPoint, ResizeHandler  {
 	private TabLayoutPanel tabPanel = null;
 	private TableOfContentsPanel tableOfContentsPanel = null;
 	private IndexPanel indexPanel = null;
-	private List<Document> books = new LinkedList<Document>();
-	private List<Document> articles = new LinkedList<Document>();
+	private List<Document> documents = new LinkedList<Document>();
 	private Frame printFrame;
 	
 	public ViewerRoot() {
@@ -62,95 +61,95 @@ public class ViewerRoot implements EntryPoint, ResizeHandler  {
 		printFrame.getElement().setAttribute("id", "printframe");
 	}
 	
-	protected void loadIncludes(final String baseUrl, final Document doc, final boolean isBook)
+	protected void loadIncludes(final String baseUrl, final Document doc)
 	{
 		NodeList includes = doc.getElementsByTagName("include");
-		if (includes.getLength()==0) {
-			if (isBook) {
-				books.add(doc);
-				tableOfContentsPanel.addBook(doc);
-			}
-			else {
-				articles.add(doc);
-				tableOfContentsPanel.addArticle(doc);
-			}
-		}
-		else {
-			final Element firstInclude = (Element)includes.item(0);
-		
-			String href = firstInclude.getAttribute("href");
-			String baseDir = baseUrl;
-			int slashPos = baseUrl.lastIndexOf('/');
-			if (slashPos!=-1) {
-				baseDir = baseUrl.substring(0, slashPos);
-			}
-			final String absHref = baseDir + "/" + href;
-			RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, absHref);
-			builder.setCallback(new RequestCallback() {
-				
-				@Override
-				public void onResponseReceived(Request request, Response response) {
-					final String docbookData = response.getText();
-					final Document docbookDocument = XMLParser.parse(docbookData);
-					Node n = doc.importNode(docbookDocument.getDocumentElement(), true);
-//					doc.getDocumentElement().replaceChild(n, firstInclude);
-					firstInclude.getParentNode().replaceChild(n, firstInclude);
-					loadIncludes(baseUrl, doc, isBook);
-				}
-				
-				@Override
-				public void onError(Request request, Throwable exception) {
-					Element errorPara = doc.createElement("para");
-					Text errorText = doc.createTextNode("Can't load "+absHref);
-					errorPara.appendChild(errorText);
-					doc.getDocumentElement().replaceChild(errorPara, firstInclude);
-					loadIncludes(baseUrl, doc, isBook);
-				}
-			});
-			try {
-				builder.send();
-			} catch (RequestException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+        for (int i=0; i<includes.getLength(); i++) {
+            final Element includeElement = (Element)includes.item(i);
+            String href = includeElement.getAttribute("href");
+            String baseDir = baseUrl;
+            int slashPos = baseUrl.lastIndexOf('/');
+            if (slashPos!=-1) {
+                baseDir = baseUrl.substring(0, slashPos);
+            }
+            final String absHref = baseDir + "/" + href;
+            RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, absHref);
+            builder.setCallback(new RequestCallback() {
+
+                @Override
+                public void onResponseReceived(Request request, Response response) {
+                    final String docbookData = response.getText();
+                    final Document docbookDocument = XMLParser.parse(docbookData);
+                    final String includeRootName = docbookDocument.getDocumentElement().getTagName();
+                    if (includeRootName.equalsIgnoreCase("book") || includeRootName.equalsIgnoreCase("article")) {
+                        documents.add(docbookDocument);
+                        tableOfContentsPanel.addDocument(docbookDocument);
+                    }
+                    else {
+                        Node n = doc.importNode(docbookDocument.getDocumentElement(), true);
+                        includeElement.getParentNode().replaceChild(n, includeElement);
+                    }
+                    loadIncludes(absHref, docbookDocument);
+                }
+
+                @Override
+                public void onError(Request request, Throwable exception) {
+                    Element errorPara = doc.createElement("para");
+                    Text errorText = doc.createTextNode("Can't load "+absHref);
+                    errorPara.appendChild(errorText);
+                    doc.getDocumentElement().replaceChild(errorPara, includeElement);
+                }
+            });
+            try {
+                builder.send();
+            } catch (RequestException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
 	}
 	
-	protected void loadBooksAndArticles() {
-		final String documentList = Window.Location.getParameter("documents");
-		if (documentList==null)
+	protected void loadDocument() {
+		final String documentURL = Window.Location.getParameter("document");
+		if (documentURL==null)
 			return;
-		final String[] documents = documentList.split(",");
-		for (final String documentURL : documents) {
-			if (!documentURL.isEmpty()) {
-				RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, documentURL);
-				builder.setCallback(new RequestCallback() {
-					
-					@Override
-					public void onResponseReceived(Request request, Response response) {
-						final String docbookData = response.getText();
-						final Document docbookDocument = XMLParser.parse(docbookData);
-						if (docbookDocument.getDocumentElement().getNodeName().equalsIgnoreCase("book")) {
-							loadIncludes(documentURL, docbookDocument, true);
-						}
-						else if (docbookDocument.getDocumentElement().getNodeName().equalsIgnoreCase("article")) {
-							loadIncludes(documentURL, docbookDocument, false);
-						}
-					}
-					
-					@Override
-					public void onError(Request request, Throwable exception) {
-						
-					}
-				});
-				try {
-					builder.send();
-				} catch (RequestException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
+        if (!documentURL.isEmpty()) {
+            RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, documentURL);
+            builder.setCallback(new RequestCallback() {
+
+                @Override
+                public void onResponseReceived(Request request, Response response) {
+                    final String docbookData = response.getText();
+                    final Document docbookDocument = XMLParser.parse(docbookData);
+                    if (docbookDocument.getDocumentElement().getNodeName().equalsIgnoreCase("book")) {
+                        loadIncludes(documentURL, docbookDocument);
+                        documents.add(docbookDocument);
+                        tableOfContentsPanel.addDocument(docbookDocument);
+
+                    }
+                    else if (docbookDocument.getDocumentElement().getNodeName().equalsIgnoreCase("article")) {
+                        loadIncludes(documentURL, docbookDocument);
+                        documents.add(docbookDocument);
+                        tableOfContentsPanel.addDocument(docbookDocument);
+                    }
+                    else if (docbookDocument.getDocumentElement().getNodeName().equalsIgnoreCase("set")) {
+                        loadIncludes(documentURL, docbookDocument);
+                    }
+                }
+
+                @Override
+                public void onError(Request request, Throwable exception) {
+
+                }
+            });
+            try {
+                builder.send();
+            } catch (RequestException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
 	}
 	
 	@Override
@@ -164,7 +163,7 @@ public class ViewerRoot implements EntryPoint, ResizeHandler  {
 		final String allowPrintable = Window.Location.getParameter("printable");
 		boolean printable = allowPrintable!=null && allowPrintable.equalsIgnoreCase("true");
 		DocBookModel.printable = printable;
-		loadBooksAndArticles();
+		loadDocument();
 		printFrame.setSize("210mm", "297mm");
 		printFrame.setVisible(false);
 		RootPanel.get().add(printFrame);
