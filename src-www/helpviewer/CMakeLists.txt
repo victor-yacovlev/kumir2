@@ -50,6 +50,7 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/war/viewer.css DESTINATION ${SHARE_PATH}/w
 file(MAKE_DIRECTORY ${SHARE_PATH}/webapps/helpviewer/data/russian)
 file(COPY ${CMAKE_SOURCE_DIR}/userdocs/language.xml DESTINATION ${SHARE_PATH}/webapps/helpviewer/data/russian)
 file(COPY ${CMAKE_SOURCE_DIR}/userdocs/system.xml DESTINATION ${SHARE_PATH}/webapps/helpviewer/data/russian)
+file(COPY ${CMAKE_SOURCE_DIR}/userdocs/default.xml DESTINATION ${SHARE_PATH}/webapps/helpviewer/data/russian)
 
 
 install(
