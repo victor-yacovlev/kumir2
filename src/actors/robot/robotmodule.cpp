@@ -8,6 +8,7 @@ You should change it corresponding to functionality.
 
 #include <QtCore>
 #include <QtGui>
+#include <QtDeclarative>
 #include "robotmodule.h"
 #include "extensionsystem/pluginmanager.h"
 
@@ -2401,7 +2402,16 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
       field->createRobot();
     view=new RobotView(field);
     m_mainWidget = view;
-    m_pultWidget = new QWidget();
+    const QString rcUrl = qApp->property("sharePath").toString()+"/actors/robot/rc.qml";
+    m_pultWidget = new QDeclarativeView(QUrl(rcUrl));
+    m_pultWidget->setRenderHints(QPainter::Antialiasing|QPainter::TextAntialiasing);
+    QDeclarativeItem * pult = qobject_cast<QDeclarativeItem*>(m_pultWidget->rootObject());
+    connect(pult, SIGNAL(goLeft()), this, SLOT(runGoLeft()));
+    connect(pult, SIGNAL(goRight()), this, SLOT(runGoRight()));
+    connect(pult, SIGNAL(goUp()), this, SLOT(runGoUp()));
+    connect(pult, SIGNAL(goDown()), this, SLOT(runGoDown()));
+    connect(pult, SIGNAL(doPaint()), this, SLOT(runDoPaint()));
+    connect(this, SIGNAL(sendToPultLog(QVariant)), pult, SLOT(addToResultLog(QVariant)));
     startField=field->Clone();
     field->drawField(FIELD_SIZE_SMALL);
     field->dropWasEdit();
@@ -2472,10 +2482,15 @@ void RobotModule::runGoUp()
 {
 	/* TODO implement me */
     qDebug() << "Robot up";
+    QString status = "OK";
      if(!field->stepUp())
      {
      field->robot->setCrash(UP_CRASH);    
      setError(trUtf8("Робот разбился: сверху стена!"));
+     status = trUtf8("Отказ");
+     }
+     if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+         emit sendToPultLog(status);
      }
     if(animation)sleep(1);
 	return;
@@ -2486,9 +2501,14 @@ void RobotModule::runGoDown()
 {
 	/* TODO implement me */
     qDebug() << "Robot down";
+    QString status = "OK";
      if(!field->stepDown())
      {setError(trUtf8("Робот разбился: снизу стена!"));
      field->robot->setCrash(DOWN_CRASH);
+     status = trUtf8("Отказ");
+     }
+     if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+         emit sendToPultLog(status);
      }
          if(animation)sleep(1);
 	return;
@@ -2499,10 +2519,15 @@ void RobotModule::runGoLeft()
 {
 	/* TODO implement me */
     qDebug() << "Robot left";
+    QString status = "OK";
     if(!field->stepLeft()){
       field->robot->setCrash(LEFT_CRASH);  
     setError(trUtf8("Робот разбился: слева стена!"));
+    status = trUtf8("Отказ");
     };
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
+    }
         if(animation)sleep(1);
 	return;
 }
@@ -2512,9 +2537,14 @@ void RobotModule::runGoRight()
 {
 	/* TODO implement me */
     qDebug() << "Robot right";
+    QString status = "OK";
     if(!field->stepRight()){
         field->robot->setCrash(RIGHT_CRASH);  
+        status = trUtf8("Отказ");
     setError(trUtf8("Робот разбился: справа стена!"));}
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
+    }
      if(animation)sleep(1);
 	return;
 }
@@ -2523,6 +2553,10 @@ void RobotModule::runGoRight()
 void RobotModule::runDoPaint()
 {
 	if(!field->currentCell()->IsColored)field->reverseColorCurrent();
+    QString status = "OK";
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
+    }
 	return;
 }
 

@@ -267,12 +267,12 @@ QString Plugin::initialize(const QStringList & parameters)
             m_mainWindow, SLOT(newText(QString,QString)));
 
 
-    QString uri = qApp->property("sharePath").toString()+"/webapps/helpviewer/data/russian/default.xml";
+    QString uri = "data/russian/default.xml";
 
     foreach (const QString parameter, parameters) {
         if (parameter.startsWith("help=")) {
             const QString helpName = parameter.mid(5);
-            uri = qApp->property("sharePath").toString()+"/webapps/helpviewer/data/russian/"+helpName;
+            uri = "data/russian/"+helpName;
         }
     }
 
