@@ -11,6 +11,14 @@ Rectangle {
     signal goLeft
     signal goRight
     signal doPaint
+    signal checkWallLeft
+    signal checkWallRight
+    signal checkWallTop
+    signal checkWallBottom
+    signal checkFreeLeft
+    signal checkFreeRight
+    signal checkFreeTop
+    signal checkFreeBottom
     signal copyTextToKumir
     property bool buttonsLocked: false
 
@@ -160,7 +168,7 @@ Rectangle {
 
         Text {
             id: resultLog
-            x: 95
+            x: 140
             y: 5
             color: "#ffffff"
             text: qsTr("")
@@ -429,6 +437,16 @@ Rectangle {
             source: "btn_at_left.png"
             opacity: 0
         }
+
+        onClicked: {
+            if (buttonsLocked)
+                return;
+            buttonsLocked = true;
+            commandLog.text += "слева стена\n";
+            scroll.updateScroll();
+            parent.checkWallLeft();
+        }
+
     }
 
     Button {
@@ -444,6 +462,14 @@ Rectangle {
             y: 6
             source: "btn_at_top.png"
             opacity: 0
+        }
+        onClicked: {
+            if (buttonsLocked)
+                return;
+            buttonsLocked = true;
+            commandLog.text += "сверху стена\n";
+            scroll.updateScroll();
+            parent.checkWallTop();
         }
     }
 
@@ -461,6 +487,14 @@ Rectangle {
             source: "btn_at_bottom.png"
             opacity: 0
         }
+        onClicked: {
+            if (buttonsLocked)
+                return;
+            buttonsLocked = true;
+            commandLog.text += "снизу стена\n";
+            scroll.updateScroll();
+            parent.checkWallBottom();
+        }
     }
 
     Button {
@@ -477,6 +511,14 @@ Rectangle {
             source: "btn_at_left.png"
             opacity: 0
         }
+        onClicked: {
+            if (buttonsLocked)
+                return;
+            buttonsLocked = true;
+            commandLog.text += "справа стена\n";
+            scroll.updateScroll();
+            parent.checkWallRight();
+        }
     }
 
     Button {
@@ -491,6 +533,15 @@ Rectangle {
             y: 12
             source: "btn_free_at_left.png"
             opacity: 0
+        }
+
+        onClicked: {
+            if (buttonsLocked)
+                return;
+            buttonsLocked = true;
+            commandLog.text += "слева свободно\n";
+            scroll.updateScroll();
+            parent.checkFreeLeft();
         }
     }
 
@@ -507,6 +558,14 @@ Rectangle {
             source: "btn_free_at_top.png"
             opacity: 0
         }
+        onClicked: {
+            if (buttonsLocked)
+                return;
+            buttonsLocked = true;
+            commandLog.text += "сверху свободно\n";
+            scroll.updateScroll();
+            parent.checkFreeTop();
+        }
     }
 
     Button {
@@ -522,6 +581,14 @@ Rectangle {
             source: "btn_free_at_bottom.png"
             opacity: 0
         }
+        onClicked: {
+            if (buttonsLocked)
+                return;
+            buttonsLocked = true;
+            commandLog.text += "снизу свободно\n";
+            scroll.updateScroll();
+            parent.checkFreeBottom();
+        }
     }
 
     Button {
@@ -536,6 +603,14 @@ Rectangle {
             y: 27
             source: "btn_free_at_right.png"
             opacity: 0
+        }
+        onClicked: {
+            if (buttonsLocked)
+                return;
+            buttonsLocked = true;
+            commandLog.text += "справа свободно\n";
+            scroll.updateScroll();
+            parent.checkFreeRight();
         }
     }
 

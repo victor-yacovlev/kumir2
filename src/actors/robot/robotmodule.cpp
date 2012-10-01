@@ -2411,6 +2411,14 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     connect(pult, SIGNAL(goUp()), this, SLOT(runGoUp()));
     connect(pult, SIGNAL(goDown()), this, SLOT(runGoDown()));
     connect(pult, SIGNAL(doPaint()), this, SLOT(runDoPaint()));
+    connect(pult, SIGNAL(checkWallLeft()), this, SLOT(runIsWallAtLeft()));
+    connect(pult, SIGNAL(checkWallRight()), this, SLOT(runIsWallAtRight()));
+    connect(pult, SIGNAL(checkWallTop()), this, SLOT(runIsWallAtTop()));
+    connect(pult, SIGNAL(checkWallBottom()), this, SLOT(runIsWallAtBottom()));
+    connect(pult, SIGNAL(checkFreeLeft()), this, SLOT(runIsFreeAtLeft()));
+    connect(pult, SIGNAL(checkFreeRight()), this, SLOT(runIsFreeAtRight()));
+    connect(pult, SIGNAL(checkFreeTop()), this, SLOT(runIsFreeAtTop()));
+    connect(pult, SIGNAL(checkFreeBottom()), this, SLOT(runIsFreeAtBottom()));
     connect(this, SIGNAL(sendToPultLog(QVariant)), pult, SLOT(addToResultLog(QVariant)));
     startField=field->Clone();
     field->drawField(FIELD_SIZE_SMALL);
@@ -2563,59 +2571,89 @@ void RobotModule::runDoPaint()
 
 bool RobotModule::runIsWallAtTop()
 {
-	/* TODO implement me */
-return !field->currentCell()->canUp();    
+    bool result = !field->currentCell()->canUp();
+    QString status = result? trUtf8("да") : trUtf8("нет");
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
+    }
+    return result;
 }
 
 
 bool RobotModule::runIsWallAtBottom()
 {
-	/* TODO implement me */
-    
- return !field->currentCell()->canDown();
+    bool result = !field->currentCell()->canDown();
+    QString status = result? trUtf8("да") : trUtf8("нет");
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
+    }
+    return result;
 }
 
 
 bool RobotModule::runIsWallAtLeft()
 {
-	/* TODO implement me */
-	return !field->currentCell()->canLeft();
+    bool result = !field->currentCell()->canLeft();
+    QString status = result? trUtf8("да") : trUtf8("нет");
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
+    }
+    return result;
 }
 
 
 bool RobotModule::runIsWallAtRight()
 {
-	/* TODO implement me */
-	return !field->currentCell()->canRight();
+    bool result = !field->currentCell()->canRight();
+    QString status = result? trUtf8("да") : trUtf8("нет");
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
+    }
+    return result;
 }
 
 bool RobotModule::runIsFreeAtTop()
-    {
-        /* TODO implement me */
-        return field->currentCell()->canUp();    
+{
+    bool result = field->currentCell()->canUp();
+    QString status = result? trUtf8("да") : trUtf8("нет");
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
     }
+    return result;
+}
     
     
 bool RobotModule::runIsFreeAtBottom()
-    {
-        /* TODO implement me */
-        
-        return field->currentCell()->canDown();
+{
+    bool result = field->currentCell()->canDown();
+    QString status = result? trUtf8("да") : trUtf8("нет");
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
     }
+    return result;
+}
     
     
 bool RobotModule::runIsFreeAtLeft()
-    {
-        /* TODO implement me */
-        return field->currentCell()->canLeft();
+{
+    bool result = field->currentCell()->canLeft();
+    QString status = result? trUtf8("да") : trUtf8("нет");
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
     }
+    return result;
+}
     
     
 bool RobotModule::runIsFreeAtRight()
-    {
-        /* TODO implement me */
-        return field->currentCell()->canRight();
+{
+    bool result = field->currentCell()->canRight();
+    QString status = result? trUtf8("да") : trUtf8("нет");
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
     }
+    return result;
+}
 	
 
  int RobotModule::LoadFromFile(QString p_FileName)
