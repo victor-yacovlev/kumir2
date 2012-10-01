@@ -2402,8 +2402,11 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
       field->createRobot();
     view=new RobotView(field);
     m_mainWidget = view;
-    const QString rcUrl = qApp->property("sharePath").toString()+"/actors/robot/rc.qml";
-    m_pultWidget = new QDeclarativeView(QUrl(rcUrl));
+    const QUrl rcUrl = QUrl::fromLocalFile(
+                qApp->property("sharePath").toString()+
+                "/actors/robot/rc.qml"
+                );
+    m_pultWidget = new QDeclarativeView(rcUrl);
     m_pultWidget->setRenderHints(QPainter::Antialiasing|QPainter::TextAntialiasing);
     QDeclarativeItem * pult = qobject_cast<QDeclarativeItem*>(m_pultWidget->rootObject());
     connect(pult, SIGNAL(goLeft()), this, SLOT(runGoLeft()));
