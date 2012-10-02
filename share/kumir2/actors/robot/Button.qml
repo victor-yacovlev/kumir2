@@ -2,9 +2,9 @@
 import QtQuick 1.1
 
 Rectangle {
-    width: 60
-    height: 60
-    radius: 16
+    width: 40
+    height: 40
+    radius: 10
     signal clicked
     states: [
         State {
@@ -55,8 +55,8 @@ Rectangle {
         id: mouse_area1
         x: 0
         y: 0
-        width: 60
-        height: 60
+        width: 40
+        height: 40
         hoverEnabled: true
         onPressed: parent.state = 'clicked'
         onEntered: parent.state = 'hovered'

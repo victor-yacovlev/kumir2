@@ -4,7 +4,7 @@ import QtQuick 1.0
 Rectangle {
     id: pult
     width: 260
-    height: 590
+    height: 450
     color: "#bababa"
     signal goUp
     signal goDown
@@ -29,16 +29,16 @@ Rectangle {
 
     Button {
         id: btnPaint
-        x: 100
-        y: 297
+        x: 110
+        y: 257
         z: 3
 
         Image {
             id: image5
-            x: 6
-            y: 6
-            width: 48
-            height: 48
+            x: 4
+            y: 4
+            width: 32
+            height: 32
             z: 2
             source: "btn_paint.png"
         }
@@ -54,14 +54,14 @@ Rectangle {
 
     Button {
         id: btnUp
-        x: 100
-        y: 224
+        x: 110
+        y: 204
         z: 3
 
         Image {
             id: image1
-            x: 6
-            y: 6
+            x: 4
+            y: 4
             z: 2
             source: "go-up.png"
         }
@@ -77,14 +77,14 @@ Rectangle {
 
     Button {
         id: btnDown
-        x: 100
-        y: 371
+        x: 110
+        y: 311
         z: 3
 
         Image {
             id: image2
-            x: 6
-            y: 6
+            x: 4
+            y: 4
             z: 2
             source: "go-down.png"
         }
@@ -100,14 +100,14 @@ Rectangle {
 
     Button {
         id: btnLeft
-        x: 26
-        y: 297
+        x: 56
+        y: 257
         z: 3
 
         Image {
             id: image3
-            x: 6
-            y: 6
+            x: 4
+            y: 4
             z: 2
             source: "go-previous.png"
         }
@@ -123,14 +123,14 @@ Rectangle {
 
     Button {
         id: btnRight
-        x: 174
-        y: 297
+        x: 164
+        y: 257
         z: 3
 
         Image {
             id: image4
-            x: 6
-            y: 6
+            x: 4
+            y: 4
             z: 2
             source: "go-next.png"
         }
@@ -208,9 +208,9 @@ Rectangle {
     Rectangle {
         id: bottomrect
         x: 0
-        y: 198
+        y: 204
         width: 260
-        height: 304
+        height: 183
         color: "#bababa"
         z: 2
     }
@@ -218,9 +218,9 @@ Rectangle {
     Rectangle {
         id: btnGroupCell
         x: 0
-        y: 458
+        y: 358
         width: 86.600
-        height: 42
+        height: 30
         gradient: Gradient {
             GradientStop {
                 id: gradientstop1
@@ -238,7 +238,7 @@ Rectangle {
 
         MouseArea {
             width: 86.6
-            height: 42
+            height: 30
             hoverEnabled: true
             x: 0
             y: 0
@@ -255,7 +255,7 @@ Rectangle {
         Text {
             id: text1
             x: 19
-            y: 13
+            y: 7
             text: qsTr("Клетка")
             font.bold: true
             horizontalAlignment: Text.AlignHCenter
@@ -266,9 +266,9 @@ Rectangle {
     Rectangle {
         id: btnGroupWall
         x: 87
-        y: 458
+        y: 358
         width: 86.600
-        height: 42
+        height: 30
         radius: 0
         gradient: Gradient {
             GradientStop {
@@ -288,7 +288,7 @@ Rectangle {
         Text {
             id: text2
             x: 23
-            y: 13
+            y: 7
             text: qsTr("Стена")
             font.pixelSize: 14
             font.bold: true
@@ -297,7 +297,7 @@ Rectangle {
 
         MouseArea {
             width: 86.6
-            height: 42
+            height: 30
             hoverEnabled: true
             x: 0
             y: 0
@@ -315,9 +315,9 @@ Rectangle {
     Rectangle {
         id: btnGroupFree
         x: 174
-        y: 458
+        y: 358
         width: 86.600
-        height: 42
+        height: 30
         gradient: Gradient {
             GradientStop {
                 id: gradientstop5
@@ -336,7 +336,7 @@ Rectangle {
         Text {
             id: text3
             x: 7
-            y: 13
+            y: 7
             text: qsTr("Свободно")
             font.pixelSize: 14
             font.bold: true
@@ -345,7 +345,7 @@ Rectangle {
 
         MouseArea {
             width: 86.6
-            height: 42
+            height: 30
             hoverEnabled: true
             x: 0
             y: 0
@@ -647,18 +647,18 @@ Rectangle {
     Rectangle {
         id: rectangle4
         x: 0
-        y: 500
+        y: 387
         width: 260
-        height: 90
+        height: 69
         color: "#dadada"
     }
 
     Rectangle {
         id: rectangle6
-        x: 0
-        y: 515
-        width: 60
-        height: 60
+        x: 10
+        y: 402
+        width: 40
+        height: 40
         color: "#00000000"
         radius: 16
         border.color: "#ffffff"
@@ -666,10 +666,10 @@ Rectangle {
 
     Rectangle {
         id: rectangle7
-        x: 66
-        y: 515
-        width: 60
-        height: 60
+        x: 77
+        y: 402
+        width: 40
+        height: 40
         color: "#00000000"
         radius: 16
         border.color: "#ffffff"
@@ -677,10 +677,10 @@ Rectangle {
 
     Rectangle {
         id: rectangle8
-        x: 133
-        y: 515
-        width: 60
-        height: 60
+        x: 143
+        y: 402
+        width: 40
+        height: 40
         color: "#00000000"
         radius: 16
         border.color: "#ffffff"
@@ -688,10 +688,10 @@ Rectangle {
 
     Rectangle {
         id: rectangle9
-        x: 200
-        y: 515
-        width: 60
-        height: 60
+        x: 210
+        y: 402
+        width: 40
+        height: 40
         color: "#00000000"
         radius: 16
         border.color: "#ffffff"
@@ -848,62 +848,76 @@ Rectangle {
 
             PropertyChanges {
                 target: image6
-                x: 10
-                y: 6
+                x: 4
+                y: 4
+                width: 32
+                height: 32
                 z: 4
                 opacity: 1
             }
 
             PropertyChanges {
                 target: btnTemperature
-                x: 0
-                y: 515
+                x: 12
+                y: 402
                 opacity: 1
             }
 
             PropertyChanges {
                 target: btnRadiation
-                x: 66
-                y: 515
+                x: 78
+                y: 402
                 opacity: 1
             }
 
             PropertyChanges {
                 target: btnPainted
-                x: 133
-                y: 515
+                x: 145
+                y: 402
                 opacity: 1
             }
 
             PropertyChanges {
                 target: btnClean
-                x: 200
-                y: 515
+                x: 212
+                y: 402
                 z: 5
                 opacity: 1
             }
 
             PropertyChanges {
                 target: image7
+                x: 4
+                y: 4
+                width: 32
+                height: 32
                 opacity: 1
             }
 
             PropertyChanges {
                 target: image8
+                x: 4
+                y: 4
+                width: 32
+                height: 32
                 opacity: 1
             }
 
             PropertyChanges {
                 target: image9
-                x: 6
-                y: 6
+                x: 4
+                y: 4
+                width: 32
+                height: 32
                 opacity: 1
             }
 
             PropertyChanges {
                 target: rectangle1
+                x: 0
+                y: 387
                 width: 260
-                height: 89
+                height: 69
                 color: "#404040"
                 opacity: 1
             }
@@ -914,6 +928,26 @@ Rectangle {
                 y: 0
                 visible: false
             }
+
+            PropertyChanges {
+                target: rectangle4
+                visible: false
+            }
+
+            PropertyChanges {
+                target: rectangle7
+                visible: false
+            }
+
+            PropertyChanges {
+                target: rectangle8
+                visible: false
+            }
+
+            PropertyChanges {
+                target: rectangle9
+                visible: false
+            }
         },
         State {
             name: "wallProperties"
@@ -921,31 +955,31 @@ Rectangle {
 
             PropertyChanges {
                 target: btnWallAtLeft
-                x: 0
-                y: 515
+                x: 10
+                y: 402
                 opacity: 1
             }
 
             PropertyChanges {
                 target: btnWallAtTop
-                x: 66
-                y: 515
+                x: 76
+                y: 402
                 opacity: 1
                 z: 7
             }
 
             PropertyChanges {
                 target: btnWallAtBottom
-                x: 133
-                y: 515
+                x: 143
+                y: 402
                 opacity: 1
                 z: 2
             }
 
             PropertyChanges {
                 target: btnWallAtRight
-                x: 200
-                y: 515
+                x: 210
+                y: 402
                 opacity: 1
                 z: 1
             }
@@ -964,37 +998,74 @@ Rectangle {
 
             PropertyChanges {
                 target: image10
-                x: 6
-                y: 6
+                x: 4
+                y: 4
+                width: 32
+                height: 32
                 opacity: 1
             }
 
             PropertyChanges {
                 target: image11
+                x: 4
+                y: 4
+                width: 32
+                height: 32
                 opacity: 1
             }
 
             PropertyChanges {
                 target: image12
-                x: 6
-                y: 6
+                x: 4
+                y: 4
+                width: 32
+                height: 32
                 opacity: 1
             }
 
             PropertyChanges {
                 target: image13
-                x: 6
-                y: 6
+                x: 4
+                y: 4
+                width: 32
+                height: 32
                 source: "btn_at_right.png"
                 opacity: 1
             }
 
             PropertyChanges {
                 target: rectangle2
+                x: 0
+                y: 388
                 width: 260
-                height: 89
+                height: 68
                 color: "#404040"
                 opacity: 1
+            }
+
+            PropertyChanges {
+                target: rectangle4
+                visible: false
+            }
+
+            PropertyChanges {
+                target: rectangle9
+                visible: false
+            }
+
+            PropertyChanges {
+                target: rectangle8
+                visible: false
+            }
+
+            PropertyChanges {
+                target: rectangle7
+                visible: false
+            }
+
+            PropertyChanges {
+                target: rectangle6
+                visible: false
             }
         },
         State {
@@ -1014,71 +1085,106 @@ Rectangle {
 
             PropertyChanges {
                 target: btnFreeAtLeft
-                x: 0
-                y: 515
+                x: 10
+                y: 402
                 z: 14
                 opacity: 1
             }
 
             PropertyChanges {
                 target: btnFreeAtTop
-                x: 66
-                y: 515
+                x: 76
+                y: 402
                 z: 13
                 opacity: 1
             }
 
             PropertyChanges {
                 target: btnFreeAtBottom
-                x: 133
-                y: 515
+                x: 143
+                y: 402
                 z: 12
                 opacity: 1
             }
 
             PropertyChanges {
                 target: btnFreeAtRight
-                x: 200
-                y: 515
+                x: 210
+                y: 402
                 z: 11
                 opacity: 1
             }
 
             PropertyChanges {
                 target: image14
-                x: 6
-                y: 6
+                x: 4
+                y: 4
+                width: 32
+                height: 32
                 opacity: 1
             }
 
             PropertyChanges {
                 target: image15
-                x: 6
-                y: 6
+                x: 4
+                y: 4
+                width: 32
+                height: 32
                 opacity: 1
             }
 
             PropertyChanges {
                 target: image16
-                x: 6
-                y: 6
+                x: 4
+                y: 4
+                width: 32
+                height: 32
                 opacity: 1
             }
 
             PropertyChanges {
                 target: image17
-                x: 6
-                y: 6
+                x: 4
+                y: 4
+                width: 32
+                height: 32
                 opacity: 1
             }
 
             PropertyChanges {
                 target: rectangle3
+                x: 0
+                y: 388
                 width: 260
-                height: 90
+                height: 68
                 color: "#404040"
                 z: 0
                 opacity: 1
+            }
+
+            PropertyChanges {
+                target: rectangle4
+                visible: false
+            }
+
+            PropertyChanges {
+                target: rectangle6
+                visible: false
+            }
+
+            PropertyChanges {
+                target: rectangle7
+                visible: false
+            }
+
+            PropertyChanges {
+                target: rectangle8
+                visible: false
+            }
+
+            PropertyChanges {
+                target: rectangle9
+                visible: false
             }
         }
     ]
