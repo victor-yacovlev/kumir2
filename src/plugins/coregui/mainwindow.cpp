@@ -1126,7 +1126,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
         if (f.open(QIODevice::ReadOnly)) {
             QByteArray rawData = f.readAll();
             f.close();
-            QStringList lines = KumFile::readRawDataAsString(rawData).split("\n");
+            QStringList lines = KumFile::readRawDataAsString(rawData, "").split("\n");
             for (int i=0; i<lines.size(); i++) {
                 while (lines[i].startsWith(".")||lines[i].startsWith(" ")) {
                     lines[i] = lines[i].mid(1);

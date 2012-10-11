@@ -90,11 +90,16 @@ bool hasWrongSymbols(const QString & s) {
     return false;
 }
 
-QString KumFile::readRawDataAsString(QByteArray rawData)
+QString KumFile::readRawDataAsString(QByteArray rawData, const QString &sourceEncoding)
 {
     QTextStream ts(rawData, QIODevice::ReadOnly);
-    ts.setCodec("UTF-16");
-    ts.setAutoDetectUnicode(true);
+    if (sourceEncoding.isEmpty()) {
+        ts.setCodec("UTF-16");
+        ts.setAutoDetectUnicode(true);
+    }
+    else {
+        ts.setCodec(QTextCodec::codecForName(sourceEncoding.toAscii().constData()));
+    }
     QString s = ts.readAll();
     s = s.replace(QChar(13),"");
     s = s.replace(QChar(9), "    ");
@@ -129,7 +134,7 @@ QDataStream & operator >>(QDataStream & ds, KumFile::Data & data)
             buffer.append(bb, cnt);
         }
     }
-    const QString s = KumFile::readRawDataAsString(buffer);
+    const QString s = KumFile::readRawDataAsString(buffer, data.sourceEncoding);
     data = KumFile::fromString(s);
     return ds;
 }

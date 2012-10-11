@@ -17,12 +17,13 @@ struct Data
     QSet<int> protectedLineNumbers;
     QString hiddenText;
     bool hasHiddenText;
+    QString sourceEncoding;
 
 };
 
 KUMFILE_EXPORT QString toString(const Data & data);
 KUMFILE_EXPORT Data fromString(const QString &s);
-KUMFILE_EXPORT QString readRawDataAsString(QByteArray rawData);
+KUMFILE_EXPORT QString readRawDataAsString(QByteArray rawData, const QString & sourceEncoding);
 
 } // namespace KumFile
 
