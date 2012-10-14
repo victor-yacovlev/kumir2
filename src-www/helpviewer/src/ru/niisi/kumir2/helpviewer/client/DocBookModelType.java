@@ -4,6 +4,7 @@ public enum DocBookModelType {
 	__text__,
 	Book,
 	Article,
+    Set,
 	Chapter,
 	Section,
 	Preface,
@@ -19,5 +20,6 @@ public enum DocBookModelType {
 	Emphasis,
 	XInfo,
 	KeywordSet,
-	Keyword
+	Keyword,
+    Synopsis;
 }

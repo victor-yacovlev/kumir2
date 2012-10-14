@@ -42,10 +42,14 @@ QString KumirBytecodeCompilerPlugin::initialize(const QStringList &arguments)
 void KumirBytecodeCompilerPlugin::start()
 {
     QString filename;
+    QString encoding = "";
     for (int i=1; i<qApp->argc(); i++) {
         const QString arg = qApp->arguments()[i];
         if ( !arg.startsWith("-") && !arg.startsWith("[") && arg.endsWith(".kum")) {
             filename = arg;
+        }
+        if ( arg.startsWith("--encoding=") ) {
+            encoding = arg.mid(11).toUpper();
         }
     }
     if (!filename.isEmpty() && !qApp->arguments().contains("-h") && !qApp->arguments().contains("-help") && !qApp->arguments().contains("--help") && !qApp->arguments().contains("/?")) {
@@ -54,6 +58,7 @@ void KumirBytecodeCompilerPlugin::start()
         if (f.open(QIODevice::ReadOnly)) {            
             QDataStream ts(&f);
             KumFile::Data kumFile;
+            kumFile.sourceEncoding = encoding;
             ts >> kumFile;
             f.close();
 

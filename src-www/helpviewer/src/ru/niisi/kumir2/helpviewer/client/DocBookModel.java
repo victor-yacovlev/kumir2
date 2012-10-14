@@ -9,7 +9,8 @@ import com.google.gwt.xml.client.*;
 public class DocBookModel extends TreeItem {
 	
 	
-	private final static DocBookModelType[] EXPANDABLE_TAGS = { 
+	private final static DocBookModelType[] EXPANDABLE_TAGS = {
+        DocBookModelType.Set,
 		DocBookModelType.Book,
 		DocBookModelType.Article,
 		DocBookModelType.Chapter,
@@ -17,6 +18,7 @@ public class DocBookModel extends TreeItem {
 	};
 		
 	private final static int MAX_SECTION_LEVEL = 2;
+    private final static KumirLexer kumirLexer = new KumirLexer();
 	
 	private DocBookType docBookType = null;
 	private DocBookModelType modelType = null;
@@ -32,6 +34,7 @@ public class DocBookModel extends TreeItem {
 	private String XrefLinkend = null;
 	private String XrefEndTerm = null;
 	private String EmphasisRole = null;
+    private String sourceLanguage = "kumir";
 	static int generateIdCounter = 0;
 
 	public static boolean printable = false;
@@ -181,6 +184,9 @@ public class DocBookModel extends TreeItem {
 			else if (n.getNodeType()==Node.ELEMENT_NODE && n.getNodeName().equalsIgnoreCase("programlisting")) {
 				children.add(new DocBookModel(this, docBookType, DocBookModelType.ProgramListing, (Element)n));
 			}
+            else if (n.getNodeType()==Node.ELEMENT_NODE && n.getNodeName().equalsIgnoreCase("synopsis")) {
+                children.add(new DocBookModel(this, docBookType, DocBookModelType.Synopsis, (Element)n));
+            }
 			else if (n.getNodeType()==Node.ELEMENT_NODE && n.getNodeName().equalsIgnoreCase("example")) {
 				children.add(new DocBookModel(this, docBookType, DocBookModelType.Example, (Element)n));
 			}
@@ -303,8 +309,11 @@ public class DocBookModel extends TreeItem {
 			result += "<p>";
 		}
 		else if (modelType==DocBookModelType.ProgramListing) {
-			result += "<pre>";
+			result += "<pre class=\"listing\">";
 		}
+        else if (modelType==DocBookModelType.Synopsis) {
+            result += "<pre class=\"synopsis\">";
+        }
 		else if (modelType==DocBookModelType.Xref) {
 			if (XrefLinkend!=null) {
 				result += generateXref(printableForm, XrefLinkend, XrefEndTerm);
@@ -379,8 +388,13 @@ public class DocBookModel extends TreeItem {
 		}
 		
 		if (modelType==DocBookModelType.__text__) {
-			if (parent!=null && parent.getModelType()==DocBookModelType.ProgramListing) {
-				result += nodeText;
+			if (parent!=null &&
+                    (parent.getModelType()==DocBookModelType.ProgramListing || parent.getModelType()==DocBookModelType.Synopsis)
+                ) {
+                if (sourceLanguage.equalsIgnoreCase("kumir"))
+                    result += kumirLexer.formatKumirProgram(nodeText);
+                else
+				    result += nodeText;
 			}
 			else {
 				result += normalizeText(nodeText);
@@ -403,7 +417,7 @@ public class DocBookModel extends TreeItem {
 		else if (modelType==DocBookModelType.Para) {
 			result += "</p>";
 		}
-		else if (modelType==DocBookModelType.ProgramListing) {
+		else if (modelType==DocBookModelType.ProgramListing || modelType==DocBookModelType.Synopsis) {
 			result += "</pre>";
 		}
 		else if (modelType==DocBookModelType.Emphasis) {

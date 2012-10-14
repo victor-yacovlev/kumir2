@@ -8,6 +8,7 @@ You should change it corresponding to functionality.
 
 #include <QtCore>
 #include <QtGui>
+#include <QtDeclarative>
 #include "robotmodule.h"
 #include "extensionsystem/pluginmanager.h"
 
@@ -2401,7 +2402,27 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
       field->createRobot();
     view=new RobotView(field);
     m_mainWidget = view;
-    m_pultWidget = new QWidget();
+    const QUrl rcUrl = QUrl::fromLocalFile(
+                qApp->property("sharePath").toString()+
+                "/actors/robot/rc.qml"
+                );
+    m_pultWidget = new QDeclarativeView(rcUrl);
+    m_pultWidget->setRenderHints(QPainter::Antialiasing|QPainter::TextAntialiasing);
+    QDeclarativeItem * pult = qobject_cast<QDeclarativeItem*>(m_pultWidget->rootObject());
+    connect(pult, SIGNAL(goLeft()), this, SLOT(runGoLeft()));
+    connect(pult, SIGNAL(goRight()), this, SLOT(runGoRight()));
+    connect(pult, SIGNAL(goUp()), this, SLOT(runGoUp()));
+    connect(pult, SIGNAL(goDown()), this, SLOT(runGoDown()));
+    connect(pult, SIGNAL(doPaint()), this, SLOT(runDoPaint()));
+    connect(pult, SIGNAL(checkWallLeft()), this, SLOT(runIsWallAtLeft()));
+    connect(pult, SIGNAL(checkWallRight()), this, SLOT(runIsWallAtRight()));
+    connect(pult, SIGNAL(checkWallTop()), this, SLOT(runIsWallAtTop()));
+    connect(pult, SIGNAL(checkWallBottom()), this, SLOT(runIsWallAtBottom()));
+    connect(pult, SIGNAL(checkFreeLeft()), this, SLOT(runIsFreeAtLeft()));
+    connect(pult, SIGNAL(checkFreeRight()), this, SLOT(runIsFreeAtRight()));
+    connect(pult, SIGNAL(checkFreeTop()), this, SLOT(runIsFreeAtTop()));
+    connect(pult, SIGNAL(checkFreeBottom()), this, SLOT(runIsFreeAtBottom()));
+    connect(this, SIGNAL(sendToPultLog(QVariant)), pult, SLOT(addToResultLog(QVariant)));
     startField=field->Clone();
     field->drawField(FIELD_SIZE_SMALL);
     field->dropWasEdit();
@@ -2472,10 +2493,15 @@ void RobotModule::runGoUp()
 {
 	/* TODO implement me */
     qDebug() << "Robot up";
+    QString status = "OK";
      if(!field->stepUp())
      {
      field->robot->setCrash(UP_CRASH);    
      setError(trUtf8("Робот разбился: сверху стена!"));
+     status = trUtf8("Отказ");
+     }
+     if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+         emit sendToPultLog(status);
      }
     if(animation)sleep(1);
 	return;
@@ -2486,9 +2512,14 @@ void RobotModule::runGoDown()
 {
 	/* TODO implement me */
     qDebug() << "Robot down";
+    QString status = "OK";
      if(!field->stepDown())
      {setError(trUtf8("Робот разбился: снизу стена!"));
      field->robot->setCrash(DOWN_CRASH);
+     status = trUtf8("Отказ");
+     }
+     if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+         emit sendToPultLog(status);
      }
          if(animation)sleep(1);
 	return;
@@ -2499,10 +2530,15 @@ void RobotModule::runGoLeft()
 {
 	/* TODO implement me */
     qDebug() << "Robot left";
+    QString status = "OK";
     if(!field->stepLeft()){
       field->robot->setCrash(LEFT_CRASH);  
     setError(trUtf8("Робот разбился: слева стена!"));
+    status = trUtf8("Отказ");
     };
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
+    }
         if(animation)sleep(1);
 	return;
 }
@@ -2512,9 +2548,14 @@ void RobotModule::runGoRight()
 {
 	/* TODO implement me */
     qDebug() << "Robot right";
+    QString status = "OK";
     if(!field->stepRight()){
         field->robot->setCrash(RIGHT_CRASH);  
+        status = trUtf8("Отказ");
     setError(trUtf8("Робот разбился: справа стена!"));}
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
+    }
      if(animation)sleep(1);
 	return;
 }
@@ -2523,65 +2564,99 @@ void RobotModule::runGoRight()
 void RobotModule::runDoPaint()
 {
 	if(!field->currentCell()->IsColored)field->reverseColorCurrent();
+    QString status = "OK";
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
+    }
 	return;
 }
 
 
 bool RobotModule::runIsWallAtTop()
 {
-	/* TODO implement me */
-return !field->currentCell()->canUp();    
+    bool result = !field->currentCell()->canUp();
+    QString status = result? trUtf8("да") : trUtf8("нет");
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
+    }
+    return result;
 }
 
 
 bool RobotModule::runIsWallAtBottom()
 {
-	/* TODO implement me */
-    
- return !field->currentCell()->canDown();
+    bool result = !field->currentCell()->canDown();
+    QString status = result? trUtf8("да") : trUtf8("нет");
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
+    }
+    return result;
 }
 
 
 bool RobotModule::runIsWallAtLeft()
 {
-	/* TODO implement me */
-	return !field->currentCell()->canLeft();
+    bool result = !field->currentCell()->canLeft();
+    QString status = result? trUtf8("да") : trUtf8("нет");
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
+    }
+    return result;
 }
 
 
 bool RobotModule::runIsWallAtRight()
 {
-	/* TODO implement me */
-	return !field->currentCell()->canRight();
+    bool result = !field->currentCell()->canRight();
+    QString status = result? trUtf8("да") : trUtf8("нет");
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
+    }
+    return result;
 }
 
 bool RobotModule::runIsFreeAtTop()
-    {
-        /* TODO implement me */
-        return field->currentCell()->canUp();    
+{
+    bool result = field->currentCell()->canUp();
+    QString status = result? trUtf8("да") : trUtf8("нет");
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
     }
+    return result;
+}
     
     
 bool RobotModule::runIsFreeAtBottom()
-    {
-        /* TODO implement me */
-        
-        return field->currentCell()->canDown();
+{
+    bool result = field->currentCell()->canDown();
+    QString status = result? trUtf8("да") : trUtf8("нет");
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
     }
+    return result;
+}
     
     
 bool RobotModule::runIsFreeAtLeft()
-    {
-        /* TODO implement me */
-        return field->currentCell()->canLeft();
+{
+    bool result = field->currentCell()->canLeft();
+    QString status = result? trUtf8("да") : trUtf8("нет");
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
     }
+    return result;
+}
     
     
 bool RobotModule::runIsFreeAtRight()
-    {
-        /* TODO implement me */
-        return field->currentCell()->canRight();
+{
+    bool result = field->currentCell()->canRight();
+    QString status = result? trUtf8("да") : trUtf8("нет");
+    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+        emit sendToPultLog(status);
     }
+    return result;
+}
 	
 
  int RobotModule::LoadFromFile(QString p_FileName)

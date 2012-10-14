@@ -4,30 +4,62 @@
 <context>
     <name>ActorRobot::RobotModule</name>
     <message utf8="true">
-        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2194"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2500"/>
         <source>Робот разбился: сверху стена!</source>
         <translation type="unfinished"></translation>
     </message>
     <message utf8="true">
-        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2206"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2501"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2519"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2537"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2554"/>
+        <source>Отказ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message utf8="true">
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2517"/>
         <source>Робот разбился: снизу стена!</source>
         <translation type="unfinished"></translation>
     </message>
     <message utf8="true">
-        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2220"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2536"/>
         <source>Робот разбился: слева стена!</source>
         <translation type="unfinished"></translation>
     </message>
     <message utf8="true">
-        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2233"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2555"/>
         <source>Робот разбился: справа стена!</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2313"/>
-        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2412"/>
-        <source>Robot</source>
+    <message utf8="true">
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2578"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2589"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2600"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2611"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2621"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2632"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2643"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2654"/>
+        <source>да</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message utf8="true">
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2578"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2589"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2600"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2611"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2621"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2632"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2643"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2654"/>
+        <source>нет</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2672"/>
+        <location filename="../../../src/actors/robot/robotmodule.cpp" line="2772"/>
+        <source>Robot</source>
+        <translation>Робот</translation>
     </message>
 </context>
 </TS>

@@ -37,24 +37,16 @@ public class TableOfContentsPanel extends ScrollPanel {
 		});
 	}
 	
-	public void addBook(final Document book) {
-		TreeItem bookItem = new DocBookModel(book.getDocumentElement());
-		tree.addItem(bookItem);
+	public void addDocument(final Document book) {
+		TreeItem documentItem = new DocBookModel(book.getDocumentElement());
+		tree.addItem(documentItem);
 		if (tree.getSelectedItem()==null) {
 			tree.setSelectedItem(tree.getItem(0));
 			tree.ensureSelectedItemVisible();
 		}
 	}
 	
-	public void addArticle(final Document article) {
-		TreeItem articleItem = new DocBookModel(article.getDocumentElement());
-		tree.addItem(articleItem);
-		if (tree.getSelectedItem()==null) {
-			tree.setSelectedItem(tree.getItem(0));
-			tree.ensureSelectedItemVisible();
-		}
-	}
-	
+
 	@SuppressWarnings("unchecked")
 	public void addOpenNodeHandler(OpenNodeHandler handler) {
 		addHandler(handler, OpenNodeEvent.getType());
