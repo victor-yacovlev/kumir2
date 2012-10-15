@@ -1,6 +1,5 @@
 package ru.niisi.kumir2.helpviewer.client;
 
-<<<<<<< HEAD
 /**
  * Created with IntelliJ IDEA.
  * User: victor
@@ -8,8 +7,6 @@ package ru.niisi.kumir2.helpviewer.client;
  * Time: 1:46 PM
  * To change this template use File | Settings | File Templates.
  */
-public class KumirLexer {
-=======
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 
@@ -215,5 +212,4 @@ public class KumirLexer {
         return result;
     }
 
->>>>>>> e01be18e6c0179cc3f13bfa844c6c2fee89d009d
 }
