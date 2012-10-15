@@ -7,7 +7,7 @@
 #include "extensionsystem/pluginmanager.h"
 #include "stdlib/kumstdlib.h"
 
-#define EPSILON 0.0000001
+#define EPSILON 9.88131291682e-324
 #define MAX_RECURSION_SIZE 4000
 
 using namespace Bytecode;
