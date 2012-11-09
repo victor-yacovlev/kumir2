@@ -266,8 +266,7 @@ void KumirProgram::fastRun()
 #ifdef Q_OS_WIN32
         plugin_nativeGenerator->setVerbose(true);
 #endif
-        QStringList usedDlls;
-        QPair<QString,QString> res = plugin_nativeGenerator->generateExecuable(m_ast, &exeFile, &usedDlls);
+        QPair<QString,QString> res = plugin_nativeGenerator->generateExecuable(m_ast, &exeFile);
         if (!res.first.isEmpty()) {
             qDebug() << "Error generating execuable: " << res.first;
         }
@@ -275,16 +274,6 @@ void KumirProgram::fastRun()
             ok = true;
         }
         exeFile.close();
-#ifdef Q_OS_WIN32
-        for (int i=0; i<usedDlls.size(); i++) {
-            if (!QFile::exists(usedDlls[i])) {
-                if (!QFile::copy(qApp->applicationDirPath()+"/"+usedDlls[i], usedDlls[i])) {
-                    ok = false;
-                    qDebug() << "Can't put dll into working directory: " << usedDlls[i];
-                }
-            }
-        }
-#endif
         QFile::Permissions perms = exeFile.permissions();
         perms |= QFile::ExeOwner;
         perms |= QFile::ExeUser;

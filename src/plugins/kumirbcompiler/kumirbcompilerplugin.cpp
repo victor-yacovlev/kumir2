@@ -12,6 +12,7 @@
 using namespace KumirBytecodeCompiler;
 using namespace KumirAnalizer;
 
+typedef Shared::GeneratorInterface::DebugLevel DebugLevel;
 
 KumirBytecodeCompilerPlugin::KumirBytecodeCompilerPlugin()
 {
@@ -43,6 +44,7 @@ void KumirBytecodeCompilerPlugin::start()
 {
     QString filename;
     QString encoding = "";
+    DebugLevel debugLevel = Shared::GeneratorInterface::LinesOnly;
     for (int i=1; i<qApp->argc(); i++) {
         const QString arg = qApp->arguments()[i];
         if ( !arg.startsWith("-") && !arg.startsWith("[") && arg.endsWith(".kum")) {
@@ -50,6 +52,15 @@ void KumirBytecodeCompilerPlugin::start()
         }
         if ( arg.startsWith("--encoding=") ) {
             encoding = arg.mid(11).toUpper();
+        }
+        if ( arg.toLower().startsWith("--debuglevel=") ) {
+            int level = arg.mid(13).toInt();
+            if (level==0)
+                debugLevel = Shared::GeneratorInterface::NoDebug;
+            else if (level==1)
+                debugLevel = Shared::GeneratorInterface::LinesOnly;
+            else
+                debugLevel = Shared::GeneratorInterface::LinesAndVariables;
         }
     }
     if (!filename.isEmpty() && !qApp->arguments().contains("-h") && !qApp->arguments().contains("-help") && !qApp->arguments().contains("--help") && !qApp->arguments().contains("/?")) {
@@ -105,7 +116,7 @@ void KumirBytecodeCompilerPlugin::start()
                 outKodFileName += ".kod";
 
             QFile binOut(outKodFileName);
-            QPair<QString,QString> res = generator->generateExecuable(ast, &binOut);
+            QPair<QString,QString> res = generator->generateExecuable(ast, &binOut, debugLevel);
             if (!res.first.isEmpty()) {
                 std::cerr << "Error generating execuable: " << res.first.toStdString() << std::endl;
             }

@@ -34,11 +34,11 @@ void KumirCodeGeneratorPlugin::stop()
 
 QPair<QString,QString> KumirCodeGeneratorPlugin::generateExecuable(
     const AST::Data * tree
-    , QIODevice * out, QStringList * usedDlls)
+    , QIODevice * out, DebugLevel debugLevel)
 {
     Data data;
 
-    d->reset(tree, &data);
+    d->reset(tree, &data, debugLevel);
     for (int i=0; i<tree->modules.size(); i++) {
         d->addModule(tree->modules[i]);
     }

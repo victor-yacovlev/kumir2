@@ -9,15 +9,21 @@
 #include "dataformats/lexem.h"
 #include "errormessages/errormessages.h"
 #include "dataformats/bytecode.h"
+#include "interfaces/generatorinterface.h"
+
+
 
 namespace KumirCodeGenerator {
 
+typedef Shared::GeneratorInterface::DebugLevel DebugLevel;
+
 class Generator : public QObject
 {
+
     Q_OBJECT
 public:
     explicit Generator(QObject *parent = 0);
-    void reset(const AST::Data * ast, Bytecode::Data * bc);
+    void reset(const AST::Data * ast, Bytecode::Data * bc, DebugLevel debugLevel);
     void addModule(const AST::Module * mod);
     void generateConstantTable();
     void generateExternTable();
@@ -59,6 +65,8 @@ private:
     Bytecode::Data * m_bc;
     QList< QPair<Bytecode::ValueType, QVariant> > l_constants;
     QList< QPair<quint8,quint16> > l_externs;
+    DebugLevel e_debugLevel;
+
 };
 
 } // namespace KumirCodeGenerator

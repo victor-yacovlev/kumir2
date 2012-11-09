@@ -23,7 +23,7 @@ public:
 
     QPair<QString,QString> generateExecuable(
         const AST::Data * tree
-        , QIODevice * out, QStringList * usedDlls = 0);
+        , QIODevice * out, DebugLevel debugLevel=LinesOnly);
 
     inline void setVerbose(bool) {}
     inline void setTemporaryDir(const QString &, bool ) {}

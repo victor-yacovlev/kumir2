@@ -12,10 +12,11 @@ Generator::Generator(QObject *parent) :
     m_bc = 0;
 }
 
-void Generator::reset(const AST::Data *ast, Bytecode::Data *bc)
+void Generator::reset(const AST::Data *ast, Bytecode::Data *bc, DebugLevel debugLevel)
 {
     m_ast = ast;
     m_bc = bc;
+    e_debugLevel = debugLevel;
     l_constants.clear();
     l_externs.clear();
 }
