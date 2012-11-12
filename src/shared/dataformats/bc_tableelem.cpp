@@ -250,6 +250,47 @@ extern QTextStream& operator>>(QTextStream& ts, TableElem& e)
     return ts;
 }
 
+static std::ostream& operator<<(std::ostream& os, const QString & qstring)
+{
+    const std::string str(qstring.toUtf8());
+    os << quint32(str.length());
+    for (size_t i=0; i<str.length(); i++) {
+        os << str.at(i);
+    }
+    return os;
+}
+
+static std::ostream& operator<<(std::ostream& os, const QChar & qchar)
+{
+    const QString s = QString(qchar);
+    os << s;
+    return os;
+}
+
+static std::istream& operator>>(std::istream &is, QString & qstring)
+{
+    quint32 u32_size;
+    is >> u32_size;
+    size_t size = size_t(u32_size);
+    char * buffer = (char*)calloc(size+1, sizeof(char));
+    buffer[size] = '\0';
+    for (size_t i=0; i<size; i++) {
+        is >> buffer[i];
+    }
+    qstring = QString::fromUtf8(buffer);
+    free(buffer);
+    return is;
+}
+
+static std::istream& operator>>(std::istream &is, QChar & qchar)
+{
+    QString s;
+    is >> s;
+    Q_ASSERT(s.length()==1);
+    qchar = s.at(0);
+    return is;
+}
+
 extern QDataStream& operator<<(QDataStream & ds, const TableElem &e)
 {
     ds << quint8(e.type);
@@ -269,6 +310,39 @@ extern QDataStream& operator<<(QDataStream & ds, const TableElem &e)
             ds << e.constantValue.toDouble();
         else if (e.vtype==VT_bool)
             ds << quint8(e.constantValue.toBool()? 1 : 0);
+        else {
+            ds << e.constantValue.toString();
+        }
+    }
+    else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_BELOWMAIN || e.type==EL_INIT) {
+        ds << quint16(e.instructions.size());
+        for (int i=0; i<e.instructions.size(); i++) {
+            ds << toUint32(e.instructions[i]);
+        }
+    }
+    return ds;
+}
+
+
+extern std::ostream& operator<<(std::ostream & ds, const TableElem &e)
+{
+    ds << quint8(e.type);
+    ds << quint8(e.vtype);
+    ds << quint8(e.dimension);
+    ds << quint8(e.refvalue);
+    ds << quint8(e.module);
+    ds << quint16(e.algId);
+    ds << quint16(e.id);
+    ds << e.name;
+    if (e.type==EL_EXTERN)
+        ds << e.moduleName;
+    else if (e.type==EL_CONST) {
+        if (e.vtype==VT_int)
+            ds << qint32(e.constantValue.toInt());
+        else if (e.vtype==VT_float)
+            ds << e.constantValue.toDouble();
+        else if (e.vtype==VT_bool)
+            ds << quint8(e.constantValue.toBool()? quint8(1) : quint8(0));
         else {
             ds << e.constantValue.toString();
         }
@@ -338,5 +412,63 @@ extern QDataStream& operator>>(QDataStream & ds, TableElem &e)
     }
     return ds;
 }
+
+extern std::istream& operator>>(std::istream & ds, TableElem & e)
+{
+    quint8 t;
+    quint8 v;
+    quint8 d;
+    quint8 r;
+    quint8 m;
+    quint16 a;
+    quint16 id;
+    QString s;
+    ds >> t >> v >> d >> r >> m >> a >> id >> s;
+    e.type = ElemType(t);
+    e.vtype = ValueType(v);
+    e.dimension = d;
+    e.refvalue = ValueKind(r);
+    e.module = m;
+    e.algId = a;
+    e.id = id;
+    e.name = s;
+    if (e.type==EL_EXTERN) {
+        ds >> s;
+        e.moduleName = s;
+    }
+    else if (e.type==EL_CONST) {
+        if (e.vtype==VT_int) {
+            qint32 iv;
+            ds >> iv;
+            e.constantValue = iv;
+        }
+        else if (e.vtype==VT_float) {
+            double fv;
+            ds >> fv;
+            e.constantValue = fv;
+        }
+        else if (e.vtype==VT_bool) {
+            quint8 bv;
+            ds >> bv;
+            e.constantValue = bool(bv>0? true : false);
+        }
+        else {
+            ds >> s;
+            e.constantValue = s;
+        }
+    }
+    else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_BELOWMAIN || e.type==EL_INIT) {
+        quint16 sz;
+        ds >> sz;
+        e.instructions = QVector<Instruction>(sz);
+        for (quint16 i=0; i<sz; i++) {
+            quint32 instr;
+            ds >> instr;
+            e.instructions[i] = fromUint32(instr);
+        }
+    }
+    return ds;
+}
+
 
 } // namespace Bytecode

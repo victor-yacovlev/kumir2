@@ -4,6 +4,9 @@
 #include <QtCore>
 #include "bc_instruction.h"
 
+#include <sstream>
+#include <string>
+
 #undef BYTECODE_EXPORT
 #ifdef DATAFORMATS_LIBRARY
 #   define BYTECODE_EXPORT Q_DECL_EXPORT
@@ -67,6 +70,9 @@ extern BYTECODE_EXPORT QTextStream& operator>>(QTextStream&, TableElem&);
 
 extern BYTECODE_EXPORT QDataStream& operator<<(QDataStream&, const TableElem&);
 extern BYTECODE_EXPORT QDataStream& operator>>(QDataStream&, TableElem&);
+
+extern BYTECODE_EXPORT std::ostream& operator<<(std::ostream&, const TableElem &);
+extern BYTECODE_EXPORT std::istream& operator>>(std::istream&, TableElem &);
 
 } // namespace Bytecode
 
