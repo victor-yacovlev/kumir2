@@ -31,12 +31,12 @@ public:
 
     inline explicit Variant(int v) { create() ; e_baseType = VT_int; m_value = v; }
     inline explicit Variant(double v) { create(); e_baseType = VT_float; m_value = v; }
+    inline explicit Variant(wchar_t v) { create(); e_baseType = VT_char; m_value = QChar(v); }
     inline explicit Variant(const QChar & v) { create(); e_baseType = VT_char; m_value = v; }
     inline explicit Variant(const QString & v) { create(); e_baseType = VT_string; m_value = v; }
+    inline explicit Variant(const std::wstring & v) { create(); e_baseType = VT_string; m_value = QString::fromStdWString(v); }
     inline explicit Variant(bool v) { create(); e_baseType = VT_bool; m_value = v; }
     inline explicit Variant(Variant * ref) { create(); m_reference = ref; }
-
-
 
     void init();
     inline quint8 dimension() const { return i_dimension; }
@@ -108,9 +108,11 @@ public:
     inline int toInt() const { return value().toInt(); }
     inline double toReal() const { return value().toDouble(); }
     inline bool toBool() const { return value().toBool(); }
-    inline QChar toChar() const { return value().toChar(); }
-    QString toString() const;
-    QString toString(const QList<int> & indeces) const;
+    inline QChar toQChar() const { return value().toChar(); }
+    inline wchar_t toChar() const { return static_cast<wchar_t>(toQChar().unicode()); }
+    inline std::wstring toString() const { return toQString().toStdWString(); }
+    QString toQString() const;
+    QString toQString(const QList<int> & indeces) const;
     Variant toReference();
     Variant toReference(const QList<int> & indeces);
     void setValue(const QVariant & value);

@@ -1,5 +1,7 @@
 #include "run.h"
 #include "stdlib/kumstdlib.h"
+#define DO_NOT_DECLARE_STATIC
+#include "stdlib/kumirstdlib.hpp"
 
 namespace KumirCodeRun {
 
@@ -28,7 +30,8 @@ Run::Run(QObject *parent) :
     connect(vm, SIGNAL(outputArgumentRequest(QVariant,QString,QList<int>)),
             this, SLOT(handleOutputArgumentRequest(QVariant,QString,QList<int>)),
             Qt::DirectConnection);
-    connect(vm, SIGNAL(outputRequest(QString)), this, SLOT(handleOutputRequest(QString)));
+    connect(vm, SIGNAL(outputRequest(QStringList, QList<QVariant::Type>, QVariantList)),
+                       this, SLOT(handleOutputRequest(QStringList, QList<QVariant::Type>, QVariantList)), Qt::DirectConnection);
 //    connect(vm, SIGNAL(invokeExternalFunction(QString,QString,QVariantList,QList<quintptr>,QList<int>)),
 //            this, SLOT(handleExternalRequest(QString,QString,QVariantList,QList<quintptr>,QList<int>)),
 //            Qt::DirectConnection);
@@ -381,9 +384,39 @@ void Run::finishExternalFunctionCall(const QString & error,
     s_funcError = error;
 }
 
-void Run::handleOutputRequest(const QString & out )
+void Run::handleOutputRequest(const QStringList &formats, const QList<QVariant::Type> & types, const QVariantList & values)
 {
-    emit output(out);
+    Kumir::IO::OutputStream os;
+    for (int i=0; i<formats.size(); i++) {
+        Kumir::String format = formats[i].toStdWString();
+        if (types[i]==QVariant::Int) {
+            Kumir::IO::IntFormat fmt = Kumir::IO::parseIntFormat(format);
+            if (Kumir::Core::getError().length()>0) return;
+            Kumir::IO::writeInteger(os, values[i].toInt(), fmt);
+        }
+        else if (types[i]==QVariant::Double) {
+            Kumir::IO::RealFormat fmt = Kumir::IO::parseRealFormat(format);
+            if (Kumir::Core::getError().length()>0) return;
+            Kumir::IO::writeReal(os, values[i].toDouble(), fmt);
+        }
+        else if (types[i]==QVariant::Bool) {
+            Kumir::IO::BoolFormat fmt = Kumir::IO::parseBoolFormat(format);
+            if (Kumir::Core::getError().length()>0) return;
+            Kumir::IO::writeBool(os, values[i].toBool(), fmt);
+        }
+        else if (types[i]==QVariant::Char) {
+            Kumir::IO::CharFormat fmt = Kumir::IO::parseCharFormat(format);
+            if (Kumir::Core::getError().length()>0) return;
+            Kumir::IO::writeChar(os, values[i].toChar().unicode(), fmt);
+        }
+        else if (types[i]==QVariant::String) {
+            Kumir::IO::StringFormat fmt = Kumir::IO::parseStringFormat(format);
+            if (Kumir::Core::getError().length()>0) return;
+            Kumir::IO::writeString(os, values[i].toString().toStdWString(), fmt);
+        }
+    }
+    QString data = QString::fromStdWString(os.getBuffer());
+    emit output(data);
 }
 
 bool Run::mustStop()
@@ -443,23 +476,25 @@ void Run::run()
             break;
         }
         vm->evaluateNextInstruction();
-        if (!vm->error().isEmpty()) {
+        if (vm->error().length()>0) {
             emit lineChanged(vm->effectiveLineNo());
-            emit error(vm->error());
+            emit error(QString::fromStdWString(vm->error()));
             break;
         }
     }
-    bool wasError = !vm->error().isEmpty();
+//    bool wasError = vm->error().length()>0;
     // Unclosed files is an error only if program reached end
     bool unclosedFilesIsNotError = b_stopping || vm->hasMoreInstructions();
     // Must close all files if program reached end or user terminated
-    bool closeUnclosedFiles = b_stopping || !vm->hasMoreInstructions();
-    __check_for_unclosed_files__st_funct(unclosedFilesIsNotError, closeUnclosedFiles);
-    vm->updateStFunctError();
-    if (!wasError && !vm->error().isEmpty()) {
-        emit lineChanged(vm->effectiveLineNo());
-        emit error(vm->error());
-    }
+    bool programFinished = b_stopping || !vm->hasMoreInstructions();
+//    __check_for_unclosed_files__st_funct(unclosedFilesIsNotError, closeUnclosedFiles);
+//    vm->updateStFunctError();
+//    if (!wasError && vm->error().length()>0) {
+//        emit lineChanged(vm->effectiveLineNo());
+//        emit error(QString::fromStdWString(vm->error()));
+//    }
+    if (programFinished)
+        Kumir::finalizeStandardLibrary();
     emit aboutToStop();
 }
 

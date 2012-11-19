@@ -47,6 +47,7 @@ namespace Shared {
         LxSecOut	= 0x180,
         LxSecIn         = 0x1a0,
         LxSecInout	= 0x1c0,
+        LxSecFile   = 0x1c1,
 
 
         // LxTypePrimaryKwd values

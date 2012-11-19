@@ -14,6 +14,7 @@ class Run : public QThread
 public:
     enum RunMode { RM_StepOver, RM_ToEnd, RM_StepOut, RM_StepIn };
     explicit Run(QObject *parent);
+    inline bool setGuiMode(bool v) { vm->setGuiMode(v); }
     VM * vm;
     bool programLoaded;
     inline bool stopped() const { return b_stopping; }
@@ -38,7 +39,7 @@ public slots:
     void handleOutputArgumentRequest(const QVariant & value,
                                     const QString & varName,
                                     const QList<int> & bounds);
-    void handleOutputRequest(const QString & output );
+    void handleOutputRequest(const QStringList &formats, const QList<QVariant::Type> & types, const QVariantList & values);
 
     void handleAlgorhitmDone(int lineNo);
     void handleLineChanged(int lineNo);
@@ -58,7 +59,7 @@ public slots:
 
 signals:
     void lineChanged(int lineNo);
-    void output(const QString & text);
+    void output(const QString &value);
     void error(const QString & message);
     void input(const QString & format);
     void externalFunctionCall(const QString & pluginName,

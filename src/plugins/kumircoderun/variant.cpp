@@ -82,7 +82,7 @@ void Variant::setValue(const QVariant &v)
 }
 
 
-QString Variant::toString() const
+QString Variant::toQString() const
 {
     QString result;
     switch (e_baseType)
@@ -105,7 +105,7 @@ QString Variant::toString() const
     return result;
 }
 
-QString Variant::toString(const QList<int> & indeces) const
+QString Variant::toQString(const QList<int> & indeces) const
 {
     QString result;
     switch (e_baseType)

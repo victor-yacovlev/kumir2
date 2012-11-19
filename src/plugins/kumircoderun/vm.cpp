@@ -2,10 +2,11 @@
 #include "dataformats/bc_instruction.h"
 #include "stdlib/integeroverflowchecker.h"
 #include "stdlib/doubleoverflowchecker.h"
-#include "stdlib/genericinputoutput.h"
+// #include "stdlib/genericinputoutput.h"
 #include "extensionsystem/kplugin.h"
 #include "extensionsystem/pluginmanager.h"
-#include "stdlib/kumstdlib.h"
+// #include "stdlib/kumstdlib.h"
+#include "stdlib/kumirstdlib.hpp"
 
 #define EPSILON 9.88131291682e-324
 #define MAX_RECURSION_SIZE 4000
@@ -14,11 +15,18 @@ using namespace Bytecode;
 
 namespace KumirCodeRun {
 
+using Kumir::real;
+using Kumir::String;
+using Kumir::Char;
+
 VM::VM(QObject *parent) :
     QObject(parent)
 {
+    s_error = std::wstring();
+    s_error.reserve(100);
     e_entryPoint = EP_Main;
     b_blindMode = false;
+    b_guiMode = false;
     m_dontTouchMe = new QMutex;
     stack_values.init(100, 100);
     stack_contexts.init(100, 100);
@@ -62,10 +70,14 @@ void VM::setAvailableActors(const QList<ActorInterface *> &actors)
     }
 }
 
-void VM::updateStFunctError()
+std::wstring VM::error() const
 {
-    if (s_error.length()==0)
-        s_error = __get_error__st_funct();
+    if (s_error.length()>0)
+        return s_error;
+    else if (Kumir::Core::getError().length()>0)
+        return Kumir::Core::getError();
+    else
+        return std::wstring();
 }
 
 void VM::setNextCallInto()
@@ -114,7 +126,7 @@ void VM::reset()
     b_blindMode = false;
     b_nextCallInto = false;
     i_backtraceSkip = 0;
-    s_error = "";
+    s_error.clear();
     register0 = QVariant::Invalid;
     Variant::error = "";
     Variant::ignoreUndefinedError = false;
@@ -185,6 +197,7 @@ void VM::reset()
         }
     }
     nextIP(); // Change from -1 to 0
+    Kumir::initStandardLibrary();
 }
 
 void VM::nextIP()
@@ -439,9 +452,22 @@ void VM::do_halt(quint16)
 {
     QMutexLocker l(m_dontTouchMe);
 //    if (lineNo==65535)
-        emit outputRequest("\n"+tr("STOP."));
+//        emit outputRequest("\n"+tr("STOP."));
 //    else
 //        emit outputRequest("\n"+tr("STOP AT LINE %1.").arg(lineNo));
+    if (b_guiMode) {
+        QStringList formats;
+        QList<QVariant::Type> types;
+        QVariantList values;
+        formats << QString::fromUtf8("строка");
+        types << QVariant::String;
+        values << "\n" + tr("STOP.");
+        emit outputRequest(formats, types, values);
+    }
+    else {
+        QString value = QString("\n")+tr("STOP.");
+        Kumir::IO::writeString(Kumir::Core::fromUtf8("строка"), value.toStdWString());
+    }
     stack_contexts.reset();
 }
 
@@ -490,359 +516,19 @@ void VM::do_call(quint8 mod, quint16 alg)
     quint32 algorhitm = alg;
     quint32 p = module | algorhitm;
 
-    if (mod==0xFF) {
-        int argsCount = stack_values.pop().toInt();
-        // Special calls
-        if (alg==0x00) {
-            // Input
-            const QString format = stack_values.pop().toString();
-            QList<quintptr> references;
-            QList<int> indeces;
-            for (int i=1; i<argsCount; i++) {
-                Variant ref = stack_values.pop();
-                references << quintptr(ref.reference());
-                indeces << ref.referenceIndeces();
-            }
-            if (f_input.isOpen()) {
-                StdLib::GenericInputOutput * inp = StdLib::GenericInputOutput::instance();
-                inp->doInput(format);
-                QSet<QPair<int,int> > errpos;
-                QString error;
-                QList<QVariant> result;
-                if (f_input.atEnd()) {
-                    s_error = tr("File %1 reached end").arg(f_input.fileName());
-                    return;
-                }
-                QString line = QString::fromLocal8Bit(f_input.readLine()).trimmed();
-                if (line.isEmpty()) {
-                    s_error = tr("Current line of file %1 is empty").arg(f_input.fileName());
-                    return;
-                }
-                bool ok = inp->tryFinishInput(line, result, errpos, false, error);
-                if (!ok) {
-                    s_error = tr("Input from file %1 error: %2")
-                            .arg(f_input.fileName())
-                            .arg(error);
-                }
-                else {
-                    if (result.size()>references.size()) {
-                        result = result.mid(0,references.size());
-                    }
-                    setResults("",references,indeces,result);
-                }
-
-            }
-            else {
-                emit inputRequest(format, references, indeces);
-            }
-        }
-        if (alg==0x01) {
-            // Output
-            QString output;
-            QVariantList outArgs;
-            std::string format;
-            for (int i=0; i<argsCount; i++) {
-                Variant v = stack_values.pop();
-                if (v.baseType()==VT_int) {
-                    if (i%3==0) format += 'i';
-                    outArgs << v.toInt();
-                }
-                else if (v.baseType()==VT_float) {
-                    if (i%3==0) format += 'r';
-                    outArgs << v.toReal();
-                }
-                else if (v.baseType()==VT_bool) {
-                    if (i%3==0) format += 'b';
-                    outArgs << v.toBool();
-                }
-                else if (v.baseType()==VT_string) {
-                    if (i%3==0) format += 's';
-                    outArgs << v.toString();
-                }
-                else if (v.baseType()==VT_char) {
-                    if (i%3==0) format += 'c';
-                    outArgs << v.toString();
-                }
-            }
-            output = StdLib::GenericInputOutput::prepareOutput(format, outArgs, s_error);
-            if (s_error.isEmpty()) {
-                if (f_output.isOpen()) {
-                    f_output.write(output.toLocal8Bit());
-                }
-                else {
-                    emit outputRequest(output);
-                }
-            }
-        }
-        else if (alg==0x02) {
-            // File input
-            QString format = stack_values.pop().toString();
-            int handle = stack_values.pop().toInt();
-            format.remove("%");
-            QList<quintptr> references;
-            QList<int> indeces;
-            for (int i=0; i<format.length(); i++) {
-                Variant ref = stack_values.pop();
-                references << quintptr(ref.reference());
-                indeces << ref.referenceIndeces();
-            }
-            Q_ASSERT(references.count()==format.length());
-            QList<QVariant> result;
-            for (int i=0; i<format.length(); i++) {
-                if (format[i]=='s') {
-                    const wchar_t * r = __finput2_string__st_funct(handle);
-                    result << QVariant(QString::fromWCharArray(r));
-                }
-                else if (format[i]=='c')
-                    result << QVariant(QChar(__finput2_char__st_funct(handle)));
-                else {
-                    union IntRealBool r = __finput2_int_real_bool__st_funct(handle, format[i].toAscii());
-                    if (format[i]=='b')
-                        result << QVariant(bool(r.boolValue));
-                    else if (format[i]=='d')
-                        result << QVariant(r.intValue);
-                    else
-                        result << QVariant(r.realValue);
-                }
-                s_error = __get_error__st_funct();
-                if (s_error.length()>0)
-                    break;
-            }
-            if (s_error.length()==0) {
-                if (result.size()>references.size()) {
-                    result = result.mid(0,references.size());
-                }
-                setResults("",references,indeces,result);
-            }
-        }
-        else if (alg==0x03) {
-            int handle = stack_values.pop().toInt();
-            QString output;
-            QVariantList outArgs;
-            std::string format;
-            for (int i=0; i<argsCount-1; i++) {
-                Variant v = stack_values.pop();
-                if (v.baseType()==VT_int) {
-                    if (i%3==0) format += 'i';
-                    outArgs << v.toInt();
-                }
-                else if (v.baseType()==VT_float) {
-                    if (i%3==0) format += 'r';
-                    outArgs << v.toReal();
-                }
-                else if (v.baseType()==VT_bool) {
-                    if (i%3==0) format += 'b';
-                    outArgs << v.toBool();
-                }
-                else if (v.baseType()==VT_string) {
-                    if (i%3==0) format += 's';
-                    outArgs << v.toString();
-                }
-                else if (v.baseType()==VT_char) {
-                    if (i%3==0) format += 'c';
-                    outArgs << v.toString();
-                }
-            }
-            output = StdLib::GenericInputOutput::prepareOutput(format, outArgs, s_error);
-            wchar_t * buffer = (wchar_t*)calloc(output.length()+1, sizeof(wchar_t));
-            output.toWCharArray(buffer);
-            buffer[output.length()] = L'\0';
-            if (s_error.isEmpty())
-                __foutput2__st_funct(handle, buffer);
-            free(buffer);
-
-        }
-        else if (alg==0x04) {
-            // Get char from string
-            Variant second = stack_values.pop();
-            Variant first = stack_values.pop();
-            int index = second.value().toInt();
-            QString s = first.value().toString();
-            s_error = Variant::error;
-            if (s_error.isEmpty()) {
-                if (index<1 || index>s.length()) {
-                    s_error = tr("Index out of string");
-                }
-                else {
-                    QChar result = s[index-1];
-                    Variant r(result);
-                    stack_values.push(r);
-                }
-            }
-        }
-        else if (alg==0x05) {
-            // Set char in string
-            Variant third = stack_values.pop();
-            Variant second = stack_values.pop();
-            Variant first = stack_values.pop();
-            int index = third.value().toInt();
-            QString source = second.value().toString();
-            QString ch = first.value().toString();
-            s_error = Variant::error;
-            if (s_error.isEmpty()) {
-                if (index<1 || index>source.length()) {
-                    s_error = tr("Index out of string");
-                }
-                else {
-                    source = source.mid(0,index-1)+ch+source.mid(index);
-                    Variant r(source);
-                    stack_values.push(r);
-                }
-            }
-        }
-        else if (alg==0x06) {
-            // Get slice from string
-            Variant third = stack_values.pop();
-            Variant second = stack_values.pop();
-            Variant first = stack_values.pop();
-            int start = second.value().toInt();
-            int end   = third.value().toInt();
-            QString s = first.value().toString();
-            s_error = Variant::error;
-            if (s_error.isEmpty()) {
-                if (start<1 || start>s.length()) {
-                    s_error = tr("Index out of string");
-                }
-                else if (end<1 || end>s.length()) {
-                    s_error = tr("Index out of string");
-                }
-                else if (end<start) {
-                    s_error = tr("Invalid string slice");
-                }
-                else {
-                    QString result = s.mid(start-1, end-start+1);
-                    Variant r(result);
-                    stack_values.push(r);
-                }
-            }
-        }
-        else if (alg==0x07) {
-            // Set slice in string
-            Variant fourth = stack_values.pop();
-            Variant third = stack_values.pop();
-            Variant second = stack_values.pop();
-            Variant first = stack_values.pop();
-            int end = fourth.value().toInt();
-            int start = third.value().toInt();
-            QString source = second.value().toString();
-            QString ch = first.value().toString();
-            s_error = Variant::error;
-            if (s_error.isEmpty()) {
-                if (start<1 || start>source.length()) {
-                    s_error = tr("Index out of string");
-                }
-                else if (end<1 || end>source.length()) {
-                    s_error = tr("Index out of string");
-                }
-                else if (end<start) {
-                    s_error = tr("Invalid string slice");
-                }
-                else {
-                    source = source.mid(0,start-1)+ch+source.mid(end);
-                    Variant r(source);
-                    stack_values.push(r);
-                }
-            }
-        }
-        else if (alg==0x0A01) {
-            Variant sn = stack_values.pop();
-            Variant fn = stack_values.pop();
-            const QString fileName = fn.toString();
-            const QString streamName = sn.toString().toLower().trimmed();
-            if (streamName=="stdin") {
-                f_input.close();
-                if (!fileName.isEmpty()) {
-                    f_input.setFileName(fileName);
-                    if (!f_input.exists()) {
-                        s_error = tr("File not exists: %1")
-                                .arg(QFileInfo(f_input).absoluteFilePath());
-                    }
-                    else {
-                        if (!f_input.open(QIODevice::ReadOnly)) {
-                            s_error = tr("Can't open file %1: Access denied")
-                                    .arg(QFileInfo(f_input).absoluteFilePath());
-                        }
-                    }
-                }
-            }
-            else if (streamName=="stdout") {
-                f_output.close();
-                if (!fileName.isEmpty()) {
-                    QDir d = QFileInfo(f_output).dir();
-                    if (!d.exists()) {
-                        if (!QDir::root().mkpath(d.absolutePath())) {
-                            s_error = tr("Can't create directory %1: Access denied")
-                                    .arg(d.absolutePath());
-                        }
-                    }
-                    if (d.exists()) {
-                        if (!f_output.open(QIODevice::WriteOnly)) {
-                            s_error = tr("Can't open file %1 for writing: Access denied")
-                                    .arg(QFileInfo(f_output).absoluteFilePath());
-                        }
-                    }
-                }
-            }
-        }
-        else if (alg==0xBB01) {
-            m_dontTouchMe->lock();
-            // Input argument
-            int localId = argsCount; // Already removed from stack
-            Q_ASSERT (localId < stack_contexts.top().locals.size());
-            const QString & varName = stack_contexts.top().locals[localId].name();
-            QString varFormat;
-            Bytecode::ValueType baseType = stack_contexts.top().locals[localId].baseType();
-            if (baseType==Bytecode::VT_int)
-                varFormat = "%d";
-            else if (baseType==Bytecode::VT_char)
-                varFormat = "%c";
-            else if (baseType==Bytecode::VT_float)
-                varFormat = "%f";
-            else if (baseType==Bytecode::VT_string)
-                varFormat = "%s";
-            else if (baseType==Bytecode::VT_bool)
-                varFormat = "%b";
-            QList<int> bounds = stack_contexts.top().locals[localId].bounds();
-            m_dontTouchMe->unlock();
-            emit inputArgumentRequest(localId, varName, varFormat, bounds);
-        }
-        else if (alg==0xBB02) {
-            m_dontTouchMe->lock();
-            // Output argument or return value
-            int localId = argsCount; // Already removed from stack
-            Q_ASSERT (localId < stack_contexts.top().locals.size());
-            const QString & varName = stack_contexts.top().locals[localId].name();
-            QList<int> bounds = stack_contexts.top().locals[localId].bounds();
-            QVariant value = QVariant::Invalid;
-            if (stack_contexts.top().locals[localId].hasValue())
-                value = stack_contexts.top().locals[localId].value();
-            m_dontTouchMe->unlock();
-            emit outputArgumentRequest(value, varName, bounds);
-        }
+    if (mod==0x00) {
+        do_stdcall(alg);
+    }
+    else if (mod==0xFF) {
+        do_specialcall(alg);
     }
     else if (externalMethods.contains(p)) {
         QPair<ActorInterface*,quint32> methodValue = externalMethods[p];
         call_externalMethod(methodValue.first, methodValue.second);
-//        QList<quintptr> references;
-//        QVariantList arguments;
-//        QList<int> indeces;
-//        int argsCount = stack_values.pop().toInt();
-//        for (int i=0; i<argsCount; i++) {
-//            arguments << stack_values.pop().value();
-//        }
-//        int refsCount = stack_values.pop().toInt();
-//        for (int i=0; i<refsCount; i++) {
-//            references << quintptr(stack_values.pop().reference());
-//        }
-//        const TableElem exportElem = externs[p];
-//        const QString pluginName = exportElem.moduleName;
-//        const QString algName = exportElem.name;
-//        emit invokeExternalFunction(pluginName, algName, arguments, references, indeces);
-
     }
     else if (functions.contains(p)) {
         if (stack_contexts.size()>=MAX_RECURSION_SIZE) {
-            s_error = tr("Too deep recursion");
+            s_error = Kumir::Core::fromUtf8("Слишком много вложенных вызовов алгоритмов");
         }
         else {
             m_dontTouchMe->lock();
@@ -864,9 +550,750 @@ void VM::do_call(quint8 mod, quint16 alg)
         }
     }
     else {
-        s_error = tr("Internal error: don't know what is 'call %1 %2'").arg(mod).arg(alg);
+        s_error = Kumir::Core::fromAscii("Internal error");
+    }
+    if (Kumir::Core::getError().length()>0 && s_error.length()==0) {
+        s_error = Kumir::Core::getError();
     }
     nextIP();
+}
+
+void VM::do_stdcall(quint16 alg)
+{
+    stack_values.pop(); // remove arguments count -- all is known
+    switch(alg) {
+    /* алг вещ abs(вещ x) */
+    case 0x0000: {
+        real x = stack_values.pop().toReal();
+        real y = Kumir::Math::abs(x);
+        stack_values.push(Variant(y));
+        break;
+    }
+    /* алг вещ arccos(вещ x) */
+    case 0x0001: {
+        real x = stack_values.pop().toReal();
+        real y = Kumir::Math::arccos(x);
+        stack_values.push(Variant(y));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг вещ arcctg(вещ x) */
+    case 0x0002: {
+        real x = stack_values.pop().toReal();
+        real y = Kumir::Math::arcctg(x);
+        stack_values.push(Variant(y));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг вещ arcsin(вещ x) */
+    case 0x0003: {
+        real x = stack_values.pop().toReal();
+        real y = Kumir::Math::arcsin(x);
+        stack_values.push(Variant(y));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг вещ arctg(вещ x) */
+    case 0x0004: {
+        real x = stack_values.pop().toReal();
+        real y = Kumir::Math::arctg(x);
+        stack_values.push(Variant(y));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг вещ cos(вещ x) */
+    case 0x0005: {
+        real x = stack_values.pop().toReal();
+        real y = Kumir::Math::cos(x);
+        stack_values.push(Variant(y));
+        break;
+    }
+    /* алг вещ ctg(вещ x) */
+    case 0x0006: {
+        real x = stack_values.pop().toReal();
+        real y = Kumir::Math::ctg(x);
+        stack_values.push(Variant(y));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг delay(цел x) */
+    case 0x0007: {
+        // TODO not implemented
+        break;
+    }
+    /* алг цел div(цел x, цел y) */
+    case 0x0008: {
+        int y = stack_values.pop().toInt();
+        int x = stack_values.pop().toInt();
+        int r = Kumir::Math::div(x, y);
+        stack_values.push(Variant(r));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг вещ exp(вещ x) */
+    case 0x0009: {
+        real x = stack_values.pop().toReal();
+        real y = Kumir::Math::ctg(x);
+        stack_values.push(Variant(y));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг цел iabs(цел x) */
+    case 0x000a: {
+        int x = stack_values.pop().toInt();
+        int y = Kumir::Math::iabs(x);
+        stack_values.push(Variant(y));
+        break;
+    }
+    /* алг цел imax(цел x, цел y) */
+    case 0x000b: {
+        int y = stack_values.pop().toInt();
+        int x = stack_values.pop().toInt();
+        int r = Kumir::Math::max(x, y);
+        stack_values.push(Variant(r));
+        break;
+    }
+    /* алг цел imin(цел x, цел y) */
+    case 0x000c: {
+        int y = stack_values.pop().toInt();
+        int x = stack_values.pop().toInt();
+        int r = Kumir::Math::min(x, y);
+        stack_values.push(Variant(r));
+        break;
+    }
+    /* алг цел int(вещ x) */
+    case 0x000d: {
+        real x = stack_values.pop().toReal();
+        int y = Kumir::Math::intt(x);
+        stack_values.push(Variant(y));
+        break;
+    }
+    /* алг цел irand(цел x, цел y) */
+    case 0x000e: {
+        int y = stack_values.pop().toInt();
+        int x = stack_values.pop().toInt();
+        int r = Kumir::Random::rand(x, y);
+        stack_values.push(Variant(r));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг цел irnd(цел x) */
+    case 0x000f: {
+        int x = stack_values.pop().toInt();
+        int y = Kumir::Random::rnd(x);
+        stack_values.push(Variant(y));
+        break;
+    }
+    /* алг вещ lg(вещ x) */
+    case 0x0010: {
+        real x = stack_values.pop().toReal();
+        real y = Kumir::Math::lg(x);
+        stack_values.push(Variant(y));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг вещ ln(вещ x) */
+    case 0x0011: {
+        real x = stack_values.pop().toReal();
+        real y = Kumir::Math::ln(x);
+        stack_values.push(Variant(y));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг вещ max(вещ x, вещ y) */
+    case 0x0012: {
+        real  y = stack_values.pop().toReal();
+        real  x = stack_values.pop().toReal();
+        real  r = Kumir::Math::max(x, y);
+        stack_values.push(Variant(r));
+        break;
+    }
+    /* алг вещ min(вещ x, вещ y) */
+    case 0x0013: {
+        real  y = stack_values.pop().toReal();
+        real  x = stack_values.pop().toReal();
+        real  r = Kumir::Math::min(x, y);
+        stack_values.push(Variant(r));
+        break;
+    }
+    /* алг цел mod(цел x, цел y) */
+    case 0x0014: {
+        int y = stack_values.pop().toInt();
+        int x = stack_values.pop().toInt();
+        int r = Kumir::Math::div(x, y);
+        stack_values.push(Variant(r));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг вещ rand(вещ x, вещ y) */
+    case 0x0015: {
+        real  y = stack_values.pop().toReal();
+        real  x = stack_values.pop().toReal();
+        real  r = Kumir::Math::max(x, y);
+        stack_values.push(Variant(r));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг вещ rnd(вещ x) */
+    case 0x0016: {
+        real x = stack_values.pop().toReal();
+        real y = Kumir::Math::ln(x);
+        stack_values.push(Variant(y));
+        break;
+    }
+    /* алг цел sign(вещ x) */
+    case 0x0017: {
+        real x = stack_values.pop().toReal();
+        int y = Kumir::Math::sign(x);
+        stack_values.push(Variant(y));
+        break;
+    }
+    /* алг вещ sin(вещ x) */
+    case 0x0018: {
+        real x = stack_values.pop().toReal();
+        real y = Kumir::Math::sin(x);
+        stack_values.push(Variant(y));
+        break;
+    }
+    /* алг вещ sqrt(вещ x) */
+    case 0x0019: {
+        real x = stack_values.pop().toReal();
+        real y = Kumir::Math::ln(x);
+        stack_values.push(Variant(y));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг вещ tg(вещ x) */
+    case 0x001a: {
+        real x = stack_values.pop().toReal();
+        real y = Kumir::Math::tg(x);
+        stack_values.push(Variant(y));
+        break;
+    }
+    /* алг вещ МАКСВЕЩ */
+    case 0x001b: {
+        real r = Kumir::Math::maxreal();
+        stack_values.push(Variant(r));
+        break;
+    }
+    /* алг цел МАКСЦЕЛ */
+    case 0x001c: {
+        int r = Kumir::Math::maxint();
+        stack_values.push(Variant(r));
+        break;
+    }
+    /* алг лит вещ_в_лит(вещ x) */
+    case 0x001d: {
+        real x = stack_values.pop().toReal();
+        const Kumir::String y = Kumir::Converter::realToString(x);
+        stack_values.push(Variant(y));
+        break;
+    }
+    /* алг цел время */
+    case 0x001e: {
+        int r = Kumir::System::time();
+        stack_values.push(Variant(r));
+        break;
+    }
+    /* алг цел длин(лит s) */
+    case 0x001f: {
+        const String x = stack_values.pop().toString();
+        int y = Kumir::StringUtils::length(x);
+        stack_values.push(Variant(y));
+        break;
+    }
+    /* алг цел код(сим ch) */
+    case 0x0020: {
+        Char x = stack_values.pop().toChar();
+        int y = Kumir::StringUtils::code(x);
+        stack_values.push(Variant(y));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг вещ лит_в_вещ(лит s, рез лог success) */
+    case 0x0021: {
+        Variant sf = stack_values.pop().toReference();
+        const String x = stack_values.pop().toString();
+        bool ok;
+        real y = Kumir::Converter::stringToReal(x, ok);
+        stack_values.push(Variant(y));
+        sf.setValue(QVariant(ok));
+        break;
+    }
+    /* алг цел лит_в_цел(лит s, рез лог success) */
+    case 0x0022: {
+        Variant sf = stack_values.pop().toReference();
+        const String x = stack_values.pop().toString();
+        bool ok;
+        int y = Kumir::Converter::stringToInt(x, ok);
+        stack_values.push(Variant(y));
+        sf.setValue(QVariant(ok));
+        break;
+    }
+    /* алг сим символ(цел n) */
+    case 0x0023: {
+        int x = stack_values.pop().toInt();
+        Char y = Kumir::StringUtils::symbol(x);
+        stack_values.push(Variant(y));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг сим символ2(цел n) */
+    case 0x0024: {
+        int x = stack_values.pop().toInt();
+        Char y = Kumir::StringUtils::unisymbol(x);
+        stack_values.push(Variant(y));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг лит цел_в_лит(цел n) */
+    case 0x0025: {
+        int x = stack_values.pop().toInt();
+        String y = Kumir::Converter::intToString(x);
+        stack_values.push(Variant(y));
+        break;
+    }
+    /* алг цел юникод(сим ch) */
+    case 0x0026: {
+        Char x = stack_values.pop().toChar();
+        int y = Kumir::StringUtils::unicode(x);
+        stack_values.push(Variant(y));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг цел открыть на чтение(лит имя файла) */
+    case 0x0027: {
+        const String x = stack_values.pop().toString();
+        int y = Kumir::Files::open(x, Kumir::Files::FM_Read);
+        stack_values.push(Variant(y));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг цел открыть на запись(лит имя файла) */
+    case 0x0028: {
+        const String x = stack_values.pop().toString();
+        int y = Kumir::Files::open(x, Kumir::Files::FM_Write);
+        stack_values.push(Variant(y));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг цел открыть на добавление(лит имя файла) */
+    case 0x0029: {
+        const String x = stack_values.pop().toString();
+        int y = Kumir::Files::open(x, Kumir::Files::FM_Append);
+        stack_values.push(Variant(y));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг закрыть(цел ключ) */
+    case 0x002a: {
+        int x = stack_values.pop().toInt();
+        Kumir::Files::close(x);
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг начать чтение(цел ключ) */
+    case 0x002b: {
+        int x = stack_values.pop().toInt();
+        Kumir::Files::reset(x);
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг лог конец файла(цел ключ) */
+    case 0x002c: {
+        int x = stack_values.pop().toInt();
+        bool y = Kumir::Files::eof(x);
+        stack_values.push(Variant(y));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    case 0x002d: {
+        const String x = stack_values.pop().toString();
+        Kumir::Files::setFileEncoding(x);
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    default: {
+        s_error = Kumir::Core::fromAscii("Unknown method id");
+    }
+    }
+}
+
+void VM::do_specialcall(quint16 alg)
+{
+    int argsCount = stack_values.pop().toInt();
+    // Special calls
+    if (alg==0x00) {
+        // Input
+        bool fileIO = false;
+        int fileNo = -1;
+        if (argsCount % 2) {
+            fileIO = true;
+            fileNo = stack_values.pop().toInt();
+        }
+        int varsCount = argsCount / 2;
+        QStringList formats;
+        QList<quintptr> references;
+        QList<int> indeces;
+        QList<QVariant::Type> types;
+        for (int i=0; i<varsCount; i++) {
+            const QString format = stack_values.pop().toQString();
+            formats << format;
+            Variant ref = stack_values.pop();
+            if (ref.baseType()==Bytecode::VT_int)
+                types << QVariant::Int;
+            else if (ref.baseType()==Bytecode::VT_float)
+                types << QVariant::Double;
+            else if (ref.baseType()==Bytecode::VT_bool)
+                types << QVariant::Bool;
+            else if (ref.baseType()==Bytecode::VT_char)
+                types << QVariant::Char;
+            else if (ref.baseType()==Bytecode::VT_string)
+                types << QVariant::String;
+            references << quintptr(ref.reference());
+            indeces << ref.referenceIndeces();
+        }
+        if (b_guiMode && !fileIO) {
+            emit inputRequest(formats, types, references, indeces);
+        }
+        else {
+            QVariantList result;
+            QString ioError;
+            for (int i=0; i<varsCount; i++) {
+                if (types[i]==QVariant::Int) {
+                    result << QVariant(Kumir::IO::readInteger(formats[i].toStdWString(), fileNo, !fileIO));
+                }
+                else if (types[i]==QVariant::Double) {
+                    result << QVariant(Kumir::IO::readReal(formats[i].toStdWString(), fileNo, !fileIO));
+                }
+                else if (types[i]==QVariant::Bool) {
+                    result << QVariant(Kumir::IO::readBool(formats[i].toStdWString(), fileNo, !fileIO));
+                }
+                else if (types[i]==QVariant::Char) {
+                    result << QVariant(QChar(Kumir::IO::readChar(formats[i].toStdWString(), fileNo, !fileIO)));
+                }
+                else if (types[i]==QVariant::String) {
+                    result << QVariant(QString::fromStdWString(Kumir::IO::readString(formats[i].toStdWString(), fileNo, !fileIO)));
+                }
+                ioError = QString::fromStdWString(Kumir::Core::getError());
+                if (ioError.length()>0)
+                    break;
+            }
+            setResults(ioError, references, indeces, result);
+        }
+
+    }
+    if (alg==0x01) {
+        // Output
+        bool fileIO = false;
+        int fileNo = -1;
+        if (argsCount % 2) {
+            fileIO = true;
+            fileNo = stack_values.pop().toInt();
+        }
+        int varsCount = argsCount / 2;
+        QStringList formats;
+        QVariantList values;
+        QList<QVariant::Type> types;
+        for (int i=0; i<varsCount; i++) {
+            const QString format = stack_values.pop().toQString();
+            formats << format;
+            Variant ref = stack_values.pop();
+            if (ref.baseType()==Bytecode::VT_int) {
+                types << QVariant::Int;
+                values << ref.toInt();
+            }
+            else if (ref.baseType()==Bytecode::VT_float) {
+                types << QVariant::Double;
+                values << ref.toReal();
+            }
+            else if (ref.baseType()==Bytecode::VT_bool) {
+                types << QVariant::Bool;
+                values << ref.toBool();
+            }
+            else if (ref.baseType()==Bytecode::VT_char) {
+                types << QVariant::Char;
+                values << ref.toQChar();
+            }
+            else if (ref.baseType()==Bytecode::VT_string) {
+                types << QVariant::String;
+                values << ref.toQString();
+            }
+        }
+        if (b_guiMode && !fileIO) {
+            emit outputRequest(formats, types, values);
+        }
+        else {
+            QString ioError;
+            for (int i=0; i<varsCount; i++) {
+                if (types[i]==QVariant::Int) {
+                    Kumir::IO::writeInteger(formats[i].toStdWString(), values[i].toInt(), fileNo, !fileIO);
+                }
+                else if (types[i]==QVariant::Double) {
+                    Kumir::IO::writeReal(formats[i].toStdWString(), values[i].toInt(), fileNo, !fileIO);
+                }
+                else if (types[i]==QVariant::Bool) {
+                    Kumir::IO::writeBool(formats[i].toStdWString(), values[i].toBool(), fileNo, !fileIO);
+                }
+                else if (types[i]==QVariant::Char) {
+                    Kumir::IO::writeChar(formats[i].toStdWString(), values[i].toChar().unicode(), fileNo, !fileIO);
+                }
+                else if (types[i]==QVariant::String) {
+                    Kumir::IO::writeString(formats[i].toStdWString(), values[i].toString().toStdWString(), fileNo, !fileIO);
+                }
+                ioError = QString::fromStdWString(Kumir::Core::getError());
+                if (ioError.length()>0)
+                    break;
+            }
+        }
+
+    }
+    else if (alg==0x02) {
+//        // File input
+//        QString format = stack_values.pop().toQString();
+//        int handle = stack_values.pop().toInt();
+//        format.remove("%");
+//        QList<quintptr> references;
+//        QList<int> indeces;
+//        for (int i=0; i<format.length(); i++) {
+//            Variant ref = stack_values.pop();
+//            references << quintptr(ref.reference());
+//            indeces << ref.referenceIndeces();
+//        }
+//        Q_ASSERT(references.count()==format.length());
+//        QList<QVariant> result;
+//        for (int i=0; i<format.length(); i++) {
+//            if (format[i]=='s') {
+//                const wchar_t * r = __finput2_string__st_funct(handle);
+//                result << QVariant(QString::fromWCharArray(r));
+//            }
+//            else if (format[i]=='c')
+//                result << QVariant(QChar(__finput2_char__st_funct(handle)));
+//            else {
+//                union IntRealBool r = __finput2_int_real_bool__st_funct(handle, format[i].toAscii());
+//                if (format[i]=='b')
+//                    result << QVariant(bool(r.boolValue));
+//                else if (format[i]=='d')
+//                    result << QVariant(r.intValue);
+//                else
+//                    result << QVariant(r.realValue);
+//            }
+//            s_error = Kumir::Core::getError();
+//            if (s_error.length()>0)
+//                break;
+//        }
+//        if (s_error.length()==0) {
+//            if (result.size()>references.size()) {
+//                result = result.mid(0,references.size());
+//            }
+//            setResults("",references,indeces,result);
+//        }
+    }
+    else if (alg==0x03) {
+//        // File output
+//        int handle = stack_values.pop().toInt();
+//        QString output;
+//        QVariantList outArgs;
+//        std::string format;
+//        for (int i=0; i<argsCount-1; i++) {
+//            Variant v = stack_values.pop();
+//            if (v.baseType()==VT_int) {
+//                if (i%3==0) format += 'i';
+//                outArgs << v.toInt();
+//            }
+//            else if (v.baseType()==VT_float) {
+//                if (i%3==0) format += 'r';
+//                outArgs << v.toReal();
+//            }
+//            else if (v.baseType()==VT_bool) {
+//                if (i%3==0) format += 'b';
+//                outArgs << v.toBool();
+//            }
+//            else if (v.baseType()==VT_string) {
+//                if (i%3==0) format += 's';
+//                outArgs << v.toQString();
+//            }
+//            else if (v.baseType()==VT_char) {
+//                if (i%3==0) format += 'c';
+//                outArgs << v.toQString();
+//            }
+//        }
+//        output = StdLib::GenericInputOutput::prepareOutput(format, outArgs, s_error);
+//        wchar_t * buffer = (wchar_t*)calloc(output.length()+1, sizeof(wchar_t));
+//        output.toWCharArray(buffer);
+//        buffer[output.length()] = L'\0';
+//        if (s_error.isEmpty())
+//            __foutput2__st_funct(handle, buffer);
+//        free(buffer);
+
+    }
+    else if (alg==0x04) {
+        // Get char from string
+        Variant second = stack_values.pop();
+        Variant first = stack_values.pop();
+        int index = second.value().toInt();
+        QString s = first.value().toString();
+        s_error = Variant::error.toStdWString();
+        if (s_error.length()==0) {
+            if (index<1 || index>s.length()) {
+                s_error = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
+            }
+            else {
+                QChar result = s[index-1];
+                Variant r(result);
+                stack_values.push(r);
+            }
+        }
+    }
+    else if (alg==0x05) {
+        // Set char in string
+        Variant third = stack_values.pop();
+        Variant second = stack_values.pop();
+        Variant first = stack_values.pop();
+        int index = third.value().toInt();
+        QString source = second.value().toString();
+        QString ch = first.value().toString();
+        s_error = Variant::error.toStdWString();
+        if (s_error.length()==0) {
+            if (index<1 || index>source.length()) {
+                s_error = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
+            }
+            else {
+                source = source.mid(0,index-1)+ch+source.mid(index);
+                Variant r(source);
+                stack_values.push(r);
+            }
+        }
+    }
+    else if (alg==0x06) {
+        // Get slice from string
+        Variant third = stack_values.pop();
+        Variant second = stack_values.pop();
+        Variant first = stack_values.pop();
+        int start = second.value().toInt();
+        int end   = third.value().toInt();
+        QString s = first.value().toString();
+        s_error = Variant::error.toStdWString();
+        if (s_error.length()==0) {
+            if (start<1 || start>s.length()) {
+                s_error = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
+            }
+            else if (end<1 || end>s.length()) {
+                s_error = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
+            }
+            else if (end<start) {
+                s_error = Kumir::Core::fromUtf8("Несоответствие границ вырезки из строки");
+            }
+            else {
+                QString result = s.mid(start-1, end-start+1);
+                Variant r(result);
+                stack_values.push(r);
+            }
+        }
+    }
+    else if (alg==0x07) {
+        // Set slice in string
+        Variant fourth = stack_values.pop();
+        Variant third = stack_values.pop();
+        Variant second = stack_values.pop();
+        Variant first = stack_values.pop();
+        int end = fourth.value().toInt();
+        int start = third.value().toInt();
+        QString source = second.value().toString();
+        QString ch = first.value().toString();
+        s_error = Variant::error.toStdWString();
+        if (s_error.length()==0) {
+            if (start<1 || start>source.length()) {
+                s_error = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
+            }
+            else if (end<1 || end>source.length()) {
+                s_error = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
+            }
+            else if (end<start) {
+                s_error = Kumir::Core::fromUtf8("Несоответствие границ вырезки из строки");
+            }
+            else {
+                source = source.mid(0,start-1)+ch+source.mid(end);
+                Variant r(source);
+                stack_values.push(r);
+            }
+        }
+    }
+    else if (alg==0x0A01) {
+        Variant sn = stack_values.pop();
+        Variant fn = stack_values.pop();
+        const QString fileName = fn.toQString();
+        const QString streamName = sn.toQString().toLower().trimmed();
+        if (streamName=="stdin") {
+            f_input.close();
+            if (!fileName.isEmpty()) {
+                f_input.setFileName(fileName);
+                if (!f_input.exists()) {
+                    s_error = tr("File not exists: %1")
+                            .arg(QFileInfo(f_input).absoluteFilePath()).toStdWString();
+                }
+                else {
+                    if (!f_input.open(QIODevice::ReadOnly)) {
+                        s_error = tr("Can't open file %1: Access denied")
+                                .arg(QFileInfo(f_input).absoluteFilePath()).toStdWString();
+                    }
+                }
+            }
+        }
+        else if (streamName=="stdout") {
+            f_output.close();
+            if (!fileName.isEmpty()) {
+                QDir d = QFileInfo(f_output).dir();
+                if (!d.exists()) {
+                    if (!QDir::root().mkpath(d.absolutePath())) {
+                        s_error = tr("Can't create directory %1: Access denied")
+                                .arg(d.absolutePath()).toStdWString();
+                    }
+                }
+                if (d.exists()) {
+                    if (!f_output.open(QIODevice::WriteOnly)) {
+                        s_error = tr("Can't open file %1 for writing: Access denied")
+                                .arg(QFileInfo(f_output).absoluteFilePath()).toStdWString();
+                    }
+                }
+            }
+        }
+    }
+    else if (alg==0xBB01) {
+        m_dontTouchMe->lock();
+        // Input argument
+        int localId = argsCount; // Already removed from stack
+        Q_ASSERT (localId < stack_contexts.top().locals.size());
+        const QString & varName = stack_contexts.top().locals[localId].name();
+        QString varFormat;
+        Bytecode::ValueType baseType = stack_contexts.top().locals[localId].baseType();
+        if (baseType==Bytecode::VT_int)
+            varFormat = "%d";
+        else if (baseType==Bytecode::VT_char)
+            varFormat = "%c";
+        else if (baseType==Bytecode::VT_float)
+            varFormat = "%f";
+        else if (baseType==Bytecode::VT_string)
+            varFormat = "%s";
+        else if (baseType==Bytecode::VT_bool)
+            varFormat = "%b";
+        QList<int> bounds = stack_contexts.top().locals[localId].bounds();
+        m_dontTouchMe->unlock();
+        emit inputArgumentRequest(localId, varName, varFormat, bounds);
+    }
+    else if (alg==0xBB02) {
+        m_dontTouchMe->lock();
+        // Output argument or return value
+        int localId = argsCount; // Already removed from stack
+        Q_ASSERT (localId < stack_contexts.top().locals.size());
+        const QString & varName = stack_contexts.top().locals[localId].name();
+        QList<int> bounds = stack_contexts.top().locals[localId].bounds();
+        QVariant value = QVariant::Invalid;
+        if (stack_contexts.top().locals[localId].hasValue())
+            value = stack_contexts.top().locals[localId].value();
+        m_dontTouchMe->unlock();
+        emit outputArgumentRequest(value, varName, bounds);
+    }
 }
 
 
@@ -891,7 +1318,7 @@ void VM::call_externalMethod(ActorInterface *act, quint32 method)
     }
     m_dontTouchMe->unlock();
     if (status==ES_Error) {
-        s_error = act->errorText();
+        s_error = act->errorText().toStdWString();
         return;
     }
     if (status==ES_StackResult || status==ES_StackRezResult) {
@@ -917,7 +1344,7 @@ void VM::do_init(quint8 s, quint16 id)
         globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].init();
     }
     else {
-        s_error = tr("Internal error: don't know what is 'init %1 %2'").arg(s).arg(id);
+        s_error = Kumir::Core::fromAscii("Internal error");
     }
     nextIP();
 }
@@ -934,7 +1361,7 @@ void VM::do_setarr(quint8 s, quint16 id)
         dim = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].dimension();
     }
     else {
-        s_error = tr("Internal error: don't know what is 'init %1 %2'").arg(s).arg(id);
+        s_error = Kumir::Core::fromAscii("Internal error");
     }
     if (dim>0) {
         QString name;
@@ -949,10 +1376,7 @@ void VM::do_setarr(quint8 s, quint16 id)
             globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].setBounds(bounds);
             name = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].name();
         }
-        s_error = Variant::error;
-        if (!b_blindMode && s_error.isEmpty()) {
-
-        }
+        s_error = Variant::error.toStdWString();
         const int lineNo = stack_contexts.top().lineNo;
         if (lineNo!=-1 &&
 //                (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN) &&
@@ -987,7 +1411,7 @@ void VM::do_updarr(quint8 s, quint16 id)
         dim = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].dimension();
     }
     else {
-        s_error = tr("Internal error: don't know what is 'init %1 %2'").arg(s).arg(id);
+        s_error = Kumir::Core::fromAscii("Internal error");
     }
     if (dim>0) {
         QString name;
@@ -1005,10 +1429,7 @@ void VM::do_updarr(quint8 s, quint16 id)
             name = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].myName();
             effectiveBounds = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].effectiveBounds();
         }
-        s_error = Variant::error;
-        if (!b_blindMode && s_error.isEmpty()) {
-
-        }
+        s_error = Variant::error.toStdWString();
         const int lineNo = stack_contexts.top().lineNo;
         if (lineNo!=-1 &&
                 //(stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN) &&
@@ -1049,7 +1470,7 @@ void VM::do_store(quint8 s, quint16 id)
         stack_contexts.top().locals[id].setValue(val.value());
         if (lineNo!=-1 && !b_blindMode) {
             name = stack_contexts.top().locals[id].myName();
-            svalue = stack_contexts.top().locals[id].toString();
+            svalue = stack_contexts.top().locals[id].toQString();
         }
         t = stack_contexts.top().locals[id].baseType();
     }
@@ -1061,12 +1482,12 @@ void VM::do_store(quint8 s, quint16 id)
         globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].setValue(val.value());
         if (lineNo!=-1 && !b_blindMode) {
             name = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].myName();
-            svalue = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].toString();
+            svalue = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].toQString();
         }
         t = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].baseType();
     }
     else {
-        s_error = tr("Internal error: don't know what is 'store %1 %2'").arg(s).arg(id);
+        s_error = Kumir::Core::fromAscii("Internal error");
     }
     if (lineNo!=-1 &&
 //            (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN) &&
@@ -1112,12 +1533,12 @@ void VM::do_load(quint8 s, quint16 id)
         val.setValue(constants[id].value());
     }
     else {
-        s_error = tr("Internal error: don't know what is 'load %1 %2'").arg(s).arg(id);
+        s_error = Kumir::Core::fromAscii("Internal error");
     }
     bool isRetVal = VariableScope(s)==LOCAL
             && stack_contexts.top().locals[id].algorhitmName()==stack_contexts.top().locals[id].name();
     if (!Variant::error.isEmpty() && !isRetVal)
-        s_error = Variant::error;
+        s_error = Variant::error.toStdWString();
     stack_values.push(val);
     if (val.dimension()==0)
 //        stack_contexts.top().registers[0] = val.value();
@@ -1142,7 +1563,7 @@ void VM::do_storearr(quint8 s, quint16 id)
         name = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].name();
     }
     else {
-        s_error = tr("Internal error: don't know what is 'storearr %1 %2'").arg(s).arg(id);
+        s_error = Kumir::Core::fromAscii("Internal error");
     }
     if (dim>0) {
         QList<int> indeces;
@@ -1154,18 +1575,18 @@ void VM::do_storearr(quint8 s, quint16 id)
         }
         const Variant val = stack_values.top();
         ValueType t = VT_void;
-        svalue = val.toString();
+        svalue = val.toQString();
         if (VariableScope(s)==LOCAL) {
             stack_contexts.top().locals[id].setValue(indeces, val.value());
             t = stack_contexts.top().locals[id].baseType();
             if (lineNo!=-1 && !b_blindMode)
-                svalue = stack_contexts.top().locals[id].toString(indeces);
+                svalue = stack_contexts.top().locals[id].toQString(indeces);
         }
         else if (VariableScope(s)==GLOBAL) {
             globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].setValue(indeces, val.value());
             t = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].baseType();
             if (lineNo!=-1 && !b_blindMode)
-                svalue = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].toString(indeces);
+                svalue = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].toQString(indeces);
         }
         if (t==VT_string)
             if (lineNo!=-1 && !b_blindMode)
@@ -1174,7 +1595,7 @@ void VM::do_storearr(quint8 s, quint16 id)
             if (lineNo!=-1 && !b_blindMode)
                 svalue = "'"+svalue+"'";
         if (!Variant::error.isEmpty())
-            s_error = Variant::error;
+            s_error = Variant::error.toStdWString();
     }
     if (lineNo!=-1 &&
 //            (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN) &&
@@ -1202,7 +1623,7 @@ void VM::do_loadarr(quint8 s, quint16 id)
         vt = constants[id].baseType();
     }
     else {
-        s_error = tr("Internal error: don't know what is 'loadarr %1 %2'").arg(s).arg(id);
+        s_error = Kumir::Core::fromAscii("Internal error");
     }
 
     if (dim>0 || vt==VT_string) {
@@ -1232,15 +1653,15 @@ void VM::do_loadarr(quint8 s, quint16 id)
             else if (val.baseType()==VT_float)
                 register0 = val.toReal();
             else if (val.baseType()==VT_char)
-                register0 = val.toChar();
+                register0 = val.toQChar();
             else if (val.baseType()==VT_string)
-                register0 = val.toString();
+                register0 = val.toQString();
             else if (val.baseType()==VT_bool)
                 register0 = val.toBool();
         }
     }
     if (!Variant::error.isEmpty())
-        s_error = Variant::error;
+        s_error = Variant::error.toStdWString();
     nextIP();
 }
 
@@ -1255,7 +1676,7 @@ void VM::do_ref(quint8 s, quint16 id)
         ref = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].toReference();
     }
     else {
-        s_error = tr("Internal error: don't know what is 'ref %1 %2'").arg(s).arg(id);
+        s_error = Kumir::Core::fromAscii("Internal error");
     }
     if (ref.isReference()) {
         stack_values.push(ref);
@@ -1269,7 +1690,7 @@ void VM::do_setref(quint8 s, quint16 id)
     Variant ref = stack_values.top();
     QString name;
     if (!ref.isReference()) {
-        s_error = tr("Internal error: trying to setref not a reference: 'setref %1 %2'").arg(s).arg(id);
+        s_error = Kumir::Core::fromAscii("Internal error");
     }
     else if (VariableScope(s)==LOCAL) {
         name = stack_contexts.top().locals[id].name();
@@ -1280,7 +1701,7 @@ void VM::do_setref(quint8 s, quint16 id)
         globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].setReference(ref.reference(), ref.effectiveBounds());
     }
     else {
-        s_error = tr("Internal error: trying to setref to constant: 'setref %1 %2'").arg(s).arg(id);
+        s_error = Kumir::Core::fromAscii("Internal error");
     }
     const int lineNo = stack_contexts.top().lineNo;
     if (lineNo!=-1 &&
@@ -1312,7 +1733,7 @@ void VM::do_refarr(quint8 s, quint16 id)
         dim = constants[id].dimension();
     }
     else {
-        s_error = tr("Internal error: don't know what is 'loadarr %1 %2'").arg(s).arg(id);
+        s_error = Kumir::Core::fromAscii("Internal error");
     }
     if (dim>0) {
         QList<int> indeces;
@@ -1327,7 +1748,7 @@ void VM::do_refarr(quint8 s, quint16 id)
             ref = globals[QPair<quint8,quint16>(stack_contexts.top().moduleId,id)].toReference(indeces);
         }
         else if (VariableScope(s)==CONST) {
-            s_error = tr("Internal error: don't know what is 'ref %1 %2'").arg(s).arg(id);
+            s_error = Kumir::Core::fromAscii("Internal error");
         }
         stack_values.push(ref);
     }
@@ -1411,10 +1832,10 @@ void VM::do_pop(quint8 r)
             register0 = v.toBool();
         }
         else if (v.baseType()==VT_char) {
-            register0 = v.toChar();
+            register0 = v.toQChar();
         }
         else if (v.baseType()==VT_string) {
-            register0 = v.toString();
+            register0 = v.toQString();
         }
     }
     else {
@@ -1515,18 +1936,18 @@ void VM::do_sum()
         Variant r(a.toInt()+b.toInt());
         stack_values.push(r);
         if (!StdLib::IntegerOverflowChecker::checkSumm(a.toInt(), b.toInt())) {
-            s_error = tr("Integer overflow while trying to summ");
+            s_error = Kumir::Core::fromUtf8("Целочисленное переполнение");
         }
     }
     else if (a.baseType()==VT_float || b.baseType()==VT_float) {
         Variant r(a.toReal()+b.toReal());
         stack_values.push(r);
         if (!StdLib::DoubleOverflowChecker::checkSumm(a.toReal(), b.toReal())) {
-            s_error = tr("Double overflow while trying to summ");
+            s_error = Kumir::Core::fromUtf8("Вещественное переполнение");
         }
     }
     else if (a.baseType()==VT_string || a.baseType()==VT_char) {
-        Variant r(a.toString()+b.toString());
+        Variant r(a.toQString()+b.toQString());
         stack_values.push(r);
     }
     nextIP();
@@ -1540,14 +1961,14 @@ void VM::do_sub()
         Variant r(a.toInt()-b.toInt());
         stack_values.push(r);
         if (!StdLib::IntegerOverflowChecker::checkDiff(a.toInt(), b.toInt())) {
-            s_error = tr("Integer overflow while trying to subtract");
+            s_error = Kumir::Core::fromUtf8("Целочисленное переполнение");
         }
     }
     else if (a.baseType()==VT_float || b.baseType()==VT_float) {
         Variant r(a.toReal()-b.toReal());
         stack_values.push(r);
         if (!StdLib::DoubleOverflowChecker::checkDiff(a.toReal(), b.toReal())) {
-            s_error = tr("Double overflow while trying to subtract");
+            s_error = Kumir::Core::fromUtf8("Вещественное переполнение");
         }
     }
     nextIP();
@@ -1561,14 +1982,14 @@ void VM::do_mul()
         Variant r(a.toInt()*b.toInt());
         stack_values.push(r);
         if (!StdLib::IntegerOverflowChecker::checkProd(a.toInt(), b.toInt())) {
-            s_error = tr("Integer overflow while trying to multiply");
+            s_error = Kumir::Core::fromUtf8("Целочисленное переполнение");
         }
     }
     else if (a.baseType()==VT_float || b.baseType()==VT_float) {
         Variant r(a.toReal()*b.toReal());
         stack_values.push(r);
         if (!StdLib::DoubleOverflowChecker::checkProd(a.toReal(), b.toReal())) {
-            s_error = tr("Double overflow while trying to multiply");
+            s_error = Kumir::Core::fromUtf8("Вещественное переполнение");
         }
     }
     nextIP();
@@ -1579,10 +2000,10 @@ void VM::do_div()
     Variant b = stack_values.pop();
     Variant a = stack_values.pop();
     if (b.baseType()==VT_int && b.toInt()==0) {
-        s_error = tr("Division by zero");
+        s_error = Kumir::Core::fromUtf8("Деление на ноль");
     }
     else if (b.baseType()==VT_float && fabs(b.toReal()) < EPSILON) {
-        s_error = tr("Division by zero");
+        s_error = Kumir::Core::fromUtf8("Деление на ноль");
     }
     else {
         Variant r(a.toReal()/b.toReal());
@@ -1596,13 +2017,13 @@ void VM::do_pow()
     Variant b = stack_values.pop();
     Variant a = stack_values.pop();
     if (a.baseType()==VT_int && b.baseType()==VT_int) {
-        if (s_error.isEmpty() && !StdLib::IntegerOverflowChecker::checkPower(a.toInt(), b.toInt())) {
-            s_error = tr("Integer overflow while trying to power");
+        if (s_error.length()==0 && !StdLib::IntegerOverflowChecker::checkPower(a.toInt(), b.toInt())) {
+            s_error = Kumir::Core::fromUtf8("Целочисленное переполнение");
         }
     }
     else {
-        if (s_error.isEmpty() && !StdLib::DoubleOverflowChecker::checkProd(a.toReal(), b.toReal())) {
-            s_error = tr("Double overflow while trying to power");
+        if (s_error.length()==0 && !StdLib::DoubleOverflowChecker::checkProd(a.toReal(), b.toReal())) {
+            s_error = Kumir::Core::fromUtf8("Вещественное переполнение");
         }
     }
 //    if (b.toReal()<-EPSILON && a.toReal()<-EPSILON) {
@@ -1619,13 +2040,13 @@ void VM::do_pow()
         stack_values.push(r);
 //    }
     if (a.baseType()==VT_int && b.baseType()==VT_int) {
-        if (s_error.isEmpty() && !StdLib::IntegerOverflowChecker::checkPower(a.toInt(), b.toInt())) {
-            s_error = tr("Integer overflow while trying to power");
+        if (s_error.length()==0 && !StdLib::IntegerOverflowChecker::checkPower(a.toInt(), b.toInt())) {
+            s_error = Kumir::Core::fromUtf8("Целочисленное переполнение");
         }
     }
     else {
-        if (s_error.isEmpty() && !StdLib::DoubleOverflowChecker::checkProd(a.toReal(), b.toReal())) {
-            s_error = tr("Double overflow while trying to power");
+        if (s_error.length()==0 && !StdLib::DoubleOverflowChecker::checkProd(a.toReal(), b.toReal())) {
+            s_error = Kumir::Core::fromUtf8("Вещественное переполнение");
         }
     }
     nextIP();
@@ -1691,10 +2112,10 @@ void VM::do_eq()
     }
     if (a.baseType()==VT_string || b.baseType()==VT_string)
     {
-        result = a.toString()==b.toString();
+        result = a.toQString()==b.toQString();
     }
     if (a.baseType()==VT_char && b.baseType()==VT_char) {
-        result = CHAROFSTRING(a.toString()) == CHAROFSTRING(b.toString());
+        result = CHAROFSTRING(a.toQString()) == CHAROFSTRING(b.toQString());
     }
 
     Variant r(result);
@@ -1723,10 +2144,10 @@ void VM::do_neq()
     }
     if (a.baseType()==VT_string || b.baseType()==VT_string)
     {
-        result = a.toString()==b.toString();
+        result = a.toQString()==b.toQString();
     }
     if (a.baseType()==VT_char && b.baseType()==VT_char) {
-        result = CHAROFSTRING(a.toString()) == CHAROFSTRING(b.toString());
+        result = CHAROFSTRING(a.toQString()) == CHAROFSTRING(b.toQString());
     }
     Variant r(!result);
     stack_values.push(r);
@@ -1751,10 +2172,10 @@ void VM::do_ls()
     }
     if (a.baseType()==VT_string || b.baseType()==VT_string)
     {
-        result = a.toString()<b.toString();
+        result = a.toQString()<b.toQString();
     }
     if (a.baseType()==VT_char && b.baseType()==VT_char) {
-        result = CHAROFSTRING(a.toString()) < CHAROFSTRING(b.toString());
+        result = CHAROFSTRING(a.toQString()) < CHAROFSTRING(b.toQString());
     }
     Variant r(result);
     stack_values.push(r);
@@ -1779,10 +2200,10 @@ void VM::do_gt()
     }
     if (a.baseType()==VT_string || b.baseType()==VT_string)
     {
-        result = a.toString()>b.toString();
+        result = a.toQString()>b.toQString();
     }
     if (a.baseType()==VT_char && b.baseType()==VT_char) {
-        result = CHAROFSTRING(a.toString()) > CHAROFSTRING(b.toString());
+        result = CHAROFSTRING(a.toQString()) > CHAROFSTRING(b.toQString());
     }
     Variant r(result);
     stack_values.push(r);
@@ -1807,10 +2228,10 @@ void VM::do_leq()
     }
     if (a.baseType()==VT_string || b.baseType()==VT_string)
     {
-        result = a.toString()<=b.toString();
+        result = a.toQString()<=b.toQString();
     }
     if (a.baseType()==VT_char && b.baseType()==VT_char) {
-        result = CHAROFSTRING(a.toString()) <= CHAROFSTRING(b.toString());
+        result = CHAROFSTRING(a.toQString()) <= CHAROFSTRING(b.toQString());
     }
     Variant r(result);
     stack_values.push(r);
@@ -1835,10 +2256,10 @@ void VM::do_geq()
     }
     if (a.baseType()==VT_string || b.baseType()==VT_string)
     {
-        result = a.toString()>=b.toString();
+        result = a.toQString()>=b.toQString();
     }
     if (a.baseType()==VT_char && b.baseType()==VT_char) {
-        result = CHAROFSTRING(a.toString()) >= CHAROFSTRING(b.toString());
+        result = CHAROFSTRING(a.toQString()) >= CHAROFSTRING(b.toQString());
     }
     Variant r(result);
     stack_values.push(r);
@@ -1880,7 +2301,7 @@ void VM::setResults(
                     )
 {
     QMutexLocker l(m_dontTouchMe);
-    s_error = error;
+    s_error = error.toStdWString();
     if (!error.isEmpty())
         return;
     int indecesStart = 0;
@@ -1912,7 +2333,7 @@ void VM::setResults(
         v->setValue(inds,value);
         indecesStart += inds.size();
     }
-    s_error = Variant::error;
+    s_error = Variant::error.toStdWString();
     int lineNo = stack_contexts.top().lineNo;
     if (lineNo!=-1 &&
             (stack_contexts.top().runMode==CRM_OneStep || stack_contexts.top().type==EL_MAIN)
