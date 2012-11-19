@@ -56,4 +56,4 @@ function return value = знач
 pause running = пауза
 terminate running = стоп
 assign stream = НАЗНАЧИТЬ
-
+file = файл

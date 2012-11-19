@@ -11,6 +11,8 @@ set(HEADERS
     integeroverflowchecher.h
     genericinputoutput.h
     kumstdlib.h
+    kumirstdlib.hpp
+    encodings.hpp
 )
 
 

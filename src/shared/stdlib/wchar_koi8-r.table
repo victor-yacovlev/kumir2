@@ -125,3 +125,4 @@ case 1064: return 251; break;
 case 1069: return 252; break;
 case 1065: return 253; break;
 case 1063: return 254; break;
+case 0x42A: return 255; break;

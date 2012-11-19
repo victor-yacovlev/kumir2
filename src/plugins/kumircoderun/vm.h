@@ -21,17 +21,18 @@ class VM : public QObject
 public:
     enum RunEntryPoint { EP_Main, EP_Testing };
     explicit VM(QObject *parent = 0);
+    inline void setGuiMode(bool v) { b_guiMode=v; }
     void reset();
     int effectiveLineNo() const;
     void setAvailableActors(const QList<ActorInterface*> & actors);
     ElemType topStackType() const;
     void evaluateNextInstruction();
-    void updateStFunctError();
+
     QStringList usedActors() const;
     inline bool isBlindMode() const { return b_blindMode; }
     void setBlindMode(bool bl);
     bool hasMoreInstructions() const;
-    inline QString error() const { return s_error; }
+    std::wstring error() const;
     void loadProgram(const Data & program);
     inline int deep() const { return stack_contexts.size(); }
     inline void setEntryPoint(RunEntryPoint e) { e_entryPoint = e; }
@@ -56,8 +57,8 @@ public:
 signals:
     void retInstruction(int lineNo);
     void lineNoChanged(int lineNo);
-    void inputRequest(const QString & format, const QList<quintptr> & references, const QList<int> & indeces);
-    void outputRequest(const QString & out);
+    void inputRequest(const QStringList & formats, const QList<QVariant::Type> & types, const QList<quintptr> & references, const QList<int> & indeces);
+    void outputRequest(const QStringList & formats, const QList<QVariant::Type> & types, const QVariantList & values);
     void pauseRequest();
     void contextAboutToPop();
     void beforeExternalFunction();
@@ -96,7 +97,7 @@ private:
     Bytecode::TableElem testingProgram;
     QMap< quint8, Bytecode::TableElem > inits;
     QMap< quint32, QVector<Variant> > cleanLocalTables;
-    QString s_error;
+    std::wstring s_error;
     bool b_nextCallInto;
     unsigned int i_backtraceSkip;
 
@@ -111,6 +112,8 @@ private:
 
 
     void do_call(quint8, quint16);
+    void do_stdcall(quint16);
+    void do_specialcall(quint16);
     void do_init(quint8, quint16);
     void do_setarr(quint8, quint16);
     void do_updarr(quint8, quint16);
@@ -156,6 +159,7 @@ private:
 
     QFile f_input;
     QFile f_output;
+    bool b_guiMode;
 
 };
 

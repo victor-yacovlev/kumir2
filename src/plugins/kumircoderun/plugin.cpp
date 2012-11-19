@@ -12,6 +12,7 @@ Plugin::Plugin() :
     ExtensionSystem::KPlugin()
 {
     d = new Run(this);
+
     b_done = true;
     connect (d, SIGNAL(output(QString)), this, SLOT(handleOutput(QString)));
     connect (d, SIGNAL(input(QString)), this, SLOT(handleInput(QString)));
@@ -76,7 +77,7 @@ bool Plugin::loadProgram(QIODevice *source, Shared::ProgramFormat format)
 
 QString Plugin::error() const
 {
-    return d->vm->error();
+    return QString::fromStdWString(d->vm->error());
 }
 
 QVariantList Plugin::remainingValues() const
@@ -166,7 +167,7 @@ void Plugin::handleOutput(const QString &text)
 
 void Plugin::handleThreadFinished()
 {
-    if (!d->vm->error().isEmpty()) {
+    if (d->vm->error().length()>0) {
         emit stopped(Shared::RunInterface::SR_Error);
         b_done = true;
     }
@@ -208,7 +209,7 @@ void Plugin::handleInput(const QString &format)
                     fwprintf(stderr, L"%ls\n", err);
                 }
                 else {
-                    d->vm->s_error = error;
+                    d->vm->s_error = error.toStdWString();
                     break;
                 }
             }
@@ -226,8 +227,11 @@ void Plugin::handleInput(const QString &format)
 QString Plugin::initialize(const QStringList &)
 {
     d->programLoaded = false;
+    d->setGuiMode(ExtensionSystem::PluginManager::instance()->startupModule()!=this);
     qRegisterMetaType<Variant>("KumirCodeRun::Variant");
     qRegisterMetaType<VariantList>("KumirCodeRun::VariantList");
+    qRegisterMetaType<QVariant::Type>("QVariant::Type");
+    qRegisterMetaType< QList<QVariant::Type> >("QList<QVariant::Type>");
     qRegisterMetaType<Shared::RunInterface::StopReason>("Shared::RunInterface::StopReason");
 
     const QList<KPlugin*> plugins = loadedPlugins();

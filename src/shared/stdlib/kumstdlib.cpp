@@ -690,7 +690,7 @@ extern "C" wchar_t symbol2__st_funct(int n)
 {
     QChar ch(n);
     static const QString cyrillic =
-            QString::fromUtf8("АБВГДЕЁЖЗИЙКЛМНОП� СТУФХЦЧШЩЪЫЬЮЭЯ");
+            QString::fromUtf8("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЮЭЯ");
     bool valid = n < 128 || cyrillic.contains(ch.toUpper());
     if (!valid) {
         __abort__st_funct(QObject::tr("Resulting character is not allowed in Russian languange", "StFuncError"));

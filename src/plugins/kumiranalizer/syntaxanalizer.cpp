@@ -1,6 +1,7 @@
 #include "syntaxanalizer.h"
 #include "lexer.h"
 #include <limits>
+#include <deque>
 
 #include "dataformats/ast_variable.h"
 #include "errormessages/errormessages.h"
@@ -41,6 +42,7 @@ struct SyntaxAnalizerPrivate
     void parseAlgHeader(int str, bool onlyName);
     void parseVarDecl(int str);
     void parseAssignment(int str);
+    void parseInputOutput(int str);
     void parseInputAssertPrePost(int str);
     void parseOutput(int str);
     void parseOneLexemInstruction(int str);
@@ -318,14 +320,17 @@ void SyntaxAnalizer::processAnalisys()
         else if (st.type==LxNameClass && st.alg) {
             d->parseVarDecl(i);
         }
-        else if (st.type==LxPriInput
-                 || st.type==LxPriFinput
+        else if (
+                 st.type==LxPriFinput
                  || st.type==LxPriAssert
                  || st.type==LxPriPre
                  || st.type==LxPriPost
                  )
         {
             d->parseInputAssertPrePost(i);
+        }
+        else if (st.type==LxPriInput || st.type==LxPriOutput) {
+            d->parseInputOutput(i);
         }
         else if (st.type==LxPriFoutput
                  || st.type==LxPriOutput
@@ -587,6 +592,196 @@ void SyntaxAnalizerPrivate::parseVarDecl(int str)
         st.statement->type = AST::StVarInitialize;
         st.statement->variables = vars;
     }
+}
+
+void SyntaxAnalizerPrivate::parseInputOutput(int str)
+{
+    const Statement & st = statements[str];
+    if (st.hasError())
+        return;
+    QString err;
+    if (st.data.size()==1) {
+        err = _(st.type==LxPriInput? "What to input?" : "What to output?");
+        st.data[0]->error = err;
+        return;
+    }
+    AST::Expression * fileKey = nullptr;
+
+    QList< QList<Lexem*> > groups;
+
+    for (int i=0; i<st.data.size(); i++) {
+        const LexemType lt = st.data.at(i)->type;
+        if (lt==LxPriInput || lt==LxPriOutput || lt==LxSecFile) {
+            QList<Lexem*> group;
+            groups.append(group);
+        }
+        groups.last().append(st.data.at(i));
+    }
+
+    bool fileFound = false;
+
+    for (int i=0; i<groups.size(); i++) {
+        const QList<Lexem*> & group = groups.at(i);
+        Q_ASSERT(group.size()>0);
+        Q_ASSERT(group[0]->type==LxPriInput || group[0]->type==LxPriOutput || group[0]->type==LxSecFile);
+        // check for variables existence
+        if ( (group[0]->type==LxPriInput || group[0]->type==LxPriOutput) && group.size()==1) {
+            err = _(group[0]->type==LxPriInput? "What to input?" : "Whar to output?");
+            group[0]->error = err; return;
+        }
+        // check for single 'file'
+        if (group[0]->type==LxSecFile && group.size()==1) {
+            err = _(fileFound? "Extra 'file'" : "What file?");
+            group[0]->error = err; return;
+        }
+        // check for extra 'file' group
+        if (group[0]->type==LxSecFile && fileFound) {
+            err = _("File already specified");
+            foreach (Lexem * lx, group) {
+                lx->error = err;
+            }
+            return;
+        }
+        // Ok, lets make actual parse
+        if (group[0]->type==LxPriInput || group[0]->type==LxPriOutput) {
+            // Parse variables list
+            QList< QList<Lexem*> > subgroups;
+            QList<Lexem*> comas;
+            splitLexemsByOperator(group.mid(1), LxOperComa, subgroups, comas);
+            if (subgroups.size()==0) {
+                err = _(group[0]->type==LxPriInput? "What to input?" : "What to output?");
+                foreach (Lexem * lx, group) {
+                    lx->error = err;
+                }
+                return;
+            }
+            if (subgroups.size()==comas.size()) {
+                comas.last()->error = _("Extra coma");
+                return;
+            }
+            for (int j=0; j<subgroups.size(); j++) {
+                QList< QList<Lexem*> > pair;
+                QList<Lexem*> colons;
+                splitLexemsByOperator(subgroups[j], LxOperColon, pair, colons);
+                if (colons.size()>=pair.size()) {
+                    foreach ( AST::Expression * ex, st.statement->expressions ) {
+                        delete ex;
+                    }
+                    st.statement->expressions.clear();
+                    err = _("Extra colon");
+                    colons.last()->error = err;
+                    return;
+                }
+                if (pair.size()>2) {
+                    err = _("Extra format");
+                    foreach (const QList<Lexem*> &gr, pair.mid(2))
+                        foreach (Lexem * lx, gr)
+                            lx->error = err;
+                    foreach (Lexem * lx, colons.mid(1))
+                        lx->error = err;
+                    foreach ( AST::Expression * ex, st.statement->expressions ) {
+                        delete ex;
+                    }
+                    st.statement->expressions.clear();
+                    return;
+                }
+                const QList<Lexem*> & variable = pair.at(0);
+                AST::Expression * expr = parseExpression(variable, st.mod, st.alg);
+                if (!expr) {
+                    foreach ( AST::Expression * ex, st.statement->expressions ) {
+                        delete ex;
+                    }
+                    st.statement->expressions.clear();
+                    return;
+                }
+                if (expr->kind==AST::ExprVariable && expr->variable->dimension>0) {
+                    err = _(group[0]->type==LxPriInput? "Can't input array" : "Can't output array");
+                }
+                if (expr->kind==AST::ExprConst && group[0]->type==LxPriInput) {
+                    err = _("Can't input constant value");
+                }
+                if (expr->kind==AST::ExprSubexpression && group[0]->type==LxPriInput) {
+                    err = _("Can't input complex expression");
+                }
+                if (expr->kind==AST::ExprArrayElement  && group[0]->type==LxPriInput && expr->operands.size()>1) {
+                    err = _("Can't input string slice");
+                }
+                if (expr->kind==AST::ExprVariable  && group[0]->type==LxPriInput && expr->variable->accessType==AST::AccessArgumentIn) {
+                    err = _("Can't input algorithm in- argument");
+                }
+                if (expr->kind==AST::ExprFunctionCall && group[0]->type==LxPriInput) {
+                    err = _("Can't input function");
+                }
+                if (err.length()>0) {
+                    foreach ( AST::Expression * ex, st.statement->expressions ) {
+                        delete ex;
+                    }
+                    st.statement->expressions.clear();
+                    foreach ( Lexem * lx, subgroups[i] )
+                        lx->error = err;
+                    return;
+                }
+                st.statement->expressions << expr;
+                AST::Expression * formatExpr = 0;
+                if (pair.size()==2) {
+                    const QList<Lexem*> & format = pair.at(1);
+                    formatExpr = parseExpression(format, st.mod, st.alg);
+                    if (!formatExpr) {
+                        foreach ( AST::Expression * ex, st.statement->expressions ) {
+                            delete ex;
+                        }
+                        st.statement->expressions.clear();
+                        return;
+                    }
+                    if ( (formatExpr->baseType!=AST::TypeString && formatExpr->baseType!=AST::TypeCharect) || formatExpr->dimension!=0) {
+                        err = _(group[0]->type==LxPriInput? "Input format must be a string" : "Output format must be a string");
+                        foreach (Lexem * lx, format)
+                            lx->error = err;
+                        foreach ( AST::Expression * ex, st.statement->expressions ) {
+                            delete ex;
+                        }
+                        st.statement->expressions.clear();
+                        return;
+                    }
+                }
+                else {
+                    formatExpr = new AST::Expression;
+                    formatExpr->kind = AST::ExprConst;
+                    formatExpr->baseType = AST::TypeString;
+                    formatExpr->dimension = 0;
+                    formatExpr->constant = "";
+                }
+                st.statement->expressions << formatExpr;
+            }
+        } // end parse variables list
+
+
+        // Parse file key
+        if (group[0]->type==LxSecFile) {
+            AST::Expression * expr = parseExpression(group.mid(1), st.mod, st.alg);
+            if (!expr) {
+                foreach ( AST::Expression * ex, st.statement->expressions ) {
+                    delete ex;
+                }
+                st.statement->expressions.clear();
+                return;
+            }
+            if (expr->baseType!=AST::TypeInteger || expr->dimension!=0) {
+                foreach ( AST::Expression * ex, st.statement->expressions ) {
+                    delete ex;
+                }
+                st.statement->expressions.clear();
+                delete expr;
+                err = _("File key must be an integer");
+                foreach ( Lexem * lx, group.mid(1) )
+                    lx->error = err;
+                return;
+            }
+            fileKey = expr;
+            st.statement->expressions << fileKey;
+        }
+    }
+
 }
 
 void SyntaxAnalizerPrivate::parseInputAssertPrePost(int str)

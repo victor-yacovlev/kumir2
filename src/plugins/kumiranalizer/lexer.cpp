@@ -268,6 +268,10 @@ void LexerPrivate::initNormalizator(const QString &fileName)
                     keyWords << value;
                     addToMap(kwdMap, value, LxSecInout);
                 }
+                else if (context=="file") {
+                    keyWords << value;
+                    addToMap(kwdMap, value, LxSecFile);
+                }
                 else if (context=="'true' constant value") {
                     constNames << value;
                     boolConstantValues.insert(value, true);

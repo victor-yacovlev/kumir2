@@ -1018,9 +1018,59 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
 
     quint16 argsCount;
 
-    if (st->type==AST::StOutput || st->type==AST::StFileOutput) {
+    if (st->type==AST::StFileOutput) {
         for (int i=st->expressions.size()-1; i>=0; i--) {
             QList<Bytecode::Instruction> instrs = calculate(modId, algId, level, st->expressions[i]);
+            shiftInstructions(instrs, result.size());
+            result << instrs;
+        }
+        argsCount = st->expressions.size();
+    }
+    else if (st->type==AST::StOutput) {
+        int varsCount = st->expressions.size() / 2;
+        bool fileIO = st->expressions.size() % 2 > 0;
+        for (int i = varsCount-1; i>=0; i--) {
+            const AST::Expression * varExpr = st->expressions[i*2];
+            const AST::Expression * formatExpr = st->expressions[i*2+1];
+            QList<Bytecode::Instruction> valueInstrs = calculate(modId, algId, level, varExpr);
+            shiftInstructions(valueInstrs, result.size());
+            result << valueInstrs;
+            QList<Bytecode::Instruction> formatInstrs = calculate(modId, algId, level, formatExpr);
+            shiftInstructions(formatInstrs, result.size());
+            result << formatInstrs;
+        }
+        if (fileIO) {
+            QList<Bytecode::Instruction> instrs = calculate(modId, algId, level, st->expressions.last());
+            shiftInstructions(instrs, result.size());
+            result << instrs;
+        }
+        argsCount = st->expressions.size();
+    }
+    else if (st->type==AST::StInput) {
+        int varsCount = st->expressions.size() / 2;
+        bool fileIO = st->expressions.size() % 2 > 0;
+        for (int i = varsCount-1; i>=0; i--) {
+            const AST::Expression * varExpr = st->expressions[i*2];
+            const AST::Expression * formatExpr = st->expressions[i*2+1];
+            Bytecode::Instruction ref;
+            findVariable(modId, algId, varExpr->variable, ref.scope, ref.arg);
+            if (varExpr->kind==AST::ExprVariable)
+                ref.type = Bytecode::REF;
+            else {
+                ref.type = Bytecode::REFARR;
+                for (int j=varExpr->operands.size()-1; j>=0; j--) {
+                    QList<Bytecode::Instruction> operandInstrs = calculate(modId, algId, level, varExpr->operands[j]);
+                    shiftInstructions(operandInstrs, result.size());
+                    result << operandInstrs;
+                }
+            }
+            result << ref;
+            QList<Bytecode::Instruction> formatInstrs = calculate(modId, algId, level, formatExpr);
+            shiftInstructions(formatInstrs, result.size());
+            result << formatInstrs;
+        }
+        if (fileIO) {
+            QList<Bytecode::Instruction> instrs = calculate(modId, algId, level, st->expressions.last());
             shiftInstructions(instrs, result.size());
             result << instrs;
         }
