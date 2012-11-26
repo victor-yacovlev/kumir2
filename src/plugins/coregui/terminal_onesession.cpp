@@ -1,7 +1,7 @@
 #include "terminal_onesession.h"
 #include "terminal.h"
 #include "stdlib/genericinputoutput.h"
-
+#include "stdlib/kumirstdlib.hpp"
 namespace Terminal {
 
 static const int bodyPadding = 4;
@@ -220,6 +220,7 @@ void OneSession::output(const QString &text)
 
 void OneSession::input(const QString &format)
 {
+    s_inputFormat = format;
     if (m_lines.isEmpty()) {
         m_lines << "";
         m_props << LineProp();
@@ -231,22 +232,22 @@ void OneSession::input(const QString &format)
     }
     i_inputCursorPosition = 0;
     b_inputCursorVisible = true;
-    StdLib::GenericInputOutput::instance()->doInput(format);
+//    StdLib::GenericInputOutput::instance()->doInput(format);
     QString msg = tr("INPUT ");
-    QStringList fmts = format.split("%", QString::SkipEmptyParts);
+    QStringList fmts = format.split(";", QString::SkipEmptyParts);
     for (int i=0; i<fmts.size(); i++) {
         if (i>0) {
             msg += ", ";
         }
-        if (fmts[i]=="s")
+        if (fmts[i][0]=='s')
             msg += tr("string");
-        if (fmts[i]=="d")
+        if (fmts[i][0]=='i')
             msg += tr("integer");
-        if (fmts[i]=="f")
+        if (fmts[i][0]=='r')
             msg += tr("real");
-        if (fmts[i]=="c")
+        if (fmts[i][0]=='c')
             msg += tr("charect");
-        if (fmts[i]=="b")
+        if (fmts[i][0]=='b')
             msg += tr("boolean");
     }
     msg += ".";
@@ -307,16 +308,60 @@ void OneSession::tryFinishInput()
     }
     QVector<bool> errmask = QVector<bool>(text.length(), false);
     QVariantList result;
-    QString error;
-    QSet< QPair<int,int> > errpos;
-    bool ok = StdLib::GenericInputOutput::instance()->tryFinishInput(text, result, errpos, true, error);
-    if (!ok) {
-        emit message(error);
-        for (int i=0; i<errpos.toList().size(); i++) {
-            QPair<int,int> pos = errpos.toList()[i];
-            for (int j=pos.first; j<pos.first+pos.second; j++) {
-                errmask[j] = true;
-            }
+    Kumir::IO::InputStream stream(text.toStdWString());
+    const QStringList & formats = s_inputFormat.split(";", QString::SkipEmptyParts);
+    for (int i=0; i<formats.size(); i++) {
+        char type = formats[i][0].unicode();
+        const Kumir::String format = formats[i].mid(1).toStdWString();
+        switch (type) {
+        case 'i': {
+            Kumir::IO::IntFormat fmt = Kumir::IO::parseIntFormat(format);
+            int value = Kumir::IO::readInteger(stream, fmt);
+            result << value;
+            break;
+        }
+        case 'r': {
+            Kumir::IO::RealFormat fmt = Kumir::IO::parseRealFormat(format);
+            double value = Kumir::IO::readReal(stream, fmt);
+            result << value;
+            break;
+        }
+        case 'b': {
+            Kumir::IO::BoolFormat fmt = Kumir::IO::parseBoolFormat(format);
+            bool value = Kumir::IO::readBool(stream, fmt);
+            result << value;
+            break;
+        }
+        case 'c': {
+            Kumir::IO::CharFormat fmt = Kumir::IO::parseCharFormat(format);
+            Kumir::Char value = Kumir::IO::readChar(stream, fmt);
+            result << QChar(value);
+            break;
+        }
+        case 's': {
+            Kumir::IO::StringFormat fmt = Kumir::IO::parseStringFormat(format);
+            Kumir::String value = Kumir::IO::readString(stream, fmt);
+            result << QString::fromStdWString(value);
+            break;
+        }
+        case 'n': {
+            Kumir::IO::readLine(stream);
+            result << QChar('\n');
+            break;
+        }
+        default:
+            break;
+        }
+        if (stream.hasError())
+            break;
+    }
+    if (stream.hasError()) {
+        Kumir::String errorText;
+        int errorStart, errorLength;
+        stream.getError(errorText, errorStart, errorLength);
+        emit message(QString::fromStdWString(errorText));
+        for (int i=0; i<errorLength; i++) {
+            errmask[errorStart+i] = true;
         }
         int curLine = i_inputLineStart;
         int curCol = i_inputPosStart;

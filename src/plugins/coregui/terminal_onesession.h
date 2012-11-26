@@ -55,6 +55,7 @@ private:
     QString s_fileName;
     QDateTime m_startTime;
     QDateTime m_endTime;
+    QString s_inputFormat;
     int i_fixedWidth;
     QFont m_font;
     int i_inputLineStart;

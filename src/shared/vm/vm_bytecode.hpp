@@ -1,9 +1,10 @@
 #ifndef BYTECODE_DATA_H
 #define BYTECODE_DATA_H
 
-#include "vm_tableelem.h"
+#include "vm_tableelem.hpp"
 
 #include <deque>
+#include <stdint.h>
 
 
 namespace Bytecode {
@@ -13,33 +14,59 @@ struct Data {
     uint8_t versionMaj;
     uint8_t versionMin;
     uint8_t versionRel;
-    std::string characterEncoding;
     unsigned long lastModified;
 };
 
-inline void bytecodeToDataStream(std::ostream & ds, const Data & data)
+inline void bytecodeToDataStream(std::list<char> & ds, const Data & data)
 {
-    ds << "#!/bin/env kumir2-run\n";
+    static const char * header = "#!/usr/bin/env kumir2-run\n";
+    for (size_t i=0; i<strlen(header); i++) {
+        ds.push_back(header[i]);
+    }
     valueToDataStream(ds, data.versionMaj);
     valueToDataStream(ds, data.versionMin);
     valueToDataStream(ds, data.versionRel);
-    stringToDataStream(ds, data.characterEncoding);
-    valueToDataStream(ds, uint32_t(data.d.size()));
+    uint32_t u32size = uint32_t(data.d.size());
+    valueToDataStream(ds, u32size);
     for (size_t i=0; i<data.d.size(); i++) {
         tableElemToBinaryStream(ds, data.d.at(i));
     }
 }
 
-inline void bytecodeFromDataStream(std::istream & ds, Data & data)
+inline void bytecodeToDataStream(std::ostream & ds, const Data & data)
 {
-    std::string dummy;
-    std::getline(ds, dummy);
-    valueFromDataStream(ds, data.versionMaj);
-    valueFromDataStream(ds, data.versionMin);
-    valueFromDataStream(ds, data.versionRel);
-    stringFromDataStream(ds, data.characterEncoding);
-    uint32_t u32_size;
-    valueFromDataStream(ds, u32_size);
+    std::list<char> bytes;
+    bytecodeToDataStream(bytes, data);
+    char * buffer = reinterpret_cast<char*>(calloc(bytes.size(), sizeof(char)));
+    size_t i = 0;
+    for (auto it=bytes.begin(); it!=bytes.end(); ++it) {
+        buffer[i] = *it;
+        i++;
+    }
+    ds.write(buffer, bytes.size()*sizeof(char));
+    free(buffer);
+}
+
+inline void bytecodeFromDataStream(std::list<char> & ds, Data & data)
+{
+    if (ds.size()>0 && ds.front()=='#') {
+        char cur;
+        while(1) {
+            cur = ds.front();
+            ds.pop_front();
+            if (cur=='\n')
+                break;
+        }
+    }
+    if (ds.size()>0)
+        valueFromDataStream(ds, data.versionMaj);
+    if (ds.size()>0)
+        valueFromDataStream(ds, data.versionMin);
+    if (ds.size()>0)
+        valueFromDataStream(ds, data.versionRel);
+    uint32_t u32_size = 0;
+    if (ds.size()>=4)
+        valueFromDataStream(ds, u32_size);
     size_t size = size_t(u32_size);
     data.d.resize(size);
     for (size_t i=0; i<size; i++) {
@@ -47,11 +74,22 @@ inline void bytecodeFromDataStream(std::istream & ds, Data & data)
     }
 }
 
+inline void bytecodeFromDataStream(std::istream & is, Data & data)
+{
+    std::list<char> bytes;
+    while (!is.eof()) {
+        char buffer;
+        is.read(&buffer, 1);
+        bytes.push_back(buffer);
+    }
+    bytecodeFromDataStream(bytes, data);
+}
+
+
 inline void bytecodeToTextStream(std::ostream & ts, const Data & data)
 {
-    ts << "#!/bin/env kumir2-run -S\n";
-    ts << "#version " << data.versionMaj << " " << data.versionMin << " " << data.versionRel << "\n";
-    ts << "#encoding " << data.characterEncoding << "\n\n";
+    ts << "#!/usr/bin/env kumir2-run\n";
+    ts << "#version " << int(data.versionMaj) << " " << int(data.versionMin) << " " << int(data.versionRel) << "\n\n";
     for (size_t i=0; i<data.d.size(); i++) {
         tableElemToTextStream(ts, data.d.at(i));
         ts << "\n";
@@ -64,7 +102,6 @@ inline void bytecodeFromTextStream(std::istream & ts, Data & data)
     data.versionMaj = 1;
     data.versionMin = 99;
     data.versionRel = 0;
-    data.characterEncoding = "UTF-8";
     while (!ts.eof()) {
         getline(ts, line);
         if (line.length()==0)
@@ -78,11 +115,6 @@ inline void bytecodeFromTextStream(std::istream & ts, Data & data)
             is >> data.versionMaj >> data.versionMin >> data.versionRel;
             if (is.fail())
                 throw std::string("Wrong version number in header");
-        }
-        else if (lexem=="#encoding") {
-            is >> data.characterEncoding;
-            if (is.fail())
-                throw std::string("Wrong character encoding in header");
         }
     }
     data.d.resize(20);

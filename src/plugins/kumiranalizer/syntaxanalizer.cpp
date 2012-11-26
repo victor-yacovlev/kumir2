@@ -70,7 +70,6 @@ struct SyntaxAnalizerPrivate
                                          AST::Algorhitm * alg, bool algHeader);
     QVariant parseConstant(const std::list<Lexem*> &constant
                            , const AST::VariableBaseType pt
-                           , bool array
                            , int& maxDim
                            ) const;
     AST::VariableBaseType testConst(const std::list<Lexem *> & lxs, int &err) const;
@@ -80,10 +79,33 @@ struct SyntaxAnalizerPrivate
     AST::Expression * parseSimpleName(const std::list<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg);
     AST::Expression * parseElementAccess(const QList<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg);
     AST::Expression * makeExpressionTree(const QList<SubexpressionElement> & s);
-    static void splitLexemsByOperator(const QList<Lexem *> &s
-                                      , const LexemType & op
-                                   , QList< QList<Lexem*> > & result
-                                   , QList< Lexem* > & operators);
+    template <typename List1, typename List2>
+    inline static void splitLexemsByOperator(
+            const List1 &s
+            , const LexemType & op
+            , List2 & result
+            , List1 & comas
+            )
+    {
+        result.clear();
+        comas.clear();
+        int deep = 0;
+        if (s.size()>0)
+            result.push_back(List1());
+        for (auto it=s.begin(); it!=s.end(); ++it) {
+            if ( (*it)->type==op && deep==0 ) {
+                result.push_back(List1());
+                comas.push_back((*it));
+            }
+            else {
+                if ( (*it)->type==LxOperLeftBr || (*it)->type==LxOperLeftSqBr || (*it)->type==LxOperLeftBrace )
+                    deep++;
+                else if ( (*it)->type==LxOperRightBr || (*it)->type==LxOperRightSqBr || (*it)->type==LxOperRightBrace )
+                    deep--;
+                result.back().push_back(*it);
+            }
+        }
+    }
     static Lexem * findLexemByType(const QList<Lexem*> lxs, LexemType type);
     int currentPosition;
 
@@ -144,30 +166,6 @@ void SyntaxAnalizer::init(
     d->unresolvedImports.clear();
 }
 
-void SyntaxAnalizerPrivate::splitLexemsByOperator(const QList<Lexem *> &s
-                                                  , const LexemType & op
-                                               , QList< QList<Lexem*> > & result
-                                               , QList< Lexem* > & comas)
-{
-    result.clear();
-    comas.clear();
-    int deep = 0;
-    if (!s.isEmpty())
-        result << QList<Lexem*>();
-    for (int i=0; i<s.size(); i++) {
-        if (s[i]->type==op && deep==0) {
-            result << QList<Lexem*>();
-            comas << s[i];
-        }
-        else {
-            if (s[i]->type==LxOperLeftBr || s[i]->type==LxOperLeftSqBr)
-                deep++;
-            if (s[i]->type==LxOperRightBr || s[i]->type==LxOperRightSqBr)
-                deep--;
-            result.last() << s[i];
-        }
-    }
-}
 
 Lexem * SyntaxAnalizerPrivate::findLexemByType(const QList<Lexem*> lxs, LexemType type)
 {
@@ -698,7 +696,8 @@ void SyntaxAnalizerPrivate::parseInputOutput(int str)
                     err = _(group[0]->type==LxPriInput? "Can't input array" : "Can't output array");
                 }
                 if (expr->kind==AST::ExprConst && group[0]->type==LxPriInput) {
-                    err = _("Can't input constant value");
+                    if (expr->baseType!=AST::TypeCharect || expr->constant.toChar()!='\n')
+                        err = _("Can't input constant value");
                 }
                 if (expr->kind==AST::ExprSubexpression && group[0]->type==LxPriInput) {
                     err = _("Can't input complex expression");
@@ -717,7 +716,7 @@ void SyntaxAnalizerPrivate::parseInputOutput(int str)
                         delete ex;
                     }
                     st.statement->expressions.clear();
-                    foreach ( Lexem * lx, subgroups[i] )
+                    foreach ( Lexem * lx, variable )
                         lx->error = err;
                     return;
                 }
@@ -2047,7 +2046,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
                 if (findAlgorhitm(cName, mod, aa)) {
                     group.lexems[nameStart]->error = _("Name is used by algorithm");
                 }
-                if (array && !massDeclared)
+                if (array && !massDeclared /*&& group.lexems[curPos]->type!=LxOperEqual*/)
                 {
                     group.lexems[nameStart]->error = _("Array bounds no specified");
                     return result; // нет границ
@@ -2384,9 +2383,18 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
                     return result;
                 }
                 int maxDim = 0;
-                QVariant constValue = parseConstant(initValue.toStdList(), var->baseType, var->dimension>0, maxDim);
+                QVariant constValue = parseConstant(initValue.toStdList(), var->baseType, maxDim);
                 if (constValue==QVariant::Invalid) {
                     return result;
+                }
+                if (var->dimension==0 && lexer->isArrayClassName(group.lexems[typePos]->data)) {
+                    if (maxDim>3) {
+                        for (int a=z-1; a<=curPos; a++) {
+                            group.lexems[a]->error = _("Table dimension > 3");
+                            return result;
+                        }
+                    }
+                    var->dimension = maxDim;
                 }
                 if (var->dimension>0) {
                     if (var->dimension!=maxDim) {
@@ -2396,10 +2404,36 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
                         }
                     }
                 }
+                else if (maxDim>0) {
+                    for (int a=z-1; a<=curPos; a++) {
+                        group.lexems[a]->error = _("Must be a scalar constant");
+                        return result;
+                    }
+                }
                 var->initialValue = constValue;
 
                 par = tn;
                 initValue.clear();
+            }
+            else if (deepV!=0 && group.lexems[curPos]->type==LxOperSemicolon) {
+                if (deepV>0) {
+                    // extra open
+                    for (int i=z; i<curPos; i++) {
+                        if (group.lexems[i]->type==LxOperLeftBrace) {
+                            group.lexems[i]->error = _("Extra open brace");
+                            return result;
+                        }
+                    }
+                }
+                else {
+                    // extra close
+                    for (int i=curPos-1; i>z; i--) {
+                        if (group.lexems[i]->type==LxOperRightBrace) {
+                            group.lexems[i]->error = _("Extra close brace");
+                            return result;
+                        }
+                    }
+                }
             }
             else {
                 initValue << group.lexems[curPos];
@@ -2411,16 +2445,34 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
 
 QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
                                               , const AST::VariableBaseType pt
-                                              , bool array
                                               , int& maxDim
                                               ) const
 {
     int localErr = 0;
     AST::VariableBaseType ct;
-
+    maxDim = 0;
+    if (constant.size()==0)
+        return QVariant::Invalid;
     if (constant.size()==1 && constant.front()->data.trimmed()=="...") {
         constant.front()->error = _("Constant value not typed");
         return QVariant::Invalid;
+    }
+    bool array = false;
+    if (constant.front()->type==LxOperLeftBrace) {
+        if (constant.back()->type==LxOperRightBrace)
+            array = true;
+        else {
+            constant.front()->error = _("Extra open brace");
+            return QVariant::Invalid;
+        }
+    }
+    if (constant.back()->type==LxOperRightBrace) {
+        if (constant.front()->type==LxOperLeftBrace)
+            array = true;
+        else {
+            constant.back()->error = _("Extra close brace");
+            return QVariant::Invalid;
+        }
     }
     if (!array) {
         maxDim = 0;
@@ -2521,7 +2573,72 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
             return QVariant::Invalid; // FIXME: type mismatch
         }
     }
-    // TODO implement me
+    else {
+        maxDim = 0;
+        std::list<Lexem*> alist = constant;
+        alist.pop_front();
+        alist.pop_back();
+        std::list<std::list<Lexem*>> values;
+        std::list<Lexem*> operators;
+        splitLexemsByOperator(alist, LxOperComa, values, operators);
+        QVariantList result;
+        QList<int> dimensions;
+        for (auto it=values.begin(); it!=values.end(); ++it) {
+            int valDim = 0;
+            QVariant value = QVariant::Invalid;
+            if ( (*it).size()>0 ) {
+                value = parseConstant(*it, pt, valDim);
+                if (value==QVariant::Invalid)
+                    return QVariant::Invalid;
+                else {
+                    result << value;
+                    dimensions << valDim;
+                }
+            }
+            else {
+                result << QVariant::Invalid;
+                dimensions << -1;
+            }
+        }
+        if (dimensions.size()>0) {
+            int firstDim = -1;
+            std::list<Lexem*> firstDimLexems;
+            Q_ASSERT(dimensions.size()==values.size());
+            int i = 0;
+            auto itt = values.begin();
+            for (i=0; i<dimensions.size(); i++, ++itt) {
+                if (dimensions[i]!=-1) {
+                    firstDim = dimensions[i];
+                    firstDimLexems = (*itt);
+                    break;
+                }
+            }
+            i = 0;
+            for (auto it=values.begin(); it!=values.end(); ++it, i++) {
+                if (dimensions[i]==-1)
+                    continue;
+                if (dimensions[i]!=firstDim) {
+                    for (Lexem * lx : *it) {
+                        lx->error = _("Table constant element of variant type");
+                    }
+                    for (Lexem * lx : *itt) {
+                        lx->error = _("Table constant element of variant type");
+                    }
+                    return QVariant::Invalid;
+                }
+            }
+            if (firstDim==-1) {
+                maxDim = 1;
+            }
+            else {
+                maxDim = firstDim + 1;
+            }
+        }
+        else {
+            maxDim = 1;
+        }
+        return result;
+    }
     return QVariant::Invalid;
 }
 
@@ -3513,7 +3630,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
             result->kind = AST::ExprConst;
             result->baseType = type;
             int maxDim = 0;
-            result->constant = parseConstant(lexems, type, false, maxDim);
+            result->constant = parseConstant(lexems, type, maxDim);
             if (result->constant.type()==QVariant::Double)
                 result->baseType = AST::TypeReal;
             return result;

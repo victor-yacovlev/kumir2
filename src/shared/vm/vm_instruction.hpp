@@ -5,7 +5,8 @@
 #include <sstream>
 #include <set>
 #include <algorithm>
-#include <boost/algorithm/string.hpp>
+#define DO_NOT_DECLARE_STATIC
+#include "stdlib/kumirstdlib.hpp"
 
 namespace Bytecode {
 
@@ -134,9 +135,9 @@ inline std::string typeToString(const InstructionType & t)
     else return "nop";
 }
 
-inline InstructionType typeFromString(std::string s)
+inline InstructionType typeFromString(const std::string & ss)
 {
-    boost::algorithm::to_lower(s);
+    std::string s = Kumir::Core::toLowerCase(s);
     if (s=="nop") return NOP;
     else if (s=="call") return CALL;
     else if (s=="init") return INIT;
@@ -206,7 +207,7 @@ inline std::string instructionToString(const Instruction &instr)
     InstructionType t = instr.type;
     result << typeToString(t);
     if (ModuleNoInstructions.count(t)) {
-        result << " " << instr.module;
+        result << " " << int(instr.module);
     }
     if (VariableInstructions.count(t)) {
         VariableScope s = instr.scope;
@@ -218,10 +219,10 @@ inline std::string instructionToString(const Instruction &instr)
             result << " constant";
     }
     if (HasValueInstructions.count(t)) {
-        result << " " << instr.arg;
+        result << " " << int(instr.arg);
     }
     if (RegisterNoInstructions.count(t)) {
-        result << " " << instr.registerr;
+        result << " " << int(instr.registerr);
     }
     return result.str();
 }

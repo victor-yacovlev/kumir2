@@ -398,6 +398,12 @@ void LexerPrivate::initNormalizator(const QString &fileName)
     operators << "\\]";
     kwdMap["]"] = LxOperRightSqBr;
 
+    operators << "\\{";
+    kwdMap["{"] = LxOperLeftBrace;
+
+    operators << "\\}";
+    kwdMap["}"] = LxOperRightBrace;
+
     operators << ",";
     kwdMap[","] = LxOperComa;
 

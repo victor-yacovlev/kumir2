@@ -67,7 +67,7 @@ private slots:
     void handleInputDone(const QVariantList & data);
 private:
     void timerEvent(QTimerEvent *e);
-    void prepareKumirRunner();
+    void prepareKumirRunner(Shared::GeneratorInterface::DebugLevel);
     enum State { Idle, FastRun, RegularRun, StepRun } e_state;
     const AST::Data * m_ast;
     QString s_endStatus;

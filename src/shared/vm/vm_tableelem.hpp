@@ -1,100 +1,174 @@
 #ifndef BYTECODE_TABLEELEM_H
 #define BYTECODE_TABLEELEM_H
 
-#include "vm_instruction.h"
+#define DO_NOT_DECLARE_STATIC
+#include "stdlib/kumirstdlib.hpp"
 
 #include <string>
 #include <sstream>
-#include <boost/any.hpp>
 #include <vector>
+#include "variant.hpp"
+#include "vm_instruction.hpp"
+#include "vm_enums.h"
 
 namespace Bytecode {
 
-enum ElemType {
-    EL_NONE     = 0x00,     // stream delimeter
-    EL_LOCAL    = 0x01,       // Local variable
-    EL_GLOBAL   = 0x02,      // Global variable
-    EL_CONST    = 0x03,       // Constant
-    EL_FUNCTION = 0x04,    // Local defined function
-    EL_EXTERN   = 0x05,      // External module name
-    EL_INIT     = 0x06,     // Local defined module initializer
-    EL_MAIN     = 0x07,     // Main (usually - first) function
-    EL_TESTING  = 0x08,      // Testing function
-    EL_BELOWMAIN= 0x09      // Function evaluated below main function
-};
+using Kumir::real;
+using Kumir::String;
+using VM::Variable;
 
-enum ValueType {
-    VT_void     = 0x00,
-    VT_int      = 0x01,
-    VT_float    = 0x02,
-    VT_char     = 0x03,
-    VT_bool     = 0x04,
-    VT_string   = 0x05
-};
-
-enum ValueKind {
-    VK_Plain    = 0x00,
-    VK_In       = 0x01,
-    VK_InOut    = 0x02,
-    VK_Out      = 0x03
-};
 
 struct TableElem {
-    ElemType type; // Element type
-    ValueType vtype; // Value type
-    uint8_t dimension; // 0 for regular, [1..3] for arrays
-    ValueKind refvalue; // 1 for in-argument,
+    ElemType type = EL_NONE; // Element type
+    ValueType vtype = VT_void; // Value type
+    uint8_t dimension = 0; // 0 for regular, [1..3] for arrays
+    ValueKind refvalue = VK_Plain; // 1 for in-argument,
                      // 2 for in/out-argument,
                      // 3 for out-argument
                      // 0 for regular variable
-    uint8_t module;  // module id
-    uint16_t algId; // algorhitm id
-    uint16_t id; // element id
+    uint8_t module = 0;  // module id
+    uint16_t algId = 0; // algorhitm id
+    uint16_t id = 0; // element id
 
-    std::string name; // variable or function name
+    String name; // variable or function name
 
-    std::string moduleName; // external module name
-    boost::any constantValue; // constant value
+    String moduleName; // external module name
+    Variable initialValue; // constant value
     std::vector<Instruction> instructions; // for local defined function
+
 
 };
 
-inline void stringToDataStream(std::ostream& stream, const std::string & str)
-{
-    uint16_t size = uint16_t(str.length());
-    stream << size;
-    for (size_t i=0; i<str.length(); i++)
-        stream << str.at(i);
+inline bool isLittleEndian() {
+    uint16_t test = 0xFF00;
+    char * buf = reinterpret_cast<char*>(&test);
+    return buf[0]==0x00;
 }
 
-inline void stringFromDataStream(std::istream& stream, std::string & str)
+template <typename T> inline void valueToDataStream(std::list<char> & stream, T value)
 {
-    uint16_t u16size;
-    stream >> u16size;
-    if (stream.fail())
-        throw std::string("Can't read sting value from data stream: first byte is not a string size");
-    size_t size = size_t(u16size);
-    str.resize(size);
-    char ch = '\0';
-    for (size_t i=0; i<size; i++) {
-        stream >> ch;
-        if (stream.fail())
-            throw std::string("Can't read string value from data stream: stream ends before value read");
-        str.at(i) = ch;
+    static const bool le = isLittleEndian();
+    const char * buf = reinterpret_cast<char*>(&value);
+    if (le) {
+        for (int i=sizeof(T)-1; i>=0; i--) {
+            stream.push_back(buf[i]);
+        }
+    }
+    else {
+        for (int i=0; i<sizeof(T); i++) {
+            stream.push_back(buf[i]);
+        }
     }
 }
 
-template <typename T> inline void valueToDataStream(std::ostream& stream, T value)
+template <typename T> inline void valueFromDataStream(std::list<char> & stream, T &value)
 {
-    stream.write(reinterpret_cast<char*>(&value), sizeof(T));
+    char buf[sizeof(T)];
+    static const bool le = isLittleEndian();
+    if (le) {
+        for (int i=sizeof(value)-1; i>=0 ; i--) {
+            buf[i] = stream.front();
+            stream.pop_front();
+        }
+    }
+    else {
+        for (int i=0; i<sizeof(value); i++) {
+            buf[i] = stream.front();
+            stream.pop_front();
+        }
+    }
+    const T * t = reinterpret_cast<T*>(&buf);
+    value = *t;
 }
 
-template <typename T> inline void valueFromDataStream(std::istream & stream, T &value)
+inline void stdStringToDataStream(std::list<char>& stream, const std::string & str)
 {
-    stream.read(reinterpret_cast<char*>(&value), sizeof(T));
+    uint16_t size = uint16_t(str.length());
+    valueToDataStream(stream, size);
+    for (int i=0; i<str.length(); i++) {
+        stream.push_back(str[i]);
+    }
 }
 
-inline void tableElemToBinaryStream(std::ostream & ds, const TableElem &e)
+inline void stringToDataStream(std::list<char>& stream, const String & str) {
+    const std::string utf = Kumir::Coder::encode(Kumir::UTF8, str);
+    stdStringToDataStream(stream, utf);
+}
+
+inline void stdStringFromDataStream(std::list<char>& stream, std::string & str)
+{
+    uint16_t u16size;
+    valueFromDataStream(stream, u16size);
+    size_t size = size_t(u16size);
+    str.resize(size);
+    for (size_t i=0; i<size; i++) {
+        str[i] = stream.front();
+        stream.pop_front();
+    }
+}
+
+inline void stringFromDataStream(std::list<char>& stream, String & str)
+{
+    std::string utf;
+    stdStringFromDataStream(stream, utf);
+    str = Kumir::Coder::decode(Kumir::UTF8, utf);
+}
+
+inline void scalarConstantToDataStream(std::list<char> & stream, ValueType type, const Variable & val) {
+    switch (type) {
+    case VT_int: {
+        const int32_t ival = val.toInt();
+        valueToDataStream(stream, ival);
+        break;
+    }
+    case VT_real: {
+        const double rval = val.toReal();
+        valueToDataStream(stream, rval);
+        break;
+    }
+    case VT_bool: {
+        const uint8_t bval = val.toBool()? 1 : 0;
+        valueToDataStream(stream, bval);
+        break;
+    }
+    case VT_char: {
+        const String & cval = val.toString();
+        stringToDataStream(stream, cval);
+        break;
+    }
+    case VT_string: {
+        const String & sval = val.toString();
+        stringToDataStream(stream, sval);
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+inline void constantToDataStream(std::list<char> & stream, ValueType baseType, const Variable & val, uint8_t dimension) {
+    if (dimension==0)
+        scalarConstantToDataStream(stream, baseType, val);
+    else {
+        int bounds[7];
+        val.getBounds(bounds);
+        for (int i=0; i<7; i++) {
+            int32_t bound32 = static_cast<int32_t>(bounds[i]);
+            valueToDataStream(stream, bound32);
+        }
+        int32_t rawSize = val.rawSize();
+        valueToDataStream(stream, rawSize);
+        for (size_t i=0; i<val.rawSize(); i++) {
+            VM::AnyValue v = val[i];
+            uint8_t defined = v.isValid()? 1 : 0;
+            valueToDataStream(stream, defined);
+            if (defined==1)
+                scalarConstantToDataStream(stream, baseType, VM::Variable(v));
+        }
+    }
+}
+
+inline void tableElemToBinaryStream(std::list<char> & ds, const TableElem &e)
 {
     valueToDataStream(ds, uint8_t(e.type));
     valueToDataStream(ds, uint8_t(e.vtype));
@@ -107,25 +181,7 @@ inline void tableElemToBinaryStream(std::ostream & ds, const TableElem &e)
     if (e.type==EL_EXTERN)
         stringToDataStream(ds, e.moduleName);
     else if (e.type==EL_CONST) {
-        if (e.vtype==VT_int) {
-            const int32_t val = boost::any_cast<int32_t>(e.constantValue);
-            valueToDataStream(ds, val);
-        }
-        else if (e.vtype==VT_float) {
-            const double val = boost::any_cast<double>(e.constantValue);
-            valueToDataStream(ds, val);
-        }
-        else if (e.vtype==VT_bool) {
-            const bool val = boost::any_cast<bool>(e.constantValue);
-            valueToDataStream(ds, val? uint8_t(1) : uint8_t(0));
-        }
-        else {
-            // character or string
-            // NOTE: for character type always use 'string' type
-            //       because of possible multibyte encoding
-            const std::string val = boost::any_cast<std::string>(e.constantValue);
-            stringToDataStream(ds, val);
-        }
+        constantToDataStream(ds, e.vtype, e.initialValue, e.dimension);
     }
     else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_BELOWMAIN || e.type==EL_INIT) {
         valueToDataStream(ds, uint16_t(e.instructions.size()));
@@ -135,7 +191,77 @@ inline void tableElemToBinaryStream(std::ostream & ds, const TableElem &e)
     }
 }
 
-inline void tableElemFromBinaryStream(std::istream & ds, TableElem &e)
+inline void scalarConstantFromDataStream(std::list<char> & stream, ValueType type, Variable & val)
+{
+    switch (type) {
+    case VT_int: {
+        int32_t ival;
+        valueFromDataStream(stream, ival);
+        val = Variable(ival);
+        break;
+    }
+    case VT_real: {
+        double rval;
+        valueFromDataStream(stream, rval);
+        val = Variable(rval);
+        break;
+    }
+    case VT_bool: {
+        uint8_t bval;
+        valueFromDataStream(stream, bval);
+        val = Variable(bool(bval>0? true : false));
+        break;
+    }
+    case VT_char: {
+        String cval;
+        stringFromDataStream(stream, cval);
+        val = Variable(Kumir::Char(cval.at(0)));
+        break;
+    }
+    case VT_string: {
+        Kumir::String sval;
+        stringFromDataStream(stream, sval);
+        val = Variable(sval);
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+inline void constantFromDataStream(std::list<char> & stream,
+                                   ValueType baseType,
+                                   Variable & val,
+                                   uint8_t dimension )
+{
+    if (dimension==0)
+        scalarConstantFromDataStream(stream, baseType, val);
+    else {
+        val.setDimension(dimension);
+        int bounds[7];
+        for (int i=0; i<7; i++) {
+            int32_t bounds32;
+            valueFromDataStream(stream, bounds32);
+            bounds[i] = static_cast<int>(bounds32);
+        }
+        val.setBounds(bounds);
+        val.init();
+        int32_t rawSize32;
+        valueFromDataStream(stream, rawSize32);
+        size_t rawSize = static_cast<size_t>(rawSize32);
+        for (size_t i=0; i<rawSize; i++) {
+            uint8_t defined;
+            valueFromDataStream(stream, defined);
+            if (defined==1) {
+                Variable element;
+                scalarConstantFromDataStream(stream, baseType, element);
+                val[i] = element.value();
+            }
+        }
+    }
+}
+
+inline void tableElemFromBinaryStream(std::list<char> & ds, TableElem &e)
 {
     uint8_t t;
     uint8_t v;
@@ -144,7 +270,7 @@ inline void tableElemFromBinaryStream(std::istream & ds, TableElem &e)
     uint8_t m;
     uint16_t a;
     uint16_t id;
-    std::string s;
+    String s;
     valueFromDataStream(ds, t);
     valueFromDataStream(ds, v);
     valueFromDataStream(ds, d);
@@ -152,8 +278,6 @@ inline void tableElemFromBinaryStream(std::istream & ds, TableElem &e)
     valueFromDataStream(ds, m);
     valueFromDataStream(ds, a);
     valueFromDataStream(ds, id);
-    if (ds.fail())
-        throw std::string("Can't read block from data stream");
     stringFromDataStream(ds, s);
     e.type = ElemType(t);
     e.vtype = ValueType(v);
@@ -168,25 +292,7 @@ inline void tableElemFromBinaryStream(std::istream & ds, TableElem &e)
         e.moduleName = s;
     }
     else if (e.type==EL_CONST) {
-        if (e.vtype==VT_int) {
-            int32_t iv;
-            valueFromDataStream(ds, iv);
-            e.constantValue = iv;
-        }
-        else if (e.vtype==VT_float) {
-            double fv;
-            valueFromDataStream(ds, fv);
-            e.constantValue = fv;
-        }
-        else if (e.vtype==VT_bool) {
-            uint8_t bv;
-            valueFromDataStream(ds, bv);
-            e.constantValue = bool(bv>0? true : false);
-        }
-        else {
-            stringFromDataStream(ds, s);
-            e.constantValue = s;
-        }
+        constantFromDataStream(ds, e.vtype, e.initialValue, e.dimension);
     }
     else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_BELOWMAIN || e.type==EL_INIT) {
         uint16_t u16sz;
@@ -226,9 +332,9 @@ inline std::string elemTypeToString(ElemType t)
     }
 }
 
-inline ElemType elemTypeFromString(std::string s)
+inline ElemType elemTypeFromString(const std::string &ss)
 {
-    boost::algorithm::to_lower(s);
+    const std::string s = Kumir::Core::toLowerCase(ss);
     if (s==".local")
         return EL_LOCAL;
     else if (s==".global")
@@ -258,7 +364,7 @@ inline std::string vtypeToString(ValueType t)
 {
     if (t==VT_int)
         return "int";
-    else if (t==VT_float)
+    else if (t==VT_real)
         return "float";
     else if (t==VT_char)
         return "char";
@@ -270,13 +376,13 @@ inline std::string vtypeToString(ValueType t)
         return "";
 }
 
-inline ValueType vtypeFromString(std::string s)
+inline ValueType vtypeFromString(const std::string &ss)
 {
-    boost::algorithm::to_lower(s);
+    const std::string s = Kumir::Core::toLowerCase(ss);
     if (s=="int")
         return VT_int;
     else if (s=="float")
-        return VT_float;
+        return VT_real;
     else if (s=="char")
         return VT_char;
     else if (s=="string")
@@ -303,9 +409,9 @@ inline std::string kindToString(ValueKind k)
     }
 }
 
-inline ValueKind kindFromString(std::string s)
+inline ValueKind kindFromString(const std::string &ss)
 {
-    boost::algorithm::to_lower(s);
+    const std::string s = Kumir::Core::toLowerCase(ss);
     if (s=="in")
         return VK_In;
     else if (s=="inout")
@@ -316,33 +422,33 @@ inline ValueKind kindFromString(std::string s)
         return VK_Plain;
 }
 
-inline void replaceAll(std::string &str, const std::string & from, const std::string & to)
+inline void replaceAll(String &str, const String & from, const String & to)
 {
     size_t fromSize = from.length();
     size_t startPos = 0;
-    while ((startPos = str.find(from, startPos))!=std::string::npos) {
+    while ((startPos = str.find(from, startPos))!=String::npos) {
         str.replace(startPos, fromSize, to);
         startPos += fromSize;
     }
 }
 
-inline std::string screenString(std::string s)
+inline String screenString(String s)
 {
-    replaceAll(s, "\\", "\\\\");
-    replaceAll(s, "\n", "\\n");
-    replaceAll(s, "\"", "\\\"");
-    replaceAll(s, " ", "\\s");
-    replaceAll(s, "\t", "\\t");
+    replaceAll(s, Kumir::Core::fromAscii("\\"), Kumir::Core::fromAscii("\\\\"));
+    replaceAll(s, Kumir::Core::fromAscii("\n"), Kumir::Core::fromAscii("\\n"));
+    replaceAll(s, Kumir::Core::fromAscii("\""), Kumir::Core::fromAscii("\\\""));
+    replaceAll(s, Kumir::Core::fromAscii(" "), Kumir::Core::fromAscii("\\s"));
+    replaceAll(s, Kumir::Core::fromAscii("\t"), Kumir::Core::fromAscii("\\t"));
     return s;
 }
 
-inline std::string unscreenString(std::string s)
+inline String unscreenString(String s)
 {
-    replaceAll(s, "\\n", "\n");
-    replaceAll(s, "\\\"", "\"");
-    replaceAll(s, "\\s", " ");
-    replaceAll(s, "\\t", "\t");
-    replaceAll(s, "\\\\", "\\");
+    replaceAll(s, Kumir::Core::fromAscii("\\n"), Kumir::Core::fromAscii("\n"));
+    replaceAll(s, Kumir::Core::fromAscii("\\\""), Kumir::Core::fromAscii("\""));
+    replaceAll(s, Kumir::Core::fromAscii("\\s"), Kumir::Core::fromAscii(" "));
+    replaceAll(s, Kumir::Core::fromAscii("\\t"), Kumir::Core::fromAscii("\t"));
+    replaceAll(s, Kumir::Core::fromAscii("\\\\"), Kumir::Core::fromAscii("\\"));
     return s;
 }
 
@@ -351,44 +457,40 @@ inline void tableElemToTextStream(std::ostream &ts, const TableElem &e)
     ts << elemTypeToString(e.type) << " ";
     if (e.type==EL_LOCAL || e.type==EL_GLOBAL || e.type==EL_CONST) {
         ts << vtypeToString(e.vtype) << " ";
-        ts << e.dimension <<" ";
+        ts << int(e.dimension) <<" ";
     }
     if (e.type==EL_LOCAL || e.type==EL_GLOBAL)
         ts << kindToString(e.refvalue) << " ";
 
     if (e.type==EL_LOCAL || e.type==EL_GLOBAL || e.type==EL_EXTERN || e.type==EL_FUNCTION || e.type==EL_MAIN ||e.type==EL_BELOWMAIN|| e.type==EL_INIT || e.type==EL_TESTING) {
-        ts << e.module << " ";
+        ts << int(e.module) << " ";
     }
     if (e.type==EL_LOCAL) {
-        ts << e.algId << " ";
+        ts << int(e.algId) << " ";
     }
     if (e.type!=EL_INIT)
-        ts << e.id << " ";
+        ts << int(e.id) << " ";
     if (e.type==EL_EXTERN)
-        ts << "\"" << screenString(e.moduleName) << "\" ";
+        ts << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.moduleName)) << "\" ";
     else if (e.type==EL_CONST) {
         if (e.vtype==VT_int) {
-            const int32_t val = boost::any_cast<int32_t>(e.constantValue);
+            const int32_t val = e.initialValue.toInt();
             ts << val;
         }
-        else if (e.vtype==VT_float) {
-            const double val = boost::any_cast<double>(e.constantValue);
+        else if (e.vtype==VT_real) {
+            const double val = e.initialValue.toDouble();
             ts << val;
         }
         else if (e.vtype==VT_bool) {
-            const bool val = boost::any_cast<bool>(e.constantValue);
+            const bool val = e.initialValue.toBool();
             ts << val? "true" : "false";
         }
         else {
-            // character or string
-            // NOTE: for character type always use 'string' type
-            //       because of possible multibyte encoding
-            const std::string val = boost::any_cast<std::string>(e.constantValue);
-            stringToDataStream(ts, val);
+            ts << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.initialValue.toString())) << "\"";
         }
     }
     if (e.type==EL_LOCAL||e.type==EL_GLOBAL||e.type==EL_GLOBAL||e.type==EL_FUNCTION||e.type==EL_MAIN||e.type==EL_BELOWMAIN||e.type==EL_FUNCTION||e.type==EL_EXTERN) {
-        ts << "\"" << screenString(e.name) << "\" ";
+        ts << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\" ";
     }
     if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING ||e.type==EL_BELOWMAIN|| e.type==EL_INIT) {
         ts << e.instructions.size();
@@ -466,7 +568,7 @@ inline void tableElemFromTextStream(std::istream& ts, TableElem& e)
             throw std::string("Empty table element extern declaration: "+header);
         if (lexem.length()<3)
             throw std::string("Wrong table element extern declaration: "+header);
-        e.moduleName = unscreenString(lexem.substr(1, lexem.length()-2));
+        e.moduleName = unscreenString(Kumir::Coder::decode(Kumir::UTF8, lexem.substr(1, lexem.length()-2)));
     }
     if (e.type==EL_CONST) {
         if (e.vtype==VT_int) {
@@ -474,24 +576,24 @@ inline void tableElemFromTextStream(std::istream& ts, TableElem& e)
             is >> val;
             if (is.fail())
                 throw std::string("Wrong integer constant: "+header);
-            e.constantValue = val;
+            e.initialValue = Variable(val);
         }
-        else if (e.vtype==VT_float) {
+        else if (e.vtype==VT_real) {
             double val;
             is >> val;
             if (is.fail())
                 throw std::string("Wrong dobule-precision floating point constant: "+header);
-            e.constantValue = val;
+            e.initialValue = Variable(val);
         }
         else if (e.vtype==VT_bool) {
             is >> lexem;
             if (is.fail())
                 throw std::string("Boolean constant value is empty: "+header);
-            boost::algorithm::to_lower(lexem);
+            lexem = Kumir::Core::toLowerCase(lexem);
             if (lexem=="true" || lexem=="1")
-                e.constantValue = bool(true);
+                e.initialValue = Variable(bool(true));
             else if (lexem=="false" || lexem=="0")
-                e.constantValue = bool(false);
+                e.initialValue = Variable(bool(false));
             else
                 throw std::string("Wrong boolean constant: "+header);
         }
@@ -502,7 +604,7 @@ inline void tableElemFromTextStream(std::istream& ts, TableElem& e)
             if (lexem.length()<2) {
                 throw std::string("Wrong literal constant: "+header);
             }
-            e.constantValue = unscreenString(lexem.substr(1, lexem.length()-2));
+            e.initialValue = Variable(unscreenString(Kumir::Coder::decode(Kumir::UTF8, lexem.substr(1, lexem.length()-2))));
         }
     }
     else if (e.type==EL_LOCAL||e.type==EL_GLOBAL||e.type==EL_GLOBAL||e.type==EL_FUNCTION||e.type==EL_MAIN||e.type==EL_TESTING||e.type==EL_BELOWMAIN||e.type==EL_EXTERN) {
@@ -512,7 +614,7 @@ inline void tableElemFromTextStream(std::istream& ts, TableElem& e)
         if (lexem.length()<2) {
             throw std::string("Wrong name: "+header);
         }
-        e.name = unscreenString(lexem.substr(1,lexem.length()-2));
+        e.name = unscreenString(Kumir::Coder::decode(Kumir::UTF8, lexem.substr(1,lexem.length()-2)));
     }
     if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_BELOWMAIN || e.type==EL_INIT) {
         size_t size;

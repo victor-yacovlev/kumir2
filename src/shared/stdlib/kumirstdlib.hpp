@@ -7,6 +7,7 @@
 #include <list>
 #include <deque>
 #include <map>
+#include <cstdio>
 #include "encodings.hpp"
 
 #ifndef NO_SYSTEM
@@ -36,6 +37,8 @@
 #       include <errno.h>
 #   endif
 #endif
+
+namespace VM { class Variable; }
 
 namespace Kumir {
 
@@ -81,6 +84,7 @@ class Core {
     friend class StringUtils;
     friend class System;
     friend class IO;
+    friend class VM::Variable;
 public:
     inline static void init() { error.clear(); }
     inline static void finalize() {}
@@ -139,6 +143,9 @@ protected:
     inline static void abort(const String & err) {
         error = err;
     }
+    inline static void unsetError() {
+        error.clear();
+    }
     static String error;
 };
 
@@ -146,6 +153,56 @@ class Math {
 public:
     inline static void init() {}
     inline static void finalize() {}
+
+    inline static bool checkSumm(int32_t lhs, int32_t rhs) {
+        // Check for integer overflow
+        int32_t sum = lhs+rhs;
+        if (lhs>=0) {
+            return sum >= rhs;
+        }
+        else {
+            return sum < rhs;
+        }
+    }
+
+    inline static bool checkDiff(int32_t lhs, int32_t rhs) {
+        // Check for integer overflow
+        int32_t diff = lhs-rhs;
+        if (rhs>=0) {
+            return diff <= lhs;
+        }
+        else {
+            return diff > lhs;
+        }
+    }
+
+    inline static bool checkProd(int32_t lhs, int32_t rhs) {
+        // Check for integer overflow
+        int64_t prod = lhs * rhs;
+        return (prod >> 32)==(prod >> 31);
+    }
+
+    inline static bool isCorrectDouble(double val) {
+        // !!!!!!!!!!! WARNING !!!!!!!!!!
+        // this works ONLY for x86/x86_64 platform!
+        double * pval = &val;
+        uint64_t * pbits = reinterpret_cast<uint64_t*>(pval);
+        uint64_t bits = *pbits;
+        uint64_t expMask  = 0x7FF0000000000000;
+        uint64_t fracMask = 0x000FFFFFFFFFFFFF;
+//        uint64_t signMask = 0x8000000000000000;
+        uint64_t exponent = (bits & expMask) >> 52;
+        uint64_t fraction = bits & fracMask;
+//        uint64_t sign = (bits & signMask) >> 63;
+        bool Inf = (exponent==uint64_t(0x7FF)) && (fraction==uint64_t(0));
+        bool NaN = (exponent==uint64_t(0x7FF)) && (fraction>uint64_t(0));
+        return !Inf && !NaN;
+    }
+
+    inline static bool isCorrectReal(real val) {
+        return isCorrectDouble(val);
+        // TODO: implement for ARM/AVR platform!!!!
+    }
 
     inline static real abs(real x) { return ::fabs(x); }
 
@@ -1035,7 +1092,7 @@ public:
 
     struct CharFormat {
         bool raw;
-        CharFormat() { raw = false; }
+        CharFormat() { raw = true; }
     };
 
     struct StringFormat {
@@ -1102,6 +1159,12 @@ public:
             errLength = 0;
             currentPosition=0;
         }
+        inline void getError(String & text, int & start, int & len) {
+            text = error;
+            start = errStart;
+            len = errLength;
+        }
+
         inline bool isStream() const { return stream; }
         inline void setError(const String & err) {
             if (isStream())
@@ -1135,11 +1198,20 @@ public:
                 else {
                     // More complex...
                     lastCharBuffer[0] = fgetc(file);
+                    uint8_t firstByte = lastCharBuffer[0];
+                    uint8_t oneSymbMark = firstByte >> 5;
+                    uint8_t twoSymbMark = firstByte >> 4;
+                    if (firstByte==255 && file==stdin) {
+                        Core::abort(Core::fromUtf8("Ошибка чтения данных: входной поток закончился"));
+                        return false;
+                    }
                     int extraBytes = 0;
-                    if ( (lastCharBuffer[0] >> 5) & 0x06 )
-                        extraBytes = 1;
-                    else if ( (lastCharBuffer[0] >> 4) & 0x0E ) {
-                        extraBytes = 2;
+                    if (firstByte>127) {
+                        if ( oneSymbMark & 0x06 )
+                            extraBytes = 1;
+                        else if ( twoSymbMark & 0x0E ) {
+                            extraBytes = 2;
+                        }
                     }
                     for (int i=0; i<extraBytes; i++) {
                         if (feof(file)) {
@@ -1194,11 +1266,11 @@ public:
             }
             return result;
         }
-        inline String skipDelimiters(const String & delim) {
+        inline void skipDelimiters(const String & delim) {
             // Skip delimiters until lexem
             Char skip(32);
             while (readRawChar(skip)) {
-                if (delim.find_first_of(skip)!=String::npos) {
+                if (delim.find_first_of(skip)==String::npos) {
                     pushLastCharBack();
                     break;
                 }
@@ -1263,7 +1335,11 @@ protected:
         return result;
     }
 
-    static String readLine(InputStream & is) {
+
+
+public:
+    // Generic functions to be in use while input from GUI
+    inline static String readLine(InputStream & is) {
         String result;
         result.reserve(100);
         Char current;
@@ -1275,18 +1351,16 @@ protected:
         }
         return result;
     }
-
-public:
-    // Generic functions to be in use while input from GUI
     inline static String readString(InputStream & is, const StringFormat & format) {
         if (format.lexem==StringFormat::Word)
-            return readLine(is);
+            return readWord(is);
         else if (format.lexem==StringFormat::Literal)
             return readLiteral(is);
         else
             return readLine(is);
     }
-    static Char readChar(InputStream & is, const CharFormat & format) {
+
+    inline static Char readChar(InputStream & is, const CharFormat & format) {
         Char result(0);
         if (is.hasError()) return result;
         if (format.raw) {
@@ -1614,7 +1688,7 @@ public:
         static const String RAW2 = Core::fromUtf8("Подряд");
         static const String RAW3 = Core::fromUtf8("ПОДРЯД");
         CharFormat result;
-        result.raw = fmt==RAW1 || fmt==RAW2 || fmt==RAW3;
+        result.raw = true ; // fmt==RAW1 || fmt==RAW2 || fmt==RAW3;
         if (!result.raw && fmt.length()>0)
             Core::abort(Core::fromUtf8("Неверное описание формата символа"));
         return result;
@@ -1745,6 +1819,11 @@ public:
         InputStream stream = makeInputStream(fileNo, fromStdIn);
         if (Core::getError().length()>0) return 0;
         return readString(stream, fmt);
+    }
+    inline static String readLine(int fileNo = -1, bool fromStdIn = true) {
+        InputStream stream = makeInputStream(fileNo, fromStdIn);
+        if (Core::getError().length()>0) return 0;
+        return readLine(stream);
     }
 
     inline static void writeInteger(const String & format, int value, int fileNo = -1, bool toStdOut = true) {

@@ -4,10 +4,12 @@
 #include "kumiranalizer/analizer.h"
 #include "kumiranalizer/kumiranalizerplugin.h"
 #include "interfaces/generatorinterface.h"
-#include "dataformats/bytecode.h"
 #include "dataformats/kumfile.h"
-
+#include "stdlib/kumirstdlib.hpp"
+#include "vm/variant.hpp"
+#include "vm/vm_bytecode.hpp"
 #include <iostream>
+#include <fstream>
 
 using namespace KumirBytecodeCompiler;
 using namespace KumirAnalizer;
@@ -116,27 +118,30 @@ void KumirBytecodeCompilerPlugin::start()
                 outKodFileName += ".kod";
 
             QFile binOut(outKodFileName);
-            QPair<QString,QString> res = generator->generateExecuable(ast, &binOut, debugLevel);
+            QByteArray outData;
+            QPair<QString,QString> res = generator->generateExecuable(ast, outData, debugLevel);
             if (!res.first.isEmpty()) {
                 std::cerr << "Error generating execuable: " << res.first.toStdString() << std::endl;
             }
+            binOut.open(QIODevice::WriteOnly);
+            binOut.write(outData);
+            binOut.close();
             if (res.second==MIME_BYTECODE_BINARY && QFile::exists(outKodFileName)) {
                 QFile::Permissions ps = binOut.permissions();
                 ps |= QFile::ExeGroup | QFile::ExeOwner | QFile::ExeOther;
                 QFile::setPermissions(outKodFileName, ps);
                 if (qApp->arguments().contains("-S")) {
-                    binOut.open(QIODevice::ReadOnly);
-                    QDataStream ds(&binOut);
                     Bytecode::Data data;
-                    ds >> data;
-                    binOut.close();
-                    const QString SfileName = outKodFileName.mid(0,outKodFileName.length()-4)+".ks";
-                    QFile Sfile(SfileName);
-                    if (Sfile.open(QIODevice::WriteOnly)) {
-                        QTextStream ts(&Sfile);
-                        ts << data;
-                        Sfile.close();
+                    std::list<char> cdata;
+                    for (int i=0; i<outData.size(); i++) {
+                        cdata.push_back(outData[i]);
                     }
+                    Bytecode::bytecodeFromDataStream(cdata, data);
+                    const QString SfileName = outKodFileName.mid(0,outKodFileName.length()-4)+".ks";
+                    const char * fn = QDir::toNativeSeparators(SfileName).toLocal8Bit().constData();
+                    std::ofstream Sfile(fn);
+                    Bytecode::bytecodeToTextStream(Sfile, data);
+                    Sfile.close();
                 }
             }
             qApp->setProperty("returnCode", errors.isEmpty() && res.first.isEmpty()? 0 : 1);
