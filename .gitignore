@@ -10,4 +10,4 @@ scripts/*.pyo
 .metadata
 .project
 .settings
-
+*qtcreator*
