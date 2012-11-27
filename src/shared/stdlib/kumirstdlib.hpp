@@ -287,7 +287,7 @@ public:
     }
     inline static int ipow(int a, int b) {
         if (b>=0) {
-            return static_cast<int>(::floor(::pow(a, b)));
+            return static_cast<int>(::floor(::pow(real(a), b)));
         }
         else {
             Core::abort(Core::fromUtf8("Нельзя возводить в отрицательную степень"));
@@ -889,11 +889,20 @@ public:
     }
 
 #if defined(WIN32) || defined(_WIN32)
-    inline static bool exist(const String & ) {
-# error not implemented
+    inline static bool exist(const String & fileName) {
+        DWORD dwAttrib = GetFileAttributesW(fileName.c_str());
+        return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
+                 !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
     }
     inline static int unlinkFile(const String & ) {
-# error not implemented
+        if (DeleteFileW(fileName.c_str())!=0)
+            return 0;
+         else {
+            if (GetLastError()==ERROR_FILE_NOT_FOUND)
+                return 1;
+            else
+                return 2;
+        }
     }
 
 #else
