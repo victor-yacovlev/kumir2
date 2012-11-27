@@ -784,12 +784,12 @@ void Variable::updateBounds(int bounds[7])
 
     for (int i=0; i<bounds[6]; i+=2) {
         l_restrictedBounds[i] = l_bounds[6]
-                ? Kumir::Math::max(l_bounds[i], bounds[i])
+                ? Kumir::Math::imax(l_bounds[i], bounds[i])
                 : bounds[i];
     }
     for (int i=1; i<bounds[6]; i+=2) {
         l_restrictedBounds[i] = l_bounds[6]
-                ? Kumir::Math::min(l_bounds[i], bounds[i])
+                ? Kumir::Math::imin(l_bounds[i], bounds[i])
                 : bounds[i];
     }
 

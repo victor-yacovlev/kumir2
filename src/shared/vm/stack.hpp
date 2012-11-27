@@ -58,10 +58,16 @@ public:
     }
 
 private:
-    size_t i_initialSize = 100;
-    size_t i_deltaSize = 100;
-    size_t i_currentIndex = 0;
-    std::vector<T> p_data = std::vector<T>(100);
+    size_t i_initialSize;
+    size_t i_deltaSize;
+    size_t i_currentIndex;
+    std::vector<T> p_data;
+public:
+    inline Stack() {
+        i_initialSize = i_deltaSize = 100;
+        i_currentIndex = 0;
+        p_data = std::vector<T>(100);
+    }
 };
 
 }

@@ -28,7 +28,7 @@ enum InstructionType {
     PUSH        = 0x19, // Push to stack from register
     RET         = 0x1B, // Return from function
     PAUSE       = 0x1D, // Force pause
-    ERROR       = 0x1E, // Abort evaluation
+    ERRORR       = 0x1E, // Abort evaluation
     LINE        = 0x1F, // Emit line number
     REF         = 0x20, // Get reference to variable
     REFARR      = 0x21, // Get reference to array element
@@ -61,7 +61,7 @@ enum InstructionType {
 
 enum VariableScope {
     UNDEF = 0x00, // Undefined if not need
-    CONST = 0x01, // Value from constants table
+    CONSTT = 0x01, // Value from constants table
     LOCAL = 0x02, // Value from locals table
     GLOBAL= 0x03  // Value from globals table
 };
@@ -106,7 +106,7 @@ inline std::string typeToString(const InstructionType & t)
     else if (t==PUSH) return ("push");
     else if (t==RET) return ("return");
     else if (t==PAUSE) return ("pause");
-    else if (t==ERROR) return ("error");
+    else if (t==ERRORR) return ("error");
     else if (t==SUM) return ("sum");
     else if (t==SUB) return ("sub");
     else if (t==MUL) return ("mul");
@@ -155,7 +155,7 @@ inline InstructionType typeFromString(const std::string & ss)
     else if (s=="push") return PUSH;
     else if (s=="return") return RET;
     else if (s=="pause") return PAUSE;
-    else if (s=="error") return ERROR;
+    else if (s=="error") return ERRORR;
     else if (s=="sum") return SUM;
     else if (s=="sub") return SUB;
     else if (s=="mul") return MUL;
@@ -186,22 +186,54 @@ inline InstructionType typeFromString(const std::string & ss)
 
 inline std::string instructionToString(const Instruction &instr)
 {
-    static const std::set<InstructionType> VariableInstructions = {
-        INIT, SETARR, STORE, STOREARR, LOAD, LOADARR, SETMON, UNSETMON, REF, REFARR, SETREF, UPDARR
-    };
+    static std::set<InstructionType> VariableInstructions;
+    VariableInstructions.insert(INIT);
+    VariableInstructions.insert(SETARR);
+    VariableInstructions.insert(STORE);
+    VariableInstructions.insert(STOREARR);
+    VariableInstructions.insert(LOAD);
+    VariableInstructions.insert(LOADARR);
+    VariableInstructions.insert(SETMON);
+    VariableInstructions.insert(UNSETMON);
+    VariableInstructions.insert(REF);
+    VariableInstructions.insert(REFARR);
+    VariableInstructions.insert(SETREF);
+    VariableInstructions.insert(UPDARR);
 
-    static const std::set<InstructionType> ModuleNoInstructions = {
-        CALL, CTL
-    };
+    static std::set<InstructionType> ModuleNoInstructions;
+    ModuleNoInstructions.insert(CALL);
+    ModuleNoInstructions.insert(CTL);
+    
+    static std::set<InstructionType> RegisterNoInstructions;
+    RegisterNoInstructions.insert(POP);
+    RegisterNoInstructions.insert(PUSH);
+    RegisterNoInstructions.insert(JZ);
+    RegisterNoInstructions.insert(JNZ);
+    RegisterNoInstructions.insert(SHOWREG);
 
-    static const std::set<InstructionType> RegisterNoInstructions = {
-        POP, PUSH, JZ, JNZ, SHOWREG
-    };
-
-    static const std::set<InstructionType> HasValueInstructions = {
-        CALL, INIT, SETARR, STORE, STOREARR, LOAD, LOADARR,
-        SETMON, UNSETMON, JUMP, JNZ, JZ, ERROR, LINE, REF, REFARR, CLEARMARG, SETREF, HALT, PAUSE, CTL, UPDARR
-    };
+    static std::set<InstructionType> HasValueInstructions;
+    HasValueInstructions.insert(CALL);
+    HasValueInstructions.insert(INIT);
+    HasValueInstructions.insert(SETARR);
+    HasValueInstructions.insert(STORE);
+    HasValueInstructions.insert(STOREARR);
+    HasValueInstructions.insert(LOAD);
+    HasValueInstructions.insert(LOADARR);
+    HasValueInstructions.insert(SETMON);
+    HasValueInstructions.insert(UNSETMON);
+    HasValueInstructions.insert(JUMP);
+    HasValueInstructions.insert(JNZ);
+    HasValueInstructions.insert(JZ);
+    HasValueInstructions.insert(ERRORR);
+    HasValueInstructions.insert(LINE);
+    HasValueInstructions.insert(REF);
+    HasValueInstructions.insert(REFARR);
+    HasValueInstructions.insert(CLEARMARG);
+    HasValueInstructions.insert(SETREF);
+    HasValueInstructions.insert(HALT);
+    HasValueInstructions.insert(PAUSE);
+    HasValueInstructions.insert(CTL);
+    HasValueInstructions.insert(UPDARR);
 
     std::stringstream result;
     InstructionType t = instr.type;
@@ -215,7 +247,7 @@ inline std::string instructionToString(const Instruction &instr)
             result << " global";
         else if (s==LOCAL)
             result << " local";
-        else if (s==CONST)
+        else if (s==CONSTT)
             result << " constant";
     }
     if (HasValueInstructions.count(t)) {
@@ -229,13 +261,16 @@ inline std::string instructionToString(const Instruction &instr)
 
 inline uint32_t toUint32(const Instruction &instr)
 {
-    static const std::set<InstructionType> ModuleNoInstructions = {
-        CALL, CTL
-    };
+    static std::set<InstructionType> ModuleNoInstructions;
+    ModuleNoInstructions.insert(CALL);
+    ModuleNoInstructions.insert(CTL);
 
-    static const std::set<InstructionType> RegisterNoInstructions = {
-        POP, PUSH, JZ, JNZ, SHOWREG
-    };
+    static std::set<InstructionType> RegisterNoInstructions;
+    RegisterNoInstructions.insert(POP);
+    RegisterNoInstructions.insert(PUSH);
+    RegisterNoInstructions.insert(JZ);
+    RegisterNoInstructions.insert(JNZ);
+    RegisterNoInstructions.insert(SHOWREG);
 
     uint32_t first = uint8_t(instr.type);
     first = first << 24;
@@ -256,22 +291,54 @@ inline uint32_t toUint32(const Instruction &instr)
 
 inline Instruction instructionFromString(const std::string &str)
 {
-    static const std::set<InstructionType> VariableInstructions = {
-        INIT, SETARR, STORE, STOREARR, LOAD, LOADARR, SETMON, UNSETMON, REF, REFARR, SETREF, UPDARR
-    };
+    static std::set<InstructionType> VariableInstructions;
+    VariableInstructions.insert(INIT);
+    VariableInstructions.insert(SETARR);
+    VariableInstructions.insert(STORE);
+    VariableInstructions.insert(STOREARR);
+    VariableInstructions.insert(LOAD);
+    VariableInstructions.insert(LOADARR);
+    VariableInstructions.insert(SETMON);
+    VariableInstructions.insert(UNSETMON);
+    VariableInstructions.insert(REF);
+    VariableInstructions.insert(REFARR);
+    VariableInstructions.insert(SETREF);
+    VariableInstructions.insert(UPDARR);
 
-    static const std::set<InstructionType> ModuleNoInstructions = {
-        CALL, CTL
-    };
+    static std::set<InstructionType> ModuleNoInstructions;
+    ModuleNoInstructions.insert(CALL);
+    ModuleNoInstructions.insert(CTL);
 
-    static const std::set<InstructionType> RegisterNoInstructions = {
-        POP, PUSH, JZ, JNZ, SHOWREG
-    };
+    static std::set<InstructionType> RegisterNoInstructions;
+    RegisterNoInstructions.insert(POP);
+    RegisterNoInstructions.insert(PUSH);
+    RegisterNoInstructions.insert(JZ);
+    RegisterNoInstructions.insert(JNZ);
+    RegisterNoInstructions.insert(SHOWREG);
 
-    static const std::set<InstructionType> HasValueInstructions = {
-        CALL, INIT, SETARR, STORE, STOREARR, LOAD, LOADARR,
-        SETMON, UNSETMON, JUMP, JNZ, JZ, ERROR, LINE, REF, REFARR, CLEARMARG, SETREF, HALT, PAUSE, CTL, UPDARR
-    };
+    static std::set<InstructionType> HasValueInstructions;
+    HasValueInstructions.insert(CALL);
+    HasValueInstructions.insert(INIT);
+    HasValueInstructions.insert(SETARR);
+    HasValueInstructions.insert(STORE);
+    HasValueInstructions.insert(STOREARR);
+    HasValueInstructions.insert(LOAD);
+    HasValueInstructions.insert(LOADARR);
+    HasValueInstructions.insert(SETMON);
+    HasValueInstructions.insert(UNSETMON);
+    HasValueInstructions.insert(JUMP);
+    HasValueInstructions.insert(JNZ);
+    HasValueInstructions.insert(JZ);
+    HasValueInstructions.insert(ERRORR);
+    HasValueInstructions.insert(LINE);
+    HasValueInstructions.insert(REF);
+    HasValueInstructions.insert(REFARR);
+    HasValueInstructions.insert(CLEARMARG);
+    HasValueInstructions.insert(SETREF);
+    HasValueInstructions.insert(HALT);
+    HasValueInstructions.insert(PAUSE);
+    HasValueInstructions.insert(CTL);
+    HasValueInstructions.insert(UPDARR);
 
     InstructionType t = NOP;
     uint8_t mod = 0;
@@ -292,7 +359,7 @@ inline Instruction instructionFromString(const std::string &str)
         else if (modifier.at(0)=='l')
             s = LOCAL;
         else if (modifier.at(0)=='c')
-            s = CONST;
+            s = CONSTT;
         else
             throw std::string("Error parsing instruction: variable modifier unknown (\""+str+"\")");
     }
@@ -328,13 +395,17 @@ inline Instruction instructionFromString(const std::string &str)
 
 inline Instruction fromUint32(uint32_t value)
 {
-    static const std::set<InstructionType> ModuleNoInstructions = {
-        CALL, CTL
-    };
+    static std::set<InstructionType> ModuleNoInstructions;
+    ModuleNoInstructions.insert(CALL);
+    ModuleNoInstructions.insert(CTL);
 
-    static const std::set<InstructionType> RegisterNoInstructions = {
-        POP, PUSH, JZ, JNZ, SHOWREG
-    };
+    static std::set<InstructionType> RegisterNoInstructions;
+    RegisterNoInstructions.insert(POP);
+    RegisterNoInstructions.insert(PUSH);
+    RegisterNoInstructions.insert(JZ);
+    RegisterNoInstructions.insert(JNZ);
+    RegisterNoInstructions.insert(SHOWREG);
+
     uint32_t first  = value & 0xFF000000;
     uint32_t second = value & 0x00FF0000;
     uint32_t last   = value & 0x0000FFFF;

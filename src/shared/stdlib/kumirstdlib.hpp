@@ -28,7 +28,7 @@
 
 #ifndef NO_FILES
 #   if defined(WIN32) || defined(_WIN32)
-#       error Not implemented
+#       include <Windows.h>
 #   else
 #       include <sys/stat.h>
 #       include <fcntl.h>
@@ -206,8 +206,11 @@ public:
 
     inline static real abs(real x) { return ::fabs(x); }
 
-    template <typename T> inline static T max(T x, T y) { return x>y? x : y; }
-    template <typename T> inline static T min(T x, T y) { return x<y? x : y; }
+    inline static int imax(int x, int y) { return x>y? x : y; }
+    inline static int imin(int x, int y) { return x<y? x : y; }
+
+    inline static real rmax(real x, real y) { return x>y? x : y; }
+    inline static real rmin(real x, real y) { return x<y? x : y; }
 
     inline static int iabs(int x) { return x>0? x : -x; }
     inline static int intt(real x) { return static_cast<int>(x); }
@@ -359,7 +362,7 @@ public:
     inline static void init() { srand(time(NULL)); }
     inline static void finalize() {}
 
-    template <typename T> inline static T rand(T a, T b) {
+    inline static int irand(int a, int b) {
         if (a>b) {
             Core::abort(Core::fromUtf8("Неверный диапазон чисел"));
             return 0;
@@ -367,13 +370,30 @@ public:
         else {
             int rndValue = ::rand(); // in range [0..2^32]
             real scale = static_cast<real>(b-a+1)/static_cast<real>(RAND_MAX);
-            return Kumir::Math::min(b, a+static_cast<T>(scale*rndValue));
+            return Kumir::Math::imin(b, a+static_cast<int>(scale*rndValue));
         }
     }
-    template <typename T> inline static T rnd(T x) {
+    inline static int irnd(int x) {
         int rndValue = ::rand();
         real scale = static_cast<real>(x)/static_cast<real>(RAND_MAX);
-        return Kumir::Math::min(x, 1+static_cast<T>(scale*rndValue));
+        return Kumir::Math::imin(x, 1+static_cast<int>(scale*rndValue));
+    }
+
+    inline static real rrand(real a, real b) {
+        if (a>b) {
+            Core::abort(Core::fromUtf8("Неверный диапазон чисел"));
+            return 0.0;
+        }
+        else {
+            int rndValue = ::rand(); // in range [0..2^32]
+            real scale = static_cast<real>(b-a+1)/static_cast<real>(RAND_MAX);
+            return Kumir::Math::rmin(b, a+static_cast<real>(scale*rndValue));
+        }
+    }
+    inline static real rrnd(real x) {
+        int rndValue = ::rand();
+        real scale = static_cast<real>(x)/static_cast<real>(RAND_MAX);
+        return Kumir::Math::rmin(x, 1+static_cast<real>(scale*rndValue));
     }
 };
 #endif
@@ -875,9 +895,7 @@ public:
     inline static int unlinkFile(const String & ) {
 # error not implemented
     }
-    inline static int open(const String & , const char * ) {
-# error not implemented
-    }
+
 #else
     inline static bool exist(const String & fileName) {
         char * path;
@@ -918,7 +936,7 @@ public:
 #   endif
         return result;
     }
-
+#endif
     inline static int open(const String & fileName, FileMode mode) {
         for (std::list<File>::iterator it = openedFiles.begin(); it!=openedFiles.end(); ++it) {
             const File & f = (*it);
@@ -927,13 +945,15 @@ public:
                 return -1;
             }
         }
-        char * path;
 #   ifdef NO_UNICODE
-        path = const_cast<char*>(fileName.c_str());
+        const char * path = fileName.c_str();
 #   else
-        path = reinterpret_cast<char*>( calloc(fileName.length()*2+1, sizeof(char)) );
-        size_t pl = wcstombs(path, fileName.c_str(), fileName.length()*2+1);
-        path[pl] = '\0';
+#       if defined(WIN32) || defined(_WIN32)
+        Encoding codec = CP866;
+#       else
+        Encoding codec = UTF8;
+#       endif
+        const char * path = Coder::encode(codec, fileName).c_str();
 #   endif
 
         const char * fmode;
@@ -960,11 +980,10 @@ public:
             openedFiles.push_back(f);
         }
 #   ifndef NO_UNICODE
-        free(path);
+        free((void*)path);
 #   endif
         return f.key;
     }
-#endif
     inline static void close(int key) {
         std::list<File>::iterator it = openedFiles.begin();
         for (; it!=openedFiles.end(); ++it) {
