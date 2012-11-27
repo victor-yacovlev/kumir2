@@ -2618,11 +2618,11 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
                 if (dimensions[i]==-1)
                     continue;
                 if (dimensions[i]!=firstDim) {
-                    for (Lexem * lx : *it) {
-                        lx->error = _("Table constant element of variant type");
+                    for (auto lx=it->begin(); lx!=it->end(); lx++) {
+                        (*lx)->error = _("Table constant element of variant type");
                     }
-                    for (Lexem * lx : *itt) {
-                        lx->error = _("Table constant element of variant type");
+                    for (auto lx=itt->begin(); lx!=itt->end(); lx++) {
+                        (*lx)->error = _("Table constant element of variant type");
                     }
                     return QVariant::Invalid;
                 }
