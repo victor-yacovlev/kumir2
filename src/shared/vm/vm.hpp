@@ -77,10 +77,15 @@ public:
 };
 
 struct ReferenceInfo {
-    bool valid = true;
-    uint8_t module = 0;
-    uint16_t algorithm = 0;
-    uint16_t variable = 0;
+    bool valid;
+    uint8_t module;
+    uint16_t algorithm;
+    uint16_t variable;
+    inline ReferenceInfo() {
+        valid = true;
+        module = 0;
+        algorithm = variable = 0;
+    }
 };
 
 class KumirVM {
@@ -2374,8 +2379,10 @@ void KumirVM::do_halt(uint16_t)
 {
     if (m_dontTouchMe) m_dontTouchMe->lock();
     static const String STOP = Kumir::Core::fromUtf8("\nСТОП.");
-    static const std::deque<String> formats = { String() };
-    static const std::deque<Variable> values = { Variable(STOP) };
+    static std::deque<String> formats;
+    formats.push_back(String());
+    static std::deque<Variable> values;
+    values.push_back(Variable(STOP));
     if (m_externalHandler && m_externalHandler->makeOutput(formats, values)) {
         // pass
     }

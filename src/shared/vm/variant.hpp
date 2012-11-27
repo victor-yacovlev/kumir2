@@ -258,7 +258,7 @@ private:
     int l_referenceIndeces[4];
     String s_name;
     String s_algorhitmName;
-    bool b_constant = false;
+    bool b_constant;
 };
 
 /* ----------------------- IMPLEMENTATION ----------------------*/
