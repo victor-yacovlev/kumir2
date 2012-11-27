@@ -204,7 +204,7 @@ public:
 
     inline size_t rawSize() const { return m_value.rawSize(); }
     inline const AnyValue & at(size_t index) const { return m_value.avalue[index]; }
-    inline const AnyValue & operator[](size_t index) const { at(index); }
+    inline const AnyValue & operator[](size_t index) const { return at(index); }
     inline AnyValue & at(size_t index) { return m_value.avalue[index]; }
     inline AnyValue & operator[](size_t index) { return at(index); }
 
