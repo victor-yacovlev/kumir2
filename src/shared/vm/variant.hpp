@@ -133,9 +133,9 @@ public:
 
     inline void create()
     {
-        l_referenceIndeces[3] = 0;
-        l_bounds[6] = 0;
-        l_restrictedBounds[6] = 0;
+        l_referenceIndeces[0] = l_referenceIndeces[1] = l_referenceIndeces[2] = l_referenceIndeces[3] = 0;
+        l_bounds[0] = l_bounds[1] = l_bounds[2] = l_bounds[3] = l_bounds[4] = l_bounds[5] = l_bounds[6] = 0;
+        l_restrictedBounds[0] = l_restrictedBounds[1] = l_restrictedBounds[2] = l_restrictedBounds[3] = l_restrictedBounds[4] = l_restrictedBounds[5] = l_restrictedBounds[6] = 0;
         m_value = VT_void;
         i_dimension = 0;
         e_baseType = VT_void;
@@ -204,7 +204,7 @@ public:
 
     inline size_t rawSize() const { return m_value.rawSize(); }
     inline const AnyValue & at(size_t index) const { return m_value.avalue[index]; }
-    inline const AnyValue & operator[](size_t index) const { at(index); }
+    inline const AnyValue & operator[](size_t index) const { return at(index); }
     inline AnyValue & at(size_t index) { return m_value.avalue[index]; }
     inline AnyValue & operator[](size_t index) { return at(index); }
 
@@ -250,15 +250,15 @@ private:
     inline size_t linearIndex(int a, int b) const;
     inline size_t linearIndex(int a, int b, int c) const;
     AnyValue m_value;
-    uint8_t i_dimension = 0;
-    int l_bounds[7] = {0, 0, 0, 0, 0, 0, 0};
-    int l_restrictedBounds[7] = {0, 0, 0, 0, 0, 0, 0};
-    ValueType e_baseType = VT_void;
-    Variable * m_reference = 0;
-    int l_referenceIndeces[4] = {0, 0, 0, 0};
+    uint8_t i_dimension;
+    int l_bounds[7];
+    int l_restrictedBounds[7];
+    ValueType e_baseType;
+    Variable * m_reference;
+    int l_referenceIndeces[4];
     String s_name;
     String s_algorhitmName;
-    bool b_constant = false;
+    bool b_constant;
 };
 
 /* ----------------------- IMPLEMENTATION ----------------------*/
@@ -784,12 +784,12 @@ void Variable::updateBounds(int bounds[7])
 
     for (int i=0; i<bounds[6]; i+=2) {
         l_restrictedBounds[i] = l_bounds[6]
-                ? Kumir::Math::max(l_bounds[i], bounds[i])
+                ? Kumir::Math::imax(l_bounds[i], bounds[i])
                 : bounds[i];
     }
     for (int i=1; i<bounds[6]; i+=2) {
         l_restrictedBounds[i] = l_bounds[6]
-                ? Kumir::Math::min(l_bounds[i], bounds[i])
+                ? Kumir::Math::imin(l_bounds[i], bounds[i])
                 : bounds[i];
     }
 
