@@ -397,7 +397,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
         if (var->initialValue.isValid() && var->dimension==0) {
             Bytecode::Instruction load;
             load.type = Bytecode::LOAD;
-            load.scope = Bytecode::CONSTT;
+            load.scope = Bytecode::CONST;
             load.arg = constantValue(valueType(var->baseType), 0, var->initialValue);
             instrs << load;
             Bytecode::Instruction store = init;
@@ -414,7 +414,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
         if (var->accessType==AST::AccessArgumentIn || var->accessType==AST::AccessArgumentInOut)  {
             Bytecode::Instruction varId;
             varId.type = Bytecode::LOAD;
-            varId.scope = Bytecode::CONSTT;
+            varId.scope = Bytecode::CONST;
             varId.arg = constantValue(Bytecode::VT_int, 0, i+locOffset);
 
             Bytecode::Instruction call;
@@ -470,7 +470,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
     for (int i=0; i<varsToOut.size(); i++) {
         Bytecode::Instruction arg;
         arg.type = Bytecode::LOAD;
-        arg.scope = Bytecode::CONSTT;
+        arg.scope = Bytecode::CONST;
         arg.arg = varsToOut[i];
         instrs << arg;
         Bytecode::Instruction callShow;
@@ -542,8 +542,8 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
 
     if (headerError.length()>0) {
         Bytecode::Instruction err;
-        err.type = Bytecode::ERRORR;
-        err.scope = Bytecode::CONSTT;
+        err.type = Bytecode::ERROR;
+        err.scope = Bytecode::CONST;
         err.arg = constantValue(Bytecode::VT_string, 0, headerError);
         argHandle << err;
     }
@@ -607,8 +607,8 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
 
     if (beginError.length()>0) {
         Bytecode::Instruction err;
-        err.type = Bytecode::ERRORR;
-        err.scope = Bytecode::CONSTT;
+        err.type = Bytecode::ERROR;
+        err.scope = Bytecode::CONST;
         err.arg = constantValue(Bytecode::VT_string, 0, beginError);
         argHandle << err;
     }
@@ -669,7 +669,7 @@ QList<Bytecode::Instruction> Generator::instructions(
         switch (st->type) {
         case AST::StError:
             if (!st->skipErrorEvaluation)
-                ERRORR(modId, algId, level, st, result);
+                ERROR(modId, algId, level, st, result);
             break;
         case AST::StAssign:
             ASSIGN(modId, algId, level, st, result);
@@ -735,7 +735,7 @@ quint16 Generator::constantValue(Bytecode::ValueType type, quint8 dimension, con
     }
 }
 
-void Generator::ERRORR(int , int , int , const AST::Statement * st, QList<Bytecode::Instruction>  & result)
+void Generator::ERROR(int , int , int , const AST::Statement * st, QList<Bytecode::Instruction>  & result)
 {
     int lineNo = st->lexems[0]->lineNo;
     Bytecode::Instruction l;
@@ -743,8 +743,8 @@ void Generator::ERRORR(int , int , int , const AST::Statement * st, QList<Byteco
     l.arg = lineNo;
     const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->error);
     Bytecode::Instruction e;
-    e.type = Bytecode::ERRORR;
-    e.scope = Bytecode::CONSTT;
+    e.type = Bytecode::ERROR;
+    e.scope = Bytecode::CONST;
     e.arg = constantValue(Bytecode::VT_string, 0, error);
     if (e_debugLevel!=GeneratorInterface::NoDebug)
         result << l;
@@ -834,7 +834,7 @@ void Generator::ASSIGN(int modId, int algId, int level, const AST::Statement *st
                                 lvalue->operands[lvalue->operands.count()-1]);
             Bytecode::Instruction argsCount;
             argsCount.type = Bytecode::LOAD;
-            argsCount.scope = Bytecode::CONSTT;
+            argsCount.scope = Bytecode::CONST;
             argsCount.arg = constantValue(Bytecode::VT_int, 0, 3);
             result << argsCount;
 
@@ -854,7 +854,7 @@ void Generator::ASSIGN(int modId, int algId, int level, const AST::Statement *st
                                 lvalue->operands[lvalue->operands.count()-1]);
             Bytecode::Instruction argsCount;
             argsCount.type = Bytecode::LOAD;
-            argsCount.scope = Bytecode::CONSTT;
+            argsCount.scope = Bytecode::CONST;
             argsCount.arg = constantValue(Bytecode::VT_int, 0, 4);
             result << argsCount;
 
@@ -889,7 +889,7 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
         int constId = constantValue(valueType(st->baseType), st->dimension, st->constant);
         Bytecode::Instruction instr;
         instr.type = Bytecode::LOAD;
-        instr.scope = Bytecode::CONSTT;
+        instr.scope = Bytecode::CONST;
         instr.arg = constId;
         result << instr;
     }
@@ -914,7 +914,7 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
         int diff = st->operands.size() - st->variable->dimension;
         Bytecode::Instruction argsCount;
         argsCount.type = Bytecode::LOAD;
-        argsCount.scope = Bytecode::CONSTT;
+        argsCount.scope = Bytecode::CONST;
         Bytecode::Instruction specialFunction;
         specialFunction.type = Bytecode::CALL;
         specialFunction.module = 0xff;
@@ -958,7 +958,7 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
                 }
             }
             b.type = Bytecode::LOAD;
-            b.scope = Bytecode::CONSTT;
+            b.scope = Bytecode::CONST;
             b.arg = constantValue(Bytecode::VT_int, 0, refsCount);
             result << b;
             // Push calculable arguments to stack
@@ -1036,7 +1036,7 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
                 result << pop << pop;
                 Bytecode::Instruction load;
                 load.type = Bytecode::LOAD;
-                load.scope = Bytecode::CONSTT;
+                load.scope = Bytecode::CONST;
                 load.arg = constantValue(Bytecode::VT_bool, 0,
                                          st->operatorr==AST::OpAnd
                                          ? false
@@ -1108,8 +1108,8 @@ void Generator::ASSERT(int modId, int algId, int level, const AST::Statement * s
         jnz.arg = targetIp;
         result << jnz;
         Bytecode::Instruction err;
-        err.type = Bytecode::ERRORR;
-        err.scope = Bytecode::CONSTT;
+        err.type = Bytecode::ERROR;
+        err.scope = Bytecode::CONST;
         err.arg = constantValue(Bytecode::VT_string, 0, tr("Assertion false"));
         result << err;
     }
@@ -1146,7 +1146,7 @@ void Generator::INIT(int modId, int algId, int level, const AST::Statement * st,
         if (var->initialValue.isValid()) {
             Bytecode::Instruction load;
             load.type = Bytecode::LOAD;
-            load.scope = Bytecode::CONSTT;
+            load.scope = Bytecode::CONST;
             load.arg = constantValue(valueType(var->baseType), var->dimension, var->initialValue);
             result << load;
             Bytecode::Instruction store = init;
@@ -1210,7 +1210,7 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
             const AST::Expression * formatExpr = st->expressions[i*2+1];
             Bytecode::Instruction ref;
             if (varExpr->kind==AST::ExprConst) {
-                ref.scope = Bytecode::CONSTT;
+                ref.scope = Bytecode::CONST;
                 ref.arg = constantValue(valueType(varExpr->baseType), 0, varExpr->constant);
             }
             else {
@@ -1281,7 +1281,7 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
         }
         Bytecode::Instruction fmt;
         fmt.type = Bytecode::LOAD;
-        fmt.scope = Bytecode::CONSTT;
+        fmt.scope = Bytecode::CONST;
         fmt.arg = constantValue(Bytecode::VT_string, 0, format);
         argsCount = st->expressions.size() + 1;
         result << fmt;
@@ -1289,7 +1289,7 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
 
     Bytecode::Instruction pushCount;
     pushCount.type = Bytecode::LOAD;
-    pushCount.scope = Bytecode::CONSTT;
+    pushCount.scope = Bytecode::CONST;
     pushCount.arg = constantValue(Bytecode::VT_int, 0, argsCount);
     result << pushCount;
 
@@ -1352,8 +1352,8 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
         else
             ll.arg = st->conditionals[0].lexems[0]->lineNo;
         const QString msg = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->conditionals[0].conditionError);
-        error.type = Bytecode::ERRORR;
-        error.scope = Bytecode::CONSTT;
+        error.type = Bytecode::ERROR;
+        error.scope = Bytecode::CONST;
         error.arg = constantValue(Bytecode::VT_string, 0, msg);
         result << ll << error;
     }
@@ -1379,8 +1379,8 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
                 ll.arg = st->lexems[0]->lineNo;
             else
                 ll.arg = st->conditionals[1].lexems[0]->lineNo;
-            error.type = Bytecode::ERRORR;
-            error.scope = Bytecode::CONSTT;
+            error.type = Bytecode::ERROR;
+            error.scope = Bytecode::CONST;
             error.arg = constantValue(Bytecode::VT_string, 0, msg);
             result << ll << error;
         }
@@ -1399,8 +1399,8 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
             ll.arg = st->lexems[0]->lineNo;
         else
             ll.arg = st->endBlockLexems[0]->lineNo;
-        error.type = Bytecode::ERRORR;
-        error.scope = Bytecode::CONSTT;
+        error.type = Bytecode::ERROR;
+        error.scope = Bytecode::CONST;
         error.arg = constantValue(Bytecode::VT_string, 0, msg);
         result << ll << error;
     }
@@ -1416,8 +1416,8 @@ void Generator::SWITCHCASEELSE(int modId, int algId, int level, const AST::State
         const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->beginBlockError);
         result << l;
         Bytecode::Instruction err;
-        err.type = Bytecode::ERRORR;
-        err.scope = Bytecode::CONSTT;
+        err.type = Bytecode::ERROR;
+        err.scope = Bytecode::CONST;
         err.arg = constantValue(Bytecode::VT_string, 0, error);
         result << err;
         return;
@@ -1444,8 +1444,8 @@ void Generator::SWITCHCASEELSE(int modId, int algId, int level, const AST::State
             const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->conditionals[i].conditionError);
             result << l;
             Bytecode::Instruction err;
-            err.type = Bytecode::ERRORR;
-            err.scope = Bytecode::CONSTT;
+            err.type = Bytecode::ERROR;
+            err.scope = Bytecode::CONST;
             err.arg = constantValue(Bytecode::VT_string, 0, error);
             result << err;
         }
@@ -1541,8 +1541,8 @@ void Generator::LOOP(int modId, int algId,
         const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->beginBlockError);
         result << l;
         Bytecode::Instruction err;
-        err.type = Bytecode::ERRORR;
-        err.scope = Bytecode::CONSTT;
+        err.type = Bytecode::ERROR;
+        err.scope = Bytecode::CONST;
         err.arg = constantValue(Bytecode::VT_string, 0, error);
         result << err;
         return;
@@ -1621,7 +1621,7 @@ void Generator::LOOP(int modId, int algId,
 
         // Store initial value "0" in nearest register
         a.type = Bytecode::LOAD;
-        a.scope = Bytecode::CONSTT;
+        a.scope = Bytecode::CONST;
         a.arg = constantValue(Bytecode::VT_int, 0, 0);
         result << a;
 
@@ -1647,7 +1647,7 @@ void Generator::LOOP(int modId, int algId,
         a.registerr = level * 5;
         result << a;
         a.type = Bytecode::LOAD;
-        a.scope = Bytecode::CONSTT;
+        a.scope = Bytecode::CONST;
         a.arg = constantValue(Bytecode::VT_int, 0, 1);
         result << a;
         a.type = Bytecode::SUM;
@@ -1719,7 +1719,7 @@ void Generator::LOOP(int modId, int algId,
         else {
             Bytecode::Instruction loadOneStep;
             loadOneStep.type = Bytecode::LOAD;
-            loadOneStep.scope = Bytecode::CONSTT;
+            loadOneStep.scope = Bytecode::CONST;
             loadOneStep.arg = constantValue(Bytecode::VT_int, 0, 1);
             result << loadOneStep;
         }
@@ -1808,8 +1808,8 @@ void Generator::LOOP(int modId, int algId,
                 : -1;
         result << el;
         Bytecode::Instruction ee;
-        ee.type = Bytecode::ERRORR;
-        ee.scope = Bytecode::CONSTT;
+        ee.type = Bytecode::ERROR;
+        ee.scope = Bytecode::CONST;
         ee.arg = constantValue(Bytecode::VT_string, 0, error);
         result << ee;
         return;

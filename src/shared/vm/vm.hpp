@@ -77,16 +77,10 @@ public:
 };
 
 struct ReferenceInfo {
-    bool valid;
-    uint8_t module;
-    uint16_t algorithm;
-    uint16_t variable;
-    inline ReferenceInfo() {
-        valid = true;
-        module = 0;
-        algorithm = 0;
-        variable = 0;
-    }
+    bool valid = true;
+    uint8_t module = 0;
+    uint16_t algorithm = 0;
+    uint16_t variable = 0;
 };
 
 class KumirVM {
@@ -736,7 +730,7 @@ void KumirVM::do_stdcall(uint16_t alg)
     case 0x000b: {
         int y = stack_values.pop().toInt();
         int x = stack_values.pop().toInt();
-        int r = Kumir::Math::imax(x, y);
+        int r = Kumir::Math::max(x, y);
         stack_values.push(Variable(r));
         break;
     }
@@ -744,7 +738,7 @@ void KumirVM::do_stdcall(uint16_t alg)
     case 0x000c: {
         int y = stack_values.pop().toInt();
         int x = stack_values.pop().toInt();
-        int r = Kumir::Math::imin(x, y);
+        int r = Kumir::Math::min(x, y);
         stack_values.push(Variable(r));
         break;
     }
@@ -759,7 +753,7 @@ void KumirVM::do_stdcall(uint16_t alg)
     case 0x000e: {
         int y = stack_values.pop().toInt();
         int x = stack_values.pop().toInt();
-        int r = Kumir::Random::irand(x, y);
+        int r = Kumir::Random::rand(x, y);
         stack_values.push(Variable(r));
         s_error = Kumir::Core::getError();
         break;
@@ -767,7 +761,7 @@ void KumirVM::do_stdcall(uint16_t alg)
     /* алг цел irnd(цел x) */
     case 0x000f: {
         int x = stack_values.pop().toInt();
-        int y = Kumir::Random::irnd(x);
+        int y = Kumir::Random::rnd(x);
         stack_values.push(Variable(y));
         break;
     }
@@ -791,7 +785,7 @@ void KumirVM::do_stdcall(uint16_t alg)
     case 0x0012: {
         real  y = stack_values.pop().toReal();
         real  x = stack_values.pop().toReal();
-        real  r = Kumir::Math::rmax(x, y);
+        real  r = Kumir::Math::max(x, y);
         stack_values.push(Variable(r));
         break;
     }
@@ -799,7 +793,7 @@ void KumirVM::do_stdcall(uint16_t alg)
     case 0x0013: {
         real  y = stack_values.pop().toReal();
         real  x = stack_values.pop().toReal();
-        real  r = Kumir::Math::rmin(x, y);
+        real  r = Kumir::Math::min(x, y);
         stack_values.push(Variable(r));
         break;
     }
@@ -816,7 +810,7 @@ void KumirVM::do_stdcall(uint16_t alg)
     case 0x0015: {
         real  y = stack_values.pop().toReal();
         real  x = stack_values.pop().toReal();
-        real  r = Kumir::Math::rmax(x, y);
+        real  r = Kumir::Math::max(x, y);
         stack_values.push(Variable(r));
         s_error = Kumir::Core::getError();
         break;
@@ -1601,7 +1595,7 @@ void KumirVM::do_load(uint8_t s, uint16_t id)
         val.setBounds(bounds);
         val.setValue(globals[GlobalsIndex(stack_contexts.top().moduleId,id)].value());
     }
-    else if (VariableScope(s)==CONSTT) {
+    else if (VariableScope(s)==CONST) {
         val.setBaseType(constants[id].baseType());
         val.setDimension(constants[id].dimension());
         constants[id].getBounds(bounds);
@@ -1710,7 +1704,7 @@ void KumirVM::do_loadarr(uint8_t s, uint16_t id)
         dim = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension();
         vt = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType();
     }
-    else if (VariableScope(s)==CONSTT) {
+    else if (VariableScope(s)==CONST) {
         dim = constants[id].dimension();
         vt = constants[id].baseType();
     }
@@ -1734,7 +1728,7 @@ void KumirVM::do_loadarr(uint8_t s, uint16_t id)
             val.setBaseType(globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType());
             vv = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].value(indeces);
         }
-        else if (VariableScope(s)==CONSTT) {
+        else if (VariableScope(s)==CONST) {
             val.setBaseType(constants[id].baseType());
             vv = constants[id].value(indeces);
         }
@@ -1767,7 +1761,7 @@ void KumirVM::do_ref(uint8_t s, uint16_t id)
     else if (VariableScope(s)==GLOBAL) {
         ref = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toReference();
     }
-    else if (VariableScope(s)==CONSTT) {
+    else if (VariableScope(s)==CONST) {
         ref = constants[id].toReference();
     }
     else {
@@ -1833,7 +1827,7 @@ void KumirVM::do_refarr(uint8_t s, uint16_t id)
     else if (VariableScope(s)==GLOBAL) {
         dim = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension();
     }
-    else if (VariableScope(s)==CONSTT) {
+    else if (VariableScope(s)==CONST) {
         dim = constants[id].dimension();
     }
     else {
@@ -1852,7 +1846,7 @@ void KumirVM::do_refarr(uint8_t s, uint16_t id)
         else if (VariableScope(s)==GLOBAL) {
             ref = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toReference(indeces);
         }
-        else if (VariableScope(s)==CONSTT) {
+        else if (VariableScope(s)==CONST) {
             s_error = Kumir::Core::fromAscii("Internal error");
         }
         stack_values.push(ref);
@@ -2010,7 +2004,7 @@ void KumirVM::do_error(uint8_t s, uint16_t id)
     else if (VariableScope(s)==GLOBAL) {
         s_error = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toString();
     }
-    else if (VariableScope(s)==CONSTT) {
+    else if (VariableScope(s)==CONST) {
         s_error = constants[id].toString();
     }
 }
@@ -2380,10 +2374,8 @@ void KumirVM::do_halt(uint16_t)
 {
     if (m_dontTouchMe) m_dontTouchMe->lock();
     static const String STOP = Kumir::Core::fromUtf8("\nСТОП.");
-    static std::deque<String> formats;
-    formats.push_back(String());
-    static std::deque<Variable> values;
-    values.push_back(Variable(STOP));
+    static const std::deque<String> formats = { String() };
+    static const std::deque<Variable> values = { Variable(STOP) };
     if (m_externalHandler && m_externalHandler->makeOutput(formats, values)) {
         // pass
     }
@@ -2426,7 +2418,7 @@ int KumirVM::effectiveLineNo() const
 {
     if (stack_contexts.size()==0)
         return -1;
-    int index = Kumir::Math::imax(0, int(stack_contexts.size()-1 - i_backtraceSkip));
+    int index = Kumir::Math::max(0, int(stack_contexts.size()-1 - i_backtraceSkip));
     return stack_contexts.at(index).lineNo;
 }
 

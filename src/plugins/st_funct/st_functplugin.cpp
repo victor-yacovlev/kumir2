@@ -82,7 +82,6 @@ QStringList St_functPlugin::funcList() const
 EvaluationStatus St_functPlugin::evaluate(quint32 id, const QVariantList & args)
 {
     optResults.clear();
-    return ES_Error;
 
 }
 
@@ -195,12 +194,12 @@ EvaluationStatus St_functPlugin::Iabs(const QVariant & x){
 }
 
 EvaluationStatus St_functPlugin::Imax(const QVariant & x, const QVariant & y){
-    Res = QVariant(Kumir::Math::imax(x.toInt(), y.toInt()));
+    Res = QVariant(Kumir::Math::max(x.toInt(), y.toInt()));
     return ES_StackResult;
 }
 
 EvaluationStatus St_functPlugin::Imin(const QVariant & x, const QVariant & y){
-    Res = QVariant(Kumir::Math::imin(x.toInt(), y.toInt()));
+    Res = QVariant(Kumir::Math::min(x.toInt(), y.toInt()));
     return ES_StackResult;
 }
 
@@ -211,13 +210,13 @@ EvaluationStatus St_functPlugin::Int(const QVariant & x){
 }
 
 EvaluationStatus St_functPlugin::Irand(const QVariant & x, const QVariant & y){
-    Res = QVariant(Kumir::Random::irand(x.toInt(), y.toInt()));
+    Res = QVariant(Kumir::Random::rand(x.toInt(), y.toInt()));
     errText = QString::fromWCharArray(Kumir::Core::getError().c_str());
     return errText.isEmpty()? ES_StackResult : ES_Error;
 }
 
 EvaluationStatus St_functPlugin::Irnd(const QVariant & x){
-    Res = QVariant(Kumir::Random::irnd(x.toInt()));
+    Res = QVariant(Kumir::Random::rnd(x.toInt()));
     return ES_StackResult;
 }
 
@@ -234,12 +233,12 @@ EvaluationStatus St_functPlugin::Ln(const QVariant & x){
 }
 
 EvaluationStatus St_functPlugin::Max(const QVariant & x, const QVariant & y){
-    Res = QVariant(Kumir::Math::rmax(x.toDouble(), y.toDouble()));
+    Res = QVariant(Kumir::Math::max(x.toDouble(), y.toDouble()));
     return ES_StackResult;
 }
 
 EvaluationStatus St_functPlugin::Min(const QVariant & x, const QVariant & y){
-    Res = QVariant(Kumir::Math::rmin(x.toDouble(), y.toDouble()));
+    Res = QVariant(Kumir::Math::min(x.toDouble(), y.toDouble()));
     return ES_StackResult;
 }
 
@@ -250,13 +249,13 @@ EvaluationStatus St_functPlugin::Mod(const QVariant & x, const QVariant & y){
 }
 
 EvaluationStatus St_functPlugin::Rand(const QVariant & x, const QVariant & y){
-    Res = QVariant(Kumir::Random::rrand(x.toDouble(), y.toDouble()));
+    Res = QVariant(Kumir::Random::rand(x.toDouble(), y.toDouble()));
     errText = QString::fromWCharArray(Kumir::Core::getError().c_str());
     return errText.isEmpty()? ES_StackResult : ES_Error;
 }
 
 EvaluationStatus St_functPlugin::Rnd(const QVariant & x){
-    Res = QVariant(Kumir::Random::rrnd(x.toDouble()));
+    Res = QVariant(Kumir::Random::rnd(x.toDouble()));
     return ES_StackResult;
 }
 
