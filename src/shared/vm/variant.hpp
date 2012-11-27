@@ -133,9 +133,9 @@ public:
 
     inline void create()
     {
-        l_referenceIndeces[3] = 0;
-        l_bounds[6] = 0;
-        l_restrictedBounds[6] = 0;
+        l_referenceIndeces[0] = l_referenceIndeces[1] = l_referenceIndeces[2] =         l_referenceIndeces[3] = 0;
+        l_bounds[0] = l_bounds[1] = l_bounds[2] = l_bounds[3] = l_bounds[4] = l_bounds[5] = l_bounds[6] = 0;
+        l_restrictedBounds[0] = l_restrictedBounds[1] = l_restrictedBounds[2] = l_restrictedBounds[3] = l_restrictedBounds[4] = l_restrictedBounds[5] = l_restrictedBounds[6] = 0;
         m_value = VT_void;
         i_dimension = 0;
         e_baseType = VT_void;
@@ -250,12 +250,12 @@ private:
     inline size_t linearIndex(int a, int b) const;
     inline size_t linearIndex(int a, int b, int c) const;
     AnyValue m_value;
-    uint8_t i_dimension = 0;
-    int l_bounds[7] = {0, 0, 0, 0, 0, 0, 0};
-    int l_restrictedBounds[7] = {0, 0, 0, 0, 0, 0, 0};
-    ValueType e_baseType = VT_void;
-    Variable * m_reference = 0;
-    int l_referenceIndeces[4] = {0, 0, 0, 0};
+    uint8_t i_dimension;
+    int l_bounds[7];
+    int l_restrictedBounds[7];
+    ValueType e_baseType;
+    Variable * m_reference;
+    int l_referenceIndeces[4];
     String s_name;
     String s_algorhitmName;
     bool b_constant = false;

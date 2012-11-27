@@ -894,7 +894,7 @@ public:
         return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
                  !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
     }
-    inline static int unlinkFile(const String & ) {
+    inline static int unlinkFile(const String & fileName) {
         if (DeleteFileW(fileName.c_str())!=0)
             return 0;
          else {
