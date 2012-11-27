@@ -669,7 +669,7 @@ QList<Bytecode::Instruction> Generator::instructions(
         switch (st->type) {
         case AST::StError:
             if (!st->skipErrorEvaluation)
-                ERROR(modId, algId, level, st, result);
+                ERRORR(modId, algId, level, st, result);
             break;
         case AST::StAssign:
             ASSIGN(modId, algId, level, st, result);
@@ -735,7 +735,7 @@ quint16 Generator::constantValue(Bytecode::ValueType type, quint8 dimension, con
     }
 }
 
-void Generator::ERROR(int , int , int , const AST::Statement * st, QList<Bytecode::Instruction>  & result)
+void Generator::ERRORR(int , int , int , const AST::Statement * st, QList<Bytecode::Instruction>  & result)
 {
     int lineNo = st->lexems[0]->lineNo;
     Bytecode::Instruction l;

@@ -23,13 +23,17 @@ namespace KumirCodeGenerator {
 typedef Shared::GeneratorInterface::DebugLevel DebugLevel;
 struct ConstValue {
     QVariant value;
-    Bytecode::ValueType baseType = Bytecode::VT_void;
-    quint8 dimension = 0;
+    Bytecode::ValueType baseType;
+    quint8 dimension;
     inline bool operator==(const ConstValue & other) {
         return
                 baseType == other.baseType &&
                 dimension == other.dimension &&
                 value == other.value;
+    }
+    inline ConstValue() {
+        baseType = Bytecode::VT_void;
+        dimension = 0;
     }
 };
 
@@ -56,7 +60,7 @@ private:
     static void shiftInstructions(QList<Bytecode::Instruction> &instrs, int offset);
     static void setBreakAddress(QList<Bytecode::Instruction> &instrs, int level, int address);
 
-    void ERROR(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
+    void ERRORR(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
     void ASSIGN(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
     void ASSERT(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
     void PAUSE_STOP(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
