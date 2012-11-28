@@ -368,38 +368,57 @@ inline ElemType elemTypeFromString(const std::string &ss)
 
 
 
-inline std::string vtypeToString(ValueType t)
+inline std::string vtypeToString(ValueType t, uint8_t dim)
 {
+    std::string result;
     if (t==VT_int)
-        return "int";
+        result = "int";
     else if (t==VT_real)
-        return "float";
+        result = "real";
     else if (t==VT_char)
-        return "char";
+        result = "char";
     else if (t==VT_string)
-        return "string";
+        result = "string";
     else if (t==VT_bool)
-        return "bool";
+        result = "bool";
     else
-        return "";
+        result = "";
+    if (result.length()>0) {
+        for (uint8_t i=0; i<dim; i++) {
+            result += "[]";
+        }
+    }
+    return result;
 }
 
-inline ValueType vtypeFromString(const std::string &ss)
+inline void vtypeFromString(const std::string &ss, ValueType &t, uint8_t &dim)
 {
-    const std::string s = Kumir::Core::toLowerCase(ss);
+    size_t brackPos = ss.find_first_of('[');
+    std::string s = Kumir::Core::toLowerCase(ss.substr(0, brackPos));
+    Kumir::StringUtils::trim<std::string,char>(s);
     if (s=="int")
-        return VT_int;
-    else if (s=="float")
-        return VT_real;
+        t = VT_int;
+    else if (s=="real")
+        t = VT_real;
     else if (s=="char")
-        return VT_char;
+        t = VT_char;
     else if (s=="string")
-        return VT_string;
+        t = VT_string;
     else if (s=="bool")
-        return VT_bool;
+        t = VT_bool;
     else
-        return VT_void;
+        t = VT_void;
+    dim = 0;
+    if (brackPos!=std::string::npos) {
+        std::string brackets = s.substr(brackPos);
+        for (size_t i=0; i<brackets.length(); i++) {
+            if (brackets[i]=='[')
+                dim++;
+        }
+    }
+
 }
+
 
 inline std::string kindToString(ValueKind k)
 {
@@ -460,55 +479,110 @@ inline String unscreenString(String s)
     return s;
 }
 
+inline std::string constantToTextStream(const TableElem & e)
+{
+    std::ostringstream os;
+    os << ".constant id=" << e.id << " type=" << vtypeToString(e.vtype, e.dimension) << " value=";
+    if (e.vtype==VT_int) {
+        const int32_t val = e.initialValue.toInt();
+        os << val;
+    }
+    else if (e.vtype==VT_real) {
+        const double val = e.initialValue.toDouble();
+        os << val;
+    }
+    else if (e.vtype==VT_bool) {
+        const bool val = e.initialValue.toBool();
+        os << val? "true" : "false";
+    }
+    else {
+        os << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.initialValue.toString())) << "\"";
+    }
+    return os.str();
+}
+
+inline std::string localToTextStream(const TableElem & e)
+{
+    std::ostringstream os;
+    os << ".local kind=" << kindToString(e.refvalue) << " type=" << vtypeToString(e.vtype, e.dimension) << " ";
+    os << "module=" << int(e.module) << " algorithm=" << e.algId << " id=" << e.id;
+    if (e.name.length()>0) {
+        os << " name=\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\"";
+    }
+    return os.str();
+}
+
+inline std::string globalToTextStream(const TableElem & e)
+{
+    std::ostringstream os;
+    os << ".global type:" << vtypeToString(e.vtype, e.dimension) << " ";
+    os << "module=" << int(e.module) << " id=" << e.id;
+    if (e.name.length()>0) {
+        os << " name=\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\"";
+    }
+    return os.str();
+}
+
+inline std::string functionToTextStream(const TableElem & e)
+{
+    std::ostringstream os;
+    os << elemTypeToString(e.type) << " ";
+    os << "module=" << int(e.module) << " id=" << e.id << " size=" << e.instructions.size();
+    if (e.name.length()>0) {
+        os << " name=\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\"";
+    }
+    os << "\n";
+    for (size_t i=0; i<e.instructions.size(); i++) {
+        os << i << ":\t";
+        os << instructionToString(e.instructions[i]);
+        os << "\n";
+    }
+    return os.str();
+}
+
+inline std::string externToTextStream(const TableElem & e)
+{
+    std::ostringstream os;
+    os << ".extern ";
+    os << "module=";
+    os << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.moduleName)) << "\"";
+    os << " function=";
+    os << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\"";
+}
+
 inline void tableElemToTextStream(std::ostream &ts, const TableElem &e)
 {
-    ts << elemTypeToString(e.type) << " ";
-    if (e.type==EL_LOCAL || e.type==EL_GLOBAL || e.type==EL_CONST) {
-        ts << vtypeToString(e.vtype) << " ";
-        ts << int(e.dimension) <<" ";
-    }
-    if (e.type==EL_LOCAL || e.type==EL_GLOBAL)
-        ts << kindToString(e.refvalue) << " ";
-
-    if (e.type==EL_LOCAL || e.type==EL_GLOBAL || e.type==EL_EXTERN || e.type==EL_FUNCTION || e.type==EL_MAIN ||e.type==EL_BELOWMAIN|| e.type==EL_INIT || e.type==EL_TESTING) {
-        ts << int(e.module) << " ";
-    }
-    if (e.type==EL_LOCAL) {
-        ts << int(e.algId) << " ";
-    }
-    if (e.type!=EL_INIT)
-        ts << int(e.id) << " ";
-    if (e.type==EL_EXTERN)
-        ts << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.moduleName)) << "\" ";
-    else if (e.type==EL_CONST) {
-        if (e.vtype==VT_int) {
-            const int32_t val = e.initialValue.toInt();
-            ts << val;
-        }
-        else if (e.vtype==VT_real) {
-            const double val = e.initialValue.toDouble();
-            ts << val;
-        }
-        else if (e.vtype==VT_bool) {
-            const bool val = e.initialValue.toBool();
-            ts << val? "true" : "false";
-        }
-        else {
-            ts << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.initialValue.toString())) << "\"";
-        }
-    }
-    if (e.type==EL_LOCAL||e.type==EL_GLOBAL||e.type==EL_GLOBAL||e.type==EL_FUNCTION||e.type==EL_MAIN||e.type==EL_BELOWMAIN||e.type==EL_FUNCTION||e.type==EL_EXTERN) {
-        ts << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\" ";
-    }
-    if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING ||e.type==EL_BELOWMAIN|| e.type==EL_INIT) {
-        ts << e.instructions.size();
-        for (int i=0; i<e.instructions.size(); i++) {
-            ts << "\n";
-            ts << i << ":\t";
-            ts << instructionToString(e.instructions[i]);
-        }
-    }
+    if (e.type==EL_CONST)
+        ts << constantToTextStream(e);
+    else if (e.type==EL_EXTERN)
+        ts << externToTextStream(e);
+    else if (e.type==EL_LOCAL)
+        ts << localToTextStream(e);
+    else if (e.type==EL_GLOBAL)
+        ts << globalToTextStream(e);
+    else
+        ts << functionToTextStream(e);
     ts << "\n";
+}
+
+inline std::map<std::string,std::string> attributesFromTextStream(std::istream & is)
+{
+    std::string lexem;
+    std::map<std::string, std::string> result;
+    while(1) {
+        is >> lexem;
+        if (is.fail())
+            break;
+        size_t eq_pos = lexem.find_first_of('=');
+        if (eq_pos!=std::string::npos) {
+            std::string key = lexem.substr(0, eq_pos);
+            std::string val = lexem.substr(eq_pos+1);
+            Kumir::StringUtils::trim<std::string,char>(key);
+            Kumir::StringUtils::trim<std::string,char>(val);
+            result[key] = val;
+        }
+    }
+    return result;
 }
 
 inline void tableElemFromTextStream(std::istream& ts, TableElem& e)
@@ -532,72 +606,80 @@ inline void tableElemFromTextStream(std::istream& ts, TableElem& e)
     if (is.fail())
         throw std::string("Empty table element header: "+header);
     e.type = elemTypeFromString(lexem);
-    if (e.type==EL_LOCAL || e.type==EL_GLOBAL || e.type==EL_CONST) {
-        is >> lexem;
-        if (is.fail())
-            throw std::string("Empty table element type: "+header);
-        e.vtype = vtypeFromString(lexem);
-        uint8_t dim;
-        is >> dim;
-        if (is.fail())
-            throw std::string("Wrong table element dimension: "+header);
-        e.dimension = dim;
-    }
-    if (e.type==EL_LOCAL || e.type==EL_GLOBAL)
-        is >> lexem;
-        if (is.fail())
-            throw std::string("Empty table element scope: "+header);
-        e.refvalue = kindFromString(lexem);
-
-    if (e.type==EL_LOCAL || e.type==EL_GLOBAL || e.type==EL_EXTERN || e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_INIT ||e.type==EL_BELOWMAIN|| e.type==EL_TESTING) {
-        uint8_t val;
-        is >> val;
-        if (is.fail())
-            throw std::string("Wrong table element module ID: "+header);
-        e.module = val;
+    if (is.fail())
+        throw std::string("Empty table element type: "+header);
+    std::map<std::string, std::string> attrs = attributesFromTextStream(is);
+    Kumir::Converter::ParseError error;
+    if (attrs.count("id")==0 && e.type!=EL_EXTERN)
+        throw std::string("No id specified: "+header);
+    e.id = static_cast<uint16_t>(Kumir::Converter::parseInt(Kumir::Core::fromAscii(attrs["id"]),0,error));
+    if (error!=Kumir::Converter::NoError) throw std::string("Error parsing numeric value");
+    if (e.type==EL_LOCAL ||
+            e.type==EL_GLOBAL ||
+            e.type==EL_MAIN ||
+            e.type==EL_BELOWMAIN ||
+            e.type==EL_FUNCTION ||
+            e.type==EL_TESTING
+            )
+    {
+        if (attrs.count("name"))
+            e.name = unscreenString(Kumir::Coder::decode(Kumir::UTF8, attrs["name"].substr(1,attrs["name"].length()-2)));
     }
     if (e.type==EL_LOCAL) {
-        uint16_t val;
-        is >> val;
-        if (is.fail())
-            throw std::string("Wrong table element algorithm ID: "+header);
-        e.algId = val;
+        if (attrs.count("module")==0)
+            throw std::string("No module id specified for local variable");
+        if (error!=Kumir::Converter::NoError) throw std::string("Error parsing numeric value");
+        if (attrs.count("algorithm")==0)
+            throw std::string("No algorithm id specified for local variable");
+        e.algId = Kumir::Converter::parseInt(Kumir::Core::fromAscii(attrs["algorithm"]),0,error);
+        if (error!=Kumir::Converter::NoError) throw std::string("Error parsing numeric value");
+        e.refvalue = VK_Plain;
+        if (attrs.count("kind"))
+            e.refvalue = kindFromString(attrs["kind"]);
+        if (attrs.count("type")==0)
+            throw std::string("No type specified for local variable");
+        vtypeFromString(attrs["type"], e.vtype, e.dimension);
+        if (e.vtype==VT_void)
+            throw std::string("Illegal variable type");
     }
-    if (e.type!=EL_INIT) {
-        uint16_t val;
-        is >> val;
-        if (is.fail())
-            throw std::string("Wrong table element ID: "+header);
-        e.id = val;
+    if (e.type==EL_GLOBAL) {
+        if (attrs.count("module")==0)
+            throw std::string("No module id specified for global variable");
+        if (error!=Kumir::Converter::NoError) throw std::string("Error parsing numeric value");
+        e.refvalue = VK_Plain;
+        if (attrs.count("type")==0)
+            throw std::string("No type specified for global variable");
+        vtypeFromString(attrs["type"], e.vtype, e.dimension);
+        if (e.vtype==VT_void)
+            throw std::string("Illegal variable type");
     }
     if (e.type==EL_EXTERN) {
-        is >> lexem;
-        if (is.fail())
-            throw std::string("Empty table element extern declaration: "+header);
-        if (lexem.length()<3)
-            throw std::string("Wrong table element extern declaration: "+header);
-        e.moduleName = unscreenString(Kumir::Coder::decode(Kumir::UTF8, lexem.substr(1, lexem.length()-2)));
+        if (attrs.count("module")==0)
+            throw std::string("No module name specified for external algorithm");
+        e.moduleName = unscreenString(Kumir::Coder::decode(Kumir::UTF8, attrs["module"].substr(1,attrs["module"].length()-2)));
+        if (attrs.count("algorithm")==0)
+            throw std::string("No algorithm name specified for external reference");
+        e.name = unscreenString(Kumir::Coder::decode(Kumir::UTF8,attrs["algorithm"].substr(1,attrs["algorithm"].length()-2)));
     }
     if (e.type==EL_CONST) {
+        if (attrs.count("type")==0)
+            throw std::string("No type specified for constant");
+        vtypeFromString(attrs["type"], e.vtype, e.dimension);
+        if (attrs.count("value")==0)
+            throw std::string("No value specified for constant");
         if (e.vtype==VT_int) {
-            int32_t val;
-            is >> val;
-            if (is.fail())
-                throw std::string("Wrong integer constant: "+header);
+            int32_t val = Kumir::Converter::parseInt(Kumir::Core::fromUtf8(attrs["value"]),0,error);
+            if (error!=Kumir::Converter::NoError) throw std::string("Error parsing numeric value");
             e.initialValue = Variable(val);
         }
         else if (e.vtype==VT_real) {
             double val;
-            is >> val;
-            if (is.fail())
-                throw std::string("Wrong dobule-precision floating point constant: "+header);
+            val = Kumir::Converter::parseReal(Kumir::Core::fromAscii(attrs["value"]),0,error);
+            if (error!=Kumir::Converter::NoError) throw std::string("Error parsing numeric value");
             e.initialValue = Variable(val);
         }
         else if (e.vtype==VT_bool) {
-            is >> lexem;
-            if (is.fail())
-                throw std::string("Boolean constant value is empty: "+header);
-            lexem = Kumir::Core::toLowerCase(lexem);
+            const std::string lexem = Kumir::Core::toLowerCase(attrs["value"]);
             if (lexem=="true" || lexem=="1")
                 e.initialValue = Variable(bool(true));
             else if (lexem=="false" || lexem=="0")
@@ -606,42 +688,43 @@ inline void tableElemFromTextStream(std::istream& ts, TableElem& e)
                 throw std::string("Wrong boolean constant: "+header);
         }
         else {
-            is >> lexem;
-            if (is.fail())
-                throw std::string("Literal constant value is empty: "+header);
+            const std::string lexem = attrs["value"];
             if (lexem.length()<2) {
                 throw std::string("Wrong literal constant: "+header);
             }
             e.initialValue = Variable(unscreenString(Kumir::Coder::decode(Kumir::UTF8, lexem.substr(1, lexem.length()-2))));
         }
     }
-    else if (e.type==EL_LOCAL||e.type==EL_GLOBAL||e.type==EL_GLOBAL||e.type==EL_FUNCTION||e.type==EL_MAIN||e.type==EL_TESTING||e.type==EL_BELOWMAIN||e.type==EL_EXTERN) {
-        is >> lexem;
-        if (is.fail())
-            throw std::string("Name is empty: "+header);
-        if (lexem.length()<2) {
-            throw std::string("Wrong name: "+header);
-        }
-        e.name = unscreenString(Kumir::Coder::decode(Kumir::UTF8, lexem.substr(1,lexem.length()-2)));
-    }
     if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_BELOWMAIN || e.type==EL_INIT) {
-        size_t size;
-        is >> size;
-        if (is.fail()) {
-            throw std::string("Wrong element size: "+header);
+        int size = -1;
+        if (attrs.count("size")) {
+            size = Kumir::Converter::parseInt(Kumir::Core::fromAscii(attrs["size"]),0,error);
+            if (error!=Kumir::Converter::NoError) throw std::string("Error parsing numeric value");
         }
-        e.instructions.resize(size);
-        size_t index = 0;
-        while (index<size && !ts.eof()) {
+        if (size==-1)
+            e.instructions.resize(500);
+        else
+            e.instructions.resize(size);
+        int index = 0;
+        while (!ts.eof()) {
+            if (size!=-1 && index>=size)
+                break;
             std::string line;
             std::getline(ts, line);
-            if (line.length()==0 || line.at(0)=='#')
-                continue;
+            Kumir::StringUtils::trim<std::string,char>(line);
+            if (line.length()==0 || line.at(0)=='#') {
+                if (size==-1 && line.length()==0)
+                    break;
+                else
+                    continue;
+            }
             size_t colonPos = line.find(":");
             line = line.substr(colonPos+1);
             e.instructions[index] = instructionFromString(line);
             index++;
         }
+        if (size==-1)
+            e.instructions.resize(index);
     }
 }
 

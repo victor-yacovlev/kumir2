@@ -798,6 +798,32 @@ public:
         }
     }
 #endif
+    template <class S, typename C>
+    inline static S & trim(S & s) {
+        size_t nonSpacePos = 0;
+        for (; nonSpacePos<s.length(); nonSpacePos++) {
+            if ( s[nonSpacePos]!=C(' ') &&
+                 s[nonSpacePos]!=C('\t') &&
+                 s[nonSpacePos]!=C('\n')
+                 )
+                break;
+        }
+        if (nonSpacePos>0) {
+            s.erase(0, nonSpacePos);
+        }
+        nonSpacePos = s.length()-1;
+        for (; nonSpacePos>=0; nonSpacePos--) {
+            if ( s[nonSpacePos]!=C(' ') &&
+                 s[nonSpacePos]!=C('\t') &&
+                 s[nonSpacePos]!=C('\n')
+                 )
+                break;
+        }
+        if (s.length()-(nonSpacePos+1) > 0) {
+            s.erase(nonSpacePos+1);
+        }
+        return s;
+    }
 };
 
 #ifdef NO_FILES

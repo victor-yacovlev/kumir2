@@ -607,31 +607,31 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
     }
 #endif
     else if (functions.count(p)) {
+
         if (stack_contexts.size()>=MAX_RECURSION_SIZE) {
-            if (stack_contexts.size()>=MAX_RECURSION_SIZE) {
-                s_error = Kumir::Core::fromUtf8("Слишком много вложенных вызовов алгоритмов");
-            }
-            else {
-                if (m_dontTouchMe)
-                    m_dontTouchMe->lock();
-                Context c;
-                c.program = & (functions[p].instructions );
-                c.locals = cleanLocalTables[p];
-                c.type = functions[p].type;
-                if (b_nextCallInto)
-                    c.runMode = CRM_OneStep;
-                else if (stack_contexts.top().type==EL_BELOWMAIN && c.type==EL_MAIN)
-                    c.runMode = stack_contexts.top().runMode;
-                else
-                    c.runMode = CRM_ToEnd;
-                c.moduleId = functions[p].module;
-                c.algId = functions[p].algId;
-                stack_contexts.push(c);
-                b_nextCallInto = false;
-                if (m_dontTouchMe)
-                    m_dontTouchMe->unlock();
-            }
+            s_error = Kumir::Core::fromUtf8("Слишком много вложенных вызовов алгоритмов");
         }
+        else {
+            if (m_dontTouchMe)
+                m_dontTouchMe->lock();
+            Context c;
+            c.program = & (functions[p].instructions );
+            c.locals = cleanLocalTables[p];
+            c.type = functions[p].type;
+            if (b_nextCallInto)
+                c.runMode = CRM_OneStep;
+            else if (stack_contexts.top().type==EL_BELOWMAIN && c.type==EL_MAIN)
+                c.runMode = stack_contexts.top().runMode;
+            else
+                c.runMode = CRM_ToEnd;
+            c.moduleId = functions[p].module;
+            c.algId = functions[p].algId;
+            stack_contexts.push(c);
+            b_nextCallInto = false;
+            if (m_dontTouchMe)
+                m_dontTouchMe->unlock();
+        }
+
     }
     else {
         s_error = Kumir::Core::fromUtf8("Вызов алгоритма из недоступного исполнителя");

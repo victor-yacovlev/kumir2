@@ -3688,11 +3688,13 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
         }
 
         // Catch keyword in name
-        for (std::list<Lexem*>::const_iterator it=lexems.begin(); it!=lexems.end(); it++) {
-            Lexem* lx = (*it);
-            if (lx->type & LxTypePrimaryKwd || lx->type & LxTypeSecondaryKwd || lx->type==LxNameClass) {
-                lx->error = _("Keyword in name");
-                return 0;
+        if (!retval) {
+            for (std::list<Lexem*>::const_iterator it=lexems.begin(); it!=lexems.end(); it++) {
+                Lexem* lx = (*it);
+                if (lx->type & LxTypePrimaryKwd || lx->type & LxTypeSecondaryKwd || lx->type==LxNameClass) {
+                    lx->error = _("Keyword in name");
+                    return 0;
+                }
             }
         }
 

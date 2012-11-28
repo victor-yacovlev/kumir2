@@ -538,7 +538,8 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     Bytecode::Instruction l;
     l.type = Bytecode::LINE;
     l.arg = alg->impl.headerLexems[0]->lineNo;
-    argHandle << l;
+    if (e_debugLevel!=GeneratorInterface::NoDebug)
+        argHandle << l;
 
     if (headerError.length()>0) {
         Bytecode::Instruction err;
@@ -602,7 +603,8 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
 
     if (alg->impl.beginLexems.size()) {
         l.arg = alg->impl.beginLexems[0]->lineNo;
-        argHandle << l;
+        if (e_debugLevel!=GeneratorInterface::NoDebug)
+            argHandle << l;
     }
 
     if (beginError.length()>0) {
@@ -638,7 +640,8 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     line.type = Bytecode::LINE;
     if (alg->impl.endLexems.size()>0) {
         line.arg = alg->impl.endLexems[0]->lineNo;
-        ret << line;
+        if (e_debugLevel!=GeneratorInterface::NoDebug)
+            ret << line;
     }
 
     const AST::Variable * retval = returnValue(alg);

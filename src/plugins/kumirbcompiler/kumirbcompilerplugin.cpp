@@ -64,6 +64,15 @@ void KumirBytecodeCompilerPlugin::start()
             else
                 debugLevel = Shared::GeneratorInterface::LinesAndVariables;
         }
+        if ( arg.toLower().startsWith("-g=") ) {
+            int level = arg.mid(3).toInt();
+            if (level==0)
+                debugLevel = Shared::GeneratorInterface::NoDebug;
+            else if (level==1)
+                debugLevel = Shared::GeneratorInterface::LinesOnly;
+            else
+                debugLevel = Shared::GeneratorInterface::LinesAndVariables;
+        }
     }
     if (!filename.isEmpty() && !qApp->arguments().contains("-h") && !qApp->arguments().contains("-help") && !qApp->arguments().contains("--help") && !qApp->arguments().contains("/?")) {
         filename = QFileInfo(filename).absoluteFilePath();

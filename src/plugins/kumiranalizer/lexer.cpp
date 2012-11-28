@@ -1276,7 +1276,10 @@ QString LexerPrivate::retvalKeyword = QString();
 QString Lexer::testName(const QString &name)
 {
     if ( name.isEmpty() )
-        return 0;
+        return QString();
+
+//    if (name==d->retvalKeyword)
+//        return QString();
 
 
     // Check for HEX-constant
