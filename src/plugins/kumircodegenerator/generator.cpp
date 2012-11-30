@@ -793,6 +793,8 @@ void Generator::findFunction(const AST::Algorhitm *alg, quint8 &module, quint16 
                     if (!l_externs.contains(ext))
                         l_externs << ext;
                 }
+                if (mod->builtInID)
+                    module = mod->builtInID;
                 return;
             }
         }

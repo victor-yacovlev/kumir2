@@ -5,8 +5,7 @@
 
 #include "dataformats/ast_variable.h"
 #include "errormessages/errormessages.h"
-#include "stdlib/integeroverflowchecker.h"
-#include "stdlib/doubleoverflowchecker.h"
+
 
 #define BADNAME_KEYWORD TN_BAD_NAME_3
 #define BADNAME_OPERATOR TN_BAD_NAME_1
@@ -2493,7 +2492,8 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
             bool integerOverflow = false;
 
             if (pt==AST::TypeInteger) {
-                integerOverflow = !StdLib::IntegerOverflowChecker::checkFromString(val);
+                //integerOverflow = !StdLib::IntegerOverflowChecker::checkFromString(val);
+                // TODO check integer value from string
             }
             if (ct==AST::TypeReal) {
                 static const QString expFormSymbols = QString::fromUtf8("eEеЕ01234567890");
@@ -2544,13 +2544,14 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
             }
 
             if (pt==AST::TypeReal || integerOverflow) {
-                if (!StdLib::DoubleOverflowChecker::checkFromString(val)) {
-                    for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
-                        Lexem * lx = * it;
-                        lx->error = _("Real constant too big");
-                    }
-                    return QVariant::Invalid;
-                }
+//                if (!StdLib::DoubleOverflowChecker::checkFromString(val)) {
+//                    for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
+//                        Lexem * lx = * it;
+//                        lx->error = _("Real constant too big");
+//                    }
+//                    return QVariant::Invalid;
+//                }
+                // TODO check real value for overflow
                 ct = AST::TypeReal;
             }
 

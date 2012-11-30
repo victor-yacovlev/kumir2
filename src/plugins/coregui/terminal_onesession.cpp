@@ -1,6 +1,5 @@
 #include "terminal_onesession.h"
 #include "terminal.h"
-#include "stdlib/genericinputoutput.h"
 #include "stdlib/kumirstdlib.hpp"
 namespace Terminal {
 

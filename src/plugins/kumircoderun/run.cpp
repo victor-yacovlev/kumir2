@@ -1,5 +1,4 @@
 #include "stdlib/kumirstdlib.hpp"
-#include "stdlib/kumstdlib.h"
 #include "vm/variant.hpp"
 #include "vm/vm.hpp"
 #include "run.h"

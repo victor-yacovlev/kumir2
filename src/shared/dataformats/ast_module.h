@@ -80,6 +80,8 @@ struct ABSTRACTSYNTAXTREE_EXPORT Module {
     /** Public interface of module */
     struct ModuleHeader header;
 
+    quint8 builtInID;
+
     /** Module internal representation */
     struct ModuleImplementation impl;
 

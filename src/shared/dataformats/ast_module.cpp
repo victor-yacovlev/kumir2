@@ -9,6 +9,7 @@ namespace AST {
 
 Module::Module()
 {
+    builtInID = 0;
     header.type = ModTypeUser;
     header.enabled = false;
 }

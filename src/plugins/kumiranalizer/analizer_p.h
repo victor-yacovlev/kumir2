@@ -32,6 +32,7 @@ struct AnalizerPrivate
         SubjStatements
     };
 
+    std::vector<Shared::ActorInterface*> builtinModules;
     class Analizer * q;
     class Lexer * lexer;
     class PDAutomata * pdAutomata;
@@ -40,7 +41,7 @@ struct AnalizerPrivate
 
     static QString StandartFunctionsModuleName;
 
-    void createModuleFromActor(const Shared::ActorInterface * actor);
+    void createModuleFromActor(const Shared::ActorInterface * actor, uint8_t forcedId);
 
 
     QStringList sourceText;

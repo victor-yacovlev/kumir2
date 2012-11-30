@@ -1,4 +1,3 @@
-add_subdirectory(st_funct)
 add_subdirectory(kumiranalizer)
 add_subdirectory(kumircodegenerator)
 #add_subdirectory(kumirnativegenerator)

@@ -53,7 +53,7 @@ qt4_add_resources(QRC_SOURCES ${RESOURCES})
 copySpecFile(CoreGUI)
 add_library(CoreGUI SHARED ${UI_SOURCES} ${MOC_SOURCES} ${SOURCES} ${QRC_SOURCES})
 handleTranslation(CoreGUI)
-target_link_libraries(CoreGUI ${QT_LIBRARIES} ${EXTRA_LIBS} ExtensionSystem DataFormats KumirStdLib Widgets)
+target_link_libraries(CoreGUI ${QT_LIBRARIES} ${EXTRA_LIBS} ExtensionSystem DataFormats Widgets)
 
 copyResources(coregui)
 install(TARGETS CoreGUI DESTINATION ${PLUGINS_DIR})

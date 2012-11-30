@@ -591,7 +591,7 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
     uint32_t algorithm = alg;
     uint32_t p = module | algorithm;
 
-    if (mod==0x00)
+    if (mod!=0xFF && (mod & 0xF0)) // 0xF0 ... 0xFE -- builtin modules
         do_stdcall(alg);
     else if (mod==0xFF)
         do_specialcall(alg);

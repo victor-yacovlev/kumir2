@@ -7,6 +7,7 @@
 #include "syntaxanalizer.h"
 #include "errormessages/errormessages.h"
 #include "kumiranalizerplugin.h"
+#include "stdlibmodules.h"
 
 using namespace Shared;
 
@@ -99,18 +100,16 @@ AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin, Analizer *qq)
     lexer = new Lexer(q);
     pdAutomata = new PDAutomata(q);
     analizer = new SyntaxAnalizer(lexer, q);
-//    qDebug() << lexer->metaObject()->className();
-//    qDebug() << pdAutomata->metaObject()->className();
-//    qDebug() << analizer->metaObject()->className();
-    ActorInterface * stdFunct = qobject_cast<ActorInterface*>(plugin->myDependency("st_funct"));
-    Q_ASSERT_X(stdFunct, "constructor AnalizerPrivate", "Can't' load st_func module");
-    createModuleFromActor(stdFunct);
+    builtinModules.resize(16);
+    ActorInterface * stdFunct = new StdLibModules::RTL;
+    builtinModules[0] = stdFunct;
+    createModuleFromActor(stdFunct, 0xF0);
     QList<ExtensionSystem::KPlugin*> actors = plugin->loadedPlugins("Actor*");
     foreach (QObject *o, actors) {
         ActorInterface * actor = qobject_cast<ActorInterface*>(o);
         if (actor) {
 //            qDebug() << "Loading actor " << actor->name();
-            createModuleFromActor(actor);
+            createModuleFromActor(actor, 0);
         }
     }
 }
@@ -321,9 +320,10 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
 
 QString AnalizerPrivate::StandartFunctionsModuleName = "Standart functions";
 
-void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor)
+void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor, uint8_t forcedId)
 {
     AST::Module * mod = new AST::Module();
+    mod->builtInID = forcedId;
     mod->header.type = AST::ModTypeExternal;
     mod->header.name = actor->name();
     mod->header.enabled = mod->header.name==StandartFunctionsModuleName;

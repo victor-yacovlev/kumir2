@@ -20,6 +20,6 @@ qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 copySpecFile(KumirCodeRun)
 add_library(KumirCodeRun SHARED ${MOC_SOURCES} ${SOURCES})
 handleTranslation(KumirCodeRun)
-target_link_libraries(KumirCodeRun ${QT_LIBRARIES} ExtensionSystem DataFormats KumirStdLib)
+target_link_libraries(KumirCodeRun ${QT_LIBRARIES} ExtensionSystem)
 
 install(TARGETS KumirCodeRun DESTINATION ${PLUGINS_DIR})

@@ -21,19 +21,19 @@ enum EvaluationStatus {
 class ActorInterface
 {
 public:
-    virtual QStringList funcList() const =0; // List of public functions;
-    virtual QString name() const =0;
-    virtual QString mainIconName() const = 0;
-    virtual QString pultIconName() const = 0;
-    virtual QVariant     result() const =0;
-    virtual QVariantList algOptResults() const =0;//optional results
-    virtual class QWidget * mainWidget()=0;
-    virtual class QWidget * pultWidget()=0;
-    virtual QList<class QMenu*> moduleMenus() const = 0;
-    virtual void reset() = 0;
-    virtual void setAnimationEnabled(bool enabled) = 0;
-    virtual EvaluationStatus evaluate(quint32 no, const QVariantList & args) = 0;
-    virtual QString errorText() const = 0;
+    inline virtual QStringList funcList() const { return QStringList(); } // List of public functions;
+    inline virtual QString name() const { return QString(); }
+    inline virtual QString mainIconName() const {return QString(); }
+    inline virtual QString pultIconName() const {return QString(); }
+    inline virtual QVariant     result() const { return QVariant::Invalid; }
+    inline virtual QVariantList algOptResults() const { return QVariantList(); }
+    inline virtual class QWidget * mainWidget() { return 0; }
+    inline virtual class QWidget * pultWidget() { return 0; }
+    inline virtual QList<class QMenu*> moduleMenus() const { return QList<class QMenu*>(); }
+    inline virtual void reset() {};
+    inline virtual void setAnimationEnabled(bool ) {}
+    inline virtual EvaluationStatus evaluate(quint32 , const QVariantList & ) { return ES_Error; }
+    inline virtual QString errorText() const { return QString(); }
 };
 
 }

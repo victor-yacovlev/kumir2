@@ -59,6 +59,7 @@ private:
     const AST::Algorhitm * findAlgorhitmByLine(const AST::Module * mod, int lineNo) const;
     struct AnalizerPrivate * d;
 
+
 };
 
 } // namespace KumirAnalizer
