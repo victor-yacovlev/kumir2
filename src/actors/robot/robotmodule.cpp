@@ -46,9 +46,11 @@ namespace ActorRobot {
         upCharItm=NULL;
         downCharItm=NULL;
         markItm=NULL;
+        radItm=NULL;
+        tempItm=NULL;
         
-        font.setPixelSize(8);
-        font.setPointSize(8);
+        font.setPixelSize(9);
+        font.setPointSize(9);
         font.setStyle(QFont::StyleNormal);
         font.setBold(true);
         font.setStyleHint(QFont::SansSerif);
@@ -58,6 +60,7 @@ namespace ActorRobot {
         TextColor=QColor(sett->value("Robot/TextColor","#FFFFFF").toString());
         upCharFld=NULL;
         downCharFld=NULL;
+        
     }
     
     FieldItm::~FieldItm()
@@ -133,6 +136,16 @@ namespace ActorRobot {
             if(Scene)Scene->removeItem(downCharFld);
             downCharFld=NULL;
         }
+        if(radItm)
+        {
+            if(Scene)Scene->removeItem(radItm);
+            radItm=NULL;
+        }
+        if(tempItm)
+        {
+            if(Scene)Scene->removeItem(tempItm);
+            tempItm=NULL;
+        }
     }
     
     
@@ -143,6 +156,8 @@ namespace ActorRobot {
         
         
         upCharItm->setDefaultTextColor(TextColor);
+        downCharItm->setDefaultTextColor(TextColor);
+
         
     };
     
@@ -201,21 +216,68 @@ namespace ActorRobot {
         showDownChar(upLeftCornerX,upLeftCornerY,size);
         showMark(upLeftCornerX,upLeftCornerY,size);
     }
+    void FieldItm::showRTItm(qreal upLeftCornerX, qreal upLeftCornerY, int size)
+    {
+       
+        if (radItm) {
+            if (Scene)
+                Scene->removeItem(radItm);
+            delete radItm;
+            radItm = NULL;
+        }
+        
+        
+        if (tempItm) {
+            if (Scene)
+                Scene->removeItem(tempItm);
+            delete tempItm;
+            tempItm = NULL;
+        }
+        
+     
+        radItm=Scene->addText("R: "+QString::number(radiation),font);
+        radItm->setDefaultTextColor(TextColor);
+        radItm->setPos(upLeftCornerX+1,upLeftCornerY+1);
+        radItm->setZValue(1);
+        
+        tempItm=Scene->addText("T: "+QString::number(temperature),font);
+        tempItm->setDefaultTextColor(TextColor);
+        tempItm->setPos(upLeftCornerX+1,upLeftCornerY+size-16);
+        tempItm->setZValue(1);
+        
+
+    }
+    void FieldItm::hideRTItm()
+    {
+        if (radItm) {radItm->hide();};
+        if(tempItm){tempItm->hide();};
+    }
     void FieldItm::showCharFld(qreal upLeftCornerX,qreal upLeftCornerY,int field_size)
     {
-        upCharFld=new QGraphicsRectItem(upLeftCornerX+3,upLeftCornerY+3,7,11);
+        
+         if(upCharFld) Scene->removeItem(upCharFld);
+        upCharFld=new QGraphicsRectItem(upLeftCornerX+4,upLeftCornerY+4,7,11);
+        upCharFld->setPen(QPen(Qt::NoPen));
+        upCharFld->setBrush(QBrush(QColor(60,115,175)));
         Scene->addItem(upCharFld);
-        upCharFld->setZValue(200);
+        upCharFld->setZValue(0.2);
         
-        
-        downCharFld=new QGraphicsRectItem(upLeftCornerX+3,field_size+upLeftCornerY-14,7,11);
+         if(downCharFld) Scene->removeItem(downCharFld);
+        downCharFld=new QGraphicsRectItem(upLeftCornerX+4,field_size+upLeftCornerY-14,7,11);
+        downCharFld->setPen(QPen(Qt::NoPen));
+        downCharFld->setBrush(QBrush(QColor(60,115,175)));
         Scene->addItem(downCharFld);
-        downCharFld->setZValue(200);
+        downCharFld->setZValue(0.2);
     };
     void FieldItm::hideCharFld()
     {
        
        if(upCharFld) Scene->removeItem(upCharFld);
+        if(!Scene)
+        {
+        qDebug()<<"Scene is NULL!";
+            return;
+        }
        if(downCharFld)Scene->removeItem(downCharFld);
     };
     void FieldItm::showUpChar(qreal upLeftCornerX, qreal upLeftCornerY, int size)
@@ -230,7 +292,7 @@ namespace ActorRobot {
         if (upChar.isPrint() && upChar!=' ') {
             upCharItm=Scene->addText(upChar,font);
             upCharItm->setDefaultTextColor(TextColor);
-            upCharItm->setPos(upLeftCornerX+2,upLeftCornerY+2);
+            upCharItm->setPos(upLeftCornerX+1,upLeftCornerY+1);
             upCharItm->setZValue(1);
         }
     }
@@ -248,7 +310,7 @@ namespace ActorRobot {
         if (downChar.isPrint() && downChar!=' ') {
             downCharItm=Scene->addText(downChar,font);
             downCharItm->setDefaultTextColor(TextColor);
-            downCharItm->setPos(upLeftCornerX+2,upLeftCornerY+size-16);
+            downCharItm->setPos(upLeftCornerX+1,upLeftCornerY+size-16);
             downCharItm->setZValue(1);
         }
     }
@@ -668,6 +730,7 @@ namespace ActorRobot {
         keyCursor=new QGraphicsLineItem(0,0,0,0);
         this->addItem(keyCursor); 
         keyCursor->hide();
+        radSpinBox=new QDoubleSpinBox();
     };
   void RoboField::setEditMode( bool EditMode) 
     { 
@@ -746,7 +809,7 @@ namespace ActorRobot {
         destroyField();
         // clear();
         //debug();
-        
+        showWall = new QGraphicsLineItem(0,0,0,0);
         if(!editMode)Color = NormalColor;//Normal Color
         else Color=EditColor;//Edit Color
         this->setBackgroundBrush (QBrush(Color));
@@ -765,9 +828,9 @@ namespace ActorRobot {
                
                 //Отрисовываем бордюры
                 row->at(j)->setScene(this);
-                if(textEditMode)row->at(j)->showCharFld(upLeftCorner(i,j).x(),
-                                        upLeftCorner(i,j).y(),fieldSize);
-                else row->at(j)->hideCharFld();
+//                if(textEditMode)row->at(j)->showCharFld(upLeftCorner(i,j).x(),
+//                                        upLeftCorner(i,j).y(),fieldSize);
+//                else row->at(j)->hideCharFld();
                 
                 
                 if(!row->at(j)->hasUpSep())
@@ -874,15 +937,34 @@ namespace ActorRobot {
    void RoboField::setTextEditMode(bool flag)
     {
         clickCell=QPair<int,int>(-1,-1);
-        textEditMode=flag;
+        if(flag)
+        {
+            keyCursor= new QGraphicsLineItem(0,0,0,0);
+            this->addItem(keyCursor);
+        }
+       
         if(radEditMode)radEditMode=!flag;
        // destroyField();
        // drawField(FIELD_SIZE_SMALL);
-        redrawEditFields();
-        if(!textEditMode)timer->stop();
+
+        if(textEditMode && !flag)
+        {timer->stop();
         keyCursor->hide();
-        
+        };
+         textEditMode=flag;
+        redrawEditFields();
+        redrawRTFields();
     };
+   void RoboField::setRadEditMode(bool flag)
+    {
+     clickCell=QPair<int,int>(-1,-1);
+     QGraphicsView * view=views().first();   
+     radSpinBox->setParent(view);
+     radEditMode=flag;  
+     redrawEditFields();
+     redrawRTFields();   
+    };
+    
     void RoboField::destroyRobot()
     {
         if(robot)
@@ -911,6 +993,21 @@ namespace ActorRobot {
                 if(textEditMode)row->at(j)->showCharFld(upLeftCorner(i,j).x(),
                                                         upLeftCorner(i,j).y(),FIELD_SIZE_SMALL);
                 else row->at(j)->hideCharFld();
+                
+            };
+        };
+    };
+    void RoboField::redrawRTFields()
+    {
+        for(int i=0;i<rows();i++) //Cikl po kletkam
+        {
+            QList<FieldItm*>* row=&Items[i];
+            for(int j=0;j<columns();j++)
+            {
+                
+                if(radEditMode)row->at(j)->showRTItm(upLeftCorner(i,j).x(),
+                                                        upLeftCorner(i,j).y(),FIELD_SIZE_SMALL);
+                else row->at(j)->hideRTItm();
                 
             };
         };
@@ -1018,6 +1115,13 @@ namespace ActorRobot {
        
         this->removeItem(showWall);
         delete showWall;
+        if(radEditMode || textEditMode)
+          {
+              showWall=new QGraphicsLineItem(0,0,0,0);
+              this->addItem(showWall);
+              return;
+              
+          }
         showWall=new QGraphicsLineItem(upLeftCorner(row,col).x(),
                                                                    upLeftCorner(row,col).y(),
                                                                    upLeftCorner(row,col).x()+fieldSize,
@@ -1034,6 +1138,12 @@ namespace ActorRobot {
     {
         this->removeItem(showWall);
         delete showWall;
+        if(radEditMode || textEditMode)
+        {
+            showWall=new QGraphicsLineItem(0,0,0,0);
+            this->addItem(showWall);
+            return;
+        }
         showWall=new QGraphicsLineItem(upLeftCorner(row,col).x(),
                                                                      upLeftCorner(row,col).y()+fieldSize,
                                                                      upLeftCorner(row,col).x()+fieldSize,
@@ -1050,6 +1160,12 @@ namespace ActorRobot {
     {
         this->removeItem(showWall);
        if(showWall) delete showWall;
+        if(radEditMode || textEditMode)
+        {
+            showWall=new QGraphicsLineItem(0,0,0,0);
+            this->addItem(showWall);
+            return;
+        };
         showWall=new QGraphicsLineItem(upLeftCorner(row,col).x(),
                                                                      upLeftCorner(row,col).y(),
                                                                      upLeftCorner(row,col).x(),
@@ -1066,7 +1182,15 @@ namespace ActorRobot {
     {
         this->removeItem(showWall);
         delete showWall;
-       showWall=new QGraphicsLineItem(upLeftCorner(row,col).x()+fieldSize,
+        
+        if(radEditMode || textEditMode)
+        {
+            showWall=new QGraphicsLineItem(0,0,0,0);
+            this->addItem(showWall);
+            return;
+            
+        };
+        showWall=new QGraphicsLineItem(upLeftCorner(row,col).x()+fieldSize,
                                                                       upLeftCorner(row,col).y(),
                                                                       upLeftCorner(row,col).x()+fieldSize,
                                                                       upLeftCorner(row,col).y()+fieldSize);
@@ -1164,13 +1288,13 @@ namespace ActorRobot {
         
         for (int i = -1; i < columns(); i++) //Vertikalnie linii
         {
-            setka.append(this->addLine(i * FIELD_SIZE_SMALL+ddx+FIELD_SIZE_SMALL/2+1 , -FIELD_SIZE_SMALL , i * FIELD_SIZE_SMALL+ddx+1+FIELD_SIZE_SMALL/2,(rows()+1) * FIELD_SIZE_SMALL,Pen ));
+            setka.append(this->addLine(i * FIELD_SIZE_SMALL+ddx+FIELD_SIZE_SMALL/2+2 , -FIELD_SIZE_SMALL , i * FIELD_SIZE_SMALL+ddx+2+FIELD_SIZE_SMALL/2,(rows()+1) * FIELD_SIZE_SMALL,Pen ));
             setka.last()->setZValue(0.5);
         }
         
         for (int i = -1; i < rows(); i++)//Horizontalnie linii
         {
-            setka.append(this->addLine(-FIELD_SIZE_SMALL, i * FIELD_SIZE_SMALL+ddx-3+FIELD_SIZE_SMALL/2 ,(columns()+1 )* FIELD_SIZE_SMALL, i * FIELD_SIZE_SMALL+ddx-3+FIELD_SIZE_SMALL/2,Pen));
+            setka.append(this->addLine(-FIELD_SIZE_SMALL, i * FIELD_SIZE_SMALL+ddx-1+FIELD_SIZE_SMALL/2 ,(columns()+1 )* FIELD_SIZE_SMALL, i * FIELD_SIZE_SMALL+ddx-1+FIELD_SIZE_SMALL/2,Pen));
             setka.last()->setZValue(0.5);
         }
        
@@ -1853,6 +1977,7 @@ namespace ActorRobot {
     void RoboField::mousePressEvent ( QGraphicsSceneMouseEvent * mouseEvent )
     {
         qDebug()<<" Field Mouse event";
+        
         if(!editMode)
         {
             pressed=true;
@@ -1860,20 +1985,52 @@ namespace ActorRobot {
             perssX=mouseEvent->pos().x();
             pressY=mouseEvent->pos().y();
               mouseEvent->accept();
-            return;};
+            return;
+        };
+        
+        
         qDebug()<<" Edit mouse press event";
         QPointF scenePos=mouseEvent->scenePos();
-        int rowClicked=scenePos.y()/fieldSize;
-        int colClicked=(scenePos.x()-3)/fieldSize;
+        float rc=float(scenePos.y())/float(fieldSize);
+        if(rc<0)rc=-1;
+        float cc=float(scenePos.x()-3)/float(fieldSize);
+        if(cc<0)cc=-1;
+        int rowClicked=rc;
+        int colClicked=cc;
+        qDebug()<<"RC:"<<rowClicked<<"CC:"<<colClicked<<" sc pos y:"<<scenePos.y()<<" scenePos.x()"<<scenePos.x()<<"";
         if(textEditMode)
         {
-            this->removeItem(keyCursor);
+            pressD=false;
+            if(keyCursor)this->removeItem(keyCursor);
             clickCell=QPair<int,int>(rowClicked,colClicked);
-            showCursorUp(rowClicked,colClicked);
+            if((scenePos.y()-rowClicked*fieldSize)>fieldSize/2)
+            {
+                pressD=true;
+                showCursorDown(rowClicked,colClicked);
+            }
+             else showCursorUp(rowClicked,colClicked);
             return;
         }
-        if(radEditMode)
-        {
+        if(radEditMode)//if radiation || temp edit mode
+        {   
+            if(clickCell!=QPair<int,int>(rowClicked,colClicked))
+             {
+               if(radSpinBox->isVisible()) getFieldItem(clickCell.first,clickCell.second)->radiation=radSpinBox->value();
+                 redrawRTFields();  
+             }
+            if(rowClicked>rows() || colClicked>columns() ||rowClicked<0 || colClicked<0)//clik mimio polya
+            {
+              radSpinBox->hide();
+             return;
+            }
+            clickCell=QPair<int,int>(rowClicked,colClicked);
+            radSpinBox->show();
+   
+            QGraphicsView * view=views().first();  //current view
+            QPoint clickViewPos=view->mapFromScene(mouseEvent->scenePos().x(), mouseEvent->scenePos().y());
+            radSpinBox->setValue(getFieldItem(rowClicked,colClicked)->radiation);//set radiation
+            radSpinBox->move(clickViewPos.x(),clickViewPos.y());
+            qDebug()<<"Show spin box"<<clickViewPos.x()<<" pos y"<<clickViewPos.y();
             return;
         }
 
@@ -1976,6 +2133,7 @@ namespace ActorRobot {
     void RoboField::mouseMoveEvent ( QGraphicsSceneMouseEvent * mouseEvent )
     {
         if(!editMode)return;
+        if(textEditMode)return;
      if(!pressed)
      {
          QPointF scenePos=mouseEvent->scenePos();
@@ -2072,16 +2230,33 @@ namespace ActorRobot {
     };   
     void RoboField::keyPressEvent ( QKeyEvent * keyEvent )
     {
-        if(!editMode)return;
         if(clickCell==QPair<int,int>(-1,1))return;
+        if(radSpinBox->isVisible() &&radEditMode ) 
+        {
+         if(keyEvent->key()==Qt::Key_Enter)getFieldItem(clickCell.first,clickCell.second)->radiation=radSpinBox->value();   
+         if(keyEvent->key()==Qt::Key_Escape)radSpinBox->hide();
+            redrawRTFields();
+        }
+        redrawRTFields();
+        
+        if(!editMode)return;
+      
         qDebug()<<"KEY PRESSD"<<keyEvent->text ();
         int rowP=clickCell.first;
         int colP=clickCell.second;
-        if(keyEvent->text ().isNull() || keyEvent->text ().isEmpty())return;
+        if(keyEvent->text ().isNull() || keyEvent->text ().isEmpty() || keyEvent->text()=="/n" )return;
+        if(!pressD)//Pressed up symbol
+        {
         getFieldItem(rowP,colP)->upChar=keyEvent->text ().at(0);
         getFieldItem(rowP,colP)->showUpChar
         (upLeftCorner(rowP,colP).x(),upLeftCorner(rowP,colP).y(),fieldSize);
-        wasEdit=true;
+        }else
+        {
+            getFieldItem(rowP,colP)->downChar=keyEvent->text ().at(0);
+            getFieldItem(rowP,colP)->showDownChar
+            (upLeftCorner(rowP,colP).x(),upLeftCorner(rowP,colP).y(),fieldSize);
+        }
+            wasEdit=true;
     };  
 
     void RoboField::setColorFromSett()
@@ -2197,7 +2372,15 @@ namespace ActorRobot {
     };
     void RoboField::showCursorDown(int row,int col)
     {
+        timer->start(500);
         
+        
+        
+        
+        keyCursor=new QGraphicsLineItem(upLeftCorner(row,col).x()+4,upLeftCorner(row,col).y()+18,upLeftCorner(row,col).x()+4,upLeftCorner(row,col).y()+29);
+        keyCursor->setPen(QPen(QColor(Qt::white)));
+        keyCursor->setZValue(210);
+        this->addItem(keyCursor);   
     };
     void RoboField::timerTic()
     {
@@ -2715,12 +2898,18 @@ int RobotModule::SaveToFile(QString p_FileName)
         textEditBtn=new QToolButton(this);
         textEditBtn->hide();
         textEditBtn->setCheckable ( true );
+        radEditBtn=new QToolButton(this);
+        radEditBtn->hide();
+        radEditBtn->setCheckable ( true );
+        radEditBtn->move(textEditBtn->height(),0);
         connect(textEditBtn,SIGNAL(clicked()),this,SLOT(changeEditMode()));
+        connect(radEditBtn,SIGNAL(clicked()),this,SLOT(changeEditMode()));
     };
     
     void RobotView::showButtons(bool flag)
     {
         textEditBtn->setVisible(flag);
+        radEditBtn->setVisible(flag);
     };
     void RobotView::mousePressEvent ( QMouseEvent * event )
     {
@@ -2782,6 +2971,9 @@ int RobotModule::SaveToFile(QString p_FileName)
     };
 void RobotView::changeEditMode()
     {
+        if(textEditBtn->isChecked ())radEditBtn->setChecked(false);
+        if(radEditBtn->isChecked ())textEditBtn->setChecked(false);
         robotField->setTextEditMode(textEditBtn->isChecked ());  
+        robotField->setRadEditMode(radEditBtn->isChecked ()); 
     };
 } // $namespace

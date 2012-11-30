@@ -55,6 +55,13 @@
 		                    "ru_RU": "Загрузить обстановку..."
 		                },
 						"icon": "file-open"
+					},	
+                    {
+						"title": {
+							"ascii": "Load Rescent...", 
+		                    "ru_RU": "Недавние обстановки"
+		                },
+						"icon": "file-rescent"
 					},
 					{
 						"title": {
