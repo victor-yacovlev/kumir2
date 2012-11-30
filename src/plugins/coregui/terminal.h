@@ -31,6 +31,10 @@ public slots:
     void saveAll();
     void editLast();
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
+    inline QAction * actionSaveAll() const { return a_saveAll; }
+    inline QAction * actionSaveLast() const { return a_saveLast; }
+    inline QAction * actionEditLast() const { return a_editLast; }
+    inline QAction * actionClear() const { return a_clear; }
 
 protected:
     void focusInEvent(QFocusEvent *);
@@ -53,7 +57,7 @@ private:
     QAction * a_saveLast;
     QAction * a_editLast;
     QAction * a_clear;
-    QToolBar * m_toolBar;
+//    QToolBar * m_toolBar;
     QGridLayout * m_layout;
 
 

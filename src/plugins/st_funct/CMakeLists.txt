@@ -9,7 +9,6 @@ set(SOURCES
 )
 
 
-
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 copySpecFile(st_funct)
 add_library(st_funct SHARED ${MOC_SOURCES} ${SOURCES})

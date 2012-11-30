@@ -463,13 +463,15 @@ namespace ActorRobot {
         int LoadFromFile(QString p_FileName);
         int SaveToFile(QString p_FileName);
         QWidget* m_mainWidget;
-        QWidget* m_pultWidget;
+        class QDeclarativeView * m_pultWidget;
         RoboField* field;
         RoboField * startField;
         bool animation;
         RobotView * view;
         QString curDir;
         bool pressed;
+    signals:
+        void sendToPultLog(const QVariant &);
       
     }; // RobotModule
 

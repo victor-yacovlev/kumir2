@@ -40,11 +40,7 @@ public:
                              , DocumentType type
                              , bool enableToolBar);
 
-    QDockWidget * addSecondaryComponent(const QString & title
-                               , QWidget * c
-                               , const QList<QAction*> & toolbarActions
-                               , const QList<QMenu*> & menuActions
-                               , DockWindowType type);
+
     ~MainWindow();
     void disableTabs();
     void disablePascalProgram();
@@ -90,7 +86,7 @@ private slots:
     void setupStatusbarForTab();
     void setTitleForTab(int index);
     void checkCounterValue();
-    void checkActorWindowTitles();
+
     void addToRecent(const QString &fileName);
     void handleDocumentCleanChanged(bool v);
     void handleTabTitleChange(const QString & title);
@@ -105,9 +101,9 @@ private:
     bool b_workspaceSwitching;
 
     QAction * a_notAvailable;
-    QList<class QDockWidget*> l_dockWindows;
 
     QList<QWidget*> l_tabDependentStatusbarWidgets;
+
     QMenu * menu_empty;
 
     QString suggestNewFileName(const QString &suffix) const;

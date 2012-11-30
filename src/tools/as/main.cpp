@@ -1,7 +1,12 @@
-#include <QtCore>
 #include <iostream>
+#include <fstream>
+#include "stdlib/kumirstdlib.hpp"
+#include "vm/variant.hpp"
+#include "vm/vm_bytecode.hpp"
 
-#include "shared/dataformats/bytecode.h"
+#if !defined(WIN32) && !defined(_WIN32)
+#include <sys/stat.h>
+#endif
 
 int usage(const char * programName)
 {
@@ -16,90 +21,84 @@ int usage(const char * programName)
     return 127;
 }
 
-int assemble(const QString & inFileName, const QString & outFileName)
+int assemble(const std::string & inFileName, const std::string & outFileName)
 {
-    QFile inFile(inFileName);
-    if (inFile.open(QIODevice::ReadOnly)) {
-        QTextStream ts(&inFile);
-        Bytecode::Data data;
-        ts >> data;
-        inFile.close();
-        QFile out(outFileName);
-        if (out.open(QIODevice::WriteOnly)) {
-            QDataStream ds(&out);
-            ds << data;
-            out.close();
-            QFile::Permissions perms = out.permissions();
-            perms |= QFile::ExeOther | QFile::ExeOwner | QFile::ExeUser | QFile::ExeGroup;
-            out.setPermissions(perms);
-        }
-        else {
-            std::cerr << "Can't open " << outFileName.toLocal8Bit().data() << std::endl;
-            return 2;
-        }
-    }
-    else {
-        std::cerr << "Can't open " << inFileName.toLocal8Bit().data() << std::endl;
+    std::ifstream inFile(inFileName);
+    if (!inFile.is_open()) {
+        std::cerr << "Can't open " << inFileName << std::endl;
         return 1;
     }
+    Bytecode::Data data;
+    Bytecode::bytecodeFromTextStream(inFile, data);
+    inFile.close();
+    std::ofstream outFile(outFileName);
+    if (!outFile.is_open()) {
+        std::cerr << "Can't open " << outFileName << std::endl;
+        return 2;
+    }
+    Bytecode::bytecodeToDataStream(outFile, data);
+    outFile.close();
+#if !defined(WIN32) && !defined(_WIN32)
+    static const mode_t mode = S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH;
+    chmod(outFileName.c_str(), mode);
+#endif
     return 0;
 }
 
-int disassemble(const QString & inFileName, const QString & outFileName)
+int disassemble(const std::string & inFileName, const std::string & outFileName)
 {
-    QFile inFile(inFileName);
-    if (inFile.open(QIODevice::ReadOnly)) {
-        QDataStream ds(&inFile);
-        Bytecode::Data data;
-        ds >> data;
-        inFile.close();
-        QFile out(outFileName);
-        if (out.open(QIODevice::WriteOnly)) {
-            QTextStream ts(&out);
-            ts << data;
-            out.close();
-        }
-        else {
-            std::cerr << "Can't open " << outFileName.toLocal8Bit().data() << std::endl;
-            return 2;
-        }
-    }
-    else {
-        std::cerr << "Can't open " << inFileName.toLocal8Bit().data() << std::endl;
+    std::ifstream inFile(inFileName);
+    if (!inFile.is_open()) {
+        std::cerr << "Can't open " << inFileName << std::endl;
         return 1;
     }
+    Bytecode::Data data;
+    Bytecode::bytecodeFromDataStream(inFile, data);
+    inFile.close();
+    std::ofstream outFile(outFileName);
+    if (!outFile.is_open()) {
+        std::cerr << "Can't open " << outFileName << std::endl;
+        return 2;
+    }
+    Bytecode::bytecodeToTextStream(outFile, data);
+    outFile.close();
+#if !defined(WIN32) && !defined(_WIN32)
+    static const mode_t mode = S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH;
+    chmod(outFileName.c_str(), mode);
+#endif
     return 0;
 }
 
 int main(int argc, char *argv[])
 {
-    QString inFileName;
-    QString outFileName;
+    std::string inFileName;
+    std::string outFileName;
     bool disassembler = false;
-    QString suffix = ".kod";
-    QString inSuffix = ".ks";
+    std::string suffix = ".kod";
+    std::string inSuffix = ".ks";
     for (int i=1; i<argc; i++) {
-        QString arg = QString::fromLocal8Bit(argv[i]);
-        if (arg.startsWith("-o=")) {
-            outFileName= arg.mid(3);
+        std::string  arg(argv[i]);
+        if (arg.at(0)=='-') {
+            if (arg.length()>3 && arg.at(1)=='o' && arg.at(2)=='=')
+                outFileName = arg.substr(3);
+            else if (arg.length()==2 && (arg.at(1)=='d' || arg.at(1)=='D') ) {
+                disassembler = true;
+                suffix = ".ks";
+                inSuffix = ".kod";
+            }
         }
-        if (!arg.startsWith("-"))
+        else
             inFileName = arg;
-        if (arg.startsWith("-d") || arg.startsWith("-D")) {
-            disassembler = true;
-            suffix = ".ks";
-            inSuffix = ".kod";
-        }
     }
-    if (inFileName.isEmpty())
+    if (inFileName.empty())
         return usage(argv[0]);
-    if (outFileName.isEmpty()) {
-        if (inFileName.endsWith(inSuffix)) {
-            outFileName = inFileName.left(inFileName.length()-inSuffix.length()) + suffix;
-        }
-        else {
+    if (outFileName.empty()) {
+        if (!disassembler && inFileName.substr(inFileName.length()-2)=="ks")
+            outFileName = inFileName.substr(0,inFileName.length()-3)+suffix;
+        else if (disassembler && inFileName.substr(inFileName.length()-3)=="kod")
+            outFileName = inFileName.substr(0,inFileName.length()-4)+suffix;
+        else
             outFileName = inFileName+suffix;
-        }
     }
     if (disassembler) {
         return disassemble(inFileName, outFileName);

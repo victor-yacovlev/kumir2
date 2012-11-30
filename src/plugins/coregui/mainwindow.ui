@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>754</width>
-    <height>554</height>
+    <width>744</width>
+    <height>544</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,33 +17,34 @@
    <enum>QTabWidget::Triangular</enum>
   </property>
   <property name="dockNestingEnabled">
-   <bool>true</bool>
-  </property>
-  <property name="dockOptions">
-   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks|QMainWindow::VerticalTabs</set>
+   <bool>false</bool>
   </property>
   <property name="unifiedTitleAndToolBarOnMac">
    <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <property name="leftMargin">
+   <layout class="QGridLayout" name="gridLayout">
+    <property name="margin">
      <number>0</number>
     </property>
-    <property name="topMargin">
-     <number>6</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
-     <number>0</number>
-    </property>
-    <item>
-     <widget class="CoreGUI::TabWidget" name="tabWidget">
-      <property name="documentMode">
-       <bool>true</bool>
+    <item row="0" column="0">
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
       </property>
+      <widget class="CoreGUI::TabWidget" name="tabWidget">
+       <property name="documentMode">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QWidget" name="bottomWidget" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>200</height>
+        </size>
+       </property>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -53,8 +54,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>754</width>
-     <height>23</height>
+     <width>744</width>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -92,6 +93,7 @@
      <string>Help</string>
     </property>
     <addaction name="actionUsage"/>
+    <addaction name="actionVariables"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -192,16 +194,22 @@
    <property name="shortcut">
     <string>Ctrl+Q</string>
    </property>
+   <property name="menuRole">
+    <enum>QAction::QuitRole</enum>
+   </property>
   </action>
   <action name="actionUsage">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Usage...</string>
+    <string>Manuals</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="actionAbout">
@@ -212,6 +220,9 @@
   <action name="actionPreferences">
    <property name="text">
     <string>Preferences...</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::PreferencesRole</enum>
    </property>
   </action>
   <action name="actionNew_pascal_program">
@@ -225,6 +236,20 @@
   <action name="actionRestore_previous_session">
    <property name="text">
     <string>Restore previous session</string>
+   </property>
+  </action>
+  <action name="actionVariables">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Variables</string>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
  </widget>

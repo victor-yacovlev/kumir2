@@ -23,6 +23,8 @@ class ActorInterface
 public:
     virtual QStringList funcList() const =0; // List of public functions;
     virtual QString name() const =0;
+    virtual QString mainIconName() const = 0;
+    virtual QString pultIconName() const = 0;
     virtual QVariant     result() const =0;
     virtual QVariantList algOptResults() const =0;//optional results
     virtual class QWidget * mainWidget()=0;

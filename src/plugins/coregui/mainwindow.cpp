@@ -52,6 +52,7 @@ MainWindow::MainWindow(Plugin * p) :
     connect(ui->actionSave_as, SIGNAL(triggered()), this, SLOT(saveCurrentFileAs()));
 
     gr_otherActions = new QActionGroup(this);
+    gr_otherActions->setExclusive(false);
 
     a_notAvailable = new QAction(this);
     a_notAvailable->setText(tr("No actions for this tab"));
@@ -87,7 +88,9 @@ MainWindow::MainWindow(Plugin * p) :
     connect(ui->actionUsage, SIGNAL(triggered()), this, SLOT(showUserManual()));
 
     installEventFilter(this);
+#ifndef Q_OS_MAC
     installEventFilter(menuBar());
+#endif
 
     ui->actionRecent_files->setMenu(new QMenu());
     connect(ui->actionRecent_files->menu(), SIGNAL(aboutToShow()), this, SLOT(prepareRecentFilesMenu()));
@@ -121,15 +124,16 @@ QString MainWindow::StatusbarWidgetCSS =
 
 void MainWindow::changeFocusOnMenubar()
 {
-    QMenu * firstMenu = menuBar()->findChild<QMenu*>();
-    if (!menuBar()->hasFocus()) {
-        menuBar()->setFocus();
+    QMenuBar * mb = menuBar();
+    QMenu * firstMenu = mb->findChild<QMenu*>();
+    if (!mb->hasFocus()) {
+        mb->setFocus();
         if (firstMenu) {
-            menuBar()->setActiveAction(firstMenu->menuAction());
+            mb->setActiveAction(firstMenu->menuAction());
         }
     }
     else {
-        menuBar()->setActiveAction(0);
+        mb->setActiveAction(0);
         setFocusOnCentralWidget();
     }
 }
@@ -218,25 +222,10 @@ void MainWindow::setFocusOnCentralWidget()
 void MainWindow::timerEvent(QTimerEvent *e)
 {
     checkCounterValue();
-    checkActorWindowTitles();
     e->accept();
 }
 
-void MainWindow::checkActorWindowTitles()
-{
-    QList<const KPlugin*> actors = PluginManager::instance()->loadedConstPlugins("Actor*");
-    foreach (const KPlugin* plugin, actors) {
-        ActorInterface * actor = qobject_cast<ActorInterface*>(plugin);
-        QWidget * mw = actor->mainWidget();
-        if (mw) {
-            foreach (QDockWidget * dw, l_dockWindows) {
-                if (dw->widget()==mw && !mw->windowTitle().isEmpty()) {
-                    dw->setWindowTitle(mw->windowTitle());
-                }
-            }
-        }
-    }
-}
+
 
 bool MainWindow::saveCurrentFile()
 {
@@ -708,45 +697,12 @@ TabWidgetElement * MainWindow::addCentralComponent(
     return element;
 }
 
-
-
-QDockWidget * MainWindow::addSecondaryComponent(const QString & title
-                                                , QWidget * c
-                                                , const QList<QAction*> & toolbarActions
-                                                , const QList<QMenu*> & menuActions
-                                                , DockWindowType type)
-{
-    QDockWidget * dock = new QDockWidget(title, this);
-    dock->setVisible(false);
-    dock->setWidget(c);
-    dock->setObjectName(title);
-    Q_UNUSED(toolbarActions);
-    if (type!=SubControl && type!=Help) {
-        ui->menuWindow->addAction(dock->toggleViewAction());
-        l_dockWindows << dock;
-    }
-    if (type!=Terminal) {
-        if (type!=SubControl && type!=Control && type!=Help) {
-            for (int i=0; i<menuActions.size(); i++) {
-                ui->menubar->addMenu(menuActions[i]);
-            }
-        }
-        dock->setFloating(true);
-    }
-    else {
-        dock->setFloating(false);
-        addDockWidget(Qt::BottomDockWidgetArea, dock, Qt::Horizontal);
-    }
-    return dock;
-}
-
-
-
 void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
 {
     QList<QMenu*> menus;
-    for (int i=0; i<menuBar()->children().size(); i++) {
-        QMenu * m = qobject_cast<QMenu*>(menuBar()->children()[i]);
+    QMenuBar * mb = menuBar();
+    for (int i=0; i<mb->children().size(); i++) {
+        QMenu * m = qobject_cast<QMenu*>(mb->children()[i]);
         if (m)
             menus << m;
     }
@@ -761,7 +717,7 @@ void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
             }
         }
         if (!found) {
-            QMenu * menu = new QMenu(title, menuBar());
+            QMenu * menu = new QMenu(title, mb);
             menu->setWindowTitle(menu->title());
             //            menu->setTearOffEnabled(true);
             if (tabDependent) {
@@ -775,7 +731,7 @@ void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
                 }
                 menu->addActions(actions);
             }
-            menuBar()->insertMenu(ui->menuWindow->menuAction(), menu);
+            mb->insertMenu(ui->menuWindow->menuAction(), menu);
         }
     }
 }
@@ -824,6 +780,7 @@ void MainWindow::loadSettings()
         move(r.topLeft());
     }
     restoreState(m_plugin->mySettings()->value(Plugin::MainWindowStateKey).toByteArray());
+    ui->splitter->restoreState(m_plugin->mySettings()->value(Plugin::MainWindowSplitterStateKey).toByteArray());
 }
 
 void MainWindow::saveSettings()
@@ -832,6 +789,7 @@ void MainWindow::saveSettings()
     QSettings * sett = m_plugin->mySettings();
     sett->setValue(Plugin::MainWindowGeometryKey, r);
     sett->setValue(Plugin::MainWindowStateKey, saveState());
+    sett->setValue(Plugin::MainWindowSplitterStateKey, ui->splitter->saveState());
 }
 
 void MainWindow::restoreSession()
@@ -1012,7 +970,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
     }
 
     e->accept();
-
+    qApp->quit();
 }
 
 void MainWindow::switchWorkspace() {
@@ -1168,7 +1126,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
         if (f.open(QIODevice::ReadOnly)) {
             QByteArray rawData = f.readAll();
             f.close();
-            QStringList lines = KumFile::readRawDataAsString(rawData).split("\n");
+            QStringList lines = KumFile::readRawDataAsString(rawData, "").split("\n");
             for (int i=0; i<lines.size(); i++) {
                 while (lines[i].startsWith(".")||lines[i].startsWith(" ")) {
                     lines[i] = lines[i].mid(1);

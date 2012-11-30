@@ -8,21 +8,47 @@
 #include "dataformats/ast_algorhitm.h"
 #include "dataformats/lexem.h"
 #include "errormessages/errormessages.h"
-#include "dataformats/bytecode.h"
+#include "interfaces/generatorinterface.h"
+#include "vm/vm_enums.h"
+#include "vm/vm_instruction.hpp"
+
+
+
+namespace Bytecode {
+class Data;
+}
 
 namespace KumirCodeGenerator {
 
+typedef Shared::GeneratorInterface::DebugLevel DebugLevel;
+struct ConstValue {
+    QVariant value;
+    Bytecode::ValueType baseType;
+    quint8 dimension;
+    inline bool operator==(const ConstValue & other) {
+        return
+                baseType == other.baseType &&
+                dimension == other.dimension &&
+                value == other.value;
+    }
+    inline ConstValue() {
+        baseType = Bytecode::VT_void;
+        dimension = 0;
+    }
+};
+
 class Generator : public QObject
 {
+
     Q_OBJECT
 public:
     explicit Generator(QObject *parent = 0);
-    void reset(const AST::Data * ast, Bytecode::Data * bc);
+    void reset(const AST::Data * ast, Bytecode::Data * bc, DebugLevel debugLevel);
     void addModule(const AST::Module * mod);
     void generateConstantTable();
     void generateExternTable();
 private:
-    quint16 constantValue(Bytecode::ValueType type, const QVariant & value);
+    quint16 constantValue(Bytecode::ValueType type, quint8 dimension, const QVariant & value);
     void addKumirModule(int id, const AST::Module * mod);
     void addFunction(int id, int moduleId, Bytecode::ElemType type, const AST::Algorhitm * alg);
     void addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, const AST::Module * mod, const AST::Algorhitm * alg);
@@ -34,7 +60,7 @@ private:
     static void shiftInstructions(QList<Bytecode::Instruction> &instrs, int offset);
     static void setBreakAddress(QList<Bytecode::Instruction> &instrs, int level, int address);
 
-    void ERROR(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
+    void ERRORR(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
     void ASSIGN(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
     void ASSERT(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
     void PAUSE_STOP(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result);
@@ -57,8 +83,10 @@ private:
 
     const AST::Data * m_ast;
     Bytecode::Data * m_bc;
-    QList< QPair<Bytecode::ValueType, QVariant> > l_constants;
+    QList< ConstValue > l_constants;
     QList< QPair<quint8,quint16> > l_externs;
+    DebugLevel e_debugLevel;
+
 };
 
 } // namespace KumirCodeGenerator

@@ -12,6 +12,12 @@ namespace Shared {
 
 class GeneratorInterface {
 public:
+    enum DebugLevel {
+        NoDebug = 0,
+        LinesOnly = 1,
+        LinesAndVariables = 2
+    };
+
     /** Generates execuable by AST
       * @param tree IN:  abstract syntax tree
       * @param out  OUT: output buffer to write (if QFile - not opened state)
@@ -19,7 +25,7 @@ public:
       */
     virtual QPair<QString,QString> generateExecuable(
             const AST::Data * tree
-            , QIODevice * out, QStringList * usedDlls = 0) = 0;
+            , QByteArray & out, DebugLevel debugLevel) = 0;
     virtual void setVerbose(bool v) = 0;
     virtual void setTemporaryDir(const QString & path, bool autoclean) = 0;
 };

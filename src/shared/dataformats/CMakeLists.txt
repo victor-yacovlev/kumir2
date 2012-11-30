@@ -10,9 +10,6 @@ set(SOURCES
     ast_expression.cpp
     ast_variable.cpp
     ast_statement.cpp
-    bytecode.cpp
-    bc_tableelem.cpp
-    bc_instruction.cpp
     kumfile.cpp
 )
 

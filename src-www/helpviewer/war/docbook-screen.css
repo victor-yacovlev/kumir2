@@ -149,3 +149,45 @@
 .docbook_screen .version_for_print_link a:hover {
 	color: black;
 }
+
+.docbook_screen .synopsis {
+    text-align: center;
+    border-top: 1px solid lightgray;
+    border-bottom: 1px solid lightgray;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.docbook_screen pre .keyword, .operator {
+	color: black;
+	font-weight: bold;
+}
+
+.docbook_screen pre .algname {
+	color: blue;
+	font-weight: bold;
+}
+
+.docbook_screen pre .typename {
+    color: brown;
+    font-weight: bold;
+}
+
+.docbook_screen pre .modulename {
+    color: green;
+    font-weight: bold;
+}
+
+.docbook_screen pre .comment {
+    color: gray;
+    font-style: italic;
+}
+
+.docbook_screen pre .commentfirstsymbol {
+    color: gray;
+}
+
+.docbook_screen pre .docstring {
+    color: #7b68ee;
+    font-weight: bold;
+}

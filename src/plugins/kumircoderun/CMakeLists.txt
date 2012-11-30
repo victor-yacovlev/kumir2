@@ -1,17 +1,19 @@
 include(../../kumir2_plugin.cmake)
 
+set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
+
 set(SOURCES
     plugin.cpp
     run.cpp
-    vm.cpp
-    variant.cpp
-    context.cpp
+)
+
+set(HEADERS
+    ../../shared/vm/vm.hpp
 )
 
 set(MOC_HEADERS
     plugin.h
     run.h
-    vm.h
 )
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})

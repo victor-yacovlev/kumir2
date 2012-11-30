@@ -19,6 +19,11 @@ set(SOURCES
 set(EXTRA_LIBS
 )
 
+if(UNIX AND NOT APPLE)
+    find_package(X11 REQUIRED)
+    set(EXTRA_LIBS ${X11_LIBRARIES})
+endif()
+
 if(APPLE)
     set(SOURCES ${SOURCES}
         mac-util.mm

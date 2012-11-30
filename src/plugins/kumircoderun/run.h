@@ -2,21 +2,44 @@
 #define KUMIRCODERUN_RUN_H
 
 #include <QtCore>
-#include "vm.h"
-#include "dataformats/bytecode.h"
-#include "variant.h"
+#define DO_NOT_DECLARE_STATIC
+#include "vm/vm.hpp"
+
 
 namespace KumirCodeRun {
 
-class Run : public QThread
+using Kumir::String;
+using Kumir::real;
+using VM::Variable;
+using VM::AnyValue;
+
+class Run
+        : public QThread
+        , public VM::AbstractInteractionHandler
 {
     Q_OBJECT
 public:
     enum RunMode { RM_StepOver, RM_ToEnd, RM_StepOut, RM_StepIn };
     explicit Run(QObject *parent);
-    VM * vm;
+    VM::KumirVM * vm;
     bool programLoaded;
     inline bool stopped() const { return b_stopping; }
+
+    // VM Access methods
+    int effectiveLineNo() const;
+    void loadProgramFromBinaryBuffer(std::list<char> & stream);
+    void loadProgramFromTextBuffer(const std::string & stream);
+    QString error() const;
+    QVariantList remainingValues() const;
+    void setEntryPointToMain();
+    void setEntryPointToTest();
+    bool hasMoreInstructions() const;
+    void reset();
+    void evaluateNextInstruction();
+    bool canStepOut() const;
+    QVariant value(quint8, quint16, quint16) const;
+    QList<int> bounds(quint8, quint16, quint16) const;
+    QList<int> reference(quint8, quint16, quint16) const;
 
 public slots:
     void stop();
@@ -27,10 +50,10 @@ public slots:
     void runContinuous();
 
 
-    void handleInputRequest(const QString & format,
-                            const QList<quintptr> & references,
-                            const QList<int> & indeces
-                            );
+    bool makeInput(
+                const std::deque<String> & /*formats*/,
+                std::deque<Variable> & /*references*/
+                );
     void handleInputArgumentRequest(int localId,
                                     const QString & varName,
                                     const QString & baseFormat,
@@ -38,10 +61,19 @@ public slots:
     void handleOutputArgumentRequest(const QVariant & value,
                                     const QString & varName,
                                     const QList<int> & bounds);
-    void handleOutputRequest(const QString & output );
+    bool makeOutput(
+                const std::deque<String> & /*formats*/,
+                const std::deque<Variable> & /*values*/
+                );
+
+    bool noticeOnLineNoChanged(
+            int /*lineNo*/
+            );
+
+    bool noticeOnValueChange(int lineNo, const String & s);
+    bool clearMargin(int from, int to);
 
     void handleAlgorhitmDone(int lineNo);
-    void handleLineChanged(int lineNo);
     void finishInput(const QVariantList & data);
     void finishExternalFunctionCall(
         const QString & error,
@@ -58,14 +90,16 @@ public slots:
 
 signals:
     void lineChanged(int lineNo);
-    void output(const QString & text);
+    void output(const QString &value);
     void error(const QString & message);
     void input(const QString & format);
+    void marginText(int lineNo, const QString & text);
     void externalFunctionCall(const QString & pluginName,
                               const QString & functionName,
                               const QVariantList & arguments);
     void resetModule(const QString & pluginName);
     void aboutToStop();
+    void clearMarginRequest(int,int);
 protected :
     void run();
 
@@ -91,7 +125,6 @@ protected :
     QVariantList list_funcResults;
     QVariant v_funcResult;
     QString s_funcError;
-
 
 };
 

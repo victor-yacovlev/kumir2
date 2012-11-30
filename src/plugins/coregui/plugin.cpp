@@ -2,6 +2,7 @@
 #include "mainwindow.h"
 #include "extensionsystem/pluginmanager.h"
 #include "kumirvariableswebobject.h"
+#include "widgets/secondarywindow.h"
 #include "ui_mainwindow.h"
 #ifdef Q_OS_MACX
 #include "mac-fixes.h"
@@ -27,6 +28,7 @@ QString Plugin::RecentFileKey = "History/FileDialog";
 QString Plugin::RecentFilesKey = "History/RecentFiles";
 QString Plugin::MainWindowGeometryKey = "Geometry/MainWindow";
 QString Plugin::MainWindowStateKey = "State/MainWindow";
+QString Plugin::MainWindowSplitterStateKey = "State/MainWindowSplitter";
 QString Plugin::DockVisibleKey = "DockWindow/Visible";
 QString Plugin::DockFloatingKey = "DockWindow/Floating";
 QString Plugin::DockGeometryKey = "DockWindow/Geometry";
@@ -41,13 +43,10 @@ QString Plugin::initialize(const QStringList & parameters)
     const QStringList BlacklistedThemes = QStringList()
             << "iaorakde" << "iaoraqt" << "iaora";
     const QString currentStyleName = qApp->style()->objectName().toLower();
-//    qDebug() << currentStyleName;
     if (BlacklistedThemes.contains(currentStyleName)) {
         qApp->setStyle("Cleanlooks");
     }
-#ifdef Q_OS_MAC
-    //qApp->setStyle("Cleanlooks");
-#endif
+
     QString iconSuffix;
     for (int i=0; i<parameters.count(); i++) {
         const QString param = parameters[i];
@@ -77,20 +76,48 @@ QString Plugin::initialize(const QStringList & parameters)
         return "Can't load editor plugin!";
 //    if (!plugin_NativeGenerator)
 //        return "Can't load c-generator plugin!";
-    m_terminal = new Term(0);
+    m_terminal = new Term(m_mainWindow);
+    m_terminal->sizePolicy().setHorizontalStretch(5);
+    m_terminal->sizePolicy().setHorizontalPolicy(QSizePolicy::Ignored);
 
 
     connect(m_terminal, SIGNAL(message(QString)),
             m_mainWindow, SLOT(showMessage(QString)));
 
-    QDockWidget * termWindow = m_mainWindow->addSecondaryComponent(tr("Input/Output terminal"),
-                                        m_terminal,
-                                        QList<QAction*>(),
-                                        QList<QMenu*>(),
-                                        MainWindow::Terminal);
+//    QDockWidget * termWindow = m_mainWindow->addSecondaryComponent(tr("Input/Output terminal"),
+//                                        m_terminal,
+//                                        QList<QAction*>(),
+//                                        QList<QMenu*>(),
+//                                        MainWindow::Terminal);
+    m_mainWindow->ui->bottomWidget->setLayout(new QHBoxLayout);
+    QSplitter * bottomSplitter = new QSplitter(m_mainWindow->ui->bottomWidget);
+    m_bottomSplitter = bottomSplitter;
+    m_mainWindow->ui->bottomWidget->layout()->setContentsMargins(0,0,0,0);
+//    m_mainWindow->ui->bottomWidget->layout()->addWidget(m_terminal);
+    m_mainWindow->ui->bottomWidget->layout()->addWidget(bottomSplitter);
+    bottomSplitter->setOrientation(Qt::Horizontal);
+    bottomSplitter->addWidget(m_terminal);
+
 #ifndef Q_OS_MAC
-    termWindow->toggleViewAction()->setShortcut(QKeySequence("F12"));
+//    termWindow->toggleViewAction()->setShortcut(QKeySequence("F12"));
 #endif
+
+    QToolButton * btnSaveTerm = new QToolButton(m_mainWindow);
+    btnSaveTerm->setPopupMode(QToolButton::InstantPopup);
+    QMenu * menuSaveTerm = new QMenu(btnSaveTerm);
+    btnSaveTerm->setMenu(menuSaveTerm);
+    btnSaveTerm->setIcon(m_terminal->actionSaveLast()->icon());
+    menuSaveTerm->addAction(m_terminal->actionSaveLast());
+    menuSaveTerm->addAction(m_terminal->actionSaveAll());
+    m_mainWindow->statusBar()->insertWidget(0, btnSaveTerm);
+    QToolButton * btnClearTerm = new QToolButton(m_mainWindow);
+    btnClearTerm->setDefaultAction(m_terminal->actionClear());
+    m_mainWindow->statusBar()->insertWidget(1, btnClearTerm);
+    if (!parameters.contains("notabs",Qt::CaseInsensitive)) {
+        QToolButton * btnEditTerm = new QToolButton(m_mainWindow);
+        btnEditTerm->setDefaultAction(m_terminal->actionEditLast());
+        m_mainWindow->statusBar()->insertWidget(1, btnEditTerm);
+    }
 
 
     m_mainWindow->disablePascalProgram();
@@ -100,7 +127,7 @@ QString Plugin::initialize(const QStringList & parameters)
     m_kumirProgram->setBytecodeGenerator(plugin_BytecodeGenerator);
     m_kumirProgram->setNativeGenerator(plugin_NativeGenerator);
     m_kumirProgram->setEditorPlugin(plugin_editor);
-    m_kumirProgram->setTerminal(m_terminal, termWindow);
+    m_kumirProgram->setTerminal(m_terminal, 0);
 
 
     QMap<QString,QObject*> variablesBrowserObjects;
@@ -118,13 +145,16 @@ QString Plugin::initialize(const QStringList & parameters)
             variablesBrowser.widget, SLOT(evaluateCommand(QString,QVariantList)));
     variablesBrowser.widget->setMinimumWidth(430);
 
-    QDockWidget * variablesWindow = m_mainWindow->addSecondaryComponent(
-                tr("Variables"),
+    Widgets::SecondaryWindow * variablesWindow = new Widgets::SecondaryWindow(
                 variablesBrowser.widget,
-                QList<QAction*>(),
-                QList<QMenu*>(),
-                MainWindow::Control
-                );
+                0,
+                m_mainWindow,
+                mySettings(),
+                "Variables");
+
+    variablesWindow->setWindowTitle(tr("Variables"));
+
+
 
     connect(m_kumirProgram->variablesWebObject(), SIGNAL(newWindowCreated(Shared::BrowserComponent)),
             this, SLOT(handleNewVariablesWindow(Shared::BrowserComponent)));
@@ -134,29 +164,91 @@ QString Plugin::initialize(const QStringList & parameters)
             this, SLOT(handleRaiseVariablesWindow(QWidget*)));
 
 
-    variablesWindow->toggleViewAction()->setShortcut(QKeySequence("F2"));
+    connect(m_mainWindow->ui->actionVariables, SIGNAL(triggered()),
+            variablesWindow->toggleViewAction(), SLOT(trigger()));
+
+    l_secondaryWindows << variablesWindow;
+
 
     connect(m_kumirProgram, SIGNAL(giveMeAProgram()), this, SLOT(prepareKumirProgramToRun()), Qt::DirectConnection);
+
 
     KPlugin * kumirRunner = myDependency("KumirCodeRun");
     //Q_CHECK_PTR(kumirRunner);
     m_kumirProgram->setBytecodeRun(kumirRunner);
-
     QList<ExtensionSystem::KPlugin*> actors = loadedPlugins("Actor*");
     actors += loadedPlugins("st_funct");
     foreach (ExtensionSystem::KPlugin* o, actors) {
         ActorInterface * actor = qobject_cast<ActorInterface*>(o);
         l_plugin_actors << actor;
-        QDockWidget * w = 0;
+        QWidget * w = 0;
         if (actor->mainWidget()) {
             QWidget * actorWidget = actor->mainWidget();
             QList<QMenu*> actorMenus = actor->moduleMenus();
             bool priv = o->property("privilegedActor").toBool();
-            w = m_mainWindow->addSecondaryComponent(actor->name(),
-                                                actorWidget,
-                                                QList<QAction*>(),
-                                                actorMenus,
-                                                priv? MainWindow::StandardActor : MainWindow::WorldActor);
+//            w = m_mainWindow->addSecondaryComponent(actor->name(),
+//                                                actorWidget,
+//                                                QList<QAction*>(),
+//                                                actorMenus,
+//                                                priv? MainWindow::StandardActor : MainWindow::WorldActor);
+            QWidget * place = new QWidget(m_mainWindow);
+            place->setLayout(new QHBoxLayout);
+            place->layout()->setContentsMargins(0,0,0,0);
+            place->sizePolicy().setHorizontalStretch(1);
+            place->sizePolicy().setHorizontalPolicy(QSizePolicy::Fixed);
+            bottomSplitter->addWidget(place);
+            place->setVisible(false);
+
+            Widgets::SecondaryWindow * actorWindow = new Widgets::SecondaryWindow(
+                        actorWidget,
+                        place,
+                        m_mainWindow,
+                        o->pluginSettings(),
+                        o->pluginSpec().name,
+                        true, true
+                        );
+            l_secondaryWindows << actorWindow;
+            actorWindow->setWindowTitle(actor->name());
+            w = actorWindow;
+            m_mainWindow->ui->menuWindow->addAction(actorWindow->toggleViewAction());
+            if (!actor->mainIconName().isEmpty()) {
+                const QString iconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->mainIconName()+".png";
+                const QString smallIconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->mainIconName()+"_22x22.png";
+                QIcon mainIcon = QIcon(iconFileName);
+                if (QFile::exists(smallIconFileName))
+                    mainIcon.addFile(smallIconFileName, QSize(22,22));
+                actorWindow->setWindowIcon(mainIcon);
+                actorWindow->toggleViewAction()->setIcon(mainIcon);
+                m_mainWindow->gr_otherActions->addAction(actorWindow->toggleViewAction());
+
+            }
+
+            foreach (QMenu* menu, actorMenus) {
+                m_mainWindow->ui->menubar->insertMenu(m_mainWindow->ui->menuHelp->menuAction(), menu);
+            }
+
+            if (actor->pultWidget()) {
+                Widgets::SecondaryWindow * pultWindow = new Widgets::SecondaryWindow(
+                            actor->pultWidget(),
+                            NULL,
+                            m_mainWindow,
+                            mySettings(),
+                            actor->name()+"Pult", false, false);
+                l_secondaryWindows << pultWindow;
+                pultWindow->setWindowTitle(actor->name()+" - "+tr("Remote Control"));
+                m_mainWindow->ui->menuWindow->addAction(pultWindow->toggleViewAction());
+                if (!actor->pultIconName().isEmpty()) {
+                    const QString iconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->pultIconName()+".png";
+                    const QString smallIconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->pultIconName()+"_22x22.png";
+                    QIcon pultIcon = QIcon(iconFileName);
+                    if (QFile::exists(smallIconFileName))
+                        pultIcon.addFile(smallIconFileName, QSize(22,22));
+                    pultWindow->setWindowIcon(pultIcon);
+                    pultWindow->toggleViewAction()->setIcon(pultIcon);
+                    m_mainWindow->gr_otherActions->addAction(pultWindow->toggleViewAction());
+                }
+            }
+
         }
         m_kumirProgram->addActor(o, w);
     }
@@ -175,36 +267,24 @@ QString Plugin::initialize(const QStringList & parameters)
             m_mainWindow, SLOT(newText(QString,QString)));
 
 
-    QDir docsRoot(qApp->property("sharePath").toString()+"/webapps/helpviewer/data/russian/");
-    const QStringList entryList = docsRoot.entryList();
-    QStringList documents;
-    for (int i=0; i<entryList.size(); i++) {
-        const QString entry = entryList[i];
-        if (entry.endsWith(".xml")) {
-            const QString document = "data/russian/"+entry;
-            documents << document;
+    QString uri = "data/russian/default.xml";
+
+    foreach (const QString parameter, parameters) {
+        if (parameter.startsWith("help=")) {
+            const QString helpName = parameter.mid(5);
+            uri = "data/russian/"+helpName;
         }
     }
 
+
     m_helpBrowser = plugin_browser->createBrowser(
-                QUrl("http://localhost/helpviewer/index.html?documents="+documents.join(",")),
+                QUrl("http://localhost/helpviewer/index.html?document="+uri),
                 m_browserObjects);
 
-//    m_helpBrowser = plugin_browser->createBrowser(
-//                QUrl("http://lpm.org.ru/~victor/helpviewer/index.html?documents=data/russian/system.xml,data/russian/language.xml"),
-//                m_browserObjects);
 
-//    m_helpBrowser = plugin_browser->createBrowser(
-//                QUrl("http://localhost/helpviewer/index.html?documents=data/russian/system.xml,data/russian/language.xml&printable=true"),
-//                m_browserObjects);
-
-    QDockWidget * helpWindow = m_mainWindow->addSecondaryComponent(
-                tr("Help"),
-                m_helpBrowser.widget,
-                QList<QAction*>(),
-                QList<QMenu*>(),
-                MainWindow::Help
-                );
+    Widgets::SecondaryWindow * helpWindow = new Widgets::SecondaryWindow(m_helpBrowser.widget,0,m_mainWindow,mySettings(),"HelpWindow");
+    l_secondaryWindows << helpWindow;
+    helpWindow->setWindowTitle(tr("Help"));
 
     helpWindow->toggleViewAction()->setShortcut(QKeySequence("F1"));
     connect(m_mainWindow->ui->actionUsage, SIGNAL(triggered()),
@@ -213,19 +293,29 @@ QString Plugin::initialize(const QStringList & parameters)
             m_mainWindow->ui->actionUsage, SLOT(setChecked(bool)));
 
 
+
     connect(m_kumirProgram, SIGNAL(activateDocumentTab(int)),
             m_mainWindow, SLOT(activateDocumentTab(int)));
 
     return "";
 }
 
+void Plugin::updateSettings()
+{
+    foreach (Widgets::SecondaryWindow * window, l_secondaryWindows) {
+        window->setSettingsObject(mySettings());
+    }
+}
+
 void Plugin::handleNewVariablesWindow(const Shared::BrowserComponent &browser)
 {
-    QDockWidget * window = m_mainWindow->addSecondaryComponent(tr("Variables"),
-                                        browser.widget,
-                                        QList<QAction*>(),
-                                        QList<QMenu*>(),
-                                        MainWindow::SubControl);
+    Widgets::SecondaryWindow * window = new Widgets::SecondaryWindow(
+                browser.widget,
+                0,
+                m_mainWindow,
+                mySettings(),
+                "Variables"+QString::number(l_variablesChildBrowsers.size()));
+    l_secondaryWindows << window;
     connect(browser.widget, SIGNAL(titleChanged(QString)),
             window, SLOT(setWindowTitle(QString)));
     connect(m_kumirProgram->variablesWebObject(), SIGNAL(jsRequest(QString,QVariantList)),
@@ -321,6 +411,10 @@ void Plugin::stop()
 void Plugin::saveSession() const
 {
     m_mainWindow->saveSettings();
+    mySettings()->setValue("BottomSplitterGeometry", m_bottomSplitter->saveGeometry());
+    mySettings()->setValue("BottomSplitterState", m_bottomSplitter->saveState());
+    foreach (Widgets::SecondaryWindow * secWindow, l_secondaryWindows)
+        secWindow->saveState();
 }
 
 
@@ -351,6 +445,10 @@ void Plugin::restoreSession()
         else if (analizerName.startsWith("Python"))
             m_mainWindow->newPythonProgram();
     }
+    foreach (Widgets::SecondaryWindow * secWindow, l_secondaryWindows)
+        secWindow->restoreState();
+    m_bottomSplitter->restoreGeometry(mySettings()->value("BottomSplitterGeometry").toByteArray());
+    m_bottomSplitter->restoreState(mySettings()->value("BottomSplitterState").toByteArray());
 }
 
 Plugin::~Plugin()

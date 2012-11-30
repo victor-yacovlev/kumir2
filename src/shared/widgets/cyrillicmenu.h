@@ -11,7 +11,7 @@
 
 namespace Widgets {
 
-class CyrillicMenu:
+class WIDGETS_EXPORT CyrillicMenu:
         public QMenu
 {
     Q_OBJECT

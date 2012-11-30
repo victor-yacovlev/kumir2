@@ -268,6 +268,10 @@ void LexerPrivate::initNormalizator(const QString &fileName)
                     keyWords << value;
                     addToMap(kwdMap, value, LxSecInout);
                 }
+                else if (context=="file") {
+                    keyWords << value;
+                    addToMap(kwdMap, value, LxSecFile);
+                }
                 else if (context=="'true' constant value") {
                     constNames << value;
                     boolConstantValues.insert(value, true);
@@ -393,6 +397,12 @@ void LexerPrivate::initNormalizator(const QString &fileName)
 
     operators << "\\]";
     kwdMap["]"] = LxOperRightSqBr;
+
+    operators << "\\{";
+    kwdMap["{"] = LxOperLeftBrace;
+
+    operators << "\\}";
+    kwdMap["}"] = LxOperRightBrace;
 
     operators << ",";
     kwdMap[","] = LxOperComa;
@@ -1266,7 +1276,10 @@ QString LexerPrivate::retvalKeyword = QString();
 QString Lexer::testName(const QString &name)
 {
     if ( name.isEmpty() )
-        return 0;
+        return QString();
+
+//    if (name==d->retvalKeyword)
+//        return QString();
 
 
     // Check for HEX-constant

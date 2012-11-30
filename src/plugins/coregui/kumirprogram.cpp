@@ -222,7 +222,7 @@ void KumirProgram::setBytecodeRun(KPlugin *run)
     connect(run, SIGNAL(resetModule(QString)), this, SLOT(handleActorResetRequest(QString)));
 }
 
-void KumirProgram::addActor(KPlugin *a, QDockWidget *w)
+void KumirProgram::addActor(KPlugin *a, QWidget *w)
 {
     connect(a, SIGNAL(sync()), this, SLOT(handleActorCommandFinished()));
     Shared::ActorInterface * aa = qobject_cast<Shared::ActorInterface*>(a);
@@ -266,25 +266,14 @@ void KumirProgram::fastRun()
 #ifdef Q_OS_WIN32
         plugin_nativeGenerator->setVerbose(true);
 #endif
-        QStringList usedDlls;
-        QPair<QString,QString> res = plugin_nativeGenerator->generateExecuable(m_ast, &exeFile, &usedDlls);
-        if (!res.first.isEmpty()) {
-            qDebug() << "Error generating execuable: " << res.first;
-        }
-        else {
-            ok = true;
-        }
+//        QPair<QString,QString> res = plugin_nativeGenerator->generateExecuable(m_ast, &exeFile);
+//        if (!res.first.isEmpty()) {
+//            qDebug() << "Error generating execuable: " << res.first;
+//        }
+//        else {
+//            ok = true;
+//        }
         exeFile.close();
-#ifdef Q_OS_WIN32
-        for (int i=0; i<usedDlls.size(); i++) {
-            if (!QFile::exists(usedDlls[i])) {
-                if (!QFile::copy(qApp->applicationDirPath()+"/"+usedDlls[i], usedDlls[i])) {
-                    ok = false;
-                    qDebug() << "Can't put dll into working directory: " << usedDlls[i];
-                }
-            }
-        }
-#endif
         QFile::Permissions perms = exeFile.permissions();
         perms |= QFile::ExeOwner;
         perms |= QFile::ExeUser;
@@ -316,7 +305,7 @@ void KumirProgram::blindRun()
     s_endStatus = "";
     if (e_state==Idle) {
         emit giveMeAProgram();
-        prepareKumirRunner();
+        prepareKumirRunner(Shared::GeneratorInterface::LinesOnly);
     }
     e_state = RegularRun;
     PluginManager::instance()->switchGlobalState(GS_Running);
@@ -348,7 +337,7 @@ void KumirProgram::testingRun()
                                   );
             return;
         }
-        prepareKumirRunner();
+        prepareKumirRunner(Shared::GeneratorInterface::LinesOnly);
     }
     e_state = RegularRun;
     PluginManager::instance()->switchGlobalState(GS_Running);
@@ -364,7 +353,7 @@ void KumirProgram::regularRun()
     s_endStatus = "";
     if (e_state==Idle) {
         emit giveMeAProgram();
-        prepareKumirRunner();
+        prepareKumirRunner(Shared::GeneratorInterface::LinesAndVariables);
     }
     e_state = RegularRun;
     m_variablesWebObject->reset(plugin_bytecodeRun);
@@ -372,24 +361,20 @@ void KumirProgram::regularRun()
     plugin_bytecodeRun->runContinuous();
 }
 
-void KumirProgram::prepareKumirRunner()
+void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel debugLevel)
 {
     bool mustRegenerate = !m_ast->lastModified.isValid() ||
             !plugin_bytecodeRun->loadedProgramVersion().isValid() ||
             m_ast->lastModified > plugin_bytecodeRun->loadedProgramVersion();
     if (mustRegenerate) {
         QByteArray bufArray;
-        QBuffer buffer(&bufArray);
-        QPair<QString,QString> res = plugin_bytcodeGenerator->generateExecuable(m_ast, &buffer);
-
-        buffer.open(QIODevice::ReadOnly);
+        QPair<QString,QString> res = plugin_bytcodeGenerator->generateExecuable(m_ast, bufArray, debugLevel);
         if (!res.first.isEmpty()) {
             qDebug() << "Error generating execuable: " << res.first;
         }
         else {
-            plugin_bytecodeRun->loadProgram(&buffer, Shared::FormatBinary);
+            plugin_bytecodeRun->loadProgram(bufArray, Shared::FormatBinary);
         }
-        buffer.close();
     }
     const QString exeFileName = s_sourceFileName.mid(0, s_sourceFileName.length()-4)+".kum";
     m_variablesWebObject->setProgram(m_ast);
@@ -403,7 +388,7 @@ void KumirProgram::stepRun()
     s_endStatus = "";
     if (e_state==Idle) {
         emit giveMeAProgram();
-        prepareKumirRunner();
+        prepareKumirRunner(Shared::GeneratorInterface::LinesAndVariables);
         m_variablesWebObject->reset(plugin_bytecodeRun);
     }
     e_state = StepRun;

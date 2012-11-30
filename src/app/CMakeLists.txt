@@ -28,5 +28,5 @@ endif(APPLE)
 
 #add_subdirectory(kumir2-cc)
 add_subdirectory(kumir2-bc)
-add_subdirectory(kumir2-run)
+add_subdirectory(kumir2-xrun)
 

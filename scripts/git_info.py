@@ -2,9 +2,18 @@
 
 import sys
 import os.path
+import os
 from subprocess import Popen, PIPE
 
 GIT = "git"
+if os.name=="nt":
+    PATH = os.environ["PATH"].split(";")
+    for entry in PATH:
+        if os.path.exists(entry+"/git.cmd"):
+            GIT = entry+"/../bin/git.exe"
+            break
+
+
 OUT = sys.stdout
 CWD = "."
 
@@ -25,6 +34,7 @@ BCOMMAND = "$GIT branch".replace("$GIT", GIT)
 try:
     process = Popen(COMMAND.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd=CWD)
 except:
+    sys.stderr.write("Warning: can't run GIT to get version info: "+COMMAND+"\n")
     OUT.close()
     sys.exit(0)
     

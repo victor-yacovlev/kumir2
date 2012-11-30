@@ -6,4 +6,8 @@ scripts/*.pyc
 scripts/*.pyo
 *~
 *.bak
-
+.classpath
+.metadata
+.project
+.settings
+*qtcreator*
