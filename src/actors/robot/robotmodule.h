@@ -32,7 +32,7 @@ namespace ActorRobot {
 
     //Robot
     //#define FIELD_SIZE 20
-#define FIELD_SIZE_SMALL 30
+#define FIELD_SIZE_SMALL 33
 #define BUTTON_SIZE 20
     
 #define NOT_LEFT_WALL   14
@@ -123,6 +123,8 @@ namespace ActorRobot {
         void showCharMark(qreal upLeftCornerX,qreal upLeftCornerY,int size);
         void showUpChar(qreal upLeftCornerX,qreal upLeftCornerY,int size);
         void showDownChar(qreal upLeftCornerX,qreal upLeftCornerY,int size);
+        void showRTItm(qreal upLeftCornerX, qreal upLeftCornerY, int size);
+        void hideRTItm();
         
         void showMark(qreal upLeftCornerX,qreal upLeftCornerY,int size);
         
@@ -204,6 +206,8 @@ namespace ActorRobot {
         QGraphicsTextItem * upCharItm;
         QGraphicsTextItem * downCharItm;
         QGraphicsTextItem * markItm;
+        QGraphicsTextItem * radItm;
+        QGraphicsTextItem * tempItm;
         QGraphicsRectItem * upCharFld;
         QGraphicsRectItem * downCharFld;
         
@@ -213,6 +217,7 @@ namespace ActorRobot {
         FieldItm* sepItmDown;
         FieldItm* sepItmLeft;
         FieldItm* sepItmRight;
+        QFont charFnt;
         QSettings* sett;
     };
     
@@ -228,7 +233,9 @@ namespace ActorRobot {
         void drawField(uint cellSize);//TODO Document
         void destroyField();
         void setTextEditMode(bool flag);
+        void setRadEditMode(bool flag);
         void redrawEditFields();
+        void redrawRTFields();
         void destroyRobot();
         
         /**
@@ -369,8 +376,9 @@ namespace ActorRobot {
         qreal perssX,pressY;
         QGraphicsLineItem* showWall,*keyCursor;
         QPair<int,int> old_cell,clickCell;
-        bool textEditMode,radEditMode;
-        
+        bool textEditMode,radEditMode,pressD;
+        QDoubleSpinBox * radSpinBox;
+        QSpinBox * tempSpinBox;
           
     };
   
@@ -407,6 +415,7 @@ namespace ActorRobot {
         int pressX,pressY;
         RoboField* robotField;
         QToolButton * textEditBtn;
+        QToolButton * radEditBtn;
         
     };
     
