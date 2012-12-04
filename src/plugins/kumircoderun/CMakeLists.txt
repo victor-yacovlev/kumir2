@@ -1,6 +1,5 @@
 include(../../kumir2_plugin.cmake)
 
-set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
 
 set(SOURCES
     plugin.cpp

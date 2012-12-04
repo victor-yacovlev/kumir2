@@ -1,4 +1,5 @@
 #include "ast.h"
+#include "ast_type.h"
 #include "ast_module.h"
 #include "ast_algorhitm.h"
 #include "lexem.h"
@@ -32,6 +33,8 @@ Module::Module( const struct Module * src )
     header.type = src->header.type;
     header.name = src->header.name;
     header.uses = src->header.uses;
+    header.types = src->header.types;
+
 }
 
 void Module::updateReferences(const Module *src, const Data *srcData, const Data *data)

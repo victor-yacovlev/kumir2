@@ -1,10 +1,11 @@
 #include "ast_variable.h"
+#include "ast_type.h"
 
 namespace AST {
 
 Variable::Variable()
 {
-    baseType = TypeNone;
+    baseType.kind = TypeNone;
     accessType = AccessRegular;
     dimension = 0;
 }
@@ -55,7 +56,7 @@ QString Variable::dump() const
 {
     QString result = "{\n";
     result += "\t\"name\": \""+name+"\",\n";
-    result += "\t\"baseType\": "+AST::dump(baseType);
+//    result += "\t\"baseType\": "+AST::dump(baseType);
     if (dimension>0)
         result += ",\n\t\"dimension\": "+QString::number(dimension);
     if (accessType!=AccessRegular)

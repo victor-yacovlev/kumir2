@@ -2,6 +2,7 @@
 #define STDLIBMODULES_H
 #include <QtCore>
 #include "interfaces/actorinterface.h"
+#include "stdlib/kumirstdlib.hpp"
 
 namespace StdLibModules {
 
@@ -56,14 +57,39 @@ public:
         /* 0x0025 */ result << QString::fromUtf8("алг лит цел_в_лит(цел n)");
         /* 0x0026 */ result << QString::fromUtf8("алг цел юникод(сим ch)");
 
-        /* 0x0027 */ result << QString::fromUtf8("алг цел открыть на чтение(лит имя файла)");
-        /* 0x0028 */ result << QString::fromUtf8("алг цел открыть на запись(лит имя файла)");
-        /* 0x0029 */ result << QString::fromUtf8("алг цел открыть на добавление(лит имя файла)");
-        /* 0x002a */ result << QString::fromUtf8("алг закрыть(цел ключ)");
-        /* 0x002b */ result << QString::fromUtf8("алг начать чтение(цел ключ)");
-        /* 0x002c */ result << QString::fromUtf8("алг лог конец файла(цел ключ)");
 
-        /* 0x002d */ result << QString::fromUtf8("алг установить кодировку(лит кодировка)");
+        return result;
+    }
+};
+
+class Files
+        : public Shared::ActorInterface
+{
+    inline QString name() const {return QString::fromUtf8("Файлы");}
+    inline TypeList typeList() const {
+        // TODO implement non-russian headers
+        // (check system locale)
+
+        TypeList result;
+        CustomType fileType;
+        fileType.first = QString::fromUtf8("файл");
+        fileType.second = sizeof(Kumir::FileType);
+        result << fileType;
+        return result;
+    }
+    QStringList funcList() const {
+        QStringList result;
+        // TODO implement non-russian headers
+        // (check system locale)
+
+        /* 0x0000 */ result << QString::fromUtf8("алг файл открыть на чтение(лит имя файла)");
+        /* 0x0001 */ result << QString::fromUtf8("алг файл открыть на запись(лит имя файла)");
+        /* 0x0002 */ result << QString::fromUtf8("алг файл открыть на добавление(лит имя файла)");
+        /* 0x0003 */ result << QString::fromUtf8("алг закрыть(файл ключ)");
+        /* 0x0004 */ result << QString::fromUtf8("алг начать чтение(файл ключ)");
+        /* 0x0005 */ result << QString::fromUtf8("алг лог конец файла(файл ключ)");
+
+        /* 0x0006 */ result << QString::fromUtf8("алг установить кодировку(лит кодировка)");
 
         return result;
     }

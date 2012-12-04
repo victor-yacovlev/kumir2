@@ -39,9 +39,10 @@ struct AnalizerPrivate
     class SyntaxAnalizer * analizer;
     AST_Data * ast;
 
-    static QString StandartFunctionsModuleName;
+    static QStringList AlwaysAvailableModulesName;
 
-    void createModuleFromActor(const Shared::ActorInterface * actor, uint8_t forcedId);
+    void createModuleFromActor(const Shared::ActorInterface * actor, quint8 forcedId);
+    QStringList gatherExtraTypeNames() const;
 
 
     QStringList sourceText;

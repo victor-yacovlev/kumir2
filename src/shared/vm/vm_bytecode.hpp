@@ -39,7 +39,7 @@ inline void bytecodeToDataStream(std::ostream & ds, const Data & data)
     bytecodeToDataStream(bytes, data);
     char * buffer = reinterpret_cast<char*>(calloc(bytes.size(), sizeof(char)));
     size_t i = 0;
-    for (auto it=bytes.begin(); it!=bytes.end(); ++it) {
+    for (std::list<char>::const_iterator it=bytes.begin(); it!=bytes.end(); ++it) {
         buffer[i] = *it;
         i++;
     }

@@ -21,6 +21,7 @@ struct LexerPrivate {
       */
     void splitLineIntoLexems(const QString &text
                              , QList<Lexem*> & lexems
+                             , const QStringList & extraTypeNames
                              ) const;
 
     /**

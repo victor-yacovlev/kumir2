@@ -23,13 +23,14 @@ Lexer::~Lexer()
 int Lexer::splitIntoStatements(const QStringList &lines
                                 , int baseLineNo
                                 , QList<Statement*> &statements
+                                , const QStringList & extraTypeNames
                                 ) const
 {
     int errorsCount = 0;
     for (int i=0; i<lines.size(); i++) {
         const QString line = lines[i];
         QList<Lexem*> lexems;
-        d->splitLineIntoLexems(line, lexems);
+        d->splitLineIntoLexems(line, lexems, extraTypeNames);
         QList<Statement*> sts;
         d->groupLexemsByStatements(lexems, sts);        
         for (int j=0; j<sts.size(); j++) {
@@ -42,9 +43,9 @@ int Lexer::splitIntoStatements(const QStringList &lines
     return errorsCount;
 }
 
-void Lexer::splitIntoLexems(const QString &text, QList<Lexem *> &lexems)
+void Lexer::splitIntoLexems(const QString &text, QList<Lexem *> &lexems, const QStringList & extraTypeNames)
 {
-    d->splitLineIntoLexems(text, lexems);
+    d->splitLineIntoLexems(text, lexems, extraTypeNames);
 }
 
 QStringList allVariants(const QString & value) {
@@ -267,10 +268,6 @@ void LexerPrivate::initNormalizator(const QString &fileName)
                 else if (context=="'read and write' parameter modifier") {
                     keyWords << value;
                     addToMap(kwdMap, value, LxSecInout);
-                }
-                else if (context=="file") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxSecFile);
                 }
                 else if (context=="'true' constant value") {
                     constNames << value;
@@ -644,8 +641,48 @@ void searchEndLoopIf(QList<Lexem*> & lexems) {
     }
 }
 
+void searchUserTypeNames(QList<Lexem*> & lexems, const QStringList & names) {
+    QList<Lexem*>::iterator it;
+    for (it=lexems.begin(); it!=lexems.end(); ) {
+        Lexem * lx = (*it);
+        if (lx->type==LxTypeName) {
+            for (int i=0; i<names.size(); i++) {
+                const QString typeName = names[i];
+                const QRegExp rxTypeName("\\b"+typeName+"\\b");
+                int p = lx->data.indexOf(rxTypeName);
+                if (p!=-1) {
+                    QString left, right;
+                    if (p>0) {
+                        left = lx->data.left(p);
+                        Lexem * lxx = new Lexem;
+                        lxx->data = left;
+                        lxx->type = LxTypeName;
+                        lxx->lineNo = lx->lineNo;
+                        lxx->linePos = lx->linePos;
+                        lxx->length = left.length();
+                        it = lexems.insert(it, lxx);
+                    }
+                    Lexem *tl = new Lexem;
+                    tl->data = typeName;
+                    tl->type = LxNameClass;
+                    tl->lineNo = lx->lineNo;
+                    tl->linePos = lx->linePos + p;
+                    tl->length = typeName.length();
+                    it = lexems.insert(it, tl);
+                    right = lx->data.mid(p+typeName.length());
+                    lx->data = right;
+                    lx->length = right.length();
+                    lx->linePos = lx->linePos + p + typeName.length();
+                }
+            }
+        }
+        it++;
+    }
+}
+
 void LexerPrivate::splitLineIntoLexems(const QString &text
                                        , QList<Lexem*> &lexems
+                                       , const QStringList & extraTypeNames
                                        ) const
 {
     lexems.clear();
@@ -754,6 +791,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
             break;
         }
     }
+    searchUserTypeNames(lexems, extraTypeNames);
     for (int i=0; i<lexems.size(); i++) {
         lexems[i]->length = lexems[i]->data.size();
         if (lexems[i]->type!=LxConstLiteral) {
@@ -788,7 +826,9 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
         }
     }
     searchNumericConstants(lexems);
+
     searchEndLoopIf(lexems);
+
 }
 
 void popFirstStatement(QList<Lexem*> & lexems, Statement & result );

@@ -21,6 +21,7 @@ using VM::Variable;
 struct TableElem {
     ElemType type; // Element type
     ValueType vtype; // Value type
+    size_t userTypeSize; // Size of user-defined type
     uint8_t dimension; // 0 for regular, [1..3] for arrays
     ValueKind refvalue; // 1 for in-argument,
                      // 2 for in/out-argument,
@@ -180,6 +181,7 @@ inline void tableElemToBinaryStream(std::list<char> & ds, const TableElem &e)
 {
     valueToDataStream(ds, uint8_t(e.type));
     valueToDataStream(ds, uint8_t(e.vtype));
+    valueToDataStream(ds, uint32_t(e.userTypeSize));
     valueToDataStream(ds, uint8_t(e.dimension));
     valueToDataStream(ds, uint8_t(e.refvalue));
     valueToDataStream(ds, uint8_t(e.module));
@@ -278,9 +280,11 @@ inline void tableElemFromBinaryStream(std::list<char> & ds, TableElem &e)
     uint8_t m;
     uint16_t a;
     uint16_t id;
+    uint32_t sz;
     String s;
     valueFromDataStream(ds, t);
     valueFromDataStream(ds, v);
+    valueFromDataStream(ds, sz);
     valueFromDataStream(ds, d);
     valueFromDataStream(ds, r);
     valueFromDataStream(ds, m);
@@ -289,6 +293,7 @@ inline void tableElemFromBinaryStream(std::list<char> & ds, TableElem &e)
     stringFromDataStream(ds, s);
     e.type = ElemType(t);
     e.vtype = ValueType(v);
+    e.userTypeSize = size_t(sz);
     e.dimension = d;
     e.refvalue = ValueKind(r);
     e.module = m;
@@ -368,7 +373,7 @@ inline ElemType elemTypeFromString(const std::string &ss)
 
 
 
-inline std::string vtypeToString(ValueType t, uint8_t dim)
+inline std::string vtypeToString(ValueType t, size_t userDataSize, uint8_t dim)
 {
     std::string result;
     if (t==VT_int)
@@ -381,6 +386,11 @@ inline std::string vtypeToString(ValueType t, uint8_t dim)
         result = "string";
     else if (t==VT_bool)
         result = "bool";
+    else if (t==VT_user) {
+        std::ostringstream ss;
+        ss << "user" << int(userDataSize);
+        result = ss.str();
+    }
     else
         result = "";
     if (result.length()>0) {
@@ -482,7 +492,7 @@ inline String unscreenString(String s)
 inline std::string constantToTextStream(const TableElem & e)
 {
     std::ostringstream os;
-    os << ".constant id=" << e.id << " type=" << vtypeToString(e.vtype, e.dimension) << " value=";
+    os << ".constant id=" << e.id << " type=" << vtypeToString(e.vtype, e.userTypeSize, e.dimension) << " value=";
     if (e.vtype==VT_int) {
         const int32_t val = e.initialValue.toInt();
         os << val;
@@ -504,7 +514,7 @@ inline std::string constantToTextStream(const TableElem & e)
 inline std::string localToTextStream(const TableElem & e)
 {
     std::ostringstream os;
-    os << ".local kind=" << kindToString(e.refvalue) << " type=" << vtypeToString(e.vtype, e.dimension) << " ";
+    os << ".local kind=" << kindToString(e.refvalue) << " type=" << vtypeToString(e.vtype, e.userTypeSize, e.dimension) << " ";
     os << "module=" << int(e.module) << " algorithm=" << e.algId << " id=" << e.id;
     if (e.name.length()>0) {
         os << " name=\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\"";
@@ -515,7 +525,7 @@ inline std::string localToTextStream(const TableElem & e)
 inline std::string globalToTextStream(const TableElem & e)
 {
     std::ostringstream os;
-    os << ".global type:" << vtypeToString(e.vtype, e.dimension) << " ";
+    os << ".global type:" << vtypeToString(e.vtype, e.userTypeSize, e.dimension) << " ";
     os << "module=" << int(e.module) << " id=" << e.id;
     if (e.name.length()>0) {
         os << " name=\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\"";

@@ -6,6 +6,7 @@
 #include <QVariant>
 
 #include "ast_variabletype.h"
+#include "ast_type.h"
 
 #undef ABSTRACTSYNTAXTREE_EXPORT
 #ifdef DATAFORMATS_LIBRARY
@@ -66,7 +67,7 @@ struct ABSTRACTSYNTAXTREE_EXPORT Expression {
     enum ExpressionType kind;
 
     /** Resulting base type of expression */
-    enum VariableBaseType baseType;
+    Type baseType;
 
     /** Resulting dimension of base type */
     int dimension;

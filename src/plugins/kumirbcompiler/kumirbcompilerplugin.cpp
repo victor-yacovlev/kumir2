@@ -47,6 +47,7 @@ void KumirBytecodeCompilerPlugin::start()
     QString filename;
     QString encoding = "";
     DebugLevel debugLevel = Shared::GeneratorInterface::LinesOnly;
+
     for (int i=1; i<qApp->argc(); i++) {
         const QString arg = qApp->arguments()[i];
         if ( !arg.startsWith("-") && !arg.startsWith("[") && arg.endsWith(".kum")) {

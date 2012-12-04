@@ -197,6 +197,7 @@ private /*methods*/:
 private /*instruction methods*/:
     inline void do_call(uint8_t, uint16_t);
     inline void do_stdcall(uint16_t);
+    inline void do_filescall(uint16_t);
     inline void do_specialcall(uint16_t);
     inline void do_externalcall(const String & name, uint16_t id);
     inline void do_init(uint8_t, uint16_t);
@@ -591,8 +592,10 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
     uint32_t algorithm = alg;
     uint32_t p = module | algorithm;
 
-    if (mod!=0xFF && (mod & 0xF0)) // 0xF0 ... 0xFE -- builtin modules
+    if (mod==0xF0) // stdlib
         do_stdcall(alg);
+    else if (mod==0xF1)
+        do_filescall(alg);
     else if (mod==0xFF)
         do_specialcall(alg);
 #ifndef NO_EXTERNS
@@ -947,53 +950,68 @@ void KumirVM::do_stdcall(uint16_t alg)
         s_error = Kumir::Core::getError();
         break;
     }
-    /* алг цел открыть на чтение(лит имя файла) */
-    case 0x0027: {
+    default: {
+        s_error = Kumir::Core::fromUtf8("Вызов неизвестного алгоримта, возможно из более новой версии Кумир");
+    }
+    }
+    if (m_dontTouchMe)
+        m_dontTouchMe->unlock();
+}
+
+void KumirVM::do_filescall(uint16_t alg)
+{
+    m_dontTouchMe->lock();
+    stack_values.pop(); // Args count
+    switch (alg) {
+    /* алг файл открыть на чтение(лит имя файла) */
+    case 0x0000: {
         const String x = stack_values.pop().toString();
-        int y = Kumir::Files::open(x, Kumir::Files::FM_Read);
-        stack_values.push(Variable(y));
+        Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Read);
+        UserTypeValue yy(y);
+        Variable res(yy);
+        stack_values.push(res);
         s_error = Kumir::Core::getError();
         break;
     }
-    /* алг цел открыть на запись(лит имя файла) */
-    case 0x0028: {
+    /* алг файл открыть на запись(лит имя файла) */
+    case 0x0001: {
         const String x = stack_values.pop().toString();
-        int y = Kumir::Files::open(x, Kumir::Files::FM_Write);
-        stack_values.push(Variable(y));
+        Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Write);
+        stack_values.push(Variable(UserTypeValue(y)));
         s_error = Kumir::Core::getError();
         break;
     }
-    /* алг цел открыть на добавление(лит имя файла) */
-    case 0x0029: {
+    /* алг файл открыть на добавление(лит имя файла) */
+    case 0x0002: {
         const String x = stack_values.pop().toString();
-        int y = Kumir::Files::open(x, Kumir::Files::FM_Append);
-        stack_values.push(Variable(y));
+        Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Append);
+        stack_values.push(Variable(UserTypeValue(y)));
         s_error = Kumir::Core::getError();
         break;
     }
-    /* алг закрыть(цел ключ) */
-    case 0x002a: {
-        int x = stack_values.pop().toInt();
+    /* алг закрыть(файл ключ) */
+    case 0x0003: {
+        Kumir::FileType x = stack_values.pop().toUserType<Kumir::FileType>();
         Kumir::Files::close(x);
         s_error = Kumir::Core::getError();
         break;
     }
-    /* алг начать чтение(цел ключ) */
-    case 0x002b: {
-        int x = stack_values.pop().toInt();
+    /* алг начать чтение(файл ключ) */
+    case 0x0004: {
+        Kumir::FileType x = stack_values.pop().toUserType<Kumir::FileType>();
         Kumir::Files::reset(x);
         s_error = Kumir::Core::getError();
         break;
     }
-    /* алг лог конец файла(цел ключ) */
-    case 0x002c: {
-        int x = stack_values.pop().toInt();
+    /* алг лог конец файла(файл ключ) */
+    case 0x0005: {
+        Kumir::FileType x = stack_values.pop().toUserType<Kumir::FileType>();
         bool y = Kumir::Files::eof(x);
         stack_values.push(Variable(y));
         s_error = Kumir::Core::getError();
         break;
     }
-    case 0x002d: {
+    case 0x0006: {
         const String x = stack_values.pop().toString();
         Kumir::Files::setFileEncoding(x);
         s_error = Kumir::Core::getError();
@@ -1003,8 +1021,7 @@ void KumirVM::do_stdcall(uint16_t alg)
         s_error = Kumir::Core::fromUtf8("Вызов неизвестного алгоримта, возможно из более новой версии Кумир");
     }
     }
-    if (m_dontTouchMe)
-        m_dontTouchMe->unlock();
+    m_dontTouchMe->unlock();
 }
 
 void KumirVM::do_externalcall(const String &name, uint16_t id)
@@ -1056,10 +1073,10 @@ void KumirVM::do_specialcall(uint16_t alg)
         // Input
         if (m_dontTouchMe) m_dontTouchMe->lock();
         bool fileIO = false;
-        int fileNo = -1;
+        Kumir::FileType fileNo;
         if (argsCount % 2) {
             fileIO = true;
-            fileNo = stack_values.pop().toInt();
+            fileNo = stack_values.pop().toUserType<Kumir::FileType>();
         }
         int varsCount = argsCount / 2;
         std::deque<String> formats;
@@ -1148,10 +1165,10 @@ void KumirVM::do_specialcall(uint16_t alg)
         // Output
         if (m_dontTouchMe) m_dontTouchMe->lock();
         bool fileIO = false;
-        int fileNo = -1;
+        Kumir::FileType fileNo;
         if (argsCount % 2) {
             fileIO = true;
-            fileNo = stack_values.pop().toInt();
+            fileNo = stack_values.pop().toUserType<Kumir::FileType>();
         }
         int varsCount = argsCount / 2;
         std::deque<String> formats;

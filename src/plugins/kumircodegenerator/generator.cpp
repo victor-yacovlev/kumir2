@@ -190,20 +190,23 @@ void Generator::generateExternTable()
     }
 }
 
-Bytecode::ValueType Generator::valueType(AST::VariableBaseType t)
+
+QPair<Bytecode::ValueType, size_t> Generator::valueType(const AST::Type & t)
 {
-    if (t==AST::TypeInteger)
-        return Bytecode::VT_int;
-    else if (t==AST::TypeReal)
-        return Bytecode::VT_real;
-    else if (t==AST::TypeBoolean)
-        return Bytecode::VT_bool;
-    else if (t==AST::TypeString)
-        return Bytecode::VT_string;
-    else if (t==AST::TypeCharect)
-        return Bytecode::VT_char;
+    if (t.kind==AST::TypeInteger)
+        return QPair<Bytecode::ValueType, size_t>(Bytecode::VT_int,0);
+    else if (t.kind==AST::TypeReal)
+        return QPair<Bytecode::ValueType, size_t>(Bytecode::VT_real,0);
+    else if (t.kind==AST::TypeBoolean)
+        return QPair<Bytecode::ValueType, size_t>(Bytecode::VT_bool,0);
+    else if (t.kind==AST::TypeString)
+        return QPair<Bytecode::ValueType, size_t>(Bytecode::VT_string,0);
+    else if (t.kind==AST::TypeCharect)
+        return QPair<Bytecode::ValueType, size_t>(Bytecode::VT_char,0);
+    else if (t.kind==AST::TypeUser)
+        return QPair<Bytecode::ValueType, size_t>(Bytecode::VT_user,t.size);
     else
-        return Bytecode::VT_void;
+        return QPair<Bytecode::ValueType, size_t>(Bytecode::VT_void,0);
 }
 
 Bytecode::ValueKind Generator::valueKind(AST::VariableAccessType t)
@@ -277,7 +280,8 @@ void Generator::addKumirModule(int id, const AST::Module *mod)
         glob.id = quint16(i);
         glob.name = var->name.toStdWString();
         glob.dimension = quint8(var->dimension);
-        glob.vtype = valueType(var->baseType);
+        glob.vtype = valueType(var->baseType).first;
+        glob.userTypeSize = valueType(var->baseType).second;
         glob.refvalue = valueKind(var->accessType);
         m_bc->d.push_back(glob);
     }
@@ -341,7 +345,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
     int locOffset = 0;
 
     // Add function return as local
-    if (alg->header.returnType!=AST::TypeNone) {
+    if (alg->header.returnType.kind!=AST::TypeNone) {
         const AST::Variable * retval = returnValue(alg);
         Bytecode::TableElem loc;
         loc.type = Bytecode::EL_LOCAL;
@@ -350,7 +354,8 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
         loc.id = 0;
         loc.name = tr("Function return value").toStdWString();
         loc.dimension = 0;
-        loc.vtype = valueType(retval->baseType);
+        loc.vtype = valueType(retval->baseType).first;
+        loc.userTypeSize = valueType(retval->baseType).second;
         loc.refvalue = Bytecode::VK_Plain;
         m_bc->d.push_back(loc);
         varsToOut << constantValue(Bytecode::VT_int, 0, 0);
@@ -367,7 +372,8 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
         loc.id = locOffset+i;
         loc.name = var->name.toStdWString();
         loc.dimension = var->dimension;
-        loc.vtype = valueType(var->baseType);
+        loc.vtype = valueType(var->baseType).first;
+        loc.userTypeSize = valueType(var->baseType).second;
         loc.refvalue = Bytecode::VK_Plain;
         m_bc->d.push_back(loc);
 
@@ -398,7 +404,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
             Bytecode::Instruction load;
             load.type = Bytecode::LOAD;
             load.scope = Bytecode::CONSTT;
-            load.arg = constantValue(valueType(var->baseType), 0, var->initialValue);
+            load.arg = constantValue(valueType(var->baseType).first, 0, var->initialValue);
             instrs << load;
             Bytecode::Instruction store = init;
             store.type = Bytecode::STORE;
@@ -454,7 +460,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
     findFunction(alg, callInstr.module, callInstr.arg);
     instrs << callInstr;
     //  -- 3) Store return value
-    if (alg->header.returnType!=AST::TypeNone) {
+    if (alg->header.returnType.kind!=AST::TypeNone) {
         Bytecode::Instruction storeRetVal;
         storeRetVal.type = Bytecode::STORE;
         storeRetVal.scope = Bytecode::LOCAL;
@@ -524,7 +530,8 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
         loc.id = i;
         loc.name = var->name.toStdWString();
         loc.dimension = var->dimension;
-        loc.vtype = valueType(var->baseType);
+        loc.vtype = valueType(var->baseType).first;
+        loc.userTypeSize = valueType(var->baseType).second;
         loc.refvalue = valueKind(var->accessType);
         m_bc->d.push_back(loc);
     }
@@ -788,7 +795,7 @@ void Generator::findFunction(const AST::Algorhitm *alg, quint8 &module, quint16 
             if (alg==table[j]) {
                 module = i;
                 id = j;
-                if (mod->header.type==AST::ModTypeExternal) {
+                if (mod->header.type==AST::ModTypeExternal && (mod->builtInID & 0xF0) == 0) {
                     QPair<quint8,quint16> ext(module, id);
                     if (!l_externs.contains(ext))
                         l_externs << ext;
@@ -891,7 +898,7 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
 {
     QList<Bytecode::Instruction> result;
     if (st->kind==AST::ExprConst) {
-        int constId = constantValue(valueType(st->baseType), st->dimension, st->constant);
+        int constId = constantValue(valueType(st->baseType).first, st->dimension, st->constant);
         Bytecode::Instruction instr;
         instr.type = Bytecode::LOAD;
         instr.scope = Bytecode::CONSTT;
@@ -1152,7 +1159,7 @@ void Generator::INIT(int modId, int algId, int level, const AST::Statement * st,
             Bytecode::Instruction load;
             load.type = Bytecode::LOAD;
             load.scope = Bytecode::CONSTT;
-            load.arg = constantValue(valueType(var->baseType), var->dimension, var->initialValue);
+            load.arg = constantValue(valueType(var->baseType).first, var->dimension, var->initialValue);
             result << load;
             Bytecode::Instruction store = init;
             store.type = Bytecode::STORE;
@@ -1216,7 +1223,7 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
             Bytecode::Instruction ref;
             if (varExpr->kind==AST::ExprConst) {
                 ref.scope = Bytecode::CONSTT;
-                ref.arg = constantValue(valueType(varExpr->baseType), 0, varExpr->constant);
+                ref.arg = constantValue(valueType(varExpr->baseType).first, 0, varExpr->constant);
             }
             else {
                 findVariable(modId, algId, varExpr->variable, ref.scope, ref.arg);
@@ -1258,13 +1265,13 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
             start ++;
         for (int i=start; i<st->expressions.size(); i++) {
             AST::Expression * expr = st->expressions[i];
-            if (expr->baseType==AST::TypeBoolean)
+            if (expr->baseType.kind==AST::TypeBoolean)
                 format += "%b";
-            else if (expr->baseType==AST::TypeCharect)
+            else if (expr->baseType.kind==AST::TypeCharect)
                 format += "%c";
-            else if (expr->baseType==AST::TypeInteger)
+            else if (expr->baseType.kind==AST::TypeInteger)
                 format += "%d";
-            else if (expr->baseType==AST::TypeReal)
+            else if (expr->baseType.kind==AST::TypeReal)
                 format += "%f";
             else
                 format += "%s";

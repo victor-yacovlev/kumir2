@@ -7,7 +7,7 @@ namespace AST {
 Algorhitm::Algorhitm()
 {
     header.specialType = AlgorhitmTypeRegular;
-    header.returnType = TypeNone;
+    header.returnType.kind = TypeNone;
     header.implType = AlgorhitmCompiled;
 }
 
@@ -103,7 +103,7 @@ QString Algorhitm::dump() const
     QString result = "{\n";
     result += "\t\"header\": {\n";
     result += "\t\t\"name\": \""+header.name+"\",\n";
-    result += "\t\t\"returnType\": "+AST::dump(header.returnType)+",\n";
+//    result += "\t\t\"returnType\": "+AST::dump(header.returnType)+",\n";
     result += "\t\t\"specialType\": "+AST::dump(header.specialType);
     if (!header.arguments.isEmpty()) {
     result += ",\n\t\t\"arguments\": [ ";

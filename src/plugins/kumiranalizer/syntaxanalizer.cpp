@@ -4,6 +4,7 @@
 #include <deque>
 
 #include "dataformats/ast_variable.h"
+#include "dataformats/ast_type.h"
 #include "errormessages/errormessages.h"
 
 
@@ -64,6 +65,7 @@ struct SyntaxAnalizerPrivate
                       , const AST::Module * module
                       , const AST::Algorhitm * algorhitm
                       , AST::Variable* & var);
+    bool findUserType(const QString & name, AST::Type &type, AST::Module * module);
     QList<AST::Variable*> parseVariables(int statementIndex, VariablesGroup & group,
                                          AST::Module * mod,
                                          AST::Algorhitm * alg, bool algHeader);
@@ -91,7 +93,8 @@ struct SyntaxAnalizerPrivate
         int deep = 0;
         if (s.size()>0)
             result.push_back(List1());
-        for (auto it=s.begin(); it!=s.end(); ++it) {
+        typename List1::const_iterator it;
+        for (it=s.begin(); it!=s.end(); ++it) {
             if ( (*it)->type==op && deep==0 ) {
                 result.push_back(List1());
                 comas.push_back((*it));
@@ -528,7 +531,7 @@ void SyntaxAnalizerPrivate::parseAssignFileStream(int str)
             expression = parseExpression(group, st.mod, st.alg);
             if (!expression)
                 return;
-            if (expression->baseType==AST::TypeString || expression->baseType==AST::TypeCharect) {
+            if (expression->baseType.kind==AST::TypeString || expression->baseType.kind==AST::TypeCharect) {
 
             }
             else {
@@ -551,7 +554,7 @@ void SyntaxAnalizerPrivate::parseAssignFileStream(int str)
         return;
     }
     AST::Expression * e0 = new AST::Expression;
-    e0->baseType = AST::TypeString;
+    e0->baseType.kind = AST::TypeString;
     e0->constant = streamType==LxPriInput? "stdin" : "stdout";
     e0->kind = AST::ExprConst;
     e0->dimension = 0;
@@ -602,42 +605,20 @@ void SyntaxAnalizerPrivate::parseInputOutput(int str)
         st.data[0]->error = err;
         return;
     }
-    AST::Expression * fileKey = nullptr;
+    AST::Expression * fileKey = 0;
 
     QList< QList<Lexem*> > groups;
-
-    for (int i=0; i<st.data.size(); i++) {
-        const LexemType lt = st.data.at(i)->type;
-        if (lt==LxPriInput || lt==LxPriOutput || lt==LxSecFile) {
-            QList<Lexem*> group;
-            groups.append(group);
-        }
-        groups.last().append(st.data.at(i));
-    }
 
     bool fileFound = false;
 
     for (int i=0; i<groups.size(); i++) {
         const QList<Lexem*> & group = groups.at(i);
         Q_ASSERT(group.size()>0);
-        Q_ASSERT(group[0]->type==LxPriInput || group[0]->type==LxPriOutput || group[0]->type==LxSecFile);
+        Q_ASSERT(group[0]->type==LxPriInput || group[0]->type==LxPriOutput );
         // check for variables existence
         if ( (group[0]->type==LxPriInput || group[0]->type==LxPriOutput) && group.size()==1) {
             err = _(group[0]->type==LxPriInput? "What to input?" : "Whar to output?");
             group[0]->error = err; return;
-        }
-        // check for single 'file'
-        if (group[0]->type==LxSecFile && group.size()==1) {
-            err = _(fileFound? "Extra 'file'" : "What file?");
-            group[0]->error = err; return;
-        }
-        // check for extra 'file' group
-        if (group[0]->type==LxSecFile && fileFound) {
-            err = _("File already specified");
-            foreach (Lexem * lx, group) {
-                lx->error = err;
-            }
-            return;
         }
         // Ok, lets make actual parse
         if (group[0]->type==LxPriInput || group[0]->type==LxPriOutput) {
@@ -695,7 +676,7 @@ void SyntaxAnalizerPrivate::parseInputOutput(int str)
                     err = _(group[0]->type==LxPriInput? "Can't input array" : "Can't output array");
                 }
                 if (expr->kind==AST::ExprConst && group[0]->type==LxPriInput) {
-                    if (expr->baseType!=AST::TypeCharect || expr->constant.toChar()!='\n')
+                    if (expr->baseType.kind!=AST::TypeCharect || expr->constant.toChar()!='\n')
                         err = _("Can't input constant value");
                 }
                 if (expr->kind==AST::ExprSubexpression && group[0]->type==LxPriInput) {
@@ -731,7 +712,7 @@ void SyntaxAnalizerPrivate::parseInputOutput(int str)
                         st.statement->expressions.clear();
                         return;
                     }
-                    if ( (formatExpr->baseType!=AST::TypeString && formatExpr->baseType!=AST::TypeCharect) || formatExpr->dimension!=0) {
+                    if ( (formatExpr->baseType.kind!=AST::TypeString && formatExpr->baseType.kind!=AST::TypeCharect) || formatExpr->dimension!=0) {
                         err = _(group[0]->type==LxPriInput? "Input format must be a string" : "Output format must be a string");
                         foreach (Lexem * lx, format)
                             lx->error = err;
@@ -745,7 +726,7 @@ void SyntaxAnalizerPrivate::parseInputOutput(int str)
                 else {
                     formatExpr = new AST::Expression;
                     formatExpr->kind = AST::ExprConst;
-                    formatExpr->baseType = AST::TypeString;
+                    formatExpr->baseType.kind = AST::TypeString;
                     formatExpr->dimension = 0;
                     formatExpr->constant = "";
                 }
@@ -753,31 +734,6 @@ void SyntaxAnalizerPrivate::parseInputOutput(int str)
             }
         } // end parse variables list
 
-
-        // Parse file key
-        if (group[0]->type==LxSecFile) {
-            AST::Expression * expr = parseExpression(group.mid(1), st.mod, st.alg);
-            if (!expr) {
-                foreach ( AST::Expression * ex, st.statement->expressions ) {
-                    delete ex;
-                }
-                st.statement->expressions.clear();
-                return;
-            }
-            if (expr->baseType!=AST::TypeInteger || expr->dimension!=0) {
-                foreach ( AST::Expression * ex, st.statement->expressions ) {
-                    delete ex;
-                }
-                st.statement->expressions.clear();
-                delete expr;
-                err = _("File key must be an integer");
-                foreach ( Lexem * lx, group.mid(1) )
-                    lx->error = err;
-                return;
-            }
-            fileKey = expr;
-            st.statement->expressions << fileKey;
-        }
     }
 
 }
@@ -834,7 +790,7 @@ void SyntaxAnalizerPrivate::parseInputAssertPrePost(int str)
         QString err;
         if (groupType==FileHandle) {
             // Expression is a file ID
-            if (expr->baseType!=AST::TypeInteger) {
+            if (expr->baseType.kind!=AST::TypeInteger) {
                 err = _("File handle is not integer");
             }
         }
@@ -866,7 +822,7 @@ void SyntaxAnalizerPrivate::parseInputAssertPrePost(int str)
         else if (groupType==AssertionExpression) {
             // Expression is assertion in anywhere
 
-            if (expr->baseType!=AST::TypeBoolean) {
+            if (expr->baseType.kind!=AST::TypeBoolean) {
                 err = _("Condition is not boolean");
             }
         }
@@ -923,7 +879,7 @@ void SyntaxAnalizerPrivate::parseOutput(int str)
             if (!expr) {
                 return;
             }
-            if (expr->baseType!=AST::TypeInteger) {
+            if (expr->baseType.kind!=AST::TypeInteger) {
                 delete expr;
                 err = _("File handle is not integer");
                 for (int a=0; a<groups[i].size(); a++) {
@@ -941,7 +897,7 @@ void SyntaxAnalizerPrivate::parseOutput(int str)
             if (!expr) {
                 return;
             }
-            const int maxSubgroups = expr->baseType==AST::TypeReal? 3 : 2;
+            const int maxSubgroups = expr->baseType.kind==AST::TypeReal? 3 : 2;
             Q_ASSERT(colons.size() == subgroups.size()-1);
             if (subgroups.size()>maxSubgroups) {
                 delete expr;
@@ -963,7 +919,7 @@ void SyntaxAnalizerPrivate::parseOutput(int str)
                     delete expr;
                     return;
                 }
-                if (expr2->baseType!=AST::TypeInteger) {
+                if (expr2->baseType.kind!=AST::TypeInteger) {
                     err = _("Format parameter not integer");
                     foreach (Lexem * lx, subgroups[1])
                         lx->error = err;
@@ -974,7 +930,7 @@ void SyntaxAnalizerPrivate::parseOutput(int str)
             }
             else {
                 expr2 = new AST::Expression;
-                expr2->baseType = AST::TypeInteger;
+                expr2->baseType.kind = AST::TypeInteger;
                 expr2->dimension = 0;
                 expr2->kind = AST::ExprConst;
                 expr2->constant = QVariant(std::numeric_limits<qint32>::max());
@@ -986,7 +942,7 @@ void SyntaxAnalizerPrivate::parseOutput(int str)
                     delete expr2;
                     return;
                 }
-                if (expr3->baseType!=AST::TypeInteger) {
+                if (expr3->baseType.kind!=AST::TypeInteger) {
                     err = _("Format parameter not integer");
                     foreach (Lexem * lx, subgroups[2])
                         lx->error = err;
@@ -998,7 +954,7 @@ void SyntaxAnalizerPrivate::parseOutput(int str)
             }
             else {
                 expr3 = new AST::Expression;
-                expr3->baseType = AST::TypeInteger;
+                expr3->baseType.kind = AST::TypeInteger;
                 expr3->dimension = 0;
                 expr3->kind = AST::ExprConst;
                 expr3->constant = QVariant(6);
@@ -1045,7 +1001,7 @@ void SyntaxAnalizerPrivate::parseEndLoop(int str)
         QList<Lexem*> condLexems = st.data.mid(2);
         AST::Expression * expr = parseExpression(condLexems, st.mod, st.alg);
         if (expr) {
-            if (expr->baseType!=AST::TypeBoolean) {
+            if (expr->baseType.kind!=AST::TypeBoolean) {
                 for (int i=2; i<st.data.size(); i++) {
                     st.data[i]->error = _("Condition is not boolean");
                 }
@@ -1091,7 +1047,7 @@ void SyntaxAnalizerPrivate::parseIfCase(int str)
         cond = st.data.mid(1);
     AST::Expression * expr = parseExpression(cond, st.mod, st.alg);
     if (expr) {
-        if (expr->baseType!=AST::TypeBoolean) {
+        if (expr->baseType.kind!=AST::TypeBoolean) {
             for (int i=0; i<cond.size(); i++) {
                 cond[i]->error = _("Condition after '%1' not boolean", st.data[0]->data);
             }
@@ -1229,7 +1185,7 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
             foreach (Lexem *l, forr) l->error = _("Variable not found");
             return;
         }
-        if (st.statement->loop.forVariable->baseType!=AST::TypeInteger
+        if (st.statement->loop.forVariable->baseType.kind!=AST::TypeInteger
                 || st.statement->loop.forVariable->dimension>0) {
             foreach (Lexem *l, forr) l->error = _("Not integer for-loop variable");
             return;
@@ -1238,7 +1194,7 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
         if (!fromExpr) {
             return;
         }
-        else if (fromExpr->baseType!=AST::TypeInteger) {
+        else if (fromExpr->baseType.kind!=AST::TypeInteger) {
             foreach (Lexem *l, from) l->error = _("Not integer from-value");
             delete fromExpr;
             return;
@@ -1248,7 +1204,7 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
             delete fromExpr;
             return;
         }
-        else if (toExpr->baseType!=AST::TypeInteger) {
+        else if (toExpr->baseType.kind!=AST::TypeInteger) {
             foreach (Lexem *l, to) l->error = _("Not integer to-value");
             delete fromExpr;
             delete toExpr;
@@ -1266,7 +1222,7 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
             delete toExpr;
             return;
         }
-        else if (stepExpr && stepExpr->baseType!=AST::TypeInteger) {
+        else if (stepExpr && stepExpr->baseType.kind!=AST::TypeInteger) {
             foreach (Lexem *l, step) l->error = _("Not integer step-value");
             delete fromExpr;
             delete toExpr;
@@ -1306,7 +1262,7 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
         AST::Expression * timesExpr = parseExpression(times, st.mod, st.alg);
         if (!timesExpr)
             return;
-        else if (timesExpr->baseType!=AST::TypeInteger) {
+        else if (timesExpr->baseType.kind!=AST::TypeInteger) {
             foreach (Lexem * l, times) l->error = _("Not integer times-value");
             delete timesExpr;
             return;
@@ -1317,7 +1273,7 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
         if (st.data.size()==1) {
             // Forever loop
             AST::Expression * foreverr = new AST::Expression;
-            foreverr->baseType = AST::TypeBoolean;
+            foreverr->baseType.kind = AST::TypeBoolean;
             foreverr->kind = AST::ExprConst;
             foreverr->constant = QVariant(true);
             st.statement->loop.whileCondition = foreverr;
@@ -1332,7 +1288,7 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
             AST::Expression * condExpr = parseExpression(cond, st.mod, st.alg);
             if (!condExpr)
                 return;
-            else if (condExpr->baseType!=AST::TypeBoolean) {
+            else if (condExpr->baseType.kind!=AST::TypeBoolean) {
                 foreach (Lexem * l, cond) l->error = _("Condition is not boolean");
                 delete condExpr;
                 return;
@@ -1426,7 +1382,7 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
     }
     AST::Expression * leftExpr = 0;
     if (!left.isEmpty()) {
-        if (rightExpr->baseType==AST::TypeNone) {
+        if (rightExpr->baseType.kind==AST::TypeNone) {
             if (rightExpr->kind!=AST::ExprFunctionCall)
                 assignOp->error = _("Assignment of void");
             else {
@@ -1483,8 +1439,8 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
         }
         QString err;
         if (leftExpr->baseType!=rightExpr->baseType) {
-            AST::VariableBaseType a = leftExpr->baseType;
-            AST::VariableBaseType b = rightExpr->baseType;
+            AST::VariableBaseType a = leftExpr->baseType.kind;
+            AST::VariableBaseType b = rightExpr->baseType.kind;
             if (a==AST::TypeInteger) {
                 if (b==AST::TypeReal) {
                     QString strValue = QString::number(rightExpr->constant.toDouble(), 'f', 100);
@@ -1596,7 +1552,20 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName)
     int nameStartLexem = 1;
     if (st.data.size()>1 && st.data[1]->type==LxNameClass) {
         nameStartLexem = 2;
-        alg->header.returnType = lexer->baseTypeByClassName(st.data[1]->data);
+        AST::VariableBaseType bt = lexer->baseTypeByClassName(st.data[1]->data);
+        if (bt==AST::TypeNone) {
+            AST::Type tp;
+            AST::Module * typeMod = 0;
+            if (findUserType(st.data[1]->data, tp, typeMod)) {
+                alg->header.returnType = tp;
+            }
+            else {
+                alg->header.returnType.kind = AST::TypeNone;
+            }
+        }
+        else {
+            alg->header.returnType.kind = bt;
+        }
         if (lexer->isArrayClassName(st.data[1]->data)) {
             st.data[1]->error = _("Algorhitms can't return array");
             return;
@@ -1641,10 +1610,10 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName)
                     st.data[i]->error = _("Extra arguments");
                 return;
             }
-            if ( alg->header.returnType!=AST::TypeNone )
+            if ( alg->header.returnType.kind!=AST::TypeNone )
             {
                 st.data[1]->error = _("First unnamed algorithm should not return anything");
-                alg->header.returnType=AST::TypeNone;
+                alg->header.returnType.kind=AST::TypeNone;
                 return;
             }
         }
@@ -1683,7 +1652,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName)
         return ;
     }
 
-    if (alg->header.returnType!=AST::TypeNone) {
+    if (alg->header.returnType.kind!=AST::TypeNone) {
         AST::Variable * retVar = new AST::Variable;
         retVar->accessType = AST::AccessRegular;
         retVar->baseType = alg->header.returnType;
@@ -1870,7 +1839,8 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
 
     //  Состояния автомата
     Parcing par = type; // режим разбора
-    AST::VariableBaseType cType = AST::TypeNone; // тип текущей величины
+    AST::Type cType; // тип текущей величины
+    cType.kind = AST::TypeNone;
     bool array = false;
     QString cName = ""; // имя текущей величины
     QList<Lexem*> cBound; // текущая граница массива
@@ -1915,7 +1885,19 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
         {
             //          Pазбираемся с типом переменных
             if (group.lexems[curPos]->type==LxNameClass) {
-                cType = lexer->baseTypeByClassName(group.lexems[curPos]->data);
+                AST::VariableBaseType bt = lexer->baseTypeByClassName(group.lexems[curPos]->data);
+                if (bt==AST::TypeNone) {
+                    AST::Type userType;
+                    AST::Module * userTypeModule = 0;
+                    if (findUserType(group.lexems[curPos]->data, userType, userTypeModule)) {
+                        cType.kind = AST::TypeUser;
+                        cType.name = group.lexems[curPos]->data;
+                        cType.size = userType.size;
+                    }
+                }
+                else {
+                    cType.kind = bt;
+                }
                 array = lexer->isArrayClassName(group.lexems[curPos]->data);
                 //              Переходим в режим поиска имени
                 par = name;
@@ -2166,7 +2148,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
                     }
                 }
 
-                if (left->baseType!=AST::TypeInteger)
+                if (left->baseType.kind!=AST::TypeInteger)
                 {
                     for (int a=arrayBoundStart; a<=curPos; a++) {
                         group.lexems[a]->error = _("Left array bound is not integer");
@@ -2262,7 +2244,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
                 }
 
 
-                if (right->baseType!=AST::TypeInteger)
+                if (right->baseType.kind!=AST::TypeInteger)
                 {
                     for (int a=arrayBoundStart; a<=curPos; a++) {
                         group.lexems[a]->error = _("Right array bound is not integer");
@@ -2331,7 +2313,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
                         return result;
                     }
                 }
-                if (right->baseType!=AST::TypeInteger)
+                if (right->baseType.kind!=AST::TypeInteger)
                 {
                     for (int a=arrayBoundStart+1; a<curPos; a++) {
                         group.lexems[a]->error = _("Right array bound is not integer");
@@ -2382,7 +2364,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
                     return result;
                 }
                 int maxDim = 0;
-                QVariant constValue = parseConstant(initValue.toStdList(), var->baseType, maxDim);
+                QVariant constValue = parseConstant(initValue.toStdList(), var->baseType.kind, maxDim);
                 if (constValue==QVariant::Invalid) {
                     return result;
                 }
@@ -2579,12 +2561,13 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
         std::list<Lexem*> alist = constant;
         alist.pop_front();
         alist.pop_back();
-        std::list<std::list<Lexem*>> values;
+        std::list< std::list<Lexem*> > values;
+        typedef std::list< std::list<Lexem*> >::const_iterator values_iterator;
         std::list<Lexem*> operators;
         splitLexemsByOperator(alist, LxOperComa, values, operators);
         QVariantList result;
         QList<int> dimensions;
-        for (auto it=values.begin(); it!=values.end(); ++it) {
+        for (values_iterator it=values.begin(); it!=values.end(); ++it) {
             int valDim = 0;
             QVariant value = QVariant::Invalid;
             if ( (*it).size()>0 ) {
@@ -2606,7 +2589,7 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
             std::list<Lexem*> firstDimLexems;
             Q_ASSERT(dimensions.size()==values.size());
             int i = 0;
-            auto itt = values.begin();
+            values_iterator itt = values.begin();
             for (i=0; i<dimensions.size(); i++, ++itt) {
                 if (dimensions[i]!=-1) {
                     firstDim = dimensions[i];
@@ -2615,14 +2598,14 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
                 }
             }
             i = 0;
-            for (auto it=values.begin(); it!=values.end(); ++it, i++) {
+            for (values_iterator it=values.begin(); it!=values.end(); ++it, i++) {
                 if (dimensions[i]==-1)
                     continue;
                 if (dimensions[i]!=firstDim) {
-                    for (auto lx=it->begin(); lx!=it->end(); lx++) {
+                    for (std::list<Lexem*>::const_iterator lx=it->begin(); lx!=it->end(); lx++) {
                         (*lx)->error = _("Table constant element of variant type");
                     }
-                    for (auto lx=itt->begin(); lx!=itt->end(); lx++) {
+                    for (std::list<Lexem*>::const_iterator lx=itt->begin(); lx!=itt->end(); lx++) {
                         (*lx)->error = _("Table constant element of variant type");
                     }
                     return QVariant::Invalid;
@@ -2760,6 +2743,25 @@ bool SyntaxAnalizerPrivate::findLocalVariable(const QString &name, const AST::Al
         }
     }
     return var!=0;
+}
+
+bool SyntaxAnalizerPrivate::findUserType(const QString &name, AST::Type &type, AST::Module *module)
+{
+    module = 0;
+    for (int i=0; i<ast->modules.size(); i++) {
+        AST::Module * mod = ast->modules[i];
+        if (mod->header.enabled) {
+            for (int j=0; j<mod->header.types.size(); j++) {
+                AST::Type tp = mod->header.types[j];
+                if (tp.name==name) {
+                    module = mod;
+                    type = tp;
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 bool SyntaxAnalizerPrivate::findVariable(const QString &name
@@ -2919,7 +2921,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
             if (oper)
                 subexpression << oper;
             if (subexpression.size()>1 &&
-                    operand->baseType==AST::TypeNone &&
+                    operand->baseType.kind==AST::TypeNone &&
                     operand->kind==AST::ExprFunctionCall
             )
             {
@@ -2951,7 +2953,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
             if (oper)
                 subexpression << oper;
             if (subexpression.size()>1 &&
-                    operand->baseType==AST::TypeNone &&
+                    operand->baseType.kind==AST::TypeNone &&
                     operand->kind==AST::ExprFunctionCall
             )
             {
@@ -3238,7 +3240,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
         return 0;
     }
     for (int i=0; i<arguments.size(); i++) {
-        AST::VariableBaseType extType = function->header.arguments[i]->baseType;
+        AST::Type extType = function->header.arguments[i]->baseType;
         int extDim = function->header.arguments[i]->dimension;
         bool allowTypeChange = function->header.arguments[i]->accessType==AST::AccessArgumentIn;
         AST::Expression * argument = 0;
@@ -3281,10 +3283,10 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
             }
         }
         realArguments << argument;
-        AST::VariableBaseType intType = argument->baseType;
+        AST::Type intType = argument->baseType;
         int intDim = argument->dimension;
-        bool typesCompatible = ( intType==AST::TypeInteger && extType==AST::TypeReal )
-                || ( intType==AST::TypeCharect && extType==AST::TypeString );
+        bool typesCompatible = ( intType.kind==AST::TypeInteger && extType.kind==AST::TypeReal )
+                || ( intType.kind==AST::TypeCharect && extType.kind==AST::TypeString );
         QString err;
         if (intDim!=extDim) {
             if (intDim==0 || extDim==0) {
@@ -3360,7 +3362,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
     AST::Variable * variable = 0;
     if (!findVariable(name, mod, alg, variable)) {
         if (lexer->isReturnVariable(name)) {
-            if (!alg || alg->header.returnType==AST::TypeNone) {
+            if (!alg || alg->header.returnType.kind==AST::TypeNone) {
                 if (openBracketIndex==-1)
                     openBracketIndex = lexems.size();
                 for (int i=0; i<openBracketIndex; i++) {
@@ -3403,7 +3405,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
         }
     }
 
-    if (lexer->isReturnVariable(name) && alg->header.returnType!=AST::TypeString) {
+    if (lexer->isReturnVariable(name) && alg->header.returnType.kind!=AST::TypeString) {
         if (openBracketIndex==-1)
             openBracketIndex = lexems.size();
         for (int i=0; i<openBracketIndex; i++) {
@@ -3489,7 +3491,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
     }
 
     int varDimension = variable->dimension;
-    if (variable->baseType==AST::TypeString)
+    if (variable->baseType.kind==AST::TypeString)
         varDimension ++;
 
     for (int i=0; i<arguments.size(); i++) {
@@ -3499,13 +3501,13 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
 
         splitLexemsByOperator(arguments[i], LxOperColon, slice, colons);
 
-        if (slice.size()>1 && variable->baseType!=AST::TypeString) {
+        if (slice.size()>1 && variable->baseType.kind!=AST::TypeString) {
             foreach (Lexem * lx, arguments[i]) {
                 lx->error = _("Not a simple index");
             }
             return 0;
         }
-        if (slice.size()>1 && variable->baseType==AST::TypeString && i<arguments.size()-1) {
+        if (slice.size()>1 && variable->baseType.kind==AST::TypeString && i<arguments.size()-1) {
             foreach (Lexem * lx, arguments[i]) {
                 lx->error = _("Slice of string array, but not string");
             }
@@ -3541,7 +3543,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
                 return 0;
             }
             realArguments << argument;
-            AST::VariableBaseType intType = argument->baseType;
+            AST::Type intType = argument->baseType;
             int intDim = argument->dimension;
             if (intDim>0) {
                 foreach (Lexem * lx, slice[j])
@@ -3549,7 +3551,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
                 foreach (AST::Expression * a, realArguments) delete a;
                 return 0;
             }
-            if (intType!=AST::TypeInteger) {
+            if (intType.kind!=AST::TypeInteger) {
                 foreach (Lexem * lx, slice[j])
                     lx->error = _("Index is not integer");
                 foreach (AST::Expression * a, realArguments) delete a;
@@ -3582,8 +3584,8 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
             delete result;
         return 0;
     }
-    if ( ( diff<0 && variable->baseType!=AST::TypeString )
-            || ( diff<-1 && variable->baseType==AST::TypeString )
+    if ( ( diff<0 && variable->baseType.kind!=AST::TypeString )
+            || ( diff<-1 && variable->baseType.kind==AST::TypeString )
             ) {
         cb->error = _("Not enought indeces");
         if (result)
@@ -3593,15 +3595,15 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
 
     result = new AST::Expression;
     result->kind = AST::ExprArrayElement;
-    if (variable->baseType==AST::TypeString && diff==0) {
+    if (variable->baseType.kind==AST::TypeString && diff==0) {
         // Element of string: indeces count == array dimension + 1
         if (realArguments.size() > arguments.size()) {
             // String slice -> res type is string
-            result->baseType = AST::TypeString;
+            result->baseType.kind = AST::TypeString;
         }
         else {
             // String element -> res type is character
-            result->baseType = AST::TypeCharect;
+            result->baseType.kind = AST::TypeCharect;
         }
     }
     else {
@@ -3629,11 +3631,11 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
         else {
             result = new AST::Expression;
             result->kind = AST::ExprConst;
-            result->baseType = type;
+            result->baseType.kind = type;
             int maxDim = 0;
             result->constant = parseConstant(lexems, type, maxDim);
             if (result->constant.type()==QVariant::Double)
-                result->baseType = AST::TypeReal;
+                result->baseType.kind = AST::TypeReal;
             return result;
         }
     }
@@ -3653,7 +3655,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
     if (lexems.size()==1 && lexems.front()->type == LxSecNewline) {
         result = new AST::Expression;
         result->kind = AST::ExprConst;
-        result->baseType = AST::TypeCharect;
+        result->baseType.kind = AST::TypeCharect;
         result->dimension = 0;
         result->constant = QVariant(QChar('\n'));
         return result;
@@ -3746,7 +3748,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
             if (!alg) {
                 err = _("Access to return value outside of algorithm");
             }
-            if (alg && alg->header.returnType==AST::TypeNone) {
+            if (alg && alg->header.returnType.kind==AST::TypeNone) {
                 err = _("This algorithm has no return value");
             }
             if (err.isEmpty()) {
@@ -3834,13 +3836,13 @@ bool IS_NUMERIC_LIST(const QList<AST::Expression*> & list) {
     bool result = true;
     for (int i=0; i<list.size(); i++) {
         bool c = true;
-        if (list[i]->baseType==AST::TypeBoolean &&
+        if (list[i]->baseType.kind==AST::TypeBoolean &&
                 list[i]->kind==AST::ExprSubexpression)
         {
             c = IS_NUMERIC_LIST(list[i]->operands);
         }
         else {
-            c = IS_NUMERIC(list[i]->baseType);
+            c = IS_NUMERIC(list[i]->baseType.kind);
         }
         result = result && c;
     }
@@ -3850,7 +3852,7 @@ bool IS_NUMERIC_LIST(const QList<AST::Expression*> & list) {
 bool IS_LITERAL_LIST(const QList<AST::Expression*> & list) {
     bool result = true;
     for (int i=0; i<list.size(); i++) {
-        result = result && IS_LITERAL(list[i]->baseType);
+        result = result && IS_LITERAL(list[i]->baseType.kind);
     }
     return result;
 }
@@ -3891,8 +3893,8 @@ AST::ExpressionOperator operatorByLexem(const Lexem * lx)
 
 }
 
-AST::VariableBaseType resType(AST::VariableBaseType a
-                              , AST::VariableBaseType b
+AST::Type resType(const AST::Type & a
+                              , const AST::Type & b
                               , AST::ExpressionOperator op)
 {
     if(a==AST::TypeNone)
@@ -4305,18 +4307,18 @@ AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<Subexpre
             return 0;
         if (!tailExpr)
             return 0;
-        AST::VariableBaseType headType = headExpr? headExpr->baseType : AST::TypeNone;
-        AST::VariableBaseType tailType = tailExpr->baseType;
+        AST::Type headType = headExpr? headExpr->baseType : AST::Type();
+        AST::Type tailType = tailExpr->baseType;
         static const QSet<LexemType> ComparisonOperators = QSet<LexemType>()
                 << LxOperLess << LxOperLessOrEqual << LxOperEqual << LxOperNotEqual << LxOperGreaterOrEqual << LxOperGreater << LxPriAssign;
 
-        bool tailIsNumeric = IS_NUMERIC(tailType);
-        bool headIsBool = headType==AST::TypeBoolean;
+        bool tailIsNumeric = IS_NUMERIC(tailType.kind);
+        bool headIsBool = headType.kind==AST::TypeBoolean;
         bool hasHeadExpr = headExpr != NULL;
         bool headIsSubexpr = hasHeadExpr && headExpr->kind==AST::ExprSubexpression;
         bool isComparision = ComparisonOperators.contains(s[l].o->type);
         bool numericOperands = headExpr && IS_NUMERIC_LIST(headExpr->operands);
-        bool tailIsLiteral = IS_LITERAL(tailType);
+        bool tailIsLiteral = IS_LITERAL(tailType.kind);
         bool literalOperands = headExpr && IS_LITERAL_LIST(headExpr->operands);
 
         bool makeCNF = headIsBool && headIsSubexpr && isComparision && (
@@ -4328,12 +4330,12 @@ AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<Subexpre
         if (makeCNF) {
             AST::Expression * res = new AST::Expression;
             res->kind = AST::ExprSubexpression;
-            res->baseType = AST::TypeBoolean;
+            res->baseType.kind = AST::TypeBoolean;
             res->operands << headExpr;
             res->operatorr = AST::OpAnd;
             AST::Expression * subRes = new AST::Expression;
             subRes->kind = AST::ExprSubexpression;
-            subRes->baseType = AST::TypeBoolean;
+            subRes->baseType.kind = AST::TypeBoolean;
 //            subRes->operands << new AST::Expression(headExpr->operands.last());
             subRes->operands << findRightmostCNFSubexpression(new AST::Expression(headExpr));
             subRes->operands << tailExpr;
@@ -4344,45 +4346,45 @@ AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<Subexpre
         else if (!headExpr && tailExpr->kind==AST::ExprConst) {
             // Merge unary +, - and 'not' into constant
             if (s[l].o->type==LxOperPlus) {
-                if (tailExpr->baseType==AST::TypeInteger) {
+                if (tailExpr->baseType.kind==AST::TypeInteger) {
                     // pass
                 }
-                else if (tailExpr->baseType==AST::TypeReal) {
+                else if (tailExpr->baseType.kind==AST::TypeReal) {
                     // pass
                 }
                 else {
-                    s[l].o->error = _("Can't +%1", lexer->classNameByBaseType(tailExpr->baseType));
+                    s[l].o->error = _("Can't +%1", lexer->classNameByBaseType(tailExpr->baseType.kind));
                 }
             }
             else if (s[l].o->type==LxOperMinus) {
-                if (tailExpr->baseType==AST::TypeInteger) {
+                if (tailExpr->baseType.kind==AST::TypeInteger) {
                     tailExpr->constant = QVariant(0-tailExpr->constant.toInt());
                 }
-                else if (tailExpr->baseType==AST::TypeReal) {
+                else if (tailExpr->baseType.kind==AST::TypeReal) {
                     tailExpr->constant = QVariant(0.0-tailExpr->constant.toDouble());
                 }
                 else {
-                    s[l].o->error = _("Can't -%1", lexer->classNameByBaseType(tailExpr->baseType));
+                    s[l].o->error = _("Can't -%1", lexer->classNameByBaseType(tailExpr->baseType.kind));
                 }
             }
             else if (s[l].o->type==LxSecNot) {
-                if (tailExpr->baseType==AST::TypeBoolean) {
+                if (tailExpr->baseType.kind==AST::TypeBoolean) {
                     tailExpr->constant = QVariant( ! tailExpr->constant.toBool());
                 }
                 else {
-                    s[l].o->error = _("Can't not %1", lexer->classNameByBaseType(tailExpr->baseType));
+                    s[l].o->error = _("Can't not %1", lexer->classNameByBaseType(tailExpr->baseType.kind));
                 }
             }
             return tailExpr;
         }
         else {
             AST::ExpressionOperator operation = operatorByLexem(s[l].o);
-            AST::VariableBaseType rt = resType(headType, tailType, operation);
-            if (rt==AST::TypeNone) {
+            AST::Type rt = resType(headType, tailType, operation);
+            if (rt.kind==AST::TypeNone) {
                 s[l].o->error = _("Can't %1 %2 %3"
-                                  ,lexer->classNameByBaseType(headType)
+                                  ,lexer->classNameByBaseType(headType.kind)
                                   ,s[l].o->data
-                                  ,lexer->classNameByBaseType(tailType)
+                                  ,lexer->classNameByBaseType(tailType.kind)
                                   );
                 if (headExpr)
                     delete headExpr;

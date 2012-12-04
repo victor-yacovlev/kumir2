@@ -1,6 +1,5 @@
 include(../../kumir2_plugin.cmake)
 find_package(PythonInterp)
-set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
 
 set(SOURCES
     kumiranalizerplugin.cpp

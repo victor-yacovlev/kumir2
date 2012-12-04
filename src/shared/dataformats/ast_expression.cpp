@@ -8,7 +8,7 @@ namespace AST {
 Expression::Expression()
 {
     kind = ExprNone;
-    baseType = TypeNone;
+    baseType.kind = TypeNone;
     variable = NULL;
     function = NULL;
     constant = QVariant::Invalid;
@@ -187,7 +187,7 @@ QString Expression::dump() const
 //        result += "\t],\n";
 //    }
     result += "\t\"kind\": "+dumpKind(kind);
-    result += ",\n\t\"type\": "+AST::dump(baseType);
+//    result += ",\n\t\"type\": "+AST::dump(baseType);
     if (kind==ExprConst) {
         result += ",\n\t\"constant\": ";
         if (constant.type()==QVariant::String || constant.type()==QVariant::Char) {

@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include "stdlib/kumirstdlib.hpp"
 #include "vm/variant.hpp"
 #include "vm/vm.hpp"
@@ -665,7 +666,7 @@ QVariantList Run::remainingValues() const
 {
     QVariantList result;
     std::list<AnyValue> vls = vm->remainingValues();
-    for (auto it=vls.begin(); it!=vls.end(); ++it) {
+    for (std::list<AnyValue>::const_iterator it=vls.begin(); it!=vls.end(); ++it) {
         const AnyValue & var = (*it);
         if (var.type()==VT_void)
             result << QVariant::Invalid;

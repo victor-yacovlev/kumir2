@@ -1,6 +1,6 @@
 set(
     CONFIGURATION_TEMPLATE
-    "Actor*,!KumirBCompiler,KumirCodeGenerator,KumirAnalizer"
+    "Actor*,!KumirBCompiler,KumirCodeGenerator,KumirAnalizer\(preload=Files,preload=String\)"
 )
 
 set(SRC ../main.cpp)

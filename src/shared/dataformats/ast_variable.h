@@ -8,6 +8,7 @@
 
 #include "ast_variabletype.h"
 #include "ast_expression.h"
+#include "ast_type.h"
 #include "lexem.h"
 
 #undef ABSTRACTSYNTAXTREE_EXPORT
@@ -29,7 +30,7 @@ struct ABSTRACTSYNTAXTREE_EXPORT Variable {
     QString name;
 
     /** Variable base type */
-    enum VariableBaseType baseType;
+    struct Type baseType;
 
     /** Variable access type */
     enum VariableAccessType accessType;

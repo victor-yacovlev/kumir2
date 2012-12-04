@@ -6,6 +6,7 @@
 #include "dataformats/ast.h"
 #include "dataformats/ast_module.h"
 #include "dataformats/ast_algorhitm.h"
+#include "dataformats/ast_type.h"
 #include "interfaces/analizerinterface.h"
 
 #include <QtCore>
@@ -15,6 +16,7 @@ namespace KumirAnalizer {
 class Analizer : public QObject
 {
     Q_OBJECT
+    friend class AnalizerPrivate;
 public:
 
     explicit Analizer(class KumirAnalizerPlugin * plugin);
@@ -26,8 +28,11 @@ public:
       * Kumir source language (Russian, Ukrainian, etc.)
       */
     static void setSourceLanguage(const QLocale::Language & language);
+    static void setModuleAlwaysAvailable(const QString & moduleName);
 
 public slots:
+
+
 
     void changeSourceText(const QList<Shared::ChangeTextTransaction> & changes);
     void setHiddenText(const QString & text, int baseLineNo);
@@ -58,6 +63,7 @@ private:
     const AST::Module * findModuleByLine(int lineNo) const;
     const AST::Algorhitm * findAlgorhitmByLine(const AST::Module * mod, int lineNo) const;
     struct AnalizerPrivate * d;
+
 
 
 };

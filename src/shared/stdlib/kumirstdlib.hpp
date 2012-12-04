@@ -40,6 +40,7 @@
 
 namespace VM { class Variable; }
 
+
 namespace Kumir {
 
 #ifdef NO_UNICODE
@@ -55,6 +56,48 @@ typedef float real;
 #else
 typedef double real;
 #endif
+
+struct FileType {
+    enum OpenMode { NotOpen, Read, Write, Append };
+    inline FileType() { valid = false; fullPath[0] = Char('\0'); mode = NotOpen; }
+    inline void setName(const String &name) {
+        std::string utf8 = Coder::encode(UTF8, name);
+        strcpy(fullPath, utf8.c_str());
+    }
+    inline String getName() const {
+        std::string utf8(fullPath);
+        return Coder::decode(UTF8, utf8);
+    }
+    inline void setMode(OpenMode m) {
+        mode = uint8_t(m);
+    }
+    inline OpenMode getMode() const {
+        return OpenMode(mode);
+    }
+    inline void setFilePtr(FILE * f) {
+        ptr = uint64_t(f);
+        valid = true;
+    }
+    inline FILE* getFilePtr() const {
+        void * pptr = (void*)ptr;
+        return reinterpret_cast<FILE*>(pptr);
+    }
+    inline bool isValid() const {
+        return valid;
+    }
+    inline void invalidate() {
+        valid = false;
+    }
+    inline bool operator==(const FileType & other) const {
+        return strcmp(other.fullPath, fullPath)==0;
+    }
+
+private:
+    char fullPath[256];
+    uint64_t ptr;
+    uint8_t mode;
+    bool valid;
+};
 
 class StringList:
         public std::deque<String>
@@ -368,13 +411,13 @@ public:
             return 0;
         }
         else {
-            int rndValue = ::rand(); // in range [0..2^32]
+            int rndValue = rand(); // in range [0..2^32]
             real scale = static_cast<real>(b-a+1)/static_cast<real>(RAND_MAX);
             return Kumir::Math::imin(b, a+static_cast<int>(scale*rndValue));
         }
     }
     inline static int irnd(int x) {
-        int rndValue = ::rand();
+        int rndValue = rand();
         real scale = static_cast<real>(x)/static_cast<real>(RAND_MAX);
         return Kumir::Math::imin(x, 1+static_cast<int>(scale*rndValue));
     }
@@ -385,13 +428,13 @@ public:
             return 0.0;
         }
         else {
-            int rndValue = ::rand(); // in range [0..2^32]
+            int rndValue = rand(); // in range [0..2^32]
             real scale = static_cast<real>(b-a+1)/static_cast<real>(RAND_MAX);
             return Kumir::Math::rmin(b, a+static_cast<real>(scale*rndValue));
         }
     }
     inline static real rrnd(real x) {
-        int rndValue = ::rand();
+        int rndValue = rand();
         real scale = static_cast<real>(x)/static_cast<real>(RAND_MAX);
         return Kumir::Math::rmin(x, 1+static_cast<real>(scale*rndValue));
     }
@@ -826,39 +869,9 @@ public:
     }
 };
 
-#ifdef NO_FILES
-// Dummy files implementation
 class Files {
     friend class IO;
 public:
-    inline static void init() {}
-    inline static void finalize() {}
-
-    inline static bool exist(const String & ) { return false; }
-    inline static bool unlinkFile(const String & ) { return false; }
-
-    inline static int open(const String & , const char * ) { return 0; }
-    inline static void close(int ) {}
-    inline static void reset(int ) {}
-    inline static bool eof(int ) { return true; }
-
-    inline static bool readBool(int, const String &) { return false; }
-    inline static int readInt(int, const String &) { return 0; }
-    inline static real readReal(int, const String &) { return 0; }
-    inline static Char readChar(int, const String &) { return Char(0); }
-    inline static String readString(int, const String &) { return String(); }
-
-    inline static void writeBool(int,bool, const String &) {}
-    inline static void writeInt(int,int, const String &) {}
-    inline static void writeReal(int,real, const String &) {}
-    inline static void writeChar(int,Char, const String &) {}
-    inline static void writeString(int,const String &, const String &) {}
-};
-#else
-class Files {
-    friend class IO;
-public:
-    enum FileMode { FM_Read, FM_Write, FM_Append };
     inline static bool isOpenedFiles() { return openedFiles.size()> 0; }
     inline static void init() {
         fileEncoding = UTF8;
@@ -866,11 +879,11 @@ public:
     inline static void finalize() {
         if (isOpenedFiles() && Core::getError().length()==0)
             Core::abort(Core::fromUtf8("Остались не закрытые файлы"));
-        for (std::list<File>::const_iterator it = openedFiles.begin();
+        for (std::list<FileType>::const_iterator it = openedFiles.begin();
              it != openedFiles.end(); ++it)
         {
-            const File & f = (*it);
-            fclose(f.d);
+            const FileType & f = (*it);
+            fclose(f.getFilePtr());
         }
         openedFiles.clear();
     }
@@ -972,12 +985,12 @@ public:
         return result;
     }
 #endif
-    inline static int open(const String & fileName, FileMode mode) {
-        for (std::list<File>::iterator it = openedFiles.begin(); it!=openedFiles.end(); ++it) {
-            const File & f = (*it);
-            if (f.name==fileName) {
+    inline static FileType open(const String & fileName, FileType::OpenMode mode) {
+        for (std::list<FileType>::iterator it = openedFiles.begin(); it!=openedFiles.end(); ++it) {
+            const FileType & f = (*it);
+            if (f.getName()==fileName) {
                 Core::abort(Core::fromUtf8("Файл уже открыт: ")+fileName);
-                return -1;
+                return FileType();
             }
         }
 #   ifdef NO_UNICODE
@@ -992,38 +1005,33 @@ public:
 #   endif
 
         const char * fmode;
-        if (mode==FM_Read)
+        if (mode==FileType::Read)
             fmode = "r";
-        else if (mode==FM_Write)
+        else if (mode==FileType::Write)
             fmode = "w";
-        else if (mode==FM_Append)
+        else if (mode==FileType::Append)
             fmode = "a";
 
         FILE * res = fopen(path, fmode);
-        File f;
-        f.key = -1;
+        FileType f;
         if (res==0) {
             Core::abort(Core::fromUtf8("Невозможно открыть файл: ")+fileName);
         }
         else {
-            if (mode==FM_Append)
-                mode = FM_Write;
-            f.name = fileName;
-            f.key = openedFiles.size();
-            f.mode = mode;
-            f.d = res;
+            if (mode==FileType::Append)
+                mode = FileType::Write;
+            f.setName(fileName);
+            f.setMode(mode);
+            f.setFilePtr(res);
             openedFiles.push_back(f);
         }
-#   ifndef NO_UNICODE
-        free((void*)path);
-#   endif
-        return f.key;
+        return f;
     }
-    inline static void close(int key) {
-        std::list<File>::iterator it = openedFiles.begin();
+    inline static void close(FileType & key) {
+        std::list<FileType>::iterator it = openedFiles.begin();
         for (; it!=openedFiles.end(); ++it) {
-            const File & f = (*it);
-            if (f.key==key) {
+            const FileType & f = (*it);
+            if (f==key) {
                 break;
             }
         }
@@ -1031,15 +1039,17 @@ public:
             Core::abort(Core::fromUtf8("Неверный ключ"));
             return;
         }
-        fclose(it->d);
+        FileType & f = (*it);
+        fclose(f.getFilePtr());
+        f.invalidate();
         openedFiles.erase(it);
     }
 
-    inline static void reset(int key) {
-        std::list<File>::iterator it = openedFiles.begin();
+    inline static void reset(FileType & key) {
+        std::list<FileType>::iterator it = openedFiles.begin();
         for (; it!=openedFiles.end(); ++it) {
-            const File & f = (*it);
-            if (f.key==key) {
+            const FileType & f = (*it);
+            if (f==key) {
                 break;
             }
         }
@@ -1047,14 +1057,14 @@ public:
             Core::abort(Core::fromUtf8("Неверный ключ"));
             return;
         }
-        const File & f = (*it);
-        fseek(f.d, 0, 0);
+        const FileType & f = (*it);
+        fseek(f.getFilePtr(), 0, 0);
     }
-    inline static bool eof(int key) {
-        std::list<File>::iterator it = openedFiles.begin();
+    inline static bool eof(const FileType & key) {
+        std::list<FileType>::iterator it = openedFiles.begin();
         for (; it!=openedFiles.end(); ++it) {
-            const File & f = (*it);
-            if (f.key==key) {
+            const FileType & f = (*it);
+            if (f==key) {
                 break;
             }
         }
@@ -1062,20 +1072,14 @@ public:
             Core::abort(Core::fromUtf8("Неверный ключ"));
             return false;
         }
-        const File & f = (*it);
-        return feof(f.d)>0? true : false;
+        const FileType & f = (*it);
+        return feof(f.getFilePtr())>0? true : false;
     }
 
 
 private:
-    struct File {
-        int key;
-        String name;
-        FileMode mode;
-        FILE * d;
-    };
 
-    static std::list<File> openedFiles;
+    static std::list<FileType> openedFiles;
 
     struct IntegerFormat {
         int base;
@@ -1100,7 +1104,6 @@ private:
     static Encoding fileEncoding;
 };
 
-#endif
 
 class IO {
 public:
@@ -1787,14 +1790,14 @@ public:
 #   define LOCALE_ENCODING ##ONEBYTE_LOCALE##
 #endif
 
-    static InputStream makeInputStream(int fileNo, bool fromStdIn) {
+    static InputStream makeInputStream(FileType fileNo, bool fromStdIn) {
         if (fromStdIn) {
             return InputStream(stdin, LOCALE_ENCODING);
         }
         else {
-            std::list<Files::File>::const_iterator it = Files::openedFiles.begin();
+            std::list<FileType>::const_iterator it = Files::openedFiles.begin();
             for ( ; it!=Files::openedFiles.end(); ++it) {
-                if (it->key==fileNo) {
+                if (*it==fileNo) {
                     break;
                 }
             }
@@ -1802,24 +1805,24 @@ public:
                 Core::abort(Core::fromUtf8("Файл с таким ключем не открыт"));
                 return InputStream();
             }
-            const Files::File file = (*it);
-            if (file.mode!=Files::FM_Read) {
+            const FileType file = (*it);
+            if (file.getMode()!=FileType::Read) {
                 Core::abort(Core::fromUtf8("Файл с таким ключем открыт на запись"));
                 return InputStream();
             }
-            return InputStream(file.d, Files::fileEncoding);
+            return InputStream(file.getFilePtr(), Files::fileEncoding);
         }
     }
 
-    inline static OutputStream makeOutputStream(int fileNo, bool toStdOut) {
+    inline static OutputStream makeOutputStream(FileType fileNo, bool toStdOut) {
         if (toStdOut) {
             return OutputStream(stdout, LOCALE_ENCODING);
         }
         else {
-            const std::list<Files::File> & fs = Files::openedFiles;
-            std::list<Files::File>::const_iterator it = fs.begin();
+            const std::list<FileType> & fs = Files::openedFiles;
+            std::list<FileType>::const_iterator it = fs.begin();
             for ( ; it!=fs.end(); ++it) {
-                if (it->key==fileNo) {
+                if (*it==fileNo) {
                     break;
                 }
             }
@@ -1827,16 +1830,16 @@ public:
                 Core::abort(Core::fromUtf8("Файл с таким ключем не открыт"));
                 return OutputStream();
             }
-            const Files::File file = (*it);
-            if (file.mode==Files::FM_Read) {
+            const FileType file = (*it);
+            if (file.getMode()==FileType::Read) {
                 Core::abort(Core::fromUtf8("Файл с таким ключем открыт на чтение"));
                 return OutputStream();
             }
-            return OutputStream(file.d, Files::fileEncoding);
+            return OutputStream(file.getFilePtr(), Files::fileEncoding);
         }
     }
 
-    inline static int readInteger(const String & format, int fileNo = -1, bool fromStdIn = true) {
+    inline static int readInteger(const String & format, FileType fileNo = FileType(), bool fromStdIn = true) {
         IntFormat fmt = parseIntFormat(format);
         if (Core::getError().length()>0) return 0;
         InputStream stream = makeInputStream(fileNo, fromStdIn);
@@ -1844,7 +1847,7 @@ public:
         return readInteger(stream, fmt);
     }
 
-    inline static real readReal(const String & format, int fileNo = -1, bool fromStdIn = true) {
+    inline static real readReal(const String & format, FileType fileNo = FileType(), bool fromStdIn = true) {
         RealFormat fmt = parseRealFormat(format);
         if (Core::getError().length()>0) return 0;
         InputStream stream = makeInputStream(fileNo, fromStdIn);
@@ -1852,7 +1855,7 @@ public:
         return readReal(stream, fmt);
     }
 
-    inline static bool readBool(const String & format, int fileNo = -1, bool fromStdIn = true) {
+    inline static bool readBool(const String & format, FileType fileNo = FileType(), bool fromStdIn = true) {
         BoolFormat fmt = parseBoolFormat(format);
         if (Core::getError().length()>0) return 0;
         InputStream stream = makeInputStream(fileNo, fromStdIn);
@@ -1860,27 +1863,27 @@ public:
         return readBool(stream, fmt);
     }
 
-    inline static Char readChar(const String & format, int fileNo = -1, bool fromStdIn = true) {
+    inline static Char readChar(const String & format, FileType fileNo = FileType(), bool fromStdIn = true) {
         CharFormat fmt = parseCharFormat(format);
         if (Core::getError().length()>0) return 0;
         InputStream stream = makeInputStream(fileNo, fromStdIn);
         if (Core::getError().length()>0) return 0;
         return readChar(stream, fmt);
     }
-    inline static String readString(const String & format, int fileNo = -1, bool fromStdIn = true) {
+    inline static String readString(const String & format, FileType fileNo = FileType(), bool fromStdIn = true) {
         StringFormat fmt = parseStringFormat(format);
         if (Core::getError().length()>0) return 0;
         InputStream stream = makeInputStream(fileNo, fromStdIn);
         if (Core::getError().length()>0) return 0;
         return readString(stream, fmt);
     }
-    inline static String readLine(int fileNo = -1, bool fromStdIn = true) {
+    inline static String readLine(FileType fileNo = FileType(), bool fromStdIn = true) {
         InputStream stream = makeInputStream(fileNo, fromStdIn);
         if (Core::getError().length()>0) return 0;
         return readLine(stream);
     }
 
-    inline static void writeInteger(const String & format, int value, int fileNo = -1, bool toStdOut = true) {
+    inline static void writeInteger(const String & format, int value, FileType fileNo = FileType(), bool toStdOut = true) {
         IntFormat fmt = parseIntFormat(format);
         if (Core::getError().length()>0) return;
         OutputStream stream = makeOutputStream(fileNo, toStdOut);
@@ -1888,28 +1891,28 @@ public:
         writeInteger(stream, value, fmt);
     }
 
-    inline static void writeReal(const String & format, real value, int fileNo = -1, bool toStdOut = true) {
+    inline static void writeReal(const String & format, real value, FileType fileNo = FileType(), bool toStdOut = true) {
         RealFormat fmt = parseRealFormat(format);
         if (Core::getError().length()>0) return;
         OutputStream stream = makeOutputStream(fileNo, toStdOut);
         if (Core::getError().length()>0) return;
         writeReal(stream, value, fmt);
     }
-    inline static void writeBool(const String & format, bool value, int fileNo = -1, bool toStdOut = true) {
+    inline static void writeBool(const String & format, bool value, FileType fileNo = FileType(), bool toStdOut = true) {
         BoolFormat fmt = parseBoolFormat(format);
         if (Core::getError().length()>0) return;
         OutputStream stream = makeOutputStream(fileNo, toStdOut);
         if (Core::getError().length()>0) return;
         writeBool(stream, value, fmt);
     }
-    inline static void writeString(const String & format, const String & value, int fileNo = -1, bool toStdOut = true) {
+    inline static void writeString(const String & format, const String & value, FileType fileNo = FileType(), bool toStdOut = true) {
         StringFormat fmt = parseStringFormat(format);
         if (Core::getError().length()>0) return;
         OutputStream stream = makeOutputStream(fileNo, toStdOut);
         if (Core::getError().length()>0) return;
         writeString(stream, value, fmt);
     }
-    inline static void writeChar(const String & format, Char value, int fileNo = -1, bool toStdOut = true) {
+    inline static void writeChar(const String & format, Char value, FileType fileNo = FileType(), bool toStdOut = true) {
         CharFormat fmt = parseCharFormat(format);
         if (Core::getError().length()>0) return;
         OutputStream stream = makeOutputStream(fileNo, toStdOut);
@@ -1962,7 +1965,7 @@ inline void finalizeStandardLibrary() {
 
 #ifndef DO_NOT_DECLARE_STATIC
 String Core::error = String();
-std::list<Files::File> Files::openedFiles;
+std::list<FileType> Files::openedFiles;
 Encoding Files::fileEncoding;
 String Kumir::IO::outputDelimiter = Kumir::Core::fromAscii("");
 String Kumir::IO::inputDelimeters = Kumir::Core::fromAscii(",");

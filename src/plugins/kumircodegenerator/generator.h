@@ -77,7 +77,8 @@ private:
     static const AST::Variable * returnValue(const AST::Algorhitm * alg);
     void findFunction(const AST::Algorhitm * alg, quint8 & module, quint16 & id) ;
 
-    static Bytecode::ValueType valueType(AST::VariableBaseType t);
+
+    static QPair<Bytecode::ValueType, size_t> valueType(const AST::Type & t);
     static Bytecode::ValueKind valueKind(AST::VariableAccessType t);
     static Bytecode::InstructionType operation(AST::ExpressionOperator op);
 

@@ -46,6 +46,9 @@ struct ModuleHeader {
       * represented as references to corresponding functions */
     QList<struct Algorhitm *> algorhitms;
 
+    /** Module custom types */
+    QList<struct Type> types;
+
     /** List of dependent modules */
     QSet<QString> uses;
 
@@ -71,6 +74,7 @@ struct ModuleImplementation {
 
     /** Module end lexems */
     QList<struct Lexem*> endLexems;
+
 };
 
 

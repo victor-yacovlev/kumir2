@@ -18,10 +18,14 @@ enum EvaluationStatus {
 };
 
 
+
 class ActorInterface
 {
 public:
+    typedef QPair<QString,size_t> CustomType;
+    typedef QList<CustomType> TypeList;
     inline virtual QStringList funcList() const { return QStringList(); } // List of public functions;
+    inline virtual TypeList typeList() const { return TypeList(); }
     inline virtual QString name() const { return QString(); }
     inline virtual QString mainIconName() const {return QString(); }
     inline virtual QString pultIconName() const {return QString(); }

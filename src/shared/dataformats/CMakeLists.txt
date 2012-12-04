@@ -6,6 +6,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set(SOURCES
     ast.cpp
     ast_module.cpp
+    ast_type.cpp
     ast_algorhitm.cpp
     ast_expression.cpp
     ast_variable.cpp

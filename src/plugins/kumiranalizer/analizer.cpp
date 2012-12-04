@@ -21,6 +21,14 @@ void Analizer::setSourceLanguage(const QLocale::Language &language)
     AnalizerPrivate::nativeLanguage = language;
 }
 
+void Analizer::setModuleAlwaysAvailable(const QString &moduleName)
+{
+    if (moduleName==QString::fromAscii("Files"))
+        AnalizerPrivate::AlwaysAvailableModulesName.append(QString::fromUtf8("Файлы"));
+    if (moduleName==QString::fromAscii("String"))
+        AnalizerPrivate::AlwaysAvailableModulesName.append(QString::fromUtf8("Строки"));
+}
+
 Analizer::Analizer(KumirAnalizerPlugin * plugin) :
     QObject(plugin)
 {
@@ -35,7 +43,7 @@ QString Analizer::sourceText() const
 LineProp Analizer::lineProp(const QString &text) const
 {
     QList<Lexem*> lexems;
-    d->lexer->splitIntoLexems(text, lexems);
+    d->lexer->splitIntoLexems(text, lexems, d->gatherExtraTypeNames());
     LineProp lp(text.length(), LxTypeEmpty);
     bool delimFound = false;
     for (int i=0; i<lexems.size(); i++) {
@@ -92,7 +100,8 @@ QStringList Analizer::moduleNames() const
     return result;
 }
 
-AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin, Analizer *qq)
+AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin,
+                                 Analizer *qq)
 {
     hiddenBaseLine = -1;
     q = qq;
@@ -104,15 +113,18 @@ AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin, Analizer *qq)
     ActorInterface * stdFunct = new StdLibModules::RTL;
     builtinModules[0] = stdFunct;
     createModuleFromActor(stdFunct, 0xF0);
+    ActorInterface * filesFunct = new StdLibModules::Files;
+    builtinModules[1] = filesFunct;
+    createModuleFromActor(filesFunct, 0xF1);
     QList<ExtensionSystem::KPlugin*> actors = plugin->loadedPlugins("Actor*");
     foreach (QObject *o, actors) {
         ActorInterface * actor = qobject_cast<ActorInterface*>(o);
         if (actor) {
-//            qDebug() << "Loading actor " << actor->name();
             createModuleFromActor(actor, 0);
         }
     }
 }
+
 
 void AnalizerPrivate::setHiddenBaseLine(int lineNo)
 {
@@ -145,7 +157,7 @@ void AnalizerPrivate::setHiddenText(const QString &text, int baseLineNo)
     }
 
     // Compile teacher algorhitms
-    lexer->splitIntoStatements(text.split("\n"), baseLineNo, teacherStatements);
+    lexer->splitIntoStatements(text.split("\n"), baseLineNo, teacherStatements, gatherExtraTypeNames());
 
     // Build structure
     pdAutomata->init(true, teacherStatements, ast, 0);
@@ -275,7 +287,7 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
     }
     sourceText = newSourceText;
 
-    lexer->splitIntoStatements(newLines, lineStart, newStatements);
+    lexer->splitIntoStatements(newLines, lineStart, newStatements, gatherExtraTypeNames());
 
     AnalizerPrivate::AnalizeSubject subjByOld =
             analizeSubject(removedStatements);
@@ -318,24 +330,34 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
     }
 }
 
-QString AnalizerPrivate::StandartFunctionsModuleName = "Standart functions";
+QStringList AnalizerPrivate::AlwaysAvailableModulesName;
 
-void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor, uint8_t forcedId)
+void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor, quint8 forcedId)
 {
     AST::Module * mod = new AST::Module();
     mod->builtInID = forcedId;
     mod->header.type = AST::ModTypeExternal;
     mod->header.name = actor->name();
-    mod->header.enabled = mod->header.name==StandartFunctionsModuleName;
+    mod->header.enabled = AlwaysAvailableModulesName.contains(mod->header.name);
 
     ast->modules << mod;
+
+    for (int i=0; i<actor->typeList().size(); i++) {
+        Shared::ActorInterface::CustomType ct = actor->typeList()[i];
+        AST::Type tp;
+        tp.name = ct.first;
+        tp.size = ct.second;
+        tp.kind = AST::TypeUser;
+        mod->header.types << tp;
+    }
+
     for (int i=0; i<actor->funcList().size(); i++) {
         AST::Algorhitm * alg = new AST::Algorhitm;
         alg->header.implType = AST::AlgorhitmExternal;
         alg->header.external.moduleName = actor->name();
         alg->header.external.id = i;
         QList<Statement*> sts;
-        lexer->splitIntoStatements(QStringList() << actor->funcList()[i], -1, sts);
+        lexer->splitIntoStatements(QStringList() << actor->funcList()[i], -1, sts, gatherExtraTypeNames());
         Q_ASSERT_X(sts.size()==1
                    , "AnalizerPrivate::createModuleFromActor"
                    , QString("Algorhitm %1 in module %2 has syntax error").arg(actor->funcList()[i]).arg(actor->name()).toLocal8Bit().data());
@@ -392,6 +414,7 @@ AnalizerPrivate::AnalizeSubject AnalizerPrivate::analizeSubject(const QList<Stat
                 || ( lt == LxPriEndLoop)
                 || ( lt == LxPriPre)
                 || ( lt == LxPriPost)
+                || ( lt == LxPriImport)
                 )
         {
             return SubjWholeText;
@@ -885,6 +908,23 @@ QStringList Analizer::globalsAvailableFor(int lineNo) const
     if (mod) {
         for (int i=0; i<mod->impl.globals.size(); i++) {
             result << mod->impl.globals[i]->name;
+        }
+    }
+    return result;
+}
+
+QStringList AnalizerPrivate::gatherExtraTypeNames() const
+{
+    QStringList result;
+    if (ast) {
+        for (int i=0; i<ast->modules.size(); i++) {
+            AST::Module * mod = ast->modules[i];
+            if (mod && mod->header.enabled) {
+                for (int j=0; j<mod->header.types.size(); j++) {
+                    AST::Type tp = mod->header.types[j];
+                    result << tp.name;
+                }
+            }
         }
     }
     return result;

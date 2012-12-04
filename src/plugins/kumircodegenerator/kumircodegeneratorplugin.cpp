@@ -1,4 +1,5 @@
 #include <sstream>
+#include <cstdlib>
 #include "stdlib/kumirstdlib.hpp"
 #include "vm/variant.hpp"
 #include "vm/vm_bytecode.hpp"
@@ -54,7 +55,7 @@ QPair<QString,QString> KumirCodeGeneratorPlugin::generateExecuable(
 
     std::list<char> buffer;
     Bytecode::bytecodeToDataStream(buffer, data);
-    for (auto it=buffer.begin(); it!=buffer.end(); ++it) {
+    for (std::list<char>::const_iterator it=buffer.begin(); it!=buffer.end(); ++it) {
         out.push_back(*it);
     }
 

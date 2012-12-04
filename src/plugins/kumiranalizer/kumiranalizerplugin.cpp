@@ -24,6 +24,8 @@ QString KumirAnalizerPlugin::initialize(const QStringList &arguments)
 {
     QLocale::Language language = QLocale::Russian;
 
+    Analizer::setModuleAlwaysAvailable(QString::fromUtf8("Стандартные функции"));
+
     Q_FOREACH (const QString &arg, arguments) {
         if (arg.startsWith("language=")) {
             const QString lang = arg.mid(9);
@@ -33,9 +35,14 @@ QString KumirAnalizerPlugin::initialize(const QStringList &arguments)
                 break;
             }
         }
+        else if (arg.startsWith("preload=")) {
+            const QString modname = arg.mid(8);
+            Analizer::setModuleAlwaysAvailable(modname);
+        }
     }
 
     Analizer::setSourceLanguage(language);
+
     Shared::ErrorMessages::loadMessages("KumirAnalizer");
 
     return "";

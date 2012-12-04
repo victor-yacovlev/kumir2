@@ -1777,7 +1777,7 @@ void PDAutomataPrivate::setGarbageSwitchCaseError()
         AST::ConditionSpec dummyCond;
         dummyCond.condition = new AST::Expression;
         dummyCond.condition->kind = AST::ExprConst;
-        dummyCond.condition->baseType = AST::TypeBoolean;
+        dummyCond.condition->baseType.kind = AST::TypeBoolean;
         dummyCond.condition->constant = QVariant(1);
         currentContext.top()->last()->conditionals << dummyCond;
     }

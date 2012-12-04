@@ -28,8 +28,10 @@ public slots:
     int splitIntoStatements(const QStringList &lines
                              , int baseLineNo
                              , QList<Statement*> &statements
+                             , const QStringList & extraTypeNames
                              ) const;
-    void splitIntoLexems(const QString & text, QList<Lexem*> & lexems);
+    void splitIntoLexems(const QString & text, QList<Lexem*> & lexems,
+                         const QStringList & extraTypeNames);
 private:
     struct LexerPrivate * d;
 

@@ -7,6 +7,7 @@
 #include "ast_variabletype.h"
 #include "ast_statement.h"
 #include "ast_variable.h"
+#include "ast_type.h"
 
 #undef ABSTRACTSYNTAXTREE_EXPORT
 #ifdef DATAFORMATS_LIBRARY
@@ -67,7 +68,7 @@ struct AlgorhitmHeader {
     struct AlgorhitmExternalReference external;
 
     /** Return type */
-    enum VariableBaseType returnType;
+    Type returnType;
 
     /** Formal arguments, represented as
       * references to corresponding local variables */
