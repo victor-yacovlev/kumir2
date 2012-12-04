@@ -23,7 +23,7 @@ int usage(const char * programName)
 
 int assemble(const std::string & inFileName, const std::string & outFileName)
 {
-    std::ifstream inFile(inFileName);
+    std::ifstream inFile(inFileName.c_str());
     if (!inFile.is_open()) {
         std::cerr << "Can't open " << inFileName << std::endl;
         return 1;
@@ -31,7 +31,7 @@ int assemble(const std::string & inFileName, const std::string & outFileName)
     Bytecode::Data data;
     Bytecode::bytecodeFromTextStream(inFile, data);
     inFile.close();
-    std::ofstream outFile(outFileName);
+    std::ofstream outFile(outFileName.c_str());
     if (!outFile.is_open()) {
         std::cerr << "Can't open " << outFileName << std::endl;
         return 2;
@@ -47,7 +47,7 @@ int assemble(const std::string & inFileName, const std::string & outFileName)
 
 int disassemble(const std::string & inFileName, const std::string & outFileName)
 {
-    std::ifstream inFile(inFileName);
+    std::ifstream inFile(inFileName.c_str());
     if (!inFile.is_open()) {
         std::cerr << "Can't open " << inFileName << std::endl;
         return 1;
@@ -55,7 +55,7 @@ int disassemble(const std::string & inFileName, const std::string & outFileName)
     Bytecode::Data data;
     Bytecode::bytecodeFromDataStream(inFile, data);
     inFile.close();
-    std::ofstream outFile(outFileName);
+    std::ofstream outFile(outFileName.c_str());
     if (!outFile.is_open()) {
         std::cerr << "Can't open " << outFileName << std::endl;
         return 2;

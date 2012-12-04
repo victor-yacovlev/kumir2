@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
         return usage(argv[0]);
 
     // Load a program
-    std::ifstream programFile(programName);
+    std::ifstream programFile(programName.c_str());
     if (!programFile.is_open()) {
         std::cerr << "Can't open program file: " << programName << std::endl;
         return 1;
