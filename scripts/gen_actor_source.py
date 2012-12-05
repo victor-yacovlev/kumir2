@@ -45,6 +45,22 @@ def name_to_cpp(name, firstUpper = False):
         ascii = name
     newName = ""
     nextIsCap = firstUpper
+    if ascii=="+":
+        return "OperatorPLUS"
+    elif ascii=="-":
+        return "OperatorMINUS"
+    elif ascii=="*":
+        return "OperatorASTERISK"
+    elif ascii=="**":
+        return "OperatorPOWER"
+    elif ascii=="/":
+        return "OperatorSLASH"
+    elif ascii=="=":
+        return "OperatorEQUAL"
+    elif ascii=="<":
+        return "OperatorLESS"
+    elif ascii==">":
+        return "OperatorGREATER"
     for c in ascii:
         if c==' ':
             nextIsCap = True
@@ -64,6 +80,21 @@ def basetype_to_qtype(baseType):
         return "qreal"
     elif baseType=="char":
         return "QChar"
+    elif "types" in actor.keys():
+        types = actor["types"]
+        for tp in types:
+            name = tp["name"]
+            if type(name)==dict:
+                name = name["ascii"]
+            if name==baseType:
+                typename = tp["cppdecl"]
+                if typename.startswith("struct "):
+                    p = typename.index("{")
+                    typename = typename[7:p]
+                if typename.startswith("class "):
+                    p = typename.index("{")
+                    typename = typename[6:p]
+                return typename
     else:
         return baseType
 
@@ -82,7 +113,7 @@ def arg_to_qarg(arg):
         access = "in"
     if access=="in":
         qtype = "const "+qtype
-    if "out" in access or "Q" in qtype:
+    if "out" in access or not arg["baseType"] in ["int", "bool", "double"]:
         qtype += "&"
     return qtype+" "+name_to_cpp(arg["name"])
 
@@ -113,6 +144,12 @@ if update:
 
 
     h.write("namespace %s {\n\n" % actorCPPNameSpace)
+    
+    if "types" in actor.keys():
+        for tp in actor["types"]:
+            if tp["cppdecl"].startswith("struct") or tp["cppdecl"].startswith("class"):
+                h.write(tp["cppdecl"]+";\n\n")
+    
     h.write("class %sBase\n    : public QObject\n{\n" % actorCPPModuleName)
     h.write("    Q_OBJECT\n")
     h.write("public:\n")
@@ -385,6 +422,7 @@ public:
     inline bool isGuiRequired() const { return %s; }
     // Actor information
     QStringList funcList() const;
+    TypeList typeList() const;
     QString name() const;
     inline QString mainIconName() const { return "%s"; }
     inline QString pultIconName() const { return "%s"; }
@@ -482,16 +520,33 @@ signals:
     ))
 
     h.close()
+    
+def kumir_custom_typename(name, locale="ascii"):
+    # TODO implement non-russian language
+    if not "types" in actor.keys():
+        return u""
+    for tp in actor["types"]:
+        nm = tp["name"]
+        if type(nm)==dict:
+            ascii = nm["ascii"]
+            ru = nm["ru_RU"]
+        else:
+            ascii = nm
+            ru = nm
+        if ascii==name:
+            return ru
+    return u""
 
 def kumir_signature(method, locale="ascii"):
     # TODO implement non-russian language
     res = u"алг "
     if method.has_key("returnType") and method["returnType"]!="void":
         if method["returnType"]=="int": res += u"цел "
-        if method["returnType"]=="double": res += u"вещ "
-        if method["returnType"]=="bool": res += u"лог "
-        if method["returnType"]=="char": res += u"сим "
-        if method["returnType"]=="string": res += u"лит "
+        elif method["returnType"]=="double": res += u"вещ "
+        elif method["returnType"]=="bool": res += u"лог "
+        elif method["returnType"]=="char": res += u"сим "
+        elif method["returnType"]=="string": res += u"лит "
+        else: res += kumir_custom_typename(method["returnType"])+" "
     if type(method["name"])==dict:
         if "ru_RU" in method["name"]:
             res += method["name"]["ru_RU"]
@@ -504,10 +559,11 @@ def kumir_signature(method, locale="ascii"):
         args = list()
         for arg in method["arguments"]:
             if arg["baseType"]=="int": baseType=u"цел"
-            if arg["baseType"]=="double": baseType=u"вещ"
-            if arg["baseType"]=="bool": baseType=u"лог"
-            if arg["baseType"]=="char": baseType=u"сим"
-            if arg["baseType"]=="string": baseType=u"лит"
+            elif arg["baseType"]=="double": baseType=u"вещ"
+            elif arg["baseType"]=="bool": baseType=u"лог"
+            elif arg["baseType"]=="char": baseType=u"сим"
+            elif arg["baseType"]=="string": baseType=u"лит"
+            else: baseType = kumir_custom_typename(arg["baseType"])
             try:
                 dim = int(arg["dim"])
             except:
@@ -568,8 +624,10 @@ def make_method_call(method, fromThread=False):
                     bt = basetype_to_qtype(arg["baseType"])
                     if dim:
                         argline += "toVector%i<%s>(%s)" % (dim, bt, argvar)
-                    else:
+                    elif qtype in ["int", "qreal", "bool", "QString", "QChar"] or dim>0:
                         argline += "qvariant_cast<%s>(%s)" % (bt, argvar)
+                    else:
+                        argline += "customTypeFromQVariant<%s>(%s)" % (bt, argvar)
                     
                 if arg.has_key("access") and "out" in arg["access"]:
                     optresults += "        l_optResults << x"+str(index+1)+";\n"
@@ -581,7 +639,10 @@ def make_method_call(method, fromThread=False):
         if optresults:
             optresults = "        l_optResults.clear();\n"+optresults
         if method.has_key("returnType") and method["returnType"]!="void":
-            call = "v_result = QVariant(%s)" % call
+            if method["returnType"] in ["int", "double", "string", "bool", "char"]:
+                call = "v_result = QVariant::fromValue(%s)" % call
+            else:
+                call = "v_result = customTypeToQVariant<%s>(%s)" % (basetype_to_qtype(method["returnType"]), call)
             if fromThread:
                 call = "m_plugin->"+call
             if optresults:
@@ -683,6 +744,23 @@ if "settings" in actor:
     .replace("$pluginName", actorCPPName+"Plugin") \
     .replace("$actorLocalizedName", actor["name"]["ru_RU"])
 
+makeTypes = ""
+if "types" in actor.keys():
+    makeTypes += "Shared::ActorInterface::CustomType tp;\n"
+    for tp in actor["types"]:
+        name = tp["name"]
+        if type(name)==dict:
+            name = name["ascii"]
+        typename = tp["cppdecl"]
+        if typename.startswith("struct "):
+            p = typename.index("{")
+            typename = typename[7:p]
+        if typename.startswith("class "):
+            p = typename.index("{")
+            typename = typename[6:p]
+        kum_name = kumir_custom_typename(name)
+        makeTypes += "    tp = Shared::ActorInterface::CustomType(QString::fromUtf8(\""+kum_name+"\"), sizeof("+typename+"));\n"
+
 if update:
     cpp = open(cppName, "w")
     cpp.write(DO_NOT_EDIT)
@@ -756,6 +834,13 @@ QStringList $className::funcList() const
     return result;
 }
 
+Shared::ActorInterface::TypeList $className::typeList() const
+{
+    Shared::ActorInterface::TypeList result;
+    $makeTypes
+    return result;
+}
+
 QString $className::name() const
 {
     return QString::fromUtf8(\"$actorName\");
@@ -800,6 +885,24 @@ void $className::setAnimationEnabled(bool enabled)
 {
     if (m_module)
         m_module->setAnimationEnabled(enabled);
+}
+
+template <typename T>
+T customTypeFromQVariant(const QVariant & value)
+{
+    T res;
+    QByteArray valData = value.toByteArray();
+    memcpy(&res, valData.constData(), sizeof(T));
+    return res;
+}
+
+template <typename T>
+QVariant customTypeToQVariant(const T & value)
+{
+    char data[sizeof(T)];
+    memcpy(&data, &value, sizeof(T));
+    QByteArray valData(data);
+    return QVariant(valData);
 }
 
 Shared::EvaluationStatus $className::evaluate(quint32 index, const QVariantList & args)
@@ -863,6 +966,7 @@ Q_EXPORT_PLUGIN($namespace::$className)
     .replace("$threadRunBody", evaluateMethodsThr)
     .replace("$actorName", actor["name"]["ru_RU"])
     .replace("$settingsPageCreation", settingsPageCreation)
+    .replace("$makeTypes", makeTypes)
     .encode("utf-8")
     )
     cpp.close()
@@ -1037,12 +1141,12 @@ for ret, signature in actorMethods:
         default = " ' '"
     elif ret=="int":
         default = " 0";
-    elif ret=="double":
+    elif ret=="qreal":
         default = " 0.0"
     elif ret=="bool":
         default = " false";
     else:
-        default = ""
+        default = " "+ret+"()"
     cpp.write("""
 $returnType $className::$signature
 {

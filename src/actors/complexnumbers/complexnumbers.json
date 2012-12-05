@@ -1,0 +1,59 @@
+{
+    "name": { "ascii": "Complex numbers", "ru_RU": "Комплексные числа" },
+    "types": [
+        {
+            "name": { "ascii": "complex", "ru_RU": "компл" },
+            "cppdecl": "struct Complex { double re; double im; }",
+            "constants": true,
+            "convertertable from": ["double", "int"]
+        }
+    ],
+	"methods": [
+        {
+            "name": {"ascii": "Re" },
+            "returnType": "double",
+            "arguments": [
+                { "name": "x", "baseType": "complex" }
+            ]
+        },
+        {
+            "name": {"ascii": "Im" },
+            "returnType": "double",
+            "arguments": [
+                { "name": "x", "baseType": "complex" }
+            ]
+        },
+        {
+            "name": {"ascii": "+" },
+            "returnType": "complex",
+            "arguments": [
+                { "name": "x", "baseType": "complex" },
+                { "name": "y", "baseType": "complex" }
+            ]
+        },
+        {
+            "name": {"ascii": "-" },
+            "returnType": "complex",
+            "arguments": [
+                { "name": "x", "baseType": "complex" },
+                { "name": "y", "baseType": "complex" }
+            ]
+        },
+        {
+            "name": {"ascii": "*" },
+            "returnType": "complex",
+            "arguments": [
+                { "name": "x", "baseType": "complex" },
+                { "name": "y", "baseType": "complex" }
+            ]
+        },
+        {
+            "name": {"ascii": "/" },
+            "returnType": "complex",
+            "arguments": [
+                { "name": "x", "baseType": "complex" },
+                { "name": "y", "baseType": "complex" }
+            ]
+        }
+    ]
+}
