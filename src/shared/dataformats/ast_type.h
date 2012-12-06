@@ -2,6 +2,7 @@
 #define AST_MODULE_TYPE_H
 
 #include <QString>
+#include <QPair>
 #include "ast_variabletype.h"
 
 #undef ABSTRACTSYNTAXTREE_EXPORT
@@ -12,6 +13,9 @@
 #endif
 
 namespace AST {
+
+    typedef QPair<QString,struct Type>  Field;
+
     struct Type {
         /** Base type */
         VariableBaseType kind;
@@ -19,14 +23,16 @@ namespace AST {
         /** Type name (if user defined)*/
         QString name;
 
-        /** Data size (if user defined)*/
-        size_t size;
+        /** User type fields (if user defined)*/
+        QList< Field > userTypeFields;
+
         bool operator==(const Type & other) const;
         bool operator!=(const Type & other) const;
         bool operator==(const VariableBaseType & otherType) const;
-        inline Type() { kind = TypeNone; size = 0; }
-        inline Type(AST::VariableBaseType bt) { kind = bt; size = 0; }
+        inline Type() { kind = TypeNone; }
+        inline Type(AST::VariableBaseType bt) { kind = bt; }
     };
+
 }
 
 #endif

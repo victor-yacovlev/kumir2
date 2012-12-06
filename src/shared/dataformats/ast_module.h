@@ -42,9 +42,13 @@ struct ModuleHeader {
     /** Module type */
     enum ModuleType type;
 
-    /** List of public (i.e. not underscore-starting named) algorhitms,
+    /** List of public (i.e. not underscore-starting named) algorithms,
       * represented as references to corresponding functions */
     QList<struct Algorhitm *> algorhitms;
+
+    /** List of overrided operators,
+     * each represented as algorithm */
+    QList<struct Algorhitm *> operators;
 
     /** Module custom types */
     QList<struct Type> types;

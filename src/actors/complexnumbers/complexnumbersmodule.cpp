@@ -34,6 +34,12 @@ void ComplexNumbersModule::setAnimationEnabled(bool enabled)
     */
 }
 
+bool ComplexNumbersModule::parseConstantOfType_Complex(const QString & literal, Complex &value) {
+    //TODO implement me
+    return false;
+}
+
+
 
 qreal ComplexNumbersModule::runRe(const Complex & x)
 {
@@ -71,6 +77,20 @@ Complex  ComplexNumbersModule::runOperatorASTERISK(const Complex & x, const Comp
 
 
 Complex  ComplexNumbersModule::runOperatorSLASH(const Complex & x, const Complex & y)
+{
+    /* TODO implement me */
+    return Complex ();
+}
+
+
+Complex  ComplexNumbersModule::runOperatorASSIGN(const int x)
+{
+    /* TODO implement me */
+    return Complex ();
+}
+
+
+Complex  ComplexNumbersModule::runOperatorASSIGN(const qreal x)
 {
     /* TODO implement me */
     return Complex ();

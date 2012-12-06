@@ -330,7 +330,7 @@ KumirVM::KumirVM() {
 Variable KumirVM::fromTableElem(const Bytecode::TableElem &e) {
     Variable r = e.initialValue;
     r.setDimension(e.dimension);
-    r.setBaseType(e.vtype);
+    r.setBaseType(e.vtype.front());
     r.setName(e.name);
     r.setConstantFlag(e.type==EL_CONST);
     return r;
@@ -967,7 +967,7 @@ void KumirVM::do_filescall(uint16_t alg)
     case 0x0000: {
         const String x = stack_values.pop().toString();
         Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Read);
-        UserTypeValue yy(y);
+        Record yy;
         Variable res(yy);
         stack_values.push(res);
         s_error = Kumir::Core::getError();
@@ -977,7 +977,8 @@ void KumirVM::do_filescall(uint16_t alg)
     case 0x0001: {
         const String x = stack_values.pop().toString();
         Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Write);
-        stack_values.push(Variable(UserTypeValue(y)));
+        Record yy;
+        stack_values.push(Variable(yy));
         s_error = Kumir::Core::getError();
         break;
     }
@@ -985,30 +986,31 @@ void KumirVM::do_filescall(uint16_t alg)
     case 0x0002: {
         const String x = stack_values.pop().toString();
         Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Append);
-        stack_values.push(Variable(UserTypeValue(y)));
+        Record yy;
+        stack_values.push(Variable(yy));
         s_error = Kumir::Core::getError();
         break;
     }
     /* алг закрыть(файл ключ) */
     case 0x0003: {
-        Kumir::FileType x = stack_values.pop().toUserType<Kumir::FileType>();
-        Kumir::Files::close(x);
-        s_error = Kumir::Core::getError();
+//        Kumir::FileType x = stack_values.pop().toUserType<Kumir::FileType>();
+//        Kumir::Files::close(x);
+//        s_error = Kumir::Core::getError();
         break;
     }
     /* алг начать чтение(файл ключ) */
     case 0x0004: {
-        Kumir::FileType x = stack_values.pop().toUserType<Kumir::FileType>();
-        Kumir::Files::reset(x);
-        s_error = Kumir::Core::getError();
+//        Kumir::FileType x = stack_values.pop().toUserType<Kumir::FileType>();
+//        Kumir::Files::reset(x);
+//        s_error = Kumir::Core::getError();
         break;
     }
     /* алг лог конец файла(файл ключ) */
     case 0x0005: {
-        Kumir::FileType x = stack_values.pop().toUserType<Kumir::FileType>();
-        bool y = Kumir::Files::eof(x);
-        stack_values.push(Variable(y));
-        s_error = Kumir::Core::getError();
+//        Kumir::FileType x = stack_values.pop().toUserType<Kumir::FileType>();
+//        bool y = Kumir::Files::eof(x);
+//        stack_values.push(Variable(y));
+//        s_error = Kumir::Core::getError();
         break;
     }
     case 0x0006: {
@@ -1076,7 +1078,7 @@ void KumirVM::do_specialcall(uint16_t alg)
         Kumir::FileType fileNo;
         if (argsCount % 2) {
             fileIO = true;
-            fileNo = stack_values.pop().toUserType<Kumir::FileType>();
+//            fileNo = stack_values.pop().toUserType<Kumir::FileType>();
         }
         int varsCount = argsCount / 2;
         std::deque<String> formats;
@@ -1168,7 +1170,7 @@ void KumirVM::do_specialcall(uint16_t alg)
         Kumir::FileType fileNo;
         if (argsCount % 2) {
             fileIO = true;
-            fileNo = stack_values.pop().toUserType<Kumir::FileType>();
+//            fileNo = stack_values.pop().toUserType<Kumir::FileType>();
         }
         int varsCount = argsCount / 2;
         std::deque<String> formats;

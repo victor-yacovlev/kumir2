@@ -22,7 +22,10 @@ class ComplexNumbersModule
     Q_OBJECT
 public:
     // Constructor
+
     ComplexNumbersModule(ExtensionSystem::KPlugin * parent);
+    bool parseConstantOfType_Complex(const QString & literal, Complex &value);
+
 public slots:
     // Reset actor state before program starts
     void reset();
@@ -35,6 +38,8 @@ public slots:
     Complex  runOperatorMINUS(const Complex & x, const Complex & y);
     Complex  runOperatorASTERISK(const Complex & x, const Complex & y);
     Complex  runOperatorSLASH(const Complex & x, const Complex & y);
+    Complex  runOperatorASSIGN(const int x);
+    Complex  runOperatorASSIGN(const qreal x);
 
 
 

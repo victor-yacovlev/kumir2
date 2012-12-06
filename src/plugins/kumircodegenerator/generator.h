@@ -23,7 +23,7 @@ namespace KumirCodeGenerator {
 typedef Shared::GeneratorInterface::DebugLevel DebugLevel;
 struct ConstValue {
     QVariant value;
-    Bytecode::ValueType baseType;
+    std::list<Bytecode::ValueType> baseType;
     quint8 dimension;
     inline bool operator==(const ConstValue & other) {
         return
@@ -32,7 +32,7 @@ struct ConstValue {
                 value == other.value;
     }
     inline ConstValue() {
-        baseType = Bytecode::VT_void;
+        baseType.push_back(Bytecode::VT_void);
         dimension = 0;
     }
 };
@@ -49,6 +49,11 @@ public:
     void generateExternTable();
 private:
     quint16 constantValue(Bytecode::ValueType type, quint8 dimension, const QVariant & value);
+    quint16 constantValue(const std::list<Bytecode::ValueType> & type, quint8 dimension, const QVariant & value);
+    inline quint16 constantValue(const QList<Bytecode::ValueType> & type, quint8 dimension, const QVariant & value)
+    {
+        return constantValue(type.toStdList(), dimension, value);
+    }
     void addKumirModule(int id, const AST::Module * mod);
     void addFunction(int id, int moduleId, Bytecode::ElemType type, const AST::Algorhitm * alg);
     void addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, const AST::Module * mod, const AST::Algorhitm * alg);
@@ -78,7 +83,7 @@ private:
     void findFunction(const AST::Algorhitm * alg, quint8 & module, quint16 & id) ;
 
 
-    static QPair<Bytecode::ValueType, size_t> valueType(const AST::Type & t);
+    static QList<Bytecode::ValueType> valueType(const AST::Type & t);
     static Bytecode::ValueKind valueKind(AST::VariableAccessType t);
     static Bytecode::InstructionType operation(AST::ExpressionOperator op);
 

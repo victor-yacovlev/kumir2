@@ -39,7 +39,7 @@ struct SyntaxAnalizerPrivate
 
     void parseImport(int str);
     void parseModuleHeader(int str);
-    void parseAlgHeader(int str, bool onlyName);
+    void parseAlgHeader(int str, bool onlyName, bool allowOperatorsDeclaration);
     void parseVarDecl(int str);
     void parseAssignment(int str);
     void parseInputOutput(int str);
@@ -50,7 +50,14 @@ struct SyntaxAnalizerPrivate
     void parseIfCase(int str);
     void parseLoopBegin(int str);
     void parseAssignFileStream(int str);
-
+    bool findConversionAlgorithm(const AST::Type & from
+                                 , const AST::Type & to
+                                 , AST::Module * mod
+                                 , AST::Algorhitm * alg) const;
+    AST::Expression * makeCustomBinaryOperation(const QString & operatorName
+                            , AST::Expression * leftExpression
+                            , AST::Expression * rightExpression
+                            );
     bool findAlgorhitm(const QString &name
                        , const AST::Module*  module
                        , AST::Algorhitm* & algorhitm);
@@ -178,7 +185,7 @@ Lexem * SyntaxAnalizerPrivate::findLexemByType(const QList<Lexem*> lxs, LexemTyp
     return 0;
 }
 
-void SyntaxAnalizer::buildTables()
+void SyntaxAnalizer::buildTables(bool allowOperatorsDeclaration)
 {
 //    if (d->algorhitm)
 //        return; // Nothing to build if we analize just one algorhitm
@@ -263,7 +270,7 @@ void SyntaxAnalizer::buildTables()
         const Statement & st = d->statements[i];
         bool wasError = st.hasError();
         if (st.type==LxPriAlgHeader) {
-            d->parseAlgHeader(i, true);
+            d->parseAlgHeader(i, true, allowOperatorsDeclaration);
         }
         if (!wasError && d->statements[i].hasError()) {
             foreach (Lexem * lx, d->statements[i].data) {
@@ -280,7 +287,7 @@ void SyntaxAnalizer::buildTables()
             d->parseVarDecl(i);
         }
         if (st.type==LxPriAlgHeader) {
-            d->parseAlgHeader(i, false);
+            d->parseAlgHeader(i, false, allowOperatorsDeclaration);
         }
         if (!wasError && d->statements[i].hasError()) {
             foreach (Lexem * lx, d->statements[i].data) {
@@ -1537,7 +1544,7 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
         st.statement->expressions << leftExpr;
 }
 
-void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName)
+void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName, bool allowOperatorsDeclaration)
 {
     const Statement & st = statements[str];
     if (st.hasError() || !st.mod ||!st.alg)
@@ -1547,6 +1554,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName)
     Q_CHECK_PTR(alg);
     Q_CHECK_PTR(mod);
     QString name;
+    bool isOperator = false;
     bool isFirst = mod->header.name.isEmpty() && mod->impl.algorhitms.indexOf(alg)==0;
     int argsStartLexem = -1;
     int nameStartLexem = 1;
@@ -1587,7 +1595,13 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName)
             argsStartLexem = i+1;
             break;
         }
-        else if (st.data[i]->type==LxNameClass
+        else if (allowOperatorsDeclaration) {
+            if (i>nameStartLexem)
+                name += " ";
+            name += st.data[i]->data;
+            isOperator = true;
+        }
+        else if  (st.data[i]->type==LxNameClass
                  || st.data[i]->type & LxTypePrimaryKwd
                  || st.data[i]->type & LxTypeSecondaryKwd)
         {
@@ -1632,7 +1646,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName)
 
     // Проверяем на повторное описание алгоритма
     AST::Algorhitm * aa;
-    if (findAlgorhitm(name,st.mod,aa) && aa!=alg)
+    if (!isOperator && findAlgorhitm(name,st.mod,aa) && aa!=alg)
     {
         for (int i=1; i<st.data.size(); i++) {
             if (st.data[i]->type==LxNameAlg)
@@ -1644,7 +1658,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName)
     // Проверяем на наличие переменной с таким же именем
 
     AST::Variable * vv;
-    if (findGlobalVariable(name, st.mod, vv)) {
+    if (!isOperator && findGlobalVariable(name, st.mod, vv)) {
         for (int i=1; i<st.data.size(); i++) {
             if (st.data[i]->type==LxNameAlg)
                 st.data[i]->error = _("The name is used by global variable");
@@ -1670,7 +1684,10 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName)
 
     // Make this algorhitm public available (if not private name)
     if (!name.isEmpty() && !name.startsWith("_")) {
-        mod->header.algorhitms << alg;
+        if (isOperator)
+            mod->header.operators << alg;
+        else
+            mod->header.algorhitms << alg;
     }
 
     for (int i=nameStartLexem; i<argsStartLexem-1; i++) {
@@ -1687,7 +1704,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName)
         return;
     }
 
-    // =============== � АЗБО�  А� ГУМЕНТОВ
+    // =============== Argument list parsing
 
 
     QList<VariablesGroup> groups;
@@ -1890,9 +1907,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
                     AST::Type userType;
                     AST::Module * userTypeModule = 0;
                     if (findUserType(group.lexems[curPos]->data, userType, userTypeModule)) {
-                        cType.kind = AST::TypeUser;
-                        cType.name = group.lexems[curPos]->data;
-                        cType.size = userType.size;
+                        cType = userType;
                     }
                 }
                 else {
@@ -2717,6 +2732,101 @@ bool SyntaxAnalizerPrivate::findAlgorhitm(const QString &name, const AST::Module
     }
 
     return false;
+}
+
+bool SyntaxAnalizerPrivate::findConversionAlgorithm(const AST::Type & from
+                             , const AST::Type & to
+                             , AST::Module * mod
+                             , AST::Algorhitm * alg) const
+{
+    for (int i=0; i<ast->modules.size(); i++) {
+        mod = ast->modules[i];
+        if (!mod->header.enabled)
+            continue;
+        for (int j=0; j<mod->header.operators.size(); j++) {
+            alg = mod->header.operators[j];
+            if (alg->header.arguments.size()==1) {
+                if (alg->header.arguments[0]->baseType==from
+                        && alg->header.arguments[0]->dimension==0)
+                {
+                    if (alg->header.returnType==to)
+                        return true;
+                }
+            }
+        }
+    }
+    mod = 0;
+    alg = 0;
+    return false;
+}
+
+AST::Expression * SyntaxAnalizerPrivate::makeCustomBinaryOperation(const QString & operatorName
+                                               , AST::Expression * leftExpression
+                                               , AST::Expression * rightExpression
+                                               )
+{
+    QString headTypeName;
+    if (leftExpression->baseType.kind==AST::TypeUser)
+        headTypeName = leftExpression->baseType.name;
+    else
+        headTypeName = lexer->classNameByBaseType(leftExpression->baseType.kind);
+    QString tailTypeName;
+    if (rightExpression->baseType.kind==AST::TypeUser)
+        tailTypeName = rightExpression->baseType.name;
+    else
+        tailTypeName = lexer->classNameByBaseType(rightExpression->baseType.kind);
+    for (int i=0; i<ast->modules.size(); i++) {
+        AST::Module * mod = ast->modules[i];
+        if (!mod->header.enabled)
+            continue;
+        for (int j=0; j<mod->header.operators.size(); j++) {
+            AST::Algorhitm * alg = mod->header.operators[j];
+            bool omatch = alg->header.name==operatorName;
+            if (omatch && alg->header.arguments.size()==2) {
+                AST::Type ltype = alg->header.arguments[0]->baseType;
+                AST::Type rtype = alg->header.arguments[1]->baseType;
+                AST::Algorhitm * lconvAlg = 0;
+                AST::Algorhitm * rconvAlg = 0;
+                AST::Module * lconvMod = 0;
+                AST::Module * rconvMod = 0;
+                bool lmatch = ltype.name==headTypeName
+                        || findConversionAlgorithm(leftExpression->baseType, ltype, lconvMod, lconvAlg);
+                bool rmatch = rtype.name==tailTypeName
+                        || findConversionAlgorithm(rightExpression->baseType, rtype, rconvMod, rconvAlg);
+                if (lmatch && rmatch && omatch) {
+
+                    AST::Expression * res = new AST::Expression;
+                    res->kind = AST::ExprFunctionCall;
+                    res->baseType = alg->header.returnType;
+
+                    if (lconvAlg) {
+                        AST::Expression * lconv = new AST::Expression;
+                        lconv->kind = AST::ExprFunctionCall;
+                        lconv->function = lconvAlg;
+                        lconv->operands.append(leftExpression);
+                        res->operands.append(lconv);
+                    }
+                    else {
+                        res->operands.append(leftExpression);
+                    }
+
+                    if (rconvAlg) {
+                        AST::Expression * rconv = new AST::Expression;
+                        rconv->kind = AST::ExprFunctionCall;
+                        rconv->function = rconvAlg;
+                        rconv->operands.append(rightExpression);
+                        res->operands.append(rconv);
+                    }
+                    else {
+                        res->operands.append(rightExpression);
+                    }
+
+                    return res;
+                }
+            }
+        }
+    }
+    return 0;
 }
 
 bool SyntaxAnalizerPrivate::findGlobalVariable(const QString &name, const AST::Module *module, AST::Variable *&var)
@@ -4381,10 +4491,27 @@ AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<Subexpre
             AST::ExpressionOperator operation = operatorByLexem(s[l].o);
             AST::Type rt = resType(headType, tailType, operation);
             if (rt.kind==AST::TypeNone) {
+                // Try to find custom-overriden operator
+                const QString & operatorName = s[l].o->data;
+                AST::Expression * customOperation = makeCustomBinaryOperation(operatorName, headExpr, tailExpr);
+                if (customOperation) {
+                    return customOperation;
+                }
+            }
+            if (rt.kind==AST::TypeNone) {
+                QString type1name, type2name;
+                if (headType.kind!=AST::TypeUser)
+                    type1name = lexer->classNameByBaseType(headType.kind);
+                else
+                    type1name = headType.name;
+                if (tailType.kind!=AST::TypeUser)
+                    type2name = lexer->classNameByBaseType(tailType.kind);
+                else
+                    type2name = tailType.name;
                 s[l].o->error = _("Can't %1 %2 %3"
-                                  ,lexer->classNameByBaseType(headType.kind)
+                                  ,type1name
                                   ,s[l].o->data
-                                  ,lexer->classNameByBaseType(tailType.kind)
+                                  ,type2name
                                   );
                 if (headExpr)
                     delete headExpr;

@@ -71,9 +71,12 @@ class Files
         // (check system locale)
 
         TypeList result;
-        CustomType fileType;
-        fileType.first = QString::fromUtf8("файл");
-        fileType.second = sizeof(Kumir::FileType);
+        Field fileKey(QString::fromAscii("key"), Int);
+        Field openMode(QString::fromAscii("mode"), Int);
+        Field fileName(QString::fromAscii("name"), String);
+        Record fileRecord;
+        fileRecord << fileKey << openMode << fileName;
+        CustomType fileType(QString::fromUtf8("файл"), fileRecord);
         result << fileType;
         return result;
     }

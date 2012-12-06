@@ -166,7 +166,7 @@ void AnalizerPrivate::setHiddenText(const QString &text, int baseLineNo)
 
     // Build tables for hidden algorhitms
     analizer->init(teacherStatements, ast, 0);
-    analizer->buildTables();
+    analizer->buildTables(false);
 
     // Do complete semantic analisys
     QList<Statement*> statementsToAnalize = statements+teacherStatements;
@@ -338,15 +338,31 @@ void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor
     mod->builtInID = forcedId;
     mod->header.type = AST::ModTypeExternal;
     mod->header.name = actor->name();
-    mod->header.enabled = AlwaysAvailableModulesName.contains(mod->header.name);
-
+    mod->header.enabled = true;
     ast->modules << mod;
 
     for (int i=0; i<actor->typeList().size(); i++) {
-        Shared::ActorInterface::CustomType ct = actor->typeList()[i];
+        typedef Shared::ActorInterface AI;
+        AI::CustomType ct = actor->typeList()[i];
         AST::Type tp;
         tp.name = ct.first;
-        tp.size = ct.second;
+        AI::Record record = ct.second;
+        for (int j=0; j<record.size(); j++) {
+            AI::Field field = record[j];
+            AI::FieldType ft = field.second;
+            AST::Type afield;
+            if (ft==AI::Int)
+                afield.kind = AST::TypeInteger;
+            else if (ft==AI::Real)
+                afield.kind = AST::TypeReal;
+            else if (ft==AI::Bool)
+                afield.kind = AST::TypeBoolean;
+            else if (ft==AI::Char)
+                afield.kind = AST::TypeCharect;
+            else if (ft==AI::String)
+                afield.kind = AST::TypeString;
+            tp.userTypeFields << AST::Field(field.first, afield);
+        }
         tp.kind = AST::TypeUser;
         mod->header.types << tp;
     }
@@ -365,7 +381,7 @@ void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor
         sts[0]->alg = alg;
         sts[0]->mod = mod;
         analizer->init(sts, ast, alg);
-        analizer->buildTables();
+        analizer->buildTables(true);
         foreach (const Lexem *lx, sts[0]->data) {
             if (!lx->error.isEmpty()) {
                 Q_ASSERT_X(sts.size()==1
@@ -376,6 +392,7 @@ void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor
         }
         delete sts[0];
     }
+    mod->header.enabled = AlwaysAvailableModulesName.contains(mod->header.name);
 }
 
 extern AnalizerPrivate::AnalizeSubject operator * ( const AnalizerPrivate::AnalizeSubject &first
@@ -803,7 +820,7 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
     }
     analizer->init(analizingStatements, ast, alg);
     if (whatToCompile!=SubjStatements)
-        analizer->buildTables();
+        analizer->buildTables(false);
 
     analizer->processAnalisys();
     analizer->syncStatements();

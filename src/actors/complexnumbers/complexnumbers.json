@@ -4,8 +4,7 @@
         {
             "name": { "ascii": "complex", "ru_RU": "компл" },
             "cppdecl": "struct Complex { double re; double im; }",
-            "constants": true,
-            "convertertable from": ["double", "int"]
+            "constants": true
         }
     ],
 	"methods": [
@@ -54,6 +53,20 @@
                 { "name": "x", "baseType": "complex" },
                 { "name": "y", "baseType": "complex" }
             ]
-        }
+        },
+		{
+			"name": ":=",
+			"returnType": "complex",
+			"arguments": [
+				{ "name": "x", "baseType": "int" }
+			]
+		},
+		{
+			"name": ":=",
+			"returnType": "complex",
+			"arguments": [
+				{ "name": "x", "baseType": "double" }
+			]
+		}
     ]
 }

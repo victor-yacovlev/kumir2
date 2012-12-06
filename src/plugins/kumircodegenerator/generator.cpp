@@ -51,11 +51,11 @@ static void getVarListSizes(const QVariant & var, int sizes[3], int fromDim)
     sizes[fromDim] = qMax(sizes[fromDim], elems.size());
 }
 
-static VM::AnyValue makeAnyValue(const QVariant & val, Bytecode::ValueType vt)
+static VM::AnyValue makeAnyValue(const QVariant & val, std::list<Bytecode::ValueType> vt)
 {
     if (val==QVariant::Invalid)
         return VM::AnyValue();
-    switch (vt)
+    switch (vt.front())
     {
     case Bytecode::VT_int:
         return VM::AnyValue(val.toInt());
@@ -81,7 +81,7 @@ static Bytecode::TableElem makeConstant(const ConstValue & val)
     if (val.value.type()!=QVariant::List) {
         VM::Variable var;
         var.setValue(makeAnyValue(val.value, val.baseType));
-        var.setBaseType(val.baseType);
+        var.setBaseType(val.baseType.front());
         var.setDimension(val.dimension);
         var.setConstantFlag(true);
         e.initialValue = var;
@@ -91,7 +91,7 @@ static Bytecode::TableElem makeConstant(const ConstValue & val)
         getVarListSizes(val.value, sizes, 0);
         VM::Variable var;
         var.setConstantFlag(true);
-        var.setBaseType(val.baseType);
+        var.setBaseType(val.baseType.front());
         var.setDimension(val.dimension);
         int bounds[7] = { 1,  sizes[0], 1, sizes[1], 1, sizes[2], var.dimension()*2 };
         var.setBounds(bounds);
@@ -191,22 +191,30 @@ void Generator::generateExternTable()
 }
 
 
-QPair<Bytecode::ValueType, size_t> Generator::valueType(const AST::Type & t)
+QList<Bytecode::ValueType> Generator::valueType(const AST::Type & t)
 {
+    QList<Bytecode::ValueType> result;
     if (t.kind==AST::TypeInteger)
-        return QPair<Bytecode::ValueType, size_t>(Bytecode::VT_int,0);
+        result << Bytecode::VT_int;
     else if (t.kind==AST::TypeReal)
-        return QPair<Bytecode::ValueType, size_t>(Bytecode::VT_real,0);
+        result << Bytecode::VT_real;
     else if (t.kind==AST::TypeBoolean)
-        return QPair<Bytecode::ValueType, size_t>(Bytecode::VT_bool,0);
+        result << Bytecode::VT_bool;
     else if (t.kind==AST::TypeString)
-        return QPair<Bytecode::ValueType, size_t>(Bytecode::VT_string,0);
+        result << Bytecode::VT_string;
     else if (t.kind==AST::TypeCharect)
-        return QPair<Bytecode::ValueType, size_t>(Bytecode::VT_char,0);
-    else if (t.kind==AST::TypeUser)
-        return QPair<Bytecode::ValueType, size_t>(Bytecode::VT_user,t.size);
+        result << Bytecode::VT_char;
+    else if (t.kind==AST::TypeUser) {
+        QList<Bytecode::ValueType> result;
+        result << Bytecode::VT_user;
+        for (int i=0; i<t.userTypeFields.size(); i++) {
+            AST::Field field = t.userTypeFields[i];
+            result << valueType(field.second);
+        }
+    }
     else
-        return QPair<Bytecode::ValueType, size_t>(Bytecode::VT_void,0);
+        result << Bytecode::VT_void;
+    return result;
 }
 
 Bytecode::ValueKind Generator::valueKind(AST::VariableAccessType t)
@@ -280,8 +288,7 @@ void Generator::addKumirModule(int id, const AST::Module *mod)
         glob.id = quint16(i);
         glob.name = var->name.toStdWString();
         glob.dimension = quint8(var->dimension);
-        glob.vtype = valueType(var->baseType).first;
-        glob.userTypeSize = valueType(var->baseType).second;
+        glob.vtype = valueType(var->baseType).toStdList();
         glob.refvalue = valueKind(var->accessType);
         m_bc->d.push_back(glob);
     }
@@ -354,8 +361,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
         loc.id = 0;
         loc.name = tr("Function return value").toStdWString();
         loc.dimension = 0;
-        loc.vtype = valueType(retval->baseType).first;
-        loc.userTypeSize = valueType(retval->baseType).second;
+        loc.vtype = valueType(retval->baseType).toStdList();
         loc.refvalue = Bytecode::VK_Plain;
         m_bc->d.push_back(loc);
         varsToOut << constantValue(Bytecode::VT_int, 0, 0);
@@ -372,8 +378,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
         loc.id = locOffset+i;
         loc.name = var->name.toStdWString();
         loc.dimension = var->dimension;
-        loc.vtype = valueType(var->baseType).first;
-        loc.userTypeSize = valueType(var->baseType).second;
+        loc.vtype = valueType(var->baseType).toStdList();
         loc.refvalue = Bytecode::VK_Plain;
         m_bc->d.push_back(loc);
 
@@ -404,7 +409,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
             Bytecode::Instruction load;
             load.type = Bytecode::LOAD;
             load.scope = Bytecode::CONSTT;
-            load.arg = constantValue(valueType(var->baseType).first, 0, var->initialValue);
+            load.arg = constantValue(valueType(var->baseType), 0, var->initialValue);
             instrs << load;
             Bytecode::Instruction store = init;
             store.type = Bytecode::STORE;
@@ -530,8 +535,7 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
         loc.id = i;
         loc.name = var->name.toStdWString();
         loc.dimension = var->dimension;
-        loc.vtype = valueType(var->baseType).first;
-        loc.userTypeSize = valueType(var->baseType).second;
+        loc.vtype = valueType(var->baseType).toStdList();
         loc.refvalue = valueKind(var->accessType);
         m_bc->d.push_back(loc);
     }
@@ -732,6 +736,13 @@ QList<Bytecode::Instruction> Generator::instructions(
 
 quint16 Generator::constantValue(Bytecode::ValueType type, quint8 dimension, const QVariant &value)
 {
+    std::list<Bytecode::ValueType> vt;
+    vt.push_back(type);
+    return constantValue(vt, dimension, value);
+}
+
+quint16 Generator::constantValue(const std::list<Bytecode::ValueType> & type, quint8 dimension, const QVariant &value)
+{
     ConstValue c;
     c.baseType = type;
     c.dimension = dimension;
@@ -898,7 +909,7 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
 {
     QList<Bytecode::Instruction> result;
     if (st->kind==AST::ExprConst) {
-        int constId = constantValue(valueType(st->baseType).first, st->dimension, st->constant);
+        int constId = constantValue(valueType(st->baseType), st->dimension, st->constant);
         Bytecode::Instruction instr;
         instr.type = Bytecode::LOAD;
         instr.scope = Bytecode::CONSTT;
@@ -1159,7 +1170,7 @@ void Generator::INIT(int modId, int algId, int level, const AST::Statement * st,
             Bytecode::Instruction load;
             load.type = Bytecode::LOAD;
             load.scope = Bytecode::CONSTT;
-            load.arg = constantValue(valueType(var->baseType).first, var->dimension, var->initialValue);
+            load.arg = constantValue(valueType(var->baseType), var->dimension, var->initialValue);
             result << load;
             Bytecode::Instruction store = init;
             store.type = Bytecode::STORE;
@@ -1223,7 +1234,7 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
             Bytecode::Instruction ref;
             if (varExpr->kind==AST::ExprConst) {
                 ref.scope = Bytecode::CONSTT;
-                ref.arg = constantValue(valueType(varExpr->baseType).first, 0, varExpr->constant);
+                ref.arg = constantValue(valueType(varExpr->baseType), 0, varExpr->constant);
             }
             else {
                 findVariable(modId, algId, varExpr->variable, ref.scope, ref.arg);

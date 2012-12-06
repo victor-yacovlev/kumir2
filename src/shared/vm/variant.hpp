@@ -20,52 +20,7 @@ using Kumir::String;
 using Kumir::real;
 using namespace Bytecode;
 
-class UserTypeValue
-{
-public:
-    inline explicit UserTypeValue() { sz = 0; data = 0; }
-    inline explicit UserTypeValue(void * ptr, size_t s) {
-        data = malloc(s);
-        memcpy(data, ptr, s);
-        sz = s;
-    }
-    inline explicit UserTypeValue(const UserTypeValue &other) {
-        sz = other.sz;
-        if (sz>0) {
-            data = malloc(sz);
-            memcpy(data, other.data, sz);
-        }
-    }
-    inline void operator=(const UserTypeValue & other) {
-        sz = other.sz;
-        if (sz>0) {
-            data = malloc(sz);
-            memcpy(data, other.data, sz);
-        }
-    }
-
-    template <typename T>
-    inline explicit UserTypeValue(const T & value) {
-        data = malloc(sizeof(T));
-        memcpy(data, &value, sizeof(T));
-        sz = sizeof(T);
-    }
-    template <typename T>
-    inline T & get() const {
-        return *(reinterpret_cast<T*>(data));
-    }
-    template <typename T>
-    inline T get() {
-        return *(reinterpret_cast<T*>(data));
-    }
-    inline ~UserTypeValue() {
-        if (data && sz>0)
-            free(data);
-    }
-private:
-    size_t sz;
-    void * data;
-};
+typedef std::deque< class AnyValue > Record;
 
 class AnyValue
 {
@@ -78,7 +33,7 @@ public:
     inline explicit AnyValue(bool v) { __init__(); tp = VT_bool; bvalue = v; }
     inline explicit AnyValue(Char v) { __init__(); tp = VT_char; cvalue = v; }
     inline explicit AnyValue(const String & v) { tp = VT_string; svalue = new String(v); }
-    inline explicit AnyValue(const UserTypeValue & value) { __init__(); tp = VT_user; uvalue = value; }
+    inline explicit AnyValue(const Record & value) { __init__(); tp = VT_user; uvalue = value; }
 
     inline void operator=(ValueType t) { __init__(); tp = t;  svalue = t==VT_string? new String() : 0; }
     inline void operator=(int v) { __init__(); tp = VT_int;  ivalue = v; }
@@ -86,7 +41,7 @@ public:
     inline void operator=(bool v) { __init__(); tp = VT_bool; bvalue = v; }
     inline void operator=(Char v) { __init__(); tp = VT_char; cvalue = v; }
     inline void operator=(const String & v) { __init__(); tp = VT_string; svalue = new String(v); }
-    inline void operator=(const UserTypeValue & value) {
+    inline void operator=(const Record & value) {
         __init__();
         tp = VT_user;
         uvalue = value;
@@ -123,9 +78,11 @@ public:
         else if (tp==VT_void) return String();
         else return *svalue;
     }
-    template <typename T>
-    inline T toUserType() const {
-        return uvalue.get<T>();
+    inline const Record & toRecord() const {
+        return uvalue;
+    }
+    inline Record & toRecord() {
+        return uvalue;
     }
 
     inline bool isValid() const { return tp!=VT_void || asize>0; }
@@ -180,7 +137,7 @@ private:
         Char cvalue;
         bool bvalue;
     };
-    UserTypeValue uvalue;
+    Record uvalue;
     String * svalue;
     AnyValue * avalue;
     size_t asize;
@@ -213,7 +170,7 @@ public:
     inline explicit Variable(Char & v) { create(); e_baseType = VT_char; m_value = v; }
     inline explicit Variable(const String & v) { create(); e_baseType = VT_string; m_value = v; }
     inline explicit Variable(bool v) { create(); e_baseType = VT_bool; m_value = v; }
-    inline explicit Variable(const UserTypeValue & value) {
+    inline explicit Variable(const Record & value) {
         create();
         e_baseType = VT_user;
         m_value = value;
@@ -297,8 +254,6 @@ public:
     inline bool toBool() const { return value().toBool(); }
     inline Char toChar() const { return value().toChar(); }
     inline String toString() const;
-    template <typename T>
-    inline T toUserType() const { return value().toUserType<T>(); }
     inline String toString(int indeces[4]) const;
     inline Variable toReference();
     inline static Variable toConstReference(const AnyValue & value);

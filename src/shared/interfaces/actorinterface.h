@@ -22,7 +22,10 @@ enum EvaluationStatus {
 class ActorInterface
 {
 public:
-    typedef QPair<QString,size_t> CustomType;
+    enum FieldType { Int, Real, Bool, Char, String };
+    typedef QPair<QString, FieldType> Field;
+    typedef QList<Field> Record;
+    typedef QPair<QString,Record> CustomType;
     typedef QList<CustomType> TypeList;
     inline virtual QStringList funcList() const { return QStringList(); } // List of public functions;
     inline virtual TypeList typeList() const { return TypeList(); }
@@ -30,11 +33,13 @@ public:
     inline virtual QString mainIconName() const {return QString(); }
     inline virtual QString pultIconName() const {return QString(); }
     inline virtual QVariant     result() const { return QVariant::Invalid; }
+    inline virtual bool handlesCustomTypeConstant() const { return false; }
+    inline virtual QByteArray parseCustomTypeConstant(const QString & /*asciiTypeName*/, const QString & /*literal*/) const { return QByteArray(); }
     inline virtual QVariantList algOptResults() const { return QVariantList(); }
     inline virtual class QWidget * mainWidget() { return 0; }
     inline virtual class QWidget * pultWidget() { return 0; }
     inline virtual QList<class QMenu*> moduleMenus() const { return QList<class QMenu*>(); }
-    inline virtual void reset() {};
+    inline virtual void reset() {}
     inline virtual void setAnimationEnabled(bool ) {}
     inline virtual EvaluationStatus evaluate(quint32 , const QVariantList & ) { return ES_Error; }
     inline virtual QString errorText() const { return QString(); }

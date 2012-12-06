@@ -20,8 +20,7 @@ using VM::Variable;
 
 struct TableElem {
     ElemType type; // Element type
-    ValueType vtype; // Value type
-    size_t userTypeSize; // Size of user-defined type
+    std::list<ValueType> vtype; // Value type
     uint8_t dimension; // 0 for regular, [1..3] for arrays
     ValueKind refvalue; // 1 for in-argument,
                      // 2 for in/out-argument,
@@ -38,7 +37,7 @@ struct TableElem {
     std::vector<Instruction> instructions; // for local defined function
     inline TableElem() {
         type = EL_NONE;
-        vtype = VT_void;
+        vtype.push_back(VT_void);
         dimension = 0;
         refvalue = VK_Plain;
         module = 0;
@@ -123,7 +122,7 @@ inline void stringFromDataStream(std::list<char>& stream, String & str)
     str = Kumir::Coder::decode(Kumir::UTF8, utf);
 }
 
-inline void scalarConstantToDataStream(std::list<char> & stream, ValueType type, const Variable & val) {
+inline void scalarConstantToDataStream(std::list<char> & stream, ValueType type, const VM::AnyValue & val) {
     switch (type) {
     case VT_int: {
         const int32_t ival = val.toInt();
@@ -155,7 +154,21 @@ inline void scalarConstantToDataStream(std::list<char> & stream, ValueType type,
     }
 }
 
-inline void constantToDataStream(std::list<char> & stream, ValueType baseType, const Variable & val, uint8_t dimension) {
+inline void scalarConstantToDataStream(std::list<char> & stream, const std::list<ValueType> & type, const Variable & val) {
+    if (type.front()!=VT_user) {
+        scalarConstantToDataStream(stream, type.front(), val.value());
+    }
+    else {
+        const VM::Record value = val.value().toRecord();
+        valueToDataStream(stream, uint32_t(value.size()));
+        for (int i=0; i<value.size(); i++) {
+            const VM::AnyValue & field = value[i];
+            scalarConstantToDataStream(stream, field.type(), field);
+        }
+    }
+}
+
+inline void constantToDataStream(std::list<char> & stream, const std::list<ValueType> & baseType, const Variable & val, uint8_t dimension) {
     if (dimension==0)
         scalarConstantToDataStream(stream, baseType, val);
     else {
@@ -177,11 +190,39 @@ inline void constantToDataStream(std::list<char> & stream, ValueType baseType, c
     }
 }
 
+inline void vtypeToDataStream(std::list<char> & ds, const std::list<ValueType> & vtype)
+{
+    valueToDataStream(ds, uint8_t(vtype.front()));
+    if (vtype.front()==VT_user) {
+        std::list<ValueType>::const_iterator it = vtype.begin();
+        it ++;
+        for ( ; it!=vtype.end(); ++it) {
+            valueToDataStream(ds, uint8_t(*it));
+        }
+    }
+}
+
+inline void vtypeFromDataStream(std::list<char> & ds, std::list<ValueType> & vtype)
+{
+    uint8_t u8;
+    valueFromDataStream(ds, u8);
+    ValueType first = ValueType(u8);
+    vtype.push_back(first);
+    if (first==VT_user) {
+        uint32_t sz;
+        valueFromDataStream(ds, sz);
+        for (uint32_t i=0; i<sz; i++) {
+            valueFromDataStream(ds, u8);
+            first = ValueType(u8);
+            vtype.push_back(first);
+        }
+    }
+}
+
 inline void tableElemToBinaryStream(std::list<char> & ds, const TableElem &e)
 {
     valueToDataStream(ds, uint8_t(e.type));
-    valueToDataStream(ds, uint8_t(e.vtype));
-    valueToDataStream(ds, uint32_t(e.userTypeSize));
+    vtypeToDataStream(ds, e.vtype);
     valueToDataStream(ds, uint8_t(e.dimension));
     valueToDataStream(ds, uint8_t(e.refvalue));
     valueToDataStream(ds, uint8_t(e.module));
@@ -201,37 +242,37 @@ inline void tableElemToBinaryStream(std::list<char> & ds, const TableElem &e)
     }
 }
 
-inline void scalarConstantFromDataStream(std::list<char> & stream, ValueType type, Variable & val)
+inline void scalarConstantFromDataStream(std::list<char> & stream, ValueType type, VM::AnyValue & val)
 {
     switch (type) {
     case VT_int: {
         int32_t ival;
         valueFromDataStream(stream, ival);
-        val = Variable(ival);
+        val = VM::AnyValue(ival);
         break;
     }
     case VT_real: {
         double rval;
         valueFromDataStream(stream, rval);
-        val = Variable(rval);
+        val = VM::AnyValue(rval);
         break;
     }
     case VT_bool: {
         uint8_t bval;
         valueFromDataStream(stream, bval);
-        val = Variable(bool(bval>0? true : false));
+        val = VM::AnyValue(bool(bval>0? true : false));
         break;
     }
     case VT_char: {
         String cval;
         stringFromDataStream(stream, cval);
-        val = Variable(Kumir::Char(cval.at(0)));
+        val = VM::AnyValue(Kumir::Char(cval.at(0)));
         break;
     }
     case VT_string: {
         Kumir::String sval;
         stringFromDataStream(stream, sval);
-        val = Variable(sval);
+        val = VM::AnyValue(sval);
         break;
     }
     default:
@@ -239,13 +280,32 @@ inline void scalarConstantFromDataStream(std::list<char> & stream, ValueType typ
     }
 }
 
+inline void scalarConstantFromDataStream(std::list<char> & stream, const std::list<ValueType> & type, VM::AnyValue & val)
+{
+    if (type.front()!=VT_user) {
+        scalarConstantToDataStream(stream, type.front(), val);
+    }
+    else {
+        std::list<ValueType>::const_iterator it = type.begin();
+        it ++;
+        for ( ; it!=type.end(); ++it) {
+            VM::AnyValue field;
+            scalarConstantFromDataStream(stream, *it, field);
+            val.toRecord().push_back(field);
+        }
+    }
+}
+
 inline void constantFromDataStream(std::list<char> & stream,
-                                   ValueType baseType,
+                                   const std::list<ValueType> & baseType,
                                    Variable & val,
                                    uint8_t dimension )
 {
-    if (dimension==0)
-        scalarConstantFromDataStream(stream, baseType, val);
+    if (dimension==0) {
+        VM::AnyValue value;
+        scalarConstantFromDataStream(stream, baseType, value);
+        val.setValue(value);
+    }
     else {
         val.setDimension(dimension);
         int bounds[7];
@@ -263,9 +323,9 @@ inline void constantFromDataStream(std::list<char> & stream,
             uint8_t defined;
             valueFromDataStream(stream, defined);
             if (defined==1) {
-                Variable element;
+                VM::AnyValue element;
                 scalarConstantFromDataStream(stream, baseType, element);
-                val[i] = element.value();
+                val[i] = element;
             }
         }
     }
@@ -274,7 +334,6 @@ inline void constantFromDataStream(std::list<char> & stream,
 inline void tableElemFromBinaryStream(std::list<char> & ds, TableElem &e)
 {
     uint8_t t;
-    uint8_t v;
     uint8_t d;
     uint8_t r;
     uint8_t m;
@@ -283,7 +342,7 @@ inline void tableElemFromBinaryStream(std::list<char> & ds, TableElem &e)
     uint32_t sz;
     String s;
     valueFromDataStream(ds, t);
-    valueFromDataStream(ds, v);
+    vtypeFromDataStream(ds, e.vtype);
     valueFromDataStream(ds, sz);
     valueFromDataStream(ds, d);
     valueFromDataStream(ds, r);
@@ -292,8 +351,6 @@ inline void tableElemFromBinaryStream(std::list<char> & ds, TableElem &e)
     valueFromDataStream(ds, id);
     stringFromDataStream(ds, s);
     e.type = ElemType(t);
-    e.vtype = ValueType(v);
-    e.userTypeSize = size_t(sz);
     e.dimension = d;
     e.refvalue = ValueKind(r);
     e.module = m;
@@ -372,10 +429,10 @@ inline ElemType elemTypeFromString(const std::string &ss)
 }
 
 
-
-inline std::string vtypeToString(ValueType t, size_t userDataSize, uint8_t dim)
+inline std::string vtypeToString(const std::list<ValueType> & type, uint8_t dim)
 {
     std::string result;
+    ValueType t = type.front();
     if (t==VT_int)
         result = "int";
     else if (t==VT_real)
@@ -387,9 +444,29 @@ inline std::string vtypeToString(ValueType t, size_t userDataSize, uint8_t dim)
     else if (t==VT_bool)
         result = "bool";
     else if (t==VT_user) {
-        std::ostringstream ss;
-        ss << "user" << int(userDataSize);
-        result = ss.str();
+        result = "record{";
+        std::list<ValueType>::const_iterator it = type.begin();
+        it ++;
+        std::list<ValueType>::const_iterator itt;
+        for ( ; it!=type.end(); ++it) {
+            t = *it;
+            if (t==VT_int)
+                result = "int";
+            else if (t==VT_real)
+                result = "real";
+            else if (t==VT_char)
+                result = "char";
+            else if (t==VT_string)
+                result = "string";
+            else if (t==VT_bool)
+                result = "bool";
+            itt = it;
+            itt++;
+            if ( itt != type.end() ) {
+                result += ",";
+            }
+        }
+        result += "}";
     }
     else
         result = "";
@@ -401,11 +478,12 @@ inline std::string vtypeToString(ValueType t, size_t userDataSize, uint8_t dim)
     return result;
 }
 
-inline void vtypeFromString(const std::string &ss, ValueType &t, uint8_t &dim)
+inline void vtypeFromString(const std::string &ss, std::list<ValueType> &type, uint8_t &dim)
 {
     size_t brackPos = ss.find_first_of('[');
     std::string s = Kumir::Core::toLowerCase(ss.substr(0, brackPos));
     Kumir::StringUtils::trim<std::string,char>(s);
+    ValueType t;
     if (s=="int")
         t = VT_int;
     else if (s=="real")
@@ -416,6 +494,8 @@ inline void vtypeFromString(const std::string &ss, ValueType &t, uint8_t &dim)
         t = VT_string;
     else if (s=="bool")
         t = VT_bool;
+    else if (s.length()>=std::string("record").length())
+        t = VT_user;
     else
         t = VT_void;
     dim = 0;
@@ -426,7 +506,11 @@ inline void vtypeFromString(const std::string &ss, ValueType &t, uint8_t &dim)
                 dim++;
         }
     }
-
+    type.clear();
+    type.push_back(t);
+    if (t==VT_user) {
+        // TODO implement me!
+    }
 }
 
 
@@ -492,16 +576,16 @@ inline String unscreenString(String s)
 inline std::string constantToTextStream(const TableElem & e)
 {
     std::ostringstream os;
-    os << ".constant id=" << e.id << " type=" << vtypeToString(e.vtype, e.userTypeSize, e.dimension) << " value=";
-    if (e.vtype==VT_int) {
+    os << ".constant id=" << e.id << " type=" << vtypeToString(e.vtype, e.dimension) << " value=";
+    if (e.vtype.front()==VT_int) {
         const int32_t val = e.initialValue.toInt();
         os << val;
     }
-    else if (e.vtype==VT_real) {
+    else if (e.vtype.front()==VT_real) {
         const double val = e.initialValue.toDouble();
         os << val;
     }
-    else if (e.vtype==VT_bool) {
+    else if (e.vtype.front()==VT_bool) {
         const bool val = e.initialValue.toBool();
         os << val? "true" : "false";
     }
@@ -514,7 +598,7 @@ inline std::string constantToTextStream(const TableElem & e)
 inline std::string localToTextStream(const TableElem & e)
 {
     std::ostringstream os;
-    os << ".local kind=" << kindToString(e.refvalue) << " type=" << vtypeToString(e.vtype, e.userTypeSize, e.dimension) << " ";
+    os << ".local kind=" << kindToString(e.refvalue) << " type=" << vtypeToString(e.vtype, e.dimension) << " ";
     os << "module=" << int(e.module) << " algorithm=" << e.algId << " id=" << e.id;
     if (e.name.length()>0) {
         os << " name=\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\"";
@@ -525,7 +609,7 @@ inline std::string localToTextStream(const TableElem & e)
 inline std::string globalToTextStream(const TableElem & e)
 {
     std::ostringstream os;
-    os << ".global type:" << vtypeToString(e.vtype, e.userTypeSize, e.dimension) << " ";
+    os << ".global type:" << vtypeToString(e.vtype, e.dimension) << " ";
     os << "module=" << int(e.module) << " id=" << e.id;
     if (e.name.length()>0) {
         os << " name=\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\"";
@@ -649,7 +733,7 @@ inline void tableElemFromTextStream(std::istream& ts, TableElem& e)
         if (attrs.count("type")==0)
             throw std::string("No type specified for local variable");
         vtypeFromString(attrs["type"], e.vtype, e.dimension);
-        if (e.vtype==VT_void)
+        if (e.vtype.front()==VT_void)
             throw std::string("Illegal variable type");
     }
     if (e.type==EL_GLOBAL) {
@@ -660,7 +744,7 @@ inline void tableElemFromTextStream(std::istream& ts, TableElem& e)
         if (attrs.count("type")==0)
             throw std::string("No type specified for global variable");
         vtypeFromString(attrs["type"], e.vtype, e.dimension);
-        if (e.vtype==VT_void)
+        if (e.vtype.front()==VT_void)
             throw std::string("Illegal variable type");
     }
     if (e.type==EL_EXTERN) {
@@ -677,18 +761,18 @@ inline void tableElemFromTextStream(std::istream& ts, TableElem& e)
         vtypeFromString(attrs["type"], e.vtype, e.dimension);
         if (attrs.count("value")==0)
             throw std::string("No value specified for constant");
-        if (e.vtype==VT_int) {
+        if (e.vtype.front()==VT_int) {
             int32_t val = Kumir::Converter::parseInt(Kumir::Core::fromUtf8(attrs["value"]),0,error);
             if (error!=Kumir::Converter::NoError) throw std::string("Error parsing numeric value");
             e.initialValue = Variable(val);
         }
-        else if (e.vtype==VT_real) {
+        else if (e.vtype.front()==VT_real) {
             double val;
             val = Kumir::Converter::parseReal(Kumir::Core::fromAscii(attrs["value"]),0,error);
             if (error!=Kumir::Converter::NoError) throw std::string("Error parsing numeric value");
             e.initialValue = Variable(val);
         }
-        else if (e.vtype==VT_bool) {
+        else if (e.vtype.front()==VT_bool) {
             const std::string lexem = Kumir::Core::toLowerCase(attrs["value"]);
             if (lexem=="true" || lexem=="1")
                 e.initialValue = Variable(bool(true));
