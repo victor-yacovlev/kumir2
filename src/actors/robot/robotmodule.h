@@ -206,7 +206,7 @@ namespace ActorRobot {
         QGraphicsTextItem * upCharItm;
         QGraphicsTextItem * downCharItm;
         QGraphicsTextItem * markItm;
-        QGraphicsTextItem * radItm;
+        QGraphicsRectItem * radItm;
         QGraphicsTextItem * tempItm;
         QGraphicsRectItem * upCharFld;
         QGraphicsRectItem * downCharFld;
