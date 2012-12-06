@@ -236,10 +236,14 @@ namespace ActorRobot {
         }
         
      
-        radItm=Scene->addText("R: "+QString::number(radiation),font);
-        radItm->setDefaultTextColor(TextColor);
-        radItm->setPos(upLeftCornerX+1,upLeftCornerY+1);
+       radItm=Scene->addRect(upLeftCornerX+1, upLeftCornerY+1, size*(radiation/99),size/5 );
+        
+       radItm->setBrush(QBrush(Qt::yellow));
+     //  radItm->setPos(upLeftCornerX+1,upLeftCornerY+1);
         radItm->setZValue(1);
+        
+        
+        
         
         tempItm=Scene->addText("T: "+QString::number(temperature),font);
         tempItm->setDefaultTextColor(TextColor);
@@ -953,6 +957,7 @@ namespace ActorRobot {
         keyCursor->hide();
         };
          textEditMode=flag;
+        radSpinBox->hide(); 
         redrawEditFields();
         redrawRTFields();
     };
@@ -961,6 +966,7 @@ namespace ActorRobot {
      clickCell=QPair<int,int>(-1,-1);
      QGraphicsView * view=views().first();   
      radSpinBox->setParent(view);
+        radSpinBox->hide();   
      radEditMode=flag;  
      redrawEditFields();
      redrawRTFields();   
@@ -2016,8 +2022,13 @@ namespace ActorRobot {
         {   
             if(clickCell!=QPair<int,int>(rowClicked,colClicked))
              {
-               if(radSpinBox->isVisible()) getFieldItem(clickCell.first,clickCell.second)->radiation=radSpinBox->value();
+               if(radSpinBox->isVisible())
+               {qDebug()<<"SET F:"<<clickCell.first<<"SET SEC:"<<clickCell.second;
+                   getFieldItem(clickCell.first,clickCell.second)->radiation=radSpinBox->value();
+                
+               }
                  redrawRTFields();  
+                 radSpinBox->hide();
              }
             if(rowClicked>rows() || colClicked>columns() ||rowClicked<0 || colClicked<0)//clik mimio polya
             {
@@ -2029,6 +2040,7 @@ namespace ActorRobot {
    
             QGraphicsView * view=views().first();  //current view
             QPoint clickViewPos=view->mapFromScene(mouseEvent->scenePos().x(), mouseEvent->scenePos().y());
+            qDebug()<<"ROW:"<<rowClicked<<"COL:"<<colClicked;
             radSpinBox->setValue(getFieldItem(rowClicked,colClicked)->radiation);//set radiation
             radSpinBox->move(clickViewPos.x(),clickViewPos.y());
             qDebug()<<"Show spin box"<<clickViewPos.x()<<" pos y"<<clickViewPos.y();
