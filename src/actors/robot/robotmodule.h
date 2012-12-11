@@ -73,6 +73,14 @@ namespace ActorRobot {
         QGraphicsPolygonItem* RoboItem();
         void setCrash(uint dirct);
         void move(QPoint point);
+        bool isMoving()
+        {
+            return moving;
+        }
+        void  setMoving(bool flag)
+        {
+             moving=flag;
+        }
         //void show();
     signals:
         void moved(QPointF point);
@@ -85,7 +93,7 @@ namespace ActorRobot {
     private:
         
         QGraphicsPolygonItem *Robot;
-        bool ready;
+        bool ready,moving;
         uint crash;
         
     };    
@@ -336,6 +344,7 @@ namespace ActorRobot {
         SimpleRobot * robot;
         void wbMode();
         void colorMode();
+         void mouseReleaseEvent ( QGraphicsSceneMouseEvent * mouseEvent );
         public
         
     slots:
@@ -352,7 +361,7 @@ namespace ActorRobot {
     private:
         
         void mousePressEvent ( QGraphicsSceneMouseEvent * mouseEvent );
-        void mouseReleaseEvent ( QGraphicsSceneMouseEvent * mouseEvent );
+       
         void mouseMoveEvent ( QGraphicsSceneMouseEvent * mouseEvent );
         void keyPressEvent ( QKeyEvent * keyEvent );  
         QTimer * timer;
