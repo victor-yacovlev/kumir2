@@ -57,7 +57,48 @@ namespace ActorRobot {
 #define DEFAULT_SIZEX 400
 #define DEFAULT_SIZEY 400    
 
-   
+    class EditLine:public QGraphicsObject
+    {
+        Q_OBJECT;
+    public:
+        EditLine(QGraphicsItem *parent = 0);
+        QRectF boundingRect() const;
+        bool isTemp()
+        {
+            return istemp;
+        }
+        bool isRad()
+        {
+            return !istemp;
+        }
+        void setRad()
+        {
+            istemp=false;
+        }
+        void setTemp()
+        {
+            istemp=true;
+            iconPath=QUrl::fromLocalFile(
+                                         qApp->property("sharePath").toString()+
+                                         "/actors/robot/radioactive-danger-symbol.svg"
+                                         );
+            rad=QImage(iconPath.toLocalFile ());
+            
+            rad.load(iconPath.toLocalFile ());
+        }
+        void setValue(float value)
+        {
+            Value=value;
+        }
+        
+        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+                   QWidget *widget);
+        private:
+        QUrl iconPath;
+        float Value;
+        bool istemp;
+        QImage rad;
+    };
     
     class SimpleRobot:
     public QGraphicsObject
@@ -214,7 +255,7 @@ namespace ActorRobot {
         QGraphicsTextItem * upCharItm;
         QGraphicsTextItem * downCharItm;
         QGraphicsTextItem * markItm;
-        QGraphicsRectItem * radItm;
+        EditLine * radItm;
         QGraphicsTextItem * tempItm;
         QGraphicsRectItem * upCharFld;
         QGraphicsRectItem * downCharFld;

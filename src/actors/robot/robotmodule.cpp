@@ -236,19 +236,24 @@ namespace ActorRobot {
         }
         
      
-       radItm=Scene->addRect(upLeftCornerX+1, upLeftCornerY+1, size*(radiation/99),size/5 );
-        
-       radItm->setBrush(QBrush(Qt::yellow));
+      // radItm=Scene->addRect(upLeftCornerX+1, upLeftCornerY+1, size*(radiation/99),size/5 );
+        radItm=new EditLine();
+        radItm->moveBy(upLeftCornerX+1, upLeftCornerY+1);
+        radItm->setValue(radiation);
+        // radItm=Scene->addItem(upLeftCornerX+1, upLeftCornerY+1, size*(radiation/99),size/5 );
+       Scene->addItem(radItm);
+      // radItm->setBrush(QBrush(Qt::yellow));
      //  radItm->setPos(upLeftCornerX+1,upLeftCornerY+1);
-        radItm->setZValue(1);
+        radItm->setZValue(100);
+        radItm->show();
         
         
         
         
-        tempItm=Scene->addText("T: "+QString::number(temperature),font);
-        tempItm->setDefaultTextColor(TextColor);
-        tempItm->setPos(upLeftCornerX+1,upLeftCornerY+size-16);
-        tempItm->setZValue(1);
+        //tempItm=Scene->addText("T: "+QString::number(temperature),font);
+        //tempItm->setDefaultTextColor(TextColor);
+        //tempItm->setPos(upLeftCornerX+1,upLeftCornerY+size-16);
+        //tempItm->setZValue(1);
         
 
     }
@@ -2483,9 +2488,40 @@ namespace ActorRobot {
     };
     
     
+    //++++++++EditLine
     
+    EditLine::EditLine(QGraphicsItem *parent)
+    {
+        Value=0;
+        istemp=true;
+        iconPath=QUrl::fromLocalFile(
+                                     qApp->property("sharePath").toString()+
+                                     "/actors/robot/btn_radiation.png"
+                                     );
+        rad=QImage(iconPath.toLocalFile ());
+        
+        rad.load(iconPath.toLocalFile ());
+    }
     
-
+    void EditLine::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+                            QWidget *widget)
+    {
+        Q_UNUSED(option); Q_UNUSED(widget);
+        
+        if(isTemp())
+        {
+                        
+            painter->drawImage(2,2,rad.scaledToHeight(FIELD_SIZE_SMALL/4) );
+            painter->setBrush(QBrush(Qt::yellow));
+            painter->drawRect(2, FIELD_SIZE_SMALL/4+2, (FIELD_SIZE_SMALL-FIELD_SIZE_SMALL/4)*(Value/99),FIELD_SIZE_SMALL/5 );
+            
+        }
+    }
+    QRectF EditLine::boundingRect() const
+    {
+        //     qreal adjust = 0.5;
+        return QRectF(0,0,FIELD_SIZE_SMALL/4,FIELD_SIZE_SMALL/4);
+    };
     //+++++++Simple Robot
     SimpleRobot::SimpleRobot(QGraphicsItem *parent )
     {
