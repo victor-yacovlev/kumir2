@@ -16,8 +16,6 @@ Plugin::Plugin() :
     b_done = true;
     connect (d, SIGNAL(output(QString)), this, SIGNAL(outputRequest(QString)));
     connect (d, SIGNAL(input(QString)), this, SIGNAL(inputRequest(QString)));
-    connect (d, SIGNAL(externalFunctionCall(QString,QString,QVariantList)),
-             this, SIGNAL(externalRequest(QString,QString,QVariantList)));
     connect (d, SIGNAL(finished()), this, SLOT(handleThreadFinished()));
     connect (d, SIGNAL(lineChanged(int)), this, SIGNAL(lineChanged(int)));
 //    connect (d->vm, SIGNAL(valueChangeNotice(int,QString)),

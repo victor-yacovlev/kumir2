@@ -23,7 +23,7 @@ enum ValueType {
     VT_char     = 0x03,
     VT_bool     = 0x04,
     VT_string   = 0x05,
-    VT_user     = 0xFF
+    VT_record     = 0xFF
 };
 
 enum ValueKind {

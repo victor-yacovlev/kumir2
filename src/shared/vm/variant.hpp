@@ -33,7 +33,7 @@ public:
     inline explicit AnyValue(bool v) { __init__(); tp = VT_bool; bvalue = v; }
     inline explicit AnyValue(Char v) { __init__(); tp = VT_char; cvalue = v; }
     inline explicit AnyValue(const String & v) { tp = VT_string; svalue = new String(v); }
-    inline explicit AnyValue(const Record & value) { __init__(); tp = VT_user; uvalue = value; }
+    inline explicit AnyValue(const Record & value) { __init__(); tp = VT_record; uvalue = value; }
 
     inline void operator=(ValueType t) { __init__(); tp = t;  svalue = t==VT_string? new String() : 0; }
     inline void operator=(int v) { __init__(); tp = VT_int;  ivalue = v; }
@@ -43,7 +43,7 @@ public:
     inline void operator=(const String & v) { __init__(); tp = VT_string; svalue = new String(v); }
     inline void operator=(const Record & value) {
         __init__();
-        tp = VT_user;
+        tp = VT_record;
         uvalue = value;
     }
 
@@ -83,6 +83,60 @@ public:
     }
     inline Record & toRecord() {
         return uvalue;
+    }
+
+    template <typename T>
+    inline T toUserValue() const {
+        size_t fields = strlen(T::_());
+        T value;
+        void * ptr = &value;
+        for (size_t i=0; i<fields; i++) {
+            void * fieldptr = 0;
+            size_t copySize = 0;
+            char tp = T::_()[i];
+            switch (tp) {
+            case 'i': {
+                int val = uvalue.at(i).toInt();
+                fieldptr = &val;
+                copySize = sizeof(int);
+                ptr += copySize;
+                memcpy(ptr, fieldptr, copySize);
+                break;
+            }
+            case 'd': {
+                double val = uvalue.at(i).toReal();
+                fieldptr = &val;
+                ptr += copySize;
+                memcpy(ptr, fieldptr, copySize);
+                break;
+            }
+            case 'b': {
+                bool val = uvalue.at(i).toBool();
+                fieldptr = &val;
+                ptr += copySize;
+                memcpy(ptr, fieldptr, copySize);
+                break;
+            }
+            case 'c': {
+                Char val = uvalue.at(i).toChar();
+                fieldptr = &val;
+                copySize = sizeof(Char);
+                ptr += sizeof(Char);
+                break;
+            }
+            case 's': {
+                String val = uvalue.at(i).toString();
+                fieldptr = &val;
+                ptr += copySize;
+                String * stringRef = reinterpret_cast<String*>(fieldptr);
+                stringRef->assign(val); // copy container data
+                break;
+            }
+            default:
+                break;
+            }
+        }
+        return value;
     }
 
     inline bool isValid() const { return tp!=VT_void || asize>0; }
@@ -172,7 +226,7 @@ public:
     inline explicit Variable(bool v) { create(); e_baseType = VT_bool; m_value = v; }
     inline explicit Variable(const Record & value) {
         create();
-        e_baseType = VT_user;
+        e_baseType = VT_record;
         m_value = value;
     }
     inline explicit Variable(Variable * ref) { create(); m_reference = ref; }
@@ -255,6 +309,9 @@ public:
     inline Char toChar() const { return value().toChar(); }
     inline String toString() const;
     inline String toString(int indeces[4]) const;
+    inline const Record & toRecord() const { return m_value.toRecord(); }
+    inline Record & toRecord() { return m_value.toRecord(); }
+
     inline Variable toReference();
     inline static Variable toConstReference(const AnyValue & value);
     inline Variable toReference(int indeces[4]);
@@ -338,7 +395,7 @@ AnyValue Variable::value() const
             Kumir::Core::abort(Kumir::Core::fromUtf8("Нет значения у величины"));
         return m_value;
     }
-    return AnyValue(VT_void);
+    return m_value;
 }
 
 void Variable::setValue(const AnyValue &v)

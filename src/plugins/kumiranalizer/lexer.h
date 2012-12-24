@@ -24,6 +24,8 @@ public:
     bool isArrayClassName(const QString &clazz) const;
     bool boolConstantValue(const QString &val) const;
     bool isReturnVariable(const QString & name) const;
+    inline QString inputLexemName() const { return QString::fromUtf8("ввод"); }
+    inline QString outputLexemName() const{ return QString::fromUtf8("вывод"); }
 public slots:
     int splitIntoStatements(const QStringList &lines
                              , int baseLineNo

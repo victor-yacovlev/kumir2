@@ -59,28 +59,19 @@ typedef double real;
 
 struct FileType {
     enum OpenMode { NotOpen, Read, Write, Append };
+    inline static const char * _() { return "sib"; }
     inline FileType() { valid = false; fullPath[0] = Char('\0'); mode = NotOpen; }
     inline void setName(const String &name) {
-        std::string utf8 = Coder::encode(UTF8, name);
-        strcpy(fullPath, utf8.c_str());
+        fullPath = name;
     }
     inline String getName() const {
-        std::string utf8(fullPath);
-        return Coder::decode(UTF8, utf8);
+        return fullPath;
     }
     inline void setMode(OpenMode m) {
-        mode = uint8_t(m);
+        mode = int(m);
     }
     inline OpenMode getMode() const {
         return OpenMode(mode);
-    }
-    inline void setFilePtr(FILE * f) {
-        ptr = uint64_t(f);
-        valid = true;
-    }
-    inline FILE* getFilePtr() const {
-        void * pptr = (void*)ptr;
-        return reinterpret_cast<FILE*>(pptr);
     }
     inline bool isValid() const {
         return valid;
@@ -89,13 +80,12 @@ struct FileType {
         valid = false;
     }
     inline bool operator==(const FileType & other) const {
-        return strcmp(other.fullPath, fullPath)==0;
+        return other.fullPath==fullPath;
     }
 
 private:
-    char fullPath[256];
-    uint64_t ptr;
-    uint8_t mode;
+    String fullPath;
+    int mode;
     bool valid;
 };
 
@@ -178,6 +168,26 @@ public:
             }
             else
                 result.push_back(ch);
+        }
+        return result;
+    }
+
+    inline static StringList splitString(const String & s, const Char separator, bool skipEmptyParts) {
+        StringList result;
+        size_t prev_index = 0;
+        while (true) {
+            size_t cur_index = s.find(separator, prev_index+1);
+            if (cur_index==s.npos)
+                cur_index = s.length();
+            size_t length = cur_index - prev_index;
+            if (length==0 && !skipEmptyParts)
+                result.push_back(String());
+            else if (length>0) {
+                result.push_back(s.substr(prev_index+1, length-1));
+            }
+            prev_index = cur_index;
+            if (prev_index==s.length())
+                break;
         }
         return result;
     }
@@ -879,17 +889,27 @@ public:
     inline static void finalize() {
         if (isOpenedFiles() && Core::getError().length()==0)
             Core::abort(Core::fromUtf8("Остались не закрытые файлы"));
-        for (std::list<FileType>::const_iterator it = openedFiles.begin();
-             it != openedFiles.end(); ++it)
-        {
-            const FileType & f = (*it);
-            fclose(f.getFilePtr());
+        for (size_t i=0; i<openedFiles.size(); i++) {
+            fclose(openedFileHandles[i]);
         }
         openedFiles.clear();
+        openedFileHandles.clear();
+        if (assignedIN!=stdin)
+            fclose(assignedIN);
+        if (assignedOUT!=stdout)
+            fclose(assignedOUT);
+
+        assignedIN = stdin;
+        assignedOUT = stdout;
     }
 
     inline static void setFileEncoding(const String & enc) {
         String encoding = Core::toLowerCaseW(enc);
+        StringUtils::trim<String,Char>(encoding);
+        if (encoding.length()==0) {
+            fileEncoding = DefaultEncoding;
+            return;
+        }
         size_t minus = encoding.find_first_of(Char('-'));
         if (minus!=String::npos) {
             encoding.erase(minus, 1);
@@ -898,34 +918,207 @@ public:
         static const String ansi2 = Core::fromAscii("windows1251");
         static const String ansi3 = Core::fromAscii("windows");
         static const String ansi4 = Core::fromAscii("ansi");
+        static const String ansi5 = Core::fromAscii("1251");
         static const String oem1 = Core::fromAscii("cp866");
         static const String oem2 = Core::fromAscii("ibm866");
         static const String oem3 = Core::fromAscii("ibm");
         static const String oem4 = Core::fromAscii("oem");
+        static const String oem5 = Core::fromAscii("oem866");
+        static const String oem6 = Core::fromAscii("dos");
         static const String koi1 = Core::fromAscii("koi8");
         static const String koi2 = Core::fromAscii("koi8r");
         static const String koi3 = Core::fromUtf8("кои8");
         static const String koi4 = Core::fromUtf8("кои8р");
         static const String utf1 = Core::fromAscii("utf");
         static const String utf2 = Core::fromAscii("utf8");
-        static const String utf3 = Core::fromAscii("unicode");
-        static const String utf4 = Core::fromAscii("linux");
-        if (encoding==ansi1 || encoding==ansi2 || encoding==ansi3 || encoding==ansi4) {
+        static const String utf3 = Core::fromAscii("linux");
+        static const String intel1 = Core::fromAscii("unicode");
+        static const String intel2 = Core::fromAscii("utf16");
+        static const String intel3 = Core::fromAscii("utf16le");
+        static const String intel4 = Core::fromUtf8("юникод");
+        static const String motorola = Core::fromAscii("utf16be");
+        if (encoding==ansi1 || encoding==ansi2 || encoding==ansi3 || encoding==ansi4 || encoding==ansi5) {
             fileEncoding = CP1251;
         }
-        else if (encoding==oem1 || encoding==oem2 || encoding==oem3 || encoding==oem4) {
+        else if (encoding==oem1 || encoding==oem2 || encoding==oem3 || encoding==oem4 || encoding==oem5 || encoding==oem6) {
             fileEncoding = CP866;
         }
         else if (encoding==koi1 || encoding==koi2 || encoding==koi3 || encoding==koi4) {
             fileEncoding = KOI8R;
         }
-        else if (encoding==utf1 || encoding==utf2 || encoding==utf3 || encoding==utf4) {
+        else if (encoding==utf1 || encoding==utf2 || encoding==utf3) {
             fileEncoding = UTF8;
+        }
+        else if (encoding==intel1 || encoding==intel2 || encoding==intel3 || encoding==intel4) {
+            fileEncoding = UTF16INTEL;
+        }
+        else if (encoding==motorola) {
+            fileEncoding = UTF16MOTOROLA;
         }
         else {
             Core::abort(Core::fromUtf8("Неизвестная кодировка"));
         }
     }
+
+#if defined(WIN32) || defined(_WIN32)
+    inline static String getAbsolutePath(const String & x) {
+
+    }
+#else
+    inline static String getAbsolutePath(const String & fileName) {
+        char cwd[1024];
+        getcwd(cwd, 1024*sizeof(char));
+        String workDir;
+#   ifdef NO_UNICODE
+        workDir = String(cwd);
+#   else
+        wchar_t wcwd[1024];
+        size_t pl = mbstowcs(wcwd, cwd, 1024);
+        wcwd[pl] = L'\0';
+        workDir = String(wcwd);
+#   endif
+        workDir.push_back(Char('/'));
+        String absPath;
+        if (fileName.length()==0 || fileName.at(0)==Char('/'))
+            absPath = fileName;
+        else
+            absPath = workDir + fileName;
+        return getNormalizedPath(absPath, Char('/'));
+    }
+#endif
+
+    inline static String getNormalizedPath(const String & path, const Char separator)
+    {
+        if (path.length()==0)
+            return path;
+        const StringList parts = Core::splitString(path, separator, true);
+        StringList normParts;
+        int skip = 0;
+        String result;
+        static const String CUR = Core::fromAscii(".");
+        static const String UP  = Core::fromAscii("..");
+        for (int i=parts.size()-1; i>=0; i--) {
+            const String & apart = parts[i];
+            if (apart==CUR) {
+                // pass
+            }
+            else if (apart==UP) {
+                skip += 1;
+            }
+            else {
+                if (skip==0) {
+                    normParts.push_front(apart);
+                }
+                else {
+                    skip -= 1;
+                }
+            }
+        }
+        result = normParts.join(separator);
+        if (path.at(0)==separator)
+            result.insert(0, 1, separator);
+        if (path.length()>1 && path.at(path.length()-1)==separator)
+            result.push_back(separator);
+        return result;
+    }
+
+#if defined(WIN32) || defined(_WIN32)
+    inline static bool canOpenForRead(const String & path)
+    {
+
+    }
+
+    inline static bool canOpenForWrite(const String & path)
+    {
+
+    }
+#else
+    inline static bool canOpenForRead(const String & fileName)
+    {
+        char * path;
+#   ifdef NO_UNICODE
+        path = const_cast<char*>(fileName.c_str());
+#   else
+        path = reinterpret_cast<char*>( calloc(fileName.length()*2+1, sizeof(char)) );
+        size_t pl = wcstombs(path, fileName.c_str(), fileName.length()*2+1);
+        path[pl] = '\0';
+#   endif
+        struct stat st;
+        int res = stat(path, &st);
+        bool exists = res==0;
+        bool readAsOwner = false;
+        bool readAsGroup = false;
+        bool readAsOther = false;
+        if (exists) {
+            bool w = st.st_mode & S_IRUSR;
+            bool g = st.st_mode & S_IRGRP;
+            bool o = st.st_mode & S_IROTH;
+            readAsOwner = w && getuid()==st.st_uid;
+            readAsGroup = g && getgid()==st.st_gid;
+            readAsOther = o;
+        }
+#   ifndef NO_UNICODE
+        free(path);
+#   endif
+        bool result = readAsOwner || readAsGroup || readAsOther;
+        return result;
+    }
+
+    inline static bool canOpenForWrite(const String & fileName)
+    {
+        char * path;
+#   ifdef NO_UNICODE
+        path = const_cast<char*>(fileName.c_str());
+#   else
+        path = reinterpret_cast<char*>( calloc(fileName.length()*2+1, sizeof(char)) );
+        size_t pl = wcstombs(path, fileName.c_str(), fileName.length()*2+1);
+        path[pl] = '\0';
+#   endif
+        struct stat st;
+        int res = stat(path, &st);
+        bool exists = res==0;
+        bool writeAsOwner = false;
+        bool writeAsGroup = false;
+        bool writeAsOther = false;
+        if (exists) {
+            bool w = st.st_mode & S_IRUSR;
+            bool g = st.st_mode & S_IRGRP;
+            bool o = st.st_mode & S_IROTH;
+            writeAsOwner = w && getuid()==st.st_uid;
+            writeAsGroup = g && getgid()==st.st_gid;
+            writeAsOther = o;
+        }
+        else if (errno==ENOENT) {
+            while (!exists) {
+                int i = 0;
+                for (i=strlen(path)-1; i>=0; i++) {
+                    if (path[i]=='/') {
+                        path[i] = '\0';
+                        break;
+                    }
+                }
+                if (i==0)
+                    break;
+                res = stat(path, &st);
+                exists = res==0;
+                if (exists) {
+                    bool w = st.st_mode & S_IRUSR;
+                    bool g = st.st_mode & S_IRGRP;
+                    bool o = st.st_mode & S_IROTH;
+                    writeAsOwner = w && getuid()==st.st_uid;
+                    writeAsGroup = g && getgid()==st.st_gid;
+                    writeAsOther = o;
+                    break;
+                }
+            }
+        }
+#   ifndef NO_UNICODE
+        free(path);
+#   endif
+        bool result = writeAsOwner || writeAsGroup || writeAsOther;
+        return result;
+    }
+#endif
 
 #if defined(WIN32) || defined(_WIN32)
     inline static bool exist(const String & fileName) {
@@ -963,6 +1156,41 @@ public:
         return result;
     }
 
+    inline static bool isDirectory(const String & fileName) {
+        char * path;
+#   ifdef NO_UNICODE
+        path = const_cast<char*>(fileName.c_str());
+#   else
+        path = reinterpret_cast<char*>( calloc(fileName.length()*2+1, sizeof(char)) );
+        size_t pl = wcstombs(path, fileName.c_str(), fileName.length()*2+1);
+        path[pl] = '\0';
+#   endif
+        struct stat st;
+        int res = stat(path, &st);
+        bool result = res==0 && S_ISDIR(st.st_mode);
+#   ifndef NO_UNICODE
+        free(path);
+#   endif
+        return result;
+    }
+
+    inline static bool mkdir(const String & fileName) {
+        char * path;
+#   ifdef NO_UNICODE
+        path = const_cast<char*>(fileName.c_str());
+#   else
+        path = reinterpret_cast<char*>( calloc(fileName.length()*2+1, sizeof(char)) );
+        size_t pl = wcstombs(path, fileName.c_str(), fileName.length()*2+1);
+        path[pl] = '\0';
+#   endif
+        int res = ::mkdir(path, 0666);
+        bool result = res==0;
+#   ifndef NO_UNICODE
+        free(path);
+#   endif
+        return result;
+    }
+
     inline static int unlinkFile(const String & fileName) {
         char * path;
 #   ifdef NO_UNICODE
@@ -985,8 +1213,9 @@ public:
         return result;
     }
 #endif
-    inline static FileType open(const String & fileName, FileType::OpenMode mode) {
-        for (std::list<FileType>::iterator it = openedFiles.begin(); it!=openedFiles.end(); ++it) {
+    inline static FileType open(const String & shortName, FileType::OpenMode mode, bool remember=true, FILE* *fh = 0) {
+        const String fileName = getAbsolutePath(shortName);
+        for (std::deque<FileType>::const_iterator it = openedFiles.begin(); it!=openedFiles.end(); ++it) {
             const FileType & f = (*it);
             if (f.getName()==fileName) {
                 Core::abort(Core::fromUtf8("Файл уже открыт: ")+fileName);
@@ -1012,7 +1241,7 @@ public:
         else if (mode==FileType::Append)
             fmode = "a";
 
-        FILE * res = fopen(path, fmode);
+        FILE* res = fopen(path, fmode);
         FileType f;
         if (res==0) {
             Core::abort(Core::fromUtf8("Невозможно открыть файл: ")+fileName);
@@ -1022,15 +1251,21 @@ public:
                 mode = FileType::Write;
             f.setName(fileName);
             f.setMode(mode);
-            f.setFilePtr(res);
-            openedFiles.push_back(f);
+            if (remember) {
+                openedFiles.push_back(f);
+                openedFileHandles.push_back(res);
+            }
+            else if (fh) {
+                *fh = res;
+            }
         }
         return f;
     }
-    inline static void close(FileType & key) {
-        std::list<FileType>::iterator it = openedFiles.begin();
-        for (; it!=openedFiles.end(); ++it) {
-            const FileType & f = (*it);
+    inline static void close(const FileType & key) {
+        std::deque<FileType>::iterator it = openedFiles.begin();
+        std::deque<FILE*>::iterator it2 = openedFileHandles.begin();
+        for (; it!=openedFiles.end(); ++it, ++it2) {
+            FileType f = (*it);
             if (f==key) {
                 break;
             }
@@ -1039,15 +1274,18 @@ public:
             Core::abort(Core::fromUtf8("Неверный ключ"));
             return;
         }
-        FileType & f = (*it);
-        fclose(f.getFilePtr());
+        FileType f = (*it);
+        FILE * fh = (*it2);
         f.invalidate();
+        fclose(fh);
         openedFiles.erase(it);
+        openedFileHandles.erase(it2);
     }
 
     inline static void reset(FileType & key) {
-        std::list<FileType>::iterator it = openedFiles.begin();
-        for (; it!=openedFiles.end(); ++it) {
+        std::deque<FileType>::iterator it = openedFiles.begin();
+        std::deque<FILE*>::iterator it2 = openedFileHandles.begin();
+        for (; it!=openedFiles.end(); ++it, ++it2) {
             const FileType & f = (*it);
             if (f==key) {
                 break;
@@ -1058,11 +1296,13 @@ public:
             return;
         }
         const FileType & f = (*it);
-        fseek(f.getFilePtr(), 0, 0);
+        FILE * fh = (*it2);
+        fseek(fh, 0, 0);
     }
     inline static bool eof(const FileType & key) {
-        std::list<FileType>::iterator it = openedFiles.begin();
-        for (; it!=openedFiles.end(); ++it) {
+        std::deque<FileType>::iterator it = openedFiles.begin();
+        std::deque<FILE*>::iterator it2 = openedFileHandles.begin();
+        for (; it!=openedFiles.end(); ++it, ++it2) {
             const FileType & f = (*it);
             if (f==key) {
                 break;
@@ -1073,13 +1313,91 @@ public:
             return false;
         }
         const FileType & f = (*it);
-        return feof(f.getFilePtr())>0? true : false;
+        FILE * fh = (*it2);
+        return feof(fh)>0? true : false;
+    }
+    inline static bool hasData(const FileType & key) {
+        std::deque<FileType>::iterator it = openedFiles.begin();
+        std::deque<FILE*>::iterator it2 = openedFileHandles.begin();
+        for (; it!=openedFiles.end(); ++it, ++it2) {
+            const FileType & f = (*it);
+            if (f==key) {
+                break;
+            }
+        }
+        if (it==openedFiles.end()) {
+            Core::abort(Core::fromUtf8("Неверный ключ"));
+            return false;
+        }
+        FILE * fh = (*it2);
+        std::vector<char> buffer(1024);
+        size_t readAmount = 0;
+        bool result = false;
+        while (1) {
+            if (feof(fh))
+                break;
+            char ch = fgetc(fh);
+            if (readAmount>=buffer.size())
+                buffer.resize(buffer.size()*2);
+            buffer[readAmount] = ch;
+            readAmount ++;
+            if (ch==' ' || ch=='\t' || ch=='\r' || ch=='\n') {
+                // found a whitespace
+            }
+            else {
+                result = true;
+                break;
+            }
+        }
+        for (int i=readAmount-1; i>=0; i--) {
+            ungetc(buffer[i], fh);
+        }
+        return result;
     }
 
+    inline static bool overloadedStdIn() {
+        return assignedIN!=stdin;
+    }
+
+    inline static bool overloadedStdOut() {
+        return assignedOUT!=stdout;
+    }
+
+    inline static FILE* getAssignedIn() {
+        return assignedIN;
+    }
+
+    inline static FILE* getAssignedOut() {
+        return assignedOUT;
+    }
+
+    inline static void assignInStream(String fileName) {
+        StringUtils::trim<String,Char>(fileName);
+        if (assignedIN!=stdin)
+            fclose(assignedIN);
+        if (fileName.length()>0)
+            open(fileName, FileType::Read, false, &assignedIN);
+        else
+            assignedIN = stdin;
+    }
+
+    inline static void assignOutStream(String fileName) {
+        StringUtils::trim<String,Char>(fileName);
+        if (assignedIN!=stdout)
+            fclose(assignedOUT);
+        if (fileName.length()>0)
+            open(fileName, FileType::Write, false, &assignedOUT);
+        else
+            assignedOUT = stdout;
+    }
 
 private:
 
-    static std::list<FileType> openedFiles;
+    static FILE * assignedIN;
+    static FILE * assignedOUT;
+
+    static std::deque<FileType> openedFiles;
+    static std::deque<FILE*> openedFileHandles;
 
     struct IntegerFormat {
         int base;
@@ -1111,53 +1429,8 @@ public:
     inline static void init() {}
     inline static void finalize() {}
 
-    static String outputDelimiter;
     static String inputDelimeters;
     static bool spaceIsDelimeterToo;
-    enum TextAlignment { Left, Right, Center };
-
-    struct IntFormat {
-        char base;
-        int width;
-        TextAlignment align;
-        IntFormat() { base = 10; width = 0; align = Left; }
-    };
-
-    struct RealFormat {
-        Char delimeter;
-        bool exp;
-        int width;
-        int decs;
-        TextAlignment align;
-        RealFormat() { delimeter = Core::fromAscii(".").at(0); exp=false; width=0; decs=0; align=Left; }
-    };
-
-    struct BoolFormat {
-        std::deque<String> yes;
-        std::deque<String> no;
-        BoolFormat() {
-            yes.push_back(Core::fromUtf8("да"));
-            yes.push_back(Core::fromUtf8("Да"));
-            yes.push_back(Core::fromUtf8("ДА"));
-            yes.push_back(Core::fromUtf8("1"));
-            no.push_back(Core::fromUtf8("нет"));
-            no.push_back(Core::fromUtf8("Нет"));
-            no.push_back(Core::fromUtf8("НЕТ"));
-            no.push_back(Core::fromUtf8("0"));
-        }
-    };
-
-    struct CharFormat {
-        bool raw;
-        CharFormat() { raw = true; }
-    };
-
-    struct StringFormat {
-        enum Lexem {
-            Word, Literal, Line
-        } lexem;
-        StringFormat() { lexem = Word; }
-    };
 
     class OutputStream {
     public:
@@ -1258,7 +1531,7 @@ public:
                     uint8_t firstByte = lastCharBuffer[0];
                     uint8_t oneSymbMark = firstByte >> 5;
                     uint8_t twoSymbMark = firstByte >> 4;
-                    if (firstByte==255 && file==stdin) {
+                    if (firstByte==255 && file==Files::getAssignedIn()) {
                         Core::abort(Core::fromUtf8("Ошибка чтения данных: входной поток закончился"));
                         return false;
                     }
@@ -1359,7 +1632,7 @@ protected:
         return is.readUntil(delim);
     }
 
-    static String readLiteral(InputStream & is) {
+    static String readLiteralOrWord(InputStream & is) {
         String delim = inputDelimeters;
         if (spaceIsDelimeterToo)
             delim += Core::fromAscii(" \t\n\r");
@@ -1408,46 +1681,28 @@ public:
         }
         return result;
     }
-    inline static String readString(InputStream & is, const StringFormat & format) {
-        if (format.lexem==StringFormat::Word)
-            return readWord(is);
-        else if (format.lexem==StringFormat::Literal)
-            return readLiteral(is);
-        else
-            return readLine(is);
+    inline static String readString(InputStream & is) {
+        return readLiteralOrWord(is);
     }
 
-    inline static Char readChar(InputStream & is, const CharFormat & format) {
+    inline static Char readChar(InputStream & is) {
         Char result(0);
         if (is.hasError()) return result;
-        if (format.raw) {
-            bool ok;
-            ok = is.readRawChar(result);
-            if (!ok)
-                is.setError(Core::fromUtf8("Ошибка ввода символа: текст закончился"));
-        }
-        else {
-            String word = readWord(is);
-            if (is.hasError()) return result;
-            if (word.length()==0)
-                is.setError(Core::fromUtf8("Ошибка ввода символа: текст закончился"));
-            else if (word.length()>1)
-                is.setError(Core::fromUtf8("Ошибка ввода: введено больше одного символа"));
-            else
-                result = word.at(0);
-        }
+
+        bool ok;
+        ok = is.readRawChar(result);
+        if (!ok)
+            is.setError(Core::fromUtf8("Ошибка ввода символа: текст закончился"));
+
         return result;
     }
-    inline static int readInteger(InputStream & is, const IntFormat & format) {
+    inline static int readInteger(InputStream & is) {
         String word = readWord(is);
         if (is.hasError()) return 0;
         Converter::ParseError error = Converter::NoError;
-        int result = Converter::parseInt(word, format.base, error);
+        int result = Converter::parseInt(word, 10, error);
         if (error==Converter::EmptyWord) {
             is.setError(Core::fromUtf8("Ошибка ввода целого числа: текст закончился"));
-        }
-        else if (error==Converter::WrongHex) {
-            is.setError(Core::fromUtf8("Ошибка ввода целого числа: неверное 16-ричное число"));
         }
         else if (error==Converter::BadSymbol) {
             is.setError(Core::fromUtf8("Ошибка ввода целого числа: число содержит неверный символ"));
@@ -1457,11 +1712,11 @@ public:
         }
         return result;
     }
-    inline static real readReal(InputStream & is, const RealFormat & format) {
+    inline static real readReal(InputStream & is) {
         String word = readWord(is);
         if (is.hasError()) return 0;
         Converter::ParseError error = Converter::NoError;
-        real result = Converter::parseReal(word, format.delimeter, error);
+        real result = Converter::parseReal(word, '.', error);
         if (error==Converter::EmptyWord) {
             is.setError(Core::fromUtf8("Ошибка ввода вещественного числа: текст закончился"));
         }
@@ -1473,24 +1728,35 @@ public:
         }
         return result;
     }
-    inline static bool readBool(InputStream & is, const BoolFormat & format) {
-        String word = readWord(is);
+    inline static bool readBool(InputStream & is) {
+        String word = Core::toLowerCaseW(readWord(is));
         if (is.hasError()) return 0;
         if (word.length()==0) {
             is.setError(Core::fromUtf8("Ошибка ввода логического значения: ничего не введено"));
         }
         bool yes = false;
         bool no = false;
-        for (size_t i=0; i<format.yes.size(); i++) {
-            if (format.yes[i]==word) {
-                yes = true; break;
-            }
+        static std::set<String> YES, NO;
+        YES.insert(Core::fromAscii("true"));
+        YES.insert(Core::fromAscii("yes"));
+        YES.insert(Core::fromAscii("1"));
+        YES.insert(Core::fromUtf8("да"));
+        YES.insert(Core::fromUtf8("истина"));
+        NO.insert(Core::fromAscii("false"));
+        NO.insert(Core::fromAscii("no"));
+        NO.insert(Core::fromAscii("0"));
+        NO.insert(Core::fromUtf8("нет"));
+        NO.insert(Core::fromUtf8("ложь"));
+
+        if (YES.count(word)) {
+            yes = true;
         }
-        for (size_t i=0; i<format.no.size(); i++) {
-            if (format.no[i]==word) {
-                no = true; break;
-            }
+
+
+        if (NO.count(word)) {
+            no = true;
         }
+
         if (!yes && !no)
         {
             is.setError(Core::fromUtf8("Ошибка ввода логического значения: неизвестное значение"));
@@ -1498,80 +1764,41 @@ public:
         return yes;
     }
 
-    inline static void writeString(OutputStream & os, const String & str, const StringFormat & format) {
-        String data;
-        if (format.lexem==StringFormat::Literal) {
-            data.reserve(str.length()+2+outputDelimiter.length());
-            data.push_back(Char('"'));
-            data.append(str);
-            data.push_back(Char('"'));
-            data.append(outputDelimiter);
-        }
-        else if (format.lexem==StringFormat::Word) {
-            data.reserve(str.length()+outputDelimiter.length());
-            data.append(str);
-            data.append(outputDelimiter);
-        }
-        else {
-            data = str;
+    inline static void writeString(OutputStream & os, const String & str, int width) {
+        String data = str;
+        if (width) {
+            // TODO implement me
         }
         os.writeRawString(data);
     }
 
-    inline static void writeChar(OutputStream & os, const Char & chr, const CharFormat & format) {
+    inline static void writeChar(OutputStream & os, const Char & chr, int width) {
         String data;
-        if (format.raw) {
-            data.push_back(chr);
-        }
-        else {
-            data.reserve(3+outputDelimiter.length());
-            if (chr==Char('\''))
-                data.push_back(Char('"'));
-            else
-                data.push_back(Char('\''));
-            data.push_back(chr);
-            if (chr==Char('\''))
-                data.push_back(Char('"'));
-            else
-                data.push_back(Char('\''));
-            data.append(outputDelimiter);
+        data.push_back(chr);
+        if (width) {
+            // TODO implement me
         }
         os.writeRawString(data);
     }
 
-    inline static void writeInteger(OutputStream & os, int value, const IntFormat & format) {
-        char al;
-        if (format.align==Right) al = 'r';
-        else if (format.align==Center) al = 'c';
-        else al = 'l';
-        const String strval = Converter::sprintfInt(value, format.base, format.width, al);
-        String data;
-        data.reserve(strval.length()+outputDelimiter.length());
-        data.append(strval);
-        data.append(outputDelimiter);
-        os.writeRawString(data);
+    inline static void writeInteger(OutputStream & os, int value, int width) {
+        const String strval = Converter::sprintfInt(value, 10, width, 'r');
+        os.writeRawString(strval);
     }
 
-    inline static void writeReal(OutputStream & os, real value, const RealFormat & format) {
-        char al;
-        if (format.align==Right) al = 'r';
-        else if (format.align==Center) al = 'c';
-        else al = 'l';
-        const String strval = Converter::sprintfReal(value, format.delimeter, format.exp, format.width, format.decs, al);
-        String data;
-        data.reserve(strval.length()+outputDelimiter.length());
-        data.append(strval);
-        data.append(outputDelimiter);
-        os.writeRawString(data);
+    inline static void writeReal(OutputStream & os, real value, int width, int decimals) {
+        const String strval = Converter::sprintfReal(value, '.', false, width, decimals, 'r');
+        os.writeRawString(strval);
     }
 
-    inline static void writeBool(OutputStream & os, bool value, const BoolFormat & format) {
-        String data;
-        const String & sval = value? format.yes.at(0) : format.no.at(0);
-        data.reserve(outputDelimiter.length()+sval.length());
-        data.append(sval);
-        data.append(outputDelimiter);
-        os.writeRawString(data);
+    inline static void writeBool(OutputStream & os, bool value, int width) {
+        static const String YES = Core::fromUtf8("да");
+        static const String NO = Core::fromUtf8("нет");
+        const String & sval = value? YES : NO;
+        if (width) {
+            // TODO implement me
+        }
+        os.writeRawString(sval);
     }
 
     // Format parsing functions
@@ -1594,189 +1821,6 @@ public:
         return result;
     }
 
-    static IntFormat parseIntFormat(const String & fmt) {
-        const StringList lexems = splitIntoLexemsByDelimeter(fmt);
-        IntFormat result;
-        Converter::ParseError error = Converter::NoError;
-        if (lexems.size()>=1) {
-            if (lexems[0].length()>0) {
-                int base = Converter::parseInt(lexems[0], 10, error);
-                if (error!=Converter::NoError || (base!=2 && base!=8 && base!=10 && base!=16)) {
-                    Core::abort(Core::fromUtf8("Ошибка в описании формата целого числа: неверное основание системы исчисленния"));
-                    return result;
-                }
-                result.base = static_cast<char>(base);
-            }
-        }
-        if (lexems.size()>=2) {
-            int width = Converter::parseInt(lexems[1], 10, error);
-            if (error!=Converter::NoError || width<0) {
-                Core::abort(Core::fromUtf8("Ошибка в описании формата целого числа: неверная ширина элемента вывода"));
-                return result;
-            }
-            result.width = width;
-        }
-        static const String LEFT = Core::fromUtf8("LlЛл");
-        static const String RIGHT = Core::fromUtf8("RrПп");
-        static const String CENTER = Core::fromUtf8("CcЦц");
-        if (lexems.size()>=3) {
-            const String word = lexems[2];
-            if (word.length()==0) {
-                Core::abort(Core::fromUtf8("Ошибка в описании формата целого числа: не указано выравнивание"));
-                return result;
-            }
-            if (word.length()>1) {
-                Core::abort(Core::fromUtf8("Ошибка в описании формата целого числа: неверно указано выравнивание"));
-                return result;
-            }
-            Char lett = word[0];
-            if (LEFT.find_first_of(lett)==String::npos && RIGHT.find_first_of(lett)==String::npos && CENTER.find_first_of(lett)==String::npos) {
-                Core::abort(Core::fromUtf8("Ошибка в описании формата целого числа: неверно указано выравнивание"));
-                return result;
-            }
-            if (RIGHT.find_first_of(word[0])!=String::npos) {
-                result.align = Right;
-            }
-            else if (CENTER.find_first_of(word[0])!=String::npos) {
-                result.align = Center;
-            }
-            else {
-                result.align = Left;
-            }
-        }
-        return result;
-    }
-
-    static RealFormat parseRealFormat(const String & fmt) {
-        const StringList lexems = splitIntoLexemsByDelimeter(fmt);
-        RealFormat result;
-        static const String EEEE = Core::fromUtf8("EeЕе");
-        if (lexems.size()>=1) {
-            const String word = lexems[0];
-            if (word.length()>0) {
-                if (word.length()>2 || (word.length()==2 && EEEE.find_first_of(word[1])==String::npos)) {
-                    Core::abort(Core::fromUtf8("Ошибка в описании формата вещественного числа: неверный разделитель разрядов"));
-                    return result;
-                }
-                if (word.length()==2) {
-                    result.delimeter = word[0];
-                    result.exp = word.length()==2;
-                }
-                else if (EEEE.find_first_of(word[0])==String::npos) {
-                    result.delimeter = word[0];
-                }
-                else {
-                    result.exp = true;
-                }
-            }
-        }
-
-        Converter::ParseError error = Converter::NoError;
-        if (lexems.size()>=2) {
-            int width = Converter::parseInt(lexems[1], 10, error);
-            if (error!=Converter::NoError || width<0) {
-                Core::abort(Core::fromUtf8("Ошибка в описании формата вещественного числа: неверная ширина элемента вывода"));
-                return result;
-            }
-            result.width = width;
-        }
-        if (lexems.size()>=3) {
-            int decs = Converter::parseInt(lexems[2], 10, error);
-            if (error!=Converter::NoError || decs<0) {
-                Core::abort(Core::fromUtf8("Ошибка в описании формата вещественного числа: неверное число символов дробной части"));
-                return result;
-            }
-            result.decs = decs;
-        }
-        static const String LEFT = Core::fromUtf8("LlЛл");
-        static const String RIGHT = Core::fromUtf8("RrПп");
-        static const String CENTER = Core::fromUtf8("CcЦц");
-        if (lexems.size()>=4) {
-            const String word = lexems[3];
-            if (word.length()==0) {
-                Core::abort(Core::fromUtf8("Ошибка в описании формата вещественного числа: не указано выравнивание"));
-                return result;
-            }
-            if (word.length()>1) {
-                Core::abort(Core::fromUtf8("Ошибка в описании формата вещественного числа: неверно указано выравнивание"));
-                return result;
-            }
-            Char lett = word[0];
-            if (LEFT.find_first_of(lett)==String::npos && RIGHT.find_first_of(lett)==String::npos && CENTER.find_first_of(lett)==String::npos) {
-                Core::abort(Core::fromUtf8("Ошибка в описании формата вещественного числа: неверно указано выравнивание"));
-                return result;
-            }
-            if (RIGHT.find_first_of(word[0])!=String::npos) {
-                result.align = Right;
-            }
-            else if (CENTER.find_first_of(word[0])!=String::npos) {
-                result.align = Center;
-            }
-            else {
-                result.align = Left;
-            }
-        }
-        return result;
-    }
-
-    static BoolFormat parseBoolFormat(const String & fmt) {
-        BoolFormat result;
-        const StringList alist = splitIntoLexemsByDelimeter(fmt, ',');
-        if (alist.size()>0) {
-            // clear default values
-            result.yes.clear();
-            result.no.clear();
-        }
-        for (size_t i=0; i<alist.size(); i++) {
-            const String element = alist[i];
-            const StringList pair = splitIntoLexemsByDelimeter(element,'/');
-            if (pair.size()!=2) {
-                Core::abort(Core::fromUtf8("Ошибка в описании формата логического значения"));
-                return result;
-            }
-            result.yes.push_back(pair[0]);
-            result.no.push_back(pair[1]);
-        }
-        return result;
-    }
-
-    static CharFormat parseCharFormat(const String & fmt) {
-        static const String RAW1 = Core::fromUtf8("подряд");
-        static const String RAW2 = Core::fromUtf8("Подряд");
-        static const String RAW3 = Core::fromUtf8("ПОДРЯД");
-        CharFormat result;
-        result.raw = true ; // fmt==RAW1 || fmt==RAW2 || fmt==RAW3;
-        if (!result.raw && fmt.length()>0)
-            Core::abort(Core::fromUtf8("Неверное описание формата символа"));
-        return result;
-    }
-
-    static StringFormat parseStringFormat(const String & fmt) {
-        static const String WORD1 = Core::fromUtf8("слово");
-        static const String WORD2 = Core::fromUtf8("Слово");
-        static const String WORD3 = Core::fromUtf8("СЛОВО");
-        static const String LITERAL1 = Core::fromUtf8("литерал");
-        static const String LITERAL2 = Core::fromUtf8("Литерал");
-        static const String LITERAL3 = Core::fromUtf8("ЛИТЕРАЛ");
-        static const String LINE1 = Core::fromUtf8("строка");
-        static const String LINE2 = Core::fromUtf8("Строка");
-        static const String LINE3 = Core::fromUtf8("СТРОКА");
-        StringFormat result;
-        unsigned char word = (fmt==WORD1 || fmt==WORD2 || fmt==WORD3)? 1 : 0;
-        unsigned char literal = (fmt==LITERAL1 || fmt==LITERAL2 || fmt==LITERAL3)? 1 : 0;
-        unsigned char line = (fmt==LINE1 || fmt==LINE2 || fmt==LINE3)? 1 : 0;
-        unsigned char summ = word+literal+line;
-        if ( (summ==0 && fmt.length()>0) || summ>1 ) {
-            Core::abort(Core::fromUtf8("Неверное описание формата литерала"));
-        }
-        if (word)
-            result.lexem = StringFormat::Word;
-        else if (literal)
-            result.lexem = StringFormat::Literal;
-        else if (line)
-            result.lexem = StringFormat::Line;
-        return result;
-    }
 
     // Actual functions to be in use while input from stream
 
@@ -1792,11 +1836,12 @@ public:
 
     static InputStream makeInputStream(FileType fileNo, bool fromStdIn) {
         if (fromStdIn) {
-            return InputStream(stdin, LOCALE_ENCODING);
+            return InputStream(Files::getAssignedIn(), LOCALE_ENCODING);
         }
         else {
-            std::list<FileType>::const_iterator it = Files::openedFiles.begin();
-            for ( ; it!=Files::openedFiles.end(); ++it) {
+            std::deque<FileType>::iterator it = Files::openedFiles.begin();
+            std::deque<FILE*>::iterator it2 = Files::openedFileHandles.begin();
+            for ( ; it!=Files::openedFiles.end(); ++it, ++it2) {
                 if (*it==fileNo) {
                     break;
                 }
@@ -1810,23 +1855,23 @@ public:
                 Core::abort(Core::fromUtf8("Файл с таким ключем открыт на запись"));
                 return InputStream();
             }
-            return InputStream(file.getFilePtr(), Files::fileEncoding);
+            return InputStream(*it2, Files::fileEncoding);
         }
     }
 
     inline static OutputStream makeOutputStream(FileType fileNo, bool toStdOut) {
         if (toStdOut) {
-            return OutputStream(stdout, LOCALE_ENCODING);
+            return OutputStream(Files::getAssignedOut(), LOCALE_ENCODING);
         }
         else {
-            const std::list<FileType> & fs = Files::openedFiles;
-            std::list<FileType>::const_iterator it = fs.begin();
-            for ( ; it!=fs.end(); ++it) {
+            std::deque<FileType>::iterator it = Files::openedFiles.begin();
+            std::deque<FILE*>::iterator it2 = Files::openedFileHandles.begin();
+            for ( ; it!=Files::openedFiles.end(); ++it, ++it2) {
                 if (*it==fileNo) {
                     break;
                 }
             }
-            if (it==fs.end()) {
+            if (it==Files::openedFiles.end()) {
                 Core::abort(Core::fromUtf8("Файл с таким ключем не открыт"));
                 return OutputStream();
             }
@@ -1835,47 +1880,37 @@ public:
                 Core::abort(Core::fromUtf8("Файл с таким ключем открыт на чтение"));
                 return OutputStream();
             }
-            return OutputStream(file.getFilePtr(), Files::fileEncoding);
+            return OutputStream(*it2, Files::fileEncoding);
         }
     }
 
-    inline static int readInteger(const String & format, FileType fileNo = FileType(), bool fromStdIn = true) {
-        IntFormat fmt = parseIntFormat(format);
-        if (Core::getError().length()>0) return 0;
+    inline static int readInteger(FileType fileNo = FileType(), bool fromStdIn = true) {
         InputStream stream = makeInputStream(fileNo, fromStdIn);
         if (Core::getError().length()>0) return 0;
-        return readInteger(stream, fmt);
+        return readInteger(stream);
     }
 
-    inline static real readReal(const String & format, FileType fileNo = FileType(), bool fromStdIn = true) {
-        RealFormat fmt = parseRealFormat(format);
-        if (Core::getError().length()>0) return 0;
+    inline static real readReal(FileType fileNo = FileType(), bool fromStdIn = true) {
         InputStream stream = makeInputStream(fileNo, fromStdIn);
         if (Core::getError().length()>0) return 0;
-        return readReal(stream, fmt);
+        return readReal(stream);
     }
 
-    inline static bool readBool(const String & format, FileType fileNo = FileType(), bool fromStdIn = true) {
-        BoolFormat fmt = parseBoolFormat(format);
-        if (Core::getError().length()>0) return 0;
+    inline static bool readBool(FileType fileNo = FileType(), bool fromStdIn = true) {
         InputStream stream = makeInputStream(fileNo, fromStdIn);
         if (Core::getError().length()>0) return 0;
-        return readBool(stream, fmt);
+        return readBool(stream);
     }
 
-    inline static Char readChar(const String & format, FileType fileNo = FileType(), bool fromStdIn = true) {
-        CharFormat fmt = parseCharFormat(format);
-        if (Core::getError().length()>0) return 0;
+    inline static Char readChar(FileType fileNo = FileType(), bool fromStdIn = true) {
         InputStream stream = makeInputStream(fileNo, fromStdIn);
         if (Core::getError().length()>0) return 0;
-        return readChar(stream, fmt);
+        return readChar(stream);
     }
-    inline static String readString(const String & format, FileType fileNo = FileType(), bool fromStdIn = true) {
-        StringFormat fmt = parseStringFormat(format);
-        if (Core::getError().length()>0) return 0;
+    inline static String readString(FileType fileNo = FileType(), bool fromStdIn = true) {
         InputStream stream = makeInputStream(fileNo, fromStdIn);
         if (Core::getError().length()>0) return 0;
-        return readString(stream, fmt);
+        return readString(stream);
     }
     inline static String readLine(FileType fileNo = FileType(), bool fromStdIn = true) {
         InputStream stream = makeInputStream(fileNo, fromStdIn);
@@ -1883,41 +1918,31 @@ public:
         return readLine(stream);
     }
 
-    inline static void writeInteger(const String & format, int value, FileType fileNo = FileType(), bool toStdOut = true) {
-        IntFormat fmt = parseIntFormat(format);
-        if (Core::getError().length()>0) return;
+    inline static void writeInteger(int width, int value, FileType fileNo = FileType(), bool toStdOut = true) {
         OutputStream stream = makeOutputStream(fileNo, toStdOut);
         if (Core::getError().length()>0) return;
-        writeInteger(stream, value, fmt);
+        writeInteger(stream, value, width);
     }
 
-    inline static void writeReal(const String & format, real value, FileType fileNo = FileType(), bool toStdOut = true) {
-        RealFormat fmt = parseRealFormat(format);
-        if (Core::getError().length()>0) return;
+    inline static void writeReal(int width, int decimals, real value, FileType fileNo = FileType(), bool toStdOut = true) {
         OutputStream stream = makeOutputStream(fileNo, toStdOut);
         if (Core::getError().length()>0) return;
-        writeReal(stream, value, fmt);
+        writeReal(stream, value, width, decimals);
     }
-    inline static void writeBool(const String & format, bool value, FileType fileNo = FileType(), bool toStdOut = true) {
-        BoolFormat fmt = parseBoolFormat(format);
-        if (Core::getError().length()>0) return;
+    inline static void writeBool(int width, bool value, FileType fileNo = FileType(), bool toStdOut = true) {
         OutputStream stream = makeOutputStream(fileNo, toStdOut);
         if (Core::getError().length()>0) return;
-        writeBool(stream, value, fmt);
+        writeBool(stream, value, width);
     }
-    inline static void writeString(const String & format, const String & value, FileType fileNo = FileType(), bool toStdOut = true) {
-        StringFormat fmt = parseStringFormat(format);
-        if (Core::getError().length()>0) return;
+    inline static void writeString(int width, const String & value, FileType fileNo = FileType(), bool toStdOut = true) {
         OutputStream stream = makeOutputStream(fileNo, toStdOut);
         if (Core::getError().length()>0) return;
-        writeString(stream, value, fmt);
+        writeString(stream, value, width);
     }
-    inline static void writeChar(const String & format, Char value, FileType fileNo = FileType(), bool toStdOut = true) {
-        CharFormat fmt = parseCharFormat(format);
-        if (Core::getError().length()>0) return;
+    inline static void writeChar(int width, Char value, FileType fileNo = FileType(), bool toStdOut = true) {
         OutputStream stream = makeOutputStream(fileNo, toStdOut);
         if (Core::getError().length()>0) return;
-        writeChar(stream, value, fmt);
+        writeChar(stream, value, width);
     }
 
 }; // end class IO
@@ -1965,9 +1990,11 @@ inline void finalizeStandardLibrary() {
 
 #ifndef DO_NOT_DECLARE_STATIC
 String Core::error = String();
-std::list<FileType> Files::openedFiles;
+std::deque<FileType> Files::openedFiles;
+std::deque<FILE*> Files::openedFileHandles;
+FILE * Files::assignedIN = stdin;
+FILE * Files::assignedOUT = stdout;
 Encoding Files::fileEncoding;
-String Kumir::IO::outputDelimiter = Kumir::Core::fromAscii("");
 String Kumir::IO::inputDelimeters = Kumir::Core::fromAscii(",");
 bool Kumir::IO::spaceIsDelimeterToo = true;
 #endif

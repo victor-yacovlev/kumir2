@@ -69,7 +69,6 @@ protected slots:
 
 signals:
     void stopped(int reason);
-    void externalRequest(const QString &actorPluginName, const QString & algName, const QVariantList & args);
     void inputRequest(const QString & format);
     void outputRequest(const QString & output);
     void lineChanged(int lineNo);

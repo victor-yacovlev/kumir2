@@ -6,6 +6,8 @@
 #include "dataformats/ast_variable.h"
 #include "dataformats/ast_type.h"
 #include "errormessages/errormessages.h"
+#include "extensionsystem/pluginmanager.h"
+#include "interfaces/actorinterface.h"
 
 
 #define BADNAME_KEYWORD TN_BAD_NAME_3
@@ -42,14 +44,19 @@ struct SyntaxAnalizerPrivate
     void parseAlgHeader(int str, bool onlyName, bool allowOperatorsDeclaration);
     void parseVarDecl(int str);
     void parseAssignment(int str);
-    void parseInputOutput(int str);
-    void parseInputAssertPrePost(int str);
+    void parseInput(int str);
+    void parseAssertPrePost(int str);
     void parseOutput(int str);
     void parseOneLexemInstruction(int str);
     void parseEndLoop(int str);
     void parseIfCase(int str);
     void parseLoopBegin(int str);
-    void parseAssignFileStream(int str);
+
+    bool tryInputOperatorAlgorithm(
+            const QString & lexem,
+            AST::Type & type,
+            QVariant & constantValue
+            ) const;
     bool findConversionAlgorithm(const AST::Type & from
                                  , const AST::Type & to
                                  , AST::Module * mod
@@ -58,6 +65,8 @@ struct SyntaxAnalizerPrivate
                             , AST::Expression * leftExpression
                             , AST::Expression * rightExpression
                             );
+    AST::Expression * makeCustomUnaryOperation(const QString & operatorName
+                                               , AST::Expression * argument);
     bool findAlgorhitm(const QString &name
                        , const AST::Module*  module
                        , AST::Algorhitm* & algorhitm);
@@ -328,27 +337,23 @@ void SyntaxAnalizer::processAnalisys()
             d->parseVarDecl(i);
         }
         else if (
-                 st.type==LxPriFinput
-                 || st.type==LxPriAssert
+                 st.type==LxPriAssert
                  || st.type==LxPriPre
                  || st.type==LxPriPost
                  )
         {
-            d->parseInputAssertPrePost(i);
+            d->parseAssertPrePost(i);
         }
-        else if (st.type==LxPriInput || st.type==LxPriOutput) {
-            d->parseInputOutput(i);
+        else if (st.type==LxPriInput) {
+            d->parseInput(i);
         }
-        else if (st.type==LxPriFoutput
-                 || st.type==LxPriOutput
-
+        else if (
+                 st.type==LxPriOutput
                  )
         {
             d->parseOutput(i);
         }
-        else if (st.type==LxPriAssignFile) {
-            d->parseAssignFileStream(i);
-        }
+
         else if (st.type==LxPriEndModule
                  ||st.type==LxPriAlgBegin
                  ||st.type==LxPriAlgEnd
@@ -467,107 +472,6 @@ void SyntaxAnalizerPrivate::parseModuleHeader(int str)
     mod->header.name = st.data[1]->data.simplified();
 }
 
-void SyntaxAnalizerPrivate::parseAssignFileStream(int str)
-{
-    const Statement & st = statements[str];
-    if (st.hasError())
-        return;
-    if (st.data.size()==1) {
-        st.data[0]->error = _("What to assign?");
-        return;
-    }
-    int deep = 0;
-    int open = -1;
-    QList<Lexem*> lxs;
-    for (int i=1; i<st.data.size(); i++) {
-        Lexem * lx = st.data[i];
-        if (lx->type==LxOperLeftBr) {
-            deep++;
-            if (lxs.isEmpty()) {
-                open = i;
-            }
-        }
-        else if (lx->type==LxOperRightBr) {
-            deep--;
-            if (deep<0) {
-                lx->error = _("No pairing '('");
-                return;
-            }
-        }
-        lxs << lx;
-    }
-    if (deep>0) {
-        st.data[open]->error = _("No pairing ')'");
-        return;
-    }
-    QList< QList<Lexem*> > groups;
-    QList<Lexem*> comas;
-    if (lxs.first()->type==LxOperLeftBr && lxs.last()->type==LxOperRightBr) {
-        lxs.pop_back();
-        lxs.pop_front();
-    }
-    splitLexemsByOperator(lxs, LxOperComa, groups, comas);
-    AST::Expression * expression = 0;
-    LexemType streamType = LexemType(0);
-    for (int i=0; i<groups.size(); i++) {
-        QList<Lexem*> group = groups[i];
-        if (group.isEmpty()) {
-            if (i>0) {
-                comas[i-1]->error = _("Extra coma");
-                return;
-            }
-        }
-        if (!streamType) {
-            if (group[0]->type==LxPriInput || group[0]->type==LxPriOutput) {
-                if (group.size()>1) {
-                    for (int j=1; j<group.size(); j++) {
-                        group[j]->error = _("Garbage after %1", group[0]->data);
-                    }
-                    return;
-                }
-                streamType = group[0]->type;
-            }
-            else {
-                for (int j=0; j<group.size(); j++) {
-                    group[j]->error = _("Here must be \"input\" or \"output\"");
-                }
-                return;
-            }
-        }
-        else if (!expression) {
-            expression = parseExpression(group, st.mod, st.alg);
-            if (!expression)
-                return;
-            if (expression->baseType.kind==AST::TypeString || expression->baseType.kind==AST::TypeCharect) {
-
-            }
-            else {
-                delete expression;
-                for (int j=0; j<group.size(); j++) {
-                    group[j]->error = _("Must be a file name or empty string");
-                }
-                return;
-            }
-        }
-    }
-    if (groups.size()>2) {
-        delete expression;
-        comas[2]->error = _("It is a garbage");
-        for (int i=2; i<groups.size(); i++) {
-            for (int j=0; j<groups[i].size(); j++) {
-                groups[i][j]->error = comas[2]->error;
-            }
-        }
-        return;
-    }
-    AST::Expression * e0 = new AST::Expression;
-    e0->baseType.kind = AST::TypeString;
-    e0->constant = streamType==LxPriInput? "stdin" : "stdout";
-    e0->kind = AST::ExprConst;
-    e0->dimension = 0;
-    st.statement->expressions.append(e0);
-    st.statement->expressions.append(expression);
-}
 
 void SyntaxAnalizerPrivate::parseVarDecl(int str)
 {
@@ -601,7 +505,135 @@ void SyntaxAnalizerPrivate::parseVarDecl(int str)
     }
 }
 
-void SyntaxAnalizerPrivate::parseInputOutput(int str)
+void SyntaxAnalizerPrivate::parseOutput(int str)
+{
+    const Statement & st = statements[str];
+    if (st.hasError()) {
+        return;
+    }
+    if (st.data.size()==1) {
+        QString err = _("What to output?");
+        st.data[0]->error = err;
+        return;
+    }
+    if (st.data.last()->type==LxOperComa) {
+        st.data.last()->error = _("Statement ends with coma");
+        return;
+    }
+    QList< QList<Lexem*> > groups;
+    QList<Lexem*> comas;
+    splitLexemsByOperator(st.data.mid(1), LxOperComa, groups, comas);
+
+    AST::Expression * fileHandle = 0;
+
+    for (int i=0 ; i<groups.size(); i++) {
+        QString err;
+
+        QList< QList<Lexem*> > subgroups;
+        QList< Lexem* > colons;
+        splitLexemsByOperator(groups[i], LxOperColon, subgroups, colons);
+        AST::Expression * expr = parseExpression(subgroups[0], st.mod, st.alg);
+        if (!expr) {
+            return;
+        }
+        int maxSubgroups;
+        if (expr->baseType.kind==AST::TypeReal)
+            maxSubgroups = 3;
+        else if (expr->baseType.kind==AST::TypeInteger)
+            maxSubgroups = 2;
+        else
+            maxSubgroups = 1;
+        Q_ASSERT(colons.size() == subgroups.size()-1);
+        if (subgroups.size()>maxSubgroups) {
+            delete expr;
+            err = _("Extra format parameter");
+            for (int j=maxSubgroups-1 ; j<colons.size(); j++) {
+                colons[j]->error = err;
+            }
+            for (int j=maxSubgroups; j<subgroups.size(); j++) {
+                foreach (Lexem * lx, subgroups[j]) {
+                    lx->error = err;
+                }
+            }
+            return;
+        }
+        if (expr->baseType.kind==AST::TypeUser && expr->baseType.name==QString::fromUtf8("файл")) {
+            fileHandle = expr;
+            continue;
+        }
+        AST::Expression * expr2 = 0, *expr3 = 0;
+        if (subgroups.size()>1) {
+            expr2 = parseExpression(subgroups[1], st.mod, st.alg);
+            if (!expr2) {
+                delete expr;
+                return;
+            }
+            if (expr2->baseType.kind!=AST::TypeInteger) {
+                err = _("Format parameter not integer");
+                foreach (Lexem * lx, subgroups[1])
+                    lx->error = err;
+                delete expr;
+                delete expr2;
+                return;
+            }
+        }
+        else {
+            expr2 = new AST::Expression;
+            expr2->baseType.kind = AST::TypeInteger;
+            expr2->dimension = 0;
+            expr2->kind = AST::ExprConst;
+            expr2->constant = QVariant(0);
+        }
+        if (subgroups.size()>2) {
+            expr3 = parseExpression(subgroups[2], st.mod, st.alg);
+            if (!expr3) {
+                delete expr;
+                delete expr2;
+                return;
+            }
+            if (expr3->baseType.kind!=AST::TypeInteger) {
+                err = _("Format parameter not integer");
+                foreach (Lexem * lx, subgroups[2])
+                    lx->error = err;
+                delete expr;
+                delete expr2;
+                delete expr3;
+                return;
+            }
+        }
+        else {
+            expr3 = new AST::Expression;
+            expr3->baseType.kind = AST::TypeInteger;
+            expr3->dimension = 0;
+            expr3->kind = AST::ExprConst;
+            expr3->constant = QVariant(6);
+        }
+        if (expr->baseType.kind==AST::TypeUser) {
+            AST::Expression * helperCall = makeCustomUnaryOperation(lexer->outputLexemName(), expr);
+            if (helperCall) {
+                expr = helperCall;
+            }
+            else {
+                err = _("Can't input value of type %1").arg(expr->baseType.name);
+                foreach (Lexem * lx, subgroups[2])
+                    lx->error = err;
+                delete expr;
+                delete expr2;
+                delete expr3;
+                return;
+            }
+        }
+        st.statement->expressions << expr << expr2 << expr3;
+    }
+    if (fileHandle) {
+        st.statement->expressions << fileHandle;
+    }
+}
+
+
+
+
+void SyntaxAnalizerPrivate::parseInput(int str)
 {
     const Statement & st = statements[str];
     if (st.hasError())
@@ -745,7 +777,7 @@ void SyntaxAnalizerPrivate::parseInputOutput(int str)
 
 }
 
-void SyntaxAnalizerPrivate::parseInputAssertPrePost(int str)
+void SyntaxAnalizerPrivate::parseAssertPrePost(int str)
 {
     const Statement & st = statements[str];
     if (st.hasError()) {
@@ -753,12 +785,6 @@ void SyntaxAnalizerPrivate::parseInputAssertPrePost(int str)
     }
     if (st.data.size()==1) {
         QString err = _("No expressions after '%1'", st.data[0]->data);
-        if (st.data[0]->type==LxPriOutput || st.data[0]->type==LxPriFoutput) {
-            err = _("What to output?");
-        }
-        if (st.data[0]->type==LxPriInput || st.data[0]->type==LxPriFinput) {
-            err = _("What to input?");
-        }
         if (st.data[0]->type!=LxPriPre && st.data[0]->type!=LxPriPost)
             st.data[0]->error = err;
         return;
@@ -771,67 +797,15 @@ void SyntaxAnalizerPrivate::parseInputAssertPrePost(int str)
     QList<Lexem*> comas;
     splitLexemsByOperator(st.data.mid(1), LxOperComa, groups, comas);
 
-    enum GroupType {
-        Undefined,
-        FileHandle,
-        InputExpression,
-        OutputExpression,
-        AssertionExpression
-    } groupType = Undefined;
-
     for (int i=0 ; i<groups.size(); i++) {
-
-        if (i==0 && (st.type==LxPriFinput || st.type==LxPriFoutput))
-            groupType = FileHandle;
-        else if (st.type==LxPriInput || st.type==LxPriFinput)
-            groupType = InputExpression;
-        else if (st.type==LxPriOutput || st.type==LxPriFoutput)
-            groupType = OutputExpression;
-        else if (st.type==LxPriAssert || st.type==LxPriPre || st.type==LxPriPost)
-            groupType = AssertionExpression;
 
         AST::Expression * expr = parseExpression(groups[i], st.mod, st.alg);
         if (!expr) {
             return;
         }
         QString err;
-        if (groupType==FileHandle) {
-            // Expression is a file ID
-            if (expr->baseType.kind!=AST::TypeInteger) {
-                err = _("File handle is not integer");
-            }
-        }
-        else if (groupType==InputExpression) {
-            // Expression is input variable
-
-            if (expr->kind==AST::ExprVariable && expr->variable->dimension>0) {
-                err = _("Can't input array");
-            }
-            if (expr->kind==AST::ExprConst) {
-                err = _("Can't input constant value");
-            }
-            if (expr->kind==AST::ExprSubexpression) {
-                err = _("Can't input complex expression");
-            }
-            if (expr->kind==AST::ExprArrayElement && expr->operands.size()>1) {
-                err = _("Can't input string slice");
-            }
-            if (expr->kind==AST::ExprVariable && expr->variable->accessType==AST::AccessArgumentIn) {
-                err = _("Can't input algorithm in- argument");
-            }
-            if (expr->kind==AST::ExprFunctionCall) {
-                err = _("Can't input function");
-            }
-        }
-        else if (groupType==OutputExpression) {
-            // Expression is output variable -- nothing special to check
-        }
-        else if (groupType==AssertionExpression) {
-            // Expression is assertion in anywhere
-
-            if (expr->baseType.kind!=AST::TypeBoolean) {
-                err = _("Condition is not boolean");
-            }
+        if (expr->baseType.kind!=AST::TypeBoolean) {
+            err = _("Condition is not boolean");
         }
 
         if (!err.isEmpty()) {
@@ -845,132 +819,7 @@ void SyntaxAnalizerPrivate::parseInputAssertPrePost(int str)
     }
 }
 
-void SyntaxAnalizerPrivate::parseOutput(int str)
-{
-    const Statement & st = statements[str];
-    if (st.hasError()) {
-        return;
-    }
-    if (st.data.size()==1) {
-        QString err = _("What to output?");
-        st.data[0]->error = err;
-        return;
-    }
-    if (st.data.last()->type==LxOperComa) {
-        st.data.last()->error = _("Statement ends with coma");
-        return;
-    }
-    QList< QList<Lexem*> > groups;
-    QList<Lexem*> comas;
-    splitLexemsByOperator(st.data.mid(1), LxOperComa, groups, comas);
 
-    enum GroupType {
-        Undefined,
-        FileHandle,
-        InputExpression,
-        OutputExpression,
-        AssertionExpression
-    } groupType = Undefined;
-
-    for (int i=0 ; i<groups.size(); i++) {
-
-        if (i==0 && (st.type==LxPriFinput || st.type==LxPriFoutput))
-            groupType = FileHandle;
-        else
-            groupType = OutputExpression;
-
-        QString err;
-        if (groupType==FileHandle) {
-            // Expression is a file ID
-            AST::Expression * expr = parseExpression(groups[i], st.mod, st.alg);
-            if (!expr) {
-                return;
-            }
-            if (expr->baseType.kind!=AST::TypeInteger) {
-                delete expr;
-                err = _("File handle is not integer");
-                for (int a=0; a<groups[i].size(); a++) {
-                    groups[i][a]->error = err;
-                }
-                return;
-            }
-            st.statement->expressions << expr;
-        }
-        else {
-            QList< QList<Lexem*> > subgroups;
-            QList< Lexem* > colons;
-            splitLexemsByOperator(groups[i], LxOperColon, subgroups, colons);
-            AST::Expression * expr = parseExpression(subgroups[0], st.mod, st.alg);
-            if (!expr) {
-                return;
-            }
-            const int maxSubgroups = expr->baseType.kind==AST::TypeReal? 3 : 2;
-            Q_ASSERT(colons.size() == subgroups.size()-1);
-            if (subgroups.size()>maxSubgroups) {
-                delete expr;
-                err = _("Extra format parameter");
-                for (int j=maxSubgroups-1 ; j<colons.size(); j++) {
-                    colons[j]->error = err;
-                }
-                for (int j=maxSubgroups; j<subgroups.size(); j++) {
-                    foreach (Lexem * lx, subgroups[j]) {
-                        lx->error = err;
-                    }
-                }
-                return;
-            }
-            AST::Expression * expr2 = 0, *expr3 = 0;
-            if (subgroups.size()>1) {
-                expr2 = parseExpression(subgroups[1], st.mod, st.alg);
-                if (!expr2) {
-                    delete expr;
-                    return;
-                }
-                if (expr2->baseType.kind!=AST::TypeInteger) {
-                    err = _("Format parameter not integer");
-                    foreach (Lexem * lx, subgroups[1])
-                        lx->error = err;
-                    delete expr;
-                    delete expr2;
-                    return;
-                }
-            }
-            else {
-                expr2 = new AST::Expression;
-                expr2->baseType.kind = AST::TypeInteger;
-                expr2->dimension = 0;
-                expr2->kind = AST::ExprConst;
-                expr2->constant = QVariant(std::numeric_limits<qint32>::max());
-            }
-            if (subgroups.size()>2) {
-                expr3 = parseExpression(subgroups[2], st.mod, st.alg);
-                if (!expr3) {
-                    delete expr;
-                    delete expr2;
-                    return;
-                }
-                if (expr3->baseType.kind!=AST::TypeInteger) {
-                    err = _("Format parameter not integer");
-                    foreach (Lexem * lx, subgroups[2])
-                        lx->error = err;
-                    delete expr;
-                    delete expr2;
-                    delete expr3;
-                    return;
-                }
-            }
-            else {
-                expr3 = new AST::Expression;
-                expr3->baseType.kind = AST::TypeInteger;
-                expr3->dimension = 0;
-                expr3->kind = AST::ExprConst;
-                expr3->constant = QVariant(6);
-            }
-            st.statement->expressions << expr << expr2 << expr3;
-        }
-
-    }
-}
 
 void SyntaxAnalizerPrivate::parseOneLexemInstruction(int str)
 {
@@ -2734,6 +2583,61 @@ bool SyntaxAnalizerPrivate::findAlgorhitm(const QString &name, const AST::Module
     return false;
 }
 
+bool SyntaxAnalizerPrivate::tryInputOperatorAlgorithm(
+        const QString & lexem,
+        AST::Type & type,
+        QVariant & constantValue
+        ) const
+{
+
+    AST::AlgorhitmExternalReference ref;
+    for (int i=0; i<ast->modules.size(); i++) {
+        const AST::Module * mod = ast->modules[i];
+        if (!mod->header.enabled)
+            continue;
+        for (int j=0; j<mod->header.operators.size(); j++) {
+            const AST::Algorhitm * alg = mod->header.operators[j];
+            if (alg->header.arguments.size()==2
+                    && alg->header.arguments[0]->baseType.kind==AST::TypeString
+                    && alg->header.arguments[0]->dimension==0
+                    && alg->header.arguments[1]->baseType.kind==AST::TypeBoolean
+                    && alg->header.arguments[1]->dimension==0
+                    && alg->header.arguments[1]->accessType==AST::AccessArgumentOut
+                    && alg->header.returnType.kind!=AST::TypeNone
+                    && alg->header.name==lexer->inputLexemName()
+                    )
+            {
+                ref = alg->header.external;
+                Shared::ActorInterface * actor = 0;
+                QList<ExtensionSystem::KPlugin*> actors = ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
+                for (int k=0; k<actors.size(); k++) {
+                    actor = qobject_cast<Shared::ActorInterface*>(actors[k]);
+                    if (!actor) continue;
+                    if (actor->name()==mod->header.name)
+                        break;
+                    else
+                        actor = 0;
+                }
+                if (!actor)
+                    continue;
+                QVariantList args;
+                args << QVariant(lexem);
+                Shared::EvaluationStatus es = actor->evaluate(ref.id, args);
+                if (es==ES_StackRezResult) {
+                    QVariant result = actor->result();
+                    QVariantList retvals = actor->algOptResults();
+                    if (retvals.size()==1 && retvals.at(0).toBool()) {
+                        constantValue = result;
+                        type = alg->header.returnType;
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
 bool SyntaxAnalizerPrivate::findConversionAlgorithm(const AST::Type & from
                              , const AST::Type & to
                              , AST::Module * mod
@@ -2758,6 +2662,52 @@ bool SyntaxAnalizerPrivate::findConversionAlgorithm(const AST::Type & from
     mod = 0;
     alg = 0;
     return false;
+}
+
+AST::Expression * SyntaxAnalizerPrivate::makeCustomUnaryOperation(
+        const QString &operatorName
+        , AST::Expression *argument)
+{
+    QString argTypeName;
+    if (argument->baseType.kind==AST::TypeUser)
+        argTypeName = argument->baseType.name;
+    else
+        argTypeName = lexer->classNameByBaseType(argument->baseType.kind);
+    for (int i=0; i<ast->modules.size(); i++) {
+        AST::Module * mod = ast->modules[i];
+        if (!mod->header.enabled)
+            continue;
+        for (int j=0; j<mod->header.operators.size(); j++) {
+            AST::Algorhitm * alg = mod->header.operators[j];
+            bool omatch = alg->header.name==operatorName;
+            if (omatch && alg->header.arguments.size()==1) {
+                AST::Type formaltype = alg->header.arguments[0]->baseType;
+                AST::Type facttype   = argument->baseType;
+                AST::Algorhitm * convAlg = 0;
+                AST::Module * convMod = 0;
+                bool typematch = formaltype.name==facttype.name
+                        || findConversionAlgorithm(facttype, formaltype, convMod, convAlg);
+                if (typematch) {
+                    AST::Expression * res = new AST::Expression;
+                    res->kind = AST::ExprFunctionCall;
+                    res->baseType = alg->header.returnType;
+                    res->function = alg;
+                    if (convAlg) {
+                        AST::Expression * convExpr = new AST::Expression;
+                        convExpr->kind = AST::ExprFunctionCall;
+                        convExpr->function = convAlg;
+                        convExpr->operands << argument;
+                        res->operands << convExpr;
+                    }
+                    else {
+                        res->operands << argument;
+                    }
+                    return res;
+                }
+            }
+        }
+    }
+    return 0;
 }
 
 AST::Expression * SyntaxAnalizerPrivate::makeCustomBinaryOperation(const QString & operatorName
@@ -2798,7 +2748,7 @@ AST::Expression * SyntaxAnalizerPrivate::makeCustomBinaryOperation(const QString
                     AST::Expression * res = new AST::Expression;
                     res->kind = AST::ExprFunctionCall;
                     res->baseType = alg->header.returnType;
-
+                    res->function = alg;
                     if (lconvAlg) {
                         AST::Expression * lconv = new AST::Expression;
                         lconv->kind = AST::ExprFunctionCall;
@@ -3771,6 +3721,28 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
         return result;
     }
     else {
+        // First -- try to parse as a constant of custom type
+        QString longLexem;
+        for (std::list<Lexem*>::const_iterator it=lexems.begin(); it!=lexems.end(); it++) {
+            if (it!=lexems.begin())
+                longLexem += " ";
+            longLexem += (*it)->data;
+        }
+        AST::Type userConstType;
+        QVariant userConstValue;
+        if (tryInputOperatorAlgorithm(longLexem, userConstType, userConstValue)) {
+            result = new AST::Expression;
+            result->kind = AST::ExprConst;
+            result->baseType = userConstType;
+            result->dimension = 0;
+            result->constant = userConstValue;
+            for (std::list<Lexem*>::const_iterator it=lexems.begin(); it!=lexems.end(); it++) {
+                Lexem * lx = (*it);
+                lx->type = LxConstReal;
+            }
+            return result;
+        }
+        // If not a custom type constant -- try more...
         QString name;
         bool expCandidate = true;
         for (std::list<Lexem*>::const_iterator it=lexems.begin(); it!=lexems.end(); it++) {

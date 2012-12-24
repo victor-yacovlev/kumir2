@@ -314,32 +314,27 @@ void OneSession::tryFinishInput()
         const Kumir::String format = formats[i].mid(1).toStdWString();
         switch (type) {
         case 'i': {
-            Kumir::IO::IntFormat fmt = Kumir::IO::parseIntFormat(format);
-            int value = Kumir::IO::readInteger(stream, fmt);
+            int value = Kumir::IO::readInteger(stream);
             result << value;
             break;
         }
         case 'r': {
-            Kumir::IO::RealFormat fmt = Kumir::IO::parseRealFormat(format);
-            double value = Kumir::IO::readReal(stream, fmt);
+            double value = Kumir::IO::readReal(stream);
             result << value;
             break;
         }
         case 'b': {
-            Kumir::IO::BoolFormat fmt = Kumir::IO::parseBoolFormat(format);
-            bool value = Kumir::IO::readBool(stream, fmt);
+            bool value = Kumir::IO::readBool(stream);
             result << value;
             break;
         }
         case 'c': {
-            Kumir::IO::CharFormat fmt = Kumir::IO::parseCharFormat(format);
-            Kumir::Char value = Kumir::IO::readChar(stream, fmt);
+            Kumir::Char value = Kumir::IO::readChar(stream);
             result << QChar(value);
             break;
         }
         case 's': {
-            Kumir::IO::StringFormat fmt = Kumir::IO::parseStringFormat(format);
-            Kumir::String value = Kumir::IO::readString(stream, fmt);
+            Kumir::String value = Kumir::IO::readString(stream);
             result << QString::fromStdWString(value);
             break;
         }

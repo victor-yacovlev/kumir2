@@ -179,10 +179,6 @@ QString dumpStatementType(const enum StatementType t)
         return "input";
     else if (t==StOutput)
         return "output";
-    else if (t==StFileInput)
-        return "fileInput";
-    else if (t==StFileOutput)
-        return "fileOutput";
     else if (t==StLoop)
         return "loop";
     else if (t==StIfThenElse)

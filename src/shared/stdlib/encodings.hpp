@@ -8,7 +8,7 @@
 
 namespace Kumir {
 
-    enum Encoding { ASCII, UTF8, CP866, CP1251, KOI8R };
+    enum Encoding { DefaultEncoding, ASCII, UTF8, UTF16INTEL, UTF16MOTOROLA, CP866, CP1251, KOI8R };
     enum EncodingError { OutOfTable, StreamEnded };
 
     typedef const char * charptr;

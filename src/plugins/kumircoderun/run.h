@@ -51,7 +51,6 @@ public slots:
 
 
     bool makeInput(
-                const std::deque<String> & /*formats*/,
                 std::deque<Variable> & /*references*/
                 );
     void handleInputArgumentRequest(int localId,
@@ -62,7 +61,7 @@ public slots:
                                     const QString & varName,
                                     const QList<int> & bounds);
     bool makeOutput(
-                const std::deque<String> & /*formats*/,
+                const std::deque< std::pair<int,int> > & /*formats*/,
                 const std::deque<Variable> & /*values*/
                 );
 
@@ -72,6 +71,13 @@ public slots:
 
     bool noticeOnValueChange(int lineNo, const String & s);
     bool clearMargin(int from, int to);
+
+    bool loadExternalModule(const String & moduleName,
+                            const String & fileName,
+                            /*out*/ std::list<String> & availableMethods);
+
+
+
 
     void handleAlgorhitmDone(int lineNo);
     void finishInput(const QVariantList & data);
@@ -84,6 +90,17 @@ public slots:
                                const QVariantList & arguments,
                                const QList<quintptr> & references,
                                const QList<int> & indeces);
+    void handleExternalFunctionCall(const QString & moduleName
+                               , quint16 algId
+                               , const QVariantList & arguments);
+    bool evaluateExternalFunction(
+            const String & /*moduleName*/, // IN
+            uint16_t /*functionId*/, // IN
+            const std::deque<Variable> & /*arguments*/, // IN
+            std::deque<Variable> &,
+            Variable & /*result*/,  // OUT
+            String & /*moduleRuntimeError*/  // OUT
+            );
     void handleExternalRequest(const QList<quintptr> & references);
     void handlePauseRequest();
     void prepareExternalCall();
@@ -95,7 +112,7 @@ signals:
     void input(const QString & format);
     void marginText(int lineNo, const QString & text);
     void externalFunctionCall(const QString & pluginName,
-                              const QString & functionName,
+                              quint16 algId,
                               const QVariantList & arguments);
     void resetModule(const QString & pluginName);
     void aboutToStop();

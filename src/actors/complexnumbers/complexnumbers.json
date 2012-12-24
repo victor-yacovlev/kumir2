@@ -3,8 +3,10 @@
     "types": [
         {
             "name": { "ascii": "complex", "ru_RU": "компл" },
-            "cppdecl": "struct Complex { double re; double im; }",
-            "constants": true
+            "fields": [
+				{ "name": "re", "baseType": "double" },
+				{ "name": "im", "baseType": "double" }
+			]
         }
     ],
 	"methods": [
@@ -66,6 +68,21 @@
 			"returnType": "complex",
 			"arguments": [
 				{ "name": "x", "baseType": "double" }
+			]
+		},
+		{
+			"name": { "ascii": "input", "ru_RU": "ввод" },
+			"returnType": "complex",
+			"arguments": [
+				{ "name": "x", "baseType": "string" },
+				{ "name": "ok", "baseType": "bool", "access": "out"}
+			]
+		},
+		{
+			"name": { "ascii": "output", "ru_RU": "вывод" },
+			"returnType": "string",
+			"arguments": [
+				{ "name": "x", "baseType": "complex" }
 			]
 		}
     ]

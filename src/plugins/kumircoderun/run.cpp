@@ -3,7 +3,8 @@
 #include "vm/variant.hpp"
 #include "vm/vm.hpp"
 #include "run.h"
-
+#include "extensionsystem/pluginmanager.h"
+#include "interfaces/actorinterface.h"
 
 namespace KumirCodeRun {
 
@@ -39,6 +40,10 @@ Run::Run(QObject *parent) :
     e_runMode = RM_ToEnd;
 
     vm->setExternalHandler(this);
+    connect(this, SIGNAL(externalFunctionCall(QString,quint16,QVariantList)),
+            this, SLOT(handleExternalFunctionCall(QString,quint16,QVariantList))
+            , Qt::DirectConnection
+            );
 //    connect(vm, SIGNAL(pauseRequest()), this, SLOT(handlePauseRequest()), Qt::DirectConnection);
 
 //    connect(vm, SIGNAL(lineNoChanged(int)), this, SLOT(handleLineChanged(int)), Qt::DirectConnection);
@@ -116,7 +121,7 @@ void Run::runContinuous()
 }
 
 
-bool Run::makeInput(const std::deque<String> & formats, std::deque<Variable> & references)
+bool Run::makeInput(std::deque<Variable> & references)
 {
     mutex_interactDone->lock();
     b_interactDone = false;
@@ -124,17 +129,14 @@ bool Run::makeInput(const std::deque<String> & formats, std::deque<Variable> & r
     mutex_interactDone->unlock();
     QVariantList result;
     String format;
-    for (int i=0; i<formats.size(); i++) {
+    for (int i=0; i<references.size(); i++) {
         if (references[i].baseType()==VT_int) {
-            Kumir::IO::parseIntFormat(formats[i]);
             format.push_back('i');
         }
         else if (references[i].baseType()==VT_real) {
-            Kumir::IO::parseRealFormat(formats[i]);
             format.push_back('r');
         }
         else if (references[i].baseType()==VT_bool) {
-            Kumir::IO::parseBoolFormat(formats[i]);
             format.push_back('b');
         }
         else if (references[i].baseType()==VT_char &&
@@ -144,17 +146,12 @@ bool Run::makeInput(const std::deque<String> & formats, std::deque<Variable> & r
             format.push_back('n');
         }
         else if (references[i].baseType()==VT_char) {
-            Kumir::IO::parseCharFormat(formats[i]);
             format.push_back('c');
         }
         else if (references[i].baseType()==VT_string) {
-            Kumir::IO::parseStringFormat(formats[i]);
             format.push_back('s');
         }
-        format += formats[i];
-        if (i<formats.size()) format.push_back(';');
-        if (Kumir::Core::getError().length()>0)
-            return true;
+        if (i<references.size()) format.push_back(';');
     }
     emit input(QString::fromStdWString(format));
     forever {
@@ -396,6 +393,187 @@ void Run::handleExternalRequest(const QString &pluginName,
 //    vm->setResults(s_funcError, references, indeces, list_funcResults);
 }
 
+QVariant VariableToQVariant(const Variable & var)
+{
+    QVariant result;
+    if (var.dimension()==0) {
+        if (var.baseType()==VT_int)
+            result = QVariant(var.toInt());
+        else if (var.baseType()==VT_real)
+            result = QVariant(var.toReal());
+        else if (var.baseType()==VT_bool)
+            result = QVariant(var.toBool());
+        else if (var.baseType()==VT_char)
+            result = QVariant(QChar(var.toChar()));
+        else if (var.baseType()==VT_string)
+            result = QVariant(QString::fromStdWString(var.toString()));
+        else if (var.baseType()==VT_record) {
+            QVariantList recData;
+            const AnyValue & val = var.value();
+            const Record & record = val.toRecord();
+            for (int j=0; j<record.size(); j++) {
+                const VM::AnyValue & field = record[j];
+                if (field.type()==VT_int)
+                    recData << QVariant(field.toInt());
+                else if (field.type()==VT_real)
+                    recData << QVariant(field.toReal());
+                else if (field.type()==VT_bool)
+                    recData << QVariant(field.toBool());
+                else if (field.type()==VT_char)
+                    recData << QVariant(QChar(field.toChar()));
+                else if (field.type()==VT_string)
+                    recData << QVariant(QString::fromStdWString(field.toString()));
+            }
+            result = recData;
+        }
+    }
+    else {
+        // TODO implement me
+    }
+    return result;
+}
+
+VM::AnyValue QVariantToValue(const QVariant & var, int dim)
+{
+    AnyValue aval;
+    if (dim==0) {
+        if (var.type()==QVariant::Int)
+            aval = AnyValue(var.toInt());
+        else if (var.type()==QVariant::Double)
+            aval = AnyValue(var.toDouble());
+        else if (var.type()==QVariant::Bool)
+            aval = AnyValue(var.toBool());
+        else if (var.type()==QVariant::Char)
+            aval = AnyValue(var.toChar().unicode());
+        else if (var.type()==QVariant::String)
+            aval = AnyValue(var.toString().toStdWString());
+        else if (var.type()==QVariant::List) {
+            aval = AnyValue(VT_record);
+            Record & record = aval.toRecord();
+            const QVariantList & recvals = var.toList();
+            for (int i=0; i<recvals.size(); i++) {
+                AnyValue fieldVal;
+                const QVariant & rval = recvals.at(i);
+                if (rval.type()==QVariant::Int)
+                    fieldVal = AnyValue(rval.toInt());
+                else if (rval.type()==QVariant::Double)
+                    fieldVal = AnyValue(rval.toDouble());
+                else if (rval.type()==QVariant::Bool)
+                    fieldVal = AnyValue(rval.toBool());
+                else if (rval.type()==QVariant::Char)
+                    fieldVal = AnyValue(rval.toChar().unicode());
+                else if (rval.type()==QVariant::String)
+                    fieldVal = AnyValue(rval.toString().toStdWString());
+                record.push_back(fieldVal);
+            }
+        }
+    }
+    else {
+        // TODO implement me
+    }
+    return aval;
+}
+
+bool Run::evaluateExternalFunction(
+        /* IN */      const String & moduleName,
+        /* IN */      uint16_t functionId,
+        /* IN */      const std::deque<Variable> & arguments,
+        /* OUT */     std::deque<Variable> & outArguments,
+        /* OUT */     Variable & result,
+        /* OUT */     String & moduleRuntimeError
+        )
+{
+    mutex_interactDone->lock();
+    b_interactDone = false;
+    list_funcResults.clear();
+    v_funcResult.clear();
+    s_funcError = "";
+    mutex_interactDone->unlock();
+
+    // Prepare arguments
+    QVariantList qArgs;
+    typedef std::deque<Variable>::const_iterator CIt;
+    typedef std::deque<Variable>::iterator It;
+    for (CIt i=arguments.begin(); i!=arguments.end() ; ++i) {
+        const Variable & arg = (*i);
+        qArgs << VariableToQVariant(arg);
+    } // end preparing arguments
+
+    // Call Signal/Slot threading bridge to Run::handleExternalFunctionCall(...)
+    emit externalFunctionCall(QString::fromStdWString(moduleName), functionId, qArgs);
+
+    // Wait for actor thread finishes...
+    bool done = false;
+    forever {
+        mutex_interactDone->lock();
+        done = b_interactDone;
+        mutex_interactDone->unlock();
+        if (!done) {
+            msleep(1);
+        }
+        else {
+            break;
+        }
+        if (mustStop())
+            break;
+    }
+    // Return a flag "processed" in case of User-termination to avoid runtime error
+    if (mustStop())
+        return true;
+
+    // Set function result if need
+    result = Variable(QVariantToValue(v_funcResult, 0));
+
+    // Set function OUT-parameters if need
+    Q_ASSERT(list_funcResults.size()==outArguments.size());
+    for (int i=0; i<list_funcResults.size(); i++) {
+        const QVariant & value = list_funcResults.at(i);
+        outArguments[i].setValue(QVariantToValue(value, 0));
+    }
+
+    // Set error
+    moduleRuntimeError = s_funcError.toStdWString();
+
+    // Return a flag "processed"
+    return true;
+}
+
+void Run::handleExternalFunctionCall(
+        const QString &moduleName
+        , quint16 algId
+        , const QVariantList &arguments
+        )
+/* Signal/Slot threading bridge */
+{
+    QList<ExtensionSystem::KPlugin*> plugins =
+            ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
+    Shared::ActorInterface * actor = 0;
+    for (int i=0; i<plugins.size(); i++) {
+        actor = qobject_cast<Shared::ActorInterface*>(plugins[i]);
+        if (actor) {
+            if (actor->name()==moduleName)
+                break;
+            else
+                actor = 0;
+        }
+    }
+    if (actor) {
+        Shared::EvaluationStatus status = actor->evaluate(algId, arguments);
+        QMutexLocker locker(mutex_interactDone);
+        if (status==Shared::ES_Error)
+            s_funcError = actor->errorText();
+        if (status==Shared::ES_StackResult || status==Shared::ES_StackRezResult)
+            v_funcResult = actor->result();
+        if (status==Shared::ES_RezResult || status==Shared::ES_StackRezResult)
+            list_funcResults = actor->algOptResults();
+        b_interactDone = true;
+    }
+    else {
+        QMutexLocker locker(mutex_interactDone);
+        b_interactDone = true;
+    }
+}
+
 void Run::prepareExternalCall()
 {
     mutex_interactDone->lock();
@@ -442,45 +620,35 @@ void Run::finishExternalFunctionCall(const QString & error,
                                      const QVariant &retval,
                                      const QVariantList &results)
 {
-    QMutexLocker l(mutex_interactDone);
-    b_interactDone = true;
-    list_funcResults = results;
-    v_funcResult = retval;
-    s_funcError = error;
+//    QMutexLocker l(mutex_interactDone);
+//    b_interactDone = true;
+//    list_funcResults = results;
+//    v_funcResult = retval;
+//    s_funcError = error;
 }
 
 bool Run::makeOutput(
-        const std::deque<String> & formats,
+        const std::deque< std::pair<int,int> > & formats,
         const std::deque<Variable> & values
         )
 {
     Kumir::IO::OutputStream os;
     for (int i=0; i<formats.size(); i++) {
-        Kumir::String format = formats[i];
+        std::pair<int,int> format = formats[i];
         if (values[i].baseType()==VT_int) {
-            Kumir::IO::IntFormat fmt = Kumir::IO::parseIntFormat(format);
-            if (Kumir::Core::getError().length()>0) return true;
-            Kumir::IO::writeInteger(os, values[i].toInt(), fmt);
+            Kumir::IO::writeInteger(os, values[i].toInt(), format.first);
         }
         else if (values[i].baseType()==VT_real) {
-            Kumir::IO::RealFormat fmt = Kumir::IO::parseRealFormat(format);
-            if (Kumir::Core::getError().length()>0) return true;
-            Kumir::IO::writeReal(os, values[i].toDouble(), fmt);
+            Kumir::IO::writeReal(os, values[i].toDouble(), format.first, format.second);
         }
         else if (values[i].baseType()==VT_bool) {
-            Kumir::IO::BoolFormat fmt = Kumir::IO::parseBoolFormat(format);
-            if (Kumir::Core::getError().length()>0) return true;
-            Kumir::IO::writeBool(os, values[i].toBool(), fmt);
+            Kumir::IO::writeBool(os, values[i].toBool(), format.first);
         }
-        else if (values[i].baseType()==VT_char) {
-            Kumir::IO::CharFormat fmt = Kumir::IO::parseCharFormat(format);
-            if (Kumir::Core::getError().length()>0) return true;
-            Kumir::IO::writeChar(os, values[i].toChar(), fmt);
+        else if (values[i].baseType()==VT_char) {            
+            Kumir::IO::writeChar(os, values[i].toChar(), format.first);
         }
         else if (values[i].baseType()==VT_string) {
-            Kumir::IO::StringFormat fmt = Kumir::IO::parseStringFormat(format);
-            if (Kumir::Core::getError().length()>0) return true;
-            Kumir::IO::writeString(os, values[i].toString(), fmt);
+            Kumir::IO::writeString(os, values[i].toString(), format.first);
         }
     }
     QString data = QString::fromStdWString(os.getBuffer());
@@ -510,6 +678,29 @@ bool Run::clearMargin(int from, int to)
 {
     emit clearMarginRequest(from, to);
     return true;
+}
+
+bool Run::loadExternalModule(
+          const String &moduleName
+        , const String &fileName
+        , std::list<String> &availableMethods
+     )
+{
+    // TODO implement loading modules on demand
+    QList<ExtensionSystem::KPlugin*> plugins =
+            ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
+    bool found = false;
+    for (int i=0; i<plugins.size(); i++) {
+        Shared::ActorInterface * actor = qobject_cast<Shared::ActorInterface*>(plugins[i]);
+        if (actor && actor->name()==QString::fromStdWString(moduleName)) {
+            found = true;
+            for (int j=0; j<actor->funcList().size(); j++) {
+                availableMethods.push_back(actor->funcList()[j].toStdWString());
+            }
+            break;
+        }
+    }
+    return found;
 }
 
 bool Run::mustStop()

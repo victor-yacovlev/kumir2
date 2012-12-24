@@ -562,24 +562,24 @@ void KumirProgram::switchGlobalState(GlobalState prev, GlobalState cur)
 
 void KumirProgram::handleActorCommandFinished()
 {
-    QObject * o = sender();
-    Q_CHECK_PTR(o);
-    ActorInterface * a = qobject_cast<ActorInterface*>(o);
-    Q_CHECK_PTR(a);
-    const QString error = a->errorText();
-    const QVariant result = a->result();
-    const QVariantList res = a->algOptResults();
-    if (e_state==FastRun || e_state==Idle) {
-        QVariantList message;
-        message << error;
-        message << result;
-        message += res;
+//    QObject * o = sender();
+//    Q_CHECK_PTR(o);
+//    ActorInterface * a = qobject_cast<ActorInterface*>(o);
+//    Q_CHECK_PTR(a);
+//    const QString error = a->errorText();
+//    const QVariant result = a->result();
+//    const QVariantList res = a->algOptResults();
+//    if (e_state==FastRun || e_state==Idle) {
+//        QVariantList message;
+//        message << error;
+//        message << result;
+//        message += res;
 
-    }
-    if (e_state==RegularRun || e_state==StepRun) {
-        Q_CHECK_PTR(plugin_bytecodeRun);
-        plugin_bytecodeRun->finishExternalFunctionCall(error, result, res);
-    }
+//    }
+//    if (e_state==RegularRun || e_state==StepRun) {
+//        Q_CHECK_PTR(plugin_bytecodeRun);
+//        plugin_bytecodeRun->finishExternalFunctionCall(error, result, res);
+//    }
 }
 
 void KumirProgram::handleActorResetRequest(const QString & actorName)

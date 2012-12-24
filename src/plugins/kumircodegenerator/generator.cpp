@@ -1,5 +1,8 @@
 #include "generator.h"
+#include "vm/vm_tableelem.hpp"
 #include "vm/vm.hpp"
+#include "extensionsystem/pluginmanager.h"
+#include "interfaces/actorinterface.h"
 
 
 namespace KumirCodeGenerator {
@@ -67,6 +70,39 @@ static VM::AnyValue makeAnyValue(const QVariant & val, std::list<Bytecode::Value
         return VM::AnyValue(Kumir::Char(val.toChar().unicode()));
     case Bytecode::VT_string:
         return VM::AnyValue(val.toString().toStdWString());
+    case Bytecode::VT_record:
+    {
+        QVariantList valueFields = val.toList();
+        VM::AnyValue value(Bytecode::VT_record);
+        VM::Record & record = value.toRecord();
+        size_t offset = 0;
+        size_t curSize = 0;
+        std::list<Bytecode::ValueType>::const_iterator it = vt.begin();
+        it++;
+        for (int i=1; i<vt.size(); i++) {
+            switch (*it) {
+            case Bytecode::VT_int:
+                record.push_back(VM::AnyValue(valueFields[i-1].toInt()));
+                break;
+            case Bytecode::VT_real:
+                record.push_back(VM::AnyValue(valueFields[i-1].toDouble()));
+                break;
+            case Bytecode::VT_bool:
+                record.push_back(VM::AnyValue(valueFields[i-1].toBool()));
+                break;
+            case Bytecode::VT_char:
+                record.push_back(VM::AnyValue(valueFields[i-1].toChar().unicode()));
+                break;
+            case Bytecode::VT_string:
+                record.push_back(VM::AnyValue(valueFields[i-1].toString().toStdWString()));
+                break;
+            default:
+                break;
+            }
+            it++;
+        }
+        return value;
+    }
     default:
         return VM::AnyValue();
     }
@@ -78,7 +114,7 @@ static Bytecode::TableElem makeConstant(const ConstValue & val)
     e.type = Bytecode::EL_CONST;
     e.vtype = val.baseType;
     e.dimension = val.dimension;
-    if (val.value.type()!=QVariant::List) {
+    if (val.dimension==0) {
         VM::Variable var;
         var.setValue(makeAnyValue(val.value, val.baseType));
         var.setBaseType(val.baseType.front());
@@ -184,8 +220,29 @@ void Generator::generateExternTable()
         e.type = Bytecode::EL_EXTERN;
         e.module = ext.first;
         e.algId = e.id = ext.second;
-        e.moduleName = m_ast->modules[ext.first]->header.name.toStdWString();
-        e.name = m_ast->modules[ext.first]->header.algorhitms[ext.second]->header.name.toStdWString();
+        const AST::Module * mod = m_ast->modules[ext.first];
+        const QList<AST::Algorhitm*> table = mod->header.algorhitms + mod->header.operators;
+        const AST::Algorhitm * alg = table[ext.second];
+        QList<ExtensionSystem::KPlugin*> plugins =
+                ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
+        QString moduleFileName;
+        QString signature;
+        for (int m=0; m<plugins.size(); m++) {
+            Shared::ActorInterface * actor = qobject_cast<Shared::ActorInterface*>(plugins[m]);
+            if (actor && actor->name()==mod->header.name) {
+                signature = actor->funcList()[e.id];
+                moduleFileName = plugins[m]->pluginSpec().libraryFileName;
+                // Make filename relative
+                int slashP = moduleFileName.lastIndexOf("/");
+                if (slashP!=-1) {
+                    moduleFileName = moduleFileName.mid(slashP+1);
+                }
+            }
+        }
+        e.moduleName = mod->header.name.toStdWString();
+        e.name = alg->header.name.toStdWString();
+        e.signature = signature.toStdWString();
+        e.fileName = moduleFileName.toStdWString();
         m_bc->d.push_front(e);
     }
 }
@@ -205,8 +262,7 @@ QList<Bytecode::ValueType> Generator::valueType(const AST::Type & t)
     else if (t.kind==AST::TypeCharect)
         result << Bytecode::VT_char;
     else if (t.kind==AST::TypeUser) {
-        QList<Bytecode::ValueType> result;
-        result << Bytecode::VT_user;
+        result << Bytecode::VT_record;
         for (int i=0; i<t.userTypeFields.size(); i++) {
             AST::Field field = t.userTypeFields[i];
             result << valueType(field.second);
@@ -700,12 +756,6 @@ QList<Bytecode::Instruction> Generator::instructions(
         case AST::StOutput:
             CALL_SPECIAL(modId, algId, level, st, result);
             break;
-        case AST::StFileInput:
-            CALL_SPECIAL(modId, algId, level, st, result);
-            break;
-        case AST::StFileOutput:
-            CALL_SPECIAL(modId, algId, level, st, result);
-            break;
         case AST::StAssignFileStream:
             CALL_SPECIAL(modId, algId, level, st, result);
             break;
@@ -799,9 +849,9 @@ void Generator::findFunction(const AST::Algorhitm *alg, quint8 &module, quint16 
         const AST::Module * mod = m_ast->modules[i];
         QList<AST::Algorhitm*> table;
         if (mod->header.type==AST::ModTypeExternal)
-            table = mod->header.algorhitms;
+            table = mod->header.algorhitms + mod->header.operators;
         else
-            table = mod->impl.algorhitms;
+            table = mod->impl.algorhitms + mod->header.operators;
         for (quint16 j=0; j<table.size(); j++) {
             if (alg==table[j]) {
                 module = i;
@@ -1197,32 +1247,35 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
 
     quint16 argsCount;
 
-    if (st->type==AST::StFileOutput) {
-        for (int i=st->expressions.size()-1; i>=0; i--) {
-            QList<Bytecode::Instruction> instrs = calculate(modId, algId, level, st->expressions[i]);
+
+    if (st->type==AST::StOutput) {
+        int varsCount = st->expressions.size() / 3;
+
+        for (int i = varsCount-1; i>=0; i--) {
+            const AST::Expression * expr = st->expressions[3*i];
+            const AST::Expression * format1 = st->expressions[3*i+1];
+            const AST::Expression * format2 = st->expressions[3*i+2];
+            QList<Bytecode::Instruction> instrs;
+            instrs = calculate(modId, algId, level, expr);
+            shiftInstructions(instrs, result.size());
+            result << instrs;
+
+            instrs = calculate(modId, algId, level, format1);
+            shiftInstructions(instrs, result.size());
+            result << instrs;
+
+            instrs = calculate(modId, algId, level, format2);
             shiftInstructions(instrs, result.size());
             result << instrs;
         }
-        argsCount = st->expressions.size();
-    }
-    else if (st->type==AST::StOutput) {
-        int varsCount = st->expressions.size() / 2;
-        bool fileIO = st->expressions.size() % 2 > 0;
-        for (int i = varsCount-1; i>=0; i--) {
-            const AST::Expression * varExpr = st->expressions[i*2];
-            const AST::Expression * formatExpr = st->expressions[i*2+1];
-            QList<Bytecode::Instruction> valueInstrs = calculate(modId, algId, level, varExpr);
-            shiftInstructions(valueInstrs, result.size());
-            result << valueInstrs;
-            QList<Bytecode::Instruction> formatInstrs = calculate(modId, algId, level, formatExpr);
-            shiftInstructions(formatInstrs, result.size());
-            result << formatInstrs;
-        }
-        if (fileIO) {
+
+        if (st->expressions.size() % 3) {
+            // File handle
             QList<Bytecode::Instruction> instrs = calculate(modId, algId, level, st->expressions.last());
             shiftInstructions(instrs, result.size());
             result << instrs;
         }
+
         argsCount = st->expressions.size();
     }
     else if (st->type==AST::StInput) {
@@ -1272,8 +1325,6 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
     else {
         QString format;
         int start = 0;
-        if (st->type==AST::StFileInput)
-            start ++;
         for (int i=start; i<st->expressions.size(); i++) {
             AST::Expression * expr = st->expressions[i];
             if (expr->baseType.kind==AST::TypeBoolean)
@@ -1323,10 +1374,6 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
         call.arg = 0x0000;
     else if (st->type==AST::StOutput)
         call.arg = 0x0001;
-    else if (st->type==AST::StFileInput)
-        call.arg = 0x0002;
-    else if (st->type==AST::StFileOutput)
-        call.arg = 0x0003;
     else if (st->type==AST::StAssignFileStream)
         call.arg = 0x0A01;
 

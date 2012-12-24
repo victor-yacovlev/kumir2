@@ -68,12 +68,10 @@ namespace Shared {
         LxPriEndLoop	= 0x7800,
         LxPriInput	= 0x8000,
         LxPriOutput	= 0x8800,
-        LxPriFinput	= 0x9000,
-        LxPriFoutput	= 0x9800,
         LxPriAssign	= 0xa000,
         LxPriAssert	= 0xa800,
         LxPriImport	= 0xb000,
-        LxPriAssignFile = 0xb800,
+
         LxPriExit	= 0xc000,
         LxPriPause      = 0xc800,
         LxPriHalt       = 0xd000,

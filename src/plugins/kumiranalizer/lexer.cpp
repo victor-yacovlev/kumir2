@@ -229,18 +229,6 @@ void LexerPrivate::initNormalizator(const QString &fileName)
                     keyWords << value;
                     addToMap(kwdMap, value, LxPriOutput);
                 }
-                else if (context=="file input") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriFinput);
-                }
-                else if (context=="file output") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriFoutput);
-                }
-                else if (context=="assign stream") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriAssignFile);
-                }
                 else if (context=="new line symbol") {
                     keyWords << value;
                     addToMap(kwdMap, value, LxSecNewline);
@@ -1045,12 +1033,6 @@ void popFirstStatementByKeyword(QList<Lexem*> &lexems, Statement &result)
     else if (lexems[0]->type==LxPriOutput) {
         popOutputStatement(lexems, result);
     }
-    else if (lexems[0]->type==LxPriFinput) {
-        popFinputStatement(lexems, result);
-    }
-    else if (lexems[0]->type==LxPriFoutput) {
-        popFoutputStatement(lexems, result);
-    }
     else if (lexems[0]->type==LxPriAssert) {
         popAssertStatement(lexems, result);
     }
@@ -1068,9 +1050,6 @@ void popFirstStatementByKeyword(QList<Lexem*> &lexems, Statement &result)
     }
     else if (lexems[0]->type==LxNameClass) {
         popVarDeclStatement(lexems, result);
-    }
-    else if (lexems[0]->type==LxPriAssignFile) {
-        popAssignFileStatement(lexems, result);
     }
     else {
         popLexemsUntilSemicolon(lexems, result);
@@ -1144,13 +1123,6 @@ void popHaltStatement(QList<Lexem*> &lexems, Statement &result)
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popAssignFileStatement(QList<Lexem *> &lexems, Statement &result)
-{
-    result.type = lexems[0]->type;
-    result.data << lexems[0];
-    lexems.pop_front();
-    popLexemsUntilPrimaryKeywordExclIO(lexems, result);
-}
 
 void popPreStatement(QList<Lexem*> &lexems, Statement &result)
 {

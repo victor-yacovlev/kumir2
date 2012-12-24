@@ -283,15 +283,13 @@ void PDAutomataPrivate::loadRules(const QString &rulesRoot)
                 LxPriEndLoop,
                 LxPriInput,
                 LxPriOutput,
-                LxPriFinput,
-                LxPriFoutput,
                 LxPriAssign,
                 LxPriAssert,
                 LxPriImport,
                 LxPriExit,
                 LxPriPause,
                 LxPriExit,
-                LxPriAssignFile,
+
                 LexemType(0xFFFFFFFF)
             };
 
@@ -904,8 +902,6 @@ QString terminalByCode(int code)
         return QString::fromUtf8("при");
     case LxPriAssign:
         return QString::fromUtf8("простое_предложение");
-    case LxPriAssignFile:
-        return QString::fromUtf8("простое_предложение");
     case LxPriOutput:
         return QString::fromUtf8("простое_предложение");
     case LxPriAssert:
@@ -922,10 +918,6 @@ QString terminalByCode(int code)
         return QString::fromUtf8("кон_исп");
     case LxPriImport:
         return QString::fromUtf8("использовать");
-    case LxPriFinput:
-        return QString::fromUtf8("простое_предложение");
-    case LxPriFoutput:
-        return QString::fromUtf8("простое_предложение");
     case LxPriPause:
         return QString::fromUtf8("простое_предложение");
     case LxPriHalt:
@@ -1238,15 +1230,6 @@ void PDAutomataPrivate::appendSimpleLine()
     case LxPriOutput:
         statement->type = AST::StOutput;
         break;
-    case LxPriFinput:
-        statement->type = AST::StFileInput;
-        break;
-    case LxPriFoutput:
-        statement->type = AST::StFileOutput;
-        break;
-    case LxPriAssignFile:
-        statement->type = AST::StAssignFileStream;
-        break;
     case LxPriExit:
         statement->type = AST::StBreak;
         break;
@@ -1306,12 +1289,6 @@ AST::Statement * PDAutomata::createSimpleAstStatement(Statement * st)
         break;
     case LxPriOutput:
         statement->type = AST::StOutput;
-        break;
-    case LxPriFinput:
-        statement->type = AST::StFileInput;
-        break;
-    case LxPriFoutput:
-        statement->type = AST::StFileOutput;
         break;
     case LxPriExit:
         statement->type = AST::StBreak;

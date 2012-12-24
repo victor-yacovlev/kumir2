@@ -24,7 +24,6 @@ public:
     // Constructor
 
     ComplexNumbersModule(ExtensionSystem::KPlugin * parent);
-    bool parseConstantOfType_Complex(const QString & literal, Complex &value);
 
 public slots:
     // Reset actor state before program starts
@@ -32,14 +31,16 @@ public slots:
     // Set animation flag
     void setAnimationEnabled(bool enabled);
     // Actor methods
-    qreal runRe(const Complex & x);
-    qreal runIm(const Complex & x);
-    Complex  runOperatorPLUS(const Complex & x, const Complex & y);
-    Complex  runOperatorMINUS(const Complex & x, const Complex & y);
-    Complex  runOperatorASTERISK(const Complex & x, const Complex & y);
-    Complex  runOperatorSLASH(const Complex & x, const Complex & y);
-    Complex  runOperatorASSIGN(const int x);
-    Complex  runOperatorASSIGN(const qreal x);
+    qreal runRe(const Complex& x);
+    qreal runIm(const Complex& x);
+    Complex runOperatorPLUS(const Complex& x, const Complex& y);
+    Complex runOperatorMINUS(const Complex& x, const Complex& y);
+    Complex runOperatorASTERISK(const Complex& x, const Complex& y);
+    Complex runOperatorSLASH(const Complex& x, const Complex& y);
+    Complex runOperatorASSIGN(const int x);
+    Complex runOperatorASSIGN(const qreal x);
+    Complex runOperatorINPUT(const QString& x, bool& ok);
+    QString runOperatorOUTPUT(const Complex& x);
 
 
 

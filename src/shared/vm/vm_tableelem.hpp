@@ -31,8 +31,9 @@ struct TableElem {
     uint16_t id; // element id
 
     String name; // variable or function name
-
+    String signature; // external method signature
     String moduleName; // external module name
+    String fileName;
     Variable initialValue; // constant value
     std::vector<Instruction> instructions; // for local defined function
     inline TableElem() {
@@ -155,12 +156,11 @@ inline void scalarConstantToDataStream(std::list<char> & stream, ValueType type,
 }
 
 inline void scalarConstantToDataStream(std::list<char> & stream, const std::list<ValueType> & type, const Variable & val) {
-    if (type.front()!=VT_user) {
+    if (type.front()!=VT_record) {
         scalarConstantToDataStream(stream, type.front(), val.value());
     }
     else {
         const VM::Record value = val.value().toRecord();
-        valueToDataStream(stream, uint32_t(value.size()));
         for (int i=0; i<value.size(); i++) {
             const VM::AnyValue & field = value[i];
             scalarConstantToDataStream(stream, field.type(), field);
@@ -193,7 +193,8 @@ inline void constantToDataStream(std::list<char> & stream, const std::list<Value
 inline void vtypeToDataStream(std::list<char> & ds, const std::list<ValueType> & vtype)
 {
     valueToDataStream(ds, uint8_t(vtype.front()));
-    if (vtype.front()==VT_user) {
+    if (vtype.front()==VT_record) {
+        valueToDataStream(ds, uint32_t(vtype.size()-1));
         std::list<ValueType>::const_iterator it = vtype.begin();
         it ++;
         for ( ; it!=vtype.end(); ++it) {
@@ -207,8 +208,9 @@ inline void vtypeFromDataStream(std::list<char> & ds, std::list<ValueType> & vty
     uint8_t u8;
     valueFromDataStream(ds, u8);
     ValueType first = ValueType(u8);
+    vtype.clear();
     vtype.push_back(first);
-    if (first==VT_user) {
+    if (first==VT_record) {
         uint32_t sz;
         valueFromDataStream(ds, sz);
         for (uint32_t i=0; i<sz; i++) {
@@ -226,11 +228,16 @@ inline void tableElemToBinaryStream(std::list<char> & ds, const TableElem &e)
     valueToDataStream(ds, uint8_t(e.dimension));
     valueToDataStream(ds, uint8_t(e.refvalue));
     valueToDataStream(ds, uint8_t(e.module));
+    if (e.type==EL_EXTERN) {
+        stringToDataStream(ds, e.fileName);
+        stringToDataStream(ds, e.signature);
+    }
     valueToDataStream(ds, uint16_t(e.algId));
     valueToDataStream(ds, uint16_t(e.id));
     stringToDataStream(ds, e.name);
-    if (e.type==EL_EXTERN)
+    if (e.type==EL_EXTERN) {
         stringToDataStream(ds, e.moduleName);
+    }
     else if (e.type==EL_CONST) {
         constantToDataStream(ds, e.vtype, e.initialValue, e.dimension);
     }
@@ -282,10 +289,11 @@ inline void scalarConstantFromDataStream(std::list<char> & stream, ValueType typ
 
 inline void scalarConstantFromDataStream(std::list<char> & stream, const std::list<ValueType> & type, VM::AnyValue & val)
 {
-    if (type.front()!=VT_user) {
-        scalarConstantToDataStream(stream, type.front(), val);
+    if (type.front()!=VT_record) {
+        scalarConstantFromDataStream(stream, type.front(), val);
     }
     else {
+        val = VM::AnyValue(VT_record);
         std::list<ValueType>::const_iterator it = type.begin();
         it ++;
         for ( ; it!=type.end(); ++it) {
@@ -304,6 +312,7 @@ inline void constantFromDataStream(std::list<char> & stream,
     if (dimension==0) {
         VM::AnyValue value;
         scalarConstantFromDataStream(stream, baseType, value);
+        val.setBaseType(VT_record);
         val.setValue(value);
     }
     else {
@@ -342,20 +351,23 @@ inline void tableElemFromBinaryStream(std::list<char> & ds, TableElem &e)
     uint32_t sz;
     String s;
     valueFromDataStream(ds, t);
-    vtypeFromDataStream(ds, e.vtype);
-    valueFromDataStream(ds, sz);
-    valueFromDataStream(ds, d);
-    valueFromDataStream(ds, r);
-    valueFromDataStream(ds, m);
-    valueFromDataStream(ds, a);
-    valueFromDataStream(ds, id);
-    stringFromDataStream(ds, s);
     e.type = ElemType(t);
+    vtypeFromDataStream(ds, e.vtype);
+    valueFromDataStream(ds, d);
     e.dimension = d;
+    valueFromDataStream(ds, r);
     e.refvalue = ValueKind(r);
+    valueFromDataStream(ds, m);
     e.module = m;
+    if (e.type==EL_EXTERN) {
+        stringFromDataStream(ds, e.fileName);
+        stringFromDataStream(ds, e.signature);
+    }
+    valueFromDataStream(ds, a);
     e.algId = a;
+    valueFromDataStream(ds, id);
     e.id = id;
+    stringFromDataStream(ds, s);
     e.name = s;
     if (e.type==EL_EXTERN) {
         stringFromDataStream(ds, s);
@@ -443,7 +455,7 @@ inline std::string vtypeToString(const std::list<ValueType> & type, uint8_t dim)
         result = "string";
     else if (t==VT_bool)
         result = "bool";
-    else if (t==VT_user) {
+    else if (t==VT_record) {
         result = "record{";
         std::list<ValueType>::const_iterator it = type.begin();
         it ++;
@@ -495,7 +507,7 @@ inline void vtypeFromString(const std::string &ss, std::list<ValueType> &type, u
     else if (s=="bool")
         t = VT_bool;
     else if (s.length()>=std::string("record").length())
-        t = VT_user;
+        t = VT_record;
     else
         t = VT_void;
     dim = 0;
@@ -508,7 +520,7 @@ inline void vtypeFromString(const std::string &ss, std::list<ValueType> &type, u
     }
     type.clear();
     type.push_back(t);
-    if (t==VT_user) {
+    if (t==VT_record) {
         // TODO implement me!
     }
 }
