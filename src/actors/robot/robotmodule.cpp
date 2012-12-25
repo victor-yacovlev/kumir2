@@ -236,19 +236,24 @@ namespace ActorRobot {
         }
         
      
-       radItm=Scene->addRect(upLeftCornerX+1, upLeftCornerY+1, size*(radiation/99),size/5 );
-        
-       radItm->setBrush(QBrush(Qt::yellow));
+      // radItm=Scene->addRect(upLeftCornerX+1, upLeftCornerY+1, size*(radiation/99),size/5 );
+        radItm=new EditLine();
+        radItm->moveBy(upLeftCornerX+1, upLeftCornerY+1);
+        radItm->setValue(radiation);
+        // radItm=Scene->addItem(upLeftCornerX+1, upLeftCornerY+1, size*(radiation/99),size/5 );
+       Scene->addItem(radItm);
+      // radItm->setBrush(QBrush(Qt::yellow));
      //  radItm->setPos(upLeftCornerX+1,upLeftCornerY+1);
-        radItm->setZValue(1);
+        radItm->setZValue(100);
+        radItm->show();
         
         
         
         
-        tempItm=Scene->addText("T: "+QString::number(temperature),font);
-        tempItm->setDefaultTextColor(TextColor);
-        tempItm->setPos(upLeftCornerX+1,upLeftCornerY+size-16);
-        tempItm->setZValue(1);
+        //tempItm=Scene->addText("T: "+QString::number(temperature),font);
+        //tempItm->setDefaultTextColor(TextColor);
+        //tempItm->setPos(upLeftCornerX+1,upLeftCornerY+size-16);
+        //tempItm->setZValue(1);
         
 
     }
@@ -1996,7 +2001,7 @@ namespace ActorRobot {
         };
         
         
-        qDebug()<<" Edit mouse press event";
+        //qDebug()<<" Edit mouse press event";
         QPointF scenePos=mouseEvent->scenePos();
         float rc=float(scenePos.y())/float(fieldSize);
         if(rc<0)rc=-1;
@@ -2004,7 +2009,7 @@ namespace ActorRobot {
         if(cc<0)cc=-1;
         int rowClicked=rc;
         int colClicked=cc;
-        qDebug()<<"RC:"<<rowClicked<<"CC:"<<colClicked<<" sc pos y:"<<scenePos.y()<<" scenePos.x()"<<scenePos.x()<<"";
+       // qDebug()<<"RC:"<<rowClicked<<"CC:"<<colClicked<<" sc pos y:"<<scenePos.y()<<" scenePos.x()"<<scenePos.x()<<"";
         if(textEditMode)
         {
             pressD=false;
@@ -2040,7 +2045,7 @@ namespace ActorRobot {
    
             QGraphicsView * view=views().first();  //current view
             QPoint clickViewPos=view->mapFromScene(mouseEvent->scenePos().x(), mouseEvent->scenePos().y());
-            qDebug()<<"ROW:"<<rowClicked<<"COL:"<<colClicked;
+           // qDebug()<<"ROW:"<<rowClicked<<"COL:"<<colClicked;
             radSpinBox->setValue(getFieldItem(rowClicked,colClicked)->radiation);//set radiation
             radSpinBox->move(clickViewPos.x(),clickViewPos.y());
             qDebug()<<"Show spin box"<<clickViewPos.x()<<" pos y"<<clickViewPos.y();
@@ -2073,8 +2078,8 @@ namespace ActorRobot {
         if((colClicked>columns()-1)||(colClicked<0))
         {mouseEvent->ignore();QGraphicsScene::mousePressEvent(mouseEvent);return;};
         
-        qDebug()<<"ScenePos y "<<scenePos.y() <<" sceneposx"<<scenePos.x() << "rowClick:"<<rowClicked << " "<<" colClick:"<<colClicked <<
-        " delta_row" <<delta_row << " delta_col" << delta_col;
+       // qDebug()<<"ScenePos y "<<scenePos.y() <<" sceneposx"<<scenePos.x() << "rowClick:"<<rowClicked << " "<<" colClick:"<<colClicked <<
+      //  " delta_row" <<delta_row << " delta_col" << delta_col;
         if(delta_row<=MAX_CLICK_DELTA){up=true;upD=delta_row;qDebug("UP");};
         
         if(fieldSize-delta_row<=MAX_CLICK_DELTA){down=true;downD=fieldSize-delta_row;};
@@ -2141,12 +2146,21 @@ namespace ActorRobot {
     };
     void RoboField::mouseReleaseEvent ( QGraphicsSceneMouseEvent * mouseEvent )
     {
-        pressed=true;
+        qDebug()<<"FIELD RELEASE";
+        QGraphicsScene::mouseReleaseEvent(mouseEvent);
+        if(mouseEvent->isAccepted ())
+        {
+        qDebug()<<"Field is ACC";
+           return; 
+        }
+        if(!editMode)pressed=true;
     };
     void RoboField::mouseMoveEvent ( QGraphicsSceneMouseEvent * mouseEvent )
     {
+        qDebug()<<"FIELD MOVE";
         if(!editMode)return;
-        if(textEditMode)return;
+        if(textEditMode )return;
+        QGraphicsScene::mouseMoveEvent(mouseEvent);
      if(!pressed)
      {
          QPointF scenePos=mouseEvent->scenePos();
@@ -2218,7 +2232,7 @@ namespace ActorRobot {
          if(right && markMode)showRightWall(rowClicked,colClicked);
          if(!up && !down && !left && !right)
          {
-             if((mouseEvent->buttons()==Qt::LeftButton) && (old_cell!=QPair<int,int>(rowClicked, colClicked)))
+             if((mouseEvent->buttons()==Qt::LeftButton) && (old_cell!=QPair<int,int>(rowClicked, colClicked)&&(!robot->isMoving())))
              {
              if(markMode)
              {
@@ -2234,7 +2248,7 @@ namespace ActorRobot {
                  
                  
              }
-             qDebug()<<"OldCell!newCell"<<  (old_cell!=QPair<int,int>(rowClicked, colClicked));
+            // qDebug()<<"OldCell!newCell"<<  (old_cell!=QPair<int,int>(rowClicked, colClicked));
          showWall->setVisible(false);
          }
           
@@ -2474,9 +2488,40 @@ namespace ActorRobot {
     };
     
     
+    //++++++++EditLine
     
+    EditLine::EditLine(QGraphicsItem *parent)
+    {
+        Value=0;
+        istemp=true;
+        iconPath=QUrl::fromLocalFile(
+                                     qApp->property("sharePath").toString()+
+                                     "/actors/robot/btn_radiation.png"
+                                     );
+        rad=QImage(iconPath.toLocalFile ());
+        
+        rad.load(iconPath.toLocalFile ());
+    }
     
-
+    void EditLine::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+                            QWidget *widget)
+    {
+        Q_UNUSED(option); Q_UNUSED(widget);
+        
+        if(isTemp())
+        {
+                        
+            painter->drawImage(2,2,rad.scaledToHeight(FIELD_SIZE_SMALL/4) );
+            painter->setBrush(QBrush(Qt::yellow));
+            painter->drawRect(2, FIELD_SIZE_SMALL/4+2, (FIELD_SIZE_SMALL-FIELD_SIZE_SMALL/4)*(Value/99),FIELD_SIZE_SMALL/5 );
+            
+        }
+    }
+    QRectF EditLine::boundingRect() const
+    {
+        //     qreal adjust = 0.5;
+        return QRectF(0,0,FIELD_SIZE_SMALL/4,FIELD_SIZE_SMALL/4);
+    };
     //+++++++Simple Robot
     SimpleRobot::SimpleRobot(QGraphicsItem *parent )
     {
@@ -2494,6 +2539,7 @@ namespace ActorRobot {
         Robot->setZValue(100);
         setZValue(100);
         crash=NO_CRASH;
+        moving=false;
         // ainter->drawPolygon(polygonf);
         //Robot->setPolygon(polygonf);
     };
@@ -2511,20 +2557,22 @@ namespace ActorRobot {
     
     void SimpleRobot::mousePressEvent ( QGraphicsSceneMouseEvent * event )
     {
-        event->accept();
-        qDebug()<<"Mouse press" << event->pos();
+       // event->accept();
+        moving=true;
+        qDebug()<<"Mouse press SROBOT2" << event->pos();
     };
     
     void SimpleRobot::mouseMoveEvent ( QGraphicsSceneMouseEvent * event )
     {
-        //qDebug("Mouse move");
+        qDebug("Mouse move srobot");
         setPos(event->scenePos());
         
     };
     void SimpleRobot::mouseReleaseEvent ( QGraphicsSceneMouseEvent * event )
     {
         //setZValue(100);
-        emit moved(event->scenePos());
+         qDebug()<<"Mouse release SROBOT" << event->pos();
+       // emit moved(event->scenePos());
         
     };
     QRectF SimpleRobot::boundingRect() const
@@ -3003,7 +3051,7 @@ int RobotModule::SaveToFile(QString p_FileName)
         if(robotField->isEditMode())
         {
          qDebug()<<"Edit mode;";
-            QGraphicsView::mousePressEvent(event);   
+           QGraphicsView::mousePressEvent(event);   
             return;
         }
         if(robotField->sceneRect().height()> this->height()  &&robotField->sceneRect().width()> this->width())//field > view
@@ -3016,9 +3064,20 @@ int RobotModule::SaveToFile(QString p_FileName)
          
     };
     
-    void RobotView::mouseReleaseEvent ( QMouseEvent * event )
+   void RobotView::mouseReleaseEvent ( QMouseEvent * event )
     {
-        if(robotField->isEditMode())return;
+        if(robotField->isEditMode())
+            
+        { //event->ignore ();
+           // robotField->mouseReleaseEvent(event);
+            if(robotField->robot->isMoving())
+            {
+               robotField->roboMoved(this->mapToScene(event->pos()));
+                robotField->robot->setMoving(false);
+            };
+            qDebug()<<"Mouse Release EV (RobotView)";
+            return;   
+        }
         pressed=false;
         setCursor(Qt::OpenHandCursor);
     };

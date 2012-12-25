@@ -57,7 +57,48 @@ namespace ActorRobot {
 #define DEFAULT_SIZEX 400
 #define DEFAULT_SIZEY 400    
 
-   
+    class EditLine:public QGraphicsObject
+    {
+        Q_OBJECT;
+    public:
+        EditLine(QGraphicsItem *parent = 0);
+        QRectF boundingRect() const;
+        bool isTemp()
+        {
+            return istemp;
+        }
+        bool isRad()
+        {
+            return !istemp;
+        }
+        void setRad()
+        {
+            istemp=false;
+        }
+        void setTemp()
+        {
+            istemp=true;
+            iconPath=QUrl::fromLocalFile(
+                                         qApp->property("sharePath").toString()+
+                                         "/actors/robot/radioactive-danger-symbol.svg"
+                                         );
+            rad=QImage(iconPath.toLocalFile ());
+            
+            rad.load(iconPath.toLocalFile ());
+        }
+        void setValue(float value)
+        {
+            Value=value;
+        }
+        
+        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+                   QWidget *widget);
+        private:
+        QUrl iconPath;
+        float Value;
+        bool istemp;
+        QImage rad;
+    };
     
     class SimpleRobot:
     public QGraphicsObject
@@ -73,6 +114,14 @@ namespace ActorRobot {
         QGraphicsPolygonItem* RoboItem();
         void setCrash(uint dirct);
         void move(QPoint point);
+        bool isMoving()
+        {
+            return moving;
+        }
+        void  setMoving(bool flag)
+        {
+             moving=flag;
+        }
         //void show();
     signals:
         void moved(QPointF point);
@@ -85,7 +134,7 @@ namespace ActorRobot {
     private:
         
         QGraphicsPolygonItem *Robot;
-        bool ready;
+        bool ready,moving;
         uint crash;
         
     };    
@@ -206,7 +255,7 @@ namespace ActorRobot {
         QGraphicsTextItem * upCharItm;
         QGraphicsTextItem * downCharItm;
         QGraphicsTextItem * markItm;
-        QGraphicsRectItem * radItm;
+        EditLine * radItm;
         QGraphicsTextItem * tempItm;
         QGraphicsRectItem * upCharFld;
         QGraphicsRectItem * downCharFld;
@@ -336,6 +385,7 @@ namespace ActorRobot {
         SimpleRobot * robot;
         void wbMode();
         void colorMode();
+         void mouseReleaseEvent ( QGraphicsSceneMouseEvent * mouseEvent );
         public
         
     slots:
@@ -352,7 +402,7 @@ namespace ActorRobot {
     private:
         
         void mousePressEvent ( QGraphicsSceneMouseEvent * mouseEvent );
-        void mouseReleaseEvent ( QGraphicsSceneMouseEvent * mouseEvent );
+       
         void mouseMoveEvent ( QGraphicsSceneMouseEvent * mouseEvent );
         void keyPressEvent ( QKeyEvent * keyEvent );  
         QTimer * timer;
