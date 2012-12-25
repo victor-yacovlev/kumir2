@@ -1,3 +1,4 @@
+find_package(Java COMPONENTS Runtime)
 set(GWT_MAIN_MODULE ru.niisi.kumir2.helpviewer.viewer)
 set(SOURCE
     src/ru/niisi/kumir2/helpviewer/viewer.gwt.xml
@@ -13,7 +14,7 @@ set(SOURCE
     src/ru/niisi/kumir2/helpviewer/client/XrefDatabase.java
 )
 if (WIN32)
-	set(GWTC_COMMAND ${CMAKE_SOURCE_DIR}/gwt/gwtc.cmd ${GWT_DEV_JAR} ${GWT_USER_JAR} ${CMAKE_CURRENT_SOURCE_DIR}/src ${SHARE_PATH}/webapps/helpviewer ${GWT_MAIN_MODULE})
+        set(GWTC_COMMAND ${CMAKE_SOURCE_DIR}/gwt/gwtc.cmd ${Java_JAVA_EXECUTABLE} ${GWT_DEV_JAR} ${GWT_USER_JAR} ${CMAKE_CURRENT_SOURCE_DIR}/src ${SHARE_PATH}/webapps/helpviewer ${GWT_MAIN_MODULE})
 else()
     set(GWTC_COMMAND ${CMAKE_SOURCE_DIR}/gwt/gwtc.sh ${GWT_DEV_JAR} ${GWT_USER_JAR} ${CMAKE_CURRENT_SOURCE_DIR}/src ${SHARE_PATH}/webapps/helpviewer ${GWT_MAIN_MODULE})
 endif()

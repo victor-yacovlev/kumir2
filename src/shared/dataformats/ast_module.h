@@ -5,6 +5,7 @@
 #include <QList>
 #include <QSet>
 #include <QStringList>
+#include "ast_type.h"
 
 
 #undef ABSTRACTSYNTAXTREE_EXPORT

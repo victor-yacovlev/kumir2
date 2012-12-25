@@ -20,7 +20,7 @@ using Kumir::String;
 using Kumir::real;
 using namespace Bytecode;
 
-typedef std::deque< class AnyValue > Record;
+typedef std::vector< class AnyValue > Record;
 
 class AnyValue
 {

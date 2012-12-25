@@ -26,9 +26,21 @@ namespace AST {
         /** User type fields (if user defined)*/
         QList< Field > userTypeFields;
 
-        bool operator==(const Type & other) const;
-        bool operator!=(const Type & other) const;
-        bool operator==(const VariableBaseType & otherType) const;
+        inline bool operator==(const Type & other) const {
+            if (kind!=TypeUser)
+                return kind == other.kind;
+            else
+                return name == other.name;
+        }
+        inline bool operator!=(const Type & other) const {
+            if (kind==TypeUser)
+                return name!=other.name;
+            else
+                return kind!=other.kind;
+        }
+        inline bool operator==(const VariableBaseType & otherType) const {
+            return kind!=TypeUser && kind==otherType;
+        }
         inline Type() { kind = TypeNone; }
         inline Type(AST::VariableBaseType bt) { kind = bt; }
     };

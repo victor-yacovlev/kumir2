@@ -60,7 +60,7 @@ typedef double real;
 struct FileType {
     enum OpenMode { NotOpen, Read, Write, Append };
     inline static const char * _() { return "sib"; }
-    inline FileType() { valid = false; fullPath[0] = Char('\0'); mode = NotOpen; }
+    inline FileType() { valid = false; mode = NotOpen; }
     inline void setName(const String &name) {
         fullPath = name;
     }
@@ -961,8 +961,18 @@ public:
     }
 
 #if defined(WIN32) || defined(_WIN32)
-    inline static String getAbsolutePath(const String & x) {
-
+    inline static String getAbsolutePath(const String & fileName) {
+        wchar_t cwd[1024];
+        GetCurrentDirectoryW(1024, cwd);
+        String workDir;
+        workDir = String(cwd);
+        workDir.push_back(Char('\\'));
+        String absPath;
+        if (fileName.length()==0 || fileName.at(0)==Char('\\'))
+            absPath = fileName;
+        else
+            absPath = workDir + fileName;
+        return getNormalizedPath(absPath, Char('\\'));
     }
 #else
     inline static String getAbsolutePath(const String & fileName) {
@@ -1025,12 +1035,12 @@ public:
 #if defined(WIN32) || defined(_WIN32)
     inline static bool canOpenForRead(const String & path)
     {
-
+        return exist(path); // TODO implement me
     }
 
     inline static bool canOpenForWrite(const String & path)
     {
-
+        return true;
     }
 #else
     inline static bool canOpenForRead(const String & fileName)
@@ -1122,9 +1132,8 @@ public:
 
 #if defined(WIN32) || defined(_WIN32)
     inline static bool exist(const String & fileName) {
-        DWORD dwAttrib = GetFileAttributesW(fileName.c_str());
-        return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
-                 !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+            DWORD dwAttrib = GetFileAttributesW(fileName.c_str());
+            return dwAttrib!=INVALID_FILE_ATTRIBUTES;
     }
     inline static int unlinkFile(const String & fileName) {
         if (DeleteFileW(fileName.c_str())!=0)
@@ -1136,7 +1145,15 @@ public:
                 return 2;
         }
     }
-
+    inline static bool isDirectory(const String & fileName) {
+        DWORD dwAttrib = GetFileAttributesW(fileName.c_str());
+        return (dwAttrib!=INVALID_FILE_ATTRIBUTES &&
+                 (dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+    }
+    inline static bool mkdir(const String & fileName) {
+        BOOL result = CreateDirectoryW(fileName.c_str(), NULL);
+        return result;
+    }
 #else
     inline static bool exist(const String & fileName) {
         char * path;

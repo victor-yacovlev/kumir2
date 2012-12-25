@@ -133,7 +133,7 @@ QString Module::dump() const
 {
     QString result;
     result = "{\n";
-    result += "\t\"header\": \{\n";
+    result += "\t\"header\": {\n";
     result += "\t\t\"name\": \""+header.name+"\",\n";
     if (!header.uses.isEmpty()) {
         result += "\t\t\"uses\": [";

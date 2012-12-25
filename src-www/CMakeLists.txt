@@ -1,2 +1,5 @@
 include(GWT.cmake)
+if (WIN32)
+else()
 add_subdirectory(helpviewer)
+endif()

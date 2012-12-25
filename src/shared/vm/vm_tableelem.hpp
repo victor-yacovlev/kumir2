@@ -654,6 +654,7 @@ inline std::string externToTextStream(const TableElem & e)
     os << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.moduleName)) << "\"";
     os << " function=";
     os << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\"";
+    return os.str();
 }
 
 inline void tableElemToTextStream(std::ostream &ts, const TableElem &e)
