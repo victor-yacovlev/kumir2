@@ -1108,7 +1108,20 @@ void KumirVM::do_filescall(uint16_t alg)
         stack_values.push(Variable(y));
         break;
     }
-
+    /* алг НАЗНАЧИТЬ ВВОД(лит имя файла) */
+    case 0x000f: {
+        const String x = stack_values.pop().toString();
+        Kumir::Files::assignInStream(x);
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг НАЗНАЧИТЬ ВЫВОД(лит имя файла) */
+    case 0x0010: {
+        const String x = stack_values.pop().toString();
+        Kumir::Files::assignOutStream(x);
+        s_error = Kumir::Core::getError();
+        break;
+    }
     default: {
         s_error = Kumir::Core::fromUtf8("Вызов неизвестного алгоримта, возможно из более новой версии Кумир");
     }
