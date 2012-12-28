@@ -557,7 +557,7 @@ void SyntaxAnalizerPrivate::parseOutput(int str)
             }
             return;
         }
-        if (expr->baseType.kind==AST::TypeUser && expr->baseType.name==QString::fromUtf8("файл")) {
+        if (!fileHandle && expr->baseType.kind==AST::TypeUser && expr->baseType.name==QString::fromUtf8("файл")) {
             fileHandle = expr;
             continue;
         }
@@ -614,7 +614,7 @@ void SyntaxAnalizerPrivate::parseOutput(int str)
                 expr = helperCall;
             }
             else {
-                err = _("Can't input value of type %1").arg(expr->baseType.name);
+                err = _("Can't output value of type %1").arg(expr->baseType.name);
                 foreach (Lexem * lx, subgroups[2])
                     lx->error = err;
                 delete expr;
@@ -636,145 +636,65 @@ void SyntaxAnalizerPrivate::parseOutput(int str)
 void SyntaxAnalizerPrivate::parseInput(int str)
 {
     const Statement & st = statements[str];
-    if (st.hasError())
+    if (st.hasError()) {
         return;
-    QString err;
+    }
     if (st.data.size()==1) {
-        err = _(st.type==LxPriInput? "What to input?" : "What to output?");
+        QString err = _("What to input?");
         st.data[0]->error = err;
         return;
     }
-    AST::Expression * fileKey = 0;
-
-    QList< QList<Lexem*> > groups;
-
-    bool fileFound = false;
-
-    for (int i=0; i<groups.size(); i++) {
-        const QList<Lexem*> & group = groups.at(i);
-        Q_ASSERT(group.size()>0);
-        Q_ASSERT(group[0]->type==LxPriInput || group[0]->type==LxPriOutput );
-        // check for variables existence
-        if ( (group[0]->type==LxPriInput || group[0]->type==LxPriOutput) && group.size()==1) {
-            err = _(group[0]->type==LxPriInput? "What to input?" : "Whar to output?");
-            group[0]->error = err; return;
-        }
-        // Ok, lets make actual parse
-        if (group[0]->type==LxPriInput || group[0]->type==LxPriOutput) {
-            // Parse variables list
-            QList< QList<Lexem*> > subgroups;
-            QList<Lexem*> comas;
-            splitLexemsByOperator(group.mid(1), LxOperComa, subgroups, comas);
-            if (subgroups.size()==0) {
-                err = _(group[0]->type==LxPriInput? "What to input?" : "What to output?");
-                foreach (Lexem * lx, group) {
-                    lx->error = err;
-                }
-                return;
-            }
-            if (subgroups.size()==comas.size()) {
-                comas.last()->error = _("Extra coma");
-                return;
-            }
-            for (int j=0; j<subgroups.size(); j++) {
-                QList< QList<Lexem*> > pair;
-                QList<Lexem*> colons;
-                splitLexemsByOperator(subgroups[j], LxOperColon, pair, colons);
-                if (colons.size()>=pair.size()) {
-                    foreach ( AST::Expression * ex, st.statement->expressions ) {
-                        delete ex;
-                    }
-                    st.statement->expressions.clear();
-                    err = _("Extra colon");
-                    colons.last()->error = err;
-                    return;
-                }
-                if (pair.size()>2) {
-                    err = _("Extra format");
-                    foreach (const QList<Lexem*> &gr, pair.mid(2))
-                        foreach (Lexem * lx, gr)
-                            lx->error = err;
-                    foreach (Lexem * lx, colons.mid(1))
-                        lx->error = err;
-                    foreach ( AST::Expression * ex, st.statement->expressions ) {
-                        delete ex;
-                    }
-                    st.statement->expressions.clear();
-                    return;
-                }
-                const QList<Lexem*> & variable = pair.at(0);
-                AST::Expression * expr = parseExpression(variable, st.mod, st.alg);
-                if (!expr) {
-                    foreach ( AST::Expression * ex, st.statement->expressions ) {
-                        delete ex;
-                    }
-                    st.statement->expressions.clear();
-                    return;
-                }
-                if (expr->kind==AST::ExprVariable && expr->variable->dimension>0) {
-                    err = _(group[0]->type==LxPriInput? "Can't input array" : "Can't output array");
-                }
-                if (expr->kind==AST::ExprConst && group[0]->type==LxPriInput) {
-                    if (expr->baseType.kind!=AST::TypeCharect || expr->constant.toChar()!='\n')
-                        err = _("Can't input constant value");
-                }
-                if (expr->kind==AST::ExprSubexpression && group[0]->type==LxPriInput) {
-                    err = _("Can't input complex expression");
-                }
-                if (expr->kind==AST::ExprArrayElement  && group[0]->type==LxPriInput && expr->operands.size()>1) {
-                    err = _("Can't input string slice");
-                }
-                if (expr->kind==AST::ExprVariable  && group[0]->type==LxPriInput && expr->variable->accessType==AST::AccessArgumentIn) {
-                    err = _("Can't input algorithm in- argument");
-                }
-                if (expr->kind==AST::ExprFunctionCall && group[0]->type==LxPriInput) {
-                    err = _("Can't input function");
-                }
-                if (err.length()>0) {
-                    foreach ( AST::Expression * ex, st.statement->expressions ) {
-                        delete ex;
-                    }
-                    st.statement->expressions.clear();
-                    foreach ( Lexem * lx, variable )
-                        lx->error = err;
-                    return;
-                }
-                st.statement->expressions << expr;
-                AST::Expression * formatExpr = 0;
-                if (pair.size()==2) {
-                    const QList<Lexem*> & format = pair.at(1);
-                    formatExpr = parseExpression(format, st.mod, st.alg);
-                    if (!formatExpr) {
-                        foreach ( AST::Expression * ex, st.statement->expressions ) {
-                            delete ex;
-                        }
-                        st.statement->expressions.clear();
-                        return;
-                    }
-                    if ( (formatExpr->baseType.kind!=AST::TypeString && formatExpr->baseType.kind!=AST::TypeCharect) || formatExpr->dimension!=0) {
-                        err = _(group[0]->type==LxPriInput? "Input format must be a string" : "Output format must be a string");
-                        foreach (Lexem * lx, format)
-                            lx->error = err;
-                        foreach ( AST::Expression * ex, st.statement->expressions ) {
-                            delete ex;
-                        }
-                        st.statement->expressions.clear();
-                        return;
-                    }
-                }
-                else {
-                    formatExpr = new AST::Expression;
-                    formatExpr->kind = AST::ExprConst;
-                    formatExpr->baseType.kind = AST::TypeString;
-                    formatExpr->dimension = 0;
-                    formatExpr->constant = "";
-                }
-                st.statement->expressions << formatExpr;
-            }
-        } // end parse variables list
-
+    if (st.data.last()->type==LxOperComa) {
+        st.data.last()->error = _("Statement ends with coma");
+        return;
     }
+    QList< QList<Lexem*> > groups;
+    QList<Lexem*> comas;
+    splitLexemsByOperator(st.data.mid(1), LxOperComa, groups, comas);
 
+    AST::Expression * fileHandle = 0;
+
+    for (int i=0 ; i<groups.size(); i++) {
+        QString err;
+
+        AST::Expression * expr = parseExpression(groups[i], st.mod, st.alg);
+        if (!expr) {
+            return;
+        }
+
+        if (!fileHandle && expr->baseType.kind==AST::TypeUser && expr->baseType.name==QString::fromUtf8("файл")) {
+            fileHandle = expr;
+            continue;
+        }
+
+        if (expr->baseType.kind==AST::TypeUser) {
+            err = _("Can't input value of type %1").arg(expr->baseType.name);
+        }
+
+        if (expr->kind==AST::ExprConst &&
+                (expr->baseType!=AST::TypeCharect || expr->constant.toChar()!='\n'))
+        {
+            err = _("Can't input constant");
+        }
+        if (expr->kind==AST::ExprFunctionCall)
+            err = _("Can't input function call");
+        if (expr->kind==AST::ExprSubexpression)
+            err = _("Can't input subexpression");
+        if (expr->dimension>0)
+            err = _("Can't input an array");
+
+
+        if (err.length()>0) {
+            foreach (Lexem * lx, groups[i])
+                lx->error = err;
+            delete expr;
+        }
+
+        st.statement->expressions << expr;
+    }
+    if (fileHandle) {
+        st.statement->expressions << fileHandle;
+    }
 }
 
 void SyntaxAnalizerPrivate::parseAssertPrePost(int str)

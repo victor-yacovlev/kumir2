@@ -35,9 +35,6 @@ enum StatementType {
     /** Terminal output */
     StOutput,
 
-    /** Assign file as I/O stream */
-    StAssignFileStream,
-
     /** Loop block */
     StLoop,
 

@@ -39,6 +39,7 @@
 "Extra operator";"Лишний оператор";"";"";"";"";
 "Can't input value of type %1";"";"";"";"";"";
 "File already specified";"";"";"";"";"";
+"Can't input function call";"";"";"";"";"";
 "Garbage after algorhitm header";"Мусор после “нач”";"";"";"";"";
 "Extra 'endloop'";"Непарный “кц”";"";"";"";"";
 "Extra arguments";"Лишние аргументы";"";"";"";"";
@@ -80,6 +81,7 @@
 "No 'loop' before 'times'";"Перед “раз” нет “нц”";"";"";"";"";
 "Extra ','";"Лишняя запятая";"";"";"";"";
 "Garbage after 'switch' statement";"Мусор после “выбор”";"";"";"";"";
+"Can't input constant";"";"";"";"";"";
 "Not enought indeces";"Не все индексы";"";"";"";"";
 "Begin in algorhitm body";"“нач” внутри алгоритма";"";"";"";"";
 "'=' instead of ':='";"“=” вместо “:=”";"";"";"";"";
@@ -102,6 +104,7 @@
 "Garbage at the end of statement";"Мусор в конце выражения";"";"";"";"";
 "No 'then' after 'if'";"Где “то” после условия?";"";"";"";"";
 "Assignment to complex expression";"Нельзя присвоить выражению";"";"";"";"";
+"Can't output value of type %1";"";"";"";"";"";
 "Can't real:=string";"Нельзя “вещ := лит”";"";"";"";"";
 "Constant instead of name";"Здесь должно быть имя";"";"";"";"";
 "':=' or '=' ?";"“:=” или “=” ?";"";"";"";"";
@@ -122,11 +125,12 @@
 "Unmatched array dimensions";"Несоответствие размерностей таблиц";"";"";"";"";
 "Operator in name";"Имя содержит оператор";"";"";"";"";
 "Times value not specified";"Сколько раз?";"";"";"";"";
+"Table dimension > 3";"";"";"";"";"";
 "No for-loop variable";"Нет величины цикла";"";"";"";"";
 "Left array bound is not integer";"Левая граница – не целое";"";"";"";"";
 "No condition after 'case'";"Нет условия после “при”";"";"";"";"";
 "Incompatible types";"Плохой тип параметра";"";"";"";"";
-"Unpaired ')'";"Непарная скобка";"";"";"";"";
+"'end_module' instead of 'end'";"“кон_исп” вместо “кон”";"";"";"";"";
 "Initial value is empty";"Начальное значение не задано";"";"";"";"";
 "'%1' in algorithm";"“%1” внутри алгоритма";"";"";"";"";
 "Can't pass in-argument as in/out-argument";"Нельзя арг передать в рез или аргрез";"";"";"";"";
@@ -146,10 +150,11 @@
 "Left array bound not specified";"Не указана левая граница таблицы";"";"";"";"";
 "Array input must not be in a list";"";"";"";"";"";
 "Index is not integer";"Индекс – не целое число";"";"";"";"";
-"Table dimension > 3";"";"";"";"";"";
+"Unpaired ')'";"Непарная скобка";"";"";"";"";
 "Extra variable group out-specifier";"Лишний “рез”";"";"";"";"";
 "No 'loop' before 'while'";"Перед “пока” нет “нц”";"";"";"";"";
 "Extra 'case'";"“при” не на месте";"";"";"";"";
+"Can't input subexpression";"";"";"";"";"";
 "No variable name";"Не указано имя величины";"";"";"";"";
 "Can't pass this expression as out-argument";"Не величина в рез-параметре";"";"";"";"";
 "Can't charect:=real";"Нельзя “сим := вещ”";"";"";"";"";
@@ -161,12 +166,11 @@
 "Extra 'else'";"Лишнее “иначе”";"";"";"";"";
 "Extra 'begin'";"Нет “кон” после “нач”";"";"";"";"";
 "Extra variable group inout-specifier";"Лишний “аргрез”";"";"";"";"";
-"Can't -%1";"Нельзя -%1";"";"";"";"";
 "Extra indeces in slice";"Лишние индексы в вырезке";"";"";"";"";
 "Unpaired '['";"Не парная “[“";"";"";"";"";
 "Can't pass this expression as in/out-argumeny";"Не величина в аргрез-параметре";"";"";"";"";
 "Must be a scalar constant";"";"";"";"";"";
-"'end_module' instead of 'end'";"“кон_исп” вместо “кон”";"";"";"";"";
+"Wrong E-real number";"Ошибка в E-записи числа";"";"";"";"";
 "Extra 'end'";"Лишний “кон”";"";"";"";"";
 "Algorhitm header in algorhitm body";"Вложенное описание алгоритма";"";"";"";"";
 "Not a simple index";"Индекс – не число";"";"";"";"";
@@ -175,7 +179,7 @@
 "Not enought algorithm arguments";"Мало аргументов";"";"";"";"";
 "Can't charect:=boolean";"Нельзя “сим := лог”";"";"";"";"";
 "Array dimension must not be > 3";"Таблицы не бывают размерности > 3";"";"";"";"";
-"Wrong E-real number";"Ошибка в E-записи числа";"";"";"";"";
+"No 'loop' before 'for'";"Перед “для” нет “нц”";"";"";"";"";
 "Extra 'if'";"Нет “то..все” после “если”";"";"";"";"";
 "No condition between 'case' and colon";"Нет условия между “при” и “:”";"";"";"";"";
 "No then before else";"Нет “то” перед “иначе”";"";"";"";"";
@@ -183,6 +187,7 @@
 "Extra 'not'";"Лишнее “не”";"";"";"";"";
 "'end' instead of 'endloop'";"“кон” вместо “кц”";"";"";"";"";
 "Keyword in name";"Ключевое слово в имени";"";"";"";"";
+"Can't input an array";"";"";"";"";"";
 "No 'case' after 'switch'";"Нет “при:” после “выбор”";"";"";"";"";
 "Garbage between alg..begin";"Мусор между “алг”..”нач”";"";"";"";"";
 "Garbage afrer module name";"Мусор после имени исполнителя";"";"";"";"";
@@ -199,7 +204,7 @@
 "Can't string:=real";"Нельзя “лит := вещ”";"";"";"";"";
 "No 'from'..'to'.. after variable";"Нет “от”..”до”.. после величины";"";"";"";"";
 "Forgotten operator after bracket";"Перед выражением пропущен оператор";"";"";"";"";
-"No 'loop' before 'for'";"Перед “для” нет “нц”";"";"";"";"";
+"Can't -%1";"Нельзя -%1";"";"";"";"";
 "Can't pass in-argument as out-argument";"Нельзя арг передать в рез или аргрез";"";"";"";"";
 "Condition after '%1' not boolean";"Условие после “%1” не логическое";"";"";"";"";
 "Can't integer:=real";"Нельзя “цел := вещ”";"";"";"";"";

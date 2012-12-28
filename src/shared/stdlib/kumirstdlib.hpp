@@ -59,7 +59,7 @@ typedef double real;
 
 struct FileType {
     enum OpenMode { NotOpen, Read, Write, Append };
-    inline static const char * _() { return "sib"; }
+    inline static const char * _() { return "siib"; }
     inline FileType() { valid = false; mode = NotOpen; }
     inline void setName(const String &name) {
         fullPath = name;
@@ -191,6 +191,46 @@ public:
         }
         return result;
     }
+#if defined(WIN32) || defined(_WIN32)
+    inline static Encoding getSystemEncoding() {
+        return CP1251;
+    }
+#elif defined(DOS)
+    inline static Encoding getSystemEncoding() {
+        return CP866;
+    }
+#else
+    inline static Encoding getSystemEncoding()
+    {
+        char * lc = 0;
+        lc = getenv("LC_CTYPE");
+        if (!lc)
+            lc = getenv("LC_ALL");
+        if (!lc)
+            return UTF8;
+        static const StringList parts = splitString(fromAscii(std::string(lc)), Char('.'), true);
+        if (parts.size()==0)
+            return UTF8;
+        else {
+            static const std::string last = Coder::encode(ASCII, parts.at(parts.size()-1));
+            if (last==std::string("KOI8-R"))
+                return KOI8R;
+            else if (last==std::string("CP866") ||
+                     last==std::string("IBM866") ||
+                     last==std::string("CP-866") ||
+                     last==std::string("IBM-866"))
+                return CP866;
+            else if (last==std::string("CP1251") ||
+                     last==std::string("WINDOWS1251") ||
+                     last==std::string("CP-1251") ||
+                     last==std::string("WINDOWS-1251"))
+                return CP1251;
+            else
+                return UTF8;
+        }
+    }
+
+#endif
 
 protected:
     inline static void abort(const String & err) {
@@ -603,7 +643,7 @@ public:
             if (error!=NoError) return 0.0;
         }
         real fractionalLength = static_cast<real>(sFractional.length());
-        for (size_t i=sFractional.length()-1; i>=0; i--) {
+        for (int i=sFractional.length()-1; i>=0; i--) {
             Char ch = sFractional.at(i);
             if (ch==Char('0'))
                 fractionalLength -= 1.0;
@@ -1447,16 +1487,26 @@ public:
     inline static void finalize() {}
 
     static String inputDelimeters;
-    static bool spaceIsDelimeterToo;
 
     class OutputStream {
     public:
         OutputStream() { stream = false; file = 0; encoding = UTF8; buffer.reserve(100); }
-        OutputStream(FILE * f, Encoding enc) { stream = true; file = f; encoding = enc; }
+        OutputStream(FILE * f, Encoding enc) {
+            stream = true;
+            file = f;
+            if (enc==DefaultEncoding)
+                encoding = UTF8;
+            else
+                encoding = enc;
+        }
         inline const String & getBuffer() const { return buffer; }
         inline bool isStream() const { return stream; }
         void writeRawString(const String & s) {
             if (isStream()) {
+                if (encoding==UTF8 && ftell(file)==0) {
+                    static const char * BOM = "\xEF\xBB\xBF";
+                    fwrite(BOM, sizeof(char), 3, file);
+                }
                 std::string bytes;
                 try {
                     bytes = Coder::encode(encoding, s);
@@ -1501,7 +1551,25 @@ public:
         InputStream(FILE * f, Encoding enc) {
             stream = true;
             file = f;
-            encoding = enc;
+            if (encoding==DefaultEncoding) {
+                bool forceUtf8 = false;
+                if (f!=stdin) {
+                    long curpos = ftell(f);
+                    fseek(f, 0, SEEK_SET);
+                    char B[3];
+                    if (fread(B, 1, 3, f)==3) {
+                        forceUtf8 = B[0]==0xEF && B[1]==0xBB && B[2]==0xBF;
+                    }
+                    fseek(f, curpos, SEEK_SET);
+                }
+                if (forceUtf8)
+                    encoding = UTF8;
+                else
+                    encoding = Core::getSystemEncoding();
+            }
+            else {
+                encoding = enc;
+            }
             errStart = 0;
             errLength = 0;
             currentPosition=0;
@@ -1591,11 +1659,16 @@ public:
                 errLength -= 1;
             }
             else {
-                if (lastCharBuffer[2]!='\0')
-                    ungetc(lastCharBuffer[2], file);
-                if (lastCharBuffer[1]!='\0')
-                    ungetc(lastCharBuffer[1], file);
-                ungetc(lastCharBuffer[0], file);
+                if (file==stdin) {
+                    if (lastCharBuffer[2]!='\0')
+                        ungetc(lastCharBuffer[2], file);
+                    if (lastCharBuffer[1]!='\0')
+                        ungetc(lastCharBuffer[1], file);
+                    ungetc(lastCharBuffer[0], file);
+                }
+                else {
+                    fseek(file, -1*strlen(lastCharBuffer), SEEK_CUR);
+                }
             }
         }
         inline String readUntil(const String & delimeters) {
@@ -1641,8 +1714,6 @@ protected:
     // IO helper functions
     static String readWord(InputStream & is) {
         String delim = inputDelimeters;
-        if (spaceIsDelimeterToo)
-            delim += Core::fromAscii(" \t\n\r");
         is.skipDelimiters(delim);
         // Mark as lexem begin position
         is.markPossibleErrorStart();
@@ -1651,19 +1722,17 @@ protected:
 
     static String readLiteralOrWord(InputStream & is) {
         String delim = inputDelimeters;
-        if (spaceIsDelimeterToo)
-            delim += Core::fromAscii(" \t\n\r");
         is.skipDelimiters(delim);
         // Mark as lexem begin position
         is.markPossibleErrorStart();
-        Char bracket;
+        Char bracket = Char('\0');
         if (!is.readRawChar(bracket)) {
             is.setError(Core::fromUtf8("Не могу прочитать литерал: текст закончился"));
             return String();
         }
         if (bracket!=Char('\'') && bracket!=Char('"')) {
-            is.setError(Core::fromUtf8("Ошибка чтения литерала: литерал начинается не с кавычки"));
-            return String();
+            is.pushLastCharBack();
+            return is.readUntil(delim);
         }
         Char current;
         String result;
@@ -1675,10 +1744,12 @@ protected:
                 break;
         }
         if (current!=bracket) {
-            is.setError(Core::fromUtf8("Ошибка чтения литерала: текст закончился раньше, чем появилась закрывающая кавычка"));
+//            is.setError(Core::fromUtf8("Ошибка чтения литерала: текст закончился раньше, чем появилась закрывающая кавычка"));
         }
-        // Skip closing bracket
-        is.readRawChar(bracket);
+        else {
+            // Skip closing bracket
+            is.readRawChar(bracket);
+        }
         return result;
     }
 
@@ -1841,14 +1912,12 @@ public:
 
     // Actual functions to be in use while input from stream
 
-#if !defined(ONEBYTE_LOCALE)
+#if !defined(LOCALE_ENCODING)
 #   if defined(WIN32) || defined(_WIN32)
 #       define LOCALE_ENCODING CP866
 #   else
 #       define LOCALE_ENCODING UTF8
 #   endif
-#else
-#   define LOCALE_ENCODING ##ONEBYTE_LOCALE##
 #endif
 
     static InputStream makeInputStream(FileType fileNo, bool fromStdIn) {
@@ -2012,8 +2081,7 @@ std::deque<FILE*> Files::openedFileHandles;
 FILE * Files::assignedIN = stdin;
 FILE * Files::assignedOUT = stdout;
 Encoding Files::fileEncoding;
-String Kumir::IO::inputDelimeters = Kumir::Core::fromAscii(",");
-bool Kumir::IO::spaceIsDelimeterToo = true;
+String Kumir::IO::inputDelimeters = Kumir::Core::fromAscii(" \n\t");
 #endif
 
 }

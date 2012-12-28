@@ -51,7 +51,6 @@ public:
             ) { return false; }
 #endif
     inline virtual bool makeInput(
-            const std::deque<String> & /*formats*/,
             std::deque<Variable> & /*references*/
             ) { return false; }
     inline virtual bool makeOutput(
@@ -1175,7 +1174,7 @@ T KumirVM::fromRecordValue(const Record & record)
     T result;
     T * ptr = & result;
     size_t offset = 0;
-    const size_t N = strlen(T::_());
+    const size_t N = Kumir::Math::imin(strlen(T::_()), record.size());
     for (size_t i=0; i<N; i++) {
         switch (T::_()[i]) {
         case 'i': {
@@ -1261,59 +1260,59 @@ void KumirVM::do_specialcall(uint16_t alg)
         // Input
         if (m_dontTouchMe) m_dontTouchMe->lock();
         bool fileIO = false;
-        Kumir::FileType fileNo;
-        if (argsCount % 2) {
-            fileIO = true;
-//            fileNo = stack_values.pop().toUserType<Kumir::FileType>();
-        }
-        int varsCount = argsCount / 2;
-        std::deque<String> formats;
+        int varsCount = argsCount;
+        Kumir::FileType fileReference;
         std::deque<Variable> references;
         for (int i=0; i<varsCount; i++) {
-            const String format = stack_values.pop().toString();
-            formats.push_back(format);
             const Variable & ref = stack_values.pop();
-            references.push_back(ref);
+            if (ref.baseType()==VT_record) {
+                fileIO = true;
+                const Record fileReferenceRecord = ref.toRecord();
+                fileReference = fromRecordValue<Kumir::FileType>(fileReferenceRecord);
+            }
+            else {
+                references.push_back(ref);
+            }
         }
         if (m_dontTouchMe) m_dontTouchMe->unlock();
-        if (m_externalHandler && !fileIO && m_externalHandler->makeInput(formats, references)) {
+        if (m_externalHandler && !fileIO && !Kumir::Files::overloadedStdIn() && m_externalHandler->makeInput(references)) {
             // pass
         }
         else {
             if (m_dontTouchMe) m_dontTouchMe->lock();
             for (int i=0; i<varsCount; i++) {
-//                if (references.at(i).baseType()==VT_int) {
-//                    int value = Kumir::IO::readInteger(formats[i], fileNo, !fileIO);
-//                    references.at(i).setValue(AnyValue(value));
-//                }
-//                else if (references.at(i).baseType()==VT_real) {
-//                    real value = Kumir::IO::readReal(formats[i], fileNo, !fileIO);
-//                    references.at(i).setValue(AnyValue(value));
-//                }
-//                else if (references.at(i).baseType()==VT_bool) {
-//                    bool value = Kumir::IO::readBool(formats[i], fileNo, !fileIO);
-//                    references.at(i).setValue(AnyValue(value));
-//                }
-//                else if (references.at(i).baseType()==VT_char &&
-//                         references.at(i).isConstant() &&
-//                         references.at(i).value().toChar()==Char('\n')
-//                         ) {
-//                    // Skip everything to next line
-//                    Kumir::IO::readLine(fileNo, !fileIO);
-//                }
-//                else if (references.at(i).baseType()==VT_char) {
-//                    Char value = Kumir::IO::readChar(formats[i], fileNo, !fileIO);
-//                    references.at(i).setValue(AnyValue(value));
-//                }
-//                else if (references.at(i).baseType()==VT_string) {
-//                    const String & value = Kumir::IO::readString(formats[i], fileNo, !fileIO);
-//                    references.at(i).setValue(AnyValue(value));
-//                }
-//                if (Kumir::Core::getError().length()>0 && s_error.length()==0) {
-//                    s_error = Kumir::Core::getError();
-//                }
-//                if (s_error.length()>0)
-//                    break;
+                if (references.at(i).baseType()==VT_int) {
+                    int value = Kumir::IO::readInteger(fileReference, !fileIO);
+                    references.at(i).setValue(AnyValue(value));
+                }
+                else if (references.at(i).baseType()==VT_real) {
+                    real value = Kumir::IO::readReal(fileReference, !fileIO);
+                    references.at(i).setValue(AnyValue(value));
+                }
+                else if (references.at(i).baseType()==VT_bool) {
+                    bool value = Kumir::IO::readBool(fileReference, !fileIO);
+                    references.at(i).setValue(AnyValue(value));
+                }
+                else if (references.at(i).baseType()==VT_char &&
+                         references.at(i).isConstant() &&
+                         references.at(i).value().toChar()==Char('\n')
+                         ) {
+                    // Skip everything to next line
+                    Kumir::IO::readLine(fileReference, !fileIO);
+                }
+                else if (references.at(i).baseType()==VT_char) {
+                    Char value = Kumir::IO::readChar(fileReference, !fileIO);
+                    references.at(i).setValue(AnyValue(value));
+                }
+                else if (references.at(i).baseType()==VT_string) {
+                    const String & value = Kumir::IO::readString(fileReference, !fileIO);
+                    references.at(i).setValue(AnyValue(value));
+                }
+                if (Kumir::Core::getError().length()>0 && s_error.length()==0) {
+                    s_error = Kumir::Core::getError();
+                }
+                if (s_error.length()>0)
+                    break;
             }
             if (m_dontTouchMe) m_dontTouchMe->unlock();
         }
@@ -1344,7 +1343,6 @@ void KumirVM::do_specialcall(uint16_t alg)
                     margin.push_back('\'');
                 if (references.at(i).baseType()==VT_string)
                     margin.push_back('"');
-
             }
             m_externalHandler->noticeOnValueChange(lineNo, margin);
         }
@@ -1372,7 +1370,7 @@ void KumirVM::do_specialcall(uint16_t alg)
             values.push_back(ref);
         }
         if (m_dontTouchMe) m_dontTouchMe->unlock();
-        if (m_externalHandler && !fileIO && m_externalHandler->makeOutput(formats, values)) {
+        if (m_externalHandler && !fileIO && !Kumir::Files::overloadedStdOut() && m_externalHandler->makeOutput(formats, values)) {
             // pass
         }
         else {

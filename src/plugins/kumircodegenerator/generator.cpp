@@ -756,9 +756,6 @@ QList<Bytecode::Instruction> Generator::instructions(
         case AST::StOutput:
             CALL_SPECIAL(modId, algId, level, st, result);
             break;
-        case AST::StAssignFileStream:
-            CALL_SPECIAL(modId, algId, level, st, result);
-            break;
         case AST::StLoop:
             LOOP(modId, algId, level+1, st, result);
             break;
@@ -1279,11 +1276,9 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
         argsCount = st->expressions.size();
     }
     else if (st->type==AST::StInput) {
-        int varsCount = st->expressions.size() / 2;
-        bool fileIO = st->expressions.size() % 2 > 0;
+        int varsCount = st->expressions.size();
         for (int i = varsCount-1; i>=0; i--) {
-            const AST::Expression * varExpr = st->expressions[i*2];
-            const AST::Expression * formatExpr = st->expressions[i*2+1];
+            const AST::Expression * varExpr = st->expressions[i];
             Bytecode::Instruction ref;
             if (varExpr->kind==AST::ExprConst) {
                 ref.scope = Bytecode::CONSTT;
@@ -1303,62 +1298,8 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
                 }
             }
             result << ref;
-            QList<Bytecode::Instruction> formatInstrs = calculate(modId, algId, level, formatExpr);
-            shiftInstructions(formatInstrs, result.size());
-            result << formatInstrs;
-        }
-        if (fileIO) {
-            QList<Bytecode::Instruction> instrs = calculate(modId, algId, level, st->expressions.last());
-            shiftInstructions(instrs, result.size());
-            result << instrs;
         }
         argsCount = st->expressions.size();
-    }
-    else if (st->type==AST::StAssignFileStream) {
-        for (int i=st->expressions.size()-1; i>=0; i--) {
-            QList<Bytecode::Instruction> instrs = calculate(modId, algId, level, st->expressions[i]);
-            shiftInstructions(instrs, result.size());
-            result << instrs;
-        }
-        argsCount = st->expressions.size();
-    }
-    else {
-        QString format;
-        int start = 0;
-        for (int i=start; i<st->expressions.size(); i++) {
-            AST::Expression * expr = st->expressions[i];
-            if (expr->baseType.kind==AST::TypeBoolean)
-                format += "%b";
-            else if (expr->baseType.kind==AST::TypeCharect)
-                format += "%c";
-            else if (expr->baseType.kind==AST::TypeInteger)
-                format += "%d";
-            else if (expr->baseType.kind==AST::TypeReal)
-                format += "%f";
-            else
-                format += "%s";
-        }
-        for (int i=st->expressions.size()-1; i>=0; i--) {
-            AST::Expression * expr = st->expressions[i];
-            Bytecode::Instruction ref;
-            findVariable(modId, algId, expr->variable, ref.scope, ref.arg);
-            if (expr->kind==AST::ExprVariable) {
-                ref.type = Bytecode::REF;
-            }
-            else if (expr->kind==AST::ExprArrayElement) {
-                ref.type = Bytecode::REFARR;
-                for (int j=expr->operands.size()-1; j>=0; j--) {
-                    result << calculate(modId, algId, level, expr->operands[j]);
-                }
-            }
-            result << ref;
-        }
-        Bytecode::Instruction fmt;
-        fmt.type = Bytecode::LOAD;
-        fmt.scope = Bytecode::CONSTT;
-        fmt.arg = constantValue(Bytecode::VT_string, 0, format);
-        argsCount = st->expressions.size() + 1;
-        result << fmt;
     }
 
     Bytecode::Instruction pushCount;
@@ -1374,8 +1315,6 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
         call.arg = 0x0000;
     else if (st->type==AST::StOutput)
         call.arg = 0x0001;
-    else if (st->type==AST::StAssignFileStream)
-        call.arg = 0x0A01;
 
     result << call;
 }
