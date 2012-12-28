@@ -1,5 +1,5 @@
 set(CONFIGURATION_TEMPLATE
-    "Editor,Browser,Actor*,KumirAnalizer\(preload=Files\),KumirCodeGenerator,KumirCodeRun,!CoreGUI\(notabs,icon=classic,nostartpage,nosessions\)"
+    "Editor,Browser,Actor*,KumirAnalizer\(preload=Files,preload=Strings\),KumirCodeGenerator,KumirCodeRun,!CoreGUI\(notabs,icon=classic,nostartpage,nosessions\)"
 )
 set(SPLASHSCREEN
     "coregui/splashscreens/classic.png"

@@ -109,6 +109,29 @@ class Files
     }
 };
 
+class Strings
+        : public Shared::ActorInterface
+{
+    inline QString name() const {return QString::fromUtf8("Строки");}
+    QStringList funcList() const {
+        QStringList result;
+        // TODO implement non-russian headers
+        // (check system locale)
+
+        /* 0x0000 */ result << QString::fromUtf8("алг лит верхний регистр(лит строка)");
+        /* 0x0001 */ result << QString::fromUtf8("алг лит нижний регистр(лит строка)");
+
+        /* 0x0002 */ result << QString::fromUtf8("алг цел найти после(цел от, лит фрагмент, лит строка)");
+        /* 0x0003 */ result << QString::fromUtf8("алг цел найти(лит фрагмент, лит строка)");
+
+        /* 0x0004 */ result << QString::fromUtf8("алг вставить(лит фрагмент, аргрез лит строка, цел позиция)");
+        /* 0x0005 */ result << QString::fromUtf8("алг заменить(аргрез лит строка, лит старый фрагмент, лит новый фрагмент, лог каждый)");
+        /* 0x0006 */ result << QString::fromUtf8("алг удалить(аргрез лит строка, цел начало, цел количество)");
+
+        return result;
+    }
+};
+
 }
 
 

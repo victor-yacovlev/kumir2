@@ -25,7 +25,7 @@ void Analizer::setModuleAlwaysAvailable(const QString &moduleName)
 {
     if (moduleName==QString::fromAscii("Files"))
         AnalizerPrivate::AlwaysAvailableModulesName.append(QString::fromUtf8("Файлы"));
-    if (moduleName==QString::fromAscii("String"))
+    if (moduleName==QString::fromAscii("Strings"))
         AnalizerPrivate::AlwaysAvailableModulesName.append(QString::fromUtf8("Строки"));
 }
 
@@ -116,6 +116,9 @@ AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin,
     ActorInterface * filesFunct = new StdLibModules::Files;
     builtinModules[1] = filesFunct;
     createModuleFromActor(filesFunct, 0xF1);
+    ActorInterface * stringsFunct = new StdLibModules::Strings;
+    builtinModules[2] = stringsFunct;
+    createModuleFromActor(stringsFunct, 0xF2);
     QList<ExtensionSystem::KPlugin*> actors = plugin->loadedPlugins("Actor*");
     foreach (QObject *o, actors) {
         ActorInterface * actor = qobject_cast<ActorInterface*>(o);

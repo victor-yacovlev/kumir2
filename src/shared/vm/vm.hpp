@@ -213,6 +213,7 @@ private /*instruction methods*/:
     inline void do_call(uint8_t, uint16_t);
     inline void do_stdcall(uint16_t);
     inline void do_filescall(uint16_t);
+    inline void do_stringscall(uint16_t);
     inline void do_specialcall(uint16_t);
     inline void do_externalcall(const String & name, uint16_t id);
     inline void do_init(uint8_t, uint16_t);
@@ -628,6 +629,8 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
         do_stdcall(alg);
     else if (mod==0xF1)
         do_filescall(alg);
+    else if (mod==0xF2)
+        do_stringscall(alg);
     else if (mod==0xFF)
         do_specialcall(alg);
 #ifndef NO_EXTERNS
@@ -1127,6 +1130,93 @@ void KumirVM::do_filescall(uint16_t alg)
     }
     m_dontTouchMe->unlock();
 }
+
+void KumirVM::do_stringscall(uint16_t alg)
+{
+    m_dontTouchMe->lock();
+    stack_values.pop(); // Args count
+    switch (alg) {
+    /* алг лит верхний регистр(лит строка) */
+    case 0x0000: {
+        const String x = stack_values.pop().toString();
+        const String y = Kumir::StringUtils::toUpperCase(x);
+        Variable res(y);
+        stack_values.push(res);
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг лит нижний регистр(лит строка) */
+    case 0x0001: {
+        const String x = stack_values.pop().toString();
+        const String y = Kumir::StringUtils::toLowerCase(x);
+        Variable res(y);
+        stack_values.push(res);
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг цел найти после(цел от, лит фрагмент, лит строка) */
+    case 0x0002: {
+        const String s = stack_values.pop().toString();
+        const String sub = stack_values.pop().toString();
+        const int from = stack_values.pop().toInt();
+        const int y = Kumir::StringUtils::find(from, sub, s);
+        Variable res(y);
+        stack_values.push(res);
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг цел найти(лит фрагмент, лит строка) */
+    case 0x0003: {
+        const String s = stack_values.pop().toString();
+        const String sub = stack_values.pop().toString();
+        const int y = Kumir::StringUtils::find(sub, s);
+        Variable res(y);
+        stack_values.push(res);
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг вставить(лит фрагмент, аргрез лит строка, цел позиция) */
+    case 0x0004: {
+        const int from = stack_values.pop().toInt();
+        Variable sr = stack_values.pop().toReference();
+        String s = sr.value().toString();
+        const String sub = stack_values.pop().toString();
+        Kumir::StringUtils::insert(sub, s, from);
+        sr.setValue(AnyValue(s));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг заменить(аргрез лит строка, лит старый фрагмент, лит новый фрагмент, лог каждый) */
+    case 0x0005: {
+        const bool all = stack_values.pop().toBool();
+        const String newSub = stack_values.pop().toString();
+        const String oldSub = stack_values.pop().toString();
+        Variable sr = stack_values.pop().toReference();
+        String s = sr.value().toString();
+        Kumir::StringUtils::replace(s, oldSub, newSub, all);
+        sr.setValue(AnyValue(s));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг удалить(аргрез лит строка, цел начало, цел количество) */
+    case 0x0006: {
+        const int count = stack_values.pop().toInt();
+        const int from = stack_values.pop().toInt();
+        Variable sr = stack_values.pop().toReference();
+        String s = sr.value().toString();
+        Kumir::StringUtils::remove(s, from, count);
+        sr.setValue(AnyValue(s));
+        s_error = Kumir::Core::getError();
+        break;
+    }
+
+    default: {
+        s_error = Kumir::Core::fromUtf8("Вызов неизвестного алгоримта, возможно из более новой версии Кумир");
+    }
+    }
+    m_dontTouchMe->unlock();
+}
+
 
 void KumirVM::do_externalcall(const String &name, uint16_t id)
 {

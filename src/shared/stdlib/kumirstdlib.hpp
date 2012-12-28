@@ -164,7 +164,38 @@ public:
                 result.push_back(ch+32);
             }
             else if (ch>=0x0400 && ch<=0x042F) {
-                result.push_back(ch+0x30);
+                result.push_back(ch+0x20);
+            }
+            else
+                result.push_back(ch);
+        }
+        return result;
+    }
+
+    inline static std::string toUpperCase(const std::string & s) {
+        // !!!! Only for ASCII in onebyte case !!!!!
+        std::string result;
+        result.reserve(s.length());
+        for (size_t i=0; i<s.length(); i++) {
+            char ch = s[i];
+            if (ch>='a' && ch<='z')
+                result.push_back(ch-32);
+            else
+                result.push_back(ch);
+        }
+        return result;
+    }
+
+    inline static std::wstring toUpperCaseW(const std::wstring & s) {
+        std::wstring result;
+        result.reserve(s.length());
+        for (size_t i=0; i<s.length(); i++) {
+            wchar_t ch = s[i];
+            if (ch>=L'a' && ch<=L'z') {
+                result.push_back(ch-32);
+            }
+            else if (ch>=0x0430 && ch<=0x044F) {
+                result.push_back(ch-0x20);
             }
             else
                 result.push_back(ch);
@@ -916,6 +947,84 @@ public:
             s.erase(nonSpacePos+1);
         }
         return s;
+    }
+    inline static String toLowerCase(const String & s) {
+#ifdef NO_UNICODE
+        return Core::toLowerCase(s);
+#else
+        return Core::toLowerCaseW(s);
+#endif
+    }
+    inline static String toUpperCase(const String & s) {
+#ifdef NO_UNICODE
+        return Core::toUpperCase(s);
+#else
+        return Core::toUpperCaseW(s);
+#endif
+    }
+    inline static int find(int from, const String &substr, const String & s) {
+        if (from<1) {
+            Core::abort(Core::fromUtf8("Индекс меньше 1"));
+            return 0;
+        }
+        size_t start = static_cast<size_t>(from);
+        size_t pos = s.find(substr, start);
+        if (pos==String::npos)
+            return 0;
+        else
+            return static_cast<int>(pos+1);
+    }
+
+    inline static int find(const String & substr, const String &s) {
+        return find(1,substr,s);
+    }
+
+    inline static void insert(const String & substr, String & s, int pos) {
+        if (pos<1) {
+            Core::abort(Core::fromUtf8("Индекс меньше 1"));
+        }
+        else if (pos-1 >= s.length()) {
+            s.append(substr);
+        }
+        else {
+            size_t spos = static_cast<size_t>(pos-1);
+            s.insert(spos, substr);
+        }
+    }
+    inline static void replace(String & s, const String & oldSubstr, const String & newSubstr, bool all) {
+        size_t pos = 0;
+        while (true) {
+            pos = s.find(oldSubstr, pos);
+            if (pos==String::npos) {
+                break;
+            }
+            s.replace(pos, oldSubstr.length(), newSubstr);
+            if (all) {
+                pos += newSubstr.length();
+            }
+            else {
+                break;
+            }
+        }
+    }
+    inline static void remove(String & s, int pos, int count) {
+        if (pos<1) {
+            Core::abort(Core::fromUtf8("Индекс меньше 1"));
+            return;
+        }
+        if (count<0) {
+            Core::abort(Core::fromUtf8("Количество удаляемый символов меньше 0"));
+            return;
+        }
+        if (count==0) {
+            return;
+        }
+        if (pos-1+count>s.length()) {
+            s.resize(static_cast<size_t>(pos-1));
+        }
+        else {
+            s.replace(static_cast<size_t>(pos-1), static_cast<size_t>(count), String());
+        }
     }
 };
 
