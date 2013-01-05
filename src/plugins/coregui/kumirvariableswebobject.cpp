@@ -155,6 +155,7 @@ QString KumirVariablesWebObject::makeTableValue(
 QString KumirVariablesWebObject::modulePage(int index) const
 {
     QString result;
+    return result;
     if (index>=0 && index<l_userModules.size()) {
         AST::Module * mod = l_userModules[index];
 
