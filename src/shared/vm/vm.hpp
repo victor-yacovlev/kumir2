@@ -2112,21 +2112,22 @@ void KumirVM::do_push(uint8_t r)
         v = register0;
     else
         v = stack_contexts.top().registers[r];
-    if (v.type()==VT_int) {
-        stack_values.push(Variable(v.toInt()));
-    }
-    else if (v.type()==VT_real) {
-        stack_values.push(Variable(v.toReal()));
-    }
-    else if (v.type()==VT_bool) {
-        stack_values.push(Variable(v.toBool()));
-    }
-    else if (v.type()==VT_char) {
-        stack_values.push(Variable(v.toChar()));
-    }
-    else if (v.type()==VT_string) {
-        stack_values.push(Variable(v.toString()));
-    }
+    stack_values.push(Variable(v));
+    //if (v.type()==VT_int) {
+        //stack_values.push(Variable(v.toInt()));
+    //}
+    //else if (v.type()==VT_real) {
+        //stack_values.push(Variable(v.toReal()));
+    //}
+    //else if (v.type()==VT_bool) {
+        //stack_values.push(Variable(v.toBool()));
+    //}
+    //else if (v.type()==VT_char) {
+        //stack_values.push(Variable(v.toChar()));
+    //}
+    //else if (v.type()==VT_string) {
+        //stack_values.push(Variable(v.toString()));
+    //}
     nextIP();
 }
 
