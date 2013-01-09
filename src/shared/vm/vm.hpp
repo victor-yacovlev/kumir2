@@ -1029,7 +1029,8 @@ void KumirVM::do_filescall(uint16_t alg)
     }
     /* алг закрыть(файл ключ) */
     case 0x0003: {
-        const Record xx = stack_values.pop().toRecord();
+        const Variable xvar = stack_values.pop();
+        const Record xx = xvar.toRecord();
         Kumir::FileType x = fromRecordValue<Kumir::FileType>(xx);
         Kumir::Files::close(x);
         s_error = Kumir::Core::getError();
