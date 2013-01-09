@@ -59,7 +59,7 @@ typedef double real;
 
 struct FileType {
     enum OpenMode { NotOpen, Read, Write, Append };
-    inline static const char * _() { return "siib"; }
+    inline static const char * _() { return "sib"; }
     inline FileType() { valid = false; mode = NotOpen; }
     inline void setName(const String &name) {
         fullPath = name;
