@@ -21,6 +21,152 @@ int usage(const char * programName)
     return 127;
 }
 
+class InteractionHandler
+        : public VM::AbstractInteractionHandler
+{
+public:
+    explicit InteractionHandler(int argc, char *argv[]);
+    bool makeInputArgument(VM::Variable & reference);
+private:
+    bool readScalarArgument(const Kumir::String & message, const Kumir::String & name, VM::ValueType type, VM::AnyValue & val);
+    std::deque< Kumir::String > m_arguments;
+    size_t i_currentArgument;
+};
+
+InteractionHandler::InteractionHandler(int argc, char *argv[])
+{
+    i_currentArgument = 0;
+    bool argumentsScope = false;
+    for (int i=1; i<argc; i++) {
+        std::string arg(argv[i]);
+        if (!argumentsScope) {
+            if (arg[0]!='-') {
+                // Found not a switch -> it is a program,
+                // so next arg is a program argument
+                argumentsScope = true;
+            }
+        }
+        else {
+            m_arguments.push_back(Kumir::Coder::decode(LOCALE, arg));
+        }
+    }
+}
+
+bool InteractionHandler::readScalarArgument(const Kumir::String &message, const Kumir::String &name, VM::ValueType type, VM::AnyValue &val)
+{
+    Kumir::IO::InputStream stream;
+    bool foundValue = false;
+#if !defined(WIN32) && !defined(_WIN32)
+    char * REQUEST_METHOD = getenv("REQUEST_METHOD");
+    char * QUERY_STRING = getenv("QUERY_STRING");
+    if (REQUEST_METHOD && std::string(REQUEST_METHOD)==std::string("GET") && QUERY_STRING) {
+        Kumir::String query_string = Kumir::Coder::decode(LOCALE, std::string(QUERY_STRING));
+        Kumir::StringList pairs = Kumir::Core::splitString(query_string, Kumir::Char('&'), true);
+        for (size_t i=0; i<pairs.size(); i++) {
+            Kumir::StringList apair = Kumir::Core::splitString(pairs[i], Kumir::Char('='), true);
+            if (apair.size()==2) {
+                Kumir::String aname = apair[0];
+                Kumir::String avalue = apair[1];
+                if (aname==name) {
+                    stream = Kumir::IO::InputStream(avalue);
+                    foundValue = true;
+                    break;
+                }
+            }
+        }
+    }
+#endif
+    if (!foundValue) {
+        if (i_currentArgument<m_arguments.size()) {
+            stream = Kumir::IO::InputStream(m_arguments[i_currentArgument]);
+            i_currentArgument ++;
+            foundValue = true;
+        }
+    }
+    if (!foundValue) {
+        Kumir::IO::writeString(0, message);
+        stream = Kumir::IO::InputStream(stdin, LOCALE);
+    }
+    if      (type==VM::VT_int)
+        val = Kumir::IO::readInteger(stream);
+    else if (type==VM::VT_real)
+        val = Kumir::IO::readReal(stream);
+    else if (type==VM::VT_bool)
+        val = Kumir::IO::readBool(stream);
+    else if (type==VM::VT_char)
+        val = Kumir::IO::readChar(stream);
+    else if (type==VM::VT_string)
+        val = Kumir::IO::readString(stream);
+    return Kumir::Core::getError().size()==0;
+}
+
+bool InteractionHandler::makeInputArgument(VM::Variable &reference)
+{
+    Kumir::String message = Kumir::Core::fromUtf8("Введите ")+reference.name();
+    if (reference.dimension()==0) {
+        message += Kumir::Core::fromAscii(": ");
+        VM::AnyValue val;
+        if (readScalarArgument(message, reference.name(), reference.baseType(), val))
+            reference.setValue(val);
+    }
+    else if (reference.dimension()==1) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        for (int x=bounds[0]; x<=bounds[1]; x++) {
+            VM::AnyValue val;
+            message = Kumir::Core::fromUtf8("Введите ")+reference.name();
+            message += Kumir::Core::fromAscii("[");
+            message += Kumir::Converter::intToString(x);
+            message += Kumir::Core::fromAscii("]: ");
+            if (readScalarArgument(message, reference.name(), reference.baseType(),  val))
+                reference.setValue(x,val);
+            else
+                return true;
+        }
+    }
+    else if (reference.dimension()==2) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        for (int y=bounds[0]; y<=bounds[1]; y++) {
+            for (int x=bounds[2]; x<=bounds[3]; x++) {
+                VM::AnyValue val;
+                message = Kumir::Core::fromUtf8("Введите ")+reference.name();
+                message += Kumir::Core::fromAscii("[");
+                message += Kumir::Converter::intToString(y);
+                message += Kumir::Core::fromAscii(",");
+                message += Kumir::Converter::intToString(x);
+                message += Kumir::Core::fromAscii("]: ");
+                if (readScalarArgument(message, reference.name(), reference.baseType(),  val))
+                    reference.setValue(y,x,val);
+                else
+                    return true;
+            }
+        }
+    }
+    else if (reference.dimension()==3) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        for (int z=bounds[0]; z<=bounds[1]; z++) {
+            for (int y=bounds[2]; y<=bounds[3]; y++) {
+                for (int x=bounds[4]; x<=bounds[5]; x++) {
+                    VM::AnyValue val;
+                    message = Kumir::Core::fromUtf8("Введите ")+reference.name();
+                    message += Kumir::Core::fromAscii("[");
+                    message += Kumir::Converter::intToString(y);
+                    message += Kumir::Core::fromAscii(",");
+                    message += Kumir::Converter::intToString(x);
+                    message += Kumir::Core::fromAscii("]: ");
+                    if (readScalarArgument(message, reference.name(), reference.baseType(),  val))
+                        reference.setValue(z,y,x,val);
+                    else
+                        return true;
+                }
+            }
+        }
+    }
+    return true;
+}
+
 int main(int argc, char *argv[])
 {
     // Look at arguments
@@ -75,8 +221,13 @@ int main(int argc, char *argv[])
 
     // Prepare runner
     VM::KumirVM vm;
+
+    InteractionHandler interactionHandler(argc, argv);
+    vm.setExternalHandler(&interactionHandler);
+
     vm.setProgram(programData);
     vm.reset();
+
 
     // Main loop
     while (vm.hasMoreInstructions()) {
