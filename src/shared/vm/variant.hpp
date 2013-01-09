@@ -139,7 +139,7 @@ public:
         return value;
     }
 
-    inline bool isValid() const { return tp!=VT_void || asize>0; }
+    inline bool isValid() const { return tp!=VT_void || avalue.size()>0; }
 
     inline ValueType type() const { return tp; }
     inline const AnyValue & at(size_t index) const { return avalue[index]; }
@@ -147,31 +147,21 @@ public:
     inline AnyValue & at(size_t index) { return avalue[index]; }
     inline AnyValue & operator[](size_t index) { return at(index); }
 
-    inline size_t rawSize() const { return asize; }
+    inline size_t rawSize() const { return avalue.size(); }
 
 
 protected:
 
     inline void resize(size_t size) {
         if (size==0) {
-            if (avalue)
-                free(avalue);
-            avalue = 0;
-            asize = 0;
+            if (avalue.size())
+                avalue.clear();
         }
         else {
-            if (size >= asize) {
-                avalue = reinterpret_cast<AnyValue*>(realloc(avalue, size * sizeof(AnyValue)));
-                for (size_t i=asize; i<size; i++)
-                    avalue[i] = AnyValue();
+            if (size != avalue.size()) {
+                size_t asize = avalue.size();
+                avalue.resize(size);
             }
-            else {
-                for (size_t i=size; i<asize; i++) {
-                    delete &(avalue[i]);
-                }
-                avalue = reinterpret_cast<AnyValue*>(realloc(avalue, size * sizeof(AnyValue)));
-            }
-            asize = size;
         }
     }
 
@@ -180,8 +170,6 @@ private:
         tp = VT_void;
         svalue = 0;
         ivalue = 0;
-        avalue = 0;
-        asize = 0;
     }
 
     ValueType tp;
@@ -193,8 +181,7 @@ private:
     };
     Record uvalue;
     String * svalue;
-    AnyValue * avalue;
-    size_t asize;
+    std::vector<class AnyValue> avalue;
 };
 
 
@@ -238,7 +225,7 @@ public:
     inline void setConstantFlag(bool value) { b_constant = value; }
 
     inline void init();
-    inline uint8_t dimension() const { return i_dimension; }
+    inline uint8_t dimension() const { return m_reference? m_reference->dimension() : i_dimension; }
     inline void setDimension(uint8_t v) { i_dimension = v; }
     inline void setName(const String & n) {
         s_name = n;

@@ -121,6 +121,103 @@ void Run::runContinuous()
 }
 
 
+bool Run::inputScalarArgument(const QString &message, const QString & format, AnyValue &val)
+{
+    emit output(message);
+    mutex_interactDone->lock();
+    list_inputResult.clear();
+    mutex_interactDone->unlock();
+    QVariantList result;
+    emit input(format);
+    forever {
+        mutex_interactDone->lock();
+        result = list_inputResult;
+        mutex_interactDone->unlock();
+        if (result.isEmpty())
+            msleep(50);
+        else
+            break;
+        if (mustStop())
+            return false;
+    }
+    if      (format[0]=='i')
+        val = result[0].toInt();
+    else if (format[0]=='r')
+        val = result[0].toDouble();
+    else if (format[0]=='b')
+        val = result[0].toBool();
+    else if (format[0]=='c')
+        val = result[0].toChar().unicode();
+    else if (format[0]=='s')
+        val = result[0].toString().toStdWString();
+    return true;
+}
+
+
+bool Run::makeInputArgument(Variable & reference)
+{
+
+    QString format;
+    if (reference.baseType()==VT_int)
+        format.push_back('i');
+    else if (reference.baseType()==VT_real)
+        format.push_back('r');
+    else if (reference.baseType()==VT_bool)
+        format.push_back('b');
+    else if (reference.baseType()==VT_char)
+        format.push_back('c');
+    else if (reference.baseType()==VT_string)
+        format.push_back('s');
+
+    if (reference.dimension()==0) {
+        AnyValue val;
+        if (inputScalarArgument(tr("Please enter %1: ").arg(QString::fromStdWString(reference.name())),format,val))
+            reference.setValue(val);
+    }
+    else if (reference.dimension()==1) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        for (int x=bounds[0]; x<=bounds[1]; x++) {
+            AnyValue val;
+            if (inputScalarArgument(tr("Please enter %1[%2]: ").arg(QString::fromStdWString(reference.name())).arg(x),format,val))
+                reference.setValue(x,val);
+            else
+                return true;
+        }
+    }
+    else if (reference.dimension()==2) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        for (int y=bounds[0]; y<=bounds[1]; y++) {
+            for (int x=bounds[2]; x<=bounds[3]; x++) {
+                AnyValue val;
+                if (inputScalarArgument(tr("Please enter %1[%2,%3]: ").arg(QString::fromStdWString(reference.name())).arg(y).arg(x),format,val))
+                    reference.setValue(y,x,val);
+                else
+                    return true;
+            }
+        }
+    }
+    else if (reference.dimension()==3) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        for (int z=bounds[0]; z<=bounds[1]; z++) {
+            for (int y=bounds[2]; y<=bounds[3]; y++) {
+                for (int x=bounds[4]; x<=bounds[5]; x++) {
+                    AnyValue val;
+                    if (inputScalarArgument(tr("Please enter %1[%2,%3,%4]: ").arg(QString::fromStdWString(reference.name())).arg(z).arg(y).arg(x),format,val))
+                        reference.setValue(z,y,x,val);
+                    else
+                        return true;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+
+
 bool Run::makeInput(std::deque<Variable> & references)
 {
     mutex_interactDone->lock();

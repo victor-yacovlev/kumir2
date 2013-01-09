@@ -53,6 +53,8 @@ public slots:
     bool makeInput(
                 std::deque<Variable> & /*references*/
                 );
+    bool makeInputArgument(Variable & /*reference*/);
+    bool inputScalarArgument(const QString & message, const QString & format, AnyValue & value);
     void handleInputArgumentRequest(int localId,
                                     const QString & varName,
                                     const QString & baseFormat,

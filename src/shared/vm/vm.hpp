@@ -1588,21 +1588,6 @@ void KumirVM::do_specialcall(uint16_t alg)
         }
         if (m_dontTouchMe) m_dontTouchMe->unlock();
     }
-    else if (alg==0x0A01) {
-        // Assign file to default I/O
-        if (m_dontTouchMe) m_dontTouchMe->lock();
-        Variable sn = stack_values.pop();
-        Variable fn = stack_values.pop();
-        const String fileName = fn.toString();
-        const String streamName = sn.toString();
-        if (streamName==Kumir::Core::fromAscii("stdin")) {
-            // TODO Implement me!
-        }
-        else if (streamName==Kumir::Core::fromAscii("stdout")) {
-            // TODO Implement me!
-        }
-        if (m_dontTouchMe) m_dontTouchMe->unlock();
-    }
     else if (alg==0xBB01) {
         if (m_dontTouchMe) m_dontTouchMe->lock();
         // Input argument
@@ -1761,7 +1746,7 @@ void KumirVM::do_updarr(uint8_t s, uint16_t id)
     if (dim>0) {
         String name;
         int effectiveBounds[7];
-        effectiveBounds[6] = dim*2;
+        bounds[6] = effectiveBounds[6] = dim*2;
         for (int i=0; i<dim*2; i++) {
             bounds[i] = stack_values.pop().toInt();
         }
@@ -1821,6 +1806,7 @@ void KumirVM::do_store(uint8_t s, uint16_t id)
         else {
             stack_contexts.top().locals[id].setBounds(bounds);
             stack_contexts.top().locals[id].setValue(val.value());
+            stack_contexts.top().locals[id].setDimension(val.dimension());
         }
         if (lineNo!=-1 && !b_blindMode) {
             name = stack_contexts.top().locals[id].myName();
@@ -1835,6 +1821,7 @@ void KumirVM::do_store(uint8_t s, uint16_t id)
             globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setConstValue(val);
         }
         else {
+            globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setDimension(val.dimension());
             globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setBounds(bounds);
             globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setValue(val.value());
         }
@@ -1888,12 +1875,14 @@ void KumirVM::do_load(uint8_t s, uint16_t id)
     if (VariableScope(s)==LOCAL) {
         val.setBaseType(stack_contexts.top().locals[id].baseType());
         stack_contexts.top().locals[id].getBounds(bounds);
+        val.setDimension(stack_contexts.top().locals[id].dimension());
         val.setBounds(bounds);
         val.setValue(stack_contexts.top().locals[id].value());
     }
     else if (VariableScope(s)==GLOBAL) {
         val.setBaseType(globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType());
         globals[GlobalsIndex(stack_contexts.top().moduleId,id)].getBounds(bounds);
+        val.setDimension(globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension());
         val.setBounds(bounds);
         val.setValue(globals[GlobalsIndex(stack_contexts.top().moduleId,id)].value());
     }
