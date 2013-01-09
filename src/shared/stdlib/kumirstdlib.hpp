@@ -82,6 +82,9 @@ struct FileType {
     inline bool operator==(const FileType & other) const {
         return other.fullPath==fullPath;
     }
+    inline bool operator!=(const FileType & other) const {
+        return other.fullPath!=fullPath;
+    }
 
 private:
     String fullPath;
@@ -205,9 +208,10 @@ public:
 
     inline static StringList splitString(const String & s, const Char separator, bool skipEmptyParts) {
         StringList result;
-        size_t prev_index = 0;
+        size_t prev_index;
+        prev_index = 0;
         while (true) {
-            size_t cur_index = s.find(separator, prev_index+1);
+            size_t cur_index = s.find(separator, prev_index);
             if (cur_index==s.npos)
                 cur_index = s.length();
             size_t length = cur_index - prev_index;
@@ -1407,7 +1411,8 @@ public:
 #       else
         Encoding codec = UTF8;
 #       endif
-        const char * path = Coder::encode(codec, fileName).c_str();
+        const std::string localName = Coder::encode(codec, fileName);
+        const char * path = localName.c_str();
 #   endif
 
         const char * fmode;

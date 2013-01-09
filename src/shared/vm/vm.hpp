@@ -1124,6 +1124,24 @@ void KumirVM::do_filescall(uint16_t alg)
         s_error = Kumir::Core::getError();
         break;
     }
+    /* алг лог =(фaйл ф1, файл ф2) */
+    case 0x0011: {
+        const Record f2rec = stack_values.pop().toRecord();
+        const Record f1rec = stack_values.pop().toRecord();
+        const Kumir::FileType f1 = fromRecordValue<Kumir::FileType>(f1rec);
+        const Kumir::FileType f2 = fromRecordValue<Kumir::FileType>(f2rec);
+        stack_values.push(Variable(f1==f2));
+        break;
+    }
+    /* алг лог =(фaйл ф1, файл ф2) */
+    case 0x0012: {
+        const Record f2rec = stack_values.pop().toRecord();
+        const Record f1rec = stack_values.pop().toRecord();
+        const Kumir::FileType f1 = fromRecordValue<Kumir::FileType>(f1rec);
+        const Kumir::FileType f2 = fromRecordValue<Kumir::FileType>(f2rec);
+        stack_values.push(Variable(f1!=f2));
+        break;
+    }
     default: {
         s_error = Kumir::Core::fromUtf8("Вызов неизвестного алгоримта, возможно из более новой версии Кумир");
     }
