@@ -151,7 +151,7 @@ bool Run::makeInput(std::deque<Variable> & references)
         else if (references[i].baseType()==VT_string) {
             format.push_back('s');
         }
-        if (i<references.size()) format.push_back(';');
+        if (i<references.size()-1) format.push_back(';');
     }
     emit input(QString::fromStdWString(format));
     forever {

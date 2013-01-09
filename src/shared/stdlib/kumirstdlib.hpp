@@ -634,10 +634,6 @@ public:
             if (!dotFound) {
                 // parse integral part of mantissa
                 if (ch==dot || E.find_first_of(ch)!=String::npos) {
-                    if (sIntegral.length()>0) {
-                        integral = parseInt(sIntegral, 10, error);
-                        if (error!=NoError) return 0.0;
-                    }
                     if (ch==dot)
                         dotFound = true;
                     else {
@@ -668,6 +664,10 @@ public:
                 // parse exponenta
                 sExponenta.push_back(ch);
             }
+        }
+        if (sIntegral.length()>0) {
+            integral = parseInt(sIntegral, 10, error);
+            if (error!=NoError) return 0.0;
         }
         if (sExponenta.length()>0) {
             iexponenta = parseInt(sExponenta, 10, error);
