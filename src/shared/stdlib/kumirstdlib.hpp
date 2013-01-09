@@ -1048,7 +1048,7 @@ class Files {
 public:
     inline static bool isOpenedFiles() { return openedFiles.size()> 0; }
     inline static void init() {
-        fileEncoding = UTF8;
+        fileEncoding = DefaultEncoding;
     }
     inline static void finalize() {
         if (isOpenedFiles() && Core::getError().length()==0)
@@ -1676,7 +1676,7 @@ public:
         InputStream(FILE * f, Encoding enc) {
             stream = true;
             file = f;
-            if (encoding==DefaultEncoding) {
+            if (enc==DefaultEncoding) {
                 bool forceUtf8 = false;
                 if (f!=stdin) {
                     long curpos = ftell(f);
@@ -1737,12 +1737,27 @@ public:
                 }
                 else {
                     // More complex...
+                    long cpos = ftell(file);
+                    if (cpos==0) {
+                        // Try to read BOM
+                        static const char * BOM = "\xEF\xBB\xBF";
+                        char firstThree[3];
+                        bool seekBack = true;
+                        if (fread(firstThree,sizeof(char),3,file)==3
+                                && strncmp(BOM, firstThree, 3)==0)
+                            seekBack = false;
+                        if (seekBack)
+                            fseek(file, 0, SEEK_SET);
+                    }
                     lastCharBuffer[0] = fgetc(file);
                     uint8_t firstByte = lastCharBuffer[0];
                     uint8_t oneSymbMark = firstByte >> 5;
                     uint8_t twoSymbMark = firstByte >> 4;
                     if (firstByte==255 && file==Files::getAssignedIn()) {
                         Core::abort(Core::fromUtf8("Ошибка чтения данных: входной поток закончился"));
+                        return false;
+                    }
+                    else if (firstByte==255) {
                         return false;
                     }
                     int extraBytes = 0;
