@@ -1134,6 +1134,18 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
     AST::Expression * rightExpr = parseExpression(right, mod, alg);
     if (!rightExpr)
         return;
+    if (left.isEmpty() && rightExpr->kind==AST::ExprFunctionCall &&
+            rightExpr->baseType!=AST::TypeNone)
+    {
+        // TODO in 2.1:
+        // allow this!
+        const QString err = _("Expression not assigned to anything");
+        for (int i=0; i<right.size(); i++) {
+            st.data[i]->error = err;
+        }
+        delete rightExpr;
+        return;
+    }
     if (left.isEmpty() && rightExpr->kind!=AST::ExprFunctionCall) {
         if (rightExpr->kind==AST::ExprSubexpression && rightExpr->operatorr==AST::OpEqual) {
             Lexem * lx = 0;
