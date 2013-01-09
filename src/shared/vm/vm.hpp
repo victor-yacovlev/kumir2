@@ -666,6 +666,7 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
             c.algId = functions[p].algId;
             stack_contexts.push(c);
             b_nextCallInto = false;
+            stack_values.pop(); // current implementation doesn't requere args count
             if (m_dontTouchMe)
                 m_dontTouchMe->unlock();
         }
@@ -2229,7 +2230,7 @@ void KumirVM::do_push(uint8_t r)
 void KumirVM::do_pop(uint8_t r)
 {
     Variable v = stack_values.pop();
-    if (r==0) {
+    if (r==0 && v.hasValue()) {
         if (v.baseType()==VT_int) {
             register0 = v.toInt();
         }
@@ -2246,7 +2247,7 @@ void KumirVM::do_pop(uint8_t r)
             register0 = v.toString();
         }
     }
-    else {
+    else if (r!=0) {
         stack_contexts.top().registers[r] = v.toInt();
     }
     nextIP();
