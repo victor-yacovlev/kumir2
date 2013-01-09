@@ -1037,7 +1037,8 @@ void KumirVM::do_filescall(uint16_t alg)
     }
     /* алг начать чтение(файл ключ) */
     case 0x0004: {
-        const Record xx = stack_values.pop().toRecord();
+        const Variable & xval = stack_values.pop();
+        const Record xx = xval.toRecord();
         Kumir::FileType x = fromRecordValue<Kumir::FileType>(xx);
         Kumir::Files::reset(x);
         s_error = Kumir::Core::getError();
@@ -1045,7 +1046,8 @@ void KumirVM::do_filescall(uint16_t alg)
     }
     /* алг лог конец файла(файл ключ) */
     case 0x0005: {
-        const Record xx = stack_values.pop().toRecord();
+        const Variable & xval = stack_values.pop();
+        const Record xx = xval.toRecord();
         Kumir::FileType x = fromRecordValue<Kumir::FileType>(xx);
         bool y = Kumir::Files::eof(x);
         stack_values.push(Variable(y));
@@ -1077,7 +1079,8 @@ void KumirVM::do_filescall(uint16_t alg)
     }
     /* алг лог есть данные(файл ключ) */
     case 0x0009: {
-        const Record xx = stack_values.pop().toRecord();
+        const Variable xval = stack_values.pop();
+        const Record xx = xval.toRecord();
         Kumir::FileType x = fromRecordValue<Kumir::FileType>(xx);
         bool y = Kumir::Files::hasData(x);
         stack_values.push(Variable(y));
