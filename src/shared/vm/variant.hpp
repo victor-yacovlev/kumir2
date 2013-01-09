@@ -99,21 +99,24 @@ public:
                 int val = uvalue.at(i).toInt();
                 fieldptr = &val;
                 copySize = sizeof(int);
-                ptr += copySize;
+                ptr = (void*)((size_t)(ptr)+copySize);
+             //   ptr +=(uint)copySize;
                 memcpy(ptr, fieldptr, copySize);
                 break;
             }
             case 'd': {
                 double val = uvalue.at(i).toReal();
                 fieldptr = &val;
-                ptr += copySize;
+                copySize = sizeof(double);
+                ptr = (void*)((size_t)(ptr)+copySize);
                 memcpy(ptr, fieldptr, copySize);
                 break;
             }
             case 'b': {
                 bool val = uvalue.at(i).toBool();
                 fieldptr = &val;
-                ptr += copySize;
+                copySize = sizeof(bool);
+                ptr = (void*)((size_t)(ptr)+copySize);
                 memcpy(ptr, fieldptr, copySize);
                 break;
             }
@@ -121,13 +124,15 @@ public:
                 Char val = uvalue.at(i).toChar();
                 fieldptr = &val;
                 copySize = sizeof(Char);
-                ptr += sizeof(Char);
+
+                ptr = (void*)((size_t)(ptr)+copySize);
                 break;
             }
             case 's': {
                 String val = uvalue.at(i).toString();
                 fieldptr = &val;
-                ptr += copySize;
+                copySize = sizeof(String);
+                ptr = (void*)((size_t)(ptr)+copySize);
                 String * stringRef = reinterpret_cast<String*>(fieldptr);
                 stringRef->assign(val); // copy container data
                 break;

@@ -6,7 +6,7 @@ if(MSVC)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 	set(CMAKE_CXX_FLAGS "-Zm300 -Zc:wchar_t- -EHsc -MD -GR")
 	#set(CMAKE_CXX_FLAGS " -EHsc")
-else()
+else if (NOT APPLE)
         set(CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS}"-Wl,--no-undefined")
 endif(MSVC)
 
