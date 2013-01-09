@@ -11,6 +11,7 @@ You should change it corresponding to functionality.
 
 #include <QtCore>
 #include <QtGui>
+
 #include "extensionsystem/kplugin.h"
 #include "robotmodulebase.h"
 
@@ -74,13 +75,21 @@ namespace ActorRobot {
         void setRad()
         {
             istemp=false;
+            
+            iconPath=QUrl::fromLocalFile(
+                                         qApp->property("sharePath").toString()+
+                                         "/actors/robot/btn_radiation.png"
+                                         );
+            rad=QImage(iconPath.toLocalFile ());
+            
+            rad.load(iconPath.toLocalFile ());
         }
         void setTemp()
         {
             istemp=true;
             iconPath=QUrl::fromLocalFile(
                                          qApp->property("sharePath").toString()+
-                                         "/actors/robot/radioactive-danger-symbol.svg"
+                                         "/actors/robot/temp.png"
                                          );
             rad=QImage(iconPath.toLocalFile ());
             
@@ -98,6 +107,7 @@ namespace ActorRobot {
         float Value;
         bool istemp;
         QImage rad;
+        QPicture radiation,temp;
     };
     
     class SimpleRobot:
@@ -256,7 +266,7 @@ namespace ActorRobot {
         QGraphicsTextItem * downCharItm;
         QGraphicsTextItem * markItm;
         EditLine * radItm;
-        QGraphicsTextItem * tempItm;
+        EditLine * tempItm;
         QGraphicsRectItem * upCharFld;
         QGraphicsRectItem * downCharFld;
         
@@ -459,6 +469,7 @@ namespace ActorRobot {
         void mousePressEvent ( QMouseEvent * event );
         void mouseReleaseEvent ( QMouseEvent * event );
         void mouseMoveEvent ( QMouseEvent * event );
+        void	wheelEvent ( QWheelEvent * event );
        
     private:
         bool pressed;
@@ -466,6 +477,7 @@ namespace ActorRobot {
         RoboField* robotField;
         QToolButton * textEditBtn;
         QToolButton * radEditBtn;
+        float c_scale;
         
     };
     

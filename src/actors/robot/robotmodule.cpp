@@ -238,7 +238,9 @@ namespace ActorRobot {
      
       // radItm=Scene->addRect(upLeftCornerX+1, upLeftCornerY+1, size*(radiation/99),size/5 );
         radItm=new EditLine();
+        radItm->setRad();
         radItm->moveBy(upLeftCornerX+1, upLeftCornerY+1);
+        radItm->setScale(0.25);
         radItm->setValue(radiation);
         // radItm=Scene->addItem(upLeftCornerX+1, upLeftCornerY+1, size*(radiation/99),size/5 );
        Scene->addItem(radItm);
@@ -249,7 +251,14 @@ namespace ActorRobot {
         
         
         
-        
+        tempItm=new EditLine();
+        tempItm->moveBy(upLeftCornerX+1, upLeftCornerY+1);
+        tempItm->setTemp();
+        tempItm->setValue(temperature);
+        Scene->addItem(tempItm);
+         tempItm->setScale(0.25);
+        tempItm->setZValue(100);
+        tempItm->show();
         //tempItm=Scene->addText("T: "+QString::number(temperature),font);
         //tempItm->setDefaultTextColor(TextColor);
         //tempItm->setPos(upLeftCornerX+1,upLeftCornerY+size-16);
@@ -2493,7 +2502,7 @@ namespace ActorRobot {
     EditLine::EditLine(QGraphicsItem *parent)
     {
         Value=0;
-        istemp=true;
+        istemp=false;
         iconPath=QUrl::fromLocalFile(
                                      qApp->property("sharePath").toString()+
                                      "/actors/robot/btn_radiation.png"
@@ -2501,19 +2510,31 @@ namespace ActorRobot {
         rad=QImage(iconPath.toLocalFile ());
         
         rad.load(iconPath.toLocalFile ());
+        QPainter pntr;
+        pntr.begin(&radiation);
+        pntr.drawImage(2,2,rad.scaledToHeight(FIELD_SIZE_SMALL) );
+     //   setRenderHints(QPainter::Antialiasing);
     }
     
     void EditLine::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                             QWidget *widget)
     {
         Q_UNUSED(option); Q_UNUSED(widget);
-        
-        if(isTemp())
+      //  painter->setRenderHints(QPainter::SmoothPixmapTransform);
+        if(isRad())
         {
                         
-            painter->drawImage(2,2,rad.scaledToHeight(FIELD_SIZE_SMALL/4) );
+            painter->drawPicture(0,0,radiation);
             painter->setBrush(QBrush(Qt::yellow));
-            painter->drawRect(2, FIELD_SIZE_SMALL/4+2, (FIELD_SIZE_SMALL-FIELD_SIZE_SMALL/4)*(Value/99),FIELD_SIZE_SMALL/5 );
+            painter->drawRect(2, FIELD_SIZE_SMALL+4, (FIELD_SIZE_SMALL-FIELD_SIZE_SMALL/4)*(Value*4/99),FIELD_SIZE_SMALL*4/6 );
+            
+        }
+        if(isTemp())
+        {
+            
+            painter->drawImage(2,FIELD_SIZE_SMALL*2+2,rad.scaledToHeight(FIELD_SIZE_SMALL) );
+            painter->setBrush(QBrush(Qt::blue));
+            painter->drawRect(2, FIELD_SIZE_SMALL-2+FIELD_SIZE_SMALL*2, (FIELD_SIZE_SMALL-FIELD_SIZE_SMALL/4)*(Value*4/341),FIELD_SIZE_SMALL*4/6 );
             
         }
     }
@@ -3039,6 +3060,8 @@ int RobotModule::SaveToFile(QString p_FileName)
         radEditBtn->move(textEditBtn->height(),0);
         connect(textEditBtn,SIGNAL(clicked()),this,SLOT(changeEditMode()));
         connect(radEditBtn,SIGNAL(clicked()),this,SLOT(changeEditMode()));
+        c_scale=1;
+      //  setRenderHint(QPainter::Antialiasing);
     };
     
     void RobotView::showButtons(bool flag)
@@ -3111,6 +3134,24 @@ int RobotModule::SaveToFile(QString p_FileName)
        // qDebug()<<mapFromScene (robotField->sceneRect())<<robotField->sceneRect().height();
         
     };
+    void	RobotView::wheelEvent ( QWheelEvent * event )
+    {
+    float numDegrees = event->delta() / 8;
+        qDebug()<<"whell:"<<numDegrees;
+//        c_scale=c_scale*0.8;
+        qDebug()<<"Scale"<<c_scale;
+      //setRenderHint(QPainter::Antialiasing);
+        if(numDegrees>0)
+        { if(c_scale<3 && c_scale>0.003)this->scale(1.2,1.2);
+          c_scale=c_scale*1.2;
+        }
+        else{ 
+          if(c_scale<3 && c_scale>0.003)this->scale(0.8,0.8);
+          c_scale=c_scale*0.8;
+        }
+        
+    }
+    
  void RobotView:: FindRobot()
     {
         centerOn(robotField->roboPosF());
@@ -3121,5 +3162,6 @@ void RobotView::changeEditMode()
         if(radEditBtn->isChecked ())textEditBtn->setChecked(false);
         robotField->setTextEditMode(textEditBtn->isChecked ());  
         robotField->setRadEditMode(radEditBtn->isChecked ()); 
+        
     };
 } // $namespace
