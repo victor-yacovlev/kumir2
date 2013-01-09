@@ -602,7 +602,7 @@ public:
         return result;
     }
 
-    static double parseReal(String word, Char dot, ParseError & error) {
+    static real parseReal(String word, Char dot, ParseError & error) {
         error = NoError;
         if (word.length()==0) {
             error = EmptyWord;
