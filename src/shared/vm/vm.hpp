@@ -1392,7 +1392,8 @@ void KumirVM::do_specialcall(uint16_t alg)
         }
         else {
             if (m_dontTouchMe) m_dontTouchMe->lock();
-            for (int i=0; i<varsCount; i++) {
+
+            for (int i=0; i<references.size(); i++) {
                 if (references.at(i).baseType()==VT_int) {
                     int value = Kumir::IO::readInteger(fileReference, !fileIO);
                     references.at(i).setValue(AnyValue(value));
@@ -1437,7 +1438,7 @@ void KumirVM::do_specialcall(uint16_t alg)
         {
             String margin;
             margin.reserve(100);
-            for (int i=0; i<varsCount; i++) {
+            for (int i=0; i<references.size(); i++) {
                 if (references.at(i).isConstant())
                     continue;
                 if (i>0) {
