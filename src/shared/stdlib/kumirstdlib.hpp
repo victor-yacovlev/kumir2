@@ -214,10 +214,10 @@ public:
             if (length==0 && !skipEmptyParts)
                 result.push_back(String());
             else if (length>0) {
-                result.push_back(s.substr(prev_index+1, length-1));
+                result.push_back(s.substr(prev_index, length));
             }
-            prev_index = cur_index;
-            if (prev_index==s.length())
+            prev_index = cur_index+1;
+            if (prev_index>=s.length())
                 break;
         }
         return result;
@@ -602,7 +602,7 @@ public:
         return result;
     }
 
-    static int parseReal(String word, Char dot, ParseError & error) {
+    static double parseReal(String word, Char dot, ParseError & error) {
         error = NoError;
         if (word.length()==0) {
             error = EmptyWord;
@@ -659,6 +659,9 @@ public:
                     }
                     eFound = true;
                 }
+                else {
+                    sFractional.push_back(ch);
+                }
             }
             else {
                 // parse exponenta
@@ -669,18 +672,26 @@ public:
             integral = parseInt(sIntegral, 10, error);
             if (error!=NoError) return 0.0;
         }
+        if (sFractional.length()>0) {
+            fractional = parseInt(sFractional, 10, error);
+            if (error!=NoError) return 0.0;
+        }
         if (sExponenta.length()>0) {
             iexponenta = parseInt(sExponenta, 10, error);
             if (error!=NoError) return 0.0;
         }
-        real fractionalLength = static_cast<real>(sFractional.length());
+        int fractionalLength = sFractional.length();
         for (int i=sFractional.length()-1; i>=0; i--) {
             Char ch = sFractional.at(i);
             if (ch==Char('0'))
-                fractionalLength -= 1.0;
+                fractionalLength -= 1;
         }
-        fraction = static_cast<real>(fractional)/Math::pow(10, fractionalLength);
-        mantissa = static_cast<real>(integral) + fraction;
+        fraction = fractional;
+        for (int i=0; i<fractionalLength; i++) {
+            fraction /= 10.0;
+        }
+        mantissa = static_cast<real>(integral);
+        mantissa += fraction;
         exponenta = static_cast<real>(iexponenta);
         real result = mantissa * Math::pow(10, exponenta);
         return result;
