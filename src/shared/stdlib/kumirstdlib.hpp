@@ -967,7 +967,7 @@ public:
             Core::abort(Core::fromUtf8("Индекс меньше 1"));
             return 0;
         }
-        size_t start = static_cast<size_t>(from);
+        size_t start = static_cast<size_t>(from-1);
         size_t pos = s.find(substr, start);
         if (pos==String::npos)
             return 0;

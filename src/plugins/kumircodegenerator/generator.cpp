@@ -1011,68 +1011,36 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
     }
     else if (st->kind==AST::ExprFunctionCall) {
         const AST::Algorhitm * alg = st->function;
-        if (alg->header.implType==AST::AlgorhitmExternal) {
-            // Push to stack references (and them count) and arguments (and them count)
 
-            // Push references to stack
-            Bytecode::Instruction b;
-            int refsCount = 0;
-            for (int i=st->operands.size()-1; i>=0; i--) {
-                AST::VariableAccessType t = alg->header.arguments[i]->accessType;
-                if (t==AST::AccessArgumentOut||t==AST::AccessArgumentInOut) {
-                    Bytecode::Instruction ref;
-                    ref.type = Bytecode::REF;
-                    findVariable(modId, algId, st->operands[i]->variable, ref.scope, ref.arg);
-                    result << ref;
-                    refsCount ++;
-                }
+        // Push calculable arguments to stack
+        int argsCount = 0;
+        for (int i=0; i<st->operands.size(); i++) {
+            AST::VariableAccessType t = alg->header.arguments[i]->accessType;
+            bool arr = alg->header.arguments[i]->dimension>0;
+            if (t==AST::AccessArgumentOut||t==AST::AccessArgumentInOut) {
+                Bytecode::Instruction ref;
+                ref.type = Bytecode::REF;
+                findVariable(modId, algId, st->operands[i]->variable, ref.scope, ref.arg);
+                result << ref;
             }
-            b.type = Bytecode::LOAD;
-            b.scope = Bytecode::CONSTT;
-            b.arg = constantValue(Bytecode::VT_int, 0, refsCount);
-            result << b;
-            // Push calculable arguments to stack
-            int argsCount = 0;
-            for (int i=st->operands.size()-1; i>=0; i--) {
-                AST::VariableAccessType t = alg->header.arguments[i]->accessType;
-                bool arr = alg->header.arguments[i]->dimension>0;
-                if (t==AST::AccessArgumentIn && !arr)
-                    result << calculate(modId, algId, level, st->operands[i]);
-                else if (t==AST::AccessArgumentIn && arr) {
-                    // load the whole array into stack
-                    Bytecode::Instruction load;
-                    load.type = Bytecode::LOAD;
-                    findVariable(modId, algId, st->operands[i]->variable, load.scope, load.arg);
-                    result << load;
-                }
-                if (t==AST::AccessArgumentIn)
-                    argsCount ++;
+            else if (t==AST::AccessArgumentIn && !arr)
+                result << calculate(modId, algId, level, st->operands[i]);
+            else if (t==AST::AccessArgumentIn && arr) {
+                // load the whole array into stack
+                Bytecode::Instruction load;
+                load.type = Bytecode::LOAD;
+                findVariable(modId, algId, st->operands[i]->variable, load.scope, load.arg);
+                result << load;
             }
-            b.arg = constantValue(Bytecode::VT_int, 0, argsCount);
-            result << b;
+            argsCount ++;
         }
-        else {
-            // Push to stack just arguments if reverse order
-            for (int i=st->operands.size()-1; i>=0; i--) {
-                AST::VariableAccessType t = alg->header.arguments[i]->accessType;
-                bool arr = alg->header.arguments[i]->dimension>0;
-                if (t==AST::AccessArgumentIn && !arr)
-                    result << calculate(modId, algId, level, st->operands[i]);
-                else if (t==AST::AccessArgumentIn && arr) {
-                    // load the whole array into stack
-                    Bytecode::Instruction load;
-                    load.type = Bytecode::LOAD;
-                    findVariable(modId, algId, st->operands[i]->variable, load.scope, load.arg);
-                    result << load;
-                }
-                else if (t==AST::AccessArgumentOut||t==AST::AccessArgumentInOut) {
-                    Bytecode::Instruction ref;
-                    ref.type = Bytecode::REF;
-                    findVariable(modId, algId, st->operands[i]->variable, ref.scope, ref.arg);
-                    result << ref;
-                }
-            }
-        }
+        Bytecode::Instruction b;
+        b.type = Bytecode::LOAD;
+        b.scope = Bytecode::CONSTT;
+        b.arg = constantValue(Bytecode::VT_int, 0, argsCount);
+        result << b;
+
+
         Bytecode::Instruction instr;
         instr.type = Bytecode::CALL;
         findFunction(st->function, instr.module, instr.arg);
