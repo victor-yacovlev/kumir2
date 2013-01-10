@@ -698,7 +698,7 @@ public:
         mantissa += fraction;
         exponenta = static_cast<real>(iexponenta);
         real result = mantissa * Math::pow(10, exponenta);
-        return result;
+        return negative? -1.0*result : result;
     }
 
     static String sprintfInt(int value, char base, int width, char al) {
