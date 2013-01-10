@@ -94,6 +94,7 @@ struct SyntaxAnalizerPrivate
     AST::Expression * parseFunctionCall(const QList<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg);
 
     AST::Expression * parseSimpleName(const std::list<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg);
+    void updateSliceDSCall(AST::Expression * expr, AST::Variable * var);
     AST::Expression * parseElementAccess(const QList<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg);
     AST::Expression * makeExpressionTree(const QList<SubexpressionElement> & s);
     template <typename List1, typename List2>
@@ -3330,6 +3331,28 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
     return result;
 }
 
+void SyntaxAnalizerPrivate::updateSliceDSCall(AST::Expression * expr, AST::Variable * var)
+{
+    static AST::Algorhitm * strlenAlg = 0;
+    static AST::Module * stdlibMod = 0;
+    if (!strlenAlg)
+        findAlgorhitm(QString::fromUtf8("длин"), stdlibMod, strlenAlg);
+    if (expr->kind==AST::ExprFunctionCall
+            && expr->function==strlenAlg
+            && expr->operands.size()==0)
+    {
+        AST::Expression * varExpr = new AST::Expression;
+        varExpr->kind = AST::ExprVariable;
+        varExpr->baseType = AST::TypeString;
+        varExpr->dimension = 0;
+        varExpr->variable = var;
+        expr->operands.append(varExpr);
+    }
+    else foreach (AST::Expression * subExpr, expr->operands) {
+        updateSliceDSCall(subExpr, var);
+    }
+}
+
 AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg)
 {
     AST::Expression * result = 0;
@@ -3549,6 +3572,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
                 foreach (AST::Expression * a, realArguments) delete a;
                 return 0;
             }
+            updateSliceDSCall(argument, variable);
         }
     } // end for arguments loop
 
@@ -3613,6 +3637,16 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
 AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg)
 {
     AST::Expression * result = 0;
+    if (lexems.size()==1 && lexems.front()->type==LxSecCurrentStringLength) {
+        result = new AST::Expression;
+        result->kind = AST::ExprFunctionCall;
+        result->baseType = AST::TypeInteger;
+        result->dimension = 0;
+        result->lexems = QList<Lexem*>::fromStdList(lexems);
+        const AST::Module * dummy;
+        findAlgorhitm(QString::fromUtf8("длин"), dummy, result->function);
+        return result;
+    }
     if (lexems.size()==1 && lexems.front()->type & LxTypeConstant) {
         int err = 0;
         AST::VariableBaseType type = testConst(lexems, err);

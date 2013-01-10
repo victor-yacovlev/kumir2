@@ -233,6 +233,10 @@ void LexerPrivate::initNormalizator(const QString &fileName)
                     keyWords << value;
                     addToMap(kwdMap, value, LxSecNewline);
                 }
+                else if (context=="string length") {
+                    keyWords << value;
+                    addToMap(kwdMap, value, LxSecCurrentStringLength);
+                }
                 else if (context=="logical 'not'") {
                     keyWords << value;
                     addToMap(kwdMap, value, LxSecNot);
