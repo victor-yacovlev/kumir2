@@ -60,7 +60,7 @@ QString Variable::dump() const
     if (dimension>0)
         result += ",\n\t\"dimension\": "+QString::number(dimension);
     if (accessType!=AccessRegular)
-        result == ",\n\t\"accessType\": "+AST::dump(accessType);
+        result = ",\n\t\"accessType\": "+AST::dump(accessType);
     if (dimension>0) {
         result += ",\n\t\"bounds\": [\n";
         for (int i=0; i<bounds.size(); i++) {

@@ -599,7 +599,7 @@ inline std::string constantToTextStream(const TableElem & e)
     }
     else if (e.vtype.front()==VT_bool) {
         const bool val = e.initialValue.toBool();
-        os << val? "true" : "false";
+        os << ( val? "true" : "false" );
     }
     else {
         os << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.initialValue.toString())) << "\"";

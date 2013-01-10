@@ -137,7 +137,7 @@ inline std::string typeToString(const InstructionType & t)
 
 inline InstructionType typeFromString(const std::string & ss)
 {
-    std::string s = Kumir::Core::toLowerCase(s);
+    std::string s = Kumir::Core::toLowerCase(ss);
     if (s=="nop") return NOP;
     else if (s=="call") return CALL;
     else if (s=="init") return INIT;

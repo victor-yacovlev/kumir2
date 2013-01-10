@@ -939,7 +939,7 @@ public:
 #endif
     template <class S, typename C>
     inline static S & trim(S & s) {
-        size_t nonSpacePos = 0;
+        int nonSpacePos = 0;
         for (; nonSpacePos<s.length(); nonSpacePos++) {
             if ( s[nonSpacePos]!=C(' ') &&
                  s[nonSpacePos]!=C('\t') &&
