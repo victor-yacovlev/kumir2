@@ -57,3 +57,4 @@ pause running = пауза
 terminate running = стоп
 assign stream = НАЗНАЧИТЬ
 file = файл
+string length = дс
