@@ -80,6 +80,7 @@ struct FileType {
         valid = false;
     }
     inline bool operator==(const FileType & other) const {
+        std::wcout<<fullPath<<" "<<other.fullPath;
         return other.fullPath==fullPath;
     }
 
@@ -1392,6 +1393,7 @@ public:
 #endif
     inline static FileType open(const String & shortName, FileType::OpenMode mode, bool remember=true, FILE* *fh = 0) {
         const String fileName = getAbsolutePath(shortName);
+        std::wcout<<fileName;
         for (std::deque<FileType>::const_iterator it = openedFiles.begin(); it!=openedFiles.end(); ++it) {
             const FileType & f = (*it);
             if (f.getName()==fileName) {
@@ -2066,6 +2068,7 @@ public:
     }
 
     inline static OutputStream makeOutputStream(FileType fileNo, bool toStdOut) {
+      //  std::cout<<fileNo.fullPath;
         if (toStdOut) {
             return OutputStream(Files::getAssignedOut(), LOCALE_ENCODING);
         }
