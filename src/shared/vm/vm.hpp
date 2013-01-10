@@ -1548,7 +1548,7 @@ void KumirVM::do_specialcall(uint16_t alg)
                 s_error = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
             }
             else {
-                source[index] = ch;
+                source[index-1] = ch;
                 Variable r(source);
                 stack_values.push(r);
             }
@@ -1567,13 +1567,14 @@ void KumirVM::do_specialcall(uint16_t alg)
         s_error = Kumir::Core::getError();
         if (s_error.length()==0) {
             if (start<1 || start>s.length()) {
-                s_error = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
-            }
-            else if (end<1 || end>s.length()) {
-                s_error = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
+                s_error = Kumir::Core::fromUtf8("Левая граница вырезки за пределами строки");
             }
             else if (end<start) {
-                s_error = Kumir::Core::fromUtf8("Несоответствие границ вырезки из строки");
+                String empty;
+                stack_values.push(Variable(empty));
+            }
+            else if (end<1 || end>s.length()) {
+                s_error = Kumir::Core::fromUtf8("Правая граница вырезки за пределами строки");
             }
             else {
                 String result = s.substr(start-1, end-start+1);
@@ -1596,14 +1597,21 @@ void KumirVM::do_specialcall(uint16_t alg)
         String ch = first.value().toString();
         s_error = Kumir::Core::getError();
         if (s_error.length()==0) {
-            if (start<1 || start>source.length()) {
-                s_error = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
+            if (start==source.length()+1 && end<=start) {
+                source.append(ch);
+                Variable r(source);
+                stack_values.push(r);
             }
             else if (end<1 || end>source.length()) {
-                s_error = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
+                s_error = Kumir::Core::fromUtf8("Правая граница вырезки за пределами строки");
+            }
+            else if (start<1 || start>source.length()) {
+                s_error = Kumir::Core::fromUtf8("Левая граница вырезки за пределами строки");
             }
             else if (end<start) {
-                s_error = Kumir::Core::fromUtf8("Несоответствие границ вырезки из строки");
+                source.insert(start-1, ch);
+                Variable r(source);
+                stack_values.push(r);
             }
             else {
                 source = source.substr(0,start-1)+ch+source.substr(end);
