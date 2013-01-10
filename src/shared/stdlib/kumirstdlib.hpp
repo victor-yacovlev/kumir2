@@ -80,7 +80,6 @@ struct FileType {
         valid = false;
     }
     inline bool operator==(const FileType & other) const {
-        std::wcout<<fullPath<<" "<<other.fullPath;
         return other.fullPath==fullPath;
     }
 
