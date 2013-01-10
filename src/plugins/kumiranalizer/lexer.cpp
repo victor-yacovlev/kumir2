@@ -233,6 +233,10 @@ void LexerPrivate::initNormalizator(const QString &fileName)
                     keyWords << value;
                     addToMap(kwdMap, value, LxSecNewline);
                 }
+                else if (context=="string length") {
+                    keyWords << value;
+                    addToMap(kwdMap, value, LxSecCurrentStringLength);
+                }
                 else if (context=="logical 'not'") {
                     keyWords << value;
                     addToMap(kwdMap, value, LxSecNot);
@@ -1145,7 +1149,7 @@ void popIfStatement(QList<Lexem*> &lexems, Statement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
+    popLexemsUntilPrimaryKeyword(lexems, result);
 }
 
 void popThenStatement(QList<Lexem*> &lexems, Statement &result)

@@ -855,7 +855,7 @@ void Run::run()
     // Unclosed files is an error only if program reached end
     bool unclosedFilesIsNotError = b_stopping || vm->hasMoreInstructions();
     // Must close all files if program reached end or user terminated
-    bool programFinished = b_stopping || !vm->hasMoreInstructions();
+    bool programFinished = b_stopping || !vm->hasMoreInstructions() || vm->error().length();
 //    __check_for_unclosed_files__st_funct(unclosedFilesIsNotError, closeUnclosedFiles);
 //    vm->updateStFunctError();
 //    if (!wasError && vm->error().length()>0) {

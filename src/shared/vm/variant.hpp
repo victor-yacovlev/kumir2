@@ -301,8 +301,8 @@ public:
     inline Char toChar() const { return value().toChar(); }
     inline String toString() const;
     inline String toString(int indeces[4]) const;
-    inline const Record & toRecord() const { return m_value.toRecord(); }
-    inline Record & toRecord() { return m_value.toRecord(); }
+    inline const Record toRecord() const { return value().toRecord(); }
+    inline Record & toRecord() { return value().toRecord(); }
 
     inline Variable toReference();
     inline static Variable toConstReference(const AnyValue & value);

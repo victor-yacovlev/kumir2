@@ -633,7 +633,7 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     if (e_debugLevel==GeneratorInterface::LinesAndVariables)
         argHandle << ctlOn;
 
-    for (int i=0; i<alg->header.arguments.size(); i++) {
+    for (int i=alg->header.arguments.size()-1; i>=0; i--) {
         Bytecode::Instruction store;
         const AST::Variable * var = alg->header.arguments[i];
         if (var->accessType==AST::AccessArgumentIn)

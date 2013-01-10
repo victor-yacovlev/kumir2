@@ -82,6 +82,9 @@ struct FileType {
     inline bool operator==(const FileType & other) const {
         return other.fullPath==fullPath;
     }
+    inline bool operator!=(const FileType & other) const {
+        return other.fullPath!=fullPath;
+    }
 
 private:
     String fullPath;
@@ -205,9 +208,10 @@ public:
 
     inline static StringList splitString(const String & s, const Char separator, bool skipEmptyParts) {
         StringList result;
-        size_t prev_index = 0;
+        size_t prev_index;
+        prev_index = 0;
         while (true) {
-            size_t cur_index = s.find(separator, prev_index+1);
+            size_t cur_index = s.find(separator, prev_index);
             if (cur_index==s.npos)
                 cur_index = s.length();
             size_t length = cur_index - prev_index;
@@ -602,7 +606,7 @@ public:
         return result;
     }
 
-    static double parseReal(String word, Char dot, ParseError & error) {
+    static real parseReal(String word, Char dot, ParseError & error) {
         error = NoError;
         if (word.length()==0) {
             error = EmptyWord;
@@ -694,7 +698,7 @@ public:
         mantissa += fraction;
         exponenta = static_cast<real>(iexponenta);
         real result = mantissa * Math::pow(10, exponenta);
-        return result;
+        return negative? -1.0*result : result;
     }
 
     static String sprintfInt(int value, char base, int width, char al) {
@@ -1044,7 +1048,7 @@ class Files {
 public:
     inline static bool isOpenedFiles() { return openedFiles.size()> 0; }
     inline static void init() {
-        fileEncoding = UTF8;
+        fileEncoding = DefaultEncoding;
     }
     inline static void finalize() {
         if (isOpenedFiles() && Core::getError().length()==0)
@@ -1408,7 +1412,8 @@ public:
 #       else
         Encoding codec = UTF8;
 #       endif
-        const char * path = Coder::encode(codec, fileName).c_str();
+        const std::string localName = Coder::encode(codec, fileName);
+        const char * path = localName.c_str();
 #   endif
 
         const char * fmode;
@@ -1672,7 +1677,7 @@ public:
         InputStream(FILE * f, Encoding enc) {
             stream = true;
             file = f;
-            if (encoding==DefaultEncoding) {
+            if (enc==DefaultEncoding) {
                 bool forceUtf8 = false;
                 if (f!=stdin) {
                     long curpos = ftell(f);
@@ -1733,12 +1738,27 @@ public:
                 }
                 else {
                     // More complex...
+                    long cpos = ftell(file);
+                    if (cpos==0) {
+                        // Try to read BOM
+                        static const char * BOM = "\xEF\xBB\xBF";
+                        char firstThree[3];
+                        bool seekBack = true;
+                        if (fread(firstThree,sizeof(char),3,file)==3
+                                && strncmp(BOM, firstThree, 3)==0)
+                            seekBack = false;
+                        if (seekBack)
+                            fseek(file, 0, SEEK_SET);
+                    }
                     lastCharBuffer[0] = fgetc(file);
                     uint8_t firstByte = lastCharBuffer[0];
                     uint8_t oneSymbMark = firstByte >> 5;
                     uint8_t twoSymbMark = firstByte >> 4;
                     if (firstByte==255 && file==Files::getAssignedIn()) {
                         Core::abort(Core::fromUtf8("Ошибка чтения данных: входной поток закончился"));
+                        return false;
+                    }
+                    else if (firstByte==255) {
                         return false;
                     }
                     int extraBytes = 0;

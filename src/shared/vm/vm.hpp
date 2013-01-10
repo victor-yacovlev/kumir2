@@ -666,6 +666,7 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
             c.algId = functions[p].algId;
             stack_contexts.push(c);
             b_nextCallInto = false;
+            stack_values.pop(); // current implementation doesn't requere args count
             if (m_dontTouchMe)
                 m_dontTouchMe->unlock();
         }
@@ -1028,7 +1029,8 @@ void KumirVM::do_filescall(uint16_t alg)
     }
     /* алг закрыть(файл ключ) */
     case 0x0003: {
-        const Record xx = stack_values.pop().toRecord();
+        const Variable xvar = stack_values.pop();
+        const Record xx = xvar.toRecord();
         Kumir::FileType x = fromRecordValue<Kumir::FileType>(xx);
         Kumir::Files::close(x);
         s_error = Kumir::Core::getError();
@@ -1036,7 +1038,8 @@ void KumirVM::do_filescall(uint16_t alg)
     }
     /* алг начать чтение(файл ключ) */
     case 0x0004: {
-        const Record xx = stack_values.pop().toRecord();
+        const Variable & xval = stack_values.pop();
+        const Record xx = xval.toRecord();
         Kumir::FileType x = fromRecordValue<Kumir::FileType>(xx);
         Kumir::Files::reset(x);
         s_error = Kumir::Core::getError();
@@ -1044,7 +1047,8 @@ void KumirVM::do_filescall(uint16_t alg)
     }
     /* алг лог конец файла(файл ключ) */
     case 0x0005: {
-        const Record xx = stack_values.pop().toRecord();
+        const Variable & xval = stack_values.pop();
+        const Record xx = xval.toRecord();
         Kumir::FileType x = fromRecordValue<Kumir::FileType>(xx);
         bool y = Kumir::Files::eof(x);
         stack_values.push(Variable(y));
@@ -1076,7 +1080,8 @@ void KumirVM::do_filescall(uint16_t alg)
     }
     /* алг лог есть данные(файл ключ) */
     case 0x0009: {
-        const Record xx = stack_values.pop().toRecord();
+        const Variable xval = stack_values.pop();
+        const Record xx = xval.toRecord();
         Kumir::FileType x = fromRecordValue<Kumir::FileType>(xx);
         bool y = Kumir::Files::hasData(x);
         stack_values.push(Variable(y));
@@ -1122,6 +1127,24 @@ void KumirVM::do_filescall(uint16_t alg)
         const String x = stack_values.pop().toString();
         Kumir::Files::assignOutStream(x);
         s_error = Kumir::Core::getError();
+        break;
+    }
+    /* алг лог =(фaйл ф1, файл ф2) */
+    case 0x0011: {
+        const Record f2rec = stack_values.pop().toRecord();
+        const Record f1rec = stack_values.pop().toRecord();
+        const Kumir::FileType f1 = fromRecordValue<Kumir::FileType>(f1rec);
+        const Kumir::FileType f2 = fromRecordValue<Kumir::FileType>(f2rec);
+        stack_values.push(Variable(f1==f2));
+        break;
+    }
+    /* алг лог =(фaйл ф1, файл ф2) */
+    case 0x0012: {
+        const Record f2rec = stack_values.pop().toRecord();
+        const Record f1rec = stack_values.pop().toRecord();
+        const Kumir::FileType f1 = fromRecordValue<Kumir::FileType>(f1rec);
+        const Kumir::FileType f2 = fromRecordValue<Kumir::FileType>(f2rec);
+        stack_values.push(Variable(f1!=f2));
         break;
     }
     default: {
@@ -1370,7 +1393,8 @@ void KumirVM::do_specialcall(uint16_t alg)
         }
         else {
             if (m_dontTouchMe) m_dontTouchMe->lock();
-            for (int i=0; i<varsCount; i++) {
+
+            for (int i=0; i<references.size(); i++) {
                 if (references.at(i).baseType()==VT_int) {
                     int value = Kumir::IO::readInteger(fileReference, !fileIO);
                     references.at(i).setValue(AnyValue(value));
@@ -1415,7 +1439,7 @@ void KumirVM::do_specialcall(uint16_t alg)
         {
             String margin;
             margin.reserve(100);
-            for (int i=0; i<varsCount; i++) {
+            for (int i=0; i<references.size(); i++) {
                 if (references.at(i).isConstant())
                     continue;
                 if (i>0) {
@@ -1444,7 +1468,8 @@ void KumirVM::do_specialcall(uint16_t alg)
         Kumir::FileType fileReference;
         if (argsCount % 3) {
             fileIO = true;
-            const Record fileReferenceRecord = stack_values.pop().toRecord();
+            const Variable fileVar = stack_values.pop();
+            const Record fileReferenceRecord = fileVar.toRecord();
             fileReference = fromRecordValue<Kumir::FileType>(fileReferenceRecord);
 
         }
@@ -1523,7 +1548,7 @@ void KumirVM::do_specialcall(uint16_t alg)
                 s_error = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
             }
             else {
-                source[index] = ch;
+                source[index-1] = ch;
                 Variable r(source);
                 stack_values.push(r);
             }
@@ -1542,13 +1567,14 @@ void KumirVM::do_specialcall(uint16_t alg)
         s_error = Kumir::Core::getError();
         if (s_error.length()==0) {
             if (start<1 || start>s.length()) {
-                s_error = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
-            }
-            else if (end<1 || end>s.length()) {
-                s_error = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
+                s_error = Kumir::Core::fromUtf8("Левая граница вырезки за пределами строки");
             }
             else if (end<start) {
-                s_error = Kumir::Core::fromUtf8("Несоответствие границ вырезки из строки");
+                String empty;
+                stack_values.push(Variable(empty));
+            }
+            else if (end<1 || end>s.length()) {
+                s_error = Kumir::Core::fromUtf8("Правая граница вырезки за пределами строки");
             }
             else {
                 String result = s.substr(start-1, end-start+1);
@@ -1571,14 +1597,21 @@ void KumirVM::do_specialcall(uint16_t alg)
         String ch = first.value().toString();
         s_error = Kumir::Core::getError();
         if (s_error.length()==0) {
-            if (start<1 || start>source.length()) {
-                s_error = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
+            if (start==source.length()+1 && end<=start) {
+                source.append(ch);
+                Variable r(source);
+                stack_values.push(r);
             }
             else if (end<1 || end>source.length()) {
-                s_error = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
+                s_error = Kumir::Core::fromUtf8("Правая граница вырезки за пределами строки");
+            }
+            else if (start<1 || start>source.length()) {
+                s_error = Kumir::Core::fromUtf8("Левая граница вырезки за пределами строки");
             }
             else if (end<start) {
-                s_error = Kumir::Core::fromUtf8("Несоответствие границ вырезки из строки");
+                source.insert(start-1, ch);
+                Variable r(source);
+                stack_values.push(r);
             }
             else {
                 source = source.substr(0,start-1)+ch+source.substr(end);
@@ -2211,7 +2244,7 @@ void KumirVM::do_push(uint8_t r)
 void KumirVM::do_pop(uint8_t r)
 {
     Variable v = stack_values.pop();
-    if (r==0) {
+    if (r==0 && v.hasValue()) {
         if (v.baseType()==VT_int) {
             register0 = v.toInt();
         }
@@ -2228,7 +2261,7 @@ void KumirVM::do_pop(uint8_t r)
             register0 = v.toString();
         }
     }
-    else {
+    else if (r!=0) {
         stack_contexts.top().registers[r] = v.toInt();
     }
     nextIP();

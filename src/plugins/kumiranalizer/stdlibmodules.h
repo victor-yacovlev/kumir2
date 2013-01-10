@@ -105,6 +105,9 @@ class Files
         /* 0x000f */ result << QString::fromUtf8("алг НАЗНАЧИТЬ ВВОД(лит имя файла)");
         /* 0x0010 */ result << QString::fromUtf8("алг НАЗНАЧИТЬ ВЫВОД(лит имя файла)");
 
+        /* 0x0011*/ result << QString::fromUtf8("алг лог =(файл ф1, файл ф2)");
+        /* 0x0012*/ result << QString::fromUtf8("алг лог <>(файл ф1, файл ф2)");
+
         return result;
     }
 };
