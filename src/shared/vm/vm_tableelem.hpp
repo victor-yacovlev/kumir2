@@ -463,15 +463,15 @@ inline std::string vtypeToString(const std::list<ValueType> & type, uint8_t dim)
         for ( ; it!=type.end(); ++it) {
             t = *it;
             if (t==VT_int)
-                result = "int";
+                result += "int";
             else if (t==VT_real)
-                result = "real";
+                result += "real";
             else if (t==VT_char)
-                result = "char";
+                result += "char";
             else if (t==VT_string)
-                result = "string";
+                result += "string";
             else if (t==VT_bool)
-                result = "bool";
+                result += "bool";
             itt = it;
             itt++;
             if ( itt != type.end() ) {
