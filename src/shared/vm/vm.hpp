@@ -1468,7 +1468,8 @@ void KumirVM::do_specialcall(uint16_t alg)
         Kumir::FileType fileReference;
         if (argsCount % 3) {
             fileIO = true;
-            const Record fileReferenceRecord = stack_values.pop().toRecord();
+            const Variable fileVar = stack_values.pop();
+            const Record fileReferenceRecord = fileVar.toRecord();
             fileReference = fromRecordValue<Kumir::FileType>(fileReferenceRecord);
 
         }
