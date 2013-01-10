@@ -539,6 +539,8 @@ public:
         NoError,
         EmptyWord,
         WrongHex,
+        WrongReal,
+        WrongExpForm,
         BadSymbol,
         Overflow
     };
@@ -633,6 +635,14 @@ public:
         bool dotFound = false;
         bool eFound = false;
         static const String E = Core::fromUtf8("eEеЕ"); // includes cyrillic 'e'
+        bool hasE = false;
+        for (size_t i=0; i<E.length(); i++) {
+            if (!hasE) {
+                hasE = word.find(E[i]);
+            }
+            if (hasE)
+                break;
+        }
         for (size_t i=pos; i<word.length(); i++) {
             Char ch = word.at(i);
             if (!dotFound) {
@@ -655,10 +665,13 @@ public:
                 if (E.find_first_of(ch)!=String::npos) {
                     if (sFractional.length()>0) {
                         fractional = parseInt(sFractional, 10, error);
-                        if (error!=NoError) return 0.0;
+                        if (error!=NoError) {
+                            error = hasE? WrongExpForm : WrongReal;
+                            return 0.0;
+                        }
                     }
                     if (fractional<0) {
-                        error = BadSymbol;
+                        error = hasE? WrongExpForm : WrongReal;
                         return 0.0;
                     }
                     eFound = true;
@@ -689,6 +702,8 @@ public:
             Char ch = sFractional.at(i);
             if (ch==Char('0'))
                 fractionalLength -= 1;
+            else
+                break;
         }
         fraction = fractional;
         for (int i=0; i<fractionalLength; i++) {
@@ -1951,6 +1966,12 @@ public:
         }
         else if (error==Converter::BadSymbol) {
             is.setError(Core::fromUtf8("Ошибка ввода вещественного числа: число содержит неверный символ"));
+        }
+        else if (error==Converter::WrongExpForm) {
+            is.setError(Core::fromUtf8("Ошибка ввода вещественного числа: неверная запись экспоненциальной формы"));
+        }
+        else if (error==Converter::WrongExpForm) {
+            is.setError(Core::fromUtf8("Ошибка ввода вещественного числа: неверная запись"));
         }
         else if (error==Converter::Overflow) {
             is.setError(Core::fromUtf8("Ошибка ввода: слишком большое вещественное число"));
