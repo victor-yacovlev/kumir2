@@ -638,7 +638,7 @@ public:
         bool hasE = false;
         for (size_t i=0; i<E.length(); i++) {
             if (!hasE) {
-                hasE = word.find(E[i]);
+                hasE = word.find(E[i])!=String::npos;
             }
             if (hasE)
                 break;
@@ -807,7 +807,7 @@ public:
     inline static real stringToReal(const String & str, bool & ok)
     {
         ParseError error = NoError;
-        int result = parseReal(str, '.', error);
+        real result = parseReal(str, '.', error);
         ok = error == NoError;
         return result;
     }
