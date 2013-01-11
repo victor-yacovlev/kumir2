@@ -438,6 +438,7 @@ void KumirVM::reset()
         c.algId = testingProgram.algId;
         c.moduleId = testingProgram.module;
     }
+    c.IP = 0;
 
     // Push startup context to stack
     stack_contexts.push(c);
@@ -457,11 +458,10 @@ void KumirVM::reset()
             initContext.runMode = CRM_ToEnd;
             initContext.moduleId = e.module;
             initContext.algId = -1;
+            initContext.IP = 0;
             stack_contexts.push(initContext);
         }
     }
-    // Set Instruction Point (IP) in current context to 0
-    nextIP(); // Change from -1 to 0
     // Prepare standard library
     Kumir::initStandardLibrary();
 }

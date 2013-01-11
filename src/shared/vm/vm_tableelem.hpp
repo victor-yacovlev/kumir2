@@ -621,7 +621,7 @@ inline std::string localToTextStream(const TableElem & e)
 inline std::string globalToTextStream(const TableElem & e)
 {
     std::ostringstream os;
-    os << ".global type:" << vtypeToString(e.vtype, e.dimension) << " ";
+    os << ".global type=" << vtypeToString(e.vtype, e.dimension) << " ";
     os << "module=" << int(e.module) << " id=" << e.id;
     if (e.name.length()>0) {
         os << " name=\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\"";

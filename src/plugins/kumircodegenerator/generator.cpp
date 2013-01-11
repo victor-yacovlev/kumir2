@@ -498,7 +498,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
 
     // Call main (first) algorhitm:
     //  -- 1) Push arguments
-    for (int i=alg->header.arguments.size()-1; i>=0; i--) {
+    for (int i=0; i<alg->header.arguments.size(); i++) {
         AST::VariableAccessType t = alg->header.arguments[i]->accessType;
         if (t==AST::AccessArgumentIn) {
             Bytecode::Instruction load;
@@ -515,6 +515,13 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
             instrs << ref;
         }
     }
+
+    Bytecode::Instruction argsCount;
+    argsCount.type = Bytecode::LOAD;
+    argsCount.scope = Bytecode::CONSTT;
+    argsCount.arg = constantValue(QList<Bytecode::ValueType>()<<Bytecode::VT_int,0,alg->header.arguments.size());
+    instrs << argsCount;
+
     //  -- 2) Call main (first) algorhitm
     Bytecode::Instruction callInstr;
     callInstr.type = Bytecode::CALL;
