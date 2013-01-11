@@ -996,7 +996,7 @@ void KumirVM::do_stdcall(uint16_t alg)
 
 void KumirVM::do_filescall(uint16_t alg)
 {
-    m_dontTouchMe->lock();
+    if (m_dontTouchMe) m_dontTouchMe->lock();
     stack_values.pop(); // Args count
     switch (alg) {
     /* алг файл открыть на чтение(лит имя файла) */
@@ -1151,12 +1151,12 @@ void KumirVM::do_filescall(uint16_t alg)
         s_error = Kumir::Core::fromUtf8("Вызов неизвестного алгоримта, возможно из более новой версии Кумир");
     }
     }
-    m_dontTouchMe->unlock();
+    if (m_dontTouchMe) m_dontTouchMe->unlock();
 }
 
 void KumirVM::do_stringscall(uint16_t alg)
 {
-    m_dontTouchMe->lock();
+    if (m_dontTouchMe) m_dontTouchMe->lock();
     stack_values.pop(); // Args count
     switch (alg) {
     /* алг лит верхний регистр(лит строка) */
@@ -1237,7 +1237,7 @@ void KumirVM::do_stringscall(uint16_t alg)
         s_error = Kumir::Core::fromUtf8("Вызов неизвестного алгоримта, возможно из более новой версии Кумир");
     }
     }
-    m_dontTouchMe->unlock();
+    if (m_dontTouchMe) m_dontTouchMe->unlock();
 }
 
 
