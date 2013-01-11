@@ -712,7 +712,7 @@ public:
         mantissa = static_cast<real>(integral);
         mantissa += fraction;
         exponenta = static_cast<real>(iexponenta);
-        real result = mantissa * Math::pow(10, exponenta);
+        real result = mantissa * ::pow(10, exponenta);
         return negative? -1.0*result : result;
     }
 
