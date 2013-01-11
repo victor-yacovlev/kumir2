@@ -264,9 +264,9 @@ int main(int argc, char *argv[])
     // Main loop
     while (vm.hasMoreInstructions()) {
         vm.evaluateNextInstruction();
-        if (Kumir::Core::getError().length()>0) {
+        if (vm.error().length()>0) {
             static const Kumir::String RUNTIME_ERROR = Kumir::Core::fromUtf8("ОШИБКА ВЫПОЛНЕНИЯ: ");
-            const Kumir::String message = RUNTIME_ERROR + Kumir::Core::getError();
+            const Kumir::String message = RUNTIME_ERROR + vm.error();
             const std::string localMessage = Kumir::Coder::encode(LOCALE, message);
             std::cerr << localMessage << std::endl;
             return 10;
