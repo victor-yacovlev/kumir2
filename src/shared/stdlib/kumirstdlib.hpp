@@ -1512,7 +1512,19 @@ public:
         }
         const FileType & f = (*it);
         FILE * fh = (*it2);
-        return feof(fh)>0? true : false;
+        if (feof(fh))
+            return true;
+        unsigned char ch = 0x00;
+        if (fh!=stdin) {
+            ch = fgetc(fh);
+            ungetc(ch, fh);
+        }
+        else {
+            long pos = ftell(fh);
+            ch = fgetc(fh);
+            fseek(fh, pos, SEEK_SET);
+        }
+        return ch==0xFF;
     }
     inline static bool hasData(const FileType & key) {
         std::deque<FileType>::iterator it = openedFiles.begin();
@@ -1528,6 +1540,9 @@ public:
             return false;
         }
         FILE * fh = (*it2);
+        long backPos = -1;
+        if (fh!=stdin)
+            backPos = ftell(fh);
         std::vector<char> buffer(1024);
         size_t readAmount = 0;
         bool result = false;
@@ -1535,10 +1550,14 @@ public:
             if (feof(fh))
                 break;
             char ch = fgetc(fh);
-            if (readAmount>=buffer.size())
-                buffer.resize(buffer.size()*2);
-            buffer[readAmount] = ch;
-            readAmount ++;
+            if ((unsigned char)(ch)==0xFF)
+                break;
+            if (fh==stdin) {
+                if (readAmount>=buffer.size())
+                    buffer.resize(buffer.size()*2);
+                buffer[readAmount] = ch;
+                readAmount ++;
+            }
             if (ch==' ' || ch=='\t' || ch=='\r' || ch=='\n') {
                 // found a whitespace
             }
@@ -1547,8 +1566,13 @@ public:
                 break;
             }
         }
-        for (int i=readAmount-1; i>=0; i--) {
-            ungetc(buffer[i], fh);
+        if (fh==stdin) {
+            for (int i=readAmount-1; i>=0; i--) {
+                ungetc(buffer[i], fh);
+            }
+        }
+        else {
+            fseek(fh, backPos, SEEK_SET);
         }
         return result;
     }
