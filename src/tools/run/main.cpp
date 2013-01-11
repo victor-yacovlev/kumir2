@@ -52,6 +52,38 @@ InteractionHandler::InteractionHandler(int argc, char *argv[])
     }
 }
 
+#define IS_HEX(x) ( (x>='0' && x<='9') || (x>='A' && x<='F') || (x>='a' && x<='f') )
+
+Kumir::String decodeHttpStringValue(const std::string & s)
+{
+    Kumir::String result;
+    size_t cpos = 0;
+    std::string utf8string;
+    utf8string.reserve(s.length());
+    while (cpos<s.length()) {
+        if (s[cpos]=='%'
+                && cpos+2 < s.length()
+                && IS_HEX(s[cpos+1])
+                && IS_HEX(s[cpos+2])
+                )
+        {
+            std::string hexcode = std::string("0x")+s.substr(cpos+1,2);
+            bool ok;
+            int value = Kumir::Converter::stringToInt(Kumir::Coder::decode(Kumir::ASCII,hexcode), ok);
+            char ch = (char)value;
+            utf8string.push_back(ch);
+            cpos += 3;
+        }
+        else {
+            utf8string.push_back(s[cpos]);
+            cpos += 1;
+        }
+
+    }
+    result = Kumir::Coder::decode(Kumir::UTF8, utf8string);
+    return result;
+}
+
 bool InteractionHandler::readScalarArgument(const Kumir::String &message, const Kumir::String &name, VM::ValueType type, VM::AnyValue &val)
 {
     Kumir::IO::InputStream stream;
@@ -60,7 +92,7 @@ bool InteractionHandler::readScalarArgument(const Kumir::String &message, const 
     char * REQUEST_METHOD = getenv("REQUEST_METHOD");
     char * QUERY_STRING = getenv("QUERY_STRING");
     if (REQUEST_METHOD && std::string(REQUEST_METHOD)==std::string("GET") && QUERY_STRING) {
-        Kumir::String query_string = Kumir::Coder::decode(LOCALE, std::string(QUERY_STRING));
+        Kumir::String query_string = decodeHttpStringValue(std::string(QUERY_STRING));
         Kumir::StringList pairs = Kumir::Core::splitString(query_string, Kumir::Char('&'), true);
         for (size_t i=0; i<pairs.size(); i++) {
             Kumir::StringList apair = Kumir::Core::splitString(pairs[i], Kumir::Char('='), true);
