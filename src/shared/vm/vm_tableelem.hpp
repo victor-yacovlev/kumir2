@@ -312,7 +312,7 @@ inline void constantFromDataStream(std::list<char> & stream,
     if (dimension==0) {
         VM::AnyValue value;
         scalarConstantFromDataStream(stream, baseType, value);
-        val.setBaseType(VT_record);
+        val.setBaseType(baseType.size()==1? baseType.front() : VT_record);
         val.setValue(value);
     }
     else {

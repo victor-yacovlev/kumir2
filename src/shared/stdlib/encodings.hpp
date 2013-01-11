@@ -165,12 +165,14 @@ namespace Kumir {
             }
             unsigned char byte = (*from);
             from ++;
+            unsigned char byte_first_3_bits = byte >> 5;
+            unsigned char byte_first_4_bits = byte >> 4;
             if ( (byte & 0x80) == 0 ) {
                 // first byte mask: 0xxxxxxx
                 // -- only one byte used
                 v = byte & 0x7F; // 0x7F = 01111111;
             }
-            else if ( (byte >> 5) & 0x06 ) {
+            else if ( byte_first_3_bits==0x06 ) {
                 // first byte mask: 110xxxxx
                 // -- use two bytes
                 v = byte & 0x1F; // 0x1F = 000xxxxx
@@ -182,7 +184,7 @@ namespace Kumir {
                 from ++;
                 v = (v << 6) | (byte & 0x3F); // 0x3F = 00111111
             }
-            else if ( (byte >> 4) & 0x0E ) {
+            else if (byte_first_4_bits==0x0E ) {
                 // first byte mask: 1110xxxx
                 // -- use three bytes
                 v = byte & 0x0F; // 0x0F = 00001111
