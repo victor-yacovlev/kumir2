@@ -757,7 +757,7 @@ public:
     }
 
     static String sprintfReal(real value, Char dot, bool expform, int width, int decimals, char al) {
-        char buffer[50];
+        char buffer[500];
         String sprintfFormat;
         sprintfFormat.reserve(10);
         sprintfFormat.push_back('%');
