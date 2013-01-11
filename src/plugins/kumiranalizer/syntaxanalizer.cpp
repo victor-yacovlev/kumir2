@@ -1140,7 +1140,12 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
     {
         // TODO in 2.1:
         // allow this!
-        const QString err = _("Expression not assigned to anything");
+        QString err = _("Expression not assigned to anything");
+        if (rightExpr->operatorr==AST::OpEqual)
+        {
+            // Possible = instead of :=
+            err = _("'=' instead of ':='");
+        }
         for (int i=0; i<right.size(); i++) {
             st.data[i]->error = err;
         }
@@ -4433,6 +4438,7 @@ AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<Subexpre
                 const QString & operatorName = s[l].o->data;
                 AST::Expression * customOperation = makeCustomBinaryOperation(operatorName, headExpr, tailExpr);
                 if (customOperation) {
+                    customOperation->operatorr = operation;
                     return customOperation;
                 }
             }

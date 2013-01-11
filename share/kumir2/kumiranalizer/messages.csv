@@ -25,7 +25,7 @@
 "Nothing between '(' and ')'";"Пусто между “(“ и “)”";"";"";"";"";
 "No operands";"Только операция";"";"";"";"";
 "File handle is not integer";"Ключ – не целое число";"";"";"";"";
-"No colon after condition";"В конце нет “:”";"";"";"";"";
+"Wrong E-real number";"Ошибка в E-записи числа";"";"";"";"";
 "Can't not %1";"Нельзя не %1";"";"";"";"";
 "No pairing ']'";"Нет парной “]”";"";"";"";"";
 "Can't integer:=charect";"Нельзя “цел := сим”";"";"";"";"";
@@ -53,7 +53,7 @@
 "Function in array bound";"Алгоритм в границе";"";"";"";"";
 "Indeces was specified before";"Повторное указание индексов";"";"";"";"";
 "From-value not specified";"Нет значения после “от”";"";"";"";"";
-"No variables declared after '%1'";"Пусто после “%1”";"";"";"";"";
+"Right array bound is not integer";"Правая граница таблицы не целая";"";"";"";"";
 "Too many 'not'";"Много “не”";"";"";"";"";
 "No pairing ')'";"Нет парной “)”";"";"";"";"";
 "Table constant element of variant type";"";"";"";"";"";
@@ -71,7 +71,7 @@
 "Variable name is empty";"Где имя величины?";"";"";"";"";
 "Assignment to in- argument";"Нельзя присвоить аргументу";"";"";"";"";
 "No coma before type";"Нет запятой перед объявлением";"";"";"";"";
-"Right array bound is not integer";"Правая граница таблицы не целая";"";"";"";"";
+"No variables declared after '%1'";"Пусто после “%1”";"";"";"";"";
 "No arguments";"Нет аргументов";"";"";"";"";
 "Extra 'fi'";"Что - “все”?";"";"";"";"";
 "Type not declared before";"Не указан тип";"";"";"";"";
@@ -106,7 +106,7 @@
 "Assignment to complex expression";"Нельзя присвоить выражению";"";"";"";"";
 "Can't output value of type %1";"";"";"";"";"";
 "Can't real:=string";"Нельзя “вещ := лит”";"";"";"";"";
-"Constant instead of name";"Здесь должно быть имя";"";"";"";"";
+"Wrong hex constant";"Плохая 16-ричная константа";"";"";"";"";
 "':=' or '=' ?";"“:=” или “=” ?";"";"";"";"";
 "Unpaired quote";"Непарная кавычка";"";"";"";"";
 "Array name not specified before '['";"Перед “[“ должно быть имя таблицы";"";"";"";"";
@@ -121,7 +121,7 @@
 "Extra docstring";"Здесь не должно быть строк описания";"";"";"";"";
 "Extra brackets for algorithm without arguments";"Нет аргументов – не нужны скобки";"";"";"";"";
 "Assignment to function";"Нельзя присвоить алгоритму";"";"";"";"";
-"Wrong hex constant";"Плохая 16-ричная константа";"";"";"";"";
+"Constant instead of name";"Здесь должно быть имя";"";"";"";"";
 "Unmatched array dimensions";"Несоответствие размерностей таблиц";"";"";"";"";
 "Operator in name";"Имя содержит оператор";"";"";"";"";
 "Times value not specified";"Сколько раз?";"";"";"";"";
@@ -170,7 +170,7 @@
 "Unpaired '['";"Не парная “[“";"";"";"";"";
 "Can't pass this expression as in/out-argumeny";"Не величина в аргрез-параметре";"";"";"";"";
 "Must be a scalar constant";"";"";"";"";"";
-"Wrong E-real number";"Ошибка в E-записи числа";"";"";"";"";
+"No colon after condition";"В конце нет “:”";"";"";"";"";
 "Extra 'end'";"Лишний “кон”";"";"";"";"";
 "Algorhitm header in algorhitm body";"Вложенное описание алгоритма";"";"";"";"";
 "Not a simple index";"Индекс – не число";"";"";"";"";
@@ -190,6 +190,7 @@
 "Can't input an array";"";"";"";"";"";
 "No 'case' after 'switch'";"Нет “при:” после “выбор”";"";"";"";"";
 "Garbage between alg..begin";"Мусор между “алг”..”нач”";"";"";"";"";
+"= instead of :=";"";"";"";"";"";
 "Garbage afrer module name";"Мусор после имени исполнителя";"";"";"";"";
 "Array element in array bound";"Элемент таблицы в границе";"";"";"";"";
 "First unnamed algorithm should not return anything";"Алгоритм без имени ничего не возвращает";"";"";"";"";
@@ -261,6 +262,7 @@
 "'%1' can't be part of name";"Константа в имени";"";"";"";"";
 "Extra coma";"Лишняя запятая";"";"";"";"";
 "Can't input constant value";"Нельзя ввести в константу";"";"";"";"";
+"'='' instead of ':='";"";"";"";"";"";
 "Statement ends with coma";"Запятая в конце";"";"";"";"";
 "Left array bound is empty";"Нет левой границы таблицы";"";"";"";"";
 "Expression not assigned to anything";"Выражение ничему не присвоено";"";"";"";"";
