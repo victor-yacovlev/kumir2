@@ -253,6 +253,7 @@ int main(int argc, char *argv[])
 
     // Prepare runner
     VM::KumirVM vm;
+    vm.setDebugOff(false);
 
     InteractionHandler interactionHandler(argc, argv);
     vm.setExternalHandler(&interactionHandler);
@@ -266,7 +267,18 @@ int main(int argc, char *argv[])
         vm.evaluateNextInstruction();
         if (vm.error().length()>0) {
             static const Kumir::String RUNTIME_ERROR = Kumir::Core::fromUtf8("ОШИБКА ВЫПОЛНЕНИЯ: ");
-            const Kumir::String message = RUNTIME_ERROR + vm.error();
+            static const Kumir::String RUNTIME_ERROR_AT = Kumir::Core::fromUtf8("ОШИБКА ВЫПОЛНЕНИЯ В СТРОКЕ ");
+            static const Kumir::String COLON = Kumir::Core::fromAscii(": ");
+            Kumir::String message;
+            if (vm.effectiveLineNo()!=-1) {
+                message = RUNTIME_ERROR_AT+
+                        Kumir::Converter::sprintfInt(vm.effectiveLineNo()+1,10,0,0)+
+                        COLON+
+                        vm.error();
+            }
+            else {
+                message = RUNTIME_ERROR + vm.error();
+            }
             const std::string localMessage = Kumir::Coder::encode(LOCALE, message);
             std::cerr << localMessage << std::endl;
             return 10;
