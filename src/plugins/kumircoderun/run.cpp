@@ -106,6 +106,7 @@ void Run::runStepOut()
 
 void Run::runBlind()
 {
+    b_stopping = false;
     e_runMode = RM_ToEnd;
     vm->setDebugOff(true);
     vm->setNextCallToEnd();
@@ -750,6 +751,7 @@ bool Run::makeOutput(
     }
     QString data = QString::fromStdWString(os.getBuffer());
     emit output(data);
+    msleep(10);
     return true;
 }
 
