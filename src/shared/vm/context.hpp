@@ -19,6 +19,7 @@ struct Context {
         IP = -1; type = Bytecode::EL_FUNCTION;
         runMode = CRM_ToEnd; lineNo = -1;
         algId = -1;
+        program = 0;
     }
 
     int registers[201];

@@ -323,7 +323,25 @@ void SyntaxAnalizer::processAnalisys()
     }
     for (int i=0; i<d->statements.size(); i++) {
         d->currentPosition = i;
-        const Statement & st = d->statements[i];
+        Statement & st = d->statements[i];
+        // Fix unmatched modules first
+        if (!st.mod) {
+            for (int j=0; j<d->ast->modules.size(); j++) {
+                if (d->ast->modules[j]->header.type==AST::ModTypeUser &&
+                        d->ast->modules[j]->header.name.isEmpty()) {
+                    st.mod = d->ast->modules[j];
+                    break;
+                }
+            }
+        }
+        if (!st.mod) {
+            // Add dummy module for this statement
+            // (it is possible to reuse dummy module later)
+            AST::Module * dummyModule = new AST::Module;
+            dummyModule->header.type = AST::ModTypeUser;
+            d->ast->modules.push_back(dummyModule);
+            st.mod  = dummyModule;
+        }
         bool wasError = st.hasError();
         if (st.statement) {
             for (int j=0; j<st.statement->expressions.size(); j++) {

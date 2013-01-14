@@ -1172,6 +1172,7 @@ void PDAutomataPrivate::processCorrectAlgHeader()
                 lastModule->impl.algorhitms << alg;
                 source.at(currentPosition)->mod = lastModule;
             }
+            setCurrentError(_("Algorithm out of module"));
         }
         else {
             currentModule->impl.algorhitms << alg;
