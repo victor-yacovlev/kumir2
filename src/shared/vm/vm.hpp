@@ -440,8 +440,9 @@ void KumirVM::reset()
     }
     c.IP = 0;
 
-    // Push startup context to stack
-    stack_contexts.push(c);
+    // Push startup context to stack (if non empty)
+    if (c.program)
+        stack_contexts.push(c);
 
     // Each kumir module have 'initialization' section,
     // so push all these sections (if any) into stack
@@ -479,7 +480,7 @@ bool KumirVM::hasMoreInstructions() const
     if (stack_contexts.size()>0) {
         const std::vector<Bytecode::Instruction> * program = stack_contexts.at(0).program;
         int IP = stack_contexts.at(0).IP;
-        return IP < program->size();
+        return program && IP < program->size();
     }
     else {
         return false;
