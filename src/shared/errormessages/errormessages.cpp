@@ -92,9 +92,12 @@ QString ErrorMessages::message(const QString &plugin
                        , const QString &key)
 {
     Context context(plugin, language);
-    static const QRegExp arg1("\\\\1=\\{(\\S*)\\}");
-    static const QRegExp arg2("\\\\2=\\{(\\S*)\\}");
-    static const QRegExp arg3("\\\\3=\\{(\\S*)\\}");
+    static QRegExp arg1("\\\\1=\\{(\\S*)\\}");
+    arg1.setMinimal(true);
+    static QRegExp arg2("\\\\2=\\{(\\S*)\\}");
+    arg2.setMinimal(true);
+    static QRegExp arg3("\\\\3=\\{(\\S*)\\}");
+    arg3.setMinimal(true);
     QString k = key;
     QStringList arguments;
     QString result;

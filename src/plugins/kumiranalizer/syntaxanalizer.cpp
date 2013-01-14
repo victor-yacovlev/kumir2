@@ -1284,6 +1284,9 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
                 else if (b==AST::TypeBoolean) {
                     err = _("Can't integer:=boolean");
                 }
+                else if (b==AST::TypeUser) {
+                    err = _("Can't %1:=%2", lexer->classNameByBaseType(leftExpr->baseType.kind), rightExpr->baseType.name);
+                }
             }
             else if (a==AST::TypeReal) {
                 if (b==AST::TypeCharect) {
@@ -1294,6 +1297,9 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
                 }
                 else if (b==AST::TypeBoolean) {
                     err = _("Can't real:=boolean");
+                }
+                else if (b==AST::TypeUser) {
+                    err = _("Can't %1:=%2", lexer->classNameByBaseType(leftExpr->baseType.kind), rightExpr->baseType.name);
                 }
             }
             else if (a==AST::TypeCharect) {
@@ -1309,6 +1315,9 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
                 else if (b==AST::TypeString) {
                     err = _("Can't charect:=string");
                 }
+                else if (b==AST::TypeUser) {
+                    err = _("Can't %1:=%2", lexer->classNameByBaseType(leftExpr->baseType.kind), rightExpr->baseType.name);
+                }
             }
             else if (a==AST::TypeBoolean) {
                 if (b==AST::TypeInteger) {
@@ -1323,6 +1332,9 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
                 else if (b==AST::TypeString) {
                     err = _("Can't boolean:=string");
                 }
+                else if (b==AST::TypeUser) {
+                    err = _("Can't %1:=%2", lexer->classNameByBaseType(leftExpr->baseType.kind), rightExpr->baseType.name);
+                }
             }
             else if (a==AST::TypeString) {
                 if (b==AST::TypeBoolean) {
@@ -1333,6 +1345,17 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
                 }
                 else if (b==AST::TypeReal) {
                     err = _("Can't string:=real");
+                }
+                else if (b==AST::TypeUser) {
+                    err = _("Can't %1:=%2", lexer->classNameByBaseType(leftExpr->baseType.kind), rightExpr->baseType.name);
+                }
+            }
+            else if (a==AST::TypeUser) {
+                if (b!=AST::TypeUser) {
+                    err = _("Can't %1:=%2", leftExpr->baseType.name, lexer->classNameByBaseType(rightExpr->baseType.kind));
+                }
+                else if (b==AST::TypeUser) {
+                    err = _("Can't %1:=%2", leftExpr->baseType.name, rightExpr->baseType.name);
                 }
             }
         } // if (leftExpr->type!=rightExpr->type)
