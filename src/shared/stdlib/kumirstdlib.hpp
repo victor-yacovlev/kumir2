@@ -548,6 +548,40 @@ public:
     inline static void init() {}
     inline static void finalize() {}
 
+    static bool validDecimal(const String & astring) {
+        static const String validSymbols = Core::fromAscii("0123456789");
+        for (size_t i=0; i<astring.length(); i++) {
+            if (i==0 && (astring[i]=='-' || astring[i]=='+'))
+                continue;
+            if (validSymbols.find(astring[i])==String::npos)
+                return false;
+        }
+        return true;
+    }
+
+    static real fromDecimal(const String & astring) {
+        real result = 0;
+        real power = 1;
+        size_t index;
+        real digit;
+        static const String digits = Core::fromAscii("0123456789");
+        for (int i=astring.length()-1; i>=0; i--) {
+            if (i==0 && astring[i]=='-') {
+                result = -1 * result;
+                break;
+            }
+            if (i==0 && astring[i]=='+')
+                break;
+            index = digits.find(astring[i]);
+            if (index==String::npos)
+                return 0.0;
+            digit = static_cast<real>(index);
+            result += power * digit;
+            power *= 10;
+        }
+        return result;
+    }
+
     static int parseInt(String word, char base, ParseError & error) {
         error = NoError;
         if (word.length()==0) {
@@ -624,9 +658,6 @@ public:
             pos += 1;
         real mantissa = 0.0;
         real exponenta = 0.0;
-        int integral = 0;
-        int fractional = 0;
-        int iexponenta = 0;
         real fraction = 0.0;
         String sIntegral, sFractional, sExponenta;
         sIntegral.reserve(30);
@@ -664,13 +695,13 @@ public:
                 // parse fractional part of mantissa
                 if (E.find_first_of(ch)!=String::npos) {
                     if (sFractional.length()>0) {
-                        fractional = parseInt(sFractional, 10, error);
-                        if (error!=NoError) {
+                        if (!validDecimal(sFractional)) {
                             error = hasE? WrongExpForm : WrongReal;
                             return 0.0;
                         }
+                        fraction = fromDecimal(sFractional);
                     }
-                    if (fractional<0) {
+                    if (fraction<0) {
                         error = hasE? WrongExpForm : WrongReal;
                         return 0.0;
                     }
@@ -685,18 +716,6 @@ public:
                 sExponenta.push_back(ch);
             }
         }
-        if (sIntegral.length()>0) {
-            integral = parseInt(sIntegral, 10, error);
-            if (error!=NoError) return 0.0;
-        }
-        if (sFractional.length()>0) {
-            fractional = parseInt(sFractional, 10, error);
-            if (error!=NoError) return 0.0;
-        }
-        if (sExponenta.length()>0) {
-            iexponenta = parseInt(sExponenta, 10, error);
-            if (error!=NoError) return 0.0;
-        }
         int fractionalLength = sFractional.length();
         for (int i=sFractional.length()-1; i>=0; i--) {
             Char ch = sFractional.at(i);
@@ -705,15 +724,24 @@ public:
             else
                 break;
         }
-        fraction = fractional;
+        if (!validDecimal(sIntegral) || !validDecimal(sFractional) || !validDecimal(sExponenta)) {
+            error = WrongReal;
+            return 0.0;
+        }
+
+        fraction = fromDecimal(sFractional);
         for (int i=0; i<fractionalLength; i++) {
             fraction /= 10.0;
         }
-        mantissa = static_cast<real>(integral);
+        mantissa = fromDecimal(sIntegral);
         mantissa += fraction;
-        exponenta = static_cast<real>(iexponenta);
+        exponenta = fromDecimal(sExponenta);
         real result = mantissa * ::pow(10, exponenta);
-        return negative? -1.0*result : result;
+        if (negative)
+            result *= -1;
+        if (!Math::isCorrectDouble(result))
+            error = Overflow;
+        return result;
     }
 
     static String sprintfInt(int value, char base, int width, char al) {
@@ -1994,7 +2022,7 @@ public:
         else if (error==Converter::WrongExpForm) {
             is.setError(Core::fromUtf8("Ошибка ввода вещественного числа: неверная запись экспоненциальной формы"));
         }
-        else if (error==Converter::WrongExpForm) {
+        else if (error==Converter::WrongReal) {
             is.setError(Core::fromUtf8("Ошибка ввода вещественного числа: неверная запись"));
         }
         else if (error==Converter::Overflow) {
