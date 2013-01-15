@@ -232,6 +232,9 @@ inline void tableElemToBinaryStream(std::list<char> & ds, const TableElem &e)
         stringToDataStream(ds, e.fileName);
         stringToDataStream(ds, e.signature);
     }
+    if (e.type==EL_FUNCTION || e.type==EL_MAIN) {
+        stringToDataStream(ds, e.signature);
+    }
     valueToDataStream(ds, uint16_t(e.algId));
     valueToDataStream(ds, uint16_t(e.id));
     stringToDataStream(ds, e.name);
@@ -361,6 +364,9 @@ inline void tableElemFromBinaryStream(std::list<char> & ds, TableElem &e)
     e.module = m;
     if (e.type==EL_EXTERN) {
         stringFromDataStream(ds, e.fileName);
+        stringFromDataStream(ds, e.signature);
+    }
+    if (e.type==EL_FUNCTION || e.type==EL_MAIN) {
         stringFromDataStream(ds, e.signature);
     }
     valueFromDataStream(ds, a);

@@ -1363,20 +1363,15 @@ public:
     }
 #else
     inline static bool exist(const String & fileName) {
-        char * path;
 #   ifdef NO_UNICODE
-        path = const_cast<char*>(fileName.c_str());
+        const char * path = const_cast<char*>(fileName.c_str());
 #   else
-        path = reinterpret_cast<char*>( calloc(fileName.length()*2+1, sizeof(char)) );
-        size_t pl = wcstombs(path, fileName.c_str(), fileName.length()*2+1);
-        path[pl] = '\0';
+        std::string localName = Kumir::Coder::encode(Kumir::UTF8, fileName);
+        const char * path = localName.c_str();
 #   endif
         struct stat st;
         int res = stat(path, &st);
         bool result = res==0;
-#   ifndef NO_UNICODE
-        free(path);
-#   endif
         return result;
     }
 

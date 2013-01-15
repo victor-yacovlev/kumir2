@@ -27,8 +27,8 @@ public:
 
     // VM Access methods
     int effectiveLineNo() const;
-    void loadProgramFromBinaryBuffer(std::list<char> & stream);
-    void loadProgramFromTextBuffer(const std::string & stream);
+    void loadProgramFromBinaryBuffer(std::list<char> & stream, const String & filename);
+    void loadProgramFromTextBuffer(const std::string & stream, const String & filename);
     QString error() const;
     QVariantList remainingValues() const;
     void setEntryPointToMain();

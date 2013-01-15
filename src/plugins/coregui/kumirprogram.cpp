@@ -373,7 +373,7 @@ void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel deb
             qDebug() << "Error generating execuable: " << res.first;
         }
         else {
-            plugin_bytecodeRun->loadProgram(bufArray, Shared::FormatBinary);
+            plugin_bytecodeRun->loadProgram("", bufArray, Shared::FormatBinary);
         }
     }
     const QString exeFileName = s_sourceFileName.mid(0, s_sourceFileName.length()-4)+".kum";

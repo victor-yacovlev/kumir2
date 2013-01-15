@@ -5,6 +5,8 @@
 #include <deque>
 #include <set>
 #include <sstream>
+#include <iostream>
+#include <fstream>
 
 #include "stdlib/kumirstdlib.hpp"
 #include "vm_bytecode.hpp"
@@ -19,13 +21,7 @@
 
 namespace VM {
 
-typedef std::pair<String,String> TwoStrings;
-typedef std::map<uint32_t, Bytecode::TableElem> FunctionMap;
-typedef std::pair<uint8_t,uint16_t> GlobalsIndex;
-typedef std::map<GlobalsIndex, Variable > GlobalsMap;
-typedef std::map<uint16_t,Variable> ConstantsMap;
-typedef std::vector<Variable> VariantArray;
-typedef std::map<uint32_t, VariantArray> LocalsMap;
+
 
 /*abstract*/ class CriticalSectionLocker {
 public:
@@ -100,10 +96,10 @@ public /*typedefs*/:
 
 public /*methods*/:
     /** Set parsed Kumir bytecode */
-    inline void setProgram(const Bytecode::Data & data);
+    inline void setProgram(const Bytecode::Data & data, bool isMain, const String & filename);
 
-    inline bool loadProgramFromBinaryBuffer(std::list<char> & stream, String & error);
-    inline bool loadProgramFromTextBuffer(const std::string & stream, String & error);
+    inline bool loadProgramFromBinaryBuffer(std::list<char> & stream, bool isMain, const String & filename, String & error);
+    inline bool loadProgramFromTextBuffer(const std::string & stream, bool isMain, const String & filename, String & error);
 
     /** Set entry point to Main or Testing algorithm */
     inline void setEntryPoint(EntryPoint ep) { e_entryPoint = ep; }
@@ -169,22 +165,19 @@ public /*methods*/:
 
 
 private /*fields*/:
-#ifndef NO_EXTERNS
-    struct ExternalMethod {
-        String moduleName;
-        uint16_t methodId;
-    };
-    FunctionMap externs;
-    std::map<uint32_t, ExternalMethod> externalMethods;
-    std::map<TwoStrings, ExternalMethod> availableExternalMethods;
-#endif
-    FunctionMap functions;
+//#ifndef NO_EXTERNS
+//    struct ExternalMethod {
+//        String moduleName;
+//        uint16_t methodId;
+//    };
+
+//    std::map<uint32_t, ExternalMethod> externalMethods;
+//    std::map<TwoStrings, ExternalMethod> availableExternalMethods;
+//#endif
+
     Bytecode::TableElem mainProgram;
     Bytecode::TableElem testingProgram;
-    FunctionMap inits;
-    LocalsMap cleanLocalTables;
-    GlobalsMap globals;
-    ConstantsMap constants;
+    std::deque<ModuleContext> moduleContexts;
     EntryPoint e_entryPoint;
     bool b_blindMode;
     bool b_nextCallInto;
@@ -260,23 +253,25 @@ private /*instruction methods*/:
 
 /**** IMPLEMENTATION ******/
 
-void KumirVM::setProgram(const Bytecode::Data &program)
+void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const String & filename)
 {
-#ifndef NO_EXTERNS
-    externs.clear();
-    externalMethods.clear();
-#endif
-    functions.clear();
-    cleanLocalTables.clear();
-    inits.clear();
+    if (isMain) {
+        moduleContexts.clear();
+//#ifndef NO_EXTERNS
+//        externalMethods.clear();
+//#endif
+    }
+    moduleContexts.push_back(ModuleContext());
+    moduleContexts.back().filename = filename;
+    int currentModuleContext = moduleContexts.size()-1;
     LocalsMap locals;
     for (int i=0; i<program.d.size(); i++) {
         const TableElem e = program.d[i];
         if (e.type==EL_GLOBAL) {
-            globals[std::pair<uint8_t,uint16_t>(e.module,e.id)] = fromTableElem(e);
+            moduleContexts[currentModuleContext].globals[std::pair<uint8_t,uint16_t>(e.module,e.id)] = fromTableElem(e);
         }
         else if (e.type==EL_CONST) {
-            constants[e.id] = fromTableElem(e);
+            moduleContexts[currentModuleContext].constants[e.id] = fromTableElem(e);
 
         }
         else if (e.type==EL_LOCAL) {
@@ -291,52 +286,118 @@ void KumirVM::setProgram(const Bytecode::Data &program)
             lcs.push_back(fromTableElem(e));
             locals[key] = lcs;
         }
-        else if (e.type==EL_EXTERN) {
-#ifndef NO_EXTERNS
+        else if (e.type==EL_EXTERN &&
+                 e.fileName.length()>4 &&
+                 e.fileName.substr(e.fileName.length()-4)==Kumir::Core::fromAscii(".kod"))
+        {
+#if !defined(WIN32) && !defined(_WIN32)
+#define VM_LOCALE Kumir::UTF8
+#else
+#define VM_LOCALE Kumir::CP866
+#endif
+            int externModuleContext = -1;
+            for (int m=0; m<moduleContexts.size(); m++) {
+                if (moduleContexts[m].filename==e.fileName) {
+                    externModuleContext = m;
+                    break;
+                }
+            }
+            if (externModuleContext==-1) {
+                externModuleContext = currentModuleContext + 1;
+                const std::string filename = Kumir::Coder::encode(VM_LOCALE, e.fileName);
+                std::fstream externalfile(filename.c_str());
+                if (!Kumir::Files::exist(e.fileName) || !externalfile.is_open()) {
+                    Kumir::String errorMessage = Kumir::Core::fromUtf8("Не могу загрузить внешний исполнитель: ")+e.fileName;
+                    throw errorMessage;
+                }
+                Bytecode::Data programData;
+                Bytecode::bytecodeFromDataStream(externalfile, programData);
+                externalfile.close();
+                setProgram(programData, false, e.fileName);
+            }
             uint32_t key = 0x00000000;
             uint32_t alg = e.algId;
             uint32_t mod = e.module;
             mod = mod << 16;
             key = mod | alg;
-            externs[key] = e;
-            TwoStrings qualifedKey;
-            qualifedKey.first = e.moduleName;
-            qualifedKey.second = e.signature.length()? e.signature : e.name;
-            if (availableExternalMethods.count(qualifedKey)==0 && m_externalHandler) {
-                std::list<String> moduleMethods;
-                if (m_externalHandler->loadExternalModule(e.moduleName, e.fileName, moduleMethods)) {
-                    typedef std::list<String>::const_iterator It;
-                    uint16_t id = 0;
-                    for (It i=moduleMethods.begin(); i!=moduleMethods.end(); ++i) {
-                        TwoStrings aKey(e.moduleName, *i);
-                        ExternalMethod method;
-                        method.moduleName = e.moduleName;
-                        method.methodId = id;
-                        availableExternalMethods[aKey] = method;
-                        id++;
-                    }
+            uint32_t extKey = 0x00000000;
+            bool found = false;
+            const FunctionMap & externMap = moduleContexts[externModuleContext].functions;
+            for (FunctionMap::const_iterator it = externMap.begin();
+                 it != externMap.end();
+                 ++it)
+            {
+                extKey = (*it).first;
+                const String fname = (*it).second.name;
+                if (fname==e.name) {
+                    found = true;
+                    break;
                 }
             }
-            if (availableExternalMethods.count(qualifedKey)) {
-                ExternalMethod em = availableExternalMethods[qualifedKey];
-                externalMethods[key] = em;
+            if (!found) {
+                Kumir::String errorMessage = Kumir::Core::fromUtf8("Во внешнем исполнителе \"")+
+                        e.fileName+
+                        Kumir::Core::fromUtf8("\" нет алгоритма \"")+
+                        e.name+
+                        Kumir::Core::fromAscii("\"");
+                throw errorMessage;
             }
-#endif
+            ExternReference reference;
+            reference.funcKey = extKey;
+            reference.moduleContext = externModuleContext;
+            reference.moduleName = e.fileName;
+            moduleContexts[currentModuleContext].externs[key] = reference;
         }
+//        else if (e.type==EL_EXTERN) {
+//#ifndef NO_EXTERNS
+//            uint32_t key = 0x00000000;
+//            uint32_t alg = e.algId;
+//            uint32_t mod = e.module;
+//            mod = mod << 16;
+//            key = mod | alg;
+//            moduleContexts[currentModuleContext].externs[key] = e;
+//            TwoStrings qualifedKey;
+//            qualifedKey.first = e.moduleName;
+//            qualifedKey.second = e.signature.length()? e.signature : e.name;
+//            if (availableExternalMethods.count(qualifedKey)==0 && m_externalHandler) {
+//                std::list<String> moduleMethods;
+//                if (m_externalHandler->loadExternalModule(e.moduleName, e.fileName, moduleMethods)) {
+//                    typedef std::list<String>::const_iterator It;
+//                    uint16_t id = 0;
+//                    for (It i=moduleMethods.begin(); i!=moduleMethods.end(); ++i) {
+//                        TwoStrings aKey(e.moduleName, *i);
+//                        ExternalMethod method;
+//                        method.moduleName = e.moduleName;
+//                        method.methodId = id;
+//                        availableExternalMethods[aKey] = method;
+//                        id++;
+//                    }
+//                }
+//            }
+//            if (availableExternalMethods.count(qualifedKey)) {
+//                ExternalMethod em = availableExternalMethods[qualifedKey];
+//                externalMethods[key] = em;
+//            }
+//#endif
+//        }
         else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_BELOWMAIN || e.type==EL_TESTING) {
             uint32_t key = 0x00000000;
             uint32_t alg = e.algId;
             uint32_t mod = e.module;
             mod = mod << 16;
             key = mod | alg;
-            functions[key] = e;
+            moduleContexts[currentModuleContext].functions[key] = e;
+            moduleContexts[currentModuleContext].exportModuleId = mod;
         }
         else if (e.type==EL_INIT ) {
             uint8_t key = e.module;
-            inits[key] = e;
+            moduleContexts[currentModuleContext].inits[key] = e;
         }
     }
-    for (FunctionMap::iterator it = functions.begin(); it!=functions.end(); ++it) {
+    for (FunctionMap::iterator it = moduleContexts[currentModuleContext].functions.begin();
+         it!=moduleContexts[currentModuleContext].functions.end();
+         ++it)
+    {
         uint32_t key = (*it).first;
         const String & algName = (*it).second.name;
         if (locals.count(key)) {
@@ -348,7 +409,7 @@ void KumirVM::setProgram(const Bytecode::Data &program)
     for (LocalsMap::iterator it = locals.begin(); it!=locals.end(); ++it) {
         uint32_t key = (*it).first;
         const VariantArray & arr = (*it).second;
-        cleanLocalTables[key] = arr;
+        moduleContexts[currentModuleContext].cleanLocalTables[key] = arr;
     }
 }
 
@@ -385,7 +446,10 @@ void KumirVM::reset()
     testingProgram.instructions.clear();
 
     // Find testing and main algorithms
-    for (FunctionMap::iterator it=functions.begin(); it!=functions.end(); ++it) {
+    for (FunctionMap::iterator it=moduleContexts.front().functions.begin();
+         it!=moduleContexts.front().functions.end();
+         ++it)
+    {
         const TableElem & e = (*it).second;
         if (e.type==EL_MAIN || e.type==EL_BELOWMAIN)
             mainProgram = e;
@@ -393,25 +457,28 @@ void KumirVM::reset()
             testingProgram = e;
     }
 
-#ifndef NO_EXTERNS
-    // Reset external modules if need
+//#ifndef NO_EXTERNS
+//    // Reset external modules if need
 
-    // First: make unique set of modules to avoid of multiple initializing
-    std::set<String> externModules;
-    for (FunctionMap::iterator it=externs.begin(); it!=externs.end(); ++it) {
-        const TableElem & e = (*it).second;
-        externModules.insert(e.moduleName);
-    }
-    // Make actual reset
-    if (m_externalHandler) {
-        for (std::set<String>::const_iterator it=externModules.begin();
-             it!=externModules.end(); ++it)
-        {
-            const String & moduleName = (*it);
-            m_externalHandler->resetExternalModule(moduleName);
-        }
-    }
-#endif
+//    // First: make unique set of modules to avoid of multiple initializing
+//    std::set<String> externModules;
+//    for (FunctionMap::iterator it=moduleContexts.back().externs.begin();
+//         it!=moduleContexts.back().externs.end();
+//         ++it)
+//    {
+//        const TableElem & e = (*it).second;
+//        externModules.insert(e.moduleName);
+//    }
+//    // Make actual reset
+//    if (m_externalHandler) {
+//        for (std::set<String>::const_iterator it=externModules.begin();
+//             it!=externModules.end(); ++it)
+//        {
+//            const String & moduleName = (*it);
+//            m_externalHandler->resetExternalModule(moduleName);
+//        }
+//    }
+//#endif
 
     // Prepare startup context
     Context c;
@@ -419,7 +486,7 @@ void KumirVM::reset()
         uint32_t mod = mainProgram.module;
         uint32_t alg = mainProgram.algId;
         uint32_t key = (mod << 16) | alg;
-        c.locals = cleanLocalTables[key];
+        c.locals = moduleContexts.front().cleanLocalTables[key];
         c.program = &(mainProgram.instructions);
         c.type = mainProgram.type;
         c.runMode = CRM_ToEnd;
@@ -431,7 +498,7 @@ void KumirVM::reset()
         uint32_t mod = testingProgram.module;
         uint32_t alg = testingProgram.algId;
         uint32_t key = (mod << 16) | alg;
-        c.locals = cleanLocalTables[key];
+        c.locals = moduleContexts.front().cleanLocalTables[key];
         c.program = &(testingProgram.instructions);
         c.type = EL_TESTING;
         c.runMode = CRM_ToEnd;
@@ -447,20 +514,25 @@ void KumirVM::reset()
     // Each kumir module have 'initialization' section,
     // so push all these sections (if any) into stack
     // to call them BEFORE startup context
-    for (FunctionMap::iterator it=inits.begin();
-         it!=inits.end();
-         ++it)
+    for (size_t moduleContextNo=0;
+         moduleContextNo<moduleContexts.size();
+         moduleContextNo++)
     {
-        const TableElem & e = (*it).second;
-        if (e.instructions.size()>0) {
-            Context initContext;
-            initContext.program = &(e.instructions);
-            initContext.type = EL_INIT;
-            initContext.runMode = CRM_ToEnd;
-            initContext.moduleId = e.module;
-            initContext.algId = -1;
-            initContext.IP = 0;
-            stack_contexts.push(initContext);
+        for (FunctionMap::iterator it=moduleContexts[moduleContextNo].inits.begin();
+             it!=moduleContexts[moduleContextNo].inits.end();
+             ++it)
+        {
+            const TableElem & e = (*it).second;
+            if (e.instructions.size()>0) {
+                Context initContext;
+                initContext.program = &(e.instructions);
+                initContext.type = EL_INIT;
+                initContext.runMode = CRM_ToEnd;
+                initContext.moduleId = e.module;
+                initContext.algId = -1;
+                initContext.IP = 0;
+                stack_contexts.push(initContext);
+            }
         }
     }
     // Prepare standard library
@@ -634,18 +706,18 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
         do_stringscall(alg);
     else if (mod==0xFF)
         do_specialcall(alg);
-#ifndef NO_EXTERNS
-    else if (externalMethods.count(p)) {
-        const ExternalMethod & em = externalMethods[p];
-        if (m_externalHandler) {
-            do_externalcall(em.moduleName, em.methodId);
-        }
-        else {
-            s_error = Kumir::Core::fromUtf8("Вызов алгоритмов исполнителей запрещен");
-        }
-    }
-#endif
-    else if (functions.count(p)) {
+//#ifndef NO_EXTERNS
+//    else if (externalMethods.count(p)) {
+//        const ExternalMethod & em = externalMethods[p];
+//        if (m_externalHandler) {
+//            do_externalcall(em.moduleName, em.methodId);
+//        }
+//        else {
+//            s_error = Kumir::Core::fromUtf8("Вызов алгоритмов исполнителей запрещен");
+//        }
+//    }
+//#endif
+    else if (moduleContexts[stack_contexts.top().moduleContextNo].functions.count(p)) {
 
         if (stack_contexts.size()>=MAX_RECURSION_SIZE) {
             s_error = Kumir::Core::fromUtf8("Слишком много вложенных вызовов алгоритмов");
@@ -654,17 +726,18 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
             if (m_dontTouchMe)
                 m_dontTouchMe->lock();
             Context c;
-            c.program = & (functions[p].instructions );
-            c.locals = cleanLocalTables[p];
-            c.type = functions[p].type;
+            c.program = & (moduleContexts[stack_contexts.top().moduleContextNo].functions[p].instructions );
+            c.locals = moduleContexts[stack_contexts.top().moduleContextNo].cleanLocalTables[p];
+            c.type = moduleContexts[stack_contexts.top().moduleContextNo].functions[p].type;
             if (b_nextCallInto)
                 c.runMode = CRM_OneStep;
             else if (stack_contexts.top().type==EL_BELOWMAIN && c.type==EL_MAIN)
                 c.runMode = stack_contexts.top().runMode;
             else
                 c.runMode = CRM_ToEnd;
-            c.moduleId = functions[p].module;
-            c.algId = functions[p].algId;
+            c.moduleId = moduleContexts[stack_contexts.top().moduleContextNo].functions[p].module;
+            c.algId = moduleContexts[stack_contexts.top().moduleContextNo].functions[p].algId;
+            c.moduleContextNo = stack_contexts.top().moduleContextNo;
             stack_contexts.push(c);
             b_nextCallInto = false;
             stack_values.pop(); // current implementation doesn't requere args count
@@ -672,6 +745,30 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
                 m_dontTouchMe->unlock();
         }
 
+    }
+    else if (moduleContexts[stack_contexts.top().moduleContextNo].externs.count(p)) {
+        if (stack_contexts.size()>=MAX_RECURSION_SIZE) {
+            s_error = Kumir::Core::fromUtf8("Слишком много вложенных вызовов алгоритмов");
+        }
+        else {
+            if (m_dontTouchMe)
+                m_dontTouchMe->lock();
+            ExternReference reference = moduleContexts[stack_contexts.top().moduleContextNo].externs[p];
+            uint32_t key = reference.funcKey;
+            Context c;
+            c.program = & (moduleContexts[reference.moduleContext].functions[key].instructions );
+            c.locals = moduleContexts[reference.moduleContext].cleanLocalTables[key];
+            c.type = moduleContexts[reference.moduleContext].functions[key].type;
+            c.runMode = CRM_ToEnd;
+            c.moduleId = moduleContexts[reference.moduleContext].functions[key].module;
+            c.algId = moduleContexts[reference.moduleContext].functions[key].algId;
+            c.moduleContextNo = reference.moduleContext;
+            stack_contexts.push(c);
+            b_nextCallInto = false;
+            stack_values.pop(); // current implementation doesn't requere args count
+            if (m_dontTouchMe)
+                m_dontTouchMe->unlock();
+        }
     }
     else {
         s_error = Kumir::Core::fromUtf8("Вызов алгоритма из недоступного исполнителя");
@@ -1701,7 +1798,7 @@ void KumirVM::do_init(uint8_t s, uint16_t id)
         stack_contexts.top().locals[id].init();
     }
     else if (VariableScope(s)==GLOBAL) {
-        globals[GlobalsIndex(stack_contexts.top().moduleId,id)].init();
+        moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].init();
     }
     else {
         s_error = Kumir::Core::fromAscii("Internal error");
@@ -1719,7 +1816,7 @@ void KumirVM::do_setarr(uint8_t s, uint16_t id)
         dim = stack_contexts.top().locals[id].dimension();
     }
     else if (VariableScope(s)==GLOBAL) {
-        dim = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension();
+        dim = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension();
     }
     else {
         s_error = Kumir::Core::fromAscii("Internal error");
@@ -1735,8 +1832,8 @@ void KumirVM::do_setarr(uint8_t s, uint16_t id)
             name = stack_contexts.top().locals[id].name();
         }
         else if (VariableScope(s)==GLOBAL) {
-            globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setBounds(bounds);
-            name = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].name();
+            moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setBounds(bounds);
+            name = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].name();
         }
         s_error = Kumir::Core::getError();
         const int lineNo = stack_contexts.top().lineNo;
@@ -1772,7 +1869,7 @@ void KumirVM::do_updarr(uint8_t s, uint16_t id)
         dim = stack_contexts.top().locals[id].dimension();
     }
     else if (VariableScope(s)==GLOBAL) {
-        dim = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension();
+        dim = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension();
     }
     else {
         s_error = Kumir::Core::fromAscii("Internal error");
@@ -1790,9 +1887,9 @@ void KumirVM::do_updarr(uint8_t s, uint16_t id)
             stack_contexts.top().locals[id].getEffectiveBounds(effectiveBounds);
         }
         else if (VariableScope(s)==GLOBAL) {
-            globals[GlobalsIndex(stack_contexts.top().moduleId,id)].updateBounds(bounds);
-            name = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].myName();
-            globals[GlobalsIndex(stack_contexts.top().moduleId,id)].getEffectiveBounds(effectiveBounds);
+            moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].updateBounds(bounds);
+            name = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].myName();
+            moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].getEffectiveBounds(effectiveBounds);
         }
         s_error = Kumir::Core::getError();
         const int lineNo = stack_contexts.top().lineNo;
@@ -1850,20 +1947,20 @@ void KumirVM::do_store(uint8_t s, uint16_t id)
     }
     else if (VariableScope(s)==GLOBAL) {
 //        if (globals[GlobalsIndex(stack_contexts.top().moduleId,id)].isReference())
-        reference = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].reference();
+        reference = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].reference();
         if (val.isConstant()) {
-            globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setConstValue(val);
+            moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setConstValue(val);
         }
         else {
-            globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setDimension(val.dimension());
-            globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setBounds(bounds);
-            globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setValue(val.value());
+            moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setDimension(val.dimension());
+            moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setBounds(bounds);
+            moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setValue(val.value());
         }
         if (lineNo!=-1 && !b_blindMode) {
-            name = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].myName();
-            svalue = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toString();
+            name = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].myName();
+            svalue = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toString();
         }
-        t = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType();
+        t = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType();
     }
     else {
         s_error = Kumir::Core::fromAscii("Internal error");
@@ -1914,18 +2011,18 @@ void KumirVM::do_load(uint8_t s, uint16_t id)
         val.setValue(stack_contexts.top().locals[id].value());
     }
     else if (VariableScope(s)==GLOBAL) {
-        val.setBaseType(globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType());
-        globals[GlobalsIndex(stack_contexts.top().moduleId,id)].getBounds(bounds);
-        val.setDimension(globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension());
+        val.setBaseType(moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType());
+        moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].getBounds(bounds);
+        val.setDimension(moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension());
         val.setBounds(bounds);
-        val.setValue(globals[GlobalsIndex(stack_contexts.top().moduleId,id)].value());
+        val.setValue(moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].value());
     }
     else if (VariableScope(s)==CONSTT) {
-        val.setBaseType(constants[id].baseType());
-        val.setDimension(constants[id].dimension());
-        constants[id].getBounds(bounds);
+        val.setBaseType(moduleContexts[stack_contexts.top().moduleContextNo].constants[id].baseType());
+        val.setDimension(moduleContexts[stack_contexts.top().moduleContextNo].constants[id].dimension());
+        moduleContexts[stack_contexts.top().moduleContextNo].constants[id].getBounds(bounds);
         val.setBounds(bounds);
-        val.setValue(constants[id].value());
+        val.setValue(moduleContexts[stack_contexts.top().moduleContextNo].constants[id].value());
         val.setConstantFlag(true);
     }
     else {
@@ -1958,8 +2055,8 @@ void KumirVM::do_storearr(uint8_t s, uint16_t id)
         name = stack_contexts.top().locals[id].name();
     }
     else if (VariableScope(s)==GLOBAL) {
-        dim = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension();
-        name = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].name();
+        dim = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension();
+        name = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].name();
     }
     else {
         s_error = Kumir::Core::fromAscii("Internal error");
@@ -1983,10 +2080,10 @@ void KumirVM::do_storearr(uint8_t s, uint16_t id)
                 svalue = stack_contexts.top().locals[id].toString(indeces);
         }
         else if (VariableScope(s)==GLOBAL) {
-            globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setValue(indeces, val.value());
-            t = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType();
+            moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setValue(indeces, val.value());
+            t = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType();
             if (lineNo!=-1 && !b_blindMode)
-                svalue = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toString(indeces);
+                svalue = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toString(indeces);
         }
         if (t==VT_string)
             if (lineNo!=-1 && !b_blindMode) {
@@ -2026,12 +2123,12 @@ void KumirVM::do_loadarr(uint8_t s, uint16_t id)
         vt = stack_contexts.top().locals[id].baseType();
     }
     else if (VariableScope(s)==GLOBAL) {
-        dim = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension();
-        vt = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType();
+        dim = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension();
+        vt = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType();
     }
     else if (VariableScope(s)==CONSTT) {
-        dim = constants[id].dimension();
-        vt = constants[id].baseType();
+        dim = moduleContexts[stack_contexts.top().moduleContextNo].constants[id].dimension();
+        vt = moduleContexts[stack_contexts.top().moduleContextNo].constants[id].baseType();
     }
     else {
         s_error = Kumir::Core::fromAscii("Internal error");
@@ -2050,12 +2147,12 @@ void KumirVM::do_loadarr(uint8_t s, uint16_t id)
             vv = stack_contexts.top().locals[id].value(indeces);
         }
         else if (VariableScope(s)==GLOBAL) {
-            val.setBaseType(globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType());
-            vv = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].value(indeces);
+            val.setBaseType(moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType());
+            vv = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].value(indeces);
         }
         else if (VariableScope(s)==CONSTT) {
-            val.setBaseType(constants[id].baseType());
-            vv = constants[id].value(indeces);
+            val.setBaseType(moduleContexts[stack_contexts.top().moduleContextNo].constants[id].baseType());
+            vv = moduleContexts[stack_contexts.top().moduleContextNo].constants[id].value(indeces);
         }
         if (vv.isValid()) {
             val.setValue(vv);
@@ -2084,10 +2181,10 @@ void KumirVM::do_ref(uint8_t s, uint16_t id)
         ref = stack_contexts.top().locals[id].toReference();
     }
     else if (VariableScope(s)==GLOBAL) {
-        ref = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toReference();
+        ref = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toReference();
     }
     else if (VariableScope(s)==CONSTT) {
-        ref = constants[id].toReference();
+        ref = moduleContexts[stack_contexts.top().moduleContextNo].constants[id].toReference();
     }
     else {
         s_error = Kumir::Core::fromAscii("Internal error");
@@ -2114,8 +2211,8 @@ void KumirVM::do_setref(uint8_t s, uint16_t id)
         stack_contexts.top().locals[id].setReference(ref.reference(), bounds);
     }
     else if (VariableScope(s)==GLOBAL) {
-        name = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].name();
-        globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setReference(ref.reference(), bounds);
+        name = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].name();
+        moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setReference(ref.reference(), bounds);
     }
     else {
         s_error = Kumir::Core::fromAscii("Internal error");
@@ -2150,10 +2247,10 @@ void KumirVM::do_refarr(uint8_t s, uint16_t id)
         dim = stack_contexts.top().locals[id].dimension();
     }
     else if (VariableScope(s)==GLOBAL) {
-        dim = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension();
+        dim = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension();
     }
     else if (VariableScope(s)==CONSTT) {
-        dim = constants[id].dimension();
+        dim = moduleContexts[stack_contexts.top().moduleContextNo].constants[id].dimension();
     }
     else {
         s_error = Kumir::Core::fromAscii("Internal error");
@@ -2169,7 +2266,7 @@ void KumirVM::do_refarr(uint8_t s, uint16_t id)
             ref = stack_contexts.top().locals[id].toReference(indeces);
         }
         else if (VariableScope(s)==GLOBAL) {
-            ref = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toReference(indeces);
+            ref = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toReference(indeces);
         }
         else if (VariableScope(s)==CONSTT) {
             s_error = Kumir::Core::fromAscii("Internal error");
@@ -2328,10 +2425,10 @@ void KumirVM::do_error(uint8_t s, uint16_t id)
         s_error = stack_contexts.top().locals[id].toString();
     }
     else if (VariableScope(s)==GLOBAL) {
-        s_error = globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toString();
+        s_error = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toString();
     }
     else if (VariableScope(s)==CONSTT) {
-        s_error = constants[id].toString();
+        s_error = moduleContexts[stack_contexts.top().moduleContextNo].constants[id].toString();
     }
 }
 
@@ -2758,7 +2855,7 @@ bool KumirVM::canStepOut() const
         return stack_contexts.top().type==EL_FUNCTION;
 }
 
-bool KumirVM::loadProgramFromBinaryBuffer(std::list<char> &stream, String & error)
+bool KumirVM::loadProgramFromBinaryBuffer(std::list<char> &stream, bool isMain, const String & filename, String & error)
 {
     error.clear();
     Bytecode::Data d;
@@ -2776,12 +2873,12 @@ bool KumirVM::loadProgramFromBinaryBuffer(std::list<char> &stream, String & erro
         ok = false;
     }
     if (ok) {
-        setProgram(d);
+        setProgram(d, isMain, filename);
     }
     return ok;
 }
 
-bool KumirVM::loadProgramFromTextBuffer(const std::string &buffer, String & error)
+bool KumirVM::loadProgramFromTextBuffer(const std::string &buffer, bool isMain, const String & filename, String & error)
 {
     error.clear();
     Bytecode::Data d;
@@ -2800,7 +2897,7 @@ bool KumirVM::loadProgramFromTextBuffer(const std::string &buffer, String & erro
         ok = false;
     }
     if (ok) {
-        setProgram(d);
+        setProgram(d, isMain, filename);
     }
     return ok;
 }
@@ -2824,8 +2921,8 @@ AnyValue KumirVM::value(int moduleId, int algorhitmId, int variableId) const
         GlobalsIndex index;
         index.first = moduleId;
         index.second = variableId;
-        if (globals.count(index)) {
-            GlobalsMap::const_iterator it = globals.find(index);
+        if (moduleContexts[stack_contexts.top().moduleContextNo].globals.count(index)) {
+            GlobalsMap::const_iterator it = moduleContexts[stack_contexts.top().moduleContextNo].globals.find(index);
             const Variable & var = it->second;
             if (var.hasValue())
                 result = var.value();
@@ -2858,8 +2955,8 @@ std::list<int> KumirVM::bounds(int moduleId, int algorhitmId, int variableId) co
         GlobalsIndex index;
         index.first = moduleId;
         index.second = variableId;
-        if (globals.count(index)) {
-            GlobalsMap::const_iterator it = globals.find(index);
+        if (moduleContexts[stack_contexts.top().moduleContextNo].globals.count(index)) {
+            GlobalsMap::const_iterator it = moduleContexts[stack_contexts.top().moduleContextNo].globals.find(index);
             const Variable & var = it->second;
             int bs[7];
             var.getBounds(bs);

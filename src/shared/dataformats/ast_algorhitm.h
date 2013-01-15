@@ -34,7 +34,7 @@ enum AlgorhitmType {
 /** Algorhitm implementation type */
 enum AlgorhitmImplementationType {
 
-    /** Kumir-compiler algorhitm */
+    /** Kumir-compiled algorhitm */
     AlgorhitmCompiled,
 
     /** External or builtin algorhitm */

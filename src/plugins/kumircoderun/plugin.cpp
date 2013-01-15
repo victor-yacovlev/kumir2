@@ -58,17 +58,17 @@ int Plugin::currentLineNo() const
     return d->effectiveLineNo();
 }
 
-bool Plugin::loadProgram(const QByteArray & source, Shared::ProgramFormat format)
+bool Plugin::loadProgram(const QString & filename, const QByteArray & source, Shared::ProgramFormat format)
 {
     if (format==Shared::FormatBinary) {
         std::list<char> buffer;
         for (int i=0; i<source.size(); i++)
             buffer.push_back(source[i]);
-        d->loadProgramFromBinaryBuffer(buffer);
+        d->loadProgramFromBinaryBuffer(buffer, filename.toStdWString());
     }
     else {
         const std::string str(source.constData());
-        d->loadProgramFromTextBuffer(str);
+        d->loadProgramFromTextBuffer(str, filename.toStdWString());
     }
     d->programLoaded = true;
     return true;
@@ -268,7 +268,7 @@ QString Plugin::initialize(const QStringList &)
             QFile f(fileName);
             if (f.open(QIODevice::ReadOnly)) {
                 const QByteArray data = f.readAll();
-                loadProgram(data, fileName.endsWith(".ks")? Shared::FormatText : Shared::FormatBinary);
+                loadProgram(fileName, data, fileName.endsWith(".ks")? Shared::FormatText : Shared::FormatBinary);
             }
         }
     }

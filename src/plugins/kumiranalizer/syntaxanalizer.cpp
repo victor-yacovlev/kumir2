@@ -2,13 +2,15 @@
 #include "lexer.h"
 #include <limits>
 #include <deque>
+#include <iostream>
+#include <fstream>
 
 #include "dataformats/ast_variable.h"
 #include "dataformats/ast_type.h"
 #include "errormessages/errormessages.h"
 #include "extensionsystem/pluginmanager.h"
 #include "interfaces/actorinterface.h"
-
+#include "vm/vm_bytecode.hpp"
 
 #define BADNAME_KEYWORD TN_BAD_NAME_3
 #define BADNAME_OPERATOR TN_BAD_NAME_1
@@ -195,6 +197,38 @@ Lexem * SyntaxAnalizerPrivate::findLexemByType(const QList<Lexem*> lxs, LexemTyp
     return 0;
 }
 
+AST::Type typeFromSignature(QString s) {
+    AST::Type result;
+    if (s.startsWith("void"))
+        result.kind = AST::TypeNone;
+    else if (s.startsWith("int"))
+        result.kind = AST::TypeInteger;
+    else if (s.startsWith("real"))
+        result.kind = AST::TypeReal;
+    else if (s.startsWith("bool"))
+        result.kind = AST::TypeBoolean;
+    else if (s.startsWith("char"))
+        result.kind = AST::TypeCharect;
+    else if (s.startsWith("string"))
+        result.kind = AST::TypeString;
+    else if (s.startsWith("record ")) {
+        result.kind = AST::TypeUser;
+        s.remove(0, 7);
+        int br = s.indexOf("{");
+        result.name = s.left(br);
+        s.remove(0, br+1);
+        int lbr = s.lastIndexOf("}");
+        s = s.left(lbr);
+        QStringList fields = s.split(";");
+        for (int i=0; i<fields.size(); i++) {
+            AST::Type fieldType = typeFromSignature(fields[i]);
+            AST::Field field(fields[i], fieldType);
+            result.userTypeFields.append(field);
+        }
+    }
+    return result;
+}
+
 void SyntaxAnalizer::buildTables(bool allowOperatorsDeclaration)
 {
 //    if (d->algorhitm)
@@ -242,7 +276,76 @@ void SyntaxAnalizer::buildTables(bool allowOperatorsDeclaration)
             break;
     }
 
-    // TODO Find and load unresolved imports!
+    // Find and load unresolved imports
+    for (int i=0; i<d->unresolvedImports.size(); i++) {
+        const QString name = d->unresolvedImports.toList()[i];
+        QString error;
+        if (name.endsWith(".kod")) {
+            QString canonicalName = name;
+            if (canonicalName.startsWith(QDir::currentPath())) {
+                canonicalName.remove(0, QDir::currentPath().length());
+                if (canonicalName.startsWith("/"))
+                    canonicalName.remove(0,1);
+            }
+            QFileInfo kodFile(name);
+            QString kodFilePath = QDir::toNativeSeparators(kodFile.absoluteFilePath());
+            const char * programName = kodFilePath.toLocal8Bit().constData();
+            std::ifstream programFile(programName);
+            Bytecode::Data programData;
+            if (!programFile.is_open()) {
+                error = _("Can't open module file");
+            }
+            else {
+                try {
+                    Bytecode::bytecodeFromDataStream(programFile, programData);
+                }
+                catch (...) {
+                    error = _("Module file is damaged");
+                }
+            }
+            if (error.length()==0) {
+                AST::Module * module = new AST::Module;
+                module->header.type = AST::ModTypeCached;
+                module->header.name = canonicalName;
+                module->header.enabled = true;
+                d->ast->modules.push_back(module);
+                for (size_t e=0; e<programData.d.size(); e++) {
+                    const Bytecode::TableElem & elem = programData.d.at(e);
+                    if (elem.type==Bytecode::EL_FUNCTION || elem.type==Bytecode::EL_MAIN) {
+                        const QString algName = QString::fromStdWString(elem.name);
+                        if (algName.length()>0 && !algName.startsWith("_")) {
+                            AST::Algorhitm * alg = new AST::Algorhitm;
+                            alg->header.name = algName;
+                            alg->header.implType = AST::AlgorhitmExternal;
+                            alg->header.external.moduleName = canonicalName;
+                            alg->header.external.id = elem.id;
+                            const QString signature = QString::fromStdWString(elem.signature);
+                            QStringList algSig = signature.split(":");
+                            alg->header.returnType = typeFromSignature(algSig[0]);
+                            if (algSig.size()>1) {
+                                QStringList argSignatures = algSig[1].split(",");
+                                for (int argNo=0; argNo<argSignatures.size(); argNo++) {
+                                    AST::Variable * var = new AST::Variable;
+                                    QStringList sigPair = argSignatures[argNo].split(" ");
+                                    if (sigPair[0]=="in")
+                                        var->accessType = AST::AccessArgumentIn;
+                                    else if (sigPair[0]=="out")
+                                        var->accessType = AST::AccessArgumentOut;
+                                    else if (sigPair[0]=="inout")
+                                        var->accessType = AST::AccessArgumentInOut;
+                                    var->baseType = typeFromSignature(sigPair[1]);
+                                    var->dimension = sigPair[1].count("[]");
+                                    alg->header.arguments.push_back(var);
+                                }
+                            }
+                            module->header.algorhitms.push_back(alg);
+                        }
+                    }
+                }
+            }
+
+        }
+    }
 
     // Set errors for imports that could not be resolved
     for (int i=0; i<d->unresolvedImports.size(); i++) {
@@ -449,15 +552,70 @@ void SyntaxAnalizerPrivate::parseImport(int str)
         st.data[1]->error = _("No module name");
         return;
     }
-    QString localError = lexer->testName(st.data[1]->data);
-    if (localError.size()>0) {
-        st.data[1]->error = localError;
-        return;
+    QString name;
+    if (st.data[1]->type==LxConstLiteral) {
+        name = st.data[1]->data.trimmed();
+        if (name.isEmpty()) {
+            st.data[1]->error = _("Must be Kumir program file name");
+            return;
+        }
+        if (!name.endsWith(".kum") && !name.endsWith(".kod")) {
+            name += ".kum";
+        }
+        QString kumName, binName;
+        QFileInfo binFile, kumFile;
+        if (name.endsWith(".kum")) {
+            kumName = name;
+            name = binName = name.left(name.length()-4)+".kod";
+            binFile = QFileInfo (QDir::current().absoluteFilePath(binName));
+            kumFile = QFileInfo (QDir::current().absoluteFilePath(kumName));
+            QString kumir2bc = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("kumir2-bc");
+#ifdef Q_OS_WIN32
+            kumir2bc += ".exe";
+#endif
+            if (kumFile.exists()) {
+                if (!binFile.exists() || binFile.lastModified()<kumFile.lastModified()) {
+                    // Run kumir2-bc to create (or update) binary module
+                    int status = QProcess::execute(kumir2bc, QStringList()
+                                                   << "--debuglevel=2" << kumFile.absoluteFilePath());
+                    if (status==-2) {
+                        st.data[1]->error = _("Can't run kumir2-bc to compile this module");
+                        return;
+                    }
+                    else if (status==-1) {
+                        st.data[1]->error = _("kumir2-bc crashed while compiling this module");
+                        return;
+                    }
+                    binFile = QFileInfo (QDir::current().absoluteFilePath(binName));
+                    if (!binFile.exists()) {
+                        st.data[1]->error = _("Error compiling this module");
+                        return;
+                    }
+                }
+            }
+        }
+        else {
+            binName = name;
+            binFile = QFileInfo (QDir::current().absoluteFilePath(binName));
+        }
+        if (!kumFile.exists() && !binFile.exists()) {
+            st.data[1]->error = _("No such file");
+            return;
+        }
+        name = binFile.absoluteFilePath();
+    }
+    else {
+        QString localError = lexer->testName(st.data[1]->data);
+        if (localError.size()>0) {
+            st.data[1]->error = localError;
+            return;
+        }
+        name = st.data[1]->data.simplified();
+        st.data[1]->type = LxNameModule;
     }
     AST::Module * mod = st.mod;
     Q_CHECK_PTR(mod);
-    st.data[1]->type = LxNameModule;
-    mod->header.uses.insert(st.data[1]->data.simplified());
+    mod->header.uses.insert(name);
 }
 
 void SyntaxAnalizerPrivate::parseModuleHeader(int str)

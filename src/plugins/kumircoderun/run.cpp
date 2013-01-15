@@ -874,10 +874,10 @@ int Run::effectiveLineNo() const
     return vm->effectiveLineNo();
 }
 
-void Run::loadProgramFromBinaryBuffer(std::list<char> &stream)
+void Run::loadProgramFromBinaryBuffer(std::list<char> &stream, const String & filename)
 {
     String error;
-    if (!vm->loadProgramFromBinaryBuffer(stream, error)) {
+    if (!vm->loadProgramFromBinaryBuffer(stream, true, filename, error)) {
         std::string msg;
 #if defined(WIN32) || defined(_WIN32)
         msg = Kumir::Coder::encode(Kumir::CP866, error);
@@ -888,10 +888,10 @@ void Run::loadProgramFromBinaryBuffer(std::list<char> &stream)
     }
 }
 
-void Run::loadProgramFromTextBuffer(const std::string &stream)
+void Run::loadProgramFromTextBuffer(const std::string &stream, const String & filename)
 {
     String error;
-    if (!vm->loadProgramFromTextBuffer(stream, error)) {
+    if (!vm->loadProgramFromTextBuffer(stream, true, filename, error)) {
         std::string msg;
 #if defined(WIN32) || defined(_WIN32)
         msg = Kumir::Coder::encode(Kumir::CP866, error);

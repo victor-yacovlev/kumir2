@@ -20,7 +20,7 @@ public:
 
     bool canStepOut() const;
 
-    bool loadProgram(const QByteArray & source, Shared::ProgramFormat format);
+    bool loadProgram(const QString & fileName, const QByteArray & source, Shared::ProgramFormat format);
     bool hasMoreInstructions() const;
     QString error() const;
     QVariantList remainingValues() const;

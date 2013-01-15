@@ -131,6 +131,8 @@ inline void bytecodeFromTextStream(std::istream & ts, Data & data)
     data.d.resize(realCount);
 }
 
+
+
 } // namespace Bytecode
 
 #endif // BYTECODE_DATA_H

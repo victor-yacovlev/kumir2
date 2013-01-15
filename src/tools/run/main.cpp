@@ -258,7 +258,29 @@ int main(int argc, char *argv[])
     InteractionHandler interactionHandler(argc, argv);
     vm.setExternalHandler(&interactionHandler);
 
-    vm.setProgram(programData);
+    static const Kumir::String LOAD_ERROR = Kumir::Core::fromUtf8("ОШИБКА ЗАГРУЗКИ ПРОГРАММЫ: ");
+
+    try {
+        vm.setProgram(programData, true, Kumir::Coder::decode(LOCALE, programName));
+    }
+    catch (Kumir::String & msg) {
+        Kumir::String message = LOAD_ERROR + msg;
+        const std::string localMessage = Kumir::Coder::encode(LOCALE, message);
+        std::cerr << localMessage << std::endl;
+        return 11;
+    }
+    catch (std::string & msg) {
+        Kumir::String message = LOAD_ERROR + Kumir::Core::fromAscii(msg);
+        const std::string localMessage = Kumir::Coder::encode(LOCALE, message);
+        std::cerr << localMessage << std::endl;
+        return 11;
+    }
+    catch (...) {
+        const std::string localMessage = Kumir::Coder::encode(LOCALE, LOAD_ERROR);
+        std::cerr << localMessage << std::endl;
+        return 11;
+    }
+
     vm.reset();
 
 

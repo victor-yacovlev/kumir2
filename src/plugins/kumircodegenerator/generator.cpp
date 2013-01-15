@@ -239,6 +239,8 @@ void Generator::generateExternTable()
                 }
             }
         }
+        if (mod->header.type==AST::ModTypeCached)
+            moduleFileName = mod->header.name;
         e.moduleName = mod->header.name.toStdWString();
         e.name = alg->header.name.toStdWString();
         e.signature = signature.toStdWString();
@@ -565,6 +567,38 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
 
 }
 
+QString typeSignature(const AST::Type & tp) {
+    QString signature;
+    if (tp.kind==AST::TypeNone) {
+        signature += "void";
+    }
+    else if (tp.kind==AST::TypeInteger) {
+        signature += "int";
+    }
+    else if (tp.kind==AST::TypeReal) {
+        signature += "real";
+    }
+    else if (tp.kind==AST::TypeBoolean) {
+        signature += "bool";
+    }
+    else if (tp.kind==AST::TypeCharect) {
+        signature += "char";
+    }
+    else if (tp.kind==AST::TypeString) {
+        signature += "string";
+    }
+    else if (tp.kind==AST::TypeUser) {
+        signature += "record "+tp.name+" {";
+        for (int i=0; i<tp.userTypeFields.size(); i++) {
+            signature += typeSignature(tp.userTypeFields.at(i).second);
+            if (i<tp.userTypeFields.size()-1)
+                signature += ";";
+        }
+        signature += "}";
+    }
+    return signature;
+}
+
 void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const AST::Algorhitm *alg)
 {
     QString headerError =  "";
@@ -588,6 +622,25 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
         }
     }
 
+    QString signature;
+
+    signature = typeSignature(alg->header.returnType)+":";
+
+    for (int i=0; i<alg->header.arguments.size(); i++) {
+        const AST::Variable * var = alg->header.arguments[i];
+        if (var->accessType==AST::AccessArgumentIn)
+            signature += "in ";
+        else if (var->accessType==AST::AccessArgumentOut)
+            signature += "out ";
+        else if (var->accessType==AST::AccessArgumentInOut)
+            signature += "inout ";
+        signature += typeSignature(var->baseType);
+        for (int j=0; j<var->dimension; j++) {
+            signature += "[]";
+        }
+        if (i<alg->header.arguments.size()-1)
+            signature += ",";
+    }
 
     for (int i=0; i<alg->impl.locals.size(); i++) {
         const AST::Variable * var = alg->impl.locals[i];
@@ -607,6 +660,7 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     func.module = moduleId;
     func.algId = func.id = id;
     func.name = alg->header.name.toStdWString();
+    func.signature = signature.toStdWString();
     QList<Bytecode::Instruction> argHandle;
 
     Bytecode::Instruction l;
@@ -852,7 +906,7 @@ void Generator::findFunction(const AST::Algorhitm *alg, quint8 &module, quint16 
     for (quint8 i=0; i<m_ast->modules.size(); i++) {
         const AST::Module * mod = m_ast->modules[i];
         QList<AST::Algorhitm*> table;
-        if (mod->header.type==AST::ModTypeExternal)
+        if (mod->header.type==AST::ModTypeExternal || mod->header.type==AST::ModTypeCached)
             table = mod->header.algorhitms + mod->header.operators;
         else
             table = mod->impl.algorhitms + mod->header.operators;
@@ -860,7 +914,8 @@ void Generator::findFunction(const AST::Algorhitm *alg, quint8 &module, quint16 
             if (alg==table[j]) {
                 module = i;
                 id = j;
-                if (mod->header.type==AST::ModTypeExternal && (mod->builtInID & 0xF0) == 0) {
+                if (mod->header.type==AST::ModTypeCached ||
+                        mod->header.type==AST::ModTypeExternal && (mod->builtInID & 0xF0) == 0) {
                     QPair<quint8,quint16> ext(module, id);
                     if (!l_externs.contains(ext))
                         l_externs << ext;
