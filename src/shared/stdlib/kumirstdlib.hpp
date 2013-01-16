@@ -8,6 +8,7 @@
 #include <deque>
 #include <map>
 #include <cstdio>
+#include <random>
 #include "encodings.hpp"
 
 #ifndef NO_SYSTEM
@@ -487,7 +488,8 @@ public:
 #include <stdlib.h>
 class Random {
 public:
-    inline static void init() { srand(time(NULL)); }
+    inline static void init() {
+    }
     inline static void finalize() {}
 
     inline static int irand(int a, int b) {
@@ -496,14 +498,20 @@ public:
             return 0;
         }
         else {
-            int rndValue = rand(); // in range [0..2^32]
-            real scale = static_cast<real>(b-a+1)/static_cast<real>(RAND_MAX);
+            std::random_device rd;
+            unsigned int rndValue = rd(); // in range [0..2^32]
+#undef max
+            unsigned int rd_max = std::random_device::max();
+            real scale = static_cast<real>(b-a+1)/static_cast<real>(rd_max);
             return Kumir::Math::imin(b, a+static_cast<int>(scale*rndValue));
         }
     }
     inline static int irnd(int x) {
-        int rndValue = rand();
-        real scale = static_cast<real>(x)/static_cast<real>(RAND_MAX);
+        std::random_device rd;
+        unsigned int rndValue = rd();
+#undef max
+        unsigned int rd_max = std::random_device::max();
+        real scale = static_cast<real>(x)/static_cast<real>(rd_max);
         return Kumir::Math::imin(x, 1+static_cast<int>(scale*rndValue));
     }
 
@@ -513,14 +521,20 @@ public:
             return 0.0;
         }
         else {
-            int rndValue = rand(); // in range [0..2^32]
-            real scale = static_cast<real>(b-a+1)/static_cast<real>(RAND_MAX);
+            std::random_device rd;
+            unsigned int rndValue = rd(); // in range [0..2^32]
+#undef max
+            unsigned int rd_max = std::random_device::max();
+            real scale = static_cast<real>(b-a+1)/static_cast<real>(rd_max);
             return Kumir::Math::rmin(b, a+static_cast<real>(scale*rndValue));
         }
     }
     inline static real rrnd(real x) {
-        int rndValue = rand();
-        real scale = static_cast<real>(x)/static_cast<real>(RAND_MAX);
+        std::random_device rd;
+        unsigned int rndValue = rd();
+#undef max
+        unsigned int rd_max = std::random_device::max();
+        real scale = static_cast<real>(x)/static_cast<real>(rd_max);
         return Kumir::Math::rmin(x, static_cast<real>(scale*rndValue));
     }
 };
