@@ -1454,7 +1454,7 @@ public:
 #endif
     inline static FileType open(const String & shortName, FileType::OpenMode mode, bool remember=true, FILE* *fh = 0) {
         const String fileName = getAbsolutePath(shortName);
-        std::wcout<<fileName;
+//        std::wcout<<fileName;
         for (std::deque<FileType>::const_iterator it = openedFiles.begin(); it!=openedFiles.end(); ++it) {
             const FileType & f = (*it);
             if (f.getName()==fileName) {
