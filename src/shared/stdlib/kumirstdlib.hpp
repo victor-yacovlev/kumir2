@@ -521,7 +521,7 @@ public:
     inline static real rrnd(real x) {
         int rndValue = rand();
         real scale = static_cast<real>(x)/static_cast<real>(RAND_MAX);
-        return Kumir::Math::rmin(x, 1+static_cast<real>(scale*rndValue));
+        return Kumir::Math::rmin(x, static_cast<real>(scale*rndValue));
     }
 };
 #endif

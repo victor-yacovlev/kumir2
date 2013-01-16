@@ -856,7 +856,7 @@ void KumirVM::do_stdcall(uint16_t alg)
     /* алг вещ exp(вещ x) */
     case 0x0009: {
         real x = stack_values.pop().toReal();
-        real y = Kumir::Math::ctg(x);
+        real y = Kumir::Math::exp(x);
         stack_values.push(Variable(y));
         s_error = Kumir::Core::getError();
         break;
@@ -981,7 +981,7 @@ void KumirVM::do_stdcall(uint16_t alg)
     /* алг вещ sqrt(вещ x) */
     case 0x0019: {
         real x = stack_values.pop().toReal();
-        real y = Kumir::Math::ln(x);
+        real y = Kumir::Math::sqrt(x);
         stack_values.push(Variable(y));
         s_error = Kumir::Core::getError();
         break;
@@ -1275,8 +1275,8 @@ void KumirVM::do_stringscall(uint16_t alg)
         s_error = Kumir::Core::getError();
         break;
     }
-    /* алг цел найти после(цел от, лит фрагмент, лит строка) */
-    case 0x0002: {
+    /* алг цел позиция после(цел от, лит фрагмент, лит строка) */
+    case 0x0002: case 0x0007: {
         const String s = stack_values.pop().toString();
         const String sub = stack_values.pop().toString();
         const int from = stack_values.pop().toInt();
@@ -1286,8 +1286,8 @@ void KumirVM::do_stringscall(uint16_t alg)
         s_error = Kumir::Core::getError();
         break;
     }
-    /* алг цел найти(лит фрагмент, лит строка) */
-    case 0x0003: {
+    /* алг цел позиция(лит фрагмент, лит строка) */
+    case 0x0003: case 0x0008: {
         const String s = stack_values.pop().toString();
         const String sub = stack_values.pop().toString();
         const int y = Kumir::StringUtils::find(sub, s);
