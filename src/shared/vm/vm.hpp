@@ -531,6 +531,7 @@ void KumirVM::reset()
                 initContext.moduleId = e.module;
                 initContext.algId = -1;
                 initContext.IP = 0;
+                initContext.moduleContextNo = moduleContextNo;
                 stack_contexts.push(initContext);
             }
         }
