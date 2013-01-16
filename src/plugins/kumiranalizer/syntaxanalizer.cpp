@@ -4673,7 +4673,7 @@ AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<Subexpre
         else {
             AST::ExpressionOperator operation = operatorByLexem(s[l].o);
             AST::Type rt = resType(headType, tailType, operation);
-            if (rt.kind==AST::TypeNone) {
+            if (rt.kind==AST::TypeNone && headExpr && tailExpr) {
                 // Try to find custom-overriden operator
                 const QString & operatorName = s[l].o->data;
                 AST::Expression * customOperation = makeCustomBinaryOperation(operatorName, headExpr, tailExpr);
