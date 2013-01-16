@@ -2269,13 +2269,23 @@ public:
     inline static int time() { return 0; }
 };
 #else
+#include <time.h>
 class System {
 public:
     inline static void init() {}
     inline static void finalize() {}
 
     inline static int time() {
-        return 0; // TODO implement me
+        time_t epoch;
+        struct tm * loc;
+        epoch = ::time(NULL);
+        loc = localtime(&epoch);
+        int result =
+                loc->tm_hour * 3600 +
+                loc->tm_min * 60 +
+                loc->tm_sec;
+        result *= 1000; // convert s to ms
+        return result;
     }
 };
 #endif
