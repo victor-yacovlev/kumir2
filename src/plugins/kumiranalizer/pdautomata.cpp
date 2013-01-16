@@ -64,6 +64,9 @@ void PDAutomata::init(bool teacherMode, const QList<Statement*> & statements, AS
                 it++;
             }
         }
+        foreach (Statement * st, statements) {
+            st->statement = 0;
+        }
     }
     else {
         algorhitm->impl.pre.clear();
