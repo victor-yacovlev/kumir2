@@ -177,7 +177,7 @@ private /*fields*/:
 
     Bytecode::TableElem mainProgram;
     Bytecode::TableElem testingProgram;
-    std::deque<ModuleContext> moduleContexts;
+    std::vector<ModuleContext> moduleContexts;
     EntryPoint e_entryPoint;
     bool b_blindMode;
     bool b_nextCallInto;
