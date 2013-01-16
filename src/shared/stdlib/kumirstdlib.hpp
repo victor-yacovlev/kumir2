@@ -2286,6 +2286,13 @@ public:
         int secs = 0;
         int msecs = 0;
 #if defined(WIN32) || defined(_WIN32)
+        SYSTEMTIME st;
+        memset(&st, 0, sizeof(SYSTEMTIME));
+        GetSystemTime(&st);
+        hours = st.wHour;
+        mins = st.wMinute;
+        secs = st.wSecond;
+        msecs = st.wMilliseconds;
 #else
         struct timeval tv;
         gettimeofday(&tv, 0);
