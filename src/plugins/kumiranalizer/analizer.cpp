@@ -108,7 +108,7 @@ AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin,
     ast = new AST::Data();
     lexer = new Lexer(q);
     pdAutomata = new PDAutomata(q);
-    analizer = new SyntaxAnalizer(lexer, q);
+    analizer = new SyntaxAnalizer(lexer, AlwaysAvailableModulesName, q);
     builtinModules.resize(16);
     ActorInterface * stdFunct = new StdLibModules::RTL;
     builtinModules[0] = stdFunct;
@@ -290,7 +290,49 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
     }
     sourceText = newSourceText;
 
-    lexer->splitIntoStatements(newLines, lineStart, newStatements, gatherExtraTypeNames());
+
+
+    QList<Statement*> preprocessorStatements;
+    lexer->splitIntoStatements(newLines, lineStart, preprocessorStatements, QStringList());
+
+    QStringList extraTypeNames;
+
+    foreach (Statement * st, preprocessorStatements) {
+        if (st->data.size()>1 && st->data.at(0)->type==LxPriImport) {
+            if (st->data.at(1)->type!=LxConstLiteral && st->data.at(1)->type!=LxPriImport) {
+                const QString moduleName = st->data.at(1)->data;
+                foreach (const AST::Module * pmod, ast->modules) {
+                    if (pmod->header.type==AST::ModTypeExternal &&
+                            pmod->header.name==moduleName)
+                    {
+                        foreach (const AST::Type ptype, pmod->header.types) {
+                            const QString typeName = ptype.name;
+                            if (!extraTypeNames.contains(typeName))
+                                extraTypeNames.append(typeName);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    foreach (Statement * st, removedStatements) {
+        if (st->type==LxPriImport) {
+            if (st->data.size()>1 &&
+                    st->data.at(1)->type!=LxConstLiteral &&
+                    st->data.at(1)->type!=LxPriImport)
+            {
+                const QString moduleName = st->data.at(1)->data;
+                foreach (AST::Module * rmod, ast->modules) {
+                    if (rmod->header.name==moduleName) {
+                        rmod->header.enabled = false;
+                    }
+                }
+            }
+        }
+    }
+
+    lexer->splitIntoStatements(newLines, lineStart, newStatements, extraTypeNames);
 
     AnalizerPrivate::AnalizeSubject subjByOld =
             analizeSubject(removedStatements);
@@ -312,6 +354,12 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
     for (int i=0 ; i<newStatements.size(); i++) {
         statements.insert(insertPos, newStatements[i]);
         insertPos ++;
+    }
+
+
+    if (subject==SubjWholeText) {
+        statements.clear();
+        lexer->splitIntoStatements(sourceText, 0, statements, extraTypeNames);
     }
 
     if (removedStatements.size()>0 || newStatements.size()>0)

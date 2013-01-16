@@ -40,6 +40,7 @@ struct SyntaxAnalizerPrivate
     AST::Algorhitm * algorhitm;
     QList<Statement> statements;
     QSet<QString> unresolvedImports;
+    QStringList alwaysEnabledModules;
 
     void parseImport(int str);
     void parseModuleHeader(int str);
@@ -134,7 +135,9 @@ struct SyntaxAnalizerPrivate
 
 };
 
-SyntaxAnalizer::SyntaxAnalizer(Lexer * lexer, QObject *parent) :
+SyntaxAnalizer::SyntaxAnalizer(Lexer * lexer,
+                               const QStringList & alwaysEnabledModules,
+                               QObject *parent) :
     QObject(parent)
 {
     d = new SyntaxAnalizerPrivate;
@@ -142,6 +145,7 @@ SyntaxAnalizer::SyntaxAnalizer(Lexer * lexer, QObject *parent) :
     d->algorhitm = 0;
     d->lexer = lexer;
     d->currentPosition = -1;
+    d->alwaysEnabledModules = alwaysEnabledModules;
 }
 
 void SyntaxAnalizer::syncStatements()
@@ -247,6 +251,17 @@ void SyntaxAnalizer::buildTables(bool allowOperatorsDeclaration)
             foreach (Lexem * lx, d->statements[i].data) {
                 if (!lx->error.isEmpty())
                     lx->errorStage = Lexem::Tables;
+            }
+        }
+    }
+
+    for (int i=0; i<d->ast->modules.size(); i++) {
+        AST::Module * mod = d->ast->modules[i];
+        if (mod->header.type==AST::ModTypeExternal) {
+            if (mod->builtInID!=0xF0 &&
+                    !d->alwaysEnabledModules.contains(mod->header.name))
+            {
+                mod->header.enabled = false;
             }
         }
     }
