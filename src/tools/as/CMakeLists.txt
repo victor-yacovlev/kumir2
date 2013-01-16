@@ -1,7 +1,9 @@
 set(SRC
     main.cpp
 )
-set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
+if(NOT MSVC)
+    set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
+endif()
 add_executable(kumir2-as ${SRC})
 target_link_libraries(kumir2-as)
 if (XCODE OR MSVC_IDE)
