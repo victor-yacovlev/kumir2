@@ -803,6 +803,12 @@ void SyntaxAnalizerPrivate::parseOutput(int str)
         st.statement->expressions << expr << expr2 << expr3;
     }
     if (fileHandle) {
+        if (st.statement->expressions.size()==0) {
+            delete fileHandle;
+            QString err = _("What to output to file?");
+            st.data.at(0)->error = err;
+            return;
+        }
         st.statement->expressions << fileHandle;
     }
 }
@@ -883,6 +889,12 @@ void SyntaxAnalizerPrivate::parseInput(int str)
         st.statement->expressions << expr;
     }
     if (fileHandle) {
+        if (st.statement->expressions.size()==0) {
+            delete fileHandle;
+            QString err = _("What to input from file?");
+            st.data.at(0)->error = err;
+            return;
+        }
         st.statement->expressions << fileHandle;
     }
 }
