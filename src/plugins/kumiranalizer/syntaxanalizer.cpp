@@ -836,6 +836,12 @@ void SyntaxAnalizerPrivate::parseInput(int str)
 
         AST::Expression * expr = parseExpression(groups[i], st.mod, st.alg);
         if (!expr) {
+            for (int e=0; e<st.statement->expressions.size(); e++) {
+                delete st.statement->expressions[e];
+            }
+            st.statement->expressions.clear();
+            if (fileHandle)
+                delete fileHandle;
             return;
         }
 
@@ -865,6 +871,13 @@ void SyntaxAnalizerPrivate::parseInput(int str)
             foreach (Lexem * lx, groups[i])
                 lx->error = err;
             delete expr;
+            for (int e=0; e<st.statement->expressions.size(); e++) {
+                delete st.statement->expressions[e];
+            }
+            st.statement->expressions.clear();
+            if (fileHandle)
+                delete fileHandle;
+            return;
         }
 
         st.statement->expressions << expr;
