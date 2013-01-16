@@ -233,7 +233,7 @@ AST::Type typeFromSignature(QString s) {
     return result;
 }
 
-void SyntaxAnalizer::buildTables(bool allowOperatorsDeclaration)
+void SyntaxAnalizer::buildTables(bool isInternalBuild)
 {
 //    if (d->algorhitm)
 //        return; // Nothing to build if we analize just one algorhitm
@@ -255,6 +255,7 @@ void SyntaxAnalizer::buildTables(bool allowOperatorsDeclaration)
         }
     }
 
+    if (!isInternalBuild)
     for (int i=0; i<d->ast->modules.size(); i++) {
         AST::Module * mod = d->ast->modules[i];
         if (mod->header.type==AST::ModTypeExternal) {
@@ -398,7 +399,7 @@ void SyntaxAnalizer::buildTables(bool allowOperatorsDeclaration)
         const Statement & st = d->statements[i];
         bool wasError = st.hasError();
         if (st.type==LxPriAlgHeader) {
-            d->parseAlgHeader(i, true, allowOperatorsDeclaration);
+            d->parseAlgHeader(i, true, isInternalBuild);
         }
         if (!wasError && d->statements[i].hasError()) {
             foreach (Lexem * lx, d->statements[i].data) {
@@ -415,7 +416,7 @@ void SyntaxAnalizer::buildTables(bool allowOperatorsDeclaration)
             d->parseVarDecl(i);
         }
         if (st.type==LxPriAlgHeader) {
-            d->parseAlgHeader(i, false, allowOperatorsDeclaration);
+            d->parseAlgHeader(i, false, isInternalBuild);
         }
         if (!wasError && d->statements[i].hasError()) {
             foreach (Lexem * lx, d->statements[i].data) {
@@ -806,8 +807,8 @@ void SyntaxAnalizerPrivate::parseOutput(int str)
                 expr = helperCall;
             }
             else {
-                err = _("Can't output value of type %1").arg(expr->baseType.name);
-                foreach (Lexem * lx, subgroups[2])
+                err = _("Can't output value of type %1", expr->baseType.name);
+                foreach (Lexem * lx, subgroups[0])
                     lx->error = err;
                 delete expr;
                 delete expr2;
