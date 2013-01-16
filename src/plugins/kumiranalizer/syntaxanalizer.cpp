@@ -3860,7 +3860,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
         result->baseType = AST::TypeInteger;
         result->dimension = 0;
         result->lexems = QList<Lexem*>::fromStdList(lexems);
-        const AST::Module * dummy;
+        const AST::Module * dummy = 0;
         findAlgorhitm(QString::fromUtf8("длин"), dummy, result->function);
         return result;
     }
