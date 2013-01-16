@@ -2519,64 +2519,34 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
                 //integerOverflow = !StdLib::IntegerOverflowChecker::checkFromString(val);
                 // TODO check integer value from string
             }
-            if (ct==AST::TypeReal) {
-                static const QString expFormSymbols = QString::fromUtf8("eEеЕ01234567890");
-                bool result = val.length()>0 && (val[0].isDigit() || val[0]=='.');
-                bool dotFound = false;
-                bool signFound = false;
-                bool eFound = false;
-                for (int i=0; i<val.length(); i++) {
-                    if (val[i]=='.') {
-                        if (!dotFound) {
-                            dotFound = true;
-                        }
-                        else {
-                            result = false;
-                            break;
-                        }
-                    }
-                    else if (val[i]=='+' ||  val[i]=='-') {
-                        if (!signFound) {
-                            signFound = true;
-                        }
-                        else {
-                            result = false;
-                            break;
-                        }
-                    }
-                    else if (val[i]=='e') {
-                        if (!eFound) {
-                            eFound = true;
-                        }
-                        else {
-                            result = false;
-                            break;
-                        }
-                    }
-                    else if (!expFormSymbols.contains(val[i])) {
-                        result = false;
-                        break;
-                    }
+            if (ct==AST::TypeReal ||
+                    (pt==AST::TypeReal || integerOverflow)
+                    )
+            {
+                ct = AST::TypeReal;
+                Kumir::Converter::ParseError local_error = Kumir::Converter::NoError;
+                Kumir::real value = Kumir::Converter::parseReal(val.toStdWString(), Kumir::Char('.'), local_error);
+                QString err;
+                if (local_error==Kumir::Converter::WrongReal) {
+                    err = _("Wrong real number");
                 }
-                if (!result) {
+                else if (local_error==Kumir::Converter::WrongExpForm) {
+                    err = _("Wrong E-real number");
+                }
+                else if (local_error==Kumir::Converter::BadSymbol) {
+                    err = _("Wrong real number");
+                }
+                else if (local_error==Kumir::Converter::Overflow) {
+                    err = _("Too big real value");
+                }
+                if (err.length()>0) {
                     for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
                         Lexem * lx = * it;
-                        lx->error = _("Wrong E-real number");
+                        lx->error = err;
                         return QVariant::Invalid;
                     }
                 }
-            }
-
-            if (pt==AST::TypeReal || integerOverflow) {
-//                if (!StdLib::DoubleOverflowChecker::checkFromString(val)) {
-//                    for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
-//                        Lexem * lx = * it;
-//                        lx->error = _("Real constant too big");
-//                    }
-//                    return QVariant::Invalid;
-//                }
-                // TODO check real value for overflow
-                ct = AST::TypeReal;
+                return QVariant(value);
             }
 
             if (pt==AST::TypeInteger && integerOverflow) {
