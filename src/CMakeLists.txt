@@ -15,6 +15,11 @@ else()
     endif(NOT APPLE)
 endif(MSVC)
 
+
+if(NOT MSVC)
+    set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
+endif()
+
 if(MSVC_IDE)
 	#set(CMAKE_SHARED_LIBRARY_PREFIX "../")
 	#set(CMAKE_IMPORT_LIBRARY_PREFIX "../")
