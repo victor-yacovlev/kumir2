@@ -2270,21 +2270,41 @@ public:
 };
 #else
 #include <time.h>
+#if defined(WIN32) || defined(_WIN32)
+#include <windows.h>
+#else
+#include <sys/time.h>
+#endif
 class System {
 public:
     inline static void init() {}
     inline static void finalize() {}
 
     inline static int time() {
+        int hours = 0;
+        int mins = 0;
+        int secs = 0;
+        int msecs = 0;
+#if defined(WIN32) || defined(_WIN32)
+#else
+        struct timeval tv;
+        gettimeofday(&tv, 0);
+        tzset();
         time_t epoch;
         struct tm * loc;
+        struct tm dummy;
         epoch = ::time(NULL);
-        loc = localtime(&epoch);
+        loc = localtime_r(&epoch, &dummy);
+        hours = loc->tm_hour;
+        mins = loc->tm_min;
+        secs = loc->tm_sec;
+        msecs = tv.tv_usec / 1000;
+#endif
         int result =
-                loc->tm_hour * 3600 +
-                loc->tm_min * 60 +
-                loc->tm_sec;
-        result *= 1000; // convert s to ms
+                hours * 3600 * 1000 +
+                mins * 60 * 1000 +
+                secs * 1000 +
+                msecs;
         return result;
     }
 };
