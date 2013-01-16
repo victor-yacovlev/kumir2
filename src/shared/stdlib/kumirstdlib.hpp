@@ -342,7 +342,9 @@ public:
     inline static real rmin(real x, real y) { return x<y? x : y; }
 
     inline static int iabs(int x) { return x>0? x : -x; }
-    inline static int intt(real x) { return static_cast<int>(x); }
+    inline static int intt(real x) {
+        return static_cast<int>(::floor(x));
+    }
     inline static real arccos(real x) {
         if (x>=-1.0 && x<=1.0) {
             return ::acos(x);

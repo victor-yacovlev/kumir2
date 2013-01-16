@@ -943,7 +943,7 @@ void KumirVM::do_stdcall(uint16_t alg)
     case 0x0014: {
         int y = stack_values.pop().toInt();
         int x = stack_values.pop().toInt();
-        int r = Kumir::Math::div(x, y);
+        int r = Kumir::Math::mod(x, y);
         stack_values.push(Variable(r));
         s_error = Kumir::Core::getError();
         break;
