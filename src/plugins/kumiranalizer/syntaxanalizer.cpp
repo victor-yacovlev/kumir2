@@ -851,7 +851,7 @@ void SyntaxAnalizerPrivate::parseInput(int str)
         }
 
         if (expr->baseType.kind==AST::TypeUser) {
-            err = _("Can't input value of type %1").arg(expr->baseType.name);
+            err = _("Can't input value of type %1",expr->baseType.name);
         }
 
         if (expr->kind==AST::ExprConst &&

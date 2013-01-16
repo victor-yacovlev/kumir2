@@ -40,7 +40,7 @@
 "'to' earler then 'from'";"“до” раньше чем “от”";"";"";"";"";
 "Error compiling this module";"Ошибка сборки этого исполнителя";"";"";"";"";
 "Extra operator";"Лишний оператор";"";"";"";"";
-"Can't input value of type %1";"";"";"";"";"";
+"Can't input value of type %1";"Нельзя ввести значение типа %1";"";"";"";"";
 "File already specified";"";"";"";"";"";
 "Can't boolean:=%1";"";"";"";"";"";
 "'='' instead of ':='";"";"";"";"";"";
@@ -112,7 +112,7 @@
 "Garbage at the end of statement";"Мусор в конце выражения";"";"";"";"";
 "No 'then' after 'if'";"Где “то” после условия?";"";"";"";"";
 "Assignment to complex expression";"Нельзя присвоить выражению";"";"";"";"";
-"Can't output value of type %1";"";"";"";"";"";
+"Can't output value of type %1";"Нельзя вывести значение типа %1";"";"";"";"";
 "Can't real:=string";"Нельзя “вещ := лит”";"";"";"";"";
 "Wrong hex constant";"Плохая 16-ричная константа";"";"";"";"";
 "':=' or '=' ?";"“:=” или “=” ?";"";"";"";"";
