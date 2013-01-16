@@ -293,7 +293,7 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
 
 
     QList<Statement*> preprocessorStatements;
-    lexer->splitIntoStatements(newLines, lineStart, preprocessorStatements, QStringList());
+    lexer->splitIntoStatements(sourceText, lineStart, preprocessorStatements, QStringList());
 
     QStringList extraTypeNames;
 
