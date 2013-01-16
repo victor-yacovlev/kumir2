@@ -613,8 +613,10 @@ void searchEndLoopIf(QList<Lexem*> & lexems) {
         Lexem * lx = (*it);
         Lexem * lxx = 0;
         if (lx->type==LxPriEndLoop) {
-            if (lx->data.contains("_")) {
+            if (lx->data.contains("_") || lx->data.contains(" ")) {
                 int underscorePos = lx->data.indexOf("_");
+                if (underscorePos==-1)
+                    underscorePos = lx->data.indexOf(" ");
                 QString caseText = lx->data.mid(underscorePos);
                 lx->data = lx->data.left(underscorePos);
                 lx->length -= caseText.length();
