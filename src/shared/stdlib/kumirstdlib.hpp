@@ -732,6 +732,10 @@ public:
                 sExponenta.push_back(ch);
             }
         }
+        if (hasE && sExponenta.length()==0) {
+            error = WrongExpForm;
+            return 0.0;
+        }
         int fractionalLength = sFractional.length();
         for (int i=sFractional.length()-1; i>=0; i--) {
             Char ch = sFractional.at(i);
