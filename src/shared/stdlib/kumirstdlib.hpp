@@ -1194,6 +1194,13 @@ public:
             absPath = workDir + fileName;
         return getNormalizedPath(absPath, Char('\\'));
     }
+    inline static String CurrentWorkingDirectory() {
+        wchar_t cwd[1024];
+        GetCurrentDirectoryW(1024, cwd);
+        String workDir;
+        workDir = String(cwd);
+        return workDir;
+    }
 #else
     inline static String getAbsolutePath(const String & fileName) {
         char cwd[1024];
@@ -1215,6 +1222,22 @@ public:
             absPath = workDir + fileName;
         return getNormalizedPath(absPath, Char('/'));
     }
+
+    inline static String CurrentWorkingDirectory() {
+        char cwd[1024];
+        getcwd(cwd, 1024*sizeof(char));
+        String workDir;
+#   ifdef NO_UNICODE
+        workDir = String(cwd);
+#   else
+        wchar_t wcwd[1024];
+        size_t pl = mbstowcs(wcwd, cwd, 1024);
+        wcwd[pl] = L'\0';
+        workDir = String(wcwd);
+#   endif
+        return workDir;
+    }
+
 #endif
 
     inline static String getNormalizedPath(const String & path, const Char separator)
