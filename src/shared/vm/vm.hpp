@@ -97,6 +97,7 @@ public /*typedefs*/:
 public /*methods*/:
     /** Set parsed Kumir bytecode */
     inline void setProgram(const Bytecode::Data & data, bool isMain, const String & filename);
+    inline void setProgramDirectory(const Kumir::String & path) { s_programDirectory = path; };
 
     inline bool loadProgramFromBinaryBuffer(std::list<char> & stream, bool isMain, const String & filename, String & error);
     inline bool loadProgramFromTextBuffer(const std::string & stream, bool isMain, const String & filename, String & error);
@@ -189,6 +190,7 @@ private /*fields*/:
     AnyValue register0;
     Stack<Variable> stack_values;
     Stack<Context> stack_contexts;
+    Kumir::String s_programDirectory;
 public /*constructors*/:
     inline KumirVM();
 private /*methods*/:
@@ -304,10 +306,18 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
             }
             if (externModuleContext==-1) {
                 externModuleContext = currentModuleContext + 1;
-                const std::string filename = Kumir::Coder::encode(VM_LOCALE, e.fileName);
+                Kumir::String modulePath;
+                if (e.fileName[0]==Kumir::Char('/') || s_programDirectory.length()==0)
+                    modulePath = e.fileName;
+                else {
+                    modulePath = s_programDirectory;
+                    modulePath.push_back(Kumir::Char('/'));
+                    modulePath += e.fileName;
+                }
+                const std::string filename = Kumir::Coder::encode(VM_LOCALE, modulePath);
                 std::fstream externalfile(filename.c_str());
-                if (!Kumir::Files::exist(e.fileName) || !externalfile.is_open()) {
-                    Kumir::String errorMessage = Kumir::Core::fromUtf8("Не могу загрузить внешний исполнитель: ")+e.fileName;
+                if (!Kumir::Files::exist(modulePath) || !externalfile.is_open()) {
+                    Kumir::String errorMessage = Kumir::Core::fromUtf8("Не могу загрузить внешний исполнитель: ")+modulePath;
                     throw errorMessage;
                 }
                 Bytecode::Data programData;

@@ -84,6 +84,29 @@ Kumir::String decodeHttpStringValue(const std::string & s)
     return result;
 }
 
+int showErrorMessage(const Kumir::String & message, int code) {
+    bool toHttp = false;
+#if !defined(WIN32) && !defined(_WIN32)
+    char * REQUEST_METHOD = getenv("REQUEST_METHOD");
+    char * QUERY_STRING = getenv("QUERY_STRING");
+    toHttp = (REQUEST_METHOD!=0 && QUERY_STRING!=0);
+#endif
+    if (!toHttp) {
+        const std::string localMessage = Kumir::Coder::encode(LOCALE, message);
+        std::cerr << localMessage << std::endl;
+        return code;
+    }
+    else {
+        const std::string localMessage = Kumir::Coder::encode(Kumir::UTF8, message);
+        std::cout << "Content-type: text/html;charset=utf-8\n\n\n";
+        std::cout << "<html><head><title>An error occured on server</title></head>\n";
+        std::cout << "<body>\n";
+        std::cout << localMessage << std::endl;
+        std::cout << "</body></html>\n";
+        return 0;
+    }
+}
+
 bool InteractionHandler::readScalarArgument(const Kumir::String &message, const Kumir::String &name, VM::ValueType type, VM::AnyValue &val)
 {
     Kumir::IO::InputStream stream;
@@ -258,6 +281,15 @@ int main(int argc, char *argv[])
     InteractionHandler interactionHandler(argc, argv);
     vm.setExternalHandler(&interactionHandler);
 
+    Kumir::String programPath = Kumir::Files::getAbsolutePath(Kumir::Coder::decode(LOCALE, programName));
+    size_t slashPos = programPath.find_last_of(Kumir::Char('/'));
+    Kumir::String programDir;
+    if (slashPos!=Kumir::String::npos) {
+        programDir = programPath.substr(0, slashPos);
+    }
+
+    vm.setProgramDirectory(programDir);
+
     static const Kumir::String LOAD_ERROR = Kumir::Core::fromUtf8("ОШИБКА ЗАГРУЗКИ ПРОГРАММЫ: ");
 
     try {
@@ -265,20 +297,15 @@ int main(int argc, char *argv[])
     }
     catch (Kumir::String & msg) {
         Kumir::String message = LOAD_ERROR + msg;
-        const std::string localMessage = Kumir::Coder::encode(LOCALE, message);
-        std::cerr << localMessage << std::endl;
-        return 11;
+        return showErrorMessage(message, 11);
     }
     catch (std::string & msg) {
         Kumir::String message = LOAD_ERROR + Kumir::Core::fromAscii(msg);
-        const std::string localMessage = Kumir::Coder::encode(LOCALE, message);
-        std::cerr << localMessage << std::endl;
-        return 11;
+        return showErrorMessage(message, 11);
     }
     catch (...) {
-        const std::string localMessage = Kumir::Coder::encode(LOCALE, LOAD_ERROR);
-        std::cerr << localMessage << std::endl;
-        return 11;
+        Kumir::String message = LOAD_ERROR;
+        return showErrorMessage(message, 11);
     }
 
     vm.reset();
@@ -301,8 +328,7 @@ int main(int argc, char *argv[])
             else {
                 message = RUNTIME_ERROR + vm.error();
             }
-            const std::string localMessage = Kumir::Coder::encode(LOCALE, message);
-            std::cerr << localMessage << std::endl;
+            return showErrorMessage(message, 10);
             return 10;
         }
     }
