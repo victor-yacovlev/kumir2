@@ -55,7 +55,7 @@ private:
         return constantValue(type.toStdList(), dimension, value);
     }
     void addKumirModule(int id, const AST::Module * mod);
-    void addFunction(int id, int moduleId, Bytecode::ElemType type, const AST::Algorhitm * alg);
+    void addFunction(int id, int moduleId, Bytecode::ElemType type, const AST::Module * mod, const AST::Algorhitm * alg);
     void addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, const AST::Module * mod, const AST::Algorhitm * alg);
 
     QList<Bytecode::Instruction> instructions(

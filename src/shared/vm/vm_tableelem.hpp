@@ -237,11 +237,9 @@ inline void tableElemToBinaryStream(std::list<char> & ds, const TableElem &e)
     }
     valueToDataStream(ds, uint16_t(e.algId));
     valueToDataStream(ds, uint16_t(e.id));
-    stringToDataStream(ds, e.name);
-    if (e.type==EL_EXTERN) {
-        stringToDataStream(ds, e.moduleName);
-    }
-    else if (e.type==EL_CONST) {
+    stringToDataStream(ds, e.name);    
+    stringToDataStream(ds, e.moduleName);
+    if (e.type==EL_CONST) {
         constantToDataStream(ds, e.vtype, e.initialValue, e.dimension);
     }
     else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_BELOWMAIN || e.type==EL_INIT) {
@@ -375,11 +373,9 @@ inline void tableElemFromBinaryStream(std::list<char> & ds, TableElem &e)
     e.id = id;
     stringFromDataStream(ds, s);
     e.name = s;
-    if (e.type==EL_EXTERN) {
-        stringFromDataStream(ds, s);
-        e.moduleName = s;
-    }
-    else if (e.type==EL_CONST) {
+    stringFromDataStream(ds, s);
+    e.moduleName = s;
+    if (e.type==EL_CONST) {
         constantFromDataStream(ds, e.vtype, e.initialValue, e.dimension);
     }
     else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_BELOWMAIN || e.type==EL_INIT) {

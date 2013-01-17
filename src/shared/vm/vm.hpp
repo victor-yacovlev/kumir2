@@ -534,13 +534,13 @@ void KumirVM::reset()
     // Each kumir module have 'initialization' section,
     // so push all these sections (if any) into stack
     // to call them BEFORE startup context
-    for (size_t moduleContextNo=0;
-         moduleContextNo<moduleContexts.size();
-         moduleContextNo++)
+    for (int moduleContextNo=moduleContexts.size()-1;
+         moduleContextNo>=0;
+         moduleContextNo--)
     {
-        for (FunctionMap::iterator it=moduleContexts[moduleContextNo].inits.begin();
-             it!=moduleContexts[moduleContextNo].inits.end();
-             ++it)
+        for (FunctionMap::iterator it=moduleContexts[moduleContextNo].inits.end();
+             it!=moduleContexts[moduleContextNo].inits.begin();
+             it--)
         {
             const TableElem & e = (*it).second;
             if (e.instructions.size()>0) {

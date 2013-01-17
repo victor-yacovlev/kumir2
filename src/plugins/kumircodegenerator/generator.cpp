@@ -355,6 +355,7 @@ void Generator::addKumirModule(int id, const AST::Module *mod)
     returnFromInit.type = Bytecode::RET;
     initElem.type = Bytecode::EL_INIT;
     initElem.module = quint8(id);
+    initElem.moduleName = mod->header.name.toStdWString();
     initElem.instructions = instructions(id, -1, 0, mod->impl.initializerBody).toVector().toStdVector();
     if (!initElem.instructions.empty())
         initElem.instructions << returnFromInit;
@@ -380,7 +381,7 @@ void Generator::addKumirModule(int id, const AST::Module *mod)
         if (alg->header.specialType==AST::AlgorhitmTypeTesting) {
             ft = Bytecode::EL_TESTING;
         }
-        addFunction(i, id, ft, alg);
+        addFunction(i, id, ft, mod, alg);
     }
     if (mainMod && mainAlg) {
         addInputArgumentsMainAlgorhitm(mainModId, mainAlgorhitmId, mainMod, mainAlg);
@@ -599,7 +600,7 @@ QString typeSignature(const AST::Type & tp) {
     return signature;
 }
 
-void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const AST::Algorhitm *alg)
+void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const AST::Module * mod, const AST::Algorhitm *alg)
 {
     QString headerError =  "";
     QString beginError = "";
@@ -661,6 +662,7 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     func.algId = func.id = id;
     func.name = alg->header.name.toStdWString();
     func.signature = signature.toStdWString();
+    func.moduleName = mod->header.name.toStdWString();
     QList<Bytecode::Instruction> argHandle;
 
     Bytecode::Instruction l;
