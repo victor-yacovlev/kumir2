@@ -408,22 +408,15 @@ public:
         }
     }
     inline static real pow(real a, real b) {
-        if (b>=0) {
-            return ::pow(a, b);
-        }
-        else {
-            Core::abort(Core::fromUtf8("Нельзя возводить в отрицательную степень"));
+        real result = ::pow(a, b);
+        if (!Math::isCorrectReal(result)) {
+            Core::abort(Core::fromUtf8("Ошибка возведения в степень: результат - слишком большое число"));
             return 0.0;
         }
+        return result;
     }
     inline static int ipow(int a, int b) {
-        if (b>=0) {
-            return static_cast<int>(::floor(::pow(real(a), b)));
-        }
-        else {
-            Core::abort(Core::fromUtf8("Нельзя возводить в отрицательную степень"));
-            return 0.0;
-        }
+        return static_cast<int>(::floor(::pow(real(a), b)));
     }
     template <typename A, typename B> inline static real safediv(A a, B b) {
 #ifdef NO_ZERODIV_CHECK
