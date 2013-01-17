@@ -655,6 +655,7 @@ void searchUserTypeNames(QList<Lexem*> & lexems, const QStringList & names) {
                         lxx->linePos = lx->linePos;
                         lxx->length = left.length();
                         it = lexems.insert(it, lxx);
+                        it++;
                     }
                     Lexem *tl = new Lexem;
                     tl->data = typeName;
