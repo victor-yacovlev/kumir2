@@ -411,7 +411,7 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
         }
         else if (e.type==EL_INIT ) {
             uint8_t key = e.module;
-            moduleContexts[currentModuleContext].inits[key] = e;
+            moduleContexts[currentModuleContext].inits.push_back(e);
         }
     }
     for (FunctionMap::iterator it = moduleContexts[currentModuleContext].functions.begin();
@@ -538,11 +538,11 @@ void KumirVM::reset()
          moduleContextNo>=0;
          moduleContextNo--)
     {
-        for (FunctionMap::iterator it=moduleContexts[moduleContextNo].inits.end();
-             it!=moduleContexts[moduleContextNo].inits.begin();
-             it--)
+        const ModuleContext & currentModule = moduleContexts.at(moduleContextNo);
+        const std::deque<Bytecode::TableElem> & inits = currentModule.inits;
+        for (int initNo=inits.size()-1; initNo>=0; initNo--)
         {
-            const TableElem & e = (*it).second;
+            const Bytecode::TableElem & e = inits.at(initNo);
             if (e.instructions.size()>0) {
                 Context initContext;
                 initContext.program = &(e.instructions);
