@@ -1248,8 +1248,24 @@ void KumirVM::do_filescall(uint16_t alg)
         s_error = Kumir::Core::getError();
         break;
     }
-    /* алг лог =(фaйл ф1, файл ф2) */
+    /* алг лит РАБОЧИЙ КАТАЛОГ */
     case 0x0011: {
+        const String res = Kumir::Files::CurrentWorkingDirectory();
+        stack_values.push(Variable(res));
+        break;
+    }
+    /* алг лит КАТАЛОГ ПРОГРАММЫ */
+    case 0x0012: {
+        String res;
+        if (s_programDirectory.length()==0)
+            res = Kumir::Files::CurrentWorkingDirectory();
+        else
+            res = s_programDirectory;
+        stack_values.push(Variable(res));
+        break;
+    }
+    /* алг лог =(фaйл ф1, файл ф2) */
+    case 0x0013: {
         const Record f2rec = stack_values.pop().toRecord();
         const Record f1rec = stack_values.pop().toRecord();
         const Kumir::FileType f1 = fromRecordValue<Kumir::FileType>(f1rec);
@@ -1258,7 +1274,7 @@ void KumirVM::do_filescall(uint16_t alg)
         break;
     }
     /* алг лог =(фaйл ф1, файл ф2) */
-    case 0x0012: {
+    case 0x0014: {
         const Record f2rec = stack_values.pop().toRecord();
         const Record f1rec = stack_values.pop().toRecord();
         const Kumir::FileType f1 = fromRecordValue<Kumir::FileType>(f1rec);

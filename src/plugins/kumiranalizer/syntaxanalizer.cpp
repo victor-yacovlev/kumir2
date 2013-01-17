@@ -319,6 +319,7 @@ void SyntaxAnalizer::buildTables(bool isInternalBuild)
                     error = _("Module file is damaged");
                 }
             }
+            programFile.close();
             if (error.length()==0) {
                 AST::Module * module = new AST::Module;
                 module->header.type = AST::ModTypeCached;
