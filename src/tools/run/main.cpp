@@ -224,6 +224,7 @@ bool InteractionHandler::makeInputArgument(VM::Variable &reference)
 
 int main(int argc, char *argv[])
 {
+//    sleep(15); // for remote debugger
     // Look at arguments
     std::string programName;
     std::deque<std::string> args;

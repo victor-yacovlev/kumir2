@@ -315,9 +315,19 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
                     modulePath += e.fileName;
                 }
                 const std::string filename = Kumir::Coder::encode(VM_LOCALE, modulePath);
-                std::fstream externalfile(filename.c_str());
-                if (!Kumir::Files::exist(modulePath) || !externalfile.is_open()) {
-                    Kumir::String errorMessage = Kumir::Core::fromUtf8("Не могу загрузить внешний исполнитель: ")+modulePath;
+                std::ifstream externalfile(filename.c_str());
+                if (
+                        !Kumir::Files::exist(modulePath)
+                        || !externalfile.is_open()
+                   )
+                {
+                    int error = errno;
+                    Kumir::String errorMessage = Kumir::Core::fromUtf8("Не могу загрузить внешний исполнитель: ")
+                            +modulePath
+                            +Kumir::Core::fromUtf8(" (ошибка ")
+                            +Kumir::Converter::sprintfInt(error,10,0,0)
+                            +Kumir::Core::fromAscii(") ")
+                            ;
                     throw errorMessage;
                 }
                 Bytecode::Data programData;
