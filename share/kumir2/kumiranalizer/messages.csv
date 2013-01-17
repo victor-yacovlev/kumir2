@@ -54,7 +54,7 @@
 "Condition if not boolean";"Условие после “если” не логическое";"";"";"";"";
 "Can't declare variables at this level";"Здесь нельзя объявлять величины";"";"";"";"";
 "Extra variable group in-specifier";"Лишний “арг”";"";"";"";"";
-"Function in array bound";"Алгоритм в границе";"";"";"";"";
+"Function in array bound";"Нельзя использовать вызов алгоритма в границе";"";"";"";"";
 "Indeces was specified before";"Повторное указание индексов";"";"";"";"";
 "From-value not specified";"Нет значения после “от”";"";"";"";"";
 "No variables declared after '%1'";"Пусто после “%1”";"";"";"";"";
