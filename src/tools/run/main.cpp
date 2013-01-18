@@ -27,7 +27,10 @@ class InteractionHandler
 public:
     explicit InteractionHandler(int argc, char *argv[]);
     bool makeInputArgument(VM::Variable & reference);
+    bool makeOutputArgument(const VM::Variable & reference);
 private:
+    void output(const Kumir::String & s);
+    inline void output(const std::string & s) { output(Kumir::Core::fromAscii(s)); }
     bool readScalarArgument(const Kumir::String & message, const Kumir::String & name, VM::ValueType type, VM::AnyValue & val);
     std::deque< Kumir::String > m_arguments;
     size_t i_currentArgument;
@@ -221,6 +224,111 @@ bool InteractionHandler::makeInputArgument(VM::Variable &reference)
     }
     return true;
 }
+
+bool InteractionHandler::makeOutputArgument(const VM::Variable & reference) {
+    Kumir::String repr;
+    output(reference.name()+Kumir::Core::fromAscii(" = "));
+    if (reference.dimension()==0) {
+        if (reference.hasValue()) {
+            repr = reference.value().toString();
+            if (reference.baseType()==Bytecode::VT_string)
+                repr = Kumir::Core::fromAscii("\"") + repr + Kumir::Core::fromAscii("\"");
+            else if (reference.baseType()==Bytecode::VT_char)
+                repr = Kumir::Core::fromAscii("'") + repr + Kumir::Core::fromAscii("'");
+        }
+        output(repr);
+    }
+    else if (reference.dimension()==1) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        output("{ ");
+        for (int x=bounds[0]; x<=bounds[1]; x++) {
+            repr.clear();
+            if (reference.hasValue(x)) {
+                repr = reference.value(x).toString();
+                if (reference.baseType()==Bytecode::VT_string)
+                    repr = Kumir::Core::fromAscii("\"") + repr + Kumir::Core::fromAscii("\"");
+                else if (reference.baseType()==Bytecode::VT_char)
+                    repr = Kumir::Core::fromAscii("'") + repr + Kumir::Core::fromAscii("'");
+            }
+            output(repr);
+            if (x<bounds[1]) {
+                output(", ");
+            }
+        }
+        output(" }");
+    }
+    else if (reference.dimension()==2) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        output("{ ");
+        for (int y=bounds[0]; y<=bounds[1]; y++) {
+            output("{ ");
+            for (int x=bounds[2]; x<=bounds[3]; x++) {
+                repr.clear();
+                if (reference.hasValue(y,x)) {
+                    repr = reference.value(y,x).toString();
+                    if (reference.baseType()==Bytecode::VT_string)
+                        repr = Kumir::Core::fromAscii("\"") + repr + Kumir::Core::fromAscii("\"");
+                    else if (reference.baseType()==Bytecode::VT_char)
+                        repr = Kumir::Core::fromAscii("'") + repr + Kumir::Core::fromAscii("'");
+                }
+                output(repr);
+                if (x<bounds[1]) {
+                    output(", ");
+                }
+            }
+            output(" }");
+            if (y<bounds[1]) {
+                output(", ");
+            }
+        }
+        output(" }");
+    }
+    else if (reference.dimension()==3) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        output("{ ");
+        for (int z=bounds[0]; z<=bounds[1]; z++) {
+            output("{ ");
+            for (int y=bounds[2]; y<=bounds[3]; y++) {
+                output("{ ");
+                for (int x=bounds[4]; x<=bounds[5]; x++) {
+                    repr.clear();
+                    if (reference.hasValue(z,y,x)) {
+                        repr = reference.value(z,y,x).toString();
+                        if (reference.baseType()==Bytecode::VT_string)
+                            repr = Kumir::Core::fromAscii("\"") + repr + Kumir::Core::fromAscii("\"");
+                        else if (reference.baseType()==Bytecode::VT_char)
+                            repr = Kumir::Core::fromAscii("'") + repr + Kumir::Core::fromAscii("'");
+                    }
+                    output(repr);
+                    if (x<bounds[1]) {
+                        output(", ");
+                    }
+                }
+                output(" }");
+                if (y<bounds[1]) {
+                    output(", ");
+                }
+            }
+            output(" }");
+            if (z<bounds[1]) {
+                output(", ");
+            }
+        }
+        output(" }");
+    }
+    output("\n");
+    return true;
+}
+
+void InteractionHandler::output(const Kumir::String &s)
+{
+    const std::string localstring = Kumir::Coder::encode(LOCALE, s);
+    std::cout << localstring;
+}
+
 
 int main(int argc, char *argv[])
 {

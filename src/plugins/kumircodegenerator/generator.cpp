@@ -370,7 +370,7 @@ void Generator::addKumirModule(int id, const AST::Module *mod)
         Bytecode::ElemType ft = Bytecode::EL_FUNCTION;
         if (mod->header.name.isEmpty() && i==0) {
             ft = Bytecode::EL_MAIN;
-            if (!alg->header.arguments.isEmpty())
+            if (!alg->header.arguments.isEmpty() || alg->header.returnType.kind!=AST::TypeNone)
             {
                 mainMod = mod;
                 mainAlg = alg;

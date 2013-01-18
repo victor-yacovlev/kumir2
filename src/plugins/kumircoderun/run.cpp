@@ -217,6 +217,103 @@ bool Run::makeInputArgument(Variable & reference)
     return true;
 }
 
+bool Run::makeOutputArgument(const Variable & reference) {
+    QString repr;
+    emit output(QString::fromStdWString(reference.name())+" = ");
+    if (reference.dimension()==0) {
+        if (reference.hasValue()) {
+            repr = QString::fromStdWString(reference.value().toString());
+            if (reference.baseType()==Bytecode::VT_string)
+                repr = "\"" + repr + "\"";
+            else if (reference.baseType()==Bytecode::VT_char)
+                repr = "'" + repr + "'";
+        }
+        emit output(repr);
+    }
+    else if (reference.dimension()==1) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        emit output("{ ");
+        for (int x=bounds[0]; x<=bounds[1]; x++) {
+            repr = "";
+            if (reference.hasValue(x)) {
+                repr = QString::fromStdWString(reference.value(x).toString());
+                if (reference.baseType()==Bytecode::VT_string)
+                    repr = "\"" + repr + "\"";
+                else if (reference.baseType()==Bytecode::VT_char)
+                    repr = "'" + repr + "'";
+            }
+            emit output(repr);
+            if (x<bounds[1]) {
+                emit output(", ");
+            }
+        }
+        emit output(" }");
+    }
+    else if (reference.dimension()==2) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        emit output("{ ");
+        for (int y=bounds[0]; y<=bounds[1]; y++) {
+            emit output("{ ");
+            for (int x=bounds[2]; x<=bounds[3]; x++) {
+                repr = "";
+                if (reference.hasValue(y,x)) {
+                    repr = QString::fromStdWString(reference.value(y,x).toString());
+                    if (reference.baseType()==Bytecode::VT_string)
+                        repr = "\"" + repr + "\"";
+                    else if (reference.baseType()==Bytecode::VT_char)
+                        repr = "'" + repr + "'";
+                }
+                emit output(repr);
+                if (x<bounds[1]) {
+                    emit output(", ");
+                }
+            }
+            emit output(" }");
+            if (y<bounds[1]) {
+                emit output(", ");
+            }
+        }
+        emit output(" }");
+    }
+    else if (reference.dimension()==3) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        emit output("{ ");
+        for (int z=bounds[0]; z<=bounds[1]; z++) {
+            emit output("{ ");
+            for (int y=bounds[2]; y<=bounds[3]; y++) {
+                emit output("{ ");
+                for (int x=bounds[4]; x<=bounds[5]; x++) {
+                    repr = "";
+                    if (reference.hasValue(z,y,x)) {
+                        repr = QString::fromStdWString(reference.value(z,y,x).toString());
+                        if (reference.baseType()==Bytecode::VT_string)
+                            repr = "\"" + repr + "\"";
+                        else if (reference.baseType()==Bytecode::VT_char)
+                            repr = "'" + repr + "'";
+                    }
+                    emit output(repr);
+                    if (x<bounds[1]) {
+                        emit output(", ");
+                    }
+                }
+                emit output(" }");
+                if (y<bounds[1]) {
+                    emit output(", ");
+                }
+            }
+            emit output(" }");
+            if (z<bounds[1]) {
+                emit output(", ");
+            }
+        }
+        emit output(" }");
+    }
+    emit output("\n");
+    return true;
+}
 
 
 bool Run::makeInput(std::deque<Variable> & references)
