@@ -3661,7 +3661,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
         if (openBracketIndex==-1)
             openBracketIndex = lexems.size();
         for (int i=0; i<openBracketIndex; i++) {
-            lexems[i]->error = _("Return valus is not a string");
+            lexems[i]->error = _("Return value is not indexable");
         }
         return 0;
     }
