@@ -3310,6 +3310,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
             if (oper) {
                 subexpression << oper;
             }
+            operand->expressionIsClosed = true;
         } // end if (blockType==SubExpression)
         else if (blockType==None) {
             if (oper) {
@@ -4600,6 +4601,9 @@ AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<Subexpre
                     ||
                     (tailIsLiteral && literalOperands)
                     );
+
+        if (headExpr->expressionIsClosed)
+            makeCNF = false;
 
         if (makeCNF) {
             AST::Expression * res = new AST::Expression;

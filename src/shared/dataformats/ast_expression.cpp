@@ -11,6 +11,7 @@ Expression::Expression()
     baseType.kind = TypeNone;
     variable = NULL;
     function = NULL;
+    expressionIsClosed = false;
     constant = QVariant::Invalid;
     operatorr = AST::OpNone;
     dimension = 0;

@@ -92,6 +92,10 @@ struct ABSTRACTSYNTAXTREE_EXPORT Expression {
       */
     QList<struct Expression *> operands;
 
+    /** True if expression () bounds.
+      * This flag is used to avoid CNF-transofmations */
+    bool expressionIsClosed;
+
     /** Operator in case of kind==StSubexpression, emty otherwise */
     enum ExpressionOperator operatorr;
 
