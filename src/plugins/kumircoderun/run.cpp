@@ -848,7 +848,8 @@ void Run::run()
         }
         vm->evaluateNextInstruction();
         if (vm->error().length()>0) {
-            emit lineChanged(vm->effectiveLineNo());
+            int lineNo = vm->effectiveLineNo();
+            emit lineChanged(lineNo);
             emit error(QString::fromStdWString(vm->error()));
             break;
         }

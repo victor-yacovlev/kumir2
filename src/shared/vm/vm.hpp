@@ -547,10 +547,10 @@ void KumirVM::reset()
                 Context initContext;
                 initContext.program = &(e.instructions);
                 initContext.type = EL_INIT;
-                initContext.runMode = CRM_ToEnd;
+                initContext.runMode = moduleContextNo==0? CRM_OneStep : CRM_ToEnd;
                 initContext.moduleId = e.module;
                 initContext.algId = -1;
-                initContext.IP = 0;
+                initContext.IP = -1;
                 initContext.moduleContextNo = moduleContextNo;
                 stack_contexts.push(initContext);
             }
@@ -583,6 +583,9 @@ bool KumirVM::hasMoreInstructions() const
 void KumirVM::evaluateNextInstruction()
 {
     int ip = stack_contexts.top().IP;
+    if (ip==-1) {
+        ip = 0;
+    }
     const std::vector<Instruction> * program = stack_contexts.top().program;
     const Instruction & instr = program->at(ip);
     switch (instr.type) {
@@ -2446,7 +2449,7 @@ void KumirVM::do_ret()
                 && last_context.runMode == CRM_OneStep
                 )
         {
-            if (stack_contexts.size()>0) {
+            if (stack_contexts.size()>0 && stack_contexts.top().moduleContextNo==0) {
                 stack_contexts.top().runMode = CRM_OneStep;
             }
         }
