@@ -1224,7 +1224,7 @@ void popInputStatement(QList<Lexem*> &lexems, Statement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
+    popLexemsUntilPrimaryKeyword(lexems, result);
 }
 
 void popOutputStatement(QList<Lexem*> &lexems, Statement &result)
@@ -1232,7 +1232,7 @@ void popOutputStatement(QList<Lexem*> &lexems, Statement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
+    popLexemsUntilPrimaryKeyword(lexems, result);
 }
 
 void popFinputStatement(QList<Lexem*> &lexems, Statement &result)
