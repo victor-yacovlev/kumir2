@@ -1940,6 +1940,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
             if ( curPos>0
                  && group.lexems[curPos]->type!=LxOperComa
                  && group.lexems[curPos]->type!=LxOperSemicolon
+                 && group.lexems[curPos]->type!=LxOperEqual
                  && group.lexems[curPos-1]->type!=LxOperComa
                  && group.lexems[curPos-1]->type!=LxOperSemicolon
                  )
@@ -2528,7 +2529,9 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
             }
             return QVariant::Invalid;
         }
-        else if ( ( ct==pt ) || (ct==AST::TypeInteger && pt==AST::TypeReal) )
+        else if ( ( ct==pt ) ||
+                  (ct==AST::TypeInteger && pt==AST::TypeReal) ||
+                  (ct==AST::TypeCharect && pt==AST::TypeString))
         {
             QString val;
             for (std::list<Lexem*>::const_iterator it=constant.begin(); it!=constant.end(); it++) {
