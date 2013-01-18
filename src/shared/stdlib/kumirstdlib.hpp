@@ -779,7 +779,7 @@ public:
             return 0.0;
         }
 
-        fraction = fromDecimal(sFractional);
+        fraction = fromDecimal(sFractional.substr(0,fractionalLength));
         for (int i=0; i<fractionalLength; i++) {
             fraction /= 10.0;
         }
@@ -865,6 +865,16 @@ public:
                 result.insert(0, leftSpaces, ' ');
             if (rightSpaces>0)
                 result.append(rightSpaces, ' ');
+        }
+        if (!expform) {
+            int chopPos;
+            for (chopPos=result.length()-1; chopPos>0; chopPos--) {
+                if (result[chopPos]!='0')
+                    break;
+            }
+            if (result[chopPos]=='.')
+                chopPos += 1;
+            result = result.substr(0, chopPos+1);
         }
         String uniresult = Coder::decode(ASCII, result);
         size_t dotPos = uniresult.find_first_of('.');

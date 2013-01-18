@@ -4613,7 +4613,7 @@ AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<Subexpre
                     (tailIsLiteral && literalOperands)
                     );
 
-        if (headExpr->expressionIsClosed)
+        if (headExpr && headExpr->expressionIsClosed)
             makeCNF = false;
 
         if (makeCNF) {
