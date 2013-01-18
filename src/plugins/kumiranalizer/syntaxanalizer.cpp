@@ -1920,7 +1920,6 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
 
     for ( int curPos=0; curPos<group.lexems.size(); curPos++ )
     {
-
         //      Предполагается, что модификатор группы уже задан, поэтому
         //      если встречается арг, рез или аргрез, то это ошибка
         if (group.lexems[curPos]->type==LxSecIn) {
@@ -1937,6 +1936,17 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
         }
         else if ( ( par == type ) || ( par == tn ) )
         {
+            // Check if no coma before not first declaration
+            if ( curPos>0
+                 && group.lexems[curPos]->type!=LxOperComa
+                 && group.lexems[curPos-1]->type!=LxOperComa
+                 && group.lexems[curPos-1]->type!=LxOperSemicolon
+                 )
+            {
+                group.lexems[curPos]->error = _("No coma before declaration");
+                return result;
+            }
+
             //          Pазбираемся с типом переменных
             if (group.lexems[curPos]->type==LxNameClass) {
                 AST::VariableBaseType bt = lexer->baseTypeByClassName(group.lexems[curPos]->data);
