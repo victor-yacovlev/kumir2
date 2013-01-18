@@ -3085,6 +3085,16 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
             return 0;
         }
 
+        if (oper && oper->type==LxOperRightBr) {
+            oper->error = _("Extra )");
+            return 0;
+        }
+
+        if (oper && oper->type==LxOperRightSqBr) {
+            oper->error = _("Extra ]");
+            return 0;
+        }
+
         Lexem * notFlag = 0;
         if (block.size()>1 && block.last()->type==LxSecNot) {
             block.last()->error = _("Extra 'not'");
@@ -3306,6 +3316,16 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
             }
             else if (IS_OPERATOR(lexems[curPos]->type)) {
                 oper = lexems[curPos];
+                if (oper->type==LxOperLeftSqBr) {
+                    oper->error = _("No name before [");
+                    delete operand;
+                    return 0;
+                }
+                if (oper->type==LxOperLeftBr) {
+                    oper->error = _("No operator before (");
+                    delete operand;
+                    return 0;
+                }
             }
             else {
                 lexems[curPos]->error = _("Forgotten operator after bracket"); // FIXME garbage error
@@ -3597,6 +3617,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
     QString name;
     Lexem * openBracket = 0;
     int openBracketIndex = -1;
+    bool nameIsNumericConstant = true;
     for (int i=0; i<lexems.size(); i++) {
         if (lexems[i]->type==LxOperLeftSqBr) {
             openBracket = lexems[i];
@@ -3606,7 +3627,21 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
         else {
             if (i>0) name += " ";
             name += lexems[i]->data;
+            nameIsNumericConstant = nameIsNumericConstant &&
+                    (lexems[i]->type==LxConstInteger
+                     || lexems[i]->type==LxConstReal
+                     || lexems[i]->type==LxConstBoolTrue
+                     || lexems[i]->type==LxConstBoolFalse
+                     );
         }
+    }
+    if (nameIsNumericConstant) {
+        if (openBracketIndex==-1)
+            openBracketIndex = lexems.size();
+        for (int i=0; i<openBracketIndex; i++) {
+            lexems[i]->error = _("Non-literal constant is not indexable");
+        }
+        return 0;
     }
     QList<AST::Expression*> realArguments;
     QList< QList<Lexem*> > arguments;
