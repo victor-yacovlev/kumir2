@@ -846,7 +846,7 @@ public:
         if (expform)
             sprintfFormat.push_back('e');
         else
-            sprintfFormat.push_back('f');
+            sprintfFormat.push_back('g');
         sprintf(buffer, Coder::encode(ASCII, sprintfFormat).c_str(), value);
         std::string result(reinterpret_cast<char*>(&buffer));
 
@@ -868,19 +868,35 @@ public:
         }
         if (!expform) {
             int chopPos;
+            bool dotFound = false;
             for (chopPos=result.length()-1; chopPos>0; chopPos--) {
+                if (result[chopPos]=='.')
+                    dotFound = true;
                 if (result[chopPos]!='0')
                     break;
             }
             if (result[chopPos]=='.')
                 chopPos += 1;
-            result = result.substr(0, chopPos+1);
+            if (dotFound)
+                result = result.substr(0, chopPos+1);
         }
         String uniresult = Coder::decode(ASCII, result);
         size_t dotPos = uniresult.find_first_of('.');
         if (dotPos!=String::npos) {
             uniresult[dotPos] = dot;
         }
+        else {
+            if (uniresult.find_first_of(Char('e'))==String::npos) {
+                uniresult.push_back(dot);
+                uniresult.push_back('0');
+            }
+        }
+//        if (!expform) {
+//            bool forceExpForm = false;
+//            int integralDigits = dotPos; // thereshold >= 8
+//            int decimalDigits = uniresult.length()-integralDigits-1; // t
+
+//        }
         return uniresult;
     }
 
