@@ -2076,6 +2076,8 @@ void KumirVM::do_load(uint8_t s, uint16_t id)
         stack_values.push(val);
         if (val.dimension()==0)
             register0 = val.value();
+        if (isRetVal)
+            Variable::unsetError();
     }
     s_error = Kumir::Core::getError();
     nextIP();
