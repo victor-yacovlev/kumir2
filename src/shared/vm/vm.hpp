@@ -2070,13 +2070,13 @@ void KumirVM::do_load(uint8_t s, uint16_t id)
     }
     bool isRetVal = VariableScope(s)==LOCAL
             && stack_contexts.top().locals[id].algorhitmName()==stack_contexts.top().locals[id].name();
-    if (isRetVal)
+    if (isRetVal && stack_contexts.top().type==Bytecode::EL_MAIN)
         Variable::unsetError();
     if (Kumir::Core::getError().length()==0) {
         stack_values.push(val);
         if (val.dimension()==0)
             register0 = val.value();
-        if (isRetVal)
+        if (isRetVal && stack_contexts.top().type==Bytecode::EL_MAIN)
             Variable::unsetError();
     }
     s_error = Kumir::Core::getError();
