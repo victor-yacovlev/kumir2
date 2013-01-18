@@ -784,6 +784,11 @@ public:
             fraction /= 10.0;
         }
         mantissa = fromDecimal(sIntegral);
+        if (mantissa<0) {
+            // Extra '-' at start
+            error = WrongReal;
+            return 0.0;
+        }
         mantissa += fraction;
         exponenta = fromDecimal(sExponenta);
         real result = mantissa * ::pow(10, exponenta);
