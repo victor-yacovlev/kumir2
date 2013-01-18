@@ -333,6 +333,43 @@ public:
         // TODO: implement for ARM/AVR platform!!!!
     }
 
+    inline static bool isCorrectIntegerConstant(const String & value) {
+        size_t start = 0;
+        if (value.length()<=start) return false;
+        bool isNegative = value.at(0)==Char('-');
+        if (isNegative) {
+            start = 1;
+        }
+        if (value.length()<=start) return false;
+        bool isHex = false;
+        if (value.length()-start >= 1) {
+            isHex = value.at(start)==Char('$');
+            if (isHex) start += 1;
+        }
+        if (!isHex && value.length()-start >= 2) {
+            isHex = value.at(start)==Char('0') && value.at(start+1)==Char('x');
+            if (isHex) start += 2;
+        }
+        if (value.length()<=start) return false;
+        while (start<value.length() && value.at(start)==Char('0'))
+            start += 1;
+        const String digits = value.substr(start);
+        static const String maxHex = Core::fromAscii("80000000");
+        static const String maxDecimal = Core::fromAscii("2147483648");
+        if (isHex) {
+            if (digits.length()==maxHex.length())
+                return digits < maxHex;
+            else
+                return digits.length()<maxHex.length();
+        }
+        else {
+            if (digits.length()==maxDecimal.length())
+                return digits < maxDecimal;
+            else
+                return digits.length()<maxDecimal.length();
+        }
+    }
+
     inline static real abs(real x) { return ::fabs(x); }
 
     inline static int imax(int x, int y) { return x>y? x : y; }

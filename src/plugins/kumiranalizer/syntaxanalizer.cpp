@@ -1455,14 +1455,23 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
             AST::VariableBaseType b = rightExpr->baseType.kind;
             if (a==AST::TypeInteger) {
                 if (b==AST::TypeReal) {
-                    QString strValue = QString::number(rightExpr->constant.toDouble(), 'f', 100);
-                    while (strValue.endsWith('0') || strValue.endsWith('.')) {
-                        strValue = strValue.left(strValue.length()-1);
+                    bool isRealConstant = false;
+                    static const QString realSpecificSymbols =
+                            QString::fromUtf8("еЕeE.");
+                    if (rightExpr->kind==AST::ExprConst) {
+                        QString strValue;
+                        foreach (const AST::Lexem * lx, right) {
+                            strValue += lx->data;
+                        }
+                        for (int s=0; s<realSpecificSymbols.length(); s++) {
+                            const QChar ss = realSpecificSymbols[s];
+                            if (strValue.contains(ss)) {
+                                isRealConstant = true;
+                                break;
+                            }
+                        }
                     }
-                    if (rightExpr->kind==AST::ExprConst
-                            && !strValue.contains(".")
-                            && !strValue.toLower().contains("e")
-                            )
+                    if (!isRealConstant)
                     {
                         // Constant became real because of big integer representation
                         err = _("Integer constant too big");
@@ -2515,13 +2524,14 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
                 val += (*it)->data;
             }
             bool integerOverflow = false;
+            bool isHex = false;
 
             if (pt==AST::TypeInteger) {
-                //integerOverflow = !StdLib::IntegerOverflowChecker::checkFromString(val);
-                // TODO check integer value from string
+                integerOverflow = !Kumir::Math::isCorrectIntegerConstant(val.toStdWString());
+                isHex = val.startsWith("$") || val.startsWith("-$") || val.startsWith("0x") || val.startsWith("-0x");
             }
             if (ct==AST::TypeReal ||
-                    (pt==AST::TypeReal || integerOverflow)
+                    (pt==AST::TypeReal || (integerOverflow && !isHex) )
                     )
             {
                 ct = AST::TypeReal;
