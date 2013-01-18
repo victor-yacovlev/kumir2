@@ -573,7 +573,7 @@ bool KumirVM::hasMoreInstructions() const
     if (stack_contexts.size()>0) {
         const std::vector<Bytecode::Instruction> * program = stack_contexts.at(0).program;
         int IP = stack_contexts.at(0).IP;
-        return program && IP < program->size();
+        return program && IP < int(program->size());
     }
     else {
         return false;
