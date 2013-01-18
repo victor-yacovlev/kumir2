@@ -307,7 +307,7 @@ public:
 
     inline static bool checkProd(int32_t lhs, int32_t rhs) {
         // Check for integer overflow
-        int64_t prod = lhs * rhs;
+        int64_t prod = int64_t(lhs) * int64_t(rhs);
         return (prod >> 32)==(prod >> 31);
     }
 
