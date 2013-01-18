@@ -1126,8 +1126,10 @@ void PDAutomataPrivate::setCurrentIndentRank(int start, int end)
 void PDAutomataPrivate::setCurrentError(const QString &value)
 {
     for (int i=0; i<source[currentPosition]->data.size(); i++) {
-        source[currentPosition]->data[i]->error = value;
-        source[currentPosition]->data[i]->errorStage = AST::Lexem::PDAutomata;
+        if (source[currentPosition]->data[i]->type!=LxTypeComment) {
+            source[currentPosition]->data[i]->error = value;
+            source[currentPosition]->data[i]->errorStage = AST::Lexem::PDAutomata;
+        }
     }
 }
 
@@ -1441,8 +1443,10 @@ void PDAutomataPrivate::processModEndInsteadOfAlgEnd()
                     ? _("Extra 'begin'")
                     : _("Algorhitm not implemented");
             for (int i=0; i<source[pos]->data.size(); i++) {
-                source[pos]->data[i]->error = err;
-                source[pos]->data[i]->errorStage = AST::Lexem::PDAutomata;
+                if (source[pos]->data[i]->type!=LxTypeComment) {
+                    source[pos]->data[i]->error = err;
+                    source[pos]->data[i]->errorStage = AST::Lexem::PDAutomata;
+                }
             }
             if (currentContext.size()==1) { // Module initializer
                 AST::Statement * st = new AST::Statement;
