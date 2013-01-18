@@ -1939,6 +1939,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
             // Check if no coma before not first declaration
             if ( curPos>0
                  && group.lexems[curPos]->type!=LxOperComa
+                 && group.lexems[curPos]->type!=LxOperSemicolon
                  && group.lexems[curPos-1]->type!=LxOperComa
                  && group.lexems[curPos-1]->type!=LxOperSemicolon
                  )
@@ -3712,7 +3713,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
     }
     if ((cbPos+1)<argLine.size()) {
         for (int i=cbPos+1; i<argLine.size(); i++) {
-            argLine[cbPos]->error = _("Garbage in expression");
+            argLine[i]->error = _("Garbage in expression");
         }
         return 0;
     }
