@@ -3288,6 +3288,11 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                 return 0;
             }
             subexpression << operand;
+            if (oper && oper->type==LxOperLeftBr) {
+                delete operand;
+                oper->error = _("No operator before (");
+                return 0;
+            }
             if (oper)
                 subexpression << oper;
             if (subexpression.size()>1 &&
