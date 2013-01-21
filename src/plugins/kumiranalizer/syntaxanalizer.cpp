@@ -3039,6 +3039,67 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
     int prevPos = 0;
     int curPos = -1;
 
+    // First -- check brackets
+
+    QStack<Lexem *> openBrackets;
+    QStack<Lexem *> openSqBrackets;
+    QStack<Lexem *> openBraces;
+
+
+    for (int i=0; i<lexems.size(); i++) {
+        Lexem * lx = lexems.at(i);
+        if (lx->type==LxOperLeftBr) {
+            openBrackets.push_back(lx);
+        }
+        else if (lx->type==LxOperLeftSqBr) {
+            openSqBrackets.push_back(lx);
+        }
+        else if (lx->type==LxOperLeftBrace) {
+            openBraces.push_back(lx);
+        }
+        else if (lx->type==LxOperRightBr) {
+            if (openBrackets.size()==0) {
+                lx->error = _("Unpaired )");
+                return 0;
+            }
+            else {
+                openBrackets.pop_back();
+            }
+        }
+        else if (lx->type==LxOperRightSqBr) {
+            if (openSqBrackets.size()==0) {
+                lx->error = _("Unpaired ]");
+                return 0;
+            }
+            else {
+                openSqBrackets.pop_back();
+            }
+        }
+        else if (lx->type==LxOperRightBrace) {
+            if (openBraces.size()==0) {
+                lx->error = _("Unpaired }");
+                return 0;
+            }
+            else {
+                openBraces.pop_back();
+            }
+        }
+    }
+
+    foreach (Lexem * lx, openBrackets) {
+        lx->error = _("Unpaired (");
+    }
+    foreach (Lexem * lx, openSqBrackets) {
+        lx->error = _("Unpaired [");
+    }
+    foreach (Lexem * lx, openBraces) {
+        lx->error = _("Unpaired {");
+    }
+
+    if (openBrackets.size()+openSqBrackets.size()+openBraces.size() > 0) {
+        return 0;
+    }
+
     while (curPos < lexems.size()) {
         blockType = None;
         block.clear();
