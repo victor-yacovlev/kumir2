@@ -3331,8 +3331,18 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
         } // end if (blockType==Function)
         else if (blockType==Simple) {
             if (block.isEmpty() && notFlag) {
-                notFlag->error = _("Extra 'not'");
-                return 0;
+                bool isUnaryOperatorAfterNot =
+                        lexems[curPos]->type==LxOperPlus ||
+                        lexems[curPos]->type==LxOperMinus ;
+                 if (curPos==lexems.length()-1 || !isUnaryOperatorAfterNot) {
+                    notFlag->error = _("Extra 'not'");
+                    return 0;
+                 }
+                 else {
+                     subexpression << notFlag;
+                     subexpression << lexems[curPos];
+                    continue;
+                 }
             }
             AST::Expression * operand = parseSimpleName(block.toStdList(), mod, alg);
             if (!operand) {
@@ -3531,7 +3541,9 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
             bool isBooleanComparision =
                     i>0 && subexpression[i-1].e && subexpression[i-1].e->baseType.kind == AST::TypeBoolean
                     ||
-                    i<subexpression.size()-1 && subexpression[i+1].e && subexpression[i+1].e->baseType.kind == AST::TypeBoolean;
+                    i<subexpression.size()-1 && subexpression[i+1].e && subexpression[i+1].e->baseType.kind == AST::TypeBoolean
+                    ||
+                    i<subexpression.size()-1 && subexpression[i+1].o && subexpression[i+1].o->type==LxSecNot;
             if (isBooleanComparision) {
                 if (el.o->type = LxOperEqual)
                     el.o->type = LxOperBoolEqual;
