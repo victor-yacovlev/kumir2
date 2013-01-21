@@ -33,7 +33,7 @@
 "Can't integer:=charect";"Нельзя “цел := сим”";"";"";"";"";
 "Can't charect:=integer";"Нельзя “сим := цел”";"";"";"";"";
 "Can't boolean:=real";"Нельзя “лог := вещ”";"";"";"";"";
-"No operator before (";"";"";"";"";"";
+"No operator before (";"Пропущен оператор";"";"";"";"";
 "The name is used by other algorithm";"Имя занято другим алгоритмом";"";"";"";"";
 "Variable already declared";"Величина уже описана";"";"";"";"";
 "Can't boolean:=integer";"Нельзя “лог := цел”";"";"";"";"";
@@ -90,7 +90,7 @@
 "No 'loop' before 'times'";"Перед “раз” нет “нц”";"";"";"";"";
 "Extra ','";"Лишняя запятая";"";"";"";"";
 "Garbage after 'switch' statement";"Мусор после “выбор”";"";"";"";"";
-"Can't input constant";"";"";"";"";"";
+"Can't input constant";"Нельзя ввести в константу";"";"";"";"";
 "Not enought indeces";"Не все индексы";"";"";"";"";
 "Begin in algorhitm body";"“нач” внутри алгоритма";"";"";"";"";
 "'=' instead of ':='";"“=” вместо “:=”";"";"";"";"";
@@ -128,7 +128,7 @@
 "Not a constant value";"Это не константа";"";"";"";"";
 "Can't input function";"Нельзя ввести в алгоритм";"";"";"";"";
 "Algorithm out of module";"Алгоритм вне исполнителя";"";"";"";"";
-"No operator before [";"";"";"";"";"";
+"No operator before [";"Нет величины перед [";"";"";"";"";
 "Can't integer:=boolean";"Нельзя “цел := лог”";"";"";"";"";
 "Extra type";"Лишнее объявление типа";"";"";"";"";
 "Return value is not indexable";"У знач не может быть индексов";"";"";"";"";
@@ -170,7 +170,7 @@
 "Extra variable group out-specifier";"Лишний “рез”";"";"";"";"";
 "No 'loop' before 'while'";"Перед “пока” нет “нц”";"";"";"";"";
 "Extra 'case'";"“при” не на месте";"";"";"";"";
-"Can't input subexpression";"";"";"";"";"";
+"Can't input subexpression";"Нельзя ввести в выражение";"";"";"";"";
 "No variable name";"Не указано имя величины";"";"";"";"";
 "Can't pass this expression as out-argument";"Не величина в рез-параметре";"";"";"";"";
 "Can't charect:=real";"Нельзя “сим := вещ”";"";"";"";"";
