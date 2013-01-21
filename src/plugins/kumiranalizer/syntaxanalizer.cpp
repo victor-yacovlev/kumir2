@@ -3354,8 +3354,9 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
         else if (blockType==Simple) {
             if (block.isEmpty() && notFlag) {
                 bool isUnaryOperatorAfterNot =
+                        curPos<lexems.length() && (
                         lexems[curPos]->type==LxOperPlus ||
-                        lexems[curPos]->type==LxOperMinus ;
+                        lexems[curPos]->type==LxOperMinus );
                  if (curPos==lexems.length()-1 || !isUnaryOperatorAfterNot) {
                     notFlag->error = _("Extra 'not'");
                     return 0;
