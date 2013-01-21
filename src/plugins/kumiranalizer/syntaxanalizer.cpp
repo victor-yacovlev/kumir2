@@ -3432,7 +3432,21 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
         }
 
     }
-
+    for (int i=0; i<subexpression.size(); i++) {
+        const SubexpressionElement & el = subexpression.at(i);
+        if (el.o && (el.o->type==LxOperEqual || el.o->type==LxOperNotEqual) ) {
+            bool isBooleanComparision =
+                    i>0 && subexpression[i-1].e && subexpression[i-1].e->baseType.kind == AST::TypeBoolean
+                    ||
+                    i<subexpression.size()-1 && subexpression[i+1].e && subexpression[i+1].e->baseType.kind == AST::TypeBoolean;
+            if (isBooleanComparision) {
+                if (el.o->type = LxOperEqual)
+                    el.o->type = LxOperBoolEqual;
+                else
+                    el.o->type = LxOperBoolNotEqual;
+            }
+        }
+    }
     result = makeExpressionTree(subexpression);
     if (result)
         result->lexems = lexems;
@@ -4195,8 +4209,9 @@ int findOperatorByPriority(const QList<SubexpressionElement> & s)
     static const QList<QSet <LexemType> > Omega = QList<QSet<LexemType> >()
             << ( QSet<LexemType>() << LxSecOr )
             << ( QSet<LexemType>() << LxSecAnd )
-            << ( QSet<LexemType>() << LxOperNotEqual << LxOperEqual << LxOperGreater << LxOperGreaterOrEqual << LxOperLess << LxOperLessOrEqual << LxPriAssign)
+            << ( QSet<LexemType>() << LxOperBoolEqual << LxOperBoolNotEqual )
             << ( QSet<LexemType>() << LxSecNot )
+            << ( QSet<LexemType>() << LxOperNotEqual << LxOperEqual << LxOperGreater << LxOperGreaterOrEqual << LxOperLess << LxOperLessOrEqual << LxPriAssign)
             << ( QSet<LexemType>() << LxOperPlus << LxOperMinus )
             << ( QSet<LexemType>() << LxOperAsterisk << LxOperSlash )
             << ( QSet<LexemType>() << LxOperPower );
@@ -4260,9 +4275,9 @@ AST::ExpressionOperator operatorByLexem(const Lexem * lx)
         return AST::OpAnd;
     else if (lx->type==LxSecOr)
         return AST::OpOr;
-    else if (lx->type==LxOperEqual)
+    else if (lx->type==LxOperEqual || lx->type==LxOperBoolEqual)
         return AST::OpEqual;
-    else if (lx->type==LxOperNotEqual)
+    else if (lx->type==LxOperNotEqual || lx->type==LxOperBoolNotEqual)
         return AST::OpNotEqual;
     else if (lx->type==LxOperLess)
         return AST::OpLess;
