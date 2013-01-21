@@ -453,7 +453,17 @@ public:
         return result;
     }
     inline static int ipow(int a, int b) {
-        return static_cast<int>(::floor(::pow(real(a), b)));
+        real rresult = ::floor(pow(real(a), real(b)));
+        if (Core::error.length()>0) return 0;
+        if (rresult>real(maxint())
+                ||
+                rresult < -real(maxint()))
+        {
+            Core::abort(Core::fromUtf8("Ошибка возведения в степень: результат - слишком большое число"));
+            return 0;
+        }
+        int iresult = static_cast<int>(rresult);
+        return iresult;
     }
     template <typename A, typename B> inline static real safediv(A a, B b) {
 #ifdef NO_ZERODIV_CHECK
