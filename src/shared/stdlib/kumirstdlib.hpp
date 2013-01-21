@@ -2315,29 +2315,29 @@ public:
 
     inline static real readReal(FileType fileNo = FileType(), bool fromStdIn = true) {
         InputStream stream = makeInputStream(fileNo, fromStdIn);
-        if (Core::getError().length()>0) return 0;
+        if (Core::getError().length()>0) return 0.0;
         return readReal(stream);
     }
 
     inline static bool readBool(FileType fileNo = FileType(), bool fromStdIn = true) {
         InputStream stream = makeInputStream(fileNo, fromStdIn);
-        if (Core::getError().length()>0) return 0;
+        if (Core::getError().length()>0) return false;
         return readBool(stream);
     }
 
     inline static Char readChar(FileType fileNo = FileType(), bool fromStdIn = true) {
         InputStream stream = makeInputStream(fileNo, fromStdIn);
-        if (Core::getError().length()>0) return 0;
+        if (Core::getError().length()>0) return Char(' ');
         return readChar(stream);
     }
     inline static String readString(FileType fileNo = FileType(), bool fromStdIn = true) {
         InputStream stream = makeInputStream(fileNo, fromStdIn);
-        if (Core::getError().length()>0) return 0;
+        if (Core::getError().length()>0) return String();
         return readString(stream);
     }
     inline static String readLine(FileType fileNo = FileType(), bool fromStdIn = true) {
         InputStream stream = makeInputStream(fileNo, fromStdIn);
-        if (Core::getError().length()>0) return 0;
+        if (Core::getError().length()>0) return String();
         return readLine(stream);
     }
 
