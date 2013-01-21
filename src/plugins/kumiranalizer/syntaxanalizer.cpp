@@ -3110,6 +3110,26 @@ enum BlockType {
 
 #define IS_OPERATOR(x) (x & LxTypeOperator || x==LxOperGreaterOrEqual || x==LxSecOr || x==LxSecAnd || x==LxPriAssign/* || x==LxSecNot */)
 
+inline bool hasBoolOpBefore(const QList<SubexpressionElement> & alist, int no)
+{
+    for (int i=no-1; i>=0; i--) {
+        if (alist[i].o) {
+            const LexemType t = alist[i].o->type;
+            if (
+                    t==LxOperBoolEqual ||
+                    t==LxOperBoolNotEqual ||
+                    t==LxSecAnd ||
+                    t==LxSecOr ||
+                    t==LxSecNot
+                    )
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 AST::Expression * SyntaxAnalizerPrivate::parseExpression(
     QList<Lexem *> lexems
     , const AST::Module *mod
@@ -3540,12 +3560,14 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
         if (el.o && (el.o->type==LxOperEqual || el.o->type==LxOperNotEqual) ) {
             bool isBooleanComparision =
                     i>0 && subexpression[i-1].e && subexpression[i-1].e->baseType.kind == AST::TypeBoolean
+//                    ||
+//                    i>0 && hasBoolOpBefore(subexpression, i)
                     ||
                     i<subexpression.size()-1 && subexpression[i+1].e && subexpression[i+1].e->baseType.kind == AST::TypeBoolean
                     ||
                     i<subexpression.size()-1 && subexpression[i+1].o && subexpression[i+1].o->type==LxSecNot;
             if (isBooleanComparision) {
-                if (el.o->type = LxOperEqual)
+                if (el.o->type == LxOperEqual)
                     el.o->type = LxOperBoolEqual;
                 else
                     el.o->type = LxOperBoolNotEqual;
