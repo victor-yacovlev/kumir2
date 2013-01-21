@@ -1099,36 +1099,38 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
         int toIndex = st.data.indexOf(toLexem);
         int stepIndex = st.data.indexOf(stepLexem);
 
+        QString err =  "";
+
         if (fromIndex!=-1 && forIndex!=-1 && fromIndex-forIndex==1) {
-            forLexem->error =  _("No loop variable");
-            return;
+            err =  _("No loop variable");
         }
 
         if (toIndex!=-1 && fromIndex>toIndex) {
-            toLexem->error = _("'to' earler then 'from'");
-            return;
+            err = _("'to' earler then 'from'");
         }
 
         if (fromIndex==-1 && toIndex!=-1) {
-            toLexem->error = _("No 'from' before 'to'");
-            return;
+            err = _("No 'from' before 'to'");
         }
 
         if (fromIndex==-1 && toIndex==-1) {
-            forLexem->error = _("No 'from'..'to'.. after variable");
-            return;
+            err = _("No 'from'..'to'.. after variable");
         }
 
         if (!fromLexem) {
-            forLexem->error = _("No loop variable");
-            return;
+            err = _("No loop variable");
         }
         if (!fromLexem) {
-            forLexem->error = _("No loop 'from' value");
-            return;
+            err = _("No loop 'from' value");
         }
         if (!toLexem) {
-            forLexem->error = _("No loop 'to' value");
+            err = _("No loop 'to' value");
+        }
+
+        if (err.length()) {
+            for (int i=1; i<st.data.size(); i++) {
+                st.data[i]->error = err;
+            }
             return;
         }
 
