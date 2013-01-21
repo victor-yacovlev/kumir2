@@ -2048,6 +2048,8 @@ void KumirVM::do_store(uint8_t s, uint16_t id)
         if (m_externalHandler)
             m_externalHandler->noticeOnValueChange(lineNo, qn);
     }
+    if (stack_contexts.top().type==Bytecode::EL_BELOWMAIN)
+        Variable::unsetError();
     s_error = Kumir::Core::getError();
     nextIP();
     if (m_dontTouchMe) m_dontTouchMe->unlock();

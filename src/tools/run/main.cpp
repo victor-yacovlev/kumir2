@@ -226,6 +226,8 @@ bool InteractionHandler::makeInputArgument(VM::Variable &reference)
 }
 
 bool InteractionHandler::makeOutputArgument(const VM::Variable & reference) {
+    if (!reference.isValid())
+        return true;
     Kumir::String repr;
     output(reference.name()+Kumir::Core::fromAscii(" = "));
     if (reference.dimension()==0) {

@@ -218,6 +218,8 @@ bool Run::makeInputArgument(Variable & reference)
 }
 
 bool Run::makeOutputArgument(const Variable & reference) {
+    if (!reference.isValid())
+        return true;
     QString repr;
     emit output(QString::fromStdWString(reference.name())+" = ");
     if (reference.dimension()==0) {
