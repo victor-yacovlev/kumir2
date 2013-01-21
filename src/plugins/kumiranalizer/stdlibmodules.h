@@ -108,10 +108,10 @@ class Files
         /* 0x0011 */ result << QString::fromUtf8("алг лит РАБОЧИЙ КАТАЛОГ");
         /* 0x0012 */ result << QString::fromUtf8("алг лит КАТАЛОГ ПРОГРАММЫ");
 
-        /* 0x0013*/ result << QString::fromUtf8("алг лог =(файл ф1, файл ф2)");
-        /* 0x0014*/ result << QString::fromUtf8("алг лог <>(файл ф1, файл ф2)");
+        /* 0x0013 */ result << QString::fromUtf8("алг лог удалить_каталог(лит имя каталога)");
 
-        /* 0x0015 */ result << QString::fromUtf8("алг лог удалить_каталог(лит имя каталога)");
+        /* 0x0014*/ result << QString::fromUtf8("алг лог =(файл ф1, файл ф2)");
+        /* 0x0015*/ result << QString::fromUtf8("алг лог <>(файл ф1, файл ф2)");
 
 
         return result;

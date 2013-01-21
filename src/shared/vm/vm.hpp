@@ -1274,25 +1274,29 @@ void KumirVM::do_filescall(uint16_t alg)
         break;
     }
     /* алг лог =(фaйл ф1, файл ф2) */
-    case 0x0013: {
-        const Record f2rec = stack_values.pop().toRecord();
-        const Record f1rec = stack_values.pop().toRecord();
+    case 0x0014: {
+        const Variable f2var = stack_values.pop();
+        const Variable f1var = stack_values.pop();
+        const Record f2rec = f2var.toRecord();
+        const Record f1rec = f1var.toRecord();
         const Kumir::FileType f1 = fromRecordValue<Kumir::FileType>(f1rec);
         const Kumir::FileType f2 = fromRecordValue<Kumir::FileType>(f2rec);
         stack_values.push(Variable(f1==f2));
         break;
     }
     /* алг лог =(фaйл ф1, файл ф2) */
-    case 0x0014: {
-        const Record f2rec = stack_values.pop().toRecord();
-        const Record f1rec = stack_values.pop().toRecord();
+    case 0x0015: {
+        const Variable f2var = stack_values.pop();
+        const Variable f1var = stack_values.pop();
+        const Record f2rec = f2var.toRecord();
+        const Record f1rec = f1var.toRecord();
         const Kumir::FileType f1 = fromRecordValue<Kumir::FileType>(f1rec);
         const Kumir::FileType f2 = fromRecordValue<Kumir::FileType>(f2rec);
         stack_values.push(Variable(f1!=f2));
         break;
     }
-    /* алг удалить_файл(лит имя файла) */
-    case 0x0015: {
+    /* алг удалить_каталог(лит имя файла) */
+    case 0x0013: {
         const String x = stack_values.pop().toString();
         Kumir::Files::rmdir(x);
         break;
