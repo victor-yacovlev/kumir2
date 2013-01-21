@@ -1612,6 +1612,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName, bool allowOpe
             alg->header.returnType.kind = bt;
         }
         if (lexer->isArrayClassName(st.data[1]->data)) {
+            alg->header.returnType.kind = AST::TypeNone;
             st.data[1]->error = _("Algorhitms can't return array");
             return;
         }
