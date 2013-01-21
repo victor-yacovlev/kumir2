@@ -752,6 +752,17 @@ void SyntaxAnalizerPrivate::parseOutput(int str)
             return;
         }
         if (!fileHandle && expr->baseType.kind==AST::TypeUser && expr->baseType.name==QString::fromUtf8("файл")) {
+            if (i>0) {
+                for (int e=0; e<st.statement->expressions.size(); e++) {
+                    delete st.statement->expressions[e];
+                }
+                st.statement->expressions.clear();
+                if (fileHandle)
+                    delete fileHandle;
+                foreach (Lexem * lx, groups[i])
+                    lx->error = _("File must be specified at first");
+                return;
+            }
             fileHandle = expr;
             continue;
         }
@@ -869,6 +880,17 @@ void SyntaxAnalizerPrivate::parseInput(int str)
         }
 
         if (!fileHandle && expr->baseType.kind==AST::TypeUser && expr->baseType.name==QString::fromUtf8("файл")) {
+            if (i>0) {
+                for (int e=0; e<st.statement->expressions.size(); e++) {
+                    delete st.statement->expressions[e];
+                }
+                st.statement->expressions.clear();
+                if (fileHandle)
+                    delete fileHandle;
+                foreach (Lexem * lx, groups[i])
+                    lx->error = _("File must be specified at first");
+                return;
+            }
             fileHandle = expr;
             continue;
         }
