@@ -1694,7 +1694,10 @@ void KumirVM::do_specialcall(uint16_t alg)
         Char ch = first.value().toChar();
         s_error = Kumir::Core::getError();
         if (s_error.length()==0) {
-            if (index<1 || index>source.length()) {
+            if (index<1) {
+                s_error = Kumir::Core::fromUtf8("Индекс символа меньше 1");
+            }
+            else if (index>source.length()) {
                 s_error = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
             }
             else {
