@@ -2327,7 +2327,9 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
             }
             else if (group.lexems[curPos]->type==LxOperRightSqBr && deep1==0)
             {
-                group.lexems[curPos]->error = _("Left array bound is empty");
+                group.lexems[curPos]->error = cBound.isEmpty()
+                        ? _("Left array bound is empty")
+                        : _("Right array bound is empty");
                 return result;
             }
             else
