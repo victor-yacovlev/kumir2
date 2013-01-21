@@ -1237,6 +1237,12 @@ void KumirVM::do_filescall(uint16_t alg)
         stack_values.push(Variable(y));
         break;
     }
+    /* алг удалить_файл(лит имя файла) */
+    case 0x000e: {
+        const String x = stack_values.pop().toString();
+        Kumir::Files::unlink(x);
+        break;
+    }
     /* алг НАЗНАЧИТЬ ВВОД(лит имя файла) */
     case 0x000f: {
         const String x = stack_values.pop().toString();
@@ -1285,6 +1291,12 @@ void KumirVM::do_filescall(uint16_t alg)
         stack_values.push(Variable(f1!=f2));
         break;
     }
+    /* алг удалить_файл(лит имя файла) */
+    case 0x0015: {
+        const String x = stack_values.pop().toString();
+        Kumir::Files::rmdir(x);
+        break;
+    }
     default: {
         s_error = Kumir::Core::fromUtf8("Вызов неизвестного алгоримта, возможно из более новой версии Кумир");
     }
@@ -1320,7 +1332,7 @@ void KumirVM::do_stringscall(uint16_t alg)
         const String s = stack_values.pop().toString();
         const String sub = stack_values.pop().toString();
         const int from = stack_values.pop().toInt();
-        const int y = Kumir::StringUtils::find(from, sub, s);
+        const int y = Kumir::StringUtils::find(from+1, sub, s);
         Variable res(y);
         stack_values.push(res);
         s_error = Kumir::Core::getError();

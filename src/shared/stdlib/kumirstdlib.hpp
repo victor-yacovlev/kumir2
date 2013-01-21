@@ -1514,7 +1514,7 @@ public:
         return result;
     }
 
-    inline static int unlinkFile(const String & fileName) {
+    inline static bool unlink(const String & fileName) {
         char * path;
 #   ifdef NO_UNICODE
         path = const_cast<char*>(fileName.c_str());
@@ -1524,11 +1524,33 @@ public:
         path[pl] = '\0';
 #   endif
         int res = ::unlink(path);
-        int result;
+        bool result;
         if (res==0)
-            result = 0;
+            result = true;
         else {
-            result = errno==ENOENT? 1 : 2;
+            result = false;
+        }
+#   ifndef NO_UNICODE
+        free(path);
+#   endif
+        return result;
+    }
+
+    inline static int rmdir(const String & fileName) {
+        char * path;
+#   ifdef NO_UNICODE
+        path = const_cast<char*>(fileName.c_str());
+#   else
+        path = reinterpret_cast<char*>( calloc(fileName.length()*2+1, sizeof(char)) );
+        size_t pl = wcstombs(path, fileName.c_str(), fileName.length()*2+1);
+        path[pl] = '\0';
+#   endif
+        int res = ::rmdir(path);
+        bool result;
+        if (res==0)
+            result = true;
+        else {
+            result = false;
         }
 #   ifndef NO_UNICODE
         free(path);
@@ -1536,6 +1558,7 @@ public:
         return result;
     }
 #endif
+
     inline static FileType open(const String & shortName, FileType::OpenMode mode, bool remember=true, FILE* *fh = 0) {
         const String fileName = getAbsolutePath(shortName);
 //        std::wcout<<fileName;
