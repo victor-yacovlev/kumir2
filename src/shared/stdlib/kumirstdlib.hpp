@@ -455,9 +455,9 @@ public:
     inline static int ipow(int a, int b) {
         real rresult = ::floor(pow(real(a), real(b)));
         if (Core::error.length()>0) return 0;
-        if (rresult>real(maxint())
-                ||
-                rresult < -real(maxint()))
+        real absval = fabs(rresult);
+        real mxintval = fabs(real(maxint()));
+        if (absval>mxintval)
         {
             Core::abort(Core::fromUtf8("Ошибка возведения в степень: результат - слишком большое число"));
             return 0;
