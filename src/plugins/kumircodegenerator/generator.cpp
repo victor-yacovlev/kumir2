@@ -774,6 +774,25 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
             ret << line;
     }
 
+
+    if (alg->impl.endLexems.size()>0) {
+        QString endError;
+        for (int i=0; i<alg->impl.endLexems.size();i++) {
+            if (alg->impl.endLexems[i]->error.size()>0) {
+                endError = ErrorMessages::message("KumirAnalizer", QLocale::Russian, alg->impl.endLexems[i]->error);
+                break;
+            }
+        }
+        if (endError.length()>0) {
+            Bytecode::Instruction err;
+            err.type = Bytecode::ERRORR;
+            err.scope = Bytecode::CONSTT;
+            err.arg = constantValue(Bytecode::VT_string, 0, endError);
+            ret << err;
+        }
+    }
+
+
     const AST::Variable * retval = returnValue(alg);
     if (retval) {
         Bytecode::Instruction loadRetval;
