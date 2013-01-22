@@ -1495,7 +1495,7 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
                             }
                         }
                     }
-                    if (!isRealConstant)
+                    if (isRealConstant)
                     {
                         // Constant became real because of big integer representation
                         err = _("Integer constant too big");
