@@ -131,6 +131,7 @@ QString ErrorMessages::message(const QString &plugin
         result = result.arg(arguments[0]).arg(arguments[1]).arg(arguments[2]);
     result.replace(QString::fromUtf8("“"), "\"");
     result.replace(QString::fromUtf8("”"), "\"");
+    result.replace(QString::fromUtf8("–"), "-");
     return result;
 }
 
