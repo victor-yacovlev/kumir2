@@ -1456,16 +1456,25 @@ public:
             DWORD dwAttrib = GetFileAttributesW(fileName.c_str());
             return dwAttrib!=INVALID_FILE_ATTRIBUTES;
     }
-    inline static int unlinkFile(const String & fileName) {
+    inline static bool unlink(const String & fileName) {
         if (DeleteFileW(fileName.c_str())!=0)
-            return 0;
+            return true;
          else {
             if (GetLastError()==ERROR_FILE_NOT_FOUND)
-                return 1;
+                return false;
             else
-                return 2;
+                return false;
         }
     }
+    inline static bool rmdir(const String & fileName) {
+        if (RemoveDirectoryW(fileName.c_str())) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
     inline static bool isDirectory(const String & fileName) {
         DWORD dwAttrib = GetFileAttributesW(fileName.c_str());
         return (dwAttrib!=INVALID_FILE_ATTRIBUTES &&
