@@ -42,6 +42,8 @@ InteractionHandler::InteractionHandler(int argc, char *argv[])
     bool argumentsScope = false;
     for (int i=1; i<argc; i++) {
         std::string arg(argv[i]);
+        if (arg.length()==0)
+            continue;
         if (!argumentsScope) {
             if (arg[0]!='-') {
                 // Found not a switch -> it is a program,
@@ -341,6 +343,8 @@ int main(int argc, char *argv[])
     bool forceTextForm = false;
     for (int i=1; i<argc; i++) {
         std::string  arg(argv[i]);
+        if (arg.length()==0)
+            continue;
         static const std::string minuss("-s");
         static const std::string minusS("-S");
         if (programName.empty()) {
