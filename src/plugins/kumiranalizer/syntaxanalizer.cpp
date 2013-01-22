@@ -1495,7 +1495,10 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
                             }
                         }
                     }
-                    if (isRealConstant)
+                    bool isBigIntegerConstant = !isRealConstant &&
+                            rightExpr->kind==AST::ExprConst &&
+                            rightExpr->baseType.kind==AST::TypeReal;
+                    if (isBigIntegerConstant)
                     {
                         // Constant became real because of big integer representation
                         err = _("Integer constant too big");
