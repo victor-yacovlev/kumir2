@@ -788,6 +788,11 @@ public:
             return 0.0;
         }
 
+        if (sExponenta.length()>0 && sExponenta.find(Char('.'))!=String::npos) {
+            error = WrongExpForm;
+            return 0.0;
+        }
+
         fraction = fromDecimal(sFractional.substr(0,fractionalLength));
         for (int i=0; i<fractionalLength; i++) {
             fraction /= 10.0;

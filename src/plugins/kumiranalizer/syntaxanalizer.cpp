@@ -4146,6 +4146,10 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
             result->constant = parseConstant(lexems, type, maxDim);
             if (result->constant.type()==QVariant::Double)
                 result->baseType.kind = AST::TypeReal;
+            if (!result->constant.isValid()) {
+                delete result;
+                result = 0;
+            }
             return result;
         }
     }
