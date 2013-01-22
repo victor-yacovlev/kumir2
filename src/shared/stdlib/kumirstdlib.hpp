@@ -87,7 +87,6 @@ struct FileType {
         return other.fullPath!=fullPath;
     }
 
-private:
     String fullPath;
     int mode;
     bool valid;
@@ -1890,7 +1889,7 @@ public:
                 if (f!=stdin) {
                     long curpos = ftell(f);
                     fseek(f, 0, SEEK_SET);
-                    char B[3];
+                    unsigned char B[3];
                     if (fread(B, 1, 3, f)==3) {
                         forceUtf8 = B[0]==0xEF && B[1]==0xBB && B[2]==0xBF;
                     }

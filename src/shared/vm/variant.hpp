@@ -1,6 +1,7 @@
 #ifndef VARIANT_HPP
 #define VARIANT_HPP
 
+
 #ifdef DO_NOT_DECLARE_STATIC
 #define DO_NOT_DECLARE_STATIC_VARIANT
 #endif

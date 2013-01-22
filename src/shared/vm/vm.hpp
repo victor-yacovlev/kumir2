@@ -1,6 +1,7 @@
 #ifndef VM_HPP
 #define VM_HPP
 
+
 #include <map>
 #include <deque>
 #include <set>
@@ -198,11 +199,15 @@ private /*methods*/:
     inline int contextByIds(int moduleId, int algorhitmId) const;
     inline void nextIP();
 
-    template <class T>
-    inline static Record toRecordValue(const T & t);
+//    template <class T>
+//    inline static Record toRecordValue(const T & t);
 
-    template <class T>
-    inline static T fromRecordValue(const Record & record);
+//    template <class T>
+//    inline static T fromRecordValue(const Record & record);
+
+    inline static Record toRecordValue(const Kumir::FileType & ft);
+    inline static Kumir::FileType fromRecordValue(const Record & record);
+
 
 private /*instruction methods*/:
     inline void do_call(uint8_t, uint16_t);
@@ -1125,7 +1130,7 @@ void KumirVM::do_filescall(uint16_t alg)
     case 0x0000: {
         const String x = stack_values.pop().toString();
         Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Read);
-        Record yy = toRecordValue<Kumir::FileType>(y);
+        Record yy = toRecordValue(y);
         Variable res(yy);
         stack_values.push(res);
         s_error = Kumir::Core::getError();
@@ -1135,7 +1140,7 @@ void KumirVM::do_filescall(uint16_t alg)
     case 0x0001: {
         const String x = stack_values.pop().toString();
         Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Write);
-        Record yy = toRecordValue<Kumir::FileType>(y);
+        Record yy = toRecordValue(y);
         stack_values.push(Variable(yy));
         s_error = Kumir::Core::getError();
         break;
@@ -1144,7 +1149,7 @@ void KumirVM::do_filescall(uint16_t alg)
     case 0x0002: {
         const String x = stack_values.pop().toString();
         Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Append);
-        Record yy = toRecordValue<Kumir::FileType>(y);
+        Record yy = toRecordValue(y);
         stack_values.push(Variable(yy));
         s_error = Kumir::Core::getError();
         break;
@@ -1153,7 +1158,7 @@ void KumirVM::do_filescall(uint16_t alg)
     case 0x0003: {
         const Variable xvar = stack_values.pop();
         const Record xx = xvar.toRecord();
-        Kumir::FileType x = fromRecordValue<Kumir::FileType>(xx);
+        Kumir::FileType x = fromRecordValue(xx);
         Kumir::Files::close(x);
         s_error = Kumir::Core::getError();
         break;
@@ -1162,7 +1167,7 @@ void KumirVM::do_filescall(uint16_t alg)
     case 0x0004: {
         const Variable & xval = stack_values.pop();
         const Record xx = xval.toRecord();
-        Kumir::FileType x = fromRecordValue<Kumir::FileType>(xx);
+        Kumir::FileType x = fromRecordValue(xx);
         Kumir::Files::reset(x);
         s_error = Kumir::Core::getError();
         break;
@@ -1171,7 +1176,7 @@ void KumirVM::do_filescall(uint16_t alg)
     case 0x0005: {
         const Variable & xval = stack_values.pop();
         const Record xx = xval.toRecord();
-        Kumir::FileType x = fromRecordValue<Kumir::FileType>(xx);
+        Kumir::FileType x = fromRecordValue(xx);
         bool y = Kumir::Files::eof(x);
         stack_values.push(Variable(y));
         s_error = Kumir::Core::getError();
@@ -1204,7 +1209,7 @@ void KumirVM::do_filescall(uint16_t alg)
     case 0x0009: {
         const Variable xval = stack_values.pop();
         const Record xx = xval.toRecord();
-        Kumir::FileType x = fromRecordValue<Kumir::FileType>(xx);
+        Kumir::FileType x = fromRecordValue(xx);
         bool y = Kumir::Files::hasData(x);
         stack_values.push(Variable(y));
         s_error = Kumir::Core::getError();
@@ -1279,8 +1284,8 @@ void KumirVM::do_filescall(uint16_t alg)
         const Variable f1var = stack_values.pop();
         const Record f2rec = f2var.toRecord();
         const Record f1rec = f1var.toRecord();
-        const Kumir::FileType f1 = fromRecordValue<Kumir::FileType>(f1rec);
-        const Kumir::FileType f2 = fromRecordValue<Kumir::FileType>(f2rec);
+        const Kumir::FileType f1 = fromRecordValue(f1rec);
+        const Kumir::FileType f2 = fromRecordValue(f2rec);
         stack_values.push(Variable(f1==f2));
         break;
     }
@@ -1290,8 +1295,8 @@ void KumirVM::do_filescall(uint16_t alg)
         const Variable f1var = stack_values.pop();
         const Record f2rec = f2var.toRecord();
         const Record f1rec = f1var.toRecord();
-        const Kumir::FileType f1 = fromRecordValue<Kumir::FileType>(f1rec);
-        const Kumir::FileType f2 = fromRecordValue<Kumir::FileType>(f2rec);
+        const Kumir::FileType f1 = fromRecordValue(f1rec);
+        const Kumir::FileType f2 = fromRecordValue(f2rec);
         stack_values.push(Variable(f1!=f2));
         break;
     }
@@ -1435,86 +1440,103 @@ void KumirVM::do_externalcall(const String &name, uint16_t id)
     }
 }
 
-template <class T>
-T KumirVM::fromRecordValue(const Record & record)
-{
-    T result;
-    T * ptr = & result;
-    size_t offset = 0;
-    const size_t N = Kumir::Math::imin(strlen(T::_()), record.size());
-    for (size_t i=0; i<N; i++) {
-        switch (T::_()[i]) {
-        case 'i': {
-            int * pval = reinterpret_cast<int*>(ptr+offset);
-            *pval = record.at(i).toInt();
-            break;
-        }
-        case 'd': {
-            Kumir::real * pval = reinterpret_cast<Kumir::real*>(ptr+offset);
-            *pval = record.at(i).toReal();
-            break;
-        }
-        case 'b': {
-            bool * pval = reinterpret_cast<bool*>(ptr+offset);
-            *pval = record.at(i).toBool();
-            break;
-        }
-        case 'c': {
-            Kumir::Char * pval = reinterpret_cast<Kumir::Char*>(ptr+offset);
-            *pval = record.at(i).toChar();
-            break;
-        }
-        case 's': {
-            Kumir::String * pval = reinterpret_cast<Kumir::String*>(ptr+offset);
-            *pval = record.at(i).toString();
-            break;
-        }
-        default:
-            break;
-        }
-    }
+//template <class T>
+//T KumirVM::fromRecordValue(const Record & record)
+//{
+//    T result;
+//    T * ptr = & result;
+//    size_t offset = 0;
+//    const size_t N = Kumir::Math::imin(strlen(T::_()), record.size());
+//    for (size_t i=0; i<N; i++) {
+//        switch (T::_()[i]) {
+//        case 'i': {
+//            int * pval = reinterpret_cast<int*>(ptr+offset);
+//            *pval = record.at(i).toInt();
+//            break;
+//        }
+//        case 'd': {
+//            Kumir::real * pval = reinterpret_cast<Kumir::real*>(ptr+offset);
+//            *pval = record.at(i).toReal();
+//            break;
+//        }
+//        case 'b': {
+//            bool * pval = reinterpret_cast<bool*>(ptr+offset);
+//            *pval = record.at(i).toBool();
+//            break;
+//        }
+//        case 'c': {
+//            Kumir::Char * pval = reinterpret_cast<Kumir::Char*>(ptr+offset);
+//            *pval = record.at(i).toChar();
+//            break;
+//        }
+//        case 's': {
+//            Kumir::String * pval = reinterpret_cast<Kumir::String*>(ptr+offset);
+//            *pval = record.at(i).toString();
+//            break;
+//        }
+//        default:
+//            break;
+//        }
+//    }
+//    return result;
+//}
+
+//template <class T>
+//Record KumirVM::toRecordValue(const T & t)
+//{
+//    Record result;
+//    const T * ptr = & t;
+//    size_t offset = 0;
+//    const size_t N = strlen(T::_());
+//    for (size_t i=0; i<N; i++) {
+//        switch (T::_()[i]) {
+//        case 'i': {
+//            const int * pval = reinterpret_cast<const int*>(ptr+offset);
+//            result.push_back(AnyValue(*pval));
+//            break;
+//        }
+//        case 'd': {
+//            const Kumir::real * pval = reinterpret_cast<const Kumir::real*>(ptr+offset);
+//            result.push_back(AnyValue(*pval));
+//            break;
+//        }
+//        case 'b': {
+//            const bool * pval = reinterpret_cast<const bool*>(ptr+offset);
+//            result.push_back(AnyValue(*pval));
+//            break;
+//        }
+//        case 'c': {
+//            const Kumir::Char * pval = reinterpret_cast<const Kumir::Char*>(ptr+offset);
+//            result.push_back(AnyValue(*pval));
+//            break;
+//        }
+//        case 's': {
+//            const Kumir::String * pval = reinterpret_cast<const Kumir::String*>(ptr+offset);
+//            result.push_back(AnyValue(*pval));
+//            break;
+//        }
+//        default:
+//            break;
+//        }
+//    }
+//    return result;
+//}
+
+inline Kumir::FileType KumirVM::fromRecordValue(const Record & record) {
+    Kumir::FileType result;
+    result.fullPath = record.at(0).toString();
+    result.mode = record.at(1).toInt();
+    result.valid = record.at(2).toBool();
     return result;
 }
 
-template <class T>
-Record KumirVM::toRecordValue(const T & t)
-{
-    Record result;
-    const T * ptr = & t;
-    size_t offset = 0;
-    const size_t N = strlen(T::_());
-    for (size_t i=0; i<N; i++) {
-        switch (T::_()[i]) {
-        case 'i': {
-            const int * pval = reinterpret_cast<const int*>(ptr+offset);
-            result.push_back(AnyValue(*pval));
-            break;
-        }
-        case 'd': {
-            const Kumir::real * pval = reinterpret_cast<const Kumir::real*>(ptr+offset);
-            result.push_back(AnyValue(*pval));
-            break;
-        }
-        case 'b': {
-            const bool * pval = reinterpret_cast<const bool*>(ptr+offset);
-            result.push_back(AnyValue(*pval));
-            break;
-        }
-        case 'c': {
-            const Kumir::Char * pval = reinterpret_cast<const Kumir::Char*>(ptr+offset);
-            result.push_back(AnyValue(*pval));
-            break;
-        }
-        case 's': {
-            const Kumir::String * pval = reinterpret_cast<const Kumir::String*>(ptr+offset);
-            result.push_back(AnyValue(*pval));
-            break;
-        }
-        default:
-            break;
-        }
-    }
-    return result;
+inline Record KumirVM::toRecordValue(const Kumir::FileType & ft) {
+    Record record;
+    record.resize(3);
+    record.at(0) = AnyValue(ft.fullPath);
+    record.at(1) = AnyValue(ft.mode);
+    record.at(2) = AnyValue(ft.valid);
+    return record;
 }
 
 void KumirVM::do_specialcall(uint16_t alg)
@@ -1535,7 +1557,7 @@ void KumirVM::do_specialcall(uint16_t alg)
             if (ref.baseType()==VT_record) {
                 fileIO = true;
                 const Record fileReferenceRecord = ref.toRecord();
-                fileReference = fromRecordValue<Kumir::FileType>(fileReferenceRecord);
+                fileReference = fromRecordValue(fileReferenceRecord);
             }
             else {
                 references.push_back(ref);
@@ -1624,7 +1646,7 @@ void KumirVM::do_specialcall(uint16_t alg)
             fileIO = true;
             const Variable fileVar = stack_values.pop();
             const Record fileReferenceRecord = fileVar.toRecord();
-            fileReference = fromRecordValue<Kumir::FileType>(fileReferenceRecord);
+            fileReference = fromRecordValue(fileReferenceRecord);
 
         }
         int varsCount = argsCount / 3;
