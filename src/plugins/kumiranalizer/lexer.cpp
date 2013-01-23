@@ -935,6 +935,20 @@ void popLexemsUntilSemicolonOrBegin(QList<Lexem*> & lexems, Statement &result)
     }
 }
 
+
+void popLexemsUntilSemicolonOrBlockClose(QList<Lexem*> & lexems, Statement &result)
+{
+    while (lexems.size()>0) {
+        Lexem * lx = lexems[0];
+        if (lx->type==LxOperSemicolon
+                || lx->type==LxPriElse
+                || lx->type==LxPriEndLoop
+                || lx->type==LxPriFi)
+            break;
+        lexems.pop_front();
+        result.data << lx;
+    }
+}
 void popLexemsUntilPrimaryKeywordExclIO(QList<Lexem*> & lexems, Statement &result)
 {
     while (lexems.size()>0) {
@@ -1111,7 +1125,7 @@ void popExitStatement(QList<Lexem*> &lexems, Statement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
+    popLexemsUntilSemicolonOrBlockClose(lexems, result);
 }
 
 void popPauseStatement(QList<Lexem*> &lexems, Statement &result)
@@ -1119,7 +1133,7 @@ void popPauseStatement(QList<Lexem*> &lexems, Statement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
+    popLexemsUntilSemicolonOrBlockClose(lexems, result);
 }
 
 void popHaltStatement(QList<Lexem*> &lexems, Statement &result)
@@ -1127,7 +1141,7 @@ void popHaltStatement(QList<Lexem*> &lexems, Statement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
+    popLexemsUntilSemicolonOrBlockClose(lexems, result);
 }
 
 
@@ -1136,7 +1150,7 @@ void popPreStatement(QList<Lexem*> &lexems, Statement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeyword(lexems, result);
+    popLexemsUntilSemicolon(lexems, result);
 }
 
 void popPostStatement(QList<Lexem*> &lexems, Statement &result)
@@ -1144,7 +1158,7 @@ void popPostStatement(QList<Lexem*> &lexems, Statement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeyword(lexems, result);
+    popLexemsUntilSemicolon(lexems, result);
 }
 
 void popIfStatement(QList<Lexem*> &lexems, Statement &result)
@@ -1224,7 +1238,7 @@ void popInputStatement(QList<Lexem*> &lexems, Statement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeyword(lexems, result);
+    popLexemsUntilSemicolonOrBlockClose(lexems, result);
 }
 
 void popOutputStatement(QList<Lexem*> &lexems, Statement &result)
@@ -1232,31 +1246,16 @@ void popOutputStatement(QList<Lexem*> &lexems, Statement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeyword(lexems, result);
+    popLexemsUntilSemicolonOrBlockClose(lexems, result);
 }
 
-void popFinputStatement(QList<Lexem*> &lexems, Statement &result)
-{
-    result.type = lexems[0]->type;
-    result.data << lexems[0];
-    lexems.pop_front();
-    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
-}
-
-void popFoutputStatement(QList<Lexem*> &lexems, Statement &result)
-{
-    result.type = lexems[0]->type;
-    result.data << lexems[0];
-    lexems.pop_front();
-    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
-}
 
 void popAssertStatement(QList<Lexem*> &lexems, Statement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeyword(lexems, result);
+    popLexemsUntilSemicolonOrBlockClose(lexems, result);
 }
 
 void popImportStatement(QList<Lexem*> &lexems, Statement &result)
@@ -1264,7 +1263,7 @@ void popImportStatement(QList<Lexem*> &lexems, Statement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
+    popLexemsUntilSemicolon(lexems, result);
 }
 
 void popVarDeclStatement(QList<Lexem*> &lexems, Statement &result)
