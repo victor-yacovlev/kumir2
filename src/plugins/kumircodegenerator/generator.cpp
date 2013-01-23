@@ -820,7 +820,7 @@ QList<Bytecode::Instruction> Generator::instructions(
         const AST::Statement * st = statements[i];
         switch (st->type) {
         case AST::StError:
-//            if (!st->skipErrorEvaluation)
+            if (!st->skipErrorEvaluation)
                 ERRORR(modId, algId, level, st, result);
             break;
         case AST::StAssign:
