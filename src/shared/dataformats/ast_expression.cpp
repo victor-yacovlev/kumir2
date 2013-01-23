@@ -12,6 +12,7 @@ Expression::Expression()
     variable = NULL;
     function = NULL;
     expressionIsClosed = false;
+    isStringPart = false;
     constant = QVariant::Invalid;
     operatorr = AST::OpNone;
     dimension = 0;
