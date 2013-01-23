@@ -1294,10 +1294,8 @@ public:
 #   ifdef NO_UNICODE
         workDir = String(cwd);
 #   else
-        wchar_t wcwd[1024];
-        size_t pl = mbstowcs(wcwd, cwd, 1024);
-        wcwd[pl] = L'\0';
-        workDir = String(wcwd);
+        std::string sworkDir = std::string(cwd);
+        workDir = Core::fromUtf8(sworkDir);
 #   endif
         workDir.push_back(Char('/'));
         String absPath;
