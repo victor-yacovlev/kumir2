@@ -910,7 +910,8 @@ void SyntaxAnalizerPrivate::parseInput(int str)
             err = _("Can't input subexpression");
         if (expr->dimension>0)
             err = _("Can't input an array");
-
+        if (expr->isStringPart)
+            err = _("Can't input part of string");
 
         if (err.length()>0) {
             foreach (Lexem * lx, groups[i])
@@ -4100,10 +4101,12 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
         if (realArguments.size() > arguments.size()) {
             // String slice -> res type is string
             result->baseType.kind = AST::TypeString;
+            result->isStringPart = true;
         }
         else {
             // String element -> res type is character
             result->baseType.kind = AST::TypeCharect;
+            result->isStringPart = true;
         }
     }
     else {

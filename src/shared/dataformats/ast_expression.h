@@ -96,6 +96,9 @@ struct ABSTRACTSYNTAXTREE_EXPORT Expression {
       * This flag is used to avoid CNF-transofmations */
     bool expressionIsClosed;
 
+    /** True if string element or slice */
+    bool isStringPart;
+
     /** Operator in case of kind==StSubexpression, emty otherwise */
     enum ExpressionOperator operatorr;
 
