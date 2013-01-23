@@ -64,7 +64,7 @@
 "No variables declared after '%1'";"Пусто после “%1”";"";"";"";"";
 "Too many 'not'";"Много “не”";"";"";"";"";
 "No pairing ')'";"Нет парной “)”";"";"";"";"";
-"Table constant element of variant type";"";"";"";"";"";
+"Table constant element of variant type";"Размерности константы не одинаковы";"";"";"";"";
 "Void index";"Пустой индекс";"";"";"";"";
 "End module in algorhitm body";"“кон_исп” внутри алгоритма";"";"";"";"";
 "Extra 'loop'";"Нет парного “кц”";"";"";"";"";
@@ -301,7 +301,7 @@
 "'%1' can't be part of name";"Константа в имени";"";"";"";"";
 "Extra coma";"Лишняя запятая";"";"";"";"";
 "Can't input constant value";"Нельзя ввести в константу";"";"";"";"";
-"Can't input function call";"";"";"";"";"";
+"Can't input function call";"Нельзя ввести в вызов алгоритма";"";"";"";"";
 "Statement ends with coma";"Запятая в конце";"";"";"";"";
 "Left array bound is empty";"Нет левой границы таблицы";"";"";"";"";
 "Expression not assigned to anything";"Выражение ничему не присвоено";"";"";"";"";
