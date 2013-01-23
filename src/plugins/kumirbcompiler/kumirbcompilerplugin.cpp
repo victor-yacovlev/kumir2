@@ -121,7 +121,7 @@ void KumirBytecodeCompilerPlugin::start()
 #ifdef Q_OS_WIN32
                 std::cerr << cp866->fromUnicode(errorMessage).data();
 #else
-                std::cerr << errorMessage.toLocal8Bit();
+                std::cerr << errorMessage.toLocal8Bit().data();
 #endif
                 std::cerr << std::endl;
             }
