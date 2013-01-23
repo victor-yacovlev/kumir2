@@ -542,7 +542,7 @@ public:
             std::random_device rd;
             unsigned int rndValue = rd(); // in range [0..2^32]
 #undef max
-            unsigned int rd_max = std::random_device::max();
+            unsigned int rd_max = rd.max();
             real scale = static_cast<real>(b-a+1)/static_cast<real>(rd_max);
             return Kumir::Math::imin(b, a+static_cast<int>(scale*rndValue));
         }
@@ -551,7 +551,7 @@ public:
         std::random_device rd;
         unsigned int rndValue = rd();
 #undef max
-        unsigned int rd_max = std::random_device::max();
+        unsigned int rd_max = rd.max();
         real scale = static_cast<real>(x)/static_cast<real>(rd_max);
         return Kumir::Math::imin(x, 1+static_cast<int>(scale*rndValue));
     }
@@ -565,7 +565,7 @@ public:
             std::random_device rd;
             unsigned int rndValue = rd(); // in range [0..2^32]
 #undef max
-            unsigned int rd_max = std::random_device::max();
+            unsigned int rd_max = rd.max();
             real scale = static_cast<real>(b-a+1)/static_cast<real>(rd_max);
             return Kumir::Math::rmin(b, a+static_cast<real>(scale*rndValue));
         }
@@ -574,7 +574,7 @@ public:
         std::random_device rd;
         unsigned int rndValue = rd();
 #undef max
-        unsigned int rd_max = std::random_device::max();
+        unsigned int rd_max = rd.max();
         real scale = static_cast<real>(x)/static_cast<real>(rd_max);
         return Kumir::Math::rmin(x, static_cast<real>(scale*rndValue));
     }
