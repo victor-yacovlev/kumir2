@@ -1270,7 +1270,10 @@ public:
         workDir = String(cwd);
         workDir.push_back(Char('\\'));
         String absPath;
-        if (fileName.length()==0 || fileName.at(0)==Char('\\'))
+        if (fileName.length()==0
+                ||
+                fileName.length()>2 && fileName.at(1)==Char(':') && fileName.at(2)==Char('\\')
+            )
             absPath = fileName;
         else
             absPath = workDir + fileName;
@@ -1592,18 +1595,46 @@ public:
                 return FileType();
             }
         }
+        bool isCorrectName = true;
 #   ifdef NO_UNICODE
         const char * path = fileName.c_str();
 #   else
+        std::string localName;
 #       if defined(WIN32) || defined(_WIN32)
-        Encoding codec = CP866;
+//        try {
+//            localName = Coder::encode(AreFileApisANSI()? CP1251 : CP866, fileName);
+//            isCorrectName = true;
+//        }
+//        catch (...) {
+//            isCorrectName = false;
+//        }
 #       else
-        Encoding codec = UTF8;
+        try {
+            localName = Coder::encode(UTF8, fileName);
+            isCorrectName = true;
+        }
+        catch (...) {
+            isCorrectName = false;
+        }
 #       endif
-        const std::string localName = Coder::encode(codec, fileName);
+        if (!isCorrectName) {
+            Kumir::Core::abort(Kumir::Core::fromUtf8("Ошибка открытия файла: имя содержит недопустимый символ"));
+            return FileType();
+        }
         const char * path = localName.c_str();
 #   endif
 
+#   if defined(WIN32) || defined(_WIN32)
+        const wchar_t * fmode;
+        if (mode==FileType::Read)
+            fmode = L"r";
+        else if (mode==FileType::Write)
+            fmode = L"w";
+        else if (mode==FileType::Append)
+            fmode = L"a";
+        FILE * res = 0;
+        _wfopen_s(&res, fileName.c_str(), fmode);
+#   else
         const char * fmode;
         if (mode==FileType::Read)
             fmode = "r";
@@ -1611,8 +1642,8 @@ public:
             fmode = "w";
         else if (mode==FileType::Append)
             fmode = "a";
-
         FILE* res = fopen(path, fmode);
+#   endif
         FileType f;
         if (res==0) {
             Core::abort(Core::fromUtf8("Невозможно открыть файл: ")+fileName);
