@@ -13,21 +13,21 @@ if(NOT APPLE)
         "$ORIGIN/../${LIBS_DIR}/"
     )
 
-    add_subdirectory(kumir2-classic)
-    add_subdirectory(kumir2-highgrade)
-    add_subdirectory(kumir2-ide)
-    add_subdirectory(kumir2-teacher)
+#    add_subdirectory(kumir2-classic)
+#    add_subdirectory(kumir2-highgrade)
+#    add_subdirectory(kumir2-ide)
+#    add_subdirectory(kumir2-teacher)
 #    add_subdirectory(kumir2-python)
 
 endif(NOT APPLE)
 
 if(APPLE)
-    add_subdirectory(kumir2-macx)
+#    add_subdirectory(kumir2-macx)
 endif(APPLE)
 
 
 
 #add_subdirectory(kumir2-cc)
 add_subdirectory(kumir2-bc)
-add_subdirectory(kumir2-xrun)
+#add_subdirectory(kumir2-xrun)
 

@@ -1,6 +1,0 @@
-<RCC>
-    <qresource prefix="/coregui">
-        <file>close-tab-hovered.png</file>
-        <file>close-tab.png</file>
-    </qresource>
-</RCC>

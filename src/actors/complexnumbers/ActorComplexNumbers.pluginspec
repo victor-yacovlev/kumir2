@@ -1,2 +1,0 @@
-name    = ActorComplexNumbers
-gui     = false
