@@ -2116,7 +2116,11 @@ void KumirVM::do_load(uint8_t s, uint16_t id)
         val.setDimension(moduleContexts[stack_contexts.top().moduleContextNo].constants[id].dimension());
         moduleContexts[stack_contexts.top().moduleContextNo].constants[id].getBounds(bounds);
         val.setBounds(bounds);
-        val.setValue(moduleContexts[stack_contexts.top().moduleContextNo].constants[id].value());
+        bool wasError = Kumir::Core::getError().length()>0;
+        AnyValue v = moduleContexts[stack_contexts.top().moduleContextNo].constants[id].value();
+        if (!wasError)
+            Variable::unsetError();
+        val.setValue(v);
         val.setConstantFlag(true);
     }
     else {

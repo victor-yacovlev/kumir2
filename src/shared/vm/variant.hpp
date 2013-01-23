@@ -565,6 +565,7 @@ void Variable::setConstValue(const Variable & ctab)
         for (int y=0; y<=sy; y++) {
             for (int x=0; x<=sx; x++) {
                 setValue(my+y, mx+x, ctab.value(cy+y, cx+x));
+                unsetError();
             }
         }
         break;
