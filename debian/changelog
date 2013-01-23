@@ -1,0 +1,5 @@
+kumir2 (2.0.0) stable; urgency=low
+
+  * Initial public release of console tools
+
+ -- Victor Yacovlev <victor@lpm.org.ru>  Thu, 24 Jan 2013 00:00:00 +0300

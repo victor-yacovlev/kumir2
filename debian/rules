@@ -1,0 +1,7 @@
+#!/usr/bin/make -f
+#export LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(DESTDIR)/usr/lib/kumir2:$(DESTDIR)/usr/lib/kumir2/plugins
+export DH_VERBOSE=1
+
+%:
+	dh $@
+

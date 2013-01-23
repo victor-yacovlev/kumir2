@@ -1,0 +1,22 @@
+Source: kumir2
+Vcs-Browser: https://gitorious.org/kumir2/kumir2
+Section: science
+Priority: optional
+Maintainer: Victor Yacovlev <victor@lpm.org.ru>
+Standards-Version: 3.9.1
+Homepage: http://www.niisi.ru/kumir/
+Build-Depends: debhelper (>= 7.0.50~), cdbs, libqt4-dev (>= 4.7.0), libx11-dev, qt4-qmake, python, cmake (>= 2.8.0)
+
+Package: kumir2-bc
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:depends}, libqt4-core (>= 4.7.0), libqt4-gui (>= 4.7.0)
+Description: Kumir-2 compiler tool
+    A console tool to compile Kumir program sources into 
+    executable byte code
+
+Package: kumir2-run
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:depends}
+Description: Lightweight console Kumir bytecode interpreter
+    A stack-based executable engine with build-in standard modules
+    for evaluating Kumir programs
