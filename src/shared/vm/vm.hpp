@@ -1776,7 +1776,20 @@ void KumirVM::do_specialcall(uint16_t alg)
         String ch = first.value().toString();
         s_error = Kumir::Core::getError();
         if (s_error.length()==0) {
-            if (start==source.length()+1 && end<=start) {
+            if (end<start && start==0) {
+                source = ch + source;
+                Variable r(source);
+                stack_values.push(r);
+            }
+            else if (start>source.length()) {
+                s_error = Kumir::Core::fromUtf8("Левая граница вырезки за пределами строки");
+            }
+            else if (end<start && start>0) {
+                source.insert(start, ch);
+                Variable r(source);
+                stack_values.push(r);
+            }
+            else if (start==source.length()+1 && end<=start) {
                 source.append(ch);
                 Variable r(source);
                 stack_values.push(r);
@@ -1788,9 +1801,7 @@ void KumirVM::do_specialcall(uint16_t alg)
                 s_error = Kumir::Core::fromUtf8("Левая граница вырезки за пределами строки");
             }
             else if (end<start) {
-                source.insert(start-1, ch);
-                Variable r(source);
-                stack_values.push(r);
+                s_error = Kumir::Core::fromUtf8("Ошибка в границах вырезки");
             }
             else {
                 source = source.substr(0,start-1)+ch+source.substr(end);

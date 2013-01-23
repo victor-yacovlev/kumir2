@@ -1627,21 +1627,21 @@ public:
 #   if defined(WIN32) || defined(_WIN32)
         const wchar_t * fmode;
         if (mode==FileType::Read)
-            fmode = L"r";
+            fmode = L"rb";
         else if (mode==FileType::Write)
-            fmode = L"w";
+            fmode = L"wb";
         else if (mode==FileType::Append)
-            fmode = L"a";
+            fmode = L"ab";
         FILE * res = 0;
         _wfopen_s(&res, fileName.c_str(), fmode);
 #   else
         const char * fmode;
         if (mode==FileType::Read)
-            fmode = "r";
+            fmode = "rb";
         else if (mode==FileType::Write)
-            fmode = "w";
+            fmode = "wb";
         else if (mode==FileType::Append)
-            fmode = "a";
+            fmode = "ab";
         FILE* res = fopen(path, fmode);
 #   endif
         FileType f;
