@@ -105,13 +105,25 @@ void KumirBytecodeCompilerPlugin::start()
                 ots << modJs;
                 ff.close();;
             }
+            QTextCodec * cp866 = QTextCodec::codecForName("CP866");
             for (int i=0; i<errors.size(); i++) {
                 Shared::Error e = errors[i];
-                std::cerr << "Error: " <<
-                             QFileInfo(filename).fileName().toLocal8Bit().data() <<
-                             ":" << e.line+1 <<
-                             ":" << e.start+1 << "-" << e.start+e.len <<
-                             ": " << e.code.toLocal8Bit().data() << std::endl;
+                QString errorMessage = trUtf8("Ошибка: ") +
+                        QFileInfo(filename).fileName() +
+                        ":" + QString::number(e.line+1) +
+                        ":" + QString::number(e.start+1) + "-" + QString::number(e.start+e.len) +
+                        ": " + e.code;
+//                std::cerr << "Error: " <<
+//                             QFileInfo(filename).fileName().toLocal8Bit().data() <<
+//                             ":" << e.line+1 <<
+//                             ":" << e.start+1 << "-" << e.start+e.len <<
+//                             ": " << e.code.toLocal8Bit().data() << std::endl;
+#ifdef Q_OS_WIN32
+                std::cerr << cp866->fromUnicode(errorMessage).data();
+#else
+                std::cerr << errorMessage.toLocal8Bit();
+#endif
+                std::cerr << std::endl;
             }
             Shared::GeneratorInterface * generator =
                     qobject_cast<Shared::GeneratorInterface*>(myDependency("Generator"));
