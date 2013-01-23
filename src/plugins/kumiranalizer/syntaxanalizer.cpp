@@ -305,8 +305,9 @@ void SyntaxAnalizer::buildTables(bool isInternalBuild)
             }
             QFileInfo kodFile(name);
             QString kodFilePath = QDir::toNativeSeparators(kodFile.absoluteFilePath());
-            const char * programName = kodFilePath.toLocal8Bit().constData();
-            std::ifstream programFile(programName);
+            char programName[1024];
+            strcpy(programName, kodFilePath.toLocal8Bit().constData());
+            std::ifstream programFile(programName,  std::ios::in|std::ios::binary);
             Bytecode::Data programData;
             if (!programFile.is_open()) {
                 error = _("Can't open module file");
@@ -342,6 +343,8 @@ void SyntaxAnalizer::buildTables(bool isInternalBuild)
                             if (algSig.size()>1) {
                                 QStringList argSignatures = algSig[1].split(",");
                                 for (int argNo=0; argNo<argSignatures.size(); argNo++) {
+                                    if (argSignatures[argNo].length()==0)
+                                        break;
                                     AST::Variable * var = new AST::Variable;
                                     QStringList sigPair = argSignatures[argNo].split(" ");
                                     if (sigPair[0]=="in")
