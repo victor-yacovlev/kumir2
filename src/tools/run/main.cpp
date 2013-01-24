@@ -34,7 +34,7 @@ int usage(const char * programName)
         message.push_back(_n);
         message += Core::fromUtf8("\t-ansi\t\tИспользовть кодировку 1251 вместо 866 в терминале (только для Windows)");
         message.push_back(_n);
-        message += Core::fromUtf8("\tИМЯФАЙЛА.kod\tИмя выполнеяемой программы)");
+        message += Core::fromUtf8("\tИМЯФАЙЛА.kod\tИмя выполнеяемой программы");
         message.push_back(_n);
         message += Core::fromUtf8("\tПАРАМ1...ПАРАМn\tАргументы главного алгоритма Кумир-программы");
         message.push_back(_n);
@@ -48,7 +48,7 @@ int usage(const char * programName)
         message.push_back(_n);
         message += Core::fromUtf8("\t-ansi\t\tUse codepage 1251 instead of 866 in console (Windows only)");
         message.push_back(_n);
-        message += Core::fromUtf8("\tFILENAME.kod\tKumir runtime file name)");
+        message += Core::fromUtf8("\tFILENAME.kod\tKumir runtime file name");
         message.push_back(_n);
         message += Core::fromUtf8("\tARG1...ARGn\tKumir program main algorithm arguments");
         message.push_back(_n);
