@@ -5,11 +5,7 @@
 #include "vm/vm_bytecode.hpp"
 #include "vm/vm.hpp"
 
-#if !defined(WIN32) && !defined(_WIN32)
-#define LOCALE Kumir::UTF8
-#else
-#define LOCALE Kumir::CP866
-#endif
+static Kumir::Encoding LOCALE;
 
 int usage(const char * programName)
 {
@@ -378,6 +374,11 @@ int main(int argc, char *argv[])
 {
 //    sleep(15); // for remote debugger
     // Look at arguments
+#if defined(WIN32) || defined(_WIN32)
+    Kumir::IO::LOCALE_ENCODING = LOCALE = Kumir::CP866;
+#else
+    Kumir::IO::LOCALE_ENCODING = LOCALE = Kumir::UTF8;
+#endif
     std::string programName;
     std::deque<std::string> args;
     bool forceTextForm = false;
@@ -387,9 +388,12 @@ int main(int argc, char *argv[])
             continue;
         static const std::string minuss("-s");
         static const std::string minusS("-S");
+        static const std::string minusansi("-ansi");
         if (programName.empty()) {
             if (arg==minuss || arg==minusS)
                 forceTextForm = true;
+            else if (arg==minusansi)
+                Kumir::IO::LOCALE_ENCODING = LOCALE = Kumir::CP1251;
             else
                 programName = arg;
         }

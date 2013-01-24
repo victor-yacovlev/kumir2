@@ -2296,15 +2296,9 @@ public:
     }
 
 
-    // Actual functions to be in use while input from stream
+    static Encoding LOCALE_ENCODING;
 
-#if !defined(LOCALE_ENCODING)
-#   if defined(WIN32) || defined(_WIN32)
-#       define LOCALE_ENCODING CP866
-#   else
-#       define LOCALE_ENCODING UTF8
-#   endif
-#endif
+    // Actual functions to be in use while input from stream
 
     static InputStream makeInputStream(FileType fileNo, bool fromStdIn) {
         if (fromStdIn) {
@@ -2504,6 +2498,11 @@ std::deque<FileType> Files::openedFiles;
 std::deque<FILE*> Files::openedFileHandles;
 FILE * Files::assignedIN = stdin;
 FILE * Files::assignedOUT = stdout;
+#if defined(WIN32) || defined(_WIN32)
+Encoding IO::LOCALE_ENCODING = CP866;
+#else
+Encoding IO::LOCALE_ENCODING = UTF8;
+#endif
 Encoding Files::fileEncoding;
 String Kumir::IO::inputDelimeters = Kumir::Core::fromAscii(" \n\t");
 #endif
