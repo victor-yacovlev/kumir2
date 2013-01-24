@@ -15,7 +15,7 @@ int usage(const char * programName)
 
 #if defined(WIN32) || defined(_WIN32)
     russianLanguage = true;
-    Char _n = Char('\r\n');
+    Char _n = Char('\n');
 #else
     char * env = getenv("LANG");
     if (env) {

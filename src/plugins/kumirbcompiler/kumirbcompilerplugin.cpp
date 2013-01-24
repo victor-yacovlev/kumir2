@@ -105,7 +105,7 @@ void KumirBytecodeCompilerPlugin::start()
                 ots << modJs;
                 ff.close();;
             }
-            QTextCodec * cp866 = QTextCodec::codecForName("CP866");
+
             for (int i=0; i<errors.size(); i++) {
                 Shared::Error e = errors[i];
                 QString errorMessage = trUtf8("Ошибка: ") +
@@ -119,7 +119,13 @@ void KumirBytecodeCompilerPlugin::start()
 //                             ":" << e.start+1 << "-" << e.start+e.len <<
 //                             ": " << e.code.toLocal8Bit().data() << std::endl;
 #ifdef Q_OS_WIN32
-                std::cerr << cp866->fromUnicode(errorMessage).data();
+                QTextCodec * cp866 = QTextCodec::codecForName("CP866");
+                if (!qApp->arguments().contains("-ansi")) {
+                    std::cerr << cp866->fromUnicode(errorMessage).data();
+                }
+                else {
+                    std::cerr << errorMessage.toLocal8Bit().data();
+                }
 #else
                 std::cerr << errorMessage.toLocal8Bit().data();
 #endif
@@ -170,13 +176,46 @@ void KumirBytecodeCompilerPlugin::start()
         }
     }
     else {
-        std::cerr << "Usage:" << std::endl;
-        std::cerr << "\t" << qApp->argv()[0] << " [-J] [-S] [-o=OUTFILE.kod] FILENAME.kum" << std::endl;
-        std::cerr << std::endl;
-        std::cerr << "\t-J\t\tIf present, generates internal AST in JSON file" << std::endl;
-        std::cerr << "\t-S\t\tIf present, generates human-readable form of code" << std::endl;
-        std::cerr << "\t-o OUTFILE.kod\tOutput file name (default: FILENAME.kod)" << std::endl;
-        std::cerr << "\tFILENAME.kum\tKumir program input file name" << std::endl;
+        bool russianLanguage = false;
+    #if defined(WIN32) || defined(_WIN32)
+        russianLanguage = true;
+    #else
+        char * env = getenv("LANG");
+        if (env) {
+            std::string LANG(env);
+            russianLanguage = LANG.find("ru")!=std::string::npos;
+        }
+    #endif
+        QString message;
+        if (russianLanguage) {
+            message = QString::fromUtf8("Вызов:\n");
+            message += QString::fromAscii("\t") + qApp->argv()[0]+
+                    QString::fromUtf8(" [-ansi] [-o=ИМЯПРОГРАММЫ.kod] [--encoding=КОДИРОВКА] ИМЯФАЙЛА.kum\n\n");
+            message += QString::fromUtf8("\t-ansi\t\tИспользовть кодировку 1251 вместо 866 в терминале (только для Windows)\n");
+            message += QString::fromUtf8("\t--encoding=КОДИРОВКА\tИспользовать заданную кодировку входного файла\n");
+            message += QString::fromUtf8("\t-o=ИМЯПРОГРАММЫ.kod\tИмя файла результата (по умолчанию: ИМЯФАЙЛА.kod)\n");
+            message += QString::fromUtf8("\tИМЯПРОГРАММЫ.kum\tИмя файла с Кумир-программой\n");
+        }
+        else {
+            message = QString::fromUtf8("Usage:\n");
+            message += QString::fromAscii("\t") + qApp->argv()[0]+
+                    QString::fromUtf8(" [-ansi] [-o=PROGRAMNAME.kod] [--encoding=SOURCECODING] FILENAME.kum\n\n");
+            message += QString::fromUtf8("\t-ansi\t\tUse codepage 1251 instead of 866 in console (Windows only)\n");
+            message += QString::fromUtf8("\t--encoding=SOURCECODING\tForce source file encoding usage\n");
+            message += QString::fromUtf8("\t-o=PROGRAMNAME.kod\tOutput file name (default: FILENAME.kod)\n");
+            message += QString::fromUtf8("\tFILENAME.kum\tKumir input file name\n");
+        }
+#ifdef Q_OS_WIN32
+            QTextCodec * cp866 = QTextCodec::codecForName("CP866");
+            if (!qApp->arguments().contains("-ansi")) {
+                std::cerr << cp866->fromUnicode(message).data();
+            }
+            else {
+                std::cerr << message.toLocal8Bit().data();
+            }
+#else
+            std::cerr << message.toLocal8Bit().data();
+#endif
         qApp->setProperty("returnCode", 127);
     }
 }
