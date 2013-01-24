@@ -869,6 +869,21 @@ public:
         sprintf(buffer, Coder::encode(ASCII, sprintfFormat).c_str(), value);
         std::string result(reinterpret_cast<char*>(&buffer));
 
+        int epos = result.find('e');
+        if (epos!=std::string::npos) {
+            std::string beforeESignValue = result.substr(0,epos+2);
+            std::string afterESignValue  = result.substr(epos+2);
+            while (afterESignValue.length()>0 && afterESignValue.at(0)=='0') {
+                afterESignValue = afterESignValue.substr(1);
+            }
+            result = beforeESignValue;
+            int zeroesToAppend = 2-afterESignValue.length();
+            for (int i=0; i<zeroesToAppend; i++) {
+                result.push_back('0');
+            }
+            result += afterESignValue;
+        }
+
         if (width>0) {
             int leftSpaces = 0;
             int rightSpaces = 0;
