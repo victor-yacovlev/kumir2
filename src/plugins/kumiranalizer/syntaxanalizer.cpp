@@ -41,6 +41,7 @@ struct SyntaxAnalizerPrivate
     QList<Statement> statements;
     QSet<QString> unresolvedImports;
     QStringList alwaysEnabledModules;
+    QString sourceDirName;
 
     void parseImport(int str);
     void parseModuleHeader(int str);
@@ -552,6 +553,11 @@ void SyntaxAnalizer::processAnalisys()
     }
 }
 
+void SyntaxAnalizer::setSourceDirName(const QString &dirName)
+{
+    d->sourceDirName = dirName;
+}
+
 void SyntaxAnalizerPrivate::parseImport(int str)
 {
     if (statements[str].hasError())
@@ -587,8 +593,8 @@ void SyntaxAnalizerPrivate::parseImport(int str)
         if (name.endsWith(".kum")) {
             kumName = name;
             name = binName = name.left(name.length()-4)+".kod";
-            binFile = QFileInfo (QDir::current().absoluteFilePath(binName));
-            kumFile = QFileInfo (QDir::current().absoluteFilePath(kumName));
+            binFile = QFileInfo (QDir(sourceDirName).absoluteFilePath(binName));
+            kumFile = QFileInfo (QDir(sourceDirName).absoluteFilePath(kumName));
             QString kumir2bc = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("kumir2-bc");
 #ifdef Q_OS_WIN32
             kumir2bc += ".exe";

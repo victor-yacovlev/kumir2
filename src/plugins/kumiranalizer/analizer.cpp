@@ -40,6 +40,11 @@ QString Analizer::sourceText() const
     return d->sourceText.join("\n")+"\n";
 }
 
+void Analizer::setSourceDirName(const QString &dirName)
+{
+    d->analizer->setSourceDirName(dirName);
+}
+
 LineProp Analizer::lineProp(const QString &text) const
 {
     QList<Lexem*> lexems;
