@@ -69,7 +69,7 @@ void EditorPlugin::clearMargin(int documentId, int fromLine, int toLine)
     ed->clearMarginText(fromLine, toLine);
 }
 
-Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, const QString &initialText, bool initiallyNotSaved)
+Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, const QString &initialText, const QString &documentDir, bool initiallyNotSaved)
 {
     AnalizerInterface * a = 0;
     int docId = -1;
@@ -79,6 +79,7 @@ Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, c
         a = qobject_cast<AnalizerInterface*>( dep );
         Q_CHECK_PTR(a);
         docId = a->newDocument();
+        a->setSourceDirName(docId, documentDir);
     }
     Editor * w = new Editor(initiallyNotSaved, mySettings(), a, docId, 0);
     w->setTeacherMode(d->teacherMode);

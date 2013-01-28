@@ -22,6 +22,7 @@ public:
               , AST_Algorhitm *algorhitm);
     void syncStatements();
     QStringList unresolvedImports() const;
+    void setSourceDirName(const QString & dirName);
     void buildTables(bool allowOperatorsDeclaration);
     void processAnalisys();
     ~SyntaxAnalizer();

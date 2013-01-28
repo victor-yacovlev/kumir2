@@ -88,6 +88,12 @@ void KumirAnalizerPlugin::setSourceText(int documentId, const QString &text)
         m_analizers[documentId]->changeSourceText(QList<Shared::ChangeTextTransaction>() << change);
 }
 
+void KumirAnalizerPlugin::setSourceDirName(int documentId, const QString &dirPath)
+{
+    Q_CHECK_PTR(m_analizers[documentId]);
+    m_analizers[documentId]->setSourceDirName(dirPath);
+}
+
 void KumirAnalizerPlugin::setHiddenText(int documentId, const QString &text, int baseLine)
 {
     Q_CHECK_PTR(m_analizers[documentId]);

@@ -17,9 +17,10 @@ struct EditorComponent {
 class EditorInterface
 {
 public:
-    virtual struct EditorComponent newDocument(const QString & analizerName = "Analizer",
-            const QString & initialText = "",
-            bool initiallyNotSaved = false
+    virtual struct EditorComponent newDocument(const QString & analizerName,
+            const QString & initialText,
+            const QString & documentDir,
+            bool initiallyNotSaved
             ) = 0;
     virtual void closeDocument(int documentId) = 0;
     virtual int analizerDocumentId(int editorDocumentId) const = 0;

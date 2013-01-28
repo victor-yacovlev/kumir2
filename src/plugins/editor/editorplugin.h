@@ -17,9 +17,10 @@ public:
     EditorPlugin();
     ~EditorPlugin();
 
-    struct Shared::EditorComponent newDocument(const QString &analizerName = "Analizer"
-            , const QString &initialText = ""
-            , bool initiallyNotSaved = false);
+    struct Shared::EditorComponent newDocument(const QString &analizerName
+            , const QString &initialText
+            , const QString &documentDir
+            , bool initiallyNotSaved);
 
     int analizerDocumentId(int editorDocumentId) const;
     void closeDocument(int documentId);
