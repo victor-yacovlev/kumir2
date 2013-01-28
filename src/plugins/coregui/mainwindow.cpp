@@ -1132,7 +1132,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                     lines[i] = lines[i].mid(1);
                 }
             }
-            EditorComponent doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", QFileInfo(f).absoluteDir().dirName(), lines.join("\n"), false);
+            EditorComponent doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", lines.join("\n"), QFileInfo(f).absoluteDir().dirName(), false);
             QWidget * vc = doc.widget;
             int id = doc.id;
             vc->setProperty("documentId", id);
