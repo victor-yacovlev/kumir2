@@ -22,7 +22,7 @@ AST::Module * moduleOfAlgorhitm(AST::Data * data, AST::Algorhitm * alg) {
 }
 
 void prepareRules(const QStringList &files, QString &out, const QList<int> &priors);
-QString terminalByCode(int code);
+QString terminalByCode(unsigned int code);
 bool isCorrectTerminal(const QString &terminal);
 
 PDAutomata::~PDAutomata()
@@ -300,8 +300,11 @@ void PDAutomataPrivate::loadRules(const QString &rulesRoot)
             do {
                 QString key;
                 RuleRightPart rule;
-                if ( allLines[j] != 0 )
-                    key = terminalByCode(allLines[j]) + "/" + leftPart;
+                if ( allLines[j] != 0 ) {
+                    unsigned int code;
+                    code = allLines[j];
+                    key = terminalByCode(code) + "/" + leftPart;
+                }
                 else
                     key = "end/" + leftPart;
                 Q_ASSERT ( ! key.startsWith("/") );
@@ -874,7 +877,7 @@ void prepareRules(const QStringList &files, QString &out, const QList<int> &prio
     out += "\n";
 }
 
-QString terminalByCode(int code)
+QString terminalByCode(unsigned int code)
 {
     switch ( code ) {
     case LxNameClass:

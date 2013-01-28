@@ -936,7 +936,7 @@ void Generator::findFunction(const AST::Algorhitm *alg, quint8 &module, quint16 
                 module = i;
                 id = j;
                 if (mod->header.type==AST::ModTypeCached ||
-                        mod->header.type==AST::ModTypeExternal && (mod->builtInID & 0xF0) == 0) {
+                        (mod->header.type==AST::ModTypeExternal && (mod->builtInID & 0xF0) == 0) ) {
                     QPair<quint8,quint16> ext(module, id);
                     if (!l_externs.contains(ext))
                         l_externs << ext;
