@@ -87,6 +87,7 @@ void KumirBytecodeCompilerPlugin::start()
 
             int id = m_analizer->newDocument();
             m_analizer->setSourceText(id, kumFile.visibleText);
+            m_analizer->setSourceDirName(id, QFileInfo(filename).absoluteDir().dirName());
             if (kumFile.hasHiddenText) {
                 m_analizer->setHiddenText(id, kumFile.hiddenText, -1);
             }

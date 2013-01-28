@@ -28,6 +28,7 @@ public:
 
     int newDocument();
     void dropDocument(int documentId);
+    void setSourceDirName(int documentId, const QString &dirPath);
     void setSourceText(int documentId, const QString &text);
     void setHiddenText(int documentId, const QString &text, int baseLine);
     void setHiddenTextBaseLine(int documentId, int baseLine);

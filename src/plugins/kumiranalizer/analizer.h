@@ -33,7 +33,7 @@ public:
 public slots:
 
 
-
+    void setSourceDirName(const QString & dirName);
     void changeSourceText(const QList<Shared::ChangeTextTransaction> & changes);
     void setHiddenText(const QString & text, int baseLineNo);
     void setHiddenBaseLine(int lineNo);

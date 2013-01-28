@@ -116,7 +116,7 @@ void EditorStandaloneWindow::newProgram()
     setWindowTitle(tr("Kumir Editor"));
     if (m_editor.id!=-1)
         m_plugin->closeDocument(m_editor.id);
-    Shared::EditorComponent p = m_plugin->newDocument("Analizer","");
+    Shared::EditorComponent p = m_plugin->newDocument("Analizer","",QDir::currentPath(),false);
     m_editor = p;
     setupEditor();
 }
@@ -135,7 +135,7 @@ bool EditorStandaloneWindow::loadFromFile(const QString &fileName)
         if (m_editor.id) {
             m_plugin->closeDocument(m_editor.id);
         }
-        m_editor = m_plugin->newDocument("Analizer", data);
+        m_editor = m_plugin->newDocument("Analizer", data, QFileInfo(f).absoluteDir().dirName(), false);
 
         setupEditor();
         setWindowTitle(QFileInfo(s_fileName).fileName()+" - "+tr("Kumir Editor"));

@@ -21,6 +21,7 @@ public:
     virtual bool caseInsensitiveGrammatic() const = 0;
     virtual bool supportPartialCompiling() const = 0;
     virtual void dropDocument(int documentId) = 0;
+    virtual void setSourceDirName(int documentId, const QString & dirPath) = 0;
     virtual void setSourceText(int documentId, const QString &text) = 0;
     virtual void setHiddenText(int documentId, const QString &text, int baseLine) = 0;
     virtual void setHiddenTextBaseLine(int documentId, int baseLine) = 0;
