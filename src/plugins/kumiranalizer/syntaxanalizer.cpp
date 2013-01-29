@@ -3277,6 +3277,16 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
             return 0;
         }
 
+        if (oper && oper->type==LxOperLeftBrace) {
+            oper->error = _("Extra {");
+            return 0;
+        }
+
+        if (oper && oper->type==LxOperRightBrace) {
+            oper->error = _("Extra }");
+            return 0;
+        }
+
         if (oper && oper->type==LxOperRightSqBr) {
             oper->error = _("Extra ]");
             return 0;
