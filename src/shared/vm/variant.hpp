@@ -28,13 +28,43 @@ class AnyValue
     friend class Variable;
 public:
     inline explicit AnyValue() { __init__(); }
+    inline AnyValue(const AnyValue & other) {
+        __init__();
+        tp = other.tp;
+        if (other.svalue) {
+            svalue = new String(*(other.svalue));
+        }
+        if (other.uvalue) {
+            uvalue = new Record(*(other.uvalue));
+        }
+        if (other.avalue) {
+            avalue = new std::vector<class AnyValue>(*(other.avalue));
+        }
+        if (tp==VT_int)
+            ivalue = other.ivalue;
+        if (tp==VT_real)
+            rvalue = other.rvalue;
+        if (tp==VT_bool)
+            bvalue = other.bvalue;
+        if (tp==VT_char)
+            cvalue = other.cvalue;
+    }
+
     inline explicit AnyValue(ValueType t) { __init__(); tp = t;  svalue = t==VT_string? new String() : 0; ivalue = 0; }
-    inline explicit AnyValue(int v) { __init__(); tp = VT_int;  ivalue = v; }
+    inline explicit AnyValue(int v) {
+        __init__();
+        tp = VT_int;
+        ivalue = v;
+    }
     inline explicit AnyValue(real v) { __init__(); tp = VT_real;  rvalue = v; }
     inline explicit AnyValue(bool v) { __init__(); tp = VT_bool; bvalue = v; }
     inline explicit AnyValue(Char v) { __init__(); tp = VT_char; cvalue = v; }
-    inline explicit AnyValue(const String & v) { tp = VT_string; svalue = new String(v); }
-    inline explicit AnyValue(const Record & value) { __init__(); tp = VT_record; uvalue = value; }
+    inline explicit AnyValue(const String & v) { __init__(); tp = VT_string; svalue = new String(v); }
+    inline explicit AnyValue(const Record & value) {
+        __init__();
+        tp = VT_record;
+        uvalue = new Record(value);
+    }
 
     inline void operator=(ValueType t) { __init__(); tp = t;  svalue = t==VT_string? new String() : 0; }
     inline void operator=(int v) { __init__(); tp = VT_int;  ivalue = v; }
@@ -45,7 +75,28 @@ public:
     inline void operator=(const Record & value) {
         __init__();
         tp = VT_record;
-        uvalue = value;
+        uvalue = new Record(value);
+    }
+    inline void operator=(const AnyValue &other) {
+        __init__();
+        tp = other.tp;
+        if (other.svalue) {
+            svalue = new String(*(other.svalue));
+        }
+        if (other.uvalue) {
+            uvalue = new Record(*(other.uvalue));
+        }
+        if (other.avalue) {
+            avalue = new std::vector<class AnyValue>(*(other.avalue));
+        }
+        if (tp==VT_int)
+            ivalue = other.ivalue;
+        if (tp==VT_real)
+            rvalue = other.rvalue;
+        if (tp==VT_bool)
+            bvalue = other.bvalue;
+        if (tp==VT_char)
+            cvalue = other.cvalue;
     }
 
     inline int toInt() const {
@@ -77,13 +128,13 @@ public:
             return sval;
         }
         else if (tp==VT_void) return String();
-        else return *svalue;
+        else return String(*svalue);
     }
     inline const Record & toRecord() const {
-        return uvalue;
+        return *uvalue;
     }
     inline Record & toRecord() {
-        return uvalue;
+        return *uvalue;
     }
 
     template <typename T>
@@ -97,7 +148,7 @@ public:
             char tp = T::_()[i];
             switch (tp) {
             case 'i': {
-                int val = uvalue.at(i).toInt();
+                int val = uvalue->at(i).toInt();
                 fieldptr = &val;
                 copySize = sizeof(int);
                 ptr = (void*)((size_t)(ptr)+copySize);
@@ -106,7 +157,7 @@ public:
                 break;
             }
             case 'd': {
-                double val = uvalue.at(i).toReal();
+                double val = uvalue->at(i).toReal();
                 fieldptr = &val;
                 copySize = sizeof(double);
                 ptr = (void*)((size_t)(ptr)+copySize);
@@ -114,7 +165,7 @@ public:
                 break;
             }
             case 'b': {
-                bool val = uvalue.at(i).toBool();
+                bool val = uvalue->at(i).toBool();
                 fieldptr = &val;
                 copySize = sizeof(bool);
                 ptr = (void*)((size_t)(ptr)+copySize);
@@ -122,7 +173,7 @@ public:
                 break;
             }
             case 'c': {
-                Char val = uvalue.at(i).toChar();
+                Char val = uvalue->at(i).toChar();
                 fieldptr = &val;
                 copySize = sizeof(Char);
 
@@ -130,7 +181,7 @@ public:
                 break;
             }
             case 's': {
-                String val = uvalue.at(i).toString();
+                String val = uvalue->at(i).toString();
                 fieldptr = &val;
                 copySize = sizeof(String);
                 ptr = (void*)((size_t)(ptr)+copySize);
@@ -145,28 +196,42 @@ public:
         return value;
     }
 
-    inline bool isValid() const { return tp!=VT_void || avalue.size()>0; }
+    inline bool isValid() const { return tp!=VT_void || ( avalue && avalue->size()>0 ); }
 
     inline ValueType type() const { return tp; }
-    inline const AnyValue & at(size_t index) const { return avalue[index]; }
+    inline const AnyValue & at(size_t index) const { return avalue->at(index); }
     inline const AnyValue & operator[](size_t index) const { return at(index); }
-    inline AnyValue & at(size_t index) { return avalue[index]; }
+    inline AnyValue & at(size_t index) { return avalue->at(index); }
     inline AnyValue & operator[](size_t index) { return at(index); }
 
-    inline size_t rawSize() const { return avalue.size(); }
+    inline size_t rawSize() const { return avalue? avalue->size() : 0; }
+    inline ~AnyValue() {
+        if (svalue)
+            delete svalue;
+        if (avalue) {
+            avalue->clear();
+            delete avalue;
+        }
+        if (uvalue) {
+            uvalue->clear();
+            delete uvalue;
+        }
+    }
 
 
 protected:
 
     inline void resize(size_t size) {
+        if (!avalue)
+            avalue = new std::vector<class AnyValue>(size);
         if (size==0) {
-            if (avalue.size())
-                avalue.clear();
+            if (avalue->size())
+                avalue->clear();
         }
         else {
-            if (size != avalue.size()) {
-                size_t asize = avalue.size();
-                avalue.resize(size);
+            if (size != avalue->size()) {
+                size_t asize = avalue->size();
+                avalue->resize(size);
             }
         }
     }
@@ -176,6 +241,8 @@ private:
         tp = VT_void;
         svalue = 0;
         ivalue = 0;
+        uvalue = 0;
+        avalue = 0;
     }
 
     ValueType tp;
@@ -185,9 +252,9 @@ private:
         Char cvalue;
         bool bvalue;
     };
-    Record uvalue;
+    Record * uvalue;
     String * svalue;
-    std::vector<class AnyValue> avalue;
+    std::vector<class AnyValue> * avalue;
 };
 
 
@@ -224,6 +291,19 @@ public:
     }
     inline explicit Variable(Variable * ref) { create(); m_reference = ref; }
     inline explicit Variable(const AnyValue & v) { create(); e_baseType = v.type(); m_value = v; }
+//    inline Variable(const Variable & other) {
+//        create();
+//        e_baseType = other.e_baseType;
+//        i_dimension = other.i_dimension;
+//        memcpy(l_bounds, other.l_bounds, sizeof(l_bounds));
+//        memcpy(l_restrictedBounds, other.l_restrictedBounds, sizeof(l_restrictedBounds));
+//        memcpy(l_referenceIndeces, other.l_referenceIndeces, sizeof(l_referenceIndeces));
+//        m_reference = other.m_reference;
+//        b_constant = other.b_constant;
+//        s_name = other.s_name;
+//        s_algorhitmName = other.s_algorhitmName;
+//        m_value = other.m_value;
+//    }
 
     inline bool isValid() const { return e_baseType!=VT_void; }
 
@@ -275,9 +355,9 @@ public:
     inline AnyValue value(int indeces[4]) const;
 
     inline size_t rawSize() const { return m_value.rawSize(); }
-    inline const AnyValue & at(size_t index) const { return m_value.avalue[index]; }
+    inline const AnyValue & at(size_t index) const { return m_value.avalue->at(index); }
     inline const AnyValue & operator[](size_t index) const { return at(index); }
-    inline AnyValue & at(size_t index) { return m_value.avalue[index]; }
+    inline AnyValue & at(size_t index) { return m_value.avalue->at(index); }
     inline AnyValue & operator[](size_t index) { return at(index); }
 
     inline bool isReference() const { return m_reference!=0; }

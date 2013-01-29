@@ -435,7 +435,6 @@ int main(int argc, char *argv[])
 
     // Prepare runner
     VM::KumirVM vm;
-    vm.setDebugOff(false);
 
     InteractionHandler interactionHandler(argc, argv);
     vm.setExternalHandler(&interactionHandler);
@@ -468,6 +467,7 @@ int main(int argc, char *argv[])
     }
 
     vm.reset();
+    vm.setDebugOff(true);
 
 
     // Main loop
