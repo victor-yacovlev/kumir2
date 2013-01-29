@@ -190,7 +190,7 @@
 "Unpaired '['";"Не парная “[“";"";"";"";"";
 "Can't pass this expression as in/out-argumeny";"Не величина в аргрез-параметре";"";"";"";"";
 "Unpaired ]";"Непарная ]";"";"";"";"";
-"Must be a scalar constant";"";"";"";"";"";
+"Must be a scalar constant";"Нельзя присвоить список значений";"";"";"";"";
 "What to input from file?";"Куда вводить из файла?";"";"";"";"";
 "Unpaired [";"Непарная [";"";"";"";"";
 "Extra )";"Лишняя )";"";"";"";"";
