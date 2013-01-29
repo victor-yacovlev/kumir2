@@ -1164,6 +1164,17 @@ void PDAutomataPrivate::setOutOfAlgError()
     if (currentModule)
         doNotEvaluate = currentModule->impl.algorhitms.size()>0;
 
+    bool hasAnyAlgorithmAfter = false;
+    for (int i=0; i<source.size(); i++) {
+        if (source[i]->type==LxPriAlgHeader) {
+            hasAnyAlgorithmAfter = true;
+            break;
+        }
+    }
+
+    if (!hasAnyAlgorithmAfter)
+        doNotEvaluate = false;
+
     appendSimpleLine();
     if (!currentContext.isEmpty() && currentContext.top())
         currentContext.top()->last()->skipErrorEvaluation = doNotEvaluate;
