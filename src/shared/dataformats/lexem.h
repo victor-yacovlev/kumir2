@@ -8,9 +8,12 @@ namespace AST {
 
     struct Lexem {
         enum ErrorStage { NoError, Lexer, PDAutomata, Tables, Semantics } errorStage;
+        enum ErrorRaisePosition { AsIs, Header, Begin, End } errorRaisePosition;
         inline Lexem() {
             type = Shared::LxTypeEmpty;
-            lineNo = -1; linePos = 0; length = 0; errorStage = NoError;
+            lineNo = -1; linePos = 0; length = 0;
+            errorStage = NoError;
+            errorRaisePosition = AsIs;
         }
         Shared::LexemType type;
         QString data;

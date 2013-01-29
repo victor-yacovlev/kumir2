@@ -679,6 +679,19 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
         argHandle << err;
     }
 
+    if (alg->impl.headerRuntimeError.size()>0) {
+        Bytecode::Instruction l;
+        l.type = Bytecode::LINE;
+        l.arg = alg->impl.headerRuntimeErrorLine;
+        argHandle << l;
+        l.type = Bytecode::ERRORR;
+        l.scope = Bytecode::CONSTT;
+        l.arg = constantValue(Bytecode::VT_string, 0,
+                              ErrorMessages::message("KumirAnalizer", QLocale::Russian, alg->impl.headerRuntimeError)
+                              );
+        argHandle << l;
+    }
+
     if (alg->impl.endLexems.size()>0 && e_debugLevel==GeneratorInterface::LinesAndVariables) {
 
         Bytecode::Instruction clearmarg;
@@ -1395,6 +1408,20 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
         showreg.type = Bytecode::SHOWREG;
         showreg.registerr = 0;
         result << showreg;
+
+
+        if (st->headerError.size()>0) {
+            Bytecode::Instruction garbage;
+            garbage.type = Bytecode::LINE;
+            garbage.arg = st->headerErrorLine;
+            result << garbage;
+            garbage.type = Bytecode::ERRORR;
+            garbage.scope = Bytecode::CONSTT;
+            garbage.arg = constantValue(Bytecode::VT_string, 0,
+                                        ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->headerError)
+                                        );
+            result << garbage;
+        }
 
         jzIP = result.size();
         Bytecode::Instruction jz;
