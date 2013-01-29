@@ -2,6 +2,7 @@
 #include "lexer.h"
 #include <limits>
 #include <deque>
+#include <stack>
 #include <iostream>
 #include <fstream>
 
@@ -2601,12 +2602,78 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
         constant.front()->error = _("Constant value not typed");
         return QVariant::Invalid;
     }
+    std::stack <Lexem *> openBrackets;
+    std::stack <Lexem *> openSqBrackets;
+    std::stack <Lexem *> openBraces;
+
+    for (auto it = constant.cbegin(); it!=constant.cend(); ++it) {
+        Lexem * lx = *it;
+        if (lx->type==LxOperLeftBr) {
+            openBrackets.push(lx);
+        }
+        else if (lx->type==LxOperLeftSqBr) {
+            openSqBrackets.push(lx);
+        }
+        else if (lx->type==LxOperLeftBrace) {
+            openBraces.push(lx);
+        }
+        else if (lx->type==LxOperRightBr) {
+            if (openBrackets.size()==0) {
+                lx->error = _("Unpaired )");
+                return QVariant::Invalid;
+            }
+            else {
+                openBrackets.pop();
+            }
+        }
+        else if (lx->type==LxOperRightSqBr) {
+            if (openSqBrackets.size()==0) {
+                lx->error = _("Unpaired ]");
+                return QVariant::Invalid;
+            }
+            else {
+                openSqBrackets.pop();
+            }
+        }
+        else if (lx->type==LxOperRightBrace) {
+            if (openBraces.size()==0) {
+                lx->error = _("Unpaired }");
+                return QVariant::Invalid;
+            }
+            else {
+                openBraces.pop();
+            }
+        }
+    }
+    bool error = openBrackets.size()+openSqBrackets.size()+openBraces.size() > 0;
+    while (openBrackets.size()>0) {
+        Lexem * lx = openBrackets.top();
+        lx->error = _("Unpaired (");
+        openBrackets.pop();
+    }
+    while (openSqBrackets.size()>0) {
+        Lexem * lx = openSqBrackets.top();
+        lx->error = _("Unpaired [");
+        openSqBrackets.pop();
+    }
+    while (openBraces.size()>0) {
+        Lexem * lx = openBraces.top();
+        lx->error = _("Unpaired {");
+        openBraces.pop();
+    }
+    if (error)
+        return QVariant::Invalid;
     bool array = false;
     if (constant.front()->type==LxOperLeftBrace) {
         if (constant.back()->type==LxOperRightBrace)
             array = true;
         else {
-            constant.front()->error = _("Extra open brace");
+            for (auto it = constant.crbegin(); it!=constant.crend(); ++it) {
+                Lexem * lx = *it;
+                if (lx->type==LxOperRightBrace)
+                    break;
+                lx->error = _("Garbage after }");
+            }
             return QVariant::Invalid;
         }
     }
