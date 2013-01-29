@@ -56,20 +56,21 @@ static void getVarListSizes(const QVariant & var, int sizes[3], int fromDim)
 
 static VM::AnyValue makeAnyValue(const QVariant & val, std::list<Bytecode::ValueType> vt)
 {
+    VM::AnyValue result;
     if (val==QVariant::Invalid)
-        return VM::AnyValue();
+        return result;
     switch (vt.front())
     {
     case Bytecode::VT_int:
-        return VM::AnyValue(val.toInt());
+        result = VM::AnyValue(val.toInt()); break;
     case Bytecode::VT_real:
-        return VM::AnyValue(val.toDouble());
+        result = VM::AnyValue(val.toDouble()); break;
     case Bytecode::VT_bool:
-        return VM::AnyValue(bool(val.toBool()));
+        result = VM::AnyValue(bool(val.toBool())); break;
     case Bytecode::VT_char:
-        return VM::AnyValue(Kumir::Char(val.toChar().unicode()));
+        result = VM::AnyValue(Kumir::Char(val.toChar().unicode())); break;
     case Bytecode::VT_string:
-        return VM::AnyValue(val.toString().toStdWString());
+        result = VM::AnyValue(val.toString().toStdWString()); break;
     case Bytecode::VT_record:
     {
         QVariantList valueFields = val.toList();
@@ -101,11 +102,13 @@ static VM::AnyValue makeAnyValue(const QVariant & val, std::list<Bytecode::Value
             }
             it++;
         }
-        return value;
+        result = value;
+        break;
     }
     default:
-        return VM::AnyValue();
+        break;
     }
+    return result;
 }
 
 static Bytecode::TableElem makeConstant(const ConstValue & val)
@@ -116,7 +119,8 @@ static Bytecode::TableElem makeConstant(const ConstValue & val)
     e.dimension = val.dimension;
     if (val.dimension==0) {
         VM::Variable var;
-        var.setValue(makeAnyValue(val.value, val.baseType));
+        VM::AnyValue vv = makeAnyValue(val.value, val.baseType);
+        var.setValue(vv);
         var.setBaseType(val.baseType.front());
         var.setDimension(val.dimension);
         var.setConstantFlag(true);
