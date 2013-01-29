@@ -1133,30 +1133,26 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
 
         QString err =  "";
 
-        if (fromIndex!=-1 && forIndex!=-1 && fromIndex-forIndex==1) {
+        if (err.length()==0 && !fromLexem) {
+            err = _("No loop 'from'");
+        }
+        if (err.length()==0 && !toLexem) {
+            err = _("No loop 'to'");
+        }
+        if (err.length()==0 && fromIndex!=-1 && forIndex!=-1 && fromIndex-forIndex==1) {
             err =  _("No loop variable");
         }
 
-        if (toIndex!=-1 && fromIndex>toIndex) {
+        if (err.length()==0 && toIndex!=-1 && fromIndex>toIndex) {
             err = _("'to' earler then 'from'");
         }
 
-        if (fromIndex==-1 && toIndex!=-1) {
+        if (err.length()==0 && fromIndex==-1 && toIndex!=-1) {
             err = _("No 'from' before 'to'");
         }
 
-        if (fromIndex==-1 && toIndex==-1) {
+        if (err.length()==0 && fromIndex==-1 && toIndex==-1) {
             err = _("No 'from'..'to'.. after variable");
-        }
-
-        if (!fromLexem) {
-            err = _("No loop variable");
-        }
-        if (!fromLexem) {
-            err = _("No loop 'from' value");
-        }
-        if (!toLexem) {
-            err = _("No loop 'to' value");
         }
 
         if (err.length()) {
