@@ -775,6 +775,10 @@ public:
             error = WrongExpForm;
             return 0.0;
         }
+        if (sIntegral.length()+sFractional.length()==0) {
+            error = sExponenta.length()>0? WrongExpForm : WrongReal;
+            return 0.0;
+        }
         int fractionalLength = sFractional.length();
         for (int i=sFractional.length()-1; i>=0; i--) {
             Char ch = sFractional.at(i);
