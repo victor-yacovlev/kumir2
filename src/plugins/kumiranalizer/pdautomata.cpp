@@ -1136,6 +1136,15 @@ void PDAutomataPrivate::setCurrentError(const QString &value)
     }
 }
 
+void PDAutomataPrivate::setCurrentErrorRaisePosition(Lexem::ErrorRaisePosition pos)
+{
+    for (int i=0; i<source[currentPosition]->data.size(); i++) {
+        if (source[currentPosition]->data[i]->type!=LxTypeComment) {
+            source[currentPosition]->data[i]->errorRaisePosition = pos;
+        }
+    }
+}
+
 void PDAutomataPrivate::setOutOfAlgError()
 {
     QString value;
@@ -1468,6 +1477,8 @@ void PDAutomataPrivate::processCorrectCase()
 {
     setCurrentIndentRank(-1, +1);
     currentContext.pop();
+    if (currentContext.size()==0 || currentContext.top()->size()==0)
+        return;
     Q_ASSERT(currentContext.size()>0);
     Q_ASSERT(currentContext.top()->last()->type==AST::StSwitchCaseElse);
     AST::ConditionSpec cond;
@@ -1729,8 +1740,18 @@ void PDAutomataPrivate::setGarbageAlgError()
             QList<LexemType>() << LxPriImport << LxPriAlgHeader << LxPriModule << LxPriEndModule;
     if (OutgoingOperationalBrackets.contains(source[currentPosition]->type))
         setCurrentError(_("'%1' in algorithm", source[currentPosition]->data.first()->data));
-    else
+    else {
         setCurrentError(_("Garbage between alg..begin"));
+        setCurrentErrorRaisePosition(Lexem::Header);
+        if (currentAlgorhitm) {
+            int lineNo = -1;
+            if (source[currentPosition]->data.size()>0) {
+                lineNo = source[currentPosition]->data[0]->lineNo;
+            }
+            currentAlgorhitm->impl.headerRuntimeError = _("Garbage between alg..begin");
+            currentAlgorhitm->impl.headerRuntimeErrorLine = lineNo;
+        }
+    }
     appendSimpleLine();
 }
 
@@ -1748,6 +1769,18 @@ void PDAutomataPrivate::setGarbageIfThenError()
     }
     const QString error = hasThen? _("Garbage between if..then")
                                  : _("No 'then' after 'if'");
+    if (currentContext.size()>0
+            && currentContext.top()->size()>0
+            && currentContext.top()->at(0)->type==AST::StIfThenElse
+            )
+    {
+        currentContext.top()->at(0)->headerError = error;
+        int lineNo = -1;
+        if (source[currentPosition]->data.size()>0) {
+            lineNo = source[currentPosition]->data[0]->lineNo;
+        }
+        currentContext.top()->at(0)->headerErrorLine = lineNo;
+    }
     setCurrentError(error);
 //    appendSimpleLine();
     processCorrectThen();

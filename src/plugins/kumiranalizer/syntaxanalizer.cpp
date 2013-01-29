@@ -1081,7 +1081,7 @@ void SyntaxAnalizerPrivate::parseIfCase(int str)
             delete expr;
         }
         else {
-            if (st.conditionalIndex < st.statement->conditionals.size()) {
+            if (st.statement && st.conditionalIndex < st.statement->conditionals.size()) {
                 st.statement->conditionals[st.conditionalIndex].condition = expr;
             }
             else {
@@ -3575,13 +3575,13 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
         const SubexpressionElement & el = subexpression.at(i);
         if (el.o && (el.o->type==LxOperEqual || el.o->type==LxOperNotEqual) ) {
             bool isBooleanComparision =
-                    i>0 && subexpression[i-1].e && subexpression[i-1].e->baseType.kind == AST::TypeBoolean
+                    (i>0 && subexpression[i-1].e && subexpression[i-1].e->baseType.kind == AST::TypeBoolean)
 //                    ||
 //                    i>0 && hasBoolOpBefore(subexpression, i)
                     ||
-                    i<subexpression.size()-1 && subexpression[i+1].e && subexpression[i+1].e->baseType.kind == AST::TypeBoolean
+                    (i<subexpression.size()-1 && subexpression[i+1].e && subexpression[i+1].e->baseType.kind == AST::TypeBoolean)
                     ||
-                    i<subexpression.size()-1 && subexpression[i+1].o && subexpression[i+1].o->type==LxSecNot;
+                    (i<subexpression.size()-1 && subexpression[i+1].o && subexpression[i+1].o->type==LxSecNot);
             if (isBooleanComparision) {
                 if (el.o->type == LxOperEqual)
                     el.o->type = LxOperBoolEqual;

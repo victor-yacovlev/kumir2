@@ -79,6 +79,7 @@ public:
 public slots:
     void addDummyAlgHeader();
     void setCurrentError(const QString & value);
+    void setCurrentErrorRaisePosition(Lexem::ErrorRaisePosition pos);
     void setOutOfAlgError();
     void setModuleBeginError(const QString & value);
     void setCurrentIndentRank(int start, int end);
