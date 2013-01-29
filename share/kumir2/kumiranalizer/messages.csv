@@ -312,4 +312,4 @@
 "Expression not assigned to anything";"Выражение ничему не присвоено";"";"";"";"";
 "Many quotes in constant";"Много кавычек в одной константе";"";"";"";"";
 "Module file is damaged";"Файл исполнителя поврежден";"";"";"";"";
-"Extra close brace";"";"";"";"";"";
+"Extra close brace";"Лишняя кавычка";"";"";"";"";
