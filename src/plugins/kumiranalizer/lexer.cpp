@@ -943,6 +943,7 @@ void popLexemsUntilSemicolonOrBlockClose(QList<Lexem*> & lexems, Statement &resu
         if (lx->type==LxOperSemicolon
                 || lx->type==LxPriElse
                 || lx->type==LxPriEndLoop
+                || lx->type==LxPriCase
                 || lx->type==LxPriFi)
             break;
         lexems.pop_front();

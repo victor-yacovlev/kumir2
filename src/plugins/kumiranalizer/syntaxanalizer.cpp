@@ -613,7 +613,7 @@ void SyntaxAnalizerPrivate::parseImport(int str)
                         st.data[1]->error = _("kumir2-bc crashed while compiling this module");
                         return;
                     }
-                    binFile = QFileInfo (QDir::current().absoluteFilePath(binName));
+                    binFile = QFileInfo (QDir(sourceDirName).absoluteFilePath(binName));
                     if (!binFile.exists()) {
                         st.data[1]->error = _("Error compiling this module");
                         return;
@@ -747,6 +747,13 @@ void SyntaxAnalizerPrivate::parseOutput(int str)
             maxSubgroups = 2;
         else
             maxSubgroups = 1;
+        if (expr->baseType.kind==AST::TypeNone && expr->kind==AST::ExprFunctionCall) {
+            delete expr;
+            err = _("This algorithm has no return value");
+            foreach (Lexem * lx, groups[i])
+                lx->error = err;
+            return;
+        }
         Q_ASSERT(colons.size() == subgroups.size()-1);
         if (subgroups.size()>maxSubgroups) {
             delete expr;
