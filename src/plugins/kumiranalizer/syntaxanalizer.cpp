@@ -929,6 +929,8 @@ void SyntaxAnalizerPrivate::parseInput(int str)
             err = _("Can't input an array");
         if (expr->isStringPart)
             err = _("Can't input part of string");
+        if (expr->kind==AST::ExprVariable && expr->variable->accessType==AST::AccessArgumentIn)
+            err = _("Can't input in-argument");
 
         if (err.length()>0) {
             foreach (Lexem * lx, groups[i])
