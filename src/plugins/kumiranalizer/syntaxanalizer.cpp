@@ -564,6 +564,8 @@ void SyntaxAnalizerPrivate::parseImport(int str)
     if (statements[str].hasError())
         return;
     Statement & st = statements[str];
+    AST::Module * mod = st.mod;
+    Q_CHECK_PTR(mod);
     if (st.data.size()<2) {
         Q_ASSERT(st.data.size()==1);
         st.data[0]->error = _("No module name");
@@ -638,10 +640,12 @@ void SyntaxAnalizerPrivate::parseImport(int str)
             return;
         }
         name = st.data[1]->data.simplified();
+        if (mod->header.uses.contains(name)) {
+            st.data[1]->error = _("Module already imported");
+            return;
+        }
         st.data[1]->type = LxNameModule;
     }
-    AST::Module * mod = st.mod;
-    Q_CHECK_PTR(mod);
     mod->header.uses.insert(name);
 }
 
