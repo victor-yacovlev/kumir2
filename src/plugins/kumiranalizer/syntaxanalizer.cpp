@@ -2121,6 +2121,25 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
                 group.lexems[curPos]->error = _("No pairing '['");
                 return result;
             }
+            if (group.lexems[curPos]->type==LxOperLeftBrace) {
+                int searchPos = curPos;
+                int deep = 0;
+                for ( ; searchPos<group.lexems.size(); searchPos++) {
+                    const Lexem * lx = group.lexems[searchPos];
+                    if (lx->type==LxOperLeftBrace)
+                        deep++;
+                    if (lx->type==LxOperRightBrace) {
+                        deep--;
+                        if (deep==0) {
+                            break;
+                        }
+                    }
+                }
+                for (int i=curPos; i<=searchPos; i++) {
+                    group.lexems[i]->error = _("Must be a variable name");
+                }
+                return result;
+            }
             if (group.lexems[curPos]->type==LxOperLeftSqBr)
             {
                 if ( massDeclared )
@@ -2130,7 +2149,7 @@ QList<AST::Variable*> SyntaxAnalizerPrivate::parseVariables(int statementIndex, 
                 }
                 if ( cName.trimmed().isEmpty() )
                 {
-                    group.lexems[typePos]->error = _("No variable name");
+                    group.lexems[curPos]->error = group.lexems[curPos-1]->error = _("No variable name");
                     return result; // нет имени переменной
                 }
                 else
