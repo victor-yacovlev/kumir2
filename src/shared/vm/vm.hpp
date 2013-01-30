@@ -1556,6 +1556,10 @@ void KumirVM::do_specialcall(uint16_t alg)
             const Variable & ref = stack_values.pop();
             if (ref.baseType()==VT_record) {
                 fileIO = true;
+                if (!ref.isValid()) {
+                    s_error = Kumir::Core::fromUtf8("Нет значения у ключа файла");
+                    return;
+                }
                 const Record fileReferenceRecord = ref.toRecord();
                 fileReference = fromRecordValue(fileReferenceRecord);
             }
@@ -1645,6 +1649,10 @@ void KumirVM::do_specialcall(uint16_t alg)
         if (argsCount % 3) {
             fileIO = true;
             const Variable fileVar = stack_values.pop();
+            if (!fileVar.isValid()) {
+                s_error = Kumir::Core::fromUtf8("Нет значения у ключа файла");
+                return;
+            }
             const Record fileReferenceRecord = fileVar.toRecord();
             fileReference = fromRecordValue(fileReferenceRecord);
 
