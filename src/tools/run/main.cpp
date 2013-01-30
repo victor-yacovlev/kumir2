@@ -5,19 +5,55 @@
 #include "vm/vm_bytecode.hpp"
 #include "vm/vm.hpp"
 
-#if !defined(WIN32) && !defined(_WIN32)
-#define LOCALE Kumir::UTF8
-#else
-#define LOCALE Kumir::CP866
-#endif
+static Kumir::Encoding LOCALE;
 
 int usage(const char * programName)
 {
-    std::cerr << "Usage: " << std::endl;
-    std::cerr << "\t" << programName << " FILENAME.kod | FILENAME.ks [ARG1 [ARG2 ... [ARGn]]]" << std::endl << std::endl;
-    std::cerr << "\tFILENAME.kod\tKumir runtime code file name" << std::endl;
-    std::cerr << "\tFILENAME.ks\tKumir assembler input file name" << std::endl;
-    std::cerr << "\tARG1...ARGn\tKumir program main algorithm arguments" << std::endl;
+    using namespace Kumir;
+
+    bool russianLanguage = false;
+
+#if defined(WIN32) || defined(_WIN32)
+    russianLanguage = true;
+    Char _n = Char('\n');
+#else
+    char * env = getenv("LANG");
+    if (env) {
+        std::string LANG(env);
+        russianLanguage = LANG.find("ru")!=std::string::npos;
+    }
+    Char _n = Char('\n');
+#endif
+    String message;
+    if (russianLanguage) {
+        message  = Core::fromUtf8("Вызов:");
+        message.push_back(_n);
+        message += Core::fromUtf8("\t")+Core::fromUtf8(std::string(programName));
+        message += Core::fromUtf8(" [-ansi] ИМЯФАЙЛА.kod [ПАРАМ1 [ПАРАМ2 ... [ПАРАМn]]]");
+        message.push_back(_n);
+        message.push_back(_n);
+        message += Core::fromUtf8("\t-ansi\t\tИспользовть кодировку 1251 вместо 866 в терминале (только для Windows)");
+        message.push_back(_n);
+        message += Core::fromUtf8("\tИМЯФАЙЛА.kod\tИмя выполнеяемой программы");
+        message.push_back(_n);
+        message += Core::fromUtf8("\tПАРАМ1...ПАРАМn\tАргументы главного алгоритма Кумир-программы");
+        message.push_back(_n);
+    }
+    else {
+        message  = Core::fromUtf8("Usage:");
+        message.push_back(_n);
+        message += Core::fromUtf8("\t")+Core::fromUtf8(std::string(programName));
+        message += Core::fromUtf8(" [-ansi] FILENAME.kod [ARG1 [ARG2 ... [ARGn]]]");
+        message.push_back(_n);
+        message.push_back(_n);
+        message += Core::fromUtf8("\t-ansi\t\tUse codepage 1251 instead of 866 in console (Windows only)");
+        message.push_back(_n);
+        message += Core::fromUtf8("\tFILENAME.kod\tKumir runtime file name");
+        message.push_back(_n);
+        message += Core::fromUtf8("\tARG1...ARGn\tKumir program main algorithm arguments");
+        message.push_back(_n);
+    }
+    std::cerr << Coder::encode(LOCALE, message);
     return 127;
 }
 
@@ -338,6 +374,11 @@ int main(int argc, char *argv[])
 {
 //    sleep(15); // for remote debugger
     // Look at arguments
+#if defined(WIN32) || defined(_WIN32)
+    Kumir::IO::LOCALE_ENCODING = LOCALE = Kumir::CP866;
+#else
+    Kumir::IO::LOCALE_ENCODING = LOCALE = Kumir::UTF8;
+#endif
     std::string programName;
     std::deque<std::string> args;
     bool forceTextForm = false;
@@ -347,9 +388,12 @@ int main(int argc, char *argv[])
             continue;
         static const std::string minuss("-s");
         static const std::string minusS("-S");
+        static const std::string minusansi("-ansi");
         if (programName.empty()) {
             if (arg==minuss || arg==minusS)
                 forceTextForm = true;
+            else if (arg==minusansi)
+                Kumir::IO::LOCALE_ENCODING = LOCALE = Kumir::CP1251;
             else
                 programName = arg;
         }
@@ -391,7 +435,6 @@ int main(int argc, char *argv[])
 
     // Prepare runner
     VM::KumirVM vm;
-    vm.setDebugOff(false);
 
     InteractionHandler interactionHandler(argc, argv);
     vm.setExternalHandler(&interactionHandler);
@@ -424,6 +467,7 @@ int main(int argc, char *argv[])
     }
 
     vm.reset();
+    vm.setDebugOff(true);
 
 
     // Main loop

@@ -7,7 +7,7 @@
 "Assignment of non-returning algorithm";"У этого алгоритма нет значения";"";"";"";"";
 "Can't input string slice";"Нельзя ввести в вырезку";"";"";"";"";
 "Use of 'not' for non-boolean value";"“не” вне логического выражения";"";"";"";"";
-"Can't pass in-argument as in/out-argument";"Нельзя арг передать в рез или аргрез";"";"";"";"";
+"Extra statement";"Строка не на месте";"";"";"";"";
 "Wrong table constant";"";"";"";"";"";
 "Unpaired ']'";"Нет парной “]”";"";"";"";"";
 "Return valus is not a string";"Возвращаемая величина не строка";"";"";"";"";
@@ -80,9 +80,11 @@
 "Variable name is empty";"Где имя величины?";"";"";"";"";
 "Assignment to in- argument";"Нельзя присвоить аргументу";"";"";"";"";
 "No coma before type";"Нет запятой перед объявлением";"";"";"";"";
+"Extra indeces";"Лишние индексы";"";"";"";"";
 "Right array bound is not integer";"Правая граница таблицы не целая";"";"";"";"";
 "No arguments";"Нет аргументов";"";"";"";"";
 "No name before [";"Перед [ должно быть имя";"";"";"";"";
+"Garbage after }";"Мусор после }";"";"";"";"";
 "Extra 'fi'";"Что - “все”?";"";"";"";"";
 "Type not declared before";"Не указан тип";"";"";"";"";
 "Can't input algorithm in- argument";"Нельзя ввести в аргумент";"";"";"";"";
@@ -148,8 +150,8 @@
 "Array dimension mismatch";"Несоответствие размерностей таблиц";"";"";"";"";
 "Initial value is empty";"Начальное значение не задано";"";"";"";"";
 "'%1' in algorithm";"“%1” внутри алгоритма";"";"";"";"";
-"Extra statement";"Строка не на месте";"";"";"";"";
-"Extra open brace";"";"";"";"";"";
+"Can't pass in-argument as in/out-argument";"Нельзя арг передать в рез или аргрез";"";"";"";"";
+"Extra open brace";"Лишняя {";"";"";"";"";
 "No such file";"Нет такого исполнителя рядом с программой";"";"";"";"";
 "No loop 'to' value";"Нет “до” после “от”";"";"";"";"";
 "Extra format";"";"";"";"";"";
@@ -168,6 +170,7 @@
 "Unmatched array dimensions";"Несоответствие размерностей таблиц";"";"";"";"";
 "Table dimension > 3";"";"";"";"";"";
 "Extra variable group out-specifier";"Лишний “рез”";"";"";"";"";
+"No 'from'";"Нет “от”";"";"";"";"";
 "No 'loop' before 'while'";"Перед “пока” нет “нц”";"";"";"";"";
 "Extra 'case'";"“при” не на месте";"";"";"";"";
 "Can't input subexpression";"Нельзя ввести в выражение";"";"";"";"";
@@ -191,7 +194,7 @@
 "No pairing '('";"Нет парной “(“";"";"";"";"";
 "Can't pass this expression as in/out-argumeny";"Не величина в аргрез-параметре";"";"";"";"";
 "Unpaired ]";"Непарная ]";"";"";"";"";
-"Must be a scalar constant";"";"";"";"";"";
+"Must be a scalar constant";"Нельзя присвоить список значений";"";"";"";"";
 "What to input from file?";"Куда вводить из файла?";"";"";"";"";
 "Unpaired [";"Непарная [";"";"";"";"";
 "Extra )";"Лишняя )";"";"";"";"";
@@ -211,9 +214,12 @@
 "Extra 'if'";"Нет “то..все” после “если”";"";"";"";"";
 "Can't %1:=real";"";"";"";"";"";
 "No condition between 'case' and colon";"Нет условия между “при” и “:”";"";"";"";"";
+"Extra }";"Лишняя }";"";"";"";"";
 "No then before else";"Нет “то” перед “иначе”";"";"";"";"";
 "Assignment of array";"Нельзя присваивать таблицы";"";"";"";"";
+"Can't pass in-argument as out-argument";"Нельзя арг передать в рез или аргрез";"";"";"";"";
 "Extra 'not'";"Лишнее “не”";"";"";"";"";
+"Extra {";"Лишняя {";"";"";"";"";
 "Can't output value of type %1";"Нельзя вывести значение типа %1";"";"";"";"";
 "Keyword in name";"Ключевое слово в имени";"";"";"";"";
 "Can't input an array";"";"";"";"";"";
@@ -238,7 +244,7 @@
 "No 'from'..'to'.. after variable";"Нет “от”..”до”.. после величины";"";"";"";"";
 "Forgotten operator after bracket";"Перед выражением пропущен оператор";"";"";"";"";
 "No 'loop' before 'for'";"Перед “для” нет “нц”";"";"";"";"";
-"Can't pass in-argument as out-argument";"Нельзя арг передать в рез или аргрез";"";"";"";"";
+"No loop 'from'";"Нет “от”";"";"";"";"";
 "Condition after '%1' not boolean";"Условие после “%1” не логическое";"";"";"";"";
 "Can't integer:=real";"Нельзя “цел := вещ”";"";"";"";"";
 "Array required here";"Индексы не нужны";"";"";"";"";
@@ -263,7 +269,7 @@
 "Can't string:=boolean";"Нельзя “лит := лог”";"";"";"";"";
 "No 'from' before 'to'";"Нет “от”.. перед “до”";"";"";"";"";
 "Name starts with digit";"Имя не может начинаться с цифры";"";"";"";"";
-"Extra indeces";"Лишние индексы";"";"";"";"";
+"No loop 'to'";"Нет “до”";"";"";"";"";
 "No coma before %1";"Нет запятой перед %1";"";"";"";"";
 "Misplaced import";"“использовать” не в начале";"";"";"";"";
 "No loop variable";"Не указана величина цикла";"";"";"";"";
@@ -307,4 +313,4 @@
 "Expression not assigned to anything";"Выражение ничему не присвоено";"";"";"";"";
 "Many quotes in constant";"Много кавычек в одной константе";"";"";"";"";
 "Module file is damaged";"Файл исполнителя поврежден";"";"";"";"";
-"Extra close brace";"";"";"";"";"";
+"Extra close brace";"Лишняя }";"";"";"";"";

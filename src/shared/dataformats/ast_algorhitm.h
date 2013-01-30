@@ -102,6 +102,9 @@ struct AlgorhitmImplementation {
 
     /** End lexems */
     QList<struct Lexem*> endLexems;
+
+    QString headerRuntimeError;
+    int headerRuntimeErrorLine;
 };
 
 /** Algorhitm representation */

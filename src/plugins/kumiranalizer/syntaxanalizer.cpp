@@ -2,6 +2,7 @@
 #include "lexer.h"
 #include <limits>
 #include <deque>
+#include <stack>
 #include <iostream>
 #include <fstream>
 
@@ -41,6 +42,7 @@ struct SyntaxAnalizerPrivate
     QList<Statement> statements;
     QSet<QString> unresolvedImports;
     QStringList alwaysEnabledModules;
+    QString sourceDirName;
 
     void parseImport(int str);
     void parseModuleHeader(int str);
@@ -552,6 +554,11 @@ void SyntaxAnalizer::processAnalisys()
     }
 }
 
+void SyntaxAnalizer::setSourceDirName(const QString &dirName)
+{
+    d->sourceDirName = dirName;
+}
+
 void SyntaxAnalizerPrivate::parseImport(int str)
 {
     if (statements[str].hasError())
@@ -587,8 +594,8 @@ void SyntaxAnalizerPrivate::parseImport(int str)
         if (name.endsWith(".kum")) {
             kumName = name;
             name = binName = name.left(name.length()-4)+".kod";
-            binFile = QFileInfo (QDir::current().absoluteFilePath(binName));
-            kumFile = QFileInfo (QDir::current().absoluteFilePath(kumName));
+            binFile = QFileInfo (QDir(sourceDirName).absoluteFilePath(binName));
+            kumFile = QFileInfo (QDir(sourceDirName).absoluteFilePath(kumName));
             QString kumir2bc = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("kumir2-bc");
 #ifdef Q_OS_WIN32
             kumir2bc += ".exe";
@@ -1075,7 +1082,7 @@ void SyntaxAnalizerPrivate::parseIfCase(int str)
             delete expr;
         }
         else {
-            if (st.conditionalIndex < st.statement->conditionals.size()) {
+            if (st.statement && st.conditionalIndex < st.statement->conditionals.size()) {
                 st.statement->conditionals[st.conditionalIndex].condition = expr;
             }
             else {
@@ -1127,30 +1134,26 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
 
         QString err =  "";
 
-        if (fromIndex!=-1 && forIndex!=-1 && fromIndex-forIndex==1) {
+        if (err.length()==0 && !fromLexem) {
+            err = _("No loop 'from'");
+        }
+        if (err.length()==0 && !toLexem) {
+            err = _("No loop 'to'");
+        }
+        if (err.length()==0 && fromIndex!=-1 && forIndex!=-1 && fromIndex-forIndex==1) {
             err =  _("No loop variable");
         }
 
-        if (toIndex!=-1 && fromIndex>toIndex) {
+        if (err.length()==0 && toIndex!=-1 && fromIndex>toIndex) {
             err = _("'to' earler then 'from'");
         }
 
-        if (fromIndex==-1 && toIndex!=-1) {
+        if (err.length()==0 && fromIndex==-1 && toIndex!=-1) {
             err = _("No 'from' before 'to'");
         }
 
-        if (fromIndex==-1 && toIndex==-1) {
+        if (err.length()==0 && fromIndex==-1 && toIndex==-1) {
             err = _("No 'from'..'to'.. after variable");
-        }
-
-        if (!fromLexem) {
-            err = _("No loop variable");
-        }
-        if (!fromLexem) {
-            err = _("No loop 'from' value");
-        }
-        if (!toLexem) {
-            err = _("No loop 'to' value");
         }
 
         if (err.length()) {
@@ -2599,12 +2602,78 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
         constant.front()->error = _("Constant value not typed");
         return QVariant::Invalid;
     }
+    std::stack <Lexem *> openBrackets;
+    std::stack <Lexem *> openSqBrackets;
+    std::stack <Lexem *> openBraces;
+
+    for (auto it = constant.cbegin(); it!=constant.cend(); ++it) {
+        Lexem * lx = *it;
+        if (lx->type==LxOperLeftBr) {
+            openBrackets.push(lx);
+        }
+        else if (lx->type==LxOperLeftSqBr) {
+            openSqBrackets.push(lx);
+        }
+        else if (lx->type==LxOperLeftBrace) {
+            openBraces.push(lx);
+        }
+        else if (lx->type==LxOperRightBr) {
+            if (openBrackets.size()==0) {
+                lx->error = _("Unpaired )");
+                return QVariant::Invalid;
+            }
+            else {
+                openBrackets.pop();
+            }
+        }
+        else if (lx->type==LxOperRightSqBr) {
+            if (openSqBrackets.size()==0) {
+                lx->error = _("Unpaired ]");
+                return QVariant::Invalid;
+            }
+            else {
+                openSqBrackets.pop();
+            }
+        }
+        else if (lx->type==LxOperRightBrace) {
+            if (openBraces.size()==0) {
+                lx->error = _("Unpaired }");
+                return QVariant::Invalid;
+            }
+            else {
+                openBraces.pop();
+            }
+        }
+    }
+    bool error = openBrackets.size()+openSqBrackets.size()+openBraces.size() > 0;
+    while (openBrackets.size()>0) {
+        Lexem * lx = openBrackets.top();
+        lx->error = _("Unpaired (");
+        openBrackets.pop();
+    }
+    while (openSqBrackets.size()>0) {
+        Lexem * lx = openSqBrackets.top();
+        lx->error = _("Unpaired [");
+        openSqBrackets.pop();
+    }
+    while (openBraces.size()>0) {
+        Lexem * lx = openBraces.top();
+        lx->error = _("Unpaired {");
+        openBraces.pop();
+    }
+    if (error)
+        return QVariant::Invalid;
     bool array = false;
     if (constant.front()->type==LxOperLeftBrace) {
         if (constant.back()->type==LxOperRightBrace)
             array = true;
         else {
-            constant.front()->error = _("Extra open brace");
+            for (auto it = constant.crbegin(); it!=constant.crend(); ++it) {
+                Lexem * lx = *it;
+                if (lx->type==LxOperRightBrace)
+                    break;
+                lx->error = _("Garbage after }");
+            }
             return QVariant::Invalid;
         }
     }
@@ -3271,6 +3340,16 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
             return 0;
         }
 
+        if (oper && oper->type==LxOperLeftBrace) {
+            oper->error = _("Extra {");
+            return 0;
+        }
+
+        if (oper && oper->type==LxOperRightBrace) {
+            oper->error = _("Extra }");
+            return 0;
+        }
+
         if (oper && oper->type==LxOperRightSqBr) {
             oper->error = _("Extra ]");
             return 0;
@@ -3569,13 +3648,13 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
         const SubexpressionElement & el = subexpression.at(i);
         if (el.o && (el.o->type==LxOperEqual || el.o->type==LxOperNotEqual) ) {
             bool isBooleanComparision =
-                    i>0 && subexpression[i-1].e && subexpression[i-1].e->baseType.kind == AST::TypeBoolean
+                    (i>0 && subexpression[i-1].e && subexpression[i-1].e->baseType.kind == AST::TypeBoolean)
 //                    ||
 //                    i>0 && hasBoolOpBefore(subexpression, i)
                     ||
-                    i<subexpression.size()-1 && subexpression[i+1].e && subexpression[i+1].e->baseType.kind == AST::TypeBoolean
+                    (i<subexpression.size()-1 && subexpression[i+1].e && subexpression[i+1].e->baseType.kind == AST::TypeBoolean)
                     ||
-                    i<subexpression.size()-1 && subexpression[i+1].o && subexpression[i+1].o->type==LxSecNot;
+                    (i<subexpression.size()-1 && subexpression[i+1].o && subexpression[i+1].o->type==LxSecNot);
             if (isBooleanComparision) {
                 if (el.o->type == LxOperEqual)
                     el.o->type = LxOperBoolEqual;

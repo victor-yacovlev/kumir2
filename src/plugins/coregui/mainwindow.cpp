@@ -535,7 +535,7 @@ void MainWindow::newProgram()
     QString suffix = ".kum";
     DocumentType type = Kumir;
     const QString initialText = m_plugin->mySettings()->value(Plugin::InitialTextKey, defaultText).toString();
-    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", initialText);
+    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", initialText, QDir::currentPath(), false);
     QWidget* vc = doc.widget;
     int id = doc.id;
     vc->setProperty("documentId", id);
@@ -564,7 +564,7 @@ void MainWindow::newPythonProgram()
     QString suffix = ".py";
     DocumentType type = Python;
     const QString initialText = m_plugin->mySettings()->value(Plugin::InitialTextKey, defaultText).toString();
-    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("Python3Language", initialText);
+    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("Python3Language", initialText, QDir::currentPath(), false);
     QWidget* vc = doc.widget;
     int id = doc.id;
     vc->setProperty("documentId", id);
@@ -594,7 +594,7 @@ void MainWindow::newPascalProgram()
     QString defaultText = QString::fromUtf8("program %1;\n\nbegin\n\nend.\n").arg(fileName.left(fileName.length()-4));
     DocumentType type = Pascal;
     const QString initialText = m_plugin->mySettings()->value(Plugin::InitialTextKey, defaultText).toString();
-    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("PascalAnalizer", initialText);
+    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("PascalAnalizer", initialText, QDir::currentPath(), false);
     QWidget* vc = doc.widget;
     int id = doc.id;
     vc->setProperty("documentId", id);
@@ -620,7 +620,7 @@ void MainWindow::newText()
 
 void MainWindow::newText(const QString &fileName, const QString & text)
 {
-    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("", text, true);
+    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("", text, QDir::currentPath(), true);
     QWidget * vc = doc.widget;
     int id = doc.id;
     vc->setProperty("documentId", id);
@@ -869,7 +869,7 @@ void MainWindow::restoreSession()
                     analizerName = "PascalAnalizer";
                     doctype = Pascal;
                 }
-                EditorComponent doc = m_plugin->plugin_editor->newDocument(analizerName, "");
+                EditorComponent doc = m_plugin->plugin_editor->newDocument(analizerName, QDir::currentPath(), "", false);
                 QByteArray editorSession = f.readAll();
                 QWidget * vc = doc.widget;
                 vc->setProperty("documentId", doc.id);
@@ -1132,7 +1132,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                     lines[i] = lines[i].mid(1);
                 }
             }
-            EditorComponent doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", lines.join("\n"));
+            EditorComponent doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", lines.join("\n"), QFileInfo(f).absoluteDir().dirName(), false);
             QWidget * vc = doc.widget;
             int id = doc.id;
             vc->setProperty("documentId", id);
@@ -1160,7 +1160,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             ts.setAutoDetectUnicode(true);
             QString data = ts.readAll();
             f.close();
-            EditorComponent doc = m_plugin->plugin_editor->newDocument("PascalAnalizer", data);
+            EditorComponent doc = m_plugin->plugin_editor->newDocument("PascalAnalizer", data, QFileInfo(f).absoluteDir().dirName(), false);
             QWidget* vc = doc.widget;
             int id = doc.id;
             vc->setProperty("documentId", id);
@@ -1187,7 +1187,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             ts.setAutoDetectUnicode(true);
             QString data = ts.readAll();
             f.close();
-            EditorComponent doc = m_plugin->plugin_editor->newDocument("", data);
+            EditorComponent doc = m_plugin->plugin_editor->newDocument("", data, "", false);
             QWidget* vc = doc.widget;
             int id = doc.id;
             vc->setProperty("documentId", id);

@@ -56,20 +56,21 @@ static void getVarListSizes(const QVariant & var, int sizes[3], int fromDim)
 
 static VM::AnyValue makeAnyValue(const QVariant & val, std::list<Bytecode::ValueType> vt)
 {
+    VM::AnyValue result;
     if (val==QVariant::Invalid)
-        return VM::AnyValue();
+        return result;
     switch (vt.front())
     {
     case Bytecode::VT_int:
-        return VM::AnyValue(val.toInt());
+        result = VM::AnyValue(val.toInt()); break;
     case Bytecode::VT_real:
-        return VM::AnyValue(val.toDouble());
+        result = VM::AnyValue(val.toDouble()); break;
     case Bytecode::VT_bool:
-        return VM::AnyValue(bool(val.toBool()));
+        result = VM::AnyValue(bool(val.toBool())); break;
     case Bytecode::VT_char:
-        return VM::AnyValue(Kumir::Char(val.toChar().unicode()));
+        result = VM::AnyValue(Kumir::Char(val.toChar().unicode())); break;
     case Bytecode::VT_string:
-        return VM::AnyValue(val.toString().toStdWString());
+        result = VM::AnyValue(val.toString().toStdWString()); break;
     case Bytecode::VT_record:
     {
         QVariantList valueFields = val.toList();
@@ -101,11 +102,13 @@ static VM::AnyValue makeAnyValue(const QVariant & val, std::list<Bytecode::Value
             }
             it++;
         }
-        return value;
+        result = value;
+        break;
     }
     default:
-        return VM::AnyValue();
+        break;
     }
+    return result;
 }
 
 static Bytecode::TableElem makeConstant(const ConstValue & val)
@@ -116,7 +119,8 @@ static Bytecode::TableElem makeConstant(const ConstValue & val)
     e.dimension = val.dimension;
     if (val.dimension==0) {
         VM::Variable var;
-        var.setValue(makeAnyValue(val.value, val.baseType));
+        VM::AnyValue vv = makeAnyValue(val.value, val.baseType);
+        var.setValue(vv);
         var.setBaseType(val.baseType.front());
         var.setDimension(val.dimension);
         var.setConstantFlag(true);
@@ -679,6 +683,19 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
         argHandle << err;
     }
 
+    if (alg->impl.headerRuntimeError.size()>0) {
+        Bytecode::Instruction l;
+        l.type = Bytecode::LINE;
+        l.arg = alg->impl.headerRuntimeErrorLine;
+        argHandle << l;
+        l.type = Bytecode::ERRORR;
+        l.scope = Bytecode::CONSTT;
+        l.arg = constantValue(Bytecode::VT_string, 0,
+                              ErrorMessages::message("KumirAnalizer", QLocale::Russian, alg->impl.headerRuntimeError)
+                              );
+        argHandle << l;
+    }
+
     if (alg->impl.endLexems.size()>0 && e_debugLevel==GeneratorInterface::LinesAndVariables) {
 
         Bytecode::Instruction clearmarg;
@@ -936,7 +953,7 @@ void Generator::findFunction(const AST::Algorhitm *alg, quint8 &module, quint16 
                 module = i;
                 id = j;
                 if (mod->header.type==AST::ModTypeCached ||
-                        mod->header.type==AST::ModTypeExternal && (mod->builtInID & 0xF0) == 0) {
+                        (mod->header.type==AST::ModTypeExternal && (mod->builtInID & 0xF0) == 0) ) {
                     QPair<quint8,quint16> ext(module, id);
                     if (!l_externs.contains(ext))
                         l_externs << ext;
@@ -1395,6 +1412,20 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
         showreg.type = Bytecode::SHOWREG;
         showreg.registerr = 0;
         result << showreg;
+
+
+        if (st->headerError.size()>0) {
+            Bytecode::Instruction garbage;
+            garbage.type = Bytecode::LINE;
+            garbage.arg = st->headerErrorLine;
+            result << garbage;
+            garbage.type = Bytecode::ERRORR;
+            garbage.scope = Bytecode::CONSTT;
+            garbage.arg = constantValue(Bytecode::VT_string, 0,
+                                        ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->headerError)
+                                        );
+            result << garbage;
+        }
 
         jzIP = result.size();
         Bytecode::Instruction jz;

@@ -775,6 +775,10 @@ public:
             error = WrongExpForm;
             return 0.0;
         }
+        if (sIntegral.length()+sFractional.length()==0) {
+            error = sExponenta.length()>0? WrongExpForm : WrongReal;
+            return 0.0;
+        }
         int fractionalLength = sFractional.length();
         for (int i=sFractional.length()-1; i>=0; i--) {
             Char ch = sFractional.at(i);
@@ -868,6 +872,21 @@ public:
             sprintfFormat.push_back('g');
         sprintf(buffer, Coder::encode(ASCII, sprintfFormat).c_str(), value);
         std::string result(reinterpret_cast<char*>(&buffer));
+
+        int epos = result.find('e');
+        if (epos!=std::string::npos) {
+            std::string beforeESignValue = result.substr(0,epos+2);
+            std::string afterESignValue  = result.substr(epos+2);
+            while (afterESignValue.length()>0 && afterESignValue.at(0)=='0') {
+                afterESignValue = afterESignValue.substr(1);
+            }
+            result = beforeESignValue;
+            int zeroesToAppend = 2-afterESignValue.length();
+            for (int i=0; i<zeroesToAppend; i++) {
+                result.push_back('0');
+            }
+            result += afterESignValue;
+        }
 
         if (width>0) {
             int leftSpaces = 0;
@@ -2296,15 +2315,9 @@ public:
     }
 
 
-    // Actual functions to be in use while input from stream
+    static Encoding LOCALE_ENCODING;
 
-#if !defined(LOCALE_ENCODING)
-#   if defined(WIN32) || defined(_WIN32)
-#       define LOCALE_ENCODING CP866
-#   else
-#       define LOCALE_ENCODING UTF8
-#   endif
-#endif
+    // Actual functions to be in use while input from stream
 
     static InputStream makeInputStream(FileType fileNo, bool fromStdIn) {
         if (fromStdIn) {
@@ -2504,6 +2517,11 @@ std::deque<FileType> Files::openedFiles;
 std::deque<FILE*> Files::openedFileHandles;
 FILE * Files::assignedIN = stdin;
 FILE * Files::assignedOUT = stdout;
+#if defined(WIN32) || defined(_WIN32)
+Encoding IO::LOCALE_ENCODING = CP866;
+#else
+Encoding IO::LOCALE_ENCODING = UTF8;
+#endif
 Encoding Files::fileEncoding;
 String Kumir::IO::inputDelimeters = Kumir::Core::fromAscii(" \n\t");
 #endif

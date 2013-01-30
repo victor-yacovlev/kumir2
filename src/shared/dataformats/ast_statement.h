@@ -130,6 +130,8 @@ struct ABSTRACTSYNTAXTREE_EXPORT Statement {
     /** Compile-time error */
     QString error;
 
+    QString headerError;
+    int headerErrorLine;
     QString beginBlockError;
     QString endBlockError;
 
