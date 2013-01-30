@@ -1132,7 +1132,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                     lines[i] = lines[i].mid(1);
                 }
             }
-            EditorComponent doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", lines.join("\n"), QFileInfo(f).absoluteDir().dirName(), false);
+            EditorComponent doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", lines.join("\n"), QFileInfo(f).absoluteDir().absolutePath(), false);
             QWidget * vc = doc.widget;
             int id = doc.id;
             vc->setProperty("documentId", id);
@@ -1160,7 +1160,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             ts.setAutoDetectUnicode(true);
             QString data = ts.readAll();
             f.close();
-            EditorComponent doc = m_plugin->plugin_editor->newDocument("PascalAnalizer", data, QFileInfo(f).absoluteDir().dirName(), false);
+            EditorComponent doc = m_plugin->plugin_editor->newDocument("PascalAnalizer", data, QFileInfo(f).absoluteDir().absolutePath(), false);
             QWidget* vc = doc.widget;
             int id = doc.id;
             vc->setProperty("documentId", id);
