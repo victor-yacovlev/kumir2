@@ -2041,14 +2041,17 @@ void KumirVM::do_store(uint8_t s, uint16_t id)
     String svalue;
     const int lineNo = stack_contexts.top().lineNo;
     Variable & variable = findVariable(s, id);
+    const int dim = variable.dimension();
     ValueType t = variable.baseType();
     Variable * reference = variable.reference();
     int bounds[7];
-    value.getBounds(bounds);
+    if (dim>0)
+        value.getBounds(bounds);
     if (value.isConstant())
         variable.setConstValue(value);
     else {
-        variable.setBounds(bounds);
+        if (dim>0)
+            variable.setBounds(bounds);
         variable.setValue(value.value());
         variable.setDimension(value.dimension());
     }
