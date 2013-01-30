@@ -9,7 +9,6 @@ set(SOURCES
     terminal_onesession.cpp
     terminal_plane.cpp
     tabbar.cpp
-    kumirvariableswebobject.cpp
     aboutdialog.cpp
 )
 
@@ -33,7 +32,6 @@ set(MOC_HEADERS
     terminal_onesession.h
     terminal_plane.h
     tabbar.h
-    kumirvariableswebobject.h
     aboutdialog.h
     tabwidgetelement.h
 )

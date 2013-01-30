@@ -1,7 +1,6 @@
 #include "plugin.h"
 #include "mainwindow.h"
 #include "extensionsystem/pluginmanager.h"
-#include "kumirvariableswebobject.h"
 #include "widgets/secondarywindow.h"
 #include "ui_mainwindow.h"
 #ifdef Q_OS_MACX
@@ -125,49 +124,8 @@ QString Plugin::initialize(const QStringList & parameters)
 
     m_kumirProgram = new KumirProgram(this);
     m_kumirProgram->setBytecodeGenerator(plugin_BytecodeGenerator);
-    m_kumirProgram->setNativeGenerator(plugin_NativeGenerator);
     m_kumirProgram->setEditorPlugin(plugin_editor);
     m_kumirProgram->setTerminal(m_terminal, 0);
-
-
-    QMap<QString,QObject*> variablesBrowserObjects;
-    variablesBrowserObjects["variablesObject"] = m_kumirProgram->variablesWebObject();
-    m_kumirProgram->variablesWebObject()->setBrowserPlugin(plugin_browser);
-
-    struct Shared::BrowserComponent variablesBrowser =
-            plugin_browser->createBrowser(
-                QUrl::fromLocalFile(
-                    QApplication::instance()->property("sharePath").toString()+
-                    "/coregui/variableswindow_kumir/index.html"
-                ),
-                variablesBrowserObjects);
-    connect(m_kumirProgram->variablesWebObject(), SIGNAL(jsRequest(QString,QVariantList)),
-            variablesBrowser.widget, SLOT(evaluateCommand(QString,QVariantList)));
-    variablesBrowser.widget->setMinimumWidth(430);
-
-    Widgets::SecondaryWindow * variablesWindow = new Widgets::SecondaryWindow(
-                variablesBrowser.widget,
-                0,
-                m_mainWindow,
-                mySettings(),
-                "Variables");
-
-    variablesWindow->setWindowTitle(tr("Variables"));
-
-
-
-    connect(m_kumirProgram->variablesWebObject(), SIGNAL(newWindowCreated(Shared::BrowserComponent)),
-            this, SLOT(handleNewVariablesWindow(Shared::BrowserComponent)));
-    connect(m_kumirProgram->variablesWebObject(), SIGNAL(windowCloseRequest(QWidget*)),
-            this, SLOT(handleCloseVariablesWindow(QWidget*)));
-    connect(m_kumirProgram->variablesWebObject(), SIGNAL(windowRaiseRequest(QWidget*)),
-            this, SLOT(handleRaiseVariablesWindow(QWidget*)));
-
-
-    connect(m_mainWindow->ui->actionVariables, SIGNAL(triggered()),
-            variablesWindow->toggleViewAction(), SLOT(trigger()));
-
-    l_secondaryWindows << variablesWindow;
 
 
     connect(m_kumirProgram, SIGNAL(giveMeAProgram()), this, SLOT(prepareKumirProgramToRun()), Qt::DirectConnection);
@@ -307,52 +265,6 @@ void Plugin::updateSettings()
     }
 }
 
-void Plugin::handleNewVariablesWindow(const Shared::BrowserComponent &browser)
-{
-    Widgets::SecondaryWindow * window = new Widgets::SecondaryWindow(
-                browser.widget,
-                0,
-                m_mainWindow,
-                mySettings(),
-                "Variables"+QString::number(l_variablesChildBrowsers.size()));
-    l_secondaryWindows << window;
-    connect(browser.widget, SIGNAL(titleChanged(QString)),
-            window, SLOT(setWindowTitle(QString)));
-    connect(m_kumirProgram->variablesWebObject(), SIGNAL(jsRequest(QString,QVariantList)),
-            browser.widget, SLOT(evaluateCommand(QString,QVariantList)));
-    window->setMinimumSize(300, 120);
-    window->resize(300, 180);
-    window->show();
-    l_variablesChildBrowsers << browser;
-    l_variablesChildWindows << window;
-}
-
-void Plugin::handleCloseVariablesWindow(QWidget *w)
-{
-    int index = -1;
-    for (int i=0; i<l_variablesChildBrowsers.size(); i++) {
-        if (l_variablesChildBrowsers[i].widget==w) {
-            index = i;
-            break;
-        }
-    }
-    l_variablesChildBrowsers[index].widget->deleteLater();
-    l_variablesChildWindows[index]->deleteLater();
-    l_variablesChildBrowsers.removeAt(index);
-    l_variablesChildWindows.removeAt(index);
-}
-
-void Plugin::handleRaiseVariablesWindow(QWidget *w)
-{
-    int index = -1;
-    for (int i=0; i<l_variablesChildBrowsers.size(); i++) {
-        if (l_variablesChildBrowsers[i].widget==w) {
-            index = i;
-            break;
-        }
-    }
-    l_variablesChildWindows[index]->show();
-}
 
 void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState state)
 {

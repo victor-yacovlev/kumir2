@@ -1,7 +1,6 @@
 #include "kumirprogram.h"
 #include "extensionsystem/pluginmanager.h"
 #include "interfaces/actorinterface.h"
-#include "kumirvariableswebobject.h"
 #include "dataformats/ast_algorhitm.h"
 
 namespace CoreGUI {
@@ -15,7 +14,6 @@ KumirProgram::KumirProgram(QObject *parent)
     , m_ast(0)
     , m_process(0)
     , m_terminal(0)
-    , plugin_nativeGenerator(0)
     , plugin_bytcodeGenerator(0)
     , plugin_bytecodeRun(0)
     , plugin_editor(0)
@@ -28,8 +26,6 @@ KumirProgram::KumirProgram(QObject *parent)
     , a_stepOut(0)
     , a_stop(0)
     , gr_actions(0)
-
-    , m_variablesWebObject(0)
     , w_mainWidget(0)
 {
     b_blind = false;
@@ -134,47 +130,20 @@ KumirProgram::KumirProgram(QObject *parent)
     gr_actions->addAction(s2);
     gr_actions->addAction(a_stop);
 
-    m_variablesWebObject = new KumirVariablesWebObject(this);
     i_timerId = startTimer(1000);
 }
 
 void KumirProgram::setAST(const AST::Data *ast)
 {
     m_ast = ast;
-    m_variablesWebObject->setProgram(m_ast);    
 }
 
-KumirVariablesWebObject * KumirProgram::variablesWebObject()
-{
-    return m_variablesWebObject;
-}
 
-void KumirProgram::setNativeGenerator(GeneratorInterface *cpp)
-{
-    plugin_nativeGenerator = cpp;
-    if (cpp) {
-        m_process = new QProcess(this);
-        connect(m_process, SIGNAL(finished(int,QProcess::ExitStatus)),
-                this, SLOT(handleProcessFinished(int,QProcess::ExitStatus)));
-        connect(m_process, SIGNAL(error(QProcess::ProcessError)),
-                this, SLOT(handleProcessError(QProcess::ProcessError)));
-
-
-
-
-    }
-    else {
-        a_fastRun->deleteLater();
-        a_fastRun = 0;
-    }
-}
 
 void KumirProgram::handleMarginTextRequest(int lineNo, const QString &text)
 {
     if (lineNo!=-1 && !text.isEmpty())
         plugin_editor->appendMarginText(i_documentId, lineNo, text);
-    if (e_state==StepRun)
-        m_variablesWebObject->refreshRoot();
 }
 
 void KumirProgram::handleMarginClearRequest(int fromLine, int toLine)
@@ -356,7 +325,6 @@ void KumirProgram::regularRun()
         prepareKumirRunner(Shared::GeneratorInterface::LinesAndVariables);
     }
     e_state = RegularRun;
-    m_variablesWebObject->reset(plugin_bytecodeRun);
     PluginManager::instance()->switchGlobalState(GS_Running);
     plugin_bytecodeRun->runContinuous();
 }
@@ -377,7 +345,6 @@ void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel deb
         }
     }
     const QString exeFileName = s_sourceFileName.mid(0, s_sourceFileName.length()-4)+".kum";
-    m_variablesWebObject->setProgram(m_ast);
     m_terminal->start(exeFileName);
 }
 
@@ -389,7 +356,6 @@ void KumirProgram::stepRun()
     if (e_state==Idle) {
         emit giveMeAProgram();
         prepareKumirRunner(Shared::GeneratorInterface::LinesAndVariables);
-        m_variablesWebObject->reset(plugin_bytecodeRun);
     }
     e_state = StepRun;
     a_stepRun->setIcon(QIcon::fromTheme("debug-step-over",  QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));
@@ -459,7 +425,6 @@ void KumirProgram::handleRunnerStopped(int rr)
 //        a_stepOut->setEnabled(plugin_bytecodeRun->canStepOut());
     }
     else if (reason==Shared::RunInterface::SR_UserTerminated) {
-        m_variablesWebObject->refreshRoot();
         s_endStatus = tr("Evaluation terminated");
         m_terminal->finish();
         PluginManager::instance()->switchGlobalState(GS_Observe);
@@ -470,7 +435,6 @@ void KumirProgram::handleRunnerStopped(int rr)
     }
     else if (reason==Shared::RunInterface::SR_Error) {
         s_endStatus = tr("Evaluation error");
-        m_variablesWebObject->refreshRoot();
         m_terminal->error(plugin_bytecodeRun->error());
         plugin_editor->highlightLineRed(i_documentId, plugin_bytecodeRun->currentLineNo());
         PluginManager::instance()->switchGlobalState(GS_Observe);
@@ -480,7 +444,6 @@ void KumirProgram::handleRunnerStopped(int rr)
     else if (reason==Shared::RunInterface::SR_Done) {
         s_endStatus = tr("Evaluation finished");
         m_terminal->finish();
-        m_variablesWebObject->refreshRoot();
         PluginManager::instance()->switchGlobalState(GS_Observe);
         e_state = Idle;
         m_terminal->clearFocus();
@@ -548,15 +511,6 @@ void KumirProgram::switchGlobalState(GlobalState prev, GlobalState cur)
         a_stepOut->setEnabled(true);
         a_stop->setEnabled(true);
     }
-
-    if (prev==GS_Unlocked && cur==GS_Running) {
-        m_variablesWebObject->reset(plugin_bytecodeRun);
-    }
-    if (cur==GS_Unlocked) {
-        m_variablesWebObject->reset(0);
-    }
-
-
 }
 
 
@@ -596,9 +550,6 @@ void KumirProgram::handleActorResetRequest(const QString & actorName)
 
 void KumirProgram::timerEvent(QTimerEvent *e)
 {
-    if (e_state==RegularRun && !b_blind) {
-        m_variablesWebObject->refreshRoot();
-    }
     e->accept();
 }
 

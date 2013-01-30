@@ -25,7 +25,6 @@ class KumirProgram : public QObject
     Q_OBJECT
 public:
     explicit KumirProgram(QObject *parent = 0);
-    void setNativeGenerator(GeneratorInterface * cpp);
     inline void setBytecodeGenerator(GeneratorInterface * bc) { plugin_bytcodeGenerator = bc; }
     inline void setEditorPlugin(EditorInterface * ed) { plugin_editor = ed; }
     void setAST(const AST::Data * ast);
@@ -40,7 +39,6 @@ public:
     void addActor(KPlugin * a, QWidget * w);
     inline QString endStatus() const { return s_endStatus; }
     ~KumirProgram();
-    class KumirVariablesWebObject * variablesWebObject();
 signals:
     void giveMeAProgram();
     void activateDocumentTab(int documentId);
@@ -74,7 +72,6 @@ private:
     QProcess * m_process;
     Term * m_terminal;
     QDockWidget * m_terminalWindow;
-    GeneratorInterface * plugin_nativeGenerator;
     GeneratorInterface * plugin_bytcodeGenerator;
     RunInterface * plugin_bytecodeRun;
     EditorInterface * plugin_editor;
@@ -92,7 +89,6 @@ private:
     QMap<QString,ActorInterface*> m_actors;
     int i_documentId;
     bool b_blind;
-    class KumirVariablesWebObject * m_variablesWebObject;
     int i_timerId;
     QWidget * w_mainWidget;
     bool b_processUserTerminated;

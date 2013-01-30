@@ -41,9 +41,6 @@ public:
     static QString DockSideKey;
 protected slots:
     void prepareKumirProgramToRun();
-    void handleNewVariablesWindow(const Shared::BrowserComponent & browser);
-    void handleCloseVariablesWindow(QWidget * w);
-    void handleRaiseVariablesWindow(QWidget * w);
 
 protected:
     QString initialize(const QStringList &arguments);
@@ -63,9 +60,7 @@ protected:
     BrowserInterface * plugin_browser;
     QList<ActorInterface*> l_plugin_actors;
     BrowserComponent m_startPage;
-    QList<Shared::BrowserComponent> l_variablesChildBrowsers;
     QList<Widgets::SecondaryWindow*> l_secondaryWindows;
-    QList<QWidget*> l_variablesChildWindows;
     Term * m_terminal;
     QMap<QString,QObject*> m_browserObjects;
     KumirProgram * m_kumirProgram;
