@@ -416,7 +416,10 @@ public:
     }
     inline static real lg(real x) {
         if (x>0.0) {
-            return ::log(x)/::log(10.0);
+            real num = ::log(x);
+            real den = ::log((real)10.0);
+            real result = num / den;
+            return result;
         }
         else {
             Core::abort(Core::fromUtf8("Логарифм от не положительного числа"));
@@ -903,6 +906,10 @@ public:
                 result.insert(0, leftSpaces, ' ');
             if (rightSpaces>0)
                 result.append(rightSpaces, ' ');
+        }
+        for (size_t i=0; i<result.length(); i++) {
+            if (result[i]==',')
+                result[i] = '.';
         }
         if (!expform) {
             int chopPos;
