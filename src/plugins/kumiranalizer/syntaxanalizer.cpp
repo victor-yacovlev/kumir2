@@ -1203,6 +1203,7 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
             stepLexem->error = _("Step-value is empty");
         }
         QString name;
+        AST::Algorhitm * dummyAlg = 0;
         for (int i=0; i<forr.size(); i++) {
             if (i>0) name += " "; name += forr[i]->data;
         }
@@ -1211,6 +1212,10 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
         }
         else if (findGlobalVariable(name, st.mod, st.statement->loop.forVariable)) {
 
+        }
+        else if (findAlgorhitm(name, st.mod, dummyAlg)) {
+            foreach (Lexem *l, forr) l->error = _("Algorithm can't be a loop variable");
+            return;
         }
         else if (forr.size()==1 && forr[0]->type & LxTypeConstant) {
             foreach (Lexem *l, forr) l->error = _("Constant for-loop variable");
