@@ -29,14 +29,11 @@ typedef std::map<uint32_t, ExternReference> ExternsMap;
 // module_id|alg_id -> instructions
 typedef std::map<uint32_t, Bytecode::TableElem> FunctionMap;
 
-// module_id|global_id
-typedef std::pair<uint8_t,uint16_t> GlobalsIndex;
-
 // module_id|global_id -> global variable
-typedef std::map<GlobalsIndex, Variable > GlobalsMap;
+typedef std::vector< std::vector< Variable > > GlobalsMap;
 
 // constant_id -> constant value
-typedef std::map<uint16_t,Variable> ConstantsMap;
+typedef std::vector<Variable> ConstantsMap;
 
 typedef std::vector<Variable> VariantArray;
 

@@ -192,6 +192,9 @@ private /*fields*/:
     Stack<Variable> stack_values;
     Stack<Context> stack_contexts;
     Kumir::String s_programDirectory;
+    std::vector<Variable> * currentConstants;
+    std::vector<Variable> * currentGlobals;
+    std::vector<Variable> * currentLocals;
 public /*constructors*/:
     inline KumirVM();
 private /*methods*/:
@@ -208,6 +211,7 @@ private /*methods*/:
     inline static Record toRecordValue(const Kumir::FileType & ft);
     inline static Kumir::FileType fromRecordValue(const Record & record);
 
+    inline Variable & findVariable(uint8_t scope, uint16_t id);
 
 private /*instruction methods*/:
     inline void do_call(uint8_t, uint16_t);
@@ -260,6 +264,19 @@ private /*instruction methods*/:
 
 /**** IMPLEMENTATION ******/
 
+Variable & KumirVM::findVariable(uint8_t scope, uint16_t id)
+{
+    if (VariableScope(scope)==Bytecode::CONSTT) {
+        return currentConstants->at(id);
+    }
+    else if (VariableScope(scope)==Bytecode::LOCAL) {
+        return currentLocals->at(id);
+    }
+    else {
+        return currentGlobals->at(id);
+    }
+}
+
 void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const String & filename)
 {
     if (isMain) {
@@ -271,13 +288,30 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
     moduleContexts.push_back(ModuleContext());
     moduleContexts.back().filename = filename;
     int currentModuleContext = moduleContexts.size()-1;
+    moduleContexts.back().globals.clear();
+    moduleContexts.back().constants.clear();
+    moduleContexts.back().globals.reserve(16);
+    for (int i=0; i<moduleContexts.back().globals.size(); i++) {
+        moduleContexts.back().globals.at(i).clear();
+        moduleContexts.back().globals.at(i).reserve(256);
+    }
+    moduleContexts.back().constants.reserve(256);
     LocalsMap locals;
     for (int i=0; i<program.d.size(); i++) {
         const TableElem e = program.d[i];
         if (e.type==EL_GLOBAL) {
-            moduleContexts[currentModuleContext].globals[std::pair<uint8_t,uint16_t>(e.module,e.id)] = fromTableElem(e);
+            if (moduleContexts[currentModuleContext].globals.size()<=e.module) {
+                moduleContexts[currentModuleContext].globals.resize(e.module+1);
+                moduleContexts[currentModuleContext].globals[e.module].reserve(256);
+            }
+            if (moduleContexts[currentModuleContext].globals[e.module].size() <= e.id) {
+                moduleContexts[currentModuleContext].globals[e.module].resize(e.id+1);
+            }
+            moduleContexts[currentModuleContext].globals[e.module][e.id] = fromTableElem(e);
         }
         else if (e.type==EL_CONST) {
+            if (moduleContexts[currentModuleContext].constants.size()<=e.id)
+                moduleContexts[currentModuleContext].constants.resize(e.id+1);
             moduleContexts[currentModuleContext].constants[e.id] = fromTableElem(e);
 
         }
@@ -436,6 +470,9 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
         const VariantArray & arr = (*it).second;
         moduleContexts[currentModuleContext].cleanLocalTables[key] = arr;
     }
+    currentLocals = 0;
+    currentGlobals = 0;
+    currentConstants = 0;
 }
 
 KumirVM::KumirVM() {
@@ -469,6 +506,9 @@ void KumirVM::reset()
     stack_contexts.reset();
     mainProgram.instructions.clear();
     testingProgram.instructions.clear();
+    currentLocals = 0;
+    currentGlobals = 0;
+    currentConstants = 0;
 
     // Find testing and main algorithms
     for (FunctionMap::iterator it=moduleContexts.front().functions.begin();
@@ -532,9 +572,16 @@ void KumirVM::reset()
     }
     c.IP = 0;
 
+    currentGlobals = &(moduleContexts[0].globals.back());
+    currentConstants = &(moduleContexts[0].constants);
+
     // Push startup context to stack (if non empty)
-    if (c.program)
+    if (c.program) {
         stack_contexts.push(c);
+        currentLocals = &(stack_contexts.top().locals);
+        currentGlobals = &(moduleContexts[0].globals[c.moduleId]);
+    }
+
 
     // Each kumir module have 'initialization' section,
     // so push all these sections (if any) into stack
@@ -558,6 +605,8 @@ void KumirVM::reset()
                 initContext.IP = -1;
                 initContext.moduleContextNo = moduleContextNo;
                 stack_contexts.push(initContext);
+                currentConstants = &(moduleContexts[moduleContextNo].constants);
+                currentGlobals = &(moduleContexts[moduleContextNo].globals[e.module]);
             }
         }
     }
@@ -770,6 +819,9 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
             stack_contexts.push(c);
             b_nextCallInto = false;
             stack_values.pop(); // current implementation doesn't requere args count
+            currentLocals = &(stack_contexts.top().locals);
+            currentGlobals = &(moduleContexts[c.moduleContextNo].globals[c.moduleId]);
+            currentConstants = &(moduleContexts[c.moduleContextNo].constants);
             if (m_dontTouchMe)
                 m_dontTouchMe->unlock();
         }
@@ -1886,15 +1938,7 @@ void KumirVM::do_specialcall(uint16_t alg)
 void KumirVM::do_init(uint8_t s, uint16_t id)
 {
     if (m_dontTouchMe) m_dontTouchMe->lock();
-    if (VariableScope(s)==LOCAL) {
-        stack_contexts.top().locals[id].init();
-    }
-    else if (VariableScope(s)==GLOBAL) {
-        moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].init();
-    }
-    else {
-        s_error = Kumir::Core::fromAscii("Internal error");
-    }
+    findVariable(s,id).init();
     nextIP();
     if (m_dontTouchMe) m_dontTouchMe->unlock();
 }
@@ -1902,31 +1946,18 @@ void KumirVM::do_init(uint8_t s, uint16_t id)
 void KumirVM::do_setarr(uint8_t s, uint16_t id)
 {
     if (m_dontTouchMe) m_dontTouchMe->lock();
-    int dim = 0;
-    int bounds[7];
-    if (VariableScope(s)==LOCAL) {
-        dim = stack_contexts.top().locals[id].dimension();
-    }
-    else if (VariableScope(s)==GLOBAL) {
-        dim = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension();
-    }
-    else {
-        s_error = Kumir::Core::fromAscii("Internal error");
-    }
+    Variable & var = findVariable(s, id);
+    const int dim = var.dimension();
+    int bounds[7];    
     if (dim>0) {
         String name;
         bounds[6] = dim*2;
         for (int i=0; i<dim*2; i++) {
             bounds[i] = stack_values.pop().toInt();
         }
-        if (VariableScope(s)==LOCAL) {
-            stack_contexts.top().locals[id].setBounds(bounds);
-            name = stack_contexts.top().locals[id].name();
-        }
-        else if (VariableScope(s)==GLOBAL) {
-            moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setBounds(bounds);
-            name = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].name();
-        }
+        var.setBounds(bounds);
+        if (!b_blindMode)
+            name = var.name();
         s_error = Kumir::Core::getError();
         const int lineNo = stack_contexts.top().lineNo;
         if (lineNo!=-1 &&
@@ -1955,17 +1986,9 @@ void KumirVM::do_setarr(uint8_t s, uint16_t id)
 void KumirVM::do_updarr(uint8_t s, uint16_t id)
 {
     if (m_dontTouchMe) m_dontTouchMe->lock();
-    int dim = 0;
+    Variable & var = findVariable(s, id);
+    const int dim = var.dimension();
     int bounds[7];
-    if (VariableScope(s)==LOCAL) {
-        dim = stack_contexts.top().locals[id].dimension();
-    }
-    else if (VariableScope(s)==GLOBAL) {
-        dim = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension();
-    }
-    else {
-        s_error = Kumir::Core::fromAscii("Internal error");
-    }
     if (dim>0) {
         String name;
         int effectiveBounds[7];
@@ -1973,16 +1996,10 @@ void KumirVM::do_updarr(uint8_t s, uint16_t id)
         for (int i=0; i<dim*2; i++) {
             bounds[i] = stack_values.pop().toInt();
         }
-        if (VariableScope(s)==LOCAL) {
-            stack_contexts.top().locals[id].updateBounds(bounds);
-            name = stack_contexts.top().locals[id].myName();
-            stack_contexts.top().locals[id].getEffectiveBounds(effectiveBounds);
-        }
-        else if (VariableScope(s)==GLOBAL) {
-            moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].updateBounds(bounds);
-            name = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].myName();
-            moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].getEffectiveBounds(effectiveBounds);
-        }
+        var.updateBounds(bounds);
+        var.getEffectiveBounds(effectiveBounds);
+        if (!b_blindMode)
+            name = var.myName();
         s_error = Kumir::Core::getError();
         const int lineNo = stack_contexts.top().lineNo;
         if (lineNo!=-1 &&
@@ -1991,7 +2008,6 @@ void KumirVM::do_updarr(uint8_t s, uint16_t id)
                 )
         {
             String boundsText;
-
             for (int i=0; i<dim; i++) {
                 boundsText += Kumir::Converter::sprintfInt(bounds[i*2],10,0,0);
                 boundsText.push_back(Char(':'));
@@ -2012,55 +2028,30 @@ void KumirVM::do_updarr(uint8_t s, uint16_t id)
 void KumirVM::do_store(uint8_t s, uint16_t id)
 {
     if (m_dontTouchMe) m_dontTouchMe->lock();
-    const Variable & val = stack_values.top();
+    const Variable & value = stack_values.top();
     String name;
     String svalue;
     const int lineNo = stack_contexts.top().lineNo;
-    ValueType t = VT_void;
-    Variable * reference = 0;
+    Variable & variable = findVariable(s, id);
+    ValueType t = variable.baseType();
+    Variable * reference = variable.reference();
     int bounds[7];
-    val.getBounds(bounds);
-    if (VariableScope(s)==LOCAL) {
-        if (stack_contexts.top().locals[id].isReference())
-            reference = stack_contexts.top().locals[id].reference();
-        if (val.isConstant()) {
-            stack_contexts.top().locals[id].setConstValue(val);
-        }
-        else {
-            stack_contexts.top().locals[id].setBounds(bounds);
-            stack_contexts.top().locals[id].setValue(val.value());
-            stack_contexts.top().locals[id].setDimension(val.dimension());
-        }
-        if (lineNo!=-1 && !b_blindMode) {
-            name = stack_contexts.top().locals[id].myName();
-            svalue = stack_contexts.top().locals[id].toString();
-        }
-        t = stack_contexts.top().locals[id].baseType();
-    }
-    else if (VariableScope(s)==GLOBAL) {
-//        if (globals[GlobalsIndex(stack_contexts.top().moduleId,id)].isReference())
-        reference = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].reference();
-        if (val.isConstant()) {
-            moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setConstValue(val);
-        }
-        else {
-            moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setDimension(val.dimension());
-            moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setBounds(bounds);
-            moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setValue(val.value());
-        }
-        if (lineNo!=-1 && !b_blindMode) {
-            name = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].myName();
-            svalue = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toString();
-        }
-        t = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType();
-    }
+    value.getBounds(bounds);
+    if (value.isConstant())
+        variable.setConstValue(value);
     else {
-        s_error = Kumir::Core::fromAscii("Internal error");
+        variable.setBounds(bounds);
+        variable.setValue(value.value());
+        variable.setDimension(value.dimension());
+    }
+    if (lineNo!=-1 && !b_blindMode) {
+        name = variable.myName();
+        svalue = variable.toString();
     }
     if (lineNo!=-1 &&
             !b_blindMode &&
             stack_contexts.top().type != EL_BELOWMAIN &&
-            val.dimension()==0
+            value.dimension()==0
             )
     {
         if (t==VT_string) {
@@ -2096,36 +2087,24 @@ void KumirVM::do_load(uint8_t s, uint16_t id)
 {
     if (m_dontTouchMe) m_dontTouchMe->lock();
     Variable val;
+    Variable & variable = findVariable(s, id);
     int bounds[7];
-    if (VariableScope(s)==LOCAL) {
-        val.setBaseType(stack_contexts.top().locals[id].baseType());
-        stack_contexts.top().locals[id].getBounds(bounds);
-        val.setDimension(stack_contexts.top().locals[id].dimension());
-        val.setBounds(bounds);
-        val.setValue(stack_contexts.top().locals[id].value());
-    }
-    else if (VariableScope(s)==GLOBAL) {
-        val.setBaseType(moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType());
-        moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].getBounds(bounds);
-        val.setDimension(moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension());
-        val.setBounds(bounds);
-        val.setValue(moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].value());
-    }
-    else if (VariableScope(s)==CONSTT) {
-        val.setBaseType(moduleContexts[stack_contexts.top().moduleContextNo].constants[id].baseType());
-        val.setDimension(moduleContexts[stack_contexts.top().moduleContextNo].constants[id].dimension());
-        moduleContexts[stack_contexts.top().moduleContextNo].constants[id].getBounds(bounds);
-        val.setBounds(bounds);
+    val.setBaseType(variable.baseType());
+    variable.getBounds(bounds);
+    val.setDimension(variable.dimension());
+    val.setBounds(bounds);
+    if (VariableScope(s)==CONSTT) {
         bool wasError = Kumir::Core::getError().length()>0;
-        AnyValue v = moduleContexts[stack_contexts.top().moduleContextNo].constants[id].value();
+        AnyValue v = variable.value();
         if (!wasError)
             Variable::unsetError();
         val.setValue(v);
         val.setConstantFlag(true);
     }
     else {
-        s_error = Kumir::Core::fromAscii("Internal error");
+        val.setValue(variable.value());
     }
+
     bool isRetVal = VariableScope(s)==LOCAL
             && stack_contexts.top().locals[id].algorhitmName()==stack_contexts.top().locals[id].name();
     if (isRetVal && stack_contexts.top().type==Bytecode::EL_MAIN)
@@ -2145,21 +2124,14 @@ void KumirVM::do_load(uint8_t s, uint16_t id)
 void KumirVM::do_storearr(uint8_t s, uint16_t id)
 {
     if (m_dontTouchMe) m_dontTouchMe->lock();
-    int dim = 0;
     String name;
     String svalue;
     const int lineNo = stack_contexts.top().lineNo;
     String sindeces;
-    if (VariableScope(s)==LOCAL) {
-        dim = stack_contexts.top().locals[id].dimension();
-        name = stack_contexts.top().locals[id].name();
-    }
-    else if (VariableScope(s)==GLOBAL) {
-        dim = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension();
-        name = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].name();
-    }
-    else {
-        s_error = Kumir::Core::fromAscii("Internal error");
+    Variable & variable = findVariable(s, id);
+    const int dim = variable.dimension();
+    if (!b_blindMode) {
+        name = variable.name();
     }
     if (dim>0) {
         int indeces[4];
@@ -2170,21 +2142,12 @@ void KumirVM::do_storearr(uint8_t s, uint16_t id)
                 sindeces.push_back(',');
             sindeces += Kumir::Converter::sprintfInt(indeces[i], 10, 0, 0);
         }
-        const Variable & val = stack_values.top();
+        const Variable & value = stack_values.top();
         ValueType t = VT_void;
-        svalue = val.toString();
-        if (VariableScope(s)==LOCAL) {
-            stack_contexts.top().locals[id].setValue(indeces, val.value());
-            t = stack_contexts.top().locals[id].baseType();
-            if (lineNo!=-1 && !b_blindMode)
-                svalue = stack_contexts.top().locals[id].toString(indeces);
-        }
-        else if (VariableScope(s)==GLOBAL) {
-            moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setValue(indeces, val.value());
-            t = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType();
-            if (lineNo!=-1 && !b_blindMode)
-                svalue = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toString(indeces);
-        }
+        if (!b_blindMode)
+            svalue = value.toString();
+        variable.setValue(indeces, value.value());
+        t = variable.baseType();
         if (t==VT_string)
             if (lineNo!=-1 && !b_blindMode) {
                 svalue.insert(0, 1, Char('"'));
@@ -2216,23 +2179,9 @@ void KumirVM::do_storearr(uint8_t s, uint16_t id)
 void KumirVM::do_loadarr(uint8_t s, uint16_t id)
 {
     if (m_dontTouchMe) m_dontTouchMe->lock();
-    int dim = 0;
-    ValueType vt = VT_void;
-    if (VariableScope(s)==LOCAL) {
-        dim = stack_contexts.top().locals[id].dimension();
-        vt = stack_contexts.top().locals[id].baseType();
-    }
-    else if (VariableScope(s)==GLOBAL) {
-        dim = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension();
-        vt = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType();
-    }
-    else if (VariableScope(s)==CONSTT) {
-        dim = moduleContexts[stack_contexts.top().moduleContextNo].constants[id].dimension();
-        vt = moduleContexts[stack_contexts.top().moduleContextNo].constants[id].baseType();
-    }
-    else {
-        s_error = Kumir::Core::fromAscii("Internal error");
-    }
+    Variable & variable = findVariable(s, id);
+    const int dim = variable.dimension();
+    const ValueType vt = variable.baseType();
 
     if (dim>0 || vt==VT_string) {
         int indeces[4];
@@ -2242,18 +2191,8 @@ void KumirVM::do_loadarr(uint8_t s, uint16_t id)
         }
         Variable val;
         AnyValue vv;
-        if (VariableScope(s)==LOCAL) {
-            val.setBaseType(stack_contexts.top().locals[id].baseType());
-            vv = stack_contexts.top().locals[id].value(indeces);
-        }
-        else if (VariableScope(s)==GLOBAL) {
-            val.setBaseType(moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].baseType());
-            vv = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].value(indeces);
-        }
-        else if (VariableScope(s)==CONSTT) {
-            val.setBaseType(moduleContexts[stack_contexts.top().moduleContextNo].constants[id].baseType());
-            vv = moduleContexts[stack_contexts.top().moduleContextNo].constants[id].value(indeces);
-        }
+        val.setBaseType(vt);
+        vv = variable.value(indeces);
         if (vv.isValid()) {
             val.setValue(vv);
             stack_values.push(val);
@@ -2276,19 +2215,8 @@ void KumirVM::do_loadarr(uint8_t s, uint16_t id)
 void KumirVM::do_ref(uint8_t s, uint16_t id)
 {
     if (m_dontTouchMe) m_dontTouchMe->lock();
-    Variable ref;
-    if (VariableScope(s)==LOCAL) {
-        ref = stack_contexts.top().locals[id].toReference();
-    }
-    else if (VariableScope(s)==GLOBAL) {
-        ref = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toReference();
-    }
-    else if (VariableScope(s)==CONSTT) {
-        ref = moduleContexts[stack_contexts.top().moduleContextNo].constants[id].toReference();
-    }
-    else {
-        s_error = Kumir::Core::fromAscii("Internal error");
-    }
+    Variable & variable = findVariable(s, id);
+    Variable ref = variable.toReference();
     if (ref.isReference()) {
         stack_values.push(ref);
     }
@@ -2306,16 +2234,9 @@ void KumirVM::do_setref(uint8_t s, uint16_t id)
     if (!ref.isReference()) {
         s_error = Kumir::Core::fromAscii("Internal error");
     }
-    else if (VariableScope(s)==LOCAL) {
-        name = stack_contexts.top().locals[id].name();
-        stack_contexts.top().locals[id].setReference(ref.reference(), bounds);
-    }
-    else if (VariableScope(s)==GLOBAL) {
-        name = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].name();
-        moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].setReference(ref.reference(), bounds);
-    }
     else {
-        s_error = Kumir::Core::fromAscii("Internal error");
+        Variable & variable = findVariable(s, id);
+        variable.setReference(ref.reference(), bounds);
     }
     const int lineNo = stack_contexts.top().lineNo;
     if (lineNo!=-1 &&
@@ -2342,35 +2263,15 @@ void KumirVM::do_setref(uint8_t s, uint16_t id)
 void KumirVM::do_refarr(uint8_t s, uint16_t id)
 {
     if (m_dontTouchMe) m_dontTouchMe->lock();
-    int dim = 0;
-    if (VariableScope(s)==LOCAL) {
-        dim = stack_contexts.top().locals[id].dimension();
-    }
-    else if (VariableScope(s)==GLOBAL) {
-        dim = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].dimension();
-    }
-    else if (VariableScope(s)==CONSTT) {
-        dim = moduleContexts[stack_contexts.top().moduleContextNo].constants[id].dimension();
-    }
-    else {
-        s_error = Kumir::Core::fromAscii("Internal error");
-    }
+    Variable & variable = findVariable(s, id);
+    const int dim = variable.dimension();
     if (dim>0) {
         int indeces[4];
         indeces[3] = dim;
         for (int i=0; i<dim; i++) {
             indeces[i] = stack_values.pop().toInt();
         }
-        Variable ref;
-        if (VariableScope(s)==LOCAL) {
-            ref = stack_contexts.top().locals[id].toReference(indeces);
-        }
-        else if (VariableScope(s)==GLOBAL) {
-            ref = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toReference(indeces);
-        }
-        else if (VariableScope(s)==CONSTT) {
-            s_error = Kumir::Core::fromAscii("Internal error");
-        }
+        Variable ref = variable.toReference(indeces);
         stack_values.push(ref);
     }
     if (m_dontTouchMe) m_dontTouchMe->unlock();
@@ -2421,21 +2322,6 @@ void KumirVM::do_push(uint8_t r)
     else
         v = stack_contexts.top().registers[r];
     stack_values.push(Variable(v));
-    //if (v.type()==VT_int) {
-        //stack_values.push(Variable(v.toInt()));
-    //}
-    //else if (v.type()==VT_real) {
-        //stack_values.push(Variable(v.toReal()));
-    //}
-    //else if (v.type()==VT_bool) {
-        //stack_values.push(Variable(v.toBool()));
-    //}
-    //else if (v.type()==VT_char) {
-        //stack_values.push(Variable(v.toChar()));
-    //}
-    //else if (v.type()==VT_string) {
-        //stack_values.push(Variable(v.toString()));
-    //}
     nextIP();
 }
 
@@ -2517,19 +2403,16 @@ void KumirVM::do_ret()
             nextIP();
         }
     }
+    if (stack_contexts.size()>0) {
+        currentLocals = &(stack_contexts.top().locals);
+        currentGlobals = &(moduleContexts[stack_contexts.top().moduleContextNo].globals[stack_contexts.top().moduleId]);
+        currentConstants = &(moduleContexts[stack_contexts.top().moduleContextNo].constants);
+    }
 }
 
 void KumirVM::do_error(uint8_t s, uint16_t id)
 {
-    if (VariableScope(s)==LOCAL) {
-        s_error = stack_contexts.top().locals[id].toString();
-    }
-    else if (VariableScope(s)==GLOBAL) {
-        s_error = moduleContexts[stack_contexts.top().moduleContextNo].globals[GlobalsIndex(stack_contexts.top().moduleId,id)].toString();
-    }
-    else if (VariableScope(s)==CONSTT) {
-        s_error = moduleContexts[stack_contexts.top().moduleContextNo].constants[id].toString();
-    }
+    s_error = findVariable(s,id).toString();
 }
 
 void KumirVM::do_line(uint16_t no)
@@ -3017,32 +2900,7 @@ AnyValue KumirVM::value(int moduleId, int algorhitmId, int variableId) const
 {
     if (m_dontTouchMe) m_dontTouchMe->lock();
     AnyValue result;
-    if (algorhitmId==-1 && moduleId!=-1 && variableId!=-1) {
-        GlobalsIndex index;
-        index.first = moduleId;
-        index.second = variableId;
-        if (moduleContexts[stack_contexts.top().moduleContextNo].globals.count(index)) {
-            GlobalsMap::const_iterator it = moduleContexts[stack_contexts.top().moduleContextNo].globals.find(index);
-            const Variable & var = it->second;
-            if (var.hasValue())
-                result = var.value();
-        }
-    }
-    else if (algorhitmId!=-1 && moduleId!=-1 && variableId!=-1) {
-        int context = contextByIds(moduleId, algorhitmId);
-
-        if (context>-1 &&
-                variableId < stack_contexts.at(context).locals.size() &&
-                stack_contexts.at(context).locals[variableId].hasValue()
-                ) {
-            result = stack_contexts.at(context).locals[variableId].value();
-        }
-        else if (context==-2 &&
-                 variableId < last_context.locals.size() &&
-                 last_context.locals[variableId].hasValue()) {
-            result = last_context.locals[variableId].value();
-        }
-    }
+    // TODO implement me
     if (m_dontTouchMe) m_dontTouchMe->unlock();
     return result;
 }
@@ -3051,41 +2909,7 @@ std::list<int> KumirVM::bounds(int moduleId, int algorhitmId, int variableId) co
 {
     if (m_dontTouchMe) m_dontTouchMe->lock();
     std::list<int> result;
-    if (algorhitmId==-1 && moduleId!=-1 && variableId!=-1) {
-        GlobalsIndex index;
-        index.first = moduleId;
-        index.second = variableId;
-        if (moduleContexts[stack_contexts.top().moduleContextNo].globals.count(index)) {
-            GlobalsMap::const_iterator it = moduleContexts[stack_contexts.top().moduleContextNo].globals.find(index);
-            const Variable & var = it->second;
-            int bs[7];
-            var.getBounds(bs);
-            for (int j=0; j<bs[6]; j++)
-                result.push_back(bs[j]);
-        }
-    }
-    else if (algorhitmId!=-1 && moduleId!=-1 && variableId!=-1) {
-        int context = contextByIds(moduleId, algorhitmId);
-        if (context>-1) {
-            if (variableId<stack_contexts.at(context).locals.size()) {
-                int bs[7];
-                const Variable & var = stack_contexts.at(context).locals[variableId];
-                var.getBounds(bs);
-                for (int j=0; j<bs[6]; j++)
-                    result.push_back(bs[j]);
-            }
-        }
-        else if (context==-2) {
-            if (variableId<last_context.locals.size()) {
-                int bs[7];
-                const Variable & var = last_context.locals[variableId];
-                var.getBounds(bs);
-                for (int j=0; j<bs[6]; j++)
-                    result.push_back(bs[j]);
-            }
-        }
-
-    }
+    // TODO implement me
     if (m_dontTouchMe) m_dontTouchMe->unlock();
     return result;
 }
@@ -3102,12 +2926,7 @@ ReferenceInfo KumirVM::reference(int moduleId, int algorhitmId, int variableId) 
 std::list<AnyValue> KumirVM::remainingValues() const
 {
     std::list<AnyValue> result;
-    for (int i=0; i<stack_values.size(); i++) {
-        if (stack_values.at(i).hasValue())
-            result.push_back(stack_values.at(i).value());
-        else
-            result.push_back(AnyValue());
-    }
+    // TODO implement me
     return result;
 }
 

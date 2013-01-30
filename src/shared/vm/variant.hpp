@@ -382,8 +382,25 @@ public:
     inline Char toChar() const { return value().toChar(); }
     inline String toString() const;
     inline String toString(int indeces[4]) const;
-    inline const Record toRecord() const { return value().toRecord(); }
-    inline Record & toRecord() { return value().toRecord(); }
+    inline const Record toRecord() const {
+        if (m_reference) {
+            const Record result = m_reference->toRecord();
+            return result;
+        }
+        else {
+            return m_value.toRecord();
+        }
+    }
+    inline Record & toRecord() {
+        if (m_reference) {
+            Record & result = m_reference->toRecord();
+            return result;
+        }
+        else {
+            Record & result = m_value.toRecord();
+            return result;
+        }
+    }
 
     inline Variable toReference();
     inline static Variable toConstReference(const AnyValue & value);
