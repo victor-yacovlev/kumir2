@@ -850,7 +850,7 @@ bool Run::makeOutput(
     }
     QString data = QString::fromStdWString(os.getBuffer());
     emit output(data);
-    msleep(10);
+//    msleep(10);
     return true;
 }
 
