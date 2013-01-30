@@ -305,7 +305,11 @@ public:
 //        m_value = other.m_value;
 //    }
 
-    inline bool isValid() const { return e_baseType!=VT_void; }
+    inline bool isValid() const {
+        return m_reference
+                ? m_reference->isValid()
+                : m_value.type()!=VT_void;
+    }
 
     inline bool isConstant() const { return m_reference? m_reference->isConstant() : b_constant; }
     inline void setConstantFlag(bool value) { b_constant = value; }

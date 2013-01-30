@@ -845,6 +845,9 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
             c.algId = moduleContexts[reference.moduleContext].functions[key].algId;
             c.moduleContextNo = reference.moduleContext;
             stack_contexts.push(c);
+            currentLocals = &(stack_contexts.top().locals);
+            currentGlobals = &(moduleContexts[c.moduleContextNo].globals[c.moduleId]);
+            currentConstants = &(moduleContexts[reference.moduleContext].constants);
             b_nextCallInto = false;
             stack_values.pop(); // current implementation doesn't requere args count
             if (m_dontTouchMe)
@@ -1912,34 +1915,8 @@ void KumirVM::do_specialcall(uint16_t alg)
         int localId = argsCount; // Already removed from stack
         Variable ref = stack_contexts.top().locals[localId].toReference();
         if (m_dontTouchMe) m_dontTouchMe->unlock();
-        if (m_externalHandler && m_externalHandler->makeOutputArgument(ref)) {
-            // pass
-        }
-        else {
-            if (m_dontTouchMe) m_dontTouchMe->lock();
-//            Kumir::IO::writeString(String(), Kumir::Core::fromUtf8("Значение ")+ref.name()+Kumir::Core::fromAscii(": "));
-//            if (ref.baseType()==VT_int) {
-//                int val = Kumir::IO::readInteger(String());
-//                ref.setValue(AnyValue(val));
-//            }
-//            else if (ref.baseType()==VT_int) {
-//                real val = Kumir::IO::readReal(String());
-//                ref.setValue(AnyValue(val));
-//            }
-//            else if (ref.baseType()==VT_bool) {
-//                bool val = Kumir::IO::readBool(String());
-//                ref.setValue(AnyValue(val));
-//            }
-//            else if (ref.baseType()==VT_char) {
-//                Char val = Kumir::IO::readChar(String());
-//                ref.setValue(AnyValue(val));
-//            }
-//            else if (ref.baseType()==VT_int) {
-//                const String & val = Kumir::IO::readString(String());
-//                ref.setValue(AnyValue(val));
-//            }
-            if (m_dontTouchMe) m_dontTouchMe->unlock();
-        }
+        if (m_externalHandler && ref.isValid())
+            m_externalHandler->makeOutputArgument(ref);
     }
 }
 
