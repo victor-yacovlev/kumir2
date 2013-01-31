@@ -281,6 +281,8 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
 {
     if (isMain) {
         moduleContexts.clear();
+        mainProgram.type = EL_NONE;
+        mainProgram.instructions.clear();
 //#ifndef NO_EXTERNS
 //        externalMethods.clear();
 //#endif
