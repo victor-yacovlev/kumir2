@@ -1930,7 +1930,11 @@ void PDAutomataPrivate::setExtraOpenKeywordError(const QString &kw)
             // Append dummy 'else' block
             if (currentContext.size()>1
                     && currentContext[currentContext.size()-2]->size()>0
-                    && currentContext[currentContext.size()-2]->last()->type==AST::StSwitchCaseElse
+                    && (
+                        currentContext[currentContext.size()-2]->last()->type==AST::StSwitchCaseElse
+                        ||
+                        currentContext[currentContext.size()-2]->last()->type==AST::StIfThenElse
+                       )
                     )
             {
                 appendLine = false;
