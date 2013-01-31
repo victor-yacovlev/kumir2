@@ -17,7 +17,6 @@ KumirProgram::KumirProgram(QObject *parent)
     , plugin_bytcodeGenerator(0)
     , plugin_bytecodeRun(0)
     , plugin_editor(0)
-    , a_fastRun(0)
     , a_blindRun(0)
     , a_regularRun(0)
     , a_testingRun(0)
@@ -95,16 +94,6 @@ KumirProgram::KumirProgram(QObject *parent)
     QAction * s2 = new QAction(this);
     s2->setSeparator(true);
 
-    a_fastRun = new QAction(tr("Fast run"), this);
-    a_fastRun->setIcon(QIcon::fromTheme("system-run", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/system-run.png")));
-    connect(a_fastRun, SIGNAL(triggered()), this, SLOT(fastRun()));
-#ifndef Q_OS_MAC
-    a_fastRun->setShortcut(QKeySequence("Ctrl+Shift+F9"));
-
-#else
-    a_fastRun->setShortcut(QKeySequence("Ctrl+Shift+R"));
-#endif
-    a_fastRun->setToolTip(a_fastRun->text()+" <b>"+a_fastRun->shortcut().toString()+"</b>");
 
     a_blindRun = new QAction(tr("Blind run"), this);
     a_blindRun->setIcon(QIcon::fromTheme("media-seek-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-seek-forward.png")));
@@ -119,7 +108,6 @@ KumirProgram::KumirProgram(QObject *parent)
 
 
     gr_actions = new QActionGroup(this);
-    gr_actions->addAction(a_fastRun);
     gr_actions->addAction(a_blindRun);
     gr_actions->addAction(a_regularRun);
     gr_actions->addAction(a_testingRun);
@@ -474,8 +462,7 @@ void KumirProgram::handleLineChanged(int lineNo)
 void KumirProgram::switchGlobalState(GlobalState prev, GlobalState cur)
 {
     if (cur==GS_Unlocked || cur==GS_Observe) {
-        if (a_fastRun)
-            a_fastRun->setEnabled(true);
+
         a_blindRun->setEnabled(true);
         a_regularRun->setEnabled(true);
         a_testingRun->setEnabled(true);
@@ -488,8 +475,7 @@ void KumirProgram::switchGlobalState(GlobalState prev, GlobalState cur)
 
     }
     if (cur==GS_Running || cur==GS_Input) {
-        if (a_fastRun)
-            a_fastRun->setEnabled(false);
+
         a_blindRun->setEnabled(false);
         a_regularRun->setEnabled(false);
         a_testingRun->setEnabled(false);
@@ -499,8 +485,7 @@ void KumirProgram::switchGlobalState(GlobalState prev, GlobalState cur)
         a_stop->setEnabled(true);
     }
     if (cur==GS_Pause) {
-        if (a_fastRun)
-            a_fastRun->setEnabled(false);
+
         a_blindRun->setEnabled(true);
         a_regularRun->setEnabled(true);
         a_stepRun->setEnabled(true);

@@ -75,7 +75,6 @@ private:
     GeneratorInterface * plugin_bytcodeGenerator;
     RunInterface * plugin_bytecodeRun;
     EditorInterface * plugin_editor;
-    QAction * a_fastRun;
     QAction * a_blindRun;
     QAction * a_regularRun;
     QAction * a_testingRun;
