@@ -394,6 +394,7 @@ void SyntaxAnalizer::buildTables(bool isInternalBuild)
                         errStatement->type = AST::StError;
                         errStatement->error = error;
                         errStatement->lexems = d->statements[j].data;
+                        errStatement->skipErrorEvaluation = false;
                         mod->impl.initializerBody.prepend(errStatement);
                     }
                 }
