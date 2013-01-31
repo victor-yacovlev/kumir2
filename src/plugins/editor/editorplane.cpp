@@ -600,7 +600,7 @@ void EditorPlane::paintEvent(QPaintEvent *e)
 
     paintDropPosition(&p);
     p.setBrush(Qt::NoBrush);
-    const QBrush br = hasFocus()? palette().brush(QPalette::Highlight) : palette().brush(QPalette::Window);
+    const QBrush br = hasFocus()? palette().brush(QPalette::Highlight) : palette().brush(QPalette::Dark);
     p.setPen(QPen(br,1));
     p.drawRect(0,0,width()-1,height()-1);
     if (b_teacherMode && b_hasAnalizer) {

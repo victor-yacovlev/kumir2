@@ -133,7 +133,7 @@ void RemoveCommand::redo()
             }
         }
     }
-    if (cursorRow<doc->linesCount()) {
+    if (cursorRow<=doc->linesCount()) {
         QString curLineText = doc->textAt(cursorRow);
         int indent = doc->indentAt(cursor->row()) * 2;
         int textPos = cursor->column()-indent;
