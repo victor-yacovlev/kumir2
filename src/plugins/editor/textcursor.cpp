@@ -599,8 +599,22 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             if (m==MM_Move) {
                 if (i_row>=m_document->linesCount())
                     i_column = 0;
-                else
-                    i_column = m_document->indentAt(i_row) * 2;
+                else {
+                    int indent = m_document->indentAt(i_row) * 2;
+                    const QString textLine = m_document->textAt(i_row);
+                    int nonSpacePos = 0;
+                    for (; nonSpacePos<textLine.length(); nonSpacePos++) {
+                        if (!textLine[nonSpacePos].isSpace())
+                            break;
+                    }
+                    if (nonSpacePos==textLine.length())
+                        nonSpacePos = 0;
+                    int beforeTextPos = indent + nonSpacePos;
+                    if (i_column!=beforeTextPos)
+                        i_column = beforeTextPos;
+                    else
+                        i_column = indent;
+                }
             }
             else if (m==MM_Select) {
                 if (i_row<m_document->linesCount()) {
@@ -619,10 +633,21 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
         }
         else if (op==QTextCursor::EndOfBlock) {
             if (m==MM_Move) {
-                if (i_row>=m_document->linesCount()) {}
-                else
-                    i_column = m_document->indentAt(i_row) * 2 +
-                            m_document->textAt(i_row).length();
+                if (i_row>=m_document->linesCount()) { i_column = 0; }
+                else {
+                    const QString textLine = m_document->textAt(i_row);
+                    int indent = m_document->indentAt(i_row) * 2;
+                    int nonSpacePos = textLine.length();
+                    for (int i=textLine.length()-1; i>=0; i--) {
+                        if (textLine[i].isSpace())
+                            nonSpacePos--;
+                        else
+                            break;
+                    }
+                    i_column = indent + nonSpacePos;
+//                    i_column = m_document->indentAt(i_row) * 2 +
+//                            m_document->textAt(i_row).length();
+                }
             }
             else if (m==MM_Select) {
                 if (i_row<m_document->linesCount()) {
