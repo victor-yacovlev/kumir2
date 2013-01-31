@@ -12,6 +12,7 @@ Statement::Statement()
     loop.type = LoopWhile;
     loop.forVariable = NULL;
     loop.toValue = loop.fromValue = loop.whileCondition = loop.timesValue = loop.endCondition = loop.stepValue = 0;
+    skipErrorEvaluation = false;
 }
 
 Statement::~Statement()

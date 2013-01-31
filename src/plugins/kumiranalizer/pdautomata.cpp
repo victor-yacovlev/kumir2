@@ -1855,6 +1855,7 @@ void PDAutomataPrivate::setCorrespondingIfBroken()
 
 void PDAutomataPrivate::setExtraOpenKeywordError(const QString &kw)
 {
+    bool appendLine = true;
     if (kw==QString::fromUtf8("если")) {
         setCurrentIndentRank(0,0);
         setCurrentError(_("Extra 'if'"));
@@ -1922,17 +1923,39 @@ void PDAutomataPrivate::setExtraOpenKeywordError(const QString &kw)
         if (elseFoundForward || elseFoundBackward) {
             err = _("Extra 'else'");
         }
-
+        else {
+            // Append dummy 'else' block
+            if (currentContext.size()>1
+                    && currentContext[currentContext.size()-2]->size()>0
+                    && currentContext[currentContext.size()-2]->last()->type==AST::StSwitchCaseElse
+                    )
+            {
+                appendLine = false;
+                AST::ConditionSpec cond;
+                cond.lexems = source[currentPosition]->data;
+                cond.condition = 0;
+                AST::Statement * errStatement = new AST::Statement();
+                errStatement->type = AST::StError;
+                errStatement->skipErrorEvaluation = false;
+                errStatement->error = err;
+                errStatement->lexems = source[currentPosition]->data;
+                cond.body.append(errStatement);
+                currentContext[currentContext.size()-2]->last()->conditionals.push_back(cond);
+                source.at(currentPosition)->statement = errStatement;
+            }
+        }
         setCurrentError(err);
     }
     else if (kw==QString::fromUtf8("исп")) {
         setCurrentIndentRank(0,0);
         setCurrentError(_("Extra 'module'"));
     }
-    appendSimpleLine();
     source.at(currentPosition)->alg = currentAlgorhitm;
     source.at(currentPosition)->mod = currentModule;
-    source.at(currentPosition)->statement = currentContext.top()->last();
+    if (appendLine) {
+        appendSimpleLine();
+        source.at(currentPosition)->statement = currentContext.top()->last();
+    }
 }
 
 void PDAutomataPrivate::setExtraCloseKeywordError(const QString &kw)
