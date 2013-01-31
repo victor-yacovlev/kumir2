@@ -2076,11 +2076,14 @@ void KumirVM::do_load(uint8_t s, uint16_t id)
     if (m_dontTouchMe) m_dontTouchMe->lock();
     Variable val;
     Variable & variable = findVariable(s, id);
+    const int dim = variable.dimension();
     int bounds[7];
     val.setBaseType(variable.baseType());
-    variable.getBounds(bounds);
     val.setDimension(variable.dimension());
-    val.setBounds(bounds);
+    if (dim>0) {
+        variable.getBounds(bounds);
+        val.setBounds(bounds);
+    }
     if (VariableScope(s)==CONSTT) {
         bool wasError = Kumir::Core::getError().length()>0;
         AnyValue v = variable.value();
