@@ -16,7 +16,7 @@ struct BrowserComponent {
 class BrowserInterface
 {
 public:
-    virtual BrowserComponent createBrowser(const QUrl & url, const QMap<QString, QObject*> manageableObjects) = 0;
+    virtual BrowserComponent createBrowser(const QUrl & url, const QMap<QString, QObject*> manageableObjects, bool enableKeyboardNavigation = false) = 0;
 };
 
 }

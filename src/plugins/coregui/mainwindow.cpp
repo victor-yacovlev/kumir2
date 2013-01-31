@@ -456,6 +456,8 @@ void MainWindow::handleTabTitleChange(const QString &title)
 void MainWindow::closeCurrentTab()
 {
     closeTab(ui->tabWidget->currentIndex());
+    if (ui->tabWidget->currentWidget())
+        ui->tabWidget->currentWidget()->setFocus();
 }
 
 bool MainWindow::closeTab(int index)

@@ -17,7 +17,7 @@ class Plugin
 public:
     Plugin();
     ~Plugin();
-    Shared::BrowserComponent createBrowser(const QUrl &url, const QMap<QString, QObject *> manageableObjects);
+    Shared::BrowserComponent createBrowser(const QUrl &url, const QMap<QString, QObject *> manageableObjects, bool enableKeyboardNavigation = false);
     inline QNetworkAccessManager * networkAccessManager() { return m_networkAccessManager; }
 protected:
     QString initialize(const QStringList &);

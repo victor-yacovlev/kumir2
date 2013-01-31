@@ -214,7 +214,7 @@ QString Plugin::initialize(const QStringList & parameters)
     if (!parameters.contains("nostartpage", Qt::CaseInsensitive)) {
         const QString browserEntryPoint = QApplication::instance()->property("sharePath").toString()+"/coregui/startpage/russian/index.html";
         m_browserObjects["mainWindow"] = m_mainWindow;
-        m_startPage = plugin_browser->createBrowser(QUrl::fromLocalFile(browserEntryPoint), m_browserObjects);
+        m_startPage = plugin_browser->createBrowser(QUrl::fromLocalFile(browserEntryPoint), m_browserObjects, true);
         m_startPage.widget->setProperty("uncloseable", true);
     }
     if (parameters.contains("notabs", Qt::CaseInsensitive)) {
