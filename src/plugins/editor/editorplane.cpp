@@ -777,6 +777,9 @@ bool EditorPlane::event(QEvent *e)
             return true;
         }
     }
+    else if (e->type()==QEvent::FocusOut) {
+        Utils::temporaryLayoutSwitch = false;
+    }
     return QWidget::event(e);
 }
 
