@@ -33,6 +33,9 @@ public:
     void setHiddenText(int documentId, const QString &text, int baseLine);
     void setHiddenTextBaseLine(int documentId, int baseLine);
     void changeSourceText(int documentId, const QList<Shared::ChangeTextTransaction> & changes);
+
+    QList<Shared::Suggestion> suggestAutoComplete(int documentId, int lineNo, const QString & before, const QString & after) const;
+
     std::string rawSourceData(int documentId) const;
     Shared::LineProp lineProp(int documentId, const QString & text) const;
     QList<Shared::Error> errors(int documentId) const;

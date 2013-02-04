@@ -57,6 +57,44 @@ struct SyntaxAnalizerPrivate
     void parseIfCase(int str);
     void parseLoopBegin(int str);
 
+    QList<Shared::Suggestion> suggestAssignmentAutoComplete(
+            const Statement *statementBefore,
+            const QList<Lexem *> lexemsAfter,
+            const AST::Module *contextModule,
+            const AST::Algorhitm *contextAlgorithm) const;
+
+    QList<Shared::Suggestion> suggestExpressionAutoComplete(
+            const QList<Lexem*> lexemsBefore,
+            const QList<Lexem*> lexemsAfter,
+            const AST::Module *contextModule,
+            const AST::Algorhitm *contextAlgorithm,
+            bool typeIsKnown,
+            AST::Type baseType,
+            unsigned int dimension,
+            AST::VariableAccessType accessType,
+            AST::ExpressionType expressionKind
+            ) const;
+
+    QList<Shared::Suggestion> suggestValueAutoComplete(
+            const QList<Lexem*> lexemsBefore,
+            const QList<Lexem*> lexemsAfter,
+            const AST::Module *contextModule,
+            const AST::Algorhitm *contextAlgorithm,
+            AST::Type baseType,
+            unsigned int minimumDimension,
+            AST::VariableAccessType accessType
+            ) const;
+
+    QList<Shared::Suggestion> suggestOperandAutoComplete(
+            const QList<Lexem*> lexemsBefore,
+            const QList<Lexem*> lexemsAfter,
+            const AST::Module * contextModule,
+            const AST::Algorhitm * contextAlgorithm,
+            const AST::Expression * leftExpression,
+            const LexemType operatorr,
+            const AST::Type & targetBaseType
+            ) const;
+
     bool tryInputOperatorAlgorithm(
             const QString & lexem,
             AST::Type & type,
@@ -69,24 +107,24 @@ struct SyntaxAnalizerPrivate
     AST::Expression * makeCustomBinaryOperation(const QString & operatorName
                             , AST::Expression * leftExpression
                             , AST::Expression * rightExpression
-                            );
+                            ) const;
     AST::Expression * makeCustomUnaryOperation(const QString & operatorName
-                                               , AST::Expression * argument);
+                                               , AST::Expression * argument) const;
     bool findAlgorhitm(const QString &name
                        , const AST::Module*  module
-                       , AST::Algorhitm* & algorhitm);
-    bool findGlobalVariable(const QString &name, const AST::Module *module, AST::Variable* & var);
+                       , AST::Algorhitm* & algorhitm) const;
+    bool findGlobalVariable(const QString &name, const AST::Module *module, AST::Variable* & var) const;
     bool findLocalVariable(const QString &name
                            , const AST::Algorhitm * alg
-                           , AST::Variable* & var);
+                           , AST::Variable* & var) const;
     AST::Expression * parseExpression(QList<Lexem*> lexems
                                       , const AST::Module * mod
-                                      , const AST::Algorhitm * alg);
+                                      , const AST::Algorhitm * alg) const;
     bool findVariable(const QString &name
                       , const AST::Module * module
                       , const AST::Algorhitm * algorhitm
-                      , AST::Variable* & var);
-    bool findUserType(const QString & name, AST::Type &type, AST::Module * module);
+                      , AST::Variable* & var) const;
+    bool findUserType(const QString & name, AST::Type &type, AST::Module * module) const;
     QList<AST::Variable*> parseVariables(int statementIndex, VariablesGroup & group,
                                          AST::Module * mod,
                                          AST::Algorhitm * alg, bool algHeader);
@@ -96,12 +134,12 @@ struct SyntaxAnalizerPrivate
                            ) const;
     AST::VariableBaseType testConst(const std::list<Lexem *> & lxs, int &err) const;
     QVariant createConstValue(const QString &str, const AST::VariableBaseType type) const;
-    AST::Expression * parseFunctionCall(const QList<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg);
+    AST::Expression * parseFunctionCall(const QList<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg) const;
 
-    AST::Expression * parseSimpleName(const std::list<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg);
-    void updateSliceDSCall(AST::Expression * expr, AST::Variable * var);
-    AST::Expression * parseElementAccess(const QList<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg);
-    AST::Expression * makeExpressionTree(const QList<SubexpressionElement> & s);
+    AST::Expression * parseSimpleName(const std::list<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg) const;
+    void updateSliceDSCall(AST::Expression * expr, AST::Variable * var) const;
+    AST::Expression * parseElementAccess(const QList<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg) const;
+    AST::Expression * makeExpressionTree(const QList<SubexpressionElement> & s) const;
     template <typename List1, typename List2>
     inline static void splitLexemsByOperator(
             const List1 &s
@@ -232,6 +270,476 @@ AST::Type typeFromSignature(QString s) {
             result.userTypeFields.append(field);
         }
     }
+    return result;
+}
+
+QList<Shared::Suggestion> SyntaxAnalizerPrivate::suggestAssignmentAutoComplete(
+        const Statement *statementBefore,
+        const QList<Lexem *> lexemsAfter,
+        const AST::Module *contextModule,
+        const AST::Algorhitm *contextAlgorithm) const
+{
+    QList<Shared::Suggestion> result;
+    QList<Lexem*> lvalue, rvalue;
+    Lexem * assignOperator = nullptr;
+    for ( auto it = statementBefore->data.begin(); it!=statementBefore->data.end(); ++it ) {
+        Lexem * lx = *it;
+        if (lx->type==LxPriAssign) {
+            assignOperator = lx;
+        }
+        else if (assignOperator!=nullptr) {
+            rvalue.push_back(lx);
+        }
+        else {
+            lvalue.push_back(lx);
+        }
+    }
+    AST::Expression * leftExpr = nullptr;
+    if (assignOperator!=nullptr) {
+        // Make a tree for a left value and deduce it's type
+        leftExpr = parseExpression(lvalue, contextModule, contextAlgorithm);
+        if (leftExpr) {
+            // Make suggestion only if left if correct
+            result = suggestExpressionAutoComplete(
+                        /* lexemsBefore     = */ rvalue,
+                        /* lexemsAfter      = */ lexemsAfter,
+                        /* contextModule    = */ contextModule,
+                        /* contextAlgorithm = */ contextAlgorithm,
+                        /* typeIsKnown      = */ true,
+                        /* baseType         = */ leftExpr->baseType,
+                        /* dimension        = */ leftExpr->dimension,
+                        /* accessType       = */ leftExpr->variable->accessType,
+                        /* expressionKind   = */ AST::ExprSubexpression
+                        );
+            delete leftExpr;
+        }
+    }
+    return result;
+}
+
+#define IS_OPERATOR(x) (x & LxTypeOperator || x==LxOperGreaterOrEqual || x==LxSecOr || x==LxSecAnd || x==LxPriAssign/* || x==LxSecNot */)
+
+QList<Shared::Suggestion> SyntaxAnalizerPrivate::suggestExpressionAutoComplete(
+        const QList<Lexem*> lexemsBefore,
+        const QList<Lexem*> lexemsAfter,
+        const AST::Module *contextModule,
+        const AST::Algorhitm *contextAlgorithm,
+        bool typeIsKnown,
+        AST::Type baseType,
+        unsigned int dimension,
+        AST::VariableAccessType accessType,
+        AST::ExpressionType expressionKind
+        ) const
+{
+    QList<Shared::Suggestion> result;
+
+    Lexem * prevOper = nullptr;
+
+    QList<Lexem*> prevBlock;
+    int prevPos = lexemsBefore.size()-1;
+
+    while (prevPos>=0) {
+        if (IS_OPERATOR(lexemsBefore[prevPos]->type)) {
+            prevOper = lexemsBefore[prevPos];
+            break;
+        }
+        prevBlock.push_front(lexemsBefore[prevPos]);
+        prevPos -= 1;
+    }
+
+    if (prevOper
+            && (prevOper->type==LxOperComa
+                || prevOper->type==LxOperColon
+                || prevOper->type==LxOperLeftBr
+                || prevOper->type==LxOperLeftSqBr)
+            )
+    {
+        // An array index or algorithm argument.
+        // Find unpaired [ or ( before to have more information
+        int comasBefore = 0;
+        int unpairedBracketPos = -1;
+        int sqBrDeep = 0;
+        int brDeep = 0;
+        for (int i=prevPos; i>=0; i--) {
+            Lexem * lx = lexemsBefore[i];
+            if (lx->type==LxOperComa && sqBrDeep==0 && brDeep==0)
+                comasBefore += 1;
+            else if (lx->type==LxOperRightBr)
+                brDeep += 1;
+            else if (lx->type==LxOperRightSqBr)
+                sqBrDeep += 1;
+            else if (lx->type==LxOperLeftBr && brDeep>0)
+                brDeep -= 1;
+            else if (lx->type==LxOperLeftSqBr && sqBrDeep>0)
+                sqBrDeep -= 1;
+            else if (lx->type==LxOperLeftBr && brDeep==0) {
+                unpairedBracketPos = i;
+                break;
+            }
+            else if (lx->type==LxOperLeftSqBr && sqBrDeep==0) {
+                unpairedBracketPos = i;
+                break;
+            }
+        }
+        if (unpairedBracketPos!=-1) {
+            if (lexemsBefore[unpairedBracketPos]->type==LxOperLeftSqBr) {
+                // Suggest an integer value as of array index
+                result = suggestValueAutoComplete(
+                            /* lexemsBefore    = */ prevBlock,
+                            /* lexemsAfter     = */ lexemsAfter,
+                            /* contextModule   = */ contextModule,
+                            /* contextAlgorithm= */ contextAlgorithm,
+                            /* baseType        = */ AST::Type(AST::TypeInteger),
+                            /* minimumDimension= */ 0,
+                            /* accessType      = */ AST::AccessArgumentIn
+                            );
+            }
+            else if (lexemsBefore[unpairedBracketPos]->type==LxOperLeftBr) {
+                // Find an algorithm to rely on it's argument type
+                QString algorithmName;
+                for (int i=unpairedBracketPos-1; i>=0; i--) {
+                    Lexem * lx = lexemsBefore[i];
+                    if (IS_OPERATOR(lx->type) && lx->type!=LxSecNot)
+                        break;
+                    if (lx->type!=LxSecNot) {
+                        algorithmName.prepend(lx->data+" ");
+                    }
+                }
+                algorithmName = algorithmName.simplified();
+                AST::Algorhitm * alg = nullptr;
+                if (findAlgorhitm(algorithmName, contextModule, alg)) {
+                    int argumentIndex = comasBefore;
+                    if (argumentIndex<alg->header.arguments.size()) {
+                        // Suggest a corresponding argument type value
+                        AST::Variable * argument = alg->header.arguments[argumentIndex];
+                        result = suggestValueAutoComplete(
+                                    /* lexemsBefore    = */ prevBlock,
+                                    /* lexemsAfter     = */ lexemsAfter,
+                                    /* contextModule   = */ contextModule,
+                                    /* contextAlgorithm= */ contextAlgorithm,
+                                    /* baseType        = */ argument->baseType,
+                                    /* minimumDimension= */ argument->dimension,
+                                    /* accessType      = */ argument->accessType
+                                    );
+                    }
+                }
+            }
+        }
+    } // end if { coma, left bracket, colon }
+    else if (prevOper && (
+                 prevOper->type==LxOperAsterisk
+                 || prevOper->type==LxOperPower
+                 || prevOper->type==LxOperPlus
+                 || prevOper->type==LxOperMinus
+                 || prevOper->type==LxOperEqual
+                 || prevOper->type==LxOperNotEqual
+                 || prevOper->type==LxOperLess
+                 || prevOper->type==LxOperLessOrEqual
+                 || prevOper->type==LxOperGreater
+                 || prevOper->type==LxOperGreaterOrEqual
+                 || prevOper->type==LxSecAnd
+                 || prevOper->type==LxSecOr
+                 || prevOper->type==LxSecNot
+                 )
+             )
+    {
+        // Sugest a correct type operand to match operator
+        QList<Lexem*> previousSubExpressionLexems;
+        if (prevPos>0)
+            previousSubExpressionLexems = lexemsBefore.mid(0, prevPos);
+        AST::Expression * previousSubExpression = nullptr;
+        if (previousSubExpressionLexems.size()>0)
+            previousSubExpression = parseExpression(
+                        /* lexems = */ previousSubExpressionLexems,
+                        /* mod    = */ contextModule,
+                        /* alg    = */ contextAlgorithm
+                        );
+        if (previousSubExpression || previousSubExpressionLexems.size()==0) {
+            result = suggestOperandAutoComplete(
+                        /* lexemsBefore    = */ prevBlock,
+                        /* lexemsAfter     = */ lexemsAfter,
+                        /* contextModule   = */ contextModule,
+                        /* contextAlgorithm= */ contextAlgorithm,
+                        /* leftExpression  = */ previousSubExpression,
+                        /* operatorr       = */ prevOper->type,
+                        /* targetBaseType  = */ typeIsKnown? baseType : AST::TypeNone
+                        );
+        }
+        if (previousSubExpression)
+            delete previousSubExpression;
+    } // end if (expression operator)
+    else if (prevPos<0) {
+        // Make a suggestion from clear space.
+        // Suggest everything capable
+        result = suggestValueAutoComplete(
+                    /* lexemsBefore    = */ prevBlock,
+                    /* lexemsAfter     = */ lexemsAfter,
+                    /* contextModule   = */ contextModule,
+                    /* contextAlgorithm= */ contextAlgorithm,
+                    /* baseType        = */ typeIsKnown ? baseType : AST::TypeNone,
+                    /* minimumDimension= */ typeIsKnown ? dimension : 0,
+                    /* accessType      = */ typeIsKnown ? AST::AccessArgumentIn : AST::AccessArgumentOut
+                    );
+    }
+    return result;
+}
+
+static bool isSuggestionValueApplicable(
+        const AST::Variable * var,
+        AST::Type baseType,
+        unsigned int minimumDimension,
+        AST::VariableAccessType accessType
+        )
+{
+    bool typeMatch = var->baseType==baseType;
+    if (accessType==AST::AccessArgumentIn || accessType==AST::AccessRegular) {
+        // It is possible to cast int->real and char->string
+        if (baseType.kind==AST::TypeReal && var->baseType.kind==AST::TypeInteger)
+            typeMatch = true;
+        if (baseType.kind==AST::TypeString && var->baseType.kind==AST::TypeString)
+            typeMatch = true;
+    }
+    bool dimensionMatch = minimumDimension == (unsigned int)(var->dimension);
+    if (accessType==AST::AccessArgumentIn || accessType==AST::AccessRegular) {
+        dimensionMatch = minimumDimension <= (unsigned int)(var->dimension);
+    }
+    if (baseType.kind==AST::TypeNone) {
+        // It is possible to suggest value of any type and dimension
+        typeMatch = true;
+        dimensionMatch = true;
+    }
+    bool accessMatch = (
+                (accessType==AST::AccessArgumentIn || accessType==AST::AccessRegular)
+                && var->accessType!=AST::AccessArgumentOut
+                )
+            ||
+                ( accessType==AST::AccessArgumentOut && var->accessType!=AST::AccessArgumentIn )
+            ||
+                ( accessType==var->accessType );
+    return typeMatch && dimensionMatch && accessMatch;
+}
+
+QList<Shared::Suggestion>
+SyntaxAnalizerPrivate::suggestValueAutoComplete(
+        const QList<Lexem *> lexemsBefore,
+        const QList<Lexem *> lexemsAfter,
+        const AST::Module *contextModule,
+        const AST::Algorhitm *contextAlgorithm,
+        AST::Type baseType,
+        unsigned int minimumDimension,
+        AST::VariableAccessType accessType
+) const
+{
+    QList<Shared::Suggestion> result;
+
+    // 1. Suggest locals and globals if any applicable
+    QList<AST::Variable*> vars;
+    if (contextAlgorithm)
+        vars += contextAlgorithm->impl.locals;
+    if (contextModule)
+        vars += contextModule->impl.globals;
+
+    for (const AST::Variable * var : vars) {
+        if (isSuggestionValueApplicable(var, baseType, minimumDimension, accessType)) {
+            Shared::Suggestion suggestion;
+            suggestion.value = var->name;
+            suggestion.description = var->baseType.kind==AST::TypeUser
+                    ? var->baseType.name
+                    : lexer->classNameByBaseType(var->baseType.kind);
+            suggestion.description += " " + var->name;
+            result.push_back(suggestion);
+        }
+    }
+
+    // 2. Suggest algorithms if any applicable
+    if (minimumDimension==0
+            && (baseType.kind==AST::TypeNone
+                || accessType==AST::AccessArgumentIn
+                || accessType==AST::AccessRegular
+                )
+            )
+    {
+        QList<AST::Algorhitm*> algs;
+        if (contextModule)
+            algs += contextModule->impl.algorhitms;
+        for (const AST::Module * mod : ast->modules) {
+            if (mod->header.enabled)
+                algs += contextModule->header.algorhitms;
+        }
+
+        for (const AST::Algorhitm * alg : algs) {
+            bool typeMatch = alg->header.returnType==baseType;
+            if (accessType==AST::AccessRegular || accessType==AST::AccessArgumentIn) {
+                // It is possible to cast int->real and char->string
+                if (alg->header.returnType.kind==AST::TypeInteger && baseType.kind==AST::TypeReal)
+                    typeMatch = true;
+                if (alg->header.returnType.kind==AST::TypeCharect && baseType.kind==AST::TypeString)
+                    typeMatch = true;
+            }
+            if (typeMatch
+                    && alg->header.name.length()>0
+                    )
+            {
+                Shared::Suggestion suggestion;
+                suggestion.value = alg->header.name;
+                suggestion.description = QString::fromUtf8("алг ");
+                suggestion.description += alg->header.returnType.kind==AST::TypeUser
+                        ? alg->header.returnType.name
+                        : lexer->classNameByBaseType(alg->header.returnType.kind);
+                suggestion.description += alg->header.name;
+                if (alg->header.arguments.size()>0) {
+                    suggestion.description += "(";
+                    for (int i=0; i<alg->header.arguments.size(); i++) {
+                        const AST::Variable * arg = alg->header.arguments[i];
+                        suggestion.description += arg->name;
+                        if (i>0)
+                            suggestion.description += ",";
+                    }
+                    suggestion.description += ")";
+                }
+                result.push_back(suggestion);
+            }
+        }
+    }
+
+    return result;
+}
+
+QList<Shared::Suggestion>
+SyntaxAnalizerPrivate::suggestOperandAutoComplete(
+        const QList<Lexem *> lexemsBefore,
+        const QList<Lexem *> lexemsAfter,
+        const AST::Module *contextModule,
+        const AST::Algorhitm *contextAlgorithm,
+        const AST::Expression *leftExpression,
+        const LexemType operatorr,
+        const AST::Type & targetBaseType
+        ) const
+{
+    QList<Shared::Suggestion> result;
+    AST::Type baseType = AST::TypeNone;
+    if (leftExpression) {
+        baseType = leftExpression->baseType;
+    }
+
+    if ((operatorr==LxOperPlus || operatorr==LxOperMinus) && leftExpression==nullptr) {
+        // Unary + or -
+        if (targetBaseType.kind==AST::TypeReal || targetBaseType.kind==AST::TypeInteger) {
+            result  = suggestValueAutoComplete(
+                        /* lexemsBefore    = */ lexemsBefore,
+                        /* lexemsAfter     = */ lexemsAfter,
+                        /* contextModule   = */ contextModule,
+                        /* contextAlgorithm= */ contextAlgorithm,
+                        /* baseType        = */ targetBaseType,
+                        /* minimumDimension= */ 0,
+                        /* accessType      = */ AST::AccessArgumentIn
+                        );
+        }
+    }
+    else if (operatorr==LxSecNot && leftExpression==nullptr) {
+        // Unary 'not'
+        result  = suggestValueAutoComplete(
+                    /* lexemsBefore    = */ lexemsBefore,
+                    /* lexemsAfter     = */ lexemsAfter,
+                    /* contextModule   = */ contextModule,
+                    /* contextAlgorithm= */ contextAlgorithm,
+                    /* baseType        = */ AST::TypeBoolean,
+                    /* minimumDimension= */ 0,
+                    /* accessType      = */ AST::AccessArgumentIn
+                    );
+    }
+    else if (operatorr==LxOperPlus) {
+        // Binary +
+        if (targetBaseType.kind==AST::TypeString
+                || targetBaseType.kind==AST::TypeReal
+                || targetBaseType.kind==AST::TypeInteger
+                )
+        {
+            result  = suggestValueAutoComplete(
+                        /* lexemsBefore    = */ lexemsBefore,
+                        /* lexemsAfter     = */ lexemsAfter,
+                        /* contextModule   = */ contextModule,
+                        /* contextAlgorithm= */ contextAlgorithm,
+                        /* baseType        = */ targetBaseType,
+                        /* minimumDimension= */ 0,
+                        /* accessType      = */ AST::AccessArgumentIn
+                        );
+        }
+    }
+    else if ((operatorr==LxOperMinus || operatorr==LxOperAsterisk || operatorr==LxOperPower)
+             && leftExpression!=nullptr)
+    {
+        // Binary -, * or **
+        // Applicable to integers and reals
+        if (targetBaseType.kind==AST::TypeInteger || targetBaseType.kind==AST::TypeReal) {
+            result  = suggestValueAutoComplete(
+                        /* lexemsBefore    = */ lexemsBefore,
+                        /* lexemsAfter     = */ lexemsAfter,
+                        /* contextModule   = */ contextModule,
+                        /* contextAlgorithm= */ contextAlgorithm,
+                        /* baseType        = */ targetBaseType,
+                        /* minimumDimension= */ 0,
+                        /* accessType      = */ AST::AccessArgumentIn
+                        );
+        }
+    }
+    else if (operatorr==LxOperSlash && leftExpression!=nullptr)
+    {
+        // Binary /
+        // Applicable to reals only
+        if (targetBaseType.kind==AST::TypeReal) {
+            result  = suggestValueAutoComplete(
+                        /* lexemsBefore    = */ lexemsBefore,
+                        /* lexemsAfter     = */ lexemsAfter,
+                        /* contextModule   = */ contextModule,
+                        /* contextAlgorithm= */ contextAlgorithm,
+                        /* baseType        = */ AST::TypeReal,
+                        /* minimumDimension= */ 0,
+                        /* accessType      = */ AST::AccessArgumentIn
+                        );
+        }
+    }
+    else if ((operatorr==LxOperEqual ||
+              operatorr==LxOperNotEqual ||
+              operatorr==LxOperLess ||
+              operatorr==LxOperLessOrEqual ||
+              operatorr==LxOperGreater ||
+              operatorr==LxOperGreaterOrEqual
+              ) && leftExpression!=nullptr)
+    {
+        // Comparision operators
+        // Applicable in result of bool, type must be the same as left (or cast-applicable)
+        if (targetBaseType.kind==AST::TypeBoolean) {
+            result  = suggestValueAutoComplete(
+                        /* lexemsBefore    = */ lexemsBefore,
+                        /* lexemsAfter     = */ lexemsAfter,
+                        /* contextModule   = */ contextModule,
+                        /* contextAlgorithm= */ contextAlgorithm,
+                        /* baseType        = */ baseType,
+                        /* minimumDimension= */ 0,
+                        /* accessType      = */ AST::AccessArgumentIn
+                        );
+        }
+    }
+    else if ((operatorr==LxSecAnd ||
+              operatorr==LxSecOr
+              ) && leftExpression!=nullptr)
+    {
+        // Logical operators
+        // Applicable to bools only
+        if (targetBaseType.kind==AST::TypeBoolean) {
+            result  = suggestValueAutoComplete(
+                        /* lexemsBefore    = */ lexemsBefore,
+                        /* lexemsAfter     = */ lexemsAfter,
+                        /* contextModule   = */ contextModule,
+                        /* contextAlgorithm= */ contextAlgorithm,
+                        /* baseType        = */ AST::TypeBoolean,
+                        /* minimumDimension= */ 0,
+                        /* accessType      = */ AST::AccessArgumentIn
+                        );
+        }
+    }
+
     return result;
 }
 
@@ -553,6 +1061,23 @@ void SyntaxAnalizer::processAnalisys()
             }
         }
     }
+}
+
+QList<Shared::Suggestion> SyntaxAnalizer::suggestAutoComplete(
+        const Statement *statementBefore,
+        const QList<Lexem *> lexemsAfter,
+        const AST::Module *contextModule,
+        const AST::Algorhitm *contextAlgorithm) const
+{
+    QList<Shared::Suggestion> result;
+    switch (statementBefore->type) {
+    case LxPriAssign:
+        result = d->suggestAssignmentAutoComplete(statementBefore, lexemsAfter, contextModule, contextAlgorithm);
+        break;
+    default: break;
+    }
+
+    return result;
 }
 
 void SyntaxAnalizer::setSourceDirName(const QString &dirName)
@@ -2929,7 +3454,7 @@ QVariant SyntaxAnalizerPrivate::createConstValue(const QString & str
     return result;
 }
 
-bool SyntaxAnalizerPrivate::findAlgorhitm(const QString &name, const AST::Module *module, AST::Algorhitm *&algorhitm)
+bool SyntaxAnalizerPrivate::findAlgorhitm(const QString &name, const AST::Module *module, AST::Algorhitm *&algorhitm) const
 {
     algorhitm = 0;
     for (int i=0; i<ast->modules.size(); i++) {
@@ -3043,7 +3568,7 @@ bool SyntaxAnalizerPrivate::findConversionAlgorithm(const AST::Type & from
 
 AST::Expression * SyntaxAnalizerPrivate::makeCustomUnaryOperation(
         const QString &operatorName
-        , AST::Expression *argument)
+        , AST::Expression *argument) const
 {
     QString argTypeName;
     if (argument->baseType.kind==AST::TypeUser)
@@ -3090,7 +3615,7 @@ AST::Expression * SyntaxAnalizerPrivate::makeCustomUnaryOperation(
 AST::Expression * SyntaxAnalizerPrivate::makeCustomBinaryOperation(const QString & operatorName
                                                , AST::Expression * leftExpression
                                                , AST::Expression * rightExpression
-                                               )
+                                               ) const
 {
     QString headTypeName;
     if (leftExpression->baseType.kind==AST::TypeUser)
@@ -3156,7 +3681,7 @@ AST::Expression * SyntaxAnalizerPrivate::makeCustomBinaryOperation(const QString
     return 0;
 }
 
-bool SyntaxAnalizerPrivate::findGlobalVariable(const QString &name, const AST::Module *module, AST::Variable *&var)
+bool SyntaxAnalizerPrivate::findGlobalVariable(const QString &name, const AST::Module *module, AST::Variable *&var) const
 {
     var = 0;
     for (int i=0; i<module->impl.globals.size(); i++) {
@@ -3169,7 +3694,7 @@ bool SyntaxAnalizerPrivate::findGlobalVariable(const QString &name, const AST::M
     return var!=0;
 }
 
-bool SyntaxAnalizerPrivate::findLocalVariable(const QString &name, const AST::Algorhitm *alg, AST::Variable *&var)
+bool SyntaxAnalizerPrivate::findLocalVariable(const QString &name, const AST::Algorhitm *alg, AST::Variable *&var) const
 {
     var = 0;
     for (int i=0; i<alg->impl.locals.size(); i++) {
@@ -3182,7 +3707,7 @@ bool SyntaxAnalizerPrivate::findLocalVariable(const QString &name, const AST::Al
     return var!=0;
 }
 
-bool SyntaxAnalizerPrivate::findUserType(const QString &name, AST::Type &type, AST::Module *module)
+bool SyntaxAnalizerPrivate::findUserType(const QString &name, AST::Type &type, AST::Module *module) const
 {
     module = 0;
     for (int i=0; i<ast->modules.size(); i++) {
@@ -3204,7 +3729,7 @@ bool SyntaxAnalizerPrivate::findUserType(const QString &name, AST::Type &type, A
 bool SyntaxAnalizerPrivate::findVariable(const QString &name
                                          , const AST::Module *module
                                          , const AST::Algorhitm *algorhitm
-                                         , AST::Variable *&var)
+                                         , AST::Variable *&var) const
 {
     bool found = false;
     if (algorhitm) {
@@ -3224,7 +3749,6 @@ enum BlockType {
     SubExpression
 } ;
 
-#define IS_OPERATOR(x) (x & LxTypeOperator || x==LxOperGreaterOrEqual || x==LxSecOr || x==LxSecAnd || x==LxPriAssign/* || x==LxSecNot */)
 
 inline bool hasBoolOpBefore(const QList<SubexpressionElement> & alist, int no)
 {
@@ -3250,7 +3774,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
     QList<Lexem *> lexems
     , const AST::Module *mod
     , const AST::Algorhitm *alg
-    )
+    ) const
 {
     AST::Expression * result = 0;
     BlockType blockType = None;
@@ -3708,7 +4232,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
 }
 
 
-AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg)
+AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg) const
 {
     AST::Expression * result = 0;
     QString name;
@@ -3921,7 +4445,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
     return result;
 }
 
-void SyntaxAnalizerPrivate::updateSliceDSCall(AST::Expression * expr, AST::Variable * var)
+void SyntaxAnalizerPrivate::updateSliceDSCall(AST::Expression * expr, AST::Variable * var) const
 {
     static AST::Algorhitm * strlenAlg = 0;
     static AST::Module * stdlibMod = 0;
@@ -3943,7 +4467,7 @@ void SyntaxAnalizerPrivate::updateSliceDSCall(AST::Expression * expr, AST::Varia
     }
 }
 
-AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg)
+AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg) const
 {
     AST::Expression * result = 0;
     QString name;
@@ -4241,7 +4765,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
 }
 
 
-AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg)
+AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg) const
 {
     AST::Expression * result = 0;
     if (lexems.size()==1 && lexems.front()->type==LxSecCurrentStringLength) {
@@ -4927,7 +5451,7 @@ AST::Expression * findRightmostCNFSubexpression(AST::Expression * e)
     }
 }
 
-AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<SubexpressionElement> & s)
+AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<SubexpressionElement> & s) const
 {
     if (s.isEmpty())
         return 0;

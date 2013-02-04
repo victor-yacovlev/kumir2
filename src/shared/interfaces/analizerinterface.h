@@ -14,6 +14,11 @@ struct ChangeTextTransaction {
     QStringList newLines;
 };
 
+struct Suggestion {
+    QString value;
+    QString description;
+};
+
 class AnalizerInterface {
 public:
     virtual int newDocument() = 0;
@@ -26,15 +31,27 @@ public:
     virtual void setHiddenText(int documentId, const QString &text, int baseLine) = 0;
     virtual void setHiddenTextBaseLine(int documentId, int baseLine) = 0;
     virtual void changeSourceText(int documentId, const QList<ChangeTextTransaction> & changes) = 0;
+
+    /**
+     * @brief suggestAutoComplete
+     * Make a suggestion variants for a given text cursor position
+     *
+     * @param documentId -- the document ID
+     * @param lineNo -- line number of text cursor
+     * @param before -- text before the cursor
+     * @param after -- text after the cursor
+     * @return a list of structs { autocomplete text, the description of suggestion }
+     */
+    virtual QList<Suggestion> suggestAutoComplete(int documentId, int lineNo, const QString & before, const QString & after) const { return QList<Suggestion>(); }
     virtual QList<Error> errors(int documentId) const = 0;
     virtual QList<LineProp> lineProperties(int documentId) const = 0;
     virtual QList<QPoint> lineRanks(int documentId) const = 0;
     virtual QStringList imports(int documentId) const = 0;
     virtual const AST::Data * abstractSyntaxTree(int documentId) const = 0;
     virtual LineProp lineProp(int documentId, const QString & text) const = 0;
-    virtual QStringList algorhitmsAvailableFor(int documentId, int lineNo) const = 0;
-    virtual QStringList globalsAvailableFor(int documentId, int lineNo) const = 0;
-    virtual QStringList localsAvailableFor(int documentId, int lineNo) const = 0;
+    /* deprecated!!! */ virtual QStringList algorhitmsAvailableFor(int documentId, int lineNo) const = 0;
+    /* deprecated!!! */ virtual QStringList globalsAvailableFor(int documentId, int lineNo) const = 0;
+    /* deprecated!!! */ virtual QStringList localsAvailableFor(int documentId, int lineNo) const = 0;
     virtual std::string rawSourceData(int documentId) const = 0;
     inline virtual QList<QRegExp> supportedFileNamePattern() const {
         return QList<QRegExp>()

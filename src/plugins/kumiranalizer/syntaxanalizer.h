@@ -6,6 +6,7 @@
 
 #include "dataformats/ast.h"
 #include "dataformats/ast_algorhitm.h"
+#include "interfaces/analizerinterface.h"
 
 typedef AST::Data AST_Data;
 typedef AST::Algorhitm AST_Algorhitm;
@@ -24,6 +25,11 @@ public:
     QStringList unresolvedImports() const;
     void setSourceDirName(const QString & dirName);
     void buildTables(bool allowOperatorsDeclaration);
+    QList<Shared::Suggestion> suggestAutoComplete(const Statement * statementBefore,
+                                                  const QList<Lexem*> lexemsAfter,
+                                                  const AST::Module * contextModule,
+                                                  const AST::Algorhitm * contextAlgorithm
+                                                  ) const;
     void processAnalisys();
     ~SyntaxAnalizer();
 private:

@@ -58,6 +58,7 @@ void KumirAnalizerPlugin::stop()
 
 }
 
+
 int KumirAnalizerPlugin::newDocument()
 {
     int id = 0;
@@ -86,6 +87,12 @@ void KumirAnalizerPlugin::setSourceText(int documentId, const QString &text)
     change.removedLineNumbers << 999999; // Flag: remove all
     if (!text.trimmed().isEmpty())
         m_analizers[documentId]->changeSourceText(QList<Shared::ChangeTextTransaction>() << change);
+}
+
+QList<Shared::Suggestion> KumirAnalizerPlugin::suggestAutoComplete(int documentId, int lineNo, const QString &before, const QString &after) const
+{
+    Q_CHECK_PTR(m_analizers[documentId]);
+    return m_analizers[documentId]->suggestAutoComplete(lineNo, before, after);
 }
 
 void KumirAnalizerPlugin::setSourceDirName(int documentId, const QString &dirPath)

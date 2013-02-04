@@ -38,7 +38,7 @@ public slots:
     void setHiddenText(const QString & text, int baseLineNo);
     void setHiddenBaseLine(int lineNo);
     QString sourceText() const;
-
+    QList<Shared::Suggestion> suggestAutoComplete(int lineNo, const QString &before, const QString &after) const;
     QStringList algorhitmsAvailableFor(int lineNo) const;
     QStringList globalsAvailableFor(int lineNo) const;
     QStringList localsAvailableFor(int lineNo) const;
