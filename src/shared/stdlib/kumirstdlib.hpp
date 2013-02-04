@@ -496,8 +496,13 @@ public:
             return 0;
         } else {
             int aa = a;
-            while (aa<0)
-                aa += b;
+            if (aa<0) {
+                unsigned int absolunta = -1*(aa);
+                unsigned int quoti = absolunta / b + 1;
+                aa += quoti * b;
+            }
+//            while (aa<0)
+//                aa += b;
             int m = aa % b;
             return (a-m)/b;
         }
@@ -507,8 +512,13 @@ public:
             Core::abort(Core::fromUtf8("Деление на не натуральное число"));
             return 0;
         } else {
-            while (a<0)
-                a += b;
+            if (a<0) {
+                unsigned int absolunta = -1*(a);
+                unsigned int quoti = absolunta / b + 1;
+                a += quoti * b;
+            }
+//            while (a<0)
+//                a += b;
             return a % b;
         }
     }
