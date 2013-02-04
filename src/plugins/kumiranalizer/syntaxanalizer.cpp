@@ -57,6 +57,24 @@ struct SyntaxAnalizerPrivate
     void parseIfCase(int str);
     void parseLoopBegin(int str);
 
+    QList<Shared::Suggestion> suggestAssignmentAutoComplete(
+            const Statement *statementBefore,
+            const QList<Lexem *> lexemsAfter,
+            const AST::Module *contextModule,
+            const AST::Algorhitm *contextAlgorithm) const;
+
+    QList<Shared::Suggestion> suggestExpressionAutoComplete(
+            const QList<Lexem*> lexemsBefore,
+            const QList<Lexem*> lexemsAfter,
+            const AST::Module *contextModule,
+            const AST::Algorhitm *contextAlgorithm,
+            bool typeIsKnown,
+            AST::Type baseType,
+            unsigned int dimension,
+            AST::VariableAccessType accessType,
+            AST::ExpressionType expressionKind
+            ) const;
+
     bool tryInputOperatorAlgorithm(
             const QString & lexem,
             AST::Type & type,
@@ -69,24 +87,24 @@ struct SyntaxAnalizerPrivate
     AST::Expression * makeCustomBinaryOperation(const QString & operatorName
                             , AST::Expression * leftExpression
                             , AST::Expression * rightExpression
-                            );
+                            ) const;
     AST::Expression * makeCustomUnaryOperation(const QString & operatorName
-                                               , AST::Expression * argument);
+                                               , AST::Expression * argument) const;
     bool findAlgorhitm(const QString &name
                        , const AST::Module*  module
-                       , AST::Algorhitm* & algorhitm);
-    bool findGlobalVariable(const QString &name, const AST::Module *module, AST::Variable* & var);
+                       , AST::Algorhitm* & algorhitm) const;
+    bool findGlobalVariable(const QString &name, const AST::Module *module, AST::Variable* & var) const;
     bool findLocalVariable(const QString &name
                            , const AST::Algorhitm * alg
-                           , AST::Variable* & var);
+                           , AST::Variable* & var) const;
     AST::Expression * parseExpression(QList<Lexem*> lexems
                                       , const AST::Module * mod
-                                      , const AST::Algorhitm * alg);
+                                      , const AST::Algorhitm * alg) const;
     bool findVariable(const QString &name
                       , const AST::Module * module
                       , const AST::Algorhitm * algorhitm
-                      , AST::Variable* & var);
-    bool findUserType(const QString & name, AST::Type &type, AST::Module * module);
+                      , AST::Variable* & var) const;
+    bool findUserType(const QString & name, AST::Type &type, AST::Module * module) const;
     QList<AST::Variable*> parseVariables(int statementIndex, VariablesGroup & group,
                                          AST::Module * mod,
                                          AST::Algorhitm * alg, bool algHeader);
@@ -96,12 +114,12 @@ struct SyntaxAnalizerPrivate
                            ) const;
     AST::VariableBaseType testConst(const std::list<Lexem *> & lxs, int &err) const;
     QVariant createConstValue(const QString &str, const AST::VariableBaseType type) const;
-    AST::Expression * parseFunctionCall(const QList<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg);
+    AST::Expression * parseFunctionCall(const QList<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg) const;
 
-    AST::Expression * parseSimpleName(const std::list<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg);
-    void updateSliceDSCall(AST::Expression * expr, AST::Variable * var);
-    AST::Expression * parseElementAccess(const QList<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg);
-    AST::Expression * makeExpressionTree(const QList<SubexpressionElement> & s);
+    AST::Expression * parseSimpleName(const std::list<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg) const;
+    void updateSliceDSCall(AST::Expression * expr, AST::Variable * var) const;
+    AST::Expression * parseElementAccess(const QList<Lexem*> &lexems, const AST::Module * mod, const AST::Algorhitm * alg) const;
+    AST::Expression * makeExpressionTree(const QList<SubexpressionElement> & s) const;
     template <typename List1, typename List2>
     inline static void splitLexemsByOperator(
             const List1 &s
@@ -232,6 +250,66 @@ AST::Type typeFromSignature(QString s) {
             result.userTypeFields.append(field);
         }
     }
+    return result;
+}
+
+QList<Shared::Suggestion> SyntaxAnalizerPrivate::suggestAssignmentAutoComplete(
+        const Statement *statementBefore,
+        const QList<Lexem *> lexemsAfter,
+        const AST::Module *contextModule,
+        const AST::Algorhitm *contextAlgorithm) const
+{
+    QList<Shared::Suggestion> result;
+    QList<Lexem*> lvalue, rvalue;
+    Lexem * assignOperator = nullptr;
+    for ( auto it = statementBefore->data.begin(); it!=statementBefore->data.end(); ++it ) {
+        Lexem * lx = *it;
+        if (lx->type==LxPriAssign) {
+            assignOperator = lx;
+        }
+        else if (assignOperator!=nullptr) {
+            rvalue.push_back(lx);
+        }
+        else {
+            lvalue.push_back(lx);
+        }
+    }
+    AST::Expression * leftExpr = nullptr;
+    if (assignOperator!=nullptr) {
+        // Make a tree for a left value and deduce it's type
+        leftExpr = parseExpression(lvalue, contextModule, contextAlgorithm);
+        if (leftExpr) {
+            // Make suggestion only if left if correct
+            result = suggestExpressionAutoComplete(
+                        /* lexemsBefore     = */ rvalue,
+                        /* lexemsAfter      = */ lexemsAfter,
+                        /* contextModule    = */ contextModule,
+                        /* contextAlgorithm = */ contextAlgorithm,
+                        /* typeIsKnown      = */ true,
+                        /* baseType         = */ leftExpr->baseType,
+                        /* dimension        = */ leftExpr->dimension,
+                        /* accessType       = */ leftExpr->variable->accessType,
+                        /* expressionKind   = */ AST::ExprSubexpression
+                        );
+            delete leftExpr;
+        }
+    }
+    return result;
+}
+
+QList<Shared::Suggestion> SyntaxAnalizerPrivate::suggestExpressionAutoComplete(
+        const QList<Lexem*> lexemsBefore,
+        const QList<Lexem*> lexemsAfter,
+        const AST::Module *contextModule,
+        const AST::Algorhitm *contextAlgorithm,
+        bool typeIsKnown,
+        AST::Type baseType,
+        unsigned int dimension,
+        AST::VariableAccessType accessType,
+        AST::ExpressionType expressionKind
+        ) const
+{
+    QList<Shared::Suggestion> result;
     return result;
 }
 
@@ -553,6 +631,23 @@ void SyntaxAnalizer::processAnalisys()
             }
         }
     }
+}
+
+QList<Shared::Suggestion> SyntaxAnalizer::suggestAutoComplete(
+        const Statement *statementBefore,
+        const QList<Lexem *> lexemsAfter,
+        const AST::Module *contextModule,
+        const AST::Algorhitm *contextAlgorithm) const
+{
+    QList<Shared::Suggestion> result;
+    switch (statementBefore->type) {
+    case LxPriAssign:
+        result = d->suggestAssignmentAutoComplete(statementBefore, lexemsAfter, contextModule, contextAlgorithm);
+        break;
+    default: break;
+    }
+
+    return result;
 }
 
 void SyntaxAnalizer::setSourceDirName(const QString &dirName)
@@ -2929,7 +3024,7 @@ QVariant SyntaxAnalizerPrivate::createConstValue(const QString & str
     return result;
 }
 
-bool SyntaxAnalizerPrivate::findAlgorhitm(const QString &name, const AST::Module *module, AST::Algorhitm *&algorhitm)
+bool SyntaxAnalizerPrivate::findAlgorhitm(const QString &name, const AST::Module *module, AST::Algorhitm *&algorhitm) const
 {
     algorhitm = 0;
     for (int i=0; i<ast->modules.size(); i++) {
@@ -3043,7 +3138,7 @@ bool SyntaxAnalizerPrivate::findConversionAlgorithm(const AST::Type & from
 
 AST::Expression * SyntaxAnalizerPrivate::makeCustomUnaryOperation(
         const QString &operatorName
-        , AST::Expression *argument)
+        , AST::Expression *argument) const
 {
     QString argTypeName;
     if (argument->baseType.kind==AST::TypeUser)
@@ -3090,7 +3185,7 @@ AST::Expression * SyntaxAnalizerPrivate::makeCustomUnaryOperation(
 AST::Expression * SyntaxAnalizerPrivate::makeCustomBinaryOperation(const QString & operatorName
                                                , AST::Expression * leftExpression
                                                , AST::Expression * rightExpression
-                                               )
+                                               ) const
 {
     QString headTypeName;
     if (leftExpression->baseType.kind==AST::TypeUser)
@@ -3156,7 +3251,7 @@ AST::Expression * SyntaxAnalizerPrivate::makeCustomBinaryOperation(const QString
     return 0;
 }
 
-bool SyntaxAnalizerPrivate::findGlobalVariable(const QString &name, const AST::Module *module, AST::Variable *&var)
+bool SyntaxAnalizerPrivate::findGlobalVariable(const QString &name, const AST::Module *module, AST::Variable *&var) const
 {
     var = 0;
     for (int i=0; i<module->impl.globals.size(); i++) {
@@ -3169,7 +3264,7 @@ bool SyntaxAnalizerPrivate::findGlobalVariable(const QString &name, const AST::M
     return var!=0;
 }
 
-bool SyntaxAnalizerPrivate::findLocalVariable(const QString &name, const AST::Algorhitm *alg, AST::Variable *&var)
+bool SyntaxAnalizerPrivate::findLocalVariable(const QString &name, const AST::Algorhitm *alg, AST::Variable *&var) const
 {
     var = 0;
     for (int i=0; i<alg->impl.locals.size(); i++) {
@@ -3182,7 +3277,7 @@ bool SyntaxAnalizerPrivate::findLocalVariable(const QString &name, const AST::Al
     return var!=0;
 }
 
-bool SyntaxAnalizerPrivate::findUserType(const QString &name, AST::Type &type, AST::Module *module)
+bool SyntaxAnalizerPrivate::findUserType(const QString &name, AST::Type &type, AST::Module *module) const
 {
     module = 0;
     for (int i=0; i<ast->modules.size(); i++) {
@@ -3204,7 +3299,7 @@ bool SyntaxAnalizerPrivate::findUserType(const QString &name, AST::Type &type, A
 bool SyntaxAnalizerPrivate::findVariable(const QString &name
                                          , const AST::Module *module
                                          , const AST::Algorhitm *algorhitm
-                                         , AST::Variable *&var)
+                                         , AST::Variable *&var) const
 {
     bool found = false;
     if (algorhitm) {
@@ -3250,7 +3345,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
     QList<Lexem *> lexems
     , const AST::Module *mod
     , const AST::Algorhitm *alg
-    )
+    ) const
 {
     AST::Expression * result = 0;
     BlockType blockType = None;
@@ -3708,7 +3803,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
 }
 
 
-AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg)
+AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg) const
 {
     AST::Expression * result = 0;
     QString name;
@@ -3921,7 +4016,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
     return result;
 }
 
-void SyntaxAnalizerPrivate::updateSliceDSCall(AST::Expression * expr, AST::Variable * var)
+void SyntaxAnalizerPrivate::updateSliceDSCall(AST::Expression * expr, AST::Variable * var) const
 {
     static AST::Algorhitm * strlenAlg = 0;
     static AST::Module * stdlibMod = 0;
@@ -3943,7 +4038,7 @@ void SyntaxAnalizerPrivate::updateSliceDSCall(AST::Expression * expr, AST::Varia
     }
 }
 
-AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg)
+AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg) const
 {
     AST::Expression * result = 0;
     QString name;
@@ -4241,7 +4336,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseElementAccess(const QList<Lexem *>
 }
 
 
-AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg)
+AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg) const
 {
     AST::Expression * result = 0;
     if (lexems.size()==1 && lexems.front()->type==LxSecCurrentStringLength) {
@@ -4927,7 +5022,7 @@ AST::Expression * findRightmostCNFSubexpression(AST::Expression * e)
     }
 }
 
-AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<SubexpressionElement> & s)
+AST::Expression * SyntaxAnalizerPrivate::makeExpressionTree(const QList<SubexpressionElement> & s) const
 {
     if (s.isEmpty())
         return 0;

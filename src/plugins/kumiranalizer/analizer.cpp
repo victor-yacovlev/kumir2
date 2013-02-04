@@ -937,6 +937,28 @@ const AST::Algorhitm * Analizer::findAlgorhitmByLine(const AST::Module *mod, int
     return 0;
 }
 
+QList<Suggestion> Analizer::suggestAutoComplete(int lineNo, const QString &before, const QString &after) const
+{
+    const AST::Algorhitm * alg = nullptr;
+    const AST::Module * mod = nullptr;
+    alg = findAlgorhitmByLine(mod, lineNo);
+    QStringList beforeProgram;
+    beforeProgram << before;
+    QList<Statement*> beforeStatements;
+    d->lexer->splitIntoStatements(beforeProgram, 0, beforeStatements, QStringList());
+    if (beforeStatements.size()==0) {
+        return QList<Suggestion>();
+    }
+    QList<Lexem*> afterLexems;
+    d->lexer->splitIntoLexems(after, afterLexems, QStringList());
+    QList<Suggestion> result = d->analizer->suggestAutoComplete(beforeStatements.back(), afterLexems, mod, alg);
+    for ( Statement * st : beforeStatements )
+        delete st;
+    for ( Lexem * lx : afterLexems )
+        delete lx;
+    return result;
+}
+
 QStringList Analizer::algorhitmsAvailableFor(int lineNo) const
 {
     QStringList result;
