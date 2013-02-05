@@ -923,6 +923,24 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
 
 void EditorPlane::doAutocomplete()
 {
+
+    QString before, after;
+    if (m_cursor->row()<m_document->linesCount()) {
+        QString line = m_document->textAt(m_cursor->row());
+        int textPos = m_cursor->column() - 2 * m_document->indentAt(m_cursor->row());
+        before = line.mid(0, textPos);
+        if (textPos<line.length()) {
+            after = line.mid(textPos);
+        }
+    }
+    QList<Shared::Suggestion> suggestions =
+            m_analizer->suggestAutoComplete(m_document->documentId, m_cursor->row(), before, after);
+
+    for (Shared::Suggestion s : suggestions) {
+        qDebug() << QString("Suggestion: ") << s.value << QString(" --- ") << s.description;
+    }
+    return;
+
     QString source;
     QStringList algorhitms = m_analizer->algorhitmsAvailableFor(m_document->documentId, m_cursor->row());
     QStringList locals = m_analizer->localsAvailableFor(m_document->documentId, m_cursor->row());
