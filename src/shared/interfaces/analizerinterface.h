@@ -15,8 +15,11 @@ struct ChangeTextTransaction {
 };
 
 struct Suggestion {
+    enum class Kind { Local, Global, Algorithm, BuiltinModule, KumirModule, Statement, Other };
     QString value;
     QString description;
+    bool showOnlyInFullList = false;
+    Kind kind = Kind::Other;
 };
 
 class AnalizerInterface {

@@ -924,34 +924,30 @@ const AST::Module * Analizer::findModuleByLine(int lineNo) const
 const AST::Algorhitm * Analizer::findAlgorhitmByLine(const AST::Module *mod, int lineNo) const
 {
     if (!mod || lineNo==-1)
-        return 0;
-    for (int i=0; i<mod->impl.algorhitms.size(); i++) {
-        if (
-                mod->impl.algorhitms[i]->impl.beginLexems.size()>0
-                && mod->impl.algorhitms[i]->impl.beginLexems[0]->lineNo>=lineNo
-                && mod->impl.algorhitms[i]->impl.endLexems.size()>0
-                && mod->impl.algorhitms[i]->impl.endLexems[0]->lineNo<=lineNo
-                )
-            return mod->impl.algorhitms[i];
+        return nullptr;
+    for (const AST::Algorhitm * alg : mod->impl.algorhitms) {
+        if (alg->impl.beginLexems.size()==0 || alg->impl.endLexems.size()==0)
+            continue;
+        const int algBegin = alg->impl.beginLexems.front()->lineNo;
+        const int algEnd   = alg->impl.endLexems.last()->lineNo;
+        if (algBegin <= lineNo && lineNo <= algEnd)
+            return alg;
     }
-    return 0;
+    return nullptr;
 }
 
 QList<Suggestion> Analizer::suggestAutoComplete(int lineNo, const QString &before, const QString &after) const
 {
-    const AST::Algorhitm * alg = nullptr;
-    const AST::Module * mod = nullptr;
-    alg = findAlgorhitmByLine(mod, lineNo);
+    const AST::Module * mod = findModuleByLine(lineNo);
+    const AST::Algorhitm * alg = findAlgorhitmByLine(mod, lineNo);
     QStringList beforeProgram;
     beforeProgram << before;
     QList<Statement*> beforeStatements;
     d->lexer->splitIntoStatements(beforeProgram, 0, beforeStatements, QStringList());
-    if (beforeStatements.size()==0) {
-        return QList<Suggestion>();
-    }
     QList<Lexem*> afterLexems;
     d->lexer->splitIntoLexems(after, afterLexems, QStringList());
-    QList<Suggestion> result = d->analizer->suggestAutoComplete(beforeStatements.back(), afterLexems, mod, alg);
+    const Statement* lastStatement = beforeStatements.size()>0? beforeStatements.last() : nullptr;
+    QList<Suggestion> result = d->analizer->suggestAutoComplete(lastStatement, afterLexems, mod, alg);
     for ( Statement * st : beforeStatements )
         delete st;
     for ( Lexem * lx : afterLexems )

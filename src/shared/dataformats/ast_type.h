@@ -43,6 +43,7 @@ namespace AST {
         }
         inline Type() { kind = TypeNone; }
         inline Type(AST::VariableBaseType bt) { kind = bt; }
+        inline Type(const QString & userTypeName) { kind = AST::TypeUser; name = userTypeName; }
     };
 
 }

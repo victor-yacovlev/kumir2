@@ -36,6 +36,7 @@ struct SubexpressionElement {
 
 struct SyntaxAnalizerPrivate
 {
+    class SyntaxAnalizer * q;
     Lexer * lexer;
     AST::Data * ast;
     AST::Algorhitm * algorhitm;
@@ -61,7 +62,27 @@ struct SyntaxAnalizerPrivate
             const Statement *statementBefore,
             const QList<Lexem *> lexemsAfter,
             const AST::Module *contextModule,
-            const AST::Algorhitm *contextAlgorithm) const;
+            const AST::Algorhitm *contextAlgorithm
+            ) const;
+
+    QList<Shared::Suggestion> suggestInputOutputAutoComplete(
+            const Statement *statementBefore,
+            const QList<Lexem *> lexemsAfter,
+            const AST::Module *contextModule,
+            const AST::Algorhitm *contextAlgorithm
+            ) const;
+
+    QList<Shared::Suggestion> suggestConditionAutoComplete(
+            const Statement *statementBefore,
+            const QList<Lexem *> lexemsAfter,
+            const AST::Module *contextModule,
+            const AST::Algorhitm *contextAlgorithm
+            ) const;
+
+    QList<Shared::Suggestion> suggestImportAutoComplete(
+            const Statement *statementBefore,
+            const QList<Lexem *> lexemsAfter
+            ) const;
 
     QList<Shared::Suggestion> suggestExpressionAutoComplete(
             const QList<Lexem*> lexemsBefore,
@@ -80,6 +101,7 @@ struct SyntaxAnalizerPrivate
             const QList<Lexem*> lexemsAfter,
             const AST::Module *contextModule,
             const AST::Algorhitm *contextAlgorithm,
+            bool typeIsKnown,
             AST::Type baseType,
             unsigned int minimumDimension,
             AST::VariableAccessType accessType
@@ -181,6 +203,7 @@ SyntaxAnalizer::SyntaxAnalizer(Lexer * lexer,
     QObject(parent)
 {
     d = new SyntaxAnalizerPrivate;
+    d->q = this;
     d->ast = 0;
     d->algorhitm = 0;
     d->lexer = lexer;
@@ -273,7 +296,195 @@ AST::Type typeFromSignature(QString s) {
     return result;
 }
 
-QList<Shared::Suggestion> SyntaxAnalizerPrivate::suggestAssignmentAutoComplete(
+QList<Shared::Suggestion>
+SyntaxAnalizerPrivate::suggestImportAutoComplete(
+        const Statement *,
+        const QList<Lexem *>
+        ) const
+{
+    QList<Shared::Suggestion> result;
+    for (const AST::Module * mod : ast->modules) {
+        if (!mod->header.enabled && mod->header.name.length()>0) {
+            Shared::Suggestion suggestion;
+            suggestion.value = mod->header.name;
+            suggestion.description = q->tr("Built-it module %s").arg(mod->header.name);
+            suggestion.kind = Shared::Suggestion::Kind::BuiltinModule;
+            result.push_back(suggestion);
+        }
+    }
+    QDir programDir(sourceDirName);
+    QSet<QString> kumFiles;
+    for ( const QString fileName : programDir.entryList(QStringList() << "*.kum") ) {
+        kumFiles.insert(fileName);
+        Shared::Suggestion suggestion;
+        suggestion.value = "\""+fileName+"\"";
+        suggestion.description = q->tr("Use file \"%s\" as module").arg(fileName);
+        suggestion.kind = Shared::Suggestion::Kind::KumirModule;
+        result.push_back(suggestion);
+    }
+    for ( const QString fileName : programDir.entryList(QStringList() << "*.kod") ) {
+        const QString kumFileName = fileName.left(fileName.length()-4) + ".kum";
+        if (!kumFiles.contains(kumFileName)) {
+            Shared::Suggestion suggestion;
+            suggestion.value = "\""+fileName+"\"";
+            suggestion.description = q->tr("Use precompiled file \"%s\" as module").arg(fileName);
+            suggestion.kind = Shared::Suggestion::Kind::KumirModule;
+            result.push_back(suggestion);
+        }
+    }
+    return result;
+}
+
+QList<Shared::Suggestion>
+SyntaxAnalizerPrivate::suggestInputOutputAutoComplete(
+        const Statement *statementBefore,
+        const QList<Lexem *> lexemsAfter,
+        const AST::Module *contextModule,
+        const AST::Algorhitm *contextAlgorithm) const
+{
+    QList<Shared::Suggestion> result;
+    const QList<Lexem*> lexemsBefore = statementBefore->data;
+    int curBlockStartPos = 1;
+    int curBlockIndex = 0;
+    int sqBrDeep = 0;
+    int brDeep = 0;
+    for (int i=curBlockStartPos; i<lexemsBefore.size(); i++) {
+        Lexem * lx = lexemsBefore[i];
+        if (lx->type==LxOperComa && sqBrDeep==0 && brDeep==0) {
+            curBlockStartPos = i+1;
+            curBlockIndex += 1;
+        }
+        else if (lx->type==LxOperRightBr)
+            brDeep -= 1;
+        else if (lx->type==LxOperRightSqBr)
+            sqBrDeep -= 1;
+        else if (lx->type==LxOperLeftBr && brDeep>0)
+            brDeep += 1;
+        else if (lx->type==LxOperLeftSqBr && sqBrDeep>0)
+            sqBrDeep += 1;
+
+    }
+    const QList<Lexem*> curBlock = curBlockStartPos<lexemsBefore.size()
+            ? lexemsBefore.mid(curBlockStartPos)
+            : QList<Lexem*>();
+
+    if (curBlockIndex==0) {
+        // Check for passing file variable
+        bool filesModuleAvailable = false;
+        const AST::Module * filesMod = nullptr;
+        for (const AST::Module * mod : ast->modules) {
+            if (mod->header.enabled && mod->header.name==QString::fromUtf8("Файлы")) {
+                filesModuleAvailable = true;
+                filesMod = mod;
+                break;
+            }
+        }
+        if (filesModuleAvailable) {
+            static const AST::Type FileType = AST::Type(QString::fromUtf8("файл"));
+            QList<Shared::Suggestion> fileSuggestions =
+                    suggestExpressionAutoComplete(
+                        /* lexemsBefore    = */ curBlock,
+                        /* lexemsAfter     = */ lexemsAfter,
+                        /* contextModule   = */ contextModule,
+                        /* contextAlgorithm= */ contextAlgorithm,
+                        /* typeIsKnown     = */ true,
+                        /* baseType        = */ FileType,
+                        /* dimension       = */ 0,
+                        /* accessType      = */ AST::AccessArgumentIn,
+                        /* expressionKind  = */ AST::ExprNone
+                        );
+            for (const Shared::Suggestion & s : fileSuggestions) {
+                // Filter values not to use built-in functions retvals
+                // to avoid unclosed files
+                const QString & name = s.value;
+                if (s.kind==Shared::Suggestion::Kind::Algorithm) {
+                    bool deny = false;
+                    for (const AST::Algorhitm * alg : filesMod->header.algorhitms) {
+                        if (alg->header.name==name) {
+                            deny = true;
+                            break;
+                        }
+                    }
+                    if (!deny)
+                        result.push_back(s);
+                }
+                else {
+                    result.push_back(s);
+                }
+            } // end file filtering
+        } // end if (filesModuleAvailable)
+    } // end if (curBlockIndex==0)
+
+    const AST::VariableAccessType accessType = statementBefore->type==LxPriInput
+            ? AST::AccessArgumentOut : AST::AccessArgumentIn;
+    QList<Shared::Suggestion> valueSuggestions =
+            suggestExpressionAutoComplete(
+                /* lexemsBefore    = */ curBlock,
+                /* lexemsAfter     = */ lexemsAfter,
+                /* contextModule   = */ contextModule,
+                /* contextAlgorithm= */ contextAlgorithm,
+                /* typeIsKnown     = */ false,
+                /* baseType        = */ AST::TypeNone,
+                /* dimension       = */ 0,
+                /* accessType      = */ accessType,
+                /* expressionKind  = */ AST::ExprNone
+                );
+    for (const Shared::Suggestion & s : valueSuggestions) {
+        // Filter values to match conditions:
+        //   a) can't input algorithms
+        //   b) can't input/output values of custom type
+        if (s.kind==Shared::Suggestion::Kind::Local || s.kind==Shared::Suggestion::Kind::Global
+                || accessType==AST::AccessArgumentIn
+                ) {
+            const QString & name = s.value;
+            AST::Variable * var = nullptr;
+            AST::Algorhitm * alg = nullptr;
+            AST::Type type;
+            if (findVariable(name, contextModule, contextAlgorithm, var))
+            {
+                type = var->baseType;
+            }
+            else if (findAlgorhitm(name, contextModule, alg)) {
+                type = alg->header.returnType;
+            }
+            if (type.kind!=AST::TypeUser && type.kind!=AST::TypeNone) {
+                result.push_back(s);
+            }
+
+        }
+    }
+
+    return result;
+}
+
+QList<Shared::Suggestion>
+SyntaxAnalizerPrivate::suggestConditionAutoComplete(
+        const Statement *statementBefore,
+        const QList<Lexem *> lexemsAfter,
+        const AST::Module *contextModule,
+        const AST::Algorhitm *contextAlgorithm) const
+{
+    QList<Shared::Suggestion> result;
+    int start = (statementBefore->type==LxPriEndLoop || statementBefore->type==LxPriLoop)
+            ? 2 : 1;
+    const QList<Lexem*> block = statementBefore->data.size()>start
+            ? statementBefore->data.mid(start) : QList<Lexem*>();
+    result = suggestExpressionAutoComplete(
+                /* lexemsBefore    = */ block,
+                /* lexemsAfter     = */ lexemsAfter,
+                /* contextModule   = */ contextModule,
+                /* contextAlgorithm= */ contextAlgorithm,
+                /* typeIsKnown     = */ true,
+                /* baseType        = */ AST::TypeBoolean,
+                /* dimension       = */ 0,
+                /* accessType      = */ AST::AccessArgumentIn,
+                /* expressionKind  = */ AST::ExprNone
+                );
+    return result;
+}
+
+QList<Shared::Suggestion>
+SyntaxAnalizerPrivate::suggestAssignmentAutoComplete(
         const Statement *statementBefore,
         const QList<Lexem *> lexemsAfter,
         const AST::Module *contextModule,
@@ -282,16 +493,18 @@ QList<Shared::Suggestion> SyntaxAnalizerPrivate::suggestAssignmentAutoComplete(
     QList<Shared::Suggestion> result;
     QList<Lexem*> lvalue, rvalue;
     Lexem * assignOperator = nullptr;
-    for ( auto it = statementBefore->data.begin(); it!=statementBefore->data.end(); ++it ) {
-        Lexem * lx = *it;
-        if (lx->type==LxPriAssign) {
-            assignOperator = lx;
-        }
-        else if (assignOperator!=nullptr) {
-            rvalue.push_back(lx);
-        }
-        else {
-            lvalue.push_back(lx);
+    if (statementBefore!=nullptr) {
+        for ( auto it = statementBefore->data.begin(); it!=statementBefore->data.end(); ++it ) {
+            Lexem * lx = *it;
+            if (lx->type==LxPriAssign) {
+                assignOperator = lx;
+            }
+            else if (assignOperator!=nullptr) {
+                rvalue.push_back(lx);
+            }
+            else {
+                lvalue.push_back(lx);
+            }
         }
     }
     AST::Expression * leftExpr = nullptr;
@@ -313,6 +526,20 @@ QList<Shared::Suggestion> SyntaxAnalizerPrivate::suggestAssignmentAutoComplete(
                         );
             delete leftExpr;
         }
+    }
+    else {
+        // Make suggestion for void algorithm call
+        result = suggestExpressionAutoComplete(
+                    /* lexemsBefore    = */ rvalue,
+                    /* lexemsAfter     = */ lexemsAfter,
+                    /* contextModule   = */ contextModule,
+                    /* contextAlgorithm= */ contextAlgorithm,
+                    /* typeIsKnown     = */ true,
+                    /* baseType        = */ AST::TypeNone,
+                    /* dimension       = */ 0,
+                    /* accessType      = */ AST::AccessRegular,
+                    /* expressionKind  = */ AST::ExprNone
+                    );
     }
     return result;
 }
@@ -389,6 +616,7 @@ QList<Shared::Suggestion> SyntaxAnalizerPrivate::suggestExpressionAutoComplete(
                             /* lexemsAfter     = */ lexemsAfter,
                             /* contextModule   = */ contextModule,
                             /* contextAlgorithm= */ contextAlgorithm,
+                            /* typeIsKnown     = */ true,
                             /* baseType        = */ AST::Type(AST::TypeInteger),
                             /* minimumDimension= */ 0,
                             /* accessType      = */ AST::AccessArgumentIn
@@ -417,6 +645,7 @@ QList<Shared::Suggestion> SyntaxAnalizerPrivate::suggestExpressionAutoComplete(
                                     /* lexemsAfter     = */ lexemsAfter,
                                     /* contextModule   = */ contextModule,
                                     /* contextAlgorithm= */ contextAlgorithm,
+                                    /* typeIsKnown     = */ true,
                                     /* baseType        = */ argument->baseType,
                                     /* minimumDimension= */ argument->dimension,
                                     /* accessType      = */ argument->accessType
@@ -476,9 +705,10 @@ QList<Shared::Suggestion> SyntaxAnalizerPrivate::suggestExpressionAutoComplete(
                     /* lexemsAfter     = */ lexemsAfter,
                     /* contextModule   = */ contextModule,
                     /* contextAlgorithm= */ contextAlgorithm,
+                    /* typeIsKnown     = */ typeIsKnown,
                     /* baseType        = */ typeIsKnown ? baseType : AST::TypeNone,
                     /* minimumDimension= */ typeIsKnown ? dimension : 0,
-                    /* accessType      = */ typeIsKnown ? AST::AccessArgumentIn : AST::AccessArgumentOut
+                    /* accessType      = */ accessType
                     );
     }
     return result;
@@ -525,6 +755,7 @@ SyntaxAnalizerPrivate::suggestValueAutoComplete(
         const QList<Lexem *> lexemsAfter,
         const AST::Module *contextModule,
         const AST::Algorhitm *contextAlgorithm,
+        bool typeIsKnown,
         AST::Type baseType,
         unsigned int minimumDimension,
         AST::VariableAccessType accessType
@@ -533,27 +764,33 @@ SyntaxAnalizerPrivate::suggestValueAutoComplete(
     QList<Shared::Suggestion> result;
 
     // 1. Suggest locals and globals if any applicable
-    QList<AST::Variable*> vars;
-    if (contextAlgorithm)
-        vars += contextAlgorithm->impl.locals;
-    if (contextModule)
-        vars += contextModule->impl.globals;
+    if (!typeIsKnown || baseType.kind!=AST::TypeNone) {
+        QList<AST::Variable*> vars;
+        if (contextAlgorithm)
+            vars += contextAlgorithm->impl.locals;
+        if (contextModule)
+            vars += contextModule->impl.globals;
 
-    for (const AST::Variable * var : vars) {
-        if (isSuggestionValueApplicable(var, baseType, minimumDimension, accessType)) {
-            Shared::Suggestion suggestion;
-            suggestion.value = var->name;
-            suggestion.description = var->baseType.kind==AST::TypeUser
-                    ? var->baseType.name
-                    : lexer->classNameByBaseType(var->baseType.kind);
-            suggestion.description += " " + var->name;
-            result.push_back(suggestion);
+        for (AST::Variable * var : vars) {
+            if (isSuggestionValueApplicable(var, baseType, minimumDimension, accessType)) {
+                Shared::Suggestion suggestion;
+                suggestion.value = var->name;
+                suggestion.description = var->baseType.kind==AST::TypeUser
+                        ? var->baseType.name
+                        : lexer->classNameByBaseType(var->baseType.kind);
+                suggestion.description += " " + var->name;
+                suggestion.kind = contextModule->impl.globals.contains(var)
+                        ? Shared::Suggestion::Kind::Global
+                        : Shared::Suggestion::Kind::Local;
+                result.push_back(suggestion);
+            }
         }
     }
 
     // 2. Suggest algorithms if any applicable
     if (minimumDimension==0
-            && (baseType.kind==AST::TypeNone
+            && (!typeIsKnown
+                || baseType.kind==AST::TypeNone
                 || accessType==AST::AccessArgumentIn
                 || accessType==AST::AccessRegular
                 )
@@ -564,7 +801,7 @@ SyntaxAnalizerPrivate::suggestValueAutoComplete(
             algs += contextModule->impl.algorhitms;
         for (const AST::Module * mod : ast->modules) {
             if (mod->header.enabled)
-                algs += contextModule->header.algorhitms;
+                algs += mod->header.algorhitms;
         }
 
         for (const AST::Algorhitm * alg : algs) {
@@ -576,6 +813,8 @@ SyntaxAnalizerPrivate::suggestValueAutoComplete(
                 if (alg->header.returnType.kind==AST::TypeCharect && baseType.kind==AST::TypeString)
                     typeMatch = true;
             }
+            if (!typeIsKnown)
+                typeMatch = alg->header.returnType.kind != AST::TypeNone;
             if (typeMatch
                     && alg->header.name.length()>0
                     )
@@ -586,6 +825,8 @@ SyntaxAnalizerPrivate::suggestValueAutoComplete(
                 suggestion.description += alg->header.returnType.kind==AST::TypeUser
                         ? alg->header.returnType.name
                         : lexer->classNameByBaseType(alg->header.returnType.kind);
+                if (!suggestion.description.endsWith(' '))
+                    suggestion.description += " ";
                 suggestion.description += alg->header.name;
                 if (alg->header.arguments.size()>0) {
                     suggestion.description += "(";
@@ -597,6 +838,7 @@ SyntaxAnalizerPrivate::suggestValueAutoComplete(
                     }
                     suggestion.description += ")";
                 }
+                suggestion.kind = Shared::Suggestion::Kind::Algorithm;
                 result.push_back(suggestion);
             }
         }
@@ -630,6 +872,7 @@ SyntaxAnalizerPrivate::suggestOperandAutoComplete(
                         /* lexemsAfter     = */ lexemsAfter,
                         /* contextModule   = */ contextModule,
                         /* contextAlgorithm= */ contextAlgorithm,
+                        /* typeIsKnown     = */ true,
                         /* baseType        = */ targetBaseType,
                         /* minimumDimension= */ 0,
                         /* accessType      = */ AST::AccessArgumentIn
@@ -643,6 +886,7 @@ SyntaxAnalizerPrivate::suggestOperandAutoComplete(
                     /* lexemsAfter     = */ lexemsAfter,
                     /* contextModule   = */ contextModule,
                     /* contextAlgorithm= */ contextAlgorithm,
+                    /* typeIsKnown     = */ true,
                     /* baseType        = */ AST::TypeBoolean,
                     /* minimumDimension= */ 0,
                     /* accessType      = */ AST::AccessArgumentIn
@@ -660,6 +904,7 @@ SyntaxAnalizerPrivate::suggestOperandAutoComplete(
                         /* lexemsAfter     = */ lexemsAfter,
                         /* contextModule   = */ contextModule,
                         /* contextAlgorithm= */ contextAlgorithm,
+                        /* typeIsKnown     = */ true,
                         /* baseType        = */ targetBaseType,
                         /* minimumDimension= */ 0,
                         /* accessType      = */ AST::AccessArgumentIn
@@ -677,6 +922,7 @@ SyntaxAnalizerPrivate::suggestOperandAutoComplete(
                         /* lexemsAfter     = */ lexemsAfter,
                         /* contextModule   = */ contextModule,
                         /* contextAlgorithm= */ contextAlgorithm,
+                        /* typeIsKnown     = */ true,
                         /* baseType        = */ targetBaseType,
                         /* minimumDimension= */ 0,
                         /* accessType      = */ AST::AccessArgumentIn
@@ -693,6 +939,7 @@ SyntaxAnalizerPrivate::suggestOperandAutoComplete(
                         /* lexemsAfter     = */ lexemsAfter,
                         /* contextModule   = */ contextModule,
                         /* contextAlgorithm= */ contextAlgorithm,
+                        /* typeIsKnown     = */ true,
                         /* baseType        = */ AST::TypeReal,
                         /* minimumDimension= */ 0,
                         /* accessType      = */ AST::AccessArgumentIn
@@ -715,6 +962,7 @@ SyntaxAnalizerPrivate::suggestOperandAutoComplete(
                         /* lexemsAfter     = */ lexemsAfter,
                         /* contextModule   = */ contextModule,
                         /* contextAlgorithm= */ contextAlgorithm,
+                        /* typeIsKnown     = */ true,
                         /* baseType        = */ baseType,
                         /* minimumDimension= */ 0,
                         /* accessType      = */ AST::AccessArgumentIn
@@ -733,6 +981,7 @@ SyntaxAnalizerPrivate::suggestOperandAutoComplete(
                         /* lexemsAfter     = */ lexemsAfter,
                         /* contextModule   = */ contextModule,
                         /* contextAlgorithm= */ contextAlgorithm,
+                        /* typeIsKnown     = */ true,
                         /* baseType        = */ AST::TypeBoolean,
                         /* minimumDimension= */ 0,
                         /* accessType      = */ AST::AccessArgumentIn
@@ -1070,15 +1319,31 @@ QList<Shared::Suggestion> SyntaxAnalizer::suggestAutoComplete(
         const AST::Algorhitm *contextAlgorithm) const
 {
     QList<Shared::Suggestion> result;
-    switch (statementBefore->type) {
-    case LxPriAssign:
+    if (statementBefore==nullptr || statementBefore->type==LxPriAssign)
         result = d->suggestAssignmentAutoComplete(statementBefore, lexemsAfter, contextModule, contextAlgorithm);
-        break;
-    default: break;
+    else if (statementBefore->type==LxPriImport) {
+        result = d->suggestImportAutoComplete(statementBefore, lexemsAfter);
     }
-
+    else if (statementBefore->type==LxPriInput || statementBefore->type==LxPriOutput) {
+        result = d->suggestInputOutputAutoComplete(statementBefore, lexemsAfter, contextModule, contextAlgorithm);
+    }
+    else if (statementBefore->type==LxPriAssert
+             || statementBefore->type==LxPriPre
+             || statementBefore->type==LxPriPost
+             || statementBefore->type==LxPriIf
+             || statementBefore->type==LxPriCase
+             || (statementBefore->type==LxPriEndLoop && statementBefore->data.size()>1 && statementBefore->data[1]->type==LxSecIf)
+                // endloop_if ...
+             || (statementBefore->type==LxPriLoop && statementBefore->data.size()>1 && statementBefore->data[1]->type==LxSecWhile)
+                // loop while ...
+             )
+    {
+        result = d->suggestConditionAutoComplete(statementBefore, lexemsAfter, contextModule, contextAlgorithm);
+    }
     return result;
 }
+
+
 
 void SyntaxAnalizer::setSourceDirName(const QString &dirName)
 {
