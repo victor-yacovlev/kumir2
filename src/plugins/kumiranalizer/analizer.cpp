@@ -948,11 +948,33 @@ QList<Suggestion> Analizer::suggestAutoComplete(int lineNo, const QString &befor
     d->lexer->splitIntoLexems(after, afterLexems, QStringList());
     const Statement* lastStatement = beforeStatements.size()>0? beforeStatements.last() : nullptr;
     QList<Suggestion> result = d->analizer->suggestAutoComplete(lastStatement, afterLexems, mod, alg);
+    QList<Suggestion> filteredResult;
+    for ( const Suggestion & s : result) {
+        // filter by space at end
+        if (before.endsWith(' ') && !before.trimmed().isEmpty()) {
+            // suggest only if suggestion bounds by a keyword
+            if (s.kind==Suggestion::Kind::SecondaryKeyword ||
+                    (lastStatement!=nullptr
+                     && lastStatement->data.size()>0 &&
+                        (
+                        lastStatement->data.last()->type & LxTypePrimaryKwd
+                        ||
+                        lastStatement->data.last()->type & LxTypeSecondaryKwd
+                        )
+                     )
+                    )
+                filteredResult.push_back(s);
+        }
+        else {
+            // regular case -- suggest it (already filtered by name)
+            filteredResult.push_back(s);
+        }
+    }
     for ( Statement * st : beforeStatements )
         delete st;
     for ( Lexem * lx : afterLexems )
         delete lx;
-    return result;
+    return filteredResult;
 }
 
 QStringList Analizer::algorhitmsAvailableFor(int lineNo) const

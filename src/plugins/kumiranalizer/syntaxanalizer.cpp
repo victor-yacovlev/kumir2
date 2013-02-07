@@ -79,6 +79,13 @@ struct SyntaxAnalizerPrivate
             const AST::Algorhitm *contextAlgorithm
             ) const;
 
+    QList<Shared::Suggestion> suggestLoopBeginAutoComplete(
+            const Statement *statementBefore,
+            const QList<Lexem *> lexemsAfter,
+            const AST::Module *contextModule,
+            const AST::Algorhitm *contextAlgorithm
+            ) const;
+
     QList<Shared::Suggestion> suggestImportAutoComplete(
             const Statement *statementBefore,
             const QList<Lexem *> lexemsAfter
@@ -484,6 +491,202 @@ SyntaxAnalizerPrivate::suggestConditionAutoComplete(
 }
 
 QList<Shared::Suggestion>
+SyntaxAnalizerPrivate::suggestLoopBeginAutoComplete(
+        const Statement *statementBefore,
+        const QList<Lexem *> lexemsAfter,
+        const AST::Module *contextModule,
+        const AST::Algorhitm *contextAlgorithm) const
+{
+    QList<Shared::Suggestion> result;
+    if (statementBefore->data.size()==1) {
+        // 1. Suggest additional keywords for loop types
+        Shared::Suggestion s;
+        s.value = QString::fromUtf8(" для ");
+        s.description = q->tr("Loop for variable");
+        s.kind = Shared::Suggestion::Kind::SecondaryKeyword;
+        result.push_back(s);
+
+        s.value = QString::fromUtf8(" пока ");
+        s.description = q->tr("Repeat while condition is true");
+        result.push_back(s);
+
+        const QList<Lexem*> block = statementBefore->data.size()>1
+                ? statementBefore->data.mid(2)
+                : QList<Lexem*>();
+
+        // 2. Suggest integer values followed by 'times' keyword
+        QList<Shared::Suggestion> intvals = suggestExpressionAutoComplete(
+                    /* lexemsBefore    = */ block,
+                    /* lexemsAfter     = */ lexemsAfter,
+                    /* contextModule   = */ contextModule,
+                    /* contextAlgorithm= */ contextAlgorithm,
+                    /* typeIsKnown     = */ true,
+                    /* baseType        = */ AST::TypeInteger,
+                    /* dimension       = */ 0,
+                    /* accessType      = */ AST::AccessArgumentIn,
+                    /* expressionKind  = */ AST::ExprNone
+                    );
+        for (Shared::Suggestion & ss : intvals) {
+            ss.value += QString::fromUtf8(" раз");
+            result.push_back(ss);
+        }
+    }
+    else if (statementBefore->data.size()>=2 && statementBefore->data[1]->type==LxSecFor) {
+        // Suggest values for 'from' or 'to'.
+        // If no such keywords, then suggest keywords
+        int fromPos = -1;
+        int toPos = -1;
+        int stepPos = -1;
+        Lexem * lastKeywordLexem = nullptr;
+        for (int i=statementBefore->data.size()-1; i>0; i--) {
+            Lexem * lx = statementBefore->data[i];
+            if (lx->type==LxSecFrom) {
+                fromPos = i;
+                if (!lastKeywordLexem)
+                    lastKeywordLexem = lx;
+            }
+            else if (lx->type==LxSecTo) {
+                toPos = i;
+                if (!lastKeywordLexem)
+                    lastKeywordLexem = lx;
+            }
+            else if (lx->type==LxSecStep) {
+                stepPos = i;
+                if (!lastKeywordLexem)
+                    lastKeywordLexem = lx;
+            }
+            else if (lx->type==LxSecFor) {
+                if (!lastKeywordLexem)
+                    lastKeywordLexem = lx;
+            }
+        }
+        QList<Lexem*> block;
+        Q_ASSERT(lastKeywordLexem!=nullptr);
+        if (lastKeywordLexem->type==LxSecFor) {
+            // Suggest variables applicable to 'for' statement
+            if (statementBefore->data.size()>2)
+                block = statementBefore->data.mid(2);
+            bool hasCompleteForVariable = false;
+            if (block.size()>0) {
+                // First check if there is complete for variable
+                QString varName;
+                for (Lexem * lx : block) {
+                    varName += " "+lx->data;
+                }
+                varName = varName.simplified();
+                AST::Variable * var = nullptr;
+                if (findVariable(varName, contextModule, contextAlgorithm, var)) {
+                    if (var->baseType.kind==AST::TypeInteger
+                            &&
+                            (var->accessType==AST::AccessRegular || var->accessType==AST::AccessArgumentInOut)
+                            )
+                    {
+                        hasCompleteForVariable = true;
+                    }
+                }
+            }
+            if (hasCompleteForVariable) {
+                // Suggest only 'from' keyword
+                Shared::Suggestion s;
+                s.kind = Shared::Suggestion::Kind::SecondaryKeyword;
+                s.value = QString::fromUtf8(" от ");
+                result.push_back(s);
+            }
+            else {
+                QList<Shared::Suggestion> forvalues = suggestExpressionAutoComplete(
+                            /* lexemsBefore    = */ QList<Lexem*>(),
+                            /* lexemsAfter     = */ lexemsAfter,
+                            /* contextModule   = */ contextModule,
+                            /* contextAlgorithm= */ contextAlgorithm,
+                            /* typeIsKnown     = */ true,
+                            /* baseType        = */ AST::TypeInteger,
+                            /* dimension       = */ 0,
+                            /* accessType      = */ AST::AccessRegular,
+                            /* expressionKind  = */ AST::ExprNone
+                            ) + suggestExpressionAutoComplete(
+                            /* lexemsBefore    = */ QList<Lexem*>(),
+                            /* lexemsAfter     = */ lexemsAfter,
+                            /* contextModule   = */ contextModule,
+                            /* contextAlgorithm= */ contextAlgorithm,
+                            /* typeIsKnown     = */ true,
+                            /* baseType        = */ AST::TypeInteger,
+                            /* dimension       = */ 0,
+                            /* accessType      = */ AST::AccessArgumentInOut,
+                            /* expressionKind  = */ AST::ExprNone
+                            );
+                for (Shared::Suggestion & ss : forvalues) {
+                    // Filter values to match one of conditions:
+                    //   a) local/global variable; or
+                    //   b) in/out parameter
+                    if (ss.kind==Shared::Suggestion::Kind::Global) {
+                        ss.value += QString::fromUtf8(" от ");
+                        result.push_back(ss);
+                    }
+                    else if (ss.kind==Shared::Suggestion::Kind::Local) {
+                        AST::Variable * var = nullptr;
+                        if (findVariable(ss.value, contextModule, contextAlgorithm, var)) {
+                            if (var->accessType==AST::AccessRegular || var->accessType==AST::AccessArgumentInOut) {
+                                ss.value += QString::fromUtf8(" от ");
+                                result.push_back(ss);
+                            }
+                        }
+                    }
+                } // end for (Shared::Suggestion & ss : forvalues)
+            } // end if (hasCompleteForVariable) { ... } else { ... }
+        }
+        else {
+            // Suggest any integer value for 'from', 'to' or 'step'
+            int lastKeywordPos = statementBefore->data.lastIndexOf(lastKeywordLexem);
+            if (lastKeywordPos<statementBefore->data.size()-1)
+                block = statementBefore->data.mid(lastKeywordPos+1);
+            bool hasCompleteIntegerExpression = false;
+            if (block.size()>0) {
+                // First check if there is complete integer value
+                AST::Expression * expr = parseExpression(block, contextModule, contextAlgorithm);
+                if (expr) {
+                    if (expr->baseType.kind==AST::TypeInteger)
+                        hasCompleteIntegerExpression = true;
+                    delete expr;
+                }
+            }
+            if (hasCompleteIntegerExpression) {
+                // Append next for-statement keyword
+                Shared::Suggestion ss;
+                ss.kind = Shared::Suggestion::Kind::SecondaryKeyword;
+                if (lastKeywordLexem->type==LxSecFrom) {
+                    ss.value = QString::fromUtf8(" до ");
+                    result.push_back(ss);
+                }
+                else if (lastKeywordLexem->type==LxSecTo) {
+                    ss.value = QString::fromUtf8(" шаг ");
+                    result.push_back(ss);
+                }
+            }
+            else {
+                // Suggest integer values
+                QList<Shared::Suggestion> intvalues = suggestExpressionAutoComplete(
+                            /* lexemsBefore    = */ QList<Lexem*>(),
+                            /* lexemsAfter     = */ lexemsAfter,
+                            /* contextModule   = */ contextModule,
+                            /* contextAlgorithm= */ contextAlgorithm,
+                            /* typeIsKnown     = */ true,
+                            /* baseType        = */ AST::TypeInteger,
+                            /* dimension       = */ 0,
+                            /* accessType      = */ AST::AccessArgumentIn,
+                            /* expressionKind  = */ AST::ExprNone
+                            );
+                for (Shared::Suggestion ss : intvalues) {
+                    if (lastKeywordLexem->type==LxSecFrom)
+                        ss.value += QString::fromUtf8(" до ");
+                    result.push_back(ss);
+                }
+            }
+        }
+    }
+    return result;
+}
+
+QList<Shared::Suggestion>
 SyntaxAnalizerPrivate::suggestAssignmentAutoComplete(
         const Statement *statementBefore,
         const QList<Lexem *> lexemsAfter,
@@ -538,6 +741,18 @@ SyntaxAnalizerPrivate::suggestAssignmentAutoComplete(
                     /* baseType        = */ AST::TypeNone,
                     /* dimension       = */ 0,
                     /* accessType      = */ AST::AccessRegular,
+                    /* expressionKind  = */ AST::ExprNone
+                    );
+        // Make suggestion for variable assignment
+        result += suggestExpressionAutoComplete(
+                    /* lexemsBefore    = */ rvalue,
+                    /* lexemsAfter     = */ lexemsAfter,
+                    /* contextModule   = */ contextModule,
+                    /* contextAlgorithm= */ contextAlgorithm,
+                    /* typeIsKnown     = */ false,
+                    /* baseType        = */ AST::TypeNone,
+                    /* dimension       = */ 0,
+                    /* accessType      = */ AST::AccessArgumentOut,
                     /* expressionKind  = */ AST::ExprNone
                     );
     }
@@ -710,6 +925,19 @@ QList<Shared::Suggestion> SyntaxAnalizerPrivate::suggestExpressionAutoComplete(
                     /* minimumDimension= */ typeIsKnown ? dimension : 0,
                     /* accessType      = */ accessType
                     );
+        if (typeIsKnown && baseType.kind==AST::TypeBoolean) {
+            // Suggest something to bool-calculable
+            result += suggestValueAutoComplete(
+                        /* lexemsBefore    = */ prevBlock,
+                        /* lexemsAfter     = */ lexemsAfter,
+                        /* contextModule   = */ contextModule,
+                        /* contextAlgorithm= */ contextAlgorithm,
+                        /* typeIsKnown     = */ false,
+                        /* baseType        = */ AST::TypeNone,
+                        /* minimumDimension= */ typeIsKnown ? dimension : 0,
+                        /* accessType      = */ accessType
+                        );
+        }
     }
     return result;
 }
@@ -789,8 +1017,8 @@ SyntaxAnalizerPrivate::suggestValueAutoComplete(
 
     // 2. Suggest algorithms if any applicable
     if (minimumDimension==0
-            && (!typeIsKnown
-                || baseType.kind==AST::TypeNone
+            && (
+                baseType.kind==AST::TypeNone
                 || accessType==AST::AccessArgumentIn
                 || accessType==AST::AccessRegular
                 )
@@ -815,7 +1043,19 @@ SyntaxAnalizerPrivate::suggestValueAutoComplete(
             }
             if (!typeIsKnown)
                 typeMatch = alg->header.returnType.kind != AST::TypeNone;
+            bool accessMatch = false;
+                // Can pass an algorithm here
+            if (typeIsKnown && baseType.kind==AST::TypeNone) {
+                // It is always possible to call an algorithm from start of line
+                accessMatch = true;
+            }
+            else {
+                // Algorithms can be passed only by value, but not reference
+                accessMatch = accessType==AST::AccessRegular || accessType==AST::AccessArgumentIn;
+            }
+
             if (typeMatch
+                    && accessMatch
                     && alg->header.name.length()>0
                     )
             {
@@ -1340,7 +1580,30 @@ QList<Shared::Suggestion> SyntaxAnalizer::suggestAutoComplete(
     {
         result = d->suggestConditionAutoComplete(statementBefore, lexemsAfter, contextModule, contextAlgorithm);
     }
-    return result;
+    else if (statementBefore->type==LxPriLoop) {
+        result = d->suggestLoopBeginAutoComplete(statementBefore, lexemsAfter, contextModule, contextAlgorithm);
+    }
+    QList<Shared::Suggestion> filteredResult;
+    for (Shared::Suggestion & s : result) {
+        // Filter suggestions to match last lexem text
+        if (statementBefore && statementBefore->data.size()>0 && statementBefore->data.last()->type==LxTypeName) {
+            Lexem * last = statementBefore->data.back();
+            const QString lastText = last->data;
+            if (s.value.startsWith(lastText)) {
+                filteredResult.push_back(s);
+            }
+        }
+        else {
+            if (statementBefore && statementBefore->data.size()>0) {
+                Lexem * last = statementBefore->data.back();
+                if (last->type & LxTypePrimaryKwd || last->type & LxTypeSecondaryKwd)
+                    if (!s.value.startsWith(' '))
+                        s.value.prepend(' ');
+            }
+            filteredResult.push_back(s);
+        }
+    }
+    return filteredResult;
 }
 
 
