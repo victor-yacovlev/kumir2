@@ -314,7 +314,7 @@ SyntaxAnalizerPrivate::suggestImportAutoComplete(
         if (!mod->header.enabled && mod->header.name.length()>0) {
             Shared::Suggestion suggestion;
             suggestion.value = mod->header.name;
-            suggestion.description = q->tr("Built-it module %s").arg(mod->header.name);
+            suggestion.description = q->tr("Built-it module %1").arg(mod->header.name);
             suggestion.kind = Shared::Suggestion::Kind::BuiltinModule;
             result.push_back(suggestion);
         }
@@ -325,7 +325,7 @@ SyntaxAnalizerPrivate::suggestImportAutoComplete(
         kumFiles.insert(fileName);
         Shared::Suggestion suggestion;
         suggestion.value = "\""+fileName+"\"";
-        suggestion.description = q->tr("Use file \"%s\" as module").arg(fileName);
+        suggestion.description = q->tr("Use file \"%1\" as module").arg(fileName);
         suggestion.kind = Shared::Suggestion::Kind::KumirModule;
         result.push_back(suggestion);
     }
@@ -334,7 +334,7 @@ SyntaxAnalizerPrivate::suggestImportAutoComplete(
         if (!kumFiles.contains(kumFileName)) {
             Shared::Suggestion suggestion;
             suggestion.value = "\""+fileName+"\"";
-            suggestion.description = q->tr("Use precompiled file \"%s\" as module").arg(fileName);
+            suggestion.description = q->tr("Use precompiled file \"%1\" as module").arg(fileName);
             suggestion.kind = Shared::Suggestion::Kind::KumirModule;
             result.push_back(suggestion);
         }
