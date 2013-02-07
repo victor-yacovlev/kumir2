@@ -4446,6 +4446,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
         }
 
         Lexem * notFlag = 0;
+        bool notInTheMiddle = false;
         if (block.size()>1 && block.last()->type==LxSecNot) {
             block.last()->error = _("'not' at the end");
             return 0;
@@ -4454,6 +4455,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
             if ( (*it)->type==LxSecNot && notFlag==0 ) {
                 notFlag = (*it);
                 it = block.erase(it);
+                notInTheMiddle = it!=block.begin();
             }
             else if ( (*it)->type==LxSecNot && notFlag!=0 ) {
                 (*it)->error = _("Too many 'not'");
@@ -4493,6 +4495,11 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
 //                    notFlag->error = _("Use of 'not' for non-boolean value");
 //                    return 0;
 //                }
+                if (operand->baseType.kind!=AST::TypeBoolean && notInTheMiddle) {
+                    notFlag->error = _("'not' must be before boolean expression");
+                    delete operand;
+                    return 0;
+                }
                 subexpression << notFlag;
             }
             curPos++;
@@ -4553,6 +4560,11 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
 //                    notFlag->error =  _("Use of 'not' for non-boolean value");
 //                    return 0;
 //                }
+                if (operand->baseType.kind!=AST::TypeBoolean && notInTheMiddle) {
+                    notFlag->error = _("'not' must be before boolean expression");
+                    delete operand;
+                    return 0;
+                }
                 subexpression << notFlag;
             }
             subexpression << operand;
@@ -4674,6 +4686,11 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
 //                    notFlag->error =  _("Use of 'not' for non-boolean value");
 //                    return 0;
 //                }
+                if (operand->baseType.kind!=AST::TypeBoolean && notInTheMiddle) {
+                    notFlag->error = _("'not' must be before boolean expression");
+                    delete operand;
+                    return 0;
+                }
                 subexpression << notFlag;
             }
             curPos++;
