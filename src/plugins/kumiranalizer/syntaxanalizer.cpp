@@ -4447,7 +4447,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
 
         Lexem * notFlag = 0;
         if (block.size()>1 && block.last()->type==LxSecNot) {
-            block.last()->error = _("Extra 'not'");
+            block.last()->error = _("'not' at the end");
             return 0;
         }
         for (QList<Lexem*>::iterator it=block.begin(); it!=block.end(); ) {
