@@ -1256,7 +1256,7 @@ void popAssertStatement(QList<Lexem*> &lexems, Statement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilSemicolonOrBlockClose(lexems, result);
+    popLexemsUntilPrimaryKeyword(lexems, result);
 }
 
 void popImportStatement(QList<Lexem*> &lexems, Statement &result)
