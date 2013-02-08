@@ -1790,7 +1790,13 @@ void SyntaxAnalizerPrivate::parseOutput(int str)
 
     for (int i=0 ; i<groups.size(); i++) {
         QString err;
-
+        if (groups[i].size()==0) {
+            if (i<comas.size())
+                comas[i]->error = _("Extra coma");
+            else
+                comas[i-1]->error = _("Extra coma");
+            return;
+        }
         QList< QList<Lexem*> > subgroups;
         QList< Lexem* > colons;
         splitLexemsByOperator(groups[i], LxOperColon, subgroups, colons);
