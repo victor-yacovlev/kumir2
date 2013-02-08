@@ -160,12 +160,22 @@ void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterf
         }
     }
     if (line < data.size()) {
-        data[line].text.remove(0, blankChars);
-        data[line].changed = true;
-        for (int i=0; i<blankChars; i++) {
-            data[line].selected.pop_front();
-            data[line].highlight.pop_front();
-            m_removedLines.insert(i);
+        int blanks = blankChars;
+        TextLine & tl = data[line];
+        bool changed = false;
+        for (int i=tl.text.length()-1; i>=0; i--) {
+            if (blanks<=0) break;
+            if (tl.text[i].isSpace()) {
+                tl.text.resize(tl.text.length()-1);
+                tl.selected.pop_back();
+                tl.highlight.pop_back();
+                changed = true;
+                blanks -= 1;
+            }
+        }
+        if (changed) {
+            m_removedLines.insert(line);
+            tl.changed = true;
         }
     }
     for (int i=0; i<blankLines; i++) {
