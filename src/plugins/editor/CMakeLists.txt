@@ -13,7 +13,7 @@ set(SOURCES
     keycommand.cpp
     textdocument.cpp
     editcommands.cpp
-    autocompletewidget.cpp
+    suggestionswindow.cpp
 )
 
 set(EXTRA_LIBS
@@ -41,12 +41,13 @@ set(MOC_HEADERS
     clipboard.h
     editorstandalonewindow.h
     settingspage.h
-    autocompletewidget.h
     editor_p.h
+    suggestionswindow.h
 )
 
 set(FORMS
     settingspage.ui
+    suggestionswindow.ui
 )
 
 qt4_wrap_ui(UI_SOURCES ${FORMS})

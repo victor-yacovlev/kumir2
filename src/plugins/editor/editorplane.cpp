@@ -5,7 +5,7 @@
 #include "clipboard.h"
 #include "settingspage.h"
 #include "utils.h"
-#include "autocompletewidget.h"
+#include "suggestionswindow.h"
 
 
 #define RECT_SELECTION_MODIFIER Qt::AltModifier
@@ -59,10 +59,11 @@ EditorPlane::EditorPlane(TextDocument * doc
     setFocusPolicy(Qt::StrongFocus);
     pnt_delimeterPress = pnt_marginPress = pnt_textPress = pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
     b_selectionInProgress = false;
-    m_autocompleteWidget = new AutoCompleteWidget(this);
+    m_autocompleteWidget = new SuggestionsWindow(this);
+    m_autocompleteWidget->updateSettings(settings);
     m_autocompleteWidget->setVisible(false);
-    connect(m_autocompleteWidget, SIGNAL(accepted(QString,QString)),
-            this, SLOT(finishAutoCompletion(QString,QString)));
+    connect(m_autocompleteWidget, SIGNAL(acceptedSuggestion(QString)),
+            this, SLOT(finishAutoCompletion(QString)));
     qApp->installEventFilter(this);
 
     an_dontEdit = new QPropertyAnimation(this, "dontEditState", this);
@@ -126,7 +127,7 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
 {
     emit requestAutoScroll(0);
     if (m_autocompleteWidget->isVisible())
-        m_autocompleteWidget->reject();
+        m_autocompleteWidget->hide();
     if (e->button()==Qt::RightButton) {
         e->accept();
         return;
@@ -785,7 +786,7 @@ bool EditorPlane::event(QEvent *e)
 
 void EditorPlane::keyPressEvent(QKeyEvent *e)
 {
-    if (m_cursor->isEnabled()) {
+    if (m_cursor->isEnabled() && hasFocus()) {
         if (e->matches(QKeySequence::MoveToNextChar)) {
             m_cursor->evaluateCommand(KeyCommand::MoveToNextChar);
         }
@@ -936,54 +937,51 @@ void EditorPlane::doAutocomplete()
     QList<Shared::Suggestion> suggestions =
             m_analizer->suggestAutoComplete(m_document->documentId, m_cursor->row(), before, after);
 
-    for (Shared::Suggestion s : suggestions) {
-        qDebug() << QString("Suggestion: ") << s.value << QString(" --- ") << s.description;
-    }
-    return;
-
-    QString source;
-    QStringList algorhitms = m_analizer->algorhitmsAvailableFor(m_document->documentId, m_cursor->row());
-    QStringList locals = m_analizer->localsAvailableFor(m_document->documentId, m_cursor->row());
-    QStringList globals = m_analizer->globalsAvailableFor(m_document->documentId, m_cursor->row());
+//    for (Shared::Suggestion s : suggestions) {
+//        qDebug() << QString("Suggestion: ") << s.value << QString(" --- ") << s.description;
+//    }
 
     m_cursor->removeSelection();
     m_cursor->removeRectSelection();
+    m_autocompleteWidget->init(before, suggestions);
+    m_autocompleteWidget->move(cursorRect().topLeft());
+    m_autocompleteWidget->setVisible(true);
+    m_autocompleteWidget->setFocus();
 
+}
+
+void EditorPlane::finishAutoCompletion(const QString &suggestion)
+{
+    static const QString Delimeters = QString::fromAscii(
+                " ;:=()!,.@_-+*/[]{}"
+                );
+    QString before, after;
     if (m_cursor->row()<m_document->linesCount()) {
         QString line = m_document->textAt(m_cursor->row());
         int textPos = m_cursor->column() - 2 * m_document->indentAt(m_cursor->row());
-        if (textPos <= line.length()) {
-            for (int i=line.length(); i>0; i--) {
-                QChar ch = line[i-1];
-                if (ch.isLetterOrNumber() || ch=='_' || ch=='%')
-                    source.prepend(ch);
-                else
-                    break;
-            }
+        before = line.mid(0, textPos);
+        if (textPos<line.length()) {
+            after = line.mid(textPos);
         }
     }
-
-    m_autocompleteWidget->init(font(),
-                               this,
-                               source,
-                               algorhitms,
-                               locals,
-                               globals
-                               );
-    if (m_autocompleteWidget->suggestionsCount()>0) {
-        m_autocompleteWidget->move(cursorRect().topLeft()+QPoint(5*charWidth(), m_autocompleteWidget->offsetY()));
-        m_autocompleteWidget->setVisible(true);
-        m_autocompleteWidget->setFocus();
+    int leftPart = 0;
+    QString text;
+    if (!suggestion.startsWith(' ')) {
+        for (int i=before.length()-1; i>=0; i--) {
+            if (Delimeters.contains(before[i]))
+                break;
+            else
+                leftPart += 1;
+        }
+        text = suggestion;
     }
-}
-
-void EditorPlane::finishAutoCompletion(const QString &source,
-                                       const QString &newtext)
-{
-    for (int i=0; i<source.length(); i++) {
+    else if (before.length()>0 && Delimeters.contains(before[before.length()-1])) {
+        text = suggestion.mid(1);
+    }
+    for (int i=0; i<leftPart; i++) {
         m_cursor->evaluateCommand(KeyCommand::SelectPreviousChar);
     }
-    m_cursor->evaluateCommand(KeyCommand(newtext));
+    m_cursor->evaluateCommand(KeyCommand(text));
 }
 
 void EditorPlane::selectAll()

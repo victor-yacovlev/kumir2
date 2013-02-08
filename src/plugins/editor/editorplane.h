@@ -95,7 +95,7 @@ protected:
 protected slots:
     void updateCursor();
     void updateText(int fromLine, int toLine);
-    void finishAutoCompletion(const QString & source, const QString & newtext);
+    void finishAutoCompletion(const QString & suggession);
 
 private:
     int i_timerId;
@@ -127,7 +127,7 @@ private:
     int i_highlightedLine;
     QColor color_highlightedLine;
     int i_grayLockSymbolLine;
-    class AutoCompleteWidget * m_autocompleteWidget;
+    class SuggestionsWindow * m_autocompleteWidget;
     Shared::AnalizerInterface * m_analizer;
     QList<QAction*> l_contextMenuActions;
 signals:
