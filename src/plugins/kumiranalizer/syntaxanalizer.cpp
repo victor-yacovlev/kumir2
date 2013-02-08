@@ -3811,7 +3811,7 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
                     int startPos = 0;
                     if (val.startsWith('-'))
                         startPos += 1;
-                    if (val.mid(startPos).startsWith('0')) {
+                    if (val.mid(startPos).startsWith('0') && val.length()>startPos+1) {
                         for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
                             Lexem * lx = * it;
                             lx->error = _("Leading zeroes not allowed in constants");
