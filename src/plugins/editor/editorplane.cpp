@@ -899,7 +899,7 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
             if (b_hasAnalizer)
                 doAutocomplete();
         }
-        else if (!e->text().isEmpty()) {
+        else if (!e->text().isEmpty() && !e->modifiers().testFlag(Qt::ControlModifier)) {
             m_cursor->evaluateCommand(Utils::textByKey(Qt::Key(e->key())
                                                        , e->text()
                                                        , e->modifiers().testFlag(Qt::ShiftModifier)));
