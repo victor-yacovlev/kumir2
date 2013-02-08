@@ -308,7 +308,7 @@ public:
     inline bool isValid() const {
         return m_reference
                 ? m_reference->isValid()
-                : m_value.type()!=VT_void;
+                : m_value.type()!=VT_void || i_dimension>0;
     }
 
     inline bool isConstant() const { return m_reference? m_reference->isConstant() : b_constant; }
