@@ -10,6 +10,7 @@
 "Extra statement";"Строка не на месте";"";"";"";"";
 "Wrong table constant";"";"";"";"";"";
 "Unpaired ']'";"Нет парной “]”";"";"";"";"";
+"Leading zeroes not allowed";"Лишние нули в начале числа";"";"";"";"";
 "Return valus is not a string";"Возвращаемая величина не строка";"";"";"";"";
 "What to output?";"Что выводить?";"";"";"";"";
 "Garbage in algorithm";"Лишние строки алгоритма";"";"";"";"";
@@ -163,6 +164,7 @@
 "Extra format parameter";"Лишний параметр вывода";"";"";"";"";
 "No 'end' after 'then'";"Нет “все” после “то”";"";"";"";"";
 "Slice of string array, but not string";"Вырезка не из строки, а из таблицы";"";"";"";"";
+"Leading zeroes not allowed in constants";"Лишние нули в начале числа";"";"";"";"";
 "Void argument";"Пустой аргумент";"";"";"";"";
 "What to input?";"Куда вводить?";"";"";"";"";
 "Can't input complex expression";"Нельзя ввести в выражение";"";"";"";"";

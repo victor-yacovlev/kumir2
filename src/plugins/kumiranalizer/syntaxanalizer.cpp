@@ -3800,6 +3800,20 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
             if (pt==AST::TypeInteger) {
                 integerOverflow = !Kumir::Math::isCorrectIntegerConstant(val.toStdWString());
                 isHex = val.startsWith("$") || val.startsWith("-$") || val.startsWith("0x") || val.startsWith("-0x");
+                if (!isHex) {
+                    // Check for leading zeroes
+                    int startPos = 0;
+                    if (val.startsWith('-'))
+                        startPos += 1;
+                    if (val.mid(startPos).startsWith('0')) {
+                        for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
+                            Lexem * lx = * it;
+                            lx->error = _("Leading zeroes not allowed in constants");
+                            return QVariant::Invalid;
+                        }
+                    }
+
+                }
             }
             if (ct==AST::TypeReal ||
                     (pt==AST::TypeReal || (integerOverflow && !isHex) )
