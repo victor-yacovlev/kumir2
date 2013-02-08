@@ -935,7 +935,10 @@ void TextCursor::removeCurrentLine()
     }
 
     if (i_row<m_document->linesCount()) {
+        int column = i_column;
+        movePosition(QTextCursor::EndOfBlock, MM_Move, 1);
         m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, 0, m_document->textAt(i_row).length()+1, true));
+        i_column = column;
         emit updateRequest(-1, -1);
         emit updateRequest();
     }
