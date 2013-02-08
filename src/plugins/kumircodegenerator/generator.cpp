@@ -455,6 +455,12 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
                 QList<Bytecode::Instruction> initBounds;
                 initBounds << calculate(moduleId, algorhitmId, 0, var->bounds[j].second);
                 initBounds << calculate(moduleId, algorhitmId, 0, var->bounds[j].first);
+                for ( Bytecode::Instruction & instr : initBounds ) {
+                    if (instr.type==Bytecode::LOAD || instr.type==Bytecode::LOADARR) {
+                        if (instr.scope==Bytecode::LOCAL)
+                            instr.arg = uint16_t(instr.arg-locOffset);
+                    }
+                }
                 instrs << initBounds;
             }
             Bytecode::Instruction bounds;
