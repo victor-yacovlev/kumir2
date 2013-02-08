@@ -184,7 +184,17 @@ inline InstructionType typeFromString(const std::string & ss)
     else return NOP;
 }
 
-inline std::string instructionToString(const Instruction &instr)
+typedef std::pair<uint32_t, uint16_t> AS_Key;
+    // module | algorithm, id
+typedef std::map<AS_Key, std::string> AS_Values;
+struct AS_Helpers {
+    AS_Values globals;
+    AS_Values locals;
+    AS_Values constants;
+    AS_Values algorithms;
+};
+
+inline std::string instructionToString(const Instruction &instr, const AS_Helpers & helpers, uint8_t moduleId, uint16_t algId)
 {
     static std::set<InstructionType> VariableInstructions;
     VariableInstructions.insert(INIT);
@@ -236,6 +246,8 @@ inline std::string instructionToString(const Instruction &instr)
     HasValueInstructions.insert(UPDARR);
 
     std::stringstream result;
+    result.setf(std::ios::hex,std::ios::basefield);
+    result.setf(std::ios::showbase);
     InstructionType t = instr.type;
     result << typeToString(t);
     if (ModuleNoInstructions.count(t)) {
@@ -251,12 +263,53 @@ inline std::string instructionToString(const Instruction &instr)
             result << " constant";
     }
     if (HasValueInstructions.count(t)) {
+        if (t==JUMP || t==JNZ || t==JZ) {
+            result.unsetf(std::ios::basefield);
+            result.unsetf(std::ios::showbase);
+        }
         result << " " << int(instr.arg);
     }
     if (RegisterNoInstructions.count(t)) {
         result << " " << int(instr.registerr);
     }
-    return result.str();
+    std::string r = result.str();
+
+    if (VariableInstructions.count(t)) {
+        VariableScope s = instr.scope;
+        AS_Key akey;
+        const AS_Values * vals = nullptr;
+        akey.first = 0;
+        if (s==LOCAL) {
+            akey.first = (moduleId << 16) | algId;
+            akey.second = instr.arg;
+            vals = &(helpers.locals);
+        }
+        else if (s==GLOBAL) {
+            akey.first = (moduleId << 16);
+            akey.second = instr.arg;
+            vals = &(helpers.globals);
+        }
+        else if (s==CONSTT) {
+            akey.first = 0;
+            akey.second = instr.arg;
+            vals = &(helpers.constants);
+        }
+        if (vals && vals->count(akey)) {
+            while (r.length()<25)
+                r.push_back(' ');
+            r += std::string("# ") + vals->at(akey);
+        }
+    }
+    else if (t==CALL) {
+        AS_Key akey (instr.module << 16, instr.arg);
+        const AS_Values * vals = &(helpers.algorithms);
+        if (vals && vals->count(akey)) {
+            while (r.length()<25)
+                r.push_back(' ');
+            r += std::string("# ") + vals->at(akey);
+        }
+    }
+    return r;
 }
 
 inline uint32_t toUint32(const Instruction &instr)

@@ -590,7 +590,11 @@ inline String unscreenString(String s)
 inline std::string constantToTextStream(const TableElem & e)
 {
     std::ostringstream os;
+    os.setf(std::ios::hex,std::ios::basefield);
+    os.setf(std::ios::showbase);
     os << ".constant id=" << e.id << " type=" << vtypeToString(e.vtype, e.dimension) << " value=";
+    os.unsetf(std::ios::basefield);
+    os.unsetf(std::ios::showbase);
     if (e.vtype.front()==VT_int) {
         const int32_t val = e.initialValue.toInt();
         os << val;
@@ -612,6 +616,8 @@ inline std::string constantToTextStream(const TableElem & e)
 inline std::string localToTextStream(const TableElem & e)
 {
     std::ostringstream os;
+    os.setf(std::ios::hex,std::ios::basefield);
+    os.setf(std::ios::showbase);
     os << ".local kind=" << kindToString(e.refvalue) << " type=" << vtypeToString(e.vtype, e.dimension) << " ";
     os << "module=" << int(e.module) << " algorithm=" << e.algId << " id=" << e.id;
     if (e.name.length()>0) {
@@ -623,6 +629,8 @@ inline std::string localToTextStream(const TableElem & e)
 inline std::string globalToTextStream(const TableElem & e)
 {
     std::ostringstream os;
+    os.setf(std::ios::hex,std::ios::basefield);
+    os.setf(std::ios::showbase);
     os << ".global type=" << vtypeToString(e.vtype, e.dimension) << " ";
     os << "module=" << int(e.module) << " id=" << e.id;
     if (e.name.length()>0) {
@@ -631,18 +639,24 @@ inline std::string globalToTextStream(const TableElem & e)
     return os.str();
 }
 
-inline std::string functionToTextStream(const TableElem & e)
+
+
+inline std::string functionToTextStream(const TableElem & e, const AS_Helpers & helpers)
 {
     std::ostringstream os;
+    os.setf(std::ios::hex,std::ios::basefield);
+    os.setf(std::ios::showbase);
     os << elemTypeToString(e.type) << " ";
     os << "module=" << int(e.module) << " id=" << e.id << " size=" << e.instructions.size();
     if (e.name.length()>0) {
         os << " name=\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\"";
     }
     os << "\n";
+    os.unsetf(std::ios::basefield);
+    os.unsetf(std::ios::showbase);
     for (size_t i=0; i<e.instructions.size(); i++) {
         os << i << ":\t";
-        os << instructionToString(e.instructions[i]);
+        os << instructionToString(e.instructions[i], helpers, e.module, e.algId);
         os << "\n";
     }
     return os.str();
@@ -651,6 +665,8 @@ inline std::string functionToTextStream(const TableElem & e)
 inline std::string externToTextStream(const TableElem & e)
 {
     std::ostringstream os;
+    os.setf(std::ios::hex,std::ios::basefield);
+    os.setf(std::ios::showbase);
     os << ".extern ";
     os << "module=";
     os << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.moduleName)) << "\"";
@@ -659,7 +675,7 @@ inline std::string externToTextStream(const TableElem & e)
     return os.str();
 }
 
-inline void tableElemToTextStream(std::ostream &ts, const TableElem &e)
+inline void tableElemToTextStream(std::ostream &ts, const TableElem &e, const AS_Helpers & helpers)
 {
     if (e.type==EL_CONST)
         ts << constantToTextStream(e);
@@ -670,7 +686,7 @@ inline void tableElemToTextStream(std::ostream &ts, const TableElem &e)
     else if (e.type==EL_GLOBAL)
         ts << globalToTextStream(e);
     else
-        ts << functionToTextStream(e);
+        ts << functionToTextStream(e, helpers);
     ts << "\n";
 }
 
