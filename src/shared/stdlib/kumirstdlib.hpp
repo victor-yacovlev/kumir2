@@ -2092,12 +2092,15 @@ public:
             result.reserve(100);
             Char current;
             while (readRawChar(current)) {
-                if (delimeters.find_first_of(current)!=String::npos) {
+                if (delimeters.find_first_of(current)!=String::npos
+                        && current!=Char('\r')
+                        ) {
                     pushLastCharBack();
                     break;
                 }
                 else {
-                    result.push_back(current);
+                    if (current!=Char('\r'))
+                        result.push_back(current);
                 }
             }
             return result;
@@ -2106,7 +2109,9 @@ public:
             // Skip delimiters until lexem
             Char skip(32);
             while (readRawChar(skip)) {
-                if (delim.find_first_of(skip)==String::npos) {
+                if (delim.find_first_of(skip)==String::npos
+                        && skip!=Char('\r')
+                        ) {
                     pushLastCharBack();
                     break;
                 }
