@@ -70,6 +70,8 @@ bool Plugin::loadProgram(const QString & filename, const QByteArray & source, Sh
         const std::string str(source.constData());
         d->loadProgramFromTextBuffer(str, filename.toStdWString());
     }
+    const QString programDirName = QFileInfo(filename).absoluteDir().absolutePath();
+    d->setProgramDirectory(programDirName);
     d->programLoaded = true;
     return true;
 }
