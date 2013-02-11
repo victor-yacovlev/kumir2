@@ -2832,7 +2832,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName, bool allowOpe
         return ;
     }
 
-    if (alg->header.returnType.kind!=AST::TypeNone) {
+    if (alg->header.returnType.kind!=AST::TypeNone  && onlyName) {
         AST::Variable * retVar = new AST::Variable;
         retVar->accessType = AST::AccessRegular;
         retVar->baseType = alg->header.returnType;
