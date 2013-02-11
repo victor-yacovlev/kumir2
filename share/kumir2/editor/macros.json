@@ -3,30 +3,36 @@
         "title": "алг-нач-кон",
         "key": "А",
         "commands": [
-            { "command": "InsertText", "text": "алг \nнач\n\nкон" },
+            { "command": "InsertText", "text": "алг\nнач\n\nкон" },
             { "command": "MoveToPreviousLine", "text": "" },
-            { "command": "MoveToStartOfLine", "text": "" }
+            { "command": "MoveToPreviousLine", "text": "" },
+            { "command": "MoveToPreviousLine", "text": "" },
+            { "command": "MoveToEndOfLine", "text": "" },
+            { "command": "InsertText", "text": " " }
         ]
     },
     {
         "title": "если-то-все",
         "key": "Е",
         "commands": [
-            { "command": "InsertText", "text": "если \nто\n\nвсе" },
+            { "command": "InsertText", "text": "если\nто\n\nвсе" },
             { "command": "MoveToPreviousLine", "text": "" },
             { "command": "MoveToPreviousLine", "text": "" },
             { "command": "MoveToPreviousLine", "text": "" },
-            { "command": "MoveToEndOfLine", "text": "" }
+            { "command": "MoveToEndOfLine", "text": "" },
+            { "command": "InsertText", "text": " " }
         ]
     },
     {
         "title": "выбор-при-все",
         "key": "В",
         "commands": [
-            { "command": "InsertText", "text": "выбор\nпри \n\nвсе" },
+            { "command": "InsertText", "text": "выбор\nпри\n\nвсе" },
             { "command": "MoveToPreviousLine", "text": "" },
             { "command": "MoveToPreviousLine", "text": "" },
-            { "command": "MoveToEndOfLine", "text": "" }
+            { "command": "MoveToEndOfLine", "text": "" },
+            { "command": "InsertText", "text": " :" },
+            { "command": "MoveToPreviousChar", text: "" }
         ]
     },
     {
@@ -40,40 +46,35 @@
         "title": "нц-раз-кц",
         "key": "Р",
         "commands": [
-            { "command": "InsertText", "text": "нц  раз\n\nкц" },
+            { "command": "InsertText", "text": "нц раз\n\nкц" },
             { "command": "MoveToPreviousLine", "text": "" },
             { "command": "MoveToPreviousLine", "text": "" },
             { "command": "MoveToStartOfLine", "text": "" },
             { "command": "MoveToNextChar", "text": "" },
             { "command": "MoveToNextChar", "text": "" },
-            { "command": "MoveToNextChar", "text": "" }
+            { "command": "InsertText", "text": " " }
         ]
     },
     {
         "title": "нц-для-кц",
         "key": "Д",
         "commands": [
-            { "command": "InsertText", "text": "нц для  от  до  \n\nкц" },
+            { "command": "InsertText", "text": "нц для\n\nкц" },
             { "command": "MoveToPreviousLine", "text": "" },
             { "command": "MoveToPreviousLine", "text": "" },
-            { "command": "MoveToStartOfLine", "text": "" },
-            { "command": "MoveToNextChar", "text": "" },
-            { "command": "MoveToNextChar", "text": "" },
-            { "command": "MoveToNextChar", "text": "" },
-            { "command": "MoveToNextChar", "text": "" },
-            { "command": "MoveToNextChar", "text": "" },
-            { "command": "MoveToNextChar", "text": "" },
-            { "command": "MoveToNextChar", "text": "" }
+            { "command": "MoveToEndOfLine", "text": "" },
+            { "command": "InsertText", "text": " " }
         ]
     },
     {
         "title": "нц-пока-кц",
         "key": "П",
         "commands": [
-            { "command": "InsertText", "text": "нц пока \n\nкц" },
+            { "command": "InsertText", "text": "нц пока\n\nкц" },
             { "command": "MoveToPreviousLine", "text": "" },
             { "command": "MoveToPreviousLine", "text": "" },
-            { "command": "MoveToEndOfLine", "text": "" }
+            { "command": "MoveToEndOfLine", "text": "" },
+            { "command": "InsertText", "text": " " }
         ]
     },
     {
@@ -84,15 +85,5 @@
             { "command": "MoveToPreviousLine", "text": "" },
             { "command": "MoveToStartOfLine", "text": "" }
         ]
-    },
-    {
-        "title": "исп-кон_исп",
-        "key": "С",
-        "commands": [
-            { "command": "InsertText", "text": "исп \n\nкон_исп" },
-            { "command": "MoveToPreviousLine", "text": "" },
-            { "command": "MoveToPreviousLine", "text": "" },
-            { "command": "MoveToEndOfLine", "text": "" }
-        ]
-    }
+    }    
 ]
