@@ -270,8 +270,37 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
         m_document->setErrorsAt(i_row, QStringList());
     }
 
-    if (prevRow!=i_row || prevLines != m_document->linesCount())
+    if (prevRow!=i_row || prevLines != m_document->linesCount()) {
         m_document->flushTransaction();
+        if (m_analizer
+                && command.type==KeyCommand::InsertText
+                && command.text=="\n") {
+            // Try to complete closing bracket
+            Shared::TextAppend append = m_analizer->closingBracketSuggestion(
+                        m_document->documentId,
+                        prevRow);
+                // Ask for a compiler
+            if (append.first.length()>0) {
+                // If found suggesstion
+                const QStringList extraLines = append.first.split('\n', QString::KeepEmptyParts);
+                for (int i=0; i<extraLines.size(); i++) {
+                    // insert closing bracket text lines
+                    QString line = extraLines[i];
+                    evaluateCommand(KeyCommand::MoveToStartOfLine);
+                    if (i<extraLines.size()-1)
+                        line += "\n";
+                    evaluateCommand(line);
+                }
+                for (quint32 i=0; i<append.second; i++)
+                    // move cursor back required times
+                    evaluateCommand(KeyCommand::MoveToPreviousLine);
+                evaluateCommand(KeyCommand::MoveToEndOfLine);
+                if (m_document->textAt(i_row).trimmed().length()>0) {
+                    evaluateCommand(" ");
+                }
+            }
+        }
+    }
     if (ExtensionSystem::PluginManager::instance()->currentGlobalState()==ExtensionSystem::GS_Observe
             && command.type & KeyCommand::CommandModifiesTextMask
             )

@@ -115,6 +115,8 @@ void TextDocument::removeSelection()
 
 void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterface *analizer, int line, int pos, int blankLines, int blankChars, int count)
 {
+    if (data.size()==0)
+        return;
     int cnt = count;
     int p = pos;
     int removedCounter = line;
