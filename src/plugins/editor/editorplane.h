@@ -97,6 +97,7 @@ protected slots:
     void updateText(int fromLine, int toLine);
     void finishAutoCompletion(const QString & suggession);
 
+
 private:
     int i_timerId;
     class TextDocument * m_document;
@@ -133,6 +134,8 @@ private:
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
     void requestAutoScroll(char a);
+    void disableInsertActions();
+    void enableInsertActions();
 
 };
 

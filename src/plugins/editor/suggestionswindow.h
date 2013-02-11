@@ -16,12 +16,13 @@ class SuggestionsWindow : public QWidget
     Q_OBJECT
     
 public:
-    explicit SuggestionsWindow(QWidget *parent = 0);
+    explicit SuggestionsWindow(QWidget *editorWidget);
     void init(const QString & before, const QList<Shared::Suggestion> & suggestions);
     ~SuggestionsWindow();
     void updateSettings(const QSettings * settings);
 signals:
     void acceptedSuggestion(const QString & text);
+    void hidden();
 protected:
     void focusInEvent(QFocusEvent * event);
     void keyPressEvent(QKeyEvent * event);
@@ -44,6 +45,7 @@ private:
     QIcon icon_module;
     QIcon icon_kumfile;
     QIcon icon_other;
+    QWidget * editorWidget = nullptr;
 };
 
 

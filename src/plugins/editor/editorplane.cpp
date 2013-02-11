@@ -62,6 +62,7 @@ EditorPlane::EditorPlane(TextDocument * doc
     m_autocompleteWidget = new SuggestionsWindow(this);
     m_autocompleteWidget->updateSettings(settings);
     m_autocompleteWidget->setVisible(false);
+    connect(m_autocompleteWidget, SIGNAL(hidden()), this, SIGNAL(enableInsertActions()));
     connect(m_autocompleteWidget, SIGNAL(acceptedSuggestion(QString)),
             this, SLOT(finishAutoCompletion(QString)));
     qApp->installEventFilter(this);
@@ -936,7 +937,7 @@ void EditorPlane::doAutocomplete()
     }
     QList<Shared::Suggestion> suggestions =
             m_analizer->suggestAutoComplete(m_document->documentId, m_cursor->row(), before, after);
-
+    emit disableInsertActions();
 //    for (Shared::Suggestion s : suggestions) {
 //        qDebug() << QString("Suggestion: ") << s.value << QString(" --- ") << s.description;
 //    }
@@ -944,8 +945,9 @@ void EditorPlane::doAutocomplete()
     m_cursor->removeSelection();
     m_cursor->removeRectSelection();
     m_autocompleteWidget->init(before, suggestions);
-    m_autocompleteWidget->move(cursorRect().topLeft());
+    m_autocompleteWidget->move(mapToGlobal(cursorRect().topLeft()+offset()));
     m_autocompleteWidget->setVisible(true);
+    m_autocompleteWidget->activateWindow();
     m_autocompleteWidget->setFocus();
 
 }
@@ -953,7 +955,7 @@ void EditorPlane::doAutocomplete()
 void EditorPlane::finishAutoCompletion(const QString &suggestion)
 {
     static const QString Delimeters = QString::fromAscii(
-                " ;:=()!,.@_-+*/[]{}"
+                " ;:=()!,.@-+*/[]{}"
                 );
     QString before, after;
     if (m_cursor->row()<m_document->linesCount()) {

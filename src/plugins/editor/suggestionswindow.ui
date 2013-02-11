@@ -63,7 +63,7 @@
     <widget class="QWidget" name="widget" native="true">
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="margin">
-       <number>0</number>
+       <number>2</number>
       </property>
       <item>
        <widget class="QToolButton" name="btnClose">
@@ -74,9 +74,6 @@
          <iconset theme="dialog-close">
           <normaloff/>
          </iconset>
-        </property>
-        <property name="shortcut">
-         <string notr="true">Esc</string>
         </property>
         <property name="autoRaise">
          <bool>true</bool>

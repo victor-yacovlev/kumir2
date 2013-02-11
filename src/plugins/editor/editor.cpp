@@ -114,6 +114,26 @@ QList<QWidget*> Editor::statusbarWidgets()
     return QList<QWidget*>() << d->positionStatus << d->keybStatus;
 }
 
+void EditorPrivate::disableInsertActions()
+{
+    for (Macro & m : userMacros) {
+        m.action->setEnabled(false);
+    }
+    for (Macro & m : systemMacros) {
+        m.action->setEnabled(false);
+    }
+}
+
+void EditorPrivate::enableInsertActions()
+{
+    for (Macro & m : userMacros) {
+        m.action->setEnabled(true);
+    }
+    for (Macro & m : systemMacros) {
+        m.action->setEnabled(true);
+    }
+}
+
 void EditorPrivate::timerEvent(QTimerEvent *e)
 {
     if (e->timerId()==timerId) {
@@ -463,6 +483,9 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
     connect(d->doc->undoStack(), SIGNAL(canRedoChanged(bool)), d->cursor, SLOT(handleRedoChanged(bool)));
     connect(d->doc->undoStack(), SIGNAL(canUndoChanged(bool)), d->cursor, SLOT(handleUndoChanged(bool)));
     connect(d->cursor, SIGNAL(signalizeNotEditable()), d->plane, SLOT(signalizeNotEditable()));
+
+    connect(d->plane, SIGNAL(enableInsertActions()), d, SLOT(enableInsertActions()));
+    connect(d->plane, SIGNAL(disableInsertActions()), d, SLOT(disableInsertActions()));
 }
 
 

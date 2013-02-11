@@ -4,11 +4,38 @@
 
 namespace Editor {
 
-SuggestionsWindow::SuggestionsWindow(QWidget *parent) :
-    QWidget(parent),
+void desaturate(QImage & img) {
+    for (int y=0; y<img.height(); y++) {
+        for (int x=0; x<img.width(); x++) {
+            const QColor source = QColor(img.pixel(x,y));
+            QColor target;
+            target.setHsv(source.hsvHue(), source.hsvSaturation()/2, source.value()/4*3);
+            target.setAlpha(qAlpha(img.pixel(x,y)));
+            img.setPixel(x,y,target.rgba());
+        }
+    }
+}
+
+SuggestionsWindow::SuggestionsWindow(QWidget *editorWidget) :
+    QWidget(0, Qt::Popup),
     ui(new Ui::SuggestionsWindow)
 {
+    this->editorWidget = editorWidget;
+    QPalette pal = palette();
+    const QString bgColor = pal.brush(QPalette::Normal, QPalette::ToolTipBase).color().name();
     ui->setupUi(this);
+    static const QString css = QString::fromAscii(""
+            "QWidget {"
+            "  background-color: %1;"
+            "  border: 1px solid black;"
+            "}"
+            "QWidget#widget { border-left: 0; }"
+            "QListWidget { border-bottom: 0; }"
+            "QToolButton { border: 0; }"
+            "")
+            .arg(bgColor);
+//    qDebug() << css;
+    setStyleSheet(css);
     ui->alist->installEventFilter(this);
     connect(ui->alist, SIGNAL(currentRowChanged(int)),
             this, SLOT(handleCurrentItemChanged(int)));
@@ -16,6 +43,31 @@ SuggestionsWindow::SuggestionsWindow(QWidget *parent) :
             this, SLOT(handleItemActivated(QListWidgetItem*)));
     connect(ui->btnAccept, SIGNAL(clicked()), this, SLOT(acceptItem()));
     connect(ui->btnClose, SIGNAL(clicked()), this, SLOT(hide()));
+    setCursor(Qt::ArrowCursor);
+    ui->alist->setCursor(Qt::PointingHandCursor);
+
+    QPixmap pxOkActive = ui->btnAccept->icon().pixmap(ui->btnAccept->iconSize());
+    QPixmap pxCloseActive = ui->btnClose->icon().pixmap(ui->btnClose->iconSize());
+
+    QImage imgOk = pxOkActive.toImage();
+    QImage imgClose = pxCloseActive.toImage();
+
+    desaturate(imgOk);
+    desaturate(imgClose);
+
+    QPixmap pxOkNormal = QPixmap::fromImage(imgOk);
+    QPixmap pxCloseNormal = QPixmap::fromImage(imgClose);
+
+    QIcon ok, close;
+    ok.addPixmap(pxOkActive, QIcon::Active);
+    ok.addPixmap(pxOkNormal, QIcon::Normal);
+
+    close.addPixmap(pxCloseActive, QIcon::Active);
+    close.addPixmap(pxCloseNormal, QIcon::Normal);
+
+    ui->btnAccept->setIcon(ok);
+    ui->btnClose->setIcon(close);
+
 }
 
 void SuggestionsWindow::updateSettings(const QSettings *settings)
@@ -152,10 +204,14 @@ void SuggestionsWindow::init(
     b_keyPressed = false;
     ui->alist->clear();
     ui->descriptionView->clear();
+    int prefWidth = 100;
+    const QFontMetrics fm (ui->alist->font());
+    int prefHeight = fm.height()*(5+suggestions.size());
     for (int index = 0; index<suggestions.size(); index++) {
         const Shared::Suggestion & s = suggestions.at(index);
         QListWidgetItem * item = new QListWidgetItem(ui->alist);
         item->setText(s.value);
+        prefWidth = qMax(prefWidth, 100+fm.width(s.value));
         if (s.kind==Shared::Suggestion::Kind::Local) {
             item->setIcon(icon_local);
         }
@@ -178,6 +234,10 @@ void SuggestionsWindow::init(
             item->setIcon(icon_other);
         }
     }
+    int width = qMax(qMin(400, prefWidth), 150);
+    int height = qMin(prefHeight, 400);
+    setFixedWidth(width);
+    setFixedHeight(height);
     if (l_suggestions.size()==0) {
         ui->descriptionView->setText(tr("No suggestions"));
     }
@@ -227,11 +287,12 @@ void SuggestionsWindow::keyReleaseEvent(QKeyEvent *event)
         b_keyPressed = false;
         if (event->key()==Qt::Key_Tab || event->key()==Qt::Key_Escape) {
             hide();
+            event->accept();
         }
         else if (event->key()==Qt::Key_Enter || event->key()==Qt::Key_Return) {
             hide();
+            event->accept();
         }
-        event->accept();
     }
     else {
         event->ignore();
@@ -240,9 +301,11 @@ void SuggestionsWindow::keyReleaseEvent(QKeyEvent *event)
 
 void SuggestionsWindow::hideEvent(QHideEvent *event)
 {
+    Q_CHECK_PTR(editorWidget);
     b_keyPressed = false;
     QWidget::hideEvent(event);
-    parentWidget()->setFocus();
+    editorWidget->setFocus();
+    emit hidden();
 }
 
 SuggestionsWindow::~SuggestionsWindow()

@@ -72,6 +72,8 @@ public slots:
     void handleLineAndTextChanged(const QStack<Shared::ChangeTextTransaction> & changes);
     void playMacro();
     void handleAutoScrollChange(char a);
+    void disableInsertActions();
+    void enableInsertActions();
 };
 
 }
