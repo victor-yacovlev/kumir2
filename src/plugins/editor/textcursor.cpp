@@ -122,6 +122,7 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
 {
     int prevRow = i_row;
     int prevLines = m_document->linesCount();
+    bool clearCurrentLineError = false;
     switch (command.type) {
     case KeyCommand::MoveToNextChar:
         movePosition(QTextCursor::NextCell, TextCursor::MM_Move);
@@ -219,22 +220,27 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
 
     case KeyCommand::InsertText:
         insertText(command.text);
+        clearCurrentLineError = !command.text.contains("\n");
         break;
     case KeyCommand::Backspace:
+        clearCurrentLineError = true;
         removePreviousChar();
         break;
     case KeyCommand::Delete:
+        clearCurrentLineError = true;
         removeCurrentChar();
         break;
     case KeyCommand::RemoveLine:
         removeCurrentLine();
         break;
     case KeyCommand::RemoveTail:
+        clearCurrentLineError = true;
         removeLineTail();
         break;
     case KeyCommand::Cut:
         evaluateCommand(KeyCommand::Copy);
         if (hasSelection()) {
+            clearCurrentLineError = !selectedText().contains("\n");
             removeSelectedText();
         }
         else if (hasRectSelection()) {
@@ -249,15 +255,21 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
             }
             else if (data.type == ClipboardData::Text) {
                 insertText(data.text);
+                clearCurrentLineError = !data.text.contains("\n");
             }
         }
         break;
     case KeyCommand::ToggleComment:
         toggleComment();
+        clearCurrentLineError = true;
         break;
     default:
         break;
     }
+    if (clearCurrentLineError && i_row<m_document->linesCount()) {
+        m_document->setErrorsAt(i_row, QStringList());
+    }
+
     if (prevRow!=i_row || prevLines != m_document->linesCount())
         m_document->flushTransaction();
     if (ExtensionSystem::PluginManager::instance()->currentGlobalState()==ExtensionSystem::GS_Observe
