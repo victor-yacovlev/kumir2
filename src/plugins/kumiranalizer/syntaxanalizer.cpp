@@ -1002,14 +1002,30 @@ SyntaxAnalizerPrivate::suggestValueAutoComplete(
         for (AST::Variable * var : vars) {
             if (isSuggestionValueApplicable(var, baseType, minimumDimension, accessType)) {
                 Shared::Suggestion suggestion;
-                suggestion.value = var->name;
-                suggestion.description = var->baseType.kind==AST::TypeUser
-                        ? var->baseType.name
-                        : lexer->classNameByBaseType(var->baseType.kind);
-                suggestion.description += " " + var->name;
-                suggestion.kind = contextModule->impl.globals.contains(var)
-                        ? Shared::Suggestion::Kind::Global
-                        : Shared::Suggestion::Kind::Local;
+                if (contextAlgorithm
+                        && contextAlgorithm->impl.locals.contains(var)
+                        && contextAlgorithm->header.name==var->name
+                        )
+                {
+                    // return-value
+                    suggestion.value = QString::fromUtf8("знач");
+                    suggestion.kind = Shared::Suggestion::Kind::Local;
+                    suggestion.description = var->baseType.kind==AST::TypeUser
+                            ? var->baseType.name
+                            : lexer->classNameByBaseType(var->baseType.kind);
+                    suggestion.description += " "+suggestion.value;
+                }
+                else {
+                    // local or global variable
+                    suggestion.value = var->name;
+                    suggestion.description = var->baseType.kind==AST::TypeUser
+                            ? var->baseType.name
+                            : lexer->classNameByBaseType(var->baseType.kind);
+                    suggestion.description += " " + var->name;
+                    suggestion.kind = contextModule->impl.globals.contains(var)
+                            ? Shared::Suggestion::Kind::Global
+                            : Shared::Suggestion::Kind::Local;
+                }
                 result.push_back(suggestion);
             }
         }
