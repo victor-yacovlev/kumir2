@@ -1,4 +1,4 @@
-АЛГОРИТМ* -> алг : { setCurrentError("No algorhitm implementation"); appendSimpleLine(); }
+АЛГОРИТМ* -> алг : { setCurrentError("No algorhitm implementation"); appendSimpleLine(); suggest("нач\n\nкон\n",5); }
 АЛГОРИТМ* -> если : { setOutOfAlgError();  }
 АЛГОРИТМ* -> кон : { setOutOfAlgError();  }
 АЛГОРИТМ* -> выбор : { setOutOfAlgError();  }

@@ -31,7 +31,7 @@
 
 ИСПОЛНИТЕЛЬ* -> кон_исп : { setCurrentError("No pairing 'begin module'"); appendSimpleLine(); } 
 
-АЛГОРИТМ* -> алг ДОКУМЕНТАЦИЯ ДАНО_НАДО end : { setCurrentError("Algorhitm not implemented"); appendSimpleLine(); } {} 
+АЛГОРИТМ* -> алг ДОКУМЕНТАЦИЯ ДАНО_НАДО end : { setCurrentError("Algorhitm not implemented"); appendSimpleLine(); suggest("нач\n\nкон\n",2); } {} 
 АЛГОРИТМ* -> алг алг МУСОР_МЕЖДУ_АЛГ_НАЧ ДОКУМЕНТАЦИЯ ДАНО_НАДО ТЕЛО_АЛГОРИТМА : { setCurrentError("Algorhitm not implemented"); appendSimpleLine(); } { processCorrectAlgHeader(); }
 АЛГОРИТМ* -> ограничение_алгоритма : { setOutOfAlgError();  }
 

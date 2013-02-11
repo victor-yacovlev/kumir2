@@ -14,7 +14,7 @@
 
 ЛИШНИЙ_НАЧ_У_ИСПОЛНИТЕЛЯ -> нач : { setCurrentError("Extra 'begin'"); appendSimpleLine(); }
 
-КОНЕЦ_ИСПОЛНИТЕЛЯ -> end : { setModuleBeginError("No paired 'end module'"); }
+КОНЕЦ_ИСПОЛНИТЕЛЯ -> end : { setModuleBeginError("No paired 'end module'"); suggest("\n\n\nкон_исп\n",3); }
 
 ИСПОЛНИТЕЛЬ* -> алг МУСОР_МЕЖДУ_АЛГ_НАЧ ДОКУМЕНТАЦИЯ ДАНО_НАДО ТЕЛО_АЛГОРИТМА : { 
     
@@ -28,6 +28,7 @@
     setCurrentIndentRank(0, +1);  
     processCorrectAlgHeader(); 
     processCorrectAlgBegin();
+    suggest("нач\n\nкон\n",2);
 }
 
 ФРАГМЕНТ_АЛГОРИТМА* -> алг нач ФРАГМЕНТ_АЛГОРИТМА* кон : {

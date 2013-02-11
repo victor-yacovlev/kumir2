@@ -110,7 +110,7 @@ public slots:
     void setCorrespondingIfBroken();
     void setExtraOpenKeywordError(const QString & kw);
     void setExtraCloseKeywordError(const QString & kw);
-
+    void suggest(const QString & text, int moveCursorBackLinesCount);
     void setTooManyErrors();
     void finalizeIterativeRule(const PDStackElem & stackElem);
     void nextStep();

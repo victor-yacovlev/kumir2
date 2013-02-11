@@ -35,6 +35,7 @@ public:
     void changeSourceText(int documentId, const QList<Shared::ChangeTextTransaction> & changes);
 
     QList<Shared::Suggestion> suggestAutoComplete(int documentId, int lineNo, const QString & before, const QString & after) const;
+    Shared::TextAppend closingBracketSuggestion(int documentId, int lineNo) const;
 
     std::string rawSourceData(int documentId) const;
     Shared::LineProp lineProp(int documentId, const QString & text) const;

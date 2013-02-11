@@ -30,6 +30,7 @@ struct Statement
     int conditionalIndex;
     bool hasError() const;
     explicit Statement();
+    QPair<QString,quint32> suggestedClosingBracket;
 };
 
 }

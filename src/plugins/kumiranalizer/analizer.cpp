@@ -226,6 +226,17 @@ void Analizer::changeSourceText(const QList<ChangeTextTransaction> & changes)
     }
 }
 
+Shared::TextAppend Analizer::closingBracketSuggestion(int lineNo) const
+{
+    for (const Statement * st : d->statements) {
+        if (st->data.size()>0 && st->data.last()->lineNo==lineNo) {
+            if (st->suggestedClosingBracket.first.length()>0)
+                return st->suggestedClosingBracket;
+        }
+    }
+    return QPair<QString,quint32>("",0);
+}
+
 
 void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
 {
@@ -234,6 +245,9 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
 //    qDebug() << lexer->metaObject()->className();
 //    qDebug() << pdAutomata->metaObject()->className();
 //    qDebug() << analizer->metaObject()->className();
+    for (Statement * st : statements) {
+        st->suggestedClosingBracket.first.clear();
+    }
     QList<Statement*> removedStatements;
     QList<Statement*> newStatements;
     QList<int> removedLineNumbers = changes.removedLineNumbers.toList();

@@ -1083,10 +1083,18 @@ void PDAutomata::postProcess()
                     }
                     break;
                 case 2:
-                    m.invoke(d, Qt::DirectConnection,
-                             Q_ARG(int, arguments[0].toInt()),
-                             Q_ARG(int, arguments[0].toInt())
-                             );
+                    if (QString::fromAscii(m.parameterTypes()[0])=="int") {
+                        m.invoke(d, Qt::DirectConnection,
+                                 Q_ARG(int, arguments[0].toInt()),
+                                 Q_ARG(int, arguments[1].toInt())
+                                 );
+                    }
+                    else {
+                        m.invoke(d, Qt::DirectConnection,
+                                 Q_ARG(QString, arguments[0].toString()),
+                                 Q_ARG(int, arguments[1].toInt())
+                                 );
+                    }
                     break;
                 default:
                     m.invoke(d, Qt::DirectConnection);
@@ -1124,6 +1132,30 @@ void PDAutomata::postProcess()
 void PDAutomataPrivate::setCurrentIndentRank(int start, int end)
 {   
     source[currentPosition]->indentRank = QPoint(start, end);
+}
+
+void PDAutomataPrivate::suggest(const QString &text, int moveCursorBackLinesCount)
+{
+    QString txt = text;
+    txt.replace("\\n","\n");
+    Statement * st = nullptr;
+    if (currentPosition<source.size())
+        st = source.at(currentPosition);
+    else {
+        for (int i=0; i<source.size(); i++) {
+            if (source[i]->mod == currentModule && source[i]->type==LxPriModule) {
+                st = source.at(i);
+                break;
+            }
+        }
+    }
+    if (st) {
+        st->suggestedClosingBracket.first = txt;
+        if (moveCursorBackLinesCount>=0)
+            st->suggestedClosingBracket.second = quint32(moveCursorBackLinesCount);
+        else
+            st->suggestedClosingBracket.second = 0;
+    }
 }
 
 void PDAutomataPrivate::setCurrentError(const QString &value)
@@ -1855,6 +1887,7 @@ void PDAutomataPrivate::setCorrespondingIfBroken()
         }
     }
 }
+
 
 void PDAutomataPrivate::setExtraOpenKeywordError(const QString &kw)
 {

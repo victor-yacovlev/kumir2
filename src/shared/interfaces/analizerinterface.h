@@ -14,6 +14,8 @@ struct ChangeTextTransaction {
     QStringList newLines;
 };
 
+typedef QPair<QString,quint32> TextAppend;
+
 struct Suggestion {
     enum class Kind { Local, Global, Algorithm, BuiltinModule, KumirModule, Statement, SecondaryKeyword, Other };
     QString value;
@@ -46,6 +48,7 @@ public:
      * @return a list of structs { autocomplete text, the description of suggestion }
      */
     virtual QList<Suggestion> suggestAutoComplete(int documentId, int lineNo, const QString & before, const QString & after) const { return QList<Suggestion>(); }
+    virtual TextAppend closingBracketSuggestion(int documentId, int lineNo) const { return QPair<QString,quint32>(QString(), 0); }
     virtual QList<Error> errors(int documentId) const = 0;
     virtual QList<LineProp> lineProperties(int documentId) const = 0;
     virtual QList<QPoint> lineRanks(int documentId) const = 0;

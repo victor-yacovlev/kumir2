@@ -37,6 +37,7 @@ public slots:
     void changeSourceText(const QList<Shared::ChangeTextTransaction> & changes);
     void setHiddenText(const QString & text, int baseLineNo);
     void setHiddenBaseLine(int lineNo);
+    Shared::TextAppend closingBracketSuggestion(int lineNo) const;
     QString sourceText() const;
     QList<Shared::Suggestion> suggestAutoComplete(int lineNo, const QString &before, const QString &after) const;
     QStringList algorhitmsAvailableFor(int lineNo) const;

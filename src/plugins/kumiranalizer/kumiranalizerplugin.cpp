@@ -95,6 +95,12 @@ QList<Shared::Suggestion> KumirAnalizerPlugin::suggestAutoComplete(int documentI
     return m_analizers[documentId]->suggestAutoComplete(lineNo, before, after);
 }
 
+Shared::TextAppend KumirAnalizerPlugin::closingBracketSuggestion(int documentId, int lineNo) const
+{
+    Q_CHECK_PTR(m_analizers[documentId]);
+    return m_analizers[documentId]->closingBracketSuggestion(lineNo);
+}
+
 void KumirAnalizerPlugin::setSourceDirName(int documentId, const QString &dirPath)
 {
     Q_CHECK_PTR(m_analizers[documentId]);
