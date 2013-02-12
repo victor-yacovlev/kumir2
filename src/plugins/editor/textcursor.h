@@ -75,6 +75,8 @@ protected:
     int justifyLeft(const QString & text) const;
     bool modifiesProtectedLiines() const;
 
+    void findLexemBound(int & row,  int & column, const qint8 dir) const;
+
     void timerEvent(QTimerEvent *e);
     void emitPositionChanged();
     class TextDocument * m_document;

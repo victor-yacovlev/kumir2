@@ -794,6 +794,12 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         else if (e->matches(QKeySequence::SelectNextChar)) {
             m_cursor->evaluateCommand(KeyCommand::SelectNextChar);
         }
+        else if (e->matches(QKeySequence::MoveToNextWord)) {
+            m_cursor->evaluateCommand(KeyCommand::MoveToNextLexem);
+        }
+        else if (e->matches(QKeySequence::SelectNextWord)) {
+            m_cursor->evaluateCommand(KeyCommand::SelectNextLexem);
+        }
         else if (e->key()==Qt::Key_Right && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && m_analizer==0) {
             m_cursor->evaluateCommand(KeyCommand::SelectNextColumn);
         }
@@ -802,6 +808,12 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         }
         else if (e->matches(QKeySequence::SelectPreviousChar)) {
             m_cursor->evaluateCommand(KeyCommand::SelectPreviousChar);
+        }
+        else if (e->matches(QKeySequence::MoveToPreviousWord)) {
+            m_cursor->evaluateCommand(KeyCommand::MoveToPreviousLexem);
+        }
+        else if (e->matches(QKeySequence::SelectPreviousWord)) {
+            m_cursor->evaluateCommand(KeyCommand::SelectPreviousLexem);
         }
         else if (e->key()==Qt::Key_Left && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && m_analizer==0) {
             m_cursor->evaluateCommand(KeyCommand::SelectPreviousColumn);

@@ -127,6 +127,18 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
     case KeyCommand::MoveToNextChar:
         movePosition(QTextCursor::NextCell, TextCursor::MM_Move);
         break;
+    case KeyCommand::MoveToNextLexem:
+        movePosition(QTextCursor::NextWord, TextCursor::MM_Move);
+        break;
+    case KeyCommand::SelectNextLexem:
+        movePosition(QTextCursor::NextWord, TextCursor::MM_Select);
+        break;
+    case KeyCommand::MoveToPreviousLexem:
+        movePosition(QTextCursor::PreviousWord, TextCursor::MM_Move);
+        break;
+    case KeyCommand::SelectPreviousLexem:
+        movePosition(QTextCursor::PreviousWord, TextCursor::MM_Select);
+        break;
     case KeyCommand::SelectNextChar:
         movePosition(QTextCursor::NextCell, TextCursor::MM_Select);
         break;
@@ -763,7 +775,69 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                             m_document->textAt(m_document->linesCount()-1).length();
                 }
             }
-        }
+        } // end End
+        else if (op==QTextCursor::PreviousWord) {
+            int toRow, toColumn;
+            findLexemBound(toRow, toColumn, -1);
+            if (m==MM_Move) {
+                i_row = toRow; i_column = toColumn;
+            }
+            else if (m==MM_Select && (i_row>0 || i_column>0) ) {
+                if (i_row>=m_document->linesCount()) {
+                    i_row = m_document->linesCount() - 1;
+                    i_column = 2*m_document->indentAt(i_row) +
+                            m_document->at(i_row).text.length()+1;
+                }
+                i_column -= 1;
+                    // Selection starts from left of current column
+
+                forever {
+                    int stopAt = i_row==toRow? toColumn : 2*m_document->indentAt(i_row);
+                    forever {
+                        int linePos = i_column - 2*m_document->indentAt(i_row);
+                        if (linePos>=0 && linePos<m_document->at(i_row).text.length())
+                            m_document->at(i_row).selected[linePos] = !m_document->at(i_row).selected[linePos];
+                        if (i_column>stopAt)
+                            i_column -= 1;
+                        else
+                            break;
+                    }
+                    if (i_row==toRow)
+                        break;
+                    i_row -= 1;
+                    m_document->at(i_row).lineEndSelected = !m_document->at(i_row).lineEndSelected;
+                    i_column = 2*m_document->indentAt(i_row) +
+                            m_document->at(i_row).text.length();
+                }
+            }
+        } // end PreviousWord
+        else if (op==QTextCursor::NextWord) {
+            int toRow, toColumn;
+            findLexemBound(toRow, toColumn, +1);
+            if (m==MM_Move) {
+                i_row = toRow; i_column = toColumn;
+            }
+            else if (m==MM_Select) {
+                forever {
+                    forever {
+                        if (i_row==toRow && i_column==toColumn)
+                            break;
+                        int linePos = i_column - 2*m_document->indentAt(i_row);
+                        if (linePos>=0 && linePos<m_document->at(i_row).text.length())
+                            m_document->at(i_row).selected[linePos] = !m_document->at(i_row).selected[linePos];
+                        if (linePos<m_document->at(i_row).text.length())
+                            i_column += 1;
+                        else
+                            break;
+                    }
+                    if (i_row==toRow)
+                        break;
+                    m_document->at(i_row).lineEndSelected = !m_document->at(i_row).lineEndSelected;
+                    i_row += 1;
+                    i_column = 0;
+                }
+            }
+        } // end NextWord
     }
     b_visible = true;
     emit updateRequest();
@@ -773,6 +847,184 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
     emitPositionChanged();
     Q_ASSERT(i_row>=0);
     Q_ASSERT(i_column>=0);
+}
+
+void TextCursor::findLexemBound(int &row, int &column, const qint8 dir) const
+{
+    row = i_row; column = i_column;
+
+    if (dir>0 && i_row>=m_document->linesCount())
+        return;
+    if (dir<0 && i_row==0 && i_row<m_document->linesCount() && i_column<=2*m_document->indentAt(0))
+        return;
+
+    int linePos = column - 2*m_document->indentAt(row);
+
+    if (dir<0) {
+        // search backward
+        int realTextRow = qMin(m_document->linesCount()-1, row);
+        int realTextEndPos = m_document->at(realTextRow).text.length();
+        while (realTextEndPos>0) {
+            // find last non space position in text
+            if (m_document->at(realTextRow).text.at(realTextEndPos-1).isSpace())
+                realTextEndPos -= 1;
+            else
+                break;
+        }
+        if (linePos>realTextEndPos || row>realTextRow) {
+            // try to act like 'End' key
+            row = realTextRow;
+            column = realTextEndPos + 2*m_document->indentAt(row);
+            return;
+        }
+
+        forever {
+            linePos = column - 2*m_document->indentAt(row);
+            linePos = qMax(0, qMin(linePos, m_document->at(row).text.length()));
+                // Normalization of linePos
+
+            if (linePos==0 && row==0) {
+                // found start of document
+                return;
+            }
+            else if (linePos==0 && row>0) {
+                // jump to end of previous line
+                row -= 1;
+                linePos = m_document->at(row).text.length();
+                while (linePos>0 && m_document->at(row).text.at(linePos-1).isSpace()) {
+                    linePos -= 1;
+                }
+                column = linePos + 2*m_document->indentAt(row);
+                return;
+            }
+            else {
+                // jump to start of lexem (or word in text mode)
+                if (m_analizer) {
+                    // jump to start of lexem in this case
+                    LexemType curLexemType, prevPosLexemType;
+                    curLexemType = m_document->at(row).highlight.at(linePos-1);
+                    while (linePos>0 && curLexemType==LxTypeEmpty) {
+                        // ignore whitespaces
+                        linePos -= 1;
+                        curLexemType = m_document->at(row).highlight.at(linePos-1);
+                    }
+                    while (linePos>0) {
+                        // linePos==0 is : line bound is a delimeter too
+                        prevPosLexemType = m_document->at(row).highlight.at(linePos-1);
+                        if (prevPosLexemType!=curLexemType)
+                            // found a lexem of previous type
+                            break;
+                        linePos -= 1;
+                    }
+                }
+                else {
+                    // jump to last non-space position at left
+                    if (linePos>0
+                            &&
+                            linePos<m_document->at(row).text.length()
+                            && m_document->at(row).text.at(linePos-1).isSpace()
+                            )
+                    {
+                        // if already at begin of word, then go left
+                        // to find previous word
+                        linePos -= 1;
+
+                    }
+                    while (linePos>=0) {
+                        // skip trailing spaces first
+                        if (linePos>=m_document->at(row).text.length() || m_document->at(row).text.at(linePos).isSpace())
+                            linePos -= 1;
+                        else break;
+                    }
+                    while (linePos>0) {
+                        // do actual search
+                        bool prevIsSpace = m_document->at(row).text.at(linePos-1).isSpace();
+                        if (prevIsSpace)
+                            // found start of word
+                            break;
+                        linePos -= 1;
+                    }
+                }
+                column = linePos + 2*m_document->indentAt(row);
+                return;
+            }
+        }
+    }
+    else if (dir>0) {
+        // search forward
+        forever {
+            linePos = column - 2*m_document->indentAt(row);
+            linePos = qMax(linePos, 0);
+                // skip indent pos
+
+            // find text line length excluding trailing spaces
+            const QString & lineText = m_document->at(row).text;
+            int length = lineText.length();
+            int trailingSpaces = 0;
+            for (int k=length-1; k>=0; k--) {
+                if (lineText[k].isSpace())
+                    trailingSpaces += 1;
+                else
+                    break;
+            }
+            length -= trailingSpaces;
+            if (row==m_document->linesCount()-1 && linePos>=length) {
+                // found end of document
+                return;
+            }
+            else if (linePos>=length && row+1<m_document->linesCount()) {
+                // jump to start of next line
+                row += 1;
+                linePos = 0;
+                while (linePos<lineText.length() && lineText.at(linePos).isSpace()) {
+                    linePos += 1;
+                }
+                column = linePos + 2*m_document->indentAt(row);
+                return;
+            }
+            else {
+                if (m_analizer) {
+                    // jump to end of lexem in this case
+                    LexemType curLexemType, nextPosLexemType;
+                    curLexemType = m_document->at(row).highlight.at(linePos);
+                    while (linePos<length && curLexemType==LxTypeEmpty) {
+                        // ignore whitespaces
+                        curLexemType = m_document->at(row).highlight.at(linePos);
+                        linePos += 1;
+                    }
+                    while (linePos<length) {
+                        linePos += 1;
+                        if (linePos==length)
+                            // found end of line (except trailing spaces)
+                            break;
+                        nextPosLexemType = m_document->at(row).highlight.at(linePos);
+                        if (nextPosLexemType!=curLexemType && nextPosLexemType!=LxTypeEmpty)
+                            // found a lexem of next type;
+                            break;
+                    }
+                }
+                else {
+                    // jump to start of next word, i.e.
+                    // first non-space symbol after any spaces
+                    while (linePos<length
+                           && !m_document->at(row).text.at(linePos).isSpace())
+                    {
+                        // at first - go to end of current word
+                        linePos += 1;
+                    }
+                    while (linePos<length
+                           && m_document->at(row).text.at(linePos).isSpace()
+                           )
+                    {
+                        // skip spaces
+                        linePos += 1;
+                    }
+                }
+                column = linePos + 2*m_document->indentAt(row);
+                return;
+            }
+        }
+    }
 }
 
 void TextCursor::insertBlock(const QStringList &block)

@@ -52,7 +52,8 @@ public:
     // while pushing actions into undo-stack.
     // Becomes false after session restore done.
     static bool noUndoRedo;
-
+    inline TextLine & at(int index) { return data[index]; }
+    inline const TextLine & at(int index) const { return data[index]; }
     explicit TextDocument(QObject * parent, QSettings * settings);
     int documentId;
     int indentAt(int lineNo) const;

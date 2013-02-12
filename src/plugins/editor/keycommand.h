@@ -35,6 +35,10 @@ struct KeyCommand
         SelectEndOfDocument     = 0x0018,
         SelectAll               = 0x0019,
         Copy                    = 0x001a,
+        MoveToNextLexem         = 0x001b,
+        MoveToPreviousLexem     = 0x001c,
+        SelectNextLexem         = 0x001d,
+        SelectPreviousLexem     = 0x001e,
 
 
         InsertText              = 0x1001,
