@@ -1004,15 +1004,21 @@ void EditorPlane::finishAutoCompletion(const QString &suggestion)
     else if (before.length()>0) {
         QString endText;
         int removeCount = 0;
-        for (int i=1; i<before.length(); i++) {
-            endText = before.mid(before.length()-i);
+        for (int i=0; i<before.length(); i++) {
+            endText = before.mid(before.length()-i-1);
             if (suggestion.startsWith(endText)) {
                 break;
             }
         }
-        if (endText.length()!=before.length())
+        if (endText.length()!=before.length()) {
             removeCount = endText.length();
-        text = suggestion.mid(removeCount);
+            text = suggestion.mid(removeCount);
+        }
+        else {
+            text = suggestion;
+            while (text.startsWith(' '))
+                text.remove(0,1);
+        }
     }
     for (int i=0; i<leftPart; i++) {
         m_cursor->evaluateCommand(KeyCommand::SelectPreviousChar);
