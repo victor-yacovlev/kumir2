@@ -51,6 +51,9 @@ QString SettingsPage::DefaultPlayMacroShortcut = "Esc";
 QString SettingsPage::KeyForcePressTextToLeft = "Other/PressTextToLeft";
 bool SettingsPage::DefaultForcePressTextToLeft = false;
 
+QString SettingsPage::KeyShowTrailingSpaces = "Other/ShowTrailingSpaces";
+bool SettingsPage::DefaultShowTrailingSpaces = false;
+
 QString SettingsPage::defaultFontFamily()
 {
     QString result = "Courier";
@@ -130,11 +133,13 @@ void SettingsPage::accept()
     m_settings->setValue(KeyPlayMacroShortcut, play);
 
     m_settings->setValue(KeyForcePressTextToLeft, ui->pressTextLeft->isChecked());
+    m_settings->setValue(KeyShowTrailingSpaces, ui->showTrailingSpaces->isChecked());
 
     m_settings->setValue("Settings/FontCollapsed", ui->groupFont->isCollapsed());
     m_settings->setValue("Settings/KeyboardCollapsed", ui->groupKeyboard->isCollapsed());
     m_settings->setValue("Settings/SyntaxCollapsed", ui->groupSyntax->isCollapsed());
     m_settings->setValue("Settings/OtherCollapsed", ui->groupOther->isCollapsed());
+
 
     emit settingsChanged();
 }
@@ -202,6 +207,7 @@ void SettingsPage::init()
     ui->macroPlayKey->setCurrentIndex(index);
 
     ui->pressTextLeft->setChecked(m_settings->value(KeyForcePressTextToLeft, DefaultForcePressTextToLeft).toBool());
+    ui->showTrailingSpaces->setChecked(m_settings->value(KeyShowTrailingSpaces, DefaultShowTrailingSpaces).toBool());
 
     updateFontPreview();
 }

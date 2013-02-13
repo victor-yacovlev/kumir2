@@ -69,6 +69,9 @@ public:
     static QString DefaultPlayMacroShortcut;
     static quint32 DefaultTempSwitchLayoutButton;
 
+    static QString KeyShowTrailingSpaces;
+    static bool DefaultShowTrailingSpaces;
+
 public slots:
     void accept();
     void init();

@@ -1721,7 +1721,10 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
                 p->drawPolyline(pp);
             }
         }
-        if (trailingSpaces) {
+        if (trailingSpaces && m_settings->value(
+                    SettingsPage::KeyShowTrailingSpaces, SettingsPage::DefaultShowTrailingSpaces
+                    ).toBool())
+        {
             p->setPen(QColor("lightgray"));
             // Paint trailing spaces
             QString dots;
