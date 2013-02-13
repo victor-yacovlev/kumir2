@@ -460,6 +460,7 @@ void EditorPlane::updateScrollBars()
 
 void EditorPlane::ensureCursorVisible()
 {
+    const int lineNoWidth = 5;
     QRect cr(5 + m_cursor->column(),
              m_cursor->row(),
              2,
@@ -469,27 +470,32 @@ void EditorPlane::ensureCursorVisible()
     vr.setLeft(m_horizontalScrollBar->isEnabled()? m_horizontalScrollBar->value()/charWidth() : 0);
     vr.setTop(m_verticalScrollBar->isEnabled()? m_verticalScrollBar->value()/lineHeight() : 0);
     vr.setSize(QSize(widthInChars(), height()/lineHeight()));
+    vr.translate(QPoint(lineNoWidth, 0));
 //    qDebug() << "CR: " << cr;
 //    qDebug() << "VR: " << vr;
     if (cr.left()>vr.right()) {
 //        qDebug() << "A";
-        int v = 6+m_cursor->column();
+        int v = m_cursor->column() - vr.width()-1 + lineNoWidth;
         m_horizontalScrollBar->setValue(v * charWidth());
     }
-    else if (cr.right()<vr.left()) {
+    else if (cr.left()<vr.left()) {
 //        qDebug() << "B";
-        int v = 4+m_cursor->column();
+        int v = m_cursor->column();
         m_horizontalScrollBar->setValue(v * charWidth());
     }
     if (cr.top()>vr.bottom()) {
 //        qDebug() << "C";
-        int v = m_cursor->row()+1;
+        int v = m_cursor->row()-vr.height()+1;
+//        qDebug() << "v0: " << m_verticalScrollBar->value();
         m_verticalScrollBar->setValue(v*lineHeight());
+//        qDebug() << "v1: " << m_verticalScrollBar->value();
     }
-    else if (cr.bottom()<vr.top()) {
+    else if (cr.top()<vr.top()) {
 //        qDebug() << "D";
-        int v = m_cursor->row()-1;
+        int v = cr.top();
+//        qDebug() << "v0: " << m_verticalScrollBar->value();
         m_verticalScrollBar->setValue(v*lineHeight());
+//        qDebug() << "v1: " << m_verticalScrollBar->value();
     }
 }
 
