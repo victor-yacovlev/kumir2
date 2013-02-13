@@ -1680,11 +1680,16 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
 
         QList<Shared::LexemType> highlight = m_document->highlightAt(i);
         QString text = m_document->textAt(i);
+        int trailingSpaces = 0;
+        for (int j=0; j<text.length(); j++) {
+            if (text.at(text.length()-j-1).isSpace())
+                trailingSpaces += 1;
+        }
         
         QList<bool> sm = m_document->selectionMaskAt(i);
         Shared::LexemType curType = Shared::LexemType(0);
         setProperFormat(p, curType, '.');
-        for (int j=0; j<text.size(); j++) {
+        for (int j=0; j<text.size()-trailingSpaces; j++) {
             int offset = ( indent * 2 + j ) * charWidth();
             if (j<highlight.size()) {
                 curType = highlight[j];
@@ -1714,6 +1719,14 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
 //                p->drawLine(offset, y+2, offset+charWidth(), y+2);
                 p->drawPolyline(pp);
             }
+        }
+        if (trailingSpaces) {
+            p->setPen(QColor("lightgray"));
+            // Paint trailing spaces
+            QString dots;
+            dots.fill('.', trailingSpaces);
+            int offset = (indent*2 + text.length()-trailingSpaces) * charWidth();
+            p->drawText(offset, y, dots);
         }
 
     }
