@@ -988,7 +988,23 @@ QList<Suggestion> Analizer::suggestAutoComplete(int lineNo, const QString &befor
         delete st;
     for ( Lexem * lx : afterLexems )
         delete lx;
-    return filteredResult;
+
+    QList<Suggestion> cleanResult;
+        // Remove duplicates
+    for ( const Suggestion & s : filteredResult) {
+        bool found = false;
+        for ( const Suggestion & ss : cleanResult ) {
+            if (s.value.trimmed()==ss.value.trimmed()) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            cleanResult.append(s);
+        }
+    }
+
+    return cleanResult;
 }
 
 QStringList Analizer::algorhitmsAvailableFor(int lineNo) const
