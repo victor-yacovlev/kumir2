@@ -6,7 +6,9 @@
 #include "settingspage.h"
 #include "utils.h"
 #include "suggestionswindow.h"
-
+#ifdef Q_OS_UNIX
+#include <unistd.h>
+#endif
 
 #define RECT_SELECTION_MODIFIER Qt::AltModifier
 
@@ -966,6 +968,10 @@ void EditorPlane::doAutocomplete()
 
 void EditorPlane::finishAutoCompletion(const QString &suggestion)
 {
+#ifdef QT_DEBUG
+    m_autocompleteWidget->hide();
+    QApplication::processEvents();
+#endif
     static const QString Delimeters = QString::fromAscii(
                 " ;:=()!,.@-+*/[]{}"
                 );
@@ -989,8 +995,18 @@ void EditorPlane::finishAutoCompletion(const QString &suggestion)
         }
         text = suggestion;
     }
-    else if (before.length()>0 && Delimeters.contains(before[before.length()-1])) {
-        text = suggestion.mid(1);
+    else if (before.length()>0) {
+        QString endText;
+        int removeCount = 0;
+        for (int i=1; i<before.length(); i++) {
+            endText = before.mid(before.length()-i);
+            if (suggestion.startsWith(endText)) {
+                break;
+            }
+        }
+        if (endText.length()!=before.length())
+            removeCount = endText.length();
+        text = suggestion.mid(removeCount);
     }
     for (int i=0; i<leftPart; i++) {
         m_cursor->evaluateCommand(KeyCommand::SelectPreviousChar);

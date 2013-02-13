@@ -238,10 +238,10 @@ void SuggestionsWindow::init(
     int height = qMin(prefHeight, 400);
     setFixedWidth(width);
     setFixedHeight(height);
+    l_suggestions = suggestions;
     if (l_suggestions.size()==0) {
         ui->descriptionView->setText(tr("No suggestions"));
     }
-    l_suggestions = suggestions;
 }
 
 void SuggestionsWindow::focusInEvent(QFocusEvent *event)
