@@ -498,7 +498,21 @@ SyntaxAnalizerPrivate::suggestLoopBeginAutoComplete(
         const AST::Algorhitm *contextAlgorithm) const
 {
     QList<Shared::Suggestion> result;
-    if (statementBefore->data.size()==1) {
+    bool secondLexemIncomplete = statementBefore->data.size()==1;
+    if (statementBefore->data.size()==2) {
+        Lexem * lx = statementBefore->data.at(1);
+        if (lx->type!=LxSecFor && lx->type!=LxSecWhile) {
+            AST::Expression * ex = parseExpression(QList<Lexem*>() << lx,
+                                                   contextModule,
+                                                   contextAlgorithm);
+                // try to parse integer ... times
+            if (!ex || ex->baseType.kind!=AST::TypeInteger)
+                secondLexemIncomplete = true;
+            if (ex)
+                delete ex;
+        }
+    }
+    if (secondLexemIncomplete) {
         // 1. Suggest additional keywords for loop types
         Shared::Suggestion s;
         s.value = QString::fromUtf8(" для ");
@@ -1605,7 +1619,9 @@ QList<Shared::Suggestion> SyntaxAnalizer::suggestAutoComplete(
         if (statementBefore && statementBefore->data.size()>0 && statementBefore->data.last()->type==LxTypeName) {
             Lexem * last = statementBefore->data.back();
             const QString lastText = last->data;
-            if (s.value.startsWith(lastText)) {
+            const QString match = s.kind==Suggestion::Kind::SecondaryKeyword?
+                        s.value.trimmed() : s.value;
+            if (match.startsWith(lastText)) {
                 filteredResult.push_back(s);
             }
         }
