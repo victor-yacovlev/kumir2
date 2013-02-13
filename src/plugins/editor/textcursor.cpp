@@ -1191,7 +1191,16 @@ void TextCursor::removePreviousChar()
         if ( i_row<m_document->linesCount() &&
              textPos <= m_document->textAt(i_row).length())
         {
-            m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, textPos-1, 1, false));
+            m_document->undoStack()->push(new RemoveCommand(m_document,
+                                                            this,
+                                                            m_analizer,
+                                                            i_row,
+                                                            textPos-1,
+                                                            1,
+                                                            false,
+                                                            i_row,
+                                                            i_column-1
+                                                            ));
         }
         else if (i_row<m_document->linesCount() && textPos>m_document->textAt(i_row).length()) {
             movePosition(QTextCursor::PreviousCell, TextCursor::MM_Move);
@@ -1205,7 +1214,16 @@ void TextCursor::removePreviousChar()
         // remove current line and set cursor to end of previous line
         if (i_row>0) {
             if (i_row<m_document->linesCount()) {
-                m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row-1, m_document->textAt(i_row-1).length(), 1, false));
+                m_document->undoStack()->push(new RemoveCommand(m_document,
+                                                                this,
+                                                                m_analizer,
+                                                                i_row-1,
+                                                                m_document->textAt(i_row-1).length(),
+                                                                1,
+                                                                false,
+                                                                i_row-1,
+                                                                m_document->textAt(i_row-1).length() + 2*m_document->indentAt(i_row-1)
+                                                                ));
             }
         }
     }
@@ -1230,7 +1248,7 @@ void TextCursor::removeCurrentLine()
     if (i_row<m_document->linesCount()) {
         int column = i_column;
         movePosition(QTextCursor::EndOfBlock, MM_Move, 1);
-        m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, 0, m_document->textAt(i_row).length()+1, true));
+        m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, 0, m_document->textAt(i_row).length()+1, true, i_row, i_column));
         i_column = column;
         emit updateRequest(-1, -1);
         emit updateRequest();
@@ -1253,7 +1271,7 @@ void TextCursor::removeLineTail()
 
         int textPos = i_column - m_document->indentAt(i_row)*2;
         if (textPos<m_document->textAt(i_row).length()) {
-            m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, textPos, m_document->textAt(i_row).length()-textPos, true));
+            m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, textPos, m_document->textAt(i_row).length()-textPos, true, i_row, i_column));
             emit updateRequest(-1, -1);
             emit updateRequest();
         }
@@ -1289,7 +1307,7 @@ void TextCursor::removeCurrentChar()
         return;
     if (textPos>=m_document->textAt(i_row).length() && i_row>=m_document->linesCount()-1)
         return;
-    m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, textPos, 1, true));
+    m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, textPos, 1, true, i_row, i_column));
 
     b_visible = true;
     emit updateRequest();
@@ -1376,13 +1394,19 @@ void TextCursor::removeSelectedText()
 
 
     if (count>0) {
-        m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, lineStart, posStart, count, true));
+        m_document->undoStack()->push(new RemoveCommand(m_document,
+                                                        this,
+                                                        m_analizer,
+                                                        lineStart,
+                                                        posStart,
+                                                        count,
+                                                        true,
+                                                        cursorStartLine,
+                                                        m_document->indentAt(i_row)*2 + cursorTextPos
+                                                        ));
     }
 
     // Move cursor
-
-    i_row = cursorStartLine;
-    i_column = m_document->indentAt(i_row)*2 + cursorTextPos;
 
     removeSelection();
 
@@ -1536,9 +1560,16 @@ void TextCursor::undo()
     if (b_enabled) {
         m_document->undoStack()->undo();
     }
+    int row = i_row;
+    int column = i_column;
 //    if (prevRow!=i_row || prevLines!=m_document->linesCount()) {
         m_document->forceCompleteRecompilation();
 //    }
+    i_row = row;
+    i_column = column;
+        // restore cursor position due it may be changed
+        // after compilation request
+
     emit undoAvailable(b_enabled && m_document->undoStack()->canUndo());
     emit redoAvailable(b_enabled && m_document->undoStack()->canRedo());
 }

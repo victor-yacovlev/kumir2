@@ -89,7 +89,7 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
 //        }
 //        m_removedLines.insert(line+1);
 //        m_newLines.insert(line);
-        data[line+lines.count()-1].text.prepend(remainder);
+        data[line+lines.count()-1].text.append(remainder);
         data[line+lines.count()-1].changed = true;
         while (data[line+lines.count()-1].selected.size() < data[line+lines.count()-1].text.length())
             data[line+lines.count()-1].selected << false;

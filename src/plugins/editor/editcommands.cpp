@@ -91,7 +91,10 @@ RemoveCommand::RemoveCommand(
     TextDocument *doc,
     class TextCursor * cursor,
     Shared::AnalizerInterface *analizer,
-    int line, int pos, int count, bool keepCursor)
+    int line, int pos, int count, bool keepCursor,
+        int moveToRow, int moveToCol
+
+        )
 {
     this->doc = doc;
     this->cursor = cursor;
@@ -100,6 +103,8 @@ RemoveCommand::RemoveCommand(
     this->pos = pos;
     this->count = count;
     this->keepKursor = keepCursor;
+    cursorRowAfter = moveToRow;
+    cursorColAfter = moveToCol;
 }
 
 RemoveCommand::RemoveCommand(TextDocument *doc, TextCursor *cursor, Shared::AnalizerInterface *analizer)
@@ -110,6 +115,7 @@ RemoveCommand::RemoveCommand(TextDocument *doc, TextCursor *cursor, Shared::Anal
     line = pos = count = insertedSpaces = 0;
     keepKursor = true;
 }
+
 
 void RemoveCommand::redo()
 {
@@ -151,6 +157,8 @@ void RemoveCommand::redo()
         doc->removeText(removedText, analizer, line, pos, 0, 0, count);
         doc->checkForCompilationRequest(QPoint(cursor->row(), cursor->column()));
     }
+    cursor->setRow(cursorRowAfter);
+    cursor->setColumn(cursorColAfter);
 }
 
 void RemoveCommand::undo()
@@ -197,6 +205,8 @@ bool RemoveCommand::mergeWith(const QUndoCommand *other)
 //            cursorRow = qMin(cursorRow, o->cursorRow);
 //            cursorCol = qMin(cursorCol, o->cursorCol);
 //        }
+        cursorRowAfter = o->cursorRowAfter;
+        cursorColAfter = o->cursorColAfter;
         return true;
     }
     else {

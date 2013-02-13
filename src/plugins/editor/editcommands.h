@@ -55,7 +55,9 @@ public:
                            int line,
                            int pos,
                            int count,
-                           bool keepCursor
+                           bool keepCursor,
+                           int newCursorRow,
+                           int newCursorColumn
                            );
     explicit RemoveCommand(class TextDocument * doc,
                            class TextCursor * cursor,
@@ -64,7 +66,6 @@ public:
     void undo();
     inline int id() const { return 2; }
     bool mergeWith(const QUndoCommand *other);
-
 private:
     class TextDocument * doc;
     class TextCursor * cursor;
@@ -77,7 +78,8 @@ private:
     int insertedSpaces;
     int cursorRow;
     int cursorCol;
-
+    int cursorRowAfter;
+    int cursorColAfter;
 };
 
 class InsertBlockCommand:
