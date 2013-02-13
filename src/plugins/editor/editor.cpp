@@ -45,6 +45,7 @@ void Editor::lock()
     d->paste->setEnabled(false);
     d->deleteLine->setEnabled(false);
     d->deleteTail->setEnabled(false);
+    d->toggleComment->setEnabled(false);
     for (int i=0; i<d->userMacros.size(); i++) {
         d->userMacros[i].action->setEnabled(false);
     }
@@ -60,6 +61,7 @@ void Editor::unlock()
     d->cut->setEnabled(true);
     d->deleteLine->setEnabled(true);
     d->deleteTail->setEnabled(true);
+    d->toggleComment->setEnabled(true);
     for (int i=0; i<d->userMacros.size(); i++) {
         d->userMacros[i].action->setEnabled(true);
     }
