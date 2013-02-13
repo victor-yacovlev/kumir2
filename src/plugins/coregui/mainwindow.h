@@ -45,6 +45,8 @@ public:
     void disableTabs();
     void disablePascalProgram();
 public slots:
+    void lockActions();
+    void unlockActions();
     QStringList recentFiles(bool fullPaths) const;
     void loadRecentFile(const QString & fullPath);
     inline void loadFromUrl(const QString &s) { loadFromUrl(QUrl(s), true); }

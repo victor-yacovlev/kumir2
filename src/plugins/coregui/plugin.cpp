@@ -272,21 +272,26 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
         m_kumirStateLabel->setText(tr("Editing"));
         m_mainWindow->clearMessage();
         m_mainWindow->setFocusOnCentralWidget();
+        m_mainWindow->unlockActions();
     }
     else if (state==ExtensionSystem::GS_Observe) {
         m_kumirStateLabel->setText(tr("Observe"));
         m_mainWindow->showMessage(m_kumirProgram->endStatus());
         m_mainWindow->setFocusOnCentralWidget();
+        m_mainWindow->unlockActions();
     }
     else if (state==ExtensionSystem::GS_Running) {
         m_kumirStateLabel->setText(tr("Running"));
         m_mainWindow->clearMessage();
+        m_mainWindow->lockActions();
     }
     else if (state==ExtensionSystem::GS_Pause) {
         m_kumirStateLabel->setText(tr("Pause"));
+        m_mainWindow->lockActions();
     }
     else if (state==ExtensionSystem::GS_Input) {
         m_kumirStateLabel->setText(tr("Pause"));
+        m_mainWindow->lockActions();
     }
 
     m_kumirProgram->switchGlobalState(old, state);

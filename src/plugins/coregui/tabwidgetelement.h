@@ -28,6 +28,7 @@ public:
         , statusbarWidgets(sws)
         , type(t)
         , documentId(-1)
+        , m_kumirProgram(kumir)
     {
         Q_CHECK_PTR(w);
         Q_ASSERT(!QString::fromAscii(w->metaObject()->className()).isEmpty());
@@ -99,6 +100,7 @@ public:
     QList<QWidget*> statusbarWidgets;
     MainWindow::DocumentType type;
     int documentId;
+    inline class KumirProgram * kumirProgram() { return m_kumirProgram; }
 signals:
     void changeTitle(const QString & txt);
     void documentCleanChanged(bool v);
@@ -107,7 +109,8 @@ protected:
         QWidget::focusInEvent(e);
         component->setFocus();
     }
-
+private:
+    class KumirProgram * m_kumirProgram = nullptr;
 };
 }
 

@@ -157,6 +157,55 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
 }
 
 
+void MainWindow::lockActions()
+{
+    ui->actionRestore_previous_session->setEnabled(false);
+    ui->actionSwitch_workspace->setEnabled(false);
+
+    ui->actionPreferences->setEnabled(false);
+
+    if (b_notabs) {
+        ui->actionNewProgram->setEnabled(false);
+        ui->actionOpen->setEnabled(false);
+        ui->actionRecent_files->setEnabled(false);
+    }
+    else {
+        for (int i=0; i<ui->tabWidget->count(); i++) {
+            TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+            if (twe && twe->type==Kumir && twe->kumirProgram()) {
+                if (twe->kumirProgram()->isRunning()) {
+                    twe->setProperty("uncloseable", true);
+                }
+            }
+        }
+        setupActionsForTab();
+    }
+}
+
+void MainWindow::unlockActions()
+{
+
+    ui->actionRestore_previous_session->setEnabled(true);
+    ui->actionSwitch_workspace->setEnabled(true);
+
+    ui->actionPreferences->setEnabled(true);
+
+    if (b_notabs) {
+        ui->actionNewProgram->setEnabled(true);
+        ui->actionOpen->setEnabled(true);
+        ui->actionRecent_files->setEnabled(true);
+    }
+    else {
+        for (int i=0; i<ui->tabWidget->count(); i++) {
+            TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+            if (twe && twe->type==Kumir && twe->kumirProgram()) {
+                twe->setProperty("uncloseable", false);
+            }
+        }
+        setupActionsForTab();
+    }
+}
+
 void MainWindow::activateDocumentTab(int documentId)
 {
     for (int i=0; i<ui->tabWidget->count(); i++) {
@@ -272,6 +321,8 @@ void MainWindow::setupActionsForTab()
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
     ui->actionSave->setEnabled(twe->type!=WWW);
     ui->actionSave_as->setEnabled(twe->type!=WWW);
+
+    ui->actionClose->setEnabled(!twe->property("uncloseable").toBool());
 
     prepareEditMenu();
     prepareInsertMenu();
@@ -465,6 +516,9 @@ bool MainWindow::closeTab(int index)
     if (index==-1 || index>=ui->tabWidget->count())
         return true;
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(index));
+    if (twe->property("uncloseable").toBool()) {
+        return false;
+    }
     if (twe->type!=WWW) {
         int documentId = twe->property("documentId").toInt();
         bool notSaved = m_plugin->plugin_editor->hasUnsavedChanges(documentId);
