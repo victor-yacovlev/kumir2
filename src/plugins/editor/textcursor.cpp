@@ -239,7 +239,7 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
         removePreviousChar();
         break;
     case KeyCommand::Delete:
-        clearCurrentLineError = true;
+        clearCurrentLineError = i_column>=2*m_document->indentAt(i_row) || hasSelection() || hasRectSelection();
         removeCurrentChar();
         break;
     case KeyCommand::RemoveLine:
@@ -1307,6 +1307,10 @@ void TextCursor::removeCurrentChar()
         return;
     if (textPos>=m_document->textAt(i_row).length() && i_row>=m_document->linesCount()-1)
         return;
+    if (textPos<0) {
+        i_column = 2*m_document->indentAt(i_row);
+        return;
+    }
     m_document->undoStack()->push(new RemoveCommand(m_document, this, m_analizer, i_row, textPos, 1, true, i_row, i_column));
 
     b_visible = true;
