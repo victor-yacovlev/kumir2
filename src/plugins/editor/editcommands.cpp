@@ -139,6 +139,8 @@ void RemoveCommand::redo()
             }
         }
     }
+    int indentBefore = 0;
+    int indentAfter = 0;
     if (cursorRow<=doc->linesCount()) {
         QString curLineText = doc->textAt(cursorRow);
         int indent = doc->indentAt(cursor->row()) * 2;
@@ -154,8 +156,10 @@ void RemoveCommand::redo()
             int bl;
             doc->insertText(QString().fill(' ',insertedSpaces), analizer, cursorRow, curLineText.length(), bl, bl);
         }
+        indentBefore = doc->indentAt(cursorRowAfter);
         doc->removeText(removedText, analizer, line, pos, 0, 0, count);
         doc->checkForCompilationRequest(QPoint(cursor->row(), cursor->column()));
+        indentAfter = doc->indentAt(cursorRowAfter);
     }
     cursor->setRow(cursorRowAfter);
     cursor->setColumn(cursorColAfter);

@@ -390,8 +390,12 @@ void EditorPrivate::updateFromAnalizer()
     QList<Shared::LineProp> props = analizer->lineProperties(doc->documentId);
     QList<QPoint> ranks = analizer->lineRanks(doc->documentId);
     QList<Error> errors = analizer->errors(doc->documentId);
+    std::vector<int> oldIndents(doc->linesCount(), 0);
     for (int i=0; i<doc->linesCount(); i++) {
-        int oldIndent = doc->indentAt(i);
+        oldIndents[i] = doc->indentAt(i);
+    }
+    for (int i=0; i<doc->linesCount(); i++) {
+        int oldIndent = oldIndents[i];
         if (i<ranks.size()) {
             doc->setIndentRankAt(i, ranks[i]);
         }
@@ -402,7 +406,7 @@ void EditorPrivate::updateFromAnalizer()
         int newIndent = doc->indentAt(i);
         int diffIndent = newIndent - oldIndent;
         if (cursor->row()==i) {
-            cursor->setColumn(qMax(cursor->column()+diffIndent,0));
+            cursor->setColumn(qMax(cursor->column()+2*diffIndent,0));
         }
     }
     for (int i=0; i<errors.size(); i++) {
