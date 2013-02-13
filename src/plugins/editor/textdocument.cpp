@@ -124,7 +124,7 @@ void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterf
         TextLine tl = data[line];
         tl.changed = true;
         int thisLineRemoveCount = qMin(cnt, tl.text.length() - p);
-        Q_ASSERT(thisLineRemoveCount>=0);
+//        Q_ASSERT(thisLineRemoveCount>=0);
         removedText += tl.text.mid(p, thisLineRemoveCount);
         tl.text.remove(p, thisLineRemoveCount);
         for (int i=0; i<thisLineRemoveCount; i++) {
