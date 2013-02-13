@@ -15,7 +15,7 @@ TS_MODULES = {
         "KumirCodeGenerator": "src/plugins/kumircodegenerator",
         "KumirNativeGenerator": "src/plugins/kumirnativegenerator",
         "PascalAnalizer": "src/plugins/pascalanalizer",
-        "st_funct": "src/plugins/st_funct"
+#        "st_funct": "src/plugins/st_funct"
     }
 
 TS_LANGUAGES = [ "ru" ]
