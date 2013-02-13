@@ -747,7 +747,7 @@ SyntaxAnalizerPrivate::suggestAssignmentAutoComplete(
     else {
         // Make suggestion for void algorithm call
         result = suggestExpressionAutoComplete(
-                    /* lexemsBefore    = */ rvalue,
+                    /* lexemsBefore    = */ lvalue,
                     /* lexemsAfter     = */ lexemsAfter,
                     /* contextModule   = */ contextModule,
                     /* contextAlgorithm= */ contextAlgorithm,
@@ -759,7 +759,7 @@ SyntaxAnalizerPrivate::suggestAssignmentAutoComplete(
                     );
         // Make suggestion for variable assignment
         result += suggestExpressionAutoComplete(
-                    /* lexemsBefore    = */ rvalue,
+                    /* lexemsBefore    = */ lvalue,
                     /* lexemsAfter     = */ lexemsAfter,
                     /* contextModule   = */ contextModule,
                     /* contextAlgorithm= */ contextAlgorithm,
