@@ -1262,9 +1262,7 @@ void TextCursor::removeLineTail()
     if (!b_enabled)
         return;
     if (hasSelection()) {
-        removeSelectedText();
-        emitPositionChanged();
-        return;
+        removeSelection();
     }
 
     if (i_row<m_document->linesCount()) {
