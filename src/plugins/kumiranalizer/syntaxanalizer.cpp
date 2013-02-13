@@ -4552,6 +4552,11 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                     delete operand;
                     return 0;
                 }
+                const LexemType lxType = block.first()->type;
+                for (Lexem * lx : block) {
+                    lx->type = lxType;
+                        // set correct lexem type to all parts split by 'not'
+                }
                 subexpression << notFlag;
             }
             curPos++;
@@ -4617,6 +4622,11 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
                     delete operand;
                     return 0;
                 }
+                const LexemType lxType = block.first()->type;
+                for (Lexem * lx : block) {
+                    lx->type = lxType;
+                        // set correct lexem type to all parts split by 'not'
+                }
                 subexpression << notFlag;
             }
             subexpression << operand;
@@ -4673,6 +4683,11 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
 //                    notFlag->error =  _("Use of 'not' for non-boolean value");
 //                    return 0;
 //                }
+                const LexemType lxType = block.first()->type;
+                for (Lexem * lx : block) {
+                    lx->type = lxType;
+                        // set correct lexem type to all parts split by 'not'
+                }
                 subexpression << notFlag;
             }
             curPos++;
