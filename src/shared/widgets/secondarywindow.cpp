@@ -49,8 +49,6 @@ public:
 
     QAction* a_toggleVisible;
 
-    class SecondaryWindowTitle *lbl_title;
-
     QList<QPixmap*> px_topBorder;
     QList<QPixmap*> px_topDockedBorder;
     QList<QPixmap*> px_bottomBorder;
@@ -108,7 +106,7 @@ class SecondaryWindowButton :
         public QAbstractButton
 {
 public:
-    explicit SecondaryWindowButton(QWidget *parent, bool checkable, const QString &name,
+    explicit SecondaryWindowButton(QWidget *parent, bool checkable, const QString &name, QStyle::StandardPixmap role,
                           const QList<QPixmap*> &pixmaps, const QString &toolTip);
     inline bool isHovered() const { return b_hovered; }
     inline bool isPressed() const { return b_pressed; }
@@ -122,6 +120,8 @@ protected:
     bool b_hovered;
     bool b_pressed;
     QList<QPixmap*> px;
+    QStyle::StandardPixmap e_role;
+
 };
 
 class SecondaryWindowTitle :
@@ -206,14 +206,13 @@ bool SecondaryWindow::eventFilter(QObject *obj, QEvent *evt)
 
 void SecondaryWindow::setWindowTitle(const QString &title)
 {
-    d->lbl_title->setText(title);
     d->a_toggleVisible->setText(title);
     QWidget::setWindowTitle(title);
 }
 
 QString SecondaryWindow::windowTitle()
 {
-    return d->lbl_title->text();
+    return QWidget::windowTitle();
 }
 
 void SecondaryWindow::setStayOnTop(bool v)
@@ -315,7 +314,6 @@ void SecondaryWindow::toggleDocked()
         d->btn_stayOnTop->setVisible(false);
         d->btn_minimize->setVisible(false);
         d->w_topBorder->switchPixmaps(d->px_topDockedBorder);
-        d->lbl_title->setStyle(d->css_titleDocked);
         QSize dockSize = d->m_settings->value("DockPlace/"+d->s_settingsKey+"/Size",
                                               size()
                                               ).toSize();
@@ -339,7 +337,7 @@ void SecondaryWindow::toggleDocked()
         d->btn_stayOnTop->setVisible(true);
         d->btn_minimize->setVisible(true);
         d->w_topBorder->switchPixmaps(d->px_topBorder);
-        d->lbl_title->setStyle(d->css_title);
+
         d->w_dockPlace->layout()->removeWidget(this);
         setParent(D_PARENT);
         setWindowFlags(windowFlags() | Qt::Window);
@@ -439,6 +437,7 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
 
     btn_stayOnTop = new SecondaryWindowButton(w_topBorder, true,
                                      "Stay on top",
+                                     QStyle::SP_TitleBarShadeButton,
                                      px_stayOnTopButton,
                                      q->tr("Toggle stay on top"));
 
@@ -463,13 +462,11 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
         labelStyleFile2.close();
     }
 
-    lbl_title = new SecondaryWindowTitle(w_topBorder, css_title);
-
-
 
 
     btn_minimize = new SecondaryWindowButton(w_topBorder, false,
                                     "Minimize",
+                                    QStyle::SP_TitleBarMinButton,
                                     px_minimizeButton,
                                     q->tr("Minimize"));
 
@@ -480,6 +477,7 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
     if (placeWidget) {
         btn_toggleDocked = new SecondaryWindowButton(w_topBorder, false,
                                         "Docking",
+                                        QStyle::SP_TitleBarNormalButton,
                                         px_toggleDocked,
                                         q->tr("Docking"));
 
@@ -490,6 +488,7 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
 
     btn_close = new SecondaryWindowButton(w_topBorder, false,
                                  "Close",
+                                 QStyle::SP_TitleBarCloseButton,
                                  px_closeButton,
                                  q->tr("Close"));
 
@@ -499,7 +498,7 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
 #ifndef Q_OS_MAC
     // Buttons at right to title
     ll->addWidget(btn_stayOnTop);
-    ll->addWidget(lbl_title);
+    ll->addStretch();
     ll->addWidget(btn_minimize);
     if (placeWidget)
         ll->addWidget(btn_toggleDocked);
@@ -510,7 +509,7 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
     if (placeWidget)
         ll->addWidget(btn_toggleDocked);
     ll->addWidget(btn_minimize);
-    ll->addWidget(lbl_title);
+    ll->addStretch();
     ll->addWidget(btn_stayOnTop);
 #endif
 
@@ -541,7 +540,7 @@ void SecondaryWindowPrivate::timerEvent(QTimerEvent *e)
     if (!q->isFloating())
         return;
     QString newTitle = w_centralWidget->windowTitle();
-    QString oldTitle = lbl_title->text();
+    QString oldTitle = q->windowTitle();
     if (newTitle!=oldTitle && !newTitle.trimmed().isEmpty()) {
         q->setWindowTitle(newTitle);
     }
@@ -609,48 +608,81 @@ void BorderWidget::switchPixmaps(const QList<QPixmap *> &pixmaps)
 void BorderWidget::paintEvent(QPaintEvent *e)
 {
     QPainter p(this);
-
-    // left or top corner
-    int first_w = px_border[0]->width();
-    int first_h = px_border[0]->height();
-    QRect firstRect(0,0,first_w,first_h);
-    if (e->rect().intersects(firstRect))
-        p.drawPixmap(firstRect, *(px_border[0]));
-
-    // middle of border
-    QRect midRect;
-    int w = width();
-    int h = height();
-    int x = (e_border=='t'||e_border=='b')? first_w : 0;
-    int y = (e_border=='t'||e_border=='b')? 0 : first_h;
-    int mid_w = px_border[1]->width();
-    int mid_h = px_border[1]->height();
-    while (x<w && y<h) {
-        midRect = QRect(x,y,mid_w,mid_h);
-        if (e->rect().intersects(midRect))
-            p.drawPixmap(midRect, *(px_border[1]));
-        if (e_border=='t'||e_border=='b') {
-            x += mid_w;
+    if (e_border=='t') {
+        QStyleOptionTitleBar opt;
+        opt.initFrom(this);
+        opt.titleBarFlags = Qt::Window
+                | Qt::WindowTitleHint;
+        opt.text = parentWidget()->windowTitle();
+        if (isActiveWindow()) {
+            opt.state |= QStyle::State_Active;
+            opt.titleBarState |= QStyle::State_Active;
+            opt.palette.setCurrentColorGroup(QPalette::Active);
         }
         else {
-            y += mid_h;
+            opt.state &= ~QStyle::State_Active;
+            opt.titleBarState &= ~QStyle::State_Active;
+            opt.palette.setCurrentColorGroup(QPalette::Inactive);
         }
+        style()->drawComplexControl(QStyle::CC_TitleBar, &opt, &p, this);
     }
+//    // left or top corner
+//    int first_w = px_border[0]->width();
+//    int first_h = px_border[0]->height();
+//    QRect firstRect(0,0,first_w,first_h);
+//    if (e->rect().intersects(firstRect))
+//        p.drawPixmap(firstRect, *(px_border[0]));
 
-    // right or bottom corner
-    int last_w = px_border[2]->width();
-    int last_h = px_border[2]->height();
-    QRect lastRect;
-    if (e_border=='t'||e_border=='b') {
-        lastRect = QRect(w-last_w, 0, last_w, last_h);
-    }
-    else {
-        lastRect = QRect(0, h-last_h, last_w, last_h);
-    }
-    if (e->rect().intersects(lastRect))
-        p.drawPixmap(lastRect, *(px_border[2]));
+//    // middle of border
+//    QRect midRect;
+//    int w = width();
+//    int h = height();
+//    int x = (e_border=='t'||e_border=='b')? first_w : 0;
+//    int y = (e_border=='t'||e_border=='b')? 0 : first_h;
+//    int mid_w = px_border[1]->width();
+//    int mid_h = px_border[1]->height();
+//    while (x<w && y<h) {
+//        midRect = QRect(x,y,mid_w,mid_h);
+//        if (e->rect().intersects(midRect))
+//            p.drawPixmap(midRect, *(px_border[1]));
+//        if (e_border=='t'||e_border=='b') {
+//            x += mid_w;
+//        }
+//        else {
+//            y += mid_h;
+//        }
+//    }
+
+//    // right or bottom corner
+//    int last_w = px_border[2]->width();
+//    int last_h = px_border[2]->height();
+//    QRect lastRect;
+//    if (e_border=='t'||e_border=='b') {
+//        lastRect = QRect(w-last_w, 0, last_w, last_h);
+//    }
+//    else {
+//        lastRect = QRect(0, h-last_h, last_w, last_h);
+//    }
+//    if (e->rect().intersects(lastRect))
+//        p.drawPixmap(lastRect, *(px_border[2]));
 
     e->accept();
+}
+
+void SecondaryWindow::paintEvent(QPaintEvent *e)
+{
+    QPainter p(this);
+    QStyleOptionFrame opt;
+    opt.initFrom(this);
+    opt.rect.setY(opt.rect.y()+d->w_topBorder->height());
+    if (isActiveWindow()) {
+        opt.state |= QStyle::State_Active;
+    }
+    else {
+        opt.state &= ~QStyle::State_Active;
+    }
+    style()->drawPrimitive(QStyle::PE_FrameWindow, &opt, &p, this);
+    QWidget::paintEvent(e);
 }
 
 void BorderWidget::mousePressEvent(QMouseEvent *e)
@@ -738,6 +770,7 @@ void BorderWidget::mouseDragAction(const QPoint &offset)
 
 SecondaryWindowButton::SecondaryWindowButton(QWidget *parent, bool checkable,
                            const QString &name,
+                           QStyle::StandardPixmap role,
                            const QList<QPixmap*> &pixmaps,
                            const QString &toolTip)
                                : QAbstractButton(parent)
@@ -748,6 +781,7 @@ SecondaryWindowButton::SecondaryWindowButton(QWidget *parent, bool checkable,
     setMouseTracking(true);
     px = pixmaps;
     b_pressed = b_hovered = false;
+    e_role = role;
     int maxW = 0, maxH = 0;
     for (int i=0; i<pixmaps.size(); i++) {
         maxW = qMax(maxW, pixmaps[i]->width());
@@ -810,79 +844,6 @@ void SecondaryWindowButton::mouseReleaseEvent(QMouseEvent *e)
 {
     b_pressed = false;
     QAbstractButton::mouseReleaseEvent(e);
-}
-
-// class CustomLabel
-
-SecondaryWindowTitle::SecondaryWindowTitle(QWidget *parent, const QString &style)
-    : QWidget(parent)
-{
-    setStyle(style);
-}
-
-void SecondaryWindowTitle::setStyle(const QString &style)
-{
-    QStringList props = style.split(";");
-    QString name, value;
-    QStringList p;
-    i_padding = 0;
-    fl_textAlignment = Qt::AlignLeft;
-    f_font = font();
-    col_foreground = QColor("black");
-    for (int i=0; i<props.size(); i++) {
-        p = props.at(i).split(":");
-        if (p.size()==2) {
-            name = p[0].toLower().trimmed(); value = p[1].trimmed();
-            if (name=="color") {
-                col_foreground = QColor(value);
-            }
-            if (name=="size") {
-                QString measure = "pt";
-                if (value.endsWith("px")) {
-                    measure = "px";
-                }
-                value.remove("pt");
-                value.remove("px");
-                int v = value.toInt();
-                if (measure=="px")
-                    f_font.setPixelSize(v);
-                if (measure=="pt")
-                    f_font.setPointSize(v);
-            }
-            if (name=="alignment") {
-                value = value.toLower();
-                if (value=="center")
-                    fl_textAlignment = Qt::AlignHCenter;
-                else if (value=="right")
-                    fl_textAlignment = Qt::AlignRight;
-                else
-                    fl_textAlignment = Qt::AlignLeft;
-            }
-            if (name=="padding") {
-                i_padding = value.toInt();
-            }
-        }
-    }
-    update();
-}
-
-void SecondaryWindowTitle::setText(const QString &v)
-{
-    s_text = v;
-    update();
-}
-
-void SecondaryWindowTitle::paintEvent(QPaintEvent *e)
-{
-    QPainter p(this);
-    p.setFont(f_font);
-    p.setPen(QColor(col_foreground));
-    QTextOption opt;
-    opt.setAlignment(fl_textAlignment|Qt::AlignVCenter);
-    opt.setWrapMode(QTextOption::NoWrap);
-    p.drawText(QRect(i_padding,0,width()-2*i_padding,height()),s_text,opt);
-    e->accept();
-
 }
 
 }

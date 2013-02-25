@@ -41,6 +41,7 @@ public slots:
     void setSettingsObject(QSettings * settings);
     void restoreState();
     void saveState();
+    void paintEvent(QPaintEvent *e);
 protected:
     void closeEvent(QCloseEvent *);
     bool eventFilter(QObject *obj, QEvent *evt);

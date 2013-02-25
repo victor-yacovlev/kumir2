@@ -10,6 +10,7 @@ set(SOURCES
     terminal_plane.cpp
     tabbar.cpp
     aboutdialog.cpp
+    debuggerwindow.cpp
 )
 
 set(EXTRA_LIBS
@@ -34,6 +35,7 @@ set(MOC_HEADERS
     tabbar.h
     aboutdialog.h
     tabwidgetelement.h
+    debuggerwindow.h
 )
 
 set(FORMS

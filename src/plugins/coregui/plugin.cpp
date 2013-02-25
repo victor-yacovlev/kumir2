@@ -2,6 +2,7 @@
 #include "mainwindow.h"
 #include "extensionsystem/pluginmanager.h"
 #include "widgets/secondarywindow.h"
+#include "debuggerwindow.h"
 #include "ui_mainwindow.h"
 #ifdef Q_OS_MACX
 #include "mac-fixes.h"
@@ -132,6 +133,7 @@ QString Plugin::initialize(const QStringList & parameters)
 
 
     KPlugin * kumirRunner = myDependency("KumirCodeRun");
+    plugin_kumirCodeRun = qobject_cast<RunInterface*>(kumirRunner);
     //Q_CHECK_PTR(kumirRunner);
     m_kumirProgram->setBytecodeRun(kumirRunner);
     QList<ExtensionSystem::KPlugin*> actors = loadedPlugins("Actor*");
@@ -251,9 +253,81 @@ QString Plugin::initialize(const QStringList & parameters)
             m_mainWindow->ui->actionUsage, SLOT(setChecked(bool)));
 
 
+    QWidget * debuggerPlace = new QWidget(m_mainWindow);
+    debuggerPlace->setLayout(new QHBoxLayout);
+    debuggerPlace->layout()->setContentsMargins(0,0,0,0);
+    debuggerPlace->sizePolicy().setHorizontalStretch(1);
+    debuggerPlace->sizePolicy().setHorizontalPolicy(QSizePolicy::Fixed);
+    bottomSplitter->insertWidget(0, debuggerPlace);
+    debuggerPlace->setVisible(false);
+
+
+    m_debugger = new DebuggerWindow(plugin_kumirCodeRun);
+    Widgets::SecondaryWindow * debuggerWindow = new Widgets::SecondaryWindow(
+                m_debugger,
+                debuggerPlace,
+                m_mainWindow,
+                mySettings(),
+                "DebuggerWindow");
+    l_secondaryWindows << debuggerWindow;
+    debuggerWindow->setWindowTitle(tr("Variables"));
+    debuggerWindow->toggleViewAction()->setShortcut(QKeySequence("F2"));
+    connect(m_mainWindow->ui->actionVariables, SIGNAL(triggered()),
+            debuggerWindow->toggleViewAction(), SLOT(trigger()));
+    connect(debuggerWindow->toggleViewAction(), SIGNAL(toggled(bool)),
+            m_mainWindow->ui->actionVariables, SLOT(setChecked(bool)));
+
+    connect(kumirRunner, SIGNAL(debuggerReset()),
+            m_debugger, SLOT(reset()));
+    connect(kumirRunner, SIGNAL(debuggerPopContext()),
+            m_debugger, SLOT(popContext()));
+    connect(kumirRunner,
+            SIGNAL(debuggerPushContext(QString,QStringList,QStringList,QList<int>)),
+            m_debugger,
+            SLOT(pushContext(QString,QStringList,QStringList,QList<int>)));
+    connect(kumirRunner,
+            SIGNAL(debuggerUpdateLocalVariable(QString,QString)),
+            m_debugger,
+            SLOT(updateLocalVariable(QString,QString)));
+    connect(kumirRunner,
+            SIGNAL(debuggerUpdateGlobalVariable(QString,QString,QString)),
+            m_debugger,
+            SLOT(updateGlobalVariable(QString,QString,QString)));
+    connect(kumirRunner,
+            SIGNAL(debuggerUpdateLocalTableBounds(QString,QList<int>)),
+            m_debugger,
+            SLOT(updateLocalTableBounds(QString,QList<int>)));
+    connect(kumirRunner,
+            SIGNAL(debuggerUpdateGlobalTableBounds(QString,QString,QList<int>)),
+            m_debugger,
+            SLOT(updateGlobalTableBounds(QString,QString,QList<int>)));
+    connect(kumirRunner,
+            SIGNAL(debuggerSetLocalReference(QString,QString,QList<int>,int,QString)),
+            m_debugger,
+            SLOT(setLocalReference(QString,QString,QList<int>,int,QString)));
+    connect(kumirRunner,
+            SIGNAL(debuggerForceUpdateValues()),
+            m_debugger,
+            SLOT(updateAllValues()));
+    connect(kumirRunner,
+            SIGNAL(debuggerUpdateLocalTableValue(QString,QList<int>)),
+            m_debugger,
+            SLOT(updateLocalTableValue(QString,QList<int>)));
+    connect(kumirRunner,
+            SIGNAL(debuggerUpdateGlobalTableValue(QString,QString,QList<int>)),
+            m_debugger,
+            SLOT(updateGlobalTableValue(QString,QString,QList<int>)));
+
+    connect(kumirRunner,
+            SIGNAL(debuggerSetGlobals(QString,QStringList,QStringList,QList<int>)),
+            m_debugger,
+            SLOT(setGlobals(QString,QStringList,QStringList,QList<int>))
+            );
 
     connect(m_kumirProgram, SIGNAL(activateDocumentTab(int)),
             m_mainWindow, SLOT(activateDocumentTab(int)));
+
+    m_kumirProgram->setDebuggerWindow(m_debugger);
 
     return "";
 }
@@ -273,6 +347,7 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
         m_mainWindow->clearMessage();
         m_mainWindow->setFocusOnCentralWidget();
         m_mainWindow->unlockActions();
+        m_debugger->reset();
     }
     else if (state==ExtensionSystem::GS_Observe) {
         m_kumirStateLabel->setText(tr("Observe"));

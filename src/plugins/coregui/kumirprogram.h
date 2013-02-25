@@ -34,6 +34,7 @@ public:
     inline void setDocumentId(int id) { if (e_state==Idle) i_documentId = id; }
     inline int documentId() const { return i_documentId; }
     inline void setMainWidget(QWidget * w) { w_mainWidget = w; }
+    inline void setDebuggerWindow(class DebuggerWindow * w) { w_debuggerWindow = w; }
     void setTerminal(Term * t, QDockWidget * w);
     void setBytecodeRun(KPlugin * run);
     void addActor(KPlugin * a, QWidget * w);
@@ -91,6 +92,7 @@ private:
     int i_timerId;
     QWidget * w_mainWidget;
     bool b_processUserTerminated;
+    class DebuggerWindow * w_debuggerWindow;
 };
 
 } // namespace CoreGui

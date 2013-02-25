@@ -67,11 +67,20 @@ MainWindow::MainWindow(Plugin * p) :
     setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
     setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 
-    statusBar()->setStyleSheet("QStatusBar { border-top: 1px solid darkgray; } ");
+    statusBar()->setStyleSheet(
+                "QStatusBar { "
+                "   border-top: 1px solid darkgray;"
+                "}"
+                "QToolButton {"
+                "   icon-size: 16px;"
+                "   border: none;"
+                "}"
+                );
+
 
     statusBar()->addWidget(m_plugin->m_kumirStateLabel);
     statusBar()->addWidget(m_plugin->m_genericCounterLabel);
-    m_plugin->m_kumirStateLabel->setFixedWidth(120);
+    m_plugin->m_kumirStateLabel->setFixedWidth(140);
     m_plugin->m_kumirStateLabel->setStyleSheet(StatusbarWidgetCSS);
     m_plugin->m_kumirStateLabel->setAlignment(Qt::AlignCenter);
     m_plugin->m_genericCounterLabel->setFixedWidth(120);
@@ -116,10 +125,12 @@ MainWindow::MainWindow(Plugin * p) :
 }
 
 QString MainWindow::StatusbarWidgetCSS =
-"QLabel {"
-"   font-size: 12px;"
-"   padding: 4px;"
-"}"
+        "QLabel {"
+        "   font-size: 16px;"
+        "   padding: 4px;"
+        "   border: 2px solid darkgray;"
+        "   margin: 0;"
+        "}"
 ;
 
 void MainWindow::changeFocusOnMenubar()

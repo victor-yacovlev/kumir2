@@ -55,7 +55,7 @@
      <x>0</x>
      <y>0</y>
      <width>744</width>
-     <height>24</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -243,7 +243,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Variables</string>
+    <string>Variable Current Values</string>
    </property>
    <property name="shortcut">
     <string>F2</string>

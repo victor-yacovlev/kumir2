@@ -2,6 +2,7 @@
 #include "extensionsystem/pluginmanager.h"
 #include "interfaces/actorinterface.h"
 #include "dataformats/ast_algorhitm.h"
+#include "debuggerwindow.h"
 
 namespace CoreGUI {
 
@@ -26,6 +27,7 @@ KumirProgram::KumirProgram(QObject *parent)
     , a_stop(0)
     , gr_actions(0)
     , w_mainWidget(0)
+    , w_debuggerWindow(0)
 {
     b_blind = false;
 
@@ -189,6 +191,7 @@ void KumirProgram::addActor(KPlugin *a, QWidget *w)
 
 void KumirProgram::fastRun()
 {
+    if (w_debuggerWindow) w_debuggerWindow->reset();
     b_processUserTerminated = false;
     s_endStatus = "";
     if (e_state!=Idle) {
@@ -255,7 +258,7 @@ void KumirProgram::fastRun()
 
 void KumirProgram::blindRun()
 {
-
+    if (w_debuggerWindow) w_debuggerWindow->reset();
     if (e_state==FastRun)
         return;
     b_blind = true;
@@ -271,6 +274,7 @@ void KumirProgram::blindRun()
 
 void KumirProgram::testingRun()
 {
+    if (w_debuggerWindow) w_debuggerWindow->reset();
     if (e_state==FastRun)
         return;
     b_blind = true;
@@ -303,7 +307,7 @@ void KumirProgram::testingRun()
 
 void KumirProgram::regularRun()
 {
-
+    if (w_debuggerWindow) w_debuggerWindow->reset();
     if (e_state==FastRun)
         return;
     b_blind = false;
@@ -319,6 +323,7 @@ void KumirProgram::regularRun()
 
 void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel debugLevel)
 {
+    if (w_debuggerWindow) w_debuggerWindow->reset();
     bool mustRegenerate = !m_ast->lastModified.isValid() ||
             !plugin_bytecodeRun->loadedProgramVersion().isValid() ||
             m_ast->lastModified > plugin_bytecodeRun->loadedProgramVersion();
@@ -377,6 +382,7 @@ void KumirProgram::stop()
         b_processUserTerminated = true;
         m_process->kill();
     }
+    if (w_debuggerWindow) w_debuggerWindow->reset();
 }
 
 void KumirProgram::handleProcessError(QProcess::ProcessError error)
@@ -436,6 +442,7 @@ void KumirProgram::handleRunnerStopped(int rr)
         e_state = Idle;
         m_terminal->clearFocus();
         plugin_editor->unhighlightLine(i_documentId);
+        if (w_debuggerWindow) w_debuggerWindow->reset();
     }
 
     if (e_state==Idle) {

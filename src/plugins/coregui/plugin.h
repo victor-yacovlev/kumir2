@@ -8,6 +8,7 @@
 #include "interfaces/browserinterface.h"
 #include "interfaces/generatorinterface.h"
 #include "interfaces/actorinterface.h"
+#include "interfaces/runinterface.h"
 #include "widgets/secondarywindow.h"
 #include "terminal.h"
 #include "kumirprogram.h"
@@ -58,12 +59,14 @@ protected:
     GeneratorInterface * plugin_NativeGenerator;
     GeneratorInterface * plugin_BytecodeGenerator;
     BrowserInterface * plugin_browser;
+    RunInterface * plugin_kumirCodeRun;
     QList<ActorInterface*> l_plugin_actors;
     BrowserComponent m_startPage;
     QList<Widgets::SecondaryWindow*> l_secondaryWindows;
     Term * m_terminal;
     QMap<QString,QObject*> m_browserObjects;
     KumirProgram * m_kumirProgram;
+    class DebuggerWindow * m_debugger;
     BrowserComponent m_helpBrowser;
     QSplitter * m_bottomSplitter;
 

@@ -795,50 +795,108 @@ bool EditorPlane::event(QEvent *e)
 
 void EditorPlane::keyPressEvent(QKeyEvent *e)
 {
+    bool MoveToNextChar = e->matches(QKeySequence::MoveToNextChar);
+    bool SelectNextChar = e->matches(QKeySequence::SelectNextChar);
+    bool MoveToNextWord = e->matches(QKeySequence::MoveToNextWord);
+    bool SelectNextWord = e->matches(QKeySequence::SelectNextWord);
+    bool MoveToPreviousChar = e->matches(QKeySequence::MoveToPreviousChar);
+    bool SelectPreviousChar = e->matches(QKeySequence::SelectPreviousChar);
+    bool MoveToPreviousWord = e->matches(QKeySequence::MoveToPreviousChar);
+    bool SelectPreviousWord = e->matches(QKeySequence::SelectPreviousWord);
+    bool MoveToNextLine = e->matches(QKeySequence::MoveToNextLine);
+    bool SelectNextLine = e->matches(QKeySequence::SelectNextLine);
+    bool MoveToPreviousLine = e->matches(QKeySequence::MoveToPreviousLine);
+    bool SelectPreviousLine = e->matches(QKeySequence::SelectPreviousLine);
+#ifdef Q_WS_X11
+    // VIM-style navigation using Super key :
+    //   {h,j,k,l} -> {left, down, up, right }
+    if (e->modifiers().testFlag(Qt::MetaModifier)) {
+        MoveToNextChar = e->key()==Qt::Key_L
+                && !e->modifiers().testFlag(Qt::ShiftModifier)
+                && !e->modifiers().testFlag(Qt::ControlModifier);
+        SelectNextChar = e->key()==Qt::Key_L
+                && e->modifiers().testFlag(Qt::ShiftModifier)
+                && !e->modifiers().testFlag(Qt::ControlModifier);
+        MoveToNextWord = e->key()==Qt::Key_L
+                && !e->modifiers().testFlag(Qt::ShiftModifier)
+                && e->modifiers().testFlag(Qt::ControlModifier);
+        SelectNextWord = e->key()==Qt::Key_L
+                && e->modifiers().testFlag(Qt::ShiftModifier)
+                && e->modifiers().testFlag(Qt::ControlModifier);
+
+        MoveToPreviousChar = e->key()==Qt::Key_H
+                && !e->modifiers().testFlag(Qt::ShiftModifier)
+                && !e->modifiers().testFlag(Qt::ControlModifier);
+        SelectPreviousChar = e->key()==Qt::Key_H
+                && e->modifiers().testFlag(Qt::ShiftModifier)
+                && !e->modifiers().testFlag(Qt::ControlModifier);
+        MoveToPreviousWord = e->key()==Qt::Key_H
+                && !e->modifiers().testFlag(Qt::ShiftModifier)
+                && e->modifiers().testFlag(Qt::ControlModifier);
+        SelectPreviousWord = e->key()==Qt::Key_H
+                && e->modifiers().testFlag(Qt::ShiftModifier)
+                && e->modifiers().testFlag(Qt::ControlModifier);
+
+        MoveToNextLine = e->key()==Qt::Key_J
+                && !e->modifiers().testFlag(Qt::ShiftModifier)
+                && !e->modifiers().testFlag(Qt::ControlModifier);
+        SelectNextLine = e->key()==Qt::Key_J
+                && e->modifiers().testFlag(Qt::ShiftModifier)
+                && !e->modifiers().testFlag(Qt::ControlModifier);
+
+        MoveToPreviousLine = e->key()==Qt::Key_K
+                && !e->modifiers().testFlag(Qt::ShiftModifier)
+                && !e->modifiers().testFlag(Qt::ControlModifier);
+        SelectPreviousLine = e->key()==Qt::Key_K
+                && e->modifiers().testFlag(Qt::ShiftModifier)
+                && !e->modifiers().testFlag(Qt::ControlModifier);
+    }
+
+#endif
     if (m_cursor->isEnabled() && hasFocus()) {
-        if (e->matches(QKeySequence::MoveToNextChar)) {
+        if (MoveToNextChar) {
             m_cursor->evaluateCommand(KeyCommand::MoveToNextChar);
         }
-        else if (e->matches(QKeySequence::SelectNextChar)) {
+        else if (SelectNextChar) {
             m_cursor->evaluateCommand(KeyCommand::SelectNextChar);
         }
-        else if (e->matches(QKeySequence::MoveToNextWord)) {
+        else if (MoveToNextWord) {
             m_cursor->evaluateCommand(KeyCommand::MoveToNextLexem);
         }
-        else if (e->matches(QKeySequence::SelectNextWord)) {
+        else if (SelectNextWord) {
             m_cursor->evaluateCommand(KeyCommand::SelectNextLexem);
         }
         else if (e->key()==Qt::Key_Right && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && m_analizer==0) {
             m_cursor->evaluateCommand(KeyCommand::SelectNextColumn);
         }
-        else if (e->matches(QKeySequence::MoveToPreviousChar)) {
+        else if (MoveToPreviousChar) {
             m_cursor->evaluateCommand(KeyCommand::MoveToPreviousChar);
         }
-        else if (e->matches(QKeySequence::SelectPreviousChar)) {
+        else if (SelectPreviousChar) {
             m_cursor->evaluateCommand(KeyCommand::SelectPreviousChar);
         }
-        else if (e->matches(QKeySequence::MoveToPreviousWord)) {
+        else if (MoveToPreviousWord) {
             m_cursor->evaluateCommand(KeyCommand::MoveToPreviousLexem);
         }
-        else if (e->matches(QKeySequence::SelectPreviousWord)) {
+        else if (SelectPreviousWord) {
             m_cursor->evaluateCommand(KeyCommand::SelectPreviousLexem);
         }
         else if (e->key()==Qt::Key_Left && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && m_analizer==0) {
             m_cursor->evaluateCommand(KeyCommand::SelectPreviousColumn);
         }
-        else if (e->matches(QKeySequence::MoveToNextLine)) {
+        else if (MoveToNextLine) {
             m_cursor->evaluateCommand(KeyCommand::MoveToNextLine);
         }
-        else if (e->matches(QKeySequence::SelectNextLine)) {
+        else if (SelectNextLine) {
             m_cursor->evaluateCommand(KeyCommand::SelectNextLine);
         }
         else if (e->key()==Qt::Key_Down && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && m_analizer==0) {
             m_cursor->evaluateCommand(KeyCommand::SelectNextRow);
         }
-        else if (e->matches(QKeySequence::MoveToPreviousLine)) {
+        else if (MoveToPreviousLine) {
             m_cursor->evaluateCommand(KeyCommand::MoveToPreviousLine);
         }
-        else if (e->matches(QKeySequence::SelectPreviousLine)) {
+        else if (SelectPreviousLine) {
             m_cursor->evaluateCommand(KeyCommand::SelectPreviousLine);
         }
         else if (e->key()==Qt::Key_Up && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && m_analizer==0) {
