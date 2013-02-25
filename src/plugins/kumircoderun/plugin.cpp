@@ -26,6 +26,40 @@ Plugin::Plugin() :
     connect (d, SIGNAL(clearMarginRequest(int,int)), this, SIGNAL(clearMargin(int,int)));
 //    connect (d->vm, SIGNAL(resetModuleRequest(QString)), this, SIGNAL(resetModule(QString)));
     b_onlyOneTryToInput = false;
+
+
+    connect(d, SIGNAL(signal_debuggerReset()), this, SIGNAL(debuggerReset()), Qt::DirectConnection);
+    connect(d, SIGNAL(signal_debuggerPopContext()), this, SIGNAL(debuggerPopContext()), Qt::DirectConnection);
+    connect(d, SIGNAL(signal_debuggerPushContext(QString,QStringList,QStringList,QList<int>)),
+            this, SIGNAL(debuggerPushContext(QString,QStringList,QStringList,QList<int>)),
+            Qt::DirectConnection);
+    connect(d, SIGNAL(signal_debuggerSetGlobals(QString,QStringList,QStringList,QList<int>)),
+            this, SIGNAL(debuggerSetGlobals(QString,QStringList,QStringList,QList<int>)),
+            Qt::DirectConnection);
+    connect(d, SIGNAL(signal_debuggerUpdateLocalVariable(QString,QString)),
+            this, SIGNAL(debuggerUpdateLocalVariable(QString,QString)),
+            Qt::DirectConnection);
+    connect(d, SIGNAL(signal_debuggerUpdateGlobalVariable(QString,QString,QString)),
+            this, SIGNAL(debuggerUpdateGlobalVariable(QString,QString,QString)),
+            Qt::DirectConnection);
+    connect(d, SIGNAL(signal_debuggerUpdateLocalTableBounds(QString,QList<int>)),
+            this, SIGNAL(debuggerUpdateLocalTableBounds(QString,QList<int>)),
+            Qt::DirectConnection);
+    connect(d, SIGNAL(signal_debuggerUpdateGlobalTableBounds(QString,QString,QList<int>)),
+            this, SIGNAL(debuggerUpdateGlobalTableBounds(QString,QString,QList<int>)),
+            Qt::DirectConnection);
+    connect(d, SIGNAL(signal_debuggerSetLocalReference(QString,QString,QList<int>,int,QString)),
+            this, SIGNAL(debuggerSetLocalReference(QString,QString,QList<int>,int,QString)),
+            Qt::DirectConnection);
+    connect(d, SIGNAL(signal_debuggerForceUpdateValues()),
+            this, SIGNAL(debuggerForceUpdateValues()),
+            Qt::DirectConnection);
+    connect(d, SIGNAL(signal_debuggerUpdateLocalTableValue(QString,QList<int>)),
+            this, SIGNAL(debuggerUpdateLocalTableValue(QString,QList<int>)),
+            Qt::DirectConnection);
+    connect(d, SIGNAL(signal_debuggerUpdateGlobalTableValue(QString,QString,QList<int>)),
+            this, SIGNAL(debuggerUpdateGlobalTableValue(QString,QString,QList<int>)),
+            Qt::DirectConnection);
 }
 
 bool Plugin::isGuiRequired() const
@@ -81,10 +115,261 @@ QString Plugin::error() const
     return d->error();
 }
 
-QVariantList Plugin::remainingValues() const
+QMap<QString,QVariant> Plugin::getScalarLocalValues(int frameNo) const
 {
-    return d->remainingValues();
+    d->lockVMMutex();
+    QMap<QString,QVariant> result;
+    const std::vector<Variable> & locals = d->vm->getLocals(frameNo);
+    for (int i=0; i<locals.size(); i++) {
+        const Variable & var = locals.at(i);
+        if (var.dimension()==0) {
+            const QString varName = QString::fromStdWString(var.myName());
+            QVariant value;
+            if (var.isValid()) {
+                value = QString::fromStdWString(var.toString());
+            }
+            else {
+                value = QVariant::Invalid;
+            }
+            result.insert(varName, value);
+        }
+    }
+    d->unlockVMMutex();
+    return result;
 }
+
+QMap<QString,QVariant> Plugin::getScalarGlobalValues(const QString & moduleName) const
+{
+    d->lockVMMutex();
+    QMap<QString,QVariant> result;
+    const std::vector<Variable> & locals = d->vm->getGlobals(moduleName.toStdWString());
+    for (int i=0; i<locals.size(); i++) {
+        const Variable & var = locals.at(i);
+        if (var.dimension()==0) {
+            const QString varName = QString::fromStdWString(var.myName());
+            QVariant value;
+            if (var.isValid()) {
+                value = QString::fromStdWString(var.toString());
+            }
+            else {
+                value = QVariant::Invalid;
+            }
+            result.insert(varName, value);
+        }
+    }
+    d->unlockVMMutex();
+    return result;
+}
+
+QVariantList getTableValues(
+        const Variable & var,
+        int dimension,
+        QList< QPair<int,int> > ranges,
+        int & counter,
+        const int maxCount,
+        bool & complete
+        )
+{
+    int bounds[7];
+    var.getEffectiveBounds(bounds);
+    QVariantList result;
+    if (ranges.size()<dimension) {
+        QPair<int,int> maxRange;
+        maxRange.first  = bounds[2*(3-dimension)];
+        maxRange.second = bounds[2*(3-dimension)+1];
+        ranges.push_back(maxRange);
+    }
+    if (dimension==1) {
+        const QPair<int,int> xrange = ranges[0];
+        QVariantList & X = result;
+        const int xs = xrange.first;
+        const int xe = xrange.second;
+        for (int x=xs; x<=xe; x++) {
+            const QVariant Xvalue = var.hasValue(x)
+                    ? QVariant(QString::fromStdWString(var.value(x).toString()))
+                    : QVariant(QVariant::Invalid);
+            X.push_back(Xvalue);
+            counter += 1;
+            if (maxCount!=-1 && counter>=maxCount) {
+                complete = complete && x==xe;
+                break;
+            }
+        }
+    }
+    else if (dimension==2) {
+        const QPair<int,int> yrange = ranges[0];
+        const QPair<int,int> xrange = ranges[1];
+        QVariantList & Y = result;
+        const int ys = yrange.first;
+        const int ye = yrange.second;
+        for (int y=ys; y<=ye; y++) {
+            QVariantList Yvalue;
+            QVariantList & X = Yvalue;
+            const int xs = xrange.first;
+            const int xe = xrange.second;
+            for (int x=xs; x<=xe; x++) {
+                const QVariant Xvalue = var.hasValue(y,x)
+                        ? QVariant(QString::fromStdWString(var.value(y,x).toString()))
+                        : QVariant(QVariant::Invalid);
+                X.push_back(Xvalue);
+                counter += 1;
+                if (maxCount!=-1 && counter>=maxCount) {
+                    complete = complete && x==xe;
+                    break;
+                }
+            }
+            Y.push_back(Yvalue);
+            if (maxCount!=-1 && counter>=maxCount) {
+                complete = complete && y==ye;
+                break;
+            }
+        }
+    }
+    else if (dimension==3) {
+        const QPair<int,int> zrange = ranges[0];
+        const QPair<int,int> yrange = ranges[1];
+        const QPair<int,int> xrange = ranges[2];
+        QVariantList & Z = result;
+        const int zs = zrange.first;
+        const int ze = zrange.second;
+        for (int z=zs; z<=ze; z++) {
+            QVariantList Zvalue;
+            QVariantList & Y = Zvalue;
+            const int ys = yrange.first;
+            const int ye = yrange.second;
+            for (int y=ys; y<=ye; y++) {
+                QVariantList Yvalue;
+                QVariantList & X = Yvalue;
+                const int xs = xrange.first;
+                const int xe = xrange.second;
+                for (int x=xs; x<=xe; x++) {
+                    const QVariant Xvalue = var.hasValue(z,y,x)
+                            ? QVariant(QString::fromStdWString(var.value(z,y,x).toString()))
+                            : QVariant(QVariant::Invalid);
+                    X.push_back(Xvalue);
+                    counter += 1;
+                    if (maxCount!=-1 && counter>=maxCount) {
+                        complete = complete && x==xe;
+                        break;
+                    }
+                }
+                Y.push_back(Yvalue);
+                if (maxCount!=-1 && counter>=maxCount) {
+                    complete = complete && y==ye;
+                    break;
+                }
+            }
+            Z.push_back(Zvalue);
+            if (maxCount!=-1 && counter>=maxCount) {
+                complete = complete && z==ze;
+                break;
+            }
+        }
+    }
+    return result;
+}
+
+QVariantList Plugin::getLocalTableValues(
+        int frameNo,
+        int maxCount,
+        const QString &name,
+        const QList<QPair<int, int> > &ranges,
+        bool & complete
+        ) const
+{
+    QVariantList result;
+    int counter = 0;
+    d->lockVMMutex();
+    const std::vector<Variable> & locals = d->vm->getLocals(frameNo);
+    for (int i=0; i<locals.size(); i++) {
+        const Variable & var = locals.at(i);
+        if (var.dimension()>0 && var.myName()==name.toStdWString()) {
+            complete = true;
+            result = getTableValues(var, var.dimension(), ranges, counter, maxCount, complete);
+            break;
+        }
+    }
+    d->unlockVMMutex();
+    return result;
+}
+
+QVariant Plugin::getLocalTableValue(
+        int frameNo,
+        const QString &name,
+        const QList<int> &indeces
+        ) const
+{
+    QVariant result;
+    int kIndeces[4];
+    kIndeces[3] = indeces.size();
+    for (int i=0; i<indeces.size(); i++) {
+        kIndeces[i] = indeces[i];
+    }
+    d->lockVMMutex();
+    const std::vector<Variable> & locals = d->vm->getLocals(frameNo);
+    for (int i=0; i<locals.size(); i++) {
+        const Variable & var = locals.at(i);
+        if (var.dimension()>0 && var.myName()==name.toStdWString()) {
+            if (var.hasValue(kIndeces))
+                result = QString::fromStdWString(var.toString(kIndeces));
+            break;
+        }
+    }
+    d->unlockVMMutex();
+    return result;
+}
+
+QVariantList Plugin::getGlobalTableValues(
+        const QString & moduleName,
+        int maxCount,
+        const QString &name,
+        const QList<QPair<int, int> > &ranges,
+        bool & complete
+        ) const
+{
+    QVariantList result;
+    int counter = 0;
+    d->lockVMMutex();
+    const std::vector<Variable> & globals = d->vm->getGlobals(moduleName.toStdWString());
+    for (int i=0; i<globals.size(); i++) {
+        const Variable & var = globals.at(i);
+        if (var.dimension()>0 && var.myName()==name.toStdWString()) {
+            complete = true;
+            result = getTableValues(var, var.dimension(), ranges, counter, maxCount, complete);
+            break;
+        }
+    }
+    d->unlockVMMutex();
+    return result;
+}
+
+QVariant Plugin::getGlobalTableValue(
+        const QString & moduleName,
+        const QString &name,
+        const QList<int> &indeces
+        ) const
+{
+    QVariant result;
+    int kIndeces[4];
+    kIndeces[3] = indeces.size();
+    for (int i=0; i<indeces.size(); i++) {
+        kIndeces[i] = indeces[i];
+    }
+    d->lockVMMutex();
+    const std::vector<Variable> & globals = d->vm->getGlobals(moduleName.toStdWString());
+    for (int i=0; i<globals.size(); i++) {
+        const Variable & var = globals.at(i);
+        if (var.dimension()>0 && var.myName()==name.toStdWString()) {
+            if (var.hasValue(kIndeces))
+                result = QString::fromStdWString(var.toString(kIndeces));
+            break;
+        }
+    }
+    d->unlockVMMutex();
+    return result;
+}
+
+
 
 void Plugin::runContinuous()
 {
@@ -334,24 +619,6 @@ bool Plugin::canStepOut() const
     return d->canStepOut();
 }
 
-
-
-
-
-QVariant Plugin::value(int moduleId, int algorhitmId, int variableId) const
-{
-    return d->value(moduleId, algorhitmId, variableId);
-}
-
-QList<int> Plugin::bounds(int moduleId, int algorhitmId, int variableId) const
-{
-    return d->bounds(moduleId, algorhitmId, variableId);
-}
-
-QList<int> Plugin::reference(int moduleId, int algorhitmId, int variableId) const
-{
-    return d->reference(moduleId, algorhitmId, variableId);
-}
 
 } // namespace KumirCodeRun
 

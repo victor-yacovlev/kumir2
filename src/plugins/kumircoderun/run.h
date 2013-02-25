@@ -31,18 +31,17 @@ public:
     void loadProgramFromTextBuffer(const std::string & stream, const String & filename);
     inline void setProgramDirectory(const QString & dirName) { vm->setProgramDirectory(dirName.toStdWString()); }
     QString error() const;
-    QVariantList remainingValues() const;
+
     void setEntryPointToMain();
     void setEntryPointToTest();
     bool hasMoreInstructions() const;
     void reset();
     void evaluateNextInstruction();
     bool canStepOut() const;
-    QVariant value(quint8, quint16, quint16) const;
-    QList<int> bounds(quint8, quint16, quint16) const;
-    QList<int> reference(quint8, quint16, quint16) const;
 
 public slots:
+    void lockVMMutex();
+    void unlockVMMutex();
     void stop();
     void runStepOver();
     void runStepIn();
@@ -80,8 +79,37 @@ public slots:
                             const String & fileName,
                             /*out*/ std::list<String> & availableMethods);
 
-
-
+    bool debuggerReset();
+    bool debuggerPopContext();
+    bool debuggerPushContext(const Kumir::String &,
+                             const std::deque<Kumir::String> &,
+                             const std::deque<Kumir::String> &,
+                             const std::deque<uint8_t> &);
+    bool debuggerSetGlobals(const Kumir::String &,
+                            const std::deque<Kumir::String> &,
+                            const std::deque<Kumir::String> &,
+                            const std::deque<uint8_t> &);
+    bool debuggerUpdateLocalVariable(const Kumir::String &,
+                                const Kumir::String &);
+    bool debuggerUpdateGlobalVariable(const Kumir::String &,
+                                      const Kumir::String &,
+                                const Kumir::String &);
+    bool debuggerUpdateLocalTableBounds(const Kumir::String &, const int[7]);
+    bool debuggerUpdateGlobalTableBounds(const Kumir::String &,
+                                        const Kumir::String &, const int[7]);
+    bool debuggerSetLocalReference(
+            const Kumir::String &,
+            const Kumir::String &,
+            const int[4],
+            const int,
+            const Kumir::String &
+            );
+    bool debuggerForceUpdateValues();
+    bool debuggerUpdateLocalTableValue(const Kumir::String & name,
+                                       const int indeces[4]);
+    bool debuggerUpdateGlobalTableValue(const Kumir::String &,
+                                       const Kumir::String & name,
+                                       const int indeces[4]);
 
     void handleAlgorhitmDone(int lineNo);
     void finishInput(const QVariantList & data);
@@ -121,6 +149,59 @@ signals:
     void resetModule(const QString & pluginName);
     void aboutToStop();
     void clearMarginRequest(int,int);
+
+
+    // Signals for debugger window
+    void signal_debuggerReset();
+    void signal_debuggerSetGlobals(
+            /** module name */           const QString & moduleName,
+            /** variable names */         const QStringList & names,
+            /** variable base types */const QStringList & baseTypes,
+            /** variable dimensions */ const QList<int> & dimensions
+            );
+    void signal_debuggerPushContext(
+            /** context header */       const QString & contextName,
+            /** variable names */         const QStringList & names,
+            /** variable base types */const QStringList & baseTypes,
+            /** variable dimensions */ const QList<int> & dimensions
+            );
+    void signal_debuggerPopContext();
+    void signal_debuggerUpdateLocalVariable(
+            /** variable name */       const QString & name,
+            /** value */              const QString & value
+            );
+    void signal_debuggerUpdateGlobalVariable(
+            /** module name */   const QString & moduleName,
+            /** variable name */       const QString & name,
+            /** value */              const QString & value
+            );
+    void signal_debuggerUpdateLocalTableBounds(
+            /** variable name */       const QString & name,
+            /** bounds */          const QList<int> & bounds
+            );
+    void signal_debuggerUpdateGlobalTableBounds(
+            /** module name */   const QString & moduleName,
+            /** variable name */       const QString & name,
+            /** bounds */          const QList<int> & bounds
+            );
+    void signal_debuggerSetLocalReference(
+            /** variable name */             const QString & name,
+            /** target name */         const QString & targetName,
+            /** target array indeces */const QList<int> & indeces,
+            /** stack frames back */                     int back,
+            /** module name for a global variable */const QString & moduleName
+            );
+    void signal_debuggerForceUpdateValues();
+    void signal_debuggerUpdateLocalTableValue(
+            /** variable name */            const QString & name,
+            /** indeces */             const QList<int> & indeces
+            );
+    void signal_debuggerUpdateGlobalTableValue(
+            /** module name */        const QString & moduleName,
+            /** variable name */            const QString & name,
+            /** indeces */             const QList<int> & indeces
+            );
+
 protected :
     void run();
 
@@ -146,6 +227,7 @@ protected :
     QVariantList list_funcResults;
     QVariant v_funcResult;
     QString s_funcError;
+    class Mutex * mutex_vm = nullptr;
 
 };
 

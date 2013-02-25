@@ -28,13 +28,15 @@ public:
     virtual bool hasMoreInstructions() const = 0;
     virtual int currentLineNo() const = 0;
     virtual QString error() const = 0;
-    virtual QVariantList remainingValues() const = 0;
-    // Get variable value or QVariant::Invalid if not initialized
-    virtual QVariant value(int moduleId, int algorhitmId, int variableId) const = 0;
-    // Get array bounds or empty list if not initialized
-    virtual QList<int> bounds(int moduleId, int algorhitmId, int variableId) const = 0;
-    // Get triple  { module id, algorhitm id, variable id } for reference target or empty list if not initialized
-    virtual QList<int> reference(int moduleId, int algorhitmId, int variableId) const = 0;
+
+    virtual QMap<QString,QVariant> getScalarLocalValues(int frameNo) const = 0;
+    virtual QMap<QString,QVariant> getScalarGlobalValues(const QString & moduleName) const = 0;
+    virtual QVariantList getLocalTableValues(int frameNo, int maxCount, const QString & name,
+                                             const QList< QPair<int,int> > & ranges, bool & complete) const = 0;
+    virtual QVariantList getGlobalTableValues(const QString & moduleName, int maxCount, const QString & name,
+                                             const QList< QPair<int,int> > & ranges, bool & complete) const = 0;
+    virtual QVariant getLocalTableValue(int frameNo, const QString & name, const QList<int> & indeces) const = 0;
+    virtual QVariant getGlobalTableValue(const QString & moduleName, const QString & name, const QList<int> & indeces) const = 0;
 
     virtual void finishInput(const QVariantList & message) = 0;
     virtual void finishExternalFunctionCall(

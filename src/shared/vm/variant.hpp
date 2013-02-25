@@ -333,6 +333,13 @@ public:
     inline void setAlgorhitmName(const String & n) {
         s_algorhitmName = n;
     }
+    inline void setModuleName(const String & n) {
+        s_moduleName = n;
+    }
+    inline const String & moduleName() const {
+        return s_moduleName;
+    }
+
     inline const String & algorhitmName() const {
         if(m_reference)
             return m_reference->algorhitmName();
@@ -408,6 +415,10 @@ public:
 
     inline Variable toReference();
     inline static Variable toConstReference(const AnyValue & value);
+
+    inline int referenceStackContextNo() const { return i_referenceStackContextNo; }
+    inline void setReferenceStackContextNo(int v) { i_referenceStackContextNo = v; }
+
     inline Variable toReference(int indeces[4]);
     inline void setValue(const AnyValue & value);
     inline void setValue(int index0, const AnyValue & value);
@@ -434,7 +445,9 @@ private:
     int l_referenceIndeces[4];
     String s_name;
     String s_algorhitmName;
+    String s_moduleName;
     bool b_constant;
+    int i_referenceStackContextNo = -2;
 };
 
 /* ----------------------- IMPLEMENTATION ----------------------*/

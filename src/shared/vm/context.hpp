@@ -59,6 +59,7 @@ struct Context {
     int algId;
     int lineNo;
     size_t moduleContextNo;
+    Kumir::String name;
 };
 
 struct ModuleContext {
@@ -68,6 +69,7 @@ struct ModuleContext {
     std::deque<Bytecode::TableElem> inits;
     LocalsMap cleanLocalTables;
     GlobalsMap globals;
+    std::vector<Kumir::String> moduleNames;
     ConstantsMap constants;
     uint8_t exportModuleId;
 };

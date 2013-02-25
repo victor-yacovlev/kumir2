@@ -29,7 +29,8 @@ Run::Run(QObject *parent) :
 {
     programLoaded = false;
     vm = new KumirVM();
-    vm->setMutex(new Mutex);
+    mutex_vm = new Mutex;
+    vm->setMutex(mutex_vm);
 
     i_originFunctionDeep = 0;
     b_interactDone = b_stopping = b_stepDone = b_algDone = false;
@@ -65,6 +66,16 @@ Run::Run(QObject *parent) :
 //            this, SLOT(prepareExternalCall()), Qt::DirectConnection);
 //    connect(vm, SIGNAL(resetModuleRequest(QString)), this, SIGNAL(resetModule(QString)));
 
+}
+
+void Run::lockVMMutex()
+{
+    mutex_vm->lock();
+}
+
+void Run::unlockVMMutex()
+{
+    mutex_vm->unlock();
 }
 
 void Run::stop()
@@ -476,6 +487,7 @@ void Run::handleInputArgumentRequest(int localId,
 //    }
 }
 
+
 void Run::handleOutputArgumentRequest(const QVariant & value,
                                      const QString &varName,
                                      const QList<int> &bounds)
@@ -771,6 +783,173 @@ void Run::handleExternalFunctionCall(
     }
 }
 
+bool Run::debuggerReset()
+{
+    emit signal_debuggerReset();
+    return true;
+}
+
+bool Run::debuggerPopContext()
+{
+    emit signal_debuggerPopContext();
+    return true;
+}
+
+bool Run::debuggerPushContext(
+        const Kumir::String & contextName,
+        const std::deque<Kumir::String> & names,
+        const std::deque<Kumir::String> & baseTypes,
+        const std::deque<uint8_t> & dimensions)
+{
+    const QString qContextName = QString::fromStdWString(contextName);
+    QStringList qNames, qBaseTypes;
+    QList<int> qDimensions;
+    for (size_t i=0; i<names.size(); i++) {
+        qNames.push_back(QString::fromStdWString(names.at(i)));
+        qBaseTypes.push_back(QString::fromStdWString(baseTypes.at(i)));
+        qDimensions.push_back(static_cast<int>(dimensions.at(i)));
+    }
+    emit signal_debuggerPushContext(qContextName,
+                                    qNames,
+                                    qBaseTypes,
+                                    qDimensions);
+    return true;
+}
+
+bool Run::debuggerSetGlobals(
+        const Kumir::String & moduleName,
+        const std::deque<Kumir::String> & names,
+        const std::deque<Kumir::String> & baseTypes,
+        const std::deque<uint8_t> & dimensions)
+{
+    const QString qModuleName = QString::fromStdWString(moduleName);
+    QStringList qNames, qBaseTypes;
+    QList<int> qDimensions;
+    for (size_t i=0; i<names.size(); i++) {
+        qNames.push_back(QString::fromStdWString(names.at(i)));
+        qBaseTypes.push_back(QString::fromStdWString(baseTypes.at(i)));
+        qDimensions.push_back(static_cast<int>(dimensions.at(i)));
+    }
+    emit signal_debuggerSetGlobals(qModuleName,
+                                   qNames,
+                                   qBaseTypes,
+                                   qDimensions);
+    return true;
+}
+
+bool Run::debuggerUpdateLocalVariable(
+        const Kumir::String & name,
+        const Kumir::String & value)
+{
+    const QString qName = QString::fromStdWString(name);
+    const QString qValue = QString::fromStdWString(value);
+    emit signal_debuggerUpdateLocalVariable(qName, qValue);
+    return true;
+}
+
+bool Run::debuggerUpdateGlobalVariable(
+        const Kumir::String & moduleName,
+        const Kumir::String & name,
+        const Kumir::String & value)
+{
+    const QString qModuleName = QString::fromStdWString(moduleName);
+    const QString qName = QString::fromStdWString(name);
+    const QString qValue = QString::fromStdWString(value);
+    emit signal_debuggerUpdateGlobalVariable(qModuleName, qName, qValue);
+    return true;
+}
+
+bool Run::debuggerUpdateLocalTableBounds(
+        const Kumir::String & name,
+        const int bounds[7])
+{
+    const QString qName = QString::fromStdWString(name);
+    QList<int> qBounds;
+    int count = bounds[6];
+    for (int i=0; i<count; i++) {
+        qBounds.push_back(bounds[i]);
+    }
+    emit signal_debuggerUpdateLocalTableBounds(qName, qBounds);
+    return true;
+}
+
+bool Run::debuggerUpdateGlobalTableBounds(
+        const Kumir::String & moduleName,
+        const Kumir::String & name,
+        const int bounds[7])
+{
+    const QString qModuleName = QString::fromStdWString(moduleName);
+    const QString qName = QString::fromStdWString(name);
+    QList<int> qBounds;
+    int count = bounds[6];
+    for (int i=0; i<count; i++) {
+        qBounds.push_back(bounds[i]);
+    }
+    emit signal_debuggerUpdateGlobalTableBounds(qModuleName, qName, qBounds);
+    return true;
+}
+
+bool Run::debuggerSetLocalReference(
+        const Kumir::String & name,
+        const Kumir::String & targetName,
+        const int tableIndeces[4],
+        const int stackStepsBackward,
+        const Kumir::String & moduleName
+        )
+{
+    const QString qName = QString::fromStdWString(name);
+    const QString qTargetName = QString::fromStdWString(targetName);
+    const QString qModuleName = QString::fromStdWString(moduleName);
+    QList<int> qIndeces;
+    for (int i=0; i<tableIndeces[3]; i++) {
+        qIndeces.push_back(tableIndeces[i]);
+    }
+    emit signal_debuggerSetLocalReference(
+                qName,
+                qTargetName,
+                qIndeces,
+                stackStepsBackward,
+                qModuleName
+                );
+    return true;
+}
+
+bool Run::debuggerForceUpdateValues()
+{
+    emit signal_debuggerForceUpdateValues();
+    return true;
+}
+
+bool Run::debuggerUpdateLocalTableValue(const Kumir::String &name,
+                                        const int indeces[4]
+                                        )
+{
+    const QString qName = QString::fromStdWString(name);
+    QList<int> qIndeces;
+    for (int i=0; i<indeces[3]; i++) {
+        qIndeces.push_back(indeces[i]);
+    }
+    emit signal_debuggerUpdateLocalTableValue(qName, qIndeces);
+    return true;
+}
+
+
+bool Run::debuggerUpdateGlobalTableValue(
+        const Kumir::String &moduleName,
+        const Kumir::String &name,
+        const int indeces[4]
+        )
+{
+    const QString qModuleName = QString::fromStdWString(moduleName);
+    const QString qName = QString::fromStdWString(name);
+    QList<int> qIndeces;
+    for (int i=0; i<indeces[3]; i++) {
+        qIndeces.push_back(indeces[i]);
+    }
+    emit signal_debuggerUpdateGlobalTableValue(qModuleName, qName, qIndeces);
+    return true;
+}
+
 void Run::prepareExternalCall()
 {
     mutex_interactDone->lock();
@@ -1002,40 +1181,6 @@ void Run::loadProgramFromTextBuffer(const std::string &stream, const String & fi
     }
 }
 
-QVariant Run::value(quint8 mod, quint16 alg, quint16 var) const
-{
-    const AnyValue & v = vm->value(mod, alg, var);
-    QVariant result;
-    if (v.type()==VT_int)
-        result = v.toInt();
-    else if (v.type()==VT_real)
-        result = v.toReal();
-    else if (v.type()==VT_char)
-        result = QChar(v.toChar());
-    else if (v.type()==VT_string)
-        result = QString::fromStdWString(v.toString());
-    else if (v.type()==VT_bool)
-        result = v.toBool();
-    return result;
-}
-
-QList<int> Run::bounds(quint8 mod, quint16 alg, quint16 var) const
-{
-    const std::list<int> b = vm->bounds(mod, alg, var);
-    return QList<int>::fromStdList(b);
-}
-
-QList<int> Run::reference(quint8 mod, quint16 alg, quint16 var) const
-{
-    // Get triple  { module id, algorhitm id, variable id }
-    // for reference target or empty list if not initialized
-    ReferenceInfo r = vm->reference(mod, alg, var);
-    QList<int> result;
-    if (r.valid) {
-        result << r.module << r.algorithm << r.variable;
-    }
-    return result;
-}
 
 void Run::setEntryPointToMain()
 {
@@ -1052,27 +1197,6 @@ QString Run::error() const
     return QString::fromStdWString(vm->error());
 }
 
-QVariantList Run::remainingValues() const
-{
-    QVariantList result;
-    std::list<AnyValue> vls = vm->remainingValues();
-    for (std::list<AnyValue>::const_iterator it=vls.begin(); it!=vls.end(); ++it) {
-        const AnyValue & var = (*it);
-        if (var.type()==VT_void)
-            result << QVariant::Invalid;
-        else if (var.type()==VT_int)
-            result << var.toInt();
-        else if (var.type()==VT_real)
-            result << var.toReal();
-        else if (var.type()==VT_bool)
-            result << var.toBool();
-        else if (var.type()==VT_char)
-            result << QChar(var.toChar());
-        else if (var.type()==VT_string)
-            result << QString::fromStdWString(var.toString());
-    }
-    return result;
-}
 
 void Run::reset()
 {

@@ -4,12 +4,12 @@
 <context>
     <name>KumirCodeRun::Plugin</name>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/plugin.cpp" line="304"/>
+        <location filename="../../../src/plugins/kumircoderun/plugin.cpp" line="589"/>
         <source>RUNTIME ERROR: </source>
         <translation>ОШИБКА ВЫПОЛНЕНИЯ: </translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/plugin.cpp" line="307"/>
+        <location filename="../../../src/plugins/kumircoderun/plugin.cpp" line="592"/>
         <source>RUNTIME ERROR AT LINE </source>
         <translation>ОШИБКА ВЫПОЛНЕНИЯ В СТРОКЕ </translation>
     </message>
@@ -17,22 +17,22 @@
 <context>
     <name>KumirCodeRun::Run</name>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/run.cpp" line="175"/>
+        <location filename="../../../src/plugins/kumircoderun/run.cpp" line="186"/>
         <source>Please enter %1: </source>
         <translation>Введите %1: </translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/run.cpp" line="183"/>
+        <location filename="../../../src/plugins/kumircoderun/run.cpp" line="194"/>
         <source>Please enter %1[%2]: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/run.cpp" line="195"/>
+        <location filename="../../../src/plugins/kumircoderun/run.cpp" line="206"/>
         <source>Please enter %1[%2,%3]: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/run.cpp" line="209"/>
+        <location filename="../../../src/plugins/kumircoderun/run.cpp" line="220"/>
         <source>Please enter %1[%2,%3,%4]: </source>
         <translation type="unfinished"></translation>
     </message>
