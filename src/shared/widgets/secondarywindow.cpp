@@ -614,6 +614,10 @@ void BorderWidget::paintEvent(QPaintEvent *e)
         opt.titleBarFlags = Qt::Window
                 | Qt::WindowTitleHint;
         opt.text = parentWidget()->windowTitle();
+#ifdef Q_WS_WIN
+        if (parentWidget()->isTopLevel())
+            opt.text = "      " + opt.text;
+#endif
         if (isActiveWindow()) {
             opt.state |= QStyle::State_Active;
             opt.titleBarState |= QStyle::State_Active;
@@ -671,6 +675,7 @@ void BorderWidget::paintEvent(QPaintEvent *e)
 
 void SecondaryWindow::paintEvent(QPaintEvent *e)
 {
+#ifdef Q_WS_X11
     QPainter p(this);
     QStyleOptionFrame opt;
     opt.initFrom(this);
@@ -682,6 +687,14 @@ void SecondaryWindow::paintEvent(QPaintEvent *e)
         opt.state &= ~QStyle::State_Active;
     }
     style()->drawPrimitive(QStyle::PE_FrameWindow, &opt, &p, this);
+#endif
+#ifdef Q_WS_WIN
+    QPainter p(this);
+    p.setPen(QPen(QColor(Qt::black)));
+    p.drawLine(0, 16, 0, height());
+    p.drawLine(width()-1, 16, width()-1, height());
+    p.drawLine(0, height()-1, width()-1, height()-1);
+#endif
     QWidget::paintEvent(e);
 }
 
