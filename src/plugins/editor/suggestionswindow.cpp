@@ -20,6 +20,7 @@ SuggestionsWindow::SuggestionsWindow(QWidget *editorWidget) :
     QWidget(0, Qt::Popup),
     ui(new Ui::SuggestionsWindow)
 {
+    b_keyPressed = false;
     this->editorWidget = editorWidget;
     QPalette pal = palette();
     const QString bgColor = pal.brush(QPalette::Normal, QPalette::ToolTipBase).color().name();
@@ -212,22 +213,22 @@ void SuggestionsWindow::init(
         QListWidgetItem * item = new QListWidgetItem(ui->alist);
         item->setText(s.value);
         prefWidth = qMax(prefWidth, 100+fm.width(s.value));
-        if (s.kind==Shared::Suggestion::Kind::Local) {
+        if (s.kind==Shared::Suggestion::Local) {
             item->setIcon(icon_local);
         }
-        else if (s.kind==Shared::Suggestion::Kind::Global) {
+        else if (s.kind==Shared::Suggestion::Global) {
             item->setIcon(icon_global);
         }
-        else if (s.kind==Shared::Suggestion::Kind::Algorithm) {
+        else if (s.kind==Shared::Suggestion::Algorithm) {
             item->setIcon(icon_algorithm);
         }
-        else if (s.kind==Shared::Suggestion::Kind::BuiltinModule) {
+        else if (s.kind==Shared::Suggestion::BuiltinModule) {
             item->setIcon(icon_module);
         }
-        else if (s.kind==Shared::Suggestion::Kind::KumirModule) {
+        else if (s.kind==Shared::Suggestion::KumirModule) {
             item->setIcon(icon_kumfile);
         }
-        else if (s.kind==Shared::Suggestion::Kind::SecondaryKeyword) {
+        else if (s.kind==Shared::Suggestion::SecondaryKeyword) {
             item->setIcon(icon_keyword);
         }
         else {

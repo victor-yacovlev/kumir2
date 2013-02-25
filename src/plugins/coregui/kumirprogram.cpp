@@ -223,9 +223,6 @@ void KumirProgram::fastRun()
             }
         }
 
-#ifdef Q_OS_WIN32
-        plugin_nativeGenerator->setVerbose(true);
-#endif
 //        QPair<QString,QString> res = plugin_nativeGenerator->generateExecuable(m_ast, &exeFile);
 //        if (!res.first.isEmpty()) {
 //            qDebug() << "Error generating execuable: " << res.first;

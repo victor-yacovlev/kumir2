@@ -30,6 +30,7 @@ public:
         , documentId(-1)
         , m_kumirProgram(kumir)
     {
+        m_kumirProgram = nullptr;
         Q_CHECK_PTR(w);
         Q_ASSERT(!QString::fromAscii(w->metaObject()->className()).isEmpty());
         setProperty("uncloseable", w->property("uncloseable"));
@@ -110,7 +111,7 @@ protected:
         component->setFocus();
     }
 private:
-    class KumirProgram * m_kumirProgram = nullptr;
+    class KumirProgram * m_kumirProgram;
 };
 }
 

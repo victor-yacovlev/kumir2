@@ -118,20 +118,20 @@ QList<QWidget*> Editor::statusbarWidgets()
 
 void EditorPrivate::disableInsertActions()
 {
-    for (Macro & m : userMacros) {
+    foreach (Macro m , userMacros) {
         m.action->setEnabled(false);
     }
-    for (Macro & m : systemMacros) {
+    foreach (Macro m , systemMacros) {
         m.action->setEnabled(false);
     }
 }
 
 void EditorPrivate::enableInsertActions()
 {
-    for (Macro & m : userMacros) {
+    foreach (Macro m , userMacros) {
         m.action->setEnabled(true);
     }
-    for (Macro & m : systemMacros) {
+    foreach (Macro m , systemMacros) {
         m.action->setEnabled(true);
     }
 }

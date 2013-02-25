@@ -177,7 +177,7 @@ inline QList<QTreeWidgetItem*> findAllBackReferences(QTreeWidgetItem* root)
     QList<QTreeWidgetItem*> result;
     if (root->data(0, ROLE_BACK_REFERENCES).isValid()) {
         QVariantList alist = root->data(0, ROLE_BACK_REFERENCES).toList();
-        for ( const QVariant & v : alist ) {
+        foreach ( const QVariant & v , alist ) {
             quintptr ptr = v.toULongLong();
             QTreeWidgetItem * item = reinterpret_cast<QTreeWidgetItem*>(ptr);
             result.push_back(item);
@@ -214,7 +214,7 @@ void DebuggerWindow::updateLocalVariable(
     text += " = "+value;
     variable->setData(0, ROLE_VALUE, value);
     variable->setText(0, text);
-    for ( QTreeWidgetItem * ref : allReferences ) {
+    foreach ( QTreeWidgetItem * ref , allReferences ) {
         if (ref!=variable) {
             text = ref->data(0, ROLE_BASETYPE).toString();
             text += " "+ref->data(0, ROLE_NAME).toString();
@@ -257,7 +257,7 @@ void DebuggerWindow::updateGlobalVariable(
     text += " = "+value;
     variable->setData(0, ROLE_VALUE, value);
     variable->setText(0, text);
-    for ( QTreeWidgetItem * ref : allReferences ) {
+    foreach ( QTreeWidgetItem * ref , allReferences ) {
         if (ref!=variable) {
             text = ref->data(0, ROLE_BASETYPE).toString();
             text += " "+ref->data(0, ROLE_NAME).toString();

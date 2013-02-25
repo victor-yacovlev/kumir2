@@ -37,7 +37,7 @@ private:
     void createIcons(const QSettings * settings);
     Ui::SuggestionsWindow *ui;
     QList<Shared::Suggestion> l_suggestions;
-    bool b_keyPressed = false;
+    bool b_keyPressed;
     QIcon icon_local;
     QIcon icon_global;
     QIcon icon_algorithm;
@@ -45,7 +45,7 @@ private:
     QIcon icon_module;
     QIcon icon_kumfile;
     QIcon icon_other;
-    QWidget * editorWidget = nullptr;
+    QWidget * editorWidget;
 };
 
 
