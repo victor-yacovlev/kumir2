@@ -227,7 +227,7 @@ protected :
     QVariantList list_funcResults;
     QVariant v_funcResult;
     QString s_funcError;
-    class Mutex * mutex_vm = nullptr;
+    class Mutex * mutex_vm;
 
 };
 

@@ -27,6 +27,7 @@ private:
 Run::Run(QObject *parent) :
     QThread(parent)
 {
+    mutex_vm = nullptr;
     programLoaded = false;
     vm = new KumirVM();
     mutex_vm = new Mutex;

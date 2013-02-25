@@ -228,7 +228,8 @@ void Analizer::changeSourceText(const QList<ChangeTextTransaction> & changes)
 
 Shared::TextAppend Analizer::closingBracketSuggestion(int lineNo) const
 {
-    for (const Statement * st : d->statements) {
+    for (int i=0; i<d->statements.size(); i++) {
+        const Statement * st = d->statements.at(i);
         if (st->data.size()>0 && st->data.last()->lineNo==lineNo) {
             if (st->suggestedClosingBracket.first.length()>0)
                 return st->suggestedClosingBracket;
@@ -245,7 +246,8 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
 //    qDebug() << lexer->metaObject()->className();
 //    qDebug() << pdAutomata->metaObject()->className();
 //    qDebug() << analizer->metaObject()->className();
-    for (Statement * st : statements) {
+    for (int i=0; i<statements.size(); i++) {
+        Statement * st = statements.at(i);
         st->suggestedClosingBracket.first.clear();
     }
     QList<Statement*> removedStatements;
@@ -939,7 +941,8 @@ const AST::Algorhitm * Analizer::findAlgorhitmByLine(const AST::Module *mod, int
 {
     if (!mod || lineNo==-1)
         return nullptr;
-    for (const AST::Algorhitm * alg : mod->impl.algorhitms) {
+    for (int i=0; i<mod->impl.algorhitms.size(); i++) {
+        const AST::Algorhitm * alg = mod->impl.algorhitms.at(i);
         if (alg->impl.beginLexems.size()==0 || alg->impl.endLexems.size()==0)
             continue;
         const int algBegin = alg->impl.beginLexems.front()->lineNo;
@@ -963,11 +966,12 @@ QList<Suggestion> Analizer::suggestAutoComplete(int lineNo, const QString &befor
     const Statement* lastStatement = beforeStatements.size()>0? beforeStatements.last() : nullptr;
     QList<Suggestion> result = d->analizer->suggestAutoComplete(lastStatement, afterLexems, mod, alg);
     QList<Suggestion> filteredResult;
-    for ( const Suggestion & s : result) {
+    for (int i_sugg=0; i_sugg<result.size(); i_sugg++) {
         // filter by space at end
+        const Suggestion & s = result.at(i_sugg);
         if (before.endsWith(' ') && !before.trimmed().isEmpty()) {
             // suggest only if suggestion bounds by a keyword
-            if (s.kind==Suggestion::Kind::SecondaryKeyword ||
+            if (s.kind==Suggestion::SecondaryKeyword ||
                     (lastStatement!=nullptr
                      && lastStatement->data.size()>0 &&
                         (
@@ -984,16 +988,16 @@ QList<Suggestion> Analizer::suggestAutoComplete(int lineNo, const QString &befor
             filteredResult.push_back(s);
         }
     }
-    for ( Statement * st : beforeStatements )
+    foreach ( Statement * st , beforeStatements )
         delete st;
-    for ( Lexem * lx : afterLexems )
+    foreach ( Lexem * lx , afterLexems )
         delete lx;
 
     QList<Suggestion> cleanResult;
         // Remove duplicates
-    for ( const Suggestion & s : filteredResult) {
+    foreach ( const Suggestion & s , filteredResult) {
         bool found = false;
-        for ( const Suggestion & ss : cleanResult ) {
+        foreach ( const Suggestion & ss , cleanResult ) {
             if (s.value.trimmed()==ss.value.trimmed()) {
                 found = true;
                 break;

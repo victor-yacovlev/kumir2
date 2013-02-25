@@ -267,6 +267,7 @@ public:
 
     inline void create()
     {
+        i_referenceStackContextNo = -2;
         l_referenceIndeces[0] = l_referenceIndeces[1] = l_referenceIndeces[2] =         l_referenceIndeces[3] = 0;
         l_bounds[0] = l_bounds[1] = l_bounds[2] = l_bounds[3] = l_bounds[4] = l_bounds[5] = l_bounds[6] = 0;
         l_restrictedBounds[0] = l_restrictedBounds[1] = l_restrictedBounds[2] = l_restrictedBounds[3] = l_restrictedBounds[4] = l_restrictedBounds[5] = l_restrictedBounds[6] = 0;
@@ -447,7 +448,7 @@ private:
     String s_algorhitmName;
     String s_moduleName;
     bool b_constant;
-    int i_referenceStackContextNo = -2;
+    int i_referenceStackContextNo;
 };
 
 /* ----------------------- IMPLEMENTATION ----------------------*/

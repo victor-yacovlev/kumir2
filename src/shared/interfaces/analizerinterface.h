@@ -17,11 +17,12 @@ struct ChangeTextTransaction {
 typedef QPair<QString,quint32> TextAppend;
 
 struct Suggestion {
-    enum class Kind { Local, Global, Algorithm, BuiltinModule, KumirModule, Statement, SecondaryKeyword, Other };
+    enum Kind { Local, Global, Algorithm, BuiltinModule, KumirModule, Statement, SecondaryKeyword, Other };
+    inline Suggestion() { kind = Other; showOnlyInFullList = false; }
     QString value;
     QString description;
-    bool showOnlyInFullList = false;
-    Kind kind = Kind::Other;
+    bool showOnlyInFullList;
+    Kind kind;
 };
 
 class AnalizerInterface {

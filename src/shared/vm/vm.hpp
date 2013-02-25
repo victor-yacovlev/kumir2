@@ -2976,7 +2976,8 @@ void KumirVM::updateDebugger()
         const Context & c = stack_contexts.at(i);
         if (c.type==EL_MAIN || c.type==EL_FUNCTION) {
             debuggerPushContext(false, c.name, &(c.locals), true);
-            for (const Variable & var : c.locals) {
+            for (size_t i_var=0; i_var<c.locals.size(); i_var++) {
+                const Variable & var = c.locals.at(i_var);
                 if (var.isReference()) {
                     int referenceIndeces[4];
                     var.getReferenceIndeces(referenceIndeces);
@@ -3026,9 +3027,16 @@ void KumirVM::updateDebugger()
                         &(contextGlobals[i_module]),
                         true
                         );
-            for (const Variable & var : contextGlobals[i_module]) {
+            for (size_t i_var=0; i_var<contextGlobals[i_module].size(); i_var++) {
+                const Variable & var = contextGlobals[i_module].at(i_var);
                 if (var.dimension()>0) {
-                    // TODO implement me
+                    int bounds[7];
+                    var.getEffectiveBounds(bounds);
+                    m_externalHandler->debuggerUpdateGlobalTableBounds(
+                                var.moduleName(),
+                                var.myName(),
+                                bounds
+                                );
                 }
                 else if (var.isValid()) {
                     m_externalHandler->debuggerUpdateGlobalVariable(
