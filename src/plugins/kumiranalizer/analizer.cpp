@@ -418,6 +418,7 @@ void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor
         AI::CustomType ct = actor->typeList()[i];
         AST::Type tp;
         tp.name = ct.first;
+        tp.moduleName = actor->name();
         AI::Record record = ct.second;
         for (int j=0; j<record.size(); j++) {
             AI::Field field = record[j];

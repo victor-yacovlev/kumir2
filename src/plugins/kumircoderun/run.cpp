@@ -360,6 +360,14 @@ bool Run::makeInput(std::deque<Variable> & references)
         else if (references[i].baseType()==VT_string) {
             format.push_back('s');
         }
+        else if (references[i].baseType()==VT_record) {
+            const Variable & variable = references[i];
+            const String typeFullName =
+                    variable.recordModuleName()+
+                    Kumir::Core::fromAscii("::")+
+                    variable.recordClassName();
+            format.append(typeFullName);
+        }
         if (i<references.size()-1) format.push_back(';');
     }
     emit input(QString::fromStdWString(format));
@@ -393,6 +401,24 @@ bool Run::makeInput(std::deque<Variable> & references)
                 val = result[i].toChar().unicode();
             else if (references[i].baseType()==VT_string)
                 val = result[i].toString().toStdWString();
+            else if (references[i].baseType()==VT_record) {
+                const QVariantList alist = result[i].toList();
+                Record record;
+                for (int j=0; j<alist.size(); j++) {
+                    const QVariant & aval = alist[j];
+                    if (aval.type()==QVariant::Int)
+                        record.fields.push_back(AnyValue(aval.toInt()));
+                    else if (aval.type()==QVariant::Double)
+                        record.fields.push_back(AnyValue(Kumir::real(aval.toDouble())));
+                    else if (aval.type()==QVariant::Bool)
+                        record.fields.push_back(AnyValue(aval.toBool()));
+                    else if (aval.type()==QVariant::Char)
+                        record.fields.push_back(AnyValue(Kumir::Char(aval.toChar().unicode())));
+                    else if (aval.type()==QVariant::String)
+                        record.fields.push_back(AnyValue(aval.toString().toStdWString()));
+                }
+                val = AnyValue(record);
+            }
             references[i].setValue(val);
         }
     }
@@ -607,7 +633,9 @@ QVariant VariableToQVariant(const Variable & var)
 {
     QVariant result;
     if (var.dimension()==0) {
-        if (var.baseType()==VT_int)
+        if (!var.isValid())
+            result = QVariant::Invalid;
+        else if (var.baseType()==VT_int)
             result = QVariant(var.toInt());
         else if (var.baseType()==VT_real)
             result = QVariant(var.toReal());
@@ -621,8 +649,8 @@ QVariant VariableToQVariant(const Variable & var)
             QVariantList recData;
             const AnyValue & val = var.value();
             const Record & record = val.toRecord();
-            for (int j=0; j<record.size(); j++) {
-                const VM::AnyValue & field = record[j];
+            for (int j=0; j<record.fields.size(); j++) {
+                const VM::AnyValue & field = record.fields[j];
                 if (field.type()==VT_int)
                     recData << QVariant(field.toInt());
                 else if (field.type()==VT_real)
@@ -646,6 +674,8 @@ QVariant VariableToQVariant(const Variable & var)
 VM::AnyValue QVariantToValue(const QVariant & var, int dim)
 {
     AnyValue aval;
+    if (!var.isValid())
+        return aval;
     if (dim==0) {
         if (var.type()==QVariant::Int)
             aval = AnyValue(var.toInt());
@@ -658,8 +688,7 @@ VM::AnyValue QVariantToValue(const QVariant & var, int dim)
         else if (var.type()==QVariant::String)
             aval = AnyValue(var.toString().toStdWString());
         else if (var.type()==QVariant::List) {
-            aval = AnyValue(VT_record);
-            Record & record = aval.toRecord();
+            Record record;
             const QVariantList & recvals = var.toList();
             for (int i=0; i<recvals.size(); i++) {
                 AnyValue fieldVal;
@@ -674,8 +703,9 @@ VM::AnyValue QVariantToValue(const QVariant & var, int dim)
                     fieldVal = AnyValue(rval.toChar().unicode());
                 else if (rval.type()==QVariant::String)
                     fieldVal = AnyValue(rval.toString().toStdWString());
-                record.push_back(fieldVal);
+                record.fields.push_back(fieldVal);
             }
+            aval = AnyValue(record);
         }
     }
     else {
@@ -688,7 +718,6 @@ bool Run::evaluateExternalFunction(
         /* IN */      const String & moduleName,
         /* IN */      uint16_t functionId,
         /* IN */      const std::deque<Variable> & arguments,
-        /* OUT */     std::deque<Variable> & outArguments,
         /* OUT */     Variable & result,
         /* OUT */     String & moduleRuntimeError
         )
@@ -734,12 +763,8 @@ bool Run::evaluateExternalFunction(
     // Set function result if need
     result = Variable(QVariantToValue(v_funcResult, 0));
 
-    // Set function OUT-parameters if need
-    Q_ASSERT(list_funcResults.size()==outArguments.size());
-    for (int i=0; i<list_funcResults.size(); i++) {
-        const QVariant & value = list_funcResults.at(i);
-        outArguments[i].setValue(QVariantToValue(value, 0));
-    }
+
+    // TODO implement out-parameters
 
     // Set error
     moduleRuntimeError = s_funcError.toStdWString();
@@ -781,6 +806,75 @@ void Run::handleExternalFunctionCall(
     else {
         QMutexLocker locker(mutex_interactDone);
         b_interactDone = true;
+    }
+}
+
+bool Run::convertExternalTypeFromString(
+        const String &stringg, Variable &variable, bool &ok
+        )
+{
+    const QString modName =
+            QString::fromStdWString(variable.recordModuleName());
+    const QString className =
+            QString::fromStdWString(variable.recordClassName());
+    const QString qString = QString::fromStdWString(stringg);
+
+    QList<ExtensionSystem::KPlugin*> plugins =
+            ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
+    Shared::ActorInterface * actor = 0;
+    for (int i=0; i<plugins.size(); i++) {
+        actor = qobject_cast<Shared::ActorInterface*>(plugins[i]);
+        if (actor) {
+            if (actor->name()==modName)
+                break;
+            else
+                actor = 0;
+        }
+    }
+    if (actor) {
+        Shared::ActorInterface::CustomType ct;
+        ct.first = className;
+        const QVariant value = actor->customValueFromString(ct, qString);
+        ok = value.isValid();
+        if (ok) {
+            variable.setValue(QVariantToValue(value, 0));
+        }
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool Run::convertExternalTypeToString(const Variable &variable, String &out)
+{
+    const QString modName =
+            QString::fromStdWString(variable.recordModuleName());
+    const QString className =
+            QString::fromStdWString(variable.recordClassName());
+
+    QList<ExtensionSystem::KPlugin*> plugins =
+            ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
+    Shared::ActorInterface * actor = 0;
+    for (int i=0; i<plugins.size(); i++) {
+        actor = qobject_cast<Shared::ActorInterface*>(plugins[i]);
+        if (actor) {
+            if (actor->name()==modName)
+                break;
+            else
+                actor = 0;
+        }
+    }
+    if (actor) {
+        Shared::ActorInterface::CustomType ct;
+        ct.first = className;
+        QVariant value = VariableToQVariant(variable);
+        const QString qString = actor->customValueToString(ct, value);
+        out = qString.toStdWString();
+        return true;
+    }
+    else {
+        return false;
     }
 }
 
@@ -1026,6 +1120,11 @@ bool Run::makeOutput(
         }
         else if (values[i].baseType()==VT_string) {
             Kumir::IO::writeString(os, values[i].toString(), format.first);
+        }
+        else if (values[i].baseType()==VT_record) {
+            String svalue;
+            convertExternalTypeToString(values[i], svalue);
+            Kumir::IO::writeString(os, svalue, format.first);
         }
     }
     QString data = QString::fromStdWString(os.getBuffer());

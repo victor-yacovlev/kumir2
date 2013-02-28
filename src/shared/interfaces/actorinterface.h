@@ -29,6 +29,14 @@ public:
     typedef QList<CustomType> TypeList;
     inline virtual QStringList funcList() const { return QStringList(); } // List of public functions;
     inline virtual TypeList typeList() const { return TypeList(); }
+    inline virtual QString customValueToString(
+            const CustomType & clazz,
+            const QVariant & value /* invalid value of a list of field values */
+            ) const { return QString(); }
+    inline virtual QVariant customValueFromString(
+            const CustomType & clazz,
+            const QString & stringg
+            ) const { return QVariant::Invalid; }
     inline virtual QString name() const { return QString(); }
     inline virtual QString mainIconName() const {return QString(); }
     inline virtual QString pultIconName() const {return QString(); }

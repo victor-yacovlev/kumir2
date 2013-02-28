@@ -21,7 +21,9 @@ using Kumir::String;
 using Kumir::real;
 using namespace Bytecode;
 
-typedef std::vector< class AnyValue > Record;
+struct Record {
+    std::vector<class AnyValue> fields;
+};
 
 class AnyValue
 {
@@ -30,175 +32,120 @@ public:
     inline explicit AnyValue() { __init__(); }
     inline AnyValue(const AnyValue & other) {
         __init__();
-        tp = other.tp;
-        if (other.svalue) {
-            svalue = new String(*(other.svalue));
+        type_ = other.type_;
+        if (other.svalue_) {
+            svalue_ = new String(*(other.svalue_));
         }
-        if (other.uvalue) {
-            uvalue = new Record(*(other.uvalue));
+        if (other.uvalue_) {
+            uvalue_ = new Record(*(other.uvalue_));
         }
         if (other.avalue) {
             avalue = new std::vector<class AnyValue>(*(other.avalue));
         }
-        if (tp==VT_int)
-            ivalue = other.ivalue;
-        if (tp==VT_real)
-            rvalue = other.rvalue;
-        if (tp==VT_bool)
-            bvalue = other.bvalue;
-        if (tp==VT_char)
-            cvalue = other.cvalue;
+        if (type_==VT_int)
+            ivalue_ = other.ivalue_;
+        if (type_==VT_real)
+            rvalue_ = other.rvalue_;
+        if (type_==VT_bool)
+            bvalue_ = other.bvalue_;
+        if (type_==VT_char)
+            cvalue_ = other.cvalue_;
     }
 
-    inline explicit AnyValue(ValueType t) { __init__(); tp = t;  svalue = t==VT_string? new String() : 0; ivalue = 0; }
+    inline explicit AnyValue(ValueType t) { __init__(); type_ = t;  svalue_ = t==VT_string? new String() : 0; ivalue_ = 0; }
     inline explicit AnyValue(int v) {
         __init__();
-        tp = VT_int;
-        ivalue = v;
+        type_ = VT_int;
+        ivalue_ = v;
     }
-    inline explicit AnyValue(real v) { __init__(); tp = VT_real;  rvalue = v; }
-    inline explicit AnyValue(bool v) { __init__(); tp = VT_bool; bvalue = v; }
-    inline explicit AnyValue(Char v) { __init__(); tp = VT_char; cvalue = v; }
-    inline explicit AnyValue(const String & v) { __init__(); tp = VT_string; svalue = new String(v); }
+    inline explicit AnyValue(real v) { __init__(); type_ = VT_real;  rvalue_ = v; }
+    inline explicit AnyValue(bool v) { __init__(); type_ = VT_bool; bvalue_ = v; }
+    inline explicit AnyValue(Char v) { __init__(); type_ = VT_char; cvalue_ = v; }
+    inline explicit AnyValue(const String & v) { __init__(); type_ = VT_string; svalue_ = new String(v); }
     inline explicit AnyValue(const Record & value) {
         __init__();
-        tp = VT_record;
-        uvalue = new Record(value);
+        type_ = VT_record;
+        uvalue_ = new Record(value);
     }
 
-    inline void operator=(ValueType t) { __init__(); tp = t;  svalue = t==VT_string? new String() : 0; }
-    inline void operator=(int v) { __init__(); tp = VT_int;  ivalue = v; }
-    inline void operator=(real v) { __init__(); tp = VT_real; rvalue = v; }
-    inline void operator=(bool v) { __init__(); tp = VT_bool; bvalue = v; }
-    inline void operator=(Char v) { __init__(); tp = VT_char; cvalue = v; }
-    inline void operator=(const String & v) { __init__(); tp = VT_string; svalue = new String(v); }
+    inline void operator=(ValueType t) { __init__(); type_ = t;  svalue_ = t==VT_string? new String() : 0; }
+    inline void operator=(int v) { __init__(); type_ = VT_int;  ivalue_ = v; }
+    inline void operator=(real v) { __init__(); type_ = VT_real; rvalue_ = v; }
+    inline void operator=(bool v) { __init__(); type_ = VT_bool; bvalue_ = v; }
+    inline void operator=(Char v) { __init__(); type_ = VT_char; cvalue_ = v; }
+    inline void operator=(const String & v) { __init__(); type_ = VT_string; svalue_ = new String(v); }
     inline void operator=(const Record & value) {
         __init__();
-        tp = VT_record;
-        uvalue = new Record(value);
+        type_ = VT_record;
+        uvalue_ = new Record(value);
     }
     inline void operator=(const AnyValue &other) {
         __init__();
-        tp = other.tp;
-        if (other.svalue) {
-            svalue = new String(*(other.svalue));
+        type_ = other.type_;
+        if (other.svalue_) {
+            svalue_ = new String(*(other.svalue_));
         }
-        if (other.uvalue) {
-            uvalue = new Record(*(other.uvalue));
+        if (other.uvalue_) {
+            uvalue_ = new Record(*(other.uvalue_));
         }
         if (other.avalue) {
             avalue = new std::vector<class AnyValue>(*(other.avalue));
         }
-        if (tp==VT_int)
-            ivalue = other.ivalue;
-        if (tp==VT_real)
-            rvalue = other.rvalue;
-        if (tp==VT_bool)
-            bvalue = other.bvalue;
-        if (tp==VT_char)
-            cvalue = other.cvalue;
+        if (type_==VT_int)
+            ivalue_ = other.ivalue_;
+        if (type_==VT_real)
+            rvalue_ = other.rvalue_;
+        if (type_==VT_bool)
+            bvalue_ = other.bvalue_;
+        if (type_==VT_char)
+            cvalue_ = other.cvalue_;
     }
 
     inline int toInt() const {
-        if (tp==VT_bool) return bvalue? 1 : 0;
-        else if (tp==VT_char) return static_cast<int>(cvalue);
-        else return ivalue;
+        if (type_==VT_bool) return bvalue_? 1 : 0;
+        else if (type_==VT_char) return static_cast<int>(cvalue_);
+        else return ivalue_;
     }
     inline real toReal() const {
-        if (tp==VT_bool || tp==VT_int) return static_cast<real>(toInt());
-        else return rvalue;
+        if (type_==VT_bool || type_==VT_int) return static_cast<real>(toInt());
+        else return rvalue_;
     }
     inline bool toBool() const {
-        if (tp==VT_int) return ivalue!=0;
-        else if (tp==VT_real) return rvalue!=0.0;
-        else return bvalue;
+        if (type_==VT_int) return ivalue_!=0;
+        else if (type_==VT_real) return rvalue_!=0.0;
+        else return bvalue_;
     }
     inline Char toChar() const {
-        if (tp==VT_int) return static_cast<Char>(ivalue);
-        else if (tp==VT_string && svalue && svalue->length()==1) return svalue->at(0);
-        else return cvalue;
+        if (type_==VT_int) return static_cast<Char>(ivalue_);
+        else if (type_==VT_string && svalue_ && svalue_->length()==1) return svalue_->at(0);
+        else return cvalue_;
     }
     inline String toString() const {
-        if (tp==VT_int) return Kumir::Converter::sprintfInt(ivalue, 10, 0, 0);
-        else if (tp==VT_real) return Kumir::Converter::sprintfReal(rvalue, '.', false, 0, 0, 0);
-        else if (tp==VT_bool) return bvalue? Kumir::Core::fromUtf8("да") : Kumir::Core::fromUtf8("нет");
-        else if (tp==VT_char) {
+        if (type_==VT_int) return Kumir::Converter::sprintfInt(ivalue_, 10, 0, 0);
+        else if (type_==VT_real) return Kumir::Converter::sprintfReal(rvalue_, '.', false, 0, 0, 0);
+        else if (type_==VT_bool) return bvalue_? Kumir::Core::fromUtf8("да") : Kumir::Core::fromUtf8("нет");
+        else if (type_==VT_char) {
             String sval;
-            sval.push_back(cvalue);
+            sval.push_back(cvalue_);
             return sval;
         }
-        else if (tp==VT_void) return String();
-        else return String(*svalue);
+        else if (type_==VT_void) return String();
+        else if (svalue_)
+            return String(*svalue_);
+        else
+            return String();
     }
     inline const Record & toRecord() const {
-        return *uvalue;
+        return *uvalue_;
     }
     inline Record & toRecord() {
-        return *uvalue;
+        return *uvalue_;
     }
 
-    template <typename T>
-    inline T toUserValue() const {
-        size_t fields = strlen(T::_());
-        T value;
-        void * ptr = &value;
-        for (size_t i=0; i<fields; i++) {
-            void * fieldptr = 0;
-            size_t copySize = 0;
-            char tp = T::_()[i];
-            switch (tp) {
-            case 'i': {
-                int val = uvalue->at(i).toInt();
-                fieldptr = &val;
-                copySize = sizeof(int);
-                ptr = (void*)((size_t)(ptr)+copySize);
-             //   ptr +=(uint)copySize;
-                memcpy(ptr, fieldptr, copySize);
-                break;
-            }
-            case 'd': {
-                double val = uvalue->at(i).toReal();
-                fieldptr = &val;
-                copySize = sizeof(double);
-                ptr = (void*)((size_t)(ptr)+copySize);
-                memcpy(ptr, fieldptr, copySize);
-                break;
-            }
-            case 'b': {
-                bool val = uvalue->at(i).toBool();
-                fieldptr = &val;
-                copySize = sizeof(bool);
-                ptr = (void*)((size_t)(ptr)+copySize);
-                memcpy(ptr, fieldptr, copySize);
-                break;
-            }
-            case 'c': {
-                Char val = uvalue->at(i).toChar();
-                fieldptr = &val;
-                copySize = sizeof(Char);
 
-                ptr = (void*)((size_t)(ptr)+copySize);
-                break;
-            }
-            case 's': {
-                String val = uvalue->at(i).toString();
-                fieldptr = &val;
-                copySize = sizeof(String);
-                ptr = (void*)((size_t)(ptr)+copySize);
-                String * stringRef = reinterpret_cast<String*>(fieldptr);
-                stringRef->assign(val); // copy container data
-                break;
-            }
-            default:
-                break;
-            }
-        }
-        return value;
-    }
+    inline bool isValid() const { return type_!=VT_void || ( avalue && avalue->size()>0 ); }
 
-    inline bool isValid() const { return tp!=VT_void || ( avalue && avalue->size()>0 ); }
-
-    inline ValueType type() const { return tp; }
+    inline ValueType type() const { return type_; }
     inline const AnyValue & at(size_t index) const { return avalue->at(index); }
     inline const AnyValue & operator[](size_t index) const { return at(index); }
     inline AnyValue & at(size_t index) { return avalue->at(index); }
@@ -206,15 +153,14 @@ public:
 
     inline size_t rawSize() const { return avalue? avalue->size() : 0; }
     inline ~AnyValue() {
-        if (svalue)
-            delete svalue;
+        if (svalue_)
+            delete svalue_;
         if (avalue) {
             avalue->clear();
             delete avalue;
         }
-        if (uvalue) {
-            uvalue->clear();
-            delete uvalue;
+        if (uvalue_) {
+            delete uvalue_;
         }
     }
 
@@ -238,22 +184,22 @@ protected:
 
 private:
     inline void __init__() {
-        tp = VT_void;
-        svalue = 0;
-        ivalue = 0;
-        uvalue = 0;
+        type_ = VT_void;
+        svalue_ = 0;
+        ivalue_ = 0;
+        uvalue_ = 0;
         avalue = 0;
     }
 
-    ValueType tp;
+    ValueType type_;
     union {
-        int ivalue;
-        real rvalue;
-        Char cvalue;
-        bool bvalue;
+        int ivalue_;
+        real rvalue_;
+        Char cvalue_;
+        bool bvalue_;
     };
-    Record * uvalue;
-    String * svalue;
+    Record * uvalue_;
+    String * svalue_;
     std::vector<class AnyValue> * avalue;
 };
 
@@ -267,91 +213,107 @@ public:
 
     inline void create()
     {
-        i_referenceStackContextNo = -2;
-        l_referenceIndeces[0] = l_referenceIndeces[1] = l_referenceIndeces[2] =         l_referenceIndeces[3] = 0;
-        l_bounds[0] = l_bounds[1] = l_bounds[2] = l_bounds[3] = l_bounds[4] = l_bounds[5] = l_bounds[6] = 0;
-        l_restrictedBounds[0] = l_restrictedBounds[1] = l_restrictedBounds[2] = l_restrictedBounds[3] = l_restrictedBounds[4] = l_restrictedBounds[5] = l_restrictedBounds[6] = 0;
-        m_value = VT_void;
-        i_dimension = 0;
-        e_baseType = VT_void;
-        m_reference = 0;
-        b_constant = false;
+        referenceStackContextNo_ = -2;
+        referenceIndeces_[0] = referenceIndeces_[1] = referenceIndeces_[2] =         referenceIndeces_[3] = 0;
+        bounds_[0] = bounds_[1] = bounds_[2] = bounds_[3] = bounds_[4] = bounds_[5] = bounds_[6] = 0;
+        restrictedBounds_[0] = restrictedBounds_[1] = restrictedBounds_[2] = restrictedBounds_[3] = restrictedBounds_[4] = restrictedBounds_[5] = restrictedBounds_[6] = 0;
+        value_ = VT_void;
+        dimension_ = 0;
+        baseType_ = VT_void;
+        reference_ = 0;
+        constant_ = false;
     }
 
     static bool ignoreUndefinedError;
 
-    inline explicit Variable(int v) { create() ; e_baseType = VT_int; m_value = v; }
-    inline explicit Variable(double v) { create(); e_baseType = VT_real; m_value = v; }
-    inline explicit Variable(Char & v) { create(); e_baseType = VT_char; m_value = v; }
-    inline explicit Variable(const String & v) { create(); e_baseType = VT_string; m_value = v; }
-    inline explicit Variable(bool v) { create(); e_baseType = VT_bool; m_value = v; }
+    inline explicit Variable(int v) { create() ; baseType_ = VT_int; value_ = v; }
+    inline explicit Variable(double v) { create(); baseType_ = VT_real; value_ = v; }
+    inline explicit Variable(Char & v) { create(); baseType_ = VT_char; value_ = v; }
+    inline explicit Variable(const String & v) { create(); baseType_ = VT_string; value_ = v; }
+    inline explicit Variable(bool v) { create(); baseType_ = VT_bool; value_ = v; }
     inline explicit Variable(const Record & value) {
         create();
-        e_baseType = VT_record;
-        m_value = value;
+        baseType_ = VT_record;
+        value_ = value;
     }
-    inline explicit Variable(Variable * ref) { create(); m_reference = ref; }
-    inline explicit Variable(const AnyValue & v) { create(); e_baseType = v.type(); m_value = v; }
-//    inline Variable(const Variable & other) {
-//        create();
-//        e_baseType = other.e_baseType;
-//        i_dimension = other.i_dimension;
-//        memcpy(l_bounds, other.l_bounds, sizeof(l_bounds));
-//        memcpy(l_restrictedBounds, other.l_restrictedBounds, sizeof(l_restrictedBounds));
-//        memcpy(l_referenceIndeces, other.l_referenceIndeces, sizeof(l_referenceIndeces));
-//        m_reference = other.m_reference;
-//        b_constant = other.b_constant;
-//        s_name = other.s_name;
-//        s_algorhitmName = other.s_algorhitmName;
-//        m_value = other.m_value;
-//    }
+    inline explicit Variable(Variable * ref) { create(); reference_ = ref; }
+    inline explicit Variable(const AnyValue & v) {
+        create();
+        baseType_ = v.type();
+        value_ = v;
+    }
 
     inline bool isValid() const {
-        return m_reference
-                ? m_reference->isValid()
-                : m_value.type()!=VT_void || i_dimension>0;
+        return reference_
+                ? reference_->isValid()
+                : value_.type()!=VT_void || dimension_>0;
     }
 
-    inline bool isConstant() const { return m_reference? m_reference->isConstant() : b_constant; }
-    inline void setConstantFlag(bool value) { b_constant = value; }
+    inline bool isConstant() const { return reference_? reference_->isConstant() : constant_; }
+    inline void setConstantFlag(bool value) { constant_ = value; }
 
     inline void init();
-    inline uint8_t dimension() const { return m_reference? m_reference->dimension() : i_dimension; }
-    inline void setDimension(uint8_t v) { i_dimension = v; }
+    inline uint8_t dimension() const { return reference_? reference_->dimension() : dimension_; }
+    inline void setDimension(uint8_t v) { dimension_ = v; }
     inline void setName(const String & n) {
-        s_name = n;
+        name_ = n;
     }
     inline String fullReferenceName() const;
     inline const String & name() const {
-        if(m_reference)
-            return m_reference->name();
+        if(reference_)
+            return reference_->name();
         else
-            return s_name;
+            return name_;
     }
     inline const String & myName() const {
-        return s_name;
+        return name_;
     }
+    inline const String & recordModuleName() const {
+        if (reference_)
+            return reference_->recordModuleName();
+        else
+            return recordModuleName_;
+    }
+    inline const String & recordClassName() const {
+        if (reference_)
+            return reference_->recordClassName();
+        else
+            return recordClassName_;
+    }
+    inline void setRecordModuleName(const String & n) {
+        if (reference_)
+            reference_->setRecordModuleName(n);
+        else
+            recordModuleName_ = n;
+    }
+    inline void setRecordClassName(const String & n) {
+        if (reference_)
+            reference_->setRecordClassName(n);
+        else
+            recordClassName_ = n;
+    }
+
     inline void setAlgorhitmName(const String & n) {
-        s_algorhitmName = n;
+        algorhitmName_ = n;
     }
     inline void setModuleName(const String & n) {
-        s_moduleName = n;
+        moduleName_ = n;
     }
     inline const String & moduleName() const {
-        return s_moduleName;
+        return moduleName_;
     }
 
     inline const String & algorhitmName() const {
-        if(m_reference)
-            return m_reference->algorhitmName();
+        if(reference_)
+            return reference_->algorhitmName();
         else
-            return s_algorhitmName;
+            return algorhitmName_;
     }
 
     inline void setBounds(int bounds[7]);
     inline void updateBounds(int bounds[7]);
-    inline void getBounds(/*out*/ int bounds[7]) const { memcpy(bounds, l_bounds, 7*sizeof(int)); }
-    inline void getEffectiveBounds(/*out*/ int bounds[7]) const { memcpy(bounds, l_restrictedBounds, 7*sizeof(int)); }
+    inline void getBounds(/*out*/ int bounds[7]) const { memcpy(bounds, bounds_, 7*sizeof(int)); }
+    inline void getEffectiveBounds(/*out*/ int bounds[7]) const { memcpy(bounds, restrictedBounds_, 7*sizeof(int)); }
 
     inline bool hasValue() const;
     inline bool hasValue(int indeces[4]) const;
@@ -366,25 +328,25 @@ public:
 
     inline AnyValue value(int indeces[4]) const;
 
-    inline size_t rawSize() const { return m_value.rawSize(); }
-    inline const AnyValue & at(size_t index) const { return m_value.avalue->at(index); }
+    inline size_t rawSize() const { return value_.rawSize(); }
+    inline const AnyValue & at(size_t index) const { return value_.avalue->at(index); }
     inline const AnyValue & operator[](size_t index) const { return at(index); }
-    inline AnyValue & at(size_t index) { return m_value.avalue->at(index); }
+    inline AnyValue & at(size_t index) { return value_.avalue->at(index); }
     inline AnyValue & operator[](size_t index) { return at(index); }
 
-    inline bool isReference() const { return m_reference!=0; }
+    inline bool isReference() const { return reference_!=0; }
     inline void setReference(Variable * r, int effectiveBounds[7]) {
-        m_reference = r;
-        memcpy(l_bounds, effectiveBounds, 7*sizeof(int));
-        memcpy(l_restrictedBounds, effectiveBounds, 7*sizeof(int));
+        reference_ = r;
+        memcpy(bounds_, effectiveBounds, 7*sizeof(int));
+        memcpy(restrictedBounds_, effectiveBounds, 7*sizeof(int));
     }
-    inline Variable * reference() { return m_reference; }
+    inline Variable * reference() { return reference_; }
 
     inline void setReferenceIndeces(int v[4]) {
-        memcpy(l_referenceIndeces, v, 4*sizeof(int));
+        memcpy(referenceIndeces_, v, 4*sizeof(int));
     }
     inline void getReferenceIndeces(int result[4]) const {
-        memcpy(result, l_referenceIndeces, 4*sizeof(int));
+        memcpy(result, referenceIndeces_, 4*sizeof(int));
     }
 
     inline int toInt() const { return value().toInt(); }
@@ -395,21 +357,21 @@ public:
     inline String toString() const;
     inline String toString(int indeces[4]) const;
     inline const Record toRecord() const {
-        if (m_reference) {
-            const Record result = m_reference->toRecord();
+        if (reference_) {
+            const Record result = reference_->toRecord();
             return result;
         }
         else {
-            return m_value.toRecord();
+            return value_.toRecord();
         }
     }
     inline Record & toRecord() {
-        if (m_reference) {
-            Record & result = m_reference->toRecord();
+        if (reference_) {
+            Record & result = reference_->toRecord();
             return result;
         }
         else {
-            Record & result = m_value.toRecord();
+            Record & result = value_.toRecord();
             return result;
         }
     }
@@ -417,8 +379,8 @@ public:
     inline Variable toReference();
     inline static Variable toConstReference(const AnyValue & value);
 
-    inline int referenceStackContextNo() const { return i_referenceStackContextNo; }
-    inline void setReferenceStackContextNo(int v) { i_referenceStackContextNo = v; }
+    inline int referenceStackContextNo() const { return referenceStackContextNo_; }
+    inline void setReferenceStackContextNo(int v) { referenceStackContextNo_ = v; }
 
     inline Variable toReference(int indeces[4]);
     inline void setValue(const AnyValue & value);
@@ -429,44 +391,46 @@ public:
 
     inline void setConstValue(const Variable & ctab);
 
-    inline ValueType baseType() const { return m_reference? m_reference->baseType() : e_baseType; }
-    inline void setBaseType(ValueType vt) { e_baseType = vt; }
+    inline ValueType baseType() const { return reference_? reference_->baseType() : baseType_; }
+    inline void setBaseType(ValueType vt) { baseType_ = vt; }
 
     inline static void unsetError() { Kumir::Core::unsetError(); }
 private:
     inline size_t linearIndex(int a) const;
     inline size_t linearIndex(int a, int b) const;
     inline size_t linearIndex(int a, int b, int c) const;
-    AnyValue m_value;
-    uint8_t i_dimension;
-    int l_bounds[7];
-    int l_restrictedBounds[7];
-    ValueType e_baseType;
-    Variable * m_reference;
-    int l_referenceIndeces[4];
-    String s_name;
-    String s_algorhitmName;
-    String s_moduleName;
-    bool b_constant;
-    int i_referenceStackContextNo;
+    AnyValue value_;
+    uint8_t dimension_;
+    int bounds_[7];
+    int restrictedBounds_[7];
+    ValueType baseType_;
+    Variable * reference_;
+    int referenceIndeces_[4];
+    String name_;
+    String algorhitmName_;
+    String moduleName_;
+    String recordModuleName_;
+    String recordClassName_;
+    bool constant_;
+    int referenceStackContextNo_;
 };
 
 /* ----------------------- IMPLEMENTATION ----------------------*/
 
 bool Variable::hasValue() const
 {
-    if (m_reference) {
-        if (l_referenceIndeces[3]==0)
-            return m_reference->hasValue();
-        else if (l_referenceIndeces[3]==1)
-            return m_reference->hasValue(l_referenceIndeces[0]);
-        else if (l_referenceIndeces[3]==2)
-            return m_reference->hasValue(l_referenceIndeces[0], l_referenceIndeces[1]);
+    if (reference_) {
+        if (referenceIndeces_[3]==0)
+            return reference_->hasValue();
+        else if (referenceIndeces_[3]==1)
+            return reference_->hasValue(referenceIndeces_[0]);
+        else if (referenceIndeces_[3]==2)
+            return reference_->hasValue(referenceIndeces_[0], referenceIndeces_[1]);
         else
-            return m_reference->hasValue(l_referenceIndeces[0], l_referenceIndeces[1], l_referenceIndeces[2]);
+            return reference_->hasValue(referenceIndeces_[0], referenceIndeces_[1], referenceIndeces_[2]);
     }
     else
-        return m_value.isValid();
+        return value_.isValid();
 }
 
 
@@ -484,47 +448,47 @@ bool Variable::hasValue(int indeces[4]) const
 
 AnyValue Variable::value() const
 {
-    if (m_reference) {
-        if (l_referenceIndeces[3]==0) {
-            return m_reference->value();
+    if (reference_) {
+        if (referenceIndeces_[3]==0) {
+            return reference_->value();
         }
-        else if (l_referenceIndeces[3]==1) {
-            return m_reference->value(l_referenceIndeces[0]);
+        else if (referenceIndeces_[3]==1) {
+            return reference_->value(referenceIndeces_[0]);
         }
-        else if (l_referenceIndeces[3]==2) {
-            return m_reference->value(l_referenceIndeces[0], l_referenceIndeces[1]);
+        else if (referenceIndeces_[3]==2) {
+            return reference_->value(referenceIndeces_[0], referenceIndeces_[1]);
         }
-        else if (l_referenceIndeces[3]==3) {
-            return m_reference->value(l_referenceIndeces[0], l_referenceIndeces[1], l_referenceIndeces[2]);
+        else if (referenceIndeces_[3]==3) {
+            return reference_->value(referenceIndeces_[0], referenceIndeces_[1], referenceIndeces_[2]);
         }
     }
     else {
-        if (!m_value.isValid() && !ignoreUndefinedError)
+        if (!value_.isValid() && !ignoreUndefinedError)
             Kumir::Core::abort(Kumir::Core::fromUtf8("Нет значения у величины"));
-        return m_value;
+        return value_;
     }
-    return m_value;
+    return value_;
 }
 
 void Variable::setValue(const AnyValue &v)
 {
-    if (m_reference) {
-        if (l_referenceIndeces[3]==0) {
-            m_reference->setValue(v);
+    if (reference_) {
+        if (referenceIndeces_[3]==0) {
+            reference_->setValue(v);
         }
-        else if (l_referenceIndeces[3]==1) {
-            m_reference->setValue(l_referenceIndeces[0], v);
+        else if (referenceIndeces_[3]==1) {
+            reference_->setValue(referenceIndeces_[0], v);
         }
-        else if (l_referenceIndeces[3]==2) {
-            m_reference->setValue(l_referenceIndeces[0],l_referenceIndeces[1], v);
+        else if (referenceIndeces_[3]==2) {
+            reference_->setValue(referenceIndeces_[0],referenceIndeces_[1], v);
         }
-        else if (l_referenceIndeces[3]==3) {
-            m_reference->setValue(l_referenceIndeces[0],l_referenceIndeces[1],l_referenceIndeces[2], v);
+        else if (referenceIndeces_[3]==3) {
+            reference_->setValue(referenceIndeces_[0],referenceIndeces_[1],referenceIndeces_[2], v);
         }
 
     }
     else {
-        m_value = v;
+        value_ = v;
     }
 
 }
@@ -535,7 +499,7 @@ void Variable::setValue(const AnyValue &v)
 String Variable::toString() const
 {
     String result;
-    switch (e_baseType)
+    switch (baseType_)
     {
     case VT_bool:
         if (value().toBool())
@@ -564,7 +528,7 @@ String Variable::toString() const
 String Variable::toString(int indeces[4]) const
 {
     String result;
-    switch (e_baseType)
+    switch (baseType_)
     {
     case VT_bool:
         if (value(indeces).toBool())
@@ -617,29 +581,29 @@ void Variable::setValue(int indeces[4], const AnyValue &value)
 
 size_t Variable::linearIndex(int a) const
 {
-    return a-l_bounds[0];
+    return a-bounds_[0];
 }
 
 size_t Variable::linearIndex(int a, int b) const
 {
-    int size0 = l_bounds[3]-l_bounds[2]+1;
-    int offset0 = (a - l_bounds[0]) * size0;
-    int result = offset0 + b-l_bounds[2];
+    int size0 = bounds_[3]-bounds_[2]+1;
+    int offset0 = (a - bounds_[0]) * size0;
+    int result = offset0 + b-bounds_[2];
     return result;
 }
 
 size_t Variable::linearIndex(int a, int b, int c) const
 {
-    int size0 = l_bounds[3]-l_bounds[2]+1;
-    int size1 = l_bounds[5]-l_bounds[4]+1;
-    return (a-l_bounds[0])*size0*size1 + (b-l_bounds[2])*size1 + c-l_bounds[4];
+    int size0 = bounds_[3]-bounds_[2]+1;
+    int size1 = bounds_[5]-bounds_[4]+1;
+    return (a-bounds_[0])*size0*size1 + (b-bounds_[2])*size1 + c-bounds_[4];
 }
 
 
 void Variable::setConstValue(const Variable & ctab)
 {
     if (isReference()) {
-        m_reference->setConstValue(ctab);
+        reference_->setConstValue(ctab);
         return;
     }
     const int dim = ctab.dimension();
@@ -647,7 +611,7 @@ void Variable::setConstValue(const Variable & ctab)
     if (dim>0) {
         ctab.getBounds(cbounds);
         for (int i=0; i<dim; i++) {
-            const int mysize = l_bounds[2*i+1] - l_bounds[2*i];
+            const int mysize = bounds_[2*i+1] - bounds_[2*i];
             const int csize  = cbounds [2*i+1] - cbounds [2*i];
             if (mysize < csize) {
                 Kumir::Core::abort(Kumir::Core::fromUtf8("Выход за границу таблицы"));
@@ -663,7 +627,7 @@ void Variable::setConstValue(const Variable & ctab)
     }
     case 1: {
         const int cx = cbounds [0];
-        const int mx = l_bounds[0];
+        const int mx = bounds_[0];
         const int sx = cbounds [1] - cbounds [0];
         for (int x=0; x<=sx; x++) {
             setValue(mx+x, ctab.value(cx+x));
@@ -672,9 +636,9 @@ void Variable::setConstValue(const Variable & ctab)
     }
     case 2: {
         const int cy = cbounds [0];
-        const int my = l_bounds[0];
+        const int my = bounds_[0];
         const int cx = cbounds [2];
-        const int mx = l_bounds[2];
+        const int mx = bounds_[2];
         const int sy = cbounds [1] - cbounds [0];
         const int sx = cbounds [3] - cbounds [2];
         for (int y=0; y<=sy; y++) {
@@ -687,11 +651,11 @@ void Variable::setConstValue(const Variable & ctab)
     }
     case 3: {
         const int cz = cbounds [0];
-        const int mz = l_bounds[0];
+        const int mz = bounds_[0];
         const int cy = cbounds [2];
-        const int my = l_bounds[2];
+        const int my = bounds_[2];
         const int cx = cbounds [4];
-        const int mx = l_bounds[4];
+        const int mx = bounds_[4];
         const int sz = cbounds [1] - cbounds [0];
         const int sy = cbounds [3] - cbounds [2];
         const int sx = cbounds [5] - cbounds [4];
@@ -714,54 +678,54 @@ void Variable::setConstValue(const Variable & ctab)
 
 bool Variable::hasValue(int index0) const
 {
-    if (m_reference)
-        return m_reference->hasValue(index0);
-    if (m_value.rawSize()==0 || l_restrictedBounds[6]<1) {
+    if (reference_)
+        return reference_->hasValue(index0);
+    if (value_.rawSize()==0 || restrictedBounds_[6]<1) {
         return false;
     }
-    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1]) {
+    if (index0<restrictedBounds_[0] || index0>restrictedBounds_[1]) {
         return false;
     }
     int index = linearIndex(index0);
-    return m_value.isValid() && m_value[index].isValid();
+    return value_.isValid() && value_[index].isValid();
 }
 
 AnyValue Variable::value(int index0) const
 {
-    if (m_reference)
-        return m_reference->value(index0);
-    if (m_value.rawSize()==0 || l_restrictedBounds[6]<1) {
+    if (reference_)
+        return reference_->value(index0);
+    if (value_.rawSize()==0 || restrictedBounds_[6]<1) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Таблица не инициализирована"));
         return AnyValue(VT_void);
     }
-    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1]) {
+    if (index0<restrictedBounds_[0] || index0>restrictedBounds_[1]) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Выход за границу таблицы"));
         return AnyValue(VT_void);
     }
     int index = linearIndex(index0);
-    if (m_value[index].type()==VT_void) {
+    if (value_[index].type()==VT_void) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Значение элемента таблицы не определено"));
         return AnyValue(VT_void);
     }
-    return m_value[index];
+    return value_[index];
 }
 
 void Variable::setValue(int index0, const AnyValue &value)
 {
-    if (!m_reference && (m_value.rawSize()==0 || l_restrictedBounds[6]<1)) {
+    if (!reference_ && (value_.rawSize()==0 || restrictedBounds_[6]<1)) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Таблица не инициализирована"));
         return ;
     }
-    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1]) {
+    if (index0<restrictedBounds_[0] || index0>restrictedBounds_[1]) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Выход за границу таблицы"));
         return ;
     }
-    if (m_reference) {
-        m_reference->setValue(index0, value);
+    if (reference_) {
+        reference_->setValue(index0, value);
         return;
     }
     size_t index = linearIndex(index0);
-    m_value[index] = value;
+    value_[index] = value;
 }
 
 
@@ -770,54 +734,54 @@ void Variable::setValue(int index0, const AnyValue &value)
 
 bool Variable::hasValue(int index0, int index1) const
 {
-    if (m_reference)
-        return m_reference->hasValue(index0, index1);
-    if (m_value.rawSize()==0 || l_restrictedBounds[6]<2) {
+    if (reference_)
+        return reference_->hasValue(index0, index1);
+    if (value_.rawSize()==0 || restrictedBounds_[6]<2) {
         return false;
     }
-    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1] || index1<l_restrictedBounds[2]|| index1>l_restrictedBounds[3]) {
+    if (index0<restrictedBounds_[0] || index0>restrictedBounds_[1] || index1<restrictedBounds_[2]|| index1>restrictedBounds_[3]) {
         return false;
     }
     size_t index = linearIndex(index0, index1);
-    return m_value.isValid() && m_value[index].isValid();
+    return value_.isValid() && value_[index].isValid();
 }
 
 AnyValue Variable::value(int index0, int index1) const
 {
-    if (m_reference)
-        return m_reference->value(index0, index1);
-    if (m_value.rawSize()==0 || l_restrictedBounds[6]<2) {
+    if (reference_)
+        return reference_->value(index0, index1);
+    if (value_.rawSize()==0 || restrictedBounds_[6]<2) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Таблица не инициализирована"));
         return AnyValue(VT_void);
     }
-    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1] || index1<l_restrictedBounds[2] || index1>l_restrictedBounds[3]) {
+    if (index0<restrictedBounds_[0] || index0>restrictedBounds_[1] || index1<restrictedBounds_[2] || index1>restrictedBounds_[3]) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Выход за границу таблицы"));
         return AnyValue(VT_void);
     }
     size_t index = linearIndex(index0, index1);
-    if (m_value[index].type()==VT_void) {
+    if (value_[index].type()==VT_void) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Значение элемента таблицы не определено"));
         return AnyValue(VT_void);
     }
-    return m_value[index];
+    return value_[index];
 }
 
 void Variable::setValue(int index0, int index1, const AnyValue &value)
 {
-    if (!m_reference && (m_value.rawSize()==0 || l_restrictedBounds[6]<2)) {
+    if (!reference_ && (value_.rawSize()==0 || restrictedBounds_[6]<2)) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Таблица не инициализирована"));
         return ;
     }
-    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1] || index1<l_restrictedBounds[2] || index1>l_restrictedBounds[3]) {
+    if (index0<restrictedBounds_[0] || index0>restrictedBounds_[1] || index1<restrictedBounds_[2] || index1>restrictedBounds_[3]) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Выход за границу таблицы"));
         return ;
     }
-    if (m_reference) {
-        m_reference->setValue(index0, index1, value);
+    if (reference_) {
+        reference_->setValue(index0, index1, value);
         return;
     }
     size_t index = linearIndex(index0, index1);
-    m_value[index] = value;
+    value_[index] = value;
 }
 
 
@@ -825,86 +789,86 @@ void Variable::setValue(int index0, int index1, const AnyValue &value)
 
 bool Variable::hasValue(int index0, int index1, int index2) const
 {
-    if (m_reference)
-        return m_reference->hasValue(index0, index1, index2);
-    if (m_value.rawSize()==0 || l_restrictedBounds[6]<3) {
+    if (reference_)
+        return reference_->hasValue(index0, index1, index2);
+    if (value_.rawSize()==0 || restrictedBounds_[6]<3) {
         return false;
     }
-    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1] || index1<l_restrictedBounds[2]|| index1>l_restrictedBounds[3]|| index2<l_restrictedBounds[4] || index2>l_restrictedBounds[5]) {
+    if (index0<restrictedBounds_[0] || index0>restrictedBounds_[1] || index1<restrictedBounds_[2]|| index1>restrictedBounds_[3]|| index2<restrictedBounds_[4] || index2>restrictedBounds_[5]) {
         return false;
     }
     size_t index = linearIndex(index0, index1, index2);
-    return m_value.isValid() && m_value[index].isValid();
+    return value_.isValid() && value_[index].isValid();
 }
 
 AnyValue Variable::value(int index0, int index1, int index2) const
 {
-    if (m_reference)
-        return m_reference->value(index0, index1, index2);
-    if (m_value.rawSize()==0 || l_restrictedBounds[6]<3) {
+    if (reference_)
+        return reference_->value(index0, index1, index2);
+    if (value_.rawSize()==0 || restrictedBounds_[6]<3) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Таблица не инициализирована"));
         return AnyValue(VT_void);
     }
-    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1] || index1<l_restrictedBounds[2] || index1>l_restrictedBounds[3]|| index2<l_restrictedBounds[4] || index2>l_restrictedBounds[5]) {
+    if (index0<restrictedBounds_[0] || index0>restrictedBounds_[1] || index1<restrictedBounds_[2] || index1>restrictedBounds_[3]|| index2<restrictedBounds_[4] || index2>restrictedBounds_[5]) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Выход за границу таблицы"));
         return AnyValue(VT_void);
     }
     size_t index = linearIndex(index0, index1, index2);
-    if (m_value[index].type()==VT_void) {
+    if (value_[index].type()==VT_void) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Значение элемента таблицы не определено"));
         return AnyValue(VT_void);
     }
-    return m_value[index];
+    return value_[index];
 }
 
 void Variable::setValue(int index0, int index1, int index2, const AnyValue &value)
 {
-    if (!m_reference && (m_value.rawSize()==0 || l_restrictedBounds[6]<3)) {
+    if (!reference_ && (value_.rawSize()==0 || restrictedBounds_[6]<3)) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Таблица не инициализирована"));
         return ;
     }
-    if (index0<l_restrictedBounds[0] || index0>l_restrictedBounds[1] || index1<l_restrictedBounds[2] || index1>l_restrictedBounds[3]|| index2<l_restrictedBounds[4] || index2>l_restrictedBounds[5]) {
+    if (index0<restrictedBounds_[0] || index0>restrictedBounds_[1] || index1<restrictedBounds_[2] || index1>restrictedBounds_[3]|| index2<restrictedBounds_[4] || index2>restrictedBounds_[5]) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Выход за границу таблицы"));
         return ;
     }
-    if (m_reference) {
-        m_reference->setValue(index0, index1, index2, value);
+    if (reference_) {
+        reference_->setValue(index0, index1, index2, value);
         return;
     }
     size_t index = linearIndex(index0, index1, index2);
-    m_value[index] = value;
+    value_[index] = value;
 }
 
 void Variable::init()
 {
-    if (m_reference) {
-        m_reference->init();
+    if (reference_) {
+        reference_->init();
         return;
     }
-    if (i_dimension==0) {
-        m_value = VT_void;
+    if (dimension_==0) {
+        value_ = VT_void;
     }
     else {
-        if (i_dimension==1) {
-            for (int x=l_restrictedBounds[0]; x<=l_restrictedBounds[1]; x++) {
+        if (dimension_==1) {
+            for (int x=restrictedBounds_[0]; x<=restrictedBounds_[1]; x++) {
                 size_t index = linearIndex(x);
-                m_value[index] = VT_void;
+                value_[index] = VT_void;
             }
         }
-        else if (i_dimension==2) {
-            for (int y=l_restrictedBounds[0]; y<=l_restrictedBounds[1]; y++) {
-                for (int x=l_restrictedBounds[2]; x<=l_restrictedBounds[3]; x++) {
+        else if (dimension_==2) {
+            for (int y=restrictedBounds_[0]; y<=restrictedBounds_[1]; y++) {
+                for (int x=restrictedBounds_[2]; x<=restrictedBounds_[3]; x++) {
                     size_t index = linearIndex(y, x);
-                    m_value[index] = VT_void;
+                    value_[index] = VT_void;
                 }
             }
         }
-        else if (i_dimension==3) {
-            for (int z=l_restrictedBounds[0]; z<=l_restrictedBounds[1]; z++) {
-                for (int y=l_restrictedBounds[2]; y<=l_restrictedBounds[3]; y++) {
-                    for (int x=l_restrictedBounds[4]; x<=l_restrictedBounds[5]; x++) {
+        else if (dimension_==3) {
+            for (int z=restrictedBounds_[0]; z<=restrictedBounds_[1]; z++) {
+                for (int y=restrictedBounds_[2]; y<=restrictedBounds_[3]; y++) {
+                    for (int x=restrictedBounds_[4]; x<=restrictedBounds_[5]; x++) {
                         size_t index = linearIndex(z, y, x);
-                        m_value[index] = VT_void;
+                        value_[index] = VT_void;
                     }
                 }
             }
@@ -916,22 +880,22 @@ void Variable::init()
 void Variable::setBounds(int bounds[7])
 {
     size_t size = 0;
-    i_dimension = bounds[6]/2;
-    if (i_dimension>=1) {
+    dimension_ = bounds[6]/2;
+    if (dimension_>=1) {
         size = bounds[1]-bounds[0]+1;
         if (size<=0) {
             Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
             return;
         }
     }
-    if (i_dimension>=2) {
+    if (dimension_>=2) {
         size *= bounds[3]-bounds[2]+1;
         if (size<=0) {
             Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
             return;
         }
     }
-    if (i_dimension>=3) {
+    if (dimension_>=3) {
         size *= bounds[5]-bounds[4]+1;
         if (size<=0) {
             Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
@@ -939,31 +903,31 @@ void Variable::setBounds(int bounds[7])
         }
     }
 
-    m_value.resize(size);
+    value_.resize(size);
 
-    memcpy(l_bounds, bounds, 7*sizeof(int));
-    memcpy(l_restrictedBounds, l_bounds, 7*sizeof(int));
+    memcpy(bounds_, bounds, 7*sizeof(int));
+    memcpy(restrictedBounds_, bounds_, 7*sizeof(int));
 }
 
 void Variable::updateBounds(int bounds[7])
 {
     size_t size = 0;
-    i_dimension = bounds[6]/2;
-    if (i_dimension>=1) {
+    dimension_ = bounds[6]/2;
+    if (dimension_>=1) {
         size = bounds[1]-bounds[0]+1;
         if (size<=0) {
             Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
             return;
         }
     }
-    if (i_dimension>=2) {
+    if (dimension_>=2) {
         size *= bounds[3]-bounds[2]+1;
         if (size<=0) {
             Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
             return;
         }
     }
-    if (i_dimension>=3) {
+    if (dimension_>=3) {
         size *= bounds[5]-bounds[4]+1;
         if (size<=0) {
             Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
@@ -971,16 +935,16 @@ void Variable::updateBounds(int bounds[7])
         }
     }
 
-    l_restrictedBounds[6] = bounds[6];
+    restrictedBounds_[6] = bounds[6];
 
     for (int i=0; i<bounds[6]; i+=2) {
-        l_restrictedBounds[i] = l_bounds[6]
-                ? Kumir::Math::imax(l_bounds[i], bounds[i])
+        restrictedBounds_[i] = bounds_[6]
+                ? Kumir::Math::imax(bounds_[i], bounds[i])
                 : bounds[i];
     }
     for (int i=1; i<bounds[6]; i+=2) {
-        l_restrictedBounds[i] = l_bounds[6]
-                ? Kumir::Math::imin(l_bounds[i], bounds[i])
+        restrictedBounds_[i] = bounds_[6]
+                ? Kumir::Math::imin(bounds_[i], bounds[i])
                 : bounds[i];
     }
 
@@ -989,14 +953,14 @@ void Variable::updateBounds(int bounds[7])
 Variable Variable::toReference()
 {
     Variable result;
-    if (m_reference) {
-        result.m_reference = m_reference;
+    if (reference_) {
+        result.reference_ = reference_;
     }
     else {
-        result.m_reference = this;
+        result.reference_ = this;
     }
-    memcpy(result.l_bounds, l_restrictedBounds, 7*sizeof(int));
-    memcpy(result.l_restrictedBounds, l_restrictedBounds, 7*sizeof(int));
+    memcpy(result.bounds_, restrictedBounds_, 7*sizeof(int));
+    memcpy(result.restrictedBounds_, restrictedBounds_, 7*sizeof(int));
     return result;
 }
 
@@ -1005,25 +969,25 @@ Variable Variable::toReference()
 Variable Variable::toReference(int indeces[4])
 {
     Variable result;
-    if (m_reference) {
-        result.m_reference = m_reference;
+    if (reference_) {
+        result.reference_ = reference_;
     }
     else {
-        result.m_reference = this;
+        result.reference_ = this;
     }
-    memcpy(result.l_referenceIndeces, indeces, 4*sizeof(int));
+    memcpy(result.referenceIndeces_, indeces, 4*sizeof(int));
     return result;
 }
 
 String Variable::fullReferenceName() const
 {
-    if (m_reference) {
+    if (reference_) {
         String result = name();
-        if (l_referenceIndeces[3]) {
+        if (referenceIndeces_[3]) {
             result.push_back('[');
-            for (size_t i=0; i<l_referenceIndeces[3]; i++) {
-                result += Kumir::Converter::sprintfInt(l_referenceIndeces[i],10,0,0);
-                if (i<l_referenceIndeces[3]-1)
+            for (size_t i=0; i<referenceIndeces_[3]; i++) {
+                result += Kumir::Converter::sprintfInt(referenceIndeces_[i],10,0,0);
+                if (i<referenceIndeces_[3]-1)
                     result.push_back(',');
             }
             result.push_back(']');

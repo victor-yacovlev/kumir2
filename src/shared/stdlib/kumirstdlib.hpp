@@ -50,6 +50,17 @@ typedef std::string String;
 #else
 typedef wchar_t Char;
 typedef std::wstring String;
+inline String & operator+(String & s, const /*ascii only*/ char c) {
+    Char uc = Char(c);
+    s.push_back(uc);
+    return s;
+}
+inline String & operator+(String &s1, const /*utf8*/ char * s2) {
+    String us2 = Coder::decode(UTF8, std::string(s2));
+    s1.append(us2);
+    return s1;
+}
+
 #endif
 
 #ifdef NO_FPU
@@ -57,6 +68,11 @@ typedef float real;
 #else
 typedef double real;
 #endif
+
+inline String & operator+(String & s, const Char c) {
+    s.push_back(c);
+    return s;
+}
 
 struct FileType {
     enum OpenMode { NotOpen, Read, Write, Append };
@@ -1932,26 +1948,26 @@ public:
 
     class InputStream {
     public:
-        InputStream() {
-            stream=false;
-            file=0;
-            encoding=UTF8;
-            errStart=0;
-            errLength=0;
-            currentPosition=0;
+        inline InputStream() {
+            stream_=false;
+            file_=0;
+            encoding_=UTF8;
+            errStart_=0;
+            errLength_=0;
+            currentPosition_=0;
         }
-        InputStream(const String & b) {
-            stream=false;
-            file=0;
-            encoding=UTF8;
-            errStart=0;
-            errLength=0;
-            buffer=b;
-            currentPosition=0;
+        inline InputStream(const String & b) {
+            stream_=false;
+            file_=0;
+            encoding_=UTF8;
+            errStart_=0;
+            errLength_=0;
+            buffer_=b;
+            currentPosition_=0;
         }
-        InputStream(FILE * f, Encoding enc) {
-            stream = true;
-            file = f;
+        inline InputStream(FILE * f, Encoding enc) {
+            stream_ = true;
+            file_ = f;
             if (enc==DefaultEncoding) {
                 bool forceUtf8 = false;
                 if (f!=stdin) {
@@ -1964,72 +1980,75 @@ public:
                     fseek(f, curpos, SEEK_SET);
                 }
                 if (forceUtf8)
-                    encoding = UTF8;
+                    encoding_ = UTF8;
                 else
-                    encoding = Core::getSystemEncoding();
+                    encoding_ = Core::getSystemEncoding();
             }
             else {
-                encoding = enc;
+                encoding_ = enc;
             }
-            errStart = 0;
-            errLength = 0;
-            currentPosition=0;
+            errStart_ = 0;
+            errLength_ = 0;
+            currentPosition_=0;
         }
-        inline void getError(String & text, int & start, int & len) {
-            text = error;
-            start = errStart;
-            len = errLength;
+        inline int currentPosition() const {
+            return currentPosition_;
+        }
+        inline void getError(String & text, int & start, int & len) const {
+            text = error_;
+            start = errStart_;
+            len = errLength_;
         }
 
-        inline bool isStream() const { return stream; }
+        inline bool isStream() const { return stream_; }
         inline void setError(const String & err) {
             if (isStream())
                 Core::abort(err);
             else
-                error = err;
+                error_ = err;
         }
         inline bool hasError() const {
             if (isStream()) return Core::getError().length()>0;
-            else return error.length()>0;
+            else return error_.length()>0;
         }
-        inline void markPossibleErrorStart() { errStart = currentPosition; errLength = 0; error.clear();}
-        bool readRawChar(Char & x) {
-            lastCharBuffer[0] = lastCharBuffer[1] = lastCharBuffer[2] = '\0';
-            if (!stream) {
-                if (currentPosition==buffer.length())
+        inline void markPossibleErrorStart() { errStart_ = currentPosition_; errLength_ = 0; error_.clear();}
+        inline bool readRawChar(Char & x) {
+            lastCharBuffer_[0] = lastCharBuffer_[1] = lastCharBuffer_[2] = '\0';
+            if (!stream_) {
+                if (currentPosition_==buffer_.length())
                     return false;
-                x = buffer.at(currentPosition);
-                currentPosition += 1;
-                errLength += 1;
+                x = buffer_.at(currentPosition_);
+                currentPosition_ += 1;
+                errLength_ += 1;
                 return true;
             }
             else {
-                if (feof(file))
+                if (feof(file_))
                     return false;
-                charptr buffer = reinterpret_cast<charptr>(&lastCharBuffer);
-                if (encoding!=UTF8) {
+                charptr buffer = reinterpret_cast<charptr>(&lastCharBuffer_);
+                if (encoding_!=UTF8) {
                     // Read only one byte
-                    lastCharBuffer[0] = fgetc(file);
+                    lastCharBuffer_[0] = fgetc(file_);
                 }
                 else {
                     // More complex...
-                    long cpos = ftell(file);
+                    long cpos = ftell(file_);
                     if (cpos==0) {
                         // Try to read BOM
                         static const char * BOM = "\xEF\xBB\xBF";
                         char firstThree[3];
                         bool seekBack = true;
-                        if (fread(firstThree,sizeof(char),3,file)==3
+                        if (fread(firstThree,sizeof(char),3,file_)==3
                                 && strncmp(BOM, firstThree, 3)==0)
                             seekBack = false;
                         if (seekBack)
-                            fseek(file, 0, SEEK_SET);
+                            fseek(file_, 0, SEEK_SET);
                     }
-                    lastCharBuffer[0] = fgetc(file);
-                    uint8_t firstByte = lastCharBuffer[0];
+                    lastCharBuffer_[0] = fgetc(file_);
+                    uint8_t firstByte = lastCharBuffer_[0];
                     uint8_t oneSymbMark = firstByte >> 5;
                     uint8_t twoSymbMark = firstByte >> 4;
-                    if (firstByte==255 && file==Files::getAssignedIn()) {
+                    if (firstByte==255 && file_==Files::getAssignedIn()) {
                         Core::abort(Core::fromUtf8("Ошибка чтения данных: входной поток закончился"));
                         return false;
                     }
@@ -2045,17 +2064,17 @@ public:
                         }
                     }
                     for (int i=0; i<extraBytes; i++) {
-                        if (feof(file)) {
+                        if (feof(file_)) {
                             Core::abort(Core::fromUtf8("Ошибка чтения данных из файла: UTF-8 файл поврежден"));
                             return false;
                         }
-                        lastCharBuffer[i+1] = fgetc(file);
+                        lastCharBuffer_[i+1] = fgetc(file_);
                     }
                 }
                 const std::string sb(buffer);
                 std::wstring res;
                 try {
-                    res = Coder::decode(encoding, sb);
+                    res = Coder::decode(encoding_, sb);
                 }
                 catch (...) {
                     Core::abort(Core::fromUtf8("Ошибка перекодирования при чтении данных из текстового файла"));
@@ -2069,21 +2088,21 @@ public:
                 return true;
             }
         }
-        void pushLastCharBack() {
-            if (!stream) {
-                currentPosition -= 1;
-                errLength -= 1;
+        inline void pushLastCharBack() {
+            if (!stream_) {
+                currentPosition_ -= 1;
+                errLength_ -= 1;
             }
             else {
-                if (file==stdin) {
-                    if (lastCharBuffer[2]!='\0')
-                        ungetc(lastCharBuffer[2], file);
-                    if (lastCharBuffer[1]!='\0')
-                        ungetc(lastCharBuffer[1], file);
-                    ungetc(lastCharBuffer[0], file);
+                if (file_==stdin) {
+                    if (lastCharBuffer_[2]!='\0')
+                        ungetc(lastCharBuffer_[2], file_);
+                    if (lastCharBuffer_[1]!='\0')
+                        ungetc(lastCharBuffer_[1], file_);
+                    ungetc(lastCharBuffer_[0], file_);
                 }
                 else {
-                    fseek(file, -1*strlen(lastCharBuffer), SEEK_CUR);
+                    fseek(file_, -1*strlen(lastCharBuffer_), SEEK_CUR);
                 }
             }
         }
@@ -2119,15 +2138,15 @@ public:
         }
 
     private:
-        bool stream;
-        FILE * file;
-        Encoding encoding;
-        String buffer;
-        String error;
-        int errStart;
-        int errLength;
-        int currentPosition;
-        char lastCharBuffer[3];
+        bool stream_;
+        FILE * file_;
+        Encoding encoding_;
+        String buffer_;
+        String error_;
+        int errStart_;
+        int errLength_;
+        int currentPosition_;
+        char lastCharBuffer_[3];
     }; // end inner class InputStream
 
 

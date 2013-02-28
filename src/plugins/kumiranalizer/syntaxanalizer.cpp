@@ -131,13 +131,14 @@ struct SyntaxAnalizerPrivate
             ) const;
     bool findConversionAlgorithm(const AST::Type & from
                                  , const AST::Type & to
-                                 , AST::Module * mod
-                                 , AST::Algorhitm * alg) const;
+                                 , AST::Module * & mod
+                                 , AST::Algorhitm * & alg) const;
     AST::Expression * makeCustomBinaryOperation(const QString & operatorName
                             , AST::Expression * leftExpression
                             , AST::Expression * rightExpression
                             ) const;
-    AST::Expression * makeCustomUnaryOperation(const QString & operatorName
+    template <typename TOut>
+    TOut makeCustomUnaryOperation(const QString & operatorName
                                                , AST::Expression * argument) const;
     bool findAlgorhitm(const QString &name
                        , const AST::Module*  module
@@ -1928,11 +1929,8 @@ void SyntaxAnalizerPrivate::parseOutput(int str)
             expr3->constant = QVariant(6);
         }
         if (expr->baseType.kind==AST::TypeUser) {
-            AST::Expression * helperCall = makeCustomUnaryOperation(lexer->outputLexemName(), expr);
-            if (helperCall) {
-                expr = helperCall;
-            }
-            else {
+            bool canConvert = makeCustomUnaryOperation<bool>(lexer->outputLexemName(), expr);
+            if (!canConvert) {
                 err = _("Can't output value of type %1", expr->baseType.name);
                 foreach (Lexem * lx, subgroups[0])
                     lx->error = err;
@@ -1941,6 +1939,7 @@ void SyntaxAnalizerPrivate::parseOutput(int str)
                 delete expr3;
                 return;
             }
+            expr = makeCustomUnaryOperation<AST::Expression*>(lexer->outputLexemName(), expr);
         }
         st.statement->expressions << expr << expr2 << expr3;
     }
@@ -2010,7 +2009,9 @@ void SyntaxAnalizerPrivate::parseInput(int str)
         }
 
         if (expr->baseType.kind==AST::TypeUser) {
-            err = _("Can't input value of type %1",expr->baseType.name);
+            bool canConvert = makeCustomUnaryOperation<bool>(lexer->inputLexemName(), expr);
+            if (!canConvert)
+                err = _("Can't input value of type %1",expr->baseType.name);
         }
 
         if (expr->kind==AST::ExprConst &&
@@ -4123,8 +4124,8 @@ bool SyntaxAnalizerPrivate::tryInputOperatorAlgorithm(
 
 bool SyntaxAnalizerPrivate::findConversionAlgorithm(const AST::Type & from
                              , const AST::Type & to
-                             , AST::Module * mod
-                             , AST::Algorhitm * alg) const
+                             , AST::Module * & mod
+                             , AST::Algorhitm * & alg) const
 {
     for (int i=0; i<ast->modules.size(); i++) {
         mod = ast->modules[i];
@@ -4147,11 +4148,13 @@ bool SyntaxAnalizerPrivate::findConversionAlgorithm(const AST::Type & from
     return false;
 }
 
-AST::Expression * SyntaxAnalizerPrivate::makeCustomUnaryOperation(
+template <typename TOut>
+TOut SyntaxAnalizerPrivate::makeCustomUnaryOperation(
         const QString &operatorName
         , AST::Expression *argument) const
 {
     QString argTypeName;
+    bool checkOnly = sizeof(TOut)==1; // return type is a boolean
     if (argument->baseType.kind==AST::TypeUser)
         argTypeName = argument->baseType.name;
     else
@@ -4163,7 +4166,7 @@ AST::Expression * SyntaxAnalizerPrivate::makeCustomUnaryOperation(
         for (int j=0; j<mod->header.operators.size(); j++) {
             AST::Algorhitm * alg = mod->header.operators[j];
             bool omatch = alg->header.name==operatorName;
-            if (omatch && alg->header.arguments.size()==1) {
+            if (omatch && alg->header.arguments.size()>=1) {
                 AST::Type formaltype = alg->header.arguments[0]->baseType;
                 AST::Type facttype   = argument->baseType;
                 AST::Algorhitm * convAlg = 0;
@@ -4171,26 +4174,31 @@ AST::Expression * SyntaxAnalizerPrivate::makeCustomUnaryOperation(
                 bool typematch = formaltype.name==facttype.name
                         || findConversionAlgorithm(facttype, formaltype, convMod, convAlg);
                 if (typematch) {
-                    AST::Expression * res = new AST::Expression;
-                    res->kind = AST::ExprFunctionCall;
-                    res->baseType = alg->header.returnType;
-                    res->function = alg;
-                    if (convAlg) {
-                        AST::Expression * convExpr = new AST::Expression;
-                        convExpr->kind = AST::ExprFunctionCall;
-                        convExpr->function = convAlg;
-                        convExpr->operands << argument;
-                        res->operands << convExpr;
+                    if (checkOnly) {
+                        return TOut(1);
                     }
                     else {
-                        res->operands << argument;
+                        AST::Expression * res = new AST::Expression;
+                        res->kind = AST::ExprFunctionCall;
+                        res->baseType = alg->header.returnType;
+                        res->function = alg;
+                        if (convAlg) {
+                            AST::Expression * convExpr = new AST::Expression;
+                            convExpr->kind = AST::ExprFunctionCall;
+                            convExpr->function = convAlg;
+                            convExpr->operands << argument;
+                            res->operands << convExpr;
+                        }
+                        else {
+                            res->operands << argument;
+                        }
+                        return TOut(res);
                     }
-                    return res;
                 }
             }
         }
     }
-    return 0;
+    return TOut(0);
 }
 
 AST::Expression * SyntaxAnalizerPrivate::makeCustomBinaryOperation(const QString & operatorName

@@ -22,6 +22,9 @@ struct ExternReference {
     int moduleContext;
     uint32_t funcKey;
     String moduleName;
+    bool platformDependent;
+    String fileName;
+    String platformModuleName;
 };
 
 typedef std::map<uint32_t, ExternReference> ExternsMap;

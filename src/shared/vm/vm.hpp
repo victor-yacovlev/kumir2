@@ -33,7 +33,6 @@ public:
 
 /*abstract*/ class AbstractInteractionHandler {
 public:
-#ifndef NO_EXTERNS
     inline virtual bool resetExternalModule(const String & /*moduleName*/) { return false; }
     inline virtual bool loadExternalModule(const String & /*moduleName*/,
                                            const String & /*fileName*/,
@@ -41,12 +40,19 @@ public:
     inline virtual bool evaluateExternalFunction(
             const String & /*moduleName*/, // IN
             uint16_t /*functionId*/, // IN
-            const std::deque<Variable> & /*inArguments*/, // IN
-            std::deque<Variable> & /*outArguments*/, // OUT
+            const std::deque<Variable> & /*arguments*/, // IN
             Variable & /*result*/,  // OUT
             String & /*moduleRuntimeError*/  // OUT
             ) { return false; }
-#endif
+    inline virtual bool convertExternalTypeToString(
+            const Variable & /*value*/,
+            String & /*out*/
+            ) { return false; }
+    inline virtual bool convertExternalTypeFromString(
+            const String & /*value*/,
+            Variable & /*out reference*/,
+            bool & /*ok*/
+            ) { return false; }
     inline virtual bool makeInput(
             std::deque<Variable> & /*references*/
             ) { return false; }
@@ -122,7 +128,7 @@ public:
             const Kumir::String & /*moduleName*/,
             const Kumir::String & /*name*/,
             const int[4] /*indeces*/
-            ) { return false; }
+            ) { return false; }    
 };
 
 struct ReferenceInfo {
@@ -282,7 +288,7 @@ private /*instruction methods*/:
     inline void do_filescall(uint16_t);
     inline void do_stringscall(uint16_t);
     inline void do_specialcall(uint16_t);
-    inline void do_externalcall(const String & name, uint16_t id);
+
     inline void do_init(uint8_t, uint16_t);
     inline void do_setarr(uint8_t, uint16_t);
     inline void do_updarr(uint8_t, uint16_t);
@@ -331,6 +337,54 @@ Context & KumirVM::currentContext() {
     return stack_contexts.top();
 }
 
+inline String makeCanonicalName(const String & filename) {
+    Kumir::String result;
+    static const Kumir::Char slash = Char('/');
+    size_t slashPos = filename.find_last_of(slash);
+    if (slashPos==Kumir::String::npos) {
+        result = filename;
+    }
+    else {
+        result = filename.substr(slashPos+1);
+    }
+    if (result.length()>3 &&
+            result[0]==Char('l') &&
+            result[1]==Char('i') &&
+            result[2]==Char('b'))
+    {
+        result = result.substr(3);
+    }
+    if (result.length()>3 &&
+            result[result.length()-3]==Char('.') &&
+            result[result.length()-2]==Char('s') &&
+            result[result.length()-1]==Char('o')
+            )
+    {
+        result.resize(result.length()-3);
+    }
+    if (result.length()>4 &&
+            result[result.length()-4]==Char('.') &&
+            result[result.length()-3]==Char('d') &&
+            result[result.length()-2]==Char('l') &&
+            result[result.length()-1]==Char('l')
+            )
+    {
+        result.resize(result.length()-4);
+    }
+    if (result.length()>6 &&
+            result[result.length()-6]==Char('.') &&
+            result[result.length()-5]==Char('d') &&
+            result[result.length()-4]==Char('y') &&
+            result[result.length()-3]==Char('l') &&
+            result[result.length()-2]==Char('i') &&
+            result[result.length()-1]==Char('b')
+            )
+    {
+        result.resize(result.length()-6);
+    }
+    return result;
+}
+
 Variable & KumirVM::findVariable(uint8_t scope, uint16_t id)
 {
     if (VariableScope(scope)==Bytecode::CONSTT) {
@@ -350,9 +404,6 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
         moduleContexts.clear();
         mainProgram.type = EL_NONE;
         mainProgram.instructions.clear();
-//#ifndef NO_EXTERNS
-//        externalMethods.clear();
-//#endif
     }
     moduleContexts.push_back(ModuleContext());
     moduleContexts.back().filename = filename;
@@ -475,43 +526,29 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
                 throw errorMessage;
             }
             ExternReference reference;
+            reference.platformDependent = false;
             reference.funcKey = extKey;
             reference.moduleContext = externModuleContext;
-            reference.moduleName = e.fileName;
+            reference.fileName = e.fileName;
+            reference.moduleName = e.moduleName.length()>0
+                    ? e.name
+                    : e.fileName;
             moduleContexts[currentModuleContext].externs[key] = reference;
         }
-//        else if (e.type==EL_EXTERN) {
-//#ifndef NO_EXTERNS
-//            uint32_t key = 0x00000000;
-//            uint32_t alg = e.algId;
-//            uint32_t mod = e.module;
-//            mod = mod << 16;
-//            key = mod | alg;
-//            moduleContexts[currentModuleContext].externs[key] = e;
-//            TwoStrings qualifedKey;
-//            qualifedKey.first = e.moduleName;
-//            qualifedKey.second = e.signature.length()? e.signature : e.name;
-//            if (availableExternalMethods.count(qualifedKey)==0 && m_externalHandler) {
-//                std::list<String> moduleMethods;
-//                if (m_externalHandler->loadExternalModule(e.moduleName, e.fileName, moduleMethods)) {
-//                    typedef std::list<String>::const_iterator It;
-//                    uint16_t id = 0;
-//                    for (It i=moduleMethods.begin(); i!=moduleMethods.end(); ++i) {
-//                        TwoStrings aKey(e.moduleName, *i);
-//                        ExternalMethod method;
-//                        method.moduleName = e.moduleName;
-//                        method.methodId = id;
-//                        availableExternalMethods[aKey] = method;
-//                        id++;
-//                    }
-//                }
-//            }
-//            if (availableExternalMethods.count(qualifedKey)) {
-//                ExternalMethod em = availableExternalMethods[qualifedKey];
-//                externalMethods[key] = em;
-//            }
-//#endif
-//        }
+        else if (e.type==EL_EXTERN) {
+            ExternReference reference;
+            uint32_t key = 0x00000000;
+            uint32_t alg = e.algId;
+            uint32_t mod = e.module;
+            mod = mod << 16;
+            key = mod | alg;
+            reference.platformDependent = true;
+            reference.funcKey = alg;
+            reference.moduleName = e.moduleName;
+            reference.fileName = e.fileName;
+            reference.platformModuleName = makeCanonicalName(e.fileName);
+            moduleContexts[currentModuleContext].externs[key] = reference;
+        }
         else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_BELOWMAIN || e.type==EL_TESTING) {
             uint32_t key = 0x00000000;
             uint32_t alg = e.algId;
@@ -563,6 +600,8 @@ Variable KumirVM::fromTableElem(const Bytecode::TableElem &e) {
     r.setName(e.name);
     r.setConstantFlag(e.type==EL_CONST);
     r.setModuleName(e.moduleName);
+    r.setRecordModuleName(e.recordModuleName);
+    r.setRecordClassName(e.recordClassName);
     return r;
 }
 
@@ -921,17 +960,6 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
         do_stringscall(alg);
     else if (mod==0xFF)
         do_specialcall(alg);
-//#ifndef NO_EXTERNS
-//    else if (externalMethods.count(p)) {
-//        const ExternalMethod & em = externalMethods[p];
-//        if (m_externalHandler) {
-//            do_externalcall(em.moduleName, em.methodId);
-//        }
-//        else {
-//            s_error = Kumir::Core::fromUtf8("Вызов алгоритмов исполнителей запрещен");
-//        }
-//    }
-//#endif
     else if (moduleContexts[stack_contexts.top().moduleContextNo].functions.count(p)) {
 
         if (stack_contexts.size()>=MAX_RECURSION_SIZE) {
@@ -973,26 +1001,63 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
             s_error = Kumir::Core::fromUtf8("Слишком много вложенных вызовов алгоритмов");
         }
         else {
-            if (m_dontTouchMe)
-                m_dontTouchMe->lock();
             ExternReference reference = moduleContexts[stack_contexts.top().moduleContextNo].externs[p];
-            uint32_t key = reference.funcKey;
-            Context c;
-            c.program = & (moduleContexts[reference.moduleContext].functions[key].instructions );
-            c.locals = moduleContexts[reference.moduleContext].cleanLocalTables[key];
-            c.type = moduleContexts[reference.moduleContext].functions[key].type;
-            c.runMode = CRM_ToEnd;
-            c.moduleId = moduleContexts[reference.moduleContext].functions[key].module;
-            c.algId = moduleContexts[reference.moduleContext].functions[key].algId;
-            c.moduleContextNo = reference.moduleContext;
-            stack_contexts.push(c);
-            currentLocals = &(stack_contexts.top().locals);
-            currentGlobals = &(moduleContexts[c.moduleContextNo].globals[c.moduleId]);
-            currentConstants = &(moduleContexts[reference.moduleContext].constants);
-            b_nextCallInto = false;
-            stack_values.pop(); // current implementation doesn't requere args count
-            if (m_dontTouchMe)
-                m_dontTouchMe->unlock();
+            if (!reference.platformDependent) {
+                // External call of algorithm found in another kumir file
+                if (m_dontTouchMe) m_dontTouchMe->lock();
+                uint32_t key = reference.funcKey;
+                Context c;
+                c.program = & (moduleContexts[reference.moduleContext].functions[key].instructions );
+                c.locals = moduleContexts[reference.moduleContext].cleanLocalTables[key];
+                c.type = moduleContexts[reference.moduleContext].functions[key].type;
+                c.runMode = CRM_ToEnd;
+                c.moduleId = moduleContexts[reference.moduleContext].functions[key].module;
+                c.algId = moduleContexts[reference.moduleContext].functions[key].algId;
+                c.moduleContextNo = reference.moduleContext;
+                stack_contexts.push(c);
+                currentLocals = &(stack_contexts.top().locals);
+                currentGlobals = &(moduleContexts[c.moduleContextNo].globals[c.moduleId]);
+                currentConstants = &(moduleContexts[reference.moduleContext].constants);
+                b_nextCallInto = false;
+                stack_values.pop(); // current implementation doesn't requere args count
+                if (m_dontTouchMe) m_dontTouchMe->unlock();
+            }
+            else {
+                uint16_t algKey = reference.funcKey & 0xffff;
+                const Kumir::String modulePlatformName = reference.moduleName;
+                if (m_dontTouchMe) m_dontTouchMe->lock();
+                int argsCount = stack_values.pop().toInt();
+                std::deque<Variable> args;
+                for (int i=0; i<argsCount; i++) {
+                    Variable arg = stack_values.pop();
+                    args.push_front(arg);
+                }
+                if (m_dontTouchMe) m_dontTouchMe->unlock();
+                Variable algResult;
+                Kumir::String localError;
+                if (m_externalHandler && m_externalHandler->evaluateExternalFunction(
+                            modulePlatformName,
+                            algKey,
+                            args,
+                            algResult,
+                            localError
+                            ))
+                {
+                    if (m_dontTouchMe) m_dontTouchMe->lock();
+                    if (localError.length()>0) {
+                        if (s_error.length()==0)
+                            s_error = localError;
+                    }
+                    else {
+                        if (algResult.isValid())
+                            stack_values.push(algResult);
+                    }
+                    if (m_dontTouchMe) m_dontTouchMe->unlock();
+                }
+                else {
+                    s_error = Kumir::Core::fromUtf8("Вызов алгоритма из недоступного исполнителя");
+                }
+            }
         }
     }
     else {
@@ -1596,142 +1661,20 @@ void KumirVM::do_stringscall(uint16_t alg)
 }
 
 
-void KumirVM::do_externalcall(const String &name, uint16_t id)
-{
-    if (m_dontTouchMe)
-        m_dontTouchMe->lock();
-    // Prepare arguments
-    int argsCount = stack_values.pop().toInt();
-    std::deque<Variable> args;
-    std::deque<Variable> refs;
-    for (int i=0; i<argsCount; i++) {
-        const Variable val = stack_values.pop();
-        args.push_back(val);
-    }
-    // Prepare references
-    int refsCount = stack_values.pop().toInt();
-    for (int i=0; i<refsCount; i++) {
-        Variable ref = stack_values.pop();
-        refs.push_back(ref);
-    }
-    String error;
-    if (m_dontTouchMe)
-        m_dontTouchMe->unlock();
-    // Make actual call
-    Variable result;
-    bool processed = m_externalHandler->evaluateExternalFunction(
-                name, id, args, refs, result, error
-                );
-    if (!processed) {
-        s_error = Kumir::Core::fromUtf8("Вызов алгоритмов исполнителей запрещен");
-        return;
-    }
-    if (error.length()>0 && s_error.length()==0 && Kumir::Core::getError().length()==0)
-        s_error = error;
-    // Push external function result to stack
-    if (result.isValid()) {
-        if (m_dontTouchMe) m_dontTouchMe->lock();
-        stack_values.push(Variable(result));
-        if (m_dontTouchMe) m_dontTouchMe->unlock();
-    }
-}
-
-//template <class T>
-//T KumirVM::fromRecordValue(const Record & record)
-//{
-//    T result;
-//    T * ptr = & result;
-//    size_t offset = 0;
-//    const size_t N = Kumir::Math::imin(strlen(T::_()), record.size());
-//    for (size_t i=0; i<N; i++) {
-//        switch (T::_()[i]) {
-//        case 'i': {
-//            int * pval = reinterpret_cast<int*>(ptr+offset);
-//            *pval = record.at(i).toInt();
-//            break;
-//        }
-//        case 'd': {
-//            Kumir::real * pval = reinterpret_cast<Kumir::real*>(ptr+offset);
-//            *pval = record.at(i).toReal();
-//            break;
-//        }
-//        case 'b': {
-//            bool * pval = reinterpret_cast<bool*>(ptr+offset);
-//            *pval = record.at(i).toBool();
-//            break;
-//        }
-//        case 'c': {
-//            Kumir::Char * pval = reinterpret_cast<Kumir::Char*>(ptr+offset);
-//            *pval = record.at(i).toChar();
-//            break;
-//        }
-//        case 's': {
-//            Kumir::String * pval = reinterpret_cast<Kumir::String*>(ptr+offset);
-//            *pval = record.at(i).toString();
-//            break;
-//        }
-//        default:
-//            break;
-//        }
-//    }
-//    return result;
-//}
-
-//template <class T>
-//Record KumirVM::toRecordValue(const T & t)
-//{
-//    Record result;
-//    const T * ptr = & t;
-//    size_t offset = 0;
-//    const size_t N = strlen(T::_());
-//    for (size_t i=0; i<N; i++) {
-//        switch (T::_()[i]) {
-//        case 'i': {
-//            const int * pval = reinterpret_cast<const int*>(ptr+offset);
-//            result.push_back(AnyValue(*pval));
-//            break;
-//        }
-//        case 'd': {
-//            const Kumir::real * pval = reinterpret_cast<const Kumir::real*>(ptr+offset);
-//            result.push_back(AnyValue(*pval));
-//            break;
-//        }
-//        case 'b': {
-//            const bool * pval = reinterpret_cast<const bool*>(ptr+offset);
-//            result.push_back(AnyValue(*pval));
-//            break;
-//        }
-//        case 'c': {
-//            const Kumir::Char * pval = reinterpret_cast<const Kumir::Char*>(ptr+offset);
-//            result.push_back(AnyValue(*pval));
-//            break;
-//        }
-//        case 's': {
-//            const Kumir::String * pval = reinterpret_cast<const Kumir::String*>(ptr+offset);
-//            result.push_back(AnyValue(*pval));
-//            break;
-//        }
-//        default:
-//            break;
-//        }
-//    }
-//    return result;
-//}
-
 inline Kumir::FileType KumirVM::fromRecordValue(const Record & record) {
     Kumir::FileType result;
-    result.fullPath = record.at(0).toString();
-    result.mode = record.at(1).toInt();
-    result.valid = record.at(2).toBool();
+    result.fullPath = record.fields[0].toString();
+    result.mode = record.fields[1].toInt();
+    result.valid = record.fields[2].toBool();
     return result;
 }
 
 inline Record KumirVM::toRecordValue(const Kumir::FileType & ft) {
     Record record;
-    record.resize(3);
-    record.at(0) = AnyValue(ft.fullPath);
-    record.at(1) = AnyValue(ft.mode);
-    record.at(2) = AnyValue(ft.valid);
+    record.fields.resize(3);
+    record.fields[0] = AnyValue(ft.fullPath);
+    record.fields[1] = AnyValue(ft.mode);
+    record.fields[2] = AnyValue(ft.valid);
     return record;
 }
 
@@ -1750,7 +1693,8 @@ void KumirVM::do_specialcall(uint16_t alg)
         std::deque<Variable> references;
         for (int i=0; i<varsCount; i++) {
             const Variable & ref = stack_values.pop();
-            if (ref.baseType()==VT_record) {
+            if (ref.baseType()==VT_record
+                    && ref.recordClassName()==Kumir::Core::fromUtf8("файл")) {
                 fileIO = true;
                 if (!ref.isValid()) {
                     s_error = Kumir::Core::fromUtf8("Нет значения у ключа файла");
@@ -1818,21 +1762,36 @@ void KumirVM::do_specialcall(uint16_t alg)
             for (int i=0; i<references.size(); i++) {
                 if (references.at(i).isConstant())
                     continue;
+                String svalue;
+                if (references.at(i).baseType()==VT_char) {
+                    svalue.push_back('\'');
+                    svalue.push_back(references.at(i).value().toChar());
+                    svalue.push_back('\'');
+                }
+                else if (references.at(i).baseType()==VT_char) {
+                    svalue.push_back('"');
+                    svalue.append(references.at(i).value().toString());
+                    svalue.push_back('"');
+                }
+                else if (references.at(i).baseType()==VT_record) {
+                    if (m_externalHandler)
+                        m_externalHandler->convertExternalTypeToString(
+                                    references.at(i),
+                                    svalue
+                                    );
+                }
+                else {
+                    svalue = references.at(i).value().toString();
+                }
+                if (svalue.length()==0)
+                    continue;
                 if (i>0) {
                     margin.push_back(',');
                     margin.push_back(' ');
                 }
                 margin += references.at(i).fullReferenceName();
                 margin.push_back('=');
-                if (references.at(i).baseType()==VT_char)
-                    margin.push_back('\'');
-                if (references.at(i).baseType()==VT_string)
-                    margin.push_back('"');
-                margin += references.at(i).value().toString();
-                if (references.at(i).baseType()==VT_char)
-                    margin.push_back('\'');
-                if (references.at(i).baseType()==VT_string)
-                    margin.push_back('"');
+                margin += svalue;
             }
             m_externalHandler->noticeOnValueChange(lineNo, margin);
         }
@@ -2162,8 +2121,6 @@ void KumirVM::do_store(uint8_t s, uint16_t id)
 {
     if (m_dontTouchMe) m_dontTouchMe->lock();
     const Variable & value = stack_values.top();
-    String name;
-    String svalue;
     const int lineNo = stack_contexts.top().lineNo;
     Variable & variable = findVariable(s, id);
     const int dim = variable.dimension();
@@ -2180,37 +2137,52 @@ void KumirVM::do_store(uint8_t s, uint16_t id)
         variable.setValue(value.value());
         variable.setDimension(value.dimension());
     }
-    if (lineNo!=-1 && !b_blindMode) {
-        name = variable.myName();
-        svalue = variable.toString();
-    }
     if (lineNo!=-1 &&
             !b_blindMode &&
             stack_contexts.top().type != EL_BELOWMAIN &&
             value.dimension()==0
             )
     {
+        const String & name = variable.myName();
+        String svalue;
         if (t==VT_string) {
-            svalue.insert(0, 1, Char('"'));
+            const String valueString = value.toString();
+            svalue.reserve(valueString.length()+2);
+            svalue.push_back(Char('"'));
+            svalue.append(valueString);
             svalue.push_back(Char('"'));
         }
-        if (t==VT_char) {
-            svalue.insert(0, 1, Char('\''));
+        else if (t==VT_char) {
+            const Char valueChar = value.toChar();
+            svalue.reserve(3);
+            svalue.push_back(Char('\''));
+            svalue.push_back(valueChar);
             svalue.push_back(Char('\''));
         }
-        String qn;
-        bool startsWithAt = reference && reference->algorhitmName().length()>0 &&
-                reference->algorhitmName().at(0)==Char('@');
-        if (reference && !startsWithAt) {
-            qn = reference->algorhitmName().empty()
-                            ? reference->name()
-                            : reference->algorhitmName()+Kumir::Core::fromAscii("::")+reference->name();
+        else if (t==VT_int) {
+            svalue = Kumir::Converter::sprintfInt(value.toInt(), 10, 0, 0);
         }
-        qn += name;
-        qn.push_back(Char('='));
-        qn += svalue;
-        if (m_externalHandler) {
-            m_externalHandler->noticeOnValueChange(lineNo, qn);
+        else if (t==VT_real) {
+            svalue = Kumir::Converter::sprintfReal(value.toReal(), '.', false, 0 ,0, 0);
+        }
+        else if (t==VT_bool) {
+            static const String YES = Kumir::Core::fromUtf8("да");
+            static const String NO = Kumir::Core::fromUtf8("нет");
+            svalue = value.toBool()? YES : NO;
+        }
+        else if (t==VT_record && m_externalHandler) {
+            const String & clazzModule = variable.myName();
+            const String & clazz = variable.myName();
+            if (clazz.length()>0) {
+                m_externalHandler->convertExternalTypeToString(
+                            variable,
+                            svalue
+                            );
+            }
+        }
+        if (m_externalHandler && svalue.length()>0) {
+            const String message = name+Char('=')+svalue;
+            m_externalHandler->noticeOnValueChange(lineNo, message);
         }
         if (m_externalHandler && currentContext().runMode==CRM_OneStep) {
             if (VariableScope(s)==Bytecode::LOCAL)

@@ -128,11 +128,16 @@ public slots:
     bool evaluateExternalFunction(
             const String & /*moduleName*/, // IN
             uint16_t /*functionId*/, // IN
-            const std::deque<Variable> & /*arguments*/, // IN
-            std::deque<Variable> &,
+            const std::deque<Variable> & /*arguments*/,
             Variable & /*result*/,  // OUT
             String & /*moduleRuntimeError*/  // OUT
             );
+    bool convertExternalTypeFromString(
+            const String & stringg,
+            Variable & variable,
+            bool & ok
+            );
+    bool convertExternalTypeToString(const Variable & variable, String &out);
     void handleExternalRequest(const QList<quintptr> & references);
     void handlePauseRequest();
     void prepareExternalCall();

@@ -34,6 +34,8 @@ struct TableElem {
     String signature; // external method signature
     String moduleName; // external module name
     String fileName;
+    String recordModuleName;
+    String recordClassName;
     Variable initialValue; // constant value
     std::vector<Instruction> instructions; // for local defined function
     inline TableElem() {
@@ -161,8 +163,8 @@ inline void scalarConstantToDataStream(std::list<char> & stream, const std::list
     }
     else {
         const VM::Record value = val.value().toRecord();
-        for (int i=0; i<value.size(); i++) {
-            const VM::AnyValue & field = value[i];
+        for (int i=0; i<value.fields.size(); i++) {
+            const VM::AnyValue & field = value.fields[i];
             scalarConstantToDataStream(stream, field.type(), field);
         }
     }
@@ -239,6 +241,10 @@ inline void tableElemToBinaryStream(std::list<char> & ds, const TableElem &e)
     valueToDataStream(ds, uint16_t(e.id));
     stringToDataStream(ds, e.name);    
     stringToDataStream(ds, e.moduleName);
+    if (e.type==EL_GLOBAL || e.type==EL_LOCAL || e.type==EL_CONST) {
+        stringToDataStream(ds, e.recordModuleName);
+        stringToDataStream(ds, e.recordClassName);
+    }
     if (e.type==EL_CONST) {
         constantToDataStream(ds, e.vtype, e.initialValue, e.dimension);
     }
@@ -294,14 +300,15 @@ inline void scalarConstantFromDataStream(std::list<char> & stream, const std::li
         scalarConstantFromDataStream(stream, type.front(), val);
     }
     else {
-        val = VM::AnyValue(VT_record);
+        VM::Record record;
         std::list<ValueType>::const_iterator it = type.begin();
         it ++;
         for ( ; it!=type.end(); ++it) {
             VM::AnyValue field;
             scalarConstantFromDataStream(stream, *it, field);
-            val.toRecord().push_back(field);
+            record.fields.push_back(field);
         }
+        val = VM::AnyValue(record);
     }
 }
 
@@ -375,6 +382,10 @@ inline void tableElemFromBinaryStream(std::list<char> & ds, TableElem &e)
     e.name = s;
     stringFromDataStream(ds, s);
     e.moduleName = s;
+    if (e.type==EL_GLOBAL || e.type==EL_LOCAL || e.type==EL_CONST) {
+        stringFromDataStream(ds, e.recordModuleName);
+        stringFromDataStream(ds, e.recordClassName);
+    }
     if (e.type==EL_CONST) {
         constantFromDataStream(ds, e.vtype, e.initialValue, e.dimension);
     }

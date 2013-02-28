@@ -20,6 +20,9 @@ namespace AST {
         /** Base type */
         VariableBaseType kind;
 
+        /** A module providing custon type */
+        QString moduleName;
+
         /** Type name (if user defined)*/
         QString name;
 

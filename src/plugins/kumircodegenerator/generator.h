@@ -23,12 +23,16 @@ namespace KumirCodeGenerator {
 typedef Shared::GeneratorInterface::DebugLevel DebugLevel;
 struct ConstValue {
     QVariant value;
-    std::list<Bytecode::ValueType> baseType;
+    QList<Bytecode::ValueType> baseType;
+    QString recordModuleName;
+    QString recordClassName;
     quint8 dimension;
     inline bool operator==(const ConstValue & other) {
         return
                 baseType == other.baseType &&
                 dimension == other.dimension &&
+                recordModuleName == other.recordModuleName &&
+                recordClassName == other.recordClassName &&
                 value == other.value;
     }
     inline ConstValue() {
@@ -48,12 +52,12 @@ public:
     void generateConstantTable();
     void generateExternTable();
 private:
-    quint16 constantValue(Bytecode::ValueType type, quint8 dimension, const QVariant & value);
-    quint16 constantValue(const std::list<Bytecode::ValueType> & type, quint8 dimension, const QVariant & value);
-    inline quint16 constantValue(const QList<Bytecode::ValueType> & type, quint8 dimension, const QVariant & value)
-    {
-        return constantValue(type.toStdList(), dimension, value);
-    }
+    quint16 constantValue(Bytecode::ValueType type, quint8 dimension, const QVariant & value,
+                          const QString & recordModule, const QString & recordClass
+                          );
+    quint16 constantValue(const QList<Bytecode::ValueType> & type, quint8 dimension, const QVariant & value,
+                          const QString & recordModule, const QString & recordClass
+                          );
     void addKumirModule(int id, const AST::Module * mod);
     void addFunction(int id, int moduleId, Bytecode::ElemType type, const AST::Module * mod, const AST::Algorhitm * alg);
     void addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, const AST::Module * mod, const AST::Algorhitm * alg);
