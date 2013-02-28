@@ -1,6 +1,10 @@
 #include "terminal_onesession.h"
 #include "terminal.h"
 #include "stdlib/kumirstdlib.hpp"
+#include "extensionsystem/pluginmanager.h"
+#include "interfaces/actorinterface.h"
+
+
 namespace Terminal {
 
 static const int bodyPadding = 4;
@@ -240,14 +244,19 @@ void OneSession::input(const QString &format)
         }
         if (fmts[i][0]=='s')
             msg += tr("string");
-        if (fmts[i][0]=='i')
+        else if (fmts[i][0]=='i')
             msg += tr("integer");
-        if (fmts[i][0]=='r')
+        else if (fmts[i][0]=='r')
             msg += tr("real");
-        if (fmts[i][0]=='c')
+        else if (fmts[i][0]=='c')
             msg += tr("charect");
-        if (fmts[i][0]=='b')
+        else if (fmts[i][0]=='b')
             msg += tr("boolean");
+        else if (fmts[i].contains("::")) {
+            QStringList typeName = fmts[i].split("::", QString::KeepEmptyParts);
+            msg += typeName[1];
+        }
+
     }
     msg += ".";
     emit message(msg);
@@ -308,52 +317,100 @@ void OneSession::tryFinishInput()
     QVector<bool> errmask = QVector<bool>(text.length(), false);
     QVariantList result;
     Kumir::IO::InputStream stream(text.toStdWString());
+    bool conversionError = false;
+    int conversionErrorStart = -1;
+    int conversionErrorLength = 0;
+    QString conversionErrorType = "";
     const QStringList & formats = s_inputFormat.split(";", QString::SkipEmptyParts);
     for (int i=0; i<formats.size(); i++) {
         char type = formats[i][0].unicode();
-        const Kumir::String format = formats[i].mid(1).toStdWString();
-        switch (type) {
-        case 'i': {
+        const QString format = formats[i];
+        if (format[0]=='i') {
             int value = Kumir::IO::readInteger(stream);
             result << value;
-            break;
         }
-        case 'r': {
+        else if (format[0]=='r') {
             double value = Kumir::IO::readReal(stream);
             result << value;
-            break;
         }
-        case 'b': {
+        else if (format[0]=='b') {
             bool value = Kumir::IO::readBool(stream);
             result << value;
-            break;
         }
-        case 'c': {
+        else if (format[0]=='c') {
             Kumir::Char value = Kumir::IO::readChar(stream);
             result << QChar(value);
-            break;
         }
-        case 's': {
+        else if (format[0]=='s') {
             Kumir::String value = Kumir::IO::readString(stream);
             result << QString::fromStdWString(value);
-            break;
         }
-        case 'n': {
+        else if (format[0]=='n') {
             Kumir::IO::readLine(stream);
             result << QChar('\n');
-            break;
         }
-        default:
-            break;
+        else if (format.contains("::")) {
+            const QStringList typeName = format.split("::", QString::KeepEmptyParts);
+            const QString & moduleName = typeName[0];
+            const QString & className  = typeName[1];
+            QList<ExtensionSystem::KPlugin*> plugins =
+                    ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
+            Shared::ActorInterface * actor = 0;
+            for (int i=0; i<plugins.size(); i++) {
+                actor = qobject_cast<Shared::ActorInterface*>(plugins[i]);
+                if (actor) {
+                    if (actor->name()==moduleName)
+                        break;
+                    else
+                        actor = 0;
+                }
+            }
+            if (actor) {
+                stream.skipDelimiters(Kumir::IO::inputDelimeters);
+                conversionErrorStart = stream.currentPosition();
+                QString lexem = QString::fromStdWString(Kumir::IO::readString(stream));
+                QVariant value;
+                if (!stream.hasError()) {
+                    Shared::ActorInterface::CustomType ct;
+                    ct.first = className;
+                    value = actor->customValueFromString(ct, lexem);
+                    if (!value.isValid()) {
+                        conversionError = true;
+                        conversionErrorLength = lexem.length();
+                        conversionErrorType   = className;
+                        break;
+                    }
+                }
+                result << value;
+            }
+            else {
+                result << QVariant::Invalid;
+            }
         }
         if (stream.hasError())
             break;
     }
+    bool hasError    = false;
+    int  errorStart  = -1;
+    int  errorLength = 0;
+    QString errorMessage;
+
     if (stream.hasError()) {
+        hasError = true;
         Kumir::String errorText;
-        int errorStart, errorLength;
         stream.getError(errorText, errorStart, errorLength);
-        emit message(QString::fromStdWString(errorText));
+        errorMessage = QString::fromStdWString(errorText);
+    }
+
+    if (conversionError) {
+        hasError = true;
+        errorStart = conversionErrorStart;
+        errorLength = conversionErrorLength;
+        errorMessage = tr("Not a '%1' value").arg(conversionErrorType);
+    }
+
+    if (hasError) {
+        emit message(errorMessage);
         for (int i=0; i<errorLength; i++) {
             errmask[errorStart+i] = true;
         }
