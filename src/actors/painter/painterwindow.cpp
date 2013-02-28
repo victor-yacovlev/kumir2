@@ -182,7 +182,9 @@ void PainterWindow::newImage()
             m_module->runLoadPage(resourcesRoot+s_templateName);
         }
         else {
-            m_module->runNewPage(w, h, m_newImageDialog->color());
+            Color c;
+            c.cssValue = m_newImageDialog->color();
+            m_module->runNewPage(w, h, c);
         }
         if (m_newImageDialog->isTemplate()) {
             setWindowTitle(tr("Painter [%1]").arg(m_newImageDialog->templateName()));

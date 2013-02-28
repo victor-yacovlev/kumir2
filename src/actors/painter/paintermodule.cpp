@@ -58,51 +58,67 @@ QWidget* PainterModule::mainWidget() const
     return m_window;
 }
 
-QString PainterModule::runCMYK(const int c, const int m, const int y, const int k)
+Color PainterModule::runCMYK(const int c, const int m, const int y, const int k)
 {
-    return QString::fromAscii("cmyk(%1,%2,%3,%4)").arg(c).arg(m).arg(y).arg(k);
+    Color cc;
+    cc.cssValue = QString::fromAscii("cmyk(%1,%2,%3,%4)").arg(c).arg(m).arg(y).arg(k);
+    return cc;
 }
 
 
-QString PainterModule::runCMYKA(const int c, const int m, const int y, const int k, const int a)
+Color PainterModule::runCMYKA(const int c, const int m, const int y, const int k, const int a)
 {
-    return QString::fromAscii("cmyka(%1,%2,%3,%4,%5)").arg(c).arg(m).arg(y).arg(k).arg(a);
+    Color cc;
+    cc.cssValue = QString::fromAscii("cmyka(%1,%2,%3,%4,%5)").arg(c).arg(m).arg(y).arg(k).arg(a);
+    return cc;
 }
 
 
-QString PainterModule::runHSL(const int h, const int s, const int l)
+Color PainterModule::runHSL(const int h, const int s, const int l)
 {
-    return QString::fromAscii("hsl(%1,%2,%3)").arg(h).arg(s).arg(l);
+    Color c;
+    c.cssValue = QString::fromAscii("hsl(%1,%2,%3)").arg(h).arg(s).arg(l);
+    return c;
 }
 
 
-QString PainterModule::runHSLA(const int h, const int s, const int l, const int a)
+Color PainterModule::runHSLA(const int h, const int s, const int l, const int a)
 {
-    return QString::fromAscii("hsla(%1,%2,%3,%4)").arg(h).arg(s).arg(l).arg(a);
+    Color c;
+    c.cssValue = QString::fromAscii("hsla(%1,%2,%3,%4)").arg(h).arg(s).arg(l).arg(a);
+    return c;
 }
 
 
-QString PainterModule::runHSV(const int h, const int s, const int v)
+Color PainterModule::runHSV(const int h, const int s, const int v)
 {
-    return QString::fromAscii("hsv(%1,%2,%3)").arg(h).arg(s).arg(v);
+    Color c;
+    c.cssValue = QString::fromAscii("hsv(%1,%2,%3)").arg(h).arg(s).arg(v);
+    return c;
 }
 
 
-QString PainterModule::runHSVA(const int h, const int s, const int v, const int a)
+Color PainterModule::runHSVA(const int h, const int s, const int v, const int a)
 {
-    return QString::fromAscii("hsva(%1,%2,%3,%4)").arg(h).arg(s).arg(v).arg(a);
+    Color c;
+    c.cssValue = QString::fromAscii("hsva(%1,%2,%3,%4)").arg(h).arg(s).arg(v).arg(a);
+    return c;
 }
 
 
-QString PainterModule::runRGB(const int r, const int g, const int b)
+Color PainterModule::runRGB(const int r, const int g, const int b)
 {
-    return QString::fromAscii("rgb(%1,%2,%3)").arg(r).arg(g).arg(b);
+    Color c;
+    c.cssValue = QString::fromAscii("rgb(%1,%2,%3)").arg(r).arg(g).arg(b);
+    return c;
 }
 
 
-QString PainterModule::runRGBA(const int r, const int g, const int b, const int a)
+Color PainterModule::runRGBA(const int r, const int g, const int b, const int a)
 {
-    return QString::fromAscii("rgba(%1,%2,%3,%4)").arg(r).arg(g).arg(b).arg(a);
+    Color c;
+    c.cssValue = QString::fromAscii("rgba(%1,%2,%3,%4)").arg(r).arg(g).arg(b).arg(a);
+    return c;
 }
 
 
@@ -165,10 +181,10 @@ void PainterModule::runFill(const int x, const int y)
 }
 
 
-void PainterModule::runSetBrush(const QString& cs)
+void PainterModule::runSetBrush(const Color& cs)
 {
-    QColor c = parceColor(cs);
-    if (cs.trimmed().isEmpty())
+    QColor c = parseColor(cs.cssValue);
+    if (cs.cssValue.trimmed().isEmpty())
         transparent = true;
     else
         transparent = false;
@@ -245,9 +261,9 @@ void PainterModule::runWrite(const int x, const int y, const QString& text)
 }
 
 
-void PainterModule::runNewPage(const int width, const int height, const QString& backgroundColor)
+void PainterModule::runNewPage(const int width, const int height, const Color& backgroundColor)
 {
-    QColor clr = parceColor(backgroundColor);
+    QColor clr = parseColor(backgroundColor.cssValue);
     QImage * oldCanvas = canvas;
     QImage * oldCanvas2 = originalCanvas;
     canvas = new QImage(width,height,QImage::Format_RGB32);
@@ -271,10 +287,10 @@ void PainterModule::runCircle(const int xc, const int yc, const int r)
 }
 
 
-void PainterModule::runSetPen(const int width, const QString& cs)
+void PainterModule::runSetPen(const int width, const Color& cs)
 {
-    QColor c = parceColor(cs.trimmed());
-    if (cs.trimmed().isEmpty() || width<1) {
+    QColor c = parseColor(cs.cssValue.trimmed());
+    if (cs.cssValue.trimmed().isEmpty() || width<1) {
         pen = Qt::NoPen;
     }
     else {
@@ -283,11 +299,11 @@ void PainterModule::runSetPen(const int width, const QString& cs)
 }
 
 
-void PainterModule::runPoint(const int x, const int y, const QString& color)
+void PainterModule::runPoint(const int x, const int y, const Color& color)
 {
     canvasLock->lock();
     QPainter p(canvas);
-    p.setPen(QPen(parceColor(color)));
+    p.setPen(QPen(parseColor(color.cssValue)));
     p.drawPoint(x,y);
     canvasLock->unlock();
     if (view)
@@ -348,9 +364,9 @@ void PainterModule::runRectangle(const int x0, const int y0, const int x1, const
 }
 
 
-void PainterModule::runSplitColorToCMYK(const QString& color, int& c, int& m, int& y, int& k)
+void PainterModule::runSplitToCMYK(const Color& color, int& c, int& m, int& y, int& k)
 {
-    const QColor clr(color);
+    const QColor clr(color.cssValue);
     c = clr.cyan();
     m = clr.magenta();
     y = clr.yellow();
@@ -358,27 +374,27 @@ void PainterModule::runSplitColorToCMYK(const QString& color, int& c, int& m, in
 }
 
 
-void PainterModule::runSplitColorToHSL(const QString& color, int& h, int& s, int& l)
+void PainterModule::runSplitToHSL(const Color& color, int& h, int& s, int& l)
 {
-    const QColor clr(color);
+    const QColor clr(color.cssValue);
     h = clr.hue();
     s = clr.saturation();
     l = clr.lightness();
 }
 
 
-void PainterModule::runSplitColorToHSV(const QString& color, int& h, int& s, int& v)
+void PainterModule::runSplitToHSV(const Color& color, int& h, int& s, int& v)
 {
-    const QColor clr(color);
+    const QColor clr(color.cssValue);
     h = clr.hue();
     s = clr.saturation();
     v = clr.value();
 }
 
 
-void PainterModule::runSplitColorToRGB(const QString& color, int& r, int& g, int& b)
+void PainterModule::runSplitToRGB(const Color& color, int& r, int& g, int& b)
 {
-    const QColor clr(color);
+    const QColor clr(color.cssValue);
     r = clr.red();
     g = clr.green();
     b = clr.blue();
@@ -405,19 +421,21 @@ void PainterModule::runUnsetBrush()
 }
 
 
-QString PainterModule::runPointSample(const int x, const int y)
+Color PainterModule::runPointSample(const int x, const int y)
 {
     if (x<0 || y<0) {
         setError(tr("Coordinate is less than 0"));
-        return "";
+        return Color();
     }
     else if (x>=canvas->width() || y>=canvas->height()) {
         setError(tr("Coordinate is out of page"));
-        return "";
+        return Color();
     }
     else {
         QColor c = QColor::fromRgb(canvas->pixel(x,y));
-        return c.name();
+        Color cc;
+        cc.cssValue = c.name();
+        return cc;
     }
 }
 
@@ -468,6 +486,56 @@ void PainterModule::runEllipse(const int x, const int y, const int r1, const int
     canvasLock->unlock();
     if (view)
         view->update();
+}
+
+Color PainterModule::runOperatorINPUT(const QString& x, bool& ok)
+{
+    QStringList validValues;
+    validValues << QString::fromUtf8("прозрачный");
+    validValues << QString::fromUtf8("белый");
+    validValues << QString::fromUtf8("черный");
+    validValues << QString::fromUtf8("чёрный");
+    validValues << QString::fromUtf8("серый");
+    validValues << QString::fromUtf8("фиолетовый");
+    validValues << QString::fromUtf8("синий");
+    validValues << QString::fromUtf8("голубой");
+    validValues << QString::fromUtf8("зелёный");
+    validValues << QString::fromUtf8("зеленый");
+    validValues << QString::fromUtf8("жёлтый");
+    validValues << QString::fromUtf8("желтый");
+    validValues << QString::fromUtf8("оранжевый");
+    validValues << QString::fromUtf8("красный");
+    ok = validValues.contains(x.trimmed());
+    Color result;
+    if (ok) {
+        QColor c = parseColor(x.trimmed());
+        result.cssValue = c.name();
+    }
+    return result;
+}
+
+QString PainterModule::runOperatorOUTPUT(const Color& x)
+{
+    QString result;
+    QMap<QString,QString> standardColorNames;
+    standardColorNames[parseColor(QString::fromUtf8("прозрачный")).name()] = (QString::fromUtf8("прозрачный"));
+    standardColorNames[parseColor(QString::fromUtf8("белый")).name()] = (QString::fromUtf8("белый"));
+    standardColorNames[parseColor(QString::fromUtf8("чёрный")).name()] = (QString::fromUtf8("чёрный"));
+    standardColorNames[parseColor(QString::fromUtf8("серый")).name()] = (QString::fromUtf8("серый"));
+    standardColorNames[parseColor(QString::fromUtf8("фиолетовый")).name()] = (QString::fromUtf8("фиолетовый"));
+    standardColorNames[parseColor(QString::fromUtf8("синий")).name()] = (QString::fromUtf8("синий"));
+    standardColorNames[parseColor(QString::fromUtf8("голубой")).name()] = (QString::fromUtf8("голубой"));
+    standardColorNames[parseColor(QString::fromUtf8("зелёный")).name()] = (QString::fromUtf8("зелёный"));
+    standardColorNames[parseColor(QString::fromUtf8("жёлтый")).name()] = (QString::fromUtf8("жёлтый"));
+    standardColorNames[parseColor(QString::fromUtf8("оранжевый")).name()] = (QString::fromUtf8("оранжевый"));
+    standardColorNames[parseColor(QString::fromUtf8("красный")).name()] = (QString::fromUtf8("красный"));
+    if (standardColorNames.contains(x.cssValue)) {
+        result = standardColorNames[x.cssValue];
+    }
+    else {
+        result = x.cssValue;
+    }
+    return result;
 }
 
     

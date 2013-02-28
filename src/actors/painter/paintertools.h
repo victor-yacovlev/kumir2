@@ -6,7 +6,7 @@
 
 namespace ActorPainter {
 
-    extern QColor parceColor(const QString &css);
+    extern QColor parseColor(const QString &css);
     extern QString CSS_RGB_toString(const QString &cssRgb);
 
 }

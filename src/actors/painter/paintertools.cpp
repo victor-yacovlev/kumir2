@@ -2,7 +2,7 @@
 
 namespace ActorPainter {
 
-extern QColor parceColor(const QString &css)
+extern QColor parseColor(const QString &css)
 {
     QColor result = QColor::Invalid;
     QString normCSS = css.toLower().remove(QRegExp("\\s"));
@@ -25,8 +25,11 @@ extern QColor parceColor(const QString &css)
     if (normCSS.startsWith("#")) {
         result = QColor(css); // Qt supports HTML-colors
     }
-    else if (normCSS.isEmpty()) {
-        result = QColor("white");
+    else if (normCSS.isEmpty() ||
+             normCSS==QString::fromUtf8("прозрачный") ||
+             normCSS==QString::fromUtf8("transparent")
+             ) {
+        result = QColor(0,0,0,0);
     }
     else if (rxCSS.exactMatch(normCSS)) {
         const QString model = rxCSS.cap(1);

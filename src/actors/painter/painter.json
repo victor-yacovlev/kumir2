@@ -1,9 +1,17 @@
 {
 	"name": { "ascii": "Painter", "ru_RU": "Рисователь" },
+	"types": [
+		{
+			"name": { "ascii": "color", "ru_RU": "цвет" },
+			"fields": [
+				{ "name": "cssValue", "baseType": "string" }
+			]
+		}
+	],
 	"methods": [
 		{
 			"name": "CMYK",
-			"returnType": "string",
+			"returnType": "color",
 			"arguments": [
 				{ "name": "c", "baseType": "int" },
 				{ "name": "m", "baseType": "int" },
@@ -13,7 +21,7 @@
 		},
 		{
 			"name": "CMYKA",
-			"returnType": "string",
+			"returnType": "color",
 			"arguments": [
 				{ "name": "c", "baseType": "int" },
 				{ "name": "m", "baseType": "int" },
@@ -24,7 +32,7 @@
 		},
 		{
 			"name": "HSL",
-			"returnType": "string",
+			"returnType": "color",
 			"arguments": [
 				{ "name": "h", "baseType": "int" },
 				{ "name": "s", "baseType": "int" },
@@ -33,7 +41,7 @@
 		},
 		{
 			"name": "HSLA",
-			"returnType": "string",
+			"returnType": "color",
 			"arguments": [
 				{ "name": "h", "baseType": "int" },
 				{ "name": "s", "baseType": "int" },
@@ -43,7 +51,7 @@
 		},
 		{
 			"name": "HSV",
-			"returnType": "string",
+			"returnType": "color",
 			"arguments": [
 				{ "name": "h", "baseType": "int" },
 				{ "name": "s", "baseType": "int" },
@@ -52,7 +60,7 @@
 		},
 		{
 			"name": "HSVA",
-			"returnType": "string",
+			"returnType": "color",
 			"arguments": [
 				{ "name": "h", "baseType": "int" },
 				{ "name": "s", "baseType": "int" },
@@ -62,7 +70,7 @@
 		},
 		{
 			"name": "RGB",
-			"returnType": "string",
+			"returnType": "color",
 			"arguments": [
 				{ "name": "r", "baseType": "int" },
 				{ "name": "g", "baseType": "int" },
@@ -71,7 +79,7 @@
 		},
 		{
 			"name": "RGBA",
-			"returnType": "string",
+			"returnType": "color",
 			"arguments": [
 				{ "name": "r", "baseType": "int" },
 				{ "name": "g", "baseType": "int" },
@@ -115,7 +123,7 @@
 			"arguments": [
 				{
 					"name": { "ascii": "color", "ru_RU": "цвет"},
-					"baseType": "string"
+					"baseType": "color"
 				}
 			]
 		},
@@ -161,7 +169,7 @@
 			"arguments": [
 				{ "name": {"ascii": "width", "ru_RU": "ширина"}, "baseType": "int" },
 				{ "name": {"ascii": "height", "ru_RU": "высота"}, "baseType": "int" },
-				{ "name": {"ascii": "background color", "ru_RU": "цвет фона"}, "baseType": "string" }
+				{ "name": {"ascii": "background", "ru_RU": "фон"}, "baseType": "color" }
 			]
 		},
 		{
@@ -178,7 +186,7 @@
 			"async": false,
 			"arguments": [
 				{ "name": {"ascii": "width", "ru_RU": "толщина"}, "baseType": "int" },
-				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "string" }
+				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "color" }
 			]
 		},
 		{
@@ -187,7 +195,7 @@
 			"arguments": [
 				{ "name": "x", "baseType": "int" },
 				{ "name": "y", "baseType": "int" },
-				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "string" }
+				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "color" }
 			]
 		},
 		{
@@ -208,10 +216,10 @@
 			]
 		},
 		{
-			"name": {"ascii": "split color to CMYK", "ru_RU": "разложить цвет в CMYK"},
+			"name": {"ascii": "split to CMYK", "ru_RU": "разложить в CMYK"},
 			"async": false,
 			"arguments": [
-				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "string" },
+				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "color" },
 				{ "name": "c", "baseType": "int", "access": "out" },
 				{ "name": "m", "baseType": "int", "access": "out" },
 				{ "name": "y", "baseType": "int", "access": "out" },
@@ -219,30 +227,30 @@
 			]
 		},
 		{
-			"name": {"ascii": "split color to HSL", "ru_RU": "разложить цвет в HSL"},
+			"name": {"ascii": "split to HSL", "ru_RU": "разложить в HSL"},
 			"async": false,
 			"arguments": [
-				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "string" },
+				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "color" },
 				{ "name": "h", "baseType": "int", "access": "out" },
 				{ "name": "s", "baseType": "int", "access": "out" },
 				{ "name": "l", "baseType": "int", "access": "out" }
 			]
 		},
 		{
-			"name": {"ascii": "split color to HSV", "ru_RU": "разложить цвет в HSV"},
+			"name": {"ascii": "split to HSV", "ru_RU": "разложить в HSV"},
 			"async": false,
 			"arguments": [
-				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "string" },
+				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "color" },
 				{ "name": "h", "baseType": "int", "access": "out" },
 				{ "name": "s", "baseType": "int", "access": "out" },
 				{ "name": "v", "baseType": "int", "access": "out" }
 			]
 		},
 		{
-			"name": {"ascii": "split color to RGB", "ru_RU": "разложить цвет в RGB"},
+			"name": {"ascii": "split to RGB", "ru_RU": "разложить в RGB"},
 			"async": false,
 			"arguments": [
-				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "string" },
+				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "color" },
 				{ "name": "r", "baseType": "int", "access": "out" },
 				{ "name": "g", "baseType": "int", "access": "out" },
 				{ "name": "b", "baseType": "int", "access": "out" }
@@ -263,8 +271,8 @@
 			"async": false
 		},
 		{
-			"name": {"ascii": "point sample", "ru_RU": "цвет в точке"},
-			"returnType": "string",
+			"name": {"ascii": "point sample", "ru_RU": "значение в точке"},
+			"returnType": "color",
 			"arguments": [
 				{ "name": "x", "baseType": "int" },
 				{ "name": "y", "baseType": "int" }
@@ -310,6 +318,21 @@
 				{ "name": "y", "baseType": "int" },
 				{ "name": "r1", "baseType": "int" },
 				{ "name": "r2", "baseType": "int" }
+			]
+		},
+		{
+			"name": {"ascii": "input", "ru_RU": "ввод"},
+			"returnType": "color",
+			"arguments": [
+				{ "name": "x", "baseType": "string" },
+				{ "name": "ok", "baseType": "bool", "access": "out" }
+			]
+		},
+		{
+			"name": {"ascii": "output", "ru_RU": "вывод"},
+			"returnType": "string",
+			"arguments": [
+				{ "name": "x", "baseType": "color" }
 			]
 		}
 	],

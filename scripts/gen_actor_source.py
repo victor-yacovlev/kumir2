@@ -117,7 +117,7 @@ def arg_to_qarg(arg):
         access = "in"
     if access == "in":
         qtype = "const " + qtype
-    if "out" in access or not arg["baseType"] in ["int", "bool", "double"]:
+    if "out" in access or not arg["baseType"] in ["int", "bool", "double"] or dim>0:
         qtype += "&"
     return qtype + " " + name_to_cpp(arg["name"])
 
