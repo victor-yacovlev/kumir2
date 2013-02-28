@@ -9,6 +9,8 @@ You should change it corresponding to functionality.
 #include <QtCore>
 #include <QtGui>
 #include "complexnumbersmodule.h"
+#include <ccomplex>
+#include "stdlib/kumirstdlib.hpp"
 
 namespace ActorComplexNumbers {
 
@@ -37,57 +39,72 @@ void ComplexNumbersModule::setAnimationEnabled(bool enabled)
 
 qreal ComplexNumbersModule::runRe(const Complex& x)
 {
-    /* TODO implement me */
-    return 0.0;
+    return x.re;
 }
 
 
 qreal ComplexNumbersModule::runIm(const Complex& x)
 {
-    /* TODO implement me */
-    return 0.0;
+    return x.im;
 }
 
 
 Complex ComplexNumbersModule::runOperatorPLUS(const Complex& x, const Complex& y)
 {
-    /* TODO implement me */
-    return Complex();
+    Complex result;
+    result.re = x.re + y.re;
+    result.im = x.im + y.im;
+    return result;
 }
 
 
 Complex ComplexNumbersModule::runOperatorMINUS(const Complex& x, const Complex& y)
 {
-    /* TODO implement me */
-    return Complex();
+    Complex result;
+    result.re = x.re - y.re;
+    result.im = x.im - y.im;
+    return result;
 }
 
 
 Complex ComplexNumbersModule::runOperatorASTERISK(const Complex& x, const Complex& y)
 {
-    /* TODO implement me */
-    return Complex();
+    Complex result;
+    result.re = x.re*y.re - x.im*y.im;
+    result.im = y.im*x.re + x.re*y.im;
+    return result;
 }
 
 
 Complex ComplexNumbersModule::runOperatorSLASH(const Complex& x, const Complex& y)
 {
-    /* TODO implement me */
-    return Complex();
+    Complex result;
+    if (y.re==0 && y.im==0) {
+        setError(QString::fromUtf8("Деление на комплексный нуль"));
+        return result;
+    }
+    qreal factor = y.re*y.re + y.im*y.im;
+    result.re = (x.re*y.re+x.im*y.im) / factor;
+    result.im = (x.im*y.re-x.re*y.im) / factor;
+    return result;
 }
 
 
 Complex ComplexNumbersModule::runOperatorASSIGN(const int x)
 {
-    /* TODO implement me */
-    return Complex();
+    Complex result;
+    result.re = x;
+    result.im = 0;
+    return result;
 }
 
 
 Complex ComplexNumbersModule::runOperatorASSIGN(const qreal x)
 {
-    /* TODO implement me */
-    return Complex();
+    Complex result;
+    result.re = x;
+    result.im = 0;
+    return result;
 }
 
 
@@ -122,6 +139,9 @@ Complex ComplexNumbersModule::runOperatorINPUT(const QString& x, bool& ok)
         im = im.left(im.length()-1);
         im = im.trimmed();
     }
+    if (im.isEmpty()) {
+        im = "1.0";
+    }
     result.re = re.toDouble(&ok1);
     result.im = im.toDouble(&ok2);
     ok = ok1 && ok2;
@@ -131,8 +151,17 @@ Complex ComplexNumbersModule::runOperatorINPUT(const QString& x, bool& ok)
 
 QString ComplexNumbersModule::runOperatorOUTPUT(const Complex& x)
 {
-    /* TODO implement me */
-    return "";
+    QString result;
+    const QString re = QString::fromStdWString(
+                Kumir::Converter::sprintfReal(x.re,'.',false,0,0,0)
+                );
+    const QString im = QString::fromStdWString(
+                Kumir::Converter::sprintfReal(x.im,'.',false,0,0,0)
+                );
+    result = re;
+    result += im.startsWith('-')? "" : "+";
+    result += im + "i";
+    return result;
 }
 
     
