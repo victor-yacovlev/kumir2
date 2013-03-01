@@ -79,6 +79,7 @@ Complex ComplexNumbersModule::runOperatorASTERISK(const Complex& x, const Comple
 Complex ComplexNumbersModule::runOperatorSLASH(const Complex& x, const Complex& y)
 {
     Complex result;
+    result.im = result.re = 0.0;
     if (y.re==0 && y.im==0) {
         setError(QString::fromUtf8("Деление на комплексный нуль"));
         return result;
