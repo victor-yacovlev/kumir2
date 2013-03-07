@@ -37,7 +37,7 @@ public:
     inline void setDebuggerWindow(class DebuggerWindow * w) { w_debuggerWindow = w; }
     void setTerminal(Term * t, QDockWidget * w);
     void setBytecodeRun(KPlugin * run);
-    void addActor(KPlugin * a, QWidget * w);
+
     inline QString endStatus() const { return s_endStatus; }
     ~KumirProgram();
 signals:
@@ -54,8 +54,6 @@ public slots:
     void stepOut();
     void stop();
     void switchGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState cur);
-    void handleActorCommandFinished();
-    void handleActorResetRequest(const QString & actorName);
     void handleLineChanged(int lineNo);
     void handleMarginTextRequest(int lineNo, const QString & text);
     void handleMarginClearRequest(int fromLine, int toLine);
@@ -63,7 +61,7 @@ private slots:
     void handleProcessFinished(int exitCode, QProcess::ExitStatus status);
     void handleProcessError(QProcess::ProcessError);
     void handleRunnerStopped(int);
-    void handleInputDone(const QVariantList & data);
+
 private:
     void timerEvent(QTimerEvent *e);
     void prepareKumirRunner(Shared::GeneratorInterface::DebugLevel);
@@ -85,8 +83,7 @@ private:
     QAction * a_stop;
     QActionGroup * gr_actions;
     QString s_sourceFileName;
-    QMap<QString,QWidget*> m_actorWindows;
-    QMap<QString,ActorInterface*> m_actors;
+
     int i_documentId;
     bool b_blind;
     int i_timerId;

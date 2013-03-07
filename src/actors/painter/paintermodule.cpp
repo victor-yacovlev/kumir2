@@ -141,13 +141,10 @@ void PainterModule::runLoadPage(const QString& fileName)
         setError(tr("File not exists: %s").arg(fileName));
     }
     QImage * oldCanvas = canvas;
-    QImage * oldCanvas2 = originalCanvas;
     canvas = new QImage(fileName);
-    originalCanvas = new QImage(fileName);
     if (m_window)
         m_window->setCanvas(canvas, canvasLock);
     delete oldCanvas;
-    delete oldCanvas2;
 }
 
 
@@ -265,15 +262,10 @@ void PainterModule::runNewPage(const int width, const int height, const Color& b
 {
     QColor clr = parseColor(backgroundColor.cssValue);
     QImage * oldCanvas = canvas;
-    QImage * oldCanvas2 = originalCanvas;
     canvas = new QImage(width,height,QImage::Format_RGB32);
     canvas->fill(clr.rgb());
-    originalCanvas = new QImage(width,height,QImage::Format_RGB32);
-    originalCanvas->fill(clr.rgb());
-    reset();
     m_window->setCanvas(canvas, canvasLock);
     delete oldCanvas;
-    delete oldCanvas2;
 }
 
 

@@ -56,9 +56,6 @@ public:
     virtual QStringList imports(int documentId) const = 0;
     virtual const AST::Data * abstractSyntaxTree(int documentId) const = 0;
     virtual LineProp lineProp(int documentId, const QString & text) const = 0;
-    /* deprecated!!! */ virtual QStringList algorhitmsAvailableFor(int documentId, int lineNo) const = 0;
-    /* deprecated!!! */ virtual QStringList globalsAvailableFor(int documentId, int lineNo) const = 0;
-    /* deprecated!!! */ virtual QStringList localsAvailableFor(int documentId, int lineNo) const = 0;
     virtual std::string rawSourceData(int documentId) const = 0;
     inline virtual QList<QRegExp> supportedFileNamePattern() const {
         return QList<QRegExp>()

@@ -146,48 +146,33 @@ void KumirProgram::setTerminal(Term *t, QDockWidget * w)
     m_terminal = t;
     m_terminalWindow = w;
 
+    KPlugin * plugin_bytecodeRunObject =
+            ExtensionSystem::PluginManager::instance()->loadedPlugin("KumirCodeRun");
+
     connect(m_terminal, SIGNAL(inputFinished(QVariantList)),
-            this, SLOT(handleInputDone(QVariantList)));
-    connect(m_terminal, SIGNAL(showWindowRequest()),
-            m_terminalWindow, SLOT(show()));
+            plugin_bytecodeRunObject, SIGNAL(finishInput(QVariantList)));
+    connect(plugin_bytecodeRunObject, SIGNAL(inputRequest(QString)),
+            m_terminal, SLOT(show()));
+    connect(plugin_bytecodeRunObject, SIGNAL(outputRequest(QString)),
+            m_terminal, SLOT(show()));
+    connect(plugin_bytecodeRunObject, SIGNAL(inputRequest(QString)),
+            m_terminal, SLOT(input(QString)));
+    connect(plugin_bytecodeRunObject, SIGNAL(outputRequest(QString)),
+            m_terminal, SLOT(output(QString)));
 }
-
-void KumirProgram::handleInputDone(const QVariantList &data)
-{
-    if (e_state==RegularRun || e_state==StepRun) {
-        Q_CHECK_PTR(plugin_bytecodeRun);
-        plugin_bytecodeRun->finishInput(data);
-    }
-
-    m_terminal->clearFocus();
-}
-
 
 
 void KumirProgram::setBytecodeRun(KPlugin *run)
 {
     plugin_bytecodeRun = qobject_cast<RunInterface*>(run);
-    connect(run, SIGNAL(inputRequest(QString)), m_terminal, SLOT(input(QString)));
-    connect(run, SIGNAL(outputRequest(QString)), m_terminal, SLOT(output(QString)));
-    connect(run, SIGNAL(inputRequest(QString)), m_terminalWindow, SLOT(show()));
-    connect(run, SIGNAL(inputRequest(QString)), m_terminalWindow, SLOT(show()));
+
     connect(run, SIGNAL(stopped(int)),
             this, SLOT(handleRunnerStopped(int)));
     connect(run, SIGNAL(lineChanged(int)), this, SLOT(handleLineChanged(int)));
     connect(run, SIGNAL(marginText(int,QString)), this, SLOT(handleMarginTextRequest(int,QString)));
     connect(run, SIGNAL(clearMargin(int,int)), this, SLOT(handleMarginClearRequest(int,int)));
-    connect(run, SIGNAL(externalRequest(QString,QString,QVariantList)),
-            this, SLOT(handleActorCommand(QString,QString,QVariantList)));
-    connect(run, SIGNAL(resetModule(QString)), this, SLOT(handleActorResetRequest(QString)));
 }
 
-void KumirProgram::addActor(KPlugin *a, QWidget *w)
-{
-    connect(a, SIGNAL(sync()), this, SLOT(handleActorCommandFinished()));
-    Shared::ActorInterface * aa = qobject_cast<Shared::ActorInterface*>(a);
-    m_actors[aa->name()] = qobject_cast<ActorInterface*>(a);
-    m_actorWindows[aa->name()] = w;
-}
 
 void KumirProgram::fastRun()
 {
@@ -502,40 +487,6 @@ void KumirProgram::switchGlobalState(GlobalState prev, GlobalState cur)
     }
 }
 
-
-void KumirProgram::handleActorCommandFinished()
-{
-//    QObject * o = sender();
-//    Q_CHECK_PTR(o);
-//    ActorInterface * a = qobject_cast<ActorInterface*>(o);
-//    Q_CHECK_PTR(a);
-//    const QString error = a->errorText();
-//    const QVariant result = a->result();
-//    const QVariantList res = a->algOptResults();
-//    if (e_state==FastRun || e_state==Idle) {
-//        QVariantList message;
-//        message << error;
-//        message << result;
-//        message += res;
-
-//    }
-//    if (e_state==RegularRun || e_state==StepRun) {
-//        Q_CHECK_PTR(plugin_bytecodeRun);
-//        plugin_bytecodeRun->finishExternalFunctionCall(error, result, res);
-//    }
-}
-
-void KumirProgram::handleActorResetRequest(const QString & actorName)
-{
-    Q_ASSERT(m_actors.contains(actorName));
-    ActorInterface * a = m_actors[actorName];
-    Q_CHECK_PTR(a);
-    a->reset();
-    Q_ASSERT(m_actorWindows.contains(actorName));
-    if (m_actorWindows[actorName]) {
-        m_actorWindows[actorName]->show();
-    }
-}
 
 void KumirProgram::timerEvent(QTimerEvent *e)
 {

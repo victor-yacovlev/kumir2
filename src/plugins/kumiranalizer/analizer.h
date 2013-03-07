@@ -40,9 +40,7 @@ public slots:
     Shared::TextAppend closingBracketSuggestion(int lineNo) const;
     QString sourceText() const;
     QList<Shared::Suggestion> suggestAutoComplete(int lineNo, const QString &before, const QString &after) const;
-    QStringList algorhitmsAvailableFor(int lineNo) const;
-    QStringList globalsAvailableFor(int lineNo) const;
-    QStringList localsAvailableFor(int lineNo) const;
+
 
     QList<Shared::Error> errors() const;
 

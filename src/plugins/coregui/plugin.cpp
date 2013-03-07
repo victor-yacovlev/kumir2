@@ -134,7 +134,6 @@ QString Plugin::initialize(const QStringList & parameters)
 
     KPlugin * kumirRunner = myDependency("KumirCodeRun");
     plugin_kumirCodeRun = qobject_cast<RunInterface*>(kumirRunner);
-    //Q_CHECK_PTR(kumirRunner);
     m_kumirProgram->setBytecodeRun(kumirRunner);
     QList<ExtensionSystem::KPlugin*> actors = loadedPlugins("Actor*");
     actors += loadedPlugins("st_funct");
@@ -210,7 +209,7 @@ QString Plugin::initialize(const QStringList & parameters)
             }
 
         }
-        m_kumirProgram->addActor(o, w);
+
     }
 
     if (!parameters.contains("nostartpage", Qt::CaseInsensitive)) {

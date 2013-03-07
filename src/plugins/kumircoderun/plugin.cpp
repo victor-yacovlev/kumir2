@@ -13,18 +13,15 @@ Plugin::Plugin() :
 {
     d = new Run(this);
 
+    connect (this, SIGNAL(finishInput(QVariantList)), d, SIGNAL(finishInput(QVariantList)));
+
     b_done = true;
     connect (d, SIGNAL(output(QString)), this, SIGNAL(outputRequest(QString)));
     connect (d, SIGNAL(input(QString)), this, SIGNAL(inputRequest(QString)));
     connect (d, SIGNAL(finished()), this, SLOT(handleThreadFinished()));
     connect (d, SIGNAL(lineChanged(int)), this, SIGNAL(lineChanged(int)));
-//    connect (d->vm, SIGNAL(valueChangeNotice(int,QString)),
-//             this, SIGNAL(marginText(int,QString)));
     connect (d, SIGNAL(marginText(int,QString)), this, SIGNAL(marginText(int,QString)));
-//    connect (d->vm, SIGNAL(clearMargin(int,int)),
-//             this, SIGNAL(clearMargin(int,int)));
     connect (d, SIGNAL(clearMarginRequest(int,int)), this, SIGNAL(clearMargin(int,int)));
-//    connect (d->vm, SIGNAL(resetModuleRequest(QString)), this, SIGNAL(resetModule(QString)));
     b_onlyOneTryToInput = false;
 
 
@@ -60,22 +57,6 @@ Plugin::Plugin() :
     connect(d, SIGNAL(signal_debuggerUpdateGlobalTableValue(QString,QString,QList<int>)),
             this, SIGNAL(debuggerUpdateGlobalTableValue(QString,QString,QList<int>)),
             Qt::DirectConnection);
-}
-
-bool Plugin::isGuiRequired() const
-{
-//    QStringList actors = d->vm->usedActors();
-//    const QList<const KPlugin *> modules = loadedPlugins();
-//    for (int i=0; i<actors.size(); i++) {
-//        const QString actorName = actors[i];
-//        for (int j=0; j<modules.size(); j++) {
-//            if (modules[j]->pluginSpec().name==actorName) {
-//                if (modules[j]->isGuiRequired())
-//                    return true;
-//            }
-//        }
-//    }
-    return false;
 }
 
 Plugin::~Plugin()
@@ -425,31 +406,6 @@ void Plugin::terminate()
     d->stop();
 }
 
-void Plugin::finishInput(const QVariantList &message)
-{
-    d->finishInput(message);
-}
-
-void Plugin::finishExternalFunctionCall(const QString & error,
-                                        const QVariant &retval,
-                                        const QVariantList &results)
-{
-    d->finishExternalFunctionCall(error, retval, results);
-}
-
-void Plugin::handleOutput(const QString &text)
-{
-    if (ExtensionSystem::PluginManager::instance()->startupModule()==this) {
-        wchar_t * buffer = (wchar_t*)calloc(text.length()+1, sizeof(wchar_t));
-        text.toWCharArray(buffer);
-        buffer[text.length()] = L'\0';
-        wprintf(L"%ls", buffer);
-        free(buffer);
-    }
-    else {
-        emit outputRequest(text);
-    }
-}
 
 void Plugin::handleThreadFinished()
 {
@@ -475,61 +431,13 @@ void Plugin::handleLineChanged(int lineNo)
     emit lineChanged(lineNo);
 }
 
-void Plugin::handleInput(const QString &format)
-{
-//    if (ExtensionSystem::PluginManager::instance()->startupModule()==this) {
-//        QList<QVariant> result;
-//        StdLib::GenericInputOutput * inp = StdLib::GenericInputOutput::instance();
-//        inp->doInput(format);
-//        wchar_t buffer[4096];
-//        wchar_t err[256];
-//        QString error;
-//        bool ok;
-//        do {
-//            wscanf(L"%ls", &buffer);
-//            QSet<QPair<int,int> > errpos;
-//            ok = inp->tryFinishInput(QString::fromWCharArray(buffer), result, errpos, false, error);
-//            if (!ok) {
-//                if (!b_onlyOneTryToInput) {
-//                    err[error.toWCharArray(err)] = L'\0';
-//                    fwprintf(stderr, L"%ls\n", err);
-//                }
-//                else {
-//                    d->vm->s_error = error.toStdWString();
-//                    break;
-//                }
-//            }
-//        } while (!ok);
-
-//        d->finishInput(result);
-
-//    }
-//    else {
-//        emit stopped(Shared::RunInterface::SR_UserInteraction);
-//        emit inputRequest(format);
-//    }
-}
-
 QString Plugin::initialize(const QStringList &)
 {
     d->programLoaded = false;
-//    d->setGuiMode(ExtensionSystem::PluginManager::instance()->startupModule()!=this);
-//    qRegisterMetaType<Variant>("KumirCodeRun::Variant");
-//    qRegisterMetaType<VariantList>("KumirCodeRun::VariantList");
+
     qRegisterMetaType<QVariant::Type>("QVariant::Type");
     qRegisterMetaType< QList<QVariant::Type> >("QList<QVariant::Type>");
     qRegisterMetaType<Shared::RunInterface::StopReason>("Shared::RunInterface::StopReason");
-
-    const QList<KPlugin*> plugins = loadedPlugins();
-//    QList<ActorInterface*> availableActors;
-//    foreach (KPlugin * plugin , plugins) {
-//        ActorInterface * a = qobject_cast<ActorInterface*>(plugin);
-//        if (a) {
-//            availableActors << a;
-//        }
-//    }
-
-//    d->vm->setAvailableActors(availableActors);
 
     if (ExtensionSystem::PluginManager::instance()->startupModule()==this) {
 #ifndef Q_OS_WIN32

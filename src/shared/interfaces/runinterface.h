@@ -38,11 +38,7 @@ public:
     virtual QVariant getLocalTableValue(int frameNo, const QString & name, const QList<int> & indeces) const = 0;
     virtual QVariant getGlobalTableValue(const QString & moduleName, const QString & name, const QList<int> & indeces) const = 0;
 
-    virtual void finishInput(const QVariantList & message) = 0;
-    virtual void finishExternalFunctionCall(
-        const QString & error,
-        const QVariant & retval,
-        const QVariantList & results) = 0;
+
 /*
  * NOTE: signals should not be declared as virtuals in interface, but
  *       must be implemented in derivative classes

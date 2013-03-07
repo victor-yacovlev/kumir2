@@ -177,7 +177,9 @@ if MODE_UPDATE:
             for index, field in enumerate(tp["fields"]):
                 fieldName = name_to_cpp(field["name"])
                 converter = "to" + field["baseType"].title()
-                h.write("    result.%s = alist.at(%i).%s();\n" % (fieldName, index, converter))
+                dummy = basetype_to_qtype(field["baseType"])
+                h.write("    result.%s = alist.size()>%i? alist.at(%i).%s() : %s();\n" %
+                        (fieldName, index, index, converter, dummy))
             h.write("    return result;\n")
             h.write("}\n\n")
 
@@ -745,14 +747,14 @@ def make_method_call(method, fromThread=False):
                         argline += "decode(%s)" % argvar
 
                 if arg.has_key("access") and "out" in arg["access"]:
-                    optresults += "            l_optResults << x" + str(index + 1) + ";\n"
+                    optresults += "l_optResults << x" + str(index + 1) + ";\n"
+                else:
+                    optresults += "l_optResults << QVariant::Invalid;\n"
                 argline += ";"
                 arglines += [argline]
                 if index: call += ", "
                 call += "x" + str(index + 1)
         call += ")"
-        if optresults:
-            optresults = "          l_optResults.clear();\n" + optresults
         if method.has_key("returnType") and method["returnType"] != "void":
             if method["returnType"] in ["int", "double", "string", "bool", "char"]:
                 call = "v_result = QVariant::fromValue(%s)" % call

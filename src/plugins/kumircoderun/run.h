@@ -4,7 +4,7 @@
 #include <QtCore>
 #define DO_NOT_DECLARE_STATIC
 #include "vm/vm.hpp"
-
+#include "interfaces/actorinterface.h"
 
 namespace KumirCodeRun {
 
@@ -15,7 +15,7 @@ using VM::AnyValue;
 
 class Run
         : public QThread
-        , public VM::AbstractInteractionHandler
+        , public VM::DebuggingInteractionHandler
 {
     Q_OBJECT
 public:
@@ -23,7 +23,8 @@ public:
     explicit Run(QObject *parent);
     VM::KumirVM * vm;
     bool programLoaded;
-    inline bool stopped() const { return b_stopping; }
+    inline bool stopped() const { return stoppingFlag_; }
+    bool mustStop() const;
 
     // VM Access methods
     int effectiveLineNo() const;
@@ -49,35 +50,12 @@ public slots:
     void runBlind();
     void runContinuous();
 
-
-    bool makeInput(
-                std::deque<Variable> & /*references*/
-                );
-    bool makeInputArgument(Variable & /*reference*/);
-    bool makeOutputArgument(const Variable & /*reference*/);
-    bool inputScalarArgument(const QString & message, const QString & format, AnyValue & value);
-    void handleInputArgumentRequest(int localId,
-                                    const QString & varName,
-                                    const QString & baseFormat,
-                                    const QList<int> & bounds);
-    void handleOutputArgumentRequest(const QVariant & value,
-                                    const QString & varName,
-                                    const QList<int> & bounds);
-    bool makeOutput(
-                const std::deque< std::pair<int,int> > & /*formats*/,
-                const std::deque<Variable> & /*values*/
-                );
-
     bool noticeOnLineNoChanged(
             int /*lineNo*/
             );
 
     bool noticeOnValueChange(int lineNo, const String & s);
     bool clearMargin(int from, int to);
-
-    bool loadExternalModule(const String & moduleName,
-                            const String & fileName,
-                            /*out*/ std::list<String> & availableMethods);
 
     bool debuggerReset();
     bool debuggerPopContext();
@@ -112,37 +90,10 @@ public slots:
                                        const int indeces[4]);
 
     void handleAlgorhitmDone(int lineNo);
-    void finishInput(const QVariantList & data);
-    void finishExternalFunctionCall(
-        const QString & error,
-        const QVariant & retval,
-                                    const QVariantList & results);
-    void handleExternalRequest(const QString & pluginName,
-                               const QString & functionName,
-                               const QVariantList & arguments,
-                               const QList<quintptr> & references,
-                               const QList<int> & indeces);
-    void handleExternalFunctionCall(const QString & moduleName
-                               , quint16 algId
-                               , const QVariantList & arguments);
-    bool evaluateExternalFunction(
-            const String & /*moduleName*/, // IN
-            uint16_t /*functionId*/, // IN
-            const std::deque<Variable> & /*arguments*/,
-            Variable & /*result*/,  // OUT
-            String & /*moduleRuntimeError*/  // OUT
-            );
-    bool convertExternalTypeFromString(
-            const String & stringg,
-            Variable & variable,
-            bool & ok
-            );
-    bool convertExternalTypeToString(const Variable & variable, String &out);
-    void handleExternalRequest(const QList<quintptr> & references);
-    void handlePauseRequest();
-    void prepareExternalCall();
+
 
 signals:
+    void finishInput(const QVariantList &data);
     void lineChanged(int lineNo);
     void output(const QString &value);
     void error(const QString & message);
@@ -210,30 +161,186 @@ signals:
 protected :
     void run();
 
-    bool mustStop();
+    RunMode runMode_;
 
-    RunMode e_runMode;
+    bool stoppingFlag_;
+    QMutex * stoppingMutex_;
 
-    bool b_stopping;
-    QMutex * mutex_stopping;
+    bool stepDoneFlag_;
+    QMutex * stepDoneMutex_;
 
-    bool b_stepDone;
-    QMutex * mutex_stepDone;
+    bool algDoneFlag_;
+    QMutex * algDoneMutex_;
 
-    bool b_algDone;
-    QMutex * mutex_algDone;
+    int originFunctionDeep_;
 
-    int i_originFunctionDeep;
+    QMutex * interactDoneMutex_;
+    bool interactDoneFlag_;
 
-    QMutex * mutex_interactDone;
-    bool b_interactDone;
+    QVariantList inputResult_;
+    QVariantList funcOptResults_;
+    QVariant funcResult_;
+    QString funcError_;
+    class Mutex * VMMutex_;
 
-    QVariantList list_inputResult;
-    QVariantList list_funcResults;
-    QVariant v_funcResult;
-    QString s_funcError;
-    class Mutex * mutex_vm;
+    class ExternalModuleResetFunctor * externalModuleResetFunctor_;
+    class ExternalModuleLoadFunctor  * externalModuleLoadFunctor_ ;
+    class ExternalModuleCallFunctor  * externalModuleCallFunctor_ ;
+    class CustomTypeToStringFunctor  * customTypeToStringFunctor_;
+    class CustomTypeFromStringFunctor* customTypeFromStringFunctor_;
+    class InputFunctor               * inputFunctor_;
+    class OutputFunctor              * outputFunctor_;
+    class GetMainArgumentFunctor     * getMainArgumentFunctor_;
+    class ReturnMainValueFunctor     * returnMainValueFunctor_;
 
+};
+
+class SleepFunctions: private QThread
+{
+public:
+    inline static void msleep(quint32 msec) {
+        QThread::msleep(msec);
+    }
+    inline static void usleep(quint32 usec) {
+        QThread::usleep(usec);
+    }
+private:
+    inline void run() {}
+};
+
+class ExternalModuleLoadFunctor: public VM::ExternalModuleLoadFunctor
+{
+};
+
+class ExternalModuleResetFunctor: public VM::ExternalModuleResetFunctor
+{
+public:
+    void operator()(const String & moduleName);
+};
+
+
+class ExternalModuleCallFunctor:
+        private QObject,
+        public VM::ExternalModuleCallFunctor
+{
+    Q_OBJECT
+public:
+    explicit ExternalModuleCallFunctor(QObject * parent);
+    AnyValue operator()(
+            const String & moduleName,
+            const uint16_t algKey,
+            VariableReferencesList alist
+            );
+    ~ExternalModuleCallFunctor();
+
+private slots:
+    void handleActorSync();
+
+private /*methods*/:
+    Shared::ActorInterface * findActor(const QString & moduleName)
+        /* throws Kumir::String */;
+    void releaseActor(Shared::ActorInterface * actor);
+
+private /*fields*/:
+    bool finishedFlag_;
+    QMutex * finishedMutex_;
+};
+
+class InputFunctor
+        : private QObject
+        , public VM::InputFunctor
+{
+    Q_OBJECT
+public:
+    explicit InputFunctor(class Run * parent,
+                          VM::CustomTypeFromStringFunctor * converter);
+    void operator()(VariableReferencesList alist);
+    ~InputFunctor();
+signals:
+    void requestInput(const QString & format);
+private slots:
+    void handleInputDone(const QVariantList & values);
+private /*fields*/:
+    bool finishedFlag_;
+    QMutex * finishedMutex_;
+    QVariantList inputValues_;
+    VM::CustomTypeFromStringFunctor * converter_;
+    class Run * runner_;
+};
+
+class OutputFunctor
+        : private QObject
+        , public VM::OutputFunctor
+{
+    Q_OBJECT
+public:
+    explicit OutputFunctor(QObject * parent,
+                           VM::CustomTypeToStringFunctor * converter);
+    void operator()(VariableReferencesList alist, FormatsList formats);
+signals:
+    void requestOutput(const QString & data);
+private:
+    VM::CustomTypeToStringFunctor * converter_;
+};
+
+class GetMainArgumentFunctor
+        : private QObject
+        , public VM::GetMainArgumentFunctor
+{
+    Q_OBJECT
+public:
+    explicit GetMainArgumentFunctor(class Run * parent,
+                          VM::CustomTypeFromStringFunctor * converter);
+    void operator()(Variable & reference);
+    ~GetMainArgumentFunctor();
+signals:
+    void requestInput(const QString & format);
+    void requestOutput(const QString & data);
+private:
+    bool inputScalarArgument(const QString & message,
+                             const QString & format,
+                             AnyValue & value);
+private slots:
+    void handleInputDone(const QVariantList & values);
+private /*fields*/:
+    bool finishedFlag_;
+    QMutex * finishedMutex_;
+    QVariantList inputValues_;
+    VM::CustomTypeFromStringFunctor * converter_;
+    class Run * runner_;
+};
+
+class ReturnMainValueFunctor
+        : private QObject
+        , public VM::ReturnMainValueFunctor
+{
+    Q_OBJECT
+public:
+    explicit ReturnMainValueFunctor(QObject * parent,
+                           VM::CustomTypeToStringFunctor * converter);
+    void operator()(const Variable & reference);
+signals:
+    void requestOutput(const QString & data);
+private:
+    VM::CustomTypeToStringFunctor * converter_;
+};
+
+class CustomTypeToStringFunctor
+        : public VM::CustomTypeToStringFunctor
+{
+public:
+    String operator()(const Variable & variable);
+};
+
+class CustomTypeFromStringFunctor
+        : public VM::CustomTypeFromStringFunctor
+{
+public:
+    AnyValue operator()(
+                const String & source,
+                const String & moduleName,
+                const String & typeName
+                );
 };
 
 } // namespace KumirCodeRun

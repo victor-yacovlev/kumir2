@@ -4104,15 +4104,36 @@ bool SyntaxAnalizerPrivate::tryInputOperatorAlgorithm(
                 }
                 if (!actor)
                     continue;
-                QVariantList args;
-                args << QVariant(lexem);
-                Shared::EvaluationStatus es = actor->evaluate(ref.id, args);
-                if (es==ES_StackRezResult) {
-                    QVariant result = actor->result();
-                    QVariantList retvals = actor->algOptResults();
-                    if (retvals.size()==1 && retvals.at(0).toBool()) {
-                        constantValue = result;
-                        type = alg->header.returnType;
+                const Shared::ActorInterface::TypeList tList = actor->typeList();
+                for (int k=0; k<tList.size(); k++) {
+                    const Shared::ActorInterface::CustomType & clazz = tList[k];
+                    constantValue = actor->customValueFromString(clazz, lexem);
+                    if (constantValue.isValid()) {
+                        type.kind = AST::TypeUser;
+                        type.moduleName = actor->name();
+                        type.name = clazz.first;
+                        for (int f=0; f<clazz.second.size(); f++) {
+                            const Shared::ActorInterface::Field & field =
+                                    clazz.second[f];
+                            const QString & fieldName = field.first;
+                            const ActorInterface::FieldType & fieldType =
+                                    field.second;
+                            AST::VariableBaseType bt = AST::TypeNone;
+                            if (fieldType==ActorInterface::Int)
+                                bt = AST::TypeInteger;
+                            else if (fieldType==ActorInterface::Real)
+                                bt = AST::TypeReal;
+                            else if (fieldType==ActorInterface::Bool)
+                                bt = AST::TypeBoolean;
+                            else if (fieldType==ActorInterface::Char)
+                                bt = AST::TypeCharect;
+                            else if (fieldType==ActorInterface::String)
+                                bt = AST::TypeString;
+                            QPair<QString,AST::Type> astField;
+                            astField.first = fieldName;
+                            astField.second.kind = bt;
+                            type.userTypeFields.push_back(astField);
+                        }
                         return true;
                     }
                 }

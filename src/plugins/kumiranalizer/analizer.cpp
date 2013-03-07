@@ -1012,54 +1012,6 @@ QList<Suggestion> Analizer::suggestAutoComplete(int lineNo, const QString &befor
     return cleanResult;
 }
 
-QStringList Analizer::algorhitmsAvailableFor(int lineNo) const
-{
-    QStringList result;
-    for (int i=0; i<d->ast->modules.size(); i++) {
-        if (d->ast->modules[i]->header.enabled) {
-            for (int j=0; j<d->ast->modules[i]->header.algorhitms.size(); j++) {
-                const QString name = d->ast->modules[i]->header.algorhitms[j]->header.name;
-                if (!name.isEmpty() && !result.contains(name))
-                    result << name;
-            }
-        }
-    }
-    const AST::Module * mod = findModuleByLine(lineNo);
-    if (mod) {
-        // Add current module private algorhitms
-        for (int j=0; j<mod->impl.algorhitms.size(); j++) {
-            const QString name = mod->impl.algorhitms[j]->header.name;
-            if (!name.isEmpty() && !result.contains(name))
-                result << name;
-        }
-    }
-
-    return result;
-}
-
-QStringList Analizer::localsAvailableFor(int lineNo) const
-{
-    const AST::Algorhitm * alg = findAlgorhitmByLine(findModuleByLine(lineNo), lineNo);
-    QStringList result;
-    if (alg) {
-        for (int i=0; i<alg->impl.locals.size(); i++) {
-            result << alg->impl.locals[i]->name;
-        }
-    }
-    return result;
-}
-
-QStringList Analizer::globalsAvailableFor(int lineNo) const
-{
-    const AST::Module * mod = findModuleByLine(lineNo);
-    QStringList result;
-    if (mod) {
-        for (int i=0; i<mod->impl.globals.size(); i++) {
-            result << mod->impl.globals[i]->name;
-        }
-    }
-    return result;
-}
 
 QStringList AnalizerPrivate::gatherExtraTypeNames() const
 {

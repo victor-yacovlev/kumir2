@@ -174,23 +174,6 @@ std::string KumirAnalizerPlugin::rawSourceData(int documentId) const
     return std::string(ba.constData());
 }
 
-QStringList KumirAnalizerPlugin::algorhitmsAvailableFor(int documentId, int lineNo) const
-{
-    Q_CHECK_PTR(m_analizers[documentId]);
-    return m_analizers[documentId]->algorhitmsAvailableFor(lineNo);
-}
-
-QStringList KumirAnalizerPlugin::globalsAvailableFor(int documentId, int lineNo) const
-{
-    Q_CHECK_PTR(m_analizers[documentId]);
-    return m_analizers[documentId]->globalsAvailableFor(lineNo);
-}
-
-QStringList KumirAnalizerPlugin::localsAvailableFor(int documentId, int lineNo) const
-{
-    Q_CHECK_PTR(m_analizers[documentId]);
-    return m_analizers[documentId]->localsAvailableFor(lineNo);
-}
 
 
 

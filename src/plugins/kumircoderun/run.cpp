@@ -8,10 +8,8 @@
 
 namespace KumirCodeRun {
 
-using Kumir::String;
-using Kumir::real;
-
 using namespace VM;
+using namespace Kumir;
 
 class Mutex: public CriticalSectionLocker
 {
@@ -24,65 +22,60 @@ private:
     QMutex * m;
 };
 
+
 Run::Run(QObject *parent) :
     QThread(parent)
 {
-    mutex_vm = nullptr;
     programLoaded = false;
     vm = new KumirVM();
-    mutex_vm = new Mutex;
-    vm->setMutex(mutex_vm);
+    VMMutex_ = new Mutex;
+    vm->setMutex(VMMutex_);
+    externalModuleResetFunctor_ = new ExternalModuleResetFunctor();
+    externalModuleLoadFunctor_ = new ExternalModuleLoadFunctor();
+    externalModuleCallFunctor_ = new ExternalModuleCallFunctor(this);
+    customTypeFromStringFunctor_ = new CustomTypeFromStringFunctor();
+    customTypeToStringFunctor_ = new CustomTypeToStringFunctor();
+    inputFunctor_ = new InputFunctor(this, customTypeFromStringFunctor_);
+    outputFunctor_ = new OutputFunctor(this, customTypeToStringFunctor_);
+    getMainArgumentFunctor_ = new GetMainArgumentFunctor(this, customTypeFromStringFunctor_);
+    returnMainValueFunctor_ = new ReturnMainValueFunctor(this, customTypeToStringFunctor_);
 
-    i_originFunctionDeep = 0;
-    b_interactDone = b_stopping = b_stepDone = b_algDone = false;
-    mutex_stopping = new QMutex;
-    mutex_stepDone = new QMutex;
-    mutex_algDone = new QMutex;
-    mutex_interactDone = new QMutex;
-    e_runMode = RM_ToEnd;
+    vm->setFunctor(externalModuleLoadFunctor_);
+    vm->setFunctor(externalModuleResetFunctor_);
+    vm->setFunctor(externalModuleCallFunctor_);
+    vm->setFunctor(inputFunctor_);
+    vm->setFunctor(outputFunctor_);
+    vm->setFunctor(customTypeFromStringFunctor_);
+    vm->setFunctor(customTypeToStringFunctor_);
+    vm->setFunctor(getMainArgumentFunctor_);
+    vm->setFunctor(returnMainValueFunctor_);
 
-    vm->setExternalHandler(this);
-    connect(this, SIGNAL(externalFunctionCall(QString,quint16,QVariantList)),
-            this, SLOT(handleExternalFunctionCall(QString,quint16,QVariantList))
-            , Qt::DirectConnection
-            );
-//    connect(vm, SIGNAL(pauseRequest()), this, SLOT(handlePauseRequest()), Qt::DirectConnection);
+    originFunctionDeep_ = 0;
+    interactDoneFlag_ = stoppingFlag_ = stepDoneFlag_ = algDoneFlag_ = false;
+    stoppingMutex_ = new QMutex;
+    stepDoneMutex_ = new QMutex;
+    algDoneMutex_ = new QMutex;
+    interactDoneMutex_ = new QMutex;
+    runMode_ = RM_ToEnd;
 
-//    connect(vm, SIGNAL(lineNoChanged(int)), this, SLOT(handleLineChanged(int)), Qt::DirectConnection);
-//    connect(vm, SIGNAL(retInstruction(int)), this, SLOT(handleAlgorhitmDone(int)), Qt::DirectConnection);
-
-//    connect(vm, SIGNAL(inputRequest(QString,QList<quintptr>,QList<int>)),
-//            this, SLOT(handleInputRequest(QString,QList<quintptr>,QList<int>)), Qt::DirectConnection);
-//    connect(vm, SIGNAL(inputArgumentRequest(int,QString,QString,QList<int>)),
-//            this, SLOT(handleInputArgumentRequest(int,QString,QString,QList<int>)), Qt::DirectConnection);
-//    connect(vm, SIGNAL(outputArgumentRequest(QVariant,QString,QList<int>)),
-//            this, SLOT(handleOutputArgumentRequest(QVariant,QString,QList<int>)),
-//            Qt::DirectConnection);
-//    connect(vm, SIGNAL(outputRequest(QStringList, QList<QVariant::Type>, QVariantList)),
-//                       this, SLOT(handleOutputRequest(QStringList, QList<QVariant::Type>, QVariantList)), Qt::DirectConnection);
-//    connect(vm, SIGNAL(invokeExternalFunction(QList<quintptr>)),
-//            this, SLOT(handleExternalRequest(QList<quintptr>)),
-//            Qt::DirectConnection);
-//    connect(vm, SIGNAL(beforeExternalFunction()),
-//            this, SLOT(prepareExternalCall()), Qt::DirectConnection);
-//    connect(vm, SIGNAL(resetModuleRequest(QString)), this, SIGNAL(resetModule(QString)));
+    vm->setDebuggingHandler(this);
 
 }
 
 void Run::lockVMMutex()
 {
-    mutex_vm->lock();
+    VMMutex_->lock();
 }
 
 void Run::unlockVMMutex()
 {
-    mutex_vm->unlock();
+    VMMutex_->unlock();
 }
 
 void Run::stop()
 {
-    QMutexLocker l(mutex_stopping);
-    b_stopping = true;
+    QMutexLocker l(stoppingMutex_);
+    stoppingFlag_ = true;
     if (!isRunning()) {
         emit lineChanged(-1);
         emit finished();
@@ -91,35 +84,35 @@ void Run::stop()
 
 void Run::runStepOver()
 {
-    b_stepDone = false;
-    b_stopping = false;
-    e_runMode = RM_StepOver;
+    stepDoneFlag_ = false;
+    stoppingFlag_ = false;
+    runMode_ = RM_StepOver;
     vm->setNextCallStepOver();
     start();
 }
 
 void Run::runStepIn()
 {
-    b_stepDone = false;
-    e_runMode = RM_StepIn;
+    stepDoneFlag_ = false;
+    runMode_ = RM_StepIn;
     vm->setNextCallInto();
     start();
 }
 
 void Run::runStepOut()
 {
-    b_stepDone = false;
-    b_algDone = false;
+    stepDoneFlag_ = false;
+    algDoneFlag_ = false;
     emit lineChanged(-1);
-    e_runMode = RM_StepOut;
+    runMode_ = RM_StepOut;
     vm->setNextCallOut();
     start();
 }
 
 void Run::runBlind()
 {
-    b_stopping = false;
-    e_runMode = RM_ToEnd;
+    stoppingFlag_ = false;
+    runMode_ = RM_ToEnd;
     vm->setDebugOff(true);
     vm->setNextCallToEnd();
     start();
@@ -127,507 +120,12 @@ void Run::runBlind()
 
 void Run::runContinuous()
 {
-    e_runMode = RM_ToEnd;
-    b_stopping = false;
+    runMode_ = RM_ToEnd;
+    stoppingFlag_ = false;
     vm->setNextCallToEnd();
     start();
 }
 
-
-bool Run::inputScalarArgument(const QString &message, const QString & format, AnyValue &val)
-{
-    emit output(message);
-    mutex_interactDone->lock();
-    list_inputResult.clear();
-    mutex_interactDone->unlock();
-    QVariantList result;
-    emit input(format);
-    forever {
-        mutex_interactDone->lock();
-        result = list_inputResult;
-        mutex_interactDone->unlock();
-        if (result.isEmpty())
-            msleep(50);
-        else
-            break;
-        if (mustStop())
-            return false;
-    }
-    if      (format[0]=='i')
-        val = result[0].toInt();
-    else if (format[0]=='r')
-        val = result[0].toDouble();
-    else if (format[0]=='b')
-        val = result[0].toBool();
-    else if (format[0]=='c')
-        val = result[0].toChar().unicode();
-    else if (format[0]=='s')
-        val = result[0].toString().toStdWString();
-    return true;
-}
-
-
-bool Run::makeInputArgument(Variable & reference)
-{
-
-    QString format;
-    if (reference.baseType()==VT_int)
-        format.push_back('i');
-    else if (reference.baseType()==VT_real)
-        format.push_back('r');
-    else if (reference.baseType()==VT_bool)
-        format.push_back('b');
-    else if (reference.baseType()==VT_char)
-        format.push_back('c');
-    else if (reference.baseType()==VT_string)
-        format.push_back('s');
-
-    if (reference.dimension()==0) {
-        AnyValue val;
-        if (inputScalarArgument(tr("Please enter %1: ").arg(QString::fromStdWString(reference.name())),format,val))
-            reference.setValue(val);
-    }
-    else if (reference.dimension()==1) {
-        int bounds[7];
-        reference.getEffectiveBounds(bounds);
-        for (int x=bounds[0]; x<=bounds[1]; x++) {
-            AnyValue val;
-            if (inputScalarArgument(tr("Please enter %1[%2]: ").arg(QString::fromStdWString(reference.name())).arg(x),format,val))
-                reference.setValue(x,val);
-            else
-                return true;
-        }
-    }
-    else if (reference.dimension()==2) {
-        int bounds[7];
-        reference.getEffectiveBounds(bounds);
-        for (int y=bounds[0]; y<=bounds[1]; y++) {
-            for (int x=bounds[2]; x<=bounds[3]; x++) {
-                AnyValue val;
-                if (inputScalarArgument(tr("Please enter %1[%2,%3]: ").arg(QString::fromStdWString(reference.name())).arg(y).arg(x),format,val))
-                    reference.setValue(y,x,val);
-                else
-                    return true;
-            }
-        }
-    }
-    else if (reference.dimension()==3) {
-        int bounds[7];
-        reference.getEffectiveBounds(bounds);
-        for (int z=bounds[0]; z<=bounds[1]; z++) {
-            for (int y=bounds[2]; y<=bounds[3]; y++) {
-                for (int x=bounds[4]; x<=bounds[5]; x++) {
-                    AnyValue val;
-                    if (inputScalarArgument(tr("Please enter %1[%2,%3,%4]: ").arg(QString::fromStdWString(reference.name())).arg(z).arg(y).arg(x),format,val))
-                        reference.setValue(z,y,x,val);
-                    else
-                        return true;
-                }
-            }
-        }
-    }
-    return true;
-}
-
-bool Run::makeOutputArgument(const Variable & reference) {
-    if (!reference.isValid())
-        return true;
-    QString repr;
-    emit output(QString::fromStdWString(reference.name())+" = ");
-    if (reference.dimension()==0) {
-        if (reference.hasValue()) {
-            repr = QString::fromStdWString(reference.value().toString());
-            if (reference.baseType()==Bytecode::VT_string)
-                repr = "\"" + repr + "\"";
-            else if (reference.baseType()==Bytecode::VT_char)
-                repr = "'" + repr + "'";
-        }
-        emit output(repr);
-    }
-    else if (reference.dimension()==1) {
-        int bounds[7];
-        reference.getEffectiveBounds(bounds);
-        emit output("{ ");
-        for (int x=bounds[0]; x<=bounds[1]; x++) {
-            repr = "";
-            if (reference.hasValue(x)) {
-                repr = QString::fromStdWString(reference.value(x).toString());
-                if (reference.baseType()==Bytecode::VT_string)
-                    repr = "\"" + repr + "\"";
-                else if (reference.baseType()==Bytecode::VT_char)
-                    repr = "'" + repr + "'";
-            }
-            emit output(repr);
-            if (x<bounds[1]) {
-                emit output(", ");
-            }
-        }
-        emit output(" }");
-    }
-    else if (reference.dimension()==2) {
-        int bounds[7];
-        reference.getEffectiveBounds(bounds);
-        emit output("{ ");
-        for (int y=bounds[0]; y<=bounds[1]; y++) {
-            emit output("{ ");
-            for (int x=bounds[2]; x<=bounds[3]; x++) {
-                repr = "";
-                if (reference.hasValue(y,x)) {
-                    repr = QString::fromStdWString(reference.value(y,x).toString());
-                    if (reference.baseType()==Bytecode::VT_string)
-                        repr = "\"" + repr + "\"";
-                    else if (reference.baseType()==Bytecode::VT_char)
-                        repr = "'" + repr + "'";
-                }
-                emit output(repr);
-                if (x<bounds[1]) {
-                    emit output(", ");
-                }
-            }
-            emit output(" }");
-            if (y<bounds[1]) {
-                emit output(", ");
-            }
-        }
-        emit output(" }");
-    }
-    else if (reference.dimension()==3) {
-        int bounds[7];
-        reference.getEffectiveBounds(bounds);
-        emit output("{ ");
-        for (int z=bounds[0]; z<=bounds[1]; z++) {
-            emit output("{ ");
-            for (int y=bounds[2]; y<=bounds[3]; y++) {
-                emit output("{ ");
-                for (int x=bounds[4]; x<=bounds[5]; x++) {
-                    repr = "";
-                    if (reference.hasValue(z,y,x)) {
-                        repr = QString::fromStdWString(reference.value(z,y,x).toString());
-                        if (reference.baseType()==Bytecode::VT_string)
-                            repr = "\"" + repr + "\"";
-                        else if (reference.baseType()==Bytecode::VT_char)
-                            repr = "'" + repr + "'";
-                    }
-                    emit output(repr);
-                    if (x<bounds[1]) {
-                        emit output(", ");
-                    }
-                }
-                emit output(" }");
-                if (y<bounds[1]) {
-                    emit output(", ");
-                }
-            }
-            emit output(" }");
-            if (z<bounds[1]) {
-                emit output(", ");
-            }
-        }
-        emit output(" }");
-    }
-    emit output("\n");
-    return true;
-}
-
-
-bool Run::makeInput(std::deque<Variable> & references)
-{
-    mutex_interactDone->lock();
-    b_interactDone = false;
-    list_inputResult.clear();
-    mutex_interactDone->unlock();
-    QVariantList result;
-    String format;
-    for (int i=0; i<references.size(); i++) {
-        if (references[i].baseType()==VT_int) {
-            format.push_back('i');
-        }
-        else if (references[i].baseType()==VT_real) {
-            format.push_back('r');
-        }
-        else if (references[i].baseType()==VT_bool) {
-            format.push_back('b');
-        }
-        else if (references[i].baseType()==VT_char &&
-                 references[i].isConstant() &&
-                 references[i].value().toChar() == Char('\n'))
-        {
-            format.push_back('n');
-        }
-        else if (references[i].baseType()==VT_char) {
-            format.push_back('c');
-        }
-        else if (references[i].baseType()==VT_string) {
-            format.push_back('s');
-        }
-        else if (references[i].baseType()==VT_record) {
-            const Variable & variable = references[i];
-            const String typeFullName =
-                    variable.recordModuleName()+
-                    Kumir::Core::fromAscii("::")+
-                    variable.recordClassName();
-            format.append(typeFullName);
-        }
-        if (i<references.size()-1) format.push_back(';');
-    }
-    emit input(QString::fromStdWString(format));
-    forever {
-        mutex_interactDone->lock();
-        result = list_inputResult;
-        mutex_interactDone->unlock();
-        if (result.isEmpty()) {
-            msleep(50);
-        }
-        else {
-            break;
-        }
-        if (mustStop())
-            break;
-    }
-    if (mustStop()) {
-        return true;
-    }
-    else {
-        Q_ASSERT(result.size()==references.size());
-        for (int i=0; i<result.size(); i++) {
-            AnyValue val;
-            if (references[i].baseType()==VT_int)
-                val = result[i].toInt();
-            else if (references[i].baseType()==VT_real)
-                val = result[i].toDouble();
-            else if (references[i].baseType()==VT_bool)
-                val = result[i].toBool();
-            else if (references[i].baseType()==VT_char)
-                val = result[i].toChar().unicode();
-            else if (references[i].baseType()==VT_string)
-                val = result[i].toString().toStdWString();
-            else if (references[i].baseType()==VT_record) {
-                const QVariantList alist = result[i].toList();
-                Record record;
-                for (int j=0; j<alist.size(); j++) {
-                    const QVariant & aval = alist[j];
-                    if (aval.type()==QVariant::Int)
-                        record.fields.push_back(AnyValue(aval.toInt()));
-                    else if (aval.type()==QVariant::Double)
-                        record.fields.push_back(AnyValue(Kumir::real(aval.toDouble())));
-                    else if (aval.type()==QVariant::Bool)
-                        record.fields.push_back(AnyValue(aval.toBool()));
-                    else if (aval.type()==QVariant::Char)
-                        record.fields.push_back(AnyValue(Kumir::Char(aval.toChar().unicode())));
-                    else if (aval.type()==QVariant::String)
-                        record.fields.push_back(AnyValue(aval.toString().toStdWString()));
-                }
-                val = AnyValue(record);
-            }
-            references[i].setValue(val);
-        }
-    }
-    return true;
-}
-
-void Run::handleInputArgumentRequest(int localId,
-                                     const QString &varName,
-                                     const QString &baseFormat,
-                                     const QList<int> &bounds)
-{
-//    QVariantList result;
-//    QVariantList localResult;
-//    int totalItems = 1;
-//    int currentIndex = 0;
-//    int dimension = 0;
-//    bool inputNext = true;
-//    int z = 0;
-//    int y = 0;
-//    int x = 0;
-//    int size0 = 0;
-//    int size1 = 0;
-//    int size2 = 0;
-//    if (bounds.size()==2) {
-//        dimension = 1;
-//        size0 = bounds[1]-bounds[0]+1;
-//        x = bounds[0];
-//        totalItems = size0;
-//    }
-//    else if (bounds.size()==4) {
-//        dimension = 2;
-//        size0 = bounds[3]-bounds[2]+1;
-//        size1 = bounds[1]-bounds[0]+1;
-//        x = bounds[0];
-//        y = bounds[2];
-//        totalItems = size0 * size1;
-//    }
-//    else if (bounds.size()==6) {
-//        dimension = 3;
-//        size0 = bounds[5]-bounds[4]+1;
-//        size1 = bounds[3]-bounds[2]+1;
-//        size2 = bounds[1]-bounds[0]+1;
-//        x = bounds[0];
-//        y = bounds[2];
-//        z = bounds[4];
-//        totalItems = size0 * size1 * size2;
-//    }
-//    forever {
-//        if (inputNext) {
-//            inputNext = false;
-//            mutex_interactDone->lock();
-//            b_interactDone = false;
-//            list_inputResult.clear();
-//            mutex_interactDone->unlock();
-//            QString varNameAndIndeces = varName;
-//            if (dimension>0) {
-//                QStringList indeces;
-//                indeces.prepend(QString::number(x+currentIndex%size0));
-//                if (dimension>=2)
-//                    indeces.prepend(QString::number(y+currentIndex%(size0*size1)));
-//                if (dimension==3)
-//                    indeces.prepend(QString::number(z+currentIndex%(size0*size1*size2)));
-//                varNameAndIndeces += "["+indeces.join(",")+"]";
-//            }
-//            QString greeting = tr("Please enter %1: ").arg(varNameAndIndeces);
-//            emit output(greeting);
-//            emit input(baseFormat);
-//        }
-//        mutex_interactDone->lock();
-//        localResult = list_inputResult;
-//        mutex_interactDone->unlock();
-//        if (localResult.isEmpty()) {
-//            msleep(50);
-//        }
-//        else {
-//            result << localResult.at(0);
-//            currentIndex++;
-//            inputNext = true;
-//            if (totalItems==currentIndex) {
-//                break;
-//            }
-//        }
-//        if (mustStop())
-//            break;
-//    }
-//    if (mustStop())
-//        return;
-//    if (dimension==0) {
-//        vm->setLocalVariableValue(localId, result.first());
-//    }
-//    else {
-//        vm->setLocalVariableValue(localId, QVariant(result));
-//    }
-}
-
-
-void Run::handleOutputArgumentRequest(const QVariant & value,
-                                     const QString &varName,
-                                     const QList<int> &bounds)
-{
-//    if (value.type()!=QVariant::List) {
-//        QString out = varName + "=";
-//        if (!value.isValid())
-//            out += tr("undefined");
-//        else if (value.type()==QVariant::String)
-//            out += "\""+value.toString()+"\"";
-//        else if (value.type()==QVariant::Char)
-//            out += "'"+value.toString()+"'";
-//        else
-//            out += value.toString();
-//        out += "\n";
-//        emit output(out);
-//    }
-//    else {
-//        const QVariantList & list = value.toList();
-//        int totalItems = 1;
-//        int currentIndex = 0;
-//        int dimension = 0;
-//        int z = 0;
-//        int y = 0;
-//        int x = 0;
-//        int size0 = 0;
-//        int size1 = 0;
-//        int size2 = 0;
-//        if (bounds.size()==2) {
-//            dimension = 1;
-//            size0 = bounds[1]-bounds[0]+1;
-//            x = bounds[0];
-//            totalItems = size0;
-//        }
-//        else if (bounds.size()==4) {
-//            dimension = 2;
-//            size0 = bounds[3]-bounds[2]+1;
-//            size1 = bounds[1]-bounds[0]+1;
-//            x = bounds[0];
-//            y = bounds[2];
-//            totalItems = size0 * size1;
-//        }
-//        else if (bounds.size()==6) {
-//            dimension = 3;
-//            size0 = bounds[5]-bounds[4]+1;
-//            size1 = bounds[3]-bounds[2]+1;
-//            size2 = bounds[1]-bounds[0]+1;
-//            x = bounds[0];
-//            y = bounds[2];
-//            z = bounds[4];
-//            totalItems = size0 * size1 * size2;
-//        }
-//        for ( ; currentIndex<totalItems; currentIndex ++) {
-//            QString varNameAndIndeces = varName;
-//            if (dimension>0) {
-//                QStringList indeces;
-//                indeces.prepend(QString::number(x+currentIndex%size0));
-//                if (dimension>=2)
-//                    indeces.prepend(QString::number(y+currentIndex%(size0*size1)));
-//                if (dimension==3)
-//                    indeces.prepend(QString::number(z+currentIndex%(size0*size1*size2)));
-//                varNameAndIndeces += "["+indeces.join(",")+"]";
-//            }
-//            QString out = varNameAndIndeces + "=";
-//            const QVariant & val = list[currentIndex];
-//            if (!val.isValid())
-//                out += tr("undefined");
-//            else if (val.type()==QVariant::String)
-//                out += "\""+val.toString()+"\"";
-//            else if (val.type()==QVariant::Char)
-//                out += "'"+val.toString()+"'";
-//            else
-//                out += val.toString();
-//            out += "\n";
-//            emit output(out);
-//        }
-//    }
-}
-
-void Run::handleExternalRequest(const QString &pluginName,
-                                const QString &functionName,
-                                const QVariantList &arguments,
-                                const QList<quintptr> &references,
-                                const QList<int> &indeces)
-{
-//    mutex_interactDone->lock();
-//    b_interactDone = false;
-//    list_funcResults.clear();
-//    v_funcResult = QVariant::Invalid;
-//    s_funcError = "";
-//    mutex_interactDone->unlock();
-//    QVariantList result;
-//    emit externalFunctionCall(pluginName, functionName, arguments);
-//    bool done = false;
-//    forever {
-//        mutex_interactDone->lock();
-//        done = b_interactDone;
-//        mutex_interactDone->unlock();
-//        if (!done) {
-//            msleep(1);
-//        }
-//        else {
-//            break;
-//        }
-//        if (mustStop())
-//            break;
-//    }
-//    if (mustStop())
-//        return;
-//    Q_ASSERT(result.size()==references.size());
-//    vm->pushValueToStack(v_funcResult);
-//    vm->setResults(s_funcError, references, indeces, list_funcResults);
-}
 
 QVariant VariableToQVariant(const Variable & var)
 {
@@ -714,169 +212,7 @@ VM::AnyValue QVariantToValue(const QVariant & var, int dim)
     return aval;
 }
 
-bool Run::evaluateExternalFunction(
-        /* IN */      const String & moduleName,
-        /* IN */      uint16_t functionId,
-        /* IN */      const std::deque<Variable> & arguments,
-        /* OUT */     Variable & result,
-        /* OUT */     String & moduleRuntimeError
-        )
-{
-    mutex_interactDone->lock();
-    b_interactDone = false;
-    list_funcResults.clear();
-    v_funcResult.clear();
-    s_funcError = "";
-    mutex_interactDone->unlock();
 
-    // Prepare arguments
-    QVariantList qArgs;
-    typedef std::deque<Variable>::const_iterator CIt;
-    typedef std::deque<Variable>::iterator It;
-    for (CIt i=arguments.begin(); i!=arguments.end() ; ++i) {
-        const Variable & arg = (*i);
-        qArgs << VariableToQVariant(arg);
-    } // end preparing arguments
-
-    // Call Signal/Slot threading bridge to Run::handleExternalFunctionCall(...)
-    emit externalFunctionCall(QString::fromStdWString(moduleName), functionId, qArgs);
-
-    // Wait for actor thread finishes...
-    bool done = false;
-    forever {
-        mutex_interactDone->lock();
-        done = b_interactDone;
-        mutex_interactDone->unlock();
-        if (!done) {
-            msleep(1);
-        }
-        else {
-            break;
-        }
-        if (mustStop())
-            break;
-    }
-    // Return a flag "processed" in case of User-termination to avoid runtime error
-    if (mustStop())
-        return true;
-
-    // Set function result if need
-    result = Variable(QVariantToValue(v_funcResult, 0));
-
-
-    // TODO implement out-parameters
-
-    // Set error
-    moduleRuntimeError = s_funcError.toStdWString();
-
-    // Return a flag "processed"
-    return true;
-}
-
-void Run::handleExternalFunctionCall(
-        const QString &moduleName
-        , quint16 algId
-        , const QVariantList &arguments
-        )
-/* Signal/Slot threading bridge */
-{
-    QList<ExtensionSystem::KPlugin*> plugins =
-            ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
-    Shared::ActorInterface * actor = 0;
-    for (int i=0; i<plugins.size(); i++) {
-        actor = qobject_cast<Shared::ActorInterface*>(plugins[i]);
-        if (actor) {
-            if (actor->name()==moduleName)
-                break;
-            else
-                actor = 0;
-        }
-    }
-    if (actor) {
-        Shared::EvaluationStatus status = actor->evaluate(algId, arguments);
-        QMutexLocker locker(mutex_interactDone);
-        if (status==Shared::ES_Error)
-            s_funcError = actor->errorText();
-        if (status==Shared::ES_StackResult || status==Shared::ES_StackRezResult)
-            v_funcResult = actor->result();
-        if (status==Shared::ES_RezResult || status==Shared::ES_StackRezResult)
-            list_funcResults = actor->algOptResults();
-        b_interactDone = true;
-    }
-    else {
-        QMutexLocker locker(mutex_interactDone);
-        b_interactDone = true;
-    }
-}
-
-bool Run::convertExternalTypeFromString(
-        const String &stringg, Variable &variable, bool &ok
-        )
-{
-    const QString modName =
-            QString::fromStdWString(variable.recordModuleName());
-    const QString className =
-            QString::fromStdWString(variable.recordClassName());
-    const QString qString = QString::fromStdWString(stringg);
-
-    QList<ExtensionSystem::KPlugin*> plugins =
-            ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
-    Shared::ActorInterface * actor = 0;
-    for (int i=0; i<plugins.size(); i++) {
-        actor = qobject_cast<Shared::ActorInterface*>(plugins[i]);
-        if (actor) {
-            if (actor->name()==modName)
-                break;
-            else
-                actor = 0;
-        }
-    }
-    if (actor) {
-        Shared::ActorInterface::CustomType ct;
-        ct.first = className;
-        const QVariant value = actor->customValueFromString(ct, qString);
-        ok = value.isValid();
-        if (ok) {
-            variable.setValue(QVariantToValue(value, 0));
-        }
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
-bool Run::convertExternalTypeToString(const Variable &variable, String &out)
-{
-    const QString modName =
-            QString::fromStdWString(variable.recordModuleName());
-    const QString className =
-            QString::fromStdWString(variable.recordClassName());
-
-    QList<ExtensionSystem::KPlugin*> plugins =
-            ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
-    Shared::ActorInterface * actor = 0;
-    for (int i=0; i<plugins.size(); i++) {
-        actor = qobject_cast<Shared::ActorInterface*>(plugins[i]);
-        if (actor) {
-            if (actor->name()==modName)
-                break;
-            else
-                actor = 0;
-        }
-    }
-    if (actor) {
-        Shared::ActorInterface::CustomType ct;
-        ct.first = className;
-        QVariant value = VariableToQVariant(variable);
-        const QString qString = actor->customValueToString(ct, value);
-        out = qString.toStdWString();
-        return true;
-    }
-    else {
-        return false;
-    }
-}
 
 bool Run::debuggerReset()
 {
@@ -1045,94 +381,6 @@ bool Run::debuggerUpdateGlobalTableValue(
     return true;
 }
 
-void Run::prepareExternalCall()
-{
-    mutex_interactDone->lock();
-    b_interactDone = false;
-    mutex_interactDone->unlock();
-}
-
-void Run::handleExternalRequest(const QList<quintptr> &references)
-{
-//    bool done = false;
-//    forever {
-//        mutex_interactDone->lock();
-//        done = b_interactDone;
-//        mutex_interactDone->unlock();
-//        if (!done) {
-//            msleep(1);
-//        }
-//        else {
-//            break;
-//        }
-//        if (mustStop())
-//            break;
-//    }
-//    if (mustStop())
-//        return;
-//    Q_ASSERT(list_funcResults.size()==references.size());
-//    if (v_funcResult.isValid())
-//        vm->pushValueToStack(v_funcResult);
-//    v_funcResult = QVariant::Invalid;
-//    vm->setResults(s_funcError, references, QList<int>(), list_funcResults);
-//    list_funcResults.clear();
-//    b_interactDone = false;
-//    s_funcError.clear();
-}
-
-void Run::finishInput(const QVariantList &data)
-{
-    QMutexLocker l(mutex_interactDone);
-    b_interactDone = true;
-    list_inputResult = data;
-}
-
-void Run::finishExternalFunctionCall(const QString & error,
-                                     const QVariant &retval,
-                                     const QVariantList &results)
-{
-//    QMutexLocker l(mutex_interactDone);
-//    b_interactDone = true;
-//    list_funcResults = results;
-//    v_funcResult = retval;
-//    s_funcError = error;
-}
-
-bool Run::makeOutput(
-        const std::deque< std::pair<int,int> > & formats,
-        const std::deque<Variable> & values
-        )
-{
-    Kumir::IO::OutputStream os;
-    for (int i=0; i<formats.size(); i++) {
-        std::pair<int,int> format = formats[i];
-        if (values[i].baseType()==VT_int) {
-            Kumir::IO::writeInteger(os, values[i].toInt(), format.first);
-        }
-        else if (values[i].baseType()==VT_real) {
-            Kumir::IO::writeReal(os, values[i].toDouble(), format.first, format.second);
-        }
-        else if (values[i].baseType()==VT_bool) {
-            Kumir::IO::writeBool(os, values[i].toBool(), format.first);
-        }
-        else if (values[i].baseType()==VT_char) {            
-            Kumir::IO::writeChar(os, values[i].toChar(), format.first);
-        }
-        else if (values[i].baseType()==VT_string) {
-            Kumir::IO::writeString(os, values[i].toString(), format.first);
-        }
-        else if (values[i].baseType()==VT_record) {
-            String svalue;
-            convertExternalTypeToString(values[i], svalue);
-            Kumir::IO::writeString(os, svalue, format.first);
-        }
-    }
-    QString data = QString::fromStdWString(os.getBuffer());
-    emit output(data);
-    usleep(100);
-    return true;
-}
-
 bool Run::noticeOnValueChange(int l, const String & s)
 {
     emit marginText(l, QString::fromStdWString(s));
@@ -1141,9 +389,9 @@ bool Run::noticeOnValueChange(int l, const String & s)
 
 bool Run::noticeOnLineNoChanged(int lineNo)
 {
-    mutex_stepDone->lock();
-    b_stepDone = true;
-    mutex_stepDone->unlock();
+    stepDoneMutex_->lock();
+    stepDoneFlag_ = true;
+    stepDoneMutex_->unlock();
     if (mustStop())
         emit lineChanged(lineNo);
     else
@@ -1157,61 +405,33 @@ bool Run::clearMargin(int from, int to)
     return true;
 }
 
-bool Run::loadExternalModule(
-          const String &moduleName
-        , const String &fileName
-        , std::list<String> &availableMethods
-     )
+bool Run::mustStop() const
 {
-    // TODO implement loading modules on demand
-    QList<ExtensionSystem::KPlugin*> plugins =
-            ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
-    bool found = false;
-    for (int i=0; i<plugins.size(); i++) {
-        Shared::ActorInterface * actor = qobject_cast<Shared::ActorInterface*>(plugins[i]);
-        if (actor && actor->name()==QString::fromStdWString(moduleName)) {
-            found = true;
-            for (int j=0; j<actor->funcList().size(); j++) {
-                availableMethods.push_back(actor->funcList()[j].toStdWString());
-            }
-            break;
-        }
-    }
-    return found;
-}
-
-bool Run::mustStop()
-{
-    QMutexLocker l1(mutex_stopping);
-    QMutexLocker l2(mutex_stepDone);
+    QMutexLocker l1(stoppingMutex_); l1;
+    QMutexLocker l2(stepDoneMutex_); l2;
 
     if (vm->error().length()>0)
         return true;
 
-    if (b_stopping)
+    if (stoppingFlag_)
         return true;
 
-    if (e_runMode==RM_StepOut) {
-        return b_algDone;
+    if (runMode_==RM_StepOut) {
+        return algDoneFlag_;
     }
-    else if (e_runMode!=RM_ToEnd) {
-        return b_stepDone;
+    else if (runMode_!=RM_ToEnd) {
+        return stepDoneFlag_;
     }
     else {
         return false;
     }
 }
 
-void Run::handlePauseRequest()
-{
-    e_runMode = RM_StepOver;
-}
-
 void Run::handleAlgorhitmDone(int lineNo)
 {
-    mutex_algDone->lock();
-    b_algDone = true;
-    mutex_algDone->unlock();
+    algDoneMutex_->lock();
+    algDoneFlag_ = true;
+    algDoneMutex_->unlock();
     if (mustStop())
         emit lineChanged(lineNo);
     else
@@ -1234,9 +454,9 @@ void Run::run()
     }
 //    bool wasError = vm->error().length()>0;
     // Unclosed files is an error only if program reached end
-    bool unclosedFilesIsNotError = b_stopping || vm->hasMoreInstructions();
+    bool unclosedFilesIsNotError = stoppingFlag_ || vm->hasMoreInstructions();
     // Must close all files if program reached end or user terminated
-    bool programFinished = b_stopping || !vm->hasMoreInstructions() || vm->error().length();
+    bool programFinished = stoppingFlag_ || !vm->hasMoreInstructions() || vm->error().length();
 //    __check_for_unclosed_files__st_funct(unclosedFilesIsNotError, closeUnclosedFiles);
 //    vm->updateStFunctError();
 //    if (!wasError && vm->error().length()>0) {
@@ -1318,6 +538,635 @@ bool Run::canStepOut() const
     return vm->canStepOut();
 }
 
+// --------------------- FUNCTORS IMPLEMENTATION
+// TODO move to separate files
+
+
+
+void ExternalModuleResetFunctor::operator ()(const String & moduleName)
+{
+    const QString qModuleName = QString::fromStdWString(moduleName);
+    QList<ExtensionSystem::KPlugin*> plugins =
+            ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
+    Shared::ActorInterface * actor = 0;
+    for (int i=0; i<plugins.size(); i++) {
+        actor = qobject_cast<Shared::ActorInterface*>(plugins[i]);
+        if (actor) {
+            if (actor->name()==qModuleName)
+                break;
+            else
+                actor = 0;
+        }
+    }
+    if (actor) {
+        actor->reset();
+    }
+    else {
+        const QString qErrorMessage =
+                QString::fromUtf8("Нет такого исполнителя: \"%1\"")
+                .arg(qModuleName);
+        const String errorMessage =
+                qErrorMessage.toStdWString();
+        throw errorMessage;
+    }
+}
+
+ExternalModuleCallFunctor::ExternalModuleCallFunctor(QObject *parent)
+    : QObject(parent)
+    , finishedFlag_(false)
+    , finishedMutex_(new QMutex)
+{
+}
+
+ExternalModuleCallFunctor::~ExternalModuleCallFunctor()
+{
+    delete finishedMutex_;
+}
+
+AnyValue ExternalModuleCallFunctor::operator ()
+(
+    const String & moduleName,
+    const uint16_t algKey,
+    VariableReferencesList alist
+)
+{
+    // Clear state
+    finishedFlag_ = false;
+
+    // Convert STL+Kumir into Qt value types
+    const QString qModuleName = QString::fromStdWString(moduleName);
+    const quint16 qAlgKey = quint16(algKey);
+    QVariantList arguments;
+    for (auto it=alist.begin(); it!=alist.end(); ++it) {
+        const QVariant qVal = VariableToQVariant(*it);
+        arguments.push_back(qVal);
+    }
+
+    // Find an actor (or throw)
+    Shared::ActorInterface * actor = findActor(qModuleName);
+
+    if (actor->evaluate(qAlgKey, arguments)==Shared::ES_Async) {
+        // Wait for actor thread to finish
+        forever {
+            bool done = false;
+            finishedMutex_->lock();
+            done = finishedFlag_;
+            finishedMutex_->unlock();
+            if (!done) {
+                SleepFunctions::msleep(1);
+            }
+            else {
+                break;
+            }
+        }
+    }
+
+    // Collect actor result
+    const QString errorMessage = actor->errorText();
+    const QVariant returnValue = actor->result();
+    const QVariantList argumentReturnValues = actor->algOptResults();
+
+    // Check for runtime error
+    if (errorMessage.length()>0) {
+        const String message = errorMessage.toStdWString();
+        throw message;
+    }
+
+    // Get result
+    AnyValue result = QVariantToValue(returnValue, 0);
+
+    // Check for out and in/out arguments and store them
+    for (size_t i=0; i<alist.size(); i++) {
+        Variable var = alist.at(i);
+        const QVariant & qval = argumentReturnValues.at(i);
+        if (var.isReference() && qval.isValid()) {
+            quint8 dim = quint8(var.dimension());
+            const AnyValue kval = QVariantToValue(qval, dim);
+            var.setValue(kval);
+        }
+    }
+
+    // Disconnect an actor
+    releaseActor(actor);
+
+    // Return a result
+    return result;
+}
+
+void ExternalModuleCallFunctor::handleActorSync()
+{
+    finishedMutex_->lock();
+    finishedFlag_ = true;
+    finishedMutex_->unlock();
+}
+
+Shared::ActorInterface * ExternalModuleCallFunctor::findActor(
+        const QString &moduleName)
+{
+    Shared::ActorInterface * actor = nullptr;
+    QObject * actorObject = nullptr;
+    QList<ExtensionSystem::KPlugin*> plugins =
+            ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
+    for (int i=0; i<plugins.size(); i++) {
+        actor = qobject_cast<Shared::ActorInterface*>(plugins[i]);
+        actorObject = plugins[i];
+        if (actor) {
+            if (actor->name()==moduleName)
+                break;
+            else
+                actor = 0;
+        }
+    }
+    if (!actor) {
+        throw
+        QString::fromUtf8("Нет такого исполнителя: %1")
+                .arg(moduleName)
+                .toStdWString();
+    }
+    else {
+        connect(actorObject, SIGNAL(sync()), this, SLOT(handleActorSync()));
+    }
+    return actor;
+}
+
+void ExternalModuleCallFunctor::releaseActor(
+        Shared::ActorInterface *actor)
+{
+    QObject * actorObject = dynamic_cast<QObject*>(actor);
+    disconnect(actorObject, SIGNAL(sync()), this, SLOT(handleActorSync()));
+}
+
+InputFunctor::InputFunctor(
+        class Run * parent,
+        VM::CustomTypeFromStringFunctor * converter
+        )
+    : QObject(parent)
+    , finishedFlag_(false)
+    , finishedMutex_(new QMutex)
+    , inputValues_(QVariantList())
+    , converter_(converter)
+    , runner_(parent)
+{
+    connect(parent, SIGNAL(finishInput(QVariantList)),
+            this, SLOT(handleInputDone(QVariantList)));
+    connect(this, SIGNAL(requestInput(QString)),
+            parent, SIGNAL(input(QString)));
+}
+
+InputFunctor::~InputFunctor()
+{
+    delete finishedMutex_;
+}
+
+void InputFunctor::operator ()(VariableReferencesList references)
+{
+    // Clear state
+    finishedFlag_ = false;
+    inputValues_.clear();
+
+    // Prepare input format for GUI
+    String format;
+    for (int i=0; i<references.size(); i++) {
+        if (references[i].baseType()==VT_int) {
+            format.push_back('i');
+        }
+        else if (references[i].baseType()==VT_real) {
+            format.push_back('r');
+        }
+        else if (references[i].baseType()==VT_bool) {
+            format.push_back('b');
+        }
+        else if (references[i].baseType()==VT_char &&
+                 references[i].isConstant() &&
+                 references[i].value().toChar() == Char('\n'))
+        {
+            format.push_back('n');
+        }
+        else if (references[i].baseType()==VT_char) {
+            format.push_back('c');
+        }
+        else if (references[i].baseType()==VT_string) {
+            format.push_back('s');
+        }
+        else if (references[i].baseType()==VT_record) {
+            const Variable & variable = references[i];
+            const String typeFullName =
+                    variable.recordModuleName()+
+                    Kumir::Core::fromAscii("::")+
+                    variable.recordClassName();
+            format.append(typeFullName);
+        }
+        if (i<references.size()-1) format.push_back(';');
+    }
+
+    const QString qFormat = QString::fromStdWString(format);
+
+    // Request input action and wait for response
+    emit requestInput(qFormat);
+    forever {
+        bool done = false;
+        finishedMutex_->lock();
+        done = finishedFlag_;
+        finishedMutex_->unlock();
+        if (runner_->mustStop()) {
+            break;
+        }
+        else if (!done) {
+            SleepFunctions::msleep(1);
+        }
+        else {
+            break;
+        }
+    }
+
+    if (runner_->mustStop())
+        return; // Do nothing on exit
+
+    // Store input values
+    Q_ASSERT(inputValues_.size()==references.size());
+    for (int i=0; i<inputValues_.size(); i++) {
+        const AnyValue val = QVariantToValue(inputValues_.at(i), 0);
+        references[i].setValue(val);
+    }
+}
+
+void InputFunctor::handleInputDone(const QVariantList & values)
+{
+    finishedMutex_->lock();
+    finishedFlag_ = true;
+    inputValues_ = values;
+    finishedMutex_->unlock();
+}
+
+OutputFunctor::OutputFunctor(QObject *parent, VM::CustomTypeToStringFunctor * converter)
+    : QObject(parent)
+    , converter_(converter)
+{
+    connect(this, SIGNAL(requestOutput(QString)),
+            parent, SIGNAL(output(QString)));
+}
+
+void OutputFunctor::operator ()(
+        VariableReferencesList values,
+        FormatsList formats
+        )
+{
+    Kumir::IO::OutputStream os;
+    for (int i=0; i<formats.size(); i++) {
+        std::pair<int,int> format = formats[i];
+        if (values[i].baseType()==VT_int) {
+            Kumir::IO::writeInteger(os, values[i].toInt(), format.first);
+        }
+        else if (values[i].baseType()==VT_real) {
+            Kumir::IO::writeReal(os, values[i].toDouble(), format.first, format.second);
+        }
+        else if (values[i].baseType()==VT_bool) {
+            Kumir::IO::writeBool(os, values[i].toBool(), format.first);
+        }
+        else if (values[i].baseType()==VT_char) {
+            Kumir::IO::writeChar(os, values[i].toChar(), format.first);
+        }
+        else if (values[i].baseType()==VT_string) {
+            Kumir::IO::writeString(os, values[i].toString(), format.first);
+        }
+        else if (values[i].baseType()==VT_record) {
+            String svalue;
+            if (converter_) {
+                svalue = (*converter_)(values[i]);
+                Kumir::IO::writeString(os, svalue, format.first);
+            }
+        }
+    }
+    QString data = QString::fromStdWString(os.getBuffer());
+    emit requestOutput(data);
+    SleepFunctions::usleep(100);
+}
+
+GetMainArgumentFunctor::GetMainArgumentFunctor(
+        Run * parent,
+        VM::CustomTypeFromStringFunctor * converter
+        )
+    : QObject(parent)
+    , finishedFlag_(false)
+    , finishedMutex_(new QMutex)
+    , inputValues_(QVariantList())
+    , converter_(converter)
+    , runner_(parent)
+{
+    connect(parent, SIGNAL(finishInput(QVariantList)),
+            this, SLOT(handleInputDone(QVariantList)));
+    connect(this, SIGNAL(requestInput(QString)),
+            parent, SIGNAL(input(QString)));
+    connect(this, SIGNAL(requestOutput(QString)),
+            parent, SIGNAL(outputRequest(QString)));
+}
+
+GetMainArgumentFunctor::~GetMainArgumentFunctor()
+{
+    delete finishedMutex_;
+}
+
+void GetMainArgumentFunctor::operator ()(Variable & reference)
+{
+    QString format;
+    if (reference.baseType()==VT_int)
+        format.push_back('i');
+    else if (reference.baseType()==VT_real)
+        format.push_back('r');
+    else if (reference.baseType()==VT_bool)
+        format.push_back('b');
+    else if (reference.baseType()==VT_char)
+        format.push_back('c');
+    else if (reference.baseType()==VT_string)
+        format.push_back('s');
+
+    if (reference.dimension()==0) {
+        AnyValue val;
+        if (inputScalarArgument(QString::fromUtf8("Введите %1: ").arg(QString::fromStdWString(reference.name())),format,val))
+            reference.setValue(val);
+    }
+    else if (reference.dimension()==1) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        for (int x=bounds[0]; x<=bounds[1]; x++) {
+            AnyValue val;
+            if (inputScalarArgument(QString::fromUtf8("Введите %1[%2]: ").arg(QString::fromStdWString(reference.name())).arg(x),format,val))
+                reference.setValue(x,val);
+            else
+                return;
+        }
+    }
+    else if (reference.dimension()==2) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        for (int y=bounds[0]; y<=bounds[1]; y++) {
+            for (int x=bounds[2]; x<=bounds[3]; x++) {
+                AnyValue val;
+                if (inputScalarArgument(QString::fromUtf8("Введите %1[%2,%3]: ").arg(QString::fromStdWString(reference.name())).arg(y).arg(x),format,val))
+                    reference.setValue(y,x,val);
+                else
+                    return;
+            }
+        }
+    }
+    else if (reference.dimension()==3) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        for (int z=bounds[0]; z<=bounds[1]; z++) {
+            for (int y=bounds[2]; y<=bounds[3]; y++) {
+                for (int x=bounds[4]; x<=bounds[5]; x++) {
+                    AnyValue val;
+                    if (inputScalarArgument(QString::fromUtf8("Введите %1[%2,%3,%4]: ").arg(QString::fromStdWString(reference.name())).arg(z).arg(y).arg(x),format,val))
+                        reference.setValue(z,y,x,val);
+                    else
+                        return;
+                }
+            }
+        }
+    }
+}
+
+void GetMainArgumentFunctor::handleInputDone(const QVariantList &values)
+{
+    QMutexLocker lock(finishedMutex_); lock;
+    finishedFlag_ = true;
+    inputValues_ = values;
+}
+
+
+ReturnMainValueFunctor::ReturnMainValueFunctor(
+        QObject *parent,
+        VM::CustomTypeToStringFunctor * converter
+        )
+    : QObject(parent)
+    , converter_(converter)
+{
+    connect(this, SIGNAL(requestOutput(QString)),
+            parent, SIGNAL(outputRequest(QString)));
+}
+
+bool GetMainArgumentFunctor::inputScalarArgument(
+        const QString &message,
+        const QString & format,
+        AnyValue &val
+        )
+{
+    // Show message
+    emit requestOutput(message);
+
+    // Clear values
+    inputValues_.clear();
+    finishedFlag_ = false;
+
+    emit requestInput(format);
+    forever {
+        bool done = false;
+        finishedMutex_->lock();
+        done = finishedFlag_;
+        finishedMutex_->unlock();
+        if (runner_->mustStop())
+            break;
+        else if (!done)
+            SleepFunctions::msleep(1);
+        else
+            break;
+    }
+    if (runner_->mustStop())
+        return false;
+
+    if      (format[0]=='i')
+        val = inputValues_[0].toInt();
+    else if (format[0]=='r')
+        val = inputValues_[0].toDouble();
+    else if (format[0]=='b')
+        val = inputValues_[0].toBool();
+    else if (format[0]=='c')
+        val = inputValues_[0].toChar().unicode();
+    else if (format[0]=='s')
+        val = inputValues_[0].toString().toStdWString();
+    return true;
+}
+
+void ReturnMainValueFunctor::operator()(const Variable & reference)
+{
+    if (!reference.isValid())
+        return;
+    QString repr;
+    emit requestOutput(QString::fromStdWString(reference.name())+" = ");
+    if (reference.dimension()==0) {
+        if (reference.hasValue()) {
+            repr = QString::fromStdWString(reference.value().toString());
+            if (reference.baseType()==Bytecode::VT_string)
+                repr = "\"" + repr + "\"";
+            else if (reference.baseType()==Bytecode::VT_char)
+                repr = "'" + repr + "'";
+        }
+        emit requestOutput(repr);
+    }
+    else if (reference.dimension()==1) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        emit requestOutput("{ ");
+        for (int x=bounds[0]; x<=bounds[1]; x++) {
+            repr = "";
+            if (reference.hasValue(x)) {
+                repr = QString::fromStdWString(reference.value(x).toString());
+                if (reference.baseType()==Bytecode::VT_string)
+                    repr = "\"" + repr + "\"";
+                else if (reference.baseType()==Bytecode::VT_char)
+                    repr = "'" + repr + "'";
+            }
+            emit requestOutput(repr);
+            if (x<bounds[1]) {
+                emit requestOutput(", ");
+            }
+        }
+        emit requestOutput(" }");
+    }
+    else if (reference.dimension()==2) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        emit requestOutput("{ ");
+        for (int y=bounds[0]; y<=bounds[1]; y++) {
+            emit requestOutput("{ ");
+            for (int x=bounds[2]; x<=bounds[3]; x++) {
+                repr = "";
+                if (reference.hasValue(y,x)) {
+                    repr = QString::fromStdWString(reference.value(y,x).toString());
+                    if (reference.baseType()==Bytecode::VT_string)
+                        repr = "\"" + repr + "\"";
+                    else if (reference.baseType()==Bytecode::VT_char)
+                        repr = "'" + repr + "'";
+                }
+                emit requestOutput(repr);
+                if (x<bounds[1]) {
+                    emit requestOutput(", ");
+                }
+            }
+            emit requestOutput(" }");
+            if (y<bounds[1]) {
+                emit requestOutput(", ");
+            }
+        }
+        emit requestOutput(" }");
+    }
+    else if (reference.dimension()==3) {
+        int bounds[7];
+        reference.getEffectiveBounds(bounds);
+        emit requestOutput("{ ");
+        for (int z=bounds[0]; z<=bounds[1]; z++) {
+            emit requestOutput("{ ");
+            for (int y=bounds[2]; y<=bounds[3]; y++) {
+                emit requestOutput("{ ");
+                for (int x=bounds[4]; x<=bounds[5]; x++) {
+                    repr = "";
+                    if (reference.hasValue(z,y,x)) {
+                        repr = QString::fromStdWString(reference.value(z,y,x).toString());
+                        if (reference.baseType()==Bytecode::VT_string)
+                            repr = "\"" + repr + "\"";
+                        else if (reference.baseType()==Bytecode::VT_char)
+                            repr = "'" + repr + "'";
+                    }
+                    emit requestOutput(repr);
+                    if (x<bounds[1]) {
+                        emit requestOutput(", ");
+                    }
+                }
+                emit requestOutput(" }");
+                if (y<bounds[1]) {
+                    emit requestOutput(", ");
+                }
+            }
+            emit requestOutput(" }");
+            if (z<bounds[1]) {
+                emit requestOutput(", ");
+            }
+        }
+        emit requestOutput(" }");
+    }
+    emit requestOutput("\n");
+}
+
+String CustomTypeToStringFunctor::operator ()(const Variable & variable)
+{
+    const QString modName =
+            QString::fromStdWString(variable.recordModuleName());
+    const QString className =
+            QString::fromStdWString(variable.recordClassName());
+
+    QList<ExtensionSystem::KPlugin*> plugins =
+            ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
+    Shared::ActorInterface * actor = 0;
+    for (int i=0; i<plugins.size(); i++) {
+        actor = qobject_cast<Shared::ActorInterface*>(plugins[i]);
+        if (actor) {
+            if (actor->name()==modName)
+                break;
+            else
+                actor = 0;
+        }
+    }
+    String result;
+    if (actor) {
+        Shared::ActorInterface::CustomType ct;
+        ct.first = className;
+        QVariant value = VariableToQVariant(variable);
+        const QString qString = actor->customValueToString(ct, value);
+        result = qString.toStdWString();
+    }
+    else {
+        throw QString::fromUtf8("Нет такого исполнителя: %1").arg(modName)
+                .toStdWString();
+    }
+    return result;
+}
+
+AnyValue CustomTypeFromStringFunctor::operator ()(
+        const String & source,
+        const String & moduleName,
+        const String & typeName
+        )
+{
+    AnyValue result;
+    QString errorMessage;
+    const QString modName =
+            QString::fromStdWString(moduleName);
+    const QString className =
+            QString::fromStdWString(typeName);
+    const QString qString = QString::fromStdWString(source);
+
+    QList<ExtensionSystem::KPlugin*> plugins =
+            ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
+    Shared::ActorInterface * actor = 0;
+    for (int i=0; i<plugins.size(); i++) {
+        actor = qobject_cast<Shared::ActorInterface*>(plugins[i]);
+        if (actor) {
+            if (actor->name()==modName)
+                break;
+            else
+                actor = 0;
+        }
+    }
+    if (actor) {
+        Shared::ActorInterface::CustomType ct;
+        ct.first = className;
+        const QVariant value = actor->customValueFromString(ct, qString);
+        if (value.isValid()) {
+            result = QVariantToValue(value, 0);
+        }
+        else {
+            errorMessage = QString::fromUtf8("Ошибка ввода значения типа \"%1\"")
+                    .arg(className);
+        }
+    }
+    else {
+        errorMessage = QString::fromUtf8("Исполнитель не доступен: %1")
+                .arg(modName);
+    }
+    if (errorMessage.length()>0)
+        throw errorMessage.toStdWString();
+    return result;
+}
 
 } // namespace KumirCodeRun
 

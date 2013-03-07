@@ -27,7 +27,7 @@ public:
     int currentLineNo() const ;
     inline QDateTime loadedProgramVersion() const { return dt_loadedVersion; }
 
-    bool isGuiRequired() const;
+    inline bool isGuiRequired() { return false; }
 
     QMap<QString,QVariant> getScalarLocalValues(int frameNo) const;
     QMap<QString,QVariant> getScalarGlobalValues(const QString & moduleName) const;
@@ -58,12 +58,7 @@ public slots:
     void runTesting();
     void terminate();
 
-    void finishInput(const QVariantList & message);
-    void finishExternalFunctionCall(
-        const QString & error,
-        const QVariant & retval,
-        const QVariantList & results
-        );
+
 
 
 protected:
@@ -74,14 +69,13 @@ protected:
     bool b_onlyOneTryToInput;
 
 protected slots:
-    void handleOutput(const QString & text);
-    void handleInput(const QString & format);
     void handleThreadFinished();
     void handleLineChanged(int lineNo);
 
 
 signals:
     void stopped(int reason);
+    void finishInput(const QVariantList & data);
     void inputRequest(const QString & format);
     void outputRequest(const QString & output);
     void lineChanged(int lineNo);

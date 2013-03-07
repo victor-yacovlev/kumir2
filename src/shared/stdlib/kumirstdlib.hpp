@@ -902,7 +902,7 @@ public:
         sprintf(buffer, Coder::encode(ASCII, sprintfFormat).c_str(), value);
         std::string result(reinterpret_cast<char*>(&buffer));
 
-        int epos = result.find('e');
+        size_t epos = result.find('e');
         if (epos!=std::string::npos) {
             std::string beforeESignValue = result.substr(0,epos+2);
             std::string afterESignValue  = result.substr(epos+2);
