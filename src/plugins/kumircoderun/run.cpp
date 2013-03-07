@@ -407,22 +407,34 @@ bool Run::clearMargin(int from, int to)
 
 bool Run::mustStop() const
 {
-    QMutexLocker l1(stoppingMutex_); l1;
-    QMutexLocker l2(stepDoneMutex_); l2;
+    stoppingMutex_->lock();
+    stepDoneMutex_->lock();
 
-    if (vm->error().length()>0)
+    if (vm->error().length()>0) {
+        stoppingMutex_->unlock();
+        stepDoneMutex_->unlock();
         return true;
+    }
 
-    if (stoppingFlag_)
+    if (stoppingFlag_) {
+        stoppingMutex_->unlock();
+        stepDoneMutex_->unlock();
         return true;
+    }
 
     if (runMode_==RM_StepOut) {
+        stoppingMutex_->unlock();
+        stepDoneMutex_->unlock();
         return algDoneFlag_;
     }
     else if (runMode_!=RM_ToEnd) {
+        stoppingMutex_->unlock();
+        stepDoneMutex_->unlock();
         return stepDoneFlag_;
     }
     else {
+        stoppingMutex_->unlock();
+        stepDoneMutex_->unlock();
         return false;
     }
 }
@@ -928,9 +940,10 @@ void GetMainArgumentFunctor::operator ()(Variable & reference)
 
 void GetMainArgumentFunctor::handleInputDone(const QVariantList &values)
 {
-    QMutexLocker lock(finishedMutex_); lock;
+    finishedMutex_->lock();
     finishedFlag_ = true;
     inputValues_ = values;
+    finishedMutex_->unlock();
 }
 
 
