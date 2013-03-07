@@ -1,67 +1,67 @@
-ФРАГМЕНТ_АЛГОРИТМА* -> все : { setExtraCloseKeywordError("все"); }
-ФРАГМЕНТ_АЛГОРИТМА* -> кц : { setExtraCloseKeywordError("кц"); }
-АЛГОРИТМ* -> кон : { setExtraCloseKeywordError("кон"); }
+[91] ФРАГМЕНТ_АЛГОРИТМА* -> все : { setExtraCloseKeywordError("все"); }
+[91] ФРАГМЕНТ_АЛГОРИТМА* -> кц : { setExtraCloseKeywordError("кц"); }
+[91] АЛГОРИТМ* -> кон : { setExtraCloseKeywordError("кон"); }
 
-ФРАГМЕНТ_АЛГОРИТМА* -> иначе : { setExtraCloseKeywordError("иначе"); }
-ФРАГМЕНТ_АЛГОРИТМА* -> ограничение_алгоритма : { setExtraCloseKeywordError("ограничение_алгоритма"); }
-ФРАГМЕНТ_АЛГОРИТМА* -> строка_документации : { setExtraCloseKeywordError("строка_документации"); }
-ФРАГМЕНТ_АЛГОРИТМА* -> при : { setExtraCloseKeywordError("при"); }
-ФРАГМЕНТ_АЛГОРИТМА* -> то : { setExtraCloseKeywordError("то"); }
-ФРАГМЕНТ_АЛГОРИТМА* -> использовать : { setCurrentError("Misplaced import"); appendSimpleLine(); } 
+[91] ФРАГМЕНТ_АЛГОРИТМА* -> иначе : { setExtraCloseKeywordError("иначе"); }
+[91] ФРАГМЕНТ_АЛГОРИТМА* -> ограничение_алгоритма : { setExtraCloseKeywordError("ограничение_алгоритма"); }
+[91] ФРАГМЕНТ_АЛГОРИТМА* -> строка_документации : { setExtraCloseKeywordError("строка_документации"); }
+[91] ФРАГМЕНТ_АЛГОРИТМА* -> при : { setExtraCloseKeywordError("при"); }
+[91] ФРАГМЕНТ_АЛГОРИТМА* -> то : { setExtraCloseKeywordError("то"); }
+[91] ФРАГМЕНТ_АЛГОРИТМА* -> использовать : { setCurrentError("Misplaced import"); appendSimpleLine(); } 
 
-ЛИНЕЙНАЯ_СТРОКА* -> выбор : { setOutOfAlgError();  } 
-ЛИНЕЙНАЯ_СТРОКА* -> при : { setOutOfAlgError();  } 
-ЛИНЕЙНАЯ_СТРОКА* -> если : { setOutOfAlgError();  } 
-ЛИНЕЙНАЯ_СТРОКА* -> все : { setOutOfAlgError();  } 
-ЛИНЕЙНАЯ_СТРОКА* -> иначе : { setOutOfAlgError();  } 
-ЛИНЕЙНАЯ_СТРОКА* -> нц : { setOutOfAlgError();  } 
-ЛИНЕЙНАЯ_СТРОКА* -> кц : { setOutOfAlgError();  } 
-ЛИНЕЙНАЯ_СТРОКА* -> кон : { setOutOfAlgError();  } 
-ЛИНЕЙНАЯ_СТРОКА* -> использовать : { setCurrentError("Misplaced import"); appendSimpleLine(); } 
+[91] ЛИНЕЙНАЯ_СТРОКА* -> выбор : { setOutOfAlgError();  } 
+[91] ЛИНЕЙНАЯ_СТРОКА* -> при : { setOutOfAlgError();  } 
+[91] ЛИНЕЙНАЯ_СТРОКА* -> если : { setOutOfAlgError();  } 
+[91] ЛИНЕЙНАЯ_СТРОКА* -> все : { setOutOfAlgError();  } 
+[91] ЛИНЕЙНАЯ_СТРОКА* -> иначе : { setOutOfAlgError();  } 
+[91] ЛИНЕЙНАЯ_СТРОКА* -> нц : { setOutOfAlgError();  } 
+[91] ЛИНЕЙНАЯ_СТРОКА* -> кц : { setOutOfAlgError();  } 
+[91] ЛИНЕЙНАЯ_СТРОКА* -> кон : { setOutOfAlgError();  } 
+[91] ЛИНЕЙНАЯ_СТРОКА* -> использовать : { setCurrentError("Misplaced import"); appendSimpleLine(); } 
 
-ИСПОЛНИТЕЛЬ* -> кон : { setOutOfAlgError();  }
+[91] ИСПОЛНИТЕЛЬ* -> кон : { setOutOfAlgError();  }
 
-АЛГОРИТМ* -> при : { setOutOfAlgError();  } 
-АЛГОРИТМ* -> все : { setOutOfAlgError();  } 
-АЛГОРИТМ* -> кц : { setOutOfAlgError();  } 
-АЛГОРИТМ* -> кон : { setOutOfAlgError();  }
-АЛГОРИТМ* -> ограничение_алгоритма : { setOutOfAlgError();  } 
-АЛГОРИТМ* -> строка_документации : { setOutOfAlgError();  } 
-АЛГОРИТМ* -> нач ФРАГМЕНТ_АЛГОРИТМА* КОНЕЦ_АЛГОРИТМА : { setCurrentError("No algorhitm header"); addDummyAlgHeader(); processCorrectAlgBegin(); }
+[91] АЛГОРИТМ* -> при : { setOutOfAlgError();  } 
+[91] АЛГОРИТМ* -> все : { setOutOfAlgError();  } 
+[91] АЛГОРИТМ* -> кц : { setOutOfAlgError();  } 
+[91] АЛГОРИТМ* -> кон : { setOutOfAlgError();  }
+[91] АЛГОРИТМ* -> ограничение_алгоритма : { setOutOfAlgError();  } 
+[91] АЛГОРИТМ* -> строка_документации : { setOutOfAlgError();  } 
+[91] АЛГОРИТМ* -> нач ФРАГМЕНТ_АЛГОРИТМА* КОНЕЦ_АЛГОРИТМА : { setCurrentError("No algorhitm header"); addDummyAlgHeader(); processCorrectAlgBegin(); }
 
-ИСПОЛНИТЕЛЬ* -> кон_исп : { setCurrentError("No pairing 'begin module'"); appendSimpleLine(); } 
+[91] ИСПОЛНИТЕЛЬ* -> кон_исп : { setCurrentError("No pairing 'begin module'"); appendSimpleLine(); } 
 
-АЛГОРИТМ* -> алг ДОКУМЕНТАЦИЯ ДАНО_НАДО end : { setCurrentError("Algorhitm not implemented"); appendSimpleLine(); suggest("нач\n\nкон\n",2); } {} 
-АЛГОРИТМ* -> алг алг МУСОР_МЕЖДУ_АЛГ_НАЧ ДОКУМЕНТАЦИЯ ДАНО_НАДО ТЕЛО_АЛГОРИТМА : { setCurrentError("Algorhitm not implemented"); appendSimpleLine(); } { processCorrectAlgHeader(); }
-АЛГОРИТМ* -> ограничение_алгоритма : { setOutOfAlgError();  }
+[91] АЛГОРИТМ* -> алг ДОКУМЕНТАЦИЯ ДАНО_НАДО end : { setCurrentError("Algorhitm not implemented"); appendSimpleLine(); suggest("нач\n\nкон\n",2); } {} 
+[91] АЛГОРИТМ* -> алг алг МУСОР_МЕЖДУ_АЛГ_НАЧ ДОКУМЕНТАЦИЯ ДАНО_НАДО ТЕЛО_АЛГОРИТМА : { setCurrentError("Algorhitm not implemented"); appendSimpleLine(); } { processCorrectAlgHeader(); }
+[91] АЛГОРИТМ* -> ограничение_алгоритма : { setOutOfAlgError();  }
 
-ИСПОЛНИТЕЛЬ* -> простое_предложение : { setOutOfAlgError();  }
+[91] ИСПОЛНИТЕЛЬ* -> простое_предложение : { setOutOfAlgError();  }
 
-ОШИБОЧНАЯ_ЗАГРУЗКА* -> использовать : { setCurrentError("Misplaced import"); appendSimpleLine(); }
-СТРОКА_ВНЕ_АЛГОРИТМА* -> использовать : { setCurrentError("Misplaced import"); appendSimpleLine(); }
-СТРОКА_ВНЕ_АЛГОРИТМА* -> нц : { setOutOfAlgError();  } 
-СТРОКА_ВНЕ_АЛГОРИТМА* -> кц : { setOutOfAlgError();  } 
-СТРОКА_ВНЕ_АЛГОРИТМА* -> если : { setOutOfAlgError();  } 
-СТРОКА_ВНЕ_АЛГОРИТМА* -> то : { setOutOfAlgError();  } 
-СТРОКА_ВНЕ_АЛГОРИТМА* -> иначе : { setOutOfAlgError();  } 
-СТРОКА_ВНЕ_АЛГОРИТМА* -> все : { setOutOfAlgError();  }
+[91] ОШИБОЧНАЯ_ЗАГРУЗКА* -> использовать : { setCurrentError("Misplaced import"); appendSimpleLine(); }
+[91] СТРОКА_ВНЕ_АЛГОРИТМА* -> использовать : { setCurrentError("Misplaced import"); appendSimpleLine(); }
+[91] СТРОКА_ВНЕ_АЛГОРИТМА* -> нц : { setOutOfAlgError();  } 
+[91] СТРОКА_ВНЕ_АЛГОРИТМА* -> кц : { setOutOfAlgError();  } 
+[91] СТРОКА_ВНЕ_АЛГОРИТМА* -> если : { setOutOfAlgError();  } 
+[91] СТРОКА_ВНЕ_АЛГОРИТМА* -> то : { setOutOfAlgError();  } 
+[91] СТРОКА_ВНЕ_АЛГОРИТМА* -> иначе : { setOutOfAlgError();  } 
+[91] СТРОКА_ВНЕ_АЛГОРИТМА* -> все : { setOutOfAlgError();  }
 
-СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> нц : { setOutOfAlgError();  }
-СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> кц : { setOutOfAlgError();  }
-СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> если : { setOutOfAlgError();  }
-СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> то : { setOutOfAlgError();  }
-СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> иначе : { setOutOfAlgError();  }
-СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> выбор : { setOutOfAlgError();  }
-СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> при : { setOutOfAlgError();  }
-СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> все : { setOutOfAlgError();  } 
+[91] СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> нц : { setOutOfAlgError();  }
+[91] СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> кц : { setOutOfAlgError();  }
+[91] СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> если : { setOutOfAlgError();  }
+[91] СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> то : { setOutOfAlgError();  }
+[91] СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> иначе : { setOutOfAlgError();  }
+[91] СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> выбор : { setOutOfAlgError();  }
+[91] СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> при : { setOutOfAlgError();  }
+[91] СТРОКА_ПЕРЕД_АЛГОРИТМОМ* -> все : { setOutOfAlgError();  } 
 
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> использовать : { setOutOfAlgError();  }
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> нц : { setOutOfAlgError();  }
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> кц : { setOutOfAlgError();  }
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> если : { setOutOfAlgError();  }
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> то : { setOutOfAlgError();  }
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> выбор : { setOutOfAlgError();  }
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> при : { setOutOfAlgError();  }
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> иначе : { setOutOfAlgError();  }
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> все : { setOutOfAlgError();  }
-МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> простое_предложение : { setOutOfAlgError();  }
+[91] МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> использовать : { setOutOfAlgError();  }
+[91] МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> нц : { setOutOfAlgError();  }
+[91] МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> кц : { setOutOfAlgError();  }
+[91] МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> если : { setOutOfAlgError();  }
+[91] МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> то : { setOutOfAlgError();  }
+[91] МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> выбор : { setOutOfAlgError();  }
+[91] МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> при : { setOutOfAlgError();  }
+[91] МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> иначе : { setOutOfAlgError();  }
+[91] МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> все : { setOutOfAlgError();  }
+[91] МУСОР_В_КОНЦЕ_ПРОГРАММЫ* -> простое_предложение : { setOutOfAlgError();  }

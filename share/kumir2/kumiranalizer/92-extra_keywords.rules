@@ -1,9 +1,9 @@
-АЛГОРИТМ* -> алг : { setCurrentError("No algorhitm implementation"); appendSimpleLine(); suggest("нач\n\nкон\n",5); }
-АЛГОРИТМ* -> если : { setOutOfAlgError();  }
-АЛГОРИТМ* -> кон : { setOutOfAlgError();  }
-АЛГОРИТМ* -> выбор : { setOutOfAlgError();  }
-АЛГОРИТМ* -> при : { setOutOfAlgError();  }
-АЛГОРИТМ* -> все : { setOutOfAlgError();  }
-АЛГОРИТМ* -> нц : { setOutOfAlgError();  }
-АЛГОРИТМ* -> кц : { setOutOfAlgError();  }
-ИСПОЛНИТЕЛЬ* -> нач : { setOutOfAlgError();  }
+[92] АЛГОРИТМ* -> алг : { setCurrentError("No algorhitm implementation"); appendSimpleLine(); suggest("нач\n\nкон\n",5); }
+[92] АЛГОРИТМ* -> если : { setOutOfAlgError();  }
+[92] АЛГОРИТМ* -> кон : { setOutOfAlgError();  }
+[92] АЛГОРИТМ* -> выбор : { setOutOfAlgError();  }
+[92] АЛГОРИТМ* -> при : { setOutOfAlgError();  }
+[92] АЛГОРИТМ* -> все : { setOutOfAlgError();  }
+[92] АЛГОРИТМ* -> нц : { setOutOfAlgError();  }
+[92] АЛГОРИТМ* -> кц : { setOutOfAlgError();  }
+[92] ИСПОЛНИТЕЛЬ* -> нач : { setOutOfAlgError();  }

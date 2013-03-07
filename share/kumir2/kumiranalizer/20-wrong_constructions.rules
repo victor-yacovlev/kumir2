@@ -1,4 +1,4 @@
-﻿ТО -> иначе ФРАГМЕНТ_АЛГОРИТМА* все : { 
+﻿[20] ТО -> иначе ФРАГМЕНТ_АЛГОРИТМА* все : { 
    processCorrectThenIfNotExists2();
    processCorrectElse(); 
    setCurrentError("No 'then' before else..fi"); 
@@ -7,23 +7,23 @@
    processCorrectFi(); 
 }
 
-ФРАГМЕНТ_АЛГОРИТМА* -> алг : { setCurrentError("Algorhitm header in algorhitm body"); appendSimpleLine(); }
-ФРАГМЕНТ_АЛГОРИТМА* -> нач : { setCurrentError("Begin in algorhitm body"); appendSimpleLine(); }
-ФРАГМЕНТ_АЛГОРИТМА* -> исп : { setCurrentError("Module in algorhitm body"); appendSimpleLine(); }
-ФРАГМЕНТ_АЛГОРИТМА* -> кон_исп : { setCurrentError("End module in algorhitm body"); appendSimpleLine(); }
+[20] ФРАГМЕНТ_АЛГОРИТМА* -> алг : { setCurrentError("Algorhitm header in algorhitm body"); appendSimpleLine(); }
+[20] ФРАГМЕНТ_АЛГОРИТМА* -> нач : { setCurrentError("Begin in algorhitm body"); appendSimpleLine(); }
+[20] ФРАГМЕНТ_АЛГОРИТМА* -> исп : { setCurrentError("Module in algorhitm body"); appendSimpleLine(); }
+[20] ФРАГМЕНТ_АЛГОРИТМА* -> кон_исп : { setCurrentError("End module in algorhitm body"); appendSimpleLine(); }
 
-ЛИШНИЙ_НАЧ_У_ИСПОЛНИТЕЛЯ -> нач : { setCurrentError("Extra 'begin'"); appendSimpleLine(); }
+[20] ЛИШНИЙ_НАЧ_У_ИСПОЛНИТЕЛЯ -> нач : { setCurrentError("Extra 'begin'"); appendSimpleLine(); }
 
-КОНЕЦ_ИСПОЛНИТЕЛЯ -> end : { setModuleBeginError("No paired 'end module'"); suggest("\n\n\nкон_исп\n",3); }
+[20] КОНЕЦ_ИСПОЛНИТЕЛЯ -> end : { setModuleBeginError("No paired 'end module'"); suggest("\n\n\nкон_исп\n",3); }
 
-ИСПОЛНИТЕЛЬ* -> алг МУСОР_МЕЖДУ_АЛГ_НАЧ ДОКУМЕНТАЦИЯ ДАНО_НАДО ТЕЛО_АЛГОРИТМА : { 
+[20] ИСПОЛНИТЕЛЬ* -> алг МУСОР_МЕЖДУ_АЛГ_НАЧ ДОКУМЕНТАЦИЯ ДАНО_НАДО ТЕЛО_АЛГОРИТМА : { 
     
     processCorrectAlgHeader(); 
 }
 
-#АЛГОРИТМ* -> если МУСОР_МЕЖДУ_ЕСЛИ_ТО ТО : { setCurrentError("Garbage after 'if' statement"); processCorrectIf(); }
-#АЛГОРИТМ* -> выбор МУСОР_МЕЖДУ_ВЫБОР_ПРИ при ФРАГМЕНТ_АЛГОРИТМА* ПРИ* ИНАЧЕ_ВСЕ : { setCurrentError("Garbage after 'switch' statement"); processCorrectSwitch(); } { processCorrectCase(); }
-АЛГОРИТМ* -> алг ФРАГМЕНТ_АЛГОРИТМА* КОНЕЦ_АЛГОРИТМА : { 
+#[20] АЛГОРИТМ* -> если МУСОР_МЕЖДУ_ЕСЛИ_ТО ТО : { setCurrentError("Garbage after 'if' statement"); processCorrectIf(); }
+#[20] АЛГОРИТМ* -> выбор МУСОР_МЕЖДУ_ВЫБОР_ПРИ при ФРАГМЕНТ_АЛГОРИТМА* ПРИ* ИНАЧЕ_ВСЕ : { setCurrentError("Garbage after 'switch' statement"); processCorrectSwitch(); } { processCorrectCase(); }
+[20] АЛГОРИТМ* -> алг ФРАГМЕНТ_АЛГОРИТМА* КОНЕЦ_АЛГОРИТМА : { 
     setCurrentError("No 'begin' after header"); 
     setCurrentIndentRank(0, +1);  
     processCorrectAlgHeader(); 
@@ -31,7 +31,7 @@
     suggest("нач\n\nкон\n",2);
 }
 
-ФРАГМЕНТ_АЛГОРИТМА* -> алг нач ФРАГМЕНТ_АЛГОРИТМА* кон : {
+[20] ФРАГМЕНТ_АЛГОРИТМА* -> алг нач ФРАГМЕНТ_АЛГОРИТМА* кон : {
   setCurrentError("Inner algorhitm"); 
   appendSimpleLine();
 } {

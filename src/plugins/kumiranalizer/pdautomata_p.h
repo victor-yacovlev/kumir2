@@ -21,7 +21,7 @@ struct RuleRightPart {
     QStringList nonTerminals;
     ScriptListPtr script;
     bool isEpsilon;
-    int priority;
+    qreal priority;
     inline bool operator< (const RuleRightPart &other) const {
             return priority < other.priority;
     }
@@ -35,7 +35,7 @@ typedef QMap<QString,Rules> Matrix;
 struct PDStackElem {
         QString nonTerminal;
         int iterateStart;
-        int priority;
+        qreal priority;
 };
 
 class PDAutomataPrivate:
@@ -70,7 +70,7 @@ public:
     AST::Algorhitm * currentAlgorhitm;
     QStack< QList<AST::Statement*> * > currentContext;
 
-    int maxPriorityValue;
+    qreal maxPriorityValue;
 
     void matchScript(const QString &text, ScriptListPtr & scripts);
 
