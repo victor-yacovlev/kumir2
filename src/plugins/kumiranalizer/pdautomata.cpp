@@ -174,8 +174,8 @@ QStringList makeAllTerminals(const QString & representation)
     else {
         const QString notTerminal = representation.mid(1);
         static QStringList allTerminals;
-        allTerminals << QString::fromUtf8("begin");
-        allTerminals << QString::fromUtf8("end");
+//        allTerminals << QString::fromUtf8("begin");
+//        allTerminals << QString::fromUtf8("end");
         allTerminals << QString::fromUtf8("простое_предложение");
         allTerminals << QString::fromUtf8("алг");
         allTerminals << QString::fromUtf8("нач");
@@ -211,6 +211,13 @@ void PDAutomataPrivate::loadRules(const QString &rulesRoot)
         priorities << i;
     }
     prepareRules(rulesFileList, normalizedRules, priorities);
+
+//    QFile dbg("/home/victor/work/git/kumir2/rules.txt");
+//    dbg.open(QIODevice::WriteOnly);
+//    QTextStream ts(&dbg);
+//    ts.setCodec("UTF-8");
+//    ts << normalizedRules;
+//    dbg.close();
 
     QStringList lines = normalizedRules.split("\n");
 
