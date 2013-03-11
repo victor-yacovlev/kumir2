@@ -173,27 +173,26 @@ QStringList makeAllTerminals(const QString & representation)
     }
     else {
         const QString notTerminal = representation.mid(1);
-        static const QStringList allTerminals = {
-            QString::fromUtf8("begin"),
-            QString::fromUtf8("end"),
-            QString::fromUtf8("простое_предложение"),
-            QString::fromUtf8("алг"),
-            QString::fromUtf8("нач"),
-            QString::fromUtf8("кон"),
-            QString::fromUtf8("нц"),
-            QString::fromUtf8("кц"),
-            QString::fromUtf8("иначе"),
-            QString::fromUtf8("если"),
-            QString::fromUtf8("то"),
-            QString::fromUtf8("все"),
-            QString::fromUtf8("выбор"),
-            QString::fromUtf8("при"),
-            QString::fromUtf8("ограничение_алгоритма"),
-            QString::fromUtf8("исп"),
-            QString::fromUtf8("использовать"),
-            QString::fromUtf8("кон_исп"),
-            QString::fromUtf8("строка_документации")
-        };
+        static QStringList allTerminals;
+        allTerminals << QString::fromUtf8("begin");
+        allTerminals << QString::fromUtf8("end");
+        allTerminals << QString::fromUtf8("простое_предложение");
+        allTerminals << QString::fromUtf8("алг");
+        allTerminals << QString::fromUtf8("нач");
+        allTerminals << QString::fromUtf8("кон");
+        allTerminals << QString::fromUtf8("нц");
+        allTerminals << QString::fromUtf8("кц");
+        allTerminals << QString::fromUtf8("иначе");
+        allTerminals << QString::fromUtf8("если");
+        allTerminals << QString::fromUtf8("то");
+        allTerminals << QString::fromUtf8("все");
+        allTerminals << QString::fromUtf8("выбор");
+        allTerminals << QString::fromUtf8("при");
+        allTerminals << QString::fromUtf8("ограничение_алгоритма");
+        allTerminals << QString::fromUtf8("исп");
+        allTerminals << QString::fromUtf8("использовать");
+        allTerminals << QString::fromUtf8("кон_исп");
+        allTerminals << QString::fromUtf8("строка_документации");
         result = allTerminals;
         result.removeAll(notTerminal);
     }
