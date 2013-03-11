@@ -628,7 +628,7 @@ void KumirVM::reset()
 
     // Prepare startup context
     Context c;
-    if (entryPoint_==EP_Main && (pMainProgram->type==EL_MAIN || pMainProgram->type==EL_BELOWMAIN) ) {
+    if (entryPoint_==EP_Main && pMainProgram && (pMainProgram->type==EL_MAIN || pMainProgram->type==EL_BELOWMAIN) ) {
         uint32_t mod = pMainProgram->module;
         uint32_t alg = pMainProgram->algId;
         uint32_t key = (mod << 16) | alg;
@@ -641,7 +641,7 @@ void KumirVM::reset()
         c.name = pMainProgram->name;
     }
 
-    if (entryPoint_==EP_Testing && pTestingProgram->type==EL_TESTING) {
+    if (entryPoint_==EP_Testing && pTestingProgram && pTestingProgram->type==EL_TESTING) {
         uint32_t mod = pTestingProgram->module;
         uint32_t alg = pTestingProgram->algId;
         uint32_t key = (mod << 16) | alg;
