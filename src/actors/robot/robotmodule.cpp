@@ -2703,6 +2703,7 @@ void RobotModule::reset()
 	This method is called when actor resets its state before program starts.
 	*/
     //delete field;
+    qDebug()<<"Reset!!";
     field->destroyRobot();
     field->deleteLater();
     field=startField->Clone();
@@ -2767,7 +2768,7 @@ void RobotModule::runGoUp()
      if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
          emit sendToPultLog(status);
      }
-    if(animation)sleep(1);
+    if(animation)sleep(0.25);
 	return;
 }
 
@@ -2785,7 +2786,7 @@ void RobotModule::runGoDown()
      if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
          emit sendToPultLog(status);
      }
-         if(animation)sleep(1);
+         if(animation)sleep(0.25);
 	return;
 }
 
@@ -2803,7 +2804,7 @@ void RobotModule::runGoLeft()
     if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
         emit sendToPultLog(status);
     }
-        if(animation)sleep(1);
+        if(animation)sleep(0.25);
 	return;
 }
 
@@ -2820,7 +2821,7 @@ void RobotModule::runGoRight()
     if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
         emit sendToPultLog(status);
     }
-     if(animation)sleep(1);
+     if(animation)sleep(0.25);
 	return;
 }
 
