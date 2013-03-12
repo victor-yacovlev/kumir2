@@ -3078,7 +3078,8 @@ int RobotModule::SaveToFile(QString p_FileName)
            QGraphicsView::mousePressEvent(event);   
             return;
         }
-        if(robotField->sceneRect().height()> this->height()  &&robotField->sceneRect().width()> this->width())//field > view
+        //qDebug()<<robotField->sceneRect().height()<<this->height();
+        if(robotField->sceneRect().height()*c_scale> this->height()  &&robotField->sceneRect().width()*c_scale> this->width())//field > view
         {
         pressed=true;
         setCursor(Qt::ClosedHandCursor);   
