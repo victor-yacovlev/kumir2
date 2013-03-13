@@ -1550,10 +1550,25 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
 
 void Generator::SWITCHCASEELSE(int modId, int algId, int level, const AST::Statement *st, QList<Bytecode::Instruction> & result)
 {
+    if (st->headerError.size()>0) {
+        Bytecode::Instruction garbage;
+        garbage.type = Bytecode::LINE;
+        garbage.arg = st->headerErrorLine;
+        result << garbage;
+        garbage.type = Bytecode::ERRORR;
+        garbage.scope = Bytecode::CONSTT;
+        garbage.arg = constantValue(Bytecode::VT_string, 0,
+                                    ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->headerError)
+                                    , QString(), QString()
+                                    );
+        result << garbage;
+        return;
+    }
+
     Bytecode::Instruction l;
     l.type = Bytecode::LINE;
 
-    if (st->beginBlockError.size()>0) {
+        if (st->beginBlockError.size()>0) {
         const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->beginBlockError);
         result << l;
         Bytecode::Instruction err;
@@ -1566,6 +1581,8 @@ void Generator::SWITCHCASEELSE(int modId, int algId, int level, const AST::State
 
     int lastJzIp = -1;
     QList<int> jumpIps;
+
+
 
     for (int i=0; i<st->conditionals.size(); i++) {
         if (lastJzIp!=-1) {

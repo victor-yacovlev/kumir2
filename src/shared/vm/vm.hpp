@@ -796,7 +796,7 @@ void KumirVM::debuggerPushContext(
     std::deque<uint8_t> dims;
     for (size_t i=0; i<variables->size(); i++) {
         const Variable & var = variables->at(i);
-        names.push_back(var.name());
+        names.push_back(var.myName());
         switch (var.baseType()) {
             case VT_int: types.push_back(Kumir::Core::fromUtf8("цел")); break;
             case VT_real: types.push_back(Kumir::Core::fromUtf8("вещ")); break;

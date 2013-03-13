@@ -29,6 +29,10 @@ struct Statement
     QList<AST::Variable*> variables;
     int conditionalIndex;
     bool hasError() const;
+    void setError(const QString & err,
+                  const Lexem::ErrorStage stage,
+                  const Lexem::ErrorRaisePosition raise
+                  );
     explicit Statement();
     QPair<QString,quint32> suggestedClosingBracket;
 };

@@ -41,10 +41,10 @@ struct PDStackElem {
 class PDAutomataPrivate:
         public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
 public:
 
-    void loadRules(const QString &rulesRoot);
+    void loadRules(const QString &rulesRoot);    
     class PDAutomata * q;
     ~PDAutomataPrivate();
     AST::Data * ast;
@@ -57,11 +57,13 @@ public:
 
     int currentPosition;
     QVector<ScriptListPtr> scripts;
+    QVector<QString> acceptedRules;
     QStack<PDStackElem> stack;
 
     QStack<int> history_currentPosition;
     QStack< QVector<ScriptListPtr> > history_scripts;
     QStack< QStack<PDStackElem> > history_stack;
+    QStack< QVector<int> > history_nextPointers;
 
     QVector<ScriptListPtr> fixedScripts;
     QVector<int> nextPointers;
@@ -73,6 +75,7 @@ public:
     qreal maxPriorityValue;
 
     void matchScript(const QString &text, ScriptListPtr & scripts);
+    void addEpsilonRule(const QString &nonTerminal, const qreal prior, const QString & script );
 
     int errorsCount;
 
@@ -104,6 +107,7 @@ public slots:
     void processCorrectModuleEnd();
     void processCorrectLoad();
     void appendSimpleLine();
+    void processAlgWithNoBegin();
     void setGarbageAlgError();
     void setGarbageIfThenError();
     void setGarbageSwitchCaseError();

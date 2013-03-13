@@ -13,6 +13,7 @@ Statement::Statement()
     loop.forVariable = NULL;
     loop.toValue = loop.fromValue = loop.whileCondition = loop.timesValue = loop.endCondition = loop.stepValue = 0;
     skipErrorEvaluation = false;
+    parent = 0;
 }
 
 Statement::~Statement()
@@ -56,6 +57,7 @@ Statement::Statement(const Statement *src)
     type = src->type;
     error = src->error;
     loop.type = src->loop.type;
+    parent = src->parent;
     if (src->loop.toValue)
         loop.toValue = new Expression(src->loop.toValue);
     else

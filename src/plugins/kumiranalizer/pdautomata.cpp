@@ -7,13 +7,15 @@
 #include <deque>
 #include <algorithm>
 
-#define isTerminal(x) QRegExp(QString::fromUtf8("!?[a-z|а-я][a-z|а-я|_]*")).exactMatch(x)
-#define isNeterminal(x) QRegExp(QString::fromUtf8("[А-Я|A-Z][А-Я|A-Z|1-9|_*]*")).exactMatch(x)
+#define isTerminal(x) QRegExp(QString::fromUtf8("!?[a-zа-я][a-zа-я_,]*")).exactMatch(x)
+#define isNeterminal(x) QRegExp(QString::fromUtf8("[А-ЯA-Z][А-ЯA-Z1-9_*]*")).exactMatch(x)
 #define isNagruzka(x) ( x.startsWith("{") && x.endsWith("}") )
 
-#define MAXIMUM_ERRORS_COUNT 20
+#define MAXIMUM_ERRORS_EDGES 1000
 
 namespace KumirAnalizer {
+
+//static QFile logger("/home/victor/decision.txt");
 
 AST::Module * moduleOfAlgorhitm(AST::Data * data, AST::Algorhitm * alg) {
     foreach (AST::Module * mod, data->modules) {
@@ -24,7 +26,7 @@ AST::Module * moduleOfAlgorhitm(AST::Data * data, AST::Algorhitm * alg) {
     return 0;
 }
 
-void prepareRules(const QStringList &files, QString &out, const QList<int> &priors);
+void prepareRules(const QStringList &files, QString &out);
 QString terminalByCode(unsigned int code);
 bool isCorrectTerminal(QString terminal);
 QStringList makeAllTerminals(const QString & representation);
@@ -49,6 +51,7 @@ void PDAutomata::init(bool teacherMode, const QList<Statement*> & statements, AS
     static Statement * begin = new Statement(LexemType(0xFFFFFFFF));
     d->source.clear();
     d->source << begin;
+//    logger.open(QIODevice::WriteOnly|QIODevice::Text);
     foreach (Statement * st, statements) {
         if (st->type!=LxTypeComment)
             d->source << st;
@@ -93,12 +96,13 @@ void PDAutomata::init(bool teacherMode, const QList<Statement*> & statements, AS
     start.priority = 0;
     d->stack.push(start);
     d->scripts = QVector< ScriptListPtr > (d->source.size()+2, NULL);
+    d->acceptedRules = QVector< QString > (d->source.size()+2, QString());
     d->fixedScripts = QVector< ScriptListPtr > (d->source.size()+2, NULL);
     d->nextPointers = QVector<int>(d->source.size());
     for (int i=0; i<d->nextPointers.size(); i++) {
         d->nextPointers[i] = i+1;
     }
-    d->allowSkipParts = d->source.size() >= MAXIMUM_ERRORS_COUNT;
+    d->allowSkipParts = d->source.size() >= MAXIMUM_ERRORS_EDGES;
 }
 
 PDAutomataPrivate::~PDAutomataPrivate()
@@ -169,11 +173,11 @@ QStringList makeAllTerminals(const QString & representation)
 {
     QStringList result;
     if (!representation.startsWith("!")) {
-        result << representation;
+        result << representation.split(",");
     }
     else {
-        const QString notTerminal = representation.mid(1);
-        static QStringList allTerminals;
+        const QStringList notTerminals = representation.mid(1).split(",");
+        QStringList allTerminals;
 //        allTerminals << QString::fromUtf8("begin");
 //        allTerminals << QString::fromUtf8("end");
         allTerminals << QString::fromUtf8("простое_предложение");
@@ -194,23 +198,100 @@ QStringList makeAllTerminals(const QString & representation)
         allTerminals << QString::fromUtf8("кон_исп");
         allTerminals << QString::fromUtf8("строка_документации");
         result = allTerminals;
-        result.removeAll(notTerminal);
+        foreach (const QString notTerminal, notTerminals)
+            result.removeAll(notTerminal);
+    }
+    for (int i=0; i<result.size(); i++) {
+        result[i] = result[i].trimmed();
     }
     return result;
+}
+
+void PDAutomataPrivate::addEpsilonRule(const QString &leftPart, const qreal prior, const QString & script)
+{
+    static const LexemType allLines[] = {
+        LxTypeEmpty,
+        LxTypeDoc,
+        LxNameClass,
+        LxPriModule,
+        LxPriEndModule,
+        LxPriAlgHeader,
+        LxPriAlgBegin,
+        LxPriAlgEnd,
+        LxPriPre,
+        LxPriPost,
+        LxPriIf,
+        LxPriThen,
+        LxPriElse,
+        LxPriFi,
+        LxPriSwitch,
+        LxPriCase,
+        LxPriLoop,
+        LxPriEndLoop,
+        LxPriInput,
+        LxPriOutput,
+        LxPriAssign,
+        LxPriAssert,
+        LxPriImport,
+        LxPriExit,
+        LxPriPause,
+        LxPriExit,
+
+        LexemType(0xFFFFFFFF)
+    };
+
+    int j = 0;
+    do {
+        QString key;
+        RuleRightPart rule;
+        if ( allLines[j] != 0 ) {
+            unsigned int code;
+            code = allLines[j];
+            key = terminalByCode(code) + "/" + leftPart;
+        }
+        else
+            key = "end/" + leftPart;
+        Q_ASSERT ( ! key.startsWith("/") );
+        rule.nonTerminals = QStringList();
+        rule.isEpsilon = true;
+        rule.priority = prior;
+        matchScript(script.mid(1, script.length()-2), rule.script);
+        if ( matrix.contains(key) ) {
+            // Добавляем \epsilon-правило только если нет других правил
+            // c тем же приоритетом
+            bool allowToAdd = true;
+            Rules rulesList = matrix[key];
+            foreach ( RuleRightPart rule, rulesList ) {
+                if ( rule.priority == prior ) {
+                    allowToAdd = false;
+                    break;
+                }
+            }
+            if ( allowToAdd )
+                matrix[key].append(rule);
+            else
+                delete rule.script;
+        }
+        else {
+            Rules newRulesList;
+            newRulesList.append(rule);
+            matrix[key] = newRulesList;
+        }
+        j++;
+    } while ( allLines[j] != 0xFFFFFFFF );
 }
 
 void PDAutomataPrivate::loadRules(const QString &rulesRoot)
 {
     const QDir rulesDir(rulesRoot);
-    QStringList rulesFileList = rulesDir.entryList(QStringList() << "*.rules");
+    QStringList rulesFileList = rulesDir.entryList(QStringList() << "[A-Z]*.rules");
     QString normalizedRules;
-    QList<int> priorities;
+
     for (int i=0; i<rulesFileList.count(); i++) {
         QString absName = rulesDir.absoluteFilePath(rulesFileList[i]);
         rulesFileList[i] = absName;
-        priorities << i;
     }
-    prepareRules(rulesFileList, normalizedRules, priorities);
+    prepareRules(rulesFileList, normalizedRules);
 
 //    QFile dbg("/home/victor/work/git/kumir2/rules.txt");
 //    dbg.open(QIODevice::WriteOnly);
@@ -310,82 +391,13 @@ void PDAutomataPrivate::loadRules(const QString &rulesRoot)
 
         // Добавляем в таблицу правил
         if ( terminal.isEmpty() ) {
-            LexemType allLines[] = {
-                LxTypeEmpty,
-                LxTypeDoc,
-                LxNameClass,
-                LxPriModule,
-                LxPriEndModule,
-                LxPriAlgHeader,
-                LxPriAlgBegin,
-                LxPriAlgEnd,
-                LxPriPre,
-                LxPriPost,
-                LxPriIf,
-                LxPriThen,
-                LxPriElse,
-                LxPriFi,
-                LxPriSwitch,
-                LxPriCase,
-                LxPriLoop,
-                LxPriEndLoop,
-                LxPriInput,
-                LxPriOutput,
-                LxPriAssign,
-                LxPriAssert,
-                LxPriImport,
-                LxPriExit,
-                LxPriPause,
-                LxPriExit,
-
-                LexemType(0xFFFFFFFF)
-            };
-
-            int j = 0;
-            do {
-                QString key;
-                RuleRightPart rule;
-                if ( allLines[j] != 0 ) {
-                    unsigned int code;
-                    code = allLines[j];
-                    key = terminalByCode(code) + "/" + leftPart;
-                }
-                else
-                    key = "end/" + leftPart;
-                Q_ASSERT ( ! key.startsWith("/") );
-                rule.nonTerminals = QStringList();
-                rule.isEpsilon = true;
-                rule.priority = prior;
-                matchScript(script.mid(1, script.length()-2), rule.script);
-                if ( matrix.contains(key) ) {
-                    // Добавляем \epsilon-правило только если нет других правил
-                    // c тем же приоритетом
-                    bool allowToAdd = true;
-                    Rules rulesList = matrix[key];
-                    foreach ( RuleRightPart rule, rulesList ) {
-                        if ( rule.priority == prior ) {
-                            allowToAdd = false;
-                            break;
-                        }
-                    }
-                    if ( allowToAdd )
-                        matrix[key].append(rule);
-                    else
-                        delete rule.script;
-                }
-                else {
-                    Rules newRulesList;
-                    newRulesList.append(rule);
-                    matrix[key] = newRulesList;
-                }
-                j++;
-            } while ( allLines[j] != 0xFFFFFFFF );
+            addEpsilonRule(leftPart, prior, script);
         }
         else {
             // Случай обычного правила
-            Q_ASSERT( isCorrectTerminal(terminal) );
             const QStringList possibleTerminals = makeAllTerminals(terminal);
             foreach (const QString & aTerminal, possibleTerminals) {
+                Q_ASSERT( isCorrectTerminal(aTerminal) );
                 QString key;
                 key = aTerminal + "/" + leftPart;
                 RuleRightPart rule;
@@ -430,7 +442,7 @@ int PDAutomata::process()
             return 1;
     }
     do {
-        if (d->errorsCount>MAXIMUM_ERRORS_COUNT) {
+        if (d->errorsCount>MAXIMUM_ERRORS_EDGES) {
             d->setTooManyErrors();
             return 0;
         }
@@ -447,16 +459,37 @@ int PDAutomata::process()
             currentTerminal = "end";
         }
         key = currentTerminal + "/" + currentStackElem.nonTerminal;
+//        logger.write(QString::fromAscii("Processing %1 -> %2 (%3): \n")
+//                     .arg(currentStackElem.nonTerminal)
+//                     .arg(currentTerminal)
+//                     .arg(d->currentPosition)
+//                     .toUtf8()
+//                     );
+//        logger.flush();
         if ( d->matrix.contains(key) ) {
             Rules rulesList = d->matrix[key];
-
+//            logger.write(QString::fromAscii("rules count = %1\n")
+//                         .arg(rulesList.size()).toUtf8()
+//                         );
+//            logger.flush();
             if ( rulesList.count() == 1 ) {
                 // Линейный случай, когда паре {ТЕРМИНАЛ,НЕТЕРМИНАЛ}
                 // соответствует только одно правило
                 RuleRightPart rule = rulesList[0];
-
-                if ( !rule.isEpsilon && d->currentPosition>=0 )
+//                logger.write(QString::fromAscii("1:\t[%1] %2\n")
+//                             .arg(rule.priority)
+//                             .arg(rule.isEpsilon? "0" : rule.nonTerminals.join(" "))
+//                             .toUtf8()
+//                             );
+//                logger.flush();
+                if ( !rule.isEpsilon && d->currentPosition>=0 ) {
                     d->scripts[d->currentPosition] = rule.script;
+                    d->acceptedRules[d->currentPosition] = QString::fromAscii("[%1] %2 -> %3 %4")
+                            .arg(rule.priority)
+                            .arg(currentStackElem.nonTerminal)
+                            .arg(currentTerminal)
+                            .arg(rule.nonTerminals.join(" "));
+                }
                 // Если левая часть правила итеративная (*), то помещаем её обратно в стек
                 if ( !rule.isEpsilon && currentStackElem.nonTerminal.endsWith("*") ) {
                     PDStackElem backElem = currentStackElem;
@@ -484,11 +517,26 @@ int PDAutomata::process()
 
                 // 				int errorsBefore = m_errorWayCounter;
                 for ( int i=0; i<rulesList.count(); i++ )  {
+                    if (i>0)
+                        d->errorsCount ++;
                     d->saveData();
                     RuleRightPart rule = rulesList[i];
+//                    logger.write(QString::fromAscii("%1:\t[%2] %3\n")
+//                                 .arg(i)
+//                                 .arg(rule.priority)
+//                                 .arg(rule.isEpsilon? "0" : rule.nonTerminals.join(" "))
+//                                 .toUtf8()
+//                                 );
+//                    logger.flush();
 
-                    if ( !rule.isEpsilon && d->currentPosition>=0 )
+                    if ( !rule.isEpsilon && d->currentPosition>=0 ) {
                         d->scripts[d->currentPosition] = rule.script;
+                        d->acceptedRules[d->currentPosition] = QString::fromAscii("[%1] %2 -> %3 %4")
+                                .arg(rule.priority)
+                                .arg(currentStackElem.nonTerminal)
+                                .arg(currentTerminal)
+                                .arg(rule.nonTerminals.join(" "));
+                    }
                     // Если левая часть правила итеративная (*), то помещаем её обратно в стек
                     if ( !rule.isEpsilon && currentStackElem.nonTerminal.endsWith("*") ) {
                         PDStackElem backElem = currentStackElem;
@@ -521,7 +569,7 @@ int PDAutomata::process()
                     break;
                 }
             }
-        }
+        } // end if (matrix has key)
         else {
             return 1;
         }
@@ -553,6 +601,14 @@ inline int lineLevel(const QString & line) {
     return line.count("{") - line.count("}");
 }
 
+static void cleanupRuleLine(QString & line) {
+    int commentPos = line.indexOf('#');
+    if (commentPos!=-1) {
+        line = line.left(commentPos);
+    }
+    line = line.trimmed();
+}
+
 static void mergeRuleLines(std::list<QString> & lines)
 {
     typedef std::list<QString>::iterator It;
@@ -560,15 +616,21 @@ static void mergeRuleLines(std::list<QString> & lines)
     It nextToCurrent;
     It statement;
     for ( ; current!=lines.end(); ) {
-        int currentLevel = lineLevel(*current);
-        if (currentLevel!=0) {
+        QString & currentLine = *current;
+        cleanupRuleLine(currentLine);
+        int currentLevel = lineLevel(currentLine);
+        if (currentLevel!=0 || currentLine.endsWith("\\")) {
             nextToCurrent = current;
             ++nextToCurrent;
             statement = nextToCurrent;
             for ( ; statement!=lines.end(); ++statement) {
-                currentLevel += lineLevel(*statement);
-                *current += " " + statement->trimmed();
-                if (currentLevel==0) {
+                QString & statementLine = *statement;
+                cleanupRuleLine(statementLine);
+                currentLevel += lineLevel(statementLine);
+                if (currentLine.endsWith("\\"))
+                    currentLine = currentLine.remove(currentLine.length()-1, 1);
+                currentLine += " " + statementLine;
+                if (currentLevel==0 && !statementLine.endsWith("\\")) {
                     statement ++;
                     break;
                 }
@@ -576,7 +638,6 @@ static void mergeRuleLines(std::list<QString> & lines)
             current = lines.erase(nextToCurrent, statement);
         }
         else {
-            *current = current->trimmed();
             current ++;
         }
     }
@@ -643,8 +704,39 @@ static RulesLine parseRulesLine(const QString & line) {
     return result;
 }
 
+bool hasEpsilonRule(const std::list<RulesLine> & rules,
+                    const QString & left, const qreal priority) {
+    typedef std::list<RulesLine>::const_iterator It;
+    for (It it = rules.begin(); it!=rules.end(); ++it) {
+        const RulesLine & rule = *it;
+        if (rule.priority==priority && rule.rightPart=="0" && rule.leftPart==left)
+            return true;
+    }
+    return false;
+}
 
-void prepareRules(const QStringList &files, QString &out, const QList<int> &priors)
+void insertEpsilonRules(std::list<RulesLine> & rules) {
+    typedef std::list<RulesLine>::iterator It;
+    for ( It it = rules.begin(); it!=rules.end(); ) {
+        RulesLine & rule = *it;
+        bool iterative = rule.leftPart.endsWith("*");
+        bool mustInsertEpsilon =
+                iterative &&
+                !hasEpsilonRule(rules, rule.leftPart, rule.priority);
+        if (mustInsertEpsilon) {
+            RulesLine epsilonRule;
+            epsilonRule.leftPart = rule.leftPart;
+            epsilonRule.rightPart = "0";
+            epsilonRule.priority = rule.priority;
+            it = rules.insert(it, epsilonRule);
+        }
+        else {
+            it ++;
+        }
+    }
+}
+
+void prepareRules(const QStringList &files, QString &out)
 {
     int iskNet = 0;
 
@@ -660,6 +752,8 @@ void prepareRules(const QStringList &files, QString &out, const QList<int> &prio
     catch (const QString & error) {
         qDebug() << "ERROR PARSING RULES: " << error;
     }
+
+    insertEpsilonRules(rules);
 
     QStringList pravila1;
 
@@ -1491,6 +1585,7 @@ void PDAutomataPrivate::saveData()
     history_stack.push(stack);
     history_currentPosition.push(currentPosition);
     history_scripts.push(scripts);
+    history_nextPointers.push(nextPointers);
 }
 
 void PDAutomataPrivate::restoreData()
@@ -1498,6 +1593,7 @@ void PDAutomataPrivate::restoreData()
     currentPosition = history_currentPosition.pop();
     stack = history_stack.pop();
     scripts = history_scripts.pop();
+    nextPointers = history_nextPointers.pop();
 }
 
 void PDAutomataPrivate::popHistory()
@@ -1505,6 +1601,7 @@ void PDAutomataPrivate::popHistory()
     history_currentPosition.pop();
     history_stack.pop();
     history_scripts.pop();
+    history_nextPointers.pop();
 }
 
 void PDAutomataPrivate::clearDataHistory()
@@ -1512,6 +1609,7 @@ void PDAutomataPrivate::clearDataHistory()
     history_currentPosition.clear();
     history_stack.clear();
     history_scripts.clear();
+    history_nextPointers.clear();
 }
 
 void PDAutomataPrivate::nextStep()
@@ -1523,6 +1621,7 @@ void PDAutomataPrivate::nextStep()
 
 void PDAutomata::postProcess()
 {
+//    logger.close();
     d->currentContext.clear();
     d->currentPosition = 0;
     if (!d->algorhitm) {
@@ -1552,6 +1651,7 @@ void PDAutomata::postProcess()
     }
 
     for (int i=0; i<d->scripts.size(); i++) {
+//        qDebug() << i << ": " << d->acceptedRules[i];
         ScriptListPtr scripts = d->scripts[i];
         if (!scripts) {
             scripts = d->fixedScripts[i];
@@ -1703,6 +1803,42 @@ void PDAutomataPrivate::setOutOfAlgError()
     appendSimpleLine();
     if (!currentContext.isEmpty() && currentContext.top())
         currentContext.top()->last()->skipErrorEvaluation = doNotEvaluate;
+}
+
+void PDAutomataPrivate::processAlgWithNoBegin()
+{
+    setCurrentIndentRank(0, +1);
+    processCorrectAlgHeader();
+    processCorrectAlgBegin();
+    Statement * errorStatement = source.at(currentPosition);
+    for (int i=currentPosition+1; i<source.size(); i++) {
+        // Try to find a statement after which there shound be 'begin'
+        Statement * st = source.at(i);
+        if (st->type==Shared::LxTypeDoc ||
+                st->type==Shared::LxPriPre ||
+                st->type==Shared::LxPriPost)
+            errorStatement = st;
+        else if (st->type!=Shared::LxTypeComment) {
+            break;
+        }
+    }
+    QString errorText;
+    if (errorStatement->type==Shared::LxTypeDoc)
+        errorText = _("No 'begin' after last document line");
+    else if (errorStatement->type==Shared::LxPriAlgHeader)
+        errorText = _("No 'begin' after 'alg'");
+    else if (errorStatement->type==Shared::LxPriPre)
+        errorText = _("No 'begin' after 'pre'");
+    else if (errorStatement->type==Shared::LxPriPost)
+        errorText = _("No 'begin' after 'post'");
+    errorStatement->setError(errorText, Lexem::PDAutomata, Lexem::Header);
+    if (currentAlgorhitm) {
+        foreach (Lexem * lx, currentAlgorhitm->impl.headerLexems) {
+            lx->error = errorText;
+            lx->errorRaisePosition = Lexem::Header;
+            lx->errorStage = Lexem::PDAutomata;
+        }
+    }
 }
 
 void PDAutomataPrivate::processCorrectAlgHeader()
@@ -1923,11 +2059,21 @@ void PDAutomataPrivate::processCorrectEndOfLoop()
     setCurrentIndentRank(-1,  0);
     currentContext.pop();
     Q_ASSERT(currentContext.size()>0);
-    Q_ASSERT(currentContext.top()->last()->type==AST::StLoop);
-    currentContext.top()->last()->loop.endLexems = source.at(currentPosition)->data;
+    QList<AST::Statement*> * topContext = currentContext.top();
+    AST::Statement * beginOfLoop = nullptr;
+    for (int i=topContext->size()-1; i>=0; i--) {
+        AST::Statement * st = topContext->at(i);
+        if (st->type==AST::StLoop) {
+            beginOfLoop = st;
+            break;
+        }
+    }
+    if (beginOfLoop) {
+        beginOfLoop->loop.endLexems = source.at(currentPosition)->data;
+        source[currentPosition]->statement = beginOfLoop;
+    }
     source.at(currentPosition)->mod = currentModule;
     source.at(currentPosition)->alg = currentAlgorhitm;
-    source.at(currentPosition)->statement = currentContext.top()->last();
 }
 
 void PDAutomataPrivate::processAlgEndInsteadOfLoopEnd()
@@ -2076,6 +2222,7 @@ void PDAutomataPrivate::processCorrectThen()
     }
     Q_ASSERT(currentContext.top()->last()->type==AST::StIfThenElse);
     AST::ConditionSpec cond;
+    cond.parent = currentContext.top()->last();
 
     cond.lexems = source.at(currentPosition)->data;
     cond.condition = 0;
@@ -2249,6 +2396,7 @@ void PDAutomataPrivate::processCorrectModuleBegin()
         ast->modules << currentModule;
     }
     currentModule = new AST::Module;
+    currentAlgorhitm = nullptr;
     currentModule->header.type = teacherMode? AST::ModTypeHidden : AST::ModTypeUser;
     source.at(currentPosition)->mod = currentModule;
     currentContext.push(&(currentModule->impl.initializerBody));
@@ -2274,19 +2422,23 @@ void PDAutomataPrivate::setGarbageAlgError()
 {
     static const QList<LexemType> OutgoingOperationalBrackets =
             QList<LexemType>() << LxPriImport << LxPriAlgHeader << LxPriModule << LxPriEndModule;
-    if (OutgoingOperationalBrackets.contains(source[currentPosition]->type))
-        setCurrentError(_("'%1' in algorithm", source[currentPosition]->data.first()->data));
-    else {
-        setCurrentError(_("Garbage between alg..begin"));
-        setCurrentErrorRaisePosition(Lexem::Header);
-        if (currentAlgorhitm) {
-            int lineNo = -1;
-            if (source[currentPosition]->data.size()>0) {
-                lineNo = source[currentPosition]->data[0]->lineNo;
-            }
-            currentAlgorhitm->impl.headerRuntimeError = _("Garbage between alg..begin");
-            currentAlgorhitm->impl.headerRuntimeErrorLine = lineNo;
+
+    QString error;
+    if (OutgoingOperationalBrackets.contains(source[currentPosition]->type)) {
+        error = _("'%1' in algorithm", source[currentPosition]->data.first()->data);
+    }
+    else {     
+        error = _("Garbage between alg..begin");
+    }
+    setCurrentError(error);
+    setCurrentErrorRaisePosition(Lexem::Header);
+    if (currentAlgorhitm) {
+        int lineNo = -1;
+        if (source[currentPosition]->data.size()>0) {
+            lineNo = source[currentPosition]->data[0]->lineNo;
         }
+        currentAlgorhitm->impl.headerRuntimeError = error;
+        currentAlgorhitm->impl.headerRuntimeErrorLine = lineNo;
     }
     appendSimpleLine();
 }
@@ -2305,17 +2457,28 @@ void PDAutomataPrivate::setGarbageIfThenError()
     }
     const QString error = hasThen? _("Garbage between if..then")
                                  : _("No 'then' after 'if'");
+    AST::Statement * ifStatement = nullptr;
     if (currentContext.size()>0
             && currentContext.top()->size()>0
             && currentContext.top()->at(0)->type==AST::StIfThenElse
             )
     {
+        ifStatement = currentContext.top()->at(0);
         currentContext.top()->at(0)->headerError = error;
         int lineNo = -1;
         if (source[currentPosition]->data.size()>0) {
             lineNo = source[currentPosition]->data[0]->lineNo;
         }
         currentContext.top()->at(0)->headerErrorLine = lineNo;
+    }
+    if (ifStatement) {
+        for (int i=0; i<source.size(); i++) {
+            Statement * st = source.at(i);
+            if (st->statement==ifStatement) {
+                st->setError(error, Lexem::PDAutomata, Lexem::Header);
+                break;
+            }
+        }
     }
     setCurrentError(error);
 //    appendSimpleLine();
@@ -2339,10 +2502,30 @@ void PDAutomataPrivate::setGarbageSwitchCaseError()
         currentContext.top()->last()->conditionals << dummyCond;
     }
 
+    AST::Statement * switchStatement = nullptr;
+    for (int i=currentContext.size()-1; i>=0; i--) {
+        if (currentContext[i]->size()>0 && currentContext[i]->last()->type==AST::StSwitchCaseElse) {
+            switchStatement = currentContext[i]->last();
+            break;
+        }
+    }
+
 
     currentContext.push(&(currentContext.top()->last()->conditionals.first().body));
 
-    setCurrentError(_("Garbage between switch..case"));
+    const QString error = _("Garbage between switch..case");
+
+    for (int i=0; i<source.size(); i++) {
+        Statement * st = source.at(i);
+        if (st->statement==switchStatement) {
+            st->setError(error, Lexem::PDAutomata, Lexem::Header);
+            switchStatement->headerErrorLine = st->data.at(0)->lineNo;
+            switchStatement->headerError = error;
+            break;
+        }
+    }
+
+    setCurrentError(error);
     appendSimpleLine();
     currentContext.pop();
     if (pushBackZero) {
@@ -2352,7 +2535,11 @@ void PDAutomataPrivate::setGarbageSwitchCaseError()
 
 void PDAutomataPrivate::setTooManyErrors()
 {
-
+    if (currentPosition<source.size())
+        source[currentPosition]->indentRank = QPoint(-100, 0);
+    for (int i=currentPosition; i<source.size()-1; i++) {
+        source[i]->setError(_("Too many errors"), Lexem::PDAutomata, Lexem::AsIs);
+    }
 }
 
 
@@ -2360,9 +2547,24 @@ void PDAutomataPrivate::setCorrespondingIfBroken()
 {
     AST::Statement * st = 0;
     for (int i=currentContext[currentContext.size()-1]->size()-1; i>=0; i--) {
-        if (currentContext[currentContext.size()-1]->at(i)->type==AST::StIfThenElse) {
+        if (currentContext[currentContext.size()-1]->at(i)->type==AST::StIfThenElse
+                ||
+                currentContext[currentContext.size()-1]->at(i)->type==AST::StSwitchCaseElse
+                ) {
             st = currentContext[currentContext.size()-1]->at(i);
             break;
+        }
+    }
+    if (!st) {
+        // Try to find at top-level
+        for (int i=currentContext.size()-1; i>=0; i--) {
+            if (currentContext[i]->size()>0 &&
+                    ( currentContext[i]->last()->type==AST::StIfThenElse ||
+                      currentContext[i]->last()->type==AST::StSwitchCaseElse )
+                    ) {
+                st = currentContext[i]->last();
+                break;
+            }
         }
     }
     if (st) {
@@ -2418,6 +2620,7 @@ void PDAutomataPrivate::setExtraOpenKeywordError(const QString &kw)
         setCurrentError(_("Extra 'loop'"));
     }
     else if (kw==QString::fromUtf8("нач")) {
+        setCurrentIndentRank(0,0);
         setCurrentError(_("Extra 'begin'"));
         if (currentAlgorhitm) {
             AST::Statement * st = new AST::Statement;

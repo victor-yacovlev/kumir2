@@ -76,13 +76,32 @@ QString getLanguage()
 }
 
 
+class Application
+        : public QApplication
+{
+public:
+    inline explicit Application(int argc, char **argv, bool gui)
+        : QApplication(argc, argv, gui) {}
+    inline bool notify(QObject * receiver, QEvent * event) {
+        bool result = false;
+        try {
+            result = QApplication::notify(receiver, event);
+        }
+        catch (...) {
+            qDebug() << "Exception caught in QApplication::notify!!!";
+//            abort();
+        }
+        return result;
+    }
+};
+
 int main(int argc, char **argv)
 { 
     bool gui = true;
 #ifdef Q_WS_X11
     gui = gui && getenv("DISPLAY")!=0;
 #endif
-    QApplication * app = new QApplication(argc, argv, gui);
+    QApplication * app = new Application(argc, argv, gui);
     QLocale russian = QLocale("ru_RU");
     QLocale::setDefault(russian);
 #ifdef Q_OS_WIN32

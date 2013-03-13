@@ -105,6 +105,8 @@ struct LoopSpec {
 /** "if-then", "case" or "else" sub-block of statement */
 struct ConditionSpec {
 
+    Statement * parent;
+
     /** Condition; empty for "else" block */
     struct Expression * condition;
 
@@ -122,6 +124,10 @@ struct ABSTRACTSYNTAXTREE_EXPORT Statement {
 
     /** Statement kind */
     StatementType type;
+
+    /** Tree parent */
+
+    Statement * parent;
 
     /** Statement source lexems */
     QList<struct Lexem*> lexems;

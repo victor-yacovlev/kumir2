@@ -131,6 +131,7 @@ inline void removeAllBackReference(QTreeWidgetItem * item) {
 
 void DebuggerWindow::updateAllValues()
 {
+    return;
     // Update variables -- it is possible that
     //  called function changed something while running
     //  not step-in mode (via out-parameters)
@@ -274,7 +275,7 @@ void DebuggerWindow::updateLocalTableValue(
         const QList<int> & indeces
         )
 {
-    Q_ASSERT(topLevelItemCount()>0);
+    Q_ASSERT_X(topLevelItemCount()>0, "updateLocalTableBounds", "topLevelItemCount()>0");
     QTreeWidgetItem * context = topLevelItem(topLevelItemCount()-1);
     QTreeWidgetItem * variable = nullptr;
     for (int i=0; i<context->childCount(); i++) {
@@ -283,7 +284,7 @@ void DebuggerWindow::updateLocalTableValue(
             break;
         }
     }
-    Q_CHECK_PTR(variable);
+    Q_ASSERT_X(variable!=nullptr, "updateLocalTableBounds", "variable!=nullptr");
     setupTableValue(variable);
     clearSelection();
     QTreeWidgetItem * itemToSelect = variable;
@@ -369,7 +370,7 @@ void DebuggerWindow::updateLocalTableBounds(
 {
     if (bounds.isEmpty())
         return;
-    Q_ASSERT(topLevelItemCount()>0);
+    Q_ASSERT_X(topLevelItemCount()>0, "updateLocalTableBounds", "topLevelItemCount()>0");
     QTreeWidgetItem * context = topLevelItem(topLevelItemCount()-1);
     QTreeWidgetItem * variable = nullptr;
     for (int i=0; i<context->childCount(); i++) {
@@ -378,7 +379,7 @@ void DebuggerWindow::updateLocalTableBounds(
             break;
         }
     }
-    Q_CHECK_PTR(variable);
+    Q_ASSERT_X(variable!=nullptr, "updateLocalTableBounds", "variable!=nullptr");
     QString text;
     text = variable->data(0, ROLE_BASETYPE).toString()+QString::fromUtf8("таб");
     text += " "+variable->data(0, ROLE_NAME).toString()+"[";
@@ -743,36 +744,36 @@ void DebuggerWindow::setLocalReference(
     }
     else {
         int targetFrameNo = topLevelItemCount()-1 - back;
-        Q_ASSERT(targetFrameNo>=0);
-        targetContext = topLevelItem(targetFrameNo);
+        if (targetFrameNo>=0)
+            targetContext = topLevelItem(targetFrameNo);
     }
-    Q_CHECK_PTR(targetContext);
-    for (int i=0; i<targetContext->childCount(); i++) {
-        if (targetName==targetContext->child(i)->data(0, ROLE_NAME).toString()) {
-            targetVariable = targetContext->child(i);
-            break;
+    if (targetContext) {
+        for (int i=0; i<targetContext->childCount(); i++) {
+            if (targetName==targetContext->child(i)->data(0, ROLE_NAME).toString()) {
+                targetVariable = targetContext->child(i);
+                break;
+            }
         }
     }
-    Q_CHECK_PTR(targetVariable);
 
-    // Set reference and back reference to update values automatically
-    QVariantList backReferenceList;
-    if (targetVariable->data(0, ROLE_BACK_REFERENCES).isValid()) {
-        backReferenceList = targetVariable->data(0, ROLE_BACK_REFERENCES).toList();
-    }
-    backReferenceList.push_back(reinterpret_cast<quintptr>(variable));
-    targetVariable->setData(0, ROLE_BACK_REFERENCES, backReferenceList);
-    variable->setData(0, ROLE_REFERENCE, reinterpret_cast<quintptr>(targetVariable));
+    if (targetVariable) {
+        // Set reference and back reference to update values automatically
+        QVariantList backReferenceList;
+        if (targetVariable->data(0, ROLE_BACK_REFERENCES).isValid()) {
+            backReferenceList = targetVariable->data(0, ROLE_BACK_REFERENCES).toList();
+        }
+        backReferenceList.push_back(reinterpret_cast<quintptr>(variable));
+        targetVariable->setData(0, ROLE_BACK_REFERENCES, backReferenceList);
+        variable->setData(0, ROLE_REFERENCE, reinterpret_cast<quintptr>(targetVariable));
 
-    QString text;
-    text = variable->data(0, ROLE_BASETYPE).toString();
-    text += " "+variable->data(0, ROLE_NAME).toString();
-    if (targetVariable->data(0, ROLE_VALUE).isValid()) {
-        text += " = "+targetVariable->data(0, ROLE_VALUE).toString();
+        QString text;
+        text = variable->data(0, ROLE_BASETYPE).toString();
+        text += " "+variable->data(0, ROLE_NAME).toString();
+        if (targetVariable->data(0, ROLE_VALUE).isValid()) {
+            text += " = "+targetVariable->data(0, ROLE_VALUE).toString();
+        }
+        variable->setText(0, text);
     }
-    variable->setText(0, text);
-//    clearSelection();
-//    variable->setSelected(true);
 }
 
 void DebuggerWindow::paintEvent(QPaintEvent *event)
