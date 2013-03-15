@@ -17,27 +17,27 @@
 <context>
     <name>KumirAnalizer::SyntaxAnalizerPrivate</name>
     <message>
-        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="317"/>
+        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="318"/>
         <source>Built-it module %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="328"/>
+        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="329"/>
         <source>Use file &quot;%1&quot; as module</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="337"/>
+        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="338"/>
         <source>Use precompiled file &quot;%1&quot; as module</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="519"/>
+        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="520"/>
         <source>Loop for variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="524"/>
+        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="525"/>
         <source>Repeat while condition is true</source>
         <translation type="unfinished"></translation>
     </message>

@@ -37,6 +37,7 @@ public:
     static QString KeyBoldComment;
     static QString KeyFontName;
     static QString KeyFontSize;
+    static QString KeyProgramTemplateFile;
 
     static QString KeyForcePressTextToLeft;
     static bool DefaultForcePressTextToLeft;
@@ -49,6 +50,7 @@ public:
     static QString DefaultColorMod;
     static QString DefaultColorDoc;
     static QString DefaultColorComment;
+    static QString DefaultProgramTemplateFile;
 
     static bool DefaultBoldKw;
     static bool DefaultBoldType;
@@ -82,6 +84,8 @@ private slots:
     void setButtonColor(QToolButton * b, const QColor &color);
     QColor buttonColor(const QToolButton *b) const;
     void updateFontPreview();
+    void validateProgramTemplateFile();
+    void browseInitialProgramTemplateFile();
 
 private:
 

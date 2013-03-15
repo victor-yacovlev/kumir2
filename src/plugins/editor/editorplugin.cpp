@@ -69,7 +69,7 @@ void EditorPlugin::clearMargin(int documentId, int fromLine, int toLine)
     ed->clearMarginText(fromLine, toLine);
 }
 
-Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, const QString &initialText, const QString &documentDir, bool initiallyNotSaved)
+Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, const QString &documentDir, bool initiallyNotSaved)
 {
     AnalizerInterface * a = 0;
     int docId = -1;
@@ -84,10 +84,17 @@ Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, c
     Editor * w = new Editor(initiallyNotSaved, mySettings(), a, docId, 0);
     w->setTeacherMode(d->teacherMode);
     if (analizerName.contains("kumir", Qt::CaseInsensitive)) {
-        w->setKumFile(KumFile::fromString(initialText));
-    }
-    else {
-        w->setPlainText(initialText);
+         const QString initialTextFileName =
+                mySettings()->value(SettingsPage::KeyProgramTemplateFile,
+                                    SettingsPage::DefaultProgramTemplateFile)
+                .toString();
+        QFile f(initialTextFileName);
+        if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
+            const QByteArray bytes = f.readAll();
+            f.close();
+            const KumFile::Data data = KumFile::fromString(KumFile::readRawDataAsString(bytes, QString()));
+            w->setKumFile(data);
+        }
     }
     int index = 0;
     for (int i=0; i<d->editors.size(); i++) {
@@ -185,6 +192,25 @@ QString EditorPlugin::saveDocument(int documentId, const QString &fileName)
     }
     else {
         return tr("Can't open file %1 for writing").arg(fileName);
+    }
+    return "";
+}
+
+QString EditorPlugin::loadDocument(int documentId, const QString &fileName)
+{
+    Q_ASSERT(documentId>=0);
+    Q_ASSERT(documentId<d->editors.size());
+    Q_CHECK_PTR(d->editors[documentId].e);
+    Ed ed = d->editors[documentId];
+    Editor * editor = ed.e;
+    QFile f(fileName);
+    if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        const QByteArray bytes = f.readAll();
+        editor->setKumFile(KumFile::fromString(KumFile::readRawDataAsString(bytes, QString())));
+        f.close();
+    }
+    else {
+        return tr("Can't open file %1 for reading").arg(fileName);
     }
     return "";
 }

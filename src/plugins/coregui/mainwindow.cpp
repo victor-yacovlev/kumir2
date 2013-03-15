@@ -598,11 +598,9 @@ void MainWindow::newProgram()
     if (b_notabs && !closeTab(ui->tabWidget->currentIndex())) {
         return;
     }
-    QString defaultText = QString::fromUtf8("алг\nнач\n\nкон");
     QString suffix = ".kum";
     DocumentType type = Kumir;
-    const QString initialText = m_plugin->mySettings()->value(Plugin::InitialTextKey, defaultText).toString();
-    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", initialText, QDir::currentPath(), false);
+    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", QDir::currentPath(), false);
     QWidget* vc = doc.widget;
     int id = doc.id;
     vc->setProperty("documentId", id);
@@ -627,11 +625,9 @@ void MainWindow::newPythonProgram()
     if (b_notabs && !closeTab(ui->tabWidget->currentIndex())) {
         return;
     }
-    QString defaultText = QString::fromUtf8("#!/usr/bin/python3\n#coding=utf-8\n\n");
     QString suffix = ".py";
-    DocumentType type = Python;
-    const QString initialText = m_plugin->mySettings()->value(Plugin::InitialTextKey, defaultText).toString();
-    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("Python3Language", initialText, QDir::currentPath(), false);
+    DocumentType type = Python;   
+    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("Python3Language", QDir::currentPath(), false);
     QWidget* vc = doc.widget;
     int id = doc.id;
     vc->setProperty("documentId", id);
@@ -658,10 +654,8 @@ void MainWindow::newPascalProgram()
     }
     QString suffix = ".pas";
     QString fileName = suggestNewFileName(suffix);
-    QString defaultText = QString::fromUtf8("program %1;\n\nbegin\n\nend.\n").arg(fileName.left(fileName.length()-4));
     DocumentType type = Pascal;
-    const QString initialText = m_plugin->mySettings()->value(Plugin::InitialTextKey, defaultText).toString();
-    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("PascalAnalizer", initialText, QDir::currentPath(), false);
+    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("PascalAnalizer", QDir::currentPath(), false);
     QWidget* vc = doc.widget;
     int id = doc.id;
     vc->setProperty("documentId", id);
@@ -687,7 +681,7 @@ void MainWindow::newText()
 
 void MainWindow::newText(const QString &fileName, const QString & text)
 {
-    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("", text, QDir::currentPath(), true);
+    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("", QDir::currentPath(), true);
     QWidget * vc = doc.widget;
     int id = doc.id;
     vc->setProperty("documentId", id);
@@ -936,7 +930,7 @@ void MainWindow::restoreSession()
                     analizerName = "PascalAnalizer";
                     doctype = Pascal;
                 }
-                EditorComponent doc = m_plugin->plugin_editor->newDocument(analizerName, QDir::currentPath(), "", false);
+                EditorComponent doc = m_plugin->plugin_editor->newDocument(analizerName, QDir::currentPath(), false);
                 QByteArray editorSession = f.readAll();
                 QWidget * vc = doc.widget;
                 vc->setProperty("documentId", doc.id);
@@ -1189,19 +1183,12 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
     if (addToRecentFiles && type!=WWW)
         addToRecent(url.toLocalFile());
     if (type==Kumir) {
-        QFile f(url.toLocalFile());
-        if (f.open(QIODevice::ReadOnly)) {
-            QByteArray rawData = f.readAll();
-            f.close();
-            QStringList lines = KumFile::readRawDataAsString(rawData, "").split("\n");
-            for (int i=0; i<lines.size(); i++) {
-                while (lines[i].startsWith(".")||lines[i].startsWith(" ")) {
-                    lines[i] = lines[i].mid(1);
-                }
-            }
-            EditorComponent doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", lines.join("\n"), QFileInfo(f).absoluteDir().absolutePath(), false);
+        QFileInfo f(url.toLocalFile());
+        if (f.isReadable()) {
+            EditorComponent doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", QFileInfo(f).absoluteDir().absolutePath(), false);
             QWidget * vc = doc.widget;
             int id = doc.id;
+            m_plugin->plugin_editor->loadDocument(id, f.absoluteFilePath());
             vc->setProperty("documentId", id);
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
@@ -1227,7 +1214,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             ts.setAutoDetectUnicode(true);
             QString data = ts.readAll();
             f.close();
-            EditorComponent doc = m_plugin->plugin_editor->newDocument("PascalAnalizer", data, QFileInfo(f).absoluteDir().absolutePath(), false);
+            EditorComponent doc = m_plugin->plugin_editor->newDocument("PascalAnalizer", QFileInfo(f).absoluteDir().absolutePath(), false);
             QWidget* vc = doc.widget;
             int id = doc.id;
             vc->setProperty("documentId", id);
@@ -1254,7 +1241,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             ts.setAutoDetectUnicode(true);
             QString data = ts.readAll();
             f.close();
-            EditorComponent doc = m_plugin->plugin_editor->newDocument("", data, "", false);
+            EditorComponent doc = m_plugin->plugin_editor->newDocument("", "", false);
             QWidget* vc = doc.widget;
             int id = doc.id;
             vc->setProperty("documentId", id);

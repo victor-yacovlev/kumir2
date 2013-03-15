@@ -18,7 +18,6 @@ public:
     ~EditorPlugin();
 
     struct Shared::EditorComponent newDocument(const QString &analizerName
-            , const QString &initialText
             , const QString &documentDir
             , bool initiallyNotSaved);
 
@@ -27,6 +26,7 @@ public:
     QWidget* settingsEditorPage();
     bool hasUnsavedChanges(int documentId) const;
     void setDocumentChangesSaved(int documentId);
+    virtual QString loadDocument(int documentId, const QString & fileName);
     QString saveDocument(int documentId, const QString & fileName);
     Shared::AnalizerInterface * analizer(int documentId);
     quint32 errorsLinesCount(int documentId) const;

@@ -18,7 +18,6 @@ class EditorInterface
 {
 public:
     virtual struct EditorComponent newDocument(const QString & analizerName,
-            const QString & initialText,
             const QString & documentDir,
             bool initiallyNotSaved
             ) = 0;
@@ -26,6 +25,7 @@ public:
     virtual int analizerDocumentId(int editorDocumentId) const = 0;
     virtual bool hasUnsavedChanges(int documentId) const = 0;
     virtual void setDocumentChangesSaved(int documentId) = 0;
+    virtual QString loadDocument(int documentId, const QString & fileName) = 0;
     virtual QString saveDocument(int documentId, const QString & fileName) = 0;
     virtual AnalizerInterface * analizer(int documentId) = 0;
     virtual quint32 errorsLinesCount(int documentId) const = 0;

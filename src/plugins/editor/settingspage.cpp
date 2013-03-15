@@ -24,6 +24,8 @@ QString SettingsPage::KeyBoldComment = "Highlight/Comment/Bold";
 QString SettingsPage::KeyFontName = "Font/Family";
 QString SettingsPage::KeyFontSize = "Font/Size";
 
+QString SettingsPage::KeyProgramTemplateFile = "Content/DefaultProgramFile";
+
 QString SettingsPage::DefaultColorKw = "#000000";
 QString SettingsPage::DefaultColorType = "#c05800";
 QString SettingsPage::DefaultColorNumeric = "#0095ff";
@@ -32,6 +34,8 @@ QString SettingsPage::DefaultColorAlg = "#0000c8";
 QString SettingsPage::DefaultColorMod = "#00aa00";
 QString SettingsPage::DefaultColorDoc = "#a3acff";
 QString SettingsPage::DefaultColorComment = "#888888";
+
+QString SettingsPage::DefaultProgramTemplateFile = "${RESOURCES}/editor/default.kum";
 
 bool SettingsPage::DefaultBoldKw = true;
 bool SettingsPage::DefaultBoldType = true;
@@ -89,6 +93,8 @@ SettingsPage::SettingsPage(QSettings * settings, QWidget *parent) :
     connect(ui->moduleColor, SIGNAL(clicked()), this, SLOT(showColorDialog()));
     connect(ui->docColor, SIGNAL(clicked()), this, SLOT(showColorDialog()));
     connect(ui->commentColor, SIGNAL(clicked()), this, SLOT(showColorDialog()));
+    connect(ui->templateFileName, SIGNAL(textChanged(QString)), this, SLOT(validateProgramTemplateFile()));
+    connect(ui->btnBrowseTemplateFile, SIGNAL(clicked()), this, SLOT(browseInitialProgramTemplateFile()));
 }
 
 void SettingsPage::accept()
@@ -138,7 +144,12 @@ void SettingsPage::accept()
     m_settings->setValue("Settings/FontCollapsed", ui->groupFont->isCollapsed());
     m_settings->setValue("Settings/KeyboardCollapsed", ui->groupKeyboard->isCollapsed());
     m_settings->setValue("Settings/SyntaxCollapsed", ui->groupSyntax->isCollapsed());
+    m_settings->setValue("Settings/InitialCollapsed", ui->groupInitial->isCollapsed());
     m_settings->setValue("Settings/OtherCollapsed", ui->groupOther->isCollapsed());
+
+    m_settings->setValue(KeyProgramTemplateFile,
+                         QDir::fromNativeSeparators(ui->templateFileName->text())
+                         );
 
 
     emit settingsChanged();
@@ -150,6 +161,7 @@ void SettingsPage::init()
     ui->groupKeyboard->setCollapsed(m_settings->value("Settings/KeyboardCollapsed", 1).toBool());
     ui->groupSyntax->setCollapsed(m_settings->value("Settings/SyntaxCollapsed", 1).toBool());
     ui->groupOther->setCollapsed(m_settings->value("Settings/OtherCollapsed", 1).toBool());
+    ui->groupInitial->setCollapsed(m_settings->value("Settings/InitialCollapsed", 1).toBool());
 
     setButtonColor(ui->kwColor, QColor(m_settings->value(KeyColorKw, DefaultColorKw).toString()));
     setButtonColor(ui->typeColor, QColor(m_settings->value(KeyColorType, DefaultColorType).toString()));
@@ -209,7 +221,45 @@ void SettingsPage::init()
     ui->pressTextLeft->setChecked(m_settings->value(KeyForcePressTextToLeft, DefaultForcePressTextToLeft).toBool());
     ui->showTrailingSpaces->setChecked(m_settings->value(KeyShowTrailingSpaces, DefaultShowTrailingSpaces).toBool());
 
+    QString initialFileName = DefaultProgramTemplateFile;
+    static const QString resourcesRoot = QDir(qApp->applicationDirPath()+"/../share/kumir2/").canonicalPath();
+    initialFileName.replace("${RESOURCES}", resourcesRoot);
+    ui->templateFileName->setText(QDir::toNativeSeparators(
+                                      m_settings->value(KeyProgramTemplateFile,
+                                                    initialFileName
+                                                    ).toString()
+                                      )
+                                  );
+    validateProgramTemplateFile();
     updateFontPreview();
+}
+
+void SettingsPage::validateProgramTemplateFile()
+{
+    const QString fileName = QDir::fromNativeSeparators(ui->templateFileName->text().trimmed());
+    QFileInfo fileInfo(fileName);
+    QLabel * errorPlace = ui->fileNotExistsLabel;
+    QString error;
+    if (!fileInfo.exists()) {
+        error = tr("File not exists");
+    }
+    else if (!fileInfo.isReadable()) {
+        error = tr("File access denied");
+    }
+    errorPlace->setText(error);
+}
+
+void SettingsPage::browseInitialProgramTemplateFile()
+{
+    QString fileName = QDir::fromNativeSeparators(ui->templateFileName->text().trimmed());
+    fileName = QFileDialog::getOpenFileName(this,
+                                            tr("Choose initial program file"),
+                                            fileName,
+                                            QString("Kumir programs (*.kum)")
+                                            );
+    if (!fileName.isEmpty()) {
+        ui->templateFileName->setText(QDir::toNativeSeparators(fileName));
+    }
 }
 
 void SettingsPage::setButtonColor(QToolButton *btn, const QColor &color)

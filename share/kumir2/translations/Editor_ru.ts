@@ -11,12 +11,17 @@
 <context>
     <name>Editor::EditorPlugin</name>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="187"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="194"/>
         <source>Can&apos;t open file %1 for writing</source>
         <translation>Не могу открыть %1 для записи</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="218"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="213"/>
+        <source>Can&apos;t open file %1 for reading</source>
+        <translation>Не могу открыть %1 для чтения</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="244"/>
         <source>Editor</source>
         <translation>Редактор</translation>
     </message>
@@ -233,21 +238,51 @@
     </message>
     <message>
         <location filename="../../../src/plugins/editor/settingspage.ui" line="548"/>
+        <source>Initial Text</source>
+        <translation>Текст исходной программы</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="554"/>
+        <source>Browse...</source>
+        <translation>Найти...</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="616"/>
+        <source>Initial program template file:</source>
+        <translation>Имя файла с текстом исходной программы:</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="629"/>
         <source>Other</source>
         <translation>Другое</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="554"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="635"/>
         <source>Force press program text to the left</source>
         <translation>Прижимать текст программы к левому краю</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="561"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="642"/>
         <source>Show trailing spaces</source>
         <translation>Отображать пробелы в конце строк</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.cpp" line="265"/>
+        <location filename="../../../src/plugins/editor/settingspage.cpp" line="244"/>
+        <source>File not exists</source>
+        <translation>Файл не найден</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/settingspage.cpp" line="247"/>
+        <source>File access denied</source>
+        <translation>Нет доступа к файлу</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/settingspage.cpp" line="256"/>
+        <source>Choose initial program file</source>
+        <translation>Выбор файла с исходным текстом программы</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/settingspage.cpp" line="315"/>
         <source>Choose color</source>
         <translation>Выберете цвет</translation>
     </message>
@@ -321,7 +356,7 @@
         <translation>...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/suggestionswindow.cpp" line="243"/>
+        <location filename="../../../src/plugins/editor/suggestionswindow.cpp" line="244"/>
         <source>No suggestions</source>
         <translation>Ничем не могу помочь</translation>
     </message>
