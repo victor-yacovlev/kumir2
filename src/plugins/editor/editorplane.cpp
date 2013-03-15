@@ -807,6 +807,10 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
     bool SelectNextLine = e->matches(QKeySequence::SelectNextLine);
     bool MoveToPreviousLine = e->matches(QKeySequence::MoveToPreviousLine);
     bool SelectPreviousLine = e->matches(QKeySequence::SelectPreviousLine);
+
+    bool ignoreTextEvent = e->key()==Qt::Key_Escape ||
+            e->key()==Qt::Key_Backspace ||
+            ( (e->key()==Qt::Key_Enter||e->key()==Qt::Key_Return) && e->modifiers()!=0 );
 #ifdef Q_WS_X11
     // VIM-style navigation using Super key :
     //   {h,j,k,l} -> {left, down, up, right }
@@ -978,7 +982,10 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
             if (b_hasAnalizer)
                 doAutocomplete();
         }
-        else if (!e->text().isEmpty() && !e->modifiers().testFlag(Qt::ControlModifier)) {
+        else if (!e->text().isEmpty() &&
+                 !e->modifiers().testFlag(Qt::ControlModifier) &&
+                 !ignoreTextEvent
+                 ) {
             m_cursor->evaluateCommand(Utils::textByKey(Qt::Key(e->key())
                                                        , e->text()
                                                        , e->modifiers().testFlag(Qt::ShiftModifier)));
