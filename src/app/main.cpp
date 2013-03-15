@@ -80,7 +80,7 @@ class Application
         : public QApplication
 {
 public:
-    inline explicit Application(int argc, char **argv, bool gui)
+    inline explicit Application(int & argc, char **argv, bool gui)
         : QApplication(argc, argv, gui) {}
     inline bool notify(QObject * receiver, QEvent * event) {
         bool result = false;
