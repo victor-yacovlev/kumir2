@@ -233,8 +233,8 @@ void KumirProgram::fastRun()
         m_process->waitForStarted();
         e_state = FastRun;
         qDebug() << "Started subprocess with PID " << m_process->pid();
-
         PluginManager::instance()->switchGlobalState(GS_Running);
+        setAllActorsAnimationFlag(false);
     }
 }
 
@@ -251,6 +251,7 @@ void KumirProgram::blindRun()
     }
     e_state = RegularRun;
     PluginManager::instance()->switchGlobalState(GS_Running);
+    setAllActorsAnimationFlag(false);
     plugin_bytecodeRun->runBlind();
 }
 
@@ -284,6 +285,7 @@ void KumirProgram::testingRun()
     }
     e_state = RegularRun;
     PluginManager::instance()->switchGlobalState(GS_Running);
+    setAllActorsAnimationFlag(false);
     plugin_bytecodeRun->runTesting();
 }
 
@@ -300,6 +302,7 @@ void KumirProgram::regularRun()
     }
     e_state = RegularRun;
     PluginManager::instance()->switchGlobalState(GS_Running);
+    setAllActorsAnimationFlag(true);
     plugin_bytecodeRun->runContinuous();
 }
 
@@ -335,6 +338,7 @@ void KumirProgram::stepRun()
     e_state = StepRun;
     a_stepRun->setIcon(QIcon::fromTheme("debug-step-over",  QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));
     PluginManager::instance()->switchGlobalState(GS_Running);
+    setAllActorsAnimationFlag(true);
     plugin_bytecodeRun->runStepOver();
 }
 
@@ -344,6 +348,7 @@ void KumirProgram::stepIn()
         stepRun();
     }
     else {
+        setAllActorsAnimationFlag(true);
         plugin_bytecodeRun->runStepInto();
     }
 }
@@ -352,6 +357,7 @@ void KumirProgram::stepOut()
 {
     if (e_state!=StepRun)
         return;
+    setAllActorsAnimationFlag(true);
     plugin_bytecodeRun->runStepOut();
 }
 
@@ -386,6 +392,19 @@ void KumirProgram::handleProcessFinished(int exitCode, QProcess::ExitStatus stat
     s_endStatus = exitCode==0? tr("Evaluation finished") : tr("Evaluation error");
 
     PluginManager::instance()->switchGlobalState(GS_Observe);
+}
+
+void KumirProgram::setAllActorsAnimationFlag(bool animationEnabled)
+{
+    QList<KPlugin*> actorPlugins = ExtensionSystem::PluginManager::instance()
+            ->loadedPlugins("Actor*");
+    foreach (KPlugin * plugin , actorPlugins) {
+        Shared::ActorInterface * actor =
+                qobject_cast<Shared::ActorInterface*>(plugin);
+        if (actor) {
+            actor->setAnimationEnabled(animationEnabled);
+        }
+    }
 }
 
 void KumirProgram::handleRunnerStopped(int rr)

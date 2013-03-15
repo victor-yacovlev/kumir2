@@ -63,6 +63,7 @@ private slots:
     void handleRunnerStopped(int);
 
 private:
+    void setAllActorsAnimationFlag(bool animationEnabled);
     void timerEvent(QTimerEvent *e);
     void prepareKumirRunner(Shared::GeneratorInterface::DebugLevel);
     enum State { Idle, FastRun, RegularRun, StepRun } e_state;
