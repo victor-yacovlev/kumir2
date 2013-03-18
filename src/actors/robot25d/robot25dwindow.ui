@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Robot25DWindow</class>
+ <widget class="QMainWindow" name="Robot25DWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>507</width>
+    <height>406</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Вертун</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <property name="margin">
+     <number>0</number>
+    </property>
+    <item row="0" column="0">
+     <widget class="QGraphicsView" name="graphicsView"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>507</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Обстановка</string>
+    </property>
+    <addaction name="actionLoad"/>
+    <addaction name="separator"/>
+    <addaction name="actionPrev"/>
+    <addaction name="actionNext"/>
+    <addaction name="separator"/>
+    <addaction name="actionReset"/>
+   </widget>
+   <addaction name="menu"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionLoad"/>
+   <addaction name="separator"/>
+   <addaction name="actionPrev"/>
+   <addaction name="actionNext"/>
+   <addaction name="separator"/>
+   <addaction name="actionReset"/>
+  </widget>
+  <action name="actionLoad">
+   <property name="text">
+    <string>Загрузить...</string>
+   </property>
+   <property name="iconText">
+    <string>Загрузить</string>
+   </property>
+   <property name="toolTip">
+    <string>Загрузить обстановку или набор из файла</string>
+   </property>
+  </action>
+  <action name="actionNext">
+   <property name="text">
+    <string>Следующая обстановка</string>
+   </property>
+   <property name="iconText">
+    <string>Вперед</string>
+   </property>
+  </action>
+  <action name="actionPrev">
+   <property name="text">
+    <string>Предыдущая обстановка</string>
+   </property>
+   <property name="iconText">
+    <string>Назад</string>
+   </property>
+  </action>
+  <action name="actionReset">
+   <property name="text">
+    <string>Вернуть обстановку к начальной</string>
+   </property>
+   <property name="iconText">
+    <string>Вернуть обстановку</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
