@@ -1317,6 +1317,8 @@ for ret, signature in actorMethods:
         default = " 0.0"
     elif ret == "bool":
         default = " false";
+    elif ret == "void":
+        default = ""
     else:
         default = " " + ret + "()"
     cpp.write("""
