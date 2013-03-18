@@ -751,8 +751,14 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             else if (m==MM_Select) {
                 if (i_row>=m_document->linesCount()) {
                     i_row = m_document->linesCount()-1;
-                    i_column = m_document->indentAt(i_row)*2 +
-                            m_document->textAt(m_document->linesCount()-1).length();
+                    if (i_row!=-1) {
+                        i_column = m_document->indentAt(i_row)*2 +
+                                m_document->textAt(m_document->linesCount()-1).length();
+                    }
+                    else {
+                        i_row = 0;
+                        i_column = 0;
+                    }
                 }
                 else {
                     int textPos = i_column - m_document->indentAt(i_row);

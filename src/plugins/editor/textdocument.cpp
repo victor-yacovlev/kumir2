@@ -191,7 +191,7 @@ int TextDocument::indentAt(int lineNo) const
     for (int i=0; i<qMin(lineNo, data.size()); i++) {
         result += data[i].indentStart + data[i].indentEnd;
     }
-    if (lineNo < data.size()) {
+    if (lineNo>=0 && lineNo < data.size()) {
         result += data[lineNo].indentStart;
     }
     return qMax(result, 0);

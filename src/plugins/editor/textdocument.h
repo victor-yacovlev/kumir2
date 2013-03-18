@@ -69,18 +69,18 @@ public:
     QString lineToHtml(int lineNo) const;
     void setKumFile(const KumFile::Data & data, bool showHiddenLines);
     void setPlainText(const QString & data);
-    inline QString textAt(int index) const { return index<data.size()? data[index].text : ""; }
-    inline QString marginTextAt(int index) const { return index<data.size()? data[index].marginText : ""; }
-    inline QList<bool> selectionMaskAt(int index) const { return index<data.size()? data[index].selected : QList<bool>(); }
-    inline void setSelectionMaskAt(int index, const QList<bool> mask) { if (index<data.size()) data[index].selected = mask; }
-    inline bool lineEndSelectedAt(int index) const { return index<data.size()? data[index].lineEndSelected : false; }
-    inline QList<Shared::LexemType> highlightAt(int index) { return index<data.size()? data[index].highlight : QList<Shared::LexemType>(); }
-    inline void setMarginTextAt(int index, const QString & text) { if (index<data.size()) data[index].marginText = text; }
-    inline void setIndentRankAt(int index, const QPoint & rank) { if (index<data.size()) data[index].indentStart = rank.x(); data[index].indentEnd = rank.y(); }
-    inline void setHighlightAt(int index, const QList<Shared::LexemType> & highlight) { if (index<data.size()) data[index].highlight = highlight; }
-    inline void setErrorsAt(int index, const QStringList & errs) { if (index<data.size()) data[index].errors = errs; }
-    inline QStringList errorsAt(int index) const { return index<data.size()? data[index].errors : QStringList(); }
-    inline void clearErrorsAt(int index) { if (index<data.size()) data[index].errors.clear(); }
+    inline QString textAt(int index) const { return index>=0 && index<data.size()? data[index].text : ""; }
+    inline QString marginTextAt(int index) const { return index>=0 && index<data.size()? data[index].marginText : ""; }
+    inline QList<bool> selectionMaskAt(int index) const { return index>=0 && index<data.size()? data[index].selected : QList<bool>(); }
+    inline void setSelectionMaskAt(int index, const QList<bool> mask) { if (index>=0 && index<data.size()) data[index].selected = mask; }
+    inline bool lineEndSelectedAt(int index) const { return index>=0 && index<data.size()? data[index].lineEndSelected : false; }
+    inline QList<Shared::LexemType> highlightAt(int index) { return index>=0 && index<data.size()? data[index].highlight : QList<Shared::LexemType>(); }
+    inline void setMarginTextAt(int index, const QString & text) { if (index>=0 && index<data.size()) data[index].marginText = text; }
+    inline void setIndentRankAt(int index, const QPoint & rank) { if (index>=0 && index<data.size()) data[index].indentStart = rank.x(); data[index].indentEnd = rank.y(); }
+    inline void setHighlightAt(int index, const QList<Shared::LexemType> & highlight) { if (index>=0 && index<data.size()) data[index].highlight = highlight; }
+    inline void setErrorsAt(int index, const QStringList & errs) { if (index>=0 && index<data.size()) data[index].errors = errs; }
+    inline QStringList errorsAt(int index) const { return index>=0 && index<data.size()? data[index].errors : QStringList(); }
+    inline void clearErrorsAt(int index) { if (index>=0 && index<data.size()) data[index].errors.clear(); }
 
     inline void setSelected(int line, int pos, bool v) { if (line<data.size()) data[line].selected[pos] = v; }
     inline void setEndOfLineSelected(int line, bool v) { if (line<data.size()) data[line].lineEndSelected = v; }
