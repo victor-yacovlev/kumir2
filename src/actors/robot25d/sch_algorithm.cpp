@@ -48,10 +48,10 @@ extern bool parceJSON(const QScriptValue &value, Algorhitm &algorhitm)
     algorhitm.repeaterCommand = CmdNone;
     algorhitm.conditionCommand = CmdNone;
     if (value.property("repeater_data").isNumber()) {
-        algorhitm.repeaterCommand = Command(value.property("repeater_data").toInteger());
+        algorhitm.repeaterCommand = Command(value.property("repeater_data").toUInt32());
     }
     if (value.property("condition_data").isNumber()) {
-        algorhitm.repeaterCommand = Command(value.property("condition_data").toInteger());
+        algorhitm.repeaterCommand = Command(value.property("condition_data").toUInt32());
     }
     return true;
 }
