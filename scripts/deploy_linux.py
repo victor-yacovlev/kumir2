@@ -34,12 +34,20 @@ def deploy_library(filepath, target_dir, lib):
         shutil.copyfile(lib, target_filename)
 
 
+def run_chrpath(filename, target_dir):
+    filedir, name = os.path.split(filename)
+    rpath = os.path.relpath(target_dir, filedir) + "/"
+    sys.stderr.write("  - changing rpath to %s\n" % rpath)
+    subprocess.call(["chrpath", "-r", rpath, filename])
+
+
 def process_file(filename, target_dir, sdk_root):
     sys.stderr.write("Processing %s\n" % filename)
     dependencies = run_ldd(filename)
     libs_to_deploy = filter(lambda x: x.startswith(sdk_root), dependencies)
     for lib in libs_to_deploy:
         deploy_library(filename, target_dir, lib)
+    run_chrpath(filename, target_dir)
 
 
 def process_dir(dirname, suffix, target_dir, sdk_root):
