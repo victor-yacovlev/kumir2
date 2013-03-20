@@ -1,4 +1,4 @@
-
+find_package(PythonInterp 2.6 REQUIRED)
 include(../../kumir2_plugin.cmake)
 
 set(SOURCES
@@ -11,7 +11,7 @@ set(MOC_HEADERS
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/complexnumbersmodulebase.cpp ${CMAKE_CURRENT_BINARY_DIR}/complexnumbersmodulebase.h ${CMAKE_CURRENT_BINARY_DIR}/complexnumbersplugin.cpp ${CMAKE_CURRENT_BINARY_DIR}/complexnumbersplugin.h ${CMAKE_CURRENT_BINARY_DIR}/ActorComplexNumbers.pluginspec
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py --update ${CMAKE_CURRENT_SOURCE_DIR}/complexnumbers.json
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py --update ${CMAKE_CURRENT_SOURCE_DIR}/complexnumbers.json
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/complexnumbers.json ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py
 )
 

@@ -1,3 +1,4 @@
+find_package(PythonInterp 2.6 REQUIRED)
 include(../../kumir2_plugin.cmake)
 
 set(SOURCES
@@ -29,7 +30,7 @@ set(FORMS
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/isometricrobotmodulebase.cpp ${CMAKE_CURRENT_BINARY_DIR}/isometricrobotmodulebase.h ${CMAKE_CURRENT_BINARY_DIR}/isometricrobotplugin.cpp ${CMAKE_CURRENT_BINARY_DIR}/isometricrobotplugin.h ${CMAKE_CURRENT_BINARY_DIR}/ActorIsometricRobot.pluginspec
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py --update ${CMAKE_CURRENT_SOURCE_DIR}/robot25d.json
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py --update ${CMAKE_CURRENT_SOURCE_DIR}/robot25d.json
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/robot25d.json ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py
 )
 

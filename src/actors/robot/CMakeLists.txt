@@ -1,4 +1,4 @@
-
+find_package(PythonInterp 2.6 REQUIRED)
 include(../../kumir2_plugin.cmake)
 
 set(SOURCES
@@ -11,7 +11,7 @@ set(MOC_HEADERS
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/robotmodulebase.cpp ${CMAKE_CURRENT_BINARY_DIR}/robotmodulebase.h ${CMAKE_CURRENT_BINARY_DIR}/robotplugin.cpp ${CMAKE_CURRENT_BINARY_DIR}/robotplugin.h ${CMAKE_CURRENT_BINARY_DIR}/ActorRobot.pluginspec
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py --update ${CMAKE_CURRENT_SOURCE_DIR}/robot.json
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py --update ${CMAKE_CURRENT_SOURCE_DIR}/robot.json
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/robot.json ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py
 )
 
