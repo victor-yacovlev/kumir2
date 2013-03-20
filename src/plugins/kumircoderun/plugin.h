@@ -25,7 +25,7 @@ public:
     QString error() const;
 
     int currentLineNo() const ;
-    inline QDateTime loadedProgramVersion() const { return dt_loadedVersion; }
+    inline QDateTime loadedProgramVersion() const { return loadedVersion_; }
 
     inline bool isGuiRequired() { return false; }
 
@@ -64,9 +64,12 @@ public slots:
 protected:
     void start();
     QString initialize(const QStringList &);
-    QDateTime dt_loadedVersion;
-    bool b_done;
-    bool b_onlyOneTryToInput;
+    void prepareCommonRun();
+    void prepareConsoleRun();
+    void prepareGuiRun();
+    QDateTime loadedVersion_;
+    bool done_;
+    bool onlyOneTryToInput_;
 
 protected slots:
     void handleThreadFinished();
@@ -137,6 +140,9 @@ signals:
 
 private:
     class Run * d;
+    struct CommonFunctors * common_;
+    struct ConsoleFunctors * console_;
+    struct GuiFunctors * gui_;
 
 };
 

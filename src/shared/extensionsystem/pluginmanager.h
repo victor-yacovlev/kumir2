@@ -43,6 +43,12 @@ public:
       * @return error message or empty string on success */
     QString loadPluginsByTemplate(const QString &templ);
 
+    /** Loads extra module (example: actor file on demand) by given canonical
+     *  file name @param canonicalFileName.
+     *
+     *  @returns error message or empty string on success */
+    QString loadExtraModule(const std::string & canonicalFileName);
+
     /** Returns true if at least one module requires gui event processing */
     bool isGuiRequired() const;
 

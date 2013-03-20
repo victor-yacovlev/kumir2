@@ -4,25 +4,31 @@
 #include <iostream>
 #include <sstream>
 #include <locale.h>
-
+#include "util.h"
+#include "commonrun.h"
+#include "consolerun.h"
+#include "guirun.h"
+#include "vm/vm_console_handlers.hpp"
 
 namespace KumirCodeRun {
 
-Plugin::Plugin() :
-    ExtensionSystem::KPlugin()
+Plugin::Plugin()
+    : ExtensionSystem::KPlugin()
+    , d(new Run(this))
+    , common_(nullptr)
+    , console_(nullptr)
+    , gui_(nullptr)
 {
-    d = new Run(this);
-
     connect (this, SIGNAL(finishInput(QVariantList)), d, SIGNAL(finishInput(QVariantList)));
 
-    b_done = true;
+    done_ = true;
     connect (d, SIGNAL(output(QString)), this, SIGNAL(outputRequest(QString)));
     connect (d, SIGNAL(input(QString)), this, SIGNAL(inputRequest(QString)));
     connect (d, SIGNAL(finished()), this, SLOT(handleThreadFinished()));
     connect (d, SIGNAL(lineChanged(int)), this, SIGNAL(lineChanged(int)));
     connect (d, SIGNAL(marginText(int,QString)), this, SIGNAL(marginText(int,QString)));
     connect (d, SIGNAL(clearMarginRequest(int,int)), this, SIGNAL(clearMargin(int,int)));
-    b_onlyOneTryToInput = false;
+    onlyOneTryToInput_ = false;
 
 
     connect(d, SIGNAL(signal_debuggerReset()), this, SIGNAL(debuggerReset()), Qt::DirectConnection);
@@ -57,15 +63,6 @@ Plugin::Plugin() :
     connect(d, SIGNAL(signal_debuggerUpdateGlobalTableValue(QString,QString,QList<int>)),
             this, SIGNAL(debuggerUpdateGlobalTableValue(QString,QString,QList<int>)),
             Qt::DirectConnection);
-}
-
-Plugin::~Plugin()
-{
-    if (d->isRunning()) {
-        d->stop();
-        d->wait();
-    }
-    delete d;
 }
 
 int Plugin::currentLineNo() const
@@ -354,20 +351,20 @@ QVariant Plugin::getGlobalTableValue(
 
 void Plugin::runContinuous()
 {
-    if (b_done) {
+    if (done_) {
         d->setEntryPointToMain();
         d->reset();
-        b_done = false;
+        done_ = false;
     }
     d->runContinuous();
 }
 
 void Plugin::runBlind()
 {
-    if (b_done) {
+    if (done_) {
         d->setEntryPointToMain();
         d->reset();
-        b_done = false;
+        done_ = false;
     }
     d->runBlind();
 }
@@ -384,17 +381,17 @@ void Plugin::runStepOut()
 
 void Plugin::runStepOver()
 {
-    if (b_done) {
+    if (done_) {
         d->setEntryPointToMain();
         d->reset();
-        b_done = false;
+        done_ = false;
     }
     d->runStepOver();
 }
 
 void Plugin::runTesting()
 {
-    if (b_done) {
+    if (done_) {
         d->setEntryPointToTest();
         d->reset();
     }
@@ -411,18 +408,18 @@ void Plugin::handleThreadFinished()
 {
     if (d->error().length()>0) {
         emit stopped(Shared::RunInterface::SR_Error);
-        b_done = true;
+        done_ = true;
     }
     else if (d->hasMoreInstructions() && d->stopped()) {
         emit stopped(Shared::RunInterface::SR_UserTerminated);
-        b_done = true;
+        done_ = true;
     }
     else if (d->hasMoreInstructions()) {
         emit stopped(Shared::RunInterface::SR_UserInteraction);
     }
     else {
         emit stopped(Shared::RunInterface::SR_Done);
-        b_done = true;
+        done_ = true;
     }
 }
 
@@ -430,6 +427,118 @@ void Plugin::handleLineChanged(int lineNo)
 {
     emit lineChanged(lineNo);
 }
+
+
+struct CommonFunctors {
+    Common::ExternalModuleResetFunctor reset;
+    Common::ExternalModuleCallFunctor call;
+    Common::CustomTypeFromStringFunctor fromString;
+    Common::CustomTypeToStringFunctor toString;
+};
+
+struct ConsoleFunctors {
+    Console::ExternalModuleLoadFunctor load;
+    VM::Console::InputFunctor input;
+    VM::Console::OutputFunctor output;
+    VM::Console::GetMainArgumentFunctor getMainArgument;
+    VM::Console::ReturnMainValueFunctor returnMainValue;
+};
+
+struct GuiFunctors {
+    Gui::InputFunctor input;
+    Gui::OutputFunctor output;
+    Gui::GetMainArgumentFunctor getMainArgument;
+    Gui::ReturnMainValueFunctor returnMainValue;
+};
+
+Plugin::~Plugin()
+{
+    if (d->isRunning()) {
+        d->stop();
+        d->wait();
+    }
+    delete d;
+    if (gui_)
+        delete gui_;
+    if (console_)
+        delete console_;
+    if (common_)
+        delete common_;
+}
+
+
+void Plugin::prepareCommonRun()
+{
+    common_ = new CommonFunctors;
+    d->vm->setFunctor(&common_->reset);
+    d->vm->setFunctor(&common_->call);
+    d->vm->setFunctor(&common_->toString);
+    d->vm->setFunctor(&common_->fromString);
+}
+
+void Plugin::prepareConsoleRun()
+{
+    if (! common_)
+        prepareCommonRun();
+
+    console_ = new ConsoleFunctors;
+
+    const Kumir::Encoding localeEncoding =
+        #ifdef Q_OS_WIN32
+            qApp->arguments().contains("-ansi")? Kumir::CP1251 : Kumir::CP866;
+        #else
+            Kumir::UTF8;
+        #endif
+
+    std::deque<std::string> arguments;
+    foreach (const QString & arg, qApp->arguments())
+        arguments.push_back(arg.toStdString());
+
+    console_->input.setLocale(localeEncoding);
+    console_->output.setLocale(localeEncoding);
+    console_->getMainArgument.setLocale(localeEncoding);
+    console_->returnMainValue.setLocale(localeEncoding);
+
+    console_->input.setCustomTypeFromStringFunctor(&common_->fromString);
+    console_->getMainArgument.setCustomTypeFromStringFunctor(&common_->fromString);
+    console_->output.setCustomTypeToStringFunctor(&common_->toString);
+    console_->returnMainValue.setCustomTypeToStringFunctor(&common_->toString);
+
+    console_->getMainArgument.init(arguments);
+
+    d->vm->setFunctor(&console_->load);    
+    d->vm->setFunctor(&console_->input);
+    d->vm->setFunctor(&console_->output);
+    d->vm->setFunctor(&console_->getMainArgument);
+    d->vm->setFunctor(&console_->returnMainValue);
+
+}
+
+void Plugin::prepareGuiRun()
+{
+    if (! common_)
+        prepareCommonRun();
+
+    gui_ = new GuiFunctors;
+
+    gui_->input.setRunnerInstance(d);
+    gui_->output.setRunnerInstance(d);
+    gui_->getMainArgument.setRunnerInstance(d);
+    gui_->returnMainValue.setRunnerInstance(d);
+
+    gui_->input.setCustomTypeFromStringFunctor(&common_->fromString);
+    gui_->output.setCustomTypeToStringFunctor(&common_->toString);
+    gui_->getMainArgument.setCustomTypeFromStringFunctor(&common_->fromString);
+    gui_->returnMainValue.setCustomTypeToStringFunctor(&common_->toString);
+
+    d->vm->setFunctor(&gui_->input);
+    d->vm->setFunctor(&gui_->output);
+    d->vm->setFunctor(&gui_->getMainArgument);
+    d->vm->setFunctor(&gui_->returnMainValue);
+
+
+}
+
 
 QString Plugin::initialize(const QStringList &)
 {
@@ -440,12 +549,15 @@ QString Plugin::initialize(const QStringList &)
     qRegisterMetaType<Shared::RunInterface::StopReason>("Shared::RunInterface::StopReason");
 
     if (ExtensionSystem::PluginManager::instance()->startupModule()==this) {
+
+        prepareConsoleRun();
+
 #ifndef Q_OS_WIN32
         setlocale(LC_CTYPE, "ru_RU.UTF-8");
 #else
         setlocale(LC_CTYPE, ".1251");
 #endif
-        b_onlyOneTryToInput = qApp->arguments().contains("-p");
+        onlyOneTryToInput_ = qApp->arguments().contains("-p");
         QString fileName;
         QStringList programArguments;
         for (int i=1; i<qApp->arguments().size(); i++) {
@@ -463,9 +575,17 @@ QString Plugin::initialize(const QStringList &)
             QFile f(fileName);
             if (f.open(QIODevice::ReadOnly)) {
                 const QByteArray data = f.readAll();
-                loadProgram(fileName, data, fileName.endsWith(".ks")? Shared::FormatText : Shared::FormatBinary);
+                try {
+                    loadProgram(fileName, data, fileName.endsWith(".ks")? Shared::FormatText : Shared::FormatBinary);
+                }
+                catch (const std::wstring & message) {
+                    return QString::fromStdWString(message);
+                }
             }
         }
+    }
+    else {
+        prepareGuiRun();
     }
 
     return "";

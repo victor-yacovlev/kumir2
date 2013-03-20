@@ -2,21 +2,24 @@
 #include <fstream>
 #include "stdlib/kumirstdlib.hpp"
 #include "vm/vm_abstract_handlers.h"
+#include "vm/vm_console_handlers.hpp"
 #include "vm/variant.hpp"
 #include "vm/vm_bytecode.hpp"
 #include "vm/vm.hpp"
 
-static Kumir::Encoding LOCALE;
+using namespace Kumir;
 
-static void do_output(const Kumir::String &s)
+static Encoding LOCALE;
+
+static void do_output(const String &s)
 {
-    const std::string localstring = Kumir::Coder::encode(LOCALE, s);
+    const std::string localstring = Coder::encode(LOCALE, s);
     std::cout << localstring;
 }
 
 static void do_output(const std::string & s)
 {
-    do_output(Kumir::Core::fromUtf8(s));
+    do_output(Core::fromUtf8(s));
 }
 
 int usage(const char * programName)
@@ -69,151 +72,7 @@ int usage(const char * programName)
     return 127;
 }
 
-class InputFunctor
-        : public VM::InputFunctor
-{
-public:
-    void operator() (VariableReferencesList alist);
-};
-
-void InputFunctor::operator() (VariableReferencesList alist)
-{
-    Kumir::IO::InputStream stream = Kumir::IO::makeInputStream(Kumir::FileType(), true);
-    for (size_t i=0; i<alist.size(); i++) {
-        VM::Variable & var = alist[i];
-        if (var.baseType()==VM::VT_int)
-            var.setValue(VM::AnyValue(Kumir::IO::readInteger(stream)));
-        else if (var.baseType()==VM::VT_real)
-            var.setValue(VM::AnyValue(Kumir::IO::readReal(stream)));
-        else if (var.baseType()==VM::VT_bool)
-            var.setValue(VM::AnyValue(Kumir::IO::readBool(stream)));
-        else if (var.baseType()==VM::VT_char)
-            var.setValue(VM::AnyValue(Kumir::IO::readChar(stream)));
-        else if (var.baseType()==VM::VT_string)
-            var.setValue(VM::AnyValue(Kumir::IO::readString(stream)));
-        else if (var.baseType()==VM::VT_record)
-            throw Kumir::Core::fromUtf8("Невозвожно ввести значение типа \"")+
-                var.recordClassName()+Kumir::Core::fromAscii("\"");
-        if (stream.hasError()) {
-            int a, b;
-            Kumir::String message;
-            stream.getError(message, a, b);
-            throw message;
-        }
-    }
-}
-
-class OutputFunctor
-        : public VM::OutputFunctor
-{
-public:
-    void operator ()(VariableReferencesList alist, FormatsList formats);
-};
-
-void OutputFunctor::operator ()(
-        VariableReferencesList values,
-        FormatsList formats
-        )
-{
-    Kumir::IO::OutputStream os;
-    for (int i=0; i<formats.size(); i++) {
-        std::pair<int,int> format = formats[i];
-        if (values[i].baseType()==VM::VT_int) {
-            Kumir::IO::writeInteger(os, values[i].toInt(), format.first);
-        }
-        else if (values[i].baseType()==VM::VT_real) {
-            Kumir::IO::writeReal(os, values[i].toDouble(), format.first, format.second);
-        }
-        else if (values[i].baseType()==VM::VT_bool) {
-            Kumir::IO::writeBool(os, values[i].toBool(), format.first);
-        }
-        else if (values[i].baseType()==VM::VT_char) {
-            Kumir::IO::writeChar(os, values[i].toChar(), format.first);
-        }
-        else if (values[i].baseType()==VM::VT_string) {
-            Kumir::IO::writeString(os, values[i].toString(), format.first);
-        }
-        else if (values[i].baseType()==VM::VT_record) {
-            throw Kumir::Core::fromUtf8("Невозвожно вывести значение типа \"")+
-                values[i].recordClassName()+Kumir::Core::fromAscii("\"");
-        }
-    }
-    do_output(os.getBuffer());
-}
-
-class ReturnMainValueFunctor
-        : public VM::ReturnMainValueFunctor
-{
-public:
-    void operator()(const VM::Variable & reference);
-};
-
-class GetMainArgumentFunctor
-        : public VM::GetMainArgumentFunctor
-{
-public:
-    explicit GetMainArgumentFunctor(int argc, char *argv[]);
-    void operator()(VM::Variable & reference);
-private:
-    bool readScalarArgument(const Kumir::String & message, const Kumir::String & name, VM::ValueType type, VM::AnyValue & val);
-    std::deque< Kumir::String > m_arguments;
-    size_t i_currentArgument;
-};
-
-GetMainArgumentFunctor::GetMainArgumentFunctor(int argc, char *argv[])
-{
-    i_currentArgument = 0;
-    bool argumentsScope = false;
-    for (int i=1; i<argc; i++) {
-        std::string arg(argv[i]);
-        if (arg.length()==0)
-            continue;
-        if (!argumentsScope) {
-            if (arg[0]!='-') {
-                // Found not a switch -> it is a program,
-                // so next arg is a program argument
-                argumentsScope = true;
-            }
-        }
-        else {
-            m_arguments.push_back(Kumir::Coder::decode(LOCALE, arg));
-        }
-    }
-}
-
-#define IS_HEX(x) ( (x>='0' && x<='9') || (x>='A' && x<='F') || (x>='a' && x<='f') )
-
-Kumir::String decodeHttpStringValue(const std::string & s)
-{
-    Kumir::String result;
-    size_t cpos = 0;
-    std::string utf8string;
-    utf8string.reserve(s.length());
-    while (cpos<s.length()) {
-        if (s[cpos]=='%'
-                && cpos+2 < s.length()
-                && IS_HEX(s[cpos+1])
-                && IS_HEX(s[cpos+2])
-                )
-        {
-            std::string hexcode = std::string("0x")+s.substr(cpos+1,2);
-            bool ok;
-            int value = Kumir::Converter::stringToInt(Kumir::Coder::decode(Kumir::ASCII,hexcode), ok);
-            char ch = (char)value;
-            utf8string.push_back(ch);
-            cpos += 3;
-        }
-        else {
-            utf8string.push_back(s[cpos]);
-            cpos += 1;
-        }
-
-    }
-    result = Kumir::Coder::decode(Kumir::UTF8, utf8string);
-    return result;
-}
-
-int showErrorMessage(const Kumir::String & message, int code) {
+int showErrorMessage(const String & message, int code) {
     bool toHttp = false;
 #if !defined(WIN32) && !defined(_WIN32)
     char * REQUEST_METHOD = getenv("REQUEST_METHOD");
@@ -221,12 +80,12 @@ int showErrorMessage(const Kumir::String & message, int code) {
     toHttp = (REQUEST_METHOD!=0 && QUERY_STRING!=0);
 #endif
     if (!toHttp) {
-        const std::string localMessage = Kumir::Coder::encode(LOCALE, message);
+        const std::string localMessage = Coder::encode(LOCALE, message);
         std::cerr << localMessage << std::endl;
         return code;
     }
     else {
-        const std::string localMessage = Kumir::Coder::encode(Kumir::UTF8, message);
+        const std::string localMessage = Coder::encode(UTF8, message);
         std::cout << "Content-type: text/html;charset=utf-8\n\n\n";
         std::cout << "<html><head><title>An error occured on server</title></head>\n";
         std::cout << "<body>\n";
@@ -236,231 +95,14 @@ int showErrorMessage(const Kumir::String & message, int code) {
     }
 }
 
-bool GetMainArgumentFunctor::readScalarArgument(const Kumir::String &message, const Kumir::String &name, VM::ValueType type, VM::AnyValue &val)
-{
-    Kumir::IO::InputStream stream;
-    bool foundValue = false;
-#if !defined(WIN32) && !defined(_WIN32)
-    char * REQUEST_METHOD = getenv("REQUEST_METHOD");
-    char * QUERY_STRING = getenv("QUERY_STRING");
-    if (REQUEST_METHOD && std::string(REQUEST_METHOD)==std::string("GET") && QUERY_STRING) {
-        Kumir::String query_string = decodeHttpStringValue(std::string(QUERY_STRING));
-        Kumir::StringList pairs = Kumir::Core::splitString(query_string, Kumir::Char('&'), true);
-        for (size_t i=0; i<pairs.size(); i++) {
-            Kumir::StringList apair = Kumir::Core::splitString(pairs[i], Kumir::Char('='), true);
-            if (apair.size()==2) {
-                Kumir::String aname = apair[0];
-                Kumir::String avalue = apair[1];
-                if (aname==name) {
-                    stream = Kumir::IO::InputStream(avalue);
-                    foundValue = true;
-                    break;
-                }
-            }
-        }
-    }
-#endif
-    if (!foundValue) {
-        if (i_currentArgument<m_arguments.size()) {
-            stream = Kumir::IO::InputStream(m_arguments[i_currentArgument]);
-            i_currentArgument ++;
-            foundValue = true;
-        }
-    }
-    if (!foundValue) {
-        Kumir::IO::writeString(0, message);
-        stream = Kumir::IO::InputStream(stdin, LOCALE);
-    }
-    if      (type==VM::VT_int)
-        val = Kumir::IO::readInteger(stream);
-    else if (type==VM::VT_real)
-        val = Kumir::IO::readReal(stream);
-    else if (type==VM::VT_bool)
-        val = Kumir::IO::readBool(stream);
-    else if (type==VM::VT_char)
-        val = Kumir::IO::readChar(stream);
-    else if (type==VM::VT_string)
-        val = Kumir::IO::readString(stream);
-    return Kumir::Core::getError().size()==0;
-}
-
-void GetMainArgumentFunctor::operator()(VM::Variable &reference)
-{
-    Kumir::String message = Kumir::Core::fromUtf8("Введите ")+reference.name();
-    static const Kumir::String errorMessage = Kumir::Core::fromUtf8("Не все аргументы первого алгоритма введены корректно");
-    if (reference.dimension()==0) {
-        message += Kumir::Core::fromAscii(": ");
-        VM::AnyValue val;
-        if (readScalarArgument(message, reference.name(), reference.baseType(), val))
-            reference.setValue(val);
-        else
-            throw errorMessage;
-    }    
-    else if (reference.dimension()==1) {
-        int bounds[7];
-        reference.getEffectiveBounds(bounds);
-        for (int x=bounds[0]; x<=bounds[1]; x++) {
-            VM::AnyValue val;
-            message = Kumir::Core::fromUtf8("Введите ")+reference.name();
-            message += Kumir::Core::fromAscii("[");
-            message += Kumir::Converter::intToString(x);
-            message += Kumir::Core::fromAscii("]: ");
-            if (readScalarArgument(message, reference.name(), reference.baseType(),  val))
-                reference.setValue(x,val);
-            else
-                throw errorMessage;
-        }
-    }
-    else if (reference.dimension()==2) {
-        int bounds[7];
-        reference.getEffectiveBounds(bounds);
-        for (int y=bounds[0]; y<=bounds[1]; y++) {
-            for (int x=bounds[2]; x<=bounds[3]; x++) {
-                VM::AnyValue val;
-                message = Kumir::Core::fromUtf8("Введите ")+reference.name();
-                message += Kumir::Core::fromAscii("[");
-                message += Kumir::Converter::intToString(y);
-                message += Kumir::Core::fromAscii(",");
-                message += Kumir::Converter::intToString(x);
-                message += Kumir::Core::fromAscii("]: ");
-                if (readScalarArgument(message, reference.name(), reference.baseType(),  val))
-                    reference.setValue(y,x,val);
-                else
-                    throw errorMessage;
-            }
-        }
-    }
-    else if (reference.dimension()==3) {
-        int bounds[7];
-        reference.getEffectiveBounds(bounds);
-        for (int z=bounds[0]; z<=bounds[1]; z++) {
-            for (int y=bounds[2]; y<=bounds[3]; y++) {
-                for (int x=bounds[4]; x<=bounds[5]; x++) {
-                    VM::AnyValue val;
-                    message = Kumir::Core::fromUtf8("Введите ")+reference.name();
-                    message += Kumir::Core::fromAscii("[");
-                    message += Kumir::Converter::intToString(y);
-                    message += Kumir::Core::fromAscii(",");
-                    message += Kumir::Converter::intToString(x);
-                    message += Kumir::Core::fromAscii("]: ");
-                    if (readScalarArgument(message, reference.name(), reference.baseType(),  val))
-                        reference.setValue(z,y,x,val);
-                    else
-                        throw errorMessage;
-                }
-            }
-        }
-    }
-}
-
-void ReturnMainValueFunctor::operator()(const VM::Variable & reference) {
-    if (!reference.isValid())
-        return;
-    Kumir::String repr;
-    do_output(reference.name()+Kumir::Core::fromAscii(" = "));
-    if (reference.dimension()==0) {
-        if (reference.hasValue()) {
-            repr = reference.value().toString();
-            if (reference.baseType()==Bytecode::VT_string)
-                repr = Kumir::Core::fromAscii("\"") + repr + Kumir::Core::fromAscii("\"");
-            else if (reference.baseType()==Bytecode::VT_char)
-                repr = Kumir::Core::fromAscii("'") + repr + Kumir::Core::fromAscii("'");
-        }
-        do_output(repr);
-    }
-    else if (reference.dimension()==1) {
-        int bounds[7];
-        reference.getEffectiveBounds(bounds);
-        do_output("{ ");
-        for (int x=bounds[0]; x<=bounds[1]; x++) {
-            repr.clear();
-            if (reference.hasValue(x)) {
-                repr = reference.value(x).toString();
-                if (reference.baseType()==Bytecode::VT_string)
-                    repr = Kumir::Core::fromAscii("\"") + repr + Kumir::Core::fromAscii("\"");
-                else if (reference.baseType()==Bytecode::VT_char)
-                    repr = Kumir::Core::fromAscii("'") + repr + Kumir::Core::fromAscii("'");
-            }
-            do_output(repr);
-            if (x<bounds[1]) {
-                do_output(", ");
-            }
-        }
-        do_output(" }");
-    }
-    else if (reference.dimension()==2) {
-        int bounds[7];
-        reference.getEffectiveBounds(bounds);
-        do_output("{ ");
-        for (int y=bounds[0]; y<=bounds[1]; y++) {
-            do_output("{ ");
-            for (int x=bounds[2]; x<=bounds[3]; x++) {
-                repr.clear();
-                if (reference.hasValue(y,x)) {
-                    repr = reference.value(y,x).toString();
-                    if (reference.baseType()==Bytecode::VT_string)
-                        repr = Kumir::Core::fromAscii("\"") + repr + Kumir::Core::fromAscii("\"");
-                    else if (reference.baseType()==Bytecode::VT_char)
-                        repr = Kumir::Core::fromAscii("'") + repr + Kumir::Core::fromAscii("'");
-                }
-                do_output(repr);
-                if (x<bounds[1]) {
-                    do_output(", ");
-                }
-            }
-            do_output(" }");
-            if (y<bounds[1]) {
-                do_output(", ");
-            }
-        }
-        do_output(" }");
-    }
-    else if (reference.dimension()==3) {
-        int bounds[7];
-        reference.getEffectiveBounds(bounds);
-        do_output("{ ");
-        for (int z=bounds[0]; z<=bounds[1]; z++) {
-            do_output("{ ");
-            for (int y=bounds[2]; y<=bounds[3]; y++) {
-                do_output("{ ");
-                for (int x=bounds[4]; x<=bounds[5]; x++) {
-                    repr.clear();
-                    if (reference.hasValue(z,y,x)) {
-                        repr = reference.value(z,y,x).toString();
-                        if (reference.baseType()==Bytecode::VT_string)
-                            repr = Kumir::Core::fromAscii("\"") + repr + Kumir::Core::fromAscii("\"");
-                        else if (reference.baseType()==Bytecode::VT_char)
-                            repr = Kumir::Core::fromAscii("'") + repr + Kumir::Core::fromAscii("'");
-                    }
-                    do_output(repr);
-                    if (x<bounds[1]) {
-                        do_output(", ");
-                    }
-                }
-                do_output(" }");
-                if (y<bounds[1]) {
-                    do_output(", ");
-                }
-            }
-            do_output(" }");
-            if (z<bounds[1]) {
-                do_output(", ");
-            }
-        }
-        do_output(" }");
-    }
-    do_output("\n");
-}
-
-
 int main(int argc, char *argv[])
 {
 //    sleep(15); // for remote debugger
     // Look at arguments
 #if defined(WIN32) || defined(_WIN32)
-    Kumir::IO::LOCALE_ENCODING = LOCALE = Kumir::CP866;
+    IO::LOCALE_ENCODING = LOCALE = CP866;
 #else
-    Kumir::IO::LOCALE_ENCODING = LOCALE = Kumir::UTF8;
+    IO::LOCALE_ENCODING = LOCALE = UTF8;
 #endif
     std::string programName;
     std::deque<std::string> args;
@@ -476,7 +118,7 @@ int main(int argc, char *argv[])
             if (arg==minuss || arg==minusS)
                 forceTextForm = true;
             else if (arg==minusansi)
-                Kumir::IO::LOCALE_ENCODING = LOCALE = Kumir::CP1251;
+                IO::LOCALE_ENCODING = LOCALE = CP1251;
             else
                 programName = arg;
         }
@@ -506,8 +148,8 @@ int main(int argc, char *argv[])
         std::cerr << "Can't load program file: " << e << std::endl;
         return 2;
     }
-    catch (Kumir::String e) {
-        std::cerr << "Can't load program file: " << Kumir::Coder::encode(LOCALE, e) << std::endl;
+    catch (String e) {
+        std::cerr << "Can't load program file: " << Coder::encode(LOCALE, e) << std::endl;
         return 2;
     }
     catch (...) {
@@ -519,40 +161,47 @@ int main(int argc, char *argv[])
     // Prepare runner
     VM::KumirVM vm;
 
-    InputFunctor inputFunctor;
-    OutputFunctor outputFunctor;
-    GetMainArgumentFunctor getMainArgumentFunctor(argc, argv);
-    ReturnMainValueFunctor returnMainValueFunctor;
+    VM::Console::InputFunctor inputFunctor;
+    VM::Console::OutputFunctor outputFunctor;
+    VM::Console::GetMainArgumentFunctor getMainArgumentFunctor;
+    VM::Console::ReturnMainValueFunctor returnMainValueFunctor;
+
+    inputFunctor.setLocale(LOCALE);
+    outputFunctor.setLocale(LOCALE);
+    getMainArgumentFunctor.setLocale(LOCALE);
+    returnMainValueFunctor.setLocale(LOCALE);
+
+    getMainArgumentFunctor.init(argc, argv);
 
     vm.setFunctor(&inputFunctor);
     vm.setFunctor(&outputFunctor);
     vm.setFunctor(&getMainArgumentFunctor);
     vm.setFunctor(&returnMainValueFunctor);
 
-    Kumir::String programPath = Kumir::Files::getAbsolutePath(Kumir::Coder::decode(LOCALE, programName));
-    size_t slashPos = programPath.find_last_of(Kumir::Char('/'));
-    Kumir::String programDir;
-    if (slashPos!=Kumir::String::npos) {
+    String programPath = Files::getAbsolutePath(Coder::decode(LOCALE, programName));
+    size_t slashPos = programPath.find_last_of(Char('/'));
+    String programDir;
+    if (slashPos!=String::npos) {
         programDir = programPath.substr(0, slashPos);
     }
 
     vm.setProgramDirectory(programDir);
 
-    static const Kumir::String LOAD_ERROR = Kumir::Core::fromUtf8("ОШИБКА ЗАГРУЗКИ ПРОГРАММЫ: ");
+    static const String LOAD_ERROR = Core::fromUtf8("ОШИБКА ЗАГРУЗКИ ПРОГРАММЫ: ");
 
     try {
-        vm.setProgram(programData, true, Kumir::Coder::decode(LOCALE, programName));
+        vm.setProgram(programData, true, Coder::decode(LOCALE, programName));
     }
-    catch (Kumir::String & msg) {
-        Kumir::String message = LOAD_ERROR + msg;
+    catch (String & msg) {
+        String message = LOAD_ERROR + msg;
         return showErrorMessage(message, 11);
     }
     catch (std::string & msg) {
-        Kumir::String message = LOAD_ERROR + Kumir::Core::fromAscii(msg);
+        String message = LOAD_ERROR + Core::fromAscii(msg);
         return showErrorMessage(message, 11);
     }
     catch (...) {
-        Kumir::String message = LOAD_ERROR;
+        String message = LOAD_ERROR;
         return showErrorMessage(message, 11);
     }
 
@@ -564,13 +213,13 @@ int main(int argc, char *argv[])
     while (vm.hasMoreInstructions()) {
         vm.evaluateNextInstruction();
         if (vm.error().length()>0) {
-            static const Kumir::String RUNTIME_ERROR = Kumir::Core::fromUtf8("ОШИБКА ВЫПОЛНЕНИЯ: ");
-            static const Kumir::String RUNTIME_ERROR_AT = Kumir::Core::fromUtf8("ОШИБКА ВЫПОЛНЕНИЯ В СТРОКЕ ");
-            static const Kumir::String COLON = Kumir::Core::fromAscii(": ");
-            Kumir::String message;
+            static const String RUNTIME_ERROR = Core::fromUtf8("ОШИБКА ВЫПОЛНЕНИЯ: ");
+            static const String RUNTIME_ERROR_AT = Core::fromUtf8("ОШИБКА ВЫПОЛНЕНИЯ В СТРОКЕ ");
+            static const String COLON = Core::fromAscii(": ");
+            String message;
             if (vm.effectiveLineNo()!=-1) {
                 message = RUNTIME_ERROR_AT+
-                        Kumir::Converter::sprintfInt(vm.effectiveLineNo()+1,10,0,0)+
+                        Converter::sprintfInt(vm.effectiveLineNo()+1,10,0,0)+
                         COLON+
                         vm.error();
             }

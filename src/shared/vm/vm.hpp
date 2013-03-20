@@ -464,8 +464,18 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
             reference.funcKey = alg;
             reference.moduleName = e.moduleName;
             reference.fileName = e.fileName;
-            reference.platformModuleName = makeCanonicalName(e.fileName);
+            reference.platformModuleName = Kumir::Coder::encode(
+                        VM_LOCALE,
+                        makeCanonicalName(e.fileName)
+                        );
             moduleContexts_[currentModuleContext].externs[key] = reference;
+            if (externalModuleLoad_) {
+                std::list< Kumir::String > algorithms =
+                        (*externalModuleLoad_)(
+                            reference.moduleName,
+                            reference.platformModuleName
+                            );
+            }
         }
         else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_BELOWMAIN || e.type==EL_TESTING) {
             uint32_t key = 0x00000000;

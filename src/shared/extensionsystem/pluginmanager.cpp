@@ -46,6 +46,7 @@ PluginManager::PluginManager()
     m_instance = this;
     d->globalState = GS_Unlocked;
     d->mySettings = new QSettings("kumir2", "ExtensionSystem");
+    d->settingsDialog = 0;
 #ifdef Q_WS_X11
     bool gui = getenv("DISPLAY")!=0;
     if (!gui)
@@ -419,6 +420,59 @@ QString PluginManager::loadPluginsByTemplate(const QString &templ)
     return "";
 }
 
+QString PluginManager::loadExtraModule(const std::string &canonicalFileName)
+{
+    QString moduleName = QString::fromStdString(canonicalFileName);
+    if ( moduleName.length()>0 )
+        moduleName[0] = moduleName[0].toUpper();
+
+    QString libraryFileName = moduleName;
+#if defined(Q_OS_WIN32)
+    libraryFileName += ".dll";
+#elif defined(Q_OS_MACX)
+    libraryFileName = "lib"+libraryFileName+".dylib";
+#else
+    libraryFileName = "lib"+libraryFileName+".so";
+#endif
+    QString fullPath;
+    if (QFile::exists(d->path+"/"+libraryFileName))
+        fullPath = d->path + "/" + libraryFileName;
+    else if (QFile::exists(QDir::currentPath()+"/"+libraryFileName))
+        fullPath = QDir::currentPath()+ "/" + libraryFileName;
+    else {
+        const QString errorMessage = tr("Can't load module %1: file not found")
+                .arg(libraryFileName);
+        return errorMessage;
+    }
+
+    QPluginLoader loader(fullPath);
+
+    if (!loader.load()) {
+        return QString("Can't load module %1: %2")
+                .arg(libraryFileName)
+                .arg(loader.errorString());
+    }
+    KPlugin * plugin = qobject_cast<KPlugin*>(loader.instance());
+    if (!plugin) {
+        return QString("Plugin is not valid (does not implement interface KPlugin)");
+        loader.unload();
+    }
+    d->objects.push_back(plugin);
+    d->states.push_back(KPlugin::Loaded);
+    PluginSpec spec;
+    spec.name = QString::fromStdString(canonicalFileName);
+    spec.libraryFileName = libraryFileName;
+    spec.gui = plugin->isGuiRequired();
+    d->specs.push_back(spec);
+
+    QSettings * settings = new QSettings("kumir2", moduleName);
+    settings->setIniCodec("UTF-8");
+    d->settings.push_back(settings);
+    plugin->updateSettings();
+    plugin->initialize(QStringList());
+    return QString();
+}
+
 bool PluginManager::isGuiRequired() const
 {
     KPlugin * runtimePlugin = qobject_cast<KPlugin*>(d->objects.last());
@@ -484,14 +538,15 @@ KPlugin* PluginManager::loadedPlugin(const QString &name)
 
 KPlugin* PluginManager::startupModule()
 {
-    return d->objects.last();
+    return loadedPlugin(d->mainPluginName);
 }
 
 QString PluginManager::start()
 {
-    KPlugin * p = d->objects.last();
+    KPlugin * p = startupModule();
+    int index = d->objects.indexOf(p);
     p->start();
-    d->states[d->states.size()-1] = KPlugin::Started;
+    d->states[index] = KPlugin::Started;
     return "";
 }
 

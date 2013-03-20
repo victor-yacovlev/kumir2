@@ -1,6 +1,6 @@
 set(
     CONFIGURATION_TEMPLATE
-    "Actor*,!KumirCodeRun"
+    "!KumirCodeRun"
 )
 
 set(SRC ../main.cpp)

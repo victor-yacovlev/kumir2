@@ -283,10 +283,10 @@ public:
 
 #endif
 
-protected:
     inline static void abort(const String & err) {
         error = err;
     }
+protected:
     inline static void unsetError() {
         error.clear();
     }
