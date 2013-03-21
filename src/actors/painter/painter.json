@@ -122,7 +122,7 @@
 			"async": false,
 			"arguments": [
 				{
-					"name": { "ascii": "color", "ru_RU": "цвет"},
+					"name": { "ascii": "colour", "ru_RU": "Цвет"},
 					"baseType": "color"
 				}
 			]
