@@ -28,7 +28,7 @@ public:
 
     // VM Access methods
     int effectiveLineNo() const;
-    void loadProgramFromBinaryBuffer(std::list<char> & stream, const String & filename);
+    bool loadProgramFromBinaryBuffer(std::list<char> & stream, const String & filename);
     void loadProgramFromTextBuffer(const std::string & stream, const String & filename);
     inline void setProgramDirectory(const QString & dirName) { vm->setProgramDirectory(dirName.toStdWString()); }
     QString error() const;

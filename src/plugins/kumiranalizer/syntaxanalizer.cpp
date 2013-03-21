@@ -2706,7 +2706,18 @@ void SyntaxAnalizerPrivate::parseAssignment(int str)
                 }
             }
             else if (a==AST::TypeUser) {
-                if (b!=AST::TypeUser) {
+                AST::Module * convMod = nullptr;
+                AST::Algorhitm * convAlg = nullptr;
+                if (findConversionAlgorithm(rightExpr->baseType, leftExpr->baseType, convMod, convAlg)) {
+                    AST::Expression * convExpr = new AST::Expression;
+                    convExpr->kind = AST::ExprFunctionCall;
+                    convExpr->function = convAlg;
+                    convExpr->operands.push_back(rightExpr);
+                    convExpr->baseType = a;
+                    convExpr->dimension = leftExpr->dimension;
+                    rightExpr = convExpr;
+                }
+                else if (b!=AST::TypeUser) {
                     err = _("Can't %1:=%2", leftExpr->baseType.name, lexer->classNameByBaseType(rightExpr->baseType.kind));
                 }
                 else if (b==AST::TypeUser) {

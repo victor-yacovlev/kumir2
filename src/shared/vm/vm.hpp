@@ -3168,16 +3168,27 @@ bool KumirVM::loadProgramFromBinaryBuffer(std::list<char> &stream, bool isMain, 
         Bytecode::bytecodeFromDataStream(stream, d);
         ok = true;
     }
-    catch (String e) {
+    catch (const String & e) {
         error = e;
         ok = false;
     }
-    catch (std::string e) {
-        error = Kumir::Core::fromAscii(e);
+    catch (const std::string & e) {
+        error = Kumir::Core::fromUtf8(e);
         ok = false;
     }
     if (ok) {
-        setProgram(d, isMain, filename);
+        try {
+            setProgram(d, isMain, filename);
+            ok = true;
+        }
+        catch (const String & e) {
+            error = e;
+            ok = false;
+        }
+        catch (const std::string & e) {
+            error = Kumir::Core::fromUtf8(e);
+            ok = false;
+        }
     }
     return ok;
 }

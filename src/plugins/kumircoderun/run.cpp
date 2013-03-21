@@ -380,18 +380,22 @@ int Run::effectiveLineNo() const
     return vm->effectiveLineNo();
 }
 
-void Run::loadProgramFromBinaryBuffer(std::list<char> &stream, const String & filename)
+bool Run::loadProgramFromBinaryBuffer(std::list<char> &stream, const String & filename)
 {
-    String error;
-    if (!vm->loadProgramFromBinaryBuffer(stream, true, filename, error)) {
+    String errorMessage;
+    bool ok = vm->loadProgramFromBinaryBuffer(stream, true, filename, errorMessage);
+    if (!ok) {
         std::string msg;
 #if defined(WIN32) || defined(_WIN32)
         msg = Kumir::Coder::encode(Kumir::CP866, error);
 #else
-        msg = Kumir::Coder::encode(Kumir::UTF8, error);
+        msg = Kumir::Coder::encode(Kumir::UTF8, errorMessage);
 #endif
         std::cerr << msg << std::endl;
+        emit error(QString::fromUtf8("Ошибка загрузки программы: %1")
+                    .arg(QString::fromStdWString(errorMessage)));
     }
+    return ok;
 }
 
 void Run::loadProgramFromTextBuffer(const std::string &stream, const String & filename)

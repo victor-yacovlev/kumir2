@@ -15,6 +15,16 @@ namespace Gui {
 using namespace Kumir;
 using namespace VM;
 
+class ExternalModuleLoadFunctor
+        : public VM::ExternalModuleLoadFunctor
+{
+public:
+    NamesList operator()(
+                const String & moduleName,
+                const std::string & canonicalModuleFileName)
+                /* throws std::string, Kumir::String */ ;
+};
+
 class InputFunctor
         : private QObject
         , public VM::InputFunctor

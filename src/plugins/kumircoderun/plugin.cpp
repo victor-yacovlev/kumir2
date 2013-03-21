@@ -72,11 +72,12 @@ int Plugin::currentLineNo() const
 
 bool Plugin::loadProgram(const QString & filename, const QByteArray & source, Shared::ProgramFormat format)
 {
+    bool ok = false;
     if (format==Shared::FormatBinary) {
         std::list<char> buffer;
         for (int i=0; i<source.size(); i++)
             buffer.push_back(source[i]);
-        d->loadProgramFromBinaryBuffer(buffer, filename.toStdWString());
+        ok = d->loadProgramFromBinaryBuffer(buffer, filename.toStdWString());
     }
     else {
         const std::string str(source.constData());
@@ -84,8 +85,8 @@ bool Plugin::loadProgram(const QString & filename, const QByteArray & source, Sh
     }
     const QString programDirName = QFileInfo(filename).absoluteDir().absolutePath();
     d->setProgramDirectory(programDirName);
-    d->programLoaded = true;
-    return true;
+    d->programLoaded = ok;
+    return ok;
 }
 
 QString Plugin::error() const
@@ -445,6 +446,7 @@ struct ConsoleFunctors {
 };
 
 struct GuiFunctors {
+    Gui::ExternalModuleLoadFunctor load;
     Gui::InputFunctor input;
     Gui::OutputFunctor output;
     Gui::GetMainArgumentFunctor getMainArgument;
@@ -531,6 +533,7 @@ void Plugin::prepareGuiRun()
     gui_->getMainArgument.setCustomTypeFromStringFunctor(&common_->fromString);
     gui_->returnMainValue.setCustomTypeToStringFunctor(&common_->toString);
 
+    d->vm->setFunctor(&gui_->load);
     d->vm->setFunctor(&gui_->input);
     d->vm->setFunctor(&gui_->output);
     d->vm->setFunctor(&gui_->getMainArgument);

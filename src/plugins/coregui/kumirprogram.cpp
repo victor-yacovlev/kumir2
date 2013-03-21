@@ -312,6 +312,7 @@ void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel deb
     bool mustRegenerate = !m_ast->lastModified.isValid() ||
             !plugin_bytecodeRun->loadedProgramVersion().isValid() ||
             m_ast->lastModified > plugin_bytecodeRun->loadedProgramVersion();
+    bool ok = true;
     if (mustRegenerate) {
         QByteArray bufArray;
         QPair<QString,QString> res = plugin_bytcodeGenerator->generateExecuable(m_ast, bufArray, debugLevel);
@@ -319,11 +320,17 @@ void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel deb
             qDebug() << "Error generating execuable: " << res.first;
         }
         else {
-            plugin_bytecodeRun->loadProgram(s_sourceFileName, bufArray, Shared::FormatBinary);
+            ok = plugin_bytecodeRun->loadProgram(s_sourceFileName, bufArray, Shared::FormatBinary);
+
         }
     }
     const QString exeFileName = s_sourceFileName.mid(0, s_sourceFileName.length()-4)+".kum";
-    m_terminal->start(exeFileName);
+    if (ok) {
+        m_terminal->start(exeFileName);
+    }
+    else {
+        handleRunnerStopped(Shared::RunInterface::SR_Error);
+    }
 }
 
 void KumirProgram::stepRun()
@@ -373,26 +380,6 @@ void KumirProgram::stop()
     if (w_debuggerWindow) w_debuggerWindow->reset();
 }
 
-void KumirProgram::handleProcessError(QProcess::ProcessError error)
-{
-    if (b_processUserTerminated)
-        return;
-    qDebug() << "Process error " << error;
-    e_state = Idle;
-    m_terminal->error(tr("Unknown error"));
-    s_endStatus = tr("Evaluation error");
-    PluginManager::instance()->switchGlobalState(GS_Observe);
-}
-
-void KumirProgram::handleProcessFinished(int exitCode, QProcess::ExitStatus status)
-{
-    qDebug() << "Process finished with code " << exitCode << " and status " << status;
-    e_state = Idle;
-    m_terminal->finish();
-    s_endStatus = exitCode==0? tr("Evaluation finished") : tr("Evaluation error");
-
-    PluginManager::instance()->switchGlobalState(GS_Observe);
-}
 
 void KumirProgram::setAllActorsAnimationFlag(bool animationEnabled)
 {

@@ -89,7 +89,8 @@ public:
         }
         catch (...) {
             qDebug() << "Exception caught in QApplication::notify!!!";
-//            abort();
+            if (arguments().contains("--debug"))
+                abort();
         }
         return result;
     }

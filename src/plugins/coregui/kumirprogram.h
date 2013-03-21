@@ -58,8 +58,6 @@ public slots:
     void handleMarginTextRequest(int lineNo, const QString & text);
     void handleMarginClearRequest(int fromLine, int toLine);
 private slots:
-    void handleProcessFinished(int exitCode, QProcess::ExitStatus status);
-    void handleProcessError(QProcess::ProcessError);
     void handleRunnerStopped(int);
 
 private:

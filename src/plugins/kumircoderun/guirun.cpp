@@ -7,6 +7,20 @@ namespace KumirCodeRun {
 namespace Gui {
 
 
+VM::ExternalModuleLoadFunctor::NamesList
+ExternalModuleLoadFunctor::operator ()(const String & moduleName, const std::string&)
+{
+    // In GUI mode this functor should not throw in any case
+    NamesList result;
+    Shared::ActorInterface * actor = Util::findActor(moduleName);
+    if (actor) {
+        foreach (const QString & name, actor->funcList()) {
+            result.push_back(name.toStdWString());
+        }
+    }
+    return result;
+}
+
 
 InputFunctor::InputFunctor()
     : QObject(0)
