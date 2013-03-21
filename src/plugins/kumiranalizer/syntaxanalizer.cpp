@@ -5431,7 +5431,10 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
         findAlgorhitm(QString::fromUtf8("длин"), dummy, result->function);
         return result;
     }
-    if (lexems.size()==1 && lexems.front()->type & LxTypeConstant) {
+    if (lexems.size()==1 &&
+            lexems.front()->type & LxTypeConstant &&
+            lexems.front()->type != LxTypeConstant // Exact type of constant is known
+            ) {
         int err = 0;
         AST::VariableBaseType type = testConst(lexems, err);
         if (err) {
@@ -5492,7 +5495,7 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
             result->constant = userConstValue;
             for (std::list<Lexem*>::const_iterator it=lexems.begin(); it!=lexems.end(); it++) {
                 Lexem * lx = (*it);
-                lx->type = LxConstReal;
+                lx->type = LxTypeConstant;
             }
             return result;
         }

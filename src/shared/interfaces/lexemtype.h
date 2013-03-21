@@ -20,7 +20,7 @@ namespace Shared {
         LxTypeName          = 0x0000001C, // bits [2..4]
         LxTypeSecondaryKwd  = 0x000001E0, // bits [5..8]
         LxTypePrimaryKwd    = 0x0000F800, // bits [11..15]
-        LxTypeConstant      = 0x001E0000, // bits [17..20]
+        LxTypeConstant      = 0x000E0000, // bits [17..20]
         LxTypeOperator      = 0x01F00000, // bits [21..25]
         LxTypeError         = 0x80000000,  // bit 31
 
