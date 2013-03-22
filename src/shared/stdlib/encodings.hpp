@@ -223,14 +223,16 @@ namespace Kumir {
             if (E!=UTF8) {
                 result.reserve(src.length());
                 for (size_t i=0; i<src.length(); i++) {
+                    char ch = '\0';
                     if (E==CP866)
-                        result.push_back(CP866CodingTable::enc(src[i]));
+                        ch = CP866CodingTable::enc(src[i]);
                     else if (E==CP1251)
-                        result.push_back(CP1251CodingTable::enc(src[i]));
+                        ch = CP1251CodingTable::enc(src[i]);
                     else if (E==KOI8R)
-                        result.push_back(KOI8RCodingTable::enc(src[i]));
+                        ch = KOI8RCodingTable::enc(src[i]);
                     else if (E==ASCII)
-                        result.push_back(AsciiCodingTable::enc(src[i]));
+                        ch = AsciiCodingTable::enc(src[i]);
+                    result.push_back(ch);
 
                 }
             }

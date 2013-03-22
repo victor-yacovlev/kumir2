@@ -487,7 +487,7 @@ void Plugin::prepareConsoleRun()
 
     const Kumir::Encoding localeEncoding =
         #ifdef Q_OS_WIN32
-            qApp->arguments().contains("-ansi")? Kumir::CP1251 : Kumir::CP866;
+            Kumir::CP1251;
         #else
             Kumir::UTF8;
         #endif
