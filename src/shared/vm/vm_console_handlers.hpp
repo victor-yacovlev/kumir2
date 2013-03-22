@@ -18,6 +18,7 @@ inline void do_output(const String &s, const Encoding locale)
 {
     const std::string localstring = Coder::encode(locale, s);
     std::cout << localstring;
+    std::cout.flush();
 }
 
 inline void do_output(const std::string & s, const Encoding locale)

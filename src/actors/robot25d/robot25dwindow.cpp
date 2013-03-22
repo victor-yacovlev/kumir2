@@ -36,6 +36,11 @@ Robot25DWindow::Robot25DWindow(QWidget *parent) :
     group_lockedActionsDuringEvaluate->addAction(ui->actionReset);
 }
 
+void Robot25DWindow::statusMessage(const QString &msg)
+{
+    statusBar()->showMessage(msg);
+}
+
 Robot25DWindow::~Robot25DWindow()
 {
     delete ui;

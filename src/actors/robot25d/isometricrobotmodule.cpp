@@ -41,6 +41,7 @@ QWidget* IsometricRobotModule::mainWidget() const
 
 void IsometricRobotModule::runGoForward()
 {
+//    window_->statusMessage(__FUNCTION__);
     if (!robotView_->goForward()) {
         setError(robotView_->lastError(QLocale::Russian));
     }
@@ -50,6 +51,7 @@ void IsometricRobotModule::runGoForward()
 
 void IsometricRobotModule::runTurnRight()
 {
+//    window_->statusMessage(__FUNCTION__);
     robotView_->turnRight();
     robotView_->waitForAnimated();
 }
@@ -57,6 +59,7 @@ void IsometricRobotModule::runTurnRight()
 
 void IsometricRobotModule::runTurnLeft()
 {
+//    window_->statusMessage(__FUNCTION__);
     robotView_->turnLeft();
     robotView_->waitForAnimated();
 }
@@ -64,6 +67,7 @@ void IsometricRobotModule::runTurnLeft()
 
 void IsometricRobotModule::runDoPaint()
 {
+//    window_->statusMessage(__FUNCTION__);
     robotView_->doPaint();
     robotView_->waitForAnimated();
 }

@@ -621,31 +621,6 @@ void Plugin::start()
         else {
             startTimer(0); // start thread after event loop started
         }
-//        while (d->hasMoreInstructions()) {
-//            d->evaluateNextInstruction();
-//            if (!error().isEmpty())
-//                break;
-//        }
-//        if (error().isEmpty()) {
-//            qApp->setProperty("returnCode", 0);
-//        }
-//        else {
-//            QString message;
-//            if (d->effectiveLineNo()==-1) {
-//                message = tr("RUNTIME ERROR: ");
-//            }
-//            else {
-//                message = tr("RUNTIME ERROR AT LINE ");
-//                message += QString::number(d->effectiveLineNo()+1)+": ";
-//            }
-//            message += error()+"\n";
-//            wchar_t * buffer = (wchar_t*)calloc(message.length()+1, sizeof(wchar_t));
-//            message.toWCharArray(buffer);
-//            buffer[message.length()] = L'\0';
-//            fwprintf(stderr, L"%ls", buffer);
-//            free(buffer);
-//            qApp->setProperty("returnCode", 1);
-//        }
     }
     else {
         std::cerr << "Usage:\n\t" << qApp->arguments().at(0).toLocal8Bit().data() << " PROGRAM.kod|PROGRAM.ks [PROGRAM_ARGUMENTS]\n\n";

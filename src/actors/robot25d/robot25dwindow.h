@@ -24,6 +24,7 @@ public:
 
     void loadGame(const QString &fileName);
     void loadEnvironment(const QString &fileName);
+    void statusMessage(const QString & msg);
 private slots:
     void handleLoadAction();
     void handleNextAction();
