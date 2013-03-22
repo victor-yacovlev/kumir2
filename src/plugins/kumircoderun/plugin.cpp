@@ -10,6 +10,8 @@
 #include "guirun.h"
 #include "vm/vm_console_handlers.hpp"
 
+#include <QtGui>
+
 namespace KumirCodeRun {
 
 Plugin::Plugin()
@@ -597,24 +599,27 @@ QString Plugin::initialize(const QStringList &)
 void Plugin::timerEvent(QTimerEvent *event) {
     killTimer(event->timerId());
     event->accept();
+    d->reset();
+    QList<KPlugin*> actors = ExtensionSystem::PluginManager::instance()
+            ->loadedPlugins("Actor*");
+    foreach (KPlugin * plugin, actors) {
+        Shared::ActorInterface * actor =
+                qobject_cast<Shared::ActorInterface*>(plugin);
+        if (actor)
+            actor->setAnimationEnabled(true);
+        if (actor && actor->mainWidget()) {
+            actor->mainWidget()->show();
+            connect(d, SIGNAL(finished()), actor->mainWidget(), SLOT(close()));
+        }
+    }
     d->start();
 }
 
 void Plugin::start()
 {
     if (d->programLoaded) {
-        QList<KPlugin*> actors = ExtensionSystem::PluginManager::instance()
-                ->loadedPlugins("Actor*");
-        foreach (KPlugin * plugin, actors) {
-            Shared::ActorInterface * actor =
-                    qobject_cast<Shared::ActorInterface*>(plugin);
-            if (actor)
-                actor->setAnimationEnabled(true);
-        }
-
-        d->reset();
-        d->start();
         if (!ExtensionSystem::PluginManager::instance()->isGuiRequired()) {
+            d->reset();
             d->start();
             d->wait();
         }

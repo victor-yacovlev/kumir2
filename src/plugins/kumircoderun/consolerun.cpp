@@ -60,9 +60,6 @@ ExternalModuleLoadFunctor::operator() (
         foreach ( const QString & functionName, actor->funcList() ) {
             namesList.push_back(functionName.toStdWString());
         }
-        if (actor->mainWidget()) {
-            actor->mainWidget()->show();
-        }
     }
 
     return namesList;
