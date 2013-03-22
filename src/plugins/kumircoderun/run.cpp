@@ -387,7 +387,7 @@ bool Run::loadProgramFromBinaryBuffer(std::list<char> &stream, const String & fi
     if (!ok) {
         std::string msg;
 #if defined(WIN32) || defined(_WIN32)
-        msg = Kumir::Coder::encode(Kumir::CP866, error);
+        msg = Kumir::Coder::encode(Kumir::CP866, errorMessage);
 #else
         msg = Kumir::Coder::encode(Kumir::UTF8, errorMessage);
 #endif
