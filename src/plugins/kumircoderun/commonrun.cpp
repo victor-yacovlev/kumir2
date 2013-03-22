@@ -2,6 +2,8 @@
 #include "util.h"
 #include "extensionsystem/pluginmanager.h"
 
+#include <QWidget>
+
 namespace KumirCodeRun {
 
 namespace Common {
@@ -93,6 +95,8 @@ AnyValue ExternalModuleCallFunctor::operator ()
         return AnyValue();
     }
 
+    grabActor(actor);
+
     if (actor->evaluate(qAlgKey, arguments)==Shared::ES_Async) {
         // Wait for actor thread to finish
         forever {
@@ -147,6 +151,11 @@ void ExternalModuleCallFunctor::releaseActor(ActorInterface *actor)
     disconnect(actorObject, SIGNAL(sync()), this, SLOT(handleActorSync()));
 }
 
+void ExternalModuleCallFunctor::grabActor(ActorInterface *actor)
+{
+    QObject * actorObject = dynamic_cast<QObject*>(actor);
+    connect(actorObject, SIGNAL(sync()), this, SLOT(handleActorSync()));
+}
 
 
 

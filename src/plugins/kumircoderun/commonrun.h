@@ -51,6 +51,7 @@ private slots:
     void handleActorSync();
 
 private /*methods*/:
+    void grabActor(ActorInterface * actor);
     void releaseActor(ActorInterface * actor);
 
 private /*fields*/:

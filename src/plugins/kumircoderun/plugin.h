@@ -63,6 +63,7 @@ public slots:
 
 protected:
     void start();
+    void timerEvent(QTimerEvent *);
     QString initialize(const QStringList &);
     void prepareCommonRun();
     void prepareConsoleRun();

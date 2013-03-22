@@ -8,6 +8,7 @@ You should change it corresponding to functionality.
 
 #include <QtCore>
 #include <QtGui>
+#include <iostream>
 #include "isometricrobotmodule.h"
 
 namespace ActorIsometricRobot {

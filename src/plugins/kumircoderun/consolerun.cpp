@@ -3,6 +3,8 @@
 #include "interfaces/actorinterface.h"
 #include "util.h"
 
+#include <QWidget>
+
 namespace KumirCodeRun {
 namespace Console {
 
@@ -57,6 +59,9 @@ ExternalModuleLoadFunctor::operator() (
     if (actor) /* must check in case of exceptions disabled */ {
         foreach ( const QString & functionName, actor->funcList() ) {
             namesList.push_back(functionName.toStdWString());
+        }
+        if (actor->mainWidget()) {
+            actor->mainWidget()->show();
         }
     }
 

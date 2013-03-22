@@ -3,7 +3,7 @@
 #include "robotview.h"
 #include "graphicsimageitem.h"
 #include "cellgraphicsitem.h"
-
+#include <iostream>
 
 namespace Robot25D {
 
@@ -386,7 +386,7 @@ void RobotItem::timerEvent(QTimerEvent *event) {
 
 void RobotItem::setPulse(qreal v)
 {
-    //    qDebug() << "Set pulse: " << v;
+//    std::cerr << "Set pulse: " << v;
     r_pulse = v;
     if (e_animationType==ChangeFrameNo) {
         qreal start = i_startFrame;
