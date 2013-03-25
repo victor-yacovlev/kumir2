@@ -7,6 +7,14 @@
 #include "vm/vm_bytecode.hpp"
 #include "vm/vm.hpp"
 
+#include <algorithm>
+
+#if defined(WIN32) || defined(_WIN32)
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
+
 using namespace Kumir;
 
 static Encoding LOCALE;
@@ -95,6 +103,35 @@ int showErrorMessage(const String & message, int code) {
     }
 }
 
+bool IsPluginExtern(const Bytecode::TableElem & e) {
+    bool isExtern = e.type==Bytecode::EL_EXTERN;
+    bool isKumirModule = e.fileName.length()>4 &&
+            e.fileName.substr(e.fileName.length()-4)==Kumir::Core::fromAscii(".kod");
+    return isExtern && !isKumirModule;
+}
+
+int runKumirXRun(int argc, char* argv[]) {
+
+#if defined(WIN32) || defined(_WIN32)
+    // Win32 implementation
+#else
+    // Posix implementation
+    std::string kumir2run = std::string(argv[0]);
+    if (kumir2run.at(0)!='/') {
+        char buf[2048];
+        getcwd(buf, 2048);
+        std::string cwd(buf);
+        cwd.push_back('/');
+        kumir2run = cwd + kumir2run;
+    }
+    size_t lastSlash = kumir2run.find_last_of('/');
+    const std::string basePath = kumir2run.substr(0, lastSlash+1);
+    const std::string kumir2xrun = basePath + std::string("kumir2-xrun");
+    return execv(kumir2xrun.c_str(), argv);
+#endif
+    return 127;
+}
+
 int main(int argc, char *argv[])
 {
 //    sleep(15); // for remote debugger
@@ -157,6 +194,14 @@ int main(int argc, char *argv[])
         return 2;
     }
     programFile.close();
+
+    // Check if it's possible to run using regular runtime
+    bool hasPluginDependency =
+            std::count_if(programData.d.begin(), programData.d.end(), IsPluginExtern);
+
+    if (hasPluginDependency) {
+        return runKumirXRun(argc, argv);
+    }
 
     // Prepare runner
     VM::KumirVM vm;
