@@ -114,6 +114,39 @@ int runKumirXRun(int argc, char* argv[]) {
 
 #if defined(WIN32) || defined(_WIN32)
     // Win32 implementation
+    char buf[MAX_PATH];
+    GetModuleFileNameA(NULL, buf, MAX_PATH);
+    std::string kumir2run(buf);
+    size_t lastSlash = kumir2run.find_last_of('\\');
+    const std::string basePath = kumir2run.substr(0, lastSlash+1);
+    const std::string kumir2xrun = basePath + std::string("kumir2-xrun.exe");
+    std::string commandLine = kumir2xrun;
+    for (int i=1; i<argc; i++) {
+        std::string arg(argv[i]);
+        commandLine.push_back(' ');
+        commandLine.append(arg);
+    }
+    STARTUPINFOA startupInfo;
+    ZeroMemory( &startupInfo, sizeof(startupInfo));
+    startupInfo.cb = sizeof(startupInfo);
+    PROCESS_INFORMATION processInformation;
+    ZeroMemory( &processInformation, sizeof(processInformation) );
+    LPSTR lpCommandLine = const_cast<LPSTR> ( commandLine.c_str() );
+    BOOL success = CreateProcessA(
+                NULL, // lpApplicationName
+                lpCommandLine, // lpCommandLine
+                NULL, // lpProcessAttributes
+                NULL, // lpThreadAttributes
+                TRUE, // bInheritHandles
+                0, // dwCreationFlags
+                NULL, // lpEnvironment
+                NULL, // lpCurrentDirectory
+                &startupInfo, // lpStartupInfo
+                &processInformation // lpProcessInformation
+                );
+    if (success) {
+        return WaitForSingleObject(processInformation.hProcess, INFINITE);
+    }
 #else
     // Posix implementation
     std::string kumir2run = std::string(argv[0]);
