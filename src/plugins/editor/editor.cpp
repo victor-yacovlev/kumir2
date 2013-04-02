@@ -155,14 +155,24 @@ void EditorPrivate::timerEvent(QTimerEvent *e)
     }
     else if (e->timerId()==autoScrollTimerId) {
         e->accept();
-        if (autoScrollState==-1) {
+        if (autoScrollStateY==-1) {
             if (verticalScrollBar->value()>0) {
                 verticalScrollBar->setValue(verticalScrollBar->value()-verticalScrollBar->singleStep());
             }
         }
-        else if (autoScrollState==1) {
+        else if (autoScrollStateY==1) {
             if (verticalScrollBar->value()<verticalScrollBar->maximum()) {
                 verticalScrollBar->setValue(verticalScrollBar->value()+verticalScrollBar->singleStep());
+            }
+        }
+        if (autoScrollStateX==-1) {
+            if (horizontalScrollBar->value()>0) {
+                horizontalScrollBar->setValue(horizontalScrollBar->value()-horizontalScrollBar->singleStep());
+            }
+        }
+        else if (autoScrollStateX==1) {
+            if (horizontalScrollBar->value()<horizontalScrollBar->maximum()) {
+                horizontalScrollBar->setValue(horizontalScrollBar->value()+horizontalScrollBar->singleStep());
             }
         }
     }
@@ -170,7 +180,12 @@ void EditorPrivate::timerEvent(QTimerEvent *e)
 
 void EditorPrivate::handleAutoScrollChange(char a)
 {
-    autoScrollState = a;
+    autoScrollStateY = a;
+}
+
+void EditorPrivate::handleAutoScrollChangeX(char a)
+{
+    autoScrollStateX = a;
 }
 
 void EditorPrivate::updatePosition(int row, int col)
@@ -453,13 +468,17 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
     d->positionStatus->setFixedWidth(120);
     d->timerId = d->startTimer(50);
     d->autoScrollTimerId = d->startTimer(100);
-    d->autoScrollState = 0;
+    d->autoScrollStateY = 0;
+    d->autoScrollStateX = 0;
 
     connect(d->cursor, SIGNAL(positionChanged(int,int)),
             d, SLOT(updatePosition(int,int)));
 
     connect(d->plane, SIGNAL(requestAutoScroll(char)),
             d, SLOT(handleAutoScrollChange(char)));
+
+    connect(d->plane, SIGNAL(requestAutoScrollX(char)),
+            d, SLOT(handleAutoScrollChangeX(char)));
 
     d->updatePosition(d->cursor->row(), d->cursor->column());
 

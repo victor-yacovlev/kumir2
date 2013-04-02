@@ -51,7 +51,8 @@ public:
 
     int timerId;
     int autoScrollTimerId;
-    char autoScrollState;
+    char autoScrollStateY;
+    char autoScrollStateX;
 
     bool notSaved;
 
@@ -72,6 +73,7 @@ public slots:
     void handleLineAndTextChanged(const QStack<Shared::ChangeTextTransaction> & changes);
     void playMacro();
     void handleAutoScrollChange(char a);
+    void handleAutoScrollChangeX(char a);
     void disableInsertActions();
     void enableInsertActions();
 };

@@ -134,6 +134,7 @@ private:
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
     void requestAutoScroll(char a);
+    void requestAutoScrollX(char a);
     void disableInsertActions();
     void enableInsertActions();
 

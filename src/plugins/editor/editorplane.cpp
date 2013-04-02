@@ -129,6 +129,7 @@ void EditorPlane::contextMenuEvent(QContextMenuEvent *e)
 void EditorPlane::mousePressEvent(QMouseEvent *e)
 {
     emit requestAutoScroll(0);
+    emit requestAutoScrollX(0);
     if (m_autocompleteWidget->isVisible())
         m_autocompleteWidget->hide();
     if (e->button()==Qt::RightButton) {
@@ -195,6 +196,7 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
 void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
 {
     emit requestAutoScroll(0);
+    emit requestAutoScrollX(0);
     if (pnt_marginPress.x()!=-1000 && pnt_marginPress.y()!=-1000) {
         int x = pnt_marginPress.x();
         if (b_teacherMode)
@@ -315,6 +317,15 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
         }
         else {
             emit requestAutoScroll( 0);
+        }
+        if (e->pos().x()<0) {
+            emit requestAutoScrollX(-1);
+        }
+        else if (e->pos().x()>mn-2) {
+            emit requestAutoScrollX(+1);
+        }
+        else {
+            emit requestAutoScrollX( 0);
         }
         QApplication::restoreOverrideCursor();
         int dX = e->pos().x() - pnt_textPress.x();
