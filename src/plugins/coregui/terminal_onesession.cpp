@@ -208,6 +208,11 @@ bool OneSession::hasSelectedText() const
     return false;
 }
 
+bool OneSession::isEditable() const
+{
+    return inputCursorPosition_ != -1;
+}
+
 QString OneSession::selectedText() const
 {
     QString result;

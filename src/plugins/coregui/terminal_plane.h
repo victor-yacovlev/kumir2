@@ -42,6 +42,7 @@ protected:
 
 private slots:
     void copyToClipboard();
+    void pasteFromClipboard();
 
 private:
     OneSession* sessionByPos(const QPoint & pos) const;
@@ -53,6 +54,7 @@ private:
     OneSession* selectedSession_;
     QPoint mousePressPosition_;
     QAction * actionCopyToClipboard_;
+    QAction * actionPasteFromClipboard_;
 };
 
 } // namespace Terminal

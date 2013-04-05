@@ -15,12 +15,17 @@ Plane::Plane(Term *parent)
     , inputPosition_(0)
     , selectedSession_(nullptr)
     , actionCopyToClipboard_(new QAction(this))
+    , actionPasteFromClipboard_(new QAction(this))
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 
     actionCopyToClipboard_->setText(tr("Copy to clipboard"));
     connect(actionCopyToClipboard_, SIGNAL(triggered()),
             this, SLOT(copyToClipboard()));
+
+    actionPasteFromClipboard_->setText(tr("Paste from clipboard"));
+    connect(actionPasteFromClipboard_, SIGNAL(triggered()),
+            this, SLOT(pasteFromClipboard()));
 
 }
 
@@ -173,12 +178,19 @@ void Plane::contextMenuEvent(QContextMenuEvent * event)
     foreach (const OneSession * s, terminal_->sessions_) {
         canCopyToClipboard = canCopyToClipboard || s->hasSelectedText();
     }
-    bool hasAnyAction = canCopyToClipboard;
+    const QClipboard * clipboard = QApplication::clipboard();
+    bool canPasteFromClipboard = inputMode_ &&
+            clipboard->text().length()>0;
+    bool hasAnyAction =
+            canCopyToClipboard ||
+            canPasteFromClipboard;
 
     if (hasAnyAction) {
         QMenu * menu = new QMenu(this);
         if (canCopyToClipboard)
             menu->addAction(actionCopyToClipboard_);
+        if (canPasteFromClipboard)
+            menu->addAction(actionPasteFromClipboard_);
         menu->exec(mapToGlobal(event->pos()));
     }
 }
@@ -191,6 +203,16 @@ void Plane::copyToClipboard()
         text += s->selectedText();
     }
     clipboard->setText(text);
+}
+
+void Plane::pasteFromClipboard()
+{
+    const QClipboard * clipboard = QApplication::clipboard();
+    const QString text = clipboard->text().replace("\n", " ");
+    inputText_ += text;
+    inputPosition_ += text.length();
+    emit inputTextChanged(inputText_);
+    emit inputCursorPositionChanged(inputPosition_);
 }
 
 void Plane::updateScrollBars()

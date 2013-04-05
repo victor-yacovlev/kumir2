@@ -35,6 +35,7 @@ public:
     int widthInChars(int realWidth) const;
     bool hasSelectedText() const;
     QString selectedText() const;
+    bool isEditable() const;
 public slots:
     void output(const QString & text);
     void input(const QString & format);

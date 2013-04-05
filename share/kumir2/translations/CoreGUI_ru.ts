@@ -800,52 +800,52 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>Terminal::OneSession</name>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="272"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="277"/>
         <source>&gt;&gt; %1:%2:%3 - %4 - Process started</source>
         <translation>&gt;&gt; %1:%2:%3 - %4 - Начало выполнения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="282"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="287"/>
         <source>&gt;&gt; %1:%2:%3 - %4 - Process finished</source>
         <translation>&gt;&gt; %1:%2:%3 - %4 - Выполнение завершено</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="334"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="339"/>
         <source>INPUT </source>
         <translation>ВВОД </translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="341"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="346"/>
         <source>string</source>
         <translation>лит</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="343"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="348"/>
         <source>integer</source>
         <translation>цел</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="345"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="350"/>
         <source>real</source>
         <translation>вещ</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="347"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="352"/>
         <source>charect</source>
         <translation>сим</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="349"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="354"/>
         <source>boolean</source>
         <translation>лог</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="504"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="509"/>
         <source>Not a &apos;%1&apos; value</source>
         <translation>Это не значение типа %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="540"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="545"/>
         <source>RUNTIME ERROR: %1</source>
         <translation>ОШИБКА ВЫПОЛНЕНИЯ: %1</translation>
     </message>
@@ -853,9 +853,14 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>Terminal::Plane</name>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_plane.cpp" line="21"/>
+        <location filename="../../../src/plugins/coregui/terminal_plane.cpp" line="22"/>
         <source>Copy to clipboard</source>
         <translation>Копировать</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/terminal_plane.cpp" line="26"/>
+        <source>Paste from clipboard</source>
+        <translation>Вставить</translation>
     </message>
 </context>
 <context>
