@@ -23,14 +23,18 @@ public:
     OneSession(int fixedWidth, const QString & fileName, QWidget * parent);
     QSize visibleSize(int realWidth) const;
     QString plainText(bool footer_header) const;
-    inline QString fileName() const { return s_fileName; }
-    inline QDateTime startTime() const { return m_startTime; }
-    inline QDateTime endTime() const { return m_endTime; }
-    inline int fixedWidth() const { return i_fixedWidth; }
+    inline QString fileName() const { return fileName_; }
+    inline QDateTime startTime() const { return startTime_; }
+    inline QDateTime endTime() const { return endTime_; }
+    inline int fixedWidth() const { return fixedWidth_; }
     void draw(QPainter * p, int realWidth);
-    inline void setFont(const QFont &font) { m_font = font; }
-    inline QFont font() const { return m_font; }
+    void triggerTextSelection(const QPoint & fromPos, const QPoint & toPos);
+    void clearSelection();
+    inline void setFont(const QFont &font) { font_ = font; }
+    inline QFont font() const { return font_; }
     int widthInChars(int realWidth) const;
+    bool hasSelectedText() const;
+    QString selectedText() const;
 public slots:
     void output(const QString & text);
     void input(const QString & format);
@@ -47,22 +51,26 @@ signals:
     void message(const QString & txt);
     void inputDone(const QVariantList &);
 private:
-
+    QPoint cursorPositionByVisiblePosition(const QPoint & pos) const;
+    QString headerText() const;
+    QString footerText() const;
+    QFont utilityFont() const;
     void timerEvent(QTimerEvent * e);
     QSize charSize() const;
-    QStringList m_lines;
-    QList<LineProp> m_props;
-    QString s_fileName;
-    QDateTime m_startTime;
-    QDateTime m_endTime;
-    QString s_inputFormat;
-    int i_fixedWidth;
-    QFont m_font;
-    int i_inputLineStart;
-    int i_inputPosStart;
-    int i_inputCursorPosition;
-    bool b_inputCursorVisible;
-    int i_timerId;
+    QWidget * parent_;
+    QStringList lines_;
+    QList<LineProp> props_;
+    QString fileName_;
+    QDateTime startTime_;
+    QDateTime endTime_;
+    QString inputFormat_;
+    int fixedWidth_;
+    QFont font_;
+    int inputLineStart_;
+    int inputPosStart_;
+    int inputCursorPosition_;
+    bool inputCursorVisible_;
+    int timerId_;
 
 };
 

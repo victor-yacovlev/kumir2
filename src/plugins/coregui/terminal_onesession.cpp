@@ -7,20 +7,23 @@
 
 namespace Terminal {
 
-static const int bodyPadding = 4;
-static const int headerPadding = 4;
-static const int lineWidth = 1;
-static const int shadowOffset = 4;
+static const int BodyPadding = 4;
+static const int HeaderPadding = 4;
+static const int LineWidth = 1;
+static const int ShadowOffset = 4;
+
+static const unsigned int SelectionMask = 0xFF00;
 
 OneSession::OneSession(int fixedWidth, const QString & fileName, QWidget * parent)
     : QObject(parent)
-    , s_fileName(fileName)
-    , i_fixedWidth(fixedWidth)
+    , parent_(parent)
+    , fileName_(fileName)
+    , fixedWidth_(fixedWidth)
 {
-    i_inputLineStart = i_inputPosStart = -1;
-    i_inputCursorPosition = -1;
-    i_timerId = -1;
-    b_inputCursorVisible = false;
+    inputLineStart_ = inputPosStart_ = -1;
+    inputCursorPosition_ = -1;
+    timerId_ = -1;
+    inputCursorVisible_ = false;
     QString defaultFontFamily = "Courier";
 #ifdef Q_WS_X11
     defaultFontFamily = "DejaVu Sans Mono";
@@ -37,7 +40,7 @@ OneSession::OneSession(int fixedWidth, const QString & fileName, QWidget * paren
     fnt.setFamily(defaultFontFamily);
     fnt.setPointSize(defaultFontSize);
     setFont(fnt);
-    m_startTime = QDateTime::currentDateTime();
+    startTime_ = QDateTime::currentDateTime();
 }
 
 QSize OneSession::charSize() const
@@ -50,52 +53,42 @@ QSize OneSession::charSize() const
 int OneSession::widthInChars(int realWidth) const
 {
     QSize atom = charSize();
-    return (realWidth-2*bodyPadding-lineWidth-shadowOffset)/atom.width();
+    return (realWidth-2*BodyPadding-LineWidth-ShadowOffset)/atom.width();
 }
 
 QSize OneSession::visibleSize(int realWidth) const
 {
     QSize atom = charSize();
     QSize body;
-    if (i_fixedWidth==-1) {
+    if (fixedWidth_==-1) {
         int maxLineLength = 0;
         int linesCount = 0;
         int maxChars = widthInChars(realWidth);
-        foreach (const QString & s, m_lines) {
+        foreach (const QString & s, lines_) {
             maxLineLength = qMax(s.length(), maxLineLength);
             linesCount += 1+(s.length())/maxChars;
         }
         body = QSize(maxLineLength*atom.width(), linesCount*atom.height());
     }
     else {
-        int maxLineLength = i_fixedWidth;
-        int linesCount = m_lines.size();
+        int maxLineLength = fixedWidth_;
+        int linesCount = lines_.size();
         body = QSize(maxLineLength*atom.width(), linesCount*atom.height());
     }
 
-    body.setWidth(body.width() + 2 * bodyPadding);
-    body.setHeight(body.height() + 2 * bodyPadding);
-    const int headerHeight = 2 * headerPadding + atom.height();
-    const int footerHeight = m_endTime.isValid()? headerHeight : 0;
-    return QSize(body.width()+lineWidth+shadowOffset,
-                 body.height()+headerHeight+footerHeight+lineWidth+shadowOffset);
+    body.setWidth(body.width() + 2 * BodyPadding);
+    body.setHeight(body.height() + 2 * BodyPadding);
+    const int headerHeight = 2 * HeaderPadding + atom.height();
+    const int footerHeight = endTime_.isValid()? headerHeight : 0;
+    return QSize(body.width()+LineWidth+ShadowOffset,
+                 body.height()+headerHeight+footerHeight+LineWidth+ShadowOffset);
 }
 
 QString OneSession::plainText(bool footer_header) const
 {
-    const QString body = m_lines.join("\n");
-    const QString header = tr(">> %1:%2:%3 - %4 - Process started")
-            .arg(m_startTime.time().hour(), 2, 10, QChar(' '))
-            .arg(m_startTime.time().minute(), 2, 10, QChar('0'))
-            .arg(m_startTime.time().second(), 2, 10, QChar('0'))
-            .arg(s_fileName);
-    const QString footer = m_endTime.isValid()
-            ? tr(">> %1:%2:%3 - %4 - Process finished")
-              .arg(m_endTime.time().hour(), 2, 10, QChar(' '))
-              .arg(m_endTime.time().minute(), 2, 10, QChar('0'))
-              .arg(m_endTime.time().second(), 2, 10, QChar('0'))
-              .arg(s_fileName)
-            : "";
+    const QString body = lines_.join("\n");
+    const QString header = headerText();
+    const QString footer = footerText();
     if (footer_header)
         return header + "\n" + body + "\n" + footer+"\n";
     else
@@ -108,47 +101,25 @@ void OneSession::draw(QPainter *p, int realWidth)
     const QSize atom = charSize();
     QSize sz = visibleSize(realWidth);
     p->save();
-    if (i_fixedWidth==-1)
+    if (fixedWidth_==-1)
         sz.setWidth(realWidth);
     else {
         p->translate((realWidth-sz.width())/2, 0);
     }
 
-//    p->setPen(Qt::NoPen);
-//    p->setBrush(QColor(Qt::black));
-//    p->drawRect(shadowOffset, shadowOffset,
-//                sz.width()-shadowOffset-lineWidth,
-//                sz.height()-shadowOffset-lineWidth);
-//    p->setPen(QPen(QColor(Qt::black),lineWidth));
-//    p->setBrush(QColor(Qt::white));
-//    p->drawRect(0,0,sz.width()-shadowOffset, sz.height()-shadowOffset);
 
-    QFont smallFont = m_font;
-    smallFont.setPointSize(m_font.pointSize()-2);
-    smallFont.setItalic(true);
-    const QString header = tr(">> %1:%2:%3 - %4 - Process started")
-            .arg(m_startTime.time().hour(), 2, 10, QChar(' '))
-            .arg(m_startTime.time().minute(), 2, 10, QChar('0'))
-            .arg(m_startTime.time().second(), 2, 10, QChar('0'))
-            .arg(s_fileName);
-    const QString footer = m_endTime.isValid()
-            ? tr(">> %1:%2:%3 - %4 - Process finished")
-              .arg(m_endTime.time().hour(), 2, 10, QChar(' '))
-              .arg(m_endTime.time().minute(), 2, 10, QChar('0'))
-              .arg(m_endTime.time().second(), 2, 10, QChar('0'))
-              .arg(s_fileName)
-            : "";
-    p->setFont(smallFont);
+    const QString header = headerText();
+    const QString footer = footerText();
+    p->setFont(utilityFont());
     p->setPen(QColor(Qt::darkGray));
-    p->drawText(headerPadding, headerPadding+QFontMetrics(smallFont).height(), header);
-    int x = bodyPadding;
-    int y = 2 * headerPadding + 2 * atom.height() + bodyPadding;
+    p->drawText(HeaderPadding, HeaderPadding+QFontMetrics(utilityFont()).height(), header);
 
-    if (i_inputCursorPosition!=-1 && b_inputCursorVisible && (qobject_cast<QWidget*>(parent()))->hasFocus()) {
-//        int cursorRow = m_lines.size()-1-i_inputLineStart;
-        int cursorRow = i_inputLineStart;
-//        int cursorCol = cursorRow>0? 0 : i_inputCursorPosition+i_inputPosStart;
-        int cursorCol = i_inputCursorPosition+i_inputPosStart;
+    int x = BodyPadding;
+    int y = 2 * HeaderPadding + 2 * atom.height() + BodyPadding;
+
+    if (inputCursorPosition_!=-1 && inputCursorVisible_ && (qobject_cast<QWidget*>(parent()))->hasFocus()) {
+        int cursorRow = inputLineStart_;
+        int cursorCol = inputCursorPosition_+inputPosStart_;
         QRect cursorRect(x + cursorCol * atom.width(),
                          y + cursorRow * atom.height(),
                          atom.width(),
@@ -159,63 +130,187 @@ void OneSession::draw(QPainter *p, int realWidth)
         p->drawRect(cursorRect);
     }
 
-    Q_ASSERT(m_lines.size()==m_props.size());
-    p->setFont(m_font);
-    for (int i=0; i<m_lines.size(); i++) {
-        const QString text = m_lines[i];
-        const LineProp prop = m_props[i];
+    Q_ASSERT(lines_.size()==props_.size());
+    p->setFont(font_);
+
+    const QBrush selectionBackroundBrush = parent_->palette().brush(
+                parent_->hasFocus() ? QPalette::Active : QPalette::Inactive,
+                QPalette::Highlight
+                );
+    const QColor selectedTextColor = parent_->palette().brush(
+                parent_->hasFocus() ? QPalette::Active : QPalette::Inactive,
+                QPalette::HighlightedText
+                ).color();
+
+    for (int i=0; i<lines_.size(); i++) {
+        const QString text = lines_[i];
+        const LineProp prop = props_[i];
         Q_ASSERT(text.length()==prop.size());
         for (int j=0; j<text.length(); j++) {
-            if (prop[j]==CS_Input)
+            if (prop[j] & SelectionMask) {
+                p->setPen(Qt::NoPen);
+                p->setBrush(selectionBackroundBrush);
+                p->drawRect(x, y-atom.height(), atom.width(), atom.height());
+            }
+            if (prop[j] & SelectionMask)
+                p->setPen(selectedTextColor);
+            else if (prop[j] & CS_Input)
                 p->setPen(QColor(Qt::blue));
-            else if (prop[j]==CS_Error || prop[j]==CS_InputError)
+            else if (prop[j] & CS_Error || prop[j] & CS_InputError)
                 p->setPen(QColor(Qt::red));
             else
                 p->setPen(QColor(Qt::black));
             p->drawText(x,y,QString(text[j]));
             x += atom.width();
-            if (i_fixedWidth==-1) {
+            if (fixedWidth_==-1) {
                 int lw = widthInChars(realWidth);
                 if (j % lw==0 && j>0) {
-                    x = bodyPadding;
+                    x = BodyPadding;
                     y += atom.height();
                 }
             }
         }
         y += atom.height();
-        x = bodyPadding;
+        x = BodyPadding;
     }
 
-
-
     if (!footer.isEmpty()) {
-        p->setFont(smallFont);
+        p->setFont(utilityFont());
         p->setPen(QColor(Qt::darkGray));
-        p->drawText(headerPadding,
-                    sz.height()-lineWidth-shadowOffset-headerPadding,
+        p->drawText(HeaderPadding,
+                    sz.height()-LineWidth-ShadowOffset-HeaderPadding,
                     footer);
         p->setPen(QColor(Qt::darkGray));
-        p->drawLine(bodyPadding, sz.height()-headerPadding, sz.width()-bodyPadding, sz.height()-headerPadding);
+        p->drawLine(BodyPadding, sz.height()-HeaderPadding, sz.width()-BodyPadding, sz.height()-HeaderPadding);
     }
     p->restore();
 }
 
+void OneSession::clearSelection()
+{
+    for (int y=0; y<props_.size(); y++) {
+        LineProp & lineProp = props_[y];
+        for (int x=0; x<lineProp.length(); x++) {
+            lineProp[x] = Terminal::CharSpec(lineProp[x] & 0xFF);
+        }
+    }
+}
+
+bool OneSession::hasSelectedText() const
+{
+    for (int y=0; y<lines_.size(); y++) {
+        const LineProp & lineProp = props_[y];
+        for (int x=0; x<lineProp.size(); x++) {
+            if (lineProp[x] & SelectionMask)
+                return true;
+        }
+    }
+    return false;
+}
+
+QString OneSession::selectedText() const
+{
+    QString result;
+    for (int y=0; y<lines_.size(); y++) {
+        QString thisLineText;
+        const QString & thisLine = lines_[y];
+        const LineProp & thisProp = props_[y];
+        for (int x=0; x<thisLine.length(); x++) {
+            if (thisProp[x] & SelectionMask)
+                thisLineText += thisLine[x];
+        }
+        if (result.length()>0 && thisLineText.length()>0) {
+            result += "\n";
+        }
+        result += thisLineText;
+    }
+    return result;
+}
+
+void OneSession::triggerTextSelection(const QPoint &fromPos, const QPoint &toPos)
+{
+    QPoint fromCursorPos = cursorPositionByVisiblePosition(fromPos);
+    QPoint toCursorPos = cursorPositionByVisiblePosition(toPos);
+    int y0 = qMin(fromCursorPos.y(), toCursorPos.y());
+    int y1 = qMax(fromCursorPos.y(), toCursorPos.y());
+    int x0 = qMin(fromCursorPos.x(), toCursorPos.x());
+    int x1 = qMax(fromCursorPos.x(), toCursorPos.x());
+//    qDebug() << __FUNCTION__ << fromCursorPos << toCursorPos;
+    for (int y=y0; y<=y1; y++) {
+        LineProp & lineProp = props_[y];
+        int xx0 = y==y0? x0 : 0;
+        int xx1 = y==y1? x1 : lineProp.length();
+        for (int x=xx0; x<xx1; x++) {
+            lineProp[x] = Terminal::CharSpec(lineProp[x] | SelectionMask);
+        }
+    }
+}
+
+QPoint OneSession::cursorPositionByVisiblePosition(const QPoint &pos) const
+{
+    const QSize atom = charSize();
+
+    int offsetX = BodyPadding;
+    int offsetY = 2 * HeaderPadding + 2 * atom.height() + BodyPadding;
+
+    const QPoint bodyPos = pos - QPoint(offsetX, offsetY);
+
+    QPoint cursor(bodyPos.x()/atom.width(), bodyPos.y()/atom.height());
+    cursor.setY(qMin(lines_.size()-1,
+                    qMax(0,
+                        cursor.y()))
+                );
+    cursor.setX(qMin(lines_.at(cursor.y()).length(),
+                     qMax(0,
+                          cursor.x())
+                    ));
+    return cursor;
+}
+
+QString OneSession::headerText() const
+{
+    return tr(">> %1:%2:%3 - %4 - Process started")
+                .arg(startTime_.time().hour(), 2, 10, QChar(' '))
+                .arg(startTime_.time().minute(), 2, 10, QChar('0'))
+                .arg(startTime_.time().second(), 2, 10, QChar('0'))
+                .arg(fileName_);
+}
+
+QString OneSession::footerText() const
+{
+    return endTime_.isValid()
+            ? tr(">> %1:%2:%3 - %4 - Process finished")
+              .arg(endTime_.time().hour(), 2, 10, QChar(' '))
+              .arg(endTime_.time().minute(), 2, 10, QChar('0'))
+              .arg(endTime_.time().second(), 2, 10, QChar('0'))
+              .arg(fileName_)
+            : "";
+}
+
+QFont OneSession::utilityFont() const
+{
+    QFont smallFont = font_;
+    smallFont.setPointSize(font_.pointSize()-2);
+    smallFont.setItalic(true);
+    return smallFont;
+}
+
 void OneSession::output(const QString &text)
 {
-    int curLine = m_lines.size()-1;
-    int curCol = m_lines.isEmpty()? 0 : m_lines[curLine].length();
+    int curLine = lines_.size()-1;
+    int curCol = lines_.isEmpty()? 0 : lines_[curLine].length();
     for (int i=0; i<text.length(); i++) {
-        bool newLine = curLine<0 || text[i]=='\n' || ( i_fixedWidth!=-1 && curCol>=i_fixedWidth );
+        bool newLine = curLine<0 || text[i]=='\n' || ( fixedWidth_!=-1 && curCol>=fixedWidth_ );
         if (newLine) {
-            m_lines.append("");
-            m_props.append(LineProp());
+            lines_.append("");
+            props_.append(LineProp());
             curLine ++;
             curCol = 0;
         }
         if (text[i].unicode()>=32) {
-            m_lines[curLine] += text[i];
-            m_props[curLine].append(CS_Output);
-            Q_ASSERT(m_props[curLine].last()==CS_Output);
+            lines_[curLine] += text[i];
+            props_[curLine].append(CS_Output);
+            Q_ASSERT(props_[curLine].last()==CS_Output);
         }
     }
     emit updateRequest();
@@ -223,18 +318,18 @@ void OneSession::output(const QString &text)
 
 void OneSession::input(const QString &format)
 {
-    s_inputFormat = format;
-    if (m_lines.isEmpty()) {
-        m_lines << "";
-        m_props << LineProp();
+    inputFormat_ = format;
+    if (lines_.isEmpty()) {
+        lines_ << "";
+        props_ << LineProp();
     }
-    i_inputLineStart = m_lines.size()-1;
-    i_inputPosStart = 0;
-    if (!m_lines.isEmpty()) {
-        i_inputPosStart = m_lines.last().length();
+    inputLineStart_ = lines_.size()-1;
+    inputPosStart_ = 0;
+    if (!lines_.isEmpty()) {
+        inputPosStart_ = lines_.last().length();
     }
-    i_inputCursorPosition = 0;
-    b_inputCursorVisible = true;
+    inputCursorPosition_ = 0;
+    inputCursorVisible_ = true;
 //    StdLib::GenericInputOutput::instance()->doInput(format);
     QString msg = tr("INPUT ");
     QStringList fmts = format.split(";", QString::SkipEmptyParts);
@@ -260,46 +355,46 @@ void OneSession::input(const QString &format)
     }
     msg += ".";
     emit message(msg);
-    i_timerId = startTimer(QApplication::cursorFlashTime()/2);
+    timerId_ = startTimer(QApplication::cursorFlashTime()/2);
     emit updateRequest();
 }
 
 void OneSession::timerEvent(QTimerEvent *e)
 {
-    b_inputCursorVisible = !b_inputCursorVisible;
+    inputCursorVisible_ = !inputCursorVisible_;
     emit updateRequest();
     e->accept();
 }
 
 void OneSession::changeCursorPosition(quint16 pos)
 {
-    i_inputCursorPosition = pos;
-    b_inputCursorVisible = true;
+    inputCursorPosition_ = pos;
+    inputCursorVisible_ = true;
     emit updateRequest();
 }
 
 void OneSession::changeInputText(const QString &text)
 {
-    m_lines = m_lines.mid(0, i_inputLineStart+1);
-    m_props = m_props.mid(0, i_inputLineStart+1);
-    if (!m_lines.isEmpty()) {
-        m_lines[m_lines.size()-1] = m_lines[m_lines.size()-1].mid(0,i_inputPosStart);
-        m_props[m_props.size()-1] = m_props[m_props.size()-1].mid(0,i_inputPosStart);
+    lines_ = lines_.mid(0, inputLineStart_+1);
+    props_ = props_.mid(0, inputLineStart_+1);
+    if (!lines_.isEmpty()) {
+        lines_[lines_.size()-1] = lines_[lines_.size()-1].mid(0,inputPosStart_);
+        props_[props_.size()-1] = props_[props_.size()-1].mid(0,inputPosStart_);
     }
-    int curCol = i_inputPosStart;
-    int curLine = m_lines.size()-1;
+    int curCol = inputPosStart_;
+    int curLine = lines_.size()-1;
     for (int i=0; i<text.length(); i++) {
-        bool newLine = curLine<0 || ( i_fixedWidth!=-1 && curCol>=i_fixedWidth );
+        bool newLine = curLine<0 || ( fixedWidth_!=-1 && curCol>=fixedWidth_ );
         if (newLine) {
-            m_lines.append("");
-            m_props.append(LineProp());
+            lines_.append("");
+            props_.append(LineProp());
             curLine ++;
             curCol = 0;
         }
         if (text[i].unicode()>=32) {
-            m_lines[curLine] += text[i];
-            m_props[curLine].append(CS_Input);
-            Q_ASSERT(m_props[curLine].last()==CS_Input);
+            lines_[curLine] += text[i];
+            props_[curLine].append(CS_Input);
+            Q_ASSERT(props_[curLine].last()==CS_Input);
         }
     }
     emit updateRequest();
@@ -308,11 +403,11 @@ void OneSession::changeInputText(const QString &text)
 void OneSession::tryFinishInput()
 {
     QString text;
-    for (int i=i_inputLineStart; i<m_lines.size(); i++) {
-        if (i==i_inputLineStart)
-            text += m_lines[i].mid(i_inputPosStart);
+    for (int i=inputLineStart_; i<lines_.size(); i++) {
+        if (i==inputLineStart_)
+            text += lines_[i].mid(inputPosStart_);
         else
-            text += m_lines[i];
+            text += lines_[i];
     }
     QVector<bool> errmask = QVector<bool>(text.length(), false);
     QVariantList result;
@@ -321,7 +416,7 @@ void OneSession::tryFinishInput()
     int conversionErrorStart = -1;
     int conversionErrorLength = 0;
     QString conversionErrorType = "";
-    const QStringList & formats = s_inputFormat.split(";", QString::SkipEmptyParts);
+    const QStringList & formats = inputFormat_.split(";", QString::SkipEmptyParts);
     for (int i=0; i<formats.size(); i++) {
         char type = formats[i][0].unicode();
         const QString format = formats[i];
@@ -414,25 +509,25 @@ void OneSession::tryFinishInput()
         for (int i=0; i<errorLength; i++) {
             errmask[errorStart+i] = true;
         }
-        int curLine = i_inputLineStart;
-        int curCol = i_inputPosStart;
+        int curLine = inputLineStart_;
+        int curCol = inputPosStart_;
         for (int i=0; i<text.length(); i++) {
-            bool newLine = curLine<0 || ( i_fixedWidth!=-1 && curCol>=i_fixedWidth );
+            bool newLine = curLine<0 || ( fixedWidth_!=-1 && curCol>=fixedWidth_ );
             if (newLine) {
                 curLine ++;
                 curCol = 0;
             }
             else {
-                Q_ASSERT(m_props[curLine][curCol]==CS_Input || m_props[curLine][curCol]==CS_InputError);
-                m_props[curLine][curCol] = errmask[i]? CS_InputError : CS_Input;
-                Q_ASSERT(m_props[curLine][curCol]==CS_Input || m_props[curLine][curCol]==CS_InputError);
+                Q_ASSERT(props_[curLine][curCol]==CS_Input || props_[curLine][curCol]==CS_InputError);
+                props_[curLine][curCol] = errmask[i]? CS_InputError : CS_Input;
+                Q_ASSERT(props_[curLine][curCol]==CS_Input || props_[curLine][curCol]==CS_InputError);
                 curCol ++;
             }
         }
         emit updateRequest();
     }
     else {
-        i_inputLineStart = i_inputPosStart = i_inputCursorPosition = -1;
+        inputLineStart_ = inputPosStart_ = inputCursorPosition_ = -1;
         output("\n");
         emit message("");
         emit inputDone(result);
@@ -442,27 +537,27 @@ void OneSession::tryFinishInput()
 
 void OneSession::error(const QString &message)
 {
-    m_lines.append(tr("RUNTIME ERROR: %1").arg(message));
-    m_props.append(LineProp());
-    for (int i=0; i<m_lines.last().size(); i++) {
-        m_props[m_props.size()-1] << CS_Error;
+    lines_.append(tr("RUNTIME ERROR: %1").arg(message));
+    props_.append(LineProp());
+    for (int i=0; i<lines_.last().size(); i++) {
+        props_[props_.size()-1] << CS_Error;
     }
-    m_endTime = QDateTime::currentDateTime();
+    endTime_ = QDateTime::currentDateTime();
     emit updateRequest();
 }
 
 void OneSession::terminate()
 {
-    m_endTime = QDateTime::currentDateTime();
-    if (i_timerId!=-1)
-        killTimer(i_timerId);
-    i_inputLineStart = i_inputPosStart = i_inputCursorPosition = -1;
+    endTime_ = QDateTime::currentDateTime();
+    if (timerId_!=-1)
+        killTimer(timerId_);
+    inputLineStart_ = inputPosStart_ = inputCursorPosition_ = -1;
     emit updateRequest();
 }
 
 void OneSession::finish()
 {
-    m_endTime = QDateTime::currentDateTime();
+    endTime_ = QDateTime::currentDateTime();
     emit updateRequest();
 }
 

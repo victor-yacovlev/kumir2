@@ -89,10 +89,10 @@ void Term::resizeEvent(QResizeEvent *e)
 void Term::changeGlobalState(ExtensionSystem::GlobalState , ExtensionSystem::GlobalState current)
 {
     if (current==ExtensionSystem::GS_Unlocked || current==ExtensionSystem::GS_Observe) {
-        a_saveAll->setEnabled(l_sessions.size()>0);
-        a_saveLast->setEnabled(l_sessions.size()>0);
-        a_editLast->setEnabled(l_sessions.size()>0);
-        a_clear->setEnabled(l_sessions.size()>0);
+        a_saveAll->setEnabled(sessions_.size()>0);
+        a_saveLast->setEnabled(sessions_.size()>0);
+        a_editLast->setEnabled(sessions_.size()>0);
+        a_clear->setEnabled(sessions_.size()>0);
     }
     else {
         a_saveAll->setEnabled(false);
@@ -104,25 +104,25 @@ void Term::changeGlobalState(ExtensionSystem::GlobalState , ExtensionSystem::Glo
 
 void Term::handleInputTextChanged(const QString &text)
 {
-    if (l_sessions.isEmpty())
+    if (sessions_.isEmpty())
         return;
-    OneSession * last = l_sessions.last();
+    OneSession * last = sessions_.last();
     last->changeInputText(text);
 }
 
 void Term::handleInputCursorPositionChanged(quint16 pos)
 {
-    if (l_sessions.isEmpty())
+    if (sessions_.isEmpty())
         return;
-    OneSession * last = l_sessions.last();
+    OneSession * last = sessions_.last();
     last->changeCursorPosition(pos);
 }
 
 void Term::handleInputFinishRequested()
 {
-    if (l_sessions.isEmpty())
+    if (sessions_.isEmpty())
         return;
-    OneSession * last = l_sessions.last();
+    OneSession * last = sessions_.last();
     last->tryFinishInput();
 }
 
@@ -140,10 +140,10 @@ void Term::focusOutEvent(QFocusEvent *e)
 
 void Term::clear()
 {
-    for (int i=0; i<l_sessions.size(); i++) {
-        l_sessions[i]->deleteLater();
+    for (int i=0; i<sessions_.size(); i++) {
+        sessions_[i]->deleteLater();
     }
-    l_sessions.clear();
+    sessions_.clear();
     m_plane->update();
     a_saveAll->setEnabled(false);
     a_saveLast->setEnabled(false);
@@ -156,12 +156,12 @@ void Term::start(const QString & fileName)
     int fixedWidth = -1;
     OneSession * session = new OneSession(fixedWidth, QFileInfo(fileName).fileName(), m_plane);
     connect(session, SIGNAL(updateRequest()), m_plane, SLOT(update()));
-    l_sessions << session;
-    connect (l_sessions.last(), SIGNAL(inputDone(QVariantList)),
+    sessions_ << session;
+    connect (sessions_.last(), SIGNAL(inputDone(QVariantList)),
              this, SIGNAL(inputFinished(QVariantList)));
-    connect (l_sessions.last(), SIGNAL(message(QString)),
+    connect (sessions_.last(), SIGNAL(message(QString)),
              this, SIGNAL(message(QString)));
-    connect (l_sessions.last(), SIGNAL(inputDone(QVariantList)),
+    connect (sessions_.last(), SIGNAL(inputDone(QVariantList)),
              this, SLOT(handleInputDone()));
     m_plane->updateScrollBars();
     if (sb_vertical->isEnabled())
@@ -171,10 +171,10 @@ void Term::start(const QString & fileName)
 
 void Term::finish()
 {
-    if (l_sessions.isEmpty())
-        l_sessions << new OneSession(-1,"unknown", m_plane);
+    if (sessions_.isEmpty())
+        sessions_ << new OneSession(-1,"unknown", m_plane);
 
-    l_sessions.last()->finish();
+    sessions_.last()->finish();
     m_plane->updateScrollBars();
     if (sb_vertical->isEnabled())
         sb_vertical->setValue(sb_vertical->maximum());
@@ -182,9 +182,9 @@ void Term::finish()
 
 void Term::terminate()
 {
-    if (l_sessions.isEmpty())
-        l_sessions << new OneSession(-1,"unknown", m_plane);
-    l_sessions.last()->terminate();
+    if (sessions_.isEmpty())
+        sessions_ << new OneSession(-1,"unknown", m_plane);
+    sessions_.last()->terminate();
     m_plane->updateScrollBars();
     if (sb_vertical->isEnabled())
         sb_vertical->setValue(sb_vertical->maximum());
@@ -194,9 +194,9 @@ void Term::terminate()
 void Term::output(const QString & text)
 {
     emit showWindowRequest();
-    if (l_sessions.isEmpty())
-        l_sessions << new OneSession(-1,"unknown", m_plane);
-    l_sessions.last()->output(text);
+    if (sessions_.isEmpty())
+        sessions_ << new OneSession(-1,"unknown", m_plane);
+    sessions_.last()->output(text);
 //    qDebug() << "output " << text;
     m_plane->updateScrollBars();
     if (sb_vertical->isEnabled())
@@ -206,16 +206,16 @@ void Term::output(const QString & text)
 void Term::input(const QString & format)
 {
     emit showWindowRequest();
-    if (l_sessions.isEmpty()) {
-        l_sessions << new OneSession(-1,"unknown", m_plane);
-        connect (l_sessions.last(), SIGNAL(inputDone(QVariantList)),
+    if (sessions_.isEmpty()) {
+        sessions_ << new OneSession(-1,"unknown", m_plane);
+        connect (sessions_.last(), SIGNAL(inputDone(QVariantList)),
                  this, SIGNAL(inputFinished(QVariantList)));
-        connect (l_sessions.last(), SIGNAL(message(QString)),
+        connect (sessions_.last(), SIGNAL(message(QString)),
                  this, SIGNAL(message(QString)));
-        connect (l_sessions.last(), SIGNAL(inputDone(QVariantList)),
+        connect (sessions_.last(), SIGNAL(inputDone(QVariantList)),
                  this, SLOT(handleInputDone()));
     }
-    OneSession * lastSession = l_sessions.last();
+    OneSession * lastSession = sessions_.last();
 
 
 
@@ -236,9 +236,9 @@ void Term::handleInputDone()
 void Term::error(const QString & message)
 {
     emit showWindowRequest();
-    if (l_sessions.isEmpty())
-        l_sessions << new OneSession(-1,"unknown", m_plane);
-    l_sessions.last()->error(message);
+    if (sessions_.isEmpty())
+        sessions_ << new OneSession(-1,"unknown", m_plane);
+    sessions_.last()->error(message);
     m_plane->updateScrollBars();
     if (sb_vertical->isEnabled())
         sb_vertical->setValue(sb_vertical->maximum());
@@ -249,17 +249,17 @@ void Term::saveAll()
 {
     const QString suggestedFileName = QDir::current().absoluteFilePath("output-all.txt");
     QString allText;
-    for (int i=0; i<l_sessions.size(); i++) {
-        allText += l_sessions[i]->plainText(true);
+    for (int i=0; i<sessions_.size(); i++) {
+        allText += sessions_[i]->plainText(true);
     }
     saveText(suggestedFileName, allText);
 }
 
 void Term::saveLast()
 {
-    QString suggestedFileName = QDir::current().absoluteFilePath(l_sessions.last()->fileName());
+    QString suggestedFileName = QDir::current().absoluteFilePath(sessions_.last()->fileName());
     suggestedFileName = suggestedFileName.left(suggestedFileName.length()-4)+"-out.txt";
-    saveText(suggestedFileName, l_sessions.last()->plainText(false));
+    saveText(suggestedFileName, sessions_.last()->plainText(false));
 }
 
 void Term::saveText(const QString &suggestedFileName, const QString &text)
@@ -288,10 +288,10 @@ void Term::saveText(const QString &suggestedFileName, const QString &text)
 
 void Term::editLast()
 {
-    Q_ASSERT(!l_sessions.isEmpty());
-    QString suggestedFileName = QDir::current().absoluteFilePath(l_sessions.last()->fileName());
+    Q_ASSERT(!sessions_.isEmpty());
+    QString suggestedFileName = QDir::current().absoluteFilePath(sessions_.last()->fileName());
     suggestedFileName = suggestedFileName.left(suggestedFileName.length()-4)+"-out.txt";
-    emit openTextEditor(suggestedFileName, l_sessions.last()->plainText(false));
+    emit openTextEditor(suggestedFileName, sessions_.last()->plainText(false));
 }
 
 } // namespace Terminal
