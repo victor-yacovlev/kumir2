@@ -49,7 +49,7 @@ protected slots:
     void handleInputDone();
 
 private:
-    QList<class OneSession*> l_sessions;
+    QList<class OneSession*> sessions_;
     QScrollBar * sb_vertical;
     QScrollBar * sb_horizontal;
     class Plane * m_plane;

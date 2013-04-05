@@ -15,7 +15,7 @@ class Plane : public QWidget
 public:
     explicit Plane(Term * parent);
     inline void setInputMode(bool v) {
-        b_inputMode = v; s_inputText = ""; i_inputPosition = 0;
+        inputMode_ = v; inputText_ = ""; inputPosition_ = 0;
     }
 
 signals:
@@ -31,14 +31,28 @@ protected:
     void resizeEvent(QResizeEvent *e);
     void wheelEvent(QWheelEvent *e);
     void keyPressEvent(QKeyEvent *e);
+
     void mousePressEvent(QMouseEvent *e);
+    void mouseMoveEvent(QMouseEvent *e);
+    void mouseReleaseEvent(QMouseEvent *e);
+
+    void contextMenuEvent(QContextMenuEvent *);
+
     QPoint offset() const;
 
+private slots:
+    void copyToClipboard();
+
 private:
-    Term * m_terminal;
-    bool b_inputMode;
-    quint16 i_inputPosition;
-    QString s_inputText;
+    OneSession* sessionByPos(const QPoint & pos) const;
+    QRect sessionRect(const OneSession * session) const;
+    Term * terminal_;
+    bool inputMode_;
+    quint16 inputPosition_;
+    QString inputText_;
+    OneSession* selectedSession_;
+    QPoint mousePressPosition_;
+    QAction * actionCopyToClipboard_;
 };
 
 } // namespace Terminal

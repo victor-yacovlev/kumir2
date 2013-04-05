@@ -230,25 +230,21 @@ Right click to navigate target</source>
         <translation>До конца алгоритма</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="382"/>
         <source>Unknown error</source>
-        <translation>Нераспознанная ошибка</translation>
+        <translation type="obsolete">Нераспознанная ошибка</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="383"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="392"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="432"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="419"/>
         <source>Evaluation error</source>
         <translation>Ошибка выполнения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="392"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="440"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="427"/>
         <source>Evaluation finished</source>
         <translation>Выполнение завершено</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="423"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="410"/>
         <source>Evaluation terminated</source>
         <translation>Выполнение прервано</translation>
     </message>
@@ -804,56 +800,62 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>Terminal::OneSession</name>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="87"/>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="129"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="272"/>
         <source>&gt;&gt; %1:%2:%3 - %4 - Process started</source>
         <translation>&gt;&gt; %1:%2:%3 - %4 - Начало выполнения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="93"/>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="135"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="282"/>
         <source>&gt;&gt; %1:%2:%3 - %4 - Process finished</source>
         <translation>&gt;&gt; %1:%2:%3 - %4 - Выполнение завершено</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="239"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="334"/>
         <source>INPUT </source>
         <translation>ВВОД </translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="246"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="341"/>
         <source>string</source>
         <translation>лит</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="248"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="343"/>
         <source>integer</source>
         <translation>цел</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="250"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="345"/>
         <source>real</source>
         <translation>вещ</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="252"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="347"/>
         <source>charect</source>
         <translation>сим</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="254"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="349"/>
         <source>boolean</source>
         <translation>лог</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="409"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="504"/>
         <source>Not a &apos;%1&apos; value</source>
-        <translation type="unfinished"></translation>
+        <translation>Это не значение типа %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="445"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="540"/>
         <source>RUNTIME ERROR: %1</source>
         <translation>ОШИБКА ВЫПОЛНЕНИЯ: %1</translation>
+    </message>
+</context>
+<context>
+    <name>Terminal::Plane</name>
+    <message>
+        <location filename="../../../src/plugins/coregui/terminal_plane.cpp" line="21"/>
+        <source>Copy to clipboard</source>
+        <translation>Копировать</translation>
     </message>
 </context>
 <context>

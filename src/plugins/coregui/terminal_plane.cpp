@@ -2,34 +2,43 @@
 #include "terminal.h"
 #include "terminal_onesession.h"
 
+#include <algorithm>
+
 namespace Terminal {
 
 static int sessionMargin = 4;
 
 Plane::Plane(Term *parent)
     : QWidget(parent)
-    , m_terminal(parent)
+    , terminal_(parent)
+    , inputMode_(false)
+    , inputPosition_(0)
+    , selectedSession_(nullptr)
+    , actionCopyToClipboard_(new QAction(this))
 {
-    b_inputMode = false;
-    i_inputPosition = 0;
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+
+    actionCopyToClipboard_->setText(tr("Copy to clipboard"));
+    connect(actionCopyToClipboard_, SIGNAL(triggered()),
+            this, SLOT(copyToClipboard()));
+
 }
 
 void Plane::keyPressEvent(QKeyEvent *e)
 {
-    if (!b_inputMode) {
+    if (!inputMode_) {
         e->ignore();
         return;
     }
     if (e->matches(QKeySequence::MoveToNextChar)) {
-        i_inputPosition++;
-        emit inputCursorPositionChanged(i_inputPosition);
+        inputPosition_++;
+        emit inputCursorPositionChanged(inputPosition_);
         e->accept();
     }
     else if (e->matches(QKeySequence::MoveToPreviousChar)) {
-        if (i_inputPosition>0) {
-            i_inputPosition --;
-            emit inputCursorPositionChanged(i_inputPosition);
+        if (inputPosition_>0) {
+            inputPosition_ --;
+            emit inputCursorPositionChanged(inputPosition_);
             e->accept();
         }
     }
@@ -37,38 +46,38 @@ void Plane::keyPressEvent(QKeyEvent *e)
              || e->matches(QKeySequence::MoveToStartOfDocument)
              || e->matches(QKeySequence::MoveToPreviousLine)
              ) {
-        i_inputPosition = 0;
-        emit inputCursorPositionChanged(i_inputPosition);
+        inputPosition_ = 0;
+        emit inputCursorPositionChanged(inputPosition_);
         e->accept();
     }
     else if (e->matches(QKeySequence::MoveToEndOfLine)
              || e->matches(QKeySequence::MoveToEndOfDocument)
              || e->matches(QKeySequence::MoveToNextLine)
              ) {
-        i_inputPosition = s_inputText.length();
-        emit inputCursorPositionChanged(i_inputPosition);
+        inputPosition_ = inputText_.length();
+        emit inputCursorPositionChanged(inputPosition_);
         e->accept();
     }
     else if (e->key()==Qt::Key_Backspace) {
-        if (i_inputPosition>0) {
-            if (i_inputPosition>s_inputText.length()) {
-                i_inputPosition = s_inputText.length();
-                emit inputCursorPositionChanged(i_inputPosition);
+        if (inputPosition_>0) {
+            if (inputPosition_>inputText_.length()) {
+                inputPosition_ = inputText_.length();
+                emit inputCursorPositionChanged(inputPosition_);
             }
             else {
-                s_inputText.remove(i_inputPosition-1, 1);
-                i_inputPosition --;
-                emit inputCursorPositionChanged(i_inputPosition);
-                emit inputTextChanged(s_inputText);
+                inputText_.remove(inputPosition_-1, 1);
+                inputPosition_ --;
+                emit inputCursorPositionChanged(inputPosition_);
+                emit inputTextChanged(inputText_);
             }
             e->accept();
         }
     }
     else if (e->key()==Qt::Key_Delete) {
-        if (i_inputPosition<s_inputText.length()) {
-            s_inputText.remove(i_inputPosition, 1);
-            emit inputCursorPositionChanged(i_inputPosition);
-            emit inputTextChanged(s_inputText);
+        if (inputPosition_<inputText_.length()) {
+            inputText_.remove(inputPosition_, 1);
+            emit inputCursorPositionChanged(inputPosition_);
+            emit inputTextChanged(inputText_);
             e->accept();
         }
     }
@@ -77,54 +86,130 @@ void Plane::keyPressEvent(QKeyEvent *e)
         e->accept();
     }
     else if (!e->text().isEmpty()) {
-        while (i_inputPosition>s_inputText.length())
-            s_inputText += " ";
-        s_inputText.insert(i_inputPosition, e->text());
-        i_inputPosition += e->text().length();
-        emit inputTextChanged(s_inputText);
-        emit inputCursorPositionChanged(i_inputPosition);
+        while (inputPosition_>inputText_.length())
+            inputText_ += " ";
+        inputText_.insert(inputPosition_, e->text());
+        inputPosition_ += e->text().length();
+        emit inputTextChanged(inputText_);
+        emit inputCursorPositionChanged(inputPosition_);
         e->accept();
     }
+}
+
+OneSession * Plane::sessionByPos(const QPoint &pos) const
+{
+    OneSession * result = nullptr;
+    foreach (OneSession * session, terminal_->sessions_) {
+        if (sessionRect(session).contains(pos)) {
+            result = session;
+            break;
+        }
+    }
+    return result;
+}
+
+QRect Plane::sessionRect(const OneSession *session) const
+{
+    QRect result(offset() + QPoint(sessionMargin, 0), QSize(0,0));
+    foreach (const OneSession * s, terminal_->sessions_) {
+        result.setSize(s->visibleSize(width()-2*sessionMargin));
+        if (session==s)
+            break;
+        result.translate(0, result.height()+sessionMargin);
+    }
+    result.setWidth(qMax(result.width(), width()-2*sessionMargin));
+    return result;
 }
 
 void Plane::mousePressEvent(QMouseEvent *e)
 {
     setFocus();
     e->accept();
+    selectedSession_ = sessionByPos(e->pos());
+    mousePressPosition_ = e->pos();
+    if (e->button()!=Qt::RightButton) {
+        for (int i=0; i<terminal_->sessions_.size(); i++) {
+            terminal_->sessions_.at(i)->clearSelection();
+        }
+    }
+    update();
+}
+
+void Plane::mouseMoveEvent(QMouseEvent *e)
+{
+    e->accept();
+    if (selectedSession_) {
+        const QPoint sessionOffset = sessionRect(selectedSession_).topLeft();
+        const QPoint fromPos = mousePressPosition_ - sessionOffset;
+        const QPoint toPos   = e->pos() - sessionOffset;
+        selectedSession_->triggerTextSelection(fromPos, toPos);
+        update();
+    }
+}
+
+void Plane::mouseReleaseEvent(QMouseEvent *e)
+{
+    e->accept();
 }
 
 QPoint Plane::offset() const
 {
     QPoint result(0,0);
-    if (m_terminal->sb_horizontal->isEnabled()) {
-        int valX = m_terminal->sb_horizontal->value();
+    if (terminal_->sb_horizontal->isEnabled()) {
+        int valX = terminal_->sb_horizontal->value();
         result.setX(-valX);
     }
-    if (m_terminal->sb_vertical->isEnabled()) {
-        int valY = m_terminal->sb_vertical->value();
+    if (terminal_->sb_vertical->isEnabled()) {
+        int valY = terminal_->sb_vertical->value();
         result.setY(-valY);
     }
     return result;
 }
 
+void Plane::contextMenuEvent(QContextMenuEvent * event)
+{
+    event->accept();
+    bool canCopyToClipboard = false;
+    foreach (const OneSession * s, terminal_->sessions_) {
+        canCopyToClipboard = canCopyToClipboard || s->hasSelectedText();
+    }
+    bool hasAnyAction = canCopyToClipboard;
+
+    if (hasAnyAction) {
+        QMenu * menu = new QMenu(this);
+        if (canCopyToClipboard)
+            menu->addAction(actionCopyToClipboard_);
+        menu->exec(mapToGlobal(event->pos()));
+    }
+}
+
+void Plane::copyToClipboard()
+{
+    QClipboard * clipboard = QApplication::clipboard();
+    QString text;
+    foreach (const OneSession * s, terminal_->sessions_) {
+        text += s->selectedText();
+    }
+    clipboard->setText(text);
+}
 
 void Plane::updateScrollBars()
 {
     QPoint prevOffset = offset();
     int w = 2 * sessionMargin;
     int h = 2 * sessionMargin;
-    for (int i=0; i<m_terminal->l_sessions.size(); i++) {
-        OneSession * s = m_terminal->l_sessions[i];
+    for (int i=0; i<terminal_->sessions_.size(); i++) {
+        OneSession * s = terminal_->sessions_[i];
         QSize ss = s->visibleSize(width()-2*sessionMargin);
         w = qMax(w, sessionMargin*2 + ss.width());
         h += sessionMargin + ss.height();
-        if (i==m_terminal->l_sessions.size()-1) {
+        if (i==terminal_->sessions_.size()-1) {
             h += qMax(0, height()-ss.height()-2*sessionMargin);
         }
     }
 
-    QScrollBar * hb = m_terminal->sb_horizontal;
-    QScrollBar * vb = m_terminal->sb_vertical;
+    QScrollBar * hb = terminal_->sb_horizontal;
+    QScrollBar * vb = terminal_->sb_vertical;
 
     if (w<=width()) {
         hb->setEnabled(false);
@@ -164,17 +249,17 @@ void Plane::resizeEvent(QResizeEvent *e)
 
 void Plane::wheelEvent(QWheelEvent *e)
 {
-    if (!m_terminal->sb_vertical->isEnabled() && e->orientation()==Qt::Vertical) {
+    if (!terminal_->sb_vertical->isEnabled() && e->orientation()==Qt::Vertical) {
         e->ignore();
         return;
     }
-    if (!m_terminal->sb_horizontal->isEnabled() && e->orientation()==Qt::Horizontal) {
+    if (!terminal_->sb_horizontal->isEnabled() && e->orientation()==Qt::Horizontal) {
         e->ignore();
         return;
     }
     int degrees = e->delta() / 8;
     int steps = degrees / 15;
-    QScrollBar * sb = e->orientation()==Qt::Vertical? m_terminal->sb_vertical : m_terminal->sb_horizontal;
+    QScrollBar * sb = e->orientation()==Qt::Vertical? terminal_->sb_vertical : terminal_->sb_horizontal;
     sb->setValue(sb->value()-steps*sb->singleStep()*3);
 }
 
@@ -191,8 +276,8 @@ void Plane::paintEvent(QPaintEvent *e)
 
     QPoint off = offset();
     int y = sessionMargin;
-    for (int i=0; i<m_terminal->l_sessions.size(); i++) {
-        OneSession * session = m_terminal->l_sessions[i];
+    for (int i=0; i<terminal_->sessions_.size(); i++) {
+        OneSession * session = terminal_->sessions_[i];
         const QSize sessionSize = session->visibleSize(width()-2*sessionMargin);
 //        const QRect sessionRect = QRect(QPoint(sessionMargin, y), sessionSize).translated(off);
 //        const QRect myRect(off, size());
