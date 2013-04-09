@@ -56,30 +56,80 @@ public:
     inline const TextLine & at(int index) const { return data[index]; }
     explicit TextDocument(QObject * parent, QSettings * settings);
     int documentId;
-    int indentAt(int lineNo) const;
+    uint indentAt(uint lineNo) const;
     inline void setAnalizer(Shared::AnalizerInterface * a) { m_analizer = a; }
-    inline bool isProtected(int lineNo) const { return data[lineNo].protecteed; }
+    inline bool isProtected(uint lineNo) const { return data[lineNo].protecteed; }
     inline void setProtected(int lineNo, bool v) { data[lineNo].protecteed = v; }
-    inline bool isHidden(int lineNo) const { return data[lineNo].hidden; }
+    inline bool isHidden(uint lineNo) const { return data[lineNo].hidden; }
     inline void setHidden(int lineNo, bool v) { data[lineNo].hidden = v; }
     int hiddenLineStart() const;
-    inline int linesCount() const { return data.size(); }
+    inline uint linesCount() const { return uint(data.size()); }
     KumFile::Data toKumFile() const;
     QString toHtml(int fromLine = -1, int toLine = -1) const;
     QString lineToHtml(int lineNo) const;
     void setKumFile(const KumFile::Data & data, bool showHiddenLines);
     void setPlainText(const QString & data);
-    inline QString textAt(int index) const { return index>=0 && index<data.size()? data[index].text : ""; }
-    inline QString marginTextAt(int index) const { return index>=0 && index<data.size()? data[index].marginText : ""; }
-    inline QList<bool> selectionMaskAt(int index) const { return index>=0 && index<data.size()? data[index].selected : QList<bool>(); }
+    inline const QString& textAt(uint index) const {
+        if (index < uint(data.size())) {
+            return data.at(index).text;
+        }
+        else {
+            static const QString dummyString;
+            return dummyString;
+        }
+    }
+    inline const QString& marginTextAt(uint index) const
+    {
+        if ( index < uint(data.size()) ) {
+            return data.at(index).marginText;
+        }
+        else {
+            static const QString dummyString;
+            return dummyString;
+        }
+    }
+    inline const QList<bool>& selectionMaskAt(uint index) const {
+        if (index < uint(data.size())) {
+            return data.at(index).selected;
+        }
+        else {
+            static const QList<bool> dummySelectionMask;
+            return dummySelectionMask;
+        }
+    }
     inline void setSelectionMaskAt(int index, const QList<bool> mask) { if (index>=0 && index<data.size()) data[index].selected = mask; }
     inline bool lineEndSelectedAt(int index) const { return index>=0 && index<data.size()? data[index].lineEndSelected : false; }
-    inline QList<Shared::LexemType> highlightAt(int index) { return index>=0 && index<data.size()? data[index].highlight : QList<Shared::LexemType>(); }
+    inline const QList<Shared::LexemType>& highlightAt(uint index) const {
+        if (index < uint(data.size())) {
+            return data.at(index).highlight;
+        }
+        else {
+            static const QList<Shared::LexemType> dummyHighlight;
+            return dummyHighlight;
+        }
+    }
     inline void setMarginTextAt(int index, const QString & text) { if (index>=0 && index<data.size()) data[index].marginText = text; }
     inline void setIndentRankAt(int index, const QPoint & rank) { if (index>=0 && index<data.size()) data[index].indentStart = rank.x(); data[index].indentEnd = rank.y(); }
     inline void setHighlightAt(int index, const QList<Shared::LexemType> & highlight) { if (index>=0 && index<data.size()) data[index].highlight = highlight; }
     inline void setErrorsAt(int index, const QStringList & errs) { if (index>=0 && index<data.size()) data[index].errors = errs; }
-    inline QStringList errorsAt(int index) const { return index>=0 && index<data.size()? data[index].errors : QStringList(); }
+    inline const QStringList & errorsAt(uint index) const {
+        if (index < uint(data.size())) {
+            return data.at(index).errors;
+        }
+        else {
+            static const QStringList dummyStringList;
+            return dummyStringList;
+        }
+    }
+    inline QStringList & errorsAt(uint index) {
+        if (index < uint(data.size())) {
+            return data[index].errors;
+        }
+        else {
+            static QStringList dummyStringList;
+            return dummyStringList;
+        }
+    }
     inline void clearErrorsAt(int index) { if (index>=0 && index<data.size()) data[index].errors.clear(); }
 
     inline void setSelected(int line, int pos, bool v) { if (line<data.size()) data[line].selected[pos] = v; }

@@ -185,16 +185,16 @@ void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterf
     }
 }
 
-int TextDocument::indentAt(int lineNo) const
+uint TextDocument::indentAt(uint lineNo) const
 {
     int result = 0;
-    for (int i=0; i<qMin(lineNo, data.size()); i++) {
+    for (uint i=0; i<qMin(lineNo, uint(data.size()) ); i++) {
         result += data[i].indentStart + data[i].indentEnd;
     }
     if (lineNo>=0 && lineNo < data.size()) {
         result += data[lineNo].indentStart;
     }
-    return qMax(result, 0);
+    return uint( qMax(result, 0) );
 }
 
 void TextDocument::setKumFile(const KumFile::Data &d, bool showHiddenLines)

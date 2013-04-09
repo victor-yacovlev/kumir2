@@ -10,14 +10,21 @@
 #include <unistd.h>
 #endif
 
-#define RECT_SELECTION_MODIFIER Qt::AltModifier
 
-#define LOCK_SYMBOL_WIDTH 20
 
 namespace Editor {
 
+static const Qt::KeyboardModifier RECT_SELECTION_MODIFIER  = Qt::AltModifier;
+static const uint LOCK_SYMBOL_WIDTH = 20u /*px*/;
+static const uint HIDDEN_DELIMETER_LINE_HEIGHT = 4u /*px*/;
+static const uint LEFT_MARGIN_SIZE = 5u /*symbols*/;
+static const uint HIGHTLIGHT_LINE_VERTICAL_PADDING = 5u /*px*/;
+static const QColor PROTECTED_LINE_BACKGROUND(0x15, 0x79, 0x63, 0x40);
+static const QColor HIDDEN_LINE_BACKGROUND(0x00, 0x00, 0x00, 0x40);
+static const uint MARGIN_LINE_WIDTH = 4u /*px*/;
+
 QString EditorPlane::MarginWidthKey = "MarginWidth";
-int EditorPlane::MarginWidthDefault = 15;
+uint EditorPlane::MarginWidthDefault = 15u /*px*/;
 
 EditorPlane::EditorPlane(TextDocument * doc
                          , Shared::AnalizerInterface * analizer
@@ -31,26 +38,25 @@ EditorPlane::EditorPlane(TextDocument * doc
                          , QWidget *parent) :
     QWidget(parent)
 {
-    e_backgroundMode = BgPlain;
-    m_analizer = analizer;
-    i_highlightedLine = -1;
-    i_grayLockSymbolLine = -1;
+    analizer_ = analizer;
+    highlightedTextLineNumber_ = -1;
+    highlightedLockSymbolLineNumber_ = -1;
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-    rxFilenamePattern = fileNamesToOpen;
-    i_marginAlpha = 255;
-    m_document = doc;
-    m_cursor = cursor;
-    m_clipboard = clipboard;
-    m_settings = settings;
-    m_horizontalScrollBar = horizontalSB;
-    m_verticalScrollBar = verticalSB;
-    b_hasAnalizer = hasAnalizer;
-    connect(m_cursor, SIGNAL(updateRequest()), this, SLOT(updateCursor()));
-    connect(m_cursor, SIGNAL(updateRequest(int,int)), this, SLOT(updateText(int,int)));
+    rxFilenamePattern_ = fileNamesToOpen;
+    marginBackgroundAlpha_ = 255;
+    document_ = doc;
+    cursor_ = cursor;
+    clipboard_ = clipboard;
+    settings_ = settings;
+    horizontalScrollBar_ = horizontalSB;
+    verticalScrollBar_ = verticalSB;
+    hasAnalizerFlag_ = hasAnalizer;
+    connect(cursor_, SIGNAL(updateRequest()), this, SLOT(updateCursor()));
+    connect(cursor_, SIGNAL(updateRequest(int,int)), this, SLOT(updateText(int,int)));
     setFocusPolicy(Qt::StrongFocus);
     QFont defaultFont;
-    defaultFont.setFamily(m_settings->value(SettingsPage::KeyFontName, SettingsPage::defaultFontFamily()).toString());
-    defaultFont.setPointSize(m_settings->value(SettingsPage::KeyFontSize, SettingsPage::defaultFontSize).toInt());
+    defaultFont.setFamily(settings_->value(SettingsPage::KeyFontName, SettingsPage::defaultFontFamily()).toString());
+    defaultFont.setPointSize(settings_->value(SettingsPage::KeyFontSize, SettingsPage::defaultFontSize).toInt());
     setFont(defaultFont);
     connect(horizontalSB, SIGNAL(valueChanged(int)), this, SLOT(update()));
     connect(verticalSB, SIGNAL(valueChanged(int)), this, SLOT(update()));
@@ -59,37 +65,37 @@ EditorPlane::EditorPlane(TextDocument * doc
     setMouseTracking(true);
     setAcceptDrops(true);
     setFocusPolicy(Qt::StrongFocus);
-    pnt_delimeterPress = pnt_marginPress = pnt_textPress = pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
-    b_selectionInProgress = false;
-    m_autocompleteWidget = new SuggestionsWindow(this);
-    m_autocompleteWidget->updateSettings(settings);
-    m_autocompleteWidget->setVisible(false);
-    connect(m_autocompleteWidget, SIGNAL(hidden()), this, SIGNAL(enableInsertActions()));
-    connect(m_autocompleteWidget, SIGNAL(acceptedSuggestion(QString)),
+    delimeterRuleMousePressedPoint_ = marginMousePressedPoint_ = textMousePressedPoint_ = pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
+    selectionInProgressFlag_ = false;
+    autocompleteWidget_ = new SuggestionsWindow(this);
+    autocompleteWidget_->updateSettings(settings);
+    autocompleteWidget_->setVisible(false);
+    connect(autocompleteWidget_, SIGNAL(hidden()), this, SIGNAL(enableInsertActions()));
+    connect(autocompleteWidget_, SIGNAL(acceptedSuggestion(QString)),
             this, SLOT(finishAutoCompletion(QString)));
     qApp->installEventFilter(this);
 
-    an_dontEdit = new QPropertyAnimation(this, "dontEditState", this);
-    an_dontEdit->setDuration(1000);
-    r_dontEditState = 0.0;
-    img_dontEdit = QImage(qApp->property("sharePath").toString()+"/editor/dontedit.png");
+    doNotEditAnimation_ = new QPropertyAnimation(this, "dontEditState", this);
+    doNotEditAnimation_->setDuration(1000);
+    dontEditImageOpacity_ = 0.0;
+    dontEditImage_ = QImage(qApp->property("sharePath").toString()+"/editor/dontedit.png");
 
 }
 
 void EditorPlane::addContextMenuAction(QAction *a)
 {
-    l_contextMenuActions << a;
+    contextMenuActions_ << a;
 }
 
 void EditorPlane::setTeacherMode(bool v)
 {
-    b_teacherMode = v;
+    teacherModeFlag_ = v;
 }
 
 void EditorPlane::setLineHighlighted(int lineNo, const QColor &color)
 {
-    i_highlightedLine = lineNo;
-    color_highlightedLine = color;
+    highlightedTextLineNumber_ = lineNo;
+    highlightedTextLineColor_ = color;
     if (lineNo>-1) {
         ensureHighlightedLineVisible();
     }
@@ -121,117 +127,209 @@ void EditorPlane::paintDropPosition(QPainter *p)
 void EditorPlane::contextMenuEvent(QContextMenuEvent *e)
 {
     QMenu * menu = new QMenu(this);
-    menu->addActions(l_contextMenuActions);
+    menu->addActions(contextMenuActions_);
     menu->exec(e->globalPos());
     e->accept();
 }
 
 void EditorPlane::mousePressEvent(QMouseEvent *e)
 {
+    // Ensure auto scrolling by timer is stopped
     emit requestAutoScroll(0);
     emit requestAutoScrollX(0);
-    if (m_autocompleteWidget->isVisible())
-        m_autocompleteWidget->hide();
-    if (e->button()==Qt::RightButton) {
+
+    // Auto complete widget is a tool tip, so it must be hidden if
+    // use clicks somewhere in editor
+    if (autocompleteWidget_->isVisible())
+        autocompleteWidget_->hide();
+
+    // Do nothing on middle or right mouse button.
+    // Right mouse button is used for context menu and processed by
+    // separate handler contextMenuEvent
+    if (e->button()!=Qt::LeftButton) {
         e->accept();
         return;
     }
-    int lockSymbolWidth = b_teacherMode && b_hasAnalizer ? LOCK_SYMBOL_WIDTH : 0;
-    int ln = charWidth() * 5 + lockSymbolWidth;
-    int wc = widthInChars();
-    int mn = (wc+5)* charWidth()+1;
-//        qDebug() << "wc = " << ln;
-//        qDebug() << "ln = " << ln;
-//        qDebug() << "mn = " << mn;
-//        qDebug() << "x  = " << e->pos().x();
-    m_cursor->setViewMode(TextCursor::VM_Hidden);
-    pnt_delimeterPress = pnt_marginPress = pnt_textPress = QPoint(-1000, -1000);
-    if (b_hasAnalizer && b_teacherMode && e->pos().x() < lockSymbolWidth) {
-        int realY = e->pos().y() - offset().y();
-        int textY = qMax(0, realY/lineHeight());
-        if (textY<m_document->linesCount()) {
-            m_document->undoStack()->push(new ToggleLineProtectedCommand(m_document, textY));
-            QApplication::restoreOverrideCursor();
+
+    // The width of symbol "line locked" in teacher mode
+    const uint lockSymbolWidth = teacherModeFlag_ &&
+            hasAnalizerFlag_ ? LOCK_SYMBOL_WIDTH : 0;
+
+    // Left border of editable area
+    const uint editableAreaLeftBorder =
+            charWidth() * LEFT_MARGIN_SIZE +
+            lockSymbolWidth;
+
+    // Right border of editable area
+    const uint editableAreaRightBorder =
+            editableAreaLeftBorder +
+            widthInChars() * charWidth() -
+            lockSymbolWidth;
+
+    // Force text cursor (managed primarily from keyboard) to temporary hide
+    cursor_->setViewMode(TextCursor::VM_Hidden);
+
+    // Unset values for mouse press points
+    // TODO implement it using boost::optional !
+    delimeterRuleMousePressedPoint_ =
+            marginMousePressedPoint_ =
+            textMousePressedPoint_ = QPoint(-1000, -1000);
+
+
+    // Perform an action depending on position where mouse clicked
+
+    if (hasAnalizerFlag_ && teacherModeFlag_ &&
+            e->pos().x() < lockSymbolWidth)
+    {
+        // Toggle 'locked' line status
+
+        // Take into consideration possible scrolled coordinates
+        const uint realY = qMax(0, e->pos().y() - offset().y());
+        // Translate visible coordinates into text coordinates
+        const uint textY = qMax(0u, realY/lineHeight());
+
+        if (textY < document_->linesCount()) {
+            // Toggle status only if line exists
+            document_->undoStack()->push(
+                        new ToggleLineProtectedCommand(document_, textY)
+                        );
         }
     }
-    if (b_hasAnalizer && e->pos().x()>=(mn-2) && e->pos().x()<=(mn+2)) {
+    else if (hasAnalizerFlag_ &&
+             // Pointer position near margin line
+             marginLineRect().contains(e->pos()))
+    {
         // Begin drag margin line
-        pnt_marginPress = e->pos();
+        marginMousePressedPoint_ = e->pos();
     }
-    else if (e->pos().x()>ln && e->pos().x()<(mn-2)) {
-        bool moveDelimeterLine = false;
-        if (b_hasAnalizer && b_teacherMode) {
-            int hls = m_document->hiddenLineStart();
-            QRect lr;
-            if (hls==-1) {
-                lr = QRect(charWidth()*5+lockSymbolWidth, height()-lineHeight(), widthInChars()*charWidth(), lineHeight());
-            }
-            else {
-                lr = QRect(charWidth()*5+lockSymbolWidth, lineHeight()*hls-2, widthInChars()*charWidth(), 4);
-            }
-            moveDelimeterLine = lr.contains(e->pos());
+    else if ( editableAreaLeftBorder < e->pos().x() &&
+              e->pos().x() < editableAreaRightBorder-2 )
+    {
+        // There are two actions possible:
+        //   1) click on a text;
+        //   2) drag a ruler
+
+        // Flag to mark an action as move delimeter line between "visible"
+        // and "hidden" part of editable text. False by default
+        bool moveDelimeterRulerBetweenVisibleAndHiddenTextFlag = false;
+        if (hasAnalizerFlag_ && teacherModeFlag_) {
+            // The line number, where hidden text starts, or -1 if
+            // there is no hidden text
+            const int hiddenLineStart = document_->hiddenLineStart();
+
+            // Rectangle region for delimeter "line"
+            const QRect delimeterLineRect = hiddenLineStart==-1
+                    ? QRect(editableAreaLeftBorder, // left border
+                            height()-lineHeight(), // topBorder
+                            widthInChars()*charWidth(), // width of area
+                            lineHeight() // line thickness is line height
+                          )
+                    : QRect(editableAreaLeftBorder, // left border
+                            lineHeight()*hiddenLineStart-2, // top border
+                            widthInChars()*charWidth(), // width of area
+                            HIDDEN_DELIMETER_LINE_HEIGHT // height of line (4px)
+                          )
+                    ;
+
+            // If mouse coordinated in delimeterLineRect,
+            // then move the line
+            moveDelimeterRulerBetweenVisibleAndHiddenTextFlag =
+                    delimeterLineRect.contains(e->pos());
         }
-        if (moveDelimeterLine) {
+        if (moveDelimeterRulerBetweenVisibleAndHiddenTextFlag) {
             // Move line between visible and teacher text
-            pnt_delimeterPress = e->pos();
-            update();
+            delimeterRuleMousePressedPoint_ = e->pos();
         }
         else {
             // Move cursor and (possible) begin selection
-            pnt_textPress = e->pos();
-            int realX = e->pos().x() - offset().x();
-            int realY = e->pos().y() - offset().y();
-            int textX = realX/charWidth();
-            int textY = realY/lineHeight();
-            if (textY != m_cursor->row())
-                m_document->flushTransaction();
-            m_cursor->moveTo(textY, textX);
-            pos_textPress = QPoint(textX, textY);
-            update();
+            textMousePressedPoint_ = e->pos();
+
+            // Calculate text position
+            const uint realX = qMax(0, e->pos().x() - offset().x());
+            const uint realY = qMax(0, e->pos().y() - offset().y());
+            const uint textX = realX / charWidth();
+            const uint textY = realY / lineHeight();
+
+            if (textY != cursor_->row())
+                // Compile text if need
+                document_->flushTransaction();
+
+            // Move text cursor into clicked position
+            cursor_->moveTo(textY, textX);
+
+            // Store text clicked position for possible
+            // selection handling
+            textPressedPosition_ = QPoint(textX, textY);
         }
     }
+
+    // Set repaint flag due to something may be changed and accept event
+    update();
     e->accept();
 }
 
 void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
 {
+    // Ensure auto scrolling by timer is stopped
     emit requestAutoScroll(0);
     emit requestAutoScrollX(0);
-    if (pnt_marginPress.x()!=-1000 && pnt_marginPress.y()!=-1000) {
-        int x = pnt_marginPress.x();
-        if (b_teacherMode)
-            x += LOCK_SYMBOL_WIDTH;
-        int cw = charWidth();
-        x = (x/cw)*cw;
-        int marginAbsoluteWidth = width()-x;
-        marginAbsoluteWidth = qMin(marginAbsoluteWidth, 450);
-        marginAbsoluteWidth = qMax(marginAbsoluteWidth, cw);
-        int marginWidth = marginAbsoluteWidth / cw;
-        m_settings->setValue(MarginWidthKey, marginWidth);
+
+    if (marginMousePressedPoint_.x()!=-1000 &&
+            marginMousePressedPoint_.y()!=-1000)
+    {
+        // In this case there was pairing "mousePress" action on this widget
+        // inside a margin region
+
+        // New margin position in pixels (normalized and bounded)
+        uint x = normalizedNewMarginLinePosition(marginMousePressedPoint_.x());
+
+        // New margin width in characters
+        const uint marginCharWidth = (width() - x) / charWidth();
+
+        // Store a settings value, this will be used on paint event
+        settings_->setValue(MarginWidthKey, marginCharWidth);
+
+        // Update scrollbars due to editable region size changed
         updateScrollBars();
-        update();
-        pnt_marginPress = QPoint(-1000, -1000);
+
+        // Unset value
+        // TODO use boost::optional here
+        marginMousePressedPoint_ = QPoint(-1000, -1000);
     }
-    if (pnt_delimeterPress.x()!=-1000 && pnt_delimeterPress.y()!=-1000) {
-        int y = pnt_delimeterPress.y();
-        int lh = lineHeight();
-        int yy = (y/lh) ;
-        if (y>height()-lh)
-            yy = -1;
-        m_document->undoStack()->push(new ChangeHiddenLineDelimeterCommand(
-                                          m_document,
-                                          yy));
+
+    if (delimeterRuleMousePressedPoint_.x()!=-1000 &&
+            delimeterRuleMousePressedPoint_.y()!=-1000)
+    {
+        // In this case there was pairing "mousePress" action on this widget
+        // inside a visible/hidden rule region
+
+        const uint y = qMax(0, delimeterRuleMousePressedPoint_.y());
+        int textY = y / lineHeight();
+        if (y > uint(height()) - lineHeight())
+            textY = -1;
+        document_->undoStack()->push(new ChangeHiddenLineDelimeterCommand(
+                                          document_,
+                                          textY));
         update();
-        pnt_delimeterPress = QPoint(-1000, -1000);
+        delimeterRuleMousePressedPoint_ = QPoint(-1000, -1000);
     }
-    if (b_selectionInProgress) {
-        b_selectionInProgress = false;
+
+    if (selectionInProgressFlag_) {
+        // Stop selection, so the next mouse press will initiate
+        // a new selection progress
+        selectionInProgressFlag_ = false;
     }
     else {
-        m_cursor->removeSelection();
-        m_cursor->removeRectSelection();
+        // If not selection in progress, remove all selections
+        cursor_->removeSelection();
+        cursor_->removeRectSelection();
     }
-    m_cursor->setViewMode(TextCursor::VM_Blinking);
+
+    // Restore cursor blink behaviour, changed while mousePressEvent
+    cursor_->setViewMode(TextCursor::VM_Blinking);
+
+    // Set repaint flag due to something may be changed and accept event
+    update();
     e->accept();
 }
 
@@ -245,182 +343,341 @@ bool EditorPlane::eventFilter(QObject *, QEvent *event)
         }
     }
     else if (event->type()==QEvent::MouseButtonPress) {
-        pnt_textPress = QPoint(-1000,-1000);
+        textMousePressedPoint_ = QPoint(-1000,-1000);
     }
     return false;
 }
 
 void EditorPlane::mouseMoveEvent(QMouseEvent *e)
 {
-    int lockSymbolWidth = b_teacherMode && b_hasAnalizer ? LOCK_SYMBOL_WIDTH : 0;
-    int ln = charWidth() * 5 + lockSymbolWidth;
-    int mn = ln + widthInChars() * charWidth() - lockSymbolWidth;
-    i_grayLockSymbolLine = -1;
-    bool moveDelimeterLine = false;
-    if (b_hasAnalizer && b_teacherMode) {
-        int hls = m_document->hiddenLineStart();
-        QRect lr;
-        if (hls==-1) {
-            lr = QRect(charWidth()*5+lockSymbolWidth, height()-lineHeight(), widthInChars()*charWidth(), lineHeight());
-        }
-        else {
-            lr = QRect(charWidth()*5+lockSymbolWidth, lineHeight()*hls-2, widthInChars()*charWidth(), 4);
-        }
-        moveDelimeterLine = lr.contains(e->pos());
+    // The width of symbol "line locked" in teacher mode
+    const uint lockSymbolWidth = teacherModeFlag_ &&
+            hasAnalizerFlag_ ? LOCK_SYMBOL_WIDTH : 0;
+
+    // Left border of editable area
+    const uint editableAreaLeftBorder =
+            charWidth() * LEFT_MARGIN_SIZE +
+            lockSymbolWidth;
+
+    // Right border of editable area
+    const uint editableAreaRightBorder =
+            editableAreaLeftBorder +
+            widthInChars() * charWidth() -
+            lockSymbolWidth;
+
+    // Line number of highlighted (by mouseover) 'lock' symbol or -1 if none
+    highlightedLockSymbolLineNumber_ = -1;
+
+    // The action is move delimeter line between "visible"
+    // and "hidden" part of editable text. False by default
+    bool moveDelimeterRulerBetweenVisibleAndHiddenTextFlag = false;
+
+    if (hasAnalizerFlag_ && teacherModeFlag_) {
+        // Programs in teacher mode have visible delimeter line,
+        // so it is possible to move that line
+
+        // The line number, where hidden text starts, or -1 if
+        // there is no hidden text
+        const int hiddenLineStart = document_->hiddenLineStart();
+
+        // Rectangle region for delimeter "line" (of course, non-zero thickness)
+        const QRect delimeterLineRect = hiddenLineStart==-1
+                ? QRect(editableAreaLeftBorder, // left border
+                        height()-lineHeight(), // topBorder
+                        widthInChars()*charWidth(), // width of editable area
+                        lineHeight() // line thickness is line height this case
+                      )
+                : QRect(editableAreaLeftBorder, // left border
+                        lineHeight()*hiddenLineStart-2, // top border
+                        widthInChars()*charWidth(), // width of editable area
+                        HIDDEN_DELIMETER_LINE_HEIGHT // height of line (4px)
+                      )
+                ;
+
+        // If mouse coordinated in delimeterLineRect,
+        // then move the line
+        moveDelimeterRulerBetweenVisibleAndHiddenTextFlag =
+                delimeterLineRect.contains(e->pos());
     }
 
-    if (b_teacherMode && b_hasAnalizer && e->pos().x()<lockSymbolWidth) {
-        int lh = lineHeight();
-        int realY = e->pos().y() - offset().y();
-        int textY = realY/lh;
-        textY = qMax(textY, 0);
-        if (textY<m_document->linesCount()) {
-            i_grayLockSymbolLine = textY;
-//            QApplication::setOverrideCursor(Qt::PointingHandCursor);
-        }
-        else {
-//            QApplication::restoreOverrideCursor();
+    if (teacherModeFlag_ && hasAnalizerFlag_ && e->pos().x()<lockSymbolWidth) {
+        // Programs in teacher mode have visible 'lock' symbols to the left
+        // of line numbers. Mouseover these symbols causes to highlight them
+
+        // Take into consideration possible scrolled coordinates
+        const uint realY = qMax(0, e->pos().y() - offset().y());
+
+        // Translate visible coordinates into text coordinates
+        const uint textY = qMax(0u, realY/lineHeight());
+
+        if (textY<document_->linesCount()) {
+            // Mark corresponding highlight 'lock' symbol only if
+            // there is real text line exists
+            highlightedLockSymbolLineNumber_ = textY;
         }
 
     }
-    else if (e->pos().x()<ln) {
-//        QApplication::setOverrideCursor(Qt::ArrowCursor);
+
+    // Set proper mouse cursor shape depending on mouse pointer position
+
+    if (teacherModeFlag_ && hasAnalizerFlag_ &&
+            ( 0 <= e->pos().x() && e->pos().x() <= lockSymbolWidth ) &&
+            highlightedLockSymbolLineNumber_ != -1
+            )
+    {
+        // Pointer is over 'lock' symbol and real text line exists near it.
+        // It is possible to toggle 'locked' status, so pointer shape should
+        // be something like 'hand' of 'finger'
+
         QApplication::restoreOverrideCursor();
+        QApplication::setOverrideCursor(Qt::PointingHandCursor);
     }
-    else if (e->pos().x()<=mn-2) {
+    else if (e->pos().x()<editableAreaLeftBorder) {
+        // Pointer is out of editable text, so there should be
+        // regular 'arrow' shape instead of this widget default
+        // 'text beam' shape
+
         QApplication::restoreOverrideCursor();
-        if (moveDelimeterLine)
-           QApplication::setOverrideCursor(Qt::SplitVCursor);
+        QApplication::setOverrideCursor(Qt::ArrowCursor);
     }
-    else if (b_hasAnalizer && e->pos().x()<=mn+2) {
+    else if (// Pointer position in visible/hidden ruler region
+             moveDelimeterRulerBetweenVisibleAndHiddenTextFlag
+             ||
+             // Visible/hidden ruler movement in progress
+             ( delimeterRuleMousePressedPoint_.x()!=-1000 &&
+               delimeterRuleMousePressedPoint_.y()!=-1000 )
+             )
+    {
+        // The mouse points to delimeter ruler between visible and hidden
+        // text, so there should be a pointer shape as for vertical resize
+
+        QApplication::restoreOverrideCursor();
+        QApplication::setOverrideCursor(Qt::SplitVCursor);
+    }
+    else if (hasAnalizerFlag_ &&
+             (
+                 // Pointer position near margin line
+                 marginLineRect().contains(e->pos())
+                 ||
+                 // Margin line movement in progress
+                 ( marginMousePressedPoint_.x()!=-1000 &&
+                   marginMousePressedPoint_.y()!=-1000 )
+                 )
+             )
+    {
+        // The mouse pointer is about red line delimeter between editable area
+        // and the margin (+- 2 pixels), so there should be a pointer shape as
+        // for horizontal resize
+
+        QApplication::restoreOverrideCursor();
         QApplication::setOverrideCursor(Qt::SplitHCursor);
     }
-
     else {
-//        QApplication::setOverrideCursor(Qt::ArrowCursor);
+        // Just a simple regular case: mouse pointer is over editable area
+        // or text margin, so restore cursor shape to its regular "text beam"
+
         QApplication::restoreOverrideCursor();
     }
-    if (pnt_marginPress.x()!=-1000 && pnt_marginPress.y()!=-1000) {
-        pnt_marginPress = e->pos();
+
+
+    // Begin processing of move event.
+    // There is three actions possible to perform:
+    //  1) move margin line;
+    //  2) move visible/hidden ruler;
+    //  3) perform text selection or start drag'n'drop
+
+    // There are special values (-1000, -1000) to indicate "has value" flag
+    // for storing positions of mouse press to margin or delimeter rule.
+    // Update them if requred
+
+    // TODO switch to using of boost::optional instead to reduce flags usage!
+
+    if (marginMousePressedPoint_.x()!=-1000 &&
+            marginMousePressedPoint_.y()!=-1000) {
+        marginMousePressedPoint_ = e->pos();
         update();
     }
-    else if (pnt_delimeterPress.x()!=-1000 && pnt_delimeterPress.y()!=-1000) {
-        pnt_delimeterPress = e->pos();
+    else if (delimeterRuleMousePressedPoint_.x()!=-1000 &&
+             delimeterRuleMousePressedPoint_.y()!=-1000) {
+        delimeterRuleMousePressedPoint_ = e->pos();
         update();
     }
-    else if (b_selectionInProgress || (e->pos().x()>ln && e->pos().x()<mn-2 && e->buttons().testFlag(Qt::LeftButton))) {
+
+    // The last important case is selecting text by mouse.
+    // This case is matched by already set 'selectionInProgressFlag_'
+    // or if left mouse button pressed while pointer is in editable area
+    else if (selectionInProgressFlag_ || (
+                 e->pos().x()>editableAreaLeftBorder &&
+                 e->pos().x()<editableAreaRightBorder-2 &&
+                 e->buttons().testFlag(Qt::LeftButton)
+                 )
+             )
+    {
+        // Start autoscrolling while selection if mouse pointer
+        // is out of the widget area
+
+        // Check for vertival scrolling
         if (e->pos().y()<0) {
-            emit requestAutoScroll(-1);
+            emit requestAutoScroll(-1);   // scroll up by timer ticks
         }
         else if (e->pos().y()>height()) {
-            emit requestAutoScroll(+1);
+            emit requestAutoScroll(+1);   // scroll down by timer ticks
         }
         else {
-            emit requestAutoScroll( 0);
+            emit requestAutoScroll( 0);   // stop vertical autoscrolling
         }
+
+        // Check for horizontal scrolling
         if (e->pos().x()<0) {
-            emit requestAutoScrollX(-1);
+            emit requestAutoScrollX(-1);  // scroll left by timer ticks
         }
-        else if (e->pos().x()>mn-2) {
-            emit requestAutoScrollX(+1);
+        else if (e->pos().x()>editableAreaRightBorder-2) {
+            emit requestAutoScrollX(+1);  // scroll right by timer ticks
         }
         else {
-            emit requestAutoScrollX( 0);
+            emit requestAutoScrollX( 0);  // stop horizontal autoscrolling
         }
-        QApplication::restoreOverrideCursor();
-        int dX = e->pos().x() - pnt_textPress.x();
-        int dY = e->pos().y() - pnt_textPress.y();
+
+        // Calculate distance for this mouse movement to protect user from
+        // unawaited text selection
+        int dX = e->pos().x() - textMousePressedPoint_.x();
+        int dY = e->pos().y() - textMousePressedPoint_.y();
         qreal distance = sqrt(double(dX*dX+dY*dY));
-        if (pnt_textPress.x()==-1000 && !b_selectionInProgress)
-            distance = 0;
-        qreal therehold = QApplication::startDragDistance();
-        if (distance>=therehold) {
-            bool sel = m_cursor->hasSelection();
-            bool rsel = m_analizer==0 && m_cursor->hasRectSelection();
-//            qDebug() << "sel = " << sel;
-//            qDebug() << "rsel = " << rsel;
-            bool nothingSelected = !sel && !rsel;
-//            qDebug() << "nothingSelected = " << nothingSelected;
-            if (b_selectionInProgress || nothingSelected ) {
-                b_selectionInProgress = true;
-                int cw = charWidth();
-                int lh = lineHeight();
-                int realX = e->pos().x() - offset().x();
-                int realY = e->pos().y() - offset().y();
-                int textX = realX/cw;
-                int textY = realY/lh;
-                textX = qMax(textX, 0);
-                textY = qMax(textY, 0);
-                if (m_analizer==0 && e->modifiers().testFlag(Qt::ShiftModifier)) {
+        qreal thereshold = QApplication::startDragDistance();
+        bool reallyMovingMouse = distance >= thereshold;
+
+        // Check if selection really performing
+        bool mousePressedInTextOrSelectionInProgress =
+                textMousePressedPoint_.x()!=-1000 || selectionInProgressFlag_;
+
+        if (reallyMovingMouse && mousePressedInTextOrSelectionInProgress) {
+            // Ok, let's perform a text selection
+
+            // Is something selected?
+            bool cursorHasTextSelection = cursor_->hasSelection();
+            bool cursorHasRectSelection =
+                    analizer_==0 && cursor_->hasRectSelection();
+
+            bool nothingSelected =
+                    !cursorHasTextSelection && !cursorHasRectSelection;
+
+            if (selectionInProgressFlag_ || nothingSelected ) {
+                // Perform a text selection
+
+                // Set selection in progress flag in case if nothing was
+                // selected before
+                selectionInProgressFlag_ = true;
+
+                // Translate coordinates considering scroll values
+                const uint realX = qMax(0, e->pos().x() - offset().x());
+                const uint realY = qMax(0, e->pos().y() - offset().y());
+
+                // Translate pointer pixel-coordinates into text coordinates
+                const uint textX = realX / charWidth();
+                const uint textY = realY / lineHeight();
+
+                if (analizer_==0 &&
+                        e->modifiers().testFlag(Qt::ShiftModifier))
+                {
+                    // Rectangle selection (Using Shift+mouse button),
+                    // which available only for plain text editors
+
+                    // Set cursor shape like spreadsheet cross
                     QApplication::restoreOverrideCursor();
                     QApplication::setOverrideCursor(Qt::CrossCursor);
-                    m_cursor->selectRangeBlock(pos_textPress.y(), pos_textPress.x(), textY, textX);
+
+                    // Perform rectangle selection
+                    cursor_->selectRangeBlock(
+                                textPressedPosition_.y(),
+                                textPressedPosition_.x(),
+                                textY,
+                                textX);
                 }
                 else {
+                    // Regular text selection
+
+                    // Ensure using regular mouse pointer shape
                     QApplication::restoreOverrideCursor();
-                    m_cursor->selectRangeText(pos_textPress.y(), pos_textPress.x(), textY, textX);
+
+                    // Perform regular text selection
+                    cursor_->selectRangeText(
+                                textPressedPosition_.y(),
+                                textPressedPosition_.x(),
+                                textY,
+                                textX);
                 }
-                update();
-            }
-            else if (rsel || sel) {
+            } // end if (selectionInProgressFlag_ || nothingSelected )
+
+            else if (cursorHasRectSelection || cursorHasTextSelection) {
+                // Have a finished selection. Perform drag'n'drop
+
+                // Prepare drag data
                 QMimeData * data = new QMimeData;
-                if (sel) {
-                    data->setText(m_cursor->selectedText());
+
+                if (cursorHasTextSelection) {
+                    // If regular selection mode, store selected text
+                    data->setText(cursor_->selectedText());
                 }
-                if (m_analizer==0 && rsel) {
-                    data->setText(m_cursor->selectedText());
+
+                if (analizer_==0 && cursorHasRectSelection) {
+                    // In case of rectangle selection, store rectangle
+                    // block data ...
                     data->setData(
-                                Clipboard::BlockMimeType
-                                , m_cursor->rectSelectionText().join("\n").toUtf8());
+                                Clipboard::BlockMimeType,
+                                cursor_->rectSelectionText().
+                                join("\n").toUtf8());
+
+                    // ... and plain text data to use in non-Kumir
+                    // drop source
+                    data->setText(cursor_->selectedText());
                 }
+
+                // Perform a drag action
                 QDrag * drag = new QDrag(this);
                 drag->setMimeData(data);
-                Qt::DropAction result = drag->exec(Qt::CopyAction|Qt::MoveAction, Qt::CopyAction);
+                Qt::DropAction result = drag->exec(
+                            Qt::CopyAction|Qt::MoveAction,
+                            Qt::CopyAction
+                            );
+
+                // If drag'n'drop performed as 'Move' but not 'Copy',
+                // then delete selected text
                 if (result==Qt::MoveAction && drag->target()!=this) {
-                    if (sel) {
-                        m_cursor->removeSelectedText();
+                    if (cursorHasTextSelection) {
+                        cursor_->removeSelectedText();
                     }
-                    else if (rsel) {
-                        m_cursor->removeSelectedBlock();
+                    else if (cursorHasRectSelection) {
+                        cursor_->removeSelectedBlock();
                     }
                 }
-            }
-        }
+            } // end else if (cursorHasRectSelection || cursorHasTextSelection)
+        } // end if (reallyMovingMouse && mousePressedInText...)
     }
 
-
-    e->accept();
+    // Set repaint flag due to something may be changed and accept event
     update();
+    e->accept();
 }
 
 
 void EditorPlane::initMouseCursor()
 {
-//    QRect r0(0,0,charWidth(),lineHeight());
-//    QRect r1(0,0,charWidth()-1,lineHeight()-1);
-//    QImage img(r0.size(), QImage::Format_ARGB32);
-//    img.fill(0);
-//    QPainter p(&img);
-//    p.setPen(QPen(QColor(Qt::black)));
-//    p.drawRect(r1);
-//    p.end();
-//    QCursor c(QPixmap::fromImage(img));
     QCursor c(Qt::IBeamCursor);
     setCursor(c);
 }
 
 QPoint EditorPlane::offset() const
 {
-    QPoint lineNumbersOffset (charWidth()*5 , 0);
-    QPoint lockSymbolOffset (b_teacherMode? LOCK_SYMBOL_WIDTH : 0, 0);
-    QPoint scrollOffset(0,0);
-    if (m_horizontalScrollBar->isEnabled()) {
-        int valX = m_horizontalScrollBar->value();
+    QPoint lineNumbersOffset(charWidth() * LEFT_MARGIN_SIZE , 0);
+    QPoint lockSymbolOffset (teacherModeFlag_ ? LOCK_SYMBOL_WIDTH : 0, 0);
+    QPoint scrollOffset(0, 0);
+    if (horizontalScrollBar_->isEnabled()) {
+        int valX = horizontalScrollBar_->value();
         valX = ( valX / charWidth() ) * charWidth();
         scrollOffset.setX(-valX);
     }
-    if (m_verticalScrollBar->isEnabled()) {
-        int valY = m_verticalScrollBar->value();
+    if (verticalScrollBar_->isEnabled()) {
+        int valY = verticalScrollBar_->value();
         valY = ( valY / lineHeight() ) * lineHeight();
         scrollOffset.setY(-valY);
     }
@@ -431,39 +688,39 @@ QPoint EditorPlane::offset() const
 void EditorPlane::updateScrollBars()
 {
     QPoint prevOffset = offset();
-    int w = 1;
-    int h = 1;
-    for (int i=0 ; i<m_document->linesCount(); i++) {
-        int indent = m_document->indentAt(i) * 2;
-        int tl = m_document->textAt(i).length();
-        w = qMax(w, indent+tl+1);
+    uint w = 1;
+    uint h = 1;
+    for (int i=0 ; i<document_->linesCount(); i++) {
+        uint indent = document_->indentAt(i) * 2;
+        uint textLength = document_->textAt(i).length();
+        w = qMax(w, indent + textLength + 1);
     }
-    w = qMax(w, m_cursor->column()+1);
-    h = qMax(m_document->linesCount()+1, m_cursor->row()+2);
+    w = qMax(w, cursor_->column()+1);
+    h = qMax(document_->linesCount()+1, cursor_->row()+2);
 
     QSize contentSize (w*charWidth(), h*lineHeight());
     QSize viewportSize (widthInChars() * charWidth(), height());
     if (contentSize.width()<=viewportSize.width()) {
-        m_horizontalScrollBar->setEnabled(false);
-        m_horizontalScrollBar->setVisible(false);
+        horizontalScrollBar_->setEnabled(false);
+        horizontalScrollBar_->setVisible(false);
     }
     else {
-        m_horizontalScrollBar->setEnabled(true);
-        m_horizontalScrollBar->setVisible(true);
-        m_horizontalScrollBar->setRange(0, contentSize.width()-viewportSize.width());
-        m_horizontalScrollBar->setSingleStep(charWidth());
-        m_horizontalScrollBar->setPageStep(charWidth() * 8);
+        horizontalScrollBar_->setEnabled(true);
+        horizontalScrollBar_->setVisible(true);
+        horizontalScrollBar_->setRange(0, contentSize.width()-viewportSize.width());
+        horizontalScrollBar_->setSingleStep(charWidth());
+        horizontalScrollBar_->setPageStep(charWidth() * 8);
     }
     if (contentSize.height()<=viewportSize.height()) {
-        m_verticalScrollBar->setEnabled(false);
-        m_verticalScrollBar->setVisible(false);
+        verticalScrollBar_->setEnabled(false);
+        verticalScrollBar_->setVisible(false);
     }
     else {
-        m_verticalScrollBar->setEnabled(true);
-        m_verticalScrollBar->setVisible(true);
-        m_verticalScrollBar->setRange(0, contentSize.height()-viewportSize.height());
-        m_verticalScrollBar->setSingleStep(lineHeight());
-        m_verticalScrollBar->setPageStep(lineHeight() * 8);
+        verticalScrollBar_->setEnabled(true);
+        verticalScrollBar_->setVisible(true);
+        verticalScrollBar_->setRange(0, contentSize.height()-viewportSize.height());
+        verticalScrollBar_->setSingleStep(lineHeight());
+        verticalScrollBar_->setPageStep(lineHeight() * 8);
     }
     if (prevOffset!=offset())
         update();
@@ -472,40 +729,40 @@ void EditorPlane::updateScrollBars()
 void EditorPlane::ensureCursorVisible()
 {
     const int lineNoWidth = 5;
-    QRect cr(5 + m_cursor->column(),
-             m_cursor->row(),
+    QRect cr(5 + cursor_->column(),
+             cursor_->row(),
              2,
              2
                 );
     QRect vr;
-    vr.setLeft(m_horizontalScrollBar->isEnabled()? m_horizontalScrollBar->value()/charWidth() : 0);
-    vr.setTop(m_verticalScrollBar->isEnabled()? m_verticalScrollBar->value()/lineHeight() : 0);
+    vr.setLeft(horizontalScrollBar_->isEnabled()? horizontalScrollBar_->value()/charWidth() : 0);
+    vr.setTop(verticalScrollBar_->isEnabled()? verticalScrollBar_->value()/lineHeight() : 0);
     vr.setSize(QSize(widthInChars(), height()/lineHeight()));
     vr.translate(QPoint(lineNoWidth, 0));
 //    qDebug() << "CR: " << cr;
 //    qDebug() << "VR: " << vr;
     if (cr.left()>vr.right()) {
 //        qDebug() << "A";
-        int v = m_cursor->column() - vr.width()-1 + lineNoWidth;
-        m_horizontalScrollBar->setValue(v * charWidth());
+        int v = cursor_->column() - vr.width()-1 + lineNoWidth;
+        horizontalScrollBar_->setValue(v * charWidth());
     }
     else if (cr.left()<vr.left()) {
 //        qDebug() << "B";
-        int v = m_cursor->column();
-        m_horizontalScrollBar->setValue(v * charWidth());
+        int v = cursor_->column();
+        horizontalScrollBar_->setValue(v * charWidth());
     }
     if (cr.top()>vr.bottom()) {
 //        qDebug() << "C";
-        int v = m_cursor->row()-vr.height()+1;
+        int v = cursor_->row()-vr.height()+1;
 //        qDebug() << "v0: " << m_verticalScrollBar->value();
-        m_verticalScrollBar->setValue(v*lineHeight());
+        verticalScrollBar_->setValue(v*lineHeight());
 //        qDebug() << "v1: " << m_verticalScrollBar->value();
     }
     else if (cr.top()<vr.top()) {
 //        qDebug() << "D";
         int v = cr.top();
 //        qDebug() << "v0: " << m_verticalScrollBar->value();
-        m_verticalScrollBar->setValue(v*lineHeight());
+        verticalScrollBar_->setValue(v*lineHeight());
 //        qDebug() << "v1: " << m_verticalScrollBar->value();
     }
 }
@@ -513,22 +770,22 @@ void EditorPlane::ensureCursorVisible()
 void EditorPlane::ensureHighlightedLineVisible()
 {
     QRect cr(0,
-             i_highlightedLine,
+             highlightedTextLineNumber_,
              2,
              2
                 );
     QRect vr;
-    vr.setLeft(m_horizontalScrollBar->isEnabled()? m_horizontalScrollBar->value()/charWidth() : 0);
-    vr.setTop(m_verticalScrollBar->isEnabled()? m_verticalScrollBar->value()/lineHeight() : 0);
+    vr.setLeft(horizontalScrollBar_->isEnabled()? horizontalScrollBar_->value()/charWidth() : 0);
+    vr.setTop(verticalScrollBar_->isEnabled()? verticalScrollBar_->value()/lineHeight() : 0);
     vr.setSize(QSize(widthInChars(), height()/lineHeight()));
 
     if (cr.top()>vr.bottom()) {
-        int v = i_highlightedLine;
-        m_verticalScrollBar->setValue(v*lineHeight());
+        int v = highlightedTextLineNumber_;
+        verticalScrollBar_->setValue(v*lineHeight());
     }
     else if (cr.bottom()<vr.top()) {
-        int v = i_highlightedLine;
-        m_verticalScrollBar->setValue(v*lineHeight());
+        int v = highlightedTextLineNumber_;
+        verticalScrollBar_->setValue(v*lineHeight());
     }
 }
 
@@ -541,113 +798,182 @@ void EditorPlane::findCursor()
 
 void EditorPlane::paintEvent(QPaintEvent *e)
 {
-//    qDebug() << "My size : " << size();
+    // Create a painter
     QPainter p(this);
+
+    // Paint a plain background
     paintBackground(&p, e->rect());
 
+    // Save state before translating scroll offsets
     p.save();
 
+    // Translate coordinate system to match scroll values
     p.translate( offset() );
 
-    paintSelection(&p, e->rect());
-    paintRectSelection(&p, e->rect());
+    // Paint selections before text
+    paintSelection(&p, e->rect().translated(-offset()));
+    paintRectSelection(&p, e->rect().translated(-offset()));
 
-    if (i_highlightedLine!=-1)
+    // Paint line highlight if need before text itself
+    if (highlightedTextLineNumber_!=-1)
     {
-        QRect highlightRect(0, lineHeight()*i_highlightedLine+1,
-                            widthInChars()*charWidth(), lineHeight()+5);
+        const QRect highlightRect(
+                    0,
+                    lineHeight() * highlightedTextLineNumber_+1,
+                    widthInChars() * charWidth(),
+                    lineHeight() + HIGHTLIGHT_LINE_VERTICAL_PADDING
+                    );
+
+        // Prepare a brush gradient based on current highlight color
         QLinearGradient gr(QPointF(0,0),QPointF(0,1));
         gr.setCoordinateMode(QGradient::ObjectBoundingMode);
-        QColor c1 = color_highlightedLine.lighter();
+        QColor c1 = highlightedTextLineColor_.lighter();
         c1.setAlpha(32);
-        QColor c2 = color_highlightedLine.lighter();
-
+        QColor c2 = highlightedTextLineColor_.lighter();
         gr.setColorAt(0, c1);
         gr.setColorAt(1, c2);
+
+        // Draw a rect
         p.setBrush(gr);
         p.setPen(Qt::NoPen);
         p.drawRect(highlightRect);
-        p.setPen(color_highlightedLine);
+
+        // Draw rect borders
+        p.setPen(highlightedTextLineColor_);
         p.drawLine(highlightRect.topLeft(), highlightRect.topRight());
         p.drawLine(highlightRect.bottomLeft(), highlightRect.bottomRight());
+
+        // Restore a pen
         p.setPen(Qt::NoPen);
     }
-    paintText(&p, e->rect());
 
+    // Paint a text
+    paintText(&p, e->rect().translated(-offset()));
+
+    // Paint a cursor
+    paintCursor(&p, e->rect().translated(-offset()));
+
+    // Restore coordinate system due to line numbers must be always
+    // visible without reference to scroll values
     p.restore();
     paintLineNumbers(&p, e->rect());
 
-    paintCursor(&p, e->rect());
-
-    if (b_hasAnalizer) {
+    if (hasAnalizerFlag_) {
+        // Fill a margin with empty backround and draw margin line
         paintMarginBackground(&p, e->rect());
 
+        // Draw a new margin rect in case of moving margin line by mouse
         paintNewMarginLine(&p);
     }
 
-
-
-    p.save();
-    p.translate(offset());
-    if (i_highlightedLine!=-1)
+    // If there is highlighted line, draw it's parts at left anf right margin
+    if (highlightedTextLineNumber_!=-1)
     {
-        QRect highlightRect1(-offset().x(), lineHeight()*i_highlightedLine+1,
-                            5*charWidth(), lineHeight()+5);
-        QRect highlightRect2(charWidth()*widthInChars(), lineHeight()*i_highlightedLine+1,
-                             marginCharactersCount()*widthInChars(), lineHeight()+5);
+        // Save & translate coordinate system again
+        p.save();
+        p.translate(offset());
+
+        const QRect highlightLeftRect(
+                    -offset().x(),
+                    lineHeight() * highlightedTextLineNumber_ + 1,
+                    LEFT_MARGIN_SIZE * charWidth(),
+                    lineHeight() + HIGHTLIGHT_LINE_VERTICAL_PADDING
+                    );
+
+        const QRect highlightRightRect(
+                    charWidth() * widthInChars(),
+                    lineHeight() * highlightedTextLineNumber_ + 1,
+                    marginCharactersCount() * widthInChars(),
+                    lineHeight() + HIGHTLIGHT_LINE_VERTICAL_PADDING
+                    );
+
+        // Prepare a brush gradient based on current highlight color
         QLinearGradient gr(QPointF(0,0),QPointF(0,1));
         gr.setCoordinateMode(QGradient::ObjectBoundingMode);
-        QColor c1 = color_highlightedLine.lighter();
+        QColor c1 = highlightedTextLineColor_.lighter();
         c1.setAlpha(32);
-        QColor c2 = color_highlightedLine.lighter();
-
+        QColor c2 = highlightedTextLineColor_.lighter();
         gr.setColorAt(0, c1);
         gr.setColorAt(1, c2);
+
+        // Draw a rect
         p.setBrush(gr);
         p.setPen(Qt::NoPen);
-        p.drawRect(highlightRect1);
-        p.drawRect(highlightRect2);
-        p.setPen(color_highlightedLine);
-        p.drawLine(highlightRect1.topLeft(), highlightRect1.topRight());
-        p.drawLine(highlightRect1.bottomLeft(), highlightRect1.bottomRight());
-        p.drawLine(highlightRect2.topLeft(), highlightRect2.topRight());
-        p.drawLine(highlightRect2.bottomLeft(), highlightRect2.bottomRight());
-    }
-    p.restore();
+        p.drawRect(highlightLeftRect);
+        p.drawRect(highlightRightRect);
 
-    if (b_hasAnalizer) {
+        // Draw borders
+        p.setPen(highlightedTextLineColor_);
+        p.drawLine(highlightLeftRect.topLeft(),
+                   highlightLeftRect.topRight());
+        p.drawLine(highlightLeftRect.bottomLeft(),
+                   highlightLeftRect.bottomRight());
+        p.drawLine(highlightRightRect.topLeft(),
+                   highlightRightRect.topRight());
+        p.drawLine(highlightRightRect.bottomLeft(),
+                   highlightRightRect.bottomRight());
+
+        // Restore a pen
+        p.setPen(Qt::NoPen);
+
+        // Restore a coordinate system
+        p.restore();
+    }
+
+    if (hasAnalizerFlag_) {
+        // Paint margin text
+        // This function translates coordinate system itself due to
+        // margin text always visible and so has no reference on X-scroll value
         paintMarginText(&p, e->rect());
     }
 
+    // What is it???? TODO comment me!
     paintDropPosition(&p);
+
+    // Draw a widget border to show its focus state
     p.setBrush(Qt::NoBrush);
-    const QBrush br = hasFocus()? palette().brush(QPalette::Highlight) : palette().brush(QPalette::Dark);
+    const QBrush br = hasFocus()
+            ? palette().brush(QPalette::Highlight)
+            : palette().brush(QPalette::Dark);
+
     p.setPen(QPen(br,1));
     p.drawRect(0,0,width()-1,height()-1);
-    if (b_teacherMode && b_hasAnalizer) {
+
+    // Draw a delimeter ruler between visible/hidden text if need
+    if (teacherModeFlag_ && hasAnalizerFlag_) {
+
+        // Draw a place where ruler stays if no hidden text
         p.setPen(Qt::NoPen);
         QColor hidColor("#797979");
         hidColor.setAlpha(255);
         p.setBrush(hidColor);
-//        p.drawRect(0, height()-lineHeight(), (widthInChars()+5)*charWidth(), lineHeight());
         p.drawRect(0, height()-lineHeight(), width(), lineHeight());
+
+        // Draw a ruler
         paintHiddenTextDelimeterLine(&p);
+
+        // Draw a new ruler rect in case of moving ruler by mouse
         paintNewHiddenDelimeterLine(&p);
     }
 
-    p.setOpacity(r_dontEditState);
-    p.drawImage((width()-img_dontEdit.width())/2,
-                (height()-img_dontEdit.height())/2,
-                img_dontEdit);
-    p.setOpacity(1.0);
-    e->accept();
+    // Draw 'don't edit' image (if any) with opacity, determined
+    // by 'don't edit' flag
+    p.setOpacity(dontEditImageOpacity_);
+    p.drawImage((width()-dontEditImage_.width())/2,
+                (height()-dontEditImage_.height())/2,
+                dontEditImage_);
 
+    // Restore a painter opacity
+    p.setOpacity(1.0);
+
+    // Accept an event
+    e->accept();
 }
 
 void EditorPlane::paintHiddenTextDelimeterLine(QPainter *p)
 {
-    if (b_teacherMode && b_hasAnalizer) {
-        int hiddenLineStart = m_document->hiddenLineStart();
+    if (teacherModeFlag_ && hasAnalizerFlag_) {
+        int hiddenLineStart = document_->hiddenLineStart();
 
         int x1 = 5*charWidth()+LOCK_SYMBOL_WIDTH;
         int x2 = (widthInChars()+5)*charWidth();
@@ -664,33 +990,42 @@ void EditorPlane::paintHiddenTextDelimeterLine(QPainter *p)
     }
 }
 
+uint EditorPlane::normalizedNewMarginLinePosition(uint x) const
+{
+    // Bound x value
+    uint minimumLeftPosition = (LEFT_MARGIN_SIZE + 1) * charWidth() +
+            (teacherModeFlag_ && hasAnalizerFlag_
+             ? LOCK_SYMBOL_WIDTH : 0 );
+
+    uint maximumLeftPosition = width() - charWidth() - MARGIN_LINE_WIDTH;
+    x = qMax(minimumLeftPosition, qMin(maximumLeftPosition, x));
+
+    // Make x-coordinate aligned to character matrix
+    x = ( x / charWidth() ) * charWidth();
+    qDebug() << "X = " << x;
+    return x;
+}
+
 void EditorPlane::paintNewMarginLine(QPainter *p)
 {
-    if (pnt_marginPress.x()!=-1000 && pnt_marginPress.y()!=-1000) {
-        p->save();
+    if (marginMousePressedPoint_.x() >= 0 &&
+            marginMousePressedPoint_.y() >= 0)
+    {
+        // Draw only in case of moving margin line
+
+        uint x = normalizedNewMarginLinePosition(marginMousePressedPoint_.x());
+
+        const QRect newMarginLineRect(
+                    x,
+                    0,
+                    MARGIN_LINE_WIDTH,
+                    height()
+                    );
+
+        // Draw a transparent bordered rect
         p->setPen(QColor(Qt::black));
         p->setBrush(Qt::NoBrush);
-        int x = pnt_marginPress.x();
-        int cw = charWidth();
-        QRect marginLineRect(0,0,4,height());
-        x = ( x / cw ) * cw;
-        int marginAbsoluteWidth = width()-x;
-//        int userWidth = marginAbsoluteWidth;
-        marginAbsoluteWidth = qMin(marginAbsoluteWidth, 450);
-        marginAbsoluteWidth = qMax(marginAbsoluteWidth, cw);
-
-        marginLineRect.translate(width()-marginAbsoluteWidth-marginLineRect.width()/2,0);
-        p->drawRect(marginLineRect);
-
-//        if (userWidth!=marginAbsoluteWidth) {
-//            p->setPen(QColor(Qt::gray));
-//            p->setBrush(QColor(Qt::gray));
-//            marginLineRect.setLeft(width()-userWidth-marginLineRect.width()/2);
-//            marginLineRect.setRight(marginLineRect.left()+4);
-//            p->drawRect(marginLineRect);
-//        }
-
-        p->restore();
+        p->drawRect(newMarginLineRect);
     }
 }
 
@@ -699,7 +1034,7 @@ void EditorPlane::paintNewHiddenDelimeterLine(QPainter *p)
     p->save();
     p->setPen(QColor(Qt::black));
     p->setBrush(Qt::NoBrush);
-    int y = pnt_delimeterPress.y();
+    int y = delimeterRuleMousePressedPoint_.y();
     int lh = lineHeight();
     int x1 = 5*charWidth()+LOCK_SYMBOL_WIDTH;
     int x2 = (widthInChars()+5)*charWidth();
@@ -716,10 +1051,10 @@ void EditorPlane::paintNewHiddenDelimeterLine(QPainter *p)
     p->restore();
 }
 
-int EditorPlane::charWidth() const
+uint EditorPlane::charWidth() const
 {
     const QFontMetrics fm(font());
-    return fm.width('M');
+    return qMax(0, fm.width('M'));
 }
 
 void EditorPlane::updateCursor()
@@ -742,27 +1077,28 @@ void EditorPlane::updateText(int fromLine, int toLine)
         update(r);
 }
 
-int EditorPlane::lineHeight() const
+uint EditorPlane::lineHeight() const
 {
     const QFontMetrics fm(font());
-    return fm.lineSpacing();
+    return qMax(0, fm.lineSpacing());
 }
 
 
 
 void EditorPlane::paintCursor(QPainter *p, const QRect &rect)
 {
-    p->save();
-    QRect cr = cursorRect();
-    cr.translate(offset());
+    // Get cursor rect (in absolute coordinated)
+    const QRect cr = cursorRect();
 
-//    qDebug() << "Paint rect: " << rect;
-    if (rect.intersects(cr) && m_cursor->isVisible()) {
+    if (rect.intersects(cr) // prevent painting of non-updated region
+            &&
+            cursor_->isVisible() // determined by blink timer
+            )
+    {
         p->setPen(Qt::NoPen);
         p->setBrush(QColor(Qt::black));
         p->drawRect(cr);
     }
-    p->restore();
 }
 
 
@@ -770,7 +1106,7 @@ void EditorPlane::paintCursor(QPainter *p, const QRect &rect)
 void EditorPlane::keyReleaseEvent(QKeyEvent *e)
 {
     Qt::Key tempSwichLayoutKey = Qt::Key(
-                m_settings->value(
+                settings_->value(
                     SettingsPage::KeyTempSwitchLayoutButton
                     , SettingsPage::DefaultTempSwitchLayoutButton)
                 .toUInt()
@@ -778,7 +1114,7 @@ void EditorPlane::keyReleaseEvent(QKeyEvent *e)
     if (e->key()==tempSwichLayoutKey) {
         Utils::temporaryLayoutSwitch = false;
     }
-    if (m_cursor->isEnabled()) {
+    if (cursor_->isEnabled()) {
         e->accept();
     }
     else {
@@ -868,142 +1204,142 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
     }
 
 #endif
-    if (m_cursor->isEnabled() && hasFocus()) {
+    if (cursor_->isEnabled() && hasFocus()) {
         if (MoveToNextChar) {
-            m_cursor->evaluateCommand(KeyCommand::MoveToNextChar);
+            cursor_->evaluateCommand(KeyCommand::MoveToNextChar);
         }
         else if (SelectNextChar) {
-            m_cursor->evaluateCommand(KeyCommand::SelectNextChar);
+            cursor_->evaluateCommand(KeyCommand::SelectNextChar);
         }
         else if (MoveToNextWord) {
-            m_cursor->evaluateCommand(KeyCommand::MoveToNextLexem);
+            cursor_->evaluateCommand(KeyCommand::MoveToNextLexem);
         }
         else if (SelectNextWord) {
-            m_cursor->evaluateCommand(KeyCommand::SelectNextLexem);
+            cursor_->evaluateCommand(KeyCommand::SelectNextLexem);
         }
-        else if (e->key()==Qt::Key_Right && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && m_analizer==0) {
-            m_cursor->evaluateCommand(KeyCommand::SelectNextColumn);
+        else if (e->key()==Qt::Key_Right && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && analizer_==0) {
+            cursor_->evaluateCommand(KeyCommand::SelectNextColumn);
         }
         else if (MoveToPreviousChar) {
-            m_cursor->evaluateCommand(KeyCommand::MoveToPreviousChar);
+            cursor_->evaluateCommand(KeyCommand::MoveToPreviousChar);
         }
         else if (SelectPreviousChar) {
-            m_cursor->evaluateCommand(KeyCommand::SelectPreviousChar);
+            cursor_->evaluateCommand(KeyCommand::SelectPreviousChar);
         }
         else if (MoveToPreviousWord) {
-            m_cursor->evaluateCommand(KeyCommand::MoveToPreviousLexem);
+            cursor_->evaluateCommand(KeyCommand::MoveToPreviousLexem);
         }
         else if (SelectPreviousWord) {
-            m_cursor->evaluateCommand(KeyCommand::SelectPreviousLexem);
+            cursor_->evaluateCommand(KeyCommand::SelectPreviousLexem);
         }
-        else if (e->key()==Qt::Key_Left && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && m_analizer==0) {
-            m_cursor->evaluateCommand(KeyCommand::SelectPreviousColumn);
+        else if (e->key()==Qt::Key_Left && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && analizer_==0) {
+            cursor_->evaluateCommand(KeyCommand::SelectPreviousColumn);
         }
         else if (MoveToNextLine) {
-            m_cursor->evaluateCommand(KeyCommand::MoveToNextLine);
+            cursor_->evaluateCommand(KeyCommand::MoveToNextLine);
         }
         else if (SelectNextLine) {
-            m_cursor->evaluateCommand(KeyCommand::SelectNextLine);
+            cursor_->evaluateCommand(KeyCommand::SelectNextLine);
         }
-        else if (e->key()==Qt::Key_Down && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && m_analizer==0) {
-            m_cursor->evaluateCommand(KeyCommand::SelectNextRow);
+        else if (e->key()==Qt::Key_Down && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && analizer_==0) {
+            cursor_->evaluateCommand(KeyCommand::SelectNextRow);
         }
         else if (MoveToPreviousLine) {
-            m_cursor->evaluateCommand(KeyCommand::MoveToPreviousLine);
+            cursor_->evaluateCommand(KeyCommand::MoveToPreviousLine);
         }
         else if (SelectPreviousLine) {
-            m_cursor->evaluateCommand(KeyCommand::SelectPreviousLine);
+            cursor_->evaluateCommand(KeyCommand::SelectPreviousLine);
         }
-        else if (e->key()==Qt::Key_Up && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && m_analizer==0) {
-            m_cursor->evaluateCommand(KeyCommand::SelectPreviousRow);
+        else if (e->key()==Qt::Key_Up && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && analizer_==0) {
+            cursor_->evaluateCommand(KeyCommand::SelectPreviousRow);
         }
         else if (e->matches(QKeySequence::MoveToStartOfLine)) {
-            m_cursor->evaluateCommand(KeyCommand::MoveToStartOfLine);
+            cursor_->evaluateCommand(KeyCommand::MoveToStartOfLine);
         }
         else if (e->matches(QKeySequence::SelectStartOfLine)) {
-            m_cursor->evaluateCommand(KeyCommand::SelectStartOfLine);
+            cursor_->evaluateCommand(KeyCommand::SelectStartOfLine);
         }
         else if (e->matches(QKeySequence::MoveToEndOfLine)) {
-            m_cursor->evaluateCommand(KeyCommand::MoveToEndOfLine);
+            cursor_->evaluateCommand(KeyCommand::MoveToEndOfLine);
         }
         else if (e->matches(QKeySequence::SelectEndOfLine)) {
-            m_cursor->evaluateCommand(KeyCommand::SelectEndOfLine);
+            cursor_->evaluateCommand(KeyCommand::SelectEndOfLine);
         }
         else if (e->matches(QKeySequence::MoveToPreviousPage)) {
-            m_cursor->evaluateCommand(KeyCommand::MoveToPreviousPage);
+            cursor_->evaluateCommand(KeyCommand::MoveToPreviousPage);
         }
         else if (e->matches(QKeySequence::SelectPreviousPage)) {
-            m_cursor->evaluateCommand(KeyCommand::SelectPreviousPage);
+            cursor_->evaluateCommand(KeyCommand::SelectPreviousPage);
         }
         else if (e->matches(QKeySequence::MoveToNextPage)) {
-            m_cursor->evaluateCommand(KeyCommand::MoveToNextPage);
+            cursor_->evaluateCommand(KeyCommand::MoveToNextPage);
         }
         else if (e->matches(QKeySequence::SelectNextPage)) {
-            m_cursor->evaluateCommand(KeyCommand::SelectNextPage);
+            cursor_->evaluateCommand(KeyCommand::SelectNextPage);
         }
         else if (e->matches(QKeySequence::MoveToStartOfDocument)) {
-            m_cursor->evaluateCommand(KeyCommand::MoveToStartOfDocument);
+            cursor_->evaluateCommand(KeyCommand::MoveToStartOfDocument);
         }
         else if (e->matches(QKeySequence::SelectStartOfDocument)) {
-            m_cursor->evaluateCommand(KeyCommand::SelectStartOfDocument);
+            cursor_->evaluateCommand(KeyCommand::SelectStartOfDocument);
         }
         else if (e->matches(QKeySequence::MoveToEndOfDocument)) {
-            m_cursor->evaluateCommand(KeyCommand::MoveToEndOfDocument);
+            cursor_->evaluateCommand(KeyCommand::MoveToEndOfDocument);
         }
         else if (e->matches(QKeySequence::SelectEndOfDocument)) {
-            m_cursor->evaluateCommand(KeyCommand::SelectEndOfDocument);
+            cursor_->evaluateCommand(KeyCommand::SelectEndOfDocument);
         }
         else if (e->matches(QKeySequence::InsertParagraphSeparator)) {
-            m_cursor->evaluateCommand("\n");
+            cursor_->evaluateCommand("\n");
         }
         else if (e->key()==Qt::Key_Backspace && e->modifiers()==0) {
-            m_cursor->evaluateCommand(KeyCommand::Backspace);
+            cursor_->evaluateCommand(KeyCommand::Backspace);
         }
         else if (e->matches(QKeySequence::Paste)) {
-            m_cursor->evaluateCommand(KeyCommand::Paste);
+            cursor_->evaluateCommand(KeyCommand::Paste);
         }
         else if (e->matches(QKeySequence::Copy)) {
-            m_cursor->evaluateCommand(KeyCommand::Copy);
+            cursor_->evaluateCommand(KeyCommand::Copy);
         }
         else if (e->matches(QKeySequence::Cut)) {
-            m_cursor->evaluateCommand(KeyCommand::Cut);
+            cursor_->evaluateCommand(KeyCommand::Cut);
         }
         else if (e->matches(QKeySequence::SelectAll)) {
-            m_cursor->evaluateCommand(KeyCommand::SelectAll);
+            cursor_->evaluateCommand(KeyCommand::SelectAll);
         }
         else if (e->key()==Qt::Key_Y && e->modifiers().testFlag(Qt::ControlModifier)) {
-            m_cursor->evaluateCommand(KeyCommand::RemoveLine);
+            cursor_->evaluateCommand(KeyCommand::RemoveLine);
         }
         else if (e->key()==Qt::Key_K && e->modifiers().testFlag(Qt::ControlModifier)) {
-            m_cursor->evaluateCommand(KeyCommand::RemoveTail);
+            cursor_->evaluateCommand(KeyCommand::RemoveTail);
         }
         else if (e->matches(QKeySequence::Delete)) {
-            m_cursor->evaluateCommand(KeyCommand::Delete);
+            cursor_->evaluateCommand(KeyCommand::Delete);
         }
         else if (e->matches(QKeySequence::Undo)) {
-            m_cursor->undo();
+            cursor_->undo();
         }
         else if (e->matches(QKeySequence::Redo)) {
-            m_cursor->redo();
+            cursor_->redo();
         }
         else if (e->key()==Qt::Key_Slash && e->modifiers().testFlag(Qt::ControlModifier)) {
-            m_cursor->toggleComment();
+            cursor_->toggleComment();
         }
         else if (e->key()==Qt::Key_Tab || ( e->key()==Qt::Key_Space && e->modifiers().testFlag(Qt::ControlModifier) ) ) {
-            if (b_hasAnalizer)
+            if (hasAnalizerFlag_)
                 doAutocomplete();
         }
         else if (!e->text().isEmpty() &&
                  !e->modifiers().testFlag(Qt::ControlModifier) &&
                  !ignoreTextEvent
                  ) {
-            m_cursor->evaluateCommand(Utils::textByKey(Qt::Key(e->key())
+            cursor_->evaluateCommand(Utils::textByKey(Qt::Key(e->key())
                                                        , e->text()
                                                        , e->modifiers().testFlag(Qt::ShiftModifier)));
         }
 
         Qt::Key tempSwichLayoutKey = Qt::Key(
-                    m_settings->value(
+                    settings_->value(
                         SettingsPage::KeyTempSwitchLayoutButton
                         , SettingsPage::DefaultTempSwitchLayoutButton)
                     .toUInt()
@@ -1023,44 +1359,44 @@ void EditorPlane::doAutocomplete()
 {
 
     QString before, after;
-    if (m_cursor->row()<m_document->linesCount()) {
-        QString line = m_document->textAt(m_cursor->row());
-        int textPos = m_cursor->column() - 2 * m_document->indentAt(m_cursor->row());
+    if (cursor_->row()<document_->linesCount()) {
+        QString line = document_->textAt(cursor_->row());
+        int textPos = cursor_->column() - 2 * document_->indentAt(cursor_->row());
         before = line.mid(0, textPos);
         if (textPos<line.length()) {
             after = line.mid(textPos);
         }
     }
     QList<Shared::Suggestion> suggestions =
-            m_analizer->suggestAutoComplete(m_document->documentId, m_cursor->row(), before, after);
+            analizer_->suggestAutoComplete(document_->documentId, cursor_->row(), before, after);
     emit disableInsertActions();
 //    for (Shared::Suggestion s : suggestions) {
 //        qDebug() << QString("Suggestion: ") << s.value << QString(" --- ") << s.description;
 //    }
 
-    m_cursor->removeSelection();
-    m_cursor->removeRectSelection();
-    m_autocompleteWidget->init(before, suggestions);
-    m_autocompleteWidget->move(mapToGlobal(cursorRect().topLeft()+offset()));
-    m_autocompleteWidget->setVisible(true);
-    m_autocompleteWidget->activateWindow();
-    m_autocompleteWidget->setFocus();
+    cursor_->removeSelection();
+    cursor_->removeRectSelection();
+    autocompleteWidget_->init(before, suggestions);
+    autocompleteWidget_->move(mapToGlobal(cursorRect().topLeft()+offset()));
+    autocompleteWidget_->setVisible(true);
+    autocompleteWidget_->activateWindow();
+    autocompleteWidget_->setFocus();
 
 }
 
 void EditorPlane::finishAutoCompletion(const QString &suggestion)
 {
 #ifdef QT_DEBUG
-    m_autocompleteWidget->hide();
+    autocompleteWidget_->hide();
     QApplication::processEvents();
 #endif
     static const QString Delimeters = QString::fromAscii(
                 " ;:=()!,.@-+*/[]{}"
                 );
     QString before, after;
-    if (m_cursor->row()<m_document->linesCount()) {
-        QString line = m_document->textAt(m_cursor->row());
-        int textPos = m_cursor->column() - 2 * m_document->indentAt(m_cursor->row());
+    if (cursor_->row()<document_->linesCount()) {
+        QString line = document_->textAt(cursor_->row());
+        int textPos = cursor_->column() - 2 * document_->indentAt(cursor_->row());
         before = line.mid(0, textPos);
         if (textPos<line.length()) {
             after = line.mid(textPos);
@@ -1097,43 +1433,43 @@ void EditorPlane::finishAutoCompletion(const QString &suggestion)
         }
     }
     for (int i=0; i<leftPart; i++) {
-        m_cursor->evaluateCommand(KeyCommand::SelectPreviousChar);
+        cursor_->evaluateCommand(KeyCommand::SelectPreviousChar);
     }
-    m_cursor->evaluateCommand(KeyCommand(text));
+    cursor_->evaluateCommand(KeyCommand(text));
 }
 
 void EditorPlane::selectAll()
 {
-    m_cursor->evaluateCommand(KeyCommand::SelectAll);
+    cursor_->evaluateCommand(KeyCommand::SelectAll);
 }
 
 void EditorPlane::copy()
 {
-    m_cursor->evaluateCommand(KeyCommand::Copy);
+    cursor_->evaluateCommand(KeyCommand::Copy);
 }
 
 void EditorPlane::paste()
 {
-    m_cursor->evaluateCommand(KeyCommand::Paste);
+    cursor_->evaluateCommand(KeyCommand::Paste);
     findCursor();
 }
 
 void EditorPlane::cut()
 {
-    m_cursor->evaluateCommand(KeyCommand::Cut);
+    cursor_->evaluateCommand(KeyCommand::Cut);
     findCursor();
 }
 
 bool EditorPlane::canDrop(const QPoint &pos, const QMimeData *data) const
 {
-    if (!m_cursor->isEnabled()) {
+    if (!cursor_->isEnabled()) {
         return false;
     }
     bool result = false;
     if (data->hasUrls()) {
         foreach (const QUrl &url, data->urls()) {
             const QString filename = url.toLocalFile();
-            foreach (const QRegExp &rx, rxFilenamePattern) {
+            foreach (const QRegExp &rx, rxFilenamePattern_) {
                 if (rx.exactMatch(filename)) {
                     result = true;
                 }
@@ -1156,13 +1492,13 @@ bool EditorPlane::canDrop(const QPoint &pos, const QMimeData *data) const
 
 void EditorPlane::dragEventHandler(QDragMoveEvent *e)
 {
-    m_cursor->setViewMode(TextCursor::VM_Hidden);
+    cursor_->setViewMode(TextCursor::VM_Hidden);
     if (canDrop(e->pos(), e->mimeData())) {
         if (e->source()==this) {
             e->setDropAction(Qt::MoveAction);
         }
         if (e->mimeData()->hasUrls()) {
-            i_marginAlpha = 255;
+            marginBackgroundAlpha_ = 255;
             pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
         }
         else{
@@ -1173,23 +1509,23 @@ void EditorPlane::dragEventHandler(QDragMoveEvent *e)
             if (e->mimeData()->hasFormat(Clipboard::BlockMimeType)) {
                 pnt_dropPosCorner = QPoint(col, row);
                 if (col>widthInChars()-1) {
-                    i_marginAlpha = 64;
+                    marginBackgroundAlpha_ = 64;
                 }
                 else {
-                    i_marginAlpha = 255;
+                    marginBackgroundAlpha_ = 255;
                 }
             }
             else if (e->mimeData()->hasText()) {
                 pnt_dropPosMarker = QPoint(col, row);
                 if (col>widthInChars()-1) {
-                    i_marginAlpha = 64;
+                    marginBackgroundAlpha_ = 64;
                 }
                 else {
-                    i_marginAlpha = 255;
+                    marginBackgroundAlpha_ = 255;
                 }
             }
             else {
-                i_marginAlpha = 255;
+                marginBackgroundAlpha_ = 255;
                 pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
             }
         }
@@ -1203,18 +1539,18 @@ void EditorPlane::dragEventHandler(QDragMoveEvent *e)
 
 void EditorPlane::dropEvent(QDropEvent *e)
 {
-    m_cursor->setViewMode(TextCursor::VM_Blinking);
+    cursor_->setViewMode(TextCursor::VM_Blinking);
     pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
-    i_marginAlpha = 255;
+    marginBackgroundAlpha_ = 255;
     bool dropIntoSelection = false;
     int col = (e->pos().x()-offset().x())/charWidth();
     int row = (e->pos().y()-offset().y())/lineHeight();
     col = qMax(col, 0);
     row = qMax(row, 0);
     int fromRow, fromCol, toRow, toCol;
-    m_document->undoStack()->beginMacro("dragndrop");
-    if (m_cursor->hasSelection()) {
-        m_cursor->selectionBounds(fromRow, fromCol, toRow, toCol);
+    document_->undoStack()->beginMacro("dragndrop");
+    if (cursor_->hasSelection()) {
+        cursor_->selectionBounds(fromRow, fromCol, toRow, toCol);
         if (row>fromRow && row<toRow) {
             dropIntoSelection = true;
         }
@@ -1233,8 +1569,8 @@ void EditorPlane::dropEvent(QDropEvent *e)
         }
     }
     QRect r;
-    if (m_cursor->hasRectSelection()) {
-        r = m_cursor->selectionRect();
+    if (cursor_->hasRectSelection()) {
+        r = cursor_->selectionRect();
         dropIntoSelection = r.contains(col, row);
     }
     if (e->mimeData()->hasUrls()) {
@@ -1243,7 +1579,7 @@ void EditorPlane::dropEvent(QDropEvent *e)
         foreach (QUrl url, urls) {
             const QString fileName = url.toLocalFile();
             bool valid = false;
-            foreach (QRegExp rx, rxFilenamePattern) {
+            foreach (QRegExp rx, rxFilenamePattern_) {
                 if (rx.exactMatch(fileName)) {
                     valid = true;
                     break;
@@ -1281,27 +1617,27 @@ void EditorPlane::dropEvent(QDropEvent *e)
     }
 
     if (dropIntoSelection) {
-        if (m_cursor->hasSelection()) {
-            m_cursor->removeSelectedText();
+        if (cursor_->hasSelection()) {
+            cursor_->removeSelectedText();
         }
-        if (m_cursor->hasRectSelection()) {
-            m_cursor->removeSelectedBlock();
+        if (cursor_->hasRectSelection()) {
+            cursor_->removeSelectedBlock();
         }
     }
     else {
         if (e->source()==this) {
-            if (m_cursor->hasSelection()) {
+            if (cursor_->hasSelection()) {
                 int afromRow, atoRow, afromCol, atoCol;
-                m_cursor->selectionBounds(afromRow, afromCol, atoRow, atoCol);
-                m_cursor->setRow(afromRow);
-                m_cursor->setColumn(afromCol);
+                cursor_->selectionBounds(afromRow, afromCol, atoRow, atoCol);
+                cursor_->setRow(afromRow);
+                cursor_->setColumn(afromCol);
                 if (row>=toRow) {
-                    QString st = m_cursor->selectedText();
+                    QString st = cursor_->selectedText();
                     row -= st.count("\n");
                 }
-                m_cursor->removeSelectedText();
-                m_cursor->setRow(toRow);
-                m_cursor->setColumn(toCol);
+                cursor_->removeSelectedText();
+                cursor_->setRow(toRow);
+                cursor_->setColumn(toCol);
 //                if (row>=toRow) {
 //                    row -= text.count("\n");
 //                    if (row==toRow && col>=toCol) {
@@ -1309,8 +1645,8 @@ void EditorPlane::dropEvent(QDropEvent *e)
 //                    }
 //                }
             }
-            if (m_cursor->hasRectSelection()) {
-                m_cursor->removeSelectedBlock();
+            if (cursor_->hasRectSelection()) {
+                cursor_->removeSelectedBlock();
 //                if (row>=r.bottom()) {
 //                    row -= r.height();
 //                }
@@ -1318,33 +1654,33 @@ void EditorPlane::dropEvent(QDropEvent *e)
 
         }
         else {
-            if (m_cursor->hasSelection()) {
-                m_cursor->removeSelection();
+            if (cursor_->hasSelection()) {
+                cursor_->removeSelection();
             }
-            if (m_cursor->hasRectSelection()) {
-                m_cursor->removeRectSelection();
+            if (cursor_->hasRectSelection()) {
+                cursor_->removeRectSelection();
             }
         }
     }
-    m_cursor->moveTo(row, col);
+    cursor_->moveTo(row, col);
     if (e->mimeData()->hasFormat(Clipboard::BlockMimeType)) {
-        m_cursor->insertBlock(lines);
+        cursor_->insertBlock(lines);
     }
     else if (e->mimeData()->hasText()) {
-        m_cursor->insertText(text);
+        cursor_->insertText(text);
     }
-    m_document->undoStack()->endMacro();
+    document_->undoStack()->endMacro();
 //    m_document->flushTransaction();
-    m_document->forceCompleteRecompilation();
+    document_->forceCompleteRecompilation();
 
     update();
 }
 
 void EditorPlane::dragLeaveEvent(QDragLeaveEvent *e)
 {
-    m_cursor->setViewMode(TextCursor::VM_Blinking);
+    cursor_->setViewMode(TextCursor::VM_Blinking);
     pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
-    i_marginAlpha = 255;
+    marginBackgroundAlpha_ = 255;
     update();
     e->accept();
 }
@@ -1368,132 +1704,128 @@ void EditorPlane::resizeEvent(QResizeEvent *e)
 void EditorPlane::focusInEvent(QFocusEvent *e)
 {
     QWidget::focusInEvent(e);
-    if (m_cursor->isEnabled()) {
-        m_cursor->setViewMode(TextCursor::VM_Blinking);
+    if (cursor_->isEnabled()) {
+        cursor_->setViewMode(TextCursor::VM_Blinking);
     }
 }
 
 void EditorPlane::focusOutEvent(QFocusEvent *e)
 {
     QWidget::focusOutEvent(e);
-    if (m_cursor->isEnabled()) {
-        m_cursor->setViewMode(TextCursor::VM_Hidden);
+    if (cursor_->isEnabled()) {
+        cursor_->setViewMode(TextCursor::VM_Hidden);
     }
 }
 
 void EditorPlane::removeLine()
 {
-    m_cursor->evaluateCommand(KeyCommand::RemoveLine);
+    cursor_->evaluateCommand(KeyCommand::RemoveLine);
     findCursor();
 }
 
 void EditorPlane::removeLineTail()
 {
-    m_cursor->evaluateCommand(KeyCommand::RemoveTail);
+    cursor_->evaluateCommand(KeyCommand::RemoveTail);
     findCursor();
 }
 
 QRect EditorPlane::cursorRect() const
 {
-//    QPoint off = offset();
-    int row = m_cursor->row();
-    int col = m_cursor->column();
-    int dX = charWidth();
-    int dY = lineHeight();
-    QRect result;
-    if (m_cursor->mode()==TextCursor::EM_Overwrite)
-        result = QRect(col*dX, row*dY, dX, dY);
-    else
-        result = QRect(col*dX, (row+1)*dY-1, dX, 2);
-//    result.translate( off );
-//    qDebug() << "Cursor rect: " << result;
-    return result;
+    // Text coordinates
+    uint row = cursor_->row();
+    uint col = cursor_->column();
+
+    // Sizes
+    uint dX = charWidth();
+    uint dY = lineHeight();
+
+    if (cursor_->mode()==TextCursor::EM_Overwrite) {
+        // Return a cursor rect the same height as line in this case
+        return QRect(col*dY, row*dY, dX, dY);
+    }
+    else {
+        // Return an "underline" cursor rect
+        return QRect(col*dX, (row+1)*dY-1, dX, 2);
+    }
 }
 
+uint EditorPlane::marginLeftBound() const
+{
+    return (widthInChars() + LEFT_MARGIN_SIZE) * charWidth() +
+            (teacherModeFlag_ && hasAnalizerFlag_
+             ? LOCK_SYMBOL_WIDTH : 0 ) - MARGIN_LINE_WIDTH / 2 ;
+}
+
+QRect EditorPlane::marginBackgroundRect() const
+{
+    return QRect(
+                marginLeftBound() + MARGIN_LINE_WIDTH, // left
+                0, // top
+                width() - marginLeftBound() - MARGIN_LINE_WIDTH, // width
+                height() // height
+                );
+}
+
+QRect EditorPlane::marginLineRect() const
+{
+    return QRect(
+                marginLeftBound(), // left
+                0, // top
+                MARGIN_LINE_WIDTH, // width
+                height() // height
+                );
+}
+
+/** Draws margin background and margin line
+ * @param p the initialized painter
+ * @param rect the rect to be repainted
+ */
 void EditorPlane::paintMarginBackground(QPainter *p, const QRect &rect)
 {
-    p->save();
-    p->setPen(Qt::NoPen);
-    QColor bgColor = palette().brush(QPalette::Base).color();
-    bgColor.setAlpha(i_marginAlpha);
-    p->setBrush(bgColor);
+    // Draw a background
 
-    const int dX = charWidth();
-    const int dY = lineHeight();
-    int marginLeft = (widthInChars()+5)*dX+1;
-    QRect marginLine = QRect(marginLeft, 0, 2, height()).intersected(rect);
-    p->drawRect(rect.intersected(QRect(marginLeft, 0, width()-marginLeft, height())));
-    p->setPen(QPen(QColor(0,0,255,32*i_marginAlpha/256),1));
-    p->setBrush(Qt::NoBrush);
-    if (e_backgroundMode!=BgPlain) {
-        // draw horizontal lines
-        QRect lineRect;
-        for (int y=dY; y<height(); y += dY) {
-            lineRect = QRect(marginLeft, y, width(), 1).intersected(rect);
-            if (lineRect.width()>0 && lineRect.height()>0) {
-                p->drawLine(lineRect.topLeft(), lineRect.topRight());
-            }
-        }
-        // draw vertical lines
-//        for (int x=dX; x<width(); x+= dX) {
-//            lineRect = QRect(x, 0, 1, height()).intersected(rect);
-//            if (lineRect.width()>0 && lineRect.height()>0) {
-//                p->drawLine(lineRect.topLeft(), lineRect.bottomLeft());
-//            }
-//        }
-    }
-    // draw margin line
-    if (marginLine.width()>0 && marginLine.height()>0) {
-        p->setPen(QPen(QColor(255,0,0,128*i_marginAlpha/256),2));
-        p->drawLine((widthInChars()+5)*dX+1, 0, (widthInChars()+5)*dX+1, height());
-    }
-    p->restore();
+    // No border for the rect
+    p->setPen(Qt::NoPen);
+
+    // Use the same color as for editable area
+    QColor marginBacgroundColor = palette().brush(QPalette::Base).color();
+    // It may be semi-transparent in case of text dragging
+    marginBacgroundColor.setAlpha(marginBackgroundAlpha_);
+    p->setBrush(marginBacgroundColor);
+    p->drawRect(marginBackgroundRect().intersected(rect));
+
+    // Draw margin line
+    QColor marginLineColor(0xFF, 0x80, 0x80);
+    marginLineColor.setAlpha(marginBackgroundAlpha_);
+    p->setBrush(marginLineColor);
+    p->drawRect(marginLineRect().intersected(rect));
 }
 
+/** Draws main background
+ * @param p the initialized painter
+ * @param rect the rect to be repainted
+ */
 void EditorPlane::paintBackground(QPainter *p, const QRect &rect)
 {
-    p->save();
     p->setPen(Qt::NoPen);
     p->setBrush(palette().brush(QPalette::Base).color());
     p->drawRect(rect);
-    p->setPen(QPen(QColor(0,0,255,32),1));
-    p->setBrush(Qt::NoBrush);
-    const int dX = charWidth();
-    const int dY = lineHeight();
-    if (e_backgroundMode==BgLines || e_backgroundMode==BgCells) {
-        // draw horizontal lines
-        QRect lineRect;
-        for (int y=dY; y<height(); y += dY) {
-            lineRect = QRect(0, y, width(), 1).intersected(rect);
-            if (lineRect.width()>0 && lineRect.height()>0) {
-                p->drawLine(lineRect.topLeft(), lineRect.topRight());
-            }
-        }
-    }
-    if (e_backgroundMode==BgCells) {
-        // draw vertical lines
-        QRect lineRect;
-        for (int x=dX; x<width(); x+= dX) {
-            lineRect = QRect(x, 0, 1, height()).intersected(rect);
-            if (lineRect.width()>0 && lineRect.height()>0) {
-                p->drawLine(lineRect.topLeft(), lineRect.bottomLeft());
-            }
-        }
-    }
-
-    p->restore();
 }
 
+/** Draws rectangle text selection
+ * @param p the initialized painter
+ * @param rect the rect to be repainted
+ */
 void EditorPlane::paintRectSelection(QPainter *p, const QRect &)
 {
-    if (!m_cursor->hasRectSelection())
+    if (!cursor_->hasRectSelection())
         return;
     p->save();
     p->setPen(QPen(palette().brush(QPalette::Highlight)
                    , 2
                    , Qt::SolidLine));
     p->setBrush(Qt::NoBrush);
-    QRect selRect = m_cursor->selectionRect();
+    QRect selRect = cursor_->selectionRect();
     QRect r(selRect.left() * charWidth() + 1,
             selRect.top() * lineHeight() + 1,
             selRect.width() * charWidth() - 2,
@@ -1504,6 +1836,10 @@ void EditorPlane::paintRectSelection(QPainter *p, const QRect &)
     p->restore();
 }
 
+/** Draws regular text selection
+ * @param p the initialized painter
+ * @param rect the rect to be repainted
+ */
 void EditorPlane::paintSelection(QPainter *p, const QRect &rect)
 {
     Q_UNUSED(rect);
@@ -1513,24 +1849,24 @@ void EditorPlane::paintSelection(QPainter *p, const QRect &rect)
     int startLine = 0;
 //    int startLine = qMax(0, rect.top() / lineHeight() - 1);
 //    int endLine = rect.bottom() / lineHeight() + 1;
-    int endLine = m_document->linesCount();
+    int endLine = document_->linesCount();
     int lh = lineHeight();
     int cw = charWidth();
     bool prevLineSelected = false;
     for (int i=startLine; i<endLine+1; i++) {
-        if (i<m_document->linesCount()) {
-            int indentSpace = 2 * cw * m_document->indentAt(i);
+        if (i<document_->linesCount()) {
+            int indentSpace = 2 * cw * document_->indentAt(i);
             if (prevLineSelected) {
                 p->drawRect(0, i*lh, indentSpace, lh);
             }
-            QList<bool> sm = m_document->selectionMaskAt(i);
+            QList<bool> sm = document_->selectionMaskAt(i);
             for (int j=0; j<sm.size(); j++) {
                 if (sm[j])
                     p->drawRect(indentSpace+j*cw, i*lh, cw, lh);
             }
-            if (m_document->lineEndSelectedAt(i)) {
+            if (document_->lineEndSelectedAt(i)) {
                 prevLineSelected = true;
-                int textLength = m_document->textAt(i).length()*cw;
+                int textLength = document_->textAt(i).length()*cw;
                 int xx = indentSpace + textLength;
                 int ww = widthInChars()*cw-xx;
                 p->drawRect(xx,
@@ -1546,40 +1882,88 @@ void EditorPlane::paintSelection(QPainter *p, const QRect &rect)
     p->restore();
 }
 
+/** Draws a block to the left of editable area
+ * @param p the initialized painter
+ * @param rect the rect to be repainted
+ */
 void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
 {
-    p->save();
-    int startLine = rect.top() / lineHeight();
-    int endLine = rect.bottom() / lineHeight() + 1;
-    int lh = lineHeight();
-    int cw = charWidth();
-    int lockOffset = b_teacherMode? LOCK_SYMBOL_WIDTH : 0;
-    for (int i=startLine; i<endLine+1; i++) {
+    // Determine which text lines actually required to be repainted (inclusive)
+    const uint startLine = qMax(0, rect.top() / int(lineHeight()) - 1);
+    const uint endLine = qMax(0, rect.bottom() / int(lineHeight()) + 1);
+
+    uint lockSymbolOffset = teacherModeFlag_? LOCK_SYMBOL_WIDTH : 0;
+    for (uint i=startLine; i<=endLine; i++) {
+
+        // Visible line number accounting Y-scroll offset
+        uint realLineNumber = i + qMax(0, -offset().y()) / lineHeight();
+
+        // Draw a background
+
+        // The line number backround is not editable, so use theme backround
+        // color and theme text color
         p->setPen(Qt::NoPen);
         p->setBrush(palette().brush(QPalette::Window));
-        p->drawRect(0, i*lh, cw*4+cw/2+lockOffset, lh);
+        p->drawRect(0,
+                    i * lineHeight(),
+                    charWidth() * 4+ charWidth() / 2 + lockSymbolOffset,
+                    lineHeight()
+                    );
+
+        // Draw a small white border to the right
         p->setBrush(palette().brush(QPalette::Base));
-        p->drawRect(cw*4+cw/2+lockOffset, i*lh, cw/2, lh);
-        QColor textColor = QColor(palette().brush(QPalette::WindowText).color());
-        if (i-1-offset().y()/lineHeight()>=m_document->linesCount()) {
-            textColor = QColor(Qt::lightGray);
-        }
+        p->drawRect(charWidth() * 4 + charWidth() / 2 + lockSymbolOffset,
+                    i * lineHeight(),
+                    charWidth() / 2,
+                    lineHeight()
+                    );
+
+
+        const QColor textColor = realLineNumber <= document_->linesCount()
+                  // If line exists, draw number using regular fg color
+                ? QColor(palette().brush(QPalette::WindowText).color())
+                  // else draw using lighter color
+                : QColor(Qt::lightGray);
+
         p->setPen(textColor);
-        QString txt = QString::number(i - (offset().y()/lineHeight()));
-        int tw = QFontMetrics(font()).width(txt);
-        int xx = cw * 3 - tw + lockOffset;
-        int yy = i * lh-2;
+
+        // Calculate number width to align it centered
+        const QString txt = QString::number(realLineNumber);
+        int textWidth = QFontMetrics(font()).width(txt);
+        int xx = charWidth() * 3 - textWidth + lockSymbolOffset;
+        int yy = i * lineHeight() - 2;
         p->drawText(xx, yy, txt);
-        if (b_teacherMode) {
-            if (i<m_document->linesCount() && m_document->isProtected(i))
-                paintLockSymbol(p, true, QRect(0, i*lh, LOCK_SYMBOL_WIDTH, lh));
-            if (i==i_grayLockSymbolLine && i<m_document->linesCount() && !m_document->isProtected(i))
-                paintLockSymbol(p, false, QRect(0, i*lh, LOCK_SYMBOL_WIDTH, lh));
+
+        if (teacherModeFlag_) {
+            // Paint 'lock' symbol to the left of line number
+            const QRect lockSymbolRect(
+                        0,
+                        i * lineHeight(),
+                        LOCK_SYMBOL_WIDTH,
+                        lineHeight()
+                        );
+            if (realLineNumber<document_->linesCount() &&
+                    document_->isProtected(realLineNumber))
+            {
+                // Draw 'locked' symbol if line is protected
+                paintLockSymbol(p, true, lockSymbolRect);
+            }
+
+            if (realLineNumber==highlightedLockSymbolLineNumber_ &&
+                    realLineNumber<document_->linesCount() &&
+                    !document_->isProtected(realLineNumber) )
+            {
+                // Draw 'locked' symbol outline in case of mouse over
+                paintLockSymbol(p, false, lockSymbolRect);
+            }
         }
     }
-    p->restore();
 }
 
+/** Draws a 'lock' symbol in teacher mode
+ * @param p the initialized painter
+ * @param rect the rect to be repainted
+ */
 void EditorPlane::paintLockSymbol(QPainter *p, bool colored, const QRect &r)
 {
     p->save();
@@ -1590,7 +1974,11 @@ void EditorPlane::paintLockSymbol(QPainter *p, bool colored, const QRect &r)
     W = H = S;
     int X = r.left() + (r.width()-W)/2 + 2;
     int Y = r.top() + (r.height()-H)/2+2;
-    p->setPen(QPen(QColor(colored? Qt::black : Qt::gray),1));
+
+    p->setPen(QPen(QColor(colored
+                       ? Qt::black
+                       : palette().brush(QPalette::WindowText).color()
+                         ), 1));
 
     if (colored) {
         p->setBrush(QColor(Qt::gray));
@@ -1638,189 +2026,258 @@ void EditorPlane::wheelEvent(QWheelEvent *e)
         currentSize += steps;
         currentSize = qMin(maxSize, qMax(minSize, currentSize));
         fnt.setPointSize(currentSize);
-        m_settings->setValue(SettingsPage::KeyFontSize, currentSize);
+        settings_->setValue(SettingsPage::KeyFontSize, currentSize);
         setFont(fnt);
         update();
 
     }
-    if (!m_verticalScrollBar->isEnabled() && e->orientation()==Qt::Vertical) {
+    if (!verticalScrollBar_->isEnabled() && e->orientation()==Qt::Vertical) {
         e->ignore();
         return;
     }
-    if (!m_horizontalScrollBar->isEnabled() && e->orientation()==Qt::Horizontal) {
+    if (!horizontalScrollBar_->isEnabled() && e->orientation()==Qt::Horizontal) {
         e->ignore();
         return;
     }
     int degrees = e->delta() / 8;
     int steps = degrees / 15;
-    QScrollBar * sb = e->orientation()==Qt::Vertical? m_verticalScrollBar : m_horizontalScrollBar;
+    QScrollBar * sb = e->orientation()==Qt::Vertical? verticalScrollBar_ : horizontalScrollBar_;
     sb->setValue(sb->value()-steps*sb->singleStep()*3);
 
 }
 
+/** Draws margin text
+ * @param p the initialized painter
+ * @param rect the rect to be repainted
+ */
 void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
 {
-    int marginWidth = m_settings->value(MarginWidthKey, MarginWidthDefault).toInt();
+    // Test if there is enought space for margin text
+    uint marginWidth =
+            settings_->value(MarginWidthKey, MarginWidthDefault).toUInt();
     if (marginWidth<3)
         return;
-    p->save();
-    QColor errorColor(Qt::red);
-    errorColor.setAlpha(i_marginAlpha);
-    QColor marginColor(Qt::black);
-    marginColor.setAlpha(i_marginAlpha);
 
-    const int dX = charWidth();
-    const int dY = lineHeight();
-    int marginLeft = (widthInChars()+5)*dX+1;
-    int startLine = rect.top()-offset().y() / lineHeight() - 1;
-    int endLine = rect.bottom()-offset().y() / lineHeight() + 1;
-    for (int i=qMax(startLine, 0); i<endLine+1; i++) {
-        int y =  ( i + 1 )* dY;
-        QString text;
-        if (i<m_document->linesCount() && m_document->marginTextAt(i).length()>0) {
-            text = m_document->marginTextAt(i);
-            p->setPen(marginColor);
+    // Determine which text lines actually required to be repainted (inclusive)
+    const uint startLine = qMax(0, rect.top() / int(lineHeight()) - 1);
+    const uint endLine =
+            qMax(0, qMin(
+                     int(rect.bottom() / lineHeight() + 1),
+                     int(document_->linesCount())-1
+                     )
+                 );
+
+    // Prepare colors
+    QColor errorColor(Qt::red);
+    errorColor.setAlpha(marginBackgroundAlpha_);
+    QColor marginColor(Qt::black);
+    marginColor.setAlpha(marginBackgroundAlpha_);
+
+    // Calculate text position
+    uint marginTextLeft = marginLeftBound() +
+            MARGIN_LINE_WIDTH +
+            + charWidth() / 2;
+
+    for (uint i=startLine; i<=endLine; i++) {
+        if (document_->marginTextAt(i).length() > 0 ||
+                document_->errorsAt(i).size() > 0)
+        {
+            // If something exists on margin
+
+            // Text bottom position
+            const uint y =  ( i + 1 ) * lineHeight();
+
+            // Text to show
+            const QString & text =
+                    document_->marginTextAt(i).length() > 0
+                    ? document_->marginTextAt(i)
+                    : document_->errorsAt(i).first();
+
+            // Set corresponding text color
+            p->setPen(document_->marginTextAt(i).length() > 0
+                      ? marginColor : errorColor );
+
+            // Draw a text line
+            p->drawText(marginTextLeft, y+offset().y(), text);
         }
-        else if (i<m_document->linesCount() && m_document->errorsAt(i).size()>0) {
-            text = m_document->errorsAt(i)[0];
-            p->setPen(errorColor);
-        }
-        if (text.length()>0)
-            p->drawText(marginLeft+4, y+offset().y(), text);
     }
-    p->restore();
 }
 
+/** Draws editable text
+ * @param p the initialized painter
+ * @param rect the rect to be repainted
+ */
 void EditorPlane::paintText(QPainter *p, const QRect &rect)
 {
-    p->save();
-    const int lh = lineHeight();
-    int deltaY = offset().y();
-    int effectiveRectTop = rect.top() - deltaY;
-    int effectiveRectBottom = rect.bottom() - deltaY;
-    int startLine = qMax(effectiveRectTop/lh - 1, 0);
-    int endLine = qMin(effectiveRectBottom/lh + 1, m_document->linesCount()-1);
+    // Determine which text lines actually required to be repainted (inclusive)
+    const uint startLine = qMax(0, rect.top() / int(lineHeight()) - 1);
+    const uint endLine =
+            qMax(0, qMin(
+                     int(rect.bottom() / lineHeight() + 1),
+                     int(document_->linesCount())-1
+                     )
+                 );
+
+    // Find a line in the document from which hidden text begins,
+    // -1 value means 'not found'
+    // TODO implement using std::algorithm with predicate (requires C++11)
     int hiddenLineStart = -1;
-    if (b_teacherMode && b_hasAnalizer)
-    for (int i=0; i<m_document->linesCount(); i++) {
-        if (m_document->isHidden(i)) {
+    if (teacherModeFlag_ && hasAnalizerFlag_)
+    for (uint i=0; i<document_->linesCount(); i++) {
+        if (document_->isHidden(i)) {
             hiddenLineStart = i;
             break;
         }
     }
-//    qDebug() << "START LINE " << startLine;
-//    qDebug() << "END LINE" << endLine;
-//    qDebug() << "Delta Y" << deltaY;
-//    qDebug() << "rect " << rect;
 
-    for (int i=qMax(startLine, 0); i<endLine+1; i++) {
-        int y =  ( i )* lineHeight();
-        bool drawThisRect = false;
-        QRect specialLineRect (0, y, width(), lineHeight());
-        if (i<m_document->linesCount() && m_document->isProtected(i) && !m_document->isHidden(i)) {
-            QColor protColor("#157962");
-            protColor.setAlpha(64);
-            p->setBrush(protColor);
-            drawThisRect = true;
+    // Draw protection/hidden background
+    for (uint i=startLine; i<endLine+1; i++) {
+
+        // Top bound
+        const uint y =  i * lineHeight();
+
+        // Whether to draw a rect or not
+        bool drawThisSpecialRectFlag = false;
+
+        // The rect itself
+        const QRect specialLineRect (0, y, width(), lineHeight());
+
+        if (document_->isProtected(i) && !document_->isHidden(i)) {
+            // Line is protected
+            p->setBrush(PROTECTED_LINE_BACKGROUND);
+            drawThisSpecialRectFlag = true;
         }
-        else if (hiddenLineStart!=-1 && i>=hiddenLineStart) {
-            QColor hidColor("black");
-            hidColor.setAlpha(64);
-            p->setBrush(hidColor);
-            drawThisRect = true;
+        else if (hiddenLineStart!=-1 && int(i)>=hiddenLineStart) {
+            // Line is hidden
+            p->setBrush(HIDDEN_LINE_BACKGROUND);
+            drawThisSpecialRectFlag = true;
         }
-        if (drawThisRect) {
+
+        if (drawThisSpecialRectFlag) {
+            // Perform drawing a rect
             p->setPen(Qt::NoPen);
             p->drawRect(specialLineRect);
         }
     }
-    for (int i=qMax(startLine, 0); i<endLine+1; i++) {
-        int indent = m_document->indentAt(i);
-        int y =  ( i + 1 )* lineHeight();
+
+    // Draw text lines themselves
+    for (uint i=startLine; i<=endLine; i++)
+    {
+        // Indent count (in logical levels)
+        uint indent = document_->indentAt(i);
+
+        // Bottom text bound (so 'i + 1' instead of 'i')
+        const uint y =  ( i + 1 )* lineHeight();
+
+        // Draw black 'dots' at start of lines
         p->setBrush(QColor(Qt::black));
         p->setPen(Qt::NoPen);
-        for (int j=0; j<indent; j++) {
-            const int dotH = lineHeight()/5;
-//            const int dotW = charWidth()/5;
-            const int dotW = dotH;
-            const int dotX = j * charWidth() * 2 + (charWidth()-dotW);
-            const int dotY = y - lineHeight() + (lineHeight()-dotH);
-            QRect dotRect(dotX, dotY, dotW, dotH);
+        for (uint j=0; j<indent; j++) {
+            const uint dotSize = qMin(lineHeight() / 3u,
+                                      charWidth() / 3u);
+            const uint dotX = j * charWidth() * 2 + (charWidth()-dotSize);
+            const uint dotY = y - lineHeight() + (lineHeight()-dotSize);
+            const QRect dotRect(dotX, dotY, dotSize, dotSize);
             p->drawRect(dotRect);
         }
-    }
-    for (int i=qMax(startLine, 0); i<qMin(endLine+1, m_document->linesCount()); i++) {
-        int indent = m_document->indentAt(i);
-        int y =  ( i + 1 )* lineHeight();
 
+        // Requires lexem types for propertly highlighting
+        const QList<Shared::LexemType> & highlight = document_->highlightAt(i);
+        const QString& text = document_->textAt(i);
 
-        QList<Shared::LexemType> highlight = m_document->highlightAt(i);
-        QString text = m_document->textAt(i);
-        int trailingSpaces = 0;
+        // Calculate trailing spaces to show them in special way if need
+        uint trailingSpaces = 0;
         for (int j=0; j<text.length(); j++) {
             if (text.at(text.length()-j-1).isSpace())
                 trailingSpaces += 1;
             else break;
         }
         
-        QList<bool> sm = m_document->selectionMaskAt(i);
+        // Requires selection mask due to selected text color differs
+        const QList<bool>& sm = document_->selectionMaskAt(i);
+
+        // Current lexem type, by default -- regular text
         Shared::LexemType curType = Shared::LexemType(0);
+
+        // Set current proper format for default type and non-letter
         setProperFormat(p, curType, '.');
-        for (int j=0; j<text.size()-trailingSpaces; j++) {
-            int offset = ( indent * 2 + j ) * charWidth();
-            if (j<highlight.size()) {
+
+        // Draw line letters
+        for (uint j=0; j<uint(qMax(0, text.size()-int(trailingSpaces))); j++) {
+
+            // Offet by indent
+            uint offset = ( indent * 2 + j ) * charWidth();
+
+            // Get current lexem type
+            if (j<uint(highlight.size()))
                 curType = highlight[j];
-            }
+
+            // Set proper format for lexem type and current character
             setProperFormat(p, curType, text[j]);
-            if (j<sm.size() && sm[j]) {
+
+            // If this character is selected, then set proper text color
+            if (j<uint(sm.size()) && sm[j]) {
                 p->setPen(palette().brush(QPalette::HighlightedText).color());
             }
-            if (i_highlightedLine==i) {
+
+            // If line is highlighted, then make text some darker
+            // for better accessibility
+            if (highlightedTextLineNumber_==i) {
                 p->setPen(p->pen().color().darker());
             }
 
-            int charW = QFontMetrics(p->font()).width(text[j]);
+            // Align character horizontally to it's position in case
+            // if various characters have different width
+            const int charW = QFontMetrics(p->font()).width(text[j]);
             if (charW<charWidth()) {
                 offset += (charWidth()-charW)/2;
             }
+
             if (curType==LxTypeComment && text[j]=='|') {
-                p->setPen(QPen(p->pen().brush(),2));
+                // A comment symbol '|' must be drawn as accessible as possible
+                p->setPen(QPen(p->pen().brush(), 2));
                 p->drawLine(offset, y, offset, y-lineHeight()+2);
             }
             else {
+                // Draw a symbol using obtained format
                 p->drawText(offset, y,  QString(text[j]));
             }
+
+            // If there is an error then draw underline
             if (curType & Shared::LxTypeError) {
                 p->setPen(QPen(QColor(Qt::red),1));
                 QPolygon pp = errorUnderline(offset, y+2, charWidth());
-//                p->drawLine(offset, y+2, offset+charWidth(), y+2);
                 p->drawPolyline(pp);
             }
         }
-        if (trailingSpaces && m_settings->value(
-                    SettingsPage::KeyShowTrailingSpaces, SettingsPage::DefaultShowTrailingSpaces
+
+        // Draw trailing spaces if they are visible by user settings
+        if (trailingSpaces && settings_->value(
+                    SettingsPage::KeyShowTrailingSpaces,
+                    SettingsPage::DefaultShowTrailingSpaces
                     ).toBool())
         {
+            // Trainling spaces are lighter then primary text
             p->setPen(QColor("lightgray"));
             // Paint trailing spaces
             QString dots;
             dots.fill('.', trailingSpaces);
-            int offset = (indent*2 + text.length()-trailingSpaces) * charWidth();
+            uint offset =
+                    (indent*2 + text.length() - trailingSpaces) * charWidth();
             p->drawText(offset, y, dots);
         }
 
-    }
-    p->restore();
+    } // end for (uint i=startLine; i<=endLine; i++)
 }
 
 void EditorPlane::signalizeNotEditable()
 {
     qDebug() << "AAAAA!!!!";
-    an_dontEdit->stop();
-    an_dontEdit->setStartValue(1.0);
-    an_dontEdit->setEndValue(0.0);
-    r_dontEditState = 1.0;
-    an_dontEdit->start();
+    doNotEditAnimation_->stop();
+    doNotEditAnimation_->setStartValue(1.0);
+    doNotEditAnimation_->setEndValue(0.0);
+    dontEditImageOpacity_ = 1.0;
+    doNotEditAnimation_->start();
 }
 
 QPolygon EditorPlane::errorUnderline(int x, int y, int len)
@@ -1834,99 +2291,150 @@ QPolygon EditorPlane::errorUnderline(int x, int y, int len)
     return QPolygon(points);
 }
 
-void EditorPlane::setProperFormat(QPainter *p, Shared::LexemType type, const QChar &ch)
+/** Set painter's format for specified lexem type and character
+ * @param p the painter to setup
+ * @param type lexem type
+ * @param ch a character used to resolve italic font usage
+ */
+void EditorPlane::setProperFormat(
+        QPainter *p,
+        Shared::LexemType type,
+        const QChar &ch
+        )
 {
+    // Current font to modify
     QFont f = font();
+
+    // Text color, by default is black
     QColor c = Qt::black;
 
-    const quint32 t = (type << 1) >> 1; // remove error flag
+    // Remove error flag (first bit in mask) and make it uint32_t
+    const uint32_t t = (type << 1) >> 1;
 
-    static const quint32 PriKwd = Shared::LxTypePrimaryKwd;
-    static const quint32 SecKwd = Shared::LxTypeSecondaryKwd;
-    static const quint32 NameClass = Shared::LxNameClass;
-    static const quint32 NameAlg = Shared::LxNameAlg;
-    static const quint32 NameModule = Shared::LxNameModule;
-    static const quint32 ConstLiteral = Shared::LxConstLiteral;
-    static const quint32 TypeConstant = Shared::LxTypeConstant;
-    static const quint32 TypeDoc = Shared::LxTypeDoc;
-    static const quint32 TypeComment = Shared::LxTypeComment;
+    // Bit masks for certain groups
+    static const uint32_t PriKwd = Shared::LxTypePrimaryKwd;
+    static const uint32_t SecKwd = Shared::LxTypeSecondaryKwd;
+    static const uint32_t NameClass = Shared::LxNameClass;
+    static const uint32_t NameAlg = Shared::LxNameAlg;
+    static const uint32_t NameModule = Shared::LxNameModule;
+    static const uint32_t ConstLiteral = Shared::LxConstLiteral;
+    static const uint32_t TypeConstant = Shared::LxTypeConstant;
+    static const uint32_t TypeDoc = Shared::LxTypeDoc;
+    static const uint32_t TypeComment = Shared::LxTypeComment;
 
-    const quint32 priKwd = PriKwd & t;
-    const quint32 secKwd = SecKwd & t;
-    const quint32 nameClass = NameClass == t;
-    const quint32 nameAlg = NameAlg == t;
-    const quint32 nameModule = NameModule == t;
-    const quint32 literalConstant = ConstLiteral == t;
-    const quint32 constant = TypeConstant & t;
-    const quint32 doc = TypeDoc == t;
-    const quint32 comment = TypeComment == t;
+    // Test if provided lexem type matches these groups
+    const uint32_t priKwd = PriKwd & t;
+    const uint32_t secKwd = SecKwd & t;
+    const uint32_t nameClass = NameClass == t;
+    const uint32_t nameAlg = NameAlg == t;
+    const uint32_t nameModule = NameModule == t;
+    const uint32_t literalConstant = ConstLiteral == t;
+    const uint32_t constant = TypeConstant & t;
+    const uint32_t doc = TypeDoc == t;
+    const uint32_t comment = TypeComment == t;
 
-    QFont::Capitalization caseInsensitiveKw = QFont::AllLowercase;
-    QFont::Capitalization caseInsensitiveType = QFont::MixedCase;
+    // Flags for case-insensitive grammatics (like Pascal language)
+    static const QFont::Capitalization caseInsensitiveKw = QFont::AllLowercase;
+    static const QFont::Capitalization caseInsensitiveType = QFont::MixedCase;
 
+    // The code below uses settings values
     if (priKwd || secKwd) {
-        c = m_settings->value(SettingsPage::KeyColorKw, SettingsPage::DefaultColorKw).toString();
-        f.setBold(m_settings->value(SettingsPage::KeyBoldKw, SettingsPage::DefaultBoldKw).toBool());
-        if (m_analizer->caseInsensitiveGrammatic()) {
+        // Matched keyword
+        c = settings_->value(SettingsPage::KeyColorKw,
+                             SettingsPage::DefaultColorKw).toString();
+        f.setBold(settings_->value(SettingsPage::KeyBoldKw,
+                                   SettingsPage::DefaultBoldKw).toBool());
+        if (analizer_->caseInsensitiveGrammatic()) {
             f.setCapitalization(caseInsensitiveKw);
         }
     }
     if (nameClass) {
-        c = m_settings->value(SettingsPage::KeyColorType,  SettingsPage::DefaultColorType).toString();
-        f.setBold(m_settings->value(SettingsPage::KeyBoldType, SettingsPage::DefaultBoldType).toBool());
-        if (m_analizer->caseInsensitiveGrammatic()) {
+        // Matched name of type/class
+        c = settings_->value(SettingsPage::KeyColorType,
+                             SettingsPage::DefaultColorType).toString();
+        f.setBold(settings_->value(SettingsPage::KeyBoldType,
+                                   SettingsPage::DefaultBoldType).toBool());
+        if (analizer_->caseInsensitiveGrammatic()) {
             f.setCapitalization(caseInsensitiveType);
         }
     }
     else if (nameAlg) {
-        c = m_settings->value(SettingsPage::KeyColorAlg,  SettingsPage::DefaultColorAlg).toString();
-        f.setBold(m_settings->value(SettingsPage::KeyBoldAlg, SettingsPage::DefaultBoldAlg).toBool());
+        // Matched name of algorithm/procedure/function
+        c = settings_->value(SettingsPage::KeyColorAlg,
+                             SettingsPage::DefaultColorAlg).toString();
+        f.setBold(settings_->value(SettingsPage::KeyBoldAlg,
+                                   SettingsPage::DefaultBoldAlg).toBool());
     }
     else if (nameModule) {
-        c = m_settings->value(SettingsPage::KeyColorMod,  SettingsPage::DefaultColorMod).toString();
-        f.setBold(m_settings->value(SettingsPage::KeyBoldMod, SettingsPage::DefaultBoldMod).toBool());
+        // Matched name of unit/module
+        c = settings_->value(SettingsPage::KeyColorMod,
+                             SettingsPage::DefaultColorMod).toString();
+        f.setBold(settings_->value(SettingsPage::KeyBoldMod,
+                                   SettingsPage::DefaultBoldMod).toBool());
     }
     else if (literalConstant) {
-        c = m_settings->value(SettingsPage::KeyColorLiteral,  SettingsPage::DefaultColorLiteral).toString();
-        f.setBold(m_settings->value(SettingsPage::KeyBoldLiteral, SettingsPage::DefaultBoldLiteral).toBool());
+        // Matched literal constant
+        c = settings_->value(SettingsPage::KeyColorLiteral,
+                             SettingsPage::DefaultColorLiteral).toString();
+        f.setBold(settings_->value(SettingsPage::KeyBoldLiteral,
+                                   SettingsPage::DefaultBoldLiteral).toBool());
     }
     else if (constant)
     {
-        c = m_settings->value(SettingsPage::KeyColorNumeric,  SettingsPage::DefaultColorNumeric).toString();
-        f.setBold(m_settings->value(SettingsPage::KeyBoldNumeric, SettingsPage::DefaultBoldNumeric).toBool());
+        // Matched any other constant
+        c = settings_->value(SettingsPage::KeyColorNumeric,
+                             SettingsPage::DefaultColorNumeric).toString();
+        f.setBold(settings_->value(SettingsPage::KeyBoldNumeric,
+                                   SettingsPage::DefaultBoldNumeric).toBool());
     }
     else if (doc) {
-        c = m_settings->value(SettingsPage::KeyColorDoc,  SettingsPage::DefaultColorDoc).toString();
-        f.setBold(m_settings->value(SettingsPage::KeyBoldDoc, SettingsPage::DefaultBoldDoc).toBool());
+        // Matched documentation string
+        c = settings_->value(SettingsPage::KeyColorDoc,
+                             SettingsPage::DefaultColorDoc).toString();
+        f.setBold(settings_->value(SettingsPage::KeyBoldDoc,
+                                   SettingsPage::DefaultBoldDoc).toBool());
     }
     else if (comment) {
-        c = m_settings->value(SettingsPage::KeyColorComment,  SettingsPage::DefaultColorComment).toString();
-        f.setBold(m_settings->value(SettingsPage::KeyBoldComment, SettingsPage::DefaultBoldComment).toBool());
+        // Matched comment
+        c = settings_->value(SettingsPage::KeyColorComment,
+                             SettingsPage::DefaultColorComment).toString();
+        f.setBold(settings_->value(SettingsPage::KeyBoldComment,
+                                   SettingsPage::DefaultBoldComment).toBool());
     }
 
-    if (m_analizer && !m_analizer->primaryAlphabetIsLatin() && ch!='\0' && ch.isLetter() && ch.toAscii()!='\0') {
+    // Make letter italic if latin-italization available
+    if (analizer_ && // it is source code editor
+            !analizer_->primaryAlphabetIsLatin() &&  // italization possible
+            ch!='\0' && // char is valid
+            ch.isLetter() &&  // char is a letter
+            ch.toAscii()!='\0' //char is valid (see above), but its ASCII is not
+            )
+    {
         f.setItalic(true);
     }
+
+    // Update a painter
     p->setFont(f);
     p->setPen(c);
 }
 
-int EditorPlane::widthInChars() const
+/** Width of editable area
+ * @return winth (in characters) of editable area
+ */
+uint EditorPlane::widthInChars() const
 {
-    const int cw = charWidth();
-    int marginMinWidth = cw * m_settings->value(MarginWidthKey, MarginWidthDefault).toInt();;
-    if (!b_hasAnalizer)
-        marginMinWidth = 0;
-    const int myWidth = width();
-    const int lockSymbolWidth = (b_hasAnalizer && b_teacherMode)? LOCK_SYMBOL_WIDTH : 0;
-    const int availableWidth = myWidth - marginMinWidth - lockSymbolWidth;
+    const uint cw = charWidth();
+    uint marginWidthInPixels =
+            cw * settings_->value(MarginWidthKey, MarginWidthDefault).toUInt();
+    if (!hasAnalizerFlag_)
+        marginWidthInPixels = 0;
+    const uint myWidth = width();
+    const uint lockSymbolWidth = (hasAnalizerFlag_ && teacherModeFlag_)
+            ? LOCK_SYMBOL_WIDTH
+            : 0;
+    const int availableWidth = myWidth - marginWidthInPixels - lockSymbolWidth;
     const int result = availableWidth / cw - 5;
-//    qDebug() << "myWidth = " << myWidth;
-//    qDebug() << "marginMinWidth = " << marginMinWidth;
-//    qDebug() << "availableWidth = " << availableWidth;
-//    qDebug() << "charWidth = " << cw;
-//    qDebug() << "widthInChars() = " << result;
-    return result;
+    return uint( qMax(0, result) );
 }
 
 } // namespace Editor

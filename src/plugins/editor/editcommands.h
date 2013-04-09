@@ -181,8 +181,8 @@ class ToggleCommentCommand:
 public:
     explicit ToggleCommentCommand(
         class TextDocument * Doc,
-        int FromLineInclusive,
-        int ToLineInclusive,
+        uint FromLineInclusive,
+        uint ToLineInclusive,
         class TextCursor * cursor,
         Shared::AnalizerInterface * analizer
         );
@@ -193,8 +193,8 @@ private:
     class TextDocument * doc;
     class TextCursor * cursor;
     Shared::AnalizerInterface * analizer;
-    int fromLineInclusive;
-    int toLineInclusive;
+    uint fromLineInclusive;
+    uint toLineInclusive;
     QSet<int> commentedLines;
     QSet< QPair<int,int> > uncommentedLines;
 };

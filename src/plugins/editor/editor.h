@@ -35,7 +35,7 @@ public:
     void appendMarginText(int lineNo, const QString & text);
     void setMarginText(int lineNo, const QString & text);
     void clearMarginText();
-    void clearMarginText(int fromLine, int toLine);
+    void clearMarginText(uint fromLine, uint toLine);
     void setNotModified();
     void checkForClean();
     void lock();

@@ -96,10 +96,10 @@ void Editor::clearMarginText()
     update();
 }
 
-void Editor::clearMarginText(int fromLine, int toLine)
+void Editor::clearMarginText(uint fromLine, uint toLine)
 {
-    int start = qMin(qMax(0, fromLine), d->doc->linesCount()-1);
-    int end = qMin(qMax(0, toLine), d->doc->linesCount()-1);
+    uint start = qMin(qMax(0u, fromLine), d->doc->linesCount()-1);
+    uint end = qMin(qMax(0u, toLine), d->doc->linesCount()-1);
     for (int i=start; i<=end; i++) {
         d->doc->setMarginTextAt(i, "");
     }
@@ -423,14 +423,14 @@ void EditorPrivate::updateFromAnalizer()
         int newIndent = doc->indentAt(i);
         int diffIndent = newIndent - oldIndent;
         if (cursor->row()==i) {
-            cursor->setColumn(qMax(cursor->column()+2*diffIndent,0));
+            cursor->setColumn(qMax(cursor->column()+2*diffIndent, 0u));
         }
     }
     for (int i=0; i<errors.size(); i++) {
         Error err = errors[i];
         int lineNo = err.line;
         if (lineNo>=0) {
-            doc->setErrorsAt(lineNo, doc->errorsAt(lineNo) << err.code);
+            doc->errorsAt(lineNo).append(err.code);
         }
     }
     plane->update();
@@ -646,7 +646,7 @@ Editor::~Editor()
 void Editor::setSettings(QSettings *s)
 {
     d->settings = s;
-    d->plane->m_settings = s;
+    d->plane->settings_ = s;
     QFont defaultFont;
     defaultFont.setFamily(s->value(SettingsPage::KeyFontName, SettingsPage::defaultFontFamily()).toString());
     defaultFont.setPointSize(s->value(SettingsPage::KeyFontSize, SettingsPage::defaultFontSize).toInt());

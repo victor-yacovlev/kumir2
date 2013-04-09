@@ -460,15 +460,15 @@ void ChangeHiddenLineDelimeterCommand::undo()
 }
 
 ToggleCommentCommand::ToggleCommentCommand(class TextDocument * Doc,
-                                           int FromLineInclusive,
-                                           int ToLineInclusive,
+                                           uint FromLineInclusive,
+                                           uint ToLineInclusive,
                                            class TextCursor * Cursor,
                                            Shared::AnalizerInterface * Analizer)
 {
     doc = Doc;
     cursor = Cursor;
     analizer = Analizer;
-    fromLineInclusive = qMax(0, FromLineInclusive);
+    fromLineInclusive = qMax(0u, FromLineInclusive);
     toLineInclusive = qMin(doc->linesCount()-1, ToLineInclusive);
 }
 

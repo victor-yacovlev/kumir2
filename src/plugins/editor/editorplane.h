@@ -15,7 +15,6 @@ class EditorPlane : public QWidget
     Q_OBJECT
     Q_PROPERTY(qreal dontEditState READ dontEditState WRITE setDontEditState)
 public:
-    enum BackgroundMode { BgPlain, BgLines, BgCells };
     explicit EditorPlane(class TextDocument * doc
                          , Shared::AnalizerInterface * analizer
                          , class TextCursor * cursor
@@ -26,18 +25,23 @@ public:
                          , QScrollBar * verticalSB
                          , bool hasAnalizer
                          , QWidget *parent = 0);
-    int widthInChars() const;
-    int charWidth() const;
-    int lineHeight() const;
-    inline void setBackgroundMode(BackgroundMode m) { e_backgroundMode = m; }
-    inline int marginCharactersCount() const { return m_settings->value(MarginWidthKey, MarginWidthDefault).toInt(); }
-    inline qreal dontEditState() const { return r_dontEditState; }
-    void setDontEditState(qreal v) { r_dontEditState = v; update(); }
+    uint widthInChars() const;
+    uint charWidth() const;
+    uint lineHeight() const;
+    inline int marginCharactersCount() const {
+        return settings_->value(MarginWidthKey, MarginWidthDefault).toInt();
+    }
+    inline qreal dontEditState() const { return dontEditImageOpacity_; }
+    void setDontEditState(qreal v) { dontEditImageOpacity_ = v; update(); }
     QRect cursorRect() const;
+    uint marginLeftBound() const;
+    QRect marginBackgroundRect() const;
+    QRect marginLineRect() const;
+    uint normalizedNewMarginLinePosition(uint x) const;
     static QString MarginWidthKey;
-    static int MarginWidthDefault;
+    static uint MarginWidthDefault;
     void setTeacherMode(bool v);
-    inline bool isTeacherMode() const { return b_teacherMode; }
+    inline bool isTeacherMode() const { return teacherModeFlag_; }
     void addContextMenuAction(QAction * a);
 public slots:
     void selectAll();
@@ -99,38 +103,36 @@ protected slots:
 
 
 private:
-    int i_timerId;
-    class TextDocument * m_document;
-    class TextCursor * m_cursor;
-    class Clipboard * m_clipboard;
+    int timerId_;
+    class TextDocument * document_;
+    class TextCursor * cursor_;
+    class Clipboard * clipboard_;
 
-    QList<QRegExp> rxFilenamePattern;
-    QSettings * m_settings;
-    QScrollBar * m_verticalScrollBar;
-    QScrollBar * m_horizontalScrollBar;
-    QPoint pnt_marginPress;
-    QPoint pnt_delimeterPress;
-    QPoint pnt_textPress;
-    QPoint pos_textPress;
-    bool b_selectionInProgress;
+    QList<QRegExp> rxFilenamePattern_;
+    QSettings * settings_;
+    QScrollBar * verticalScrollBar_;
+    QScrollBar * horizontalScrollBar_;
+    QPoint marginMousePressedPoint_;
+    QPoint delimeterRuleMousePressedPoint_;
+    QPoint textMousePressedPoint_;
+    QPoint textPressedPosition_;
+    bool selectionInProgressFlag_;
 
     QPoint pnt_dropPosMarker;
     QPoint pnt_dropPosCorner;
-    int i_marginAlpha;
-    bool b_hasAnalizer;
-    bool b_teacherMode;
-    QImage img_dontEdit;
-    qreal r_dontEditState;
-    QPropertyAnimation * an_dontEdit;
+    int marginBackgroundAlpha_;
+    bool hasAnalizerFlag_;
+    bool teacherModeFlag_;
+    QImage dontEditImage_;
+    qreal dontEditImageOpacity_;
+    QPropertyAnimation * doNotEditAnimation_;
 
-    BackgroundMode e_backgroundMode;
-
-    int i_highlightedLine;
-    QColor color_highlightedLine;
-    int i_grayLockSymbolLine;
-    class SuggestionsWindow * m_autocompleteWidget;
-    Shared::AnalizerInterface * m_analizer;
-    QList<QAction*> l_contextMenuActions;
+    int highlightedTextLineNumber_;
+    QColor highlightedTextLineColor_;
+    int highlightedLockSymbolLineNumber_;
+    class SuggestionsWindow * autocompleteWidget_;
+    Shared::AnalizerInterface * analizer_;
+    QList<QAction*> contextMenuActions_;
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
     void requestAutoScroll(char a);
