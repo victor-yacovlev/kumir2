@@ -132,6 +132,9 @@ void EditorPlane::contextMenuEvent(QContextMenuEvent *e)
     e->accept();
 }
 
+/** Handles mouse press event
+ * @param e an event gone throught event system
+ */
 void EditorPlane::mousePressEvent(QMouseEvent *e)
 {
     // Ensure auto scrolling by timer is stopped
@@ -268,6 +271,9 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
     e->accept();
 }
 
+/** Handles mouse button release event
+ * @param e an event passed throught an event system
+ */
 void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
 {
     // Ensure auto scrolling by timer is stopped
@@ -348,6 +354,12 @@ bool EditorPlane::eventFilter(QObject *, QEvent *event)
     return false;
 }
 
+
+/** Handles mouse move (while button pressed or not) enent.
+ * The reason to handle the event while button is not pressed is
+ * to set proper mouse pointer shape
+ * @param e an event passed throught an event system
+ */
 void EditorPlane::mouseMoveEvent(QMouseEvent *e)
 {
     // The width of symbol "line locked" in teacher mode
