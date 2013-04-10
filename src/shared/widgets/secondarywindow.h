@@ -42,13 +42,15 @@ public slots:
     void restoreState();
     void saveState();
     void paintEvent(QPaintEvent *e);
+public:
+    QSize minimumSizeHint() const;
 protected:
     void closeEvent(QCloseEvent *);
     bool eventFilter(QObject *obj, QEvent *evt);
 protected slots:
     void checkForPlaceVisible(bool show);
 private:
-    class SecondaryWindowPrivate *d;
+    class SecondaryWindowPrivate *pImpl_;
 };
 
 }

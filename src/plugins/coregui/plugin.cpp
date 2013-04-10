@@ -91,6 +91,16 @@ QString Plugin::initialize(const QStringList & parameters)
 //                                        MainWindow::Terminal);
     m_mainWindow->ui->bottomWidget->setLayout(new QHBoxLayout);
     QSplitter * bottomSplitter = new QSplitter(m_mainWindow->ui->bottomWidget);
+    bottomSplitter->setStyleSheet(""
+                                  "QSplitter {"
+                                  "    width: 16px;"
+                                  "    background-image: url(:/coregui/horizontal-splitter-background.png);"
+                                  "}"
+                                  "QSplitter::handle {"
+                                  "    width: 16px;"
+                                  "    background-image: url(:/coregui/horizontal-splitter-handle.png);"
+                                  "}"
+                );
     m_bottomSplitter = bottomSplitter;
     m_mainWindow->ui->bottomWidget->layout()->setContentsMargins(0,0,0,0);
 //    m_mainWindow->ui->bottomWidget->layout()->addWidget(m_terminal);

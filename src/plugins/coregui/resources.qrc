@@ -2,5 +2,7 @@
     <qresource prefix="/coregui">
         <file>close-tab-hovered.png</file>
         <file>close-tab.png</file>
+        <file>horizontal-splitter-background.png</file>
+        <file>horizontal-splitter-handle.png</file>
     </qresource>
 </RCC>
