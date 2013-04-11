@@ -10,4 +10,5 @@ scripts/*.pyo
 .metadata
 .project
 .settings
+.idea
 *qtcreator*
