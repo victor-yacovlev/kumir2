@@ -1720,7 +1720,7 @@ void Generator::LOOP(int modId, int algId,
     int jzIp = -1;
 
 
-    if (st->loop.type==AST::LoopWhile) {
+    if (st->loop.type==AST::LoopWhile || st->loop.type==AST::LoopForever) {
         // Highlight line and clear margin
         if (lineNo!=-1) {
             if (e_debugLevel!=GeneratorInterface::NoDebug)
@@ -1739,8 +1739,14 @@ void Generator::LOOP(int modId, int algId,
             a.registerr = level * 5;
             result << a;
 
-            if (lineNo!=-1 && e_debugLevel==GeneratorInterface::LinesAndVariables) {
-                result << swreg;
+            if (lineNo!=-1 &&
+                    e_debugLevel==GeneratorInterface::LinesAndVariables)
+            {
+                if (st->loop.type==AST::LoopWhile) {
+                    // Show condition at margin only in case if
+                    // condition if typed by user
+                    result << swreg;
+                }
             }
 
             jzIp = result.size();
@@ -1748,7 +1754,9 @@ void Generator::LOOP(int modId, int algId,
             a.registerr = level * 5;
             result << a;
 
-            if (lineNo!=-1 && e_debugLevel==GeneratorInterface::LinesAndVariables) {
+            if (lineNo!=-1 &&
+                    e_debugLevel==GeneratorInterface::LinesAndVariables)
+            {
                 result << clmarg;
             }
         }

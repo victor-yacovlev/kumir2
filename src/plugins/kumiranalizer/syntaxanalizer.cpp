@@ -2207,7 +2207,7 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
     }
     AST::LoopType type = AST::LoopWhile;
     if (st.data.size()==1) {
-        type = AST::LoopWhile;
+        type = AST::LoopForever;
     }
     else if (st.data.size()>1 && st.data[1]->type==LxSecFor) {
         type = AST::LoopFor;
@@ -2407,7 +2407,7 @@ void SyntaxAnalizerPrivate::parseLoopBegin(int str)
         }
         st.statement->loop.timesValue = timesExpr;
     } // end if (type==AST::LoopTimes)
-    else if (type==AST::LoopWhile) {
+    else if (type==AST::LoopWhile || type==AST::LoopForever) {
         if (st.data.size()==1) {
             // Forever loop
             AST::Expression * foreverr = new AST::Expression;

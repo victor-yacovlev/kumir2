@@ -52,7 +52,7 @@ struct Context {
         moduleContextNo = 0;
     }
 
-    int registers[201];
+    VM::AnyValue registers[255];
     int IP;
     std::vector<Variable> locals;
     const std::vector<Bytecode::Instruction> * program;

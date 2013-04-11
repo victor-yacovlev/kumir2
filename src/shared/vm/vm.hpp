@@ -2496,13 +2496,13 @@ void KumirVM::do_jump(uint16_t ip)
 
 void KumirVM::do_jnz(uint8_t r, uint16_t ip)
 {
-    bool v = false;
-    if (r==0)
-        v = register0_.toBool();
-    else
-        v = contextsStack_.top().registers[r] > 0;
-    if (v) {
-        contextsStack_.top().IP = ip;
+    const AnyValue & registerValue = r==0u
+            ? register0_
+            : currentContext().registers[r];
+
+    const bool value = registerValue.toBool();
+    if (value) {
+        currentContext().IP = ip;
     }
     else {
         nextIP();
@@ -2512,16 +2512,16 @@ void KumirVM::do_jnz(uint8_t r, uint16_t ip)
 
 void KumirVM::do_jz(uint8_t r, uint16_t ip)
 {
-    bool v = false;
-    if (r==0)
-        v = register0_.toBool();
-    else
-        v = contextsStack_.top().registers[r] > 0;
-    if (v) {
-        nextIP();
+    const AnyValue & registerValue = r==0u
+            ? register0_
+            : currentContext().registers[r];
+
+    const bool value = registerValue.toBool();
+    if (! value) {
+        currentContext().IP = ip;
     }
     else {
-        contextsStack_.top().IP = ip;
+        nextIP();
     }
 }
 
@@ -2539,26 +2539,13 @@ void KumirVM::do_push(uint8_t r)
 void KumirVM::do_pop(uint8_t r)
 {
     Variable v = valuesStack_.pop();
-    if (r==0 && v.hasValue()) {
-        if (v.baseType()==VT_int) {
-            register0_ = v.toInt();
-        }
-        else if (v.baseType()==VT_real) {
-            register0_ = v.toReal();
-        }
-        else if (v.baseType()==VT_bool) {
-            register0_ = v.toBool();
-        }
-        else if (v.baseType()==VT_char) {
-            register0_ = v.toChar();
-        }
-        else if (v.baseType()==VT_string) {
-            register0_ = v.toString();
-        }
+    AnyValue & registerToStore = r==0u
+            ? register0_
+           : currentContext().registers[r];
+    if (v.hasValue()) {
+        registerToStore = v.value();
     }
-    else if (r!=0) {
-        contextsStack_.top().registers[r] = v.toInt();
-    }
+
     nextIP();
 }
 
@@ -2569,11 +2556,9 @@ void KumirVM::do_showreg(uint8_t regNo) {
                 !blindMode_
                 )
         {
-            AnyValue val;
-            if (regNo==0)
-                val = register0_;
-            else
-                val = contextsStack_.top().registers[regNo];
+            const AnyValue & val = regNo==0u
+                    ? register0_
+                    : currentContext().registers[regNo];
             if (debugHandler_)
                 debugHandler_->noticeOnValueChange(lineNo, val.toString());
         }

@@ -111,8 +111,10 @@ public:
         else return rvalue_;
     }
     inline bool toBool() const {
-        if (type_==VT_int) return ivalue_!=0;
-        else if (type_==VT_real) return rvalue_!=0.0;
+        if (type_==VT_int) return ivalue_ > 0;
+        else if (type_==VT_real) return rvalue_ > 0.0;
+        else if (type_==VT_char) return cvalue_ != '\0';
+        else if (type_==VT_string) return svalue_ && svalue_->length() > 0;
         else return bvalue_;
     }
     inline Char toChar() const {

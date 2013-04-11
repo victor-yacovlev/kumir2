@@ -65,6 +65,9 @@ enum LoopType {
 
     /** Counter loop (russian "nc ? raz") */
     LoopTimes,
+
+    /** Forever loop: a particular case of 'while (true)' */
+    LoopForever
 };
 
 /** Loop-specific part of statement */
