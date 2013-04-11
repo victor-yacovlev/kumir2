@@ -572,12 +572,12 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
     ll->addWidget(buttonClose_);
 #else
     // Buttons at left to title
-    ll->addWidget(btn_close);
+    ll->addWidget(buttonClose_);
     if (placeWidget)
-        ll->addWidget(btn_toggleDocked);
-    ll->addWidget(btn_minimize);
+        ll->addWidget(buttonToggleDocked_);
+    ll->addWidget(buttonMinimize_);
     ll->addStretch();
-    ll->addWidget(btn_stayOnTop);
+    ll->addWidget(buttonStayOnTop_);
 #endif
 
     int maxButtonHeight = qMax(buttonStayOnTop_->height(),
