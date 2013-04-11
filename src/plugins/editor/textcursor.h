@@ -17,7 +17,11 @@ public:
     enum EditMode { EM_Insert, EM_Overwrite };
     enum MoveMode { MM_Move, MM_Select, MM_RectSelect };
     enum ViewMode { VM_Blinking, VM_Hidden, VM_Visible };
-    explicit TextCursor(class TextDocument * document, class Clipboard * clipboard, class AnalizerInterface * analizer);
+    explicit TextCursor(class TextDocument * document,
+                        class Clipboard * clipboard,
+                        class AnalizerInterface * analizer,
+                        QSettings * settings
+                        );
 
     ~TextCursor();
     inline uint row() const { return row_; }
@@ -82,6 +86,7 @@ protected:
     class TextDocument * document_;
     class Clipboard * clipboard_;
     class AnalizerInterface * analizer_;
+    QSettings * settings_;
     EditMode editMode_;
     ViewMode viewMode_;
     int blinkTimerId_;

@@ -74,6 +74,9 @@ public:
     static QString KeyShowTrailingSpaces;
     static bool DefaultShowTrailingSpaces;
 
+    static QString KeyAutoInsertPairingBraces;
+    static bool DefaultAutoInsertPairingBraces;
+
 public slots:
     void accept();
     void init();
@@ -90,7 +93,7 @@ private slots:
 private:
 
     Ui::SettingsPage *ui;
-    QSettings * m_settings;
+    QSettings * settings_;
 };
 
 

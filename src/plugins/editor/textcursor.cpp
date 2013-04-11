@@ -7,11 +7,17 @@
 
 namespace Editor {
 
-TextCursor::TextCursor(TextDocument * document, Clipboard * clipboard, AnalizerInterface * analizer)
+TextCursor::TextCursor(
+        TextDocument * document,
+        Clipboard * clipboard,
+        AnalizerInterface * analizer,
+        QSettings * settings
+        )
     : QObject(0)
     , document_(document)
     , clipboard_(clipboard)
     , analizer_(analizer)
+    , settings_(settings)
     , editMode_(EM_Insert)
     , viewMode_(VM_Hidden)
     , blinkTimerId_(-1)
@@ -285,8 +291,12 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
     if (prevRow!=row_ || prevLines != document_->linesCount()) {
         document_->flushTransaction();
         if (analizer_
+                && settings_->value(
+                    SettingsPage::KeyAutoInsertPairingBraces,
+                    SettingsPage::DefaultAutoInsertPairingBraces).toBool()
                 && command.type==KeyCommand::InsertText
-                && command.text=="\n") {
+                && command.text=="\n")
+        {
             // Try to complete closing bracket
             Shared::TextAppend append = analizer_->closingBracketSuggestion(
                         document_->documentId,
