@@ -58,9 +58,15 @@ public:
     int documentId;
     uint indentAt(uint lineNo) const;
     inline void setAnalizer(Shared::AnalizerInterface * a) { m_analizer = a; }
-    inline bool isProtected(uint lineNo) const { return data[lineNo].protecteed; }
+    inline bool isProtected(uint lineNo) const {
+        return lineNo < uint(data.size())
+                ? data[lineNo].protecteed : false;
+    }
     inline void setProtected(int lineNo, bool v) { data[lineNo].protecteed = v; }
-    inline bool isHidden(uint lineNo) const { return data[lineNo].hidden; }
+    inline bool isHidden(uint lineNo) const {
+        return lineNo < uint(data.size())
+                ? data[lineNo].hidden : false;
+    }
     inline void setHidden(int lineNo, bool v) { data[lineNo].hidden = v; }
     int hiddenLineStart() const;
     inline uint linesCount() const { return uint(data.size()); }
