@@ -184,7 +184,7 @@ void OutputFunctor::operator ()(
     }
     QString data = QString::fromStdWString(os.getBuffer());
     emit requestOutput(data);
-    Util::SleepFunctions::usleep(100);
+    Util::SleepFunctions::usleep(1000);
 }
 
 GetMainArgumentFunctor::GetMainArgumentFunctor()
