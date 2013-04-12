@@ -92,15 +92,16 @@ QString Plugin::initialize(const QStringList & parameters)
     m_mainWindow->ui->bottomWidget->setLayout(new QHBoxLayout);
     QSplitter * bottomSplitter = new QSplitter(m_mainWindow->ui->bottomWidget);
     bottomSplitter->setStyleSheet(""
-                                  "QSplitter {"
+                                  "QSplitter[stylable=\"true\"] {"
                                   "    width: 16px;"
                                   "    background-image: url(:/coregui/horizontal-splitter-background.png);"
                                   "}"
-                                  "QSplitter::handle {"
+                                  "QSplitter[stylable=\"true\"]::handle {"
                                   "    width: 16px;"
                                   "    background-image: url(:/coregui/horizontal-splitter-handle.png);"
                                   "}"
                 );
+    bottomSplitter->setProperty("stylable", true);
     m_bottomSplitter = bottomSplitter;
     m_mainWindow->ui->bottomWidget->layout()->setContentsMargins(0,0,0,0);
 //    m_mainWindow->ui->bottomWidget->layout()->addWidget(m_terminal);
