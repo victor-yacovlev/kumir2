@@ -35,6 +35,7 @@ QString Plugin::initialize(const QStringList &)
 Shared::BrowserComponent Plugin::createBrowser(const QUrl &url, const QMap<QString, QObject *> manageableObjects, bool enableKeyboardNavigation)
 {
     Component * c = new Component(this);
+    c->setAcceptDrops(false);
     c->page()->settings()->setAttribute(QWebSettings::SpatialNavigationEnabled, enableKeyboardNavigation);
     QMap<QString,QObject*> objs = manageableObjects;
     objs["directory"] = m_directory;

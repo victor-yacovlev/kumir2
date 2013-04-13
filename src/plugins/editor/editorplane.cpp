@@ -1478,17 +1478,19 @@ bool EditorPlane::canDrop(const QPoint &pos, const QMimeData *data) const
         return false;
     }
     bool result = false;
-    if (data->hasUrls()) {
-        foreach (const QUrl &url, data->urls()) {
-            const QString filename = url.toLocalFile();
-            foreach (const QRegExp &rx, rxFilenamePattern_) {
-                if (rx.exactMatch(filename)) {
-                    result = true;
-                }
-            }
-        }
-    }
-    if (data->hasText() || data->hasFormat(Clipboard::BlockMimeType)) {
+//    if (data->hasUrls()) {
+//        foreach (const QUrl &url, data->urls()) {
+//            const QString filename = url.toLocalFile();
+//            foreach (const QRegExp &rx, rxFilenamePattern_) {
+//                if (rx.exactMatch(filename)) {
+//                    result = true;
+//                }
+//            }
+//        }
+//    }
+    if ( (!data->hasUrls() && data->hasText())
+            || data->hasFormat(Clipboard::BlockMimeType))
+    {
 //        int ln = charWidth() * 5;
 //        int mn = ln + widthInChars() * charWidth();
 //        if (pos.x()>ln && pos.x()<mn) {

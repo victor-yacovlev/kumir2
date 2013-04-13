@@ -115,6 +115,9 @@ MainWindow::MainWindow(Plugin * p) :
     else {
         connect(ui->actionRestore_previous_session, SIGNAL(triggered()), this, SLOT(restoreSession()));
     }
+
+    ui->tabWidget->setAcceptDrops(true);
+    ui->tabWidget->installEventFilter(this);
 }
 
 QString MainWindow::StatusbarWidgetCSS =
@@ -157,6 +160,57 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
         }
     }
 #endif
+    if (e->type() == QEvent::DragEnter && o == ui->tabWidget) {
+        QDragEnterEvent * event = static_cast<QDragEnterEvent*>(e);
+        const QMimeData * data = event->mimeData();
+        if (data->hasUrls() && data->urls().size()>0)
+        {
+//            qDebug() << "Matched: " << data->urls();
+            QList<QUrl> validUrls;
+            foreach (const QUrl & url, data->urls()) {
+                if (url.isValid()
+                        && !url.isEmpty()
+                        && url.scheme()=="file"
+                        )
+                {
+                    static const QStringList validSuffices = b_notabs
+                            ? ( QStringList() << "kum" )
+                            : ( QStringList() << "kum" << "txt"
+                                << "html" << "htm" );
+                    const QFileInfo fileInfo(url.toLocalFile());
+                    if (
+                            fileInfo.isReadable()
+                            && fileInfo.isFile()
+                            && validSuffices.contains(
+                                fileInfo.completeSuffix() )
+                            )
+                    {
+                        validUrls.append(url);
+                    }
+                }
+            }
+            const bool canAccept = b_notabs
+                    ? validUrls.size() == 1
+                    : validUrls.size() >= 1;
+            if (canAccept) {
+                event->accept();
+            }
+            else {
+                event->ignore();
+            }
+            return true;
+        }
+    }
+    if (e->type() == QEvent::Drop && o == ui->tabWidget) {
+//        qDebug() << "Drop!";
+        QDropEvent * event = static_cast<QDropEvent*>(e);
+        const QMimeData * data = event->mimeData();
+        foreach (const QUrl & url, data->urls()) {
+            loadFromUrl(url, true);
+        }
+        e->accept();
+        return true;
+    }
     return false;
 }
 
@@ -1163,8 +1217,8 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
         const QString suffix = QFileInfo(fileName).suffix();
         if (suffix=="kum")
             type = Kumir;
-        else if (suffix=="pas" || suffix=="pp")
-            type = Pascal;
+//        else if (suffix=="pas" || suffix=="pp")
+//            type = Pascal;
         else if (suffix=="html" || suffix=="htm")
             type = WWW;
         else
