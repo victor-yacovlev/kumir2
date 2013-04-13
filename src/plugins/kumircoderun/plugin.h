@@ -140,7 +140,7 @@ signals:
             );
 
 private:
-    class Run * d;
+    class Run * pRun_;
     struct CommonFunctors * common_;
     struct ConsoleFunctors * console_;
     struct GuiFunctors * gui_;

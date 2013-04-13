@@ -90,6 +90,7 @@ public slots:
                                        const int indeces[4]);
 
     void handleAlgorhitmDone(int lineNo);
+    void handlePauseRequest();
 
 
 signals:

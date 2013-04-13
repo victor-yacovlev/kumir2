@@ -345,6 +345,13 @@ void Run::handleAlgorhitmDone(int lineNo)
         emit lineChanged(-1);
 }
 
+void Run::handlePauseRequest()
+{
+    runMode_ = RM_StepOver;
+    vm->setNextCallStepOver();
+    vm->setDebugOff(false);
+}
+
 void Run::run()
 {
     while (vm->hasMoreInstructions()) {

@@ -450,6 +450,17 @@ void ReturnMainValueFunctor::operator()(const Variable & reference)
 }
 
 
+PauseFunctor::PauseFunctor()
+    : QObject()
+    , VM::PauseFunctor()
+{
+}
+
+void PauseFunctor::operator ()()
+{
+    emit requestPause();
+}
+
 
 }
 

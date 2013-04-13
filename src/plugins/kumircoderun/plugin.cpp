@@ -16,60 +16,60 @@ namespace KumirCodeRun {
 
 Plugin::Plugin()
     : ExtensionSystem::KPlugin()
-    , d(new Run(this))
+    , pRun_(new Run(this))
     , common_(nullptr)
     , console_(nullptr)
     , gui_(nullptr)
 {
-    connect (this, SIGNAL(finishInput(QVariantList)), d, SIGNAL(finishInput(QVariantList)));
+    connect (this, SIGNAL(finishInput(QVariantList)), pRun_, SIGNAL(finishInput(QVariantList)));
 
     done_ = true;
-    connect (d, SIGNAL(output(QString)), this, SIGNAL(outputRequest(QString)));
-    connect (d, SIGNAL(input(QString)), this, SIGNAL(inputRequest(QString)));
-    connect (d, SIGNAL(finished()), this, SLOT(handleThreadFinished()));
-    connect (d, SIGNAL(lineChanged(int)), this, SIGNAL(lineChanged(int)));
-    connect (d, SIGNAL(marginText(int,QString)), this, SIGNAL(marginText(int,QString)));
-    connect (d, SIGNAL(clearMarginRequest(int,int)), this, SIGNAL(clearMargin(int,int)));
+    connect (pRun_, SIGNAL(output(QString)), this, SIGNAL(outputRequest(QString)));
+    connect (pRun_, SIGNAL(input(QString)), this, SIGNAL(inputRequest(QString)));
+    connect (pRun_, SIGNAL(finished()), this, SLOT(handleThreadFinished()));
+    connect (pRun_, SIGNAL(lineChanged(int)), this, SIGNAL(lineChanged(int)));
+    connect (pRun_, SIGNAL(marginText(int,QString)), this, SIGNAL(marginText(int,QString)));
+    connect (pRun_, SIGNAL(clearMarginRequest(int,int)), this, SIGNAL(clearMargin(int,int)));
     onlyOneTryToInput_ = false;
 
 
-    connect(d, SIGNAL(signal_debuggerReset()), this, SIGNAL(debuggerReset()), Qt::DirectConnection);
-    connect(d, SIGNAL(signal_debuggerPopContext()), this, SIGNAL(debuggerPopContext()), Qt::DirectConnection);
-    connect(d, SIGNAL(signal_debuggerPushContext(QString,QStringList,QStringList,QList<int>)),
+    connect(pRun_, SIGNAL(signal_debuggerReset()), this, SIGNAL(debuggerReset()), Qt::DirectConnection);
+    connect(pRun_, SIGNAL(signal_debuggerPopContext()), this, SIGNAL(debuggerPopContext()), Qt::DirectConnection);
+    connect(pRun_, SIGNAL(signal_debuggerPushContext(QString,QStringList,QStringList,QList<int>)),
             this, SIGNAL(debuggerPushContext(QString,QStringList,QStringList,QList<int>)),
             Qt::DirectConnection);
-    connect(d, SIGNAL(signal_debuggerSetGlobals(QString,QStringList,QStringList,QList<int>)),
+    connect(pRun_, SIGNAL(signal_debuggerSetGlobals(QString,QStringList,QStringList,QList<int>)),
             this, SIGNAL(debuggerSetGlobals(QString,QStringList,QStringList,QList<int>)),
             Qt::DirectConnection);
-    connect(d, SIGNAL(signal_debuggerUpdateLocalVariable(QString,QString)),
+    connect(pRun_, SIGNAL(signal_debuggerUpdateLocalVariable(QString,QString)),
             this, SIGNAL(debuggerUpdateLocalVariable(QString,QString)),
             Qt::DirectConnection);
-    connect(d, SIGNAL(signal_debuggerUpdateGlobalVariable(QString,QString,QString)),
+    connect(pRun_, SIGNAL(signal_debuggerUpdateGlobalVariable(QString,QString,QString)),
             this, SIGNAL(debuggerUpdateGlobalVariable(QString,QString,QString)),
             Qt::DirectConnection);
-    connect(d, SIGNAL(signal_debuggerUpdateLocalTableBounds(QString,QList<int>)),
+    connect(pRun_, SIGNAL(signal_debuggerUpdateLocalTableBounds(QString,QList<int>)),
             this, SIGNAL(debuggerUpdateLocalTableBounds(QString,QList<int>)),
             Qt::DirectConnection);
-    connect(d, SIGNAL(signal_debuggerUpdateGlobalTableBounds(QString,QString,QList<int>)),
+    connect(pRun_, SIGNAL(signal_debuggerUpdateGlobalTableBounds(QString,QString,QList<int>)),
             this, SIGNAL(debuggerUpdateGlobalTableBounds(QString,QString,QList<int>)),
             Qt::DirectConnection);
-    connect(d, SIGNAL(signal_debuggerSetLocalReference(QString,QString,QList<int>,int,QString)),
+    connect(pRun_, SIGNAL(signal_debuggerSetLocalReference(QString,QString,QList<int>,int,QString)),
             this, SIGNAL(debuggerSetLocalReference(QString,QString,QList<int>,int,QString)),
             Qt::DirectConnection);
-    connect(d, SIGNAL(signal_debuggerForceUpdateValues()),
+    connect(pRun_, SIGNAL(signal_debuggerForceUpdateValues()),
             this, SIGNAL(debuggerForceUpdateValues()),
             Qt::DirectConnection);
-    connect(d, SIGNAL(signal_debuggerUpdateLocalTableValue(QString,QList<int>)),
+    connect(pRun_, SIGNAL(signal_debuggerUpdateLocalTableValue(QString,QList<int>)),
             this, SIGNAL(debuggerUpdateLocalTableValue(QString,QList<int>)),
             Qt::DirectConnection);
-    connect(d, SIGNAL(signal_debuggerUpdateGlobalTableValue(QString,QString,QList<int>)),
+    connect(pRun_, SIGNAL(signal_debuggerUpdateGlobalTableValue(QString,QString,QList<int>)),
             this, SIGNAL(debuggerUpdateGlobalTableValue(QString,QString,QList<int>)),
             Qt::DirectConnection);
 }
 
 int Plugin::currentLineNo() const
 {
-    return d->effectiveLineNo();
+    return pRun_->effectiveLineNo();
 }
 
 bool Plugin::loadProgram(const QString & filename, const QByteArray & source, Shared::ProgramFormat format)
@@ -79,28 +79,28 @@ bool Plugin::loadProgram(const QString & filename, const QByteArray & source, Sh
         std::list<char> buffer;
         for (int i=0; i<source.size(); i++)
             buffer.push_back(source[i]);
-        ok = d->loadProgramFromBinaryBuffer(buffer, filename.toStdWString());
+        ok = pRun_->loadProgramFromBinaryBuffer(buffer, filename.toStdWString());
     }
     else {
         const std::string str(source.constData());
-        d->loadProgramFromTextBuffer(str, filename.toStdWString());
+        pRun_->loadProgramFromTextBuffer(str, filename.toStdWString());
     }
     const QString programDirName = QFileInfo(filename).absoluteDir().absolutePath();
-    d->setProgramDirectory(programDirName);
-    d->programLoaded = ok;
+    pRun_->setProgramDirectory(programDirName);
+    pRun_->programLoaded = ok;
     return ok;
 }
 
 QString Plugin::error() const
 {
-    return d->error();
+    return pRun_->error();
 }
 
 QMap<QString,QVariant> Plugin::getScalarLocalValues(int frameNo) const
 {
-    d->lockVMMutex();
+    pRun_->lockVMMutex();
     QMap<QString,QVariant> result;
-    const std::vector<Variable> & locals = d->vm->getLocals(frameNo);
+    const std::vector<Variable> & locals = pRun_->vm->getLocals(frameNo);
     for (int i=0; i<locals.size(); i++) {
         const Variable & var = locals.at(i);
         if (var.dimension()==0) {
@@ -115,15 +115,15 @@ QMap<QString,QVariant> Plugin::getScalarLocalValues(int frameNo) const
             result.insert(varName, value);
         }
     }
-    d->unlockVMMutex();
+    pRun_->unlockVMMutex();
     return result;
 }
 
 QMap<QString,QVariant> Plugin::getScalarGlobalValues(const QString & moduleName) const
 {
-    d->lockVMMutex();
+    pRun_->lockVMMutex();
     QMap<QString,QVariant> result;
-    const std::vector<Variable> & locals = d->vm->getGlobals(moduleName.toStdWString());
+    const std::vector<Variable> & locals = pRun_->vm->getGlobals(moduleName.toStdWString());
     for (int i=0; i<locals.size(); i++) {
         const Variable & var = locals.at(i);
         if (var.dimension()==0) {
@@ -138,7 +138,7 @@ QMap<QString,QVariant> Plugin::getScalarGlobalValues(const QString & moduleName)
             result.insert(varName, value);
         }
     }
-    d->unlockVMMutex();
+    pRun_->unlockVMMutex();
     return result;
 }
 
@@ -260,8 +260,8 @@ QVariantList Plugin::getLocalTableValues(
 {
     QVariantList result;
     int counter = 0;
-    d->lockVMMutex();
-    const std::vector<Variable> & locals = d->vm->getLocals(frameNo);
+    pRun_->lockVMMutex();
+    const std::vector<Variable> & locals = pRun_->vm->getLocals(frameNo);
     for (int i=0; i<locals.size(); i++) {
         const Variable & var = locals.at(i);
         if (var.dimension()>0 && var.myName()==name.toStdWString()) {
@@ -270,7 +270,7 @@ QVariantList Plugin::getLocalTableValues(
             break;
         }
     }
-    d->unlockVMMutex();
+    pRun_->unlockVMMutex();
     return result;
 }
 
@@ -286,8 +286,8 @@ QVariant Plugin::getLocalTableValue(
     for (int i=0; i<indeces.size(); i++) {
         kIndeces[i] = indeces[i];
     }
-    d->lockVMMutex();
-    const std::vector<Variable> & locals = d->vm->getLocals(frameNo);
+    pRun_->lockVMMutex();
+    const std::vector<Variable> & locals = pRun_->vm->getLocals(frameNo);
     for (int i=0; i<locals.size(); i++) {
         const Variable & var = locals.at(i);
         if (var.dimension()>0 && var.myName()==name.toStdWString()) {
@@ -296,7 +296,7 @@ QVariant Plugin::getLocalTableValue(
             break;
         }
     }
-    d->unlockVMMutex();
+    pRun_->unlockVMMutex();
     return result;
 }
 
@@ -310,8 +310,8 @@ QVariantList Plugin::getGlobalTableValues(
 {
     QVariantList result;
     int counter = 0;
-    d->lockVMMutex();
-    const std::vector<Variable> & globals = d->vm->getGlobals(moduleName.toStdWString());
+    pRun_->lockVMMutex();
+    const std::vector<Variable> & globals = pRun_->vm->getGlobals(moduleName.toStdWString());
     for (int i=0; i<globals.size(); i++) {
         const Variable & var = globals.at(i);
         if (var.dimension()>0 && var.myName()==name.toStdWString()) {
@@ -320,7 +320,7 @@ QVariantList Plugin::getGlobalTableValues(
             break;
         }
     }
-    d->unlockVMMutex();
+    pRun_->unlockVMMutex();
     return result;
 }
 
@@ -336,8 +336,8 @@ QVariant Plugin::getGlobalTableValue(
     for (int i=0; i<indeces.size(); i++) {
         kIndeces[i] = indeces[i];
     }
-    d->lockVMMutex();
-    const std::vector<Variable> & globals = d->vm->getGlobals(moduleName.toStdWString());
+    pRun_->lockVMMutex();
+    const std::vector<Variable> & globals = pRun_->vm->getGlobals(moduleName.toStdWString());
     for (int i=0; i<globals.size(); i++) {
         const Variable & var = globals.at(i);
         if (var.dimension()>0 && var.myName()==name.toStdWString()) {
@@ -346,7 +346,7 @@ QVariant Plugin::getGlobalTableValue(
             break;
         }
     }
-    d->unlockVMMutex();
+    pRun_->unlockVMMutex();
     return result;
 }
 
@@ -355,69 +355,69 @@ QVariant Plugin::getGlobalTableValue(
 void Plugin::runContinuous()
 {
     if (done_) {
-        d->setEntryPointToMain();
-        d->reset();
+        pRun_->setEntryPointToMain();
+        pRun_->reset();
         done_ = false;
     }
-    d->runContinuous();
+    pRun_->runContinuous();
 }
 
 void Plugin::runBlind()
 {
     if (done_) {
-        d->setEntryPointToMain();
-        d->reset();
+        pRun_->setEntryPointToMain();
+        pRun_->reset();
         done_ = false;
     }
-    d->runBlind();
+    pRun_->runBlind();
 }
 
 void Plugin::runStepInto()
 {
-    d->runStepIn();
+    pRun_->runStepIn();
 }
 
 void Plugin::runStepOut()
 {
-    d->runStepOut();
+    pRun_->runStepOut();
 }
 
 void Plugin::runStepOver()
 {
     if (done_) {
-        d->setEntryPointToMain();
-        d->reset();
+        pRun_->setEntryPointToMain();
+        pRun_->reset();
         done_ = false;
     }
-    d->runStepOver();
+    pRun_->runStepOver();
 }
 
 void Plugin::runTesting()
 {
     if (done_) {
-        d->setEntryPointToTest();
-        d->reset();
+        pRun_->setEntryPointToTest();
+        pRun_->reset();
     }
-    d->runBlind();
+    pRun_->runBlind();
 }
 
 void Plugin::terminate()
 {
-    d->stop();
+    pRun_->stop();
 }
 
 
 void Plugin::handleThreadFinished()
 {
-    if (d->error().length()>0) {
+    if (pRun_->error().length()>0) {
         emit stopped(Shared::RunInterface::SR_Error);
         done_ = true;
     }
-    else if (d->hasMoreInstructions() && d->stopped()) {
+    else if (pRun_->hasMoreInstructions() && pRun_->stopped()) {
         emit stopped(Shared::RunInterface::SR_UserTerminated);
         done_ = true;
     }
-    else if (d->hasMoreInstructions()) {
+    else if (pRun_->hasMoreInstructions()) {
         emit stopped(Shared::RunInterface::SR_UserInteraction);
     }
     else {
@@ -453,15 +453,16 @@ struct GuiFunctors {
     Gui::OutputFunctor output;
     Gui::GetMainArgumentFunctor getMainArgument;
     Gui::ReturnMainValueFunctor returnMainValue;
+    Gui::PauseFunctor pause;
 };
 
 Plugin::~Plugin()
 {
-    if (d->isRunning()) {
-        d->stop();
-        d->wait();
+    if (pRun_->isRunning()) {
+        pRun_->stop();
+        pRun_->wait();
     }
-    delete d;
+    delete pRun_;
     if (gui_)
         delete gui_;
     if (console_)
@@ -474,10 +475,10 @@ Plugin::~Plugin()
 void Plugin::prepareCommonRun()
 {
     common_ = new CommonFunctors;
-    d->vm->setFunctor(&common_->reset);
-    d->vm->setFunctor(&common_->call);
-    d->vm->setFunctor(&common_->toString);
-    d->vm->setFunctor(&common_->fromString);
+    pRun_->vm->setFunctor(&common_->reset);
+    pRun_->vm->setFunctor(&common_->call);
+    pRun_->vm->setFunctor(&common_->toString);
+    pRun_->vm->setFunctor(&common_->fromString);
 }
 
 void Plugin::prepareConsoleRun()
@@ -510,11 +511,11 @@ void Plugin::prepareConsoleRun()
 
     console_->getMainArgument.init(arguments);
 
-    d->vm->setFunctor(&console_->load);    
-    d->vm->setFunctor(&console_->input);
-    d->vm->setFunctor(&console_->output);
-    d->vm->setFunctor(&console_->getMainArgument);
-    d->vm->setFunctor(&console_->returnMainValue);
+    pRun_->vm->setFunctor(&console_->load);
+    pRun_->vm->setFunctor(&console_->input);
+    pRun_->vm->setFunctor(&console_->output);
+    pRun_->vm->setFunctor(&console_->getMainArgument);
+    pRun_->vm->setFunctor(&console_->returnMainValue);
 
 }
 
@@ -525,29 +526,33 @@ void Plugin::prepareGuiRun()
 
     gui_ = new GuiFunctors;
 
-    gui_->input.setRunnerInstance(d);
-    gui_->output.setRunnerInstance(d);
-    gui_->getMainArgument.setRunnerInstance(d);
-    gui_->returnMainValue.setRunnerInstance(d);
+    gui_->input.setRunnerInstance(pRun_);
+    gui_->output.setRunnerInstance(pRun_);
+    gui_->getMainArgument.setRunnerInstance(pRun_);
+    gui_->returnMainValue.setRunnerInstance(pRun_);
 
     gui_->input.setCustomTypeFromStringFunctor(&common_->fromString);
     gui_->output.setCustomTypeToStringFunctor(&common_->toString);
     gui_->getMainArgument.setCustomTypeFromStringFunctor(&common_->fromString);
     gui_->returnMainValue.setCustomTypeToStringFunctor(&common_->toString);
 
-    d->vm->setFunctor(&gui_->load);
-    d->vm->setFunctor(&gui_->input);
-    d->vm->setFunctor(&gui_->output);
-    d->vm->setFunctor(&gui_->getMainArgument);
-    d->vm->setFunctor(&gui_->returnMainValue);
+    connect(&gui_->pause, SIGNAL(requestPause()),
+            pRun_, SLOT(handlePauseRequest()),
+            Qt::DirectConnection
+            );
 
-
+    pRun_->vm->setFunctor(&gui_->load);
+    pRun_->vm->setFunctor(&gui_->input);
+    pRun_->vm->setFunctor(&gui_->output);
+    pRun_->vm->setFunctor(&gui_->getMainArgument);
+    pRun_->vm->setFunctor(&gui_->returnMainValue);
+    pRun_->vm->setFunctor(&gui_->pause);
 }
 
 
 QString Plugin::initialize(const QStringList &)
 {
-    d->programLoaded = false;
+    pRun_->programLoaded = false;
 
     qRegisterMetaType<QVariant::Type>("QVariant::Type");
     qRegisterMetaType< QList<QVariant::Type> >("QList<QVariant::Type>");
@@ -599,7 +604,7 @@ QString Plugin::initialize(const QStringList &)
 void Plugin::timerEvent(QTimerEvent *event) {
     killTimer(event->timerId());
     event->accept();
-    d->reset();
+    pRun_->reset();
     QList<KPlugin*> actors = ExtensionSystem::PluginManager::instance()
             ->loadedPlugins("Actor*");
     foreach (KPlugin * plugin, actors) {
@@ -609,19 +614,19 @@ void Plugin::timerEvent(QTimerEvent *event) {
             actor->setAnimationEnabled(true);
         if (actor && actor->mainWidget()) {
             actor->mainWidget()->show();
-            connect(d, SIGNAL(finished()), actor->mainWidget(), SLOT(close()));
+            connect(pRun_, SIGNAL(finished()), actor->mainWidget(), SLOT(close()));
         }
     }
-    d->start();
+    pRun_->start();
 }
 
 void Plugin::start()
 {
-    if (d->programLoaded) {
+    if (pRun_->programLoaded) {
         if (!ExtensionSystem::PluginManager::instance()->isGuiRequired()) {
-            d->reset();
-            d->start();
-            d->wait();
+            pRun_->reset();
+            pRun_->start();
+            pRun_->wait();
         }
         else {
             startTimer(0); // start thread after event loop started
@@ -637,12 +642,12 @@ void Plugin::start()
 
 bool Plugin::hasMoreInstructions() const
 {
-    return d->hasMoreInstructions();
+    return pRun_->hasMoreInstructions();
 }
 
 bool Plugin::canStepOut() const
 {
-    return d->canStepOut();
+    return pRun_->canStepOut();
 }
 
 

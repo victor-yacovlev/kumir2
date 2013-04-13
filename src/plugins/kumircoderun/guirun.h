@@ -109,6 +109,18 @@ private:
 };
 
 
+class PauseFunctor
+        : public QObject
+        , public VM::PauseFunctor
+{
+    Q_OBJECT
+public:
+    PauseFunctor();
+    void operator()();
+signals:
+    void requestPause();
+};
+
 }
 
 }
