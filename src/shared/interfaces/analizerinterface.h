@@ -61,6 +61,8 @@ public:
         return QList<QRegExp>()
                 << QRegExp("*",Qt::CaseInsensitive,QRegExp::Wildcard);
     }
+
+    virtual QString createImportStatementLine(const QString &importName) const = 0;
 };
 
 }

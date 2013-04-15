@@ -1380,7 +1380,7 @@ void EditorPlane::doAutocomplete()
         }
     }
     QList<Shared::Suggestion> suggestions =
-            analizer_->suggestAutoComplete(document_->documentId, cursor_->row(), before, after);
+            analizer_->suggestAutoComplete(document_->id_, cursor_->row(), before, after);
     emit disableInsertActions();
 //    for (Shared::Suggestion s : suggestions) {
 //        qDebug() << QString("Suggestion: ") << s.value << QString(" --- ") << s.description;

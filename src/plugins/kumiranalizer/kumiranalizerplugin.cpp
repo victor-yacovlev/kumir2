@@ -2,6 +2,7 @@
 #include "kumiranalizerplugin.h"
 #include "analizer.h"
 #include "errormessages/errormessages.h"
+#include "lexer.h"
 
 #include <QtCore>
 
@@ -174,6 +175,12 @@ std::string KumirAnalizerPlugin::rawSourceData(int documentId) const
     return std::string(ba.constData());
 }
 
+QString KumirAnalizerPlugin::createImportStatementLine(
+        const QString &importName
+        ) const
+{
+    return Lexer::importKeyword()+" "+importName;
+}
 
 
 

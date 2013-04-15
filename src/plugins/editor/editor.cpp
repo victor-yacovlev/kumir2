@@ -35,7 +35,7 @@ void Editor::unsetAnalizer()
 
 void Editor::setDocumentId(int id)
 {
-    d->doc->documentId = id;
+    d->doc->id_ = id;
 }
 
 void Editor::lock()
@@ -379,7 +379,7 @@ void EditorPrivate::handleCompleteCompilationRequiest(
         if (i<visibleText.size()-1)
             vt += "\n";
     }
-    analizer->setSourceText(doc->documentId, vt);
+    analizer->setSourceText(doc->id_, vt);
     if (teacherMode) {
         QString ht;
         for (int i=0; i<hiddenText.size(); i++) {
@@ -387,7 +387,7 @@ void EditorPrivate::handleCompleteCompilationRequiest(
             if (i<hiddenText.size()-1)
                 ht += "\n";
         }
-        analizer->setHiddenText(doc->documentId, ht, hiddenBaseLine);
+        analizer->setHiddenText(doc->id_, ht, hiddenBaseLine);
     }
     updateFromAnalizer();
 }
@@ -397,16 +397,16 @@ void EditorPrivate::handleLineAndTextChanged(const QStack<Shared::ChangeTextTran
     if (!analizer) {
         return;
     }
-    analizer->setHiddenTextBaseLine(doc->documentId, doc->hiddenLineStart());
-    analizer->changeSourceText(doc->documentId, mergeTransactions(changes.toList()));
+    analizer->setHiddenTextBaseLine(doc->id_, doc->hiddenLineStart());
+    analizer->changeSourceText(doc->id_, mergeTransactions(changes.toList()));
     updateFromAnalizer();
 }
 
 void EditorPrivate::updateFromAnalizer()
 {
-    QList<Shared::LineProp> props = analizer->lineProperties(doc->documentId);
-    QList<QPoint> ranks = analizer->lineRanks(doc->documentId);
-    QList<Error> errors = analizer->errors(doc->documentId);
+    QList<Shared::LineProp> props = analizer->lineProperties(doc->id_);
+    QList<QPoint> ranks = analizer->lineRanks(doc->id_);
+    QList<Error> errors = analizer->errors(doc->id_);
     std::vector<int> oldIndents(doc->linesCount(), 0);
     for (int i=0; i<doc->linesCount(); i++) {
         oldIndents[i] = doc->indentAt(i);
@@ -452,7 +452,7 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
     d->doc->setAnalizer(analizer);
     d->cursor = new TextCursor(d->doc, d->clipboard, analizer, settings);
     d->analizer = analizer;
-    d->doc->documentId = documentId;
+    d->doc->id_ = documentId;
     d->settings = settings;
     d->horizontalScrollBar = new QScrollBar(Qt::Horizontal, this);
     d->verticalScrollBar = new QScrollBar(Qt::Vertical, this);
@@ -736,13 +736,13 @@ void Editor::setKumFile(const KumFile::Data &data)
     d->doc->setKumFile(data, d->teacherMode);
     if (d->analizer && !d->teacherMode) {
         // Set hidden part manually, because of editor will not emit hidden text to analizer
-        d->analizer->setSourceText(d->doc->documentId, data.visibleText);
+        d->analizer->setSourceText(d->doc->id_, data.visibleText);
         int hbl = -1;
         if (d->teacherMode) {
             hbl = data.visibleText.split("\n").size();
         }
         if (!data.hiddenText.isEmpty())
-            d->analizer->setHiddenText(d->doc->documentId, data.hiddenText, hbl);
+            d->analizer->setHiddenText(d->doc->id_, data.hiddenText, hbl);
         d->updateFromAnalizer();
     }
     d->plane->update();
@@ -753,7 +753,7 @@ void  Editor::setPlainText(const QString & data)
 {
     d->doc->setPlainText(data);
     if (d->analizer) {
-        d->analizer->setSourceText(d->doc->documentId, data);
+        d->analizer->setSourceText(d->doc->id_, data);
         d->updateFromAnalizer();
     }
     d->plane->update();

@@ -141,6 +141,31 @@ private:
     QStringList previousLines;
 };
 
+class InsertImportCommand
+    : public QUndoCommand
+{
+    friend QDataStream & operator<< (QDataStream &, const InsertImportCommand&);
+    friend QDataStream & operator>> (QDataStream &, InsertImportCommand&);
+public:
+    explicit InsertImportCommand(
+            class TextDocument * document,
+            class TextCursor * cursor,
+            Shared::AnalizerInterface * analizer,
+            const QString & importName
+            );
+
+    void redo();
+    void undo();
+    inline int id() const { return 5; }
+
+private:
+    class TextDocument * document_;
+    class TextCursor * cursor_;
+    Shared::AnalizerInterface * analizer_;
+    QString importName_;
+    uint lineNo_;
+};
+
 class ToggleLineProtectedCommand:
         public QUndoCommand
 {

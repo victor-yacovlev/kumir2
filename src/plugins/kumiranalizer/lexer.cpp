@@ -1433,4 +1433,10 @@ QString Lexer::testingAlgorhitmName()
     return name;
 }
 
+QString Lexer::importKeyword()
+{
+    // TODO implement for non-russian language
+    return QString::fromUtf8("использовать");
+}
+
 }

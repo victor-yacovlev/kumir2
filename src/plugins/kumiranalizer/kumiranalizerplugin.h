@@ -51,6 +51,7 @@ public:
         return QList<QRegExp>()
                 << QRegExp("*.kum",Qt::CaseInsensitive,QRegExp::Wildcard);
     }
+    QString createImportStatementLine(const QString &importName) const;
 
 protected:
     QString initialize(const QStringList &arguments);

@@ -9,12 +9,12 @@ namespace Editor
 
 TextDocument::TextDocument(QObject *parent, QSettings * settings)
     : QObject(parent)
-    , documentId(-1)
-    , m_undoStack(new QUndoStack(this))
-    , m_settings(settings)
+    , id_(-1)
+    , undoStack_(new QUndoStack(this))
+    , settings_(settings)
 {
-    m_analizer = 0;
-    b_wasHiddenText = false;
+    analizer_ = 0;
+    wasHiddenTextFlag_ = false;
 }
 
 bool TextDocument::noUndoRedo = false;
@@ -24,16 +24,16 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
 
     blankLines = blankChars = 0;
     bool blankLinesAreHidden = false;
-    if (data.size()>0)
-            blankLinesAreHidden = data.last().hidden;
-    while (data.size()<=line) {
+    if (data_.size()>0)
+            blankLinesAreHidden = data_.last().hidden;
+    while (data_.size()<=line) {
         blankLines ++;
         TextLine tl;
         tl.inserted = true;
         tl.hidden = blankLinesAreHidden;
-        data.append(tl);
+        data_.append(tl);
     }
-    TextLine tl = data[line];
+    TextLine tl = data_[line];
     while (pos>tl.text.length()) {
         blankChars ++;
         tl.text.append(' ');
@@ -41,30 +41,30 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
         tl.highlight << Shared::LxTypeEmpty;
     }
     tl.changed = true;
-    data[line] = tl;
+    data_[line] = tl;
 
     const QStringList lines = text.split("\n", QString::KeepEmptyParts);
     if (lines.size()==1) {
         // Insert text fragment into line
-        data[line].text.insert(pos, lines[0]);
-        while (data[line].selected.size() < data[line].text.length())
-            data[line].selected << false;
-        while (data[line].highlight.size() < data[line].text.length())
-            data[line].highlight << Shared::LxTypeEmpty;
+        data_[line].text.insert(pos, lines[0]);
+        while (data_[line].selected.size() < data_[line].text.length())
+            data_[line].selected << false;
+        while (data_[line].highlight.size() < data_[line].text.length())
+            data_[line].highlight << Shared::LxTypeEmpty;
         if (analizer)
-            data[line].highlight = analizer->lineProp(documentId, data[line].text).toList();
+            data_[line].highlight = analizer->lineProp(id_, data_[line].text).toList();
 
     }
     else {
         // 1. Append fragment to first line
-        QString remainder = data[line].text.mid(pos);
-        data[line].text = data[line].text.left(pos)+lines[0];
-        while (data[line].selected.size() < data[line].text.length())
-            data[line].selected << false;
-        while (data[line].highlight.size() < data[line].text.length())
-            data[line].highlight << Shared::LxTypeEmpty;
+        QString remainder = data_[line].text.mid(pos);
+        data_[line].text = data_[line].text.left(pos)+lines[0];
+        while (data_[line].selected.size() < data_[line].text.length())
+            data_[line].selected << false;
+        while (data_[line].highlight.size() < data_[line].text.length())
+            data_[line].highlight << Shared::LxTypeEmpty;
         if (analizer)
-            data[line].highlight = analizer->lineProp(documentId, data[line].text).toList();
+            data_[line].highlight = analizer->lineProp(id_, data_[line].text).toList();
 
         // 2. Insert middle lines
         for (int i=lines.count()-1; i>=1; i--) {
@@ -72,14 +72,14 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
             tl.changed = true;
             tl.inserted = true;
             tl.text = lines[i];
-            tl.hidden = data[line].hidden;
+            tl.hidden = data_[line].hidden;
             for (int j=0; j<tl.text.length(); j++) {
                 tl.selected << false;
                 tl.highlight << Shared::LxTypeEmpty;
             }
             if (analizer)
-                tl.highlight = analizer->lineProp(documentId, tl.text).toList();
-            data.insert(line+1, tl);
+                tl.highlight = analizer->lineProp(id_, tl.text).toList();
+            data_.insert(line+1, tl);
         }
 
 //        // 3. Prepend fragment to last line
@@ -89,14 +89,14 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
 //        }
 //        m_removedLines.insert(line+1);
 //        m_newLines.insert(line);
-        data[line+lines.count()-1].text.append(remainder);
-        data[line+lines.count()-1].changed = true;
-        while (data[line+lines.count()-1].selected.size() < data[line+lines.count()-1].text.length())
-            data[line+lines.count()-1].selected << false;
-        while (data[line+lines.count()-1].highlight.size() < data[line+lines.count()-1].text.length())
-            data[line+lines.count()-1].highlight << Shared::LxTypeEmpty;
+        data_[line+lines.count()-1].text.append(remainder);
+        data_[line+lines.count()-1].changed = true;
+        while (data_[line+lines.count()-1].selected.size() < data_[line+lines.count()-1].text.length())
+            data_[line+lines.count()-1].selected << false;
+        while (data_[line+lines.count()-1].highlight.size() < data_[line+lines.count()-1].text.length())
+            data_[line+lines.count()-1].highlight << Shared::LxTypeEmpty;
         if (analizer)
-            data[line+lines.count()-1].highlight = analizer->lineProp(documentId, data[line+lines.count()-1].text).toList();
+            data_[line+lines.count()-1].highlight = analizer->lineProp(id_, data_[line+lines.count()-1].text).toList();
     }
 }
 
@@ -105,23 +105,23 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
 
 void TextDocument::removeSelection()
 {
-    for (int i=0; i<data.size(); i++) {
-        for (int j=0; j<data[i].selected.size(); j++) {
-            data[i].selected[j] = false;
+    for (int i=0; i<data_.size(); i++) {
+        for (int j=0; j<data_[i].selected.size(); j++) {
+            data_[i].selected[j] = false;
         }
-        data[i].lineEndSelected = false;
+        data_[i].lineEndSelected = false;
     }
 }
 
 void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterface *analizer, int line, int pos, int blankLines, int blankChars, int count)
 {
-    if (data.size()==0)
+    if (data_.size()==0)
         return;
     int cnt = count;
     int p = pos;
     int removedCounter = line;
     while (cnt>0) {
-        TextLine tl = data[line];
+        TextLine tl = data_[line];
         tl.changed = true;
         int thisLineRemoveCount = qMin(cnt, tl.text.length() - p);
 //        Q_ASSERT(thisLineRemoveCount>=0);
@@ -133,13 +133,13 @@ void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterf
         }
         cnt -= thisLineRemoveCount;
         if (cnt>0) {
-            if (line+1 < data.size()) {
-                TextLine next = data[line+1];
-                data.removeAt(line+1);
+            if (line+1 < data_.size()) {
+                TextLine next = data_[line+1];
+                data_.removeAt(line+1);
                 if (next.hidden)
-                    m_removedHiddenLines.insert(removedCounter);
+                    removedHiddenLines_.insert(removedCounter);
                 else
-                    m_removedLines.insert(removedCounter);
+                    removedLines_.insert(removedCounter);
                 tl.text += next.text;
                 tl.selected += next.selected;
                 tl.highlight += next.highlight;
@@ -147,23 +147,23 @@ void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterf
                 removedCounter ++;
             }
             else {
-                data.removeAt(line);
-                m_removedLines.insert(removedCounter);
+                data_.removeAt(line);
+                removedLines_.insert(removedCounter);
                 removedCounter ++;
             }
 
             cnt --;
         }
-        if (line < data.size()) {
+        if (line < data_.size()) {
             if (analizer)
-                tl.highlight = analizer->lineProp(documentId, tl.text).toList();
-            data[line] = tl;
-            m_removedLines.insert(removedCounter);
+                tl.highlight = analizer->lineProp(id_, tl.text).toList();
+            data_[line] = tl;
+            removedLines_.insert(removedCounter);
         }
     }
-    if (line < data.size()) {
+    if (line < data_.size()) {
         int blanks = blankChars;
-        TextLine & tl = data[line];
+        TextLine & tl = data_[line];
         bool changed = false;
         for (int i=tl.text.length()-1; i>=0; i--) {
             if (blanks<=0) break;
@@ -176,30 +176,52 @@ void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterf
             }
         }
         if (changed) {
-            m_removedLines.insert(line);
+            removedLines_.insert(line);
             tl.changed = true;
         }
     }
     for (int i=0; i<blankLines; i++) {
-        data.pop_back();
+        data_.pop_back();
     }
+}
+
+void TextDocument::insertLine(const QString &text, const uint beforeLineNo)
+{
+    TextLine textLine;
+    textLine.text = text;
+    textLine.inserted = true;
+    if (analizer_) {
+        textLine.highlight = analizer_->lineProp(id_, text).toList();
+    }
+    for (uint i=0; i<text.length(); i++) {
+        textLine.selected.push_back(false);
+    }
+    data_.insert(qMin(beforeLineNo, uint(data_.size())), textLine);
+    forceCompleteRecompilation();
+}
+
+void TextDocument::removeLine(const uint lineNo)
+{
+    data_.removeAt(lineNo);
+    removedLines_.insert(lineNo);
+    forceCompleteRecompilation();
 }
 
 uint TextDocument::indentAt(uint lineNo) const
 {
     int result = 0;
-    for (uint i=0; i<qMin(lineNo, uint(data.size()) ); i++) {
-        result += data[i].indentStart + data[i].indentEnd;
+    for (uint i=0; i<qMin(lineNo, uint(data_.size()) ); i++) {
+        result += data_[i].indentStart + data_[i].indentEnd;
     }
-    if (lineNo>=0 && lineNo < data.size()) {
-        result += data[lineNo].indentStart;
+    if (lineNo>=0 && lineNo < data_.size()) {
+        result += data_[lineNo].indentStart;
     }
     return uint( qMax(result, 0) );
 }
 
 void TextDocument::setKumFile(const KumFile::Data &d, bool showHiddenLines)
 {
-    data.clear();
+    data_.clear();
     QStringList lines = d.visibleText.split("\n");
     for (int i=0; i<lines.count(); i++) {
         const QString line = lines[i];
@@ -214,7 +236,7 @@ void TextDocument::setKumFile(const KumFile::Data &d, bool showHiddenLines)
         }
         textLine.protecteed = d.protectedLineNumbers.contains(i);
         textLine.hidden = false;
-        data.append(textLine);
+        data_.append(textLine);
     }
     if (d.hasHiddenText && showHiddenLines) {
         lines = d.hiddenText.split("\n");
@@ -231,19 +253,19 @@ void TextDocument::setKumFile(const KumFile::Data &d, bool showHiddenLines)
             }
             textLine.protecteed = false;
             textLine.hidden = true;
-            data.append(textLine);
+            data_.append(textLine);
         }
     }
     else if (d.hasHiddenText) {
-        s_hiddenText = d.hiddenText;
-        b_wasHiddenText = true;
+        hiddenText_ = d.hiddenText;
+        wasHiddenTextFlag_ = true;
     }
     forceCompleteRecompilation();
 }
 
 void TextDocument::setPlainText(const QString &t)
 {
-    data.clear();
+    data_.clear();
     QStringList lines = t.split("\n");
     for (int i=0; i<lines.count(); i++) {
         const QString line = lines[i];
@@ -258,7 +280,7 @@ void TextDocument::setPlainText(const QString &t)
         }
         textLine.protecteed = false;
         textLine.hidden = false;
-        data.append(textLine);
+        data_.append(textLine);
     }
     forceCompleteRecompilation();
 }
@@ -266,8 +288,8 @@ void TextDocument::setPlainText(const QString &t)
 int TextDocument::hiddenLineStart() const
 {
     int result = -1;
-    for (int i=0; i<data.size(); i++) {
-        if (data[i].hidden) {
+    for (int i=0; i<data_.size(); i++) {
+        if (data_[i].hidden) {
             result = i;
             break;
         }
@@ -278,23 +300,23 @@ int TextDocument::hiddenLineStart() const
 KumFile::Data TextDocument::toKumFile() const
 {
     KumFile::Data kumfile;
-    for (int i=0; i<data.size(); i++) {
-        if (data[i].hidden) {
-            kumfile.hiddenText += data[i].text;
-            if (i<data.size()-1)
+    for (int i=0; i<data_.size(); i++) {
+        if (data_[i].hidden) {
+            kumfile.hiddenText += data_[i].text;
+            if (i<data_.size()-1)
                 kumfile.hiddenText += "\n";
         }
         else {
-            kumfile.visibleText += data[i].text;
-            if (data[i].protecteed)
+            kumfile.visibleText += data_[i].text;
+            if (data_[i].protecteed)
                 kumfile.protectedLineNumbers.insert(i);
-            if (i<data.size()-1 && !data[i+1].hidden)
+            if (i<data_.size()-1 && !data_[i+1].hidden)
                 kumfile.visibleText += "\n";
         }
     }
-    if (b_wasHiddenText) {
+    if (wasHiddenTextFlag_) {
         kumfile.hasHiddenText = true;
-        kumfile.hiddenText = s_hiddenText;
+        kumfile.hiddenText = hiddenText_;
     }
     return kumfile;
 }
@@ -302,17 +324,17 @@ KumFile::Data TextDocument::toKumFile() const
 
 void TextDocument::checkForCompilationRequest(const QPoint &cursorPosition)
 {
-    if (cursorPosition.y()!=lastCursorPos.y()) {
+    if (cursorPosition.y()!=lastCursorPos_.y()) {
         bool hasChangedLines = false;
-        for (int i=0; i<data.size(); i++) {
-            if (data[i].changed) {
+        for (int i=0; i<data_.size(); i++) {
+            if (data_[i].changed) {
                 hasChangedLines = true;
                 break;
             }
         }
-        bool hasRemovedLines = !m_removedLines.isEmpty();
+        bool hasRemovedLines = !removedLines_.isEmpty();
         if (!hasChangedLines || !hasRemovedLines) {
-            lastCursorPos = cursorPosition;
+            lastCursorPos_ = cursorPosition;
             flushChanges();
         }
     }
@@ -321,35 +343,35 @@ void TextDocument::checkForCompilationRequest(const QPoint &cursorPosition)
 void TextDocument::flushChanges()
 {
     Shared::ChangeTextTransaction trans;
-    trans.removedLineNumbers = m_removedLines;
-    for (int i=0; i<data.size(); i++) {
-        if (!data[i].hidden) {
-            if (data[i].inserted) {
-                trans.newLines.append(data[i].text);
+    trans.removedLineNumbers = removedLines_;
+    for (int i=0; i<data_.size(); i++) {
+        if (!data_[i].hidden) {
+            if (data_[i].inserted) {
+                trans.newLines.append(data_[i].text);
             }
-            else if (data[i].changed) {
+            else if (data_[i].changed) {
                 trans.removedLineNumbers.insert(i);
-                trans.newLines.append(data[i].text);
+                trans.newLines.append(data_[i].text);
             }
-            data[i].changed = false;
-            data[i].inserted = false;
+            data_[i].changed = false;
+            data_[i].inserted = false;
         }
     }
     if (!trans.removedLineNumbers.isEmpty() || !trans.newLines.isEmpty())
-        changes.push(trans);
-    m_removedLines.clear();
+        changes_.push(trans);
+    removedLines_.clear();
 
 }
 
 void TextDocument::flushTransaction()
 {
-    if (!m_analizer)
+    if (!analizer_)
         return;
-    bool hiddenChanged = !m_removedHiddenLines.isEmpty();
+    bool hiddenChanged = !removedHiddenLines_.isEmpty();
     if (!hiddenChanged)
-    for (int i=0; i<data.size(); i++) {
-        if (data[i].changed || data[i].inserted) {
-            if (data[i].hidden) {
+    for (int i=0; i<data_.size(); i++) {
+        if (data_[i].changed || data_[i].inserted) {
+            if (data_[i].hidden) {
                 hiddenChanged = true;
                 break;
             }
@@ -358,30 +380,30 @@ void TextDocument::flushTransaction()
     flushChanges();
     if (hiddenChanged)
         forceCompleteRecompilation();
-    if (!changes.isEmpty()) {
-        if (m_analizer->supportPartialCompiling())
-            emit compilationRequest(changes);
+    if (!changes_.isEmpty()) {
+        if (analizer_->supportPartialCompiling())
+            emit compilationRequest(changes_);
         else
             emit forceCompleteRecompilation();
     }
-    changes.clear();
+    changes_.clear();
 }
 
 void TextDocument::forceCompleteRecompilation()
 {
-    changes.clear();
-    m_removedLines.clear();
-    m_removedHiddenLines.clear();
+    changes_.clear();
+    removedLines_.clear();
+    removedHiddenLines_.clear();
     QStringList visibleText, hiddenText;
     int hiddenBaseLine = -1;
-    for (int i=0; i<data.size(); i++) {
-        data[i].changed = data[i].inserted = false;
-        if (data[i].hidden && hiddenBaseLine==-1)
+    for (int i=0; i<data_.size(); i++) {
+        data_[i].changed = data_[i].inserted = false;
+        if (data_[i].hidden && hiddenBaseLine==-1)
             hiddenBaseLine = i;
-        if (data[i].hidden)
-            hiddenText += data[i].text;
+        if (data_[i].hidden)
+            hiddenText += data_[i].text;
         else
-            visibleText += data[i].text;
+            visibleText += data_[i].text;
     }
     emit completeCompilationRequest(visibleText, hiddenText, hiddenBaseLine);
 }
@@ -389,21 +411,21 @@ void TextDocument::forceCompleteRecompilation()
 QString TextDocument::toHtml(int fromLine, int toLine) const
 {
     if (fromLine==-1 || toLine==-1) {
-        for (int i=0; i<data.size(); i++) {
-            if (data[i].selected.contains(true)) {
+        for (int i=0; i<data_.size(); i++) {
+            if (data_[i].selected.contains(true)) {
                 fromLine = i;
                 break;
             }
         }
-        for (int i=data.size()-1; i>=0; i--) {
-            if (data[i].selected.contains(true)) {
+        for (int i=data_.size()-1; i>=0; i--) {
+            if (data_[i].selected.contains(true)) {
                 toLine = i;
                 break;
             }
         }
     }
     fromLine = qMax(0, fromLine);
-    toLine = qMin(data.size()-1, toLine);
+    toLine = qMin(data_.size()-1, toLine);
     QString result;
     QStringList programLines;
     QStringList marginLines;
@@ -415,7 +437,7 @@ QString TextDocument::toHtml(int fromLine, int toLine) const
 
     for (int i=fromLine; i<=toLine; i++) {
         programLines << lineToHtml(i);
-        marginLines << ( data[i].marginText.isEmpty()? (data[i].errors.isEmpty()? "" : data[i].errors[0]) : data[i].marginText );
+        marginLines << ( data_[i].marginText.isEmpty()? (data_[i].errors.isEmpty()? "" : data_[i].errors[0]) : data_[i].marginText );
     }
     result = QString::fromAscii(
                 "<table width=\"100%\">"
@@ -448,15 +470,15 @@ struct Chunk {
 
 QString TextDocument::lineToHtml(int lineNo) const
 {
-    if (lineNo<0 || lineNo>=data.size())
+    if (lineNo<0 || lineNo>=data_.size())
         return "";
     int indent = indentAt(lineNo);
     QString result;
     for (int i=0; i<indent; i++) {
         result += ". ";
     }
-    QList<Shared::LexemType> highlight = data[lineNo].highlight;
-    QString text = data[lineNo].text;
+    QList<Shared::LexemType> highlight = data_[lineNo].highlight;
+    QString text = data_[lineNo].text;
     Q_ASSERT(text.length()==highlight.size());
 
     QList<Chunk> chunks;
@@ -509,37 +531,37 @@ QString TextDocument::lineToHtml(int lineNo) const
         const quint32 comment = TypeComment == chunks[i].format;
         QColor c = Qt::black;
         if (priKwd || secKwd) {
-            c = m_settings->value(SettingsPage::KeyColorKw, SettingsPage::DefaultColorKw).toString();
-            chunks[i].bold = m_settings->value(SettingsPage::KeyBoldKw, SettingsPage::DefaultBoldKw).toBool();
+            c = settings_->value(SettingsPage::KeyColorKw, SettingsPage::DefaultColorKw).toString();
+            chunks[i].bold = settings_->value(SettingsPage::KeyBoldKw, SettingsPage::DefaultBoldKw).toBool();
         }
         if (nameClass) {
-            c = m_settings->value(SettingsPage::KeyColorType,  SettingsPage::DefaultColorType).toString();
-            chunks[i].bold = m_settings->value(SettingsPage::KeyBoldType, SettingsPage::DefaultBoldType).toBool();
+            c = settings_->value(SettingsPage::KeyColorType,  SettingsPage::DefaultColorType).toString();
+            chunks[i].bold = settings_->value(SettingsPage::KeyBoldType, SettingsPage::DefaultBoldType).toBool();
         }
         else if (nameAlg) {
-            c = m_settings->value(SettingsPage::KeyColorAlg,  SettingsPage::DefaultColorAlg).toString();
-            chunks[i].bold = m_settings->value(SettingsPage::KeyBoldAlg, SettingsPage::DefaultBoldAlg).toBool();
+            c = settings_->value(SettingsPage::KeyColorAlg,  SettingsPage::DefaultColorAlg).toString();
+            chunks[i].bold = settings_->value(SettingsPage::KeyBoldAlg, SettingsPage::DefaultBoldAlg).toBool();
         }
         else if (nameModule) {
-            c = m_settings->value(SettingsPage::KeyColorMod,  SettingsPage::DefaultColorMod).toString();
-            chunks[i].bold = m_settings->value(SettingsPage::KeyBoldMod, SettingsPage::DefaultBoldMod).toBool();
+            c = settings_->value(SettingsPage::KeyColorMod,  SettingsPage::DefaultColorMod).toString();
+            chunks[i].bold = settings_->value(SettingsPage::KeyBoldMod, SettingsPage::DefaultBoldMod).toBool();
         }
         else if (literalConstant) {
-            c = m_settings->value(SettingsPage::KeyColorLiteral,  SettingsPage::DefaultColorLiteral).toString();
-            chunks[i].bold = m_settings->value(SettingsPage::KeyBoldLiteral, SettingsPage::DefaultBoldLiteral).toBool();
+            c = settings_->value(SettingsPage::KeyColorLiteral,  SettingsPage::DefaultColorLiteral).toString();
+            chunks[i].bold = settings_->value(SettingsPage::KeyBoldLiteral, SettingsPage::DefaultBoldLiteral).toBool();
         }
         else if (constant)
         {
-            c = m_settings->value(SettingsPage::KeyColorNumeric,  SettingsPage::DefaultColorNumeric).toString();
-            chunks[i].bold = m_settings->value(SettingsPage::KeyBoldNumeric, SettingsPage::DefaultBoldNumeric).toBool();
+            c = settings_->value(SettingsPage::KeyColorNumeric,  SettingsPage::DefaultColorNumeric).toString();
+            chunks[i].bold = settings_->value(SettingsPage::KeyBoldNumeric, SettingsPage::DefaultBoldNumeric).toBool();
         }
         else if (doc) {
-            c = m_settings->value(SettingsPage::KeyColorDoc,  SettingsPage::DefaultColorDoc).toString();
-            chunks[i].bold = m_settings->value(SettingsPage::KeyBoldDoc, SettingsPage::DefaultBoldDoc).toBool();
+            c = settings_->value(SettingsPage::KeyColorDoc,  SettingsPage::DefaultColorDoc).toString();
+            chunks[i].bold = settings_->value(SettingsPage::KeyBoldDoc, SettingsPage::DefaultBoldDoc).toBool();
         }
         else if (comment) {
-            c = m_settings->value(SettingsPage::KeyColorComment,  SettingsPage::DefaultColorComment).toString();
-            chunks[i].bold = m_settings->value(SettingsPage::KeyBoldComment, SettingsPage::DefaultBoldComment).toBool();
+            c = settings_->value(SettingsPage::KeyColorComment,  SettingsPage::DefaultColorComment).toString();
+            chunks[i].bold = settings_->value(SettingsPage::KeyBoldComment, SettingsPage::DefaultBoldComment).toBool();
         }
         chunks[i].color = c.name();
         chunks[i].html = QString::fromAscii(

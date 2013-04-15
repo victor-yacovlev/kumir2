@@ -135,7 +135,7 @@ void RemoveCommand::redo()
             }
             else if (cursor->row()>0) {
                 cursor->setRow(cursor->row()-1);
-                cursor->setColumn(doc->indentAt(cursor->row())*2+doc->data[cursor->row()].text.length());
+                cursor->setColumn(doc->indentAt(cursor->row())*2+doc->data_[cursor->row()].text.length());
             }
         }
     }
@@ -244,10 +244,10 @@ void RemoveBlockCommand::redo()
     int bottom = block.bottom()+1;
     int left = block.left();
     int right = block.right()+1;
-    bottom = qMin(bottom, doc->data.size());
+    bottom = qMin(bottom, doc->data_.size());
     previousLines.clear();
     for (int i=top; i<bottom; i++) {
-        TextLine tl = doc->data[i];
+        TextLine tl = doc->data_[i];
         previousLines << tl.text;
         int textPos = left - doc->indentAt(i)*2;
 
@@ -259,10 +259,10 @@ void RemoveBlockCommand::redo()
         for (int j=0; j<tl.text.length(); j++)
             tl.selected << false;
         if (analizer)
-            tl.highlight = analizer->lineProp(doc->documentId, tl.text).toList();
+            tl.highlight = analizer->lineProp(doc->id_, tl.text).toList();
         else for (int j=0; j<tl.text.length(); j++)
             tl.highlight << Shared::LxTypeEmpty;
-        doc->data[i] = tl;
+        doc->data_[i] = tl;
 
     }
     cursorRow = cursor->row();
@@ -277,20 +277,20 @@ void RemoveBlockCommand::undo()
         return;
     int top = block.top();
     int bottom = block.bottom()+1;
-    bottom = qMin(bottom, doc->data.size());
+    bottom = qMin(bottom, doc->data_.size());
     for (int i=top; i<bottom; i++) {
-        TextLine tl = doc->data[i];
+        TextLine tl = doc->data_[i];
         tl.text = previousLines[i-top];
         tl.selected.clear();
         tl.highlight.clear();
         for (int j=0; j<tl.text.length(); j++)
             tl.selected << false;
         if (analizer)
-            tl.highlight = analizer->lineProp(doc->documentId, tl.text).toList();
+            tl.highlight = analizer->lineProp(doc->id_, tl.text).toList();
         else for (int j=0; j<tl.text.length(); j++)
             tl.highlight << Shared::LxTypeEmpty;
         tl.changed = true;
-        doc->data[i] = tl;
+        doc->data_[i] = tl;
 
     }
 
@@ -328,22 +328,22 @@ void InsertBlockCommand::redo()
     addedLines = 0;
     previousLines.clear();
     // 1. Ensure we have enought space
-    while (doc->data.size()<row+block.size()) {
+    while (doc->data_.size()<row+block.size()) {
         addedLines ++;
         TextLine tl;
         tl.changed = true;
         tl.inserted = true;
-        doc->data.append(tl);
+        doc->data_.append(tl);
     }
 
     // 2. Save old lines
     for (int i=row; i<row+block.size(); i++) {
-        previousLines.append(doc->data[i].text);
+        previousLines.append(doc->data_[i].text);
     }
 
     // 3. Insert block
     for (int i=0; i<block.size(); i++) {
-        TextLine tl = doc->data[row+i];
+        TextLine tl = doc->data_[row+i];
         tl.changed = true;
         int textPos = column - 2 * doc->indentAt(row+i);
         while (textPos>tl.text.length())
@@ -355,14 +355,14 @@ void InsertBlockCommand::redo()
             tl.selected << false;
         }
         if (analizer) {
-            tl.highlight = analizer->lineProp(doc->documentId, tl.text).toList();
+            tl.highlight = analizer->lineProp(doc->id_, tl.text).toList();
         }
         else {
             for (int j=0; j<tl.text.length(); j++) {
                 tl.highlight << Shared::LxTypeEmpty;
             }
         }
-        doc->data[row+i] = tl;
+        doc->data_[row+i] = tl;
     }
     cursorRow = cursor->row();
     cursorCol = cursor->column();
@@ -378,7 +378,7 @@ void InsertBlockCommand::undo()
     // 1. Restore old lines
     Q_ASSERT(block.size()==previousLines.size());
     for (int i=0; i<block.size(); i++) {
-        TextLine tl = doc->data[row+i];
+        TextLine tl = doc->data_[row+i];
         tl.changed = true;
         tl.text = previousLines[i];
         tl.selected.clear();
@@ -387,20 +387,20 @@ void InsertBlockCommand::undo()
             tl.selected << false;
         }
         if (analizer) {
-            tl.highlight = analizer->lineProp(doc->documentId, tl.text).toList();
+            tl.highlight = analizer->lineProp(doc->id_, tl.text).toList();
         }
         else {
             for (int j=0; j<tl.text.length(); j++) {
                 tl.highlight << Shared::LxTypeEmpty;
             }
         }
-        doc->data[row+i] = tl;
+        doc->data_[row+i] = tl;
     }
 
     // 2. Remove added lines
     for (int i=0; i<addedLines; i++) {
-        doc->data.pop_back();
-        doc->m_removedLines.insert(doc->data.size());
+        doc->data_.pop_back();
+        doc->removedLines_.insert(doc->data_.size());
     }
 
     // 3. Restore cursor position
@@ -408,6 +408,70 @@ void InsertBlockCommand::undo()
     cursor->setColumn(cursorCol);
 
     doc->checkForCompilationRequest(QPoint(cursor->row(), cursor->column()));
+}
+
+
+InsertImportCommand::InsertImportCommand(
+        TextDocument *document,
+        TextCursor *cursor,
+        AnalizerInterface *analizer,
+        const QString &importName)
+    : QUndoCommand()
+    , document_(document)
+    , cursor_(cursor)
+    , analizer_(analizer)
+    , importName_(importName)
+    , lineNo_(0)
+{
+}
+
+void InsertImportCommand::redo()
+{
+    // Find a line to import
+    // Import line is a first line after block of comments (if any)
+    for (uint i=0; i<document_->linesCount()+1; i++) {
+
+        if (i==document_->linesCount()) {
+            // Reached end of document -- append a line to end of text
+            lineNo_ = i;
+            break;
+        }
+
+        const QList<Shared::LexemType> & props =
+                document_->highlightAt(i);
+
+        bool isCommentLine = false;
+
+        for (uint j=0; j<props.size(); j++) {
+            Shared::LexemType lxType = props.at(j);
+            if (lxType==Shared::LxTypeEmpty) {
+                continue;
+            }
+            else if (lxType==Shared::LxTypeComment) {
+                isCommentLine = true;
+                break;
+            }
+            else {
+                break;
+            }
+        }
+
+        if (!isCommentLine) {
+            lineNo_ = i;
+            break;
+        }
+    }
+
+    // Now lineNo_ points to a line number where text will be inserted
+    const QString textToInsert =
+            analizer_->createImportStatementLine(importName_);
+
+    document_->insertLine(textToInsert, lineNo_);
+}
+
+void InsertImportCommand::undo()
+{
+    document_->removeLine(lineNo_);
 }
 
 

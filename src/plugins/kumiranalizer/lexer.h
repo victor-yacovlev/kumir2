@@ -18,6 +18,7 @@ public:
     ~Lexer();
     static void setLanguage(const QLocale::Language & language);
     static QString testingAlgorhitmName();
+    static QString importKeyword();
     QString testName( const QString &stroka );
     AST::VariableBaseType baseTypeByClassName(const QString &clazz) const;
     QString classNameByBaseType(const AST::VariableBaseType &type) const;

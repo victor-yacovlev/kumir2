@@ -299,7 +299,7 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
         {
             // Try to complete closing bracket
             Shared::TextAppend append = analizer_->closingBracketSuggestion(
-                        document_->documentId,
+                        document_->id_,
                         prevRow);
                 // Ask for a compiler
             if (append.first.length()>0) {
@@ -1135,7 +1135,7 @@ void TextCursor::insertText(const QString &text)
     // move cursor from protected part
     column_ = qMax(column_, indent * 2u);
 
-    if (document_->m_settings->value(SettingsPage::KeyForcePressTextToLeft, SettingsPage::DefaultForcePressTextToLeft).toBool())
+    if (document_->settings_->value(SettingsPage::KeyForcePressTextToLeft, SettingsPage::DefaultForcePressTextToLeft).toBool())
         column_ = justifyLeft(text);
 
     int textPos = column_ - indent * 2;
@@ -1170,7 +1170,7 @@ int TextCursor::justifyLeft(const QString &text) const
         s = document_->textAt(row_);
     }
     s.insert(textPos, text);
-    LineProp lp = analizer_->lineProp(document_->documentId, s);
+    LineProp lp = analizer_->lineProp(document_->id_, s);
     if (lp[textPos]==LxTypeComment || lp[textPos]==LxConstLiteral) {
         // Do not justify comments and literal constants
         return column_;
