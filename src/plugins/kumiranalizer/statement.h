@@ -34,7 +34,8 @@ struct Statement
                   const Lexem::ErrorRaisePosition raise
                   );
     explicit Statement();
-    QPair<QString,quint32> suggestedClosingBracket;
+    mutable QPair<QString,quint32> suggestedClosingBracket;
+    mutable QStringList suggestedImportModuleNames;
 };
 
 }

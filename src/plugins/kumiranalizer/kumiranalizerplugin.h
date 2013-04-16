@@ -5,6 +5,7 @@
 #include <interfaces/analizerinterface.h>
 
 #include <QtCore/QLocale>
+#include <QtCore/QStringList>
 
 namespace KumirAnalizer {
 
@@ -36,6 +37,7 @@ public:
 
     QList<Shared::Suggestion> suggestAutoComplete(int documentId, int lineNo, const QString & before, const QString & after) const;
     Shared::TextAppend closingBracketSuggestion(int documentId, int lineNo) const;
+    QStringList importModuleSuggestion(int documentId, int lineNo) const;
 
     std::string rawSourceData(int documentId) const;
     Shared::LineProp lineProp(int documentId, const QString & text) const;
@@ -58,7 +60,7 @@ protected:
     void start();
     void stop();
 private:
-    QVector<Analizer*> m_analizers;
+    QVector<Analizer*> analizers_;
 };
 
 }

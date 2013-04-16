@@ -12,7 +12,7 @@ using namespace KumirAnalizer;
 
 KumirAnalizerPlugin::KumirAnalizerPlugin()
 {
-    m_analizers = QVector<Analizer*> (128, NULL);
+    analizers_ = QVector<Analizer*> (128, NULL);
 }
 
 
@@ -63,110 +63,116 @@ void KumirAnalizerPlugin::stop()
 int KumirAnalizerPlugin::newDocument()
 {
     int id = 0;
-    for (int i=0 ; i < m_analizers.size(); i++) {
-        if (m_analizers[i]==NULL) {
+    for (int i=0 ; i < analizers_.size(); i++) {
+        if (analizers_[i]==NULL) {
             id = i;
             break;
         }
     }
-    m_analizers[id] = new Analizer(this);
+    analizers_[id] = new Analizer(this);
     return id;
 }
 
 void KumirAnalizerPlugin::dropDocument(int documentId)
 {
-    Q_CHECK_PTR(m_analizers[documentId]);
-    m_analizers[documentId]->deleteLater();
-    m_analizers[documentId] = NULL;
+    Q_CHECK_PTR(analizers_[documentId]);
+    analizers_[documentId]->deleteLater();
+    analizers_[documentId] = NULL;
 }
 
 void KumirAnalizerPlugin::setSourceText(int documentId, const QString &text)
 {
-    Q_CHECK_PTR(m_analizers[documentId]);
+    Q_CHECK_PTR(analizers_[documentId]);
     Shared::ChangeTextTransaction change;
     change.newLines = text.split("\n");
     change.removedLineNumbers << 999999; // Flag: remove all
     if (!text.trimmed().isEmpty())
-        m_analizers[documentId]->changeSourceText(QList<Shared::ChangeTextTransaction>() << change);
+        analizers_[documentId]->changeSourceText(QList<Shared::ChangeTextTransaction>() << change);
 }
 
 QList<Shared::Suggestion> KumirAnalizerPlugin::suggestAutoComplete(int documentId, int lineNo, const QString &before, const QString &after) const
 {
-    Q_CHECK_PTR(m_analizers[documentId]);
-    return m_analizers[documentId]->suggestAutoComplete(lineNo, before, after);
+    Q_CHECK_PTR(analizers_[documentId]);
+    return analizers_[documentId]->suggestAutoComplete(lineNo, before, after);
 }
 
 Shared::TextAppend KumirAnalizerPlugin::closingBracketSuggestion(int documentId, int lineNo) const
 {
-    Q_CHECK_PTR(m_analizers[documentId]);
-    return m_analizers[documentId]->closingBracketSuggestion(lineNo);
+    Q_CHECK_PTR(analizers_[documentId]);
+    return analizers_[documentId]->closingBracketSuggestion(lineNo);
+}
+
+QStringList KumirAnalizerPlugin::importModuleSuggestion(int documentId, int lineNo) const
+{
+    Q_CHECK_PTR(analizers_[documentId]);
+    return analizers_[documentId]->importModuleSuggestion(lineNo);
 }
 
 void KumirAnalizerPlugin::setSourceDirName(int documentId, const QString &dirPath)
 {
-    Q_CHECK_PTR(m_analizers[documentId]);
-    m_analizers[documentId]->setSourceDirName(dirPath);
+    Q_CHECK_PTR(analizers_[documentId]);
+    analizers_[documentId]->setSourceDirName(dirPath);
 }
 
 void KumirAnalizerPlugin::setHiddenText(int documentId, const QString &text, int baseLine)
 {
-    Q_CHECK_PTR(m_analizers[documentId]);
-    m_analizers[documentId]->setHiddenText(text, baseLine);
+    Q_CHECK_PTR(analizers_[documentId]);
+    analizers_[documentId]->setHiddenText(text, baseLine);
 }
 
 void KumirAnalizerPlugin::setHiddenTextBaseLine(int documentId, int baseLine)
 {
-    Q_CHECK_PTR(m_analizers[documentId]);
-    m_analizers[documentId]->setHiddenBaseLine(baseLine);
+    Q_CHECK_PTR(analizers_[documentId]);
+    analizers_[documentId]->setHiddenBaseLine(baseLine);
 }
 
 void KumirAnalizerPlugin::changeSourceText(int documentId, const QList<Shared::ChangeTextTransaction> & changes)
 {
-    Q_CHECK_PTR(m_analizers[documentId]);
-    m_analizers[documentId]->changeSourceText(changes);
+    Q_CHECK_PTR(analizers_[documentId]);
+    analizers_[documentId]->changeSourceText(changes);
 }
 
 QList<Shared::Error> KumirAnalizerPlugin::errors(int documentId) const
 {
-    Q_CHECK_PTR(m_analizers[documentId]);
-    return m_analizers[documentId]->errors();
+    Q_CHECK_PTR(analizers_[documentId]);
+    return analizers_[documentId]->errors();
 }
 
 QList<Shared::LineProp> KumirAnalizerPlugin::lineProperties(int documentId) const
 {
-    Q_CHECK_PTR(m_analizers[documentId]);
-    return m_analizers[documentId]->lineProperties();
+    Q_CHECK_PTR(analizers_[documentId]);
+    return analizers_[documentId]->lineProperties();
 }
 
 QList<QPoint> KumirAnalizerPlugin::lineRanks(int documentId) const
 {
-    Q_CHECK_PTR(m_analizers[documentId]);
-    return m_analizers[documentId]->lineRanks();
+    Q_CHECK_PTR(analizers_[documentId]);
+    return analizers_[documentId]->lineRanks();
 }
 
 QStringList KumirAnalizerPlugin::imports(int documentId) const
 {
-    Q_CHECK_PTR(m_analizers[documentId]);
-    return m_analizers[documentId]->imports();
+    Q_CHECK_PTR(analizers_[documentId]);
+    return analizers_[documentId]->imports();
 }
 
 const AST::Data * KumirAnalizerPlugin::abstractSyntaxTree(int documentId) const
 {
-    Q_CHECK_PTR(m_analizers[documentId]);
-    return m_analizers[documentId]->abstractSyntaxTree();
+    Q_CHECK_PTR(analizers_[documentId]);
+    return analizers_[documentId]->abstractSyntaxTree();
 }
 
 
 Shared::LineProp KumirAnalizerPlugin::lineProp(int documentId, const QString &text) const
 {
-    Q_CHECK_PTR(m_analizers[documentId]);
-    return m_analizers[documentId]->lineProp(text);
+    Q_CHECK_PTR(analizers_[documentId]);
+    return analizers_[documentId]->lineProp(text);
 }
 
 std::string KumirAnalizerPlugin::rawSourceData(int documentId) const
 {
-    Q_CHECK_PTR(m_analizers[documentId]);
-    QString s = m_analizers[documentId]->sourceText();
+    Q_CHECK_PTR(analizers_[documentId]);
+    QString s = analizers_[documentId]->sourceText();
     QByteArray ba;
     QTextStream ts(&ba);
     ts.setGenerateByteOrderMark(true);

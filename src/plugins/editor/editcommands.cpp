@@ -467,11 +467,13 @@ void InsertImportCommand::redo()
             analizer_->createImportStatementLine(importName_);
 
     document_->insertLine(textToInsert, lineNo_);
+    cursor_->setRow(cursor_->row() + 1);
 }
 
 void InsertImportCommand::undo()
 {
     document_->removeLine(lineNo_);
+    cursor_->setRow(cursor_->row() - 1);
 }
 
 

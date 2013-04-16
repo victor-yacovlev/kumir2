@@ -45,6 +45,7 @@ public:
     QStringList rectSelectionText() const;
     void removeRectSelection();
     void insertText(const QString &text);
+    void insertImport(const QString &importableName);
     void insertBlock(const QStringList & block);
     void removePreviousChar();
     void removeCurrentChar();

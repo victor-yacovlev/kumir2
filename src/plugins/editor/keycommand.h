@@ -48,7 +48,9 @@ struct KeyCommand
         RemoveTail              = 0x1005,
         Cut                     = 0x1006,
         Paste                   = 0x1007,
-        ToggleComment           = 0x1008
+        ToggleComment           = 0x1008,
+
+        InsertImport            = 0x1009
 
     } type;
     inline KeyCommand(KeyCommand::Type t) { type = t; text = ""; }

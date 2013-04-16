@@ -9,7 +9,8 @@
 #include "settingspage.h"
 #include "editcommands.h"
 #include "widgets/cyrillicmenu.h"
-
+#include "interfaces/actorinterface.h"
+#include "extensionsystem/pluginmanager.h"
 
 namespace Editor {
 
@@ -195,9 +196,38 @@ void EditorPrivate::updatePosition(int row, int col)
 
 void EditorPrivate::loadMacros()
 {
+    using namespace Shared;
+    using namespace ExtensionSystem;
     const QString sharePath = QCoreApplication::instance()->property("sharePath").toString();
     const QString systemMacrosPath = sharePath+"/editor/macros.json";
     systemMacros = loadFromFile(systemMacrosPath);
+
+    const QList<const KPlugin*> actorPlugins =
+            PluginManager::instance()->loadedConstPlugins("Actor*");
+
+    std::deque<QString> availableActorNames;
+
+    foreach (const KPlugin* plugin, actorPlugins) {
+        ActorInterface * actor = qobject_cast<ActorInterface*>(plugin);
+        if (actor) {
+            availableActorNames.push_back(actor->name());
+        }
+    }
+
+    if (!availableActorNames.empty()) {
+        for (size_t i=0; i<qMin(size_t(9), availableActorNames.size()); i++) {
+            const QString & actorName = availableActorNames.at(i);
+            const QString insertText = tr("import %1").arg(actorName);
+            Macro macro;
+            macro.title = insertText;
+            macro.key = QString::number(i+1).at(0);
+            macro.commands.push_back(
+                        KeyCommand(KeyCommand::InsertImport, actorName)
+                        );
+            systemMacros.push_back(macro);
+        }
+    }
+
 }
 
 void EditorPrivate::updateInsertMenu()

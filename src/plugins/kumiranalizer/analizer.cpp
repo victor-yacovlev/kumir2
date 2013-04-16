@@ -238,6 +238,17 @@ Shared::TextAppend Analizer::closingBracketSuggestion(int lineNo) const
     return QPair<QString,quint32>("",0);
 }
 
+QStringList Analizer::importModuleSuggestion(int lineNo) const
+{
+    for (int i=0; i<d->statements.size(); i++) {
+        const Statement * st = d->statements.at(i);
+        if (st->data.size()>0 && st->data.last()->lineNo==lineNo) {
+            return st->suggestedImportModuleNames;
+        }
+    }
+    return QStringList();
+}
+
 
 void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
 {
@@ -249,6 +260,7 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
     for (int i=0; i<statements.size(); i++) {
         Statement * st = statements.at(i);
         st->suggestedClosingBracket.first.clear();
+        st->suggestedImportModuleNames.clear();
     }
     QList<Statement*> removedStatements;
     QList<Statement*> newStatements;

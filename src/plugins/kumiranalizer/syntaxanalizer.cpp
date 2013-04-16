@@ -58,6 +58,8 @@ struct SyntaxAnalizerPrivate
     void parseIfCase(int str);
     void parseLoopBegin(int str);
 
+    const Statement & findSourceStatementByLexem(const Lexem* lexem) const;
+
     QList<Shared::Suggestion> suggestAssignmentAutoComplete(
             const Statement *statementBefore,
             const QList<Lexem *> lexemsAfter,
@@ -225,6 +227,7 @@ void SyntaxAnalizer::syncStatements()
     for (int i=0; i<d->originalStatements.size(); i++) {
         Q_CHECK_PTR(d->originalStatements[i]);
         d->originalStatements[i]->variables = d->statements[i].variables;
+        d->originalStatements[i]->suggestedImportModuleNames = d->statements[i].suggestedImportModuleNames;
     }
 }
 
@@ -4885,6 +4888,63 @@ AST::Expression * SyntaxAnalizerPrivate::parseExpression(
 }
 
 
+static QStringList possibleModuleImports(
+        const QString & nameToFind,
+        const AST::Data * ast
+        )
+{
+    QStringList result;
+
+    for (int i=0; i<ast->modules.size(); i++) {
+        if (!ast->modules[i]->header.enabled) {
+            // Check for disabled modules only
+            for (int j=0; j<ast->modules[i]->header.algorhitms.size(); j++) {
+                AST::Algorhitm * alg = ast->modules[i]->header.algorhitms[j];
+                if (alg->header.name==nameToFind) {
+                    result.push_back(ast->modules[i]->header.name);
+                }
+            }
+        }
+    }
+
+    if (result.isEmpty() && nameToFind.contains(' ')) {
+        // Try to find a type
+        const QString firstWord = nameToFind.left(nameToFind.indexOf(' '));
+        for (int i=0; i<ast->modules.size(); i++) {
+            if (!ast->modules[i]->header.enabled) {
+                for (int j=0; j<ast->modules[i]->header.types.size(); j++) {
+                    const AST::Type & type = ast->modules[i]->header.types[j];
+                    if (type.kind==AST::TypeUser && type.name==firstWord) {
+                        result.push_back(ast->modules[i]->header.name);
+                    }
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+const Statement & SyntaxAnalizerPrivate::findSourceStatementByLexem(
+        const Lexem* lexem
+        ) const
+{
+    for (int i=0; i<statements.size(); i++) {
+        bool found = false;
+        for (int j=0; j<statements[i].data.size(); j++) {
+            if (lexem==statements[i].data[j]) {
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            return statements[i];
+        }
+    }
+    static const Statement dummy;
+    return dummy;
+}
+
 AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> &lexems, const AST::Module *mod, const AST::Algorhitm *alg) const
 {
     AST::Expression * result = 0;
@@ -4918,6 +4978,12 @@ AST::Expression * SyntaxAnalizerPrivate::parseFunctionCall(const QList<Lexem *> 
             openBracketIndex = lexems.size();
         for (int i=0; i<openBracketIndex; i++) {
             lexems[i]->error = _("Algorhitm not found");
+        }
+        const QStringList possibleImports = possibleModuleImports(name, ast);
+        if (possibleImports.size() > 0) {
+            const Statement & sourceStatement =
+                    findSourceStatementByLexem(lexems.first());
+            sourceStatement.suggestedImportModuleNames = possibleImports;
         }
         return 0;
     }
@@ -5629,6 +5695,13 @@ AST::Expression * SyntaxAnalizerPrivate::parseSimpleName(const std::list<Lexem *
             }
             else {
                 err = _("Name not declared");
+                // Try to find algorithms from disabled modules
+                const QStringList possibleImports = possibleModuleImports(name, ast);
+                if (possibleImports.size() > 0) {
+                    const Statement & sourceStatement =
+                            findSourceStatementByLexem(lexems.front());
+                    sourceStatement.suggestedImportModuleNames = possibleImports;
+                }
             }
         }
         if (!err.isEmpty()) {

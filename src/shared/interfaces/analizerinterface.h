@@ -50,6 +50,7 @@ public:
      */
     virtual QList<Suggestion> suggestAutoComplete(int documentId, int lineNo, const QString & before, const QString & after) const { return QList<Suggestion>(); }
     virtual TextAppend closingBracketSuggestion(int documentId, int lineNo) const { return QPair<QString,quint32>(QString(), 0); }
+    virtual QStringList importModuleSuggestion(int /*documentId*/, int /*lineNo*/) const { return QStringList(); }
     virtual QList<Error> errors(int documentId) const = 0;
     virtual QList<LineProp> lineProperties(int documentId) const = 0;
     virtual QList<QPoint> lineRanks(int documentId) const = 0;

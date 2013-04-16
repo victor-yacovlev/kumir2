@@ -281,6 +281,8 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
         toggleComment();
         clearCurrentLineError = true;
         break;
+    case KeyCommand::InsertImport:
+        insertImport(command.text);
     default:
         break;
     }
@@ -320,6 +322,19 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
                 if (document_->textAt(row_).trimmed().length()>0) {
                     evaluateCommand(" ");
                 }
+            }
+
+            // Try to import module used
+            const QStringList modulesList = analizer_->importModuleSuggestion(
+                        document_->id_,
+                        prevRow
+                        );
+            if (modulesList.size()==1) {
+                // Found explicit module name
+                evaluateCommand(KeyCommand(
+                                    KeyCommand::InsertImport,
+                                    modulesList.first()
+                                    ));
             }
         }
     }
@@ -1149,6 +1164,26 @@ void TextCursor::insertText(const QString &text)
         document_->undoStack()->endMacro();
 
     emitPositionChanged();
+}
+
+void TextCursor::insertImport(const QString &importableName)
+{
+    if (!enabledFlag_) {
+        emit signalizeNotEditable();
+        return;
+    }
+
+    if (analizer_) {
+        document_->undoStack()->push(new InsertImportCommand(
+                                         document_,
+                                         this,
+                                         analizer_,
+                                         importableName
+                                         )
+                                     );
+    }
+
+    emit updateRequest(0, row_+1);
 }
 
 int TextCursor::justifyLeft(const QString &text) const
