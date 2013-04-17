@@ -58,6 +58,9 @@ public:
     QString selectedText() const;
     void removeSelectedBlock();
     void evaluateCommand(const KeyCommand & command);
+
+    bool isFreeCursorMovement() const;
+
 public slots:
     void toggleComment();
     void undo();
@@ -95,6 +98,7 @@ protected:
     bool visibleFlag_;
     uint row_;
     uint column_;
+    int keptColumn_;
     bool teacherModeFlag_;
 
     QRect selectionRect_;

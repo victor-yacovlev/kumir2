@@ -25,6 +25,7 @@ TextCursor::TextCursor(
     , visibleFlag_(false)
     , row_(0)
     , column_(0)
+    , keptColumn_(-1)
 
 {
     teacherModeFlag_ = false;
@@ -122,6 +123,57 @@ void TextCursor::toggleComment()
                                               ));
         }
     }
+}
+
+bool TextCursor::isFreeCursorMovement() const
+{
+    using namespace Shared;
+    uint settingValue = settings_->value(
+                SettingsPage::KeyFreeCursorMovement,
+                SettingsPage::DefaultFreeCursorMovement
+                ).toUInt();
+
+    SettingsPage::FreeCursorMovementType setting =
+            SettingsPage::FreeCursorMovementType(settingValue);
+
+
+    switch (setting) {
+
+    case SettingsPage::Always:
+        return true;
+        break;
+
+    case SettingsPage::TextsOnly:
+        return analizer_ == nullptr;
+        break;
+
+    default: {
+        if (analizer_) {
+            const QList<LexemType> & lineProp = document_->highlightAt(row_);
+            static const QList<LexemType> AllowedLexemsForFreeCursor
+                    = QList<LexemType>()
+                    << LxTypeComment << LxTypeDoc;
+
+            const int indentColumns = 2 * document_->indentAt(row_);
+            const uint textPos = qMax(0, int(column_) - indentColumns);
+
+            const bool hasProp = lineProp.size() > 0;
+            if (!hasProp) {
+                return false;
+            }
+            const LexemType lxType = textPos < lineProp.size()
+                    ? lineProp.at(textPos)
+                    : lineProp.last();
+            bool result = AllowedLexemsForFreeCursor.contains(lxType);
+            return result;
+        }
+        else {
+            return true;
+        }
+    }
+
+    }
+    return false; // Prevent some compilers warning
 }
 
 void TextCursor::evaluateCommand(const KeyCommand &command)
@@ -350,6 +402,11 @@ void TextCursor::moveTo(int row, int col)
     updateRequest();
     row_ = qMax(0, row);
     column_ = qMax(0, col);
+    if (!isFreeCursorMovement()) {
+        uint indent = qMax(0, int(2*document_->indentAt(row_)));
+        uint maxColumn = indent + document_->textAt(row_).length();
+        column_ = qMin(column_, maxColumn);
+    }
     if (viewMode_!=VM_Hidden) {
         visibleFlag_ = true;
         updateRequest();
@@ -451,6 +508,11 @@ void TextCursor::selectRangeText(int fromRow, int fromCol, int toRow, int toCol)
     }
     row_ = endY;
     column_ = endX;
+    if (!isFreeCursorMovement()) {
+        uint indent = qMax(0, int(2*document_->indentAt(row_)));
+        uint maxColumn = indent + document_->textAt(row_).length();
+        column_ = qMin(column_, maxColumn);
+    }
     if (viewMode_!=VM_Hidden) {
         visibleFlag_ = true;
     }
@@ -500,8 +562,27 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
     }
     for (int i=0; i<n; i++) {
         if (op==QTextCursor::NextCell) {
-            if (m==MM_Move)
-                column_ ++;
+            keptColumn_ = -1;
+            if (m==MM_Move) {
+                if (isFreeCursorMovement()) {
+                    column_ ++;
+                }
+                else {
+                    uint indent = qMax(0, 2 * int(document_->indentAt(row_)));
+                    uint textPos = qMax(0, int(column_) - int(indent));
+                    if ( textPos < document_->textAt(row_).length()
+                         ||
+                         column_ < indent
+                         )
+                    {
+                        column_ ++;
+                    }
+                    else {
+                        row_ ++;
+                        column_ = 0;
+                    }
+                }
+            }
             else if (m==MM_Select) {
                 int indent = 2 * document_->indentAt(row_);
                 if (row_<document_->linesCount()) {
@@ -535,6 +616,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
 
         }
         else if (op==QTextCursor::PreviousCell) {
+            keptColumn_ = -1;
             if (m==MM_Move) {
                 if (column_==0 && row_==0) {}
                 else if (column_==0 && row_>0) {
@@ -594,8 +676,30 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             }
         }
         else if (op==QTextCursor::NextRow) {
-            if (m==MM_Move)
+            if (m==MM_Move) {
                 row_++;
+                if (!isFreeCursorMovement()) {
+                    if (keptColumn_ == -1) {
+                        keptColumn_ = column_;
+                    }
+                    uint indent = qMax(0, 2 * int(document_->indentAt(row_)));
+                    uint textPos = qMax(0, keptColumn_ - int(indent));
+                    if ( textPos < document_->textAt(row_).length()
+                         ||
+                         keptColumn_ < indent
+                         )
+                    {
+                        // Keep and show column position
+                        column_ = keptColumn_;
+                    }
+                    else {
+                        // Just keep, but no effect kept column position
+                        column_ = document_->textAt(row_).length() + indent;
+                    }
+                } else if (keptColumn_ != -1) {
+                    column_ = keptColumn_;
+                }
+            }
             else if (m==MM_Select) {
                 if (row_<document_->linesCount()) {
                     document_->setEndOfLineSelected(row_, !document_->lineEndSelectedAt(row_));
@@ -632,8 +736,31 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
         else if (op==QTextCursor::PreviousRow) {
             if (row_==0) {}
             else {
-                if (m==MM_Move)
+                if (m==MM_Move) {
                     row_--;
+                    if (!isFreeCursorMovement()) {
+                        if (keptColumn_ == -1) {
+                            keptColumn_ = column_;
+                        }
+                        uint indent = qMax(0, 2 * int(document_->indentAt(row_)));
+                        uint textPos = qMax(0, keptColumn_ - int(indent));
+                        if ( textPos < document_->textAt(row_).length()
+                             ||
+                             keptColumn_ < indent
+                             )
+                        {
+                            // Keep and show column position
+                            column_ = keptColumn_;
+                        }
+                        else {
+                            // Just keep, but no effect kept column position
+                            column_ = document_->textAt(row_).length() + indent;
+                        }
+                    }
+                    else if (keptColumn_ != -1) {
+                        column_ = keptColumn_;
+                    }
+                }
                 else if (m==MM_Select) {
                     if (row_==0) {
                         int textPos = column_ - document_->indentAt(row_) * 2;
@@ -674,6 +801,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             }
         }
         else if (op==QTextCursor::StartOfBlock) {
+            keptColumn_ = -1;
             if (m==MM_Move) {
                 if (row_>=document_->linesCount())
                     column_ = 0;
@@ -710,6 +838,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             }
         }
         else if (op==QTextCursor::EndOfBlock) {
+            keptColumn_ = -1;
             if (m==MM_Move) {
                 if (row_>=document_->linesCount()) { column_ = 0; }
                 else {
@@ -740,6 +869,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             }
         }
         else if (op==QTextCursor::Start) {
+            keptColumn_ = -1;
             if (m==MM_Move) {
                 row_ = 0;
                 column_ = 0;
@@ -768,6 +898,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             }
         }
         else if (op==QTextCursor::End) {
+            keptColumn_ = -1;
             if (m==MM_Move) {
                 row_ = document_->linesCount()-1;
                 column_ = document_->indentAt(row_)*2 +
@@ -808,6 +939,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             }
         } // end End
         else if (op==QTextCursor::PreviousWord) {
+            keptColumn_ = -1;
             uint toRow, toColumn;
             findLexemBound(toRow, toColumn, -1);
             if (m==MM_Move) {
@@ -843,6 +975,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             }
         } // end PreviousWord
         else if (op==QTextCursor::NextWord) {
+            keptColumn_ = -1;
             uint toRow, toColumn;
             findLexemBound(toRow, toColumn, +1);
             if (m==MM_Move) {

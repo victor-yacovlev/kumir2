@@ -61,6 +61,9 @@ bool SettingsPage::DefaultShowTrailingSpaces = false;
 QString SettingsPage::KeyAutoInsertPairingBraces = "Other/AutoInsertPairingBraces";
 bool SettingsPage::DefaultAutoInsertPairingBraces = false;
 
+QString SettingsPage::KeyFreeCursorMovement = "Other/FreeCursorMovement";
+SettingsPage::FreeCursorMovementType SettingsPage::DefaultFreeCursorMovement = SettingsPage::CommentsAndTexts;
+
 QString SettingsPage::defaultFontFamily()
 {
     QString result = "Courier";
@@ -146,6 +149,10 @@ void SettingsPage::accept()
     settings_->setValue(KeyAutoInsertPairingBraces,
                         ui->autoInsertClosingOperationalBrackets->isChecked());
 
+    uint freeCursor = ui->freeCursorPositioning->currentIndex();
+
+    settings_->setValue(KeyFreeCursorMovement, freeCursor);
+
     settings_->setValue("Settings/FontCollapsed", ui->groupFont->isCollapsed());
     settings_->setValue("Settings/KeyboardCollapsed", ui->groupKeyboard->isCollapsed());
     settings_->setValue("Settings/SyntaxCollapsed", ui->groupSyntax->isCollapsed());
@@ -154,7 +161,7 @@ void SettingsPage::accept()
 
     settings_->setValue(KeyProgramTemplateFile,
                          QDir::fromNativeSeparators(ui->templateFileName->text())
-                         );
+                         );   
 
 
     emit settingsChanged();
@@ -232,6 +239,13 @@ void SettingsPage::init()
                     DefaultAutoInsertPairingBraces
                     ).toBool()
                 );
+
+    uint freeCursorMovement =
+            settings_->value(KeyFreeCursorMovement, DefaultFreeCursorMovement)
+            .toUInt();
+
+    if (freeCursorMovement < ui->freeCursorPositioning->count())
+        ui->freeCursorPositioning->setCurrentIndex(freeCursorMovement);
 
     QString initialFileName = DefaultProgramTemplateFile;
     static const QString resourcesRoot = QDir(qApp->applicationDirPath()+"/../share/kumir2/").canonicalPath();

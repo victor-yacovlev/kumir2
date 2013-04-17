@@ -274,7 +274,27 @@
     <message>
         <location filename="../../../src/plugins/editor/settingspage.ui" line="649"/>
         <source>Auto insert pairing operational brackets</source>
-        <translation type="unfinished">Автоматически дописывать конструкции программы</translation>
+        <translation>Автоматически дописывать конструкции программы</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="659"/>
+        <source>Free cursor positioning:</source>
+        <translation>Свободное перемещение курсора:</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="667"/>
+        <source>Texts and comments</source>
+        <translation>В текстовых файлах и комментариях</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="672"/>
+        <source>Always</source>
+        <translation>В текстовых файлах и программах</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="677"/>
+        <source>Texts only</source>
+        <translation>Только в текстовых файлах</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/editor/settingspage.cpp" line="256"/>

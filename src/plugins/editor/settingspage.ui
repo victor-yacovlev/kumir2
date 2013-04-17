@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>390</width>
-    <height>839</height>
+    <height>864</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -648,6 +648,38 @@
         <property name="text">
          <string>Auto insert pairing operational brackets</string>
         </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="widget" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout_13">
+         <item>
+          <widget class="QLabel" name="label_15">
+           <property name="text">
+            <string>Free cursor positioning:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="freeCursorPositioning">
+           <item>
+            <property name="text">
+             <string>Texts and comments</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Always</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Texts only</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>

@@ -1753,13 +1753,17 @@ QRect EditorPlane::cursorRect() const
     uint dX = charWidth();
     uint dY = lineHeight();
 
+
+
     if (cursor_->mode()==TextCursor::EM_Overwrite) {
         // Return a cursor rect the same height as line in this case
         return QRect(col*dY, row*dY, dX, dY);
     }
     else {
-        // Return an "underline" cursor rect
-        return QRect(col*dX, (row+1)*dY-1, dX, 2);
+        // Return an "underline" or "vline" cursor rect
+        return cursor_->isFreeCursorMovement()
+                ? QRect(col*dX, (row+1)*dY-1, dX, 2)
+                : QRect(col*dX, row*dY+4, 2, dY-2);
     }
 }
 

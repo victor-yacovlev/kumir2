@@ -5,6 +5,8 @@
 
 namespace Editor {
 
+
+
 namespace Ui {
     class SettingsPage;
 }
@@ -12,8 +14,16 @@ namespace Ui {
 class SettingsPage : public QWidget
 {
     Q_OBJECT
+    Q_ENUMS(FreeCursorMovementType)
 
 public:
+
+    enum FreeCursorMovementType {
+        CommentsAndTexts = 0,
+        Always = 1,
+        TextsOnly = 2
+    };
+
     explicit SettingsPage(QSettings * settings, QWidget *parent = 0);
     void changeSettings(QSettings * settings);
     ~SettingsPage();
@@ -76,6 +86,9 @@ public:
 
     static QString KeyAutoInsertPairingBraces;
     static bool DefaultAutoInsertPairingBraces;
+
+    static QString KeyFreeCursorMovement;
+    static FreeCursorMovementType DefaultFreeCursorMovement;
 
 public slots:
     void accept();
