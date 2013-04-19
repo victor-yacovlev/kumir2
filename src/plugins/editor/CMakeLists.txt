@@ -14,6 +14,7 @@ set(SOURCES
     textdocument.cpp
     editcommands.cpp
     suggestionswindow.cpp
+    findreplace.cpp
 )
 
 set(EXTRA_LIBS
@@ -43,11 +44,13 @@ set(MOC_HEADERS
     settingspage.h
     editor_p.h
     suggestionswindow.h
+    findreplace.h
 )
 
 set(FORMS
     settingspage.ui
     suggestionswindow.ui
+    findreplace.ui
 )
 
 qt4_wrap_ui(UI_SOURCES ${FORMS})

@@ -491,6 +491,7 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
         fileNamesToOpen = d->analizer->supportedFileNamePattern();
 
     d->plane = new EditorPlane(d->doc, d->analizer, d->cursor, d->clipboard, fileNamesToOpen, d->settings, d->horizontalScrollBar, d->verticalScrollBar, d->analizer!=NULL, this);
+    d->findReplace = new FindReplace(d->doc, d->cursor, d->plane);
 
     d->keybStatus = new QLabel(0);
     d->keybStatus->setFixedWidth(90);
@@ -570,6 +571,22 @@ void EditorPrivate::createActions()
     paste->setShortcut(QKeySequence(QKeySequence::Paste));
     QObject::connect(paste, SIGNAL(triggered()), plane, SLOT(paste()));
 
+    find = new QAction(plane);
+    find->setText(QObject::tr("Find..."));
+    find->setIcon(QIcon::fromTheme("edit-find", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-find.png")));
+    find->setShortcut(QKeySequence(QKeySequence::Find));
+    QObject::connect(find, SIGNAL(triggered()),
+                     findReplace, SLOT(showFind()));
+
+    replace = new QAction(plane);
+    replace->setText(QObject::tr("Replace..."));
+    replace->setIcon(QIcon::fromTheme("edit-find-replace", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-find-replace.png")));
+    replace->setShortcut(QKeySequence(QKeySequence::Replace));
+    QObject::connect(replace, SIGNAL(triggered()),
+                     findReplace, SLOT(showReplace()));
+
+
+
     deleteLine = new QAction(plane);
     deleteLine->setText(QObject::tr("Delete line under cursor"));
     deleteLine->setIcon(QIcon::fromTheme("edit-delete", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-delete.png")));
@@ -621,6 +638,9 @@ void EditorPrivate::createActions()
     menu_edit->addAction(cut);
     menu_edit->addAction(copy);
     menu_edit->addAction(paste);
+    menu_edit->addSeparator();
+    menu_edit->addAction(find);
+    menu_edit->addAction(replace);
     menu_edit->addSeparator();
     menu_edit->addAction(deleteLine);
     menu_edit->addAction(deleteTail);

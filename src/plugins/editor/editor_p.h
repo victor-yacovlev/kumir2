@@ -6,6 +6,7 @@
 #include "interfaces/editorinterface.h"
 #include "interfaces/analizerinterface.h"
 #include "macro.h"
+#include "findreplace.h"
 
 namespace Editor {
 
@@ -25,6 +26,8 @@ public:
     QScrollBar * verticalScrollBar;
     QSettings * settings;
 
+    FindReplace * findReplace;
+
     QLabel * keybStatus;
     QLabel * positionStatus;
 
@@ -35,6 +38,9 @@ public:
     QAction * deleteLine;
     QAction * deleteTail;
     QAction * toggleComment;
+
+    QAction * find;
+    QAction * replace;
 
     QAction * undo;
     QAction * redo;

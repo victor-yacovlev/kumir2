@@ -44,12 +44,12 @@
         <translation>использовать %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="615"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="632"/>
         <source>Edit</source>
         <translation>Редактирование</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="632"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="652"/>
         <source>Insert</source>
         <translation>Вставка</translation>
     </message>
@@ -125,6 +125,66 @@
         <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="188"/>
         <source>Save Kumir program...</source>
         <translation>Сохранить Кумир-программу...</translation>
+    </message>
+</context>
+<context>
+    <name>Editor::FindReplace</name>
+    <message>
+        <location filename="../../../src/plugins/editor/findreplace.ui" line="14"/>
+        <source>Form</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/findreplace.ui" line="50"/>
+        <source>Find:</source>
+        <translation>Найти:</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/findreplace.ui" line="85"/>
+        <location filename="../../../src/plugins/editor/findreplace.ui" line="100"/>
+        <location filename="../../../src/plugins/editor/findreplace.ui" line="165"/>
+        <source>...</source>
+        <translation>...</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/findreplace.ui" line="173"/>
+        <source>Esc</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/findreplace.ui" line="210"/>
+        <source>Replace:</source>
+        <translation>Заменить на:</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/findreplace.ui" line="261"/>
+        <source>Replace</source>
+        <translation>Заменить</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/findreplace.ui" line="268"/>
+        <source>Replace All</source>
+        <translation>Заменить все</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/findreplace.ui" line="296"/>
+        <source>Search mode:</source>
+        <translation>Режим поиска:</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/findreplace.ui" line="307"/>
+        <source>Plain text</source>
+        <translation>Простой текст</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/findreplace.ui" line="312"/>
+        <source>Pattern</source>
+        <translation>Шаблон по * и ?</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/findreplace.ui" line="333"/>
+        <source>Match case</source>
+        <translation>С учетом регистра букв</translation>
     </message>
 </context>
 <context>
@@ -297,22 +357,22 @@
         <translation>Только в текстовых файлах</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.cpp" line="256"/>
+        <location filename="../../../src/plugins/editor/settingspage.cpp" line="270"/>
         <source>File not exists</source>
         <translation>Файл не найден</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.cpp" line="259"/>
+        <location filename="../../../src/plugins/editor/settingspage.cpp" line="273"/>
         <source>File access denied</source>
         <translation>Нет доступа к файлу</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.cpp" line="268"/>
+        <location filename="../../../src/plugins/editor/settingspage.cpp" line="282"/>
         <source>Choose initial program file</source>
         <translation>Выбор файла с исходным текстом программы</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.cpp" line="327"/>
+        <location filename="../../../src/plugins/editor/settingspage.cpp" line="341"/>
         <source>Choose color</source>
         <translation>Выберете цвет</translation>
     </message>
@@ -394,47 +454,57 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="550"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="551"/>
         <source>Select all text in editor</source>
         <translation>Выбрать весь текст</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="556"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="557"/>
         <source>Copy selection to clipboard</source>
         <translation>Скопировать</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="562"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="563"/>
         <source>Cut selection to clipboard</source>
         <translation>Вырезать</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="568"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="569"/>
         <source>Paste from clipboard</source>
         <translation>Вставить</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="574"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="575"/>
+        <source>Find...</source>
+        <translation>Найти...</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="582"/>
+        <source>Replace...</source>
+        <translation>Заменить...</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="591"/>
         <source>Delete line under cursor</source>
         <translation>Удалить строку</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="580"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="597"/>
         <source>Delete text from cursor to end of line</source>
         <translation>Удалить текст до конца строки</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="587"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="604"/>
         <source>Undo last action</source>
         <translation>Отменить последнее действие</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="595"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="612"/>
         <source>Redo last undoed action</source>
         <translation>Повторить отмененное действие</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="603"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="620"/>
         <source>(Un)Comment lines</source>
         <translation>(Раз)комменировать строки</translation>
     </message>
