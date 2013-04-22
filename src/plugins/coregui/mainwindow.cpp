@@ -586,10 +586,30 @@ bool MainWindow::closeTab(int index)
         }
         else {
             ui->tabWidget->setCurrentIndex(index);
-            r = QMessageBox::question(this, tr("Close editor"),
-                                      tr("Save current text?"),
-                                      QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
-                                      QMessageBox::Save);
+            QMessageBox messageBox(
+                        QMessageBox::Question,
+                        tr("Close editor"),
+                        tr("Save current text?"),
+                        QMessageBox::NoButton,
+                        this
+                        );
+            QPushButton * btnSave =
+                    messageBox.addButton(tr("Save"), QMessageBox::AcceptRole);
+            QPushButton * btnDiscard =
+                    messageBox.addButton(tr("Don't save"), QMessageBox::DestructiveRole);
+            QPushButton * btnCancel =
+                    messageBox.addButton(tr("Cancel closing"), QMessageBox::RejectRole);
+            messageBox.setDefaultButton(btnSave);
+            messageBox.exec();
+            if (messageBox.clickedButton()==btnSave) {
+                r = QMessageBox::Save;
+            }
+            if (messageBox.clickedButton()==btnDiscard) {
+                r = QMessageBox::Discard;
+            }
+            if (messageBox.clickedButton()==btnCancel) {
+                r = QMessageBox::Cancel;
+            }
         }
         if (r==QMessageBox::Discard) {
             m_plugin->plugin_editor->closeDocument(documentId);
@@ -914,12 +934,19 @@ void MainWindow::restoreSession()
             break;
     }
 
-    if (hasUnsavedChanges) {
-        QMessageBox::StandardButton r = QMessageBox::question(this,
-                                                              tr("Restore previous session"),
-                                                              tr("Are you sure to restore previous session? All unsaved changes will be lost."),
-                                                              QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-        if (r==QMessageBox::No) {
+    if (hasUnsavedChanges) {        
+        QMessageBox messageBox(
+                    QMessageBox::Question,
+                    tr("Restore previous session"),
+                    tr("Are you sure to restore previous session? All unsaved changes will be lost."),
+                    QMessageBox::NoButton,
+                    this
+                    );
+        messageBox.addButton(tr("Yes"), QMessageBox::AcceptRole);
+        QPushButton * btnNo = messageBox.addButton(tr("No"), QMessageBox::RejectRole);
+        messageBox.setDefaultButton(btnNo);
+        messageBox.exec();
+        if (messageBox.clickedButton()==btnNo) {
             return;
         }
     }
@@ -1040,8 +1067,31 @@ void MainWindow::closeEvent(QCloseEvent *e)
     }
     if (!unsavedFiles.isEmpty()) {
         QString messageText = tr("The following files have changes:\n%1\nSave them?").arg(unsavedFiles.join("\n"));
-        r =  QMessageBox::question(this, tr("Close Kumir"), messageText,
-                                   QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Save);
+        QMessageBox messageBox(
+                    QMessageBox::Question,
+                    tr("Close Kumir"),
+                    messageText,
+                    QMessageBox::NoButton,
+                    this
+                    );
+        QPushButton * btnSave =
+                messageBox.addButton(tr("Save"), QMessageBox::AcceptRole);
+        QPushButton * btnDiscard =
+                messageBox.addButton(tr("Don't save"), QMessageBox::DestructiveRole);
+        QPushButton * btnCancel =
+                messageBox.addButton(tr("Cancel closing"), QMessageBox::RejectRole);
+        messageBox.setDefaultButton(btnCancel);
+        messageBox.exec();
+        if (messageBox.clickedButton()==btnSave) {
+            r = QMessageBox::Save;
+        }
+        if (messageBox.clickedButton()==btnDiscard) {
+            r = QMessageBox::Discard;
+        }
+        if (messageBox.clickedButton()==btnCancel) {
+            r = QMessageBox::Cancel;
+        }
+
     }
     if (r==QMessageBox::Cancel) {
         e->ignore();
