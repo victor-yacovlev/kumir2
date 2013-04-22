@@ -1160,7 +1160,7 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
     bool SelectNextWord = e->matches(QKeySequence::SelectNextWord);
     bool MoveToPreviousChar = e->matches(QKeySequence::MoveToPreviousChar);
     bool SelectPreviousChar = e->matches(QKeySequence::SelectPreviousChar);
-    bool MoveToPreviousWord = e->matches(QKeySequence::MoveToPreviousChar);
+    bool MoveToPreviousWord = e->matches(QKeySequence::MoveToPreviousWord);
     bool SelectPreviousWord = e->matches(QKeySequence::SelectPreviousWord);
     bool MoveToNextLine = e->matches(QKeySequence::MoveToNextLine);
     bool SelectNextLine = e->matches(QKeySequence::SelectNextLine);
