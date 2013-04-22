@@ -52,7 +52,7 @@ protected:
     void stop();
     void updateSettings();
 
-    class MainWindow * m_mainWindow;
+    class MainWindow * mainWindow_;
     class QLabel * m_kumirStateLabel;
     class QLabel * m_genericCounterLabel;
     EditorInterface * plugin_editor;
@@ -61,16 +61,16 @@ protected:
     BrowserInterface * plugin_browser;
     RunInterface * plugin_kumirCodeRun;
     QList<ActorInterface*> l_plugin_actors;
-    BrowserComponent m_startPage;
-    QList<Widgets::SecondaryWindow*> l_secondaryWindows;
+    BrowserComponent startPage_;
+    QList<Widgets::SecondaryWindow*> secondaryWindows_;
     Term * m_terminal;
     QMap<QString,QObject*> m_browserObjects;
-    KumirProgram * m_kumirProgram;
-    class DebuggerWindow * m_debugger;
-    BrowserComponent m_helpBrowser;
-    QSplitter * m_bottomSplitter;
+    KumirProgram * kumirProgram_;
+    class DebuggerWindow * debugger_;
+    BrowserComponent helpBrowser_;
+    QSplitter * bottomSplitter_;
 
-    bool b_nosessions;
+    bool sessionsDisableFlag_;
 
 };
 

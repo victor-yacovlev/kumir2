@@ -108,7 +108,7 @@ MainWindow::MainWindow(Plugin * p) :
 #ifdef Q_OS_MAC
 
 #endif
-    if (m_plugin->b_nosessions) {
+    if (m_plugin->sessionsDisableFlag_) {
         ui->actionRestore_previous_session->setEnabled(false);
         ui->actionRestore_previous_session->setVisible(false);
     }
@@ -438,7 +438,7 @@ void MainWindow::prepareRunMenu()
     if (!twe)
         return;
     if (twe->type==Kumir) {
-        ui->menuRun->addActions(m_plugin->m_kumirProgram->actions()->actions());
+        ui->menuRun->addActions(m_plugin->kumirProgram_->actions()->actions());
     }
     else {
         ui->menuRun->addAction(a_notAvailable);
@@ -780,7 +780,7 @@ TabWidgetElement * MainWindow::addCentralComponent(
     class KumirProgram * kumir = 0;
     class PascalProgram * pascal = 0;
     if (type==Kumir) {
-        kumir = m_plugin->m_kumirProgram;
+        kumir = m_plugin->kumirProgram_;
     }
     TabWidgetElement * element = new TabWidgetElement(
                 c,
@@ -858,13 +858,13 @@ void MainWindow::setupContentForTab()
         const AnalizerInterface * analizer = m_plugin->plugin_editor->analizer(id);
         int analizerId = m_plugin->plugin_editor->analizerDocumentId(id);
         const AST::Data * ast = analizer->abstractSyntaxTree(analizerId);
-        m_plugin->m_kumirProgram->setAST(0);
-        m_plugin->m_kumirProgram->setAST(ast);
-        m_plugin->m_kumirProgram->setSourceFileName(fileName);
-        m_plugin->m_kumirProgram->setDocumentId(id);
+        m_plugin->kumirProgram_->setAST(0);
+        m_plugin->kumirProgram_->setAST(ast);
+        m_plugin->kumirProgram_->setSourceFileName(fileName);
+        m_plugin->kumirProgram_->setDocumentId(id);
     }
     else {
-        m_plugin->m_kumirProgram->setAST(0);
+        m_plugin->kumirProgram_->setAST(0);
     }
 }
 
@@ -936,13 +936,13 @@ void MainWindow::restoreSession()
         ui->tabWidget->removeTab(index);
     }
 
-    if (m_plugin->m_startPage.widget) {
+    if (m_plugin->startPage_.widget) {
 
         addCentralComponent(
                     tr("Start"),
-                    m_plugin->m_startPage.widget,
-                    m_plugin->m_startPage.toolbarActions,
-                    m_plugin->m_startPage.menus,
+                    m_plugin->startPage_.widget,
+                    m_plugin->startPage_.toolbarActions,
+                    m_plugin->startPage_.menus,
                     QList<QWidget*>(),
                     WWW,
                     false);
@@ -1011,7 +1011,7 @@ void MainWindow::restoreSession()
 
 void MainWindow::closeEvent(QCloseEvent *e)
 {
-    if (m_plugin->b_nosessions && b_notabs) {
+    if (m_plugin->sessionsDisableFlag_ && b_notabs) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
         if (twe->type!=WWW) {
             int documentId = twe->property("documentId").toInt();
@@ -1059,7 +1059,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
         }
     }
 
-    if (!m_plugin->b_nosessions) {
+    if (!m_plugin->sessionsDisableFlag_) {
         // Clear previous session
 
         QDir sessionDir(QDir::currentPath()+"/.session");
