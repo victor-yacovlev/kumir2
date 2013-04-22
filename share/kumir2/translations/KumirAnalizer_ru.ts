@@ -19,27 +19,27 @@
     <message>
         <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="318"/>
         <source>Built-it module %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Встроенный исполнитель %1</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="329"/>
         <source>Use file &quot;%1&quot; as module</source>
-        <translation type="unfinished"></translation>
+        <translation>Использовать программу &quot;%1&quot; как исполнитель</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="338"/>
         <source>Use precompiled file &quot;%1&quot; as module</source>
-        <translation type="unfinished"></translation>
+        <translation>Использовать код &quot;%1&quot; как исполнитель</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="520"/>
         <source>Loop for variable</source>
-        <translation type="unfinished"></translation>
+        <translation>Цикл с изменением значения величины</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="525"/>
         <source>Repeat while condition is true</source>
-        <translation type="unfinished"></translation>
+        <translation>Повторять пока условие истинно</translation>
     </message>
 </context>
 </TS>

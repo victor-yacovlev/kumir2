@@ -16,26 +16,53 @@ void desaturate(QImage & img) {
     }
 }
 
-SuggestionsWindow::SuggestionsWindow(QWidget *editorWidget) :
-    QWidget(0, Qt::Popup),
-    ui(new Ui::SuggestionsWindow)
+SuggestionsWindow::SuggestionsWindow(QWidget *editorWidget)
+    : QWidget(0, Qt::Popup)
+    , ui(new Ui::SuggestionsWindow)
+    , keyPressedFlag_(false)
+    , editorWidget_(editorWidget)
 {
-    b_keyPressed = false;
-    this->editorWidget = editorWidget;
-    QPalette pal = palette();
-    const QString bgColor = pal.brush(QPalette::Normal, QPalette::ToolTipBase).color().name();
     ui->setupUi(this);
-    static const QString css = QString::fromAscii(""
-            "QWidget {"
-            "  background-color: %1;"
-            "  border: 1px solid black;"
-            "}"
-            "QWidget#widget { border-left: 0; }"
-            "QListWidget { border-bottom: 0; }"
-            "QToolButton { border: 0; }"
-            "")
-            .arg(bgColor);
-//    qDebug() << css;
+    QPalette pal = palette();
+    const QString bgColor =
+            pal.brush(QPalette::Normal, QPalette::ToolTipBase).color().name();
+    QColor handleColor =
+            pal.brush(QPalette::Normal, QPalette::ToolTipBase).color().toHsl();
+    int lightness = handleColor.lightness();
+    if (lightness > 128) {
+        // Make scrollbar handle darker
+        lightness = qMax(0, lightness-40);
+    }
+    else {
+        // Make scrollbar handle lighter (assuming dark UI theme)
+        lightness = qMin(255, lightness+40);
+    }
+    handleColor.setHsl(handleColor.hue(), handleColor.saturation(), lightness);
+    static const QString css =
+            QString::fromAscii(""
+                               "QWidget {"
+                               "  background-color: %1;"
+                               "  border: 0;"
+                               "}"
+                               "QScrollBar:vertical { "
+                               "  width: 10px;"
+                               "  background: transparent;"
+                               "}"
+                               "QScrollBar:horizontal {"
+                               "  height: 0"
+                               "}"
+                               "QScrollBar::handle {"
+                               "  background: %2;"
+                               "  border-radius: 4px;"
+                               "}"
+                               "QScrollBar::add-line:vertical {"
+                               "  height: 0;"
+                               "}"
+                               "QScrollBar::sub-line:vertical {"
+                               "  height: 0;"
+                               "}"
+                               "")
+            .arg(bgColor).arg(handleColor.name());
     setStyleSheet(css);
     ui->alist->installEventFilter(this);
     connect(ui->alist, SIGNAL(currentRowChanged(int)),
@@ -100,7 +127,7 @@ void SuggestionsWindow::createIcons(const QSettings *settings)
                            ).toString()));
     pl.drawEllipse(QRect(0,0,8,8));
 
-    icon_local = QIcon(QPixmap::fromImage(local));
+    icon_local_ = QIcon(QPixmap::fromImage(local));
 
     QImage global(8,8,QImage::Format_ARGB32);
     global.fill(0);
@@ -113,7 +140,7 @@ void SuggestionsWindow::createIcons(const QSettings *settings)
                            ).toString()));
     pg.drawPolygon(points, 4);
 
-    icon_global = QIcon(QPixmap::fromImage(global));
+    icon_global_ = QIcon(QPixmap::fromImage(global));
 
     QImage algorithm(8,8,QImage::Format_ARGB32);
     algorithm.fill(0);
@@ -126,7 +153,7 @@ void SuggestionsWindow::createIcons(const QSettings *settings)
                            ).toString()));
     pa.drawPolygon(points, 4);
 
-    icon_algorithm = QIcon(QPixmap::fromImage(algorithm));
+    icon_algorithm_ = QIcon(QPixmap::fromImage(algorithm));
 
     QImage module(8,8,QImage::Format_ARGB32);
     module.fill(0);
@@ -139,7 +166,7 @@ void SuggestionsWindow::createIcons(const QSettings *settings)
                            ).toString()));
     pm.drawRect(QRect(1,1,6,6));
 
-    icon_module = QIcon(QPixmap::fromImage(module));
+    icon_module_ = QIcon(QPixmap::fromImage(module));
 
     QImage kumfile(8,8,QImage::Format_ARGB32);
     kumfile.fill(0);
@@ -152,7 +179,7 @@ void SuggestionsWindow::createIcons(const QSettings *settings)
                            ).toString()));
     pf.drawRect(QRect(1,1,6,6));
 
-    icon_kumfile = QIcon(QPixmap::fromImage(kumfile));
+    icon_kumfile_ = QIcon(QPixmap::fromImage(kumfile));
 
     QImage keyword(8,8,QImage::Format_ARGB32);
     keyword.fill(0);
@@ -165,18 +192,18 @@ void SuggestionsWindow::createIcons(const QSettings *settings)
                            ).toString()));
     pk.drawRect(QRect(1,1,6,6));
 
-    icon_keyword = QIcon(QPixmap::fromImage(keyword));
+    icon_keyword_ = QIcon(QPixmap::fromImage(keyword));
 
     QImage other(8,8,QImage::Format_ARGB32);
     other.fill(0);
-    icon_other = QIcon(QPixmap::fromImage(other));
+    icon_other_ = QIcon(QPixmap::fromImage(other));
 
 }
 
 void SuggestionsWindow::handleCurrentItemChanged(int currentRow)
 {
-    if (currentRow>=0 && currentRow<l_suggestions.size()) {
-        ui->descriptionView->setText(l_suggestions.at(currentRow).description);
+    if (currentRow>=0 && currentRow<suggestions_.size()) {
+        ui->descriptionView->setText(suggestions_.at(currentRow).description);
     }
     else {
         ui->descriptionView->clear();
@@ -192,7 +219,7 @@ void SuggestionsWindow::acceptItem()
 {
     int row = ui->alist->currentRow();
     if (row>=0 && row<ui->alist->count()) {
-        const QString value = l_suggestions.at(row).value;
+        const QString value = suggestions_.at(row).value;
         emit acceptedSuggestion(value);
     }
     hide();
@@ -202,7 +229,7 @@ void SuggestionsWindow::init(
         const QString &,
         const QList<Shared::Suggestion> &suggestions)
 {
-    b_keyPressed = false;
+    keyPressedFlag_ = false;
     ui->alist->clear();
     ui->descriptionView->clear();
     int prefWidth = 100;
@@ -214,33 +241,33 @@ void SuggestionsWindow::init(
         item->setText(s.value);
         prefWidth = qMax(prefWidth, 100+fm.width(s.value));
         if (s.kind==Shared::Suggestion::Local) {
-            item->setIcon(icon_local);
+            item->setIcon(icon_local_);
         }
         else if (s.kind==Shared::Suggestion::Global) {
-            item->setIcon(icon_global);
+            item->setIcon(icon_global_);
         }
         else if (s.kind==Shared::Suggestion::Algorithm) {
-            item->setIcon(icon_algorithm);
+            item->setIcon(icon_algorithm_);
         }
         else if (s.kind==Shared::Suggestion::BuiltinModule) {
-            item->setIcon(icon_module);
+            item->setIcon(icon_module_);
         }
         else if (s.kind==Shared::Suggestion::KumirModule) {
-            item->setIcon(icon_kumfile);
+            item->setIcon(icon_kumfile_);
         }
         else if (s.kind==Shared::Suggestion::SecondaryKeyword) {
-            item->setIcon(icon_keyword);
+            item->setIcon(icon_keyword_);
         }
         else {
-            item->setIcon(icon_other);
+            item->setIcon(icon_other_);
         }
     }
     int width = qMax(qMin(400, prefWidth), 150);
     int height = qMin(prefHeight, 400);
     setFixedWidth(width);
     setFixedHeight(height);
-    l_suggestions = suggestions;
-    if (l_suggestions.size()==0) {
+    suggestions_ = suggestions;
+    if (suggestions_.size()==0) {
         ui->descriptionView->setText(tr("No suggestions"));
     }
 }
@@ -268,7 +295,7 @@ bool SuggestionsWindow::eventFilter(QObject *obj, QEvent *event)
 
 void SuggestionsWindow::keyPressEvent(QKeyEvent *event)
 {
-    b_keyPressed = true;
+    keyPressedFlag_ = true;
     if (event->key()==Qt::Key_Tab || event->key()==Qt::Key_Escape) {
         hide();
         event->accept();
@@ -284,8 +311,8 @@ void SuggestionsWindow::keyPressEvent(QKeyEvent *event)
 
 void SuggestionsWindow::keyReleaseEvent(QKeyEvent *event)
 {
-    if (b_keyPressed || event->key()==Qt::Key_Escape) {
-        b_keyPressed = false;
+    if (keyPressedFlag_ || event->key()==Qt::Key_Escape) {
+        keyPressedFlag_ = false;
         if (event->key()==Qt::Key_Tab || event->key()==Qt::Key_Escape) {
             hide();
             event->accept();
@@ -302,10 +329,10 @@ void SuggestionsWindow::keyReleaseEvent(QKeyEvent *event)
 
 void SuggestionsWindow::hideEvent(QHideEvent *event)
 {
-    Q_CHECK_PTR(editorWidget);
-    b_keyPressed = false;
+    Q_CHECK_PTR(editorWidget_);
+    keyPressedFlag_ = false;
     QWidget::hideEvent(event);
-    editorWidget->setFocus();
+    editorWidget_->setFocus();
     emit hidden();
 }
 

@@ -1440,8 +1440,11 @@ void EditorPlane::finishAutoCompletion(const QString &suggestion)
         }
         else {
             text = suggestion;
-            while (text.startsWith(' '))
-                text.remove(0,1);
+            if (text.startsWith(' ') &&
+                    (before.length()==0 || before.endsWith(' '))) {
+                while (text.startsWith(' '))
+                    text.remove(0,1);
+            }
         }
     }
     for (int i=0; i<leftPart; i++) {

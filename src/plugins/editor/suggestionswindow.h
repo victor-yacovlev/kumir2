@@ -36,16 +36,16 @@ protected slots:
 private:
     void createIcons(const QSettings * settings);
     Ui::SuggestionsWindow *ui;
-    QList<Shared::Suggestion> l_suggestions;
-    bool b_keyPressed;
-    QIcon icon_local;
-    QIcon icon_global;
-    QIcon icon_algorithm;
-    QIcon icon_keyword;
-    QIcon icon_module;
-    QIcon icon_kumfile;
-    QIcon icon_other;
-    QWidget * editorWidget;
+    QList<Shared::Suggestion> suggestions_;
+    bool keyPressedFlag_;
+    QIcon icon_local_;
+    QIcon icon_global_;
+    QIcon icon_algorithm_;
+    QIcon icon_keyword_;
+    QIcon icon_module_;
+    QIcon icon_kumfile_;
+    QIcon icon_other_;
+    QWidget * editorWidget_;
 };
 
 
