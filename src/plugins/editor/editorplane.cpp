@@ -1014,7 +1014,7 @@ uint EditorPlane::normalizedNewMarginLinePosition(uint x) const
 
     // Make x-coordinate aligned to character matrix
     x = ( x / charWidth() ) * charWidth();
-    qDebug() << "X = " << x;
+//    qDebug() << "X = " << x;
     return x;
 }
 
@@ -2290,7 +2290,7 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
 
 void EditorPlane::signalizeNotEditable()
 {
-    qDebug() << "AAAAA!!!!";
+//    qDebug() << "AAAAA!!!!";
     doNotEditAnimation_->stop();
     doNotEditAnimation_->setStartValue(1.0);
     doNotEditAnimation_->setEndValue(0.0);
