@@ -33,7 +33,7 @@ public:
     class TextDocument * document();
     bool isModified() const;
     void appendMarginText(int lineNo, const QString & text);
-    void setMarginText(int lineNo, const QString & text);
+    void setMarginText(int lineNo, const QString & text, const QColor &fgColor);
     void clearMarginText();
     void clearMarginText(uint fromLine, uint toLine);
     void setNotModified();

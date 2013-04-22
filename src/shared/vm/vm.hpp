@@ -1848,7 +1848,7 @@ void KumirVM::do_specialcall(uint16_t alg)
                 margin.push_back('=');
                 margin += svalue;
             }
-            debugHandler_->noticeOnValueChange(lineNo, margin);
+            debugHandler_->appendTextToMargin(lineNo, margin);
         }
     }
     if (alg==0x01) {
@@ -2113,7 +2113,7 @@ void KumirVM::do_setarr(uint8_t s, uint16_t id)
             }
             const String notice = name+Kumir::Core::fromAscii("[")+boundsText+Kumir::Core::fromAscii("]");
             if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
-                debugHandler_->noticeOnValueChange(lineNo, notice);
+                debugHandler_->appendTextToMargin(lineNo, notice);
                 if (VariableScope(s)==Bytecode::LOCAL) {
                     debugHandler_->debuggerUpdateLocalTableBounds(name, bounds);
                 }
@@ -2162,7 +2162,7 @@ void KumirVM::do_updarr(uint8_t s, uint16_t id)
             }
             const String notice = name+Kumir::Core::fromAscii("[")+boundsText+Kumir::Core::fromAscii("]");
             if (debugHandler_)
-                debugHandler_->noticeOnValueChange(lineNo, notice);
+                debugHandler_->appendTextToMargin(lineNo, notice);
         }
     }
     nextIP();
@@ -2232,7 +2232,7 @@ void KumirVM::do_store(uint8_t s, uint16_t id)
         }
         if (debugHandler_ && svalue.length()>0) {
             const String message = name+Char('=')+svalue;
-            debugHandler_->noticeOnValueChange(lineNo, message);
+            debugHandler_->appendTextToMargin(lineNo, message);
         }
         if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
             if (VariableScope(s)==Bytecode::LOCAL)
@@ -2343,7 +2343,7 @@ void KumirVM::do_storearr(uint8_t s, uint16_t id)
         notice.push_back(Char('='));
         notice += svalue;
         if (debugHandler_) {
-            debugHandler_->noticeOnValueChange(lineNo, notice);
+            debugHandler_->appendTextToMargin(lineNo, notice);
         }
         if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
             if (VariableScope(s)==Bytecode::LOCAL)
@@ -2445,7 +2445,7 @@ void KumirVM::do_setref(uint8_t s, uint16_t id)
 //            name.push_back('&');
 //            name += qn;
             if (debugHandler_) {
-                debugHandler_->noticeOnValueChange(lineNo, name);
+                debugHandler_->appendTextToMargin(lineNo, name);
             }
             if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
                 if (VariableScope(s)==Bytecode::LOCAL) {
@@ -2560,7 +2560,7 @@ void KumirVM::do_showreg(uint8_t regNo) {
                     ? register0_
                     : currentContext().registers[regNo];
             if (debugHandler_)
-                debugHandler_->noticeOnValueChange(lineNo, val.toString());
+                debugHandler_->appendTextToMargin(lineNo, val.toString());
         }
     }
     nextIP();
@@ -2627,7 +2627,11 @@ void KumirVM::do_ret()
 
 void KumirVM::do_error(uint8_t s, uint16_t id)
 {
+    const int lineNo = currentContext().lineNo;
     error_ = findVariable(s,id).toString();
+    if (debugHandler_ && lineNo!=-1) {
+        debugHandler_->setTextToMargin(lineNo, error_, true);
+    }
 }
 
 void KumirVM::do_line(uint16_t no)

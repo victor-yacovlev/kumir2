@@ -54,7 +54,8 @@ public slots:
             int /*lineNo*/
             );
 
-    bool noticeOnValueChange(int lineNo, const String & s);
+    bool setTextToMargin(int lineNo, const String & s, bool red);
+    bool appendTextToMargin(int lineNo, const String & s);
     bool clearMargin(int from, int to);
 
     bool debuggerReset();
@@ -100,6 +101,7 @@ signals:
     void error(const QString & message);
     void input(const QString & format);
     void marginText(int lineNo, const QString & text);
+    void marginTextReplace(int lineNo, const QString & text, bool redFgColor);
     void externalFunctionCall(const QString & pluginName,
                               quint16 algId,
                               const QVariantList & arguments);

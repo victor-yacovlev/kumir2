@@ -91,11 +91,11 @@ private:
     static Bytecode::ValueKind valueKind(AST::VariableAccessType t);
     static Bytecode::InstructionType operation(AST::ExpressionOperator op);
 
-    const AST::Data * m_ast;
-    Bytecode::Data * m_bc;
-    QList< ConstValue > l_constants;
-    QList< QPair<quint8,quint16> > l_externs;
-    DebugLevel e_debugLevel;
+    const AST::Data * ast_;
+    Bytecode::Data * byteCode_;
+    QList< ConstValue > constants_;
+    QList< QPair<quint8,quint16> > externs_;
+    DebugLevel debugLevel_;
 
 };
 

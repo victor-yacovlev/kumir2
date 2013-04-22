@@ -30,6 +30,8 @@ Plugin::Plugin()
     connect (pRun_, SIGNAL(lineChanged(int)), this, SIGNAL(lineChanged(int)));
     connect (pRun_, SIGNAL(marginText(int,QString)), this, SIGNAL(marginText(int,QString)));
     connect (pRun_, SIGNAL(clearMarginRequest(int,int)), this, SIGNAL(clearMargin(int,int)));
+    connect (pRun_, SIGNAL(marginTextReplace(int,QString,bool)),
+             this, SIGNAL(replaceMarginText(int,QString,bool)));
     onlyOneTryToInput_ = false;
 
 

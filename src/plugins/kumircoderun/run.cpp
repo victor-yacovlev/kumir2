@@ -276,10 +276,15 @@ bool Run::debuggerUpdateGlobalTableValue(
     return true;
 }
 
-bool Run::noticeOnValueChange(int l, const String & s)
+bool Run::appendTextToMargin(int l, const String & s)
 {
     emit marginText(l, QString::fromStdWString(s));
     return true;
+}
+
+bool Run::setTextToMargin(int lineNo, const String &s, bool red)
+{
+    emit marginTextReplace(lineNo, QString::fromStdWString(s), red);
 }
 
 bool Run::noticeOnLineNoChanged(int lineNo)

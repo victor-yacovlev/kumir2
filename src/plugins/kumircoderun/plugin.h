@@ -84,6 +84,7 @@ signals:
     void outputRequest(const QString & output);
     void lineChanged(int lineNo);
     void marginText(int lineNo, const QString & text);
+    void replaceMarginText(int lineNo, const QString & text, bool redFgColor);
     void clearMargin(int fromLine, int toLine);
     void resetModule(const QString &actorPluginName);
 

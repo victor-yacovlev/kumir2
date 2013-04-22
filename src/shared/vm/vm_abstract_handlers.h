@@ -249,9 +249,15 @@ public:
 
 class DebuggingInteractionHandler {
 public:
-    inline virtual bool noticeOnValueChange(
+    inline virtual bool appendTextToMargin(
             int /*lineNo*/,
             const Kumir::String & /*noticeText*/
+            ) { return false; }
+
+    inline virtual bool setTextToMargin(
+            int /*lineNo*/,
+            const Kumir::String & /*text*/,
+            bool /*redColorForeground*/
             ) { return false; }
 
     inline virtual bool clearMargin(

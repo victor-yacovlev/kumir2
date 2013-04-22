@@ -128,17 +128,26 @@ void KumirProgram::setAST(const AST::Data *ast)
     m_ast = ast;
 }
 
-
+void KumirProgram::handleMarginTextReplace(int lineNo, const QString &text, bool redFgColor)
+{
+    if (lineNo!=-1 && !text.isEmpty())
+        plugin_editor->setMarginText(
+                    documentId_,
+                    lineNo,
+                    text,
+                    redFgColor ? QColor("red") : QColor("black")
+                    );
+}
 
 void KumirProgram::handleMarginTextRequest(int lineNo, const QString &text)
 {
     if (lineNo!=-1 && !text.isEmpty())
-        plugin_editor->appendMarginText(i_documentId, lineNo, text);
+        plugin_editor->appendMarginText(documentId_, lineNo, text);
 }
 
 void KumirProgram::handleMarginClearRequest(int fromLine, int toLine)
 {
-    plugin_editor->clearMargin(i_documentId, fromLine, toLine);
+    plugin_editor->clearMargin(documentId_, fromLine, toLine);
 }
 
 void KumirProgram::setTerminal(Term *t, QDockWidget * w)
@@ -171,6 +180,8 @@ void KumirProgram::setBytecodeRun(KPlugin *run)
     connect(run, SIGNAL(lineChanged(int)), this, SLOT(handleLineChanged(int)));
     connect(run, SIGNAL(marginText(int,QString)), this, SLOT(handleMarginTextRequest(int,QString)));
     connect(run, SIGNAL(clearMargin(int,int)), this, SLOT(handleMarginClearRequest(int,int)));
+    connect(run, SIGNAL(replaceMarginText(int,QString, bool)),
+            this, SLOT(handleMarginTextReplace(int,QString,bool)));
 }
 
 
@@ -413,12 +424,12 @@ void KumirProgram::handleRunnerStopped(int rr)
         e_state = Idle;
         m_terminal->clearFocus();
 
-        plugin_editor->unhighlightLine(i_documentId);
+        plugin_editor->unhighlightLine(documentId_);
     }
     else if (reason==Shared::RunInterface::SR_Error) {
         s_endStatus = tr("Evaluation error");
         m_terminal->error(plugin_bytecodeRun->error());
-        plugin_editor->highlightLineRed(i_documentId, plugin_bytecodeRun->currentLineNo());
+        plugin_editor->highlightLineRed(documentId_, plugin_bytecodeRun->currentLineNo());
         PluginManager::instance()->switchGlobalState(GS_Observe);
         e_state = Idle;
         m_terminal->clearFocus();
@@ -429,7 +440,7 @@ void KumirProgram::handleRunnerStopped(int rr)
         PluginManager::instance()->switchGlobalState(GS_Observe);
         e_state = Idle;
         m_terminal->clearFocus();
-        plugin_editor->unhighlightLine(i_documentId);
+        plugin_editor->unhighlightLine(documentId_);
         if (w_debuggerWindow) w_debuggerWindow->reset();
     }
 
@@ -441,15 +452,15 @@ void KumirProgram::handleRunnerStopped(int rr)
 
 void KumirProgram::handleLineChanged(int lineNo)
 {
-    emit activateDocumentTab(i_documentId);
+    emit activateDocumentTab(documentId_);
     if (lineNo!=-1) {
         if (plugin_bytecodeRun->error().isEmpty())
-            plugin_editor->highlightLineGreen(i_documentId, lineNo);
+            plugin_editor->highlightLineGreen(documentId_, lineNo);
         else
-            plugin_editor->highlightLineRed(i_documentId, lineNo);
+            plugin_editor->highlightLineRed(documentId_, lineNo);
     }
     else {
-        plugin_editor->unhighlightLine(i_documentId);
+        plugin_editor->unhighlightLine(documentId_);
     }
 }
 

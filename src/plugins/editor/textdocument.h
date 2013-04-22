@@ -32,6 +32,7 @@ struct TextLine
     QString text;
     QStringList errors;
     QString marginText;
+    QColor marginColor;
     bool changed;
     bool inserted;
 };
@@ -85,6 +86,16 @@ public:
             return dummyString;
         }
     }
+    inline const QColor & marginForegroundColorAt(uint index) const
+    {
+        if ( index < uint(data_.size()) ) {
+            return data_.at(index).marginColor;
+        }
+        else {
+            static const QColor dummyColor("black");
+            return dummyColor;
+        }
+    }
     inline const QString& marginTextAt(uint index) const
     {
         if ( index < uint(data_.size()) ) {
@@ -115,7 +126,12 @@ public:
             return dummyHighlight;
         }
     }
-    inline void setMarginTextAt(int index, const QString & text) { if (index>=0 && index<data_.size()) data_[index].marginText = text; }
+    inline void setMarginTextAt(int index, const QString & text, const QColor & fgColor) {
+        if (index>=0 && index<data_.size()) {
+            data_[index].marginText = text;
+            data_[index].marginColor = fgColor;
+        }
+    }
     inline void setIndentRankAt(int index, const QPoint & rank) { if (index>=0 && index<data_.size()) data_[index].indentStart = rank.x(); data_[index].indentEnd = rank.y(); }
     inline void setHighlightAt(int index, const QList<Shared::LexemType> & highlight) { if (index>=0 && index<data_.size()) data_[index].highlight = highlight; }
     inline void setErrorsAt(int index, const QStringList & errs) { if (index>=0 && index<data_.size()) data_[index].errors = errs; }

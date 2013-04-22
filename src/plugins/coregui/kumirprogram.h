@@ -31,8 +31,8 @@ public:
     inline QActionGroup * actions() { return gr_actions; }
     inline bool isRunning() const { return e_state!=Idle; }
     inline void setSourceFileName(const QString & s) { s_sourceFileName = s; }
-    inline void setDocumentId(int id) { if (e_state==Idle) i_documentId = id; }
-    inline int documentId() const { return i_documentId; }
+    inline void setDocumentId(int id) { if (e_state==Idle) documentId_ = id; }
+    inline int documentId() const { return documentId_; }
     inline void setMainWidget(QWidget * w) { w_mainWidget = w; }
     inline void setDebuggerWindow(class DebuggerWindow * w) { w_debuggerWindow = w; }
     void setTerminal(Term * t, QDockWidget * w);
@@ -57,6 +57,7 @@ public slots:
     void handleLineChanged(int lineNo);
     void handleMarginTextRequest(int lineNo, const QString & text);
     void handleMarginClearRequest(int fromLine, int toLine);
+    void handleMarginTextReplace(int,const QString&,bool);
 private slots:
     void handleRunnerStopped(int);
 
@@ -83,7 +84,7 @@ private:
     QActionGroup * gr_actions;
     QString s_sourceFileName;
 
-    int i_documentId;
+    int documentId_;
     bool b_blind;
     int i_timerId;
     QWidget * w_mainWidget;

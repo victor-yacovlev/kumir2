@@ -75,24 +75,32 @@ void Editor::appendMarginText(int lineNo, const QString &text)
 {
     if (lineNo>=0 && lineNo<d->doc->linesCount()) {
         if (!d->doc->marginTextAt(lineNo).isEmpty()) {
-            d->doc->setMarginTextAt(lineNo, d->doc->marginTextAt(lineNo)+"; ");
+            d->doc->setMarginTextAt(
+                        lineNo,
+                        d->doc->marginTextAt(lineNo)+"; ",
+                        d->doc->marginForegroundColorAt(lineNo)
+                        );
         }
-        d->doc->setMarginTextAt(lineNo, d->doc->marginTextAt(lineNo) + text);
+        d->doc->setMarginTextAt(
+                    lineNo,
+                    d->doc->marginTextAt(lineNo) + text,
+                    d->doc->marginForegroundColorAt(lineNo)
+                    );
     }
     update();
 }
 
-void Editor::setMarginText(int lineNo, const QString &text)
+void Editor::setMarginText(int lineNo, const QString &text, const QColor & fgColor)
 {
     if (lineNo>=0 && lineNo<d->doc->linesCount())
-        d->doc->setMarginTextAt(lineNo, text);
+        d->doc->setMarginTextAt(lineNo, text, fgColor);
     update();
 }
 
 void Editor::clearMarginText()
 {
     for (int i=0; i<d->doc->linesCount(); i++) {
-        d->doc->setMarginTextAt(i, "");
+        d->doc->setMarginTextAt(i, "", QColor());
     }
     update();
 }
@@ -102,7 +110,7 @@ void Editor::clearMarginText(uint fromLine, uint toLine)
     uint start = qMin(qMax(0u, fromLine), d->doc->linesCount()-1);
     uint end = qMin(qMax(0u, toLine), d->doc->linesCount()-1);
     for (int i=start; i<=end; i++) {
-        d->doc->setMarginTextAt(i, "");
+        d->doc->setMarginTextAt(i, "", QColor());
     }
     update();
 }

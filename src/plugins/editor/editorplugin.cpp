@@ -48,11 +48,11 @@ void EditorPlugin::appendMarginText(int documentId, int lineNo, const QString & 
     ed->appendMarginText(lineNo, text);
 }
 
-void EditorPlugin::setMarginText(int documentId, int lineNo, const QString & text)
+void EditorPlugin::setMarginText(int documentId, int lineNo, const QString & text, const QColor & fgColor)
 {
     Editor * ed = d->editors[documentId].e;
     Q_CHECK_PTR(ed);
-    ed->setMarginText(lineNo, text);
+    ed->setMarginText(lineNo, text, fgColor);
 }
 
 void EditorPlugin::clearMargin(int documentId)
