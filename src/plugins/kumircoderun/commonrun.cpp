@@ -28,6 +28,10 @@ CriticalSectionLocker::~CriticalSectionLocker()
     delete mutex_;
 }
 
+void ExternalModuleResetFunctor::setCallFunctor(ExternalModuleCallFunctor *callFunctor)
+{
+    callFunctor_ = callFunctor;
+}
 
 void ExternalModuleResetFunctor::operator ()(const Kumir::String & moduleName)
 {
@@ -37,6 +41,9 @@ void ExternalModuleResetFunctor::operator ()(const Kumir::String & moduleName)
 
     if (actor) {
         actor->reset();
+        if (callFunctor_) {
+            callFunctor_->checkForActorConnected(actor);
+        }
     }
     else {
         const QString qModuleName = QString::fromStdWString(moduleName);
@@ -95,8 +102,6 @@ AnyValue ExternalModuleCallFunctor::operator ()
         return AnyValue();
     }
 
-    grabActor(actor);
-
     if (actor->evaluate(qAlgKey, arguments)==Shared::ES_Async) {
         // Wait for actor thread to finish
         forever {
@@ -138,26 +143,20 @@ AnyValue ExternalModuleCallFunctor::operator ()
         }
     }
 
-    // Disconnect an actor
-    releaseActor(actor);
-
     // Return a result
     return result;
 }
 
-void ExternalModuleCallFunctor::releaseActor(ActorInterface *actor)
+void ExternalModuleCallFunctor::checkForActorConnected(ActorInterface *actor)
 {
-    QObject * actorObject = dynamic_cast<QObject*>(actor);
-    disconnect(actorObject, SIGNAL(sync()), this, SLOT(handleActorSync()));
+    if (connectedActors_.count(actor)==0) {
+        QObject * actorObject = dynamic_cast<QObject*>(actor);
+        connect(actorObject, SIGNAL(sync()),
+                this, SLOT(handleActorSync()),
+                Qt::DirectConnection);
+        connectedActors_.push_back(actor);
+    }
 }
-
-void ExternalModuleCallFunctor::grabActor(ActorInterface *actor)
-{
-    QObject * actorObject = dynamic_cast<QObject*>(actor);
-    connect(actorObject, SIGNAL(sync()), this, SLOT(handleActorSync()));
-}
-
-
 
 void ExternalModuleCallFunctor::handleActorSync()
 {

@@ -25,13 +25,6 @@ private:
     QMutex * mutex_;
 };
 
-class ExternalModuleResetFunctor
-        : public VM::ExternalModuleResetFunctor
-{
-public:
-    void operator()(const Kumir::String & moduleName)
-        /* throws std::string, Kumir::String */ ;
-};
 
 class ExternalModuleCallFunctor:
         private QObject,
@@ -46,17 +39,26 @@ public:
             VariableReferencesList alist
             )  /* throws std::string, Kumir::String */ ;
     ~ExternalModuleCallFunctor();
+    void checkForActorConnected(Shared::ActorInterface * actor);
 
 private slots:
     void handleActorSync();
 
-private /*methods*/:
-    void grabActor(ActorInterface * actor);
-    void releaseActor(ActorInterface * actor);
-
 private /*fields*/:
     bool finishedFlag_;
     QMutex * finishedMutex_;
+    QList<Shared::ActorInterface*> connectedActors_;
+};
+
+class ExternalModuleResetFunctor
+        : public VM::ExternalModuleResetFunctor
+{
+public:
+    void operator()(const Kumir::String & moduleName)
+        /* throws std::string, Kumir::String */ ;
+    void setCallFunctor(ExternalModuleCallFunctor * callFunctor);
+private:
+    ExternalModuleCallFunctor * callFunctor_;
 };
 
 class CustomTypeToStringFunctor

@@ -477,6 +477,7 @@ Plugin::~Plugin()
 void Plugin::prepareCommonRun()
 {
     common_ = new CommonFunctors;
+    common_->reset.setCallFunctor(&common_->call);
     pRun_->vm->setFunctor(&common_->reset);
     pRun_->vm->setFunctor(&common_->call);
     pRun_->vm->setFunctor(&common_->toString);
