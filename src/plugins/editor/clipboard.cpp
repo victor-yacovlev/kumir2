@@ -43,7 +43,7 @@ void Clipboard::push(const ClipboardData & data)
     QClipboard * cl = QApplication::clipboard();
     QMimeData * md = new QMimeData;
     md->setText(data.text);
-    md->setHtml(data.html);
+    md->setData("text/rtf", data.rtf);
     if (data.type==ClipboardData::Block)
         md->setData(BlockMimeType, data.block.join("\n").toUtf8());
     cl->setMimeData(md);

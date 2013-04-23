@@ -275,7 +275,11 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
             ClipboardData data;
             data.text = selectedText();
             data.type = ClipboardData::Text;
-            data.html = document_->toHtml(-1, -1);
+            int rstart, rend, cstart, cend;
+            selectionBounds(rstart, cstart, rend, cend);
+            uint fromLine = qMax(0, rstart);
+            uint toLine = qMin(rend, int(document_->linesCount()));
+            data.rtf = document_->toRtf(fromLine, toLine);
             clipboard_->push(data);
         }
         else if (hasRectSelection()) {
@@ -283,7 +287,9 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
             data.text = selectedText();
             data.type = ClipboardData::Block;
             data.block = rectSelectionText();
-            data.html = document_->toHtml(selectionRect_.top(), selectionRect_.bottom());
+            uint fromLine = qMax(0, selectionRect_.top());
+            uint toLine = qMin(selectionRect_.bottom(), int(document_->linesCount()));
+            data.rtf = document_->toRtf(fromLine, toLine);
             clipboard_->push(data);
         }
         break;
@@ -339,7 +345,7 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
         break;
     }
     if (clearCurrentLineError && row_<document_->linesCount()) {
-        document_->setErrorsAt(row_, QStringList());
+        document_->marginAt(row_).errors.clear();
     }
 
     if (prevRow!=row_ || prevLines != document_->linesCount()) {

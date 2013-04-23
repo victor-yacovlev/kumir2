@@ -74,33 +74,30 @@ void Editor::unlock()
 void Editor::appendMarginText(int lineNo, const QString &text)
 {
     if (lineNo>=0 && lineNo<d->doc->linesCount()) {
-        if (!d->doc->marginTextAt(lineNo).isEmpty()) {
-            d->doc->setMarginTextAt(
-                        lineNo,
-                        d->doc->marginTextAt(lineNo)+"; ",
-                        d->doc->marginForegroundColorAt(lineNo)
-                        );
+        TextLine::Margin & margin = d->doc->marginAt(lineNo);
+        if (!margin.text.isEmpty()) {
+            margin.text += "; ";
         }
-        d->doc->setMarginTextAt(
-                    lineNo,
-                    d->doc->marginTextAt(lineNo) + text,
-                    d->doc->marginForegroundColorAt(lineNo)
-                    );
+        margin.text += text;
     }
     update();
 }
 
 void Editor::setMarginText(int lineNo, const QString &text, const QColor & fgColor)
 {
-    if (lineNo>=0 && lineNo<d->doc->linesCount())
-        d->doc->setMarginTextAt(lineNo, text, fgColor);
+    if (lineNo>=0 && lineNo<d->doc->linesCount()) {
+        TextLine::Margin & margin = d->doc->marginAt(lineNo);
+        margin.text = text;
+        margin.color = fgColor;
+    }
     update();
 }
 
 void Editor::clearMarginText()
 {
-    for (int i=0; i<d->doc->linesCount(); i++) {
-        d->doc->setMarginTextAt(i, "", QColor());
+    for (uint i=0; i<d->doc->linesCount(); i++) {
+        TextLine::Margin & margin = d->doc->marginAt(i);
+        margin.text.clear();
     }
     update();
 }
@@ -109,8 +106,9 @@ void Editor::clearMarginText(uint fromLine, uint toLine)
 {
     uint start = qMin(qMax(0u, fromLine), d->doc->linesCount()-1);
     uint end = qMin(qMax(0u, toLine), d->doc->linesCount()-1);
-    for (int i=start; i<=end; i++) {
-        d->doc->setMarginTextAt(i, "", QColor());
+    for (uint i=start; i<=end; i++) {
+        TextLine::Margin & margin = d->doc->marginAt(i);
+        margin.text.clear();
     }
     update();
 }
@@ -457,7 +455,7 @@ void EditorPrivate::updateFromAnalizer()
         if (i<props.size()) {
             doc->setHighlightAt(i, props[i].toList());
         }
-        doc->clearErrorsAt(i);
+        doc->marginAt(i).errors.clear();
         int newIndent = doc->indentAt(i);
         int diffIndent = newIndent - oldIndent;
         if (cursor->row()==i) {
@@ -468,7 +466,7 @@ void EditorPrivate::updateFromAnalizer()
         Error err = errors[i];
         int lineNo = err.line;
         if (lineNo>=0) {
-            doc->errorsAt(lineNo).append(err.code);
+            doc->marginAt(lineNo).errors.append(err.code);
         }
     }
     plane->update();

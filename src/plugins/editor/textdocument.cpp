@@ -113,6 +113,28 @@ void TextDocument::removeSelection()
     }
 }
 
+const TextLine::Margin & TextDocument::marginAt(uint index) const
+{
+    if (index < data_.size()) {
+        return data_.at(index).margin;
+    }
+    else {
+        static const TextLine::Margin dummy = TextLine::Margin();
+        return dummy;
+    }
+}
+
+TextLine::Margin & TextDocument::marginAt(uint index)
+{
+    if (index < data_.size()) {
+        return data_[index].margin;
+    }
+    else {
+        static TextLine::Margin dummy;
+        return dummy;
+    }
+}
+
 void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterface *analizer, int line, int pos, int blankLines, int blankChars, int count)
 {
     if (data_.size()==0)
@@ -437,7 +459,12 @@ QString TextDocument::toHtml(int fromLine, int toLine) const
 
     for (int i=fromLine; i<=toLine; i++) {
         programLines << lineToHtml(i);
-        marginLines << ( data_[i].marginText.isEmpty()? (data_[i].errors.isEmpty()? "" : data_[i].errors[0]) : data_[i].marginText );
+        marginLines << ( data_[i].margin.text.isEmpty()
+                         ? (data_[i].margin.errors.isEmpty()
+                            ? "" : data_[i].margin.errors[0]
+                            )
+                         : data_[i].margin.text
+                           );
     }
     result = QString::fromAscii(
                 "<table width=\"100%\">"
@@ -584,6 +611,278 @@ QString TextDocument::lineToHtml(int lineNo) const
     for (int i=0; i<chunks.size(); i++) {
         result += chunks[i].html;
     }
+    return result;
+}
+
+
+namespace RTF {
+
+static QByteArray rtfColor(const QSettings * s,
+                           const QString & key,
+                           const QString & defaultt)
+{
+    const QString colorName = s->value(key, defaultt).toString();
+    const QColor color(colorName);
+    QByteArray result;
+    result.append("\\red" + QString::number(color.red()).toAscii());
+    result.append("\\green" + QString::number(color.green()).toAscii());
+    result.append("\\blue" + QString::number(color.blue()).toAscii());
+    result.append(";");
+    return result;
+}
+
+struct Chunk {
+    QString text;
+    bool bold;
+    bool italic;
+    bool error;
+    uint color;
+    uint32_t format;
+    QByteArray data;
+};
+
+static QList<Chunk> splitLineIntoChunks(const QSettings * s,
+                                        const TextLine & textLine)
+{
+    using namespace Shared;
+    QList<Chunk> result;
+    const QString & text = textLine.text;
+    const QList<LexemType> & highlight = textLine.highlight;
+
+    // Split text into chunks of various formats
+    for (uint i=0; i<text.length(); i++) {
+        bool latin = text[i]!='\0' &&
+                text[i].isLetter() &&
+                text[i].toAscii()!='\0';
+        if (result.isEmpty())
+        {
+            // Create first empty chunk of text
+            Chunk chunk;
+            chunk.bold = chunk.error = false;
+            chunk.italic = latin;
+            chunk.format = highlight[i];
+            chunk.text += text[i];
+            result.push_back(chunk);
+        }
+        else if (result.last().format==highlight[i] &&
+                 result.last().italic!=latin)
+        {
+            // Continue the same format chunk of text
+            Chunk & chunk = result.last();
+            chunk.text += text[i];
+        }
+        else
+        {
+            // Make new format chunk of text
+            Chunk chunk;
+            chunk.bold = chunk.error = false;
+            chunk.italic = latin;
+            chunk.format = highlight[i];
+            chunk.text += text[i];
+            result.push_back(chunk);
+        }
+    }
+
+    // Set proper formats to chunks
+    static const uint32_t PriKwd = LxTypePrimaryKwd;
+    static const uint32_t SecKwd = LxTypeSecondaryKwd;
+    static const uint32_t NameClass = LxNameClass;
+    static const uint32_t NameAlg = LxNameAlg;
+    static const uint32_t NameModule = LxNameModule;
+    static const uint32_t ConstLiteral = LxConstLiteral;
+    static const uint32_t TypeConstant = LxTypeConstant;
+    static const uint32_t TypeDoc = LxTypeDoc;
+    static const uint32_t TypeComment = LxTypeComment;
+
+    for (uint i=0; i<result.size(); i++) {
+        Chunk & chunk = result[i];
+        chunk.error = ( chunk.format & LxTypeError ) > 0;
+        chunk.format = ( chunk.format << 1 ) >> 1;
+
+        const uint32_t priKwd = PriKwd & chunk.format;
+        const uint32_t secKwd = SecKwd & chunk.format;
+        const uint32_t nameClass = NameClass == chunk.format;
+        const uint32_t nameAlg = NameAlg == chunk.format;
+        const uint32_t nameModule = NameModule == chunk.format;
+        const uint32_t literalConstant = ConstLiteral == chunk.format;
+        const uint32_t constant = TypeConstant & chunk.format;
+        const uint32_t doc = TypeDoc == chunk.format;
+        const uint32_t comment = TypeComment == chunk.format;
+
+        if (priKwd || secKwd) {
+            chunk.color = 1;
+            chunk.bold = s->value(SettingsPage::KeyBoldKw,
+                                  SettingsPage::DefaultBoldKw).toBool();
+        }
+        else if (nameClass) {
+            chunk.color = 2;
+            chunk.bold = s->value(SettingsPage::KeyBoldType,
+                                  SettingsPage::DefaultBoldType).toBool();
+        }
+        else if (nameAlg) {
+            chunk.color = 3;
+            chunk.bold = s->value(SettingsPage::KeyBoldAlg,
+                                  SettingsPage::DefaultBoldAlg).toBool();
+        }
+        else if (nameModule) {
+            chunk.color = 4;
+            chunk.bold = s->value(SettingsPage::KeyBoldMod,
+                                  SettingsPage::DefaultBoldMod).toBool();
+        }
+        else if (literalConstant) {
+            chunk.color = 5;
+            chunk.bold = s->value(SettingsPage::KeyBoldLiteral,
+                                  SettingsPage::DefaultBoldLiteral).toBool();
+        }
+        else if (constant) {
+            chunk.color = 6;
+            chunk.bold = s->value(SettingsPage::KeyBoldNumeric,
+                                  SettingsPage::DefaultBoldNumeric).toBool();
+        }
+        else if (doc) {
+            chunk.color = 7;
+            chunk.bold = s->value(SettingsPage::KeyBoldDoc,
+                                  SettingsPage::DefaultBoldDoc).toBool();
+        }
+        else if (comment) {
+            chunk.color = 8;
+            chunk.bold = s->value(SettingsPage::KeyBoldComment,
+                                  SettingsPage::DefaultBoldComment).toBool();
+        }
+        else {
+            chunk.color = 0;
+            chunk.bold = false;
+        }
+        if (chunk.error) {
+            chunk.color = 9;
+        }
+    }
+
+    // Make RTF data for chunks
+    for (uint i=0; i<result.size(); i++) {
+        QByteArray & d = result[i].data;
+        const Chunk & chunk = result[i];
+        d.append("{");
+        if (chunk.color)
+            d.append("\\cf"+QString::number(chunk.color).toAscii());
+        if (chunk.bold)
+            d.append("\\b");
+        if (chunk.italic)
+            d.append("\\i");
+        if (chunk.error)
+            d.append("\\ul");
+        if (chunk.bold || chunk.italic || chunk.error || chunk.color)
+            d.append(" ");
+
+        static QTextCodec * codec = QTextCodec::codecForName("CP1251");
+        d.append(codec->fromUnicode(chunk.text));
+
+        d.append("}");
+    }
+
+    return result;
+}
+
+} // end namespace RTF
+
+/**
+ * @brief Get formatted text (with margins) as RTF
+ * @param fromLine begin line number (inclusive)
+ * @param toLine end line number (not inclusive)
+ * @return RTF file data
+ */
+QByteArray TextDocument::toRtf(uint fromLine, uint toLine) const
+{
+    using namespace RTF;
+
+    QByteArray result;
+
+    // RTF header
+    result.append("{\\rtf1\\ansicpg1251\r\n");
+
+    // Font table
+    result.append("{\\fonttbl{\\f0\\fmodern\\fcharset204 Courier New;}}\r\n");
+
+    // Begin color table
+    result.append("{\\colortbl;");
+
+    result.append(rtfColor(settings_, SettingsPage::KeyColorKw, SettingsPage::DefaultColorKw));
+    result.append(rtfColor(settings_, SettingsPage::KeyColorType, SettingsPage::DefaultColorType));
+    result.append(rtfColor(settings_, SettingsPage::KeyColorAlg, SettingsPage::DefaultColorAlg));
+    result.append(rtfColor(settings_, SettingsPage::KeyColorMod, SettingsPage::DefaultColorMod));
+    result.append(rtfColor(settings_, SettingsPage::KeyColorLiteral, SettingsPage::DefaultColorLiteral));
+    result.append(rtfColor(settings_, SettingsPage::KeyColorNumeric, SettingsPage::DefaultColorNumeric));
+    result.append(rtfColor(settings_, SettingsPage::KeyColorDoc, SettingsPage::DefaultColorDoc));
+    result.append(rtfColor(settings_, SettingsPage::KeyColorComment, SettingsPage::DefaultColorComment));
+    result.append("\\red255;\\green0\\blue0;"); // for errors
+
+    // End color table
+    result.append("}\r\n");
+
+    // Begin code style
+    result.append("{\\f0\\lang1024\r\n");
+
+    // Begin table row
+    result.append("\\trowd\r\n");
+    result.append("\\trgraph144\r\n");
+    result.append("\\trautofit1\r\n");
+    result.append("\\intbl\r\n");
+    result.append("\\trftsWidth2\\trwWidth5000\r\n");
+    result.append("\\clbrdrt\\brdrs\\clbrdrl\\brdrs\\clbrdrb\\brdrs\\clbrdrr\\brdrs\r\n");
+    result.append("\\clNoWrap\\clftsWidth2\\clwWidth3000\\cellx6000\r\n");
+    result.append("\\clbrdrt\\brdrs\\clbrdrl\\brdrs\\clbrdrb\\brdrs\\clbrdrr\\brdrs\r\n");
+    result.append("\\clNoWrap\\clftsWidth2\\clwWidth2000\\cellx10000\r\n");
+
+    // Main program cell
+    for (uint i=fromLine; i<toLine; i++) {
+        result.append("\\intbl");
+        // Indent spaces
+        if (this->indentAt(i) > 0) {
+            result.append("{");
+            for (uint j=0; j<this->indentAt(i); j++) {
+                result.append("  ");
+            }
+            result.append("}");
+        }
+        const TextLine & textLine = data_[i];
+        const QList<RTF::Chunk> chunks = splitLineIntoChunks(settings_, textLine);
+        for (uint j=0; j<chunks.size(); j++) {
+            result.append(chunks[j].data);
+        }
+        if (fromLine!=toLine && i<toLine-1) {
+            result.append("\\par\r\n");
+        }
+    }
+    // End main proram cell
+    result.append("\\cell\r\n");
+
+    // Margin cell
+    for (uint i=fromLine; i<toLine; i++) {
+        const TextLine & textLine = data_[i];
+        const QString & marginText = textLine.margin.errors.join("; ");
+        static QTextCodec * codec = QTextCodec::codecForName("CP1251");
+        result.append("\\intbl");
+        if (marginText.length()>0) {
+            result.append("{\\cf9 ");
+            result.append(codec->fromUnicode(marginText));
+            result.append("}");
+        }
+        if (fromLine!=toLine && i<toLine-1) {
+            result.append("\\par\r\n");
+        }
+    }
+
+    // End margin cell
+    result.append("\\cell\r\n");
+
+    // End table row
+    result.append("\\row\r\n");
+
+    // Code style end
+    result.append("}\r\n");
+
+    // RTF end
+    result.append("}\r\n");
     return result;
 }
 

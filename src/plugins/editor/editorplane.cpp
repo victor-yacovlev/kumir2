@@ -2100,8 +2100,8 @@ void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
             + charWidth() / 2;
 
     for (uint i=startLine; i<=endLine; i++) {
-        if (document_->marginTextAt(i).length() > 0 ||
-                document_->errorsAt(i).size() > 0)
+        if (document_->marginAt(i).text.length() > 0 ||
+                document_->marginAt(i).errors.size() > 0)
         {
             // If something exists on margin
 
@@ -2110,12 +2110,12 @@ void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
 
             // Text to show
             const QString & text =
-                    document_->marginTextAt(i).length() > 0
-                    ? document_->marginTextAt(i)
-                    : document_->errorsAt(i).first();
+                    document_->marginAt(i).text.length() > 0
+                    ? document_->marginAt(i).text
+                    : document_->marginAt(i).errors.first();
 
             // Set corresponding text color
-            p->setPen(document_->marginTextAt(i).length() > 0
+            p->setPen(document_->marginAt(i).text.length() > 0
                       ? marginColor : errorColor );
 
             // Draw a text line

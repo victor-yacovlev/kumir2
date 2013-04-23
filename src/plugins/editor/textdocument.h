@@ -11,7 +11,6 @@
 namespace Editor {
 
 
-
 struct TextLine
 {
     inline explicit TextLine() {
@@ -30,9 +29,15 @@ struct TextLine
     bool protecteed;
     bool hidden;
     QString text;
-    QStringList errors;
-    QString marginText;
-    QColor marginColor;
+
+    struct Margin {
+        QStringList errors;
+        QString text;
+        QColor color;
+        QList<bool> selected;
+        bool lineEndSelected;
+    } margin;
+
     bool changed;
     bool inserted;
 };
@@ -75,6 +80,7 @@ public:
     KumFile::Data toKumFile() const;
     QString toHtml(int fromLine = -1, int toLine = -1) const;
     QString lineToHtml(int lineNo) const;
+    QByteArray toRtf(uint fromLine, uint toLine) const;
     void setKumFile(const KumFile::Data & data_, bool showHiddenLines);
     void setPlainText(const QString & data_);
     inline const QString& textAt(uint index) const {
@@ -86,26 +92,9 @@ public:
             return dummyString;
         }
     }
-    inline const QColor & marginForegroundColorAt(uint index) const
-    {
-        if ( index < uint(data_.size()) ) {
-            return data_.at(index).marginColor;
-        }
-        else {
-            static const QColor dummyColor("black");
-            return dummyColor;
-        }
-    }
-    inline const QString& marginTextAt(uint index) const
-    {
-        if ( index < uint(data_.size()) ) {
-            return data_.at(index).marginText;
-        }
-        else {
-            static const QString dummyString;
-            return dummyString;
-        }
-    }
+    const TextLine::Margin & marginAt(uint index) const;
+    TextLine::Margin & marginAt(uint index);
+
     inline const QList<bool>& selectionMaskAt(uint index) const {
         if (index < uint(data_.size())) {
             return data_.at(index).selected;
@@ -126,34 +115,8 @@ public:
             return dummyHighlight;
         }
     }
-    inline void setMarginTextAt(int index, const QString & text, const QColor & fgColor) {
-        if (index>=0 && index<data_.size()) {
-            data_[index].marginText = text;
-            data_[index].marginColor = fgColor;
-        }
-    }
     inline void setIndentRankAt(int index, const QPoint & rank) { if (index>=0 && index<data_.size()) data_[index].indentStart = rank.x(); data_[index].indentEnd = rank.y(); }
     inline void setHighlightAt(int index, const QList<Shared::LexemType> & highlight) { if (index>=0 && index<data_.size()) data_[index].highlight = highlight; }
-    inline void setErrorsAt(int index, const QStringList & errs) { if (index>=0 && index<data_.size()) data_[index].errors = errs; }
-    inline const QStringList & errorsAt(uint index) const {
-        if (index < uint(data_.size())) {
-            return data_.at(index).errors;
-        }
-        else {
-            static const QStringList dummyStringList;
-            return dummyStringList;
-        }
-    }
-    inline QStringList & errorsAt(uint index) {
-        if (index < uint(data_.size())) {
-            return data_[index].errors;
-        }
-        else {
-            static QStringList dummyStringList;
-            return dummyStringList;
-        }
-    }
-    inline void clearErrorsAt(int index) { if (index>=0 && index<data_.size()) data_[index].errors.clear(); }
 
     inline void setSelected(int line, int pos, bool v) { if (line<data_.size()) data_[line].selected[pos] = v; }
     inline void setEndOfLineSelected(int line, bool v) { if (line<data_.size()) data_[line].lineEndSelected = v; }
