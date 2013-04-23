@@ -537,6 +537,9 @@ public:
     QVariant result() const;
     QVariantList algOptResults() const;
     QString errorText() const;
+    inline void connectSync(QObject * receiver, const char * method) {
+        connect(this, SIGNAL(sync()), receiver, method, Qt::DirectConnection);
+    }
 protected:
     QString initialize(const QStringList&);
     void sleep(unsigned long secs);
@@ -1003,7 +1006,7 @@ QString $className::initialize(const QStringList&)
     connect(m_asyncRunThread,
         SIGNAL(finished()),
         this,
-        SIGNAL(sync()) );
+        SIGNAL(sync()), Qt::DirectConnection );
     
 $settingsPageCreation
     return QString::fromAscii("");
