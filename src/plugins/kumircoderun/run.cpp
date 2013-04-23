@@ -285,6 +285,7 @@ bool Run::appendTextToMargin(int l, const String & s)
 bool Run::setTextToMargin(int lineNo, const String &s, bool red)
 {
     emit marginTextReplace(lineNo, QString::fromStdWString(s), red);
+    return true;
 }
 
 bool Run::noticeOnLineNoChanged(int lineNo)

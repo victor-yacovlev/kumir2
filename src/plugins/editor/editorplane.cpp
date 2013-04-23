@@ -9,7 +9,7 @@
 #ifdef Q_OS_UNIX
 #include <unistd.h>
 #endif
-
+#include <cstdint>
 
 
 namespace Editor {

@@ -2,6 +2,8 @@
 #include "textcursor.h"
 #include "settingspage.h"
 
+#include <cstdint>
+
 namespace Editor
 {
 
