@@ -34,6 +34,9 @@ Robot25DWindow::Robot25DWindow(QWidget *parent) :
     group_lockedActionsDuringEvaluate->addAction(ui->actionNext);
     group_lockedActionsDuringEvaluate->addAction(ui->actionPrev);
     group_lockedActionsDuringEvaluate->addAction(ui->actionReset);
+    ui->toolBar->setVisible(false);
+    ui->menubar->setVisible(false);
+    ui->statusbar->setVisible(false);
 }
 
 void Robot25DWindow::statusMessage(const QString &msg)
