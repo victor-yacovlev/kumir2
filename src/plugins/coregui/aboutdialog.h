@@ -17,6 +17,9 @@ public:
     explicit AboutDialog(QWidget *parent = 0);
     ~AboutDialog();
 
+private slots:
+    void copySystemInformationToClipboard();
+
 private:
     void addQtVersion();
     void addOsVersion();
