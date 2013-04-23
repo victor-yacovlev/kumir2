@@ -732,8 +732,8 @@ void KumirVM::reset()
         }
 
         const ExternsMap & contextExterns = mc.externs;
-        for (auto itExtern = contextExterns.cbegin();
-             itExtern!=contextExterns.cend(); ++itExtern)
+        for (ExternsMap::const_iterator itExtern = contextExterns.begin();
+             itExtern!=contextExterns.end(); ++itExtern)
         {
             const ExternReference & externReference = itExtern->second;
             if (externReference.platformDependent) {
@@ -750,8 +750,8 @@ void KumirVM::reset()
 
     // Reset used external modules
     if (externalModuleReset_) {
-        for (auto it=usedExternalModules.cbegin();
-             it!=usedExternalModules.cend();
+        for (std::set<Kumir::String>::const_iterator it=usedExternalModules.begin();
+             it!=usedExternalModules.end();
              ++it
              )
         {

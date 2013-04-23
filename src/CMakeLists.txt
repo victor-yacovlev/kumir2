@@ -23,6 +23,10 @@ if(NOT MSVC)
     endif()
 endif()
 
+if(APPLE)
+    set(CMAKE_CXX_FLAGS "-DAPPLE ${CMAKE_CXX_FLAGS}")
+endif()
+
 if(MSVC_IDE)
 	#set(CMAKE_SHARED_LIBRARY_PREFIX "../")
 	#set(CMAKE_IMPORT_LIBRARY_PREFIX "../")

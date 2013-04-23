@@ -3751,7 +3751,7 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
     std::stack <Lexem *> openSqBrackets;
     std::stack <Lexem *> openBraces;
 
-    for (auto it = constant.cbegin(); it!=constant.cend(); ++it) {
+    for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); ++it) {
         Lexem * lx = *it;
         if (lx->type==LxOperLeftBr) {
             openBrackets.push(lx);
@@ -3813,7 +3813,7 @@ QVariant SyntaxAnalizerPrivate::parseConstant(const std::list<Lexem*> &constant
         if (constant.back()->type==LxOperRightBrace)
             array = true;
         else {
-            for (auto it = constant.crbegin(); it!=constant.crend(); ++it) {
+            for (std::list<Lexem*>::const_reverse_iterator it = constant.rbegin(); it!=constant.rend(); ++it) {
                 Lexem * lx = *it;
                 if (lx->type==LxOperRightBrace)
                     break;

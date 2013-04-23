@@ -8,7 +8,9 @@
 #include <deque>
 #include <map>
 #include <cstdio>
+#ifndef APPLE
 #include <random>
+#endif
 #include "encodings.hpp"
 
 #ifndef NO_SYSTEM
@@ -561,7 +563,48 @@ public:
     inline static void init() {
     }
     inline static void finalize() {}
+#ifdef APPLE
+    inline static int irand(int a, int b) {
+        if (a>b) {
+            Core::abort(Core::fromUtf8("Неверный диапазон чисел"));
+            return 0;
+        }
+        else {
 
+            unsigned int rndValue = rand(); // in range [0..2^32]
+            unsigned int rd_max =RAND_MAX;
+            real scale = static_cast<real>(b-a+1)/static_cast<real>(rd_max);
+            return Kumir::Math::imin(b, a+static_cast<int>(scale*rndValue));
+        }
+    }
+    inline static int irnd(int x) {
+
+        unsigned int rndValue = rand(); // in range [0..2^32]
+        unsigned int rd_max =RAND_MAX;
+        real scale = static_cast<real>(x)/static_cast<real>(rd_max);
+        return Kumir::Math::imin(x, 1+static_cast<int>(scale*rndValue));
+    }
+
+    inline static real rrand(real a, real b) {
+        if (a>b) {
+            Core::abort(Core::fromUtf8("Неверный диапазон чисел"));
+            return 0.0;
+        }
+        else {
+
+            unsigned int rndValue = rand(); // in range [0..2^32]
+            unsigned int rd_max =RAND_MAX;
+            real scale = static_cast<real>(b-a+1)/static_cast<real>(rd_max);
+            return Kumir::Math::rmin(b, a+static_cast<real>(scale*rndValue));
+        }
+    }
+    inline static real rrnd(real x) {
+        unsigned int rndValue = rand(); // in range [0..2^32]
+        unsigned int rd_max =RAND_MAX;
+        real scale = static_cast<real>(x)/static_cast<real>(rd_max);
+        return Kumir::Math::rmin(x, static_cast<real>(scale*rndValue));
+    }
+#else
     inline static int irand(int a, int b) {
         if (a>b) {
             Core::abort(Core::fromUtf8("Неверный диапазон чисел"));
@@ -607,7 +650,9 @@ public:
         real scale = static_cast<real>(x)/static_cast<real>(rd_max);
         return Kumir::Math::rmin(x, static_cast<real>(scale*rndValue));
     }
+#endif
 };
+
 #endif
 
 #ifdef NO_UNICODE

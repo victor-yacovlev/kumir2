@@ -62,10 +62,10 @@ QString Plugin::initialize(const QStringList & parameters)
     m_kumirStateLabel = new QLabel();
     m_genericCounterLabel = new QLabel();
     mainWindow_ = new MainWindow(this);
-#ifdef Q_OS_MACX
-    void * mac_mainWindow = (class NSView*)(m_mainWindow->winId());
-    MacFixes::setLionFullscreenButton(mac_mainWindow);
-#endif
+//#ifdef Q_OS_MACX
+//    void * mac_mainWindow = (class NSView*)(m_mainWindow->winId());
+//    MacFixes::setLionFullscreenButton(mac_mainWindow);
+//#endif
 
     plugin_editor = qobject_cast<EditorInterface*>(myDependency("Editor"));
 
