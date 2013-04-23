@@ -695,48 +695,22 @@ void BorderWidget::paintEvent(QPaintEvent *e)
             opt.titleBarState &= ~QStyle::State_Active;
             opt.palette.setCurrentColorGroup(QPalette::Inactive);
         }
+#ifndef APPLE
         style()->drawComplexControl(QStyle::CC_TitleBar, &opt, &p, this);
+#else
+        p.setPen(Qt::NoPen);
+        p.setBrush(palette().brush(QPalette::Window));
+        p.drawRect(rect());
+        p.setPen(QPen(Qt::black));
+        QFontMetrics fm(font());
+        int titleWidth = fm.width(parentWidget()->windowTitle());
+        int titleHeight = fm.height();
+        p.setFont(font());
+        int textX = (width() - titleWidth) / 2;
+        int textY = titleHeight + (height() - titleHeight) / 2 - 2;
+        p.drawText(textX, textY, parentWidget()->windowTitle());
+#endif
     }
-//    // left or top corner
-//    int first_w = px_border[0]->width();
-//    int first_h = px_border[0]->height();
-//    QRect firstRect(0,0,first_w,first_h);
-//    if (e->rect().intersects(firstRect))
-//        p.drawPixmap(firstRect, *(px_border[0]));
-
-//    // middle of border
-//    QRect midRect;
-//    int w = width();
-//    int h = height();
-//    int x = (e_border=='t'||e_border=='b')? first_w : 0;
-//    int y = (e_border=='t'||e_border=='b')? 0 : first_h;
-//    int mid_w = px_border[1]->width();
-//    int mid_h = px_border[1]->height();
-//    while (x<w && y<h) {
-//        midRect = QRect(x,y,mid_w,mid_h);
-//        if (e->rect().intersects(midRect))
-//            p.drawPixmap(midRect, *(px_border[1]));
-//        if (e_border=='t'||e_border=='b') {
-//            x += mid_w;
-//        }
-//        else {
-//            y += mid_h;
-//        }
-//    }
-
-//    // right or bottom corner
-//    int last_w = px_border[2]->width();
-//    int last_h = px_border[2]->height();
-//    QRect lastRect;
-//    if (e_border=='t'||e_border=='b') {
-//        lastRect = QRect(w-last_w, 0, last_w, last_h);
-//    }
-//    else {
-//        lastRect = QRect(0, h-last_h, last_w, last_h);
-//    }
-//    if (e->rect().intersects(lastRect))
-//        p.drawPixmap(lastRect, *(px_border[2]));
-
     e->accept();
 }
 
