@@ -2768,7 +2768,7 @@ void RobotModule::runGoUp()
      if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
          emit sendToPultLog(status);
      }
-    if(animation)sleep(0.25);
+    if(animation)msleep(250);
 	return;
 }
 
@@ -2786,7 +2786,7 @@ void RobotModule::runGoDown()
      if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
          emit sendToPultLog(status);
      }
-         if(animation)sleep(0.25);
+         if(animation)msleep(250);
 	return;
 }
 
@@ -2804,7 +2804,7 @@ void RobotModule::runGoLeft()
     if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
         emit sendToPultLog(status);
     }
-        if(animation)sleep(0.25);
+        if(animation)msleep(250);
 	return;
 }
 
@@ -2821,7 +2821,7 @@ void RobotModule::runGoRight()
     if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
         emit sendToPultLog(status);
     }
-     if(animation)sleep(0.25);
+     if(animation)msleep(250);
 	return;
 }
 
