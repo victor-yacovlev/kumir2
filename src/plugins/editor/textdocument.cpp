@@ -2,7 +2,7 @@
 #include "textcursor.h"
 #include "settingspage.h"
 
-#include <cstdint>
+#include <stdint.h>
 
 namespace Editor
 {
@@ -237,7 +237,7 @@ uint TextDocument::indentAt(uint lineNo) const
     for (uint i=0; i<qMin(lineNo, uint(data_.size()) ); i++) {
         result += data_[i].indentStart + data_[i].indentEnd;
     }
-    if (lineNo>=0 && lineNo < data_.size()) {
+    if (lineNo < data_.size()) {
         result += data_[lineNo].indentStart;
     }
     return uint( qMax(result, 0) );

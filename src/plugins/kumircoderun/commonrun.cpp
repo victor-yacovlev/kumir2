@@ -150,10 +150,7 @@ AnyValue ExternalModuleCallFunctor::operator ()
 void ExternalModuleCallFunctor::checkForActorConnected(ActorInterface *actor)
 {
     if (connectedActors_.count(actor)==0) {
-        QObject * actorObject = dynamic_cast<QObject*>(actor);
-        connect(actorObject, SIGNAL(sync()),
-                this, SLOT(handleActorSync()),
-                Qt::DirectConnection);
+        actor->connectSync(this, SLOT(handleActorSync()));
         connectedActors_.push_back(actor);
     }
 }

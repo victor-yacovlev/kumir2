@@ -893,7 +893,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                 else {
                     row_ = document_->linesCount()-1;
                 }
-                for ( ; row_>=0; row_-- ) {
+                for ( ; row_-- > 0; ) {
                     for (int i=0; i<document_->selectionMaskAt(row_).size(); i++) {
                         document_->setSelected(row_, i, !document_->selectionMaskAt(row_)[i]);
                     }

@@ -49,6 +49,7 @@ public:
     inline virtual void setAnimationEnabled(bool ) {}
     inline virtual EvaluationStatus evaluate(quint32 , const QVariantList & ) { return ES_Error; }
     inline virtual QString errorText() const { return QString(); }
+    inline virtual void connectSync(QObject * receiver, const char * method) {}
 };
 
 }

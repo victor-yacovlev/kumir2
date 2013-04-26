@@ -9,7 +9,7 @@ You should change it corresponding to functionality.
 #include <QtCore>
 #include <QtGui>
 #include "complexnumbersmodule.h"
-#include <ccomplex>
+#include <complex.h>
 #include "stdlib/kumirstdlib.hpp"
 
 namespace ActorComplexNumbers {

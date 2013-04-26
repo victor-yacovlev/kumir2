@@ -27,6 +27,30 @@ AboutDialog::AboutDialog(QWidget *parent) :
     addOsVersion();
     addQtVersion();
     addLoadedModules();
+
+    connect(ui->btnCopyEnvironmentAndVersion,
+            SIGNAL(clicked()), this, SLOT(copySystemInformationToClipboard()));
+}
+
+void AboutDialog::copySystemInformationToClipboard()
+{
+    QString textToCopy;
+    textToCopy += "Version: "+ui->version->text()+"\n";
+    textToCopy += "Git: "+ui->gitHash->text() + "\n";
+    for (int i=0; i<ui->tableWidget->rowCount(); i++) {
+        const QString key = ui->tableWidget->item(i, 0)->text();
+        const QString value = ui->tableWidget->item(i, 1)->text();
+        textToCopy += key + ": " + value + "\n";
+    }
+    QClipboard * clipboard = QApplication::clipboard();
+    clipboard->setText(textToCopy);
+    QMessageBox::information(
+                this,
+                tr("Copied to clipboard"),
+                tr("<b>The following text has been copied to clipboard:</b>\n\n%1")
+                .arg(textToCopy).replace("\n", "<br/>"),
+                QMessageBox::Ok
+                );
 }
 
 void AboutDialog::addQtVersion()

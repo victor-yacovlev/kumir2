@@ -14,33 +14,66 @@
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="30"/>
-        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="47"/>
-        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="64"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="37"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="54"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="71"/>
         <source>unknown</source>
         <translation>неизвестно</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="40"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="47"/>
         <source>GIT hash:</source>
         <translation>GIT отпечаток:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="57"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="64"/>
         <source>Last modified:</source>
         <translation>Последнее изменение:</translation>
     </message>
     <message utf8="true">
-        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="74"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="81"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Droid Sans&apos;; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:8pt;&quot;&gt;Здесь будет краткое описание и текст лицензии&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Droid Sans&apos;; font-size:12pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;За пределами Российской Федерации данная программа может свободно распространяться по лиценции GNU GPL v2.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-style:italic;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;На территории Российской Федерации данная программа распространяется в соответствии с данным Лицензионным соглашением.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;ЛИЦЕНЗИОННОЕ СОГЛАШЕНИЕ&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;1. Устанавливая данный программный продукт, Вы автоматически принимаете условия данного лицензионного соглашения.&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;2. Вы можете устанавливать данную программу на любое число компьютеров неограниченное число раз.&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;3. Вы можете делать  неограниченное число копий данного программного продукта.&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;4. Вы можете передавать копии данного программного продукта возмездно или безвозмездно неограниченному числу третьих лиц.&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;5. Вы имеете право загрузить с сайта разработчика исходные тексты данного программного продукта и использовать их в соответствии с требованиями лицензии GNU GPL v2, текст которой на английском языке прилагается в файле license.gpl.&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;6. Разработчик не дает никаких гарантий работоспобосности данного продукта и не несет ответственности за любой ущерб, причиненный вследствии установки или запуска данного программного продукта.&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="141"/>
+        <source>Copy system information to clipboard</source>
+        <translation>Скопировать информацию о системе в буфер обмена</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="161"/>
+        <source>Close</source>
+        <translation>Закрыть</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="164"/>
+        <source>Esc</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="85"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="30"/>
         <source>Version:</source>
         <translation>Версия:</translation>
     </message>
@@ -49,12 +82,12 @@ p, li { white-space: pre-wrap; }
         <translation type="obsolete">Версия %1 (SVN-ревизия №%2)</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="103"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="121"/>
         <source>Parameter</source>
         <translation>Параметр</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="93"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="111"/>
         <source>System Information</source>
         <translation>Информация об окружении</translation>
     </message>
@@ -71,27 +104,41 @@ p, li { white-space: pre-wrap; }
         <translation type="obsolete">Исполняемый файл:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="108"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="126"/>
         <source>Value</source>
         <translation>Значение</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="35"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="49"/>
+        <source>Copied to clipboard</source>
+        <translation>Скопировано в буфер обмена</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="50"/>
+        <source>&lt;b&gt;The following text has been copied to clipboard:&lt;/b&gt;
+
+%1</source>
+        <translation>&lt;b&gt;Следующий текст был скопирован в буфер обмена:&lt;/b&gt;
+
+%1</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="58"/>
         <source>Qt Version</source>
         <translation>Версия Qt</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="42"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="65"/>
         <source>Operating System</source>
         <translation>Система</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="87"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="110"/>
         <source>Execuable Path</source>
         <translation>Выполняемый файл</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="100"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="123"/>
         <source>Loaded Modules</source>
         <translation>Модули системы</translation>
     </message>
