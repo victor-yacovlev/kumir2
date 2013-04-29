@@ -725,7 +725,7 @@ namespace ActorRobot {
         sett=RobotModule::robotSettings();
         QString className = sett->metaObject()->className();
         Parent=parent;
-        editMode=false;
+        mode=0;
         LineColor = QColor(sett->value("LineColor","#C8C800").toString());
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
         EditColor=QColor(sett->value("EditColor","#00008C").toString());
@@ -744,16 +744,16 @@ namespace ActorRobot {
         wasEdit=false;
         showWall=new QGraphicsLineItem(0,0,0,0);
         this->addItem(showWall);
-        textEditMode=false;
+      //  textEditMode=false;
         radEditMode=false;
         keyCursor=new QGraphicsLineItem(0,0,0,0);
         this->addItem(keyCursor); 
         keyCursor->hide();
         radSpinBox=new QDoubleSpinBox();
     };
-  void RoboField::setEditMode( bool EditMode) 
+  void RoboField::setMode( int Mode) 
     { 
-        editMode=EditMode;
+        mode=Mode;
         sett=RobotModule::robotSettings();
         LineColor = QColor(sett->value("LineColor","#C8C800").toString());
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
@@ -762,7 +762,7 @@ namespace ActorRobot {
     }
     void RoboField::editField()
     {
-        editMode=true;
+       mode=NEDIT_MODE;
      //   connect(cellDialog->buttonBox,SIGNAL(accepted()),this,SLOT(cellDialogOk()));
     };
     /**
@@ -829,7 +829,7 @@ namespace ActorRobot {
         // clear();
         //debug();
         showWall = new QGraphicsLineItem(0,0,0,0);
-        if(!editMode)Color = NormalColor;//Normal Color
+        if(!mode>0)Color = NormalColor;//Normal Color
         else Color=EditColor;//Edit Color
         this->setBackgroundBrush (QBrush(Color));
         fieldSize=FieldSize;
@@ -966,11 +966,12 @@ namespace ActorRobot {
        // destroyField();
        // drawField(FIELD_SIZE_SMALL);
 
-        if(textEditMode && !flag)
+        if(mode!=TEXT_MODE && !flag)
         {timer->stop();
         keyCursor->hide();
         };
-         textEditMode=flag;
+        if(flag)mode=TEXT_MODE;
+            else mode=NEDIT_MODE;
         radSpinBox->hide(); 
         redrawEditFields();
         redrawRTFields();
@@ -1011,7 +1012,7 @@ namespace ActorRobot {
             for(int j=0;j<columns();j++)
             {
       
-                if(textEditMode)row->at(j)->showCharFld(upLeftCorner(i,j).x(),
+                if(mode==TEXT_MODE)row->at(j)->showCharFld(upLeftCorner(i,j).x(),
                                                         upLeftCorner(i,j).y(),FIELD_SIZE_SMALL);
                 else row->at(j)->hideCharFld();
                 
@@ -1136,7 +1137,7 @@ namespace ActorRobot {
        
         this->removeItem(showWall);
         delete showWall;
-        if(radEditMode || textEditMode)
+        if(mode>NEDIT_MODE)
           {
               showWall=new QGraphicsLineItem(0,0,0,0);
               this->addItem(showWall);
@@ -1159,7 +1160,7 @@ namespace ActorRobot {
     {
         this->removeItem(showWall);
         delete showWall;
-        if(radEditMode || textEditMode)
+        if(mode>NEDIT_MODE)
         {
             showWall=new QGraphicsLineItem(0,0,0,0);
             this->addItem(showWall);
@@ -1181,7 +1182,7 @@ namespace ActorRobot {
     {
         this->removeItem(showWall);
        if(showWall) delete showWall;
-        if(radEditMode || textEditMode)
+        if(mode>NEDIT_MODE)
         {
             showWall=new QGraphicsLineItem(0,0,0,0);
             this->addItem(showWall);
@@ -1204,7 +1205,7 @@ namespace ActorRobot {
         this->removeItem(showWall);
         delete showWall;
         
-        if(radEditMode || textEditMode)
+        if(mode>NEDIT_MODE)
         {
             showWall=new QGraphicsLineItem(0,0,0,0);
             this->addItem(showWall);
@@ -1997,9 +1998,9 @@ namespace ActorRobot {
      */
     void RoboField::mousePressEvent ( QGraphicsSceneMouseEvent * mouseEvent )
     {
-        qDebug()<<" Field Mouse event";
+        qDebug()<<" Field Mouse event mode:"<<mode;
         
-        if(!editMode)
+        if(mode==0)
         {
             pressed=true;
             oldRect=sceneRect();
@@ -2019,7 +2020,7 @@ namespace ActorRobot {
         int rowClicked=rc;
         int colClicked=cc;
        // qDebug()<<"RC:"<<rowClicked<<"CC:"<<colClicked<<" sc pos y:"<<scenePos.y()<<" scenePos.x()"<<scenePos.x()<<"";
-        if(textEditMode)
+        if(mode==TEXT_MODE)
         {
             pressD=false;
             if(keyCursor)this->removeItem(keyCursor);
@@ -2162,13 +2163,13 @@ namespace ActorRobot {
         qDebug()<<"Field is ACC";
            return; 
         }
-        if(!editMode)pressed=true;
+        if(mode==0)pressed=true;
     };
     void RoboField::mouseMoveEvent ( QGraphicsSceneMouseEvent * mouseEvent )
     {
         qDebug()<<"FIELD MOVE";
-        if(!editMode)return;
-        if(textEditMode )return;
+        if(mode==0)return;
+        if(mode==TEXT_MODE)return;
         QGraphicsScene::mouseMoveEvent(mouseEvent);
      if(!pressed)
      {
@@ -2275,7 +2276,7 @@ namespace ActorRobot {
         }
         redrawRTFields();
         
-        if(!editMode)return;
+        if(!(mode==NEDIT_MODE || mode==TEXT_MODE))return;
       
         qDebug()<<"KEY PRESSD"<<keyEvent->text ();
         int rowP=clickCell.first;
@@ -2303,7 +2304,7 @@ namespace ActorRobot {
         EditColor=QColor(sett->value("EditColor","#00008C").toString());
         NormalColor=QColor(sett->value("NormalColor","#289628").toString());
         qDebug()<<"Normal color blue"<<NormalColor.blue ();
-       if(!editMode) this->setBackgroundBrush (QBrush(NormalColor));
+       if(mode==NORMAL_MODE) this->setBackgroundBrush (QBrush(NormalColor));
             else  this->setBackgroundBrush (QBrush(EditColor));
         
         for(int i=0;i<setka.count();i++)
@@ -2452,7 +2453,7 @@ namespace ActorRobot {
         clone->setFieldItems(Items);
         clone->robo_x=robo_x;
         clone->robo_y=robo_y;
-        clone->setEditMode(editMode);
+        clone->setMode(mode);
         for(int i=0;i<rows();i++)
         {
             for(int j=0;j<columns();j++)
@@ -2491,7 +2492,7 @@ namespace ActorRobot {
                 getFieldItem(i,j)->setTextColor();
             };
         };
-        if(!editMode)Color = QColor(40,150,40);//Normal Color
+        if(mode==0)Color = QColor(40,150,40);//Normal Color
         else Color=QColor(0,0,140);//Edit Color
         this->setBackgroundBrush (QBrush(Color));
     };
@@ -2962,9 +2963,9 @@ bool RobotModule::runIsFreeAtRight()
 void RobotModule::editEnv()
     {
        
-        startField->setEditMode(true);
+        startField->setMode(NEDIT_MODE);
         
-        field->setEditMode(true);
+        field->setMode(NEDIT_MODE);
         view->showButtons(true);
         reset();
     };    
@@ -3109,7 +3110,7 @@ int RobotModule::SaveToFile(QString p_FileName)
     void RobotView::mouseMoveEvent ( QMouseEvent * event )
     { if(robotField->isEditMode())
     {
-        
+        setCursor(Qt::ArrowCursor);    
         QGraphicsView::mouseMoveEvent(event);
         return;
         
@@ -3159,9 +3160,13 @@ int RobotModule::SaveToFile(QString p_FileName)
     };
 void RobotView::changeEditMode()
     {
-        if(textEditBtn->isChecked ())radEditBtn->setChecked(false);
+       if(!textEditBtn->isChecked () && !radEditBtn->isChecked ())robotField->setMode(NEDIT_MODE);
+        if(textEditBtn->isChecked ())
+        {
+           radEditBtn->setChecked(false); 
+            robotField->setMode(TEXT_MODE); 
+        }
         if(radEditBtn->isChecked ())textEditBtn->setChecked(false);
-        robotField->setTextEditMode(textEditBtn->isChecked ());  
         robotField->setRadEditMode(radEditBtn->isChecked ()); 
         
     };

@@ -18,6 +18,13 @@ You should change it corresponding to functionality.
 namespace ActorRobot {
 
     
+#define NORMAL_MODE 0
+#define NEDIT_MODE 1
+#define TEMP_MODE 2
+#define RAD_MODE 3
+#define TEXT_MODE 4
+
+    
     
 #define LEFT_WALL 	0x1
 #define RIGHT_WALL 	0x2
@@ -357,12 +364,12 @@ namespace ActorRobot {
         
         void reverseColor(int row,int col);
         void reverseColorCurrent();
-        
+  
         void reverseMark(int row,int col);
         
         bool isEditMode()
         {
-            return editMode;
+            return mode>0;
         }
         
         inline QList<QList<FieldItm * > > FieldItems() { return Items; }
@@ -377,7 +384,7 @@ namespace ActorRobot {
         bool stepLeft();
         bool stepRight();
         void editField();
-        void setEditMode(bool EditMode);
+        void setMode(int Mode);
         void showCellDialog(FieldItm * cellClicked);
         inline FieldItm * currentCell() { return getFieldItem(robo_y,robo_x); }
         inline FieldItm * cellAt(int x,int y) { return getFieldItem(x,y); }
@@ -419,7 +426,7 @@ namespace ActorRobot {
         QList<QList<FieldItm * > > Items;
         QList<QGraphicsLineItem*> setka;
         //QGraphicsView * scena;
-        bool editMode,markMode,wasEdit;
+        bool markMode,wasEdit;
         QColor LineColor,WallColor,EditColor,NormalColor,Color;
         uint fieldSize;
         uint robo_x,robo_y;
@@ -436,9 +443,10 @@ namespace ActorRobot {
         qreal perssX,pressY;
         QGraphicsLineItem* showWall,*keyCursor;
         QPair<int,int> old_cell,clickCell;
-        bool textEditMode,radEditMode,pressD;
+        bool radEditMode,pressD;
         QDoubleSpinBox * radSpinBox;
         QSpinBox * tempSpinBox;
+        int mode;
           
     };
   
