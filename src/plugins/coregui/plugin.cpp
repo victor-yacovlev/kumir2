@@ -178,7 +178,8 @@ QString Plugin::initialize(const QStringList & parameters)
                         true, true
                         );
             secondaryWindows_ << actorWindow;
-            actorWindow->setWindowTitle(actor->name());
+            const QString actorName = actor->name();
+            actorWindow->setWindowTitle(actorName);
             w = actorWindow;
             mainWindow_->ui->menuWindow->addAction(actorWindow->toggleViewAction());
             if (!actor->mainIconName().isEmpty()) {

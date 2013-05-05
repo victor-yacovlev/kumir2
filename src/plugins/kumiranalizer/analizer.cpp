@@ -424,10 +424,10 @@ void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor
     mod->header.name = actor->name();
     mod->header.enabled = true;
     ast->modules << mod;
-
-    for (int i=0; i<actor->typeList().size(); i++) {
+    const Shared::ActorInterface::TypeList typeList = actor->typeList();
+    for (int i=0; i<typeList.size(); i++) {
         typedef Shared::ActorInterface AI;
-        AI::CustomType ct = actor->typeList()[i];
+        AI::CustomType ct = typeList[i];
         AST::Type tp;
         tp.name = ct.first;
         tp.moduleName = actor->name();
@@ -451,17 +451,19 @@ void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor
         tp.kind = AST::TypeUser;
         mod->header.types << tp;
     }
-
-    for (int i=0; i<actor->funcList().size(); i++) {
+    const QStringList funcList = actor->funcList();
+    for (int i=0; i<funcList.size(); i++) {
         AST::Algorhitm * alg = new AST::Algorhitm;
         alg->header.implType = AST::AlgorhitmExternal;
         alg->header.external.moduleName = actor->name();
         alg->header.external.id = i;
         QList<Statement*> sts;
-        lexer->splitIntoStatements(QStringList() << actor->funcList()[i], -1, sts, gatherExtraTypeNames());
+        lexer->splitIntoStatements(QStringList() << funcList[i], -1, sts, gatherExtraTypeNames());
         Q_ASSERT_X(sts.size()==1
                    , "AnalizerPrivate::createModuleFromActor"
-                   , QString("Algorhitm %1 in module %2 has syntax error").arg(actor->funcList()[i]).arg(actor->name()).toLocal8Bit().data());
+                   , QString("Algorhitm %1 in module %2 has syntax error")
+                   .arg(funcList[i])
+                   .arg(actor->name()).toLocal8Bit().data());
         alg->impl.headerLexems = sts[0]->data;
         sts[0]->alg = alg;
         sts[0]->mod = mod;
@@ -471,7 +473,9 @@ void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor
             if (!lx->error.isEmpty()) {
                 Q_ASSERT_X(sts.size()==1
                            , "AnalizerPrivate::createModuleFromActor"
-                           , QString("Algorhitm %1 in module %2 has syntax error").arg(actor->funcList()[i]).arg(actor->name()).toLocal8Bit().data());
+                           , QString("Algorhitm %1 in module %2 has syntax error")
+                           .arg(funcList[i])
+                           .arg(actor->name()).toLocal8Bit().data());
             }
             delete lx;
         }

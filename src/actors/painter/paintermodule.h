@@ -28,6 +28,8 @@ class PainterModule
 public:
     // Constructor
     PainterModule(ExtensionSystem::KPlugin * parent);
+    inline void reloadSettings(QSettings *) {}
+    inline void changeGlobalState(ExtensionSystem::GlobalState, ExtensionSystem::GlobalState) {}
 public slots:
     // Reset actor state before program starts
     void reset();
@@ -76,6 +78,7 @@ public slots:
 public:
     // GUI access methods
     QWidget* mainWidget() const;
+    inline QWidget* pultWidget() const { return nullptr; }
 
 private:
     void drawPolygon(const QVector<QPoint> & points);

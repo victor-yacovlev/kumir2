@@ -24,6 +24,8 @@ public:
     // Constructor
 
     ComplexNumbersModule(ExtensionSystem::KPlugin * parent);
+    inline void reloadSettings(QSettings *) {}
+    inline void changeGlobalState(ExtensionSystem::GlobalState, ExtensionSystem::GlobalState) {}
 
 public slots:
     // Reset actor state before program starts

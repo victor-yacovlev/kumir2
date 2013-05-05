@@ -41,9 +41,13 @@ public slots:
     bool runIsWallAhead();
     bool runIsFreeAhead();
 
+    inline void reloadSettings(QSettings* ) { }
+    inline void changeGlobalState(ExtensionSystem::GlobalState, ExtensionSystem::GlobalState) {}
+
 public:
     // GUI access methods
     QWidget* mainWidget() const;
+    inline QWidget* pultWidget() const { return nullptr; }
 
 private:
     Robot25DWindow * window_;
