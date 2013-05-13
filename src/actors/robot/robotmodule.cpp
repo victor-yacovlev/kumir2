@@ -291,7 +291,7 @@ namespace ActorRobot {
     void FieldItm::hideCharFld()
     {
        
-       if(upCharFld) Scene->removeItem(upCharFld);
+       if(upCharFld!=NULL) Scene->removeItem(upCharFld);
         if(!Scene)
         {
         qDebug()<<"Scene is NULL!";
@@ -738,14 +738,12 @@ namespace ActorRobot {
         this->setItemIndexMethod(NoIndex);
         robot=NULL;
         markMode=true;
-   //     cellDialog=new CellDialog(Parent);
-        // cellDialog=CellDialog::instance();
-      //  cellDialog->setParent(Parent);
+
         wasEdit=false;
         showWall=new QGraphicsLineItem(0,0,0,0);
         this->addItem(showWall);
       //  textEditMode=false;
-        radEditMode=false;
+       
         keyCursor=new QGraphicsLineItem(0,0,0,0);
         this->addItem(keyCursor); 
         keyCursor->hide();
@@ -755,10 +753,41 @@ namespace ActorRobot {
     { 
         mode=Mode;
         sett=RobotModule::robotSettings();
+        QGraphicsView * view=views().first();
+        if(mode==NEDIT_MODE)
+        {
+          radSpinBox->hide();
+         // setTextEditMode(false);  
+          redrawEditFields();
+          redrawRTFields();  
+        }
+        
+        if(mode==RAD_MODE)
+        {
+            radSpinBox->setParent(view);
+            radSpinBox->move(70,5);
+            
+            radSpinBox->show();
+            clickCell=QPair<int,int>(-1,-1);
+          
+            
+            
+            redrawEditFields();
+            redrawRTFields();  
+            
+        }
+        if(mode==TEXT_MODE)
+        {
+            redrawRTFields();
+            setTextEditMode(true);
+        }
         LineColor = QColor(sett->value("LineColor","#C8C800").toString());
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
         EditColor=QColor(sett->value("EditColor","#00008C").toString());
         NormalColor=QColor(sett->value("NormalColor","#289628").toString());
+        
+        view->repaint();
+        
     }
     void RoboField::editField()
     {
@@ -962,30 +991,19 @@ namespace ActorRobot {
             this->addItem(keyCursor);
         }
        
-        if(radEditMode)radEditMode=!flag;
+       
        // destroyField();
        // drawField(FIELD_SIZE_SMALL);
 
         if(mode!=TEXT_MODE && !flag)
         {timer->stop();
-        keyCursor->hide();
+        if(keyCursor)keyCursor->hide();
         };
-        if(flag)mode=TEXT_MODE;
-            else mode=NEDIT_MODE;
         radSpinBox->hide(); 
         redrawEditFields();
         redrawRTFields();
     };
-   void RoboField::setRadEditMode(bool flag)
-    {
-     clickCell=QPair<int,int>(-1,-1);
-     QGraphicsView * view=views().first();   
-     radSpinBox->setParent(view);
-        radSpinBox->hide();   
-     radEditMode=flag;  
-     redrawEditFields();
-     redrawRTFields();   
-    };
+
     
     void RoboField::destroyRobot()
     {
@@ -1027,7 +1045,7 @@ namespace ActorRobot {
             for(int j=0;j<columns();j++)
             {
                 
-                if(radEditMode)row->at(j)->showRTItm(upLeftCorner(i,j).x(),
+                if(mode==RAD_MODE)row->at(j)->showRTItm(upLeftCorner(i,j).x(),
                                                         upLeftCorner(i,j).y(),FIELD_SIZE_SMALL);
                 else row->at(j)->hideRTItm();
                 
@@ -2033,44 +2051,38 @@ namespace ActorRobot {
              else showCursorUp(rowClicked,colClicked);
             return;
         }
-        if(radEditMode)//if radiation || temp edit mode
+        if(mode==RAD_MODE)//if radiation || temp edit mode
         {   
+            qDebug()<<"RAD MODE CLick";
             if(clickCell!=QPair<int,int>(rowClicked,colClicked))
              {
                if(radSpinBox->isVisible())
-               {qDebug()<<"SET F:"<<clickCell.first<<"SET SEC:"<<clickCell.second;
-                   getFieldItem(clickCell.first,clickCell.second)->radiation=radSpinBox->value();
+                   
+               {    clickCell=QPair<int,int>(rowClicked,colClicked);
+                   qDebug()<<"SET F:"<<clickCell.first<<"SET SEC:"<<clickCell.second;
+                   getFieldItem(rowClicked,colClicked)->radiation=radSpinBox->value();
                 
                }
                  redrawRTFields();  
-                 radSpinBox->hide();
+                // radSpinBox->hide();
              }
             if(rowClicked>rows() || colClicked>columns() ||rowClicked<0 || colClicked<0)//clik mimio polya
             {
-              radSpinBox->hide();
+              //radSpinBox->hide();
              return;
             }
-            clickCell=QPair<int,int>(rowClicked,colClicked);
-            radSpinBox->show();
+           
    
             QGraphicsView * view=views().first();  //current view
             QPoint clickViewPos=view->mapFromScene(mouseEvent->scenePos().x(), mouseEvent->scenePos().y());
            // qDebug()<<"ROW:"<<rowClicked<<"COL:"<<colClicked;
-            radSpinBox->setValue(getFieldItem(rowClicked,colClicked)->radiation);//set radiation
-            radSpinBox->move(clickViewPos.x(),clickViewPos.y());
-            qDebug()<<"Show spin box"<<clickViewPos.x()<<" pos y"<<clickViewPos.y();
+            //radSpinBox->setValue(getFieldItem(rowClicked,colClicked)->radiation);//set radiation
+            view->repaint();
+        
             return;
         }
 
-        
-        if(mouseEvent->button()==Qt::RightButton)//Диалог редактирования
-        {
-          //  cellDialog->setPos(rowClicked+1,colClicked+1);
-            //         if (robo_y==rowClicked && robo_x==colClicked)cellDialog->setRobot->setChecked(true);
-            //else cellDialog->setRobot->setChecked(false);
-            showCellDialog(getFieldItem(rowClicked,colClicked));
-            return;
-        };
+ 
         
         bool left,right,up,down;
         left=false;right=false;up=false;down=false;
@@ -2090,6 +2102,8 @@ namespace ActorRobot {
         
        // qDebug()<<"ScenePos y "<<scenePos.y() <<" sceneposx"<<scenePos.x() << "rowClick:"<<rowClicked << " "<<" colClick:"<<colClicked <<
       //  " delta_row" <<delta_row << " delta_col" << delta_col;
+        if(!NEDIT_MODE)return; //don't setup walls,and marks;
+        
         if(delta_row<=MAX_CLICK_DELTA){up=true;upD=delta_row;qDebug("UP");};
         
         if(fieldSize-delta_row<=MAX_CLICK_DELTA){down=true;downD=fieldSize-delta_row;};
@@ -2167,9 +2181,10 @@ namespace ActorRobot {
     };
     void RoboField::mouseMoveEvent ( QGraphicsSceneMouseEvent * mouseEvent )
     {
-        qDebug()<<"FIELD MOVE";
+       // qDebug()<<"FIELD MOVE";
         if(mode==0)return;
-        if(mode==TEXT_MODE)return;
+        if(mode!=NEDIT_MODE)return;
+        
         QGraphicsScene::mouseMoveEvent(mouseEvent);
      if(!pressed)
      {
@@ -2268,12 +2283,7 @@ namespace ActorRobot {
     void RoboField::keyPressEvent ( QKeyEvent * keyEvent )
     {
         if(clickCell==QPair<int,int>(-1,1))return;
-        if(radSpinBox->isVisible() &&radEditMode ) 
-        {
-         if(keyEvent->key()==Qt::Key_Enter)getFieldItem(clickCell.first,clickCell.second)->radiation=radSpinBox->value();   
-         if(keyEvent->key()==Qt::Key_Escape)radSpinBox->hide();
-            redrawRTFields();
-        }
+   
         redrawRTFields();
         
         if(!(mode==NEDIT_MODE || mode==TEXT_MODE))return;
@@ -2421,7 +2431,12 @@ namespace ActorRobot {
     };
     void RoboField::timerTic()
     {
+        if(!EDIT_MODE){
+         keyCursor->hide();
+            timer->stop();  
+        }
       qDebug()<<"TIK!"; 
+        if(!keyCursor)return;
       timer->start(500);
         if(keyCursor->isVisible())keyCursor->hide();
         else keyCursor->show();
@@ -2453,7 +2468,7 @@ namespace ActorRobot {
         clone->setFieldItems(Items);
         clone->robo_x=robo_x;
         clone->robo_y=robo_y;
-        clone->setMode(mode);
+        clone->setModeFlag(mode);
         for(int i=0;i<rows();i++)
         {
             for(int j=0;j<columns();j++)
@@ -2513,7 +2528,7 @@ namespace ActorRobot {
         rad.load(iconPath.toLocalFile ());
         QPainter pntr;
         pntr.begin(&radiation);
-        pntr.drawImage(2,2,rad.scaledToHeight(FIELD_SIZE_SMALL) );
+       // pntr.drawImage(2,2,rad.scaledToHeight(FIELD_SIZE_SMALL) );
      //   setRenderHints(QPainter::Antialiasing);
     }
     
@@ -2525,7 +2540,7 @@ namespace ActorRobot {
         if(isRad())
         {
                         
-            painter->drawPicture(0,0,radiation);
+          //  painter->drawPicture(0,0,radiation);
             painter->setBrush(QBrush(Qt::yellow));
             painter->drawRect(2, FIELD_SIZE_SMALL+4, (FIELD_SIZE_SMALL-FIELD_SIZE_SMALL/4)*(Value*4/99),FIELD_SIZE_SMALL*4/6 );
             
@@ -2533,7 +2548,7 @@ namespace ActorRobot {
         if(isTemp())
         {
             
-            painter->drawImage(2,FIELD_SIZE_SMALL*2+2,rad.scaledToHeight(FIELD_SIZE_SMALL) );
+         //   painter->drawImage(2,FIELD_SIZE_SMALL*2+2,rad.scaledToHeight(FIELD_SIZE_SMALL) );
             painter->setBrush(QBrush(Qt::blue));
             painter->drawRect(2, FIELD_SIZE_SMALL-2+FIELD_SIZE_SMALL*2, (FIELD_SIZE_SMALL-FIELD_SIZE_SMALL/4)*(Value*4/341),FIELD_SIZE_SMALL*4/6 );
             
@@ -2963,11 +2978,16 @@ bool RobotModule::runIsFreeAtRight()
 void RobotModule::editEnv()
     {
        
-        startField->setMode(NEDIT_MODE);
+        startField->setModeFlag(NEDIT_MODE);
         
-        field->setMode(NEDIT_MODE);
+        //field->setMode(NEDIT_MODE);
+        
         view->showButtons(true);
+        //field->setMode(NEDIT_MODE); 
         reset();
+        field->setMode(NEDIT_MODE);
+        startField->setModeFlag(NORMAL_MODE);
+        //field->setMode(NEDIT_MODE); 
     };    
 void RobotModule::loadEnv()
     {
@@ -3166,8 +3186,10 @@ void RobotView::changeEditMode()
            radEditBtn->setChecked(false); 
             robotField->setMode(TEXT_MODE); 
         }
-        if(radEditBtn->isChecked ())textEditBtn->setChecked(false);
-        robotField->setRadEditMode(radEditBtn->isChecked ()); 
+        if(radEditBtn->isChecked ())
+        {textEditBtn->setChecked(false);
+                    robotField->setMode(RAD_MODE); 
+        }; 
         
     };
 } // $namespace

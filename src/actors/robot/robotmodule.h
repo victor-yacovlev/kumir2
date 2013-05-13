@@ -87,9 +87,9 @@ namespace ActorRobot {
                                          qApp->property("sharePath").toString()+
                                          "/actors/robot/btn_radiation.png"
                                          );
-            rad=QImage(iconPath.toLocalFile ());
+           // rad=QImage(iconPath.toLocalFile ());
             
-            rad.load(iconPath.toLocalFile ());
+           // rad.load(iconPath.toLocalFile ());
         }
         void setTemp()
         {
@@ -100,7 +100,7 @@ namespace ActorRobot {
                                          );
             rad=QImage(iconPath.toLocalFile ());
             
-            rad.load(iconPath.toLocalFile ());
+           // rad.load(iconPath.toLocalFile ());
         }
         void setValue(float value)
         {
@@ -299,7 +299,7 @@ namespace ActorRobot {
         void drawField(uint cellSize);//TODO Document
         void destroyField();
         void setTextEditMode(bool flag);
-        void setRadEditMode(bool flag);
+       // void setRadEditMode(bool flag);
         void redrawEditFields();
         void redrawRTFields();
         void destroyRobot();
@@ -384,7 +384,11 @@ namespace ActorRobot {
         bool stepLeft();
         bool stepRight();
         void editField();
-        void setMode(int Mode);
+        void setMode(int Mode);//swich mode (show/hide controls etc.)
+        void setModeFlag(int Mode)
+        {
+            mode=Mode; 
+        }
         void showCellDialog(FieldItm * cellClicked);
         inline FieldItm * currentCell() { return getFieldItem(robo_y,robo_x); }
         inline FieldItm * cellAt(int x,int y) { return getFieldItem(x,y); }
@@ -443,7 +447,7 @@ namespace ActorRobot {
         qreal perssX,pressY;
         QGraphicsLineItem* showWall,*keyCursor;
         QPair<int,int> old_cell,clickCell;
-        bool radEditMode,pressD;
+        bool pressD;
         QDoubleSpinBox * radSpinBox;
         QSpinBox * tempSpinBox;
         int mode;
