@@ -757,7 +757,6 @@ namespace ActorRobot {
         if(mode==NEDIT_MODE)
         {
           radSpinBox->hide();
-         // setTextEditMode(false);  
           redrawEditFields();
           redrawRTFields();  
         }
@@ -2720,8 +2719,17 @@ void RobotModule::reset()
 	*/
     //delete field;
     qDebug()<<"Reset!!";
+
+        
     field->destroyRobot();
     field->deleteLater();
+    if(field->isEditMode())
+    {
+        field->setMode(NORMAL_MODE);
+        view->showButtons(false);
+        
+      startField=field->Clone();  
+    }
     field=startField->Clone();
     field->setRoboPos(startField->robotX(),startField->robotY());
     field->createRobot();
@@ -3076,12 +3084,17 @@ int RobotModule::SaveToFile(QString p_FileName)
         textEditBtn=new QToolButton(this);
         textEditBtn->hide();
         textEditBtn->setCheckable ( true );
+        textEditBtn->setIcon(QIcon(qApp->property("sharePath").toString()+
+                                  "/actors/robot/text.png"));
         radEditBtn=new QToolButton(this);
+        radEditBtn->setIcon(QIcon(qApp->property("sharePath").toString()+
+                                  "/actors/robot/btn_radiation.png"));
+
         radEditBtn->hide();
         radEditBtn->setCheckable ( true );
         radEditBtn->move(textEditBtn->height(),0);
-        connect(textEditBtn,SIGNAL(clicked()),this,SLOT(changeEditMode()));
-        connect(radEditBtn,SIGNAL(clicked()),this,SLOT(changeEditMode()));
+        connect(textEditBtn,SIGNAL(toggled(bool)),this,SLOT(changeEditMode(bool)));
+        connect(radEditBtn,SIGNAL(toggled(bool)),this,SLOT(changeEditMode(bool)));
         c_scale=1;
       //  setRenderHint(QPainter::Antialiasing);
     };
@@ -3178,16 +3191,20 @@ int RobotModule::SaveToFile(QString p_FileName)
     {
         centerOn(robotField->roboPosF());
     };
-void RobotView::changeEditMode()
+void RobotView::changeEditMode(bool state)
     {
+        QToolButton *clicked = qobject_cast<QToolButton*>(sender());
+        if(radEditBtn!=clicked && radEditBtn->isChecked())radEditBtn->setChecked(false); 
+        if(textEditBtn!=clicked && textEditBtn->isChecked())textEditBtn->setChecked(false);
+        if(clicked->isChecked()!=state)clicked->setChecked(state);
        if(!textEditBtn->isChecked () && !radEditBtn->isChecked ())robotField->setMode(NEDIT_MODE);
         if(textEditBtn->isChecked ())
         {
-           radEditBtn->setChecked(false); 
+          
             robotField->setMode(TEXT_MODE); 
         }
         if(radEditBtn->isChecked ())
-        {textEditBtn->setChecked(false);
+        {
                     robotField->setMode(RAD_MODE); 
         }; 
         

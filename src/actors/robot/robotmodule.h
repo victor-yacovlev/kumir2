@@ -475,7 +475,7 @@ namespace ActorRobot {
             robotField=field;
         }
     public slots:
-        void changeEditMode();
+        void changeEditMode(bool state);
         
     protected:
         void mousePressEvent ( QMouseEvent * event );
