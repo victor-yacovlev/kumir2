@@ -750,7 +750,12 @@ namespace ActorRobot {
         this->addItem(keyCursor); 
         keyCursor->hide();
         radSpinBox=new QDoubleSpinBox();
+        radSpinBox->setRange(0, 99);
         tempSpinBox=new QSpinBox();
+        tempSpinBox->setRange(0, 171);
+        tempSpinBox->setValue(77);
+        radSpinBox->setValue(55);
+        
     };
   void RoboField::setMode( int Mode) 
     { 
@@ -2584,16 +2589,24 @@ namespace ActorRobot {
         {
                         
           //  painter->drawPicture(0,0,radiation);
-            painter->setBrush(QBrush(Qt::yellow));
-            painter->drawRect(2, FIELD_SIZE_SMALL+4, (FIELD_SIZE_SMALL-FIELD_SIZE_SMALL/4)*(Value*4/99),FIELD_SIZE_SMALL*4/6 );
+            painter->setPen(QPen(Qt::yellow));
+           // painter->drawRect(2, FIELD_SIZE_SMALL+4, (FIELD_SIZE_SMALL-FIELD_SIZE_SMALL/4)*(Value*4/99),FIELD_SIZE_SMALL*4/6 );
+            QFont sansFont("Helvetica [Cronyx]", 12);
+            sansFont.setPixelSize(FIELD_SIZE_SMALL*1.2);
+            painter->setFont(sansFont);
+            painter->drawText(4, FIELD_SIZE_SMALL+4,FIELD_SIZE_SMALL*3,FIELD_SIZE_SMALL*1.5,0 ,QString::number(Value));
             
         }
         if(isTemp())
         {
             
-         //   painter->drawImage(2,FIELD_SIZE_SMALL*2+2,rad.scaledToHeight(FIELD_SIZE_SMALL) );
-            painter->setBrush(QBrush(Qt::blue));
-            painter->drawRect(2, FIELD_SIZE_SMALL-2+FIELD_SIZE_SMALL*2, (FIELD_SIZE_SMALL-FIELD_SIZE_SMALL/4)*(Value*4/341),FIELD_SIZE_SMALL*4/6 );
+            //  painter->drawPicture(0,0,radiation);
+            painter->setPen(QPen(Qt::white));
+            // painter->drawRect(2, FIELD_SIZE_SMALL+4, (FIELD_SIZE_SMALL-FIELD_SIZE_SMALL/4)*(Value*4/99),FIELD_SIZE_SMALL*4/6 );
+            QFont sansFont("Helvetica [Cronyx]", 12);
+            sansFont.setPixelSize(FIELD_SIZE_SMALL*1.2);
+            painter->setFont(sansFont);
+            painter->drawText(4, FIELD_SIZE_SMALL+4,FIELD_SIZE_SMALL*3,FIELD_SIZE_SMALL*1.5,0 ,QString::number(Value));
             
         }
     }
@@ -3029,17 +3042,16 @@ bool RobotModule::runIsFreeAtRight()
     }
 void RobotModule::editEnv()
     {
-       
+        if(field->isEditMode())return;
         startField->setModeFlag(NEDIT_MODE);
         
-        //field->setMode(NEDIT_MODE);
         
         view->showButtons(true);
-        //field->setMode(NEDIT_MODE); 
+         
         reset();
         field->setMode(NEDIT_MODE);
         startField->setModeFlag(NORMAL_MODE);
-        //field->setMode(NEDIT_MODE); 
+        
     };    
 void RobotModule::loadEnv()
     {
