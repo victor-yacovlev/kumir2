@@ -217,7 +217,7 @@ namespace ActorRobot {
         showDownChar(upLeftCornerX,upLeftCornerY,size);
         showMark(upLeftCornerX,upLeftCornerY,size);
     }
-    void FieldItm::showRTItm(qreal upLeftCornerX, qreal upLeftCornerY, int size)
+    void FieldItm::showRTItm(qreal upLeftCornerX, qreal upLeftCornerY, int size,int mode)
     {
        
         if (radItm) {
@@ -247,7 +247,8 @@ namespace ActorRobot {
       // radItm->setBrush(QBrush(Qt::yellow));
      //  radItm->setPos(upLeftCornerX+1,upLeftCornerY+1);
         radItm->setZValue(100);
-        radItm->show();
+        if(mode==RAD_MODE)radItm->show();
+        else radItm->hide();
         
         
         
@@ -258,7 +259,8 @@ namespace ActorRobot {
         Scene->addItem(tempItm);
          tempItm->setScale(0.25);
         tempItm->setZValue(100);
-        tempItm->show();
+        if(mode==TEMP_MODE)tempItm->show();
+        else tempItm->hide();
         //tempItm=Scene->addText("T: "+QString::number(temperature),font);
         //tempItm->setDefaultTextColor(TextColor);
         //tempItm->setPos(upLeftCornerX+1,upLeftCornerY+size-16);
@@ -748,6 +750,7 @@ namespace ActorRobot {
         this->addItem(keyCursor); 
         keyCursor->hide();
         radSpinBox=new QDoubleSpinBox();
+        tempSpinBox=new QSpinBox();
     };
   void RoboField::setMode( int Mode) 
     { 
@@ -757,14 +760,16 @@ namespace ActorRobot {
         if(mode==NEDIT_MODE)
         {
           radSpinBox->hide();
+          tempSpinBox->hide();
           redrawEditFields();
           redrawRTFields();  
         }
         
         if(mode==RAD_MODE)
         {
+            tempSpinBox->hide();
             radSpinBox->setParent(view);
-            radSpinBox->move(70,5);
+            radSpinBox->move(100,2);
             
             radSpinBox->show();
             clickCell=QPair<int,int>(-1,-1);
@@ -775,8 +780,24 @@ namespace ActorRobot {
             redrawRTFields();  
             
         }
+        if(mode==TEMP_MODE)
+        {
+            radSpinBox->hide();
+            tempSpinBox->setParent(view);
+            tempSpinBox->move(100,2);
+            
+            tempSpinBox->show();
+            clickCell=QPair<int,int>(-1,-1);
+            
+            
+            
+            redrawEditFields();
+            redrawRTFields();  
+            
+        }
         if(mode==TEXT_MODE)
         {
+            tempSpinBox->hide();
             redrawRTFields();
             setTextEditMode(true);
         }
@@ -1044,8 +1065,8 @@ namespace ActorRobot {
             for(int j=0;j<columns();j++)
             {
                 
-                if(mode==RAD_MODE)row->at(j)->showRTItm(upLeftCorner(i,j).x(),
-                                                        upLeftCorner(i,j).y(),FIELD_SIZE_SMALL);
+                if(mode==RAD_MODE || mode==TEMP_MODE)row->at(j)->showRTItm(upLeftCorner(i,j).x(),
+                                                        upLeftCorner(i,j).y(),FIELD_SIZE_SMALL,mode);
                 else row->at(j)->hideRTItm();
                 
             };
@@ -2051,7 +2072,11 @@ namespace ActorRobot {
             return;
         }
         if(mode==RAD_MODE)//if radiation || temp edit mode
-        {   
+        {   if(rowClicked>rows() || colClicked>columns() ||rowClicked<0 || colClicked<0)//clik mimio polya
+            {
+            //radSpinBox->hide();
+            return;
+            }
             qDebug()<<"RAD MODE CLick";
             if(clickCell!=QPair<int,int>(rowClicked,colClicked))
              {
@@ -2072,15 +2097,34 @@ namespace ActorRobot {
             }
            
    
-            QGraphicsView * view=views().first();  //current view
-            QPoint clickViewPos=view->mapFromScene(mouseEvent->scenePos().x(), mouseEvent->scenePos().y());
+           QGraphicsView * view=views().first();  //current view
+            //QPoint clickViewPos=view->mapFromScene(mouseEvent->scenePos().x(), mouseEvent->scenePos().y());
            // qDebug()<<"ROW:"<<rowClicked<<"COL:"<<colClicked;
             //radSpinBox->setValue(getFieldItem(rowClicked,colClicked)->radiation);//set radiation
             view->repaint();
         
             return;
         }
-
+        if(mode==TEMP_MODE)
+        {
+            qDebug()<<"Temp MODE CLick";
+            if(rowClicked>rows() || colClicked>columns() ||rowClicked<0 || colClicked<0)//clik mimio polya
+            {
+                //radSpinBox->hide();
+                return;
+            }
+            if(tempSpinBox->isVisible())
+                
+            {    clickCell=QPair<int,int>(rowClicked,colClicked);
+                qDebug()<<"SET F:"<<clickCell.first<<"SET SEC:"<<clickCell.second;
+                getFieldItem(rowClicked,colClicked)->temperature=tempSpinBox->value();
+                
+            }
+            redrawRTFields();  
+             QGraphicsView * view=views().first();
+            view->repaint();
+            return;
+        }
  
         
         bool left,right,up,down;
@@ -3093,8 +3137,17 @@ int RobotModule::SaveToFile(QString p_FileName)
         radEditBtn->hide();
         radEditBtn->setCheckable ( true );
         radEditBtn->move(textEditBtn->height(),0);
+        tmpEditBtn=new QToolButton(this);
+        tmpEditBtn->hide();
+        tmpEditBtn->setCheckable ( true );
+        tmpEditBtn->setIcon(QIcon(qApp->property("sharePath").toString()+
+                                   "/actors/robot/btn_temperature.png"));
+        tmpEditBtn->move(textEditBtn->height()*2+2,0);
+        
         connect(textEditBtn,SIGNAL(toggled(bool)),this,SLOT(changeEditMode(bool)));
         connect(radEditBtn,SIGNAL(toggled(bool)),this,SLOT(changeEditMode(bool)));
+        connect(tmpEditBtn,SIGNAL(toggled(bool)),this,SLOT(changeEditMode(bool)));
+        
         c_scale=1;
       //  setRenderHint(QPainter::Antialiasing);
     };
@@ -3103,6 +3156,7 @@ int RobotModule::SaveToFile(QString p_FileName)
     {
         textEditBtn->setVisible(flag);
         radEditBtn->setVisible(flag);
+        tmpEditBtn->setVisible(flag);
     };
     void RobotView::mousePressEvent ( QMouseEvent * event )
     {
@@ -3196,6 +3250,7 @@ void RobotView::changeEditMode(bool state)
         QToolButton *clicked = qobject_cast<QToolButton*>(sender());
         if(radEditBtn!=clicked && radEditBtn->isChecked())radEditBtn->setChecked(false); 
         if(textEditBtn!=clicked && textEditBtn->isChecked())textEditBtn->setChecked(false);
+        if(tmpEditBtn!=clicked && tmpEditBtn->isChecked())tmpEditBtn->setChecked(false); 
         if(clicked->isChecked()!=state)clicked->setChecked(state);
        if(!textEditBtn->isChecked () && !radEditBtn->isChecked ())robotField->setMode(NEDIT_MODE);
         if(textEditBtn->isChecked ())
@@ -3206,6 +3261,10 @@ void RobotView::changeEditMode(bool state)
         if(radEditBtn->isChecked ())
         {
                     robotField->setMode(RAD_MODE); 
+        }; 
+        if(tmpEditBtn->isChecked ())
+        {
+            robotField->setMode(TEMP_MODE); 
         }; 
         
     };

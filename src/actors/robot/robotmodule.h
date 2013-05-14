@@ -189,7 +189,7 @@ namespace ActorRobot {
         void showCharMark(qreal upLeftCornerX,qreal upLeftCornerY,int size);
         void showUpChar(qreal upLeftCornerX,qreal upLeftCornerY,int size);
         void showDownChar(qreal upLeftCornerX,qreal upLeftCornerY,int size);
-        void showRTItm(qreal upLeftCornerX, qreal upLeftCornerY, int size);
+        void showRTItm(qreal upLeftCornerX, qreal upLeftCornerY, int size,int mode);
         void hideRTItm();
         
         void showMark(qreal upLeftCornerX,qreal upLeftCornerY,int size);
@@ -481,7 +481,7 @@ namespace ActorRobot {
         void mousePressEvent ( QMouseEvent * event );
         void mouseReleaseEvent ( QMouseEvent * event );
         void mouseMoveEvent ( QMouseEvent * event );
-        void	wheelEvent ( QWheelEvent * event );
+        void wheelEvent ( QWheelEvent * event );
        
     private:
         bool pressed;
@@ -489,6 +489,7 @@ namespace ActorRobot {
         RoboField* robotField;
         QToolButton * textEditBtn;
         QToolButton * radEditBtn;
+        QToolButton * tmpEditBtn;
         float c_scale;
         
     };
