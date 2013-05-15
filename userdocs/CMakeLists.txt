@@ -1,0 +1,11 @@
+project(docbookviewer)
+cmake_minimum_required(VERSION 2.8)
+
+file(MAKE_DIRECTORY ${SHARE_PATH}/userdocs)
+file(GLOB_RECURSE resfiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*)
+foreach(res IN ITEMS ${resfiles})
+    if((NOT ${res} MATCHES ^[.].*) AND (NOT ${res} MATCHES CMakeLists))
+        file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${res} DESTINATION ${SHARE_PATH}/userdocs)
+        install(FILES ${SHARE_PATH}/userdocs/${res} DESTINATION ${RESOURCES_DIR}/userdocs)
+    endif()
+endforeach(res)

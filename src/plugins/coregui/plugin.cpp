@@ -142,6 +142,13 @@ QString Plugin::initialize(const QStringList & parameters)
 
     connect(kumirProgram_, SIGNAL(giveMeAProgram()), this, SLOT(prepareKumirProgramToRun()), Qt::DirectConnection);
 
+    helpViewer_ = new DocBookViewer::DocBookView(mainWindow_);
+    static const QString helpPath =
+            QApplication::instance()->property("sharePath").toString() +
+            "/userdocs/";
+
+    helpViewer_->addDocument(QUrl::fromLocalFile(helpPath + "default.xml"));
+
 
     KPlugin * kumirRunner = myDependency("KumirCodeRun");
     plugin_kumirCodeRun = qobject_cast<RunInterface*>(kumirRunner);
@@ -152,6 +159,10 @@ QString Plugin::initialize(const QStringList & parameters)
         ActorInterface * actor = qobject_cast<ActorInterface*>(o);
         l_plugin_actors << actor;
         QWidget * w = 0;
+        const QString actorHelpFile = helpPath + o->pluginSpec().name;
+        if (QFile(actorHelpFile).exists()) {
+            helpViewer_->addDocument(QUrl::fromLocalFile(actorHelpFile));
+        }
         if (actor->mainWidget()) {
             QWidget * actorWidget = actor->mainWidget();
             QList<QMenu*> actorMenus = actor->moduleMenus();
@@ -237,23 +248,7 @@ QString Plugin::initialize(const QStringList & parameters)
     connect(m_terminal, SIGNAL(openTextEditor(QString,QString)),
             mainWindow_, SLOT(newText(QString,QString)));
 
-
-    QString uri = "data/russian/default.xml";
-
-    foreach (const QString parameter, parameters) {
-        if (parameter.startsWith("help=")) {
-            const QString helpName = parameter.mid(5);
-            uri = "data/russian/"+helpName;
-        }
-    }
-
-
-    helpBrowser_ = plugin_browser->createBrowser(
-                QUrl("http://localhost/helpviewer/index.html?document="+uri),
-                m_browserObjects);
-
-
-    Widgets::SecondaryWindow * helpWindow = new Widgets::SecondaryWindow(helpBrowser_.widget,0,mainWindow_,mySettings(),"HelpWindow");
+    Widgets::SecondaryWindow * helpWindow = new Widgets::SecondaryWindow(helpViewer_,0,mainWindow_,mySettings(),"HelpWindow");
     secondaryWindows_ << helpWindow;
     helpWindow->setWindowTitle(tr("Help"));
 

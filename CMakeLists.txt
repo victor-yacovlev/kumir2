@@ -70,7 +70,8 @@ set(EXECUTABLE_OUTPUT_PATH
 set(LIBEXECS_PATH ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${LIBEXECS_DIR})
 
 add_subdirectory(src)
-add_subdirectory(src-www)
+#add_subdirectory(src-www)
+add_subdirectory(userdocs)
 
 if(UNIX AND NOT APPLE)
     file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications)
