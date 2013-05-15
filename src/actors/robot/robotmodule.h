@@ -15,6 +15,7 @@ You should change it corresponding to functionality.
 #include "extensionsystem/kplugin.h"
 #include "robotmodulebase.h"
 
+
 namespace ActorRobot {
 
     
@@ -64,6 +65,10 @@ namespace ActorRobot {
 #define PAUSE_MODE 4
 #define DEFAULT_SIZEX 400
 #define DEFAULT_SIZEY 400    
+#define MAX_COLUMNS 33
+#define MAX_ROWS 33
+    
+    
 
     class EditLine:public QGraphicsObject
     {
@@ -87,9 +92,9 @@ namespace ActorRobot {
                                          qApp->property("sharePath").toString()+
                                          "/actors/robot/btn_radiation.png"
                                          );
-            rad=QImage(iconPath.toLocalFile ());
+           // rad=QImage(iconPath.toLocalFile ());
             
-            rad.load(iconPath.toLocalFile ());
+           // rad.load(iconPath.toLocalFile ());
         }
         void setTemp()
         {
@@ -100,7 +105,7 @@ namespace ActorRobot {
                                          );
             rad=QImage(iconPath.toLocalFile ());
             
-            rad.load(iconPath.toLocalFile ());
+           // rad.load(iconPath.toLocalFile ());
         }
         void setValue(float value)
         {
@@ -189,7 +194,7 @@ namespace ActorRobot {
         void showCharMark(qreal upLeftCornerX,qreal upLeftCornerY,int size);
         void showUpChar(qreal upLeftCornerX,qreal upLeftCornerY,int size);
         void showDownChar(qreal upLeftCornerX,qreal upLeftCornerY,int size);
-        void showRTItm(qreal upLeftCornerX, qreal upLeftCornerY, int size);
+        void showRTItm(qreal upLeftCornerX, qreal upLeftCornerY, int size,int mode);
         void hideRTItm();
         
         void showMark(qreal upLeftCornerX,qreal upLeftCornerY,int size);
@@ -299,7 +304,7 @@ namespace ActorRobot {
         void drawField(uint cellSize);//TODO Document
         void destroyField();
         void setTextEditMode(bool flag);
-        void setRadEditMode(bool flag);
+       // void setRadEditMode(bool flag);
         void redrawEditFields();
         void redrawRTFields();
         void destroyRobot();
@@ -384,7 +389,11 @@ namespace ActorRobot {
         bool stepLeft();
         bool stepRight();
         void editField();
-        void setMode(int Mode);
+        void setMode(int Mode);//swich mode (show/hide controls etc.)
+        void setModeFlag(int Mode)
+        {
+            mode=Mode; 
+        }
         void showCellDialog(FieldItm * cellClicked);
         inline FieldItm * currentCell() { return getFieldItem(robo_y,robo_x); }
         inline FieldItm * cellAt(int x,int y) { return getFieldItem(x,y); }
@@ -443,7 +452,7 @@ namespace ActorRobot {
         qreal perssX,pressY;
         QGraphicsLineItem* showWall,*keyCursor;
         QPair<int,int> old_cell,clickCell;
-        bool radEditMode,pressD;
+        bool pressD;
         QDoubleSpinBox * radSpinBox;
         QSpinBox * tempSpinBox;
         int mode;
@@ -471,13 +480,13 @@ namespace ActorRobot {
             robotField=field;
         }
     public slots:
-        void changeEditMode();
+        void changeEditMode(bool state);
         
     protected:
         void mousePressEvent ( QMouseEvent * event );
         void mouseReleaseEvent ( QMouseEvent * event );
         void mouseMoveEvent ( QMouseEvent * event );
-        void	wheelEvent ( QWheelEvent * event );
+        void wheelEvent ( QWheelEvent * event );
        
     private:
         bool pressed;
@@ -485,6 +494,7 @@ namespace ActorRobot {
         RoboField* robotField;
         QToolButton * textEditBtn;
         QToolButton * radEditBtn;
+        QToolButton * tmpEditBtn;
         float c_scale;
         
     };
@@ -529,6 +539,11 @@ namespace ActorRobot {
         void resetEnv();
         void saveEnv();
         void editEnv();
+        void newEnv();
+        void createNewField();
+        void createRescentMenu();
+        void updateLastFiles(const QString newFile );
+        void openRecent();
     private:
         int LoadFromFile(QString p_FileName);
         int SaveToFile(QString p_FileName);
@@ -540,6 +555,13 @@ namespace ActorRobot {
         RobotView * view;
         QString curDir;
         bool pressed;
+        QPushButton * btnOK1;
+        QPushButton * btnCancel1; //Кнопки диалога новая обстановка
+        QSpinBox *eXSizeEdit;
+        QSpinBox *eYSizeEdit;
+        QWidget* NewWindow;
+        QMenu * rescentMenu;
+        void prepareNewWindow();
     signals:
         void sendToPultLog(const QVariant &);
       
