@@ -2773,7 +2773,7 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     prepareNewWindow();
     rescentMenu=new QMenu();
     m_actionRobotLoadRescent->setMenu(rescentMenu);
-    createRescentMenu();
+    
 } 
 
     
@@ -2835,6 +2835,7 @@ void RobotModule::reloadSettings(QSettings *settings)
 {
     qDebug()<<"reload settings";
     field->setColorFromSett();
+    createRescentMenu();
 }
 
 void RobotModule::setAnimationEnabled(bool enabled)
@@ -3162,7 +3163,7 @@ void RobotModule::loadEnv()
         field->createField(eYSizeEdit->value(),eXSizeEdit->value());
         field->setRoboPos(0,0);
         field->createRobot();
-        
+        startField=field->Clone();
         field->drawField(FIELD_SIZE_SMALL);
         
         mainWidget()->setWindowTitle(QString::fromUtf8("Робот - нет файла") );
@@ -3253,7 +3254,7 @@ int RobotModule::SaveToFile(QString p_FileName)
  void RobotModule::createRescentMenu()
     {
         rescentMenu->clear();
-        QStringList lastFiles= RobotModule::robotSettings()->value("Robot/LastFiles").toString().split(";");
+        QStringList lastFiles= mySettings()->value("Robot/LastFiles").toString().split(";");
         qDebug()<<lastFiles;
         if(lastFiles.count()==0)rescentMenu->setEnabled(false);else  rescentMenu->setEnabled(true);
 
