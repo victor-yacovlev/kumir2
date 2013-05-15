@@ -15,6 +15,7 @@ You should change it corresponding to functionality.
 #include "extensionsystem/kplugin.h"
 #include "robotmodulebase.h"
 
+
 namespace ActorRobot {
 
     
@@ -64,6 +65,10 @@ namespace ActorRobot {
 #define PAUSE_MODE 4
 #define DEFAULT_SIZEX 400
 #define DEFAULT_SIZEY 400    
+#define MAX_COLUMNS 33
+#define MAX_ROWS 33
+    
+    
 
     class EditLine:public QGraphicsObject
     {
@@ -534,6 +539,11 @@ namespace ActorRobot {
         void resetEnv();
         void saveEnv();
         void editEnv();
+        void newEnv();
+        void createNewField();
+        void createRescentMenu();
+        void updateLastFiles(const QString newFile );
+        void openRecent();
     private:
         int LoadFromFile(QString p_FileName);
         int SaveToFile(QString p_FileName);
@@ -545,6 +555,13 @@ namespace ActorRobot {
         RobotView * view;
         QString curDir;
         bool pressed;
+        QPushButton * btnOK1;
+        QPushButton * btnCancel1; //Кнопки диалога новая обстановка
+        QSpinBox *eXSizeEdit;
+        QSpinBox *eYSizeEdit;
+        QWidget* NewWindow;
+        QMenu * rescentMenu;
+        void prepareNewWindow();
     signals:
         void sendToPultLog(const QVariant &);
       

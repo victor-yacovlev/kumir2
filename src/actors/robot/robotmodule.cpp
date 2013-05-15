@@ -9,6 +9,8 @@ You should change it corresponding to functionality.
 #include <QtCore>
 #include <QtGui>
 #include <QtDeclarative>
+#include <qmessagebox.h>
+#include <algorithm>
 #include "robotmodule.h"
 #include "extensionsystem/pluginmanager.h"
 
@@ -2765,7 +2767,13 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     connect(m_actionRobotLoadEnvironment,SIGNAL(triggered()) , this, SLOT(loadEnv()));
     connect(m_actionRobotRevertEnvironment,SIGNAL(triggered()) , this, SLOT(resetEnv()));
     connect(m_actionRobotSaveEnvironment,SIGNAL(triggered()) , this, SLOT(saveEnv()));
-    connect(m_actionRobotEditEnvironment,SIGNAL(triggered()) , this, SLOT(editEnv()));  
+    connect(m_actionRobotEditEnvironment,SIGNAL(triggered()) , this, SLOT(editEnv())); 
+    connect(m_actionRobotNewEnvironment,SIGNAL(triggered()) , this, SLOT(newEnv()));
+    
+    prepareNewWindow();
+    rescentMenu=new QMenu();
+    m_actionRobotLoadRescent->setMenu(rescentMenu);
+    createRescentMenu();
 } 
 
     
@@ -2800,7 +2808,28 @@ void RobotModule::reset()
 
     void RobotModule::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current){
     qDebug()<<"RobotModuleBase::changeGlobalState";
-        };    
+        if(current==ExtensionSystem::GS_Running)
+          {
+              m_actionRobotRevertEnvironment->setEnabled(false);
+              m_actionRobotLoadEnvironment->setEnabled(false);
+              m_actionRobotLoadRescent->setEnabled(false);
+              m_actionRobotRevertEnvironment->setEnabled(false);
+              m_actionRobotSaveEnvironment->setEnabled(false);
+              m_actionRobotEditEnvironment->setEnabled(false);
+              m_actionRobotNewEnvironment->setEnabled(false);
+          }
+        if(current==ExtensionSystem::GS_Unlocked || current==ExtensionSystem::GS_Observe)
+        {
+            m_actionRobotRevertEnvironment->setEnabled(true);
+            m_actionRobotLoadEnvironment->setEnabled(true);
+            m_actionRobotLoadRescent->setEnabled(true);
+            m_actionRobotRevertEnvironment->setEnabled(true);
+            m_actionRobotSaveEnvironment->setEnabled(true);
+            m_actionRobotEditEnvironment->setEnabled(true);
+            m_actionRobotNewEnvironment->setEnabled(true);
+        }
+
+    };    
     
 void RobotModule::reloadSettings(QSettings *settings)
 {
@@ -3081,10 +3110,103 @@ void RobotModule::loadEnv()
        // CurrentFileName = RobotFile;
        
         if( LoadFromFile(RobotFile)!=0)QMessageBox::information( mainWidget(), "", QString::fromUtf8("Ошибка открытия файла! ")+RobotFile, 0,0,0); 
+            else updateLastFiles(RobotFile);
     }
     void RobotModule::resetEnv()
     {
         reset();
+    }
+    void RobotModule::prepareNewWindow()
+    {
+    NewWindow = new QDialog(mainWidget());
+	QGridLayout *nwl = new QGridLayout;
+	NewWindow->setLayout(nwl);
+	NewWindow->setWindowModality(Qt::WindowModal);
+	//NewWindow->setPalette (BackPall);
+	NewWindow->setWindowTitle ( QString::fromUtf8("Новая обстановка"));
+	QLabel *lKol = new QLabel(QString::fromUtf8("Количество:"),NewWindow,0);
+	nwl->addWidget(lKol, 0, 0, 1, 2, Qt::AlignCenter);
+    
+	QLabel *lXSize = new QLabel(QString::fromUtf8("Столбцов"),NewWindow,0);
+	nwl->addWidget(lXSize, 1, 1, 1, 1, Qt::AlignCenter);
+    
+    
+	QLabel *lYSize = new QLabel(QString::fromUtf8("Строк"),NewWindow,0);
+	nwl->addWidget(lYSize, 1, 0, 1, 1, Qt::AlignCenter);
+    
+	NewWindow->setFixedSize(250,150);
+	eXSizeEdit = new QSpinBox(NewWindow);
+	eXSizeEdit->setRange ( 1, MAX_COLUMNS );
+	//eTemp->show();
+	eYSizeEdit = new QSpinBox(NewWindow);
+    
+    
+	eYSizeEdit->setRange ( 1, MAX_ROWS );
+	nwl->addWidget(eYSizeEdit, 2, 0, 1, 1, Qt::AlignCenter);
+	nwl->addWidget(eXSizeEdit, 2, 1, 1, 1, Qt::AlignCenter);
+    
+    
+	QDialogButtonBox *buttonBox = new QDialogButtonBox(NewWindow);
+    
+	btnOK1 = buttonBox->addButton(QDialogButtonBox::Ok);
+	btnCancel1 = buttonBox->addButton(QDialogButtonBox::Cancel);
+   
+    nwl->addWidget(buttonBox, 3, 0, 1, 2, Qt::AlignRight);  
+    connect ( btnCancel1, SIGNAL(clicked()), NewWindow, SLOT(close()));
+    connect ( btnOK1, SIGNAL(clicked()), this, SLOT(createNewField()) );
+    }
+    void RobotModule::createNewField()
+    {
+        field->destroyField();
+        field->destroyRobot();
+        field->createField(eYSizeEdit->value(),eXSizeEdit->value());
+        field->setRoboPos(0,0);
+        field->createRobot();
+        
+        field->drawField(FIELD_SIZE_SMALL);
+        
+        mainWidget()->setWindowTitle(QString::fromUtf8("Робот - нет файла") );
+        
+        NewWindow->close();
+        editEnv();
+    };
+    void RobotModule::newEnv()
+    {
+        if(field->WasEdit())
+        {
+            QMessageBox::StandardButton r;
+            
+            QMessageBox messageBox(
+                                   QMessageBox::Question,
+                                   tr("New field"),
+                                   tr("Save current field?"),
+                                   QMessageBox::NoButton,mainWidget()
+                                   );
+            
+            QPushButton * btnSave =
+            messageBox.addButton(tr("Save"), QMessageBox::AcceptRole);
+            QPushButton * btnDiscard =
+            messageBox.addButton(tr("Don't save"), QMessageBox::DestructiveRole);
+            QPushButton * btnCancel =
+            messageBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
+            
+            messageBox.setDefaultButton(btnSave);
+            messageBox.exec();
+            if (messageBox.clickedButton()==btnSave) {
+                r = QMessageBox::Save;
+            }
+            if (messageBox.clickedButton()==btnDiscard) {
+                r = QMessageBox::Discard;
+            }
+            if (messageBox.clickedButton()==btnCancel) {
+                r = QMessageBox::Cancel;
+            }
+            if (r==QMessageBox::Save) {saveEnv();};
+            if (r==QMessageBox::Cancel) {return;};
+            
+        }
+        
+        NewWindow->show();
     }
 void RobotModule::saveEnv()
     {
@@ -3108,7 +3230,7 @@ void RobotModule::saveEnv()
         
         SaveToFile(RobotFile);
          RobotModule::robotSettings()->setValue("Robot/StartField/File",RobotFile);
-      
+        updateLastFiles(RobotFile);
 
     }
     
@@ -3126,7 +3248,81 @@ int RobotModule::SaveToFile(QString p_FileName)
         
     }    
     
+
     
+ void RobotModule::createRescentMenu()
+    {
+        rescentMenu->clear();
+        QStringList lastFiles= RobotModule::robotSettings()->value("Robot/LastFiles").toString().split(";");
+        qDebug()<<lastFiles;
+        if(lastFiles.count()==0)rescentMenu->setEnabled(false);else  rescentMenu->setEnabled(true);
+
+
+        for(int i=0;i<lastFiles.count();i++) {
+            if(lastFiles[i]=="")continue;
+            QAction *action = rescentMenu->addAction("&"+QString::number(i+1)+" "+lastFiles[i],this,SLOT(openRecent()));
+            Q_UNUSED(action);
+            }
+    };
+ void RobotModule::openRecent()
+    {
+        
+        if(field->WasEdit())
+        {
+            QMessageBox::StandardButton r;
+            
+            QMessageBox messageBox(
+                                   QMessageBox::Question,
+                                   tr("New field"),
+                                   tr("Save current field?"),
+                                   QMessageBox::NoButton,mainWidget()
+                                   );
+            
+            QPushButton * btnSave =
+            messageBox.addButton(tr("Save"), QMessageBox::AcceptRole);
+            QPushButton * btnDiscard =
+            messageBox.addButton(tr("Don't save"), QMessageBox::DestructiveRole);
+            QPushButton * btnCancel =
+            messageBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
+            
+            messageBox.setDefaultButton(btnSave);
+            messageBox.exec();
+            if (messageBox.clickedButton()==btnSave) {
+                r = QMessageBox::Save;
+            }
+            if (messageBox.clickedButton()==btnDiscard) {
+                r = QMessageBox::Discard;
+            }
+            if (messageBox.clickedButton()==btnCancel) {
+                r = QMessageBox::Cancel;
+            }
+            if (r==QMessageBox::Save) {saveEnv();};
+            if (r==QMessageBox::Cancel) {return;};
+            
+        }
+
+        QAction *s = qobject_cast<QAction*>(sender());
+        QString txt = s->text();
+        txt.remove(0,1);
+        QStringList words = txt.split(" ");
+        if(words.count()<2)return;
+        QString RobotFile=words[1];
+        if( LoadFromFile(RobotFile)!=0)QMessageBox::information( mainWidget(), "", QString::fromUtf8("Ошибка открытия файла! ")+RobotFile, 0,0,0);
+        
+    };
+ void RobotModule::updateLastFiles(const QString newFile )
+    {
+     QStringList lastFiles= RobotModule::robotSettings()->value("Robot/LastFiles").toString().split(";");
+        if(lastFiles.indexOf(newFile)<0)lastFiles.prepend(newFile);
+        int max_fid=std::min(lastFiles.count(),11);
+        QString sett="";
+        for(int i=0;i<max_fid;i++)
+        {
+            sett+= lastFiles.at(i)+";";
+        }
+        RobotModule::robotSettings()->setValue("Robot/LastFiles",sett);  
+        createRescentMenu();
+    }
 
     RobotView::RobotView(RoboField * roboField)
     {

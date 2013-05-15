@@ -83,7 +83,14 @@
 		                    "ru_RU": "Редактировать обстановку..."
 		                },
 						"icon": "file-save-as"
-					}
+					},
+                          {
+                          "title": {
+                          "ascii": "New Environment...", 
+                          "ru_RU": "Новая обстановка..."
+                          },
+                          "icon": "file-new"
+                          }
 				]
 			}
 		]
