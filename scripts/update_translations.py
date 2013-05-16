@@ -2,6 +2,7 @@
 
 TS_MODULES = {
         "ExtensionSystem": "src/shared/extensionsystem",
+        "DocBookViewer": "src/shared/docbookviewer",
         "KumirStdLib": "src/shared/stdlib",
         "ActorPainter": "src/actors/painter",
         "ActorRobot": "src/actors/robot",
