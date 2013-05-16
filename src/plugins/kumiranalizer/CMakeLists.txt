@@ -1,5 +1,9 @@
-include(../../kumir2_plugin.cmake)
+set(QT_USE_QTMAIN 1)
+find_package(Qt4 4.7.0 COMPONENTS QtCore REQUIRED)
 find_package(PythonInterp)
+include (${QT_USE_FILE})
+
+include(../../kumir2_plugin.cmake)
 
 set(SOURCES
     kumiranalizerplugin.cpp

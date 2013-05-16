@@ -1768,7 +1768,7 @@ private:
             body += "asyncRunThread_ = new %s(this, module_);\n" % self._module.runThreadClassName()
             body += "QObject::connect(asyncRunThread_, SIGNAL(finished()),\n"
             body += "                 this, SIGNAL(sync()));\n"
-            body += "return QString();\n"
+        body += "return QString();\n"
         return """
 /* protected */ QString %s::initialize(const QStringList &)
 {
@@ -2863,7 +2863,10 @@ def createCMakeListsTxt(module, jsonFileName, targetDir=""):
         "actorDir": module.name.cppCamelCaseValue().lower()
     }
     data = _renderTemplate(r"""
+set(QT_USE_QTMAIN 1)
+find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui REQUIRED)
 find_package(PythonInterp 2.6 REQUIRED)
+include (${QT_USE_FILE})
 include(../../kumir2_plugin.cmake)
 
 set(SOURCES
