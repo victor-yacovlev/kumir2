@@ -172,7 +172,9 @@ QString ContentView::renderKeySym(ModelPtr data) const
 QString ContentView::renderProgramListing(ModelPtr data) const
 {
     QString result = "<table width='100%' border='1'><tr><td>";
-    result += "<pre align='left'>" + renderChilds(data) + "</pre>\n";
+    result += "<pre align='left'>" + renderChilds(data);
+    result = result.trimmed();
+    result += "</pre>\n";
     result += "</td></tr></table>\n";
     return result;
 }
