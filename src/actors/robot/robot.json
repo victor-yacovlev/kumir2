@@ -1,7 +1,7 @@
 {
 	"name": { "ascii": "Robot", "ru_RU": "Робот" },
 	"methods": [
-		{ "name": {"ascii": "go up", "ru_RU": "вверх" } },
+		{ "name": {"ascii": "go up", "ru_RU": "вверх" }},
 		{ "name": {"ascii": "go down", "ru_RU": "вниз" } },
 		{ "name": {"ascii": "go left", "ru_RU": "влево" } },
 		{ "name": {"ascii": "go right", "ru_RU": "вправо" } },
@@ -38,7 +38,58 @@
 		{ 
 			"name": {"ascii": "is free at right", "ru_RU": "справа свободно"},
 			"returnType": "bool"
+		},
+		{ 
+			"name": {"ascii": "is Color", "ru_RU": "клетка закрашена"},
+			"returnType": "bool"
+		},
+		{ 
+			"name": {"ascii": "is Clear", "ru_RU": "клетка чистая"},
+			"returnType": "bool"
+		},
+		{ 
+			"name": {"ascii": "radiation", "ru_RU": "радиация"},
+			"returnType": "double"
+		},
+		{ 
+			"name": {"ascii": "temperature", "ru_RU": "температура"},
+			"returnType": "int"
+		},		
+		{
+			"name": {"ascii": "field size", "ru_RU": "@@размер поля"},
+			"async": false,
+			"arguments": [
+				{ "name": "rows", "baseType": "int", "access": "out" },
+				{ "name": "cols", "baseType": "int", "access": "out" }
+			]
+		},		
+		{
+			"name": {"ascii": "mark", "ru_RU": "@@метка"},
+			"async": false,
+			"returnType": "bool",
+			"arguments": [
+				{ "name": "row", "baseType": "int" },
+				{ "name": "col", "baseType": "int"}
+			]
+		},		
+		{
+			"name": {"ascii": "colored", "ru_RU": "@@закрашена"},
+			"async": false,
+			"returnType": "bool",
+			"arguments": [
+				{ "name": "row", "baseType": "int" },
+				{ "name": "col", "baseType": "int"}
+			]
+		},		
+		{
+			"name": {"ascii": "robot pos", "ru_RU": "@@робот"},
+			"async": false,
+			"arguments": [
+				{ "name": "row", "baseType": "int", "access": "out" },
+				{ "name": "col", "baseType": "int", "access": "out" }
+			]
 		}
+		
 	],
 	"gui": {
 		"windows": [

@@ -3033,8 +3033,62 @@ bool RobotModule::runIsFreeAtRight()
     }
     return result;
 }
-	
 
+bool RobotModule::runIsColor()
+    {
+     bool result = field->currentCell()->isColored();
+        QString status = result? trUtf8("да") : trUtf8("нет");
+        if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+            emit sendToPultLog(status);
+        }
+        return result;
+        
+    };
+    bool RobotModule::runIsClear()
+    {
+        bool result = !field->currentCell()->isColored();
+        QString status = result? trUtf8("да") : trUtf8("нет");
+        if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+            emit sendToPultLog(status);
+        }
+        return result;
+    };
+    double RobotModule::runRadiation(){    
+        double result = field->currentCell()->radiation;
+        QString status = result? trUtf8("да") : trUtf8("нет");
+        if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+            emit sendToPultLog(status);
+        }
+        return result;
+    };
+    int RobotModule::runTemperature(){       
+        int result = field->currentCell()->temperature;
+        QString status = result? trUtf8("да") : trUtf8("нет");
+        if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
+            emit sendToPultLog(status);
+        }
+        return result;};	
+    void RobotModule::runFieldSize(int& rows, int& cols)
+    {
+        rows=field->rows();
+        cols=field->columns();
+    };
+    bool RobotModule::runMark(const int row, const int col)
+    {
+        return field->cellAt(row-1,col-1)->mark;
+    };
+    bool RobotModule::runColored(const int row, const int col)
+    {
+        return  field->cellAt(row-1,col-1)->isColored();   
+    };
+    void RobotModule::runRobotPos(int& row, int& col)
+    {
+        row=field->robotX()+1;
+        col=field->robotY()+1;
+    };
+    
+    
+    
  int RobotModule::LoadFromFile(QString p_FileName)
     {
         if(field->loadFromFile(p_FileName)!=0)return 1;
