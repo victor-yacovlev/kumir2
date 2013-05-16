@@ -764,6 +764,13 @@ namespace ActorRobot {
         mode=Mode;
         sett=RobotModule::robotSettings();
         QGraphicsView * view=views().first();
+       if(mode==NORMAL_MODE)
+       {
+           radSpinBox->hide();
+           tempSpinBox->hide();
+           redrawEditFields();
+           redrawRTFields();  
+       }
         if(mode==NEDIT_MODE)
         {
           radSpinBox->hide();
@@ -805,6 +812,7 @@ namespace ActorRobot {
         if(mode==TEXT_MODE)
         {
             tempSpinBox->hide();
+            radSpinBox->hide();
             redrawRTFields();
             setTextEditMode(true);
         }
@@ -3087,7 +3095,15 @@ bool RobotModule::runIsColor()
         col=field->robotY()+1;
     };
     
-    
+    QChar RobotModule::runUpChar(const int row, const int col)
+    {
+        qDebug()<<field->cellAt(row-1,col-1)->upChar;
+        return field->cellAt(row-1,col-1)->upChar;  
+    };
+    QChar RobotModule::runDownChar(const int row, const int col)
+    {qDebug()<<field->cellAt(row-1,col-1)->downChar;
+        return field->cellAt(row-1,col-1)->downChar;
+    };   
     
  int RobotModule::LoadFromFile(QString p_FileName)
     {
