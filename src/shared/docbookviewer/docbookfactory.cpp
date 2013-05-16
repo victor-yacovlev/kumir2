@@ -73,7 +73,10 @@ void DocBookFactory::filterByOs(ModelPtr root) const
 #ifdef Q_WS_WIN
     pattern = "win";
 #endif
-    for (ModelIterator it = root->children_.begin(); it!=root->children_.end();)
+    QList<ModelPtr> newList;
+    for (ModelIterator it = root->children_.begin();
+         it!=root->children_.end();
+         it++)
     {
         ModelPtr child = *it;
         bool toDelete = false;
@@ -84,14 +87,14 @@ void DocBookFactory::filterByOs(ModelPtr root) const
                 toDelete = !toDelete;
             }
         }
-        if (toDelete) {
-            it = root_->children_.erase(it);
+        if (!toDelete) {
+            newList.push_back(child);
         }
         else {
             filterByOs(child);
-            it ++;
         }
     }
+    root->children_ = newList;
 }
 
 bool DocBookFactory::startDocument()
