@@ -526,7 +526,14 @@ namespace ActorRobot {
         bool runIsFreeAtBottom();
         bool runIsFreeAtLeft();
         bool runIsFreeAtRight();
-        
+        bool runIsColor();
+        bool runIsClear();
+        double runRadiation();
+        int runTemperature();
+        void runFieldSize(int& rows, int& cols);
+        bool runMark(const int row, const int col) ;
+        bool runColored(const int row, const int col);
+        void runRobotPos(int& row, int& col);
     public:
         // GUI access methods
         QWidget* mainWidget() const;
