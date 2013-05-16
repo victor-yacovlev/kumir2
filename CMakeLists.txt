@@ -4,9 +4,9 @@ cmake_minimum_required(VERSION 2.8)
 #if(APPLE)
 set(CMAKE_VERBOSE_MAKEFILE on)
 #endif(APPLE)
-set(QT_USE_QTMAIN 1)
-find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtScript QtNetwork QtXml QtSvg QtWebKit QtDeclarative REQUIRED)
-include (${QT_USE_FILE})
+#set(QT_USE_QTMAIN 1)
+#find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtScript QtNetwork QtXml QtSvg QtWebKit QtDeclarative REQUIRED)
+#include (${QT_USE_FILE})
 include_directories(${CMAKE_SOURCE_DIR}/src/shared)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
@@ -70,7 +70,8 @@ set(EXECUTABLE_OUTPUT_PATH
 set(LIBEXECS_PATH ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${LIBEXECS_DIR})
 
 add_subdirectory(src)
-add_subdirectory(src-www)
+#add_subdirectory(src-www)
+add_subdirectory(userdocs)
 
 if(UNIX AND NOT APPLE)
     file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications)

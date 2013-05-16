@@ -91,7 +91,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent *);
     void mouseMoveEvent(QMouseEvent *);
 
-    void mouseDragAction(const QPoint &offset);
+    bool mouseDragAction(const QPoint &offset);
 
     char border_;
     QList<QPixmap*> pixmaps_;
@@ -768,7 +768,15 @@ void BorderWidget::mouseMoveEvent(QMouseEvent *e)
         int distance = (int) ( sqrt( (double) (d.x()*d.x() + d.y()*d.y()) ) );
         p_start = e->globalPos();
         if ( movingFlag_ || distance >= QApplication::startDragDistance() ) {
-            mouseDragAction(d);
+            if (mouseDragAction(d)) {
+                e->accept();
+            }
+            else {
+                e->ignore();
+            }
+        }
+        else {
+            e->ignore();
         }
     }
     else {
@@ -789,30 +797,46 @@ void BorderWidget::mouseReleaseEvent(QMouseEvent *e)
     }
 }
 
-void BorderWidget::mouseDragAction(const QPoint &offset)
+bool BorderWidget::mouseDragAction(const QPoint &offset)
 {
+    const QSize minSize = pWindowImpl_->pClass_->minimumSizeHint();
     if (resizableFlag_) {
         Q_CHECK_PTR(window_);
         if (border_=='l') {
-            QPoint newPos = window_->pos();
-            newPos.setX(newPos.x()+offset.x());
-            window_->move(newPos);
-            window_->setFixedWidth(window_->width()-offset.x());
-            pWindowImpl_->centralWidget_->setFixedWidth(window_->width()-
-                                              pWindowImpl_->leftBorder_->width()-
-                                              pWindowImpl_->rightBorder_->width());
+            if (window_->width()-offset.x() >= minSize.width()) {
+                QPoint newPos = window_->pos();
+                newPos.setX(newPos.x()+offset.x());
+                window_->move(newPos);
+                window_->setFixedWidth(window_->width()-offset.x());
+                pWindowImpl_->centralWidget_->setFixedWidth(window_->width()-
+                                                  pWindowImpl_->leftBorder_->width()-
+                                                  pWindowImpl_->rightBorder_->width());
+            }
+            else {
+                return false;
+            }
         }
         if (border_=='r') {
-            window_->setFixedWidth(window_->width()+offset.x());
-            pWindowImpl_->centralWidget_->setFixedWidth(window_->width()-
-                                              pWindowImpl_->leftBorder_->width()-
-                                              pWindowImpl_->rightBorder_->width());
+            if (window_->width() + offset.x() >= minSize.width()) {
+                window_->setFixedWidth(window_->width()+offset.x());
+                pWindowImpl_->centralWidget_->setFixedWidth(window_->width()-
+                                                  pWindowImpl_->leftBorder_->width()-
+                                                  pWindowImpl_->rightBorder_->width());
+            }
+            else {
+                return false;
+            }
         }
         if (border_=='b') {
-            window_->setFixedHeight(window_->height()+offset.y());
-            pWindowImpl_->centralWidget_->setFixedHeight(window_->height()-
-                                               pWindowImpl_->topBorder_->height()-
-                                               pWindowImpl_->bottomBorder_->height());
+            if (window_->height() + offset.y() >= minSize.height()) {
+                window_->setFixedHeight(window_->height()+offset.y());
+                pWindowImpl_->centralWidget_->setFixedHeight(window_->height()-
+                                                   pWindowImpl_->topBorder_->height()-
+                                                   pWindowImpl_->bottomBorder_->height());
+            }
+            else {
+                return false;
+            }
         }
         update();
     }
@@ -820,6 +844,7 @@ void BorderWidget::mouseDragAction(const QPoint &offset)
         Q_CHECK_PTR(window_);
         window_->move(window_->pos()+offset);
     }
+    return true;
 }
 
 SecondaryWindowButton::SecondaryWindowButton(QWidget *parent, bool checkable,

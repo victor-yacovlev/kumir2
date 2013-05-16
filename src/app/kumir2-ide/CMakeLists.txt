@@ -1,3 +1,7 @@
+set(QT_USE_QTMAIN 1)
+find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui REQUIRED)
+include (${QT_USE_FILE})
+
 set(CONFIGURATION_TEMPLATE
     "Editor,Actor*,Browser,KumirAnalizer,KumirCodeGenerator,KumirCodeRun,!CoreGUI"
 )

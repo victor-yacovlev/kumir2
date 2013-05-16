@@ -1,3 +1,7 @@
+set(QT_USE_QTMAIN 1)
+find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui REQUIRED)
+include (${QT_USE_FILE})
+
 include(../../kumir2_plugin.cmake)
 
 set(SOURCES
@@ -53,7 +57,7 @@ qt4_add_resources(QRC_SOURCES ${RESOURCES})
 copySpecFile(CoreGUI)
 add_library(CoreGUI SHARED ${UI_SOURCES} ${MOC_SOURCES} ${SOURCES} ${QRC_SOURCES})
 handleTranslation(CoreGUI)
-target_link_libraries(CoreGUI ${QT_LIBRARIES} ${EXTRA_LIBS} ExtensionSystem DataFormats Widgets)
+target_link_libraries(CoreGUI ${QT_LIBRARIES} ${EXTRA_LIBS} ExtensionSystem DataFormats Widgets DocBookViewer)
 
 copyResources(coregui)
 install(TARGETS CoreGUI DESTINATION ${PLUGINS_DIR})

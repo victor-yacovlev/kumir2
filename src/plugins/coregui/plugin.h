@@ -10,6 +10,7 @@
 #include "interfaces/actorinterface.h"
 #include "interfaces/runinterface.h"
 #include "widgets/secondarywindow.h"
+#include "docbookviewer/docbookview.h"
 #include "terminal.h"
 #include "kumirprogram.h"
 
@@ -67,7 +68,7 @@ protected:
     QMap<QString,QObject*> m_browserObjects;
     KumirProgram * kumirProgram_;
     class DebuggerWindow * debugger_;
-    BrowserComponent helpBrowser_;
+    DocBookViewer::DocBookView * helpViewer_;
     QSplitter * bottomSplitter_;
 
     bool sessionsDisableFlag_;
