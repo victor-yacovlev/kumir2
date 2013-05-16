@@ -4,5 +4,4 @@
     <title>Справка</title>
     <xi:include href="system.xml"/>
     <xi:include href="language.xml"/>
-    <xi:include href="ActorPainter.xml"/>
 </set>
