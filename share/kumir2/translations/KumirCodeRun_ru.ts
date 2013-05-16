@@ -4,14 +4,12 @@
 <context>
     <name>KumirCodeRun::Plugin</name>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/plugin.cpp" line="497"/>
         <source>RUNTIME ERROR: </source>
-        <translation>ОШИБКА ВЫПОЛНЕНИЯ: </translation>
+        <translation type="obsolete">ОШИБКА ВЫПОЛНЕНИЯ: </translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumircoderun/plugin.cpp" line="500"/>
         <source>RUNTIME ERROR AT LINE </source>
-        <translation>ОШИБКА ВЫПОЛНЕНИЯ В СТРОКЕ </translation>
+        <translation type="obsolete">ОШИБКА ВЫПОЛНЕНИЯ В СТРОКЕ </translation>
     </message>
 </context>
 <context>

@@ -10,6 +10,14 @@
     </message>
 </context>
 <context>
+    <name>ExtensionSystem::PluginManager</name>
+    <message>
+        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="443"/>
+        <source>Can&apos;t load module %1: file not found</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ExtensionSystem::SettingsDialog</name>
     <message>
         <location filename="../../../src/shared/extensionsystem/settingsdialog.ui" line="14"/>
