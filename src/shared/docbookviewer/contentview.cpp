@@ -8,7 +8,6 @@ namespace DocBookViewer {
 
 ContentView::ContentView(QWidget *parent)
     : QTextBrowser(parent)
-    , currentSectionLevel_(0u)
 {
     setOpenLinks(false);
     connect(this, SIGNAL(anchorClicked(QUrl)),
@@ -19,18 +18,30 @@ void ContentView::reset()
 {
     loadedModels_.clear();
     clear();
-    currentSectionLevel_ = 0u;
     counters_.example = counters_.figure = counters_.table = 0u;
 }
 
 void ContentView::addData(ModelPtr data)
 {
-    if (loadedModels_.size() == 0) {
-        currentSectionLevel_ = data->sectionLevel();
-    }
+    ModelPtr dataToRender = onePageParentModel(data);
     loadedModels_.push_back(data);
-    const QString html = wrapHTML(render(data));
+    const QString html = wrapHTML(render(dataToRender));
     setHtml(html);
+    if (dataToRender != data) {
+        QString anchor = modelToLink(data);
+        QUrl anchorUrl("#" + anchor);
+        setSource(anchorUrl);
+    }
+}
+
+QString ContentView::renderChapter(ModelPtr data) const
+{
+    QString result;
+    result += renderTOC(data);
+    foreach (ModelPtr child, data->children()) {
+        result += renderElement(child);
+    }
+    return result;
 }
 
 QString ContentView::wrapHTML(const QString &body) const
@@ -47,7 +58,14 @@ QString ContentView::wrapHTML(const QString &body) const
 
 QString ContentView::render(ModelPtr data) const
 {
-    return isPlainPage(data) ? renderPlainPage(data) : renderTOC(data);
+    if (data->modelType() == DocBookModel::Set ||
+            data->modelType() == DocBookModel::Book)
+    {
+        return renderTOC(data);
+    }
+    else {
+        return renderPlainPage(data);
+    }
 }
 
 bool ContentView::isPlainPage(ModelPtr data) const
@@ -93,6 +111,9 @@ QString ContentView::renderElement(ModelPtr data) const
     }
     else if (data->modelType() == DocBookModel::ItemizedList) {
         return renderItemizedList(data);
+    }
+    else if (data->modelType() == DocBookModel::Chapter) {
+        return renderChapter(data);
     }
     else if (data->modelType() == DocBookModel::Section) {
         return renderSection(data);
@@ -259,11 +280,16 @@ QString ContentView::renderText(ModelPtr data) const
 
 QString ContentView::renderSection(ModelPtr data) const
 {
-    const qint8 thisSectionLevel = data->sectionLevel() - currentSectionLevel_;
+    const qint8 thisSectionLevel =
+            data->sectionLevel() -
+            onePageParentModel(data)->sectionLevel();
     const QString tag = QString::fromAscii("h%1").arg(thisSectionLevel + 1);
-    QString result = "<" + tag + +" class=\"title\">" +
+    const QString anchor = data->id().length() > 0
+            ? data->id()
+            : modelToLink(data);
+    QString result = "<a name='" + anchor + "'><" + tag + +" class=\"title\">" +
             normalizeText(data->title()) +
-            "</" + tag + ">\n";
+            "</" + tag + "></a>\n";
     if (data->subtitle().length() > 0) {
         result += "<" + tag + " class=\"subtitle\">" +
                 normalizeText(data->subtitle()) +
@@ -271,6 +297,15 @@ QString ContentView::renderSection(ModelPtr data) const
     }
     result += renderChilds(data);
     return result;
+}
+
+QString ContentView::modelToLink(ModelPtr data) const
+{
+    const quintptr ptr = quintptr(data.toWeakRef().data());
+    QByteArray buffer;
+    QDataStream ds(&buffer, QIODevice::WriteOnly);
+    ds << ptr;
+    return QString::fromAscii(buffer.toHex());
 }
 
 QString ContentView::renderXref(ModelPtr data) const
@@ -289,12 +324,8 @@ QString ContentView::renderXref(ModelPtr data) const
                         topLevelModel(data), linkEnd
                         );
             if (container) {
-                const quintptr ptr = quintptr(container.toWeakRef().data());
-                QByteArray buffer;
-                QDataStream ds(&buffer, QIODevice::WriteOnly);
-                ds << ptr;
                 href = QString::fromAscii("model_ptr:") +
-                        QString::fromAscii(buffer.toHex());
+                        modelToLink(container);
             }
         }
         const QString targetTitle = normalizeText(target->title());
@@ -336,6 +367,25 @@ ModelPtr ContentView::topLevelModel(ModelPtr data) const
     }
     else {
         return topLevelModel(data->parent());
+    }
+}
+
+ModelPtr ContentView::onePageParentModel(ModelPtr data) const
+{
+    if (data->parent().isNull() || data->modelType() == DocBookModel::Chapter ||
+            data->modelType() == DocBookModel::Article ||
+            data->modelType() == DocBookModel::Book)
+    {
+        return data;
+    }
+    else if (data->parent()->modelType() == DocBookModel::Chapter ||
+             data->parent()->modelType() == DocBookModel::Article ||
+             data->parent()->modelType() == DocBookModel::Book)
+    {
+        return data->parent();
+    }
+    else {
+        return onePageParentModel(data->parent());
     }
 }
 

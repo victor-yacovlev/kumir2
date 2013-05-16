@@ -28,6 +28,7 @@ signals:
 private:
     QString wrapHTML(const QString & body) const;
     QString render(ModelPtr data) const;
+    QString renderChapter(ModelPtr data) const;
     QString renderTOC(ModelPtr data) const;
     QString renderTOCElement(ModelPtr data) const;
     QString renderPlainPage(ModelPtr data) const;
@@ -49,13 +50,14 @@ private:
     bool isPlainPage(ModelPtr data) const;
 
     ModelPtr topLevelModel(ModelPtr data) const;
+    ModelPtr onePageParentModel(ModelPtr data) const;
     ModelPtr findModelById(ModelPtr top, const QString & modelId) const;
+    QString modelToLink(ModelPtr data) const;
 
     bool hasModelOnThisPage(ModelPtr data) const;
     bool hasChild(ModelPtr who, ModelPtr child) const;
 
 private /*fields*/:
-    quint8 currentSectionLevel_;
     QList<ModelPtr> loadedModels_;
     mutable struct Counters {
         quint32 example;
