@@ -16,7 +16,7 @@ class PrintRenderer
 public:
     static PrintRenderer* self();
     void reset();
-    void addData(const DocBookModel *data);
+    void addData(ModelPtr data);
     void setBaseFont(QFont font);
     int pagesCount() const;
     void render(QPrinter * printer) const;
@@ -55,12 +55,12 @@ private:
     typedef QList<Frame> Page;
 
     struct Cursor {
-        const DocBookModel * item;
+        ModelPtr item;
         size_t textPosition;
 
-        inline explicit Cursor(const DocBookModel * data)
+        inline explicit Cursor(ModelPtr data)
             : item(data), textPosition(0) {}
-        operator bool() const { return item != nullptr; }
+        operator bool() const { return item; }
     };
 
     explicit PrintRenderer();
@@ -89,7 +89,7 @@ private:
                               const FrameItem & item) const;
 
     QFont baseFont_;
-    const DocBookModel * currentRoot_;
+    ModelPtr currentRoot_;
     QSizeF pageSize_;
 
     QList<Page> pages_;

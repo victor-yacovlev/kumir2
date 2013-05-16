@@ -10,6 +10,11 @@ DocBookView::DocBookView(QWidget *parent)
 
 }
 
+void DocBookView::updateSettings(QSettings *settings, const QString & prefix)
+{
+    pImpl_->updateSettings(settings, prefix);
+}
+
 DocBookView::~DocBookView()
 {
     delete pImpl_;
@@ -28,6 +33,16 @@ Document DocBookView::addDocument(const QUrl &url, QString *error, int index)
 void DocBookView::removeDocument(const Document & existingDocument)
 {
     pImpl_->removeDocument(existingDocument);
+}
+
+QSize DocBookView::minimumSizeHint() const
+{
+    return pImpl_->minimumSizeHint();
+}
+
+QSize DocBookView::sizeHint() const
+{
+    return pImpl_->sizeHint();
 }
 
 }

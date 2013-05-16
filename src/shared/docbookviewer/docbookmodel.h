@@ -5,10 +5,13 @@
 #include <QtGlobal>
 #include <QString>
 #include <QObject>
+#include <QSharedPointer>
 
 namespace DocBookViewer {
 
 static const quint8 MAX_SECTION_LEVEL_IN_TOC = 2u;
+typedef QSharedPointer<class DocBookModel> ModelPtr;
+typedef QList<ModelPtr>::iterator ModelIterator;
 
 class DocBookModel
 {
@@ -40,7 +43,6 @@ public:
         KeySym
     };
 
-    void render(class ContentRenderer * renderer);
     quint8 sectionLevel() const;
     ModelType modelType() const;
     const QString & id() const;
@@ -50,19 +52,18 @@ public:
     const QString & role() const;
     const QString & xrefLinkEnd() const;
     const QString & xrefEndTerm() const;
-    DocBookModel* parent() const;
-    const QList<DocBookModel*>& children() const;
-    void setParent(DocBookModel* parent);
+    ModelPtr parent() const;
+    const QList<ModelPtr>& children() const;
+    void setParent(ModelPtr parent);
     bool isSectioningNode() const;
-    ~DocBookModel();
 
 protected /*methods*/:
-    explicit DocBookModel(DocBookModel * parent, const ModelType modelType);
+    explicit DocBookModel(ModelPtr parent, const ModelType modelType);
     void updateSectionLevel();
 
 protected /*fields*/:
-    DocBookModel* parent_;
-    QList<DocBookModel*> children_;
+    ModelPtr parent_;
+    QList<ModelPtr> children_;
     ModelType modelType_;
     unsigned short sectionLevel_;
     QString title_;

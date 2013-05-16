@@ -6,6 +6,7 @@
 
 #include <QObject>
 #include <QMap>
+#include <QSharedPointer>
 
 class QSplitter;
 class QTreeWidget;
@@ -30,8 +31,14 @@ public:
             );
 
     void removeDocument(const Document & existingDocument);
+    void updateSettings(QSettings * settings, const QString & prefix);
+
+    QSize minimumSizeHint() const;
+    QSize sizeHint() const;
 
     DocBookView* pClass_;
+    QSettings* settings_;
+    QString settingsPrefix_;
 
     /* Child widgets */
     QSplitter * splitter_;
@@ -45,11 +52,11 @@ public:
 
 
     void createNavigationItems(QTreeWidgetItem * item,
-                               const DocBookModel * model);
+                               ModelPtr model);
 
 
-    QMap<QTreeWidgetItem*, const DocBookModel*> modelsOfItems_;
-    QMap<const DocBookModel*, QTreeWidgetItem*> itemsOfModels_;
+    QMap<QTreeWidgetItem*, ModelPtr> modelsOfItems_;
+    QMap<ModelPtr, QTreeWidgetItem*> itemsOfModels_;
 
 public slots:
     void selectAnItem(QTreeWidgetItem * item);

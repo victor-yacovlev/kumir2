@@ -8,6 +8,7 @@
 #include <QString>
 #include <QWidget>
 #include <QUrl>
+#include <QSettings>
 
 #ifdef DOCBOOKVIEWER_LIBRARY
 #define DOCBOOKVIEWER_EXPORT Q_DECL_EXPORT
@@ -30,6 +31,11 @@ public:
 
     explicit DocBookView(QWidget * parent = 0);
     QAction * viewerAction(const DocBookViewAction type) const;
+    void updateSettings(QSettings * settings,
+                        const QString & prefix = QString());
+
+    QSize minimumSizeHint() const;
+    QSize sizeHint() const;
 
     ~DocBookView();
 

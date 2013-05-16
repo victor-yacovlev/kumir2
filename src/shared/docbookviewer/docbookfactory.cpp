@@ -29,7 +29,7 @@ Document DocBookFactory::parseDocument(const QUrl &url, QString *error) const
 {
     // TODO network url loading
     const QString fileName = url.toLocalFile();
-    DocBookModel * content = 0;
+    ModelPtr content;
     QFile file(fileName);
     if (file.open(QIODevice::ReadOnly)) {
         content = parseDocument(&file, url, error);
@@ -38,9 +38,9 @@ Document DocBookFactory::parseDocument(const QUrl &url, QString *error) const
     return Document(url, content);
 }
 
-DocBookModel* DocBookFactory::parseDocument(QIODevice *stream,
-                                            const QUrl & url,
-                                            QString *error) const
+ModelPtr DocBookFactory::parseDocument(QIODevice *stream,
+                                       const QUrl & url,
+                                       QString *error) const
 {
     url_ = url;
     QXmlInputSource source(stream);
@@ -52,16 +52,16 @@ DocBookModel* DocBookFactory::parseDocument(QIODevice *stream,
     }
     else {
         if (doc_)
-            delete doc_;
+            doc_.clear();
         const QString errorText = reader_->errorHandler()->errorString();
         if (error) {
             *error = errorText;
         }
-        return 0;
+        return ModelPtr();
     }
 }
 
-void DocBookFactory::filterByOs(DocBookModel *root) const
+void DocBookFactory::filterByOs(ModelPtr root) const
 {
     QString pattern;
 #ifdef Q_WS_MAC
@@ -73,10 +73,9 @@ void DocBookFactory::filterByOs(DocBookModel *root) const
 #ifdef Q_WS_WIN
     pattern = "win";
 #endif
-    typedef QList<DocBookModel*>::iterator iterator;
-    for (iterator it = root->children_.begin(); it!=root->children_.end(); )
+    for (ModelIterator it = root->children_.begin(); it!=root->children_.end();)
     {
-        DocBookModel* child = *it;
+        ModelPtr child = *it;
         bool toDelete = false;
         if (child->os_.length() > 0) {
             const QString os = child->os_.toLower().trimmed();
@@ -87,7 +86,6 @@ void DocBookFactory::filterByOs(DocBookModel *root) const
         }
         if (toDelete) {
             it = root_->children_.erase(it);
-            delete child;
         }
         else {
             filterByOs(child);
@@ -98,9 +96,8 @@ void DocBookFactory::filterByOs(DocBookModel *root) const
 
 bool DocBookFactory::startDocument()
 {
-    if (doc_)
-        delete doc_;
-    doc_ = root_ = 0;
+    doc_.clear();
+    root_.clear();
     return true;
 }
 
@@ -170,12 +167,12 @@ bool DocBookFactory::startElement(
         if (root_ && buffer_.length() > 0) {
             DocBookModel* text = new DocBookModel(root_, DocBookModel::Text);
             text->text_ = buffer_;
-            root_->children_.append(text);
+            root_->children_.append(ModelPtr(text));
             buffer_.clear();
         }
-        root_ = model;
         model->id_ = atts.value("id");
         model->os_ = atts.value("os");
+        root_ = ModelPtr(model);
     }
     else if (element == "include") {
         const QString href = atts.value("href");
@@ -187,7 +184,7 @@ bool DocBookFactory::startElement(
             if (file.open(QIODevice::ReadOnly)) {
                 DocBookFactory* innerFactory = new DocBookFactory();
                 QString localError;
-                DocBookModel * include =
+                ModelPtr include =
                         innerFactory->parseDocument(&file, hrefUrl, &localError);
                 if (include) {
                     if (root_) {
@@ -248,17 +245,17 @@ bool DocBookFactory::endElement(const QString &namespaceURI,
         if (buffer_.length() > 0) {
             DocBookModel* text = new DocBookModel(root_, DocBookModel::Text);
             text->text_ = buffer_;
-            root_->children_.append(text);
+            root_->children_.append(ModelPtr(text));
             buffer_.clear();
         }
-        DocBookModel* parent = root_->parent();
+        ModelPtr parent = root_->parent();
         if (parent) {
             parent->children_.append(root_);
             root_ = parent;
         }
         else {
             doc_ = root_;
-            root_ = 0;
+            root_.clear();
         }
     }
     return true;

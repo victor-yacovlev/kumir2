@@ -3,7 +3,7 @@
 
 namespace DocBookViewer {
 
-DocBookModel::DocBookModel(DocBookModel * parent, const ModelType modelType)
+DocBookModel::DocBookModel(ModelPtr parent, const ModelType modelType)
     : parent_(parent)
     , modelType_(modelType)
     , sectionLevel_(0)
@@ -11,17 +11,6 @@ DocBookModel::DocBookModel(DocBookModel * parent, const ModelType modelType)
     updateSectionLevel();
 }
 
-DocBookModel::~DocBookModel()
-{
-    foreach (DocBookModel *child, children_) {
-        delete child;
-    }
-}
-
-void DocBookModel::render(ContentRenderer *renderer)
-{
-    renderer->addData(this);
-}
 
 quint8 DocBookModel::sectionLevel() const
 {
@@ -68,26 +57,34 @@ const QString& DocBookModel::xrefEndTerm() const
     return xrefEndTerm_;
 }
 
-DocBookModel* DocBookModel::parent() const
+ModelPtr DocBookModel::parent() const
 {
     return parent_;
 }
 
-void DocBookModel::setParent(DocBookModel *parent)
+void DocBookModel::setParent(ModelPtr parent)
 {
     if (parent_) {
-        parent_->children_.removeAll(this);
+        for (ModelIterator it=parent_->children_.begin();
+             it!=parent_->children_.end();)
+        {
+            const ModelPtr & ptr = *it;
+            if (ptr.data() == this) {
+                it = parent_->children_.erase(it);
+            }
+            else {
+                it ++;
+            }
+        }
     }
     parent_ = parent;
     if (parent_) {
-        if (!parent_->children_.contains(this)) {
-            parent_->children_.append(this);
-        }
+        parent_->children_.append(ModelPtr(this));
     }
     updateSectionLevel();
 }
 
-const QList<DocBookModel*>& DocBookModel::children() const
+const QList<ModelPtr>& DocBookModel::children() const
 {
     return children_;
 }
@@ -117,14 +114,14 @@ void DocBookModel::updateSectionLevel()
         sectionLevel_ = 0u;
     }
     else {
-        DocBookModel* p = parent_;
+        ModelPtr p = parent_;
         sectionLevel_ = 1u;
         while (p && p->modelType_ == Section) {
             p = p->parent();
             sectionLevel_ ++;
         }
     }
-    foreach (DocBookModel * child, children_) {
+    foreach (ModelPtr child, children_) {
         child->updateSectionLevel();
     }
 }

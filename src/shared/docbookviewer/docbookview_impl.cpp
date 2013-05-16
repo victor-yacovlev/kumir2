@@ -16,6 +16,7 @@ namespace DocBookViewer {
 DocBookViewImpl::DocBookViewImpl(DocBookView *pClass)
     : QObject(pClass)
     , pClass_(pClass)
+    , settings_(nullptr)
 {
     pClass_->setLayout(new QHBoxLayout);
     splitter_ = new QSplitter(Qt::Horizontal, pClass_);
@@ -31,6 +32,24 @@ DocBookViewImpl::DocBookViewImpl(DocBookView *pClass)
     connect(content_, SIGNAL(requestModelLoad(quintptr)),
             this, SLOT(loadAModelByPtr(quintptr)));
     createActions();
+}
+
+
+QSize DocBookViewImpl::minimumSizeHint() const
+{
+    return QSize(500, 300);
+}
+
+QSize DocBookViewImpl::sizeHint() const
+{
+    return QSize(700, 600);
+}
+
+
+void DocBookViewImpl::updateSettings(QSettings *settings, const QString &prefix)
+{
+    settings_ = settings;
+    settingsPrefix_ = prefix;
 }
 
 void DocBookViewImpl::createActions()
@@ -54,24 +73,22 @@ QAction * DocBookViewImpl::viewerAction(const DocBookView::DocBookViewAction typ
     return 0;
 }
 
-Document DocBookViewImpl::addDocument(
-        const QUrl &url,
-        QString *error,
-        int index)
+Document DocBookViewImpl::addDocument(const QUrl &url, QString *error, int index)
 {
     DocBookFactory * factory = DocBookFactory::self();
     Document doc = factory->parseDocument(url, error);
-    QList<DocBookModel*> topLevelItems;
-    if (doc.content()) {
-        if (doc.content()->modelType() == DocBookModel::Set) {
-            topLevelItems = doc.content()->children();
+    QList<ModelPtr> topLevelItems;
+    if (doc.root_) {
+        if (doc.root_->modelType() == DocBookModel::Set) {
+            topLevelItems = doc.root_->children();
         }
         else {
-            topLevelItems.append(const_cast<DocBookModel*>(doc.content()));
+            topLevelItems.append(doc.root_);
         }
         loadedDocuments_.append(doc);
     }
-    foreach (const DocBookModel* model, topLevelItems) {
+    for (int i=0; i<topLevelItems.size(); i++) {
+        ModelPtr model = topLevelItems[i];
         QTreeWidgetItem * item = new QTreeWidgetItem(navigator_);
         navigator_->addTopLevelItem(item);
         item->setText(0, model->title());
@@ -84,11 +101,11 @@ Document DocBookViewImpl::addDocument(
     return doc;
 }
 
-void DocBookViewImpl::createNavigationItems(
-        QTreeWidgetItem *item,
-        const DocBookModel *model)
+void DocBookViewImpl::createNavigationItems(QTreeWidgetItem *item,
+                                            ModelPtr model)
 {
-    foreach (const DocBookModel* child, model->children()) {
+    for (int i=0; i<model->children().size(); i++) {
+        ModelPtr child = model->children()[i];
         if (child->isSectioningNode()) {
             QTreeWidgetItem * childItem = new QTreeWidgetItem(item);
             childItem->setText(0, child->title());
@@ -112,7 +129,7 @@ void DocBookViewImpl::selectAnItem(QTreeWidgetItem *item)
     if (!item || !modelsOfItems_.contains(item)) {
         return;
     }
-    const DocBookModel* model = modelsOfItems_[item];
+    ModelPtr model = modelsOfItems_[item];
     content_->reset();
     content_->addData(model);
 
@@ -121,18 +138,22 @@ void DocBookViewImpl::selectAnItem(QTreeWidgetItem *item)
 void DocBookViewImpl::loadAModelByPtr(quintptr dataPtr)
 {
     if (dataPtr) {
-        const DocBookModel * model =
+        const DocBookModel * modelWeakPointer =
                 reinterpret_cast<const DocBookModel*>(dataPtr);
-        if (itemsOfModels_.contains(model)) {
-            QList<QTreeWidgetItem*> selection = navigator_->selectedItems();
-            foreach (QTreeWidgetItem* item, selection) {
-                item->setSelected(false);
+        const QList<ModelPtr> keys = itemsOfModels_.keys();
+        for (int i=0; i<keys.size(); i++) {
+            ModelPtr model = keys[i];
+            if (model.data() == modelWeakPointer) {
+                QList<QTreeWidgetItem*> selection = navigator_->selectedItems();
+                foreach (QTreeWidgetItem* item, selection) {
+                    item->setSelected(false);
+                }
+                QTreeWidgetItem * item = itemsOfModels_[model];
+                item->setSelected(true);
+                navigator_->scrollToItem(item);
+                content_->reset();
+                content_->addData(model);
             }
-            QTreeWidgetItem * item = itemsOfModels_[model];
-            item->setSelected(true);
-            navigator_->scrollToItem(item);
-            content_->reset();
-            content_->addData(model);
         }
     }
 }
@@ -148,9 +169,8 @@ void DocBookViewImpl::showPrintDialog()
         if (actualPrintDialog.exec()) {
             PrintRenderer * renderer = PrintRenderer::self();
             renderer->reset();
-            QList<const DocBookModel*> selectedModels =
-                    chooseItemsDialog.selectedModels();
-            foreach (const DocBookModel * model, selectedModels)
+            QList<ModelPtr> selectedModels = chooseItemsDialog.selectedModels();
+            foreach (ModelPtr model, selectedModels)
             {
                 renderer->addData(model);
             }

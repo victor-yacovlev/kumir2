@@ -6,7 +6,6 @@ namespace DocBookViewer {
 
 PrintRenderer::PrintRenderer()
     : ContentRenderer()
-    , currentRoot_(nullptr)
 {
     const QFontDatabase fontDatabase;
     baseFont_ = fontDatabase.font("serif", "regular", 12);
@@ -27,11 +26,11 @@ void PrintRenderer::setBaseFont(QFont font)
 
 void PrintRenderer::reset()
 {
-    currentRoot_ = nullptr;
+    currentRoot_.clear();
     pages_.clear();
 }
 
-void PrintRenderer::addData(const DocBookModel *data)
+void PrintRenderer::addData(ModelPtr data)
 {
     currentRoot_ = data;
     Cursor cursor = Cursor(data);
@@ -134,7 +133,7 @@ QRectF PrintRenderer::freeContentArea(const Page &page) const
 
 bool PrintRenderer::isTwoColumnLayout() const
 {
-    const DocBookModel * parent = currentRoot_;
+    ModelPtr parent = currentRoot_;
     while (parent) {
         if (parent->modelType() == DocBookModel::Article) {
             return true;

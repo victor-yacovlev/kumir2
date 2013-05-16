@@ -21,9 +21,9 @@ public:
 
 
 private /*methods*/:
-    class DocBookModel* parseDocument(QIODevice * stream,
-                                      const QUrl & url,
-                                      QString * error = 0) const;
+    ModelPtr parseDocument(QIODevice * stream,
+                           const QUrl & url,
+                           QString * error = 0) const;
 
     explicit DocBookFactory();
 
@@ -37,14 +37,14 @@ private /*methods*/:
                     const QString &localName,
                     const QString &qName);
 
-    void filterByOs(DocBookModel * root) const;
+    void filterByOs(ModelPtr root) const;
 
 private /*fields*/:
     mutable QXmlSimpleReader* reader_;
-    mutable DocBookModel* doc_;
+    mutable ModelPtr doc_;
     mutable QUrl url_;
 
-    DocBookModel* root_;
+    ModelPtr root_;
     QString buffer_;
 
 };

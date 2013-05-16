@@ -23,18 +23,16 @@ void PrintDialog::addDocument(const Document &doc)
 {
     QTreeWidgetItem * item = new QTreeWidgetItem(ui->itemsChooser);
     ui->itemsChooser->addTopLevelItem(item);
-    item->setText(0, doc.content()->title());
-    item->setToolTip(0, doc.content()->subtitle());
+    item->setText(0, doc.root_->title());
+    item->setToolTip(0, doc.root_->subtitle());
     item->setCheckState(0, Qt::Unchecked);
-    createNavigationItems(item, doc.content());
-    modelsOfItems_[item] = doc.content();
+    createNavigationItems(item, doc.root_);
+    modelsOfItems_[item] = doc.root_;
 }
 
-void PrintDialog::createNavigationItems(
-        QTreeWidgetItem *item,
-        const DocBookModel *model)
+void PrintDialog::createNavigationItems(QTreeWidgetItem *item, ModelPtr model)
 {
-    foreach (const DocBookModel* child, model->children()) {
+    foreach (ModelPtr child, model->children()) {
         if (child->isSectioningNode()) {
             QTreeWidgetItem * childItem = new QTreeWidgetItem(item);
             childItem->setCheckState(0, Qt::Unchecked);
@@ -48,19 +46,18 @@ void PrintDialog::createNavigationItems(
     }
 }
 
-QList<const DocBookModel*> PrintDialog::selectedModels() const
+QList<ModelPtr> PrintDialog::selectedModels() const
 {
-    QList<const DocBookModel*> result;
+    QList<ModelPtr> result;
     for (int i=0; i<ui->itemsChooser->topLevelItemCount(); i++) {
         result += selectedModels(ui->itemsChooser->topLevelItem(i));
     }
     return result;
 }
 
-QList<const DocBookModel*> PrintDialog::selectedModels(
-        QTreeWidgetItem * root) const
+QList<ModelPtr> PrintDialog::selectedModels(QTreeWidgetItem * root) const
 {
-    QList<const DocBookModel*> result;
+    QList<ModelPtr> result;
     if (root->checkState(0) == Qt::Checked) {
         result.append(modelsOfItems_[root]);
     }

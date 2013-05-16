@@ -5,8 +5,11 @@
 
 #include <QtGlobal>
 #include <QTextBrowser>
+#include <QSharedPointer>
 
 namespace DocBookViewer {
+
+typedef QSharedPointer<class DocBookModel> ModelPtr;
 
 class ContentView
         : public QTextBrowser
@@ -17,48 +20,43 @@ public:
     explicit ContentView(QWidget * parent);
 
     void reset();
-    void addData(const class DocBookModel *data);
+    void addData(ModelPtr data);
 
 signals:
     void requestModelLoad(quintptr dataPtr);
 
 private:
     QString wrapHTML(const QString & body) const;
-    QString render(const class DocBookModel *data) const;
-    QString renderTOC(const class DocBookModel * data) const;
-    QString renderTOCElement(const class DocBookModel * data) const;
-    QString renderPlainPage(const class DocBookModel * data) const;
-    QString renderOrderedList(const class DocBookModel * data) const;
-    QString renderItemizedList(const class DocBookModel * data) const;
-    QString renderListItem(const class DocBookModel * data) const;
-    QString renderParagraph(const class DocBookModel * data) const;
-    QString renderEmphasis(const class DocBookModel * data) const;
-    QString renderText(const class DocBookModel * data) const;
+    QString render(ModelPtr data) const;
+    QString renderTOC(ModelPtr data) const;
+    QString renderTOCElement(ModelPtr data) const;
+    QString renderPlainPage(ModelPtr data) const;
+    QString renderOrderedList(ModelPtr data) const;
+    QString renderItemizedList(ModelPtr data) const;
+    QString renderListItem(ModelPtr data) const;
+    QString renderParagraph(ModelPtr data) const;
+    QString renderEmphasis(ModelPtr data) const;
+    QString renderText(ModelPtr data) const;
     QString normalizeText(QString text) const;
-    QString renderElement(const class DocBookModel * data) const;
-    QString renderExample(const class DocBookModel * data) const;
-    QString renderChilds(const class DocBookModel * data) const;
-    QString renderSection(const class DocBookModel * data) const;
-    QString renderXref(const class DocBookModel * data) const;
-    QString renderProgramListing(const class DocBookModel * data) const;
-    QString renderKeyCombo(const class DocBookModel * data) const;
-    QString renderKeySym(const class DocBookModel * data) const;
-    bool isPlainPage(const class DocBookModel * data) const;
+    QString renderElement(ModelPtr data) const;
+    QString renderExample(ModelPtr data) const;
+    QString renderChilds(ModelPtr data) const;
+    QString renderSection(ModelPtr data) const;
+    QString renderXref(ModelPtr data) const;
+    QString renderProgramListing(ModelPtr data) const;
+    QString renderKeyCombo(ModelPtr data) const;
+    QString renderKeySym(ModelPtr data) const;
+    bool isPlainPage(ModelPtr data) const;
 
-    const class DocBookModel * topLevelModel(
-            const class DocBookModel * data) const;
-    const class DocBookModel * findModelById(
-            const class DocBookModel * top,
-            const QString & modelId
-            ) const;
+    ModelPtr topLevelModel(ModelPtr data) const;
+    ModelPtr findModelById(ModelPtr top, const QString & modelId) const;
 
-    bool hasModelOnThisPage(const class DocBookModel* data) const;
-    bool hasChild(const class DocBookModel* who,
-                  const class DocBookModel* child) const;
+    bool hasModelOnThisPage(ModelPtr data) const;
+    bool hasChild(ModelPtr who, ModelPtr child) const;
 
 private /*fields*/:
     quint8 currentSectionLevel_;
-    QList<const class DocBookModel*> loadedModels_;
+    QList<ModelPtr> loadedModels_;
     mutable struct Counters {
         quint32 example;
         quint32 figure;

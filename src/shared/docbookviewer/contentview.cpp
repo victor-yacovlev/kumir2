@@ -23,7 +23,7 @@ void ContentView::reset()
     counters_.example = counters_.figure = counters_.table = 0u;
 }
 
-void ContentView::addData(const DocBookModel *data)
+void ContentView::addData(ModelPtr data)
 {
     if (loadedModels_.size() == 0) {
         currentSectionLevel_ = data->sectionLevel();
@@ -45,36 +45,36 @@ QString ContentView::wrapHTML(const QString &body) const
             "<body>\n" + body +"\n</body></html>";
 }
 
-QString ContentView::render(const DocBookModel *data) const
+QString ContentView::render(ModelPtr data) const
 {
     return isPlainPage(data) ? renderPlainPage(data) : renderTOC(data);
 }
 
-bool ContentView::isPlainPage(const DocBookModel *data) const
+bool ContentView::isPlainPage(ModelPtr data) const
 {
     quint32 sectionedChilds = 0;
-    foreach (const DocBookModel * child, data->children()) {
+    foreach (ModelPtr child, data->children()) {
         if (child->isSectioningNode())
             sectionedChilds += 1;
     }
     return sectionedChilds == 0;
 }
 
-QString ContentView::renderPlainPage(const DocBookModel *data) const
+QString ContentView::renderPlainPage(ModelPtr data) const
 {
     return renderElement(data);
 }
 
-QString ContentView::renderChilds(const DocBookModel *data) const
+QString ContentView::renderChilds(ModelPtr data) const
 {
     QString result;
-    foreach (const DocBookModel * child, data->children()) {
+    foreach (ModelPtr child, data->children()) {
         result += renderElement(child) + "\n";
     }
     return result;
 }
 
-QString ContentView::renderElement(const DocBookModel *data) const
+QString ContentView::renderElement(ModelPtr data) const
 {
     if (data->modelType() == DocBookModel::Text) {
         return renderText(data);
@@ -117,7 +117,7 @@ QString ContentView::renderElement(const DocBookModel *data) const
     }
 }
 
-QString ContentView::renderKeyCombo(const DocBookModel *data) const
+QString ContentView::renderKeyCombo(ModelPtr data) const
 {
     QString result;
     for (int i=0; i<data->children().size(); i++) {
@@ -129,11 +129,11 @@ QString ContentView::renderKeyCombo(const DocBookModel *data) const
     return result;
 }
 
-QString ContentView::renderKeySym(const DocBookModel *data) const
+QString ContentView::renderKeySym(ModelPtr data) const
 {
     QString result;
     QString keysym;
-    foreach (const DocBookModel * child, data->children()) {
+    foreach (ModelPtr  child, data->children()) {
         keysym += child->text();
     }
     const QStringList keys = keysym.split("+", QString::SkipEmptyParts);
@@ -148,7 +148,7 @@ QString ContentView::renderKeySym(const DocBookModel *data) const
     return result;
 }
 
-QString ContentView::renderProgramListing(const DocBookModel *data) const
+QString ContentView::renderProgramListing(ModelPtr data) const
 {
     QString result = "<table width='100%' border='1'><tr><td>";
     result += "<pre align='left'>" + renderChilds(data) + "</pre>\n";
@@ -156,7 +156,7 @@ QString ContentView::renderProgramListing(const DocBookModel *data) const
     return result;
 }
 
-QString ContentView::renderExample(const DocBookModel *data) const
+QString ContentView::renderExample(ModelPtr data) const
 {
     QString result;
     const QString & title = data->title();
@@ -174,7 +174,7 @@ QString ContentView::renderExample(const DocBookModel *data) const
     return result;
 }
 
-QString ContentView::renderEmphasis(const DocBookModel *data) const
+QString ContentView::renderEmphasis(ModelPtr data) const
 {
     const QString tag = data->role()=="bold" ? "b" : "i";
     QString result = "<" + tag + ">";
@@ -183,7 +183,7 @@ QString ContentView::renderEmphasis(const DocBookModel *data) const
     return result;
 }
 
-QString ContentView::renderItemizedList(const DocBookModel *data) const
+QString ContentView::renderItemizedList(ModelPtr data) const
 {
     QString result = "<ul>\n";
     result += renderChilds(data);
@@ -192,7 +192,7 @@ QString ContentView::renderItemizedList(const DocBookModel *data) const
 }
 
 
-QString ContentView::renderOrderedList(const DocBookModel *data) const
+QString ContentView::renderOrderedList(ModelPtr data) const
 {
     QString result = "<ol>\n";
     result += renderChilds(data);
@@ -200,7 +200,7 @@ QString ContentView::renderOrderedList(const DocBookModel *data) const
     return result;
 }
 
-QString ContentView::renderListItem(const DocBookModel *data) const
+QString ContentView::renderListItem(ModelPtr data) const
 {
     QString result = "<li>\n";
     result += renderChilds(data);
@@ -208,7 +208,7 @@ QString ContentView::renderListItem(const DocBookModel *data) const
     return result;
 }
 
-QString ContentView::renderParagraph(const DocBookModel *data) const
+QString ContentView::renderParagraph(ModelPtr data) const
 {
     QString result = "<p>";
     result += renderChilds(data);
@@ -243,9 +243,9 @@ QString ContentView::normalizeText(QString textData) const
     return textData;
 }
 
-QString ContentView::renderText(const DocBookModel *data) const
+QString ContentView::renderText(ModelPtr data) const
 {
-    const DocBookModel* parent = data->parent();
+    ModelPtr parent = data->parent();
     bool isPreformat = false;
     while (parent) {
         if (parent->modelType() == DocBookModel::ProgramListing) {
@@ -257,7 +257,7 @@ QString ContentView::renderText(const DocBookModel *data) const
     return isPreformat? data->text() : normalizeText(data->text());
 }
 
-QString ContentView::renderSection(const DocBookModel *data) const
+QString ContentView::renderSection(ModelPtr data) const
 {
     const qint8 thisSectionLevel = data->sectionLevel() - currentSectionLevel_;
     const QString tag = QString::fromAscii("h%1").arg(thisSectionLevel + 1);
@@ -273,23 +273,23 @@ QString ContentView::renderSection(const DocBookModel *data) const
     return result;
 }
 
-QString ContentView::renderXref(const DocBookModel *data) const
+QString ContentView::renderXref(ModelPtr data) const
 {
     QString result;
     const QString & linkEnd = data->xrefLinkEnd();
     const QString & endTerm = data->xrefEndTerm();
-    const DocBookModel* target = findModelById(topLevelModel(data), linkEnd);
+    ModelPtr target = findModelById(topLevelModel(data), linkEnd);
     if (target) {
         QString href;
         if (hasModelOnThisPage(target)) {
             href = "#" + linkEnd;
         }
         else {
-            const DocBookModel * container = findModelById(
+            ModelPtr container = findModelById(
                         topLevelModel(data), linkEnd
                         );
             if (container) {
-                const quintptr ptr = quintptr(container);
+                const quintptr ptr = quintptr(container.toWeakRef().data());
                 QByteArray buffer;
                 QDataStream ds(&buffer, QIODevice::WriteOnly);
                 ds << ptr;
@@ -307,31 +307,31 @@ QString ContentView::renderXref(const DocBookModel *data) const
     return result;
 }
 
-const DocBookModel* ContentView::findModelById(
-        const DocBookModel * top,
+ModelPtr ContentView::findModelById(
+        ModelPtr top,
         const QString & modelId
         ) const
 {
     if (!top) {
-        return nullptr;
+        return ModelPtr();
     }
     else if (top->id() == modelId) {
         return top;
     }
     else {
-        foreach (const DocBookModel * child, top->children()) {
-            const DocBookModel * result = findModelById(child, modelId);
+        foreach (ModelPtr child, top->children()) {
+            ModelPtr result = findModelById(child, modelId);
             if (result) {
                 return result;
             }
         }
     }
-    return nullptr;
+    return ModelPtr();
 }
 
-const DocBookModel* ContentView::topLevelModel(const DocBookModel * data) const
+ModelPtr ContentView::topLevelModel(ModelPtr data) const
 {
-    if (data->parent() == nullptr) {
+    if (data->parent().isNull()) {
         return data;
     }
     else {
@@ -339,9 +339,9 @@ const DocBookModel* ContentView::topLevelModel(const DocBookModel * data) const
     }
 }
 
-bool ContentView::hasModelOnThisPage(const DocBookModel *data) const
+bool ContentView::hasModelOnThisPage(ModelPtr data) const
 {
-    foreach (const DocBookModel* item, loadedModels_) {
+    foreach (ModelPtr item, loadedModels_) {
         if (data == item || hasChild(item, data)) {
             return true;
         }
@@ -349,11 +349,9 @@ bool ContentView::hasModelOnThisPage(const DocBookModel *data) const
     return false;
 }
 
-bool ContentView::hasChild(
-        const DocBookModel *who,
-        const DocBookModel *childToFind) const
+bool ContentView::hasChild(ModelPtr who, ModelPtr childToFind) const
 {
-    foreach (const DocBookModel* child, who->children()) {
+    foreach (ModelPtr child, who->children()) {
         if (childToFind == child || hasChild(child, childToFind)) {
             return true;
         }
@@ -363,7 +361,7 @@ bool ContentView::hasChild(
 
 
 
-QString ContentView::renderTOC(const DocBookModel *data) const
+QString ContentView::renderTOC(ModelPtr data) const
 {
     QString result;
     result += "<h1 class=\"title\">" + normalizeText(data->title()) + "</h1>\n";
@@ -374,7 +372,7 @@ QString ContentView::renderTOC(const DocBookModel *data) const
     }
     result += "<hr/>\n";
     result += "<ol>\n";
-    foreach (const DocBookModel * child, data->children()) {
+    foreach (ModelPtr child, data->children()) {
         result += renderTOCElement(child);
     }
     result += "</ol>\n";
@@ -382,9 +380,9 @@ QString ContentView::renderTOC(const DocBookModel *data) const
     return result;
 }
 
-QString ContentView::renderTOCElement(const DocBookModel *data) const
+QString ContentView::renderTOCElement(ModelPtr data) const
 {
-    const quintptr dataPtr = quintptr(data);
+    const quintptr dataPtr = quintptr(data.toWeakRef().data());
     QByteArray buffer;
     QDataStream ds(&buffer, QIODevice::WriteOnly);
     ds << dataPtr;
@@ -395,7 +393,7 @@ QString ContentView::renderTOCElement(const DocBookModel *data) const
     result += "<p><a href=\"" + href + "\">" + data->title() + "</p>";
     if (!isPlainPage(data)) {
         result += "\n<ol>\n";
-        foreach (const DocBookModel * child, data->children()) {
+        foreach (ModelPtr child, data->children()) {
             result += renderTOCElement(child);
         }
         result += "\n</ol>\n";

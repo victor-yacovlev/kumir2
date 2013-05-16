@@ -20,14 +20,12 @@ public:
     explicit PrintDialog(QWidget *parent = 0);
     void addDocument(const Document & document);
     ~PrintDialog();
-    QList<const DocBookModel*> selectedModels() const;
+    QList<ModelPtr> selectedModels() const;
     
 private:
-    QList<const DocBookModel*> selectedModels(
-            QTreeWidgetItem * root) const;
-    QMap<QTreeWidgetItem*, const DocBookModel*> modelsOfItems_;
-    void createNavigationItems(QTreeWidgetItem * item,
-                               const DocBookModel * model);
+    QList<ModelPtr> selectedModels(QTreeWidgetItem * root) const;
+    QMap<QTreeWidgetItem*, ModelPtr> modelsOfItems_;
+    void createNavigationItems(QTreeWidgetItem * item, ModelPtr model);
     Ui::PrintDialog *ui;
 };
 
