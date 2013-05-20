@@ -45,6 +45,7 @@ private:
     QString renderSection(ModelPtr data) const;
     QString renderXref(ModelPtr data) const;
     QString renderProgramListing(ModelPtr data) const;
+    QString renderCode(ModelPtr data) const;
     QString renderKeyCombo(ModelPtr data) const;
     QString renderKeySym(ModelPtr data) const;
     bool isPlainPage(ModelPtr data) const;
@@ -56,6 +57,17 @@ private:
 
     bool hasModelOnThisPage(ModelPtr data) const;
     bool hasChild(ModelPtr who, ModelPtr child) const;
+
+    static QString formatProgramSourceText(
+            const QString &source,
+            const QStringList &keywords,
+            const QString & inlineCommentSymbol,
+            const QString & multilineCommentStartSymbol,
+            const QString & multilineCommentEndSymbol
+            );
+
+    static QString programTextForLanguage(const QString &source,
+                                          const QString &language);
 
 private /*fields*/:
     QList<ModelPtr> loadedModels_;

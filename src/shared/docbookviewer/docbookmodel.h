@@ -30,6 +30,7 @@ public:
         Para,
         Example,
         ProgramListing,
+        Code,
         OrderedList,
         ItemizedList,
         ListItem,

@@ -139,6 +139,9 @@ bool DocBookFactory::startElement(
     else if (element == "programlisting") {
         model = new DocBookModel(root_, DocBookModel::ProgramListing);
     }
+    else if (element == "code") {
+        model = new DocBookModel(root_, DocBookModel::Code);
+    }
     else if (element == "example") {
         model = new DocBookModel(root_, DocBookModel::Example);
     }
@@ -175,6 +178,14 @@ bool DocBookFactory::startElement(
         }
         model->id_ = atts.value("id");
         model->os_ = atts.value("os");
+        model->role_ = atts.value("role");
+        if (atts.value("language").length() > 0) {
+            if (model->modelType_==DocBookModel::ProgramListing ||
+                    model->modelType_==DocBookModel::Code)
+            {
+                model->role_ = atts.value("language");
+            }
+        }
         root_ = ModelPtr(model);
     }
     else if (element == "include") {
@@ -211,7 +222,8 @@ bool DocBookFactory::startElement(
 bool DocBookFactory::characters(const QString &ch)
 {
     bool preformatMode = root_ &&
-            root_->modelType_ == DocBookModel::ProgramListing;
+            ( root_->modelType_ == DocBookModel::ProgramListing ||
+              root_->modelType_ == DocBookModel::Code );
     if (preformatMode) {
         buffer_ += ch;
     }
@@ -232,7 +244,7 @@ bool DocBookFactory::endElement(const QString &namespaceURI,
             << "book" << "article" << "set"
             << "chapter" << "section" << "para"
             << "listitem" << "itemizedlist" << "orderedlist"
-            << "example" << "programlisting"
+            << "example" << "programlisting" << "code"
             << "preface" << "abstract" << "reference"
             << "emphasis" << "xref"  << "keycombo" << "keysym";
     const QString element = localName.toLower();
