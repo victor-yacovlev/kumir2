@@ -41,7 +41,13 @@ public:
         Keyword,
         Synopsis,
         KeyCombo,
-        KeySym
+        KeySym,
+        Table,
+        InformalTable,
+        THead,
+        TBody,
+        Row,
+        Entry
     };
 
     quint8 sectionLevel() const;

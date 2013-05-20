@@ -164,6 +164,24 @@ bool DocBookFactory::startElement(
     else if (element == "keysym") {
         model = new DocBookModel(root_, DocBookModel::KeySym);
     }
+    else if (element == "table") {
+        model = new DocBookModel(root_, DocBookModel::Table);
+    }
+    else if (element == "informaltable") {
+        model = new DocBookModel(root_, DocBookModel::InformalTable);
+    }
+    else if (element == "thead") {
+        model = new DocBookModel(root_, DocBookModel::THead);
+    }
+    else if (element == "tbody") {
+        model = new DocBookModel(root_, DocBookModel::TBody);
+    }
+    else if (element == "row") {
+        model = new DocBookModel(root_, DocBookModel::Row);
+    }
+    else if (element == "entry") {
+        model = new DocBookModel(root_, DocBookModel::Entry);
+    }
     else if (element == "xref") {
         model = new DocBookModel(root_, DocBookModel::Xref);
         model->xrefLinkEnd_ = atts.value("linkend");
@@ -246,6 +264,7 @@ bool DocBookFactory::endElement(const QString &namespaceURI,
             << "listitem" << "itemizedlist" << "orderedlist"
             << "example" << "programlisting" << "code"
             << "preface" << "abstract" << "reference"
+            << "informaltable" << "table" << "thead" << "tbody" << "row" << "entry"
             << "emphasis" << "xref"  << "keycombo" << "keysym";
     const QString element = localName.toLower();
     if (root_ && element == "title") {

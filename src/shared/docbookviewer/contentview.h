@@ -28,6 +28,8 @@ signals:
 private:
     QString wrapHTML(const QString & body) const;
     QString render(ModelPtr data) const;
+    QString renderElement(ModelPtr data) const;
+
     QString renderChapter(ModelPtr data) const;
     QString renderTOC(ModelPtr data) const;
     QString renderTOCElement(ModelPtr data) const;
@@ -39,7 +41,6 @@ private:
     QString renderEmphasis(ModelPtr data) const;
     QString renderText(ModelPtr data) const;
     QString normalizeText(QString text) const;
-    QString renderElement(ModelPtr data) const;
     QString renderExample(ModelPtr data) const;
     QString renderChilds(ModelPtr data) const;
     QString renderSection(ModelPtr data) const;
@@ -48,6 +49,15 @@ private:
     QString renderCode(ModelPtr data) const;
     QString renderKeyCombo(ModelPtr data) const;
     QString renderKeySym(ModelPtr data) const;
+
+    QString renderInformalTable(ModelPtr data) const;
+    QString renderTable(ModelPtr data) const;
+    QString renderTableContent(ModelPtr data) const;
+    QString renderTHead(ModelPtr data) const;
+    QString renderTBody(ModelPtr data) const;
+    QString renderRow(ModelPtr data) const;
+    QString renderEntry(ModelPtr data) const;
+
     bool isPlainPage(ModelPtr data) const;
 
     ModelPtr topLevelModel(ModelPtr data) const;

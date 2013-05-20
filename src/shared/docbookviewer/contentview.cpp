@@ -136,6 +136,24 @@ QString ContentView::renderElement(ModelPtr data) const
     else if (data->modelType() == DocBookModel::KeySym) {
         return renderKeySym(data);
     }
+    else if (data->modelType() == DocBookModel::InformalTable) {
+        return renderInformalTable(data);
+    }
+    else if (data->modelType() == DocBookModel::Table) {
+        return renderTable(data);
+    }
+    else if (data->modelType() == DocBookModel::THead) {
+        return renderTHead(data);
+    }
+    else if (data->modelType() == DocBookModel::TBody) {
+        return renderTBody(data);
+    }
+    else if (data->modelType() == DocBookModel::Row) {
+        return renderRow(data);
+    }
+    else if (data->modelType() == DocBookModel::Entry) {
+        return renderEntry(data);
+    }
     else {
         return "";
     }
@@ -227,6 +245,120 @@ QString ContentView::renderCode(ModelPtr data) const
     const QString programText = renderChilds(data);
     result += programTextForLanguage(programText, data->role());
     result += "</font>";
+    return result;
+}
+
+QString ContentView::renderTableContent(ModelPtr data) const
+{
+    QString result;
+    result += "<table border='1' bordercolor='black' cellspacing='0' cellpadding='0' width='100%'>\n";
+    result += "<tr><td>\n";
+    result += "<table border='0' cellspacing='0' cellpadding='10' width='100%'>\n";
+    result += renderChilds(data);
+    result += "</table>\n";
+    result += "</td></tr>\n";
+    result += "</table>\n";
+    return result;
+}
+
+QString ContentView::renderTHead(ModelPtr data) const
+{
+    QString result;
+    result += "<thead>\n";
+    result += renderChilds(data);
+    result += "</thead>\n";
+    return result;
+}
+
+QString ContentView::renderTBody(ModelPtr data) const
+{
+    QString result;
+    result += "<tbody>\n";
+    result += renderChilds(data);
+    result += "</tbody>\n";
+    return result;
+}
+
+QString ContentView::renderRow(ModelPtr data) const
+{
+    ModelPtr parent = data->parent();
+    bool inTableHead = false;
+    bool inTableBody = false;
+    while (parent) {
+        if (parent->modelType()==DocBookModel::THead) {
+            inTableHead = true;
+            break;
+        }
+        if (parent->modelType()==DocBookModel::TBody) {
+            inTableBody = true;
+            break;
+        }
+        parent = parent->parent();
+    }
+    QString result;
+    if (inTableHead) {
+        result += "<tr bgcolor='lightgray'>\n";
+    }
+    else {
+        result += "<tr>\n";
+    }
+    result += renderChilds(data);
+    result += "</tr>\n";
+    return result;
+}
+
+QString ContentView::renderEntry(ModelPtr data) const
+{
+    ModelPtr parent = data->parent();
+    bool inTableHead = false;
+    bool inTableBody = false;
+    while (parent) {
+        if (parent->modelType()==DocBookModel::THead) {
+            inTableHead = true;
+            break;
+        }
+        if (parent->modelType()==DocBookModel::TBody) {
+            inTableBody = true;
+            break;
+        }
+        parent = parent->parent();
+    }
+    QString result;
+    result += "<td align='center'>\n";
+    if (inTableHead) {
+        result += "<b>";
+    }
+    result += renderChilds(data);
+    if (inTableHead) {
+        result += "</b>";
+    }
+    result += "</td>\n";
+    return result;
+}
+
+
+QString ContentView::renderTable(ModelPtr data) const
+{
+    QString result;
+    const QString & title = data->title();
+    counters_.table ++;
+    result += "<table width='100%'>\n";
+    result += "<tr><td height='10'>&nbsp;</td></tr>\n";
+    result += "<tr><td align='left'><b>";
+    result += tr("Table&nbsp;%1. ").arg(counters_.table);
+    result += "</b>" + title + "</td></tr>\n";
+    result += "<tr><td>\n";
+    result += renderTableContent(data);
+    result += "</td></tr>\n";
+    result += "<tr><td height='10'>&nbsp;</td></tr>\n";
+    result += "</table>\n";
+    return result;
+}
+
+QString ContentView::renderInformalTable(ModelPtr data) const
+{
+    QString result;
+    result += renderTableContent(data);
     return result;
 }
 

@@ -525,10 +525,61 @@
             <para>
                 Ниже приведены различные способы записи выражений.
             </para>
-            <example>
-                <title>Запись различных выражений</title>
-                <para>TODO: сделать таблицу</para>
-            </example>
+            <table>
+                <title>Запись различных математических выражений</title>
+                <thead>
+                    <row>
+                        <entry>Математическая формула</entry>
+                        <entry>Выражение на языке Кумир</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>TODO</entry>
+                        <entry><code>-1/x**2</code></entry>
+                    </row>
+                    <row>
+                        <entry>TODO</entry>
+                        <entry><code>a/(b*c)</code></entry>
+                    </row>
+                    <row>
+                        <entry>TODO</entry>
+                        <entry><code>a/b*c</code> или <code>(a/b)*c</code></entry>
+                    </row>
+                    <row>
+                        <entry>TODO</entry>
+                        <entry><code>2**(2**(2**n))</code></entry>
+                    </row>
+                    <row>
+                        <entry>TODO</entry>
+                        <entry><code>x**(y**z)</code></entry>
+                    </row>
+                    <row>
+                        <entry>TODO</entry>
+                        <entry><code>(-b+sqrt(b**2-4*a*c))/(2*a)</code></entry>
+                    </row>
+                    <row>
+                        <entry>TODO</entry>
+                        <entry><code>sqrt(p*(p-a)*(p-b)*(p-c))</code></entry>
+                    </row>
+                    <row>
+                        <entry>TODO</entry>
+                        <entry><code>(a+b+c)/2</code></entry>
+                    </row>
+                    <row>
+                        <entry>TODO</entry>
+                        <entry><code>sqrt(a**2+b**2-2*a*b*cos(gamma))</code></entry>
+                    </row>
+                    <row>
+                        <entry>TODO</entry>
+                        <entry><code>(a*d+b*c)/(b*d)</code></entry>
+                    </row>
+                    <row>
+                        <entry>TODO</entry>
+                        <entry><code>sin(alpha)*cos(beta)+cos(alpha)*sin(beta)</code></entry>
+                    </row>
+                </tbody>
+            </table>
         </section>
     </section>
 </chapter>
