@@ -264,4 +264,29 @@ bool DocBookFactory::endElement(const QString &namespaceURI,
     return true;
 }
 
+bool DocBookFactory::error(const QXmlParseException &exception)
+{
+    qDebug() << "Error parsing " << url_;
+    qDebug() << "At " << exception.lineNumber() << ":" << exception.columnNumber();
+    qDebug() << exception.message();
+    return false;
+}
+
+bool DocBookFactory::fatalError(const QXmlParseException &exception)
+{
+    qDebug() << "Fatal error parsing " << url_;
+    qDebug() << "At " << exception.lineNumber() << ":" << exception.columnNumber();
+    qDebug() << exception.message();
+    return false;
+}
+
+bool DocBookFactory::warning(const QXmlParseException &exception)
+{
+    qDebug() << "Warning parsing " << url_;
+    qDebug() << "At " << exception.lineNumber() << ":" << exception.columnNumber();
+    qDebug() << exception.message();
+    return true;
+}
+
+
 }

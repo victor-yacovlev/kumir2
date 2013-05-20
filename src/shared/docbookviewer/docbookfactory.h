@@ -37,7 +37,12 @@ private /*methods*/:
                     const QString &localName,
                     const QString &qName);
 
+    bool error(const QXmlParseException &exception);
+    bool fatalError(const QXmlParseException &exception);
+    bool warning(const QXmlParseException &exception);
+
     void filterByOs(ModelPtr root) const;
+
 
 private /*fields*/:
     mutable QXmlSimpleReader* reader_;
