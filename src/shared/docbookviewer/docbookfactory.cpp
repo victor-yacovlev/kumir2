@@ -63,6 +63,8 @@ ModelPtr DocBookFactory::parseDocument(QIODevice *stream,
 
 void DocBookFactory::filterByOs(ModelPtr root) const
 {
+    if (!root)
+        return;
     QString pattern;
 #ifdef Q_WS_MAC
     pattern = "mac";
@@ -182,6 +184,15 @@ bool DocBookFactory::startElement(
     else if (element == "entry") {
         model = new DocBookModel(root_, DocBookModel::Entry);
     }
+    else if (element == "inlinemediaobject") {
+        model = new DocBookModel(root_, DocBookModel::InlineMediaObject);
+    }
+    else if (element == "imageobject") {
+        model = new DocBookModel(root_, DocBookModel::ImageObject);
+    }
+    else if (element == "imagedata") {
+        model = new DocBookModel(root_, DocBookModel::ImageData);
+    }
     else if (element == "xref") {
         model = new DocBookModel(root_, DocBookModel::Xref);
         model->xrefLinkEnd_ = atts.value("linkend");
@@ -202,6 +213,21 @@ bool DocBookFactory::startElement(
                     model->modelType_==DocBookModel::Code)
             {
                 model->role_ = atts.value("language");
+            }
+        }
+        if (model->modelType() == DocBookModel::ImageData) {
+            model->format_ = atts.value("format");
+            const QString href = atts.value("fileref");
+            if (href.length() > 0) {
+                model->href_ = url_.resolved(href);
+                if (model->format()=="png") {
+                    model->cachedImage_ = QImage(model->href().toLocalFile());
+                }
+                else if (model->format()=="svg") {
+                    model->svgRenderer_ = SvgRendererPtr(
+                                new QSvgRenderer(model->href().toLocalFile())
+                                );
+                }
             }
         }
         root_ = ModelPtr(model);
@@ -265,6 +291,7 @@ bool DocBookFactory::endElement(const QString &namespaceURI,
             << "example" << "programlisting" << "code"
             << "preface" << "abstract" << "reference"
             << "informaltable" << "table" << "thead" << "tbody" << "row" << "entry"
+            << "inlinemediaobject" << "imageobject" << "imagedata"
             << "emphasis" << "xref"  << "keycombo" << "keysym";
     const QString element = localName.toLower();
     if (root_ && element == "title") {

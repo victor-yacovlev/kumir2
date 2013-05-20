@@ -13,7 +13,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(QT_USE_QTMAIN 1)
-find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtXml REQUIRED)
+find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtXml QtSvg REQUIRED)
 include (${QT_USE_FILE})
 
 if(NOT MSVC)

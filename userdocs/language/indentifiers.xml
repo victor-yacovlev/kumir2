@@ -2,7 +2,7 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                     "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
                     []>
-<chapter xmlns="http://www.oasis-open.org/docbook/xml/4.5/">
+<chapter xmlns="http://www.oasis-open.org/docbook/xml/4.5/" xmlns:xi="http://www.w3.org/2001/XInclude">
     <title>Имена, величины и выражения</title>
     <section>
         <title>Имена</title>
@@ -535,47 +535,113 @@
                 </thead>
                 <tbody>
                     <row>
-                        <entry>TODO</entry>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample01.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
                         <entry><code>-1/x**2</code></entry>
                     </row>
                     <row>
-                        <entry>TODO</entry>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample02.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
                         <entry><code>a/(b*c)</code></entry>
                     </row>
                     <row>
-                        <entry>TODO</entry>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample03.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
                         <entry><code>a/b*c</code> или <code>(a/b)*c</code></entry>
                     </row>
                     <row>
-                        <entry>TODO</entry>
-                        <entry><code>2**(2**(2**n))</code></entry>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample04.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
+                        <entry><code>2**(2**n)</code></entry>
                     </row>
                     <row>
-                        <entry>TODO</entry>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample05.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
                         <entry><code>x**(y**z)</code></entry>
                     </row>
                     <row>
-                        <entry>TODO</entry>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample06.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
                         <entry><code>(-b+sqrt(b**2-4*a*c))/(2*a)</code></entry>
                     </row>
                     <row>
-                        <entry>TODO</entry>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample07.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
                         <entry><code>sqrt(p*(p-a)*(p-b)*(p-c))</code></entry>
                     </row>
                     <row>
-                        <entry>TODO</entry>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample08.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
                         <entry><code>(a+b+c)/2</code></entry>
                     </row>
                     <row>
-                        <entry>TODO</entry>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample09.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
                         <entry><code>sqrt(a**2+b**2-2*a*b*cos(gamma))</code></entry>
                     </row>
                     <row>
-                        <entry>TODO</entry>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample10.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
                         <entry><code>(a*d+b*c)/(b*d)</code></entry>
                     </row>
                     <row>
-                        <entry>TODO</entry>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample11.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
                         <entry><code>sin(alpha)*cos(beta)+cos(alpha)*sin(beta)</code></entry>
                     </row>
                 </tbody>

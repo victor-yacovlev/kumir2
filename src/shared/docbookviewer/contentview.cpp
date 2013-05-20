@@ -154,6 +154,12 @@ QString ContentView::renderElement(ModelPtr data) const
     else if (data->modelType() == DocBookModel::Entry) {
         return renderEntry(data);
     }
+    else if (data->modelType() == DocBookModel::InlineMediaObject) {
+        return renderInlineMediaObject(data);
+    }
+    else if (data->modelType() == DocBookModel::ImageObject) {
+        return renderImageObject(data);
+    }
     else {
         return "";
     }
@@ -297,10 +303,10 @@ QString ContentView::renderRow(ModelPtr data) const
     }
     QString result;
     if (inTableHead) {
-        result += "<tr bgcolor='lightgray'>\n";
+        result += "<tr valign='center' bgcolor='lightgray'>\n";
     }
     else {
-        result += "<tr>\n";
+        result += "<tr valign='center'>\n";
     }
     result += renderChilds(data);
     result += "</tr>\n";
@@ -324,7 +330,7 @@ QString ContentView::renderEntry(ModelPtr data) const
         parent = parent->parent();
     }
     QString result;
-    result += "<td align='center'>\n";
+    result += "<td align='center' valign='center'>\n";
     if (inTableHead) {
         result += "<b>";
     }
@@ -423,6 +429,60 @@ QString ContentView::renderParagraph(ModelPtr data) const
     result += renderChilds(data);
     result += "</p>";
     return result;
+}
+
+QString ContentView::renderInlineMediaObject(ModelPtr data) const
+{
+    QString result;
+    ModelPtr mediaObject = findImageData(data);
+    if (mediaObject) {
+        result += renderElement(mediaObject);
+    }
+    return result;
+}
+
+QString ContentView::renderImageObject(ModelPtr data) const
+{
+    QString result;
+    ModelPtr imageData;
+    foreach (ModelPtr child, data->children()) {
+        if (child->modelType() == DocBookModel::ImageData) {
+            imageData = child;
+            break;
+        }
+    }
+    result += "<img src='model_ptr:"+modelToLink(imageData)+"'>";
+    return result;
+}
+
+QVariant ContentView::loadResource(int type, const QUrl &name)
+{
+    QVariant result;
+    bool ignore = true;
+    if (type == QTextDocument::ImageResource) {
+        const QString link = name.toString();
+        if (link.startsWith("model_ptr:")) {
+            ignore = false;
+            QByteArray linkPtr = QByteArray::fromHex(link.toAscii().mid(10));
+            QDataStream ds(linkPtr);
+            quintptr rawPointer = 0;
+            ds >> rawPointer;
+            if (rawPointer) {
+                DocBookModel * model =
+                        reinterpret_cast<DocBookModel*>(rawPointer);
+                if (model->modelType() == DocBookModel::ImageData) {
+                    const QImage & image = model->imageData();
+                    result = image;
+                }
+            }
+        }
+    }
+    if (ignore) {
+        return QTextBrowser::loadResource(type, name);
+    }
+    else {
+        return result;
+    }
 }
 
 QString ContentView::normalizeText(QString textData) const
@@ -600,6 +660,26 @@ bool ContentView::hasChild(ModelPtr who, ModelPtr childToFind) const
     return false;
 }
 
+ModelPtr ContentView::findImageData(ModelPtr parent) const
+{
+    ModelPtr svgChild;
+    ModelPtr pngChild;
+    foreach (ModelPtr child, parent->children()) {
+        if (child->modelType()==DocBookModel::ImageObject) {
+            foreach (ModelPtr childChild, child->children()) {
+                if (childChild->modelType()==DocBookModel::ImageData) {
+                    if (childChild->format() == "svg") {
+                        svgChild = child;
+                    }
+                    else if (childChild->format() == "png") {
+                        pngChild = child;
+                    }
+                }
+            }
+        }
+    }
+    return pngChild ? pngChild : svgChild;
+}
 
 
 QString ContentView::renderTOC(ModelPtr data) const

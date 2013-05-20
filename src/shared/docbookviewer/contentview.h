@@ -58,12 +58,17 @@ private:
     QString renderRow(ModelPtr data) const;
     QString renderEntry(ModelPtr data) const;
 
+    QString renderInlineMediaObject(ModelPtr data) const;
+    QString renderImageObject(ModelPtr data) const;
+
     bool isPlainPage(ModelPtr data) const;
 
     ModelPtr topLevelModel(ModelPtr data) const;
     ModelPtr onePageParentModel(ModelPtr data) const;
     ModelPtr findModelById(ModelPtr top, const QString & modelId) const;
+    ModelPtr findImageData(ModelPtr parent) const;
     QString modelToLink(ModelPtr data) const;
+
 
     bool hasModelOnThisPage(ModelPtr data) const;
     bool hasChild(ModelPtr who, ModelPtr child) const;
@@ -78,6 +83,8 @@ private:
 
     static QString programTextForLanguage(const QString &source,
                                           const QString &language);
+
+    QVariant loadResource(int type, const QUrl &name);
 
 private /*fields*/:
     QList<ModelPtr> loadedModels_;

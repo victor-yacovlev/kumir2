@@ -4,14 +4,18 @@
 // Qt includes
 #include <QtGlobal>
 #include <QString>
+#include <QUrl>
 #include <QObject>
 #include <QSharedPointer>
+#include <QSvgRenderer>
+#include <QImage>
 
 namespace DocBookViewer {
 
 static const quint8 MAX_SECTION_LEVEL_IN_TOC = 2u;
 typedef QSharedPointer<class DocBookModel> ModelPtr;
 typedef QList<ModelPtr>::iterator ModelIterator;
+typedef QSharedPointer<QSvgRenderer> SvgRendererPtr;
 
 class DocBookModel
 {
@@ -47,7 +51,10 @@ public:
         THead,
         TBody,
         Row,
-        Entry
+        Entry,
+        InlineMediaObject,
+        ImageObject,
+        ImageData
     };
 
     quint8 sectionLevel() const;
@@ -59,10 +66,15 @@ public:
     const QString & role() const;
     const QString & xrefLinkEnd() const;
     const QString & xrefEndTerm() const;
+    const QUrl & href() const;
+    const QString format() const;
     ModelPtr parent() const;
     const QList<ModelPtr>& children() const;
     void setParent(ModelPtr parent);
     bool isSectioningNode() const;
+
+    const QImage& imageData() const;
+
 
 protected /*methods*/:
     explicit DocBookModel(ModelPtr parent, const ModelType modelType);
@@ -81,6 +93,10 @@ protected /*fields*/:
     QString xrefLinkEnd_;
     QString xrefEndTerm_;
     QString role_;
+    QUrl href_;
+    QString format_;
+    mutable SvgRendererPtr svgRenderer_;
+    mutable QImage cachedImage_;
 };
 
 }
