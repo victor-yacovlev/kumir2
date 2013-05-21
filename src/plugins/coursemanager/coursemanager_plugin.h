@@ -20,7 +20,7 @@ public:
     QWidget* mainWindow() const;
     QAction* actionPerformCheck() const;
     QWidget* settingsEditorPage();
-    QList<QMenu*> menu() const; 
+    QList<QMenu*> Menus() const; 
        
 public slots:
     void setEnabled(bool value);
@@ -39,7 +39,8 @@ private /*fields*/:
     QWidget* mainWindow_;
     QAction* actionPerformCheck_;
     ExtensionSystem::DeclarativeSettingsPage* settingsEditorPage_;
-
+    QMenu* courseMenu;
+    QList<QMenu*> MenuList;
 
 };
 

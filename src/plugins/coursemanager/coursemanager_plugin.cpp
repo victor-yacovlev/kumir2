@@ -8,8 +8,14 @@ Plugin::Plugin()
     , actionPerformCheck_(nullptr)
     , settingsEditorPage_(nullptr)
 {
+    courseMenu=new QMenu(trUtf8("Практикум"));
+    MenuList.append(courseMenu);
 }
-
+QList<QMenu*>  Plugin::Menus()const
+{
+    
+    return MenuList; 
+}; 
 
 QWidget* Plugin::mainWindow() const
 {
