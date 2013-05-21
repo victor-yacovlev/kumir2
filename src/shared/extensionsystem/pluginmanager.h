@@ -80,6 +80,19 @@ public:
     /** Module to start */
     KPlugin * startupModule();
 
+    template <class PluginInterface>
+    PluginInterface* findPlugin() {
+        QList<KPlugin*> plugins = loadedPlugins();
+        PluginInterface* result = nullptr;
+        for (int i=0; i<plugins.size(); i++) {
+            KPlugin * plugin = plugins[i];
+            result = qobject_cast<PluginInterface*>(plugin);
+            if (result)
+                break;
+        }
+        return result;
+    }
+
 public slots:
 
     /** Show settings for all modules
