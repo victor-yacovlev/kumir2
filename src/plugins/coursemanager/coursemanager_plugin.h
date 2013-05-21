@@ -20,6 +20,7 @@ public:
     QWidget* mainWindow() const;
     QAction* actionPerformCheck() const;
     QWidget* settingsEditorPage();
+    QList<QMenu*> menu() const; 
        
 public slots:
     void setEnabled(bool value);
