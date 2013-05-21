@@ -22,6 +22,7 @@ Plugin::Plugin() :
     kumirProgram_ = 0;
     startPage_.widget = 0;
     helpViewer_ = 0;
+    courseManager_ = 0;
 }
 
 QString Plugin::InitialTextKey = "InitialText";
@@ -42,6 +43,12 @@ QString Plugin::initialize(const QStringList & parameters)
 
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
+    qRegisterMetaType<KumFile::Data>("KumirFile.Data");
+    qRegisterMetaType<Shared::GuiInterface::ProgramSourceText::Language>
+            ("Gui.ProgramSourceText.Language");
+    qRegisterMetaType<Shared::GuiInterface::ProgramSourceText>
+            ("Gui.ProgramSourceText");
+
 
     const QStringList BlacklistedThemes = QStringList()
             << "iaorakde" << "iaoraqt" << "iaora";
@@ -344,6 +351,13 @@ QString Plugin::initialize(const QStringList & parameters)
 
     kumirProgram_->setDebuggerWindow(debugger_);
 
+
+    courseManager_ = ExtensionSystem::PluginManager::instance()
+            ->findPlugin<Shared::CoursesInterface>();
+
+
+
+
     return "";
 }
 
@@ -469,18 +483,19 @@ Plugin::~Plugin()
 
 void Plugin::setProgramSource(const ProgramSourceText &source)
 {
-
+    if (mainWindow_) {
+        mainWindow_->loadFromCourseManager(source);
+    }
 }
 
 GuiInterface::ProgramSourceText Plugin::programSource() const
 {
-    GuiInterface::ProgramSourceText result;
-    return result;
+    return mainWindow_->courseManagerProgramSource();
 }
 
 void Plugin::startTesting()
 {
-
+    kumirProgram_->testingRun();
 }
 
 } // namespace CoreGUI

@@ -39,6 +39,7 @@ public:
     void reset();
     void evaluateNextInstruction();
     bool canStepOut() const;
+    QVariant valueStackTopItem() const;
 
 public slots:
     void lockVMMutex();
@@ -184,7 +185,7 @@ protected :
     QVariantList funcOptResults_;
     QVariant funcResult_;
     QString funcError_;
-    class Mutex * VMMutex_;
+    mutable class Mutex * VMMutex_;
 
 };
 

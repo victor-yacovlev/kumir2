@@ -93,6 +93,20 @@ public:
         return result;
     }
 
+    template <class PluginInterface>
+    QList<PluginInterface*> findPlugins() {
+        QList<KPlugin*> plugins = loadedPlugins();
+        QList<PluginInterface*> result;
+        for (int i=0; i<plugins.size(); i++) {
+            KPlugin * plugin = plugins[i];
+            PluginInterface* implementation =
+                    qobject_cast<PluginInterface*>(plugin);
+            if (implementation)
+                result.push_back(implementation);
+        }
+        return result;
+    }
+
 public slots:
 
     /** Show settings for all modules

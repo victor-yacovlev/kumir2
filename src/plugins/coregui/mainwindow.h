@@ -51,6 +51,10 @@ public slots:
     void loadRecentFile(const QString & fullPath);
     inline void loadFromUrl(const QString &s) { loadFromUrl(QUrl(s), true); }
     class TabWidgetElement * loadFromUrl(const QUrl & url, bool addToRecentFiles);
+    class TabWidgetElement * loadFromCourseManager(
+            const Shared::GuiInterface::ProgramSourceText &data
+            );
+    Shared::GuiInterface::ProgramSourceText courseManagerProgramSource() const;
     bool saveCurrentFile();
     bool saveCurrentFileAs();
     bool saveCurrentFileTo(const QString & fileName);

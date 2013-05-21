@@ -65,7 +65,7 @@ private:
     void setAllActorsAnimationFlag(bool animationEnabled);
     void timerEvent(QTimerEvent *e);
     void prepareKumirRunner(Shared::GeneratorInterface::DebugLevel);
-    enum State { Idle, FastRun, RegularRun, StepRun } e_state;
+    enum State { Idle, FastRun, RegularRun, StepRun, TestingRun } e_state;
     const AST::Data * m_ast;
     QString s_endStatus;
     QProcess * m_process;

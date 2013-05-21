@@ -67,6 +67,12 @@ public /*methods*/:
     inline void setMutex(CriticalSectionLocker * m)
     { stacksMutex_ = m;}
 
+    /**
+     * Returns top-level value stack scalar item or raises an exception
+     * in case value is not scalar or stack if empty
+     */
+    inline AnyValue topLevelStackValue() const /* throws std::string */;
+
     /** The following two functions are basic to use for actual run:
      *  while ( vm.hasMoreInstructions() )
      *      vm.evaluateNextInstruction();
@@ -203,6 +209,21 @@ private /*instruction methods*/:
 
 
 /**** IMPLEMENTATION ******/
+
+AnyValue KumirVM::topLevelStackValue() const {
+    AnyValue result;
+    if (valuesStack_.size() > 0) {
+        const Variable & var = valuesStack_.top();
+        if (var.dimension() > 0) {
+            throw std::string("Access to non scalar value in values stack");
+        }
+        result = var.value();
+    }
+    else {
+        throw std::string("Access to empty values stack");
+    }
+    return result;
+}
 
 Context & KumirVM::currentContext() {
     return contextsStack_.top();
