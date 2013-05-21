@@ -3,6 +3,7 @@
 
 #include "extensionsystem/kplugin.h"
 #include "interfaces/editorinterface.h"
+#include "dataformats/kumfile.h"
 
 namespace Editor {
 
@@ -26,8 +27,10 @@ public:
     QWidget* settingsEditorPage();
     bool hasUnsavedChanges(int documentId) const;
     void setDocumentChangesSaved(int documentId);
-    virtual QString loadDocument(int documentId, const QString & fileName);
+    QString loadDocument(int documentId, const QString & fileName);
+    QString loadDocument(int documentId, const KumFile::Data &data);
     QString saveDocument(int documentId, const QString & fileName);
+    KumFile::Data documentContent(int documentId) const;
     Shared::AnalizerInterface * analizer(int documentId);
     quint32 errorsLinesCount(int documentId) const;
     void highlightLineGreen(int documentId, int lineNo);

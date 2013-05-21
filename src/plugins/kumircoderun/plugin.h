@@ -28,6 +28,7 @@ public:
     inline QDateTime loadedProgramVersion() const { return loadedVersion_; }
 
     inline bool isGuiRequired() { return false; }
+    QVariant valueStackTopItem() const;
 
     QMap<QString,QVariant> getScalarLocalValues(int frameNo) const;
     QMap<QString,QVariant> getScalarGlobalValues(const QString & moduleName) const;

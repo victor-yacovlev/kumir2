@@ -196,6 +196,16 @@ QString EditorPlugin::saveDocument(int documentId, const QString &fileName)
     return "";
 }
 
+KumFile::Data EditorPlugin::documentContent(int documentId) const
+{
+    Q_ASSERT(documentId>=0);
+    Q_ASSERT(documentId<d->editors.size());
+    Q_CHECK_PTR(d->editors[documentId].e);
+    Ed ed = d->editors[documentId];
+    Editor * editor = ed.e;
+    return editor->toKumFile();
+}
+
 QString EditorPlugin::loadDocument(int documentId, const QString &fileName)
 {
     Q_ASSERT(documentId>=0);
@@ -212,6 +222,17 @@ QString EditorPlugin::loadDocument(int documentId, const QString &fileName)
     else {
         return tr("Can't open file %1 for reading").arg(fileName);
     }
+    return "";
+}
+
+QString EditorPlugin::loadDocument(int documentId, const KumFile::Data & data)
+{
+    Q_ASSERT(documentId>=0);
+    Q_ASSERT(documentId<d->editors.size());
+    Q_CHECK_PTR(d->editors[documentId].e);
+    Ed ed = d->editors[documentId];
+    Editor * editor = ed.e;
+    editor->setKumFile(data);
     return "";
 }
 

@@ -44,6 +44,7 @@ public:
         }
         else {
             connect(w, SIGNAL(documentCleanChanged(bool)), this, SIGNAL(documentCleanChanged(bool)));
+            connect(w, SIGNAL(documentCleanChanged(bool)), this, SLOT(setDocumentChangesClean(bool)));
         }
         QVBoxLayout * l = new QVBoxLayout;
         l->setContentsMargins(0,0,0,0);
@@ -101,7 +102,17 @@ public:
     QList<QWidget*> statusbarWidgets;
     MainWindow::DocumentType type;
     int documentId;
+    QDateTime saved;
+    QDateTime changed;
+    QUrl url;
     inline class KumirProgram * kumirProgram() { return m_kumirProgram; }
+    inline bool isCourseManagerTab() const {
+        const QVariant prop = component->property("fromCourseManager");
+        return prop.isValid() && prop.toBool() == true;
+    }
+    inline QString title() const {
+        return component->property("title").toString();
+    }
 signals:
     void changeTitle(const QString & txt);
     void documentCleanChanged(bool v);
@@ -110,6 +121,16 @@ protected:
         QWidget::focusInEvent(e);
         component->setFocus();
     }
+protected slots:
+    inline void setDocumentChangesClean(bool clean) {
+        if (clean) {
+            changed = saved;
+        }
+        else {
+            changed = QDateTime::currentDateTime();
+        }
+    }
+
 private:
     class KumirProgram * m_kumirProgram;
 };

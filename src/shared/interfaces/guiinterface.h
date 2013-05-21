@@ -21,6 +21,7 @@ public:
         QDateTime changed;
         KumFile::Data content;
         QString title;
+        QUrl url;
     };
 public slots:
     virtual void setProgramSource(const ProgramSourceText &source) = 0;

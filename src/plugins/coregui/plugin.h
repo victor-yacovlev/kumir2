@@ -10,6 +10,7 @@
 #include "interfaces/actorinterface.h"
 #include "interfaces/runinterface.h"
 #include "interfaces/guiinterface.h"
+#include "interfaces/coursesinterface.h"
 #include "widgets/secondarywindow.h"
 #include "docbookviewer/docbookview.h"
 #include "terminal.h"
@@ -80,6 +81,7 @@ protected:
     class DebuggerWindow * debugger_;
     DocBookViewer::DocBookView * helpViewer_;
     QSplitter * bottomSplitter_;
+    Shared::CoursesInterface* courseManager_;
 
     bool sessionsDisableFlag_;
 

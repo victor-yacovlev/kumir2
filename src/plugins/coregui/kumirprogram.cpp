@@ -3,6 +3,7 @@
 #include "interfaces/actorinterface.h"
 #include "dataformats/ast_algorhitm.h"
 #include "debuggerwindow.h"
+#include "interfaces/coursesinterface.h"
 
 namespace CoreGUI {
 
@@ -294,7 +295,7 @@ void KumirProgram::testingRun()
         }
         prepareKumirRunner(Shared::GeneratorInterface::LinesOnly);
     }
-    e_state = RegularRun;
+    e_state = TestingRun;
     PluginManager::instance()->switchGlobalState(GS_Running);
     setAllActorsAnimationFlag(false);
     plugin_bytecodeRun->runTesting();
@@ -381,7 +382,7 @@ void KumirProgram::stepOut()
 
 void KumirProgram::stop()
 {
-    if (e_state==StepRun || e_state==RegularRun) {
+    if (e_state==StepRun || e_state==RegularRun || e_state==TestingRun) {
         plugin_bytecodeRun->terminate();
     }
     else if (e_state==FastRun) {
@@ -407,7 +408,7 @@ void KumirProgram::setAllActorsAnimationFlag(bool animationEnabled)
 
 void KumirProgram::handleRunnerStopped(int rr)
 {
-
+    const State previousState = e_state;
     Shared::RunInterface::StopReason reason = Shared::RunInterface::StopReason (rr);
     if (reason==Shared::RunInterface::SR_InputRequest) {
         PluginManager::instance()->switchGlobalState(GS_Input);
@@ -444,8 +445,23 @@ void KumirProgram::handleRunnerStopped(int rr)
         if (w_debuggerWindow) w_debuggerWindow->reset();
     }
 
-    if (e_state==Idle) {
-//        m_variablesWebObject->reset(0);
+    typedef Shared::CoursesInterface CI;
+    CI * courseManager =
+            ExtensionSystem::PluginManager::instance()->findPlugin<CI>();
+    typedef Shared::RunInterface RI;
+    RI * runner =
+            ExtensionSystem::PluginManager::instance()->findPlugin<RI>();
+    if (courseManager && previousState == TestingRun) {
+        if (reason == Shared::RunInterface::SR_UserTerminated) {
+            courseManager->setTestingResult(CI::UserTerminated, 0);
+        }
+        else if (reason == Shared::RunInterface::SR_Done) {
+            courseManager->setTestingResult(CI::SuccessfullyFinished,
+                                            runner->valueStackTopItem().toInt());
+        }
+        else if (reason == Shared::RunInterface::SR_Error) {
+            courseManager->setTestingResult(CI::AbortedOnError, 0);
+        }
     }
 
 }

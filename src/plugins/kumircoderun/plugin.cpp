@@ -121,6 +121,11 @@ QMap<QString,QVariant> Plugin::getScalarLocalValues(int frameNo) const
     return result;
 }
 
+QVariant Plugin::valueStackTopItem() const
+{
+    return pRun_->valueStackTopItem();
+}
+
 QMap<QString,QVariant> Plugin::getScalarGlobalValues(const QString & moduleName) const
 {
     pRun_->lockVMMutex();

@@ -532,6 +532,7 @@ bool MainWindow::saveCurrentFileTo(const QString &fileName)
     int documentId = twe->property("documentId").toInt();
     QString error = m_plugin->plugin_editor->saveDocument(documentId, fileName);
     if (error.isEmpty()) {
+        twe->saved = QDateTime::currentDateTime();
         m_plugin->plugin_editor->setDocumentChangesSaved(documentId);
         return true;
     }
@@ -1373,6 +1374,89 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
     }
     setTitleForTab(ui->tabWidget->currentIndex());
     ExtensionSystem::PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);
+    return result;
+}
+
+TabWidgetElement* MainWindow::loadFromCourseManager(
+        const GuiInterface::ProgramSourceText &data
+        )
+{
+    typedef GuiInterface::ProgramSourceText ST;
+    TabWidgetElement * result = nullptr;
+    for (int i=0; i<ui->tabWidget->count(); i++) {
+        TabWidgetElement * courseTab =
+                qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+        if (courseTab && courseTab->isCourseManagerTab()) {
+            result = courseTab;
+            break;
+        }
+    }
+    if (data.language == ST::Kumir) {
+        QWidget * vc = nullptr;
+        int id = -1;
+        if (result) {
+            // Reuse opened course manager tab
+            id = result->documentId;
+            vc = result->component;
+        }
+        else {
+            // Create new course manager tab
+            EditorComponent doc =
+                    m_plugin->plugin_editor->newDocument(
+                        "KumirAnalizer",
+                        QFileInfo(data.url.toLocalFile())
+                            .absoluteDir().absolutePath(),
+                        false
+                        );
+            vc = doc.widget;
+            id = doc.id;
+            QList<QAction*> toolBarActions = doc.toolbarActions;
+            QList<QMenu*> menus = doc.menus;
+            result = addCentralComponent(
+                        data.title,
+                        vc,
+                        toolBarActions,
+                        menus,
+                        doc.statusbarWidgets,
+                        Kumir,
+                        true
+                        );
+        }
+        m_plugin->plugin_editor->loadDocument(id, data.content);
+        result->saved = data.saved;
+        result->changed = data.changed;
+        result->url = data.url;
+        vc->setProperty("title", data.title);
+        vc->setProperty("documentId", id);
+        vc->setProperty("fromCourseManager", true);
+        vc->setProperty("realFileName", data.url.toLocalFile());
+    }
+    return result;
+}
+
+Shared::GuiInterface::ProgramSourceText
+MainWindow::courseManagerProgramSource() const
+{
+    typedef GuiInterface::ProgramSourceText ST;
+    ST result;
+    result.language = ST::Kumir; // TODO implement for other languages
+    TabWidgetElement * tab = nullptr;
+    for (int i=0; i<ui->tabWidget->count(); i++) {
+        TabWidgetElement * courseTab =
+                qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+        if (courseTab && courseTab->isCourseManagerTab()) {
+            tab = courseTab;
+            break;
+        }
+    }
+    if (tab) {
+        result.saved = tab->saved;
+        result.changed = tab->changed;
+        result.url = tab->url;
+        result.title = tab->title();
+        int id = tab->documentId;
+        result.content = m_plugin->plugin_editor->documentContent(id);
+    }
     return result;
 }
 

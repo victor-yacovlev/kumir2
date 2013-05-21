@@ -462,6 +462,38 @@ bool Run::canStepOut() const
     return vm->canStepOut();
 }
 
+QVariant Run::valueStackTopItem() const
+{
+    VMMutex_->lock();
+    AnyValue value;
+    try {
+        value = vm->topLevelStackValue();
+    }
+    catch (std::string & e) {
+        qDebug() << e.c_str();
+    }
+    VMMutex_->unlock();
+    QVariant result;
+    if (value.isValid()) {
+        if (value.type() == VT_int) {
+            result = QVariant(value.toInt());
+        }
+        else if (value.type() == VT_real) {
+            result = QVariant(value.toReal());
+        }
+        else if (value.type() == VT_bool) {
+            result = QVariant(value.toBool());
+        }
+        else if (value.type() == VT_char) {
+            result = QVariant(QChar(value.toChar()));
+        }
+        else if (value.type() == VT_string) {
+            result = QVariant(QString::fromStdWString(value.toString()));
+        }
+    }
+    return result;
+}
+
 
 
 } // namespace KumirCodeRun

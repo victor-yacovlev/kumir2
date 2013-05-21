@@ -28,6 +28,7 @@ public:
     virtual bool hasMoreInstructions() const = 0;
     virtual int currentLineNo() const = 0;
     virtual QString error() const = 0;
+    virtual QVariant valueStackTopItem() const = 0;
 
     virtual QMap<QString,QVariant> getScalarLocalValues(int frameNo) const = 0;
     virtual QMap<QString,QVariant> getScalarGlobalValues(const QString & moduleName) const = 0;
