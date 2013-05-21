@@ -7,10 +7,14 @@ include(../../kumir2_plugin.cmake)
 
 set(SOURCES
     coursemanager_plugin.cpp
+    task/mainwindow.cpp
+
 )
 
 set(MOC_HEADERS
     coursemanager_plugin.h
+    task/mainwindow.h
+
 )
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})

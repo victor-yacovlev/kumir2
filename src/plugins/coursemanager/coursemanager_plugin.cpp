@@ -1,7 +1,10 @@
 #include "coursemanager_plugin.h"
 
+
 namespace CourseManager {
 
+   
+    
 Plugin::Plugin()
     : ExtensionSystem::KPlugin()
     , mainWindow_(nullptr)
@@ -10,6 +13,8 @@ Plugin::Plugin()
 {
     courseMenu=new QMenu(trUtf8("Практикум"));
     MenuList.append(courseMenu);
+    MW=new MainWindowTask();
+    mainWindow_=MW;
 }
 QList<QMenu*>  Plugin::Menus()const
 {

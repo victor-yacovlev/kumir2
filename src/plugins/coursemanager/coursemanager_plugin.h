@@ -6,8 +6,13 @@
 #include <extensionsystem/kplugin.h>
 #include <interfaces/coursesinterface.h>
 #include <extensionsystem/declarativesettingspage.h>
-
+#include "extensionsystem/pluginmanager.h"
+#include "shared/guiinterface.h"
+typedef Shared::GuiInterface GI;
+//#include "task/mainwindow.h"
+class MainWindowTask;
 namespace CourseManager {
+    
 
 class Plugin
         : public ExtensionSystem::KPlugin
@@ -41,6 +46,7 @@ private /*fields*/:
     ExtensionSystem::DeclarativeSettingsPage* settingsEditorPage_;
     QMenu* courseMenu;
     QList<QMenu*> MenuList;
+    MainWindowTask* MW;
 
 };
 
