@@ -1,5 +1,5 @@
 #include "coursemanager_plugin.h"
-
+#include "task/mainwindow.h"
 
 namespace CourseManager {
 
@@ -22,6 +22,13 @@ QList<QMenu*>  Plugin::Menus()const
     return MenuList; 
 }; 
 
+QString Plugin::getText()
+{
+ GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
+    gui->programSource();
+}    
+    
+    
 QWidget* Plugin::mainWindow() const
 {
     return mainWindow_;

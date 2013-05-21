@@ -66,7 +66,7 @@ class MainWindowTask : public QMainWindow {
 public:
     MainWindowTask(QWidget *parent = 0);
     ~MainWindowTask();
-    void setInterface(Shared::CoursesInterface * csInterface){interface=csInterface;};
+    void setInterface(CourseManager::Plugin * csInterface){interface=csInterface;};
     void setCS(QString cs){CS=cs;};
    KumZadanie task;
     void setup();
@@ -119,7 +119,7 @@ private:
     QString curDir;
     courseModel* course;
     QModelIndex curTaskIdx;
-    Shared::CoursesInterface * interface;
+    CourseManager::Plugin * interface;
     QString CS;
     bool onTask;
     courseChanges changes;
@@ -128,8 +128,8 @@ private:
     QFile cursWorkFile;
     QMenu customMenu;
     bool isTeacher;
-    EditDialog* editDialog;
-    newKursDialog* newDialog;
+    //EditDialog* editDialog;
+    //newKursDialog* newDialog;
     QSettings* settings;
      QLineEdit *editRoot;
      QFileInfo baseKursFile; //4 mode

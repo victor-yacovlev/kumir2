@@ -50,10 +50,10 @@ cursFile="";
            connect(ui->actionSaveK,SIGNAL(triggered()),this,SLOT(saveKurs()));
             connect(ui->actionSaveKas,SIGNAL(triggered()),this,SLOT(saveKursAs()));
            connect(ui->actionRemove,SIGNAL(triggered()),this,SLOT(deleteTask()));
-           newDialog=new newKursDialog();
-           connect(ui->actionNewK,SIGNAL(triggered()),this,SLOT(newKurs()));
-           editDialog = new EditDialog(this);
-           connect(ui->actionEdit,SIGNAL(triggered()),this,SLOT(editTask()));
+         //  newDialog=new newKursDialog();
+          // connect(ui->actionNewK,SIGNAL(triggered()),this,SLOT(newKurs()));
+         //  editDialog = new EditDialog(this);
+          // connect(ui->actionEdit,SIGNAL(triggered()),this,SLOT(editTask()));
            ui->menuKurs->menuAction()->setVisible(false);
           // ui->menuKurs->menuAction()->setEnabled(false);
            setEditTaskEnabled(false);
@@ -370,7 +370,7 @@ void MainWindowTask::startTask()
      }
 
      QString progFile=course->progFile(curTaskIdx.internalId());
-interface->setTesting(loadTestAlg(course->getTaskCheck(curTaskIdx)));
+//interface->setTesting(loadTestAlg(course->getTaskCheck(curTaskIdx)));
 QFileInfo ioDir(curDir+"/"+course->progFile(curTaskIdx.internalId()));
 qDebug()<<"PRG FILE"<<course->progFile(curTaskIdx.internalId());
 if(ioDir.isFile())
@@ -764,51 +764,51 @@ void MainWindowTask:: setTeacher(bool mode)
     isTeacher=mode;};
 void MainWindowTask::editTask()
 {
-if(curTaskIdx.internalId()==0)//ROOT
-    {
-
-    QRect rect=ui->treeView->visualRect(curTaskIdx);
-    editRoot->resize(rect.width(),rect.height());
-     editRoot->setText(course->rootText());
-    editRoot->move(rect.topLeft());
-    editRoot->show();
-    return;
-     };
-    QModelIndex par=curTaskIdx.parent();
-
-editDialog->setTitle(course->getTitle(curTaskIdx.internalId()));
-editDialog->setDesc(course->getTaskText(curTaskIdx));
-editDialog->setProgram(course->progFile(curTaskIdx.internalId()));
-QStringList isps=course->Modules(curTaskIdx.internalId());
-
-if(isps.count()>0)editDialog->setUseIsps(isps.first());
-   else editDialog->setUseIsps("");
-
-if(course->Modules(curTaskIdx.internalId()).count()>0)editDialog->setEnvs(course->Fields(curTaskIdx.internalId(),isps.first()));
- else editDialog->setEnvs(QStringList());
-editDialog->setCurDir(curDir);
- if(editDialog->exec ())
- {
-  course->setUserText(curTaskIdx.internalId(),"");
-  course->setTitle(curTaskIdx.internalId(),editDialog->getTitle());
-  course->setDesc(curTaskIdx.internalId(),editDialog->getDesc());
-  qDebug()<<"Desc"<<editDialog->getDesc();
-  course->setProgram(curTaskIdx.internalId(),editDialog->getProgram());
-  qDebug()<<"EDIT ISPS"<<editDialog->getUseIsps();
-
-
-  course->setIsps(curTaskIdx,editDialog->getUseIsps());
-  qDebug()<<"PRG"<<editDialog->getProgram();
-  if(course->Modules(curTaskIdx.internalId()).count()>0)course->setIspEnvs(curTaskIdx,course->Modules(curTaskIdx.internalId()).first(),editDialog->getEnvs());
- showText(curTaskIdx);
-  ui->treeView->collapse(par);
-  ui->treeView->expand(par);
-  qDebug()<<"Set task isps:"<<course->Modules(curTaskIdx.internalId());
-  qDebug()<<"EDIT DIALOG EXEC OK";
-  saveBaseKurs();
-  resetTask();
- };
-
+//if(curTaskIdx.internalId()==0)//ROOT
+//    {
+//
+//    QRect rect=ui->treeView->visualRect(curTaskIdx);
+//    editRoot->resize(rect.width(),rect.height());
+//     editRoot->setText(course->rootText());
+//    editRoot->move(rect.topLeft());
+//    editRoot->show();
+//    return;
+//     };
+//    QModelIndex par=curTaskIdx.parent();
+//
+//editDialog->setTitle(course->getTitle(curTaskIdx.internalId()));
+//editDialog->setDesc(course->getTaskText(curTaskIdx));
+//editDialog->setProgram(course->progFile(curTaskIdx.internalId()));
+//QStringList isps=course->Modules(curTaskIdx.internalId());
+//
+//if(isps.count()>0)editDialog->setUseIsps(isps.first());
+//   else editDialog->setUseIsps("");
+//
+//if(course->Modules(curTaskIdx.internalId()).count()>0)editDialog->setEnvs(course->Fields(curTaskIdx.internalId(),isps.first()));
+// else editDialog->setEnvs(QStringList());
+//editDialog->setCurDir(curDir);
+// if(editDialog->exec ())
+// {
+//  course->setUserText(curTaskIdx.internalId(),"");
+//  course->setTitle(curTaskIdx.internalId(),editDialog->getTitle());
+//  course->setDesc(curTaskIdx.internalId(),editDialog->getDesc());
+//  qDebug()<<"Desc"<<editDialog->getDesc();
+//  course->setProgram(curTaskIdx.internalId(),editDialog->getProgram());
+//  qDebug()<<"EDIT ISPS"<<editDialog->getUseIsps();
+//
+//
+//  course->setIsps(curTaskIdx,editDialog->getUseIsps());
+//  qDebug()<<"PRG"<<editDialog->getProgram();
+//  if(course->Modules(curTaskIdx.internalId()).count()>0)course->setIspEnvs(curTaskIdx,course->Modules(curTaskIdx.internalId()).first(),editDialog->getEnvs());
+// showText(curTaskIdx);
+//  ui->treeView->collapse(par);
+//  ui->treeView->expand(par);
+//  qDebug()<<"Set task isps:"<<course->Modules(curTaskIdx.internalId());
+//  qDebug()<<"EDIT DIALOG EXEC OK";
+//  saveBaseKurs();
+//  resetTask();
+// };
+//
 };
 
 void MainWindowTask::setEditTaskEnabled(bool flag)
@@ -826,31 +826,31 @@ void MainWindowTask::setEditTaskEnabled(bool flag)
 void MainWindowTask::newKurs()
 {
 
- if(newDialog->exec())
- {
-    QFile newKurs(newDialog->fileName());
-
-    if  (!newKurs.open(QIODevice::WriteOnly))
-    {
-    QMessageBox::information( 0, "", trUtf8("Ошибка записи: ") + newKurs.fileName(), 0,0,0);
-    return;
-    };
-    QString toWr="<?xml version='1.0' encoding='UTF-8'?>\n";
-    newKurs.write(toWr.toUtf8());
-    toWr="<KURS xml:id=\"0\" xml:name=\""+newDialog->name()+"\">\n";
-    newKurs.write(toWr.toUtf8());
-
-    toWr=QString::fromUtf8("<T xml:id=\"1\" xml:name=\"Новое задание\">\n<DESC>Нет Описания</DESC>\n<CS>Кумир</CS>\n <ISP xml:ispname=\"Robot\">\n</ISP>\n<READY>false</READY>\n</T>\n");
-    newKurs.write(toWr.toUtf8());
-
-    toWr="</KURS>\n";
-    newKurs.write(toWr.toUtf8());
-    newKurs.close();
-    loadCourseData(newKurs.fileName());
-    baseKursFile=QFileInfo(newKurs);
-    curDir=baseKursFile.absolutePath();
-    ui->actionEdit->setEnabled(true);
- }
+// if(newDialog->exec())
+// {
+//    QFile newKurs(newDialog->fileName());
+//
+//    if  (!newKurs.open(QIODevice::WriteOnly))
+//    {
+//    QMessageBox::information( 0, "", trUtf8("Ошибка записи: ") + newKurs.fileName(), 0,0,0);
+//    return;
+//    };
+//    QString toWr="<?xml version='1.0' encoding='UTF-8'?>\n";
+//    newKurs.write(toWr.toUtf8());
+//    toWr="<KURS xml:id=\"0\" xml:name=\""+newDialog->name()+"\">\n";
+//    newKurs.write(toWr.toUtf8());
+//
+//    toWr=QString::fromUtf8("<T xml:id=\"1\" xml:name=\"Новое задание\">\n<DESC>Нет Описания</DESC>\n<CS>Кумир</CS>\n <ISP xml:ispname=\"Robot\">\n</ISP>\n<READY>false</READY>\n</T>\n");
+//    newKurs.write(toWr.toUtf8());
+//
+//    toWr="</KURS>\n";
+//    newKurs.write(toWr.toUtf8());
+//    newKurs.close();
+//    loadCourseData(newKurs.fileName());
+//    baseKursFile=QFileInfo(newKurs);
+//    curDir=baseKursFile.absolutePath();
+//    ui->actionEdit->setEnabled(true);
+// }
 
 };
   void  MainWindowTask::createMoveMenu()
