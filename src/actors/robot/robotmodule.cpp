@@ -764,8 +764,18 @@ namespace ActorRobot {
         mode=Mode;
         sett=RobotModule::robotSettings();
         QGraphicsView * view=views().first();
+       if(mode==NORMAL_MODE)
+       {
+              if(this->items().indexOf(keyCursor)>-1)this->removeItem(keyCursor);
+       
+           radSpinBox->hide();
+           tempSpinBox->hide();
+           redrawEditFields();
+           redrawRTFields();  
+       }
         if(mode==NEDIT_MODE)
         {
+             if(this->items().indexOf(keyCursor)>-1)this->removeItem(keyCursor);
           radSpinBox->hide();
           tempSpinBox->hide();
           redrawEditFields();
@@ -774,6 +784,8 @@ namespace ActorRobot {
         
         if(mode==RAD_MODE)
         {
+               if(this->items().indexOf(keyCursor)>-1)this->removeItem(keyCursor);
+          
             tempSpinBox->hide();
             radSpinBox->setParent(view);
             radSpinBox->move(100,2);
@@ -789,6 +801,8 @@ namespace ActorRobot {
         }
         if(mode==TEMP_MODE)
         {
+            if(this->items().indexOf(keyCursor)>-1)this->removeItem(keyCursor);
+         
             radSpinBox->hide();
             tempSpinBox->setParent(view);
             tempSpinBox->move(100,2);
@@ -805,6 +819,7 @@ namespace ActorRobot {
         if(mode==TEXT_MODE)
         {
             tempSpinBox->hide();
+            radSpinBox->hide();
             redrawRTFields();
             setTextEditMode(true);
         }
@@ -2471,7 +2486,7 @@ namespace ActorRobot {
     {
         timer->start(500);
         
-        
+        if(this->items().indexOf(keyCursor)>-1)this->removeItem(keyCursor);
         
         
         keyCursor=new QGraphicsLineItem(upLeftCorner(row,col).x()+4,upLeftCorner(row,col).y()+18,upLeftCorner(row,col).x()+4,upLeftCorner(row,col).y()+29);
@@ -2481,7 +2496,7 @@ namespace ActorRobot {
     };
     void RoboField::timerTic()
     {
-        if(!EDIT_MODE){
+        if(mode!=TEXT_MODE){
          keyCursor->hide();
             timer->stop();  
         }
@@ -3087,7 +3102,15 @@ bool RobotModule::runIsColor()
         col=field->robotY()+1;
     };
     
-    
+    QChar RobotModule::runUpChar(const int row, const int col)
+    {
+        qDebug()<<field->cellAt(row-1,col-1)->upChar;
+        return field->cellAt(row-1,col-1)->upChar;  
+    };
+    QChar RobotModule::runDownChar(const int row, const int col)
+    {qDebug()<<field->cellAt(row-1,col-1)->downChar;
+        return field->cellAt(row-1,col-1)->downChar;
+    };   
     
  int RobotModule::LoadFromFile(QString p_FileName)
     {

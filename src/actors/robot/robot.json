@@ -88,6 +88,24 @@
 				{ "name": "row", "baseType": "int", "access": "out" },
 				{ "name": "col", "baseType": "int", "access": "out" }
 			]
+		},		
+		{
+			"name": {"ascii": "upChar", "ru_RU": "@@верхняя буква"},
+			"async": false,
+			"returnType": "char",
+			"arguments": [
+				{ "name": "row", "baseType": "int"},
+				{ "name": "col", "baseType": "int"}
+			]
+		},		
+		{
+			"name": {"ascii": "downChar", "ru_RU": "@@нижняя буква"},
+			"async": false,
+			"returnType": "char",
+			"arguments": [
+				{ "name": "row", "baseType": "int"},
+				{ "name": "col", "baseType": "int"}
+			]
 		}
 		
 	],
