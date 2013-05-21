@@ -213,7 +213,7 @@ QString ContentView::programTextForLanguage(const QString &source,
                                          "целтаб,вещтаб,"
                                          "литтаб,симтаб,логтаб,"
                                          "арг,рез,аргрез,пока,для,от,до,знач,"
-                                         "да,нет,не,и,или,раз"
+                                         "да,нет,не,и,или,раз,нс,файл"
                                          ).split(",");
         inlineCommentSymbol = "|";
     }
