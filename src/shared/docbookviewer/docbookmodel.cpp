@@ -1,6 +1,9 @@
 #include "docbookmodel.h"
 #include "contentrenderer.h"
 
+#include <QImage>
+#include <QPainter>
+
 namespace DocBookViewer {
 
 DocBookModel::DocBookModel(ModelPtr parent, const ModelType modelType)
@@ -55,6 +58,16 @@ const QString& DocBookModel::xrefLinkEnd() const
 const QString& DocBookModel::xrefEndTerm() const
 {
     return xrefEndTerm_;
+}
+
+const QString DocBookModel::format() const
+{
+    return format_.toLower().trimmed();
+}
+
+const QUrl& DocBookModel::href() const
+{
+    return href_;
 }
 
 ModelPtr DocBookModel::parent() const
@@ -124,6 +137,18 @@ void DocBookModel::updateSectionLevel()
     foreach (ModelPtr child, children_) {
         child->updateSectionLevel();
     }
+}
+
+const QImage& DocBookModel::imageData() const
+{
+    if (svgRenderer_ && cachedImage_.isNull()) {
+        const QSize size = svgRenderer_->defaultSize();
+        QImage img(size, QImage::Format_ARGB32);
+        QPainter painter(&img);
+        svgRenderer_->render(&painter);
+        cachedImage_ = img;
+    }
+    return cachedImage_;
 }
 
 }

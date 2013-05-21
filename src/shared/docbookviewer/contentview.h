@@ -28,6 +28,8 @@ signals:
 private:
     QString wrapHTML(const QString & body) const;
     QString render(ModelPtr data) const;
+    QString renderElement(ModelPtr data) const;
+
     QString renderChapter(ModelPtr data) const;
     QString renderTOC(ModelPtr data) const;
     QString renderTOCElement(ModelPtr data) const;
@@ -39,23 +41,50 @@ private:
     QString renderEmphasis(ModelPtr data) const;
     QString renderText(ModelPtr data) const;
     QString normalizeText(QString text) const;
-    QString renderElement(ModelPtr data) const;
     QString renderExample(ModelPtr data) const;
     QString renderChilds(ModelPtr data) const;
     QString renderSection(ModelPtr data) const;
     QString renderXref(ModelPtr data) const;
     QString renderProgramListing(ModelPtr data) const;
+    QString renderCode(ModelPtr data) const;
     QString renderKeyCombo(ModelPtr data) const;
     QString renderKeySym(ModelPtr data) const;
+
+    QString renderInformalTable(ModelPtr data) const;
+    QString renderTable(ModelPtr data) const;
+    QString renderTableContent(ModelPtr data) const;
+    QString renderTHead(ModelPtr data) const;
+    QString renderTBody(ModelPtr data) const;
+    QString renderRow(ModelPtr data) const;
+    QString renderEntry(ModelPtr data) const;
+
+    QString renderInlineMediaObject(ModelPtr data) const;
+    QString renderImageObject(ModelPtr data) const;
+
     bool isPlainPage(ModelPtr data) const;
 
     ModelPtr topLevelModel(ModelPtr data) const;
     ModelPtr onePageParentModel(ModelPtr data) const;
     ModelPtr findModelById(ModelPtr top, const QString & modelId) const;
+    ModelPtr findImageData(ModelPtr parent) const;
     QString modelToLink(ModelPtr data) const;
+
 
     bool hasModelOnThisPage(ModelPtr data) const;
     bool hasChild(ModelPtr who, ModelPtr child) const;
+
+    static QString formatProgramSourceText(
+            const QString &source,
+            const QStringList &keywords,
+            const QString & inlineCommentSymbol,
+            const QString & multilineCommentStartSymbol,
+            const QString & multilineCommentEndSymbol
+            );
+
+    static QString programTextForLanguage(const QString &source,
+                                          const QString &language);
+
+    QVariant loadResource(int type, const QUrl &name);
 
 private /*fields*/:
     QList<ModelPtr> loadedModels_;

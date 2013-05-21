@@ -124,6 +124,9 @@ QString ContentView::renderElement(ModelPtr data) const
     else if (data->modelType() == DocBookModel::ProgramListing) {
         return renderProgramListing(data);
     }
+    else if (data->modelType() == DocBookModel::Code) {
+        return renderCode(data);
+    }
     else if (data->modelType() == DocBookModel::Xref) {
         return renderXref(data);
     }
@@ -132,6 +135,30 @@ QString ContentView::renderElement(ModelPtr data) const
     }
     else if (data->modelType() == DocBookModel::KeySym) {
         return renderKeySym(data);
+    }
+    else if (data->modelType() == DocBookModel::InformalTable) {
+        return renderInformalTable(data);
+    }
+    else if (data->modelType() == DocBookModel::Table) {
+        return renderTable(data);
+    }
+    else if (data->modelType() == DocBookModel::THead) {
+        return renderTHead(data);
+    }
+    else if (data->modelType() == DocBookModel::TBody) {
+        return renderTBody(data);
+    }
+    else if (data->modelType() == DocBookModel::Row) {
+        return renderRow(data);
+    }
+    else if (data->modelType() == DocBookModel::Entry) {
+        return renderEntry(data);
+    }
+    else if (data->modelType() == DocBookModel::InlineMediaObject) {
+        return renderInlineMediaObject(data);
+    }
+    else if (data->modelType() == DocBookModel::ImageObject) {
+        return renderImageObject(data);
     }
     else {
         return "";
@@ -169,13 +196,175 @@ QString ContentView::renderKeySym(ModelPtr data) const
     return result;
 }
 
+QString ContentView::programTextForLanguage(const QString &source,
+                                            const QString &language)
+{
+    QStringList keywordsList;
+    QString inlineCommentSymbol;
+    QString multilineCommentStartSymbol;
+    QString multilineCommentEndSymbol;
+
+    if (language.toLower() == "kumir") {
+        keywordsList = QString::fromUtf8("алг,нач,кон,нц,кц,кц_при,если,"
+                                         "то,иначе,все,выбор,при,утв,"
+                                         "дано,надо,ввод,вывод,пауза,"
+                                         "использовать,исп,кон_исп,"
+                                         "цел,вещ,лит,сим,лог,таб,"
+                                         "целтаб,вещтаб,"
+                                         "литтаб,симтаб,логтаб,"
+                                         "арг,рез,аргрез,пока,для,от,до,знач,"
+                                         "да,нет,не,и,или,раз,нс,файл"
+                                         ).split(",");
+        inlineCommentSymbol = "|";
+    }
+    else if (language.toLower() == "pascal") {
+        keywordsList = QString::fromAscii("begin,end,program,unit,uses,for,from,"
+                                         "to,if,then,else,"
+                                         "integer,real,string,char,boolean,"
+                                         "array,of"
+                                         ).split(",");
+        inlineCommentSymbol = "//";
+        multilineCommentStartSymbol = "{";
+        multilineCommentEndSymbol = "}";
+    }
+    return formatProgramSourceText(
+                source.trimmed(),
+                keywordsList,
+                inlineCommentSymbol,
+                multilineCommentStartSymbol,
+                multilineCommentEndSymbol
+                ).trimmed();
+}
+
 QString ContentView::renderProgramListing(ModelPtr data) const
 {
-    QString result = "<table width='100%' border='1'><tr><td>";
-    result += "<pre align='left'>" + renderChilds(data);
-    result = result.trimmed();
-    result += "</pre>\n";
-    result += "</td></tr></table>\n";
+    QString result = "<pre align='left'><font face='monospace'>";
+    const QString programText = renderChilds(data);
+    result += programTextForLanguage(programText, data->role());
+    result += "</font></pre>\n";
+    return result;
+}
+
+QString ContentView::renderCode(ModelPtr data) const
+{
+    QString result = "<font face='monospace'>";
+    const QString programText = renderChilds(data);
+    result += programTextForLanguage(programText, data->role());
+    result += "</font>";
+    return result;
+}
+
+QString ContentView::renderTableContent(ModelPtr data) const
+{
+    QString result;
+    result += "<table border='1' bordercolor='black' cellspacing='0' cellpadding='0' width='100%'>\n";
+    result += "<tr><td>\n";
+    result += "<table border='0' cellspacing='0' cellpadding='10' width='100%'>\n";
+    result += renderChilds(data);
+    result += "</table>\n";
+    result += "</td></tr>\n";
+    result += "</table>\n";
+    return result;
+}
+
+QString ContentView::renderTHead(ModelPtr data) const
+{
+    QString result;
+    result += "<thead>\n";
+    result += renderChilds(data);
+    result += "</thead>\n";
+    return result;
+}
+
+QString ContentView::renderTBody(ModelPtr data) const
+{
+    QString result;
+    result += "<tbody>\n";
+    result += renderChilds(data);
+    result += "</tbody>\n";
+    return result;
+}
+
+QString ContentView::renderRow(ModelPtr data) const
+{
+    ModelPtr parent = data->parent();
+    bool inTableHead = false;
+    bool inTableBody = false;
+    while (parent) {
+        if (parent->modelType()==DocBookModel::THead) {
+            inTableHead = true;
+            break;
+        }
+        if (parent->modelType()==DocBookModel::TBody) {
+            inTableBody = true;
+            break;
+        }
+        parent = parent->parent();
+    }
+    QString result;
+    if (inTableHead) {
+        result += "<tr valign='center' bgcolor='lightgray'>\n";
+    }
+    else {
+        result += "<tr valign='center'>\n";
+    }
+    result += renderChilds(data);
+    result += "</tr>\n";
+    return result;
+}
+
+QString ContentView::renderEntry(ModelPtr data) const
+{
+    ModelPtr parent = data->parent();
+    bool inTableHead = false;
+    bool inTableBody = false;
+    while (parent) {
+        if (parent->modelType()==DocBookModel::THead) {
+            inTableHead = true;
+            break;
+        }
+        if (parent->modelType()==DocBookModel::TBody) {
+            inTableBody = true;
+            break;
+        }
+        parent = parent->parent();
+    }
+    QString result;
+    result += "<td align='center' valign='center'>\n";
+    if (inTableHead) {
+        result += "<b>";
+    }
+    result += renderChilds(data);
+    if (inTableHead) {
+        result += "</b>";
+    }
+    result += "</td>\n";
+    return result;
+}
+
+
+QString ContentView::renderTable(ModelPtr data) const
+{
+    QString result;
+    const QString & title = data->title();
+    counters_.table ++;
+    result += "<table width='100%'>\n";
+    result += "<tr><td height='10'>&nbsp;</td></tr>\n";
+    result += "<tr><td align='left'><b>";
+    result += tr("Table&nbsp;%1. ").arg(counters_.table);
+    result += "</b>" + title + "</td></tr>\n";
+    result += "<tr><td>\n";
+    result += renderTableContent(data);
+    result += "</td></tr>\n";
+    result += "<tr><td height='10'>&nbsp;</td></tr>\n";
+    result += "</table>\n";
+    return result;
+}
+
+QString ContentView::renderInformalTable(ModelPtr data) const
+{
+    QString result;
+    result += renderTableContent(data);
     return result;
 }
 
@@ -187,7 +376,10 @@ QString ContentView::renderExample(ModelPtr data) const
     result += "<table width='100%'>\n";
     result += "<tr><td height='10'>&nbsp;</td></tr>\n";
     result += "<tr><td align='center'>\n";
+    result += "<table border='1' bordercolor='gray' cellspacing='0' cellpadding='10' width='100%'>";
+    result += "<tr><td>\n";
     result += renderChilds(data);
+    result += "</td></tr></table>\n";
     result += "</td></tr>\n";
     result += "<tr><td align='center'>\n";
     result += "<b>" + tr("Example&nbsp;%1. ").arg(counters_.example) + "</b>";
@@ -239,6 +431,60 @@ QString ContentView::renderParagraph(ModelPtr data) const
     return result;
 }
 
+QString ContentView::renderInlineMediaObject(ModelPtr data) const
+{
+    QString result;
+    ModelPtr mediaObject = findImageData(data);
+    if (mediaObject) {
+        result += renderElement(mediaObject);
+    }
+    return result;
+}
+
+QString ContentView::renderImageObject(ModelPtr data) const
+{
+    QString result;
+    ModelPtr imageData;
+    foreach (ModelPtr child, data->children()) {
+        if (child->modelType() == DocBookModel::ImageData) {
+            imageData = child;
+            break;
+        }
+    }
+    result += "<img src='model_ptr:"+modelToLink(imageData)+"'>";
+    return result;
+}
+
+QVariant ContentView::loadResource(int type, const QUrl &name)
+{
+    QVariant result;
+    bool ignore = true;
+    if (type == QTextDocument::ImageResource) {
+        const QString link = name.toString();
+        if (link.startsWith("model_ptr:")) {
+            ignore = false;
+            QByteArray linkPtr = QByteArray::fromHex(link.toAscii().mid(10));
+            QDataStream ds(linkPtr);
+            quintptr rawPointer = 0;
+            ds >> rawPointer;
+            if (rawPointer) {
+                DocBookModel * model =
+                        reinterpret_cast<DocBookModel*>(rawPointer);
+                if (model->modelType() == DocBookModel::ImageData) {
+                    const QImage & image = model->imageData();
+                    result = image;
+                }
+            }
+        }
+    }
+    if (ignore) {
+        return QTextBrowser::loadResource(type, name);
+    }
+    else {
+        return result;
+    }
+}
+
 QString ContentView::normalizeText(QString textData) const
 {
     static QMap<QString,QString> replacements;
@@ -271,7 +517,10 @@ QString ContentView::renderText(ModelPtr data) const
     ModelPtr parent = data->parent();
     bool isPreformat = false;
     while (parent) {
-        if (parent->modelType() == DocBookModel::ProgramListing) {
+        if (parent->modelType() == DocBookModel::ProgramListing
+                ||
+                parent->modelType() == DocBookModel::Code
+                ) {
             isPreformat = true;
             break;
         }
@@ -411,6 +660,26 @@ bool ContentView::hasChild(ModelPtr who, ModelPtr childToFind) const
     return false;
 }
 
+ModelPtr ContentView::findImageData(ModelPtr parent) const
+{
+    ModelPtr svgChild;
+    ModelPtr pngChild;
+    foreach (ModelPtr child, parent->children()) {
+        if (child->modelType()==DocBookModel::ImageObject) {
+            foreach (ModelPtr childChild, child->children()) {
+                if (childChild->modelType()==DocBookModel::ImageData) {
+                    if (childChild->format() == "svg") {
+                        svgChild = child;
+                    }
+                    else if (childChild->format() == "png") {
+                        pngChild = child;
+                    }
+                }
+            }
+        }
+    }
+    return pngChild ? pngChild : svgChild;
+}
 
 
 QString ContentView::renderTOC(ModelPtr data) const
@@ -463,6 +732,101 @@ void ContentView::handleInternalLink(const QUrl &url)
         ds >> ptr;
         emit requestModelLoad(ptr);
     }
+}
+
+static QString screenRegexSymbols(QString s)
+{
+    s.replace("|", "\\|");
+    s.replace("*", "\\*");
+    s.replace("+", "\\+");
+    s.replace("{", "\\{");
+    s.replace("}", "\\}");
+    s.replace("[", "\\[");
+    s.replace("]", "\\]");
+    return s;
+}
+
+QString ContentView::formatProgramSourceText(
+        const QString &source,
+        const QStringList &keywords,
+        const QString &inlineCommentSymbol,
+        const QString &multilineCommentStartSymbol,
+        const QString &multilineCommentEndSymbol)
+{
+    QStringList kwds;
+    QString result;
+    if (keywords.isEmpty()) {
+        return source;
+    }
+    static const QString kwdOpenTag = "<b>";
+    static const QString kwdCloseTag = "</b>";
+    static const QString beforeCommentTag = "<font color='gray'>";
+    static const QString afterCommentTag = "</font>";
+    static const QString commentOpenTag = "<i>";
+    static const QString commentCloseTag = "</i>";
+
+    foreach (const QString & keyword, keywords) {
+        kwds << "\\b" + keyword + "\\b";
+    }
+    if (inlineCommentSymbol.length() > 0) {
+        kwds << screenRegexSymbols(inlineCommentSymbol);
+        kwds << "\n";
+    }
+    if (multilineCommentStartSymbol.length() > 0
+            && multilineCommentEndSymbol.length() > 0)
+    {
+        kwds << screenRegexSymbols(multilineCommentStartSymbol);
+        kwds << screenRegexSymbols(multilineCommentEndSymbol);
+    }
+    QRegExp rxLexer(kwds.join("|"));
+    rxLexer.setMinimal(true);
+    bool inlineComment = false;
+    bool multilineComment = false;
+    for (int p = 0, c = 0; ;  ) {
+        c = rxLexer.indexIn(source, p);
+        if (c == -1) {
+            result += source.mid(p);
+            break;
+        }
+        else {
+            if (c > p) {
+                result += source.mid(p, c - p);
+            }
+            const QString cap = rxLexer.cap();
+            if (cap == inlineCommentSymbol) {
+                inlineComment = true;
+                result += beforeCommentTag;
+                result += cap;
+                result += commentOpenTag;
+            }
+            else if (inlineComment && cap=="\n") {
+                inlineComment = false;
+                result += commentCloseTag;
+                result += afterCommentTag;
+                result += "\n";
+            }
+            else if (cap == multilineCommentStartSymbol) {
+                multilineComment = true;
+                result += beforeCommentTag;
+                result += cap;
+                result += commentOpenTag;
+            }
+            else if (multilineComment && cap==multilineCommentEndSymbol) {
+                multilineComment = false;
+                result += commentCloseTag;
+                result += cap;
+                result += afterCommentTag;
+            }
+            else if (keywords.contains(cap)) {
+                result += kwdOpenTag + cap + kwdCloseTag;
+            }
+            else {
+                result += cap;
+            }
+            p = c + rxLexer.matchedLength();
+        }
+    }
+    return result;
 }
 
 }

@@ -4,4 +4,648 @@
                     []>
 <chapter xmlns="http://www.oasis-open.org/docbook/xml/4.5/" xmlns:xi="http://www.w3.org/2001/XInclude">
     <title>Имена, величины и выражения</title>
+    <section>
+        <title>Имена</title>
+        <section>
+            <title>Общие сведения</title>
+            <para>
+                Имя бывает у величин, таблиц, алгоритмов и исполнителей. <emphasis>Имя</emphasis> -- это
+                последовательность
+                слов, разделенных пробелами. Первое слово имени не должно начинаться с цифры. Ни
+                одно из слов не должно быть ключевым словом.
+            </para>
+            <para>
+                Примеры имен: m, погода на завтра, Ноябрь 7, Седьмое ноября, дом_57б.
+            </para>
+            <para>
+                Примеры неправильных имен:
+                <itemizedlist>
+                    <listitem>
+                        <para>7е ноября (первое слово начинается с цифры);</para>
+                    </listitem>
+                    <listitem>
+                        <para>альфа-бета ("-" -- недопустимый символ);</para>
+                    </listitem>
+                    <listitem>
+                        <para>альфа или омега (или -- ключевое слово).</para>
+                    </listitem>
+                </itemizedlist>
+            </para>
+            <para>
+                Примечание. Ключевое слово не можно вставлять внутрь многословных логических
+                имен <xref linkend="aaa"/>.
+            </para>
+        </section>
+        <section>
+            <title>Слова</title>
+            <para>
+                <emphasis>Слово</emphasis> -- это последовательность разрешенных (словарных) символов.
+                <emphasis>Словарными</emphasis> символами являются:
+                <itemizedlist>
+                    <listitem>
+                        <para>буквы (кириллические и латинские, прописные и строчные);</para>
+                    </listitem>
+                    <listitem>
+                        <para>цифры;</para>
+                    </listitem>
+                    <listitem>
+                        <para>два специальных знака: @ _.</para>
+                    </listitem>
+                </itemizedlist>
+            </para>
+            <para>
+                Примеры слов: бета123, 3кг, мама, Linux, КоСтЯ, kumir@infomir_ru.
+            </para>
+            <para>
+                Примеры не слов: альфа-123, ма%ма, С++.
+            </para>
+        </section>
+        <section>
+            <title>Ключевые слова</title>
+            <para>
+                <emphasis>Ключевые слова</emphasis> языка КУМИР -- это: алг нач кон исп кон_исп дано надо арг рез
+                аргрез знач цел вещ лог сим лит таб целтаб вещтаб логтаб симтаб литтаб и или
+                не да нет утв выход ввод вывод нс если то иначе все выбор при нц кц кц_при
+                раз пока для от до шаг.
+            </para>
+        </section>
+        <section>
+            <title>Многословные не-имена</title>
+            <para>
+                В отрицаниях логических величин, таблиц и алгоритмов функций ключевое слово не
+                можно вставлять между словами многословного имени.
+            </para>
+            <example>
+                <title>Использование многословных не-имен</title>
+                <programlisting role="kumir"><![CDATA[
+лог л, завтра будет четверг
+л := не завтра будет четверг   | Правильно
+л := завтра не будет четверг   | Правильно
+л := завтра будет не четверг   | Правильно
+л := завтра будет четверг не   | Неправильно
+л := не завтра не будет четверг| Неправильно]]>
+                </programlisting>
+            </example>
+            <para>
+                Первые три присваивания присваивают логической величине л значение, противоположное значению
+                логической величины завтра будет четверг. Четвертая строка синтаксически неверна -- не нельзя
+                ставить после имени. Последняя строка также неверна: нельзя использовать более одного не.
+            </para>
+        </section>
+    </section>
+    <section>
+        <title>Типы величин</title>
+        <para>
+            Величины, с которыми работает КуМир-программа, подразделяются на несколько типов.
+            Величина каждого из типов может принимать свой набор значений. В языке КуМир предусмотрены
+            следующие типы величин:
+            <itemizedlist>
+                <listitem>
+                    <para><code language="kumir">цел</code> -- принимает целые значения от
+                        <code language="kumir">-МАКСЦЕЛ</code>
+                        до <code language="kumir">МАКСЦЕЛ</code>, где МАКСЦЕЛ&nbsp;=&nbsp;2147483647;
+                    </para>
+                </listitem>
+                <listitem>
+                    <para><code language="kumir">вещ</code> -- принимает целые значения от
+                        <code language="kumir">-МАКСВЕЩ</code>
+                        до <code language="kumir">МАКСВЕЩ</code>,
+                        где МАКСВЕЩ -- это число, немного меньшее, чем 1.797693 x 10^308;
+                    </para>
+                </listitem>
+                <listitem>
+                    <para><code language="kumir">лог</code> -- принимает значения <code language="kumir">да</code>
+                        или <code language="kumir">нет</code>;</para>
+                </listitem>
+                <listitem>
+                    <para><code language="kumir">сим</code> -- значением может быть любой литеральный символ
+                        <xref linkend="aaa"/>;</para>
+                </listitem>
+                <listitem>
+                    <para><code language="kumir">лит</code> -- значением может быть строка литеральных символов.</para>
+                </listitem>
+            </itemizedlist>
+        </para>
+        <para>
+            Типы <code language="kumir">цел</code> и <code language="kumir">вещ</code> называются числовыми;
+            типы <code language="kumir">сим</code> и <code language="kumir">лит</code> -- текстовыми.
+        </para>
+        <para>
+            Значения величин <code language="kumir">МАКСЦЕЛ</code> и <code language="kumir">МАКСВЕЩ</code> определяются
+            способом представления чисел в современных компьютерах и примерно одинаковая в большинстве
+            современных языков программирования.
+        </para>
+        <para>
+            Язык Кумир содержит встроенные функции преобразования числовых типов в текстовые и наоборот
+            <xref linkend="aaa"/>.
+            При необходимости значения целого типа автоматически переводятся в вещественные, а символьные --
+            в строковые. Для преобразования вещественных значений в целые используется встроенная
+            функция int <xref linkend="aaa"/>.
+        </para>
+    </section>
+    <section>
+        <title>Константы</title>
+        <section>
+            <title>Виды констант</title>
+            <para>
+                Константы бывают целые, вещественные, логические, символьные и литеральные.
+            </para>
+        </section>
+        <section>
+            <title>Целые константы</title>
+            <para>
+                Целые константы бывают положительные и отрицательные. Целая константа по абсолютной величине
+                должна быть строго меньше 2^31. Целые константы можно записывать в
+                десятичной и 16-ричной форме. Шестнадцатеричные константы начинаются с символа <code>$</code>.
+            </para>
+            <para>Примеры: <code>123</code>, <code>-100000</code>, <code>$100</code>.</para>
+        </section>
+        <section>
+            <title>Вещественные константы</title>
+            <para>
+                Вещественные константы бывают положительные и отрицательные. Вещественная константа
+                по абсолютной величине должна быть меньше 21023. Вещественные константы можно
+                записывать в десятичной и экспоненциальной форме. В качестве разделителя в экспоненциальной
+                записи можно использовать любой вариант буквы <code>e</code>: строчный или прописной, латинский или
+                кириллический.
+            </para>
+            <para>
+                Ограничения для вещественных констант определяются стандартом IEEE 754-2008.
+            </para>
+            <para>Примеры: <code>123</code>, <code>-100000</code>, <code>$100</code>.</para>
+        </section>
+        <section>
+            <title>Логические константы</title>
+            <para>
+                Логическая константа — это одно из ключевых слов <code language="kumir">да</code>,
+                <code language="kumir">нет</code>.
+            </para>
+        </section>
+        <section>
+            <title>Символьные и литеральные константы</title>
+            <para>
+                В символьной константе допустим любой символ, который можно набрать на стандартной
+                клавиатуре. Такие символы называются <emphasis>допустимыми</emphasis>.
+            </para>
+            <para>
+                Символьная константа имеет вид <code>'c'</code> или <code>"с"</code> (здесь с -- допустимый символ).
+            </para>
+            <para>
+                Примеры: <code>'a'</code>, <code>"%"</code>, <code>'"'</code>, <code>"'"</code>,
+                <code>'Это я'</code>, <code>"It's me"</code>.
+            </para>
+            <para>
+                Литеральная (текстовая) константа имеет вид <code>'Т'</code> или <code>"Т"</code>. Здесь Т -- строка,
+                состоящая из допустимых символов. При этом, если константа Т ограничена простыми кавычками,
+                то Т не содержит простую кавычку, а если Т ограничена двойными кавычками, то она не
+                содержит двойную кавычку.
+            </para>
+        </section>
+    </section>
+    <section>
+        <title>Величины</title>
+        <section>
+            <title>Общие сведения</title>
+            <para>
+                Каждая величина имеет <emphasis>имя</emphasis>, <emphasis>тип</emphasis>,
+                <emphasis>вид</emphasis> и <emphasis>значение</emphasis>.
+            </para>
+            <para>
+                Имя величины служит для обозначения величины в алгоритме <xref linkend="ccc"/>.
+            </para>
+            <para>
+                Тип величины показывает, какие значения может принимать величина, и какие операции
+                можно с ней выполнять <xref linkend="ccc"/>.
+            </para>
+            <para>
+                Вид величины показывает ее информационную роль в алгоритме. Например, аргументы
+                содержат исходную информацию, необходимую для работы алгоритма, а промежуточные
+                величины предназначены для хранения текущей информации, которую обрабатывает
+                алгоритм.
+            </para>
+            <para>
+                Во время выполнения алгоритма в каждый конкретный момент величина имеет какое-то
+                <emphasis>значение</emphasis> либо <emphasis>не определена</emphasis>.
+            </para>
+            <para>
+                Имя, тип и вид величины можно однозначно определить по тексту алгоритма.
+                Это <emphasis>статические</emphasis> характеристики величины.
+            </para>
+            <para>
+                Значение определяется только во время выполнения. Это <emphasis>динамическая</emphasis> характеристика.
+            </para>
+        </section>
+        <section>
+            <title>Простые величины и таблицы. Описания величин</title>
+            <para>
+                В языке Кумир используются <emphasis>простые</emphasis> и табличные величины --
+                <emphasis>таблицы</emphasis>.
+            </para>
+            <para>
+                Для таблиц определена <emphasis>размерность</emphasis> (бывают таблицы размерностей 1, 2 и 3).
+                Для каждого измерения определены <emphasis>границы</emphasis> изменения
+                <emphasis>индекса</emphasis> таблицы по этому измерению -- два целых числа.
+            </para>
+        </section>
+        <section>
+            <title>Описания величин</title>
+            <para>
+                Каждая величина должна иметь описание. Это может быть сделано:
+                <itemizedlist>
+                    <listitem>
+                        <para>с помощью оператора описания;</para>
+                    </listitem>
+                    <listitem>
+                        <para>при задании формальных параметров алгоритма <xref linkend="vvv"/>.</para>
+                    </listitem>
+                </itemizedlist>
+            </para>
+            <para>
+                В описании задаются перечисленные выше статические характеристики переменной.
+            </para>
+            <para>
+                Кроме того, в алгоритмах-функциях используется простая переменная знач, ее тип
+                определяется типом функции <xref linkend="dfg"/>. Явного описания переменная знач не имеет. Ее
+                область действия -- тело соответствующего алгоритма-функции.
+            </para>
+            <para>
+                Команда описания простой величины состоит из ключевого слова нужного типа (цел,
+                вещ, сим, лит, лог), за которым следует список имен величин.
+            </para>
+            <example>
+                <title>Пример объявления простых величин</title>
+                <programlisting role="kumir"><![CDATA[
+цел j, k, n
+вещ длина, ширина
+лит мой текст]]>
+                </programlisting>
+            </example>
+            <para>
+                Для описания таблиц после описания типа нужно указать ключевое слово таб (слитно
+                или раздельно с ключевым словом типа). Размерность таблицы и границы изменения
+                индексов указываются после имени каждой величины.
+            </para>
+            <example>
+                <title>Пример объявления табличных величин</title>
+                <programlisting role="kumir"><![CDATA[
+цел таб k[-5:5]
+вещтаб tab[1:4, 1:12]]]>
+                </programlisting>
+            </example>
+            <para>
+                Здесь k -- линейная таблица, состоящая из 11 элементов целого типа. Индексы элементов
+                принимают значения от -5 до 5. Таблица tab -- прямоугольная. В ней 48 элементов --
+                4 строки и 12 столбцов.
+            </para>
+        </section>
+        <section>
+            <title>Область дейсвия описаний</title>
+            <para>
+                В зависимости от способа описания и места описания в программе, где описана величина,
+                определена ее <emphasis>область действия</emphasis> описания -- та часть текста программы,
+                где допустимо использование этой величины.
+            </para>
+            <para>
+                Если величина описана во вступлении к программе, ее можно использовать в любом
+                алгоритме <emphasis role="bold">этой</emphasis> программы.
+            </para>
+            <para>
+                Если величина описана в заголовке алгоритма, то ее можно использовать в теле этого
+                алгоритма, а также в заголовке -- после этого описания.
+            </para>
+            <para>
+                Если переменная описана в теле алгоритма, то ее можно использовать только в теле
+                этого алгоритма <emphasis role="bold">после</emphasis> места описания.
+            </para>
+            <example>
+                <title>Объявление величин в алгоритме</title>
+                <programlisting role="kumir"><![CDATA[
+алг
+нач
+  п := 1 | Так нельзя!
+  цел п
+  п := 1 | Так можно
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+    </section>
+    <section>
+        <title>Выражения</title>
+        <section>
+            <title>Общие сведения</title>
+            <para>
+                Выражение в языке КуМир описывает новое значение, полученное из уже известных значений
+                с помощью предусмотренных в языке КуМир <emphasis>операций</emphasis>.
+            </para>
+            <para>
+                Примеры:
+                <itemizedlist>
+                    <listitem>
+                        <para><code>(a+b)*(a-b)</code>;</para>
+                    </listitem>
+                    <listitem>
+                        <para><code language="kumir">да или нет</code>;</para>
+                    </listitem>
+                    <listitem>
+                        <para><code>(sin(альфа))**2+(cos(альфа))**2</code>.</para>
+                    </listitem>
+                </itemizedlist>
+            </para>
+            <para>
+                В Кумир-программе выражения могут появляться в:
+                <itemizedlist>
+                    <listitem>
+                        <para>правой части оператора присваивания;</para>
+                    </listitem>
+                    <listitem>
+                        <para>в индексе таблицы;</para>
+                    </listitem>
+                    <listitem>
+                        <para>в аргументе (типа <code language="kumir">арг</code>) вызова функции;</para>
+                    </listitem>
+                    <listitem>
+                        <para>в качестве подвыражения другого выражения;</para>
+                    </listitem>
+                    <listitem>
+                        <para>в команде <code language="kumir">вывод</code>.</para>
+                    </listitem>
+                </itemizedlist>
+            </para>
+        </section>
+        <section>
+            <title>Операции в языке Кумир</title>
+            <para>
+                Операции в языке Кумир -- это:
+                <itemizedlist>
+                    <listitem>
+                        <para>базовые операции (арифметические, логические, текстовые);</para>
+                    </listitem>
+                    <listitem>
+                        <para>вырезка из строки;</para>
+                    </listitem>
+                    <listitem>
+                        <para>операции, задаваемые алгоритмами-функциями.</para>
+                    </listitem>
+                </itemizedlist>
+            </para>
+            <para>
+                Для каждой операции известны:
+                <itemizedlist>
+                    <listitem>
+                        <para>количество значений-аргументов;</para>
+                    </listitem>
+                    <listitem>
+                        <para>их типы;</para>
+                    </listitem>
+                    <listitem>
+                        <para>тип результата.</para>
+                    </listitem>
+                </itemizedlist>
+            </para>
+        </section>
+        <section>
+            <title>Базовые операции</title>
+            <para>
+                В зависимости от типов аргументов и результата, базовые операции делятся на следующие
+                классы:
+                <itemizedlist>
+                    <listitem>
+                        <para>арифметические операции (аргументы и результат -- числового типа);</para>
+                    </listitem>
+                    <listitem>
+                        <para>сравнение арифметическое (аргументы -- числового типа, результат --
+                            <code language="kumir">лог</code>);</para>
+                    </listitem>
+                    <listitem>
+                        <para>сравнение текстовое (аргументы -- текстового типа, результат --
+                            <code language="kumir">лог</code>);</para>
+                    </listitem>
+                    <listitem>
+                        <para>логические операции (аргументы -- <code language="kumir">лог</code>, результат --
+                            <code language="kumir">лог</code>);</para>
+                    </listitem>
+                    <listitem>
+                        <para>текстовые операции (аргументы и результат -- текстового типа).</para>
+                    </listitem>
+                </itemizedlist>
+            </para>
+            <para>
+                Каждой базовой операции соответствует свой символ. В некоторых случаях приходится
+                применять составной символ, состоящий из двух обычных символов:
+                <itemizedlist>
+                    <listitem>
+                        <para><code>**</code> -- возведение в степень;</para>
+                    </listitem>
+                    <listitem>
+                        <para><code><![CDATA[&lt;=]]></code> -- меньше или равно;</para>
+                    </listitem>
+                    <listitem>
+                        <para><code><![CDATA[&gt;=]]></code> -- больше или равно;</para>
+                    </listitem>
+                    <listitem>
+                        <para><code><![CDATA[&lt;&gt;]]></code> -- не равно.</para>
+                    </listitem>
+                </itemizedlist>
+            </para>
+        </section>
+        <section>
+            <title>Тип выражения. Согласованность типов</title>
+            <para>
+                Типом выражения называется тип результата операции, которая выполняется последней
+                при вычислении этого выражения.
+            </para>
+            <para>
+                Типы всех подвыражений должны быть согласованы с типами аргументов выполняемых операций.
+            </para>
+            <example>
+                <title>Тип выражения</title>
+                <para>
+                    Рассмотрим выражение <code>гамма(x) - дельта(2y+1, z)</code>,
+                    где <code>гамма</code> и <code>дельта</code> -- описанные в программе алгоритмы-функции.
+                </para>
+                <para>
+                    Это должны быть функции числового типа.  Если обе они имеют тип <code language="kumir">цел</code>,
+                    то и все выражение имеет тип <code language="kumir">цел</code>. В противном случае выражение имеет
+                    тип <code language="kumir">вещ</code>.
+                </para>
+            </example>
+        </section>
+        <section>
+            <title>Вырезка из строки</title>
+            <para>
+                Операция вырезки из строки имеет 3 аргумента: <code language="kumir">лит</code> строка,
+                <code language="kumir">цел</code> старт, <code language="kumir">цел</code> финиш и
+                результат: <code language="kumir">лит</code> вырезка. В отличие от базовых операций, аргументы вырезки
+                из строки имеют разные типы. Поэтому способ записи вырезки из строки отличается от способа,
+                принятого для базовых операций.
+            </para>
+            <example>
+                <title>Вырезка из строки</title>
+                <programlisting role="kumir"><![CDATA[
+лит строка, вырезка
+строка = "строка"
+вырезка := строка[3:5]
+утв вырезка = "рок"
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>Функции</title>
+            <para>
+                В выражениях языка Кумир можно использовать:
+                <itemizedlist>
+                    <listitem>
+                        <para>встроенные алгоритмы-функции, например: <code>sin(x)</code>, <code>длин("ХВОСТ")</code>;
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>алгоритмы-функции встроенных исполнителей, например: <code>температура</code>;</para>
+                    </listitem>
+                    <listitem>
+                        <para>алгоритмы-функции программы пользователя (в том числе -- алгоритмы-функции
+                            исполнителей пользователя).</para>
+                    </listitem>
+                </itemizedlist>
+            </para>
+            <para>
+                У каждой функции есть имя, для нее фиксировано количество параметров, параметры
+                перенумерованы. Для каждого параметра функции и ее результата фиксированы их типы;
+                тип результата называется типом функции.
+            </para>
+            <para>
+                Вызов функции с именем имя_функции и аргументами, заданными выражениями
+                X1,..., Xn записывается так: <code>имя_функции(X1,...,Xn)</code>.
+            </para>
+        </section>
+        <section>
+            <title>Примеры записи выражений</title>
+            <para>
+                Ниже приведены различные способы записи выражений.
+            </para>
+            <table>
+                <title>Запись различных математических выражений</title>
+                <thead>
+                    <row>
+                        <entry>Математическая формула</entry>
+                        <entry>Выражение на языке Кумир</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample01.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
+                        <entry><code>-1/x**2</code></entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample02.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
+                        <entry><code>a/(b*c)</code></entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample03.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
+                        <entry><code>a/b*c</code> или <code>(a/b)*c</code></entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample04.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
+                        <entry><code>2**(2**n)</code></entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample05.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
+                        <entry><code>x**(y**z)</code></entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample06.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
+                        <entry><code>(-b+sqrt(b**2-4*a*c))/(2*a)</code></entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample07.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
+                        <entry><code>sqrt(p*(p-a)*(p-b)*(p-c))</code></entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample08.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
+                        <entry><code>(a+b+c)/2</code></entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample09.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
+                        <entry><code>sqrt(a**2+b**2-2*a*b*cos(gamma))</code></entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample10.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
+                        <entry><code>(a*d+b*c)/(b*d)</code></entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <inlinemediaobject>
+                                <imageobject>
+                                    <imagedata format="PNG" fileref="table_of_expressions/sample11.png"/>
+                                </imageobject>
+                            </inlinemediaobject>
+                        </entry>
+                        <entry><code>sin(alpha)*cos(beta)+cos(alpha)*sin(beta)</code></entry>
+                    </row>
+                </tbody>
+            </table>
+        </section>
+    </section>
 </chapter>

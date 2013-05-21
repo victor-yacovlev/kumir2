@@ -5,7 +5,7 @@
 <book xmlns="http://www.oasis-open.org/docbook/xml/4.5/" xmlns:xi="http://www.w3.org/2001/XInclude">
     <title>Язык Кумир</title>
     <xi:include href="structure.xml"/>
-    <!-- <xi:include href="indentifiers.xml"/>
+    <xi:include href="indentifiers.xml"/>
     <xi:include href="simple_commands.xml"/>
-    <xi:include href="compound_commands.xml"/> -->
+    <xi:include href="compound_commands.xml"/>
 </book>

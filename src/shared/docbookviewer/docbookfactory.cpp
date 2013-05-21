@@ -63,6 +63,8 @@ ModelPtr DocBookFactory::parseDocument(QIODevice *stream,
 
 void DocBookFactory::filterByOs(ModelPtr root) const
 {
+    if (!root)
+        return;
     QString pattern;
 #ifdef Q_WS_MAC
     pattern = "mac";
@@ -139,6 +141,9 @@ bool DocBookFactory::startElement(
     else if (element == "programlisting") {
         model = new DocBookModel(root_, DocBookModel::ProgramListing);
     }
+    else if (element == "code") {
+        model = new DocBookModel(root_, DocBookModel::Code);
+    }
     else if (element == "example") {
         model = new DocBookModel(root_, DocBookModel::Example);
     }
@@ -161,6 +166,33 @@ bool DocBookFactory::startElement(
     else if (element == "keysym") {
         model = new DocBookModel(root_, DocBookModel::KeySym);
     }
+    else if (element == "table") {
+        model = new DocBookModel(root_, DocBookModel::Table);
+    }
+    else if (element == "informaltable") {
+        model = new DocBookModel(root_, DocBookModel::InformalTable);
+    }
+    else if (element == "thead") {
+        model = new DocBookModel(root_, DocBookModel::THead);
+    }
+    else if (element == "tbody") {
+        model = new DocBookModel(root_, DocBookModel::TBody);
+    }
+    else if (element == "row") {
+        model = new DocBookModel(root_, DocBookModel::Row);
+    }
+    else if (element == "entry") {
+        model = new DocBookModel(root_, DocBookModel::Entry);
+    }
+    else if (element == "inlinemediaobject") {
+        model = new DocBookModel(root_, DocBookModel::InlineMediaObject);
+    }
+    else if (element == "imageobject") {
+        model = new DocBookModel(root_, DocBookModel::ImageObject);
+    }
+    else if (element == "imagedata") {
+        model = new DocBookModel(root_, DocBookModel::ImageData);
+    }
     else if (element == "xref") {
         model = new DocBookModel(root_, DocBookModel::Xref);
         model->xrefLinkEnd_ = atts.value("linkend");
@@ -175,6 +207,29 @@ bool DocBookFactory::startElement(
         }
         model->id_ = atts.value("id");
         model->os_ = atts.value("os");
+        model->role_ = atts.value("role");
+        if (atts.value("language").length() > 0) {
+            if (model->modelType_==DocBookModel::ProgramListing ||
+                    model->modelType_==DocBookModel::Code)
+            {
+                model->role_ = atts.value("language");
+            }
+        }
+        if (model->modelType() == DocBookModel::ImageData) {
+            model->format_ = atts.value("format");
+            const QString href = atts.value("fileref");
+            if (href.length() > 0) {
+                model->href_ = url_.resolved(href);
+                if (model->format()=="png") {
+                    model->cachedImage_ = QImage(model->href().toLocalFile());
+                }
+                else if (model->format()=="svg") {
+                    model->svgRenderer_ = SvgRendererPtr(
+                                new QSvgRenderer(model->href().toLocalFile())
+                                );
+                }
+            }
+        }
         root_ = ModelPtr(model);
     }
     else if (element == "include") {
@@ -211,7 +266,8 @@ bool DocBookFactory::startElement(
 bool DocBookFactory::characters(const QString &ch)
 {
     bool preformatMode = root_ &&
-            root_->modelType_ == DocBookModel::ProgramListing;
+            ( root_->modelType_ == DocBookModel::ProgramListing ||
+              root_->modelType_ == DocBookModel::Code );
     if (preformatMode) {
         buffer_ += ch;
     }
@@ -232,8 +288,10 @@ bool DocBookFactory::endElement(const QString &namespaceURI,
             << "book" << "article" << "set"
             << "chapter" << "section" << "para"
             << "listitem" << "itemizedlist" << "orderedlist"
-            << "example" << "programlisting"
+            << "example" << "programlisting" << "code"
             << "preface" << "abstract" << "reference"
+            << "informaltable" << "table" << "thead" << "tbody" << "row" << "entry"
+            << "inlinemediaobject" << "imageobject" << "imagedata"
             << "emphasis" << "xref"  << "keycombo" << "keysym";
     const QString element = localName.toLower();
     if (root_ && element == "title") {
@@ -263,5 +321,30 @@ bool DocBookFactory::endElement(const QString &namespaceURI,
     }
     return true;
 }
+
+bool DocBookFactory::error(const QXmlParseException &exception)
+{
+    qDebug() << "Error parsing " << url_;
+    qDebug() << "At " << exception.lineNumber() << ":" << exception.columnNumber();
+    qDebug() << exception.message();
+    return false;
+}
+
+bool DocBookFactory::fatalError(const QXmlParseException &exception)
+{
+    qDebug() << "Fatal error parsing " << url_;
+    qDebug() << "At " << exception.lineNumber() << ":" << exception.columnNumber();
+    qDebug() << exception.message();
+    return false;
+}
+
+bool DocBookFactory::warning(const QXmlParseException &exception)
+{
+    qDebug() << "Warning parsing " << url_;
+    qDebug() << "At " << exception.lineNumber() << ":" << exception.columnNumber();
+    qDebug() << exception.message();
+    return true;
+}
+
 
 }
