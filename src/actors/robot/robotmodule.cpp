@@ -766,6 +766,8 @@ namespace ActorRobot {
         QGraphicsView * view=views().first();
        if(mode==NORMAL_MODE)
        {
+              if(this->items().indexOf(keyCursor)>-1)this->removeItem(keyCursor);
+       
            radSpinBox->hide();
            tempSpinBox->hide();
            redrawEditFields();
@@ -773,6 +775,7 @@ namespace ActorRobot {
        }
         if(mode==NEDIT_MODE)
         {
+             if(this->items().indexOf(keyCursor)>-1)this->removeItem(keyCursor);
           radSpinBox->hide();
           tempSpinBox->hide();
           redrawEditFields();
@@ -781,6 +784,8 @@ namespace ActorRobot {
         
         if(mode==RAD_MODE)
         {
+               if(this->items().indexOf(keyCursor)>-1)this->removeItem(keyCursor);
+          
             tempSpinBox->hide();
             radSpinBox->setParent(view);
             radSpinBox->move(100,2);
@@ -796,6 +801,8 @@ namespace ActorRobot {
         }
         if(mode==TEMP_MODE)
         {
+            if(this->items().indexOf(keyCursor)>-1)this->removeItem(keyCursor);
+         
             radSpinBox->hide();
             tempSpinBox->setParent(view);
             tempSpinBox->move(100,2);
@@ -2479,7 +2486,7 @@ namespace ActorRobot {
     {
         timer->start(500);
         
-        
+        if(this->items().indexOf(keyCursor)>-1)this->removeItem(keyCursor);
         
         
         keyCursor=new QGraphicsLineItem(upLeftCorner(row,col).x()+4,upLeftCorner(row,col).y()+18,upLeftCorner(row,col).x()+4,upLeftCorner(row,col).y()+29);
@@ -2489,7 +2496,7 @@ namespace ActorRobot {
     };
     void RoboField::timerTic()
     {
-        if(!EDIT_MODE){
+        if(mode!=TEXT_MODE){
          keyCursor->hide();
             timer->stop();  
         }
