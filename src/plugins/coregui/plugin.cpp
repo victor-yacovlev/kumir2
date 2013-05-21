@@ -10,6 +10,8 @@
 
 namespace CoreGUI {
 
+using namespace Shared;
+
 Plugin::Plugin() :
     KPlugin()
 {
@@ -462,6 +464,23 @@ void Plugin::restoreSession()
 Plugin::~Plugin()
 {
     startPage_.widget->deleteLater();
+}
+
+
+void Plugin::setProgramSource(const ProgramSourceText &source)
+{
+
+}
+
+GuiInterface::ProgramSourceText Plugin::programSource() const
+{
+    GuiInterface::ProgramSourceText result;
+    return result;
+}
+
+void Plugin::startTesting()
+{
+
 }
 
 } // namespace CoreGUI

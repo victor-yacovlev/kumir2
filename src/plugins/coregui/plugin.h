@@ -9,6 +9,7 @@
 #include "interfaces/generatorinterface.h"
 #include "interfaces/actorinterface.h"
 #include "interfaces/runinterface.h"
+#include "interfaces/guiinterface.h"
 #include "widgets/secondarywindow.h"
 #include "docbookviewer/docbookview.h"
 #include "terminal.h"
@@ -23,9 +24,11 @@ using namespace Shared;
 
 class Plugin
         : public ExtensionSystem::KPlugin
+        , public Shared::GuiInterface
 {
     friend class MainWindow;
     Q_OBJECT
+    Q_INTERFACES(Shared::GuiInterface)
 public:
     explicit Plugin();
     ~Plugin();
@@ -41,6 +44,13 @@ public:
     static QString DockFloatingKey;
     static QString DockGeometryKey;
     static QString DockSideKey;
+
+public slots:
+    void setProgramSource(const ProgramSourceText &source);
+    ProgramSourceText programSource() const;
+
+    void startTesting();
+
 protected slots:
     void prepareKumirProgramToRun();
 

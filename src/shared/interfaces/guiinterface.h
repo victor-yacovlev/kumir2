@@ -22,7 +22,7 @@ public:
         KumFile::Data content;
         QString title;
     };
-public /*slots*/:
+public slots:
     virtual void setProgramSource(const ProgramSourceText &source) = 0;
     virtual ProgramSourceText programSource() const = 0;
 

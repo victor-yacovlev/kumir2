@@ -4,7 +4,7 @@ include (${QT_USE_FILE})
 
 set(
     CONFIGURATION_TEMPLATE
-    "Editor\(teacher\),Browser,Actor*,KumirAnalizer\(teacher\),KumirCodeGenerator,KumirCodeRun,!CoreGUI\(icon=teacher\)"
+    "CourseManager,Editor\(teacher\),Browser,Actor*,KumirAnalizer\(teacher\),KumirCodeGenerator,KumirCodeRun,!CoreGUI\(icon=teacher\)"
 )
 set(
     SPLASHSCREEN
