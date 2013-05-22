@@ -225,7 +225,8 @@ QString ContentView::programTextForLanguage(const QString &source,
                                          "целтаб,вещтаб,"
                                          "литтаб,симтаб,логтаб,"
                                          "арг,рез,аргрез,пока,для,от,до,знач,"
-                                         "да,нет,не,и,или,раз,нс,файл"
+                                         "да,нет,не,и,или,раз,нс,файл,"
+                                         "выход,шаг"
                                          ).split(",");
         inlineCommentSymbol = "|";
     }
@@ -1037,6 +1038,11 @@ QString ContentView::formatProgramSourceText(
             p = c + rxLexer.matchedLength();
         }
     }
+    if (inlineComment) {
+        result += commentCloseTag;
+        result += afterCommentTag;
+    }
+
     return result;
 }
 
