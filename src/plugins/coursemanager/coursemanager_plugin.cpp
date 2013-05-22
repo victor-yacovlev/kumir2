@@ -1,5 +1,4 @@
 #include "coursemanager_plugin.h"
-#include <dataformats/kumfile.h>
 #include "task/mainwindow.h"
 
 namespace CourseManager {
@@ -15,9 +14,7 @@ Plugin::Plugin()
     courseMenu=new QMenu(trUtf8("Практикум"));
     MenuList.append(courseMenu);
     MW=new MainWindowTask();
-    MW->setup();
     mainWindow_=MW;
-
 }
 QList<QMenu*>  Plugin::menus()const
 {
@@ -31,15 +28,8 @@ QString Plugin::getText()
     gui->programSource();
     return QString();
 }    
-void Plugin::setPreProgram(QVariant param)
-{
-   GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
-   Shared::GuiInterface::ProgramSourceText text;
-   text.content=KumFile::fromString(param.toString()); 
-   gui->setProgramSource(text);
-}   
-bool  Plugin::startNewTask(QStringList isps)
-    {return true;};    
+    
+    
 QWidget* Plugin::mainWindow() const
 {
     return mainWindow_;
@@ -101,13 +91,6 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old,
 
 QString Plugin::initialize(const QStringList &arguments)
 {
-    QList<QAction*> actions;
-    actions=MW->getActions();
-    for(int i=0;i<actions.count();i++)
-    {
-        courseMenu->addAction(actions.at(i));  
-    }
-    MW->setCS(trUtf8("Кумир"));
     qRegisterMetaType<Shared::CoursesInterface::ProgramRunStatus>
             ("CourseManager.ProgramRunStatus");
     QString error;
