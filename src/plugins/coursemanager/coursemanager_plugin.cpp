@@ -29,15 +29,37 @@ QString Plugin::getText()
 {
  GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
     gui->programSource();
-    return QString();
+    return gui->programSource().content.visibleText+gui->programSource().content.hiddenText;
 }    
 void Plugin::setPreProgram(QVariant param)
 {
-   GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
+  if(param.toString().right(4)==".kum")
+  {
+      setTextFromFile(param.toString());
+  }
+  else
+  {GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
    Shared::GuiInterface::ProgramSourceText text;
    text.content=KumFile::fromString(param.toString()); 
-   gui->setProgramSource(text);
+    text.language=Shared::GuiInterface::ProgramSourceText::Kumir;
+      gui->setProgramSource(text);
+  }
 }   
+    
+bool Plugin::setTextFromFile(QString fname)    
+{
+    QFile file(fname);
+    if(!file.open(QIODevice::ReadOnly))return false;
+    
+    GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
+    Shared::GuiInterface::ProgramSourceText text;
+    QDataStream ds(&file);
+    ds>>text.content;
+    text.language=Shared::GuiInterface::ProgramSourceText::Kumir;
+    gui->setProgramSource(text);
+    return true;
+}
+    
 bool  Plugin::startNewTask(QStringList isps)
     {return true;};    
 QWidget* Plugin::mainWindow() const
