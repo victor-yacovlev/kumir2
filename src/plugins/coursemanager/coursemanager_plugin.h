@@ -28,8 +28,8 @@ public:
     QList<QMenu*> menus() const;
     QString getText();
     void setParam(QString paramname,QString param){};
-    bool startNewTask(QStringList isps);
-    void setPreProgram(QVariant param);
+    int startNewTask(QStringList isps){return 0;};
+    void setPreProgram(QVariant param){qDebug()<<"setPreProgram! NOT IMPLEMENTED!!";};
     void startProgram(QVariant param){qDebug()<<"startProgram! NOT IMPLEMENTED!!";};
 public slots:
     void setEnabled(bool value);
