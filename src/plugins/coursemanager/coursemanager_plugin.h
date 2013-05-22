@@ -51,6 +51,7 @@ private /*fields*/:
     QMenu* courseMenu;
     QList<QMenu*> MenuList;
     MainWindowTask* MW;
+    bool setTextFromFile(QString fname);
 
 };
 
