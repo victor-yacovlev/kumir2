@@ -17,6 +17,7 @@ class DocBookFactory
 public:
     static DocBookFactory* self();
     Document parseDocument(const QUrl & url, QString * error = 0) const;
+    static ModelPtr createListOfExamples(ModelPtr root);
 
 
 
@@ -42,6 +43,8 @@ private /*methods*/:
     bool warning(const QXmlParseException &exception);
 
     void filterByOs(ModelPtr root) const;
+
+    static QList<ModelPtr> findExamples(ModelPtr root);
 
 
 private /*fields*/:

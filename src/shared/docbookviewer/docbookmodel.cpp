@@ -75,6 +75,11 @@ ModelPtr DocBookModel::parent() const
     return parent_;
 }
 
+ModelPtr DocBookModel::indexParent() const
+{
+    return indexParent_;
+}
+
 void DocBookModel::setParent(ModelPtr parent)
 {
     if (parent_) {

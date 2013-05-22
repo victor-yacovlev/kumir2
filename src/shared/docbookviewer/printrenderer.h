@@ -16,7 +16,7 @@ class PrintRenderer
 public:
     static PrintRenderer* self();
     void reset();
-    void addData(ModelPtr data);
+    void renderData(ModelPtr data);
     void setBaseFont(QFont font);
     int pagesCount() const;
     void render(QPrinter * printer) const;

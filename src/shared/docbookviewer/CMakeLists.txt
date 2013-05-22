@@ -29,6 +29,7 @@ set(MOC_HEADERS
     docbookview_impl.h
     contentview.h
     printdialog.h
+    sidepanel.h
 )
 
 set(SOURCES
@@ -40,10 +41,12 @@ set(SOURCES
     contentview.cpp
     printdialog.cpp
     printrenderer.cpp
+    sidepanel.cpp
 )
 
 set(FORMS
     printdialog.ui
+    sidepanel.ui
 )
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})

@@ -14,6 +14,7 @@ class Document
     friend class DocBookFactory;
     friend class DocBookViewImpl;
     friend class PrintDialog;
+    friend class SidePanel;
 public:
     const QUrl & url() const;
 

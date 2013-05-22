@@ -30,7 +30,7 @@ void PrintRenderer::reset()
     pages_.clear();
 }
 
-void PrintRenderer::addData(ModelPtr data)
+void PrintRenderer::renderData(ModelPtr data)
 {
     currentRoot_ = data;
     Cursor cursor = Cursor(data);

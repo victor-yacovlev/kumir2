@@ -54,7 +54,11 @@ public:
         Entry,
         InlineMediaObject,
         ImageObject,
-        ImageData
+        ImageData,
+
+        // virtual entries
+        ListOfExamples,
+        ListOfTables
     };
 
     quint8 sectionLevel() const;
@@ -69,6 +73,7 @@ public:
     const QUrl & href() const;
     const QString format() const;
     ModelPtr parent() const;
+    ModelPtr indexParent() const;
     const QList<ModelPtr>& children() const;
     void setParent(ModelPtr parent);
     bool isSectioningNode() const;
@@ -82,6 +87,7 @@ protected /*methods*/:
 
 protected /*fields*/:
     ModelPtr parent_;
+    ModelPtr indexParent_;
     QList<ModelPtr> children_;
     ModelType modelType_;
     unsigned short sectionLevel_;
@@ -99,6 +105,12 @@ protected /*fields*/:
     mutable QImage cachedImage_;
 };
 
+}
+
+inline bool operator==(const DocBookViewer::ModelPtr & model,
+                DocBookViewer::DocBookModel::ModelType type)
+{
+    return model && model->modelType() == type;
 }
 
 #endif

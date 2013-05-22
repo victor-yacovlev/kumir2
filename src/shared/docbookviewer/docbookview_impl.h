@@ -7,21 +7,21 @@
 #include <QObject>
 #include <QMap>
 #include <QSharedPointer>
-
-class QSplitter;
-class QTreeWidget;
-class QTreeWidgetItem;
-class QAction;
+#include <QTreeWidget>
+#include <QSplitter>
 
 namespace DocBookViewer {
 
 class DocBookModel;
+class SidePanel;
+class ContentView;
 
 class DocBookViewImpl
         : public QObject
 {
+    friend class DocBookView;
     Q_OBJECT
-public:
+public /* methods */:
     explicit DocBookViewImpl(class DocBookView * pClass);
     QAction * viewerAction(const DocBookView::DocBookViewAction type) const;
     class Document addDocument(
@@ -31,37 +31,35 @@ public:
             );
 
     void removeDocument(const Document & existingDocument);
+
     void updateSettings(QSettings * settings, const QString & prefix);
+    void saveState(QSettings * settings, const QString & prefix);
+    void restoreState(QSettings * settings, const QString & prefix);
 
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
 
+    void createActions();
+
+signals:
+    void itemSelected(ModelPtr model);
+
+public slots:
+    void showAnItem(ModelPtr model);
+    void showPrintDialog();
+
+private /* fields */:
     DocBookView* pClass_;
     QSettings* settings_;
     QString settingsPrefix_;
 
-    /* Child widgets */
     QSplitter * splitter_;
-    QTreeWidget * navigator_;
-    class ContentView * content_;
-    QList<Document> loadedDocuments_;
+    SidePanel * sidePanel_;
+    ContentView * content_;
+
     QAction* actionToggleNavigationBar_;
     QAction* actionShowPrintDialog_;
 
-    void createActions();
-
-
-    void createNavigationItems(QTreeWidgetItem * item,
-                               ModelPtr model);
-
-
-    QMap<QTreeWidgetItem*, ModelPtr> modelsOfItems_;
-    QMap<ModelPtr, QTreeWidgetItem*> itemsOfModels_;
-
-public slots:
-    void selectAnItem(QTreeWidgetItem * item);
-    void loadAModelByPtr(quintptr dataPtr);
-    void showPrintDialog();
 
 };
 

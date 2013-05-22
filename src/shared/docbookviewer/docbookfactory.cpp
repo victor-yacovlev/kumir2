@@ -346,5 +346,35 @@ bool DocBookFactory::warning(const QXmlParseException &exception)
     return true;
 }
 
+QList<ModelPtr> DocBookFactory::findExamples(ModelPtr root)
+{
+    QList<ModelPtr> result;
+    if (root->modelType() == DocBookModel::Example) {
+        result += root;
+    }
+    else {
+        foreach (ModelPtr child, root->children()) {
+            result += findExamples(child);
+        }
+    }
+    return result;
+}
+
+ModelPtr DocBookFactory::createListOfExamples(ModelPtr root)
+{
+    ModelPtr result;
+    QList<ModelPtr> examples = findExamples(root);
+    if (examples.size() > 0) {
+        result = ModelPtr(new DocBookModel(ModelPtr(),
+                                           DocBookModel::ListOfExamples));
+        foreach (ModelPtr example, examples) {
+            result->children_.append(example);
+            example->indexParent_ = result;
+        }
+        result->title_ = root->title();
+        result->subtitle_ = root->subtitle();
+    }
+    return result;
+}
 
 }

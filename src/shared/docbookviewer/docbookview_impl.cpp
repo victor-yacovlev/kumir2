@@ -6,6 +6,7 @@
 #include "docbookmodel.h"
 #include "printdialog.h"
 #include "printrenderer.h"
+#include "sidepanel.h"
 
 // Qt includes
 #include <QtCore>
@@ -20,37 +21,59 @@ DocBookViewImpl::DocBookViewImpl(DocBookView *pClass)
 {
     pClass_->setLayout(new QHBoxLayout);
     splitter_ = new QSplitter(Qt::Horizontal, pClass_);
-    navigator_ = new QTreeWidget(pClass_);
-    navigator_->setHeaderHidden(true);
-    navigator_->setFixedWidth(250);
-    splitter_->addWidget(navigator_);
+    sidePanel_ = new SidePanel(pClass_);
+    splitter_->addWidget(sidePanel_);
     content_ = new ContentView(pClass_);
     splitter_->addWidget(content_);
     pClass_->layout()->addWidget(splitter_);
-    connect(navigator_, SIGNAL(itemClicked(QTreeWidgetItem*,int)),
-            this, SLOT(selectAnItem(QTreeWidgetItem*)));
-    connect(content_, SIGNAL(requestModelLoad(quintptr)),
-            this, SLOT(loadAModelByPtr(quintptr)));
+
+    connect(sidePanel_, SIGNAL(itemPicked(ModelPtr)),
+            this, SLOT(showAnItem(ModelPtr)));
+
+    connect(content_, SIGNAL(itemRequest(ModelPtr)),
+            this, SLOT(showAnItem(ModelPtr)));
+
+    connect(this, SIGNAL(itemSelected(ModelPtr)),
+            sidePanel_, SLOT(selectItem(ModelPtr)));
+
     createActions();
 }
 
 
 QSize DocBookViewImpl::minimumSizeHint() const
 {
-    return QSize(800, 300);
+    return QSize(900, 300);
 }
 
 QSize DocBookViewImpl::sizeHint() const
 {
-    return QSize(800, 600);
+    return QSize(900, 600);
 }
-
 
 void DocBookViewImpl::updateSettings(QSettings *settings, const QString &prefix)
 {
     settings_ = settings;
     settingsPrefix_ = prefix;
 }
+
+void DocBookViewImpl::saveState(QSettings *settings, const QString &prefix)
+{
+    settings->setValue(prefix + "/SplitterGeometry",
+                       splitter_->saveGeometry());
+    settings->setValue(prefix + "/SplitterState",
+                       splitter_->saveState());
+    sidePanel_->saveState(settings, prefix + "/SideBar");
+}
+
+void DocBookViewImpl::restoreState(QSettings *settings, const QString &prefix)
+{
+    splitter_->restoreState(settings->value(prefix + "/SplitterState")
+                            .toByteArray());
+    splitter_->restoreGeometry(settings->value(prefix + "/SplitterGeometry")
+                               .toByteArray());
+    sidePanel_->restoreState(settings, prefix + "/SideBar");
+}
+
 
 void DocBookViewImpl::createActions()
 {
@@ -77,106 +100,31 @@ Document DocBookViewImpl::addDocument(const QUrl &url, QString *error, int index
 {
     DocBookFactory * factory = DocBookFactory::self();
     Document doc = factory->parseDocument(url, error);
-    QList<ModelPtr> topLevelItems;
-    if (doc.root_) {
-        if (doc.root_->modelType() == DocBookModel::Set) {
-            topLevelItems = doc.root_->children();
-        }
-        else {
-            topLevelItems.append(doc.root_);
-        }
-        loadedDocuments_.append(doc);
-    }
-    for (int i=0; i<topLevelItems.size(); i++) {
-        ModelPtr model = topLevelItems[i];
-        QTreeWidgetItem * item = new QTreeWidgetItem(navigator_);
-        navigator_->addTopLevelItem(item);
-        item->setText(0, model->title());
-        item->setToolTip(0, model->subtitle());
-        createNavigationItems(item, model);
-        modelsOfItems_[item] = model;
-        itemsOfModels_[model] = item;
-    }
-
+    sidePanel_->addDocument(doc);
     return doc;
 }
 
-void DocBookViewImpl::createNavigationItems(QTreeWidgetItem *item,
-                                            ModelPtr model)
-{
-    for (int i=0; i<model->children().size(); i++) {
-        ModelPtr child = model->children()[i];
-        if (child->isSectioningNode()) {
-            QTreeWidgetItem * childItem = new QTreeWidgetItem(item);
-            childItem->setText(0, child->title());
-            childItem->setToolTip(0, child->subtitle());
-            modelsOfItems_[childItem] = child;
-            itemsOfModels_[child] = childItem;
-            createNavigationItems(childItem, child);
-            item->addChild(childItem);
-            item->setExpanded(true);
-        }
-    }
-}
+
 
 void DocBookViewImpl::removeDocument(const Document & existingDocument)
 {
 
 }
 
-void DocBookViewImpl::selectAnItem(QTreeWidgetItem *item)
+void DocBookViewImpl::showAnItem(ModelPtr model)
 {
-    if (!item || !modelsOfItems_.contains(item)) {
-        return;
+    if (model) {
+        content_->reset();
+        content_->renderData(model);
     }
-    ModelPtr model = modelsOfItems_[item];
-    content_->reset();
-    content_->addData(model);
-
-}
-
-void DocBookViewImpl::loadAModelByPtr(quintptr dataPtr)
-{
-    if (dataPtr) {
-        const DocBookModel * modelWeakPointer =
-                reinterpret_cast<const DocBookModel*>(dataPtr);
-        const QList<ModelPtr> keys = itemsOfModels_.keys();
-        for (int i=0; i<keys.size(); i++) {
-            ModelPtr model = keys[i];
-            if (model.data() == modelWeakPointer) {
-                QList<QTreeWidgetItem*> selection = navigator_->selectedItems();
-                foreach (QTreeWidgetItem* item, selection) {
-                    item->setSelected(false);
-                }
-                QTreeWidgetItem * item = itemsOfModels_[model];
-                item->setSelected(true);
-                navigator_->scrollToItem(item);
-                content_->reset();
-                content_->addData(model);
-            }
-        }
+    if (sender() == content_) {
+        emit itemSelected(model);
     }
 }
 
 void DocBookViewImpl::showPrintDialog()
 {
-    PrintDialog chooseItemsDialog(pClass_);
-    foreach (const Document & doc, loadedDocuments_) {
-        chooseItemsDialog.addDocument(doc);
-    }
-    if (chooseItemsDialog.exec()) {
-        QPrintDialog actualPrintDialog(pClass_);
-        if (actualPrintDialog.exec()) {
-            PrintRenderer * renderer = PrintRenderer::self();
-            renderer->reset();
-            QList<ModelPtr> selectedModels = chooseItemsDialog.selectedModels();
-            foreach (ModelPtr model, selectedModels)
-            {
-                renderer->addData(model);
-            }
-            renderer->render(actualPrintDialog.printer());
-        }
-    }
+
 }
 
 }

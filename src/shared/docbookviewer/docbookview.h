@@ -31,8 +31,8 @@ public:
 
     explicit DocBookView(QWidget * parent = 0);
     QAction * viewerAction(const DocBookViewAction type) const;
-    void updateSettings(QSettings * settings,
-                        const QString & prefix = QString());
+
+    void updateSettings(QSettings * settings, const QString & prefix);
 
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
@@ -46,6 +46,11 @@ public:
             );
 
     void removeDocument(const Document & existingDocument);
+
+protected:
+    void showEvent(QShowEvent *);
+    void closeEvent(QCloseEvent *);
+    void hideEvent(QHideEvent *);
 
 private:    
     class DocBookViewImpl* pImpl_;

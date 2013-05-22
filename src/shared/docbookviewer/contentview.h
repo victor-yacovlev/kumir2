@@ -20,10 +20,10 @@ public:
     explicit ContentView(QWidget * parent);
 
     void reset();
-    void addData(ModelPtr data);
+    void renderData(ModelPtr data);
 
 signals:
-    void requestModelLoad(quintptr dataPtr);
+    void itemRequest(ModelPtr model);
 
 private:
     QString wrapHTML(const QString & body) const;
@@ -61,6 +61,9 @@ private:
     QString renderInlineMediaObject(ModelPtr data) const;
     QString renderImageObject(ModelPtr data) const;
 
+    QString renderListOfExamples(ModelPtr data) const;
+    QString renderListOfTables(ModelPtr data) const;
+
     bool isPlainPage(ModelPtr data) const;
 
     ModelPtr topLevelModel(ModelPtr data) const;
@@ -68,6 +71,15 @@ private:
     ModelPtr findModelById(ModelPtr top, const QString & modelId) const;
     ModelPtr findImageData(ModelPtr parent) const;
     QString modelToLink(ModelPtr data) const;
+    ModelPtr findModelByRawPtr(quintptr raw) const;
+    ModelPtr findModelByRawPtr(ModelPtr root, quintptr raw) const;
+    QString renderItemContextLink(ModelPtr data) const;
+
+    static quint16 chapterNumber(ModelPtr data);
+    static quint16 elementNumber(ModelPtr data);
+    static quint16 countOfElements(ModelPtr root, ModelPtr until, bool &stop);
+
+
 
 
     bool hasModelOnThisPage(ModelPtr data) const;
@@ -87,7 +99,7 @@ private:
     QVariant loadResource(int type, const QUrl &name);
 
 private /*fields*/:
-    QList<ModelPtr> loadedModels_;
+    ModelPtr loadedModel_;
     mutable struct Counters {
         quint32 example;
         quint32 figure;

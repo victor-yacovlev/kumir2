@@ -10,10 +10,35 @@ DocBookView::DocBookView(QWidget *parent)
 
 }
 
-void DocBookView::updateSettings(QSettings *settings, const QString & prefix)
+void DocBookView::updateSettings(QSettings *settings, const QString &prefix)
 {
     pImpl_->updateSettings(settings, prefix);
 }
+
+void DocBookView::closeEvent(QCloseEvent * event)
+{
+    if (pImpl_->settings_) {
+        pImpl_->saveState(pImpl_->settings_, pImpl_->settingsPrefix_);
+    }
+    QWidget::closeEvent(event);
+}
+
+void DocBookView::hideEvent(QHideEvent * event)
+{
+    if (pImpl_->settings_) {
+        pImpl_->saveState(pImpl_->settings_, pImpl_->settingsPrefix_);
+    }
+    QWidget::hideEvent(event);
+}
+
+void DocBookView::showEvent(QShowEvent * event)
+{
+    if (pImpl_->settings_) {
+        pImpl_->restoreState(pImpl_->settings_, pImpl_->settingsPrefix_);
+    }
+    QWidget::showEvent(event);
+}
+
 
 DocBookView::~DocBookView()
 {
