@@ -50,6 +50,7 @@ void SidePanel::addDocument(Document document)
         item->setToolTip(0, model->subtitle());
         createNavigationItems(item, model);
         createListOfExamples(model);
+        createListOfTables(model);
         modelsOfItems_[item] = model;
         itemsOfModels_[model] = item;
     }
@@ -179,7 +180,11 @@ void SidePanel::createNavigationItems(QTreeWidgetItem *item,
 
 void SidePanel::createListOfExamples(ModelPtr root)
 {
-    ModelPtr listOfExamples = DocBookFactory::createListOfExamples(root);
+    ModelPtr listOfExamples = DocBookFactory::createListOfEntries(
+                root,
+                DocBookModel::ListOfExamples,
+                DocBookModel::Example
+                );
     if (listOfExamples) {
         QTreeWidgetItem * topLevelItem =
                 new QTreeWidgetItem(ui->examplesNavigator);
@@ -195,6 +200,34 @@ void SidePanel::createListOfExamples(ModelPtr root)
             item->setToolTip(0, example->subtitle());
             modelsOfItems_[item] = example;
             itemsOfModels_[example] = item;
+            topLevelItem->addChild(item);
+            topLevelItem->setExpanded(true);
+        }
+    }
+}
+
+void SidePanel::createListOfTables(ModelPtr root)
+{
+    ModelPtr listOfTables = DocBookFactory::createListOfEntries(
+                root,
+                DocBookModel::ListOfTables,
+                DocBookModel::Table
+                );
+    if (listOfTables) {
+        QTreeWidgetItem * topLevelItem =
+                new QTreeWidgetItem(ui->tablesNavigator);
+        topLevelItem->setText(0, listOfTables->title());
+        topLevelItem->setToolTip(0, tr("List of tables in \"%1\"")
+                                 .arg(listOfTables->title()));
+        ui->tablesNavigator->addTopLevelItem(topLevelItem);
+        itemsOfModels_[listOfTables] = topLevelItem;
+        modelsOfItems_[topLevelItem] = listOfTables;
+        foreach (ModelPtr table, listOfTables->children()) {
+            QTreeWidgetItem * item = new QTreeWidgetItem(topLevelItem);
+            item->setText(0, table->title());
+            item->setToolTip(0, table->subtitle());
+            modelsOfItems_[item] = table;
+            itemsOfModels_[table] = item;
             topLevelItem->addChild(item);
             topLevelItem->setExpanded(true);
         }

@@ -346,30 +346,34 @@ bool DocBookFactory::warning(const QXmlParseException &exception)
     return true;
 }
 
-QList<ModelPtr> DocBookFactory::findExamples(ModelPtr root)
+QList<ModelPtr> DocBookFactory::findEntriesOfType(
+        ModelPtr root,
+        DocBookModel::ModelType findType
+        )
 {
     QList<ModelPtr> result;
-    if (root->modelType() == DocBookModel::Example) {
+    if (root->modelType() == findType) {
         result += root;
     }
     else {
         foreach (ModelPtr child, root->children()) {
-            result += findExamples(child);
+            result += findEntriesOfType(child, findType);
         }
     }
     return result;
 }
 
-ModelPtr DocBookFactory::createListOfExamples(ModelPtr root)
+ModelPtr DocBookFactory::createListOfEntries(ModelPtr root,
+                                             DocBookModel::ModelType resType,
+                                             DocBookModel::ModelType findType)
 {
     ModelPtr result;
-    QList<ModelPtr> examples = findExamples(root);
-    if (examples.size() > 0) {
-        result = ModelPtr(new DocBookModel(ModelPtr(),
-                                           DocBookModel::ListOfExamples));
-        foreach (ModelPtr example, examples) {
-            result->children_.append(example);
-            example->indexParent_ = result;
+    QList<ModelPtr> entries = findEntriesOfType(root, findType);
+    if (entries.size() > 0) {
+        result = ModelPtr(new DocBookModel(ModelPtr(), resType));
+        foreach (ModelPtr entry, entries) {
+            result->children_.append(entry);
+            entry->indexParent_ = result;
         }
         result->title_ = root->title();
         result->subtitle_ = root->subtitle();

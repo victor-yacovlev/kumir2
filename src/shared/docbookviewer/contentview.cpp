@@ -14,11 +14,15 @@ ContentView::ContentView(QWidget *parent)
             this, SLOT(handleInternalLink(QUrl)));
 }
 
+QSize ContentView::minimumSizeHint() const
+{
+    return QSize(640, 400);
+}
+
 void ContentView::reset()
 {
     loadedModel_.clear();
-    clear();
-    counters_.example = counters_.figure = counters_.table = 0u;
+    clear();    
 }
 
 void ContentView::renderData(ModelPtr data)
@@ -164,6 +168,9 @@ QString ContentView::renderElement(ModelPtr data) const
     }
     else if (data == DocBookModel::ListOfExamples) {
         return renderListOfExamples(data);
+    }
+    else if (data == DocBookModel::ListOfTables) {
+        return renderListOfTables(data);
     }
     else {
         return "";
@@ -352,21 +359,37 @@ QString ContentView::renderTable(ModelPtr data) const
 {
     QString result;
     const QString & title = data->title();
-    counters_.table ++;
-    const QString index = chapterNumber(data) > 0
-            ? QString("%1.%2").arg(chapterNumber(data)).arg(counters_.example)
-            : QString::number(counters_.example);
 
-    result += "<table width='100%'>\n";
-    result += "<tr><td height='10'>&nbsp;</td></tr>\n";
-    result += "<tr><td align='left'><b>";
-    result += tr("Table&nbsp;%1. ").arg(index);
-    result += "</b>" + title + "</td></tr>\n";
-    result += "<tr><td>\n";
-    result += renderTableContent(data);
-    result += "</td></tr>\n";
-    result += "<tr><td height='10'>&nbsp;</td></tr>\n";
-    result += "</table>\n";
+    const QString index = chapterNumber(data) > 0
+            ? QString("%1.%2")
+              .arg(chapterNumber(data))
+              .arg(elementNumber(data))
+            : QString::number(elementNumber(data));
+
+    if (loadedModel_ == DocBookModel::ListOfTables) {
+        result += "<a name='" + modelToLink(data) + "'>\n";
+        result += "<h2>" +
+                tr("Table&nbsp;%1. ").arg(index) +
+                normalizeText(title) +
+                "</h2>\n";
+        result += renderItemContextLink(data);
+        result += "<br/>";
+        result += renderTableContent(data);
+        result += "</a>";
+    }
+    else {
+        result += "<a name='" + modelToLink(data) + "'>\n";
+        result += "<table width='100%'>\n";
+        result += "<tr><td height='10'>&nbsp;</td></tr>\n";
+        result += "<tr><td align='left'><b>";
+        result += tr("Table&nbsp;%1. ").arg(index);
+        result += "</b>" + title + "</td></tr>\n";
+        result += "<tr><td>\n";
+        result += renderTableContent(data);
+        result += "</td></tr>\n";
+        result += "<tr><td height='10'>&nbsp;</td></tr>\n";
+        result += "</table>\n";
+    }
     return result;
 }
 
@@ -478,7 +501,6 @@ QString ContentView::renderExample(ModelPtr data) const
 {
     QString result;
     const QString & title = data->title();
-    counters_.example ++;
 
     const QString index = chapterNumber(data) > 0
             ? QString("%1.%2")
@@ -582,6 +604,14 @@ QString ContentView::renderImageObject(ModelPtr data) const
 }
 
 QString ContentView::renderListOfExamples(ModelPtr data) const
+{
+    QString result;
+    result += renderTOC(data);
+    result += renderChilds(data);
+    return result;
+}
+
+QString ContentView::renderListOfTables(ModelPtr data) const
 {
     QString result;
     result += renderTOC(data);
