@@ -69,6 +69,13 @@ isTeacher=false;
 
        //ui->textBrowser->setVisible(false);
  };
+QList<QAction*> MainWindowTask::getActions()const
+{
+    QList<QAction*> toRet;
+    toRet.append(ui->loadCurs);
+    toRet.append(ui->checkTask);
+    toRet.append(ui->actionReset);   
+}
 MainWindowTask::~MainWindowTask()
 {
     delete ui;
