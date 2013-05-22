@@ -1,16 +1,34 @@
 #include "coursemanager_plugin.h"
+#include "task/mainwindow.h"
 
 namespace CourseManager {
 
+   
+    
 Plugin::Plugin()
     : ExtensionSystem::KPlugin()
     , mainWindow_(nullptr)
     , actionPerformCheck_(nullptr)
     , settingsEditorPage_(nullptr)
 {
+    courseMenu=new QMenu(trUtf8("Практикум"));
+    MenuList.append(courseMenu);
+    MW=new MainWindowTask();
+    mainWindow_=MW;
 }
+QList<QMenu*>  Plugin::Menus()const
+{
+    
+    return MenuList; 
+}; 
 
-
+QString Plugin::getText()
+{
+ GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
+    gui->programSource();
+}    
+    
+    
 QWidget* Plugin::mainWindow() const
 {
     return mainWindow_;

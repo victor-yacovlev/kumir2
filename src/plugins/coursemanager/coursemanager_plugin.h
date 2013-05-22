@@ -6,8 +6,13 @@
 #include <extensionsystem/kplugin.h>
 #include <interfaces/coursesinterface.h>
 #include <extensionsystem/declarativesettingspage.h>
-
+#include "extensionsystem/pluginmanager.h"
+#include "shared/interfaces/guiinterface.h"
+typedef Shared::GuiInterface GI;
+//#include "task/mainwindow.h"
+class MainWindowTask;
 namespace CourseManager {
+    
 
 class Plugin
         : public ExtensionSystem::KPlugin
@@ -20,8 +25,12 @@ public:
     QWidget* mainWindow() const;
     QAction* actionPerformCheck() const;
     QWidget* settingsEditorPage();
-    QList<QMenu*> menu() const; 
-       
+    QList<QMenu*> Menus() const;
+    QString getText();
+    void setParam(QString paramname,QString param){};
+    int startNewTask(QStringList isps){return 0;};
+    void setPreProgram(QVariant param){qDebug()<<"setPreProgram! NOT IMPLEMENTED!!";};
+    void startProgram(QVariant param){qDebug()<<"startProgram! NOT IMPLEMENTED!!";};
 public slots:
     void setEnabled(bool value);
     void setTestingResult(ProgramRunStatus status, int value);
@@ -39,7 +48,9 @@ private /*fields*/:
     QWidget* mainWindow_;
     QAction* actionPerformCheck_;
     ExtensionSystem::DeclarativeSettingsPage* settingsEditorPage_;
-
+    QMenu* courseMenu;
+    QList<QMenu*> MenuList;
+    MainWindowTask* MW;
 
 };
 

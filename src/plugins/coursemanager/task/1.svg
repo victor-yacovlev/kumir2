@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 13.0.2, SVG Export Plug-In . SVG Version: 6.00 Build 14948)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Layer_2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="10.071px" height="15.251px" viewBox="0 0 10.071 15.251" enable-background="new 0 0 10.071 15.251" xml:space="preserve">
+<g>
+	<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="3.2788" y1="0" x2="3.2788" y2="15.061">
+		<stop  offset="0" style="stop-color:#FF0000"/>
+		<stop  offset="0.0365" style="stop-color:#FD2604"/>
+		<stop  offset="0.0851" style="stop-color:#FB5009"/>
+		<stop  offset="0.1344" style="stop-color:#F9740D"/>
+		<stop  offset="0.1839" style="stop-color:#F79010"/>
+		<stop  offset="0.2336" style="stop-color:#F6A312"/>
+		<stop  offset="0.2838" style="stop-color:#F5AF14"/>
+		<stop  offset="0.3352" style="stop-color:#F5B314"/>
+		<stop  offset="0.5206" style="stop-color:#F8850F"/>
+		<stop  offset="0.94" style="stop-color:#FE1102"/>
+		<stop  offset="1" style="stop-color:#FF0000"/>
+	</linearGradient>
+	<path fill="url(#SVGID_1_)" d="M6.027,12.773c0.232,0.263,0.391,0.538,0.477,0.823c0.084,0.287,0.069,0.557-0.047,0.812
+		c-0.115,0.256-0.367,0.414-0.754,0.476c-0.742,0.124-1.508,0.182-2.297,0.175c-0.789-0.009-1.532-0.02-2.228-0.035
+		c-0.48,0-0.809-0.147-0.986-0.441C0.014,14.29-0.04,13.968,0.029,13.62c0.07-0.348,0.259-0.664,0.569-0.951
+		c0.309-0.286,0.704-0.43,1.183-0.43V3.793C1.58,3.84,1.379,3.828,1.178,3.758C0.977,3.688,0.799,3.584,0.645,3.445
+		C0.49,3.306,0.37,3.14,0.285,2.946S0.172,2.556,0.204,2.354c0.046-0.34,0.22-0.688,0.522-1.044c0.302-0.356,0.653-0.65,1.056-0.882
+		c0.402-0.232,0.816-0.372,1.242-0.418c0.425-0.047,0.792,0.062,1.102,0.325C4.249,0.429,4.36,0.56,4.462,0.73
+		c0.101,0.17,0.15,0.324,0.15,0.464c0.015,1.856,0.019,3.701,0.012,5.534c-0.008,1.833-0.012,3.671-0.012,5.511h0.604
+		C5.525,12.333,5.796,12.511,6.027,12.773z"/>
+</g>
+</svg>
