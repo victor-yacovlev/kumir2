@@ -281,6 +281,26 @@ bool DocBookFactory::characters(const QString &ch)
     return true;
 }
 
+bool DocBookFactory::skippedEntity(const QString &name)
+{
+    if (name == "nbsp") {
+        buffer_.push_back(QChar::Nbsp);
+    }
+    else if (name == "lt") {
+        buffer_.push_back('<');
+    }
+    else if (name == "gt") {
+        buffer_.push_back('>');
+    }
+    else if (name == "le") {
+        buffer_.push_back(QChar(0x2264));  // less or equal
+    }
+    else if (name == "ge") {
+        buffer_.push_back(QChar(0x2265));  // greater or equal
+    }
+    return true;
+}
+
 bool DocBookFactory::endElement(const QString &namespaceURI,
                                 const QString &localName,
                                 const QString &qName)
@@ -307,6 +327,9 @@ bool DocBookFactory::endElement(const QString &namespaceURI,
         if (buffer_.length() > 0) {
             DocBookModel* text = new DocBookModel(root_, DocBookModel::Text);
             text->text_ = buffer_;
+            if (root_ == DocBookModel::Code) {
+                text->text_.replace(' ', QChar(QChar::Nbsp));
+            }
             root_->children_.append(ModelPtr(text));
             buffer_.clear();
         }
