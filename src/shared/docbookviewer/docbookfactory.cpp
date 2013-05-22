@@ -246,7 +246,8 @@ bool DocBookFactory::startElement(
                         innerFactory->parseDocument(&file, hrefUrl, &localError);
                 if (include) {
                     if (root_) {
-                        include->setParent(root_);
+                        include->parent_ = root_;
+                        root_->children_.append(include);
                     }
                     else {
                         root_ = include;

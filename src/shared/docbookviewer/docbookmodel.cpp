@@ -80,28 +80,6 @@ ModelPtr DocBookModel::indexParent() const
     return indexParent_;
 }
 
-void DocBookModel::setParent(ModelPtr parent)
-{
-    if (parent_) {
-        for (ModelIterator it=parent_->children_.begin();
-             it!=parent_->children_.end();)
-        {
-            const ModelPtr & ptr = *it;
-            if (ptr.data() == this) {
-                it = parent_->children_.erase(it);
-            }
-            else {
-                it ++;
-            }
-        }
-    }
-    parent_ = parent;
-    if (parent_) {
-        parent_->children_.append(ModelPtr(this));
-    }
-    updateSectionLevel();
-}
-
 const QList<ModelPtr>& DocBookModel::children() const
 {
     return children_;

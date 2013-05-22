@@ -75,7 +75,6 @@ public:
     ModelPtr parent() const;
     ModelPtr indexParent() const;
     const QList<ModelPtr>& children() const;
-    void setParent(ModelPtr parent);
     bool isSectioningNode() const;
 
     const QImage& imageData() const;
