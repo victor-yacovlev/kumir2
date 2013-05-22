@@ -175,7 +175,24 @@ QString Plugin::initialize(const QStringList & parameters)
     connect(helpWindow->toggleViewAction(), SIGNAL(toggled(bool)),
             mainWindow_->ui->actionUsage, SLOT(setChecked(bool)));
 
+    courseManager_ = ExtensionSystem::PluginManager::instance()
+            ->findPlugin<Shared::CoursesInterface>();
 
+    foreach (QMenu* menu, courseManager_->menus()) {
+        mainWindow_->ui->menubar->insertMenu(mainWindow_->ui->menuHelp->menuAction(), menu);
+    }
+
+    Widgets::SecondaryWindow * coursesWindow = new Widgets::SecondaryWindow(
+                courseManager_->mainWindow(),
+                nullptr,
+                mainWindow_,
+                mySettings(),
+                "CoursesWindow"
+                );
+
+    secondaryWindows_ << coursesWindow;
+    mainWindow_->ui->menuWindow->addAction(coursesWindow->toggleViewAction());
+    mainWindow_->gr_otherActions->addAction(coursesWindow->toggleViewAction());
 
     KPlugin * kumirRunner = myDependency("KumirCodeRun");
     plugin_kumirCodeRun = qobject_cast<RunInterface*>(kumirRunner);
@@ -350,12 +367,6 @@ QString Plugin::initialize(const QStringList & parameters)
             mainWindow_, SLOT(activateDocumentTab(int)));
 
     kumirProgram_->setDebuggerWindow(debugger_);
-
-
-    courseManager_ = ExtensionSystem::PluginManager::instance()
-            ->findPlugin<Shared::CoursesInterface>();
-
-
 
 
     return "";

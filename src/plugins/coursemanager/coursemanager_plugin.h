@@ -25,7 +25,7 @@ public:
     QWidget* mainWindow() const;
     QAction* actionPerformCheck() const;
     QWidget* settingsEditorPage();
-    QList<QMenu*> Menus() const;
+    QList<QMenu*> menus() const;
     QString getText();
     void setParam(QString paramname,QString param){};
     int startNewTask(QStringList isps){return 0;};
