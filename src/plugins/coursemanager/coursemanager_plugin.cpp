@@ -16,7 +16,7 @@ Plugin::Plugin()
     MW=new MainWindowTask();
     mainWindow_=MW;
 }
-QList<QMenu*>  Plugin::Menus()const
+QList<QMenu*>  Plugin::menus()const
 {
     
     return MenuList; 
