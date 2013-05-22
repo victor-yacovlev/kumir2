@@ -21,6 +21,7 @@ public:
 
     void reset();
     void renderData(ModelPtr data);
+    QSize minimumSizeHint() const;
 
 signals:
     void itemRequest(ModelPtr model);
@@ -100,11 +101,6 @@ private:
 
 private /*fields*/:
     ModelPtr loadedModel_;
-    mutable struct Counters {
-        quint32 example;
-        quint32 figure;
-        quint32 table;
-    } counters_;
 
 private slots:
     void handleInternalLink(const QUrl & url);

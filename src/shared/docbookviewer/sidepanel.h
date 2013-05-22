@@ -35,6 +35,7 @@ signals:
 private:
     void createNavigationItems(QTreeWidgetItem * item, ModelPtr model);
     void createListOfExamples(ModelPtr root);
+    void createListOfTables(ModelPtr root);
 
 
 

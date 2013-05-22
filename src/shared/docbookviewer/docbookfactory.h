@@ -2,6 +2,7 @@
 #define DOCBOOKFACTORY_H
 
 #include "document.h"
+#include "docbookmodel.h"
 
 // Qt includes
 #include <QXmlDefaultHandler>
@@ -17,7 +18,10 @@ class DocBookFactory
 public:
     static DocBookFactory* self();
     Document parseDocument(const QUrl & url, QString * error = 0) const;
-    static ModelPtr createListOfExamples(ModelPtr root);
+    static ModelPtr createListOfEntries(ModelPtr root,
+                                        DocBookModel::ModelType resType,
+                                        DocBookModel::ModelType findType
+                                        );
 
 
 
@@ -44,7 +48,9 @@ private /*methods*/:
 
     void filterByOs(ModelPtr root) const;
 
-    static QList<ModelPtr> findExamples(ModelPtr root);
+    static QList<ModelPtr> findEntriesOfType(ModelPtr root,
+                                             DocBookModel::ModelType findType
+                                             );
 
 
 private /*fields*/:
