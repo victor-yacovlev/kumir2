@@ -26,6 +26,7 @@ QString Plugin::getText()
 {
  GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
     gui->programSource();
+    return QString();
 }    
     
     
