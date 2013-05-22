@@ -9,6 +9,7 @@ Algorhitm::Algorhitm()
     header.specialType = AlgorhitmTypeRegular;
     header.returnType.kind = TypeNone;
     header.implType = AlgorhitmCompiled;
+    header.broken = false;
 }
 
 Algorhitm::Algorhitm(const Algorhitm *src)
@@ -18,6 +19,7 @@ Algorhitm::Algorhitm(const Algorhitm *src)
     header.implType = src->header.implType;
     header.name = src->header.name;
     header.error = src->header.error;
+    header.broken = src->header.broken;
 
     for (int i=0; i<src->impl.locals.size(); i++) {
         impl.locals << new Variable(src->impl.locals[i]);

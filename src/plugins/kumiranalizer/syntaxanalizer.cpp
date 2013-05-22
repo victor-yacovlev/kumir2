@@ -2842,6 +2842,10 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName, bool allowOpe
         }
     }
 
+    // Заносим алгоритм в таблицу функций
+    alg->header.name = name;
+    bool nameHasError = false;
+
     // Проверяем на повторное описание алгоритма
     AST::Algorhitm * aa;
     if (!isOperator && findAlgorhitm(name,st.mod,aa) && aa!=alg)
@@ -2850,18 +2854,18 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName, bool allowOpe
             if (st.data[i]->type==LxNameAlg)
                 st.data[i]->error = _("The name is used by other algorithm");
         }
-        return ;
+        nameHasError = true;
     }
 
     // Проверяем на наличие переменной с таким же именем
 
     AST::Variable * vv;
-    if (!isOperator && findGlobalVariable(name, st.mod, vv)) {
+    if (!nameHasError && !isOperator && findGlobalVariable(name, st.mod, vv)) {
         for (int i=1; i<st.data.size(); i++) {
             if (st.data[i]->type==LxNameAlg)
                 st.data[i]->error = _("The name is used by global variable");
         }
-        return ;
+        nameHasError = true;
     }
 
     if (alg->header.returnType.kind!=AST::TypeNone  && onlyName) {
@@ -2873,12 +2877,10 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName, bool allowOpe
     }
 
 
-
-    // Заносим алгоритм в таблицу функций
-    alg->header.name = name;
-
-    if (onlyName)
+    if (onlyName || nameHasError) {
+        alg->header.broken = nameHasError;
         return;
+    }
 
     // Make this algorhitm public available (if not private name)
     if (!name.isEmpty() && !name.startsWith("_")) {
@@ -2904,6 +2906,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName, bool allowOpe
 
     // =============== Argument list parsing
 
+    alg->header.broken = true;
 
     QList<VariablesGroup> groups;
     if (st.data.last()->type!=LxOperRightBr) {
@@ -3005,7 +3008,7 @@ void SyntaxAnalizerPrivate::parseAlgHeader(int str, bool onlyName, bool allowOpe
         if (mustStop)
             break;
     }
-
+    alg->header.broken = localError.length() > 0;
     alg->header.error = localError;
 }
 
@@ -4069,7 +4072,7 @@ bool SyntaxAnalizerPrivate::findAlgorhitm(const QString &name, const AST::Module
                 // Find only public algorhitm
                 for (int j=0; j<ast->modules[i]->header.algorhitms.size(); j++) {
                     AST::Algorhitm * alg = ast->modules[i]->header.algorhitms[j];
-                    if (alg->header.name==name) {
+                    if (alg->header.name==name && !alg->header.broken) {
                         algorhitm = alg;
                         return true;
                     }

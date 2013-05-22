@@ -38,6 +38,7 @@ private /*methods*/:
                       const QString &qName,
                       const QXmlAttributes &atts);
     bool characters(const QString &ch);
+    bool skippedEntity(const QString &name);
     bool endElement(const QString &namespaceURI,
                     const QString &localName,
                     const QString &qName);

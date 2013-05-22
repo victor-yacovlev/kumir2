@@ -77,6 +77,9 @@ struct AlgorhitmHeader {
     /** Not empty if algorhitm header contains error,
       * but algorhitm name still reachable */
     QString error;
+
+    /** True if algorithm declaration wrong */
+    bool broken;
 };
 
 /** Algorhitm body (private to other components) */

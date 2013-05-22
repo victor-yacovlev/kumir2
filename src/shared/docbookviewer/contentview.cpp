@@ -699,9 +699,7 @@ QString ContentView::renderSection(ModelPtr data) const
             data->sectionLevel() -
             onePageParentModel(data)->sectionLevel();
     const QString tag = QString::fromAscii("h%1").arg(thisSectionLevel + 1);
-    const QString anchor = data->id().length() > 0
-            ? data->id()
-            : modelToLink(data);
+    const QString anchor = modelToLink(data);
     QString result = "<a name='" + anchor + "'><" + tag + +" class=\"title\">" +
             normalizeText(data->title()) +
             "</" + tag + "></a>\n";
@@ -729,6 +727,10 @@ QString ContentView::renderXref(ModelPtr data) const
     const QString & linkEnd = data->xrefLinkEnd();
     const QString & endTerm = data->xrefEndTerm();
     ModelPtr target = findModelById(topLevelModel(data), linkEnd);
+    ModelPtr term;
+    if (endTerm.length() > 0) {
+        term = findModelById(topLevelModel(data), linkEnd);
+    }
     if (target) {
         QString href;
         if (hasModelOnThisPage(target)) {
@@ -743,7 +745,9 @@ QString ContentView::renderXref(ModelPtr data) const
                         modelToLink(container);
             }
         }
-        const QString targetTitle = normalizeText(target->title());
+        const QString targetTitle = normalizeText(
+                    term ? term->title() : target->title()
+                    );
         if (href.length() > 0) {
             result += tr("(see&nbsp;<a href=\"%1\">%2</a>)")
                     .arg(href)
