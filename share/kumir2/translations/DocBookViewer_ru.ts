@@ -4,25 +4,46 @@
 <context>
     <name>DocBookViewer::ContentView</name>
     <message>
-        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="170"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="369"/>
+        <source>Table&amp;nbsp;%1. </source>
+        <translation>Таблица&amp;nbsp;%1. </translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="476"/>
+        <source>Context:</source>
+        <translation>Контекст:</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="497"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="515"/>
         <source>Example&amp;nbsp;%1. </source>
         <translation>Пример&amp;nbsp;%1. </translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="302"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="731"/>
         <source>(see&amp;nbsp;&lt;a href=&quot;%1&quot;&gt;%2&lt;/a&gt;)</source>
         <translation>(см.&amp;nbsp;&lt;a href=&quot;%1&quot;&gt;%2&lt;/a&gt;)</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="837"/>
+        <source>List of examples in &quot;%1&quot;</source>
+        <translation>Список примеров в &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="840"/>
+        <source>List of tables in &quot;%1&quot;</source>
+        <translation>Список таблиц в &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
     <name>DocBookViewer::DocBookViewImpl</name>
     <message>
-        <location filename="../../../src/shared/docbookviewer/docbookview_impl.cpp" line="57"/>
+        <location filename="../../../src/shared/docbookviewer/docbookview_impl.cpp" line="80"/>
         <source>Toggle sidebar visible</source>
         <translation>Показывать боковую панель</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/docbookview_impl.cpp" line="60"/>
+        <location filename="../../../src/shared/docbookviewer/docbookview_impl.cpp" line="83"/>
         <source>Print...</source>
         <translation>Печать...</translation>
     </message>
@@ -126,6 +147,49 @@
         <location filename="../../../src/shared/docbookviewer/printdialog.ui" line="78"/>
         <source>Estimate pages count</source>
         <translation>Оценить</translation>
+    </message>
+</context>
+<context>
+    <name>DocBookViewer::SidePanel</name>
+    <message>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="20"/>
+        <source>Form</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="32"/>
+        <source>Contents</source>
+        <translation>Содержание</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="45"/>
+        <source>Index</source>
+        <translation>Поиск</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="55"/>
+        <source>Examples</source>
+        <translation>Примеры</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="65"/>
+        <source>Tables</source>
+        <translation>Таблицы</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="100"/>
+        <source>Search:</source>
+        <translation>Искать:</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="192"/>
+        <source>List of examples in &quot;%1&quot;</source>
+        <translation>Список примеров в &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="220"/>
+        <source>List of tables in &quot;%1&quot;</source>
+        <translation>Список таблиц в &quot;%1&quot;</translation>
     </message>
 </context>
 </TS>
