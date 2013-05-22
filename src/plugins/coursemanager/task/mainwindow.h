@@ -72,6 +72,7 @@ public:
     void setup();
      QString getFileName(QString fileName);
      void setTeacher(bool mode);
+    QList<QAction*> getActions()const;
 
 public slots:
     void aboutToQuit ();
