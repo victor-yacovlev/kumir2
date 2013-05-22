@@ -29,7 +29,7 @@ QString Plugin::getText()
 {
  GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
     gui->programSource();
-    return gui->programSource().content.visibleText+gui->programSource().content.hiddenText;
+    return gui->programSource().content.visibleText+'\n'+gui->programSource().content.hiddenText;
 }    
 void Plugin::setPreProgram(QVariant param)
 {
