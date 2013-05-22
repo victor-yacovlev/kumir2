@@ -255,7 +255,7 @@ b[i,j]:=-b[j,i]
             </programlisting>
         </example>
     </section>
-    <section>
+    <section id="command_exit">
         <title>Выход</title>
         <para>
             Команда <code language="kumir">выход</code> используется для выхода из цикла или для окончания
