@@ -33,7 +33,7 @@ private:
 
     QString renderChapter(ModelPtr data) const;
     QString renderTOC(ModelPtr data) const;
-    QString renderTOCElement(ModelPtr data) const;
+    QString renderTOCElement(ModelPtr data, quint8 level, bool enumerate) const;
     QString renderPlainPage(ModelPtr data) const;
     QString renderOrderedList(ModelPtr data) const;
     QString renderItemizedList(ModelPtr data) const;
@@ -78,7 +78,9 @@ private:
 
     static quint16 chapterNumber(ModelPtr data);
     static quint16 elementNumber(ModelPtr data);
+    static quint16 indexInParent(ModelPtr data);
     static quint16 countOfElements(ModelPtr root, ModelPtr until, bool &stop);
+    static QString sectionNumber(ModelPtr data);
 
 
 

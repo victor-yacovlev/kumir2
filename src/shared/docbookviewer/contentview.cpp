@@ -6,6 +6,16 @@
 
 namespace DocBookViewer {
 
+static const QString MainFontFamily =
+        "Droid Serif,PT Serif,Garamond,Times New Roman,serif";
+
+static const QString MainFontSize = "14pt";
+
+static const QString CodeFontFamily =
+        "DejaVu Sans Mono,Liberation Mono,PT Sans Mono,Courier New,monospace";
+
+static const QString CodeFontSize = "12pt";
+
 ContentView::ContentView(QWidget *parent)
     : QTextBrowser(parent)
 {
@@ -55,6 +65,27 @@ QString ContentView::wrapHTML(const QString &body) const
     return QString() +
             "<html><head>"
             "<style type=\"text/css\">"
+            "a {"
+            "   color: gray;"
+            "   font-weight: bold;"
+            "   text-decoration: none;"
+            "}"
+            "p {"
+            "   text-indent: 30;"
+            "}"
+            "body {"
+            "   font-family: " + MainFontFamily + ";"
+            "   font-size: " + MainFontSize + ";"
+            "   margin: 10;"
+            "}"
+            ".code {"
+            "   font-family: " + CodeFontFamily + ";"
+            "   font-size: " + CodeFontSize + ";"
+            "}"
+            "h2 {"
+            "   align: center;"
+            "   margin: 30;"
+            "}"
             "kbd {"
             "   background-color: lightgray;"
             "}"
@@ -93,7 +124,7 @@ QString ContentView::renderChilds(ModelPtr data) const
 {
     QString result;
     foreach (ModelPtr child, data->children()) {
-        result += renderElement(child) + "\n";
+        result += renderElement(child);
     }
     return result;
 }
@@ -251,19 +282,41 @@ QString ContentView::programTextForLanguage(const QString &source,
 
 QString ContentView::renderProgramListing(ModelPtr data) const
 {
-    QString result = "<pre align='left'><font face='monospace'>";
+    QString result = "<pre align='left' class='code'>";
     const QString programText = renderChilds(data);
     result += programTextForLanguage(programText, data->role());
-    result += "</font></pre>\n";
+    result += "</pre>\n";
     return result;
 }
 
 QString ContentView::renderCode(ModelPtr data) const
 {
-    QString result = "<font face='monospace'>";
+    QString result = "<span class='code'>";
     const QString programText = renderChilds(data);
     result += programTextForLanguage(programText, data->role());
-    result += "</font>";
+    result += "</span>";
+
+    ModelPtr parent = data->parent();
+    if (parent) {
+        int index = parent->children().indexOf(data);
+        ModelPtr left, right;
+        if (index > 0) {
+            left = parent->children()[index-1];
+        }
+        if (index < parent->children().size() - 1) {
+            right = parent->children()[index+1];
+        }
+        if (left == DocBookModel::Text && left->text().length() > 0) {
+            const QChar achar = left->text()[left->text().length()-1];
+            if (achar != '(' && achar != '[' && achar != '"' && achar != '\'')
+                result = " " + result;
+        }
+        if (right == DocBookModel::Text && right->text().length() > 0) {
+            const QChar achar = right->text()[0];
+            if (!achar.isPunct() || achar == '(' || achar =='[' || achar == '-')
+                result = result + " ";
+        }
+    }
     return result;
 }
 
@@ -368,18 +421,18 @@ QString ContentView::renderTable(ModelPtr data) const
             : QString::number(elementNumber(data));
 
     if (loadedModel_ == DocBookModel::ListOfTables) {
-        result += "<a name='" + modelToLink(data) + "'>\n";
-        result += "<h2>" +
+        result += "<a name='" + modelToLink(data) + "'></a>\n";
+        result += "<h2 align='left' style='margin: 0;'>" +
                 tr("Table&nbsp;%1. ").arg(index) +
-                normalizeText(title) +
+                "<span style='font-weight:normal;'>" +
+                normalizeText(title) + "</span>" +
                 "</h2>\n";
         result += renderItemContextLink(data);
-        result += "<br/>";
         result += renderTableContent(data);
-        result += "</a>";
+        result += "<hr/>";
     }
     else {
-        result += "<a name='" + modelToLink(data) + "'>\n";
+        result += "<a name='" + modelToLink(data) + "'></a>\n";
         result += "<table width='100%'>\n";
         result += "<tr><td height='10'>&nbsp;</td></tr>\n";
         result += "<tr><td align='left'><b>";
@@ -398,6 +451,38 @@ QString ContentView::renderInformalTable(ModelPtr data) const
 {
     QString result;
     result += renderTableContent(data);
+    return result;
+}
+
+quint16 ContentView::indexInParent(ModelPtr data)
+{
+    quint16 result = 0;
+    if (data->parent()) {
+        foreach (ModelPtr child, data->parent()->children()) {
+            if (child->modelType() == data->modelType()) {
+                result += 1;
+            }
+            if (child == data) {
+                break;
+            }
+        }
+    }
+    return result;
+}
+
+QString ContentView::sectionNumber(ModelPtr data)
+{
+    QString result;
+    ModelPtr parent = data->parent();
+    ModelPtr current = data;
+    while (parent) {
+        result = QString("%1.").arg(indexInParent(current)) + result;
+        current = parent;
+        parent = parent->parent();
+        if (current == DocBookModel::Book || current == DocBookModel::Article) {
+            break;
+        }
+    }
     return result;
 }
 
@@ -489,7 +574,8 @@ QString ContentView::renderItemContextLink(ModelPtr data) const
         context = context->parent();
     }
     if (context) {
-        const QString & contextTitle = context->title();
+        const QString & contextTitle = sectionNumber(context) + "&nbsp;" +
+                context->title();
         const QString contextLink = "model_ptr:" + modelToLink(context);
         result += "<p><b>" + tr("Context:") + "</b> ";
         result += "<a href='" + contextLink + "'>" +
@@ -510,17 +596,18 @@ QString ContentView::renderExample(ModelPtr data) const
             : QString::number(elementNumber(data));
 
     if (loadedModel_ == DocBookModel::ListOfExamples) {
-        result += "<a name='" + modelToLink(data) + "'>\n";
-        result += "<h2>" +
+        result += "<a name='" + modelToLink(data) + "'></a>\n";
+        result += "<h2 align='left' style='margin: 0;'>" +
                 tr("Example&nbsp;%1. ").arg(index) +
-                normalizeText(title) +
+                "<span style='font-weight:normal;'>" +
+                normalizeText(title) + "</span>" +
                 "</h2>\n";
         result += renderItemContextLink(data);
         result += renderChilds(data);
-        result += "</a>";
+        result += "<hr/>";
     }
     else {
-        result += "<a name='" + modelToLink(data) + "'>\n";
+        result += "<a name='" + modelToLink(data) + "'></a>\n";
         result += "<table width='100%'>\n";
         result += "<tr><td height='10'>&nbsp;</td></tr>\n";
         result += "<tr><td align='center'>\n";
@@ -533,7 +620,7 @@ QString ContentView::renderExample(ModelPtr data) const
         result += "<b>" + tr("Example&nbsp;%1. ").arg(index) + "</b>";
         result += normalizeText(title);
         result += "</p></td></tr>\n";
-        result += "</table></a>\n";
+        result += "</table>\n";
     }
     return result;
 }
@@ -544,6 +631,28 @@ QString ContentView::renderEmphasis(ModelPtr data) const
     QString result = "<" + tag + ">";
     result += renderChilds(data);
     result += "</" + tag + ">";
+
+    ModelPtr parent = data->parent();
+    if (parent) {
+        int index = parent->children().indexOf(data);
+        ModelPtr left, right;
+        if (index > 0) {
+            left = parent->children()[index-1];
+        }
+        if (index < parent->children().size() - 1) {
+            right = parent->children()[index+1];
+        }
+        if (left == DocBookModel::Text && left->text().length() > 0) {
+            const QChar achar = left->text()[left->text().length()-1];
+            if (achar != '(' && achar != '[' && achar != '"' && achar != '\'')
+                result = " " + result;
+        }
+        if (right == DocBookModel::Text && right->text().length() > 0) {
+            const QChar achar = right->text()[0];
+            if (!achar.isPunct() || achar == '(' || achar =='[' || achar == '-')
+                result = result + " ";
+        }
+    }
     return result;
 }
 
@@ -574,7 +683,7 @@ QString ContentView::renderListItem(ModelPtr data) const
 
 QString ContentView::renderParagraph(ModelPtr data) const
 {
-    QString result = "<p>";
+    QString result = "<p align='justify'>";
     result += renderChilds(data);
     result += "</p>";
     return result;
@@ -696,14 +805,25 @@ QString ContentView::renderText(ModelPtr data) const
 
 QString ContentView::renderSection(ModelPtr data) const
 {
+    QString result;
     const qint8 thisSectionLevel =
             data->sectionLevel() -
             onePageParentModel(data)->sectionLevel();
     const QString tag = QString::fromAscii("h%1").arg(thisSectionLevel + 1);
+    const QString number = sectionNumber(data);
+    const QString title = number + "&nbsp;" + data->title();
+    QString style;
+    if (tag == "h2") {
+        style = "align='center'";
+    }
+    else if (tag == "h3" && !number.endsWith("1.")) {
+        result += "<p>&nbsp;</p>";
+    }
     const QString anchor = modelToLink(data);
-    QString result = "<a name='" + anchor + "'><" + tag + +" class=\"title\">" +
-            normalizeText(data->title()) +
-            "</" + tag + "></a>\n";
+    result += "<a name='" + anchor + "'></a><" + tag + " " + style +
+            " class=\"title\">" +
+            normalizeText(title) +
+            "</" + tag + ">\n";
     if (data->subtitle().length() > 0) {
         result += "<" + tag + " class=\"subtitle\">" +
                 normalizeText(data->subtitle()) +
@@ -862,25 +982,23 @@ QString ContentView::renderTOC(ModelPtr data) const
         title = tr("List of tables in \"%1\"").arg(data->title());
     }
     else {
-        title = data->title();
+        title = sectionNumber(data) + "&nbsp;" + data->title();
     }
-    result += "<h1 class=\"title\">" + normalizeText(title) + "</h1>\n";
+    result += "<h1 class='title' align='center'>" + normalizeText(title) + "</h1>\n";
     if (data->subtitle().length() > 0) {
-        result += "<h1 class=\"subtitle\">" +
+        result += "<h1 class='subtitle' align='center'>" +
                 normalizeText(data->subtitle()) +
                 "</h1>\n";
     }
     result += "<hr/>\n";
-    result += "<ol>\n";
     foreach (ModelPtr child, data->children()) {
-        result += renderTOCElement(child);
+        result += renderTOCElement(child, 0, true);
     }
-    result += "</ol>\n";
     result += "<hr/>\n";
     return result;
 }
 
-QString ContentView::renderTOCElement(ModelPtr data) const
+QString ContentView::renderTOCElement(ModelPtr data, quint8 level, bool enumerate) const
 {
     const quintptr dataPtr = quintptr(data.toWeakRef().data());
     QByteArray buffer;
@@ -888,15 +1006,34 @@ QString ContentView::renderTOCElement(ModelPtr data) const
     ds << dataPtr;
     const QString href = QString::fromAscii("model_ptr:") +
             QString::fromAscii(buffer.toHex());
-
     QString result = "\n<li>";
-    result += "<p><a href=\"" + href + "\">" + data->title() + "</p>";
+    QString index;
+    if (data == DocBookModel::Example || data == DocBookModel::Table) {
+        index = chapterNumber(data) > 0
+                ? QString("%1.%2")
+                  .arg(chapterNumber(data))
+                  .arg(elementNumber(data))
+                : QString::number(elementNumber(data));
+        index = data == DocBookModel::Example
+                ? tr("Example&nbsp;%1. ").arg(index)
+                : tr("Table&nbsp;%1. ").arg(index);
+    }
+    else {
+        index = sectionNumber(data) + " ";
+    }
+    QString title = enumerate
+            ? index + data->title()
+            : data->title();
+
+    QString indent;
+    for (quint8 i=0; i<level * 4; i++) {
+        indent += "&nbsp;";
+    }
+    result += "<p align='left' margin='5'><a href=\"" + href + "\">" + indent + title + "</p>";
     if (!isPlainPage(data)) {
-        result += "\n<ol>\n";
         foreach (ModelPtr child, data->children()) {
-            result += renderTOCElement(child);
+            result += renderTOCElement(child, level + 1, enumerate);
         }
-        result += "\n</ol>\n";
     }
     return result + "</li>\n";
 }
