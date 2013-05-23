@@ -15,25 +15,27 @@
                 одно из слов не должно быть ключевым словом.
             </para>
             <para>
-                Примеры имен: m, погода на завтра, Ноябрь 7, Седьмое ноября, дом_57б.
+                Примеры имен: <code>m</code>, <code>погода на завтра</code>,
+                <code>Ноябрь 7</code>, <code>Седьмое ноября</code>, <code>дом_57б</code>.
             </para>
             <para>
                 Примеры неправильных имен:
                 <itemizedlist>
                     <listitem>
-                        <para>7е ноября (первое слово начинается с цифры);</para>
+                        <para><code>7е ноября</code> (первое слово начинается с цифры);</para>
                     </listitem>
                     <listitem>
-                        <para>альфа-бета ("-" -- недопустимый символ);</para>
+                        <para><code>альфа-бета</code> (<code>-</code> -- недопустимый символ);</para>
                     </listitem>
                     <listitem>
-                        <para>альфа или омега (или -- ключевое слово).</para>
+                        <para><code language="kumir">альфа или омега</code>
+                            (<code language="kumir">или</code> -- ключевое слово).</para>
                     </listitem>
                 </itemizedlist>
             </para>
             <para>
-                Примечание. Ключевое слово не можно вставлять внутрь многословных логических
-                имен <xref linkend="aaa"/>.
+                Примечание. Ключевое слово <code language="kumir">не</code> можно вставлять внутрь
+                многословных логических имен.
             </para>
         </section>
         <section>
@@ -49,30 +51,47 @@
                         <para>цифры;</para>
                     </listitem>
                     <listitem>
-                        <para>два специальных знака: @ _.</para>
+                        <para>два специальных знака: <code>@ _</code>.</para>
                     </listitem>
                 </itemizedlist>
             </para>
             <para>
-                Примеры слов: бета123, 3кг, мама, Linux, КоСтЯ, kumir@infomir_ru.
+                Примеры слов: <code>бета123</code>, <code>3кг</code>, <code>мама</code>,
+                <code>Linux</code>, <code>КоСтЯ</code>, <code>kumir@infomir_ru</code>.
             </para>
             <para>
-                Примеры не слов: альфа-123, ма%ма, С++.
+                Примеры не слов: <code>альфа-123</code>, <code>ма%ма</code>, <code>С++</code>.
             </para>
         </section>
         <section>
             <title>Ключевые слова</title>
             <para>
-                <emphasis>Ключевые слова</emphasis> языка КУМИР -- это: алг нач кон исп кон_исп дано надо арг рез
-                аргрез знач цел вещ лог сим лит таб целтаб вещтаб логтаб симтаб литтаб и или
-                не да нет утв выход ввод вывод нс если то иначе все выбор при нц кц кц_при
-                раз пока для от до шаг.
+                <emphasis>Ключевые слова</emphasis>
+                языка Кумир -- это:
+                <code language="kumir">алг</code>,<code language="kumir">нач</code>,<code language="kumir">кон</code>,
+                <code language="kumir">исп</code>,<code language="kumir">кон_исп</code>,<code language="kumir">
+                дано</code>,<code language="kumir">надо</code>,<code language="kumir">арг</code>,<code language="kumir">
+                рез</code>,
+                <code language="kumir">аргрез</code>,<code language="kumir">знач</code>,<code language="kumir">
+                цел</code>,<code language="kumir">вещ</code>,<code language="kumir">лог</code>,<code language="kumir">
+                сим</code>,<code language="kumir">лит</code>,<code language="kumir">таб</code>,<code language="kumir">
+                целтаб</code>,<code language="kumir">вещтаб</code>,<code language="kumir">логтаб</code>,<code
+                    language="kumir">симтаб</code>,<code language="kumir">литтаб</code>,<code language="kumir">и</code>,
+                <code language="kumir">или</code>,
+                <code language="kumir">не</code>,<code language="kumir">да</code>,<code language="kumir">нет</code>,
+                <code language="kumir">утв</code>,<code language="kumir">выход</code>,<code language="kumir">ввод</code>
+                ,<code language="kumir">вывод</code>,<code language="kumir">нс</code>,<code language="kumir">если</code>
+                ,<code language="kumir">то</code>,<code language="kumir">иначе</code>,<code language="kumir">все</code>,
+                <code language="kumir">выбор</code>,<code language="kumir">при</code>,<code language="kumir">нц</code>,
+                <code language="kumir">кц</code>,<code language="kumir">кц_при</code>,
+                <code language="kumir">раз</code>,<code language="kumir">пока</code>,<code language="kumir">для</code>,
+                <code language="kumir">от</code>,<code language="kumir">до</code>,<code language="kumir">шаг</code>.
             </para>
         </section>
         <section>
             <title>Многословные не-имена</title>
             <para>
-                В отрицаниях логических величин, таблиц и алгоритмов функций ключевое слово не
+                В отрицаниях логических величин, таблиц и алгоритмов функций ключевое слово <code language="kumir">не</code>
                 можно вставлять между словами многословного имени.
             </para>
             <example>
@@ -87,16 +106,16 @@
                 </programlisting>
             </example>
             <para>
-                Первые три присваивания присваивают логической величине л значение, противоположное значению
-                логической величины завтра будет четверг. Четвертая строка синтаксически неверна -- не нельзя
-                ставить после имени. Последняя строка также неверна: нельзя использовать более одного не.
+                Первые три присваивания присваивают логической величине <code>л</code> значение, противоположное значению
+                логической величины <code>завтра будет четверг</code>. Четвертая строка синтаксически неверна -- <code language="kumir">не</code> нельзя
+                ставить после имени. Последняя строка также неверна: нельзя использовать более одного <code language="kumir">не</code>.
             </para>
         </section>
     </section>
     <section>
         <title>Типы величин</title>
         <para>
-            Величины, с которыми работает КуМир-программа, подразделяются на несколько типов.
+            Величины, с которыми работает Кумир-программа, подразделяются на несколько типов.
             Величина каждого из типов может принимать свой набор значений. В языке КуМир предусмотрены
             следующие типы величин:
             <itemizedlist>
@@ -140,7 +159,7 @@
             <xref linkend="aaa"/>.
             При необходимости значения целого типа автоматически переводятся в вещественные, а символьные --
             в строковые. Для преобразования вещественных значений в целые используется встроенная
-            функция int <xref linkend="aaa"/>.
+            функция <code>int</code><xref linkend="aaa"/>.
         </para>
     </section>
     <section>
@@ -155,7 +174,7 @@
             <title>Целые константы</title>
             <para>
                 Целые константы бывают положительные и отрицательные. Целая константа по абсолютной величине
-                должна быть строго меньше 2^31. Целые константы можно записывать в
+                должна быть строго меньше 2<sup>31</sup>. Целые константы можно записывать в
                 десятичной и 16-ричной форме. Шестнадцатеричные константы начинаются с символа <code>$</code>.
             </para>
             <para>Примеры: <code>123</code>, <code>-100000</code>, <code>$100</code>.</para>
@@ -164,7 +183,7 @@
             <title>Вещественные константы</title>
             <para>
                 Вещественные константы бывают положительные и отрицательные. Вещественная константа
-                по абсолютной величине должна быть меньше 21023. Вещественные константы можно
+                по абсолютной величине должна быть меньше 2<sup>1023</sup>. Вещественные константы можно
                 записывать в десятичной и экспоненциальной форме. В качестве разделителя в экспоненциальной
                 записи можно использовать любой вариант буквы <code>e</code>: строчный или прописной, латинский или
                 кириллический.
