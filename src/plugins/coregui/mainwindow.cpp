@@ -529,7 +529,7 @@ bool MainWindow::saveCurrentFileAs()
 bool MainWindow::saveCurrentFileTo(const QString &fileName)
 {
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
-    int documentId = twe->property("documentId").toInt();
+    int documentId = twe->documentId;
     QString error = m_plugin->plugin_editor->saveDocument(documentId, fileName);
     if (error.isEmpty()) {
         twe->saved = QDateTime::currentDateTime();
@@ -579,7 +579,7 @@ bool MainWindow::closeTab(int index)
         return false;
     }
     if (twe->type!=WWW) {
-        int documentId = twe->property("documentId").toInt();
+        int documentId = twe->documentId;
         bool notSaved = m_plugin->plugin_editor->hasUnsavedChanges(documentId);
         QMessageBox::StandardButton r;
         if (!notSaved) {
@@ -683,6 +683,7 @@ void MainWindow::newProgram()
                 doc.statusbarWidgets,
                 type,
                 true);
+    e->documentId = doc.id;
     ui->tabWidget->setCurrentWidget(e);
     e->setFocus();
 
@@ -763,6 +764,7 @@ void MainWindow::newText(const QString &fileName, const QString & text)
                 doc.statusbarWidgets,
                 Text,
                 true);
+    e->documentId = doc.id;
     ui->tabWidget->setCurrentWidget(e);
     if (!text.isEmpty()) {
         ui->tabWidget->setTabText(ui->tabWidget->currentIndex(),
@@ -874,7 +876,7 @@ void MainWindow::setupContentForTab()
 
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
     if (twe->type==Kumir) {
-        const int id = twe->property("documentId").toInt();
+        const int id = twe->documentId;
         const QString fileName = twe->property("fileName").toString();
         const AnalizerInterface * analizer = m_plugin->plugin_editor->analizer(id);
         int analizerId = m_plugin->plugin_editor->analizerDocumentId(id);
@@ -1018,6 +1020,7 @@ void MainWindow::restoreSession()
                             doctype,
                             true
                             );
+                twe->documentId = doc.id;
                 twe->setProperty("fileName", title);
                 twe->component->setProperty("fileName", title);
                 twe->setProperty("realFileName", url);
@@ -1042,7 +1045,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
     if (m_plugin->sessionsDisableFlag_ && b_notabs) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
         if (twe->type!=WWW) {
-            int documentId = twe->property("documentId").toInt();
+            int documentId = twe->documentId;
             bool notSaved = m_plugin->plugin_editor->hasUnsavedChanges(documentId);
             if (!notSaved) {
                 e->accept();
@@ -1055,7 +1058,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
     for (int i=0; i<ui->tabWidget->count(); i++) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
         if (twe->type!=WWW) {
-            int documentId = twe->property("documentId").toInt();
+            int documentId = twe->documentId;
             bool notSaved = m_plugin->plugin_editor->hasUnsavedChanges(documentId);
             if (notSaved) {
                 QString title = ui->tabWidget->tabText(i);
@@ -1300,6 +1303,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                         doc.statusbarWidgets,
                         Kumir,
                         true);
+            result->documentId = id;
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
             setupContentForTab();
@@ -1328,6 +1332,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                         doc.statusbarWidgets,
                         Pascal,
                         true);
+            result->documentId = id;
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
         }
@@ -1355,6 +1360,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                         doc.statusbarWidgets,
                         Text,
                         true);
+            result->documentId = id;
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
         }
@@ -1426,11 +1432,13 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
         result->saved = data.saved;
         result->changed = data.changed;
         result->url = data.url;
+        result->documentId = id;
         vc->setProperty("title", data.title);
         vc->setProperty("documentId", id);
         vc->setProperty("fromCourseManager", true);
         vc->setProperty("realFileName", data.url.toLocalFile());
     }
+    ui->tabWidget->setCurrentWidget(result);
     return result;
 }
 
