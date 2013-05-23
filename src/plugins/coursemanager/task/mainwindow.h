@@ -103,6 +103,8 @@ public slots:
      void newKurs();
      void endRootEdit();
      void cancelRootEdit();
+    void lockControls();
+    void unlockControls();
 
 protected:
     void changeEvent(QEvent *e);

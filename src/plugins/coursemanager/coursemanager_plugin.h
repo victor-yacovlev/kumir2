@@ -30,7 +30,7 @@ public:
     void setParam(QString paramname,QString param){};
     bool startNewTask(QStringList isps);
     void setPreProgram(QVariant param);
-    void startProgram(QVariant param){qDebug()<<"startProgram! NOT IMPLEMENTED!!";};
+    void startProgram(QVariant param);
 public slots:
     void setEnabled(bool value);
     void setTestingResult(ProgramRunStatus status, int value);
