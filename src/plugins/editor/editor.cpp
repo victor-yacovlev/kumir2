@@ -46,7 +46,8 @@ void Editor::lock()
     d->paste->setEnabled(false);
     d->deleteLine->setEnabled(false);
     d->deleteTail->setEnabled(false);
-    d->toggleComment->setEnabled(false);
+    if (d->toggleComment)
+        d->toggleComment->setEnabled(false);
     for (int i=0; i<d->userMacros.size(); i++) {
         d->userMacros[i].action->setEnabled(false);
     }
