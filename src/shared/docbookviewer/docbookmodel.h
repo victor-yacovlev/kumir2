@@ -55,10 +55,22 @@ public:
         InlineMediaObject,
         ImageObject,
         ImageData,
+        Subscript,
+        Superscript,
+
+        FuncSynopsys,
+        FuncSynopsysInfo,
+        FuncPrototype,
+        FuncDef,
+        ParamDef,
+        Function,
+        Parameter,
+        Package,
 
         // virtual entries
         ListOfExamples,
-        ListOfTables
+        ListOfTables,
+        ListOfFunctions
     };
 
     quint8 sectionLevel() const;
@@ -110,6 +122,12 @@ inline bool operator==(const DocBookViewer::ModelPtr & model,
                 DocBookViewer::DocBookModel::ModelType type)
 {
     return model && model->modelType() == type;
+}
+
+inline bool operator!=(const DocBookViewer::ModelPtr & model,
+                DocBookViewer::DocBookModel::ModelType type)
+{
+    return ! (model && model->modelType() == type);
 }
 
 #endif

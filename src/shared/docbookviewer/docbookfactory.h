@@ -22,6 +22,8 @@ public:
                                         DocBookModel::ModelType resType,
                                         DocBookModel::ModelType findType
                                         );
+    static QMap<QString,ModelPtr> &
+    updateListOfAlgorithms(ModelPtr root, QMap<QString,ModelPtr> &result);
 
 
 

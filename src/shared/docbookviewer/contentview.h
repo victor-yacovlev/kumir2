@@ -50,6 +50,10 @@ private:
     QString renderCode(ModelPtr data) const;
     QString renderKeyCombo(ModelPtr data) const;
     QString renderKeySym(ModelPtr data) const;
+    QString renderSubscript(ModelPtr data) const;
+    QString renderSuperscript(ModelPtr data) const;
+    static QString& wrapInlineElement(ModelPtr data, QString & result,
+                                      bool left, bool right);
 
     QString renderInformalTable(ModelPtr data) const;
     QString renderTable(ModelPtr data) const;
@@ -62,7 +66,16 @@ private:
     QString renderInlineMediaObject(ModelPtr data) const;
     QString renderImageObject(ModelPtr data) const;
 
+    QString renderFuncSynopsys(ModelPtr data) const;
+    QString renderFuncSynopsysInfo(ModelPtr data) const;
+    QString renderFuncPrototype(ModelPtr data) const;
+    QString renderFuncDef(ModelPtr data) const;
+    QString renderFunction(ModelPtr data) const;
+    QString renderParamDef(ModelPtr data) const;
+    QString renderParameter(ModelPtr data) const;
+
     QString renderListOfExamples(ModelPtr data) const;
+    QString renderListOfFunctions(ModelPtr data) const;
     QString renderListOfTables(ModelPtr data) const;
 
     bool isPlainPage(ModelPtr data) const;

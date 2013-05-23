@@ -191,17 +191,35 @@ QString ContentView::renderElement(ModelPtr data) const
     else if (data == DocBookModel::Entry) {
         return renderEntry(data);
     }
+    else if (data == DocBookModel::Subscript) {
+        return renderSubscript(data);
+    }
+    else if (data == DocBookModel::Superscript) {
+        return renderSuperscript(data);
+    }
     else if (data == DocBookModel::InlineMediaObject) {
         return renderInlineMediaObject(data);
     }
     else if (data == DocBookModel::ImageObject) {
         return renderImageObject(data);
     }
+    else if (data == DocBookModel::FuncSynopsys) {
+        return renderFuncSynopsys(data);
+    }
+    else if (data == DocBookModel::Function) {
+        return renderFunction(data);
+    }
+    else if (data == DocBookModel::Parameter) {
+        return renderParameter(data);
+    }
     else if (data == DocBookModel::ListOfExamples) {
         return renderListOfExamples(data);
     }
     else if (data == DocBookModel::ListOfTables) {
         return renderListOfTables(data);
+    }
+    else if (data == DocBookModel::ListOfFunctions) {
+        return renderListOfFunctions(data);
     }
     else {
         return "";
@@ -295,28 +313,7 @@ QString ContentView::renderCode(ModelPtr data) const
     const QString programText = renderChilds(data);
     result += programTextForLanguage(programText, data->role());
     result += "</span>";
-
-    ModelPtr parent = data->parent();
-    if (parent) {
-        int index = parent->children().indexOf(data);
-        ModelPtr left, right;
-        if (index > 0) {
-            left = parent->children()[index-1];
-        }
-        if (index < parent->children().size() - 1) {
-            right = parent->children()[index+1];
-        }
-        if (left == DocBookModel::Text && left->text().length() > 0) {
-            const QChar achar = left->text()[left->text().length()-1];
-            if (achar != '(' && achar != '[' && achar != '"' && achar != '\'')
-                result = " " + result;
-        }
-        if (right == DocBookModel::Text && right->text().length() > 0) {
-            const QChar achar = right->text()[0];
-            if (!achar.isPunct() || achar == '(' || achar =='[' || achar == '-')
-                result = result + " ";
-        }
-    }
+    return wrapInlineElement(data, result, true, true);
     return result;
 }
 
@@ -625,21 +622,184 @@ QString ContentView::renderExample(ModelPtr data) const
     return result;
 }
 
+QString ContentView::renderFuncSynopsys(ModelPtr data) const
+{
+    QString result;
+    result += "<a name='" + modelToLink(data) + "'></a>";
+    ModelPtr info, prototype;
+    foreach (ModelPtr child, data->children()) {
+        if (child == DocBookModel::FuncSynopsysInfo)
+            info = child;
+        else if (child == DocBookModel::FuncPrototype)
+            prototype = child;
+    }
+    if (loadedModel_ == data->indexParent()) {
+        result += "<h2 align='left' style='margin: 0;'>" +
+                tr("Algorithm ") +
+                "<span style='font-weight:normal;'>" +
+                normalizeText(data->title()) + "</span>" +
+                "</h2>\n";
+        if (info)
+            result += renderFuncSynopsysInfo(info);
+    }
+    if (prototype) {
+        result += "<table border='0' width='100%'><tr><td>";
+        result += "<tr><td height='10'>&nbsp;</td></tr>\n";
+        result += "<b>" + tr("Synopsis:") + "</b>";
+        result += "</td></tr><tr><td>";
+        result += "<table border='1' bordercolor='gray' cellspacing='0' cellpadding='10' width='100%'>";
+        result += "<tr><td>";
+        result += renderFuncPrototype(prototype);
+        result += "</td></tr><table></td></tr></table>\n";
+    }
+    if (loadedModel_ == data->indexParent() && data->parent()) {
+        int from = data->parent()->children().indexOf(data);
+        for (int i=from + 1; i<data->parent()->children().size(); i++) {
+            ModelPtr child = data->parent()->children()[i];
+            if (child == DocBookModel::Para) {
+                result += renderParagraph(child);
+            }
+            else if (child == DocBookModel::FuncSynopsysInfo) {
+                break;
+            }
+        }
+    }
+    if (loadedModel_ == data->indexParent()) {
+        result += "<hr/>";
+    }
+    return result;
+}
+
+QString ContentView::renderFunction(ModelPtr data) const
+{
+    QString result;
+    result += "<span class='code'>" + renderChilds(data) + "</span>";
+    wrapInlineElement(data, result, true, data->parent() != DocBookModel::FuncDef);
+    return result;
+}
+
+QString ContentView::renderParameter(ModelPtr data) const
+{
+    QString result;
+    result += "<span class='code'><i>" + renderChilds(data) + "</i></span>";
+    wrapInlineElement(data, result, true, data->parent() != DocBookModel::ParamDef);
+    return result;
+}
+
+QString ContentView::renderFuncSynopsysInfo(ModelPtr data) const
+{
+    QString result;
+    return result;
+}
+
+QString ContentView::renderFuncPrototype(ModelPtr data) const
+{
+    QString result;
+    ModelPtr funcdef;
+    QList<ModelPtr> paramdefs;
+    foreach (ModelPtr child, data->children()) {
+        if (child == DocBookModel::FuncDef)
+            funcdef = child;
+        else if (child == DocBookModel::ParamDef)
+            paramdefs.push_back(child);
+    }
+    result += "<pre class='code'>";
+    if (funcdef)
+        result += renderFuncDef(funcdef);
+
+    const QString lang = data->role().toLower().trimmed();
+    bool requireBraces = lang=="c" || lang=="c++" || lang=="python";
+
+    if (paramdefs.size() > 0 || requireBraces)
+        result += "(";
+
+    foreach (ModelPtr paramdef, paramdefs) {
+        if (paramdefs.indexOf(paramdef) > 0)
+            result += ",&nbsp;";
+        result += renderParamDef(paramdef);
+    }
+
+    if (paramdefs.size() > 0 || requireBraces)
+        result += ")";
+
+    result += "</pre>";
+    return result;
+}
+
+QString ContentView::renderFuncDef(ModelPtr data) const
+{
+    QString result;
+    QString lang = data->role();
+    ModelPtr parent = data->parent();
+    while (parent && lang.length() == 0) {
+        lang = parent->role();
+        parent = parent->parent();
+    }
+    foreach (ModelPtr child, data->children()) {
+        if (child == DocBookModel::Text)
+            result += programTextForLanguage(child->text(), lang);
+        else
+            result += renderElement(child);
+    }
+    return result;
+}
+
+QString ContentView::renderParamDef(ModelPtr data) const
+{
+    QString result;
+    QString lang = data->role();
+    ModelPtr parent = data->parent();
+    while (parent && lang.length() == 0) {
+        lang = parent->role();
+        parent = parent->parent();
+    }
+    foreach (ModelPtr child, data->children()) {
+        if (child == DocBookModel::Text)
+            result += programTextForLanguage(child->text(), lang);
+        else
+            result += renderElement(child);
+    }
+    return result;
+}
+
 QString ContentView::renderEmphasis(ModelPtr data) const
 {
     const QString tag = data->role()=="bold" ? "b" : "i";
     QString result = "<" + tag + ">";
     result += renderChilds(data);
     result += "</" + tag + ">";
+    return wrapInlineElement(data, result, true, true);
+}
 
+QString ContentView::renderSubscript(ModelPtr data) const
+{
+    QString result = "<sub>";
+    result += renderChilds(data);
+    result += "</sub>";
+    return wrapInlineElement(data, result, false, true);
+}
+
+QString ContentView::renderSuperscript(ModelPtr data) const
+{
+    QString result = "<sup>";
+    result += renderChilds(data);
+    result += "</sup>";
+    return wrapInlineElement(data, result, false, true);
+}
+
+
+
+QString& ContentView::wrapInlineElement(ModelPtr data, QString & result,
+                                        bool processLeft, bool processRight)
+{
     ModelPtr parent = data->parent();
     if (parent) {
         int index = parent->children().indexOf(data);
         ModelPtr left, right;
-        if (index > 0) {
+        if (processLeft && index > 0) {
             left = parent->children()[index-1];
         }
-        if (index < parent->children().size() - 1) {
+        if (processRight && index < parent->children().size() - 1) {
             right = parent->children()[index+1];
         }
         if (left == DocBookModel::Text && left->text().length() > 0) {
@@ -722,6 +882,14 @@ QString ContentView::renderListOfExamples(ModelPtr data) const
 }
 
 QString ContentView::renderListOfTables(ModelPtr data) const
+{
+    QString result;
+    result += renderTOC(data);
+    result += renderChilds(data);
+    return result;
+}
+
+QString ContentView::renderListOfFunctions(ModelPtr data) const
 {
     QString result;
     result += renderTOC(data);
@@ -875,7 +1043,7 @@ QString ContentView::renderXref(ModelPtr data) const
                     .arg(targetTitle);
         }
     }
-    return result;
+    return wrapInlineElement(data, result, true, true);
 }
 
 ModelPtr ContentView::findModelById(
@@ -916,6 +1084,7 @@ ModelPtr ContentView::onePageParentModel(ModelPtr data) const
             data->modelType() == DocBookModel::Article ||
             data->modelType() == DocBookModel::ListOfExamples ||
             data->modelType() == DocBookModel::ListOfTables ||
+            data->modelType() == DocBookModel::ListOfFunctions ||
             data->modelType() == DocBookModel::Book)
     {
         return data;
@@ -981,6 +1150,12 @@ QString ContentView::renderTOC(ModelPtr data) const
     else if (data == DocBookModel::ListOfTables) {
         title = tr("List of tables in \"%1\"").arg(data->title());
     }
+    else if (data == DocBookModel::ListOfFunctions) {
+        if (data->title().isEmpty())
+            title = tr("List of Standard Library algorithms");
+        else
+            title = tr("List of algorithms of module \"%1\"").arg(data->title());
+    }
     else {
         title = sectionNumber(data) + "&nbsp;" + data->title();
     }
@@ -1017,6 +1192,9 @@ QString ContentView::renderTOCElement(ModelPtr data, quint8 level, bool enumerat
         index = data == DocBookModel::Example
                 ? tr("Example&nbsp;%1. ").arg(index)
                 : tr("Table&nbsp;%1. ").arg(index);
+    }
+    else if (data == DocBookModel::FuncSynopsys) {
+        QString::number(elementNumber(data));
     }
     else {
         index = sectionNumber(data) + " ";

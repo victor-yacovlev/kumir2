@@ -12,11 +12,11 @@ SidePanel::SidePanel(QWidget *parent) :
 {
     ui->setupUi(this);
     static const QList<QPushButton*> buttons = QList<QPushButton*>()
-            << ui->contents << ui->index << ui->examples << ui->tables;
+            << ui->contents << ui->algorithms << ui->examples << ui->tables;
 
     static const QList<QTreeWidget*> treeWidgets = QList<QTreeWidget*>()
-            << ui->contentsNavigator << ui->examplesNavigator
-               << ui->tablesNavigator;
+            << ui->contentsNavigator << ui->algorithmsNavigator
+            << ui->examplesNavigator << ui->tablesNavigator;
 
     foreach (QPushButton* button, buttons) {
         connect(button, SIGNAL(clicked()), this, SLOT(hadleButtonPressed()));
@@ -51,6 +51,7 @@ void SidePanel::addDocument(Document document)
         createNavigationItems(item, model);
         createListOfExamples(model);
         createListOfTables(model);
+        createListOfAlgorithms(model);
         modelsOfItems_[item] = model;
         itemsOfModels_[model] = item;
     }
@@ -60,7 +61,7 @@ void SidePanel::hadleButtonPressed()
 {
     QObject * who = sender();
     static const QList<QPushButton*> buttons = QList<QPushButton*>()
-            << ui->contents << ui->index << ui->examples << ui->tables;
+            << ui->contents << ui->algorithms << ui->examples << ui->tables;
 
     for (int index = 0; index < buttons.size() ; index ++) {
         if (who == buttons[index]) {
@@ -77,8 +78,8 @@ void SidePanel::saveState(QSettings *settings, const QString &prefix)
     QString shown;
     if (ui->contents->isChecked())
         shown = "Contents";
-    else if (ui->index->isChecked())
-        shown = "Index";
+    else if (ui->algorithms->isChecked())
+        shown = "Algorithms";
     else if (ui->examples->isChecked())
         shown = "Examples";
     else if (ui->tables->isChecked())
@@ -91,28 +92,28 @@ void SidePanel::restoreState(QSettings *settings, const QString &prefix)
     QString shown = settings->value(prefix + "/ShowMode").toString().toLower();
     if (shown == "contents") {
         ui->contents->setChecked(true);
-        ui->index->setChecked(false);
+        ui->algorithms->setChecked(false);
         ui->examples->setChecked(false);
         ui->tables->setChecked(false);
         ui->stackedWidget->setCurrentIndex(0);
     }
-    else if (shown == "index") {
+    else if (shown == "algorithms") {
         ui->contents->setChecked(false);
-        ui->index->setChecked(true);
+        ui->algorithms->setChecked(true);
         ui->examples->setChecked(false);
         ui->tables->setChecked(false);
         ui->stackedWidget->setCurrentIndex(1);
     }
     else if (shown == "examples") {
         ui->contents->setChecked(false);
-        ui->index->setChecked(false);
+        ui->algorithms->setChecked(false);
         ui->examples->setChecked(true);
         ui->tables->setChecked(false);
         ui->stackedWidget->setCurrentIndex(2);
     }
     else if (shown == "tables") {
         ui->contents->setChecked(false);
-        ui->index->setChecked(false);
+        ui->algorithms->setChecked(false);
         ui->examples->setChecked(false);
         ui->tables->setChecked(true);
         ui->stackedWidget->setCurrentIndex(3);
@@ -137,21 +138,21 @@ void SidePanel::selectItem(ModelPtr itemModel)
             item->treeWidget()->scrollToItem(item);
             if (item->treeWidget() == ui->contentsNavigator) {
                 ui->contents->setChecked(true);
-                ui->index->setChecked(false);
+                ui->algorithms->setChecked(false);
                 ui->examples->setChecked(false);
                 ui->tables->setChecked(false);
                 ui->stackedWidget->setCurrentIndex(0);
             }
             else if (item->treeWidget() == ui->examplesNavigator) {
                 ui->contents->setChecked(false);
-                ui->index->setChecked(false);
+                ui->algorithms->setChecked(false);
                 ui->examples->setChecked(true);
                 ui->tables->setChecked(false);
                 ui->stackedWidget->setCurrentIndex(2);
             }
             else if (item->treeWidget() == ui->tablesNavigator) {
                 ui->contents->setChecked(false);
-                ui->index->setChecked(false);
+                ui->algorithms->setChecked(false);
                 ui->examples->setChecked(false);
                 ui->tables->setChecked(true);
                 ui->stackedWidget->setCurrentIndex(3);
@@ -230,6 +231,46 @@ void SidePanel::createListOfTables(ModelPtr root)
             itemsOfModels_[table] = item;
             topLevelItem->addChild(item);
             topLevelItem->setExpanded(true);
+        }
+    }
+}
+
+void SidePanel::createListOfAlgorithms(ModelPtr root)
+{
+    QMap<QString, ModelPtr> modules;
+    static const QString stdlibName = tr("Standard Library functions");
+    for (int i=0; i<ui->algorithmsNavigator->topLevelItemCount(); i++) {
+        QString key;
+        QTreeWidgetItem * topLevelItem = ui->algorithmsNavigator->topLevelItem(i);
+        if (topLevelItem->text(0) != stdlibName)
+            key = topLevelItem->text(0);
+        ModelPtr topLevelModel = modelsOfItems_[topLevelItem];
+        modules[key] = topLevelModel;
+    }
+
+    DocBookFactory::updateListOfAlgorithms(root, modules);
+
+    foreach (const QString & key, modules.keys()) {
+        ModelPtr module = modules[key];
+        QTreeWidgetItem * moduleItem = nullptr;
+        if (itemsOfModels_.contains(module)) {
+            moduleItem = itemsOfModels_[module];
+        }
+        else {
+            moduleItem = new QTreeWidgetItem(ui->algorithmsNavigator);
+            moduleItem->setText(0, key.isEmpty() ? stdlibName : key);
+            moduleItem->setExpanded(true);
+            ui->algorithmsNavigator->addTopLevelItem(moduleItem);
+            itemsOfModels_[module] = moduleItem;
+            modelsOfItems_[moduleItem] = module;
+        }
+
+        foreach (ModelPtr algorithm, module->children()) {
+            QTreeWidgetItem * algItem = new QTreeWidgetItem(moduleItem);
+            moduleItem->addChild(algItem);
+            itemsOfModels_[algorithm] = algItem;
+            modelsOfItems_[algItem] = algorithm;
+            algItem->setText(0, algorithm->title());
         }
     }
 }

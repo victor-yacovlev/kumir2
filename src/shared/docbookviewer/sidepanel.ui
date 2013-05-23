@@ -19,7 +19,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
@@ -40,9 +40,9 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QPushButton" name="index">
+       <widget class="QPushButton" name="algorithms">
         <property name="text">
-         <string>Index</string>
+         <string>Algorithms</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -77,6 +77,23 @@
      <widget class="QWidget" name="pageContents">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Filter:</string>
+           </property>
+           <property name="buddy">
+            <cstring>searchContents</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="searchContents"/>
+         </item>
+        </layout>
+       </item>
+       <item>
         <widget class="QTreeWidget" name="contentsNavigator">
          <property name="headerHidden">
           <bool>true</bool>
@@ -90,29 +107,58 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="pageIndex">
+     <widget class="QWidget" name="pageAlgorithms">
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
           <widget class="QLabel" name="label">
            <property name="text">
-            <string>Search:</string>
+            <string>Filter:</string>
+           </property>
+           <property name="buddy">
+            <cstring>searchAlgorithms</cstring>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="searchInput"/>
+          <widget class="QLineEdit" name="searchAlgorithms"/>
          </item>
         </layout>
        </item>
        <item>
-        <widget class="QListWidget" name="searchItems"/>
+        <widget class="QTreeWidget" name="algorithmsNavigator">
+         <attribute name="headerVisible">
+          <bool>false</bool>
+         </attribute>
+         <column>
+          <property name="text">
+           <string notr="true">1</string>
+          </property>
+         </column>
+        </widget>
        </item>
       </layout>
      </widget>
      <widget class="QWidget" name="pageExamples">
-      <layout class="QVBoxLayout" name="verticalLayout_4">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Filter:</string>
+           </property>
+           <property name="buddy">
+            <cstring>searchExamples</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="searchExamples"/>
+         </item>
+        </layout>
+       </item>
        <item>
         <widget class="QTreeWidget" name="examplesNavigator">
          <property name="headerHidden">
@@ -129,6 +175,23 @@
      </widget>
      <widget class="QWidget" name="pageTables">
       <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Filter:</string>
+           </property>
+           <property name="buddy">
+            <cstring>searchTables</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="searchTables"/>
+         </item>
+        </layout>
+       </item>
        <item>
         <widget class="QTreeWidget" name="tablesNavigator">
          <property name="headerHidden">

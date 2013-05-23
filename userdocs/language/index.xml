@@ -8,4 +8,5 @@
     <xi:include href="indentifiers.xml"/>
     <xi:include href="simple_commands.xml"/>
     <xi:include href="compound_commands.xml"/>
+    <xi:include href="standard_library.xml"/>
 </book>

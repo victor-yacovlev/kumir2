@@ -1,8 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                     "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-                    []>
-<chapter xmlns="http://www.oasis-open.org/docbook/xml/4.5/" xmlns:xi="http://www.w3.org/2001/XInclude">
+                    [
+                            <!ENTITY % times SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent">
+                            <!ENTITY % hellip SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent">
+                    ]>
+<chapter xmlns="http://www.oasis-open.org/docbook/xml/4.5/">
     <title>Имена, величины и выражения</title>
     <section>
         <title>Имена</title>
@@ -122,14 +125,15 @@
                 <listitem>
                     <para><code language="kumir">цел</code> -- принимает целые значения от
                         <code language="kumir">-МАКСЦЕЛ</code>
-                        до <code language="kumir">МАКСЦЕЛ</code>, где МАКСЦЕЛ&nbsp;=&nbsp;2147483647;
+                        до <code language="kumir">МАКСЦЕЛ</code>, где <code>МАКСЦЕЛ</code>&nbsp;=&nbsp;2147483647;
                     </para>
                 </listitem>
                 <listitem>
                     <para><code language="kumir">вещ</code> -- принимает целые значения от
                         <code language="kumir">-МАКСВЕЩ</code>
                         до <code language="kumir">МАКСВЕЩ</code>,
-                        где МАКСВЕЩ -- это число, немного меньшее, чем 1.797693 x 10^308;
+                        где <code>МАКСВЕЩ</code> -- это число, немного меньшее, чем
+                        1.797693&times;10<superscript>308</superscript>;
                     </para>
                 </listitem>
                 <listitem>
@@ -174,7 +178,7 @@
             <title>Целые константы</title>
             <para>
                 Целые константы бывают положительные и отрицательные. Целая константа по абсолютной величине
-                должна быть строго меньше 2<sup>31</sup>. Целые константы можно записывать в
+                должна быть строго меньше 2<superscript>31</superscript>. Целые константы можно записывать в
                 десятичной и 16-ричной форме. Шестнадцатеричные константы начинаются с символа <code>$</code>.
             </para>
             <para>Примеры: <code>123</code>, <code>-100000</code>, <code>$100</code>.</para>
@@ -183,7 +187,7 @@
             <title>Вещественные константы</title>
             <para>
                 Вещественные константы бывают положительные и отрицательные. Вещественная константа
-                по абсолютной величине должна быть меньше 2<sup>1023</sup>. Вещественные константы можно
+                по абсолютной величине должна быть меньше 2<superscript>1023</superscript>. Вещественные константы можно
                 записывать в десятичной и экспоненциальной форме. В качестве разделителя в экспоненциальной
                 записи можно использовать любой вариант буквы <code>e</code>: строчный или прописной, латинский или
                 кириллический.
@@ -536,7 +540,8 @@
             </para>
             <para>
                 Вызов функции с именем имя_функции и аргументами, заданными выражениями
-                X1,..., Xn записывается так: <code>имя_функции(X1,...,Xn)</code>.
+                X<subscript>1</subscript>,&nbsp;&hellip;,&nbsp;X<subscript>n</subscript> записывается так:
+                <code>имя_функции(X1,...,Xn)</code>.
             </para>
         </section>
         <section>

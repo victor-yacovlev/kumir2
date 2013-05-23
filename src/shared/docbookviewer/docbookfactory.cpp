@@ -193,6 +193,33 @@ bool DocBookFactory::startElement(
     else if (element == "imagedata") {
         model = new DocBookModel(root_, DocBookModel::ImageData);
     }
+    else if (element == "subscript") {
+        model = new DocBookModel(root_, DocBookModel::Subscript);
+    }
+    else if (element == "superscript") {
+        model = new DocBookModel(root_, DocBookModel::Superscript);
+    }
+    else if (element == "funcsynopsis") {
+        model = new DocBookModel(root_, DocBookModel::FuncSynopsys);
+    }
+    else if (element == "funcsynopsisinfo") {
+        model = new DocBookModel(root_, DocBookModel::FuncSynopsysInfo);
+    }
+    else if (element == "funcprototype") {
+        model = new DocBookModel(root_, DocBookModel::FuncPrototype);
+    }
+    else if (element == "funcdef") {
+        model = new DocBookModel(root_, DocBookModel::FuncDef);
+    }
+    else if (element == "function") {
+        model = new DocBookModel(root_, DocBookModel::Function);
+    }
+    else if (element == "paramdef") {
+        model = new DocBookModel(root_, DocBookModel::ParamDef);
+    }
+    else if (element == "parameter") {
+        model = new DocBookModel(root_, DocBookModel::Parameter);
+    }
     else if (element == "xref") {
         model = new DocBookModel(root_, DocBookModel::Xref);
         model->xrefLinkEnd_ = atts.value("linkend");
@@ -273,9 +300,9 @@ bool DocBookFactory::characters(const QString &ch)
         buffer_ += ch;
     }
     else {
-        if (buffer_.length() > 0 && ch.trimmed().length() > 0) {
-            buffer_.push_back(' ');
-        }
+//        if (buffer_.length() > 0 && ch.trimmed().length() > 0) {
+//            buffer_.push_back(' ');
+//        }
         buffer_ += ch.simplified();
     }
     return true;
@@ -298,6 +325,14 @@ bool DocBookFactory::skippedEntity(const QString &name)
     else if (name == "ge") {
         buffer_.push_back(QChar(0x2265));  // greater or equal
     }
+    else if (name == "times") {
+        // See: http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent
+        buffer_.push_back(QChar(0x00D7)); // multiplication sign
+    }
+    else if (name == "hellip") {
+        // See: http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent
+        buffer_.push_back(QChar(0x2026)); // three dots at bottom
+    }
     return true;
 }
 
@@ -313,6 +348,10 @@ bool DocBookFactory::endElement(const QString &namespaceURI,
             << "preface" << "abstract" << "reference"
             << "informaltable" << "table" << "thead" << "tbody" << "row" << "entry"
             << "inlinemediaobject" << "imageobject" << "imagedata"
+            << "subscript" << "superscript"
+            << "funcsynopsis" << "funcsynopsisinfo" << "package"
+            << "funcprototype" << "funcdef" << "function"
+            << "paramdef" << "parameter"
             << "emphasis" << "xref"  << "keycombo" << "keysym";
     const QString element = localName.toLower();
     if (root_ && element == "title") {
@@ -324,6 +363,20 @@ bool DocBookFactory::endElement(const QString &namespaceURI,
         buffer_.clear();
     }
     else if (root_ && tagsToClose.contains(element)) {
+        if (root_->title().isEmpty()) {
+            if (root_ == DocBookModel::Example || root_ == DocBookModel::FuncSynopsys) {
+                ModelPtr parent = root_->parent();
+                while (parent) {
+                    if (parent == DocBookModel::Section
+                            && !parent->title().isEmpty())
+                    {
+                        root_->title_ = parent->title();
+                        break;
+                    }
+                    parent = parent->parent();
+                }
+            }
+        }
         if (buffer_.length() > 0) {
             DocBookModel* text = new DocBookModel(root_, DocBookModel::Text);
             text->text_ = buffer_;
@@ -402,6 +455,52 @@ ModelPtr DocBookFactory::createListOfEntries(ModelPtr root,
         result->title_ = root->title();
         result->subtitle_ = root->subtitle();
     }
+    return result;
+}
+
+QMap<QString, ModelPtr> & DocBookFactory::updateListOfAlgorithms(
+        ModelPtr root,
+        QMap<QString, ModelPtr> &result)
+{
+    QList<ModelPtr> allItems = findEntriesOfType(root, DocBookModel::FuncSynopsys);
+
+    foreach (ModelPtr item, allItems) {
+        QString moduleName;
+        QList<ModelPtr> infos = findEntriesOfType(item,
+                                                  DocBookModel::FuncSynopsysInfo);
+        if (infos.size() > 0) {
+            ModelPtr info = infos.first();
+            QList<ModelPtr> packages = findEntriesOfType(info,
+                                                         DocBookModel::Package);
+            if (packages.size() > 0) {
+                ModelPtr package = packages.first();
+                foreach (ModelPtr packageChild, package->children()) {
+                    if (packageChild == DocBookModel::Text) {
+                        if (moduleName.length() > 0)
+                            moduleName += " ";
+                        moduleName += packageChild->text().trimmed();
+                    }
+                }
+            }
+        }
+
+        ModelPtr moduleRoot;
+        if (result.contains(moduleName)) {
+            moduleRoot = result[moduleName];
+        }
+        else {
+            moduleRoot = ModelPtr(new DocBookModel(
+                                      ModelPtr(),
+                                      DocBookModel::ListOfFunctions
+                                      )
+                                  );
+            result[moduleName] = moduleRoot;
+            moduleRoot->title_ = moduleName;
+        }
+        item->indexParent_ = moduleRoot;
+        moduleRoot->children_.append(item);
+    }
+
     return result;
 }
 
