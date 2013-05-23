@@ -29,7 +29,7 @@ QString Plugin::getText()
 {
  GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
     gui->programSource();
-    return gui->programSource().content.visibleText+'\n'+gui->programSource().content.hiddenText;
+    return gui->programSource().content.visibleText+QChar('\n')+gui->programSource().content.hiddenText;
 }    
 void Plugin::setPreProgram(QVariant param)
 {
@@ -66,7 +66,11 @@ QWidget* Plugin::mainWindow() const
 {
     return mainWindow_;
 }
-
+void Plugin::startProgram(QVariant param)
+{
+   GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
+    gui->startTesting();
+};
 QAction* Plugin::actionPerformCheck() const
 {
     return actionPerformCheck_;
@@ -97,7 +101,7 @@ void Plugin::setEnabled(bool value)
 
 void Plugin::setTestingResult(ProgramRunStatus status, int value)
 {
-
+qDebug()<<"Set testing results";
 }
 
 void Plugin::saveSession() const
@@ -118,7 +122,8 @@ void Plugin::changeCurrentDirectory(const QString &path)
 void Plugin::changeGlobalState(ExtensionSystem::GlobalState old,
                                ExtensionSystem::GlobalState current)
 {
-
+    if(current==ExtensionSystem::GlobalState::GS_Running)MW->lockControls();
+   if(current==ExtensionSystem::GlobalState::GS_Observe)MW->unlockControls();  
 }
 
 QString Plugin::initialize(const QStringList &arguments)

@@ -436,16 +436,26 @@ if(!cursWorkFile.exists()){
     saveCourse();
       };
 course->setMark(curTaskIdx.internalId(),0);
-ui->splitter->setEnabled(false);
-ui->checkTask->setEnabled(false);
-ui->loadCurs->setEnabled(false);
+
 
 interface->startProgram(QVariant("TODO LOAD SCRIPT"));
    //ui->loadCurs->setEnabled(false);
 
  };
 
+ void MainWindowTask::lockControls()
+{
+    ui->splitter->setEnabled(false);
+    ui->checkTask->setEnabled(false);
+    ui->loadCurs->setEnabled(false);  
+};
 
+void MainWindowTask::unlockControls()
+{
+    ui->splitter->setEnabled(true);
+    ui->checkTask->setEnabled(true);
+    ui->loadCurs->setEnabled(true);  
+};
 
 void  MainWindowTask::setMark(int mark)
 {
