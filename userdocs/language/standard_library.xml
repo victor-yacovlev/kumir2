@@ -5,7 +5,7 @@
                 <!ENTITY % times SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent">
                 <!ENTITY % hellip SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent">
                 ]>
-<chapter xmlns="http://www.oasis-open.org/docbook/xml/4.5/">
+<chapter xmlns="http://www.oasis-open.org/docbook/xml/4.5/" xmlns:mathml="http://www.w3.org/1998/Math/MathML">
     <title>Встроенные алгоритмы</title>
     <section>
         <title>Общие сведения</title>
@@ -80,7 +80,7 @@
                 <parameter>успех</parameter> записывается <code language="kumir">да</code>
                 алгоритм возвращает вещественное значение, иначе в <parameter>успех</parameter>
                 записывается <code language="kumir">нет</code> и алгоритм возвращает значение
-                <code>0</code>.
+                <code>0.0</code>.
 
             </para>
             <example>
@@ -93,6 +93,70 @@
   а := "5.9999"
   б := лит_в_вещ(а, усп)
   вывод б, " ", усп
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>лит_в_цел</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг цел <function>лит_в_цел</function></funcdef>
+                    <paramdef>лит <parameter>строка</parameter></paramdef>
+                    <paramdef>рез лог <parameter>успех</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Переводит строку <parameter>строка</parameter> в целочисленное представление.
+                Если <parameter>строка</parameter> содержит только целое число, то в
+                <parameter>успех</parameter> записывается <code language="kumir">да</code>
+                алгоритм возвращает вещественное значение, иначе в <parameter>успех</parameter>
+                записывается <code language="kumir">нет</code> и алгоритм возвращает значение
+                <code>0</code>.
+
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+алг
+нач
+  лит а
+  цел б
+  лог усп
+  а := "5"
+  б := лит_в_цел(а, усп)
+  вывод б, " ", усп
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+    </section>
+    <section>
+        <title>Математика</title>
+        <section>
+            <title>sqrt</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>sqrt</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>Возвращает
+                <mathml:math><mathml:mrow><mathml:msqrt><mathml:mi>x</mathml:mi></mathml:msqrt></mathml:mrow></mathml:math>
+                -- квадратный корень из <parameter>x</parameter>.
+            </para>
+            <para>
+                Значение <parameter>x</parameter> должно быть <code>&ge; 0</code>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+вещ х
+алг
+нач
+ввод х
+х := sqrt (х)
+вывод "корень квадратный из числа х равен ", х
 кон
 ]]>
                 </programlisting>

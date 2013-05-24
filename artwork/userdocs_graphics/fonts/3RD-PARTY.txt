@@ -1,0 +1,3 @@
+The OpenGost fonts used in artwork are 3rd-party property, see LICENSE for details.
+
+The SVG derivative  was converted from original using Apache Batik toolkit.

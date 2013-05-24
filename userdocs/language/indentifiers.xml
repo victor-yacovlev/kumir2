@@ -5,7 +5,7 @@
                             <!ENTITY % times SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent">
                             <!ENTITY % hellip SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent">
                     ]>
-<chapter xmlns="http://www.oasis-open.org/docbook/xml/4.5/">
+<chapter xmlns="http://www.oasis-open.org/docbook/xml/4.5/" xmlns:mathml="http://www.w3.org/1998/Math/MathML">
     <title>Имена, величины и выражения</title>
     <section>
         <title>Имена</title>
@@ -560,111 +560,187 @@
                 <tbody>
                     <row>
                         <entry>
-                            <inlinemediaobject>
-                                <imageobject>
-                                    <imagedata format="PNG" fileref="table_of_expressions/sample01.png"/>
-                                </imageobject>
-                            </inlinemediaobject>
+                            <mathml:math><mathml:mrow>
+                                <mathml:mo>-</mathml:mo>
+                                <mathml:mfrac>
+                                    <mathml:mrow><mathml:mn>1</mathml:mn></mathml:mrow>
+                                    <mathml:mrow>
+                                        <mathml:mi>x</mathml:mi>
+                                        <mathml:msup>
+                                            <mathml:mn>2</mathml:mn>
+                                        </mathml:msup>
+                                    </mathml:mrow>
+                                </mathml:mfrac>
+                            </mathml:mrow></mathml:math>
                         </entry>
                         <entry><code>-1/x**2</code></entry>
                     </row>
                     <row>
                         <entry>
-                            <inlinemediaobject>
-                                <imageobject>
-                                    <imagedata format="PNG" fileref="table_of_expressions/sample02.png"/>
-                                </imageobject>
-                            </inlinemediaobject>
+                            <mathml:math><mathml:mrow>
+                                <mathml:mfrac>
+                                    <mathml:mrow><mathml:mi>a</mathml:mi></mathml:mrow>
+                                    <mathml:mrow>
+                                        <mathml:mi>b</mathml:mi>
+                                        <mathml:mi>c</mathml:mi>
+                                    </mathml:mrow>
+                                </mathml:mfrac>
+                            </mathml:mrow></mathml:math>
                         </entry>
                         <entry><code>a/(b*c)</code></entry>
                     </row>
                     <row>
                         <entry>
-                            <inlinemediaobject>
-                                <imageobject>
-                                    <imagedata format="PNG" fileref="table_of_expressions/sample03.png"/>
-                                </imageobject>
-                            </inlinemediaobject>
+                            <mathml:math><mathml:mrow>
+                                <mathml:mfrac>
+                                    <mathml:mrow><mathml:mi>a</mathml:mi></mathml:mrow>
+                                    <mathml:mrow><mathml:mi>b</mathml:mi></mathml:mrow>
+                                </mathml:mfrac>
+                                <mathml:mi>c</mathml:mi>
+                            </mathml:mrow></mathml:math>
                         </entry>
                         <entry><code>a/b*c</code> или <code>(a/b)*c</code></entry>
                     </row>
                     <row>
                         <entry>
-                            <inlinemediaobject>
-                                <imageobject>
-                                    <imagedata format="PNG" fileref="table_of_expressions/sample04.png"/>
-                                </imageobject>
-                            </inlinemediaobject>
+                            <mathml:math><mathml:mrow>
+                                <mathml:mn>2</mathml:mn>
+                                <mathml:msup>
+                                    <mathml:mn>2</mathml:mn>
+                                    <mathml:msup>
+                                        <mathml:mi>n</mathml:mi>
+                                    </mathml:msup>
+                                </mathml:msup>
+                            </mathml:mrow></mathml:math>
                         </entry>
                         <entry><code>2**(2**n)</code></entry>
                     </row>
                     <row>
                         <entry>
-                            <inlinemediaobject>
-                                <imageobject>
-                                    <imagedata format="PNG" fileref="table_of_expressions/sample05.png"/>
-                                </imageobject>
-                            </inlinemediaobject>
-                        </entry>
-                        <entry><code>x**(y**z)</code></entry>
-                    </row>
-                    <row>
-                        <entry>
-                            <inlinemediaobject>
-                                <imageobject>
-                                    <imagedata format="PNG" fileref="table_of_expressions/sample06.png"/>
-                                </imageobject>
-                            </inlinemediaobject>
+                            <mathml:math><mathml:mrow>
+                                <mathml:mfrac>
+                                    <mathml:mrow>
+                                        <mathml:mo>-</mathml:mo>
+                                        <mathml:mi>b</mathml:mi>
+                                        <mathml:mo>+</mathml:mo>
+                                        <mathml:msqrt>
+                                            <mathml:mi>b</mathml:mi>
+                                            <mathml:msup>
+                                                <mathml:mn>2</mathml:mn>
+                                            </mathml:msup>
+                                            <mathml:mo>-</mathml:mo>
+                                            <mathml:mn>4</mathml:mn>
+                                            <mathml:mi>a</mathml:mi>
+                                            <mathml:mi>c</mathml:mi>
+                                        </mathml:msqrt>
+                                    </mathml:mrow>
+                                    <mathml:mrow>
+                                        <mathml:mn>2</mathml:mn>
+                                        <mathml:mi>a</mathml:mi>
+                                    </mathml:mrow>
+                                </mathml:mfrac>
+
+                            </mathml:mrow></mathml:math>
                         </entry>
                         <entry><code>(-b+sqrt(b**2-4*a*c))/(2*a)</code></entry>
                     </row>
                     <row>
                         <entry>
-                            <inlinemediaobject>
-                                <imageobject>
-                                    <imagedata format="PNG" fileref="table_of_expressions/sample07.png"/>
-                                </imageobject>
-                            </inlinemediaobject>
+                            <mathml:math><mathml:mrow>
+                                <mathml:msqrt>
+                                    <mathml:mi>p</mathml:mi>
+                                    <mathml:mo>(</mathml:mo>
+                                    <mathml:mi>p</mathml:mi>
+                                    <mathml:mo>-</mathml:mo>
+                                    <mathml:mi>a</mathml:mi>
+                                    <mathml:mo>)</mathml:mo>
+                                    <mathml:mo>(</mathml:mo>
+                                    <mathml:mi>p</mathml:mi>
+                                    <mathml:mo>-</mathml:mo>
+                                    <mathml:mi>b</mathml:mi>
+                                    <mathml:mo>)</mathml:mo>
+                                    <mathml:mo>(</mathml:mo>
+                                    <mathml:mi>p</mathml:mi>
+                                    <mathml:mo>-</mathml:mo>
+                                    <mathml:mi>c</mathml:mi>
+                                    <mathml:mo>)</mathml:mo>
+                                </mathml:msqrt>
+                            </mathml:mrow></mathml:math>
                         </entry>
                         <entry><code>sqrt(p*(p-a)*(p-b)*(p-c))</code></entry>
                     </row>
                     <row>
                         <entry>
-                            <inlinemediaobject>
-                                <imageobject>
-                                    <imagedata format="PNG" fileref="table_of_expressions/sample08.png"/>
-                                </imageobject>
-                            </inlinemediaobject>
+                            <mathml:math><mathml:mrow>
+                                <mathml:mfrac>
+                                    <mathml:mrow>
+                                        <mathml:mi>a</mathml:mi>
+                                        <mathml:mo>+</mathml:mo>
+                                        <mathml:mi>b</mathml:mi>
+                                        <mathml:mo>+</mathml:mo>
+                                        <mathml:mi>c</mathml:mi>
+                                    </mathml:mrow>
+                                    <mathml:mrow>
+                                        <mathml:mn>2</mathml:mn>
+                                    </mathml:mrow>
+                                </mathml:mfrac>
+                            </mathml:mrow></mathml:math>
                         </entry>
                         <entry><code>(a+b+c)/2</code></entry>
                     </row>
                     <row>
                         <entry>
-                            <inlinemediaobject>
-                                <imageobject>
-                                    <imagedata format="PNG" fileref="table_of_expressions/sample09.png"/>
-                                </imageobject>
-                            </inlinemediaobject>
+                            <mathml:math><mathml:mrow>
+                                <mathml:msqrt>
+                                    <mathml:mi>a</mathml:mi>
+                                    <mathml:msup><mathml:mn>2</mathml:mn></mathml:msup>
+                                    <mathml:mo>+</mathml:mo>
+                                    <mathml:mi>b</mathml:mi>
+                                    <mathml:msup><mathml:mn>2</mathml:mn></mathml:msup>
+                                    <mathml:mo>+</mathml:mo>
+                                    <mathml:mn>2</mathml:mn>
+                                    <mathml:mi>a</mathml:mi>
+                                    <mathml:mi>b</mathml:mi>
+                                    <mathml:mi>cos</mathml:mi>
+                                    <mathml:mi>&gamma;</mathml:mi>
+                                </mathml:msqrt>
+                            </mathml:mrow></mathml:math>
                         </entry>
                         <entry><code>sqrt(a**2+b**2-2*a*b*cos(gamma))</code></entry>
                     </row>
                     <row>
                         <entry>
-                            <inlinemediaobject>
-                                <imageobject>
-                                    <imagedata format="PNG" fileref="table_of_expressions/sample10.png"/>
-                                </imageobject>
-                            </inlinemediaobject>
+                            <mathml:math><mathml:mrow>
+                                <mathml:mfrac>
+                                    <mathml:mrow>
+                                        <mathml:mi>a</mathml:mi>
+                                        <mathml:mi>d</mathml:mi>
+                                        <mathml:mo>+</mathml:mo>
+                                        <mathml:mi>b</mathml:mi>
+                                        <mathml:mi>c</mathml:mi>
+                                    </mathml:mrow>
+                                    <mathml:mrow>
+                                        <mathml:mi>b</mathml:mi>
+                                        <mathml:mi>d</mathml:mi>
+                                    </mathml:mrow>
+                                </mathml:mfrac>
+                            </mathml:mrow></mathml:math>
                         </entry>
                         <entry><code>(a*d+b*c)/(b*d)</code></entry>
                     </row>
                     <row>
                         <entry>
-                            <inlinemediaobject>
-                                <imageobject>
-                                    <imagedata format="PNG" fileref="table_of_expressions/sample11.png"/>
-                                </imageobject>
-                            </inlinemediaobject>
+                            <mathml:math><mathml:mrow>
+                                <mathml:mi>sin</mathml:mi>
+                                <mathml:mi>&alpha;</mathml:mi>
+                                <mathml:mi>cos</mathml:mi>
+                                <mathml:mi>&beta;</mathml:mi>
+                                <mathml:mo>+</mathml:mo>
+                                <mathml:mi>cos</mathml:mi>
+                                <mathml:mi>&alpha;</mathml:mi>
+                                <mathml:mi>sin</mathml:mi>
+                                <mathml:mi>&beta;</mathml:mi>
+                            </mathml:mrow></mathml:math>
                         </entry>
                         <entry><code>sin(alpha)*cos(beta)+cos(alpha)*sin(beta)</code></entry>
                     </row>

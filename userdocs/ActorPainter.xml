@@ -6,8 +6,119 @@
                 <!ENTITY % hellip SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent">
                 ]>
 <article>
-  <title>Исполнитель "Рисователь"</title>
-  <section>
-      <title>Общие сведения</title>
-  </section>
+    <title>Исполнитель "Рисователь"</title>
+    <abstract>
+        <para>
+            Рисователь -- исполнитель системы Кумир. Назначение Рисователя -- создавать
+            рисунки на листе. Как и другие исполнители, он имеет систему команд, свою
+            "обстановку" -- лист, на котором можно рисовать, и окно, в котором виден лист.
+        </para>
+        <para>
+            Исполнитель разработан по инициативе д.&nbsp;т.&nbsp;н. проф. К.&nbsp;Ю.&nbsp;Полякова,
+            спецификация исполнителя создана совместно группой разработки Кумир и К.&nbsp;Ю.&nbsp;
+            Поляковым.
+        </para>
+    </abstract>
+    <section>
+        <title>Тип величины "цвет"</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Алгоритмы для работы с цветом</title>
+        <para></para>
+        <section>
+            <title>CMYK</title>
+            <funcsynopsis role="kumir">
+                <funcsynopsisinfo>
+                    <package>Рисователь</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг <type>цвет</type><function>CMYK</function></funcdef>
+                    <paramdef>цел <parameter>c</parameter></paramdef>
+                    <paramdef>цел <parameter>m</parameter></paramdef>
+                    <paramdef>цел <parameter>y</parameter></paramdef>
+                    <paramdef>цел <parameter>k</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает величину типа <type>цвет</type>, составленную из компонент цветовой модели CMYK:
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <parameter>c</parameter> -- величина бирюзовой составляющей цвета;
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para><parameter>m</parameter> -- величина пурпурной составляющей цвета;</para>
+                    </listitem>
+                    <listitem>
+                        <para><parameter>y</parameter> -- величина желтой составляющей цвета;</para>
+                    </listitem>
+                    <listitem>
+                        <para><parameter>k</parameter> -- величина черной составляющей цвета.</para>
+                    </listitem>
+                </itemizedlist>
+                Все значения состовляющих должны быть от <code>0</code> до <code>255</code>.
+            </para>
+            <mediaobject>
+                <imageobject>
+                    <imagedata format="SVG" fileref="ActorPainter/CMYK_model.svg"/>
+                </imageobject>
+                <caption>
+                    <para>
+                        Цветовая модель CMYK получается основана на аддитивном смешиванием трех красок: чем выше
+                        значение отдельных компонент, тем темнее получается цвет.
+                    </para>
+                    <para>
+                        Как правило, при смешивании трех основных цветов -- бирюзового&nbsp;(<parameter>c</parameter>),
+                        пурпурного&nbsp;(<parameter>m</parameter>) и желтого&nbsp;(<parameter>y</parameter>), не удается
+                        получить настоящий темный цвет. Поэтому к трем основным цветам добавлен
+                        черный&nbsp;(<parameter>k</parameter>).
+                    </para>
+                </caption>
+            </mediaobject>
+        </section>
+        <section>
+            <title>RGB</title>
+            <funcsynopsis role="kumir">
+                <funcsynopsisinfo>
+                    <package>Рисователь</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг <type>цвет</type><function>RGB</function></funcdef>
+                    <paramdef>цел <parameter>r</parameter></paramdef>
+                    <paramdef>цел <parameter>g</parameter></paramdef>
+                    <paramdef>цел <parameter>b</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает величину типа <type>цвет</type>, составленную из компонент цветовой модели RGB:
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <parameter>r</parameter> -- величина красной составляющей цвета;
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para><parameter>g</parameter> -- величина зеленой составляющей цвета;</para>
+                    </listitem>
+                    <listitem>
+                        <para><parameter>b</parameter> -- величина синей составляющей цвета;</para>
+                    </listitem>
+                </itemizedlist>
+                Все значения состовляющих должны быть от <code>0</code> до <code>255</code>.
+            </para>
+            <mediaobject>
+                <imageobject>
+                    <imagedata format="SVG" fileref="ActorPainter/RGB_model.svg"/>
+                </imageobject>
+                <caption>
+                    <para>
+                        Цветовая модель RGB получается основана на субтрактивном смешиванием трех красок: чем выше
+                        значение отдельных компонент, тем светлее получается цвет.
+                    </para>
+                </caption>
+            </mediaobject>
+        </section>
+    </section>
 </article>
