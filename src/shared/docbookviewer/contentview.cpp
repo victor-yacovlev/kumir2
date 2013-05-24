@@ -1,5 +1,6 @@
 #include "contentview.h"
 #include "docbookmodel.h"
+#include "mathmlrenderer.h"
 
 #include <QtCore>
 #include <QtGui>
@@ -60,6 +61,39 @@ QString ContentView::renderChapter(ModelPtr data) const
     return result;
 }
 
+QString ContentView::renderAbstract(ModelPtr data) const
+{
+    QString result;
+    result += "<div class='abstract'>";
+    foreach (ModelPtr child, data->children()) {
+        result += renderElement(child);
+    }
+    result += "</div>";
+    return result;
+}
+
+QString ContentView::renderArticle(ModelPtr data) const
+{
+    QString result;
+    result += "<h1 align='center'>" + normalizeText(data->title()) + "</h1>\n";
+    ModelPtr abstract;
+    foreach (ModelPtr child, data->children()) {
+        if (child == DocBookModel::Abstract) {
+            abstract = child;
+            break;
+        }
+    }
+    if (abstract) {
+        result += renderAbstract(abstract);
+    }
+    result += "<hr/>";
+    foreach (ModelPtr child, data->children()) {
+        result += renderElement(child);
+    }
+    return result;
+}
+
+
 QString ContentView::wrapHTML(const QString &body) const
 {
     return QString() +
@@ -70,8 +104,9 @@ QString ContentView::wrapHTML(const QString &body) const
             "   font-weight: bold;"
             "   text-decoration: none;"
             "}"
-            "p {"
-            "   text-indent: 30;"
+            ".abstract {"
+            "   margin: 30;"
+            "   font-style: italic;"
             "}"
             "body {"
             "   font-family: " + MainFontFamily + ";"
@@ -152,6 +187,9 @@ QString ContentView::renderElement(ModelPtr data) const
     else if (data == DocBookModel::Chapter) {
         return renderChapter(data);
     }
+    else if (data == DocBookModel::Article) {
+        return renderArticle(data);
+    }    
     else if (data == DocBookModel::Section) {
         return renderSection(data);
     }
@@ -197,6 +235,12 @@ QString ContentView::renderElement(ModelPtr data) const
     else if (data == DocBookModel::Superscript) {
         return renderSuperscript(data);
     }
+    else if (data == DocBookModel::MediaObject) {
+        return renderMediaObject(data);
+    }
+    else if (data == DocBookModel::Caption) {
+        return renderCaption(data);
+    }
     else if (data == DocBookModel::InlineMediaObject) {
         return renderInlineMediaObject(data);
     }
@@ -211,6 +255,12 @@ QString ContentView::renderElement(ModelPtr data) const
     }
     else if (data == DocBookModel::Parameter) {
         return renderParameter(data);
+    }
+    else if (data == DocBookModel::Type) {
+        return renderType(data);
+    }
+    else if (data == DocBookModel::MathML_Math) {
+        return renderMathML(data);
     }
     else if (data == DocBookModel::ListOfExamples) {
         return renderListOfExamples(data);
@@ -574,9 +624,10 @@ QString ContentView::renderItemContextLink(ModelPtr data) const
         const QString & contextTitle = sectionNumber(context) + "&nbsp;" +
                 context->title();
         const QString contextLink = "model_ptr:" + modelToLink(context);
-        result += "<p><b>" + tr("Context:") + "</b> ";
-        result += "<a href='" + contextLink + "'>" +
-                contextTitle + "</a></p>";
+        const QString contextAHref = "<a href='" + contextLink + "'>" +
+                contextTitle + "</a>";
+        result += "<p align='left'>"+tr("See %1 for more details.")
+                .arg(contextAHref)+"</p>";
     }
     return result;
 }
@@ -639,12 +690,33 @@ QString ContentView::renderFuncSynopsys(ModelPtr data) const
                 "<span style='font-weight:normal;'>" +
                 normalizeText(data->title()) + "</span>" +
                 "</h2>\n";
+
+        bool hasMoreThanText = false;
+
+        if (data->parent()) {
+            foreach (ModelPtr child, data->parent()->children()) {
+                if (child != DocBookModel::Para &&
+                        child != DocBookModel::FuncSynopsys)
+                {
+                    hasMoreThanText = true;
+                    break;
+                }
+            }
+        }
+
+        if (hasMoreThanText) {
+            result += renderItemContextLink(data);
+        }
+
         if (info)
             result += renderFuncSynopsysInfo(info);
     }
     if (prototype) {
         result += "<table border='0' width='100%'><tr><td>";
-        result += "<tr><td height='10'>&nbsp;</td></tr>\n";
+        result += "<br/>";
+//            result += "<tr><td height='1'>&nbsp;</td></tr>\n";
+
+
         result += "<b>" + tr("Synopsis:") + "</b>";
         result += "</td></tr><tr><td>";
         result += "<table border='1' bordercolor='gray' cellspacing='0' cellpadding='10' width='100%'>";
@@ -683,6 +755,16 @@ QString ContentView::renderParameter(ModelPtr data) const
     QString result;
     result += "<span class='code'><i>" + renderChilds(data) + "</i></span>";
     wrapInlineElement(data, result, true, data->parent() != DocBookModel::ParamDef);
+    return result;
+}
+
+QString ContentView::renderType(ModelPtr data) const
+{
+    QString result;
+    result += "<span class='code'><b>" + renderChilds(data) + "</b></span>";
+    wrapInlineElement(data, result, true, true);
+    if (!result.endsWith(" ") && data->parent() == DocBookModel::FuncDef)
+        result += " ";
     return result;
 }
 
@@ -849,6 +931,37 @@ QString ContentView::renderParagraph(ModelPtr data) const
     return result;
 }
 
+QString ContentView::renderMediaObject(ModelPtr data) const
+{
+    QString result;
+    ModelPtr mediaObject = findImageData(data);
+    ModelPtr caption;
+    foreach (ModelPtr child, data->children()) {
+        if (child == DocBookModel::Caption) {
+            caption = child;
+            break;
+        }
+    }
+    if (mediaObject) {
+        result += "<div align='center' width='100%' padding='10'>" +
+                renderElement(mediaObject);
+        if (caption) {
+            result += renderCaption(caption);
+        }
+        result += "</div>\n";
+    }
+    return result;
+}
+
+QString ContentView::renderCaption(ModelPtr data) const
+{
+    QString result;
+    result += "<div align='center' width='100%'>";
+    result += renderChilds(data);
+    result += "</div>";
+    return result;
+}
+
 QString ContentView::renderInlineMediaObject(ModelPtr data) const
 {
     QString result;
@@ -870,6 +983,29 @@ QString ContentView::renderImageObject(ModelPtr data) const
         }
     }
     result += "<img src='model_ptr:"+modelToLink(imageData)+"'>";
+    return result;
+}
+
+QString ContentView::renderMathML(ModelPtr data) const
+{
+    QString result;
+    QList<ModelPtr> rows;
+    foreach (ModelPtr child, data->children()) {
+        if (child == DocBookModel::MathML_MRow) {
+            rows << child;
+        }
+    }
+    if (rows.size() > 1) {
+        foreach (ModelPtr row, rows) {
+            result += "<p align='center'>";
+            result += "<img src='model_ptr:"+modelToLink(row)+"'>";
+            result += "</p>";
+        }
+    }
+    else if (rows.size() == 1) {
+        result += "<img src='model_ptr:"+modelToLink(rows[0])+"'>";
+        wrapInlineElement(data, result, true, true);
+    }
     return result;
 }
 
@@ -913,6 +1049,11 @@ QVariant ContentView::loadResource(int type, const QUrl &name)
                 DocBookModel * model =
                         reinterpret_cast<DocBookModel*>(rawPointer);
                 if (model->modelType() == DocBookModel::ImageData) {
+                    const QImage & image = model->imageData();
+                    result = image;
+                }
+                else if (model->modelType() == DocBookModel::MathML_MRow) {
+                    MathMLRenderer::self()->render(model->self());
                     const QImage & image = model->imageData();
                     result = image;
                 }

@@ -42,6 +42,7 @@ set(SOURCES
     printdialog.cpp
     printrenderer.cpp
     sidepanel.cpp
+    mathmlrenderer.cpp
 )
 
 set(FORMS

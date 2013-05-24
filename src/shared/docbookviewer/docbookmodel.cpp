@@ -85,6 +85,26 @@ const QList<ModelPtr>& DocBookModel::children() const
     return children_;
 }
 
+ModelPtr DocBookModel::self() const
+{
+    ModelPtr result;
+    if (parent()) {
+        foreach (ModelPtr child, parent()->children()) {
+            if (child.data() == this) {
+                result = child;
+                break;
+            }
+        }
+    }
+    if (!result) foreach (ModelPtr child, children()) {
+        if (child->parent().data() == this) {
+            result = child->parent();
+            break;
+        }
+    }
+    return result;
+}
+
 bool DocBookModel::isSectioningNode() const
 {
     if (title_.length() == 0) {
@@ -127,6 +147,7 @@ const QImage& DocBookModel::imageData() const
     if (svgRenderer_ && cachedImage_.isNull()) {
         const QSize size = svgRenderer_->defaultSize();
         QImage img(size, QImage::Format_ARGB32);
+        img.fill(0);
         QPainter painter(&img);
         svgRenderer_->render(&painter);
         cachedImage_ = img;

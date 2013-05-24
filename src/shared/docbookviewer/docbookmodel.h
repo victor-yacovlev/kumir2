@@ -20,8 +20,11 @@ typedef QSharedPointer<QSvgRenderer> SvgRendererPtr;
 class DocBookModel
 {
     friend class DocBookFactory;
+    friend class MathMLRenderer;
 public:
     enum ModelType {
+        Unknown,
+
         Text,
         Book,
         Article,
@@ -52,6 +55,8 @@ public:
         TBody,
         Row,
         Entry,
+        MediaObject,
+        Caption,
         InlineMediaObject,
         ImageObject,
         ImageData,
@@ -66,6 +71,17 @@ public:
         Function,
         Parameter,
         Package,
+        Type,
+
+        MathML_Math,
+        MathML_MRow,
+        MathML_MSqrt,
+        MathML_MFrac,
+        MathML_MI,
+        MathML_MN,
+        MathML_MO,
+        MathML_MText,
+        MathML_MSup,
 
         // virtual entries
         ListOfExamples,
@@ -90,6 +106,8 @@ public:
     bool isSectioningNode() const;
 
     const QImage& imageData() const;
+
+    ModelPtr self() const;
 
 
 protected /*methods*/:

@@ -32,6 +32,8 @@ private:
     QString renderElement(ModelPtr data) const;
 
     QString renderChapter(ModelPtr data) const;
+    QString renderArticle(ModelPtr data) const;
+    QString renderAbstract(ModelPtr data) const;
     QString renderTOC(ModelPtr data) const;
     QString renderTOCElement(ModelPtr data, quint8 level, bool enumerate) const;
     QString renderPlainPage(ModelPtr data) const;
@@ -63,6 +65,8 @@ private:
     QString renderRow(ModelPtr data) const;
     QString renderEntry(ModelPtr data) const;
 
+    QString renderCaption(ModelPtr data) const;
+    QString renderMediaObject(ModelPtr data) const;
     QString renderInlineMediaObject(ModelPtr data) const;
     QString renderImageObject(ModelPtr data) const;
 
@@ -73,10 +77,13 @@ private:
     QString renderFunction(ModelPtr data) const;
     QString renderParamDef(ModelPtr data) const;
     QString renderParameter(ModelPtr data) const;
+    QString renderType(ModelPtr data) const;
 
     QString renderListOfExamples(ModelPtr data) const;
     QString renderListOfFunctions(ModelPtr data) const;
     QString renderListOfTables(ModelPtr data) const;
+
+    QString renderMathML(ModelPtr data) const;
 
     bool isPlainPage(ModelPtr data) const;
 

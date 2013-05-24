@@ -113,6 +113,8 @@ bool DocBookFactory::startElement(
         const QXmlAttributes &atts)
 {
     const QString element = localName.toLower();
+    static const QRegExp XInclude("http://www.w3.org/\\d+/XInclude");
+    static const QRegExp MathML("http://www.w3.org/\\d+/Math/MathML");
     DocBookModel * model = 0;
     if (element == "article") {
         model = new DocBookModel(root_, DocBookModel::Article);
@@ -184,6 +186,12 @@ bool DocBookFactory::startElement(
     else if (element == "entry") {
         model = new DocBookModel(root_, DocBookModel::Entry);
     }
+    else if (element == "mediaobject") {
+        model = new DocBookModel(root_, DocBookModel::MediaObject);
+    }
+    else if (element == "caption") {
+        model = new DocBookModel(root_, DocBookModel::Caption);
+    }
     else if (element == "inlinemediaobject") {
         model = new DocBookModel(root_, DocBookModel::InlineMediaObject);
     }
@@ -220,10 +228,76 @@ bool DocBookFactory::startElement(
     else if (element == "parameter") {
         model = new DocBookModel(root_, DocBookModel::Parameter);
     }
+    else if (element == "type") {
+        model = new DocBookModel(root_, DocBookModel::Type);
+    }
+    else if (element == "package") {
+        model = new DocBookModel(root_, DocBookModel::Package);
+    }
     else if (element == "xref") {
         model = new DocBookModel(root_, DocBookModel::Xref);
         model->xrefLinkEnd_ = atts.value("linkend");
         model->xrefEndTerm_ = atts.value("endterm");
+    }
+    else if (element == "title" || element == "subtitle") {
+        buffer_.clear();
+    }
+    else if (element == "include" && XInclude.indexIn(namespaceURI)!=-1) {
+        const QString href = atts.value("href");
+        if (href.length() > 0) {
+            const QUrl hrefUrl = url_.resolved(href);
+            // TODO network url support
+            const QString fileName = hrefUrl.toLocalFile();
+            QFile file(fileName);
+            if (file.open(QIODevice::ReadOnly)) {
+                DocBookFactory* innerFactory = new DocBookFactory();
+                QString localError;
+                ModelPtr include =
+                        innerFactory->parseDocument(&file, hrefUrl, &localError);
+                if (include) {
+                    if (root_) {
+                        include->parent_ = root_;
+                        root_->children_.append(include);
+                    }
+                    else {
+                        root_ = include;
+                    }
+                }
+                file.close();
+                delete innerFactory;
+            }
+        }
+    }
+    else if (element == "math" && MathML.indexIn(namespaceURI) != -1) {
+        model = new DocBookModel(root_, DocBookModel::MathML_Math);
+    }
+    else if (element == "mrow" && MathML.indexIn(namespaceURI) != -1) {
+        model = new DocBookModel(root_, DocBookModel::MathML_MRow);
+    }
+    else if (element == "msqrt" && MathML.indexIn(namespaceURI) != -1) {
+        model = new DocBookModel(root_, DocBookModel::MathML_MSqrt);
+    }
+    else if (element == "mfrac" && MathML.indexIn(namespaceURI) != -1) {
+        model = new DocBookModel(root_, DocBookModel::MathML_MFrac);
+    }
+    else if (element == "mi" && MathML.indexIn(namespaceURI) != -1) {
+        model = new DocBookModel(root_, DocBookModel::MathML_MI);
+    }
+    else if (element == "mn" && MathML.indexIn(namespaceURI) != -1) {
+        model = new DocBookModel(root_, DocBookModel::MathML_MN);
+    }
+    else if (element == "mo" && MathML.indexIn(namespaceURI) != -1) {
+        model = new DocBookModel(root_, DocBookModel::MathML_MO);
+    }
+    else if (element == "mtext" && MathML.indexIn(namespaceURI) != -1) {
+        model = new DocBookModel(root_, DocBookModel::MathML_MText);
+    }
+    else if (element == "msup" && MathML.indexIn(namespaceURI) != -1) {
+        model = new DocBookModel(root_, DocBookModel::MathML_MSup);
+    }
+    else {
+        model = new DocBookModel(root_, DocBookModel::Unknown);
+        buffer_.clear();
     }
     if (model) {
         if (root_ && buffer_.length() > 0) {
@@ -258,35 +332,6 @@ bool DocBookFactory::startElement(
             }
         }
         root_ = ModelPtr(model);
-    }
-    else if (element == "include") {
-        const QString href = atts.value("href");
-        if (href.length() > 0) {
-            const QUrl hrefUrl = url_.resolved(href);
-            // TODO network url support
-            const QString fileName = hrefUrl.toLocalFile();
-            QFile file(fileName);
-            if (file.open(QIODevice::ReadOnly)) {
-                DocBookFactory* innerFactory = new DocBookFactory();
-                QString localError;
-                ModelPtr include =
-                        innerFactory->parseDocument(&file, hrefUrl, &localError);
-                if (include) {
-                    if (root_) {
-                        include->parent_ = root_;
-                        root_->children_.append(include);
-                    }
-                    else {
-                        root_ = include;
-                    }
-                }
-                file.close();
-                delete innerFactory;
-            }
-        }
-    }
-    else {
-        buffer_.clear();
     }
     return true;
 }
@@ -333,6 +378,15 @@ bool DocBookFactory::skippedEntity(const QString &name)
         // See: http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent
         buffer_.push_back(QChar(0x2026)); // three dots at bottom
     }
+    else if (name == "alpha") {
+        buffer_.push_back(QChar(0x03B1));
+    }
+    else if (name == "beta") {
+        buffer_.push_back(QChar(0x03B2));
+    }
+    else if (name == "gamma") {
+        buffer_.push_back(QChar(0x03B3));
+    }
     return true;
 }
 
@@ -340,20 +394,8 @@ bool DocBookFactory::endElement(const QString &namespaceURI,
                                 const QString &localName,
                                 const QString &qName)
 {
-    static const QStringList tagsToClose = QStringList()
-            << "book" << "article" << "set"
-            << "chapter" << "section" << "para"
-            << "listitem" << "itemizedlist" << "orderedlist"
-            << "example" << "programlisting" << "code"
-            << "preface" << "abstract" << "reference"
-            << "informaltable" << "table" << "thead" << "tbody" << "row" << "entry"
-            << "inlinemediaobject" << "imageobject" << "imagedata"
-            << "subscript" << "superscript"
-            << "funcsynopsis" << "funcsynopsisinfo" << "package"
-            << "funcprototype" << "funcdef" << "function"
-            << "paramdef" << "parameter"
-            << "emphasis" << "xref"  << "keycombo" << "keysym";
     const QString element = localName.toLower();
+    static const QRegExp XInclude("http://www.w3.org/\\d+/XInclude");
     if (root_ && element == "title") {
         root_->title_ = buffer_;
         buffer_.clear();
@@ -362,7 +404,10 @@ bool DocBookFactory::endElement(const QString &namespaceURI,
         root_->subtitle_ = buffer_;
         buffer_.clear();
     }
-    else if (root_ && tagsToClose.contains(element)) {
+    else if (element == "include" && XInclude.indexIn(namespaceURI)!=-1) {
+        // do nothing here
+    }
+    else if (root_) {
         if (root_->title().isEmpty()) {
             if (root_ == DocBookModel::Example || root_ == DocBookModel::FuncSynopsys) {
                 ModelPtr parent = root_->parent();

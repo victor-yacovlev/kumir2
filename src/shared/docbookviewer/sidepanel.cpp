@@ -266,11 +266,13 @@ void SidePanel::createListOfAlgorithms(ModelPtr root)
         }
 
         foreach (ModelPtr algorithm, module->children()) {
-            QTreeWidgetItem * algItem = new QTreeWidgetItem(moduleItem);
-            moduleItem->addChild(algItem);
-            itemsOfModels_[algorithm] = algItem;
-            modelsOfItems_[algItem] = algorithm;
-            algItem->setText(0, algorithm->title());
+            if (!itemsOfModels_.contains(algorithm)) {
+                QTreeWidgetItem * algItem = new QTreeWidgetItem(moduleItem);
+                moduleItem->addChild(algItem);
+                itemsOfModels_[algorithm] = algItem;
+                modelsOfItems_[algItem] = algorithm;
+                algItem->setText(0, algorithm->title());
+            }
         }
     }
 }
