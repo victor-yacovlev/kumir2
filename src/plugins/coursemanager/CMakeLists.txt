@@ -11,6 +11,12 @@ set(SOURCES
     course_model.cpp
 )
 
+set(FORMS
+    task/editdialog.ui
+    task/mainwindow.ui
+    task/newkursdialog.ui
+)
+
 set(MOC_HEADERS
     coursemanager_plugin.h
     task/mainwindow.h
@@ -18,8 +24,9 @@ set(MOC_HEADERS
 )
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
+qt4_wrap_ui(UI_SOURCES ${FORMS})
 copySpecFile(CourseManager)
-add_library(CourseManager SHARED ${MOC_SOURCES} ${SOURCES})
+add_library(CourseManager SHARED ${MOC_SOURCES} ${SOURCES} ${UI_SOURCES})
 handleTranslation(CourseManager)
 target_link_libraries(CourseManager ${QT_LIBRARIES} ExtensionSystem DataFormats)
 
