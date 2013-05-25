@@ -17,6 +17,7 @@ Plugin::Plugin()
     MW=new MainWindowTask();
     MW->setup();
     mainWindow_=MW;
+    
 
 }
 QList<QMenu*>  Plugin::menus()const
@@ -65,11 +66,37 @@ bool  Plugin::startNewTask(QStringList isps)
 QWidget* Plugin::mainWindow() const
 {
     return mainWindow_;
+
 }
+AI * Plugin::getActor(QString name)
+{
+    QList<AI*> Actors= ExtensionSystem::PluginManager::instance()->findPlugins<AI>();
+    for(int i=0;i<Actors.count();i++)
+    {
+        if(Actors.at(i)->name()==name)return  Actors.at(i); 
+    }
+    return NULL;
+}
+
+void Plugin::checkNext()
+{
+    
+    GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
+    for(int i=0;i<MW->task.isps.count();i++)
+    {
+        AI* actor=getActor(MW->task.isps.at(i));
+        if(!actor)
+        {
+            QMessageBox::information( MW, "", QString::fromUtf8("Нет исполнтеля:")+MW->task.isps.at(i), 0,0,0); 
+            return;
+        }
+        //TODO LOAD FIELDS;
+    }
+    gui->startTesting();    
+};
 void Plugin::startProgram(QVariant param)
 {
-   GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
-    gui->startTesting();
+    checkNext();
 };
 QAction* Plugin::actionPerformCheck() const
 {
@@ -101,7 +128,7 @@ void Plugin::setEnabled(bool value)
 
 void Plugin::setTestingResult(ProgramRunStatus status, int value)
 {
-qDebug()<<"Set testing results";
+qDebug()<<"Set testing results"<<value;
 }
 
 void Plugin::saveSession() const
@@ -138,7 +165,8 @@ QString Plugin::initialize(const QStringList &arguments)
     qRegisterMetaType<Shared::CoursesInterface::ProgramRunStatus>
             ("CourseManager.ProgramRunStatus");
     QString error;
-
+    isp_no=0;
+    field_no=0;
     return error;
 }
 
