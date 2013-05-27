@@ -154,13 +154,692 @@
 вещ х
 алг
 нач
-ввод х
-х := sqrt (х)
-вывод "корень квадратный из числа х равен ", х
+  ввод х
+  х := sqrt (х)
+  вывод "корень квадратный из числа х равен ", х
 кон
 ]]>
                 </programlisting>
             </example>
+        </section>
+        <section>
+            <title>abs</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>abs</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает абсолютное (неотрицательное) значение вещественного числа <parameter>x</parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+вещ а, б
+алг
+нач
+  ввод а,б
+  а := а+б
+  а := abs(а)
+  вывод "Модуль суммы чисел равен ", а
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>iabs</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг цел <function>iabs</function></funcdef>
+                    <paramdef>цел <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает абсолютное (неотрицательное) значение целого числа <parameter>x</parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+цел а, б
+алг
+нач
+  ввод а,б
+  а := iabs(а)
+  б := iabs(б)
+  вывод а+б
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>sign</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг цел <function>sign</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает абсолютное знак числа <parameter>x</parameter>:
+                <itemizedlist>
+                    <listitem>
+                        <para><code>-1</code>, если <parameter>x</parameter>&nbsp;&lt;&nbsp;0;</para>
+                    </listitem>
+                    <listitem>
+                        <para><code>0</code>, если <parameter>x</parameter>&nbsp;=&nbsp;0;</para>
+                    </listitem>
+                    <listitem>
+                        <para><code>1</code>, если <parameter>x</parameter>&nbsp;&gt;&nbsp;0.</para>
+                    </listitem>
+                </itemizedlist>
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+цел а, б
+алг
+нач
+  ввод а
+  б := sign(а)
+  если б=-1
+    то вывод а, "<=0"
+    иначе
+      если б=0
+        то вывод а, "=0"
+        иначе вывод а, ">=0"
+      все
+  все
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>sin</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>sin</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает синус <parameter>x</parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+вещ х
+алг
+нач
+  ввод х
+  х := sin (х)
+  вывод "синус угла х равен ", х
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>cos</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>cos</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает косинус <parameter>x</parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+вещ х
+алг
+нач
+  ввод х
+  х := cos (х)
+  вывод "косинус угла х равен ", х
+кон
+]]>
+                </programlisting>
+            </example>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+вещ x, y
+алг
+нач
+  вывод "угол x="
+  ввод x
+  y := 2*sin(x)*cos(x)
+  вывод "sin2x = ", y
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>tg</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>tg</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает тангенс <parameter>x</parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+вещ х
+алг
+нач
+  ввод х
+  х := tg (х)
+  вывод "тангенс угла х равен ", х
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>ctg</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>ctg</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает котангенс <parameter>x</parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+вещ х
+алг
+нач
+  ввод х
+  х := ctg (х)
+  вывод "котангенс угла х равен ", х
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>arcsin</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>arcsin</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает арксинус <parameter>x</parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+вещ х
+алг
+нач
+  ввод х
+  х := arcsin (х)
+  вывод "арксинус числа х равен ", х
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>arccos</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>arccos</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает арккосинус <parameter>x</parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+вещ х
+алг
+нач
+  ввод х
+  х := arccos (х)
+  вывод "арккосинус числа х равен ", х
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>arctg</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>arctg</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает арктангенс <parameter>x</parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+вещ х
+алг
+нач
+  ввод х
+  х := arctg (х)
+  вывод "арктангенс числа х равен ", х
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>arcctg</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>arcctg</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает арккотангенс <parameter>x</parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+вещ х
+алг
+нач
+  ввод х
+  х := arcctg (х)
+  вывод "арккотангенс числа х равен ", х
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>ln</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>ln</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает натуральный логарифм <parameter>x</parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+вещ а,б,с
+алг
+нач
+  ввод а, б
+  с := а+б
+  с := ln(с)
+  вывод "Натуральный логарифм от суммы чисел ",а," и ",б," равен ",с
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>lg</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>lg</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает десятичный логарифм <parameter>x</parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+вещ а,б,с
+алг
+нач
+  ввод а, б
+  с := а+б
+  с := lg(с)
+  вывод "Десятичный логарифм от суммы чисел ",а," и ",б," равен ",с
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>exp</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>exp</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает <emphasis>e</emphasis><parameter><superscript>x</superscript></parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+вещ x
+цел а
+алг
+нач
+  ввод а
+  x := exp(а)
+  вывод "число е в степени ", а, " равно ", x
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>min</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>min</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                    <paramdef>вещ <parameter>y</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает наименьшее из вещественных значений <parameter>x</parameter> или <parameter>y</parameter>.
+            </para>
+        </section>
+        <section>
+            <title>max</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>max</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                    <paramdef>вещ <parameter>y</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает наибольшее из вещественных значений <parameter>x</parameter> или <parameter>y</parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+вещ а,б,с1, с2
+алг
+нач
+  ввод а, б
+  с1 := max(а,б)
+  с2 := min(а,б)
+  вывод с1, нс
+  вывод с2, нс
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>imin</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг цел <function>imin</function></funcdef>
+                    <paramdef>цел <parameter>x</parameter></paramdef>
+                    <paramdef>цел <parameter>y</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает наименьшее из целых значений <parameter>x</parameter> или <parameter>y</parameter>.
+            </para>
+        </section>
+        <section>
+            <title>imax</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг цел <function>imax</function></funcdef>
+                    <paramdef>цел <parameter>x</parameter></paramdef>
+                    <paramdef>цел <parameter>y</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает наибольшее из целых значений <parameter>x</parameter> или <parameter>y</parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+цел а,б,с1, с2
+алг
+нач
+  ввод а, б
+  с1 := imax(а,б)
+  с2 := imin(а,б)
+  вывод с1, нс
+  вывод с2, нс
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+        <section>
+            <title>div</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг цел <function>div</function></funcdef>
+                    <paramdef>цел <parameter>x</parameter></paramdef>
+                    <paramdef>цел <parameter>y</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает частное от деления целых значений <parameter>x</parameter> на <parameter>y</parameter>.
+            </para>
+        </section>
+
+        <section>
+            <title>mod</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг цел <function>mod</function></funcdef>
+                    <paramdef>цел <parameter>x</parameter></paramdef>
+                    <paramdef>цел <parameter>y</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает остаток от деления целых значений <parameter>x</parameter> на <parameter>y</parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+цел а,б,с1, с2
+алг
+нач
+  ввод а, б
+  с1 := imax(а,б)
+  с2 := imin(а,б)
+  вывод с1, нс
+  вывод с2, нс
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+
+        <section>
+            <title>int</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг цел <function>int</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает остаток максимальное целое число, не превосходящее вещественного значения
+                <parameter>x</parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+вещ а, б
+алг
+нач
+  ввод а
+  б := int(а)
+  вывод "Целая часть ", а, " равна ", б
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+
+        <section>
+            <title>rnd</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>rnd</function></funcdef>
+                    <paramdef>вещ <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Случайное число от 0 до <parameter>x</parameter>: при последовательных вызовах этой функции получается
+                последовательность случайных чисел, равномерно распределенных на [0,&nbsp;<parameter>x</parameter>].
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+алг Построение последовательности случайных вещественных чисел
+нач
+  вещ таб а [1:10]
+  цел л
+  вещ б
+  ввод б
+  нц для л от 1 до 10
+    а[л] := rnd(б)
+  кц
+  нц для л от 1 до 10
+    вывод а[л], " "
+  кц
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+
+        <section>
+            <title>rand</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>rand</function></funcdef>
+                    <paramdef>вещ <parameter>a</parameter></paramdef>
+                    <paramdef>вещ <parameter>b</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Случайное число от <parameter>a</parameter> до <parameter>b</parameter>:
+                при последовательных вызовах этой функции получается последовательность случайных чисел,
+                равномерно распределенных на [<parameter>a</parameter>,&nbsp;<parameter>b</parameter>].
+            </para>
+        </section>
+
+        <section>
+            <title>irnd</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг цел <function>irnd</function></funcdef>
+                    <paramdef>цел <parameter>x</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Случайное целое число от 0 до <parameter>x</parameter>: при последовательных вызовах этой функции получается
+                последовательность случайных чисел, равномерно распределенных на [0,&nbsp;<parameter>x</parameter>].
+            </para>
+        </section>
+
+        <section>
+            <title>МАКСЦЕЛ</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг цел <function>МАКСЦЕЛ</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Самое большое целое число, которое можно использовать в языке Кумир:
+                <code>2<superscript>31</superscript>-1</code>.
+                Величина этого числа определяется способом представления чисел в современных
+                компьютерах и примерно одинаковая в большинстве современных языков программирования.
+            </para>
+        </section>
+
+        <section>
+            <title>МАКСВЕЩ</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг вещ <function>МАКСВЕЩ</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Самое большое вещественное число, которое можно использовать в языке Кумир: значение, несколько
+                меньшее чем <code>2<superscript>1024</superscript></code>.
+            </para>
+        </section>
+    </section>
+    <section>
+        <title>Обработка текста</title>
+        <section>
+            <title>длин</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг цел <function>длин</function></funcdef>
+                    <paramdef>лит <parameter>s</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает количество символов в строке <parameter>s</parameter>.
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+алг
+нач
+  лит а
+  цел ц
+  вывод "введите строку"
+  ввод а
+  ц := длин(а)
+  вывод ц
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+
+        <section>
+            <title>код</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг цел <function>код</function></funcdef>
+                    <paramdef>сим <parameter>c</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает порядковый номер символа в таблице КОИ8-Р (в соответствии со стандартом
+                RFC&nbsp;1489).
+            </para>
+            <example>
+                <programlisting role="kumir"><![CDATA[
+алг
+нач
+  сим а
+  цел ц
+  вывод "введите символ"
+  ввод а
+  ц := код(а)
+  вывод ц
+кон
+]]>
+                </programlisting>
+            </example>
+        </section>
+
+        <section>
+            <title>юникод</title>
+            <funcsynopsis role="kumir">
+                <funcprototype>
+                    <funcdef>алг цел <function>юникод</function></funcdef>
+                    <paramdef>сим <parameter>c</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает порядковый номер символа в таблице Unicode.
+            </para>
         </section>
     </section>
 </chapter>

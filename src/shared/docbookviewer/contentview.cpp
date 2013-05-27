@@ -687,7 +687,7 @@ QString ContentView::renderFuncSynopsys(ModelPtr data) const
     if (loadedModel_ == data->indexParent()) {
         result += "<h2 align='left' style='margin: 0;'>" +
                 tr("Algorithm ") +
-                "<span style='font-weight:normal;'>" +
+                " <span style='font-weight:normal;'>" +
                 normalizeText(data->title()) + "</span>" +
                 "</h2>\n";
 

@@ -120,5 +120,47 @@
                 </caption>
             </mediaobject>
         </section>
+        <section>
+            <title>HSV</title>
+            <funcsynopsis role="kumir">
+                <funcsynopsisinfo>
+                    <package>Рисователь</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг <type>цвет</type><function>HSV</function></funcdef>
+                    <paramdef>цел <parameter>h</parameter></paramdef>
+                    <paramdef>цел <parameter>s</parameter></paramdef>
+                    <paramdef>цел <parameter>v</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает величину типа <type>цвет</type>, составленную из компонент цветовой модели HSV:
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <parameter>h</parameter> -- величина красной составляющей цвета;
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para><parameter>s</parameter> -- величина зеленой составляющей цвета;</para>
+                    </listitem>
+                    <listitem>
+                        <para><parameter>v</parameter> -- величина синей составляющей цвета;</para>
+                    </listitem>
+                </itemizedlist>
+                Все значения состовляющих должны быть от <code>0</code> до <code>255</code>.
+            </para>
+            <mediaobject>
+                <imageobject>
+                    <imagedata format="SVG" fileref="ActorPainter/RGB_model.svg"/>
+                </imageobject>
+                <caption>
+                    <para>
+                        Цветовая модель RGB получается основана на субтрактивном смешиванием трех красок: чем выше
+                        значение отдельных компонент, тем светлее получается цвет.
+                    </para>
+                </caption>
+            </mediaobject>
+        </section>
     </section>
 </article>
