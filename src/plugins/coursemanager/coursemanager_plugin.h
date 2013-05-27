@@ -8,7 +8,9 @@
 #include <extensionsystem/declarativesettingspage.h>
 #include "extensionsystem/pluginmanager.h"
 #include "shared/interfaces/guiinterface.h"
+#include "shared/interfaces/actorinterface.h"
 typedef Shared::GuiInterface GI;
+typedef Shared::ActorInterface AI;
 //#include "task/mainwindow.h"
 class MainWindowTask;
 namespace CourseManager {
@@ -31,6 +33,7 @@ public:
     bool startNewTask(QStringList isps);
     void setPreProgram(QVariant param);
     void startProgram(QVariant param);
+    void checkNext();
 public slots:
     void setEnabled(bool value);
     void setTestingResult(ProgramRunStatus status, int value);
@@ -45,6 +48,7 @@ private /*methods*/:
     void updateSettings();
 
 private /*fields*/:
+    AI * getActor(QString name);
     QWidget* mainWindow_;
     QAction* actionPerformCheck_;
     ExtensionSystem::DeclarativeSettingsPage* settingsEditorPage_;
@@ -52,6 +56,7 @@ private /*fields*/:
     QList<QMenu*> MenuList;
     MainWindowTask* MW;
     bool setTextFromFile(QString fname);
+    int isp_no,field_no;
 
 };
 
