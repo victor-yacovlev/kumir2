@@ -13,6 +13,7 @@ typedef Shared::GuiInterface GI;
 typedef Shared::ActorInterface AI;
 //#include "task/mainwindow.h"
 class MainWindowTask;
+class KumZadanie;
 namespace CourseManager {
     
 
@@ -32,8 +33,8 @@ public:
     void setParam(QString paramname,QString param){};
     bool startNewTask(QStringList isps);
     void setPreProgram(QVariant param);
-    void startProgram(QVariant param);
-    void checkNext();
+    void startProgram(QVariant param,KumZadanie* task);
+    void checkNext(KumZadanie* task);
 public slots:
     void setEnabled(bool value);
     void setTestingResult(ProgramRunStatus status, int value);

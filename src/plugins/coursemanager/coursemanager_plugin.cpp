@@ -17,7 +17,7 @@ Plugin::Plugin()
     MW=new MainWindowTask();
     MW->setup();
     mainWindow_=MW;
-    
+    field_no=0;
 
 }
 QList<QMenu*>  Plugin::menus()const
@@ -71,32 +71,36 @@ QWidget* Plugin::mainWindow() const
 AI * Plugin::getActor(QString name)
 {
     QList<AI*> Actors= ExtensionSystem::PluginManager::instance()->findPlugins<AI>();
+    if(name=="Robot")name=QString::fromUtf8("Робот");//Pach for K1
     for(int i=0;i<Actors.count();i++)
-    {
+    {   
         if(Actors.at(i)->name()==name)return  Actors.at(i); 
     }
     return NULL;
 }
 
-void Plugin::checkNext()
+void Plugin::checkNext(KumZadanie* task)
 {
     
     GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
-    for(int i=0;i<MW->task.isps.count();i++)
+    for(int i=0;i<task->isps.count();i++)
     {
-        AI* actor=getActor(MW->task.isps.at(i));
+        AI* actor=getActor(task->isps.at(i));
         if(!actor)
         {
-            QMessageBox::information( MW, "", QString::fromUtf8("Нет исполнтеля:")+MW->task.isps.at(i), 0,0,0); 
+            QMessageBox::information( NULL, "", QString::fromUtf8("Нет исполнтеля:")+task->isps.at(i), 0,0,0); 
             return;
         }
         //TODO LOAD FIELDS;
+        QFile* field_data=new QFile(task->field(task->isps.at(i), field_no));
+        actor->loadActorData(field_data);
     }
     gui->startTesting();    
 };
-void Plugin::startProgram(QVariant param)
+void Plugin::startProgram(QVariant param,KumZadanie* task)
 {
-    checkNext();
+    field_no=0;
+    checkNext( task);
 };
 QAction* Plugin::actionPerformCheck() const
 {
@@ -128,6 +132,10 @@ void Plugin::setEnabled(bool value)
 
 void Plugin::setTestingResult(ProgramRunStatus status, int value)
 {
+    MW->setMark(value);
+    if (status==ProgramRunStatus::AbortedOnError || status==ProgramRunStatus::UserTerminated)
+        MW->setMark(0);
+    
 qDebug()<<"Set testing results"<<value;
 }
 
@@ -162,6 +170,7 @@ QString Plugin::initialize(const QStringList &arguments)
         courseMenu->addAction(actions.at(i));  
     }
     MW->setCS(trUtf8("Кумир"));
+    MW->setInterface(this);
     qRegisterMetaType<Shared::CoursesInterface::ProgramRunStatus>
             ("CourseManager.ProgramRunStatus");
     QString error;
