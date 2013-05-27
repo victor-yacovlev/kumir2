@@ -1113,6 +1113,8 @@ class CppClassBase:
         protected_slots = []
         privates = []
         private_slots = []
+        public_virtuals = []
+        public_virtual_slots = []
         constructor = None
         nonInspectable = map(lambda x: ("CppImplementation", x), self.extraImplementations)
         for key, value in inspect.getmembers(self) + nonInspectable:
@@ -1134,9 +1136,14 @@ class CppClassBase:
                 returnType = firstLine[groupEndPos+2:rtypeEndPos].strip()
                 signatureBeginPos = firstLine.index("::", rtypeEndPos) + 2
                 signature = firstLine[signatureBeginPos:]
-                assert groupName in ["public", "protected", "private", "public_slot", "protected_slot", "private_slot"]
+                assert groupName in ["public", "protected", "private", "public_slot", "protected_slot", "private_slot",
+                                     "public_virtual", "public_virtual_slot"]
                 group = locals()[groupName + 's']
-                group += [_addIndent(returnType + " " + signature + ";")]
+                if "virtual" in groupName:
+                    modifier = "virtual "
+                else:
+                    modifier = ""
+                group += [_addIndent(modifier + returnType + " " + signature + ";")]
             elif key == "constructorImplementation":
                 implMethod = value.__func__
                 implementation = implMethod(self)
@@ -1149,10 +1156,10 @@ class CppClassBase:
                 publics.insert(0, _addIndent(signature + ";"))
         publics += map(lambda x: _addIndent("virtual " + x + " = 0;"), self.abstractPublicMethods)
         public_slots += map(lambda x: _addIndent("virtual " + x + " = 0;"), self.abstractPublicSlots)
-        if publics:
-            publics = ["public /* methods */:"] + publics
-        if public_slots:
-            public_slots = ["public slots:"] + public_slots
+        if publics or public_virtuals:
+            publics = ["public /* methods */:"] + publics + public_virtuals
+        if public_slots or public_virtual_slots:
+            public_slots = ["public slots:"] + public_slots + public_virtual_slots
         if protecteds:
             protecteds = ["protected /* methods */:"] + protecteds
         if privates:
@@ -1873,6 +1880,22 @@ private:
 }
         """ % self.className
 
+    def loadActorDataCppImplementation(self):
+        """
+        Creates loadActorData implementation
+
+        :rtype:     str
+        :return:    implementation of void loadActorData(QIODevice *)
+        """
+        return """
+/* public slot */ void %s::loadActorData(QIODevice * source)
+{
+    if (module_) {
+        module_->loadActorData(source);
+    }
+}
+        """ % self.className
+
 
 class AsyncThreadCppClass(CppClassBase):
     """
@@ -2056,7 +2079,7 @@ class ModuleBaseCppClass(CppClassBase):
         self.abstractPublicSlots = [
             "void reset()",
             "void reloadSettings(QSettings* settings)",
-            "void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current)",
+            "void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current)"
         ]
         if module.gui:
             self.abstractPublicMethods += [
@@ -2193,7 +2216,7 @@ class ModuleBaseCppClass(CppClassBase):
             return ""  # no implementation, just pure virtual method
         else:
             return """
-/* public slot */ void %s::setAnimationEnabled(bool enabled)
+/* public virtual slot */ void %s::setAnimationEnabled(bool enabled)
 {
     Q_UNUSED(enabled);
 }
@@ -2330,6 +2353,21 @@ class ModuleBaseCppClass(CppClassBase):
     plugin->usleep(usecs);
 }
         """ % (self.className, self._module.pluginClassName(), self._module.pluginClassName())
+
+    def loadActorDataCppImplementation(self):
+        """
+        Creates loadActorData implementation
+
+        :rtype:     str
+        :return:    implementation of void loadActorData(QIODevice *)
+        """
+        return """
+/* public virtual slot */ void %s::loadActorData(QIODevice * source)
+{
+    Q_UNUSED(source);  // By default do nothing
+
+}
+        """ % self.className
 
 
 class ModuleCppClass(CppClassBase):
@@ -2487,6 +2525,23 @@ class ModuleCppClass(CppClassBase):
     Q_UNUSED(enabled);  // Remove this line on implementation
 }
             """ % self.className
+
+    def loadActorDataCppImplementation(self):
+        """
+        Creates loadActorData implementation
+
+        :rtype:     str
+        :return:    implementation of void loadActorData(QIODevice *)
+        """
+        return """
+/* public slot */ void %s::loadActorData(QIODevice * source)
+{
+    // Set actor specific data (like environment)
+    // The source should be ready-to-read QIODevice like QBuffer or QFile
+    Q_UNUSED(source);  // By default do nothing
+
+}
+        """ % self.className
 
 
 # Script workflow functions

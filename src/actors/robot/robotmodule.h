@@ -509,6 +509,7 @@ namespace ActorRobot {
         public slots:
         // Reset actor state before program starts
         void reset();
+        void loadActorData(QIODevice * source);
         // Set animation flag
        
         void setAnimationEnabled(bool enabled);

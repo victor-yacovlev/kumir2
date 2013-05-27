@@ -2791,6 +2791,15 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     
 } 
 
+
+/* public slot */ void RobotModule::loadActorData(QIODevice * source)
+{
+    // Set actor specific data (like environment)
+    // The source should be ready-to-read QIODevice like QBuffer or QFile
+    Q_UNUSED(source);  // By default do nothing
+
+}
+
     
 void RobotModule::reset()
 {
