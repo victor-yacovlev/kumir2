@@ -273,9 +273,9 @@ void PainterModule::runCircle(const int xc, const int yc, const int r)
 {
     int x0 = xc-r;
     int y0 = yc-r;
-    int x1 = xc+r;
-    int y1 = yc+r;
-    runEllipse(x0,y0,x1,y1);
+//    int x1 = xc+r;
+//    int y1 = yc+r;
+    runEllipse(x0,y0,2 * r,2 * r);
 }
 
 
