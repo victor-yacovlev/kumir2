@@ -11,6 +11,8 @@ using namespace KumirAnalizer;
 
 
 KumirAnalizerPlugin::KumirAnalizerPlugin()
+    : ExtensionSystem::KPlugin()
+    , teacherMode_(false)
 {
     analizers_ = QVector<Analizer*> (128, NULL);
 }
@@ -45,7 +47,7 @@ QString KumirAnalizerPlugin::initialize(const QStringList &arguments)
     Analizer::setSourceLanguage(language);
 
     Shared::ErrorMessages::loadMessages("KumirAnalizer");
-
+    teacherMode_ = arguments.contains("teacher", Qt::CaseInsensitive);
     return "";
 }
 
@@ -69,7 +71,7 @@ int KumirAnalizerPlugin::newDocument()
             break;
         }
     }
-    analizers_[id] = new Analizer(this);
+    analizers_[id] = new Analizer(this, teacherMode_);
     return id;
 }
 

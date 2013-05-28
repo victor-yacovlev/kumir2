@@ -19,7 +19,7 @@ class Analizer : public QObject
     friend class AnalizerPrivate;
 public:
 
-    explicit Analizer(class KumirAnalizerPlugin * plugin);
+    explicit Analizer(class KumirAnalizerPlugin * plugin, bool teacherMode);
 
     ~Analizer();
 
@@ -63,6 +63,7 @@ private:
     const AST::Module * findModuleByLine(int lineNo) const;
     const AST::Algorhitm * findAlgorhitmByLine(const AST::Module * mod, int lineNo) const;
     struct AnalizerPrivate * d;
+    bool teacherMode_;
 
 
 
