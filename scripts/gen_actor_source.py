@@ -1436,7 +1436,7 @@ private:
                 body += "        %s x = decode(value);\n" % argument.baseType.qtName()
                 body += "        result = module_->runOperatorOUTPUT(x);\n    }\n"
         return """
-/* public */ QString %s::customValueToString(const CustomType & %s, const QVariant %s) const
+/* public */ QString %s::customValueToString(const CustomType & %s, const QVariant & %s) const
 {
     QString result;
 %s
@@ -1475,7 +1475,7 @@ private:
                 body += "        }\n"
                 body += "    }\n"
         return """
-/* public */ QVariant %s::customValueFromString(const CustomType & %s, const QString %s) const
+/* public */ QVariant %s::customValueFromString(const CustomType & %s, const QString & %s) const
 {
     QVariant result;
 %s
