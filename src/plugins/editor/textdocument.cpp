@@ -392,6 +392,7 @@ void TextDocument::flushTransaction()
     if (!analizer_)
         return;
     bool hiddenChanged = !removedHiddenLines_.isEmpty();
+    bool hasHidden = false;
     if (!hiddenChanged)
     for (int i=0; i<data_.size(); i++) {
         if (data_[i].changed || data_[i].inserted) {
@@ -400,9 +401,12 @@ void TextDocument::flushTransaction()
                 break;
             }
         }
+        if (data_[i].hidden) {
+            hasHidden = true;
+        }
     }
     flushChanges();
-    if (hiddenChanged)
+    if (hiddenChanged || hasHidden)
         forceCompleteRecompilation();
     if (!changes_.isEmpty()) {
         if (analizer_->supportPartialCompiling())
