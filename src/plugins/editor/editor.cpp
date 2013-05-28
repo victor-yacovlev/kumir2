@@ -497,7 +497,7 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
     if (d->analizer)
         fileNamesToOpen = d->analizer->supportedFileNamePattern();
 
-    d->plane = new EditorPlane(d->doc, d->analizer, d->cursor, d->clipboard, fileNamesToOpen, d->settings, d->horizontalScrollBar, d->verticalScrollBar, d->analizer!=NULL, this);
+    d->plane = new EditorPlane(d->doc, d->analizer, this, d->cursor, d->clipboard, fileNamesToOpen, d->settings, d->horizontalScrollBar, d->verticalScrollBar, d->analizer!=NULL, this);
     d->findReplace = new FindReplace(d->doc, d->cursor, d->plane);
 
     d->keybStatus = new QLabel(0);
