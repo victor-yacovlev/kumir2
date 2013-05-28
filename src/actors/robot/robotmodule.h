@@ -328,6 +328,7 @@ namespace ActorRobot {
         void debug();
         void setColorFromSett();
         int loadFromFile(QString fileName);
+        int loadFromDataStream(QIODevice * l_File);
         int saveToFile(QString fileName);
         void createRobot();
         void UpdateColors();
@@ -511,7 +512,7 @@ namespace ActorRobot {
         void reset();
         void loadActorData(QIODevice * source);
         // Set animation flag
-       
+  
         void setAnimationEnabled(bool enabled);
         // Actor methods
         void runGoUp();

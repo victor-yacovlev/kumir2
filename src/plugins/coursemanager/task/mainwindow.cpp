@@ -437,8 +437,8 @@ if(!cursWorkFile.exists()){
       };
 course->setMark(curTaskIdx.internalId(),0);
 
-
-interface->startProgram(QVariant("TODO LOAD SCRIPT"));
+     qDebug()<<"task"<<task.isps;
+interface->startProgram(QVariant("TODO LOAD SCRIPT"),&task);
    //ui->loadCurs->setEnabled(false);
 
  };
