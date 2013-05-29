@@ -231,7 +231,8 @@ int main(int argc, char **argv)
         showErrorMessage(error);
         delete manager;
         delete app;
-        return 1;
+        return app->property("returnCode").isValid()
+                ? app->property("returnCode").toInt() : 1;
     }
     // GUI requirement may be changed as result of plugins initialization,
     // so check it again
@@ -239,15 +240,16 @@ int main(int argc, char **argv)
         showErrorMessage("Requires X11 session to run this configuration");
         delete manager;
         delete app;
-        return 1;
+        return app->property("returnCode").isValid()
+                ? app->property("returnCode").toInt() : 1;
     }
-    app->setProperty("returnCode", 0);
     error = manager->start();
     if (!error.isEmpty()) {
         showErrorMessage(error);
         delete manager;
         delete app;
-        return 1;
+        return app->property("returnCode").isValid()
+                ? app->property("returnCode").toInt() : 1;
     }
     int ret = 0;
     if (splashScreen) {
@@ -256,12 +258,14 @@ int main(int argc, char **argv)
     if (manager->isGuiRequired()) {
         ret = app->exec();
         if (ret == 0) {
-            ret = app->property("returnCode").toInt();
+            return app->property("returnCode").isValid()
+                    ? app->property("returnCode").toInt() : 0;
         }
     }
     else {
         manager->shutdown();
-        ret = app->property("returnCode").toInt();
+        return app->property("returnCode").isValid()
+                ? app->property("returnCode").toInt() : 0;
     }
 
     // delete manager;

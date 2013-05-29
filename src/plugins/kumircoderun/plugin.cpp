@@ -600,6 +600,16 @@ QString Plugin::initialize(const QStringList &)
                     return QString::fromStdWString(message);
                 }
             }
+        }        
+        if (qApp->arguments().contains("-t") || qApp->arguments().contains("--teacher"))
+        {
+            if (!pRun_->hasTestingAlgorithm()) {
+                qApp->setProperty("returnCode", 125);
+                return QString::fromUtf8("В ПРОГРАММЕ НЕТ ТЕСТОВОГО АЛГОРИТМА");
+            }
+            else {
+                pRun_->setEntryPointToTest();
+            }
         }
     }
     else {

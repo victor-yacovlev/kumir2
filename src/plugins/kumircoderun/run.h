@@ -32,6 +32,7 @@ public:
     void loadProgramFromTextBuffer(const std::string & stream, const String & filename);
     inline void setProgramDirectory(const QString & dirName) { vm->setProgramDirectory(dirName.toStdWString()); }
     QString error() const;
+    bool hasTestingAlgorithm() const;
 
     void setEntryPointToMain();
     void setEntryPointToTest();

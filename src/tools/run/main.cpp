@@ -177,6 +177,7 @@ int main(int argc, char *argv[])
     std::string programName;
     std::deque<std::string> args;
     bool forceTextForm = false;
+    bool testingMode = false;
     for (int i=1; i<argc; i++) {
         std::string  arg(argv[i]);
         if (arg.length()==0)
@@ -184,13 +185,21 @@ int main(int argc, char *argv[])
         static const std::string minuss("-s");
         static const std::string minusS("-S");
         static const std::string minusansi("-ansi");
+        static const std::string minust("-t");
+        static const std::string minusminustesting("--test");
         if (programName.empty()) {
-            if (arg==minuss || arg==minusS)
+            if (arg==minuss || arg==minusS) {
                 forceTextForm = true;
-            else if (arg==minusansi)
+            }
+            else if (arg==minust || arg==minusminustesting) {
+                testingMode = true;
+            }
+            else if (arg==minusansi) {
                 IO::LOCALE_ENCODING = LOCALE = CP1251;
-            else
+            }
+            else {
                 programName = arg;
+            }
         }
         else {
             args.push_back(arg);
@@ -272,17 +281,25 @@ int main(int argc, char *argv[])
     }
     catch (String & msg) {
         String message = LOAD_ERROR + msg;
-        return showErrorMessage(message, 11);
+        return showErrorMessage(message, 126);
     }
     catch (std::string & msg) {
         String message = LOAD_ERROR + Core::fromAscii(msg);
-        return showErrorMessage(message, 11);
+        return showErrorMessage(message, 126);
     }
     catch (...) {
         String message = LOAD_ERROR;
-        return showErrorMessage(message, 11);
+        return showErrorMessage(message, 126);
     }
 
+    if (testingMode) {
+        if (!vm.hasTestingAlgorithm()) {
+            static const String NO_TESTING =
+                    Core::fromUtf8("В ПРОГРАММЕ НЕТ ТЕСТОВОГО АЛГОРИТМА");
+            return showErrorMessage(NO_TESTING, 125);
+        }
+        vm.setEntryPoint(VM::KumirVM::EP_Testing);
+    }
     vm.reset();
     vm.setDebugOff(true);
 
@@ -304,9 +321,13 @@ int main(int argc, char *argv[])
             else {
                 message = RUNTIME_ERROR + vm.error();
             }
-            return showErrorMessage(message, 10);
-            return 10;
+            return showErrorMessage(message, 120);
+            return 120;
         }
     }
-    return 0;
+
+    if (testingMode)
+        return vm.topLevelStackValue().toInt();
+    else
+        return 0;
 }

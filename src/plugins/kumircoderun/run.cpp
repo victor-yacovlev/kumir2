@@ -359,7 +359,7 @@ void Run::handlePauseRequest()
 }
 
 void Run::run()
-{
+{    
     while (vm->hasMoreInstructions()) {
         if (mustStop()) {
             break;
@@ -371,6 +371,9 @@ void Run::run()
             emit error(QString::fromStdWString(vm->error()));
             break;
         }
+    }
+    if (vm->entryPoint() == KumirVM::EP_Testing && vm->topLevelStackValue().isValid()) {
+        qApp->setProperty("returnCode", vm->topLevelStackValue().toInt());
     }
 //    bool wasError = vm->error().length()>0;
     // Unclosed files is an error only if program reached end
@@ -439,6 +442,11 @@ void Run::setEntryPointToTest()
 QString Run::error() const
 {
     return QString::fromStdWString(vm->error());
+}
+
+bool Run::hasTestingAlgorithm() const
+{
+    return vm->hasTestingAlgorithm();
 }
 
 

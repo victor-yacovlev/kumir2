@@ -40,6 +40,7 @@ public /*methods*/:
 
     /** Set entry point to Main or Testing algorithm */
     inline void setEntryPoint(EntryPoint ep) { entryPoint_ = ep; }
+    inline EntryPoint entryPoint() const { return entryPoint_; }
 
     /** Set 'blind' mode flag: do not emit debugging information */
     inline void setDebugOff(bool b) { blindMode_ = b; }
@@ -49,6 +50,8 @@ public /*methods*/:
 
     /** Reset program to initial state */
     inline void reset();
+
+    inline bool hasTestingAlgorithm() const;
 
     /** Sets the Debugging Interaction handler for this VM */
     inline void setDebuggingHandler(
@@ -619,6 +622,20 @@ void KumirVM::checkFunctors()
         static PauseFunctor dummy;
         pause_ = &dummy;
     }
+}
+
+bool KumirVM::hasTestingAlgorithm() const
+{
+    const ModuleContext & mainContexnt = moduleContexts_.front();
+    const FunctionMap & functions = mainContexnt.functions;
+    typedef FunctionMap::const_iterator It;
+    for (It i = functions.begin(); i!=functions.end(); i++) {
+        const Bytecode::TableElem & element = i->second;
+        if (element.type == Bytecode::EL_TESTING) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void KumirVM::reset()
