@@ -2,8 +2,6 @@
 
 #include <QtCore>
 
-#include "../../VERSION.h"
-
 namespace ExtensionSystem {
 
 extern QString readSpecFromFile(const QString &fileName, PluginSpec &spec)
