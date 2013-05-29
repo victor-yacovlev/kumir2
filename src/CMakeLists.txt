@@ -55,7 +55,7 @@ else()
 
     if(GIT)
         execute_process(
-            COMMAND ${GIT} --no-pager show --pretty=format:%H
+            COMMAND ${GIT} --no-pager log -1 --pretty=format:%H
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             OUTPUT_VARIABLE GIT_HASH
         )
@@ -65,7 +65,7 @@ else()
             OUTPUT_VARIABLE GIT_TAG
         )
         execute_process(
-            COMMAND ${GIT} --no-pager show --pretty=format:%ct
+            COMMAND ${GIT} --no-pager log -1 --pretty=format:%ct
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             OUTPUT_VARIABLE GIT_TIMESTAMP
         )
