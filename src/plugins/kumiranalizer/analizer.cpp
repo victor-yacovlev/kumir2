@@ -803,7 +803,7 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
                                     , int whereInserted
                                     )
 {
-    if (qApp->applicationVersion()<"2.1.0-release")
+//    if (qApp->applicationVersion()<"2.1.0-release")
         whatToCompile = SubjWholeText; // Not tested well yet
     foreach (Statement * st, oldStatements) {
         foreach (AST::Variable * var, st->variables) {

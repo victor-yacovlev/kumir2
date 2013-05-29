@@ -42,23 +42,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>GIT hash:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="gitHash">
-         <property name="text">
-          <string>unknown</string>
-         </property>
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QLabel" name="label_3">
          <property name="text">
           <string>Last modified:</string>
@@ -175,7 +158,6 @@ p, li { white-space: pre-wrap; }
   <tabstop>btnCopyEnvironmentAndVersion</tabstop>
   <tabstop>tabWidget</tabstop>
   <tabstop>version</tabstop>
-  <tabstop>gitHash</tabstop>
   <tabstop>lastModified</tabstop>
   <tabstop>textBrowser</tabstop>
   <tabstop>tableWidget</tabstop>

@@ -1,9 +1,6 @@
 #include <QtCore>
 #include <QtGui>
 
-#include "VERSION.h"
-#include "GITINFO.h"
-
 #include "extensionsystem/pluginmanager.h"
 
 #ifdef Q_OS_MAC
@@ -84,6 +81,7 @@ public:
         : QApplication(argc, argv, gui)
         , timerId_(-1)
         , splashScreen_(nullptr)
+        , started_(false)
     {}
     inline bool notify(QObject * receiver, QEvent * event) {
         bool result = false;
@@ -103,6 +101,10 @@ public:
     }
 
     inline void initialize() {
+        if (started_) {
+            return;
+        }
+        started_ = true;
         bool gui = true;
 #ifdef Q_WS_X11
         gui = gui && getenv("DISPLAY")!=0;
@@ -188,8 +190,7 @@ public:
         }
     }
 
-    inline void timerEvent(QTimerEvent * event) {
-        killTimer(timerId_);
+    inline void timerEvent(QTimerEvent * event) {        
         event->accept();
         initialize();
     }
@@ -197,6 +198,7 @@ public:
     inline int main() {
         timerId_ = startTimer(250);
         int ret = exec();
+        killTimer(timerId_);
         if (ret == 0) {
             return property("returnCode").isValid()
                     ? property("returnCode").toInt() : 0;
@@ -208,10 +210,17 @@ public:
 private:
     int timerId_;
     QSplashScreen * splashScreen_;
+    bool started_;
 };
 
 int main(int argc, char **argv)
 { 
+    QString gitHash = QString::fromAscii(GIT_HASH);
+    QString gitTag = QString::fromAscii(GIT_TAG);
+    QString gitBranch = QString::fromAscii(GIT_BRANCH);
+    QDateTime gitTimeStamp = QDateTime::fromTime_t(GIT_TIMESTAMP);
+
+
     bool gui = true;
 #ifdef Q_WS_X11
     gui = gui && getenv("DISPLAY")!=0;
@@ -220,35 +229,15 @@ int main(int argc, char **argv)
     QLocale russian = QLocale("ru_RU");
     QLocale::setDefault(russian);
 #ifdef Q_OS_WIN32
-//    app->setAttribute(Qt::AA_DontShowIconsInMenus);
     app->addLibraryPath(app->applicationDirPath());
-#endif
-#ifdef Q_OS_MAC
-   //  app->setAttribute(Qt::AA_DontUseNativeMenuBar, true);
 #endif
 #ifndef Q_OS_WIN32
     app->addLibraryPath(QDir::cleanPath(app->applicationDirPath()+"/../"+IDE_LIBRARY_BASENAME+"/kumir2/"));
 #endif
-#ifdef GIT_BRANCH
-    static const QString branch = QString::fromAscii(GIT_BRANCH);
-#else
-    static const QString branch = QString::fromAscii("release");
-#endif
 
-
-    app->setApplicationVersion(QString("%1.%2.%3-%4")
-                               .arg(VERSION_MAJOR)
-                               .arg(VERSION_MINOR)
-                               .arg(VERSION_RELEASE)
-                               .arg(branch));
-
-#ifdef GIT_HASH
-    app->setProperty("gitHash", QString::fromAscii(GIT_HASH));
-#endif
-#ifdef GIT_LAST_MODIFIED
-    app->setProperty("lastModified", QString::fromAscii(GIT_LAST_MODIFIED));
-#endif
-
+    app->setApplicationVersion(gitTag.length() > 0
+                               ? gitTag : gitBranch + "/" + gitHash);
+    app->setProperty("gitTimeStamp", gitTimeStamp);
     QSplashScreen * splashScreen = 0;
 
     const QString sharePath = QDir(app->applicationDirPath()+SHARE_PATH).canonicalPath();
