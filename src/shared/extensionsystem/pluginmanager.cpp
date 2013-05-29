@@ -298,7 +298,7 @@ QString PluginManagerPrivate::loadPlugins()
     qPrintable(test);
     for (int i=0; i<specs.size(); i++) {
         QPluginLoader loader(specs[i].libraryFileName);
-        qDebug()<<specs[i].libraryFileName;
+//        qDebug()<<specs[i].libraryFileName;
         if (!loader.load()) {
             return QString("Can't load module %1: %2")
                     .arg(specs[i].name)
