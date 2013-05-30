@@ -61,6 +61,7 @@ protected:
     void stop();
 private:
     QVector<Analizer*> analizers_;
+    bool teacherMode_;
 };
 
 }

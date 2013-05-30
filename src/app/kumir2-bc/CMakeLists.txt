@@ -4,7 +4,7 @@ include (${QT_USE_FILE})
 
 set(
     CONFIGURATION_TEMPLATE
-    "Actor*,!KumirBCompiler,KumirCodeGenerator,KumirAnalizer\(preload=Files,preload=Strings\)"
+    "Actor*,!KumirBCompiler,KumirCodeGenerator,KumirAnalizer\(teacher,preload=Files,preload=Strings\)"
 )
 
 set(SRC ../main.cpp)

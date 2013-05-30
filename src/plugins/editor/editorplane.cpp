@@ -6,6 +6,7 @@
 #include "settingspage.h"
 #include "utils.h"
 #include "suggestionswindow.h"
+#include "editor.h"
 #ifdef Q_OS_UNIX
 #include <unistd.h>
 #endif
@@ -28,6 +29,7 @@ uint EditorPlane::MarginWidthDefault = 15u /*px*/;
 
 EditorPlane::EditorPlane(TextDocument * doc
                          , Shared::AnalizerInterface * analizer
+                         , class Editor * editor
                          , TextCursor * cursor
                          , class Clipboard * clipboard
                          , const QList<QRegExp> &fileNamesToOpen
@@ -38,6 +40,7 @@ EditorPlane::EditorPlane(TextDocument * doc
                          , QWidget *parent) :
     QWidget(parent)
 {
+    editor_ = editor;
     analizer_ = analizer;
     highlightedTextLineNumber_ = -1;
     highlightedLockSymbolLineNumber_ = -1;
@@ -1347,7 +1350,9 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                  ) {
             cursor_->evaluateCommand(Utils::textByKey(Qt::Key(e->key())
                                                        , e->text()
-                                                       , e->modifiers().testFlag(Qt::ShiftModifier)));
+                                                       , e->modifiers().testFlag(Qt::ShiftModifier)
+                                                       , editor_->isTeacherMode() && editor_->analizer()
+                                                      ));
         }
 
         Qt::Key tempSwichLayoutKey = Qt::Key(

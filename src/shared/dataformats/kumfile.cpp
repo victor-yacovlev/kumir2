@@ -1,4 +1,10 @@
 #include "kumfile.h"
+//#if !defined(HAS_QCA) && defined(Q_OS_LINUX)
+//#   define HAS_QCA
+//#endif
+#ifdef HAS_QCA
+#   include <QtCrypto/qca.h>
+#endif
 
 
 QString KumFile::toString(const Data &data)
@@ -21,6 +27,10 @@ QString KumFile::toString(const Data &data)
         result += "|@hidden";
         if (i<hiddenLines.count()-1)
             result += "\n";
+    }
+    if (!data.hiddenTextSignature.isEmpty()) {
+        result += QString::fromAscii("|@signature %1|@hidden\n")
+                .arg(QString::fromAscii(data.hiddenTextSignature.toBase64()));
     }
     return result;
 }
@@ -48,7 +58,12 @@ KumFile::Data KumFile::fromString(const QString &s)
         QString line = lines[i];
         while (line.startsWith(" "))
             line.remove(0, 1);
-        if (line.endsWith("|@hidden")) {
+        if (line.startsWith("|@signature ") && line.endsWith("|@hidden"))
+        {
+            const QString b64 = line.mid(12, line.length()-20);
+            data.hiddenTextSignature = QByteArray::fromBase64(b64.toAscii());
+        }
+        else if (line.endsWith("|@hidden")) {
             data.hasHiddenText = true;
             if (!data.hiddenText.isEmpty() && data.visibleText.isEmpty())
                 data.hiddenText += "\n";
@@ -139,4 +154,57 @@ QDataStream & operator >>(QDataStream & ds, KumFile::Data & data)
     return ds;
 }
 
+bool KumFile::hasCryptographicRoutines()
+{
+#ifdef HAS_QCA
+    return true;
+#else
+    return false;
+#endif
+}
 
+void KumFile::generateKeyPair(const QString &passPhrase,
+                              QString &privateKey,
+                              QString &publicKey)
+{
+    privateKey.clear();
+    publicKey.clear();
+#ifdef HAS_QCA
+    QCA::PrivateKey seckey = QCA::KeyGenerator().createRSA(1024);
+    QCA::SecureArray phrase(passPhrase.toUtf8());
+    privateKey = seckey.toPEM(phrase);
+    QCA::PublicKey pubkey = seckey.toPublicKey();
+    publicKey = pubkey.toPEM();
+#endif
+}
+
+void KumFile::signHiddenText(Data &data,
+                             const QString &privateKey,
+                             const QString &passPhrase)
+{
+#ifdef HAS_QCA
+    QCA::SecureArray phrase(passPhrase.toUtf8());
+    QCA::PrivateKey seckey = QCA::PrivateKey::fromPEM(privateKey, phrase);
+    seckey.startSign(QCA::EMSA3_MD5);
+    seckey.update(data.hiddenText.trimmed().toUtf8());
+    data.hiddenTextSignature = seckey.signature();
+#else
+    data.hiddenTextSignature.clear();
+#endif
+}
+
+KumFile::VerifyResult KumFile::verifyHiddenText(const Data &data,
+                                                const QString &publicKey)
+{
+#ifdef HAS_QCA
+    if (data.hiddenTextSignature.isEmpty())
+        return NoSignature;
+    QCA::PublicKey pubkey = QCA::PublicKey::fromPEM(publicKey);
+    pubkey.startVerify(QCA::EMSA3_MD5);
+    pubkey.update(data.hiddenText.trimmed().toUtf8());
+    return pubkey.validSignature(data.hiddenTextSignature)
+            ? SignatureMatch : SignatureMismatch;
+#else
+    return CryptographyNotSupported;
+#endif
+}

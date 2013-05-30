@@ -14,10 +14,10 @@ AboutDialog::AboutDialog(QWidget *parent) :
     ui->setupUi(this);
 
     ui->version->setText(qApp->applicationVersion());
-    if (qApp->property("gitHash").isValid())
-        ui->gitHash->setText(qApp->property("gitHash").toString());
-    if (qApp->property("lastModified").isValid())
-        ui->lastModified->setText(qApp->property("lastModified").toString());
+    if (qApp->property("gitTimeStamp").isValid()) {
+        QDateTime timeStamp = qApp->property("gitTimeStamp").toDateTime();
+        ui->lastModified->setText(timeStamp.toString());
+    }
 
     ui->tableWidget->setColumnCount(2);
     ui->tableWidget->setColumnWidth(1, 1000);
@@ -36,7 +36,6 @@ void AboutDialog::copySystemInformationToClipboard()
 {
     QString textToCopy;
     textToCopy += "Version: "+ui->version->text()+"\n";
-    textToCopy += "Git: "+ui->gitHash->text() + "\n";
     for (int i=0; i<ui->tableWidget->rowCount(); i++) {
         const QString key = ui->tableWidget->item(i, 0)->text();
         const QString value = ui->tableWidget->item(i, 1)->text();

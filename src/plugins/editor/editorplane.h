@@ -17,6 +17,7 @@ class EditorPlane : public QWidget
 public:
     explicit EditorPlane(class TextDocument * doc
                          , Shared::AnalizerInterface * analizer
+                         , class Editor * editor
                          , class TextCursor * cursor
                          , class Clipboard * clipboard
                          , const QList<QRegExp> &fileNamePattern
@@ -107,6 +108,7 @@ private:
     class TextDocument * document_;
     class TextCursor * cursor_;
     class Clipboard * clipboard_;
+    class Editor * editor_;
 
     QList<QRegExp> rxFilenamePattern_;
     QSettings * settings_;

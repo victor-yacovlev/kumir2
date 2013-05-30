@@ -29,8 +29,9 @@ void Analizer::setModuleAlwaysAvailable(const QString &moduleName)
         AnalizerPrivate::AlwaysAvailableModulesName.append(QString::fromUtf8("Строки"));
 }
 
-Analizer::Analizer(KumirAnalizerPlugin * plugin) :
-    QObject(plugin)
+Analizer::Analizer(KumirAnalizerPlugin * plugin, bool teacherMode)
+    : QObject(plugin)
+    , teacherMode_(teacherMode)
 {
     d = new AnalizerPrivate(plugin, this);
 }
@@ -113,7 +114,7 @@ AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin,
     ast = new AST::Data();
     lexer = new Lexer(q);
     pdAutomata = new PDAutomata(q);
-    analizer = new SyntaxAnalizer(lexer, AlwaysAvailableModulesName, q);
+    analizer = new SyntaxAnalizer(lexer, AlwaysAvailableModulesName, qq->teacherMode_, q);
     builtinModules.resize(16);
     ActorInterface * stdFunct = new StdLibModules::RTL;
     builtinModules[0] = stdFunct;
@@ -802,7 +803,7 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
                                     , int whereInserted
                                     )
 {
-    if (qApp->applicationVersion()<"2.1.0-release")
+//    if (qApp->applicationVersion()<"2.1.0-release")
         whatToCompile = SubjWholeText; // Not tested well yet
     foreach (Statement * st, oldStatements) {
         foreach (AST::Variable * var, st->variables) {

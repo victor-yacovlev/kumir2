@@ -57,13 +57,20 @@ bool Utils::isCapsLock()
 
 bool Utils::temporaryLayoutSwitch = false;
 
-QString Utils::textByKey(Qt::Key key, const QString & sourceKeyText, bool shiftPressed)
+QString Utils::textByKey(Qt::Key key,
+                         const QString & sourceKeyText,
+                         bool shiftPressed,
+                         bool teacherMode
+                         )
 {
 
     Q_UNUSED(shiftPressed);
     QString keyText = sourceKeyText;
     if (temporaryLayoutSwitch && key==Qt::Key_1) {
         keyText = "|";
+    }
+    else if (teacherMode && temporaryLayoutSwitch && key==Qt::Key_2) {
+        keyText = "@";
     }
     else if (temporaryLayoutSwitch && key==Qt::Key_Equal) {
         keyText = ":=";

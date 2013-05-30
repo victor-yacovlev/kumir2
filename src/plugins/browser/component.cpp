@@ -1,7 +1,6 @@
 #include "component.h"
 #include "webpage.h"
 #include "plugin.h"
-#include "../../VERSION.h"
 
 namespace Browser {
 
@@ -44,9 +43,10 @@ Component::Component(class Plugin * plugin) :
 #ifdef QT_DEBUG
     page()->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
 #endif
-#if VERSION_ALPHA > 0
-    page()->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
-#endif
+    if (qApp->applicationVersion().contains("/")) {  // Not tagged version
+        page()->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+    }
+
     pageAction(QWebPage::Back)->setText(tr("Go back"));
     pageAction(QWebPage::Forward)->setText(tr("Go forward"));
     pageAction(QWebPage::Stop)->setText(tr("Stop"));

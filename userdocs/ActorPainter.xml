@@ -21,7 +21,59 @@
     </abstract>
     <section>
         <title>Тип величины "цвет"</title>
-        <para></para>
+        <para>В исполнителе реализован новый тип величин -- <type>цвет</type>.
+            Значение величины типа <type>цвет</type> может быть получено:
+            <itemizedlist>
+                <listitem><para>использованием одного из алгоритмов составления цвета из
+                отдельных компонент;</para></listitem>
+                <listitem><para>присваиванием величине одного из значений:
+                    <code>прозрачный</code>, <code>белый</code>, <code>чёрный</code>,
+                    <code>серый</code>, <code>фиолетовый</code>, <code>синий</code>,
+                    <code>голубой</code>, <code>зелёный</code>, <code>жёлтый</code>,
+                    <code>оранжевый</code>, <code>красный</code>.
+                </para>
+                    <para>
+                        Значение типа <type>цвет</type> записывается без кавычек, вместо буквы <code>ё</code>
+                        можно использовать букву <code>е</code>.
+                    </para>
+                </listitem>
+            </itemizedlist>
+        </para>
+        <example>
+            <title>Рисователь рисует радугу</title>
+            <programlisting role="kumir"><![CDATA[
+использовать Рисователь
+алг радуга
+нач
+  новый лист(400, 200, белый)
+  кисть(красный)
+  окружность(200, 200, 200)
+  кисть(оранжевый)
+  окружность(200, 200, 175)
+  кисть(желтый)
+  окружность(200, 200, 150)
+  кисть(зелёный)
+  окружность(200, 200, 125)
+  кисть(голубой)
+  окружность(200, 200, 100)
+  кисть(синий)
+  окружность(200, 200, 75)
+  кисть(фиолетовый)
+  окружность(200, 200, 50)
+  кисть(белый)
+  окружность(200, 200, 25)
+кон
+]]>
+            </programlisting>
+            <para>
+                Результат работы этой программы:
+                <mediaobject>
+                    <imageobject>
+                        <imagedata format="PNG" fileref="ActorPainter/example_rainbow.png"/>
+                    </imageobject>
+                </mediaobject>
+            </para>
+        </example>
     </section>
     <section>
         <title>Алгоритмы для работы с цветом</title>
@@ -103,7 +155,7 @@
                         <para><parameter>g</parameter> -- величина зеленой составляющей цвета;</para>
                     </listitem>
                     <listitem>
-                        <para><parameter>b</parameter> -- величина синей составляющей цвета;</para>
+                        <para><parameter>b</parameter> -- величина синей составляющей цвета.</para>
                     </listitem>
                 </itemizedlist>
                 Все значения состовляющих должны быть от <code>0</code> до <code>255</code>.
@@ -121,46 +173,162 @@
             </mediaobject>
         </section>
         <section>
-            <title>HSV</title>
+            <title>HSL</title>
             <funcsynopsis role="kumir">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>
                 <funcprototype>
-                    <funcdef>алг <type>цвет</type><function>HSV</function></funcdef>
+                    <funcdef>алг <type>цвет</type><function>HSL</function></funcdef>
                     <paramdef>цел <parameter>h</parameter></paramdef>
                     <paramdef>цел <parameter>s</parameter></paramdef>
-                    <paramdef>цел <parameter>v</parameter></paramdef>
+                    <paramdef>цел <parameter>l</parameter></paramdef>
                 </funcprototype>
             </funcsynopsis>
             <para>
-                Возвращает величину типа <type>цвет</type>, составленную из компонент цветовой модели HSV:
+                Возвращает величину типа <type>цвет</type>, составленную из компонент цветовой модели HSL:
                 <itemizedlist>
                     <listitem>
                         <para>
-                            <parameter>h</parameter> -- величина красной составляющей цвета;
+                            <parameter>h</parameter> -- тон цвета (значения в градусах от <code>0</code> до
+                            <code>359</code>);
                         </para>
                     </listitem>
                     <listitem>
-                        <para><parameter>s</parameter> -- величина зеленой составляющей цвета;</para>
+                        <para><parameter>s</parameter> -- значение насыщенности цвета (от <code>0</code> до
+                            <code>255</code>);</para>
                     </listitem>
                     <listitem>
-                        <para><parameter>v</parameter> -- величина синей составляющей цвета;</para>
+                        <para><parameter>s</parameter> -- значение яркости цвета (от <code>0</code> до
+                            <code>255</code>).</para>
+                    </listitem>
+                </itemizedlist>
+            </para>
+            <mediaobject>
+                <imageobject>
+                    <imagedata format="SVG" fileref="ActorPainter/HLS_model.svg"/>
+                </imageobject>
+                <caption>
+                    <para>
+                        Цветовая модель HSL представляет цвет в соответствии с восприятием человека. В этой модели цвета
+                        определяются тоном в соответствии с положением на окружности, яркостью (от черного к белому) и
+                        насыщенностью (от серого к полнолноцветному).
+                    </para>
+                </caption>
+            </mediaobject>
+        </section>
+        <section>
+            <title>CMYKA</title>
+            <funcsynopsis role="kumir">
+                <funcsynopsisinfo>
+                    <package>Рисователь</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг <type>цвет</type><function>CMYKA</function></funcdef>
+                    <paramdef>цел <parameter>c</parameter></paramdef>
+                    <paramdef>цел <parameter>m</parameter></paramdef>
+                    <paramdef>цел <parameter>y</parameter></paramdef>
+                    <paramdef>цел <parameter>k</parameter></paramdef>
+                    <paramdef>цел <parameter>a</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает величину типа <type>цвет</type>, составленную из компонент цветовой модели CMYK и
+                значения альфа-канала:
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <parameter>c</parameter> -- величина бирюзовой составляющей цвета;
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para><parameter>m</parameter> -- величина пурпурной составляющей цвета;</para>
+                    </listitem>
+                    <listitem>
+                        <para><parameter>y</parameter> -- величина желтой составляющей цвета;</para>
+                    </listitem>
+                    <listitem>
+                        <para><parameter>k</parameter> -- величина черной составляющей цвета;</para>
+                    </listitem>
+                    <listitem>
+                        <para><parameter>a</parameter> -- значение непрозрачности цвета (&alpha;-значение).</para>
                     </listitem>
                 </itemizedlist>
                 Все значения состовляющих должны быть от <code>0</code> до <code>255</code>.
             </para>
-            <mediaobject>
-                <imageobject>
-                    <imagedata format="SVG" fileref="ActorPainter/RGB_model.svg"/>
-                </imageobject>
-                <caption>
-                    <para>
-                        Цветовая модель RGB получается основана на субтрактивном смешиванием трех красок: чем выше
-                        значение отдельных компонент, тем светлее получается цвет.
-                    </para>
-                </caption>
-            </mediaobject>
+        </section>
+        <section>
+            <title>RGBA</title>
+            <funcsynopsis role="kumir">
+                <funcsynopsisinfo>
+                    <package>Рисователь</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг <type>цвет</type><function>RGBA</function></funcdef>
+                    <paramdef>цел <parameter>r</parameter></paramdef>
+                    <paramdef>цел <parameter>g</parameter></paramdef>
+                    <paramdef>цел <parameter>b</parameter></paramdef>
+                    <paramdef>цел <parameter>a</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает величину типа <type>цвет</type>, составленную из компонент цветовой модели RGB:
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <parameter>r</parameter> -- величина красной составляющей цвета;
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para><parameter>g</parameter> -- величина зеленой составляющей цвета;</para>
+                    </listitem>
+                    <listitem>
+                        <para><parameter>b</parameter> -- величина синей составляющей цвета;</para>
+                    </listitem>
+                    <listitem>
+                        <para><parameter>a</parameter> -- значение непрозрачности цвета (&alpha;-значение).</para>
+                    </listitem>
+                </itemizedlist>
+                Все значения состовляющих должны быть от <code>0</code> до <code>255</code>.
+            </para>
+        </section>
+        <section>
+            <title>HSLA</title>
+            <funcsynopsis role="kumir">
+                <funcsynopsisinfo>
+                    <package>Рисователь</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг <type>цвет</type><function>HSLA</function></funcdef>
+                    <paramdef>цел <parameter>h</parameter></paramdef>
+                    <paramdef>цел <parameter>s</parameter></paramdef>
+                    <paramdef>цел <parameter>l</parameter></paramdef>
+                    <paramdef>цел <parameter>a</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает величину типа <type>цвет</type>, составленную из компонент цветовой модели HSL:
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <parameter>h</parameter> -- тон цвета (значения в градусах от <code>0</code> до
+                            <code>359</code>);
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para><parameter>s</parameter> -- значение насыщенности цвета (от <code>0</code> до
+                            <code>255</code>);</para>
+                    </listitem>
+                    <listitem>
+                        <para><parameter>s</parameter> -- значение яркости цвета (от <code>0</code> до
+                            <code>255</code>);</para>
+                    </listitem>
+                    <listitem>
+                        <para><parameter>a</parameter> -- значение непрозрачности цвета (&alpha;-значение,
+                            от <code>0</code> до <code>255</code>).</para>
+                    </listitem>
+                </itemizedlist>
+            </para>
         </section>
     </section>
 </article>

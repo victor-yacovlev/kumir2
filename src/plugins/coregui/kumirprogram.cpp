@@ -278,14 +278,14 @@ void KumirProgram::testingRun()
         emit giveMeAProgram();
         bool hasTestingAlgorhitm = false;
         for (int i=0; i<m_ast->modules.size(); i++) {
-            if (m_ast->modules[i]->header.type==AST::ModTypeHidden) {
+//            if (m_ast->modules[i]->header.type==AST::ModTypeHidden) {
                 for (int j=0; j<m_ast->modules[i]->header.algorhitms.size(); j++) {
                     if (m_ast->modules[i]->header.algorhitms[j]->header.specialType==AST::AlgorhitmTypeTesting) {
                         hasTestingAlgorhitm = true;
                         break;
                     }
                 }
-            }
+//            }
         }
         if (!hasTestingAlgorhitm) {
             QMessageBox::information(w_mainWidget, a_testingRun->text(),
