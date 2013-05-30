@@ -47,7 +47,7 @@ if(EXISTS(version_info.cmake))
     include(version_info.cmake)
 else()
     set(GIT_HASH unknown)
-    set(GIT_TIMESTAMP unknown)
+    set(GIT_TIMESTAMP 0)
     set(GIT_BRANCH unknown)
     set(GIT_TAG unknown)
 
