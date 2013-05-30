@@ -29,8 +29,9 @@ QList<QMenu*>  Plugin::menus()const
 QString Plugin::getText()
 {
  GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
-    gui->programSource();
-    return gui->programSource().content.visibleText+QChar('\n')+gui->programSource().content.hiddenText;
+ 
+    qDebug()<<"Text"<< KumFile::toString(gui->programSource().content);
+    return KumFile::toString(gui->programSource().content);
 }    
 void Plugin::setPreProgram(QVariant param)
 {
