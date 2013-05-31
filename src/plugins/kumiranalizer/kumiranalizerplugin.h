@@ -40,7 +40,7 @@ public:
     QStringList importModuleSuggestion(int documentId, int lineNo) const;
 
     std::string rawSourceData(int documentId) const;
-    Shared::LineProp lineProp(int documentId, const QString & text) const;
+    Shared::LineProp lineProp(int documentId, int lineNo, const QString & text) const;
     QList<Shared::Error> errors(int documentId) const;
     QList<Shared::LineProp> lineProperties(int documentId) const;
     QList<QPoint> lineRanks(int documentId) const;

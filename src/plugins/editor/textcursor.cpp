@@ -1344,7 +1344,7 @@ int TextCursor::justifyLeft(const QString &text) const
         s = document_->textAt(row_);
     }
     s.insert(textPos, text);
-    LineProp lp = analizer_->lineProp(document_->id_, s);
+    LineProp lp = analizer_->lineProp(document_->id_, row_, s);
     if (lp[textPos]==LxTypeComment || lp[textPos]==LxConstLiteral) {
         // Do not justify comments and literal constants
         return column_;

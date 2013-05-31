@@ -54,7 +54,7 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
         while (data_[line].highlight.size() < data_[line].text.length())
             data_[line].highlight << Shared::LxTypeEmpty;
         if (analizer)
-            data_[line].highlight = analizer->lineProp(id_, data_[line].text).toList();
+            data_[line].highlight = analizer->lineProp(id_, line, data_[line].text).toList();
 
     }
     else {
@@ -66,7 +66,7 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
         while (data_[line].highlight.size() < data_[line].text.length())
             data_[line].highlight << Shared::LxTypeEmpty;
         if (analizer)
-            data_[line].highlight = analizer->lineProp(id_, data_[line].text).toList();
+            data_[line].highlight = analizer->lineProp(id_, line, data_[line].text).toList();
 
         // 2. Insert middle lines
         for (int i=lines.count()-1; i>=1; i--) {
@@ -80,7 +80,7 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
                 tl.highlight << Shared::LxTypeEmpty;
             }
             if (analizer)
-                tl.highlight = analizer->lineProp(id_, tl.text).toList();
+                tl.highlight = analizer->lineProp(id_, i, tl.text).toList();
             data_.insert(line+1, tl);
         }
 
@@ -98,7 +98,7 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
         while (data_[line+lines.count()-1].highlight.size() < data_[line+lines.count()-1].text.length())
             data_[line+lines.count()-1].highlight << Shared::LxTypeEmpty;
         if (analizer)
-            data_[line+lines.count()-1].highlight = analizer->lineProp(id_, data_[line+lines.count()-1].text).toList();
+            data_[line+lines.count()-1].highlight = analizer->lineProp(id_, line+lines.count()-1, data_[line+lines.count()-1].text).toList();
     }
 }
 
@@ -180,7 +180,7 @@ void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterf
         }
         if (line < data_.size()) {
             if (analizer)
-                tl.highlight = analizer->lineProp(id_, tl.text).toList();
+                tl.highlight = analizer->lineProp(id_, line, tl.text).toList();
             data_[line] = tl;
             removedLines_.insert(removedCounter);
         }
@@ -215,7 +215,7 @@ void TextDocument::insertLine(const QString &text, const uint beforeLineNo)
     textLine.text = text;
     textLine.inserted = true;
     if (analizer_) {
-        textLine.highlight = analizer_->lineProp(id_, text).toList();
+        textLine.highlight = analizer_->lineProp(id_, qMin(beforeLineNo, uint(data_.size())), text).toList();
     }
     for (uint i=0; i<text.length(); i++) {
         textLine.selected.push_back(false);

@@ -1305,7 +1305,37 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
             cursor_->evaluateCommand(KeyCommand::SelectEndOfDocument);
         }
         else if (e->matches(QKeySequence::InsertParagraphSeparator)) {
-            cursor_->evaluateCommand("\n");
+            bool addIndent = analizer_ && analizer_->indentsSignificant();
+            if (!addIndent) {
+                cursor_->evaluateCommand("\n");
+            }
+            else {
+                const QString & curText = document_->at(cursor_->row()).text;
+                int indentSpaces = 0;
+                for (int i=0; i<curText.length(); i++) {
+                    if (curText.at(i) == ' ') {
+                        indentSpaces += 1;
+                    }
+                    else {
+                        break;
+                    }
+                }
+                bool moveToEnd = false;
+                for (uint i=cursor_->column(); i<curText.length(); i++) {
+                    if (curText.at(i) == ' ') {
+                        moveToEnd = true;
+                    }
+                    else {
+                        moveToEnd = false;
+                        break;
+                    }
+                }
+                if (moveToEnd)
+                    cursor_->moveTo(cursor_->row(), curText.length());
+                QString indent;
+                indent.fill(' ', indentSpaces);
+                cursor_->evaluateCommand("\n" + indent);
+            }
         }
         else if (e->key()==Qt::Key_Backspace && e->modifiers()==0) {
             cursor_->evaluateCommand(KeyCommand::Backspace);
@@ -1340,9 +1370,17 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         else if (e->key()==Qt::Key_Slash && e->modifiers().testFlag(Qt::ControlModifier)) {
             cursor_->toggleComment();
         }
-        else if (e->key()==Qt::Key_Tab || ( e->key()==Qt::Key_Space && e->modifiers().testFlag(Qt::ControlModifier) ) ) {
+        else if (e->key()==Qt::Key_Space && e->modifiers().testFlag(Qt::ControlModifier)) {
             if (hasAnalizerFlag_)
                 doAutocomplete();
+        }
+        else if (e->key()==Qt::Key_Tab) {
+            if (analizer_ && analizer_->indentsSignificant()) {
+                cursor_->evaluateCommand("    ");
+            }
+            else if (analizer_) {
+                doAutocomplete();
+            }
         }
         else if (!e->text().isEmpty() &&
                  !e->modifiers().testFlag(Qt::ControlModifier) &&

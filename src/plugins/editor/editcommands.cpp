@@ -259,7 +259,7 @@ void RemoveBlockCommand::redo()
         for (int j=0; j<tl.text.length(); j++)
             tl.selected << false;
         if (analizer)
-            tl.highlight = analizer->lineProp(doc->id_, tl.text).toList();
+            tl.highlight = analizer->lineProp(doc->id_, i, tl.text).toList();
         else for (int j=0; j<tl.text.length(); j++)
             tl.highlight << Shared::LxTypeEmpty;
         doc->data_[i] = tl;
@@ -286,7 +286,7 @@ void RemoveBlockCommand::undo()
         for (int j=0; j<tl.text.length(); j++)
             tl.selected << false;
         if (analizer)
-            tl.highlight = analizer->lineProp(doc->id_, tl.text).toList();
+            tl.highlight = analizer->lineProp(doc->id_, i, tl.text).toList();
         else for (int j=0; j<tl.text.length(); j++)
             tl.highlight << Shared::LxTypeEmpty;
         tl.changed = true;
@@ -355,7 +355,7 @@ void InsertBlockCommand::redo()
             tl.selected << false;
         }
         if (analizer) {
-            tl.highlight = analizer->lineProp(doc->id_, tl.text).toList();
+            tl.highlight = analizer->lineProp(doc->id_, i, tl.text).toList();
         }
         else {
             for (int j=0; j<tl.text.length(); j++) {
@@ -387,7 +387,7 @@ void InsertBlockCommand::undo()
             tl.selected << false;
         }
         if (analizer) {
-            tl.highlight = analizer->lineProp(doc->id_, tl.text).toList();
+            tl.highlight = analizer->lineProp(doc->id_, i, tl.text).toList();
         }
         else {
             for (int j=0; j<tl.text.length(); j++) {

@@ -165,7 +165,7 @@ const AST::Data * KumirAnalizerPlugin::abstractSyntaxTree(int documentId) const
 }
 
 
-Shared::LineProp KumirAnalizerPlugin::lineProp(int documentId, const QString &text) const
+Shared::LineProp KumirAnalizerPlugin::lineProp(int documentId, int /*line_no*/, const QString &text) const
 {
     Q_CHECK_PTR(analizers_[documentId]);
     return analizers_[documentId]->lineProp(text);

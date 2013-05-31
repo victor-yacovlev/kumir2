@@ -31,6 +31,7 @@ public:
     virtual bool primaryAlphabetIsLatin() const = 0;
     virtual bool caseInsensitiveGrammatic() const = 0;
     virtual bool supportPartialCompiling() const = 0;
+    inline virtual bool indentsSignificant() const { return false; }
     virtual void dropDocument(int documentId) = 0;
     virtual void setSourceDirName(int documentId, const QString & dirPath) = 0;
     virtual void setSourceText(int documentId, const QString &text) = 0;
@@ -56,7 +57,7 @@ public:
     virtual QList<QPoint> lineRanks(int documentId) const = 0;
     virtual QStringList imports(int documentId) const = 0;
     virtual const AST::Data * abstractSyntaxTree(int documentId) const = 0;
-    virtual LineProp lineProp(int documentId, const QString & text) const = 0;
+    virtual LineProp lineProp(int documentId, int lineNo, const QString & text) const = 0;
     virtual std::string rawSourceData(int documentId) const = 0;
     inline virtual QList<QRegExp> supportedFileNamePattern() const {
         return QList<QRegExp>()
