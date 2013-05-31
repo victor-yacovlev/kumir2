@@ -134,7 +134,7 @@ void Plugin::setEnabled(bool value)
 void Plugin::setTestingResult(ProgramRunStatus status, int value)
 {
     MW->setMark(value);
-    if (status==ProgramRunStatus::AbortedOnError || status==ProgramRunStatus::UserTerminated)
+    if (status==AbortedOnError || status==UserTerminated)
         MW->setMark(0);
     
 qDebug()<<"Set testing results"<<value;
@@ -158,8 +158,8 @@ void Plugin::changeCurrentDirectory(const QString &path)
 void Plugin::changeGlobalState(ExtensionSystem::GlobalState old,
                                ExtensionSystem::GlobalState current)
 {
-    if(current==ExtensionSystem::GlobalState::GS_Running)MW->lockControls();
-   if(current==ExtensionSystem::GlobalState::GS_Observe)MW->unlockControls();  
+    if(current==ExtensionSystem::GS_Running)MW->lockControls();
+   if(current==ExtensionSystem::GS_Observe)MW->unlockControls();
 }
 
 QString Plugin::initialize(const QStringList &arguments)

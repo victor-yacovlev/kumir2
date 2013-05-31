@@ -900,7 +900,7 @@ namespace ActorRobot {
         // clear();
         //debug();
         showWall = new QGraphicsLineItem(0,0,0,0);
-        if(!mode>0)Color = NormalColor;//Normal Color
+        if(!(mode>0))Color = NormalColor;//Normal Color
         else Color=EditColor;//Edit Color
         this->setBackgroundBrush (QBrush(Color));
         fieldSize=FieldSize;

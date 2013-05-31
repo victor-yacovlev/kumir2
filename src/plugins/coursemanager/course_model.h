@@ -375,7 +375,7 @@ public:
                 if(tmark==0)hasNull=true;
                 if(min_m>taskMark(childs.at(i))&& tmark>0 )min_m=taskMark(childs.at(i));
              }
-             if(min_m<11 and hasNull)min_m=11;
+             if(min_m<11 && hasNull)min_m=11;
              if(min_m>0)setMark(idByNode(pnode),min_m);
 
 
