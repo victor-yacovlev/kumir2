@@ -3648,14 +3648,21 @@ bool RobotModule::runIsColor()
     };
     void RobotModule::runRobotPos(int& row, int& col)
     {
-        row=field->robotX()+1;
-        col=field->robotY()+1;
+        col=field->robotX()+1;
+        row=field->robotY()+1;
     };
     
     QChar RobotModule::runUpChar(const int row, const int col)
     {
-        qDebug()<<field->cellAt(col-1,row-1)->upChar;
-        return field->cellAt(col-1,row-1)->upChar;  
+        if(row-1>field->rows() ||col-1>field->columns())
+        {
+           
+            setError(trUtf8("Нет какой клетки!"));
+            
+            return ' ';
+        }
+        qDebug()<<field->cellAt(row-1,col-1)->upChar;
+        return field->cellAt(row-1,col-1)->upChar;  
     };
     QChar RobotModule::runDownChar(const int row, const int col)
     {qDebug()<<field->cellAt(col-1,row-1)->downChar;
