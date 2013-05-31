@@ -5,7 +5,14 @@ include(../../kumir2_plugin.cmake)
 
 find_package(PythonLibs 3.2)
 include_directories(${PYTHON_INCLUDE_DIRS})
-
+if(MSVC)
+    string(REGEX REPLACE
+        "libpython([0-9][0-9])\\.a"
+        "python\\1.lib"
+        PYTHON_LIBRARIES
+        "${PYTHON_LIBRARIES}"
+    )
+endif()
 add_definitions(-DQT_NO_KEYWORDS)
 
 set(SOURCES
@@ -23,4 +30,5 @@ handleTranslation(Python3Language)
 target_link_libraries(Python3Language ${QT_LIBRARIES} ${PYTHON_LIBRARIES} ExtensionSystem)
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/share/kumir2/python3language)
+copyResources(python3language)
 install(TARGETS Python3Language DESTINATION ${PLUGINS_DIR})
