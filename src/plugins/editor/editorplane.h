@@ -20,7 +20,6 @@ public:
                          , class Editor * editor
                          , class TextCursor * cursor
                          , class Clipboard * clipboard
-                         , const QList<QRegExp> &fileNamePattern
                          , QSettings * settings
                          , QScrollBar * horizontalSB
                          , QScrollBar * verticalSB
@@ -110,7 +109,6 @@ private:
     class Clipboard * clipboard_;
     class Editor * editor_;
 
-    QList<QRegExp> rxFilenamePattern_;
     QSettings * settings_;
     QScrollBar * verticalScrollBar_;
     QScrollBar * horizontalScrollBar_;

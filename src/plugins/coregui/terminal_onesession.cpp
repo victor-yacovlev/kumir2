@@ -265,7 +265,7 @@ QPoint OneSession::cursorPositionByVisiblePosition(const QPoint &pos) const
                     qMax(0,
                         cursor.y()))
                 );
-    cursor.setX(qMin(lines_.at(cursor.y()).length(),
+    cursor.setX(qMin(lines_.isEmpty()? 0 : lines_.at(cursor.y()).length(),
                      qMax(0,
                           cursor.x())
                     ));
@@ -300,7 +300,7 @@ QFont OneSession::utilityFont() const
     return smallFont;
 }
 
-void OneSession::output(const QString &text)
+void OneSession::output(const QString &text, const CharSpec cs)
 {
     int curLine = lines_.size()-1;
     int curCol = lines_.isEmpty()? 0 : lines_[curLine].length();
@@ -314,8 +314,8 @@ void OneSession::output(const QString &text)
         }
         if (text[i].unicode()>=32) {
             lines_[curLine] += text[i];
-            props_[curLine].append(CS_Output);
-            Q_ASSERT(props_[curLine].last()==CS_Output);
+            props_[curLine].append(cs);
+            Q_ASSERT(props_[curLine].last()==cs);
         }
     }
     emit updateRequest();
@@ -533,7 +533,7 @@ void OneSession::tryFinishInput()
     }
     else {
         inputLineStart_ = inputPosStart_ = inputCursorPosition_ = -1;
-        output("\n");
+        output("\n", CS_Output);
         emit message("");
         emit inputDone(result);
         emit updateRequest();

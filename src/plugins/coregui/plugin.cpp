@@ -141,9 +141,6 @@ QString Plugin::initialize(const QStringList & parameters)
     }
 
 
-    mainWindow_->disablePascalProgram();
-
-
     kumirProgram_ = new KumirProgram(this);
     kumirProgram_->setBytecodeGenerator(plugin_BytecodeGenerator);
     kumirProgram_->setEditorPlugin(plugin_editor);
@@ -194,7 +191,8 @@ QString Plugin::initialize(const QStringList & parameters)
     mainWindow_->ui->menuWindow->addAction(coursesWindow->toggleViewAction());
     mainWindow_->gr_otherActions->addAction(coursesWindow->toggleViewAction());
 
-    KPlugin * kumirRunner = myDependency("KumirCodeRun");
+    KPlugin * kumirRunner = ExtensionSystem::PluginManager::instance()
+            ->findKPlugin<RunInterface>();
     plugin_kumirCodeRun = qobject_cast<RunInterface*>(kumirRunner);
     kumirProgram_->setBytecodeRun(kumirRunner);
     QList<ExtensionSystem::KPlugin*> actors = loadedPlugins("Actor*");
@@ -473,12 +471,7 @@ void Plugin::restoreSession()
         QObject * dep = myDependency("Analizer");
         Q_CHECK_PTR(dep);
         QString analizerName = QString::fromAscii(dep->metaObject()->className());
-        if (analizerName.startsWith("Kumir"))
-            mainWindow_->newProgram();
-        else if (analizerName.startsWith("Pascal"))
-            mainWindow_->newPascalProgram();
-        else if (analizerName.startsWith("Python"))
-            mainWindow_->newPythonProgram();
+        mainWindow_->newProgram();
     }
     foreach (Widgets::SecondaryWindow * secWindow, secondaryWindows_)
         secWindow->restoreState();

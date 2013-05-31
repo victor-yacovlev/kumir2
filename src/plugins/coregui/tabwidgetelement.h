@@ -75,18 +75,13 @@ public:
                 tb->addSeparator();
                 foreach (QAction * a, toolbarActions)
                     tb->addAction(a);
-                if (type==MainWindow::Kumir) {
+                if (type==MainWindow::Program) {
                     tb->addSeparator();
                     QList<QAction*> acts = kumir->actions()->actions();
                     for (int i=0; i<acts.size(); i++) {
                         if (acts[i]->isSeparator() || !acts[i]->icon().isNull())
                             tb->addAction(acts[i]);
                     }
-                }
-                if (type==MainWindow::Pascal) {
-                    tb->addSeparator();
-                    Q_UNUSED(pascal);
-                    //                tb->addActions(pascal->actions()->actions());
                 }
                 if (!gr_otherActions->actions().isEmpty()) {
                     tb->addSeparator();

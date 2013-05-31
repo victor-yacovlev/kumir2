@@ -37,7 +37,7 @@ public:
     QString selectedText() const;
     bool isEditable() const;
 public slots:
-    void output(const QString & text);
+    void output(const QString & text, const CharSpec cs);
     void input(const QString & format);
     void error(const QString & message);
     void finish();

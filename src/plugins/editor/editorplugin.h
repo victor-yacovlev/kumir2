@@ -27,7 +27,7 @@ public:
     QWidget* settingsEditorPage();
     bool hasUnsavedChanges(int documentId) const;
     void setDocumentChangesSaved(int documentId);
-    QString loadDocument(int documentId, const QString & fileName);
+    QString loadDocument(int documentId, const QString & fileName, bool keepIndents);
     QString loadDocument(int documentId, const KumFile::Data &data);
     QString saveDocument(int documentId, const QString & fileName);
     KumFile::Data documentContent(int documentId) const;

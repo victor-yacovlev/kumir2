@@ -583,7 +583,6 @@ class Analizer(object):
         self.__analize_testlist(right_parts)
 
 
-
 def new_document():
     unused_index = __documents.index(None)
     __documents[unused_index] = Analizer()

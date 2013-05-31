@@ -25,6 +25,7 @@ public slots:
     void finish();
     void terminate();
     void output(const QString & text);
+    void outputErrorStream(const QString & text);
     void error(const QString & message);
     void input(const QString & format);
     void saveLast();

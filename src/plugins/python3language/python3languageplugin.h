@@ -40,6 +40,9 @@ public:
     LineProp lineProp(int documentId, int lineNo, const QString &text) const;
     std::string rawSourceData(int documentId) const;
     QString createImportStatementLine(const QString &importName) const;
+    inline QString defaultDocumentFileNameSuffix() const { return ".py"; }
+    inline QString languageName() const { return "Python"; }
+    inline ResultType resultType() const { return RT_Source; }
 
     // Runner interface methods
     bool loadProgram(const QString &fileName, const QByteArray & source, ProgramFormat format);
@@ -67,10 +70,21 @@ public:
     int currentLineNo() const;
     QString error() const;
 
+    // methods to access within self static functions
+    void handlePythonOutput(const QString & message);
+    void handlePythonError(const QString & message);
+    void handlePythonLineChanged(int lineNo);
+
+Q_SIGNALS:
+    void stopped(int reason);
+    void outputRequest(const QString & output);
+    void errorOutputRequest(const QString & output);
+    void lineChanged(int lineNo);
 protected:
     QString initialize(const QStringList &arguments);
 private:
     ::PyObject * analizerModule_;
+    ::PyObject * runModule_;
 };
 
 

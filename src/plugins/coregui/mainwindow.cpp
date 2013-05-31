@@ -230,7 +230,7 @@ void MainWindow::lockActions()
     else {
         for (int i=0; i<ui->tabWidget->count(); i++) {
             TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
-            if (twe && twe->type==Kumir && twe->kumirProgram()) {
+            if (twe && twe->type==Program && twe->kumirProgram()) {
                 if (twe->kumirProgram()->isRunning()) {
                     twe->setProperty("uncloseable", true);
                 }
@@ -256,7 +256,7 @@ void MainWindow::unlockActions()
     else {
         for (int i=0; i<ui->tabWidget->count(); i++) {
             TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
-            if (twe && twe->type==Kumir && twe->kumirProgram()) {
+            if (twe && twe->type==Program && twe->kumirProgram()) {
                 twe->setProperty("uncloseable", false);
             }
         }
@@ -268,7 +268,7 @@ void MainWindow::activateDocumentTab(int documentId)
 {
     for (int i=0; i<ui->tabWidget->count(); i++) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
-        if (twe && twe->type == Kumir && twe->documentId==documentId) {
+        if (twe && twe->type == Program && twe->documentId==documentId) {
             ui->tabWidget->setCurrentIndex(i);
             return;
         }
@@ -284,7 +284,7 @@ void MainWindow::checkCounterValue()
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
         if (!twe)
             return;
-        if (twe->type==Kumir || twe->type==Pascal) {
+        if (twe->type==Program) {
             int id = twe->documentId;
             quint32 errorsCount = m_plugin->plugin_editor->errorsLinesCount(id);
             if (errorsCount==0) {
@@ -437,7 +437,7 @@ void MainWindow::prepareRunMenu()
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
     if (!twe)
         return;
-    if (twe->type==Kumir) {
+    if (twe->type==Program) {
         ui->menuRun->addActions(m_plugin->kumirProgram_->actions()->actions());
     }
     else {
@@ -493,25 +493,26 @@ void MainWindow::prepareInsertMenu()
 
 bool MainWindow::saveCurrentFileAs()
 {
+    using namespace ExtensionSystem;
+    using namespace Shared;
+    AnalizerInterface * analizer =
+            PluginManager::instance()->findPlugin<AnalizerInterface>();
+    const QString languageName = analizer->languageName();
+    const QString fileNameSuffix = analizer->defaultDocumentFileNameSuffix();
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
     QString fileName = twe->property("fileName").toString();
-    QStringList filter;
-    if (twe->type==Kumir) {
-        filter << tr("Kumir programs (*.kum)");
-    }
-    if (twe->type==Pascal) {
-        filter << tr("Pascal programs (*.pas *.pp");
-    }
+    QStringList filter;    
+    if (twe->type==Program) {
+        filter << tr("%1 programs (*.%2)").arg(languageName).arg(fileNameSuffix);
+    }    
     if (twe->type==Text) {
         filter << tr("Text files (*.txt)");
     }
     filter << tr("All files (*)");
     fileName = QFileDialog::getSaveFileName(this, tr("Save file"), fileName, filter.join(";;"));
     if (!fileName.isEmpty()) {
-        if (twe->type==Kumir && !fileName.endsWith(".kum"))
-            fileName += ".kum";
-        if (twe->type==Pascal && !(fileName.endsWith(".pas") || fileName.endsWith(".pp")))
-            fileName += ".pas";
+        if (twe->type==Program && !fileName.endsWith(fileNameSuffix))
+            fileName += fileNameSuffix;
         if (saveCurrentFileTo(fileName)) {
             m_plugin->mySettings()->setValue(Plugin::RecentFileKey, fileName);
             twe->setProperty("fileName", fileName);
@@ -655,20 +656,25 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::disablePascalProgram()
-{
-    ui->actionNew_pascal_program->setEnabled(false);
-    ui->actionNew_pascal_program->setVisible(false);
-}
-
 void MainWindow::newProgram()
 {
+    using namespace ExtensionSystem;
+    using namespace Shared;
     if (b_notabs && !closeTab(ui->tabWidget->currentIndex())) {
         return;
     }
-    QString suffix = ".kum";
-    DocumentType type = Kumir;
-    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", QDir::currentPath(), false);
+    AnalizerInterface * analizer =
+            PluginManager::instance()->findPlugin<AnalizerInterface>();
+    KPlugin * analizerPlugin =
+            PluginManager::instance()->findKPlugin<AnalizerInterface>();
+    const QString analizerPluginName = analizerPlugin->pluginSpec().name;
+    const QString suffix = analizer->defaultDocumentFileNameSuffix();
+    DocumentType type = Program;
+    EditorComponent doc = m_plugin->plugin_editor->newDocument(
+                analizerPluginName,
+                QDir::currentPath(),
+                false
+                );
     QWidget* vc = doc.widget;
     int id = doc.id;
     vc->setProperty("documentId", id);
@@ -689,58 +695,6 @@ void MainWindow::newProgram()
 
 }
 
-void MainWindow::newPythonProgram()
-{
-    if (b_notabs && !closeTab(ui->tabWidget->currentIndex())) {
-        return;
-    }
-    QString suffix = ".py";
-    DocumentType type = Python;   
-    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("Python3Language", QDir::currentPath(), false);
-    QWidget* vc = doc.widget;
-    int id = doc.id;
-    vc->setProperty("documentId", id);
-    QString fileName = suggestNewFileName(suffix);
-    vc->setProperty("title",QFileInfo(fileName).fileName());
-    vc->setProperty("fileName", QDir::current().absoluteFilePath(fileName));
-    TabWidgetElement * e = addCentralComponent(
-                fileName,
-                vc,
-                doc.toolbarActions,
-                doc.menus,
-                doc.statusbarWidgets,
-                type,
-                true);
-    ui->tabWidget->setCurrentWidget(e);
-    e->setFocus();
-
-}
-
-void MainWindow::newPascalProgram()
-{
-    if (b_notabs && !closeTab(ui->tabWidget->currentIndex())) {
-        return;
-    }
-    QString suffix = ".pas";
-    QString fileName = suggestNewFileName(suffix);
-    DocumentType type = Pascal;
-    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("PascalAnalizer", QDir::currentPath(), false);
-    QWidget* vc = doc.widget;
-    int id = doc.id;
-    vc->setProperty("documentId", id);
-    vc->setProperty("fileName", QDir::current().absoluteFilePath(fileName));
-    vc->setProperty("title",QFileInfo(fileName).fileName());
-    TabWidgetElement * e = addCentralComponent(
-                fileName,
-                vc,
-                doc.toolbarActions,
-                doc.menus,
-                doc.statusbarWidgets,
-                type,
-                true);
-    ui->tabWidget->setCurrentWidget(e);
-    e->setFocus();
-}
 
 void MainWindow::newText()
 {
@@ -802,7 +756,7 @@ TabWidgetElement * MainWindow::addCentralComponent(
 {
     class KumirProgram * kumir = 0;
     class PascalProgram * pascal = 0;
-    if (type==Kumir) {
+    if (type==Program) {
         kumir = m_plugin->kumirProgram_;
     }
     TabWidgetElement * element = new TabWidgetElement(
@@ -875,7 +829,7 @@ void MainWindow::setupContentForTab()
         return;
 
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
-    if (twe->type==Kumir) {
+    if (twe->type==Program) {
         const int id = twe->documentId;
         const QString fileName = twe->property("fileName").toString();
         const AnalizerInterface * analizer = m_plugin->plugin_editor->analizer(id);
@@ -1001,11 +955,11 @@ void MainWindow::restoreSession()
                 DocumentType doctype = Text;
                 if (type.toLower()=="kumir") {
                     analizerName = "KumirAnalizer";
-                    doctype = Kumir;
+                    doctype = Program;
                 }
                 else if (type.toLower()=="pascal") {
                     analizerName = "PascalAnalizer";
-                    doctype = Pascal;
+                    doctype = Program;
                 }
                 EditorComponent doc = m_plugin->plugin_editor->newDocument(analizerName, QDir::currentPath(), false);
                 QByteArray editorSession = f.readAll();
@@ -1159,10 +1113,8 @@ void MainWindow::saveSession() const
         if (sessionFile.open(QIODevice::WriteOnly)) {
             QDataStream stream(&sessionFile);
             TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
-            if (twe->type==Kumir)
+            if (twe->type==Program)
                 stream << QString("kumir");
-            else if (twe->type==Pascal)
-                stream << QString("pascal");
             else if (twe->type==WWW)
                 stream << QString("www");
             else
@@ -1269,10 +1221,13 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
     if (url.scheme().startsWith("file")) {
         const QString fileName = url.toLocalFile();
         const QString suffix = QFileInfo(fileName).suffix();
-        if (suffix=="kum")
-            type = Kumir;
-//        else if (suffix=="pas" || suffix=="pp")
-//            type = Pascal;
+        AnalizerInterface * analizer =
+                PluginManager::instance()->findPlugin<AnalizerInterface>();
+        const QString programSuffix = analizer->defaultDocumentFileNameSuffix().remove(".");
+        using namespace ExtensionSystem;
+        using namespace Shared;
+        if (suffix==programSuffix)
+            type = Program;
         else if (suffix=="html" || suffix=="htm")
             type = WWW;
         else
@@ -1283,13 +1238,28 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
     }
     if (addToRecentFiles && type!=WWW)
         addToRecent(url.toLocalFile());
-    if (type==Kumir) {
+    if (type==Program) {
         QFileInfo f(url.toLocalFile());
         if (f.isReadable()) {
-            EditorComponent doc = m_plugin->plugin_editor->newDocument("KumirAnalizer", QFileInfo(f).absoluteDir().absolutePath(), false);
+            using namespace ExtensionSystem;
+            using namespace Shared;
+            AnalizerInterface * analizer =
+                    PluginManager::instance()->findPlugin<AnalizerInterface>();
+            KPlugin * analizerPlugin =
+                    PluginManager::instance()->findKPlugin<AnalizerInterface>();
+            const QString analizerPluginName = analizerPlugin->pluginSpec().name;
+            EditorComponent doc = m_plugin->plugin_editor->newDocument(
+                        analizerPluginName,
+                        QFileInfo(f).absoluteDir().absolutePath(),
+                        false
+                        );
             QWidget * vc = doc.widget;
             int id = doc.id;
-            m_plugin->plugin_editor->loadDocument(id, f.absoluteFilePath());
+            m_plugin->plugin_editor->loadDocument(
+                        id,
+                        f.absoluteFilePath(),
+                        analizer->indentsSignificant()
+                        );
             vc->setProperty("documentId", id);
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
@@ -1301,42 +1271,14 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                         doc.toolbarActions,
                         doc.menus,
                         doc.statusbarWidgets,
-                        Kumir,
+                        Program,
                         true);
             result->documentId = id;
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
             setupContentForTab();
         }
-    }
-    else if (type==Pascal) {
-        QFile f(url.toLocalFile());
-        if (f.open(QIODevice::Text|QIODevice::ReadOnly)) {
-            QTextStream ts(&f);
-            ts.setAutoDetectUnicode(true);
-            QString data = ts.readAll();
-            f.close();
-            EditorComponent doc = m_plugin->plugin_editor->newDocument("PascalAnalizer", QFileInfo(f).absoluteDir().absolutePath(), false);
-            QWidget* vc = doc.widget;
-            int id = doc.id;
-            vc->setProperty("documentId", id);
-            QString fileName = QFileInfo(url.toLocalFile()).fileName();
-            vc->setProperty("fileName", url.toLocalFile());
-            vc->setProperty("title", fileName);
-            vc->setProperty("realFileName", url.toLocalFile());
-            result = addCentralComponent(
-                        fileName,
-                        vc,
-                        doc.toolbarActions,
-                        doc.menus,
-                        doc.statusbarWidgets,
-                        Pascal,
-                        true);
-            result->documentId = id;
-            ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
-            ui->tabWidget->currentWidget()->setFocus();
-        }
-    }
+    }    
     else if (type==Text) {
         QFile f(url.toLocalFile());
         if (f.open(QIODevice::Text|QIODevice::ReadOnly)) {
@@ -1424,7 +1366,7 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
                         toolBarActions,
                         menus,
                         doc.statusbarWidgets,
-                        Kumir,
+                        Program,
                         true
                         );
         }

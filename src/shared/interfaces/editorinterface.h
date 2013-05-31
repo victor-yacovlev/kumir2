@@ -26,7 +26,7 @@ public:
     virtual int analizerDocumentId(int editorDocumentId) const = 0;
     virtual bool hasUnsavedChanges(int documentId) const = 0;
     virtual void setDocumentChangesSaved(int documentId) = 0;
-    virtual QString loadDocument(int documentId, const QString & fileName) = 0;
+    virtual QString loadDocument(int documentId, const QString & fileName, bool keepIndents) = 0;
     virtual QString loadDocument(int documentId, const KumFile::Data &data) = 0;
     virtual QString saveDocument(int documentId, const QString & fileName) = 0;
     virtual KumFile::Data documentContent(int documentId) const = 0;

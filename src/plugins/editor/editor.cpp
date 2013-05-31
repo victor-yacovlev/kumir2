@@ -63,7 +63,8 @@ void Editor::unlock()
     d->cut->setEnabled(true);
     d->deleteLine->setEnabled(true);
     d->deleteTail->setEnabled(true);
-    d->toggleComment->setEnabled(true);
+    if (d->toggleComment)
+        d->toggleComment->setEnabled(true);
     for (int i=0; i<d->userMacros.size(); i++) {
         d->userMacros[i].action->setEnabled(true);
     }
@@ -493,11 +494,7 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
     d->settings = settings;
     d->horizontalScrollBar = new QScrollBar(Qt::Horizontal, this);
     d->verticalScrollBar = new QScrollBar(Qt::Vertical, this);
-    QList<QRegExp> fileNamesToOpen = QList<QRegExp>() << QRegExp("*", Qt::CaseSensitive, QRegExp::Wildcard);
-    if (d->analizer)
-        fileNamesToOpen = d->analizer->supportedFileNamePattern();
-
-    d->plane = new EditorPlane(d->doc, d->analizer, this, d->cursor, d->clipboard, fileNamesToOpen, d->settings, d->horizontalScrollBar, d->verticalScrollBar, d->analizer!=NULL, this);
+    d->plane = new EditorPlane(d->doc, d->analizer, this, d->cursor, d->clipboard, d->settings, d->horizontalScrollBar, d->verticalScrollBar, d->analizer!=NULL, this);
     d->findReplace = new FindReplace(d->doc, d->cursor, d->plane);
 
     d->keybStatus = new QLabel(0);

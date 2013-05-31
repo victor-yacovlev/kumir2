@@ -32,7 +32,6 @@ EditorPlane::EditorPlane(TextDocument * doc
                          , class Editor * editor
                          , TextCursor * cursor
                          , class Clipboard * clipboard
-                         , const QList<QRegExp> &fileNamesToOpen
                          , QSettings * settings
                          , QScrollBar * horizontalSB
                          , QScrollBar * verticalSB
@@ -45,7 +44,6 @@ EditorPlane::EditorPlane(TextDocument * doc
     highlightedTextLineNumber_ = -1;
     highlightedLockSymbolLineNumber_ = -1;
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-    rxFilenamePattern_ = fileNamesToOpen;
     marginBackgroundAlpha_ = 255;
     document_ = doc;
     cursor_ = cursor;
@@ -1656,14 +1654,10 @@ void EditorPlane::dropEvent(QDropEvent *e)
         QList<QUrl> validUrls;
         foreach (QUrl url, urls) {
             const QString fileName = url.toLocalFile();
-            bool valid = false;
-            foreach (QRegExp rx, rxFilenamePattern_) {
-                if (rx.exactMatch(fileName)) {
-                    valid = true;
-                    break;
-                }
-            }
-            if (valid) {
+            const QString filenameSuffix =
+                    analizer_ ? analizer_->defaultDocumentFileNameSuffix()
+                              : ".txt";
+            if (fileName.endsWith(filenameSuffix)) {
                 validUrls << url;
             }
         }

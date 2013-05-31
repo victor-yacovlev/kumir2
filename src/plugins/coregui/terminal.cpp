@@ -196,8 +196,18 @@ void Term::output(const QString & text)
     emit showWindowRequest();
     if (sessions_.isEmpty())
         sessions_ << new OneSession(-1,"unknown", m_plane);
-    sessions_.last()->output(text);
-//    qDebug() << "output " << text;
+    sessions_.last()->output(text, CS_Output);
+    m_plane->updateScrollBars();
+    if (sb_vertical->isEnabled())
+        sb_vertical->setValue(sb_vertical->maximum());
+}
+
+void Term::outputErrorStream(const QString & text)
+{
+    emit showWindowRequest();
+    if (sessions_.isEmpty())
+        sessions_ << new OneSession(-1,"unknown", m_plane);
+    sessions_.last()->output(text, CS_Error);
     m_plane->updateScrollBars();
     if (sb_vertical->isEnabled())
         sb_vertical->setValue(sb_vertical->maximum());

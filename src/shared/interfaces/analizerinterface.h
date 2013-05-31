@@ -25,8 +25,11 @@ struct Suggestion {
     Kind kind;
 };
 
+
 class AnalizerInterface {
 public:
+    enum ResultType { RT_AST, RT_Binary, RT_Source };
+
     virtual int newDocument() = 0;
     virtual bool primaryAlphabetIsLatin() const = 0;
     virtual bool caseInsensitiveGrammatic() const = 0;
@@ -38,6 +41,7 @@ public:
     virtual void setHiddenText(int documentId, const QString &text, int baseLine) = 0;
     virtual void setHiddenTextBaseLine(int documentId, int baseLine) = 0;
     virtual void changeSourceText(int documentId, const QList<ChangeTextTransaction> & changes) = 0;
+    virtual ResultType resultType() const = 0;
 
     /**
      * @brief suggestAutoComplete
@@ -59,10 +63,8 @@ public:
     virtual const AST::Data * abstractSyntaxTree(int documentId) const = 0;
     virtual LineProp lineProp(int documentId, int lineNo, const QString & text) const = 0;
     virtual std::string rawSourceData(int documentId) const = 0;
-    inline virtual QList<QRegExp> supportedFileNamePattern() const {
-        return QList<QRegExp>()
-                << QRegExp("*",Qt::CaseInsensitive,QRegExp::Wildcard);
-    }
+    virtual QString languageName() const = 0;
+    virtual QString defaultDocumentFileNameSuffix() const = 0;
 
     virtual QString createImportStatementLine(const QString &importName) const = 0;
 };

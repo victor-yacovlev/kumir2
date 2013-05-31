@@ -49,10 +49,9 @@ public:
     QStringList algorhitmsAvailableFor(int documentId, int lineNo) const;
     QStringList globalsAvailableFor(int documentId, int lineNo) const;
     QStringList localsAvailableFor(int documentId, int lineNo) const;
-    inline virtual QList<QRegExp> supportedFileNamePattern() const {
-        return QList<QRegExp>()
-                << QRegExp("*.kum",Qt::CaseInsensitive,QRegExp::Wildcard);
-    }
+    inline QString defaultDocumentFileNameSuffix() const { return ".kum"; }
+    inline QString languageName() const { return QString::fromUtf8("Кумир"); }
+    inline ResultType resultType() const { return RT_AST; }
     QString createImportStatementLine(const QString &importName) const;
 
 protected:

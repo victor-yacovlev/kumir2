@@ -22,7 +22,7 @@ struct Data
 };
 
 KUMFILE_EXPORT QString toString(const Data & data);
-KUMFILE_EXPORT Data fromString(const QString &s);
+KUMFILE_EXPORT Data fromString(const QString &s, bool keepIndents = false);
 KUMFILE_EXPORT QString readRawDataAsString(QByteArray rawData, const QString & sourceEncoding);
 
 KUMFILE_EXPORT bool hasCryptographicRoutines();

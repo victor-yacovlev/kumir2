@@ -206,7 +206,7 @@ KumFile::Data EditorPlugin::documentContent(int documentId) const
     return editor->toKumFile();
 }
 
-QString EditorPlugin::loadDocument(int documentId, const QString &fileName)
+QString EditorPlugin::loadDocument(int documentId, const QString &fileName, bool keepIndents)
 {
     Q_ASSERT(documentId>=0);
     Q_ASSERT(documentId<d->editors.size());
@@ -216,7 +216,12 @@ QString EditorPlugin::loadDocument(int documentId, const QString &fileName)
     QFile f(fileName);
     if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
         const QByteArray bytes = f.readAll();
-        editor->setKumFile(KumFile::fromString(KumFile::readRawDataAsString(bytes, QString())));
+        editor->setKumFile(
+                    KumFile::fromString(
+                        KumFile::readRawDataAsString(bytes, QString())
+                        , keepIndents
+                        )
+                    );
         f.close();
     }
     else {

@@ -153,11 +153,13 @@ void KumirProgram::handleMarginClearRequest(int fromLine, int toLine)
 
 void KumirProgram::setTerminal(Term *t, QDockWidget * w)
 {
+    using namespace ExtensionSystem;
+    using namespace Shared;
     m_terminal = t;
     m_terminalWindow = w;
 
     KPlugin * plugin_bytecodeRunObject =
-            ExtensionSystem::PluginManager::instance()->loadedPlugin("KumirCodeRun");
+            PluginManager::instance()->findKPlugin<RunInterface>();
 
     connect(m_terminal, SIGNAL(inputFinished(QVariantList)),
             plugin_bytecodeRunObject, SIGNAL(finishInput(QVariantList)));
@@ -169,6 +171,8 @@ void KumirProgram::setTerminal(Term *t, QDockWidget * w)
             m_terminal, SLOT(input(QString)));
     connect(plugin_bytecodeRunObject, SIGNAL(outputRequest(QString)),
             m_terminal, SLOT(output(QString)));
+    connect(plugin_bytecodeRunObject, SIGNAL(errorOutputRequest(QString)),
+            m_terminal, SLOT(outputErrorStream(QString)));
 }
 
 
@@ -320,23 +324,50 @@ void KumirProgram::regularRun()
 
 void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel debugLevel)
 {
-    if (w_debuggerWindow) w_debuggerWindow->reset();
-    bool mustRegenerate = !m_ast->lastModified.isValid() ||
-            !plugin_bytecodeRun->loadedProgramVersion().isValid() ||
-            m_ast->lastModified > plugin_bytecodeRun->loadedProgramVersion();
-    bool ok = true;
-    if (mustRegenerate) {
-        QByteArray bufArray;
-        QPair<QString,QString> res = plugin_bytcodeGenerator->generateExecuable(m_ast, bufArray, debugLevel);
-        if (!res.first.isEmpty()) {
-            qDebug() << "Error generating execuable: " << res.first;
-        }
-        else {
-            ok = plugin_bytecodeRun->loadProgram(s_sourceFileName, bufArray, Shared::FormatBinary);
+    using namespace ExtensionSystem;
+    using namespace Shared;
+    AnalizerInterface * analizer =
+            PluginManager::instance()->findPlugin<AnalizerInterface>();
+    RunInterface * runner =
+            PluginManager::instance()->findPlugin<RunInterface>();
+    bool ok = false;
+    QString exeFileName;
+    if (analizer->resultType() == AnalizerInterface::RT_AST) {
+        if (w_debuggerWindow) w_debuggerWindow->reset();
+        ok = true;
+        bool mustRegenerate = !m_ast->lastModified.isValid() ||
+                !runner->loadedProgramVersion().isValid() ||
+                m_ast->lastModified > runner->loadedProgramVersion();
+        if (mustRegenerate) {
+            QByteArray bufArray;
+            QPair<QString,QString> res = plugin_bytcodeGenerator->generateExecuable(m_ast, bufArray, debugLevel);
+            if (!res.first.isEmpty()) {
+                qDebug() << "Error generating execuable: " << res.first;
+                ok = false;
+            }
+            else {
+                ok = runner->loadProgram(s_sourceFileName, bufArray, Shared::FormatBinary);
 
+            }
         }
+        exeFileName =
+                s_sourceFileName.mid(0, s_sourceFileName.length()-4) +
+                analizer->defaultDocumentFileNameSuffix();
     }
-    const QString exeFileName = s_sourceFileName.mid(0, s_sourceFileName.length()-4)+".kum";
+    else if (analizer->resultType() == AnalizerInterface::RT_Source) {
+        EditorInterface * editor =
+                PluginManager::instance()->findPlugin<EditorInterface>();
+        const KumFile::Data source = editor->documentContent(documentId());
+        const QString sourceText = source.hasHiddenText
+                ? source.visibleText + "\n" + source.hiddenText
+                : source.visibleText;
+        const QByteArray sourceData = sourceText.toUtf8();
+        exeFileName = s_sourceFileName;
+        ok = runner->loadProgram(s_sourceFileName, sourceData, Shared::FormatText);
+    }
+    else if (analizer->resultType() == AnalizerInterface::RT_Binary) {
+        ok = false;  // not implemented
+    }
     if (ok) {
         m_terminal->start(exeFileName);
     }

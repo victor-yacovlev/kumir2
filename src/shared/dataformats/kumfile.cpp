@@ -48,7 +48,7 @@ QDataStream & operator <<(QDataStream & ds, const KumFile::Data & data)
     return ds;
 }
 
-KumFile::Data KumFile::fromString(const QString &s)
+KumFile::Data KumFile::fromString(const QString &s, bool keepIndents)
 {
     const QStringList lines = s.split("\n", QString::KeepEmptyParts);
     KumFile::Data data;
@@ -56,8 +56,10 @@ KumFile::Data KumFile::fromString(const QString &s)
     int lineNo = -1;
     for (int i=0; i<lines.count(); i++) {
         QString line = lines[i];
-        while (line.startsWith(" "))
-            line.remove(0, 1);
+        if (!keepIndents) {
+            while (line.startsWith(" "))
+                line.remove(0, 1);
+        }
         if (line.startsWith("|@signature ") && line.endsWith("|@hidden"))
         {
             const QString b64 = line.mid(12, line.length()-20);

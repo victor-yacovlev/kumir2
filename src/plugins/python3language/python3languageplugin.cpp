@@ -1,14 +1,18 @@
 #include "python3languageplugin.h"
 #include "Python.h"
+#include <iostream>
 
 namespace Python3Language {
 
 Python3LanguagePlugin::Python3LanguagePlugin()
     : ExtensionSystem::KPlugin()
     , analizerModule_(NULL)
+    , runModule_(NULL)
 {
 
 }
+
+static Python3LanguagePlugin * PLUGIN = nullptr;
 
 static ::PyObject* _kumir_debug(PyObject *, PyObject *args)
 {
@@ -21,8 +25,70 @@ static ::PyObject* _kumir_debug(PyObject *, PyObject *args)
     return Py_None;
 }
 
+static ::PyObject* _kumir_write_to_stdout(PyObject *, PyObject *args)
+{
+    ::PyObject * msg = PyTuple_GetItem(args, 0);
+    QString qmsg;
+    if (PyUnicode_Check(msg)) {
+        wchar_t * buffer = PyUnicode_AsWideCharString(msg, 0);
+        qmsg = QString::fromWCharArray(buffer);
+        PyMem_Free(buffer);
+    }
+    else if (PyBytes_Check(msg)) {
+        char * buffer = PyBytes_AsString(msg);
+        qmsg = QString::fromLocal8Bit(buffer);
+        PyMem_Free(buffer);
+    }
+    if (PLUGIN) {
+        PLUGIN->handlePythonOutput(qmsg);
+    }
+    else {
+        qDebug() << qmsg;
+    }
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static ::PyObject* _kumir_write_to_stderr(PyObject *, PyObject *args)
+{
+    ::PyObject * msg = PyTuple_GetItem(args, 0);
+    QString qmsg;
+    if (PyUnicode_Check(msg)) {
+        wchar_t * buffer = PyUnicode_AsWideCharString(msg, 0);
+        qmsg = QString::fromWCharArray(buffer);
+        PyMem_Free(buffer);
+    }
+    else if (PyBytes_Check(msg)) {
+        char * buffer = PyBytes_AsString(msg);
+        qmsg = QString::fromLocal8Bit(buffer);
+        PyMem_Free(buffer);
+    }
+    if (PLUGIN) {
+        PLUGIN->handlePythonError(qmsg);
+    }
+    else {
+        qDebug() << qmsg;
+    }
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static ::PyObject* _kumir_notify_line_changed(PyObject *, PyObject *args)
+{
+    ::PyObject * msg = PyTuple_GetItem(args, 0);
+    int lineNo = PyLong_AsLong(msg);
+    if (PLUGIN) {
+        PLUGIN->handlePythonLineChanged(lineNo);
+    }
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 static ::PyMethodDef _kumirMethods[] = {
-    { "debug", _kumir_debug, METH_VARARGS, "Debug via qDebug routines"},
+    { "debug", _kumir_debug, METH_VARARGS, ""},
+    { "write_to_stdout", _kumir_write_to_stdout, METH_VARARGS, ""},
+    { "write_to_stderr", _kumir_write_to_stderr, METH_VARARGS, ""},
+    { "notify_line_changed", _kumir_notify_line_changed, METH_VARARGS, ""},
     { NULL, NULL, 0, NULL }
 };
 
@@ -37,13 +103,13 @@ static ::PyObject* PyInit__kumir(void)
 }
 
 QString Python3LanguagePlugin::initialize(const QStringList &)
-{
+{    
     static const QString pyLibPath = qApp->property("sharePath").toString()+"/python3language";
     static const QByteArray analizer_py_Path = pyLibPath.toLocal8Bit();
     char * analizer_py = (char*)calloc(analizer_py_Path.size(), sizeof(char));
     strcpy(analizer_py, analizer_py_Path.constData());
     PyImport_AppendInittab("_kumir", &PyInit__kumir);
-    PyImport_AppendInittab("__builtins__", &PyEval_GetBuiltins);
+//    PyImport_AppendInittab("__builtins__", &PyEval_GetBuiltins);
     Py_Initialize();    
     ::PyObject * sysPath = PySys_GetObject("path");
     ::PyObject * kumirPath = PyUnicode_FromString(analizer_py);
@@ -54,9 +120,17 @@ QString Python3LanguagePlugin::initialize(const QStringList &)
         PyErr_Fetch(&ptype, &pvalue, &ptraceback);
         PyObject_Print(pvalue, stderr,0);
         PyObject_Print(ptraceback, stderr,0);
-        return "Can't import python module 'analizer'";
+        return "Can't import python module 'analizer' using path " + pyLibPath;
     }
-
+    runModule_ = PyImport_ImportModule("run");
+    if (!runModule_) {
+        ::PyObject * ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        PyObject_Print(pvalue, stderr,0);
+        PyObject_Print(ptraceback, stderr,0);
+        return "Can't import python module 'run' using path " + pyLibPath;
+    }
+    PLUGIN = this;
     return "";
 }
 
@@ -242,9 +316,28 @@ void Python3LanguagePlugin::dropDocument(int documentId)
 
 }
 
-bool Python3LanguagePlugin::loadProgram(const QString &fileName, const QByteArray & source, ProgramFormat format)
+bool Python3LanguagePlugin::loadProgram(const QString &fileName, const QByteArray & source, ProgramFormat )
 {
-    return false;
+    ::PyObject * py_load_program = PyObject_GetAttrString(runModule_,
+                                                          "load_program");
+    ::PyObject * args = PyTuple_New(2);
+    std::wstring ws_fileName = fileName.toStdWString();
+    ::PyObject * py_file_name =
+            PyUnicode_FromWideChar(ws_fileName.c_str(), ws_fileName.length());
+    ::PyObject * py_source = PyBytes_FromStringAndSize(source.data(), source.size());
+    PyTuple_SetItem(args, 0, py_file_name);
+    PyTuple_SetItem(args, 1, py_source);
+    ::PyObject * py_result = PyObject_CallObject(py_load_program, args);
+    Py_DECREF(args);
+    if (!py_result) {
+        ::PyObject * ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        PyObject_Print(pvalue, stderr,0);
+        PyObject_Print(ptraceback, stderr,0);
+        return false;
+    }
+    bool result = PyLong_AsLong(py_result) != 0;
+    return result;
 }
 
 QDateTime Python3LanguagePlugin::loadedProgramVersion() const
@@ -264,32 +357,117 @@ bool Python3LanguagePlugin::canStepOut() const
 
 void Python3LanguagePlugin::runBlind()
 {
-
+    ::PyObject * py_function = PyObject_GetAttrString(runModule_,
+                                                       "run_blind");
+    ::PyObject * args = PyTuple_New(0);
+    ::PyObject * py_result = PyObject_CallObject(py_function, args);
+    Py_DECREF(args);
+    if (!py_result) {
+        ::PyObject * ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        PyObject_Print(pvalue, stderr,0);
+        PyObject_Print(ptraceback, stderr,0);
+    }
+    using namespace Shared;
+    if (error().length() > 0) {
+        Q_EMIT stopped(RunInterface::SR_Error);
+    }
+    else {
+        Q_EMIT stopped(RunInterface::SR_Done);
+    }
 }
 
 void Python3LanguagePlugin::runContinuous()
 {
-
+    ::PyObject * py_function = PyObject_GetAttrString(runModule_,
+                                                       "run_continuous");
+    ::PyObject * args = PyTuple_New(0);
+    ::PyObject * py_result = PyObject_CallObject(py_function, args);
+    Py_DECREF(args);
+    if (!py_result) {
+        ::PyObject * ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        PyObject_Print(pvalue, stderr,0);
+        PyObject_Print(ptraceback, stderr,0);
+    }
+    using namespace Shared;
+    if (error().length() > 0) {
+        Q_EMIT stopped(RunInterface::SR_Error);
+    }
+    else {
+        Q_EMIT stopped(RunInterface::SR_Done);
+    }
 }
 
 void Python3LanguagePlugin::runStepOver()
 {
-
+    ::PyObject * py_function = PyObject_GetAttrString(runModule_,
+                                                       "run_step_over");
+    ::PyObject * args = PyTuple_New(0);
+    ::PyObject * py_result = PyObject_CallObject(py_function, args);
+    Py_DECREF(args);
+    if (!py_result) {
+        ::PyObject * ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        PyObject_Print(pvalue, stderr,0);
+        PyObject_Print(ptraceback, stderr,0);
+    }
+    using namespace Shared;
+    if (error().length() > 0) {
+        Q_EMIT stopped(RunInterface::SR_Error);
+    }
+    else {
+        Q_EMIT stopped(RunInterface::SR_Done);
+    }
 }
 
 void Python3LanguagePlugin::runStepInto()
 {
-
+    ::PyObject * py_function = PyObject_GetAttrString(runModule_,
+                                                       "run_step_into");
+    ::PyObject * args = PyTuple_New(0);
+    ::PyObject * py_result = PyObject_CallObject(py_function, args);
+    Py_DECREF(args);
+    if (!py_result) {
+        ::PyObject * ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        PyObject_Print(pvalue, stderr,0);
+        PyObject_Print(ptraceback, stderr,0);
+    }
+    using namespace Shared;
+    if (error().length() > 0) {
+        Q_EMIT stopped(RunInterface::SR_Error);
+    }
+    else {
+        Q_EMIT stopped(RunInterface::SR_Done);
+    }
 }
 
 void Python3LanguagePlugin::runStepOut()
 {
-
+    ::PyObject * py_function = PyObject_GetAttrString(runModule_,
+                                                       "run_step_out");
+    ::PyObject * args = PyTuple_New(0);
+    ::PyObject * py_result = PyObject_CallObject(py_function, args);
+    Py_DECREF(args);
+    if (!py_result) {
+        ::PyObject * ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        PyObject_Print(pvalue, stderr,0);
+        PyObject_Print(ptraceback, stderr,0);
+    }
+    using namespace Shared;
+    if (error().length() > 0) {
+        Q_EMIT stopped(RunInterface::SR_Error);
+    }
+    else {
+        Q_EMIT stopped(RunInterface::SR_Done);
+    }
 }
 
 void Python3LanguagePlugin::runTesting()
 {
-
+    Q_EMIT stopped(RunInterface::SR_Error);
 }
 
 void Python3LanguagePlugin::terminate()
@@ -299,17 +477,58 @@ void Python3LanguagePlugin::terminate()
 
 bool Python3LanguagePlugin::hasMoreInstructions() const
 {
-    return false;
+    ::PyObject * py_function = PyObject_GetAttrString(runModule_,
+                                                       "has_more_instructions");
+    ::PyObject * args = PyTuple_New(0);
+    ::PyObject * py_result = PyObject_CallObject(py_function, args);
+    Py_DECREF(args);
+    if (!py_result) {
+        ::PyObject * ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        PyObject_Print(pvalue, stderr,0);
+        PyObject_Print(ptraceback, stderr,0);
+        return false;
+    }
+    bool result = PyLong_AsLong(py_result) != 0;
+    return result;
 }
 
 int Python3LanguagePlugin::currentLineNo() const
 {
-    return 0;
+    ::PyObject * py_function = PyObject_GetAttrString(runModule_,
+                                                       "current_line_no");
+    ::PyObject * args = PyTuple_New(0);
+    ::PyObject * py_result = PyObject_CallObject(py_function, args);
+    Py_DECREF(args);
+    if (!py_result) {
+        ::PyObject * ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        PyObject_Print(pvalue, stderr,0);
+        PyObject_Print(ptraceback, stderr,0);
+        return false;
+    }
+    int result = PyLong_AsLong(py_result);
+    return result;
 }
 
 QString Python3LanguagePlugin::error() const
 {
-    return "";
+    ::PyObject * py_get_error = PyObject_GetAttrString(runModule_,
+                                                       "get_error");
+    ::PyObject * args = PyTuple_New(0);
+    ::PyObject * py_result = PyObject_CallObject(py_get_error, args);
+    Py_DECREF(args);
+    if (!py_result) {
+        ::PyObject * ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        PyObject_Print(pvalue, stderr,0);
+        PyObject_Print(ptraceback, stderr,0);
+        return "";
+    }
+    wchar_t * buffer = PyUnicode_AsWideCharString(py_result, 0);
+    const QString result = QString::fromWCharArray(buffer);
+    PyMem_Free(buffer);
+    return result;
 }
 
 QVariant Python3LanguagePlugin::valueStackTopItem() const
@@ -349,7 +568,20 @@ QVariant Python3LanguagePlugin::getGlobalTableValue(const QString & moduleName, 
     return QVariant();
 }
 
+void Python3LanguagePlugin::handlePythonOutput(const QString &message)
+{
+    Q_EMIT outputRequest(message);
+}
 
+void Python3LanguagePlugin::handlePythonError(const QString &message)
+{
+    Q_EMIT errorOutputRequest(message);
+}
+
+void Python3LanguagePlugin::handlePythonLineChanged(int lineNo)
+{
+    Q_EMIT lineChanged(lineNo);
+}
 
 
 } // namespace
