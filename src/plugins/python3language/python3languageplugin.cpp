@@ -1,48 +1,78 @@
 #include "python3languageplugin.h"
-#include "python3.2mu/Python.h"
+#include "Python.h"
 
 namespace Python3Language {
 
-struct Python3Module
-{
-    QString text;
-};
-
 Python3LanguagePlugin::Python3LanguagePlugin()
+    : ExtensionSystem::KPlugin()
+    , analizerModule_(NULL)
 {
-    m_documents.fill(0,128);
-    py_analizer = 0;
+
 }
 
 QString Python3LanguagePlugin::initialize(const QStringList &)
 {
-    static const QString pyLibPath = qApp->property("sharePath").toString()+"/python3language/";
+    static const QString pyLibPath = qApp->property("sharePath").toString()+"/python3language";
     static const QByteArray analizer_py_Path = pyLibPath.toLocal8Bit();
     char * analizer_py = (char*)calloc(analizer_py_Path.size(), sizeof(char));
     strcpy(analizer_py, analizer_py_Path.constData());
 
     Py_Initialize();
+
     ::PyObject * sysPath = PySys_GetObject("path");
     ::PyObject * kumirPath = PyUnicode_FromString(analizer_py);
     PyList_Insert(sysPath, 0, kumirPath);
-    PyObject_Print(sysPath, stderr, 0);
-    py_analizer = PyImport_ImportModule("analizer");
-//    ::PyObject * ptype, *pvalue, *ptraceback;
-//    PyErr_Fetch(&ptype, &pvalue, &ptraceback);
-//    PyObject_Print(pvalue, stderr,0);
+    analizerModule_ = PyImport_ImportModule("analizer");
+    if (!analizerModule_) {
+        ::PyObject * ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        PyObject_Print(pvalue, stderr,0);
+        PyObject_Print(ptraceback, stderr,0);
+        return "Can't import python module 'analizer'";
+    }     
+
     return "";
 }
 
 int Python3LanguagePlugin::newDocument()
-{
-    int index = m_documents.indexOf(0);
-    m_documents[index] = new Python3Module;
-    return index;
+{    
+    ::PyObject* py_new_document = PyObject_GetAttrString(analizerModule_,
+                                                    "new_document");
+    if (!py_new_document) {
+        ::PyObject * ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        PyObject_Print(pvalue, stderr,0);
+        PyObject_Print(ptraceback, stderr,0);
+    }
+    ::PyObject* py_id = PyObject_CallFunction(py_new_document, 0);
+    if (!py_id) {
+        ::PyObject * ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        PyObject_Print(pvalue, stderr,0);
+        PyObject_Print(ptraceback, stderr,0);
+    }
+    int result = PyLong_AsLong(py_id);
+    Py_DecRef(py_id);
+    return result;
 }
 
 void Python3LanguagePlugin::setSourceText(int documentId, const QString &text)
-{
-    m_documents[documentId]->text = text;
+{    
+    ::PyObject * py_set_source_text = PyObject_GetAttrString(analizerModule_, "set_source_text");
+    ::PyObject * args = PyTuple_New(2);
+    std::wstring ws = text.toStdWString();
+    ::PyObject * id = PyLong_FromLong(documentId);
+    ::PyObject * txt = PyUnicode_FromWideChar(ws.c_str(), ws.length());
+    PyTuple_SetItem(args, 0, id);
+    PyTuple_SetItem(args, 1, txt);
+    ::PyObject *pRes = PyObject_CallObject(py_set_source_text, args);
+    Py_DECREF(args);
+    if (!pRes) {
+        ::PyObject * ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        PyObject_Print(pvalue, stderr,0);
+        PyObject_Print(ptraceback, stderr,0);
+    }
 }
 
 void Python3LanguagePlugin::setHiddenText(int documentId, const QString &text, int baseLine)
@@ -62,12 +92,70 @@ void Python3LanguagePlugin::changeSourceText(int documentId, const QList<ChangeT
 
 QList<Error> Python3LanguagePlugin::errors(int documentId) const
 {
-    return QList<Error>();
+    QList<Error> result;
+    ::PyObject * py_errors = PyObject_GetAttrString(analizerModule_, "errors");
+    ::PyObject * args = PyTuple_New(1);
+    ::PyObject * id = PyLong_FromLong(documentId);
+    PyTuple_SetItem(args, 0, id);
+    ::PyObject *pRes = PyObject_CallObject(py_errors, args);
+    Py_DECREF(args);
+    if (!pRes) {
+        ::PyObject * ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        PyObject_Print(pvalue, stderr,0);
+        PyObject_Print(ptraceback, stderr,0);
+        return result;
+    }
+    int sz = PyList_Size(pRes);
+    for (int i=0; i<sz; i++) {
+        ::PyObject * item = PyList_GetItem(pRes, i);
+        ::PyObject * lineNo = PyTuple_GetItem(item, 0);
+        ::PyObject * offset = PyTuple_GetItem(item, 1);
+        ::PyObject * length = PyTuple_GetItem(item, 2);
+        ::PyObject * text = PyTuple_GetItem(item, 3);
+        Error error;
+        error.line = PyLong_AsLong(lineNo);
+        error.start = PyLong_AsLong(offset);
+        error.len = PyLong_AsLong(length);
+        wchar_t * buffer = PyUnicode_AsWideCharString(text, 0);
+        error.code = QString::fromWCharArray(buffer);
+        if (error.code.length() > 0)
+            error.code[0] = error.code[0].toUpper();
+        PyMem_Free(buffer);
+        result.push_back(error);
+    }
+    return result;
 }
 
 QList<LineProp> Python3LanguagePlugin::lineProperties(int documentId) const
 {
-    return QList<LineProp>();
+    QList<LineProp> result;
+    ::PyObject * py_line_prop = PyObject_GetAttrString(analizerModule_, "line_properties");
+    ::PyObject * args = PyTuple_New(1);
+    ::PyObject * id = PyLong_FromLong(documentId);
+    PyTuple_SetItem(args, 0, id);
+    ::PyObject *pRes = PyObject_CallObject(py_line_prop, args);
+    Py_DECREF(args);
+    if (!pRes) {
+        ::PyObject * ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        PyObject_Print(pvalue, stderr,0);
+        PyObject_Print(ptraceback, stderr,0);
+        return result;
+    }
+    int propsCount = PyList_Size(pRes);
+    for (int i=0; i<propsCount; i++) {
+        ::PyObject * item = PyList_GetItem(pRes, i);
+        int propLength = PyList_Size(item);
+        LineProp lp(propLength);
+        for (int j=0; j<propLength; j++) {
+            ::PyObject * propElem = PyList_GetItem(item, j);
+            unsigned long val = PyLong_AsUnsignedLong(propElem);
+            lp[j] = (Shared::LexemType)val;
+        }
+        result.push_back(lp);
+    }
+    return result;
 }
 
 QList<QPoint> Python3LanguagePlugin::lineRanks(int documentId) const
@@ -80,64 +168,55 @@ QStringList Python3LanguagePlugin::imports(int documentId) const
     return QStringList();
 }
 
-LineProp Python3LanguagePlugin::lineProp(int documentId, const QString &text) const
+LineProp Python3LanguagePlugin::lineProp(int documentId, int lineNo, const QString &text) const
 {
-    ::PyObject * py_line_prop = PyObject_GetAttrString(py_analizer, "line_prop");
-    ::PyObject * args = PyTuple_New(1);
+    LineProp lp(text.size());
+    lp.fill(LxTypeEmpty);
+    if (text.length()==0)
+        return lp;
+    ::PyObject * py_line_prop = PyObject_GetAttrString(analizerModule_, "line_prop");
+    ::PyObject * args = PyTuple_New(3);
     std::wstring ws = text.toStdWString();
     ::PyObject * txt = PyUnicode_FromWideChar(ws.c_str(), ws.length());
-    PyTuple_SetItem(args, 0, txt);
+    ::PyObject * id = PyLong_FromLong(documentId);
+    ::PyObject * line_no = PyLong_FromLong(lineNo);
+    PyTuple_SetItem(args, 0, id);
+    PyTuple_SetItem(args, 1, line_no);
+    PyTuple_SetItem(args, 2, txt);
     ::PyObject *pRes = PyObject_CallObject(py_line_prop, args);
+    Py_DECREF(args);
+    if (!pRes) {
         ::PyObject * ptype, *pvalue, *ptraceback;
         PyErr_Fetch(&ptype, &pvalue, &ptraceback);
         PyObject_Print(pvalue, stderr,0);
         PyObject_Print(ptraceback, stderr,0);
-    Py_DECREF(args);
-    LineProp lp(text.size());
-    lp.fill(LxTypeEmpty);
+        return lp;
+    }
     int sz = PyList_Size(pRes);
     for (int i=0; i<sz; i++) {
         ::PyObject * item = PyList_GetItem(pRes, i);
         unsigned long val = PyLong_AsUnsignedLong(item);
         lp[i] = (Shared::LexemType)val;
-//        qDebug() << val;
     }
     return lp;
 }
 
 std::string Python3LanguagePlugin::rawSourceData(int documentId) const
 {
-    if (m_documents[documentId])
-        return m_documents[documentId]->text.toStdString();
-    else
-        return "";
+    return "";
 }
 
-QStringList Python3LanguagePlugin::algorhitmsAvailableFor(int documentId, int lineNo) const
+QString Python3LanguagePlugin::createImportStatementLine(const QString &importName) const
 {
-    return QStringList();
+    return "import " + importName;
 }
-
-QStringList Python3LanguagePlugin::globalsAvailableFor(int documentId, int lineNo) const
-{
-    return QStringList();
-}
-
-QStringList Python3LanguagePlugin::localsAvailableFor(int documentId, int lineNo) const
-{
-    return QStringList();
-}
-
 
 void Python3LanguagePlugin::dropDocument(int documentId)
 {
-    if (m_documents[documentId]) {
-        delete m_documents[documentId];
-        m_documents[documentId] = 0;
-    }
+
 }
 
-bool Python3LanguagePlugin::loadProgram(QIODevice *source, ProgramFormat format)
+bool Python3LanguagePlugin::loadProgram(const QString &fileName, const QByteArray & source, ProgramFormat format)
 {
     return false;
 }
@@ -145,6 +224,11 @@ bool Python3LanguagePlugin::loadProgram(QIODevice *source, ProgramFormat format)
 QDateTime Python3LanguagePlugin::loadedProgramVersion() const
 {
     return QDateTime::currentDateTime();
+}
+
+void Python3LanguagePlugin::setSourceDirName(int documentId, const QString &dirPath)
+{
+
 }
 
 bool Python3LanguagePlugin::canStepOut() const
@@ -202,38 +286,45 @@ QString Python3LanguagePlugin::error() const
     return "";
 }
 
-QVariantList Python3LanguagePlugin::remainingValues() const
-{
-    return QVariantList();
-}
-
-QVariant Python3LanguagePlugin::value(int moduleId, int algorhitmId, int variableId) const
+QVariant Python3LanguagePlugin::valueStackTopItem() const
 {
     return QVariant();
 }
 
-QList<int> Python3LanguagePlugin::bounds(int moduleId, int algorhitmId, int variableId) const
+QMap<QString,QVariant> Python3LanguagePlugin::getScalarLocalValues(int frameNo) const
 {
-    return QList<int>();
+    return QMap<QString,QVariant>();
 }
 
-QList<int> Python3LanguagePlugin::reference(int moduleId, int algorhitmId, int variableId) const
+QMap<QString,QVariant> Python3LanguagePlugin::getScalarGlobalValues(const QString & moduleName) const
 {
-    return QList<int>();
+    return QMap<QString,QVariant>();
 }
 
-void Python3LanguagePlugin::finishInput(const QVariantList & message)
+QVariantList Python3LanguagePlugin::getLocalTableValues(int frameNo, int maxCount, const QString & name,
+                                 const QList< QPair<int,int> > & ranges, bool & complete) const
 {
-
+    return QVariantList();
 }
 
-void Python3LanguagePlugin::finishExternalFunctionCall(
-    const QString & error,
-    const QVariant & retval,
-    const QVariantList & results)
+QVariantList Python3LanguagePlugin::getGlobalTableValues(const QString & moduleName, int maxCount, const QString & name,
+                                  const QList< QPair<int,int> > & ranges, bool & complete) const
 {
-
+    return QVariantList();
 }
+
+QVariant Python3LanguagePlugin::getLocalTableValue(int frameNo, const QString & name, const QList<int> & indeces) const
+{
+    return QVariant();
+}
+
+QVariant Python3LanguagePlugin::getGlobalTableValue(const QString & moduleName, const QString & name, const QList<int> & indeces) const
+{
+    return QVariant();
+}
+
+
+
 
 } // namespace
 
