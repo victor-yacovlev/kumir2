@@ -9,6 +9,14 @@ import keyword
 from tokenize import *
 import parser
 
+try:
+    import _kumir
+    debug = _kumir.debug
+except ImportError:
+    import logging
+    logging.root.name = "analizer"
+    logging.root.setLevel(logging.DEBUG)
+    debug = logging.debug
 
 LxTypeEmpty = 0x00000000  # empty mask
 LxTypeComment = 0x00000001  # bit 0
@@ -185,12 +193,33 @@ class Namespace(object):
         self.variables = {}
         self.parameters = {}
         if self.parent is None:
-            builtin_functions = inspect.getmembers(__builtins__, lambda obj: inspect.isbuiltin(obj) or inspect.isroutine(obj))
-            builtin_types = inspect.getmembers(__builtins__, lambda obj: inspect.isclass(obj))
+            builtin_functions = [(name, obj)
+                                 for name, obj in self.__builtin_items().items()
+                                 if inspect.isbuiltin(obj) or inspect.isroutine(obj)]
+            builtin_types = [(name, obj)
+                             for name, obj in self.__builtin_items().items()
+                             if inspect.isclass(obj)]
+            self.variables['__name__'] = "__main__"
             for name, obj in builtin_functions:
                 self.functions[name] = obj
             for name, obj in builtin_types:
                 self.types[name] = obj
+
+    def __builtin_items(self):
+        return {
+            'abs': abs, 'all': all, 'any': any, 'ascii': ascii, 'bin': bin, 'bool': bool, 'bytearray': bytearray,
+            'bytes': bytes, 'callable': callable, 'chr': chr, 'classmethod': classmethod, 'compile': compile,
+            'complex': complex, 'delattr': delattr, 'dict': dict, 'dir': dir, 'divmod': divmod, 'enumerate': enumerate,
+            'eval': eval, 'exec': exec, 'filter': filter, 'float': float, 'format': format, 'frozenset': frozenset,
+            'getattr': getattr, 'globals': globals, 'hasattr': hasattr, 'hash': hash, 'help': help, 'hex': hex,
+            'id': id, 'input': input, 'int': int, 'isinstance': isinstance, 'issubclass': issubclass, 'iter': iter,
+            'len': len, 'list': list, 'locals': locals, 'map': map, 'max': max, 'memoryview': memoryview,
+            'min': min, 'next': next, 'object': object, 'oct': oct, 'open': open, 'ord': ord, 'pow': pow,
+            'print': print, 'property': property, 'range': range, 'repr': repr, 'reversed': reversed, 'round': round,
+            'set': set, 'setattr': setattr, 'slice': slice, 'sorted': sorted, 'staticmethod': staticmethod,
+            'str': str, 'sum': sum, 'super': super, 'tuple': tuple, 'type': type, 'vars': vars, 'zip': zip,
+            '__import__': __import__
+        }
 
     def search_function(self, name):
         if name in self.functions:
@@ -351,6 +380,8 @@ class Analizer(object):
     def __analize_small_statement(self, item):
         if item[0] == symbol.import_stmt:
             self.__analize_import_statement(item[1])
+        elif item[0] == symbol.expr_stmt:
+            self.__analize_expression_statement(item[1:])
 
     def __analize_import_statement(self, item):
         if item[0] == symbol.import_name:
@@ -464,6 +495,8 @@ class Analizer(object):
             self.__analize_function_def(item[1:])
         elif item[0] == symbol.for_stmt:
             self.__analize_for_statement(item[1:])
+        elif item[0] == symbol.if_stmt:
+            self.__analize_if_statement(item[1:])
 
     def __analize_function_def(self, items):
         _, name, row, col = items[1]
@@ -495,6 +528,8 @@ class Analizer(object):
                 self.__analize_exprlist(item)
             elif isinstance(item, tuple) and item[0] == symbol.testlist:
                 self.__analize_testlist(item)
+            elif isinstance(item, tuple) and item[0] == symbol.suite:
+                self.__analize_body(item)
 
     def __analize_exprlist(self, items):
         atoms = self.__extract_atoms_from_expression(items)
@@ -504,9 +539,9 @@ class Analizer(object):
     def __analize_testlist(self, items):
         atoms = self.__extract_atoms_from_expression(items)
         ns = self.__namespace_stack[-1]
-        for _, name, row, col in atoms:
+        for type_, name, row, col in atoms:
             obj = ns.find(name)
-            if obj is None:
+            if type_ == token.NAME and obj is None:
                 self.errors += [(row - 1, col, len(name),
                                  "Name not declared")]
                 self.__set_line_prop(row - 1, col, len(name), LxTypeError)
@@ -525,6 +560,28 @@ class Analizer(object):
             elif isinstance(item, tuple):
                 result += self.__extract_atoms_from_expression(item)
         return result
+
+    def __analize_if_statement(self, items):
+        for item in items:
+            if isinstance(item, tuple) and item[0] == symbol.test:
+                self.__analize_testlist(item)
+            elif isinstance(item, tuple) and item[0] == symbol.suite:
+                self.__analize_body(item)
+
+    def __analize_expression_statement(self, items):
+        left_parts = []
+        right_parts = []
+        parts = right_parts
+        for item in items:
+            if isinstance(item, tuple) and item[0] == symbol.testlist_star_expr:
+                parts += [item[1:]]
+            elif isinstance(item, tuple) and item[0] == token.EQUAL:
+                left_parts = parts
+                right_parts = []
+                parts = right_parts
+        self.__analize_exprlist(left_parts)
+        self.__analize_testlist(right_parts)
+
 
 
 def new_document():
@@ -562,6 +619,16 @@ def main(args, hello="Hello"):
 if __name__ == "__main__":
     ret = main(sys.argv)
     ex(ret)
+elif __name__ == "kumir":
+    print("Hello")
+else:
+    alist = ['a', 'b', 'c', 'd']
+    for index, item in enumerate(alist):
+        a, b = index, item
+        debug('index: %d, item: %s' % (index, item))
     """)
     print(errors(0))
     print(line_properties(0))
+
+
+debug("Module 'analizer' initialized")

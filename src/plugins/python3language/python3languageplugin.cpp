@@ -10,15 +10,41 @@ Python3LanguagePlugin::Python3LanguagePlugin()
 
 }
 
+static ::PyObject* _kumir_debug(PyObject *, PyObject *args)
+{
+    ::PyObject * msg = PyTuple_GetItem(args, 0);
+    wchar_t * wcs = PyUnicode_AsWideCharString(msg, NULL);
+    QString qs = QString::fromWCharArray(wcs);
+    qDebug() << qs;
+    PyMem_Free(wcs);
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static ::PyMethodDef _kumirMethods[] = {
+    { "debug", _kumir_debug, METH_VARARGS, "Debug via qDebug routines"},
+    { NULL, NULL, 0, NULL }
+};
+
+static ::PyModuleDef _kumirModule = {
+    PyModuleDef_HEAD_INIT, "_kumir", NULL, -1, _kumirMethods,
+    NULL, NULL, NULL, NULL
+};
+
+static ::PyObject* PyInit__kumir(void)
+{
+    return PyModule_Create(&_kumirModule);
+}
+
 QString Python3LanguagePlugin::initialize(const QStringList &)
 {
     static const QString pyLibPath = qApp->property("sharePath").toString()+"/python3language";
     static const QByteArray analizer_py_Path = pyLibPath.toLocal8Bit();
     char * analizer_py = (char*)calloc(analizer_py_Path.size(), sizeof(char));
     strcpy(analizer_py, analizer_py_Path.constData());
-
-    Py_Initialize();
-
+    PyImport_AppendInittab("_kumir", &PyInit__kumir);
+    PyImport_AppendInittab("__builtins__", &PyEval_GetBuiltins);
+    Py_Initialize();    
     ::PyObject * sysPath = PySys_GetObject("path");
     ::PyObject * kumirPath = PyUnicode_FromString(analizer_py);
     PyList_Insert(sysPath, 0, kumirPath);
@@ -29,7 +55,7 @@ QString Python3LanguagePlugin::initialize(const QStringList &)
         PyObject_Print(pvalue, stderr,0);
         PyObject_Print(ptraceback, stderr,0);
         return "Can't import python module 'analizer'";
-    }     
+    }
 
     return "";
 }
