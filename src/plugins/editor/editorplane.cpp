@@ -1310,7 +1310,9 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                 cursor_->evaluateCommand("\n");
             }
             else {
-                const QString & curText = document_->at(cursor_->row()).text;
+                const QString & curText = cursor_->row() < document_->linesCount()
+                        ? document_->at(cursor_->row()).text : QString();
+
                 int indentSpaces = 0;
                 for (int i=0; i<curText.length(); i++) {
                     if (curText.at(i) == ' ') {
@@ -1338,7 +1340,23 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
             }
         }
         else if (e->key()==Qt::Key_Backspace && e->modifiers()==0) {
-            cursor_->evaluateCommand(KeyCommand::Backspace);
+            bool checkForIndent = !cursor_->hasSelection() &&
+                    analizer_ && analizer_->indentsSignificant();
+            if (!checkForIndent) {
+                cursor_->evaluateCommand(KeyCommand::Backspace);
+            }
+            else {
+                const QString & curText = cursor_->row() < document_->linesCount()
+                        ? document_->at(cursor_->row()).text : QString();
+                bool onlySpacesBefore = curText.left(cursor_->column()).trimmed().isEmpty();
+                uint bsCount = 1u;
+                if (onlySpacesBefore && cursor_->column() > 0) {
+                    bsCount = qMin(4u, cursor_->column());
+                }
+                for (uint i=0u; i<bsCount; i++) {
+                    cursor_->evaluateCommand(KeyCommand::Backspace);
+                }
+            }
         }
         else if (e->matches(QKeySequence::Paste)) {
             cursor_->evaluateCommand(KeyCommand::Paste);
