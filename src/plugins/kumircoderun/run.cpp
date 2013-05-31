@@ -372,7 +372,10 @@ void Run::run()
             break;
         }
     }
-    if (vm->entryPoint() == KumirVM::EP_Testing && vm->topLevelStackValue().isValid()) {
+    if (vm->error().length() == 0 &&
+            vm->entryPoint() == KumirVM::EP_Testing &&
+            vm->topLevelStackValue().isValid())
+    {
         qApp->setProperty("returnCode", vm->topLevelStackValue().toInt());
     }
 //    bool wasError = vm->error().length()>0;
