@@ -60,7 +60,7 @@ AnyValue QVariantToValue(const QVariant & var, int dim)
         else if (var.type()==QVariant::Bool)
             aval = AnyValue(var.toBool());
         else if (var.type()==QVariant::Char)
-            aval = AnyValue(var.toChar().unicode());
+            aval = AnyValue(wchar_t(var.toChar().unicode()));
         else if (var.type()==QVariant::String)
             aval = AnyValue(var.toString().toStdWString());
         else if (var.type()==QVariant::List) {
