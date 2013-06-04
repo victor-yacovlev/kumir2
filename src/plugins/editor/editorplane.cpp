@@ -2135,13 +2135,16 @@ void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
         return;
 
     // Determine which text lines actually required to be repainted (inclusive)
-    const uint startLine = qMax(0, rect.top() / int(lineHeight()) - 1);
-    const uint endLine =
-            qMax(0, qMin(
-                     int(rect.bottom() / lineHeight() + 1),
-                     int(document_->linesCount())-1
-                     )
-                 );
+//    const uint startLine = qMax(0, rect.top() / int(lineHeight()) - 1);
+//    const uint endLine =
+//            qMax(0, qMin(
+//                     int(rect.bottom() / lineHeight() + 1),
+//                     int(document_->linesCount())-1
+//                     )
+//                 );
+
+    const uint startLine = 0;
+    const uint endLine = document_->linesCount();
 
     // Prepare colors
     QColor errorColor(Qt::red);
@@ -2154,7 +2157,7 @@ void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
             MARGIN_LINE_WIDTH +
             + charWidth() / 2;
 
-    for (uint i=startLine; i<=endLine; i++) {
+    for (uint i=startLine; i<endLine; i++) {
         if (document_->marginAt(i).text.length() > 0 ||
                 document_->marginAt(i).errors.size() > 0)
         {
