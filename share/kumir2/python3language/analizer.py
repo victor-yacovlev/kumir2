@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import inspect
+import json
+import pickle
 import symtable
 import importlib
 import token
@@ -259,7 +261,7 @@ class Namespace(object):
 class Analizer(object):
 
     def __init__(self):
-        self.__sourceText = u""
+        self.source_text = u""
         self.line_properties = []
         self.__code = None
         self.__root_namespace = Namespace()
@@ -304,7 +306,7 @@ class Analizer(object):
         return res
 
     def set_source_text(self, text):
-        self.__sourceText = text
+        self.source_text = text
         self.__code = None
         self.errors = []
         lines = text.split("\n")
@@ -604,6 +606,25 @@ def errors(document_id):
 def line_properties(document_id):
     return __documents[document_id].line_properties
 
+
+def save_state():
+    result = {}
+    for index, document in enumerate(__documents):
+        if not document is None:
+            result[index] = document.source_text
+    return json.dumps(result)
+
+
+def restore_state(dump):
+    global __documents
+    __documents = [None] * 128
+    adict = json.loads(dump)
+    for key, value in adict.items():
+        key = int(key)
+        __documents[key] = Analizer()
+        __documents[key].set_source_text(value)
+
+
 if __name__ == "__main__":
     new_document()
     set_source_text(0, """
@@ -626,8 +647,11 @@ else:
         a, b = index, item
         debug('index: %d, item: %s' % (index, item))
     """)
+    dump = save_state()
+    del __documents
+    restore_state(dump)
     print(errors(0))
     print(line_properties(0))
 
 
-debug("Module 'analizer' initialized")
+# debug("Module 'analizer' initialized")

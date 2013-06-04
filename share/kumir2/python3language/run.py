@@ -5,11 +5,15 @@ import parser
 import symbol
 import sys
 import pdb
+import threading
+import token
 
 try:
     import _kumir
     debug = _kumir.debug
+    KUMIR_IMPORTED = True
 except ImportError:
+    KUMIR_IMPORTED = False
     import logging
     logging.root.name = "run"
     logging.root.setLevel(logging.DEBUG)
@@ -25,6 +29,7 @@ class StdOut(io.TextIOBase):
         except ImportError:
             self.write = sys.__stdout__.write
 
+
 class StdErr(io.TextIOBase):
     def __init__(self):
         super().__init__()
@@ -35,151 +40,123 @@ class StdErr(io.TextIOBase):
             self.write = sys.__stderr__.write
 
 
-
+if KUMIR_IMPORTED:
+    sys.stdout = StdOut()
+    sys.stderr = StdErr()
 
 
 class Runner(bdb.Bdb):
 
     def __init__(self):
         super().__init__()
-        self.filename = str()
-        self.source = bytes()
-        self.error = str()
-        self.code = None
-        self.statements = None
-        self.current_line = -1
-        self.running = False
-        self.call_deep = 0
-
-    def load_program(self, filename, source):
-        self.filename = filename
-        self.source = source
-        self.statements = None
-        self.code = None
-        success = False
-        try:
-            self.code = compile(source, filename, "exec")
-            success = True
-            self.error = ""
-        except SyntaxError as err:
-            success = False
-            self.error = err.msg
-        if not self.code is None:
-            unicode_source = str(source, 'utf-8')
-            st = parser.suite(unicode_source)
-            ptree = parser.st2tuple(st, line_info=True, col_info=True)
-            self.statements = []
-            for item in ptree:
-                if isinstance(item, tuple) and item[0] == symbol.stmt:
-                    self.statements += [item[1]]
-        return success
-
-    def __prepare_to_run(self):
-        self.running = True
-        self.reset()
-        self.current_line = -1
-        self.call_deep = 0
-        try:
-            self.run(self.source)
-        except BaseException:
-            pass
-
-    def run_blind(self):
-        self.__prepare_to_run()
-        self.set_continue()
-        self.running = False
-
-    def run_continuous(self):
-        if not self.running:
-            self.__prepare_to_run()
-        self.set_continue()
-        self.running = self.call_deep > -1
-
-    def run_step_over(self):
-        self.run_step_into()
-
-    def run_step_into(self):
-        if not self.running:
-            self.__prepare_to_run()
-        self.set_step()
-        self.running = self.call_deep > -1
-
-    def run_step_out(self):
-        self.run_step_into()
 
     def user_return(self, frame, retval):
-        self.call_deep -= 1
+        _kumir.user_return(frame, retval)
 
     def user_call(self, frame, retval):
-        self.call_deep += 1
+        _kumir.user_call(frame, retval)
 
     def user_line(self, frame):
-        self.current_line = frame.f_lineno - 1
-        try:
-            import _kumir
-            _kumir.notify_line_changed(self.current_line)
-        except ImportError:
-            pass
+        if _kumir.user_line(frame):
+            self.set_step()
+        else:
+            self.set_quit()
 
     def user_exception(self, frame, exc_info):
-        self.current_line = frame.f_lineno - 1
-        self.error = str(exc_info[1])
+        _kumir.user_exception(frame, exc_info)
 
-
-
-    def terminate(self):
-        self.set_quit()
-
-
+    def main_loop(self, filename, source):
+        self.reset()
+        self.set_step()
+        try:
+            self.run(source)
+            status = 0
+        except bdb.BdbQuit:
+            status = 1
+        except BaseException:
+            status = 2
+        return status
 
 __runner = Runner()
 
 
-def load_program(filename: str, source: bytes):
-    return __runner.load_program(filename, source)
+def main_loop(filename, source):
+    return __runner.main_loop(filename, source)
 
 
-def get_error():
-    return __runner.error
+def __extract_atoms_from_expression(items):
+        result = []
+        for item in items:
+            if isinstance(item, tuple) and item[0] == symbol.atom:
+                result += [(item[1][1], item[1][2])]
+            elif isinstance(item, tuple):
+                result += __extract_atoms_from_expression(item)
+        return result
 
 
-def has_more_instructions():
-    return __runner.running
+def __extract_lvalue_from_statement(items, target):
+    left_parts = []
+    right_parts = []
+    parts = right_parts
+    for item in items:
+        if isinstance(item, tuple) and item[0] in [symbol.testlist_star_expr, symbol.exprlist]:
+            parts += [item[1:]]
+        elif isinstance(item, tuple) and item[0] == token.EQUAL:
+            left_parts = parts
+            right_parts = []
+            parts = right_parts
+    stmt_atoms = __extract_atoms_from_expression(left_parts)
+    for atom_name, atom_line in stmt_atoms:
+        line_atoms = target[atom_line - 1]
+        line_atoms += [atom_name]
 
 
-def current_line_no():
-    return __runner.current_line
+def __extract_lvalue_from_for_statement(items, target):
+    for item in items:
+        if isinstance(item, tuple) and item[0] == symbol.exprlist:
+            for_assign_atoms = __extract_atoms_from_expression(item)
+            for atom_name, atom_line in for_assign_atoms:
+                line_atoms = target[atom_line - 1]
+                line_atoms += [atom_name]
+        elif isinstance(item, tuple) and item[0] == symbol.suite:
+            __extract_lvalue_atoms(item, target)
 
 
-def run_blind():
-    __runner.run_blind()
+def __extract_lvalue_atoms(root, target):
+    if isinstance(root, tuple):
+        if root[0] == symbol.expr_stmt:
+            __extract_lvalue_from_statement(root[1:], target)
+        elif root[0] == symbol.for_stmt:
+            __extract_lvalue_from_for_statement(root[1:], target)
+        else:
+            for item in root:
+                if isinstance(item, tuple):
+                    __extract_lvalue_atoms(item, target)
 
-
-def run_continuous():
-    __runner.run_continuous()
-
-
-def run_step_into():
-    __runner.run_step_into()
-
-
-def run_step_over():
-    __runner.run_step_over()
-
-
-def run_step_out():
-    __runner.run_step_out()
-
-
-def terminate():
-    __runner.terminate()
+def extract_lvalue_atoms(source):
+    st = parser.suite(source)
+    lines_count = len(source.split("\n")) + 1
+    items = parser.st2tuple(st, line_info=True, col_info=True)
+    result = list()
+    for i in range(0, lines_count):
+        result += [list()]
+    __extract_lvalue_atoms(items, result)
+    return result
 
 if __name__ == "__main__":
-    load_program("test.py", "print(123)\nboo()".encode('utf-8'))
-    run_step_over()
-    run_step_over()
-    sys.stderr.write(get_error())
-else:
-    sys.stdout = StdOut()
-    sys.stderr = StdErr()
+    a = extract_lvalue_atoms("""
+import sys
+
+def main(arguments):
+    for index, argument in arguments:
+        a, b = index, argument
+        print(a)
+        print(b)
+
+if __name__ == "__main__":
+    ret = main(sys.argv)
+    sys.exit(ret)
+    """)
+    print(a)
+
 

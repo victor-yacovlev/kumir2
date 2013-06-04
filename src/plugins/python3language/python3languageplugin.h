@@ -74,17 +74,138 @@ public:
     void handlePythonOutput(const QString & message);
     void handlePythonError(const QString & message);
     void handlePythonLineChanged(int lineNo);
+    void handlePythonExecutionPaused();
+    void handlePythonExecutionFinished();
+    void handlePythonExecutionTerminated();
+    void handlePythonExecutionError();
+    void handlePythonMarginText(int lineNo, const QString &text);
 
 Q_SIGNALS:
     void stopped(int reason);
     void outputRequest(const QString & output);
     void errorOutputRequest(const QString & output);
     void lineChanged(int lineNo);
+
+    void finishInput(const QVariantList & data);
+    void inputRequest(const QString & format);
+    void marginText(int lineNo, const QString & text);
+    void replaceMarginText(int lineNo, const QString & text, bool redFgColor);
+    void clearMargin(int fromLine, int toLine);
+    void resetModule(const QString &actorPluginName);
+
+    // Signals for debugger window
+    void debuggerReset();
+    void debuggerSetGlobals(
+            /** module name */           const QString & moduleName,
+            /** variable names */         const QStringList & names,
+            /** variable base types */const QStringList & baseTypes,
+            /** variable dimensions */ const QList<int> & dimensions
+            );
+    void debuggerPushContext(
+            /** context header */       const QString & contextName,
+            /** variable names */         const QStringList & names,
+            /** variable base types */const QStringList & baseTypes,
+            /** variable dimensions */ const QList<int> & dimensions
+            );
+    void debuggerPopContext();
+    void debuggerUpdateLocalVariable(
+            /** variable name */       const QString & name,
+            /** value */              const QString & value
+            );
+    void debuggerUpdateGlobalVariable(
+            /** module name */   const QString & moduleName,
+            /** variable name */       const QString & name,
+            /** value */              const QString & value
+            );
+    void debuggerUpdateLocalTableBounds(
+            /** variable name */       const QString & name,
+            /** bounds */          const QList<int> & bounds
+            );
+    void debuggerUpdateGlobalTableBounds(
+            /** module name */   const QString & moduleName,
+            /** variable name */       const QString & name,
+            /** bounds */          const QList<int> & bounds
+            );
+
+    void debuggerSetLocalReference(
+            /** variable name */             const QString & name,
+            /** target name */         const QString & targetName,
+            /** target array indeces */const QList<int> & indeces,
+            /** stack frames back */                     int back,
+            /** module name for a global value*/ const QString & moduleName
+            );
+    void debuggerForceUpdateValues();
+    void debuggerUpdateLocalTableValue(
+            /** variable name */            const QString & name,
+            /** indeces */             const QList<int> & indeces
+            );
+    void debuggerUpdateGlobalTableValue(
+            /** module name */        const QString & moduleName,
+            /** variable name */            const QString & name,
+            /** indeces */             const QList<int> & indeces
+            );
+
+
 protected:
     QString initialize(const QStringList &arguments);
-private:
+    void setBlindMode(bool flag);
+
+protected Q_SLOTS:
+    void prepareAnalizer();
+    void saveAnalizer();
+
+public: // actually private, but required for python-access function
     ::PyObject * analizerModule_;
-    ::PyObject * runModule_;
+//    ::PyObject * runModule_;
+    class RunInteractionWaiter * runInteractionWaiter_;
+    class RunWorker * runWorker_;
+    ::PyThreadState * mainPyThreadState_;
+    QString analizerState_;
+};
+
+
+struct RunInteractionWaiter
+        : public QThread
+{
+    enum Mode { RM_Continuous, RM_StepOver, RM_StepIn, RM_StepOut };
+    RunInteractionWaiter(Python3LanguagePlugin * parent);
+    bool isWaiting() const;
+    void continueExecution();
+    void tryToPause();
+
+    Mode mode;
+    QMutex * mutex;
+    bool flag;
+};
+
+struct RunWorker
+        : public QThread
+{
+    static const int DONE = 0;
+    static const int TERMINATED = 1;
+    static const int ERROR = 2;
+
+    void setTerminate();
+    bool isTerminate();
+
+    QString fileName;
+    QString source;
+    QString error;
+    int currentLineNo;
+    int previousLineNo;
+    ::PyObject * previousFrameLocals;
+    ::PyObject * previousFrameGlobals;
+    ::PyObject * currentFrameLocals;
+    ::PyObject * currentFrameGlobals;
+    bool blindMode;
+    bool terminateFlag;
+    QMutex * terminateMutex;
+
+    QVector<QStringList> lvalueAtoms;
+
+
+    RunWorker(Python3LanguagePlugin * parent);
+    void run();
 };
 
 
