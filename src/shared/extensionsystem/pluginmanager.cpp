@@ -45,7 +45,16 @@ PluginManager::PluginManager()
 {
     m_instance = this;
     d->globalState = GS_Unlocked;
-    d->mySettings = new QSettings("kumir2", "ExtensionSystem");
+#ifndef Q_OS_MAC
+        const QString applicationLanucher = qApp->arguments().at(0);
+        QString applicationName = applicationLanucher;
+        if (applicationLanucher.startsWith(qApp->applicationDirPath())) {
+            applicationName = applicationLanucher.mid(qApp->applicationDirPath().length() + 1);
+        }
+#else
+    QString applicationName = "kumir2";
+#endif
+    d->mySettings = new QSettings(applicationName, "ExtensionSystem");
     d->settingsDialog = 0;
 #ifdef Q_WS_X11
     bool gui = getenv("DISPLAY")!=0;
@@ -145,7 +154,16 @@ QString PluginManagerPrivate::reorderSpecsAndCreateStates(const QStringList &ord
         newSpecs << spec;
         objects << 0;
         states << KPlugin::Disabled;
-        settings << new QSettings("kumir2", spec.name);
+#ifndef Q_OS_MAC
+        const QString applicationLanucher = qApp->arguments().at(0);
+        QString applicationName = applicationLanucher;
+        if (applicationLanucher.startsWith(qApp->applicationDirPath())) {
+            applicationName = applicationLanucher.mid(qApp->applicationDirPath().length() + 1);
+        }
+#else
+        QString applicationName = "kumir2";
+#endif
+        settings << new QSettings(applicationName, spec.name);
         settings.last()->setIniCodec("UTF-8");
     }
     specs = newSpecs;
@@ -313,7 +331,16 @@ QString PluginManagerPrivate::loadPlugins()
         states[i] = KPlugin::Loaded;
         if (settings[i])
             settings[i]->deleteLater();
-        settings[i] = new QSettings("kumir2", specs[i].name);
+#ifndef Q_OS_MAC
+        const QString applicationLanucher = qApp->arguments().at(0);
+        QString applicationName = applicationLanucher;
+        if (applicationLanucher.startsWith(qApp->applicationDirPath())) {
+            applicationName = applicationLanucher.mid(qApp->applicationDirPath().length() + 1);
+        }
+#else
+        QString applicationName = "kumir2";
+#endif
+        settings[i] = new QSettings(applicationName, specs[i].name);
         settings[i]->setIniCodec("UTF-8");
         plugin->updateSettings();
     }
@@ -464,8 +491,16 @@ QString PluginManager::loadExtraModule(const std::string &canonicalFileName)
     spec.libraryFileName = libraryFileName;
     spec.gui = plugin->isGuiRequired();
     d->specs.push_back(spec);
-
-    QSettings * settings = new QSettings("kumir2", moduleName);
+#ifndef Q_OS_MAC
+        const QString applicationLanucher = qApp->arguments().at(0);
+        QString applicationName = applicationLanucher;
+        if (applicationLanucher.startsWith(qApp->applicationDirPath())) {
+            applicationName = applicationLanucher.mid(qApp->applicationDirPath().length() + 1);
+        }
+#else
+    QString applicationName = "kumir2";
+#endif
+    QSettings * settings = new QSettings(applicationName, moduleName);
     settings->setIniCodec("UTF-8");
     d->settings.push_back(settings);
     plugin->updateSettings();
