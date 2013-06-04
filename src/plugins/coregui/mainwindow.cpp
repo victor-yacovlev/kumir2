@@ -875,6 +875,7 @@ void MainWindow::saveSettings()
     sett->setValue(Plugin::MainWindowGeometryKey, r);
     sett->setValue(Plugin::MainWindowStateKey, saveState());
     sett->setValue(Plugin::MainWindowSplitterStateKey, ui->splitter->saveState());
+    sett->sync();
 }
 
 void MainWindow::restoreSession()
@@ -996,6 +997,8 @@ void MainWindow::restoreSession()
 
 void MainWindow::closeEvent(QCloseEvent *e)
 {
+    saveSettings();
+    m_plugin->saveSession();
     if (m_plugin->sessionsDisableFlag_ && b_notabs) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
         if (twe->type!=WWW) {
@@ -1084,6 +1087,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
         // Save current session
         saveSession();
     }
+
 
     e->accept();
     qApp->quit();
