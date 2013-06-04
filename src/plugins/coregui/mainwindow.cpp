@@ -503,7 +503,7 @@ bool MainWindow::saveCurrentFileAs()
     QString fileName = twe->property("fileName").toString();
     QStringList filter;    
     if (twe->type==Program) {
-        filter << tr("%1 programs (*.%2)").arg(languageName).arg(fileNameSuffix);
+        filter << tr("%1 programs (*%2)").arg(languageName).arg(fileNameSuffix);
     }    
     if (twe->type==Text) {
         filter << tr("Text files (*.txt)");
@@ -1151,11 +1151,25 @@ void MainWindow::showHelp()
 
 void MainWindow::fileOpen()
 {
+    QStringList filters;
+    using namespace ExtensionSystem;
+    using namespace Shared;
+    AnalizerInterface * analizer =
+            PluginManager::instance()->findPlugin<AnalizerInterface>();
+    const QString languageName = analizer->languageName();
+    const QString fileNameSuffix = analizer->defaultDocumentFileNameSuffix();
+    filters << tr("%1 programs (*%2)").arg(languageName).arg(fileNameSuffix);
+    if (!b_notabs) {
+        filters << tr("Web pages (*.html *.htm)");
+        filters << tr("Text files (*.txt)");
+    }
+    filters << tr("All files (*)");
+    const QString filter = filters.join(";;");
     const QString recent = m_plugin->mySettings()->value(Plugin::RecentFileKey, QDir::currentPath()).toString();
     QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("Load file..."),
                                                     recent,
-                                                    QString(tr("Kumir programs (*.kum);;Pascal programs (*.pas *.pp);;Web pages (*.html *.htm);;Text files (*.txt);;All files (*)"))
+                                                    filter
                                                     );
     if (!fileName.isEmpty()) {
         m_plugin->mySettings()->setValue(Plugin::RecentFileKey, fileName);
