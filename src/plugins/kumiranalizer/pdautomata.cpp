@@ -2543,30 +2543,33 @@ void PDAutomata::setTooManyErrors()
     }
 }
 
-
 void PDAutomata::setCorrespondingIfBroken()
 {
     AST::Statement * st = 0;
-    for (int i=currentContext_[currentContext_.size()-1]->size()-1; i>=0; i--) {
-        if (currentContext_[currentContext_.size()-1]->at(i)->type==AST::StIfThenElse
-                ||
-                currentContext_[currentContext_.size()-1]->at(i)->type==AST::StSwitchCaseElse
-                ) {
-            st = currentContext_[currentContext_.size()-1]->at(i);
-            break;
+    int position = currentPosition_;
+    int deep = 0;
+    for ( ; position >= 0; position --) {
+        Statement * test = source_[position];
+        if (test->type == LxPriAlgBegin
+                || test->type == LxPriAlgHeader
+                || test->type == LxPriModule
+                )
+        {
+            break;  // Reached start of more complex block
         }
-    }
-    if (!st) {
-        // Try to find at top-level
-        for (int i=currentContext_.size()-1; i>=0; i--) {
-            if (currentContext_[i]->size()>0 &&
-                    ( currentContext_[i]->last()->type==AST::StIfThenElse ||
-                      currentContext_[i]->last()->type==AST::StSwitchCaseElse )
-                    ) {
-                st = currentContext_[i]->last();
-                break;
+        else if (!test->hasError()) {
+            if (test->type == LxPriFi) {
+                deep ++;
+            }
+            else if (test->type == LxPriIf || test->type == LxPriSwitch) {
+                deep --;
+                if (deep < 0) {
+                    st = findASTStatementBySourceStatement(test);
+                    break;
+                }
             }
         }
+
     }
     if (st) {
         st->type = AST::StError;
@@ -2583,6 +2586,72 @@ void PDAutomata::setCorrespondingIfBroken()
         }
     }
 }
+
+AST::Statement* PDAutomata::findASTStatementBySourceStatement(const Statement *st) const
+{
+    AST::Statement * result = nullptr;
+    for (int i=0; i<currentContext_.size(); i++) {
+        QList<AST::Statement*> * contextItem = currentContext_[i];
+        for (int j=0; j<contextItem->size(); j++) {
+            AST::Statement * astStatement = contextItem->at(j);
+            if (astStatement->lexems.size() == st->data.size()) {
+                bool allMatch = st->data.size() > 0;
+                for (int k=0; k<st->data.size(); k++) {
+                    const Lexem * a = st->data[k];
+                    const Lexem * b = astStatement->lexems[k];
+                    allMatch = allMatch && a==b;
+                }
+                if (allMatch) {
+                    result = astStatement;
+                    break;
+                }
+            }
+            if (result) break;
+        }
+        if (result) break;
+    }
+    return result;
+}
+
+//void PDAutomata::setCorrespondingIfBroken()
+//{
+//    AST::Statement * st = 0;
+//    for (int i=currentContext_[currentContext_.size()-1]->size()-1; i>=0; i--) {
+//        if (currentContext_[currentContext_.size()-1]->at(i)->type==AST::StIfThenElse
+//                ||
+//                currentContext_[currentContext_.size()-1]->at(i)->type==AST::StSwitchCaseElse
+//                ) {
+//            st = currentContext_[currentContext_.size()-1]->at(i);
+//            break;
+//        }
+//    }
+//    if (!st) {
+//        // Try to find at top-level
+//        for (int i=currentContext_.size()-1; i>=0; i--) {
+//            if (currentContext_[i]->size()>0 &&
+//                    ( currentContext_[i]->last()->type==AST::StIfThenElse ||
+//                      currentContext_[i]->last()->type==AST::StSwitchCaseElse )
+//                    ) {
+//                st = currentContext_[i]->last();
+//                break;
+//            }
+//        }
+//    }
+//    if (st) {
+//        st->type = AST::StError;
+//        st->error = _("Broken if statement");
+//        for (int i=0; i<source_.size(); i++) {
+//            if ( source_[i]->statement==st ) {
+//                for (int a=0; a<source_[i]->data.size(); a++) {
+//                    source_[i]->data[a]->error = _("Broken if statement");
+//                    source_[i]->data[a]->errorStage = AST::Lexem::PDAutomata;
+//                }
+
+//                break;
+//            }
+//        }
+//    }
+//}
 
 
 void PDAutomata::setExtraOpenKeywordError(const QString &kw)

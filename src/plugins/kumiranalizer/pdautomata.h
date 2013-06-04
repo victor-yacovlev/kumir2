@@ -74,6 +74,8 @@ private:
             qreal priority;
     };
 
+    AST::Statement * findASTStatementBySourceStatement(const Statement * st) const;
+
     void loadRules(const QString &rulesRoot);
 
     AST::Data * ast_;
