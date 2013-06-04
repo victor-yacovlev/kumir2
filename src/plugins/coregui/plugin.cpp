@@ -432,6 +432,8 @@ void Plugin::start()
     }
     else {
 //        ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
+        updateSettings();
+        restoreSession();
     }
     PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);
     mainWindow_->show();
