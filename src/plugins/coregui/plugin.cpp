@@ -430,6 +430,9 @@ void Plugin::start()
             qApp->quit();
         }
     }
+    else if (!sessionsDisableFlag_) {
+        ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
+    }
     else {
 //        ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
         updateSettings();
