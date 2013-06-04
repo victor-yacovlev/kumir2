@@ -19,7 +19,6 @@ set(MOC_HEADERS
     analizer.h
     lexer.h
     pdautomata.h
-    pdautomata_p.h
     syntaxanalizer.h
 )
 
