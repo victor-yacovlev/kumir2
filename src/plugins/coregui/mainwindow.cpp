@@ -31,7 +31,7 @@ MainWindow::MainWindow(Plugin * p) :
 
     connect(ui->actionNewProgram, SIGNAL(triggered()), this, SLOT(newProgram()));
     connect(ui->actionNewText, SIGNAL(triggered()), this, SLOT(newText()));
-    connect(ui->actionNew_pascal_program, SIGNAL(triggered()), this, SLOT(newPascalProgram()));
+
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(fileOpen()));
     connect(ui->actionClose, SIGNAL(triggered()), this, SLOT(closeCurrentTab()));
 
