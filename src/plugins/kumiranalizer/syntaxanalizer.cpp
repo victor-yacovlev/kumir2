@@ -2694,17 +2694,17 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool allowOperatorsD
     }
 
 
-    if (onlyName || nameHasError) {
-        alg->header.broken = nameHasError;
-        return;
-    }
-
     // Make this algorhitm public available (if not private name)
     if (!name.isEmpty() && !name.startsWith("_")) {
         if (isOperator)
             mod->header.operators << alg;
         else
             mod->header.algorhitms << alg;
+    }
+
+    if (onlyName || nameHasError) {
+        alg->header.broken = nameHasError;
+        return;
     }
 
     for (int i=nameStartLexem; i<argsStartLexem-1; i++) {

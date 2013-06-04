@@ -180,7 +180,7 @@ void AnalizerPrivate::setHiddenText(const QString &text, int baseLineNo)
     // Do complete semantic analisys
     QList<Statement*> statementsToAnalize = statements+teacherStatements;
 
-    foreach (Statement * st, statements) {
+    foreach (Statement * st, teacherStatements) {
         foreach (AST::Variable * var, st->variables) {
             removeAllVariables(var);
         }
