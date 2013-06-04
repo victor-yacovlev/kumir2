@@ -93,20 +93,8 @@ void KumirBytecodeCompilerPlugin::start()
                 m_analizer->setHiddenText(id, kumFile.hiddenText, -1);
             }
             QList<Shared::Error> errors = m_analizer->errors(id);
-            const AST::Data * ast = m_analizer->abstractSyntaxTree(id);
+            const AST::DataPtr ast = m_analizer->abstractSyntaxTree(id);
             const QString baseName = QFileInfo(filename).baseName();
-            const QString outFileName = QFileInfo(filename).dir().absoluteFilePath(
-                        baseName+".dump.json");
-            QFile ff(outFileName);
-            if (qApp->arguments().contains("-J") && ff.open(QIODevice::WriteOnly|QIODevice::Text)) {
-                QTextStream ots(&ff);
-                ots.setCodec("UTF-8");
-                ots.setGenerateByteOrderMark(true);
-                QString modJs = ast->dump();
-                modJs.replace("\t", "  ");
-                ots << modJs;
-                ff.close();;
-            }
 
             for (int i=0; i<errors.size(); i++) {
                 Shared::Error e = errors[i];

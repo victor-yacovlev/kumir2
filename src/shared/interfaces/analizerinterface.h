@@ -60,7 +60,7 @@ public:
     virtual QList<LineProp> lineProperties(int documentId) const = 0;
     virtual QList<QPoint> lineRanks(int documentId) const = 0;
     virtual QStringList imports(int documentId) const = 0;
-    virtual const AST::Data * abstractSyntaxTree(int documentId) const = 0;
+    virtual const AST::DataPtr abstractSyntaxTree(int documentId) const = 0;
     virtual LineProp lineProp(int documentId, int lineNo, const QString & text) const = 0;
     virtual std::string rawSourceData(int documentId) const = 0;
     virtual QString languageName() const = 0;

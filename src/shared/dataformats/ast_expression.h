@@ -1,9 +1,12 @@
 #ifndef AST_EXPRESSION_H
 #define AST_EXPRESSION_H
 
+
 #include <QString>
 #include <QList>
 #include <QVariant>
+#include <QSharedPointer>
+#include <QWeakPointer>
 
 #include "ast_variabletype.h"
 #include "ast_type.h"
@@ -16,6 +19,18 @@
 #endif
 
 namespace AST {
+
+typedef QSharedPointer<struct Module> ModulePtr;
+
+typedef QSharedPointer<struct Algorithm> AlgorithmPtr;
+
+typedef QSharedPointer<struct Variable> VariablePtr;
+
+typedef QSharedPointer<struct Expression> ExpressionPtr;
+
+typedef QSharedPointer<struct Statement> StatementPtr;
+
+typedef QSharedPointer<struct Data> DataPtr;
 
 /** Type of expression structure */
 enum ExpressionType {
@@ -75,14 +90,14 @@ struct ABSTRACTSYNTAXTREE_EXPORT Expression {
     /** Reference to variable in cases of
       * kind==StExprVariable or kind==StArrayElement or kind==StSlice;
       * set to NULL otherwise */
-    struct Variable * variable;
+    VariablePtr  variable;
 
     /** Constant value in case of kind==ExprConst */
     QVariant constant;
 
     /** Reference to algorhitm in case of kind==StFunctionCall;
       * set to NULL otherwise */
-    struct Algorhitm * function;
+    AlgorithmPtr function;
 
     /** 1. Empty in case of kind==StVariable
       * 2. Array bounds expressions in case of kind==StArrayBound
@@ -90,7 +105,7 @@ struct ABSTRACTSYNTAXTREE_EXPORT Expression {
       * 4. Function arguments expressions in case of kind==StFunctionCall
       * 5. Expressions list of size len(operators)+1 in case of kind==StSubexpression
       */
-    QList<struct Expression *> operands;
+    QList<ExpressionPtr> operands;
 
     /** True if expression () bounds.
       * This flag is used to avoid CNF-transofmations */
@@ -106,12 +121,10 @@ struct ABSTRACTSYNTAXTREE_EXPORT Expression {
     QList<struct Lexem*> lexems;
 
     explicit Expression();
-    explicit Expression(const struct Expression * src);
-    void updateReferences(const struct Expression * src,
+    explicit Expression(const ExpressionPtr src);
+    void updateReferences(const Expression * src,
                           const struct Data * srcData,
                           const struct Data * data);
-    QString dump() const;
-    ~Expression();
 };
 
 

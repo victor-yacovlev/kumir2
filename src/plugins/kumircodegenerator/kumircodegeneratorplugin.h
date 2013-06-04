@@ -21,7 +21,7 @@ public:
     ~KumirCodeGeneratorPlugin();
 
     QPair<QString,QString> generateExecuable(
-        const AST::Data * tree
+        const AST::DataPtr tree
         , QByteArray & out, DebugLevel debugLevel=LinesOnly);
 
     inline void setVerbose(bool) {}

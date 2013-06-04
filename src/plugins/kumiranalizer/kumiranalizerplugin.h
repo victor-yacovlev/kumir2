@@ -45,7 +45,7 @@ public:
     QList<Shared::LineProp> lineProperties(int documentId) const;
     QList<QPoint> lineRanks(int documentId) const;
     QStringList imports(int documentId) const;
-    const AST::Data * abstractSyntaxTree(int documentId) const;
+    const AST::DataPtr abstractSyntaxTree(int documentId) const;
     QStringList algorhitmsAvailableFor(int documentId, int lineNo) const;
     QStringList globalsAvailableFor(int documentId, int lineNo) const;
     QStringList localsAvailableFor(int documentId, int lineNo) const;

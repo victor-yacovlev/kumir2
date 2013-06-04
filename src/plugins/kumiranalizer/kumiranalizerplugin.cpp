@@ -158,7 +158,7 @@ QStringList KumirAnalizerPlugin::imports(int documentId) const
     return analizers_[documentId]->imports();
 }
 
-const AST::Data * KumirAnalizerPlugin::abstractSyntaxTree(int documentId) const
+const AST::DataPtr KumirAnalizerPlugin::abstractSyntaxTree(int documentId) const
 {
     Q_CHECK_PTR(analizers_[documentId]);
     return analizers_[documentId]->abstractSyntaxTree();

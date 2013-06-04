@@ -124,7 +124,7 @@ KumirProgram::KumirProgram(QObject *parent)
     i_timerId = startTimer(1000);
 }
 
-void KumirProgram::setAST(const AST::Data *ast)
+void KumirProgram::setAST(const AST::DataPtr ast)
 {
     m_ast = ast;
 }

@@ -1,12 +1,14 @@
 #ifndef AST_MODULE_H
 #define AST_MODULE_H
 
+#include "ast_type.h"
+
 #include <QString>
 #include <QList>
 #include <QSet>
 #include <QStringList>
-#include "ast_type.h"
-
+#include <QSharedPointer>
+#include <QWeakPointer>
 
 #undef ABSTRACTSYNTAXTREE_EXPORT
 #ifdef DATAFORMATS_LIBRARY
@@ -16,6 +18,16 @@
 #endif
 
 namespace AST {
+
+typedef QSharedPointer<struct Module> ModulePtr;
+
+typedef QSharedPointer<struct Algorithm> AlgorithmPtr;
+
+typedef QSharedPointer<struct Variable> VariablePtr;
+
+typedef QSharedPointer<struct Statement> StatementPtr;
+
+typedef QSharedPointer<struct Data> DataPtr;
 
 enum ModuleType {
 
@@ -45,11 +57,11 @@ struct ModuleHeader {
 
     /** List of public (i.e. not underscore-starting named) algorithms,
       * represented as references to corresponding functions */
-    QList<struct Algorhitm *> algorhitms;
+    QList<AlgorithmPtr> algorhitms;
 
     /** List of overrided operators,
      * each represented as algorithm */
-    QList<struct Algorhitm *> operators;
+    QList<AlgorithmPtr> operators;
 
     /** Module custom types */
     QList<struct Type> types;
@@ -65,14 +77,14 @@ struct ModuleHeader {
 struct ModuleImplementation {
 
     /** Global variables and constants table */
-    QList<struct Variable *> globals;
+    QList<VariablePtr> globals;
 
     /** Module algorhitms table */
-    QList<struct Algorhitm *> algorhitms;
+    QList<AlgorithmPtr> algorhitms;
 
     /** Body of module initializer (i.e. statements before
       * first algorhitm declaration) */
-    QList<struct Statement *> initializerBody;
+    QList<StatementPtr> initializerBody;
 
     /** Module begin lexems */
     QList<struct Lexem*> beginLexems;
@@ -95,14 +107,10 @@ struct ABSTRACTSYNTAXTREE_EXPORT Module {
     struct ModuleImplementation impl;
 
     explicit Module();
-    explicit Module(const struct Module * src);
-    void updateReferences(const struct Module * src,
-                          const struct Data * srcData,
+    explicit Module(const ModulePtr src);
+    void updateReferences(const Module * src,
+                          const struct Data* srcData,
                           const struct Data * data);
-
-    QString dump() const;
-    bool load(const QString &data);
-    ~Module();
 
 };
 

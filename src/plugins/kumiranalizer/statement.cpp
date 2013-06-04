@@ -3,13 +3,9 @@
 namespace KumirAnalizer {
 
 Statement::Statement()
+    : type(Shared::LxTypeEmpty)
+    , conditionalIndex(0)
 {
-    indentRank = QPoint(0,0);
-    type = Shared::LxTypeEmpty;
-    statement = 0;
-    alg = 0;
-    mod = 0;
-    conditionalIndex = 0;
 }
 
 bool Statement::hasError() const

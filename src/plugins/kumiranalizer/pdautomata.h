@@ -27,8 +27,8 @@ public:
       *        whole AST
       */
     void init(bool teacherMode, const QList<Statement*> & statements
-              , AST::Data * ast
-              , AST::Algorhitm *algorhitm);
+              , AST::DataPtr ast
+              , AST::AlgorithmPtr algorhitm);
 
     /** Direct automata stage.
       * @returns 0 on allow; 1 on deny; 2 on limit exception
@@ -41,7 +41,7 @@ public:
     /** List of syntax errors */
     QList<Shared::Error> errors() const;
 
-    static AST::Statement * createSimpleAstStatement(Statement * st);
+    static AST::StatementPtr createSimpleAstStatement(Statement * st);
 
 private:
 
@@ -74,12 +74,12 @@ private:
             qreal priority;
     };
 
-    AST::Statement * findASTStatementBySourceStatement(const Statement * st) const;
+    AST::StatementPtr findASTStatementBySourceStatement(const Statement * st) const;
 
     void loadRules(const QString &rulesRoot);
 
-    AST::Data * ast_;
-    AST::Algorhitm * algorhitm_;
+    AST::DataPtr ast_;
+    AST::AlgorithmPtr algorhitm_;
     bool teacherMode_;
 
     Matrix matrix_;
@@ -99,9 +99,9 @@ private:
     QVector<ScriptListPtr> fixedScripts_;
     QVector<int> nextPointers_;
 
-    AST::Module * currentModule_;
-    AST::Algorhitm * currentAlgorhitm_;
-    QStack< QList<AST::Statement*> * > currentContext_;
+    AST::ModulePtr currentModule_;
+    AST::AlgorithmPtr currentAlgorhitm_;
+    QStack< QList<AST::StatementPtr> * > currentContext_;
 
     qreal maxPriorityValue_;
 

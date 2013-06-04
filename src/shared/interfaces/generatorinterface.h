@@ -24,7 +24,7 @@ public:
       * @returns pair of string: first is error (or empty), second is mimetype
       */
     virtual QPair<QString,QString> generateExecuable(
-            const AST::Data * tree
+            const AST::DataPtr tree
             , QByteArray & out, DebugLevel debugLevel) = 0;
     virtual void setVerbose(bool v) = 0;
     virtual void setTemporaryDir(const QString & path, bool autoclean) = 0;

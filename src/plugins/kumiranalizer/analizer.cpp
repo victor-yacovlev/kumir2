@@ -111,7 +111,7 @@ AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin,
 {
     hiddenBaseLine = -1;
     q = qq;
-    ast = new AST::Data();
+    ast = AST::DataPtr(new AST::Data());
     lexer = new Lexer(q);
     pdAutomata = new PDAutomata(q);
     analizer = new SyntaxAnalizer(lexer, AlwaysAvailableModulesName, qq->teacherMode_, q);
@@ -169,24 +169,24 @@ void AnalizerPrivate::setHiddenText(const QString &text, int baseLineNo)
     lexer->splitIntoStatements(text.split("\n"), baseLineNo, teacherStatements, gatherExtraTypeNames());
 
     // Build structure
-    pdAutomata->init(true, teacherStatements, ast, 0);
+    pdAutomata->init(true, teacherStatements, ast, AST::AlgorithmPtr());
     pdAutomata->process();
     pdAutomata->postProcess();
 
     // Build tables for hidden algorhitms
-    analizer->init(teacherStatements, ast, 0);
+    analizer->init(teacherStatements, ast, AST::AlgorithmPtr());
     analizer->buildTables(false);
 
     // Do complete semantic analisys
     QList<Statement*> statementsToAnalize = statements+teacherStatements;
 
     foreach (Statement * st, teacherStatements) {
-        foreach (AST::Variable * var, st->variables) {
+        foreach (AST::VariablePtr var, st->variables) {
             removeAllVariables(var);
         }
     }
 
-    analizer->init(statementsToAnalize, ast, 0);
+    analizer->init(statementsToAnalize, ast, AST::AlgorithmPtr());
     analizer->processAnalisys();
     analizer->syncStatements();
 
@@ -196,7 +196,6 @@ AnalizerPrivate::~AnalizerPrivate()
 {
     delete lexer;
     delete pdAutomata;
-    delete ast;
     for (int i=0; i<statements.size(); i++) {
         Statement * statement = statements[i];
         for (int j=0; j<statement->data.size(); j++) {
@@ -335,7 +334,7 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
         if (st->data.size()>1 && st->data.at(0)->type==LxPriImport) {
             if (st->data.at(1)->type!=LxConstLiteral && st->data.at(1)->type!=LxPriImport) {
                 const QString moduleName = st->data.at(1)->data;
-                foreach (const AST::Module * pmod, ast->modules) {
+                foreach (const AST::ModulePtr & pmod, ast->modules) {
                     if (pmod->header.type==AST::ModTypeExternal &&
                             pmod->header.name==moduleName)
                     {
@@ -357,7 +356,7 @@ void AnalizerPrivate::compileTransaction(const ChangeTextTransaction & changes)
                     st->data.at(1)->type!=LxPriImport)
             {
                 const QString moduleName = st->data.at(1)->data;
-                foreach (AST::Module * rmod, ast->modules) {
+                foreach (AST::ModulePtr rmod, ast->modules) {
                     if (rmod->header.name==moduleName) {
                         rmod->header.enabled = false;
                     }
@@ -419,12 +418,12 @@ QStringList AnalizerPrivate::AlwaysAvailableModulesName;
 
 void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor, quint8 forcedId)
 {
-    AST::Module * mod = new AST::Module();
+    AST::ModulePtr mod = AST::ModulePtr(new AST::Module());
     mod->builtInID = forcedId;
     mod->header.type = AST::ModTypeExternal;
     mod->header.name = actor->name();
     mod->header.enabled = true;
-    ast->modules << mod;
+    ast->modules << ModulePtr(mod);
     const Shared::ActorInterface::TypeList typeList = actor->typeList();
     for (int i=0; i<typeList.size(); i++) {
         typedef Shared::ActorInterface AI;
@@ -454,7 +453,7 @@ void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor
     }
     const QStringList funcList = actor->funcList();
     for (int i=0; i<funcList.size(); i++) {
-        AST::Algorhitm * alg = new AST::Algorhitm;
+        AST::AlgorithmPtr alg = AST::AlgorithmPtr(new AST::Algorithm);
         alg->header.implType = AST::AlgorhitmExternal;
         alg->header.external.moduleName = actor->name();
         alg->header.external.id = i;
@@ -541,13 +540,13 @@ AnalizerPrivate::AnalizeSubject AnalizerPrivate::analizeSubject(const QList<Stat
     return result;
 }
 
-AST::Algorhitm * AnalizerPrivate::findAlgorhitmByPos(AST::Data * data, int pos)
+AST::AlgorithmPtr AnalizerPrivate::findAlgorhitmByPos(AST::DataPtr data, int pos)
 {
     if (pos==-1) {
-        return 0;
+        return AST::AlgorithmPtr();
     }
-    foreach (AST::Module * mod, data->modules) {
-        foreach (AST::Algorhitm * alg, mod->impl.algorhitms) {
+    foreach (const AST::ModulePtr mod, data.data()->modules) {
+        foreach (const AST::AlgorithmPtr alg, mod->impl.algorhitms) {
             QList<Lexem*> begin = alg->impl.beginLexems;
             QList<Lexem*> end = alg->impl.endLexems;
             if (!begin.isEmpty() && !end.isEmpty()) {
@@ -562,7 +561,7 @@ AST::Algorhitm * AnalizerPrivate::findAlgorhitmByPos(AST::Data * data, int pos)
         }
     }
 
-    return 0;
+    return AST::AlgorithmPtr();
 }
 
 
@@ -667,14 +666,14 @@ QList<QPoint> Analizer::lineRanks() const
 }
 
 bool findAlgorhitmBounds( const QList<Statement*> & statements
-                         , AST::Algorhitm * alg
+                         , const AST::AlgorithmPtr alg
                          , int &beginIndex
                          , int &endIndex)
 {
-    Lexem * lxFirst = alg->impl.headerLexems.isEmpty()
-            ? alg->impl.beginLexems.first()
-            : alg->impl.headerLexems.first();
-    Lexem * lxLast = alg->impl.endLexems.first();
+    Lexem * lxFirst = alg.data()->impl.headerLexems.isEmpty()
+            ? alg.data()->impl.beginLexems.first()
+            : alg.data()->impl.headerLexems.first();
+    Lexem * lxLast = alg.data()->impl.endLexems.first();
     Statement * begin = 0;
     Statement * end = 0;
     foreach (Statement * st, statements) {
@@ -699,26 +698,27 @@ bool findAlgorhitmBounds( const QList<Statement*> & statements
 }
 
 bool AnalizerPrivate::findInstructionsBlock(
-    AST::Data *data
+    AST::DataPtr data
     , const QList<Statement*> statements
     , LAS &lst
     , int &begin
     , int &end
-    , AST::Module *&mod
-    , AST::Algorhitm *&alg)
+    , AST::ModulePtr &mod
+    , AST::AlgorithmPtr &alg)
 {
+    mod.clear();
+    alg.clear();
     if (statements.isEmpty())
         return false;
     bool found = false;
     Statement * first = statements.first();
     Statement * last = statements.last();
-    foreach (AST::Module * module, data->modules) {
+    foreach (const AST::ModulePtr module, data.data()->modules) {
         for (int i=0; i<module->impl.initializerBody.size(); i++)
         {
-            AST::Statement * st = module->impl.initializerBody[i];
+            const AST::StatementPtr st = module->impl.initializerBody[i];
             if (st==first->statement) {
                 mod = module;
-                alg = 0;
                 lst = &(module->impl.initializerBody);
                 if (begin!=-999)
                     begin = i;
@@ -729,9 +729,9 @@ bool AnalizerPrivate::findInstructionsBlock(
             }
         }
         if (!found) {
-            foreach (AST::Algorhitm * algorhitm, module->impl.algorhitms) {
+            foreach (const AST::AlgorithmPtr algorhitm, module->impl.algorhitms) {
                 for (int i=0; i<algorhitm->impl.body.size(); i++) {
-                    AST::Statement * st = algorhitm->impl.body[i];
+                    const AST::StatementPtr st = algorhitm->impl.body[i];
                     if (st==first->statement) {
                         mod = module;
                         alg = algorhitm;
@@ -763,12 +763,12 @@ bool AnalizerPrivate::findInstructionsBlock(
 
 
 bool AnalizerPrivate::findInstructionsBlock(
-    AST::Data *data
+    AST::DataPtr data
     , const QList<Statement *> statements
     , int pos
     , LAS &lst, int &outPos
-    , AST::Module *&mod
-    , AST::Algorhitm *&alg
+    , AST::ModulePtr &mod
+    , AST::AlgorithmPtr &alg
     )
 {
     if (statements.isEmpty())
@@ -785,15 +785,14 @@ bool AnalizerPrivate::findInstructionsBlock(
     return findInstructionsBlock(data, nearbyStatements, lst, dummy, outPos, mod, alg);
 }
 
-void AnalizerPrivate::removeAllVariables(AST::Variable *var)
+void AnalizerPrivate::removeAllVariables(const AST::VariablePtr var)
 {
-    foreach (AST::Module * mod, ast->modules) {
+    foreach (AST::ModulePtr mod, ast->modules) {
         mod->impl.globals.removeAll(var);
-        foreach (AST::Algorhitm * alg, mod->impl.algorhitms) {
+        foreach (AST::AlgorithmPtr alg, mod->impl.algorhitms) {
             alg->impl.locals.removeAll(var);
         }
     }
-    delete var;
 }
 
 void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
@@ -806,7 +805,7 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
 //    if (qApp->applicationVersion()<"2.1.0-release")
         whatToCompile = SubjWholeText; // Not tested well yet
     foreach (Statement * st, oldStatements) {
-        foreach (AST::Variable * var, st->variables) {
+        foreach (const AST::VariablePtr & var, st->variables) {
             removeAllVariables(var);
         }
     }
@@ -820,7 +819,7 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
 //    else
 //        qDebug() << "Analize whole text";
     QList<Statement*> analizingStatements;
-    AST::Algorhitm * alg = 0;
+    AST::AlgorithmPtr alg;
     if (whatToCompile==SubjAlgorhtitm) {
         Q_ASSERT(!newStatements.isEmpty() || !oldStatements.isEmpty());
         Statement * firstStatement = 0;
@@ -869,19 +868,19 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
         LAS lst;
         int begin = -1, end = -1;
         int insertPos;
-        AST::Module * module = 0;
-        AST::Algorhitm * algorhitm = 0;
+        AST::ModulePtr module;
+        AST::AlgorithmPtr algorhitm;
 
         if (findInstructionsBlock(ast, oldStatements, lst, begin, end, module, algorhitm)) {
             int removeCount = end-begin;
             for (int i=0; i<removeCount; i++) {
-                AST::Statement * aST = lst->at(begin+i);
-                delete aST;
+//                AST::Statement * aST = lst->at(begin+i);
+//                delete aST;
                 lst->removeAt(begin+i);
             }
             insertPos = begin;
             for (int i=0; i<newStatements.size(); i++) {
-                AST::Statement * instruction
+                AST::StatementPtr instruction
                         = PDAutomata::createSimpleAstStatement(newStatements[i]);
                 newStatements[i]->mod = module;
                 newStatements[i]->alg = algorhitm;
@@ -892,7 +891,7 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
         }
         else if (findInstructionsBlock(ast, allStatements, whereInserted, lst, insertPos, module, algorhitm)) {
             for (int i=0; i<newStatements.size(); i++) {
-                AST::Statement * instruction
+                AST::StatementPtr instruction
                         = PDAutomata::createSimpleAstStatement(newStatements[i]);
                 newStatements[i]->mod = module;
                 newStatements[i]->alg = algorhitm;
@@ -916,7 +915,7 @@ void AnalizerPrivate::doCompilation(AnalizeSubject whatToCompile
     analizer->syncStatements();
 }
 
-const AST::Data * Analizer::abstractSyntaxTree() const
+const AST::DataPtr Analizer::abstractSyntaxTree() const
 {
     return d->ast;
 }
@@ -931,10 +930,10 @@ void Analizer::setHiddenBaseLine(int lineNo)
     d->setHiddenBaseLine(lineNo);
 }
 
-const AST::Module * Analizer::findModuleByLine(int lineNo) const
+const AST::ModulePtr Analizer::findModuleByLine(int lineNo) const
 {
     if (lineNo==-1)
-        return 0;
+        return AST::ModulePtr();
     for (int i=0; i<d->ast->modules.size(); i++) {
         if (
                 (d->ast->modules[i]->header.type==AST::ModTypeUser || d->ast->modules[i]->header.type==AST::ModTypeHidden)
@@ -952,29 +951,29 @@ const AST::Module * Analizer::findModuleByLine(int lineNo) const
                 )
             return d->ast->modules[i];
     }
-    return 0;
+    return AST::ModulePtr();
 }
 
-const AST::Algorhitm * Analizer::findAlgorhitmByLine(const AST::Module *mod, int lineNo) const
+const AST::AlgorithmPtr Analizer::findAlgorhitmByLine(const AST::ModulePtr mod, int lineNo) const
 {
     if (!mod || lineNo==-1)
-        return nullptr;
-    for (int i=0; i<mod->impl.algorhitms.size(); i++) {
-        const AST::Algorhitm * alg = mod->impl.algorhitms.at(i);
-        if (alg->impl.beginLexems.size()==0 || alg->impl.endLexems.size()==0)
+        return AST::AlgorithmPtr();
+    for (int i=0; i<mod.data()->impl.algorhitms.size(); i++) {
+        const AST::AlgorithmPtr alg = mod.data()->impl.algorhitms.at(i);
+        if (alg.data()->impl.beginLexems.size()==0 || alg.data()->impl.endLexems.size()==0)
             continue;
-        const int algBegin = alg->impl.beginLexems.front()->lineNo;
-        const int algEnd   = alg->impl.endLexems.last()->lineNo;
+        const int algBegin = alg.data()->impl.beginLexems.front()->lineNo;
+        const int algEnd   = alg.data()->impl.endLexems.last()->lineNo;
         if (algBegin <= lineNo && lineNo <= algEnd)
             return alg;
     }
-    return nullptr;
+    return AST::AlgorithmPtr();
 }
 
 QList<Suggestion> Analizer::suggestAutoComplete(int lineNo, const QString &before, const QString &after) const
 {
-    const AST::Module * mod = findModuleByLine(lineNo);
-    const AST::Algorhitm * alg = findAlgorhitmByLine(mod, lineNo);
+    const AST::ModulePtr mod = findModuleByLine(lineNo);
+    const AST::AlgorithmPtr alg = findAlgorhitmByLine(mod, lineNo);
     QStringList beforeProgram;
     beforeProgram << before;
     QList<Statement*> beforeStatements;
@@ -1035,7 +1034,7 @@ QStringList AnalizerPrivate::gatherExtraTypeNames() const
     QStringList result;
     if (ast) {
         for (int i=0; i<ast->modules.size(); i++) {
-            AST::Module * mod = ast->modules[i];
+            const AST::ModulePtr mod = ast->modules[i];
             if (mod && mod->header.enabled) {
                 for (int j=0; j<mod->header.types.size(); j++) {
                     AST::Type tp = mod->header.types[j];

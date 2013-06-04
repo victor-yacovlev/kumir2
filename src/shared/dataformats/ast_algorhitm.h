@@ -18,6 +18,14 @@
 
 namespace AST {
 
+typedef QSharedPointer<struct Algorithm> AlgorithmPtr;
+
+typedef QSharedPointer<struct Variable> VariablePtr;
+
+typedef QSharedPointer<struct Statement> StatementPtr;
+
+typedef QSharedPointer<struct Data> DataPtr;
+
 /** Specific algorhitm types */
 enum AlgorhitmType {
 
@@ -72,7 +80,7 @@ struct AlgorhitmHeader {
 
     /** Formal arguments, represented as
       * references to corresponding local variables */
-    QList<struct Variable *> arguments;
+    QList<VariablePtr> arguments;
 
     /** Not empty if algorhitm header contains error,
       * but algorhitm name still reachable */
@@ -86,16 +94,16 @@ struct AlgorhitmHeader {
 struct AlgorhitmImplementation {
 
     /** Local variables and constants table */
-    QList<struct Variable *> locals;
+    QList<VariablePtr> locals;
 
     /** Statements of pre-condition block (russian: dano) */
-    QList<struct Statement *> pre;
+    QList<StatementPtr> pre;
 
     /** Statements of pre-condition block (russian: nado) */
-    QList<struct Statement *> post;
+    QList<StatementPtr> post;
 
     /** Statements of algorhitm body */
-    QList<struct Statement *> body;
+    QList<StatementPtr> body;
 
     /** Header lexems */
     QList<struct Lexem*> headerLexems;
@@ -111,7 +119,7 @@ struct AlgorhitmImplementation {
 };
 
 /** Algorhitm representation */
-struct ABSTRACTSYNTAXTREE_EXPORT Algorhitm {
+struct ABSTRACTSYNTAXTREE_EXPORT Algorithm {
 
     /** Public header for use in module etc. */
     struct AlgorhitmHeader header;
@@ -119,13 +127,12 @@ struct ABSTRACTSYNTAXTREE_EXPORT Algorhitm {
     /** Internal representation */
     struct AlgorhitmImplementation impl;
 
-    explicit Algorhitm();
-    explicit Algorhitm(const struct Algorhitm * src);
-    void updateReferences(const struct Algorhitm * src,
+    explicit Algorithm();
+    explicit Algorithm(const AlgorithmPtr src);
+    void updateReferences(const Algorithm * src,
                           const struct Data * srcData,
                           const struct Data * data);
-    QString dump() const;
-    ~Algorhitm();
+
 };
 
 }

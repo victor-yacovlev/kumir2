@@ -24,14 +24,13 @@ template <typename T> std::deque<T>& operator<<(std::deque<T> & vec, const T & v
 
 
 
-Generator::Generator(QObject *parent) :
-    QObject(parent)
-{
-    ast_ = 0;
-    byteCode_ = 0;
+Generator::Generator(QObject *parent)
+    : QObject(parent)
+    , byteCode_(nullptr)
+{   
 }
 
-void Generator::reset(const AST::Data *ast, Bytecode::Data *bc, DebugLevel debugLevel)
+void Generator::reset(const AST::DataPtr ast, Bytecode::Data *bc, DebugLevel debugLevel)
 {
     ast_ = ast;
     byteCode_ = bc;
@@ -244,9 +243,9 @@ void Generator::generateExternTable()
         e.type = Bytecode::EL_EXTERN;
         e.module = ext.first;
         e.algId = e.id = ext.second;
-        const AST::Module * mod = ast_->modules[ext.first];
-        const QList<AST::Algorhitm*> table = mod->header.algorhitms + mod->header.operators;
-        const AST::Algorhitm * alg = table[ext.second];
+        const AST::ModulePtr  mod = ast_->modules[ext.first];
+        const QList<AST::AlgorithmPtr> table = mod->header.algorhitms + mod->header.operators;
+        const AST::AlgorithmPtr  alg = table[ext.second];
         QList<ExtensionSystem::KPlugin*> plugins =
                 ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
         QString moduleFileName;
@@ -345,11 +344,11 @@ Bytecode::InstructionType Generator::operation(AST::ExpressionOperator op)
         return Bytecode::NOP;
 }
 
-void Generator::addModule(const AST::Module *mod)
+void Generator::addModule(const AST::ModulePtr mod)
 {
     if (!mod->header.enabled)
         return;
-    int id = ast_->modules.indexOf(const_cast<AST::Module*>(mod));
+    int id = ast_->modules.indexOf(mod);
     if (mod->header.type==AST::ModTypeExternal) {
 
     }
@@ -360,10 +359,10 @@ void Generator::addModule(const AST::Module *mod)
 
 
 
-void Generator::addKumirModule(int id, const AST::Module *mod)
+void Generator::addKumirModule(int id, const AST::ModulePtr mod)
 {
     for (int i=0; i<mod->impl.globals.size(); i++) {
-        const AST::Variable * var = mod->impl.globals[i];
+        const AST::VariablePtr var = mod->impl.globals[i];
         Bytecode::TableElem glob;
         glob.type = Bytecode::EL_GLOBAL;
         glob.module = quint8(id);
@@ -387,12 +386,12 @@ void Generator::addKumirModule(int id, const AST::Module *mod)
         initElem.instructions << returnFromInit;
     if (!initElem.instructions.empty())
         byteCode_->d.push_back(initElem);
-    const AST::Module * mainMod = 0;
-    const AST::Algorhitm * mainAlg = 0;
+    AST::ModulePtr  mainMod;
+    AST::AlgorithmPtr  mainAlg;
     int mainModId = -1;
     int mainAlgorhitmId = -1;
     for (int i=0; i<mod->impl.algorhitms.size() ; i++) {
-        const AST::Algorhitm * alg = mod->impl.algorhitms[i];
+        const AST::AlgorithmPtr  alg = mod->impl.algorhitms[i];
         Bytecode::ElemType ft = Bytecode::EL_FUNCTION;
         if (mod->header.name.isEmpty() && i==0) {
             ft = Bytecode::EL_MAIN;
@@ -424,7 +423,7 @@ void Generator::shiftInstructions(QList<Bytecode::Instruction> &instrs, int offs
     }
 }
 
-void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, const AST::Module *mod, const AST::Algorhitm *alg)
+void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, const AST::ModulePtr mod, const AST::AlgorithmPtr alg)
 {
     // Generate hidden algorhitm, which will called before main to input arguments
     int algId = mod->impl.algorhitms.size();
@@ -438,7 +437,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
 
     // Add function return as local
     if (alg->header.returnType.kind!=AST::TypeNone) {
-        const AST::Variable * retval = returnValue(alg);
+        const AST::VariablePtr retval = returnValue(alg);
         Bytecode::TableElem loc;
         loc.type = Bytecode::EL_LOCAL;
         loc.module = moduleId;
@@ -455,7 +454,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
 
     // Add arguments as locals
     for (int i=0; i<alg->header.arguments.size(); i++) {
-        const AST::Variable * var = alg->header.arguments[i];
+        const AST::VariablePtr var = alg->header.arguments[i];
         Bytecode::TableElem loc;
         loc.type = Bytecode::EL_LOCAL;
         loc.module = moduleId;
@@ -470,7 +469,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
     }
 
     for (int i=0; i<alg->header.arguments.size(); i++) {
-        AST::Variable * var = alg->header.arguments[i];
+        AST::VariablePtr  var = alg->header.arguments[i];
         // Initialize argument
         if (var->dimension > 0) {
             for (int j=var->dimension-1; j>=0 ; j--) {
@@ -638,7 +637,7 @@ QString typeSignature(const AST::Type & tp) {
     return signature;
 }
 
-void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const AST::Module * mod, const AST::Algorhitm *alg)
+void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const AST::ModulePtr  mod, const AST::AlgorithmPtr alg)
 {
     QString headerError =  "";
     QString beginError = "";
@@ -666,7 +665,7 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     signature = typeSignature(alg->header.returnType)+":";
 
     for (int i=0; i<alg->header.arguments.size(); i++) {
-        const AST::Variable * var = alg->header.arguments[i];
+        const AST::VariablePtr  var = alg->header.arguments[i];
         if (var->accessType==AST::AccessArgumentIn)
             signature += "in ";
         else if (var->accessType==AST::AccessArgumentOut)
@@ -682,7 +681,7 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     }
 
     for (int i=0; i<alg->impl.locals.size(); i++) {
-        const AST::Variable * var = alg->impl.locals[i];
+        const AST::VariablePtr  var = alg->impl.locals[i];
         Bytecode::TableElem loc;
         loc.type = Bytecode::EL_LOCAL;
         loc.module = moduleId;
@@ -752,7 +751,7 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
 
     for (int i=alg->header.arguments.size()-1; i>=0; i--) {
         Bytecode::Instruction store;
-        const AST::Variable * var = alg->header.arguments[i];
+        const AST::VariablePtr  var = alg->header.arguments[i];
         if (var->accessType==AST::AccessArgumentIn)
             store.type = Bytecode::STORE;
         else
@@ -766,7 +765,7 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     }
 
     for (int i=0; i<alg->header.arguments.size(); i++) {
-        const AST::Variable * var = alg->header.arguments[i];
+        const AST::VariablePtr  var = alg->header.arguments[i];
         if (var->dimension>0) {
             for (int i=var->dimension-1; i>=0; i--) {
                 argHandle << calculate(moduleId, id, 0, var->bounds[i].second);
@@ -847,7 +846,7 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     }
 
 
-    const AST::Variable * retval = returnValue(alg);
+    const AST::VariablePtr  retval = returnValue(alg);
     if (retval) {
         Bytecode::Instruction loadRetval;
         loadRetval.type = Bytecode::LOAD;
@@ -867,11 +866,11 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
 
 QList<Bytecode::Instruction> Generator::instructions(
     int modId, int algId, int level,
-    const QList<AST::Statement *> &statements)
+    const QList<AST::StatementPtr > &statements)
 {
     QList<Bytecode::Instruction> result;
     for (int i=0; i<statements.size(); i++) {
-        const AST::Statement * st = statements[i];
+        const AST::StatementPtr  st = statements[i];
         switch (st->type) {
         case AST::StError:
             if (!st->skipErrorEvaluation)
@@ -944,7 +943,7 @@ quint16 Generator::constantValue(const QList<Bytecode::ValueType> & type, quint8
     }
 }
 
-void Generator::ERRORR(int , int , int , const AST::Statement * st, QList<Bytecode::Instruction>  & result)
+void Generator::ERRORR(int , int , int , const AST::StatementPtr  st, QList<Bytecode::Instruction>  & result)
 {
     int lineNo = st->lexems[0]->lineNo;
     Bytecode::Instruction l;
@@ -960,9 +959,9 @@ void Generator::ERRORR(int , int , int , const AST::Statement * st, QList<Byteco
     result << e;
 }
 
-void Generator::findVariable(int modId, int algId, const AST::Variable * var, Bytecode::VariableScope & scope, quint16 & id) const
+void Generator::findVariable(int modId, int algId, const AST::VariablePtr  var, Bytecode::VariableScope & scope, quint16 & id) const
 {
-    const AST::Module * mod = ast_->modules.at(modId);
+    const AST::ModulePtr  mod = ast_->modules.at(modId);
     for (quint16 i=0; i<mod->impl.globals.size(); i++) {
         if (mod->impl.globals.at(i)==var) {
             scope = Bytecode::GLOBAL;
@@ -970,7 +969,7 @@ void Generator::findVariable(int modId, int algId, const AST::Variable * var, By
             return;
         }
     }
-    const AST::Algorhitm * alg = mod->impl.algorhitms[algId];
+    const AST::AlgorithmPtr  alg = mod->impl.algorhitms[algId];
     for (quint16 i=0; i<alg->impl.locals.size(); i++) {
         if (alg->impl.locals.at(i)==var) {
             scope = Bytecode::LOCAL;
@@ -981,11 +980,11 @@ void Generator::findVariable(int modId, int algId, const AST::Variable * var, By
 
 }
 
-void Generator::findFunction(const AST::Algorhitm *alg, quint8 &module, quint16 &id)
+void Generator::findFunction(const AST::AlgorithmPtr alg, quint8 &module, quint16 &id)
 {
     for (quint8 i=0; i<ast_->modules.size(); i++) {
-        const AST::Module * mod = ast_->modules[i];
-        QList<AST::Algorhitm*> table;
+        const AST::ModulePtr  mod = ast_->modules[i];
+        QList<AST::AlgorithmPtr> table;
         if (mod->header.type==AST::ModTypeExternal || mod->header.type==AST::ModTypeCached)
             table = mod->header.algorhitms + mod->header.operators;
         else
@@ -1008,7 +1007,7 @@ void Generator::findFunction(const AST::Algorhitm *alg, quint8 &module, quint16 
     }
 }
 
-void Generator::ASSIGN(int modId, int algId, int level, const AST::Statement *st, QList<Bytecode::Instruction> & result)
+void Generator::ASSIGN(int modId, int algId, int level, const AST::StatementPtr st, QList<Bytecode::Instruction> & result)
 {
     int lineNo = st->lexems[0]->lineNo;
     Bytecode::Instruction l;
@@ -1017,14 +1016,14 @@ void Generator::ASSIGN(int modId, int algId, int level, const AST::Statement *st
     if (debugLevel_!=GeneratorInterface::NoDebug)
         result << l;
 
-    const AST::Expression * rvalue = st->expressions[0];
+    const AST::ExpressionPtr rvalue = st->expressions[0];
     QList<Bytecode::Instruction> rvalueInstructions = calculate(modId, algId, level, rvalue);
     shiftInstructions(rvalueInstructions, result.size());
     result << rvalueInstructions;
 
 
     if (st->expressions.size()>1) {
-        const AST::Expression * lvalue = st->expressions[1];
+        const AST::ExpressionPtr  lvalue = st->expressions[1];
 
         int diff = lvalue->operands.size()-lvalue->variable->dimension;
 
@@ -1094,7 +1093,7 @@ void Generator::ASSIGN(int modId, int algId, int level, const AST::Statement *st
     }
 }
 
-QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int level, const AST::Expression* st)
+QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int level, const AST::ExpressionPtr st)
 {
     QList<Bytecode::Instruction> result;
     if (st->kind==AST::ExprConst) {
@@ -1154,7 +1153,7 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
         }
     }
     else if (st->kind==AST::ExprFunctionCall) {
-        const AST::Algorhitm * alg = st->function;
+        const AST::AlgorithmPtr  alg = st->function;
 
         // Push calculable arguments to stack
         int argsCount = 0;
@@ -1246,7 +1245,7 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
     return result;
 }
 
-void Generator::PAUSE_STOP(int , int , int , const AST::Statement * st, QList<Bytecode::Instruction> & result)
+void Generator::PAUSE_STOP(int , int , int , const AST::StatementPtr  st, QList<Bytecode::Instruction> & result)
 {
     int lineNo = st->lexems[0]->lineNo;
     Bytecode::Instruction l;
@@ -1261,7 +1260,7 @@ void Generator::PAUSE_STOP(int , int , int , const AST::Statement * st, QList<By
     result << a;
 }
 
-void Generator::ASSERT(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result)
+void Generator::ASSERT(int modId, int algId, int level, const AST::StatementPtr  st, QList<Bytecode::Instruction> & result)
 {
     int lineNo = st->lexems[0]->lineNo;
     Bytecode::Instruction l;
@@ -1298,7 +1297,7 @@ void Generator::ASSERT(int modId, int algId, int level, const AST::Statement * s
     }
 }
 
-void Generator::INIT(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result)
+void Generator::INIT(int modId, int algId, int level, const AST::StatementPtr  st, QList<Bytecode::Instruction> & result)
 {
     int lineNo = st->lexems[0]->lineNo;
     Bytecode::Instruction l;
@@ -1308,7 +1307,7 @@ void Generator::INIT(int modId, int algId, int level, const AST::Statement * st,
         result << l;
 
     for (int i=0; i<st->variables.size(); i++) {
-        const AST::Variable * var = st->variables[i];
+        const AST::VariablePtr  var = st->variables[i];
         if (var->dimension > 0 && var->bounds.size()>0) {
             for (int i=var->dimension-1; i>=0 ; i--) {
                 result << calculate(modId, algId, level, var->bounds[i].second);
@@ -1348,7 +1347,7 @@ void Generator::INIT(int modId, int algId, int level, const AST::Statement * st,
     }
 }
 
-void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> & result)
+void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::StatementPtr  st, QList<Bytecode::Instruction> & result)
 {
     int lineNo = st->lexems[0]->lineNo;
     Bytecode::Instruction l;
@@ -1364,9 +1363,9 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
         int varsCount = st->expressions.size() / 3;
 
         for (int i = varsCount-1; i>=0; i--) {
-            const AST::Expression * expr = st->expressions[3*i];
-            const AST::Expression * format1 = st->expressions[3*i+1];
-            const AST::Expression * format2 = st->expressions[3*i+2];
+            const AST::ExpressionPtr  expr = st->expressions[3*i];
+            const AST::ExpressionPtr  format1 = st->expressions[3*i+1];
+            const AST::ExpressionPtr  format2 = st->expressions[3*i+2];
             QList<Bytecode::Instruction> instrs;
             instrs = calculate(modId, algId, level, expr);
             shiftInstructions(instrs, result.size());
@@ -1393,7 +1392,7 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
     else if (st->type==AST::StInput) {
         int varsCount = st->expressions.size();
         for (int i = varsCount-1; i>=0; i--) {
-            const AST::Expression * varExpr = st->expressions[i];
+            const AST::ExpressionPtr  varExpr = st->expressions[i];
             Bytecode::Instruction ref;
             if (varExpr->kind==AST::ExprConst) {
                 ref.scope = Bytecode::CONSTT;
@@ -1437,7 +1436,7 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
 }
 
 
-void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement * st, QList<Bytecode::Instruction> &result)
+void Generator::IFTHENELSE(int modId, int algId, int level, const AST::StatementPtr  st, QList<Bytecode::Instruction> &result)
 {
     int jzIP = -1;
     int lineNo = st->lexems[0]->lineNo;
@@ -1548,7 +1547,7 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
 
 }
 
-void Generator::SWITCHCASEELSE(int modId, int algId, int level, const AST::Statement *st, QList<Bytecode::Instruction> & result)
+void Generator::SWITCHCASEELSE(int modId, int algId, int level, const AST::StatementPtr st, QList<Bytecode::Instruction> & result)
 {
     if (st->headerError.size()>0) {
         Bytecode::Instruction garbage;
@@ -1644,18 +1643,18 @@ void Generator::SWITCHCASEELSE(int modId, int algId, int level, const AST::State
     }
 }
 
-const AST::Variable * Generator::returnValue(const AST::Algorhitm * alg)
+const AST::VariablePtr  Generator::returnValue(const AST::AlgorithmPtr  alg)
 {
     const QString name = alg->header.name;
     for (int i=0; i<alg->impl.locals.size(); i++) {
         if (alg->impl.locals[i]->name == name)
             return alg->impl.locals[i];
     }
-    return 0;
+    return AST::VariablePtr();
 }
 
 void Generator::BREAK(int , int , int level,
-                      const AST::Statement * st,
+                      const AST::StatementPtr  st,
                       QList<Bytecode::Instruction> & result)
 {
     int lineNo = st->lexems[0]->lineNo;
@@ -1675,7 +1674,7 @@ void Generator::BREAK(int , int , int level,
 
 void Generator::LOOP(int modId, int algId,
                      int level,
-                     const AST::Statement *st,
+                     const AST::StatementPtr st,
                      QList<Bytecode::Instruction> &result)
 {
 

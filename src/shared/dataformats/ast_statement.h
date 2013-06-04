@@ -2,6 +2,8 @@
 #define AST_STATEMENT_H
 
 #include <QList>
+#include <QSharedPointer>
+#include <QWeakPointer>
 
 #undef ABSTRACTSYNTAXTREE_EXPORT
 #ifdef DATAFORMATS_LIBRARY
@@ -11,6 +13,16 @@
 #endif
 
 namespace AST {
+
+typedef QSharedPointer<struct Expression> ExpressionPtr;
+
+typedef QSharedPointer<struct Algorithm> AlgorithmPtr;
+
+typedef QSharedPointer<struct Variable> VariablePtr;
+
+typedef QSharedPointer<struct Statement> StatementPtr;
+
+typedef QSharedPointer<struct Data> DataPtr;
 
 /** Defines statement (in terminology of Kumir 1.x: ProgaValue) type */
 enum StatementType {
@@ -77,28 +89,28 @@ struct LoopSpec {
     enum LoopType type;
 
     /** Referece to "for" loop variable */
-    struct Variable * forVariable;
+    VariablePtr forVariable;
 
     /** "for" loop "from" value */
-    struct Expression * fromValue;
+    ExpressionPtr fromValue;
 
     /** "for" loop "to" value */
-    struct Expression * toValue;
+    ExpressionPtr toValue;
 
     /** "for" loop "step" value */
-    struct Expression * stepValue;
+    ExpressionPtr stepValue;
 
     /** "while" loop condition value */
-    struct Expression * whileCondition;
+    ExpressionPtr whileCondition;
 
     /** "times" loop value */
-    struct Expression * timesValue;
+    ExpressionPtr timesValue;
 
     /** Optional condition for loop end */
-    struct Expression * endCondition;
+    ExpressionPtr endCondition;
 
     /** Loop body */
-    QList<struct Statement * > body;
+    QList<StatementPtr> body;
 
     /** Loop end lexems */
     QList<struct Lexem*> endLexems;
@@ -108,13 +120,13 @@ struct LoopSpec {
 /** "if-then", "case" or "else" sub-block of statement */
 struct ConditionSpec {
 
-    Statement * parent;
+    StatementPtr parent;
 
     /** Condition; empty for "else" block */
-    struct Expression * condition;
+    ExpressionPtr condition;
 
     /** Conditional body */
-    QList<struct Statement * > body;
+    QList<StatementPtr> body;
 
     /** Condition source lexems */
     QList<struct Lexem*> lexems;
@@ -130,7 +142,7 @@ struct ABSTRACTSYNTAXTREE_EXPORT Statement {
 
     /** Tree parent */
 
-    Statement * parent;
+    StatementPtr parent;
 
     /** Statement source lexems */
     QList<struct Lexem*> lexems;
@@ -149,10 +161,10 @@ struct ABSTRACTSYNTAXTREE_EXPORT Statement {
 
     /** List of top-level expressions for all
       * statement kinds except StLoop, StIfThenElse and StSwitchCaseElse */
-    QList<struct Expression * > expressions;
+    QList<ExpressionPtr> expressions;
 
     /** Variable references list, defined only if type==StVarInitialize */
-    QList<struct Variable * > variables;
+    QList<VariablePtr> variables;
 
     /** Loop specific-part, defined only if type==StLoop */
     struct LoopSpec loop;
@@ -161,12 +173,10 @@ struct ABSTRACTSYNTAXTREE_EXPORT Statement {
     QList<struct ConditionSpec> conditionals;
 
     explicit Statement();
-    explicit Statement(const struct Statement * src);
-    void updateReferences(const struct Statement * src,
+    explicit Statement(const StatementPtr src);
+    void updateReferences(const Statement * src,
                           const struct Data * srcData,
                           const struct Data * data);
-    QString dump() const;
-    ~Statement();
 };
 
 

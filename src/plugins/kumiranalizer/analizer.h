@@ -57,11 +57,11 @@ public slots:
 
     QStringList imports() const;
 
-    const AST::Data * abstractSyntaxTree() const;
+    const AST::DataPtr abstractSyntaxTree() const;
 
 private:
-    const AST::Module * findModuleByLine(int lineNo) const;
-    const AST::Algorhitm * findAlgorhitmByLine(const AST::Module * mod, int lineNo) const;
+    const AST::ModulePtr findModuleByLine(int lineNo) const;
+    const AST::AlgorithmPtr findAlgorhitmByLine(const AST::ModulePtr mod, int lineNo) const;
     struct AnalizerPrivate * d;
     bool teacherMode_;
 

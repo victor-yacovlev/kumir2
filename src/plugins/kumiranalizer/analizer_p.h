@@ -18,7 +18,7 @@ typedef AST::Data AST_Data;
 
 namespace KumirAnalizer {
 
-typedef QList<AST::Statement*> * LAS;
+typedef QList<AST::StatementPtr> * LAS;
 
 struct AnalizerPrivate
 {
@@ -37,7 +37,7 @@ struct AnalizerPrivate
     class Lexer * lexer;
     class PDAutomata * pdAutomata;
     class SyntaxAnalizer * analizer;
-    AST_Data * ast;
+    AST::DataPtr ast;
 
     static QStringList AlwaysAvailableModulesName;
 
@@ -52,7 +52,7 @@ struct AnalizerPrivate
     QList<Statement*> teacherStatements;
     int hiddenBaseLine;
 
-    void removeAllVariables(AST::Variable * var);
+    void removeAllVariables(const AST::VariablePtr var);
 
     void setHiddenBaseLine(int lineNo);
     void setHiddenText(const QString & text, int baseLineNo);
@@ -62,7 +62,7 @@ struct AnalizerPrivate
     void compileTransaction(const Shared::ChangeTextTransaction &changes);
 
     /** Find algorhitm in AST by real line number */
-    static AST::Algorhitm * findAlgorhitmByPos(AST::Data * data, int pos);
+    static AST::AlgorithmPtr findAlgorhitmByPos(AST::DataPtr data, int pos);
 
     /** Find begin/end iterators in AST instructions list,
       * containing provided lexem groups
@@ -75,13 +75,13 @@ struct AnalizerPrivate
       * @param OUT alg - algorhitm reference
       * @return true on found, false if not found
       */
-    static bool findInstructionsBlock(AST::Data * data
+    static bool findInstructionsBlock(AST::DataPtr data
                                       , const QList<Statement*> statements
                                       , LAS & lst
                                       , int & begin
                                       , int & end
-                                      , AST::Module* & mod
-                                      , AST::Algorhitm* & alg
+                                      , AST::ModulePtr & mod
+                                      , AST::AlgorithmPtr & alg
                                       );
     /** Find context of AST instructions list,
       * containing provided lexem groups
@@ -94,13 +94,13 @@ struct AnalizerPrivate
       * @param OUT alg - algorhitm reference
       * @return true on found, false if not found
       */
-    static bool findInstructionsBlock(AST::Data * data
+    static bool findInstructionsBlock(AST::DataPtr data
                                       , const QList<Statement*> statements
                                       , int pos
                                       , LAS & lst
                                       , int & outPos
-                                      , AST::Module* & mod
-                                      , AST::Algorhitm* & alg
+                                      , AST::ModulePtr & mod
+                                      , AST::AlgorithmPtr & alg
                                       );
 
     AnalizeSubject analizeSubject(const QList<Statement*> & statements) const;

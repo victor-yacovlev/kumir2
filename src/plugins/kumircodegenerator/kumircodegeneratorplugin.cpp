@@ -37,7 +37,7 @@ void KumirCodeGeneratorPlugin::stop()
 }
 
 QPair<QString,QString> KumirCodeGeneratorPlugin::generateExecuable(
-    const AST::Data * tree
+    const AST::DataPtr tree
     , QByteArray & out, DebugLevel debugLevel)
 {
     Data data;

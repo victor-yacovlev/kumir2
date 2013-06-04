@@ -6,125 +6,79 @@
 namespace AST {
 
 Statement::Statement()
+    : type(StError)
+    , skipErrorEvaluation(false)
 {
-    type = StError;
     error = "";
     loop.type = LoopWhile;
-    loop.forVariable = NULL;
-    loop.toValue = loop.fromValue = loop.whileCondition = loop.timesValue = loop.endCondition = loop.stepValue = 0;
-    skipErrorEvaluation = false;
-    parent = 0;
 }
 
-Statement::~Statement()
-{
-    for (int i=0; i<expressions.size(); i++) {
-        if (expressions[i])
-            delete expressions[i];
-    }
-//    for (int i=0; i<variables.size(); i++) {
-//        if (variables[i])
-//            delete variables[i];
-//    }
-    for (int i=0; i<conditionals.size(); i++) {
-        if (conditionals[i].condition)
-            delete conditionals[i].condition;
-        for (int j=0; j<conditionals[i].body.size(); j++)
-            if (conditionals[i].body[j])
-                delete conditionals[i].body[j];
-    }
-//    if (loop.forVariable)
-//        delete loop.forVariable;
-    if (loop.fromValue)
-        delete loop.fromValue;
-    if (loop.toValue)
-        delete loop.toValue;
-    if (loop.stepValue)
-        delete loop.stepValue;
-    if (loop.whileCondition)
-        delete loop.whileCondition;
-    if (loop.timesValue)
-        delete loop.timesValue;
-    if (loop.endCondition)
-        delete loop.endCondition;
-    for (int i=0; i<loop.body.size(); i++) {
-        delete loop.body[i];
-    }
-}
 
-Statement::Statement(const Statement *src)
+Statement::Statement(const StatementPtr src)
 {
     type = src->type;
     error = src->error;
     loop.type = src->loop.type;
     parent = src->parent;
     if (src->loop.toValue)
-        loop.toValue = new Expression(src->loop.toValue);
-    else
-        loop.toValue = 0;
+        loop.toValue = src->loop.toValue;
     if (src->loop.fromValue)
-        loop.fromValue = new Expression(src->loop.fromValue);
-    else
-        loop.fromValue = 0;
+        loop.fromValue = src->loop.fromValue;
     if (src->loop.stepValue)
-        loop.stepValue = new Expression(src->loop.stepValue);
-    else
-        loop.stepValue = 0;
+        loop.stepValue = src->loop.stepValue;
+
     if (src->loop.timesValue)
-        loop.timesValue = new Expression(src->loop.timesValue);
-    else
-        loop.timesValue = 0;
+        loop.timesValue = src->loop.timesValue;
+
     if (src->loop.endCondition)
-        loop.endCondition = new Expression(src->loop.endCondition);
-    else
-        loop.endCondition = 0;
+        loop.endCondition = src->loop.endCondition;
+
 
     for (int i=0; i<src->loop.body.size(); i++) {
-        loop.body << new Statement(src->loop.body[i]);
+        loop.body << src->loop.body[i];
     }
 
     for (int i=0; i<src->expressions.size(); i++) {
-        expressions << new Expression(src->expressions[i]);
+        expressions << src->expressions[i];
     }
 
     for (int i=0; i<src->conditionals.size(); i++) {
         struct ConditionSpec c;
         if (src->conditionals[i].condition)
-            c.condition = new Expression(src->conditionals[i].condition);
-        else
-            c.condition = 0;
+            c.condition = src->conditionals[i].condition;
+
         for (int j=0; j<src->conditionals[i].body.size(); i++) {
-            c.body << new Statement(src->conditionals[i].body[j]);
+            c.body << src->conditionals[i].body[j];
         }
         conditionals << c;
     }
 }
 
-void Statement::updateReferences(const Statement *src, const Data *srcData, const Data *data)
+void Statement::updateReferences(const Statement * src, const struct Data * srcData, const struct Data *data)
 {
     if (loop.forVariable)
-        loop.forVariable->updateReferences(src->loop.forVariable, srcData, data);
+        loop.forVariable.data()->updateReferences(src->loop.forVariable.data(), srcData, data);
     if (loop.fromValue)
-        loop.fromValue->updateReferences(src->loop.fromValue, srcData, data);
+        loop.fromValue->updateReferences(src->loop.fromValue.data(), srcData, data);
     if (loop.toValue)
-        loop.toValue->updateReferences(src->loop.toValue, srcData, data);
+        loop.toValue->updateReferences(src->loop.toValue.data(), srcData, data);
     if (loop.stepValue)
-        loop.stepValue->updateReferences(src->loop.stepValue, srcData, data);
+        loop.stepValue->updateReferences(src->loop.stepValue.data(), srcData, data);
     if (loop.timesValue)
-        loop.timesValue->updateReferences(src->loop.timesValue, srcData, data);
+        loop.timesValue->updateReferences(src->loop.timesValue.data(), srcData, data);
     if (loop.endCondition)
-        loop.endCondition->updateReferences(src->loop.endCondition, srcData, data);
+        loop.endCondition->updateReferences(src->loop.endCondition.data(), srcData, data);
     for (int i=0; i<loop.body.size(); i++) {
-        loop.body[i]->updateReferences(src->loop.body[i], srcData, data);
+        loop.body[i]->updateReferences(src->loop.body[i].data(), srcData, data);
     }
     for (int i=0; i<expressions.size(); i++) {
-        expressions[i]->updateReferences(src->expressions[i], srcData, data);
+        expressions[i]->updateReferences(src->expressions[i].data(), srcData, data);
     }
     for (int i=0; i<conditionals.size(); i++) {
         if (conditionals[i].condition)
-            conditionals[i].condition->updateReferences(src->conditionals[i].condition, srcData, data);
+            conditionals[i].condition->updateReferences(src->conditionals[i].condition.data(), srcData, data);
         for (int j=0; j<conditionals[i].body.size(); j++) {
-            conditionals[i].body[j]->updateReferences(src->conditionals[i].body[j], srcData, data);
+            conditionals[i].body[j]->updateReferences(src->conditionals[i].body[j].data(), srcData, data);
         }
     }
     for (int i=0; i<src->variables.size(); i++) {
@@ -132,7 +86,7 @@ void Statement::updateReferences(const Statement *src, const Data *srcData, cons
         int algId = -1;
         int varId = -1;
         for (int a=0; a<srcData->modules.size(); a++) {
-            struct Module * mod = srcData->modules[a];
+            ModulePtr mod = srcData->modules[a];
             modId = a;
             algId = -1;
             for (int b=0; b<mod->impl.globals.size(); b++) {
@@ -144,7 +98,7 @@ void Statement::updateReferences(const Statement *src, const Data *srcData, cons
             if (varId>-1)
                 break;
             for (int b=0; b<mod->impl.algorhitms.size(); b++) {
-                struct Algorhitm * alg = mod->impl.algorhitms[b];
+                AlgorithmPtr alg = mod->impl.algorhitms[b];
                 algId = b;
                 for (int c=0; c<alg->impl.locals.size(); c++) {
                     if (alg->impl.locals[c]==src->variables[i]) {
@@ -165,175 +119,6 @@ void Statement::updateReferences(const Statement *src, const Data *srcData, cons
                 ? data->modules[modId]->impl.algorhitms[algId]->impl.locals[varId]
                 : data->modules[modId]->impl.globals[varId] );
     }
-}
-
-extern QString addIndent(const QString & source, int count);
-extern QString dumpLexem(const struct Lexem *lx);
-
-QString dumpStatementType(const enum StatementType t)
-{
-    if (t==StAssign)
-        return "assignment";
-    else if (t==StAssert)
-        return "assertion";
-    else if (t==StVarInitialize)
-        return "variableInitialization";
-    else if (t==StInput)
-        return "input";
-    else if (t==StOutput)
-        return "output";
-    else if (t==StLoop)
-        return "loop";
-    else if (t==StIfThenElse)
-        return "ifThenElse";
-    else if (t==StSwitchCaseElse)
-        return "switchCaseElse";
-    else if (t==StBreak)
-        return "break";
-    else if (t==StPause)
-        return "pause";
-    else if (t==StHalt)
-        return "halt";
-    else
-        return "error";
-}
-
-QString dumpLoopSpec(const struct LoopSpec & spec)
-{
-    QString result = "{\n";
-    if (spec.type==LoopFor)
-        result += "\t\"type\": \"for\",\n";
-    else if (spec.type==LoopTimes)
-        result += "\t\"type\": \"times\",\n";
-    else
-        result += "\t\"type\": \"while\",\n";
-    if (spec.type==LoopFor){
-        if (spec.forVariable)
-            result += "\t\"forVariable\": \""+spec.forVariable->name+"\",\n";
-        if (spec.fromValue)
-            result += "\t\"fromValue\": "+addIndent(spec.fromValue->dump(), 1)+",\n";
-        if (spec.toValue)
-            result += "\t\"toValue\": "+addIndent(spec.toValue->dump(), 1)+",\n";
-        if (spec.stepValue)
-            result += "\t\"stepValue\": "+addIndent(spec.stepValue->dump(), 1)+",\n";
-    }
-    else if (spec.type==LoopTimes)
-        result += "\t\"timesValue\": "+addIndent(spec.timesValue->dump(), 1)+",\n";
-    else if (spec.type==LoopWhile && spec.whileCondition)
-        result += "\t\"whileCondition\": "+addIndent(spec.whileCondition->dump(), 1)+",\n";
-    if (spec.endCondition)
-        result += "\t\"endCondition\": "+addIndent(spec.endCondition->dump(), 1)+",\n";
-    result += "\t\"body\": [\n";
-    for (int i=0; i<spec.body.size(); i++) {
-        result += addIndent(spec.body[i]->dump(), 1);
-        if (i<spec.body.size()-1)
-            result += ",";
-        result += "\n";
-    }
-    result += "\t]";
-//    if (!spec.endLexems.isEmpty()) {
-//        result += ",\n";
-//        result += "\t\"endLexems\": [\n";
-//        for (int i=0; i<spec.endLexems.size(); i++) {
-//            result += "\t\t"+dumpLexem(spec.endLexems[i]);
-//            if (i<spec.endLexems.size()-1)
-//                result += ",";
-//            result += "\n";
-//        }
-//        result += "\t]\n";
-//    }
-//    else {
-//        result += "\n";
-//    }
-    result += "\n";
-    result += "}";
-    return result;
-}
-
-QString dumpConditionSpec(const struct ConditionSpec & spec)
-{
-    QString result = "{\n";
-//    if (!spec.lexems.isEmpty()) {
-//        result += "\t\"lexems\": [\n";
-//        for (int i=0; i<spec.lexems.size(); i++) {
-//            result += "\t\t"+dumpLexem(spec.lexems[i]);
-//            if (i<spec.lexems.size()-1)
-//                result += ",";
-//            result += "\n";
-//        }
-//        result += "\t],\n";
-//    }
-    if (spec.condition) {
-        result += "\t\"condition\": "+addIndent(spec.condition->dump(), 1)+",\n";
-    }
-    result += "\t\"body\": [\n";
-    for (int i=0; i<spec.body.size(); i++) {
-        result += addIndent(spec.body[i]->dump(), 1);
-        if (i<spec.body.size()-1)
-            result += ",";
-        result += "\n";
-    }
-    result += "\t] /* end conditional body */ \n";
-    result += "} /* end conditional element */ ";
-    return result;
-}
-
-
-
-QString Statement::dump() const
-{
-    QString result = "{\n";
-//    if (!lexems.isEmpty()) {
-//        result += "\t\"lexems\": [\n";
-//        for (int i=0; i<lexems.size(); i++) {
-//            result += "\t\t"+dumpLexem(lexems[i]);
-//            if (i<lexems.size()-1)
-//                result += ",";
-//            result += "\n";
-//        }
-//        result += "\t],\n";
-//    }
-    result += "\t\"type\": \""+dumpStatementType(type)+"\"";
-    if (type==StError) {
-        result += ",\n\t\"error\": \""+error+"\"\n";
-    }
-    else if (type==StLoop) {
-        result += ",\n\t\"loop\": "+addIndent(dumpLoopSpec(loop),1)+"\n";
-    }
-    else if (type==StIfThenElse || type==StSwitchCaseElse) {
-        result += ",\n\t\"conditionals\": [\n";
-        for (int i=0; i<conditionals.size(); i++) {
-            result += addIndent(dumpConditionSpec(conditionals[i]), 2);
-            if (i<conditionals.size()-1)
-                result += ",";
-            result += "\n";
-        }
-        result += "\t]\n";
-    }
-    else if (type==StVarInitialize) {
-        result += ",\n\t\"variables\": [ ";
-        for (int i=0; i<variables.size(); i++) {
-            result += "\""+variables[i]->name+"\"";
-            if (i<variables.size()-1)
-                result += ", ";
-        }
-        result += " ]\n";
-    }
-    else if (type==StBreak) {
-        result += "\n";
-    }
-    else {
-        result += ",\n\t\"expressions\": [\n";
-        for (int i=0; i<expressions.size(); i++) {
-            result += addIndent(expressions[i]->dump(), 2);
-            if (i<expressions.size()-1)
-                result += ",";
-            result += "\n";
-        }
-        result += "\t]\n";
-    }
-    result += "} /* end statement of type '"+dumpStatementType(type)+"' */";
-    return result;
 }
 
 }

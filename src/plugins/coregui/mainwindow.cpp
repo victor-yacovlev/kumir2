@@ -834,14 +834,13 @@ void MainWindow::setupContentForTab()
         const QString fileName = twe->property("fileName").toString();
         const AnalizerInterface * analizer = m_plugin->plugin_editor->analizer(id);
         int analizerId = m_plugin->plugin_editor->analizerDocumentId(id);
-        const AST::Data * ast = analizer->abstractSyntaxTree(analizerId);
-        m_plugin->kumirProgram_->setAST(0);
+        const AST::DataPtr ast = analizer->abstractSyntaxTree(analizerId);
         m_plugin->kumirProgram_->setAST(ast);
         m_plugin->kumirProgram_->setSourceFileName(fileName);
         m_plugin->kumirProgram_->setDocumentId(id);
     }
     else {
-        m_plugin->kumirProgram_->setAST(0);
+        m_plugin->kumirProgram_->setAST(AST::DataPtr());
     }
 }
 

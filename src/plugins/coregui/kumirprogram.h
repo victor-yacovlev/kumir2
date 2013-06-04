@@ -27,7 +27,7 @@ public:
     explicit KumirProgram(QObject *parent = 0);
     inline void setBytecodeGenerator(GeneratorInterface * bc) { plugin_bytcodeGenerator = bc; }
     inline void setEditorPlugin(EditorInterface * ed) { plugin_editor = ed; }
-    void setAST(const AST::Data * ast);
+    void setAST(const AST::DataPtr ast);
     inline QActionGroup * actions() { return gr_actions; }
     inline bool isRunning() const { return e_state!=Idle; }
     inline void setSourceFileName(const QString & s) { s_sourceFileName = s; }
@@ -66,7 +66,7 @@ private:
     void timerEvent(QTimerEvent *e);
     void prepareKumirRunner(Shared::GeneratorInterface::DebugLevel);
     enum State { Idle, FastRun, RegularRun, StepRun, TestingRun } e_state;
-    const AST::Data * m_ast;
+    AST::DataPtr m_ast;
     QString s_endStatus;
     QProcess * m_process;
     Term * m_terminal;

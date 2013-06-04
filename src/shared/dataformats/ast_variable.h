@@ -1,15 +1,17 @@
 #ifndef AST_VARIABLE_H
 #define AST_VARIABLE_H
 
-#include <QString>
-#include <QList>
-#include <QVariant>
-#include <QPair>
-
 #include "ast_variabletype.h"
 #include "ast_expression.h"
 #include "ast_type.h"
 #include "lexem.h"
+
+#include <QString>
+#include <QList>
+#include <QVariant>
+#include <QPair>
+#include <QSharedPointer>
+#include <QWeakPointer>
 
 #undef ABSTRACTSYNTAXTREE_EXPORT
 #ifdef DATAFORMATS_LIBRARY
@@ -20,11 +22,15 @@
 
 namespace AST {
 
+typedef QSharedPointer<struct Variable> VariablePtr;
+
+typedef QSharedPointer<struct Data> DataPtr;
+
 /** Variable element of (locals|globals) table */
 struct ABSTRACTSYNTAXTREE_EXPORT Variable {
 
     /** One array dimension is calculable by two expressions */
-    typedef QPair<struct Expression *, struct Expression *> Bound;
+    typedef QPair<ExpressionPtr, ExpressionPtr> Bound;
 
     /** Variable name, may be empty (for constant) */
     QString name;
@@ -45,12 +51,11 @@ struct ABSTRACTSYNTAXTREE_EXPORT Variable {
     QVariant initialValue;
 
     explicit Variable();
-    explicit Variable(const struct Variable * src);
+    explicit Variable(const VariablePtr src);
     void updateReferences(const struct Variable * src,
                           const struct Data * srcData,
                           const struct Data * data);
-    QString dump() const;
-    ~Variable();
+
 };
 
 

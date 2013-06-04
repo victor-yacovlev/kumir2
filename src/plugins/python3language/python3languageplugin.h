@@ -36,7 +36,7 @@ public:
     QList<LineProp> lineProperties(int documentId) const;
     QList<QPoint> lineRanks(int documentId) const;
     QStringList imports(int documentId) const;
-    inline const AST::Data* abstractSyntaxTree(int documentId) const { return 0; }
+    inline const AST::DataPtr abstractSyntaxTree(int documentId) const { return AST::DataPtr(); }
     LineProp lineProp(int documentId, int lineNo, const QString &text) const;
     std::string rawSourceData(int documentId) const;
     QString createImportStatementLine(const QString &importName) const;
