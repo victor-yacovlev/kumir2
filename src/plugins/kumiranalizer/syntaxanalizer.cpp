@@ -3571,7 +3571,7 @@ QVariant SyntaxAnalizer::parseConstant(const std::list<Lexem*> &constant
     maxDim = 0;
     if (constant.size()==0)
         return QVariant::Invalid;
-    if (constant.size()==1 && constant.front()->data.trimmed()=="...") {
+    if (constant.size()==1 && constant.front()->data.trimmed()=="..." && constant.front()->type!=LxConstLiteral) {
         constant.front()->error = _("Constant value not typed");
         return QVariant::Invalid;
     }
