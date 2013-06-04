@@ -77,12 +77,12 @@ Module::~Module()
             impl.algorhitms[i] = 0;
         }
     }
-    for (int i=0; i<header.algorhitms.size(); i++) {
-        if (header.algorhitms[i]) {
-            delete header.algorhitms[i];
-            header.algorhitms[i] = 0;
-        }
-    }
+//    for (int i=0; i<header.algorhitms.size(); i++) {
+//        if (header.algorhitms[i]) {
+//            delete header.algorhitms[i];
+//            header.algorhitms[i] = 0;
+//        }
+//    }
     for (int i=0; i<impl.globals.size(); i++) {
         if (impl.globals[i]) {
             delete impl.globals[i];
