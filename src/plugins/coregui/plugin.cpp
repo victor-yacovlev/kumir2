@@ -175,21 +175,23 @@ QString Plugin::initialize(const QStringList & parameters)
     courseManager_ = ExtensionSystem::PluginManager::instance()
             ->findPlugin<Shared::CoursesInterface>();
 
-    foreach (QMenu* menu, courseManager_->menus()) {
-        mainWindow_->ui->menubar->insertMenu(mainWindow_->ui->menuHelp->menuAction(), menu);
+    if (courseManager_) {
+        foreach (QMenu* menu, courseManager_->menus()) {
+            mainWindow_->ui->menubar->insertMenu(mainWindow_->ui->menuHelp->menuAction(), menu);
+        }
+
+        Widgets::SecondaryWindow * coursesWindow = new Widgets::SecondaryWindow(
+                    courseManager_->mainWindow(),
+                    nullptr,
+                    mainWindow_,
+                    mySettings(),
+                    "CoursesWindow"
+                    );
+
+        secondaryWindows_ << coursesWindow;
+        mainWindow_->ui->menuWindow->addAction(coursesWindow->toggleViewAction());
+        mainWindow_->gr_otherActions->addAction(coursesWindow->toggleViewAction());
     }
-
-    Widgets::SecondaryWindow * coursesWindow = new Widgets::SecondaryWindow(
-                courseManager_->mainWindow(),
-                nullptr,
-                mainWindow_,
-                mySettings(),
-                "CoursesWindow"
-                );
-
-    secondaryWindows_ << coursesWindow;
-    mainWindow_->ui->menuWindow->addAction(coursesWindow->toggleViewAction());
-    mainWindow_->gr_otherActions->addAction(coursesWindow->toggleViewAction());
 
     KPlugin * kumirRunner = ExtensionSystem::PluginManager::instance()
             ->findKPlugin<RunInterface>();

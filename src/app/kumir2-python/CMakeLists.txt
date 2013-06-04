@@ -3,7 +3,7 @@ find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui REQUIRED)
 include (${QT_USE_FILE})
 
 set(CONFIGURATION_TEMPLATE
-    "CourseManager,Editor,Browser,Python3Language,!CoreGUI\(notabs,icon=python,nostartpage,nosessions\)"
+    "Editor,Browser,Python3Language,!CoreGUI\(notabs,icon=python,nostartpage,nosessions\)"
 )
 set(SPLASHSCREEN
     "coregui/splashscreens/python.png"
