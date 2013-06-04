@@ -2879,7 +2879,7 @@ void KumirVM::do_neq()
 
     Variable r(!result);
     valuesStack_.push(r);
-    register0_ = AnyValue(result);
+    register0_ = AnyValue(!result);
     nextIP();
 }
 
