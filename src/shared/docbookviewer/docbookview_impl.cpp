@@ -42,12 +42,12 @@ DocBookViewImpl::DocBookViewImpl(DocBookView *pClass)
 
 QSize DocBookViewImpl::minimumSizeHint() const
 {
-    return QSize(900, 300);
+    return QSize(800, 500);
 }
 
 QSize DocBookViewImpl::sizeHint() const
 {
-    return QSize(900, 600);
+    return QSize(1000, 600);
 }
 
 void DocBookViewImpl::updateSettings(QSettings *settings, const QString &prefix)

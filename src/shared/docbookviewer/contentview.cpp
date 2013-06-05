@@ -27,7 +27,7 @@ ContentView::ContentView(QWidget *parent)
 
 QSize ContentView::minimumSizeHint() const
 {
-    return QSize(640, 400);
+    return QSize(500, 400);
 }
 
 void ContentView::reset()
