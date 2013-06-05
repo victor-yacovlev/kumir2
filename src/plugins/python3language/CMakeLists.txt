@@ -27,7 +27,7 @@ qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 copySpecFile(Python3Language)
 add_library(Python3Language SHARED ${MOC_SOURCES} ${SOURCES})
 handleTranslation(Python3Language)
-target_link_libraries(Python3Language ${QT_LIBRARIES} ${PYTHON_LIBRARIES} ExtensionSystem)
+target_link_libraries(Python3Language ${QT_LIBRARIES} ${PYTHON_LIBRARIES} DataFormats ExtensionSystem)
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/share/kumir2/python3language)
 copyResources(python3language)
