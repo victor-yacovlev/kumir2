@@ -6,6 +6,7 @@
 #include <QWidget>
 #include <QTreeWidget>
 #include <QSettings>
+#include <QSet>
 
 namespace DocBookViewer {
 
@@ -38,6 +39,11 @@ private:
     void createListOfTables(ModelPtr root);
     void createListOfAlgorithms(ModelPtr root);
 
+    static QSet<QTreeWidgetItem*> findFilteredItems(
+            const QString & text,
+            QTreeWidget * tree,
+            QTreeWidgetItem * root
+            );
 
 
     Ui::SidePanel *ui;
@@ -49,6 +55,8 @@ private:
 private slots:
     void hadleButtonPressed();
     void selectTreeWidgetItem(QTreeWidgetItem * item);
+    void doFilter(const QString & text);
+
 
 };
 

@@ -4,6 +4,9 @@
 #include "sidepanel.h"
 #include "ui_sidepanel.h"
 
+#include <QtGlobal>
+#include <QDebug>
+
 namespace DocBookViewer {
 
 SidePanel::SidePanel(QWidget *parent) :
@@ -18,6 +21,10 @@ SidePanel::SidePanel(QWidget *parent) :
             << ui->contentsNavigator << ui->algorithmsNavigator
             << ui->examplesNavigator << ui->tablesNavigator;
 
+    static const QList<QLineEdit*> lineEdits = QList<QLineEdit*>()
+            << ui->searchContents << ui->searchAlgorithms
+            << ui->searchExamples << ui->searchTables;
+
     foreach (QPushButton* button, buttons) {
         connect(button, SIGNAL(clicked()), this, SLOT(hadleButtonPressed()));
     }
@@ -25,6 +32,11 @@ SidePanel::SidePanel(QWidget *parent) :
     foreach (QTreeWidget* widget, treeWidgets) {
         connect(widget, SIGNAL(itemClicked(QTreeWidgetItem*,int)),
                 this, SLOT(selectTreeWidgetItem(QTreeWidgetItem*)));
+    }
+
+    foreach (QLineEdit* lineEdit, lineEdits) {
+        connect(lineEdit, SIGNAL(textChanged(QString)),
+                this, SLOT(doFilter(QString)));
     }
 
 }
@@ -286,6 +298,70 @@ void SidePanel::selectTreeWidgetItem(QTreeWidgetItem *item)
     }
     ModelPtr model = modelsOfItems_[item];
     emit itemPicked(model);
+}
+
+
+void SidePanel::doFilter(const QString &text)
+{
+    static const QList<QTreeWidget*> treeWidgets = QList<QTreeWidget*>()
+            << ui->contentsNavigator << ui->algorithmsNavigator
+            << ui->examplesNavigator << ui->tablesNavigator;
+
+    static const QList<QLineEdit*> lineEdits = QList<QLineEdit*>()
+            << ui->searchContents << ui->searchAlgorithms
+            << ui->searchExamples << ui->searchTables;
+
+    QLineEdit * who = qobject_cast<QLineEdit*>(sender());
+    int index = lineEdits.indexOf(who);
+
+    QTreeWidget * tree = treeWidgets.at(index);
+
+    QSet<QTreeWidgetItem*> allItems = findFilteredItems("", tree, nullptr);
+
+    QSet<QTreeWidgetItem*> matchedItems = findFilteredItems(text.simplified(), tree, nullptr);
+
+    QSet<QTreeWidgetItem*> unmatchedItems = allItems - matchedItems;
+
+    foreach (QTreeWidgetItem* item, unmatchedItems) {
+        item->setHidden(true);
+    }
+
+    foreach (QTreeWidgetItem* item, matchedItems) {
+        item->setHidden(false);
+        QTreeWidgetItem* p = item->parent();
+        while (p) {
+            p->setHidden(false);
+            p = p->parent();
+        }
+    }
+
+}
+
+QSet<QTreeWidgetItem*>
+SidePanel::findFilteredItems(const QString &text,
+                             QTreeWidget *tree,
+                             QTreeWidgetItem * root)
+{
+    Q_ASSERT(tree || root);
+    QSet<QTreeWidgetItem*> result;
+    QList<QTreeWidgetItem*> topLevelChilds;
+    if (tree) {
+        for (int i=0; i<tree->topLevelItemCount(); i++) {
+            topLevelChilds << tree->topLevelItem(i);
+        }
+    }
+    else {
+        for (int i=0; i<root->childCount(); i++) {
+            topLevelChilds << root->child(i);
+        }
+    }
+    foreach (QTreeWidgetItem* item, topLevelChilds) {
+        if (item->text(0).contains(text, Qt::CaseInsensitive)) {
+            result.insert(item);
+        }
+        result += findFilteredItems(text, nullptr, item);
+    }
+    return result;
 }
 
 SidePanel::~SidePanel()
