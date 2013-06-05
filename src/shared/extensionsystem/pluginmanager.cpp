@@ -511,8 +511,10 @@ QString PluginManager::loadExtraModule(const std::string &canonicalFileName)
 bool PluginManager::isGuiRequired() const
 {
     KPlugin * runtimePlugin = qobject_cast<KPlugin*>(d->objects.last());
-    Q_CHECK_PTR(runtimePlugin);
-    return runtimePlugin->isGuiRequired();
+    if (runtimePlugin)
+        return runtimePlugin->isGuiRequired();
+    else
+        return false;
 }
 
 QString PluginManager::initializePlugins()

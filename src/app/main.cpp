@@ -101,10 +101,6 @@ public:
     }
 
     inline void initialize() {
-        if (started_) {
-            return;
-        }
-        started_ = true;
         bool gui = true;
 #ifdef Q_WS_X11
         gui = gui && getenv("DISPLAY")!=0;
@@ -191,14 +187,17 @@ public:
     }
 
     inline void timerEvent(QTimerEvent * event) {        
+        if (!started_) {
+            started_ = true;
+            killTimer(timerId_);
+            initialize();
+        }
         event->accept();
-        initialize();
     }
 
     inline int main() {
         timerId_ = startTimer(250);
         int ret = exec();
-        killTimer(timerId_);
         if (ret == 0) {
             return property("returnCode").isValid()
                     ? property("returnCode").toInt() : 0;
