@@ -796,6 +796,10 @@ void Python3LanguagePlugin::handlePythonMarginText(int lineNo, const QString &te
     Q_EMIT marginText(lineNo, text);
 }
 
+bool Python3LanguagePlugin::hasTestingEntryPoint() const
+{
+    return false;
+}
 
 } // namespace
 

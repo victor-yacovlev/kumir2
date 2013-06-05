@@ -26,6 +26,7 @@ public:
     virtual void runTesting() = 0;
     virtual void terminate() = 0;
     virtual bool hasMoreInstructions() const = 0;
+    virtual bool hasTestingEntryPoint() const = 0;
     virtual int currentLineNo() const = 0;
     virtual QString error() const = 0;
     virtual QVariant valueStackTopItem() const = 0;

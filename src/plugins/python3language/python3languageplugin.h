@@ -27,6 +27,7 @@ public:
     inline bool caseInsensitiveGrammatic() const { return false; }
     inline bool supportPartialCompiling() const { return false; }
     inline virtual bool indentsSignificant() const { return true; }
+    bool hasTestingEntryPoint() const;
     void dropDocument(int documentId);
     void setSourceText(int documentId, const QString &text);
     void setHiddenText(int documentId, const QString &text, int baseLine);

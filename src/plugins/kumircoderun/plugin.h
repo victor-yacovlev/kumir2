@@ -22,6 +22,7 @@ public:
 
     bool loadProgram(const QString & fileName, const QByteArray & source, Shared::ProgramFormat format);
     bool hasMoreInstructions() const;
+    bool hasTestingEntryPoint() const;
     QString error() const;
 
     int currentLineNo() const ;

@@ -668,6 +668,10 @@ bool Plugin::canStepOut() const
     return pRun_->canStepOut();
 }
 
+bool Plugin::hasTestingEntryPoint() const
+{
+    return pRun_->vm->hasTestingAlgorithm();
+}
 
 } // namespace KumirCodeRun
 
