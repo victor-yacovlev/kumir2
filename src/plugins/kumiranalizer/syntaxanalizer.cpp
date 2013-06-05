@@ -2607,12 +2607,14 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool allowOperatorsD
     }
 
 
-    // Make this algorhitm public available (if not private name)
-    if (!name.isEmpty() && !name.startsWith("_")) {
-        if (isOperator)
-            mod->header.operators << alg;
-        else
-            mod->header.algorhitms << alg;
+    if (onlyName) {
+        // Make this algorhitm public available (if not private name)
+        if (!name.isEmpty() && !name.startsWith("_")) {
+            if (isOperator)
+                mod->header.operators << alg;
+            else
+                mod->header.algorhitms << alg;
+        }
     }
 
 
