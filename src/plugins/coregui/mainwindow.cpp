@@ -90,7 +90,7 @@ MainWindow::MainWindow(Plugin * p) :
     m_plugin->m_kumirStateLabel->setFixedWidth(140);
     m_plugin->m_kumirStateLabel->setStyleSheet(StatusbarWidgetCSS);
     m_plugin->m_kumirStateLabel->setAlignment(Qt::AlignCenter);
-    m_plugin->m_genericCounterLabel->setFixedWidth(120);
+    m_plugin->m_genericCounterLabel->setFixedWidth(200);
     m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS);
     m_plugin->m_genericCounterLabel->setAlignment(Qt::AlignCenter);
     m_message = new QLabel(this);

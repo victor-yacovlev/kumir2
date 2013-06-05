@@ -2689,7 +2689,7 @@ void KumirVM::do_line(uint16_t no)
         if (!blindMode_ && debugHandler_) {
             debugHandler_->noticeOnStepsChanged(stepsCounter_);
         }
-        else if (blindMode_ && debugHandler_ && (stepsCounter_ % 100 == 0)) {
+        else if (blindMode_ && debugHandler_ && (stepsCounter_ % 1000 == 1)) {
             debugHandler_->noticeOnStepsChanged(stepsCounter_);
         }
     }
