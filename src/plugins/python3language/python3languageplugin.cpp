@@ -801,6 +801,11 @@ bool Python3LanguagePlugin::hasTestingEntryPoint() const
     return false;
 }
 
+unsigned long int Python3LanguagePlugin::stepsCounted() const
+{
+    return 0;
+}
+
 } // namespace
 
 Q_EXPORT_PLUGIN(Python3Language::Python3LanguagePlugin)

@@ -27,6 +27,7 @@ public:
 
     int currentLineNo() const ;
     inline QDateTime loadedProgramVersion() const { return loadedVersion_; }
+    unsigned long int stepsCounted() const;
 
     inline bool isGuiRequired() { return false; }
     QVariant valueStackTopItem() const;
@@ -80,6 +81,7 @@ protected slots:
 
 
 signals:
+    void updateStepsCounter(unsigned long int);
     void stopped(int reason);
     void finishInput(const QVariantList & data);
     void inputRequest(const QString & format);

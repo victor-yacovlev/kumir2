@@ -300,6 +300,12 @@ bool Run::noticeOnLineNoChanged(int lineNo)
     return true;
 }
 
+bool Run::noticeOnStepsChanged(unsigned long int stepsDone)
+{
+    emit updateStepsCounter(stepsDone);
+    return true;
+}
+
 bool Run::clearMargin(int from, int to)
 {
     emit clearMarginRequest(from, to);

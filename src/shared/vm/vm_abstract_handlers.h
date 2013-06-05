@@ -272,6 +272,10 @@ public:
             int /*lineNo*/
             ) { return false; }
 
+    inline virtual bool noticeOnStepsChanged(
+            unsigned long int /*stepsDone*/
+            ) { return false; }
+
     inline virtual bool debuggerReset() { return false; }
 
     inline virtual bool debuggerPushContext(

@@ -56,6 +56,8 @@ public slots:
             int /*lineNo*/
             );
 
+    bool noticeOnStepsChanged(unsigned long int stepsDone);
+
     bool setTextToMargin(int lineNo, const String & s, bool red);
     bool appendTextToMargin(int lineNo, const String & s);
     bool clearMargin(int from, int to);
@@ -97,6 +99,7 @@ public slots:
 
 
 signals:
+    void updateStepsCounter(unsigned long int);
     void finishInput(const QVariantList &data);
     void lineChanged(int lineNo);
     void output(const QString &value);

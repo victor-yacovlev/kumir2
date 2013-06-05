@@ -17,6 +17,7 @@ MainWindow::MainWindow(Plugin * p) :
     ui(new Ui::MainWindow),
     m_plugin(p)
 {
+
     b_notabs = false;
     b_workspaceSwitching = false;
     ui->setupUi(this);
@@ -43,6 +44,12 @@ MainWindow::MainWindow(Plugin * p) :
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupStatusbarForTab()));
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(checkCounterValue()));
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setTitleForTab(int)));
+
+    QObject * runnerObject =
+            ExtensionSystem::PluginManager::instance()->findKPlugin<Shared::RunInterface>();
+    if (runnerObject) {
+        connect(runnerObject, SIGNAL(updateStepsCounter(ulong)), this, SLOT(checkCounterValue()));
+    }
 
     connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(showPreferences()));
 
@@ -277,8 +284,10 @@ void MainWindow::activateDocumentTab(int documentId)
 
 void MainWindow::checkCounterValue()
 {
-    ExtensionSystem::GlobalState state = ExtensionSystem::PluginManager::instance()->currentGlobalState();
-    if (state==ExtensionSystem::GS_Unlocked) {
+    using namespace ExtensionSystem;
+    using namespace Shared;
+    GlobalState state = PluginManager::instance()->currentGlobalState();
+    if (state==GS_Unlocked) {
         if (ui->tabWidget->count()==0)
             return;
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
@@ -305,9 +314,25 @@ void MainWindow::checkCounterValue()
         }
     }
     else {
-        // TODO steps done
+        RunInterface * runner =
+                PluginManager::instance()->findPlugin<RunInterface>();
+        if (runner) {
+            ulong stepsCounted = runner->stepsCounted();
+            ulong stepsDone =
+                    state==GS_Observe && runner->error().length()==0
+                    ? stepsCounted  // all steps successfully finished
+                    : stepsCounted - 1; // all but last unfinished step
+            if (stepsCounted == 0) {
+                stepsDone = 0;  // just begin of evaluation
+            }
+            const QString text = tr("Steps done: %1").arg(stepsDone);
+            m_plugin->m_genericCounterLabel->setText(text);
+            m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS);
+        }
     }
 }
+
+
 
 void MainWindow::showMessage(const QString &text)
 {

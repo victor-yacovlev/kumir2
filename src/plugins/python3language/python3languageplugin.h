@@ -28,6 +28,7 @@ public:
     inline bool supportPartialCompiling() const { return false; }
     inline virtual bool indentsSignificant() const { return true; }
     bool hasTestingEntryPoint() const;
+    unsigned long int stepsCounted() const;
     void dropDocument(int documentId);
     void setSourceText(int documentId, const QString &text);
     void setHiddenText(int documentId, const QString &text, int baseLine);
@@ -86,6 +87,7 @@ Q_SIGNALS:
     void outputRequest(const QString & output);
     void errorOutputRequest(const QString & output);
     void lineChanged(int lineNo);
+    void updateStepsCounter(unsigned long int);
 
     void finishInput(const QVariantList & data);
     void inputRequest(const QString & format);

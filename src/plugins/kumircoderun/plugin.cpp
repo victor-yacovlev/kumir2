@@ -28,6 +28,7 @@ Plugin::Plugin()
     connect (pRun_, SIGNAL(input(QString)), this, SIGNAL(inputRequest(QString)));
     connect (pRun_, SIGNAL(finished()), this, SLOT(handleThreadFinished()));
     connect (pRun_, SIGNAL(lineChanged(int)), this, SIGNAL(lineChanged(int)));
+    connect (pRun_, SIGNAL(updateStepsCounter(ulong)), this, SIGNAL(updateStepsCounter(ulong)));
     connect (pRun_, SIGNAL(marginText(int,QString)), this, SIGNAL(marginText(int,QString)));
     connect (pRun_, SIGNAL(clearMarginRequest(int,int)), this, SIGNAL(clearMargin(int,int)));
     connect (pRun_, SIGNAL(marginTextReplace(int,QString,bool)),
@@ -67,6 +68,11 @@ Plugin::Plugin()
     connect(pRun_, SIGNAL(signal_debuggerUpdateGlobalTableValue(QString,QString,QList<int>)),
             this, SIGNAL(debuggerUpdateGlobalTableValue(QString,QString,QList<int>)),
             Qt::DirectConnection);
+}
+
+unsigned long int Plugin::stepsCounted() const
+{
+    return pRun_->vm->stepsDone();
 }
 
 int Plugin::currentLineNo() const

@@ -52,6 +52,7 @@ public /*methods*/:
     inline void reset();
 
     inline bool hasTestingAlgorithm() const;
+    inline unsigned long int stepsDone() const { return stepsCounter_; }
 
     /** Sets the Debugging Interaction handler for this VM */
     inline void setDebuggingHandler(
@@ -140,6 +141,7 @@ private /*fields*/:
     VariablesTable * currentConstants_;
     VariablesTable * currentGlobals_;
     VariablesTable * currentLocals_;
+    unsigned long int stepsCounter_;
 public /*constructors*/:
     inline KumirVM();
 private /*methods*/:
@@ -645,6 +647,7 @@ void KumirVM::reset()
     blindMode_ = false;
     nextCallInto_ = false;
     backtraceSkip_ = 0;
+    stepsCounter_ = 0u;
     error_.clear();
     register0_ = AnyValue();
     Variable::ignoreUndefinedError = false;
@@ -2673,7 +2676,7 @@ void KumirVM::do_error(uint8_t s, uint16_t id)
 }
 
 void KumirVM::do_line(uint16_t no)
-{
+{    
     if (!blindMode_ && contextsStack_.top().runMode==CRM_OneStep) {
         if (contextsStack_.top().lineNo!=no) {
             if (debugHandler_)
@@ -2681,6 +2684,15 @@ void KumirVM::do_line(uint16_t no)
         }
     }
     contextsStack_.top().lineNo = no;
+    if (currentContext().IP!=-1) {
+        stepsCounter_ ++;
+        if (!blindMode_ && debugHandler_) {
+            debugHandler_->noticeOnStepsChanged(stepsCounter_);
+        }
+        else if (blindMode_ && debugHandler_ && (stepsCounter_ % 100 == 0)) {
+            debugHandler_->noticeOnStepsChanged(stepsCounter_);
+        }
+    }
     nextIP();
 }
 
