@@ -373,10 +373,19 @@ void Run::run()
         }
     }
     if (vm->error().length() == 0 &&
-            vm->entryPoint() == KumirVM::EP_Testing &&
-            vm->topLevelStackValue().isValid())
+            vm->entryPoint() == KumirVM::EP_Testing)
     {
-        qApp->setProperty("returnCode", vm->topLevelStackValue().toInt());
+        bool hasRetval = false;
+        try {
+            VM::AnyValue retval = vm->topLevelStackValue();
+            hasRetval = retval.isValid();
+        }
+        catch (...) {
+            hasRetval = false;
+        }
+        if (hasRetval) {
+            qApp->setProperty("returnCode", vm->topLevelStackValue().toInt());
+        }
     }
 //    bool wasError = vm->error().length()>0;
     // Unclosed files is an error only if program reached end

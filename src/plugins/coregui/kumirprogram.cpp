@@ -276,33 +276,28 @@ void KumirProgram::testingRun()
     if (w_debuggerWindow) w_debuggerWindow->reset();
     if (e_state==FastRun)
         return;
+
+    using namespace ExtensionSystem;
+    using namespace Shared;
+    RunInterface * runner =
+            PluginManager::instance()->findPlugin<RunInterface>();
+
     b_blind = true;
     s_endStatus = "";
     if (e_state==Idle) {
         emit giveMeAProgram();
-        bool hasTestingAlgorhitm = false;
-        for (int i=0; i<m_ast->modules.size(); i++) {
-//            if (m_ast->modules[i]->header.type==AST::ModTypeHidden) {
-                for (int j=0; j<m_ast->modules[i]->header.algorhitms.size(); j++) {
-                    if (m_ast->modules[i]->header.algorhitms[j]->header.specialType==AST::AlgorhitmTypeTesting) {
-                        hasTestingAlgorhitm = true;
-                        break;
-                    }
-                }
-//            }
-        }
-        if (!hasTestingAlgorhitm) {
+        prepareKumirRunner(Shared::GeneratorInterface::LinesOnly);        
+        if (!runner->hasTestingEntryPoint()) {
             QMessageBox::information(w_mainWidget, a_testingRun->text(),
                                   tr("This program does not have testing algorithm")
                                   );
             return;
         }
-        prepareKumirRunner(Shared::GeneratorInterface::LinesOnly);
     }
     e_state = TestingRun;
     PluginManager::instance()->switchGlobalState(GS_Running);
     setAllActorsAnimationFlag(false);
-    plugin_bytecodeRun->runTesting();
+    runner->runTesting();
 }
 
 void KumirProgram::regularRun()

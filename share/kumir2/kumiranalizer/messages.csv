@@ -171,6 +171,7 @@
 "No 'end' after 'then'";"Нет “все” после “то”";"";"";"";"";
 "Slice of string array, but not string";"Вырезка не из строки, а из таблицы";"";"";"";"";
 "Leading zeroes not allowed in constants";"Лишние нули в начале числа";"";"";"";"";
+"Incorrect algorithm name";"Некорректное имя алгоритма";"";"";"";"";
 "Void argument";"Пустой аргумент";"";"";"";"";
 "What to input?";"Куда вводить?";"";"";"";"";
 "Can't input complex expression";"Нельзя ввести в выражение";"";"";"";"";

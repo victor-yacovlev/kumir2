@@ -60,7 +60,7 @@ bool Utils::temporaryLayoutSwitch = false;
 QString Utils::textByKey(Qt::Key key,
                          const QString & sourceKeyText,
                          bool shiftPressed,
-                         bool teacherMode
+                         bool /*teacherMode*/
                          )
 {
 
@@ -69,7 +69,7 @@ QString Utils::textByKey(Qt::Key key,
     if (temporaryLayoutSwitch && key==Qt::Key_1) {
         keyText = "|";
     }
-    else if (teacherMode && temporaryLayoutSwitch && key==Qt::Key_2) {
+    else if (/*teacherMode && */temporaryLayoutSwitch && key==Qt::Key_2) {
         keyText = "@";
     }
     else if (temporaryLayoutSwitch && key==Qt::Key_Equal) {

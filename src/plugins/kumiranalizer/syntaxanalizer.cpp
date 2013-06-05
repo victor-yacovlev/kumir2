@@ -2615,16 +2615,13 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool allowOperatorsD
             mod->header.algorhitms << alg;
     }
 
-    if (onlyName || nameHasError) {
-        alg->header.broken = nameHasError;
-        return;
-    }
+
 
     for (int i=nameStartLexem; i<argsStartLexem-1; i++) {
         st.data[i]->type = LxNameAlg;
     }
 
-    if (alg->header.specialType==AST::AlgorhitmTypeTeacher && alg->header.name==lexer_->testingAlgorhitmName()) {
+    if (/*alg->header.specialType==AST::AlgorhitmTypeTeacher && */alg->header.name==lexer_->testingAlgorhitmName()) {
         alg->header.specialType = AST::AlgorhitmTypeTesting;
     }
 
@@ -2633,6 +2630,21 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool allowOperatorsD
     }
     else if (teacherMode_ && alg->header.name.startsWith("@")) {
         alg->header.specialType = AST::AlgorhitmTypeTeacher;
+    }
+
+    if (!teacherMode_ && alg->header.specialType!=AST::AlgorhitmTypeTesting
+            && alg->header.name.startsWith("@"))
+    {
+        for (int i=1; i<st.data.size(); i++) {
+            if (st.data[i]->type==LxNameAlg)
+                st.data[i]->error = _("Incorrect algorithm name");
+        }
+        nameHasError = true;
+    }
+
+    if (onlyName || nameHasError) {
+        alg->header.broken = nameHasError;
+        return;
     }
 
 
