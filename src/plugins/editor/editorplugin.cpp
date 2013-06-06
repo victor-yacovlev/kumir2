@@ -92,7 +92,7 @@ Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, c
         if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
             const QByteArray bytes = f.readAll();
             f.close();
-            const KumFile::Data data = KumFile::fromString(KumFile::readRawDataAsString(bytes, QString()));
+            const KumFile::Data data = KumFile::fromString(KumFile::readRawDataAsString(bytes, QString(), a? a->defaultDocumentFileNameSuffix() : "txt"));
             w->setKumFile(data);
         }
     }
@@ -212,13 +212,14 @@ QString EditorPlugin::loadDocument(int documentId, const QString &fileName, bool
     Q_ASSERT(documentId<d->editors.size());
     Q_CHECK_PTR(d->editors[documentId].e);
     Ed ed = d->editors[documentId];
+    AnalizerInterface * a = d->editors[documentId].a;
     Editor * editor = ed.e;
     QFile f(fileName);
     if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
         const QByteArray bytes = f.readAll();
         editor->setKumFile(
                     KumFile::fromString(
-                        KumFile::readRawDataAsString(bytes, QString())
+                        KumFile::readRawDataAsString(bytes, QString(), a? a->defaultDocumentFileNameSuffix() : "txt")
                         , keepIndents
                         )
                     );

@@ -107,19 +107,64 @@ bool hasWrongSymbols(const QString & s) {
     return false;
 }
 
-QString KumFile::readRawDataAsString(QByteArray rawData, const QString &sourceEncoding)
-{
+QString KumFile::readRawDataAsString(QByteArray rawData, const QString &sourceEncoding, const QString &fileNameSuffix)
+{    
     QTextStream ts(rawData, QIODevice::ReadOnly);
     if (sourceEncoding.isEmpty()) {
-        ts.setCodec("UTF-16");
-        ts.setAutoDetectUnicode(true);
+        if (fileNameSuffix == "kum") {
+            ts.setCodec("UTF-16");
+            ts.setAutoDetectUnicode(true);
+        }
+        else if (fileNameSuffix == "txt") {
+#ifdef Q_OS_WIN32
+            const char * DefaultCodec = "CP1251";
+#else
+            const char * DefaultCodec = "UTF-8";
+#endif
+            ts.setCodec(DefaultCodec);
+            ts.setAutoDetectUnicode(true);
+        }
+        else if (fileNameSuffix == "py") {
+            QString codec = "UTF-8";
+            QStringList lines = QString::fromAscii(rawData).split("\n");
+            // PEP-0263 three variants to declare encoding
+            // # coding=<encoding name>
+            // # -*- coding: <encoding name -*-
+            // # vim: set fileencoding=<encoding name> :
+            static const QRegExp rx1("^coding\\s*=\\s*(\\S+)$");
+            static const QRegExp rx2("^-\\*-\\s*coding:\\s*(\\S+)\\s*-\\*-$");
+            static const QRegExp rx3("^vim:\\s*set\\s+fileencoding\\s*=\\s*(\\S+)\\s*:$");
+            foreach (QString line, lines) {
+                line = line.trimmed();
+                if (line.startsWith("#")) {
+                    line.remove(0, 1);
+                    line = line.trimmed();
+                    if (rx1.exactMatch(line)) {
+                        codec = rx1.cap(1);
+                        break;
+                    }
+                    if (rx2.exactMatch(line)) {
+                        codec = rx2.cap(1);
+                        break;
+                    }
+                    if (rx3.exactMatch(line)) {
+                        codec = rx3.cap(1);
+                        break;
+                    }
+                }
+            }
+            ts.setCodec(codec.toAscii().data());
+            ts.setAutoDetectUnicode(true);
+        }
     }
     else {
         ts.setCodec(QTextCodec::codecForName(sourceEncoding.toAscii().constData()));
     }
     QString s = ts.readAll();
     s = s.replace(QChar(13),"");
-    s = s.replace(QChar(9), "    ");
+    if (fileNameSuffix != "txt") {
+        s = s.replace(QChar(9), "    ");
+    }
     return s;
 //    static const QStringList CodecsToTry = QStringList()
 //         << "UTF-16" << "UTF-8" << "CP1251" << "KOI8-R" << "IBM866";
@@ -151,7 +196,7 @@ QDataStream & operator >>(QDataStream & ds, KumFile::Data & data)
             buffer.append(bb, cnt);
         }
     }
-    const QString s = KumFile::readRawDataAsString(buffer, data.sourceEncoding);
+    const QString s = KumFile::readRawDataAsString(buffer, data.sourceEncoding, "kum");
     data = KumFile::fromString(s);
     return ds;
 }
