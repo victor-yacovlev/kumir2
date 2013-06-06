@@ -373,7 +373,7 @@ bool MainWindow::saveCurrentFile()
         result = saveCurrentFileTo(fileName);
     }
     if (result) {
-        twe->setProperty("title", QFileInfo(twe->property("realFileName").toString()).fileName());
+//        twe->setProperty("title", QFileInfo(twe->property("realFileName").toString()).fileName());
         setTitleForTab(ui->tabWidget->currentIndex());
     }
     return result;
@@ -525,7 +525,22 @@ bool MainWindow::saveCurrentFileAs()
     const QString languageName = analizer->languageName();
     const QString fileNameSuffix = analizer->defaultDocumentFileNameSuffix();
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
-    QString fileName = twe->property("fileName").toString();
+    QString fileName = twe->property("realFileName").toString();
+    QString initialPath;
+    if (fileName.isEmpty()) {
+        QString lastFileName = m_plugin->mySettings()->value(Plugin::RecentFileKey).toString();
+        if (lastFileName.isEmpty()) {
+            initialPath = QDir::currentPath();
+        }
+        else {
+            initialPath = QFileInfo(lastFileName).absoluteDir().absolutePath();
+        }
+        const QString suffix = twe->type==Program ? fileNameSuffix : ".txt";
+        initialPath += "/" + suggestNewFileName(suffix, initialPath);
+    }
+    else {
+        initialPath = fileName;
+    }
     QStringList filter;    
     if (twe->type==Program) {
         filter << tr("%1 programs (*%2)").arg(languageName).arg(fileNameSuffix);
@@ -534,7 +549,7 @@ bool MainWindow::saveCurrentFileAs()
         filter << tr("Text files (*.txt)");
     }
     filter << tr("All files (*)");
-    fileName = QFileDialog::getSaveFileName(this, tr("Save file"), fileName, filter.join(";;"));
+    fileName = QFileDialog::getSaveFileName(this, tr("Save file"), initialPath, filter.join(";;"));
     if (!fileName.isEmpty()) {
         if (twe->type==Program && !fileName.endsWith(fileNameSuffix))
             fileName += fileNameSuffix;
@@ -546,6 +561,8 @@ bool MainWindow::saveCurrentFileAs()
             int index = ui->tabWidget->indexOf(twe);
             ui->tabWidget->setTabText(index, QFileInfo(fileName).fileName());
             addToRecent(fileName);
+            m_plugin->mySettings()->setValue(Plugin::RecentFileKey, fileName);
+            setTitleForTab(ui->tabWidget->currentIndex());
             return true;
         }
     }
@@ -753,9 +770,13 @@ void MainWindow::newText(const QString &fileName, const QString & text)
     e->setFocus();
 }
 
-QString MainWindow::suggestNewFileName(const QString &suffix) const
+QString MainWindow::suggestNewFileName(const QString &suffix, const QString & dirName) const
 {
-    QDir d = QDir::current();
+    QDir d;
+    if (dirName.isEmpty())
+        d = QDir::current();
+    else
+        d = QDir(dirName);
     QStringList fileNames = d.entryList(QStringList() << "*"+suffix);
     for (int i=0; i<ui->tabWidget->count(); i++) {
         fileNames << ui->tabWidget->tabText(i);

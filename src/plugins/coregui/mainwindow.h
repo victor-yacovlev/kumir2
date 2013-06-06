@@ -109,7 +109,7 @@ private:
 
     QMenu * menu_empty;
 
-    QString suggestNewFileName(const QString &suffix) const;
+    QString suggestNewFileName(const QString &suffix, const QString & dirName = "") const;
     void createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent);
     bool checkForSaved(VisualComponent * c);
     static QIcon actionIcon(const QString & name);
