@@ -226,6 +226,19 @@ class Namespace(object):
     def search_function(self, name):
         if name in self.functions:
             return self.functions[name]
+        elif '.' in name:
+            assert isinstance(name, str)
+            index = name.rfind('.')
+            root_name = name[:index]
+            name = name[index+1:]
+            obj = None
+            root_obj = self.find(root_name)
+            if root_obj and name in root_obj.__dict__:
+                obj = root_obj.__dict__[name]
+            if obj and (inspect.isbuiltin(obj) or inspect.isroutine(obj) or inspect.ismethod(obj)):
+                return obj
+            else:
+                return None
         else:
             return None
 
@@ -331,17 +344,29 @@ class Analizer(object):
 
     def __analize(self, source):
         self.__root_namespace.reset()
+        st = parser.suite(source)
+        self.__namespace_stack = [self.__root_namespace]
+        items = parser.st2tuple(st, line_info=True, col_info=True)
+        self.__analize_body(items)
+
+        # Update line properties
         data = source.encode('utf-8')
         lexems = tokenize(BytesIO(data).readline)
         try:
+            qualified_name = ""
             for type_, lexem, (srow, scol), (erow, ecol), _ in lexems:
                 if erow == 0 or srow == 0:
                     continue
                 kt = LxTypeEmpty
+                if type_ == OP and lexem == ".":
+                    qualified_name += "."
+                if not qualified_name.endswith("."):
+                    qualified_name = ""
                 if type_ in MATCH:
                     kt = MATCH[type_]
                 if type_ == NAME:
-                    kt = self.__lexem_type_by_name(lexem)
+                    qualified_name += lexem
+                    kt = self.__lexem_type_by_name(qualified_name)
                 if type_ == ERRORTOKEN:
                     kt = LxTypeEmpty
                 row = srow
@@ -359,10 +384,6 @@ class Analizer(object):
                     row += 1
         except BaseException as err:
             pass
-        st = parser.suite(source)
-        self.__namespace_stack = [self.__root_namespace]
-        items = parser.st2tuple(st, line_info=True, col_info=True)
-        self.__analize_body(items)
 
     def __analize_body(self, items):
         for item in items:
@@ -628,24 +649,9 @@ def restore_state(dump):
 if __name__ == "__main__":
     new_document()
     set_source_text(0, """
-from sys import exit as ex
-import sys
-def main(args, hello="Hello"):
-    for index, arg in enumerate(args):
-        print(index)
-        print(arg)
-    return 0
+import json
+json.dumps(123)
 
-if __name__ == "__main__":
-    ret = main(sys.argv)
-    ex(ret)
-elif __name__ == "kumir":
-    print("Hello")
-else:
-    alist = ['a', 'b', 'c', 'd']
-    for index, item in enumerate(alist):
-        a, b = index, item
-        debug('index: %d, item: %s' % (index, item))
     """)
     dump = save_state()
     del __documents

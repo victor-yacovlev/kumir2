@@ -81,13 +81,14 @@ public:
     void handlePythonExecutionTerminated();
     void handlePythonExecutionError();
     void handlePythonMarginText(int lineNo, const QString &text);
+    void handlePythonStepsCounterChanged(unsigned long int);
 
 Q_SIGNALS:
+    void updateStepsCounter(ulong);
     void stopped(int reason);
     void outputRequest(const QString & output);
     void errorOutputRequest(const QString & output);
     void lineChanged(int lineNo);
-    void updateStepsCounter(unsigned long int);
 
     void finishInput(const QVariantList & data);
     void inputRequest(const QString & format);
@@ -166,30 +167,31 @@ public: // actually private, but required for python-access function
     QString analizerState_;
 };
 
+enum RunMode { RM_Blind, RM_Continuous, RM_StepOver, RM_StepIn, RM_StepOut };
 
 struct RunInteractionWaiter
         : public QThread
 {
-    enum Mode { RM_Continuous, RM_StepOver, RM_StepIn, RM_StepOut };
     RunInteractionWaiter(Python3LanguagePlugin * parent);
     bool isWaiting() const;
     void continueExecution();
     void tryToPause();
 
-    Mode mode;
+    RunMode mode;
     QMutex * mutex;
     bool flag;
 };
 
 struct RunWorker
         : public QThread
-{
+{   
     static const int DONE = 0;
     static const int TERMINATED = 1;
     static const int ERROR = 2;
 
     void setTerminate();
     bool isTerminate();
+    void clearTerminate();
 
     QString fileName;
     QString source;
@@ -200,9 +202,12 @@ struct RunWorker
     ::PyObject * previousFrameGlobals;
     ::PyObject * currentFrameLocals;
     ::PyObject * currentFrameGlobals;
-    bool blindMode;
+    RunMode mode;
     bool terminateFlag;
     QMutex * terminateMutex;
+    bool justStarted;
+    unsigned long int stepsCounted;
+    QMutex * stepsCounterMutex;
 
     QVector<QStringList> lvalueAtoms;
 

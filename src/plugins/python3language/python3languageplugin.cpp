@@ -95,8 +95,35 @@ static ::PyObject* _kumir_user_line(PyObject*, PyObject * args)
 {
     ::PyObject* frame = PyTuple_GetItem(args, 0);
     ::PyObject* f_lineno = PyObject_GetAttrString(frame, "f_lineno");
+    bool sameFile = true;
 
-    if (WORKER && !WORKER->blindMode) {
+    if (WORKER && WORKER->mode!=RM_Blind) {
+        static const QString DummyFileName = QString::fromAscii("<string>");
+        ::PyObject* f_code = PyObject_GetAttrString(frame, "f_code");
+        ::PyObject* co_filename = PyObject_GetAttrString(f_code, "co_filename");
+        wchar_t * buffer = PyUnicode_AsWideCharString(co_filename, 0);
+        const QString frameFileName = QString::fromWCharArray(buffer);
+        PyMem_Free(buffer);
+        sameFile = frameFileName==DummyFileName || frameFileName==WORKER->fileName;
+    }
+
+    if (WORKER && sameFile) {
+        bool emitSteps = false;
+        unsigned long int counter = 0u;
+        WORKER->stepsCounterMutex->lock();
+        if (!WORKER->justStarted) {
+            WORKER->stepsCounted ++;
+            emitSteps = WORKER->mode!=RM_Blind || WORKER->stepsCounted % 1000 == 0;
+            counter = WORKER->stepsCounted;
+        }
+        WORKER->justStarted = false;
+        WORKER->stepsCounterMutex->unlock();
+        if (emitSteps && PLUGIN) {
+            PLUGIN->handlePythonStepsCounterChanged(counter);
+        }
+    }
+
+    if (WORKER && WORKER->mode!=RM_Blind && sameFile) {
         WORKER->previousFrameGlobals = WORKER->currentFrameGlobals;
         WORKER->previousFrameLocals = WORKER->currentFrameLocals;
         WORKER->previousLineNo = WORKER->currentLineNo;
@@ -106,7 +133,8 @@ static ::PyObject* _kumir_user_line(PyObject*, PyObject * args)
         if (PyErr_Occurred()) {
             PyErr_Print();
         }
-        PLUGIN->handlePythonLineChanged(PLUGIN->runWorker_->currentLineNo);
+        if (WORKER->mode!=RM_Continuous)
+            PLUGIN->handlePythonLineChanged(PLUGIN->runWorker_->currentLineNo);
         if (WORKER->previousLineNo != -1 &&
                 WORKER->previousLineNo < WORKER->lvalueAtoms.size() &&
                 WORKER->previousFrameLocals && WORKER->previousFrameGlobals)
@@ -153,13 +181,17 @@ static ::PyObject* _kumir_user_line(PyObject*, PyObject * args)
 
     ::PyObject* result = NULL;  // continue evaluation or not
     if (WORKER && WAITER) {
+        if (sameFile)
+            WAITER->tryToPause();
         if (WORKER->isTerminate()) {
+            WORKER->stepsCounterMutex->lock();
+            WORKER->stepsCounted --;
+            WORKER->stepsCounterMutex->unlock();
             result = PyLong_FromLong(0);
         }
         else {
             result = PyLong_FromLong(1);
         }
-        WAITER->tryToPause();
     }
     return result;
 }
@@ -489,9 +521,12 @@ bool Python3LanguagePlugin::canStepOut() const
 
 RunWorker::RunWorker(Python3LanguagePlugin *parent)
     : QThread(parent)
-    , blindMode(false)
+    , mode(RM_Continuous)
     , terminateFlag(false)
     , terminateMutex(new QMutex)
+    , justStarted(true)
+    , stepsCounted(0u)
+    , stepsCounterMutex(new QMutex)
 {
 
 }
@@ -502,6 +537,12 @@ void RunWorker::setTerminate()
     terminateFlag = true;
 }
 
+void RunWorker::clearTerminate()
+{
+    QMutexLocker lock(terminateMutex);
+    terminateFlag = false;
+}
+
 bool RunWorker::isTerminate()
 {
     QMutexLocker lock(terminateMutex);
@@ -510,6 +551,11 @@ bool RunWorker::isTerminate()
 
 void RunWorker::run()
 {
+    clearTerminate();
+    stepsCounterMutex->lock();
+    justStarted = true;
+    stepsCounted = 1u;
+    stepsCounterMutex->unlock();
     ::PyThreadState * savedPyThreadState = Py_NewInterpreter();
     static const QString pyLibPath = qApp->property("sharePath").toString()+"/python3language";
     static const QByteArray run_py_Path = pyLibPath.toLocal8Bit();
@@ -596,8 +642,8 @@ void RunWorker::run()
 
 void Python3LanguagePlugin::runBlind()
 {    
-    runWorker_->blindMode = true;
-    runInteractionWaiter_->mode = RunInteractionWaiter::RM_Continuous;
+    runWorker_->mode = RM_Blind;
+    runInteractionWaiter_->mode = RM_Blind;
     if (runInteractionWaiter_->isWaiting()) {
         // Unlock started execution
         runInteractionWaiter_->continueExecution();
@@ -610,8 +656,8 @@ void Python3LanguagePlugin::runBlind()
 
 void Python3LanguagePlugin::runContinuous()
 {
-    runWorker_->blindMode = false;
-    runInteractionWaiter_->mode = RunInteractionWaiter::RM_Continuous;
+    runWorker_->mode = RM_Continuous;
+    runInteractionWaiter_->mode = RM_Continuous;
     if (runInteractionWaiter_->isWaiting()) {
         // Unlock started execution
         runInteractionWaiter_->continueExecution();
@@ -624,8 +670,8 @@ void Python3LanguagePlugin::runContinuous()
 
 void Python3LanguagePlugin::runStepOver()
 {
-    runInteractionWaiter_->mode = RunInteractionWaiter::RM_StepOver;
-    runWorker_->blindMode = false;
+    runInteractionWaiter_->mode = RM_StepOver;
+    runWorker_->mode = RM_StepOver;
     if (runInteractionWaiter_->isWaiting()) {
         // Unlock started execution
         runInteractionWaiter_->continueExecution();
@@ -662,7 +708,7 @@ RunInteractionWaiter::RunInteractionWaiter(Python3LanguagePlugin *parent)
 
 void RunInteractionWaiter::tryToPause()
 {
-    if (mode != RM_Continuous) {
+    if (mode!=RM_Continuous && mode!=RM_Blind) {
         mutex->lock();
         flag = true;
         mutex->unlock();
@@ -679,6 +725,12 @@ void RunInteractionWaiter::tryToPause()
                 break;
             }
         }
+    }
+    else {
+        // Works really fast, so it requires sleep to make possible
+        // to termitate program using GUI
+        usleep(500);
+        QCoreApplication::processEvents();
     }
 }
 
@@ -701,6 +753,7 @@ bool RunInteractionWaiter::isWaiting() const
 void Python3LanguagePlugin::terminate()
 {
     runWorker_->setTerminate();
+    runInteractionWaiter_->continueExecution();
 }
 
 bool Python3LanguagePlugin::hasMoreInstructions() const
@@ -796,6 +849,11 @@ void Python3LanguagePlugin::handlePythonMarginText(int lineNo, const QString &te
     Q_EMIT marginText(lineNo, text);
 }
 
+void Python3LanguagePlugin::handlePythonStepsCounterChanged(unsigned long int value)
+{
+    Q_EMIT updateStepsCounter(value);
+}
+
 bool Python3LanguagePlugin::hasTestingEntryPoint() const
 {
     return false;
@@ -803,7 +861,8 @@ bool Python3LanguagePlugin::hasTestingEntryPoint() const
 
 unsigned long int Python3LanguagePlugin::stepsCounted() const
 {
-    return 0;
+    QMutexLocker lock(WORKER->stepsCounterMutex);
+    return WORKER->stepsCounted;
 }
 
 } // namespace
