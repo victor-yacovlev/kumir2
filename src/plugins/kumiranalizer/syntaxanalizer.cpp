@@ -2587,6 +2587,19 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool allowOperatorsD
         nameHasError = true;
     }
 
+    {
+        AST::Type typee;
+        QVariant cvalue;
+        if (tryInputOperatorAlgorithm(name, typee, cvalue)) {
+            const QString error = _("Name is used by module %1", typee.moduleName);
+            for (int i=1; i<st.data.size(); i++) {
+                if (st.data[i]->type==LxNameAlg)
+                    st.data[i]->error = error;
+            }
+            nameHasError = true;
+        }
+    }
+
     // Проверяем на наличие переменной с таким же именем
 
     AST::VariablePtr  vv;
@@ -3088,11 +3101,18 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                 AST::AlgorithmPtr  aa;
                 if (findAlgorhitm(cName, mod, aa)) {
                     group.lexems[nameStart]->error = _("Name is used by algorithm");
+                    return result;
                 }
                 if (array && !massDeclared /*&& group.lexems[curPos]->type!=LxOperEqual*/)
                 {
                     group.lexems[nameStart]->error = _("Array bounds no specified");
                     return result; // нет границ
+                }
+                AST::Type typee;
+                QVariant cvalue;
+                if (tryInputOperatorAlgorithm(cName, typee, cvalue)) {
+                    group.lexems[nameStart]->error = _("Name is used by module %1", typee.moduleName);
+                    return result;
                 }
                 var = AST::VariablePtr(new AST::Variable);
                 var->name = cName;
