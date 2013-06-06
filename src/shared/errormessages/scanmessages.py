@@ -223,6 +223,8 @@ def makeTable(database):
     for lang in database.keys():
         if len(lang) > 0:
             allkeys |= set(database[lang].keys())
+    allkeys = list(allkeys)
+    allkeys.sort()
     for key in allkeys:
         result += '"%s";' % key
         for lang in database.keys():
