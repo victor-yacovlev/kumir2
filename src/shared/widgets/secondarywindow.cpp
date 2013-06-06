@@ -9,10 +9,15 @@ class SecondaryWindow;
 #define Top 't'
 #define Bottom 'b'
 
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC)
 #define STAY_ON_TOP_FLAGS Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::Window
 #define REGULAR_FLAGS Qt::FramelessWindowHint|Qt::Window
 #define PARENT mainWindow
+#define D_PARENT pImpl_->mainWindow_
+#elif defined(Q_OS_WIN32)
+#define STAY_ON_TOP_FLAGS Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::Window
+#define REGULAR_FLAGS Qt::FramelessWindowHint|Qt::Window
+#define PARENT 0
 #define D_PARENT pImpl_->mainWindow_
 #else
 #define STAY_ON_TOP_FLAGS Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint|Qt::Window
