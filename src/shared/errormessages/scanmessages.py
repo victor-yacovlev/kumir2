@@ -20,49 +20,56 @@ import os
 import os.path
 import re
 
+
 def dequote(s):
+    """
+    Removes quotation of string
+
+    :param      s: source string
+    :type       s: unicode
+    :returns:   a string without leading and trailing quotation symbol
+    :rtype:     unicode
+    """
     s = s.strip()
     if s.startswith('"') and s.endswith('"') or s.startswith("'") and s.endswith("'"):
         return s[1:-1]
     else:
-        return s 
+        return s
 
-def readTable(filename):
-    """Open CSV-file and read existing table.
-    Returns 2-Dimensional dictionary:
-        DATABASE := { Language -> DATA }
-        DATA := { Key -> Message }
-        VALUE := string
+
+def parseTable(contents):
+    """
+    Parse CSV-file and read existing table
+
+    :param      contents: CSV table data
+    :type       contents: unicode
+    :returns:   2-Dimensional dictionary: DATABASE := { Language -> DATA }; DATA := { Key -> Message }; VALUE := string
+    :rtype:     dict
     """
     empty = dict()
-    empty["ru"]=dict()
-    empty["en"]=dict()
-    empty["ua"]=dict()
-    empty["by"]=dict()
-    empty["kz"]=dict()
+    empty["ru"] = dict()
+    empty["en"] = dict()
+    empty["ua"] = dict()
+    empty["by"] = dict()
+    empty["kz"] = dict()
     database = empty
-    try:
-        f = open(filename,'r')
-    except:
-        return database
-    lines = unicode(f.read(),"utf-8").split("\n")
-    f.close()
-    if len(lines)==0:
+    lines = contents.split("\n")
+    if len(lines) == 0:
         return database
     header = lines[0]
     data_rows = lines[1:]
     header_columns = header.split(";")
-    if len(header_columns)<2:
+    if len(header_columns) < 2:
         return database
     languages = header_columns[1:]
     for row in data_rows:
         columns = row.split(";")
-        if len(columns)<2:
+        if len(columns) < 2:
             continue
         key = dequote(columns[0])
         values = columns[1:]
-        for i in range( 0, min(len(languages),len(values)) ):
-            language = dequote(languages[i])           
+        for i in range(0, min(len(languages), len(values))):
+            language = dequote(languages[i])
             message = dequote(values[i])
             if database.has_key(language):
                 data = database[language]
@@ -72,9 +79,15 @@ def readTable(filename):
             database[language] = data
     return database
 
+
 def readCxx(filename):
-    """Open CPP-file and scans for messages.
-    Returns a list of keys
+    """
+    Scans CPP-file for messages
+
+    :param      filename: a file name of source
+    :type       filename: str
+    :returns:   a list of keys
+    :rtype:     list
     """
     result = list()
     f = open(filename, 'r')
@@ -87,16 +100,16 @@ def readCxx(filename):
     inBlockComment = False
     for i in range(0, len(cpp)):
         if inLineComment:
-            if cpp[i]=='\n':
+            if cpp[i] == '\n':
                 inLineComment = False
                 norm += cpp[i]
         elif inBlockComment:
-            if cpp[i]=='*' and i<len(cpp)-1 and cpp[i+1]=='/':
+            if cpp[i] == '*' and i < len(cpp) - 1 and cpp[i + 1] == '/':
                 inBlockComment = False
         else:
-            if cpp[i]=='/' and i<len(cpp)-1 and cpp[i+1]=='/':
+            if cpp[i] == '/' and i < len(cpp) - 1 and cpp[i + 1] == '/':
                 inLineComment = True
-            elif cpp[i]=='/' and i<len(cpp)-1 and cpp[i+1]=='*':
+            elif cpp[i] == '/' and i < len(cpp) - 1 and cpp[i + 1] == '*':
                 inBlockComment = True
             else:
                 norm += cpp[i]
@@ -104,42 +117,59 @@ def readCxx(filename):
     iterator = rx.finditer(norm)
     for match in iterator:
         key = match.group(1)
-        result += [ key ]
+        result += [key]
     return result
 
+
 def readRules(filename):
-    """Open rules-file and scans for messages.
-    Returns a list of keys
+    """
+    Scans PD-Automata rules file for messages
+    :param      filename: a file name of source
+    :type       filename: str
+    :returns:   a list of keys
+    :rtype:     list
     """
     result = list()
     f = open(filename, 'r')
     if f is None:
         return result
-    lines = unicode(f.read(),'utf-8').split('\n')
+    lines = unicode(f.read(), 'utf-8').split('\n')
     f.close()
-    norm = ""
     for line in lines:
-        if len(line.strip())==0 or line.strip().startswith('#'):
+        if len(line.strip()) == 0 or line.strip().startswith('#'):
             continue
         rule = line.split(':')
-        if len(rule)<2:
+        if len(rule) < 2:
             continue
-        scripts = rule[1].replace('{','').replace('}','').strip().split(';')
+        scripts = rule[1].replace('{', '').replace('}', '').strip().split(';')
         for script in scripts:
             if '(' in script:
                 brPos = script.index('(')
-                argline = script[brPos+1:-1]
+                argline = script[brPos + 1:-1]
                 funcName = script[0:brPos]
-                if funcName.lower()=="setcurrenterror":
+                if funcName.lower() == "setcurrenterror":
                     args = argline.split(",")
                     for arg in args:
                         result += [dequote(arg)]
     return result
 
+
 def cleanUnusedKeys(database, keys):
-    "Removes non-existing more keys from database"
+    """
+    Removes non-existing more keys from database
+
+    NOTE: Current implementation does nothing
+
+    :param      database: database read
+    :type       database: dict
+    :param      keys: a list of existing keys
+    :type       keys: list
+    :returns:   number of removed entries
+    :rtype:     int
+    """
     count = 0
     return count
+
 #    for lang in database.keys():
 #        for old_key in database[lang].keys():
 #            found = False
@@ -154,56 +184,77 @@ def cleanUnusedKeys(database, keys):
 #                count += 1
 #    return count/len(database.keys())
 
+
 def addNewKeys(database, keys):
-    "Adds newly appeared keys to database"
+    """
+    Adds newly appeared keys to database
+
+    :param      database: database read
+    :type       database: dict
+    :param      keys: a list of existing keys
+    :type       keys: list
+    :returns:   number of added entries
+    :rtype:     int
+    """
     count = 0
     for lang in database.keys():
         for key in keys:
-            if not database[lang].has_key(key):
-                database[lang][key] = "";
+            if not key in database[lang]:
+                database[lang][key] = ""
                 count += 1
-    return count/len(database.keys())
+    return count
 
-def writeTable(database, filename):
-    "Writes database to CSV-table"
-    f = open(filename, "w")
-    assert not f is None
-    f.write("\"Key\";")
+
+def makeTable(database):
+    """
+    Writes database to CSV-table
+
+    :param      database: database processed
+    :type       database: dict
+    :returns:   CSV table contents
+    :rtype:     unicode
+    """
+    result = u'"Key";'
     for lang in database.keys():
-        if len(lang)>0:
-            f.write("\""+lang+"\";")
-    f.write("\n")
+        if len(lang) > 0:
+            result += '"%s";' % lang
+    result += '\n'
     allkeys = set()
     for lang in database.keys():
-        if len(lang)>0:
+        if len(lang) > 0:
             allkeys |= set(database[lang].keys())
     for key in allkeys:
-        f.write("\""+key+"\";")
+        result += '"%s";' % key
         for lang in database.keys():
-            if len(lang)>0:
+            if len(lang) > 0:
                 value = database[lang][key]
-                f.write("\""+value.encode('utf-8')+"\";")
-        f.write("\n")
-    f.close()
+                result += '"%s";' % value
+        result += '\n'
+    return result
+
 
 def printUsageAndExit():
-    sys.stderr.write("Usage: "+sys.argv[0]+" --db=DB_FILE --out=OUT_FILE WORK_DIR1 WORK_DIR2 ... WORK_DIRn\n")
+    """
+    Print script usage and exit
+    """
+    sys.stderr.write("Usage: " + sys.argv[0] + " --db=DB_FILE --out=OUT_FILE WORK_DIR1 WORK_DIR2 ... WORK_DIRn\n")
     sys.exit(127)
 
-if __name__=="__main__":
-    db_file = None
-    out_file = None
+
+if __name__ == "__main__":
+    db_file_name = None
+    out_file_name = None
     work_dirs = []
     for arg in sys.argv[1:]:
         if arg.startswith("--db="):
-            db_file = arg[5:]
+            db_file_name = arg[5:]
         elif arg.startswith("--out="):
-            out_file = arg[6:]
+            out_file_name = arg[6:]
         else:
-            work_dirs += [ arg ]
-    if db_file is None or out_file is None or len(work_dirs)==0:
+            work_dirs += [arg]
+    if db_file_name is None or out_file_name is None or len(work_dirs) == 0:
         printUsageAndExit()
-    #sys.stderr.write("db_file: "+db_file+"\n")
+        #sys.stderr.write("db_file: "+db_file+"\n")
     #sys.stderr.write("out_file: "+out_file+"\n")
     #sys.stderr.write("work_dirs: "+str(work_dirs)+"\n")
 
@@ -211,25 +262,30 @@ if __name__=="__main__":
 
     for work_dir in work_dirs:
         allfiles = os.listdir(work_dir)
-        cppfiles = filter(lambda x: x.endswith(".cpp") and not x.startswith("moc_") and not x.startswith("ui_"), allfiles)
-        cpppaths = map(lambda x: work_dir+"/"+x, cppfiles)
+        cppfiles = filter(lambda x: x.endswith(".cpp") and not x.startswith("moc_") and not x.startswith("ui_"),
+                          allfiles)
+        cpppaths = map(lambda x: work_dir + "/" + x, cppfiles)
         rulesfiles = filter(lambda x: x.endswith(".rules"), allfiles)
-        relespaths = map(lambda x: work_dir+"/"+x, rulesfiles)
+        relespaths = map(lambda x: work_dir + "/" + x, rulesfiles)
 
         for filename in cpppaths:
             allkeys |= set(readCxx(filename))
         for filename in relespaths:
             allkeys |= set(readRules(filename))
 
-    database = readTable(db_file)
+    db_file = open(db_file_name, 'r')
+    source_csv_contents = unicode(db_file.read(), 'utf-8')
+    db_file.close()
 
+    database = parseTable(source_csv_contents)
 
-    unusedKeysCount = cleanUnusedKeys(database, allkeys)
-    newKeysCount = addNewKeys(database, allkeys)
-    changes = unusedKeysCount + newKeysCount
+    cleanUnusedKeys(database, allkeys)
+    addNewKeys(database, allkeys)
 
-    if changes>0:
-        writeTable(database, db_file)
+    new_csv_contents = makeTable(database)
 
-    writeTable(database, out_file)
-
+    if new_csv_contents != source_csv_contents:
+        for file_name in [db_file_name, out_file_name]:
+            f = open(file_name, 'w')
+            f.write(new_csv_contents.encode('utf-8'))
+            f.close()
