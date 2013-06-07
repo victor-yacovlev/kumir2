@@ -31,7 +31,7 @@ public:
     QList<QMenu*> menus() const;
     QString getText();
     void setParam(QString paramname,QString param){};
-    bool startNewTask(QStringList isps);
+    bool startNewTask(QStringList isps,KumZadanie* task);
     void setPreProgram(QVariant param);
     void startProgram(QVariant param,KumZadanie* task);
     void checkNext(KumZadanie* task);
@@ -58,6 +58,7 @@ private /*fields*/:
     MainWindowTask* MW;
     bool setTextFromFile(QString fname);
     int isp_no,field_no;
+    KumZadanie* cur_task;
 
 };
 

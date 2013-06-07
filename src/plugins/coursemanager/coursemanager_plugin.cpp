@@ -62,8 +62,24 @@ bool Plugin::setTextFromFile(QString fname)
     return true;
 }
     
-bool  Plugin::startNewTask(QStringList isps)
-    {return true;};    
+bool  Plugin::startNewTask(QStringList isps,KumZadanie* task)
+    {
+        field_no=0;      
+        for(int i=0;i<isps.count();i++)
+        {
+            AI* actor=getActor(isps.at(i));
+            if(!actor)
+            {
+            
+                return false;
+            }
+            //TODO LOAD FIELDS;
+            QFile* field_data=new QFile(task->field(isps.at(i), field_no));
+            qDebug()<<"Set field"<<task->field(isps.at(i), field_no);
+            actor->loadActorData(field_data);
+        }
+        return true;
+    };    
 QWidget* Plugin::mainWindow() const
 {
     return mainWindow_;
@@ -101,6 +117,7 @@ void Plugin::checkNext(KumZadanie* task)
 void Plugin::startProgram(QVariant param,KumZadanie* task)
 {
     field_no=0;
+    cur_task=task;
     checkNext( task);
 };
 QAction* Plugin::actionPerformCheck() const
@@ -133,10 +150,16 @@ void Plugin::setEnabled(bool value)
 
 void Plugin::setTestingResult(ProgramRunStatus status, int value)
 {
-    MW->setMark(value);
+
     if (status==AbortedOnError || status==UserTerminated)
+    {
         MW->setMark(0);
-    
+        field_no=0;
+        return;
+    };
+    MW->setMark(value);
+    field_no++;
+    if(field_no<cur_task->minFieldCount())checkNext(cur_task);
 qDebug()<<"Set testing results"<<value;
 }
 
