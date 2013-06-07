@@ -52,11 +52,9 @@ public slots:
     void runBlind();
     void runContinuous();
 
-    bool noticeOnLineNoChanged(
-            int /*lineNo*/
-            );
+    bool noticeOnLineChanged(int lineNo, uint32_t colStart, uint32_t colEnd);
 
-    bool noticeOnStepsChanged(unsigned long int stepsDone);
+    bool noticeOnStepsChanged(quint64 stepsDone);
 
     bool setTextToMargin(int lineNo, const String & s, bool red);
     bool appendTextToMargin(int lineNo, const String & s);
@@ -94,14 +92,14 @@ public slots:
                                        const Kumir::String & name,
                                        const int indeces[4]);
 
-    void handleAlgorhitmDone(int lineNo);
+    void handleAlgorhitmDone(int lineNo, quint32 colStart, quint32 colEnd);
     void handlePauseRequest();
 
 
 signals:
-    void updateStepsCounter(unsigned long int);
+    void updateStepsCounter(quint64);
     void finishInput(const QVariantList &data);
-    void lineChanged(int lineNo);
+    void lineChanged(int lineNo, quint32 colStart, quint32 colEnd);
     void output(const QString &value);
     void error(const QString & message);
     void input(const QString & format);

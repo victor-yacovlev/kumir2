@@ -66,6 +66,11 @@ enum VariableScope {
     GLOBAL= 0x03  // Value from globals table
 };
 
+enum LineSpecification {
+    LINE_NUMBER = 0x00,
+    COLUMN_START_AND_END = 0x80
+};
+
 /* Instruction has optimal (aka serialized) size of 32 bit:
   - first byte is Instruction Type
   - second byte is Module Number (for CALL),
@@ -79,6 +84,7 @@ enum VariableScope {
 struct Instruction {
     InstructionType type;
     union {
+        LineSpecification lineSpec;
         VariableScope scope;
         uint8_t module;
         uint8_t registerr;
@@ -194,6 +200,36 @@ struct AS_Helpers {
     AS_Values algorithms;
 };
 
+inline bool extractColumnPositionsFromLineInstruction(const Instruction & instr,
+                                                      uint32_t &from,
+                                                      uint32_t &to)
+{
+    if (instr.type == LINE && (instr.scope & COLUMN_START_AND_END) != 0) {
+        uint32_t value = ((instr.lineSpec & 0x3F) << 16) | instr.arg;
+        from = value >> 11;
+        to = value & 0x7FF;
+        return true;
+    }
+    else {
+        from = to = 0u;
+        return false;
+    }
+}
+
+inline Instruction& setColumnPositionsToLineInstruction(Instruction & instr,
+                                                        uint32_t from,
+                                                        uint32_t to)
+{
+    uint32_t value = (from << 11) | to;
+    uint16_t arg = value & 0xFFFF;
+    uint8_t scope = (value >> 16) & 0xFF;
+    scope = scope | COLUMN_START_AND_END;
+    instr.type = LINE;
+    instr.lineSpec = LineSpecification(scope);
+    instr.arg = arg;
+    return instr;
+}
+
 inline std::string instructionToString(const Instruction &instr, const AS_Helpers & helpers, uint8_t moduleId, uint16_t algId)
 {
     static std::set<InstructionType> VariableInstructions;
@@ -262,7 +298,18 @@ inline std::string instructionToString(const Instruction &instr, const AS_Helper
         else if (s==CONSTT)
             result << " constant";
     }
-    if (HasValueInstructions.count(t)) {
+    if (t == LINE) {
+        uint32_t from, to;
+        result.unsetf(std::ios::basefield);
+        result.unsetf(std::ios::showbase);
+        if (extractColumnPositionsFromLineInstruction(instr, from, to)) {
+            result << " col " << int(from) << "-" << int(to);
+        }
+        else {
+            result << " no " << int(instr.arg);
+        }
+    }
+    if (HasValueInstructions.count(t) && t!=LINE) {
         if (t==JUMP || t==JNZ || t==JZ) {
             result.unsetf(std::ios::basefield);
             result.unsetf(std::ios::showbase);
@@ -327,13 +374,16 @@ inline uint32_t toUint32(const Instruction &instr)
 
     uint32_t first = uint8_t(instr.type);
     first = first << 24;
-    uint32_t second;
+    uint32_t second = 0u;
     if (ModuleNoInstructions.count(instr.type))
         second = uint8_t(instr.module);
     else if (RegisterNoInstructions.count(instr.type))
         second = uint8_t(instr.registerr);
     else
         second = uint8_t(instr.scope);
+    if (instr.type == LINE) {
+        second = uint8_t(instr.lineSpec);
+    }
     second = second << 16;
     uint32_t last = instr.arg;
     last = last << 16; // Ensure first two bytes are 0x0000
@@ -472,6 +522,9 @@ inline Instruction fromUint32(uint32_t value)
         i.registerr = uint8_t(second);
     else
         i.scope = VariableScope(second);
+    if (i.type == LINE) {
+        i.lineSpec = LineSpecification(second);
+    }
     i.arg = uint16_t(last);
     return i;
 }

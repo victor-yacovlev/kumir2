@@ -26,6 +26,7 @@ public:
     QString error() const;
 
     int currentLineNo() const ;
+    QPair<quint32,quint32> currentColumn() const;
     inline QDateTime loadedProgramVersion() const { return loadedVersion_; }
     unsigned long int stepsCounted() const;
 
@@ -77,16 +78,17 @@ protected:
 
 protected slots:
     void handleThreadFinished();
-    void handleLineChanged(int lineNo);
+    void handleLineChanged(int lineNo, quint32 colStart, quint32 colEnd);
 
 
 signals:
-    void updateStepsCounter(unsigned long int);
+    void updateStepsCounter(quint64);
+    void errorOutputRequest(const QString &);
     void stopped(int reason);
     void finishInput(const QVariantList & data);
     void inputRequest(const QString & format);
     void outputRequest(const QString & output);
-    void lineChanged(int lineNo);
+    void lineChanged(int lineNo, quint32 colStart, quint32 colEnd);
     void marginText(int lineNo, const QString & text);
     void replaceMarginText(int lineNo, const QString & text, bool redFgColor);
     void clearMargin(int fromLine, int toLine);

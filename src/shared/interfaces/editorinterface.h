@@ -32,8 +32,8 @@ public:
     virtual KumFile::Data documentContent(int documentId) const = 0;
     virtual AnalizerInterface * analizer(int documentId) = 0;
     virtual quint32 errorsLinesCount(int documentId) const = 0;
-    virtual void highlightLineGreen(int documentId, int lineNo) = 0;
-    virtual void highlightLineRed(int documentId, int lineNo) = 0;
+    virtual void highlightLineGreen(int documentId, int lineNo, quint32 colStart, quint32 colEnd) = 0;
+    virtual void highlightLineRed(int documentId, int lineNo, quint32 colStart, quint32 colEnd) = 0;
     virtual void unhighlightLine(int documentId) = 0;
     virtual void appendMarginText(int documentId, int lineNo, const QString & text) = 0;
     virtual void setMarginText(int documentId, int lineNo, const QString & text, const QColor & color) = 0;

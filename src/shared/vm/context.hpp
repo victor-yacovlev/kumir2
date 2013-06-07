@@ -50,6 +50,7 @@ struct Context {
         algId = -1;
         program = 0;
         moduleContextNo = 0;
+        columnStart = columnEnd = 0u;
     }
 
     VM::AnyValue registers[255];
@@ -61,6 +62,8 @@ struct Context {
     uint8_t moduleId;
     int algId;
     int lineNo;
+    uint32_t columnStart;
+    uint32_t columnEnd;
     size_t moduleContextNo;
     Kumir::String name;
 };

@@ -86,6 +86,7 @@ public /*methods*/:
 
     /** Return current 'line number' or -1 if not applicable */
     inline int effectiveLineNo() const;
+    inline std::pair<uint32_t,uint32_t> effectiveColumn() const;
 
     /** Returns 'true' if evaluating non-toplevel user function */
     inline bool canStepOut() const;
@@ -185,7 +186,7 @@ private /*instruction methods*/:
     inline void do_push(uint8_t);
     inline void do_ret();
     inline void do_error(uint8_t, uint16_t);
-    inline void do_line(uint16_t);
+    inline void do_line(const Bytecode::Instruction & instr);
     inline void do_ref(uint8_t, uint16_t);
     inline void do_setref(uint8_t, uint16_t);
     inline void do_refarr(uint8_t, uint16_t);
@@ -939,7 +940,7 @@ void KumirVM::evaluateNextInstruction()
         do_error(instr.scope, instr.arg);
         break;
     case LINE:
-        do_line(instr.arg);
+        do_line(instr);
         break;
     case REF:
         do_ref(instr.scope, instr.arg);
@@ -2675,23 +2676,36 @@ void KumirVM::do_error(uint8_t s, uint16_t id)
     }
 }
 
-void KumirVM::do_line(uint16_t no)
-{    
-    if (!blindMode_ && contextsStack_.top().runMode==CRM_OneStep) {
-        if (contextsStack_.top().lineNo!=no) {
+void KumirVM::do_line(const Bytecode::Instruction & instr)
+{
+    uint32_t from = 0u, to = 0u;
+    if (extractColumnPositionsFromLineInstruction(instr, from, to)) {
+        currentContext().columnStart = from;
+        currentContext().columnEnd = to;
+        if (!blindMode_ && contextsStack_.top().runMode==CRM_OneStep) {
             if (debugHandler_)
-                debugHandler_->noticeOnLineNoChanged(no);
+                debugHandler_->noticeOnLineChanged(currentContext().lineNo, from, to);
+        }
+        if (currentContext().IP!=-1) {
+            stepsCounter_ ++;
+            if (!blindMode_ && debugHandler_) {
+                debugHandler_->noticeOnStepsChanged(stepsCounter_);
+            }
+            else if (blindMode_ && debugHandler_ && (stepsCounter_ % 1000 == 1)) {
+                debugHandler_->noticeOnStepsChanged(stepsCounter_);
+            }
         }
     }
-    contextsStack_.top().lineNo = no;
-    if (currentContext().IP!=-1) {
-        stepsCounter_ ++;
-        if (!blindMode_ && debugHandler_) {
-            debugHandler_->noticeOnStepsChanged(stepsCounter_);
-        }
-        else if (blindMode_ && debugHandler_ && (stepsCounter_ % 1000 == 1)) {
-            debugHandler_->noticeOnStepsChanged(stepsCounter_);
-        }
+    else {
+        int no = instr.arg;
+//        if (!blindMode_ && contextsStack_.top().runMode==CRM_OneStep) {
+//            if (contextsStack_.top().lineNo!=no) {
+//                if (debugHandler_)
+//                    debugHandler_->noticeOnLineChanged(no, 0u, 0u);
+//            }
+//        }
+        currentContext().lineNo = no;
+        currentContext().columnStart = currentContext().columnEnd = 0u;
     }
     nextIP();
 }
@@ -3123,9 +3137,17 @@ void KumirVM::do_pause(uint16_t lineNo)
     }
     blindMode_ = false;
     if (prevRunMode!=CRM_OneStep) {
-        if (debugHandler_) debugHandler_->noticeOnLineNoChanged(lineNo);
+        if (debugHandler_) {
+            debugHandler_->noticeOnLineChanged(currentContext().lineNo,
+                                               currentContext().columnStart,
+                                               currentContext().columnEnd);
+        }
         (*pause_)();
-        if (debugHandler_) debugHandler_->noticeOnLineNoChanged(lineNo);
+        if (debugHandler_) {
+            debugHandler_->noticeOnLineChanged(currentContext().lineNo,
+                                               currentContext().columnStart,
+                                               currentContext().columnEnd);
+        }
         if (debugHandler_) updateDebugger();
     }
     if (stacksMutex_) stacksMutex_->unlock();
@@ -3181,6 +3203,15 @@ void KumirVM::setNextCallStepOver()
     }
 }
 
+std::pair<uint32_t,uint32_t> KumirVM::effectiveColumn() const
+{
+    std::pair<uint32_t, uint32_t> result(0u, 0u);
+    if (contextsStack_.size() > 0) {
+        result.first = contextsStack_.top().columnStart;
+        result.second = contextsStack_.top().columnEnd;
+    }
+    return result;
+}
 
 int KumirVM::effectiveLineNo() const
 {

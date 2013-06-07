@@ -18,6 +18,10 @@ namespace Bytecode {
 class Data;
 }
 
+namespace AST {
+struct Lexem;
+}
+
 namespace KumirCodeGenerator {
 
 typedef Shared::GeneratorInterface::DebugLevel DebugLevel;
@@ -52,6 +56,7 @@ public:
     void generateConstantTable();
     void generateExternTable();
 private:
+    QList<Bytecode::Instruction> makeLineInstructions(const QList<AST::Lexem*> & lexems) const;
     quint16 constantValue(Bytecode::ValueType type, quint8 dimension, const QVariant & value,
                           const QString & recordModule, const QString & recordClass
                           );

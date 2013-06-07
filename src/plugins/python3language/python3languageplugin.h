@@ -70,6 +70,9 @@ public:
     void terminate();
     bool hasMoreInstructions() const;
     int currentLineNo() const;
+    inline QPair<quint32,quint32> currentColumn() const {
+        return QPair<quint32,quint32>(0u,0u);
+    }  // Python can't handle columns
     QString error() const;
 
     // methods to access within self static functions

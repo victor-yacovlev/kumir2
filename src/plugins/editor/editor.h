@@ -40,7 +40,7 @@ public:
     void checkForClean();
     void lock();
     void unlock();
-    void setLineHighlighted(int lineNo, const QColor & color);
+    void setLineHighlighted(int lineNo, const QColor & color, quint32 colStart, quint32 colEnd);
     void ensureAnalized();
     QByteArray saveState() const;
     void restoreState(const QByteArray &data);

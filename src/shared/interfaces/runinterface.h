@@ -28,6 +28,7 @@ public:
     virtual bool hasMoreInstructions() const = 0;
     virtual bool hasTestingEntryPoint() const = 0;
     virtual int currentLineNo() const = 0;
+    virtual QPair<quint32,quint32> currentColumn() const = 0;
     virtual QString error() const = 0;
     virtual QVariant valueStackTopItem() const = 0;
     virtual unsigned long int stepsCounted() const = 0;

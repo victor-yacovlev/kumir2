@@ -27,8 +27,8 @@ Plugin::Plugin()
     connect (pRun_, SIGNAL(output(QString)), this, SIGNAL(outputRequest(QString)));
     connect (pRun_, SIGNAL(input(QString)), this, SIGNAL(inputRequest(QString)));
     connect (pRun_, SIGNAL(finished()), this, SLOT(handleThreadFinished()));
-    connect (pRun_, SIGNAL(lineChanged(int)), this, SIGNAL(lineChanged(int)));
-    connect (pRun_, SIGNAL(updateStepsCounter(ulong)), this, SIGNAL(updateStepsCounter(ulong)));
+    connect (pRun_, SIGNAL(lineChanged(int,quint32,quint32)), this, SIGNAL(lineChanged(int,quint32,quint32)));
+    connect (pRun_, SIGNAL(updateStepsCounter(quint64)), this, SIGNAL(updateStepsCounter(quint64)));
     connect (pRun_, SIGNAL(marginText(int,QString)), this, SIGNAL(marginText(int,QString)));
     connect (pRun_, SIGNAL(clearMarginRequest(int,int)), this, SIGNAL(clearMargin(int,int)));
     connect (pRun_, SIGNAL(marginTextReplace(int,QString,bool)),
@@ -78,6 +78,11 @@ unsigned long int Plugin::stepsCounted() const
 int Plugin::currentLineNo() const
 {
     return pRun_->effectiveLineNo();
+}
+
+QPair<quint32,quint32> Plugin::currentColumn() const
+{
+    return QPair<quint32,quint32>(pRun_->vm->effectiveColumn().first, pRun_->vm->effectiveColumn().second);
 }
 
 bool Plugin::loadProgram(const QString & filename, const QByteArray & source, Shared::ProgramFormat format)
@@ -439,9 +444,9 @@ void Plugin::handleThreadFinished()
     }
 }
 
-void Plugin::handleLineChanged(int lineNo)
+void Plugin::handleLineChanged(int lineNo, quint32 colStart, quint32 colEnd)
 {
-    emit lineChanged(lineNo);
+    emit lineChanged(lineNo, colStart, colEnd);
 }
 
 

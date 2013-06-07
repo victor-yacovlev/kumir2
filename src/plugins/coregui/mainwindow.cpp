@@ -48,7 +48,7 @@ MainWindow::MainWindow(Plugin * p) :
     QObject * runnerObject =
             ExtensionSystem::PluginManager::instance()->findKPlugin<Shared::RunInterface>();
     if (runnerObject) {
-        connect(runnerObject, SIGNAL(updateStepsCounter(ulong)), this, SLOT(checkCounterValue()));
+        connect(runnerObject, SIGNAL(updateStepsCounter(quint64)), this, SLOT(checkCounterValue()));
     }
 
     connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(showPreferences()));

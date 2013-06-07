@@ -54,7 +54,7 @@ public slots:
     void stepOut();
     void stop();
     void switchGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState cur);
-    void handleLineChanged(int lineNo);
+    void handleLineChanged(int lineNo, quint32 colStart, quint32 colEnd);
     void handleMarginTextRequest(int lineNo, const QString & text);
     void handleMarginClearRequest(int fromLine, int toLine);
     void handleMarginTextReplace(int,const QString&,bool);

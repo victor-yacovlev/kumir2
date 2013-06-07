@@ -182,7 +182,7 @@ void KumirProgram::setBytecodeRun(KPlugin *run)
 
     connect(run, SIGNAL(stopped(int)),
             this, SLOT(handleRunnerStopped(int)));
-    connect(run, SIGNAL(lineChanged(int)), this, SLOT(handleLineChanged(int)));
+    connect(run, SIGNAL(lineChanged(int,quint32,quint32)), this, SLOT(handleLineChanged(int,quint32,quint32)));
     connect(run, SIGNAL(marginText(int,QString)), this, SLOT(handleMarginTextRequest(int,QString)));
     connect(run, SIGNAL(clearMargin(int,int)), this, SLOT(handleMarginClearRequest(int,int)));
     connect(run, SIGNAL(replaceMarginText(int,QString, bool)),
@@ -456,7 +456,7 @@ void KumirProgram::handleRunnerStopped(int rr)
     else if (reason==Shared::RunInterface::SR_Error) {
         s_endStatus = tr("Evaluation error");
         m_terminal->error(plugin_bytecodeRun->error());
-        plugin_editor->highlightLineRed(documentId_, plugin_bytecodeRun->currentLineNo());
+        plugin_editor->highlightLineRed(documentId_, plugin_bytecodeRun->currentLineNo(), plugin_bytecodeRun->currentColumn().first, plugin_bytecodeRun->currentColumn().second);
         PluginManager::instance()->switchGlobalState(GS_Observe);
         e_state = Idle;
         m_terminal->clearFocus();
@@ -492,14 +492,14 @@ void KumirProgram::handleRunnerStopped(int rr)
 
 }
 
-void KumirProgram::handleLineChanged(int lineNo)
+void KumirProgram::handleLineChanged(int lineNo, quint32 colStart, quint32 colEnd)
 {
     emit activateDocumentTab(documentId_);
     if (lineNo!=-1) {
         if (plugin_bytecodeRun->error().isEmpty())
-            plugin_editor->highlightLineGreen(documentId_, lineNo);
+            plugin_editor->highlightLineGreen(documentId_, lineNo, colStart, colEnd);
         else
-            plugin_editor->highlightLineRed(documentId_, lineNo);
+            plugin_editor->highlightLineRed(documentId_, lineNo, colStart, colEnd);
     }
     else {
         plugin_editor->unhighlightLine(documentId_);

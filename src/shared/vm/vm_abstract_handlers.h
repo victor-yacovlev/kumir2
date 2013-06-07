@@ -268,12 +268,14 @@ public:
             int /*lineNo*/
             ) { return false; }
 
-    inline virtual bool noticeOnLineNoChanged(
-            int /*lineNo*/
+    inline virtual bool noticeOnLineChanged(
+            int /*lineNo*/,
+            uint32_t /*columnStartNo*/,
+            uint32_t /*columnEndNo*/
             ) { return false; }
 
     inline virtual bool noticeOnStepsChanged(
-            unsigned long int /*stepsDone*/
+            uint64_t /*stepsDone*/
             ) { return false; }
 
     inline virtual bool debuggerReset() { return false; }

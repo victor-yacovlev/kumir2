@@ -3,7 +3,7 @@
 #include "vm/vm.hpp"
 #include "extensionsystem/pluginmanager.h"
 #include "interfaces/actorinterface.h"
-
+#include "shared/dataformats/lexem.h"
 
 namespace KumirCodeGenerator {
     
@@ -427,11 +427,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
 {
     // Generate hidden algorhitm, which will called before main to input arguments
     int algId = mod->impl.algorhitms.size();
-    QList<Bytecode::Instruction> instrs;
-    Bytecode::Instruction l;
-    l.type = Bytecode::LINE;
-    l.arg = alg->impl.headerLexems[0]->lineNo;
-    instrs << l;
+    QList<Bytecode::Instruction> instrs = makeLineInstructions(alg->impl.headerLexems);
     QList<quint16> varsToOut;
     int locOffset = 0;
 
@@ -704,11 +700,7 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     func.moduleName = mod->header.name.toStdWString();
     QList<Bytecode::Instruction> argHandle;
 
-    Bytecode::Instruction l;
-    l.type = Bytecode::LINE;
-    l.arg = alg->impl.headerLexems[0]->lineNo;
-    if (debugLevel_!=GeneratorInterface::NoDebug)
-        argHandle << l;
+    argHandle += makeLineInstructions(alg->impl.headerLexems);
 
     if (headerError.length()>0) {
         Bytecode::Instruction err;
@@ -722,6 +714,8 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
         Bytecode::Instruction l;
         l.type = Bytecode::LINE;
         l.arg = alg->impl.headerRuntimeErrorLine;
+        argHandle << l;
+        Bytecode::setColumnPositionsToLineInstruction(l, 0u, 0u);
         argHandle << l;
         l.type = Bytecode::ERRORR;
         l.scope = Bytecode::CONSTT;
@@ -785,9 +779,7 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     }
 
     if (alg->impl.beginLexems.size()) {
-        l.arg = alg->impl.beginLexems[0]->lineNo;
-        if (debugLevel_!=GeneratorInterface::NoDebug)
-            argHandle << l;
+        argHandle += makeLineInstructions(alg->impl.beginLexems);
     }
 
     if (beginError.length()>0) {
@@ -819,14 +811,7 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     setBreakAddress(body, 0, retIp);
 
 
-    Bytecode::Instruction line;
-    line.type = Bytecode::LINE;
-    if (alg->impl.endLexems.size()>0) {
-        line.arg = alg->impl.endLexems[0]->lineNo;
-        if (debugLevel_!=GeneratorInterface::NoDebug)
-            ret << line;
-    }
-
+    ret += makeLineInstructions(alg->impl.endLexems);
 
     if (alg->impl.endLexems.size()>0) {
         QString endError;
@@ -945,17 +930,12 @@ quint16 Generator::constantValue(const QList<Bytecode::ValueType> & type, quint8
 
 void Generator::ERRORR(int , int , int , const AST::StatementPtr  st, QList<Bytecode::Instruction>  & result)
 {
-    int lineNo = st->lexems[0]->lineNo;
-    Bytecode::Instruction l;
-    l.type = Bytecode::LINE;
-    l.arg = lineNo;
+    result += makeLineInstructions(st->lexems);
     const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->error);
     Bytecode::Instruction e;
     e.type = Bytecode::ERRORR;
     e.scope = Bytecode::CONSTT;
     e.arg = constantValue(Bytecode::VT_string, 0, error, QString(), QString());
-    if (debugLevel_!=GeneratorInterface::NoDebug)
-        result << l;
     result << e;
 }
 
@@ -1007,14 +987,36 @@ void Generator::findFunction(const AST::AlgorithmPtr alg, quint8 &module, quint1
     }
 }
 
+QList<Bytecode::Instruction> Generator::makeLineInstructions(const QList<AST::Lexem *> &lexems) const
+{
+    QList<Bytecode::Instruction> result;
+    if (debugLevel_ != GeneratorInterface::NoDebug) {
+        Bytecode::Instruction lineNoInstruction, lineColInstruction;
+        lineNoInstruction.type = lineColInstruction.type = Bytecode::LINE;
+        lineNoInstruction.lineSpec = Bytecode::LINE_NUMBER;
+        if (lexems.size() > 0 && lexems.first()->lineNo != -1) {
+            AST::Lexem * first = lexems.first();
+            AST::Lexem * last = first;
+            foreach (AST::Lexem * lx, lexems) {
+                if (lx->type != Shared::LxTypeComment)
+                    last = lx;
+            }
+            quint16 lineNo = first->lineNo;
+            lineNoInstruction.arg = lineNo;
+            quint32 colStart = first->linePos;
+            quint32 colEnd = last->linePos + last->data.length();
+            if (last->type == Shared::LxConstLiteral)
+                colEnd += 2;  // two quote symbols are not in lexem data
+            Bytecode::setColumnPositionsToLineInstruction(lineColInstruction, colStart, colEnd);
+            result << lineNoInstruction << lineColInstruction;
+        }
+    }
+    return result;
+}
+
 void Generator::ASSIGN(int modId, int algId, int level, const AST::StatementPtr st, QList<Bytecode::Instruction> & result)
 {
-    int lineNo = st->lexems[0]->lineNo;
-    Bytecode::Instruction l;
-    l.type = Bytecode::LINE;
-    l.arg = lineNo;
-    if (debugLevel_!=GeneratorInterface::NoDebug)
-        result << l;
+    result += makeLineInstructions(st->lexems);
 
     const AST::ExpressionPtr rvalue = st->expressions[0];
     QList<Bytecode::Instruction> rvalueInstructions = calculate(modId, algId, level, rvalue);
@@ -1247,27 +1249,17 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
 
 void Generator::PAUSE_STOP(int , int , int , const AST::StatementPtr  st, QList<Bytecode::Instruction> & result)
 {
-    int lineNo = st->lexems[0]->lineNo;
-    Bytecode::Instruction l;
-    l.type = Bytecode::LINE;
-    l.arg = lineNo;
-    if (debugLevel_!=GeneratorInterface::NoDebug)
-        result << l;
+    result += makeLineInstructions(st->lexems);
 
     Bytecode::Instruction a;
     a.type = st->type==AST::StPause? Bytecode::PAUSE : Bytecode::HALT;
-    a.arg = lineNo;
+    a.arg = 0u;
     result << a;
 }
 
 void Generator::ASSERT(int modId, int algId, int level, const AST::StatementPtr  st, QList<Bytecode::Instruction> & result)
 {
-    int lineNo = st->lexems[0]->lineNo;
-    Bytecode::Instruction l;
-    l.type = Bytecode::LINE;
-    l.arg = lineNo;
-    if (debugLevel_!=GeneratorInterface::NoDebug)
-        result << l;
+    result += makeLineInstructions(st->lexems);
 
     for (int i=0; i<st->expressions.size(); i++) {
         QList<Bytecode::Instruction> exprInstrs;
@@ -1299,12 +1291,7 @@ void Generator::ASSERT(int modId, int algId, int level, const AST::StatementPtr 
 
 void Generator::INIT(int modId, int algId, int level, const AST::StatementPtr  st, QList<Bytecode::Instruction> & result)
 {
-    int lineNo = st->lexems[0]->lineNo;
-    Bytecode::Instruction l;
-    l.type = Bytecode::LINE;
-    l.arg = lineNo;
-    if (debugLevel_!=GeneratorInterface::NoDebug)
-        result << l;
+    result += makeLineInstructions(st->lexems);
 
     for (int i=0; i<st->variables.size(); i++) {
         const AST::VariablePtr  var = st->variables[i];
@@ -1349,12 +1336,7 @@ void Generator::INIT(int modId, int algId, int level, const AST::StatementPtr  s
 
 void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::StatementPtr  st, QList<Bytecode::Instruction> & result)
 {
-    int lineNo = st->lexems[0]->lineNo;
-    Bytecode::Instruction l;
-    l.type = Bytecode::LINE;
-    l.arg = lineNo;
-    if (debugLevel_!=GeneratorInterface::NoDebug)
-        result << l;
+    result += makeLineInstructions(st->lexems);
 
     quint16 argsCount;
 
@@ -1439,12 +1421,7 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
 void Generator::IFTHENELSE(int modId, int algId, int level, const AST::StatementPtr  st, QList<Bytecode::Instruction> &result)
 {
     int jzIP = -1;
-    int lineNo = st->lexems[0]->lineNo;
-    Bytecode::Instruction l;
-    l.type = Bytecode::LINE;
-    l.arg = lineNo;
-    if (debugLevel_!=GeneratorInterface::NoDebug)
-        result << l;
+    result += makeLineInstructions(st->lexems);
 
     if (st->conditionals[0].condition) {
         QList<Bytecode::Instruction> conditionInstructions = calculate(modId, algId, level, st->conditionals[0].condition);
@@ -1467,6 +1444,8 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
             garbage.type = Bytecode::LINE;
             garbage.arg = st->headerErrorLine;
             result << garbage;
+            Bytecode::setColumnPositionsToLineInstruction(garbage, 0u, 0u);
+            result << garbage;
             garbage.type = Bytecode::ERRORR;
             garbage.scope = Bytecode::CONSTT;
             garbage.arg = constantValue(Bytecode::VT_string, 0,
@@ -1484,18 +1463,19 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
     }
 
 
-    Bytecode::Instruction ll, error;
-    if (st->conditionals[0].conditionError.size()>0) {
-        ll.type = Bytecode::LINE;
-        if (st->conditionals[0].lexems.isEmpty())
-            ll.arg = st->lexems[0]->lineNo;
-        else
-            ll.arg = st->conditionals[0].lexems[0]->lineNo;
+    Bytecode::Instruction error;
+    if (st->conditionals[0].conditionError.size()>0) {        
+        if (st->conditionals[0].lexems.isEmpty()) {
+            result += makeLineInstructions(st->lexems);
+        }
+        else {
+            result += makeLineInstructions(st->conditionals[0].lexems);
+        }
         const QString msg = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->conditionals[0].conditionError);
         error.type = Bytecode::ERRORR;
         error.scope = Bytecode::CONSTT;
         error.arg = constantValue(Bytecode::VT_string, 0, msg, QString(), QString());
-        result << ll << error;
+        result << error;
     }
     else {
         QList<Bytecode::Instruction> thenInstrs = instructions(modId, algId, level, st->conditionals[0].body);
@@ -1514,15 +1494,16 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
         result[jzIP].arg = result.size();
         if (st->conditionals[1].conditionError.size()>0) {
             const QString msg = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->conditionals[1].conditionError);
-            ll.type = Bytecode::LINE;
-            if (st->conditionals[1].lexems.isEmpty())
-                ll.arg = st->lexems[0]->lineNo;
-            else
-                ll.arg = st->conditionals[1].lexems[0]->lineNo;
+            if (st->conditionals[1].lexems.isEmpty()) {
+                result += makeLineInstructions(st->lexems);
+            }
+            else {
+                result += makeLineInstructions(st->conditionals[1].lexems);
+            }
             error.type = Bytecode::ERRORR;
             error.scope = Bytecode::CONSTT;
             error.arg = constantValue(Bytecode::VT_string, 0, msg, QString(), QString());
-            result << ll << error;
+            result << error;
         }
         else {
             QList<Bytecode::Instruction> elseInstrs = instructions(modId, algId, level, st->conditionals[1].body);
@@ -1534,15 +1515,16 @@ void Generator::IFTHENELSE(int modId, int algId, int level, const AST::Statement
 
     if (st->endBlockError.size()>0) {
         const QString msg = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->endBlockError);
-        ll.type = Bytecode::LINE;
-        if (st->endBlockLexems.size()==0)
-            ll.arg = st->lexems[0]->lineNo;
-        else
-            ll.arg = st->endBlockLexems[0]->lineNo;
+        if (st->conditionals[0].lexems.isEmpty()) {
+            result += makeLineInstructions(st->lexems);
+        }
+        else {
+            result += makeLineInstructions(st->endBlockLexems);
+        }
         error.type = Bytecode::ERRORR;
         error.scope = Bytecode::CONSTT;
         error.arg = constantValue(Bytecode::VT_string, 0, msg, QString(), QString());
-        result << ll << error;
+        result << error;
     }
 
 }
@@ -1554,6 +1536,8 @@ void Generator::SWITCHCASEELSE(int modId, int algId, int level, const AST::State
         garbage.type = Bytecode::LINE;
         garbage.arg = st->headerErrorLine;
         result << garbage;
+        Bytecode::setColumnPositionsToLineInstruction(garbage, 0u, 0u);
+        result << garbage;
         garbage.type = Bytecode::ERRORR;
         garbage.scope = Bytecode::CONSTT;
         garbage.arg = constantValue(Bytecode::VT_string, 0,
@@ -1564,12 +1548,8 @@ void Generator::SWITCHCASEELSE(int modId, int algId, int level, const AST::State
         return;
     }
 
-    Bytecode::Instruction l;
-    l.type = Bytecode::LINE;
-
-        if (st->beginBlockError.size()>0) {
+    if (st->beginBlockError.size()>0) {
         const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->beginBlockError);
-        result << l;
         Bytecode::Instruction err;
         err.type = Bytecode::ERRORR;
         err.scope = Bytecode::CONSTT;
@@ -1588,18 +1568,9 @@ void Generator::SWITCHCASEELSE(int modId, int algId, int level, const AST::State
             result[lastJzIp].arg = result.size();
             lastJzIp = -1;
         }
-        if (st->conditionals[i].lexems.size()>0) {
-            int lineNo = st->conditionals[i].lexems[0]->lineNo;
-            l.arg = lineNo;
-        }
-        else {
-            l.arg = -1;
-        }
-        if (debugLevel_!=GeneratorInterface::NoDebug)
-            result << l;
+        result += makeLineInstructions(st->conditionals[i].lexems);
         if (!st->conditionals[i].conditionError.isEmpty()) {
             const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->conditionals[i].conditionError);
-            result << l;
             Bytecode::Instruction err;
             err.type = Bytecode::ERRORR;
             err.scope = Bytecode::CONSTT;
@@ -1657,12 +1628,7 @@ void Generator::BREAK(int , int , int level,
                       const AST::StatementPtr  st,
                       QList<Bytecode::Instruction> & result)
 {
-    int lineNo = st->lexems[0]->lineNo;
-    Bytecode::Instruction l;
-    l.type = Bytecode::LINE;
-    l.arg = lineNo;
-    if (debugLevel_!=GeneratorInterface::NoDebug)
-        result << l;
+    result += makeLineInstructions(st->lexems);
 
     Bytecode::Instruction jump;
 //    jump.type = Bytecode::JUMP;
@@ -1677,13 +1643,6 @@ void Generator::LOOP(int modId, int algId,
                      const AST::StatementPtr st,
                      QList<Bytecode::Instruction> &result)
 {
-
-
-    int lineNo = st->lexems[0]->lineNo;
-    Bytecode::Instruction l;
-    l.type = Bytecode::LINE;
-    l.arg = lineNo;
-
     Bytecode::Instruction ctlOn;
     ctlOn.module = 0x00;
     ctlOn.arg = 0x0001;
@@ -1696,7 +1655,7 @@ void Generator::LOOP(int modId, int algId,
 
     if (st->beginBlockError.size()>0) {
         const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->beginBlockError);
-        result << l;
+        result += makeLineInstructions(st->lexems);
         Bytecode::Instruction err;
         err.type = Bytecode::ERRORR;
         err.scope = Bytecode::CONSTT;
@@ -1721,10 +1680,7 @@ void Generator::LOOP(int modId, int algId,
 
     if (st->loop.type==AST::LoopWhile || st->loop.type==AST::LoopForever) {
         // Highlight line and clear margin
-        if (lineNo!=-1) {
-            if (debugLevel_!=GeneratorInterface::NoDebug)
-                result << l;
-        }
+        result += makeLineInstructions(st->lexems);
 
         if (st->loop.whileCondition) {
             // Calculate condition
@@ -1738,7 +1694,7 @@ void Generator::LOOP(int modId, int algId,
             a.registerr = level * 5;
             result << a;
 
-            if (lineNo!=-1 &&
+            if (st->lexems.size() > 0 && st->lexems.first()->lineNo!=-1 &&
                     debugLevel_==GeneratorInterface::LinesAndVariables)
             {
                 if (st->loop.type==AST::LoopWhile) {
@@ -1753,7 +1709,7 @@ void Generator::LOOP(int modId, int algId,
             a.registerr = level * 5;
             result << a;
 
-            if (lineNo!=-1 &&
+            if (st->lexems.size() > 0 && st->lexems.first()->lineNo!=-1 &&
                     debugLevel_==GeneratorInterface::LinesAndVariables)
             {
                 result << clmarg;
@@ -1761,7 +1717,8 @@ void Generator::LOOP(int modId, int algId,
         }
         else {
 
-            if (lineNo!=-1 && debugLevel_==GeneratorInterface::LinesAndVariables) {
+            if (st->lexems.size() > 0 && st->lexems.first()->lineNo!=-1 &&
+                    debugLevel_==GeneratorInterface::LinesAndVariables) {
                 result << clmarg;
             }
         }
@@ -1769,9 +1726,7 @@ void Generator::LOOP(int modId, int algId,
     }
     else if (st->loop.type==AST::LoopTimes) {
         // Highlight line
-        if (lineNo!=-1 && debugLevel_!=GeneratorInterface::NoDebug) {
-            result << l;
-        }
+        result += makeLineInstructions(st->lexems);
 
         // Calculate times value
         QList<Bytecode::Instruction> timesValueInstructions = calculate(modId, algId, level, st->loop.timesValue);
@@ -1800,10 +1755,9 @@ void Generator::LOOP(int modId, int algId,
 
         // Highlight line and clear margin
 
-        if (lineNo!=-1 && debugLevel_!=GeneratorInterface::NoDebug) {
-            result << l;
-        }
-        if (lineNo!=-1 && debugLevel_==GeneratorInterface::LinesAndVariables) {
+        result += makeLineInstructions(st->lexems);
+        if (st->lexems.size() > 0 && st->lexems.first()->lineNo!=-1 &&
+                 debugLevel_==GeneratorInterface::LinesAndVariables) {
             result << clmarg;
         }
 
@@ -1841,16 +1795,15 @@ void Generator::LOOP(int modId, int algId,
         result << a;
 
         // Show counter value at margin
-        if (lineNo!=-1 && debugLevel_==GeneratorInterface::LinesAndVariables) {
+        if (st->lexems.size() > 0 && st->lexems.first()->lineNo!=-1 &&
+                 debugLevel_==GeneratorInterface::LinesAndVariables) {
            result << swreg;
         }
     }
     else if (st->loop.type==AST::LoopFor) {
 
         // Highlight line
-        if (lineNo!=-1 && debugLevel_!=GeneratorInterface::NoDebug) {
-            result << l;
-        }
+        result += makeLineInstructions(st->lexems);
 
         // Calculate 'from'-value
         result << calculate(modId, algId, level, st->loop.fromValue);
@@ -1945,10 +1898,10 @@ void Generator::LOOP(int modId, int algId,
         result << gotoEnd;
 
         // Clear margin
-        if (lineNo!=-1 && debugLevel_!=GeneratorInterface::NoDebug) {
-            result << l;
-        }
-        if (lineNo!=-1 && debugLevel_==GeneratorInterface::LinesAndVariables) {
+        result += makeLineInstructions(st->lexems);
+
+        if (st->lexems.size() > 0 && st->lexems.first()->lineNo!=-1 &&
+                debugLevel_==GeneratorInterface::LinesAndVariables) {
             result << clmarg;
         }
 
@@ -1966,12 +1919,7 @@ void Generator::LOOP(int modId, int algId,
     bool endsWithError = st->endBlockError.length()>0;
     if (endsWithError) {
         const QString error = ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->endBlockError);
-        Bytecode::Instruction el;
-        el.type = Bytecode::LINE;
-        el.arg = st->loop.endLexems.size()>0
-                ? st->loop.endLexems[0]->lineNo
-                : -1;
-        result << el;
+        result += makeLineInstructions(st->loop.endLexems);
         Bytecode::Instruction ee;
         ee.type = Bytecode::ERRORR;
         ee.scope = Bytecode::CONSTT;
@@ -1983,10 +1931,7 @@ void Generator::LOOP(int modId, int algId,
     int endJzIp = -1;
 
     if (st->loop.endCondition) {
-        lineNo = st->loop.endLexems[0]->lineNo;
-        l.arg = lineNo;
-        if (debugLevel_!=GeneratorInterface::NoDebug)
-            result << l;
+        result += makeLineInstructions(st->loop.endLexems);
         QList<Bytecode::Instruction> endCondInstructions = calculate(modId, algId, level, st->loop.endCondition);
         shiftInstructions(endCondInstructions, result.size());
         result << endCondInstructions;
@@ -1996,7 +1941,8 @@ void Generator::LOOP(int modId, int algId,
         result << e;
         // Show counter value at margin
         swreg.registerr = 0;
-        if (lineNo!=-1 && debugLevel_==GeneratorInterface::LinesAndVariables) {
+        if (st->lexems.size() > 0 && st->lexems.first()->lineNo!=-1 &&
+                debugLevel_==GeneratorInterface::LinesAndVariables) {
             result << swreg;
         }
         endJzIp = result.size();
@@ -2005,12 +1951,7 @@ void Generator::LOOP(int modId, int algId,
         result << e;
     }    
     else if (debugLevel_!=GeneratorInterface::NoDebug) {
-        Bytecode::Instruction el;
-        el.type = Bytecode::LINE;
-        el.arg = st->loop.endLexems.size()>0
-                ? st->loop.endLexems[0]->lineNo
-                : -1;
-        result << el;
+        result += makeLineInstructions(st->loop.endLexems);
     }
 
     int jzIp2 = -1;

@@ -115,9 +115,9 @@ void Editor::clearMarginText(uint fromLine, uint toLine)
     update();
 }
 
-void Editor::setLineHighlighted(int lineNo, const QColor &color)
+void Editor::setLineHighlighted(int lineNo, const QColor &color, quint32 colStart, quint32 colEnd)
 {
-    d->plane->setLineHighlighted(lineNo, color);
+    d->plane->setLineHighlighted(lineNo, color, colStart, colEnd);
 }
 
 QList<QWidget*> Editor::statusbarWidgets()

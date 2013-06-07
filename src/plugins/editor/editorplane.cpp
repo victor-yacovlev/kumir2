@@ -42,6 +42,8 @@ EditorPlane::EditorPlane(TextDocument * doc
     editor_ = editor;
     analizer_ = analizer;
     highlightedTextLineNumber_ = -1;
+    highlightedTextColumnStartNumber_ = 0u;
+    highlightedTextColumnEndNumber_ = 0u;
     highlightedLockSymbolLineNumber_ = -1;
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     marginBackgroundAlpha_ = 255;
@@ -93,10 +95,12 @@ void EditorPlane::setTeacherMode(bool v)
     teacherModeFlag_ = v;
 }
 
-void EditorPlane::setLineHighlighted(int lineNo, const QColor &color)
+void EditorPlane::setLineHighlighted(int lineNo, const QColor &color, quint32 colStart, quint32 colEnd)
 {
     highlightedTextLineNumber_ = lineNo;
     highlightedTextLineColor_ = color;
+    highlightedTextColumnStartNumber_ = colStart;
+    highlightedTextColumnEndNumber_ = colEnd;
     if (lineNo>-1) {
         ensureHighlightedLineVisible();
     }
@@ -925,6 +929,24 @@ void EditorPlane::paintEvent(QPaintEvent *e)
                    highlightRightRect.topRight());
         p.drawLine(highlightRightRect.bottomLeft(),
                    highlightRightRect.bottomRight());
+
+        if (highlightedTextColumnStartNumber_ != highlightedTextColumnEndNumber_) {
+            // Draw a rect around statement
+            QPen pen;
+            pen.setColor(highlightedTextLineColor_);
+            pen.setStyle(Qt::SolidLine);
+            pen.setWidth(2);
+            p.setPen(pen);
+            p.setBrush(Qt::NoBrush);
+            uint cw = charWidth();
+            uint left = cw * highlightedTextColumnStartNumber_;
+            uint right = cw * highlightedTextColumnEndNumber_;
+            left += cw * 2 * document_->indentAt(highlightedTextLineNumber_);
+            right += cw * 2 * document_->indentAt(highlightedTextLineNumber_);
+            p.drawRoundedRect(left, highlightLeftRect.top(),
+                              int(right) - int(left), highlightLeftRect.height(),
+                              2, 2);
+        }
 
         // Restore a pen
         p.setPen(Qt::NoPen);

@@ -59,7 +59,7 @@ void Run::stop()
     QMutexLocker l(stoppingMutex_);
     stoppingFlag_ = true;
     if (!isRunning()) {
-        emit lineChanged(-1);
+        emit lineChanged(-1, 0u, 0u);
         emit finished();
     }
 }
@@ -85,7 +85,7 @@ void Run::runStepOut()
 {
     stepDoneFlag_ = false;
     algDoneFlag_ = false;
-    emit lineChanged(-1);
+    emit lineChanged(-1, 0u, 0u);
     runMode_ = RM_StepOut;
     vm->setNextCallOut();
     start();
@@ -288,19 +288,19 @@ bool Run::setTextToMargin(int lineNo, const String &s, bool red)
     return true;
 }
 
-bool Run::noticeOnLineNoChanged(int lineNo)
+bool Run::noticeOnLineChanged(int lineNo, quint32 colStart, quint32 colEnd)
 {
     stepDoneMutex_->lock();
     stepDoneFlag_ = true;
     stepDoneMutex_->unlock();
     if (mustStop())
-        emit lineChanged(lineNo);
+        emit lineChanged(lineNo, colStart, colEnd);
     else
-        emit lineChanged(-1);
+        emit lineChanged(-1, 0u, 0u);
     return true;
 }
 
-bool Run::noticeOnStepsChanged(unsigned long int stepsDone)
+bool Run::noticeOnStepsChanged(quint64 stepsDone)
 {
     emit updateStepsCounter(stepsDone);
     return true;
@@ -346,15 +346,15 @@ bool Run::mustStop() const
     }
 }
 
-void Run::handleAlgorhitmDone(int lineNo)
+void Run::handleAlgorhitmDone(int lineNo, quint32 colStart, quint32 colEnd)
 {
     algDoneMutex_->lock();
     algDoneFlag_ = true;
     algDoneMutex_->unlock();
     if (mustStop())
-        emit lineChanged(lineNo);
+        emit lineChanged(lineNo, colStart, colEnd);
     else
-        emit lineChanged(-1);
+        emit lineChanged(-1, 0u, 0u);
 }
 
 void Run::handlePauseRequest()
@@ -373,7 +373,9 @@ void Run::run()
         vm->evaluateNextInstruction();
         if (vm->error().length()>0) {
             int lineNo = vm->effectiveLineNo();
-            emit lineChanged(lineNo);
+            std::pair<quint32,quint32> colNo =
+                    vm->effectiveColumn();
+            emit lineChanged(lineNo, colNo.first, colNo.second);
             emit error(QString::fromStdWString(vm->error()));
             break;
         }

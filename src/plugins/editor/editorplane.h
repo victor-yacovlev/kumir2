@@ -50,7 +50,7 @@ public slots:
     void cut();
     void removeLine();
     void removeLineTail();
-    void setLineHighlighted(int lineNo, const QColor & color);
+    void setLineHighlighted(int lineNo, const QColor & color, quint32 colStart, quint32 colEnd);
     void signalizeNotEditable();
 protected:
     static QPolygon errorUnderline(int x, int y, int len);
@@ -130,6 +130,8 @@ private:
     int highlightedTextLineNumber_;
     QColor highlightedTextLineColor_;
     int highlightedLockSymbolLineNumber_;
+    quint32 highlightedTextColumnStartNumber_;
+    quint32 highlightedTextColumnEndNumber_ ;
     class SuggestionsWindow * autocompleteWidget_;
     Shared::AnalizerInterface * analizer_;
     QList<QAction*> contextMenuActions_;

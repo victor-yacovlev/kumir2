@@ -33,8 +33,8 @@ public:
     KumFile::Data documentContent(int documentId) const;
     Shared::AnalizerInterface * analizer(int documentId);
     quint32 errorsLinesCount(int documentId) const;
-    void highlightLineGreen(int documentId, int lineNo);
-    void highlightLineRed(int documentId, int lineNo);
+    void highlightLineGreen(int documentId, int lineNo, quint32 colStart, quint32 colEnd);
+    void highlightLineRed(int documentId, int lineNo, quint32 colStart, quint32 colEnd);
     void unhighlightLine(int documentId);
     void appendMarginText(int documentId, int lineNo, const QString & text);
     void setMarginText(int documentId, int lineNo, const QString & text, const QColor & fgColor);

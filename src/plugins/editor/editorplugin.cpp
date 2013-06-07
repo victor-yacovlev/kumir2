@@ -341,22 +341,22 @@ void EditorPlugin::changeGlobalState(ExtensionSystem::GlobalState prev, Extensio
     }
 }
 
-void EditorPlugin::highlightLineGreen(int documentId, int lineNo)
+void EditorPlugin::highlightLineGreen(int documentId, int lineNo, quint32 colStart, quint32 colEnd)
 {
     if (d->editors[documentId].e)
-        d->editors[documentId].e->setLineHighlighted(lineNo, QColor(Qt::darkGreen));
+        d->editors[documentId].e->setLineHighlighted(lineNo, QColor(Qt::darkGreen), colStart, colEnd);
 }
 
-void EditorPlugin::highlightLineRed(int documentId, int lineNo)
+void EditorPlugin::highlightLineRed(int documentId, int lineNo, quint32 colStart, quint32 colEnd)
 {
     if (d->editors[documentId].e)
-        d->editors[documentId].e->setLineHighlighted(lineNo, QColor(Qt::red));
+        d->editors[documentId].e->setLineHighlighted(lineNo, QColor(Qt::red), colStart, colEnd);
 }
 
 void EditorPlugin::unhighlightLine(int documentId)
 {
     if (d->editors[documentId].e)
-        d->editors[documentId].e->setLineHighlighted(-1, QColor::Invalid);
+        d->editors[documentId].e->setLineHighlighted(-1, QColor::Invalid, 0u, 0u);
 }
 
 void EditorPlugin::ensureAnalized(int documentId)
