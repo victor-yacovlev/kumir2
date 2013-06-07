@@ -101,6 +101,7 @@ void Plugin::checkNext(KumZadanie* task)
 void Plugin::startProgram(QVariant param,KumZadanie* task)
 {
     field_no=0;
+    cur_task=task;
     checkNext( task);
 };
 QAction* Plugin::actionPerformCheck() const
@@ -133,10 +134,16 @@ void Plugin::setEnabled(bool value)
 
 void Plugin::setTestingResult(ProgramRunStatus status, int value)
 {
-    MW->setMark(value);
+
     if (status==AbortedOnError || status==UserTerminated)
+    {
         MW->setMark(0);
-    
+        field_no=0;
+        return;
+    };
+    MW->setMark(value);
+    field_no++;
+    if(field_no<cur_task->minFieldCount())checkNext(cur_task);
 qDebug()<<"Set testing results"<<value;
 }
 

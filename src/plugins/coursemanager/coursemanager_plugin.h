@@ -58,6 +58,7 @@ private /*fields*/:
     MainWindowTask* MW;
     bool setTextFromFile(QString fname);
     int isp_no,field_no;
+    KumZadanie* cur_task;
 
 };
 

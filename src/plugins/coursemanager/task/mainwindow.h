@@ -47,7 +47,18 @@ public:
         
         return ispFields.count();
     }
-    
+    int minFieldCount()
+    {
+        QList<QString> isps=fields.keys ();
+        int min_fields=999;
+        for(int i=0;i<isps.count();i++)
+        {
+            int fcount=fieldsCount(isps.at(i));
+            if(fcount<min_fields)
+                                min_fields=fcount;
+        }
+       return min_fields;
+    }
     QString name;
     QStringList isps;//исполнители используемые в задание
     QStringList Scripts;//скрипты используемые в задание
