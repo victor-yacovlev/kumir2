@@ -111,7 +111,7 @@ QString KumFile::readRawDataAsString(QByteArray rawData, const QString &sourceEn
 {    
     QTextStream ts(rawData, QIODevice::ReadOnly);
     if (sourceEncoding.isEmpty()) {
-        if (fileNameSuffix == "kum") {
+        if (fileNameSuffix == "kum"||fileNameSuffix == ".kum") {
             ts.setCodec("UTF-16");
             ts.setAutoDetectUnicode(true);
         }
