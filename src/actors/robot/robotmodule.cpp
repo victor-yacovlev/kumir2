@@ -3337,7 +3337,7 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     //CreatebtnFind();
     
 
-    
+    reset();
     return;
 }
 

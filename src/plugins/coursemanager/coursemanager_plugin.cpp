@@ -62,8 +62,24 @@ bool Plugin::setTextFromFile(QString fname)
     return true;
 }
     
-bool  Plugin::startNewTask(QStringList isps)
-    {return true;};    
+bool  Plugin::startNewTask(QStringList isps,KumZadanie* task)
+    {
+        field_no=0;      
+        for(int i=0;i<isps.count();i++)
+        {
+            AI* actor=getActor(isps.at(i));
+            if(!actor)
+            {
+            
+                return false;
+            }
+            //TODO LOAD FIELDS;
+            QFile* field_data=new QFile(task->field(isps.at(i), field_no));
+            qDebug()<<"Set field"<<task->field(isps.at(i), field_no);
+            actor->loadActorData(field_data);
+        }
+        return true;
+    };    
 QWidget* Plugin::mainWindow() const
 {
     return mainWindow_;

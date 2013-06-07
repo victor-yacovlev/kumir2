@@ -51,6 +51,7 @@ public:
     {
         QList<QString> isps=fields.keys ();
         int min_fields=999;
+        if(isps.count()==0)return 0;
         for(int i=0;i<isps.count();i++)
         {
             int fcount=fieldsCount(isps.at(i));
