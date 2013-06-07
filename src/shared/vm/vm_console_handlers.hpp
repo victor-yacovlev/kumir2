@@ -64,7 +64,7 @@ void InputFunctor::operator() (VariableReferencesList alist)
         else if (var.baseType()==VM::VT_char)
             var.setValue(VM::AnyValue(IO::readChar(stream)));
         else if (var.baseType()==VM::VT_string)
-            var.setValue(VM::AnyValue(IO::readString(stream)));
+            var.setValue(VM::AnyValue(IO::readLine(stream)));
         else if (var.baseType()==VM::VT_record) {
             const String s = IO::readString(stream);
             if (!stream.hasError()) {

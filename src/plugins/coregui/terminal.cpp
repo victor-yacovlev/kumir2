@@ -157,12 +157,10 @@ void Term::start(const QString & fileName)
     OneSession * session = new OneSession(fixedWidth, QFileInfo(fileName).fileName(), m_plane);
     connect(session, SIGNAL(updateRequest()), m_plane, SLOT(update()));
     sessions_ << session;
-    connect (sessions_.last(), SIGNAL(inputDone(QVariantList)),
-             this, SIGNAL(inputFinished(QVariantList)));
     connect (sessions_.last(), SIGNAL(message(QString)),
              this, SIGNAL(message(QString)));
     connect (sessions_.last(), SIGNAL(inputDone(QVariantList)),
-             this, SLOT(handleInputDone()));
+             this, SLOT(handleInputDone(QVariantList)));
     m_plane->updateScrollBars();
     if (sb_vertical->isEnabled())
         sb_vertical->setValue(sb_vertical->maximum());
@@ -227,7 +225,8 @@ void Term::input(const QString & format)
     }
     OneSession * lastSession = sessions_.last();
 
-
+    inputFormats_ = format.split(";", QString::SkipEmptyParts);
+    inputValues_.clear();
 
     lastSession->input(format);
     m_plane->updateScrollBars();
@@ -238,9 +237,27 @@ void Term::input(const QString & format)
     m_plane->setFocus();
 }
 
-void Term::handleInputDone()
+void Term::handleInputDone(const QVariantList & values)
 {
     m_plane->setInputMode(false);
+    inputValues_ += values;
+    if (inputValues_.size() < inputFormats_.size()) {
+        QStringList formats = inputFormats_;
+        for (int i=0; i<inputValues_.size(); i++) {
+            formats.pop_front();
+        }
+        const QString format = formats.join(";");
+        OneSession * lastSession = sessions_.last();
+        lastSession->input(format);
+        m_plane->updateScrollBars();
+        if (sb_vertical->isEnabled())
+            sb_vertical->setValue(sb_vertical->maximum());
+        m_plane->setInputMode(true);
+        m_plane->setFocus();
+    }
+    else {
+        emit inputFinished(inputValues_);
+    }
 }
 
 void Term::error(const QString & message)

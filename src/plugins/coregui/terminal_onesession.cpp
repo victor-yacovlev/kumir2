@@ -442,7 +442,7 @@ void OneSession::tryFinishInput()
             result << QChar(value);
         }
         else if (format[0]=='s') {
-            Kumir::String value = Kumir::IO::readString(stream);
+            Kumir::String value = Kumir::IO::readLine(stream);
             result << QString::fromStdWString(value);
         }
         else if (format[0]=='n') {
@@ -487,7 +487,7 @@ void OneSession::tryFinishInput()
                 result << QVariant::Invalid;
             }
         }
-        if (stream.hasError())
+        if (stream.hasError() || stream.currentPosition() == text.length())
             break;
     }
     bool hasError    = false;

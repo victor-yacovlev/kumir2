@@ -47,7 +47,7 @@ protected slots:
     void handleInputTextChanged(const QString & text);
     void handleInputCursorPositionChanged(quint16 pos);
     void handleInputFinishRequested();
-    void handleInputDone();
+    void handleInputDone(const QVariantList & values);
 
 private:
     QList<class OneSession*> sessions_;
@@ -60,6 +60,8 @@ private:
     QAction * a_clear;
 //    QToolBar * m_toolBar;
     QGridLayout * m_layout;
+    QStringList inputFormats_;
+    QVariantList inputValues_;
 
 
 };

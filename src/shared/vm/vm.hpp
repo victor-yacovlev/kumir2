@@ -1835,7 +1835,7 @@ void KumirVM::do_specialcall(uint16_t alg)
                     references.at(i).setValue(AnyValue(value));
                 }
                 else if (references.at(i).baseType()==VT_string) {
-                    const String & value = Kumir::IO::readString(fileReference, !fileIO);
+                    const String & value = Kumir::IO::readLine(fileReference, !fileIO);
                     references.at(i).setValue(AnyValue(value));
                 }
                 if (Kumir::Core::getError().length()>0 && error_.length()==0) {
@@ -1856,29 +1856,30 @@ void KumirVM::do_specialcall(uint16_t alg)
             String margin;
             margin.reserve(100);
             for (int i=0; i<references.size(); i++) {
-                if (references.at(i).isConstant())
+                const Variable & var = references.at(i);
+                if (var.isConstant())
                     continue;
                 String svalue;
-                if (references.at(i).baseType()==VT_char) {
+                if (var.baseType()==VT_char) {
                     svalue.push_back('\'');
-                    svalue.push_back(references.at(i).value().toChar());
+                    svalue.push_back(var.value().toChar());
                     svalue.push_back('\'');
                 }
-                else if (references.at(i).baseType()==VT_char) {
+                else if (var.baseType()==VT_string) {
                     svalue.push_back('"');
-                    svalue.append(references.at(i).value().toString());
+                    svalue.append(var.value().toString());
                     svalue.push_back('"');
                 }
-                else if (references.at(i).baseType()==VT_record) {
+                else if (var.baseType()==VT_record) {
                     try {
-                        svalue = (*customTypeToString_)(references[i]);
+                        svalue = (*customTypeToString_)(var);
                     }
                     catch (...) {
                         // do nothing for margin value
                     }
                 }
                 else {
-                    svalue = references.at(i).value().toString();
+                    svalue = var.value().toString();
                 }
                 if (svalue.length()==0)
                     continue;
@@ -1886,7 +1887,7 @@ void KumirVM::do_specialcall(uint16_t alg)
                     margin.push_back(',');
                     margin.push_back(' ');
                 }
-                margin += references.at(i).fullReferenceName();
+                margin += var.fullReferenceName();
                 margin.push_back('=');
                 margin += svalue;
             }
