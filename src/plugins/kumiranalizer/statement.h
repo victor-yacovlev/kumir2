@@ -22,9 +22,11 @@ using AST::Lexem;
 
 namespace KumirAnalizer {
 
-struct Statement
+typedef QSharedPointer<struct TextStatement> TextStatementPtr;
+
+struct TextStatement
 {
-    inline Statement(Shared::LexemType lt) : type(lt), conditionalIndex(0) {}
+    inline TextStatement(Shared::LexemType lt) : type(lt), conditionalIndex(0) {}
     QList<Lexem*> data;
     QPoint indentRank;
     Shared::LexemType type;
@@ -38,7 +40,7 @@ struct Statement
                   const Lexem::ErrorStage stage,
                   const Lexem::ErrorRaisePosition raise
                   );
-    explicit Statement();
+    explicit TextStatement();
     mutable QPair<QString,quint32> suggestedClosingBracket;
     mutable QStringList suggestedImportModuleNames;
 };

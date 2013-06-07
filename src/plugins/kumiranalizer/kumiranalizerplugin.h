@@ -31,9 +31,7 @@ public:
     void dropDocument(int documentId);
     void setSourceDirName(int documentId, const QString &dirPath);
     void setSourceText(int documentId, const QString &text);
-    void setHiddenText(int documentId, const QString &text, int baseLine);
     void setHiddenTextBaseLine(int documentId, int baseLine);
-    void changeSourceText(int documentId, const QList<Shared::ChangeTextTransaction> & changes);
 
     QList<Shared::Suggestion> suggestAutoComplete(int documentId, int lineNo, const QString & before, const QString & after) const;
     Shared::TextAppend closingBracketSuggestion(int documentId, int lineNo) const;

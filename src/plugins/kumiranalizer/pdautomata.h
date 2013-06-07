@@ -26,9 +26,10 @@ public:
       *        analize subject algorhitn, otherwise analizes to
       *        whole AST
       */
-    void init(bool teacherMode, const QList<Statement*> & statements
-              , AST::DataPtr ast
-              , AST::AlgorithmPtr algorhitm);
+    void init(
+              const QList<TextStatementPtr> & statements
+              , AST::ModulePtr module
+              );
 
     /** Direct automata stage.
       * @returns 0 on allow; 1 on deny; 2 on limit exception
@@ -41,7 +42,7 @@ public:
     /** List of syntax errors */
     QList<Shared::Error> errors() const;
 
-    static AST::StatementPtr createSimpleAstStatement(Statement * st);
+    static AST::StatementPtr createSimpleAstStatement(TextStatementPtr st);
 
 private:
 
@@ -49,6 +50,7 @@ private:
         QMetaMethod method;
         QList<QVariant> arguments;
         QString source;
+        QString scriptInfo;
     };
 
     typedef QList<Script> * ScriptListPtr;
@@ -74,16 +76,13 @@ private:
             qreal priority;
     };
 
-    AST::StatementPtr findASTStatementBySourceStatement(const Statement * st) const;
+    AST::StatementPtr findASTStatementBySourceStatement(const TextStatementPtr st) const;
 
     void loadRules(const QString &rulesRoot);
 
-    AST::DataPtr ast_;
-    AST::AlgorithmPtr algorhitm_;
-    bool teacherMode_;
 
     Matrix matrix_;
-    QList<Statement*> source_;
+    QList<TextStatementPtr> source_;
     bool allowSkipParts_;
 
     int currentPosition_;
@@ -105,7 +104,7 @@ private:
 
     qreal maxPriorityValue_;
 
-    void matchScript(const QString &text, ScriptListPtr & scripts);
+    void matchScript(const QString &text, ScriptListPtr & scripts, const QString & scriptInfo);
     void addEpsilonRule(const QString &nonTerminal, const qreal prior, const QString & script );
 
     int errorsCount_;
@@ -119,7 +118,6 @@ private slots:
     void setCurrentIndentRank(int start, int end);
     void processCorrectEndOfLoop();
     void processAlgEndInsteadOfLoopEnd();
-    void processModEndInsteadOfAlgEnd();
     void processCorrectCase();
     void processCorrectIf();
     void processCorrectThen();
@@ -134,8 +132,6 @@ private slots:
     void processCorrectDocLine();
     void processCorrectRestrictionLine();
     void processCorrectAlgEnd();
-    void processCorrectModuleBegin();
-    void processCorrectModuleEnd();
     void processCorrectLoad();
     void appendSimpleLine();
     void processAlgWithNoBegin();

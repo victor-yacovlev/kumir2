@@ -24,54 +24,41 @@ namespace KumirAnalizer {
 SyntaxAnalizer::SyntaxAnalizer(Lexer * lexer,
                                const QStringList & alwaysEnabledModules,
                                bool teacherMode,
-                               QObject *parent)
+                               Analizer *parent)
     : QObject(parent)
     , currentPosition_(-1)
     , alwaysEnabledModules_(alwaysEnabledModules)
     , teacherMode_(teacherMode)
     , lexer_(lexer)
+    , analizer_(parent)
 {
 }
 
-void SyntaxAnalizer::syncStatements()
-{
-    Q_ASSERT(originalStatements_.size()==statements_.size());
-    for (int i=0; i<originalStatements_.size(); i++) {
-        Q_CHECK_PTR(originalStatements_[i]);
-        originalStatements_[i]->variables = statements_[i].variables;
-        originalStatements_[i]->suggestedImportModuleNames = statements_[i].suggestedImportModuleNames;
-    }
-}
 
 void SyntaxAnalizer::init(
-    QList<Statement*> &statements,
-    AST::DataPtr ast,
-    AST::AlgorithmPtr algorhitm)
+    QList<TextStatementPtr> &statements,
+    AST::DataPtr ast)
 {
-    originalStatements_ = statements;
     currentPosition_ = statements.size()-1;
     ast_ = ast;
-    algorhitm_ = algorhitm;
     statements_.clear();
     for (int i=0; i<statements.size(); i++) {
-        Statement * st = statements[i];
+        TextStatementPtr st = statements[i];
         Q_CHECK_PTR(st);
-//        if (st->type!=LxTypeComment) {
-            Statement sst;
-            sst.type = st->type;
-            sst.statement = st->statement;
-            sst.alg = st->alg;
-            sst.mod = st->mod;
-            sst.conditionalIndex = st->conditionalIndex;
-            for (int j=0; j<st->data.size(); j++) {
-                Lexem * lx = st->data[j];
-                Q_CHECK_PTR(lx);
-                if (lx->type!=LxTypeComment)
-                    sst.data << lx;
-            }
+        TextStatement sst;
+        sst.type = st->type;
+        sst.statement = st->statement;
+        sst.alg = st->alg;
+        sst.mod = st->mod;
+        sst.conditionalIndex = st->conditionalIndex;
+        for (int j=0; j<st->data.size(); j++) {
+            Lexem * lx = st->data[j];
+            Q_CHECK_PTR(lx);
+            if (lx->type!=LxTypeComment)
+                sst.data << lx;
+        }
 
-            statements_ << sst;
-//        }
+        statements_ << sst;
     }
 
     unresolvedImports_.clear();
@@ -121,13 +108,15 @@ AST::Type typeFromSignature(QString s) {
 
 QList<Shared::Suggestion>
 SyntaxAnalizer::suggestImportAutoComplete(
-        const Statement *,
+        int lineNo,
+        const TextStatementPtr,
         const QList<Lexem *>
         ) const
 {
+    AST::ModulePtr currentModule = analizer_->findModuleByLine(lineNo);
     QList<Shared::Suggestion> result;
     foreach (const AST::ModulePtr mod , ast_->modules) {
-        if (!mod->header.enabled && mod->header.name.length()>0) {
+        if (!mod->isEnabledFor(currentModule) && mod->header.name.length()>0) {
             Shared::Suggestion suggestion;
             suggestion.value = mod->header.name;
             suggestion.description = tr("Built-it module %1").arg(mod->header.name);
@@ -160,11 +149,13 @@ SyntaxAnalizer::suggestImportAutoComplete(
 
 QList<Shared::Suggestion>
 SyntaxAnalizer::suggestInputOutputAutoComplete(
-        const Statement *statementBefore,
+        int lineNo,
+        const TextStatementPtr statementBefore,
         const QList<Lexem *> lexemsAfter,
         const AST::ModulePtr contextModule,
         const AST::AlgorithmPtr contextAlgorithm) const
 {
+    AST::ModulePtr currentModule = analizer_->findModuleByLine(lineNo);
     QList<Shared::Suggestion> result;
     const QList<Lexem*> lexemsBefore = statementBefore->data;
     int curBlockStartPos = 1;
@@ -196,7 +187,7 @@ SyntaxAnalizer::suggestInputOutputAutoComplete(
         bool filesModuleAvailable = false;
         AST::ModulePtr filesMod;
         foreach (const AST::ModulePtr mod , ast_->modules) {
-            if (mod->header.enabled && mod->header.name==QString::fromUtf8("Файлы")) {
+            if (mod->isEnabledFor(currentModule) && mod->header.name==QString::fromUtf8("Файлы")) {
                 filesModuleAvailable = true;
                 filesMod = mod;
                 break;
@@ -206,6 +197,7 @@ SyntaxAnalizer::suggestInputOutputAutoComplete(
             static const AST::Type FileType = AST::Type(QString::fromUtf8("файл"));
             QList<Shared::Suggestion> fileSuggestions =
                     suggestExpressionAutoComplete(
+                        lineNo,
                         /* lexemsBefore    = */ curBlock,
                         /* lexemsAfter     = */ lexemsAfter,
                         /* contextModule   = */ contextModule,
@@ -242,6 +234,7 @@ SyntaxAnalizer::suggestInputOutputAutoComplete(
             ? AST::AccessArgumentOut : AST::AccessArgumentIn;
     QList<Shared::Suggestion> valueSuggestions =
             suggestExpressionAutoComplete(
+                lineNo,
                 /* lexemsBefore    = */ curBlock,
                 /* lexemsAfter     = */ lexemsAfter,
                 /* contextModule   = */ contextModule,
@@ -282,7 +275,8 @@ SyntaxAnalizer::suggestInputOutputAutoComplete(
 
 QList<Shared::Suggestion>
 SyntaxAnalizer::suggestConditionAutoComplete(
-        const Statement *statementBefore,
+        int lineNo,
+        const TextStatementPtr statementBefore,
         const QList<Lexem *> lexemsAfter,
         const AST::ModulePtr contextModule,
         const AST::AlgorithmPtr contextAlgorithm) const
@@ -293,6 +287,7 @@ SyntaxAnalizer::suggestConditionAutoComplete(
     const QList<Lexem*> block = statementBefore->data.size()>start
             ? statementBefore->data.mid(start) : QList<Lexem*>();
     result = suggestExpressionAutoComplete(
+                lineNo,
                 /* lexemsBefore    = */ block,
                 /* lexemsAfter     = */ lexemsAfter,
                 /* contextModule   = */ contextModule,
@@ -308,7 +303,8 @@ SyntaxAnalizer::suggestConditionAutoComplete(
 
 QList<Shared::Suggestion>
 SyntaxAnalizer::suggestLoopBeginAutoComplete(
-        const Statement *statementBefore,
+        int lineNo,
+        const TextStatementPtr statementBefore,
         const QList<Lexem *> lexemsAfter,
         const AST::ModulePtr contextModule,
         const AST::AlgorithmPtr contextAlgorithm) const
@@ -344,6 +340,7 @@ SyntaxAnalizer::suggestLoopBeginAutoComplete(
 
         // 2. Suggest integer values followed by 'times' keyword
         QList<Shared::Suggestion> intvals = suggestExpressionAutoComplete(
+                    lineNo,
                     /* lexemsBefore    = */ block,
                     /* lexemsAfter     = */ lexemsAfter,
                     /* contextModule   = */ contextModule,
@@ -423,6 +420,7 @@ SyntaxAnalizer::suggestLoopBeginAutoComplete(
             }
             else {
                 QList<Shared::Suggestion> forvalues = suggestExpressionAutoComplete(
+                            lineNo,
                             /* lexemsBefore    = */ QList<Lexem*>(),
                             /* lexemsAfter     = */ lexemsAfter,
                             /* contextModule   = */ contextModule,
@@ -433,6 +431,7 @@ SyntaxAnalizer::suggestLoopBeginAutoComplete(
                             /* accessType      = */ AST::AccessRegular,
                             /* expressionKind  = */ AST::ExprNone
                             ) + suggestExpressionAutoComplete(
+                            lineNo,
                             /* lexemsBefore    = */ QList<Lexem*>(),
                             /* lexemsAfter     = */ lexemsAfter,
                             /* contextModule   = */ contextModule,
@@ -493,6 +492,7 @@ SyntaxAnalizer::suggestLoopBeginAutoComplete(
             else {
                 // Suggest integer values
                 QList<Shared::Suggestion> intvalues = suggestExpressionAutoComplete(
+                            lineNo,
                             /* lexemsBefore    = */ QList<Lexem*>(),
                             /* lexemsAfter     = */ lexemsAfter,
                             /* contextModule   = */ contextModule,
@@ -516,7 +516,8 @@ SyntaxAnalizer::suggestLoopBeginAutoComplete(
 
 QList<Shared::Suggestion>
 SyntaxAnalizer::suggestAssignmentAutoComplete(
-        const Statement *statementBefore,
+        int lineNo,
+        const TextStatementPtr statementBefore,
         const QList<Lexem *> lexemsAfter,
         const AST::ModulePtr contextModule,
         const AST::AlgorithmPtr contextAlgorithm) const
@@ -545,6 +546,7 @@ SyntaxAnalizer::suggestAssignmentAutoComplete(
         if (leftExpr) {
             // Make suggestion only if left if correct
             result = suggestExpressionAutoComplete(
+                        lineNo,
                         /* lexemsBefore     = */ rvalue,
                         /* lexemsAfter      = */ lexemsAfter,
                         /* contextModule    = */ contextModule,
@@ -560,6 +562,7 @@ SyntaxAnalizer::suggestAssignmentAutoComplete(
     else {
         // Make suggestion for void algorithm call
         result = suggestExpressionAutoComplete(
+                    lineNo,
                     /* lexemsBefore    = */ lvalue,
                     /* lexemsAfter     = */ lexemsAfter,
                     /* contextModule   = */ contextModule,
@@ -572,6 +575,7 @@ SyntaxAnalizer::suggestAssignmentAutoComplete(
                     );
         // Make suggestion for variable assignment
         result += suggestExpressionAutoComplete(
+                    lineNo,
                     /* lexemsBefore    = */ lvalue,
                     /* lexemsAfter     = */ lexemsAfter,
                     /* contextModule   = */ contextModule,
@@ -589,6 +593,7 @@ SyntaxAnalizer::suggestAssignmentAutoComplete(
 #define IS_OPERATOR(x) (x & LxTypeOperator || x==LxOperGreaterOrEqual || x==LxSecOr || x==LxSecAnd || x==LxPriAssign/* || x==LxSecNot */)
 
 QList<Shared::Suggestion> SyntaxAnalizer::suggestExpressionAutoComplete(
+        int lineNo,
         const QList<Lexem*> lexemsBefore,
         const QList<Lexem*> lexemsAfter,
         const AST::ModulePtr contextModule,
@@ -601,6 +606,7 @@ QList<Shared::Suggestion> SyntaxAnalizer::suggestExpressionAutoComplete(
         ) const
 {
     QList<Shared::Suggestion> result;
+    AST::ModulePtr currentModule = analizer_->findModuleByLine(lineNo);
 
     Lexem * prevOper = nullptr;
 
@@ -654,6 +660,7 @@ QList<Shared::Suggestion> SyntaxAnalizer::suggestExpressionAutoComplete(
             if (lexemsBefore[unpairedBracketPos]->type==LxOperLeftSqBr) {
                 // Suggest an integer value as of array index
                 result = suggestValueAutoComplete(
+                            lineNo,
                             /* lexemsBefore    = */ prevBlock,
                             /* lexemsAfter     = */ lexemsAfter,
                             /* contextModule   = */ contextModule,
@@ -683,6 +690,7 @@ QList<Shared::Suggestion> SyntaxAnalizer::suggestExpressionAutoComplete(
                         // Suggest a corresponding argument type value
                         AST::VariablePtr argument = alg->header.arguments[argumentIndex];
                         result = suggestValueAutoComplete(
+                                    lineNo,
                                     /* lexemsBefore    = */ prevBlock,
                                     /* lexemsAfter     = */ lexemsAfter,
                                     /* contextModule   = */ contextModule,
@@ -727,6 +735,7 @@ QList<Shared::Suggestion> SyntaxAnalizer::suggestExpressionAutoComplete(
                         );
         if (previousSubExpression || previousSubExpressionLexems.size()==0) {
             result = suggestOperandAutoComplete(
+                        lineNo,
                         /* lexemsBefore    = */ prevBlock,
                         /* lexemsAfter     = */ lexemsAfter,
                         /* contextModule   = */ contextModule,
@@ -741,6 +750,7 @@ QList<Shared::Suggestion> SyntaxAnalizer::suggestExpressionAutoComplete(
         // Make a suggestion from clear space.
         // Suggest everything capable
         result = suggestValueAutoComplete(
+                    lineNo,
                     /* lexemsBefore    = */ prevBlock,
                     /* lexemsAfter     = */ lexemsAfter,
                     /* contextModule   = */ contextModule,
@@ -753,6 +763,7 @@ QList<Shared::Suggestion> SyntaxAnalizer::suggestExpressionAutoComplete(
         if (typeIsKnown && baseType.kind==AST::TypeBoolean) {
             // Suggest something to bool-calculable
             result += suggestValueAutoComplete(
+                        lineNo,
                         /* lexemsBefore    = */ prevBlock,
                         /* lexemsAfter     = */ lexemsAfter,
                         /* contextModule   = */ contextModule,
@@ -804,6 +815,7 @@ static bool isSuggestionValueApplicable(
 
 QList<Shared::Suggestion>
 SyntaxAnalizer::suggestValueAutoComplete(
+        int lineNo,
         const QList<Lexem *> lexemsBefore,
         const QList<Lexem *> lexemsAfter,
         const AST::ModulePtr contextModule,
@@ -815,7 +827,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
 ) const
 {
     QList<Shared::Suggestion> result;
-
+    AST::ModulePtr currentModule = analizer_->findModuleByLine(lineNo);
     // 1. Suggest locals and globals if any applicable
     if (!typeIsKnown || baseType.kind!=AST::TypeNone) {
         QList<AST::VariablePtr> vars;
@@ -869,7 +881,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
         if (contextModule)
             algs += contextModule->impl.algorhitms;
         foreach (const AST::ModulePtr  mod , ast_->modules) {
-            if (mod->header.enabled)
+            if (mod->isEnabledFor(currentModule))
                 algs += mod->header.algorhitms;
         }
 
@@ -930,6 +942,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
 
 QList<Shared::Suggestion>
 SyntaxAnalizer::suggestOperandAutoComplete(
+        int lineNo,
         const QList<Lexem *> lexemsBefore,
         const QList<Lexem *> lexemsAfter,
         const AST::ModulePtr contextModule,
@@ -949,6 +962,7 @@ SyntaxAnalizer::suggestOperandAutoComplete(
         // Unary + or -
         if (targetBaseType.kind==AST::TypeReal || targetBaseType.kind==AST::TypeInteger) {
             result  = suggestValueAutoComplete(
+                        lineNo,
                         /* lexemsBefore    = */ lexemsBefore,
                         /* lexemsAfter     = */ lexemsAfter,
                         /* contextModule   = */ contextModule,
@@ -963,6 +977,7 @@ SyntaxAnalizer::suggestOperandAutoComplete(
     else if (operatorr==LxSecNot && leftExpression==nullptr) {
         // Unary 'not'
         result  = suggestValueAutoComplete(
+                    lineNo,
                     /* lexemsBefore    = */ lexemsBefore,
                     /* lexemsAfter     = */ lexemsAfter,
                     /* contextModule   = */ contextModule,
@@ -981,6 +996,7 @@ SyntaxAnalizer::suggestOperandAutoComplete(
                 )
         {
             result  = suggestValueAutoComplete(
+                        lineNo,
                         /* lexemsBefore    = */ lexemsBefore,
                         /* lexemsAfter     = */ lexemsAfter,
                         /* contextModule   = */ contextModule,
@@ -999,6 +1015,7 @@ SyntaxAnalizer::suggestOperandAutoComplete(
         // Applicable to integers and reals
         if (targetBaseType.kind==AST::TypeInteger || targetBaseType.kind==AST::TypeReal) {
             result  = suggestValueAutoComplete(
+                        lineNo,
                         /* lexemsBefore    = */ lexemsBefore,
                         /* lexemsAfter     = */ lexemsAfter,
                         /* contextModule   = */ contextModule,
@@ -1016,6 +1033,7 @@ SyntaxAnalizer::suggestOperandAutoComplete(
         // Applicable to reals only
         if (targetBaseType.kind==AST::TypeReal) {
             result  = suggestValueAutoComplete(
+                        lineNo,
                         /* lexemsBefore    = */ lexemsBefore,
                         /* lexemsAfter     = */ lexemsAfter,
                         /* contextModule   = */ contextModule,
@@ -1039,6 +1057,7 @@ SyntaxAnalizer::suggestOperandAutoComplete(
         // Applicable in result of bool, type must be the same as left (or cast-applicable)
         if (targetBaseType.kind==AST::TypeBoolean) {
             result  = suggestValueAutoComplete(
+                        lineNo,
                         /* lexemsBefore    = */ lexemsBefore,
                         /* lexemsAfter     = */ lexemsAfter,
                         /* contextModule   = */ contextModule,
@@ -1058,6 +1077,7 @@ SyntaxAnalizer::suggestOperandAutoComplete(
         // Applicable to bools only
         if (targetBaseType.kind==AST::TypeBoolean) {
             result  = suggestValueAutoComplete(
+                        lineNo,
                         /* lexemsBefore    = */ lexemsBefore,
                         /* lexemsAfter     = */ lexemsAfter,
                         /* contextModule   = */ contextModule,
@@ -1075,11 +1095,9 @@ SyntaxAnalizer::suggestOperandAutoComplete(
 
 void SyntaxAnalizer::buildTables(bool isInternalBuild)
 {
-//    if (algorhitm_)
-//        return; // Nothing to build if we analize just one algorhitm
 
     for (int i=0; i<statements_.size(); i++) {
-        const Statement & st = statements_[i];
+        const TextStatement & st = statements_[i];
         bool wasError = st.hasError();
         if (st.type==LxPriModule) {
             parseModuleHeader(i);
@@ -1095,42 +1113,6 @@ void SyntaxAnalizer::buildTables(bool isInternalBuild)
         }
     }
 
-    if (!isInternalBuild)
-    for (int i=0; i<ast_->modules.size(); i++) {
-        AST::ModulePtr  mod = ast_->modules[i];
-        if (mod->header.type==AST::ModTypeExternal) {
-            if (mod->builtInID!=0xF0 &&
-                    !alwaysEnabledModules_.contains(mod->header.name))
-            {
-                mod->header.enabled = false;
-            }
-        }
-    }
-
-    for (int i=0; i<ast_->modules.size(); i++) {
-        if (ast_->modules[i]->header.type==AST::ModTypeUser || ast_->modules[i]->header.type==AST::ModTypeHidden)
-            ast_->modules[i]->header.enabled = true;
-        if (ast_->modules[i]->header.enabled) {
-            unresolvedImports_.unite(ast_->modules[i]->header.uses);
-        }
-    }
-
-    forever {
-        bool nextBreak = true;
-        for (int i=0; i<ast_->modules.size(); i++) {
-            AST::ModulePtr  mod = ast_->modules[i];
-            if (unresolvedImports_.contains(mod->header.name)) {
-                unresolvedImports_.remove(mod->header.name);
-                if (!mod->header.enabled) {
-                    nextBreak = false;
-                    unresolvedImports_.unite(mod->header.uses);
-                }
-                mod->header.enabled = true;
-            }
-        }
-        if (nextBreak)
-            break;
-    }
 
     // Find and load unresolved imports
     for (int i=0; i<unresolvedImports_.size(); i++) {
@@ -1165,7 +1147,6 @@ void SyntaxAnalizer::buildTables(bool isInternalBuild)
                 AST::ModulePtr  module = AST::ModulePtr(new AST::Module);
                 module->header.type = AST::ModTypeCached;
                 module->header.name = canonicalName;
-                module->header.enabled = true;
                 ast_->modules.push_back(module);
                 for (size_t e=0; e<programData.d.size(); e++) {
                     const Bytecode::TableElem & elem = programData.d.at(e);
@@ -1241,7 +1222,7 @@ void SyntaxAnalizer::buildTables(bool isInternalBuild)
     }
 
     for (int i=0; i<statements_.size(); i++) {
-        const Statement & st = statements_[i];
+        const TextStatement & st = statements_[i];
         bool wasError = st.hasError();
         if (st.type==LxPriAlgHeader) {
             parseAlgHeader(i, true, isInternalBuild);
@@ -1255,7 +1236,7 @@ void SyntaxAnalizer::buildTables(bool isInternalBuild)
     }
 
     for (int i=0; i<statements_.size(); i++) {
-        const Statement & st = statements_[i];
+        const TextStatement & st = statements_[i];
         bool wasError = st.hasError();
         if (st.type==LxNameClass && st.alg==0) {
             parseVarDecl(i);
@@ -1270,7 +1251,7 @@ void SyntaxAnalizer::buildTables(bool isInternalBuild)
             }
         }
     }
-    ast_->modules[0]->header.enabled = true;
+
 }
 
 void SyntaxAnalizer::processAnalisys()
@@ -1287,7 +1268,7 @@ void SyntaxAnalizer::processAnalisys()
     }
     for (int i=0; i<statements_.size(); i++) {
         currentPosition_ = i;
-        Statement & st = statements_[i];
+        TextStatement & st = statements_[i];
         // Fix unmatched modules first
         if (!st.mod) {
             for (int j=0; j<ast_->modules.size(); j++) {
@@ -1391,19 +1372,21 @@ void SyntaxAnalizer::processAnalisys()
 }
 
 QList<Shared::Suggestion> SyntaxAnalizer::suggestAutoComplete(
-        const Statement *statementBefore,
+        int lineNo,
+        const TextStatementPtr statementBefore,
         const QList<Lexem *> lexemsAfter,
         const AST::ModulePtr contextModule,
         const AST::AlgorithmPtr contextAlgorithm) const
 {
+
     QList<Shared::Suggestion> result;
     if (statementBefore==nullptr || statementBefore->type==LxPriAssign)
-        result = suggestAssignmentAutoComplete(statementBefore, lexemsAfter, contextModule, contextAlgorithm);
+        result = suggestAssignmentAutoComplete(lineNo, statementBefore, lexemsAfter, contextModule, contextAlgorithm);
     else if (statementBefore->type==LxPriImport) {
-        result = suggestImportAutoComplete(statementBefore, lexemsAfter);
+        result = suggestImportAutoComplete(lineNo, statementBefore, lexemsAfter);
     }
     else if (statementBefore->type==LxPriInput || statementBefore->type==LxPriOutput) {
-        result = suggestInputOutputAutoComplete(statementBefore, lexemsAfter, contextModule, contextAlgorithm);
+        result = suggestInputOutputAutoComplete(lineNo, statementBefore, lexemsAfter, contextModule, contextAlgorithm);
     }
     else if (statementBefore->type==LxPriAssert
              || statementBefore->type==LxPriPre
@@ -1416,10 +1399,10 @@ QList<Shared::Suggestion> SyntaxAnalizer::suggestAutoComplete(
                 // loop while ...
              )
     {
-        result = suggestConditionAutoComplete(statementBefore, lexemsAfter, contextModule, contextAlgorithm);
+        result = suggestConditionAutoComplete(lineNo, statementBefore, lexemsAfter, contextModule, contextAlgorithm);
     }
     else if (statementBefore->type==LxPriLoop) {
-        result = suggestLoopBeginAutoComplete(statementBefore, lexemsAfter, contextModule, contextAlgorithm);
+        result = suggestLoopBeginAutoComplete(lineNo, statementBefore, lexemsAfter, contextModule, contextAlgorithm);
     }
     QList<Shared::Suggestion> filteredResult;
     foreach (Shared::Suggestion s , result) {
@@ -1457,8 +1440,9 @@ void SyntaxAnalizer::parseImport(int str)
 {
     if (statements_[str].hasError())
         return;
-    Statement & st = statements_[str];
+    TextStatement & st = statements_[str];
     AST::ModulePtr  mod = st.mod;
+    AST::ModulePtr moduleToImport;
     Q_CHECK_PTR(mod);
     if (st.data.size()<2) {
         Q_ASSERT(st.data.size()==1);
@@ -1534,20 +1518,30 @@ void SyntaxAnalizer::parseImport(int str)
             return;
         }
         name = st.data[1]->data.simplified();
-        if (mod->header.uses.contains(name)) {
+        foreach (AST::ModulePtr module, ast_->modules) {
+            if (module->header.name == name) {
+                moduleToImport = module;
+                break;
+            }
+        }
+    }
+    if (moduleToImport) {
+        st.data[1]->type = LxNameModule;
+        if (moduleToImport->isEnabledFor(st.mod)) {
             st.data[1]->error = _("Module already imported");
             return;
         }
-        st.data[1]->type = LxNameModule;
+        else {
+            moduleToImport->header.usedBy.append(st.mod.toWeakRef());
+        }
     }
-    mod->header.uses.insert(name);
 }
 
 void SyntaxAnalizer::parseModuleHeader(int str)
 {
     if (statements_[str].hasError())
         return;
-    const Statement & st = statements_[str];
+    const TextStatement & st = statements_[str];
     if (st.data.size()<2) {
         Q_ASSERT(st.data.size()==1);
         st.data[0]->error = _("No module name");
@@ -1577,7 +1571,7 @@ void SyntaxAnalizer::parseModuleHeader(int str)
 
 void SyntaxAnalizer::parseVarDecl(int str)
 {
-    const Statement & st = statements_[str];
+    const TextStatement & st = statements_[str];
     if (st.hasError())
         return;
     AST::AlgorithmPtr  alg = st.alg;
@@ -1609,7 +1603,7 @@ void SyntaxAnalizer::parseVarDecl(int str)
 
 void SyntaxAnalizer::parseOutput(int str)
 {
-    const Statement & st = statements_[str];
+    const TextStatement & st = statements_[str];
     if (st.hasError()) {
         return;
     }
@@ -1720,14 +1714,14 @@ void SyntaxAnalizer::parseOutput(int str)
             expr3->constant = QVariant(6);
         }
         if (expr->baseType.kind==AST::TypeUser) {
-            bool canConvert = makeCustomUnaryOperation<bool>(lexer_->outputLexemName(), expr);
+            bool canConvert = makeCustomUnaryOperation<bool>(lexer_->outputLexemName(), expr, st.mod);
             if (!canConvert) {
                 err = _("Can't output value of type %1", expr->baseType.name);
                 foreach (Lexem * lx, subgroups[0])
                     lx->error = err;
                 return;
             }
-            expr = makeCustomUnaryOperation<AST::ExpressionPtr>(lexer_->outputLexemName(), expr);
+            expr = makeCustomUnaryOperation<AST::ExpressionPtr>(lexer_->outputLexemName(), expr, st.mod);
         }
         st.statement->expressions << expr << expr2 << expr3;
     }
@@ -1746,7 +1740,7 @@ void SyntaxAnalizer::parseOutput(int str)
 
 void SyntaxAnalizer::parseInput(int str)
 {
-    const Statement & st = statements_[str];
+    const TextStatement & st = statements_[str];
     if (st.hasError()) {
         return;
     }
@@ -1787,7 +1781,7 @@ void SyntaxAnalizer::parseInput(int str)
         }
 
         if (expr->baseType.kind==AST::TypeUser) {
-            bool canConvert = makeCustomUnaryOperation<bool>(lexer_->inputLexemName(), expr);
+            bool canConvert = makeCustomUnaryOperation<bool>(lexer_->inputLexemName(), expr, st.mod);
             if (!canConvert)
                 err = _("Can't input value of type %1",expr->baseType.name);
         }
@@ -1829,7 +1823,7 @@ void SyntaxAnalizer::parseInput(int str)
 
 void SyntaxAnalizer::parseAssertPrePost(int str)
 {
-    const Statement & st = statements_[str];
+    const TextStatement & st = statements_[str];
     if (st.hasError()) {
         return;
     }
@@ -1872,7 +1866,7 @@ void SyntaxAnalizer::parseAssertPrePost(int str)
 
 void SyntaxAnalizer::parseOneLexemInstruction(int str)
 {
-    const Statement & st = statements_[str];
+    const TextStatement & st = statements_[str];
     if (st.hasError()) {
         return;
     }
@@ -1883,7 +1877,7 @@ void SyntaxAnalizer::parseOneLexemInstruction(int str)
 
 void SyntaxAnalizer::parseEndLoop(int str)
 {
-    const Statement & st = statements_[str];
+    const TextStatement & st = statements_[str];
     if (st.hasError()) {
         return;
     }
@@ -1921,7 +1915,7 @@ void SyntaxAnalizer::parseEndLoop(int str)
 
 void SyntaxAnalizer::parseIfCase(int str)
 {
-    const Statement & st = statements_[str];
+    const TextStatement & st = statements_[str];
     if (st.hasError()) {
         return;
     }
@@ -1968,7 +1962,7 @@ void SyntaxAnalizer::parseIfCase(int str)
 
 void SyntaxAnalizer::parseLoopBegin(int str)
 {
-    const Statement & st = statements_[str];
+    const TextStatement & st = statements_[str];
     if (st.hasError() || !st.statement) {
         return;
     }
@@ -2192,7 +2186,7 @@ void SyntaxAnalizer::parseLoopBegin(int str)
 
 void SyntaxAnalizer::parseAssignment(int str)
 {
-    const Statement & st = statements_[str];
+    const TextStatement & st = statements_[str];
     if (st.hasError()) {
         return;
     }
@@ -2443,7 +2437,7 @@ void SyntaxAnalizer::parseAssignment(int str)
             else if (a==AST::TypeUser) {
                 AST::ModulePtr  convMod;
                 AST::AlgorithmPtr  convAlg;
-                if (findConversionAlgorithm(rightExpr->baseType, leftExpr->baseType, convMod, convAlg)) {
+                if (findConversionAlgorithm(rightExpr->baseType, leftExpr->baseType, convMod, convAlg, st.mod)) {
                     AST::ExpressionPtr  convExpr = AST::ExpressionPtr(new AST::Expression);
                     convExpr->kind = AST::ExprFunctionCall;
                     convExpr->function = convAlg;
@@ -2473,7 +2467,7 @@ void SyntaxAnalizer::parseAssignment(int str)
 
 void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool allowOperatorsDeclaration)
 {
-    const Statement & st = statements_[str];
+    const TextStatement & st = statements_[str];
     if (st.hasError() || !st.mod ||!st.alg)
         return;
     AST::AlgorithmPtr  alg = st.alg;
@@ -2482,7 +2476,10 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool allowOperatorsD
     Q_CHECK_PTR(mod);
     QString name;
     bool isOperator = false;
-    bool isFirst = mod->header.name.isEmpty() && mod->impl.algorhitms.indexOf(alg)==0;
+    bool isFirst =
+            mod->header.name.isEmpty() &&
+            mod->header.type==AST::ModTypeUser &&
+            mod->impl.algorhitms.indexOf(alg)==0;
     int argsStartLexem = -1;
     int nameStartLexem = 1;
     if (st.data.size()>1 && st.data[1]->type==LxNameClass) {
@@ -2491,7 +2488,7 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool allowOperatorsD
         if (bt==AST::TypeNone) {
             AST::Type tp;
             AST::ModulePtr  typeMod;
-            if (findUserType(st.data[1]->data, tp, typeMod)) {
+            if (findUserType(st.data[1]->data, tp, typeMod, st.mod)) {
                 alg->header.returnType = tp;
             }
             else {
@@ -2590,7 +2587,7 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool allowOperatorsD
     {
         AST::Type typee;
         QVariant cvalue;
-        if (tryInputOperatorAlgorithm(name, typee, cvalue)) {
+        if (tryInputOperatorAlgorithm(name, typee, cvalue, st.mod)) {
             const QString error = _("Name is used by module %1", typee.moduleName);
             for (int i=1; i<st.data.size(); i++) {
                 if (st.data[i]->type==LxNameAlg)
@@ -2947,7 +2944,7 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                 if (bt==AST::TypeNone) {
                     AST::Type userType;
                     AST::ModulePtr  userTypeModule;
-                    if (findUserType(group.lexems[curPos]->data, userType, userTypeModule)) {
+                    if (findUserType(group.lexems[curPos]->data, userType, userTypeModule, mod)) {
                         cType = userType;
                     }
                 }
@@ -3110,7 +3107,7 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                 }
                 AST::Type typee;
                 QVariant cvalue;
-                if (tryInputOperatorAlgorithm(cName, typee, cvalue)) {
+                if (tryInputOperatorAlgorithm(cName, typee, cvalue, mod)) {
                     group.lexems[nameStart]->error = _("Name is used by module %1", typee.moduleName);
                     return result;
                 }
@@ -3819,12 +3816,23 @@ QVariant SyntaxAnalizer::createConstValue(const QString & str
     return result;
 }
 
-bool SyntaxAnalizer::findAlgorhitm(const QString &name, const AST::ModulePtr module, AST::AlgorithmPtr &algorhitm) const
+bool SyntaxAnalizer::findAlgorhitm(
+        const QString &name,
+        const AST::ModulePtr currentModule,
+        AST::AlgorithmPtr &algorhitm
+        ) const
 {
     algorhitm.clear();
     for (int i=0; i<ast_->modules.size(); i++) {
-        if (ast_->modules[i]->header.enabled || ast_->modules[i]->header.type==AST::ModTypeHidden) {
-            if (module && module==ast_->modules[i]) {
+        AST::ModulePtr module = ast_->modules[i];
+        bool moduleAvailable = module->isEnabledFor(currentModule);
+        bool sameFileModule =
+                module->header.type==AST::ModTypeUser ||
+                module->header.type==AST::ModTypeTeacher;
+        if (moduleAvailable) {
+            if (currentModule==module ||
+                    sameFileModule && currentModule->header.type==AST::ModTypeTeacher)
+            {
                 // The same module - find includes private members
                 for (int j=0; j<ast_->modules[i]->impl.algorhitms.size(); j++) {
                     AST::AlgorithmPtr alg = ast_->modules[i]->impl.algorhitms[j];
@@ -3854,13 +3862,14 @@ bool SyntaxAnalizer::tryInputOperatorAlgorithm(
         const QString & lexem,
         AST::Type & type,
         QVariant & constantValue
+        , const AST::ModulePtr currentModule
         ) const
 {
 
     AST::AlgorhitmExternalReference ref;
     for (int i=0; i<ast_->modules.size(); i++) {
         const AST::ModulePtr  mod = ast_->modules[i];
-        if (!mod->header.enabled)
+        if (!mod->isEnabledFor(currentModule))
             continue;
         for (int j=0; j<mod->header.operators.size(); j++) {
             const AST::AlgorithmPtr  alg = mod->header.operators[j];
@@ -3929,11 +3938,13 @@ bool SyntaxAnalizer::tryInputOperatorAlgorithm(
 bool SyntaxAnalizer::findConversionAlgorithm(const AST::Type & from
                              , const AST::Type & to
                              , AST::ModulePtr  & mod
-                             , AST::AlgorithmPtr  & alg) const
+                             , AST::AlgorithmPtr  & alg
+                             , const AST::ModulePtr currentModule
+                                             ) const
 {
     for (int i=0; i<ast_->modules.size(); i++) {
         mod = ast_->modules[i];
-        if (!mod->header.enabled)
+        if (!mod->isEnabledFor(currentModule))
             continue;
         for (int j=0; j<mod->header.operators.size(); j++) {
             alg = mod->header.operators[j];
@@ -3955,7 +3966,9 @@ bool SyntaxAnalizer::findConversionAlgorithm(const AST::Type & from
 template <typename TOut>
 TOut SyntaxAnalizer::makeCustomUnaryOperation(
         const QString &operatorName
-        , AST::ExpressionPtr argument) const
+        , AST::ExpressionPtr argument
+        , const AST::ModulePtr currentModule
+        ) const
 {
     QString argTypeName;
     bool checkOnly = sizeof(TOut)==1; // return type is a boolean
@@ -3965,7 +3978,7 @@ TOut SyntaxAnalizer::makeCustomUnaryOperation(
         argTypeName = lexer_->classNameByBaseType(argument->baseType.kind);
     for (int i=0; i<ast_->modules.size(); i++) {
         AST::ModulePtr  mod = ast_->modules[i];
-        if (!mod->header.enabled)
+        if (!mod->isEnabledFor(currentModule))
             continue;
         for (int j=0; j<mod->header.operators.size(); j++) {
             AST::AlgorithmPtr  alg = mod->header.operators[j];
@@ -3976,7 +3989,7 @@ TOut SyntaxAnalizer::makeCustomUnaryOperation(
                 AST::AlgorithmPtr  convAlg;
                 AST::ModulePtr  convMod;
                 bool typematch = formaltype.name==facttype.name
-                        || findConversionAlgorithm(facttype, formaltype, convMod, convAlg);
+                        || findConversionAlgorithm(facttype, formaltype, convMod, convAlg, currentModule);
                 if (typematch) {
                     if (checkOnly) {
                         return TOut(argument);
@@ -4006,9 +4019,10 @@ TOut SyntaxAnalizer::makeCustomUnaryOperation(
 }
 
 AST::ExpressionPtr  SyntaxAnalizer::makeCustomBinaryOperation(const QString & operatorName
-                                               , AST::ExpressionPtr  leftExpression
-                                               , AST::ExpressionPtr  rightExpression
-                                               ) const
+                                                              , AST::ExpressionPtr  leftExpression
+                                                              , AST::ExpressionPtr  rightExpression
+                                                              , const AST::ModulePtr currentModule
+                                                              ) const
 {
     QString headTypeName;
     if (leftExpression->baseType.kind==AST::TypeUser)
@@ -4022,7 +4036,7 @@ AST::ExpressionPtr  SyntaxAnalizer::makeCustomBinaryOperation(const QString & op
         tailTypeName = lexer_->classNameByBaseType(rightExpression->baseType.kind);
     for (int i=0; i<ast_->modules.size(); i++) {
         AST::ModulePtr  mod = ast_->modules[i];
-        if (!mod->header.enabled)
+        if (!mod->isEnabledFor(currentModule))
             continue;
         for (int j=0; j<mod->header.operators.size(); j++) {
             AST::AlgorithmPtr  alg = mod->header.operators[j];
@@ -4035,9 +4049,9 @@ AST::ExpressionPtr  SyntaxAnalizer::makeCustomBinaryOperation(const QString & op
                 AST::ModulePtr  lconvMod ;
                 AST::ModulePtr  rconvMod ;
                 bool lmatch = ltype.name==headTypeName
-                        || findConversionAlgorithm(leftExpression->baseType, ltype, lconvMod, lconvAlg);
+                        || findConversionAlgorithm(leftExpression->baseType, ltype, lconvMod, lconvAlg, currentModule);
                 bool rmatch = rtype.name==tailTypeName
-                        || findConversionAlgorithm(rightExpression->baseType, rtype, rconvMod, rconvAlg);
+                        || findConversionAlgorithm(rightExpression->baseType, rtype, rconvMod, rconvAlg, currentModule);
                 if (lmatch && rmatch && omatch) {
 
                     AST::ExpressionPtr  res = AST::ExpressionPtr(new AST::Expression);
@@ -4084,6 +4098,25 @@ bool SyntaxAnalizer::findGlobalVariable(const QString &name, const AST::ModulePt
             break;
         }
     }
+    if (!var && module->header.type==AST::ModTypeTeacher) {
+        AST::ModulePtr userMainModule;
+        for (int i=0; i<ast_->modules.size(); i++) {
+            AST::ModulePtr mod = ast_->modules[i];
+            if (mod->header.type==AST::ModTypeUser && mod->header.name.isEmpty()) {
+                userMainModule = mod;
+                break;
+            }
+        }
+        if (userMainModule) {
+            for (int i=0; i<userMainModule->impl.globals.size(); i++) {
+                AST::VariablePtr  v = userMainModule->impl.globals[i];
+                if (v->name==name) {
+                    var = v;
+                    break;
+                }
+            }
+        }
+    }
     return !var.isNull();
 }
 
@@ -4100,12 +4133,12 @@ bool SyntaxAnalizer::findLocalVariable(const QString &name, const AST::Algorithm
     return !var.isNull();
 }
 
-bool SyntaxAnalizer::findUserType(const QString &name, AST::Type &type, AST::ModulePtr module) const
+bool SyntaxAnalizer::findUserType(const QString &name, AST::Type &type, AST::ModulePtr module, const AST::ModulePtr currentModule) const
 {
     module.clear();
     for (int i=0; i<ast_->modules.size(); i++) {
         AST::ModulePtr  mod = ast_->modules[i];
-        if (mod->header.enabled) {
+        if (mod->isEnabledFor(currentModule)) {
             for (int j=0; j<mod->header.types.size(); j++) {
                 AST::Type tp = mod->header.types[j];
                 if (tp.name==name) {
@@ -4650,7 +4683,7 @@ AST::ExpressionPtr  SyntaxAnalizer::parseExpression(
             }
         }
     }
-    result = makeExpressionTree(subexpression);
+    result = makeExpressionTree(subexpression, mod);
     if (result)
         result->lexems = lexems;
     return result;
@@ -4660,12 +4693,13 @@ AST::ExpressionPtr  SyntaxAnalizer::parseExpression(
 static QStringList possibleModuleImports(
         const QString & nameToFind,
         const AST::DataPtr ast
+        , const AST::ModulePtr currentModule
         )
 {
     QStringList result;
 
     for (int i=0; i<ast->modules.size(); i++) {
-        if (!ast->modules[i]->header.enabled) {
+        if (!ast->modules[i]->isEnabledFor(currentModule)) {
             // Check for disabled modules only
             for (int j=0; j<ast->modules[i]->header.algorhitms.size(); j++) {
                 AST::AlgorithmPtr  alg = ast->modules[i]->header.algorhitms[j];
@@ -4680,7 +4714,7 @@ static QStringList possibleModuleImports(
         // Try to find a type
         const QString firstWord = nameToFind.left(nameToFind.indexOf(' '));
         for (int i=0; i<ast->modules.size(); i++) {
-            if (!ast->modules[i]->header.enabled) {
+            if (!ast->modules[i]->isEnabledFor(currentModule)) {
                 for (int j=0; j<ast->modules[i]->header.types.size(); j++) {
                     const AST::Type & type = ast->modules[i]->header.types[j];
                     if (type.kind==AST::TypeUser && type.name==firstWord) {
@@ -4694,7 +4728,7 @@ static QStringList possibleModuleImports(
     return result;
 }
 
-const Statement & SyntaxAnalizer::findSourceStatementByLexem(
+const TextStatement & SyntaxAnalizer::findSourceStatementByLexem(
         const Lexem* lexem
         ) const
 {
@@ -4710,7 +4744,7 @@ const Statement & SyntaxAnalizer::findSourceStatementByLexem(
             return statements_[i];
         }
     }
-    static const Statement dummy;
+    static const TextStatement dummy;
     return dummy;
 }
 
@@ -4748,9 +4782,9 @@ AST::ExpressionPtr  SyntaxAnalizer::parseFunctionCall(const QList<Lexem *> &lexe
         for (int i=0; i<openBracketIndex; i++) {
             lexems[i]->error = _("Algorhitm not found");
         }
-        const QStringList possibleImports = possibleModuleImports(name, ast_);
+        const QStringList possibleImports = possibleModuleImports(name, ast_, mod);
         if (possibleImports.size() > 0) {
-            const Statement & sourceStatement =
+            const TextStatement & sourceStatement =
                     findSourceStatementByLexem(lexems.first());
             sourceStatement.suggestedImportModuleNames = possibleImports;
         }
@@ -5312,7 +5346,7 @@ AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<Lexem *> &le
         }
         AST::Type userConstType;
         QVariant userConstValue;
-        if (tryInputOperatorAlgorithm(longLexem, userConstType, userConstValue)) {
+        if (tryInputOperatorAlgorithm(longLexem, userConstType, userConstValue, mod)) {
             result = AST::ExpressionPtr(new AST::Expression);
             result->kind = AST::ExprConst;
             result->baseType = userConstType;
@@ -5455,9 +5489,9 @@ AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<Lexem *> &le
             else {
                 err = _("Name not declared");
                 // Try to find algorithms from disabled modules
-                const QStringList possibleImports = possibleModuleImports(name, ast_);
+                const QStringList possibleImports = possibleModuleImports(name, ast_, mod);
                 if (possibleImports.size() > 0) {
-                    const Statement & sourceStatement =
+                    const TextStatement & sourceStatement =
                             findSourceStatementByLexem(lexems.front());
                     sourceStatement.suggestedImportModuleNames = possibleImports;
                 }
@@ -5939,7 +5973,7 @@ AST::ExpressionPtr  findRightmostCNFSubexpression(AST::ExpressionPtr  e)
     }
 }
 
-AST::ExpressionPtr  SyntaxAnalizer::makeExpressionTree(const QList<SubexpressionElement> & s) const
+AST::ExpressionPtr  SyntaxAnalizer::makeExpressionTree(const QList<SubexpressionElement> & s, const AST::ModulePtr currentModule) const
 {
     if (s.isEmpty())
         return AST::ExpressionPtr();
@@ -5973,8 +6007,8 @@ AST::ExpressionPtr  SyntaxAnalizer::makeExpressionTree(const QList<Subexpression
             s[l].o->error = _("Extra operator");
             return AST::ExpressionPtr();
         }
-        AST::ExpressionPtr  headExpr = makeExpressionTree(head);
-        AST::ExpressionPtr  tailExpr = makeExpressionTree(tail);
+        AST::ExpressionPtr  headExpr = makeExpressionTree(head, currentModule);
+        AST::ExpressionPtr  tailExpr = makeExpressionTree(tail, currentModule);
         if (!head.isEmpty() && !headExpr)
             return AST::ExpressionPtr();
         if (!tailExpr)
@@ -6058,7 +6092,7 @@ AST::ExpressionPtr  SyntaxAnalizer::makeExpressionTree(const QList<Subexpression
             if (rt.kind==AST::TypeNone && headExpr && tailExpr) {
                 // Try to find custom-overriden operator
                 const QString & operatorName = s[l].o->data;
-                AST::ExpressionPtr  customOperation = makeCustomBinaryOperation(operatorName, headExpr, tailExpr);
+                AST::ExpressionPtr  customOperation = makeCustomBinaryOperation(operatorName, headExpr, tailExpr, currentModule);
                 if (customOperation) {
                     customOperation->operatorr = operation;
                     return customOperation;

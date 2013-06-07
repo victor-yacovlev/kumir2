@@ -12,12 +12,10 @@ Module::Module()
 {
     builtInID = 0;
     header.type = ModTypeUser;
-    header.enabled = false;
 }
 
 Module::Module(const ModulePtr src)
 {
-    header.enabled = src->header.enabled;
     for (int i=0; i<src->impl.globals.size(); i++) {
         impl.globals << src->impl.globals[i];
     }
@@ -32,7 +30,6 @@ Module::Module(const ModulePtr src)
 
     header.type = src->header.type;
     header.name = src->header.name;
-    header.uses = src->header.uses;
     header.types = src->header.types;
 
 }
@@ -64,6 +61,35 @@ void Module::updateReferences(const Module * src, const Data* srcData, const Dat
             header.algorhitms << impl.algorhitms[index];
         }
     }
+}
+
+bool Module::isEnabledFor(const ModulePtr currentModule) const
+{
+    if (currentModule->header.type == ModTypeTeacher) {
+        if (header.type == ModTypeUser)
+            return true;
+        if (header.type == ModTypeExternal) {
+            foreach (AST::ModuleWPtr reference, header.usedBy) {
+                bool usedByUserMainModule =
+                        reference &&
+                        reference.data()->header.type == ModTypeUser &&
+                        reference.data()->header.name.isEmpty();
+                if (usedByUserMainModule)
+                    return true;
+            }
+        }
+    }
+
+    bool enabled = currentModule.data() == this;
+    if (!enabled) {
+        foreach (AST::ModuleWPtr reference, header.usedBy) {
+            if (reference && currentModule && reference.data()==currentModule.data()) {
+                enabled = true;
+                break;
+            }
+        }
+    }
+    return enabled;
 }
 
 }

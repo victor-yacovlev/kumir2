@@ -258,12 +258,11 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
             const uint textX = realX / charWidth();
             const uint textY = realY / lineHeight();
 
-            if (textY != cursor_->row())
-                // Compile text if need
-                document_->flushTransaction();
+
 
             // Move text cursor into clicked position
             cursor_->moveTo(textY, textX);
+            document_->checkForCompilationRequest(QPoint(cursor_->column(), cursor_->row()));
 
             // Store text clicked position for possible
             // selection handling
@@ -1765,7 +1764,7 @@ void EditorPlane::dropEvent(QDropEvent *e)
     }
     document_->undoStack()->endMacro();
 //    m_document->flushTransaction();
-    document_->forceCompleteRecompilation();
+    document_->forceCompleteRecompilation(QPoint(cursor_->column(), cursor_->row()));
 
     update();
 }

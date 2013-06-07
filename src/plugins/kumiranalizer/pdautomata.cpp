@@ -58,40 +58,21 @@ PDAutomata::PDAutomata(QObject *parent) :
     loadRules(rulesPath);
 }
 
-void PDAutomata::init(bool teacherMode, const QList<Statement*> & statements, AST::DataPtr ast, AST::AlgorithmPtr algorhitm)
+void PDAutomata::init(const QList<TextStatementPtr> & statements, AST::ModulePtr module)
 {
-    teacherMode_ = teacherMode;
-    static Statement * begin = new Statement(LexemType(0xFFFFFFFF));
+    currentModule_ = module;
+    static TextStatementPtr begin = TextStatementPtr(new TextStatement(LexemType(0xFFFFFFFF)));
     source_.clear();
     source_ << begin;
-//    logger.open(QIODevice::WriteOnly|QIODevice::Text);
-    foreach (Statement * st, statements) {
-        if (st->type!=LxTypeComment)
+    currentAlgorhitm_.clear();
+
+    foreach (TextStatementPtr st, statements) {
+        if (st->type!=LxTypeComment && !st->hasError())
             source_ << st;
     }
-    ast_ = ast;
-    algorhitm_ = algorhitm;
-    if (!algorhitm) {
-        QList<AST::ModulePtr>::iterator it = ast_->modules.begin();
-        AST::ModuleType moduleToRemove = teacherMode? AST::ModTypeHidden : AST::ModTypeUser;
-        while (it!=ast_->modules.end()) {
-            if ( (*it)->header.type == moduleToRemove ) {
-                it = ast_->modules.erase(it);
-            }
-            else {
-                it++;
-            }
-        }
-        foreach (Statement * st, statements) {
-            st->statement.clear();
-        }
-    }
-    else {
-        algorhitm->impl.pre.clear();
-        algorhitm->impl.post.clear();
-        algorhitm->impl.body.clear();
-        algorhitm->impl.locals.clear();
-        algorhitm->header.arguments.clear();
+
+    foreach (TextStatementPtr st, statements) {
+        st->statement.clear();
     }
 
     errorsCount_ = 0;
@@ -117,7 +98,7 @@ void PDAutomata::init(bool teacherMode, const QList<Statement*> & statements, AS
 }
 
 
-void PDAutomata::matchScript(const QString &text, ScriptListPtr & scripts)
+void PDAutomata::matchScript(const QString &text, ScriptListPtr & scripts, const QString & scriptInfo)
 {
     scripts = new QList<Script>;
     if (text.isEmpty()) {
@@ -128,6 +109,9 @@ void PDAutomata::matchScript(const QString &text, ScriptListPtr & scripts)
         if (s.trimmed().isEmpty())
             continue;
         Script script;
+#ifndef QT_NO_DEBUG
+        script.scriptInfo = scriptInfo;
+#endif
         s = s.simplified();
         script.source = s;
         int op_br = s.indexOf("(");
@@ -254,7 +238,14 @@ void PDAutomata::addEpsilonRule(const QString &leftPart, const qreal prior, cons
         rule.nonTerminals = QStringList();
         rule.isEpsilon = true;
         rule.priority = prior;
-        matchScript(script.mid(1, script.length()-2), rule.script);
+        QString scriptInfo;
+#ifndef QT_NO_DEBUG
+        scriptInfo = QString("[%1] %2 -> %3")
+                .arg(rule.priority)
+                .arg(key)
+                .arg(rule.isEpsilon? QString("0") : rule.nonTerminals.join(" "));
+#endif
+        matchScript(script.mid(1, script.length()-2), rule.script, scriptInfo);
         if ( matrix_.contains(key) ) {
             // Добавляем \epsilon-правило только если нет других правил
             // c тем же приоритетом
@@ -403,7 +394,14 @@ void PDAutomata::loadRules(const QString &rulesRoot)
                 rule.nonTerminals = rightPart.isEmpty()? QStringList() : rightPart.split(" ");
                 rule.isEpsilon = false;
                 rule.priority = prior;
-                matchScript(script.mid(1, script.length()-2), rule.script);
+                QString scriptInfo;
+        #ifndef QT_NO_DEBUG
+                scriptInfo = QString("[%1] %2 -> %3")
+                        .arg(rule.priority)
+                        .arg(key)
+                        .arg(rule.isEpsilon? QString("0") : rule.nonTerminals.join(" "));
+        #endif
+                matchScript(script.mid(1, script.length()-2), rule.script, scriptInfo);
                 if ( matrix_.contains(key) ) {
                     matrix_[key].append(rule);
                     // Удаляем \epsilon-правило, если оно там есть
@@ -451,7 +449,7 @@ int PDAutomata::process()
         if ( currentPosition_ > source_.count() )
             break;
         if ( currentPosition_ < source_.count() && currentPosition_ >= 0 ) {
-            const Statement * st = source_[currentPosition_];
+            const TextStatementPtr st = source_[currentPosition_];
             currentTerminal = terminalByCode(st->type);
         }
         else {
@@ -1620,37 +1618,13 @@ void PDAutomata::nextStep()
 
 void PDAutomata::postProcess()
 {
-//    logger.close();
     currentContext_.clear();
     currentPosition_ = 0;
-    if (!algorhitm_) {
-        currentModule_ = AST::ModulePtr(new AST::Module());
-        if (teacherMode_) {
-            currentModule_->header.type = AST::ModTypeHidden;
-            currentModule_->header.name = "@";
-        }
-        currentAlgorhitm_.clear();
-        currentContext_.push(&(currentModule_->impl.initializerBody));
-    }
-    else {
-        AST::ModulePtr mod;
-        for (int i=0; i<ast_->modules.size(); i++) {
-            for (int j=0; j<ast_->modules[i]->impl.algorhitms.size(); j++) {
-                if (algorhitm_==ast_->modules[i]->impl.algorhitms[j]) {
-                    mod = ast_->modules[i];
-                    break;
-                }
-            }
-            if (mod)
-                break;
-        }
-        currentModule_ = mod;
-//        d->currentContext.push(&(d->algorhitm->impl.body));
-        currentAlgorhitm_ = algorhitm_;
-    }
+    currentAlgorhitm_.clear();
+    currentContext_.push(&(currentModule_->impl.initializerBody));
+
 
     for (int i=0; i<scripts_.size(); i++) {
-//        qDebug() << i << ": " << d->acceptedRules[i];
         ScriptListPtr scripts = scripts_[i];
         if (!scripts) {
             scripts = fixedScripts_[i];
@@ -1695,28 +1669,8 @@ void PDAutomata::postProcess()
         }
         currentPosition_ ++;
     }
-    if (currentModule_ && !algorhitm_) {
-        ast_->modules << currentModule_;
-    }
-//    if (!algorhitm_ && currentAlgorhitm_) {
-//        bool foundAlgorhitm = false;
-//        for (int i=0; i<ast_->modules.size(); i++) {
-//            AST::ModulePtr module = ast_->modules[i];
-//            foundAlgorhitm = module->impl.algorhitms.contains(currentAlgorhitm_);
-//            if (foundAlgorhitm)
-//                break;
-//        }
-//        if (currentModule_ && !foundAlgorhitm) {
-//            foundAlgorhitm = currentModule_->impl.algorhitms.contains(currentAlgorhitm_);
-//        }
-//        if (!foundAlgorhitm)
-//            delete currentAlgorhitm_;
-//    }
+
     source_.pop_front();
-//    if (!ast_->modules.contains(currentModule_)) {
-//        delete currentModule_;
-//        currentModule_ = 0;
-//    }
     currentAlgorhitm_.clear();
 
 }
@@ -1730,7 +1684,7 @@ void PDAutomata::suggest(const QString &text, int moveCursorBackLinesCount)
 {
     QString txt = text;
     txt.replace("\\n","\n");
-    Statement * st = nullptr;
+    TextStatementPtr st;
     if (currentPosition_<source_.size())
         st = source_.at(currentPosition_);
     else {
@@ -1809,10 +1763,10 @@ void PDAutomata::processAlgWithNoBegin()
     setCurrentIndentRank(0, +1);
     processCorrectAlgHeader();
     processCorrectAlgBegin();
-    Statement * errorStatement = source_.at(currentPosition_);
+    TextStatementPtr errorStatement = source_.at(currentPosition_);
     for (int i=currentPosition_+1; i<source_.size(); i++) {
         // Try to find a statement after which there shound be 'begin'
-        Statement * st = source_.at(i);
+        TextStatementPtr st = source_.at(i);
         if (st->type==Shared::LxTypeDoc ||
                 st->type==Shared::LxPriPre ||
                 st->type==Shared::LxPriPost)
@@ -1842,30 +1796,11 @@ void PDAutomata::processAlgWithNoBegin()
 
 void PDAutomata::processCorrectAlgHeader()
 {
-    AST::AlgorithmPtr alg = algorhitm_? algorhitm_ : AST::AlgorithmPtr(new AST::Algorithm);
-    if (teacherMode_)
-        alg->header.specialType = AST::AlgorhitmTypeTeacher;
+    AST::AlgorithmPtr alg = AST::AlgorithmPtr(new AST::Algorithm);    
     alg->impl.headerLexems = source_[currentPosition_]->data;
-    currentAlgorhitm_ = alg;
-    if (algorhitm_) {
-        source_.at(currentPosition_)->mod = moduleOfAlgorhitm(ast_, algorhitm_);
-        currentModule_ = source_.at(currentPosition_)->mod;
-        currentAlgorhitm_ = algorhitm_;
-    }
-    else {
-        if (currentModule_==0) {
-            AST::ModulePtr lastModule = ast_->modules.last();
-            if (lastModule->header.type == AST::ModTypeUser) {
-                lastModule->impl.algorhitms << alg;
-                source_.at(currentPosition_)->mod = lastModule;
-            }
-            setCurrentError(_("Algorithm out of module"));
-        }
-        else {
-            currentModule_->impl.algorhitms << alg;
-            source_.at(currentPosition_)->mod = currentModule_;
-        }
-    }
+    currentAlgorhitm_ = alg;    
+    currentModule_->impl.algorhitms << alg;
+    source_.at(currentPosition_)->mod = currentModule_;
     source_.at(currentPosition_)->alg = currentAlgorhitm_;
 }
 
@@ -1931,17 +1866,6 @@ void PDAutomata::appendSimpleLine()
         statement->type = AST::StError;
         break;
     }
-    if (teacherMode_) {
-        if (currentContext_.size()<=1) {
-            // Can't do anything out of algorhitms
-            foreach (Lexem * lx, statement->lexems) {
-                lx->error = _("Hidden part must contain only algorithm");
-                lx->errorStage = AST::Lexem::PDAutomata;
-            }
-
-            statement->type = AST::StError;
-        }
-    }
     if ( source_.at(currentPosition_)->data[0]->error.size()>0 ) {
         statement->type = AST::StError;
         statement->error = source_.at(currentPosition_)->data[0]->error;
@@ -1961,7 +1885,7 @@ void PDAutomata::appendSimpleLine()
     source_.at(currentPosition_)->statement = statement;
 }
 
-AST::StatementPtr PDAutomata::createSimpleAstStatement(Statement * st)
+AST::StatementPtr PDAutomata::createSimpleAstStatement(TextStatementPtr st)
 {
     AST::StatementPtr statement = AST::StatementPtr(new AST::Statement);
     statement->skipErrorEvaluation = false;
@@ -2092,66 +2016,7 @@ void PDAutomata::processAlgEndInsteadOfLoopEnd()
     }
 }
 
-void PDAutomata::processModEndInsteadOfAlgEnd()
-{
-    int a = currentPosition_-1;
-    int modDeclPos = -1;
-    int beginPos = -1;
-    int algPos = -1;
-    while (a>=0) {
-        if (source_[a]->type==LxPriEndModule && !source_[a]->hasError()) {
-            break;
-        }
-        else if (source_[a]->type==LxPriAlgBegin) {
-            beginPos = a;
-        }
-        else if (source_[a]->type==LxPriAlgHeader) {
-            algPos = a;
-        }
-        else if (source_[a]->type==LxPriAlgEnd) {
-            algPos = beginPos = -1;
-            break;
-        }
-        else if (source_[a]->type==LxPriEndModule && !source_[a]->hasError()) {
-            modDeclPos = -1;
-            break;
-        }
-        else if (source_[a]->type==LxPriModule && !source_[a]->hasError()) {
-            modDeclPos = a;
-            break;
-        }
-        a--;
-    }
-    processCorrectAlgEnd();
-    processCorrectModuleEnd();
-    if (modDeclPos==-1) {
-        setCurrentError(_("'end_module' instead of 'end'"));
-        setCurrentIndentRank(-1, 0);
-    }
-    else {
-        int pos = qMax(algPos, beginPos);
-        if (pos!=-1) {
-            const QString err = pos==beginPos
-                    ? _("Extra 'begin'")
-                    : _("Algorhitm not implemented");
-            for (int i=0; i<source_[pos]->data.size(); i++) {
-                if (source_[pos]->data[i]->type!=LxTypeComment) {
-                    source_[pos]->data[i]->error = err;
-                    source_[pos]->data[i]->errorStage = AST::Lexem::PDAutomata;
-                }
-            }
-            if (currentContext_.size()==1) { // Module initializer
-                AST::StatementPtr st = AST::StatementPtr(new AST::Statement);
-                st->type = AST::StError;
-                st->lexems = source_[pos]->data;
-                st->error = err;
-                AST::ModulePtr mod = ast_->modules.last();
-                mod->impl.initializerBody.prepend(st);
-            }
-            setCurrentIndentRank(-2, 0);
-        }
-    }
-}
+
 
 void PDAutomata::processCorrectCase()
 {
@@ -2387,28 +2252,6 @@ void PDAutomata::processCorrectRestrictionLine()
     }
 }
 
-void PDAutomata::processCorrectModuleBegin()
-{
-    setCurrentIndentRank(0, +1);
-    if (currentModule_) {
-        ast_->modules << currentModule_;
-    }
-    currentModule_ = AST::ModulePtr(new AST::Module);
-    currentAlgorhitm_.clear();
-    currentModule_->header.type = teacherMode_? AST::ModTypeHidden : AST::ModTypeUser;
-    source_.at(currentPosition_)->mod = currentModule_;
-    currentContext_.push(&(currentModule_->impl.initializerBody));
-}
-
-void PDAutomata::processCorrectModuleEnd()
-{
-    setCurrentIndentRank(-1, 0);
-    source_.at(currentPosition_)->mod = currentModule_;
-    if (currentModule_ && !algorhitm_) {
-        ast_->modules << currentModule_;
-    }
-    currentModule_.clear();
-}
 
 void PDAutomata::processCorrectLoad()
 {
@@ -2471,7 +2314,7 @@ void PDAutomata::setGarbageIfThenError()
     }
     if (ifStatement) {
         for (int i=0; i<source_.size(); i++) {
-            Statement * st = source_.at(i);
+            TextStatementPtr st = source_.at(i);
             if (st->statement==ifStatement) {
                 st->setError(error, Lexem::PDAutomata, Lexem::Header);
                 break;
@@ -2514,7 +2357,7 @@ void PDAutomata::setGarbageSwitchCaseError()
     const QString error = _("Garbage between switch..case");
 
     for (int i=0; i<source_.size(); i++) {
-        Statement * st = source_.at(i);
+        TextStatementPtr st = source_.at(i);
         if (st->statement==switchStatement) {
             st->setError(error, Lexem::PDAutomata, Lexem::Header);
             switchStatement->headerErrorLine = st->data.at(0)->lineNo;
@@ -2546,7 +2389,7 @@ void PDAutomata::setCorrespondingIfBroken()
     int position = currentPosition_;
     int deep = 0;
     for ( ; position >= 0; position --) {
-        Statement * test = source_[position];
+        TextStatementPtr test = source_[position];
         if (test->type == LxPriAlgBegin
                 || test->type == LxPriAlgHeader
                 || test->type == LxPriModule
@@ -2584,7 +2427,7 @@ void PDAutomata::setCorrespondingIfBroken()
     }
 }
 
-AST::StatementPtr PDAutomata::findASTStatementBySourceStatement(const Statement *st) const
+AST::StatementPtr PDAutomata::findASTStatementBySourceStatement(const TextStatementPtr st) const
 {
     AST::StatementPtr result;
     for (int i=0; i<currentContext_.size(); i++) {

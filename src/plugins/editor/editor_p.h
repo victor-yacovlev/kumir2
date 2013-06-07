@@ -66,8 +66,6 @@ public:
     void updateInsertMenu();
     void createActions();
     void updateFromAnalizer();
-    static QList<Shared::ChangeTextTransaction> mergeTransactions(QList<Shared::ChangeTextTransaction>);
-    static bool mergeTransaction(Shared::ChangeTextTransaction & one, const Shared::ChangeTextTransaction & other);
     void timerEvent(QTimerEvent *e);
 public slots:
     void updatePosition(int row, int col);
@@ -76,7 +74,6 @@ public slots:
         const QStringList & hiddenText,
         int hiddenBaseLine
         );
-    void handleLineAndTextChanged(const QStack<Shared::ChangeTextTransaction> & changes);
     void playMacro();
     void handleAutoScrollChange(char a);
     void handleAutoScrollChangeX(char a);

@@ -300,107 +300,7 @@ void Editor::focusInEvent(QFocusEvent *e)
     d->plane->setFocus();
 }
 
-enum TransactionType { TT_Insert, TT_Remove, TT_Replace };
-TransactionType trType(const Shared::ChangeTextTransaction &tr)
-{
-    if (tr.removedLineNumbers.isEmpty())
-        return TT_Insert;
-    else if (tr.newLines.isEmpty())
-        return TT_Remove;
-    else
-        return TT_Replace;
-}
 
-int trStart(const Shared::ChangeTextTransaction &tr)
-{
-    if (tr.removedLineNumbers.isEmpty())
-        return 0;
-    else
-        return tr.removedLineNumbers.toList().first();
-}
-
-int trLen(const Shared::ChangeTextTransaction &tr)
-{
-    if (tr.removedLineNumbers.isEmpty())
-        return 0;
-    else
-        return tr.removedLineNumbers.toList().last()-tr.removedLineNumbers.toList().first()+1;
-}
-
-bool EditorPrivate::mergeTransaction(Shared::ChangeTextTransaction &one, const Shared::ChangeTextTransaction &other)
-{
-    TransactionType t = trType(other);
-    if (trType(one)==TT_Insert) {
-        if (t==TT_Insert) {
-            one.newLines += other.newLines;
-            return true;
-        }
-        else if (t==TT_Remove) {
-            int start = trStart(other);
-            int len = trLen(other);
-            if (start>=one.newLines.size() || start+len>=one.newLines.size())
-                return false;
-            one.newLines = one.newLines.mid(0, start) + one.newLines.mid(start+len);
-            return true;
-        }
-        else if (t==TT_Replace) {
-            int start = trStart(other);
-            int len = trLen(other);
-            if (start>=one.newLines.size() || start+len>=one.newLines.size())
-                return false;
-            one.newLines = one.newLines.mid(0, start)+other.newLines+one.newLines.mid(start+len);
-            return true;
-        }
-    }
-    else if (trType(one)==TT_Remove) {
-        if (t==TT_Insert) {
-            one.removedLineNumbers = other.removedLineNumbers;
-            return true;
-        }
-        else if (t==TT_Remove) {
-            return false; // TODO maybe implement me?
-        }
-        else if (t==TT_Replace) {
-            return false; // TODO maybe implement me?
-        }
-    }
-    else if (trType(one)==TT_Replace) {
-        if (t==TT_Insert) {
-            return false; // TODO maybe implement me?
-        }
-        else if (t==TT_Remove) {
-            return false; // TODO maybe implement me?
-        }
-        else if (t==TT_Replace) {
-            if (one.removedLineNumbers==other.removedLineNumbers && one.removedLineNumbers.size()==one.newLines.size()) {
-                one = other;
-                return true;
-            }
-            return false; // TODO maybe implement me?
-        }
-    }
-    return false;
-}
-
-QList<Shared::ChangeTextTransaction> EditorPrivate::mergeTransactions(QList<Shared::ChangeTextTransaction> s)
-{
-    if (s.size()==1) {
-        return s;
-    }
-    QList<Shared::ChangeTextTransaction> result;
-    Shared::ChangeTextTransaction curTrans = s.first();
-    s.pop_front();
-    while (!s.isEmpty()) {
-        Shared::ChangeTextTransaction otherTrans = s.first();
-        s.pop_front();
-        if (!mergeTransaction(curTrans, otherTrans)) {
-            result << curTrans;
-            curTrans = otherTrans;
-        }
-    }
-    result << curTrans;
-    return result;
-}
 
 void EditorPrivate::handleCompleteCompilationRequiest(
     const QStringList & visibleText,
@@ -417,28 +317,16 @@ void EditorPrivate::handleCompleteCompilationRequiest(
         if (i<visibleText.size()-1)
             vt += "\n";
     }
-    analizer->setSourceText(doc->id_, vt);
-    if (teacherMode) {
-        QString ht;
-        for (int i=0; i<hiddenText.size(); i++) {
-            ht += hiddenText[i];
-            if (i<hiddenText.size()-1)
-                ht += "\n";
-        }
-        analizer->setHiddenText(doc->id_, ht, hiddenBaseLine);
+    for (int i=0; i<hiddenText.size(); i++) {
+        vt += hiddenText[i];
+        if (i<hiddenText.size()-1)
+            vt += "\n";
     }
+    analizer->setSourceText(doc->id_, vt);    
     updateFromAnalizer();
 }
 
-void EditorPrivate::handleLineAndTextChanged(const QStack<Shared::ChangeTextTransaction> & changes)
-{
-    if (!analizer) {
-        return;
-    }
-    analizer->setHiddenTextBaseLine(doc->id_, doc->hiddenLineStart());
-    analizer->changeSourceText(doc->id_, mergeTransactions(changes.toList()));
-    updateFromAnalizer();
-}
+
 
 void EditorPrivate::updateFromAnalizer()
 {
@@ -522,8 +410,7 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
     d->plane->addContextMenuAction(d->copy);
     d->plane->addContextMenuAction(d->paste);
 
-    connect(d->doc, SIGNAL(compilationRequest(QStack<Shared::ChangeTextTransaction>)),
-            d, SLOT(handleLineAndTextChanged(QStack<Shared::ChangeTextTransaction>)));
+
     connect(d->doc, SIGNAL(completeCompilationRequest(QStringList,QStringList,int)),
             d, SLOT(handleCompleteCompilationRequiest(QStringList,QStringList,int)), Qt::DirectConnection);
 
@@ -790,13 +677,7 @@ void Editor::setKumFile(const KumFile::Data &data)
     d->doc->setKumFile(data, d->teacherMode);
     if (d->analizer && !d->teacherMode) {
         // Set hidden part manually, because of editor will not emit hidden text to analizer
-        d->analizer->setSourceText(d->doc->id_, data.visibleText);
-        int hbl = -1;
-        if (d->teacherMode) {
-            hbl = data.visibleText.split("\n").size();
-        }
-        if (!data.hiddenText.isEmpty())
-            d->analizer->setHiddenText(d->doc->id_, data.hiddenText, hbl);
+        d->analizer->setSourceText(d->doc->id_, data.visibleText + "\n" + data.hiddenText);
         d->updateFromAnalizer();
     }
     d->plane->update();
@@ -821,7 +702,7 @@ KumFile::Data Editor::toKumFile() const
 
 void Editor::ensureAnalized()
 {
-    d->doc->flushTransaction();
+    d->doc->forceCompleteRecompilation(QPoint(d->cursor->column(), d->cursor->row()));
 }
 
 void Editor::setNotModified()

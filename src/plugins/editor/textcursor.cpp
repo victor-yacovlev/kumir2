@@ -349,7 +349,7 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
     }
 
     if (prevRow!=row_ || prevLines != document_->linesCount()) {
-        document_->flushTransaction();
+        document_->checkForCompilationRequest(QPoint(column(), row()));
         if (analizer_
                 && settings_->value(
                     SettingsPage::KeyAutoInsertPairingBraces,
@@ -1766,7 +1766,7 @@ void TextCursor::undo()
     int row = row_;
     int column = column_;
 //    if (prevRow!=i_row || prevLines!=m_document->linesCount()) {
-        document_->forceCompleteRecompilation();
+    document_->forceCompleteRecompilation(QPoint(column, row));
 //    }
     row_ = row;
     column_ = column;
@@ -1785,7 +1785,7 @@ void TextCursor::redo()
         document_->undoStack()->redo();
     }
 //    if (prevRow!=i_row || prevLines!=m_document->linesCount()) {
-        document_->forceCompleteRecompilation();
+    document_->forceCompleteRecompilation(QPoint(column(), row()));
 //    }
     emit undoAvailable(enabledFlag_ && document_->undoStack()->canUndo());
     emit redoAvailable(enabledFlag_ && document_->undoStack()->canRedo());

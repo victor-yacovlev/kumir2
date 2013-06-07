@@ -346,8 +346,6 @@ Bytecode::InstructionType Generator::operation(AST::ExpressionOperator op)
 
 void Generator::addModule(const AST::ModulePtr mod)
 {
-    if (!mod->header.enabled)
-        return;
     int id = ast_->modules.indexOf(mod);
     if (mod->header.type==AST::ModTypeExternal) {
 

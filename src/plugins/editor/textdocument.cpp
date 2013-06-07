@@ -160,10 +160,7 @@ void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterf
             if (line+1 < data_.size()) {
                 TextLine next = data_[line+1];
                 data_.removeAt(line+1);
-                if (next.hidden)
-                    removedHiddenLines_.insert(removedCounter);
-                else
-                    removedLines_.insert(removedCounter);
+                removedLines_.insert(removedCounter);
                 tl.text += next.text;
                 tl.selected += next.selected;
                 tl.highlight += next.highlight;
@@ -221,14 +218,12 @@ void TextDocument::insertLine(const QString &text, const uint beforeLineNo)
         textLine.selected.push_back(false);
     }
     data_.insert(qMin(beforeLineNo, uint(data_.size())), textLine);
-    forceCompleteRecompilation();
 }
 
 void TextDocument::removeLine(const uint lineNo)
 {
     data_.removeAt(lineNo);
     removedLines_.insert(lineNo);
-    forceCompleteRecompilation();
 }
 
 uint TextDocument::indentAt(uint lineNo) const
@@ -284,7 +279,6 @@ void TextDocument::setKumFile(const KumFile::Data &d, bool showHiddenLines)
         hiddenText_ = d.hiddenText;
         wasHiddenTextFlag_ = true;
     }
-    forceCompleteRecompilation();
 }
 
 void TextDocument::setPlainText(const QString &t)
@@ -306,7 +300,6 @@ void TextDocument::setPlainText(const QString &t)
         textLine.hidden = false;
         data_.append(textLine);
     }
-    forceCompleteRecompilation();
 }
 
 int TextDocument::hiddenLineStart() const
@@ -347,81 +340,28 @@ KumFile::Data TextDocument::toKumFile() const
 
 
 void TextDocument::checkForCompilationRequest(const QPoint &cursorPosition)
-{
+{   
     if (cursorPosition.y()!=lastCursorPos_.y()) {
         bool hasChangedLines = false;
         for (int i=0; i<data_.size(); i++) {
-            if (data_[i].changed) {
+            if (data_[i].changed || data_[i].inserted) {
                 hasChangedLines = true;
                 break;
             }
         }
         bool hasRemovedLines = !removedLines_.isEmpty();
-        if (!hasChangedLines || !hasRemovedLines) {
-            lastCursorPos_ = cursorPosition;
-            flushChanges();
+        if (hasChangedLines || hasRemovedLines) {
+            forceCompleteRecompilation(cursorPosition);
         }
     }
+    lastCursorPos_ = cursorPosition;
 }
 
-void TextDocument::flushChanges()
+
+void TextDocument::forceCompleteRecompilation(const QPoint &cursorPosition)
 {
-    Shared::ChangeTextTransaction trans;
-    trans.removedLineNumbers = removedLines_;
-    for (int i=0; i<data_.size(); i++) {
-        if (!data_[i].hidden) {
-            if (data_[i].inserted) {
-                trans.newLines.append(data_[i].text);
-            }
-            else if (data_[i].changed) {
-                trans.removedLineNumbers.insert(i);
-                trans.newLines.append(data_[i].text);
-            }
-            data_[i].changed = false;
-            data_[i].inserted = false;
-        }
-    }
-    if (!trans.removedLineNumbers.isEmpty() || !trans.newLines.isEmpty())
-        changes_.push(trans);
+    lastCursorPos_ = cursorPosition;
     removedLines_.clear();
-
-}
-
-void TextDocument::flushTransaction()
-{
-    if (!analizer_)
-        return;
-    bool hiddenChanged = !removedHiddenLines_.isEmpty();
-    bool hasHidden = false;
-    if (!hiddenChanged)
-    for (int i=0; i<data_.size(); i++) {
-        if (data_[i].changed || data_[i].inserted) {
-            if (data_[i].hidden) {
-                hiddenChanged = true;
-                break;
-            }
-        }
-        if (data_[i].hidden) {
-            hasHidden = true;
-        }
-    }
-    flushChanges();
-    if (hiddenChanged || hasHidden)
-        forceCompleteRecompilation();
-    if (!changes_.isEmpty()) {
-        if (analizer_->supportPartialCompiling())
-            emit compilationRequest(changes_);
-        else
-            emit forceCompleteRecompilation();
-    }
-    changes_.clear();
-}
-
-void TextDocument::forceCompleteRecompilation()
-{
-    changes_.clear();
-    removedLines_.clear();
-    removedHiddenLines_.clear();
     QStringList visibleText, hiddenText;
     int hiddenBaseLine = -1;
     for (int i=0; i<data_.size(); i++) {

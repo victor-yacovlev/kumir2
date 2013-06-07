@@ -2,13 +2,13 @@
 
 namespace KumirAnalizer {
 
-Statement::Statement()
+TextStatement::TextStatement()
     : type(Shared::LxTypeEmpty)
     , conditionalIndex(0)
 {
 }
 
-bool Statement::hasError() const
+bool TextStatement::hasError() const
 {
     for (int i=0; i<data.size(); i++)
         if (!data[i]->error.isEmpty())
@@ -16,7 +16,7 @@ bool Statement::hasError() const
     return false;
 }
 
-void Statement::setError(const QString &err,
+void TextStatement::setError(const QString &err,
                          const Lexem::ErrorStage stage,
                          const Lexem::ErrorRaisePosition raise)
 {

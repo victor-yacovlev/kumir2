@@ -38,7 +38,7 @@ void InsertCommand::redo()
     else {
         cursor->setColumn(cursor->column()+text.length());
     }
-    doc->checkForCompilationRequest(QPoint(cursor->row(), cursor->column()));
+    doc->checkForCompilationRequest(QPoint(cursor->column(), cursor->row()));
 }
 
 void InsertCommand::undo()
@@ -50,7 +50,7 @@ void InsertCommand::undo()
 //    Q_ASSERT(txt==text);
     cursor->setRow(cursorRow);
     cursor->setColumn(cursorCol);
-    doc->checkForCompilationRequest(QPoint(cursor->row(), cursor->column()));
+    doc->checkForCompilationRequest(QPoint(cursor->column(), cursor->row()));
 }
 
 bool InsertCommand::mergeWith(const QUndoCommand *other)
@@ -158,7 +158,7 @@ void RemoveCommand::redo()
         }
         indentBefore = doc->indentAt(cursorRowAfter);
         doc->removeText(removedText, analizer, line, pos, 0, 0, count);
-        doc->checkForCompilationRequest(QPoint(cursor->row(), cursor->column()));
+        doc->checkForCompilationRequest(QPoint(cursor->column(), cursor->row()));
         indentAfter = doc->indentAt(cursorRowAfter);
     }
     cursor->setRow(cursorRowAfter);
@@ -176,7 +176,7 @@ void RemoveCommand::undo()
     }
     cursor->setRow(cursorRow);
     cursor->setColumn(cursorCol);
-    doc->checkForCompilationRequest(QPoint(cursor->row(), cursor->column()));
+    doc->checkForCompilationRequest(QPoint(cursor->column(), cursor->row()));
 }
 
 bool RemoveCommand::mergeWith(const QUndoCommand *other)
@@ -268,7 +268,7 @@ void RemoveBlockCommand::redo()
     cursorRow = cursor->row();
     cursorCol = cursor->column();
 
-    doc->checkForCompilationRequest(QPoint(cursor->row(), cursor->column()));
+    doc->checkForCompilationRequest(QPoint(cursor->column(), cursor->row()));
 }
 
 void RemoveBlockCommand::undo()
@@ -294,7 +294,7 @@ void RemoveBlockCommand::undo()
 
     }
 
-    doc->checkForCompilationRequest(QPoint(cursor->row(), cursor->column()));
+    doc->checkForCompilationRequest(QPoint(cursor->column(), cursor->row()));
 }
 
 InsertBlockCommand::InsertBlockCommand(
@@ -368,7 +368,7 @@ void InsertBlockCommand::redo()
     cursorCol = cursor->column();
     cursor->setRow(cursor->row()+block.size()-1);
     cursor->setColumn(cursor->column()+block[0].length());
-    doc->checkForCompilationRequest(QPoint(cursor->row(), cursor->column()));
+    doc->checkForCompilationRequest(QPoint(cursor->column(), cursor->row()));
 }
 
 void InsertBlockCommand::undo()
@@ -407,7 +407,7 @@ void InsertBlockCommand::undo()
     cursor->setRow(cursorRow);
     cursor->setColumn(cursorCol);
 
-    doc->checkForCompilationRequest(QPoint(cursor->row(), cursor->column()));
+    doc->checkForCompilationRequest(QPoint(cursor->column(), cursor->row()));
 }
 
 

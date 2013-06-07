@@ -191,6 +191,7 @@
 "Literal can't be part of name";"Константа в имени";"";"";"";"";
 "Loop type not specified";"Не указан тип цикла";"";"";"";"";
 "Many quotes in constant";"Много кавычек в одной константе";"";"";"";"";
+"Misplaced 'end module'";"";"";"";"";"";
 "Misplaced import";"“использовать” не в начале";"";"";"";"";
 "Module already imported";"Повторное использование";"";"";"";"";
 "Module file is damaged";"Файл исполнителя поврежден";"";"";"";"";
@@ -256,6 +257,7 @@
 "No pairing '['";"Нет парной “[“";"";"";"";"";
 "No pairing ']'";"Нет парной “]”";"";"";"";"";
 "No pairing 'begin module'";"Нет парной “исп”";"";"";"";"";
+"No pairing 'end module'";"";"";"";"";"";
 "No right array bound";"Нет правой границы таблицы";"";"";"";"";
 "No right value of assignment";"Нет правой части присваивания";"";"";"";"";
 "No step-value";"Нет значения после “шаг”";"";"";"";"";

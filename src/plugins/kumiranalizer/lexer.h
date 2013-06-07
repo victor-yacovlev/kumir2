@@ -30,7 +30,7 @@ public:
 public slots:
     int splitIntoStatements(const QStringList &lines
                              , int baseLineNo
-                             , QList<Statement*> &statements
+                             , QList<TextStatementPtr> &statements
                              , const QStringList & extraTypeNames
                              ) const;
     void splitIntoLexems(const QString & text, QList<Lexem*> & lexems,

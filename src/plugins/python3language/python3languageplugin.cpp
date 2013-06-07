@@ -356,17 +356,8 @@ void Python3LanguagePlugin::setSourceText(int documentId, const QString &text)
     }
 }
 
-void Python3LanguagePlugin::setHiddenText(int documentId, const QString &text, int baseLine)
-{
-
-}
 
 void Python3LanguagePlugin::setHiddenTextBaseLine(int documentId, int baseLine)
-{
-
-}
-
-void Python3LanguagePlugin::changeSourceText(int documentId, const QList<ChangeTextTransaction> &changes)
 {
 
 }

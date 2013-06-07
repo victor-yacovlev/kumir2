@@ -26,12 +26,6 @@ struct AnalizerPrivate
     explicit AnalizerPrivate(class KumirAnalizerPlugin * plugin, class Analizer *);
     ~AnalizerPrivate();
 
-    enum AnalizeSubject {
-        SubjWholeText,
-        SubjAlgorhtitm,
-        SubjStatements
-    };
-
     std::vector<Shared::ActorInterface*> builtinModules;
     class Analizer * q;
     class Lexer * lexer;
@@ -42,14 +36,13 @@ struct AnalizerPrivate
     static QStringList AlwaysAvailableModulesName;
 
     void createModuleFromActor(const Shared::ActorInterface * actor, quint8 forcedId);
-    QStringList gatherExtraTypeNames() const;
+    QStringList gatherExtraTypeNames(const AST::ModulePtr currentModule) const;
 
 
     QStringList sourceText;
-    QList<Statement*> statements;
+    QList<TextStatementPtr> statements;
 
     QString teacherText;
-    QList<Statement*> teacherStatements;
     int hiddenBaseLine;
 
     void removeAllVariables(const AST::VariablePtr var);
@@ -59,7 +52,7 @@ struct AnalizerPrivate
 
     static QLocale::Language nativeLanguage;
 
-    void compileTransaction(const Shared::ChangeTextTransaction &changes);
+
 
     /** Find algorhitm in AST by real line number */
     static AST::AlgorithmPtr findAlgorhitmByPos(AST::DataPtr data, int pos);
@@ -76,7 +69,7 @@ struct AnalizerPrivate
       * @return true on found, false if not found
       */
     static bool findInstructionsBlock(AST::DataPtr data
-                                      , const QList<Statement*> statements
+                                      , const QList<TextStatement*> statements
                                       , LAS & lst
                                       , int & begin
                                       , int & end
@@ -95,7 +88,7 @@ struct AnalizerPrivate
       * @return true on found, false if not found
       */
     static bool findInstructionsBlock(AST::DataPtr data
-                                      , const QList<Statement*> statements
+                                      , const QList<TextStatement*> statements
                                       , int pos
                                       , LAS & lst
                                       , int & outPos
@@ -103,20 +96,26 @@ struct AnalizerPrivate
                                       , AST::AlgorithmPtr & alg
                                       );
 
-    AnalizeSubject analizeSubject(const QList<Statement*> & statements) const;
+    enum CompilationStage {
+        CS_StructureAndNames, CS_Contents
+    };
+
+    void doCompilation(QList<TextStatementPtr> & allStatements, CompilationStage stage);
 
 
-    void doCompilation(AnalizeSubject whatToCompile
-                       , QList<Statement*> & oldStatements
-                       , QList<Statement*> & newStatements
-                       , QList<Statement*> & allStatements
-                       , int whereInserted
-                       );
+    struct ModuleStatementsBlock {
+        QList<TextStatementPtr> statements;
+        TextStatementPtr begin;
+        TextStatementPtr end;
+        bool teacher;
+
+        inline ModuleStatementsBlock(): teacher(false) {}
+        inline operator bool() const { return statements.size() > 0; }
+    };
+
+    static QList<struct ModuleStatementsBlock> splitIntoModules(const QList<TextStatementPtr> & statements);
 
 };
-
-extern AnalizerPrivate::AnalizeSubject operator * ( const AnalizerPrivate::AnalizeSubject &first
-                                                   , const AnalizerPrivate::AnalizeSubject &second );
 
 
 }

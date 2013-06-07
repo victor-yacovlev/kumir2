@@ -25,15 +25,12 @@ public:
     int newDocument();
     inline bool primaryAlphabetIsLatin() const { return true; }
     inline bool caseInsensitiveGrammatic() const { return false; }
-    inline bool supportPartialCompiling() const { return false; }
     inline virtual bool indentsSignificant() const { return true; }
     bool hasTestingEntryPoint() const;
     unsigned long int stepsCounted() const;
     void dropDocument(int documentId);
     void setSourceText(int documentId, const QString &text);
-    void setHiddenText(int documentId, const QString &text, int baseLine);
     void setHiddenTextBaseLine(int documentId, int baseLine);
-    void changeSourceText(int documentId, const QList<ChangeTextTransaction> &changes);
     QList<Error> errors(int documentId) const;
     QList<LineProp> lineProperties(int documentId) const;
     QList<QPoint> lineRanks(int documentId) const;

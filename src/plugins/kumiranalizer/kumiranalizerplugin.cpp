@@ -85,11 +85,7 @@ void KumirAnalizerPlugin::dropDocument(int documentId)
 void KumirAnalizerPlugin::setSourceText(int documentId, const QString &text)
 {
     Q_CHECK_PTR(analizers_[documentId]);
-    Shared::ChangeTextTransaction change;
-    change.newLines = text.split("\n");
-    change.removedLineNumbers << 999999; // Flag: remove all
-    if (!text.trimmed().isEmpty())
-        analizers_[documentId]->changeSourceText(QList<Shared::ChangeTextTransaction>() << change);
+    analizers_[documentId]->setSourceText(text);
 }
 
 QList<Shared::Suggestion> KumirAnalizerPlugin::suggestAutoComplete(int documentId, int lineNo, const QString &before, const QString &after) const
@@ -116,22 +112,11 @@ void KumirAnalizerPlugin::setSourceDirName(int documentId, const QString &dirPat
     analizers_[documentId]->setSourceDirName(dirPath);
 }
 
-void KumirAnalizerPlugin::setHiddenText(int documentId, const QString &text, int baseLine)
-{
-    Q_CHECK_PTR(analizers_[documentId]);
-    analizers_[documentId]->setHiddenText(text, baseLine);
-}
 
 void KumirAnalizerPlugin::setHiddenTextBaseLine(int documentId, int baseLine)
 {
     Q_CHECK_PTR(analizers_[documentId]);
     analizers_[documentId]->setHiddenBaseLine(baseLine);
-}
-
-void KumirAnalizerPlugin::changeSourceText(int documentId, const QList<Shared::ChangeTextTransaction> & changes)
-{
-    Q_CHECK_PTR(analizers_[documentId]);
-    analizers_[documentId]->changeSourceText(changes);
 }
 
 QList<Shared::Error> KumirAnalizerPlugin::errors(int documentId) const
@@ -165,10 +150,10 @@ const AST::DataPtr KumirAnalizerPlugin::abstractSyntaxTree(int documentId) const
 }
 
 
-Shared::LineProp KumirAnalizerPlugin::lineProp(int documentId, int /*line_no*/, const QString &text) const
+Shared::LineProp KumirAnalizerPlugin::lineProp(int documentId, int line_no, const QString &text) const
 {
     Q_CHECK_PTR(analizers_[documentId]);
-    return analizers_[documentId]->lineProp(text);
+    return analizers_[documentId]->lineProp(line_no, text);
 }
 
 std::string KumirAnalizerPlugin::rawSourceData(int documentId) const

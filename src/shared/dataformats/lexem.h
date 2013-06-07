@@ -7,7 +7,7 @@
 namespace AST {
 
     struct Lexem {
-        enum ErrorStage { NoError, Lexer, PDAutomata, Tables, Semantics } errorStage;
+        enum ErrorStage { NoError, Lexer, BeforePDAutomata, PDAutomata, Tables, Semantics } errorStage;
         enum ErrorRaisePosition { AsIs, Header, Begin, End } errorRaisePosition;
         inline Lexem() {
             type = Shared::LxTypeEmpty;

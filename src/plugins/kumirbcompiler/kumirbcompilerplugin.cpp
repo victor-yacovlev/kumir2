@@ -88,10 +88,7 @@ void KumirBytecodeCompilerPlugin::start()
             int id = m_analizer->newDocument();
             QString dirname = QFileInfo(filename).absoluteDir().absolutePath();
             m_analizer->setSourceDirName(id, dirname);
-            m_analizer->setSourceText(id, kumFile.visibleText);
-            if (kumFile.hasHiddenText) {
-                m_analizer->setHiddenText(id, kumFile.hiddenText, -1);
-            }
+            m_analizer->setSourceText(id, kumFile.visibleText + "\n" + kumFile.hiddenText);
             QList<Shared::Error> errors = m_analizer->errors(id);
             const AST::DataPtr ast = m_analizer->abstractSyntaxTree(id);
             const QString baseName = QFileInfo(filename).baseName();

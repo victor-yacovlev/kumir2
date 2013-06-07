@@ -20,6 +20,7 @@
 namespace AST {
 
 typedef QSharedPointer<struct Module> ModulePtr;
+typedef QWeakPointer<struct Module> ModuleWPtr;
 
 typedef QSharedPointer<struct Algorithm> AlgorithmPtr;
 
@@ -35,7 +36,7 @@ enum ModuleType {
     ModTypeUser,
 
     /** Hidden (e.g. teacher) pseudo-module */
-    ModTypeHidden,
+    ModTypeTeacher,
 
     /** User module in another file */
     ModTypeCached,
@@ -66,11 +67,8 @@ struct ModuleHeader {
     /** Module custom types */
     QList<struct Type> types;
 
-    /** List of dependent modules */
-    QSet<QString> uses;
-
     /** True, if module is enabled to use */
-    bool enabled;
+    QList<ModuleWPtr> usedBy;
 };
 
 /** Module body (private to other modules) */
@@ -111,6 +109,7 @@ struct ABSTRACTSYNTAXTREE_EXPORT Module {
     void updateReferences(const Module * src,
                           const struct Data* srcData,
                           const struct Data * data);
+    bool isEnabledFor(const ModulePtr reference) const;
 
 };
 

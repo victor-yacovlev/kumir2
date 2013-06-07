@@ -4,6 +4,7 @@
 #include <QtCore>
 #include "statement.h"
 
+#include "analizer.h"
 #include "dataformats/ast.h"
 #include "dataformats/ast_algorhitm.h"
 #include "interfaces/analizerinterface.h"
@@ -39,32 +40,32 @@ public:
     explicit SyntaxAnalizer(class Lexer * lexer_,
                             const QStringList & alwaysEnabledModules_,
                             bool teacherMode,
-                            QObject *parent = 0);
-    void init(QList<Statement*> & statements_
-              , AST::DataPtr  ast_
-              , AST::AlgorithmPtr algorhitm_);
-    void syncStatements();
+                            Analizer *analizer);
+    void init(QList<TextStatementPtr> & statements_
+              , AST::DataPtr  ast_);
     QStringList unresolvedImports() const;
     void setSourceDirName(const QString & dirName);
     void buildTables(bool allowOperatorsDeclaration);
-    QList<Shared::Suggestion> suggestAutoComplete(const Statement * statementBefore,
-                                                  const QList<Lexem*> lexemsAfter,
-                                                  const AST::ModulePtr contextModule,
-                                                  const AST::AlgorithmPtr contextAlgorithm
-                                                  ) const;
+    QList<Shared::Suggestion> suggestAutoComplete(
+            int lineNo,
+            const TextStatementPtr statementBefore,
+            const QList<Lexem*> lexemsAfter,
+            const AST::ModulePtr contextModule,
+            const AST::AlgorithmPtr contextAlgorithm
+            ) const;
     void processAnalisys();
     ~SyntaxAnalizer();
 private /*fields*/:
 
     Lexer * lexer_;
+    Analizer * analizer_;
     AST::DataPtr ast_;
     AST::AlgorithmPtr algorhitm_;
-    QList<Statement> statements_;
+    QList<TextStatement> statements_;
     QSet<QString> unresolvedImports_;
     QStringList alwaysEnabledModules_;
     QString sourceDirName_;
     int currentPosition_;
-    QList<Statement*> originalStatements_;
     bool teacherMode_;
 
 private /*methods*/:
@@ -81,42 +82,48 @@ private /*methods*/:
     void parseIfCase(int str);
     void parseLoopBegin(int str);
 
-    const Statement & findSourceStatementByLexem(const Lexem* lexem) const;
+    const TextStatement & findSourceStatementByLexem(const Lexem* lexem) const;
 
     QList<Shared::Suggestion> suggestAssignmentAutoComplete(
-            const Statement *statementBefore,
+            int lineNo,
+            const TextStatementPtr statementBefore,
             const QList<Lexem *> lexemsAfter,
             const AST::ModulePtr contextModule,
             const AST::AlgorithmPtr contextAlgorithm
             ) const;
 
     QList<Shared::Suggestion> suggestInputOutputAutoComplete(
-            const Statement *statementBefore,
+            int lineNo,
+            const TextStatementPtr statementBefore,
             const QList<Lexem *> lexemsAfter,
             const AST::ModulePtr contextModule,
             const AST::AlgorithmPtr contextAlgorithm
             ) const;
 
     QList<Shared::Suggestion> suggestConditionAutoComplete(
-            const Statement *statementBefore,
+            int lineNo,
+            const TextStatementPtr statementBefore,
             const QList<Lexem *> lexemsAfter,
             const AST::ModulePtr contextModule,
             const AST::AlgorithmPtr contextAlgorithm
             ) const;
 
     QList<Shared::Suggestion> suggestLoopBeginAutoComplete(
-            const Statement *statementBefore,
+            int lineNo,
+            const TextStatementPtr statementBefore,
             const QList<Lexem *> lexemsAfter,
             const AST::ModulePtr contextModule,
             const AST::AlgorithmPtr contextAlgorithm
             ) const;
 
     QList<Shared::Suggestion> suggestImportAutoComplete(
-            const Statement *statementBefore,
+            int lineNo,
+            const TextStatementPtr statementBefore,
             const QList<Lexem *> lexemsAfter
             ) const;
 
     QList<Shared::Suggestion> suggestExpressionAutoComplete(
+            int lineNo,
             const QList<Lexem*> lexemsBefore,
             const QList<Lexem*> lexemsAfter,
             const AST::ModulePtr contextModule,
@@ -129,6 +136,7 @@ private /*methods*/:
             ) const;
 
     QList<Shared::Suggestion> suggestValueAutoComplete(
+            int lineNo,
             const QList<Lexem*> lexemsBefore,
             const QList<Lexem*> lexemsAfter,
             const AST::ModulePtr contextModule,
@@ -140,6 +148,7 @@ private /*methods*/:
             ) const;
 
     QList<Shared::Suggestion> suggestOperandAutoComplete(
+            int lineNo,
             const QList<Lexem*> lexemsBefore,
             const QList<Lexem*> lexemsAfter,
             const AST::ModulePtr contextModule,
@@ -153,36 +162,43 @@ private /*methods*/:
             const QString & lexem,
             AST::Type & type,
             QVariant & constantValue
+            , const AST::ModulePtr currentModule
             ) const;
     bool findConversionAlgorithm(const AST::Type & from
                                  , const AST::Type & to
                                  , AST::ModulePtr & mod
-                                 , AST::AlgorithmPtr & alg) const;
+                                 , AST::AlgorithmPtr & alg
+                                 , const AST::ModulePtr currentModule
+                                 ) const;
     AST::ExpressionPtr makeCustomBinaryOperation(const QString & operatorName
-                            , AST::ExpressionPtr leftExpression
-                            , AST::ExpressionPtr rightExpression
-                            ) const;
+                                                 , AST::ExpressionPtr leftExpression
+                                                 , AST::ExpressionPtr rightExpression
+                                                 , const AST::ModulePtr currentModule
+                                                 ) const;
     template <typename TOut>
     TOut makeCustomUnaryOperation(const QString & operatorName
-                                               , AST::ExpressionPtr argument) const;
+                                  , AST::ExpressionPtr argument
+                                  , const AST::ModulePtr currentModule
+                                  ) const;
     bool findAlgorhitm(const QString &name
-                       , const AST::ModulePtr module
-                       , AST::AlgorithmPtr & algorhitm_) const;
+                       , const AST::ModulePtr currentModule
+                       , AST::AlgorithmPtr & algorhitm
+                       ) const;
     bool findGlobalVariable(const QString &name, const AST::ModulePtr module, AST::VariablePtr & var) const;
     bool findLocalVariable(const QString &name
                            , const AST::AlgorithmPtr alg
                            , AST::VariablePtr & var) const;
     AST::ExpressionPtr parseExpression(QList<Lexem*> lexems
-                                      , const AST::ModulePtr mod
-                                      , const AST::AlgorithmPtr alg) const;
+                                       , const AST::ModulePtr mod
+                                       , const AST::AlgorithmPtr alg) const;
     bool findVariable(const QString &name
                       , const AST::ModulePtr module
                       , const AST::AlgorithmPtr algorhitm
                       , AST::VariablePtr & var) const;
-    bool findUserType(const QString & name, AST::Type &type, AST::ModulePtr module) const;
+    bool findUserType(const QString & name, AST::Type &type, AST::ModulePtr module, const AST::ModulePtr currentModule) const;
     QList<AST::VariablePtr> parseVariables(int statementIndex, VariablesGroup & group,
-                                         AST::ModulePtr mod,
-                                         AST::AlgorithmPtr alg, bool algHeader);
+                                           AST::ModulePtr mod,
+                                           AST::AlgorithmPtr alg, bool algHeader);
     QVariant parseConstant(const std::list<Lexem*> &constant
                            , const AST::VariableBaseType pt
                            , int& maxDim
@@ -194,7 +210,7 @@ private /*methods*/:
     AST::ExpressionPtr parseSimpleName(const std::list<Lexem*> &lexems, const AST::ModulePtr mod, const AST::AlgorithmPtr alg) const;
     void updateSliceDSCall(AST::ExpressionPtr expr, AST::VariablePtr var) const;
     AST::ExpressionPtr parseElementAccess(const QList<Lexem*> &lexems, const AST::ModulePtr mod, const AST::AlgorithmPtr alg) const;
-    AST::ExpressionPtr makeExpressionTree(const QList<SubexpressionElement> & s) const;
+    AST::ExpressionPtr makeExpressionTree(const QList<SubexpressionElement> & s, const AST::ModulePtr currentModule) const;
     template <typename List1, typename List2>
     inline static void splitLexemsByOperator(
             const List1 &s
@@ -223,7 +239,7 @@ private /*methods*/:
             }
         }
     }
-    static Lexem * findLexemByType(const QList<Lexem*> lxs, LexemType type);    
+    static Lexem * findLexemByType(const QList<Lexem*> lxs, LexemType type);
 
 };
 
