@@ -69,6 +69,8 @@ bool Module::isEnabledFor(const ModulePtr currentModule) const
         return false;
     if (header.type == ModTypeUser)
         return true;
+    if (builtInID == 0xF0)  // Standard library module
+        return true;
     if (currentModule->header.type == ModTypeTeacher) {
         if (header.type == ModTypeUser)
             return true;
