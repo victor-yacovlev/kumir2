@@ -4141,7 +4141,10 @@ bool SyntaxAnalizer::findUserType(const QString &name, AST::Type &type, AST::Mod
     module.clear();
     for (int i=0; i<ast_->modules.size(); i++) {
         AST::ModulePtr  mod = ast_->modules[i];
-        if (mod->isEnabledFor(currentModule)) {
+        if (mod->isEnabledFor(currentModule) ||
+                mod->header.type == AST::ModTypeExternal &&
+                alwaysEnabledModules_.contains(mod->header.name)
+                ) {
             for (int j=0; j<mod->header.types.size(); j++) {
                 AST::Type tp = mod->header.types[j];
                 if (tp.name==name) {

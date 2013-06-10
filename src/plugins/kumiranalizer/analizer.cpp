@@ -266,6 +266,18 @@ void Analizer::setSourceText(const QString & text)
         }
     }
 
+    foreach (AST::ModulePtr module, d->ast->modules) {
+        if (module->header.type == AST::ModTypeExternal
+                && d->AlwaysAvailableModulesName.contains(module->header.name))
+        {
+            foreach (const AST::Type ptype, module->header.types) {
+                const QString typeName = ptype.name;
+                if (!extraTypeNames.contains(typeName))
+                    extraTypeNames.append(typeName);
+            }
+        }
+    }
+
     d->lexer->splitIntoStatements(d->sourceText, 0, d->statements, extraTypeNames);
     d->doCompilation(d->statements, AnalizerPrivate::CS_StructureAndNames);
     d->doCompilation(d->statements, AnalizerPrivate::CS_Contents);
