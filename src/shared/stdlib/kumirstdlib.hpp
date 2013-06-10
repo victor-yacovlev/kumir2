@@ -2035,6 +2035,15 @@ public:
             errStart_ = 0;
             errLength_ = 0;
             currentPosition_=0;
+            if (f == stdin) {
+                fileSize_ = -1;
+            }
+            else {
+                long curpos = ftell(f);
+                fseek(f, 0L, SEEK_END);
+                fileSize_ = ftell(f);
+                fseek(f, curpos, SEEK_SET);
+            }
         }
         inline int currentPosition() const {
             return currentPosition_;
@@ -2070,10 +2079,18 @@ public:
             else {
                 if (feof(file_))
                     return false;
+                long pos = ftell(file_);
+                if (fileSize_ != -1 && pos >= fileSize_) {
+                    return false;
+                }
                 charptr buffer = reinterpret_cast<charptr>(&lastCharBuffer_);
                 if (encoding_!=UTF8) {
                     // Read only one byte
                     lastCharBuffer_[0] = fgetc(file_);
+                    uint8_t firstByte = lastCharBuffer_[0];
+                    if (firstByte == 255 && fileSize_ == -1) {
+                        return false;
+                    }
                 }
                 else {
                     // More complex...
@@ -2185,6 +2202,7 @@ public:
     private:
         bool stream_;
         FILE * file_;
+        long fileSize_;
         Encoding encoding_;
         String buffer_;
         String error_;

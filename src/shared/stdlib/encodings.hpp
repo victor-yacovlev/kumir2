@@ -81,7 +81,11 @@ namespace Kumir {
                 return static_cast<uint32_t>(k);
             switch (k) {
 #include "windows-1251_wchar.table"
-                default: throw OutOfTable; return L'?';
+                default:
+            {
+//                std::cerr << "Error decoding symbol with code: " << uint32_t(k) << std::endl;
+                throw OutOfTable; return L'?';
+            }
             }
         }
     };
