@@ -314,7 +314,7 @@ void EditorPrivate::handleCompleteCompilationRequiest(
     QString vt;
     for (int i=0; i<visibleText.size(); i++) {
         vt += visibleText[i];
-        if (i<visibleText.size()-1)
+//        if (i<visibleText.size()-1)
             vt += "\n";
     }
     for (int i=0; i<hiddenText.size(); i++) {
