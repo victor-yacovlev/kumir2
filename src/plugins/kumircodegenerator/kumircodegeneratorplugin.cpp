@@ -42,11 +42,13 @@ QPair<QString,QString> KumirCodeGeneratorPlugin::generateExecuable(
 {
     Data data;
 
+    QList<AST::ModulePtr> & modules = tree->modules;
+
     d->reset(tree, &data, debugLevel);
     AST::ModulePtr userModule, teacherModule;
     AST::ModulePtr linkedModule = AST::ModulePtr(new AST::Module);
-    for (int i=0; i<tree->modules.size(); i++) {
-        AST::ModulePtr mod = tree->modules[i];
+    for (int i=0; i<modules.size(); i++) {
+        AST::ModulePtr mod = modules[i];
         if (mod->header.type == AST::ModTypeUser && mod->header.name.isEmpty()) {
             userModule = mod;
         }
@@ -62,16 +64,22 @@ QPair<QString,QString> KumirCodeGeneratorPlugin::generateExecuable(
         linkedModule->impl.initializerBody = teacherModule->impl.initializerBody;
         linkedModule->impl.algorhitms = teacherModule->impl.algorhitms;
         linkedModule->header.algorhitms = teacherModule->header.algorhitms;
+        modules.removeAll(teacherModule);
     }
     linkedModule->impl.globals += userModule->impl.globals;
     linkedModule->impl.initializerBody += userModule->impl.initializerBody;
     linkedModule->impl.algorhitms += userModule->impl.algorhitms;
+    modules.removeAll(userModule);
     linkedModule->header.algorhitms += userModule->header.algorhitms;
-    tree->modules.push_back(linkedModule);
+    modules.push_back(linkedModule);
     d->addModule(linkedModule);
     d->generateConstantTable();
     d->generateExternTable();
-    tree->modules.pop_back();
+    modules.pop_back();
+    modules.push_back(userModule);
+    if (teacherModule) {
+        modules.push_back(teacherModule);
+    }
 
     data.versionMaj = 2;
     data.versionMin = 0;
