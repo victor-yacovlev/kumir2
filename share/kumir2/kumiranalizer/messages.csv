@@ -139,6 +139,7 @@
 "Extra open brace";"Лишняя {";"";"";"";"";
 "Extra operator";"Лишний оператор";"";"";"";"";
 "Extra statement";"Строка не на месте";"";"";"";"";
+"Extra teacher marker";"Лишняя метка";"";"";"";"";
 "Extra type";"Лишнее объявление типа";"";"";"";"";
 "Extra variable group in-specifier";"Лишний “арг”";"";"";"";"";
 "Extra variable group inout-specifier";"Лишний “аргрез”";"";"";"";"";

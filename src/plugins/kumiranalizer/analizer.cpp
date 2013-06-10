@@ -600,6 +600,20 @@ void AnalizerPrivate::removeAllVariables(const AST::VariablePtr var)
 QList< AnalizerPrivate::ModuleStatementsBlock >
 AnalizerPrivate::splitIntoModules(const QList<TextStatementPtr> &statements)
 {
+    // 0. Check for invalid markers
+    QList<TextStatementPtr> markers;
+    for (int i=0; i<statements.size(); i++) {
+        TextStatementPtr st = statements.at(i);
+        if (st->type == Shared::LxTypeComment &&
+                st->data.first()->data.trimmed().startsWith("|#%%"))
+        {
+            static const QString ExtraTeacherMarker = _("Extra teacher marker");
+            foreach (TextStatementPtr prevMarker, markers) {
+                prevMarker->setError(ExtraTeacherMarker, Lexem::BeforePDAutomata, Lexem::AsIs);
+            }
+            markers.push_back(st);
+        }
+    }
     // 1. Split by "module begin"/"module end" statements
     QList< ModuleStatementsBlock > result;
     bool teacherPart = false;
@@ -608,8 +622,8 @@ AnalizerPrivate::splitIntoModules(const QList<TextStatementPtr> &statements)
         TextStatementPtr st = statements[i];
         bool beginTeacherPart =
                 !teacherPart &&
-                st->type == Shared::LxTypeComment &&
-                st->data.first()->data.trimmed().startsWith("|#%%");
+                markers.contains(st) &&
+                !st->hasError();
         if (beginTeacherPart)
             teacherPart = true;
         if (st->type == Shared::LxPriModule || beginTeacherPart) {
@@ -668,29 +682,6 @@ AnalizerPrivate::splitIntoModules(const QList<TextStatementPtr> &statements)
         }
     }
 
-    // 4. Merge all blocks without headers into one big block
-
-    // --- convert to std::list due to bugious implementation in Qt
-    QList< ModuleStatementsBlock > namedBlocks;
-    ModuleStatementsBlock unnamedUserBlock;
-    ModuleStatementsBlock unnamedTeacherBlock;
-    unnamedTeacherBlock.teacher = true;
-
-    foreach (ModuleStatementsBlock block, result) {
-        if (block.begin) {
-            namedBlocks << block;
-        }
-        else {
-            ModuleStatementsBlock & targetBlock = block.teacher
-                    ? unnamedTeacherBlock : unnamedUserBlock;
-            targetBlock.statements += block.statements;
-        }
-    }
-
-    result = namedBlocks;
-    result.append(unnamedUserBlock);
-    result.append(unnamedTeacherBlock);
-
     return result;
 }
 
@@ -704,6 +695,11 @@ void AnalizerPrivate::doCompilation(QList<TextStatementPtr> & allStatements, Ana
             }
         }
 
+        AST::ModulePtr unnamedUserModule = AST::ModulePtr(new AST::Module);
+        AST::ModulePtr unnamedTeacherModule = AST::ModulePtr(new AST::Module);
+        unnamedUserModule->header.type = AST::ModTypeUser;
+        unnamedTeacherModule->header.type = AST::ModTypeTeacher;
+
         QList<ModuleStatementsBlock> blocks = splitIntoModules(allStatements);
         for (int i=0; i<blocks.size(); i++) {
             ModuleStatementsBlock & block = blocks[i];
@@ -712,22 +708,36 @@ void AnalizerPrivate::doCompilation(QList<TextStatementPtr> & allStatements, Ana
                 statements.pop_front();
             if (statements.endsWith(block.end))
                 statements.pop_back();
-            AST::ModulePtr blockModule = AST::ModulePtr(new AST::Module);
+            AST::ModulePtr blockModule;
+            if (block.begin) {
+                blockModule = AST::ModulePtr(new AST::Module);
+                blockModule->header.type = block.teacher?
+                            AST::ModTypeTeacher : AST::ModTypeUser;
+            }
+            else if (block.teacher) {
+                blockModule = unnamedTeacherModule;
+            }
+            else {
+                blockModule = unnamedUserModule;
+            }
             foreach (TextStatementPtr st, statements)
                 st->mod = blockModule;
-            blockModule->header.type = block.teacher?
-                        AST::ModTypeTeacher : AST::ModTypeUser;
             if (block.begin)
                 block.begin->mod = blockModule;
             if (block.end)
                 block.end->mod = blockModule;
-            ast->modules.append(blockModule);
+            if (blockModule != unnamedUserModule && blockModule != unnamedTeacherModule) {
+                ast->modules.append(blockModule);
+            }
             if (statements.size() > 0) {
                 pdAutomata->init(statements, blockModule);
                 pdAutomata->process();
                 pdAutomata->postProcess();
             }
         }
+
+        ast->modules.append(unnamedUserModule);
+        ast->modules.append(unnamedTeacherModule);
 
         analizer->init(allStatements, ast);
         analizer->buildTables(false);
