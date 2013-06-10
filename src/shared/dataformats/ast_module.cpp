@@ -65,6 +65,8 @@ void Module::updateReferences(const Module * src, const Data* srcData, const Dat
 
 bool Module::isEnabledFor(const ModulePtr currentModule) const
 {
+    if (!currentModule)
+        return false;
     if (currentModule->header.type == ModTypeTeacher) {
         if (header.type == ModTypeUser)
             return true;

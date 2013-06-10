@@ -675,9 +675,11 @@ void Editor::restoreState(const QByteArray &data)
 void Editor::setKumFile(const KumFile::Data &data)
 {
     d->doc->setKumFile(data, d->teacherMode);
-    if (d->analizer && !d->teacherMode) {
-        // Set hidden part manually, because of editor will not emit hidden text to analizer
-        d->analizer->setSourceText(d->doc->id_, data.visibleText + "\n" + data.hiddenText);
+    if (d->analizer) {
+        d->analizer->setSourceText(
+                    d->doc->id_,
+                    data.visibleText + "\n" + data.hiddenText
+                    );
         d->updateFromAnalizer();
     }
     d->plane->update();

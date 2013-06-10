@@ -609,7 +609,7 @@ AnalizerPrivate::splitIntoModules(const QList<TextStatementPtr> &statements)
         bool beginTeacherPart =
                 !teacherPart &&
                 st->type == Shared::LxTypeComment &&
-                st->data.first()->data.trimmed().startsWith("|#");
+                st->data.first()->data.trimmed().startsWith("|#%%");
         if (beginTeacherPart)
             teacherPart = true;
         if (st->type == Shared::LxPriModule || beginTeacherPart) {
