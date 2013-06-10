@@ -1227,6 +1227,19 @@ void MainWindow::fileOpen()
     }
 }
 
+void MainWindow::ensureBottomVisible()
+{
+    ui->bottomWidget->setVisible(true);
+    int h = ui->bottomWidget->height();
+    QList<int> splitterItemHeights = ui->splitter->sizes();
+    if (splitterItemHeights[1] < h) {
+        int diff = h - splitterItemHeights[1];
+        splitterItemHeights[1] = h;
+        splitterItemHeights[0] -= diff;
+        ui->splitter->setSizes(splitterItemHeights);
+    }
+}
+
 QStringList MainWindow::recentFiles(bool fullPaths) const
 {
     QStringList r = m_plugin->mySettings()->value(Plugin::RecentFilesKey).toStringList();

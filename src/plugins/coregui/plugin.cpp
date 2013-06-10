@@ -89,10 +89,13 @@ QString Plugin::initialize(const QStringList & parameters)
     m_terminal = new Term(mainWindow_);
     m_terminal->sizePolicy().setHorizontalStretch(5);
     m_terminal->sizePolicy().setHorizontalPolicy(QSizePolicy::Ignored);
+    connect(m_terminal, SIGNAL(showWindowRequest()), mainWindow_, SLOT(ensureBottomVisible()));
 
 
     connect(m_terminal, SIGNAL(message(QString)),
             mainWindow_, SLOT(showMessage(QString)));
+    int minimumTerminalHeight = m_terminal->minimumHeight();
+    mainWindow_->ui->bottomWidget->setMinimumHeight(minimumTerminalHeight);
 
 //    QDockWidget * termWindow = m_mainWindow->addSecondaryComponent(tr("Input/Output terminal"),
 //                                        m_terminal,
@@ -367,6 +370,7 @@ QString Plugin::initialize(const QStringList & parameters)
             mainWindow_, SLOT(activateDocumentTab(int)));
 
     kumirProgram_->setDebuggerWindow(debugger_);
+
 
 
     return "";

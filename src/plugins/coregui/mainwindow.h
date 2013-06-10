@@ -46,6 +46,7 @@ public:
 public slots:
     void lockActions();
     void unlockActions();
+    void ensureBottomVisible();
     QStringList recentFiles(bool fullPaths) const;
     void loadRecentFile(const QString & fullPath);
     inline void loadFromUrl(const QString &s) { loadFromUrl(QUrl(s), true); }

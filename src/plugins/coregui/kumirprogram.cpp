@@ -164,10 +164,6 @@ void KumirProgram::setTerminal(Term *t, QDockWidget * w)
     connect(m_terminal, SIGNAL(inputFinished(QVariantList)),
             plugin_bytecodeRunObject, SIGNAL(finishInput(QVariantList)));
     connect(plugin_bytecodeRunObject, SIGNAL(inputRequest(QString)),
-            m_terminal, SLOT(show()));
-    connect(plugin_bytecodeRunObject, SIGNAL(outputRequest(QString)),
-            m_terminal, SLOT(show()));
-    connect(plugin_bytecodeRunObject, SIGNAL(inputRequest(QString)),
             m_terminal, SLOT(input(QString)));
     connect(plugin_bytecodeRunObject, SIGNAL(outputRequest(QString)),
             m_terminal, SLOT(output(QString)));

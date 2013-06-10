@@ -10,6 +10,7 @@ Term::Term(QWidget *parent) :
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     setMinimumWidth(450);
+    setMinimumHeight(200);
     QGridLayout * l = m_layout = new QGridLayout();
     l->setContentsMargins(0,0,0,0);
     setLayout(l);
