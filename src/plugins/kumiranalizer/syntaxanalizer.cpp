@@ -3825,7 +3825,10 @@ bool SyntaxAnalizer::findAlgorhitm(
     algorhitm.clear();
     for (int i=0; i<ast_->modules.size(); i++) {
         AST::ModulePtr module = ast_->modules[i];
-        bool moduleAvailable = module->isEnabledFor(currentModule);
+        bool moduleAvailable =
+                module->isEnabledFor(currentModule) ||
+                alwaysEnabledModules_.contains(module->header.name);
+                ;
         bool sameFileModule =
                 module->header.type==AST::ModTypeUser ||
                 module->header.type==AST::ModTypeTeacher;
