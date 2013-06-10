@@ -72,10 +72,10 @@ public /*methods*/:
     { stacksMutex_ = m;}
 
     /**
-     * Returns top-level value stack scalar item or raises an exception
-     * in case value is not scalar or stack if empty
+     * Returns top-level value stack scalar item or returns invalid if not
+     * applicable
      */
-    inline AnyValue topLevelStackValue() const /* throws std::string */;
+    inline AnyValue topLevelStackValue() const /* nothrow */;
 
     /** The following two functions are basic to use for actual run:
      *  while ( vm.hasMoreInstructions() )
@@ -220,13 +220,9 @@ AnyValue KumirVM::topLevelStackValue() const {
     AnyValue result;
     if (valuesStack_.size() > 0) {
         const Variable & var = valuesStack_.top();
-        if (var.dimension() > 0) {
-            throw std::string("Access to non scalar value in values stack");
+        if (var.dimension() == 0) {
+            result = var.value();
         }
-        result = var.value();
-    }
-    else {
-        throw std::string("Access to empty values stack");
     }
     return result;
 }
