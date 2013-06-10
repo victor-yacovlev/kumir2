@@ -364,7 +364,7 @@ bool MainWindow::saveCurrentFile()
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
     if (twe->type==WWW)
         return true;
-    const QString fileName = twe->property("realFileName").toString();
+    const QString fileName = twe->url.toLocalFile();
     bool result = 0;
     if (fileName.isEmpty()) {
         result = saveCurrentFileAs();
@@ -576,7 +576,8 @@ bool MainWindow::saveCurrentFileTo(const QString &fileName)
     QString error = m_plugin->plugin_editor->saveDocument(documentId, fileName);
     if (error.isEmpty()) {
         twe->saved = QDateTime::currentDateTime();
-        m_plugin->plugin_editor->setDocumentChangesSaved(documentId);
+        twe->url = QUrl::fromLocalFile(fileName);
+        m_plugin->plugin_editor->setDocumentChangesSaved(documentId);        
         return true;
     }
     else {
@@ -1325,6 +1326,49 @@ void MainWindow::addToRecent(const QString &fileName)
 
 void MainWindow::loadRecentFile(const QString & fullPath)
 {
+    if (b_notabs) {
+        TabWidgetElement * twe =
+                qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+        if (twe->type != WWW) {
+            int documentId = twe->documentId;
+            EditorInterface * editor =
+                    PluginManager::instance()->findPlugin<EditorInterface>();
+            bool hasUnsavedChanges = editor->hasUnsavedChanges(documentId);
+            if (hasUnsavedChanges) {
+                QMessageBox::StandardButton r = QMessageBox::Cancel;
+                QMessageBox messageBox(
+                            QMessageBox::Question,
+                            tr("Open another file"),
+                            tr("Save current text?"),
+                            QMessageBox::NoButton,
+                            this
+                            );
+                QPushButton * btnSave =
+                        messageBox.addButton(tr("Save"), QMessageBox::AcceptRole);
+                QPushButton * btnDiscard =
+                        messageBox.addButton(tr("Don't save"), QMessageBox::DestructiveRole);
+                QPushButton * btnCancel =
+                        messageBox.addButton(tr("Cancel opening another file"), QMessageBox::RejectRole);
+                messageBox.setDefaultButton(btnSave);
+                messageBox.exec();
+                if (messageBox.clickedButton()==btnSave) {
+                    r = QMessageBox::Save;
+                }
+                if (messageBox.clickedButton()==btnDiscard) {
+                    r = QMessageBox::Discard;
+                }
+                if (messageBox.clickedButton()==btnCancel) {
+                    r = QMessageBox::Cancel;
+                }
+                if (r==QMessageBox::Cancel)
+                    return;
+                if (r==QMessageBox::Save) {
+                    if (!saveCurrentFile())
+                        return;
+                }
+            }
+        }
+    }
     QString fn = fullPath.trimmed();
 //    QStringList r = recentFiles(true);
 //    if (index>=0 && index<r.size())
@@ -1384,6 +1428,9 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             vc->setProperty("fileName", url.toLocalFile());
             vc->setProperty("realFileName", url.toLocalFile());
             vc->setProperty("title", fileName);
+            if (b_notabs) {
+                while(ui->tabWidget->count()) ui->tabWidget->removeTab(0);
+            }
             result = addCentralComponent(
                         fileName,
                         vc,
@@ -1393,6 +1440,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                         Program,
                         true);
             result->documentId = id;
+            result->url = url;
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
             setupContentForTab();
@@ -1413,6 +1461,9 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             vc->setProperty("fileName", url.toLocalFile());
             vc->setProperty("realFileName", url.toLocalFile());
             vc->setProperty("title", fileName);
+            if (b_notabs) {
+                while(ui->tabWidget->count()) ui->tabWidget->removeTab(0);
+            }
             result = addCentralComponent(
                         fileName,
                         vc,
@@ -1422,12 +1473,16 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                         Text,
                         true);
             result->documentId = id;
+            result->url = url;
             ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
             ui->tabWidget->currentWidget()->setFocus();
         }
     }
     else if (type==WWW) {
         BrowserComponent browser = m_plugin->plugin_browser->createBrowser(url, m_plugin->m_browserObjects);
+        if (b_notabs) {
+            while(ui->tabWidget->count()) ui->tabWidget->removeTab(0);
+        }
         result = addCentralComponent(
                     url.toString(),
                     browser.widget,
@@ -1436,6 +1491,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                     QList<QWidget*>(),
                     WWW,
                     true);
+        result->url = url;
         ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
         ui->tabWidget->currentWidget()->setFocus();
     }
