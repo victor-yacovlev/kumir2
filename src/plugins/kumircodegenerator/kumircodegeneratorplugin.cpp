@@ -47,10 +47,10 @@ QPair<QString,QString> KumirCodeGeneratorPlugin::generateExecuable(
     AST::ModulePtr linkedModule = AST::ModulePtr(new AST::Module);
     for (int i=0; i<tree->modules.size(); i++) {
         AST::ModulePtr mod = tree->modules[i];
-        if (mod->header.type == AST::ModTypeUser) {
+        if (mod->header.type == AST::ModTypeUser && mod->header.name.isEmpty()) {
             userModule = mod;
         }
-        else if (mod->header.type == AST::ModTypeTeacher) {
+        else if (mod->header.type == AST::ModTypeTeacher && mod->header.name.isEmpty()) {
             teacherModule = mod;
         }
         else {

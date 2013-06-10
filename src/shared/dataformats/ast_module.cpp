@@ -67,6 +67,8 @@ bool Module::isEnabledFor(const ModulePtr currentModule) const
 {
     if (!currentModule)
         return false;
+    if (header.type == ModTypeUser)
+        return true;
     if (currentModule->header.type == ModTypeTeacher) {
         if (header.type == ModTypeUser)
             return true;
