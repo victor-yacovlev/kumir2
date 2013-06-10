@@ -638,7 +638,7 @@ public:
             unsigned int rndValue = rd(); // in range [0..2^32]
 #undef max
             unsigned int rd_max = rd.max();
-            real scale = static_cast<real>(b-a+1)/static_cast<real>(rd_max);
+            real scale = static_cast<real>(b-a)/static_cast<real>(rd_max);
             return Kumir::Math::rmin(b, a+static_cast<real>(scale*rndValue));
         }
     }
@@ -938,7 +938,7 @@ public:
         sprintfFormat.push_back('%');
         if (decimals>0) {
             sprintfFormat.push_back('.');
-            sprintfFormat.append(sprintfInt(decimals, 10, 0, 'l'));
+            sprintfFormat.append(sprintfInt(decimals + 1, 10, 0, 'l'));
         }
         if (expform)
             sprintfFormat.push_back('e');
