@@ -72,6 +72,12 @@ QString Utils::textByKey(Qt::Key key,
     else if (/*teacherMode && */temporaryLayoutSwitch && key==Qt::Key_2) {
         keyText = "@";
     }
+    else if (/*teacherMode && */temporaryLayoutSwitch && key==Qt::Key_3) {
+        keyText = "#";
+    }
+    else if (/*teacherMode && */temporaryLayoutSwitch && key==Qt::Key_5) {
+        keyText = "%";
+    }
     else if (temporaryLayoutSwitch && key==Qt::Key_Equal) {
         keyText = ":=";
     }

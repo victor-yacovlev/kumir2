@@ -2500,6 +2500,7 @@ void EditorPlane::setProperFormat(
                              SettingsPage::DefaultColorComment).toString();
         f.setBold(settings_->value(SettingsPage::KeyBoldComment,
                                    SettingsPage::DefaultBoldComment).toBool());
+        f.setItalic(ch.isLetter() || ch.isDigit());
     }
 
     // Make letter italic if latin-italization available
