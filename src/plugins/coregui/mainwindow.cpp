@@ -1200,9 +1200,52 @@ void MainWindow::showHelp()
 
 void MainWindow::fileOpen()
 {
-    QStringList filters;
     using namespace ExtensionSystem;
     using namespace Shared;
+    if (b_notabs) {
+        TabWidgetElement * twe =
+                qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+        if (twe->type != WWW) {
+            int documentId = twe->documentId;
+            EditorInterface * editor =
+                    PluginManager::instance()->findPlugin<EditorInterface>();
+            bool hasUnsavedChanges = editor->hasUnsavedChanges(documentId);
+            if (hasUnsavedChanges) {
+                QMessageBox::StandardButton r = QMessageBox::Cancel;
+                QMessageBox messageBox(
+                            QMessageBox::Question,
+                            tr("Open another file"),
+                            tr("Save current text?"),
+                            QMessageBox::NoButton,
+                            this
+                            );
+                QPushButton * btnSave =
+                        messageBox.addButton(tr("Save"), QMessageBox::AcceptRole);
+                QPushButton * btnDiscard =
+                        messageBox.addButton(tr("Don't save"), QMessageBox::DestructiveRole);
+                QPushButton * btnCancel =
+                        messageBox.addButton(tr("Cancel opening another file"), QMessageBox::RejectRole);
+                messageBox.setDefaultButton(btnSave);
+                messageBox.exec();
+                if (messageBox.clickedButton()==btnSave) {
+                    r = QMessageBox::Save;
+                }
+                if (messageBox.clickedButton()==btnDiscard) {
+                    r = QMessageBox::Discard;
+                }
+                if (messageBox.clickedButton()==btnCancel) {
+                    r = QMessageBox::Cancel;
+                }
+                if (r==QMessageBox::Cancel)
+                    return;
+                if (r==QMessageBox::Save) {
+                    if (!saveCurrentFile())
+                        return;
+                }
+            }
+        }
+    }
+    QStringList filters;    
     AnalizerInterface * analizer =
             PluginManager::instance()->findPlugin<AnalizerInterface>();
     const QString languageName = analizer->languageName();
