@@ -11,7 +11,7 @@
 #define isNeterminal(x) QRegExp(QString::fromUtf8("[А-ЯA-Z][А-ЯA-Z1-9_*]*")).exactMatch(x)
 #define isNagruzka(x) ( x.startsWith("{") && x.endsWith("}") )
 
-static const int MAXIMUM_ERRORS_EDGES = 1000;
+static const int MAXIMUM_ERRORS_EDGES = 10000;
 
 using namespace Shared;
 
