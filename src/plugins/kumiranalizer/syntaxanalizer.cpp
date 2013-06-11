@@ -1535,6 +1535,10 @@ void SyntaxAnalizer::parseImport(int str)
             moduleToImport->header.usedBy.append(st.mod.toWeakRef());
         }
     }
+    else {
+        st.data[1]->error = _("No such module");
+        return;
+    }
 }
 
 void SyntaxAnalizer::parseModuleHeader(int str)
