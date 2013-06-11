@@ -31,7 +31,7 @@ KumirProgram::KumirProgram(QObject *parent)
     , w_debuggerWindow(0)
 {
     b_blind = false;
-
+    courseManagerRequest_ = false;
     a_regularRun = new QAction(tr("Regular run"), this);
     a_regularRun->setIcon(QIcon::fromTheme("media-playback-start", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-playback-start.png")));
     connect(a_regularRun, SIGNAL(triggered()), this, SLOT(regularRun()));
@@ -477,7 +477,7 @@ void KumirProgram::handleRunnerStopped(int rr)
     typedef Shared::RunInterface RI;
     RI * runner =
             ExtensionSystem::PluginManager::instance()->findPlugin<RI>();
-    if (courseManager && previousState == TestingRun) {
+    if (courseManager && previousState == TestingRun && courseManagerRequest_) {
         if (reason == Shared::RunInterface::SR_UserTerminated) {
             courseManager->setTestingResult(CI::UserTerminated, 0);
         }
