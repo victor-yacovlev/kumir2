@@ -511,6 +511,7 @@ GuiInterface::ProgramSourceText Plugin::programSource() const
 
 void Plugin::startTesting()
 {
+    kumirProgram_->setCourseManagerRequest();
     kumirProgram_->testingRun();
 }
 

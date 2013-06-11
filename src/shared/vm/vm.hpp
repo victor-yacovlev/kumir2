@@ -701,7 +701,7 @@ void KumirVM::reset()
         c.moduleId = pTestingProgram->module;
         c.name = pTestingProgram->name;
     }
-    c.IP = 0;
+    c.IP = -1;
 
     if (c.program) {
         // Push startup context to stack (if non empty)
@@ -1887,7 +1887,8 @@ void KumirVM::do_specialcall(uint16_t alg)
                 margin.push_back('=');
                 margin += svalue;
             }
-            debugHandler_->appendTextToMargin(lineNo, margin);
+            if (contextsStack_.top().moduleContextNo == 0)
+                debugHandler_->appendTextToMargin(lineNo, margin);
         }
     }
     if (alg==0x01) {
@@ -2151,8 +2152,9 @@ void KumirVM::do_setarr(uint8_t s, uint16_t id)
                 }
             }
             const String notice = name+Kumir::Core::fromAscii("[")+boundsText+Kumir::Core::fromAscii("]");
-            if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
-                debugHandler_->appendTextToMargin(lineNo, notice);
+            if (debugHandler_ && currentContext().runMode==CRM_OneStep) {                
+                if (contextsStack_.top().moduleContextNo == 0)
+                    debugHandler_->appendTextToMargin(lineNo, notice);
                 if (VariableScope(s)==Bytecode::LOCAL) {
                     debugHandler_->debuggerUpdateLocalTableBounds(name, bounds);
                 }
@@ -2187,6 +2189,7 @@ void KumirVM::do_updarr(uint8_t s, uint16_t id)
         const int lineNo = contextsStack_.top().lineNo;
         if (lineNo!=-1 &&
                 !blindMode_ &&
+                contextsStack_.top().moduleContextNo == 0 &&
                 contextsStack_.top().type != EL_BELOWMAIN
                 )
         {
@@ -2201,7 +2204,8 @@ void KumirVM::do_updarr(uint8_t s, uint16_t id)
             }
             const String notice = name+Kumir::Core::fromAscii("[")+boundsText+Kumir::Core::fromAscii("]");
             if (debugHandler_)
-                debugHandler_->appendTextToMargin(lineNo, notice);
+                if (contextsStack_.top().moduleContextNo == 0)
+                    debugHandler_->appendTextToMargin(lineNo, notice);
         }
     }
     nextIP();
@@ -2231,6 +2235,7 @@ void KumirVM::do_store(uint8_t s, uint16_t id)
     if (lineNo!=-1 &&
             !blindMode_ &&
             contextsStack_.top().type != EL_BELOWMAIN &&
+            contextsStack_.top().moduleContextNo == 0 &&
             value.dimension()==0
             )
     {
@@ -2271,7 +2276,8 @@ void KumirVM::do_store(uint8_t s, uint16_t id)
         }
         if (debugHandler_ && svalue.length()>0) {
             const String message = name+Char('=')+svalue;
-            debugHandler_->appendTextToMargin(lineNo, message);
+            if (contextsStack_.top().moduleContextNo == 0)
+                debugHandler_->appendTextToMargin(lineNo, message);
         }
         if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
             if (VariableScope(s)==Bytecode::LOCAL)
@@ -2382,7 +2388,8 @@ void KumirVM::do_storearr(uint8_t s, uint16_t id)
         notice.push_back(Char('='));
         notice += svalue;
         if (debugHandler_) {
-            debugHandler_->appendTextToMargin(lineNo, notice);
+            if (contextsStack_.top().moduleContextNo == 0)
+                debugHandler_->appendTextToMargin(lineNo, notice);
         }
         if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
             if (VariableScope(s)==Bytecode::LOCAL)
@@ -2484,7 +2491,8 @@ void KumirVM::do_setref(uint8_t s, uint16_t id)
 //            name.push_back('&');
 //            name += qn;
             if (debugHandler_) {
-                debugHandler_->appendTextToMargin(lineNo, name);
+                if (contextsStack_.top().moduleContextNo == 0)
+                    debugHandler_->appendTextToMargin(lineNo, name);
             }
             if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
                 if (VariableScope(s)==Bytecode::LOCAL) {
@@ -2599,7 +2607,8 @@ void KumirVM::do_showreg(uint8_t regNo) {
                     ? register0_
                     : currentContext().registers[regNo];
             if (debugHandler_)
-                debugHandler_->appendTextToMargin(lineNo, val.toString());
+                if (contextsStack_.top().moduleContextNo == 0)
+                    debugHandler_->appendTextToMargin(lineNo, val.toString());
         }
     }
     nextIP();
@@ -2638,7 +2647,7 @@ void KumirVM::do_ret()
                 && lastContext_.runMode == CRM_OneStep
                 )
         {
-            if (contextsStack_.size()>0 && contextsStack_.top().moduleContextNo==0) {
+            if (contextsStack_.size()>0) {
                 contextsStack_.top().runMode = CRM_OneStep;
                 if (debugHandler_ && !blindMode_
                         && contextsStack_.top().type==EL_MAIN)
@@ -2679,7 +2688,7 @@ void KumirVM::do_line(const Bytecode::Instruction & instr)
     if (extractColumnPositionsFromLineInstruction(instr, from, to)) {
         currentContext().columnStart = from;
         currentContext().columnEnd = to;
-        if (!blindMode_ && contextsStack_.top().runMode==CRM_OneStep) {
+        if (!blindMode_ && contextsStack_.top().runMode==CRM_OneStep && contextsStack_.top().moduleContextNo==0) {
             if (debugHandler_)
                 debugHandler_->noticeOnLineChanged(currentContext().lineNo, from, to);
         }

@@ -1291,52 +1291,54 @@ void SyntaxAnalizer::processAnalisys()
         if (st.statement) {
             statements_[i].statement->expressions.clear();
         }
-        if (st.type==LxPriAssign) {
-            parseAssignment(i);
-        }
-        else if (st.type==LxNameClass && st.alg) {
-            parseVarDecl(i);
-        }
-        else if (
-                 st.type==LxPriAssert
-                 || st.type==LxPriPre
-                 || st.type==LxPriPost
-                 )
-        {
-            parseAssertPrePost(i);
-        }
-        else if (st.type==LxPriInput) {
-            parseInput(i);
-        }
-        else if (
-                 st.type==LxPriOutput
-                 )
-        {
-            parseOutput(i);
-        }
+        if (st.statement) {
+            if (st.type==LxPriAssign) {
+                parseAssignment(i);
+            }
+            else if (st.type==LxNameClass && st.alg) {
+                parseVarDecl(i);
+            }
+            else if (
+                     st.type==LxPriAssert
+                     || st.type==LxPriPre
+                     || st.type==LxPriPost
+                     )
+            {
+                parseAssertPrePost(i);
+            }
+            else if (st.type==LxPriInput) {
+                parseInput(i);
+            }
+            else if (
+                     st.type==LxPriOutput
+                     )
+            {
+                parseOutput(i);
+            }
 
-        else if (st.type==LxPriEndModule
-                 ||st.type==LxPriAlgBegin
-                 ||st.type==LxPriAlgEnd
-                 ||st.type==LxPriThen
-                 ||st.type==LxPriElse
-                 ||st.type==LxPriFi
-                 ||st.type==LxPriSwitch
-                 ||st.type==LxPriExit
-                 ||st.type==LxPriPause
-                 ||st.type==LxPriHalt
-                 )
-        {
-            parseOneLexemInstruction(i);
-        }
-        else if (st.type==LxPriEndLoop) {
-            parseEndLoop(i);
-        }
-        else if (st.type==LxPriIf||st.type==LxPriCase) {
-            parseIfCase(i);
-        }
-        else if (st.type==LxPriLoop) {
-            parseLoopBegin(i);
+            else if (st.type==LxPriEndModule
+                     ||st.type==LxPriAlgBegin
+                     ||st.type==LxPriAlgEnd
+                     ||st.type==LxPriThen
+                     ||st.type==LxPriElse
+                     ||st.type==LxPriFi
+                     ||st.type==LxPriSwitch
+                     ||st.type==LxPriExit
+                     ||st.type==LxPriPause
+                     ||st.type==LxPriHalt
+                     )
+            {
+                parseOneLexemInstruction(i);
+            }
+            else if (st.type==LxPriEndLoop) {
+                parseEndLoop(i);
+            }
+            else if (st.type==LxPriIf||st.type==LxPriCase) {
+                parseIfCase(i);
+            }
+            else if (st.type==LxPriLoop) {
+                parseLoopBegin(i);
+            }
         }
         for (int j=0; j<st.data.size(); j++) {
             if (!st.data[j]->error.isEmpty()) {
@@ -1510,6 +1512,9 @@ void SyntaxAnalizer::parseImport(int str)
             return;
         }
         name = binFile.absoluteFilePath();
+        moduleToImport = loadKodFile(name, st.data[1]->error);
+        if (!moduleToImport)
+            return;
     }
     else {
         QString localError = lexer_->testName(st.data[1]->data);
@@ -1539,6 +1544,78 @@ void SyntaxAnalizer::parseImport(int str)
         st.data[1]->error = _("No such module");
         return;
     }
+}
+
+AST::ModulePtr SyntaxAnalizer::loadKodFile(const QString &name, QString &error)
+{
+    QString canonicalName = name;
+    if (canonicalName.startsWith(QDir::currentPath())) {
+        canonicalName.remove(0, QDir::currentPath().length());
+        if (canonicalName.startsWith("/"))
+            canonicalName.remove(0,1);
+    }
+    QFileInfo kodFile(name);
+    QString kodFilePath = QDir::toNativeSeparators(kodFile.absoluteFilePath());
+    char programName[1024];
+    strcpy(programName, kodFilePath.toLocal8Bit().constData());
+    std::ifstream programFile(programName,  std::ios::in|std::ios::binary);
+    Bytecode::Data programData;
+    if (!programFile.is_open()) {
+        error = _("Can't open module file");
+    }
+    else {
+        try {
+            Bytecode::bytecodeFromDataStream(programFile, programData);
+        }
+        catch (...) {
+            error = _("Module file is damaged");
+        }
+    }
+    programFile.close();
+    AST::ModulePtr result;
+    if (error.length()==0) {
+        AST::Module * module = new AST::Module;
+        module->header.type = AST::ModTypeCached;
+        module->header.name = canonicalName;
+        for (size_t e=0; e<programData.d.size(); e++) {
+            const Bytecode::TableElem & elem = programData.d.at(e);
+            if (elem.type==Bytecode::EL_FUNCTION || elem.type==Bytecode::EL_MAIN) {
+                const QString algName = QString::fromStdWString(elem.name);
+                if (algName.length()>0 && !algName.startsWith("_")) {
+                    AST::Algorithm * alg = new AST::Algorithm;
+                    alg->header.name = algName;
+                    alg->header.implType = AST::AlgorhitmExternal;
+                    alg->header.external.moduleName = canonicalName;
+                    alg->header.external.id = elem.id;
+                    const QString signature = QString::fromStdWString(elem.signature);
+                    QStringList algSig = signature.split(":");
+                    alg->header.returnType = typeFromSignature(algSig[0]);
+                    if (algSig.size()>1) {
+                        QStringList argSignatures = algSig[1].split(",");
+                        for (int argNo=0; argNo<argSignatures.size(); argNo++) {
+                            if (argSignatures[argNo].length()==0)
+                                break;
+                            AST::Variable * var = new AST::Variable;
+                            QStringList sigPair = argSignatures[argNo].split(" ");
+                            if (sigPair[0]=="in")
+                                var->accessType = AST::AccessArgumentIn;
+                            else if (sigPair[0]=="out")
+                                var->accessType = AST::AccessArgumentOut;
+                            else if (sigPair[0]=="inout")
+                                var->accessType = AST::AccessArgumentInOut;
+                            var->baseType = typeFromSignature(sigPair[1]);
+                            var->dimension = sigPair[1].count("[]");
+                            alg->header.arguments.push_back(AST::VariablePtr(var));
+                        }
+                    }
+                    module->header.algorhitms.push_back(AST::AlgorithmPtr(alg));
+                }
+            }
+        }
+        result = AST::ModulePtr(module);
+        ast_->modules.push_back(result);
+    }
+    return result;
 }
 
 void SyntaxAnalizer::parseModuleHeader(int str)

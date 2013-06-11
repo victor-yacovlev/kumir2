@@ -39,6 +39,7 @@ public:
     void setBytecodeRun(KPlugin * run);
 
     inline QString endStatus() const { return s_endStatus; }
+    inline void setCourseManagerRequest() { courseManagerRequest_ = true; }
     ~KumirProgram();
 signals:
     void giveMeAProgram();
@@ -83,6 +84,8 @@ private:
     QAction * a_stop;
     QActionGroup * gr_actions;
     QString s_sourceFileName;
+
+    bool courseManagerRequest_;
 
     int documentId_;
     bool b_blind;

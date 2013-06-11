@@ -81,6 +81,7 @@ private /*methods*/:
     void parseEndLoop(int str);
     void parseIfCase(int str);
     void parseLoopBegin(int str);
+    AST::ModulePtr loadKodFile(const QString & fileName, QString &localError);
 
     const TextStatement & findSourceStatementByLexem(const Lexem* lexem) const;
 
