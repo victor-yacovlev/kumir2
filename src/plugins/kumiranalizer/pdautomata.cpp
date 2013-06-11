@@ -67,7 +67,16 @@ void PDAutomata::init(const QList<TextStatementPtr> & statements, AST::ModulePtr
     currentAlgorhitm_.clear();
 
     foreach (TextStatementPtr st, statements) {
-        if (st->type!=LxTypeComment && !st->hasError())
+        bool hasPrePDError = false;
+        if (st->hasError()) {
+            foreach (AST::Lexem * lx, st->data) {
+                if (lx->errorStage == AST::Lexem::BeforePDAutomata) {
+                    hasPrePDError = true;
+                    break;
+                }
+            }
+        }
+        if (st->type!=LxTypeComment && !hasPrePDError)
             source_ << st;
     }
 
