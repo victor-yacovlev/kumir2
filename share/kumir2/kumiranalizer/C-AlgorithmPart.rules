@@ -15,19 +15,19 @@
 }
 
 # алгоритм целиком в качестве ФРАГМЕНТ_АЛГОРИТМА
-[25] ФРАГМЕНТ_АЛГОРИТМА* -> алг нач ДОКУМЕНТАЦИЯ* ДАНО_НАДО* ФРАГМЕНТ_АЛГОРИТМА* кон : {
-    setCurrentError("Inner algorithm");
-    setCurrentIndentRank(0, +1);
-    appendSimpleLine();
-} {
-    setCurrentError("Inner algorithm");
-    setCurrentIndentRank(-1, +1);
-    appendSimpleLine();
-} {
-    setCurrentError("Inner algorithm");
-    setCurrentIndentRank(-1, 0)
-    appendSimpleLine();
-}
+#[25] ФРАГМЕНТ_АЛГОРИТМА* -> алг нач ДОКУМЕНТАЦИЯ* ДАНО_НАДО* ФРАГМЕНТ_АЛГОРИТМА* кон : {
+#    setCurrentError("Inner algorithm");
+#    setCurrentIndentRank(0, +1);
+#    appendSimpleLine();
+#} {
+#    setCurrentError("Inner algorithm");
+#    setCurrentIndentRank(-1, +1);
+#    appendSimpleLine();
+#} {
+#    setCurrentError("Inner algorithm");
+#    setCurrentIndentRank(-1, 0)
+#    appendSimpleLine();
+#}
 
 [91] ФРАГМЕНТ_АЛГОРИТМА* -> все : { setExtraCloseKeywordError("все"); }
 [91] ФРАГМЕНТ_АЛГОРИТМА* -> кц : { setExtraCloseKeywordError("кц"); }
@@ -189,11 +189,11 @@
     processCorrectEndOfLoop();
 }
 
-[20] ЦИКЛ -> нц ФРАГМЕНТ_АЛГОРИТМА* кон : {            # нет парного "кц"
-    # Ругаемся
-    setExtraOpenKeywordError("нц");
-} {
-    # Ошибка: "кон" вместо "кц"
-    setCurrentError("'end' instead of 'end loop'");
-    processCorrectEndOfLoop();
-}
+#[20] ЦИКЛ -> нц ФРАГМЕНТ_АЛГОРИТМА* кон : {            # нет парного "кц"
+#    # Ругаемся
+#    setExtraOpenKeywordError("нц");
+#} {
+#    # Ошибка: "кон" вместо "кц"
+#    setCurrentError("'end' instead of 'end loop'");
+#    processCorrectEndOfLoop();
+#}
