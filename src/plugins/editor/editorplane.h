@@ -1,6 +1,8 @@
 #ifndef EDITORPLANE_H
 #define EDITORPLANE_H
 
+#include "extensionsystem/settings.h"
+
 #include <QtGui>
 
 #include "interfaces/lexemtype.h"
@@ -20,7 +22,7 @@ public:
                          , class Editor * editor
                          , class TextCursor * cursor
                          , class Clipboard * clipboard
-                         , QSettings * settings
+                         , ExtensionSystem::SettingsPtr settings
                          , QScrollBar * horizontalSB
                          , QScrollBar * verticalSB
                          , bool hasAnalizer
@@ -109,7 +111,7 @@ private:
     class Clipboard * clipboard_;
     class Editor * editor_;
 
-    QSettings * settings_;
+    ExtensionSystem::SettingsPtr settings_;
     QScrollBar * verticalScrollBar_;
     QScrollBar * horizontalScrollBar_;
     QPoint marginMousePressedPoint_;

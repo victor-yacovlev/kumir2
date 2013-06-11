@@ -1,6 +1,8 @@
 #ifndef EDITOR_P_H
 #define EDITOR_P_H
 
+#include "extensionsystem/settings.h"
+
 #include <QtCore>
 #include <QtGui>
 #include "interfaces/editorinterface.h"
@@ -24,7 +26,7 @@ public:
     static class Clipboard * clipboard;
     QScrollBar * horizontalScrollBar;
     QScrollBar * verticalScrollBar;
-    QSettings * settings;
+    ExtensionSystem::SettingsPtr settings;
 
     FindReplace * findReplace;
 

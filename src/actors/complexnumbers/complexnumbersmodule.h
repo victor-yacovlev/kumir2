@@ -24,7 +24,7 @@ public:
     // Constructor
 
     ComplexNumbersModule(ExtensionSystem::KPlugin * parent);
-    inline void reloadSettings(QSettings *) {}
+    inline void reloadSettings(ExtensionSystem::SettingsPtr ) {}
     inline void changeGlobalState(ExtensionSystem::GlobalState, ExtensionSystem::GlobalState) {}
 
 public slots:

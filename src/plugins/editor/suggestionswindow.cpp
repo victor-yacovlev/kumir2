@@ -98,7 +98,7 @@ SuggestionsWindow::SuggestionsWindow(QWidget *editorWidget)
 
 }
 
-void SuggestionsWindow::updateSettings(const QSettings *settings)
+void SuggestionsWindow::updateSettings(const ExtensionSystem::SettingsPtr settings)
 {
     createIcons(settings);
     QFont f;
@@ -113,7 +113,7 @@ void SuggestionsWindow::updateSettings(const QSettings *settings)
     ui->alist->setFont(f);
 }
 
-void SuggestionsWindow::createIcons(const QSettings *settings)
+void SuggestionsWindow::createIcons(const ExtensionSystem::SettingsPtr settings)
 {
     QPoint points[4] = { QPoint(4,0), QPoint(0,4), QPoint(4,8), QPoint(8,4) };
     QImage local(8,8,QImage::Format_ARGB32);

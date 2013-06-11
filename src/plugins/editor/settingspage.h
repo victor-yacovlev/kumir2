@@ -1,6 +1,8 @@
 #ifndef SETTINGSPAGE_H
 #define SETTINGSPAGE_H
 
+#include "extensionsystem/settings.h"
+
 #include <QtGui>
 
 namespace Editor {
@@ -24,8 +26,8 @@ public:
         TextsOnly = 2
     };
 
-    explicit SettingsPage(QSettings * settings, QWidget *parent = 0);
-    void changeSettings(QSettings * settings);
+    explicit SettingsPage(ExtensionSystem::SettingsPtr settings, QWidget *parent = 0);
+    void changeSettings(ExtensionSystem::SettingsPtr settings);
     ~SettingsPage();
 
     static QString KeyColorKw;
@@ -106,7 +108,7 @@ private slots:
 private:
 
     Ui::SettingsPage *ui;
-    QSettings * settings_;
+    ExtensionSystem::SettingsPtr settings_;
 };
 
 

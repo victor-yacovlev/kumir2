@@ -32,7 +32,7 @@ public /* methods */:
     QWidget* pultWidget() const;
 public slots:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
-    void reloadSettings(QSettings * settings);
+    void reloadSettings(ExtensionSystem::SettingsPtr settings);
     void reset();
     void setAnimationEnabled(bool enabled);
     void runSetupPen();

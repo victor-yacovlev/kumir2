@@ -41,7 +41,7 @@ public slots:
     bool runIsWallAhead();
     bool runIsFreeAhead();
 
-    inline void reloadSettings(QSettings* ) { }
+    inline void reloadSettings(ExtensionSystem::SettingsPtr ) { }
     inline void changeGlobalState(ExtensionSystem::GlobalState, ExtensionSystem::GlobalState) {}
 
 public:

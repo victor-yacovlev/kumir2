@@ -7,6 +7,7 @@
 #define EXTENSIONSYSTEM_EXPORT Q_DECL_IMPORT
 #endif
 
+#include "settings.h"
 
 #include <QtCore>
 #include <QtGui>
@@ -32,12 +33,12 @@ public:
     DeclarativeSettingsPage(
             const QString &pluginName,
             const QString &title,
-            QSettings * settings,
+            SettingsPtr settings,
             const QMap<QString,Entry> entries
             );
 
-    void setSettingsObject(QSettings * settings);
-    inline QSettings * settingsObject() const { return m_settings; }
+    void setSettingsObject(SettingsPtr settings);
+    inline SettingsPtr settingsObject() const { return m_settings; }
 
 public slots:
     void init();
@@ -57,7 +58,7 @@ private:
     void addColorField(const QString & key, const Entry & entry);
     void addField(const QString & labelText, QWidget * controlWidget);
     QString s_pluginName;
-    QSettings * m_settings;
+    SettingsPtr m_settings;
     QMap<QString,Entry> m_entries;
     QMap<QString,QWidget*> m_widgets;
 };

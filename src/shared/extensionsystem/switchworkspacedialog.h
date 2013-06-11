@@ -1,6 +1,8 @@
 #ifndef COREGUI_SWITCHWORKSPACEDIALOG_H
 #define COREGUI_SWITCHWORKSPACEDIALOG_H
 
+#include "settings.h"
+
 #include <QtCore>
 #include <QtGui>
 
@@ -15,7 +17,7 @@ class SwitchWorkspaceDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit SwitchWorkspaceDialog(QSettings * settings);
+    explicit SwitchWorkspaceDialog(SettingsPtr settings);
     ~SwitchWorkspaceDialog();
     void setCurrentWorkspace(const QString &path);
     QString currentWorkspace() const;
@@ -27,7 +29,7 @@ private slots:
     void handleAccepted();
 private:
     Ui::SwitchWorkspaceDialog *ui;
-    QSettings * m_settings;
+    SettingsPtr settings_;
 };
 
 

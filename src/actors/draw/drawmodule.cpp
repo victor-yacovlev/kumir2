@@ -63,7 +63,7 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     return nullptr;
 }
 
-/* public slot */ void DrawModule::reloadSettings(QSettings * settings)
+/* public slot */ void DrawModule::reloadSettings(ExtensionSystem::SettingsPtr settings)
 {
     // Updates setting on module load, workspace change or appliyng settings dialog
     // TODO implement me

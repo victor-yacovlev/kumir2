@@ -65,7 +65,7 @@ int PainterNewImageDialog::exec()
         s->deleteLater();
     ui->listWidget->clear();
     ui->listWidget->addItems(sl_templateNames);
-    QSettings * ss = m_module->mySettings();
+    ExtensionSystem::SettingsPtr  ss = m_module->mySettings();
     const QString defaultPath = dir.absoluteFilePath("default.png");
     bool useTemplate = ss->value("NewCanvas/UseTemplate", QFile::exists(defaultPath)).toBool();
     int lastWidth = ss->value("NewCanvas/CustomWidth", 640).toInt();

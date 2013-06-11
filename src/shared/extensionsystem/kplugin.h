@@ -3,6 +3,7 @@
 
 #include <QtCore>
 #include "pluginspec.h"
+#include "settings.h"
 
 #ifdef EXTENSIONSYSTEM_LIBRARY
 #define EXTENSIONSYSTEM_EXPORT Q_DECL_EXPORT
@@ -35,7 +36,7 @@ public:
     State state() const;
     inline virtual bool isGuiRequired() const { return pluginSpec().gui; } // Can be overridden in special cases
     inline virtual QWidget* settingsEditorPage() { return 0; }
-    inline QSettings * pluginSettings() const { return mySettings(); }
+    SettingsPtr pluginSettings() const { return mySettings(); }
     virtual ~KPlugin();
 protected:
     inline virtual void saveSession() const { }
@@ -48,7 +49,7 @@ protected:
     inline virtual void updateSettings() { }
     KPlugin * myDependency(const QString & name) const;
 
-    QSettings * mySettings() const;
+    SettingsPtr mySettings() const;
 
     QList<KPlugin*> loadedPlugins(const QString &pattern = "*");
     QList<const KPlugin*> loadedPlugins(const QString &pattern = "*") const;

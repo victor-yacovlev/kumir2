@@ -34,7 +34,7 @@ KPlugin * KPlugin::myDependency(const QString &name) const
     return PluginManager::instance()->dependentPlugin(name, this);
 }
 
-QSettings * KPlugin::mySettings() const
+SettingsPtr KPlugin::mySettings() const
 {
     return PluginManager::instance()->settingsByObject(this);
 }

@@ -9,7 +9,7 @@ namespace Editor
 
 
 
-TextDocument::TextDocument(QObject *parent, QSettings * settings)
+TextDocument::TextDocument(QObject *parent, ExtensionSystem::SettingsPtr settings)
     : QObject(parent)
     , id_(-1)
     , undoStack_(new QUndoStack(this))
@@ -563,7 +563,7 @@ QString TextDocument::lineToHtml(int lineNo) const
 
 namespace RTF {
 
-static QByteArray rtfColor(const QSettings * s,
+static QByteArray rtfColor(const ExtensionSystem::SettingsPtr s,
                            const QString & key,
                            const QString & defaultt)
 {
@@ -587,7 +587,7 @@ struct Chunk {
     QByteArray data;
 };
 
-static QList<Chunk> splitLineIntoChunks(const QSettings * s,
+static QList<Chunk> splitLineIntoChunks(const ExtensionSystem::SettingsPtr s,
                                         const TextLine & textLine)
 {
     using namespace Shared;

@@ -3,7 +3,6 @@
 
 #include "editorplugin.h"
 #include "editor.h"
-#include "editorstandalonewindow.h"
 #include "settingspage.h"
 
 namespace Editor {
@@ -253,16 +252,7 @@ QString EditorPlugin::initialize(const QStringList &arguments)
 
 void EditorPlugin::start()
 {
-    QString filename;
-    for (int i=1; i<qApp->argc(); i++) {
-        const QString arg = qApp->arguments()[i];
-        if ( !arg.startsWith("-") && !arg.startsWith("[") && arg.endsWith(".kum")) {
-            filename = arg;
-        }
-    }
-    EditorStandaloneWindow * w = new EditorStandaloneWindow(this, mySettings(), filename);
-    qApp->setQuitOnLastWindowClosed(true);
-    w->show();
+
 }
 
 QWidget* EditorPlugin::settingsEditorPage()
@@ -274,10 +264,7 @@ QWidget* EditorPlugin::settingsEditorPage()
 
 void EditorPlugin::stop()
 {
-    for (int i=0; i<d->editors.size(); i++) {
-        if (d->editors[i].e || d->editors[i].a)
-            closeDocument(i);
-    }
+
 }
 
 bool EditorPlugin::hasUnsavedChanges(int documentId) const

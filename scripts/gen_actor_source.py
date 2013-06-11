@@ -2078,7 +2078,7 @@ class ModuleBaseCppClass(CppClassBase):
         self.classDeclarationPrefix = "    Q_OBJECT"
         self.abstractPublicSlots = [
             "void reset()",
-            "void reloadSettings(QSettings* settings)",
+            "void reloadSettings(ExtensionSystem::SettingsPtr settings)",
             "void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current)"
         ]
         if module.gui:
@@ -2299,10 +2299,10 @@ class ModuleBaseCppClass(CppClassBase):
         Creates mySettings implementation
 
         :rtype:     str
-        :return:    implementation of QSettings* mySettings() const
+        :return:    implementation of ExtensionSystem::SettingsPtr mySettings() const
         """
         return """
-/* protected */ QSettings* %s::mySettings() const
+/* protected */ ExtensionSystem::SettingsPtr %s::mySettings() const
 {
     %s* plugin = qobject_cast<%s*>(parent());
     return plugin->mySettings();
@@ -2466,10 +2466,10 @@ class ModuleCppClass(CppClassBase):
         Creates reloadSettings implementation stub
 
         :rtype:     str
-        :return:    implementation of void reloadSettings(QSettings*)
+        :return:    implementation of void reloadSettings(ExtensionSystem::SettingsPtr)
         """
         return """
-/* public slot */ void %s::reloadSettings(QSettings * settings)
+/* public slot */ void %s::reloadSettings(ExtensionSystem::SettingsPtr settings)
 {
     // Updates setting on module load, workspace change or appliyng settings dialog
     // TODO implement me

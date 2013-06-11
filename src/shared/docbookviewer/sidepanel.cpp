@@ -85,7 +85,7 @@ void SidePanel::hadleButtonPressed()
     }
 }
 
-void SidePanel::saveState(QSettings *settings, const QString &prefix)
+void SidePanel::saveState(ExtensionSystem::SettingsPtr settings, const QString &prefix)
 {
     QString shown;
     if (ui->contents->isChecked())
@@ -99,7 +99,7 @@ void SidePanel::saveState(QSettings *settings, const QString &prefix)
     settings->setValue(prefix + "/ShowMode", shown);
 }
 
-void SidePanel::restoreState(QSettings *settings, const QString &prefix)
+void SidePanel::restoreState(ExtensionSystem::SettingsPtr settings, const QString &prefix)
 {
     QString shown = settings->value(prefix + "/ShowMode").toString().toLower();
     if (shown == "contents") {

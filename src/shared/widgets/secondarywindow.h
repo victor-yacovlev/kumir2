@@ -1,6 +1,7 @@
 #ifndef SECONDARY_WINDOW_H
 #define SECONDARY_WINDOW_H
 
+#include "extensionsystem/settings.h"
 
 #include <QtCore>
 #include <QtGui>
@@ -24,7 +25,7 @@ public:
     explicit SecondaryWindow(QWidget *centralComponent,
                           QWidget * dockPlace,
                              QMainWindow * mainWindow,
-                             QSettings * settings,
+                             ExtensionSystem::SettingsPtr settings,
                           const QString &settingsKey,
                           bool resizableX = true, bool resizableY = true);
 public slots:
@@ -38,7 +39,7 @@ public slots:
     void setStayOnTop(bool v);
     bool isStayOnTop();
     QAction * toggleViewAction() const;
-    void setSettingsObject(QSettings * settings);
+    void setSettingsObject(ExtensionSystem::SettingsPtr settings);
     void restoreState();
     void saveState();
     void paintEvent(QPaintEvent *e);

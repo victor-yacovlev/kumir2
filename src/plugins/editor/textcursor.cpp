@@ -11,7 +11,7 @@ TextCursor::TextCursor(
         TextDocument * document,
         Clipboard * clipboard,
         AnalizerInterface * analizer,
-        QSettings * settings
+        ExtensionSystem::SettingsPtr settings
         )
     : QObject(0)
     , document_(document)

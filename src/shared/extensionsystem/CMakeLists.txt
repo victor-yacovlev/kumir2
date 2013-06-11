@@ -21,6 +21,7 @@ set(SOURCES
     settingsdialog.cpp
     switchworkspacedialog.cpp
     declarativesettingspage.cpp
+    settings.cpp
 )
 
 set(HEADERS
@@ -29,6 +30,7 @@ set(HEADERS
     settingsdialog.h
     switchworkspacedialog.h
     pluginspec.h
+    settings.h
 )
 
 set(FORMS

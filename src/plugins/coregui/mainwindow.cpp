@@ -917,11 +917,10 @@ void MainWindow::loadSettings()
 void MainWindow::saveSettings()
 {
     QRect r(pos(), size());
-    QSettings * sett = m_plugin->mySettings();
+    SettingsPtr sett = m_plugin->mySettings();
     sett->setValue(Plugin::MainWindowGeometryKey, r);
     sett->setValue(Plugin::MainWindowStateKey, saveState());
     sett->setValue(Plugin::MainWindowSplitterStateKey, ui->splitter->saveState());
-    sett->sync();
 }
 
 void MainWindow::restoreSession()

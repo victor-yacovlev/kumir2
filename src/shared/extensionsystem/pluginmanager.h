@@ -3,6 +3,7 @@
 
 #include <QtCore>
 #include "kplugin.h"
+#include "settings.h"
 
 #ifdef EXTENSIONSYSTEM_LIBRARY
 #define EXTENSIONSYSTEM_EXPORT Q_DECL_EXPORT
@@ -65,7 +66,7 @@ public:
     KPlugin::State stateByObject(const KPlugin * p) const;
 
     /** Returns plugin settings */
-    QSettings * settingsByObject(const KPlugin * p) const;
+    SettingsPtr settingsByObject(const KPlugin * p) const;
 
     /** Returns plugin dependency by name */
     KPlugin * dependentPlugin(const QString &name, const class KPlugin * p) const;

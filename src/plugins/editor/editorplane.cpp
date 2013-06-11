@@ -32,7 +32,7 @@ EditorPlane::EditorPlane(TextDocument * doc
                          , class Editor * editor
                          , TextCursor * cursor
                          , class Clipboard * clipboard
-                         , QSettings * settings
+                         , ExtensionSystem::SettingsPtr settings
                          , QScrollBar * horizontalSB
                          , QScrollBar * verticalSB
                          , bool hasAnalizer

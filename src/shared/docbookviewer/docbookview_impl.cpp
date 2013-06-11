@@ -50,13 +50,13 @@ QSize DocBookViewImpl::sizeHint() const
     return QSize(1000, 600);
 }
 
-void DocBookViewImpl::updateSettings(QSettings *settings, const QString &prefix)
+void DocBookViewImpl::updateSettings(ExtensionSystem::SettingsPtr settings, const QString &prefix)
 {
     settings_ = settings;
     settingsPrefix_ = prefix;
 }
 
-void DocBookViewImpl::saveState(QSettings *settings, const QString &prefix)
+void DocBookViewImpl::saveState(ExtensionSystem::SettingsPtr settings, const QString &prefix)
 {
     settings->setValue(prefix + "/SplitterGeometry",
                        splitter_->saveGeometry());
@@ -65,7 +65,7 @@ void DocBookViewImpl::saveState(QSettings *settings, const QString &prefix)
     sidePanel_->saveState(settings, prefix + "/SideBar");
 }
 
-void DocBookViewImpl::restoreState(QSettings *settings, const QString &prefix)
+void DocBookViewImpl::restoreState(ExtensionSystem::SettingsPtr settings, const QString &prefix)
 {
     splitter_->restoreState(settings->value(prefix + "/SplitterState")
                             .toByteArray());

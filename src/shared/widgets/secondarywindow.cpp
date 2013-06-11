@@ -34,7 +34,7 @@ public:
     void init(QWidget *centralWidget,
               QWidget *dockPlace,
               QMainWindow * mainWindow,
-              QSettings * settings,
+              ExtensionSystem::SettingsPtr settings,
               const QString &settingsKey,
               bool resizableX, bool resizableY);
 
@@ -71,7 +71,7 @@ public:
     SecondaryWindow *pClass_;
     bool visibleFlag_;
     QString settingsKey_;
-    QSettings * settings_;
+    ExtensionSystem::SettingsPtr settings_;
 
     void timerEvent(QTimerEvent *);
 };
@@ -151,7 +151,7 @@ protected:
 SecondaryWindow::SecondaryWindow(QWidget *centralComponent,
                                  QWidget * dockPlace,
                                  QMainWindow * mainWindow,
-                                 QSettings * settings,
+                                 ExtensionSystem::SettingsPtr settings,
                            const QString &settingsKey,
                            bool resizableX, bool resizableY) :
 
@@ -424,7 +424,7 @@ void SecondaryWindow::toggleDocked()
     btn->forceUnhighlight();
 }
 
-void SecondaryWindow::setSettingsObject(QSettings *settings)
+void SecondaryWindow::setSettingsObject(ExtensionSystem::SettingsPtr settings)
 {
     pImpl_->settings_ = settings;
     restoreState();
@@ -435,7 +435,7 @@ void SecondaryWindow::setSettingsObject(QSettings *settings)
 void SecondaryWindowPrivate::init(QWidget *centralWidget,
                                   QWidget *placeWidget,
                                   QMainWindow * mainWindow,
-                                  QSettings * settings,
+                                  ExtensionSystem::SettingsPtr settings,
                                const QString &settingsKey,
                                bool resizableX, bool resizableY)
 {

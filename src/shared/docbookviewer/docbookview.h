@@ -4,6 +4,9 @@
 // Self includes
 #include "document.h"
 
+// Extension system includes
+#include "extensionsystem/settings.h"
+
 // Qt includes
 #include <QString>
 #include <QWidget>
@@ -32,7 +35,7 @@ public:
     explicit DocBookView(QWidget * parent = 0);
     QAction * viewerAction(const DocBookViewAction type) const;
 
-    void updateSettings(QSettings * settings, const QString & prefix);
+    void updateSettings(ExtensionSystem::SettingsPtr settings, const QString & prefix);
 
     QSize minimumSizeHint() const;
     QSize sizeHint() const;

@@ -5,7 +5,7 @@ namespace ExtensionSystem {
 DeclarativeSettingsPage::DeclarativeSettingsPage(
         const QString &pluginName,
         const QString &title,
-        QSettings *settings,
+        SettingsPtr settings,
         const QMap<QString, Entry> entries)
 {
     setMaximumWidth(400);
@@ -30,11 +30,9 @@ DeclarativeSettingsPage::DeclarativeSettingsPage(
     setSettingsObject(settings);
 }
 
-void DeclarativeSettingsPage::setSettingsObject(QSettings *settings)
+void DeclarativeSettingsPage::setSettingsObject(SettingsPtr settings)
 {
     m_settings = settings;
-    const QString className = QString::fromAscii(settings->metaObject()->className());
-    Q_ASSERT(className=="QSettings");
     init();
 }
 

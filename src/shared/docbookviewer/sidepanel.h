@@ -3,6 +3,8 @@
 
 #include "document.h"
 
+#include "extensionsystem/settings.h"
+
 #include <QWidget>
 #include <QTreeWidget>
 #include <QSettings>
@@ -22,8 +24,8 @@ public:
     explicit SidePanel(QWidget *parent = 0);
 
     void addDocument(Document document);    
-    void saveState(QSettings * settings, const QString & prefix);
-    void restoreState(QSettings * settings, const QString & prefix);
+    void saveState(ExtensionSystem::SettingsPtr  settings, const QString & prefix);
+    void restoreState(ExtensionSystem::SettingsPtr  settings, const QString & prefix);
 
     ~SidePanel();
 

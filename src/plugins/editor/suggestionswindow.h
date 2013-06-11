@@ -1,6 +1,8 @@
 #ifndef EDITOR_SUGGESTIONSWINDOW_H
 #define EDITOR_SUGGESTIONSWINDOW_H
 
+#include "extensionsystem/settings.h"
+
 #include <QtGui>
 
 #include "interfaces/analizerinterface.h"
@@ -19,7 +21,7 @@ public:
     explicit SuggestionsWindow(QWidget *editorWidget);
     void init(const QString & before, const QList<Shared::Suggestion> & suggestions);
     ~SuggestionsWindow();
-    void updateSettings(const QSettings * settings);
+    void updateSettings(const ExtensionSystem::SettingsPtr settings);
 signals:
     void acceptedSuggestion(const QString & text);
     void hidden();
@@ -34,7 +36,7 @@ protected slots:
     void handleItemActivated(QListWidgetItem * item);
     void acceptItem();
 private:
-    void createIcons(const QSettings * settings);
+    void createIcons(const ExtensionSystem::SettingsPtr settings);
     Ui::SuggestionsWindow *ui;
     QList<Shared::Suggestion> suggestions_;
     bool keyPressedFlag_;

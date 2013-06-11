@@ -6,6 +6,8 @@
 #include "interfaces/analizerinterface.h"
 #include "keycommand.h"
 
+#include "extensionsystem/settings.h"
+
 using namespace Shared;
 
 namespace Editor {
@@ -20,7 +22,7 @@ public:
     explicit TextCursor(class TextDocument * document,
                         class Clipboard * clipboard,
                         class AnalizerInterface * analizer,
-                        QSettings * settings
+                        ExtensionSystem::SettingsPtr  settings
                         );
 
     ~TextCursor();
@@ -90,7 +92,7 @@ protected:
     class TextDocument * document_;
     class Clipboard * clipboard_;
     class AnalizerInterface * analizer_;
-    QSettings * settings_;
+    ExtensionSystem::SettingsPtr settings_;
     EditMode editMode_;
     ViewMode viewMode_;
     int blinkTimerId_;

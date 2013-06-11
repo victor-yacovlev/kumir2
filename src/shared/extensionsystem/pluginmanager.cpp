@@ -18,14 +18,14 @@ struct PluginManagerPrivate {
     QString sharePath;
     QList<PluginSpec> specs;
     QList<KPlugin::State> states;
-    QList<QSettings*> settings;
+    QList<SettingsPtr> settings;
     QList<PluginRequest> requests;
     QString mainPluginName;
     GlobalState globalState;
 
     SettingsDialog * settingsDialog;
     SwitchWorkspaceDialog * switchWorkspaceDialog;
-    QSettings * mySettings;
+    SettingsPtr mySettings;
     QString workspacePath;
 
 
@@ -45,16 +45,7 @@ PluginManager::PluginManager()
 {
     m_instance = this;
     d->globalState = GS_Unlocked;
-#ifndef Q_OS_MAC
-        const QString applicationLanucher = qApp->arguments().at(0);
-        QString applicationName = applicationLanucher;
-        if (applicationLanucher.startsWith(qApp->applicationDirPath())) {
-            applicationName = applicationLanucher.mid(qApp->applicationDirPath().length() + 1);
-        }
-#else
-    QString applicationName = "kumir2";
-#endif
-    d->mySettings = new QSettings(applicationName, "ExtensionSystem");
+    d->mySettings = SettingsPtr(new Settings("ExtensionSystem"));
     d->settingsDialog = 0;
 #ifdef Q_WS_X11
     bool gui = getenv("DISPLAY")!=0;
@@ -65,8 +56,7 @@ PluginManager::PluginManager()
 }
 
 PluginManager::~PluginManager()
-{
-    d->mySettings->deleteLater();
+{    
     if (d->settingsDialog)
         d->settingsDialog->deleteLater();
     if (d->switchWorkspaceDialog)
@@ -163,8 +153,7 @@ QString PluginManagerPrivate::reorderSpecsAndCreateStates(const QStringList &ord
 #else
         QString applicationName = "kumir2";
 #endif
-        settings << new QSettings(applicationName, spec.name);
-        settings.last()->setIniCodec("UTF-8");
+        settings << SettingsPtr(new Settings(spec.name));
     }
     specs = newSpecs;
     return "";
@@ -329,19 +318,7 @@ QString PluginManagerPrivate::loadPlugins()
         }
         objects[i] = plugin;
         states[i] = KPlugin::Loaded;
-        if (settings[i])
-            settings[i]->deleteLater();
-#ifndef Q_OS_MAC
-        const QString applicationLanucher = qApp->arguments().at(0);
-        QString applicationName = applicationLanucher;
-        if (applicationLanucher.startsWith(qApp->applicationDirPath())) {
-            applicationName = applicationLanucher.mid(qApp->applicationDirPath().length() + 1);
-        }
-#else
-        QString applicationName = "kumir2";
-#endif
-        settings[i] = new QSettings(applicationName, specs[i].name);
-        settings[i]->setIniCodec("UTF-8");
+        settings[i] = SettingsPtr(new Settings(specs[i].name));
         plugin->updateSettings();
     }
     return "";
@@ -491,18 +468,9 @@ QString PluginManager::loadExtraModule(const std::string &canonicalFileName)
     spec.libraryFileName = libraryFileName;
     spec.gui = plugin->isGuiRequired();
     d->specs.push_back(spec);
-#ifndef Q_OS_MAC
-        const QString applicationLanucher = qApp->arguments().at(0);
-        QString applicationName = applicationLanucher;
-        if (applicationLanucher.startsWith(qApp->applicationDirPath())) {
-            applicationName = applicationLanucher.mid(qApp->applicationDirPath().length() + 1);
-        }
-#else
-    QString applicationName = "kumir2";
-#endif
-    QSettings * settings = new QSettings(applicationName, moduleName);
-    settings->setIniCodec("UTF-8");
-    d->settings.push_back(settings);
+    Settings * sett = new Settings(moduleName);
+    sett->changeWorkingDirectory(d->workspacePath);
+    d->settings.push_back(SettingsPtr(sett));
     plugin->updateSettings();
     plugin->initialize(QStringList());
     return QString();
@@ -644,7 +612,7 @@ KPlugin::State PluginManager::stateByObject(const KPlugin *p) const
     return KPlugin::Disabled;
 }
 
-QSettings * PluginManager::settingsByObject(const KPlugin *p) const
+SettingsPtr PluginManager::settingsByObject(const KPlugin *p) const
 {
     Q_ASSERT(d->settings.size()==d->objects.size());
     for (int i=0; i<d->objects.size(); i++) {
@@ -653,7 +621,7 @@ QSettings * PluginManager::settingsByObject(const KPlugin *p) const
             return d->settings[i];
         }
     }
-    return 0;
+    return SettingsPtr();
 }
 
 PluginManager * PluginManager::m_instance = 0;
@@ -672,18 +640,17 @@ void PluginManager::shutdown()
         }
         p->stop();
         d->states[i] = KPlugin::Stopped;
-        d->settings[i]->sync();
+        d->settings[i].clear();
     }
 }
 
 void PluginManagerPrivate::changeWorkingDirectory(const QString &path)
 {
     for (int i=0; i<objects.size(); i++) {
-        settings[i]->sync();
-        settings[i]->deleteLater();
         if (!workspacePath.isEmpty()) {
             objects[i]->saveSession();
         }
+        settings[i]->changeWorkingDirectory(path);
     }
     workspacePath = path;
     QDir::root().mkpath(path);
@@ -692,16 +659,11 @@ void PluginManagerPrivate::changeWorkingDirectory(const QString &path)
     QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, path+"/.settings");
     for (int i=0; i<objects.size(); i++) {
         KPlugin * p = objects[i];
-        if (settings[i])
-            settings[i]->deleteLater();
-        settings[i] = new QSettings(path+"/.settings/"+specs[i].name+".conf", QSettings::IniFormat);
-        settings[i]->setIniCodec("UTF-8");
-        settings[i]->sync();
-
         p->changeCurrentDirectory(path);
         p->updateSettings();
         p->restoreSession();
     }
+    mySettings->setValue(SwitchWorkspaceDialog::CurrentWorkspaceKey, path);
 }
 
 void PluginManager::switchGlobalState(GlobalState state)

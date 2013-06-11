@@ -54,7 +54,7 @@ qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 qt4_wrap_ui(UI_SOURCES ${FORMS})
 
 add_library(DocBookViewer SHARED  ${SOURCES} ${MOC_SOURCES} ${UI_SOURCES})
-target_link_libraries(DocBookViewer ${QT_LIBRARIES})
+target_link_libraries(DocBookViewer ${QT_LIBRARIES} ExtensionSystem)
 set_property(TARGET DocBookViewer APPEND PROPERTY COMPILE_DEFINITIONS DOCBOOKVIEWER_LIBRARY)
 
 if(${BUILD_AS_PART_OF_KUMIR})

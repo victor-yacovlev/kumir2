@@ -364,7 +364,7 @@ void EditorPrivate::updateFromAnalizer()
 
 Clipboard * EditorPrivate::clipboard = 0;
 
-Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface * analizer, int documentId, QWidget *parent) :
+Editor::Editor(bool initiallyNotSaved, ExtensionSystem::SettingsPtr settings, AnalizerInterface * analizer, int documentId, QWidget *parent) :
     QWidget()
 {
     setParent(parent);
@@ -382,7 +382,18 @@ Editor::Editor(bool initiallyNotSaved, QSettings * settings, AnalizerInterface *
     d->settings = settings;
     d->horizontalScrollBar = new QScrollBar(Qt::Horizontal, this);
     d->verticalScrollBar = new QScrollBar(Qt::Vertical, this);
-    d->plane = new EditorPlane(d->doc, d->analizer, this, d->cursor, d->clipboard, d->settings, d->horizontalScrollBar, d->verticalScrollBar, d->analizer!=NULL, this);
+    d->plane = new EditorPlane(
+                d->doc,
+                d->analizer,
+                this,
+                d->cursor,
+                d->clipboard,
+                d->settings,
+                d->horizontalScrollBar,
+                d->verticalScrollBar,
+                d->analizer!=NULL,
+                this);
+
     d->findReplace = new FindReplace(d->doc, d->cursor, d->plane);
 
     d->keybStatus = new QLabel(0);
@@ -584,7 +595,7 @@ Editor::~Editor()
 }
 
 
-void Editor::setSettings(QSettings *s)
+void Editor::setSettings(ExtensionSystem::SettingsPtr s)
 {
     d->settings = s;
     d->plane->settings_ = s;

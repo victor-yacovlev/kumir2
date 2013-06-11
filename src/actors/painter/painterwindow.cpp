@@ -36,7 +36,7 @@ PainterWindow::PainterWindow(PainterModule * module, QWidget *parent) :
     connect (m_module->m_actionPainterColorInStatusBarHSV, SIGNAL(triggered()), this, SLOT(handleColorTextModeChanged()));
     connect (m_module->m_actionPainterColorInStatusBarRRGGBB, SIGNAL(triggered()), this, SLOT(handleColorTextModeChanged()));
 
-    QSettings * s = m_module->mySettings();
+    ExtensionSystem::SettingsPtr s = m_module->mySettings();
     restoreGeometry(s->value("WindowGeometry").toByteArray());
     qreal initialZoom = 1.0;
     QRect screenRect = qApp->desktop()->availableGeometry();
@@ -198,7 +198,7 @@ void PainterWindow::newImage()
 void PainterWindow::loadImage()
 {
     QString searchDir = QDir::homePath();
-    QSettings * s = m_module->mySettings();
+    ExtensionSystem::SettingsPtr s = m_module->mySettings();
     searchDir = s->value("LastDir", searchDir).toString();
     QString fn = QFileDialog::getOpenFileName(this,
                                               tr("Load image..."),
@@ -217,7 +217,7 @@ void PainterWindow::loadImage()
 void PainterWindow::saveImageAs()
 {
     QString searchDir = QDir::homePath();
-    QSettings * s = m_module->mySettings();
+    ExtensionSystem::SettingsPtr s = m_module->mySettings();
     QString suggestName = s_templateName.isEmpty()?
                           QString::fromUtf8("picture.png") :
                           QString::fromUtf8("copy of ")+QFileInfo(s_templateName).fileName();

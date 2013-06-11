@@ -82,7 +82,7 @@ QString SettingsPage::defaultFontFamily()
 
 int SettingsPage::defaultFontSize = 12;
 
-SettingsPage::SettingsPage(QSettings * settings, QWidget *parent) :
+SettingsPage::SettingsPage(ExtensionSystem::SettingsPtr  settings, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SettingsPage),
     settings_(settings)
@@ -312,7 +312,7 @@ QColor SettingsPage::buttonColor(const QToolButton *b) const
     }
 }
 
-void SettingsPage::changeSettings(QSettings *settings)
+void SettingsPage::changeSettings(ExtensionSystem::SettingsPtr settings)
 {
     settings_ = settings;
     init();

@@ -289,7 +289,7 @@ namespace ActorRobot {
         FieldItm* sepItmLeft;
         FieldItm* sepItmRight;
         QFont charFnt;
-        QSettings* sett;
+        ExtensionSystem::SettingsPtr sett;
     };
     
     class RoboField: public QGraphicsScene
@@ -448,7 +448,7 @@ namespace ActorRobot {
         QPoint upLeftCorner(int str,int stlb);
         bool pressed;
        // RobotModule *m_robot;
-        QSettings* sett;
+        ExtensionSystem::SettingsPtr sett;
         QRectF	oldRect;
         qreal perssX,pressY;
         QGraphicsLineItem* showWall,*keyCursor;
@@ -542,9 +542,9 @@ namespace ActorRobot {
         // GUI access methods
         QWidget* mainWidget() const;
         QWidget* pultWidget() const;
-        static QSettings * robotSettings();
+        static ExtensionSystem::SettingsPtr robotSettings();
         public slots:
-        void reloadSettings(QSettings * settings);
+        void reloadSettings(ExtensionSystem::SettingsPtr settings);
         void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
         void loadEnv();
         void resetEnv();

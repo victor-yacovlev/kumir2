@@ -11,7 +11,6 @@ set(SOURCES
     textcursor.cpp
     clipboard.cpp
     utils.cpp
-    editorstandalonewindow.cpp
     settingspage.cpp
     macro.cpp
     keycommand.cpp
@@ -44,7 +43,6 @@ set(MOC_HEADERS
     textcursor.h
     textdocument.h
     clipboard.h
-    editorstandalonewindow.h
     settingspage.h
     editor_p.h
     suggestionswindow.h

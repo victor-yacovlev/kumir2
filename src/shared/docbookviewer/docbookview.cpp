@@ -10,7 +10,7 @@ DocBookView::DocBookView(QWidget *parent)
 
 }
 
-void DocBookView::updateSettings(QSettings *settings, const QString &prefix)
+void DocBookView::updateSettings(ExtensionSystem::SettingsPtr settings, const QString &prefix)
 {
     pImpl_->updateSettings(settings, prefix);
 }

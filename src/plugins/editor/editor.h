@@ -2,6 +2,7 @@
 #define EDITOR_H
 
 #include <QtGui>
+#include "extensionsystem/settings.h"
 #include "interfaces/analizerinterface.h"
 #include "dataformats/kumfile.h"
 
@@ -12,12 +13,18 @@ class Editor
 {
     Q_OBJECT
 public:
-    explicit Editor(bool initiallyNotSaved = false, QSettings * settings = 0, Shared::AnalizerInterface * analizer = 0, int documentId = 0, QWidget *parent = 0);
+    explicit Editor(
+            bool initiallyNotSaved = false,
+            ExtensionSystem::SettingsPtr settings = ExtensionSystem::SettingsPtr(),
+            Shared::AnalizerInterface * analizer = 0,
+            int documentId = 0,
+            QWidget *parent = 0
+            );
     ~Editor();
     void setTeacherMode(bool v);
     bool isTeacherMode() const;
     QList<QAction*> toolbarActions();
-    void setSettings(QSettings * s);
+    void setSettings(ExtensionSystem::SettingsPtr s);
     QList<QMenu*> menuActions();
     QList<QWidget*> statusbarWidgets();
     KumFile::Data toKumFile() const;

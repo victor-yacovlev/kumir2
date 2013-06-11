@@ -4,6 +4,8 @@
 #include "docbookview.h"
 #include "document.h"
 
+#include "extensionsystem/settings.h"
+
 #include <QObject>
 #include <QMap>
 #include <QSharedPointer>
@@ -32,9 +34,9 @@ public /* methods */:
 
     void removeDocument(const Document & existingDocument);
 
-    void updateSettings(QSettings * settings, const QString & prefix);
-    void saveState(QSettings * settings, const QString & prefix);
-    void restoreState(QSettings * settings, const QString & prefix);
+    void updateSettings(ExtensionSystem::SettingsPtr settings, const QString & prefix);
+    void saveState(ExtensionSystem::SettingsPtr settings, const QString & prefix);
+    void restoreState(ExtensionSystem::SettingsPtr settings, const QString & prefix);
 
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
@@ -50,7 +52,7 @@ public slots:
 
 private /* fields */:
     DocBookView* pClass_;
-    QSettings* settings_;
+    ExtensionSystem::SettingsPtr settings_;
     QString settingsPrefix_;
 
     QSplitter * splitter_;

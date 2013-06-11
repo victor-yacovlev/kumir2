@@ -7,6 +7,7 @@
 #include "interfaces/lexemtype.h"
 #include "interfaces/analizerinterface.h"
 #include "dataformats/kumfile.h"
+#include "extensionsystem/settings.h"
 
 namespace Editor {
 
@@ -61,7 +62,7 @@ public:
     static bool noUndoRedo;
     inline TextLine & at(int index) { return data_[index]; }
     inline const TextLine & at(int index) const { return data_[index]; }
-    explicit TextDocument(QObject * parent, QSettings * settings);
+    explicit TextDocument(QObject * parent, ExtensionSystem::SettingsPtr settings);
     int id_;
     uint indentAt(uint lineNo) const;
     inline void setAnalizer(Shared::AnalizerInterface * a) { analizer_ = a; }
@@ -143,7 +144,7 @@ private:
     QList<TextLine> data_;
     QString hiddenText_;
     bool wasHiddenTextFlag_;
-    QSettings * settings_;
+    ExtensionSystem::SettingsPtr settings_;
     Shared::AnalizerInterface * analizer_;
 };
 

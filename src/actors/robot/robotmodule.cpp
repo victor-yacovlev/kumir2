@@ -17,7 +17,7 @@ You should change it corresponding to functionality.
 namespace ActorRobot {
 
 
-    QSettings * RobotModule::robotSettings()
+    ExtensionSystem::SettingsPtr RobotModule::robotSettings()
     {
         ExtensionSystem::PluginManager * pluginManager = ExtensionSystem::PluginManager::instance();
         ExtensionSystem::KPlugin * plugin = pluginManager->loadedPlugins("ActorRobot")[0];
@@ -727,7 +727,7 @@ namespace ActorRobot {
         old_cell=QPair<int,int>(-1,-1);
         pressed=false;
         sett=RobotModule::robotSettings();
-        QString className = sett->metaObject()->className();
+//        QString className = sett->metaObject()->className();
         Parent=parent;
         mode=0;
         LineColor = QColor(sett->value("LineColor","#C8C800").toString());
@@ -3396,7 +3396,7 @@ void RobotModule::reset()
 
     };    
     
-void RobotModule::reloadSettings(QSettings *settings)
+void RobotModule::reloadSettings(ExtensionSystem::SettingsPtr settings)
 {
     qDebug()<<"reload settings";
     field->setColorFromSett();

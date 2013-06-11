@@ -22,7 +22,7 @@ set(MOC_HEADERS
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 
 add_library(Widgets SHARED  ${SOURCES} ${MOC_SOURCES})
-target_link_libraries(Widgets ${QT_LIBRARIES})
+target_link_libraries(Widgets ${QT_LIBRARIES} ExtensionSystem)
 set_property(TARGET Widgets APPEND PROPERTY COMPILE_DEFINITIONS WIDGETS_LIBRARY)
 
 handleTranslation(Widgets)
