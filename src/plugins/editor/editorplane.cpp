@@ -1728,6 +1728,10 @@ void EditorPlane::dropEvent(QDropEvent *e)
                     QString st = cursor_->selectedText();
                     row -= st.count("\n");
                 }
+                if (row == toRow && atoCol <= col) {
+                    QString st = cursor_->selectedText();
+                    col -= st.length();
+                }
                 cursor_->removeSelectedText();
                 cursor_->setRow(toRow);
                 cursor_->setColumn(toCol);

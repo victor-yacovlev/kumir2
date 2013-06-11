@@ -4208,6 +4208,8 @@ AST::ExpressionPtr  SyntaxAnalizer::parseExpression(
     , const AST::AlgorithmPtr alg
     ) const
 {
+    if (lexems.isEmpty())
+        return AST::ExpressionPtr();
     AST::ExpressionPtr  result;
     BlockType blockType = None;
 
