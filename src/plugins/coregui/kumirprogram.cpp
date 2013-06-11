@@ -344,6 +344,8 @@ void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel deb
         exeFileName =
                 s_sourceFileName.mid(0, s_sourceFileName.length()-4) +
                 analizer->defaultDocumentFileNameSuffix();
+        const QString newCwd = QFileInfo(exeFileName).absoluteDir().absolutePath();
+        QDir::setCurrent(newCwd);
     }
     else if (analizer->resultType() == AnalizerInterface::RT_Source) {
         EditorInterface * editor =
@@ -355,6 +357,8 @@ void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel deb
         const QByteArray sourceData = sourceText.toUtf8();
         exeFileName = s_sourceFileName;
         ok = runner->loadProgram(s_sourceFileName, sourceData, Shared::FormatText);
+        const QString newCwd = QFileInfo(exeFileName).absoluteDir().absolutePath();
+        QDir::setCurrent(newCwd);
     }
     else if (analizer->resultType() == AnalizerInterface::RT_Binary) {
         ok = false;  // not implemented
