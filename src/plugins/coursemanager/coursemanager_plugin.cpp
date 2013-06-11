@@ -150,6 +150,7 @@ void Plugin::setEnabled(bool value)
 
 void Plugin::setTestingResult(ProgramRunStatus status, int value)
 {
+    
 
     if (status==AbortedOnError || status==UserTerminated)
     {
@@ -159,7 +160,7 @@ void Plugin::setTestingResult(ProgramRunStatus status, int value)
     };
     MW->setMark(value);
     field_no++;
-    if(field_no<cur_task->minFieldCount())checkNext(cur_task);
+    if(field_no<cur_task->minFieldCount() && value>7)checkNext(cur_task);
 qDebug()<<"Set testing results"<<value;
 }
 
