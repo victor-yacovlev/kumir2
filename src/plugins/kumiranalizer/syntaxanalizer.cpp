@@ -1291,52 +1291,54 @@ void SyntaxAnalizer::processAnalisys()
         if (st.statement) {
             statements_[i].statement->expressions.clear();
         }
-        if (st.type==LxPriAssign) {
-            parseAssignment(i);
-        }
-        else if (st.type==LxNameClass && st.alg) {
-            parseVarDecl(i);
-        }
-        else if (
-                 st.type==LxPriAssert
-                 || st.type==LxPriPre
-                 || st.type==LxPriPost
-                 )
-        {
-            parseAssertPrePost(i);
-        }
-        else if (st.type==LxPriInput) {
-            parseInput(i);
-        }
-        else if (
-                 st.type==LxPriOutput
-                 )
-        {
-            parseOutput(i);
-        }
+        if (st.statement) {
+            if (st.type==LxPriAssign) {
+                parseAssignment(i);
+            }
+            else if (st.type==LxNameClass && st.alg) {
+                parseVarDecl(i);
+            }
+            else if (
+                     st.type==LxPriAssert
+                     || st.type==LxPriPre
+                     || st.type==LxPriPost
+                     )
+            {
+                parseAssertPrePost(i);
+            }
+            else if (st.type==LxPriInput) {
+                parseInput(i);
+            }
+            else if (
+                     st.type==LxPriOutput
+                     )
+            {
+                parseOutput(i);
+            }
 
-        else if (st.type==LxPriEndModule
-                 ||st.type==LxPriAlgBegin
-                 ||st.type==LxPriAlgEnd
-                 ||st.type==LxPriThen
-                 ||st.type==LxPriElse
-                 ||st.type==LxPriFi
-                 ||st.type==LxPriSwitch
-                 ||st.type==LxPriExit
-                 ||st.type==LxPriPause
-                 ||st.type==LxPriHalt
-                 )
-        {
-            parseOneLexemInstruction(i);
-        }
-        else if (st.type==LxPriEndLoop) {
-            parseEndLoop(i);
-        }
-        else if (st.type==LxPriIf||st.type==LxPriCase) {
-            parseIfCase(i);
-        }
-        else if (st.type==LxPriLoop) {
-            parseLoopBegin(i);
+            else if (st.type==LxPriEndModule
+                     ||st.type==LxPriAlgBegin
+                     ||st.type==LxPriAlgEnd
+                     ||st.type==LxPriThen
+                     ||st.type==LxPriElse
+                     ||st.type==LxPriFi
+                     ||st.type==LxPriSwitch
+                     ||st.type==LxPriExit
+                     ||st.type==LxPriPause
+                     ||st.type==LxPriHalt
+                     )
+            {
+                parseOneLexemInstruction(i);
+            }
+            else if (st.type==LxPriEndLoop) {
+                parseEndLoop(i);
+            }
+            else if (st.type==LxPriIf||st.type==LxPriCase) {
+                parseIfCase(i);
+            }
+            else if (st.type==LxPriLoop) {
+                parseLoopBegin(i);
+            }
         }
         for (int j=0; j<st.data.size(); j++) {
             if (!st.data[j]->error.isEmpty()) {

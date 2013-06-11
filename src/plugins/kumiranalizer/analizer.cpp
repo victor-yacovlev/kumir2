@@ -651,6 +651,11 @@ AnalizerPrivate::splitIntoModules(const QList<TextStatementPtr> &statements)
             currentBlock.end = st;
         }
         currentBlock.statements << st;
+        if (st->type == Shared::LxPriEndModule && currentBlock.begin) {
+            result << currentBlock;
+            currentBlock = ModuleStatementsBlock();
+            currentBlock.teacher = teacherPart;
+        }
     }
     if (currentBlock)
         result << currentBlock;
