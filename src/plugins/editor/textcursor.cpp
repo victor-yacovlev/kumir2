@@ -1069,7 +1069,7 @@ void TextCursor::findLexemBound(uint &row, uint &column, const qint8 dir) const
             }
             else {
                 // jump to start of lexem (or word in text mode)
-                if (analizer_) {
+                if (analizer_ && document_->at(row).highlight.at(linePos-1) != Shared::LxTypeComment) {
                     // jump to start of lexem in this case
                     LexemType curLexemType, prevPosLexemType;
                     curLexemType = document_->at(row).highlight.at(linePos-1);
@@ -1153,7 +1153,7 @@ void TextCursor::findLexemBound(uint &row, uint &column, const qint8 dir) const
                 return;
             }
             else {
-                if (analizer_) {
+                if (analizer_ && document_->at(row).highlight.at(linePos) != Shared::LxTypeComment) {
                     // jump to end of lexem in this case
                     LexemType curLexemType, nextPosLexemType;
                     curLexemType = document_->at(row).highlight.at(linePos);
