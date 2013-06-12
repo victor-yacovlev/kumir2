@@ -43,8 +43,9 @@ void Plugin::setPreProgram(QVariant param)
   {GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
    Shared::GuiInterface::ProgramSourceText text;
    text.content=KumFile::fromString(param.toString()); 
-    text.language=Shared::GuiInterface::ProgramSourceText::Kumir;
-      gui->setProgramSource(text);
+   text.language=Shared::GuiInterface::ProgramSourceText::Kumir;
+   gui->setProgramSource(text);
+      ExtensionSystem::PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);   
   }
 }   
     
