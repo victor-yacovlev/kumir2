@@ -11,7 +11,7 @@
 #define isNeterminal(x) QRegExp(QString::fromUtf8("[А-ЯA-Z][А-ЯA-Z1-9_*]*")).exactMatch(x)
 #define isNagruzka(x) ( x.startsWith("{") && x.endsWith("}") )
 
-static const int MAXIMUM_ERRORS_EDGES = 1000;
+static const int MAXIMUM_ERRORS_EDGES = 10000;
 
 using namespace Shared;
 
@@ -1838,7 +1838,7 @@ void PDAutomata::appendSimpleLine()
         break;
     case LxNameClass: {
             // Check for we are in algorhitm top or module top
-            if (currentContext_.size()>1) {
+            if (!currentAlgorhitm_ && currentContext_.size()>1) {
                 QList<AST::StatementPtr> * body = currentContext_[currentContext_.size()-2];
                 if (!body->isEmpty()) {
                     AST::StatementPtr st = body->last();
@@ -2135,6 +2135,7 @@ void PDAutomata::processCorrectFi()
         source_.at(currentPosition_)->statement = currentContext_.top()->last();
         source_.at(currentPosition_)->statement->endBlockLexems = source_.at(currentPosition_)->data;
     }
+    setCurrentIndentRank(-2, 0);
 }
 
 

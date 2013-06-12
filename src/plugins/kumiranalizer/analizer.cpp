@@ -638,6 +638,7 @@ AnalizerPrivate::splitIntoModules(const QList<TextStatementPtr> &statements)
                 !st->hasError();
         if (beginTeacherPart)
             teacherPart = true;
+        st->indentRank = QPoint(-1000, 0);
         if (st->type == Shared::LxPriModule || beginTeacherPart) {
             if (currentBlock) {
                 result << currentBlock;
@@ -680,10 +681,10 @@ AnalizerPrivate::splitIntoModules(const QList<TextStatementPtr> &statements)
     static const QString NoPairingEndModule = _("No pairing 'end module'");
     foreach (ModuleStatementsBlock block, result) {
         if (block.begin && !previousBlockOpened) {
-            block.begin->indentRank = QPoint(0, +1);
+            block.begin->indentRank = QPoint(-1000, +1);
         }
         else if (block.begin && previousBlockOpened) {
-            block.begin->indentRank = QPoint(-1, +1);
+            block.begin->indentRank = QPoint(-1000, +1);
         }
         if (block.begin && !block.end) {
             block.begin->setError(NoPairingEndModule, Lexem::BeforePDAutomata, Lexem::AsIs);

@@ -373,6 +373,9 @@ void TextDocument::forceCompleteRecompilation(const QPoint &cursorPosition)
         else
             visibleText += data_[i].text;
     }
+    if (hiddenText_.length() > 0) {
+        hiddenText += hiddenText_;
+    }
     emit completeCompilationRequest(visibleText, hiddenText, hiddenBaseLine);
 }
 

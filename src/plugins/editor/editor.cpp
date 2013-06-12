@@ -693,6 +693,7 @@ void Editor::setKumFile(const KumFile::Data &data)
                     );
         d->updateFromAnalizer();
     }
+    d->plane->setLineHighlighted(-1, QColor(), 0, 0);
     d->plane->update();
     checkForClean();
 }
