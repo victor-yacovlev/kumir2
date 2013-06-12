@@ -74,7 +74,9 @@ QList<QAction*> MainWindowTask::getActions()
     QList<QAction*> toRet;
     toRet.append(ui->loadCurs);
     toRet.append(ui->checkTask);
-    toRet.append(ui->actionReset);  
+    toRet.append(ui->actionSave);
+    toRet.append(ui->actionReset);
+    toRet.append(ui->actionTested);
     return toRet;
 }
 MainWindowTask::~MainWindowTask()
