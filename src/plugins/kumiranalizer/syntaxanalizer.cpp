@@ -1954,11 +1954,10 @@ void SyntaxAnalizer::parseEndNamedBlock(TextStatement & st)
     AST::ModulePtr mod = st.mod;
     QList<AST::Lexem*> contentLexems = st.data.mid(1);
     QList<AST::Lexem*> nameLexems;
-    QString name;
-    static const QString NO_ERROR;
+    QString name;  
     static const QString GARBAGE = _("Garbage at end of line");
     static const QString NAME_MISMATCH = _("Name does not match header");
-    QString currentError = NO_ERROR;
+    QString currentError;
     bool forceGarbage = false;
     for (int i=0; i<contentLexems.size(); i++) {
         AST::Lexem * lx = contentLexems.at(i);
