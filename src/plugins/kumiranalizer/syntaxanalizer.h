@@ -78,6 +78,7 @@ private /*methods*/:
     void parseAssertPrePost(int str);
     void parseOutput(int str);
     void parseOneLexemInstruction(int str);
+    void parseEndNamedBlock(TextStatement & st);
     void parseEndLoop(int str);
     void parseIfCase(int str);
     void parseLoopBegin(int str);

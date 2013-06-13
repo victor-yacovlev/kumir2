@@ -1101,7 +1101,7 @@ void SyntaxAnalizer::buildTables(bool isInternalBuild)
         bool wasError = st.hasError();
         if (st.type==LxPriModule) {
             parseModuleHeader(i);
-        }
+        }        
         if (st.type==LxPriImport) {
             parseImport(i);
         }
@@ -1338,6 +1338,9 @@ void SyntaxAnalizer::processAnalisys()
             else if (st.type==LxPriLoop) {
                 parseLoopBegin(i);
             }
+        }
+        if (st.type==LxPriEndModule || st.type==LxPriAlgEnd) {
+            parseEndNamedBlock(st);
         }
         for (int j=0; j<st.data.size(); j++) {
             if (!st.data[j]->error.isEmpty()) {
@@ -1943,6 +1946,56 @@ void SyntaxAnalizer::parseAssertPrePost(int str)
 }
 
 
+void SyntaxAnalizer::parseEndNamedBlock(TextStatement & st)
+{
+    if (st.hasError())
+        return;
+    AST::AlgorithmPtr alg = st.alg;
+    AST::ModulePtr mod = st.mod;
+    QList<AST::Lexem*> contentLexems = st.data.mid(1);
+    QList<AST::Lexem*> nameLexems;
+    QString name;
+    static const QString NO_ERROR;
+    static const QString GARBAGE = _("Garbage at end of line");
+    static const QString NAME_MISMATCH = _("Name does not match header");
+    QString currentError = NO_ERROR;
+    bool forceGarbage = false;
+    for (int i=0; i<contentLexems.size(); i++) {
+        AST::Lexem * lx = contentLexems.at(i);
+        if (lx->type == LxTypeName && !forceGarbage) {
+            if (name.length() > 0)
+                name += " ";
+            name += lx->data;
+            nameLexems << lx;
+        }
+        else {
+            forceGarbage = true;
+            lx->error = GARBAGE;
+            currentError = GARBAGE;
+        }
+    }
+    const QString & headerName = alg? alg->header.name : mod->header.name;
+    if (name.length() > 0 && headerName != name) {
+        foreach (Lexem * lx, nameLexems) {
+            lx->error = forceGarbage || headerName.isEmpty() ? GARBAGE : NAME_MISMATCH;
+            currentError = lx->error;
+        }
+    }
+    if (st.hasError() && !st.statement) {
+        AST::Statement * err = new AST::Statement;
+        err->type = AST::StError;
+        err->error = currentError;
+        err->lexems = st.data;
+        st.statement = AST::StatementPtr(err);
+    }
+
+    foreach (Lexem * lx, nameLexems) {
+        if (lx->error.isEmpty()) {
+            lx->type = alg? Shared::LxNameAlg : Shared::LxNameModule;
+        }
+    }
+
+}
 
 void SyntaxAnalizer::parseOneLexemInstruction(int str)
 {

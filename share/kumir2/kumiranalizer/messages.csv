@@ -204,6 +204,7 @@
 "Must be a variable name";"Это не имя величины";"";"";"";"";
 "Name contains keyword";"Ключевое слово в имени";"";"";"";"";
 "Name contains quotation symbol";"Имя содержит кавычку";"";"";"";"";
+"Name does not match header";"Несоответствие имени с заголовком";"";"";"";"";
 "Name is used by algorithm";"Имя занято алгоритмом";"";"";"";"";
 "Name is used by module %1";"Имя занято исполнителем ”%1”";"";"";"";"";
 "Name not declared";"Имя не объявлено";"";"";"";"";
