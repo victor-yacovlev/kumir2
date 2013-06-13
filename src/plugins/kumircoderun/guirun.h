@@ -34,7 +34,7 @@ public:
     InputFunctor();
     void setCustomTypeFromStringFunctor(VM::CustomTypeFromStringFunctor *f);
     void setRunnerInstance(class Run * runner);
-    void operator()(VariableReferencesList alist);
+    bool operator()(VariableReferencesList alist);
     ~InputFunctor();
 signals:
     void requestInput(const QString & format);

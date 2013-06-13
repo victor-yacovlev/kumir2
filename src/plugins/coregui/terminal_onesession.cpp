@@ -117,6 +117,41 @@ void OneSession::draw(QPainter *p, int realWidth)
     int x = BodyPadding;
     int y = 2 * HeaderPadding + 2 * atom.height() + BodyPadding;
 
+    if (inputCursorPosition_!=-1) {
+        const QRect highlightRect(
+                    x + inputPosStart_ * atom.width(),
+                    y + (inputLineStart_ - 1)* atom.height(),
+                    parent_->width() - (x + inputPosStart_ * atom.width()) - 10,
+                    atom.height() + 4
+                    );
+
+
+        // Prepare a brush gradient based on current highlight color
+        QLinearGradient gr(QPointF(0,0),QPointF(0,1));
+        gr.setCoordinateMode(QGradient::ObjectBoundingMode);
+        QColor c1 = QColor("green").lighter();
+        c1.setAlpha(32);
+        QColor c2 = QColor("green").lighter();
+        gr.setColorAt(0, c1);
+        gr.setColorAt(1, c2);
+
+        // Draw a rect
+        p->setBrush(gr);
+        p->setPen(Qt::NoPen);
+        p->drawRect(highlightRect);
+
+        // Draw borders
+        p->setPen(QColor("green"));
+        p->drawLine(highlightRect.topLeft(),
+                   highlightRect.topRight());
+        p->drawLine(highlightRect.bottomLeft(),
+                   highlightRect.bottomRight());
+        p->drawLine(highlightRect.bottomLeft(),
+                   highlightRect.topLeft());
+        p->drawLine(highlightRect.bottomRight(),
+                   highlightRect.topRight());
+    }
+
     if (inputCursorPosition_!=-1 && inputCursorVisible_ && (qobject_cast<QWidget*>(parent()))->hasFocus()) {
         int cursorRow = inputLineStart_;
         int cursorCol = inputCursorPosition_+inputPosStart_;

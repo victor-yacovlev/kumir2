@@ -476,6 +476,20 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
                     : e.fileName;
             moduleContexts_[currentModuleContext].externs[key] = reference;
         }
+        else if (e.type==EL_EXTERN_INIT) {
+            ExternReference reference;
+            reference.platformDependent = true;
+            reference.funcKey = 0xFFFFFFFF;
+            reference.moduleName = e.moduleName;
+            reference.fileName = e.fileName;
+            reference.platformModuleName = Kumir::Coder::encode(
+                        VM_LOCALE,
+                        makeCanonicalName(e.fileName)
+                        );
+            moduleContexts_[currentModuleContext].externInits.push_back(reference);
+            if (externalModuleLoad_)
+                (*externalModuleLoad_)(reference.moduleName, reference.platformModuleName);
+        }
         else if (e.type==EL_EXTERN) {
             ExternReference reference;
             uint32_t key = 0x00000000;
@@ -769,11 +783,25 @@ void KumirVM::reset()
                         );
         }
 
+
         const ExternsMap & contextExterns = mc.externs;
+        const std::list<ExternReference> & contextExternInits = mc.externInits;
         for (ExternsMap::const_iterator itExtern = contextExterns.begin();
              itExtern!=contextExterns.end(); ++itExtern)
         {
             const ExternReference & externReference = itExtern->second;
+            if (externReference.platformDependent) {
+                const Kumir::String & externModuleName =
+                        externReference.moduleName;
+                if (!usedExternalModules.count(externModuleName))
+                    usedExternalModules.insert(externModuleName);
+            }
+        }
+
+        for (std::list<ExternReference>::const_iterator itExtern = contextExternInits.begin();
+             itExtern != contextExternInits.end(); ++itExtern)
+        {
+            const ExternReference & externReference = *itExtern;
             if (externReference.platformDependent) {
                 const Kumir::String & externModuleName =
                         externReference.moduleName;
@@ -1791,10 +1819,11 @@ void KumirVM::do_specialcall(uint16_t alg)
             }
         }
         if (stacksMutex_) stacksMutex_->unlock();
+        bool hasInput = false;
         if (input_&& !fileIO && !Kumir::Files::overloadedStdIn()) {
             // input functor works like input operator here
             try {
-                (*input_)(references);
+                hasInput = (*input_)(references);
             }
             catch (const String & message) {
                 error_ = message;
@@ -1804,6 +1833,7 @@ void KumirVM::do_specialcall(uint16_t alg)
             }
         }
         else {
+            hasInput = true;
             if (stacksMutex_) stacksMutex_->lock();
 
             for (int i=0; i<references.size(); i++) {
@@ -1843,7 +1873,7 @@ void KumirVM::do_specialcall(uint16_t alg)
             if (stacksMutex_) stacksMutex_->unlock();
         }
         const int lineNo = contextsStack_.top().lineNo;
-        if (lineNo!=-1 && debugHandler_ &&
+        if (lineNo!=-1 && debugHandler_ && hasInput &&
                 !blindMode_ &&
                 contextsStack_.top().type != EL_BELOWMAIN &&
                 error_.empty()

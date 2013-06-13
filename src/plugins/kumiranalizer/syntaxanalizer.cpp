@@ -1272,8 +1272,7 @@ void SyntaxAnalizer::processAnalisys()
         // Fix unmatched modules first
         if (!st.mod) {
             for (int j=0; j<ast_->modules.size(); j++) {
-                if (ast_->modules[j]->header.type==AST::ModTypeUser &&
-                        ast_->modules[j]->header.name.isEmpty()) {
+                if (ast_->modules[j]->header.type==AST::ModTypeUserMain || ast_->modules[j]->header.type==AST::ModTypeUser) {
                     st.mod = ast_->modules[j];
                     break;
                 }
@@ -2559,7 +2558,7 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool allowOperatorsD
     bool isOperator = false;
     bool isFirst =
             mod->header.name.isEmpty() &&
-            mod->header.type==AST::ModTypeUser &&
+            mod->header.type==AST::ModTypeUserMain &&
             mod->impl.algorhitms.indexOf(alg)==0;
     int argsStartLexem = -1;
     int nameStartLexem = 1;
@@ -3912,10 +3911,15 @@ bool SyntaxAnalizer::findAlgorhitm(
                 ;
         bool sameFileModule =
                 module->header.type==AST::ModTypeUser ||
+                module->header.type==AST::ModTypeUserMain ||
+                module->header.type==AST::ModTypeTeacherMain ||
                 module->header.type==AST::ModTypeTeacher;
         if (moduleAvailable) {
             if (currentModule==module ||
-                    sameFileModule && currentModule->header.type==AST::ModTypeTeacher)
+                    sameFileModule && currentModule->header.type==AST::ModTypeTeacher ||
+                     sameFileModule && currentModule->header.type==AST::ModTypeTeacherMain
+
+                    )
             {
                 // The same module - find includes private members
                 for (int j=0; j<ast_->modules[i]->impl.algorhitms.size(); j++) {
@@ -4182,11 +4186,11 @@ bool SyntaxAnalizer::findGlobalVariable(const QString &name, const AST::ModulePt
             break;
         }
     }
-    if (!var && module->header.type==AST::ModTypeTeacher) {
+    if (!var && (module->header.type==AST::ModTypeTeacher || module->header.type==AST::ModTypeTeacherMain)) {
         AST::ModulePtr userMainModule;
         for (int i=0; i<ast_->modules.size(); i++) {
             AST::ModulePtr mod = ast_->modules[i];
-            if (mod->header.type==AST::ModTypeUser && mod->header.name.isEmpty()) {
+            if (mod->header.type==AST::ModTypeUserMain) {
                 userMainModule = mod;
                 break;
             }
@@ -4878,6 +4882,15 @@ AST::ExpressionPtr  SyntaxAnalizer::parseFunctionCall(const QList<Lexem *> &lexe
             sourceStatement.suggestedImportModuleNames = possibleImports;
         }
         return AST::ExpressionPtr();
+    }
+
+    if (mod->header.type == AST::ModTypeUser || mod->header.type == AST::ModTypeUserMain) {
+        if (name.startsWith("@")) {
+            for (int i=0; i<openBracketIndex; i++) {
+                lexems[i]->error = _("Available only to teacher");
+            }
+            return AST::ExpressionPtr();
+        }
     }
 
     if (!function->header.error.isEmpty()) {

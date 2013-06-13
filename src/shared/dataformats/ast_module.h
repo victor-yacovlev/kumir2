@@ -42,7 +42,10 @@ enum ModuleType {
     ModTypeCached,
 
     /** External or system built-in module */
-    ModTypeExternal
+    ModTypeExternal,
+
+    ModTypeUserMain,
+    ModTypeTeacherMain
 
 };
 

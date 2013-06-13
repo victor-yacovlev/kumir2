@@ -237,6 +237,7 @@ void Generator::generateConstantTable()
 
 void Generator::generateExternTable()
 {
+    QSet<AST::ModulePtr> modulesImplicitlyImported;
     for (int i=externs_.size()-1; i>=0; i--) {
         QPair<quint8, quint16> ext = externs_[i];
         Bytecode::TableElem e;
@@ -262,11 +263,56 @@ void Generator::generateExternTable()
                 }
             }
         }
+        if (mod->header.type == AST::ModTypeExternal)
+            modulesImplicitlyImported.insert(mod);
         if (mod->header.type==AST::ModTypeCached)
             moduleFileName = mod->header.name;
         e.moduleName = mod->header.name.toStdWString();
         e.name = alg->header.name.toStdWString();
         e.signature = signature.toStdWString();
+        e.fileName = moduleFileName.toStdWString();
+        byteCode_->d.push_front(e);
+    }
+    QSet<AST::ModulePtr> modulesExplicitlyImported;
+    for (int i=0; i<ast_->modules.size(); i++) {
+        AST::ModulePtr module = ast_->modules[i];
+        if (module->header.type == AST::ModTypeExternal) {
+            const QList<AST::ModuleWPtr> & used = module->header.usedBy;
+            for (int j=0; j<used.size(); j++) {
+                AST::ModuleWPtr reference = used[j];
+                const AST::ModuleHeader & header = reference.data()->header;
+                if (header.type == AST::ModTypeUser ||
+                        header.type == AST::ModTypeUserMain ||
+                        header.type == AST::ModTypeTeacher ||
+                        header.type == AST::ModTypeTeacherMain
+                        )
+                {
+                    modulesExplicitlyImported.insert(module);
+                    break;
+                }
+            }
+        }
+    }
+    foreach (AST::ModulePtr module, modulesExplicitlyImported - modulesImplicitlyImported) {
+        Bytecode::TableElem e;
+        e.type = Bytecode::EL_EXTERN_INIT;
+        e.module = 0xFF;
+        e.algId = e.id = 0xFFFF;
+        e.moduleName = module->header.name.toStdWString();
+        QString moduleFileName;
+        QList<ExtensionSystem::KPlugin*> plugins =
+                ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
+        for (int m=0; m<plugins.size(); m++) {
+            Shared::ActorInterface * actor = qobject_cast<Shared::ActorInterface*>(plugins[m]);
+            if (actor && actor->name()==module->header.name) {
+                moduleFileName = plugins[m]->pluginSpec().libraryFileName;
+                // Make filename relative
+                int slashP = moduleFileName.lastIndexOf("/");
+                if (slashP!=-1) {
+                    moduleFileName = moduleFileName.mid(slashP+1);
+                }
+            }
+        }
         e.fileName = moduleFileName.toStdWString();
         byteCode_->d.push_front(e);
     }

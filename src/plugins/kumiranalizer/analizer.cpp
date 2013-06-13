@@ -636,16 +636,17 @@ AnalizerPrivate::splitIntoModules(const QList<TextStatementPtr> &statements)
                 !teacherPart &&
                 markers.contains(st) &&
                 !st->hasError();
-        if (beginTeacherPart)
+        if (beginTeacherPart) {
             teacherPart = true;
-        st->indentRank = QPoint(-1000, 0);
+            st->indentRank = QPoint(-1000, 0);
+        }
         if (st->type == Shared::LxPriModule || beginTeacherPart) {
             if (currentBlock) {
                 result << currentBlock;
                 currentBlock = ModuleStatementsBlock();
                 currentBlock.teacher = teacherPart;
             }
-            if (!beginTeacherPart)
+            if (st->type == Shared::LxPriModule)
                 currentBlock.begin = st;
         }
         else if (st->type == Shared::LxPriEndModule) {
@@ -715,8 +716,8 @@ void AnalizerPrivate::doCompilation(QList<TextStatementPtr> & allStatements, Ana
 
         AST::ModulePtr unnamedUserModule = AST::ModulePtr(new AST::Module);
         AST::ModulePtr unnamedTeacherModule = AST::ModulePtr(new AST::Module);
-        unnamedUserModule->header.type = AST::ModTypeUser;
-        unnamedTeacherModule->header.type = AST::ModTypeTeacher;
+        unnamedUserModule->header.type = AST::ModTypeUserMain;
+        unnamedTeacherModule->header.type = AST::ModTypeTeacherMain;
 
         QList<ModuleStatementsBlock> blocks = splitIntoModules(allStatements);
         for (int i=0; i<blocks.size(); i++) {

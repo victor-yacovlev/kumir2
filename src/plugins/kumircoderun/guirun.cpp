@@ -53,7 +53,7 @@ InputFunctor::~InputFunctor()
     delete finishedMutex_;
 }
 
-void InputFunctor::operator ()(VariableReferencesList references)
+bool InputFunctor::operator ()(VariableReferencesList references)
 {
     // Clear state
     finishedFlag_ = false;
@@ -115,7 +115,7 @@ void InputFunctor::operator ()(VariableReferencesList references)
     }
 
     if (runner_->mustStop())
-        return; // Do nothing on exit
+        return false; // Do nothing on exit
 
     // Store input values
     Q_ASSERT(inputValues_.size()==references.size());
@@ -123,6 +123,7 @@ void InputFunctor::operator ()(VariableReferencesList references)
         const AnyValue val = Util::QVariantToValue(inputValues_.at(i), 0);
         references[i].setValue(val);
     }
+    return true;
 }
 
 void InputFunctor::handleInputDone(const QVariantList & values)

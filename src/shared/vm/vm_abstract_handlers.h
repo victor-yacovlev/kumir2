@@ -193,10 +193,11 @@ class InputFunctor: public Functor {
 public:
     inline Type type() const { return Input; }
     typedef std::deque<Variable> & VariableReferencesList;
-    inline virtual void operator()(VariableReferencesList /*alist*/)
+    inline virtual bool operator()(VariableReferencesList /*alist*/)
         /* throws Kumir::String, std::string */
     {
         throw Kumir::Core::fromUtf8("Операция ввода не поддерживается");
+        return false;
     }
 };
 

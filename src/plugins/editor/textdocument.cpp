@@ -230,10 +230,13 @@ uint TextDocument::indentAt(uint lineNo) const
 {
     int result = 0;
     for (uint i=0; i<qMin(lineNo, uint(data_.size()) ); i++) {
-        result += data_[i].indentStart + data_[i].indentEnd;
+        result += data_[i].indentStart;
+        result = qMax(0, result);
+        result += data_[i].indentEnd;
     }
     if (lineNo < data_.size()) {
         result += data_[lineNo].indentStart;
+        result = qMax(0, result);
     }
     return uint( qMax(result, 0) );
 }
