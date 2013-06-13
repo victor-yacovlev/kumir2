@@ -90,6 +90,7 @@ private:
     QVector<QString> acceptedRules_;
     QStack<PDStackElem> stack_;
 
+    QStack<int> history_errorsCount_;
     QStack<int> history_currentPosition_;
     QStack< QVector<ScriptListPtr> > history_scripts_;
     QStack< QStack<PDStackElem> > history_stack_;

@@ -72,6 +72,7 @@ struct ModuleContext {
     Kumir::String filename;
     FunctionMap functions;
     ExternsMap externs;
+    std::list<ExternReference> externInits;
     std::deque<Bytecode::TableElem> inits;
     LocalsMap cleanLocalTables;
     GlobalsMap globals;
@@ -81,5 +82,6 @@ struct ModuleContext {
 };
 
 }
+
 
 #endif

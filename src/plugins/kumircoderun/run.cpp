@@ -371,7 +371,7 @@ void Run::run()
             break;
         }
         vm->evaluateNextInstruction();
-        if (vm->error().length()>0) {
+        if (vm->error().length()>0 && !stoppingFlag_) {
             int lineNo = vm->effectiveLineNo();
             std::pair<quint32,quint32> colNo =
                     vm->effectiveColumn();
@@ -380,7 +380,7 @@ void Run::run()
             break;
         }
     }
-    if (vm->error().length() == 0 &&
+    if (vm->error().length() == 0 && !stoppingFlag_ &&
             vm->entryPoint() == KumirVM::EP_Testing)
     {
         bool hasRetval = false;

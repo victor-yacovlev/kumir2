@@ -1588,6 +1588,7 @@ void PDAutomata::finalizeIterativeRule(const PDStackElem & stackElem)
 
 void PDAutomata::saveData()
 {
+//    history_errorsCount_.push(errorsCount_);
     history_stack_.push(stack_);
     history_currentPosition_.push(currentPosition_);
     history_scripts_.push(scripts_);
@@ -1596,6 +1597,7 @@ void PDAutomata::saveData()
 
 void PDAutomata::restoreData()
 {
+//    errorsCount_ = history_errorsCount_.pop();
     currentPosition_ = history_currentPosition_.pop();
     stack_ = history_stack_.pop();
     scripts_ = history_scripts_.pop();
@@ -1604,6 +1606,7 @@ void PDAutomata::restoreData()
 
 void PDAutomata::popHistory()
 {
+//    history_errorsCount_.pop();
     history_currentPosition_.pop();
     history_stack_.pop();
     history_scripts_.pop();
@@ -1612,6 +1615,7 @@ void PDAutomata::popHistory()
 
 void PDAutomata::clearDataHistory()
 {
+    history_errorsCount_.clear();
     history_currentPosition_.clear();
     history_stack_.clear();
     history_scripts_.clear();
@@ -1969,7 +1973,12 @@ void PDAutomata::processCorrectAlgEnd()
 
 void PDAutomata::addDummyAlgHeader()
 {
-    // nothind to do
+    AST::AlgorithmPtr alg = AST::AlgorithmPtr(new AST::Algorithm);
+    alg->impl.headerLexems = source_[currentPosition_]->data;
+    currentAlgorhitm_ = alg;
+    currentModule_->impl.algorhitms << alg;
+    source_.at(currentPosition_)->mod = currentModule_;
+    source_.at(currentPosition_)->alg = currentAlgorhitm_;
 }
 
 void PDAutomata::setModuleBeginError(const QString & value)

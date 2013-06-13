@@ -39,7 +39,7 @@ public:
     #endif
         , customTypeFromString_(nullptr)
     {}
-    inline void operator() (VariableReferencesList alist);
+    inline bool operator() (VariableReferencesList alist);
     inline void setLocale(const Encoding loc) { locale_ = loc; }
     inline void setCustomTypeFromStringFunctor(VM::CustomTypeFromStringFunctor *f)
     {
@@ -50,7 +50,7 @@ private:
     VM::CustomTypeFromStringFunctor * customTypeFromString_;
 };
 
-void InputFunctor::operator() (VariableReferencesList alist)
+bool InputFunctor::operator() (VariableReferencesList alist)
 {
     IO::InputStream stream = IO::makeInputStream(FileType(), true);
     for (size_t i=0; i<alist.size(); i++) {
@@ -87,6 +87,7 @@ void InputFunctor::operator() (VariableReferencesList alist)
             throw message;
         }
     }
+    return true;
 }
 
 class OutputFunctor

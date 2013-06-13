@@ -71,15 +71,14 @@ bool Module::isEnabledFor(const ModulePtr currentModule) const
         return true;
     if (builtInID == 0xF0)  // Standard library module
         return true;
-    if (currentModule->header.type == ModTypeTeacher) {
+    if (currentModule->header.type == ModTypeTeacher || currentModule->header.type == ModTypeTeacherMain) {
         if (header.type == ModTypeUser)
             return true;
         if (header.type == ModTypeExternal) {
             foreach (AST::ModuleWPtr reference, header.usedBy) {
                 bool usedByUserMainModule =
                         reference &&
-                        reference.data()->header.type == ModTypeUser &&
-                        reference.data()->header.name.isEmpty();
+                        reference.data()->header.type == ModTypeUserMain;
                 if (usedByUserMainModule)
                     return true;
             }
