@@ -276,7 +276,9 @@ void Generator::generateExternTable()
     QSet<AST::ModulePtr> modulesExplicitlyImported;
     for (int i=0; i<ast_->modules.size(); i++) {
         AST::ModulePtr module = ast_->modules[i];
-        if (module->header.type == AST::ModTypeExternal) {
+        if (module->header.type == AST::ModTypeExternal &&
+                module->builtInID == 0x00
+                ) {
             const QList<AST::ModuleWPtr> & used = module->header.usedBy;
             for (int j=0; j<used.size(); j++) {
                 AST::ModuleWPtr reference = used[j];
