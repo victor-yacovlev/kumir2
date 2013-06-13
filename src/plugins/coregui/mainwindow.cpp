@@ -435,7 +435,11 @@ void MainWindow::prepareRecentFilesMenu()
     QStringList r = m_plugin->mySettings()->value(Plugin::RecentFilesKey).toStringList();
     for (int i=0; i<r.size(); i++) {
         QFile f(r[i]);
+#ifndef Q_OS_WIN32
         if (!r[i].trimmed().isEmpty() && f.exists()) {
+#else
+        if (!r[i].trimmed().isEmpty()) {
+#endif
             QAction * a = ui->actionRecent_files->menu()->addAction(QFileInfo(r[i]).fileName());
             a->setProperty("index", i);
             if (QFileInfo(r[i]).isRelative())
