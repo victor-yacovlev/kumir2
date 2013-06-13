@@ -38,7 +38,8 @@ public:
 public slots:
     void setEnabled(bool value);
     void setTestingResult(ProgramRunStatus status, int value);
-
+    void nextField();
+    void prevField();
 private /*methods*/:
     void saveSession() const;
     void restoreSession();
@@ -52,6 +53,8 @@ private /*fields*/:
     AI * getActor(QString name);
     QWidget* mainWindow_;
     QAction* actionPerformCheck_;
+    QAction* nextFld;
+    QAction* prevFld;
     ExtensionSystem::DeclarativeSettingsPage* settingsEditorPage_;
     QMenu* courseMenu;
     QList<QMenu*> MenuList;

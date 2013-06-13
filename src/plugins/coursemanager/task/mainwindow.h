@@ -118,6 +118,8 @@ public slots:
     void lockControls();
     void unlockControls();
 
+    
+
 protected:
     void changeEvent(QEvent *e);
     void closeEvent(QCloseEvent *event);
@@ -138,6 +140,7 @@ private:
     QString CS;
     bool onTask;
     courseChanges changes;
+
     QString cursFile;
     QList<int> progChange;
     QFile cursWorkFile;

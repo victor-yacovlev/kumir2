@@ -18,6 +18,8 @@ Plugin::Plugin()
     MW->setup();
     mainWindow_=MW;
     field_no=0;
+    prevFld=new QAction("Предыдущая обстановка",this);
+    nextFld=new QAction("Следующая обстановка",this);
 
 }
 QList<QMenu*>  Plugin::menus()const
@@ -179,7 +181,14 @@ void Plugin::changeCurrentDirectory(const QString &path)
 {
 
 }
-
+void Plugin::nextField()
+    {
+        
+    };
+void Plugin::prevField()
+    {
+        
+    };
 void Plugin::changeGlobalState(ExtensionSystem::GlobalState old,
                                ExtensionSystem::GlobalState current)
 {

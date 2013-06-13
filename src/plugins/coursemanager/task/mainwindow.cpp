@@ -79,6 +79,7 @@ QList<QAction*> MainWindowTask::getActions()
     toRet.append(ui->actionTested);
     return toRet;
 }
+
 MainWindowTask::~MainWindowTask()
 {
     delete ui;
