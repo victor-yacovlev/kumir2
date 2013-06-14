@@ -150,17 +150,35 @@ public:
                markIcons.append(QIcon( qApp->property("sharePath").toString()+
                                       "/coursemanager/folder_close.png"
                                       ));
-           markIcons.append(QIcon(":/folder_1.png  "));
-           markIcons.append(QIcon(":/folder_2.svg"));
-           markIcons.append(QIcon(":/folder_3.svg"));
-           markIcons.append(QIcon(":/folder_4.svg"));
-           markIcons.append(QIcon(":/folder_5.svg"));
-           markIcons.append(QIcon(":/folder_6.svg"));
-           markIcons.append(QIcon(":/folder_7.svg"));
-           markIcons.append(QIcon(":/folder_8.svg"));
-           markIcons.append(QIcon(":/folder_9.svg"));
-           markIcons.append(QIcon(":/folder_10.svg"));
-           markIcons.append(QIcon(":/folder_open.svg"));
+               
+          markIcons.append(QIcon( qApp->property("sharePath").toString()+
+                                      "/coursemanager/folder_1.png"
+                                      ));
+               markIcons.append(QIcon( qApp->property("sharePath").toString()+
+                                      "/coursemanager/folder_2.svg"
+                                      ));
+               markIcons.append(QIcon( qApp->property("sharePath").toString()+
+                                      "/coursemanager/folder_3.svg"
+                                      ));         
+               markIcons.append(QIcon( qApp->property("sharePath").toString()+
+                                       "/coursemanager/folder_4.svg"));
+               markIcons.append(QIcon( qApp->property("sharePath").toString()+
+                                      "/coursemanager/folder_5.svg"
+                                      ));
+               markIcons.append(QIcon( qApp->property("sharePath").toString()+
+                                      "/coursemanager/folder_6.svg"
+                                      ));         
+               markIcons.append(QIcon( qApp->property("sharePath").toString()+
+                                      "/coursemanager/folder_7.svg"));
+               markIcons.append(QIcon( qApp->property("sharePath").toString()+
+                                      "/coursemanager/folder_8.svg"));
+               markIcons.append(QIcon( qApp->property("sharePath").toString()+
+                                      "/coursemanager/folder_9.svg"));
+               markIcons.append(QIcon( qApp->property("sharePath").toString()+
+                                      "/coursemanager/folder_10.svg"));
+               markIcons.append(QIcon( qApp->property("sharePath").toString()+
+                                      "/coursemanager/folder_open.svg"));
+
            isTeacher=false;
 
 
