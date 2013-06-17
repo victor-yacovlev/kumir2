@@ -17,7 +17,27 @@ Term::Term(QWidget *parent) :
     m_plane = new Plane(this);
     l->addWidget(m_plane, 1, 1, 1, 1);
     sb_vertical = new QScrollBar(Qt::Vertical, this);
+//    sb_vertical->setFixedWidth(qMin(10, sb_vertical->width()));
+    static const char * ScrollBarCSS = ""
+            "QScrollBar {"
+            "   width: 12px;"
+            "   background-color: transparent;"
+            "   padding-right: 4px;"
+            "   border: 0;"
+            "}"
+            "QScrollBar:handle {"
+            "   background-color: gray;"
+            "   border-radius: 4px;"
+            "}"
+            "QScrollBar:add-line {"
+            "   height: 0;"
+            "}"
+            "QScrollBar:sub-line {"
+            "   height: 0;"
+            "}"
+            ;
     l->addWidget(sb_vertical, 1, 2, 1, 1);
+    sb_vertical->setStyleSheet(ScrollBarCSS);
     sb_horizontal = new QScrollBar(Qt::Horizontal, this);
     l->addWidget(sb_horizontal, 2, 1, 1, 1);
 //    QToolBar * tb = m_toolBar = new QToolBar(this);
@@ -84,6 +104,28 @@ void Term::resizeEvent(QResizeEvent *e)
 //        m_toolBar->setOrientation(Qt::Horizontal);
 //        m_layout->addWidget(m_toolBar, 0, 1, 1, 1);
 //    }
+    e->accept();
+}
+
+bool Term::isActiveComponent() const
+{
+    return m_plane->hasFocus();
+}
+
+void Term::paintEvent(QPaintEvent *e)
+{
+    QPainter p(this);
+    p.setPen(Qt::NoPen);
+    p.setBrush(palette().brush(QPalette::Base));
+    p.drawRect(0,0,width(), height());
+    QWidget::paintEvent(e);
+    const QBrush br = m_plane->hasFocus()
+            ? palette().brush(QPalette::Highlight)
+            : palette().brush(QPalette::Window);
+    p.setPen(QPen(br, 1));
+    p.setBrush(Qt::NoBrush);
+    p.drawRect(0, 0, width()-1, height()-1);
+    p.end();
     e->accept();
 }
 

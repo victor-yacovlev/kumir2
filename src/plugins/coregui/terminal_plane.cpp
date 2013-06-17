@@ -6,14 +6,14 @@
 
 namespace Terminal {
 
-static int sessionMargin = 4;
+static uint SessionMargin = 4u;
 
 Plane::Plane(Term *parent)
     : QWidget(parent)
     , terminal_(parent)
     , inputMode_(false)
     , inputPosition_(0)
-    , selectedSession_(nullptr)
+    , mousePressSession_(nullptr)
     , actionCopyToClipboard_(new QAction(this))
     , actionPasteFromClipboard_(new QAction(this))
 {
@@ -31,11 +31,25 @@ Plane::Plane(Term *parent)
 
 void Plane::keyPressEvent(QKeyEvent *e)
 {
+    if (e->matches(QKeySequence::Copy)) {
+        copyToClipboard();
+        e->accept();
+        return;
+    }
+    if (e->matches(QKeySequence::SelectAll)) {
+        selectAll();
+        e->accept();
+        return;
+    }
     if (!inputMode_) {
         e->ignore();
         return;
     }
-    if (e->matches(QKeySequence::MoveToNextChar)) {
+    if (e->matches(QKeySequence::Paste)) {
+        pasteFromClipboard();
+        e->accept();
+    }
+    else if (e->matches(QKeySequence::MoveToNextChar)) {
         inputPosition_++;
         emit inputCursorPositionChanged(inputPosition_);
         e->accept();
@@ -115,14 +129,14 @@ OneSession * Plane::sessionByPos(const QPoint &pos) const
 
 QRect Plane::sessionRect(const OneSession *session) const
 {
-    QRect result(offset() + QPoint(sessionMargin, 0), QSize(0,0));
+    QRect result(offset() + QPoint(0, SessionMargin), QSize(0,0));
     foreach (const OneSession * s, terminal_->sessions_) {
-        result.setSize(s->visibleSize(width()-2*sessionMargin));
+        result.setSize(s->visibleSize());
         if (session==s)
             break;
-        result.translate(0, result.height()+sessionMargin);
+        result.translate(0, result.height()+SessionMargin);
     }
-    result.setWidth(qMax(result.width(), width()-2*sessionMargin));
+    result.setWidth(qMax(result.width(), width()));
     return result;
 }
 
@@ -130,7 +144,7 @@ void Plane::mousePressEvent(QMouseEvent *e)
 {
     setFocus();
     e->accept();
-    selectedSession_ = sessionByPos(e->pos());
+    mousePressSession_ = sessionByPos(e->pos());
     mousePressPosition_ = e->pos();
     if (e->button()!=Qt::RightButton) {
         for (int i=0; i<terminal_->sessions_.size(); i++) {
@@ -143,13 +157,47 @@ void Plane::mousePressEvent(QMouseEvent *e)
 void Plane::mouseMoveEvent(QMouseEvent *e)
 {
     e->accept();
-    if (selectedSession_) {
-        const QPoint sessionOffset = sessionRect(selectedSession_).topLeft();
-        const QPoint fromPos = mousePressPosition_ - sessionOffset;
-        const QPoint toPos   = e->pos() - sessionOffset;
-        selectedSession_->triggerTextSelection(fromPos, toPos);
-        update();
+    if (e->button()!=Qt::RightButton) {
+        for (int i=0; i<terminal_->sessions_.size(); i++) {
+            terminal_->sessions_.at(i)->clearSelection();
+        }
     }
+    QPoint from, to;
+    if (e->pos().y() > mousePressPosition_.y()) {
+        from = mousePressPosition_;
+        to = e->pos();
+    }
+    else if (e->pos().y() < mousePressPosition_.y()) {
+        from = e->pos();
+        to = mousePressPosition_;
+    }
+    else if (/* y equal and */ e->pos().x() < mousePressPosition_.x()) {
+        from = e->pos();
+        to = mousePressPosition_;
+    }
+    else {
+        from = mousePressPosition_;
+        to = e->pos();
+    }
+    for (size_t i=0; i<terminal_->sessions_.size(); i++) {
+        OneSession * session = terminal_->sessions_.at(i);
+        const QRect rect = sessionRect(session);
+        const QPoint sessionOffset = rect.topLeft();
+        session->clearSelection();
+        if ( (from.y() <= rect.bottom()) && (to.y() >= rect.top()) ) {
+            // Selection affects this session
+            QPoint fromPos = QPoint(0, 0);
+            QPoint toPos = rect.bottomRight() - sessionOffset;
+            if (from.y() >= rect.top())
+                fromPos = from - sessionOffset;
+            if (to.y() <= rect.bottom())
+                toPos = to - sessionOffset;
+            session->triggerTextSelection(fromPos, toPos);
+        }
+    }
+
+
+    update();
 }
 
 void Plane::mouseReleaseEvent(QMouseEvent *e)
@@ -195,14 +243,54 @@ void Plane::contextMenuEvent(QContextMenuEvent * event)
     }
 }
 
+void Plane::selectAll()
+{
+    foreach (OneSession * s, terminal_->sessions_) {
+        s->selectAll();
+    }
+    update();
+}
+
 void Plane::copyToClipboard()
 {
     QClipboard * clipboard = QApplication::clipboard();
     QString text;
-    foreach (const OneSession * s, terminal_->sessions_) {
-        text += s->selectedText();
+    QString rtfBody;
+
+    QString rtfHeader = "{\\rtf1\\ansicpg1251\r\n"
+            "{\\fonttbl{\\f0\\fmodern\\fcharset204 Courier New;}}\r\n"
+            "{\\colortbl;"
+            "\\red0\\green0\\blue0;"  // Main text
+            "\\red255\\green0\\blue0;"  // Error stream
+            "\\red0\\green0\\blue255;"  // Input data
+            "\\red128\\green128\\blue128;" // Headings
+            "}\r\n"
+            "{\\f0\\lang1024\r\n"
+            ;
+
+    QString rtfFooter = "}}\r\n";
+
+
+    foreach (const OneSession * s, terminal_->sessions_) {        
+        if (s->hasSelectedText()) {
+            if (text.length() > 0)
+                text += "\n";
+            if (rtfBody.length() > 0)
+                rtfBody += "\\par\r\n";
+            text += s->selectedText();
+            rtfBody += s->selectedRtf();
+        }
+    }    
+    QMimeData * richData = new QMimeData();
+    QByteArray rtfData = QTextCodec::codecForName("CP1251")->fromUnicode(rtfHeader+rtfBody+rtfFooter);
+    QFile debug("/home/victor/test.rtf");
+    if (debug.open(QIODevice::WriteOnly|QIODevice::Text)) {
+        debug.write(rtfData);
+        debug.close();
     }
-    clipboard->setText(text);
+    richData->setText(text);
+    richData->setData("text/rtf", rtfData);
+    clipboard->setMimeData(richData);
 }
 
 void Plane::pasteFromClipboard()
@@ -217,16 +305,26 @@ void Plane::pasteFromClipboard()
 
 void Plane::updateScrollBars()
 {
+    const int myHeight = height();
     QPoint prevOffset = offset();
-    int w = 2 * sessionMargin;
-    int h = 2 * sessionMargin;
+    int w = 2 * SessionMargin;
+    int h = 0;
     for (int i=0; i<terminal_->sessions_.size(); i++) {
+        if (i == 0)
+            h += SessionMargin;
         OneSession * s = terminal_->sessions_[i];
-        QSize ss = s->visibleSize(width()-2*sessionMargin);
-        w = qMax(w, sessionMargin*2 + ss.width());
-        h += sessionMargin + ss.height();
+        QSize ss = s->visibleSize();
+        w = qMax(w, ss.width());
+        h += ss.height();
+        if (i < terminal_->sessions_.size() - 1) {
+            h += 2 * SessionMargin;
+        }
         if (i==terminal_->sessions_.size()-1) {
-            h += qMax(0, height()-ss.height()-2*sessionMargin);
+            int lastSessionHeight = ss.height() + SessionMargin;
+            int fillSpace = myHeight - lastSessionHeight;
+            if (fillSpace > 0) {
+                h += fillSpace;
+            }
         }
     }
 
@@ -245,7 +343,7 @@ void Plane::updateScrollBars()
         hb->setPageStep(width());
     }
 
-    if (h<=height()) {
+    if (h<=myHeight) {
         vb->setEnabled(false);
         vb->setVisible(false);
     }
@@ -254,9 +352,9 @@ void Plane::updateScrollBars()
         int dH = fm.height();
         vb->setEnabled(true);
         vb->setVisible(true);
-        vb->setRange(0, h - height());
+        vb->setRange(0, h - myHeight);
         vb->setSingleStep(dH);
-        vb->setPageStep(height());
+        vb->setPageStep(myHeight);
     }
     if (prevOffset!=offset())
         update();
@@ -265,6 +363,10 @@ void Plane::updateScrollBars()
 
 void Plane::resizeEvent(QResizeEvent *e)
 {
+    foreach (OneSession * session, terminal_->sessions_) {
+        session->relayout(e->size().width() - 2 * SessionMargin);
+    }
+
     QWidget::resizeEvent(e);
     updateScrollBars();
 }
@@ -288,33 +390,27 @@ void Plane::wheelEvent(QWheelEvent *e)
 void Plane::paintEvent(QPaintEvent *e)
 {
     QPainter p(this);
-//    p.setRenderHint(QPainter::Antialiasing, true);
-    p.setRenderHint(QPainter::TextAntialiasing, true);
-
-    const QBrush br = hasFocus()? palette().brush(QPalette::Highlight) : palette().brush(QPalette::Window);
-    p.setPen(QPen(br,1));
-    p.setBrush(palette().brush(QPalette::Base));
-    p.drawRect(0,0,width(), height());
+    p.setRenderHint(QPainter::TextAntialiasing, true);    
 
     QPoint off = offset();
-    int y = sessionMargin;
+    int y = SessionMargin;
     for (int i=0; i<terminal_->sessions_.size(); i++) {
         OneSession * session = terminal_->sessions_[i];
-        const QSize sessionSize = session->visibleSize(width()-2*sessionMargin);
-//        const QRect sessionRect = QRect(QPoint(sessionMargin, y), sessionSize).translated(off);
-//        const QRect myRect(off, size());
-//        if (myRect.intersects(sessionRect)) {
-        {
-
+        const QSize sessionSize = session->visibleSize();
+        p.save();
+        p.translate(off.x(), y+off.y());
+        session->draw(p);
+        y += sessionSize.height() + 2 * SessionMargin;
+        p.restore();
+        if (i < terminal_->sessions_.size() - 1) {
             p.save();
-            p.translate(sessionMargin+off.x(), y+off.y());
-            session->draw(&p, width()-2*sessionMargin);
+            p.setPen(QColor(Qt::lightGray));
+            int lineY = y - SessionMargin + off.y();
+            if (lineY != 0)
+                p.drawLine(0, lineY, width(), lineY);
             p.restore();
         }
-        y += sessionSize.height() + sessionMargin;
-    }
-
-    p.end();
+    }    
     e->accept();
 }
 

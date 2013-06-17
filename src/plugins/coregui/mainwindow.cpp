@@ -218,6 +218,19 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
         e->accept();
         return true;
     }
+//    if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
+//        QKeyEvent * ke = (QKeyEvent*)(e);
+//        if (m_plugin->m_terminal->isActiveComponent()) {
+//            if (ke->matches(QKeySequence::Copy) ||
+//                    ke->matches(QKeySequence::Paste) ||
+//                    ke->matches(QKeySequence::Cut) ||
+//                    ke->matches(QKeySequence::SelectAll)
+//                    )
+//            {
+//                return true;
+//            }
+//        }
+//    }
     return false;
 }
 

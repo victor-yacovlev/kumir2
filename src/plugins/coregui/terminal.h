@@ -14,6 +14,7 @@ class Term : public QWidget
     Q_OBJECT
 public:
     explicit Term(QWidget *parent = 0);
+    bool isActiveComponent() const;
 signals:
     void openTextEditor(const QString & suggestedFileName, const QString & text);
     void message(const QString &);
@@ -41,6 +42,7 @@ protected:
     void focusInEvent(QFocusEvent *);
     void focusOutEvent(QFocusEvent *);
     void resizeEvent(QResizeEvent *);
+    void paintEvent(QPaintEvent *);
     void saveText(const QString & suggestedFileName, const QString & text);
 
 protected slots:

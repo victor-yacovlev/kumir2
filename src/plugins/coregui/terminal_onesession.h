@@ -15,19 +15,44 @@ enum CharSpec {
 
 typedef QList<CharSpec> LineProp;
 
+struct VisibleLine {
+    LineProp & prop;
+    const QString & text;
+    bool & endSelected;
+    size_t from;
+    size_t to;
+
+    inline explicit VisibleLine(const QString & tx, LineProp & lp, bool & es, size_t f, size_t t)
+        : text(tx), prop(lp), endSelected(es), from(f), to(t) {}
+
+    inline VisibleLine& operator=(const VisibleLine & other)
+    {
+        *this = other;
+        return *this;
+    }
+};
+
 class OneSession
         : public QObject
 {
     Q_OBJECT
 public:
     OneSession(int fixedWidth, const QString & fileName, QWidget * parent);
-    QSize visibleSize(int realWidth) const;
+    QSize visibleSize() const;
     QString plainText(bool footer_header) const;
     inline QString fileName() const { return fileName_; }
     inline QDateTime startTime() const { return startTime_; }
     inline QDateTime endTime() const { return endTime_; }
     inline int fixedWidth() const { return fixedWidth_; }
-    void draw(QPainter * p, int realWidth);
+    void draw(QPainter &p) const;
+    void drawInputRect(QPainter &p, const uint mainTextY) const;
+    uint drawUtilityText(QPainter &p,
+                         const QString & text,
+                         const LineProp & prop,
+                         const QPoint & topLeft
+                         ) const;
+    uint drawMainText(QPainter &p, const QPoint & topLeft) const;
+    void drawCursor(QPainter &p) const;
     void triggerTextSelection(const QPoint & fromPos, const QPoint & toPos);
     void clearSelection();
     inline void setFont(const QFont &font) { font_ = font; }
@@ -35,7 +60,10 @@ public:
     int widthInChars(int realWidth) const;
     bool hasSelectedText() const;
     QString selectedText() const;
+    QString selectedRtf() const;
+    void selectAll();
     bool isEditable() const;
+    void relayout(uint realWidth);
 public slots:
     void output(const QString & text, const CharSpec cs);
     void input(const QString & format);
@@ -51,7 +79,7 @@ signals:
     void updateRequest();
     void message(const QString & txt);
     void inputDone(const QVariantList &);
-private:
+private:    
     QPoint cursorPositionByVisiblePosition(const QPoint & pos) const;
     QString headerText() const;
     QString footerText() const;
@@ -61,6 +89,9 @@ private:
     QWidget * parent_;
     QStringList lines_;
     QList<LineProp> props_;
+    QList<VisibleLine> visibleLines_;
+    QList<bool> selectedLineEnds_;
+    QRect mainTextRegion_;
     QString fileName_;
     QDateTime startTime_;
     QDateTime endTime_;
@@ -72,7 +103,13 @@ private:
     int inputCursorPosition_;
     bool inputCursorVisible_;
     int timerId_;
-
+    QString visibleHeader_;
+    QString visibleFooter_;
+    LineProp headerProp_;
+    LineProp footerProp_;
+    QRect headerRect_;
+    QRect footerRect_;
+    QScopedPointer<QMutex> relayoutMutex_;
 };
 
 } // namespace Terminal

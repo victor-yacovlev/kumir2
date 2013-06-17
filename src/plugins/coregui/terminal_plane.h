@@ -41,6 +41,7 @@ protected:
     QPoint offset() const;
 
 private slots:
+    void selectAll();
     void copyToClipboard();
     void pasteFromClipboard();
 
@@ -51,7 +52,7 @@ private:
     bool inputMode_;
     quint16 inputPosition_;
     QString inputText_;
-    OneSession* selectedSession_;
+    OneSession* mousePressSession_;
     QPoint mousePressPosition_;
     QAction * actionCopyToClipboard_;
     QAction * actionPasteFromClipboard_;
