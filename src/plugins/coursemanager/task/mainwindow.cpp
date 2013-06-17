@@ -248,7 +248,8 @@ void MainWindowTask::loadCourse()
   }else ui->webView->setHtml(cText);
   if(isTeacher)ui->actionEdit->setEnabled(true);
   setWindowTitle(course->name()+trUtf8(" - Практикум"));
-
+    interface->lockContrls();
+    ui->checkTask->setEnabled(false);
 };
 
 
@@ -391,6 +392,7 @@ if(ioDir.isFile())
      task.isps=course->Modules(curTaskIdx.internalId());
      task.name=course->getTitle(curTaskIdx.internalId());
        qDebug()<<"ISPS"<<task.isps;
+       task.fields.clear();
        for(int i=0;i<task.isps.count();i++)
        {
       // task.Scripts.append(loadScript(course->Script(curTaskIdx.internalId(),task.isps[i])));
