@@ -1922,7 +1922,7 @@ void EditorPlane::paintRectSelection(QPainter *p, const QRect &)
     if (!cursor_->hasRectSelection())
         return;
     p->save();
-    p->setPen(QPen(palette().brush(QPalette::Highlight)
+    p->setPen(QPen(palette().brush(hasFocus()? QPalette::Active : QPalette::Inactive, QPalette::Highlight)
                    , 2
                    , Qt::SolidLine));
     p->setBrush(Qt::NoBrush);
@@ -1946,7 +1946,7 @@ void EditorPlane::paintSelection(QPainter *p, const QRect &rect)
     Q_UNUSED(rect);
     p->save();
     p->setPen(Qt::NoPen);
-    p->setBrush(palette().brush(QPalette::Highlight));
+    p->setBrush(palette().brush(hasFocus()? QPalette::Active : QPalette::Inactive, QPalette::Highlight));
     int startLine = 0;
 //    int startLine = qMax(0, rect.top() / lineHeight() - 1);
 //    int endLine = rect.bottom() / lineHeight() + 1;
