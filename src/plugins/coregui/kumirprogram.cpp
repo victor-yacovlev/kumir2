@@ -114,12 +114,12 @@ KumirProgram::KumirProgram(QObject *parent)
     gr_actions->addAction(a_blindRun);
     gr_actions->addAction(a_regularRun);
     gr_actions->addAction(a_testingRun);
+    gr_actions->addAction(a_stop);
     gr_actions->addAction(s1);
     gr_actions->addAction(a_stepRun);
     gr_actions->addAction(a_stepIn);
     gr_actions->addAction(a_stepOut);
-    gr_actions->addAction(s2);
-    gr_actions->addAction(a_stop);
+//    gr_actions->addAction(s2);
 
     i_timerId = startTimer(1000);
 }
