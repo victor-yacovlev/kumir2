@@ -29,5 +29,5 @@ copySpecFile(CourseManager)
 add_library(CourseManager SHARED ${MOC_SOURCES} ${SOURCES} ${UI_SOURCES})
 handleTranslation(CourseManager)
 target_link_libraries(CourseManager ${QT_LIBRARIES} ExtensionSystem DataFormats)
-
+copyResources(coursemanager)
 install(TARGETS CourseManager DESTINATION ${PLUGINS_DIR})

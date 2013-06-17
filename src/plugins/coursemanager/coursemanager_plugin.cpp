@@ -18,9 +18,12 @@ Plugin::Plugin()
     MW->setup();
     mainWindow_=MW;
     field_no=0;
-    prevFld=new QAction("Предыдущая обстановка",this);
-    nextFld=new QAction("Следующая обстановка",this);
-
+    prevFld=new QAction(trUtf8("Предыдущая обстановка"),this);
+    nextFld=new QAction(trUtf8("Следующая обстановка"),this);
+    connect(nextFld,SIGNAL(triggered()),this,SLOT(nextField()));
+    connect(prevFld,SIGNAL(triggered()),this,SLOT(prevField()));
+    nextFld->setEnabled(false);
+    prevFld->setEnabled(false);
 }
 QList<QMenu*>  Plugin::menus()const
 {
@@ -81,6 +84,15 @@ bool  Plugin::startNewTask(QStringList isps,KumZadanie* task)
             qDebug()<<"Set field"<<task->field(isps.at(i), field_no);
             actor->loadActorData(field_data);
         }
+        if(task->minFieldCount()>1){
+         nextFld->setEnabled(true);
+         prevFld->setEnabled(false);
+        }else
+        {
+            nextFld->setEnabled(false);
+            prevFld->setEnabled(false);   
+        }
+      cur_task=task; 
         return true;
     };    
 QWidget* Plugin::mainWindow() const
@@ -98,23 +110,27 @@ AI * Plugin::getActor(QString name)
     }
     return NULL;
 }
-
+void Plugin::selectNext(KumZadanie* task)
+    {
+       
+        for(int i=0;i<task->isps.count();i++)
+        {
+            AI* actor=getActor(task->isps.at(i));
+            if(!actor)
+            {
+                QMessageBox::information( NULL, "", QString::fromUtf8("Нет исполнтеля:")+task->isps.at(i), 0,0,0); 
+                return;
+            }
+            //TODO LOAD FIELDS;
+            QFile* field_data=new QFile(task->field(task->isps.at(i), field_no));
+            actor->loadActorData(field_data);
+        }   
+    }
 void Plugin::checkNext(KumZadanie* task)
 {
     
-    GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
-    for(int i=0;i<task->isps.count();i++)
-    {
-        AI* actor=getActor(task->isps.at(i));
-        if(!actor)
-        {
-            QMessageBox::information( NULL, "", QString::fromUtf8("Нет исполнтеля:")+task->isps.at(i), 0,0,0); 
-            return;
-        }
-        //TODO LOAD FIELDS;
-        QFile* field_data=new QFile(task->field(task->isps.at(i), field_no));
-        actor->loadActorData(field_data);
-    }
+ GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
+    selectNext(task);
     gui->startTesting();    
 };
 void Plugin::startProgram(QVariant param,KumZadanie* task)
@@ -183,17 +199,42 @@ void Plugin::changeCurrentDirectory(const QString &path)
 }
 void Plugin::nextField()
     {
-        
+      if(field_no<cur_task->minFieldCount() )
+      {
+          field_no++;
+          selectNext(cur_task);
+      }
+       prevFld->setEnabled(field_no>0);
+       nextFld->setEnabled((field_no+1)<cur_task->minFieldCount() && cur_task->minFieldCount()>0);
     };
 void Plugin::prevField()
     {
-        
+        if(field_no>-1 )
+        {
+            field_no--;
+            selectNext(cur_task);
+        }  
+        prevFld->setEnabled(field_no>0);
+        nextFld->setEnabled(field_no<cur_task->minFieldCount() && cur_task->minFieldCount()>0);
     };
+void Plugin::lockContrls()
+    {
+        prevFld->setEnabled(false);
+        nextFld->setEnabled(false);
+    }
 void Plugin::changeGlobalState(ExtensionSystem::GlobalState old,
                                ExtensionSystem::GlobalState current)
 {
-    if(current==ExtensionSystem::GS_Running)MW->lockControls();
-   if(current==ExtensionSystem::GS_Observe)MW->unlockControls();
+    if(current==ExtensionSystem::GS_Running)
+    {MW->lockControls();
+        nextFld->setEnabled(false);
+        prevFld->setEnabled(false);
+    };
+   if(current==ExtensionSystem::GS_Observe)
+   {MW->unlockControls();
+       prevFld->setEnabled(field_no>0);
+       nextFld->setEnabled(field_no<cur_task->minFieldCount() && cur_task->minFieldCount()>0); 
+   };
 }
 
 QString Plugin::initialize(const QStringList &arguments)
@@ -211,6 +252,8 @@ QString Plugin::initialize(const QStringList &arguments)
     QString error;
     isp_no=0;
     field_no=0;
+    courseMenu->addAction(nextFld);
+    courseMenu->addAction(prevFld);
     return error;
 }
 

@@ -40,6 +40,7 @@ public slots:
     void setTestingResult(ProgramRunStatus status, int value);
     void nextField();
     void prevField();
+    void lockContrls();
 private /*methods*/:
     void saveSession() const;
     void restoreSession();
@@ -61,6 +62,7 @@ private /*fields*/:
     MainWindowTask* MW;
     bool setTextFromFile(QString fname);
     int isp_no,field_no;
+    void selectNext(KumZadanie* task);
     KumZadanie* cur_task;
 
 };
