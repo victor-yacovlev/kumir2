@@ -11,6 +11,7 @@ Plugin::Plugin()
     , mainWindow_(nullptr)
     , actionPerformCheck_(nullptr)
     , settingsEditorPage_(nullptr)
+    , cur_task(nullptr)
 {
     courseMenu=new QMenu(trUtf8("Практикум"));
     MenuList.append(courseMenu);
@@ -233,7 +234,7 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old,
    if(current==ExtensionSystem::GS_Observe)
    {MW->unlockControls();
        prevFld->setEnabled(field_no>0);
-       nextFld->setEnabled(field_no<cur_task->minFieldCount() && cur_task->minFieldCount()>0); 
+       nextFld->setEnabled(cur_task && field_no<cur_task->minFieldCount() && cur_task->minFieldCount()>0);
    };
 }
 
