@@ -39,6 +39,7 @@ QString Plugin::getText()
     qDebug()<<"Text"<< KumFile::toString(gui->programSource().content);
     return KumFile::toString(gui->programSource().content);
 }    
+
 void Plugin::setPreProgram(QVariant param)
 {
   if(param.toString().right(4)==".kum")
@@ -48,13 +49,18 @@ void Plugin::setPreProgram(QVariant param)
   else
   {GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
    Shared::GuiInterface::ProgramSourceText text;
-   text.content=KumFile::fromString(param.toString()); 
+   text.content=KumFile::fromString(param.toString());
+   text.content=KumFile::insertTeacherMark(text.content);
    text.language=Shared::GuiInterface::ProgramSourceText::Kumir;
    gui->setProgramSource(text);
+     
       ExtensionSystem::PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);   
   }
 }   
-    
+void Plugin::fixOldKumTeacherMark(QDataStream* ds)
+{
+        
+}
 bool Plugin::setTextFromFile(QString fname)    
 {
     QFile file(fname);
@@ -65,6 +71,7 @@ bool Plugin::setTextFromFile(QString fname)
     QDataStream ds(&file);
     ds>>text.content;
     text.language=Shared::GuiInterface::ProgramSourceText::Kumir;
+    text.content=KumFile::insertTeacherMark(text.content);
     gui->setProgramSource(text);
     return true;
 }
@@ -216,7 +223,7 @@ void Plugin::prevField()
             selectNext(cur_task);
         }  
         prevFld->setEnabled(field_no>0);
-        nextFld->setEnabled(field_no<cur_task->minFieldCount() && cur_task->minFieldCount()>0);
+        nextFld->setEnabled(cur_task && field_no<cur_task->minFieldCount() && cur_task->minFieldCount()>0);
     };
 void Plugin::lockContrls()
     {

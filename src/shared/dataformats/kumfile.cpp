@@ -106,7 +106,34 @@ bool hasWrongSymbols(const QString & s) {
 
     return false;
 }
-
+KumFile::Data KumFile::insertTeacherMark(KumFile::Data & data)//Insert |#%% if needed.
+{
+  static const QRegExp teacherMark("^|#%%");
+    if(data.visibleText.indexOf("\n|#%%")>-1)
+    {
+        qDebug()<<" TM POS:"<<data.visibleText.indexOf("\n|#%%");
+        return data;
+    };
+    if(data.visibleText.indexOf("\n|#%%")>-1)
+    {  qDebug()<<" TM POS:"<<data.visibleText.indexOf("\n|#%%");
+        return data;
+    };   
+    static const QRegExp speclAlg(QString::fromUtf8("^|\\s*алг\\s*(\\S\\S\\S)?\\s*@"));
+    int pos=data.hiddenText.indexOf(speclAlg);
+    if(pos>-1)
+    {
+        
+        data.hiddenText.insert(pos, "\n|#%%\n");
+        return data;
+    };
+    pos=data.visibleText.indexOf(speclAlg);
+    if(pos>1)
+    {
+     data.visibleText.insert(pos, "\n|#%%\n");
+     return data;
+    };  
+    return data;
+}
 QString KumFile::readRawDataAsString(QByteArray rawData, const QString &sourceEncoding, const QString &fileNameSuffix)
 {    
     QTextStream ts(rawData, QIODevice::ReadOnly);

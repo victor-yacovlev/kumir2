@@ -250,6 +250,7 @@ void MainWindowTask::loadCourse()
   setWindowTitle(course->name()+trUtf8(" - Практикум"));
     interface->lockContrls();
     ui->checkTask->setEnabled(false);
+    this->showNormal();
 };
 
 

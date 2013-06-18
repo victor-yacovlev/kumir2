@@ -61,6 +61,7 @@ private /*fields*/:
     QList<QMenu*> MenuList;
     MainWindowTask* MW;
     bool setTextFromFile(QString fname);
+    void fixOldKumTeacherMark(QDataStream* ds);
     int isp_no,field_no;
     void selectNext(KumZadanie* task);
     KumZadanie* cur_task;
