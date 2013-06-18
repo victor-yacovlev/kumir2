@@ -130,6 +130,15 @@ KumFile::Data KumFile::insertTeacherMark(KumFile::Data & data)//Insert |#%% if n
     if(pos>1)
     {
      data.visibleText.insert(pos, "\n|#%%\n");
+    QStringList strings=data.visibleText.split("\n", QString::KeepEmptyParts);
+        for(int i=0;i<strings.count();i++)
+        {
+         if(strings.at(i).startsWith("|#%%"))
+            {
+                data.protectedLineNumbers.insert(i);
+                break;
+            }
+        }
      return data;
     };  
     return data;
