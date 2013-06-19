@@ -235,6 +235,7 @@ void MainWindowTask::loadCourse()
      if(fileName.right(9)==".work.xml")//Загрузка оценок и программ
      {
          loadMarks(fileName);
+         this->show();
          return;
      }else
      cursWorkFile.setFileName("");
@@ -250,7 +251,7 @@ void MainWindowTask::loadCourse()
   setWindowTitle(course->name()+trUtf8(" - Практикум"));
     interface->lockContrls();
     ui->checkTask->setEnabled(false);
-    this->showNormal();
+    this->show();
 };
 
 

@@ -106,19 +106,19 @@ bool hasWrongSymbols(const QString & s) {
 
     return false;
 }
-KumFile::Data KumFile::insertTeacherMark(KumFile::Data & data)//Insert |#%% if needed.
+KumFile::Data KumFile::insertTeacherMark(KumFile::Data & data)//Inserts |#%% if needed.
 {
-  static const QRegExp teacherMark("^|#%%");
-    if(data.visibleText.indexOf("\n|#%%")>-1)
+  static const QRegExp teacherMark("^\\|#%%");
+    if(data.visibleText.indexOf(teacherMark)>-1)
     {
-        qDebug()<<" TM POS:"<<data.visibleText.indexOf("\n|#%%");
+        //qDebug()<<" TM POS:"<<data.visibleText.indexOf("\n|#%%");
         return data;
     };
-    if(data.visibleText.indexOf("\n|#%%")>-1)
-    {  qDebug()<<" TM POS:"<<data.visibleText.indexOf("\n|#%%");
+    if(data.visibleText.indexOf(teacherMark)>-1)
+    { // qDebug()<<" TM POS:"<<data.visibleText.indexOf("\n|#%%");
         return data;
     };   
-    static const QRegExp speclAlg(QString::fromUtf8("^|\\s*алг\\s*(\\S\\S\\S)?\\s*@"));
+    static const QRegExp speclAlg(QString::fromUtf8("^\\s*алг\\s*(\\S\\S\\S)?\\s*@"));
     int pos=data.hiddenText.indexOf(speclAlg);
     if(pos>-1)
     {

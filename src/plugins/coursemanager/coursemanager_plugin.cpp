@@ -145,7 +145,9 @@ void Plugin::startProgram(QVariant param,KumZadanie* task)
 {
     field_no=0;
     cur_task=task;
-    checkNext( task);
+    selectNext( task);
+    GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>(); 
+    gui->startTesting();  
 };
 QAction* Plugin::actionPerformCheck() const
 {

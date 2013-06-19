@@ -35,6 +35,10 @@ public:
     void setPreProgram(QVariant param);
     void startProgram(QVariant param,KumZadanie* task);
     void checkNext(KumZadanie* task);
+    void showMW()
+        {
+            mainWindow()->showNormal();
+        }
 public slots:
     void setEnabled(bool value);
     void setTestingResult(ProgramRunStatus status, int value);
