@@ -688,6 +688,11 @@ void Python3LanguagePlugin::runTesting()
     Q_EMIT stopped(RunInterface::SR_Error);
 }
 
+bool Python3LanguagePlugin::isTestingRun() const
+{
+    return false;
+}
+
 RunInteractionWaiter::RunInteractionWaiter(Python3LanguagePlugin *parent)
     : QThread(parent)
     , mode(RM_Continuous)

@@ -459,6 +459,11 @@ void Run::setEntryPointToTest()
     vm->setEntryPoint(KumirVM::EP_Testing);
 }
 
+bool Run::isTestingRun() const
+{
+    return vm->entryPoint() == KumirVM::EP_Testing;
+}
+
 QString Run::error() const
 {
     return QString::fromStdWString(vm->error());

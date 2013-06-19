@@ -420,6 +420,11 @@ void Plugin::runTesting()
     pRun_->runBlind();
 }
 
+bool Plugin::isTestingRun() const
+{
+    return pRun_->isTestingRun();
+}
+
 void Plugin::terminate()
 {
     pRun_->stop();

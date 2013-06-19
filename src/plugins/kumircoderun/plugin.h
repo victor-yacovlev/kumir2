@@ -51,7 +51,7 @@ public:
             ) const;
     QVariant getLocalTableValue(int frameNo, const QString & name, const QList<int> & indeces) const;
     QVariant getGlobalTableValue(const QString & moduleName, const QString & name, const QList<int> & indeces) const;
-
+    bool isTestingRun() const;
 
 public slots:
     void runBlind();

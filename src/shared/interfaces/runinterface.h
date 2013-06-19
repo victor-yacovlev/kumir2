@@ -24,6 +24,7 @@ public:
     virtual void runStepInto() = 0;
     virtual void runStepOut() = 0;
     virtual void runTesting() = 0;
+    virtual bool isTestingRun() const = 0;
     virtual void terminate() = 0;
     virtual bool hasMoreInstructions() const = 0;
     virtual bool hasTestingEntryPoint() const = 0;

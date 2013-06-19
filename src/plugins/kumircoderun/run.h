@@ -25,6 +25,7 @@ public:
     bool programLoaded;
     inline bool stopped() const { return stoppingFlag_; }
     bool mustStop() const;
+    bool isTestingRun() const;
 
     // VM Access methods
     int effectiveLineNo() const;

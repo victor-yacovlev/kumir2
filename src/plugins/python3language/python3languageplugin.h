@@ -64,6 +64,7 @@ public:
     void runStepInto();
     void runStepOut();
     void runTesting();
+    bool isTestingRun() const;
     void terminate();
     bool hasMoreInstructions() const;
     int currentLineNo() const;
