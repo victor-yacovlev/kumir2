@@ -521,8 +521,8 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
                 for (int i_bounds=0; i_bounds<initBounds.size(); i_bounds++) {
                     Bytecode::Instruction & instr = initBounds[i_bounds];
                     if (instr.type==Bytecode::LOAD || instr.type==Bytecode::LOADARR) {
-                        if (instr.scope==Bytecode::LOCAL)
-                            instr.arg = uint16_t(instr.arg-locOffset);
+//                        if (instr.scope==Bytecode::LOCAL)
+//                            instr.arg = uint16_t(instr.arg-locOffset);
                     }
                 }
                 instrs << initBounds;
