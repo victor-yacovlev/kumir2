@@ -2186,7 +2186,7 @@ void KumirVM::do_setarr(uint8_t s, uint16_t id)
                 if (contextsStack_.top().moduleContextNo == 0)
                     debugHandler_->appendTextToMargin(lineNo, notice);
                 if (VariableScope(s)==Bytecode::LOCAL) {
-                    debugHandler_->debuggerUpdateLocalTableBounds(name, bounds);
+                    debugHandler_->debuggerUpdateLocalTableBounds(var.myName(), bounds);
                 }
                 else if (VariableScope(s)==Bytecode::GLOBAL) {
                     debugHandler_->debuggerUpdateGlobalTableBounds(var.moduleName(), name, bounds);
@@ -2311,7 +2311,7 @@ void KumirVM::do_store(uint8_t s, uint16_t id)
         }
         if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
             if (VariableScope(s)==Bytecode::LOCAL)
-                debugHandler_->debuggerUpdateLocalVariable(name, svalue);
+                debugHandler_->debuggerUpdateLocalVariable(variable.myName(), svalue);
             else if (VariableScope(s)==Bytecode::GLOBAL)
                 debugHandler_->debuggerUpdateGlobalVariable(
                             variable.moduleName(),
@@ -2423,7 +2423,7 @@ void KumirVM::do_storearr(uint8_t s, uint16_t id)
         }
         if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
             if (VariableScope(s)==Bytecode::LOCAL)
-                debugHandler_->debuggerUpdateLocalTableValue(name, indeces);
+                debugHandler_->debuggerUpdateLocalTableValue(variable.myName(), indeces);
             else if (VariableScope(s)==Bytecode::GLOBAL) {
                 debugHandler_->debuggerUpdateGlobalTableValue(
                             variable.moduleName(),
