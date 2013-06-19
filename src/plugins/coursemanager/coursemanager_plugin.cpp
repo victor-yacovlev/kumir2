@@ -185,11 +185,15 @@ void Plugin::setTestingResult(ProgramRunStatus status, int value)
     {
         MW->setMark(0);
         field_no=0;
+        prevFld->setEnabled(field_no>0);
+        nextFld->setEnabled((field_no+1)<cur_task->minFieldCount() && cur_task->minFieldCount()>0);
         return;
     };
     MW->setMark(value);
     field_no++;
     if(field_no<cur_task->minFieldCount() && value>7)checkNext(cur_task);
+    prevFld->setEnabled(field_no>0);
+    nextFld->setEnabled((field_no+1)<cur_task->minFieldCount() && cur_task->minFieldCount()>0);
 qDebug()<<"Set testing results"<<value;
 }
 
