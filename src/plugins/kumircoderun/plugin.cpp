@@ -415,6 +415,7 @@ void Plugin::runTesting()
     if (done_) {
         pRun_->setEntryPointToTest();
         pRun_->reset();
+        done_ = false;
     }
     pRun_->runBlind();
 }
