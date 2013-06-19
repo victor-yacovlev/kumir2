@@ -184,6 +184,7 @@ private /*methods*/:
                                   ) const;
     bool findAlgorhitm(const QString &name
                        , const AST::ModulePtr currentModule
+                       , const AST::AlgorithmPtr currentAlgorithm
                        , AST::AlgorithmPtr & algorhitm
                        ) const;
     bool findGlobalVariable(const QString &name, const AST::ModulePtr module, AST::VariablePtr & var) const;

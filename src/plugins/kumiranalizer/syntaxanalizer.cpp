@@ -260,7 +260,7 @@ SyntaxAnalizer::suggestInputOutputAutoComplete(
             {
                 type = var->baseType;
             }
-            else if (findAlgorhitm(name, contextModule, alg)) {
+            else if (findAlgorhitm(name, contextModule, contextAlgorithm, alg)) {
                 type = alg->header.returnType;
             }
             if (type.kind!=AST::TypeUser && type.kind!=AST::TypeNone) {
@@ -684,7 +684,7 @@ QList<Shared::Suggestion> SyntaxAnalizer::suggestExpressionAutoComplete(
                 }
                 algorithmName = algorithmName.simplified();
                 AST::AlgorithmPtr alg;
-                if (findAlgorhitm(algorithmName, contextModule, alg)) {
+                if (findAlgorhitm(algorithmName, contextModule, contextAlgorithm, alg)) {
                     int argumentIndex = comasBefore;
                     if (argumentIndex<alg->header.arguments.size()) {
                         // Suggest a corresponding argument type value
@@ -2204,7 +2204,7 @@ void SyntaxAnalizer::parseLoopBegin(int str)
         else if (findGlobalVariable(name, st.mod, st.statement->loop.forVariable)) {
 
         }
-        else if (findAlgorhitm(name, st.mod, dummyAlg)) {
+        else if (findAlgorhitm(name, st.mod, st.alg, dummyAlg)) {
             foreach (Lexem *l, forr) l->error = _("Algorithm can't be a loop variable");
             return;
         }
@@ -2597,7 +2597,7 @@ void SyntaxAnalizer::parseAssignment(int str)
         st.statement->expressions << leftExpr;
 }
 
-void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool allowOperatorsDeclaration)
+void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool internalBuildFlag)
 {
     const TextStatement & st = statements_[str];
     if (st.hasError() || !st.mod ||!st.alg)
@@ -2652,7 +2652,7 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool allowOperatorsD
             argsStartLexem = i+1;
             break;
         }
-        else if (allowOperatorsDeclaration) {
+        else if (internalBuildFlag) {
             if (i>nameStartLexem)
                 name += " ";
             name += st.data[i]->data;
@@ -2707,7 +2707,7 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool allowOperatorsD
 
     // Проверяем на повторное описание алгоритма
     AST::AlgorithmPtr  aa;
-    if (!isOperator && findAlgorhitm(name,st.mod,aa) && aa!=alg)
+    if (!isOperator && findAlgorhitm(name,st.mod, AST::AlgorithmPtr(), aa) && aa!=alg)
     {
         for (int i=1; i<st.data.size(); i++) {
             if (st.data[i]->type==LxNameAlg)
@@ -2772,11 +2772,11 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool allowOperatorsD
     if (teacherMode_ && alg->header.name==lexer_->testingAlgorhitmName()) {
         alg->header.specialType = AST::AlgorhitmTypeTesting;
     }
-    else if (teacherMode_ && alg->header.name.startsWith("@")) {
+    else if ( (teacherMode_ || internalBuildFlag) && alg->header.name.startsWith("@")) {
         alg->header.specialType = AST::AlgorhitmTypeTeacher;
     }
 
-    if (!teacherMode_ && alg->header.specialType!=AST::AlgorhitmTypeTesting
+    if (!(teacherMode_ || internalBuildFlag) && alg->header.specialType!=AST::AlgorhitmTypeTesting
             && alg->header.name.startsWith("@"))
     {
         for (int i=1; i<st.data.size(); i++) {
@@ -3228,7 +3228,7 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                 }
 
                 AST::AlgorithmPtr  aa;
-                if (findAlgorhitm(cName, mod, aa)) {
+                if (findAlgorhitm(cName, mod, alg, aa)) {
                     group.lexems[nameStart]->error = _("Name is used by algorithm");
                     return result;
                 }
@@ -3951,6 +3951,7 @@ QVariant SyntaxAnalizer::createConstValue(const QString & str
 bool SyntaxAnalizer::findAlgorhitm(
         const QString &name,
         const AST::ModulePtr currentModule,
+        const AST::AlgorithmPtr currentAlgorithm,
         AST::AlgorithmPtr &algorhitm
         ) const
 {
@@ -3959,7 +3960,8 @@ bool SyntaxAnalizer::findAlgorhitm(
         AST::ModulePtr module = ast_->modules[i];
         bool moduleAvailable =
                 module->isEnabledFor(currentModule) ||
-                alwaysEnabledModules_.contains(module->header.name);
+                alwaysEnabledModules_.contains(module->header.name) ||
+                (currentAlgorithm && currentAlgorithm->header.name.startsWith("@"));
                 ;
         bool sameFileModule =
                 module->header.type==AST::ModTypeUser ||
@@ -4921,7 +4923,7 @@ AST::ExpressionPtr  SyntaxAnalizer::parseFunctionCall(const QList<Lexem *> &lexe
     QList<Lexem*> comas;
 
     AST::AlgorithmPtr  function;
-    if (!findAlgorhitm(name, mod, function)) {
+    if (!findAlgorhitm(name, mod, alg, function)) {
         if (openBracketIndex==-1)
             openBracketIndex = lexems.size();
         for (int i=0; i<openBracketIndex; i++) {
@@ -5122,7 +5124,7 @@ void SyntaxAnalizer::updateSliceDSCall(AST::ExpressionPtr  expr, AST::VariablePt
     static AST::AlgorithmPtr  strlenAlg;
     static AST::ModulePtr  stdlibMod;
     if (!strlenAlg)
-        findAlgorhitm(QString::fromUtf8("длин"), stdlibMod, strlenAlg);
+        findAlgorhitm(QString::fromUtf8("длин"), stdlibMod, AST::AlgorithmPtr(), strlenAlg);
     if (expr->kind==AST::ExprFunctionCall
             && expr->function==strlenAlg
             && expr->operands.size()==0)
@@ -5199,7 +5201,7 @@ AST::ExpressionPtr  SyntaxAnalizer::parseElementAccess(const QList<Lexem *> &lex
         }
         else {
             AST::AlgorithmPtr  a ;
-            if (findAlgorhitm(name, mod,a)) {
+            if (findAlgorhitm(name, mod, alg, a)) {
                 int a = qMax(0, openBracketIndex);
                 for (int i=a; i<lexems.size(); i++) {
                     lexems[i]->error = _("'[...]' instead of '(...)'");
@@ -5442,7 +5444,7 @@ AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<Lexem *> &le
         result->dimension = 0;
         result->lexems = QList<Lexem*>::fromStdList(lexems);
         const AST::ModulePtr  dummy;
-        findAlgorhitm(QString::fromUtf8("длин"), dummy, result->function);
+        findAlgorhitm(QString::fromUtf8("длин"), dummy, AST::AlgorithmPtr(), result->function);
         return result;
     }
     if (lexems.size()==1 &&
@@ -5615,7 +5617,7 @@ AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<Lexem *> &le
             }
         }
         else {
-            if (findAlgorhitm(name, mod, a)) {
+            if (findAlgorhitm(name, mod, alg, a)) {
                 foreach (Lexem *lx, lexems) lx->type = LxNameAlg;
                 if (a->header.arguments.size()>0) {
                     err = _("No arguments");

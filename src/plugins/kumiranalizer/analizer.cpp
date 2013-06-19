@@ -231,7 +231,10 @@ void Analizer::setSourceText(const QString & text)
     QList<AST::ModulePtr>::iterator it = d->ast->modules.begin();
     while (it!=d->ast->modules.end()) {
         AST::ModulePtr module = *it;
-        if ( module->header.type == AST::ModTypeTeacher || module->header.type == AST::ModTypeUser ) {
+        if ( module->header.type == AST::ModTypeTeacher ||
+             module->header.type == AST::ModTypeTeacherMain ||
+             module->header.type == AST::ModTypeUserMain ||
+             module->header.type == AST::ModTypeUser ) {
             it = d->ast->modules.erase(it);
         }
         else {

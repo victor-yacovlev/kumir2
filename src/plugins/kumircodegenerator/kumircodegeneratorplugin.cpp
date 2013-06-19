@@ -58,19 +58,19 @@ QPair<QString,QString> KumirCodeGeneratorPlugin::generateExecuable(
         else {
             d->addModule(tree->modules[i]);
         }
-    }
+    }    
+    linkedModule->impl.globals = userModule->impl.globals;
+    linkedModule->impl.initializerBody = userModule->impl.initializerBody;
+    linkedModule->impl.algorhitms = userModule->impl.algorhitms;
+    linkedModule->header.algorhitms = userModule->header.algorhitms;
+    modules.removeAll(userModule);
     if (teacherModule) {
-        linkedModule->impl.globals = teacherModule->impl.globals;
-        linkedModule->impl.initializerBody = teacherModule->impl.initializerBody;
-        linkedModule->impl.algorhitms = teacherModule->impl.algorhitms;
-        linkedModule->header.algorhitms = teacherModule->header.algorhitms;
+        linkedModule->impl.globals += teacherModule->impl.globals;
+        linkedModule->impl.initializerBody += teacherModule->impl.initializerBody;
+        linkedModule->impl.algorhitms += teacherModule->impl.algorhitms;
+        linkedModule->header.algorhitms += teacherModule->header.algorhitms;
         modules.removeAll(teacherModule);
     }
-    linkedModule->impl.globals += userModule->impl.globals;
-    linkedModule->impl.initializerBody += userModule->impl.initializerBody;
-    linkedModule->impl.algorhitms += userModule->impl.algorhitms;
-    modules.removeAll(userModule);
-    linkedModule->header.algorhitms += userModule->header.algorhitms;
     modules.push_back(linkedModule);
     d->addModule(linkedModule);
     d->generateConstantTable();

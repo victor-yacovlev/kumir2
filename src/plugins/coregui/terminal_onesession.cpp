@@ -918,6 +918,7 @@ void OneSession::error(const QString &message)
 {
     lines_.append(tr("RUNTIME ERROR: %1").arg(message));
     props_.append(LineProp());
+    selectedLineEnds_.append(false);
     for (int i=0; i<lines_.last().size(); i++) {
         props_[props_.size()-1] << CS_Error;
     }
