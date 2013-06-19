@@ -940,6 +940,7 @@ void OneSession::terminate()
 void OneSession::finish()
 {
     endTime_ = QDateTime::currentDateTime();
+    inputLineStart_ = inputPosStart_ = inputCursorPosition_ = -1;
     relayout(parent_->width() - 2 * SessionMargin);
     emit updateRequest();
 }
