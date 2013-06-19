@@ -429,19 +429,19 @@ void Plugin::terminate()
 void Plugin::handleThreadFinished()
 {
     if (pRun_->error().length()>0) {
-        emit stopped(Shared::RunInterface::SR_Error);
         done_ = true;
+        emit stopped(Shared::RunInterface::SR_Error);
     }
     else if (pRun_->hasMoreInstructions() && pRun_->stopped()) {
-        emit stopped(Shared::RunInterface::SR_UserTerminated);
         done_ = true;
+        emit stopped(Shared::RunInterface::SR_UserTerminated);
     }
     else if (pRun_->hasMoreInstructions()) {
         emit stopped(Shared::RunInterface::SR_UserInteraction);
     }
     else {
-        emit stopped(Shared::RunInterface::SR_Done);
         done_ = true;
+        emit stopped(Shared::RunInterface::SR_Done);
     }
 }
 
