@@ -43,6 +43,9 @@ public slots:
     void restoreState();
     void saveState();
     void paintEvent(QPaintEvent *e);
+signals:
+    void docked(QWidget * place, const QString & title);
+    void undocked(QWidget * place);
 public:
     QSize minimumSizeHint() const;
 protected:

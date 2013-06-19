@@ -358,6 +358,15 @@ void SecondaryWindow::setVisible(bool visible)
     pImpl_->toggleVisibleAction_->setChecked(visible);
     pImpl_->settings_->setValue("WindowVisible/"+pImpl_->settingsKey_, visible);
     pImpl_->visibleFlag_ = visible; // required for saving state
+    if (pImpl_->dockPlace_) {
+        if (visible && !isFloating()) {
+            emit docked(pImpl_->dockPlace_, windowTitle());
+        }
+        else if (!visible && !isFloating()) {
+            emit undocked(pImpl_->dockPlace_);
+        }
+
+    }
 }
 
 bool SecondaryWindow::isFloating() const

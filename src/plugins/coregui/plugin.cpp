@@ -38,6 +38,28 @@ QString Plugin::DockFloatingKey = "DockWindow/Floating";
 QString Plugin::DockGeometryKey = "DockWindow/Geometry";
 QString Plugin::DockSideKey = "DockWindow/Side";
 
+
+class BottomRightTabWidget
+        : public QTabWidget
+{
+public:
+    inline BottomRightTabWidget(QWidget * parent)
+        : QTabWidget(parent)
+    {
+        setTabPosition(QTabWidget::South);
+    }
+protected:
+    inline void tabInserted(int)
+    {
+        tabBar()->setVisible(count() > 1);
+    }
+    inline void tabRemoved(int)
+    {
+        tabBar()->setVisible(count() > 1);
+    }
+};
+
+
 QString Plugin::initialize(const QStringList & parameters)
 {
 
@@ -121,6 +143,8 @@ QString Plugin::initialize(const QStringList & parameters)
     mainWindow_->ui->bottomWidget->layout()->addWidget(bottomSplitter);
     bottomSplitter->setOrientation(Qt::Horizontal);
     bottomSplitter->addWidget(m_terminal);
+    actorsDockPlace_ = new BottomRightTabWidget(bottomSplitter);
+    bottomSplitter->addWidget(actorsDockPlace_);
 
 #ifndef Q_OS_MAC
 //    termWindow->toggleViewAction()->setShortcut(QKeySequence("F12"));
@@ -219,12 +243,14 @@ QString Plugin::initialize(const QStringList & parameters)
 //                                                QList<QAction*>(),
 //                                                actorMenus,
 //                                                priv? MainWindow::StandardActor : MainWindow::WorldActor);
-            QWidget * place = new QWidget(mainWindow_);
+            QWidget * place = new QWidget(actorsDockPlace_);
+            place->installEventFilter(this);
             place->setLayout(new QHBoxLayout);
             place->layout()->setContentsMargins(0,0,0,0);
             place->sizePolicy().setHorizontalStretch(1);
             place->sizePolicy().setHorizontalPolicy(QSizePolicy::Fixed);
-            bottomSplitter->addWidget(place);
+//            bottomSplitter->addWidget(place);
+            place->setWindowTitle(actor->name());
             place->setVisible(false);
 
             Widgets::SecondaryWindow * actorWindow = new Widgets::SecondaryWindow(
@@ -235,6 +261,10 @@ QString Plugin::initialize(const QStringList & parameters)
                         o->pluginSpec().name,
                         true, true
                         );
+            connect(actorWindow, SIGNAL(docked(QWidget*,QString)),
+                    this, SLOT(handleSecondaryWindowDocked(QWidget*,QString)));
+            connect(actorWindow, SIGNAL(undocked(QWidget*)),
+                    this, SLOT(handleSecondaryWindowUndocked(QWidget*)));
             secondaryWindows_ << actorWindow;
             const QString actorName = actor->name();
             actorWindow->setWindowTitle(actorName);
@@ -375,6 +405,22 @@ QString Plugin::initialize(const QStringList & parameters)
 
     return "";
 }
+
+void Plugin::handleSecondaryWindowDocked(QWidget * w, const QString & title)
+{
+    actorsDockPlace_->addTab(w, w->windowTitle());
+    actorsDockPlace_->setCurrentWidget(w);
+    actorsDockPlace_->setVisible(true);
+}
+
+void Plugin::handleSecondaryWindowUndocked(QWidget * w)
+{
+    int index = actorsDockPlace_->indexOf(w);
+    actorsDockPlace_->removeTab(index);
+    if (actorsDockPlace_->count() == 0)
+        actorsDockPlace_->setVisible(false);
+}
+
 
 void Plugin::updateSettings()
 {

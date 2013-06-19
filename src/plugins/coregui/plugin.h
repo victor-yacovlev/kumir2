@@ -54,6 +54,8 @@ public slots:
 
 protected slots:
     void prepareKumirProgramToRun();
+    void handleSecondaryWindowDocked(QWidget * w, const QString & title);
+    void handleSecondaryWindowUndocked(QWidget * w);
 
 protected:
     QString initialize(const QStringList &arguments);
@@ -82,6 +84,7 @@ protected:
     DocBookViewer::DocBookView * helpViewer_;
     QSplitter * bottomSplitter_;
     Shared::CoursesInterface* courseManager_;
+    QTabWidget * actorsDockPlace_;
 
     bool sessionsDisableFlag_;
 
