@@ -3087,7 +3087,7 @@ void KumirVM::updateDebugger()
     debugHandler_->debuggerReset();
     for (int i=0; i<contextsStack_.size(); i++) {
         const Context & c = contextsStack_.at(i);
-        if (c.type==EL_MAIN || c.type==EL_FUNCTION) {
+        if (c.type==EL_MAIN || c.type==EL_FUNCTION || c.type==EL_TESTING) {
             debuggerPushContext(false, c.name, &(c.locals), true);
             for (size_t i_var=0; i_var<c.locals.size(); i_var++) {
                 const Variable & var = c.locals.at(i_var);
