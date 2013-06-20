@@ -1431,17 +1431,25 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
             else {
                 findVariable(modId, algId, varExpr->variable, ref.scope, ref.arg);
             }
-            if (varExpr->kind==AST::ExprVariable || varExpr->kind==AST::ExprConst)
+            if (varExpr->kind==AST::ExprVariable || varExpr->kind==AST::ExprConst) {
                 ref.type = Bytecode::REF;
-            else {
+                result << ref;
+            }
+            else if (varExpr->kind == AST::ExprArrayElement) {
                 ref.type = Bytecode::REFARR;
                 for (int j=varExpr->operands.size()-1; j>=0; j--) {
                     QList<Bytecode::Instruction> operandInstrs = calculate(modId, algId, level, varExpr->operands[j]);
                     shiftInstructions(operandInstrs, result.size());
                     result << operandInstrs;
                 }
+                result << ref;
             }
-            result << ref;
+            else {
+                QList<Bytecode::Instruction> operandInstrs = calculate(modId, algId, level, varExpr);
+                shiftInstructions(operandInstrs, result.size());
+                result << operandInstrs;
+            }
+
         }
         argsCount = st->expressions.size();
     }
