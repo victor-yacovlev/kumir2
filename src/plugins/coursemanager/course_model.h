@@ -72,34 +72,34 @@ public:
        courseModel( )
            : QAbstractItemModel() {
            itemFont=QFont("Helvetica [Cronyx]");
-#ifdef Q_OS_WIN32
-           markIcons.append(QIcon(":/out_stand.png"));
-           markIcons.append(QIcon(":/1.png"));
-           markIcons.append(QIcon(":/2.png"));
-           markIcons.append(QIcon(":/3.png"));
-           markIcons.append(QIcon(":/4.png"));
-           markIcons.append(QIcon(":/5.png"));
-           markIcons.append(QIcon(":/6.png"));
-           markIcons.append(QIcon(":/7.png"));
-           markIcons.append(QIcon(":/8.png"));
-           markIcons.append(QIcon(":/9.png"));
-           markIcons.append(QIcon(":/10.png"));
-           markIcons.append(QIcon(":/m.png"));
-
-           markIcons.append(QIcon(":/folder_close.png"));
-           markIcons.append(QIcon(":/folder_1.png"));
-           markIcons.append(QIcon(":/folder_2.png"));
-           markIcons.append(QIcon(":/folder_3.png"));
-           markIcons.append(QIcon(":/folder_4.png"));
-           markIcons.append(QIcon(":/folder_5.png"));
-           markIcons.append(QIcon(":/folder_6.png"));
-           markIcons.append(QIcon(":/folder_7.png"));
-           markIcons.append(QIcon(":/folder_8.png"));
-           markIcons.append(QIcon(":/folder_9.png"));
-           markIcons.append(QIcon(":/folder_10.png"));
-           markIcons.append(QIcon(":/folder_open.png"));
-           return;
-#endif
+//#ifdef Q_OS_WIN32
+//           markIcons.append(QIcon(":/out_stand.png"));
+//           markIcons.append(QIcon(":/1.png"));
+//           markIcons.append(QIcon(":/2.png"));
+//           markIcons.append(QIcon(":/3.png"));
+//           markIcons.append(QIcon(":/4.png"));
+//           markIcons.append(QIcon(":/5.png"));
+//           markIcons.append(QIcon(":/6.png"));
+//           markIcons.append(QIcon(":/7.png"));
+//           markIcons.append(QIcon(":/8.png"));
+//           markIcons.append(QIcon(":/9.png"));
+//           markIcons.append(QIcon(":/10.png"));
+//           markIcons.append(QIcon(":/m.png"));
+//
+//           markIcons.append(QIcon(":/folder_close.png"));
+//           markIcons.append(QIcon(":/folder_1.png"));
+//           markIcons.append(QIcon(":/folder_2.png"));
+//           markIcons.append(QIcon(":/folder_3.png"));
+//           markIcons.append(QIcon(":/folder_4.png"));
+//           markIcons.append(QIcon(":/folder_5.png"));
+//           markIcons.append(QIcon(":/folder_6.png"));
+//           markIcons.append(QIcon(":/folder_7.png"));
+//           markIcons.append(QIcon(":/folder_8.png"));
+//           markIcons.append(QIcon(":/folder_9.png"));
+//           markIcons.append(QIcon(":/folder_10.png"));
+//           markIcons.append(QIcon(":/folder_open.png"));
+//           return;
+//#endif
          QUrl::fromLocalFile(qApp->property("sharePath").toString()+
                                             "/coursemanager/out_stand.svg"
                                             );    
