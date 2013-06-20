@@ -104,7 +104,7 @@ public:
                                             "/coursemanager/out_stand.svg"
                                             );    
            markIcons.append(QIcon( qApp->property("sharePath").toString()+
-                                                           "/coursemanager/out_stand.svg"
+                                                           "/coursemanager/out_stand.png"
                                                            ));
                markIcons.append(QIcon(qApp->property("sharePath").toString()+
                                       "/coursemanager/1.png"
@@ -155,7 +155,7 @@ public:
                                       "/coursemanager/folder_1.png"
                                       ));
                markIcons.append(QIcon( qApp->property("sharePath").toString()+
-                                      "/coursemanager/folder_2.svg"
+                                      "/coursemanager/folder_2.png"
                                       ));
                markIcons.append(QIcon( qApp->property("sharePath").toString()+
                                       "/coursemanager/folder_3.svg"
@@ -175,7 +175,7 @@ public:
                markIcons.append(QIcon( qApp->property("sharePath").toString()+
                                       "/coursemanager/folder_9.svg"));
                markIcons.append(QIcon( qApp->property("sharePath").toString()+
-                                      "/coursemanager/folder_10.svg"));
+                                      "/coursemanager/folder_10.png"));
                markIcons.append(QIcon( qApp->property("sharePath").toString()+
                                       "/coursemanager/folder_open.svg"));
 
