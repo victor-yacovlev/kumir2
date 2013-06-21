@@ -73,9 +73,10 @@ class Files
         TypeList result;
         Field fileKey(QString::fromAscii("key"), Int);
         Field openMode(QString::fromAscii("mode"), Int);
+        Field specialType(QString::fromAscii("type"), Int);
         Field fileName(QString::fromAscii("name"), String);
         Record fileRecord;
-        fileRecord << fileKey << openMode << fileName;
+        fileRecord << fileKey << openMode << specialType << fileName;
         CustomType fileType(QString::fromUtf8("файл"), fileRecord);
         result << fileType;
         return result;
@@ -110,8 +111,10 @@ class Files
 
         /* 0x0013 */ result << QString::fromUtf8("алг лог удалить_каталог(лит имя каталога)");
 
-        /* 0x0014*/ result << QString::fromUtf8("алг лог =(файл ф1, файл ф2)");
-        /* 0x0015*/ result << QString::fromUtf8("алг лог <>(файл ф1, файл ф2)");
+        /* 0x0014 */ result << QString::fromUtf8("алг файл консоль");
+
+        /* 0x0015 */ result << QString::fromUtf8("алг лог =(файл ф1, файл ф2)");
+        /* 0x0016 */ result << QString::fromUtf8("алг лог <>(файл ф1, файл ф2)");
 
 
         return result;

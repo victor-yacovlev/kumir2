@@ -78,8 +78,9 @@ inline String & operator+(String & s, const Char c) {
 
 struct FileType {
     enum OpenMode { NotOpen, Read, Write, Append };
-    inline static const char * _() { return "sib"; }
-    inline FileType() { valid = false; mode = NotOpen; }
+    enum SpecialType { RegularFile, Console };
+    inline static const char * _() { return "siib"; }
+    inline FileType() { valid = false; mode = NotOpen; type = RegularFile; }
     inline void setName(const String &name) {
         fullPath = name;
     }
@@ -91,6 +92,12 @@ struct FileType {
     }
     inline OpenMode getMode() const {
         return OpenMode(mode);
+    }
+    inline SpecialType getType() const {
+        return SpecialType(type);
+    }
+    inline void setType(SpecialType t) {
+        type = int(t);
     }
     inline bool isValid() const {
         return valid;
@@ -107,7 +114,20 @@ struct FileType {
 
     String fullPath;
     int mode;
+    int type;
     bool valid;
+};
+
+class AbstractInputBuffer {
+public:
+    virtual bool readRawChar(Char & ch) = 0;
+    virtual void pushLastCharBack() = 0;
+    virtual void clear() = 0;    
+};
+
+class AbstractOutputBuffer {
+public:
+    virtual void writeRawString(const String & ) = 0;
 };
 
 class StringList:
@@ -1281,6 +1301,13 @@ public:
 class Files {
     friend class IO;
 public:
+    inline static void setConsoleInputBuffer(AbstractInputBuffer * b) {
+        consoleInputBuffer = b;
+    }
+    inline static void setConsoleOutputBuffer(AbstractOutputBuffer * b) {
+        consoleOutputBuffer = b;
+    }
+
     inline static bool isOpenedFiles() { return openedFiles.size()> 0; }
     inline static void init() {
         fileEncoding = DefaultEncoding;
@@ -1678,6 +1705,19 @@ public:
     }
 #endif
 
+    inline static FileType getConsoleBuffer() {
+        if (!consoleInputBuffer) {
+            Core::abort(Core::fromUtf8("Консоль не доступна"));
+            return FileType();
+        }
+        else {
+            FileType ft;
+            ft.valid = true;
+            ft.setType(FileType::Console);
+            return ft;
+        }
+    }
+
     inline static FileType open(const String & shortName, FileType::OpenMode mode, bool remember=true, FILE* *fh = 0) {
         const String fileName = getAbsolutePath(shortName);
 //        std::wcout<<fileName;
@@ -1918,6 +1958,10 @@ private:
     static std::deque<FileType> openedFiles;
     static std::deque<FILE*> openedFileHandles;
 
+    static AbstractInputBuffer* consoleInputBuffer;
+    static AbstractOutputBuffer* consoleOutputBuffer;
+    static AbstractOutputBuffer* consoleErrorBuffer;
+
     struct IntegerFormat {
         int base;
         int width;
@@ -1945,6 +1989,8 @@ private:
 class IO {
 public:
 
+    enum StreamType { File, InternalBuffer, ExternalBuffer };
+
     inline static void init() {}
     inline static void finalize() {}
 
@@ -1952,19 +1998,35 @@ public:
 
     class OutputStream {
     public:
-        OutputStream() { stream = false; file = 0; encoding = UTF8; buffer.reserve(100); }
+        OutputStream()
+        {
+            file = 0;
+            encoding = UTF8;
+            buffer.reserve(100);
+            streamType_ = InternalBuffer;
+            externalBuffer_ = 0;
+        }
         OutputStream(FILE * f, Encoding enc) {
-            stream = true;
+            streamType_ = File;
             file = f;
             if (enc==DefaultEncoding)
                 encoding = UTF8;
             else
                 encoding = enc;
+            externalBuffer_ = 0;
         }
+        OutputStream(AbstractOutputBuffer * buffer) {
+            streamType_ = ExternalBuffer;
+            file = 0;
+            encoding = UTF8;
+            externalBuffer_ = buffer;
+        }
+
         inline const String & getBuffer() const { return buffer; }
-        inline bool isStream() const { return stream; }
+        inline const StreamType type() const { return streamType_; }
+
         void writeRawString(const String & s) {
-            if (isStream()) {
+            if (type() == File) {
                 if (encoding==UTF8 && ftell(file)==0) {
                     static const char * BOM = "\xEF\xBB\xBF";
                     fwrite(BOM, sizeof(char), 3, file);
@@ -1978,41 +2040,67 @@ public:
                 }
                 fwrite(bytes.c_str(), sizeof(char), bytes.length(), file);
             }
+            else if (type() == ExternalBuffer) {
+                if (!externalBuffer_) {
+                    Core::abort(Core::fromUtf8("Ошибка вывода: консоль не доступна"));
+                }
+                else {
+                    externalBuffer_->writeRawString(s);
+                }
+            }
             else {
                 buffer.append(s);
             }
         }
 
     private:
-        bool stream;
+        StreamType streamType_;
         FILE * file;
         Encoding encoding;
         String buffer;
+        AbstractOutputBuffer * externalBuffer_;
 
     };
 
+
     class InputStream {
-    public:
+    public:        
+
         inline InputStream() {
-            stream_=false;
+            streamType_ = InternalBuffer;
             file_=0;
             encoding_=UTF8;
             errStart_=0;
             errLength_=0;
             currentPosition_=0;
+            externalBuffer_ = 0;
         }
+
         inline InputStream(const String & b) {
-            stream_=false;
+            streamType_ = InternalBuffer;
             file_=0;
             encoding_=UTF8;
             errStart_=0;
             errLength_=0;
             buffer_=b;
             currentPosition_=0;
+            externalBuffer_ = 0;
         }
+
+        inline InputStream(AbstractInputBuffer * buffer) {
+            streamType_ = ExternalBuffer;
+            file_=0;
+            encoding_=UTF8;
+            errStart_=0;
+            errLength_=0;
+            currentPosition_=0;
+            externalBuffer_ = buffer;
+        }
+
         inline InputStream(FILE * f, Encoding enc) {
-            stream_ = true;
+            streamType_ = File;
             file_ = f;
+            externalBuffer_ = 0;
             if (enc==DefaultEncoding) {
                 bool forceUtf8 = false;
                 if (f!=stdin) {
@@ -2054,27 +2142,36 @@ public:
             len = errLength_;
         }
 
-        inline bool isStream() const { return stream_; }
+        inline StreamType type() const { return streamType_; }
         inline void setError(const String & err) {
-            if (isStream())
+            if (type() != InternalBuffer)
                 Core::abort(err);
             else
                 error_ = err;
         }
         inline bool hasError() const {
-            if (isStream()) return Core::getError().length()>0;
-            else return error_.length()>0;
+            if (type() != InternalBuffer) {
+                return Core::getError().length()>0;
+            }
+            else {
+                return error_.length()>0;
+            }
         }
-        inline void markPossibleErrorStart() { errStart_ = currentPosition_; errLength_ = 0; error_.clear();}
+        inline void markPossibleErrorStart() {
+            errStart_ = currentPosition_; errLength_ = 0; error_.clear();
+        }
         inline bool readRawChar(Char & x) {
             lastCharBuffer_[0] = lastCharBuffer_[1] = lastCharBuffer_[2] = '\0';
-            if (!stream_) {
+            if ( type() == InternalBuffer ) {
                 if (currentPosition_==buffer_.length())
                     return false;
                 x = buffer_.at(currentPosition_);
                 currentPosition_ += 1;
                 errLength_ += 1;
                 return true;
+            }
+            else if ( type() == ExternalBuffer ) {
+                return externalBuffer_->readRawChar(x);
             }
             else {
                 if (feof(file_))
@@ -2151,11 +2248,14 @@ public:
             }
         }
         inline void pushLastCharBack() {
-            if (!stream_) {
+            if ( type() == InternalBuffer ) {
                 currentPosition_ -= 1;
                 errLength_ -= 1;
             }
-            else {
+            else if ( type() == ExternalBuffer ) {
+                externalBuffer_->pushLastCharBack();
+            }
+            else /* File */ {
                 if (file_==stdin) {
                     if (lastCharBuffer_[2]!='\0')
                         ungetc(lastCharBuffer_[2], file_);
@@ -2199,8 +2299,8 @@ public:
             }
         }
 
-    private:
-        bool stream_;
+    private:        
+        StreamType streamType_;
         FILE * file_;
         long fileSize_;
         Encoding encoding_;
@@ -2210,6 +2310,7 @@ public:
         int errLength_;
         int currentPosition_;
         char lastCharBuffer_[3];
+        AbstractInputBuffer * externalBuffer_;
     }; // end inner class InputStream
 
 
@@ -2427,6 +2528,9 @@ public:
         if (fromStdIn) {
             return InputStream(Files::getAssignedIn(), LOCALE_ENCODING);
         }
+        else if (fileNo.getType() == FileType::Console) {
+            return InputStream(Files::consoleInputBuffer);
+        }
         else {
             std::deque<FileType>::iterator it = Files::openedFiles.begin();
             std::deque<FILE*>::iterator it2 = Files::openedFileHandles.begin();
@@ -2452,6 +2556,9 @@ public:
       //  std::cout<<fileNo.fullPath;
         if (toStdOut) {
             return OutputStream(Files::getAssignedOut(), LOCALE_ENCODING);
+        }
+        else if (fileNo.getType() == FileType::Console) {
+            return OutputStream(Files::consoleOutputBuffer);
         }
         else {
             std::deque<FileType>::iterator it = Files::openedFiles.begin();
@@ -2619,6 +2726,9 @@ inline void finalizeStandardLibrary() {
 String Core::error = String();
 std::deque<FileType> Files::openedFiles;
 std::deque<FILE*> Files::openedFileHandles;
+AbstractInputBuffer* Files::consoleInputBuffer = 0;
+AbstractOutputBuffer* Files::consoleOutputBuffer = 0;
+AbstractOutputBuffer* Files::consoleErrorBuffer = 0;
 FILE * Files::assignedIN = stdin;
 FILE * Files::assignedOUT = stdout;
 #if defined(WIN32) || defined(_WIN32)

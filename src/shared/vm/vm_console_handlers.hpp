@@ -28,6 +28,7 @@ inline void do_output(const std::string & s, const Encoding locale)
 
 class InputFunctor
         : public VM::InputFunctor
+        , public Kumir::AbstractInputBuffer
 {
 public:
     inline InputFunctor()
@@ -38,6 +39,7 @@ public:
         , locale_(UTF8)
     #endif
         , customTypeFromString_(nullptr)
+        , stdin_(IO::makeInputStream(FileType(), true))
     {}
     inline bool operator() (VariableReferencesList alist);
     inline void setLocale(const Encoding loc) { locale_ = loc; }
@@ -45,9 +47,13 @@ public:
     {
         customTypeFromString_ = f;
     }
+    inline bool readRawChar(Char &ch);
+    inline void pushLastCharBack();
+    inline void clear() {}
 private:
     Encoding locale_;
     VM::CustomTypeFromStringFunctor * customTypeFromString_;
+    IO::InputStream stdin_;
 };
 
 bool InputFunctor::operator() (VariableReferencesList alist)
@@ -90,8 +96,19 @@ bool InputFunctor::operator() (VariableReferencesList alist)
     return true;
 }
 
+bool InputFunctor::readRawChar(Char &ch)
+{
+    return stdin_.readRawChar(ch);
+}
+
+void InputFunctor::pushLastCharBack()
+{
+    stdin_.pushLastCharBack();
+}
+
 class OutputFunctor
         : public VM::OutputFunctor
+        , public Kumir::AbstractOutputBuffer
 {
 public:
     inline OutputFunctor()
@@ -109,6 +126,7 @@ public:
     {
         customTypeToString_ = f;
     }
+    inline void writeRawString(const String &);
 
 private:
     Encoding locale_;
@@ -150,6 +168,11 @@ void OutputFunctor::operator ()(
         }
     }
     do_output(os.getBuffer(), locale_);
+}
+
+void OutputFunctor::writeRawString(const String &s)
+{
+    do_output(s, locale_);
 }
 
 class ReturnMainValueFunctor

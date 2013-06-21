@@ -29,6 +29,8 @@ InputFunctor::InputFunctor()
     , inputValues_(QVariantList())
     , converter_(nullptr)
     , runner_(nullptr)
+    , rawBuffer_(QString())
+    , rawBufferLastReadChar_(QChar::Null)
 {
 
 }
@@ -134,6 +136,57 @@ void InputFunctor::handleInputDone(const QVariantList & values)
     finishedMutex_->unlock();
 }
 
+void InputFunctor::clear()
+{
+    rawBufferLastReadChar_ = QChar(QChar::Null);
+    rawBuffer_.clear();
+}
+
+void InputFunctor::pushLastCharBack()
+{
+    rawBuffer_.prepend(rawBufferLastReadChar_);
+    rawBufferLastReadChar_ = QChar(QChar::Null);
+}
+
+bool InputFunctor::readRawChar(Kumir::Char &ch)
+{
+    if (rawBuffer_.isEmpty()) {
+        // Request for user input to fill buffer
+        finishedFlag_ = false;
+        inputValues_.clear();
+        static const QString format = "w";
+            // the same as 's', but different status bar message
+        emit requestInput(format);
+        forever {
+            bool done = false;
+            finishedMutex_->lock();
+            done = finishedFlag_;
+            finishedMutex_->unlock();
+            if (runner_->mustStop()) {
+                break;
+            }
+            else if (!done) {
+                Util::SleepFunctions::msleep(1);
+            }
+            else {
+                break;
+            }
+        }
+
+        if (runner_->mustStop() || inputValues_.isEmpty())
+            return false;
+
+        rawBuffer_ = inputValues_.first().toString();
+        if (rawBuffer_.isEmpty()) {
+            return false;
+        }
+    }
+    rawBufferLastReadChar_ = rawBuffer_.at(0);
+    rawBuffer_.remove(0, 1);
+    ch = Kumir::Char(rawBufferLastReadChar_.unicode());
+    return true;
+}
+
 OutputFunctor::OutputFunctor()
     : QObject(0)
     , converter_(nullptr)
@@ -184,6 +237,13 @@ void OutputFunctor::operator ()(
         }
     }
     QString data = QString::fromStdWString(os.getBuffer());
+    emit requestOutput(data);
+    Util::SleepFunctions::usleep(1000);
+}
+
+void OutputFunctor::writeRawString(const String &s)
+{
+    const QString data = QString::fromStdWString(s);
     emit requestOutput(data);
     Util::SleepFunctions::usleep(1000);
 }

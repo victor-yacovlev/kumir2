@@ -105,6 +105,12 @@ public /*methods*/:
             return error_;
     }
 
+    inline void setConsoleInputBuffer(Kumir::AbstractInputBuffer * b) { consoleInputBuffer_=b; }
+    inline Kumir::AbstractInputBuffer * consoleInputBuffer() const { return consoleInputBuffer_; }
+
+    inline void setConsoleOutputBuffer(Kumir::AbstractOutputBuffer * b) { consoleOutputBuffer_=b; }
+    inline Kumir::AbstractOutputBuffer * consoleOutputBuffer() const { return consoleOutputBuffer_; }
+
     /** Debug control methods */
     inline void setNextCallInto();
     inline void setNextCallOut();
@@ -143,6 +149,9 @@ private /*fields*/:
     VariablesTable * currentGlobals_;
     VariablesTable * currentLocals_;
     unsigned long int stepsCounter_;
+    Kumir::AbstractInputBuffer * consoleInputBuffer_;
+    Kumir::AbstractOutputBuffer * consoleOutputBuffer_;
+
 public /*constructors*/:
     inline KumirVM();
 private /*methods*/:
@@ -577,6 +586,7 @@ KumirVM::KumirVM()
     , currentConstants_(nullptr)
     , currentGlobals_(nullptr)
     , currentLocals_(nullptr)
+    , consoleInputBuffer_(nullptr)
 {
 
 }
@@ -833,6 +843,13 @@ void KumirVM::reset()
             }
         }
     }
+
+    if (consoleInputBuffer_) {
+        consoleInputBuffer_->clear();
+    }
+    Kumir::Files::setConsoleInputBuffer(consoleInputBuffer_);
+    Kumir::Files::setConsoleOutputBuffer(consoleOutputBuffer_);
+
 }
 
 void KumirVM::debuggerPopContext()
@@ -1503,7 +1520,7 @@ void KumirVM::do_filescall(uint16_t alg)
         const String x = valuesStack_.pop().toString();
         Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Read);
         Record yy = toRecordValue(y);
-        Variable res(yy);
+        Variable res(yy, Kumir::Core::fromUtf8("файл"));
         valuesStack_.push(res);
         error_ = Kumir::Core::getError();
         break;
@@ -1513,7 +1530,7 @@ void KumirVM::do_filescall(uint16_t alg)
         const String x = valuesStack_.pop().toString();
         Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Write);
         Record yy = toRecordValue(y);
-        valuesStack_.push(Variable(yy));
+        valuesStack_.push(Variable(yy, Kumir::Core::fromUtf8("файл")));
         error_ = Kumir::Core::getError();
         break;
     }
@@ -1522,7 +1539,7 @@ void KumirVM::do_filescall(uint16_t alg)
         const String x = valuesStack_.pop().toString();
         Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Append);
         Record yy = toRecordValue(y);
-        valuesStack_.push(Variable(yy));
+        valuesStack_.push(Variable(yy, Kumir::Core::fromUtf8("файл")));
         error_ = Kumir::Core::getError();
         break;
     }
@@ -1650,15 +1667,17 @@ void KumirVM::do_filescall(uint16_t alg)
         valuesStack_.push(Variable(res));
         break;
     }
-    /* алг лог =(фaйл ф1, файл ф2) */
+    /* алг удалить_каталог(лит имя файла) */
+    case 0x0013: {
+        const String x = valuesStack_.pop().toString();
+        Kumir::Files::rmdir(x);
+        break;
+    }
+    /* алг файл консоль */
     case 0x0014: {
-        const Variable f2var = valuesStack_.pop();
-        const Variable f1var = valuesStack_.pop();
-        const Record f2rec = f2var.toRecord();
-        const Record f1rec = f1var.toRecord();
-        const Kumir::FileType f1 = fromRecordValue(f1rec);
-        const Kumir::FileType f2 = fromRecordValue(f2rec);
-        valuesStack_.push(Variable(f1==f2));
+        const Kumir::FileType console = Kumir::Files::getConsoleBuffer();
+        const Record record = toRecordValue(console);
+        valuesStack_.push(Variable(record, Kumir::Core::fromUtf8("файл")));
         break;
     }
     /* алг лог =(фaйл ф1, файл ф2) */
@@ -1669,15 +1688,20 @@ void KumirVM::do_filescall(uint16_t alg)
         const Record f1rec = f1var.toRecord();
         const Kumir::FileType f1 = fromRecordValue(f1rec);
         const Kumir::FileType f2 = fromRecordValue(f2rec);
+        valuesStack_.push(Variable(f1==f2));
+        break;
+    }
+    /* алг лог =(фaйл ф1, файл ф2) */
+    case 0x0016: {
+        const Variable f2var = valuesStack_.pop();
+        const Variable f1var = valuesStack_.pop();
+        const Record f2rec = f2var.toRecord();
+        const Record f1rec = f1var.toRecord();
+        const Kumir::FileType f1 = fromRecordValue(f1rec);
+        const Kumir::FileType f2 = fromRecordValue(f2rec);
         valuesStack_.push(Variable(f1!=f2));
         break;
-    }
-    /* алг удалить_каталог(лит имя файла) */
-    case 0x0013: {
-        const String x = valuesStack_.pop().toString();
-        Kumir::Files::rmdir(x);
-        break;
-    }
+    }    
     default: {
         error_ = Kumir::Core::fromUtf8("Вызов неизвестного алгоримта, возможно из более новой версии Кумир");
     }
@@ -1776,16 +1800,18 @@ inline Kumir::FileType KumirVM::fromRecordValue(const Record & record) {
     Kumir::FileType result;
     result.fullPath = record.fields[0].toString();
     result.mode = record.fields[1].toInt();
-    result.valid = record.fields[2].toBool();
+    result.type = record.fields[2].toInt();
+    result.valid = record.fields[3].toBool();
     return result;
 }
 
 inline Record KumirVM::toRecordValue(const Kumir::FileType & ft) {
     Record record;
-    record.fields.resize(3);
+    record.fields.resize(4);
     record.fields[0] = AnyValue(ft.fullPath);
     record.fields[1] = AnyValue(ft.mode);
-    record.fields[2] = AnyValue(ft.valid);
+    record.fields[2] = AnyValue(ft.type);
+    record.fields[3] = AnyValue(ft.valid);
     return record;
 }
 

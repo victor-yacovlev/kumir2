@@ -4,6 +4,8 @@
 #include <QtCore>
 #include <QtGui>
 
+#include <deque>
+
 namespace Terminal {
 
 enum CharSpec {
@@ -13,7 +15,7 @@ enum CharSpec {
     CS_Error        = 0x10
 };
 
-typedef QList<CharSpec> LineProp;
+typedef std::deque<CharSpec> LineProp;
 
 struct VisibleLine {
     LineProp & prop;
@@ -88,7 +90,7 @@ private:
     QSize charSize() const;
     QWidget * parent_;
     QStringList lines_;
-    QList<LineProp> props_;
+    std::deque<LineProp> props_;
     QList<VisibleLine> visibleLines_;
     QList<bool> selectedLineEnds_;
     QRect mainTextRegion_;

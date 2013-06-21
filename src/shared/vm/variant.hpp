@@ -233,10 +233,11 @@ public:
     inline explicit Variable(Char & v) { create(); baseType_ = VT_char; value_ = v; }
     inline explicit Variable(const String & v) { create(); baseType_ = VT_string; value_ = v; }
     inline explicit Variable(bool v) { create(); baseType_ = VT_bool; value_ = v; }
-    inline explicit Variable(const Record & value) {
+    inline explicit Variable(const Record & value, const String & clazz) {
         create();
         baseType_ = VT_record;
         value_ = value;
+        setRecordClassName(clazz);
     }
     inline explicit Variable(Variable * ref) { create(); reference_ = ref; }
     inline explicit Variable(const AnyValue & v) {

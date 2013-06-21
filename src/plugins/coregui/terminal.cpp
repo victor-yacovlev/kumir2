@@ -198,6 +198,7 @@ void Term::start(const QString & fileName)
 {
     int fixedWidth = -1;
     OneSession * session = new OneSession(fixedWidth, QFileInfo(fileName).fileName(), m_plane);
+    session->relayout(m_plane->width());
     connect(session, SIGNAL(updateRequest()), m_plane, SLOT(update()));
     sessions_ << session;
     connect (sessions_.last(), SIGNAL(message(QString)),
@@ -278,6 +279,7 @@ void Term::input(const QString & format)
     m_plane->setInputMode(true);
 
     m_plane->setFocus();
+    m_plane->update();
 }
 
 void Term::handleInputDone(const QVariantList & values)

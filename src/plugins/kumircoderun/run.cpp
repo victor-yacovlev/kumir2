@@ -529,6 +529,7 @@ QVariant Run::valueStackTopItem() const
 
 
 
+
 } // namespace KumirCodeRun
 
 

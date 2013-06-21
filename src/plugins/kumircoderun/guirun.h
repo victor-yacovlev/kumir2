@@ -28,6 +28,7 @@ public:
 class InputFunctor
         : private QObject
         , public VM::InputFunctor
+        , public Kumir::AbstractInputBuffer
 {
     Q_OBJECT
 public:
@@ -36,6 +37,12 @@ public:
     void setRunnerInstance(class Run * runner);
     bool operator()(VariableReferencesList alist);
     ~InputFunctor();
+
+    // Raw data handling methods
+    void clear();
+    bool readRawChar(Kumir::Char &ch);
+    void pushLastCharBack();
+
 signals:
     void requestInput(const QString & format);
 private slots:
@@ -46,11 +53,15 @@ private /*fields*/:
     QVariantList inputValues_;
     VM::CustomTypeFromStringFunctor * converter_;
     Run * runner_;
+
+    QString rawBuffer_;
+    QChar rawBufferLastReadChar_;
 };
 
 class OutputFunctor
         : private QObject
         , public VM::OutputFunctor
+        , public Kumir::AbstractOutputBuffer
 {
     Q_OBJECT
 public:
@@ -58,6 +69,7 @@ public:
     void setCustomTypeToStringFunctor(VM::CustomTypeToStringFunctor *f);
     void setRunnerInstance(class Run * runner);
     void operator()(VariableReferencesList alist, FormatsList formats);
+    void writeRawString(const String & s);
 signals:
     void requestOutput(const QString & data);
 private:

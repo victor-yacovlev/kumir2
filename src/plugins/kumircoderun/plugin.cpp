@@ -541,6 +541,8 @@ void Plugin::prepareConsoleRun()
     pRun_->vm->setFunctor(&console_->output);
     pRun_->vm->setFunctor(&console_->getMainArgument);
     pRun_->vm->setFunctor(&console_->returnMainValue);
+    pRun_->vm->setConsoleInputBuffer(&console_->input);
+    pRun_->vm->setConsoleOutputBuffer(&console_->output);
 
 }
 
@@ -572,6 +574,8 @@ void Plugin::prepareGuiRun()
     pRun_->vm->setFunctor(&gui_->getMainArgument);
     pRun_->vm->setFunctor(&gui_->returnMainValue);
     pRun_->vm->setFunctor(&gui_->pause);
+    pRun_->vm->setConsoleInputBuffer(&gui_->input);
+    pRun_->vm->setConsoleOutputBuffer(&gui_->output);
 }
 
 

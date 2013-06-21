@@ -264,6 +264,8 @@ int main(int argc, char *argv[])
     vm.setFunctor(&outputFunctor);
     vm.setFunctor(&getMainArgumentFunctor);
     vm.setFunctor(&returnMainValueFunctor);
+    vm.setConsoleInputBuffer(&inputFunctor);
+    vm.setConsoleOutputBuffer(&outputFunctor);
 
     String programPath = Files::getAbsolutePath(Coder::decode(LOCALE, programName));
     size_t slashPos = programPath.find_last_of(Char('/'));
