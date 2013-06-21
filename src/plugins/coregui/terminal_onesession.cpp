@@ -797,6 +797,7 @@ void OneSession::tryFinishInput()
     bool conversionError = false;
     int conversionErrorStart = -1;
     int conversionErrorLength = 0;
+    bool ignoreGarbageError = false;
     QString conversionErrorType = "";
     const QStringList & formats = inputFormat_.split(";", QString::SkipEmptyParts);
     for (int i=0; i<formats.size(); i++) {
@@ -828,6 +829,7 @@ void OneSession::tryFinishInput()
         }
         else if (format[0]=='w') {  // raw data
             result << QString(text + "\n");
+            ignoreGarbageError = true;
         }
         else if (format.contains("::")) {
             const QStringList typeName = format.split("::", QString::KeepEmptyParts);
@@ -891,7 +893,7 @@ void OneSession::tryFinishInput()
 
     if (stream.currentPosition() < text.length()) {
         const QString remainder = text.mid(stream.currentPosition());
-        if (!remainder.trimmed().isEmpty() && !hasError) {
+        if (!ignoreGarbageError && !remainder.trimmed().isEmpty() && !hasError) {
             hasError = true;
             errorStart = stream.currentPosition();
             errorLength = remainder.length();
