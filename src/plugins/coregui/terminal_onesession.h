@@ -40,6 +40,7 @@ class OneSession
     Q_OBJECT
 public:
     OneSession(int fixedWidth, const QString & fileName, QWidget * parent);
+    QSize minimumSizeHint() const;
     QSize visibleSize() const;
     QString plainText(bool footer_header) const;
     inline QString fileName() const { return fileName_; }

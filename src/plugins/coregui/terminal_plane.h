@@ -14,6 +14,7 @@ class Plane : public QWidget
     Q_OBJECT
 public:
     explicit Plane(Term * parent);
+    QSize minimumSizeHint() const;
     inline void setInputMode(bool v) {
         inputMode_ = v; inputText_ = ""; inputPosition_ = 0;
     }

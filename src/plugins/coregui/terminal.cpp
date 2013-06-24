@@ -9,8 +9,8 @@ Term::Term(QWidget *parent) :
     QWidget(parent)
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-    setMinimumWidth(450);
-    setMinimumHeight(200);
+//    setMinimumWidth(450);
+//    setMinimumHeight(200);
     QGridLayout * l = m_layout = new QGridLayout();
     l->setContentsMargins(0,0,0,0);
     setLayout(l);
@@ -91,6 +91,20 @@ Term::Term(QWidget *parent) :
 //    output("this is another output");
 //    error("this is error");
 
+}
+
+QSize Term::minimumSizeHint() const
+{
+    QSize result = m_plane->minimumSizeHint();
+    if (sb_vertical->isVisible()) {
+        result.rwidth() += sb_vertical->width();
+        result.rheight() = qMax(result.rheight(), sb_vertical->minimumHeight());
+    }
+    if (sb_horizontal->isVisible()) {
+        result.rheight() += sb_horizontal->height();
+        result.rwidth() = qMax(result.width(), sb_horizontal->minimumWidth());
+    }
+    return result;
 }
 
 void Term::resizeEvent(QResizeEvent *e)

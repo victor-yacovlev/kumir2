@@ -15,6 +15,7 @@ class Term : public QWidget
 public:
     explicit Term(QWidget *parent = 0);
     bool isActiveComponent() const;
+    QSize minimumSizeHint() const;
 signals:
     void openTextEditor(const QString & suggestedFileName, const QString & text);
     void message(const QString &);

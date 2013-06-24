@@ -371,6 +371,16 @@ void Plane::resizeEvent(QResizeEvent *e)
     updateScrollBars();
 }
 
+QSize Plane::minimumSizeHint() const
+{
+    if (terminal_->sessions_.isEmpty())
+        return QSize(0, 0);
+    else {
+        OneSession * last = terminal_->sessions_.last();
+        return last->minimumSizeHint() + QSize(2*SessionMargin, 2*SessionMargin);
+    }
+}
+
 void Plane::wheelEvent(QWheelEvent *e)
 {
     if (!terminal_->sb_vertical->isEnabled() && e->orientation()==Qt::Vertical) {

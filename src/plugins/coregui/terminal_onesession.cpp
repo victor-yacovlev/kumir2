@@ -78,6 +78,20 @@ QString OneSession::plainText(bool footer_header) const
 
 }
 
+QSize OneSession::minimumSizeHint() const
+{
+    const QFontMetrics headingFM(utilityFont());
+    const QFontMetrics mainFM(font());
+    int minH = 2 * (headingFM.height() + BodyPadding + HeaderPadding) +
+            mainFM.height();
+    int minWidthInChars = fixedWidth_ == -1? 10 : fixedWidth_;
+    int minW = charSize().width() * minWidthInChars;
+    int headerWidth = qMin(400, headingFM.width(visibleHeader_));
+    int footerWidth = qMin(400, headingFM.width(visibleFooter_));
+    int maxHeadingWidth = qMax(headerWidth, footerWidth);
+    return QSize(qMax(minW, maxHeadingWidth), minH);
+}
+
 void OneSession::relayout(uint realWidth)
 {
     QMutexLocker lock(relayoutMutex_.data());
