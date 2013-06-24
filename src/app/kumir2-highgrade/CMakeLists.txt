@@ -3,10 +3,10 @@ find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui REQUIRED)
 include (${QT_USE_FILE})
 
 set(CONFIGURATION_TEMPLATE
-    "CourseManager,Editor,Browser,Actor*,KumirAnalizer\(preload=Files,preload=Strings\),KumirCodeGenerator,KumirCodeRun,!CoreGUI\(notabs,icon=classic,nostartpage,nosessions\)"
+    "CourseManager,Editor,Browser,Actor*,KumirAnalizer\(preload=Files,preload=Strings\),KumirCodeGenerator,KumirCodeRun,!CoreGUI\(notabs,icon=highgrade,nostartpage,nosessions\)"
 )
 set(SPLASHSCREEN
-    "coregui/splashscreens/classic.png"
+    "coregui/splashscreens/highgrade.png"
 )
 
 set(SRC ../main.cpp)
