@@ -11,7 +11,12 @@
 
 namespace CoreGUI {
 
+#ifdef Q_OS_MAX
+static const int ItemPadding = 16;
+#else
 static const int ItemPadding = 8;
+#endif
+
 
 StatusBar::StatusBar(QWidget *parent)
     : QStatusBar(parent)
@@ -61,6 +66,9 @@ QSize StatusBar::minimumSizeHint() const
     w += cursorPositionItemSize().width();
     h = qMax(h, keyboardLayoutItemSize().height());
     w += keyboardLayoutItemSize().width();
+#ifdef Q_OS_MAC
+    h += 8;
+#endif
     return QSize(w, h);
 }
 
@@ -164,7 +172,11 @@ QSize StatusBar::counterItemSize() const
             ? maxTextWidthEdit : textWidthOther;
 
     const int height = qMax(14, textHeight);
+#ifdef Q_OS_MAC
+    return QSize(textWidth + 2*ItemPadding + 20, height);
+#else
     return QSize(textWidth + 2*ItemPadding, height);
+#endif
 }
 
 QSize StatusBar::messageItemSize() const
@@ -218,6 +230,9 @@ void StatusBar::paintEvent(QPaintEvent *event)
     if (toolButtons_.size() > 0) {
         x += ItemPadding;
     }
+#ifdef Q_OS_MAC
+    x += 20;
+#endif
     paintModeItem(p, x);
     x += modeItemSize().width();
     paintCounterItem(p, x);

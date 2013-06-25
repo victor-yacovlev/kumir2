@@ -59,6 +59,7 @@ public:
                         "QToolBar {"
                         "   border: 0px;"
                         "   background-color: $windowColor;"
+                        "   padding: 8px;"
                         "}"
                         "QToolButton {"
                         "   border: 0px;"

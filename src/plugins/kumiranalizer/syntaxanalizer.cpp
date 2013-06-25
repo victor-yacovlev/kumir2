@@ -3970,8 +3970,8 @@ bool SyntaxAnalizer::findAlgorhitm(
                 module->header.type==AST::ModTypeTeacher;
         if (moduleAvailable) {
             if (currentModule==module ||
-                    sameFileModule && currentModule->header.type==AST::ModTypeTeacher ||
-                     sameFileModule && currentModule->header.type==AST::ModTypeTeacherMain
+                    (sameFileModule && currentModule->header.type==AST::ModTypeTeacher) ||
+                    (sameFileModule && currentModule->header.type==AST::ModTypeTeacherMain)
 
                     )
             {
@@ -4281,8 +4281,8 @@ bool SyntaxAnalizer::findUserType(const QString &name, AST::Type &type, AST::Mod
     for (int i=0; i<ast_->modules.size(); i++) {
         AST::ModulePtr  mod = ast_->modules[i];
         if (mod->isEnabledFor(currentModule) ||
-                mod->header.type == AST::ModTypeExternal &&
-                alwaysEnabledModules_.contains(mod->header.name)
+                ( mod->header.type == AST::ModTypeExternal &&
+                alwaysEnabledModules_.contains(mod->header.name) )
                 ) {
             for (int j=0; j<mod->header.types.size(); j++) {
                 AST::Type tp = mod->header.types[j];
