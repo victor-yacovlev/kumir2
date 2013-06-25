@@ -148,6 +148,7 @@ QString Plugin::initialize(const QStringList & parameters)
     bottomSplitter->setOrientation(Qt::Horizontal);
     bottomSplitter->addWidget(m_terminal);
     actorsDockPlace_ = new BottomRightTabWidget(bottomSplitter);
+    actorsDockPlace_->setVisible(false);
     bottomSplitter->addWidget(actorsDockPlace_);
 
 #ifndef Q_OS_MAC
@@ -439,6 +440,11 @@ void Plugin::handleSecondaryWindowDocked(QWidget * w, const QString & title)
     actorsDockPlace_->addTab(w, w->windowTitle());
     actorsDockPlace_->setCurrentWidget(w);
     actorsDockPlace_->setVisible(true);
+    QList<int> bottomSplitterSizes = bottomSplitter_->sizes();
+    int totalWidth = bottomSplitterSizes[1] + bottomSplitterSizes[2];
+    bottomSplitterSizes[2] = w->minimumSizeHint().width();
+    bottomSplitterSizes[1] = totalWidth - bottomSplitterSizes[2];
+    bottomSplitter_->setSizes(bottomSplitterSizes);
     mainWindow_->ui->actionShow_Console_Pane->setChecked(true);
     showConsolePane(true);
 }
@@ -466,6 +472,9 @@ void Plugin::showConsolePane(bool v)
     int curHeight = mainWindow_->ui->bottomWidget->height();
     QList<int> sizes = mainWindow_->ui->splitter->sizes();
     int totalSize = sizes[0] + sizes[1];
+    if (sizes[0] == 0) {
+        return;
+    }
     if (v) {
         if (curHeight < minHeight) {
             sizes[1] = minHeight;
@@ -586,8 +595,8 @@ void Plugin::stop()
 void Plugin::saveSession() const
 {
     mainWindow_->saveSettings();
-    mySettings()->setValue("BottomSplitterGeometry", bottomSplitter_->saveGeometry());
-    mySettings()->setValue("BottomSplitterState", bottomSplitter_->saveState());
+//    mySettings()->setValue("BottomSplitterGeometry", bottomSplitter_->saveGeometry());
+//    mySettings()->setValue("BottomSplitterState", bottomSplitter_->saveState());
     foreach (Widgets::SecondaryWindow * secWindow, secondaryWindows_)
         secWindow->saveState();
 }
@@ -595,7 +604,6 @@ void Plugin::saveSession() const
 
 void Plugin::restoreSession()
 {
-    mainWindow_->loadSettings();
     if (!sessionsDisableFlag_) {
         if (startPage_.widget && mainWindow_->ui->tabWidget->count()==0) {
             mainWindow_->addCentralComponent(
@@ -617,8 +625,9 @@ void Plugin::restoreSession()
     }
     foreach (Widgets::SecondaryWindow * secWindow, secondaryWindows_)
         secWindow->restoreState();
-    bottomSplitter_->restoreGeometry(mySettings()->value("BottomSplitterGeometry").toByteArray());
-    bottomSplitter_->restoreState(mySettings()->value("BottomSplitterState").toByteArray());
+    mainWindow_->loadSettings();
+//    bottomSplitter_->restoreGeometry(mySettings()->value("BottomSplitterGeometry").toByteArray());
+//    bottomSplitter_->restoreState(mySettings()->value("BottomSplitterState").toByteArray());
 }
 
 Plugin::~Plugin()

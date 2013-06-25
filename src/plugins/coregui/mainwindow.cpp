@@ -982,16 +982,26 @@ void MainWindow::disableTabs()
 
 void MainWindow::loadSettings()
 {
-    QRect r = m_plugin->mySettings()->value(Plugin::MainWindowGeometryKey, QRect(-1,-1,0,0)).toRect();
+    SettingsPtr sett = m_plugin->mySettings();
+    QRect r = sett->value(Plugin::MainWindowGeometryKey, QRect(-1,-1,0,0)).toRect();
     if (r.width()>0) {
         resize(r.size());
         move(r.topLeft());
     }
-    restoreState(m_plugin->mySettings()->value(Plugin::MainWindowStateKey).toByteArray());
-    ui->splitter->restoreState(m_plugin->mySettings()->value(Plugin::MainWindowSplitterStateKey).toByteArray());
-    bool showConsole = m_plugin->mySettings()->value(Plugin::MainWindowShowConsoleKey, true).toBool();
-    ui->actionShow_Console_Pane->setChecked(showConsole);
-    m_plugin->showConsolePane(showConsole);
+    QList<int> sizes;
+    sizes << 0 << 0;
+    sizes[0] = sett->value(Plugin::MainWindowSplitterStateKey+"0", 0).toInt();
+    sizes[1] = sett->value(Plugin::MainWindowSplitterStateKey+"1", 0).toInt();
+    if (sizes[0] + sizes[1] > 0) {
+        ui->splitter->setSizes(sizes);
+    }
+    ui->actionShow_Console_Pane->setChecked(sizes[1] > 0);
+    QList<int> sizes2;
+    sizes2 << 0 << 0 << 0;
+    sizes2[0] = sett->value("ConsoleSplitter0", 0).toInt();
+    sizes2[1] = sett->value("ConsoleSplitter1", ui->bottomWidget->width()).toInt();
+    sizes2[2] = sett->value("ConsoleSplitter2", 0).toInt();
+    m_plugin->bottomSplitter_->setSizes(sizes2);
 }
 
 void MainWindow::saveSettings()
@@ -999,9 +1009,14 @@ void MainWindow::saveSettings()
     QRect r(pos(), size());
     SettingsPtr sett = m_plugin->mySettings();
     sett->setValue(Plugin::MainWindowGeometryKey, r);
-    sett->setValue(Plugin::MainWindowStateKey, saveState());
-    sett->setValue(Plugin::MainWindowSplitterStateKey, ui->splitter->saveState());
-    sett->setValue(Plugin::MainWindowShowConsoleKey, ui->actionShow_Console_Pane->isChecked());
+    const QList<int> sizes = ui->splitter->sizes();
+    sett->setValue(Plugin::MainWindowSplitterStateKey+"0", sizes[0]);
+    sett->setValue(Plugin::MainWindowSplitterStateKey+"1", sizes[1]);
+    const QList<int> sizes2 = m_plugin->bottomSplitter_->sizes();
+    sett->setValue("ConsoleSplitter0", sizes2[0]);
+    sett->setValue("ConsoleSplitter1", sizes2[1]);
+    sett->setValue("ConsoleSplitter2", sizes2[2]);
+
 }
 
 void MainWindow::restoreSession()
