@@ -93,6 +93,11 @@ Term::Term(QWidget *parent) :
 
 }
 
+bool Term::isEmpty() const
+{
+    return sessions_.isEmpty();
+}
+
 QSize Term::minimumSizeHint() const
 {
     QSize result = m_plane->minimumSizeHint();

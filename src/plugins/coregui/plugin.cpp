@@ -32,6 +32,7 @@ QString Plugin::SessionTabIndexKey = "Session/TabIndex";
 QString Plugin::RecentFileKey = "History/FileDialog";
 QString Plugin::RecentFilesKey = "History/RecentFiles";
 QString Plugin::MainWindowGeometryKey = "Geometry/MainWindow";
+QString Plugin::MainWindowShowConsoleKey = "State/ConsoleToggle";
 QString Plugin::MainWindowStateKey = "State/MainWindow";
 QString Plugin::MainWindowSplitterStateKey = "State/MainWindowSplitter";
 QString Plugin::DockVisibleKey = "DockWindow/Visible";
@@ -151,6 +152,15 @@ QString Plugin::initialize(const QStringList & parameters)
 //    termWindow->toggleViewAction()->setShortcut(QKeySequence("F12"));
 #endif
 
+    connect(mainWindow_->ui->actionShow_Console_Pane,
+            SIGNAL(triggered(bool)),
+            this,
+            SLOT(showConsolePane(bool)));
+
+    QToolButton * btnShowConsole = new QToolButton(mainWindow_);
+    btnShowConsole->setDefaultAction(mainWindow_->ui->actionShow_Console_Pane);
+    btnShowConsole->setToolTip(mainWindow_->ui->actionShow_Console_Pane->text());
+    mainWindow_->statusBar_->addButtonToLeft(btnShowConsole);
     QToolButton * btnSaveTerm = new QToolButton(mainWindow_);
     btnSaveTerm->setPopupMode(QToolButton::InstantPopup);
     QMenu * menuSaveTerm = new QMenu(btnSaveTerm);
@@ -414,14 +424,26 @@ void Plugin::handleSecondaryWindowDocked(QWidget * w, const QString & title)
     actorsDockPlace_->addTab(w, w->windowTitle());
     actorsDockPlace_->setCurrentWidget(w);
     actorsDockPlace_->setVisible(true);
+    mainWindow_->ui->actionShow_Console_Pane->setChecked(true);
+    showConsolePane(true);
 }
 
 void Plugin::handleSecondaryWindowUndocked(QWidget * w)
 {
     int index = actorsDockPlace_->indexOf(w);
     actorsDockPlace_->removeTab(index);
-    if (actorsDockPlace_->count() == 0)
+    if (actorsDockPlace_->count() == 0) {
         actorsDockPlace_->setVisible(false);
+        if (m_terminal->isEmpty()) {
+            mainWindow_->ui->actionShow_Console_Pane->setChecked(false);
+            showConsolePane(false);
+        }
+    }
+}
+
+void Plugin::showConsolePane(bool v)
+{
+    mainWindow_->ui->bottomWidget->setVisible(v);
 }
 
 

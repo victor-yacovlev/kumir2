@@ -949,6 +949,9 @@ void MainWindow::loadSettings()
     }
     restoreState(m_plugin->mySettings()->value(Plugin::MainWindowStateKey).toByteArray());
     ui->splitter->restoreState(m_plugin->mySettings()->value(Plugin::MainWindowSplitterStateKey).toByteArray());
+    bool showConsole = m_plugin->mySettings()->value(Plugin::MainWindowShowConsoleKey, true).toBool();
+    ui->actionShow_Console_Pane->setChecked(showConsole);
+    m_plugin->showConsolePane(showConsole);
 }
 
 void MainWindow::saveSettings()
@@ -958,6 +961,7 @@ void MainWindow::saveSettings()
     sett->setValue(Plugin::MainWindowGeometryKey, r);
     sett->setValue(Plugin::MainWindowStateKey, saveState());
     sett->setValue(Plugin::MainWindowSplitterStateKey, ui->splitter->saveState());
+    sett->setValue(Plugin::MainWindowShowConsoleKey, ui->actionShow_Console_Pane->isChecked());
 }
 
 void MainWindow::restoreSession()

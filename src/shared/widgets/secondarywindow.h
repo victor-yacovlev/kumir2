@@ -53,6 +53,7 @@ protected:
     bool eventFilter(QObject *obj, QEvent *evt);
 protected slots:
     void checkForPlaceVisible(bool show);
+    void activate();
 private:
     class SecondaryWindowPrivate *pImpl_;
 };

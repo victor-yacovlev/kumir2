@@ -39,6 +39,7 @@ public:
     static QString RecentFileKey;
     static QString RecentFilesKey;
     static QString MainWindowGeometryKey;
+    static QString MainWindowShowConsoleKey;
     static QString MainWindowStateKey;
     static QString MainWindowSplitterStateKey;
     static QString DockVisibleKey;
@@ -56,6 +57,7 @@ protected slots:
     void prepareKumirProgramToRun();
     void handleSecondaryWindowDocked(QWidget * w, const QString & title);
     void handleSecondaryWindowUndocked(QWidget * w);
+    void showConsolePane(bool v);
 
 protected:
     QString initialize(const QStringList &arguments);

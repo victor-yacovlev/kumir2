@@ -600,8 +600,8 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
     topBorder_->setFixedHeight(qMax(maxButtonHeight, topBorderHeight));
 
     toggleVisibleAction_ = new QAction(this);
-    toggleVisibleAction_->setCheckable(true);
-    connect(toggleVisibleAction_, SIGNAL(triggered(bool)), pClass_, SLOT(setVisible(bool)));
+    toggleVisibleAction_->setCheckable(false);
+    connect(toggleVisibleAction_, SIGNAL(triggered()), pClass_, SLOT(activate()));
 
     startTimer(500);
 
@@ -613,6 +613,14 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
     }
     if (dockPlace_)
         dockPlace_->setMinimumWidth(centralWidget_->minimumWidth());
+}
+
+void SecondaryWindow::activate()
+{
+    if (!isVisible())
+        setVisible(true);
+    if (isFloating())
+        activateWindow();
 }
 
 void SecondaryWindowPrivate::timerEvent(QTimerEvent *e)
