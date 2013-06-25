@@ -1,3 +1,48 @@
+if(EXISTS(../../version_info.cmake))
+    include(../../version_info.cmake)
+else()
+    set(GIT_HASH unknown)
+    set(GIT_TIMESTAMP 0)
+    set(GIT_BRANCH unknown)
+    set(GIT_TAG unknown)
+
+    find_program(GIT git)
+
+    if(GIT)
+        execute_process(
+            COMMAND ${GIT} --no-pager log -1 --pretty=format:%H
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_HASH
+        )
+        execute_process(
+            COMMAND ${GIT} tag
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_TAG
+        )
+        execute_process(
+            COMMAND ${GIT} --no-pager log -1 --pretty=format:%ct
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_TIMESTAMP
+        )
+        execute_process(
+            COMMAND ${GIT} rev-parse --abbrev-ref HEAD
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_BRANCH
+        )
+        string(STRIP "${GIT_BRANCH}" GIT_BRANCH)
+        string(STRIP "${GIT_HASH}" GIT_HASH)
+        string(STRIP "${GIT_TAG}" GIT_TAG)
+        string(STRIP "${GIT_TIMESTAMP}" GIT_TIMESTAMP)
+    else()
+        message(WARNING "git not found and no version info provided")
+    endif()
+
+    add_definitions(-DGIT_HASH=\"${GIT_HASH}\")
+    add_definitions(-DGIT_TIMESTAMP=${GIT_TIMESTAMP})
+    add_definitions(-DGIT_TAG=\"${GIT_TAG}\")
+    add_definitions(-DGIT_BRANCH=\"${GIT_BRANCH}\")
+endif()
+
 if (MSVC_IDE)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${LIBRARY_OUTPUT_PATH})
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${LIBRARY_OUTPUT_PATH})
