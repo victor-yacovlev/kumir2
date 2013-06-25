@@ -149,15 +149,21 @@ void EditorPrivate::timerEvent(QTimerEvent *e)
 {
     if (e->timerId()==timerId) {
         e->accept();
+        emit q->keyboardLayoutChanged(
+                    Utils::isRussianLayout()? QLocale::Russian : QLocale::English,
+                    Utils::isCapsLock(),
+                    Utils::shiftKeyPressed,
+                    Utils::altKeyPressed
+                    );
         if (keybStatus) {
             bool capsLock = Utils::isCapsLock();
             bool russian = Utils::isRussianLayout();
-            if (Utils::temporaryLayoutSwitch)
+            if (Utils::altKeyPressed)
                 russian = !russian;
             QString abc = russian? QString::fromUtf8("рус") : "lat";
             if (capsLock)
                 abc = abc.toUpper();
-            if (Utils::temporaryLayoutSwitch)
+            if (Utils::altKeyPressed)
                 abc += "*";
             keybStatus->setText(tr("Keys: %1").arg(abc));
         }
@@ -199,6 +205,7 @@ void EditorPrivate::handleAutoScrollChangeX(char a)
 
 void EditorPrivate::updatePosition(int row, int col)
 {
+    emit q->cursorPositionChanged(row, col);
     positionStatus->setText(tr("Row: %1, Col: %2").arg(row+1).arg(col+1));
 }
 

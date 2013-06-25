@@ -4,5 +4,7 @@
         <file>close-tab.png</file>
         <file>horizontal-splitter-background.png</file>
         <file>horizontal-splitter-handle.png</file>
+        <file>statusbar_alt_indicator.png</file>
+        <file>statusbar_shift_indicator.png</file>
     </qresource>
 </RCC>

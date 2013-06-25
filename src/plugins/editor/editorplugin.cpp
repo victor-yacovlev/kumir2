@@ -109,7 +109,7 @@ Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, c
     result.widget = w;
     result.menus = w->menuActions();
     result.toolbarActions = w->toolbarActions();
-    result.statusbarWidgets = w->statusbarWidgets();
+//    result.statusbarWidgets = w->statusbarWidgets();
     return result;
 }
 

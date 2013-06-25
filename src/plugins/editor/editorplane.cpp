@@ -1146,7 +1146,10 @@ void EditorPlane::keyReleaseEvent(QKeyEvent *e)
                 .toUInt()
                 );
     if (e->key()==tempSwichLayoutKey) {
-        Utils::temporaryLayoutSwitch = false;
+        Utils::altKeyPressed = false;
+    }
+    if (e->key()==Qt::Key_Shift || (e->key()==-1 && e->modifiers() & Qt::ShiftModifier)) {
+        Utils::shiftKeyPressed = false;
     }
     if (cursor_->isEnabled()) {
         e->accept();
@@ -1169,7 +1172,8 @@ bool EditorPlane::event(QEvent *e)
         }
     }
     else if (e->type()==QEvent::FocusOut) {
-        Utils::temporaryLayoutSwitch = false;
+        Utils::altKeyPressed = false;
+        Utils::shiftKeyPressed = false;
     }
     return QWidget::event(e);
 }
@@ -1437,7 +1441,10 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                     .toUInt()
                     );
         if (e->key()==tempSwichLayoutKey) {
-            Utils::temporaryLayoutSwitch = true;
+            Utils::altKeyPressed = true;
+        }
+        if (e->key()==Qt::Key_Shift) {
+            Utils::shiftKeyPressed = true;
         }
         findCursor();
     }

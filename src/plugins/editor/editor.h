@@ -13,6 +13,7 @@ class Editor
 {
     Q_OBJECT
 public:
+    friend class EditorPrivate;
     explicit Editor(
             bool initiallyNotSaved = false,
             ExtensionSystem::SettingsPtr settings = ExtensionSystem::SettingsPtr(),
@@ -60,6 +61,8 @@ public slots:
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
     void documentCleanChanged(bool v);
+    void cursorPositionChanged(uint row, uint column);
+    void keyboardLayoutChanged(QLocale::Language lang, bool capslock, bool shift, bool alt);
 
 private:
 

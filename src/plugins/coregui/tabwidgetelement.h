@@ -15,7 +15,7 @@ public:
                                      , bool enableToolBar
                                      , QList<QAction*> toolbarActions
                                      , QList<QMenu*> ms
-                                     , QList<QWidget*> sws
+//                                     , QList<QWidget*> sws
                                      , MainWindow::DocumentType t
                                      , QActionGroup * gr_fileActions
                                      , QActionGroup * gr_otherActions
@@ -25,7 +25,7 @@ public:
         : QWidget()
         , component(w)
         , menus(ms)
-        , statusbarWidgets(sws)
+//        , statusbarWidgets(sws)
         , type(t)
         , documentId(-1)
         , m_kumirProgram(kumir)
@@ -94,7 +94,7 @@ public:
     }
     QWidget * component;
     QList<QMenu*> menus;
-    QList<QWidget*> statusbarWidgets;
+//    QList<QWidget*> statusbarWidgets;
     MainWindow::DocumentType type;
     int documentId;
     QDateTime saved;

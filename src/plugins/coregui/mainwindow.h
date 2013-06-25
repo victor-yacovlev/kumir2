@@ -36,7 +36,7 @@ public:
                              , QWidget *c
                              , const QList<QAction*> & toolbarActions
                              , const QList<QMenu*> & menus
-                             , const QList<QWidget*> & statusbarWidgets
+//                             , const QList<QWidget*> & statusbarWidgets
                              , DocumentType type
                              , bool enableToolBar);
 
@@ -120,12 +120,13 @@ private:
 
     bool b_notabs;
 
-    static QString StatusbarWidgetCSS;
+//    static QString StatusbarWidgetCSS;
 
     QLabel * m_message;
 
     Ui::MainWindow *ui;
     Plugin *m_plugin;
+    class StatusBar * statusBar_;
 };
 
 

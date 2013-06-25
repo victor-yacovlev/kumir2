@@ -11,7 +11,8 @@ class Utils
 public:
     static bool isRussianLayout();
     static bool isCapsLock();
-    static bool temporaryLayoutSwitch;
+    static bool altKeyPressed;
+    static bool shiftKeyPressed;
     static QString textByKey(Qt::Key key,
                              const QString & keyText,
                              bool shiftPressed,

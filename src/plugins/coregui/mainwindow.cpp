@@ -5,6 +5,7 @@
 #include "aboutdialog.h"
 #include "kumirprogram.h"
 #include "dataformats/kumfile.h"
+#include "statusbar.h"
 
 
 #include <algorithm>
@@ -15,8 +16,11 @@ namespace CoreGUI {
 MainWindow::MainWindow(Plugin * p) :
     QMainWindow(0),
     ui(new Ui::MainWindow),
-    m_plugin(p)
+    m_plugin(p),
+    statusBar_(new StatusBar)
 {
+    setMinimumHeight(280);
+    setStatusBar(statusBar_);
 
     b_notabs = false;
     b_workspaceSwitching = false;
@@ -74,29 +78,29 @@ MainWindow::MainWindow(Plugin * p) :
     setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
     setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 
-    statusBar()->setStyleSheet(
-                "QStatusBar { "
-                "   border-top: 1px solid darkgray;"
-                "}"
-                "QToolButton {"
-                "   icon-size: 16px;"
-                "   border: none;"
-                "}"
-                );
+//    statusBar()->setStyleSheet(
+//                "QStatusBar { "
+//                "   border-top: 1px solid darkgray;"
+//                "}"
+//                "QToolButton {"
+//                "   icon-size: 16px;"
+//                "   border: none;"
+//                "}"
+//                );
 
-    setMinimumSize(980, 480);
-    statusBar()->addWidget(m_plugin->m_kumirStateLabel);
-    statusBar()->addWidget(m_plugin->m_genericCounterLabel);
-    m_plugin->m_kumirStateLabel->setFixedWidth(140);
-    m_plugin->m_kumirStateLabel->setStyleSheet(StatusbarWidgetCSS);
-    m_plugin->m_kumirStateLabel->setAlignment(Qt::AlignCenter);
-    m_plugin->m_genericCounterLabel->setFixedWidth(260);
-    m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS);
-    m_plugin->m_genericCounterLabel->setAlignment(Qt::AlignCenter);
-    m_message = new QLabel(this);
-    m_message->setAlignment(Qt::AlignCenter);
-    m_message->setStyleSheet(StatusbarWidgetCSS);
-    statusBar()->addWidget(m_message, 1);
+////    setMinimumSize(980, 480);
+//    statusBar()->addWidget(m_plugin->m_kumirStateLabel);
+//    statusBar()->addWidget(m_plugin->m_genericCounterLabel);
+//    m_plugin->m_kumirStateLabel->setFixedWidth(140);
+//    m_plugin->m_kumirStateLabel->setStyleSheet(StatusbarWidgetCSS);
+//    m_plugin->m_kumirStateLabel->setAlignment(Qt::AlignCenter);
+//    m_plugin->m_genericCounterLabel->setFixedWidth(260);
+//    m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS);
+//    m_plugin->m_genericCounterLabel->setAlignment(Qt::AlignCenter);
+//    m_message = new QLabel(this);
+//    m_message->setAlignment(Qt::AlignCenter);
+//    m_message->setStyleSheet(StatusbarWidgetCSS);
+//    statusBar()->addWidget(m_message, 1);
 
     i_timerId = startTimer(1000);
 
@@ -127,14 +131,14 @@ MainWindow::MainWindow(Plugin * p) :
     ui->tabWidget->installEventFilter(this);
 }
 
-QString MainWindow::StatusbarWidgetCSS =
-        "QLabel {"
-        "   font-size: 16px;"
-        "   padding: 4px;"
-        "   border: 2px solid darkgray;"
-        "   margin: 0;"
-        "}"
-;
+//QString MainWindow::StatusbarWidgetCSS =
+//        "QLabel {"
+//        "   font-size: 16px;"
+//        "   padding: 4px;"
+//        "   border: 2px solid darkgray;"
+//        "   margin: 0;"
+//        "}"
+//;
 
 void MainWindow::changeFocusOnMenubar()
 {
@@ -309,21 +313,23 @@ void MainWindow::checkCounterValue()
         if (twe->type==Program) {
             int id = twe->documentId;
             quint32 errorsCount = m_plugin->plugin_editor->errorsLinesCount(id);
-            if (errorsCount==0) {
-                m_plugin->m_genericCounterLabel->setText(tr("No errors"));
-                m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS);
-            }
-            else {
-                m_plugin->m_genericCounterLabel->setText(tr("Errors: %1").arg(errorsCount));
-                m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS+
-                                                               "QLabel {"
-                                                               "    color: red;"
-                                                               "}"
-                                                               );
-            }
+            statusBar_->setErrorsCounter(errorsCount);
+//            if (errorsCount==0) {
+//                m_plugin->m_genericCounterLabel->setText(tr("No errors"));
+//                m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS);
+//            }
+//            else {
+//                m_plugin->m_genericCounterLabel->setText(tr("Errors: %1").arg(errorsCount));
+//                m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS+
+//                                                               "QLabel {"
+//                                                               "    color: red;"
+//                                                               "}"
+//                                                               );
+//            }
         }
         else {
-            m_plugin->m_genericCounterLabel->setText("");
+            statusBar_->setErrorsCounter(0);
+//            m_plugin->m_genericCounterLabel->setText("");
         }
     }
     else {
@@ -338,9 +344,10 @@ void MainWindow::checkCounterValue()
             if (stepsCounted == 0) {
                 stepsDone = 0;  // just begin of evaluation
             }
-            const QString text = tr("Steps done: %1").arg(stepsDone);
-            m_plugin->m_genericCounterLabel->setText(text);
-            m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS);
+            statusBar_->setStepsDoneCounter(stepsDone);
+//            const QString text = tr("Steps done: %1").arg(stepsDone);
+//            m_plugin->m_genericCounterLabel->setText(text);
+//            m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS);
         }
     }
 }
@@ -349,12 +356,14 @@ void MainWindow::checkCounterValue()
 
 void MainWindow::showMessage(const QString &text)
 {
-    m_message->setText(text);
+    statusBar_->setMessage(text);
+//    m_message->setText(text);
 }
 
 void MainWindow::clearMessage()
 {
-    m_message->setText("");
+    statusBar_->unsetMessage();
+//    m_message->setText("");
 }
 
 void MainWindow::setFocusOnCentralWidget()
@@ -427,18 +436,29 @@ void MainWindow::setupActionsForTab()
 
 void MainWindow::setupStatusbarForTab()
 {
-    foreach (QWidget * w, l_tabDependentStatusbarWidgets) {
-        statusBar()->removeWidget(w);
+    for (int i=0; i<ui->tabWidget->count(); i++) {
+        TabWidgetElement * w =
+                qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+        if (w && w->component) {
+            w->component->disconnect(statusBar_);
+        }
     }
     QWidget * currentTabWidget = ui->tabWidget->currentWidget();
     if (!currentTabWidget)
         return;
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
-    foreach (QWidget * w, twe->statusbarWidgets) {
-        l_tabDependentStatusbarWidgets << w;
-        w->setStyleSheet(StatusbarWidgetCSS);
-        statusBar()->addPermanentWidget(w);
-        w->show();
+    if (twe->type == Program || twe->type == Text) {
+        connect(twe->component,
+                SIGNAL(cursorPositionChanged(uint,uint)),
+                statusBar_,
+                SLOT(setEditorCursorPosition(uint,uint))
+                );
+        connect(twe->component,
+                SIGNAL(keyboardLayoutChanged(QLocale::Language,bool,bool,bool)),
+                statusBar_,
+                SLOT(setEditorKeyboardLayout(QLocale::Language,bool,bool,bool))
+                );
+
     }
 }
 
@@ -746,7 +766,7 @@ void MainWindow::newProgram()
                 vc,
                 doc.toolbarActions,
                 doc.menus,
-                doc.statusbarWidgets,
+//                doc.statusbarWidgets,
                 type,
                 true);
     e->documentId = doc.id;
@@ -775,7 +795,7 @@ void MainWindow::newText(const QString &fileName, const QString & text)
                 vc,
                 doc.toolbarActions,
                 doc.menus,
-                doc.statusbarWidgets,
+//                doc.statusbarWidgets,
                 Text,
                 true);
     e->documentId = doc.id;
@@ -814,7 +834,7 @@ TabWidgetElement * MainWindow::addCentralComponent(
     , QWidget *c
     , const QList<QAction*> & toolbarActions
     , const QList<QMenu*> & menus
-    , const QList<QWidget*> & statusbarWidgets
+//    , const QList<QWidget*> & statusbarWidgets
     , DocumentType type
     , bool enableToolBar)
 {
@@ -828,7 +848,7 @@ TabWidgetElement * MainWindow::addCentralComponent(
                 enableToolBar,
                 toolbarActions,
                 menus,
-                statusbarWidgets,
+//                statusbarWidgets,
                 type,
                 gr_fileActions,
                 gr_otherActions,
@@ -990,7 +1010,7 @@ void MainWindow::restoreSession()
                     m_plugin->startPage_.widget,
                     m_plugin->startPage_.toolbarActions,
                     m_plugin->startPage_.menus,
-                    QList<QWidget*>(),
+//                    QList<QWidget*>(),
                     WWW,
                     false);
     }
@@ -1033,7 +1053,7 @@ void MainWindow::restoreSession()
                             vc,
                             doc.toolbarActions,
                             doc.menus,
-                            doc.statusbarWidgets,
+//                            doc.statusbarWidgets,
                             doctype,
                             true
                             );
@@ -1452,7 +1472,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                         vc,
                         doc.toolbarActions,
                         doc.menus,
-                        doc.statusbarWidgets,
+//                        doc.statusbarWidgets,
                         Program,
                         true);
             result->documentId = id;
@@ -1485,7 +1505,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                         vc,
                         doc.toolbarActions,
                         doc.menus,
-                        doc.statusbarWidgets,
+//                        doc.statusbarWidgets,
                         Text,
                         true);
             result->documentId = id;
@@ -1504,7 +1524,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                     browser.widget,
                     browser.toolbarActions,
                     browser.menus,
-                    QList<QWidget*>(),
+//                    QList<QWidget*>(),
                     WWW,
                     true);
         result->url = url;
@@ -1556,7 +1576,7 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
                         vc,
                         toolBarActions,
                         menus,
-                        doc.statusbarWidgets,
+//                        doc.statusbarWidgets,
                         Program,
                         true
                         );

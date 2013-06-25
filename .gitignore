@@ -12,3 +12,9 @@ scripts/*.pyo
 .settings
 .idea
 *qtcreator*
+/share/kumir2/python3language/__pycache__/run.cpython-33.pyc
+/share/kumir2/python3language/__pycache__/analizer.cpython-33.pyc
+/scripts/cpplint.py
+/rules.txt
+/artwork/userdocs_graphics/kumir_language/table_expressions_formulas.odg
+/src/app/main.cpp.orig

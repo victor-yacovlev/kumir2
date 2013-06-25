@@ -4,6 +4,7 @@
 #include "widgets/secondarywindow.h"
 #include "debuggerwindow.h"
 #include "ui_mainwindow.h"
+#include "statusbar.h"
 #ifdef Q_OS_MACX
 #include "mac-fixes.h"
 #endif
@@ -75,9 +76,9 @@ QString Plugin::initialize(const QStringList & parameters)
     const QStringList BlacklistedThemes = QStringList()
             << "iaorakde" << "iaoraqt" << "iaora";
     const QString currentStyleName = qApp->style()->objectName().toLower();
-    if (BlacklistedThemes.contains(currentStyleName)) {
+//    if (BlacklistedThemes.contains(currentStyleName)) {
         qApp->setStyle("Cleanlooks");
-    }
+//    }
 
     QString iconSuffix;
     for (int i=0; i<parameters.count(); i++) {
@@ -150,22 +151,22 @@ QString Plugin::initialize(const QStringList & parameters)
 //    termWindow->toggleViewAction()->setShortcut(QKeySequence("F12"));
 #endif
 
-    QToolButton * btnSaveTerm = new QToolButton(mainWindow_);
-    btnSaveTerm->setPopupMode(QToolButton::InstantPopup);
-    QMenu * menuSaveTerm = new QMenu(btnSaveTerm);
-    btnSaveTerm->setMenu(menuSaveTerm);
-    btnSaveTerm->setIcon(m_terminal->actionSaveLast()->icon());
-    menuSaveTerm->addAction(m_terminal->actionSaveLast());
-    menuSaveTerm->addAction(m_terminal->actionSaveAll());
-    mainWindow_->statusBar()->insertWidget(0, btnSaveTerm);
-    QToolButton * btnClearTerm = new QToolButton(mainWindow_);
-    btnClearTerm->setDefaultAction(m_terminal->actionClear());
-    mainWindow_->statusBar()->insertWidget(1, btnClearTerm);
-    if (!parameters.contains("notabs",Qt::CaseInsensitive)) {
-        QToolButton * btnEditTerm = new QToolButton(mainWindow_);
-        btnEditTerm->setDefaultAction(m_terminal->actionEditLast());
-        mainWindow_->statusBar()->insertWidget(1, btnEditTerm);
-    }
+//    QToolButton * btnSaveTerm = new QToolButton(mainWindow_);
+//    btnSaveTerm->setPopupMode(QToolButton::InstantPopup);
+//    QMenu * menuSaveTerm = new QMenu(btnSaveTerm);
+//    btnSaveTerm->setMenu(menuSaveTerm);
+//    btnSaveTerm->setIcon(m_terminal->actionSaveLast()->icon());
+//    menuSaveTerm->addAction(m_terminal->actionSaveLast());
+//    menuSaveTerm->addAction(m_terminal->actionSaveAll());
+//    mainWindow_->statusBar()->insertWidget(0, btnSaveTerm);
+//    QToolButton * btnClearTerm = new QToolButton(mainWindow_);
+//    btnClearTerm->setDefaultAction(m_terminal->actionClear());
+//    mainWindow_->statusBar()->insertWidget(1, btnClearTerm);
+//    if (!parameters.contains("notabs",Qt::CaseInsensitive)) {
+//        QToolButton * btnEditTerm = new QToolButton(mainWindow_);
+//        btnEditTerm->setDefaultAction(m_terminal->actionEditLast());
+//        mainWindow_->statusBar()->insertWidget(1, btnEditTerm);
+//    }
 
 
     kumirProgram_ = new KumirProgram(this);
@@ -436,34 +437,34 @@ void Plugin::updateSettings()
 void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState state)
 {
     if (state==ExtensionSystem::GS_Unlocked) {
-        m_kumirStateLabel->setText(tr("Editing"));
+//        m_kumirStateLabel->setText(tr("Editing"));
         mainWindow_->clearMessage();
         mainWindow_->setFocusOnCentralWidget();
         mainWindow_->unlockActions();
         debugger_->reset();
     }
     else if (state==ExtensionSystem::GS_Observe) {
-        m_kumirStateLabel->setText(tr("Observe"));
+//        m_kumirStateLabel->setText(tr("Observe"));
         mainWindow_->showMessage(kumirProgram_->endStatus());
         mainWindow_->setFocusOnCentralWidget();
         mainWindow_->unlockActions();
     }
     else if (state==ExtensionSystem::GS_Running) {
-        m_kumirStateLabel->setText(tr("Running"));
+//        m_kumirStateLabel->setText(tr("Running"));
         mainWindow_->clearMessage();
         mainWindow_->lockActions();
     }
     else if (state==ExtensionSystem::GS_Pause) {
-        m_kumirStateLabel->setText(tr("Pause"));
+//        m_kumirStateLabel->setText(tr("Pause"));
         mainWindow_->lockActions();
     }
     else if (state==ExtensionSystem::GS_Input) {
-        m_kumirStateLabel->setText(tr("Pause"));
+//        m_kumirStateLabel->setText(tr("Pause"));
         mainWindow_->lockActions();
     }
-
     kumirProgram_->switchGlobalState(old, state);
     m_terminal->changeGlobalState(old, state);
+    mainWindow_->statusBar_->setState(state);
 
 
 }
@@ -519,7 +520,7 @@ void Plugin::restoreSession()
                         startPage_.widget,
                         startPage_.toolbarActions,
                         startPage_.menus,
-                        QList<QWidget*>(),
+//                        QList<QWidget*>(),
                         MainWindow::WWW,
                         false
                         );

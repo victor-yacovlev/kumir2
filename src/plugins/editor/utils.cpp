@@ -55,7 +55,8 @@ bool Utils::isCapsLock()
     return result;
 }
 
-bool Utils::temporaryLayoutSwitch = false;
+bool Utils::altKeyPressed = false;
+bool Utils::shiftKeyPressed = false;
 
 QString Utils::textByKey(Qt::Key key,
                          const QString & sourceKeyText,
@@ -66,22 +67,22 @@ QString Utils::textByKey(Qt::Key key,
 
     Q_UNUSED(shiftPressed);
     QString keyText = sourceKeyText;
-    if (temporaryLayoutSwitch && key==Qt::Key_1) {
+    if (altKeyPressed && key==Qt::Key_1) {
         keyText = "|";
     }
-    else if (/*teacherMode && */temporaryLayoutSwitch && key==Qt::Key_2) {
+    else if (/*teacherMode && */altKeyPressed && key==Qt::Key_2) {
         keyText = "@";
     }
-    else if (/*teacherMode && */temporaryLayoutSwitch && key==Qt::Key_3) {
+    else if (/*teacherMode && */altKeyPressed && key==Qt::Key_3) {
         keyText = "#";
     }
-    else if (/*teacherMode && */temporaryLayoutSwitch && key==Qt::Key_5) {
+    else if (/*teacherMode && */altKeyPressed && key==Qt::Key_5) {
         keyText = "%";
     }
-    else if (temporaryLayoutSwitch && key==Qt::Key_Equal) {
+    else if (altKeyPressed && key==Qt::Key_Equal) {
         keyText = ":=";
     }
-    else if (temporaryLayoutSwitch && isRussianLayout()) {
+    else if (altKeyPressed && isRussianLayout()) {
         if (keyText.toLower()==QString::fromUtf8("й"))
             keyText = "q";
         else if (keyText.toLower()==QString::fromUtf8("ц"))
@@ -156,7 +157,7 @@ QString Utils::textByKey(Qt::Key key,
         if ( (shiftPressed && !isCapsLock()) || (!shiftPressed && isCapsLock()) )
             keyText = keyText.toUpper();
     }
-    else if (temporaryLayoutSwitch && !isRussianLayout()) {
+    else if (altKeyPressed && !isRussianLayout()) {
         if (key==Qt::Key_Q)
             keyText = QString::fromUtf8("й");
         else if (key==Qt::Key_W)

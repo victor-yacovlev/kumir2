@@ -12,7 +12,7 @@ struct EditorComponent {
     class QWidget * widget;
     QList<class QMenu*> menus;
     QList<class QAction*> toolbarActions;
-    QList<class QWidget*> statusbarWidgets;
+//    QList<class QWidget*> statusbarWidgets;
 };
 
 class EditorInterface
