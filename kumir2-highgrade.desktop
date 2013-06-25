@@ -1,0 +1,8 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Exec=kumir2-highgrade %U
+Icon=kumir2-highgrade
+Name=Kumir High Grades School Edition
+Name[ru]=Кумир для старших классов
+Categories=Qt;KDE;Education;X-KDE-Edu-Misc;Math;

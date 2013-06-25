@@ -1,0 +1,8 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Exec=kumir2-python %U
+Icon=kumir2-python
+Name=Python IDE Based on Kumir Platform
+Name[ru]=Среда Python на основе Кумир
+Categories=Qt;KDE;Education;X-KDE-Edu-Misc;Math;
