@@ -4,6 +4,8 @@
 #include "extensionsystem/kplugin.h"
 
 #include <QStatusBar>
+#include <QToolButton>
+#include <QList>
 
 namespace CoreGUI {
 
@@ -16,6 +18,7 @@ public:
 
     explicit StatusBar(QWidget *parent = 0);    
     QSize minimumSizeHint() const;
+    void addButtonToLeft(QToolButton * btn);
 signals:
     
 public slots:
@@ -56,6 +59,7 @@ private:
     bool keyboardCaps_;
     bool keyboardShift_;
     bool keyboardAlt_;
+    QList<QToolButton*> toolButtons_;
 };
 
 } // namespace CoreGUI

@@ -28,10 +28,31 @@ StatusBar::StatusBar(QWidget *parent)
 {
 }
 
+void StatusBar::addButtonToLeft(QToolButton *btn)
+{
+    btn->setParent(this);
+    btn->setAutoRaise(true);
+    btn->setFixedSize(btn->iconSize() + QSize(8, 8));
+    addWidget(btn);
+    int x = 0;
+    for (int i=0; i<toolButtons_.size(); i++) {
+        x += toolButtons_[i]->width();
+    }
+    btn->move(x, 0);
+    toolButtons_ << btn;
+}
+
 QSize StatusBar::minimumSizeHint() const
 {
     int h = 0;
     int w = 0;
+    for (int i=0; i<toolButtons_.size(); i++) {
+        w += toolButtons_[i]->width();
+        h = qMax(h, toolButtons_[i]->height());
+    }
+    if (toolButtons_.size() > 0) {
+        w += ItemPadding;
+    }
     h = qMax(h, modeItemSize().height());
     w += modeItemSize().width();
     h = qMax(h, counterItemSize().height());
@@ -191,6 +212,12 @@ void StatusBar::paintEvent(QPaintEvent *event)
     p.setPen(pen);
     p.setBrush(Qt::NoBrush);
     int x = 0;
+    for (int i=0; i<toolButtons_.size(); i++) {
+        x += toolButtons_[i]->width();
+    }
+    if (toolButtons_.size() > 0) {
+        x += ItemPadding;
+    }
     paintModeItem(p, x);
     x += modeItemSize().width();
     paintCounterItem(p, x);
@@ -242,7 +269,7 @@ void StatusBar::paintModeItem(QPainter &p, int x)
     else {
         modeText = tr("Edit");
     }
-    const QRect textRect(QPoint(x + ItemPadding, 0),
+    const QRect textRect(QPoint(x + ItemPadding, (height() - statusBarFontMetrics().height()) / 2 + 2),
                          modeItemSize() - QSize(2*ItemPadding, 0));
     QTextOption opt;
     opt.setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
@@ -285,7 +312,7 @@ void StatusBar::paintCounterItem(QPainter &p, int x)
         else
             text = tr("%1 steps done", NULL, 25).arg(stepsDone_);
     }
-    const QRect textRect(QPoint(x + ItemPadding, 0),
+    const QRect textRect(QPoint(x + ItemPadding, (height() - statusBarFontMetrics().height()) / 2 + 2),
                          counterItemSize() - QSize(2*ItemPadding, 0));
     QTextOption opt;
     opt.setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
@@ -298,7 +325,7 @@ void StatusBar::paintMessageItem(QPainter &p, int x)
     paintItemRect(p, messageItemSize(), x);
     p.save();
     p.setPen(QPen(QColor(messageRole_==Normal? normalColor() : errorColor())));
-    const QRect textRect(QPoint(x + ItemPadding, 0),
+    const QRect textRect(QPoint(x + ItemPadding, (height() - statusBarFontMetrics().height()) / 2 + 2),
                          messageItemSize() - QSize(2*ItemPadding, 0));
     QTextOption opt;
     Qt::Alignment horiz = statusBarFontMetrics().width(message_) < textRect.width()
@@ -331,10 +358,10 @@ void StatusBar::paintCursorItem(QPainter &p, int x)
 {
     paintItemRect(p, cursorPositionItemSize(), x);
     p.save();
-    const QRect textRect(QPoint(x + ItemPadding, 0),
+    const QRect textRect(QPoint(x + ItemPadding, (height() - statusBarFontMetrics().height()) / 2 + 2),
                          cursorPositionItemSize() - QSize(2*ItemPadding, 0));
     QTextOption opt;
-    const QString text = tr("Row: %1, Column: %2").arg(editorRow_).arg(editorColumn_);
+    const QString text = tr("Row: %1, Column: %2").arg(editorRow_ + 1).arg(editorColumn_ + 1);
     opt.setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
     p.drawText(textRect, text, opt);
     p.restore();
@@ -357,9 +384,9 @@ void StatusBar::paintKeyboardItem(QPainter &p, int x)
     QImage shiftImage = makeIndicatorIcon("shift", shiftColor);
     QImage altImage = makeIndicatorIcon("alt", altColor);
     p.save();
-    p.drawImage(x + ItemPadding, 3, shiftImage);
-    p.drawImage(x + 12 + ItemPadding, 3, altImage);
-    const QRect textRect(QPoint(x + 25 + ItemPadding, 0),
+    p.drawImage(x + ItemPadding, (height() - 12) / 2 + 2, shiftImage);
+    p.drawImage(x + 12 + ItemPadding, (height() - 12) / 2 + 2, altImage);
+    const QRect textRect(QPoint(x + 25 + ItemPadding, (height() - statusBarFontMetrics().height()) / 2 + 2),
                          keyboardLayoutItemSize() - QSize(25 + 2*ItemPadding, 0));
     QTextOption opt;
     QString text;

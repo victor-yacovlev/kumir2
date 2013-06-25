@@ -76,9 +76,9 @@ QString Plugin::initialize(const QStringList & parameters)
     const QStringList BlacklistedThemes = QStringList()
             << "iaorakde" << "iaoraqt" << "iaora";
     const QString currentStyleName = qApp->style()->objectName().toLower();
-//    if (BlacklistedThemes.contains(currentStyleName)) {
+    if (BlacklistedThemes.contains(currentStyleName)) {
         qApp->setStyle("Cleanlooks");
-//    }
+    }
 
     QString iconSuffix;
     for (int i=0; i<parameters.count(); i++) {
@@ -151,22 +151,24 @@ QString Plugin::initialize(const QStringList & parameters)
 //    termWindow->toggleViewAction()->setShortcut(QKeySequence("F12"));
 #endif
 
-//    QToolButton * btnSaveTerm = new QToolButton(mainWindow_);
-//    btnSaveTerm->setPopupMode(QToolButton::InstantPopup);
-//    QMenu * menuSaveTerm = new QMenu(btnSaveTerm);
-//    btnSaveTerm->setMenu(menuSaveTerm);
-//    btnSaveTerm->setIcon(m_terminal->actionSaveLast()->icon());
-//    menuSaveTerm->addAction(m_terminal->actionSaveLast());
-//    menuSaveTerm->addAction(m_terminal->actionSaveAll());
+    QToolButton * btnSaveTerm = new QToolButton(mainWindow_);
+    btnSaveTerm->setPopupMode(QToolButton::InstantPopup);
+    QMenu * menuSaveTerm = new QMenu(btnSaveTerm);
+    btnSaveTerm->setMenu(menuSaveTerm);
+    btnSaveTerm->setIcon(m_terminal->actionSaveLast()->icon());
+    menuSaveTerm->addAction(m_terminal->actionSaveLast());
+    menuSaveTerm->addAction(m_terminal->actionSaveAll());
 //    mainWindow_->statusBar()->insertWidget(0, btnSaveTerm);
-//    QToolButton * btnClearTerm = new QToolButton(mainWindow_);
-//    btnClearTerm->setDefaultAction(m_terminal->actionClear());
+    mainWindow_->statusBar_->addButtonToLeft(btnSaveTerm);
+    QToolButton * btnClearTerm = new QToolButton(mainWindow_);
+    btnClearTerm->setDefaultAction(m_terminal->actionClear());
 //    mainWindow_->statusBar()->insertWidget(1, btnClearTerm);
-//    if (!parameters.contains("notabs",Qt::CaseInsensitive)) {
-//        QToolButton * btnEditTerm = new QToolButton(mainWindow_);
-//        btnEditTerm->setDefaultAction(m_terminal->actionEditLast());
-//        mainWindow_->statusBar()->insertWidget(1, btnEditTerm);
-//    }
+    mainWindow_->statusBar_->addButtonToLeft(btnClearTerm);
+    if (!parameters.contains("notabs",Qt::CaseInsensitive)) {
+        QToolButton * btnEditTerm = new QToolButton(mainWindow_);
+        btnEditTerm->setDefaultAction(m_terminal->actionEditLast());
+        mainWindow_->statusBar()->insertWidget(1, btnEditTerm);
+    }
 
 
     kumirProgram_ = new KumirProgram(this);
