@@ -25,6 +25,7 @@ public:
     void setTeacherMode(bool v);
     bool isTeacherMode() const;
     QList<QAction*> toolbarActions();
+    QSize minimumSizeHint() const;
     void setSettings(ExtensionSystem::SettingsPtr s);
     QList<QMenu*> menuActions();
     QList<QWidget*> statusbarWidgets();

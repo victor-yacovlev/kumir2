@@ -110,6 +110,8 @@ QString Plugin::initialize(const QStringList & parameters)
         return "Can't load editor plugin!";
 //    if (!plugin_NativeGenerator)
 //        return "Can't load c-generator plugin!";
+    connect(mainWindow_->ui->splitter, SIGNAL(splitterMoved(int,int)),
+            this, SLOT(handleMainSplitterMoved()));
     m_terminal = new Term(mainWindow_);
     m_terminal->sizePolicy().setHorizontalStretch(5);
     m_terminal->sizePolicy().setHorizontalPolicy(QSizePolicy::Ignored);
@@ -190,7 +192,7 @@ QString Plugin::initialize(const QStringList & parameters)
     if (!parameters.contains("notabs",Qt::CaseInsensitive)) {
         QToolButton * btnEditTerm = new QToolButton(mainWindow_);
         btnEditTerm->setDefaultAction(m_terminal->actionEditLast());
-        mainWindow_->statusBar()->insertWidget(1, btnEditTerm);
+        mainWindow_->statusBar_->addButtonToLeft(btnEditTerm);
     }
 
 
@@ -456,7 +458,51 @@ void Plugin::handleSecondaryWindowUndocked(QWidget * w)
 
 void Plugin::showConsolePane(bool v)
 {
-    mainWindow_->ui->bottomWidget->setVisible(v);
+    int minHeight = qMax(80, m_terminal->minimumHeight());
+    for (int i=0; i<actorsDockPlace_->count(); i++) {
+        QWidget * w = actorsDockPlace_->widget(i);
+        minHeight = qMax(minHeight, w->minimumSizeHint().height());
+    }
+    int curHeight = mainWindow_->ui->bottomWidget->height();
+    QList<int> sizes = mainWindow_->ui->splitter->sizes();
+    int totalSize = sizes[0] + sizes[1];
+    if (v) {
+        if (curHeight < minHeight) {
+            sizes[1] = minHeight;
+            sizes[0] = totalSize - minHeight;
+            mainWindow_->ui->splitter->setSizes(sizes);
+        }
+    }
+    else {
+        sizes[1] = 0;
+        sizes[0] = totalSize;
+        mainWindow_->ui->splitter->setSizes(sizes);
+    }
+    mainWindow_->ui->actionShow_Console_Pane->setChecked(v);
+    if (v && mainWindow_->height() - mainWindow_->minimumSizeHint().height() < 10) {
+        int minH = qMax(80, m_terminal->minimumSizeHint().height());
+        for (int i=0; i<actorsDockPlace_->count(); i++) {
+            QWidget * w = actorsDockPlace_->widget(i);
+            minH = qMax(minH, w->minimumSizeHint().height());
+        }
+        const QSize newSize = QSize(
+                    qMax(mainWindow_->width(), mainWindow_->minimumSizeHint().width()),
+                    mainWindow_->minimumSizeHint().height() + minH );
+        QResizeEvent * request = new QResizeEvent(newSize, mainWindow_->size());
+        QApplication::instance()->postEvent(mainWindow_, request);
+    }
+}
+
+void Plugin::handleMainSplitterMoved()
+{
+    const QList<int> sizes = mainWindow_->ui->splitter->sizes();
+    const int bottomSize = sizes[1];
+    if (bottomSize == 0) {
+        mainWindow_->ui->actionShow_Console_Pane->setChecked(false);
+    }
+    else {
+        mainWindow_->ui->actionShow_Console_Pane->setChecked(true);
+    }
 }
 
 

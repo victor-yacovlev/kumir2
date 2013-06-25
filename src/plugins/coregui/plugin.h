@@ -58,6 +58,7 @@ protected slots:
     void handleSecondaryWindowDocked(QWidget * w, const QString & title);
     void handleSecondaryWindowUndocked(QWidget * w);
     void showConsolePane(bool v);
+    void handleMainSplitterMoved();
 
 protected:
     QString initialize(const QStringList &arguments);

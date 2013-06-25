@@ -29,6 +29,18 @@ bool Editor::isTeacherMode() const
     return d->teacherMode;
 }
 
+QSize Editor::minimumSizeHint() const
+{
+    int minW = 400;
+    int minH = 0;
+    if (d->horizontalScrollBar->isVisible()) {
+        minH = d->horizontalScrollBar->height();
+    }
+    QFontMetrics fm(d->plane->font());
+    minH += fm.lineSpacing() + fm.height(); // at least 1 line of text
+    return QSize(minW, minH);
+}
+
 void Editor::unsetAnalizer()
 {
     d->analizer = 0;

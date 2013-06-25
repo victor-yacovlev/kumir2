@@ -43,6 +43,7 @@ public:
 
     ~MainWindow();
     void disableTabs();
+    QSize minimumSizeHint() const;
 public slots:
     void lockActions();
     void unlockActions();
@@ -99,6 +100,7 @@ private slots:
 private:
     void timerEvent(QTimerEvent *e);
     bool eventFilter(QObject *o, QEvent *e);
+    void resizeEvent(QResizeEvent *);
 
     void closeEvent(QCloseEvent *e);
     int i_timerId;

@@ -19,7 +19,6 @@ MainWindow::MainWindow(Plugin * p) :
     m_plugin(p),
     statusBar_(new StatusBar)
 {
-    setMinimumHeight(280);
     setStatusBar(statusBar_);
 
     b_notabs = false;
@@ -156,6 +155,41 @@ void MainWindow::changeFocusOnMenubar()
     else {
         mb->setActiveAction(0);
         setFocusOnCentralWidget();
+    }
+}
+
+QSize MainWindow::minimumSizeHint() const
+{
+    int minW = statusBar_->minimumSizeHint().width() + 10;
+    int minH = qMax(200, centralWidget()->minimumHeight()) +
+            ui->menubar->height() +
+            statusBar_->minimumHeight() + 10;
+    int minDockedH = m_plugin->m_terminal->minimumHeight();
+    int minDockedW = 0;
+    for (int i=0; i<m_plugin->secondaryWindows_.size(); i++) {
+        Widgets::SecondaryWindow * w = m_plugin->secondaryWindows_[i];
+        if (w->isVisible() && !w->isFloating()) {
+            minDockedH = qMax(minDockedH, w->minimumHeight());
+            minDockedW = qMax(minDockedW, w->minimumWidth());
+        }
+    }
+    int minBottom = m_plugin->m_terminal->minimumWidth() +
+            minDockedW + 10;
+    minW = qMax(minW, minBottom);
+    minH += minDockedH;
+    return QSize(minW, minH);
+}
+
+void MainWindow::resizeEvent(QResizeEvent *evt)
+{
+    const QSize min = minimumSizeHint();
+    const QSize sz = evt->size();
+    if (sz.width() < min.width() || sz.height() < min.height()) {
+        evt->ignore();
+    }
+    else {
+        resize(sz);
+        evt->accept();
     }
 }
 
