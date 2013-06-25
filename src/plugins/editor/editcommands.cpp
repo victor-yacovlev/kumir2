@@ -559,6 +559,9 @@ void ToggleCommentCommand::redo()
                 if (line[j]==' ') {
                     p.second ++;
                 }
+                else {
+                    break;
+                }
             }
             QString dummy;
             uncommentedLines.insert(p);

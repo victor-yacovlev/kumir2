@@ -26,9 +26,12 @@ MainWindow::MainWindow(Plugin * p) :
     b_workspaceSwitching = false;
     ui->setupUi(this);
 
-    ui->actionNewProgram->setIcon(actionIcon("document-new"));
-    ui->actionOpen->setIcon(actionIcon("document-open"));
-    ui->actionSave->setIcon(actionIcon("document-save"));
+    const QString qtcreatorIconsPath = QApplication::instance()->property("sharePath")
+            .toString() + "/icons/from_qtcreator/";
+
+//    ui->actionNewProgram->setIcon(actionIcon("document-new"));
+    ui->actionOpen->setIcon(QIcon(qtcreatorIconsPath+"fileopen.png"));
+    ui->actionSave->setIcon(QIcon(qtcreatorIconsPath+"filesave.png"));
 
 
     ui->menuFile->setWindowTitle(ui->menuFile->title());
@@ -113,7 +116,7 @@ MainWindow::MainWindow(Plugin * p) :
 #endif
 
     ui->actionRecent_files->setMenu(new QMenu());
-    connect(ui->actionRecent_files->menu(), SIGNAL(aboutToShow()), this, SLOT(prepareRecentFilesMenu()));
+    connect(ui->menuFile, SIGNAL(aboutToShow()), this, SLOT(prepareRecentFilesMenu()));
 
 
 #ifdef Q_OS_MAC
@@ -466,6 +469,7 @@ void MainWindow::prepareRecentFilesMenu()
 {
     ui->actionRecent_files->menu()->clear();
     QStringList r = m_plugin->mySettings()->value(Plugin::RecentFilesKey).toStringList();
+    bool hasAnyItem = false;
     for (int i=0; i<r.size(); i++) {
         QFile f(r[i]);
 #ifndef Q_OS_WIN32
@@ -479,8 +483,10 @@ void MainWindow::prepareRecentFilesMenu()
                 r[i] = QDir::currentPath()+"/"+r[i];
             a->setProperty("fullPath", r[i]);
             connect(a, SIGNAL(triggered()), this, SLOT(loadRecentFile()));
+            hasAnyItem = true;
         }
     }
+    ui->actionRecent_files->setEnabled(hasAnyItem);
 }
 
 void MainWindow::loadRecentFile()
@@ -1322,6 +1328,7 @@ void MainWindow::ensureBottomVisible()
         splitterItemHeights[0] -= diff;
         ui->splitter->setSizes(splitterItemHeights);
     }
+    ui->actionShow_Console_Pane->setChecked(true);
 }
 
 QStringList MainWindow::recentFiles(bool fullPaths) const

@@ -456,37 +456,40 @@ Editor::Editor(bool initiallyNotSaved, ExtensionSystem::SettingsPtr settings, An
 
 void EditorPrivate::createActions()
 {
+    const QString qtcreatorIconsPath = QApplication::instance()->property("sharePath")
+            .toString() + "/icons/from_qtcreator/";
+
     selectAll = new QAction(plane);
     selectAll->setText(QObject::tr("Select all text in editor"));
-    selectAll->setIcon(QIcon::fromTheme("edit-select-all", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-select-all.png")));
+//    selectAll->setIcon(QIcon::fromTheme("edit-select-all", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-select-all.png")));
     selectAll->setShortcut(QKeySequence(QKeySequence::SelectAll));
     selectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(selectAll, SIGNAL(triggered()), plane, SLOT(selectAll()));
 
     copy = new QAction(plane);
     copy->setText(QObject::tr("Copy selection to clipboard"));
-    copy->setIcon(QIcon::fromTheme("edit-copy", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-copy.png")));
+    copy->setIcon(QIcon(qtcreatorIconsPath+"editcopy.png"));
     copy->setShortcut(QKeySequence(QKeySequence::Copy));
     copy->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(copy, SIGNAL(triggered()), plane, SLOT(copy()));
 
     cut = new QAction(plane);
     cut->setText(QObject::tr("Cut selection to clipboard"));
-    cut->setIcon(QIcon::fromTheme("edit-cut", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-cut.png")));
+    cut->setIcon(QIcon(qtcreatorIconsPath+"editcut.png"));
     cut->setShortcut(QKeySequence(QKeySequence::Cut));
     cut->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(cut, SIGNAL(triggered()), plane, SLOT(cut()));
 
     paste = new QAction(plane);
     paste->setText(QObject::tr("Paste from clipboard"));
-    paste->setIcon(QIcon::fromTheme("edit-paste", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-paste.png")));
+    paste->setIcon(QIcon(qtcreatorIconsPath+"editpaste.png"));
     paste->setShortcut(QKeySequence(QKeySequence::Paste));
     paste->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(paste, SIGNAL(triggered()), plane, SLOT(paste()));
 
     find = new QAction(plane);
     find->setText(QObject::tr("Find..."));
-    find->setIcon(QIcon::fromTheme("edit-find", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-find.png")));
+//    find->setIcon(QIcon::fromTheme("edit-find", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-find.png")));
     find->setShortcut(QKeySequence(QKeySequence::Find));
     find->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(find, SIGNAL(triggered()),
@@ -494,7 +497,7 @@ void EditorPrivate::createActions()
 
     replace = new QAction(plane);
     replace->setText(QObject::tr("Replace..."));
-    replace->setIcon(QIcon::fromTheme("edit-find-replace", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-find-replace.png")));
+//    replace->setIcon(QIcon::fromTheme("edit-find-replace", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-find-replace.png")));
     replace->setShortcut(QKeySequence(QKeySequence::Replace));
     replace->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(replace, SIGNAL(triggered()),
@@ -504,14 +507,14 @@ void EditorPrivate::createActions()
 
     deleteLine = new QAction(plane);
     deleteLine->setText(QObject::tr("Delete line under cursor"));
-    deleteLine->setIcon(QIcon::fromTheme("edit-delete", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-delete.png")));
+//    deleteLine->setIcon(QIcon::fromTheme("edit-delete", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-delete.png")));
     deleteLine->setShortcut(QKeySequence("Ctrl+Y"));
     deleteLine->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(deleteLine, SIGNAL(triggered()), plane, SLOT(removeLine()));
 
     deleteTail = new QAction(plane);
     deleteTail->setText(QObject::tr("Delete text from cursor to end of line"));
-    deleteTail->setIcon(QIcon::fromTheme("edit-clear", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-clear.png")));
+//    deleteTail->setIcon(QIcon::fromTheme("edit-clear", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-clear.png")));
     deleteTail->setShortcut(QKeySequence("Ctrl+K"));
     deleteTail->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(deleteTail, SIGNAL(triggered()), plane, SLOT(removeLineTail()));
@@ -519,7 +522,7 @@ void EditorPrivate::createActions()
     undo = new QAction(plane);
     undo->setEnabled(false);
     undo->setText(QObject::tr("Undo last action"));
-    undo->setIcon(QIcon::fromTheme("edit-undo", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-undo.png")));
+    undo->setIcon(QIcon(qtcreatorIconsPath+"undo.png"));
     undo->setShortcut(QKeySequence::Undo);
     undo->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(cursor, SIGNAL(undoAvailable(bool)), undo, SLOT(setEnabled(bool)));
@@ -528,7 +531,7 @@ void EditorPrivate::createActions()
     redo = new QAction(plane);
     redo->setEnabled(false);
     redo->setText(QObject::tr("Redo last undoed action"));
-    redo->setIcon(QIcon::fromTheme("edit-redo", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-redo.png")));
+    redo->setIcon(QIcon(qtcreatorIconsPath+"redo.png"));
     redo->setShortcut(QKeySequence::Redo);
     redo->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(cursor, SIGNAL(redoAvailable(bool)), redo, SLOT(setEnabled(bool)));

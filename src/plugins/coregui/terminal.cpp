@@ -44,8 +44,11 @@ Term::Term(QWidget *parent) :
 //    tb->setOrientation(Qt::Vertical);
 //    l->addWidget(tb, 1, 0, 2, 1);
 
+    const QString oxygenIconsPath = QApplication::instance()->property("sharePath")
+            .toString() + "/icons/from_oxygen/";
+
     a_saveLast = new QAction(tr("Save last output"), this);
-    a_saveLast->setIcon(QIcon::fromTheme("document-save", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/document-save.png")));
+    a_saveLast->setIcon(QIcon(oxygenIconsPath+"document-save.png"));
     a_saveLast->setEnabled(false);
     connect(a_saveLast, SIGNAL(triggered()), this, SLOT(saveLast()));
 //    tb->addAction(a_saveLast);
@@ -59,7 +62,7 @@ Term::Term(QWidget *parent) :
 //    tb->addSeparator();
 
     a_saveAll = new QAction(tr("Save all output"), this);
-    a_saveAll->setIcon(QIcon::fromTheme("document-save-all", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/document-save-all.png")));
+    a_saveAll->setIcon(QIcon(oxygenIconsPath+"document-save-all.png"));
     a_saveAll->setEnabled(false);
     connect(a_saveAll, SIGNAL(triggered()), this, SLOT(saveAll()));
 //    tb->addAction(a_saveAll);
@@ -67,7 +70,7 @@ Term::Term(QWidget *parent) :
 //    tb->addSeparator();
 
     a_clear = new QAction(tr("Clear output"), this);
-    a_clear->setIcon(QIcon::fromTheme("edit-delete", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-delete.png")));
+//    a_clear->setIcon(QIcon::fromTheme("edit-delete", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-delete.png")));
     a_clear->setEnabled(false);
     connect(a_clear, SIGNAL(triggered()), this, SLOT(clear()));
 

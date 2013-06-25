@@ -33,7 +33,10 @@ KumirProgram::KumirProgram(QObject *parent)
     b_blind = false;
     courseManagerRequest_ = false;
     a_regularRun = new QAction(tr("Regular run"), this);
-    a_regularRun->setIcon(QIcon::fromTheme("media-playback-start", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-playback-start.png")));
+    const QString qtcreatorIconsPath = QApplication::instance()->property("sharePath")
+            .toString() + "/icons/from_qtcreator/";
+    a_regularRun->setIcon(QIcon(qtcreatorIconsPath+"debugger_start.png"));
+//    a_regularRun->setIcon(QIcon::fromTheme("media-playback-start", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-playback-start.png")));
     connect(a_regularRun, SIGNAL(triggered()), this, SLOT(regularRun()));
 #ifndef Q_OS_MAC
     a_regularRun->setShortcut(QKeySequence("F9"));
@@ -48,7 +51,8 @@ KumirProgram::KumirProgram(QObject *parent)
     a_testingRun->setToolTip(a_testingRun->text()+" <b>"+a_testingRun->shortcut().toString()+"</b>");
 
     a_stepRun = new QAction(tr("Step over"), this);
-    a_stepRun->setIcon(QIcon::fromTheme("debug-step-over", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));
+    a_stepRun->setIcon(QIcon(qtcreatorIconsPath+"debugger_steponeproc_small.png"));
+//    a_stepRun->setIcon(QIcon::fromTheme("debug-step-over", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));
     connect(a_stepRun, SIGNAL(triggered()), this, SLOT(stepRun()));
 #ifndef Q_OS_MAC
     a_stepRun->setShortcut(QKeySequence("F8"));
@@ -58,7 +62,8 @@ KumirProgram::KumirProgram(QObject *parent)
     a_stepRun->setToolTip(tr("Do big step")+" <b>"+a_stepRun->shortcut().toString()+"</b>");
 
     a_stepIn = new QAction(tr("Step in"), this);
-    a_stepIn->setIcon(QIcon::fromTheme("debug-step-into", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-into.png")));
+    a_stepIn->setIcon(QIcon(qtcreatorIconsPath+"debugger_stepinto_small.png"));
+//    a_stepIn->setIcon(QIcon::fromTheme("debug-step-into", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-into.png")));
     connect(a_stepIn, SIGNAL(triggered()), this, SLOT(stepIn()));
 #ifndef Q_OS_MAC
     a_stepIn->setShortcut(QKeySequence("F7"));
@@ -68,7 +73,8 @@ KumirProgram::KumirProgram(QObject *parent)
     a_stepIn->setToolTip(tr("Do small step")+" <b>"+a_stepIn->shortcut().toString()+"</b>");
 
     a_stepOut = new QAction(tr("Step to end"), this);
-    a_stepOut->setIcon(QIcon::fromTheme("debug-step-out", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-out.png")));
+    a_stepOut->setIcon(QIcon(qtcreatorIconsPath+"debugger_stepoverproc_small.png"));
+//    a_stepOut->setIcon(QIcon::fromTheme("debug-step-out", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-out.png")));
     connect(a_stepOut, SIGNAL(triggered()), this, SLOT(stepOut()));
 #ifndef Q_OS_MAC
     a_stepOut->setShortcut(QKeySequence("Shift+F10"));
@@ -78,7 +84,8 @@ KumirProgram::KumirProgram(QObject *parent)
     a_stepOut->setToolTip(tr("Run to end of algorhitm")+" <b>"+a_stepOut->shortcut().toString()+"</b>");
 
     a_stop = new QAction(tr("Stop"), this);
-    a_stop->setIcon(QIcon::fromTheme("media-playback-stop", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-playback-stop.png")));
+    a_stop->setIcon(QIcon(qtcreatorIconsPath+"stop.png"));
+//    a_stop->setIcon(QIcon::fromTheme("media-playback-stop", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-playback-stop.png")));
     connect(a_stop, SIGNAL(triggered()), this, SLOT(stop()));
 #ifndef Q_OS_MAC
     a_stop->setShortcut(QKeySequence("Esc"));
@@ -99,7 +106,8 @@ KumirProgram::KumirProgram(QObject *parent)
 
 
     a_blindRun = new QAction(tr("Blind run"), this);
-    a_blindRun->setIcon(QIcon::fromTheme("media-seek-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-seek-forward.png")));
+    a_blindRun->setIcon(QIcon(qtcreatorIconsPath+"run.png"));
+//    a_blindRun->setIcon(QIcon::fromTheme("media-seek-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-seek-forward.png")));
     connect(a_blindRun, SIGNAL(triggered()), this, SLOT(blindRun()));
 #ifndef Q_OS_MAC
     a_blindRun->setShortcut(QKeySequence("Shift+F9"));

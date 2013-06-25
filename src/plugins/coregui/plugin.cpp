@@ -157,13 +157,25 @@ QString Plugin::initialize(const QStringList & parameters)
             this,
             SLOT(showConsolePane(bool)));
 
+    const QString qtcreatorIconsPath = QApplication::instance()->property("sharePath")
+            .toString() + "/icons/from_qtcreator/";
+
+    const QString showConsoleIconPath = qtcreatorIconsPath + "category_core.png";
+    const QString clearConsoleIconPath = qtcreatorIconsPath + "clean_pane_small.png";
+
+    const QIcon showConsoleIcon = QIcon(showConsoleIconPath);
+    const QIcon cleanConsoleIcon = QIcon(clearConsoleIconPath);
+
+
     QToolButton * btnShowConsole = new QToolButton(mainWindow_);
+    mainWindow_->ui->actionShow_Console_Pane->setIcon(showConsoleIcon);
     btnShowConsole->setDefaultAction(mainWindow_->ui->actionShow_Console_Pane);
     btnShowConsole->setToolTip(mainWindow_->ui->actionShow_Console_Pane->text());
     mainWindow_->statusBar_->addButtonToLeft(btnShowConsole);
     QToolButton * btnSaveTerm = new QToolButton(mainWindow_);
     btnSaveTerm->setPopupMode(QToolButton::InstantPopup);
     QMenu * menuSaveTerm = new QMenu(btnSaveTerm);
+    btnSaveTerm->setToolTip("Save console output");
     btnSaveTerm->setMenu(menuSaveTerm);
     btnSaveTerm->setIcon(m_terminal->actionSaveLast()->icon());
     menuSaveTerm->addAction(m_terminal->actionSaveLast());
@@ -171,6 +183,7 @@ QString Plugin::initialize(const QStringList & parameters)
 //    mainWindow_->statusBar()->insertWidget(0, btnSaveTerm);
     mainWindow_->statusBar_->addButtonToLeft(btnSaveTerm);
     QToolButton * btnClearTerm = new QToolButton(mainWindow_);
+    m_terminal->actionClear()->setIcon(cleanConsoleIcon);
     btnClearTerm->setDefaultAction(m_terminal->actionClear());
 //    mainWindow_->statusBar()->insertWidget(1, btnClearTerm);
     mainWindow_->statusBar_->addButtonToLeft(btnClearTerm);

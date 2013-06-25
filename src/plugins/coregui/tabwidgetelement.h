@@ -53,6 +53,7 @@ public:
         if (enableToolBar) {
             if (!toolbarActions.isEmpty()) {
                 QToolBar * tb = new QToolBar(this);
+                tb->setIconSize(QSize(22, 22));
 #ifdef Q_OS_MAC
                 static const char * css = ""
                         "QToolBar {"
