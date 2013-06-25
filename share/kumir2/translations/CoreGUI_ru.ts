@@ -53,7 +53,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;6. Разработчик не дает никаких гарантий работоспобосности данного продукта и не несет ответственности за любой ущерб, причиненный вследствии установки или запуска данного программного продукта.&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/aboutdialog.ui" line="124"/>
@@ -841,68 +841,68 @@ Using Qt version %2</source>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="371"/>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="375"/>
         <source>rus</source>
-        <translation type="unfinished"></translation>
+        <translation>рус</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="98"/>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="369"/>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="377"/>
         <source>lat</source>
-        <translation type="unfinished"></translation>
+        <translation>lat</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="111"/>
         <source>Row: ww, Col.: ww</source>
-        <translation type="unfinished"></translation>
+        <translation>Стр: ww, Кол: ww</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="119"/>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="243"/>
         <source>Edit</source>
-        <translation type="unfinished">Редактирование</translation>
+        <translation>Редактирование</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="119"/>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="237"/>
         <source>Analisys</source>
-        <translation type="unfinished"></translation>
+        <translation>Анализ</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="119"/>
         <source>Run</source>
-        <translation type="unfinished">Выполнение</translation>
+        <translation>Выполнение</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="119"/>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="234"/>
         <source>Pause</source>
-        <translation type="unfinished">Пауза</translation>
+        <translation>Пауза</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="131"/>
         <source>ww errors</source>
-        <translation type="unfinished"></translation>
+        <translation>ww ошибок</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="132"/>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="262"/>
         <source>No errors</source>
-        <translation type="unfinished">Ошибок нет</translation>
+        <translation>Ошибок нет</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="133"/>
         <source>wwwww steps done</source>
-        <translation type="unfinished"></translation>
+        <translation>Выполнено wwwww шагов</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="240"/>
         <source>Running</source>
-        <translation type="unfinished">Выполнение</translation>
+        <translation>Выполнение</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="264"/>
         <source>1 error</source>
-        <translation type="unfinished"></translation>
+        <translation>1 ошибка</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="266"/>
@@ -910,17 +910,17 @@ Using Qt version %2</source>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="270"/>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="272"/>
         <source>%1 errors</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ошибок</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="276"/>
         <source>0 steps done</source>
-        <translation type="unfinished"></translation>
+        <translation>Выполнено 0 шагов</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="278"/>
         <source>1 step done</source>
-        <translation type="unfinished"></translation>
+        <translation>Выполнен 1 шаг</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="280"/>
@@ -928,12 +928,12 @@ Using Qt version %2</source>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="284"/>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="286"/>
         <source>%1 steps done</source>
-        <translation type="unfinished"></translation>
+        <translation>Выполнено %1 шагов</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="337"/>
         <source>Row: %1, Column: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Стр: %1, Кол: %2</translation>
     </message>
 </context>
 <context>
@@ -1008,7 +1008,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="724"/>
         <source>INPUT raw data to console stream</source>
-        <translation type="unfinished"></translation>
+        <translation>Ввод данных в файл &quot;консоль&quot;</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="727"/>
@@ -1043,12 +1043,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="905"/>
         <source>INPUT ERROR: Not a &apos;%1&apos; value</source>
-        <translation type="unfinished"></translation>
+        <translation>ОШИБКА ВВОДА: Это не значение &quot;%1&quot;</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="914"/>
         <source>INPUT ERROR: Extra input</source>
-        <translation type="unfinished"></translation>
+        <translation>ОШИБКА ВВОДА: Введено лишнее</translation>
     </message>
     <message>
         <source>Not a &apos;%1&apos; value</source>
