@@ -95,13 +95,13 @@ void StatusBar::unsetMessage()
 void StatusBar::setStepsDoneCounter(uint value)
 {
     stepsDone_ = value;
-    update();
+    repaint();
 }
 
 void StatusBar::setErrorsCounter(uint value)
 {
     errorsCount_ = value;
-    update();
+    repaint();
 }
 
 void StatusBar::setEditorCursorPosition(uint row, uint column)
@@ -303,29 +303,29 @@ void StatusBar::paintCounterItem(QPainter &p, int x)
         if (errorsCount_ == 0)
             text = tr("No errors");
         else if (errorsCount_ == 1)
-            text = tr("1 error", NULL, 1);
+            text = tr("1 error");
         else if (errorsCount_ >= 10 && errorsCount_ <= 20)
-            text = tr("%1 errors", NULL, 25).arg(errorsCount_);
+            text = tr("%1 errors", "10 <= x <= 20").arg(errorsCount_);
         else if (errorsCount_ % 10 == 1)
-            text = tr("%1 errors", NULL, 21).arg(errorsCount_);
+            text = tr("%1 errors", "1, 21, 31, etc.").arg(errorsCount_);
         else if (errorsCount_ % 10 == 2 || errorsCount_ % 10 == 3 || errorsCount_ % 10 == 4)
-            text = tr("%1 errors", NULL, 22).arg(errorsCount_);
+            text = tr("%1 errors", "2, 3, 4, 22, 23, 24,  etc.").arg(errorsCount_);
         else
-            text = tr("%1 errors", NULL, 25).arg(errorsCount_);
+            text = tr("%1 errors", "5, 6, 15, 16, etc").arg(errorsCount_);
     }
     else {
         if (stepsDone_ == 0)
             text = tr("0 steps done");
         else if (stepsDone_ == 1)
-            text = tr("1 step done", NULL, 1);
+            text = tr("1 step done");
         else if (stepsDone_ >= 10 && stepsDone_ <= 20)
-            text = tr("%1 steps done", NULL, 25).arg(stepsDone_);
+            text = tr("%1 steps done", "10 <= x <= 20").arg(stepsDone_);
         else if (stepsDone_ % 10 == 1)
-            text = tr("%1 steps done", NULL, 21).arg(stepsDone_);
+            text = tr("%1 steps done", "1, 21, 31, etc.").arg(stepsDone_);
         else if (stepsDone_ % 10 == 2 || stepsDone_ % 10 == 3 || stepsDone_ % 10 == 4)
-            text = tr("%1 steps done", NULL, 22).arg(stepsDone_);
+            text = tr("%1 steps done", "2, 3, 4, 22, 23, 24,  etc.").arg(stepsDone_);
         else
-            text = tr("%1 steps done", NULL, 25).arg(stepsDone_);
+            text = tr("%1 steps done", "5, 6, 15, 16, etc").arg(stepsDone_);
     }
     const QRect textRect(QPoint(x + ItemPadding, (height() - statusBarFontMetrics().height()) / 2 + 2),
                          counterItemSize() - QSize(2*ItemPadding, 0));
@@ -339,14 +339,38 @@ void StatusBar::paintMessageItem(QPainter &p, int x)
 {
     paintItemRect(p, messageItemSize(), x);
     p.save();
-    p.setPen(QPen(QColor(messageRole_==Normal? normalColor() : errorColor())));
-    const QRect textRect(QPoint(x + ItemPadding, (height() - statusBarFontMetrics().height()) / 2 + 2),
+    p.setPen(QPen(QColor(messageRole_==Normal? normalColor() : errorColor())));    
+    QRect textRect(QPoint(x + ItemPadding, (height() - statusBarFontMetrics().height()) / 2 + 2),
                          messageItemSize() - QSize(2*ItemPadding, 0));
+    if (textRect.right() > this->width() - ItemPadding) {
+        textRect.setRight(this->width() - ItemPadding);
+    }
+    int width = statusBarFontMetrics().width(message_);
+
+    QString text = message_;
+
+    if (width > textRect.width()) {
+        static const QString threeDots = QString("...");
+        const int dotsWidth = statusBarFontMetrics().width(threeDots);
+        if (dotsWidth >= textRect.width()) {
+            text = "";
+        }
+        else {
+            width = statusBarFontMetrics().width(text) + dotsWidth;
+            while (text.length() > 0 &&  width > textRect.width()) {
+                text.remove(text.length()-1, 1);
+                width = statusBarFontMetrics().width(text) + dotsWidth;
+            }
+            if (!text.isEmpty()) {
+                text += threeDots;
+            }
+        }
+    }
+
     QTextOption opt;
-    Qt::Alignment horiz = statusBarFontMetrics().width(message_) < textRect.width()
-            ? Qt::AlignHCenter : Qt::AlignLeft;
+    Qt::Alignment horiz = Qt::AlignHCenter;
     opt.setAlignment(Qt::AlignVCenter | horiz);
-    p.drawText(textRect, message_, opt);
+    p.drawText(textRect, text, opt);
     p.restore();
 }
 

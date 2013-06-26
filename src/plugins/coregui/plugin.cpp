@@ -354,22 +354,29 @@ QString Plugin::initialize(const QStringList & parameters)
     connect(m_terminal, SIGNAL(openTextEditor(QString,QString)),
             mainWindow_, SLOT(newText(QString,QString)));
 
-    QWidget * debuggerPlace = new QWidget(mainWindow_);
-    debuggerPlace->setLayout(new QHBoxLayout);
-    debuggerPlace->layout()->setContentsMargins(0,0,0,0);
-    debuggerPlace->sizePolicy().setHorizontalStretch(1);
-    debuggerPlace->sizePolicy().setHorizontalPolicy(QSizePolicy::Fixed);
-    bottomSplitter->insertWidget(0, debuggerPlace);
-    debuggerPlace->setVisible(false);
+    debuggerPlace_ = new QWidget(mainWindow_);
+    debuggerPlace_->setLayout(new QHBoxLayout);
+    debuggerPlace_->layout()->setContentsMargins(0,0,0,0);
+    debuggerPlace_->sizePolicy().setHorizontalStretch(1);
+    debuggerPlace_->sizePolicy().setHorizontalPolicy(QSizePolicy::Fixed);
+    bottomSplitter->insertWidget(0, debuggerPlace_);
+    debuggerPlace_->setVisible(false);
 
 
     debugger_ = new DebuggerWindow(plugin_kumirCodeRun);
     Widgets::SecondaryWindow * debuggerWindow = new Widgets::SecondaryWindow(
                 debugger_,
-                debuggerPlace,
+                debuggerPlace_,
                 mainWindow_,
                 mySettings(),
                 "DebuggerWindow");
+
+    connect(debuggerWindow, SIGNAL(docked(QWidget*,QString)),
+            this, SLOT(handleDebuggerDocked(QWidget*)));
+
+    connect(debuggerWindow, SIGNAL(undocked(QWidget*)),
+            this, SLOT(handleDebuggerUndocked(QWidget*)));
+
     secondaryWindows_ << debuggerWindow;
     debuggerWindow->setWindowTitle(tr("Variables"));
     debuggerWindow->toggleViewAction()->setShortcut(QKeySequence("F2"));
@@ -435,6 +442,18 @@ QString Plugin::initialize(const QStringList & parameters)
     return "";
 }
 
+void Plugin::handleDebuggerDocked(QWidget *w)
+{
+    debuggerPlace_->setVisible(true);
+    QList<int> bottomSplitterSizes = bottomSplitter_->sizes();
+    int totalWidth = bottomSplitterSizes[0] + bottomSplitterSizes[1];
+    bottomSplitterSizes[0] = w->minimumSizeHint().width();
+    bottomSplitterSizes[1] = totalWidth - bottomSplitterSizes[0];
+    bottomSplitter_->setSizes(bottomSplitterSizes);
+    mainWindow_->ui->actionShow_Console_Pane->setChecked(true);
+    showConsolePane(true);
+}
+
 void Plugin::handleSecondaryWindowDocked(QWidget * w, const QString & title)
 {
     actorsDockPlace_->addTab(w, w->windowTitle());
@@ -449,13 +468,22 @@ void Plugin::handleSecondaryWindowDocked(QWidget * w, const QString & title)
     showConsolePane(true);
 }
 
+void Plugin::handleDebuggerUndocked(QWidget *w)
+{
+    debuggerPlace_->setVisible(false);
+    if (!actorsDockPlace_->isVisible() && m_terminal->isEmpty()) {
+        mainWindow_->ui->actionShow_Console_Pane->setChecked(false);
+        showConsolePane(false);
+    }
+}
+
 void Plugin::handleSecondaryWindowUndocked(QWidget * w)
 {
     int index = actorsDockPlace_->indexOf(w);
     actorsDockPlace_->removeTab(index);
     if (actorsDockPlace_->count() == 0) {
         actorsDockPlace_->setVisible(false);
-        if (m_terminal->isEmpty()) {
+        if (m_terminal->isEmpty() && !debuggerPlace_->isVisible()) {
             mainWindow_->ui->actionShow_Console_Pane->setChecked(false);
             showConsolePane(false);
         }
@@ -488,18 +516,18 @@ void Plugin::showConsolePane(bool v)
         mainWindow_->ui->splitter->setSizes(sizes);
     }
     mainWindow_->ui->actionShow_Console_Pane->setChecked(v);
-    if (v && mainWindow_->height() - mainWindow_->minimumSizeHint().height() < 10) {
-        int minH = qMax(80, m_terminal->minimumSizeHint().height());
-        for (int i=0; i<actorsDockPlace_->count(); i++) {
-            QWidget * w = actorsDockPlace_->widget(i);
-            minH = qMax(minH, w->minimumSizeHint().height());
-        }
-        const QSize newSize = QSize(
-                    qMax(mainWindow_->width(), mainWindow_->minimumSizeHint().width()),
-                    mainWindow_->minimumSizeHint().height() + minH );
-        QResizeEvent * request = new QResizeEvent(newSize, mainWindow_->size());
-        QApplication::instance()->postEvent(mainWindow_, request);
-    }
+//    if (v && mainWindow_->height() - mainWindow_->minimumSizeHint().height() < 10) {
+//        int minH = qMax(80, m_terminal->minimumSizeHint().height());
+//        for (int i=0; i<actorsDockPlace_->count(); i++) {
+//            QWidget * w = actorsDockPlace_->widget(i);
+//            minH = qMax(minH, w->minimumSizeHint().height());
+//        }
+//        const QSize newSize = QSize(
+//                    qMax(mainWindow_->width(), mainWindow_->minimumSizeHint().width()),
+//                    mainWindow_->minimumSizeHint().height() + minH );
+//        QResizeEvent * request = new QResizeEvent(newSize, mainWindow_->size());
+//        QApplication::instance()->postEvent(mainWindow_, request);
+//    }
 }
 
 void Plugin::handleMainSplitterMoved()

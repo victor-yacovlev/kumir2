@@ -4,7 +4,7 @@
 <context>
     <name>ExtensionSystem::DeclarativeSettingsPage</name>
     <message>
-        <location filename="../../../src/shared/extensionsystem/declarativesettingspage.cpp" line="140"/>
+        <location filename="../../../src/shared/extensionsystem/declarativesettingspage.cpp" line="138"/>
         <source>Choose color</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12,7 +12,7 @@
 <context>
     <name>ExtensionSystem::PluginManager</name>
     <message>
-        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="443"/>
+        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="447"/>
         <source>Can&apos;t load module %1: file not found</source>
         <translation type="unfinished"></translation>
     </message>

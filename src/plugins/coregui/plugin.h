@@ -57,6 +57,8 @@ protected slots:
     void prepareKumirProgramToRun();
     void handleSecondaryWindowDocked(QWidget * w, const QString & title);
     void handleSecondaryWindowUndocked(QWidget * w);
+    void handleDebuggerDocked(QWidget * w);
+    void handleDebuggerUndocked(QWidget * w);
     void showConsolePane(bool v);
     void handleMainSplitterMoved();
 
@@ -88,7 +90,7 @@ protected:
     QSplitter * bottomSplitter_;
     Shared::CoursesInterface* courseManager_;
     QTabWidget * actorsDockPlace_;
-
+    QWidget * debuggerPlace_;
     bool sessionsDisableFlag_;
 
 };

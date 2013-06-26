@@ -20,7 +20,7 @@ MainWindow::MainWindow(Plugin * p) :
     statusBar_(new StatusBar)
 {
     setStatusBar(statusBar_);
-
+    setMinimumHeight(380);
     b_notabs = false;
     b_workspaceSwitching = false;
     ui->setupUi(this);
@@ -177,7 +177,7 @@ QSize MainWindow::minimumSizeHint() const
             minDockedW + 10;
     minW = qMax(minW, minBottom);
     minH += minDockedH;
-    return QSize(minW, minH);
+    return QSize(minW, qMax(380, minH));
 }
 
 void MainWindow::resizeEvent(QResizeEvent *evt)
@@ -185,7 +185,7 @@ void MainWindow::resizeEvent(QResizeEvent *evt)
     const QSize min = minimumSizeHint();
     const QSize sz = evt->size();
     if (sz.width() < min.width() || sz.height() < min.height()) {
-        evt->ignore();
+        evt->accept();
     }
     else {
         resize(sz);
