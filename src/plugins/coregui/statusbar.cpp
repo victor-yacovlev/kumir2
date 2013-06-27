@@ -66,7 +66,7 @@ QSize StatusBar::minimumSizeHint() const
     w += cursorPositionItemSize().width();
     h = qMax(h, keyboardLayoutItemSize().height());
     w += keyboardLayoutItemSize().width();
-#ifdef Q_OS_MAC
+#ifndef Q_WS_X11
     h += 8;
 #endif
     return QSize(w, h);
@@ -202,14 +202,14 @@ QFontMetrics StatusBar::statusBarFontMetrics() const
 
 void StatusBar::paintItemRect(QPainter &p, const QSize &sz, int x)
 {
-    p.save();
-    QStyleOptionFrameV3 opt;
-    opt.rect = QRect(x, 0, sz.width(), sz.height());
-    opt.palette = palette();
-    opt.state = QStyle::State_None;
-    opt.frameShape = QFrame::NoFrame;
-    style()->drawPrimitive(QStyle::PE_FrameStatusBarItem, &opt,  &p, this);
-    p.restore();
+//    p.save();
+//    QStyleOptionFrameV3 opt;
+//    opt.rect = QRect(x, 0, sz.width(), sz.height());
+//    opt.palette = palette();
+//    opt.state = QStyle::State_None;
+//    opt.frameShape = QFrame::NoFrame;
+//    style()->drawPrimitive(QStyle::PE_FrameStatusBarItem, &opt,  &p, this);
+//    p.restore();
 }
 
 void StatusBar::paintEvent(QPaintEvent *event)
