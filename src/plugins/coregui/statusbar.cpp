@@ -442,7 +442,9 @@ void StatusBar::paintKeyboardItem(QPainter &p, int x)
         else
             text = tr("lat");
     }
-    bool upperCase = (keyboardCaps_ && !keyboardShift_) || keyboardShift_;
+    bool upperCase =
+            (keyboardCaps_ && !keyboardShift_) ||
+            (!keyboardCaps_ && keyboardShift_);
     if (upperCase)
         text = text.toUpper();
     opt.setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
