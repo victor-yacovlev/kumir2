@@ -27,54 +27,6 @@ class SecondaryWindow;
 #endif
 
 
-class SecondaryWindowPrivate :
-        public QObject
-{
-public:
-    void init(QWidget *centralWidget,
-              QWidget *dockPlace,
-              QMainWindow * mainWindow,
-              ExtensionSystem::SettingsPtr settings,
-              const QString &settingsKey,
-              bool resizableX, bool resizableY);
-
-    QWidget* centralWidget_;
-    QWidget* dockPlace_;
-    QMainWindow * mainWindow_;
-
-    class BorderWidget* topBorder_;
-    class BorderWidget* bottomBorder_;
-    class BorderWidget* leftBorder_;
-    class BorderWidget* rightBorder_;
-
-    QAbstractButton* buttonStayOnTop_;
-    QAbstractButton* buttonMinimize_;
-    QAbstractButton* buttonToggleDocked_;
-    QAbstractButton* buttonClose_;
-
-    QAction* toggleVisibleAction_;
-
-    QList<QPixmap*> topBorderPixmaps_;
-    QList<QPixmap*> topDockedBorderPixmaps_;
-    QList<QPixmap*> bottomBorderPixmaps_;
-    QList<QPixmap*> leftBorderPixmaps_;
-    QList<QPixmap*> rightBorderPixmaps_;
-
-    QList<QPixmap*> stayOnTopButtonPixmaps_;
-    QList<QPixmap*> minimizeButtonPixmaps_;
-    QList<QPixmap*> toggleDockedButtonPixmaps_;
-    QList<QPixmap*> closeButtonPixmaps_;
-
-    QString windowTitleStylesheet_;
-    QString dockedWindowTitleStylesheet_;
-
-    SecondaryWindow *pClass_;
-    bool visibleFlag_;
-    QString settingsKey_;
-    ExtensionSystem::SettingsPtr settings_;
-
-    void timerEvent(QTimerEvent *);
-};
 
 
 class BorderWidget :
@@ -166,8 +118,8 @@ SecondaryWindow::SecondaryWindow(QWidget *centralComponent,
                  resizableX, resizableY);
     if (dockPlace)
         dockPlace->installEventFilter(this);
-    connect(pImpl_->toggleVisibleAction_, SIGNAL(triggered(bool)),
-            this, SLOT(checkForPlaceVisible(bool)));
+    connect(pImpl_->toggleVisibleAction_, SIGNAL(triggered()),
+            this, SLOT(checkForPlaceVisible()));
 }
 
 bool SecondaryWindow::eventFilter(QObject *obj, QEvent *evt)
@@ -195,13 +147,11 @@ bool SecondaryWindow::eventFilter(QObject *obj, QEvent *evt)
     return QWidget::eventFilter(obj, evt);
 }
 
-void SecondaryWindow::checkForPlaceVisible(bool show)
+void SecondaryWindow::checkForPlaceVisible()
 {
-    if (show) {
-        if (!isFloating()) {
-            pImpl_->dockPlace_->setVisible(true);
-        }
-    }
+//    if (!isFloating()) {
+//        pImpl_->dockPlace_->setVisible(true);
+//    }
 }
 
 void SecondaryWindow::restoreState()
@@ -520,7 +470,7 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
                                      "Stay on top",
                                      QStyle::SP_TitleBarShadeButton,
                                      stayOnTopButtonPixmaps_,
-                                     pClass_->tr("Toggle stay on top"));
+                                     tr("Toggle stay on top"));
 
     QObject::connect ( buttonStayOnTop_, SIGNAL(clicked(bool)),
                        pClass_, SLOT( setStayOnTop(bool)) );
@@ -549,7 +499,7 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
                                     "Minimize",
                                     QStyle::SP_TitleBarMinButton,
                                     minimizeButtonPixmaps_,
-                                    pClass_->tr("Minimize"));
+                                    tr("Minimize"));
 
     QObject::connect ( buttonMinimize_, SIGNAL(clicked()),
                        pClass_, SLOT(showMinimized()) );
@@ -560,7 +510,7 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
                                         "Docking",
                                         QStyle::SP_TitleBarNormalButton,
                                         toggleDockedButtonPixmaps_,
-                                        pClass_->tr("Docking"));
+                                        tr("Docking"));
 
         QObject::connect ( buttonToggleDocked_, SIGNAL(clicked()),
                            pClass_, SLOT(toggleDocked()) );
@@ -571,7 +521,7 @@ void SecondaryWindowPrivate::init(QWidget *centralWidget,
                                  "Close",
                                  QStyle::SP_TitleBarCloseButton,
                                  closeButtonPixmaps_,
-                                 pClass_->tr("Close"));
+                                 tr("Close"));
 
     QObject::connect(buttonClose_, SIGNAL(clicked()),
                      pClass_, SLOT(close()));
@@ -621,6 +571,10 @@ void SecondaryWindow::activate()
         setVisible(true);
     if (isFloating())
         activateWindow();
+    else {
+        pImpl_->dockPlace_->setVisible(true);
+        emit docked(this, windowTitle());
+    }
 }
 
 void SecondaryWindowPrivate::timerEvent(QTimerEvent *e)

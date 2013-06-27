@@ -17,27 +17,27 @@
 <context>
     <name>KumirAnalizer::SyntaxAnalizer</name>
     <message>
-        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="133"/>
+        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="122"/>
         <source>Built-it module %1</source>
         <translation>Встроенный исполнитель %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="144"/>
+        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="133"/>
         <source>Use file &quot;%1&quot; as module</source>
         <translation>Использовать программу &quot;%1&quot; как исполнитель</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="153"/>
+        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="142"/>
         <source>Use precompiled file &quot;%1&quot; as module</source>
         <translation>Использовать код &quot;%1&quot; как исполнитель</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="333"/>
+        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="329"/>
         <source>Loop for variable</source>
         <translation>Цикл с изменением значения величины</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="338"/>
+        <location filename="../../../src/plugins/kumiranalizer/syntaxanalizer.cpp" line="334"/>
         <source>Repeat while condition is true</source>
         <translation>Повторять пока условие истинно</translation>
     </message>

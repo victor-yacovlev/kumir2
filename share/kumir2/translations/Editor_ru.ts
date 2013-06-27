@@ -11,7 +11,7 @@
 <context>
     <name>Editor::EditorPlugin</name>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="194"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="193"/>
         <source>Can&apos;t open file %1 for writing</source>
         <translation>Не могу открыть %1 для записи</translation>
     </message>
@@ -21,7 +21,7 @@
         <translation>Не могу открыть %1 для чтения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="270"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="261"/>
         <source>Editor</source>
         <translation>Редактор</translation>
     </message>
@@ -29,27 +29,27 @@
 <context>
     <name>Editor::EditorPrivate</name>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="162"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="180"/>
         <source>Keys: %1</source>
         <translation>Клав: %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="202"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="221"/>
         <source>Row: %1, Col: %2</source>
         <translation>Стр: %1, Поз: %2</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="228"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="247"/>
         <source>import %1</source>
         <translation>использовать %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="636"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="567"/>
         <source>Edit</source>
         <translation>Редактирование</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="656"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="587"/>
         <source>Insert</source>
         <translation>Вставка</translation>
     </message>
@@ -57,74 +57,56 @@
 <context>
     <name>Editor::EditorStandaloneWindow</name>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="19"/>
         <source>File</source>
-        <translation>Файл</translation>
+        <translation type="obsolete">Файл</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="24"/>
         <source>New Kumir program</source>
-        <translation>Новая Кумир-программа</translation>
+        <translation type="obsolete">Новая Кумир-программа</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="33"/>
         <source>Load...</source>
-        <translation>Загрузить...</translation>
+        <translation type="obsolete">Загрузить...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="40"/>
         <source>Save</source>
-        <translation>Сохранить</translation>
+        <translation type="obsolete">Сохранить</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="47"/>
         <source>Save as...</source>
-        <translation>Сохранить как...</translation>
+        <translation type="obsolete">Сохранить как...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="56"/>
         <source>Preferences...</source>
-        <translation>Настройки...</translation>
+        <translation type="obsolete">Настройки...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="64"/>
         <source>Exit</source>
-        <translation>Выход</translation>
+        <translation type="obsolete">Выход</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="116"/>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="127"/>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="141"/>
         <source>Kumir Editor</source>
-        <translation>Редактор Кумир</translation>
+        <translation type="obsolete">Редактор Кумир</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="158"/>
         <source>Load Kumir program...</source>
-        <translation>Загрузить Кумир-программу...</translation>
+        <translation type="obsolete">Загрузить Кумир-программу...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="160"/>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="190"/>
         <source>Kumir programs (*.kum)</source>
-        <translation>Кумир-программы (*.kum)</translation>
+        <translation type="obsolete">Кумир-программы (*.kum)</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="167"/>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="179"/>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="196"/>
         <source>Error</source>
-        <translation>Ошибка</translation>
+        <translation type="obsolete">Ошибка</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="167"/>
         <source>Can&apos;t load file %1</source>
-        <translation>Не могу загрузить файл %1</translation>
+        <translation type="obsolete">Не могу загрузить файл %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorstandalonewindow.cpp" line="188"/>
         <source>Save Kumir program...</source>
-        <translation>Сохранить Кумир-программу...</translation>
+        <translation type="obsolete">Сохранить Кумир-программу...</translation>
     </message>
 </context>
 <context>
@@ -464,57 +446,57 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="555"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="475"/>
         <source>Select all text in editor</source>
         <translation>Выбрать весь текст</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="561"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="482"/>
         <source>Copy selection to clipboard</source>
         <translation>Скопировать</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="567"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="489"/>
         <source>Cut selection to clipboard</source>
         <translation>Вырезать</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="573"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="496"/>
         <source>Paste from clipboard</source>
         <translation>Вставить</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="579"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="503"/>
         <source>Find...</source>
         <translation>Найти...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="586"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="511"/>
         <source>Replace...</source>
         <translation>Заменить...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="595"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="521"/>
         <source>Delete line under cursor</source>
         <translation>Удалить строку</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="601"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="528"/>
         <source>Delete text from cursor to end of line</source>
         <translation>Удалить текст до конца строки</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="608"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="536"/>
         <source>Undo last action</source>
         <translation>Отменить последнее действие</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="616"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="545"/>
         <source>Redo last undoed action</source>
         <translation>Повторить отмененное действие</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="624"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="554"/>
         <source>(Un)Comment lines</source>
         <translation>(Раз)комменировать строки</translation>
     </message>

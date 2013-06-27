@@ -199,7 +199,7 @@
   </action>
   <action name="actionUsage">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>Manuals</string>
@@ -239,7 +239,7 @@
   </action>
   <action name="actionVariables">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>Variable Current Values</string>

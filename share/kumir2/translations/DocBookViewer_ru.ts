@@ -184,20 +184,20 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="32"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="41"/>
         <source>Contents</source>
         <translation>Содержание</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="45"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="54"/>
         <source>Algorithms</source>
         <translation>Алгоритмы</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="84"/>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="117"/>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="150"/>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="183"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="93"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="126"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="159"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="192"/>
         <source>Filter:</source>
         <translation>&amp;Фильтр:</translation>
     </message>
@@ -206,12 +206,12 @@
         <translation type="obsolete">Поиск</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="55"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="64"/>
         <source>Examples</source>
         <translation>Примеры</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="65"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="74"/>
         <source>Tables</source>
         <translation>Таблицы</translation>
     </message>
@@ -220,17 +220,17 @@
         <translation type="obsolete">Искать:</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="193"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="205"/>
         <source>List of examples in &quot;%1&quot;</source>
         <translation>Список примеров в &quot;%1&quot;</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="221"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="233"/>
         <source>List of tables in &quot;%1&quot;</source>
         <translation>Список таблиц в &quot;%1&quot;</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="241"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="253"/>
         <source>Standard Library functions</source>
         <translation>Встроенные алгоритмы</translation>
     </message>
