@@ -118,8 +118,8 @@ SecondaryWindow::SecondaryWindow(QWidget *centralComponent,
                  resizableX, resizableY);
     if (dockPlace)
         dockPlace->installEventFilter(this);
-    connect(pImpl_->toggleVisibleAction_, SIGNAL(triggered(bool)),
-            this, SLOT(checkForPlaceVisible(bool)));
+    connect(pImpl_->toggleVisibleAction_, SIGNAL(triggered()),
+            this, SLOT(checkForPlaceVisible()));
 }
 
 bool SecondaryWindow::eventFilter(QObject *obj, QEvent *evt)
@@ -147,13 +147,11 @@ bool SecondaryWindow::eventFilter(QObject *obj, QEvent *evt)
     return QWidget::eventFilter(obj, evt);
 }
 
-void SecondaryWindow::checkForPlaceVisible(bool show)
+void SecondaryWindow::checkForPlaceVisible()
 {
-    if (show) {
-        if (!isFloating()) {
-            pImpl_->dockPlace_->setVisible(true);
-        }
-    }
+//    if (!isFloating()) {
+//        pImpl_->dockPlace_->setVisible(true);
+//    }
 }
 
 void SecondaryWindow::restoreState()
@@ -573,6 +571,10 @@ void SecondaryWindow::activate()
         setVisible(true);
     if (isFloating())
         activateWindow();
+    else {
+        pImpl_->dockPlace_->setVisible(true);
+        emit docked(this, windowTitle());
+    }
 }
 
 void SecondaryWindowPrivate::timerEvent(QTimerEvent *e)

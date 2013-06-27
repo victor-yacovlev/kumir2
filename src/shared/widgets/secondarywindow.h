@@ -52,7 +52,7 @@ protected:
     void closeEvent(QCloseEvent *);
     bool eventFilter(QObject *obj, QEvent *evt);
 protected slots:
-    void checkForPlaceVisible(bool show);
+    void checkForPlaceVisible();
     void activate();
 private:
     class SecondaryWindowPrivate *pImpl_;
