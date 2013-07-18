@@ -33,6 +33,7 @@ public:
     virtual QString error() const = 0;
     virtual QVariant valueStackTopItem() const = 0;
     virtual unsigned long int stepsCounted() const = 0;
+    virtual QAbstractItemModel * debuggerVariablesViewModel() const = 0;
 
     virtual QMap<QString,QVariant> getScalarLocalValues(int frameNo) const = 0;
     virtual QMap<QString,QVariant> getScalarGlobalValues(const QString & moduleName) const = 0;

@@ -11,6 +11,7 @@ set(SOURCES
     commonrun.cpp
     util.cpp
     guirun.cpp
+    kumvariablesmodel.cpp
 )
 
 set(HEADERS
@@ -22,6 +23,7 @@ set(MOC_HEADERS
     run.h
     commonrun.h
     guirun.h
+    kumvariablesmodel.h
 )
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})

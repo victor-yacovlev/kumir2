@@ -14,7 +14,7 @@
 
 namespace KumirCodeRun {
 
-Plugin::Plugin()
+KumirRunPlugin::KumirRunPlugin()
     : ExtensionSystem::KPlugin()
     , pRun_(new Run(this))
     , common_(nullptr)
@@ -70,22 +70,22 @@ Plugin::Plugin()
             Qt::DirectConnection);
 }
 
-unsigned long int Plugin::stepsCounted() const
+unsigned long int KumirRunPlugin::stepsCounted() const
 {
     return pRun_->vm->stepsDone();
 }
 
-int Plugin::currentLineNo() const
+int KumirRunPlugin::currentLineNo() const
 {
     return pRun_->effectiveLineNo();
 }
 
-QPair<quint32,quint32> Plugin::currentColumn() const
+QPair<quint32,quint32> KumirRunPlugin::currentColumn() const
 {
     return QPair<quint32,quint32>(pRun_->vm->effectiveColumn().first, pRun_->vm->effectiveColumn().second);
 }
 
-bool Plugin::loadProgram(const QString & filename, const QByteArray & source, Shared::ProgramFormat format)
+bool KumirRunPlugin::loadProgram(const QString & filename, const QByteArray & source, Shared::ProgramFormat format)
 {
     bool ok = false;
     if (format==Shared::FormatBinary) {
@@ -104,12 +104,12 @@ bool Plugin::loadProgram(const QString & filename, const QByteArray & source, Sh
     return ok;
 }
 
-QString Plugin::error() const
+QString KumirRunPlugin::error() const
 {
     return pRun_->error();
 }
 
-QMap<QString,QVariant> Plugin::getScalarLocalValues(int frameNo) const
+QMap<QString,QVariant> KumirRunPlugin::getScalarLocalValues(int frameNo) const
 {
     pRun_->lockVMMutex();
     QMap<QString,QVariant> result;
@@ -132,12 +132,12 @@ QMap<QString,QVariant> Plugin::getScalarLocalValues(int frameNo) const
     return result;
 }
 
-QVariant Plugin::valueStackTopItem() const
+QVariant KumirRunPlugin::valueStackTopItem() const
 {
     return pRun_->valueStackTopItem();
 }
 
-QMap<QString,QVariant> Plugin::getScalarGlobalValues(const QString & moduleName) const
+QMap<QString,QVariant> KumirRunPlugin::getScalarGlobalValues(const QString & moduleName) const
 {
     pRun_->lockVMMutex();
     QMap<QString,QVariant> result;
@@ -268,7 +268,7 @@ QVariantList getTableValues(
     return result;
 }
 
-QVariantList Plugin::getLocalTableValues(
+QVariantList KumirRunPlugin::getLocalTableValues(
         int frameNo,
         int maxCount,
         const QString &name,
@@ -292,7 +292,7 @@ QVariantList Plugin::getLocalTableValues(
     return result;
 }
 
-QVariant Plugin::getLocalTableValue(
+QVariant KumirRunPlugin::getLocalTableValue(
         int frameNo,
         const QString &name,
         const QList<int> &indeces
@@ -318,7 +318,7 @@ QVariant Plugin::getLocalTableValue(
     return result;
 }
 
-QVariantList Plugin::getGlobalTableValues(
+QVariantList KumirRunPlugin::getGlobalTableValues(
         const QString & moduleName,
         int maxCount,
         const QString &name,
@@ -342,7 +342,7 @@ QVariantList Plugin::getGlobalTableValues(
     return result;
 }
 
-QVariant Plugin::getGlobalTableValue(
+QVariant KumirRunPlugin::getGlobalTableValue(
         const QString & moduleName,
         const QString &name,
         const QList<int> &indeces
@@ -370,7 +370,7 @@ QVariant Plugin::getGlobalTableValue(
 
 
 
-void Plugin::runContinuous()
+void KumirRunPlugin::runContinuous()
 {
     if (done_) {
         pRun_->setEntryPointToMain();
@@ -380,7 +380,7 @@ void Plugin::runContinuous()
     pRun_->runContinuous();
 }
 
-void Plugin::runBlind()
+void KumirRunPlugin::runBlind()
 {
     if (done_) {
         pRun_->setEntryPointToMain();
@@ -390,17 +390,17 @@ void Plugin::runBlind()
     pRun_->runBlind();
 }
 
-void Plugin::runStepInto()
+void KumirRunPlugin::runStepInto()
 {
     pRun_->runStepIn();
 }
 
-void Plugin::runStepOut()
+void KumirRunPlugin::runStepOut()
 {
     pRun_->runStepOut();
 }
 
-void Plugin::runStepOver()
+void KumirRunPlugin::runStepOver()
 {
     if (done_) {
         pRun_->setEntryPointToMain();
@@ -410,7 +410,7 @@ void Plugin::runStepOver()
     pRun_->runStepOver();
 }
 
-void Plugin::runTesting()
+void KumirRunPlugin::runTesting()
 {
     if (done_) {
         pRun_->setEntryPointToTest();
@@ -420,18 +420,18 @@ void Plugin::runTesting()
     pRun_->runBlind();
 }
 
-bool Plugin::isTestingRun() const
+bool KumirRunPlugin::isTestingRun() const
 {
     return pRun_->isTestingRun();
 }
 
-void Plugin::terminate()
+void KumirRunPlugin::terminate()
 {
     pRun_->stop();
 }
 
 
-void Plugin::handleThreadFinished()
+void KumirRunPlugin::handleThreadFinished()
 {
     if (pRun_->error().length()>0) {
         done_ = true;
@@ -450,7 +450,7 @@ void Plugin::handleThreadFinished()
     }
 }
 
-void Plugin::handleLineChanged(int lineNo, quint32 colStart, quint32 colEnd)
+void KumirRunPlugin::handleLineChanged(int lineNo, quint32 colStart, quint32 colEnd)
 {
     emit lineChanged(lineNo, colStart, colEnd);
 }
@@ -480,7 +480,7 @@ struct GuiFunctors {
     Gui::PauseFunctor pause;
 };
 
-Plugin::~Plugin()
+KumirRunPlugin::~KumirRunPlugin()
 {
     if (pRun_->isRunning()) {
         pRun_->stop();
@@ -496,7 +496,7 @@ Plugin::~Plugin()
 }
 
 
-void Plugin::prepareCommonRun()
+void KumirRunPlugin::prepareCommonRun()
 {
     common_ = new CommonFunctors;
     common_->reset.setCallFunctor(&common_->call);
@@ -506,7 +506,7 @@ void Plugin::prepareCommonRun()
     pRun_->vm->setFunctor(&common_->fromString);
 }
 
-void Plugin::prepareConsoleRun()
+void KumirRunPlugin::prepareConsoleRun()
 {
     if (! common_)
         prepareCommonRun();
@@ -546,7 +546,7 @@ void Plugin::prepareConsoleRun()
 
 }
 
-void Plugin::prepareGuiRun()
+void KumirRunPlugin::prepareGuiRun()
 {
     if (! common_)
         prepareCommonRun();
@@ -579,7 +579,7 @@ void Plugin::prepareGuiRun()
 }
 
 
-QString Plugin::initialize(const QStringList &)
+QString KumirRunPlugin::initialize(const QStringList &)
 {
     pRun_->programLoaded = false;
 
@@ -640,7 +640,7 @@ QString Plugin::initialize(const QStringList &)
     return "";
 }
 
-void Plugin::timerEvent(QTimerEvent *event) {
+void KumirRunPlugin::timerEvent(QTimerEvent *event) {
     killTimer(event->timerId());
     event->accept();
     pRun_->reset();
@@ -659,7 +659,7 @@ void Plugin::timerEvent(QTimerEvent *event) {
     pRun_->start();
 }
 
-void Plugin::start()
+void KumirRunPlugin::start()
 {
     if (pRun_->programLoaded) {
         if (!ExtensionSystem::PluginManager::instance()->isGuiRequired()) {
@@ -679,21 +679,28 @@ void Plugin::start()
     }
 }
 
-bool Plugin::hasMoreInstructions() const
+bool KumirRunPlugin::hasMoreInstructions() const
 {
     return pRun_->hasMoreInstructions();
 }
 
-bool Plugin::canStepOut() const
+bool KumirRunPlugin::canStepOut() const
 {
     return pRun_->canStepOut();
 }
 
-bool Plugin::hasTestingEntryPoint() const
+bool KumirRunPlugin::hasTestingEntryPoint() const
 {
     return pRun_->vm->hasTestingAlgorithm();
 }
 
+QAbstractItemModel * KumirRunPlugin::debuggerVariablesViewModel() const
+{
+    return pRun_->variablesModel();
+}
+
 } // namespace KumirCodeRun
 
-Q_EXPORT_PLUGIN(KumirCodeRun::Plugin)
+
+
+Q_EXPORT_PLUGIN(KumirCodeRun::KumirRunPlugin)

@@ -97,6 +97,12 @@ public /*methods*/:
     /** Used by debugger. Returns global variables for a given module name */
     inline const std::vector<Variable> & getGlobals(const Kumir::String &moduleName) const;
 
+    inline const std::vector<Variable> * getMainModuleGlobals() const;
+    inline std::pair< Kumir::String, const std::vector<Variable> * >
+    getLocalsAndName(size_t stackIndex) const;
+
+    inline size_t functionCallStackSize() const;
+
     /** Returns last error */
     inline const String & error() const {
         if (error_.length()==0 && Kumir::Core::getError().length()>0)
@@ -164,14 +170,7 @@ private /*methods*/:
     inline static Kumir::FileType fromRecordValue(const Record & record);
 
     inline Variable & findVariable(uint8_t scope, uint16_t id);
-    inline void debuggerPushContext(
-            const bool isGlobals,
-            const Kumir::String & name,
-            const std::vector<Variable> * variables,
-            bool force
-            );
-    inline void updateDebugger();
-    inline void debuggerPopContext();
+
     inline void checkFunctors();
 
 private /*instruction methods*/:
@@ -727,11 +726,21 @@ void KumirVM::reset()
     }
     c.IP = -1;
 
+    if (debugHandler_) {
+        debugHandler_->debuggerReset();
+        debugHandler_->debuggerNoticeBeforePushContext();
+    }
+
     if (c.program) {
         // Push startup context to stack (if non empty)
         contextsStack_.push(c);
         currentLocals_ = &(contextsStack_.top().locals);
     }
+
+    if (debugHandler_) {
+        debugHandler_->debuggerNoticeAfterPushContext();
+    }
+
     currentConstants_ = &(mainModuleContext.constants);
     currentGlobals_ = mainModuleContext.globals.empty()
             ? nullptr
@@ -768,31 +777,11 @@ void KumirVM::reset()
         }
     }
 
-    if (debugHandler_)
-        debugHandler_->debuggerReset();
-
     std::set<Kumir::String> usedExternalModules;
 
     // Push globals to debugger and make a list of used external modules
     for (size_t i_context=0; i_context<moduleContexts_.size(); i_context++) {
         const ModuleContext & mc = moduleContexts_[i_context];
-        const GlobalsMap & contextGlobals = mc.globals;
-        for (size_t i_module=0; i_module<contextGlobals.size(); i_module++) {
-            const Kumir::String & contextName = i_context==0
-                    ? Kumir::String()
-                    : mc.filename;
-            const Kumir::String & moduleName = Kumir::String();
-            const Kumir::String fullName = moduleName.length()>0
-                    ? moduleName
-                    : contextName;
-            debuggerPushContext(
-                        true,
-                        fullName,
-                        &(contextGlobals[i_module]),
-                        false
-                        );
-        }
-
 
         const ExternsMap & contextExterns = mc.externs;
         const std::list<ExternReference> & contextExternInits = mc.externInits;
@@ -852,59 +841,6 @@ void KumirVM::reset()
 
 }
 
-void KumirVM::debuggerPopContext()
-{
-    if (debugHandler_==nullptr
-            || blindMode_)
-    {
-        return; // show nothing
-    }
-    if (currentContext().runMode==CRM_OneStep)
-        debugHandler_->debuggerPopContext();
-    else
-        debugHandler_->debuggerForceUpdateValues();
-}
-
-void KumirVM::debuggerPushContext(
-        const bool isGlobals,
-        const Kumir::String &name,
-        const std::vector<Variable> *variables,
-        bool force)
-{
-    if (debugHandler_==nullptr)
-        return;
-    if (!force)
-        if (
-            blindMode_
-            || currentContext().runMode!=CRM_OneStep
-        )
-    {
-        return; // show nothing
-    }
-    if (isGlobals && variables->size()==0) {
-        return; // nothing to push
-    }
-    std::deque<Kumir::String> names;
-    std::deque<Kumir::String> types;
-    std::deque<uint8_t> dims;
-    for (size_t i=0; i<variables->size(); i++) {
-        const Variable & var = variables->at(i);
-        names.push_back(var.myName());
-        switch (var.baseType()) {
-            case VT_int: types.push_back(Kumir::Core::fromUtf8("цел")); break;
-            case VT_real: types.push_back(Kumir::Core::fromUtf8("вещ")); break;
-            case VT_bool: types.push_back(Kumir::Core::fromUtf8("лог")); break;
-            case VT_string: types.push_back(Kumir::Core::fromUtf8("лит")); break;
-            case VT_char: types.push_back(Kumir::Core::fromUtf8("сим")); break;
-            default: types.push_back(Kumir::Core::fromUtf8("")); break;
-        }
-        dims.push_back(var.dimension());
-    }
-    if (isGlobals)
-        debugHandler_->debuggerSetGlobals(name, names, types, dims);
-    else
-        debugHandler_->debuggerPushContext(name, names, types, dims);
-}
 
 void KumirVM::nextIP()
 {
@@ -1058,12 +994,6 @@ void KumirVM::evaluateNextInstruction()
     }
     if (error_.length()==0 && Kumir::Core::getError().length()>0)
         error_ = Kumir::Core::getError();
-    if (debugHandler_ &&
-            error_.length()>0 &&
-            currentContext().runMode!=CRM_OneStep)
-    {
-        updateDebugger();
-    }
 }
 
 /***** BEGIN INSTRUCTIONS IMPLEMENTATION *****/
@@ -1105,9 +1035,19 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
             if (!blindMode_)
                 c.name = moduleContexts_[contextsStack_.top().moduleContextNo].functions[p].name;
             c.moduleContextNo = contextsStack_.top().moduleContextNo;
+            if (stacksMutex_)
+                stacksMutex_->unlock();
+            if (debugHandler_ && c.runMode==CRM_OneStep)
+                debugHandler_->debuggerNoticeBeforePushContext();
+            if (stacksMutex_)
+                stacksMutex_->lock();
             contextsStack_.push(c);
-            if (c.runMode==CRM_OneStep)
-                debuggerPushContext(false, c.name, &(contextsStack_.top().locals),false);
+            if (stacksMutex_)
+                stacksMutex_->unlock();
+            if (debugHandler_ && c.runMode==CRM_OneStep)
+                debugHandler_->debuggerNoticeAfterPushContext();
+            if (stacksMutex_)
+                stacksMutex_->lock();
             nextCallInto_ = false;
             valuesStack_.pop(); // current implementation doesn't requere args count
             currentLocals_ = &(contextsStack_.top().locals);
@@ -2188,7 +2128,17 @@ void KumirVM::do_setarr(uint8_t s, uint16_t id)
         for (int i=0; i<dim*2; i++) {
             bounds[i] = valuesStack_.pop().toInt();
         }
+        if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
+            stacksMutex_->unlock();
+            debugHandler_->debuggerNoticeBeforeArrayInitialize(var, bounds);
+            stacksMutex_->lock();
+        }
         var.setBounds(bounds);
+        if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
+            stacksMutex_->unlock();
+            debugHandler_->debuggerNoticeAfterArrayInitialize(var);
+            stacksMutex_->lock();
+        }
         if (!blindMode_)
             name = var.name();
         error_ = Kumir::Core::getError();
@@ -2208,15 +2158,9 @@ void KumirVM::do_setarr(uint8_t s, uint16_t id)
                 }
             }
             const String notice = name+Kumir::Core::fromAscii("[")+boundsText+Kumir::Core::fromAscii("]");
-            if (debugHandler_ && currentContext().runMode==CRM_OneStep) {                
+            if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
                 if (contextsStack_.top().moduleContextNo == 0)
                     debugHandler_->appendTextToMargin(lineNo, notice);
-                if (VariableScope(s)==Bytecode::LOCAL) {
-                    debugHandler_->debuggerUpdateLocalTableBounds(var.myName(), bounds);
-                }
-                else if (VariableScope(s)==Bytecode::GLOBAL) {
-                    debugHandler_->debuggerUpdateGlobalTableBounds(var.moduleName(), name, bounds);
-                }
             }
         }
     }
@@ -2336,15 +2280,9 @@ void KumirVM::do_store(uint8_t s, uint16_t id)
                 debugHandler_->appendTextToMargin(lineNo, message);
         }
         if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
-            if (VariableScope(s)==Bytecode::LOCAL)
-                debugHandler_->debuggerUpdateLocalVariable(variable.myName(), svalue);
-            else if (VariableScope(s)==Bytecode::GLOBAL)
-                debugHandler_->debuggerUpdateGlobalVariable(
-                            variable.moduleName(),
-                            variable.name(),
-                            svalue
-                            );
-
+            stacksMutex_->unlock();
+            debugHandler_->debuggerNoticeOnValueChanged(variable, nullptr);
+            stacksMutex_->lock();
         }
     }
     if (contextsStack_.top().type==Bytecode::EL_BELOWMAIN)
@@ -2448,14 +2386,10 @@ void KumirVM::do_storearr(uint8_t s, uint16_t id)
                 debugHandler_->appendTextToMargin(lineNo, notice);
         }
         if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
-            if (VariableScope(s)==Bytecode::LOCAL)
-                debugHandler_->debuggerUpdateLocalTableValue(variable.myName(), indeces);
-            else if (VariableScope(s)==Bytecode::GLOBAL) {
-                debugHandler_->debuggerUpdateGlobalTableValue(
-                            variable.moduleName(),
-                            name,
-                            indeces
-                            );
+            if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
+                stacksMutex_->unlock();
+                debugHandler_->debuggerNoticeOnValueChanged(variable, indeces);
+                stacksMutex_->lock();
             }
         }
     }
@@ -2549,25 +2483,7 @@ void KumirVM::do_setref(uint8_t s, uint16_t id)
             if (debugHandler_) {
                 if (contextsStack_.top().moduleContextNo == 0)
                     debugHandler_->appendTextToMargin(lineNo, name);
-            }
-            if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
-                if (VariableScope(s)==Bytecode::LOCAL) {
-                    int dummyIndeces[4];
-                    dummyIndeces[3] = 0;
-                    int targetStackPos = ref.referenceStackContextNo();
-                    debugHandler_->debuggerSetLocalReference(
-                                name,
-                                ref.name(),
-                                dummyIndeces,
-                                targetStackPos==-1
-                                    ? -1
-                                    : contextsStack_.size()-1-targetStackPos,
-                                targetStackPos==-1
-                                    ? ref.moduleName()
-                                    : Kumir::String()
-                                );
-                }
-            }
+            }            
         }
     }
     if (stacksMutex_) stacksMutex_->unlock();
@@ -2690,30 +2606,30 @@ void KumirVM::do_ret()
         contextsStack_.top().runMode=CRM_ToEnd;
     }
     else {
-        lastContext_ = contextsStack_.top();
-        if (debugHandler_ && !blindMode_) {
-            if (lastContext_.type==Bytecode::EL_MAIN
-                    || lastContext_.type==Bytecode::EL_FUNCTION
-                    ) {
-                debuggerPopContext();
+        lastContext_ = contextsStack_.top();        
+        if (lastContext_.type != Bytecode::EL_MAIN &&
+                lastContext_.type != Bytecode::EL_TESTING)
+            // Do not pop last context before program exit
+            // to keep values for debugger in analysis mode
+        {
+            if (debugHandler_ && !blindMode_) {
+                stacksMutex_->unlock();
+                debugHandler_->debuggerNoticeBeforePopContext();
+                stacksMutex_->lock();
+            }
+            contextsStack_.pop();
+            if (debugHandler_ && !blindMode_) {
+                stacksMutex_->unlock();
+                debugHandler_->debuggerNoticeAfterPopContext();
+                stacksMutex_->lock();
             }
         }
-        contextsStack_.pop();
         if (lastContext_.type==Bytecode::EL_INIT
                 && lastContext_.runMode == CRM_OneStep
                 )
         {
             if (contextsStack_.size()>0) {
-                contextsStack_.top().runMode = CRM_OneStep;
-                if (debugHandler_ && !blindMode_
-                        && contextsStack_.top().type==EL_MAIN)
-                {
-                    debuggerPushContext(false,
-                                        contextsStack_.top().name,
-                                        &(contextsStack_.top().locals),
-                                        false
-                                        );
-                }
+                contextsStack_.top().runMode = CRM_OneStep;                
             }
         }
         if (contextsStack_.size()>0) {
@@ -3108,88 +3024,9 @@ void KumirVM::do_inrange()
     nextIP();
 }
 
-void KumirVM::updateDebugger()
-{
-    debugHandler_->debuggerReset();
-    for (int i=0; i<contextsStack_.size(); i++) {
-        const Context & c = contextsStack_.at(i);
-        if (c.type==EL_MAIN || c.type==EL_FUNCTION || c.type==EL_TESTING) {
-            debuggerPushContext(false, c.name, &(c.locals), true);
-            for (size_t i_var=0; i_var<c.locals.size(); i_var++) {
-                const Variable & var = c.locals.at(i_var);
-                if (var.isReference()) {
-                    int referenceIndeces[4];
-                    var.getReferenceIndeces(referenceIndeces);
-                    debugHandler_->debuggerSetLocalReference(
-                                var.myName(),
-                                var.name(),
-                                referenceIndeces,
-                                var.referenceStackContextNo()==-1
-                                ? -1
-                                : i-var.referenceStackContextNo(),
-                                var.referenceStackContextNo()==-1
-                                ? var.moduleName()
-                                : Kumir::String()
-                                );
-                }
-                if (var.dimension()>0) {
-                    int bounds[7];
-                    var.getEffectiveBounds(bounds);
-                    debugHandler_->debuggerUpdateLocalTableBounds(
-                                var.myName(),
-                                bounds
-                                );
-                }
-                if (var.isValid() && var.dimension()==0) {
-                    debugHandler_->debuggerUpdateLocalVariable(
-                                var.myName(),
-                                var.value().toString()
-                                );
-                }
-            }
-        }
-    }
-    for (size_t i_context=0; i_context<moduleContexts_.size(); i_context++) {
-        const ModuleContext & mc = moduleContexts_[i_context];
-        const GlobalsMap & contextGlobals = mc.globals;
-        for (size_t i_module=0; i_module<contextGlobals.size(); i_module++) {
-            const Kumir::String & contextName = i_context==0
-                    ? Kumir::String()
-                    : mc.filename;
-            const Kumir::String & moduleName = Kumir::String();
-            const Kumir::String fullName = moduleName.length()>0
-                    ? moduleName
-                    : contextName;
-            debuggerPushContext(
-                        true,
-                        fullName,
-                        &(contextGlobals[i_module]),
-                        true
-                        );
-            for (size_t i_var=0; i_var<contextGlobals[i_module].size(); i_var++) {
-                const Variable & var = contextGlobals[i_module].at(i_var);
-                if (var.dimension()>0) {
-                    int bounds[7];
-                    var.getEffectiveBounds(bounds);
-                    debugHandler_->debuggerUpdateGlobalTableBounds(
-                                var.moduleName(),
-                                var.myName(),
-                                bounds
-                                );
-                }
-                else if (var.isValid()) {
-                    debugHandler_->debuggerUpdateGlobalVariable(
-                                var.moduleName(),
-                                var.myName(),
-                                var.value().toString()
-                                );
-                }
-            }
-        }
-    }
-}
 
-void KumirVM::do_pause(uint16_t lineNo)
+
+void KumirVM::do_pause(uint16_t )
 {
     if (stacksMutex_) stacksMutex_->lock();
     ContextRunMode prevRunMode = CRM_OneStep;
@@ -3210,7 +3047,6 @@ void KumirVM::do_pause(uint16_t lineNo)
                                                currentContext().columnStart,
                                                currentContext().columnEnd);
         }
-        if (debugHandler_) updateDebugger();
     }
     if (stacksMutex_) stacksMutex_->unlock();
     nextIP();
@@ -3261,7 +3097,7 @@ void KumirVM::setNextCallStepOver()
     ContextRunMode prevMode = currentContext().runMode;
     currentContext().runMode = CRM_OneStep;
     if (prevMode!=CRM_OneStep) {
-        updateDebugger();
+
     }
 }
 
@@ -3377,6 +3213,62 @@ const std::vector<Variable> & KumirVM::getLocals(int frameNo) const
     }
     const Context & c = contextsStack_.at(frameIndex);
     return c.locals;
+}
+
+const std::vector<Variable> *
+KumirVM::getMainModuleGlobals() const
+{
+    if (moduleContexts_.size() == 0)
+        return nullptr;
+    const ModuleContext & context = moduleContexts_.front();
+    const std::vector<Variable> * result = nullptr;
+    const GlobalsMap & allGlobals = context.globals;
+    for (size_t i = allGlobals.size(); i-- > 0; ) {
+        const Kumir::String & currentModuleName = context.moduleNames[i];
+        if (currentModuleName.length() == 0) {
+            const std::vector<Variable> & moduleGlobals = allGlobals.at(i);
+            result = &moduleGlobals;
+            break;
+        }
+    }
+    return result;
+}
+
+std::pair< Kumir::String, const std::vector<Variable> *>
+KumirVM::getLocalsAndName(size_t stackIndex) const
+{
+    std::pair< Kumir::String, const std::vector<Variable> *> result;
+    result.second = nullptr;
+
+    size_t counter = 0;
+    for (size_t i=0; i<contextsStack_.size(); i++) {
+        const Context & context = contextsStack_.at(i);
+        if (context.type == EL_MAIN || context.type == EL_TESTING ||
+                context.type == EL_FUNCTION)
+        {
+            if (counter == stackIndex) {
+                result.first = context.name;
+                result.second = & context.locals;
+                break;
+            }
+            counter ++;
+        }
+    }
+    return result;
+}
+
+size_t KumirVM::functionCallStackSize() const
+{
+    size_t result = 0;
+    for (size_t i=0; i<contextsStack_.size(); i++) {
+        const Context & context = contextsStack_.at(i);
+        if (context.type == EL_MAIN || context.type == EL_TESTING ||
+                context.type == EL_FUNCTION)
+        {
+            result ++;
+        }
+    }
+    return result;
 }
 
 const std::vector<Variable> &

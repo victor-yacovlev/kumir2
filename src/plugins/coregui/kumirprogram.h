@@ -34,7 +34,6 @@ public:
     inline void setDocumentId(int id) { if (e_state==Idle) documentId_ = id; }
     inline int documentId() const { return documentId_; }
     inline void setMainWidget(QWidget * w) { w_mainWidget = w; }
-    inline void setDebuggerWindow(class DebuggerWindow * w) { w_debuggerWindow = w; }
     void setTerminal(Term * t, QDockWidget * w);
     void setBytecodeRun(KPlugin * run);
 

@@ -85,7 +85,7 @@ protected:
     Term * m_terminal;
     QMap<QString,QObject*> m_browserObjects;
     KumirProgram * kumirProgram_;
-    class DebuggerWindow * debugger_;
+    class DebuggerView * debugger_;
     DocBookViewer::DocBookView * helpViewer_;
     QSplitter * bottomSplitter_;
     Shared::CoursesInterface* courseManager_;

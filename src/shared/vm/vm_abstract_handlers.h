@@ -25,6 +25,7 @@
 
 #include "variant.hpp"
 
+
 namespace VM {
 
 
@@ -279,66 +280,18 @@ public:
             uint64_t /*stepsDone*/
             ) { return false; }
 
-    inline virtual bool debuggerReset() { return false; }
+    inline virtual void debuggerReset() {}
+    inline virtual void debuggerNoticeBeforePopContext() {}
+    inline virtual void debuggerNoticeBeforePushContext() {}
+    inline virtual void debuggerNoticeAfterPopContext() {}
+    inline virtual void debuggerNoticeAfterPushContext() {}
+    inline virtual void debuggerNoticeBeforeArrayInitialize(const VM::Variable & /*variable*/,
+                                                            const int /*bounds*/[7]) {}
+    inline virtual void debuggerNoticeAfterArrayInitialize(const VM::Variable & /*variable*/) {}
+    inline virtual void debuggerNoticeOnValueChanged(const VM::Variable & /*variable*/,
+                                                     const int[4] /*indeces*/) {}
 
-    inline virtual bool debuggerPushContext(
-            const Kumir::String & /*contextName*/,
-            const std::deque<Kumir::String> & /*variableNames*/,
-            const std::deque<Kumir::String> & /*typeNames*/,
-            const std::deque<uint8_t> & /*dimensions*/
-            ) { return false; }
 
-    inline virtual bool debuggerSetGlobals(
-            const Kumir::String & /*moduleName*/,
-            const std::deque<Kumir::String> & /*variableNames*/,
-            const std::deque<Kumir::String> & /*typeNames*/,
-            const std::deque<uint8_t> & /*dimensions*/
-            ) { return false; }
-
-    inline virtual bool debuggerPopContext() { return false; }
-
-    inline virtual bool debuggerUpdateLocalVariable(
-            const Kumir::String & /*name*/,
-            const Kumir::String & /*value*/
-            ) { return false; }
-
-    inline virtual bool debuggerUpdateGlobalVariable(
-            const Kumir::String & /*moduleName*/,
-            const Kumir::String & /*name*/,
-            const Kumir::String & /*value*/
-            ) { return false; }
-
-    inline virtual bool debuggerUpdateLocalTableBounds(
-            const Kumir::String & /*name*/,
-            const int[7] /*bounds*/
-            ) { return false; }
-
-    inline virtual bool debuggerUpdateGlobalTableBounds(
-            const Kumir::String & /*moduleName*/,
-            const Kumir::String & /*name*/,
-            const int[7] /*bounds*/
-            ) { return false; }
-
-    inline virtual bool debuggerSetLocalReference(
-            const Kumir::String & /*name*/,
-            const Kumir::String & /*targetName*/,
-            const int[4] /*tableIndeces*/,
-            const int /*stackStepsBackward*/,
-            const Kumir::String & /*global value module name*/
-            ) { return false; }
-
-    inline virtual bool debuggerForceUpdateValues() { return false; }
-
-    inline virtual bool debuggerUpdateLocalTableValue(
-            const Kumir::String & /*name*/,
-            const int[4] /*indeces*/
-            ) { return false; }
-
-    inline virtual bool debuggerUpdateGlobalTableValue(
-            const Kumir::String & /*moduleName*/,
-            const Kumir::String & /*name*/,
-            const int[4] /*indeces*/
-            ) { return false; }
 };
 
 }

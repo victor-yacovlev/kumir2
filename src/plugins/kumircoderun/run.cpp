@@ -16,8 +16,12 @@ class Mutex: public CriticalSectionLocker
 {
 public:
     inline Mutex() { m = new QMutex; }
-    inline void lock() { m->lock(); }
-    inline void unlock() { m->unlock(); }
+    inline void lock() {
+        m->lock();
+    }
+    inline void unlock() {
+        m->unlock();
+    }
     inline ~Mutex() { delete m; }
 private:
     QMutex * m;
@@ -31,6 +35,7 @@ Run::Run(QObject *parent) :
     vm = new KumirVM();
     VMMutex_ = new Mutex;
     vm->setMutex(VMMutex_);
+    variablesModel_ = new KumVariablesModel(vm, VMMutex_, this);
 
     originFunctionDeep_ = 0;
     interactDoneFlag_ = stoppingFlag_ = stepDoneFlag_ = algDoneFlag_ = false;
@@ -109,171 +114,70 @@ void Run::runContinuous()
 }
 
 
-bool Run::debuggerReset()
+void Run::debuggerReset()
 {
-    emit signal_debuggerReset();
-    return true;
+    variablesModel_->clear();
 }
 
-bool Run::debuggerPopContext()
+void Run::debuggerNoticeBeforePopContext()
 {
-    emit signal_debuggerPopContext();
-    return true;
+    int index = variablesModel_->rowCount(QModelIndex()) - 1;
+    variablesModel_->beginRemoveRows(QModelIndex(), index, index);
 }
 
-bool Run::debuggerPushContext(
-        const Kumir::String & contextName,
-        const std::deque<Kumir::String> & names,
-        const std::deque<Kumir::String> & baseTypes,
-        const std::deque<uint8_t> & dimensions)
+void Run::debuggerNoticeAfterPopContext()
 {
-    const QString qContextName = QString::fromStdWString(contextName);
-    QStringList qNames, qBaseTypes;
-    QList<int> qDimensions;
-    for (size_t i=0; i<names.size(); i++) {
-        qNames.push_back(QString::fromStdWString(names.at(i)));
-        qBaseTypes.push_back(QString::fromStdWString(baseTypes.at(i)));
-        qDimensions.push_back(static_cast<int>(dimensions.at(i)));
+    variablesModel_->endRemoveRows();
+}
+
+void Run::debuggerNoticeBeforePushContext()
+{
+    int index = variablesModel_->rowCount(QModelIndex());
+    variablesModel_->beginInsertRows(QModelIndex(), index, index);
+}
+
+void Run::debuggerNoticeAfterPushContext()
+{
+    variablesModel_->endInsertRows();
+}
+
+void Run::debuggerNoticeBeforeArrayInitialize(const Variable & variable,
+                                              const int bounds[7])
+{
+    int firstStart = bounds[0];
+    int firstEnd = bounds[1];
+    int count = firstEnd - firstStart + 1;
+    QModelIndex variableIndex;
+    KumVariableItem * item = nullptr;
+    for (int i=0; i<variablesModel_->cache_.size(); i++) {
+        KumVariableItem * it = variablesModel_->cache_[i];
+        if (it->itemType() == KumVariableItem::Variable) {
+            if (it->variable() == &variable) {
+                item = it;
+                break;
+            }
+        }
     }
-    emit signal_debuggerPushContext(qContextName,
-                                    qNames,
-                                    qBaseTypes,
-                                    qDimensions);
-    return true;
-}
-
-bool Run::debuggerSetGlobals(
-        const Kumir::String & moduleName,
-        const std::deque<Kumir::String> & names,
-        const std::deque<Kumir::String> & baseTypes,
-        const std::deque<uint8_t> & dimensions)
-{
-    const QString qModuleName = QString::fromStdWString(moduleName);
-    QStringList qNames, qBaseTypes;
-    QList<int> qDimensions;
-    for (size_t i=0; i<names.size(); i++) {
-        qNames.push_back(QString::fromStdWString(names.at(i)));
-        qBaseTypes.push_back(QString::fromStdWString(baseTypes.at(i)));
-        qDimensions.push_back(static_cast<int>(dimensions.at(i)));
+    if (item && variablesModel_->modelIndeces_.contains(item)) {
+        variableIndex = variablesModel_->modelIndeces_[item];
     }
-    emit signal_debuggerSetGlobals(qModuleName,
-                                   qNames,
-                                   qBaseTypes,
-                                   qDimensions);
-    return true;
+    variablesModel_->beginInsertRows(variableIndex, 0, count - 1);
 }
 
-bool Run::debuggerUpdateLocalVariable(
-        const Kumir::String & name,
-        const Kumir::String & value)
+void Run::debuggerNoticeAfterArrayInitialize(const Variable & variable)
 {
-    const QString qName = QString::fromStdWString(name);
-    const QString qValue = QString::fromStdWString(value);
-    emit signal_debuggerUpdateLocalVariable(qName, qValue);
-    return true;
+    variablesModel_->endInsertRows();
+    variablesModel_->emitValueChanged(variable, QVector<int>());
 }
 
-bool Run::debuggerUpdateGlobalVariable(
-        const Kumir::String & moduleName,
-        const Kumir::String & name,
-        const Kumir::String & value)
+void Run::debuggerNoticeOnValueChanged(const Variable & variable, const int * indeces)
 {
-    const QString qModuleName = QString::fromStdWString(moduleName);
-    const QString qName = QString::fromStdWString(name);
-    const QString qValue = QString::fromStdWString(value);
-    emit signal_debuggerUpdateGlobalVariable(qModuleName, qName, qValue);
-    return true;
-}
-
-bool Run::debuggerUpdateLocalTableBounds(
-        const Kumir::String & name,
-        const int bounds[7])
-{
-    const QString qName = QString::fromStdWString(name);
-    QList<int> qBounds;
-    int count = bounds[6];
-    for (int i=0; i<count; i++) {
-        qBounds.push_back(bounds[i]);
-    }
-    emit signal_debuggerUpdateLocalTableBounds(qName, qBounds);
-    return true;
-}
-
-bool Run::debuggerUpdateGlobalTableBounds(
-        const Kumir::String & moduleName,
-        const Kumir::String & name,
-        const int bounds[7])
-{
-    const QString qModuleName = QString::fromStdWString(moduleName);
-    const QString qName = QString::fromStdWString(name);
-    QList<int> qBounds;
-    int count = bounds[6];
-    for (int i=0; i<count; i++) {
-        qBounds.push_back(bounds[i]);
-    }
-    emit signal_debuggerUpdateGlobalTableBounds(qModuleName, qName, qBounds);
-    return true;
-}
-
-bool Run::debuggerSetLocalReference(
-        const Kumir::String & name,
-        const Kumir::String & targetName,
-        const int tableIndeces[4],
-        const int stackStepsBackward,
-        const Kumir::String & moduleName
-        )
-{
-    const QString qName = QString::fromStdWString(name);
-    const QString qTargetName = QString::fromStdWString(targetName);
-    const QString qModuleName = QString::fromStdWString(moduleName);
-    QList<int> qIndeces;
-    for (int i=0; i<tableIndeces[3]; i++) {
-        qIndeces.push_back(tableIndeces[i]);
-    }
-    emit signal_debuggerSetLocalReference(
-                qName,
-                qTargetName,
-                qIndeces,
-                stackStepsBackward,
-                qModuleName
-                );
-    return true;
-}
-
-bool Run::debuggerForceUpdateValues()
-{
-    emit signal_debuggerForceUpdateValues();
-    return true;
-}
-
-bool Run::debuggerUpdateLocalTableValue(const Kumir::String &name,
-                                        const int indeces[4]
-                                        )
-{
-    const QString qName = QString::fromStdWString(name);
-    QList<int> qIndeces;
-    for (int i=0; i<indeces[3]; i++) {
-        qIndeces.push_back(indeces[i]);
-    }
-    emit signal_debuggerUpdateLocalTableValue(qName, qIndeces);
-    return true;
-}
-
-
-bool Run::debuggerUpdateGlobalTableValue(
-        const Kumir::String &moduleName,
-        const Kumir::String &name,
-        const int indeces[4]
-        )
-{
-    const QString qModuleName = QString::fromStdWString(moduleName);
-    const QString qName = QString::fromStdWString(name);
-    QList<int> qIndeces;
-    for (int i=0; i<indeces[3]; i++) {
-        qIndeces.push_back(indeces[i]);
-    }
-    emit signal_debuggerUpdateGlobalTableValue(qModuleName, qName, qIndeces);
-    return true;
+    QVector<int> ind = indeces==nullptr
+            ? QVector<int>()
+            : QVector<int>(indeces[3]);
+    if (ind.size() > 0)
+        qMemCopy(ind.data(), indeces, indeces[3] * sizeof(int));
+    variablesModel_->emitValueChanged(variable, ind);
 }
 
 bool Run::appendTextToMargin(int l, const String & s)

@@ -48,6 +48,7 @@ public:
     QDateTime loadedProgramVersion() const;
     void setSourceDirName(int documentId, const QString &dirPath);
     QVariant valueStackTopItem() const;
+    QAbstractItemModel * debuggerVariablesViewModel() const;
 
     QMap<QString,QVariant> getScalarLocalValues(int frameNo) const;
     QMap<QString,QVariant> getScalarGlobalValues(const QString & moduleName) const;

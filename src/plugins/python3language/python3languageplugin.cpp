@@ -861,6 +861,11 @@ unsigned long int Python3LanguagePlugin::stepsCounted() const
     return WORKER->stepsCounted;
 }
 
+QAbstractItemModel * Python3LanguagePlugin::debuggerVariablesViewModel() const
+{
+    return 0;
+}
+
 } // namespace
 
 Q_EXPORT_PLUGIN(Python3Language::Python3LanguagePlugin)

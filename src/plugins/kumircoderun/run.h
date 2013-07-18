@@ -5,6 +5,7 @@
 #define DO_NOT_DECLARE_STATIC
 #include "vm/vm.hpp"
 #include "interfaces/actorinterface.h"
+#include "kumvariablesmodel.h"
 
 namespace KumirCodeRun {
 
@@ -42,6 +43,10 @@ public:
     void evaluateNextInstruction();
     bool canStepOut() const;
     QVariant valueStackTopItem() const;
+    inline QAbstractItemModel* variablesModel() const {
+        return variablesModel_;
+    }
+
 
 public slots:
     void lockVMMutex();
@@ -61,37 +66,15 @@ public slots:
     bool appendTextToMargin(int lineNo, const String & s);
     bool clearMargin(int from, int to);
 
-    bool debuggerReset();
-    bool debuggerPopContext();
-    bool debuggerPushContext(const Kumir::String &,
-                             const std::deque<Kumir::String> &,
-                             const std::deque<Kumir::String> &,
-                             const std::deque<uint8_t> &);
-    bool debuggerSetGlobals(const Kumir::String &,
-                            const std::deque<Kumir::String> &,
-                            const std::deque<Kumir::String> &,
-                            const std::deque<uint8_t> &);
-    bool debuggerUpdateLocalVariable(const Kumir::String &,
-                                const Kumir::String &);
-    bool debuggerUpdateGlobalVariable(const Kumir::String &,
-                                      const Kumir::String &,
-                                const Kumir::String &);
-    bool debuggerUpdateLocalTableBounds(const Kumir::String &, const int[7]);
-    bool debuggerUpdateGlobalTableBounds(const Kumir::String &,
-                                        const Kumir::String &, const int[7]);
-    bool debuggerSetLocalReference(
-            const Kumir::String &,
-            const Kumir::String &,
-            const int[4],
-            const int,
-            const Kumir::String &
-            );
-    bool debuggerForceUpdateValues();
-    bool debuggerUpdateLocalTableValue(const Kumir::String & name,
-                                       const int indeces[4]);
-    bool debuggerUpdateGlobalTableValue(const Kumir::String &,
-                                       const Kumir::String & name,
-                                       const int indeces[4]);
+    void debuggerReset();
+    void debuggerNoticeBeforePopContext();
+    void debuggerNoticeAfterPopContext();
+    void debuggerNoticeBeforePushContext();
+    void debuggerNoticeAfterPushContext();
+    void debuggerNoticeBeforeArrayInitialize(const VM::Variable &, const int[7]);
+    void debuggerNoticeAfterArrayInitialize(const VM::Variable &);
+    void debuggerNoticeOnValueChanged(const VM::Variable &, const int *);
+
 
     void handleAlgorhitmDone(int lineNo, quint32 colStart, quint32 colEnd);
     void handlePauseRequest();
@@ -189,6 +172,7 @@ protected :
     QVariant funcResult_;
     QString funcError_;
     mutable class Mutex * VMMutex_;
+    KumVariablesModel * variablesModel_;
 
 };
 

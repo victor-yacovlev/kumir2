@@ -7,15 +7,15 @@
 
 namespace KumirCodeRun {
 
-class Plugin
+class KumirRunPlugin
         : public ExtensionSystem::KPlugin
         , public Shared::RunInterface
 {
     Q_OBJECT
     Q_INTERFACES(Shared::RunInterface)
 public:
-    explicit Plugin();
-    ~Plugin();
+    explicit KumirRunPlugin();
+    ~KumirRunPlugin();
 
 
     bool canStepOut() const;
@@ -29,6 +29,7 @@ public:
     QPair<quint32,quint32> currentColumn() const;
     inline QDateTime loadedProgramVersion() const { return loadedVersion_; }
     unsigned long int stepsCounted() const;
+    QAbstractItemModel * debuggerVariablesViewModel() const;
 
     inline bool isGuiRequired() { return false; }
     QVariant valueStackTopItem() const;

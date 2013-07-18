@@ -2,7 +2,7 @@
 #include "mainwindow.h"
 #include "extensionsystem/pluginmanager.h"
 #include "widgets/secondarywindow.h"
-#include "debuggerwindow.h"
+#include "debuggerview.h"
 #include "ui_mainwindow.h"
 #include "statusbar.h"
 #ifdef Q_OS_MACX
@@ -363,7 +363,7 @@ QString Plugin::initialize(const QStringList & parameters)
     debuggerPlace_->setVisible(false);
 
 
-    debugger_ = new DebuggerWindow(plugin_kumirCodeRun);
+    debugger_ = new DebuggerView(plugin_kumirCodeRun);
     Widgets::SecondaryWindow * debuggerWindow = new Widgets::SecondaryWindow(
                 debugger_,
                 debuggerPlace_,
@@ -385,57 +385,56 @@ QString Plugin::initialize(const QStringList & parameters)
     connect(debuggerWindow->toggleViewAction(), SIGNAL(toggled(bool)),
             mainWindow_->ui->actionVariables, SLOT(setChecked(bool)));
 
-    connect(kumirRunner, SIGNAL(debuggerReset()),
-            debugger_, SLOT(reset()));
-    connect(kumirRunner, SIGNAL(debuggerPopContext()),
-            debugger_, SLOT(popContext()));
-    connect(kumirRunner,
-            SIGNAL(debuggerPushContext(QString,QStringList,QStringList,QList<int>)),
-            debugger_,
-            SLOT(pushContext(QString,QStringList,QStringList,QList<int>)));
-    connect(kumirRunner,
-            SIGNAL(debuggerUpdateLocalVariable(QString,QString)),
-            debugger_,
-            SLOT(updateLocalVariable(QString,QString)));
-    connect(kumirRunner,
-            SIGNAL(debuggerUpdateGlobalVariable(QString,QString,QString)),
-            debugger_,
-            SLOT(updateGlobalVariable(QString,QString,QString)));
-    connect(kumirRunner,
-            SIGNAL(debuggerUpdateLocalTableBounds(QString,QList<int>)),
-            debugger_,
-            SLOT(updateLocalTableBounds(QString,QList<int>)));
-    connect(kumirRunner,
-            SIGNAL(debuggerUpdateGlobalTableBounds(QString,QString,QList<int>)),
-            debugger_,
-            SLOT(updateGlobalTableBounds(QString,QString,QList<int>)));
-    connect(kumirRunner,
-            SIGNAL(debuggerSetLocalReference(QString,QString,QList<int>,int,QString)),
-            debugger_,
-            SLOT(setLocalReference(QString,QString,QList<int>,int,QString)));
-    connect(kumirRunner,
-            SIGNAL(debuggerForceUpdateValues()),
-            debugger_,
-            SLOT(updateAllValues()));
-    connect(kumirRunner,
-            SIGNAL(debuggerUpdateLocalTableValue(QString,QList<int>)),
-            debugger_,
-            SLOT(updateLocalTableValue(QString,QList<int>)));
-    connect(kumirRunner,
-            SIGNAL(debuggerUpdateGlobalTableValue(QString,QString,QList<int>)),
-            debugger_,
-            SLOT(updateGlobalTableValue(QString,QString,QList<int>)));
+//    connect(kumirRunner, SIGNAL(debuggerReset()),
+//            debugger_, SLOT(reset()));
+//    connect(kumirRunner, SIGNAL(debuggerPopContext()),
+//            debugger_, SLOT(popContext()));
+//    connect(kumirRunner,
+//            SIGNAL(debuggerPushContext(QString,QStringList,QStringList,QList<int>)),
+//            debugger_,
+//            SLOT(pushContext(QString,QStringList,QStringList,QList<int>)));
+//    connect(kumirRunner,
+//            SIGNAL(debuggerUpdateLocalVariable(QString,QString)),
+//            debugger_,
+//            SLOT(updateLocalVariable(QString,QString)));
+//    connect(kumirRunner,
+//            SIGNAL(debuggerUpdateGlobalVariable(QString,QString,QString)),
+//            debugger_,
+//            SLOT(updateGlobalVariable(QString,QString,QString)));
+//    connect(kumirRunner,
+//            SIGNAL(debuggerUpdateLocalTableBounds(QString,QList<int>)),
+//            debugger_,
+//            SLOT(updateLocalTableBounds(QString,QList<int>)));
+//    connect(kumirRunner,
+//            SIGNAL(debuggerUpdateGlobalTableBounds(QString,QString,QList<int>)),
+//            debugger_,
+//            SLOT(updateGlobalTableBounds(QString,QString,QList<int>)));
+//    connect(kumirRunner,
+//            SIGNAL(debuggerSetLocalReference(QString,QString,QList<int>,int,QString)),
+//            debugger_,
+//            SLOT(setLocalReference(QString,QString,QList<int>,int,QString)));
+//    connect(kumirRunner,
+//            SIGNAL(debuggerForceUpdateValues()),
+//            debugger_,
+//            SLOT(updateAllValues()));
+//    connect(kumirRunner,
+//            SIGNAL(debuggerUpdateLocalTableValue(QString,QList<int>)),
+//            debugger_,
+//            SLOT(updateLocalTableValue(QString,QList<int>)));
+//    connect(kumirRunner,
+//            SIGNAL(debuggerUpdateGlobalTableValue(QString,QString,QList<int>)),
+//            debugger_,
+//            SLOT(updateGlobalTableValue(QString,QString,QList<int>)));
 
-    connect(kumirRunner,
-            SIGNAL(debuggerSetGlobals(QString,QStringList,QStringList,QList<int>)),
-            debugger_,
-            SLOT(setGlobals(QString,QStringList,QStringList,QList<int>))
-            );
+//    connect(kumirRunner,
+//            SIGNAL(debuggerSetGlobals(QString,QStringList,QStringList,QList<int>)),
+//            debugger_,
+//            SLOT(setGlobals(QString,QStringList,QStringList,QList<int>))
+//            );
 
     connect(kumirProgram_, SIGNAL(activateDocumentTab(int)),
             mainWindow_, SLOT(activateDocumentTab(int)));
 
-    kumirProgram_->setDebuggerWindow(debugger_);
 
 
 
@@ -562,6 +561,7 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
         mainWindow_->setFocusOnCentralWidget();
         mainWindow_->unlockActions();
         debugger_->reset();
+        debugger_->setDebuggerEnabled(false);
     }
     else if (state==ExtensionSystem::GS_Observe) {
 //        m_kumirStateLabel->setText(tr("Observe"));
@@ -577,6 +577,7 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
     else if (state==ExtensionSystem::GS_Pause) {
 //        m_kumirStateLabel->setText(tr("Pause"));
         mainWindow_->lockActions();
+        debugger_->setDebuggerEnabled(true);
     }
     else if (state==ExtensionSystem::GS_Input) {
 //        m_kumirStateLabel->setText(tr("Pause"));

@@ -19,7 +19,7 @@ endif(MSVC)
 if(NOT MSVC)
     set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
     if(CMAKE_BUILD_TYPE MATCHES Debug)
-        set(CMAKE_CXX_FLAGS "-Werror -Wreturn-type ${CMAKE_CXX_FLAGS}")
+        set(CMAKE_CXX_FLAGS "-Werror -Wreturn-type -O0 ${CMAKE_CXX_FLAGS}")
     endif()
 endif()
 
