@@ -20,7 +20,7 @@ cursFile="";
      ui->setupUi(this);
      ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
      ui->treeView->setIconSize(QSize(25,25));
-
+     ui->menu->hide();
      ui->treeView->setStyleSheet("icon-size: 25px;font-size: 14px;");
      settings = new QSettings("NIISI RAS","Kumir");
      settings->setIniCodec("UTF-8");

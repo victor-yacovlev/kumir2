@@ -3990,7 +3990,7 @@ int RobotModule::SaveToFile(QString p_FileName)
         connect(textEditBtn,SIGNAL(toggled(bool)),this,SLOT(changeEditMode(bool)));
         connect(radEditBtn,SIGNAL(toggled(bool)),this,SLOT(changeEditMode(bool)));
         connect(tmpEditBtn,SIGNAL(toggled(bool)),this,SLOT(changeEditMode(bool)));
-        
+        setMinimumWidth ( 30 );
         c_scale=1;
       //  setRenderHint(QPainter::Antialiasing);
     };
