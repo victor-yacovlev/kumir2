@@ -1,6 +1,6 @@
 #include <QtCore>
 #include <QtGui>
-#include <QtScript>
+#include <QtXml>
 
 #include "macro.h"
 
@@ -33,26 +33,28 @@ extern QString dumpMacro(Macro &m)
     return result;
 }
 
-extern bool loadMacro(const QScriptValue &v, Macro &m)
+extern bool loadMacro(const QDomElement &v, Macro &m)
 {
     m.action = 0;
     m.commands.clear();
-    m.title = v.property("title").toString();
-    const QString key = v.property("key").toString();
+    m.title = v.attribute("title");
+    const QString key = v.attribute("key");
     if (key.length()!=1)
         return false;
     m.key = key[0];
-    quint32 commandsCount = v.property("commands").property("length").toUInt32();
-    if (commandsCount==0)
-        return false;
-    for (quint32 i=0; i<commandsCount; i++) {
-        QScriptValue cmd = v.property("commands").property(i);
-        KeyCommand command(loadKeyCommandType(cmd.property("command").toString()),
-                           cmd.property("text").toString()
-                           );
-        m.commands << command;
+    const QDomNodeList commands = v.elementsByTagName("command");
+    for (int i=0; i<commands.count(); i++) {
+        const QDomElement cmd = commands.at(i).toElement();
+        QString text = cmd.attribute("text");
+        text.replace("\\n", "\n");
+        text.replace("\\\\", "\\");
+        KeyCommand command(
+                    loadKeyCommandType(cmd.attribute("name")),
+                    text
+                    );
+        m.commands.push_back(command);
     }
-    return true;
+    return m.commands.size() > 0;
 }
 
 extern QList<Macro> loadFromFile(const QString &fileName)
@@ -60,22 +62,16 @@ extern QList<Macro> loadFromFile(const QString &fileName)
     QList<Macro> result;
     QFile f(fileName);
     if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
-        QTextStream ts(&f);
-        ts.setCodec("UTF-8");;
-        ts.setAutoDetectUnicode(true);
-        const QString data = ts.readAll();
-        f.close();
-        QScriptEngine e;
-        QScriptValue v = e.evaluate(data);
-        if (v.isArray()) {
-            quint32 length = v.property("length").toUInt32();
-            for (quint32 i=0; i<length; i++) {
-                QScriptValue vv = v.property(i);
-                Macro m;
-                if (loadMacro(vv, m))
-                    result << m;
+        QDomDocument doc;
+        doc.setContent(&f);
+        const QDomNodeList macros = doc.elementsByTagName("macro");
+        for (int i=0; i<macros.count(); i++) {
+            Macro macro;
+            if (loadMacro(macros.at(i).toElement(), macro)) {
+                result << macro;
             }
         }
+        f.close();
     }
     return result;
 }

@@ -3,7 +3,7 @@
 
 #include <QtCore>
 #include <QtGui>
-#include <QtScript>
+#include <QtXml>
 
 #include "keycommand.h"
 
@@ -17,7 +17,7 @@ struct Macro {
 };
 
 extern QString dumpMacro(Macro & m);
-extern bool loadMacro(const QScriptValue & v, Macro & m);
+extern bool loadMacro(const QDomElement & v, Macro & m);
 extern QList<Macro> loadFromFile(const QString &fileName);
 extern bool saveToFile(const QString &fileName, const QList<Macro> & macros);
 
