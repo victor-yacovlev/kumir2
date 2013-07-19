@@ -69,13 +69,16 @@ void GroupBox::paintEvent(QPaintEvent *event)
     btnOpt.state = QStyle::State_Children | (!isCollapsed()? QStyle::State_Open : QStyle::State_None);
     btnOpt.rect = QRect(4,4,16,16);
     p.save();
-    style()->drawPrimitive(QStyle::PE_IndicatorBranch, &btnOpt, &p, this);
+    style()->drawPrimitive(isCollapsed()
+                           ? QStyle::PE_IndicatorArrowRight
+                           : QStyle::PE_IndicatorArrowDown,
+                           &btnOpt, &p, this);
     p.restore();
     QFont f = font();
     f.setBold(true);
     p.setFont(f);
     int textHeight = QFontMetrics(f).height();
-    p.drawText(24,textHeight,title());
+    p.drawText(24,textHeight + 2,title());
     event->accept();
 }
 #endif
