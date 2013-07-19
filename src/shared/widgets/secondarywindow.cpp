@@ -310,7 +310,16 @@ void SecondaryWindow::setVisible(bool visible)
     pImpl_->visibleFlag_ = visible; // required for saving state
     if (pImpl_->dockPlace_) {
         if (visible && !isFloating()) {
-            emit docked(pImpl_->dockPlace_, windowTitle());
+            bool alreadyDocked = false;
+            if (parentWidget()) {
+                const QString parentClass = parentWidget()->metaObject()->className();
+                alreadyDocked =
+                        parentClass == "QTabWidget" ||
+                        parentClass == "QStackedWidget";
+            }
+            if (!alreadyDocked) {
+                emit docked(pImpl_->dockPlace_, windowTitle());
+            }
         }
         else if (!visible && !isFloating()) {
             emit undocked(pImpl_->dockPlace_);

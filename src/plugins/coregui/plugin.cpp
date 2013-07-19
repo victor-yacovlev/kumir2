@@ -454,10 +454,22 @@ void Plugin::handleDebuggerDocked(QWidget *w)
 }
 
 void Plugin::handleSecondaryWindowDocked(QWidget * w, const QString & title)
-{
-    actorsDockPlace_->addTab(w, w->windowTitle());
-    actorsDockPlace_->setCurrentWidget(w);
+{    
+    bool alreadyInDock = false;
+    for (int i=0; i<actorsDockPlace_->count(); i++) {
+        const QWidget * child = actorsDockPlace_->widget(i);
+        if (child == w) {
+            alreadyInDock = true;
+        }
+    }
+    const QString tabTitle = w->windowTitle();
+    if (!alreadyInDock) {
+        actorsDockPlace_->addTab(w, tabTitle);
+    }
+    const int index = actorsDockPlace_->indexOf(w);
+    actorsDockPlace_->setCurrentIndex(index);
     actorsDockPlace_->setVisible(true);
+
     QList<int> bottomSplitterSizes = bottomSplitter_->sizes();
     int totalWidth = bottomSplitterSizes[1] + bottomSplitterSizes[2];
     bottomSplitterSizes[2] = w->minimumSizeHint().width();
