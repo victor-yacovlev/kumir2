@@ -816,7 +816,7 @@ void Python3LanguagePlugin::handlePythonError(const QString &message)
 
 void Python3LanguagePlugin::handlePythonLineChanged(int lineNo)
 {
-    Q_EMIT lineChanged(lineNo);
+    Q_EMIT lineChanged(lineNo, 0, 0);
 }
 
 void Python3LanguagePlugin::handlePythonExecutionPaused()

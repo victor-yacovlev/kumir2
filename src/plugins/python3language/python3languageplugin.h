@@ -86,11 +86,11 @@ public:
     void handlePythonStepsCounterChanged(unsigned long int);
 
 Q_SIGNALS:
-    void updateStepsCounter(ulong);
+    void updateStepsCounter(quint64);
     void stopped(int reason);
     void outputRequest(const QString & output);
     void errorOutputRequest(const QString & output);
-    void lineChanged(int lineNo);
+    void lineChanged(int lineNo, quint32, quint32);
 
     void finishInput(const QVariantList & data);
     void inputRequest(const QString & format);
