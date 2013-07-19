@@ -94,11 +94,12 @@ int showErrorMessage(const String & message, int code) {
     }
     else {
         const std::string localMessage = Coder::encode(UTF8, message);
-        std::cout << "Content-type: text/html;charset=utf-8\n\n\n";
-        std::cout << "<html><head><title>An error occured on server</title></head>\n";
-        std::cout << "<body>\n";
+//        std::cout << "Content-type: text/html;charset=utf-8\n\n";
+//        std::cout << "<html><head><title>An error occured on server</title></head>\n";
+//        std::cout << "<body>\n";
+        std::cout << "Content-type: text/plain;charset=utf-8\n\n";
         std::cout << localMessage << std::endl;
-        std::cout << "</body></html>\n";
+//        std::cout << "</body></html>\n";
         return 0;
     }
 }

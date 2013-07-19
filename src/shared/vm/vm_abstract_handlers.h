@@ -34,9 +34,8 @@ namespace VM {
 
 class CriticalSectionLocker {
 public:
-    virtual void lock() = 0;
-    virtual void unlock() = 0;
-protected:
+    virtual void lock() {}
+    virtual void unlock() {}
     // destructor MUST me virtual even not need
     inline virtual ~CriticalSectionLocker() {}
 };

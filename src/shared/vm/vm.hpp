@@ -839,7 +839,10 @@ void KumirVM::reset()
     }
     Kumir::Files::setConsoleInputBuffer(consoleInputBuffer_);
     Kumir::Files::setConsoleOutputBuffer(consoleOutputBuffer_);
-
+    if (stacksMutex_ == nullptr) {
+        static CriticalSectionLocker dummyMutex;
+        stacksMutex_ = &dummyMutex;
+    }
 }
 
 
