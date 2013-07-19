@@ -619,7 +619,9 @@ void Plugin::start()
 //        ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
 //    }
 //    else {
-        ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
+        if (!sessionsDisableFlag_) {
+            ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
+        }
         updateSettings();
         restoreSession();
     }
