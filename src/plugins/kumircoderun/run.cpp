@@ -138,7 +138,7 @@ void Run::debuggerNoticeBeforePushContext()
 
 void Run::debuggerNoticeAfterPushContext()
 {
-    variablesModel_->endInsertRows();
+    variablesModel_->endInsertRows();    
 }
 
 void Run::debuggerNoticeBeforeArrayInitialize(const Variable & variable,

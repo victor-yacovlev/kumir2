@@ -11,62 +11,63 @@ template <class T> class Stack
 public:
     inline void push(const T& t)
     {
-        i_currentIndex ++;
-        if (i_currentIndex>=p_data.size()) {
-            p_data.resize(p_data.size()+i_deltaSize);
+        currentIndex_ ++;
+        if (currentIndex_>=data_.size()) {
+            data_.resize(data_.size()+deltaSize_);
         }
-        p_data[i_currentIndex] = t;
+        data_[currentIndex_] = t;
     }
 
     inline T pop()
     {
-        i_currentIndex--;
-        return p_data[i_currentIndex+1];
+        currentIndex_--;
+        return data_[currentIndex_+1];
     }
 
     inline T& top()
     {
-        return p_data[i_currentIndex];
+        return data_[currentIndex_];
     }
 
     inline const T& top() const
     {
-        return p_data[i_currentIndex];
+        return data_[currentIndex_];
     }
 
     inline T& at(int index)
     {
-        return p_data[index];
+        return data_[index];
     }
 
     inline const T& at(int index) const
     {
-        return p_data[index];
+        return data_[index];
     }
 
-    inline int size() const { return i_currentIndex+1; }
+    inline int size() const { return currentIndex_+1; }
+    inline int reservedSize() const { return data_.size(); }
 
     inline void reset()
     {
-        p_data = std::vector<T>(i_initialSize);
-        i_currentIndex = -1;
+        data_ = std::vector<T>(initialSize_);
+        currentIndex_ = -1;
     }
 
     inline ~Stack()
     {
-        p_data.clear();
+        data_.clear();
     }
 
 private:
-    int i_initialSize;
-    int i_deltaSize;
-    int i_currentIndex;
-    std::vector<T> p_data;
+    int initialSize_;
+    int deltaSize_;
+    int currentIndex_;
+    std::vector<T> data_;
 public:
     inline Stack() {
-        i_initialSize = i_deltaSize = 100;
-        i_currentIndex = 0;
-        p_data = std::vector<T>(100);
+        initialSize_ = deltaSize_ = 100;
+        currentIndex_ = 0;
+        data_ = std::vector<T>(100);
     }
 };
 

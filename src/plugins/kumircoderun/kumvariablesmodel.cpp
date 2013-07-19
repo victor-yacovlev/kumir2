@@ -79,29 +79,51 @@ QModelIndex KumVariablesModel::topLevelIndex(int row) const
         }
     }
     else {
-        size_t stackIndex = size_t(row + globalsOffset);
+        const VM::Context * mainContext = nullptr;
         mutex_->lock();
-        size_t stackSize = vm_->functionCallStackSize();
-        mutex_->unlock();
-        if (stackIndex < stackSize) {
-            mutex_->lock();
-            std::pair< std::wstring, TableOfVariables * > stackItem =
-                    vm_->getLocalsAndName(stackIndex);
-            mutex_->unlock();
-            for (int i=0; i<cache_.size(); i++) {
-                KumVariableItem * item = cache_[i];
-                if (item->table() == stackItem.second) {
-                    result = item;
-                    break;
+        const VM::Stack<VM::Context> & stack = vm_->callStack();
+        for (int i=0; i<stack.reservedSize(); i++) {
+            const VM::Context & context = stack.at(i);
+            if (context.type == Bytecode::EL_MAIN) {
+                mainContext = &context;
+                break;
+            }
+        }
+        QString algorithmName;
+        TableOfVariables * locals = nullptr;
+        if ( (row - globalsOffset == 0) && mainContext ) {
+            algorithmName = QString::fromStdWString(mainContext->name);
+            locals = &(mainContext->locals);
+        }
+        else {
+            int offset = globalsOffset;
+            if (mainContext)
+                offset += 1;
+            int index = row - offset;
+            int counter = 0;
+            for (int i=0; i<stack.size(); i++) {
+                const VM::Context & context = stack.at(i);
+                if (context.type == Bytecode::EL_FUNCTION) {
+                    counter += 1;
+                    if (index == counter) {
+                        algorithmName = QString::fromStdWString(context.name);
+                        locals = &(context.locals);
+                        break;
+                    }
                 }
-
             }
-            if (result == nullptr) {
-                const QString algorithmName =
-                        QString::fromStdWString(stackItem.first);
-                result = new KumVariableItem(stackItem.second, row, algorithmName);
-                cache_.push_back(result);
+        }
+        mutex_->unlock();
+        for (int i=0; i<cache_.size(); i++) {
+            KumVariableItem * item = cache_[i];
+            if (item->table() == locals) {
+                result = item;
+                break;
             }
+        }
+        if (result == nullptr) {
+            result = new KumVariableItem(locals, row, algorithmName);
+            cache_.push_back(result);
         }
     }
     return createIndex(row, 0, result);
@@ -252,7 +274,26 @@ int KumVariablesModel::rowCount(const QModelIndex &parent) const
     if (!parent.isValid()) {
         // top level item
         mutex_->lock();
-        int topLevelItemsCount = vm_->functionCallStackSize();
+        int topLevelItemsCount = 0;
+        const VM::Stack<VM::Context> & stack = vm_->callStack();
+        bool hasMain =false;
+        for (size_t i=0; i<stack.size(); i++) {
+            // Calculate function calls
+            const VM::Context & context = stack.at(i);
+            if (context.type == Bytecode::EL_FUNCTION) {
+                topLevelItemsCount += 1;
+            }
+        }
+        for (size_t i=0; i<stack.reservedSize(); i++) {
+            const VM::Context & context = stack.at(i);
+            if (context.type == Bytecode::EL_MAIN) {
+                hasMain = true;
+                break;
+            }
+        }
+        if (hasMain) {
+            topLevelItemsCount += 1;  // Always show main context
+        }
         TableOfVariables * globalsTable = vm_->getMainModuleGlobals();
         if (globalsTable && globalsTable->size() > 0)
             topLevelItemsCount ++;
@@ -459,6 +500,9 @@ QString KumVariableItem::name() const
     QString result;
     if (type_ == Variable) {
         result = QString::fromStdWString(variable_->myName());
+        if (variable_->name() == variable_->algorhitmName()) {
+            result = QString::fromUtf8("знач");
+        }
         if (variable_->dimension() > 0) {
             int bounds[7];
             result += "[";
@@ -542,8 +586,6 @@ QString KumVariableItem::array1Representation(
         qMemCopy(ind, indeces.constData(), indeces.size() * sizeof(int));
     int start = bounds[2 * indexToVary];
     int end = bounds[2 * indexToVary + 1];
-    if (start == end)
-        return "";
     for (int i=start; i<=end; i++) {
         if (i > start)
             result += ", ";
@@ -588,8 +630,6 @@ QString KumVariableItem::array2Representation(
     int indexToVary = indeces.size();
     int start = bounds[2 * indexToVary];
     int end = bounds[2 * indexToVary + 1];
-    if (start == end)
-        return "";
     QVector<int> ind(indeces.size() + 1);
     if (indeces.size() > 0)
         qMemCopy(ind.data(), indeces.constData(), indeces.size() * sizeof(int));
@@ -622,8 +662,6 @@ QString KumVariableItem::array3Representation(
     int indexToVary = indeces.size();
     int start = bounds[2 * indexToVary];
     int end = bounds[2 * indexToVary + 1];
-    if (start == end)
-        return "";
     QVector<int> ind(indeces.size() + 1);
     if (indeces.size() > 0)
         qMemCopy(ind.data(), indeces.constData(), indeces.size() * sizeof(int));

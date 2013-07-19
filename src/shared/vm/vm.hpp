@@ -102,6 +102,7 @@ public /*methods*/:
     getLocalsAndName(size_t stackIndex) const;
 
     inline size_t functionCallStackSize() const;
+    inline const Stack<Context> & callStack() const { return contextsStack_; }
 
     /** Returns last error */
     inline const String & error() const {
@@ -869,6 +870,9 @@ void KumirVM::evaluateNextInstruction()
         ip = 0;
     }
     const std::vector<Instruction> * program = contextsStack_.top().program;
+    if (ip >= program->size()) {
+        return;
+    }
     const Instruction & instr = program->at(ip);
     switch (instr.type) {
     case CALL:
@@ -2181,12 +2185,22 @@ void KumirVM::do_updarr(uint8_t s, uint16_t id)
         for (int i=0; i<dim*2; i++) {
             bounds[i] = valuesStack_.pop().toInt();
         }
+        if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
+            stacksMutex_->unlock();
+            debugHandler_->debuggerNoticeBeforeArrayInitialize(var, bounds);
+            stacksMutex_->lock();
+        }
         var.updateBounds(bounds);
+        if (debugHandler_ && currentContext().runMode==CRM_OneStep) {
+            stacksMutex_->unlock();
+            debugHandler_->debuggerNoticeAfterArrayInitialize(var);
+            stacksMutex_->lock();
+        }
         var.getEffectiveBounds(effectiveBounds);
         if (!blindMode_)
             name = var.myName();
         error_ = Kumir::Core::getError();
-        const int lineNo = contextsStack_.top().lineNo;
+        const int lineNo = contextsStack_.top().lineNo;        
         if (lineNo!=-1 &&
                 !blindMode_ &&
                 contextsStack_.top().moduleContextNo == 0 &&
@@ -2608,18 +2622,18 @@ void KumirVM::do_ret()
     }
     else {
         lastContext_ = contextsStack_.top();        
-        if (lastContext_.type != Bytecode::EL_MAIN &&
-                lastContext_.type != Bytecode::EL_TESTING)
+//        if (lastContext_.type != Bytecode::EL_MAIN &&
+//                lastContext_.type != Bytecode::EL_TESTING)
             // Do not pop last context before program exit
             // to keep values for debugger in analysis mode
         {
-            if (debugHandler_ && !blindMode_) {
+            if (debugHandler_ && !blindMode_ && lastContext_.type == Bytecode::EL_FUNCTION) {
                 stacksMutex_->unlock();
                 debugHandler_->debuggerNoticeBeforePopContext();
                 stacksMutex_->lock();
             }
             contextsStack_.pop();
-            if (debugHandler_ && !blindMode_) {
+            if (debugHandler_ && !blindMode_ && lastContext_.type == Bytecode::EL_FUNCTION) {
                 stacksMutex_->unlock();
                 debugHandler_->debuggerNoticeAfterPopContext();
                 stacksMutex_->lock();
