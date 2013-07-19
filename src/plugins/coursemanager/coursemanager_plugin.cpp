@@ -156,20 +156,21 @@ QAction* Plugin::actionPerformCheck() const
 
 QWidget* Plugin::settingsEditorPage()
 {
-    if (!settingsEditorPage_) {
-        typedef ExtensionSystem::DeclarativeSettingsPage::Entry Entry;
-        typedef QMap<QString,Entry> EntryMap;
+    return nullptr;
+//    if (!settingsEditorPage_) {
+//        typedef ExtensionSystem::DeclarativeSettingsPage::Entry Entry;
+//        typedef QMap<QString,Entry> EntryMap;
 
-        EntryMap entries; // TODO implement me
+//        EntryMap entries; // TODO implement me
 
-        settingsEditorPage_ = new ExtensionSystem::DeclarativeSettingsPage(
-                    pluginSpec().name,      // Plugin name
-                    tr("Course Manager"),   // Title in setting window
-                    mySettings(),           // Settings object
-                    entries                 // A map of configurable items
-                    );
-    }
-    return settingsEditorPage_;
+//        settingsEditorPage_ = new ExtensionSystem::DeclarativeSettingsPage(
+//                    pluginSpec().name,      // Plugin name
+//                    tr("Course Manager"),   // Title in setting window
+//                    mySettings(),           // Settings object
+//                    entries                 // A map of configurable items
+//                    );
+//    }
+//    return settingsEditorPage_;
 }
 
 void Plugin::setEnabled(bool value)
