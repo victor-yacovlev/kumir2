@@ -577,10 +577,11 @@ inline ValueKind kindFromString(const std::string &ss)
 inline void replaceAll(String &str, const String & from, const String & to)
 {
     size_t fromSize = from.length();
+    size_t toSize = to.size();
     size_t startPos = 0;
     while ((startPos = str.find(from, startPos))!=String::npos) {
         str.replace(startPos, fromSize, to);
-        startPos += fromSize;
+        startPos += toSize;
     }
 }
 
@@ -625,7 +626,12 @@ inline std::string constantToTextStream(const TableElem & e)
         os << ( val? "true" : "false" );
     }
     else {
-        os << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.initialValue.toString())) << "\"";
+        const Kumir::String stringConstant = e.initialValue.toString();
+        const Kumir::String screenedValue = screenString(stringConstant);
+        const std::string utf8Value = Kumir::Coder::encode(Kumir::UTF8, screenedValue);
+        os << "\"";
+        os << utf8Value;
+        os << "\"";
     }
     return os.str();
 }
