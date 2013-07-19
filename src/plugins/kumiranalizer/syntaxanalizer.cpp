@@ -1342,6 +1342,16 @@ void SyntaxAnalizer::processAnalisys()
         if (st.type==LxPriEndModule || st.type==LxPriAlgEnd) {
             parseEndNamedBlock(st);
         }
+        if (st.statement && st.statement->expressions.size() > 0) {
+            // Check for wrong "ds" keyword usage
+            bool hasDSError = false;
+            for (int j=0; j<st.statement->expressions.size(); j++) {
+                hasDSError = hasDSError || checkWrongDSUsage(st.statement->expressions.at(j));
+            }
+            if (hasDSError) {
+                st.statement->expressions.clear();
+            }
+        }
         for (int j=0; j<st.data.size(); j++) {
             if (!st.data[j]->error.isEmpty()) {
                 if (st.statement) {
@@ -1363,7 +1373,7 @@ void SyntaxAnalizer::processAnalisys()
                     break;
                 }
             }
-        }
+        }        
         if (!wasError && statements_[i].hasError()) {
             foreach (Lexem * lx, statements_[i].data) {
                 if (lx->errorStage==AST::Lexem::NoError && !lx->error.isEmpty())  {
@@ -1374,6 +1384,8 @@ void SyntaxAnalizer::processAnalisys()
         }
     }
 }
+
+
 
 QList<Shared::Suggestion> SyntaxAnalizer::suggestAutoComplete(
         int lineNo,
@@ -3959,6 +3971,7 @@ bool SyntaxAnalizer::findAlgorhitm(
     for (int i=0; i<ast_->modules.size(); i++) {
         AST::ModulePtr module = ast_->modules[i];
         bool moduleAvailable =
+                module->builtInID == 0xF0 ||
                 module->isEnabledFor(currentModule) ||
                 alwaysEnabledModules_.contains(module->header.name) ||
                 (currentAlgorithm && currentAlgorithm->header.name.startsWith("@"));
@@ -5139,6 +5152,29 @@ void SyntaxAnalizer::updateSliceDSCall(AST::ExpressionPtr  expr, AST::VariablePt
     else foreach (AST::ExpressionPtr  subExpr, expr->operands) {
         updateSliceDSCall(subExpr, var);
     }
+}
+
+bool SyntaxAnalizer::checkWrongDSUsage(ExpressionPtr expression)
+{
+    static AST::AlgorithmPtr  strlenAlg;
+    static AST::ModulePtr  stdlibMod;
+    bool hasError = false;
+    if (!strlenAlg)
+        findAlgorhitm(QString::fromUtf8("длин"), stdlibMod, AST::AlgorithmPtr(), strlenAlg);
+    if (expression->kind==AST::ExprFunctionCall
+            && expression->function==strlenAlg
+            && expression->operands.size()==0)
+    {
+        static const QString errorMessage = _("Wrong 'sl' usage");
+        foreach (Lexem * lx, expression->lexems) {
+            lx->error = errorMessage;
+        }
+        hasError = true;
+    }
+    else foreach (AST::ExpressionPtr  subExpr, expression->operands) {
+        hasError = hasError || checkWrongDSUsage(subExpr);
+    }
+    return hasError;
 }
 
 AST::ExpressionPtr  SyntaxAnalizer::parseElementAccess(const QList<Lexem *> &lexems, const AST::ModulePtr mod, const AST::AlgorithmPtr alg) const
