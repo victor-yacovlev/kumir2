@@ -2600,6 +2600,7 @@ void KumirVM::do_clearmarg(uint16_t toLine)
 
 void KumirVM::do_ret()
 {
+    stacksMutex_->lock();
     if (contextsStack_.top().runMode==CRM_UntilReturn) {
         if (debugHandler_)
             debugHandler_->noticeOnFunctionReturn(contextsStack_.top().lineNo);
@@ -2643,6 +2644,7 @@ void KumirVM::do_ret()
         currentConstants_ =
                 &(moduleContexts_[contextsStack_.top().moduleContextNo].constants);
     }
+    stacksMutex_->unlock();
 }
 
 void KumirVM::do_error(uint8_t s, uint16_t id)

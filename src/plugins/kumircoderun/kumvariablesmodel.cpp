@@ -369,7 +369,7 @@ QVariant KumVariablesModel::data(const QModelIndex &index, int role) const
                         item->variable()->dimension() == item->arrayIndeces().size()
                         )
                     text += " = " + item->valueRepresentation();
-                else
+                else if (item->hasValue())
                     text += " = " + item->arrayRepresentation();
                 mutex_->unlock();
                 return text;
