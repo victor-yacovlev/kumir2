@@ -2,6 +2,21 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="ru_RU">
 <context>
+    <name>KumirCodeRun::KumVariablesModel</name>
+    <message>
+        <source>Globals</source>
+        <translation>Глобальные величины</translation>
+    </message>
+    <message>
+        <source>Main algorithm locals</source>
+        <translation>Величины главного алгоритма</translation>
+    </message>
+    <message>
+        <source>Algorithm &apos;%1&apos; locals</source>
+        <translation>Величины алгоритма &quot;%1&quot;</translation>
+    </message>
+</context>
+<context>
     <name>KumirCodeRun::Plugin</name>
     <message>
         <source>RUNTIME ERROR: </source>

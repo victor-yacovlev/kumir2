@@ -173,6 +173,14 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
+    <name>CoreGUI::DebuggerView</name>
+    <message>
+        <location filename="../../../src/plugins/coregui/debuggerview.cpp" line="45"/>
+        <source>Current values available only while running program in step-by-step mode</source>
+        <translation>Текущие значения величин отображаются при выполнении по шагам</translation>
+    </message>
+</context>
+<context>
     <name>CoreGUI::DebuggerWindow</name>
     <message>
         <location filename="../../../src/plugins/coregui/debuggerwindow.cpp" line="49"/>
@@ -839,7 +847,7 @@ Using Qt version %2</source>
         <translation type="obsolete">Пауза</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="638"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="651"/>
         <source>Start</source>
         <translation>Начало</translation>
     </message>
