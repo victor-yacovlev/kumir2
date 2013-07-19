@@ -158,6 +158,9 @@ private /*fields*/:
     unsigned long int stepsCounter_;
     Kumir::AbstractInputBuffer * consoleInputBuffer_;
     Kumir::AbstractOutputBuffer * consoleOutputBuffer_;
+    int previousLineNo_;
+    uint32_t previousColStart_;
+    uint32_t previousColEnd_;
 
 public /*constructors*/:
     inline KumirVM();
@@ -674,6 +677,8 @@ void KumirVM::reset()
     Variable::ignoreUndefinedError = false;
     valuesStack_.reset();
     contextsStack_.reset();
+    previousLineNo_ = -1;
+    previousColStart_ = previousColEnd_ = 0u;
 
     checkFunctors();
 
@@ -2679,9 +2684,20 @@ void KumirVM::do_line(const Bytecode::Instruction & instr)
     if (extractColumnPositionsFromLineInstruction(instr, from, to)) {
         currentContext().columnStart = from;
         currentContext().columnEnd = to;
+        int lineNo = currentContext().lineNo;
+        if (previousLineNo_==lineNo && previousColStart_==from && previousColEnd_==to) {
+            nextIP();
+            return;
+        }
+        else {
+            previousLineNo_ = lineNo;
+            previousColStart_ = from;
+            previousColEnd_ = to;
+        }
         if (!blindMode_ && contextsStack_.top().runMode==CRM_OneStep && contextsStack_.top().moduleContextNo==0) {
-            if (debugHandler_)
+            if (debugHandler_) {
                 debugHandler_->noticeOnLineChanged(currentContext().lineNo, from, to);
+            }
         }
         if (currentContext().IP!=-1) {
             stepsCounter_ ++;
