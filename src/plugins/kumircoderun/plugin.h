@@ -95,58 +95,6 @@ signals:
     void clearMargin(int fromLine, int toLine);
     void resetModule(const QString &actorPluginName);
 
-    // Signals for debugger window
-    void debuggerReset();
-    void debuggerSetGlobals(
-            /** module name */           const QString & moduleName,
-            /** variable names */         const QStringList & names,
-            /** variable base types */const QStringList & baseTypes,
-            /** variable dimensions */ const QList<int> & dimensions
-            );
-    void debuggerPushContext(
-            /** context header */       const QString & contextName,
-            /** variable names */         const QStringList & names,
-            /** variable base types */const QStringList & baseTypes,
-            /** variable dimensions */ const QList<int> & dimensions
-            );
-    void debuggerPopContext();
-    void debuggerUpdateLocalVariable(
-            /** variable name */       const QString & name,
-            /** value */              const QString & value
-            );
-    void debuggerUpdateGlobalVariable(
-            /** module name */   const QString & moduleName,
-            /** variable name */       const QString & name,
-            /** value */              const QString & value
-            );
-    void debuggerUpdateLocalTableBounds(
-            /** variable name */       const QString & name,
-            /** bounds */          const QList<int> & bounds
-            );
-    void debuggerUpdateGlobalTableBounds(
-            /** module name */   const QString & moduleName,
-            /** variable name */       const QString & name,
-            /** bounds */          const QList<int> & bounds
-            );
-
-    void debuggerSetLocalReference(
-            /** variable name */             const QString & name,
-            /** target name */         const QString & targetName,
-            /** target array indeces */const QList<int> & indeces,
-            /** stack frames back */                     int back,
-            /** module name for a global value*/ const QString & moduleName
-            );
-    void debuggerForceUpdateValues();
-    void debuggerUpdateLocalTableValue(
-            /** variable name */            const QString & name,
-            /** indeces */             const QList<int> & indeces
-            );
-    void debuggerUpdateGlobalTableValue(
-            /** module name */        const QString & moduleName,
-            /** variable name */            const QString & name,
-            /** indeces */             const QList<int> & indeces
-            );
-
 private:
     class Run * pRun_;
     struct CommonFunctors * common_;

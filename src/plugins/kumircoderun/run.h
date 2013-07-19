@@ -97,57 +97,6 @@ signals:
     void clearMarginRequest(int,int);
 
 
-    // Signals for debugger window
-    void signal_debuggerReset();
-    void signal_debuggerSetGlobals(
-            /** module name */           const QString & moduleName,
-            /** variable names */         const QStringList & names,
-            /** variable base types */const QStringList & baseTypes,
-            /** variable dimensions */ const QList<int> & dimensions
-            );
-    void signal_debuggerPushContext(
-            /** context header */       const QString & contextName,
-            /** variable names */         const QStringList & names,
-            /** variable base types */const QStringList & baseTypes,
-            /** variable dimensions */ const QList<int> & dimensions
-            );
-    void signal_debuggerPopContext();
-    void signal_debuggerUpdateLocalVariable(
-            /** variable name */       const QString & name,
-            /** value */              const QString & value
-            );
-    void signal_debuggerUpdateGlobalVariable(
-            /** module name */   const QString & moduleName,
-            /** variable name */       const QString & name,
-            /** value */              const QString & value
-            );
-    void signal_debuggerUpdateLocalTableBounds(
-            /** variable name */       const QString & name,
-            /** bounds */          const QList<int> & bounds
-            );
-    void signal_debuggerUpdateGlobalTableBounds(
-            /** module name */   const QString & moduleName,
-            /** variable name */       const QString & name,
-            /** bounds */          const QList<int> & bounds
-            );
-    void signal_debuggerSetLocalReference(
-            /** variable name */             const QString & name,
-            /** target name */         const QString & targetName,
-            /** target array indeces */const QList<int> & indeces,
-            /** stack frames back */                     int back,
-            /** module name for a global variable */const QString & moduleName
-            );
-    void signal_debuggerForceUpdateValues();
-    void signal_debuggerUpdateLocalTableValue(
-            /** variable name */            const QString & name,
-            /** indeces */             const QList<int> & indeces
-            );
-    void signal_debuggerUpdateGlobalTableValue(
-            /** module name */        const QString & moduleName,
-            /** variable name */            const QString & name,
-            /** indeces */             const QList<int> & indeces
-            );
-
 protected :
     void run();
 

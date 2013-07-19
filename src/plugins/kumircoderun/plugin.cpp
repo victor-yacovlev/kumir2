@@ -34,40 +34,6 @@ KumirRunPlugin::KumirRunPlugin()
     connect (pRun_, SIGNAL(marginTextReplace(int,QString,bool)),
              this, SIGNAL(replaceMarginText(int,QString,bool)));
     onlyOneTryToInput_ = false;
-
-
-    connect(pRun_, SIGNAL(signal_debuggerReset()), this, SIGNAL(debuggerReset()), Qt::DirectConnection);
-    connect(pRun_, SIGNAL(signal_debuggerPopContext()), this, SIGNAL(debuggerPopContext()), Qt::DirectConnection);
-    connect(pRun_, SIGNAL(signal_debuggerPushContext(QString,QStringList,QStringList,QList<int>)),
-            this, SIGNAL(debuggerPushContext(QString,QStringList,QStringList,QList<int>)),
-            Qt::DirectConnection);
-    connect(pRun_, SIGNAL(signal_debuggerSetGlobals(QString,QStringList,QStringList,QList<int>)),
-            this, SIGNAL(debuggerSetGlobals(QString,QStringList,QStringList,QList<int>)),
-            Qt::DirectConnection);
-    connect(pRun_, SIGNAL(signal_debuggerUpdateLocalVariable(QString,QString)),
-            this, SIGNAL(debuggerUpdateLocalVariable(QString,QString)),
-            Qt::DirectConnection);
-    connect(pRun_, SIGNAL(signal_debuggerUpdateGlobalVariable(QString,QString,QString)),
-            this, SIGNAL(debuggerUpdateGlobalVariable(QString,QString,QString)),
-            Qt::DirectConnection);
-    connect(pRun_, SIGNAL(signal_debuggerUpdateLocalTableBounds(QString,QList<int>)),
-            this, SIGNAL(debuggerUpdateLocalTableBounds(QString,QList<int>)),
-            Qt::DirectConnection);
-    connect(pRun_, SIGNAL(signal_debuggerUpdateGlobalTableBounds(QString,QString,QList<int>)),
-            this, SIGNAL(debuggerUpdateGlobalTableBounds(QString,QString,QList<int>)),
-            Qt::DirectConnection);
-    connect(pRun_, SIGNAL(signal_debuggerSetLocalReference(QString,QString,QList<int>,int,QString)),
-            this, SIGNAL(debuggerSetLocalReference(QString,QString,QList<int>,int,QString)),
-            Qt::DirectConnection);
-    connect(pRun_, SIGNAL(signal_debuggerForceUpdateValues()),
-            this, SIGNAL(debuggerForceUpdateValues()),
-            Qt::DirectConnection);
-    connect(pRun_, SIGNAL(signal_debuggerUpdateLocalTableValue(QString,QList<int>)),
-            this, SIGNAL(debuggerUpdateLocalTableValue(QString,QList<int>)),
-            Qt::DirectConnection);
-    connect(pRun_, SIGNAL(signal_debuggerUpdateGlobalTableValue(QString,QString,QList<int>)),
-            this, SIGNAL(debuggerUpdateGlobalTableValue(QString,QString,QList<int>)),
-            Qt::DirectConnection);
 }
 
 unsigned long int KumirRunPlugin::stepsCounted() const
