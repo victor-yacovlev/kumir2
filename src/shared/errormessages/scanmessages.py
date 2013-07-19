@@ -255,9 +255,9 @@ if __name__ == "__main__":
         else:
             work_dirs += [arg]
     if db_file_name is None or out_file_name is None or len(work_dirs) == 0:
-        printUsageAndExit()
-        #sys.stderr.write("db_file: "+db_file+"\n")
-    #sys.stderr.write("out_file: "+out_file+"\n")
+        printUsageAndExit()    
+    #sys.stderr.write("db_file: "+db_file_name+"\n")
+    #sys.stderr.write("out_file: "+out_file_name+"\n")
     #sys.stderr.write("work_dirs: "+str(work_dirs)+"\n")
 
     allkeys = set()
@@ -291,3 +291,9 @@ if __name__ == "__main__":
             f = open(file_name, 'w')
             f.write(new_csv_contents.encode('utf-8'))
             f.close()
+
+    if not os.path.exists(out_file_name):
+        f = open(out_file_name, 'w')
+        f.write(new_csv_contents.encode('utf-8'))
+        f.close()
+

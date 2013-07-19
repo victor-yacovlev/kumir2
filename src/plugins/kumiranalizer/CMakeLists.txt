@@ -33,6 +33,7 @@ file(MAKE_DIRECTORY ${SHARE_PATH}/kumiranalizer)
 add_custom_target(
     KumirAnalizer_messages ALL
     ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/shared/errormessages/scanmessages.py --db=${CMAKE_SOURCE_DIR}/share/kumir2/kumiranalizer/messages.csv --out=${SHARE_PATH}/kumiranalizer/messages.csv ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/share/kumir2/kumiranalizer
+    DEPENDS ${SOURCERS} ${CMAKE_SOURCE_DIR}/src/shared/errormessages/scanmessages.py ${CMAKE_SOURCE_DIR}/share/kumir2/kumiranalizer/*.rules ${CMAKE_SOURCE_DIR}/share/kumir2/kumiranalizer/messages.csv
 )
 
 install(FILES ${SHARE_PATH}/kumiranalizer/messages.csv DESTINATION share/kumir2/kumiranalizer)
