@@ -131,6 +131,18 @@ MainWindow::MainWindow(Plugin * p) :
 
     ui->tabWidget->setAcceptDrops(true);
     ui->tabWidget->installEventFilter(this);
+
+
+    using namespace Shared;
+    using namespace ExtensionSystem;
+    PluginManager * manager = PluginManager::instance();
+    AnalizerInterface * analizer = manager->findPlugin<AnalizerInterface>();
+
+    if (!analizer || analizer->languageName()!=QString::fromUtf8("Кумир")) {
+        ui->menuInsert->deleteLater();
+        ui->menuInsert = nullptr;
+    }
+
 }
 
 //QString MainWindow::StatusbarWidgetCSS =
@@ -449,7 +461,15 @@ void MainWindow::setTitleForTab(int index)
 
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
     QString title = twe->property("title").toString();
-    setWindowTitle(title + " - "+ tr("Kumir"));
+    QString appName = tr("Kumir");
+    using namespace Shared;
+    using namespace ExtensionSystem;
+    PluginManager * manager = PluginManager::instance();
+    AnalizerInterface * analizer = manager->findPlugin<AnalizerInterface>();
+    if (analizer) {
+        appName = analizer->languageName();
+    }
+    setWindowTitle(title + " - "+ appName);
     ui->tabWidget->setTabText(index, title);
 }
 
@@ -572,6 +592,9 @@ void MainWindow::prepareEditMenu()
 
 void MainWindow::prepareInsertMenu()
 {
+    if (!ui->menuInsert) {
+        return;
+    }
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
     QMenu * tabMenu = 0;
 

@@ -671,7 +671,18 @@ void Editor::redo()
 QList<QMenu*> Editor::menuActions()
 {
     QList<QMenu*> result;
-    result << d->menu_edit << d->menu_insert;
+    result << d->menu_edit;
+    bool nonEmptyInsertMenu = false;
+    for (int i=0; i<d->menu_insert->children().size(); i++) {
+        QObject * child = d->menu_insert->children().at(i);
+        const QString clazz = child->metaObject()->className();
+        if (clazz=="QAction" && child != d->menu_insert->menuAction()) {
+            nonEmptyInsertMenu = true;
+            break;
+        }
+    }
+    if (nonEmptyInsertMenu)
+        result << d->menu_insert;
     return result;
 }
 
