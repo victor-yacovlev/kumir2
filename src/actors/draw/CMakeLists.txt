@@ -94,7 +94,3 @@ install(
     DESTINATION ${PLUGINS_DIR}
 )
 
-file(
-    COPY ${CMAKE_SOURCE_DIR}/userdocs/ActorDraw.xml
-    DESTINATION ${SHARE_PATH}/webapps/helpviewer/data/russian
-)

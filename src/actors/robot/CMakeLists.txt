@@ -54,5 +54,4 @@ add_library(ActorRobot SHARED ${MOC_SOURCES} ${SOURCES} ${MOC_SOURCES2} ${SOURCE
 target_link_libraries(ActorRobot ${QT_LIBRARIES} ExtensionSystem)
 copyResources(actors/robot)
 install(TARGETS ActorRobot DESTINATION ${PLUGINS_DIR})
-file(COPY ${CMAKE_SOURCE_DIR}/userdocs/ActorRobot.xml DESTINATION ${SHARE_PATH}/webapps/helpviewer/data/russian)
 

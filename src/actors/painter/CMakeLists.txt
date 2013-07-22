@@ -68,4 +68,3 @@ add_library(ActorPainter SHARED ${MOC_SOURCES} ${SOURCES} ${MOC_SOURCES2} ${SOUR
 target_link_libraries(ActorPainter ${QT_LIBRARIES} ExtensionSystem)
 copyResources(actors/painter)
 install(TARGETS ActorPainter DESTINATION ${PLUGINS_DIR})
-file(COPY ${CMAKE_SOURCE_DIR}/userdocs/ActorPainter.xml DESTINATION ${SHARE_PATH}/webapps/helpviewer/data/russian)

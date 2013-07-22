@@ -3029,11 +3029,6 @@ install(
     TARGETS $specFileName
     DESTINATION ${PLUGINS_DIR}
 )
-
-file(
-    COPY ${CMAKE_SOURCE_DIR}/userdocs/$specFileName.xml
-    DESTINATION ${SHARE_PATH}/webapps/helpviewer/data/russian
-)
     """, substitutions).strip() + "\n"
     _updateFile("CMakeLists.txt", targetDir, data)
 
