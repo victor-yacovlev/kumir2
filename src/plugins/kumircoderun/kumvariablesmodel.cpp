@@ -306,7 +306,7 @@ int KumVariablesModel::rowCount(const QModelIndex &parent) const
             item->itemType() == KumVariableItem::LocalsTable)
     {
         mutex_->lock();
-        size_t size = item->table()->size();
+        size_t size = item->table()? item->table()->size() : 0;
         mutex_->unlock();
         return size;
     }
