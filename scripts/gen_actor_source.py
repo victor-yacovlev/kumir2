@@ -2192,17 +2192,25 @@ class ModuleBaseCppClass(CppClassBase):
         :return:    implementation of C++ constructor
         """
         body = ""
+        nongui = ""
         if self._module.gui:
             body += "static const QString currentLocaleName = QLocale().name();\n\n"
             for menu in self._module.gui.menus:
                 body += self._add_menu_actions_creation(menu)
+
         return """
 %s::%s(ExtensionSystem::KPlugin* parent)
     : QObject(parent)
 {
+    bool hasGui = true;
+#ifdef Q_WS_X11
+    hasGui = getenv("DISPLAY")!=0;
+#endif
+    if (hasGui) {
 %s
+    }
 }
-        """ % (self.className, self.className, _addIndent(body))
+        """ % (self.className, self.className, _addIndent(_addIndent(body)))
 
     def setAnimationEnabledCppImplementation(self):
         """
@@ -2273,11 +2281,20 @@ class ModuleBaseCppClass(CppClassBase):
         return """
 /* public */ QList<QMenu*> %s::moduleMenus() const
 {
-    QList<QMenu*> result;
+    bool hasGui = true;
+#ifdef Q_WS_X11
+    hasGui = getenv("DISPLAY")!=0;
+#endif
+    if (hasGui) {
+        QList<QMenu*> result;
 %s
-    return result;
+        return result;
+    }
+    else {
+        return QList<QMenu*>();
+    }
 }
-        """ % (self.className, _addIndent(body))
+        """ % (self.className, _addIndent(_addIndent(body)))
 
     def setErrorCppImplementation(self):
         """
