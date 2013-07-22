@@ -134,6 +134,11 @@ void SidePanel::restoreState(ExtensionSystem::SettingsPtr settings, const QStrin
 
 void SidePanel::selectItem(ModelPtr itemModel)
 {
+    selectItem(itemModel, QString());
+}
+
+void SidePanel::selectItem(ModelPtr itemModel, const QString & searchText)
+{
     const QList<ModelPtr> keys = itemsOfModels_.keys();
     for (int i=0; i<keys.size(); i++) {
         ModelPtr model = keys[i];
@@ -141,6 +146,7 @@ void SidePanel::selectItem(ModelPtr itemModel)
             QList<QTreeWidgetItem*> selection =
                     ui->contentsNavigator->selectedItems() +
                     ui->examplesNavigator->selectedItems() +
+                    ui->algorithmsNavigator->selectedItems() +
                     ui->tablesNavigator->selectedItems();
             foreach (QTreeWidgetItem* item, selection) {
                 item->setSelected(false);
@@ -154,6 +160,9 @@ void SidePanel::selectItem(ModelPtr itemModel)
                 ui->examples->setChecked(false);
                 ui->tables->setChecked(false);
                 ui->stackedWidget->setCurrentIndex(0);
+                if (searchText.length() > 0) {
+                    ui->searchContents->setText(searchText);
+                }
             }
             else if (item->treeWidget() == ui->examplesNavigator) {
                 ui->contents->setChecked(false);
@@ -161,6 +170,9 @@ void SidePanel::selectItem(ModelPtr itemModel)
                 ui->examples->setChecked(true);
                 ui->tables->setChecked(false);
                 ui->stackedWidget->setCurrentIndex(2);
+                if (searchText.length() > 0) {
+                    ui->searchExamples->setText(searchText);
+                }
             }
             else if (item->treeWidget() == ui->tablesNavigator) {
                 ui->contents->setChecked(false);
@@ -168,6 +180,19 @@ void SidePanel::selectItem(ModelPtr itemModel)
                 ui->examples->setChecked(false);
                 ui->tables->setChecked(true);
                 ui->stackedWidget->setCurrentIndex(3);
+                if (searchText.length() > 0) {
+                    ui->searchTables->setText(searchText);
+                }
+            }
+            else if (item->treeWidget() == ui->algorithmsNavigator) {
+                ui->contents->setChecked(false);
+                ui->algorithms->setChecked(true);
+                ui->examples->setChecked(false);
+                ui->tables->setChecked(false);
+                ui->stackedWidget->setCurrentIndex(1);
+                if (searchText.length() > 0) {
+                    ui->searchAlgorithms->setText(searchText);
+                }
             }
         }
     }
@@ -284,12 +309,21 @@ void SidePanel::createListOfAlgorithms(ModelPtr root)
                 itemsOfModels_[algorithm] = algItem;
                 modelsOfItems_[algItem] = algorithm;
                 algItem->setText(0, algorithm->title());
+                algorithmsIndex_[algorithm->title()] = algorithm;
             }
         }
     }
 }
 
-
+ModelPtr SidePanel::findAlgorithm(const QString &name) const
+{
+    if (algorithmsIndex_.contains(name)) {
+        return algorithmsIndex_[name];
+    }
+    else {
+        return ModelPtr();
+    }
+}
 
 void SidePanel::selectTreeWidgetItem(QTreeWidgetItem *item)
 {

@@ -70,4 +70,14 @@ QSize DocBookView::sizeHint() const
     return pImpl_->sizeHint();
 }
 
+bool DocBookView::hasAlgorithm(const QString &name) const
+{
+    return pImpl_->hasAlgorithm(name);
+}
+
+void DocBookView::selectAlgorithm(const QString &name)
+{
+    pImpl_->selectAlgorithm(name);
+}
+
 }

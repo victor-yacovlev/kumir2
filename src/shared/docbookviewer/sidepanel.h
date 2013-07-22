@@ -26,11 +26,13 @@ public:
     void addDocument(Document document);    
     void saveState(ExtensionSystem::SettingsPtr  settings, const QString & prefix);
     void restoreState(ExtensionSystem::SettingsPtr  settings, const QString & prefix);
+    ModelPtr findAlgorithm(const QString & name) const;
 
     ~SidePanel();
 
 public slots:
     void selectItem(ModelPtr model);
+    void selectItem(ModelPtr model, const QString & searchText);
 
 signals:
     void itemPicked(ModelPtr model);
@@ -52,6 +54,7 @@ private:
     QString settingsPrefix_;
     QMap<QTreeWidgetItem*, ModelPtr> modelsOfItems_;
     QMap<ModelPtr, QTreeWidgetItem*> itemsOfModels_;
+    QMap<QString, ModelPtr> algorithmsIndex_;
     QList<Document> loadedDocuments_;
 
 private slots:

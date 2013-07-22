@@ -60,7 +60,7 @@ qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 copySpecFile(Editor)
 add_library(Editor SHARED ${UI_SOURCES} ${MOC_SOURCES} ${SOURCES})
 handleTranslation(Editor)
-target_link_libraries(Editor ${QT_LIBRARIES} ${EXTRA_LIBS} ExtensionSystem DataFormats Widgets)
+target_link_libraries(Editor ${QT_LIBRARIES} ${EXTRA_LIBS} ExtensionSystem DataFormats Widgets DocBookViewer)
 
 copyResources(editor)
 

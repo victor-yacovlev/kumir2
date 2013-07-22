@@ -27,6 +27,11 @@ static const uint MARGIN_LINE_WIDTH = 4u /*px*/;
 QString EditorPlane::MarginWidthKey = "MarginWidth";
 uint EditorPlane::MarginWidthDefault = 15u /*px*/;
 
+void EditorPlane::setHelpViewer(DocBookViewer::DocBookView *viewer)
+{
+    helpViewer_ = viewer;
+}
+
 EditorPlane::EditorPlane(TextDocument * doc
                          , Shared::AnalizerInterface * analizer
                          , class Editor * editor
@@ -39,6 +44,7 @@ EditorPlane::EditorPlane(TextDocument * doc
                          , QWidget *parent) :
     QWidget(parent)
 {
+    helpViewer_ = nullptr;
     editor_ = editor;
     analizer_ = analizer;
     highlightedTextLineNumber_ = -1;
@@ -73,6 +79,8 @@ EditorPlane::EditorPlane(TextDocument * doc
     autocompleteWidget_ = new SuggestionsWindow(this);
     autocompleteWidget_->updateSettings(settings);
     autocompleteWidget_->setVisible(false);
+    connect(autocompleteWidget_, SIGNAL(requestHelpForAlgorithm(QString)),
+            editor_, SIGNAL(requestHelpForAlgorithm(QString)));
     connect(autocompleteWidget_, SIGNAL(hidden()), this, SIGNAL(enableInsertActions()));
     connect(autocompleteWidget_, SIGNAL(acceptedSuggestion(QString)),
             this, SLOT(finishAutoCompletion(QString)));
@@ -142,6 +150,7 @@ void EditorPlane::contextMenuEvent(QContextMenuEvent *e)
  */
 void EditorPlane::mousePressEvent(QMouseEvent *e)
 {
+    emit message(QString());
     // Ensure auto scrolling by timer is stopped
     emit requestAutoScroll(0);
     emit requestAutoScrollX(0);
@@ -1243,6 +1252,7 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
 
 #endif
     if (cursor_->isEnabled() && hasFocus()) {
+        emit message(QString());
         if (MoveToNextChar) {
             cursor_->evaluateCommand(KeyCommand::MoveToNextChar);
         }
@@ -1468,19 +1478,19 @@ void EditorPlane::doAutocomplete()
     }
     QList<Shared::Suggestion> suggestions =
             analizer_->suggestAutoComplete(document_->id_, cursor_->row(), before, after);
-    emit disableInsertActions();
-//    for (Shared::Suggestion s : suggestions) {
-//        qDebug() << QString("Suggestion: ") << s.value << QString(" --- ") << s.description;
-//    }
-
-    cursor_->removeSelection();
-    cursor_->removeRectSelection();
-    autocompleteWidget_->init(before, suggestions);
-    autocompleteWidget_->move(mapToGlobal(cursorRect().topLeft()+offset()));
-    autocompleteWidget_->setVisible(true);
-    autocompleteWidget_->activateWindow();
-    autocompleteWidget_->setFocus();
-
+    if (suggestions.isEmpty()) {
+        emit message(tr("Can't suggest autocomplete"));
+    }
+    else {
+        emit disableInsertActions();
+        cursor_->removeSelection();
+        cursor_->removeRectSelection();
+        autocompleteWidget_->init(before, suggestions, helpViewer_);
+        autocompleteWidget_->move(mapToGlobal(cursorRect().topLeft()+offset()));
+        autocompleteWidget_->setVisible(true);
+        autocompleteWidget_->activateWindow();
+        autocompleteWidget_->setFocus();
+    }
 }
 
 void EditorPlane::finishAutoCompletion(const QString &suggestion)
@@ -1527,8 +1537,11 @@ void EditorPlane::finishAutoCompletion(const QString &suggestion)
         }
         else {
             text = suggestion;
+            bool textBeforeEndsWithDelimeter =
+                    before.length() > 0 &&
+                    Delimeters.contains(before.at(before.length()-1));
             if (text.startsWith(' ') &&
-                    (before.length()==0 || before.endsWith(' '))) {
+                    (before.length()==0 || textBeforeEndsWithDelimeter)) {
                 while (text.startsWith(' '))
                     text.remove(0,1);
             }
@@ -1538,6 +1551,7 @@ void EditorPlane::finishAutoCompletion(const QString &suggestion)
         cursor_->evaluateCommand(KeyCommand::SelectPreviousChar);
     }
     cursor_->evaluateCommand(KeyCommand(text));
+    emit message(QString());
 }
 
 void EditorPlane::selectAll()

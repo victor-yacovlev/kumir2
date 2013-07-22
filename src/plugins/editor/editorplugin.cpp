@@ -21,6 +21,7 @@ struct EditorPluginPrivate {
     QVector< Ed > editors;
     SettingsPage * settingsPage;
     bool teacherMode;
+    DocBookViewer::DocBookView * helpViewer;
 };
 
 EditorPlugin::EditorPlugin()
@@ -29,6 +30,7 @@ EditorPlugin::EditorPlugin()
     d->editors = QVector< Ed > ( 128, Ed(0,0,-1));
     d->settingsPage = 0;
     d->teacherMode = false;
+    d->helpViewer = nullptr;
 }
 
 EditorPlugin::~EditorPlugin()
@@ -68,6 +70,15 @@ void EditorPlugin::clearMargin(int documentId, int fromLine, int toLine)
     ed->clearMarginText(fromLine, toLine);
 }
 
+void EditorPlugin::setDocBookViewer(DocBookViewer::DocBookView *viewer)
+{
+    d->helpViewer = viewer;
+    for (int i=0; i<d->editors.size(); i++) {
+        if (d->editors[i].e)
+            d->editors[i].e->setHelpViewer(viewer);
+    }
+}
+
 Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, const QString &documentDir, bool initiallyNotSaved)
 {
     AnalizerInterface * a = 0;
@@ -81,6 +92,7 @@ Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, c
         a->setSourceDirName(docId, documentDir);
     }
     Editor * w = new Editor(initiallyNotSaved, mySettings(), a, docId, 0);
+    w->setHelpViewer(d->helpViewer);
     w->setTeacherMode(d->teacherMode);
     if (analizerName.contains("kumir", Qt::CaseInsensitive)) {
          const QString initialTextFileName =

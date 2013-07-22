@@ -9,6 +9,7 @@
 #include "interfaces/analizerinterface.h"
 #include "macro.h"
 #include "findreplace.h"
+#include "docbookviewer/docbookview.h"
 
 namespace Editor {
 
@@ -56,6 +57,8 @@ public:
     QList<Macro> userMacros;
 
     bool teacherMode;
+
+    DocBookViewer::DocBookView * helpViewer;
 
     int timerId;
     int autoScrollTimerId;

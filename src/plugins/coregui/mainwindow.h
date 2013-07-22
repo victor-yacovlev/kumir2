@@ -91,6 +91,7 @@ private slots:
     void setupStatusbarForTab();
     void setTitleForTab(int index);
     void checkCounterValue();
+    void showAlgorithmHelp(const QString & name);
 
     void addToRecent(const QString &fileName);
     void handleDocumentCleanChanged(bool v);

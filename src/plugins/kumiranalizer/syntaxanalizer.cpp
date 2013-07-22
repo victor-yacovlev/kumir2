@@ -910,6 +910,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
             if (typeMatch
                     && accessMatch
                     && alg->header.name.length()>0
+                    && !alg->header.name.startsWith('@')
                     )
             {
                 Shared::Suggestion suggestion;

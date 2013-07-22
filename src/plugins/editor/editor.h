@@ -5,6 +5,7 @@
 #include "extensionsystem/settings.h"
 #include "interfaces/analizerinterface.h"
 #include "dataformats/kumfile.h"
+#include "docbookviewer/docbookview.h"
 
 namespace Editor {
 
@@ -22,6 +23,7 @@ public:
             QWidget *parent = 0
             );
     ~Editor();
+    void setHelpViewer(DocBookViewer::DocBookView * viewer);
     void setTeacherMode(bool v);
     bool isTeacherMode() const;
     QList<QAction*> toolbarActions();
@@ -64,6 +66,8 @@ signals:
     void documentCleanChanged(bool v);
     void cursorPositionChanged(uint row, uint column);
     void keyboardLayoutChanged(QLocale::Language lang, bool capslock, bool shift, bool alt);
+    void message(const QString &);
+    void requestHelpForAlgorithm(const QString & text);
 
 private:
 

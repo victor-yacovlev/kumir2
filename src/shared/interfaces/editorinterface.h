@@ -4,6 +4,10 @@
 #include "interfaces/analizerinterface.h"
 #include "dataformats/kumfile.h"
 
+namespace DocBookViewer {
+    class DocBookView;
+}
+
 namespace Shared
 {
 
@@ -15,6 +19,7 @@ struct EditorComponent {
 //    QList<class QWidget*> statusbarWidgets;
 };
 
+
 class EditorInterface
 {
 public:
@@ -22,6 +27,7 @@ public:
             const QString & documentDir,
             bool initiallyNotSaved
             ) = 0;
+    virtual void setDocBookViewer(DocBookViewer::DocBookView *) = 0;
     virtual void closeDocument(int documentId) = 0;
     virtual int analizerDocumentId(int editorDocumentId) const = 0;
     virtual bool hasUnsavedChanges(int documentId) const = 0;

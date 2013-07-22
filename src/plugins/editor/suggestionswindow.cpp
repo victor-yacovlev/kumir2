@@ -16,87 +16,60 @@ void desaturate(QImage & img) {
     }
 }
 
+void SuggestionItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    QStyledItemDelegate::paint(painter, option, index);
+    if (index.isValid()) {
+        const QStandardItemModel * model =
+                qobject_cast<const QStandardItemModel*>(index.model());
+        SuggestionItem * item =
+                static_cast<SuggestionItem*>(model->itemFromIndex(index));
+        if (item && item->hasHelpEntry()) {
+            const QPalette & pal = option.palette;
+            const QColor & color = option.state == 98561
+                    ? pal.color(QPalette::Active, QPalette::HighlightedText)
+                    : pal.color(QPalette::Disabled, QPalette::Text);
+            painter->save();
+            const QRect rect = option.rect;
+            const QSize buttonSize =
+                    option.decorationSize - QSize(2, 4);
+            const QRect buttonRect = QRect(
+                        rect.right() - 4 - buttonSize.width(),
+                        rect.top() + 2,
+                        buttonSize.width() + 2,
+                        buttonSize.height()
+                        );
+            painter->setPen(QPen(color));
+            painter->drawRect(buttonRect);
+            QFont fnt = QApplication::font();
+            fnt.setPixelSize(buttonSize.height() - 2);
+            QTextOption textOpt;
+            textOpt.setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+            painter->setFont(fnt);
+            painter->drawText(buttonRect, "F1", textOpt);
+            painter->restore();
+        }
+    }
+}
+
 SuggestionsWindow::SuggestionsWindow(QWidget *editorWidget)
     : QWidget(0, Qt::Popup)
     , ui(new Ui::SuggestionsWindow)
+    , itemModel_(new QStandardItemModel)
     , keyPressedFlag_(false)
     , editorWidget_(editorWidget)
 {
     ui->setupUi(this);
-    QPalette pal = palette();
-    const QString bgColor =
-            pal.brush(QPalette::Normal, QPalette::ToolTipBase).color().name();
-    QColor handleColor =
-            pal.brush(QPalette::Normal, QPalette::ToolTipBase).color().toHsl();
-    int lightness = handleColor.lightness();
-    if (lightness > 128) {
-        // Make scrollbar handle darker
-        lightness = qMax(0, lightness-40);
-    }
-    else {
-        // Make scrollbar handle lighter (assuming dark UI theme)
-        lightness = qMin(255, lightness+40);
-    }
-    handleColor.setHsl(handleColor.hue(), handleColor.saturation(), lightness);
-    static const QString css =
-            QString::fromAscii(""
-                               "QWidget {"
-                               "  background-color: %1;"
-                               "  border: 0;"
-                               "}"
-                               "QScrollBar:vertical { "
-                               "  width: 10px;"
-                               "  background: transparent;"
-                               "}"
-                               "QScrollBar:horizontal {"
-                               "  height: 0"
-                               "}"
-                               "QScrollBar::handle {"
-                               "  background: %2;"
-                               "  border-radius: 4px;"
-                               "}"
-                               "QScrollBar::add-line:vertical {"
-                               "  height: 0;"
-                               "}"
-                               "QScrollBar::sub-line:vertical {"
-                               "  height: 0;"
-                               "}"
-                               "")
-            .arg(bgColor).arg(handleColor.name());
-    setStyleSheet(css);
+    ui->alist->setModel(itemModel_);
+    ui->alist->setItemDelegate(new SuggestionItemDelegate);
     ui->alist->installEventFilter(this);
-    connect(ui->alist, SIGNAL(currentRowChanged(int)),
-            this, SLOT(handleCurrentItemChanged(int)));
-    connect(ui->alist, SIGNAL(itemActivated(QListWidgetItem*)),
-            this, SLOT(handleItemActivated(QListWidgetItem*)));
-    connect(ui->btnAccept, SIGNAL(clicked()), this, SLOT(acceptItem()));
-    connect(ui->btnClose, SIGNAL(clicked()), this, SLOT(hide()));
+    connect(ui->alist, SIGNAL(activated(QModelIndex)),
+            this, SLOT(handleItemActivated(QModelIndex)));
+
     setCursor(Qt::ArrowCursor);
     ui->alist->setCursor(Qt::PointingHandCursor);
-
-    QPixmap pxOkActive = ui->btnAccept->icon().pixmap(ui->btnAccept->iconSize());
-    QPixmap pxCloseActive = ui->btnClose->icon().pixmap(ui->btnClose->iconSize());
-
-    QImage imgOk = pxOkActive.toImage();
-    QImage imgClose = pxCloseActive.toImage();
-
-    desaturate(imgOk);
-    desaturate(imgClose);
-
-    QPixmap pxOkNormal = QPixmap::fromImage(imgOk);
-    QPixmap pxCloseNormal = QPixmap::fromImage(imgClose);
-
-    QIcon ok, close;
-    ok.addPixmap(pxOkActive, QIcon::Active);
-    ok.addPixmap(pxOkNormal, QIcon::Normal);
-
-    close.addPixmap(pxCloseActive, QIcon::Active);
-    close.addPixmap(pxCloseNormal, QIcon::Normal);
-
-    ui->btnAccept->setIcon(ok);
-    ui->btnClose->setIcon(close);
-
 }
+
 
 void SuggestionsWindow::updateSettings(const ExtensionSystem::SettingsPtr settings)
 {
@@ -200,84 +173,92 @@ void SuggestionsWindow::createIcons(const ExtensionSystem::SettingsPtr settings)
 
 }
 
-void SuggestionsWindow::handleCurrentItemChanged(int currentRow)
-{
-    if (currentRow>=0 && currentRow<suggestions_.size()) {
-        ui->descriptionView->setText(suggestions_.at(currentRow).description);
-    }
-    else {
-        ui->descriptionView->clear();
-    }
-}
-
-void SuggestionsWindow::handleItemActivated(QListWidgetItem *)
+void SuggestionsWindow::handleItemActivated(const QModelIndex & index)
 {
     acceptItem();
 }
 
 void SuggestionsWindow::acceptItem()
 {
-    int row = ui->alist->currentRow();
-    if (row>=0 && row<ui->alist->count()) {
-        const QString value = suggestions_.at(row).value;
-        emit acceptedSuggestion(value);
+    const QModelIndex & index = ui->alist->currentIndex();
+    if (index.isValid()) {
+        const QString text = itemModel_->data(index, Qt::DisplayRole).toString();
+        emit acceptedSuggestion(text);
     }
     hide();
 }
 
+SuggestionItem::SuggestionItem(const Shared::Suggestion &suggestion,
+                               SuggestionsWindow *factory,
+                               DocBookViewer::DocBookView * helpViewer
+                               )
+    : QStandardItem()
+{
+    setText(suggestion.value);
+    setToolTip(suggestion.description);
+    if (suggestion.kind==Shared::Suggestion::Local) {
+        setIcon(factory->icon_local_);
+    }
+    else if (suggestion.kind==Shared::Suggestion::Global) {
+        setIcon(factory->icon_global_);
+    }
+    else if (suggestion.kind==Shared::Suggestion::Algorithm) {
+        setIcon(factory->icon_algorithm_);
+    }
+    else if (suggestion.kind==Shared::Suggestion::BuiltinModule) {
+        setIcon(factory->icon_module_);
+    }
+    else if (suggestion.kind==Shared::Suggestion::KumirModule) {
+        setIcon(factory->icon_kumfile_);
+    }
+    else if (suggestion.kind==Shared::Suggestion::SecondaryKeyword) {
+        setIcon(factory->icon_keyword_);
+    }
+    else {
+        setIcon(factory->icon_other_);
+    }
+    hasHelpEntry_ = helpViewer && helpViewer->hasAlgorithm(suggestion.value.trimmed());
+
+}
+
+
 void SuggestionsWindow::init(
         const QString &,
-        const QList<Shared::Suggestion> &suggestions)
+        const QList<Shared::Suggestion> &suggestions,
+        DocBookViewer::DocBookView * helpViewer
+        )
 {
     keyPressedFlag_ = false;
-    ui->alist->clear();
-    ui->descriptionView->clear();
+    itemModel_->clear();
     int prefWidth = 100;
     const QFontMetrics fm (ui->alist->font());
     int prefHeight = fm.height()*(5+suggestions.size());
     for (int index = 0; index<suggestions.size(); index++) {
         const Shared::Suggestion & s = suggestions.at(index);
-        QListWidgetItem * item = new QListWidgetItem(ui->alist);
-        item->setText(s.value);
+        SuggestionItem * item = new SuggestionItem(s, this, helpViewer);
+        itemModel_->appendRow(item);
         prefWidth = qMax(prefWidth, 100+fm.width(s.value));
-        if (s.kind==Shared::Suggestion::Local) {
-            item->setIcon(icon_local_);
-        }
-        else if (s.kind==Shared::Suggestion::Global) {
-            item->setIcon(icon_global_);
-        }
-        else if (s.kind==Shared::Suggestion::Algorithm) {
-            item->setIcon(icon_algorithm_);
-        }
-        else if (s.kind==Shared::Suggestion::BuiltinModule) {
-            item->setIcon(icon_module_);
-        }
-        else if (s.kind==Shared::Suggestion::KumirModule) {
-            item->setIcon(icon_kumfile_);
-        }
-        else if (s.kind==Shared::Suggestion::SecondaryKeyword) {
-            item->setIcon(icon_keyword_);
-        }
-        else {
-            item->setIcon(icon_other_);
-        }
     }
     int width = qMax(qMin(400, prefWidth), 150);
     int height = qMin(prefHeight, 400);
     setFixedWidth(width);
     setFixedHeight(height);
-    suggestions_ = suggestions;
-    if (suggestions_.size()==0) {
-        ui->descriptionView->setText(tr("No suggestions"));
-    }
 }
 
 void SuggestionsWindow::focusInEvent(QFocusEvent *event)
 {
     ui->alist->setFocus(event->reason());
     event->accept();
-    if (ui->alist->count()>0) {
-        ui->alist->setCurrentRow(0);
+    if (itemModel_->rowCount() > 0) {
+        const QModelIndex first = itemModel_->index(0, 0);
+        ui->alist->setCurrentIndex(first);
+    }
+    QList<QAction*> globalShortcuts = QApplication::activeWindow()->
+            findChildren<QAction*>();
+    for (int i=0; i<globalShortcuts.size(); i++) {
+        if (globalShortcuts[i]->shortcut().toString()=="F1") {
+            globalShortcuts[i]->setEnabled(false);
+        }
     }
 }
 
@@ -287,6 +268,20 @@ bool SuggestionsWindow::eventFilter(QObject *obj, QEvent *event)
         QKeyEvent * e = static_cast<QKeyEvent*>(event);
         if (e->key()==Qt::Key_Tab || e->key()==Qt::Key_Escape) {
             hide();
+            return true;
+        }
+        if (e->key()==Qt::Key_F1) {
+            if (ui->alist->currentIndex().isValid()) {
+                SuggestionItem * item =
+                        static_cast<SuggestionItem*>(
+                            itemModel_->itemFromIndex(ui->alist->currentIndex())
+                            );
+                if (item->hasHelpEntry()) {
+                    const QString text = item->text().trimmed();
+                    qDebug() << "Request help for " << text;
+                    emit requestHelpForAlgorithm(text);
+                }
+            }
             return true;
         }
     }
@@ -333,6 +328,13 @@ void SuggestionsWindow::hideEvent(QHideEvent *event)
     keyPressedFlag_ = false;
     QWidget::hideEvent(event);
     editorWidget_->setFocus();
+    QList<QAction*> globalShortcuts = QApplication::activeWindow()->
+            findChildren<QAction*>();
+    for (int i=0; i<globalShortcuts.size(); i++) {
+        if (globalShortcuts[i]->shortcut().toString()=="F1") {
+            globalShortcuts[i]->setEnabled(true);
+        }
+    }
     emit hidden();
 }
 

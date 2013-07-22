@@ -2,6 +2,7 @@
 #define EDITORPLANE_H
 
 #include "extensionsystem/settings.h"
+#include "docbookviewer/docbookview.h"
 
 #include <QtGui>
 
@@ -27,6 +28,7 @@ public:
                          , QScrollBar * verticalSB
                          , bool hasAnalizer
                          , QWidget *parent = 0);
+    void setHelpViewer(DocBookViewer::DocBookView * viewer);
     uint widthInChars() const;
     uint charWidth() const;
     uint lineHeight() const;
@@ -137,12 +139,14 @@ private:
     class SuggestionsWindow * autocompleteWidget_;
     Shared::AnalizerInterface * analizer_;
     QList<QAction*> contextMenuActions_;
+    DocBookViewer::DocBookView * helpViewer_;
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
     void requestAutoScroll(char a);
     void requestAutoScrollX(char a);
     void disableInsertActions();
     void enableInsertActions();
+    void message(const QString &text);
 
 };
 

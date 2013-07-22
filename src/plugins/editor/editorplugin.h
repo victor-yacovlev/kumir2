@@ -22,6 +22,7 @@ public:
             , const QString &documentDir
             , bool initiallyNotSaved);
 
+    void setDocBookViewer(DocBookViewer::DocBookView * viewer);
     int analizerDocumentId(int editorDocumentId) const;
     void closeDocument(int documentId);
     QWidget* settingsEditorPage();

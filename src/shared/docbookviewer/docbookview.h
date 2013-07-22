@@ -36,6 +36,8 @@ public:
     QAction * viewerAction(const DocBookViewAction type) const;
 
     void updateSettings(ExtensionSystem::SettingsPtr settings, const QString & prefix);
+    bool hasAlgorithm(const QString & name) const;
+    void selectAlgorithm(const QString & name);
 
     QSize minimumSizeHint() const;
     QSize sizeHint() const;

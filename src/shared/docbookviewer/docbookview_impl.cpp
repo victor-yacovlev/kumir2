@@ -104,7 +104,20 @@ Document DocBookViewImpl::addDocument(const QUrl &url, QString *error, int index
     return doc;
 }
 
+bool DocBookViewImpl::hasAlgorithm(const QString &name) const
+{
+    const ModelPtr algorithm = sidePanel_->findAlgorithm(name);
+    return ! algorithm.isNull();
+}
 
+void DocBookViewImpl::selectAlgorithm(const QString &name)
+{
+    const ModelPtr algorithm = sidePanel_->findAlgorithm(name);
+    if (algorithm) {
+        sidePanel_->selectItem(algorithm, name);
+        showAnItem(algorithm);
+    }
+}
 
 void DocBookViewImpl::removeDocument(const Document & existingDocument)
 {

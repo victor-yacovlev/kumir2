@@ -33,6 +33,8 @@ public /* methods */:
             );
 
     void removeDocument(const Document & existingDocument);
+    bool hasAlgorithm(const QString & name) const;
+    void selectAlgorithm(const QString & name);
 
     void updateSettings(ExtensionSystem::SettingsPtr settings, const QString & prefix);
     void saveState(ExtensionSystem::SettingsPtr settings, const QString & prefix);

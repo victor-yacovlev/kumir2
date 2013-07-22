@@ -24,6 +24,7 @@ Plugin::Plugin() :
     startPage_.widget = 0;
     helpViewer_ = 0;
     courseManager_ = 0;
+    helpWindow_ = 0;
 }
 
 QString Plugin::InitialTextKey = "InitialText";
@@ -101,7 +102,8 @@ QString Plugin::initialize(const QStringList & parameters)
     //MacFixes::setLionFullscreenButton(mac_mainWindow);
 #endif
 
-    plugin_editor = qobject_cast<EditorInterface*>(myDependency("Editor"));
+    plugin_editor = PluginManager::instance()->findPlugin<EditorInterface>();
+
 
     plugin_BytecodeGenerator = qobject_cast<GeneratorInterface*>(myDependency("KumirCodeGenerator"));
     plugin_NativeGenerator = qobject_cast<GeneratorInterface*>(myDependency("KumirNativeGenerator"));
@@ -212,21 +214,24 @@ QString Plugin::initialize(const QStringList & parameters)
             "/userdocs/";
 
     helpViewer_->addDocument(QUrl::fromLocalFile(helpPath + "default.xml"));
+    plugin_editor->setDocBookViewer(helpViewer_);
 
-    Widgets::SecondaryWindow * helpWindow = new Widgets::SecondaryWindow(
+    helpWindow_ = new Widgets::SecondaryWindow(
                 helpViewer_,
                 0,
                 mainWindow_,
                 mySettings(),
                 "HelpViewerWindow");
-    secondaryWindows_ << helpWindow;
-    helpWindow->setWindowTitle(tr("Help"));
+    secondaryWindows_ << helpWindow_;
+    helpWindow_->setWindowTitle(tr("Help"));
 
-    helpWindow->toggleViewAction()->setShortcut(QKeySequence("F1"));
+    helpWindow_->toggleViewAction()->setShortcut(QKeySequence("F1"));
     connect(mainWindow_->ui->actionUsage, SIGNAL(triggered()),
-            helpWindow->toggleViewAction(), SLOT(trigger()));
-    connect(helpWindow->toggleViewAction(), SIGNAL(toggled(bool)),
+            helpWindow_->toggleViewAction(), SLOT(trigger()));
+    connect(helpWindow_->toggleViewAction(), SIGNAL(toggled(bool)),
             mainWindow_->ui->actionUsage, SLOT(setChecked(bool)));
+
+
 
     courseManager_ = ExtensionSystem::PluginManager::instance()
             ->findPlugin<Shared::CoursesInterface>();

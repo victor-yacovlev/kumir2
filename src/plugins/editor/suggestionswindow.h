@@ -2,6 +2,7 @@
 #define EDITOR_SUGGESTIONSWINDOW_H
 
 #include "extensionsystem/settings.h"
+#include "docbookviewer/docbookview.h"
 
 #include <QtGui>
 
@@ -13,16 +14,39 @@ namespace Ui {
 class SuggestionsWindow;
 }
 
+class SuggestionItem
+        : public QStandardItem
+{
+public:
+    explicit SuggestionItem(const Shared::Suggestion & suggestion,
+                            class SuggestionsWindow * factory,
+                            DocBookViewer::DocBookView * helpViewer);
+    inline bool hasHelpEntry() const { return hasHelpEntry_; }
+private:
+    bool hasHelpEntry_;
+};
+
+class SuggestionItemDelegate
+        : public QStyledItemDelegate
+{
+public:
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+};
+
 class SuggestionsWindow : public QWidget
 {
+    friend class SuggestionItem;
     Q_OBJECT
-    
 public:
     explicit SuggestionsWindow(QWidget *editorWidget);
-    void init(const QString & before, const QList<Shared::Suggestion> & suggestions);
+    void init(const QString & before,
+              const QList<Shared::Suggestion> & suggestions,
+              DocBookViewer::DocBookView * helpViewer
+              );
     ~SuggestionsWindow();
     void updateSettings(const ExtensionSystem::SettingsPtr settings);
 signals:
+    void requestHelpForAlgorithm(const QString & text);
     void acceptedSuggestion(const QString & text);
     void hidden();
 protected:
@@ -32,13 +56,12 @@ protected:
     void hideEvent(QHideEvent * event);
     bool eventFilter(QObject * obj, QEvent * event);
 protected slots:
-    void handleCurrentItemChanged(int currentRow);
-    void handleItemActivated(QListWidgetItem * item);
+    void handleItemActivated(const QModelIndex & index);
     void acceptItem();
 private:
     void createIcons(const ExtensionSystem::SettingsPtr settings);
     Ui::SuggestionsWindow *ui;
-    QList<Shared::Suggestion> suggestions_;
+    QStandardItemModel * itemModel_;
     bool keyPressedFlag_;
     QIcon icon_local_;
     QIcon icon_global_;
@@ -48,6 +71,7 @@ private:
     QIcon icon_kumfile_;
     QIcon icon_other_;
     QWidget * editorWidget_;
+
 };
 
 

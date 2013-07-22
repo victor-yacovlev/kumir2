@@ -389,11 +389,18 @@ void EditorPrivate::updateFromAnalizer()
 
 Clipboard * EditorPrivate::clipboard = 0;
 
+void Editor::setHelpViewer(DocBookViewer::DocBookView *viewer)
+{
+    d->helpViewer = viewer;
+    d->plane->setHelpViewer(viewer);
+}
+
 Editor::Editor(bool initiallyNotSaved, ExtensionSystem::SettingsPtr settings, AnalizerInterface * analizer, int documentId, QWidget *parent) :
     QWidget()
 {
     setParent(parent);
     d = new EditorPrivate;
+    d->helpViewer = nullptr;
     d->q = this;
     d->teacherMode = false;
     d->notSaved = initiallyNotSaved;
@@ -418,6 +425,7 @@ Editor::Editor(bool initiallyNotSaved, ExtensionSystem::SettingsPtr settings, An
                 d->verticalScrollBar,
                 d->analizer!=NULL,
                 this);
+    connect(d->plane, SIGNAL(message(QString)), this, SIGNAL(message(QString)));
 
     d->findReplace = new FindReplace(d->doc, d->cursor, d->plane);
 

@@ -51,6 +51,7 @@ public slots:
     void setProgramSource(const ProgramSourceText &source);
     ProgramSourceText programSource() const;
 
+
     void startTesting();
 
 protected slots:
@@ -82,6 +83,7 @@ protected:
     QList<ActorInterface*> l_plugin_actors;
     BrowserComponent startPage_;
     QList<Widgets::SecondaryWindow*> secondaryWindows_;
+    Widgets::SecondaryWindow* helpWindow_;
     Term * m_terminal;
     QMap<QString,QObject*> m_browserObjects;
     KumirProgram * kumirProgram_;

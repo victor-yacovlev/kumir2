@@ -819,6 +819,9 @@ void MainWindow::newProgram()
                 false
                 );
     QWidget* vc = doc.widget;
+    connect(doc.widget, SIGNAL(message(QString)), this, SLOT(showMessage(QString)));
+    connect(doc.widget, SIGNAL(requestHelpForAlgorithm(QString)),
+            this, SLOT(showAlgorithmHelp(QString)));
     int id = doc.id;
     vc->setProperty("documentId", id);
     QString fileName = suggestNewFileName(suffix);
@@ -838,6 +841,11 @@ void MainWindow::newProgram()
 
 }
 
+void MainWindow::showAlgorithmHelp(const QString &name)
+{
+    m_plugin->helpWindow_->show();
+    m_plugin->helpViewer_->selectAlgorithm(name);
+}
 
 void MainWindow::newText()
 {
@@ -849,6 +857,7 @@ void MainWindow::newText(const QString &fileName, const QString & text)
 {
     Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("", QDir::currentPath(), true);
     QWidget * vc = doc.widget;
+    connect(doc.widget, SIGNAL(message(QString)), this, SLOT(showMessage(QString)));
     int id = doc.id;
     vc->setProperty("documentId", id);
     vc->setProperty("fileName", fileName);
@@ -1129,6 +1138,7 @@ void MainWindow::restoreSession()
                 EditorComponent doc = m_plugin->plugin_editor->newDocument(analizerName, QDir::currentPath(), false);
                 QByteArray editorSession = f.readAll();
                 QWidget * vc = doc.widget;
+                connect(doc.widget, SIGNAL(message(QString)), this, SLOT(showMessage(QString)));
                 vc->setProperty("documentId", doc.id);
                 TabWidgetElement * twe = addCentralComponent(
                             title,
@@ -1535,6 +1545,9 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                         QFileInfo(f).absoluteDir().absolutePath(),
                         false
                         );
+            connect(doc.widget, SIGNAL(message(QString)), this, SLOT(showMessage(QString)));
+            connect(doc.widget, SIGNAL(requestHelpForAlgorithm(QString)),
+                    this, SLOT(showAlgorithmHelp(QString)));
             QWidget * vc = doc.widget;
             int id = doc.id;
             m_plugin->plugin_editor->loadDocument(
