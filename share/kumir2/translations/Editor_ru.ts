@@ -9,19 +9,27 @@
     </message>
 </context>
 <context>
+    <name>Editor::EditorPlane</name>
+    <message>
+        <location filename="../../../src/plugins/editor/editorplane.cpp" line="1482"/>
+        <source>Can&apos;t suggest autocomplete</source>
+        <translation>Нет вариантов автодополнения</translation>
+    </message>
+</context>
+<context>
     <name>Editor::EditorPlugin</name>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="193"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="205"/>
         <source>Can&apos;t open file %1 for writing</source>
         <translation>Не могу открыть %1 для записи</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="228"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="240"/>
         <source>Can&apos;t open file %1 for reading</source>
         <translation>Не могу открыть %1 для чтения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="261"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="273"/>
         <source>Editor</source>
         <translation>Редактор</translation>
     </message>
@@ -39,17 +47,17 @@
         <translation>Стр: %1, Поз: %2</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="247"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="252"/>
         <source>import %1</source>
         <translation>использовать %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="567"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="581"/>
         <source>Edit</source>
         <translation>Редактирование</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="587"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="601"/>
         <source>Insert</source>
         <translation>Вставка</translation>
     </message>
@@ -432,71 +440,68 @@
         <translation>Варианты</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/suggestionswindow.ui" line="71"/>
-        <location filename="../../../src/plugins/editor/suggestionswindow.ui" line="86"/>
         <source>...</source>
-        <translation>...</translation>
+        <translation type="obsolete">...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/suggestionswindow.cpp" line="271"/>
         <source>No suggestions</source>
-        <translation>Ничем не могу помочь</translation>
+        <translation type="obsolete">Ничем не могу помочь</translation>
     </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="475"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="489"/>
         <source>Select all text in editor</source>
         <translation>Выбрать весь текст</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="482"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="496"/>
         <source>Copy selection to clipboard</source>
         <translation>Скопировать</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="489"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="503"/>
         <source>Cut selection to clipboard</source>
         <translation>Вырезать</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="496"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="510"/>
         <source>Paste from clipboard</source>
         <translation>Вставить</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="503"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="517"/>
         <source>Find...</source>
         <translation>Найти...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="511"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="525"/>
         <source>Replace...</source>
         <translation>Заменить...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="521"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="535"/>
         <source>Delete line under cursor</source>
         <translation>Удалить строку</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="528"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="542"/>
         <source>Delete text from cursor to end of line</source>
         <translation>Удалить текст до конца строки</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="536"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="550"/>
         <source>Undo last action</source>
         <translation>Отменить последнее действие</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="545"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="559"/>
         <source>Redo last undoed action</source>
         <translation>Повторить отмененное действие</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="554"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="568"/>
         <source>(Un)Comment lines</source>
         <translation>(Раз)комменировать строки</translation>
     </message>
