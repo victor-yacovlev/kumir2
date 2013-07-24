@@ -1,5 +1,11 @@
-if(EXISTS(../../version_info.cmake))
-    include(../../version_info.cmake)
+if(EXISTS "${CMAKE_SOURCE_DIR}/version_info.cmake")
+    message(STATUS "Found explicit version info")
+    include(${CMAKE_SOURCE_DIR}/version_info.cmake)
+
+    add_definitions(-DGIT_HASH=\"${GIT_HASH}\")
+    add_definitions(-DGIT_TIMESTAMP=${GIT_TIMESTAMP})
+    add_definitions(-DGIT_TAG=\"${GIT_TAG}\")
+    add_definitions(-DGIT_BRANCH=\"${GIT_BRANCH}\")
 else()
     set(GIT_HASH unknown)
     set(GIT_TIMESTAMP 0)

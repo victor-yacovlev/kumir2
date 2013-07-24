@@ -234,7 +234,7 @@ int main(int argc, char **argv)
     app->addLibraryPath(QDir::cleanPath(app->applicationDirPath()+"/../"+IDE_LIBRARY_BASENAME+"/kumir2/"));
 #endif
 
-    app->setApplicationVersion(gitTag.length() > 0
+    app->setApplicationVersion(gitTag.length() > 0 && gitTag!="unknown"
                                ? gitTag : gitBranch + "/" + gitHash);
     app->setProperty("gitTimeStamp", gitTimeStamp);
     QSplashScreen * splashScreen = 0;
