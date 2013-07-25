@@ -16,7 +16,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 
 
 
-if((${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64") AND NOT (EXISTS /etc/ubuntu-release))
+if((${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64") AND NOT (EXISTS /etc/ubuntu-release) AND NOT (EXISTS /etc/debian_version))
     set(LIB_BASENAME lib64)
 else()
     set(LIB_BASENAME lib)
