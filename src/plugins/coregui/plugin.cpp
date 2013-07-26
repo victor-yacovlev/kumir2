@@ -132,15 +132,17 @@ QString Plugin::initialize(const QStringList & parameters)
 //                                        MainWindow::Terminal);
     mainWindow_->ui->bottomWidget->setLayout(new QHBoxLayout);
     QSplitter * bottomSplitter = new QSplitter(mainWindow_->ui->bottomWidget);
-    bottomSplitter->setStyleSheet(""
+    const QString bgColorName = mainWindow_->palette().brush(QPalette::Base).color().name();
+    bottomSplitter->setStyleSheet(QString::fromAscii(""
                                   "QSplitter[stylable=\"true\"] {"
                                   "    width: 16px;"
-                                  "    background-image: url(:/coregui/horizontal-splitter-background.png);"
+                                  "    background-color: %1;"
+//                                  "    background-image: url(:/coregui/horizontal-splitter-background.png);"
                                   "}"
                                   "QSplitter[stylable=\"true\"]::handle {"
                                   "    width: 16px;"
                                   "    background-image: url(:/coregui/horizontal-splitter-handle.png);"
-                                  "}"
+                                  "}").arg(bgColorName)
                 );
     bottomSplitter->setProperty("stylable", true);
     bottomSplitter_ = bottomSplitter;

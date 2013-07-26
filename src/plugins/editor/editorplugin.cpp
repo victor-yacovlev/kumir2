@@ -342,14 +342,34 @@ void EditorPlugin::changeGlobalState(ExtensionSystem::GlobalState prev, Extensio
 
 void EditorPlugin::highlightLineGreen(int documentId, int lineNo, quint32 colStart, quint32 colEnd)
 {
-    if (d->editors[documentId].e)
-        d->editors[documentId].e->setLineHighlighted(lineNo, QColor(Qt::darkGreen), colStart, colEnd);
+    if (d->editors[documentId].e) {
+        const QColor bgColor = d->editors[documentId].e->palette().color(QPalette::Base);
+        int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
+        QColor color;
+        if (darkness / 3 <= 127) {
+            color = QColor("palegreen");
+        }
+        else {
+            color = QColor(Qt::darkGreen);
+        }
+        d->editors[documentId].e->setLineHighlighted(lineNo, color, colStart, colEnd);
+    }
 }
 
 void EditorPlugin::highlightLineRed(int documentId, int lineNo, quint32 colStart, quint32 colEnd)
 {
-    if (d->editors[documentId].e)
-        d->editors[documentId].e->setLineHighlighted(lineNo, QColor(Qt::red), colStart, colEnd);
+    if (d->editors[documentId].e) {
+        const QColor bgColor = d->editors[documentId].e->palette().color(QPalette::Base);
+        int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
+        QColor color;
+        if (darkness / 3 <= 127) {
+            color = QColor("lightcoral");
+        }
+        else {
+            color = QColor(Qt::red);
+        }
+        d->editors[documentId].e->setLineHighlighted(lineNo, color, colStart, colEnd);
+    }
 }
 
 void EditorPlugin::unhighlightLine(int documentId)

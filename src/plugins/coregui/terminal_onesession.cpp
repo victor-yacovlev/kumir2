@@ -297,6 +297,17 @@ uint OneSession::drawMainText(QPainter &p, const QPoint & topLeft) const
                 parent_->hasFocus() ? QPalette::Active : QPalette::Inactive,
                 QPalette::HighlightedText
                 ).color();
+    QColor mainColor(Qt::black);
+    QColor inputColor(Qt::blue);
+    QColor errorColor(Qt::red);
+    const QColor bgColor = parent_->palette().color(QPalette::Base);
+    int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
+    if (darkness / 3 <= 127) {
+        // Invert color for dark backround
+        mainColor = QColor(Qt::white);
+        inputColor = QColor("lime");
+        errorColor = QColor("orangered");
+    }
     p.save();
     p.setFont(font_);
     for (size_t i=0; i<visibleLines_.size(); i++) {
@@ -318,11 +329,11 @@ uint OneSession::drawMainText(QPainter &p, const QPoint & topLeft) const
             if (spec & SelectionMask)
                 p.setPen(selectedTextColor);
             else if (spec == CS_Error || spec == CS_InputError)
-                p.setPen(QColor(Qt::red));
+                p.setPen(errorColor);
             else if (spec == CS_Input)
-                p.setPen(QColor(Qt::blue));
+                p.setPen(inputColor);
             else
-                p.setPen(QColor(Qt::black));
+                p.setPen(mainColor);
             p.drawText(xx, yy, QString(symbol));
             xx += atom.width();
         }

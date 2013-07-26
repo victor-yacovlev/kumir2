@@ -30,6 +30,9 @@ public:
     void changeSettings(ExtensionSystem::SettingsPtr settings);
     ~SettingsPage();
 
+    static QString KeyInvertColorsIfDarkSystemTheme;
+    static bool DefaultInvertColorsIfDarkSystemTheme;
+
     static QString KeyColorKw;
     static QString KeyColorType;
     static QString KeyColorNumeric;

@@ -386,7 +386,7 @@ QColor StatusBar::errorColor() const
     const int Thereshold = 128 * 3;
     if (value < Thereshold) {
         // Assuming dark background palette
-        return QColor(Qt::yellow);
+        return QColor("orangered");
     }
     else {
         return QColor(Qt::red);

@@ -839,6 +839,26 @@ void EditorPlane::paintEvent(QPaintEvent *e)
     paintSelection(&p, e->rect().translated(-offset()));
     paintRectSelection(&p, e->rect().translated(-offset()));
 
+    QBrush highlightLineBrush;
+    if (highlightedTextLineNumber_!=-1)
+    {
+        const QColor bgColor = palette().color(QPalette::Base);
+        int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
+        if (darkness / 3 <= 127) {
+            highlightLineBrush = QBrush(highlightedTextLineColor_);
+        }
+        else {
+            QLinearGradient gr(QPointF(0,0),QPointF(0,1));
+            gr.setCoordinateMode(QGradient::ObjectBoundingMode);
+            QColor c1 = highlightedTextLineColor_.lighter();
+            c1.setAlpha(32);
+            QColor c2 = highlightedTextLineColor_.lighter();
+            gr.setColorAt(0, c1);
+            gr.setColorAt(1, c2);
+            highlightLineBrush = QBrush(gr);
+        }
+    }
+
     // Paint line highlight if need before text itself
     if (highlightedTextLineNumber_!=-1)
     {
@@ -847,24 +867,15 @@ void EditorPlane::paintEvent(QPaintEvent *e)
                     lineHeight() * highlightedTextLineNumber_+1,
                     widthInChars() * charWidth(),
                     lineHeight() + HIGHTLIGHT_LINE_VERTICAL_PADDING
-                    );
-
-        // Prepare a brush gradient based on current highlight color
-        QLinearGradient gr(QPointF(0,0),QPointF(0,1));
-        gr.setCoordinateMode(QGradient::ObjectBoundingMode);
-        QColor c1 = highlightedTextLineColor_.lighter();
-        c1.setAlpha(32);
-        QColor c2 = highlightedTextLineColor_.lighter();
-        gr.setColorAt(0, c1);
-        gr.setColorAt(1, c2);
+                    );        
 
         // Draw a rect
-        p.setBrush(gr);
+        p.setBrush(highlightLineBrush);
         p.setPen(Qt::NoPen);
         p.drawRect(highlightRect);
 
         // Draw rect borders
-        p.setPen(highlightedTextLineColor_);
+        p.setPen(highlightedTextLineColor_);        
         p.drawLine(highlightRect.topLeft(), highlightRect.topRight());
         p.drawLine(highlightRect.bottomLeft(), highlightRect.bottomRight());
 
@@ -912,23 +923,15 @@ void EditorPlane::paintEvent(QPaintEvent *e)
                     lineHeight() + HIGHTLIGHT_LINE_VERTICAL_PADDING
                     );
 
-        // Prepare a brush gradient based on current highlight color
-        QLinearGradient gr(QPointF(0,0),QPointF(0,1));
-        gr.setCoordinateMode(QGradient::ObjectBoundingMode);
-        QColor c1 = highlightedTextLineColor_.lighter();
-        c1.setAlpha(32);
-        QColor c2 = highlightedTextLineColor_.lighter();
-        gr.setColorAt(0, c1);
-        gr.setColorAt(1, c2);
-
         // Draw a rect
-        p.setBrush(gr);
+        p.setBrush(highlightLineBrush);
         p.setPen(Qt::NoPen);
         p.drawRect(highlightLeftRect);
         p.drawRect(highlightRightRect);
 
         // Draw borders
         p.setPen(highlightedTextLineColor_);
+
         p.drawLine(highlightLeftRect.topLeft(),
                    highlightLeftRect.topRight());
         p.drawLine(highlightLeftRect.bottomLeft(),
@@ -942,6 +945,11 @@ void EditorPlane::paintEvent(QPaintEvent *e)
             // Draw a rect around statement
             QPen pen;
             pen.setColor(highlightedTextLineColor_);
+            const QColor bgColor = palette().color(QPalette::Base);
+            int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
+            if (darkness / 3 <= 127) {
+                pen.setColor(highlightedTextLineColor_.darker());
+            }
             pen.setStyle(Qt::SolidLine);
             pen.setWidth(2);
             p.setPen(pen);
@@ -1142,6 +1150,19 @@ void EditorPlane::paintCursor(QPainter *p, const QRect &rect)
     {
         p->setPen(Qt::NoPen);
         p->setBrush(QColor(Qt::black));
+        if (settings_->value(SettingsPage::KeyInvertColorsIfDarkSystemTheme,
+                            SettingsPage::DefaultInvertColorsIfDarkSystemTheme)
+                .toBool()
+                )
+        {
+            // Check for dark background
+            const QColor bgColor = palette().color(QPalette::Base);
+            int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
+            if (darkness / 3 <= 127) {
+                // Invert color for dark backround
+                p->setBrush(Qt::white);
+            }
+        }
         p->drawRect(cr);
     }
 }
@@ -2050,6 +2071,11 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
                 : QColor(Qt::lightGray);
 
         p->setPen(textColor);
+        const QColor bgColor = palette().color(QPalette::Base);
+        int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
+        if ((darkness / 3 <= 127) && (highlightedTextLineNumber_ + 1== realLineNumber)) {
+            p->setPen(QColor(Qt::black));
+        }
 
         // Calculate number width to align it centered
         const QString txt = QString::number(realLineNumber);
@@ -2199,6 +2225,13 @@ void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
     errorColor.setAlpha(marginBackgroundAlpha_);
     QColor marginColor(Qt::black);
     marginColor.setAlpha(marginBackgroundAlpha_);
+    const QColor bgColor = palette().color(QPalette::Base);
+    int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
+    if (darkness / 3 <= 127) {
+        // Invert color for dark backround
+        errorColor = QColor("orangered");
+        marginColor = QColor(Qt::white);
+    }
 
     // Calculate text position
     uint marginTextLeft = marginLeftBound() +
@@ -2221,8 +2254,12 @@ void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
                     : document_->marginAt(i).errors.first();
 
             // Set corresponding text color
-            p->setPen(document_->marginAt(i).text.length() > 0
-                      ? marginColor : errorColor );
+            QColor color = document_->marginAt(i).text.length() > 0
+                    ? marginColor : errorColor ;
+            if (darkness / 3 <= 127 && highlightedTextLineNumber_ == i) {
+                color = QColor(Qt::black);
+            }
+            p->setPen(color);
 
             // Draw a text line
             p->drawText(marginTextLeft, y+offset().y(), text);
@@ -2298,6 +2335,20 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
 
         // Draw black 'dots' at start of lines
         p->setBrush(QColor(Qt::black));
+        if (settings_->value(SettingsPage::KeyInvertColorsIfDarkSystemTheme,
+                            SettingsPage::DefaultInvertColorsIfDarkSystemTheme)
+                .toBool()
+                )
+        {
+            // Check for dark background
+            const QColor bgColor = palette().color(QPalette::Base);
+            int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
+            if (darkness / 3 <= 127) {
+                // Invert color for dark backround
+                if (i != highlightedTextLineNumber_)
+                    p->setBrush(Qt::white);
+            }
+        }
         p->setPen(Qt::NoPen);
         for (uint j=0; j<indent; j++) {
             const uint dotSize = qMin(lineHeight() / 3u,
@@ -2341,6 +2392,13 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
 
             // Set proper format for lexem type and current character
             setProperFormat(p, curType, text[j]);
+            if (i == highlightedTextLineNumber_) {
+                const QColor bgColor = palette().color(QPalette::Base);
+                int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
+                if (darkness / 3 <= 127) {
+                    p->setPen(QColor(Qt::black));
+                }
+            }
 
             // If this character is selected, then set proper text color
             if (j<uint(sm.size()) && sm[j]) {
@@ -2373,6 +2431,12 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
             // If there is an error then draw underline
             if (curType & Shared::LxTypeError) {
                 p->setPen(QPen(QColor(Qt::red),1));
+                const QColor bgColor = palette().color(QPalette::Base);
+                int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
+                if (darkness / 3 <= 127) {
+                    // Invert color for dark backround
+                    p->setPen(QColor("orangered"));
+                }
                 QPolygon pp = errorUnderline(offset, y+2, charWidth());
                 p->drawPolyline(pp);
             }
@@ -2543,6 +2607,23 @@ void EditorPlane::setProperFormat(
 
     // Update a painter
     p->setFont(f);
+
+    if (settings_->value(SettingsPage::KeyInvertColorsIfDarkSystemTheme,
+                        SettingsPage::DefaultInvertColorsIfDarkSystemTheme)
+            .toBool()
+            )
+    {
+        // Check for dark background
+        const QColor bgColor = palette().color(QPalette::Base);
+        int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
+        if (darkness / 3 <= 127) {
+            // Invert color for dark backround
+            c.setRed(255 - c.red());
+            c.setGreen(255 - c.green());
+            c.setBlue(255 - c.blue());
+        }
+    }
+
     p->setPen(c);
 }
 

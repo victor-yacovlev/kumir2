@@ -3,6 +3,9 @@
 
 namespace Editor {
 
+QString SettingsPage::KeyInvertColorsIfDarkSystemTheme = "Highlight/InvertColorsIfDarkTheme";
+bool SettingsPage::DefaultInvertColorsIfDarkSystemTheme = true;
+
 QString SettingsPage::KeyColorKw = "Highlight/Keyword/Color";
 QString SettingsPage::KeyColorType = "Highlight/Type/Color";
 QString SettingsPage::KeyColorNumeric = "Highlight/Numeric/Color";
@@ -105,6 +108,8 @@ SettingsPage::SettingsPage(ExtensionSystem::SettingsPtr  settings, QWidget *pare
 
 void SettingsPage::accept()
 {
+    settings_->setValue(KeyInvertColorsIfDarkSystemTheme, ui->invertColors->isChecked());
+
     settings_->setValue(KeyColorKw, buttonColor(ui->kwColor).name());
     settings_->setValue(KeyColorType, buttonColor(ui->typeColor).name());
     settings_->setValue(KeyColorNumeric, buttonColor(ui->numericColor).name());
@@ -169,6 +174,9 @@ void SettingsPage::accept()
 
 void SettingsPage::init()
 {
+    ui->invertColors->setChecked(settings_->value(KeyInvertColorsIfDarkSystemTheme,
+                                                  DefaultInvertColorsIfDarkSystemTheme).toBool());
+
     ui->groupFont->setCollapsed(settings_->value("Settings/FontCollapsed", 1).toBool());
     ui->groupKeyboard->setCollapsed(settings_->value("Settings/KeyboardCollapsed", 1).toBool());
     ui->groupSyntax->setCollapsed(settings_->value("Settings/SyntaxCollapsed", 1).toBool());
