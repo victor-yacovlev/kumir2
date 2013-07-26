@@ -2,7 +2,6 @@
 #include "extensionsystem/pluginmanager.h"
 #include "interfaces/actorinterface.h"
 #include "dataformats/ast_algorhitm.h"
-#include "debuggerwindow.h"
 #include "interfaces/coursesinterface.h"
 
 namespace CoreGUI {
@@ -28,7 +27,6 @@ KumirProgram::KumirProgram(QObject *parent)
     , a_stop(0)
     , gr_actions(0)
     , w_mainWidget(0)
-    , w_debuggerWindow(0)
 {
     b_blind = false;
     courseManagerRequest_ = false;
@@ -196,7 +194,6 @@ void KumirProgram::setBytecodeRun(KPlugin *run)
 
 void KumirProgram::fastRun()
 {
-    if (w_debuggerWindow) w_debuggerWindow->reset();
     b_processUserTerminated = false;
     s_endStatus = "";
     if (e_state!=Idle) {
@@ -260,7 +257,6 @@ void KumirProgram::fastRun()
 
 void KumirProgram::blindRun()
 {
-    if (w_debuggerWindow) w_debuggerWindow->reset();
     if (e_state==FastRun)
         return;
     b_blind = true;
@@ -277,7 +273,6 @@ void KumirProgram::blindRun()
 
 void KumirProgram::testingRun()
 {
-    if (w_debuggerWindow) w_debuggerWindow->reset();
     if (e_state==FastRun)
         return;
 
@@ -306,7 +301,6 @@ void KumirProgram::testingRun()
 
 void KumirProgram::regularRun()
 {
-    if (w_debuggerWindow) w_debuggerWindow->reset();
     if (e_state==FastRun)
         return;
     b_blind = false;
@@ -332,7 +326,6 @@ void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel deb
     bool ok = false;
     QString exeFileName;
     if (analizer->resultType() == AnalizerInterface::RT_AST) {
-        if (w_debuggerWindow) w_debuggerWindow->reset();
         ok = true;
         bool mustRegenerate = !m_ast->lastModified.isValid() ||
                 !runner->loadedProgramVersion().isValid() ||
@@ -423,7 +416,6 @@ void KumirProgram::stop()
         b_processUserTerminated = true;
         m_process->kill();
     }
-    if (w_debuggerWindow) w_debuggerWindow->reset();
 }
 
 
@@ -476,7 +468,6 @@ void KumirProgram::handleRunnerStopped(int rr)
         e_state = Idle;
         m_terminal->clearFocus();
         plugin_editor->unhighlightLine(documentId_);
-        if (w_debuggerWindow) w_debuggerWindow->reset();
     }
 
     typedef Shared::CoursesInterface CI;

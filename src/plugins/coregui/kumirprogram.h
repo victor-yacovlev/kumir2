@@ -91,7 +91,6 @@ private:
     int i_timerId;
     QWidget * w_mainWidget;
     bool b_processUserTerminated;
-    class DebuggerWindow * w_debuggerWindow;
 };
 
 } // namespace CoreGui

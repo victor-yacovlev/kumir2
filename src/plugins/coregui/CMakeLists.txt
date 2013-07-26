@@ -14,7 +14,6 @@ set(SOURCES
     terminal_plane.cpp
     tabbar.cpp
     aboutdialog.cpp
-    debuggerwindow.cpp
     statusbar.cpp
     debuggerview.cpp
 )
@@ -41,7 +40,6 @@ set(MOC_HEADERS
     tabbar.h
     aboutdialog.h
     tabwidgetelement.h
-    debuggerwindow.h
     statusbar.h
     debuggerview.h
 )
