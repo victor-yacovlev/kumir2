@@ -826,8 +826,8 @@ void EditorPlane::paintEvent(QPaintEvent *e)
     // Create a painter
     QPainter p(this);
 
-    // Paint a plain background
-    paintBackground(&p, e->rect());
+//    // Paint a plain background
+//    paintBackground(&p, e->rect());
 
     // Save state before translating scroll offsets
     p.save();
@@ -977,10 +977,12 @@ void EditorPlane::paintEvent(QPaintEvent *e)
     p.setBrush(Qt::NoBrush);
     const QBrush br = hasFocus()
             ? palette().brush(QPalette::Highlight)
-            : palette().brush(QPalette::Dark);
+            : palette().brush(QPalette::Window);
+    p.setPen(QPen(br, 3));
+    p.drawLine(0, 0, width()-1, 0);
+    p.drawLine(0, height()-1, width()-1, height()-1);
+    p.drawLine(0, 0, 0, height()-1);
 
-    p.setPen(QPen(br,1));
-    p.drawRect(0,0,width()-1,height()-1);
 
     // Draw a delimeter ruler between visible/hidden text if need
     if (teacherModeFlag_ && hasAnalizerFlag_) {
@@ -1882,9 +1884,9 @@ QRect EditorPlane::marginBackgroundRect() const
 {
     return QRect(
                 marginLeftBound() + MARGIN_LINE_WIDTH, // left
-                0, // top
-                width() - marginLeftBound() - MARGIN_LINE_WIDTH, // width
-                height() // height
+                1, // top
+                width() - marginLeftBound() - MARGIN_LINE_WIDTH -3, // width
+                height() - 2 // height
                 );
 }
 

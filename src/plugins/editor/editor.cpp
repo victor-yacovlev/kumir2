@@ -398,6 +398,7 @@ void Editor::setHelpViewer(DocBookViewer::DocBookView *viewer)
 Editor::Editor(bool initiallyNotSaved, ExtensionSystem::SettingsPtr settings, AnalizerInterface * analizer, int documentId, QWidget *parent) :
     QWidget()
 {
+    installEventFilter(this);
     setParent(parent);
     d = new EditorPrivate;
     d->helpViewer = nullptr;
@@ -412,8 +413,28 @@ Editor::Editor(bool initiallyNotSaved, ExtensionSystem::SettingsPtr settings, An
     d->analizer = analizer;
     d->doc->id_ = documentId;
     d->settings = settings;
+    static const char * ScrollBarCSS = ""
+            "QScrollBar {"
+            "   width: 12px;"
+            "   background-color: transparent;"
+            "   padding-right: 4px;"
+            "   border: 0;"
+            "}"
+            "QScrollBar:handle {"
+            "   background-color: gray;"
+            "   border-radius: 4px;"
+            "}"
+            "QScrollBar:add-line {"
+            "   height: 0;"
+            "}"
+            "QScrollBar:sub-line {"
+            "   height: 0;"
+            "}"
+            ;
     d->horizontalScrollBar = new QScrollBar(Qt::Horizontal, this);
     d->verticalScrollBar = new QScrollBar(Qt::Vertical, this);
+    d->verticalScrollBar->setStyleSheet(ScrollBarCSS);
+    d->verticalScrollBar->installEventFilter(this);
     d->plane = new EditorPlane(
                 d->doc,
                 d->analizer,
@@ -425,6 +446,7 @@ Editor::Editor(bool initiallyNotSaved, ExtensionSystem::SettingsPtr settings, An
                 d->verticalScrollBar,
                 d->analizer!=NULL,
                 this);
+    d->plane->installEventFilter(this);
     connect(d->plane, SIGNAL(message(QString)), this, SIGNAL(message(QString)));
 
     d->findReplace = new FindReplace(d->doc, d->cursor, d->plane);
@@ -479,6 +501,45 @@ Editor::Editor(bool initiallyNotSaved, ExtensionSystem::SettingsPtr settings, An
     connect(d->plane, SIGNAL(disableInsertActions()), d, SLOT(disableInsertActions()));
 }
 
+void Editor::paintEvent(QPaintEvent * e)
+{
+    QPainter p(this);
+    p.setPen(Qt::NoPen);
+    p.setBrush(palette().brush(QPalette::Base));
+    p.drawRect(0, 0, width(), height());
+    QWidget::paintEvent(e);
+    p.end();
+    p.begin(this);
+    const QBrush br = d->plane->hasFocus()
+            ? palette().brush(QPalette::Highlight)
+            : palette().brush(QPalette::Window);
+    p.setPen(QPen(br, 3));
+    p.drawLine(width()-1, 0, width()-1, height()-1);
+    p.end();
+    e->accept();
+}
+
+bool Editor::eventFilter(QObject *obj, QEvent *evt)
+{
+    if (obj == d->verticalScrollBar && evt->type() == QEvent::Paint) {
+        QPainter p(d->verticalScrollBar);
+        const QBrush br = d->plane->hasFocus()
+                ? palette().brush(QPalette::Highlight)
+                : palette().brush(QPalette::Window);
+        p.setPen(QPen(br, 3));
+        p.drawLine(0, 0,
+                   d->verticalScrollBar->width()-1, 0);
+        p.drawLine(0, d->verticalScrollBar->height()-1,
+                   d->verticalScrollBar->width()-1, d->verticalScrollBar->height()-1);
+        p.end();
+    }
+    else if (obj == d->plane) {
+        if (evt->type() == QEvent::FocusIn || evt->type() == QEvent::FocusOut) {
+            d->verticalScrollBar->repaint();
+        }
+    }
+    return false;
+}
 
 void EditorPrivate::createActions()
 {

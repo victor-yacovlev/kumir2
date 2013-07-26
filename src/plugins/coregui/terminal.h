@@ -45,6 +45,7 @@ protected:
     void focusOutEvent(QFocusEvent *);
     void resizeEvent(QResizeEvent *);
     void paintEvent(QPaintEvent *);
+    bool eventFilter(QObject *, QEvent *);
     void saveText(const QString & suggestedFileName, const QString & text);
 
 protected slots:

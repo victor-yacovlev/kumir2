@@ -58,6 +58,8 @@ public:
     void unsetAnalizer();
     bool forceNotSavedFlag() const;
     void setForceNotSavedFlag(bool v);
+    void paintEvent(QPaintEvent *);
+    bool eventFilter(QObject *, QEvent *);
 public slots:
     void undo();
     void redo();

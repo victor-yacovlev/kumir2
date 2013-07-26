@@ -13,8 +13,10 @@ Term::Term(QWidget *parent) :
 //    setMinimumHeight(200);
     QGridLayout * l = m_layout = new QGridLayout();
     l->setContentsMargins(0,0,0,0);
+    l->setSpacing(0);
     setLayout(l);
     m_plane = new Plane(this);
+    m_plane->installEventFilter(this);
     l->addWidget(m_plane, 1, 1, 1, 1);
     sb_vertical = new QScrollBar(Qt::Vertical, this);
 //    sb_vertical->setFixedWidth(qMin(10, sb_vertical->width()));
@@ -38,6 +40,7 @@ Term::Term(QWidget *parent) :
             ;
     l->addWidget(sb_vertical, 1, 2, 1, 1);
     sb_vertical->setStyleSheet(ScrollBarCSS);
+    sb_vertical->installEventFilter(this);
     sb_horizontal = new QScrollBar(Qt::Horizontal, this);
     l->addWidget(sb_horizontal, 2, 1, 1, 1);
 //    QToolBar * tb = m_toolBar = new QToolBar(this);
@@ -140,16 +143,41 @@ void Term::paintEvent(QPaintEvent *e)
     p.setPen(Qt::NoPen);
     p.setBrush(palette().brush(QPalette::Base));
     p.drawRect(0,0,width(), height());
+    p.end();
     QWidget::paintEvent(e);
+    p.begin(this);
     const QBrush br = m_plane->hasFocus()
             ? palette().brush(QPalette::Highlight)
             : palette().brush(QPalette::Window);
-    p.setPen(QPen(br, 1));
+    p.setPen(QPen(br, 3));
     p.setBrush(Qt::NoBrush);
-    p.drawRect(0, 0, width()-1, height()-1);
+    p.drawLine(width()-1, 0, width()-1, height()-1);
     p.end();
     e->accept();
 }
+
+bool Term::eventFilter(QObject *obj, QEvent *evt)
+{
+    if (obj == sb_vertical && evt->type() == QEvent::Paint) {
+        QPainter p(sb_vertical);
+        const QBrush br = m_plane->hasFocus()
+                ? palette().brush(QPalette::Highlight)
+                : palette().brush(QPalette::Window);
+        p.setPen(QPen(br, 3));
+        p.drawLine(0, 0,
+                   sb_vertical->width()-1, 0);
+        p.drawLine(0, sb_vertical->height()-1,
+                   sb_vertical->width()-1, sb_vertical->height()-1);
+        p.end();
+    }
+    else if (obj == m_plane) {
+        if (evt->type() == QEvent::FocusIn || evt->type() == QEvent::FocusOut) {
+            sb_vertical->repaint();
+        }
+    }
+    return false;
+}
+
 
 void Term::changeGlobalState(ExtensionSystem::GlobalState , ExtensionSystem::GlobalState current)
 {
