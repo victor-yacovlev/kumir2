@@ -76,7 +76,8 @@ PluginManager::PluginManager()
     if (unnamedArgumentsIndexBegin) {
         for (int i=unnamedArgumentsIndexBegin; i<arguments.size(); i++) {
             const QString & arg = arguments[i];
-            d->unnamedProgramArguments.push_back(arg);
+            if (!arg.startsWith("["))
+                d->unnamedProgramArguments.push_back(arg);
         }
     }
 }
