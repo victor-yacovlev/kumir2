@@ -2429,7 +2429,7 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
             }
 
             // If there is an error then draw underline
-            if (curType & Shared::LxTypeError) {
+            if (curType & Shared::LxTypeError && !(curType & Shared::LxTypeComment)) {
                 p->setPen(QPen(QColor(Qt::red),1));
                 const QColor bgColor = palette().color(QPalette::Base);
                 int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
