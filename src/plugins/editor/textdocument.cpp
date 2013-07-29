@@ -36,7 +36,8 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
         data_.append(tl);
     }
     TextLine tl = data_[line];
-    while (pos>tl.text.length()) {
+    uint nlOffset = text == "\n" ? 1 : 0;
+    while (pos>tl.text.length() + nlOffset) {
         blankChars ++;
         tl.text.append(' ');
         tl.selected << false;

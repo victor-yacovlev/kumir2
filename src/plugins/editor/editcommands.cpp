@@ -150,7 +150,7 @@ void RemoveCommand::redo()
 //            removedText = curLineText.mid(textPos, count);
         }
         else {
-            insertedSpaces = textPos-curLineText.length();
+//            insertedSpaces = textPos-curLineText.length();
         }
         if (insertedSpaces) {
             int bl;
