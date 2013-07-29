@@ -1593,6 +1593,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             vc->setProperty("fileName", url.toLocalFile());
             vc->setProperty("realFileName", url.toLocalFile());
             vc->setProperty("title", fileName);
+            m_plugin->plugin_editor->loadDocument(id, url.toLocalFile(), true);
             if (b_notabs) {
                 while(ui->tabWidget->count()) ui->tabWidget->removeTab(0);
             }
