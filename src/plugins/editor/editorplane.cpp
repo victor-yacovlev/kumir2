@@ -752,7 +752,7 @@ void EditorPlane::updateScrollBars()
 }
 
 void EditorPlane::ensureCursorVisible()
-{
+{    
     const int lineNoWidth = 5;
     QRect cr(5 + cursor_->column(),
              cursor_->row(),

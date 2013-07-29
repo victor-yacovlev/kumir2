@@ -315,6 +315,8 @@ void EditorPrivate::playMacro()
         for (int i=0; i<m.commands.size(); i++) {
             cursor->evaluateCommand(m.commands[i]);
         }
+        plane->updateScrollBars();
+        plane->ensureCursorVisible();
     }
 }
 

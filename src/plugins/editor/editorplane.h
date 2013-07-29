@@ -47,6 +47,9 @@ public:
     void setTeacherMode(bool v);
     inline bool isTeacherMode() const { return teacherModeFlag_; }
     void addContextMenuAction(QAction * a);
+    void updateScrollBars();
+    void findCursor();
+    void ensureCursorVisible();
 public slots:
     void selectAll();
     void copy();
@@ -73,10 +76,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent *e);
     bool eventFilter(QObject *, QEvent *);
     void contextMenuEvent(QContextMenuEvent *);
-    void initMouseCursor();
-    void updateScrollBars();
-    void findCursor();
-    void ensureCursorVisible();
+    void initMouseCursor();    
     void ensureHighlightedLineVisible();
 //    void updateOffset();
     void paintEvent(QPaintEvent *);
