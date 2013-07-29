@@ -355,9 +355,9 @@ void KumirRunPlugin::runStepInto()
     pRun_->runStepIn();
 }
 
-void KumirRunPlugin::runStepOut()
+void KumirRunPlugin::runToEnd()
 {
-    pRun_->runStepOut();
+    pRun_->runToEnd();
 }
 
 void KumirRunPlugin::runStepOver()

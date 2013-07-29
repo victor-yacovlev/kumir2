@@ -265,9 +265,8 @@ public:
             int /*fromLine*/, int /*toLine*/
             ) { return false; }
 
-    inline virtual bool noticeOnFunctionReturn(
-            int /*lineNo*/
-            ) { return false; }
+    inline virtual bool noticeOnFunctionReturn()
+    { return false; }
 
     inline virtual bool noticeOnLineChanged(
             int /*lineNo*/,

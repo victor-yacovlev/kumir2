@@ -86,13 +86,13 @@ void Run::runStepIn()
     start();
 }
 
-void Run::runStepOut()
+void Run::runToEnd()
 {
     stepDoneFlag_ = false;
     algDoneFlag_ = false;
     emit lineChanged(-1, 0u, 0u);
     runMode_ = RM_StepOut;
-    vm->setNextCallOut();
+    vm->setNextCallToEndOfContext();
     start();
 }
 
@@ -201,6 +201,15 @@ bool Run::noticeOnLineChanged(int lineNo, quint32 colStart, quint32 colEnd)
         emit lineChanged(lineNo, colStart, colEnd);
     else
         emit lineChanged(-1, 0u, 0u);
+    return true;
+}
+
+bool Run::noticeOnFunctionReturn()
+{
+    algDoneMutex_->lock();
+    algDoneFlag_ = true;
+    algDoneMutex_->unlock();
+    emit lineChanged(vm->effectiveLineNo(), vm->effectiveColumn().first, vm->effectiveColumn().second);
     return true;
 }
 

@@ -54,12 +54,12 @@ public slots:
     void stop();
     void runStepOver();
     void runStepIn();
-    void runStepOut();
+    void runToEnd();
     void runBlind();
     void runContinuous();
 
     bool noticeOnLineChanged(int lineNo, uint32_t colStart, uint32_t colEnd);
-
+    bool noticeOnFunctionReturn();
     bool noticeOnStepsChanged(quint64 stepsDone);
 
     bool setTextToMargin(int lineNo, const String & s, bool red);

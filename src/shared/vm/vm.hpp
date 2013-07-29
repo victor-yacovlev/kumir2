@@ -120,7 +120,7 @@ public /*methods*/:
 
     /** Debug control methods */
     inline void setNextCallInto();
-    inline void setNextCallOut();
+    inline void setNextCallToEndOfContext();
     inline void setNextCallToEnd();
     inline void setNextCallStepOver();
 
@@ -2625,8 +2625,8 @@ void KumirVM::do_ret()
     stacksMutex_->lock();
     if (contextsStack_.top().runMode==CRM_UntilReturn) {
         if (debugHandler_)
-            debugHandler_->noticeOnFunctionReturn(contextsStack_.top().lineNo);
-        contextsStack_.top().runMode=CRM_ToEnd;
+            debugHandler_->noticeOnFunctionReturn();
+        contextsStack_.top().runMode=CRM_OneStep;
     }
     else {
         lastContext_ = contextsStack_.top();        
@@ -3111,7 +3111,7 @@ void KumirVM::setNextCallInto()
     nextCallInto_ = true;
 }
 
-void KumirVM::setNextCallOut()
+void KumirVM::setNextCallToEndOfContext()
 {
     if (contextsStack_.size()==0)
         return;

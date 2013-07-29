@@ -59,7 +59,7 @@ public slots:
     void runContinuous();
     void runStepOver();
     void runStepInto();
-    void runStepOut();
+    void runToEnd();
     void runTesting();
     void terminate();
 

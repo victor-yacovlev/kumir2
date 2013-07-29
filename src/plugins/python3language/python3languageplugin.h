@@ -68,7 +68,7 @@ public:
     void runContinuous();
     void runStepOver();
     void runStepInto();
-    void runStepOut();
+    void runToEnd();
     void runTesting();
     bool isTestingRun() const;
     void terminate();

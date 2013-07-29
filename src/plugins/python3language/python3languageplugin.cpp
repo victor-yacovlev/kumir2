@@ -679,7 +679,7 @@ void Python3LanguagePlugin::runStepInto()
     runStepOver();
 }
 
-void Python3LanguagePlugin::runStepOut()
+void Python3LanguagePlugin::runToEnd()
 {
     runStepOver();
 }

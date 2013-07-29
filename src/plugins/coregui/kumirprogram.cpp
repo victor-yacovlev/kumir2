@@ -75,9 +75,9 @@ KumirProgram::KumirProgram(QObject *parent)
 //    a_stepOut->setIcon(QIcon::fromTheme("debug-step-out", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-out.png")));
     connect(a_stepOut, SIGNAL(triggered()), this, SLOT(stepOut()));
 #ifndef Q_OS_MAC
-    a_stepOut->setShortcut(QKeySequence("Shift+F10"));
+    a_stepOut->setShortcut(QKeySequence("Shift+F8"));
 #else
-    a_stepOut->setShortcut(QKeySequence("Shift+F10"));
+    a_stepOut->setShortcut(QKeySequence("Shift+F8"));
 #endif
     a_stepOut->setToolTip(tr("Run to end of algorhitm")+" <b>"+a_stepOut->shortcut().toString()+"</b>");
 
@@ -328,7 +328,7 @@ void KumirProgram::stepOut()
     if (e_state!=StepRun)
         return;
     setAllActorsAnimationFlag(true);
-    plugin_bytecodeRun->runStepOut();
+    plugin_bytecodeRun->runToEnd();
 }
 
 void KumirProgram::stop()
