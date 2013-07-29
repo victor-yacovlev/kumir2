@@ -62,6 +62,14 @@ FindReplace::FindReplace(
             this, SLOT(handleReturnPressed()));
 
     setVisible(false);
+
+    static const QString iconsRoot =
+            qApp->property("sharePath").toString() + "/editor/";
+    ui->btnNext->setIcon(QIcon(iconsRoot+"find-next.png"));
+    ui->btnPrev->setIcon(QIcon(iconsRoot+"find-previous.png"));
+    ui->btnClose->setIcon(QIcon(iconsRoot+"find-close.png"));
+    ui->btnMore->setIcon(QIcon(iconsRoot+"find-options.png"));
+    setCursor(Qt::ArrowCursor);
 }
 
 void FindReplace::updateLayout(bool replaceMode)

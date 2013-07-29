@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="search_dialog_icons.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="91.739608"
+     inkscape:cy="1009.9741"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1582"
+     inkscape:window-height="1030"
+     inkscape:window-x="96"
+     inkscape:window-y="-3"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:none;fill-rule:evenodd;stroke:none"
+       id="rect2985"
+       width="22"
+       height="22"
+       x="20.213564"
+       y="33.506145"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/editor/find-next.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 23.715817,41.008398 7.544317,6.995495 7.451177,-6.909131"
+       id="path3755-8"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/editor/find-next.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 23.715817,41.008398 7.544317,6.995495 7.451177,-6.909131"
+       id="path3755"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccc"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/editor/find-next.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       style="fill:none;fill-rule:evenodd;stroke:none"
+       id="rect2985-3"
+       width="22"
+       height="22"
+       x="-80"
+       y="-55.362183"
+       transform="scale(-1,-1)"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/editor/find-previous.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 76.49775,47.85993 -7.54432,-6.99549 -7.45118,6.90913"
+       id="path3755-8-8"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/editor/find-previous.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 76.49775,47.85993 -7.54432,-6.99549 -7.45118,6.90913"
+       id="path3755-87"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccc"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/editor/find-previous.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       style="fill:none;fill-rule:evenodd;stroke:none"
+       id="rect2985-7"
+       width="22"
+       height="22"
+       x="94.5"
+       y="33.371574"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/editor/find-close.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <g
+       id="g3860"
+       transform="translate(-26.57029,-4.251126)"
+       style="fill:none"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/editor/find-close.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <path
+         inkscape:connector-curvature="0"
+         id="path3755-8-9"
+         d="m 124.50225,41.864435 7.54432,6.995496 7.45118,-6.909132"
+         style="fill:none;stroke:#ffffff;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path3755-8-9-9"
+         d="m 139.63833,55.380961 -7.54432,-6.9955 -7.45118,6.90913"
+         style="fill:none;stroke:#ffffff;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <path
+         sodipodi:nodetypes="ccc"
+         inkscape:connector-curvature="0"
+         id="path3755-4-4"
+         d="m 139.63833,55.380961 -7.54432,-6.9955 -7.45118,6.90913"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <path
+         sodipodi:nodetypes="ccc"
+         inkscape:connector-curvature="0"
+         id="path3755-4"
+         d="m 124.50225,41.864435 7.54432,6.995496 7.45118,-6.909132"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    </g>
+    <rect
+       style="fill:none;fill-rule:evenodd;stroke:none"
+       id="rect2985-7-0"
+       width="22"
+       height="22"
+       x="135.02536"
+       y="33.558239"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/editor/find-options.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <g
+       transform="translate(8.4930828,-0.88388602)"
+       id="g3890-1"
+       style="fill:none;stroke:#ffffff;stroke-width:4;stroke-miterlimit:4;stroke-dasharray:none"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/editor/find-options.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <path
+         inkscape:connector-curvature="0"
+         id="path3884-6"
+         d="m 129.57732,38.547834 15.90991,0"
+         style="fill:none;stroke:#ffffff;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path3886-7"
+         d="m 129.57732,45.442148 11.49049,0"
+         style="fill:none;stroke:#ffffff;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path3888-9"
+         d="m 129.57732,52.336416 15.02602,0"
+         style="fill:none;stroke:#ffffff;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    </g>
+    <g
+       id="g3890"
+       transform="translate(8.4930828,-0.88388602)"
+       style="fill:none"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/editor/find-options.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <path
+         inkscape:connector-curvature="0"
+         id="path3884"
+         d="m 129.57732,38.547834 15.90991,0"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path3886"
+         d="m 129.57732,45.442148 11.49049,0"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path3888"
+         d="m 129.57732,52.336416 15.02602,0"
+         style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    </g>
+  </g>
+</svg>

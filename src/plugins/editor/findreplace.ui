@@ -81,13 +81,11 @@
       </item>
       <item>
        <widget class="QToolButton" name="btnPrev">
-        <property name="text">
-         <string>...</string>
+        <property name="toolTip">
+         <string>Find previous</string>
         </property>
-        <property name="icon">
-         <iconset theme="arrow-up">
-          <normaloff/>
-         </iconset>
+        <property name="text">
+         <string notr="true">&lt;</string>
         </property>
         <property name="shortcut">
          <string>Shift+F3</string>
@@ -99,13 +97,11 @@
       </item>
       <item>
        <widget class="QToolButton" name="btnNext">
-        <property name="text">
-         <string>...</string>
+        <property name="toolTip">
+         <string>Find next</string>
         </property>
-        <property name="icon">
-         <iconset theme="arrow-down">
-          <normaloff/>
-         </iconset>
+        <property name="text">
+         <string notr="true">&gt;</string>
         </property>
         <property name="shortcut">
          <string>F3</string>
@@ -133,13 +129,11 @@
       </item>
       <item>
        <widget class="QToolButton" name="btnMore">
-        <property name="text">
-         <string/>
+        <property name="toolTip">
+         <string>Show options</string>
         </property>
-        <property name="icon">
-         <iconset theme="configure">
-          <normaloff/>
-         </iconset>
+        <property name="text">
+         <string notr="true">O</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -167,13 +161,11 @@
       </item>
       <item>
        <widget class="QToolButton" name="btnClose">
-        <property name="text">
-         <string>...</string>
+        <property name="toolTip">
+         <string>Close search</string>
         </property>
-        <property name="icon">
-         <iconset theme="window-close">
-          <normaloff/>
-         </iconset>
+        <property name="text">
+         <string notr="true">X</string>
         </property>
         <property name="shortcut">
          <string>Esc</string>
