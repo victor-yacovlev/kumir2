@@ -51,10 +51,11 @@ class Generator : public QObject
     Q_OBJECT
 public:
     explicit Generator(QObject *parent = 0);
-    void reset(const AST::DataPtr ast, Bytecode::Data * bc, DebugLevel debugLevel);
+    void reset(const AST::DataPtr ast, Bytecode::Data * bc);
     void addModule(const AST::ModulePtr  mod);
     void generateConstantTable();
     void generateExternTable();
+    void setDebugLevel(DebugLevel debugLevel);
 private:
     QList<Bytecode::Instruction> makeLineInstructions(const QList<AST::Lexem*> & lexems) const;
     quint16 constantValue(Bytecode::ValueType type, quint8 dimension, const QVariant & value,

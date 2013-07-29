@@ -79,7 +79,9 @@ public:
     KPlugin* loadedPlugin(const QString & name);
 
     /** Module to start */
-    KPlugin * startupModule();
+    KPlugin * startupModule();    
+
+    QString commandLineHelp() const;
 
     template <class PluginInterface>
     PluginInterface* findPlugin() {

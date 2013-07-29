@@ -17,6 +17,39 @@
     </message>
 </context>
 <context>
+    <name>KumirCodeRun::KumirRunPlugin</name>
+    <message>
+        <source>Run in pipeline batch mode without user interaction</source>
+        <translation>Запуск в пакетном режиме без взаимодействия с пользователем</translation>
+    </message>
+    <message>
+        <source>Use testing entry point instead of main</source>
+        <translation>Запустить алгоритм @тестирование вместо главного</translation>
+    </message>
+    <message>
+        <source>PROGRAM.kod</source>
+        <translation>ПРОГРАММА.kod</translation>
+    </message>
+    <message>
+        <source>Executable kumir bytecode</source>
+        <translation>Исполняемый файл байткода Кумир</translation>
+    </message>
+    <message>
+        <source>PROGRAM_ARG_%1</source>
+        <translation>АРГУМЕНТ_%1</translation>
+    </message>
+    <message>
+        <source>Program argument</source>
+        <translation>Параметры, которые передаются главному алгоритму Кумир-программы</translation>
+    </message>
+    <message>
+        <source>Error: file name not specified.
+Run with --help parameter for more details</source>
+        <translation>Ошибка: не указано имя файла
+Запустите с параметром --help для получения информации об использовании</translation>
+    </message>
+</context>
+<context>
     <name>KumirCodeRun::Plugin</name>
     <message>
         <source>RUNTIME ERROR: </source>

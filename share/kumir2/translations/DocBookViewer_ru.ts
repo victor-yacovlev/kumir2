@@ -220,17 +220,17 @@
         <translation type="obsolete">Искать:</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="205"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="230"/>
         <source>List of examples in &quot;%1&quot;</source>
         <translation>Список примеров в &quot;%1&quot;</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="233"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="258"/>
         <source>List of tables in &quot;%1&quot;</source>
         <translation>Список таблиц в &quot;%1&quot;</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="253"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="278"/>
         <source>Standard Library functions</source>
         <translation>Встроенные алгоритмы</translation>
     </message>

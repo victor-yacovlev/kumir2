@@ -5,25 +5,63 @@
 #include "vm/vm_bytecode.hpp"
 #include "generator.h"
 #include "kumircodegeneratorplugin.h"
+#include "extensionsystem/pluginmanager.h"
 
 using namespace KumirCodeGenerator;
 using namespace Bytecode;
 
+static const QString MIME_BYTECODE_BINARY   = QString::fromAscii("application/vnd.niisi.kumir2.bytecode.binary");
+static const QString MIME_BYTECODE_TEXT     = QString::fromAscii("text/plain");
+
 KumirCodeGeneratorPlugin::KumirCodeGeneratorPlugin()
+    : KPlugin()
+    , d(new Generator(this))
+    , textMode_(false)
 {
-    d = new Generator(this);
 }
 
-KumirCodeGeneratorPlugin::~KumirCodeGeneratorPlugin()
+QList<ExtensionSystem::CommandLineParameter>
+KumirCodeGeneratorPlugin::acceptableCommandLineParameters() const
 {
-    d->deleteLater();
+    using ExtensionSystem::CommandLineParameter;
+    QList<CommandLineParameter> result;
+    result << CommandLineParameter(
+                  false,
+                  's', "assembly",
+                  tr("Generate bytecode assemby text instead of executable code")
+                  );
+    result << CommandLineParameter(
+                  false,
+                  'g', "debuglevel",
+                  tr("Generate code with debug level from 0 (nothing) to 2 (maximum debug information)"),
+                  QVariant::Int, false
+                  );
+    return result;
 }
 
+QString KumirCodeGeneratorPlugin::initialize(const QStringList &/*configurationArguments*/,
+                                             const ExtensionSystem::CommandLine &runtimeArguments)
+{    
+    textMode_ = runtimeArguments.hasFlag('s');
+    DebugLevel debugLevel = DebugLevel::LinesOnly;
+    if (runtimeArguments.value('g').isValid()) {
+        int level = runtimeArguments.value('g').toInt();
+        level = qMax(0, level);
+        level = qMin(2, level);
+        debugLevel = DebugLevel(level);
+    }
+    setDebugLevel(debugLevel);
+    return QString();
+}
 
-QString KumirCodeGeneratorPlugin::initialize(const QStringList &arguments)
+void KumirCodeGeneratorPlugin::setOutputToText(bool flag)
 {
-    Q_UNUSED(arguments)
-    return "";
+    textMode_ = false;
+}
+
+void KumirCodeGeneratorPlugin::setDebugLevel(DebugLevel debugLevel)
+{
+    d->setDebugLevel(debugLevel);
 }
 
 void KumirCodeGeneratorPlugin::start()
@@ -36,15 +74,18 @@ void KumirCodeGeneratorPlugin::stop()
 
 }
 
-QPair<QString,QString> KumirCodeGeneratorPlugin::generateExecuable(
-    const AST::DataPtr tree
-    , QByteArray & out, DebugLevel debugLevel)
+void KumirCodeGeneratorPlugin::generateExecuable(
+        const AST::DataPtr tree,
+        QByteArray & out,
+        QString & mimeType,
+        QString & fileSuffix
+        )
 {
     Data data;
 
     QList<AST::ModulePtr> & modules = tree->modules;
 
-    d->reset(tree, &data, debugLevel);
+    d->reset(tree, &data);
     AST::ModulePtr userModule, teacherModule;
     AST::ModulePtr linkedModule = AST::ModulePtr(new AST::Module);
     for (int i=0; i<modules.size(); i++) {
@@ -83,13 +124,25 @@ QPair<QString,QString> KumirCodeGeneratorPlugin::generateExecuable(
 
     data.versionMaj = 2;
     data.versionMin = 0;
-    data.versionRel = 0;
+    data.versionRel = 90;
     std::list<char> buffer;
-    Bytecode::bytecodeToDataStream(buffer, data);
-    for (std::list<char>::const_iterator it=buffer.begin(); it!=buffer.end(); ++it) {
-        out.push_back(*it);
+    if (textMode_) {
+        std::ostringstream stream;
+        Bytecode::bytecodeToTextStream(stream, data);
+        const std::string text = stream.str();
+        out = QByteArray::fromRawData(text.c_str(), text.size());
+        mimeType = MIME_BYTECODE_TEXT;
+        fileSuffix = ".kod.txt";
     }
-    return QPair<QString,QString>("", MIME_BYTECODE_BINARY);
+    else {
+        out.clear();
+        Bytecode::bytecodeToDataStream(buffer, data);
+        for (std::list<char>::const_iterator it=buffer.begin(); it!=buffer.end(); ++it) {
+            out.push_back(*it);
+        }
+        mimeType = MIME_BYTECODE_BINARY;
+        fileSuffix = ".kod";
+    }
 }
 
 

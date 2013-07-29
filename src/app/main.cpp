@@ -63,7 +63,7 @@ void showErrorMessage(const QString & text)
         QMessageBox::critical(0, "Kumir 2 Launcher", text);
     }
     else {
-        qCritical("%s", qPrintable(text));
+        fprintf(stderr, "%s", qPrintable(text));
     }
 }
 
@@ -101,6 +101,19 @@ public:
     }
 
     inline void initialize() {
+        const QStringList arguments = QCoreApplication::instance()->arguments();
+        bool mustShowHelpAndExit = false;
+        for (int i=1; i<arguments.size(); i++) {
+            const QString & argument = arguments[i];
+            if (argument=="--help" || argument=="-h" || argument=="/?") {
+                mustShowHelpAndExit = true;
+                break;
+            }
+            else if (!argument.startsWith("-")) {
+                break;
+            }
+        }
+
         bool gui = true;
 #ifdef Q_WS_X11
         gui = gui && getenv("DISPLAY")!=0;
@@ -156,6 +169,14 @@ public:
             showErrorMessage(error);
             exit(1);
         }
+
+        if (mustShowHelpAndExit) {
+            if (splashScreen_)
+                splashScreen_->finish(0);
+            fprintf(stderr, qPrintable(manager->commandLineHelp()));
+            exit(0);
+            return;
+        }
         error = manager->initializePlugins();
         if (!error.isEmpty()) {
             if (splashScreen_)
@@ -205,7 +226,8 @@ public:
         else {
             return ret;
         }
-    }
+    }   
+
 private:
     int timerId_;
     QSplashScreen * splashScreen_;
@@ -241,8 +263,21 @@ int main(int argc, char **argv)
 
     const QString sharePath = QDir(app->applicationDirPath()+SHARE_PATH).canonicalPath();
 
+    const QStringList arguments = QCoreApplication::instance()->arguments();
+    bool mustShowHelpAndExit = false;
+    for (int i=1; i<arguments.size(); i++) {
+        const QString & argument = arguments[i];
+        if (argument=="--help" || argument=="-h" || argument=="/?") {
+            mustShowHelpAndExit = true;
+            break;
+        }
+        else if (!argument.startsWith("-")) {
+            break;
+        }
+    }
+
 #ifdef SPLASHSCREEN
-    if (gui) {
+    if (gui && !mustShowHelpAndExit) {
         QString imgPath = sharePath+QString("/")+SPLASHSCREEN;
         splashScreen = new QSplashScreen();
         QImage img(imgPath);

@@ -16,11 +16,10 @@ class Plugin
     Q_INTERFACES(Shared::BrowserInterface)
 public:
     Plugin();
-    ~Plugin();
     Shared::BrowserComponent createBrowser(const QUrl &url, const QMap<QString, QObject *> manageableObjects, bool enableKeyboardNavigation = false);
     inline QNetworkAccessManager * networkAccessManager() { return m_networkAccessManager; }
 protected:
-    QString initialize(const QStringList &);
+    QString initialize(const QStringList &, const ExtensionSystem::CommandLine &);
     void changeCurrentDirectory(const QString &path);
 private:
     class Dir * m_directory;

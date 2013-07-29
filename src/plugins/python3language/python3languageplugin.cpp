@@ -283,7 +283,8 @@ void Python3LanguagePlugin::saveAnalizer()
     Py_EndInterpreter(mainPyThreadState_);
 }
 
-QString Python3LanguagePlugin::initialize(const QStringList &)
+QString Python3LanguagePlugin::initialize(const QStringList &configurationArguments,
+                                          const ExtensionSystem::CommandLine & runtimeArguments)
 {    
     runInteractionWaiter_ = new RunInteractionWaiter(this);
     runWorker_ = new RunWorker(this);
@@ -488,7 +489,7 @@ void Python3LanguagePlugin::dropDocument(int documentId)
 
 }
 
-bool Python3LanguagePlugin::loadProgram(const QString &fileName, const QByteArray & source, ProgramFormat )
+bool Python3LanguagePlugin::loadProgram(const QString &fileName, const QByteArray & source)
 {
     runWorker_->fileName = fileName;
     runWorker_->source = source;

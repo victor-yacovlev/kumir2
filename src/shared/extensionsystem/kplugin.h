@@ -4,6 +4,7 @@
 #include <QtCore>
 #include "pluginspec.h"
 #include "settings.h"
+#include "commandlineparameter.h"
 
 #ifdef EXTENSIONSYSTEM_LIBRARY
 #define EXTENSIONSYSTEM_EXPORT Q_DECL_EXPORT
@@ -43,7 +44,16 @@ protected:
     inline virtual void restoreSession() { }
     inline virtual void changeCurrentDirectory(const QString & path) { Q_UNUSED(path); }
     inline virtual void changeGlobalState(GlobalState old, GlobalState current) { Q_UNUSED(old); Q_UNUSED(current); }
-    inline virtual QString initialize(const QStringList &arguments) { Q_UNUSED(arguments); return ""; }
+    inline virtual QList<CommandLineParameter> acceptableCommandLineParameters() const
+    {
+        return QList<CommandLineParameter>();
+    }
+
+    inline virtual QString initialize(
+            const QStringList & /*configurationArguments*/,
+            const CommandLine & /*runtimeArguments*/
+            ) = 0;
+
     inline virtual void start() {}
     inline virtual void stop() {}
     inline virtual void updateSettings() { }

@@ -12,6 +12,7 @@ set(MOC_HEADERS
     settingsdialog.h
     switchworkspacedialog.h
     declarativesettingspage.h
+    commandlineparameter.h
 )
 
 set(SOURCES
@@ -22,6 +23,7 @@ set(SOURCES
     switchworkspacedialog.cpp
     declarativesettingspage.cpp
     settings.cpp
+    commandlineparameter.cpp
 )
 
 set(HEADERS
@@ -31,6 +33,7 @@ set(HEADERS
     switchworkspacedialog.h
     pluginspec.h
     settings.h
+    commandlineparameter.h
 )
 
 set(FORMS

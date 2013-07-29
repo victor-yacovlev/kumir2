@@ -46,7 +46,8 @@ public:
     void restoreState(int documentId, const QByteArray & data);
     void updateSettings();
 protected:
-    QString initialize(const QStringList &arguments);
+    QString initialize(const QStringList &configurationArguments,
+                       const ExtensionSystem::CommandLine &);
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     inline void changeCurrentDirectory(const QString & path) { Q_UNUSED(path); updateSettings(); }
     void start();

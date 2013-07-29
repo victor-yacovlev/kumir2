@@ -11,7 +11,7 @@
 <context>
     <name>Editor::EditorPlane</name>
     <message>
-        <location filename="../../../src/plugins/editor/editorplane.cpp" line="1484"/>
+        <location filename="../../../src/plugins/editor/editorplane.cpp" line="1505"/>
         <source>Can&apos;t suggest autocomplete</source>
         <translation>Нет вариантов автодополнения</translation>
     </message>

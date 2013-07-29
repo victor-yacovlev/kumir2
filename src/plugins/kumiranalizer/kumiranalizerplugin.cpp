@@ -23,13 +23,14 @@ KumirAnalizerPlugin::~KumirAnalizerPlugin()
 }
 
 
-QString KumirAnalizerPlugin::initialize(const QStringList &arguments)
+QString KumirAnalizerPlugin::initialize(const QStringList &configurationArguments,
+                                        const ExtensionSystem::CommandLine &runtimeArguments)
 {
     QLocale::Language language = QLocale::Russian;
 
     Analizer::setModuleAlwaysAvailable(QString::fromUtf8("Стандартные функции"));
 
-    Q_FOREACH (const QString &arg, arguments) {
+    Q_FOREACH (const QString &arg, configurationArguments) {
         if (arg.startsWith("language=")) {
             const QString lang = arg.mid(9);
             const QLocale loc(lang);
@@ -47,7 +48,7 @@ QString KumirAnalizerPlugin::initialize(const QStringList &arguments)
     Analizer::setSourceLanguage(language);
 
     Shared::ErrorMessages::loadMessages("KumirAnalizer");
-    teacherMode_ = arguments.contains("teacher", Qt::CaseInsensitive);
+    teacherMode_ = configurationArguments.contains("teacher", Qt::CaseInsensitive);
     return "";
 }
 

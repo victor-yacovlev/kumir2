@@ -37,6 +37,10 @@ struct PluginManagerPrivate {
     void createSettingsDialog();
     QString loadPlugins();
     void changeWorkingDirectory(const QString &path);
+    bool extractRuntimeParametersForPlugin(const KPlugin * plugin, CommandLine & parameters);
+
+    std::list<QString> namedProgramArguments;
+    std::list<QString> unnamedProgramArguments;
 };
 
 PluginManager::PluginManager()
@@ -53,6 +57,28 @@ PluginManager::PluginManager()
         return;
 #endif
     d->switchWorkspaceDialog = new SwitchWorkspaceDialog(d->mySettings);
+
+    int unnamedArgumentsIndexBegin = 0;
+
+    QStringList arguments = QCoreApplication::instance()->arguments();
+
+    for (int i=1; i<arguments.size(); i++) {
+        const QString & arg = arguments[i];
+        if (arg.startsWith("-")) {
+            d->namedProgramArguments.push_back(arg);
+        }
+        else {
+            unnamedArgumentsIndexBegin = i;
+            break;
+        }
+    }
+
+    if (unnamedArgumentsIndexBegin) {
+        for (int i=unnamedArgumentsIndexBegin; i<arguments.size(); i++) {
+            const QString & arg = arguments[i];
+            d->unnamedProgramArguments.push_back(arg);
+        }
+    }
 }
 
 PluginManager::~PluginManager()
@@ -255,7 +281,7 @@ QString PluginManagerPrivate::loadSpecs(const QStringList &names/*, QScriptEngin
             continue;
         const QString fileName = path+"/"+names[i]+".pluginspec";
         PluginSpec spec;
-//#ifdef QT_NO_DEBUG
+        //#ifdef QT_NO_DEBUG
 #ifdef Q_OS_WIN
         spec.libraryFileName = QString("%1/%2.dll").arg(path).arg(names[i]);
 #endif
@@ -265,17 +291,17 @@ QString PluginManagerPrivate::loadSpecs(const QStringList &names/*, QScriptEngin
 #ifdef Q_OS_MAC
         spec.libraryFileName = QString("%1/lib%2.dylib").arg(path).arg(names[i]);
 #endif
-//#else
-//#ifdef Q_OS_WIN
-//        spec.libraryFileName = QString("%1/%2d.dll").arg(path).arg(names[i]);
-//#endif
-//#ifdef Q_OS_UNIX
-//        spec.libraryFileName = QString("%1/lib%2.so").arg(path).arg(names[i]);
-//#endif
-//#ifdef Q_OS_MAC
-//        spec.libraryFileName = QString("%1/lib%2_debug.dylib").arg(path).arg(names[i]);
-//#endif
-//#endif
+        //#else
+        //#ifdef Q_OS_WIN
+        //        spec.libraryFileName = QString("%1/%2d.dll").arg(path).arg(names[i]);
+        //#endif
+        //#ifdef Q_OS_UNIX
+        //        spec.libraryFileName = QString("%1/lib%2.so").arg(path).arg(names[i]);
+        //#endif
+        //#ifdef Q_OS_MAC
+        //        spec.libraryFileName = QString("%1/lib%2_debug.dylib").arg(path).arg(names[i]);
+        //#endif
+        //#endif
         QString error = readSpecFromFile(fileName, spec);
         if (!error.isEmpty()) {
             return error;
@@ -293,9 +319,9 @@ QString PluginManagerPrivate::loadSpecs(const QStringList &names/*, QScriptEngin
     return "";
 }
 const char* debugStr(QString s)
-    {
-        return qPrintable(s);  
-    };
+{
+    return qPrintable(s);
+};
 QString PluginManagerPrivate::loadPlugins()
 {
     QString test="dddd";
@@ -305,7 +331,7 @@ QString PluginManagerPrivate::loadPlugins()
     qPrintable(test);
     for (int i=0; i<specs.size(); i++) {
         QPluginLoader loader(specs[i].libraryFileName);
-//        qDebug()<<specs[i].libraryFileName;
+        //        qDebug()<<specs[i].libraryFileName;
         if (!loader.load()) {
             return QString("Can't load module %1: %2")
                     .arg(specs[i].name)
@@ -376,7 +402,7 @@ QString PluginManager::loadPluginsByTemplate(const QString &templ)
 #ifdef Q_WS_X11
     console = getenv("DISPLAY")==0;
 #endif
-//    console = true; // !!! was here for debug purposes
+    //    console = true; // !!! was here for debug purposes
     if (console) {
         // Remove GUI plugins
         QList<PluginSpec>::iterator it;
@@ -472,8 +498,22 @@ QString PluginManager::loadExtraModule(const std::string &canonicalFileName)
     sett->changeWorkingDirectory(d->workspacePath);
     d->settings.push_back(SettingsPtr(sett));
     plugin->updateSettings();
-    plugin->initialize(QStringList());
-    return QString();
+    CommandLine runtimeParameters;
+    if (!d->extractRuntimeParametersForPlugin(plugin, runtimeParameters)) {
+        QString error = tr("The following command line parameters required, but not set:\n");
+        for (int i=0; i<runtimeParameters.data_.size(); i++) {
+            const CommandLineParameter & param = runtimeParameters.data_[i];
+            if (param.shortDescription_.length() > 0) {
+                if (!param.isValid() && plugin==d->objects.last())
+                    error += "  " + param.toHelpLine() + "\n";
+            }
+            else if (!param.isValid()) {
+                error += "  " + param.toHelpLine() + "\n";
+            }
+        }
+        return error;
+    }
+    return plugin->initialize(QStringList(), runtimeParameters);
 }
 
 bool PluginManager::isGuiRequired() const
@@ -483,6 +523,149 @@ bool PluginManager::isGuiRequired() const
         return runtimePlugin->isGuiRequired();
     else
         return false;
+}
+
+bool PluginManagerPrivate::extractRuntimeParametersForPlugin(const KPlugin *plugin, CommandLine &parameters)
+{
+    parameters = CommandLine(plugin->acceptableCommandLineParameters());
+
+    // Eat named parameters
+    for (int i=0; i<parameters.data_.size(); i++) {
+        CommandLineParameter & param = parameters.data_[i];
+        typedef std::list<QString>::iterator It;
+        for (It it = namedProgramArguments.begin(); it != namedProgramArguments.end(); ++it) {
+            QString & arg = *it;
+            if (arg.startsWith("--"+param.longName_) || arg.startsWith("-"+QString(param.shortName_))) {
+                param.fillValue(arg);
+                namedProgramArguments.erase(it);
+                break;
+            }
+        }
+    }
+
+    // Eat unnamed parameters in case if plugin is startup module
+    if (plugin == objects.last()) {
+        CommandLineParameter * chain = nullptr;
+        for (int i=0; i<parameters.data_.size(); i++) {
+            CommandLineParameter & param = parameters.data_[i];
+            if (param.shortDescription_.length() > 0) {
+                if (unnamedProgramArguments.size() > 0) {
+                    param.value_ = unnamedProgramArguments.front();
+                    unnamedProgramArguments.pop_front();
+                }
+                chain = param.valueRequired_ ? nullptr : &param;
+            }
+        }
+
+        // Eat a list of unnamed parameters
+        while (chain && unnamedProgramArguments.size() > 0) {
+            CommandLineParameter param(
+                        chain->allowInGui_,
+                        chain->shortDescription_,
+                        chain->description_,
+                        chain->acceptType_,
+                        false);
+            param.value_ = unnamedProgramArguments.front();
+            unnamedProgramArguments.pop_front();
+        }
+    }
+
+    bool success = true;
+    for (int i=0; i<parameters.data_.size(); i++) {
+        CommandLineParameter & param = parameters.data_[i];
+        if (param.shortDescription_.length() > 0) {
+            success = success && (param.isValid() || plugin!=objects.last());
+        }
+        else {
+            success = success && param.isValid();
+        }
+    }
+
+    return success;
+}
+
+QString PluginManager::commandLineHelp() const
+{
+    const PluginSpec &mainSpec = d->specs.last();
+    bool guiMode = mainSpec.gui;
+    QString result = tr("Usage:\n");
+    QString programName = QCoreApplication::applicationFilePath();
+    if (programName.startsWith(QCoreApplication::applicationDirPath())) {
+        programName.remove(0, QCoreApplication::applicationDirPath().length() + 1);
+    }
+    QString shortLine = "  " + programName + " ";
+    QString longLine = "  " + programName + " ";
+    QStringList details;
+    foreach (const KPlugin * plugin, d->objects) {
+        const QList<CommandLineParameter> params = plugin->acceptableCommandLineParameters();
+        foreach (const CommandLineParameter & param, params) {
+            bool allowThisParam = guiMode ? param.allowInGui_ : true;
+            if (allowThisParam && param.longName_.length() > 0) {
+                if (!param.valueRequired_) {
+                    shortLine += "[";
+                    longLine += "[";
+                }
+                shortLine += "-" + QString(param.shortName_);
+                longLine += "--" + QString(param.longName_);
+                if (param.acceptValue_) {
+                    QString a = "=<";
+                    if (param.acceptType_==QVariant::Int)
+                        a += tr("int");
+                    else if (param.acceptType_==QVariant::Double)
+                        a += tr("real");
+                    else if (param.acceptType_==QVariant::Bool)
+                        a += tr("bool");
+                    else if (param.acceptType_==QVariant::Char)
+                        a += tr("char");
+                    else
+                        a += tr("string");
+                    a += ">";
+                    shortLine += a;
+                    longLine += a;
+                }
+                if (!param.valueRequired_) {
+                    shortLine += "]";
+                    longLine += "]";
+                }
+                shortLine += " ";
+                longLine += " ";
+                details.push_back(param.toHelpLine());
+            }
+        }
+    }
+    const QList<CommandLineParameter> params = d->objects.last()->acceptableCommandLineParameters();
+    foreach (const CommandLineParameter & param, params) {
+        if (param.shortDescription_.length() > 0) {
+            if (param.valueRequired_) {
+                shortLine += param.shortDescription_;
+                longLine += param.shortDescription_;
+            }
+            else {
+                shortLine += "[";
+                longLine += "[";
+                shortLine += param.shortDescription_.arg(1);
+                longLine += param.shortDescription_.arg(1);
+                shortLine += "]...[";
+                longLine += "]...[";
+                shortLine += param.shortDescription_.arg("n");
+                longLine += param.shortDescription_.arg("n");
+                shortLine += "]";
+                longLine += "]";
+            }
+            shortLine += " ";
+            longLine += " ";
+            details.push_back(param.toHelpLine());
+        }
+    }
+    if (longLine == shortLine) {
+        result += shortLine + "\n";
+    }
+    else {
+        result += longLine + "\n" + tr("or") + "\n" + shortLine + "\n";
+    }
+    if (details.size() > 0)
+        result += "\n" + tr("Options") + ":\n" + details.join("\n") + "\n";
+    return result;
 }
 
 QString PluginManager::initializePlugins()
@@ -496,7 +679,19 @@ QString PluginManager::initializePlugins()
                 arguments = d->requests[j].arguments;
             }
         }
-        QString error = d->objects[i]->initialize(arguments);
+        CommandLine runtimeParameters;
+        if (!d->extractRuntimeParametersForPlugin(d->objects[i], runtimeParameters)) {
+            QString error = tr("The following command line parameters required, but not set:\n");
+            for (int i=0; i<runtimeParameters.data_.size(); i++) {
+                const CommandLineParameter & param = runtimeParameters.data_[i];
+                if (!param.isValid()) {
+                    error += "  " + param.toHelpLine() + "\n";
+                }
+            }
+            error += tr("Run with --help for more details.\n");
+            return error;
+        }
+        QString error = d->objects[i]->initialize(arguments, runtimeParameters);
         if (!error.isEmpty()) {
             return QString("Error initializing %1: %2")
                     .arg(name)
@@ -504,6 +699,23 @@ QString PluginManager::initializePlugins()
         }
         d->states[i] = KPlugin::Initialized;
     }
+
+    std::list<QString> remainingParameters = d->namedProgramArguments;
+    remainingParameters.merge(d->unnamedProgramArguments);;
+
+    if (remainingParameters.size() > 0) {
+        QString error = tr("Extra command line arguments:\n");
+
+        for (std::list<QString>::const_iterator it=remainingParameters.begin();
+             it!=remainingParameters.end(); ++it)
+        {
+            error += "  " + (*it) + "\n";
+        }
+
+        error += tr("Run with --help for more details.\n");
+        return error;
+    }
+
     d->createSettingsDialog();
     return "";
 }
@@ -617,7 +829,7 @@ SettingsPtr PluginManager::settingsByObject(const KPlugin *p) const
     Q_ASSERT(d->settings.size()==d->objects.size());
     for (int i=0; i<d->objects.size(); i++) {
         if (d->objects[i]==p) {
-//            qDebug()<<"sett"<<d->settings[i];
+            //            qDebug()<<"sett"<<d->settings[i];
             return d->settings[i];
         }
     }

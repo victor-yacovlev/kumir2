@@ -253,7 +253,7 @@ QString EditorPlugin::loadDocument(int documentId, const KumFile::Data & data)
     return "";
 }
 
-QString EditorPlugin::initialize(const QStringList &arguments)
+QString EditorPlugin::initialize(const QStringList &arguments, const ExtensionSystem::CommandLine &)
 {
     if (arguments.contains("teacher"))
         d->teacherMode = true;

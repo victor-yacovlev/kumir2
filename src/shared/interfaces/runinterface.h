@@ -6,15 +6,10 @@
 
 namespace Shared {
 
-enum ProgramFormat {
-    FormatText,
-    FormatBinary
-};
-
 class RunInterface {
 public:
     enum StopReason { SR_Done, SR_UserInteraction, SR_InputRequest, SR_Error, SR_UserTerminated };
-    virtual bool loadProgram(const QString &fileName, const QByteArray & source, ProgramFormat format) = 0;
+    virtual bool loadProgram(const QString &fileName, const QByteArray & source) = 0;
     virtual QDateTime loadedProgramVersion() const = 0;
 
     virtual bool canStepOut() const = 0;
@@ -43,22 +38,6 @@ public:
                                              const QList< QPair<int,int> > & ranges, bool & complete) const = 0;
     virtual QVariant getLocalTableValue(int frameNo, const QString & name, const QList<int> & indeces) const = 0;
     virtual QVariant getGlobalTableValue(const QString & moduleName, const QString & name, const QList<int> & indeces) const = 0;
-
-
-/*
- * NOTE: signals should not be declared as virtuals in interface, but
- *       must be implemented in derivative classes
- *
-signals:
-    void stopped(StopReason reason);
-    void externalRequest(const QString &actorPluginName, const QString & algName, const QVariantList & args);
-    void inputRequest(const QString & format);
-    void outputRequest(const QString & output);
-    void lineChanged(int lineNo);
-    void marginText(int lineNo, const QString & text);
-    void clearMargin(int fromLine, int toLine);
-    void resetModule(const QString &actorPluginName);
-*/
 };
 
 }

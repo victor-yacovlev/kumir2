@@ -5,7 +5,7 @@ include(../../kumir2_plugin.cmake)
 
 
 set(SOURCES
-    plugin.cpp
+    runplugin.cpp
     run.cpp
     consolerun.cpp
     commonrun.cpp
@@ -19,7 +19,7 @@ set(HEADERS
 )
 
 set(MOC_HEADERS
-    plugin.h
+    runplugin.h
     run.h
     commonrun.h
     guirun.h

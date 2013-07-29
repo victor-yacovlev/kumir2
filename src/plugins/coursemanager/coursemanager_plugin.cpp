@@ -252,7 +252,8 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old,
    };
 }
 
-QString Plugin::initialize(const QStringList &arguments)
+QString Plugin::initialize(const QStringList &configurationArguments,
+                           const ExtensionSystem::CommandLine & runtimeArguments)
 {
     QList<QAction*> actions;
     actions=MW->getActions();

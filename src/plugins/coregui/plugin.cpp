@@ -63,7 +63,7 @@ protected:
 };
 
 
-QString Plugin::initialize(const QStringList & parameters)
+QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem::CommandLine &)
 {
 
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");

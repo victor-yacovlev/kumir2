@@ -64,7 +64,8 @@ protected slots:
     void handleMainSplitterMoved();
 
 protected:
-    QString initialize(const QStringList &arguments);
+    QString initialize(const QStringList &configurationArguments,
+                       const ExtensionSystem::CommandLine &runtimeArguments);
     void saveSession() const;
     void restoreSession();
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);

@@ -7,14 +7,10 @@
 namespace Browser {
 
 Plugin::Plugin()
+    : KPlugin()
+    , m_directory(new Dir(this))
+    , m_networkAccessManager(nullptr)
 {
-    m_directory = new Dir(this);
-    m_networkAccessManager = 0;
-}
-
-Plugin::~Plugin()
-{
-    m_directory->deleteLater();
 }
 
 void Plugin::changeCurrentDirectory(const QString &path)
@@ -22,7 +18,7 @@ void Plugin::changeCurrentDirectory(const QString &path)
     m_directory->m_dir = QDir(path);
 }
 
-QString Plugin::initialize(const QStringList &)
+QString Plugin::initialize(const QStringList &, const ExtensionSystem::CommandLine &)
 {
     qRegisterMetaType<Shared::BrowserComponent>("BrowserComponent");
     LocalhostServer * localhost = new LocalhostServer(QDir(qApp->property("sharePath").toString()+"/webapps/"), this);

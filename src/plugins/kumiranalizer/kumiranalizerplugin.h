@@ -23,6 +23,10 @@ public:
     KumirAnalizerPlugin();
     ~KumirAnalizerPlugin();
 
+    inline QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters() const {
+        return QList<ExtensionSystem::CommandLineParameter>();
+    }
+
     inline bool primaryAlphabetIsLatin() const { return false; }
     inline bool caseInsensitiveGrammatic() const { return false; }
     inline bool supportPartialCompiling() const { return true; }
@@ -53,7 +57,8 @@ public:
     QString createImportStatementLine(const QString &importName) const;
 
 protected:
-    QString initialize(const QStringList &arguments);
+    QString initialize(const QStringList &configurationArguments,
+                       const ExtensionSystem::CommandLine &runtimeArguments);
     void start();
     void stop();
 private:

@@ -192,73 +192,8 @@ void KumirProgram::setBytecodeRun(KPlugin *run)
 }
 
 
-void KumirProgram::fastRun()
-{
-    b_processUserTerminated = false;
-    s_endStatus = "";
-    if (e_state!=Idle) {
-        return;
-    }
-    emit giveMeAProgram();
-
-    QString suffix;
-#ifdef Q_OS_WIN32
-    suffix = ".exe";
-#else
-    suffix = ".bin";
-#endif
-    const QString exeFileName = s_sourceFileName.mid(0, s_sourceFileName.length()-4)+suffix;
-    bool mustRegenerate = true;
-    if (QFile::exists(exeFileName)) {
-        QFileInfo fi(exeFileName);
-        QDateTime astTime = m_ast->lastModified;
-        QDateTime fileTime = fi.lastModified();
-        mustRegenerate = !astTime.isValid() || fileTime < astTime;
-    }
-    bool ok = !mustRegenerate;
-    if (mustRegenerate) {
-
-        QFile exeFile(exeFileName);
-        if (exeFile.exists()) {
-            if (!exeFile.remove()) {
-                qDebug() << "Can't remove existing file " << exeFileName;
-            }
-        }
-
-//        QPair<QString,QString> res = plugin_nativeGenerator->generateExecuable(m_ast, &exeFile);
-//        if (!res.first.isEmpty()) {
-//            qDebug() << "Error generating execuable: " << res.first;
-//        }
-//        else {
-//            ok = true;
-//        }
-        exeFile.close();
-        QFile::Permissions perms = exeFile.permissions();
-        perms |= QFile::ExeOwner;
-        perms |= QFile::ExeUser;
-        perms |= QFile::ExeGroup;
-        perms |= QFile::ExeOther;
-        exeFile.setPermissions(perms);
-
-    }
-    if (ok) {
-        const QString cmd = QString("%1 --key=%2")
-                .arg(exeFileName)
-                .arg(QCoreApplication::applicationPid());
-        m_terminal->start(exeFileName);
-        m_process->start(cmd);
-        m_process->waitForStarted();
-        e_state = FastRun;
-        qDebug() << "Started subprocess with PID " << m_process->pid();
-        PluginManager::instance()->switchGlobalState(GS_Running);
-        setAllActorsAnimationFlag(false);
-    }
-}
-
 void KumirProgram::blindRun()
 {
-    if (e_state==FastRun)
-        return;
     b_blind = true;
     s_endStatus = "";
     if (e_state==Idle) {
@@ -273,9 +208,6 @@ void KumirProgram::blindRun()
 
 void KumirProgram::testingRun()
 {
-    if (e_state==FastRun)
-        return;
-
     using namespace ExtensionSystem;
     using namespace Shared;
     RunInterface * runner =
@@ -301,8 +233,6 @@ void KumirProgram::testingRun()
 
 void KumirProgram::regularRun()
 {
-    if (e_state==FastRun)
-        return;
     b_blind = false;
     s_endStatus = "";
     if (e_state==Idle) {
@@ -332,15 +262,11 @@ void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel deb
                 m_ast->lastModified > runner->loadedProgramVersion();
         if (mustRegenerate) {
             QByteArray bufArray;
-            QPair<QString,QString> res = plugin_bytcodeGenerator->generateExecuable(m_ast, bufArray, debugLevel);
-            if (!res.first.isEmpty()) {
-                qDebug() << "Error generating execuable: " << res.first;
-                ok = false;
-            }
-            else {
-                ok = runner->loadProgram(s_sourceFileName, bufArray, Shared::FormatBinary);
-
-            }
+            plugin_bytcodeGenerator->setOutputToText(false);
+            plugin_bytcodeGenerator->setDebugLevel(debugLevel);
+            QString fileNameSuffix, mimeType;
+            plugin_bytcodeGenerator->generateExecuable(m_ast, bufArray, mimeType, fileNameSuffix);
+            runner->loadProgram(s_sourceFileName, bufArray);
         }
         exeFileName =
                 s_sourceFileName.mid(0, s_sourceFileName.length()-4) +
@@ -357,7 +283,7 @@ void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel deb
                 : source.visibleText;
         const QByteArray sourceData = sourceText.toUtf8();
         exeFileName = s_sourceFileName;
-        ok = runner->loadProgram(s_sourceFileName, sourceData, Shared::FormatText);
+        ok = runner->loadProgram(s_sourceFileName, sourceData);
         const QString newCwd = QFileInfo(exeFileName).absoluteDir().absolutePath();
         QDir::setCurrent(newCwd);
     }
@@ -374,8 +300,6 @@ void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel deb
 
 void KumirProgram::stepRun()
 {
-    if (e_state==FastRun)
-        return;
     s_endStatus = "";
     if (e_state==Idle) {
         emit giveMeAProgram();
@@ -411,11 +335,7 @@ void KumirProgram::stop()
 {
     if (e_state==StepRun || e_state==RegularRun || e_state==TestingRun) {
         plugin_bytecodeRun->terminate();
-    }
-    else if (e_state==FastRun) {
-        b_processUserTerminated = true;
-        m_process->kill();
-    }
+    }    
 }
 
 

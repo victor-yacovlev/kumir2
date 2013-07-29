@@ -1132,9 +1132,9 @@ class CppClassBase:
                     continue  # pure virtual method
                 groupEndPos = firstLine.index("*/")
                 groupName = firstLine[2:groupEndPos].strip().replace(" ", "_")
-                rtypeEndPos = firstLine.index(" ", groupEndPos+3)
+                rtypeEndPos = firstLine.index(" " + self.className + "::", groupEndPos+3)
                 returnType = firstLine[groupEndPos+2:rtypeEndPos].strip()
-                signatureBeginPos = firstLine.index("::", rtypeEndPos) + 2
+                signatureBeginPos = firstLine.index(self.className + "::", rtypeEndPos) + 2 + len(self.className)
                 signature = firstLine[signatureBeginPos:]
                 assert groupName in ["public", "protected", "private", "public_slot", "protected_slot", "private_slot",
                                      "public_virtual", "public_virtual_slot"]
@@ -1262,7 +1262,8 @@ class PluginCppClass(CppClassBase):
             "class ExtensionSystem::DeclarativeSettingsPage* settingsPage_",
             "QString errorText_",
             "QVariant result_",
-            "QVariantList optResults_"
+            "QVariantList optResults_",
+            "ExtensionSystem::CommandLine commandLineParameters_"
         ]
         self.signals = ["void sync()"]
         self.classDeclarationPrefix = """
@@ -1777,7 +1778,7 @@ private:
             body += "                 this, SIGNAL(sync()));\n"
         body += "return QString();\n"
         return """
-/* protected */ QString %s::initialize(const QStringList &)
+/* protected */ QString %s::initialize(const QStringList &, const ExtensionSystem::CommandLine &)
 {
 %s
 }
@@ -1893,6 +1894,24 @@ private:
     if (module_) {
         module_->loadActorData(source);
     }
+}
+        """ % self.className
+
+    def acceptableCommandLineParametersCppImplementation(self):
+        """
+        Implementation of ExtensionSystem::KPlugin::acceptableCommandLineParameters()
+
+        :rtype:     str
+        :return:    implementation text
+        """
+        return """
+/* protected */ QList<ExtensionSystem::CommandLineParameter> %s::acceptableCommandLineParameters() const
+{
+    QList<ExtensionSystem::CommandLineParameter> result;
+    if (module_) {
+        result = module_->acceptableCommandLineParameters();
+    }
+    return result;
 }
         """ % self.className
 
@@ -2383,6 +2402,37 @@ class ModuleBaseCppClass(CppClassBase):
 {
     Q_UNUSED(source);  // By default do nothing
 
+}
+        """ % self.className
+
+    def commandLineParametersCppImplementation(self):
+        """
+        Get command line parameters passed to an actor
+
+        :rtype:     str
+        :return:    implementation of const CommandLine& commandLineParameters() const
+        """
+        return """
+/* protected */ const ExtensionSystem::CommandLine& %s::commandLineParameters() const
+{
+    %s * plugin = qobject_cast<%s*>(parent());
+    return plugin->commandLineParameters_;
+}
+        """ % (self.className, self._module.pluginClassName(), self._module.pluginClassName())
+
+    def acceptableCommandLineParametersCppImplementation(self):
+        """
+        Empty implementation to get acceptable command line parameters
+
+        :rtype:     str
+        :return:    implementation of QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters()
+        """
+        return """
+
+/* public virtual */ QList<ExtensionSystem::CommandLineParameter> %s::acceptableCommandLineParameters() const
+{
+    // See "src/shared/extensionsystem/commandlineparameter.h" for constructor details
+    return QList<ExtensionSystem::CommandLineParameter>();
 }
         """ % self.className
 

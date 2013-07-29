@@ -27,14 +27,19 @@ template <typename T> std::deque<T>& operator<<(std::deque<T> & vec, const T & v
 Generator::Generator(QObject *parent)
     : QObject(parent)
     , byteCode_(nullptr)
+    , debugLevel_(Shared::GeneratorInterface::LinesAndVariables)
 {   
 }
 
-void Generator::reset(const AST::DataPtr ast, Bytecode::Data *bc, DebugLevel debugLevel)
+void Generator::setDebugLevel(DebugLevel debugLevel)
+{
+    debugLevel_ = debugLevel;
+}
+
+void Generator::reset(const AST::DataPtr ast, Bytecode::Data *bc)
 {
     ast_ = ast;
     byteCode_ = bc;
-    debugLevel_ = debugLevel;
     constants_.clear();
     externs_.clear();
 }

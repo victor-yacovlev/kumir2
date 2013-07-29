@@ -21,6 +21,11 @@ class Python3LanguagePlugin
     Q_INTERFACES(Shared::AnalizerInterface Shared::RunInterface)
 public:
     Python3LanguagePlugin();
+
+    inline QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters() const {
+        return QList<ExtensionSystem::CommandLineParameter>();
+    }
+
     // Analizer interface methods
     int newDocument();
     inline bool primaryAlphabetIsLatin() const { return true; }
@@ -44,7 +49,7 @@ public:
     inline ResultType resultType() const { return RT_Source; }
 
     // Runner interface methods
-    bool loadProgram(const QString &fileName, const QByteArray & source, ProgramFormat format);
+    bool loadProgram(const QString &fileName, const QByteArray & source);
     QDateTime loadedProgramVersion() const;
     void setSourceDirName(int documentId, const QString &dirPath);
     QVariant valueStackTopItem() const;
@@ -101,7 +106,8 @@ Q_SIGNALS:
 
 
 protected:
-    QString initialize(const QStringList &arguments);
+    QString initialize(const QStringList &configurationArguments,
+                       const ExtensionSystem::CommandLine & runtimeArguments);
     void setBlindMode(bool flag);
 
 protected Q_SLOTS:

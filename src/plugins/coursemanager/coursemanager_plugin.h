@@ -51,7 +51,8 @@ private /*methods*/:
     void changeCurrentDirectory(const QString & path);
     void changeGlobalState(ExtensionSystem::GlobalState old,
                            ExtensionSystem::GlobalState current);
-    QString initialize(const QStringList &arguments);
+    QString initialize(const QStringList &configurationArguments,
+                       const ExtensionSystem::CommandLine & runtimeArguments);
     void updateSettings();
 
 private /*fields*/:

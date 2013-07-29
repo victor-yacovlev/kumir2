@@ -12,4 +12,15 @@
         <translation>Значение функции</translation>
     </message>
 </context>
+<context>
+    <name>KumirCodeGenerator::KumirCodeGeneratorPlugin</name>
+    <message>
+        <source>Generate bytecode assemby text instead of executable code</source>
+        <translation>Создать текстовый файл псевдокода вместо выполняемой программы</translation>
+    </message>
+    <message>
+        <source>Generate code with debug level from 0 (nothing) to 2 (maximum debug information)</source>
+        <translation>Уровень отладочной информации от 0 (без отладочной информации) до 2 (включить всю возможную отладочную информацию)</translation>
+    </message>
+</context>
 </TS>

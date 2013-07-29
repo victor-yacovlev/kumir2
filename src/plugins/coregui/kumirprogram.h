@@ -45,7 +45,6 @@ signals:
     void activateDocumentTab(int documentId);
 
 public slots:
-    void fastRun();
     void blindRun();
     void regularRun();
     void testingRun();
@@ -65,7 +64,7 @@ private:
     void setAllActorsAnimationFlag(bool animationEnabled);
     void timerEvent(QTimerEvent *e);
     void prepareKumirRunner(Shared::GeneratorInterface::DebugLevel);
-    enum State { Idle, FastRun, RegularRun, StepRun, TestingRun } e_state;
+    enum State { Idle, RegularRun, StepRun, TestingRun } e_state;
     AST::DataPtr m_ast;
     QString s_endStatus;
     QProcess * m_process;
