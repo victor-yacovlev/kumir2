@@ -1776,11 +1776,11 @@ private:
             body += "asyncRunThread_ = new %s(this, module_);\n" % self._module.runThreadClassName()
             body += "QObject::connect(asyncRunThread_, SIGNAL(finished()),\n"
             body += "                 this, SIGNAL(sync()));\n"
-        body += "return QString();\n"
         return """
-/* protected */ QString %s::initialize(const QStringList &, const ExtensionSystem::CommandLine &)
+/* protected */ QString %s::initialize(const QStringList &a, const ExtensionSystem::CommandLine &b)
 {
 %s
+    return module_->initialize(a, b);
 }
         """ % (self.className, _addIndent(body))
 
@@ -2433,6 +2433,24 @@ class ModuleBaseCppClass(CppClassBase):
 {
     // See "src/shared/extensionsystem/commandlineparameter.h" for constructor details
     return QList<ExtensionSystem::CommandLineParameter>();
+}
+        """ % self.className
+
+    def initializeCppImplementation(self):
+        """
+        Pass initialization to module itself
+
+        :rtype:     str
+        :return:    default implementaion (does nothing)
+        """
+        return """
+/* public virtual */ QString %s::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine & runtimeParameters)
+{
+    Q_UNUSED(configurationParameters);
+    Q_UNUSED(runtimeParameters);
+
+    // Return error text or an empty string on successfull  initialization
+    return QString();
 }
         """ % self.className
 
