@@ -772,6 +772,8 @@ namespace ActorRobot {
            tempSpinBox->hide();
            redrawEditFields();
            redrawRTFields();  
+           view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+           view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
        }
         if(mode==NEDIT_MODE)
         {
@@ -780,6 +782,8 @@ namespace ActorRobot {
           tempSpinBox->hide();
           redrawEditFields();
           redrawRTFields();  
+          view->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+          view->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);                                    
         }
         
         if(mode==RAD_MODE)
@@ -3429,7 +3433,14 @@ QWidget* RobotModule::pultWidget() const
 	*/
     return m_pultWidget;
 }
-
+QList<ExtensionSystem::CommandLineParameter>  RobotModule::acceptableCommandLineParameters() const
+{
+    QList<ExtensionSystem::CommandLineParameter> params;
+    params.append(ExtensionSystem::CommandLineParameter(true,'f',"field","Robot:field file name.",QVariant::String,false));
+    return params;
+    
+}
+    
 void RobotModule::runGoUp()
 {
 	/* TODO implement me */
