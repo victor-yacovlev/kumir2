@@ -17,6 +17,7 @@ cursFile="";
 }
  void MainWindowTask::setup()
  {
+       course=NULL;
      ui->setupUi(this);
      ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
      ui->treeView->setIconSize(QSize(25,25));
@@ -66,7 +67,7 @@ cursFile="";
 isTeacher=false;
        onTask=false;
        cursFile="";
-
+       
        //ui->textBrowser->setVisible(false);
  };
 QList<QAction*> MainWindowTask::getActions()
@@ -154,6 +155,8 @@ if(cursFile!=krsFile){//Esli ne udalos po puti - ishem v toyje direktorii
     qDebug()<<"PATH"<<cfi.dir().canonicalPath()+"/"+finf.fileName();
     krsFile=cfi.dir().canonicalPath()+"/"+finf.fileName();
     curDir=cfi.dir().canonicalPath();
+    QFileInfo krsFi(krsFile);
+    if(krsFi.isReadable())
     loadCourseData(krsFile);
 
 }
@@ -222,8 +225,11 @@ void MainWindowTask::loadCourse()
 
      QString	File=QFileDialog::getOpenFileName(this, QString::fromUtf8 ("Открыть файл"), dir, "(*.kurs.xml *.work.xml)");
      QFileInfo fi(File);
-
-
+    if(!fi.exists())
+    {
+           
+        return;
+    };
 
 
      baseKursFile=fi;
@@ -247,7 +253,7 @@ void MainWindowTask::loadCourse()
   {
       loadHtml(cText);
   }else ui->webView->setHtml(cText);
-  if(isTeacher)ui->actionEdit->setEnabled(true);
+ // if(isTeacher)ui->actionEdit->setEnabled(true);
   setWindowTitle(course->name()+trUtf8(" - Практикум"));
     interface->lockContrls();
     ui->checkTask->setEnabled(false);
