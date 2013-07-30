@@ -3436,11 +3436,16 @@ QWidget* RobotModule::pultWidget() const
 QList<ExtensionSystem::CommandLineParameter>  RobotModule::acceptableCommandLineParameters() const
 {
     QList<ExtensionSystem::CommandLineParameter> params;
-    params.append(ExtensionSystem::CommandLineParameter(true,'f',"field","Robot:field file name.",QVariant::String,false));
+    params.append(ExtensionSystem::CommandLineParameter(true,'f',"field",tr("Robot:field file name."),QVariant::String,false));
     return params;
     
 }
-    
+QString RobotModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine & runtimeParameters)
+    {
+        if(runtimeParameters.value("field").isValid())
+            LoadFromFile(runtimeParameters.value("field").toString());
+        return "";
+    }
 void RobotModule::runGoUp()
 {
 	/* TODO implement me */
