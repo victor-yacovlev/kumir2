@@ -772,6 +772,8 @@ namespace ActorRobot {
            tempSpinBox->hide();
            redrawEditFields();
            redrawRTFields();  
+           view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+           view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
        }
         if(mode==NEDIT_MODE)
         {
@@ -780,6 +782,8 @@ namespace ActorRobot {
           tempSpinBox->hide();
           redrawEditFields();
           redrawRTFields();  
+          view->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+          view->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);                                    
         }
         
         if(mode==RAD_MODE)
@@ -1381,7 +1385,14 @@ namespace ActorRobot {
         }
        
     };
-    
+    qreal RoboField::m_height()
+    {
+        return FIELD_SIZE_SMALL*  rows(); 
+    }
+    qreal RoboField::m_width()
+    {
+        return FIELD_SIZE_SMALL*  rows(); 
+    }
     /**
      * Загрузка обстановки из файла, отображение не производится.
      * @param fileName Имя файла
@@ -3392,6 +3403,7 @@ void RobotModule::reset()
             m_actionRobotSaveEnvironment->setEnabled(true);
             m_actionRobotEditEnvironment->setEnabled(true);
             m_actionRobotNewEnvironment->setEnabled(true);
+            view->FindRobot();
         }
 
     };    
@@ -3429,7 +3441,19 @@ QWidget* RobotModule::pultWidget() const
 	*/
     return m_pultWidget;
 }
-
+QList<ExtensionSystem::CommandLineParameter>  RobotModule::acceptableCommandLineParameters() const
+{
+    QList<ExtensionSystem::CommandLineParameter> params;
+    params.append(ExtensionSystem::CommandLineParameter(true,'f',"field",tr("Robot:field file name."),QVariant::String,false));
+    return params;
+    
+}
+QString RobotModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine & runtimeParameters)
+    {
+        if(runtimeParameters.value("field").isValid())
+            LoadFromFile(runtimeParameters.value("field").toString());
+        return "";
+    }
 void RobotModule::runGoUp()
 {
 	/* TODO implement me */
@@ -3462,7 +3486,10 @@ void RobotModule::runGoDown()
      if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
          emit sendToPultLog(status);
      }
-         if(animation)msleep(250);
+    if(animation){
+        view->update();
+     msleep(250);   
+    }
 	return;
 }
 
@@ -3480,7 +3507,11 @@ void RobotModule::runGoLeft()
     if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
         emit sendToPultLog(status);
     }
-        if(animation)msleep(250);
+    if(animation)
+    {
+        view->update();
+        msleep(250);
+    }
 	return;
 }
 
@@ -3497,7 +3528,11 @@ void RobotModule::runGoRight()
     if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
         emit sendToPultLog(status);
     }
-     if(animation)msleep(250);
+     if(animation)
+     {
+         view->update();
+     msleep(250);
+     }
 	return;
 }
 
@@ -3508,6 +3543,11 @@ void RobotModule::runDoPaint()
     QString status = "OK";
     if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
         emit sendToPultLog(status);
+    }
+    if(animation)
+    {
+        view->update();
+        msleep(250);
     }
 	return;
 }
@@ -3723,7 +3763,7 @@ void RobotModule::loadEnv()
         {
             if(QMessageBox::question(mainWidget(), "", QString::fromUtf8("Сохранить изменения?"), QMessageBox::Yes,QMessageBox::No,0) == QMessageBox::Yes)
             {
-               // SaveToFileActivated();
+               saveEnv();
                 
             }
             
@@ -3801,7 +3841,8 @@ void RobotModule::loadEnv()
         field->drawField(FIELD_SIZE_SMALL);
         
         mainWidget()->setWindowTitle(QString::fromUtf8("Робот - нет файла") );
-        
+
+        view->centerOn(field->m_height()/2,field->m_width()/2);
         NewWindow->close();
         editEnv();
     };

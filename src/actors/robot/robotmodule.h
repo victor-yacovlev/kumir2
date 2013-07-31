@@ -320,6 +320,8 @@ namespace ActorRobot {
          */
         inline int columns() const { return Items.isEmpty()? 0 : Items.last().size();  }
         void drawNet();
+        qreal m_height();
+        qreal m_width();
         void setItem(FieldItm* item,uint str,uint stlb);
         void destroyNet();
         void destroyScene();
@@ -514,6 +516,8 @@ namespace ActorRobot {
         // Set animation flag
   
         void setAnimationEnabled(bool enabled);
+        QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters() const;
+        QString initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine & runtimeParameters);
         // Actor methods
         void runGoUp();
         void runGoDown();
