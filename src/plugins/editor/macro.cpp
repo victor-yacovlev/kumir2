@@ -14,23 +14,22 @@ QString screenString(QString s)
     return s;
 }
 
-extern QString dumpMacro(Macro &m)
+extern QDomElement dumpMacro(const Macro &m, QDomDocument &document, QDomElement &root)
 {
-    QString result = "{\n";
-    result += "  title: \""+screenString(m.title)+"\",\n";
-    result += "  key: \""+screenString(QString(m.key).toUpper())+"\",\n";
-    result += "  commands: [\n";
+    QDomElement macroElement = document.createElement("macro");
+    macroElement.setAttribute("title", m.title);
+    if (!m.key.isNull())
+        macroElement.setAttribute("key", m.key);
     for (int i=0; i<m.commands.size(); i++) {
-        result += QString("    { command: \"%1\", text: \"%2\" }")
-                .arg(screenString(m.commands[i].text))
-                .arg(dumpKeyCommandType(m.commands[i].type));
-        if (i<m.commands.size()-1)
-            result += ",";
-        result += "\n";
+        const KeyCommand & cmd = m.commands[i];
+        QDomElement commandElement = document.createElement("command");
+        commandElement.setAttribute("name", dumpKeyCommandType(cmd.type));
+        if (cmd.text.length() > 0)
+            commandElement.setAttribute("text", screenString(cmd.text));
+        macroElement.appendChild(commandElement);
     }
-    result += "  ]\n";
-    result += "}";
-    return result;
+    root.appendChild(macroElement);
+    return macroElement;
 }
 
 extern bool loadMacro(const QDomElement &v, Macro &m)
@@ -39,9 +38,10 @@ extern bool loadMacro(const QDomElement &v, Macro &m)
     m.commands.clear();
     m.title = v.attribute("title");
     const QString key = v.attribute("key");
-    if (key.length()!=1)
-        return false;
-    m.key = key[0];
+    if (key.length()==1)
+        m.key = key[0];
+    else
+        m.key = QChar(QChar::Null);
     const QDomNodeList commands = v.elementsByTagName("command");
     for (int i=0; i<commands.count(); i++) {
         const QDomElement cmd = commands.at(i).toElement();
@@ -78,25 +78,17 @@ extern QList<Macro> loadFromFile(const QString &fileName)
 
 extern bool saveToFile(const QString &fileName, const QList<Macro> &macros)
 {
+    QDomDocument document("macros");
+    QDomElement root = document.createElement("macros");
+    document.appendChild(root);
+    for (int i=0; i<macros.size(); i++) {
+        const Macro & macro = macros[i];
+        dumpMacro(macro, document, root);
+    }
     QFile f(fileName);
     if (f.open(QIODevice::WriteOnly|QIODevice::Text)) {
         QTextStream ts(&f);
-        ts.setCodec("UTF-8");
-        ts.setGenerateByteOrderMark(true);
-        ts << "[\n";
-        for (int i=0; i<macros.size(); i++) {
-            Macro m = macros[i];
-            QStringList lines = dumpMacro(m).split("\n");
-            foreach (QString line, lines) {
-                ts << "  ";
-                ts << line;
-                ts << "\n";
-            }
-            if (i<macros.size()-1) {
-                ts << ", ";
-            }
-        }
-        ts << "]\n";
+        document.save(ts, 4);
         f.close();
         return true;
     }

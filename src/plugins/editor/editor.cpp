@@ -1,5 +1,4 @@
 #include "editor.h"
-#include "editor_p.h"
 #include "editorplane.h"
 #include "textcursor.h"
 #include "textdocument.h"
@@ -11,6 +10,9 @@
 #include "widgets/cyrillicmenu.h"
 #include "interfaces/actorinterface.h"
 #include "extensionsystem/pluginmanager.h"
+#include "findreplace.h"
+#include "macroeditor.h"
+#include "macrolisteditor.h"
 
 namespace Editor {
 
@@ -19,76 +21,76 @@ using namespace Shared;
 
 void Editor::setTeacherMode(bool v)
 {
-    d->teacherMode = v;
-    d->plane->setTeacherMode(v);
-    d->cursor->setTeacherMode(v);
+    teacherMode_ = v;
+    plane_->setTeacherMode(v);
+    cursor_->setTeacherMode(v);
 }
 
 bool Editor::isTeacherMode() const
 {
-    return d->teacherMode;
+    return teacherMode_;
 }
 
 QSize Editor::minimumSizeHint() const
 {
     int minW = 400;
     int minH = 0;
-    if (d->horizontalScrollBar->isVisible()) {
-        minH = d->horizontalScrollBar->height();
+    if (horizontalScrollBar_->isVisible()) {
+        minH = horizontalScrollBar_->height();
     }
-    QFontMetrics fm(d->plane->font());
+    QFontMetrics fm(plane_->font());
     minH += fm.lineSpacing() + fm.height(); // at least 1 line of text
     return QSize(minW, minH);
 }
 
 void Editor::unsetAnalizer()
 {
-    d->analizer = 0;
+    analizer_ = 0;
 }
 
 void Editor::setDocumentId(int id)
 {
-    d->doc->id_ = id;
+    doc_->id_ = id;
 }
 
 void Editor::lock()
 {
-    d->cursor->setEnabled(false);
-    d->cut->setEnabled(false);
-    d->paste->setEnabled(false);
-    d->deleteLine->setEnabled(false);
-    d->deleteTail->setEnabled(false);
-    if (d->toggleComment)
-        d->toggleComment->setEnabled(false);
-    for (int i=0; i<d->userMacros.size(); i++) {
-        d->userMacros[i].action->setEnabled(false);
+    cursor_->setEnabled(false);
+    cut_->setEnabled(false);
+    paste_->setEnabled(false);
+    deleteLine_->setEnabled(false);
+    deleteTail_->setEnabled(false);
+    if (toggleComment_)
+        toggleComment_->setEnabled(false);
+    for (int i=0; i<userMacros_.size(); i++) {
+        userMacros_[i].action->setEnabled(false);
     }
-    for (int i=0; i<d->systemMacros.size(); i++) {
-        d->systemMacros[i].action->setEnabled(false);
+    for (int i=0; i<systemMacros_.size(); i++) {
+        systemMacros_[i].action->setEnabled(false);
     }
 }
 
 void Editor::unlock()
 {
-    d->cursor->setEnabled(true);
-    d->paste->setEnabled(d->clipboard->hasContent());
-    d->cut->setEnabled(true);
-    d->deleteLine->setEnabled(true);
-    d->deleteTail->setEnabled(true);
-    if (d->toggleComment)
-        d->toggleComment->setEnabled(true);
-    for (int i=0; i<d->userMacros.size(); i++) {
-        d->userMacros[i].action->setEnabled(true);
+    cursor_->setEnabled(true);
+    paste_->setEnabled(clipboard_->hasContent());
+    cut_->setEnabled(true);
+    deleteLine_->setEnabled(true);
+    deleteTail_->setEnabled(true);
+    if (toggleComment_)
+        toggleComment_->setEnabled(true);
+    for (int i=0; i<userMacros_.size(); i++) {
+        userMacros_[i].action->setEnabled(true);
     }
-    for (int i=0; i<d->systemMacros.size(); i++) {
-        d->systemMacros[i].action->setEnabled(true);
+    for (int i=0; i<systemMacros_.size(); i++) {
+        systemMacros_[i].action->setEnabled(true);
     }
 }
 
 void Editor::appendMarginText(int lineNo, const QString &text)
 {
-    if (lineNo>=0 && lineNo<d->doc->linesCount()) {
-        TextLine::Margin & margin = d->doc->marginAt(lineNo);
+    if (lineNo>=0 && lineNo<doc_->linesCount()) {
+        TextLine::Margin & margin = doc_->marginAt(lineNo);
         if (!margin.text.isEmpty()) {
             margin.text += "; ";
         }
@@ -99,8 +101,8 @@ void Editor::appendMarginText(int lineNo, const QString &text)
 
 void Editor::setMarginText(int lineNo, const QString &text, const QColor & fgColor)
 {
-    if (lineNo>=0 && lineNo<d->doc->linesCount()) {
-        TextLine::Margin & margin = d->doc->marginAt(lineNo);
+    if (lineNo>=0 && lineNo<doc_->linesCount()) {
+        TextLine::Margin & margin = doc_->marginAt(lineNo);
         margin.text = text;
         margin.color = fgColor;
     }
@@ -109,8 +111,8 @@ void Editor::setMarginText(int lineNo, const QString &text, const QColor & fgCol
 
 void Editor::clearMarginText()
 {
-    for (uint i=0; i<d->doc->linesCount(); i++) {
-        TextLine::Margin & margin = d->doc->marginAt(i);
+    for (uint i=0; i<doc_->linesCount(); i++) {
+        TextLine::Margin & margin = doc_->marginAt(i);
         margin.text.clear();
     }
     update();
@@ -118,10 +120,10 @@ void Editor::clearMarginText()
 
 void Editor::clearMarginText(uint fromLine, uint toLine)
 {
-    uint start = qMin(qMax(0u, fromLine), d->doc->linesCount()-1);
-    uint end = qMin(qMax(0u, toLine), d->doc->linesCount()-1);
+    uint start = qMin(qMax(0u, fromLine), doc_->linesCount()-1);
+    uint end = qMin(qMax(0u, toLine), doc_->linesCount()-1);
     for (uint i=start; i<=end; i++) {
-        TextLine::Margin & margin = d->doc->marginAt(i);
+        TextLine::Margin & margin = doc_->marginAt(i);
         margin.text.clear();
     }
     update();
@@ -129,109 +131,94 @@ void Editor::clearMarginText(uint fromLine, uint toLine)
 
 void Editor::setLineHighlighted(int lineNo, const QColor &color, quint32 colStart, quint32 colEnd)
 {
-    d->plane->setLineHighlighted(lineNo, color, colStart, colEnd);
+    plane_->setLineHighlighted(lineNo, color, colStart, colEnd);
 }
 
-QList<QWidget*> Editor::statusbarWidgets()
-{
-    return QList<QWidget*>() << d->positionStatus << d->keybStatus;
-}
 
-void EditorPrivate::disableInsertActions()
+void Editor::disableInsertActions()
 {
-    foreach (Macro m , userMacros) {
+    foreach (Macro m , userMacros_) {
         m.action->setEnabled(false);
     }
-    foreach (Macro m , systemMacros) {
+    foreach (Macro m , systemMacros_) {
         m.action->setEnabled(false);
     }
 }
 
-void EditorPrivate::enableInsertActions()
+void Editor::enableInsertActions()
 {
-    foreach (Macro m , userMacros) {
+    foreach (Macro m , userMacros_) {
         m.action->setEnabled(true);
     }
-    foreach (Macro m , systemMacros) {
+    foreach (Macro m , systemMacros_) {
         m.action->setEnabled(true);
     }
 }
 
-void EditorPrivate::timerEvent(QTimerEvent *e)
+void Editor::timerEvent(QTimerEvent *e)
 {
-    if (e->timerId()==timerId) {
+    if (e->timerId()==timerId_) {
         e->accept();
-        emit q->keyboardLayoutChanged(
+        emit keyboardLayoutChanged(
                     Utils::isRussianLayout()? QLocale::Russian : QLocale::English,
                     Utils::isCapsLock(),
                     Utils::shiftKeyPressed,
                     Utils::altKeyPressed
                     );
-        if (keybStatus) {
-            bool capsLock = Utils::isCapsLock();
-            bool russian = Utils::isRussianLayout();
-            if (Utils::altKeyPressed)
-                russian = !russian;
-            QString abc = russian? QString::fromUtf8("рус") : "lat";
-            if (capsLock)
-                abc = abc.toUpper();
-            if (Utils::altKeyPressed)
-                abc += "*";
-            keybStatus->setText(tr("Keys: %1").arg(abc));
-        }
     }
-    else if (e->timerId()==autoScrollTimerId) {
+    else if (e->timerId()==autoScrollTimerId_) {
         e->accept();
-        if (autoScrollStateY==-1) {
-            if (verticalScrollBar->value()>0) {
-                verticalScrollBar->setValue(verticalScrollBar->value()-verticalScrollBar->singleStep());
+        if (autoScrollStateY_==-1) {
+            if (verticalScrollBar_->value()>0) {
+                verticalScrollBar_->setValue(verticalScrollBar_->value()-verticalScrollBar_->singleStep());
             }
         }
-        else if (autoScrollStateY==1) {
-            if (verticalScrollBar->value()<verticalScrollBar->maximum()) {
-                verticalScrollBar->setValue(verticalScrollBar->value()+verticalScrollBar->singleStep());
+        else if (autoScrollStateY_==1) {
+            if (verticalScrollBar_->value()<verticalScrollBar_->maximum()) {
+                verticalScrollBar_->setValue(verticalScrollBar_->value()+verticalScrollBar_->singleStep());
             }
         }
-        if (autoScrollStateX==-1) {
-            if (horizontalScrollBar->value()>0) {
-                horizontalScrollBar->setValue(horizontalScrollBar->value()-horizontalScrollBar->singleStep());
+        if (autoScrollStateX_==-1) {
+            if (horizontalScrollBar_->value()>0) {
+                horizontalScrollBar_->setValue(horizontalScrollBar_->value()-horizontalScrollBar_->singleStep());
             }
         }
-        else if (autoScrollStateX==1) {
-            if (horizontalScrollBar->value()<horizontalScrollBar->maximum()) {
-                horizontalScrollBar->setValue(horizontalScrollBar->value()+horizontalScrollBar->singleStep());
+        else if (autoScrollStateX_==1) {
+            if (horizontalScrollBar_->value()<horizontalScrollBar_->maximum()) {
+                horizontalScrollBar_->setValue(horizontalScrollBar_->value()+horizontalScrollBar_->singleStep());
             }
         }
     }
 }
 
-void EditorPrivate::handleAutoScrollChange(char a)
+void Editor::handleAutoScrollChange(char a)
 {
-    autoScrollStateY = a;
+    autoScrollStateY_ = a;
 }
 
-void EditorPrivate::handleAutoScrollChangeX(char a)
+void Editor::handleAutoScrollChangeX(char a)
 {
-    autoScrollStateX = a;
+    autoScrollStateX_ = a;
 }
 
-void EditorPrivate::updatePosition(int row, int col)
+void Editor::updatePosition(int row, int col)
 {
-    emit q->cursorPositionChanged(row, col);
-    positionStatus->setText(tr("Row: %1, Col: %2").arg(row+1).arg(col+1));
+    emit cursorPositionChanged(row, col);
 }
 
-void EditorPrivate::loadMacros()
+void Editor::loadMacros()
 {
-    if (analizer == nullptr) {
+    if (analizer_ == nullptr) {
         return;
     }
     using namespace Shared;
     using namespace ExtensionSystem;
-    const QString analizerName = analizer->defaultDocumentFileNameSuffix().mid(1);
+    const QString analizerName = analizer_->defaultDocumentFileNameSuffix().mid(1);
+
+    // System macros
     const QString sharePath = QCoreApplication::instance()->property("sharePath").toString();
     const QString systemMacrosPath = sharePath+"/editor/macros-"+analizerName+".xml";
-    systemMacros = loadFromFile(systemMacrosPath);
+    systemMacros_ = loadFromFile(systemMacrosPath);
 
     if (analizerName == "kum") {
         const QList<const KPlugin*> actorPlugins =
@@ -256,46 +243,63 @@ void EditorPrivate::loadMacros()
                 macro.commands.push_back(
                             KeyCommand(KeyCommand::InsertImport, actorName)
                             );
-                systemMacros.push_back(macro);
+                systemMacros_.push_back(macro);
             }
         }
     }
 
+
+    // User macros
+    QString fileName = analizerName.length() > 0
+            ? QString::fromAscii(".user-macros-%1.xml").arg(analizerName)
+            : QString::fromAscii(".user-macros.xml");
+
+    const QString dirName = settings_->locationDirectory();
+    if (dirName.startsWith(QDir::homePath() + "/."))
+        fileName.remove(0, 1);
+    QDir dir(dirName);
+    const QString filePath = dir.absoluteFilePath(fileName);
+    userMacros_ = loadFromFile(filePath);
 }
 
-void EditorPrivate::updateInsertMenu()
+
+void Editor::updateInsertMenu()
 {
-    menu_insert->clear();
-    const QString escComa = settings->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()+", ";
-    for (int i=0; i<systemMacros.size(); i++) {
-        Macro m = systemMacros[i];
+    loadMacros();
+    insertMenu_->clear();
+    const QString escComa = settings_->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()+", ";
+    for (int i=0; i<systemMacros_.size(); i++) {
+        Macro m = systemMacros_[i];
         QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
-        m.action = new QAction(m.title, menu_insert);
+        m.action = new QAction(m.title, insertMenu_);
         m.action->setShortcut(ks);
-        systemMacros[i].action = m.action;
-        menu_insert->addAction(m.action);
+        systemMacros_[i].action = m.action;
+        insertMenu_->addAction(m.action);
         connect(m.action, SIGNAL(triggered()), this, SLOT(playMacro()));
     }
-    if (!userMacros.isEmpty())
-        menu_insert->addSeparator();
-    for (int i=0; i<userMacros.size(); i++) {
-        Macro m = userMacros[i];
-        QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
-        m.action = new QAction(m.title, menu_insert);
-        m.action->setShortcut(ks);
-        userMacros[i].action = m.action;
-        menu_insert->addAction(m.action);
+    if (!userMacros_.isEmpty())
+        insertMenu_->addSeparator();
+    for (int i=0; i<userMacros_.size(); i++) {
+        Macro m = userMacros_[i];
+        m.action = new QAction(m.title, insertMenu_);
+        if (!m.key.isNull()) {
+            QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
+            m.action->setShortcut(ks);
+        }
+        userMacros_[i].action = m.action;
+        insertMenu_->addAction(m.action);
         connect(m.action, SIGNAL(triggered()), this, SLOT(playMacro()));
     }
+    editMacros_->setEnabled(userMacros_.size() > 0);
 }
 
-void EditorPrivate::playMacro()
+void Editor::playMacro()
 {
     QAction * a = qobject_cast<QAction*>(sender());
     Q_CHECK_PTR(a);
     Macro m;
     bool found = false;
-    foreach (Macro mm, systemMacros) {
+    foreach (Macro mm, systemMacros_) {
         if (mm.action==a) {
             found = true;
             m = mm;
@@ -303,7 +307,7 @@ void EditorPrivate::playMacro()
         }
     }
     if (!found) {
-        foreach (Macro mm, userMacros) {
+        foreach (Macro mm, userMacros_) {
             if (mm.action==a) {
                 found = true;
                 m = mm;
@@ -313,10 +317,10 @@ void EditorPrivate::playMacro()
     }
     if (found) {
         for (int i=0; i<m.commands.size(); i++) {
-            cursor->evaluateCommand(m.commands[i]);
+            cursor_->evaluateCommand(m.commands[i]);
         }
-        plane->updateScrollBars();
-        plane->ensureCursorVisible();
+        plane_->updateScrollBars();
+        plane_->ensureCursorVisible();
     }
 }
 
@@ -324,18 +328,18 @@ void EditorPrivate::playMacro()
 void Editor::focusInEvent(QFocusEvent *e)
 {
     QWidget::focusInEvent(e);
-    d->plane->setFocus();
+    plane_->setFocus();
 }
 
 
 
-void EditorPrivate::handleCompleteCompilationRequiest(
+void Editor::handleCompleteCompilationRequiest(
     const QStringList & visibleText,
     const QStringList & hiddenText,
     int hiddenBaseLine
     )
 {
-    if (!analizer) {
+    if (!analizer_) {
         return;
     }
     QString vt;
@@ -349,72 +353,72 @@ void EditorPrivate::handleCompleteCompilationRequiest(
         if (i<hiddenText.size()-1)
             vt += "\n";
     }
-    analizer->setSourceText(doc->id_, vt);    
+    analizer_->setSourceText(doc_->id_, vt);
     updateFromAnalizer();
 }
 
 
 
-void EditorPrivate::updateFromAnalizer()
+void Editor::updateFromAnalizer()
 {
-    QList<Shared::LineProp> props = analizer->lineProperties(doc->id_);
-    QList<QPoint> ranks = analizer->lineRanks(doc->id_);
-    QList<Error> errors = analizer->errors(doc->id_);
-    std::vector<int> oldIndents(doc->linesCount(), 0);
-    for (int i=0; i<doc->linesCount(); i++) {
-        oldIndents[i] = doc->indentAt(i);
+    QList<Shared::LineProp> props = analizer_->lineProperties(doc_->id_);
+    QList<QPoint> ranks = analizer_->lineRanks(doc_->id_);
+    QList<Error> errors = analizer_->errors(doc_->id_);
+    std::vector<int> oldIndents(doc_->linesCount(), 0);
+    for (int i=0; i<doc_->linesCount(); i++) {
+        oldIndents[i] = doc_->indentAt(i);
     }
-    for (int i=0; i<doc->linesCount(); i++) {
+    for (int i=0; i<doc_->linesCount(); i++) {
         int oldIndent = oldIndents[i];
         if (i<ranks.size()) {
-            doc->setIndentRankAt(i, ranks[i]);
+            doc_->setIndentRankAt(i, ranks[i]);
         }
         if (i<props.size()) {
-            doc->setHighlightAt(i, props[i].toList());
+            doc_->setHighlightAt(i, props[i].toList());
         }
-        doc->marginAt(i).errors.clear();
-        int newIndent = doc->indentAt(i);
+        doc_->marginAt(i).errors.clear();
+        int newIndent = doc_->indentAt(i);
         int diffIndent = newIndent - oldIndent;
-        if (cursor->row()==i) {
-            cursor->setColumn(qMax(cursor->column()+2*diffIndent, 0u));
+        if (cursor_->row()==i) {
+            cursor_->setColumn(qMax(cursor_->column()+2*diffIndent, 0u));
         }
     }
     for (int i=0; i<errors.size(); i++) {
         Error err = errors[i];
         int lineNo = err.line;
         if (lineNo>=0) {
-            doc->marginAt(lineNo).errors.append(err.code);
+            doc_->marginAt(lineNo).errors.append(err.code);
         }
     }
-    plane->update();
+    plane_->update();
 }
 
-Clipboard * EditorPrivate::clipboard = 0;
+Clipboard * Editor::clipboard_ = 0;
 
 void Editor::setHelpViewer(DocBookViewer::DocBookView *viewer)
 {
-    d->helpViewer = viewer;
-    d->plane->setHelpViewer(viewer);
+    helpViewer_ = viewer;
+    plane_->setHelpViewer(viewer);
 }
 
-Editor::Editor(bool initiallyNotSaved, ExtensionSystem::SettingsPtr settings, AnalizerInterface * analizer, int documentId, QWidget *parent) :
+Editor::Editor(EditorPlugin * plugin,
+        bool initiallyNotSaved, ExtensionSystem::SettingsPtr settings, AnalizerInterface * analizer, int documentId, QWidget *parent) :
     QWidget()
 {
+    plugin_ = plugin;
     installEventFilter(this);
     setParent(parent);
-    d = new EditorPrivate;
-    d->helpViewer = nullptr;
-    d->q = this;
-    d->teacherMode = false;
-    d->notSaved = initiallyNotSaved;
-    if (!d->clipboard)
-        d->clipboard = new Clipboard;
-    d->doc = new TextDocument(this, settings);
-    d->doc->setAnalizer(analizer);
-    d->cursor = new TextCursor(d->doc, d->clipboard, analizer, settings);
-    d->analizer = analizer;
-    d->doc->id_ = documentId;
-    d->settings = settings;
+    helpViewer_ = nullptr;
+    teacherMode_ = false;
+    notSaved_ = initiallyNotSaved;
+    if (!clipboard_)
+        clipboard_ = new Clipboard;
+    doc_ = new TextDocument(this, settings);
+    doc_->setAnalizer(analizer);
+    cursor_ = new TextCursor(doc_, clipboard_, analizer, settings);
+    analizer_ = analizer;
+    doc_->id_ = documentId;
+    settings_ = settings;
     static const char * ScrollBarCSS = ""
             "QScrollBar {"
             "   width: 12px;"
@@ -433,74 +437,70 @@ Editor::Editor(bool initiallyNotSaved, ExtensionSystem::SettingsPtr settings, An
             "   height: 0;"
             "}"
             ;
-    d->horizontalScrollBar = new QScrollBar(Qt::Horizontal, this);
-    d->verticalScrollBar = new QScrollBar(Qt::Vertical, this);
-    d->verticalScrollBar->setStyleSheet(ScrollBarCSS);
-    d->verticalScrollBar->installEventFilter(this);
-    d->plane = new EditorPlane(
-                d->doc,
-                d->analizer,
+    horizontalScrollBar_ = new QScrollBar(Qt::Horizontal, this);
+    verticalScrollBar_ = new QScrollBar(Qt::Vertical, this);
+    verticalScrollBar_->setStyleSheet(ScrollBarCSS);
+    verticalScrollBar_->installEventFilter(this);
+    plane_ = new EditorPlane(
+                doc_,
+                analizer_,
                 this,
-                d->cursor,
-                d->clipboard,
-                d->settings,
-                d->horizontalScrollBar,
-                d->verticalScrollBar,
-                d->analizer!=NULL,
+                cursor_,
+                clipboard_,
+                settings_,
+                horizontalScrollBar_,
+                verticalScrollBar_,
+                analizer_!=NULL,
                 this);
-    d->plane->installEventFilter(this);
-    connect(d->plane, SIGNAL(message(QString)), this, SIGNAL(message(QString)));
+    plane_->installEventFilter(this);
+    connect(plane_, SIGNAL(message(QString)), this, SIGNAL(message(QString)));
 
-    d->findReplace = new FindReplace(d->doc, d->cursor, d->plane);
+    findReplace_ = new FindReplace(doc_, cursor_, plane_);
 
-    d->keybStatus = new QLabel(0);
-    d->keybStatus->setFixedWidth(90);
-    d->positionStatus = new QLabel(0);
-    d->positionStatus->setFixedWidth(120);
-    d->timerId = d->startTimer(50);
-    d->autoScrollTimerId = d->startTimer(100);
-    d->autoScrollStateY = 0;
-    d->autoScrollStateX = 0;
+    timerId_ = startTimer(50);
+    autoScrollTimerId_ = startTimer(100);
+    autoScrollStateY_ = 0;
+    autoScrollStateX_ = 0;
 
-    connect(d->cursor, SIGNAL(positionChanged(int,int)),
-            d, SLOT(updatePosition(int,int)));
+    connect(cursor_, SIGNAL(positionChanged(int,int)),
+            this, SLOT(updatePosition(int,int)));
 
-    connect(d->plane, SIGNAL(requestAutoScroll(char)),
-            d, SLOT(handleAutoScrollChange(char)));
+    connect(plane_, SIGNAL(requestAutoScroll(char)),
+            this, SLOT(handleAutoScrollChange(char)));
 
-    connect(d->plane, SIGNAL(requestAutoScrollX(char)),
-            d, SLOT(handleAutoScrollChangeX(char)));
+    connect(plane_, SIGNAL(requestAutoScrollX(char)),
+            this, SLOT(handleAutoScrollChangeX(char)));
 
-    d->updatePosition(d->cursor->row(), d->cursor->column());
+    updatePosition(cursor_->row(), cursor_->column());
 
-    d->createActions();
-    d->plane->addContextMenuAction(d->cut);
-    d->plane->addContextMenuAction(d->copy);
-    d->plane->addContextMenuAction(d->paste);
+    createActions();
+    plane_->addContextMenuAction(cut_);
+    plane_->addContextMenuAction(copy_);
+    plane_->addContextMenuAction(paste_);
 
 
-    connect(d->doc, SIGNAL(completeCompilationRequest(QStringList,QStringList,int)),
-            d, SLOT(handleCompleteCompilationRequiest(QStringList,QStringList,int)), Qt::DirectConnection);
+    connect(doc_, SIGNAL(completeCompilationRequest(QStringList,QStringList,int)),
+            this, SLOT(handleCompleteCompilationRequiest(QStringList,QStringList,int)), Qt::DirectConnection);
 
-    connect(d->doc->undoStack(), SIGNAL(cleanChanged(bool)), this, SIGNAL(documentCleanChanged(bool)));
+    connect(doc_->undoStack(), SIGNAL(cleanChanged(bool)), this, SIGNAL(documentCleanChanged(bool)));
 
     QGridLayout * l = new QGridLayout();
     l->setContentsMargins(0,0,0,0);
     l->setSpacing(0);
     setLayout(l);
-    l->addWidget(d->plane, 0, 0);
-    l->addWidget(d->verticalScrollBar, 0, 1);
-    l->addWidget(d->horizontalScrollBar, 1, 0);
-    connect(d->plane, SIGNAL(urlsDragAndDropped(QList<QUrl>)), this, SIGNAL(urlsDragAndDropped(QList<QUrl>)));
-    d->loadMacros();
-    d->updateInsertMenu();
+    l->addWidget(plane_, 0, 0);
+    l->addWidget(verticalScrollBar_, 0, 1);
+    l->addWidget(horizontalScrollBar_, 1, 0);
+    connect(plane_, SIGNAL(urlsDragAndDropped(QList<QUrl>)), this, SIGNAL(urlsDragAndDropped(QList<QUrl>)));
 
-    connect(d->doc->undoStack(), SIGNAL(canRedoChanged(bool)), d->cursor, SLOT(handleRedoChanged(bool)));
-    connect(d->doc->undoStack(), SIGNAL(canUndoChanged(bool)), d->cursor, SLOT(handleUndoChanged(bool)));
-    connect(d->cursor, SIGNAL(signalizeNotEditable()), d->plane, SLOT(signalizeNotEditable()));
+    updateInsertMenu();
 
-    connect(d->plane, SIGNAL(enableInsertActions()), d, SLOT(enableInsertActions()));
-    connect(d->plane, SIGNAL(disableInsertActions()), d, SLOT(disableInsertActions()));
+    connect(doc_->undoStack(), SIGNAL(canRedoChanged(bool)), cursor_, SLOT(handleRedoChanged(bool)));
+    connect(doc_->undoStack(), SIGNAL(canUndoChanged(bool)), cursor_, SLOT(handleUndoChanged(bool)));
+    connect(cursor_, SIGNAL(signalizeNotEditable()), plane_, SLOT(signalizeNotEditable()));
+
+    connect(plane_, SIGNAL(enableInsertActions()), this, SLOT(enableInsertActions()));
+    connect(plane_, SIGNAL(disableInsertActions()), this, SLOT(disableInsertActions()));
 }
 
 void Editor::paintEvent(QPaintEvent * e)
@@ -512,7 +512,7 @@ void Editor::paintEvent(QPaintEvent * e)
     QWidget::paintEvent(e);
     p.end();
     p.begin(this);
-    const QBrush br = d->plane->hasFocus()
+    const QBrush br = plane_->hasFocus()
             ? palette().brush(QPalette::Highlight)
             : palette().brush(QPalette::Window);
     p.setPen(QPen(br, 3));
@@ -523,237 +523,298 @@ void Editor::paintEvent(QPaintEvent * e)
 
 bool Editor::eventFilter(QObject *obj, QEvent *evt)
 {
-    if (obj == d->verticalScrollBar && evt->type() == QEvent::Paint) {
-        QPainter p(d->verticalScrollBar);
-        const QBrush br = d->plane->hasFocus()
+    if (obj == verticalScrollBar_ && evt->type() == QEvent::Paint) {
+        QPainter p(verticalScrollBar_);
+        const QBrush br = plane_->hasFocus()
                 ? palette().brush(QPalette::Highlight)
                 : palette().brush(QPalette::Window);
         p.setPen(QPen(br, 3));
         p.drawLine(0, 0,
-                   d->verticalScrollBar->width()-1, 0);
-        p.drawLine(0, d->verticalScrollBar->height()-1,
-                   d->verticalScrollBar->width()-1, d->verticalScrollBar->height()-1);
+                   verticalScrollBar_->width()-1, 0);
+        p.drawLine(0, verticalScrollBar_->height()-1,
+                   verticalScrollBar_->width()-1, verticalScrollBar_->height()-1);
         p.end();
     }
-    else if (obj == d->plane) {
+    else if (obj == plane_) {
         if (evt->type() == QEvent::FocusIn || evt->type() == QEvent::FocusOut) {
-            d->verticalScrollBar->repaint();
+            verticalScrollBar_->repaint();
         }
     }
     return false;
 }
 
-void EditorPrivate::createActions()
+void Editor::createActions()
 {
     const QString qtcreatorIconsPath = QApplication::instance()->property("sharePath")
             .toString() + "/icons/from_qtcreator/";
 
-    selectAll = new QAction(plane);
-    selectAll->setText(QObject::tr("Select all text in editor"));
+    selectAll_ = new QAction(plane_);
+    selectAll_->setText(QObject::tr("Select all text in editor"));
 //    selectAll->setIcon(QIcon::fromTheme("edit-select-all", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-select-all.png")));
-    selectAll->setShortcut(QKeySequence(QKeySequence::SelectAll));
-    selectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    QObject::connect(selectAll, SIGNAL(triggered()), plane, SLOT(selectAll()));
+    selectAll_->setShortcut(QKeySequence(QKeySequence::SelectAll));
+    selectAll_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    QObject::connect(selectAll_, SIGNAL(triggered()), plane_, SLOT(selectAll()));
 
-    copy = new QAction(plane);
-    copy->setText(QObject::tr("Copy selection to clipboard"));
-    copy->setIcon(QIcon(qtcreatorIconsPath+"editcopy.png"));
-    copy->setShortcut(QKeySequence(QKeySequence::Copy));
-    copy->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    QObject::connect(copy, SIGNAL(triggered()), plane, SLOT(copy()));
+    copy_ = new QAction(plane_);
+    copy_->setText(QObject::tr("Copy selection to clipboard"));
+    copy_->setIcon(QIcon(qtcreatorIconsPath+"editcopy.png"));
+    copy_->setShortcut(QKeySequence(QKeySequence::Copy));
+    copy_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    QObject::connect(copy_, SIGNAL(triggered()), plane_, SLOT(copy()));
 
-    cut = new QAction(plane);
-    cut->setText(QObject::tr("Cut selection to clipboard"));
-    cut->setIcon(QIcon(qtcreatorIconsPath+"editcut.png"));
-    cut->setShortcut(QKeySequence(QKeySequence::Cut));
-    cut->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    QObject::connect(cut, SIGNAL(triggered()), plane, SLOT(cut()));
+    cut_ = new QAction(plane_);
+    cut_->setText(QObject::tr("Cut selection to clipboard"));
+    cut_->setIcon(QIcon(qtcreatorIconsPath+"editcut.png"));
+    cut_->setShortcut(QKeySequence(QKeySequence::Cut));
+    cut_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    QObject::connect(cut_, SIGNAL(triggered()), plane_, SLOT(cut()));
 
-    paste = new QAction(plane);
-    paste->setText(QObject::tr("Paste from clipboard"));
-    paste->setIcon(QIcon(qtcreatorIconsPath+"editpaste.png"));
-    paste->setShortcut(QKeySequence(QKeySequence::Paste));
-    paste->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    QObject::connect(paste, SIGNAL(triggered()), plane, SLOT(paste()));
+    paste_ = new QAction(plane_);
+    paste_->setText(QObject::tr("Paste from clipboard"));
+    paste_->setIcon(QIcon(qtcreatorIconsPath+"editpaste.png"));
+    paste_->setShortcut(QKeySequence(QKeySequence::Paste));
+    paste_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    QObject::connect(paste_, SIGNAL(triggered()), plane_, SLOT(paste()));
 
-    find = new QAction(plane);
-    find->setText(QObject::tr("Find..."));
-//    find->setIcon(QIcon::fromTheme("edit-find", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-find.png")));
-    find->setShortcut(QKeySequence(QKeySequence::Find));
-    find->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    QObject::connect(find, SIGNAL(triggered()),
-                     findReplace, SLOT(showFind()));
+    find_ = new QAction(plane_);
+    find_->setText(QObject::tr("Find..."));
+//    finsetIcon(QIcon::fromTheme("edit-find", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-find.png")));
+    find_->setShortcut(QKeySequence(QKeySequence::Find));
+    find_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    QObject::connect(find_, SIGNAL(triggered()),
+                     findReplace_, SLOT(showFind()));
 
-    replace = new QAction(plane);
-    replace->setText(QObject::tr("Replace..."));
+    replace_ = new QAction(plane_);
+    replace_->setText(QObject::tr("Replace..."));
 //    replace->setIcon(QIcon::fromTheme("edit-find-replace", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-find-replace.png")));
-    replace->setShortcut(QKeySequence(QKeySequence::Replace));
-    replace->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    QObject::connect(replace, SIGNAL(triggered()),
-                     findReplace, SLOT(showReplace()));
+    replace_->setShortcut(QKeySequence(QKeySequence::Replace));
+    replace_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    QObject::connect(replace_, SIGNAL(triggered()),
+                     findReplace_, SLOT(showReplace()));
 
 
 
-    deleteLine = new QAction(plane);
-    deleteLine->setText(QObject::tr("Delete line under cursor"));
+    deleteLine_ = new QAction(plane_);
+    deleteLine_->setText(QObject::tr("Delete line under cursor"));
 //    deleteLine->setIcon(QIcon::fromTheme("edit-delete", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-delete.png")));
-    deleteLine->setShortcut(QKeySequence("Ctrl+Y"));
-    deleteLine->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    QObject::connect(deleteLine, SIGNAL(triggered()), plane, SLOT(removeLine()));
+    deleteLine_->setShortcut(QKeySequence("Ctrl+Y"));
+    deleteLine_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    QObject::connect(deleteLine_, SIGNAL(triggered()), plane_, SLOT(removeLine()));
 
-    deleteTail = new QAction(plane);
-    deleteTail->setText(QObject::tr("Delete text from cursor to end of line"));
+    deleteTail_ = new QAction(plane_);
+    deleteTail_->setText(QObject::tr("Delete text from cursor to end of line"));
 //    deleteTail->setIcon(QIcon::fromTheme("edit-clear", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-clear.png")));
-    deleteTail->setShortcut(QKeySequence("Ctrl+K"));
-    deleteTail->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    QObject::connect(deleteTail, SIGNAL(triggered()), plane, SLOT(removeLineTail()));
+    deleteTail_->setShortcut(QKeySequence("Ctrl+K"));
+    deleteTail_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    QObject::connect(deleteTail_, SIGNAL(triggered()), plane_, SLOT(removeLineTail()));
 
-    undo = new QAction(plane);
-    undo->setEnabled(false);
-    undo->setText(QObject::tr("Undo last action"));
-    undo->setIcon(QIcon(qtcreatorIconsPath+"undo.png"));
-    undo->setShortcut(QKeySequence::Undo);
-    undo->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    connect(cursor, SIGNAL(undoAvailable(bool)), undo, SLOT(setEnabled(bool)));
-    QObject::connect(undo, SIGNAL(triggered()), q, SLOT(undo()));
+    undo_ = new QAction(plane_);
+    undo_->setEnabled(false);
+    undo_->setText(QObject::tr("Undo last action"));
+    undo_->setIcon(QIcon(qtcreatorIconsPath+"undo.png"));
+    undo_->setShortcut(QKeySequence::Undo);
+    undo_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(cursor_, SIGNAL(undoAvailable(bool)), undo_, SLOT(setEnabled(bool)));
+    QObject::connect(undo_, SIGNAL(triggered()), this, SLOT(undo()));
 
-    redo = new QAction(plane);
-    redo->setEnabled(false);
-    redo->setText(QObject::tr("Redo last undoed action"));
-    redo->setIcon(QIcon(qtcreatorIconsPath+"redo.png"));
-    redo->setShortcut(QKeySequence::Redo);
-    redo->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    connect(cursor, SIGNAL(redoAvailable(bool)), redo, SLOT(setEnabled(bool)));
-    QObject::connect(redo, SIGNAL(triggered()), q, SLOT(redo()));
+    redo_ = new QAction(plane_);
+    redo_->setEnabled(false);
+    redo_->setText(QObject::tr("Redo last undoed action"));
+    redo_->setIcon(QIcon(qtcreatorIconsPath+"redo.png"));
+    redo_->setShortcut(QKeySequence::Redo);
+    redo_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(cursor_, SIGNAL(redoAvailable(bool)), redo_, SLOT(setEnabled(bool)));
+    QObject::connect(redo_, SIGNAL(triggered()), this, SLOT(redo()));
 
-    if (analizer) {
-        toggleComment = new QAction(plane);
-        toggleComment->setText(QObject::tr("(Un)Comment lines"));
-        toggleComment->setShortcut(QKeySequence("Ctrl+/"));
-        toggleComment->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        QObject::connect(toggleComment, SIGNAL(triggered()),
-                         cursor, SLOT(toggleComment()));
+    if (analizer_) {
+        toggleComment_ = new QAction(plane_);
+        toggleComment_->setText(QObject::tr("(Un)Comment lines"));
+        toggleComment_->setShortcut(QKeySequence("Ctrl+/"));
+        toggleComment_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        QObject::connect(toggleComment_, SIGNAL(triggered()),
+                         cursor_, SLOT(toggleComment()));
     }
     else {
-        toggleComment = 0;
+        toggleComment_ = 0;
     }
 
-    separator = new QAction(this);
-    separator->setSeparator(true);
+    recordMacro_ = new QAction(plane_);
+    recordMacro_->setEnabled(true);
+    recordMacro_->setCheckable(true);
+    recordMacro_->setText(tr("Record keyboard sequence"));
+    recordMacro_->setShortcut(QKeySequence("Ctrl+M"));
+    recordMacro_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(recordMacro_, SIGNAL(triggered(bool)), this, SLOT(toggleRecordMacro(bool)));
 
-    menu_edit = new QMenu(tr("Edit"), 0);
-    menu_edit->addAction(undo);
-    menu_edit->addAction(redo);
-    menu_edit->addSeparator();
-    menu_edit->addAction(selectAll);
-    menu_edit->addSeparator();
-    menu_edit->addAction(cut);
-    menu_edit->addAction(copy);
-    menu_edit->addAction(paste);
-    menu_edit->addSeparator();
-    menu_edit->addAction(find);
-    menu_edit->addAction(replace);
-    menu_edit->addSeparator();
-    menu_edit->addAction(deleteLine);
-    menu_edit->addAction(deleteTail);
-    menu_edit->addSeparator();
-    if (analizer) {
-        menu_edit->addAction(toggleComment);
+    editMacros_ = new QAction(plane_);
+    editMacros_->setText(tr("Edit saved keyboard sequences..."));
+    connect(editMacros_, SIGNAL(triggered()), this, SLOT(editMacros()));
+
+
+    separatorAction_ = new QAction(this);
+    separatorAction_->setSeparator(true);
+
+    editMenu_ = new QMenu(tr("Edit"), 0);
+    editMenu_->addAction(undo_);
+    editMenu_->addAction(redo_);
+    editMenu_->addSeparator();
+    editMenu_->addAction(selectAll_);
+    editMenu_->addSeparator();
+    editMenu_->addAction(cut_);
+    editMenu_->addAction(copy_);
+    editMenu_->addAction(paste_);
+    editMenu_->addSeparator();
+    editMenu_->addAction(find_);
+    editMenu_->addAction(replace_);
+    editMenu_->addSeparator();
+    editMenu_->addAction(deleteLine_);
+    editMenu_->addAction(deleteTail_);
+
+    if (analizer_) {
+        editMenu_->addSeparator();
+        editMenu_->addAction(toggleComment_);
     }
 
-    menu_insert = new Widgets::CyrillicMenu(tr("Insert"), 0);
+    editMenu_->addSeparator();
+    editMenu_->addAction(recordMacro_);
+    editMenu_->addAction(editMacros_);
+
+    insertMenu_ = new Widgets::CyrillicMenu(tr("Insert"), 0);
 }
 
 const TextCursor * Editor::cursor() const
 {
-    return d->cursor;
+    return cursor_;
 }
 
 const TextDocument * Editor::document() const
 {
-    return d->doc;
+    return doc_;
 }
 
 TextCursor * Editor::cursor()
 {
-    return d->cursor;
+    return cursor_;
 }
 
 TextDocument * Editor::document()
 {
-    return d->doc;
+    return doc_;
 }
 
 const Shared::AnalizerInterface * Editor::analizer() const
 {
-    return d->analizer;
+    return analizer_;
 }
 
 Shared::AnalizerInterface * Editor::analizer()
 {
-    return d->analizer;
+    return analizer_;
 }
 
 Editor::~Editor()
 {
-    delete d->doc;
-    d->plane->deleteLater();
-    d->killTimer(d->timerId);
-    d->keybStatus->deleteLater();
-    d->positionStatus->deleteLater();
-    delete d;
+    delete doc_;
+    plane_->deleteLater();
+    killTimer(timerId_);
 }
 
 
 void Editor::setSettings(ExtensionSystem::SettingsPtr s)
 {
-    d->settings = s;
-    d->plane->settings_ = s;
+    settings_ = s;
+    plane_->settings_ = s;
     QFont defaultFont;
     defaultFont.setFamily(s->value(SettingsPage::KeyFontName, SettingsPage::defaultFontFamily()).toString());
     defaultFont.setPointSize(s->value(SettingsPage::KeyFontSize, SettingsPage::defaultFontSize).toInt());
-    d->plane->setFont(defaultFont);
-    d->plane->update();
+    plane_->setFont(defaultFont);
+    plane_->update();
 }
 
 QList<QAction*> Editor::toolbarActions()
 {
     QList<QAction*> result;
-    result << d->cut;
-    result << d->copy;
-    result << d->paste;
-    result << d->separator;
-    result << d->undo;
-    result << d->redo;
+    result << cut_;
+    result << copy_;
+    result << paste_;
+    result << separatorAction_;
+    result << undo_;
+    result << redo_;
 
     return result;
 }
 
 void Editor::undo()
 {
-    d->cursor->undo();
+    cursor_->undo();
 }
 
 void Editor::redo()
 {
-    d->cursor->redo();
+    cursor_->redo();
+}
+
+void Editor::toggleRecordMacro(bool on)
+{
+    if (on) {
+        cursor_->startRecordMacro();
+    }
+    else {
+        Macro * macro = cursor_->endRecordMacro();
+        if (macro->commands.size() > 0) {
+            MacroEditor * editor = new MacroEditor(this);
+            editor->setWindowTitle(tr("New keyboard sequence..."));
+            QList<Macro> allMacros = systemMacros_ + userMacros_;
+            QString usedLetters;
+            QStringList usedNames;
+            foreach(Macro m, allMacros) {
+                if (!m.key.isNull()) {
+                    usedLetters.push_back(m.key);
+                    usedNames.push_back(m.title);
+                }
+            }
+            editor->setMacroPrefix(settings_->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()+", ");
+            editor->setUsedSymbols(usedLetters, usedNames);
+            editor->setMacro(macro);
+            if (editor->exec() == QDialog::Accepted) {
+                Macro newMacro = *macro;
+                userMacros_.push_back(newMacro);
+                plugin_->updateUserMacros(analizer_ ? analizer_->defaultDocumentFileNameSuffix().mid(1) : QString(), userMacros_, true);
+            }
+            editor->deleteLater();
+        }
+        delete macro;
+    }
+    emit recordMacroChanged(on);
+}
+
+void Editor::editMacros()
+{
+    MacroListEditor * editor = new MacroListEditor(this);
+    editor->initialize(userMacros_,
+                       systemMacros_,
+                       settings_->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()+", ");
+    editor->exec();
+    userMacros_ = editor->result();
+    plugin_->updateUserMacros(analizer_ ? analizer_->defaultDocumentFileNameSuffix().mid(1) : QString(), userMacros_, true);
+    editor->deleteLater();
 }
 
 QList<QMenu*> Editor::menuActions()
 {
     QList<QMenu*> result;
-    result << d->menu_edit;
+    result << editMenu_;
     bool nonEmptyInsertMenu = false;
-    for (int i=0; i<d->menu_insert->children().size(); i++) {
-        QObject * child = d->menu_insert->children().at(i);
+    for (int i=0; i<insertMenu_->children().size(); i++) {
+        QObject * child = insertMenu_->children().at(i);
         const QString clazz = child->metaObject()->className();
-        if (clazz=="QAction" && child != d->menu_insert->menuAction()) {
+        if (clazz=="QAction" && child != insertMenu_->menuAction()) {
             nonEmptyInsertMenu = true;
             break;
         }
     }
     if (nonEmptyInsertMenu)
-        result << d->menu_insert;
+        result << insertMenu_;
     return result;
 }
 
@@ -806,50 +867,50 @@ void Editor::restoreState(const QByteArray &data)
 
 void Editor::setKumFile(const KumFile::Data &data)
 {
-    d->doc->setKumFile(data, d->teacherMode);
-    if (d->analizer) {
-        d->analizer->setSourceText(
-                    d->doc->id_,
+    doc_->setKumFile(data, teacherMode_);
+    if (analizer_) {
+        analizer_->setSourceText(
+                    doc_->id_,
                     data.visibleText + "\n" + data.hiddenText
                     );
-        d->updateFromAnalizer();
+        updateFromAnalizer();
     }
-    d->plane->setLineHighlighted(-1, QColor(), 0, 0);
-    d->plane->update();
+    plane_->setLineHighlighted(-1, QColor(), 0, 0);
+    plane_->update();
     checkForClean();
 }
 
 void  Editor::setPlainText(const QString & data)
 {
-    d->doc->setPlainText(data);
-    if (d->analizer) {
-        d->analizer->setSourceText(d->doc->id_, data);
-        d->updateFromAnalizer();
+    doc_->setPlainText(data);
+    if (analizer_) {
+        analizer_->setSourceText(doc_->id_, data);
+        updateFromAnalizer();
     }
-    d->plane->update();
+    plane_->update();
     checkForClean();
 }
 
 KumFile::Data Editor::toKumFile() const
 {
-    return d->doc->toKumFile();
+    return doc_->toKumFile();
 }
 
 void Editor::ensureAnalized()
 {
-    d->doc->forceCompleteRecompilation(QPoint(d->cursor->column(), d->cursor->row()));
+    doc_->forceCompleteRecompilation(QPoint(cursor_->column(), cursor_->row()));
 }
 
 void Editor::setNotModified()
 {
-    d->doc->undoStack()->setClean();
-    d->notSaved = false;
+    doc_->undoStack()->setClean();
+    notSaved_ = false;
     emit documentCleanChanged(true);
 }
 
 bool Editor::isModified() const
 {
-    return d->notSaved || ! d->doc->undoStack()->isClean();
+    return notSaved_ || ! doc_->undoStack()->isClean();
 }
 
 void Editor::checkForClean()
@@ -859,12 +920,12 @@ void Editor::checkForClean()
 
 bool Editor::forceNotSavedFlag() const
 {
-    return d->notSaved;
+    return notSaved_;
 }
 
 void Editor::setForceNotSavedFlag(bool v)
 {
-    d->notSaved = v;
+    notSaved_ = v;
     checkForClean();
 }
 

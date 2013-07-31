@@ -16,7 +16,7 @@ struct Macro {
     QAction * action;
 };
 
-extern QString dumpMacro(Macro & m);
+extern QDomElement dumpMacro(const Macro & m, QDomDocument &document, QDomElement &root);
 extern bool loadMacro(const QDomElement & v, Macro & m);
 extern QList<Macro> loadFromFile(const QString &fileName);
 extern bool saveToFile(const QString &fileName, const QList<Macro> & macros);

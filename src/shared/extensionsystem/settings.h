@@ -29,6 +29,7 @@ public:
 
     QVariant value(const QString & key, const QVariant & default_ = QVariant()) const;
     void setValue(const QString & key, const QVariant & value_);
+    QString locationDirectory() const;
 
 protected:
     explicit Settings(const QString & pluginName_);

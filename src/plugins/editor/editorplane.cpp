@@ -1444,6 +1444,9 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         else if (e->key()==Qt::Key_Slash && e->modifiers().testFlag(Qt::ControlModifier)) {
             cursor_->toggleComment();
         }
+        else if (e->key()==Qt::Key_M && e->modifiers().testFlag(Qt::ControlModifier)) {
+            editor_->recordMacro_->trigger();
+        }
         else if (e->key()==Qt::Key_Space && e->modifiers().testFlag(Qt::ControlModifier)) {
             if (hasAnalizerFlag_)
                 doAutocomplete();

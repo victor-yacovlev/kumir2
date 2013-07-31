@@ -30,6 +30,7 @@ StatusBar::StatusBar(QWidget *parent)
     , keyboardCaps_(false)
     , keyboardShift_(false)
     , keyboardAlt_(false)
+    , editorRecord_(false)
 {
 }
 
@@ -66,9 +67,9 @@ QSize StatusBar::minimumSizeHint() const
     w += cursorPositionItemSize().width();
     h = qMax(h, keyboardLayoutItemSize().height());
     w += keyboardLayoutItemSize().width();
-#ifndef Q_WS_X11
+//#ifndef Q_WS_X11
     h += 8;
-#endif
+//#endif
     return QSize(w, h);
 }
 
@@ -89,6 +90,12 @@ void StatusBar::unsetMessage()
 {
     message_.clear();
     messageRole_ = Normal;
+    update();
+}
+
+void StatusBar::setRecordIndicator(bool on)
+{
+    editorRecord_ = on;
     update();
 }
 
@@ -152,14 +159,14 @@ QSize StatusBar::modeItemSize() const
         maxTextWidth = qMax(maxTextWidth, statusBarFontMetrics().width(text));
     }
     const int height = qMax(14, textHeight);
-    return QSize(maxTextWidth + 2*ItemPadding, height);
+    return QSize(20 + maxTextWidth + 2*ItemPadding, height);
 }
 
 QSize StatusBar::counterItemSize() const
 {
     static const QString errorsText = tr("ww errors");
     static const QString noErrorsText = tr("No errors");
-    static const QString stepsDoneText = tr("wwwww steps done");
+    static const QString stepsDoneText = tr("wwwww steps done") + "wwwwww";
     const int textHeight = statusBarFontMetrics().height();
 
     int maxTextWidthEdit = 0;
@@ -271,6 +278,7 @@ void StatusBar::paintModeItem(QPainter &p, int x)
     paintItemRect(p, modeItemSize(), x);
     using namespace ExtensionSystem;
     p.save();
+    uint xoffset = 0;
     QString modeText;
     if (state_ == GS_Input || state_ == GS_Pause) {
         modeText = tr("Pause");
@@ -282,13 +290,24 @@ void StatusBar::paintModeItem(QPainter &p, int x)
         modeText = tr("Running");
     }
     else {
+        xoffset = 10;
         modeText = tr("Edit");
     }
-    const QRect textRect(QPoint(x + ItemPadding, (height() - statusBarFontMetrics().height()) / 2 + 2),
+    const QRect textRect(QPoint(x + ItemPadding + xoffset, (height() - statusBarFontMetrics().height()) / 2),
                          modeItemSize() - QSize(2*ItemPadding, 0));
     QTextOption opt;
     opt.setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
     p.drawText(textRect, modeText, opt);
+    if (state_ == GS_Unlocked && editorRecord_) {
+        p.setRenderHint(QPainter::Antialiasing, true);
+        p.setPen(QPen(palette().brush(QPalette::WindowText).color()));
+        p.setBrush(alternateColor());
+        QRect ellipseRect(x + ItemPadding + 4, ItemPadding + 4,
+                           textRect.height() - 8,
+                           textRect.height() - 8
+                           );
+        p.drawEllipse(ellipseRect);
+    }
     p.restore();
 }
 
@@ -299,7 +318,7 @@ void StatusBar::paintCounterItem(QPainter &p, int x)
     p.save();
     QString text;
     if (state_ == GS_Unlocked) {
-        p.setPen(QPen(errorsCount_==0? normalColor() : errorColor()));
+        p.setPen(QPen(errorsCount_==0? normalColor() : alternateColor()));
         if (errorsCount_ == 0)
             text = tr("No errors");
         else if (errorsCount_ == 1)
@@ -327,7 +346,7 @@ void StatusBar::paintCounterItem(QPainter &p, int x)
         else
             text = tr("%1 steps done", "5, 6, 15, 16, etc").arg(stepsDone_);
     }
-    const QRect textRect(QPoint(x + ItemPadding, (height() - statusBarFontMetrics().height()) / 2 + 2),
+    const QRect textRect(QPoint(x + ItemPadding, (height() - statusBarFontMetrics().height()) / 2),
                          counterItemSize() - QSize(2*ItemPadding, 0));
     QTextOption opt;
     opt.setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
@@ -339,8 +358,8 @@ void StatusBar::paintMessageItem(QPainter &p, int x)
 {
     paintItemRect(p, messageItemSize(), x);
     p.save();
-    p.setPen(QPen(QColor(messageRole_==Normal? normalColor() : errorColor())));    
-    QRect textRect(QPoint(x + ItemPadding, (height() - statusBarFontMetrics().height()) / 2 + 2),
+    p.setPen(QPen(QColor(messageRole_==Normal? normalColor() : alternateColor())));
+    QRect textRect(QPoint(x + ItemPadding, (height() - statusBarFontMetrics().height()) / 2),
                          messageItemSize() - QSize(2*ItemPadding, 0));
     if (textRect.right() > this->width() - ItemPadding) {
         textRect.setRight(this->width() - ItemPadding);
@@ -379,7 +398,7 @@ QColor StatusBar::normalColor() const
     return palette().brush(QPalette::Text).color();
 }
 
-QColor StatusBar::errorColor() const
+QColor StatusBar::alternateColor() const
 {
     const QColor bg = palette().brush(QPalette::Base).color();
     const int value = bg.red() + bg.green() + bg.blue();
@@ -397,7 +416,7 @@ void StatusBar::paintCursorItem(QPainter &p, int x)
 {
     paintItemRect(p, cursorPositionItemSize(), x);
     p.save();
-    const QRect textRect(QPoint(x + ItemPadding, (height() - statusBarFontMetrics().height()) / 2 + 2),
+    const QRect textRect(QPoint(x + ItemPadding, (height() - statusBarFontMetrics().height()) / 2),
                          cursorPositionItemSize() - QSize(2*ItemPadding, 0));
     QTextOption opt;
     const QString text = tr("Row: %1, Column: %2").arg(editorRow_ + 1).arg(editorColumn_ + 1);
@@ -423,9 +442,9 @@ void StatusBar::paintKeyboardItem(QPainter &p, int x)
     QImage shiftImage = makeIndicatorIcon("shift", shiftColor);
     QImage altImage = makeIndicatorIcon("alt", altColor);
     p.save();
-    p.drawImage(x + ItemPadding, (height() - 12) / 2 + 2, shiftImage);
-    p.drawImage(x + 12 + ItemPadding, (height() - 12) / 2 + 2, altImage);
-    const QRect textRect(QPoint(x + 25 + ItemPadding, (height() - statusBarFontMetrics().height()) / 2 + 2),
+    p.drawImage(x + ItemPadding, (height() - 12) / 2, shiftImage);
+    p.drawImage(x + 12 + ItemPadding, (height() - 12) / 2, altImage);
+    const QRect textRect(QPoint(x + 25 + ItemPadding, (height() - statusBarFontMetrics().height()) / 2),
                          keyboardLayoutItemSize() - QSize(25 + 2*ItemPadding, 0));
     QTextOption opt;
     QString text;

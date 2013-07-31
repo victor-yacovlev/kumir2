@@ -4,14 +4,48 @@
 <context>
     <name>Editor::Editor</name>
     <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="239"/>
+        <source>import %1</source>
+        <translation>использовать %1</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="644"/>
+        <source>Record keyboard sequence</source>
+        <translation>Запись последовательности нажатий клавиш</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="650"/>
+        <source>Edit saved keyboard sequences...</source>
+        <translation>Изменить записанные последовательности...</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="657"/>
         <source>Edit</source>
-        <translation type="obsolete">Редактирование</translation>
+        <translation>Редактирование</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="682"/>
+        <source>Insert</source>
+        <translation>Вставка</translation>
+    </message>
+    <message>
+        <source>Add sequence</source>
+        <translation type="obsolete">Добавить</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="obsolete">Отмена</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="766"/>
+        <source>New keyboard sequence...</source>
+        <translation>Новая последовательность действий...</translation>
     </message>
 </context>
 <context>
     <name>Editor::EditorPlane</name>
     <message>
-        <location filename="../../../src/plugins/editor/editorplane.cpp" line="1505"/>
+        <location filename="../../../src/plugins/editor/editorplane.cpp" line="1508"/>
         <source>Can&apos;t suggest autocomplete</source>
         <translation>Нет вариантов автодополнения</translation>
     </message>
@@ -19,17 +53,17 @@
 <context>
     <name>Editor::EditorPlugin</name>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="205"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="189"/>
         <source>Can&apos;t open file %1 for writing</source>
         <translation>Не могу открыть %1 для записи</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="240"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="224"/>
         <source>Can&apos;t open file %1 for reading</source>
         <translation>Не могу открыть %1 для чтения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="273"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="257"/>
         <source>Editor</source>
         <translation>Редактор</translation>
     </message>
@@ -37,29 +71,24 @@
 <context>
     <name>Editor::EditorPrivate</name>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="180"/>
         <source>Keys: %1</source>
-        <translation>Клав: %1</translation>
+        <translation type="obsolete">Клав: %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="221"/>
         <source>Row: %1, Col: %2</source>
-        <translation>Стр: %1, Поз: %2</translation>
+        <translation type="obsolete">Стр: %1, Поз: %2</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="252"/>
         <source>import %1</source>
-        <translation>использовать %1</translation>
+        <translation type="obsolete">использовать %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="644"/>
         <source>Edit</source>
-        <translation>Редактирование</translation>
+        <translation type="obsolete">Редактирование</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="664"/>
         <source>Insert</source>
-        <translation>Вставка</translation>
+        <translation type="obsolete">Вставка</translation>
     </message>
 </context>
 <context>
@@ -202,6 +231,318 @@
         <location filename="../../../src/plugins/editor/findreplace.ui" line="331"/>
         <source>Match case</source>
         <translation>С учетом регистра букв</translation>
+    </message>
+</context>
+<context>
+    <name>Editor::MacroEditor</name>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="14"/>
+        <source>Form</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="22"/>
+        <source>Title:</source>
+        <translation>Заголовок:</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="32"/>
+        <source>Type sequence menu title</source>
+        <translation>Введите заголовок последовательности в меню &quot;Вставка&quot;</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="43"/>
+        <source>Assigned key:</source>
+        <translation>Клавиша быстрой вставки:</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="120"/>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="125"/>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="130"/>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="135"/>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="140"/>
+        <source>New Row</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="145"/>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="150"/>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="155"/>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="160"/>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="165"/>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="170"/>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="175"/>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="180"/>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="185"/>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="190"/>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="195"/>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="200"/>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="205"/>
+        <source>New Column</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="210"/>
+        <source>`</source>
+        <translation>Ё</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="218"/>
+        <source>1</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="226"/>
+        <source>2</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="234"/>
+        <source>3</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="242"/>
+        <source>4</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="250"/>
+        <source>5</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="258"/>
+        <source>6</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="266"/>
+        <source>7</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="274"/>
+        <source>8</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="282"/>
+        <source>9</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="290"/>
+        <source>0</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="313"/>
+        <source>Q</source>
+        <translation>Й</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="321"/>
+        <source>W</source>
+        <translation>Ц</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="329"/>
+        <source>E</source>
+        <translation>У</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="337"/>
+        <source>R</source>
+        <translation>К</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="345"/>
+        <source>T</source>
+        <translation>Е</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="353"/>
+        <source>Y</source>
+        <translation>Н</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="361"/>
+        <source>U</source>
+        <translation>Г</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="369"/>
+        <source>I</source>
+        <translation>Ш</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="377"/>
+        <source>O</source>
+        <translation>Щ</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="385"/>
+        <source>P</source>
+        <translation>З</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="393"/>
+        <source>[</source>
+        <translation>Х</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="401"/>
+        <source>]</source>
+        <translation>Ъ</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="414"/>
+        <source>A</source>
+        <translation>Ф</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="422"/>
+        <source>S</source>
+        <translation>Ы</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="430"/>
+        <source>D</source>
+        <translation>В</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="438"/>
+        <source>F</source>
+        <translation>А</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="446"/>
+        <source>G</source>
+        <translation>П</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="454"/>
+        <source>H</source>
+        <translation>Р</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="462"/>
+        <source>J</source>
+        <translation>О</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="470"/>
+        <source>K</source>
+        <translation>Л</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="478"/>
+        <source>L</source>
+        <translation>Д</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="486"/>
+        <source>;</source>
+        <translation>Ж</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="494"/>
+        <source>&apos;</source>
+        <translation>Э</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="507"/>
+        <source>Z</source>
+        <translation>Я</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="515"/>
+        <source>X</source>
+        <translation>Ч</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="523"/>
+        <source>C</source>
+        <translation>С</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="531"/>
+        <source>V</source>
+        <translation>М</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="539"/>
+        <source>B</source>
+        <translation>И</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="547"/>
+        <source>N</source>
+        <translation>Т</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="555"/>
+        <source>M</source>
+        <translation>Ь</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="563"/>
+        <source>,</source>
+        <translation>Б</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="571"/>
+        <source>.</source>
+        <translation>Ю</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="594"/>
+        <source>Do not assign to any key</source>
+        <translation>Не назначать клавишу (вставка только из меню)</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="655"/>
+        <source>Save</source>
+        <translation>Сохранить</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.ui" line="662"/>
+        <source>Cancel</source>
+        <translation>Отмена</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macroeditor.cpp" line="40"/>
+        <source>Already used by &apos;%1&apos;</source>
+        <translation>Уже используется вставкой &quot;%1&quot;</translation>
+    </message>
+</context>
+<context>
+    <name>Editor::MacroListEditor</name>
+    <message>
+        <location filename="../../../src/plugins/editor/macrolisteditor.ui" line="14"/>
+        <source>List of recorded keyboard sequences</source>
+        <translation>Записанные последовательности клавиш</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macrolisteditor.ui" line="39"/>
+        <source>Remove</source>
+        <translation>Удалить</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macrolisteditor.ui" line="70"/>
+        <source>Edit...</source>
+        <translation>Редактировать...</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macrolisteditor.ui" line="118"/>
+        <source>Close</source>
+        <translation>Закрыть</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/macrolisteditor.cpp" line="79"/>
+        <source>Edit recorded keyboard sequence...</source>
+        <translation>Изменить записанную последовательность клавиш...</translation>
     </message>
 </context>
 <context>

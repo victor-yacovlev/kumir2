@@ -515,6 +515,8 @@ void MainWindow::setupStatusbarForTab()
                 statusBar_,
                 SLOT(setEditorKeyboardLayout(QLocale::Language,bool,bool,bool))
                 );
+        connect(twe->component, SIGNAL(recordMacroChanged(bool)),
+                statusBar_, SLOT(setRecordIndicator(bool)));
 
     }
 }

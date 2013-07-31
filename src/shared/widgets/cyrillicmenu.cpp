@@ -51,6 +51,11 @@ void CyrillicMenu::paintEvent(QPaintEvent *event)
 QString CyrillicMenu::shortcutToText(const QKeySequence &shortcut)
 {
     QStringList keys = shortcut.toString().split(",");
+    while (keys.size() > 2) {
+        QString a = keys.last();
+        keys.pop_back();
+        keys.last() += "," + a;
+    }
     QStringList newKeys;
     for (int i=0; i<keys.size(); i++) {
         QString key = keys[i].trimmed();
@@ -111,6 +116,16 @@ QString CyrillicMenu::shortcutToText(const QKeySequence &shortcut)
                 key = QString::fromUtf8("Т");
             else if (key=="M")
                 key = QString::fromUtf8("Ь");
+            else if (key=="," || key=="<")
+                key = QString::fromUtf8("Б");
+            else if (key=="." || key==">")
+                key = QString::fromUtf8("Ю");
+            else if (key=="`" || key=="~")
+                key = QString::fromUtf8("Ё");
+            else if (key=="[" || key=="{")
+                key = QString::fromUtf8("Х");
+            else if (key=="]" || key=="}")
+                key = QString::fromUtf8("Ъ");
             newKeys << key;
         }
     }

@@ -48,6 +48,14 @@ void Settings::changeWorkingDirectory(const QString &workDirPath)
     mutex_->unlock();
 }
 
+QString Settings::locationDirectory() const
+{
+    mutex_->lock();
+    const QFileInfo fileInfo(qsettings_->fileName());
+    mutex_->unlock();
+    return fileInfo.absoluteDir().absolutePath();
+}
+
 QString Settings::defaultSettingsScope()
 {
 #ifdef Q_OS_MAC

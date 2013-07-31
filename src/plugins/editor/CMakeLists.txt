@@ -18,6 +18,8 @@ set(SOURCES
     editcommands.cpp
     suggestionswindow.cpp
     findreplace.cpp
+    macroeditor.cpp
+    macrolisteditor.cpp
 )
 
 set(EXTRA_LIBS
@@ -44,15 +46,18 @@ set(MOC_HEADERS
     textdocument.h
     clipboard.h
     settingspage.h
-    editor_p.h
     suggestionswindow.h
     findreplace.h
+    macroeditor.h
+    macrolisteditor.h
 )
 
 set(FORMS
     settingspage.ui
     suggestionswindow.ui
     findreplace.ui
+    macroeditor.ui
+    macrolisteditor.ui
 )
 
 qt4_wrap_ui(UI_SOURCES ${FORMS})

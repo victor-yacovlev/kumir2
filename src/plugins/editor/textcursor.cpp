@@ -176,8 +176,20 @@ bool TextCursor::isFreeCursorMovement() const
     return false; // Prevent some compilers warning
 }
 
+void TextCursor::startRecordMacro()
+{
+    recordingMacro_.reset(new Macro);
+}
+
+Macro* TextCursor::endRecordMacro()
+{
+    return recordingMacro_.release();
+}
+
 void TextCursor::evaluateCommand(const KeyCommand &command)
 {
+    if (recordingMacro_)
+        recordingMacro_->commands.push_back(command);
     int prevRow = row_;
     int prevLines = document_->linesCount();
     bool clearCurrentLineError = false;

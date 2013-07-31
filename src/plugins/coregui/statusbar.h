@@ -29,6 +29,7 @@ public slots:
     void setErrorsCounter(uint value);
     void setEditorCursorPosition(uint row, uint column);
     void setEditorKeyboardLayout(QLocale::Language lang, bool capslock, bool shift, bool alt);
+    void setRecordIndicator(bool on);
 
 private:
     void paintEvent(QPaintEvent *event);
@@ -40,7 +41,7 @@ private:
     void paintItemRect(QPainter &p, const QSize & sz, int x);
     static QImage makeIndicatorIcon(const QString & name, const QColor & color);
     QColor normalColor() const;
-    QColor errorColor() const;
+    QColor alternateColor() const;
     QFont statusBarFont() const;
     QFontMetrics statusBarFontMetrics() const;
     QSize keyboardLayoutItemSize() const;
@@ -59,6 +60,7 @@ private:
     bool keyboardCaps_;
     bool keyboardShift_;
     bool keyboardAlt_;
+    bool editorRecord_;
     QList<QToolButton*> toolButtons_;
 };
 

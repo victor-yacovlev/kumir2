@@ -1,11 +1,14 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
-#include <QtGui>
-#include "extensionsystem/settings.h"
-#include "interfaces/analizerinterface.h"
+#include "macro.h"
 #include "dataformats/kumfile.h"
+#include "extensionsystem/settings.h"
 #include "docbookviewer/docbookview.h"
+#include "interfaces/analizerinterface.h"
+#include "editorplugin.h"
+
+#include <QtGui>
 
 namespace Editor {
 
@@ -14,8 +17,10 @@ class Editor
 {
     Q_OBJECT
 public:
-    friend class EditorPrivate;
+    friend class EditorPlane;
+    friend class TextCursor;
     explicit Editor(
+            EditorPlugin * plugin,
             bool initiallyNotSaved = false,
             ExtensionSystem::SettingsPtr settings = ExtensionSystem::SettingsPtr(),
             Shared::AnalizerInterface * analizer = 0,
@@ -30,7 +35,7 @@ public:
     QSize minimumSizeHint() const;
     void setSettings(ExtensionSystem::SettingsPtr s);
     QList<QMenu*> menuActions();
-    QList<QWidget*> statusbarWidgets();
+
     KumFile::Data toKumFile() const;
     void setKumFile(const KumFile::Data & data);
     void setPlainText(const QString & data);
@@ -60,6 +65,7 @@ public:
     void setForceNotSavedFlag(bool v);
     void paintEvent(QPaintEvent *);
     bool eventFilter(QObject *, QEvent *);
+    void updateInsertMenu();
 public slots:
     void undo();
     void redo();
@@ -70,14 +76,80 @@ signals:
     void keyboardLayoutChanged(QLocale::Language lang, bool capslock, bool shift, bool alt);
     void message(const QString &);
     void requestHelpForAlgorithm(const QString & text);
+    void recordMacroChanged(bool on);
 
-private:
 
+private slots:
+    void updatePosition(int row, int col);
+    void handleCompleteCompilationRequiest(
+        const QStringList & visibleText,
+        const QStringList & hiddenText,
+        int hiddenBaseLine
+        );
+    void playMacro();
+    void handleAutoScrollChange(char a);
+    void handleAutoScrollChangeX(char a);
+    void disableInsertActions();
+    void enableInsertActions();
+    void toggleRecordMacro(bool on);
+    void editMacros();
+
+private /* methods */:
     void focusInEvent(QFocusEvent *e);
-    class EditorPrivate * d;
+    void loadMacros();    
+    void createActions();
+    void updateFromAnalizer();
+    void timerEvent(QTimerEvent *e);
 
+private /* fields */:
+    EditorPlugin * plugin_;
+    Shared::AnalizerInterface * analizer_;
+    class TextDocument * doc_;
+    class TextCursor * cursor_;
+    class EditorPlane * plane_;
 
+    static class Clipboard * clipboard_;
+    QScrollBar * horizontalScrollBar_;
+    QScrollBar * verticalScrollBar_;
+    ExtensionSystem::SettingsPtr settings_;
 
+    class FindReplace * findReplace_;
+
+    QAction * copy_;
+    QAction * paste_;
+    QAction * cut_;
+    QAction * selectAll_;
+    QAction * deleteLine_;
+    QAction * deleteTail_;
+    QAction * toggleComment_;
+
+    QAction * find_;
+    QAction * replace_;
+
+    QAction * undo_;
+    QAction * redo_;
+
+    QAction * recordMacro_;
+    QAction * editMacros_;
+
+    QMenu * editMenu_;
+    QMenu * insertMenu_;
+
+    QAction * separatorAction_;
+
+    QList<Macro> systemMacros_;
+    QList<Macro> userMacros_;
+
+    bool teacherMode_;
+
+    DocBookViewer::DocBookView * helpViewer_;
+
+    int timerId_;
+    int autoScrollTimerId_;
+    char autoScrollStateY_;
+    char autoScrollStateX_;
+
+    bool notSaved_;
 };
 
 QDataStream & operator<< (QDataStream & stream, const Editor & editor);

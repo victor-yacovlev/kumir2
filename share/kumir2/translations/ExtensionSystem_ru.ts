@@ -40,69 +40,69 @@
 <context>
     <name>ExtensionSystem::PluginManager</name>
     <message>
-        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="473"/>
+        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="474"/>
         <source>Can&apos;t load module %1: file not found</source>
         <translation>Не могу загрузить модуль %1: нет такого файла</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="503"/>
-        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="684"/>
+        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="504"/>
+        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="685"/>
         <source>The following command line parameters required, but not set:
 </source>
         <translation>Не указаны обязательные параметры командной строки:
 </translation>
     </message>
     <message>
-        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="591"/>
+        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="592"/>
         <source>Usage:
 </source>
         <translation>Использование:
 </translation>
     </message>
     <message>
-        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="613"/>
+        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="614"/>
         <source>int</source>
         <translation>цел</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="615"/>
+        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="616"/>
         <source>real</source>
         <translation>вещ</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="617"/>
+        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="618"/>
         <source>bool</source>
         <translation>лог</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="619"/>
+        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="620"/>
         <source>char</source>
         <translation>сим</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="621"/>
+        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="622"/>
         <source>string</source>
         <translation>лит</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="664"/>
+        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="665"/>
         <source>or</source>
         <translation>или</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="667"/>
+        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="668"/>
         <source>Options</source>
         <translation>Аргументы</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="691"/>
-        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="715"/>
+        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="692"/>
+        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="716"/>
         <source>Run with --help for more details.
 </source>
         <translation>Запуск с параметром --help отображает справку по использованию </translation>
     </message>
     <message>
-        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="707"/>
+        <location filename="../../../src/shared/extensionsystem/pluginmanager.cpp" line="708"/>
         <source>Extra command line arguments:
 </source>
         <translation>Лишние аргументы командной строки:

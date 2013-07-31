@@ -1,12 +1,15 @@
 #ifndef TEXTCURSOR_H
 #define TEXTCURSOR_H
 
-#include <QtGui>
 
 #include "interfaces/analizerinterface.h"
 #include "keycommand.h"
-
+#include "macro.h"
 #include "extensionsystem/settings.h"
+
+#include <memory>
+#include <QtGui>
+
 
 using namespace Shared;
 
@@ -69,6 +72,8 @@ public slots:
     void redo();
     void handleUndoChanged(bool v);
     void handleRedoChanged(bool v);
+    void startRecordMacro();
+    Macro* endRecordMacro();
 
 
 signals:
@@ -104,6 +109,7 @@ protected:
     bool teacherModeFlag_;
 
     QRect selectionRect_;
+    std::unique_ptr<Macro> recordingMacro_;
 
 };
 
