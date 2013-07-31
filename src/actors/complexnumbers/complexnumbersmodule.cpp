@@ -35,6 +35,10 @@ void ComplexNumbersModule::setAnimationEnabled(bool enabled)
     */
 }
 
+QList<ExtensionSystem::CommandLineParameter> ComplexNumbersModule::acceptableCommandLineParameters()
+{
+    return QList<ExtensionSystem::CommandLineParameter>();
+}
 
 qreal ComplexNumbersModule::runRe(const Complex& x)
 {

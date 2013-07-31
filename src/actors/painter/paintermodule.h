@@ -28,6 +28,7 @@ class PainterModule
 public:
     // Constructor
     PainterModule(ExtensionSystem::KPlugin * parent);
+    static QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters();
     inline void reloadSettings(ExtensionSystem::SettingsPtr) {}
     inline void changeGlobalState(ExtensionSystem::GlobalState, ExtensionSystem::GlobalState) {}
 public slots:

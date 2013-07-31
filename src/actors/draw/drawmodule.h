@@ -28,10 +28,12 @@ class DrawModule
     Q_OBJECT
 public /* methods */:
     DrawModule(ExtensionSystem::KPlugin * parent);
+    static QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters();
     QWidget* mainWidget() const;
     QWidget* pultWidget() const;
 public slots:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
+    void loadActorData(QIODevice * source);
     void reloadSettings(ExtensionSystem::SettingsPtr settings);
     void reset();
     void setAnimationEnabled(bool enabled);

@@ -1137,12 +1137,16 @@ class CppClassBase:
                 signatureBeginPos = firstLine.index(self.className + "::", rtypeEndPos) + 2 + len(self.className)
                 signature = firstLine[signatureBeginPos:]
                 assert groupName in ["public", "protected", "private", "public_slot", "protected_slot", "private_slot",
-                                     "public_virtual", "public_virtual_slot"]
-                group = locals()[groupName + 's']
+                                     "public_virtual", "public_virtual_slot", "public_static"]
                 if "virtual" in groupName:
                     modifier = "virtual "
+                    group = locals()[groupName + 's']
+                elif "static" in groupName:
+                    modifier = "static "
+                    group = locals()[groupName[0:-7] + 's']
                 else:
                     modifier = ""
+                    group = locals()[groupName + 's']
                 group += [_addIndent(modifier + returnType + " " + signature + ";")]
             elif key == "constructorImplementation":
                 implMethod = value.__func__
@@ -1907,13 +1911,9 @@ private:
         return """
 /* protected */ QList<ExtensionSystem::CommandLineParameter> %s::acceptableCommandLineParameters() const
 {
-    QList<ExtensionSystem::CommandLineParameter> result;
-    if (module_) {
-        result = module_->acceptableCommandLineParameters();
-    }
-    return result;
+    return %s::acceptableCommandLineParameters();
 }
-        """ % self.className
+        """ % (self.className, self._module.className())
 
 
 class AsyncThreadCppClass(CppClassBase):
@@ -2420,22 +2420,6 @@ class ModuleBaseCppClass(CppClassBase):
 }
         """ % (self.className, self._module.pluginClassName(), self._module.pluginClassName())
 
-    def acceptableCommandLineParametersCppImplementation(self):
-        """
-        Empty implementation to get acceptable command line parameters
-
-        :rtype:     str
-        :return:    implementation of QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters()
-        """
-        return """
-
-/* public virtual */ QList<ExtensionSystem::CommandLineParameter> %s::acceptableCommandLineParameters() const
-{
-    // See "src/shared/extensionsystem/commandlineparameter.h" for constructor details
-    return QList<ExtensionSystem::CommandLineParameter>();
-}
-        """ % self.className
-
     def initializeCppImplementation(self):
         """
         Pass initialization to module itself
@@ -2625,6 +2609,22 @@ class ModuleCppClass(CppClassBase):
     // The source should be ready-to-read QIODevice like QBuffer or QFile
     Q_UNUSED(source);  // By default do nothing
 
+}
+        """ % self.className
+
+    def acceptableCommandLineParametersCppImplementation(self):
+        """
+        Empty implementation to get acceptable command line parameters
+
+        :rtype:     str
+        :return:    implementation of QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters()
+        """
+        return """
+
+/* public static */ QList<ExtensionSystem::CommandLineParameter> %s::acceptableCommandLineParameters()
+{
+    // See "src/shared/extensionsystem/commandlineparameter.h" for constructor details
+    return QList<ExtensionSystem::CommandLineParameter>();
 }
         """ % self.className
 

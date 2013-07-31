@@ -1,7 +1,6 @@
 set(QT_USE_QTMAIN 1)
 find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui REQUIRED)
 find_package(PythonInterp 2.6 REQUIRED)
-
 include (${QT_USE_FILE})
 include(../../kumir2_plugin.cmake)
 
@@ -93,4 +92,3 @@ install(
     TARGETS ActorDraw
     DESTINATION ${PLUGINS_DIR}
 )
-

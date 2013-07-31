@@ -25,6 +25,12 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     // TODO implement me
 }
 
+/* public static */ QList<ExtensionSystem::CommandLineParameter> DrawModule::acceptableCommandLineParameters()
+{
+    // See "src/shared/extensionsystem/commandlineparameter.h" for constructor details
+    return QList<ExtensionSystem::CommandLineParameter>();
+}
+
 /* public slot */ void DrawModule::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current)
 {
     // Called when changed kumir state. The states are defined as enum ExtensionSystem::GlobalState:
@@ -43,6 +49,14 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     using namespace ExtensionSystem;  // not to write "ExtensionSystem::" each time in this method scope
     Q_UNUSED(old);  // Remove this line on implementation
     Q_UNUSED(current);  // Remove this line on implementation
+}
+
+/* public slot */ void DrawModule::loadActorData(QIODevice * source)
+{
+    // Set actor specific data (like environment)
+    // The source should be ready-to-read QIODevice like QBuffer or QFile
+    Q_UNUSED(source);  // By default do nothing
+
 }
 
 /* public */ QWidget* DrawModule::mainWidget() const

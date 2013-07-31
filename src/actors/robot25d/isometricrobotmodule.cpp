@@ -21,6 +21,11 @@ IsometricRobotModule::IsometricRobotModule(ExtensionSystem::KPlugin * parent)
 {
 }
 
+QList<ExtensionSystem::CommandLineParameter> IsometricRobotModule::acceptableCommandLineParameters()
+{
+    return QList<ExtensionSystem::CommandLineParameter>();
+}
+
 void IsometricRobotModule::reset()
 {
     bool wasAnimated = robotView_->isAnimated();

@@ -3441,10 +3441,10 @@ QWidget* RobotModule::pultWidget() const
 	*/
     return m_pultWidget;
 }
-QList<ExtensionSystem::CommandLineParameter>  RobotModule::acceptableCommandLineParameters() const
+QList<ExtensionSystem::CommandLineParameter>  RobotModule::acceptableCommandLineParameters()
 {
     QList<ExtensionSystem::CommandLineParameter> params;
-    params.append(ExtensionSystem::CommandLineParameter(true,'f',"field",tr("Robot:field file name."),QVariant::String,false));
+    params.append(ExtensionSystem::CommandLineParameter(true,'f',"field",tr("Robot field file name"),QVariant::String,false));
     return params;
     
 }

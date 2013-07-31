@@ -28,6 +28,11 @@ PainterModule::PainterModule(ExtensionSystem::KPlugin * parent)
     reset();
 }
 
+QList<ExtensionSystem::CommandLineParameter> PainterModule::acceptableCommandLineParameters()
+{
+    return QList<ExtensionSystem::CommandLineParameter>();
+}
+
 void PainterModule::reset()
 {
     QImage * del = canvas;

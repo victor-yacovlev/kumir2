@@ -25,7 +25,7 @@ public:
     // Constructor
 
     IsometricRobotModule(ExtensionSystem::KPlugin * parent);
-
+    static QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters();
 public slots:
     // Reset actor state before program starts
     void reset();

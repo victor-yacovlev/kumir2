@@ -516,7 +516,7 @@ namespace ActorRobot {
         // Set animation flag
   
         void setAnimationEnabled(bool enabled);
-        QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters() const;
+        static QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters();
         QString initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine & runtimeParameters);
         // Actor methods
         void runGoUp();
