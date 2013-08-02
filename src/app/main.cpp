@@ -173,7 +173,7 @@ public:
         if (mustShowHelpAndExit) {
             if (splashScreen_)
                 splashScreen_->finish(0);
-            fprintf(stderr, qPrintable(manager->commandLineHelp()));
+            fprintf(stderr, "%s", qPrintable(manager->commandLineHelp()));
             exit(0);
             return;
         }
