@@ -239,7 +239,7 @@ int main(int argc, char **argv)
     QString gitHash = QString::fromAscii(GIT_HASH);
     QString gitTag = QString::fromAscii(GIT_TAG);
     QString gitBranch = QString::fromAscii(GIT_BRANCH);
-    QDateTime gitTimeStamp = QDateTime::fromTime_t(GIT_TIMESTAMP);
+    QDateTime gitTimeStamp = QDateTime::fromTime_t(QString::fromAscii(GIT_TIMESTAMP).toUInt());
 
 
     bool gui = true;
