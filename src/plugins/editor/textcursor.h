@@ -109,7 +109,7 @@ protected:
     bool teacherModeFlag_;
 
     QRect selectionRect_;
-    std::unique_ptr<Macro> recordingMacro_;
+    Macro * recordingMacro_;
 
 };
 

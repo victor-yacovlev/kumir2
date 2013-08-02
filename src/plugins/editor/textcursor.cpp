@@ -26,6 +26,7 @@ TextCursor::TextCursor(
     , row_(0)
     , column_(0)
     , keptColumn_(-1)
+    , recordingMacro_(nullptr)
 
 {
     teacherModeFlag_ = false;
@@ -178,12 +179,14 @@ bool TextCursor::isFreeCursorMovement() const
 
 void TextCursor::startRecordMacro()
 {
-    recordingMacro_.reset(new Macro);
+    recordingMacro_ = new Macro;
 }
 
 Macro* TextCursor::endRecordMacro()
 {
-    return recordingMacro_.release();
+    Macro * result = recordingMacro_;
+    recordingMacro_ = nullptr;
+    return result;
 }
 
 void TextCursor::evaluateCommand(const KeyCommand &command)
