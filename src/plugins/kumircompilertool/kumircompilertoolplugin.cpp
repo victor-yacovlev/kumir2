@@ -96,7 +96,7 @@ QString KumirCompilerToolPlugin::initialize(
 void KumirCompilerToolPlugin::start()
 {
 
-    QString filename = QFileInfo(filename).absoluteFilePath();
+    const QString filename = QFileInfo(sourceFileName_).absoluteFilePath();
     QFile f(filename);
     if (f.open(QIODevice::ReadOnly)) {
         QDataStream ts(&f);
