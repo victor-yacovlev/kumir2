@@ -667,6 +667,9 @@ bool KumirVM::hasTestingAlgorithm() const
 void KumirVM::reset()
 {
     // Clear everything
+    if (stacksMutex_) {
+        stacksMutex_->unlock();
+    }
     lastContext_ = Context();
     blindMode_ = false;
     nextCallInto_ = false;
