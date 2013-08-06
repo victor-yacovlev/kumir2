@@ -316,9 +316,11 @@ void Editor::playMacro()
         }
     }
     if (found) {
+        document()->undoStack()->beginMacro(m.title);
         for (int i=0; i<m.commands.size(); i++) {
             cursor_->evaluateCommand(m.commands[i]);
         }
+        document()->undoStack()->endMacro();
         plane_->updateScrollBars();
         plane_->ensureCursorVisible();
     }
