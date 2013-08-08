@@ -51,14 +51,8 @@ PluginManager::PluginManager()
     d->globalState = GS_Unlocked;
     d->mySettings = SettingsPtr(new Settings("ExtensionSystem"));
     d->settingsDialog = 0;
-#ifdef Q_WS_X11
-    bool gui = getenv("DISPLAY")!=0;
-    if (!gui)
-        return;
-#endif
-    d->switchWorkspaceDialog = new SwitchWorkspaceDialog(d->mySettings);
 
-    int unnamedArgumentsIndexBegin = 0;
+    int unnamedArgumentsIndexBegin = 1;
 
     QStringList arguments = QCoreApplication::instance()->arguments();
 
@@ -80,6 +74,13 @@ PluginManager::PluginManager()
                 d->unnamedProgramArguments.push_back(arg);
         }
     }
+
+#ifdef Q_WS_X11
+    bool gui = getenv("DISPLAY")!=0;
+    if (!gui)
+        return;
+#endif
+    d->switchWorkspaceDialog = new SwitchWorkspaceDialog(d->mySettings);
 }
 
 PluginManager::~PluginManager()
