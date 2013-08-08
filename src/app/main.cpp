@@ -103,10 +103,15 @@ public:
     inline void initialize() {
         const QStringList arguments = QCoreApplication::instance()->arguments();
         bool mustShowHelpAndExit = false;
+        bool mustShowVersionAndExit = false;
         for (int i=1; i<arguments.size(); i++) {
             const QString & argument = arguments[i];
             if (argument=="--help" || argument=="-h" || argument=="/?") {
                 mustShowHelpAndExit = true;
+                break;
+            }
+            else if (argument=="--version") {
+                mustShowVersionAndExit = true;
                 break;
             }
             else if (!argument.startsWith("-")) {
@@ -177,6 +182,13 @@ public:
             exit(0);
             return;
         }
+
+        if (mustShowVersionAndExit) {
+            fprintf(stderr, "%s\n", qPrintable(applicationVersion()));
+            exit(0);
+            return;
+        }
+
         error = manager->initializePlugins();
         if (!error.isEmpty()) {
             if (splashScreen_)
@@ -265,10 +277,15 @@ int main(int argc, char **argv)
 
     const QStringList arguments = QCoreApplication::instance()->arguments();
     bool mustShowHelpAndExit = false;
+    bool mustShowVersionAndExit = false;
     for (int i=1; i<arguments.size(); i++) {
         const QString & argument = arguments[i];
         if (argument=="--help" || argument=="-h" || argument=="/?") {
             mustShowHelpAndExit = true;
+            break;
+        }
+        else if (argument=="--version") {
+            mustShowVersionAndExit = true;
             break;
         }
         else if (!argument.startsWith("-")) {
@@ -277,7 +294,7 @@ int main(int argc, char **argv)
     }
 
 #ifdef SPLASHSCREEN
-    if (gui && !mustShowHelpAndExit) {
+    if (gui && !mustShowHelpAndExit && !mustShowVersionAndExit) {
         QString imgPath = sharePath+QString("/")+SPLASHSCREEN;
         splashScreen = new QSplashScreen();
         QImage img(imgPath);
