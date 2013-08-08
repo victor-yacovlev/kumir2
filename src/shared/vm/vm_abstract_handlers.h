@@ -18,6 +18,12 @@
 #include <wchar.h>
 #endif
 
+#if defined(WIN32) || defined(_WIN32)
+#   include <windows.h>
+#else
+#   include <unistd.h>
+#endif
+
 #include <deque>
 #include <string>
 #include <list>
@@ -56,7 +62,8 @@ public:
         Output,
         GetMainArgument,
         ReturnMainValue,
-        Pause
+        Pause,
+        Delay
     };
     virtual Type type() const = 0;
 protected:
@@ -176,10 +183,35 @@ public:
 
 /* ====== Functors for execution control function run ======= */
 
+/** A functor to make a pause while debugging
+ */
 class PauseFunctor : public Functor {
 public:
     inline Type type() const { return Pause; }
     inline virtual void operator()() /* nothrow */ {}
+};
+
+
+/** A functor to sleep execution.
+ *  Default implementation is not multi-thread
+ *
+ *  Argument is a sleep time in milliseconds
+ */
+class DelayFunctor : public Functor {
+public:
+    inline Type type() const { return Delay; }
+    inline virtual void operator()(uint32_t msec) /* nothrow */ {
+#if defined(WIN32) || defined(_WIN32)
+        Sleep(msec);
+#else
+        uint32_t sec = msec / 1000;
+        uint32_t usec = (msec - sec * 1000) * 1000;
+        // usleep works in range [0, 1000000), so
+        // call sleep(sec) first for long periods
+        sleep(sec);
+        usleep(usec);
+#endif
+    }
 };
 
 /* ====== Functors for user input and output================= */

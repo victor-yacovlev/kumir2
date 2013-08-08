@@ -133,6 +133,21 @@ signals:
     void requestPause();
 };
 
+class DelayFunctor
+        : public QThread
+        , public VM::DelayFunctor
+{
+    Q_OBJECT
+public:
+    DelayFunctor();
+    void operator()(quint32 msec);
+    void stop();
+private:
+    bool stopFlag_;
+    QScopedPointer<QMutex> stopMutex_;
+};
+
+
 }
 
 }

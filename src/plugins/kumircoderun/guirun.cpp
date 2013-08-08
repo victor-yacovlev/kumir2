@@ -522,6 +522,42 @@ void PauseFunctor::operator ()()
     emit requestPause();
 }
 
+DelayFunctor::DelayFunctor()
+    : QThread()
+    , VM::DelayFunctor()
+    , stopFlag_(false)
+{
+    stopMutex_.reset(new QMutex);
+}
+
+void DelayFunctor::stop()
+{
+    stopMutex_->lock();
+    stopFlag_ = true;
+    stopMutex_->unlock();
+}
+
+void DelayFunctor::operator ()(quint32 msec)
+{
+    stopMutex_->lock();
+    stopFlag_ = false;
+    stopMutex_->unlock();
+    static const quint32 QuantSize = 250u;
+    const quint32 quantsCount = msec / QuantSize;
+    const quint32 lastQuantSize = msec - (quantsCount * QuantSize);
+    bool mustBreak = false;
+    for (quint32 i=0; i<quantsCount; i++) {
+        stopMutex_->lock();
+        mustBreak = stopFlag_;
+        stopMutex_->unlock();
+        if (mustBreak)
+            break;
+        msleep(QuantSize);
+    }
+    if (!mustBreak) {
+        msleep(lastQuantSize);
+    }
+}
 
 }
 

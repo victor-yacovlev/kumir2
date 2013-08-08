@@ -14,6 +14,32 @@
 
 namespace KumirCodeRun {
 
+struct CommonFunctors {
+    Common::ExternalModuleResetFunctor reset;
+    Common::ExternalModuleCallFunctor call;
+    Common::CustomTypeFromStringFunctor fromString;
+    Common::CustomTypeToStringFunctor toString;
+};
+
+struct ConsoleFunctors {
+    Console::ExternalModuleLoadFunctor load;
+    VM::Console::InputFunctor input;
+    VM::Console::OutputFunctor output;
+    VM::Console::GetMainArgumentFunctor getMainArgument;
+    VM::Console::ReturnMainValueFunctor returnMainValue;
+};
+
+struct GuiFunctors {
+    Gui::ExternalModuleLoadFunctor load;
+    Gui::InputFunctor input;
+    Gui::OutputFunctor output;
+    Gui::GetMainArgumentFunctor getMainArgument;
+    Gui::ReturnMainValueFunctor returnMainValue;
+    Gui::PauseFunctor pause;
+    Gui::DelayFunctor delay;
+};
+
+
 KumirRunPlugin::KumirRunPlugin()
     : ExtensionSystem::KPlugin()
     , pRun_(new Run(this))
@@ -387,6 +413,8 @@ bool KumirRunPlugin::isTestingRun() const
 
 void KumirRunPlugin::terminate()
 {
+    if (gui_)
+        gui_->delay.stop();
     pRun_->stop();
 }
 
@@ -416,29 +444,6 @@ void KumirRunPlugin::handleLineChanged(int lineNo, quint32 colStart, quint32 col
 }
 
 
-struct CommonFunctors {
-    Common::ExternalModuleResetFunctor reset;
-    Common::ExternalModuleCallFunctor call;
-    Common::CustomTypeFromStringFunctor fromString;
-    Common::CustomTypeToStringFunctor toString;
-};
-
-struct ConsoleFunctors {
-    Console::ExternalModuleLoadFunctor load;
-    VM::Console::InputFunctor input;
-    VM::Console::OutputFunctor output;
-    VM::Console::GetMainArgumentFunctor getMainArgument;
-    VM::Console::ReturnMainValueFunctor returnMainValue;
-};
-
-struct GuiFunctors {
-    Gui::ExternalModuleLoadFunctor load;
-    Gui::InputFunctor input;
-    Gui::OutputFunctor output;
-    Gui::GetMainArgumentFunctor getMainArgument;
-    Gui::ReturnMainValueFunctor returnMainValue;
-    Gui::PauseFunctor pause;
-};
 
 KumirRunPlugin::~KumirRunPlugin()
 {
@@ -534,6 +539,7 @@ void KumirRunPlugin::prepareGuiRun()
     pRun_->vm->setFunctor(&gui_->getMainArgument);
     pRun_->vm->setFunctor(&gui_->returnMainValue);
     pRun_->vm->setFunctor(&gui_->pause);
+    pRun_->vm->setFunctor(&gui_->delay);
     pRun_->vm->setConsoleInputBuffer(&gui_->input);
     pRun_->vm->setConsoleOutputBuffer(&gui_->output);
 }

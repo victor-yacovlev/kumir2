@@ -143,6 +143,7 @@ private /*fields*/:
     GetMainArgumentFunctor * getMainArgument_;
     ReturnMainValueFunctor * returnMainValue_;
     PauseFunctor * pause_;
+    DelayFunctor * delay_;
 
     Context lastContext_;
     int backtraceSkip_;
@@ -347,6 +348,10 @@ void KumirVM::setFunctor(Functor * functor)
     case Functor::Pause:
         pause_ =
                 dynamic_cast<PauseFunctor*>(functor);
+        break;
+    case Functor::Delay:
+        delay_ =
+                dynamic_cast<DelayFunctor*>(functor);
         break;
     default:
         break;
@@ -579,6 +584,7 @@ KumirVM::KumirVM()
     , getMainArgument_(nullptr)
     , returnMainValue_(nullptr)
     , pause_(nullptr)
+    , delay_(nullptr)
     , lastContext_(Context())
     , backtraceSkip_(0)
     , error_(Kumir::String())
@@ -647,6 +653,10 @@ void KumirVM::checkFunctors()
     if (!pause_) {
         static PauseFunctor dummy;
         pause_ = &dummy;
+    }
+    if (!delay_) {
+        static DelayFunctor dummy;
+        delay_ = &dummy;
     }
 }
 
@@ -1212,9 +1222,16 @@ void KumirVM::do_stdcall(uint16_t alg)
         error_ = Kumir::Core::getError();
         break;
     }
-    /* алг delay(цел x) */
+    /* алг ждать(цел x) */
     case 0x0007: {
-        // TODO not implemented
+        int x = valuesStack_.pop().toInt();
+        if (x < 0) {
+            error_ = Kumir::Core::fromUtf8("Отрицательное время");
+        }
+        else {
+            uint32_t msec = static_cast<uint32_t>(x);
+            (*delay_)(msec);
+        }
         break;
     }
     /* алг цел div(цел x, цел y) */

@@ -24,7 +24,7 @@ public:
         /* 0x0004 */ result << QString::fromUtf8("алг вещ arctg(вещ x)");
         /* 0x0005 */ result << QString::fromUtf8("алг вещ cos(вещ x)");
         /* 0x0006 */ result << QString::fromUtf8("алг вещ ctg(вещ x)");
-        /* 0x0007 */ result << QString::fromUtf8("алг delay(цел x)");
+        /* 0x0007 */ result << QString::fromUtf8("алг ждать(цел x)");
         /* 0x0008 */ result << QString::fromUtf8("алг цел div(цел x, цел y)");
         /* 0x0009 */ result << QString::fromUtf8("алг вещ exp(вещ x)");
         /* 0x000a */ result << QString::fromUtf8("алг цел iabs(цел x)");
