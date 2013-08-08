@@ -113,7 +113,7 @@ void KumirCompilerToolPlugin::start()
         analizer_->setSourceText(id, kumFile.visibleText + "\n" + kumFile.hiddenText);
         QList<Shared::Error> errors = analizer_->errors(id);
         const AST::DataPtr ast = analizer_->abstractSyntaxTree(id);
-        const QString baseName = QFileInfo(filename).baseName();
+        const QString baseName = QFileInfo(filename).completeBaseName();
 
         for (int i=0; i<errors.size(); i++) {
             Shared::Error e = errors[i];
