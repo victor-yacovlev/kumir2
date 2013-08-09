@@ -6,6 +6,8 @@
 #include <QtGlobal>
 #include <QTextBrowser>
 #include <QSharedPointer>
+#include <QResizeEvent>
+#include <QWheelEvent>
 
 namespace DocBookViewer {
 
@@ -27,6 +29,9 @@ signals:
     void itemRequest(ModelPtr model);
 
 private:
+    void resizeEvent(QResizeEvent *e);
+    void wheelEvent(QWheelEvent *e);
+
     QString wrapHTML(const QString & body) const;
     QString render(ModelPtr data) const;
     QString renderElement(ModelPtr data) const;
@@ -123,8 +128,11 @@ private:
 
 private /*fields*/:
     ModelPtr loadedModel_;
+    QUrl lastAnchorUrl_;
+    bool ignoreClearAnchorUrl_;
 
 private slots:
+    void clearLastAnchorUrl();
     void handleInternalLink(const QUrl & url);
 
 

@@ -56,6 +56,7 @@ protected:
     void showEvent(QShowEvent *);
     void closeEvent(QCloseEvent *);
     void hideEvent(QHideEvent *);
+    void resizeEvent(QResizeEvent *);
 
 private:    
     class DocBookViewImpl* pImpl_;

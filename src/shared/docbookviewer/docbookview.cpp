@@ -1,6 +1,8 @@
 #include "docbookview.h"
 #include "docbookview_impl.h"
 
+#include <QResizeEvent>
+
 namespace DocBookViewer {
 
 DocBookView::DocBookView(QWidget *parent)
@@ -37,6 +39,18 @@ void DocBookView::showEvent(QShowEvent * event)
         pImpl_->restoreState(pImpl_->settings_, pImpl_->settingsPrefix_);
     }
     QWidget::showEvent(event);
+}
+
+void DocBookView::resizeEvent(QResizeEvent * event)
+{
+    if (event->size().width() < minimumWidth() ||
+            event->size().height() < minimumHeight()) {
+        event->ignore();
+    }
+    else {
+        event->accept();
+        pImpl_->setSize(event->size());
+    }
 }
 
 

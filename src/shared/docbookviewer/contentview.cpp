@@ -10,7 +10,7 @@ namespace DocBookViewer {
 static const QString MainFontFamily =
         "Droid Serif,PT Serif,Garamond,Times New Roman,serif";
 
-static const QString MainFontSize = "14pt";
+static const QString MainFontSize = "12pt";
 
 static const QString CodeFontFamily =
         "DejaVu Sans Mono,Liberation Mono,PT Sans Mono,Courier New,monospace";
@@ -23,11 +23,14 @@ ContentView::ContentView(QWidget *parent)
     setOpenLinks(false);
     connect(this, SIGNAL(anchorClicked(QUrl)),
             this, SLOT(handleInternalLink(QUrl)));
+    connect(verticalScrollBar(), SIGNAL(sliderMoved(int)),
+            this, SLOT(clearLastAnchorUrl()));
+    ignoreClearAnchorUrl_ = false;
 }
 
 QSize ContentView::minimumSizeHint() const
 {
-    return QSize(500, 400);
+    return QSize(500, 230);
 }
 
 void ContentView::reset()
@@ -48,6 +51,7 @@ void ContentView::renderData(ModelPtr data)
         QString anchor = modelToLink(data);
         QUrl anchorUrl("#" + anchor);
         setSource(anchorUrl);
+        lastAnchorUrl_ = anchorUrl;
     }
 }
 
@@ -1500,6 +1504,35 @@ QString ContentView::formatProgramSourceText(
     }
 
     return result;
+}
+
+void ContentView::resizeEvent(QResizeEvent *e)
+{
+    ignoreClearAnchorUrl_ = true;
+    QTextBrowser::resizeEvent(e);;
+    if (lastAnchorUrl_.isValid()) {
+        setSource(lastAnchorUrl_);
+    }
+}
+
+void ContentView::wheelEvent(QWheelEvent *e)
+{
+    QTextBrowser::wheelEvent(e);
+    if (e->buttons() == Qt::NoButton) {
+        clearLastAnchorUrl();
+    }
+}
+
+void ContentView::clearLastAnchorUrl()
+{
+    if (!ignoreClearAnchorUrl_) {
+        lastAnchorUrl_.clear();
+//        qDebug() << "Claar last anchor url";
+    }
+    else {
+//        qDebug() << "Ignored clear last anchor url";
+    }
+    ignoreClearAnchorUrl_ = false;
 }
 
 }

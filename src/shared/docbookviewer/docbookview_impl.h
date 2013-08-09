@@ -11,6 +11,8 @@
 #include <QSharedPointer>
 #include <QTreeWidget>
 #include <QSplitter>
+#include <QLabel>
+#include <QStackedWidget>
 
 namespace DocBookViewer {
 
@@ -43,6 +45,8 @@ public /* methods */:
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
 
+    bool isSideBarVisible() const;
+
     void createActions();
 
 signals:
@@ -51,6 +55,17 @@ signals:
 public slots:
     void showAnItem(ModelPtr model);
     void showPrintDialog();
+    void hideSidePanel();
+    void showSidePanel();
+    void setSize(const QSize & size);
+
+    void switchToCompactMode(bool force=false);
+    void switchToEnoughtSizeMode(bool force=false);
+
+private slots:
+    void updateToggleSideBarButton();
+    void handleShowSideBarButton(const QString & action);
+
 
 private /* fields */:
     DocBookView* pClass_;
@@ -61,8 +76,17 @@ private /* fields */:
     SidePanel * sidePanel_;
     ContentView * content_;
 
-    QAction* actionToggleNavigationBar_;
-    QAction* actionShowPrintDialog_;
+    QAction * actionToggleNavigationBar_;
+    QAction * actionShowPrintDialog_;
+
+    QLabel * toggleSideBar_;
+    QWidget * enoughtSizeContainer_;
+    QWidget * smallSizeContainer_;
+    QWidget * filler_;
+    QWidget * background_;
+    QStackedWidget * splitterRightWidget_;
+
+    bool compactModeFlag_;
 
 
 };

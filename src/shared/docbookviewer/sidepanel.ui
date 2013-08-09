@@ -6,13 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>300</width>
-    <height>480</height>
+    <width>200</width>
+    <height>261</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>250</width>
+    <width>200</width>
     <height>0</height>
    </size>
   </property>
@@ -20,23 +26,58 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
+   <property name="spacing">
+    <number>0</number>
+   </property>
    <property name="margin">
     <number>0</number>
    </property>
    <item>
-    <widget class="QGroupBox" name="groupBox">
-     <property name="title">
-      <string/>
-     </property>
-     <property name="flat">
-      <bool>true</bool>
-     </property>
+    <widget class="QFrame" name="frame">
      <layout class="QGridLayout" name="gridLayout">
       <property name="margin">
        <number>0</number>
       </property>
-      <item row="0" column="0">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <item row="2" column="0">
+       <widget class="QPushButton" name="examples">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Examples</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="tables">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Tables</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
        <widget class="QPushButton" name="contents">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>Contents</string>
         </property>
@@ -48,8 +89,13 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
+      <item row="1" column="1">
        <widget class="QPushButton" name="algorithms">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>Algorithms</string>
         </property>
@@ -58,23 +104,16 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QPushButton" name="examples">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>28</height>
+         </size>
+        </property>
         <property name="text">
-         <string>Examples</string>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QPushButton" name="tables">
-        <property name="text">
-         <string>Tables</string>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
+         <string/>
         </property>
        </widget>
       </item>
@@ -85,6 +124,12 @@
     <widget class="QStackedWidget" name="stackedWidget">
      <widget class="QWidget" name="pageContents">
       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="margin">
+        <number>0</number>
+       </property>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
@@ -104,6 +149,9 @@
        </item>
        <item>
         <widget class="QTreeWidget" name="contentsNavigator">
+         <property name="indentation">
+          <number>10</number>
+         </property>
          <property name="headerHidden">
           <bool>true</bool>
          </property>
@@ -118,6 +166,12 @@
      </widget>
      <widget class="QWidget" name="pageAlgorithms">
       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="margin">
+        <number>0</number>
+       </property>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
@@ -137,6 +191,9 @@
        </item>
        <item>
         <widget class="QTreeWidget" name="algorithmsNavigator">
+         <property name="indentation">
+          <number>10</number>
+         </property>
          <attribute name="headerVisible">
           <bool>false</bool>
          </attribute>
@@ -151,6 +208,12 @@
      </widget>
      <widget class="QWidget" name="pageExamples">
       <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="margin">
+        <number>0</number>
+       </property>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
@@ -170,6 +233,9 @@
        </item>
        <item>
         <widget class="QTreeWidget" name="examplesNavigator">
+         <property name="indentation">
+          <number>10</number>
+         </property>
          <property name="headerHidden">
           <bool>true</bool>
          </property>
@@ -184,6 +250,12 @@
      </widget>
      <widget class="QWidget" name="pageTables">
       <layout class="QVBoxLayout" name="verticalLayout_5">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="margin">
+        <number>0</number>
+       </property>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
          <item>
@@ -203,6 +275,9 @@
        </item>
        <item>
         <widget class="QTreeWidget" name="tablesNavigator">
+         <property name="indentation">
+          <number>10</number>
+         </property>
          <property name="headerHidden">
           <bool>true</bool>
          </property>
