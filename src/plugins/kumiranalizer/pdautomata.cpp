@@ -1686,6 +1686,31 @@ void PDAutomata::postProcess()
     source_.pop_front();
     currentAlgorhitm_.clear();
 
+    // Update AST tree back references
+    updateBackReferences(currentModule_->impl.initializerBody);
+    foreach (AST::AlgorithmPtr algorithm, currentModule_->impl.algorhitms) {
+        updateBackReferences(algorithm->impl.body);
+    }
+
+}
+
+void PDAutomata::updateBackReferences(const QList<AST::StatementPtr> &alist)
+{
+    foreach (AST::StatementPtr statement, alist) {
+        updateBackReferences(statement);
+    }
+}
+
+void PDAutomata::updateBackReferences(AST::StatementPtr root)
+{
+    QList<AST::StatementPtr> childStatements = root->loop.body;
+    for (int i=0; i<root->conditionals.size(); i++) {
+        childStatements += root->conditionals[i].body;
+    }
+    foreach (AST::StatementPtr st, childStatements) {
+        st->parent = root.toWeakRef();
+        updateBackReferences(st);
+    }
 }
 
 void PDAutomata::setCurrentIndentRank(int start, int end)

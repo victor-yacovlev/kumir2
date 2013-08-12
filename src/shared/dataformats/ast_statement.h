@@ -22,6 +22,8 @@ typedef QSharedPointer<struct Variable> VariablePtr;
 
 typedef QSharedPointer<struct Statement> StatementPtr;
 
+typedef QWeakPointer<struct Statement> StatementWPtr;
+
 typedef QSharedPointer<struct Data> DataPtr;
 
 /** Defines statement (in terminology of Kumir 1.x: ProgaValue) type */
@@ -142,7 +144,7 @@ struct ABSTRACTSYNTAXTREE_EXPORT Statement {
 
     /** Tree parent */
 
-    StatementPtr parent;
+    StatementWPtr parent;
 
     /** Statement source lexems */
     QList<struct Lexem*> lexems;

@@ -1667,9 +1667,32 @@ void SyntaxAnalizer::parseModuleHeader(int str)
 
 void SyntaxAnalizer::parseVarDecl(int str)
 {
-    const TextStatement & st = statements_[str];
+    TextStatement & st = statements_[str];
     if (st.hasError())
         return;
+
+    // Check for in-block declaration
+    AST::StatementWPtr p = st.statement.toWeakRef();
+    while (p) {
+        QString error;
+        if (p.data()->type == AST::StLoop) {
+            error = _("Can't declare variable in loop");
+        }
+        else if (p.data()->type == AST::StIfThenElse) {
+            error = _("Can't declare variable in condidion");
+        }
+        else if (p.data()->type == AST::StSwitchCaseElse) {
+            error = _("Can't declare variable in switch");
+        }
+        if (error.length() > 0) {
+            st.setError(error,
+                        Lexem::ErrorStage::Tables,
+                        Lexem::ErrorRaisePosition::AsIs);
+            return;
+        }
+        p = p.data()->parent;
+    }
+
     AST::AlgorithmPtr  alg = st.alg;
     AST::ModulePtr  mod = st.mod;
     VariablesGroup group;

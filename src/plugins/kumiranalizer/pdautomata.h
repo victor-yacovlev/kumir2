@@ -78,6 +78,9 @@ private:
 
     AST::StatementPtr findASTStatementBySourceStatement(const TextStatementPtr st) const;
 
+    static void updateBackReferences(const QList<AST::StatementPtr> &alist);
+    static void updateBackReferences(AST::StatementPtr root);
+
     void loadRules(const QString &rulesRoot);
 
 
