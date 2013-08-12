@@ -2,7 +2,11 @@ set(SRC
     main.cpp
 )
 if(NOT MSVC)
-    set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
+    if(APPLE)
+        set(CMAKE_CXX_FLAGS "-stdlib=libc++ -DAPPLE ${CMAKE_CXX_FLAGS}")
+    else()
+        set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
+    endif()
 endif()
 add_executable(kumir2-run ${SRC})
 target_link_libraries(kumir2-run)
