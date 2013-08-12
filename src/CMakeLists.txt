@@ -17,15 +17,16 @@ endif(MSVC)
 
 
 if(NOT MSVC)
-    set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
+    if(APPLE)
+        set(CMAKE_CXX_FLAGS "-stdlib=libc++ -DAPPLE ${CMAKE_CXX_FLAGS}")
+    else()
+        set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
+    endif()
     if(CMAKE_BUILD_TYPE MATCHES Debug)
         set(CMAKE_CXX_FLAGS "-Werror -Wreturn-type -O0 ${CMAKE_CXX_FLAGS}")
     endif()
 endif()
 
-if(APPLE)
-    set(CMAKE_CXX_FLAGS "-DAPPLE ${CMAKE_CXX_FLAGS}")
-endif()
 
 if(MSVC_IDE)
 	#set(CMAKE_SHARED_LIBRARY_PREFIX "../")
