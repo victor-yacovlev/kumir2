@@ -755,11 +755,17 @@ void EditorPlane::updateScrollBars()
 void EditorPlane::ensureCursorVisible()
 {    
     const int lineNoWidth = 5;
-    QRect cr(5 + cursor_->column(),
-             cursor_->row(),
+    uint row = cursor_->row();
+    uint column = cursor_->column();
+    QRect cr(5 + column,
+             row,
              2,
              2
                 );
+    if (column == 2u * document_->indentAt(row)) {
+        cr.setLeft(0);
+        cr.setRight(2);
+    }
     QRect vr;
     vr.setLeft(horizontalScrollBar_->isEnabled()? horizontalScrollBar_->value()/charWidth() : 0);
     vr.setTop(verticalScrollBar_->isEnabled()? verticalScrollBar_->value()/lineHeight() : 0);
@@ -775,6 +781,8 @@ void EditorPlane::ensureCursorVisible()
     else if (cr.left()<vr.left()) {
 //        qDebug() << "B";
         int v = cursor_->column();
+        if (cursor_->column() == 2u * document_->indentAt(cursor_->row()))
+            v = 0;
         horizontalScrollBar_->setValue(v * charWidth());
     }
     if (cr.top()>vr.bottom()) {
