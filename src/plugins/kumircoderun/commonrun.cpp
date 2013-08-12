@@ -82,7 +82,7 @@ AnyValue ExternalModuleCallFunctor::operator ()
     const QString qModuleName = QString::fromStdWString(moduleName);
     const quint16 qAlgKey = quint16(algKey);
     QVariantList arguments;
-    for (auto it=alist.begin(); it!=alist.end(); ++it) {
+    for (std::deque<Variable>::const_iterator it=alist.begin(); it!=alist.end(); ++it) {
         const QVariant qVal = Util::VariableToQVariant(*it);
         arguments.push_back(qVal);
     }

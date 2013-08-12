@@ -526,7 +526,7 @@ SyntaxAnalizer::suggestAssignmentAutoComplete(
     QList<Lexem*> lvalue, rvalue;
     Lexem * assignOperator = nullptr;
     if (statementBefore!=nullptr) {
-        for ( auto it = statementBefore->data.begin(); it!=statementBefore->data.end(); ++it ) {
+        for ( QList<Lexem*>::Iterator it = statementBefore->data.begin(); it!=statementBefore->data.end(); ++it ) {
             Lexem * lx = *it;
             if (lx->type==LxPriAssign) {
                 assignOperator = lx;
@@ -1686,8 +1686,8 @@ void SyntaxAnalizer::parseVarDecl(int str)
         }
         if (error.length() > 0) {
             st.setError(error,
-                        Lexem::ErrorStage::Tables,
-                        Lexem::ErrorRaisePosition::AsIs);
+                        Lexem::Tables,
+                        Lexem::AsIs);
             return;
         }
         p = p.data()->parent;

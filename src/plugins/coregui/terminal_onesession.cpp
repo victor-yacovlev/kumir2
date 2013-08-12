@@ -420,19 +420,21 @@ QString OneSession::selectedText() const
     return result;
 }
 
+struct Chunk {
+    QString text;
+    bool italic;
+    uint color;
+    QString data;
+    CharSpec spec;
+};
+
 static QString lineToRtf(const QString & text,
                          const bool utilText,
                          const LineProp & prop,
                          size_t from, size_t to
                          )
 {
-    struct Chunk {
-        QString text;
-        bool italic;
-        uint color;
-        QString data;
-        CharSpec spec;
-    };
+
 
     QList<Chunk> result;
     QString rtf;

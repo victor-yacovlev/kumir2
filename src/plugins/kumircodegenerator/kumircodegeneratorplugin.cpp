@@ -43,7 +43,7 @@ QString KumirCodeGeneratorPlugin::initialize(const QStringList &/*configurationA
                                              const ExtensionSystem::CommandLine &runtimeArguments)
 {    
     textMode_ = runtimeArguments.hasFlag('s');
-    DebugLevel debugLevel = DebugLevel::LinesOnly;
+    DebugLevel debugLevel = LinesOnly;
     if (runtimeArguments.value('g').isValid()) {
         int level = runtimeArguments.value('g').toInt();
         level = qMax(0, level);
