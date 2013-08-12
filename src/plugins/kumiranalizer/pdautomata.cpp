@@ -751,7 +751,7 @@ void prepareRules(const QStringList &files, QString &out)
 
     std::list<RulesLine> rules;
     try {
-        for (auto it=ruleLines.begin(); it!=ruleLines.end(); ++it) {
+        for (std::deque<QString>::iterator it=ruleLines.begin(); it!=ruleLines.end(); ++it) {
             rules.push_back(parseRulesLine(*it));
         }
     }
@@ -763,7 +763,7 @@ void prepareRules(const QStringList &files, QString &out)
 
     QStringList pravila1;
 
-    for (auto it=rules.begin(); it!=rules.end(); ++it) {
+    for (std::list<RulesLine>::iterator it=rules.begin(); it!=rules.end(); ++it) {
         QString subochLine = QString::fromAscii("%1 -> %2 : %3 [%4]")
                 .arg(it->leftPart)
                 .arg(it->rightPart)
