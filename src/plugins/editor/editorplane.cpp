@@ -747,6 +747,7 @@ void EditorPlane::updateScrollBars()
         verticalScrollBar_->setSingleStep(lineHeight());
         verticalScrollBar_->setPageStep(lineHeight() * 8);
     }
+    horizontalScrollBar_->setFixedWidth(marginLeftBound() + MARGIN_LINE_WIDTH);
     if (prevOffset!=offset())
         update();
 }

@@ -439,10 +439,30 @@ Editor::Editor(EditorPlugin * plugin,
             "   height: 0;"
             "}"
             ;
+    static const char * HorizontalScrollBarCSS = ""
+            "QScrollBar {"
+            "   height: 12px;"
+            "   background-color: transparent;"
+            "   padding-right: 4px;"
+            "   border: 0;"
+            "   border-right: 4px solid #FF8080;"
+            "}"
+            "QScrollBar:handle {"
+            "   background-color: gray;"
+            "   border-radius: 4px;"
+            "}"
+            "QScrollBar:add-line {"
+            "   height: 0;"
+            "}"
+            "QScrollBar:sub-line {"
+            "   height: 0;"
+            "}"
+            ;
     horizontalScrollBar_ = new QScrollBar(Qt::Horizontal, this);
     verticalScrollBar_ = new QScrollBar(Qt::Vertical, this);
     verticalScrollBar_->setStyleSheet(ScrollBarCSS);
     verticalScrollBar_->installEventFilter(this);
+    horizontalScrollBar_->setStyleSheet(HorizontalScrollBarCSS);
     plane_ = new EditorPlane(
                 doc_,
                 analizer_,
