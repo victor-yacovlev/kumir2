@@ -40,7 +40,7 @@ QSize DockWindowPlaceImpl::minimumSizeHint() const
             ? pClass_->tabBar()->minimumSizeHint().height() : 0;
     int h = 0;
     int w = pClass_->tabBar()->minimumSizeHint().width();
-    for (const QWidget * window : widgetsInDock_) {
+    foreach (const QWidget * window , widgetsInDock_) {
         const QSize windowMinimumSize = window->minimumSizeHint();
         w = qMax(w, windowMinimumSize.width());
         h = qMax(h, windowMinimumSize.height());
@@ -100,7 +100,7 @@ void DockWindowPlaceImpl::undockWindow(SecondaryWindow *window)
 void DockWindowPlaceImpl::updateVisiblity()
 {
     bool visible = false;
-    for (QWidget * window : widgetsInDock_)
+    foreach (QWidget * window , widgetsInDock_)
         visible = visible || window->isVisible();
     pClass_->setVisible(visible);
 }
@@ -115,7 +115,7 @@ void DockWindowPlaceImpl::updateSettings(ExtensionSystem::SettingsPtr settings)
 {
     if (settings_) saveState();
     settings_ = settings;
-    for (QWidget * window : allWindows_) {
+    foreach (QWidget * window , allWindows_) {
         SecondaryWindow * w = qobject_cast<SecondaryWindow*>(window);
         if (w)
             w->setSettingsObject(settings);
@@ -125,7 +125,7 @@ void DockWindowPlaceImpl::updateSettings(ExtensionSystem::SettingsPtr settings)
 
 void DockWindowPlaceImpl::saveState()
 {
-    for (QWidget * window : allWindows_) {
+    foreach (QWidget * window , allWindows_) {
         SecondaryWindow * w = qobject_cast<SecondaryWindow*>(window);
         if (w)
             w->saveState();
@@ -134,7 +134,7 @@ void DockWindowPlaceImpl::saveState()
 
 void DockWindowPlaceImpl::restoreState()
 {
-    for (QWidget * window : allWindows_) {
+    foreach (QWidget * window , allWindows_) {
         SecondaryWindow * w = qobject_cast<SecondaryWindow*>(window);
         if (w)
             w->restoreState();
