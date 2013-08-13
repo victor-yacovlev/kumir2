@@ -32,19 +32,9 @@
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
-      <widget class="CoreGUI::TabWidget" name="tabWidget">
-       <property name="documentMode">
-        <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QWidget" name="bottomWidget" native="true">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>200</height>
-        </size>
-       </property>
-      </widget>
+      <property name="handleWidth">
+       <number>10</number>
+      </property>
      </widget>
     </item>
    </layout>
@@ -55,7 +45,7 @@
      <x>0</x>
      <y>0</y>
      <width>744</width>
-     <height>24</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -264,12 +254,6 @@
   </action>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>CoreGUI::TabWidget</class>
-   <extends>QTabWidget</extends>
-   <header location="global">tabwidget.h</header>
-   <container>1</container>
-  </customwidget>
   <customwidget>
    <class>MenuBar</class>
    <extends>QMenuBar</extends>

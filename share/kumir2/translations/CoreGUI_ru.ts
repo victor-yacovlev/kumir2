@@ -571,7 +571,7 @@ Right click to navigate target</source>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="259"/>
         <source>Show Console Pane</source>
-        <translation>Отображать панель ввода-вывода</translation>
+        <translation>Отображать нижнюю часть окна</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="262"/>

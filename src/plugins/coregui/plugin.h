@@ -12,6 +12,7 @@
 #include "interfaces/guiinterface.h"
 #include "interfaces/coursesinterface.h"
 #include "widgets/secondarywindow.h"
+#include "widgets/dockwindowplace.h"
 #include "docbookviewer/docbookview.h"
 #include "terminal.h"
 #include "kumirprogram.h"
@@ -56,12 +57,8 @@ public slots:
 
 protected slots:
     void prepareKumirProgramToRun();
-    void handleSecondaryWindowDocked(QWidget * w, const QString & title);
-    void handleSecondaryWindowUndocked(QWidget * w);
-    void handleDebuggerDocked(QWidget * w);
-    void handleDebuggerUndocked(QWidget * w);
-    void showConsolePane(bool v);
-    void handleMainSplitterMoved();
+
+
 
 protected:
     QString initialize(const QStringList &configurationArguments,
@@ -85,15 +82,12 @@ protected:
     BrowserComponent startPage_;
     QList<Widgets::SecondaryWindow*> secondaryWindows_;
     Widgets::SecondaryWindow* helpWindow_;
-    Term * m_terminal;
+    Term * terminal_;
     QMap<QString,QObject*> m_browserObjects;
     KumirProgram * kumirProgram_;
     class DebuggerView * debugger_;
-    DocBookViewer::DocBookView * helpViewer_;
-    QSplitter * bottomSplitter_;
+    DocBookViewer::DocBookView * helpViewer_;  
     Shared::CoursesInterface* courseManager_;
-    QTabWidget * actorsDockPlace_;
-    QWidget * debuggerPlace_;
     bool sessionsDisableFlag_;
 
 };

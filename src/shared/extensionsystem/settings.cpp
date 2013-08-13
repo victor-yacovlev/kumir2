@@ -11,6 +11,7 @@ Settings::Settings(const QString & pluginName)
     , qsettings_(new QSettings(defaultSettingsScope(), pluginName))
 {
     qsettings_->setIniCodec("UTF-8");
+    settingsFile_ = qsettings_->fileName();
 }
 
 void Settings::setValue(const QString &key, const QVariant &value_)
@@ -44,6 +45,7 @@ void Settings::changeWorkingDirectory(const QString &workDirPath)
     sett->setIniCodec("UTF-8");
 
     qsettings_.reset(sett);
+    settingsFile_ = qsettings_->fileName();
 
     mutex_->unlock();
 }

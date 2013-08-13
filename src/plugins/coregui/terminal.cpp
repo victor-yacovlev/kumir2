@@ -8,6 +8,7 @@ namespace Terminal {
 Term::Term(QWidget *parent) :
     QWidget(parent)
 {
+    setWindowTitle(tr("Input/Output"));
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
 //    setMinimumWidth(450);
 //    setMinimumHeight(200);
@@ -107,6 +108,7 @@ bool Term::isEmpty() const
 QSize Term::minimumSizeHint() const
 {
     QSize result = m_plane->minimumSizeHint();
+    result.rwidth() = qMax(result.width(), 400);
     if (sb_vertical->isVisible()) {
         result.rwidth() += sb_vertical->width();
         result.rheight() = qMax(result.rheight(), sb_vertical->minimumHeight());

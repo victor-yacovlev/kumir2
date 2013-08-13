@@ -11,12 +11,17 @@ set(SOURCES
     groupbox.cpp
     cyrillicmenu.cpp
     secondarywindow.cpp
+    secondarywindow_impl.cpp
+    dockwindowplace.cpp
+    dockwindowplace_impl.cpp
 )
 
 set(MOC_HEADERS
     groupbox.h
     cyrillicmenu.h
     secondarywindow.h
+    secondarywindow_impl.h
+    dockwindowplace.h
 )
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})

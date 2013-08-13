@@ -62,7 +62,7 @@ DocBookViewImpl::DocBookViewImpl(DocBookView *pClass)
 
     toggleSideBar_ = new QLabel(pClass_);
     toggleSideBar_->setFixedHeight(24);
-    toggleSideBar_->move(0, 0);
+    toggleSideBar_->move(2, 0);
     toggleSideBar_->setTextFormat(Qt::RichText);
     connect(toggleSideBar_, SIGNAL(linkActivated(QString)),
             this, SLOT(handleShowSideBarButton(QString)));

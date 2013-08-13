@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "row.h"
 #include "ui_mainwindow.h"
 #include "tabwidgetelement.h"
 #include "extensionsystem/pluginmanager.h"
@@ -6,9 +7,10 @@
 #include "kumirprogram.h"
 #include "dataformats/kumfile.h"
 #include "statusbar.h"
-
+#include "tabwidget.h"
 
 #include <algorithm>
+#include <QSharedPointer>
 
 namespace CoreGUI {
 
@@ -17,13 +19,46 @@ MainWindow::MainWindow(Plugin * p) :
     QMainWindow(0),
     ui(new Ui::MainWindow),
     m_plugin(p),
-    statusBar_(new StatusBar)
+    statusBar_(new StatusBar),
+    tabWidget_(0),
+    prevBottomSize_(200)
 {
+    ui->setupUi(this);
+    connect(ui->splitter, SIGNAL(splitterMoved(int,int)), this, SLOT(handleSplitterMoved(int,int)));
+
+    centralRow_ = new Row(this, "MainWindow/CentralRow");
+    bottomRow_ = new Row(this, "MainWindow/BottomRow");
+    connect(bottomRow_, SIGNAL(visiblityRequest()), this, SLOT(ensureBottomVisible()));
+
+    ui->splitter->addWidget(centralRow_);
+    ui->splitter->addWidget(bottomRow_);
+
+    tabWidget_ = new TabWidget(this);
+    centralRow_->addComponent(tabWidget_, true);
+
+    helpPlace_ = new Widgets::DockWindowPlace(this, "MainWindow/HelpDockPlace");
+    centralRow_->addComponent(helpPlace_, false);
+    connect(helpPlace_, SIGNAL(visiblityRequest(bool,QSize)), centralRow_, SLOT(handleVisiblityRequest(bool,QSize)));
+
+    debuggerPlace_ = new Widgets::DockWindowPlace(this, "MainWindow/DebuggerDockPlace");
+    bottomRow_->addComponent(debuggerPlace_, false);
+    connect(debuggerPlace_, SIGNAL(visiblityRequest(bool,QSize)), bottomRow_, SLOT(handleVisiblityRequest(bool,QSize)));
+
+    consoleAndCourcesPlace_ = new Widgets::DockWindowPlace(this, "MainWindow/ConsoleDockPlace");
+    bottomRow_->addComponent(consoleAndCourcesPlace_, true);
+    connect(consoleAndCourcesPlace_, SIGNAL(visiblityRequest(bool,QSize)), bottomRow_, SLOT(handleVisiblityRequest(bool,QSize)));
+
+    actorsPlace_ = new Widgets::DockWindowPlace(this, "MainWindow/ActorsDockPlace");
+    bottomRow_->addComponent(actorsPlace_, false);
+    connect(actorsPlace_, SIGNAL(visiblityRequest(bool,QSize)), bottomRow_, SLOT(handleVisiblityRequest(bool,QSize)));
+
+    connect(ui->actionShow_Console_Pane, SIGNAL(triggered(bool)), this, SLOT(setBottomVisible(bool)));
+
     setStatusBar(statusBar_);
     setMinimumHeight(380);
     b_notabs = false;
     b_workspaceSwitching = false;
-    ui->setupUi(this);
+
 
     const QString qtcreatorIconsPath = QApplication::instance()->property("sharePath")
             .toString() + "/icons/from_qtcreator/";
@@ -44,12 +79,12 @@ MainWindow::MainWindow(Plugin * p) :
 
     connect(ui->actionSwitch_workspace, SIGNAL(triggered()), this, SLOT(switchWorkspace()));
 
-    connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTab(int)));
-    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupActionsForTab()));
-    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupContentForTab()));
-    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setupStatusbarForTab()));
-    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(checkCounterValue()));
-    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(setTitleForTab(int)));
+    connect(tabWidget_, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTab(int)));
+    connect(tabWidget_, SIGNAL(currentChanged(int)), this, SLOT(setupActionsForTab()));
+    connect(tabWidget_, SIGNAL(currentChanged(int)), this, SLOT(setupContentForTab()));
+    connect(tabWidget_, SIGNAL(currentChanged(int)), this, SLOT(setupStatusbarForTab()));
+    connect(tabWidget_, SIGNAL(currentChanged(int)), this, SLOT(checkCounterValue()));
+    connect(tabWidget_, SIGNAL(currentChanged(int)), this, SLOT(setTitleForTab(int)));
 
     QObject * runnerObject =
             ExtensionSystem::PluginManager::instance()->findKPlugin<Shared::RunInterface>();
@@ -129,8 +164,8 @@ MainWindow::MainWindow(Plugin * p) :
         connect(ui->actionRestore_previous_session, SIGNAL(triggered()), this, SLOT(restoreSession()));
     }
 
-    ui->tabWidget->setAcceptDrops(true);
-    ui->tabWidget->installEventFilter(this);
+    tabWidget_->setAcceptDrops(true);
+    tabWidget_->installEventFilter(this);
 
 
     using namespace Shared;
@@ -176,7 +211,7 @@ QSize MainWindow::minimumSizeHint() const
     int minH = qMax(200, centralWidget()->minimumHeight()) +
             ui->menubar->height() +
             statusBar_->minimumHeight() + 10;
-    int minDockedH = m_plugin->m_terminal->minimumHeight();
+    int minDockedH = m_plugin->terminal_->minimumHeight();
     int minDockedW = 0;
     for (int i=0; i<m_plugin->secondaryWindows_.size(); i++) {
         Widgets::SecondaryWindow * w = m_plugin->secondaryWindows_[i];
@@ -185,7 +220,7 @@ QSize MainWindow::minimumSizeHint() const
             minDockedW = qMax(minDockedW, w->minimumWidth());
         }
     }
-    int minBottom = m_plugin->m_terminal->minimumWidth() +
+    int minBottom = m_plugin->terminal_->minimumWidth() +
             minDockedW + 10;
     minW = qMax(minW, minBottom);
     minH += minDockedH;
@@ -220,7 +255,7 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
         }
     }
 #endif
-    if (e->type() == QEvent::DragEnter && o == ui->tabWidget) {
+    if (e->type() == QEvent::DragEnter && o == tabWidget_) {
         QDragEnterEvent * event = static_cast<QDragEnterEvent*>(e);
         const QMimeData * data = event->mimeData();
         if (data->hasUrls() && data->urls().size()>0)
@@ -261,7 +296,7 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
             return true;
         }
     }
-    if (e->type() == QEvent::Drop && o == ui->tabWidget) {
+    if (e->type() == QEvent::Drop && o == tabWidget_) {
 //        qDebug() << "Drop!";
         QDropEvent * event = static_cast<QDropEvent*>(e);
         const QMimeData * data = event->mimeData();
@@ -301,8 +336,8 @@ void MainWindow::lockActions()
         ui->actionRecent_files->setEnabled(false);
     }
     else {
-        for (int i=0; i<ui->tabWidget->count(); i++) {
-            TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+        for (int i=0; i<tabWidget_->count(); i++) {
+            TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
             if (twe && twe->type==Program && twe->kumirProgram()) {
                 if (twe->kumirProgram()->isRunning()) {
                     twe->setProperty("uncloseable", true);
@@ -327,8 +362,8 @@ void MainWindow::unlockActions()
         ui->actionRecent_files->setEnabled(true);
     }
     else {
-        for (int i=0; i<ui->tabWidget->count(); i++) {
-            TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+        for (int i=0; i<tabWidget_->count(); i++) {
+            TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
             if (twe && twe->type==Program && twe->kumirProgram()) {
                 twe->setProperty("uncloseable", false);
             }
@@ -339,10 +374,10 @@ void MainWindow::unlockActions()
 
 void MainWindow::activateDocumentTab(int documentId)
 {
-    for (int i=0; i<ui->tabWidget->count(); i++) {
-        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+    for (int i=0; i<tabWidget_->count(); i++) {
+        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
         if (twe && twe->type == Program && twe->documentId==documentId) {
-            ui->tabWidget->setCurrentIndex(i);
+            tabWidget_->setCurrentIndex(i);
             return;
         }
     }
@@ -354,31 +389,18 @@ void MainWindow::checkCounterValue()
     using namespace Shared;
     GlobalState state = PluginManager::instance()->currentGlobalState();
     if (state==GS_Unlocked) {
-        if (ui->tabWidget->count()==0)
+        if (tabWidget_ && tabWidget_->count()==0)
             return;
-        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
         if (!twe)
             return;
         if (twe->type==Program) {
             int id = twe->documentId;
             quint32 errorsCount = m_plugin->plugin_editor->errorsLinesCount(id);
             statusBar_->setErrorsCounter(errorsCount);
-//            if (errorsCount==0) {
-//                m_plugin->m_genericCounterLabel->setText(tr("No errors"));
-//                m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS);
-//            }
-//            else {
-//                m_plugin->m_genericCounterLabel->setText(tr("Errors: %1").arg(errorsCount));
-//                m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS+
-//                                                               "QLabel {"
-//                                                               "    color: red;"
-//                                                               "}"
-//                                                               );
-//            }
         }
         else {
             statusBar_->setErrorsCounter(0);
-//            m_plugin->m_genericCounterLabel->setText("");
         }
     }
     else {
@@ -394,9 +416,6 @@ void MainWindow::checkCounterValue()
                 stepsDone = 0;  // just begin of evaluation
             }
             statusBar_->setStepsDoneCounter(stepsDone);
-//            const QString text = tr("Steps done: %1").arg(stepsDone);
-//            m_plugin->m_genericCounterLabel->setText(text);
-//            m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS);
         }
     }
 }
@@ -417,7 +436,7 @@ void MainWindow::clearMessage()
 
 void MainWindow::setFocusOnCentralWidget()
 {
-    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
     if (twe)
         twe->component->setFocus();
 }
@@ -432,7 +451,7 @@ void MainWindow::timerEvent(QTimerEvent *e)
 
 bool MainWindow::saveCurrentFile()
 {
-    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
     if (twe->type==WWW)
         return true;
     const QString fileName = twe->url.toLocalFile();
@@ -445,16 +464,16 @@ bool MainWindow::saveCurrentFile()
     }
     if (result) {
 //        twe->setProperty("title", QFileInfo(twe->property("realFileName").toString()).fileName());
-        setTitleForTab(ui->tabWidget->currentIndex());
+        setTitleForTab(tabWidget_->currentIndex());
     }
     return result;
 }
 
 void MainWindow::setTitleForTab(int index)
 {
-    if (index<0 || index>=ui->tabWidget->count())
+    if (index<0 || index>=tabWidget_->count())
         return;
-    QWidget * currentTabWidget = ui->tabWidget->widget(index);
+    QWidget * currentTabWidget = tabWidget_->widget(index);
 
     if (!currentTabWidget)
         return;
@@ -470,12 +489,12 @@ void MainWindow::setTitleForTab(int index)
         appName = analizer->languageName();
     }
     setWindowTitle(title + " - "+ appName);
-    ui->tabWidget->setTabText(index, title);
+    tabWidget_->setTabText(index, title);
 }
 
 void MainWindow::setupActionsForTab()
 {
-    QWidget * currentTabWidget = ui->tabWidget->currentWidget();
+    QWidget * currentTabWidget = tabWidget_->currentWidget();
 
     if (!currentTabWidget)
         return;
@@ -493,14 +512,14 @@ void MainWindow::setupActionsForTab()
 
 void MainWindow::setupStatusbarForTab()
 {
-    for (int i=0; i<ui->tabWidget->count(); i++) {
+    for (int i=0; i<tabWidget_->count(); i++) {
         TabWidgetElement * w =
-                qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+                qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
         if (w && w->component) {
             w->component->disconnect(statusBar_);
         }
     }
-    QWidget * currentTabWidget = ui->tabWidget->currentWidget();
+    QWidget * currentTabWidget = tabWidget_->currentWidget();
     if (!currentTabWidget)
         return;
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
@@ -558,7 +577,7 @@ void MainWindow::loadRecentFile()
 void MainWindow::prepareRunMenu()
 {
     ui->menuRun->clear();
-    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
     if (!twe)
         return;
     if (twe->type==Program) {
@@ -571,7 +590,7 @@ void MainWindow::prepareRunMenu()
 
 void MainWindow::prepareEditMenu()
 {
-    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
     QMenu * tabMenu = 0;
 
     if (twe->type!=WWW) {
@@ -597,7 +616,7 @@ void MainWindow::prepareInsertMenu()
     if (!ui->menuInsert) {
         return;
     }
-    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
     QMenu * tabMenu = 0;
 
     if (twe->type!=WWW) {
@@ -626,7 +645,7 @@ bool MainWindow::saveCurrentFileAs()
             PluginManager::instance()->findPlugin<AnalizerInterface>();
     const QString languageName = analizer->languageName();
     const QString fileNameSuffix = analizer->defaultDocumentFileNameSuffix();
-    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
     QString fileName = twe->property("realFileName").toString();
     QString initialPath;
     if (fileName.isEmpty()) {
@@ -660,11 +679,11 @@ bool MainWindow::saveCurrentFileAs()
             twe->setProperty("fileName", fileName);
             twe->setProperty("realFileName", fileName);
             twe->setProperty("title", QFileInfo(fileName).fileName());
-            int index = ui->tabWidget->indexOf(twe);
-            ui->tabWidget->setTabText(index, QFileInfo(fileName).fileName());
+            int index = tabWidget_->indexOf(twe);
+            tabWidget_->setTabText(index, QFileInfo(fileName).fileName());
             addToRecent(fileName);
             m_plugin->mySettings()->setValue(Plugin::RecentFileKey, fileName);
-            setTitleForTab(ui->tabWidget->currentIndex());
+            setTitleForTab(tabWidget_->currentIndex());
             return true;
         }
     }
@@ -673,7 +692,7 @@ bool MainWindow::saveCurrentFileAs()
 
 bool MainWindow::saveCurrentFileTo(const QString &fileName)
 {
-    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
     int documentId = twe->documentId;
     QString error = m_plugin->plugin_editor->saveDocument(documentId, fileName);
     if (error.isEmpty()) {
@@ -691,8 +710,8 @@ bool MainWindow::saveCurrentFileTo(const QString &fileName)
 void MainWindow::handleDocumentCleanChanged(bool v)
 {
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(sender());
-    int index = ui->tabWidget->indexOf(twe);
-    QString text = ui->tabWidget->tabText(index);
+    int index = tabWidget_->indexOf(twe);
+    QString text = tabWidget_->tabText(index);
     if (text.endsWith("*"))
         text = text.left(text.length()-1);
     if (!v)
@@ -704,23 +723,23 @@ void MainWindow::handleDocumentCleanChanged(bool v)
 void MainWindow::handleTabTitleChange(const QString &title)
 {
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(sender());
-    int index = ui->tabWidget->indexOf(twe);
+    int index = tabWidget_->indexOf(twe);
     twe->setProperty("title", title);
     setTitleForTab(index);
 }
 
 void MainWindow::closeCurrentTab()
 {
-    closeTab(ui->tabWidget->currentIndex());
-    if (ui->tabWidget->currentWidget())
-        ui->tabWidget->currentWidget()->setFocus();
+    closeTab(tabWidget_->currentIndex());
+    if (tabWidget_->currentWidget())
+        tabWidget_->currentWidget()->setFocus();
 }
 
 bool MainWindow::closeTab(int index)
 {
-    if (index==-1 || index>=ui->tabWidget->count())
+    if (index==-1 || index>=tabWidget_->count())
         return true;
-    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(index));
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(index));
     if (twe->property("uncloseable").toBool()) {
         return false;
     }
@@ -732,7 +751,7 @@ bool MainWindow::closeTab(int index)
             r = QMessageBox::Discard;
         }
         else {
-            ui->tabWidget->setCurrentIndex(index);
+            tabWidget_->setCurrentIndex(index);
             QMessageBox messageBox(
                         QMessageBox::Question,
                         tr("Close editor"),
@@ -760,13 +779,13 @@ bool MainWindow::closeTab(int index)
         }
         if (r==QMessageBox::Discard) {
             m_plugin->plugin_editor->closeDocument(documentId);
-            ui->tabWidget->removeTab(index);
+            tabWidget_->removeTab(index);
             return true;
         }
         else if (r==QMessageBox::Save) {
             if (saveCurrentFile()) {
                 m_plugin->plugin_editor->closeDocument(documentId);
-                ui->tabWidget->removeTab(index);
+                tabWidget_->removeTab(index);
                 return true;
             }
             else {
@@ -778,7 +797,7 @@ bool MainWindow::closeTab(int index)
         }
     }
     else {
-        ui->tabWidget->removeTab(index);
+        tabWidget_->removeTab(index);
         return true;
     }
 
@@ -805,7 +824,7 @@ void MainWindow::newProgram()
 {
     using namespace ExtensionSystem;
     using namespace Shared;
-    if (b_notabs && !closeTab(ui->tabWidget->currentIndex())) {
+    if (b_notabs && !closeTab(tabWidget_->currentIndex())) {
         return;
     }
     AnalizerInterface * analizer =
@@ -838,7 +857,7 @@ void MainWindow::newProgram()
                 type,
                 true);
     e->documentId = doc.id;
-    ui->tabWidget->setCurrentWidget(e);
+    tabWidget_->setCurrentWidget(e);
     e->setFocus();
 
 }
@@ -873,10 +892,10 @@ void MainWindow::newText(const QString &fileName, const QString & text)
                 Text,
                 true);
     e->documentId = doc.id;
-    ui->tabWidget->setCurrentWidget(e);
+    tabWidget_->setCurrentWidget(e);
     if (!text.isEmpty()) {
-        ui->tabWidget->setTabText(ui->tabWidget->currentIndex(),
-                                  ui->tabWidget->tabText(ui->tabWidget->currentIndex())
+        tabWidget_->setTabText(tabWidget_->currentIndex(),
+                                  tabWidget_->tabText(tabWidget_->currentIndex())
                                   +"*");
     }
     e->setFocus();
@@ -890,8 +909,8 @@ QString MainWindow::suggestNewFileName(const QString &suffix, const QString & di
     else
         d = QDir(dirName);
     QStringList fileNames = d.entryList(QStringList() << "*"+suffix);
-    for (int i=0; i<ui->tabWidget->count(); i++) {
-        fileNames << ui->tabWidget->tabText(i);
+    for (int i=0; i<tabWidget_->count(); i++) {
+        fileNames << tabWidget_->tabText(i);
     }
     QString result = "newfile";
     int index = 0;
@@ -934,7 +953,7 @@ TabWidgetElement * MainWindow::addCentralComponent(
     connect(element, SIGNAL(changeTitle(QString)), this, SLOT(handleTabTitleChange(QString)));
     connect(element, SIGNAL(documentCleanChanged(bool)), this, SLOT(handleDocumentCleanChanged(bool)));
     createTopLevelMenus(menus, true);
-    ui->tabWidget->addTab(element, title);
+    tabWidget_->addTab(element, title);
 
 
     return element;
@@ -981,7 +1000,7 @@ void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
 
 void MainWindow::setupContentForTab()
 {
-    QWidget * currentTabWidget = ui->tabWidget->currentWidget();
+    QWidget * currentTabWidget = tabWidget_->currentWidget();
 
     if (!currentTabWidget)
         return;
@@ -1004,7 +1023,7 @@ void MainWindow::setupContentForTab()
 
 void MainWindow::disableTabs()
 {
-    ui->tabWidget->disableTabs();
+    tabWidget_->disableTabs();
     b_notabs = true;
     ui->actionClose->setVisible(false);
     ui->actionClose->setEnabled(false);
@@ -1014,51 +1033,51 @@ void MainWindow::disableTabs()
     ui->actionSave_all->setVisible(false);
 }
 
+void MainWindow::updateSettings(SettingsPtr settings)
+{
+    if (settings_) saveSettings();
+    settings_ = settings;
+    centralRow_->updateSettings(settings);
+    bottomRow_->updateSettings(settings);
+    loadSettings();
+}
+
 void MainWindow::loadSettings()
 {
-    SettingsPtr sett = m_plugin->mySettings();
-    QRect r = sett->value(Plugin::MainWindowGeometryKey, QRect(-1,-1,0,0)).toRect();
+    QRect r = settings_->value(Plugin::MainWindowGeometryKey, QRect(-1,-1,0,0)).toRect();
     if (r.width()>0) {
         resize(r.size());
         move(r.topLeft());
     }
     QList<int> sizes;
     sizes << 0 << 0;
-    sizes[0] = sett->value(Plugin::MainWindowSplitterStateKey+"0", 0).toInt();
-    sizes[1] = sett->value(Plugin::MainWindowSplitterStateKey+"1", 0).toInt();
+    sizes[0] = settings_->value(Plugin::MainWindowSplitterStateKey+"0", 0).toInt();
+    sizes[1] = settings_->value(Plugin::MainWindowSplitterStateKey+"1", 0).toInt();
     if (sizes[0] + sizes[1] > 0) {
         ui->splitter->setSizes(sizes);
     }
+    prevBottomSize_ = settings_->value("SavedBottomSize", 200).toInt();
     ui->actionShow_Console_Pane->setChecked(sizes[1] > 0);
-    QList<int> sizes2;
-    sizes2 << 0 << 0 << 0;
-    sizes2[0] = sett->value("ConsoleSplitter0", 0).toInt();
-    sizes2[1] = sett->value("ConsoleSplitter1", ui->bottomWidget->width()).toInt();
-    sizes2[2] = sett->value("ConsoleSplitter2", 0).toInt();
-    m_plugin->bottomSplitter_->setSizes(sizes2);
 }
 
 void MainWindow::saveSettings()
 {
-    QRect r(pos(), size());
-    SettingsPtr sett = m_plugin->mySettings();
-    sett->setValue(Plugin::MainWindowGeometryKey, r);
+    QRect r(pos(), size());  
+    settings_->setValue(Plugin::MainWindowGeometryKey, r);
     const QList<int> sizes = ui->splitter->sizes();
-    sett->setValue(Plugin::MainWindowSplitterStateKey+"0", sizes[0]);
-    sett->setValue(Plugin::MainWindowSplitterStateKey+"1", sizes[1]);
-    const QList<int> sizes2 = m_plugin->bottomSplitter_->sizes();
-    sett->setValue("ConsoleSplitter0", sizes2[0]);
-    sett->setValue("ConsoleSplitter1", sizes2[1]);
-    sett->setValue("ConsoleSplitter2", sizes2[2]);
-
+    settings_->setValue(Plugin::MainWindowSplitterStateKey+"0", sizes[0]);
+    settings_->setValue(Plugin::MainWindowSplitterStateKey+"1", sizes[1]);
+    settings_->setValue("SavedBottomSize", prevBottomSize_);
+    centralRow_->save();
+    bottomRow_->save();
 }
 
 void MainWindow::restoreSession()
 {
 
     bool hasUnsavedChanges = false;
-    for (int i=0; i<ui->tabWidget->count(); i++) {
-        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+    for (int i=0; i<tabWidget_->count(); i++) {
+        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
         if (twe->type!=WWW) {
             int documentId = twe->property("documentId").toInt();
             hasUnsavedChanges = hasUnsavedChanges || m_plugin->plugin_editor->hasUnsavedChanges(documentId);
@@ -1086,14 +1105,14 @@ void MainWindow::restoreSession()
 
     int sessionIndex = 0;
 
-    for (int index=ui->tabWidget->count()-1; index>=0; index--) {
+    for (int index=tabWidget_->count()-1; index>=0; index--) {
 
-        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(index));
+        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(index));
         if (twe->type!=WWW) {
             int documentId = twe->property("documentId").toInt();
             m_plugin->plugin_editor->closeDocument(documentId);
         }
-        ui->tabWidget->removeTab(index);
+        tabWidget_->removeTab(index);
     }
 
     if (m_plugin->startPage_.widget) {
@@ -1156,7 +1175,7 @@ void MainWindow::restoreSession()
                 twe->component->setProperty("fileName", title);
                 twe->setProperty("realFileName", url);
                 twe->component->setProperty("realFileName", url);
-                ui->tabWidget->setTabText(ui->tabWidget->count()-1, QFileInfo(title).fileName());
+                tabWidget_->setTabText(tabWidget_->count()-1, QFileInfo(title).fileName());
                 m_plugin->plugin_editor->restoreState(doc.id, editorSession);
 
             }
@@ -1166,7 +1185,7 @@ void MainWindow::restoreSession()
         }
     }
 
-    ui->tabWidget->setCurrentIndex(sessionIndex);
+    tabWidget_->setCurrentIndex(sessionIndex);
     setupContentForTab();
 
 }
@@ -1176,7 +1195,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
     saveSettings();
     m_plugin->saveSession();
     if (m_plugin->sessionsDisableFlag_ && b_notabs) {
-        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
         if (twe->type!=WWW) {
             int documentId = twe->documentId;
             bool notSaved = m_plugin->plugin_editor->hasUnsavedChanges(documentId);
@@ -1188,13 +1207,13 @@ void MainWindow::closeEvent(QCloseEvent *e)
     }
     QMessageBox::StandardButton r = QMessageBox::Discard;
     QStringList unsavedFiles;
-    for (int i=0; i<ui->tabWidget->count(); i++) {
-        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+    for (int i=0; i<tabWidget_->count(); i++) {
+        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
         if (twe->type!=WWW) {
             int documentId = twe->documentId;
             bool notSaved = m_plugin->plugin_editor->hasUnsavedChanges(documentId);
             if (notSaved) {
-                QString title = ui->tabWidget->tabText(i);
+                QString title = tabWidget_->tabText(i);
                 if (title.endsWith("*")) {
                     title = title.left(title.length()-1);
                 }
@@ -1237,8 +1256,8 @@ void MainWindow::closeEvent(QCloseEvent *e)
 
     if (r==QMessageBox::Save) {
         // Save files
-        for (int i=0; i<ui->tabWidget->count(); i++) {
-            ui->tabWidget->setCurrentIndex(i);
+        for (int i=0; i<tabWidget_->count(); i++) {
+            tabWidget_->setCurrentIndex(i);
             if (!saveCurrentFile()) {
                 e->ignore();
                 return;
@@ -1285,14 +1304,16 @@ void MainWindow::saveSession() const
     foreach (const QString e, es) {
         sessionDir.remove(e);
     }
-    for (int i=1; i<ui->tabWidget->count(); i++) {
+    centralRow_->save();
+    bottomRow_->save();
+    for (int i=1; i<tabWidget_->count(); i++) {
         const QString sessionFileName = QString("%1%2.document")
                 .arg(i, 2, 10, QChar('0'))
-                .arg(i==ui->tabWidget->currentIndex()? "-active" : "");
+                .arg(i==tabWidget_->currentIndex()? "-active" : "");
         QFile sessionFile(sessionDir.absoluteFilePath(sessionFileName));
         if (sessionFile.open(QIODevice::WriteOnly)) {
             QDataStream stream(&sessionFile);
-            TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+            TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
             if (twe->type==Program)
                 stream << QString("kumir");
             else if (twe->type==WWW)
@@ -1335,7 +1356,7 @@ void MainWindow::fileOpen()
     using namespace Shared;
     if (b_notabs) {
         TabWidgetElement * twe =
-                qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+                qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
         if (twe->type != WWW) {
             int documentId = twe->documentId;
             EditorInterface * editor =
@@ -1403,16 +1424,40 @@ void MainWindow::fileOpen()
 
 void MainWindow::ensureBottomVisible()
 {
-    ui->bottomWidget->setVisible(true);
-    int h = ui->bottomWidget->height();
-    QList<int> splitterItemHeights = ui->splitter->sizes();
-    if (splitterItemHeights[1] < h) {
-        int diff = h - splitterItemHeights[1];
-        splitterItemHeights[1] = h;
-        splitterItemHeights[0] -= diff;
-        ui->splitter->setSizes(splitterItemHeights);
-    }
     ui->actionShow_Console_Pane->setChecked(true);
+    setBottomVisible(true);
+}
+
+void MainWindow::handleSplitterMoved(int, int)
+{
+    ui->actionShow_Console_Pane->setChecked(ui->splitter->sizes()[1] > 0);
+}
+
+void MainWindow::setBottomVisible(bool v)
+{
+    if (v) {
+        int top = ui->splitter->sizes()[0];
+        int bottom = ui->splitter->sizes()[1];
+        int minTopH = ui->splitter->widget(0)->minimumSizeHint().height();
+        if (prevBottomSize_ == 0)
+            prevBottomSize_ = bottomRow_->minimumSizeHint().height();
+        int diff = prevBottomSize_ - bottom;
+        if (diff > 0) {
+            int spaceAtTop = top - minTopH;
+            int spaceToEat = qMin(diff, spaceAtTop);
+            top -= spaceToEat;
+            bottom += diff;
+            diff -= spaceToEat;
+            ui->splitter->setSizes(QList<int>() << top << bottom);
+        }
+    }
+    else {
+        int top = ui->splitter->sizes()[0];
+        int bottom = ui->splitter->sizes()[1];
+        prevBottomSize_ = bottom;
+        int summ = top + bottom;
+        ui->splitter->setSizes(QList<int>() << summ << 0);
+    }
 }
 
 QStringList MainWindow::recentFiles(bool fullPaths) const
@@ -1459,7 +1504,7 @@ void MainWindow::loadRecentFile(const QString & fullPath)
 {
     if (b_notabs) {
         TabWidgetElement * twe =
-                qobject_cast<TabWidgetElement*>(ui->tabWidget->currentWidget());
+                qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
         if (twe->type != WWW) {
             int documentId = twe->documentId;
             EditorInterface * editor =
@@ -1563,7 +1608,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             vc->setProperty("realFileName", url.toLocalFile());
             vc->setProperty("title", fileName);
             if (b_notabs) {
-                while(ui->tabWidget->count()) ui->tabWidget->removeTab(0);
+                while(tabWidget_->count()) tabWidget_->removeTab(0);
             }
             result = addCentralComponent(
                         fileName,
@@ -1575,8 +1620,8 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                         true);
             result->documentId = id;
             result->url = url;
-            ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
-            ui->tabWidget->currentWidget()->setFocus();
+            tabWidget_->setCurrentIndex(tabWidget_->count()-1);
+            tabWidget_->currentWidget()->setFocus();
             setupContentForTab();
         }
     }    
@@ -1597,7 +1642,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             vc->setProperty("title", fileName);
             m_plugin->plugin_editor->loadDocument(id, url.toLocalFile(), true);
             if (b_notabs) {
-                while(ui->tabWidget->count()) ui->tabWidget->removeTab(0);
+                while(tabWidget_->count()) tabWidget_->removeTab(0);
             }
             result = addCentralComponent(
                         fileName,
@@ -1609,14 +1654,14 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                         true);
             result->documentId = id;
             result->url = url;
-            ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
-            ui->tabWidget->currentWidget()->setFocus();
+            tabWidget_->setCurrentIndex(tabWidget_->count()-1);
+            tabWidget_->currentWidget()->setFocus();
         }
     }
     else if (type==WWW) {
         BrowserComponent browser = m_plugin->plugin_browser->createBrowser(url, m_plugin->m_browserObjects);
         if (b_notabs) {
-            while(ui->tabWidget->count()) ui->tabWidget->removeTab(0);
+            while(tabWidget_->count()) tabWidget_->removeTab(0);
         }
         result = addCentralComponent(
                     url.toString(),
@@ -1627,10 +1672,10 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                     WWW,
                     true);
         result->url = url;
-        ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
-        ui->tabWidget->currentWidget()->setFocus();
+        tabWidget_->setCurrentIndex(tabWidget_->count()-1);
+        tabWidget_->currentWidget()->setFocus();
     }
-    setTitleForTab(ui->tabWidget->currentIndex());
+    setTitleForTab(tabWidget_->currentIndex());
     ExtensionSystem::PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);
     return result;
 }
@@ -1641,9 +1686,9 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
 {
     typedef GuiInterface::ProgramSourceText ST;
     TabWidgetElement * result = nullptr;
-    for (int i=0; i<ui->tabWidget->count(); i++) {
+    for (int i=0; i<tabWidget_->count(); i++) {
         TabWidgetElement * courseTab =
-                qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+                qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
         if (courseTab && courseTab->isCourseManagerTab()) {
             result = courseTab;
             break;
@@ -1690,7 +1735,7 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
         vc->setProperty("fromCourseManager", true);
         vc->setProperty("realFileName", data.url.toLocalFile());
     }
-    ui->tabWidget->setCurrentWidget(result);
+    tabWidget_->setCurrentWidget(result);
     return result;
 }
 
@@ -1701,9 +1746,9 @@ MainWindow::courseManagerProgramSource() const
     ST result;
     result.language = ST::Kumir; // TODO implement for other languages
     TabWidgetElement * tab = nullptr;
-    for (int i=0; i<ui->tabWidget->count(); i++) {
+    for (int i=0; i<tabWidget_->count(); i++) {
         TabWidgetElement * courseTab =
-                qobject_cast<TabWidgetElement*>(ui->tabWidget->widget(i));
+                qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
         if (courseTab && courseTab->isCourseManagerTab()) {
             tab = courseTab;
             break;

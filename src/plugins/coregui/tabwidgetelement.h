@@ -93,6 +93,7 @@ public:
 
         }
         l->addWidget(w);
+
     }
     QWidget * component;
     QList<QMenu*> menus;

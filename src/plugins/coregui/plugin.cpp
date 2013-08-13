@@ -5,6 +5,7 @@
 #include "debuggerview.h"
 #include "ui_mainwindow.h"
 #include "statusbar.h"
+#include "tabwidget.h"
 #ifdef Q_OS_MACX
 #include "mac-fixes.h"
 #endif
@@ -41,26 +42,6 @@ QString Plugin::DockFloatingKey = "DockWindow/Floating";
 QString Plugin::DockGeometryKey = "DockWindow/Geometry";
 QString Plugin::DockSideKey = "DockWindow/Side";
 
-
-class BottomRightTabWidget
-        : public QTabWidget
-{
-public:
-    inline BottomRightTabWidget(QWidget * parent)
-        : QTabWidget(parent)
-    {
-        setTabPosition(QTabWidget::South);
-    }
-protected:
-    inline void tabInserted(int)
-    {
-        tabBar()->setVisible(count() > 1);
-    }
-    inline void tabRemoved(int)
-    {
-        tabBar()->setVisible(count() > 1);
-    }
-};
 
 
 QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem::CommandLine &)
@@ -110,59 +91,13 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     plugin_browser = qobject_cast<BrowserInterface*>(myDependency("Browser"));
     if (!plugin_editor)
         return "Can't load editor plugin!";
-//    if (!plugin_NativeGenerator)
-//        return "Can't load c-generator plugin!";
-    connect(mainWindow_->ui->splitter, SIGNAL(splitterMoved(int,int)),
-            this, SLOT(handleMainSplitterMoved()));
-    m_terminal = new Term(mainWindow_);
-    m_terminal->sizePolicy().setHorizontalStretch(5);
-    m_terminal->sizePolicy().setHorizontalPolicy(QSizePolicy::Ignored);
-    connect(m_terminal, SIGNAL(showWindowRequest()), mainWindow_, SLOT(ensureBottomVisible()));
+    terminal_ = new Term(mainWindow_);
+    mainWindow_->consoleAndCourcesPlace_->addPersistentWidget(terminal_);
+
+    connect(terminal_, SIGNAL(showWindowRequest()),
+            mainWindow_, SLOT(ensureBottomVisible()));
 
 
-    connect(m_terminal, SIGNAL(message(QString)),
-            mainWindow_, SLOT(showMessage(QString)));
-    int minimumTerminalHeight = m_terminal->minimumHeight();
-    mainWindow_->ui->bottomWidget->setMinimumHeight(minimumTerminalHeight);
-
-//    QDockWidget * termWindow = m_mainWindow->addSecondaryComponent(tr("Input/Output terminal"),
-//                                        m_terminal,
-//                                        QList<QAction*>(),
-//                                        QList<QMenu*>(),
-//                                        MainWindow::Terminal);
-    mainWindow_->ui->bottomWidget->setLayout(new QHBoxLayout);
-    QSplitter * bottomSplitter = new QSplitter(mainWindow_->ui->bottomWidget);
-    const QString bgColorName = mainWindow_->palette().brush(QPalette::Base).color().name();
-    bottomSplitter->setStyleSheet(QString::fromAscii(""
-                                  "QSplitter[stylable=\"true\"] {"
-                                  "    width: 16px;"
-                                  "    background-color: %1;"
-//                                  "    background-image: url(:/coregui/horizontal-splitter-background.png);"
-                                  "}"
-                                  "QSplitter[stylable=\"true\"]::handle {"
-                                  "    width: 16px;"
-                                  "    background-image: url(:/coregui/horizontal-splitter-handle.png);"
-                                  "}").arg(bgColorName)
-                );
-    bottomSplitter->setProperty("stylable", true);
-    bottomSplitter_ = bottomSplitter;
-    mainWindow_->ui->bottomWidget->layout()->setContentsMargins(0,0,0,0);
-//    m_mainWindow->ui->bottomWidget->layout()->addWidget(m_terminal);
-    mainWindow_->ui->bottomWidget->layout()->addWidget(bottomSplitter);
-    bottomSplitter->setOrientation(Qt::Horizontal);
-    bottomSplitter->addWidget(m_terminal);
-    actorsDockPlace_ = new BottomRightTabWidget(bottomSplitter);
-    actorsDockPlace_->setVisible(false);
-    bottomSplitter->addWidget(actorsDockPlace_);
-
-#ifndef Q_OS_MAC
-//    termWindow->toggleViewAction()->setShortcut(QKeySequence("F12"));
-#endif
-
-    connect(mainWindow_->ui->actionShow_Console_Pane,
-            SIGNAL(triggered(bool)),
-            this,
-            SLOT(showConsolePane(bool)));
 
     const QString qtcreatorIconsPath = QApplication::instance()->property("sharePath")
             .toString() + "/icons/from_qtcreator/";
@@ -184,19 +119,19 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     QMenu * menuSaveTerm = new QMenu(btnSaveTerm);
     btnSaveTerm->setToolTip("Save console output");
     btnSaveTerm->setMenu(menuSaveTerm);
-    btnSaveTerm->setIcon(m_terminal->actionSaveLast()->icon());
-    menuSaveTerm->addAction(m_terminal->actionSaveLast());
-    menuSaveTerm->addAction(m_terminal->actionSaveAll());
+    btnSaveTerm->setIcon(terminal_->actionSaveLast()->icon());
+    menuSaveTerm->addAction(terminal_->actionSaveLast());
+    menuSaveTerm->addAction(terminal_->actionSaveAll());
 //    mainWindow_->statusBar()->insertWidget(0, btnSaveTerm);
     mainWindow_->statusBar_->addButtonToLeft(btnSaveTerm);
     QToolButton * btnClearTerm = new QToolButton(mainWindow_);
-    m_terminal->actionClear()->setIcon(cleanConsoleIcon);
-    btnClearTerm->setDefaultAction(m_terminal->actionClear());
+    terminal_->actionClear()->setIcon(cleanConsoleIcon);
+    btnClearTerm->setDefaultAction(terminal_->actionClear());
 //    mainWindow_->statusBar()->insertWidget(1, btnClearTerm);
     mainWindow_->statusBar_->addButtonToLeft(btnClearTerm);
     if (!parameters.contains("notabs",Qt::CaseInsensitive)) {
         QToolButton * btnEditTerm = new QToolButton(mainWindow_);
-        btnEditTerm->setDefaultAction(m_terminal->actionEditLast());
+        btnEditTerm->setDefaultAction(terminal_->actionEditLast());
         mainWindow_->statusBar_->addButtonToLeft(btnEditTerm);
     }
 
@@ -204,7 +139,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     kumirProgram_ = new KumirProgram(this);
     kumirProgram_->setBytecodeGenerator(plugin_BytecodeGenerator);
     kumirProgram_->setEditorPlugin(plugin_editor);
-    kumirProgram_->setTerminal(m_terminal, 0);
+    kumirProgram_->setTerminal(terminal_, 0);
 
 
     connect(kumirProgram_, SIGNAL(giveMeAProgram()), this, SLOT(prepareKumirProgramToRun()), Qt::DirectConnection);
@@ -220,19 +155,16 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
     helpWindow_ = new Widgets::SecondaryWindow(
                 helpViewer_,
-                0,
+                mainWindow_->helpPlace_,
                 mainWindow_,
                 mySettings(),
-                "HelpViewerWindow");
-    secondaryWindows_ << helpWindow_;
+                "HelpViewerWindow");    
     helpWindow_->setWindowTitle(tr("Help"));
-
     helpWindow_->toggleViewAction()->setShortcut(QKeySequence("F1"));
     connect(mainWindow_->ui->actionUsage, SIGNAL(triggered()),
             helpWindow_->toggleViewAction(), SLOT(trigger()));
     connect(helpWindow_->toggleViewAction(), SIGNAL(toggled(bool)),
-            mainWindow_->ui->actionUsage, SLOT(setChecked(bool)));
-
+            mainWindow_->ui->actionUsage, SLOT(setChecked(bool)));    
 
 
     courseManager_ = ExtensionSystem::PluginManager::instance()
@@ -245,13 +177,12 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
         Widgets::SecondaryWindow * coursesWindow = new Widgets::SecondaryWindow(
                     courseManager_->mainWindow(),
-                    nullptr,
+                    mainWindow_->consoleAndCourcesPlace_,
                     mainWindow_,
                     mySettings(),
                     "CoursesWindow"
                     );
 
-        secondaryWindows_ << coursesWindow;
         mainWindow_->ui->menuWindow->addAction(coursesWindow->toggleViewAction());
         mainWindow_->gr_otherActions->addAction(coursesWindow->toggleViewAction());
     }
@@ -279,29 +210,14 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 //                                                QList<QAction*>(),
 //                                                actorMenus,
 //                                                priv? MainWindow::StandardActor : MainWindow::WorldActor);
-            QWidget * place = new QWidget(actorsDockPlace_);
-            place->installEventFilter(this);
-            place->setLayout(new QHBoxLayout);
-            place->layout()->setContentsMargins(0,0,0,0);
-            place->sizePolicy().setHorizontalStretch(1);
-            place->sizePolicy().setHorizontalPolicy(QSizePolicy::Fixed);
-//            bottomSplitter->addWidget(place);
-            place->setWindowTitle(actor->name());
-            place->setVisible(false);
-
             Widgets::SecondaryWindow * actorWindow = new Widgets::SecondaryWindow(
                         actorWidget,
-                        place,
+                        mainWindow_->actorsPlace_,
                         mainWindow_,
                         o->pluginSettings(),
-                        o->pluginSpec().name,
-                        true, true
+                        o->pluginSpec().name
                         );
-            connect(actorWindow, SIGNAL(docked(QWidget*,QString)),
-                    this, SLOT(handleSecondaryWindowDocked(QWidget*,QString)));
-            connect(actorWindow, SIGNAL(undocked(QWidget*)),
-                    this, SLOT(handleSecondaryWindowUndocked(QWidget*)));
-            secondaryWindows_ << actorWindow;
+
             const QString actorName = actor->name();
             actorWindow->setWindowTitle(actorName);
             w = actorWindow;
@@ -325,11 +241,9 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             if (actor->pultWidget()) {
                 Widgets::SecondaryWindow * pultWindow = new Widgets::SecondaryWindow(
                             actor->pultWidget(),
-                            NULL,
                             mainWindow_,
                             mySettings(),
-                            actor->name()+"Pult", false, false);
-                secondaryWindows_ << pultWindow;
+                            actor->name()+"Pult");
                 pultWindow->setWindowTitle(actor->name()+" - "+tr("Remote Control"));
                 mainWindow_->ui->menuWindow->addAction(pultWindow->toggleViewAction());
                 if (!actor->pultIconName().isEmpty()) {
@@ -358,33 +272,18 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         mainWindow_->disableTabs();
     }
 
-    connect(m_terminal, SIGNAL(openTextEditor(QString,QString)),
+    connect(terminal_, SIGNAL(openTextEditor(QString,QString)),
             mainWindow_, SLOT(newText(QString,QString)));
-
-    debuggerPlace_ = new QWidget(mainWindow_);
-    debuggerPlace_->setLayout(new QHBoxLayout);
-    debuggerPlace_->layout()->setContentsMargins(0,0,0,0);
-    debuggerPlace_->sizePolicy().setHorizontalStretch(1);
-    debuggerPlace_->sizePolicy().setHorizontalPolicy(QSizePolicy::Fixed);
-    bottomSplitter->insertWidget(0, debuggerPlace_);
-    debuggerPlace_->setVisible(false);
-
 
     debugger_ = new DebuggerView(plugin_kumirCodeRun);
     Widgets::SecondaryWindow * debuggerWindow = new Widgets::SecondaryWindow(
                 debugger_,
-                debuggerPlace_,
+                mainWindow_->debuggerPlace_,
                 mainWindow_,
                 mySettings(),
                 "DebuggerWindow");
 
-    connect(debuggerWindow, SIGNAL(docked(QWidget*,QString)),
-            this, SLOT(handleDebuggerDocked(QWidget*)));
 
-    connect(debuggerWindow, SIGNAL(undocked(QWidget*)),
-            this, SLOT(handleDebuggerUndocked(QWidget*)));
-
-    secondaryWindows_ << debuggerWindow;
     debuggerWindow->setWindowTitle(tr("Variables"));
     debuggerWindow->toggleViewAction()->setShortcut(QKeySequence("F2"));
     connect(mainWindow_->ui->actionVariables, SIGNAL(triggered()),
@@ -448,124 +347,14 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     return "";
 }
 
-void Plugin::handleDebuggerDocked(QWidget *w)
-{
-    debuggerPlace_->setVisible(true);
-    QList<int> bottomSplitterSizes = bottomSplitter_->sizes();
-    int totalWidth = bottomSplitterSizes[0] + bottomSplitterSizes[1];
-    bottomSplitterSizes[0] = w->minimumSizeHint().width();
-    bottomSplitterSizes[1] = totalWidth - bottomSplitterSizes[0];
-    bottomSplitter_->setSizes(bottomSplitterSizes);
-    mainWindow_->ui->actionShow_Console_Pane->setChecked(true);
-    showConsolePane(true);
-}
-
-void Plugin::handleSecondaryWindowDocked(QWidget * w, const QString & title)
-{    
-    bool alreadyInDock = false;
-    for (int i=0; i<actorsDockPlace_->count(); i++) {
-        const QWidget * child = actorsDockPlace_->widget(i);
-        if (child == w) {
-            alreadyInDock = true;
-        }
-    }
-    const QString tabTitle = w->windowTitle();
-    if (!alreadyInDock) {
-        actorsDockPlace_->addTab(w, tabTitle);
-    }
-    const int index = actorsDockPlace_->indexOf(w);
-    actorsDockPlace_->setCurrentIndex(index);
-    actorsDockPlace_->setVisible(true);
-
-    QList<int> bottomSplitterSizes = bottomSplitter_->sizes();
-    int totalWidth = bottomSplitterSizes[1] + bottomSplitterSizes[2];
-    bottomSplitterSizes[2] = w->minimumSizeHint().width();
-    bottomSplitterSizes[1] = totalWidth - bottomSplitterSizes[2];
-    bottomSplitter_->setSizes(bottomSplitterSizes);
-    mainWindow_->ui->actionShow_Console_Pane->setChecked(true);
-    showConsolePane(true);
-}
-
-void Plugin::handleDebuggerUndocked(QWidget *w)
-{
-    debuggerPlace_->setVisible(false);
-    if (!actorsDockPlace_->isVisible() && m_terminal->isEmpty()) {
-        mainWindow_->ui->actionShow_Console_Pane->setChecked(false);
-        showConsolePane(false);
-    }
-}
-
-void Plugin::handleSecondaryWindowUndocked(QWidget * w)
-{
-    int index = actorsDockPlace_->indexOf(w);
-    actorsDockPlace_->removeTab(index);
-    if (actorsDockPlace_->count() == 0) {
-        actorsDockPlace_->setVisible(false);
-        if (m_terminal->isEmpty() && !debuggerPlace_->isVisible()) {
-            mainWindow_->ui->actionShow_Console_Pane->setChecked(false);
-            showConsolePane(false);
-        }
-    }
-}
-
-void Plugin::showConsolePane(bool v)
-{
-    int minHeight = qMax(80, m_terminal->minimumHeight());
-    for (int i=0; i<actorsDockPlace_->count(); i++) {
-        QWidget * w = actorsDockPlace_->widget(i);
-        minHeight = qMax(minHeight, w->minimumSizeHint().height());
-    }
-    int curHeight = mainWindow_->ui->bottomWidget->height();
-    QList<int> sizes = mainWindow_->ui->splitter->sizes();
-    int totalSize = sizes[0] + sizes[1];
-    if (sizes[0] == 0) {
-        return;
-    }
-    if (v) {
-        if (curHeight < minHeight) {
-            sizes[1] = minHeight;
-            sizes[0] = totalSize - minHeight;
-            mainWindow_->ui->splitter->setSizes(sizes);
-        }
-    }
-    else {
-        sizes[1] = 0;
-        sizes[0] = totalSize;
-        mainWindow_->ui->splitter->setSizes(sizes);
-    }
-    mainWindow_->ui->actionShow_Console_Pane->setChecked(v);
-//    if (v && mainWindow_->height() - mainWindow_->minimumSizeHint().height() < 10) {
-//        int minH = qMax(80, m_terminal->minimumSizeHint().height());
-//        for (int i=0; i<actorsDockPlace_->count(); i++) {
-//            QWidget * w = actorsDockPlace_->widget(i);
-//            minH = qMax(minH, w->minimumSizeHint().height());
-//        }
-//        const QSize newSize = QSize(
-//                    qMax(mainWindow_->width(), mainWindow_->minimumSizeHint().width()),
-//                    mainWindow_->minimumSizeHint().height() + minH );
-//        QResizeEvent * request = new QResizeEvent(newSize, mainWindow_->size());
-//        QApplication::instance()->postEvent(mainWindow_, request);
-//    }
-}
-
-void Plugin::handleMainSplitterMoved()
-{
-    const QList<int> sizes = mainWindow_->ui->splitter->sizes();
-    const int bottomSize = sizes[1];
-    if (bottomSize == 0) {
-        mainWindow_->ui->actionShow_Console_Pane->setChecked(false);
-    }
-    else {
-        mainWindow_->ui->actionShow_Console_Pane->setChecked(true);
-    }
-}
-
 
 void Plugin::updateSettings()
 {
     foreach (Widgets::SecondaryWindow * window, secondaryWindows_) {
         window->setSettingsObject(mySettings());
     }
+    if (mainWindow_)
+        mainWindow_->updateSettings(mySettings());
     if (helpViewer_) {
         helpViewer_->updateSettings(mySettings(), "HelpViewer");
     }
@@ -603,7 +392,7 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
         mainWindow_->lockActions();
     }
     kumirProgram_->switchGlobalState(old, state);
-    m_terminal->changeGlobalState(old, state);
+    terminal_->changeGlobalState(old, state);
     mainWindow_->statusBar_->setState(state);
 
 
@@ -655,7 +444,7 @@ void Plugin::saveSession() const
 void Plugin::restoreSession()
 {
     if (!sessionsDisableFlag_) {
-        if (startPage_.widget && mainWindow_->ui->tabWidget->count()==0) {
+        if (startPage_.widget && mainWindow_->tabWidget_->count()==0) {
             mainWindow_->addCentralComponent(
                         tr("Start"),
                         startPage_.widget,

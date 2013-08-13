@@ -41,6 +41,7 @@ private:
     QString workDirPath_;
     QScopedPointer<QMutex> mutex_;
     QScopedPointer<QSettings> qsettings_;
+    QString settingsFile_;
 };
 
 } // namespace ExtensionSystem

@@ -12,6 +12,8 @@ class DebuggerView : public QTreeView
     Q_OBJECT
 public:
     explicit DebuggerView(Shared::RunInterface * runner, QWidget *parent = 0);
+    QSize minimumSizeHint() const;
+    QSize sizeHint() const;
     
 signals:
     

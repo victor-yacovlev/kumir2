@@ -1,9 +1,11 @@
 #ifndef COREGUI_MAINWINDOW_H
 #define COREGUI_MAINWINDOW_H
 
+#include "plugin.h"
+#include "widgets/dockwindowplace.h"
+
 #include <QtCore>
 #include <QtGui>
-#include "plugin.h"
 
 namespace ExtensionSystem {
     class VisualComponent;
@@ -18,7 +20,6 @@ using namespace ExtensionSystem;
 namespace Ui {
     class MainWindow;
 }
-
 
 
 class MainWindow : public QMainWindow
@@ -48,6 +49,7 @@ public slots:
     void lockActions();
     void unlockActions();
     void ensureBottomVisible();
+    void setBottomVisible(bool v);
     QStringList recentFiles(bool fullPaths) const;
     void loadRecentFile(const QString & fullPath);
     inline void loadFromUrl(const QString &s) { loadFromUrl(QUrl(s), true); }
@@ -79,6 +81,7 @@ public slots:
     void showUserManual();
     void showHelp();
     void activateDocumentTab(int documentId);
+    void updateSettings(ExtensionSystem::SettingsPtr settings);
 
 private slots:
     void loadRecentFile();
@@ -96,6 +99,7 @@ private slots:
     void addToRecent(const QString &fileName);
     void handleDocumentCleanChanged(bool v);
     void handleTabTitleChange(const QString & title);
+    void handleSplitterMoved(int, int);
 
 
 private:
@@ -130,6 +134,15 @@ private:
     Ui::MainWindow *ui;
     Plugin *m_plugin;
     class StatusBar * statusBar_;
+    class Row * bottomRow_;
+    class Row * centralRow_;
+    class TabWidget * tabWidget_;
+    Widgets::DockWindowPlace * helpPlace_;
+    Widgets::DockWindowPlace * debuggerPlace_;
+    Widgets::DockWindowPlace * actorsPlace_;
+    Widgets::DockWindowPlace * consoleAndCourcesPlace_;
+    ExtensionSystem::SettingsPtr settings_;
+    int prevBottomSize_;
 };
 
 

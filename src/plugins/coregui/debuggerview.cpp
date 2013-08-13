@@ -10,6 +10,21 @@ DebuggerView::DebuggerView(Shared::RunInterface * runner, QWidget *parent)
     setHeaderHidden(true);
 }
 
+QSize DebuggerView::minimumSizeHint() const
+{
+    return QSize(200, 300);
+}
+
+QSize DebuggerView::sizeHint() const
+{
+    QSize content;
+    if (debuggerEnabled_ && model()) {
+        content = sizeHintForIndex(rootIndex());
+    }
+    return QSize(qMax(content.width(), minimumSizeHint().width()),
+                 qMax(content.height(), minimumSizeHint().height()));
+}
+
 void DebuggerView::setDebuggerEnabled(bool enabled)
 {
     debuggerEnabled_ = enabled;

@@ -16,6 +16,7 @@ set(SOURCES
     aboutdialog.cpp
     statusbar.cpp
     debuggerview.cpp
+    row.cpp
 )
 
 set(EXTRA_LIBS
@@ -42,6 +43,7 @@ set(MOC_HEADERS
     tabwidgetelement.h
     statusbar.h
     debuggerview.h
+    row.h
 )
 
 set(FORMS
