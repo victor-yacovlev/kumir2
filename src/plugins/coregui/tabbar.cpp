@@ -8,13 +8,13 @@ TabBar::TabBar(QWidget *parent) :
     setTabsClosable(true);
 #ifdef Q_OS_MAC
     static const char * css =
-            "QTabBar::tab {"
-            "  min-width: 18ex;"
-            "  text-align: right;"
-            "}"
-            "QTabBar::tab:selected {"
-            "  background-color: $windowColor;"
-            "}"
+//            "QTabBar::tab {"
+//            "  min-width: 18ex;"
+//            "  text-align: right;"
+//            "}"
+//            "QTabBar::tab:selected {"
+//            "  background-color: $windowColor;"
+//            "}"
             "QTabBar::close-button {"
             "  image: url(:/coregui/close-tab.png);"
             "}"
@@ -44,6 +44,7 @@ TabBar::TabBar(QWidget *parent) :
     v_activeIcons = QVector<QIcon>(10);
     v_normalIcons = QVector<QIcon>(10);
     v_actions = QVector<QAction*>(10);
+#ifndef Q_OS_MAC
     for (int i=0; i<10; i++) {
         const QString text = i>0? QString::number(i) : "~";
         QFont f(font());
@@ -86,6 +87,7 @@ TabBar::TabBar(QWidget *parent) :
         addAction(toggleView);
         v_actions[i] = toggleView;
     }
+#endif
     setIconSize(QSize(16,16));
 }
 
@@ -114,6 +116,10 @@ void TabBar::handleChanged(int index)
     if (tabButton(0, QTabBar::RightSide)) {
         tabButton(0, QTabBar::RightSide)->resize(QSize(0,0));
         tabButton(0, QTabBar::RightSide)->setVisible(false);
+    }
+    if (tabButton(0, QTabBar::LeftSide)) {
+        tabButton(0, QTabBar::LeftSide)->resize(0, 0);
+        tabButton(0, QTabBar::LeftSide)->setVisible(false);
     }
 #ifndef Q_OS_MAC
     for (int i=0; i<qMin(count(),10); i++) {

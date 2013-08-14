@@ -25,12 +25,17 @@ MainWindow::MainWindow(Plugin * p) :
 {
     ui->setupUi(this);
     connect(ui->splitter, SIGNAL(splitterMoved(int,int)), this, SLOT(handleSplitterMoved(int,int)));
-
+    QWidget * centralContainer = new QWidget;
     centralRow_ = new Row(this, "MainWindow/CentralRow");
     bottomRow_ = new Row(this, "MainWindow/BottomRow");
     connect(bottomRow_, SIGNAL(visiblityRequest()), this, SLOT(ensureBottomVisible()));
-
-    ui->splitter->addWidget(centralRow_);
+    centralContainer->setLayout(new QVBoxLayout);
+    centralContainer->layout()->addWidget(centralRow_);
+    centralContainer->layout()->setContentsMargins(0, 0, 0, 0);
+#ifdef Q_OS_MAC
+    centralContainer->layout()->setContentsMargins(0, 8, 0, 0);
+#endif
+    ui->splitter->addWidget(centralContainer);
     ui->splitter->addWidget(bottomRow_);
 
     tabWidget_ = new TabWidget(this);
