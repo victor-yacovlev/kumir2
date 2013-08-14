@@ -10,12 +10,16 @@ namespace DocBookViewer {
 static const QString MainFontFamily =
         "Droid Serif,PT Serif,Garamond,Times New Roman,serif";
 
+#ifdef Q_OS_MAC
+static const QString MainFontSize = "14pt";
+static const QString CodeFontSize = "14pt";
+#else
 static const QString MainFontSize = "12pt";
+static const QString CodeFontSize = "12pt";
+#endif
 
 static const QString CodeFontFamily =
         "DejaVu Sans Mono,Liberation Mono,PT Sans Mono,Courier New,monospace";
-
-static const QString CodeFontSize = "12pt";
 
 bool ContentView::ExtraFontsLoaded_ = false;
 
