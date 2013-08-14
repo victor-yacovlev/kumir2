@@ -129,11 +129,30 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     btnClearTerm->setDefaultAction(terminal_->actionClear());
 //    mainWindow_->statusBar()->insertWidget(1, btnClearTerm);
     mainWindow_->statusBar_->addButtonToLeft(btnClearTerm);
+    QToolButton * btnEditTerm = nullptr;
     if (!parameters.contains("notabs",Qt::CaseInsensitive)) {
-        QToolButton * btnEditTerm = new QToolButton(mainWindow_);
+        btnEditTerm = new QToolButton(mainWindow_);
         btnEditTerm->setDefaultAction(terminal_->actionEditLast());
         mainWindow_->statusBar_->addButtonToLeft(btnEditTerm);
     }
+#ifdef Q_OS_MAC
+    static const char * statusBarButtonCSS =
+            "QToolButton {"
+            "   border: 0;"
+            "}"
+            "QToolButton:checked, QToolButton:pressed {"
+            "   border: 1px solid gray;"
+            "   border-radius: 5px;"
+            "   background-color: lightgray;"
+            "}"
+            ;
+    btnShowConsole->setStyleSheet(statusBarButtonCSS);
+    btnSaveTerm->setStyleSheet(statusBarButtonCSS);
+    btnClearTerm->setStyleSheet(statusBarButtonCSS);
+    if (btnEditTerm) {
+        btnEditTerm->setStyleSheet(statusBarButtonCSS);
+    }
+#endif
 
 
     kumirProgram_ = new KumirProgram(this);
