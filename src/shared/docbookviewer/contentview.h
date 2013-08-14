@@ -131,6 +131,8 @@ private /*fields*/:
     QUrl lastAnchorUrl_;
     bool ignoreClearAnchorUrl_;
 
+    static bool ExtraFontsLoaded_;
+
 private slots:
     void clearLastAnchorUrl();
     void handleInternalLink(const QUrl & url);
