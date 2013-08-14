@@ -418,8 +418,10 @@ void Plugin::start()
         if (!sessionsDisableFlag_) {
             ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
         }
-        updateSettings();
-        restoreSession();
+        else {
+            updateSettings();
+            restoreSession();
+        }
     }
     PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);
     mainWindow_->show();

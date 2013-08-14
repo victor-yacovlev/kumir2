@@ -16,7 +16,7 @@ Row::Row(QWidget *parent, const QString &settingsKey)
 
 void Row::updateSettings(ExtensionSystem::SettingsPtr settings)
 {
-    if (settings_) save();
+//    if (settings_) save();
     settings_ = settings;
     for (int i=0; i<count(); i++) {
         QWidget * w = widget(i);

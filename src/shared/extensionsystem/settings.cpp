@@ -30,6 +30,13 @@ QVariant Settings::value(const QString &key, const QVariant &default_) const
     return result;
 }
 
+void Settings::flush()
+{
+    mutex_->lock();
+    qsettings_->sync();
+    mutex_->unlock();
+}
+
 void Settings::changeWorkingDirectory(const QString &workDirPath)
 {
     workDirPath_ = workDirPath;

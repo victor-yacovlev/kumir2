@@ -127,7 +127,10 @@ bool PluginManager::showWorkspaceChooseOnLaunch() const
 
 void PluginManager::switchToDefaultWorkspace()
 {
-    d->changeWorkingDirectory(d->mySettings->value(SwitchWorkspaceDialog::CurrentWorkspaceKey, QString(QDir::homePath()+"/Kumir/")).toString());
+    const QString workDir = d->mySettings->value(
+                SwitchWorkspaceDialog::CurrentWorkspaceKey,
+                QString(QDir::homePath()+"/Kumir/")).toString();
+    d->changeWorkingDirectory(workDir);
 }
 
 bool PluginManager::showWorkspaceChooseDialog()
@@ -849,8 +852,10 @@ void PluginManager::shutdown()
 {
     for (int i=d->objects.size()-1; i>=0; i--) {
         KPlugin * p = d->objects[i];
-        if (!d->workspacePath.isEmpty()) {
+        SettingsPtr s = d->settings[i];
+        if (s) {
             d->objects[i]->saveSession();
+            s->flush();
         }
         p->stop();
         d->states[i] = KPlugin::Stopped;
@@ -860,13 +865,15 @@ void PluginManager::shutdown()
 
 void PluginManagerPrivate::changeWorkingDirectory(const QString &path)
 {
-    for (int i=0; i<objects.size(); i++) {
-        if (!workspacePath.isEmpty()) {
-            objects[i]->saveSession();
-        }
-        settings[i]->changeWorkingDirectory(path);
-    }
     workspacePath = path;
+    for (int i=0; i<objects.size(); i++) {
+        KPlugin * p = objects[i];
+        SettingsPtr s = settings[i];
+        if (s) {
+            p->saveSession();
+            s->changeWorkingDirectory(path);
+        }
+    }
     QDir::root().mkpath(path);
     QDir::setCurrent(path);
     QDir::current().mkdir(".settings");

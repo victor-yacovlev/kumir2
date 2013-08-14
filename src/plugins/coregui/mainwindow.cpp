@@ -1040,7 +1040,7 @@ void MainWindow::disableTabs()
 
 void MainWindow::updateSettings(SettingsPtr settings)
 {
-    if (settings_) saveSettings();
+//    if (settings_) saveSettings();
     settings_ = settings;
     centralRow_->updateSettings(settings);
     bottomRow_->updateSettings(settings);
@@ -1067,6 +1067,8 @@ void MainWindow::loadSettings()
 
 void MainWindow::saveSettings()
 {
+    if (!settings_)
+        return;
     QRect r(pos(), size());  
     settings_->setValue(Plugin::MainWindowGeometryKey, r);
     const QList<int> sizes = ui->splitter->sizes();
@@ -1079,7 +1081,8 @@ void MainWindow::saveSettings()
 
 void MainWindow::restoreSession()
 {
-
+    if (!settings_)
+        return;
     bool hasUnsavedChanges = false;
     for (int i=0; i<tabWidget_->count(); i++) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
@@ -1197,8 +1200,8 @@ void MainWindow::restoreSession()
 
 void MainWindow::closeEvent(QCloseEvent *e)
 {
-    saveSettings();
-    m_plugin->saveSession();
+//    saveSettings();
+//    m_plugin->saveSession();
     if (m_plugin->sessionsDisableFlag_ && b_notabs) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
         if (twe->type!=WWW) {

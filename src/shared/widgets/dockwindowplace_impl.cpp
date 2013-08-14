@@ -113,7 +113,7 @@ bool DockWindowPlaceImpl::isWindowDocked(const SecondaryWindow *window) const
 
 void DockWindowPlaceImpl::updateSettings(ExtensionSystem::SettingsPtr settings)
 {
-    if (settings_) saveState();
+//    if (settings_) saveState();
     settings_ = settings;
     foreach (QWidget * window , allWindows_) {
         SecondaryWindow * w = qobject_cast<SecondaryWindow*>(window);
