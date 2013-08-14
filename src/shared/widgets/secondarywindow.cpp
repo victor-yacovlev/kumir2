@@ -54,10 +54,36 @@ void SecondaryWindow::restoreState()
         const QRect r = pImpl_->settings_->value(
                     pImpl_->settingsKey_+"/WindowRect", QRect()
                     ).toRect();
+        QPoint position;
         if (r.isValid()) {
             resize(r.size());
-            move(r.topLeft());
+            position = r.topLeft();
         }
+        else {
+            int screenNumber = QApplication::desktop()->screenNumber(pImpl_->mainWindow_);
+            const QPoint screenCenter = QApplication::desktop()->screenGeometry(screenNumber).center();
+            position = screenCenter - QPoint(width()/2, height()/2);
+        }
+#ifdef Q_OS_MAC
+        static const int MenuBarOffset = 24;
+#else
+        static const int MenuBarOffset = 0;
+#endif
+        if (position.y() < MenuBarOffset) {
+            position.setY(MenuBarOffset);
+        }
+        int screenNumber = QApplication::desktop()->screenNumber(pImpl_->mainWindow_);
+        const QRect screenRect = QApplication::desktop()->screenGeometry(screenNumber);
+        const QPoint screenCenter = QApplication::desktop()->screenGeometry(screenNumber).center();
+        qDebug() << "Screen rect: " << screenRect;
+        if (position.x() + width() > screenRect.right()) {
+            position = screenCenter - QPoint(width()/2, height()/2);
+        }
+        if (position.y() + height() > screenRect.bottom()) {
+            position = screenCenter - QPoint(width()/2, height()/2);
+        }
+        move(position);
+        qDebug() << "Window " << pImpl_->settingsKey_ << " position: " << position;
     }
     else {
         bool visible = pImpl_->settings_->value(pImpl_->settingsKey_+"/Visible", false).toBool();
