@@ -63,7 +63,7 @@ protected:
     bool movingFlag_;
     QPoint p_start;
     class SecondaryWindowImpl *pWindowImpl_;
-    QWidget *window_;
+    QWidget *window_;    
 };
 
 class SecondaryWindowButton :
@@ -159,6 +159,7 @@ public:
 
     void timerEvent(QTimerEvent *);
     bool floating_;
+    QRect floatingRect_;
 };
 
 

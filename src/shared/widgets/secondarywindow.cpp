@@ -55,35 +55,31 @@ void SecondaryWindow::restoreState()
                     pImpl_->settingsKey_+"/WindowRect", QRect()
                     ).toRect();
         QPoint position;
+        QSize initialSize;
         if (r.isValid()) {
-            resize(r.size());
+            initialSize = r.size();
             position = r.topLeft();
         }
         else {
             int screenNumber = QApplication::desktop()->screenNumber(pImpl_->mainWindow_);
             const QPoint screenCenter = QApplication::desktop()->screenGeometry(screenNumber).center();
             position = screenCenter - QPoint(width()/2, height()/2);
+            initialSize = minimumSizeHint();
         }
 #ifdef Q_OS_MAC
         static const int MenuBarOffset = 24;
 #else
         static const int MenuBarOffset = 0;
 #endif
-        if (position.y() < MenuBarOffset) {
-            position.setY(MenuBarOffset);
-        }
+        initialSize.rwidth() = qMax(initialSize.width(), minimumSizeHint().width());
+        initialSize.rheight() = qMax(initialSize.height(), minimumSizeHint().height());
         int screenNumber = QApplication::desktop()->screenNumber(pImpl_->mainWindow_);
         const QRect screenRect = QApplication::desktop()->screenGeometry(screenNumber);
-        const QPoint screenCenter = QApplication::desktop()->screenGeometry(screenNumber).center();
-        qDebug() << "Screen rect: " << screenRect;
-        if (position.x() + width() > screenRect.right()) {
-            position = screenCenter - QPoint(width()/2, height()/2);
-        }
-        if (position.y() + height() > screenRect.bottom()) {
-            position = screenCenter - QPoint(width()/2, height()/2);
-        }
-        move(position);
-        qDebug() << "Window " << pImpl_->settingsKey_ << " position: " << position;
+        position.rx() = qMin(position.rx(), screenRect.right() - initialSize.width());
+        position.ry() = qMin(position.ry(), screenRect.bottom() - initialSize.height());
+        position.rx() = qMax(0, position.rx());
+        position.ry() = qMax(MenuBarOffset, position.ry());
+        pImpl_->floatingRect_ = QRect(position, initialSize);
     }
     else {
         bool visible = pImpl_->settings_->value(pImpl_->settingsKey_+"/Visible", false).toBool();
@@ -97,7 +93,9 @@ void SecondaryWindow::saveState()
     pImpl_->settings_->setValue(pImpl_->settingsKey_ + "/Floating",
                                 isFloating());
     if (isFloating()) {
-        const QRect r(x(), y(), width(), height());
+        QPoint position = pos();
+        QSize sz = size();
+        const QRect r(position, sz);
         pImpl_->settings_->setValue(pImpl_->settingsKey_+"/WindowRect", r);
     }
 
@@ -167,6 +165,9 @@ void SecondaryWindow::close()
     if (!isFloating()) {
         pImpl_->dockPlace_->undockWindow(this);
     }
+    else {
+        pImpl_->floatingRect_ = geometry();
+    }
     saveState();
 }
 
@@ -191,8 +192,10 @@ void SecondaryWindow::activate()
 {
     if (!isVisible())
         setVisible(true);
-    if (isFloating())
+    if (isFloating()) {
+        setGeometry(pImpl_->floatingRect_);
         activateWindow();
+    }
     else {
         pImpl_->dockPlace_->dockWindow(this, true);
     }
