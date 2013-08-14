@@ -15,6 +15,7 @@ class PrintRenderer
 {
 public:
     static PrintRenderer* self();
+    bool isEmpty() const;
     void reset();
     void renderData(ModelPtr data);
     void setBaseFont(QFont font);

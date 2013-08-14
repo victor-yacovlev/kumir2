@@ -20,7 +20,7 @@ class ContentView
     Q_OBJECT
 public:
     explicit ContentView(QWidget * parent);
-
+    bool isEmpty() const;
     void reset();
     void renderData(ModelPtr data);
     QSize minimumSizeHint() const;
@@ -33,9 +33,9 @@ private:
     void wheelEvent(QWheelEvent *e);
 
     QString wrapHTML(const QString & body) const;
-    QString render(ModelPtr data) const;
+    QString renderModel(ModelPtr data) const;
     QString renderElement(ModelPtr data) const;
-
+    QString renderSet(ModelPtr data) const;
     QString renderChapter(ModelPtr data) const;
     QString renderArticle(ModelPtr data) const;
     QString renderAbstract(ModelPtr data) const;

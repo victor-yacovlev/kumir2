@@ -240,6 +240,9 @@ Document DocBookViewImpl::addDocument(const QUrl &url, QString *error, int index
     DocBookFactory * factory = DocBookFactory::self();
     Document doc = factory->parseDocument(url, error);
     sidePanel_->addDocument(doc);
+    if (content_->isEmpty()) {
+        content_->renderData(doc.root_);
+    }
     return doc;
 }
 

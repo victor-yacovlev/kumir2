@@ -11,6 +11,16 @@ PrintRenderer::PrintRenderer()
     baseFont_ = fontDatabase.font("serif", "regular", 12);
 }
 
+bool PrintRenderer::isEmpty() const
+{
+    return pagesCount() == 0;
+}
+
+int PrintRenderer::pagesCount() const
+{
+    return pages_.size();
+}
+
 PrintRenderer* PrintRenderer::self()
 {
     static PrintRenderer* instance = new PrintRenderer();

@@ -4,6 +4,7 @@
                     []>
 <book xmlns="http://www.oasis-open.org/docbook/xml/4.5/" xmlns:xi="http://www.w3.org/2001/XInclude">
     <title>Язык Кумир</title>
+    <subtitle>Описание русского алгоритмического языка программирования</subtitle>
     <xi:include href="structure.xml"/>
     <xi:include href="indentifiers.xml"/>
     <xi:include href="simple_commands.xml"/>

@@ -39,12 +39,17 @@ void ContentView::reset()
     clear();    
 }
 
+bool ContentView::isEmpty() const
+{
+    return toPlainText().trimmed().isEmpty();
+}
+
 void ContentView::renderData(ModelPtr data)
 {
     ModelPtr dataToRender = onePageParentModel(data);
     if (dataToRender != loadedModel_) {
         loadedModel_ = dataToRender;
-        const QString html = wrapHTML(render(dataToRender));
+        const QString html = wrapHTML(renderModel(dataToRender));
         setHtml(html);
     }
     if (dataToRender != data) {
@@ -112,6 +117,9 @@ QString ContentView::wrapHTML(const QString &body) const
             "   margin: 30;"
             "   font-style: italic;"
             "}"
+            ".subtitle {"
+            "   font-size: " + MainFontSize + ";"
+            "}"
             "body {"
             "   font-family: " + MainFontFamily + ";"
             "   font-size: " + MainFontSize + ";"
@@ -132,10 +140,12 @@ QString ContentView::wrapHTML(const QString &body) const
             "<body>\n" + body +"\n</body></html>";
 }
 
-QString ContentView::render(ModelPtr data) const
+QString ContentView::renderModel(ModelPtr data) const
 {
-    if (data->modelType() == DocBookModel::Set ||
-            data->modelType() == DocBookModel::Book)
+    if (data->modelType() == DocBookModel::Set) {
+        return renderSet(data);
+    }
+    else if (data->modelType() == DocBookModel::Book)
     {
         return renderTOC(data);
     }
@@ -1301,14 +1311,17 @@ QString ContentView::renderTOC(ModelPtr data) const
         else
             title = tr("List of algorithms of module \"%1\"").arg(data->title());
     }
+    else if (data == DocBookModel::Book || data == DocBookModel::Article) {
+        title = data->title();
+    }
     else {
         title = sectionNumber(data) + "&nbsp;" + data->title();
     }
     result += "<h1 class='title' align='center'>" + normalizeText(title) + "</h1>\n";
     if (data->subtitle().length() > 0) {
-        result += "<h1 class='subtitle' align='center'>" +
+        result += "<p class='subtitle' align='center'>" +
                 normalizeText(data->subtitle()) +
-                "</h1>\n";
+                "</p>\n";
     }
     result += "<hr/>\n";
     foreach (ModelPtr child, data->children()) {
@@ -1316,6 +1329,26 @@ QString ContentView::renderTOC(ModelPtr data) const
     }
     result += "<hr/>\n";
     return result;
+}
+
+QString ContentView::renderSet(ModelPtr data) const
+{
+    QString result;
+    const QString & title = data->title();
+    result += "<h1 class='title' align='center'>" + title + "</h1>\n";
+    foreach (ModelPtr child, data->children()) {
+        const quintptr dataPtr = quintptr(child.toWeakRef().data());
+        QByteArray buffer;
+        QDataStream ds(&buffer, QIODevice::WriteOnly);
+        ds << dataPtr;
+        const QString href = QString::fromAscii("model_ptr:") +
+                QString::fromAscii(buffer.toHex());
+        result += "<p align=\"left\"><a href=\"" + href +"\">" +
+                child->title() + "</a></p>\n";
+        result += "<p margin='10' align='left'>" + child->subtitle() + "</p>";
+    }
+    return result;
+
 }
 
 QString ContentView::renderTOCElement(ModelPtr data, quint8 level, bool enumerate) const
