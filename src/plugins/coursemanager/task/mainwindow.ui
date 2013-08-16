@@ -10,6 +10,12 @@
     <height>405</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>100</width>
+    <height>100</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Практикум</string>
   </property>
@@ -49,14 +55,11 @@
         <bool>true</bool>
        </property>
       </widget>
-      <widget class="QWebView" name="webView">
-       <property name="url">
+      <widget class="QWebView" name="webView" native="true">
+       <property name="url" stdset="0">
         <url>
          <string>about:blank</string>
         </url>
-       </property>
-       <property name="renderHints">
-        <set>QPainter::Antialiasing|QPainter::HighQualityAntialiasing|QPainter::SmoothPixmapTransform|QPainter::TextAntialiasing</set>
        </property>
       </widget>
      </widget>
@@ -64,13 +67,22 @@
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>545</width>
-     <height>22</height>
+     <width>0</width>
+     <height>0</height>
     </rect>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>0</width>
+     <height>0</height>
+    </size>
    </property>
    <widget class="QMenu" name="menu">
     <property name="title">
@@ -129,7 +141,6 @@
    <addaction name="actionup"/>
    <addaction name="actionDown"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
   <action name="loadCurs">
    <property name="text">
     <string>Загрузить курс</string>
@@ -248,7 +259,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="marks.qrc">
+    <iconset>
      <normaloff>:/arrow_up.svg</normaloff>
      <disabledoff>:/arrow_upDIS.svg</disabledoff>:/arrow_up.svg</iconset>
    </property>
@@ -261,7 +272,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="marks.qrc">
+    <iconset>
      <normaloff>:/arrow_down.svg</normaloff>
      <disabledoff>:/arrow_downDIS.svg</disabledoff>:/arrow_down.svg</iconset>
    </property>

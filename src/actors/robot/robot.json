@@ -150,9 +150,16 @@
 						"title": {
 							"ascii": "Edit Environment...", 
 		                    "ru_RU": "Редактировать обстановку..."
-		                },
+		            				    },
 						"icon": "file-save-as"
-					},
+		    },
+                    {
+						"title": {
+							"ascii": "Auto window size.", 
+		                    "ru_RU": "Авто размер окна"
+		            				    },
+						"icon": "file-save-as"
+		    },
                           {
                           "title": {
                           "ascii": "New Environment...", 

@@ -3741,7 +3741,7 @@ bool RobotModule::runIsColor()
         field->drawField(FIELD_SIZE_SMALL);
        // if(CurrentRobotMode==ANALYZE_MODE)SetRobotMode(SEE_MODE);
         qDebug() << "File " << p_FileName ;
-        
+        setWindowSize();
         return(0);
     }
 void RobotModule::editEnv()
@@ -3786,6 +3786,7 @@ void RobotModule::loadEnv()
        
         if( LoadFromFile(RobotFile)!=0)QMessageBox::information( mainWidget(), "", QString::fromUtf8("Ошибка открытия файла! ")+RobotFile, 0,0,0); 
             else updateLastFiles(RobotFile);
+        
     }
     void RobotModule::resetEnv()
     {
@@ -3940,6 +3941,23 @@ int RobotModule::SaveToFile(QString p_FileName)
             Q_UNUSED(action);
             }
     };
+void RobotModule::setWindowSize()
+    {
+        QRect baseFieldSize; //fieldSize in pixel. Zoom 1:1
+        baseFieldSize.setHeight(field->rows()*mySettings()->value("Robot/CellSize").toInt());
+        baseFieldSize.setWidth(field->columns()*mySettings()->value("Robot/CellSize").toInt());
+        if(baseFieldSize.height()<view->height())
+        {
+            view->setGeometry(view->x(), view->y(), view->width(), baseFieldSize.height());
+            mainWidget()->setGeometry(view->x(), view->y(), view->width(), baseFieldSize.height());
+        }
+        if(baseFieldSize.width()<view->width())
+            view->setGeometry(view->x(), view->y(), baseFieldSize.width(), view->height()); 
+    }   
+  void setDock(bool docked)
+    {
+        
+    };
  void RobotModule::openRecent()
     {
         
@@ -4078,19 +4096,20 @@ int RobotModule::SaveToFile(QString p_FileName)
         setCursor(Qt::OpenHandCursor);
     };
     
-    void RobotView::mouseMoveEvent ( QMouseEvent * event )
-    { if(robotField->isEditMode())
-    {
+void RobotView::mouseMoveEvent ( QMouseEvent * event )
+    { 
+        if(robotField->isEditMode())
+        {
         setCursor(Qt::ArrowCursor);    
         QGraphicsView::mouseMoveEvent(event);
         return;
-        
-    }
+            
+        }
         setCursor(Qt::ArrowCursor);
        if(robotField->sceneRect().height()> this->height()  &&robotField->sceneRect().width()> this->width())//field size more then view size
-       {
+          {
         setCursor(Qt::OpenHandCursor);
-       }
+           }
         if(!pressed)return;
         setCursor(Qt::ClosedHandCursor);
         QPointF center = mapToScene(viewport()->rect().center());
@@ -4107,9 +4126,9 @@ int RobotModule::SaveToFile(QString p_FileName)
        // qDebug()<<mapFromScene (robotField->sceneRect())<<robotField->sceneRect().height();
         
     };
-    void	RobotView::wheelEvent ( QWheelEvent * event )
+void	RobotView::wheelEvent ( QWheelEvent * event )
     {
-    float numDegrees = event->delta() / 8;
+        float numDegrees = event->delta() / 8;
         qDebug()<<"whell:"<<numDegrees;
 //        c_scale=c_scale*0.8;
         qDebug()<<"Scale"<<c_scale;

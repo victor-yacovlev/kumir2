@@ -484,7 +484,8 @@ namespace ActorRobot {
         }
     public slots:
         void changeEditMode(bool state);
-        
+      signals:
+        void resizeRequest(QRect newGeometry);
     protected:
         void mousePressEvent ( QMouseEvent * event );
         void mouseReleaseEvent ( QMouseEvent * event );
@@ -547,7 +548,7 @@ namespace ActorRobot {
         QWidget* mainWidget() const;
         QWidget* pultWidget() const;
         static ExtensionSystem::SettingsPtr robotSettings();
-        public slots:
+   public slots:
         void reloadSettings(ExtensionSystem::SettingsPtr settings);
         void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
         void loadEnv();
@@ -559,6 +560,8 @@ namespace ActorRobot {
         void createRescentMenu();
         void updateLastFiles(const QString newFile );
         void openRecent();
+        void setWindowSize();
+        void setDock(bool docked);
     private:
         int LoadFromFile(QString p_FileName);
         int SaveToFile(QString p_FileName);
