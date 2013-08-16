@@ -3949,12 +3949,12 @@ void RobotModule::setWindowSize()
         if(baseFieldSize.height()<view->height())
         {
             view->setGeometry(view->x(), view->y(), view->width(), baseFieldSize.height());
-            mainWidget()->setGeometry(view->x(), view->y(), view->width(), baseFieldSize.height());
+           // mainWidget()->setGeometry(view->x(), view->y(), view->width(), baseFieldSize.height());
         }
         if(baseFieldSize.width()<view->width())
             view->setGeometry(view->x(), view->y(), baseFieldSize.width(), view->height()); 
     }   
-  void setDock(bool docked)
+  void RobotModule::setDock(bool docked)
     {
         
     };
