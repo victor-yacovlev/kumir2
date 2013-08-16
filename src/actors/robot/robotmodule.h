@@ -485,7 +485,7 @@ namespace ActorRobot {
         void setWindowSize(const QRect newGeometry);
     public slots:
         void changeEditMode(bool state);
-        
+        void setDock(bool);
       signals:
         void resizeRequest(QRect newGeometry);
     protected:
@@ -563,7 +563,7 @@ namespace ActorRobot {
         void updateLastFiles(const QString newFile );
         void openRecent();
         void setWindowSize();
-        void setDock(bool docked);
+     
     private:
         int LoadFromFile(QString p_FileName);
         int SaveToFile(QString p_FileName);

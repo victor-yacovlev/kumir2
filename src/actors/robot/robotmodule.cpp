@@ -2611,7 +2611,11 @@ namespace ActorRobot {
         int colClicked=cc;
        // qDebug()<<"RC:"<<rowClicked<<"CC:"<<colClicked<<" sc pos y:"<<scenePos.y()<<" scenePos.x()"<<scenePos.x()<<"";
         if(mode==TEXT_MODE)
-        {
+        { 
+            if(rowClicked>rows() || colClicked>columns() ||rowClicked<0 || colClicked<0)//clik mimio polya
+            {
+            return;
+            }
             pressD=false;
             if(keyCursor)this->removeItem(keyCursor);
             clickCell=QPair<int,int>(rowClicked,colClicked);
@@ -3318,6 +3322,7 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     prepareNewWindow();
     rescentMenu=new QMenu();
     m_actionRobotLoadRescent->setMenu(rescentMenu);
+    view->setWindowTitle(trUtf8("Робот - нет файла"));
     
 } 
 
@@ -3955,10 +3960,7 @@ void RobotModule::setWindowSize()
             view->setGeometry(view->x(), view->y(), baseFieldSize.width(), view->height()); 
         view->setWindowSize( view->geometry());
     }   
-  void RobotModule::setDock(bool docked)
-    {
-        
-    };
+  
  void RobotModule::openRecent()
     {
         
@@ -4069,7 +4071,7 @@ void RobotModule::setWindowSize()
            QGraphicsView::mousePressEvent(event);   
             return;
         }
-        if(robotField->sceneRect().height()*c_scale> this->height()  &&robotField->sceneRect().width()*c_scale> this->width())//field > view
+        if(robotField->sceneRect().height()*c_scale> this->height()  || robotField->sceneRect().width()*c_scale> this->width())//field > view
         {
         pressed=true;
         setCursor(Qt::ClosedHandCursor);   
@@ -4153,6 +4155,10 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
  void RobotView::setWindowSize(const QRect newGeometry)
     {
         emit resizeRequest(newGeometry);
+    };
+void RobotView::setDock(bool docked)
+    {
+        
     };
 void RobotView::changeEditMode(bool state)
     {
