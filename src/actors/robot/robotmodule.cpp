@@ -3951,15 +3951,19 @@ void RobotModule::setWindowSize()
         QRect baseFieldSize; //fieldSize in pixel. Zoom 1:1
         baseFieldSize.setHeight(field->rows()*mySettings()->value("Robot/CellSize").toInt());
         baseFieldSize.setWidth(field->columns()*mySettings()->value("Robot/CellSize").toInt());
-        if(baseFieldSize.height()<view->height())
+        if(baseFieldSize.height()<view->height() && baseFieldSize.height()>view->minimumSize().height())
         {
             view->setGeometry(view->x(), view->y(), view->width(), baseFieldSize.height());
            // mainWidget()->setGeometry(view->x(), view->y(), view->width(), baseFieldSize.height());
         }
-        if(baseFieldSize.width()<view->width())
+        
+        if(baseFieldSize.width()<view->width() && baseFieldSize.width()>view->minimumSize().width())
+        {
             view->setGeometry(view->x(), view->y(), baseFieldSize.width(), view->height()); 
+            
+        }   
         view->setWindowSize( view->geometry());
-    }   
+    }
   
  void RobotModule::openRecent()
     {
@@ -4154,7 +4158,7 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
     
  void RobotView::setWindowSize(const QRect newGeometry)
     {
-        emit resizeRequest(newGeometry);
+        emit  resizeRequest(newGeometry.size());
     };
 void RobotView::setDock(bool docked)
     {
