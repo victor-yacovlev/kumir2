@@ -3318,7 +3318,8 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     connect(m_actionRobotSaveEnvironment,SIGNAL(triggered()) , this, SLOT(saveEnv()));
     connect(m_actionRobotEditEnvironment,SIGNAL(triggered()) , this, SLOT(editEnv())); 
     connect(m_actionRobotNewEnvironment,SIGNAL(triggered()) , this, SLOT(newEnv()));
-    
+    connect(m_actionRobotAutoWindowSize,SIGNAL(triggered()) , this, SLOT(setWindowSize()));
+
     prepareNewWindow();
     rescentMenu=new QMenu();
     m_actionRobotLoadRescent->setMenu(rescentMenu);
@@ -3417,6 +3418,8 @@ void RobotModule::reloadSettings(ExtensionSystem::SettingsPtr settings)
 {
     qDebug()<<"reload settings";
     field->setColorFromSett();
+    CurCellSize=settings->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt();
+    view->reloadSett(settings);
     createRescentMenu();
 }
 
@@ -3457,6 +3460,7 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
     {
         if(runtimeParameters.value("field").isValid())
             LoadFromFile(runtimeParameters.value("field").toString());
+        
         return "";
     }
 void RobotModule::runGoUp()
@@ -3746,7 +3750,7 @@ bool RobotModule::runIsColor()
         field->drawField(FIELD_SIZE_SMALL);
        // if(CurrentRobotMode==ANALYZE_MODE)SetRobotMode(SEE_MODE);
         qDebug() << "File " << p_FileName ;
-        setWindowSize();
+   
         return(0);
     }
 void RobotModule::editEnv()
@@ -3791,6 +3795,8 @@ void RobotModule::loadEnv()
        
         if( LoadFromFile(RobotFile)!=0)QMessageBox::information( mainWidget(), "", QString::fromUtf8("Ошибка открытия файла! ")+RobotFile, 0,0,0); 
             else updateLastFiles(RobotFile);
+        setWindowSize();
+        view->setWindowTitle(trUtf8("Робот  - ")+info.baseName ());
         
     }
     void RobotModule::resetEnv()
@@ -3946,6 +3952,11 @@ int RobotModule::SaveToFile(QString p_FileName)
             Q_UNUSED(action);
             }
     };
+QSize RobotModule::minimumSize() const
+    {
+        return QSize(mySettings()->value("Robot/CellSize").toInt()*3, mySettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt()*3);
+        
+    };
 void RobotModule::setWindowSize()
     {
         QRect baseFieldSize; //fieldSize in pixel. Zoom 1:1
@@ -3953,16 +3964,19 @@ void RobotModule::setWindowSize()
         newSize=view->size();
         baseFieldSize.setHeight(field->rows()*mySettings()->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt());
         baseFieldSize.setWidth(field->columns()*mySettings()->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt());
-        if(baseFieldSize.height()<view->height() && baseFieldSize.height()>mySettings()->value("Robot/CellSize").toInt()*3)
+        
+        view->setMinimumSize(minimumSize());
+        
+        if(baseFieldSize.height()<view->height())
         {
-            newSize.setHeight( baseFieldSize.height());
+            newSize.setHeight( baseFieldSize.height()+mySettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt());
             
             // mainWidget()->setGeometry(view->x(), view->y(), view->width(), baseFieldSize.height());
         }
         
-        if(baseFieldSize.width()<view->width() && baseFieldSize.width()>mySettings()->value("Robot/CellSize").toInt()*3)
+        if(baseFieldSize.width()<view->width())
         {
-            newSize.setWidth( baseFieldSize.width());
+            newSize.setWidth( baseFieldSize.width()+mySettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt());
            // view->setGeometry(view->x(), view->y(), baseFieldSize.width(), view->height()); 
             
         }   
@@ -4063,6 +4077,7 @@ void RobotModule::setWindowSize()
         connect(tmpEditBtn,SIGNAL(toggled(bool)),this,SLOT(changeEditMode(bool)));
         setMinimumWidth ( 30 );
         c_scale=1;
+        CurCellSize=FIELD_SIZE_SMALL;
       //  setRenderHint(QPainter::Antialiasing);
     };
     
@@ -4150,11 +4165,13 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
         { //if(c_scale<3 && c_scale>0.003)this->scale(1.2,1.2);
           c_scale=c_scale*1.2;
             if(c_scale>10)c_scale=10;
+                else this->scale(1.2,1.2);
         }
         else{ 
          // if(c_scale<3 && c_scale>0.01)this->scale(0.8,0.8);
           c_scale=c_scale*0.8;
             if(c_scale<0.1)c_scale=0.1;
+                else this->scale(0.8,0.8);
         }
         
     }
@@ -4166,10 +4183,23 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
     
  void RobotView::setWindowSize(const QSize newGeometry)
     {
-        
-        
-        
+        QSize oldSize=this->size();
         emit  resizeRequest(newGeometry);
+       if(newGeometry != oldSize)
+       {centerOn(newGeometry.width()/2-CurCellSize/2,newGeometry.height()/2-CurCellSize/2);
+        qDebug()<<"CenterON:"<<newGeometry.width()/2-CurCellSize/2<<newGeometry.width()/2-CurCellSize/2;
+           this->scale(1/c_scale,1/c_scale);
+    }
+    };
+    
+QSize	RobotView::sizeHint () const
+    {
+        return QSize(robotField->columns()*CurCellSize+CurCellSize, robotField->rows()*CurCellSize+CurCellSize);
+    }
+void RobotView::reloadSett(ExtensionSystem::SettingsPtr settings)
+    {
+       CurCellSize=settings->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt(); 
+        
     };
 void RobotView::setDock(bool docked)
     {

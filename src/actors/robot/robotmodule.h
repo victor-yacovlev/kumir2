@@ -478,6 +478,7 @@ namespace ActorRobot {
         RobotView(RoboField * roboField);
         void  FindRobot();
         void showButtons(bool flag);
+        QSize	sizeHint () const;
         void setField (RoboField* field)
         {
             robotField=field;
@@ -486,6 +487,7 @@ namespace ActorRobot {
     public slots:
         void changeEditMode(bool state);
         void setDock(bool);
+        void reloadSett(ExtensionSystem::SettingsPtr settings);
       signals:
         void resizeRequest(const QSize &newGeometry);
     protected:
@@ -502,7 +504,7 @@ namespace ActorRobot {
         QToolButton * radEditBtn;
         QToolButton * tmpEditBtn;
         float c_scale;
-        
+        int CurCellSize;
     };
     
     class RobotModule
@@ -512,6 +514,7 @@ namespace ActorRobot {
     public:
         // Constructor
         RobotModule(ExtensionSystem::KPlugin * parent);
+        QSize minimumSize()const;
         public slots:
         // Reset actor state before program starts
         void reset();
@@ -582,6 +585,8 @@ namespace ActorRobot {
         QWidget* NewWindow;
         QMenu * rescentMenu;
         void prepareNewWindow();
+        int CurCellSize;
+        
     signals:
         void sendToPultLog(const QVariant &);
       
