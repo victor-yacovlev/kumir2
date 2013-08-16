@@ -4139,14 +4139,17 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
         qDebug()<<"whell:"<<numDegrees;
 //        c_scale=c_scale*0.8;
         qDebug()<<"Scale"<<c_scale;
+    
       //setRenderHint(QPainter::Antialiasing);
         if(numDegrees>0)
-        { if(c_scale<3 && c_scale>0.003)this->scale(1.2,1.2);
+        { //if(c_scale<3 && c_scale>0.003)this->scale(1.2,1.2);
           c_scale=c_scale*1.2;
+            if(c_scale>10)c_scale=10;
         }
         else{ 
-          if(c_scale<3 && c_scale>0.003)this->scale(0.8,0.8);
+         // if(c_scale<3 && c_scale>0.01)this->scale(0.8,0.8);
           c_scale=c_scale*0.8;
+            if(c_scale<0.1)c_scale=0.1;
         }
         
     }
