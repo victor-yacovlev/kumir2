@@ -213,15 +213,21 @@ void SecondaryWindow::toggleDocked()
     btn->forceUnhighlight();
     if (!pImpl_->dockPlace_)
         return;
+
     if (isFloating()) {
         setVisible(true);
         pImpl_->setFloating(false);
-        setVisible(true);
+        setVisible(true);        
     }
     else {
         pImpl_->setFloating(true);
         activate();
     }
+
+    // Check slot to notify
+    QObject * obj = pImpl_->centralWidget_;
+    QMetaObject::invokeMethod(obj, "setDock", Q_ARG(bool, !isFloating()));
+
 }
 
 void SecondaryWindow::setSettingsObject(ExtensionSystem::SettingsPtr settings)
