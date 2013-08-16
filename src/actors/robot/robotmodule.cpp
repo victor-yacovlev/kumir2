@@ -3949,20 +3949,25 @@ int RobotModule::SaveToFile(QString p_FileName)
 void RobotModule::setWindowSize()
     {
         QRect baseFieldSize; //fieldSize in pixel. Zoom 1:1
+        QSize newSize;
+        newSize=view->size();
         baseFieldSize.setHeight(field->rows()*mySettings()->value("Robot/CellSize").toInt());
         baseFieldSize.setWidth(field->columns()*mySettings()->value("Robot/CellSize").toInt());
-        if(baseFieldSize.height()<view->height() && baseFieldSize.height()>view->minimumSize().height())
+        if(baseFieldSize.height()<view->height() && baseFieldSize.height()>mySettings()->value("Robot/CellSize").toInt()*3)
         {
-            view->setGeometry(view->x(), view->y(), view->width(), baseFieldSize.height());
-           // mainWidget()->setGeometry(view->x(), view->y(), view->width(), baseFieldSize.height());
+            newSize.setHeight( baseFieldSize.height());
+            
+            // mainWidget()->setGeometry(view->x(), view->y(), view->width(), baseFieldSize.height());
         }
         
-        if(baseFieldSize.width()<view->width() && baseFieldSize.width()>view->minimumSize().width())
+        if(baseFieldSize.width()<view->width() && baseFieldSize.width()>mySettings()->value("Robot/CellSize").toInt()*3)
         {
-            view->setGeometry(view->x(), view->y(), baseFieldSize.width(), view->height()); 
+            newSize.setWidth( baseFieldSize.width());
+           // view->setGeometry(view->x(), view->y(), baseFieldSize.width(), view->height()); 
             
         }   
-        view->setWindowSize( view->geometry());
+
+                view->setWindowSize(newSize);
     }
   
  void RobotModule::openRecent()
@@ -4159,9 +4164,12 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
         centerOn(robotField->roboPosF());
     };
     
- void RobotView::setWindowSize(const QRect newGeometry)
+ void RobotView::setWindowSize(const QSize newGeometry)
     {
-        emit  resizeRequest(newGeometry.size());
+        
+        
+        
+        emit  resizeRequest(newGeometry);
     };
 void RobotView::setDock(bool docked)
     {
