@@ -3953,6 +3953,7 @@ void RobotModule::setWindowSize()
         }
         if(baseFieldSize.width()<view->width())
             view->setGeometry(view->x(), view->y(), baseFieldSize.width(), view->height()); 
+        view->setWindowSize( view->geometry());
     }   
   void RobotModule::setDock(bool docked)
     {
@@ -4106,7 +4107,7 @@ void RobotView::mouseMoveEvent ( QMouseEvent * event )
             
         }
         setCursor(Qt::ArrowCursor);
-       if(robotField->sceneRect().height()> this->height()  &&robotField->sceneRect().width()> this->width())//field size more then view size
+       if(robotField->sceneRect().height()> this->height()  || robotField->sceneRect().width()> this->width())//field size more then view size
           {
         setCursor(Qt::OpenHandCursor);
            }
@@ -4147,6 +4148,11 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
  void RobotView:: FindRobot()
     {
         centerOn(robotField->roboPosF());
+    };
+    
+ void RobotView::setWindowSize(const QRect newGeometry)
+    {
+        emit resizeRequest(newGeometry);
     };
 void RobotView::changeEditMode(bool state)
     {

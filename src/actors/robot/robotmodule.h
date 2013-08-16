@@ -482,8 +482,10 @@ namespace ActorRobot {
         {
             robotField=field;
         }
+        void setWindowSize(const QRect newGeometry);
     public slots:
         void changeEditMode(bool state);
+        
       signals:
         void resizeRequest(QRect newGeometry);
     protected:
