@@ -225,12 +225,8 @@ void SecondaryWindow::toggleDocked()
     }
 
     // Check slot to notify
-    const QMetaObject * meta = pImpl_->centralWidget_->metaObject();
-    int slotIndex = meta->indexOfSlot(SLOT(setDock(bool)));
-    if (slotIndex != -1) {
-        QMetaMethod method = meta->method(slotIndex);
-        method.invoke(pImpl_->centralWidget_, Q_ARG(bool, !isFloating()));
-    }
+    QObject * obj = pImpl_->centralWidget_;
+    QMetaObject::invokeMethod(obj, "setDock", Q_ARG(bool, !isFloating()));
 
 }
 
