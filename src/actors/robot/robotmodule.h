@@ -487,7 +487,7 @@ namespace ActorRobot {
         void changeEditMode(bool state);
         void setDock(bool);
       signals:
-        void resizeRequest(QRect newGeometry);
+        void resizeRequest(const QSize &newGeometry);
     protected:
         void mousePressEvent ( QMouseEvent * event );
         void mouseReleaseEvent ( QMouseEvent * event );
