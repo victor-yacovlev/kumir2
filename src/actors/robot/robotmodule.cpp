@@ -3951,8 +3951,8 @@ void RobotModule::setWindowSize()
         QRect baseFieldSize; //fieldSize in pixel. Zoom 1:1
         QSize newSize;
         newSize=view->size();
-        baseFieldSize.setHeight(field->rows()*mySettings()->value("Robot/CellSize").toInt());
-        baseFieldSize.setWidth(field->columns()*mySettings()->value("Robot/CellSize").toInt());
+        baseFieldSize.setHeight(field->rows()*mySettings()->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt());
+        baseFieldSize.setWidth(field->columns()*mySettings()->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt());
         if(baseFieldSize.height()<view->height() && baseFieldSize.height()>mySettings()->value("Robot/CellSize").toInt()*3)
         {
             newSize.setHeight( baseFieldSize.height());
