@@ -120,7 +120,7 @@ public:
               const QString &settingsKey,
               bool resizableX, bool resizableY);
 
-    void setFloating(bool v);
+    void setFloating(bool v);    
 
     QWidget* centralWidget_;
     QSharedPointer<class DockWindowPlaceImpl> dockPlace_;
@@ -160,6 +160,9 @@ public:
     void timerEvent(QTimerEvent *);
     bool floating_;
     QRect floatingRect_;
+
+public slots:
+    void handleResizeRequest(const QSize & size);
 };
 
 

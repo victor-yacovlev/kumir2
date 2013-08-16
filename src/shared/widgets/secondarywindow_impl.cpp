@@ -186,6 +186,12 @@ void SecondaryWindowImpl::init(QWidget *centralWidget,
         pClass_->resize(r.size());
         pClass_->move(r.topLeft());
     }
+
+    const QMetaObject * meta = centralWidget->metaObject();
+    if (meta->indexOfSignal("resizeRequest(QSize)") != -1) {
+        connect(centralWidget, SIGNAL(resizeRequest(QSize)),
+                this, SLOT(handleResizeRequest(QSize)));
+    }
 }
 
 void SecondaryWindowImpl::setFloating(bool v)
@@ -455,6 +461,26 @@ bool BorderWidget::mouseDragAction(const QPoint &offset)
         window_->move(window_->pos()+offset);
     }
     return true;
+}
+
+void SecondaryWindowImpl::handleResizeRequest(const QSize &size)
+{
+    if (pClass_->isFloating()) {
+        int screenNumber = QApplication::desktop()->screenNumber(pClass_);
+        centralWidget_->setFixedSize(size);
+        pClass_->setFixedHeight(size.height() +
+                                topBorder_->height() +
+                                bottomBorder_->height());
+        pClass_->setFixedWidth(size.width() +
+                               leftBorder_->width() +
+                               rightBorder_->width());
+        const QRect screen = QApplication::desktop()->screenGeometry(screenNumber);
+        int dx = qMax(0, pClass_->rect().right() - screen.right());
+        int dy = qMax(0, pClass_->rect().bottom() - screen.bottom());
+        if (dx > 0 || dy > 0) {
+            pClass_->move(pClass_->x() + dx, pClass_->y() + dy);
+        }
+    }
 }
 
 SecondaryWindowButton::SecondaryWindowButton(QWidget *parent, bool checkable,
