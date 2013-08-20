@@ -731,6 +731,7 @@ namespace ActorRobot {
         Parent=parent;
         mode=0;
         LineColor = QColor(sett->value("LineColor","#C8C800").toString());
+        EditLineColor = QColor(sett->value("LineColorEdit","#C8C800").toString());
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
         EditColor=QColor(sett->value("EditColor","#00008C").toString());
         NormalColor=QColor(sett->value("NormalColor","#289628").toString());
@@ -903,15 +904,25 @@ namespace ActorRobot {
         destroyField();
         // clear();
         //debug();
+        QColor gridColor;
         showWall = new QGraphicsLineItem(0,0,0,0);
-        if(!(mode>0))Color = NormalColor;//Normal Color
-        else Color=EditColor;//Edit Color
+        if(!(mode>0))
+        {
+        Color = NormalColor;//Normal Color
+        gridColor=LineColor;
+        }
+        else 
+        {
+        Color=EditColor;//Edit Color
+         gridColor=EditLineColor;
+        }
+        
         this->setBackgroundBrush (QBrush(Color));
         fieldSize=FieldSize;
         drawNet();
         
         BortLine = QPen(WallColor,4);
-        StLine=QPen(LineColor,3);
+        StLine=QPen(gridColor,3);
         qDebug()<<"Rows"<<rows()<< "Cols:"<<columns();
         //if(rows()==2)return;
         for(int i=0;i<rows();i++) //Cikl po kletkam
@@ -2909,16 +2920,26 @@ namespace ActorRobot {
     {
          sett=RobotModule::robotSettings();
         LineColor = QColor(sett->value("LineColor","#C8C800").toString());
+        EditLineColor = QColor(sett->value("LineColorEdit","#C8C800").toString());
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
         EditColor=QColor(sett->value("EditColor","#00008C").toString());
         NormalColor=QColor(sett->value("NormalColor","#289628").toString());
+        QColor gridColor;
         qDebug()<<"Normal color blue"<<NormalColor.blue ();
-       if(mode==NORMAL_MODE) this->setBackgroundBrush (QBrush(NormalColor));
-            else  this->setBackgroundBrush (QBrush(EditColor));
+        if(mode==NORMAL_MODE) {
+            gridColor=LineColor;
+            this->setBackgroundBrush (QBrush(NormalColor));
+            
+        }
+            else 
+            {
+                gridColor=EditLineColor;
+               this->setBackgroundBrush (QBrush(EditColor)); 
+            }
         
         for(int i=0;i<setka.count();i++)
         {
-            setka.at(i)->setPen(QPen(LineColor));
+            setka.at(i)->setPen(QPen(gridColor));
         }
     
     }
@@ -3458,10 +3479,14 @@ QList<ExtensionSystem::CommandLineParameter>  RobotModule::acceptableCommandLine
     
 }
 QString RobotModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine & runtimeParameters)
-    {
+    {ExtensionSystem::SettingsPtr sett;
+      sett=robotSettings();  
         if(runtimeParameters.value("field").isValid())
             LoadFromFile(runtimeParameters.value("field").toString());
-        
+        if(sett->value("Robot/SFF").isValid())
+        {
+            LoadFromFile(sett->value("Robot/SFF").toString());  
+        }
         return "";
     }
 void RobotModule::runGoUp()
@@ -3758,7 +3783,7 @@ void RobotModule::editEnv()
     {
         if(field->isEditMode())
         {
-           // field->setMode(NORMAL_MODE);
+           //Diamond DA40 field->setMode(NORMAL_MODE);
             reset(); //reset 2 normal mode
             return;
         }
@@ -3803,6 +3828,7 @@ void RobotModule::loadEnv()
             else updateLastFiles(RobotFile);
         setWindowSize();
         view->setWindowTitle(trUtf8("Робот  - ")+info.baseName ());
+        robotSettings()->setValue("Robot/SFF",QVariant(RobotFile));
         
     }
     void RobotModule::resetEnv()

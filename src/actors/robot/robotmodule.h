@@ -65,8 +65,8 @@ namespace ActorRobot {
 #define PAUSE_MODE 4
 #define DEFAULT_SIZEX 400
 #define DEFAULT_SIZEY 400    
-#define MAX_COLUMNS 33
-#define MAX_ROWS 33
+#define MAX_COLUMNS 255
+#define MAX_ROWS 128
     
     
 
@@ -439,7 +439,7 @@ namespace ActorRobot {
         QList<QGraphicsLineItem*> setka;
         //QGraphicsView * scena;
         bool markMode,wasEdit;
-        QColor LineColor,WallColor,EditColor,NormalColor,Color;
+        QColor LineColor,EditLineColor,WallColor,EditColor,NormalColor,Color;
         uint fieldSize;
         uint robo_x,robo_y;
         QWidget *Parent;
