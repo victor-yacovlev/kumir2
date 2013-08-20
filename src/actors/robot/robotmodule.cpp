@@ -3313,6 +3313,7 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     startField=field->Clone();
     field->drawField(FIELD_SIZE_SMALL);
     field->dropWasEdit();
+    m_actionRobotEditEnvironment->setCheckable(true);
     connect(m_actionRobotLoadEnvironment,SIGNAL(triggered()) , this, SLOT(loadEnv()));
     connect(m_actionRobotRevertEnvironment,SIGNAL(triggered()) , this, SLOT(resetEnv()));
     connect(m_actionRobotSaveEnvironment,SIGNAL(triggered()) , this, SLOT(saveEnv()));
@@ -3374,7 +3375,7 @@ void RobotModule::reset()
     {
         field->setMode(NORMAL_MODE);
         view->showButtons(false);
-        
+        m_actionRobotEditEnvironment->setChecked(false);
       startField=field->Clone();  
     }
     field=startField->Clone();
@@ -3755,7 +3756,12 @@ bool RobotModule::runIsColor()
     }
 void RobotModule::editEnv()
     {
-        if(field->isEditMode())return;
+        if(field->isEditMode())
+        {
+           // field->setMode(NORMAL_MODE);
+            reset(); //reset 2 normal mode
+            return;
+        }
         startField->setModeFlag(NEDIT_MODE);
         
         
