@@ -55,7 +55,7 @@ public:
     CommandLineParameter& operator=(const CommandLineParameter &other);
 
     friend class PluginManager;
-    friend struct PluginManagerPrivate;
+    friend struct PluginManagerImpl;
     friend class CommandLine;
 protected:
     bool allowInGui_;
@@ -95,7 +95,7 @@ public:
 
 
     friend class PluginManager;
-    friend struct PluginManagerPrivate;
+    friend struct PluginManagerImpl;
 
     explicit CommandLine();
 

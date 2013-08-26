@@ -1,3 +1,4 @@
+#include "switchworkspacedialog.h"
 #include "plugin.h"
 #include "mainwindow.h"
 #include "extensionsystem/pluginmanager.h"
@@ -422,25 +423,34 @@ void Plugin::prepareKumirProgramToRun()
     plugin_editor->ensureAnalized(kumirProgram_->documentId());
 }
 
-void Plugin::start()
+bool Plugin::showWorkspaceChooseDialog()
 {
-    if (!sessionsDisableFlag_ && ExtensionSystem::PluginManager::instance()->showWorkspaceChooseOnLaunch()) {
-        if (!ExtensionSystem::PluginManager::instance()->showWorkspaceChooseDialog()) {
-            qApp->quit();
+    SwitchWorkspaceDialog * dialog = new
+            SwitchWorkspaceDialog(ExtensionSystem::PluginManager::instance()->globalSettings());
+    if (dialog->exec() == QDialog::Accepted) {
+        ExtensionSystem::PluginManager::instance()->switchToWorkspace(
+                    dialog->currentWorkspace()
+        );
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+void Plugin::start()
+{  
+    bool showDialogOnStartup = ! ExtensionSystem::PluginManager::instance()->globalSettings()
+            ->value(ExtensionSystem::PluginManager::SkipChooseWorkspaceKey, false).toBool();
+    if (!sessionsDisableFlag_ && showDialogOnStartup) {
+        if (!showWorkspaceChooseDialog()) {
+            ExtensionSystem::PluginManager::instance()->shutdown();
         }
     }
     else {
-//    else if (!sessionsDisableFlag_) {
-//        ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
-//    }
-//    else {
-        if (!sessionsDisableFlag_) {
-            ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
-        }
-        else {
-            updateSettings();
-            restoreSession();
-        }
+        ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
+        updateSettings();
+        restoreSession();
     }
     PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);
     mainWindow_->show();

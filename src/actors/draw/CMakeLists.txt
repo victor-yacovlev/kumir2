@@ -84,6 +84,7 @@ target_link_libraries(
     ActorDraw
     ${QT_LIBRARIES}
     ExtensionSystem
+    Widgets
 )
 
 copyResources(actors/draw)

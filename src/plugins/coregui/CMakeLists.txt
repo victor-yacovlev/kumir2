@@ -17,6 +17,7 @@ set(SOURCES
     statusbar.cpp
     debuggerview.cpp
     row.cpp
+    switchworkspacedialog.cpp
 )
 
 set(EXTRA_LIBS
@@ -44,11 +45,13 @@ set(MOC_HEADERS
     statusbar.h
     debuggerview.h
     row.h
+    switchworkspacedialog.h
 )
 
 set(FORMS
     mainwindow.ui
     aboutdialog.ui
+    switchworkspacedialog.ui
 )
 
 set(RESOURCES

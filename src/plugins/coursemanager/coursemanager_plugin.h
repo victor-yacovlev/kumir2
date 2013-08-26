@@ -5,7 +5,7 @@
 #include <QObject>
 #include <extensionsystem/kplugin.h>
 #include <interfaces/coursesinterface.h>
-#include <extensionsystem/declarativesettingspage.h>
+#include <widgets/declarativesettingspage.h>
 #include "extensionsystem/pluginmanager.h"
 #include "shared/interfaces/guiinterface.h"
 #include "shared/interfaces/actorinterface.h"
@@ -61,7 +61,7 @@ private /*fields*/:
     QAction* actionPerformCheck_;
     QAction* nextFld;
     QAction* prevFld;
-    ExtensionSystem::DeclarativeSettingsPage* settingsEditorPage_;
+    Widgets::DeclarativeSettingsPage* settingsEditorPage_;
     QMenu* courseMenu;
     QList<QMenu*> MenuList;
     MainWindowTask* MW;

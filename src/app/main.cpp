@@ -138,7 +138,7 @@ public:
 
         QSettings::setDefaultFormat(QSettings::IniFormat);
         addLibraryPath(PLUGINS_PATH);
-        ExtensionSystem::PluginManager * manager = new ExtensionSystem::PluginManager;
+        ExtensionSystem::PluginManager * manager = ExtensionSystem::PluginManager::instance();
         QObject::connect (this, SIGNAL(aboutToQuit()), manager, SLOT(shutdown()));
         manager->setPluginPath(PLUGINS_PATH);
         manager->setSharePath(SHARE_PATH);

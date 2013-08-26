@@ -183,6 +183,7 @@ MainWindow::MainWindow(Plugin * p) :
         ui->menuInsert = nullptr;
     }
 
+    createSettingsDialog();
 }
 
 //QString MainWindow::StatusbarWidgetCSS =
@@ -808,9 +809,27 @@ bool MainWindow::closeTab(int index)
 
 }
 
-void MainWindow::showPreferences()
+void MainWindow::createSettingsDialog()
 {
-    ExtensionSystem::PluginManager::instance()->showSettingsDialog();
+    using namespace ExtensionSystem;
+    settingsDialog_ = new Widgets::MultiPageDialog(this);
+    settingsDialog_->setWindowTitle(tr("Preferences"));
+    settingsDialog_->setMinimumSize(700, 500);
+    PluginManager * manager = PluginManager::instance();
+    QList<KPlugin*> plugins = manager->loadedPlugins();
+    foreach (KPlugin * p, plugins) {
+        QWidget * page = p->settingsEditorPage();
+        if (page) {
+            settingsDialog_->addPage(page);
+        }
+    }
+}
+
+void MainWindow::showPreferences()
+{    
+    if (settingsDialog_->exec() == QDialog::Accepted) {
+        ExtensionSystem::PluginManager::instance()->updateAllSettings();
+    }
 }
 
 
@@ -1297,7 +1316,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
 }
 
 void MainWindow::switchWorkspace() {
-    ExtensionSystem::PluginManager::instance()->showWorkspaceChooseDialog();
+    m_plugin->showWorkspaceChooseDialog();
 }
 
 void MainWindow::saveSession() const

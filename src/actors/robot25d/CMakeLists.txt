@@ -70,7 +70,7 @@ qt4_wrap_ui(UI_SOURCES ${FORMS})
 install(FILES ${PLUGIN_OUTPUT_PATH}/ActorIsometricRobot.pluginspec DESTINATION ${PLUGINS_DIR})
 handleTranslation(ActorIsometricRobot)
 add_library(ActorIsometricRobot SHARED ${MOC_SOURCES} ${SOURCES} ${MOC_SOURCES2} ${SOURCES2} ${UI_SOURCES})
-target_link_libraries(ActorIsometricRobot ${QT_LIBRARIES} ExtensionSystem)
+target_link_libraries(ActorIsometricRobot ${QT_LIBRARIES} ExtensionSystem Widgets)
 copyResources(actors/robot25d)
 install(TARGETS ActorIsometricRobot DESTINATION ${PLUGINS_DIR})
 

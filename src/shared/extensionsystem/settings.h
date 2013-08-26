@@ -24,7 +24,7 @@ typedef QWeakPointer<class Settings> SettingsWPtr;
 class EXTENSIONSYSTEM_EXPORT Settings
 {
     friend class PluginManager;
-    friend class PluginManagerPrivate;
+    friend class PluginManagerImpl;
 public:
 
     QVariant value(const QString & key, const QVariant & default_ = QVariant()) const;

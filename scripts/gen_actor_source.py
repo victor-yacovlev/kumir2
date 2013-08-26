@@ -997,9 +997,9 @@ class SettingsEntry:
             maximum = unicode(self._maximum)
         return """
 {
-    ExtensionSystem::DeclarativeSettingsPage::Entry entry;
+    Widgets::DeclarativeSettingsPage::Entry entry;
     entry.title = QString::fromUtf8("%s");  // TODO non-Russian language support
-    entry.type = ExtensionSystem::DeclarativeSettingsPage::%s;
+    entry.type = Widgets::DeclarativeSettingsPage::%s;
     entry.defaultValue = %s;
     entry.minimumValue = %s;
     entry.maximumValue = %s;
@@ -1035,19 +1035,18 @@ class Settings:
         :rtype:                 unicode
         :return:                C++ code for settings page creation
         """
-        result = "QMap<QString,ExtensionSystem::DeclarativeSettingsPage::Entry> entries;\n"
+        result = "QMap<QString,Widgets::DeclarativeSettingsPage::Entry> entries;\n"
         for entry in self._entries:
             assert isinstance(entry, SettingsEntry)
             result += entry.cppEntryImplementation("entries")
         result += """
-%s = new ExtensionSystem::DeclarativeSettingsPage(
-                            "%s",
+%s = new Widgets::DeclarativeSettingsPage(
                             name(),
                             mySettings(),
                             entries
                           );
 
-        """ % (variableName, actorAsciiName)
+        """ % variableName
         return result
 
 
@@ -1263,7 +1262,7 @@ class PluginCppClass(CppClassBase):
         self.fields = [
             "class %s* module_" % module.baseClassName(),
             "class %s* asyncRunThread_" % module.runThreadClassName(),
-            "class ExtensionSystem::DeclarativeSettingsPage* settingsPage_",
+            "class Widgets::DeclarativeSettingsPage* settingsPage_",
             "QString errorText_",
             "QVariant result_",
             "QVariantList optResults_",
@@ -2692,7 +2691,7 @@ every build time
 
 // Kumir includes
 #include "extensionsystem/kplugin.h"
-#include "extensionsystem/declarativesettingspage.h"
+#include "widgets/declarativesettingspage.h"
 #include "interfaces/actorinterface.h"
 
 // Qt includes
@@ -3089,6 +3088,7 @@ target_link_libraries(
     $specFileName
     ${QT_LIBRARIES}
     ExtensionSystem
+    Widgets
 )
 
 copyResources(actors/$actorDir)

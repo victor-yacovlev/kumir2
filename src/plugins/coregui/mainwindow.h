@@ -3,6 +3,7 @@
 
 #include "plugin.h"
 #include "widgets/dockwindowplace.h"
+#include "widgets/multipagedialog.h"
 
 #include <QtCore>
 #include <QtGui>
@@ -103,6 +104,9 @@ private slots:
 
 
 private:
+    void createSettingsDialog();
+
+
     void timerEvent(QTimerEvent *e);
     bool eventFilter(QObject *o, QEvent *e);
     void resizeEvent(QResizeEvent *);
@@ -141,6 +145,7 @@ private:
     Widgets::DockWindowPlace * debuggerPlace_;
     Widgets::DockWindowPlace * actorsPlace_;
     Widgets::DockWindowPlace * consoleAndCourcesPlace_;
+    Widgets::MultiPageDialog * settingsDialog_;
     ExtensionSystem::SettingsPtr settings_;
     int prevBottomSize_;
 };

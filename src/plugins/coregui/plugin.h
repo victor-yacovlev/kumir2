@@ -54,6 +54,7 @@ public slots:
 
 
     void startTesting();
+    bool showWorkspaceChooseDialog();
 
 protected slots:
     void prepareKumirProgramToRun();

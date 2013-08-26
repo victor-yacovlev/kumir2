@@ -16,8 +16,7 @@ namespace  ExtensionSystem {
 class EXTENSIONSYSTEM_EXPORT PluginManager : public QObject
 {
     Q_OBJECT
-public:
-    explicit PluginManager();
+public:    
     ~PluginManager();
     static PluginManager * instance();
 
@@ -27,11 +26,11 @@ public:
     /** Set path to search settings etc. */
     void setSharePath(const QString &path);
 
-    bool showWorkspaceChooseOnLaunch() const;
-
     void switchGlobalState(GlobalState state);
 
     GlobalState currentGlobalState() const;
+
+    SettingsPtr globalSettings() const;
 
     /** Loads plugins by given template in form:
       *
@@ -125,24 +124,23 @@ public:
         return result;
     }
 
-public slots:
 
-    /** Show settings for all modules
-      * @param parent widget, which blocks until dialog is closed
-      */
-    void showSettingsDialog();
+    void updateAllSettings();
 
     void switchToDefaultWorkspace();
-
-    bool showWorkspaceChooseDialog();
+    void switchToWorkspace(const QString & path);
 
     /** Stops all plugins in reverse-order of creation */
     void shutdown();
 
-private:
+public /*constants*/:
 
-    static PluginManager * m_instance;
-    struct PluginManagerPrivate * d;
+    static const QString WorkspacesListKey;
+    static const QString CurrentWorkspaceKey;
+    static const QString SkipChooseWorkspaceKey;
+private:
+    explicit PluginManager();
+    QScopedPointer<struct PluginManagerImpl> pImpl_;
 
 };
 

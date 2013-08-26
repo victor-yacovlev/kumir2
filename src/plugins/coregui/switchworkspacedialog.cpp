@@ -1,24 +1,24 @@
 #include "switchworkspacedialog.h"
 #include "ui_switchworkspacedialog.h"
 
-namespace ExtensionSystem {
+#include "extensionsystem/pluginmanager.h"
 
-QString SwitchWorkspaceDialog::WorkspacesListKey = "WorkspacesList";
-QString SwitchWorkspaceDialog::CurrentWorkspaceKey = "CurrentWorkspace";
-QString SwitchWorkspaceDialog::SkipChooseWorkspaceKey = "SkipChooseWorkspace";
+namespace CoreGUI {
 
-SwitchWorkspaceDialog::SwitchWorkspaceDialog(SettingsPtr settings) :
+
+
+SwitchWorkspaceDialog::SwitchWorkspaceDialog(ExtensionSystem::SettingsPtr settings) :
     QDialog(0),
     ui(new Ui::SwitchWorkspaceDialog),
     settings_(settings)
 {
     ui->setupUi(this);
-    QStringList list = settings_->value(WorkspacesListKey, QStringList() << QDir::homePath()+"/Kumir/").toStringList();
+    QStringList list = settings_->value(ExtensionSystem::PluginManager::WorkspacesListKey, QStringList() << QDir::homePath()+"/Kumir/").toStringList();
     for (int i=0; i<list.size(); i++) {
         list[i] = QDir::toNativeSeparators(list[i]);
     }
     ui->comboBox->addItems(list);
-    ui->checkBox->setChecked(settings_->value(SkipChooseWorkspaceKey, false).toBool());
+    ui->checkBox->setChecked(settings_->value(ExtensionSystem::PluginManager::SkipChooseWorkspaceKey, false).toBool());
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(handleBrowseClicked()));
     connect(this, SIGNAL(accepted()), this, SLOT(handleAccepted()));
 }
@@ -64,9 +64,9 @@ void SwitchWorkspaceDialog::handleAccepted()
     for (int i=0; i<ui->comboBox->count(); i++) {
         list << QDir::fromNativeSeparators(ui->comboBox->itemText(i));
     }
-    settings_->setValue(WorkspacesListKey, list);
-    settings_->setValue(CurrentWorkspaceKey, currentWorkspace());
-    settings_->setValue(SkipChooseWorkspaceKey, ui->checkBox->isChecked());
+    settings_->setValue(ExtensionSystem::PluginManager::WorkspacesListKey, list);
+    settings_->setValue(ExtensionSystem::PluginManager::CurrentWorkspaceKey, currentWorkspace());
+    settings_->setValue(ExtensionSystem::PluginManager::SkipChooseWorkspaceKey, ui->checkBox->isChecked());
 }
 
 SwitchWorkspaceDialog::~SwitchWorkspaceDialog()
