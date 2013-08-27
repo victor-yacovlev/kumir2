@@ -1963,7 +1963,7 @@ namespace ActorRobot {
         //	long l_Err;
         int CurX,CurY;
         int SizeX, SizeY;
-        destroyField();
+       
         // Тестовый прогон
         
         if  (!l_File.open(QIODevice::ReadOnly))
@@ -2162,7 +2162,7 @@ namespace ActorRobot {
             
         }
         l_File.close();
-        
+         destroyField();
         //реальный прогон
         //destroyField();
         
@@ -3442,6 +3442,7 @@ void RobotModule::reloadSettings(ExtensionSystem::SettingsPtr settings)
     field->setColorFromSett();
     CurCellSize=settings->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt();
     view->reloadSett(settings);
+   
     createRescentMenu();
 }
 
@@ -3485,7 +3486,8 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
             LoadFromFile(runtimeParameters.value("field").toString());
         if(sett->value("Robot/SFF").isValid())
         {
-            LoadFromFile(sett->value("Robot/SFF").toString());  
+            if(LoadFromFile(sett->value("Robot/SFF").toString())!=0){
+                createEmptyField(7,7);}
         }
         return "";
     }
@@ -3796,7 +3798,18 @@ void RobotModule::editEnv()
         field->setMode(NEDIT_MODE);
         startField->setModeFlag(NORMAL_MODE);
         
-    };    
+    };  
+void RobotModule::createEmptyField(int rows,int cols)
+    {
+        field->createField(7,7);
+        field->setRoboPos(0,0);
+        field->createRobot();
+        startField=field->Clone();
+        field->drawField(robotSettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt());
+        
+        mainWidget()->setWindowTitle(QString::fromUtf8("Робот - нет файла") );
+        field->dropWasEdit();
+    };
 void RobotModule::loadEnv()
     {
         if(field->WasEdit())
@@ -3824,8 +3837,14 @@ void RobotModule::loadEnv()
         if ( RobotFile.isEmpty())return;
        // CurrentFileName = RobotFile;
        
-        if( LoadFromFile(RobotFile)!=0)QMessageBox::information( mainWidget(), "", QString::fromUtf8("Ошибка открытия файла! ")+RobotFile, 0,0,0); 
-            else updateLastFiles(RobotFile);
+        if( LoadFromFile(RobotFile)!=0)//Get troubles when loading env.
+        {
+            QMessageBox::information( mainWidget(), "", QString::fromUtf8("Ошибка открытия файла! ")+RobotFile, 0,0,0); 
+            return;
+        }
+        
+        updateLastFiles(RobotFile);
+        
         setWindowSize();
         view->setWindowTitle(trUtf8("Робот  - ")+info.baseName ());
         robotSettings()->setValue("Robot/SFF",QVariant(RobotFile));
@@ -3996,23 +4015,37 @@ void RobotModule::setWindowSize()
         newSize=view->size();
         baseFieldSize.setHeight(field->rows()*mySettings()->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt());
         baseFieldSize.setWidth(field->columns()*mySettings()->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt());
-        
+        int editEnlarge=0;
+        QWidgetList scBars=view->scrollBarWidgets(Qt::AlignLeft);
+        if(field->isEditMode())editEnlarge=1.8*mySettings()->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt();
         view->setMinimumSize(minimumSize());
         
         if(baseFieldSize.height()<view->height())
         {
-            newSize.setHeight( baseFieldSize.height()+mySettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt());
+            newSize.setHeight( baseFieldSize.height()+mySettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt()+editEnlarge);
             
             // mainWidget()->setGeometry(view->x(), view->y(), view->width(), baseFieldSize.height());
         }
         
         if(baseFieldSize.width()<view->width())
         {
-            newSize.setWidth( baseFieldSize.width()+mySettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt());
+            newSize.setWidth( baseFieldSize.width()+mySettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt()+editEnlarge);
            // view->setGeometry(view->x(), view->y(), baseFieldSize.width(), view->height()); 
             
         }   
-
+        
+        if(baseFieldSize.height()>view->height() && field->rows()<11)
+        {
+            newSize.setHeight( baseFieldSize.height()+mySettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt()+editEnlarge);
+            
+            // mainWidget()->setGeometry(view->x(), view->y(), view->width(), baseFieldSize.height());
+        }
+        if(baseFieldSize.width()>view->width() && field->columns()<17)
+        {
+            newSize.setWidth( baseFieldSize.width()+mySettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt()+editEnlarge);
+            // view->setGeometry(view->x(), view->y(), baseFieldSize.width(), view->height()); 
+            
+        } 
                 view->setWindowSize(newSize);
     }
   

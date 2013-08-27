@@ -568,6 +568,7 @@ namespace ActorRobot {
         void setWindowSize();
      
     private:
+        void createEmptyField(int rows,int cols);
         int LoadFromFile(QString p_FileName);
         int SaveToFile(QString p_FileName);
         QWidget* m_mainWidget;
@@ -586,6 +587,7 @@ namespace ActorRobot {
         QMenu * rescentMenu;
         void prepareNewWindow();
         int CurCellSize;
+        ExtensionSystem::SettingsPtr curSettings;
         
     signals:
         void sendToPultLog(const QVariant &);
