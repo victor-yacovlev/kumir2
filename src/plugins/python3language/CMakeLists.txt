@@ -17,10 +17,12 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 set(SOURCES
     python3languageplugin.cpp
+    analizerinstance.cpp
 )
 
 set(MOC_HEADERS
     python3languageplugin.h
+    analizerinstance.h
 )
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})

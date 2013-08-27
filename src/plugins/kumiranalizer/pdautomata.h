@@ -3,7 +3,7 @@
 
 #include <QtCore>
 #include "statement.h"
-#include "interfaces/error.h"
+#include "interfaces/analizer_instanceinterface.h"
 #include "dataformats/ast.h"
 #include "dataformats/ast_algorhitm.h"
 #include "dataformats/ast_statement.h"
@@ -40,7 +40,7 @@ public:
     void postProcess();
 
     /** List of syntax errors */
-    QList<Shared::Error> errors() const;
+    QList<Shared::Analizer::Error> errors() const;
 
     static AST::StatementPtr createSimpleAstStatement(TextStatementPtr st);
 

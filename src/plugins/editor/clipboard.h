@@ -16,8 +16,8 @@ class Clipboard : public QObject
 {
     Q_OBJECT
 public:
-    explicit Clipboard(QObject *parent = 0);
     static QString BlockMimeType;
+    static Clipboard * instance();
 public slots:
     void push(const ClipboardData & data);
     void select(int index);
@@ -30,8 +30,9 @@ signals:
 private slots:
     void checkForChanged();
 private:
-    QList<ClipboardData> m_data;
-    int i_selection;
+    explicit Clipboard();
+    QList<ClipboardData> data_;
+    int selection_;
 
 };
 

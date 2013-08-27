@@ -12,16 +12,13 @@ namespace Ui {
 class FindReplace;
 }
 
-class FindReplace : public QWidget
+class FindReplace
+        : public QWidget
 {
     Q_OBJECT
     
 public:
-    explicit FindReplace(
-            TextDocument * document,
-            TextCursor * cursor,
-            QWidget * parent
-            );
+    explicit FindReplace(class Editor * editor);
     ~FindReplace();
 
 public slots:
@@ -72,8 +69,7 @@ private:
 
 
     Ui::FindReplace *ui;
-    TextDocument * document_;
-    TextCursor * cursor_;
+    class Editor * editor_;
 };
 
 

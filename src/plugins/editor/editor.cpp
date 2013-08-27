@@ -1,3 +1,4 @@
+#include "suggestionswindow.h"
 #include "editor.h"
 #include "editorplane.h"
 #include "textcursor.h"
@@ -18,19 +19,6 @@ namespace Editor {
 
 using namespace Shared;
 
-
-void Editor::setTeacherMode(bool v)
-{
-    teacherMode_ = v;
-    plane_->setTeacherMode(v);
-    cursor_->setTeacherMode(v);
-}
-
-bool Editor::isTeacherMode() const
-{
-    return teacherMode_;
-}
-
 QSize Editor::minimumSizeHint() const
 {
     int minW = 400;
@@ -43,15 +31,6 @@ QSize Editor::minimumSizeHint() const
     return QSize(minW, minH);
 }
 
-void Editor::unsetAnalizer()
-{
-    analizer_ = 0;
-}
-
-void Editor::setDocumentId(int id)
-{
-    doc_->id_ = id;
-}
 
 void Editor::lock()
 {
@@ -73,7 +52,7 @@ void Editor::lock()
 void Editor::unlock()
 {
     cursor_->setEnabled(true);
-    paste_->setEnabled(clipboard_->hasContent());
+    paste_->setEnabled(Clipboard::instance()->hasContent());
     cut_->setEnabled(true);
     deleteLine_->setEnabled(true);
     deleteTail_->setEnabled(true);
@@ -118,11 +97,13 @@ void Editor::clearMarginText()
     update();
 }
 
-void Editor::clearMarginText(uint fromLine, uint toLine)
+void Editor::clearMarginText(int fromLine, int toLine)
 {
-    uint start = qMin(qMax(0u, fromLine), doc_->linesCount()-1);
-    uint end = qMin(qMax(0u, toLine), doc_->linesCount()-1);
-    for (uint i=start; i<=end; i++) {
+    int start = qMin(qMax(0, fromLine), int(doc_->linesCount())-1);
+    int end = qMin(qMax(0, toLine), int(doc_->linesCount())-1);
+    if (toLine == -1)
+        end = doc_->linesCount() - 1;
+    for (int i=start; i<=end; i++) {
         TextLine::Margin & margin = doc_->marginAt(i);
         margin.text.clear();
     }
@@ -208,12 +189,12 @@ void Editor::updatePosition(int row, int col)
 
 void Editor::loadMacros()
 {
-    if (analizer_ == nullptr) {
+    if (analizerPlugin_ == nullptr) {
         return;
     }
     using namespace Shared;
     using namespace ExtensionSystem;
-    const QString analizerName = analizer_->defaultDocumentFileNameSuffix().mid(1);
+    const QString analizerName = analizerPlugin_->defaultDocumentFileNameSuffix().mid(1);
 
     // System macros
     const QString sharePath = QCoreApplication::instance()->property("sharePath").toString();
@@ -254,7 +235,7 @@ void Editor::loadMacros()
             ? QString::fromAscii(".user-macros-%1.xml").arg(analizerName)
             : QString::fromAscii(".user-macros.xml");
 
-    const QString dirName = settings_->locationDirectory();
+    const QString dirName = mySettings()->locationDirectory();
     if (dirName.startsWith(QDir::homePath() + "/."))
         fileName.remove(0, 1);
     QDir dir(dirName);
@@ -262,12 +243,16 @@ void Editor::loadMacros()
     userMacros_ = loadFromFile(filePath);
 }
 
+ExtensionSystem::SettingsPtr Editor::mySettings() const
+{
+    return plugin_->mySettings();
+}
 
 void Editor::updateInsertMenu()
 {
     loadMacros();
     insertMenu_->clear();
-    const QString escComa = settings_->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()+", ";
+    const QString escComa = mySettings()->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()+", ";
     for (int i=0; i<systemMacros_.size(); i++) {
         Macro m = systemMacros_[i];
         QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
@@ -341,7 +326,7 @@ void Editor::handleCompleteCompilationRequiest(
     int hiddenBaseLine
     )
 {
-    if (!analizer_) {
+    if (!analizerPlugin_) {
         return;
     }
     QString vt;
@@ -355,7 +340,7 @@ void Editor::handleCompleteCompilationRequiest(
         if (i<hiddenText.size()-1)
             vt += "\n";
     }
-    analizer_->setSourceText(doc_->id_, vt);
+    analizerInstance_->setSourceText(vt);
     updateFromAnalizer();
 }
 
@@ -363,9 +348,9 @@ void Editor::handleCompleteCompilationRequiest(
 
 void Editor::updateFromAnalizer()
 {
-    QList<Shared::LineProp> props = analizer_->lineProperties(doc_->id_);
-    QList<QPoint> ranks = analizer_->lineRanks(doc_->id_);
-    QList<Error> errors = analizer_->errors(doc_->id_);
+    QList<Shared::Analizer::LineProp> props = analizerInstance_->lineProperties();
+    QList<QPoint> ranks = analizerInstance_->lineRanks();
+    QList<Shared::Analizer::Error> errors = analizerInstance_->errors();
     std::vector<int> oldIndents(doc_->linesCount(), 0);
     for (int i=0; i<doc_->linesCount(); i++) {
         oldIndents[i] = doc_->indentAt(i);
@@ -386,7 +371,7 @@ void Editor::updateFromAnalizer()
         }
     }
     for (int i=0; i<errors.size(); i++) {
-        Error err = errors[i];
+        Shared::Analizer::Error err = errors[i];
         int lineNo = err.line;
         if (lineNo>=0) {
             doc_->marginAt(lineNo).errors.append(err.code);
@@ -395,32 +380,60 @@ void Editor::updateFromAnalizer()
     plane_->update();
 }
 
-Clipboard * Editor::clipboard_ = 0;
-
-void Editor::setHelpViewer(DocBookViewer::DocBookView *viewer)
+Editor::Editor(
+        EditorPlugin * plugin,
+        bool initiallyNotSaved,
+        AnalizerInterface * analizerPlugin,
+        Analizer::InstanceInterface * analizerInstance)
+    : QWidget()
+    , plugin_(plugin)
+    , analizerPlugin_(analizerPlugin)
+    , analizerInstance_(analizerInstance)
+    , doc_(new TextDocument(this))
+    , cursor_(new TextCursor(this))
+    , plane_(new EditorPlane(this))
+    , notSaved_(initiallyNotSaved)
+    , findReplace_(new FindReplace(this))
+    , autocompleteWidget_(new SuggestionsWindow(this))
+    , autoScrollStateX_(0)
+    , autoScrollStateY_(0)
 {
-    helpViewer_ = viewer;
-    plane_->setHelpViewer(viewer);
+    setupUi();
+    setupStyleSheets();
+    createActions();
+    updateInsertMenu();
+
+    plane_->addContextMenuAction(cut_);
+    plane_->addContextMenuAction(copy_);
+    plane_->addContextMenuAction(paste_);
+
+    createConnections();
+
+    timerId_ = startTimer(50);
+    autoScrollTimerId_ = startTimer(100);   
+
+    updateSettings();
+    updatePosition(cursor_->row(), cursor_->column());
+
+    plane_->updateScrollBars();
 }
 
-Editor::Editor(EditorPlugin * plugin,
-        bool initiallyNotSaved, ExtensionSystem::SettingsPtr settings, AnalizerInterface * analizer, int documentId, QWidget *parent) :
-    QWidget()
+void Editor::setupUi()
 {
-    plugin_ = plugin;
-    installEventFilter(this);
-    setParent(parent);
-    helpViewer_ = nullptr;
-    teacherMode_ = false;
-    notSaved_ = initiallyNotSaved;
-    if (!clipboard_)
-        clipboard_ = new Clipboard;
-    doc_ = new TextDocument(this, settings);
-    doc_->setAnalizer(analizer);
-    cursor_ = new TextCursor(doc_, clipboard_, analizer, settings);
-    analizer_ = analizer;
-    doc_->id_ = documentId;
-    settings_ = settings;
+    horizontalScrollBar_ = new QScrollBar(Qt::Horizontal, this);
+    verticalScrollBar_ = new QScrollBar(Qt::Vertical, this);
+    QGridLayout * l = new QGridLayout();
+    l->setContentsMargins(0,0,0,0);
+    l->setSpacing(0);
+    setLayout(l);
+    l->addWidget(plane_, 0, 0);
+    l->addWidget(verticalScrollBar_, 0, 1);
+    l->addWidget(horizontalScrollBar_, 1, 0);
+    autocompleteWidget_->setVisible(false);
+}
+
+void Editor::setupStyleSheets()
+{
     static const char * ScrollBarCSS = ""
             "QScrollBar {"
             "   width: 12px;"
@@ -458,32 +471,18 @@ Editor::Editor(EditorPlugin * plugin,
             "   height: 0;"
             "}"
             ;
-    horizontalScrollBar_ = new QScrollBar(Qt::Horizontal, this);
-    verticalScrollBar_ = new QScrollBar(Qt::Vertical, this);
     verticalScrollBar_->setStyleSheet(ScrollBarCSS);
-    verticalScrollBar_->installEventFilter(this);
     horizontalScrollBar_->setStyleSheet(HorizontalScrollBarCSS);
-    plane_ = new EditorPlane(
-                doc_,
-                analizer_,
-                this,
-                cursor_,
-                clipboard_,
-                settings_,
-                horizontalScrollBar_,
-                verticalScrollBar_,
-                analizer_!=NULL,
-                this);
+}
+
+void Editor::createConnections()
+{
+    installEventFilter(this);
     plane_->installEventFilter(this);
+    verticalScrollBar_->installEventFilter(this);
+    qApp->installEventFilter(plane_);
+
     connect(plane_, SIGNAL(message(QString)), this, SIGNAL(message(QString)));
-
-    findReplace_ = new FindReplace(doc_, cursor_, plane_);
-
-    timerId_ = startTimer(50);
-    autoScrollTimerId_ = startTimer(100);
-    autoScrollStateY_ = 0;
-    autoScrollStateX_ = 0;
-
     connect(cursor_, SIGNAL(positionChanged(int,int)),
             this, SLOT(updatePosition(int,int)));
 
@@ -493,29 +492,12 @@ Editor::Editor(EditorPlugin * plugin,
     connect(plane_, SIGNAL(requestAutoScrollX(char)),
             this, SLOT(handleAutoScrollChangeX(char)));
 
-    updatePosition(cursor_->row(), cursor_->column());
-
-    createActions();
-    plane_->addContextMenuAction(cut_);
-    plane_->addContextMenuAction(copy_);
-    plane_->addContextMenuAction(paste_);
-
-
     connect(doc_, SIGNAL(completeCompilationRequest(QStringList,QStringList,int)),
             this, SLOT(handleCompleteCompilationRequiest(QStringList,QStringList,int)), Qt::DirectConnection);
 
     connect(doc_->undoStack(), SIGNAL(cleanChanged(bool)), this, SIGNAL(documentCleanChanged(bool)));
 
-    QGridLayout * l = new QGridLayout();
-    l->setContentsMargins(0,0,0,0);
-    l->setSpacing(0);
-    setLayout(l);
-    l->addWidget(plane_, 0, 0);
-    l->addWidget(verticalScrollBar_, 0, 1);
-    l->addWidget(horizontalScrollBar_, 1, 0);
     connect(plane_, SIGNAL(urlsDragAndDropped(QList<QUrl>)), this, SIGNAL(urlsDragAndDropped(QList<QUrl>)));
-
-    updateInsertMenu();
 
     connect(doc_->undoStack(), SIGNAL(canRedoChanged(bool)), cursor_, SLOT(handleRedoChanged(bool)));
     connect(doc_->undoStack(), SIGNAL(canUndoChanged(bool)), cursor_, SLOT(handleUndoChanged(bool)));
@@ -523,6 +505,29 @@ Editor::Editor(EditorPlugin * plugin,
 
     connect(plane_, SIGNAL(enableInsertActions()), this, SLOT(enableInsertActions()));
     connect(plane_, SIGNAL(disableInsertActions()), this, SLOT(disableInsertActions()));
+
+    connect(horizontalScrollBar_, SIGNAL(valueChanged(int)), plane_, SLOT(update()));
+    connect(verticalScrollBar_, SIGNAL(valueChanged(int)), plane_, SLOT(update()));
+
+    connect(cursor_, SIGNAL(updateRequest()), plane_, SLOT(updateCursor()));
+    connect(cursor_, SIGNAL(updateRequest(int,int)), plane_, SLOT(updateText(int,int)));
+
+    connect(autocompleteWidget_, SIGNAL(requestHelpForAlgorithm(QString)),
+            this, SIGNAL(requestHelpForAlgorithm(QString)));
+    connect(autocompleteWidget_, SIGNAL(hidden()), plane_, SIGNAL(enableInsertActions()));
+    connect(autocompleteWidget_, SIGNAL(acceptedSuggestion(QString)),
+            plane_, SLOT(finishAutoCompletion(QString)));
+
+}
+
+QScrollBar * Editor::scrollBar(Qt::Orientation orientation)
+{
+    if (orientation == Qt::Horizontal) {
+        return horizontalScrollBar_;
+    }
+    else {
+        return verticalScrollBar_;
+    }
 }
 
 void Editor::paintEvent(QPaintEvent * e)
@@ -648,7 +653,7 @@ void Editor::createActions()
     connect(cursor_, SIGNAL(redoAvailable(bool)), redo_, SLOT(setEnabled(bool)));
     QObject::connect(redo_, SIGNAL(triggered()), this, SLOT(redo()));
 
-    if (analizer_) {
+    if (analizerPlugin_) {
         toggleComment_ = new QAction(plane_);
         toggleComment_->setText(QObject::tr("(Un)Comment lines"));
         toggleComment_->setShortcut(QKeySequence("Ctrl+/"));
@@ -692,7 +697,7 @@ void Editor::createActions()
     editMenu_->addAction(deleteLine_);
     editMenu_->addAction(deleteTail_);
 
-    if (analizer_) {
+    if (analizerPlugin_) {
         editMenu_->addSeparator();
         editMenu_->addAction(toggleComment_);
     }
@@ -724,15 +729,11 @@ TextDocument * Editor::document()
     return doc_;
 }
 
-const Shared::AnalizerInterface * Editor::analizer() const
+Shared::Analizer::InstanceInterface * Editor::analizer()
 {
-    return analizer_;
+    return analizerInstance_;
 }
 
-Shared::AnalizerInterface * Editor::analizer()
-{
-    return analizer_;
-}
 
 Editor::~Editor()
 {
@@ -742,18 +743,7 @@ Editor::~Editor()
 }
 
 
-void Editor::setSettings(ExtensionSystem::SettingsPtr s)
-{
-    settings_ = s;
-    plane_->settings_ = s;
-    QFont defaultFont;
-    defaultFont.setFamily(s->value(SettingsPage::KeyFontName, SettingsPage::defaultFontFamily()).toString());
-    defaultFont.setPointSize(s->value(SettingsPage::KeyFontSize, SettingsPage::defaultFontSize).toInt());
-    plane_->setFont(defaultFont);
-    plane_->update();
-}
-
-QList<QAction*> Editor::toolbarActions()
+QList<QAction*> Editor::toolBarActions() const
 {
     QList<QAction*> result;
     result << cut_;
@@ -795,13 +785,13 @@ void Editor::toggleRecordMacro(bool on)
                     usedNames.push_back(m.title);
                 }
             }
-            editor->setMacroPrefix(settings_->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()+", ");
+            editor->setMacroPrefix(mySettings()->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()+", ");
             editor->setUsedSymbols(usedLetters, usedNames);
             editor->setMacro(macro);
             if (editor->exec() == QDialog::Accepted) {
                 Macro newMacro = *macro;
                 userMacros_.push_back(newMacro);
-                plugin_->updateUserMacros(analizer_ ? analizer_->defaultDocumentFileNameSuffix().mid(1) : QString(), userMacros_, true);
+                plugin_->updateUserMacros(analizerPlugin_ ? analizerPlugin_->defaultDocumentFileNameSuffix().mid(1) : QString(), userMacros_, true);
             }
             editor->deleteLater();
         }
@@ -815,14 +805,14 @@ void Editor::editMacros()
     MacroListEditor * editor = new MacroListEditor(this);
     editor->initialize(userMacros_,
                        systemMacros_,
-                       settings_->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()+", ");
+                       mySettings()->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()+", ");
     editor->exec();
     userMacros_ = editor->result();
-    plugin_->updateUserMacros(analizer_ ? analizer_->defaultDocumentFileNameSuffix().mid(1) : QString(), userMacros_, true);
+    plugin_->updateUserMacros(analizerPlugin_ ? analizerPlugin_->defaultDocumentFileNameSuffix().mid(1) : QString(), userMacros_, true);
     editor->deleteLater();
 }
 
-QList<QMenu*> Editor::menuActions()
+QList<QMenu*> Editor::menus() const
 {
     QList<QMenu*> result;
     result << editMenu_;
@@ -889,12 +879,22 @@ void Editor::restoreState(const QByteArray &data)
 
 void Editor::setKumFile(const KumFile::Data &data)
 {
-    doc_->setKumFile(data, teacherMode_);
-    if (analizer_) {
-        analizer_->setSourceText(
-                    doc_->id_,
-                    data.visibleText + "\n" + data.hiddenText
-                    );
+    doc_->setKumFile(data, plugin_->teacherMode_);
+    if (analizerInstance_) {
+        analizerInstance_->setSourceText(data.visibleText + "\n" + data.hiddenText);
+        updateFromAnalizer();
+    }
+    plane_->setLineHighlighted(-1, QColor(), 0, 0);
+    plane_->update();
+    checkForClean();
+    setNotModified();
+}
+
+void  Editor::setPlainText(const QString & data)
+{
+    doc_->setPlainText(data);
+    if (analizerInstance_) {
+        analizerInstance_->setSourceText(data);
         updateFromAnalizer();
     }
     plane_->setLineHighlighted(-1, QColor(), 0, 0);
@@ -902,25 +902,112 @@ void Editor::setKumFile(const KumFile::Data &data)
     checkForClean();
 }
 
-void  Editor::setPlainText(const QString & data)
+KumFile::Data Editor::documentContents() const
 {
-    doc_->setPlainText(data);
-    if (analizer_) {
-        analizer_->setSourceText(doc_->id_, data);
-        updateFromAnalizer();
-    }
-    plane_->update();
-    checkForClean();
+    KumFile::Data data = doc_->toKumFile();
+    data.sourceUrl = documentUrl_;
+    return data;
 }
 
-KumFile::Data Editor::toKumFile() const
+void Editor::saveDocument(const QString &fileName) const
 {
-    return doc_->toKumFile();
+    QFile f(fileName);
+    if (f.open(QIODevice::WriteOnly|QIODevice::Text)) {
+        saveDocument(&f);
+        f.close();
+        documentUrl_ = QUrl::fromLocalFile(fileName);
+    }
+    else {
+        throw tr("Can't open file %1 for writing").arg(fileName);
+    }
+}
+
+void Editor::saveDocument(QIODevice *device) const
+{
+    QDataStream ds(device);
+    ds << documentContents();
+}
+
+quint32 Editor::errorLinesCount() const
+{
+    QSet<int> lines;
+    if (analizerInstance_) {
+        QList<Shared::Analizer::Error> errors = analizerInstance_->errors();
+        foreach (const Shared::Analizer::Error & e, errors) {
+            if (e.line >= 0) {
+                lines.insert(e.line);
+            }
+        }
+    }
+    return lines.size();
+}
+
+void Editor::highlightLineGreen(int lineNo, quint32 colStart, quint32 colEnd)
+{
+    const QColor bgColor = palette().color(QPalette::Base);
+    int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
+    QColor color;
+    if (darkness / 3 <= 127) {
+        color = QColor("palegreen");
+    }
+    else {
+        color = QColor(Qt::darkGreen);
+    }
+    setLineHighlighted(lineNo, color, colStart, colEnd);
+}
+
+void Editor::highlightLineRed(int lineNo, quint32 colStart, quint32 colEnd)
+{
+    const QColor bgColor = palette().color(QPalette::Base);
+    int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
+    QColor color;
+    if (darkness / 3 <= 127) {
+        color = QColor("lightcoral");
+    }
+    else {
+        color = QColor(Qt::red);
+    }
+    setLineHighlighted(lineNo, color, colStart, colEnd);
+}
+
+void Editor::unhighlightLine()
+{
+    setLineHighlighted(-1, QColor::Invalid, 0u, 0u);
 }
 
 void Editor::ensureAnalized()
 {
     doc_->forceCompleteRecompilation(QPoint(cursor_->column(), cursor_->row()));
+}
+
+bool Editor::isTeacherMode() const
+{
+    return plugin_->teacherMode_;
+}
+
+void Editor::updateSettings()
+{
+    plane_->updateSettings();
+    plane_->update();
+}
+
+void Editor::changeGlobalState(quint32 prevv, quint32 currentt)
+{
+    ExtensionSystem::GlobalState prev = ExtensionSystem::GlobalState(prevv);
+    ExtensionSystem::GlobalState current = ExtensionSystem::GlobalState(currentt);
+
+    if (current==ExtensionSystem::GS_Unlocked || current==ExtensionSystem::GS_Running) {
+        unhighlightLine();
+    }
+    if (prev==ExtensionSystem::GS_Observe && current!=ExtensionSystem::GS_Observe) {
+        clearMarginText();
+    }
+    if (current==ExtensionSystem::GS_Unlocked || current==ExtensionSystem::GS_Observe) {
+        unlock();
+    }
+    else {
+        lock();
+    }
 }
 
 void Editor::setNotModified()
@@ -953,7 +1040,7 @@ void Editor::setForceNotSavedFlag(bool v)
 
 QDataStream & operator<< (QDataStream & stream, const Editor & editor)
 {
-    stream << KumFile::toString(editor.toKumFile());
+    stream << KumFile::toString(editor.documentContents());
     stream << editor.cursor()->row();
     stream << editor.cursor()->column();
     stream << quint8(editor.forceNotSavedFlag());

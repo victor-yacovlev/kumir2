@@ -25,24 +25,23 @@ class KumirProgram : public QObject
     Q_OBJECT
 public:
     explicit KumirProgram(QObject *parent = 0);
-    inline void setBytecodeGenerator(GeneratorInterface * bc) { plugin_bytcodeGenerator = bc; }
-    inline void setEditorPlugin(EditorInterface * ed) { plugin_editor = ed; }
-    void setAST(const AST::DataPtr ast);
-    inline QActionGroup * actions() { return gr_actions; }
-    inline bool isRunning() const { return e_state!=Idle; }
-    inline void setSourceFileName(const QString & s) { s_sourceFileName = s; }
-    inline void setDocumentId(int id) { if (e_state==Idle) documentId_ = id; }
-    inline int documentId() const { return documentId_; }
-    inline void setMainWidget(QWidget * w) { w_mainWidget = w; }
-    void setTerminal(Term * t, QDockWidget * w);
-    void setBytecodeRun(KPlugin * run);
 
-    inline QString endStatus() const { return s_endStatus; }
+    inline Shared::Editor::InstanceInterface * editorInstance() const {
+        return editor_;
+    }
+    inline void setEditorInstance(Shared::Editor::InstanceInterface * editor) {
+        editor_ = editor;
+    }
+
+    inline QActionGroup * actions() { return actions_; }
+    inline bool isRunning() const { return state_!=Idle; }
+    inline void setMainWidget(QWidget * w) { mainWidget_ = w; }
+    void setTerminal(Term * t, QDockWidget * w);
+
+    inline QString endStatus() const { return endStatus_; }
     inline void setCourseManagerRequest() { courseManagerRequest_ = true; }
-    ~KumirProgram();
 signals:
     void giveMeAProgram();
-    void activateDocumentTab(int documentId);
 
 public slots:
     void blindRun();
@@ -61,34 +60,33 @@ private slots:
     void handleRunnerStopped(int);
 
 private:
+    void createActions();
+    void createConnections();
+
+    static Shared::RunInterface * runner();
+    static Shared::GeneratorInterface * generator();
+
     void setAllActorsAnimationFlag(bool animationEnabled);
-    void timerEvent(QTimerEvent *e);
     void prepareKumirRunner(Shared::GeneratorInterface::DebugLevel);
-    enum State { Idle, RegularRun, StepRun, TestingRun } e_state;
-    AST::DataPtr m_ast;
-    QString s_endStatus;
-    QProcess * m_process;
-    Term * m_terminal;
-    QDockWidget * m_terminalWindow;
-    GeneratorInterface * plugin_bytcodeGenerator;
-    RunInterface * plugin_bytecodeRun;
-    EditorInterface * plugin_editor;
-    QAction * a_blindRun;
-    QAction * a_regularRun;
-    QAction * a_testingRun;
-    QAction * a_stepRun;
-    QAction * a_stepIn;
-    QAction * a_stepOut;
-    QAction * a_stop;
-    QActionGroup * gr_actions;
-    QString s_sourceFileName;
+
+private /*fields*/:
+    enum State { Idle, RegularRun, BlindRun, StepRun, TestingRun } state_;
+    QString endStatus_;
+    Term * terminal_;
+    Shared::Editor::InstanceInterface * editor_;
+    QWidget * mainWidget_;
+
+    QAction * blindRunAction_;
+    QAction * regularRunAction_;
+    QAction * testingRunAction_;
+    QAction * stepRunAction_;
+    QAction * stepInAction_;
+    QAction * stepOutAction_;
+    QAction * stopAction_;
+    QActionGroup * actions_;
 
     bool courseManagerRequest_;
 
-    int documentId_;
-    bool b_blind;
-    int i_timerId;
-    QWidget * w_mainWidget;
     bool b_processUserTerminated;
 };
 

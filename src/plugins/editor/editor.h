@@ -1,6 +1,7 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
+#include "extensionsystem/settings.h"
 #include "macro.h"
 #include "dataformats/kumfile.h"
 #include "extensionsystem/settings.h"
@@ -8,50 +9,62 @@
 #include "interfaces/analizerinterface.h"
 #include "editorplugin.h"
 
+#include "interfaces/editor_instanceinterface.h"
+
 #include <QtGui>
 
 namespace Editor {
 
 class Editor
         : public QWidget
+        , public Shared::Editor::InstanceInterface
 {
     Q_OBJECT
+    Q_INTERFACES(Shared::Editor::InstanceInterface)
 public:
     friend class EditorPlane;
     friend class TextCursor;
+    friend class TextDocument;
+
     explicit Editor(
             EditorPlugin * plugin,
             bool initiallyNotSaved = false,
-            ExtensionSystem::SettingsPtr settings = ExtensionSystem::SettingsPtr(),
             Shared::AnalizerInterface * analizer = 0,
-            int documentId = 0,
-            QWidget *parent = 0
+            Shared::Analizer::InstanceInterface * analizerInstance = 0
             );
-    ~Editor();
-    void setHelpViewer(DocBookViewer::DocBookView * viewer);
-    void setTeacherMode(bool v);
-    bool isTeacherMode() const;
-    QList<QAction*> toolbarActions();
-    QSize minimumSizeHint() const;
-    void setSettings(ExtensionSystem::SettingsPtr s);
-    QList<QMenu*> menuActions();
 
-    KumFile::Data toKumFile() const;
+    ~Editor();
+
+    QScrollBar * scrollBar(Qt::Orientation orientation);
+
+    bool isTeacherMode() const;
+    QList<QAction*> toolBarActions() const;
+    QSize minimumSizeHint() const;
+    QList<QMenu*> menus() const;
+
+    KumFile::Data documentContents() const;
+    void saveDocument(const QString &fileName) const;
+    void saveDocument(QIODevice * device) const;
     void setKumFile(const KumFile::Data & data);
     void setPlainText(const QString & data);
     void setDocumentId(int id);
 
+    quint32 errorLinesCount() const;
+
+    void highlightLineGreen(int lineNo, quint32 colStart, quint32 colEnd);
+    void highlightLineRed(int lineNo, quint32 colStart, quint32 colEnd);
+    void unhighlightLine();
+
     const class TextCursor * cursor() const;
     const class TextDocument * document() const;
-    const Shared::AnalizerInterface * analizer() const;
-    Shared::AnalizerInterface * analizer();
+    Shared::Analizer::InstanceInterface * analizer();
     class TextCursor * cursor();
     class TextDocument * document();
     bool isModified() const;
     void appendMarginText(int lineNo, const QString & text);
     void setMarginText(int lineNo, const QString & text, const QColor &fgColor);
     void clearMarginText();
-    void clearMarginText(uint fromLine, uint toLine);
+    void clearMarginText(int fromLine, int toLine);
     void setNotModified();
     void checkForClean();
     void lock();
@@ -66,9 +79,14 @@ public:
     void paintEvent(QPaintEvent *);
     bool eventFilter(QObject *, QEvent *);
     void updateInsertMenu();
+    inline QWidget * widget() { return this; }
 public slots:
     void undo();
     void redo();
+
+    void changeGlobalState(quint32 prevv, quint32 currentt);
+    void updateSettings();
+
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
     void documentCleanChanged(bool v);
@@ -95,6 +113,12 @@ private slots:
     void editMacros();
 
 private /* methods */:
+    ExtensionSystem::SettingsPtr mySettings() const;
+    void setupUi();
+    void createConnections();
+    void setupStyleSheets();
+
+
     void focusInEvent(QFocusEvent *e);
     void loadMacros();    
     void createActions();
@@ -102,18 +126,20 @@ private /* methods */:
     void timerEvent(QTimerEvent *e);
 
 private /* fields */:
+
     EditorPlugin * plugin_;
-    Shared::AnalizerInterface * analizer_;
+    Shared::AnalizerInterface * analizerPlugin_;
+    Shared::Analizer::InstanceInterface * analizerInstance_;
+
     class TextDocument * doc_;
     class TextCursor * cursor_;
     class EditorPlane * plane_;
 
-    static class Clipboard * clipboard_;
     QScrollBar * horizontalScrollBar_;
     QScrollBar * verticalScrollBar_;
-    ExtensionSystem::SettingsPtr settings_;
 
     class FindReplace * findReplace_;
+    class SuggestionsWindow * autocompleteWidget_;
 
     QAction * copy_;
     QAction * paste_;
@@ -140,16 +166,14 @@ private /* fields */:
     QList<Macro> systemMacros_;
     QList<Macro> userMacros_;
 
-    bool teacherMode_;
-
-    DocBookViewer::DocBookView * helpViewer_;
-
     int timerId_;
     int autoScrollTimerId_;
     char autoScrollStateY_;
     char autoScrollStateX_;
 
     bool notSaved_;
+
+    mutable QUrl documentUrl_;
 };
 
 QDataStream & operator<< (QDataStream & stream, const Editor & editor);

@@ -9,8 +9,6 @@
 #include "kumiranalizerplugin.h"
 #include "stdlibmodules.h"
 
-using namespace Shared;
-
 namespace KumirAnalizer {
 
 QLocale::Language AnalizerPrivate::nativeLanguage = QLocale::Russian;
@@ -41,17 +39,34 @@ QString Analizer::sourceText() const
     return d->sourceText.join("\n")+"\n";
 }
 
+std::string Analizer::rawSourceData() const
+{
+    const QString s = sourceText();
+    QByteArray ba;
+    QTextStream ts(&ba);
+    ts.setGenerateByteOrderMark(true);
+    ts.setCodec("UTF-8");
+    ts << s;
+    return std::string(ba.constData());
+}
+
+QString Analizer::createImportStatementLine(const QString &importName) const
+{
+    return d->lexer->importKeyword() + " " + importName;
+}
+
+
 void Analizer::setSourceDirName(const QString &dirName)
 {
     d->analizer->setSourceDirName(dirName);
 }
 
-LineProp Analizer::lineProp(int lineNo, const QString &text) const
+Shared::Analizer::LineProp Analizer::lineProp(int lineNo, const QString &text) const
 {
     AST::ModulePtr currentModule = findModuleByLine(lineNo);
     QList<Lexem*> lexems;
     d->lexer->splitIntoLexems(text, lexems, d->gatherExtraTypeNames(currentModule));
-    LineProp lp(text.length(), LxTypeEmpty);
+    Shared::Analizer::LineProp lp(text.length(), LxTypeEmpty);
     bool delimFound = false;
     for (int i=0; i<lexems.size(); i++) {
         Lexem * lx = lexems[i];
@@ -139,12 +154,6 @@ AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin,
     }
 }
 
-
-void AnalizerPrivate::setHiddenBaseLine(int lineNo)
-{
-    hiddenBaseLine = lineNo;
-}
-
 void AnalizerPrivate::setHiddenText(const QString &text, int baseLineNo)
 {
 //    teacherText = text;
@@ -203,7 +212,7 @@ Analizer::~Analizer()
 }
 
 
-Shared::TextAppend Analizer::closingBracketSuggestion(int lineNo) const
+Shared::Analizer::TextAppend Analizer::closingBracketSuggestion(int lineNo) const
 {
     for (int i=0; i<d->statements.size(); i++) {
         const TextStatementPtr st = d->statements.at(i);
@@ -383,14 +392,14 @@ AST::AlgorithmPtr AnalizerPrivate::findAlgorhitmByPos(AST::DataPtr data, int pos
 
 
 
-QList<Error> Analizer::errors() const
+QList<Shared::Analizer::Error> Analizer::errors() const
 {
-    QList<Error> result;
+    QList<Shared::Analizer::Error> result;
     QList<TextStatementPtr> all = d->statements;
     for (int i=0; i<all.size(); i++) {
         foreach (const Lexem * lx, all[i]->data) {
             if (!lx->error.isEmpty()) {
-                Error err;
+                Shared::Analizer::Error err;
                 err.line = lx->lineNo;
                 err.start = lx->linePos;
                 err.len = lx->length;
@@ -400,7 +409,7 @@ QList<Error> Analizer::errors() const
                             lx->error
                             );
                 if (result.size()>0 && result.last().line==err.line && result.last().code==err.code) {
-                    Error prev = result.last();
+                    Shared::Analizer::Error prev = result.last();
                     result.pop_back();
                     prev.len = (err.start+err.len-prev.start);
                     result << prev;
@@ -414,15 +423,15 @@ QList<Error> Analizer::errors() const
     return result;
 }
 
-QList<LineProp> Analizer::lineProperties() const
+QList<Shared::Analizer::LineProp> Analizer::lineProperties() const
 {
-    QList<LineProp> result;
+    QList<Shared::Analizer::LineProp> result;
     QStringList lines = d->sourceText + d->teacherText.split("\n");
     for (int i=0; i<lines.size(); i++) {
-        result << LineProp(lines[i].size(), LxTypeEmpty);
+        result << Shared::Analizer::LineProp(lines[i].size(), LxTypeEmpty);
     }
 
-    result << LineProp(0, LxTypeEmpty);
+    result << Shared::Analizer::LineProp(0, LxTypeEmpty);
     QList<TextStatementPtr> all = d->statements;
 
     for (int i=0; i<all.size(); i++) {
@@ -775,12 +784,6 @@ const AST::DataPtr Analizer::abstractSyntaxTree() const
 }
 
 
-
-void Analizer::setHiddenBaseLine(int lineNo)
-{
-    d->setHiddenBaseLine(lineNo);
-}
-
 const AST::ModulePtr Analizer::findModuleByLine(int lineNo) const
 {
     if (lineNo==-1)
@@ -838,7 +841,7 @@ const AST::AlgorithmPtr Analizer::findAlgorhitmByLine(const AST::ModulePtr mod, 
     return AST::AlgorithmPtr();
 }
 
-QList<Suggestion> Analizer::suggestAutoComplete(int lineNo, const QString &before, const QString &after) const
+QList<Shared::Analizer::Suggestion> Analizer::suggestAutoComplete(int lineNo, const QString &before, const QString &after) const
 {
     const AST::ModulePtr mod = findModuleByLine(lineNo);
     const AST::AlgorithmPtr alg = findAlgorhitmByLine(mod, lineNo);
@@ -849,14 +852,14 @@ QList<Suggestion> Analizer::suggestAutoComplete(int lineNo, const QString &befor
     QList<Lexem*> afterLexems;
     d->lexer->splitIntoLexems(after, afterLexems, QStringList());
     const TextStatementPtr lastStatement = beforeStatements.size()>0? beforeStatements.last() : TextStatementPtr();
-    QList<Suggestion> result = d->analizer->suggestAutoComplete(lineNo, lastStatement, afterLexems, mod, alg);
-    QList<Suggestion> filteredResult;
+    QList<Shared::Analizer::Suggestion> result = d->analizer->suggestAutoComplete(lineNo, lastStatement, afterLexems, mod, alg);
+    QList<Shared::Analizer::Suggestion> filteredResult;
     for (int i_sugg=0; i_sugg<result.size(); i_sugg++) {
         // filter by space at end
-        const Suggestion & s = result.at(i_sugg);
+        const Shared::Analizer::Suggestion & s = result.at(i_sugg);
         if (before.endsWith(' ') && !before.trimmed().isEmpty()) {
             // suggest only if suggestion bounds by a keyword
-            if (s.kind==Suggestion::SecondaryKeyword ||
+            if (s.kind==Shared::Analizer::Suggestion::SecondaryKeyword ||
                     (lastStatement!=nullptr
                      && lastStatement->data.size()>0 &&
                         (
@@ -876,11 +879,11 @@ QList<Suggestion> Analizer::suggestAutoComplete(int lineNo, const QString &befor
     foreach ( Lexem * lx , afterLexems )
         delete lx;
 
-    QList<Suggestion> cleanResult;
+    QList<Shared::Analizer::Suggestion> cleanResult;
         // Remove duplicates
-    foreach ( const Suggestion & s , filteredResult) {
+    foreach ( const Shared::Analizer::Suggestion & s , filteredResult) {
         bool found = false;
-        foreach ( const Suggestion & ss , cleanResult ) {
+        foreach ( const Shared::Analizer::Suggestion & ss , cleanResult ) {
             if (s.value.trimmed()==ss.value.trimmed()) {
                 found = true;
                 break;

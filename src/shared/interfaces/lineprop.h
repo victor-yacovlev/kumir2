@@ -6,7 +6,7 @@
 
 namespace Shared {
 
-typedef QVector<LexemType> LineProp;
+
 
 } // namespace KumirAnalizer
 

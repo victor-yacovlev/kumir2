@@ -19,6 +19,8 @@ struct Data
     bool hasHiddenText;
     QString sourceEncoding;
     QByteArray hiddenTextSignature;
+    QString canonicalSourceLanguageName; // the same as file suffix after '.'
+    QUrl sourceUrl;
 };
 
 KUMFILE_EXPORT QString toString(const Data & data);

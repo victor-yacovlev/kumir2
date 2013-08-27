@@ -11,6 +11,7 @@ namespace Python3Language {
 
 struct Python3Module;
 using namespace Shared;
+using namespace Shared::Analizer;
 
 class Python3LanguagePlugin
         : public ExtensionSystem::KPlugin
@@ -21,6 +22,8 @@ class Python3LanguagePlugin
     Q_INTERFACES(Shared::AnalizerInterface Shared::RunInterface)
 public:
     Python3LanguagePlugin();
+
+    inline Shared::Analizer::InstanceInterface * createInstance() { return 0; }
 
     inline QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters() const {
         return QList<ExtensionSystem::CommandLineParameter>();
@@ -46,7 +49,6 @@ public:
     QString createImportStatementLine(const QString &importName) const;
     inline QString defaultDocumentFileNameSuffix() const { return ".py"; }
     inline QString languageName() const { return "Python"; }
-    inline ResultType resultType() const { return RT_Source; }
 
     // Runner interface methods
     bool loadProgram(const QString &fileName, const QByteArray & source);

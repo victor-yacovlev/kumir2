@@ -378,15 +378,12 @@ void MainWindow::unlockActions()
     }
 }
 
-void MainWindow::activateDocumentTab(int documentId)
+TabWidgetElement * MainWindow::currentTab()
 {
-    for (int i=0; i<tabWidget_->count(); i++) {
-        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
-        if (twe && twe->type == Program && twe->documentId==documentId) {
-            tabWidget_->setCurrentIndex(i);
-            return;
-        }
-    }
+    if (tabWidget_->count() == 0)
+        return nullptr;
+    else
+        return qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
 }
 
 void MainWindow::checkCounterValue()
@@ -395,14 +392,12 @@ void MainWindow::checkCounterValue()
     using namespace Shared;
     GlobalState state = PluginManager::instance()->currentGlobalState();
     if (state==GS_Unlocked) {
-        if (tabWidget_ && tabWidget_->count()==0)
-            return;
-        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
+        TabWidgetElement * twe = currentTab();
         if (!twe)
             return;
-        if (twe->type==Program) {
-            int id = twe->documentId;
-            quint32 errorsCount = m_plugin->plugin_editor->errorsLinesCount(id);
+        if (twe->editorInstance) {
+            Editor::InstanceInterface * editor = twe->editorInstance;
+            quint32 errorsCount = editor->errorLinesCount();
             statusBar_->setErrorsCounter(errorsCount);
         }
         else {
@@ -457,10 +452,10 @@ void MainWindow::timerEvent(QTimerEvent *e)
 
 bool MainWindow::saveCurrentFile()
 {
-    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
-    if (twe->type==WWW)
+    TabWidgetElement * twe = currentTab();
+    if (!twe->editorInstance)
         return true;
-    const QString fileName = twe->url.toLocalFile();
+    const QString fileName = twe->editorInstance->documentContents().sourceUrl.toLocalFile();
     bool result = 0;
     if (fileName.isEmpty()) {
         result = saveCurrentFileAs();
@@ -469,7 +464,6 @@ bool MainWindow::saveCurrentFile()
         result = saveCurrentFileTo(fileName);
     }
     if (result) {
-//        twe->setProperty("title", QFileInfo(twe->property("realFileName").toString()).fileName());
         setTitleForTab(tabWidget_->currentIndex());
     }
     return result;
@@ -484,8 +478,14 @@ void MainWindow::setTitleForTab(int index)
     if (!currentTabWidget)
         return;
 
-    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
-    QString title = twe->property("title").toString();
+    TabWidgetElement * twe = currentTab();
+    QString title = twe->title();
+    if (title.isEmpty() && twe->type==Program) {
+        title = tr("New Program");
+    }
+    else if (title.isEmpty() && twe->type==Text) {
+        title = tr("New Text");
+    }
     QString appName = tr("Kumir");
     using namespace Shared;
     using namespace ExtensionSystem;
@@ -652,7 +652,7 @@ bool MainWindow::saveCurrentFileAs()
     const QString languageName = analizer->languageName();
     const QString fileNameSuffix = analizer->defaultDocumentFileNameSuffix();
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
-    QString fileName = twe->property("realFileName").toString();
+    QString fileName = twe->editorInstance->documentContents().sourceUrl.toLocalFile();
     QString initialPath;
     if (fileName.isEmpty()) {
         QString lastFileName = m_plugin->mySettings()->value(Plugin::RecentFileKey).toString();
@@ -698,19 +698,15 @@ bool MainWindow::saveCurrentFileAs()
 
 bool MainWindow::saveCurrentFileTo(const QString &fileName)
 {
-    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
-    int documentId = twe->documentId;
-    QString error = m_plugin->plugin_editor->saveDocument(documentId, fileName);
-    if (error.isEmpty()) {
-        twe->saved = QDateTime::currentDateTime();
-        twe->url = QUrl::fromLocalFile(fileName);
-        m_plugin->plugin_editor->setDocumentChangesSaved(documentId);        
-        return true;
+    TabWidgetElement * twe = currentTab();
+    try {
+        twe->editorInstance->saveDocument(fileName);
     }
-    else {
+    catch (const QString & error) {
         QMessageBox::critical(this, tr("Can't save file"), error);
         return false;
     }
+    return true;
 }
 
 void MainWindow::handleDocumentCleanChanged(bool v)
@@ -750,8 +746,7 @@ bool MainWindow::closeTab(int index)
         return false;
     }
     if (twe->type!=WWW) {
-        int documentId = twe->documentId;
-        bool notSaved = m_plugin->plugin_editor->hasUnsavedChanges(documentId);
+        bool notSaved = twe->editorInstance->isModified();
         QMessageBox::StandardButton r;
         if (!notSaved) {
             r = QMessageBox::Discard;
@@ -784,13 +779,13 @@ bool MainWindow::closeTab(int index)
             }
         }
         if (r==QMessageBox::Discard) {
-            m_plugin->plugin_editor->closeDocument(documentId);
+            twe->deleteLater();
             tabWidget_->removeTab(index);
             return true;
         }
         else if (r==QMessageBox::Save) {
             if (saveCurrentFile()) {
-                m_plugin->plugin_editor->closeDocument(documentId);
+                twe->deleteLater();
                 tabWidget_->removeTab(index);
                 return true;
             }
@@ -853,34 +848,27 @@ void MainWindow::newProgram()
     }
     AnalizerInterface * analizer =
             PluginManager::instance()->findPlugin<AnalizerInterface>();
-    KPlugin * analizerPlugin =
-            PluginManager::instance()->findKPlugin<AnalizerInterface>();
-    const QString analizerPluginName = analizerPlugin->pluginSpec().name;
     const QString suffix = analizer->defaultDocumentFileNameSuffix();
     DocumentType type = Program;
-    EditorComponent doc = m_plugin->plugin_editor->newDocument(
-                analizerPluginName,
-                QDir::currentPath(),
-                false
-                );
-    QWidget* vc = doc.widget;
-    connect(doc.widget, SIGNAL(message(QString)), this, SLOT(showMessage(QString)));
-    connect(doc.widget, SIGNAL(requestHelpForAlgorithm(QString)),
+    Shared::Editor::InstanceInterface * editor =
+            m_plugin->plugin_editor->newDocument(suffix, QDir::currentPath());
+
+    QWidget* vc = editor->widget();
+    connect(vc, SIGNAL(message(QString)), this, SLOT(showMessage(QString)));
+    connect(vc, SIGNAL(requestHelpForAlgorithm(QString)),
             this, SLOT(showAlgorithmHelp(QString)));
-    int id = doc.id;
-    vc->setProperty("documentId", id);
+
     QString fileName = suggestNewFileName(suffix);
     vc->setProperty("title",QFileInfo(fileName).fileName());
     vc->setProperty("fileName", QDir::current().absoluteFilePath(fileName));
     TabWidgetElement * e = addCentralComponent(
                 fileName,
                 vc,
-                doc.toolbarActions,
-                doc.menus,
-//                doc.statusbarWidgets,
+                editor->toolBarActions(),
+                editor->menus(),
                 type,
                 true);
-    e->documentId = doc.id;
+    e->editorInstance = editor;
     tabWidget_->setCurrentWidget(e);
     e->setFocus();
 
@@ -900,22 +888,21 @@ void MainWindow::newText()
 
 void MainWindow::newText(const QString &fileName, const QString & text)
 {
-    Shared::EditorComponent doc = m_plugin->plugin_editor->newDocument("", QDir::currentPath(), true);
-    QWidget * vc = doc.widget;
-    connect(doc.widget, SIGNAL(message(QString)), this, SLOT(showMessage(QString)));
-    int id = doc.id;
-    vc->setProperty("documentId", id);
+    Shared::Editor::InstanceInterface * editor =
+            m_plugin->plugin_editor->newDocument("", QDir::currentPath());
+    QWidget * vc = editor->widget();
+    connect(vc, SIGNAL(message(QString)), this, SLOT(showMessage(QString)));
+
     vc->setProperty("fileName", fileName);
     vc->setProperty("title",QFileInfo(fileName).fileName());
     TabWidgetElement * e = addCentralComponent(
                 QFileInfo(fileName).fileName(),
                 vc,
-                doc.toolbarActions,
-                doc.menus,
-//                doc.statusbarWidgets,
+                editor->toolBarActions(),
+                editor->menus(),
                 Text,
                 true);
-    e->documentId = doc.id;
+    e->editorInstance = editor;
     tabWidget_->setCurrentWidget(e);
     if (!text.isEmpty()) {
         tabWidget_->setTabText(tabWidget_->currentIndex(),
@@ -1030,19 +1017,7 @@ void MainWindow::setupContentForTab()
         return;
 
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
-    if (twe->type==Program) {
-        const int id = twe->documentId;
-        const QString fileName = twe->property("fileName").toString();
-        const AnalizerInterface * analizer = m_plugin->plugin_editor->analizer(id);
-        int analizerId = m_plugin->plugin_editor->analizerDocumentId(id);
-        const AST::DataPtr ast = analizer->abstractSyntaxTree(analizerId);
-        m_plugin->kumirProgram_->setAST(ast);
-        m_plugin->kumirProgram_->setSourceFileName(fileName);
-        m_plugin->kumirProgram_->setDocumentId(id);
-    }
-    else {
-        m_plugin->kumirProgram_->setAST(AST::DataPtr());
-    }
+    m_plugin->kumirProgram_->setEditorInstance(twe->editorInstance);
 }
 
 void MainWindow::disableTabs()
@@ -1105,9 +1080,8 @@ void MainWindow::restoreSession()
     bool hasUnsavedChanges = false;
     for (int i=0; i<tabWidget_->count(); i++) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
-        if (twe->type!=WWW) {
-            int documentId = twe->property("documentId").toInt();
-            hasUnsavedChanges = hasUnsavedChanges || m_plugin->plugin_editor->hasUnsavedChanges(documentId);
+        if (twe->editorInstance) {
+            hasUnsavedChanges = hasUnsavedChanges || twe->editorInstance->isModified();
         }
         if (hasUnsavedChanges)
             break;
@@ -1130,87 +1104,7 @@ void MainWindow::restoreSession()
         }
     }
 
-    int sessionIndex = 0;
-
-    for (int index=tabWidget_->count()-1; index>=0; index--) {
-
-        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(index));
-        if (twe->type!=WWW) {
-            int documentId = twe->property("documentId").toInt();
-            m_plugin->plugin_editor->closeDocument(documentId);
-        }
-        tabWidget_->removeTab(index);
-    }
-
-    if (m_plugin->startPage_.widget) {
-
-        addCentralComponent(
-                    tr("Start"),
-                    m_plugin->startPage_.widget,
-                    m_plugin->startPage_.toolbarActions,
-                    m_plugin->startPage_.menus,
-//                    QList<QWidget*>(),
-                    WWW,
-                    false);
-    }
-
-    QDir sessionDir(QDir::currentPath()+"/.session");
-    QStringList es = sessionDir.entryList(
-                QStringList() << "*.document",
-                QDir::Files,
-                QDir::Name
-                );
-
-    for (int i=0; i<es.size(); i++) {
-        const QString e = es[i];
-        QFile f(sessionDir.absoluteFilePath(e));
-        if (f.open(QIODevice::ReadOnly)) {
-            QDataStream stream(&f);
-            QString type, title;
-            QString url;
-            stream >> type >> title >> url;
-            if (type.toLower()=="url") {
-                // TODO implement me
-            }
-            else {
-                QString analizerName;
-                DocumentType doctype = Text;
-                if (type.toLower()=="kumir") {
-                    analizerName = "KumirAnalizer";
-                    doctype = Program;
-                }
-                else if (type.toLower()=="pascal") {
-                    analizerName = "PascalAnalizer";
-                    doctype = Program;
-                }
-                EditorComponent doc = m_plugin->plugin_editor->newDocument(analizerName, QDir::currentPath(), false);
-                QByteArray editorSession = f.readAll();
-                QWidget * vc = doc.widget;
-                connect(doc.widget, SIGNAL(message(QString)), this, SLOT(showMessage(QString)));
-                vc->setProperty("documentId", doc.id);
-                TabWidgetElement * twe = addCentralComponent(
-                            title,
-                            vc,
-                            doc.toolbarActions,
-                            doc.menus,
-//                            doc.statusbarWidgets,
-                            doctype,
-                            true
-                            );
-                twe->documentId = doc.id;
-                twe->setProperty("fileName", title);
-                twe->component->setProperty("fileName", title);
-                twe->setProperty("realFileName", url);
-                twe->component->setProperty("realFileName", url);
-                tabWidget_->setTabText(tabWidget_->count()-1, QFileInfo(title).fileName());
-                m_plugin->plugin_editor->restoreState(doc.id, editorSession);
-
-            }
-            f.close();
-            if (e.endsWith("-active.document"))
-                sessionIndex = i+1;
-        }
-    }
+    int sessionIndex = 0;  
 
     tabWidget_->setCurrentIndex(sessionIndex);
     setupContentForTab();
@@ -1223,9 +1117,8 @@ void MainWindow::closeEvent(QCloseEvent *e)
 //    m_plugin->saveSession();
     if (m_plugin->sessionsDisableFlag_ && b_notabs) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
-        if (twe->type!=WWW) {
-            int documentId = twe->documentId;
-            bool notSaved = m_plugin->plugin_editor->hasUnsavedChanges(documentId);
+        if (twe->editorInstance) {
+            bool notSaved = twe->editorInstance->isModified();
             if (!notSaved) {
                 e->accept();
                 return;
@@ -1236,9 +1129,8 @@ void MainWindow::closeEvent(QCloseEvent *e)
     QStringList unsavedFiles;
     for (int i=0; i<tabWidget_->count(); i++) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
-        if (twe->type!=WWW) {
-            int documentId = twe->documentId;
-            bool notSaved = m_plugin->plugin_editor->hasUnsavedChanges(documentId);
+        if (twe->editorInstance) {
+            bool notSaved = twe->editorInstance->isModified();
             if (notSaved) {
                 QString title = tabWidget_->tabText(i);
                 if (title.endsWith("*")) {
@@ -1321,43 +1213,8 @@ void MainWindow::switchWorkspace() {
 
 void MainWindow::saveSession() const
 {
-    QDir::current().mkpath(".session");
-    QDir sessionDir(QDir::currentPath()+"/.session");
-    QStringList es = sessionDir.entryList(
-                QStringList() << "*.document",
-                QDir::Files,
-                QDir::Name
-                );
-    foreach (const QString e, es) {
-        sessionDir.remove(e);
-    }
     centralRow_->save();
-    bottomRow_->save();
-    for (int i=1; i<tabWidget_->count(); i++) {
-        const QString sessionFileName = QString("%1%2.document")
-                .arg(i, 2, 10, QChar('0'))
-                .arg(i==tabWidget_->currentIndex()? "-active" : "");
-        QFile sessionFile(sessionDir.absoluteFilePath(sessionFileName));
-        if (sessionFile.open(QIODevice::WriteOnly)) {
-            QDataStream stream(&sessionFile);
-            TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
-            if (twe->type==Program)
-                stream << QString("kumir");
-            else if (twe->type==WWW)
-                stream << QString("www");
-            else
-                stream << QString("text");
-            QString title = twe->property("fileName").toString();
-            QString fileName = twe->property("realFileName").toString();
-            stream << title;
-            stream << fileName;
-            if (twe->documentId!=-1 && twe->type!=WWW) {
-                QByteArray editorSession = m_plugin->plugin_editor->saveState(twe->documentId);
-                sessionFile.write(editorSession);
-            }
-            sessionFile.close();
-        }
-    }
+    bottomRow_->save();   
 }
 
 void MainWindow::showAbout()
@@ -1384,43 +1241,37 @@ void MainWindow::fileOpen()
     if (b_notabs) {
         TabWidgetElement * twe =
                 qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
-        if (twe->type != WWW) {
-            int documentId = twe->documentId;
-            EditorInterface * editor =
-                    PluginManager::instance()->findPlugin<EditorInterface>();
-            bool hasUnsavedChanges = editor->hasUnsavedChanges(documentId);
-            if (hasUnsavedChanges) {
-                QMessageBox::StandardButton r = QMessageBox::Cancel;
-                QMessageBox messageBox(
-                            QMessageBox::Question,
-                            tr("Open another file"),
-                            tr("Save current text?"),
-                            QMessageBox::NoButton,
-                            this
-                            );
-                QPushButton * btnSave =
-                        messageBox.addButton(tr("Save"), QMessageBox::AcceptRole);
-                QPushButton * btnDiscard =
-                        messageBox.addButton(tr("Don't save"), QMessageBox::DestructiveRole);
-                QPushButton * btnCancel =
-                        messageBox.addButton(tr("Cancel opening another file"), QMessageBox::RejectRole);
-                messageBox.setDefaultButton(btnSave);
-                messageBox.exec();
-                if (messageBox.clickedButton()==btnSave) {
-                    r = QMessageBox::Save;
-                }
-                if (messageBox.clickedButton()==btnDiscard) {
-                    r = QMessageBox::Discard;
-                }
-                if (messageBox.clickedButton()==btnCancel) {
-                    r = QMessageBox::Cancel;
-                }
-                if (r==QMessageBox::Cancel)
+        if (twe->editorInstance && twe->editorInstance->isModified()) {
+            QMessageBox::StandardButton r = QMessageBox::Cancel;
+            QMessageBox messageBox(
+                        QMessageBox::Question,
+                        tr("Open another file"),
+                        tr("Save current text?"),
+                        QMessageBox::NoButton,
+                        this
+                        );
+            QPushButton * btnSave =
+                    messageBox.addButton(tr("Save"), QMessageBox::AcceptRole);
+            QPushButton * btnDiscard =
+                    messageBox.addButton(tr("Don't save"), QMessageBox::DestructiveRole);
+            QPushButton * btnCancel =
+                    messageBox.addButton(tr("Cancel opening another file"), QMessageBox::RejectRole);
+            messageBox.setDefaultButton(btnSave);
+            messageBox.exec();
+            if (messageBox.clickedButton()==btnSave) {
+                r = QMessageBox::Save;
+            }
+            if (messageBox.clickedButton()==btnDiscard) {
+                r = QMessageBox::Discard;
+            }
+            if (messageBox.clickedButton()==btnCancel) {
+                r = QMessageBox::Cancel;
+            }
+            if (r==QMessageBox::Cancel)
+                return;
+            if (r==QMessageBox::Save) {
+                if (!saveCurrentFile())
                     return;
-                if (r==QMessageBox::Save) {
-                    if (!saveCurrentFile())
-                        return;
-                }
             }
         }
     }
@@ -1532,43 +1383,37 @@ void MainWindow::loadRecentFile(const QString & fullPath)
     if (b_notabs) {
         TabWidgetElement * twe =
                 qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
-        if (twe->type != WWW) {
-            int documentId = twe->documentId;
-            EditorInterface * editor =
-                    PluginManager::instance()->findPlugin<EditorInterface>();
-            bool hasUnsavedChanges = editor->hasUnsavedChanges(documentId);
-            if (hasUnsavedChanges) {
-                QMessageBox::StandardButton r = QMessageBox::Cancel;
-                QMessageBox messageBox(
-                            QMessageBox::Question,
-                            tr("Open another file"),
-                            tr("Save current text?"),
-                            QMessageBox::NoButton,
-                            this
-                            );
-                QPushButton * btnSave =
-                        messageBox.addButton(tr("Save"), QMessageBox::AcceptRole);
-                QPushButton * btnDiscard =
-                        messageBox.addButton(tr("Don't save"), QMessageBox::DestructiveRole);
-                QPushButton * btnCancel =
-                        messageBox.addButton(tr("Cancel opening another file"), QMessageBox::RejectRole);
-                messageBox.setDefaultButton(btnSave);
-                messageBox.exec();
-                if (messageBox.clickedButton()==btnSave) {
-                    r = QMessageBox::Save;
-                }
-                if (messageBox.clickedButton()==btnDiscard) {
-                    r = QMessageBox::Discard;
-                }
-                if (messageBox.clickedButton()==btnCancel) {
-                    r = QMessageBox::Cancel;
-                }
-                if (r==QMessageBox::Cancel)
+        if (twe->editorInstance && twe->editorInstance->isModified()) {
+            QMessageBox::StandardButton r = QMessageBox::Cancel;
+            QMessageBox messageBox(
+                        QMessageBox::Question,
+                        tr("Open another file"),
+                        tr("Save current text?"),
+                        QMessageBox::NoButton,
+                        this
+                        );
+            QPushButton * btnSave =
+                    messageBox.addButton(tr("Save"), QMessageBox::AcceptRole);
+            QPushButton * btnDiscard =
+                    messageBox.addButton(tr("Don't save"), QMessageBox::DestructiveRole);
+            QPushButton * btnCancel =
+                    messageBox.addButton(tr("Cancel opening another file"), QMessageBox::RejectRole);
+            messageBox.setDefaultButton(btnSave);
+            messageBox.exec();
+            if (messageBox.clickedButton()==btnSave) {
+                r = QMessageBox::Save;
+            }
+            if (messageBox.clickedButton()==btnDiscard) {
+                r = QMessageBox::Discard;
+            }
+            if (messageBox.clickedButton()==btnCancel) {
+                r = QMessageBox::Cancel;
+            }
+            if (r==QMessageBox::Cancel)
+                return;
+            if (r==QMessageBox::Save) {
+                if (!saveCurrentFile())
                     return;
-                if (r==QMessageBox::Save) {
-                    if (!saveCurrentFile())
-                        return;
-                }
             }
         }
     }
@@ -1604,32 +1449,21 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
     }
     if (addToRecentFiles && type!=WWW)
         addToRecent(url.toLocalFile());
-    if (type==Program) {
+    if (type==Program || type==Text) {
         QFileInfo f(url.toLocalFile());
-        if (f.isReadable()) {
-            using namespace ExtensionSystem;
-            using namespace Shared;
-            AnalizerInterface * analizer =
-                    PluginManager::instance()->findPlugin<AnalizerInterface>();
-            KPlugin * analizerPlugin =
-                    PluginManager::instance()->findKPlugin<AnalizerInterface>();
-            const QString analizerPluginName = analizerPlugin->pluginSpec().name;
-            EditorComponent doc = m_plugin->plugin_editor->newDocument(
-                        analizerPluginName,
-                        QFileInfo(f).absoluteDir().absolutePath(),
-                        false
-                        );
-            connect(doc.widget, SIGNAL(message(QString)), this, SLOT(showMessage(QString)));
-            connect(doc.widget, SIGNAL(requestHelpForAlgorithm(QString)),
+        Shared::Editor::InstanceInterface * editor = nullptr;
+        try {
+            editor = m_plugin->plugin_editor->loadDocument(url.toLocalFile());
+        }
+        catch (const QString & e) {
+            QMessageBox::critical(this, tr("Can't open file"), e);
+            return nullptr;
+        }
+        if (editor) {
+            QWidget * vc = editor->widget();
+            connect(vc, SIGNAL(message(QString)), this, SLOT(showMessage(QString)));
+            connect(vc, SIGNAL(requestHelpForAlgorithm(QString)),
                     this, SLOT(showAlgorithmHelp(QString)));
-            QWidget * vc = doc.widget;
-            int id = doc.id;
-            m_plugin->plugin_editor->loadDocument(
-                        id,
-                        f.absoluteFilePath(),
-                        analizer->indentsSignificant()
-                        );
-            vc->setProperty("documentId", id);
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             vc->setProperty("fileName", url.toLocalFile());
             vc->setProperty("realFileName", url.toLocalFile());
@@ -1640,51 +1474,16 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             result = addCentralComponent(
                         fileName,
                         vc,
-                        doc.toolbarActions,
-                        doc.menus,
-//                        doc.statusbarWidgets,
-                        Program,
+                        editor->toolBarActions(),
+                        editor->menus(),
+                        type,
                         true);
-            result->documentId = id;
-            result->url = url;
+            result->editorInstance = editor;
             tabWidget_->setCurrentIndex(tabWidget_->count()-1);
             tabWidget_->currentWidget()->setFocus();
             setupContentForTab();
         }
-    }    
-    else if (type==Text) {
-        QFile f(url.toLocalFile());
-        if (f.open(QIODevice::Text|QIODevice::ReadOnly)) {
-            QTextStream ts(&f);
-            ts.setAutoDetectUnicode(true);
-            QString data = ts.readAll();
-            f.close();
-            EditorComponent doc = m_plugin->plugin_editor->newDocument("", "", false);
-            QWidget* vc = doc.widget;
-            int id = doc.id;
-            vc->setProperty("documentId", id);
-            QString fileName = QFileInfo(url.toLocalFile()).fileName();
-            vc->setProperty("fileName", url.toLocalFile());
-            vc->setProperty("realFileName", url.toLocalFile());
-            vc->setProperty("title", fileName);
-            m_plugin->plugin_editor->loadDocument(id, url.toLocalFile(), true);
-            if (b_notabs) {
-                while(tabWidget_->count()) tabWidget_->removeTab(0);
-            }
-            result = addCentralComponent(
-                        fileName,
-                        vc,
-                        doc.toolbarActions,
-                        doc.menus,
-//                        doc.statusbarWidgets,
-                        Text,
-                        true);
-            result->documentId = id;
-            result->url = url;
-            tabWidget_->setCurrentIndex(tabWidget_->count()-1);
-            tabWidget_->currentWidget()->setFocus();
-        }
-    }
+    }        
     else if (type==WWW) {
         BrowserComponent browser = m_plugin->plugin_browser->createBrowser(url, m_plugin->m_browserObjects);
         if (b_notabs) {
@@ -1695,10 +1494,8 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                     browser.widget,
                     browser.toolbarActions,
                     browser.menus,
-//                    QList<QWidget*>(),
                     WWW,
                     true);
-        result->url = url;
         tabWidget_->setCurrentIndex(tabWidget_->count()-1);
         tabWidget_->currentWidget()->setFocus();
     }
@@ -1712,58 +1509,40 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
         )
 {
     typedef GuiInterface::ProgramSourceText ST;
-    TabWidgetElement * result = nullptr;
+    TabWidgetElement * courseManagerTab = nullptr;
     for (int i=0; i<tabWidget_->count(); i++) {
         TabWidgetElement * courseTab =
                 qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
         if (courseTab && courseTab->isCourseManagerTab()) {
-            result = courseTab;
+            courseManagerTab = courseTab;
             break;
         }
     }
     if (data.language == ST::Kumir) {
         QWidget * vc = nullptr;
-        int id = -1;
-        if (result) {
+        Shared::Editor::InstanceInterface * editor =
+                m_plugin->plugin_editor->loadDocument(data.content);
+        if (courseManagerTab) {
             // Reuse opened course manager tab
-            id = result->documentId;
-            vc = result->component;
+            QObject * oldEditor = dynamic_cast<QObject*>(courseManagerTab->editorInstance);
+            oldEditor->deleteLater();
+            courseManagerTab->editorInstance = editor;
         }
         else {
             // Create new course manager tab
-            EditorComponent doc =
-                    m_plugin->plugin_editor->newDocument(
-                        "KumirAnalizer",
-                        QFileInfo(data.url.toLocalFile())
-                            .absoluteDir().absolutePath(),
-                        false
-                        );
-            vc = doc.widget;
-            id = doc.id;
-            QList<QAction*> toolBarActions = doc.toolbarActions;
-            QList<QMenu*> menus = doc.menus;
-            result = addCentralComponent(
+            courseManagerTab = addCentralComponent(
                         data.title,
-                        vc,
-                        toolBarActions,
-                        menus,
-//                        doc.statusbarWidgets,
+                        editor->widget(),
+                        editor->toolBarActions(),
+                        editor->menus(),
                         Program,
                         true
                         );
+            courseManagerTab->setCourseManagerTab(true);
         }
-        m_plugin->plugin_editor->loadDocument(id, data.content);
-        result->saved = data.saved;
-        result->changed = data.changed;
-        result->url = data.url;
-        result->documentId = id;
-        vc->setProperty("title", data.title);
-        vc->setProperty("documentId", id);
-        vc->setProperty("fromCourseManager", true);
-        vc->setProperty("realFileName", data.url.toLocalFile());
     }
-    tabWidget_->setCurrentWidget(result);
-    return result;
+    tabWidget_->setCurrentWidget(courseManagerTab);
+    return courseManagerTab;
 }
 
 Shared::GuiInterface::ProgramSourceText
@@ -1772,22 +1551,19 @@ MainWindow::courseManagerProgramSource() const
     typedef GuiInterface::ProgramSourceText ST;
     ST result;
     result.language = ST::Kumir; // TODO implement for other languages
-    TabWidgetElement * tab = nullptr;
+    TabWidgetElement * courseManagerTab = nullptr;
     for (int i=0; i<tabWidget_->count(); i++) {
         TabWidgetElement * courseTab =
                 qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
         if (courseTab && courseTab->isCourseManagerTab()) {
-            tab = courseTab;
+            courseManagerTab = courseTab;
             break;
         }
     }
-    if (tab) {
-        result.saved = tab->saved;
-        result.changed = tab->changed;
-        result.url = tab->url;
-        result.title = tab->title();
-        int id = tab->documentId;
-        result.content = m_plugin->plugin_editor->documentContent(id);
+    if (courseManagerTab) {
+        result.content = courseManagerTab->editorInstance->documentContents();
+        result.url = result.content.sourceUrl;
+        result.title = courseManagerTab->title();
     }
     return result;
 }

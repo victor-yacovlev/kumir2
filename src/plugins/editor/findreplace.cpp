@@ -5,6 +5,7 @@
 // Kumir includes
 #include "textdocument.h"
 #include "textcursor.h"
+#include "editor.h"
 
 // Qt includes
 #include <QPainter>
@@ -13,15 +14,10 @@
 
 namespace Editor {
 
-FindReplace::FindReplace(
-        TextDocument * document,
-        TextCursor * cursor,
-        QWidget * parent
-        )
-    : QWidget(parent)
+FindReplace::FindReplace(Editor * editor)
+    : QWidget(editor)
     , ui(new Ui::FindReplace)
-    , document_(document)
-    , cursor_(cursor)
+    , editor_(editor)
 {
     ui->setupUi(this);
     connect(ui->btnMore, SIGNAL(clicked(bool)),
@@ -185,8 +181,8 @@ FindReplace::~FindReplace()
 void FindReplace::handleSearchParameterChanged()
 {
     bool currentMatch = false;
-    if (cursor_->hasSelection()) {
-        const QString currentSearch = cursor_->selectedText();
+    if (editor_->cursor()->hasSelection()) {
+        const QString currentSearch = editor_->cursor()->selectedText();
         const QString text = ui->find->text();
         const bool patternFlag = ui->searchMode->currentIndex() == 1;
         const bool matchCaseFlag = ui->matchCase->isChecked();
@@ -217,7 +213,7 @@ void FindReplace::handleReturnPressed()
         }
     }
     else if (sender() == ui->replace) {
-        if (cursor_->hasSelection()) {
+        if (editor_->cursor()->hasSelection()) {
             doReplace();
         }
         else {
@@ -228,11 +224,11 @@ void FindReplace::handleReturnPressed()
 
 void FindReplace::doFindFirst(const QString &text)
 {
-    cursor_->removeSelection();
+    editor_->cursor()->removeSelection();
     const bool patternFlag = ui->searchMode->currentIndex() == 1;
     const bool matchCaseFlag = ui->matchCase->isChecked();
     const QPoint start(0, 0);
-    const QPoint end(0, document_->linesCount());
+    const QPoint end(0, editor_->document()->linesCount());
     findText(text, start, end, patternFlag, matchCaseFlag, 1);
 }
 
@@ -240,14 +236,14 @@ void FindReplace::doFindNext()
 {
     const bool patternFlag = ui->searchMode->currentIndex() == 1;
     const bool matchCaseFlag = ui->matchCase->isChecked();
-    QPoint start(cursor_->column(), cursor_->row());
-    if (cursor_->hasSelection()) {
+    QPoint start(editor_->cursor()->column(), editor_->cursor()->row());
+    if (editor_->cursor()->hasSelection()) {
         int fromRow, fromCol, toRow, toCol;
-        cursor_->selectionBounds(fromRow, fromCol, toRow, toCol);
+        editor_->cursor()->selectionBounds(fromRow, fromCol, toRow, toCol);
         start.ry() = qMax(fromRow, toRow);
         start.rx() = qMax(fromCol, toCol);
     }
-    const QPoint end(0, document_->linesCount());
+    const QPoint end(0, editor_->document()->linesCount());
     findText(ui->find->text(), start, end, patternFlag, matchCaseFlag, 1);
 }
 
@@ -256,10 +252,10 @@ void FindReplace::doFindPrevious()
     const bool patternFlag = ui->searchMode->currentIndex() == 1;
     const bool matchCaseFlag = ui->matchCase->isChecked();
     const QPoint start(0, 0);
-    QPoint end(cursor_->column(), cursor_->row());
-    if (cursor_->hasSelection()) {
+    QPoint end(editor_->cursor()->column(), editor_->cursor()->row());
+    if (editor_->cursor()->hasSelection()) {
         int fromRow, fromCol, toRow, toCol;
-        cursor_->selectionBounds(fromRow, fromCol, toRow, toCol);
+        editor_->cursor()->selectionBounds(fromRow, fromCol, toRow, toCol);
         end.ry() = qMin(fromRow, toRow);
         end.rx() = qMin(fromCol, toCol);
     }
@@ -283,11 +279,11 @@ void FindReplace::findText(
 
     if (direction == 1) {
         for (uint line=fromLine; line<toLine; line++) {
-            const uint indent = 2 * document_->indentAt(line);
+            const uint indent = 2 * editor_->document()->indentAt(line);
             const uint startPos = line==fromLine
                     ? qMax(0, int(fromPos) - int(indent))
                     : 0;
-            const QString & lineText = document_->textAt(line);
+            const QString & lineText = editor_->document()->textAt(line);
             int spos = -1;
             uint ssize = 0;
             if (!patternFlag) {
@@ -315,8 +311,8 @@ void FindReplace::findText(
     }
     else if (direction == -1) {
         for (uint line=toLine + 1; line-- > fromLine; ) {
-            const uint indent = 2 * document_->indentAt(line);
-            const QString & lineText = document_->textAt(line);
+            const uint indent = 2 * editor_->document()->indentAt(line);
+            const QString & lineText = editor_->document()->textAt(line);
             const uint endPos = line==toLine
                     ? qMax(0, int(toPos) - int(indent))
                     : qMax(0, lineText.length()-1);
@@ -354,11 +350,11 @@ void FindReplace::markFoundText(
         const char direction
         )
 {
-    cursor_->removeSelection();
+    editor_->cursor()->removeSelection();
     if (direction == 1) {
         // select from left to right
-        cursor_->moveTo(lineNo, fromPos);
-        cursor_->movePosition(
+        editor_->cursor()->moveTo(lineNo, fromPos);
+        editor_->cursor()->movePosition(
                     QTextCursor::NextCell,
                     TextCursor::MM_Select,
                     toPos - fromPos
@@ -366,8 +362,8 @@ void FindReplace::markFoundText(
     }
     else if (direction == -1) {
         // select from right to left
-        cursor_->moveTo(lineNo, toPos);
-        cursor_->movePosition(
+        editor_->cursor()->moveTo(lineNo, toPos);
+        editor_->cursor()->movePosition(
                     QTextCursor::PreviousCell,
                     TextCursor::MM_Select,
                     toPos - fromPos
@@ -393,8 +389,8 @@ QRegExp FindReplace::makeAPatternRegExp(QString s, const bool matchCaseFlag)
 
 void FindReplace::doReplace()
 {
-    if (cursor_->hasSelection()) {
-        cursor_->insertText(ui->replace->text());
+    if (editor_->cursor()->hasSelection()) {
+        editor_->cursor()->insertText(ui->replace->text());
     }
     doFindNext();
 }
@@ -402,14 +398,14 @@ void FindReplace::doReplace()
 void FindReplace::doReplaceAll()
 {
     doFindFirst(ui->find->text());
-    if (!cursor_->hasSelection()) {
+    if (!editor_->cursor()->hasSelection()) {
         return; // Prevent pushing anything to undo stack
     }
-    document_->undoStack()->beginMacro("replaceAll");
-    while (cursor_->hasSelection()) {
+    editor_->document()->undoStack()->beginMacro("replaceAll");
+    while (editor_->cursor()->hasSelection()) {
         doReplace();
     }
-    document_->undoStack()->endMacro();
+    editor_->document()->undoStack()->endMacro();
 }
 
 

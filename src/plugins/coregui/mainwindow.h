@@ -44,6 +44,7 @@ public:
 
 
     ~MainWindow();
+    class TabWidgetElement * currentTab();
     void disableTabs();
     QSize minimumSizeHint() const;
 public slots:
@@ -81,7 +82,6 @@ public slots:
     void showAbout();
     void showUserManual();
     void showHelp();
-    void activateDocumentTab(int documentId);
     void updateSettings(ExtensionSystem::SettingsPtr settings);
 
 private slots:
@@ -104,7 +104,7 @@ private slots:
 
 
 private:
-    void createSettingsDialog();
+    void createSettingsDialog();        
 
 
     void timerEvent(QTimerEvent *e);

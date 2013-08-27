@@ -188,7 +188,7 @@ void SuggestionsWindow::acceptItem()
     hide();
 }
 
-SuggestionItem::SuggestionItem(const Shared::Suggestion &suggestion,
+SuggestionItem::SuggestionItem(const Shared::Analizer::Suggestion &suggestion,
                                SuggestionsWindow *factory,
                                DocBookViewer::DocBookView * helpViewer
                                )
@@ -196,22 +196,22 @@ SuggestionItem::SuggestionItem(const Shared::Suggestion &suggestion,
 {
     setText(suggestion.value);
     setToolTip(suggestion.description);
-    if (suggestion.kind==Shared::Suggestion::Local) {
+    if (suggestion.kind==Shared::Analizer::Suggestion::Local) {
         setIcon(factory->icon_local_);
     }
-    else if (suggestion.kind==Shared::Suggestion::Global) {
+    else if (suggestion.kind==Shared::Analizer::Suggestion::Global) {
         setIcon(factory->icon_global_);
     }
-    else if (suggestion.kind==Shared::Suggestion::Algorithm) {
+    else if (suggestion.kind==Shared::Analizer::Suggestion::Algorithm) {
         setIcon(factory->icon_algorithm_);
     }
-    else if (suggestion.kind==Shared::Suggestion::BuiltinModule) {
+    else if (suggestion.kind==Shared::Analizer::Suggestion::BuiltinModule) {
         setIcon(factory->icon_module_);
     }
-    else if (suggestion.kind==Shared::Suggestion::KumirModule) {
+    else if (suggestion.kind==Shared::Analizer::Suggestion::KumirModule) {
         setIcon(factory->icon_kumfile_);
     }
-    else if (suggestion.kind==Shared::Suggestion::SecondaryKeyword) {
+    else if (suggestion.kind==Shared::Analizer::Suggestion::SecondaryKeyword) {
         setIcon(factory->icon_keyword_);
     }
     else {
@@ -224,7 +224,7 @@ SuggestionItem::SuggestionItem(const Shared::Suggestion &suggestion,
 
 void SuggestionsWindow::init(
         const QString &,
-        const QList<Shared::Suggestion> &suggestions,
+        const QList<Shared::Analizer::Suggestion> &suggestions,
         DocBookViewer::DocBookView * helpViewer
         )
 {
@@ -234,7 +234,7 @@ void SuggestionsWindow::init(
     const QFontMetrics fm (ui->alist->font());
     int prefHeight = fm.height()*(5+suggestions.size());
     for (int index = 0; index<suggestions.size(); index++) {
-        const Shared::Suggestion & s = suggestions.at(index);
+        const Shared::Analizer::Suggestion & s = suggestions.at(index);
         SuggestionItem * item = new SuggestionItem(s, this, helpViewer);
         itemModel_->appendRow(item);
         prefWidth = qMax(prefWidth, 100+fm.width(s.value));

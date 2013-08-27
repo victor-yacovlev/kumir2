@@ -17,14 +17,27 @@ class EditorPlugin
     Q_INTERFACES(Shared::EditorInterface)
 public:
     friend class Editor;
+    friend class EditorPlane;
     EditorPlugin();
     ~EditorPlugin();
 
-    struct Shared::EditorComponent newDocument(const QString &analizerName
-            , const QString &documentDir
-            , bool initiallyNotSaved);
+    Shared::Editor::InstanceInterface * newDocument(
+            const QString & canonicalLanguageName = "",
+            const QString & documentDir = "");
 
-    void setDocBookViewer(DocBookViewer::DocBookView * viewer);
+    Shared::Editor::InstanceInterface * loadDocument(
+            QIODevice * device,
+            const QString & fileNameSuffix = "",
+            const QString & sourceEncoding = "",
+            const QUrl & sourceUrl = QUrl()
+            ) /* throws QString */;
+
+    Shared::Editor::InstanceInterface * loadDocument(
+            const QString & fileName) /* throws QString */;
+
+    Shared::Editor::InstanceInterface * loadDocument(
+            const KumFile::Data &data) /* throws QString */;
+
     int analizerDocumentId(int editorDocumentId) const;
     void closeDocument(int documentId);
     QWidget* settingsEditorPage();
@@ -47,7 +60,15 @@ public:
     QByteArray saveState(int documentId);
     void restoreState(int documentId, const QByteArray & data);
     void updateSettings();
+
+signals:
+    void settingsUpdateRequest();
+    void globalStateUpdateRequest(quint32, quint32);
+
 protected:
+
+    void connectGlobalSignalsToEditor(class Editor * editor);
+
     QString initialize(const QStringList &configurationArguments,
                        const ExtensionSystem::CommandLine &);
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
@@ -67,7 +88,7 @@ private:
     QVector< Ed > editors_;
     class SettingsPage * settingsPage_;
     bool teacherMode_;
-    DocBookViewer::DocBookView * helpViewer_;
+//    DocBookViewer::DocBookView * helpViewer_;
     QString currentDirectory_;
 };
 

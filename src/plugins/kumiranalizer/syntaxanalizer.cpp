@@ -106,7 +106,7 @@ AST::Type typeFromSignature(QString s) {
     return result;
 }
 
-QList<Shared::Suggestion>
+QList<Shared::Analizer::Suggestion>
 SyntaxAnalizer::suggestImportAutoComplete(
         int lineNo,
         const TextStatementPtr,
@@ -114,13 +114,13 @@ SyntaxAnalizer::suggestImportAutoComplete(
         ) const
 {
     AST::ModulePtr currentModule = analizer_->findModuleByLine(lineNo);
-    QList<Shared::Suggestion> result;
+    QList<Shared::Analizer::Suggestion> result;
     foreach (const AST::ModulePtr mod , ast_->modules) {
         if (!mod->isEnabledFor(currentModule) && mod->header.name.length()>0) {
-            Shared::Suggestion suggestion;
+            Shared::Analizer::Suggestion suggestion;
             suggestion.value = mod->header.name;
             suggestion.description = tr("Built-it module %1").arg(mod->header.name);
-            suggestion.kind = Shared::Suggestion::BuiltinModule;
+            suggestion.kind = Shared::Analizer::Suggestion::BuiltinModule;
             result.push_back(suggestion);
         }
     }
@@ -128,26 +128,26 @@ SyntaxAnalizer::suggestImportAutoComplete(
     QSet<QString> kumFiles;
     foreach ( const QString fileName , programDir.entryList(QStringList() << "*.kum") ) {
         kumFiles.insert(fileName);
-        Shared::Suggestion suggestion;
+        Shared::Analizer::Suggestion suggestion;
         suggestion.value = "\""+fileName+"\"";
         suggestion.description = tr("Use file \"%1\" as module").arg(fileName);
-        suggestion.kind = Shared::Suggestion::KumirModule;
+        suggestion.kind = Shared::Analizer::Suggestion::KumirModule;
         result.push_back(suggestion);
     }
     foreach ( const QString fileName , programDir.entryList(QStringList() << "*.kod") ) {
         const QString kumFileName = fileName.left(fileName.length()-4) + ".kum";
         if (!kumFiles.contains(kumFileName)) {
-            Shared::Suggestion suggestion;
+            Shared::Analizer::Suggestion suggestion;
             suggestion.value = "\""+fileName+"\"";
             suggestion.description = tr("Use precompiled file \"%1\" as module").arg(fileName);
-            suggestion.kind = Shared::Suggestion::KumirModule;
+            suggestion.kind = Shared::Analizer::Suggestion::KumirModule;
             result.push_back(suggestion);
         }
     }
     return result;
 }
 
-QList<Shared::Suggestion>
+QList<Shared::Analizer::Suggestion>
 SyntaxAnalizer::suggestInputOutputAutoComplete(
         int lineNo,
         const TextStatementPtr statementBefore,
@@ -156,7 +156,7 @@ SyntaxAnalizer::suggestInputOutputAutoComplete(
         const AST::AlgorithmPtr contextAlgorithm) const
 {
     AST::ModulePtr currentModule = analizer_->findModuleByLine(lineNo);
-    QList<Shared::Suggestion> result;
+    QList<Shared::Analizer::Suggestion> result;
     const QList<Lexem*> lexemsBefore = statementBefore->data;
     int curBlockStartPos = 1;
     int curBlockIndex = 0;
@@ -195,7 +195,7 @@ SyntaxAnalizer::suggestInputOutputAutoComplete(
         }
         if (filesModuleAvailable) {
             static const AST::Type FileType = AST::Type(QString::fromUtf8("файл"));
-            QList<Shared::Suggestion> fileSuggestions =
+            QList<Shared::Analizer::Suggestion> fileSuggestions =
                     suggestExpressionAutoComplete(
                         lineNo,
                         /* lexemsBefore    = */ curBlock,
@@ -208,11 +208,11 @@ SyntaxAnalizer::suggestInputOutputAutoComplete(
                         /* accessType      = */ AST::AccessArgumentIn,
                         /* expressionKind  = */ AST::ExprNone
                         );
-            foreach (const Shared::Suggestion & s , fileSuggestions) {
+            foreach (const Shared::Analizer::Suggestion & s , fileSuggestions) {
                 // Filter values not to use built-in functions retvals
                 // to avoid unclosed files
                 const QString & name = s.value;
-                if (s.kind==Shared::Suggestion::Algorithm) {
+                if (s.kind==Shared::Analizer::Suggestion::Algorithm) {
                     bool deny = false;
                     foreach (const AST::AlgorithmPtr alg , filesMod->header.algorhitms) {
                         if (alg->header.name==name) {
@@ -232,7 +232,7 @@ SyntaxAnalizer::suggestInputOutputAutoComplete(
 
     const AST::VariableAccessType accessType = statementBefore->type==LxPriInput
             ? AST::AccessArgumentOut : AST::AccessArgumentIn;
-    QList<Shared::Suggestion> valueSuggestions =
+    QList<Shared::Analizer::Suggestion> valueSuggestions =
             suggestExpressionAutoComplete(
                 lineNo,
                 /* lexemsBefore    = */ curBlock,
@@ -245,11 +245,11 @@ SyntaxAnalizer::suggestInputOutputAutoComplete(
                 /* accessType      = */ accessType,
                 /* expressionKind  = */ AST::ExprNone
                 );
-    foreach (const Shared::Suggestion & s , valueSuggestions) {
+    foreach (const Shared::Analizer::Suggestion & s , valueSuggestions) {
         // Filter values to match conditions:
         //   a) can't input algorithms
         //   b) can't input/output values of custom type
-        if (s.kind==Shared::Suggestion::Local || s.kind==Shared::Suggestion::Global
+        if (s.kind==Shared::Analizer::Suggestion::Local || s.kind==Shared::Analizer::Suggestion::Global
                 || accessType==AST::AccessArgumentIn
                 ) {
             const QString & name = s.value;
@@ -273,7 +273,7 @@ SyntaxAnalizer::suggestInputOutputAutoComplete(
     return result;
 }
 
-QList<Shared::Suggestion>
+QList<Shared::Analizer::Suggestion>
 SyntaxAnalizer::suggestConditionAutoComplete(
         int lineNo,
         const TextStatementPtr statementBefore,
@@ -281,7 +281,7 @@ SyntaxAnalizer::suggestConditionAutoComplete(
         const AST::ModulePtr contextModule,
         const AST::AlgorithmPtr contextAlgorithm) const
 {
-    QList<Shared::Suggestion> result;
+    QList<Shared::Analizer::Suggestion> result;
     int start = (statementBefore->type==LxPriEndLoop || statementBefore->type==LxPriLoop)
             ? 2 : 1;
     const QList<Lexem*> block = statementBefore->data.size()>start
@@ -301,7 +301,7 @@ SyntaxAnalizer::suggestConditionAutoComplete(
     return result;
 }
 
-QList<Shared::Suggestion>
+QList<Shared::Analizer::Suggestion>
 SyntaxAnalizer::suggestLoopBeginAutoComplete(
         int lineNo,
         const TextStatementPtr statementBefore,
@@ -309,7 +309,7 @@ SyntaxAnalizer::suggestLoopBeginAutoComplete(
         const AST::ModulePtr contextModule,
         const AST::AlgorithmPtr contextAlgorithm) const
 {
-    QList<Shared::Suggestion> result;
+    QList<Shared::Analizer::Suggestion> result;
     bool secondLexemIncomplete = statementBefore->data.size()==1;
     if (statementBefore->data.size()==2) {
         Lexem * lx = statementBefore->data.at(1);
@@ -324,10 +324,10 @@ SyntaxAnalizer::suggestLoopBeginAutoComplete(
     }
     if (secondLexemIncomplete) {
         // 1. Suggest additional keywords for loop types
-        Shared::Suggestion s;
+        Shared::Analizer::Suggestion s;
         s.value = QString::fromUtf8(" для ");
         s.description = tr("Loop for variable");
-        s.kind = Shared::Suggestion::SecondaryKeyword;
+        s.kind = Shared::Analizer::Suggestion::SecondaryKeyword;
         result.push_back(s);
 
         s.value = QString::fromUtf8(" пока ");
@@ -339,7 +339,7 @@ SyntaxAnalizer::suggestLoopBeginAutoComplete(
                 : QList<Lexem*>();
 
         // 2. Suggest integer values followed by 'times' keyword
-        QList<Shared::Suggestion> intvals = suggestExpressionAutoComplete(
+        QList<Shared::Analizer::Suggestion> intvals = suggestExpressionAutoComplete(
                     lineNo,
                     /* lexemsBefore    = */ block,
                     /* lexemsAfter     = */ lexemsAfter,
@@ -352,7 +352,7 @@ SyntaxAnalizer::suggestLoopBeginAutoComplete(
                     /* expressionKind  = */ AST::ExprNone
                     );
         for (int i_intvals=0; i_intvals<intvals.size(); i_intvals++) {
-            Shared::Suggestion ss = intvals.at(i_intvals);
+            Shared::Analizer::Suggestion ss = intvals.at(i_intvals);
             ss.value += QString::fromUtf8(" раз");
             result.push_back(ss);
         }
@@ -413,13 +413,13 @@ SyntaxAnalizer::suggestLoopBeginAutoComplete(
             }
             if (hasCompleteForVariable) {
                 // Suggest only 'from' keyword
-                Shared::Suggestion s;
-                s.kind = Shared::Suggestion::SecondaryKeyword;
+                Shared::Analizer::Suggestion s;
+                s.kind = Shared::Analizer::Suggestion::SecondaryKeyword;
                 s.value = QString::fromUtf8(" от ");
                 result.push_back(s);
             }
             else {
-                QList<Shared::Suggestion> forvalues = suggestExpressionAutoComplete(
+                QList<Shared::Analizer::Suggestion> forvalues = suggestExpressionAutoComplete(
                             lineNo,
                             /* lexemsBefore    = */ QList<Lexem*>(),
                             /* lexemsAfter     = */ lexemsAfter,
@@ -442,15 +442,15 @@ SyntaxAnalizer::suggestLoopBeginAutoComplete(
                             /* accessType      = */ AST::AccessArgumentInOut,
                             /* expressionKind  = */ AST::ExprNone
                             );
-                foreach (Shared::Suggestion ss , forvalues) {
+                foreach (Shared::Analizer::Suggestion ss , forvalues) {
                     // Filter values to match one of conditions:
                     //   a) local/global variable; or
                     //   b) in/out parameter
-                    if (ss.kind==Shared::Suggestion::Global) {
+                    if (ss.kind==Shared::Analizer::Suggestion::Global) {
                         ss.value += QString::fromUtf8(" от ");
                         result.push_back(ss);
                     }
-                    else if (ss.kind==Shared::Suggestion::Local) {
+                    else if (ss.kind==Shared::Analizer::Suggestion::Local) {
                         AST::VariablePtr  var;
                         if (findVariable(ss.value, contextModule, contextAlgorithm, var)) {
                             if (var->accessType==AST::AccessRegular || var->accessType==AST::AccessArgumentInOut) {
@@ -459,7 +459,7 @@ SyntaxAnalizer::suggestLoopBeginAutoComplete(
                             }
                         }
                     }
-                } // end for (Shared::Suggestion & ss : forvalues)
+                } // end for (Shared::Analizer::Suggestion & ss : forvalues)
             } // end if (hasCompleteForVariable) { ... } else { ... }
         }
         else {
@@ -478,8 +478,8 @@ SyntaxAnalizer::suggestLoopBeginAutoComplete(
             }
             if (hasCompleteIntegerExpression) {
                 // Append next for-statement keyword
-                Shared::Suggestion ss;
-                ss.kind = Shared::Suggestion::SecondaryKeyword;
+                Shared::Analizer::Suggestion ss;
+                ss.kind = Shared::Analizer::Suggestion::SecondaryKeyword;
                 if (lastKeywordLexem->type==LxSecFrom) {
                     ss.value = QString::fromUtf8(" до ");
                     result.push_back(ss);
@@ -491,7 +491,7 @@ SyntaxAnalizer::suggestLoopBeginAutoComplete(
             }
             else {
                 // Suggest integer values
-                QList<Shared::Suggestion> intvalues = suggestExpressionAutoComplete(
+                QList<Shared::Analizer::Suggestion> intvalues = suggestExpressionAutoComplete(
                             lineNo,
                             /* lexemsBefore    = */ QList<Lexem*>(),
                             /* lexemsAfter     = */ lexemsAfter,
@@ -503,7 +503,7 @@ SyntaxAnalizer::suggestLoopBeginAutoComplete(
                             /* accessType      = */ AST::AccessArgumentIn,
                             /* expressionKind  = */ AST::ExprNone
                             );
-                foreach (Shared::Suggestion ss , intvalues) {
+                foreach (Shared::Analizer::Suggestion ss , intvalues) {
                     if (lastKeywordLexem->type==LxSecFrom)
                         ss.value += QString::fromUtf8(" до ");
                     result.push_back(ss);
@@ -514,7 +514,7 @@ SyntaxAnalizer::suggestLoopBeginAutoComplete(
     return result;
 }
 
-QList<Shared::Suggestion>
+QList<Shared::Analizer::Suggestion>
 SyntaxAnalizer::suggestAssignmentAutoComplete(
         int lineNo,
         const TextStatementPtr statementBefore,
@@ -522,7 +522,7 @@ SyntaxAnalizer::suggestAssignmentAutoComplete(
         const AST::ModulePtr contextModule,
         const AST::AlgorithmPtr contextAlgorithm) const
 {
-    QList<Shared::Suggestion> result;
+    QList<Shared::Analizer::Suggestion> result;
     QList<Lexem*> lvalue, rvalue;
     Lexem * assignOperator = nullptr;
     if (statementBefore!=nullptr) {
@@ -592,7 +592,7 @@ SyntaxAnalizer::suggestAssignmentAutoComplete(
 
 #define IS_OPERATOR(x) (x & LxTypeOperator || x==LxOperGreaterOrEqual || x==LxSecOr || x==LxSecAnd || x==LxPriAssign/* || x==LxSecNot */)
 
-QList<Shared::Suggestion> SyntaxAnalizer::suggestExpressionAutoComplete(
+QList<Shared::Analizer::Suggestion> SyntaxAnalizer::suggestExpressionAutoComplete(
         int lineNo,
         const QList<Lexem*> lexemsBefore,
         const QList<Lexem*> lexemsAfter,
@@ -605,7 +605,7 @@ QList<Shared::Suggestion> SyntaxAnalizer::suggestExpressionAutoComplete(
         AST::ExpressionType expressionKind
         ) const
 {
-    QList<Shared::Suggestion> result;
+    QList<Shared::Analizer::Suggestion> result;
     AST::ModulePtr currentModule = analizer_->findModuleByLine(lineNo);
 
     Lexem * prevOper = nullptr;
@@ -813,7 +813,7 @@ static bool isSuggestionValueApplicable(
     return typeMatch && dimensionMatch && accessMatch;
 }
 
-QList<Shared::Suggestion>
+QList<Shared::Analizer::Suggestion>
 SyntaxAnalizer::suggestValueAutoComplete(
         int lineNo,
         const QList<Lexem *> lexemsBefore,
@@ -826,7 +826,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
         AST::VariableAccessType accessType
 ) const
 {
-    QList<Shared::Suggestion> result;
+    QList<Shared::Analizer::Suggestion> result;
     AST::ModulePtr currentModule = analizer_->findModuleByLine(lineNo);
     // 1. Suggest locals and globals if any applicable
     if (!typeIsKnown || baseType.kind!=AST::TypeNone) {
@@ -838,7 +838,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
 
         foreach (AST::VariablePtr  var , vars) {
             if (isSuggestionValueApplicable(var, baseType, minimumDimension, accessType)) {
-                Shared::Suggestion suggestion;
+                Shared::Analizer::Suggestion suggestion;
                 if (contextAlgorithm
                         && contextAlgorithm->impl.locals.contains(var)
                         && contextAlgorithm->header.name==var->name
@@ -846,7 +846,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
                 {
                     // return-value
                     suggestion.value = QString::fromUtf8("знач");
-                    suggestion.kind = Shared::Suggestion::Local;
+                    suggestion.kind = Shared::Analizer::Suggestion::Local;
                     suggestion.description = var->baseType.kind==AST::TypeUser
                             ? var->baseType.name
                             : lexer_->classNameByBaseType(var->baseType.kind);
@@ -860,8 +860,8 @@ SyntaxAnalizer::suggestValueAutoComplete(
                             : lexer_->classNameByBaseType(var->baseType.kind);
                     suggestion.description += " " + var->name;
                     suggestion.kind = contextModule->impl.globals.contains(var)
-                            ? Shared::Suggestion::Global
-                            : Shared::Suggestion::Local;
+                            ? Shared::Analizer::Suggestion::Global
+                            : Shared::Analizer::Suggestion::Local;
                 }
                 result.push_back(suggestion);
             }
@@ -913,7 +913,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
                     && !alg->header.name.startsWith('@')
                     )
             {
-                Shared::Suggestion suggestion;
+                Shared::Analizer::Suggestion suggestion;
                 suggestion.value = alg->header.name;
                 suggestion.description = QString::fromUtf8("алг ");
                 suggestion.description += alg->header.returnType.kind==AST::TypeUser
@@ -932,7 +932,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
                     }
                     suggestion.description += ")";
                 }
-                suggestion.kind = Shared::Suggestion::Algorithm;
+                suggestion.kind = Shared::Analizer::Suggestion::Algorithm;
                 result.push_back(suggestion);
             }
         }
@@ -941,7 +941,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
     return result;
 }
 
-QList<Shared::Suggestion>
+QList<Shared::Analizer::Suggestion>
 SyntaxAnalizer::suggestOperandAutoComplete(
         int lineNo,
         const QList<Lexem *> lexemsBefore,
@@ -953,7 +953,7 @@ SyntaxAnalizer::suggestOperandAutoComplete(
         const AST::Type & targetBaseType
         ) const
 {
-    QList<Shared::Suggestion> result;
+    QList<Shared::Analizer::Suggestion> result;
     AST::Type baseType = AST::TypeNone;
     if (leftExpression) {
         baseType = leftExpression->baseType;
@@ -1388,7 +1388,7 @@ void SyntaxAnalizer::processAnalisys()
 
 
 
-QList<Shared::Suggestion> SyntaxAnalizer::suggestAutoComplete(
+QList<Shared::Analizer::Suggestion> SyntaxAnalizer::suggestAutoComplete(
         int lineNo,
         const TextStatementPtr statementBefore,
         const QList<Lexem *> lexemsAfter,
@@ -1396,7 +1396,7 @@ QList<Shared::Suggestion> SyntaxAnalizer::suggestAutoComplete(
         const AST::AlgorithmPtr contextAlgorithm) const
 {
 
-    QList<Shared::Suggestion> result;
+    QList<Shared::Analizer::Suggestion> result;
     if (statementBefore==nullptr || statementBefore->type==LxPriAssign)
         result = suggestAssignmentAutoComplete(lineNo, statementBefore, lexemsAfter, contextModule, contextAlgorithm);
     else if (statementBefore->type==LxPriImport) {
@@ -1421,13 +1421,13 @@ QList<Shared::Suggestion> SyntaxAnalizer::suggestAutoComplete(
     else if (statementBefore->type==LxPriLoop) {
         result = suggestLoopBeginAutoComplete(lineNo, statementBefore, lexemsAfter, contextModule, contextAlgorithm);
     }
-    QList<Shared::Suggestion> filteredResult;
-    foreach (Shared::Suggestion s , result) {
+    QList<Shared::Analizer::Suggestion> filteredResult;
+    foreach (Shared::Analizer::Suggestion s , result) {
         // Filter suggestions to match last lexem text
         if (statementBefore && statementBefore->data.size()>0 && statementBefore->data.last()->type==LxTypeName) {
             Lexem * last = statementBefore->data.back();
             const QString lastText = last->data;
-            const QString match = s.kind==Suggestion::SecondaryKeyword?
+            const QString match = s.kind==Shared::Analizer::Suggestion::SecondaryKeyword?
                         s.value.trimmed() : s.value;
             if (match.startsWith(lastText)) {
                 filteredResult.push_back(s);

@@ -62,10 +62,10 @@ public:
     static bool noUndoRedo;
     inline TextLine & at(int index) { return data_[index]; }
     inline const TextLine & at(int index) const { return data_[index]; }
-    explicit TextDocument(QObject * parent, ExtensionSystem::SettingsPtr settings);
-    int id_;
+
+    explicit TextDocument(class Editor * parent);
+
     uint indentAt(uint lineNo) const;
-    inline void setAnalizer(Shared::AnalizerInterface * a) { analizer_ = a; }
     inline bool isProtected(uint lineNo) const {
         return lineNo < uint(data_.size())
                 ? data_[lineNo].protecteed : false;
@@ -133,19 +133,18 @@ signals:
                                     const QStringList & hiddenText,
                                     int hiddenBaseLine);
 protected:
-    void insertText(const QString & text, const Shared::AnalizerInterface * analizer, int line, int pos, int &blankLines, int &blankChars);
-    void removeText(QString &removedText, const Shared::AnalizerInterface * analizer, int line, int pos, int  blankLines, int  blankChars, int count);
+    void insertText(const QString & text, const Shared::Analizer::InstanceInterface * analizer, int line, int pos, int &blankLines, int &blankChars);
+    void removeText(QString &removedText, const Shared::Analizer::InstanceInterface * analizer, int line, int pos, int  blankLines, int  blankChars, int count);
     void insertLine(const QString & text, const uint beforeLineNo);
     void removeLine(const uint lineNo);
 private:
+    class Editor * editor_;
     QSet<int> removedLines_;
     QPoint lastCursorPos_;
     QUndoStack * undoStack_;
     QList<TextLine> data_;
     QString hiddenText_;
     bool wasHiddenTextFlag_;
-    ExtensionSystem::SettingsPtr settings_;
-    Shared::AnalizerInterface * analizer_;
 };
 
 }

@@ -1,3 +1,4 @@
+#include "editor.h"
 #include "textdocument.h"
 #include "textcursor.h"
 #include "settingspage.h"
@@ -9,19 +10,17 @@ namespace Editor
 
 
 
-TextDocument::TextDocument(QObject *parent, ExtensionSystem::SettingsPtr settings)
-    : QObject(parent)
-    , id_(-1)
+TextDocument::TextDocument(Editor * editor)
+    : QObject(editor)
+    , editor_(editor)
     , undoStack_(new QUndoStack(this))
-    , settings_(settings)
 {
-    analizer_ = 0;
     wasHiddenTextFlag_ = false;
 }
 
 bool TextDocument::noUndoRedo = false;
 
-void TextDocument::insertText(const QString &text, const Shared::AnalizerInterface * analizer, int line, int pos, int &blankLines, int &blankChars)
+void TextDocument::insertText(const QString &text, const Shared::Analizer::InstanceInterface * analizer, int line, int pos, int &blankLines, int &blankChars)
 {
 
     blankLines = blankChars = 0;
@@ -55,7 +54,7 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
         while (data_[line].highlight.size() < data_[line].text.length())
             data_[line].highlight << Shared::LxTypeEmpty;
         if (analizer)
-            data_[line].highlight = analizer->lineProp(id_, line, data_[line].text).toList();
+            data_[line].highlight = analizer->lineProp(line, data_[line].text).toList();
 
     }
     else {
@@ -67,7 +66,7 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
         while (data_[line].highlight.size() < data_[line].text.length())
             data_[line].highlight << Shared::LxTypeEmpty;
         if (analizer)
-            data_[line].highlight = analizer->lineProp(id_, line, data_[line].text).toList();
+            data_[line].highlight = analizer->lineProp(line, data_[line].text).toList();
 
         // 2. Insert middle lines
         for (int i=lines.count()-1; i>=1; i--) {
@@ -81,7 +80,7 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
                 tl.highlight << Shared::LxTypeEmpty;
             }
             if (analizer)
-                tl.highlight = analizer->lineProp(id_, i, tl.text).toList();
+                tl.highlight = analizer->lineProp(i, tl.text).toList();
             data_.insert(line+1, tl);
         }
 
@@ -99,7 +98,7 @@ void TextDocument::insertText(const QString &text, const Shared::AnalizerInterfa
         while (data_[line+lines.count()-1].highlight.size() < data_[line+lines.count()-1].text.length())
             data_[line+lines.count()-1].highlight << Shared::LxTypeEmpty;
         if (analizer)
-            data_[line+lines.count()-1].highlight = analizer->lineProp(id_, line+lines.count()-1, data_[line+lines.count()-1].text).toList();
+            data_[line+lines.count()-1].highlight = analizer->lineProp(line+lines.count()-1, data_[line+lines.count()-1].text).toList();
     }
 }
 
@@ -138,7 +137,7 @@ TextLine::Margin & TextDocument::marginAt(uint index)
     }
 }
 
-void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterface *analizer, int line, int pos, int blankLines, int blankChars, int count)
+void TextDocument::removeText(QString &removedText, const Shared::Analizer::InstanceInterface *analizer, int line, int pos, int blankLines, int blankChars, int count)
 {
     if (data_.size()==0)
         return;
@@ -178,7 +177,7 @@ void TextDocument::removeText(QString &removedText, const Shared::AnalizerInterf
         }
         if (line < data_.size()) {
             if (analizer)
-                tl.highlight = analizer->lineProp(id_, line, tl.text).toList();
+                tl.highlight = analizer->lineProp(line, tl.text).toList();
             data_[line] = tl;
             removedLines_.insert(removedCounter);
         }
@@ -212,8 +211,8 @@ void TextDocument::insertLine(const QString &text, const uint beforeLineNo)
     TextLine textLine;
     textLine.text = text;
     textLine.inserted = true;
-    if (analizer_) {
-        textLine.highlight = analizer_->lineProp(id_, qMin(beforeLineNo, uint(data_.size())), text).toList();
+    if (editor_->analizerInstance_) {
+        textLine.highlight = editor_->analizerInstance_->lineProp(qMin(beforeLineNo, uint(data_.size())), text).toList();
     }
     for (uint i=0; i<text.length(); i++) {
         textLine.selected.push_back(false);
@@ -511,37 +510,37 @@ QString TextDocument::lineToHtml(int lineNo) const
         const quint32 comment = TypeComment == chunks[i].format;
         QColor c = Qt::black;
         if (priKwd || secKwd) {
-            c = settings_->value(SettingsPage::KeyColorKw, SettingsPage::DefaultColorKw).toString();
-            chunks[i].bold = settings_->value(SettingsPage::KeyBoldKw, SettingsPage::DefaultBoldKw).toBool();
+            c = editor_->mySettings()->value(SettingsPage::KeyColorKw, SettingsPage::DefaultColorKw).toString();
+            chunks[i].bold = editor_->mySettings()->value(SettingsPage::KeyBoldKw, SettingsPage::DefaultBoldKw).toBool();
         }
         if (nameClass) {
-            c = settings_->value(SettingsPage::KeyColorType,  SettingsPage::DefaultColorType).toString();
-            chunks[i].bold = settings_->value(SettingsPage::KeyBoldType, SettingsPage::DefaultBoldType).toBool();
+            c = editor_->mySettings()->value(SettingsPage::KeyColorType,  SettingsPage::DefaultColorType).toString();
+            chunks[i].bold = editor_->mySettings()->value(SettingsPage::KeyBoldType, SettingsPage::DefaultBoldType).toBool();
         }
         else if (nameAlg) {
-            c = settings_->value(SettingsPage::KeyColorAlg,  SettingsPage::DefaultColorAlg).toString();
-            chunks[i].bold = settings_->value(SettingsPage::KeyBoldAlg, SettingsPage::DefaultBoldAlg).toBool();
+            c = editor_->mySettings()->value(SettingsPage::KeyColorAlg,  SettingsPage::DefaultColorAlg).toString();
+            chunks[i].bold = editor_->mySettings()->value(SettingsPage::KeyBoldAlg, SettingsPage::DefaultBoldAlg).toBool();
         }
         else if (nameModule) {
-            c = settings_->value(SettingsPage::KeyColorMod,  SettingsPage::DefaultColorMod).toString();
-            chunks[i].bold = settings_->value(SettingsPage::KeyBoldMod, SettingsPage::DefaultBoldMod).toBool();
+            c = editor_->mySettings()->value(SettingsPage::KeyColorMod,  SettingsPage::DefaultColorMod).toString();
+            chunks[i].bold = editor_->mySettings()->value(SettingsPage::KeyBoldMod, SettingsPage::DefaultBoldMod).toBool();
         }
         else if (literalConstant) {
-            c = settings_->value(SettingsPage::KeyColorLiteral,  SettingsPage::DefaultColorLiteral).toString();
-            chunks[i].bold = settings_->value(SettingsPage::KeyBoldLiteral, SettingsPage::DefaultBoldLiteral).toBool();
+            c = editor_->mySettings()->value(SettingsPage::KeyColorLiteral,  SettingsPage::DefaultColorLiteral).toString();
+            chunks[i].bold = editor_->mySettings()->value(SettingsPage::KeyBoldLiteral, SettingsPage::DefaultBoldLiteral).toBool();
         }
         else if (constant)
         {
-            c = settings_->value(SettingsPage::KeyColorNumeric,  SettingsPage::DefaultColorNumeric).toString();
-            chunks[i].bold = settings_->value(SettingsPage::KeyBoldNumeric, SettingsPage::DefaultBoldNumeric).toBool();
+            c = editor_->mySettings()->value(SettingsPage::KeyColorNumeric,  SettingsPage::DefaultColorNumeric).toString();
+            chunks[i].bold = editor_->mySettings()->value(SettingsPage::KeyBoldNumeric, SettingsPage::DefaultBoldNumeric).toBool();
         }
         else if (doc) {
-            c = settings_->value(SettingsPage::KeyColorDoc,  SettingsPage::DefaultColorDoc).toString();
-            chunks[i].bold = settings_->value(SettingsPage::KeyBoldDoc, SettingsPage::DefaultBoldDoc).toBool();
+            c = editor_->mySettings()->value(SettingsPage::KeyColorDoc,  SettingsPage::DefaultColorDoc).toString();
+            chunks[i].bold = editor_->mySettings()->value(SettingsPage::KeyBoldDoc, SettingsPage::DefaultBoldDoc).toBool();
         }
         else if (comment) {
-            c = settings_->value(SettingsPage::KeyColorComment,  SettingsPage::DefaultColorComment).toString();
-            chunks[i].bold = settings_->value(SettingsPage::KeyBoldComment, SettingsPage::DefaultBoldComment).toBool();
+            c = editor_->mySettings()->value(SettingsPage::KeyColorComment,  SettingsPage::DefaultColorComment).toString();
+            chunks[i].bold = editor_->mySettings()->value(SettingsPage::KeyBoldComment, SettingsPage::DefaultBoldComment).toBool();
         }
         chunks[i].color = c.name();
         chunks[i].html = QString::fromAscii(
@@ -759,14 +758,14 @@ QByteArray TextDocument::toRtf(uint fromLine, uint toLine) const
     // Begin color table
     result.append("{\\colortbl;");
 
-    result.append(rtfColor(settings_, SettingsPage::KeyColorKw, SettingsPage::DefaultColorKw));
-    result.append(rtfColor(settings_, SettingsPage::KeyColorType, SettingsPage::DefaultColorType));
-    result.append(rtfColor(settings_, SettingsPage::KeyColorAlg, SettingsPage::DefaultColorAlg));
-    result.append(rtfColor(settings_, SettingsPage::KeyColorMod, SettingsPage::DefaultColorMod));
-    result.append(rtfColor(settings_, SettingsPage::KeyColorLiteral, SettingsPage::DefaultColorLiteral));
-    result.append(rtfColor(settings_, SettingsPage::KeyColorNumeric, SettingsPage::DefaultColorNumeric));
-    result.append(rtfColor(settings_, SettingsPage::KeyColorDoc, SettingsPage::DefaultColorDoc));
-    result.append(rtfColor(settings_, SettingsPage::KeyColorComment, SettingsPage::DefaultColorComment));
+    result.append(rtfColor(editor_->mySettings(), SettingsPage::KeyColorKw, SettingsPage::DefaultColorKw));
+    result.append(rtfColor(editor_->mySettings(), SettingsPage::KeyColorType, SettingsPage::DefaultColorType));
+    result.append(rtfColor(editor_->mySettings(), SettingsPage::KeyColorAlg, SettingsPage::DefaultColorAlg));
+    result.append(rtfColor(editor_->mySettings(), SettingsPage::KeyColorMod, SettingsPage::DefaultColorMod));
+    result.append(rtfColor(editor_->mySettings(), SettingsPage::KeyColorLiteral, SettingsPage::DefaultColorLiteral));
+    result.append(rtfColor(editor_->mySettings(), SettingsPage::KeyColorNumeric, SettingsPage::DefaultColorNumeric));
+    result.append(rtfColor(editor_->mySettings(), SettingsPage::KeyColorDoc, SettingsPage::DefaultColorDoc));
+    result.append(rtfColor(editor_->mySettings(), SettingsPage::KeyColorComment, SettingsPage::DefaultColorComment));
     result.append("\\red255;\\green0\\blue0;"); // for errors
 
     // End color table
@@ -798,7 +797,7 @@ QByteArray TextDocument::toRtf(uint fromLine, uint toLine) const
             result.append("}");
         }
         const TextLine & textLine = data_[i];
-        const QList<RTF::Chunk> chunks = splitLineIntoChunks(settings_, textLine);
+        const QList<RTF::Chunk> chunks = splitLineIntoChunks(editor_->mySettings(), textLine);
         for (uint j=0; j<chunks.size(); j++) {
             result.append(chunks[j].data);
         }

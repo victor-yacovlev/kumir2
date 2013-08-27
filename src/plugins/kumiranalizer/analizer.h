@@ -1,6 +1,8 @@
 #ifndef ANALIZER_H
 #define ANALIZER_H
 
+#include "interfaces/analizer_instanceinterface.h"
+
 #include "interfaces/error.h"
 #include "interfaces/lineprop.h"
 #include "dataformats/ast.h"
@@ -13,9 +15,17 @@
 
 namespace KumirAnalizer {
 
-class Analizer : public QObject
+class Analizer
+        : public QObject
+        , public Shared::Analizer::InstanceInterface
+        , public Shared::Analizer::ASTCompilerInterface
+        , public Shared::Analizer::HelperInterface
 {
     Q_OBJECT
+    Q_INTERFACES(Shared::Analizer::InstanceInterface
+                 Shared::Analizer::ASTCompilerInterface
+                 Shared::Analizer::HelperInterface
+                 )
     friend class AnalizerPrivate;
 public:
 
@@ -34,19 +44,19 @@ public slots:
 
 
     void setSourceDirName(const QString & dirName);   
-    void setHiddenBaseLine(int lineNo);
-    Shared::TextAppend closingBracketSuggestion(int lineNo) const;
+    Shared::Analizer::TextAppend closingBracketSuggestion(int lineNo) const;
     QStringList importModuleSuggestion(int lineNo) const;
     QString sourceText() const;
+    std::string rawSourceData() const;
     void setSourceText(const QString & text);
-    QList<Shared::Suggestion> suggestAutoComplete(int lineNo, const QString &before, const QString &after) const;
+    QList<Shared::Analizer::Suggestion> suggestAutoComplete(int lineNo, const QString &before, const QString &after) const;
 
 
-    QList<Shared::Error> errors() const;
+    QList<Shared::Analizer::Error> errors() const;
 
-    QList<Shared::LineProp> lineProperties() const;
+    QList<Shared::Analizer::LineProp> lineProperties() const;
 
-    Shared::LineProp lineProp(int lineNo, const QString & text) const;
+    Shared::Analizer::LineProp lineProp(int lineNo, const QString & text) const;
 
     QStringList algorithmsAvailabaleForModule(const AST::ModulePtr currentModule) const;
     QStringList moduleNames() const;
@@ -55,6 +65,7 @@ public slots:
     QList<QPoint> lineRanks() const;
 
     QStringList imports() const;
+    QString createImportStatementLine(const QString &importName) const;
 
     const AST::DataPtr abstractSyntaxTree() const;
 

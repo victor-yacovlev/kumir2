@@ -16,14 +16,14 @@ class InsertCommand:
 public:
     explicit InsertCommand(class TextDocument * doc,
                            class TextCursor * cursor,
-                           Shared::AnalizerInterface * analizer,
+                           Shared::Analizer::InstanceInterface * analizer,
                            int line,
                            int pos,
                            const QString & text
                            );
     explicit InsertCommand(class TextDocument * doc,
                            class TextCursor * cursor,
-                           Shared::AnalizerInterface * analizer);
+                           Shared::Analizer::InstanceInterface * analizer);
     void redo();
     void undo();
     inline int id() const { return 1; }
@@ -32,7 +32,7 @@ public:
 private:
     class TextDocument * doc;
     class TextCursor * cursor;
-    Shared::AnalizerInterface * analizer;
+    Shared::Analizer::InstanceInterface * analizer;
     int line;
     int pos;
     QString text;
@@ -51,7 +51,7 @@ class RemoveCommand:
 public:
     explicit RemoveCommand(class TextDocument * doc,
                            class TextCursor * cursor,
-                           Shared::AnalizerInterface * analizer,
+                           Shared::Analizer::InstanceInterface * analizer,
                            int line,
                            int pos,
                            int count,
@@ -61,7 +61,7 @@ public:
                            );
     explicit RemoveCommand(class TextDocument * doc,
                            class TextCursor * cursor,
-                           Shared::AnalizerInterface * analizer);
+                           Shared::Analizer::InstanceInterface * analizer);
     void redo();
     void undo();
     inline int id() const { return 2; }
@@ -69,7 +69,7 @@ public:
 private:
     class TextDocument * doc;
     class TextCursor * cursor;
-    Shared::AnalizerInterface * analizer;
+    Shared::Analizer::InstanceInterface * analizer;
     int line;
     int pos;
     int count;
@@ -90,13 +90,13 @@ class InsertBlockCommand:
 public:
     explicit InsertBlockCommand(class TextDocument * doc,
                                 class TextCursor * cursor,
-                                Shared::AnalizerInterface * analizer,
+                                Shared::Analizer::InstanceInterface * analizer,
                                 int row,
                                 int column,
                                 const QStringList & block);
     explicit InsertBlockCommand(class TextDocument * doc,
                            class TextCursor * cursor,
-                           Shared::AnalizerInterface * analizer);
+                           Shared::Analizer::InstanceInterface * analizer);
     void redo();
     void undo();
     inline int id() const { return 3; }
@@ -104,7 +104,7 @@ public:
 private:
     class TextDocument * doc;
     class TextCursor * cursor;
-    Shared::AnalizerInterface * analizer;
+    Shared::Analizer::InstanceInterface * analizer;
     int row;
     int column;
     QStringList block;
@@ -122,11 +122,11 @@ class RemoveBlockCommand:
 public:
     explicit RemoveBlockCommand(class TextDocument * doc,
                                 class TextCursor * cursor,
-                                Shared::AnalizerInterface * analizer,
+                                Shared::Analizer::InstanceInterface * analizer,
                                 const QRect & block);
     explicit RemoveBlockCommand(class TextDocument * doc,
                            class TextCursor * cursor,
-                           Shared::AnalizerInterface * analizer);
+                           Shared::Analizer::InstanceInterface * analizer);
     void redo();
     void undo();
     inline int id() const { return 4; }
@@ -134,7 +134,7 @@ public:
 private:
     class TextDocument * doc;
     class TextCursor * cursor;
-    Shared::AnalizerInterface * analizer;
+    Shared::Analizer::InstanceInterface * analizer;
     QRect block;
     int cursorRow;
     int cursorCol;
@@ -150,7 +150,7 @@ public:
     explicit InsertImportCommand(
             class TextDocument * document,
             class TextCursor * cursor,
-            Shared::AnalizerInterface * analizer,
+            Shared::Analizer::InstanceInterface * analizer,
             const QString & importName
             );
 
@@ -161,7 +161,7 @@ public:
 private:
     class TextDocument * document_;
     class TextCursor * cursor_;
-    Shared::AnalizerInterface * analizer_;
+    Shared::Analizer::InstanceInterface * analizer_;
     QString importName_;
     uint lineNo_;
 };
@@ -209,7 +209,7 @@ public:
         uint FromLineInclusive,
         uint ToLineInclusive,
         class TextCursor * cursor,
-        Shared::AnalizerInterface * analizer
+        Shared::Analizer::InstanceInterface * analizer
         );
     void redo();
     void undo();
@@ -217,7 +217,7 @@ public:
 private:
     class TextDocument * doc;
     class TextCursor * cursor;
-    Shared::AnalizerInterface * analizer;
+    Shared::Analizer::InstanceInterface * analizer;
     uint fromLineInclusive;
     uint toLineInclusive;
     QSet<int> commentedLines;

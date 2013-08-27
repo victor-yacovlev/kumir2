@@ -6,9 +6,15 @@ namespace Editor {
 
 QString Clipboard::BlockMimeType = "application/vnd.kumir.textblock";
 
-Clipboard::Clipboard(QObject *parent)
-    : QObject(parent)
-    , i_selection(-1)
+Clipboard * Clipboard::instance()
+{
+    static Clipboard INSTANCE;
+    return &INSTANCE;
+}
+
+Clipboard::Clipboard()
+    : QObject()
+    , selection_(-1)
 {
     connect(qApp->clipboard(), SIGNAL(changed(QClipboard::Mode)),
             this, SLOT(checkForChanged()));
@@ -16,12 +22,12 @@ Clipboard::Clipboard(QObject *parent)
 
 int Clipboard::entriesCount() const
 {
-    int result = m_data.size();
+    int result = data_.size();
     QClipboard * cl = QApplication::clipboard();
     bool duplicate = false;
     if (cl->mimeData()->hasText() )
     {
-        foreach (const ClipboardData & entry, m_data) {
+        foreach (const ClipboardData & entry, data_) {
             if (entry.text==cl->text()) {
                 duplicate = true;
                 break;
@@ -47,17 +53,17 @@ void Clipboard::push(const ClipboardData & data)
     if (data.type==ClipboardData::Block)
         md->setData(BlockMimeType, data.block.join("\n").toUtf8());
     cl->setMimeData(md);
-    m_data.prepend(data);
+    data_.prepend(data);
 }
 
 void Clipboard::select(int index)
 {
-    i_selection = index;
+    selection_ = index;
 }
 
 bool Clipboard::hasContent() const
 {
-    if (i_selection==-1) {
+    if (selection_==-1) {
         QClipboard * cl = QApplication::clipboard();
         const QMimeData * data = cl->mimeData();
         bool text = data->hasText();
@@ -65,13 +71,13 @@ bool Clipboard::hasContent() const
         return text || block;
     }
     else {
-        return i_selection < m_data.size();
+        return selection_ < data_.size();
     }
 }
 
 ClipboardData Clipboard::content() const
 {
-    if (i_selection==-1 || i_selection>=m_data.size()) {
+    if (selection_==-1 || selection_>=data_.size()) {
         QClipboard * cl = QApplication::clipboard();
         ClipboardData result;
         result.type = ClipboardData::Invalid;
@@ -87,13 +93,13 @@ ClipboardData Clipboard::content() const
         return result;
     }
     else {
-        return m_data[i_selection];
+        return data_[selection_];
     }
 }
 
 void Clipboard::clear()
 {
-    m_data.clear();
+    data_.clear();
     checkForChanged();
 }
 

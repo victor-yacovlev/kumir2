@@ -1,3 +1,4 @@
+#include "tabwidgetelement.h"
 #include "switchworkspacedialog.h"
 #include "plugin.h"
 #include "mainwindow.h"
@@ -157,8 +158,6 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
 
     kumirProgram_ = new KumirProgram(this);
-    kumirProgram_->setBytecodeGenerator(plugin_BytecodeGenerator);
-    kumirProgram_->setEditorPlugin(plugin_editor);
     kumirProgram_->setTerminal(terminal_, 0);
 
 
@@ -171,7 +170,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             "/userdocs/";
 
     helpViewer_->addDocument(QUrl::fromLocalFile(helpPath + "default.xml"));
-    plugin_editor->setDocBookViewer(helpViewer_);
+
 
     helpWindow_ = new Widgets::SecondaryWindow(
                 helpViewer_,
@@ -210,7 +209,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     KPlugin * kumirRunner = ExtensionSystem::PluginManager::instance()
             ->findKPlugin<RunInterface>();
     plugin_kumirCodeRun = qobject_cast<RunInterface*>(kumirRunner);
-    kumirProgram_->setBytecodeRun(kumirRunner);
+
     QList<ExtensionSystem::KPlugin*> actors = loadedPlugins("Actor*");
     actors += loadedPlugins("st_funct");
     foreach (ExtensionSystem::KPlugin* o, actors) {
@@ -420,7 +419,8 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
 
 void Plugin::prepareKumirProgramToRun()
 {
-    plugin_editor->ensureAnalized(kumirProgram_->documentId());
+    TabWidgetElement * twe = mainWindow_->currentTab();
+    kumirProgram_->setEditorInstance(twe->editorInstance);
 }
 
 bool Plugin::showWorkspaceChooseDialog()
@@ -450,7 +450,6 @@ void Plugin::start()
     else {
         ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
         updateSettings();
-        restoreSession();
     }
     PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);
     mainWindow_->show();

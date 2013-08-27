@@ -38,7 +38,7 @@ QString SettingsPage::DefaultColorMod = "#00aa00";
 QString SettingsPage::DefaultColorDoc = "#a3acff";
 QString SettingsPage::DefaultColorComment = "#888888";
 
-QString SettingsPage::DefaultProgramTemplateFile = "${RESOURCES}/editor/default.kum";
+QString SettingsPage::DefaultProgramTemplateFile = "${RESOURCES}/editor/default";
 
 bool SettingsPage::DefaultBoldKw = true;
 bool SettingsPage::DefaultBoldType = true;

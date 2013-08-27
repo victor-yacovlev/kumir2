@@ -90,7 +90,8 @@ QString PluginManagerImpl::makeDependencies(const QString &entryPoint,
         if (specs[i].provides.contains(entryPoint)) {
             spec = specs[i];
             orderedList.pop_front();
-            orderedList.prepend(spec.name);
+            if (!orderedList.contains(spec.name))
+                orderedList.prepend(spec.name);
             found = true;
             break;
         }

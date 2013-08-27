@@ -107,16 +107,18 @@ void KumirCompilerToolPlugin::start()
         ts >> kumFile;
         f.close();
 
-        int id = analizer_->newDocument();
+        Shared::Analizer::InstanceInterface * analizer =
+                analizer_->createInstance();
+
         QString dirname = QFileInfo(filename).absoluteDir().absolutePath();
-        analizer_->setSourceDirName(id, dirname);
-        analizer_->setSourceText(id, kumFile.visibleText + "\n" + kumFile.hiddenText);
-        QList<Shared::Error> errors = analizer_->errors(id);
-        const AST::DataPtr ast = analizer_->abstractSyntaxTree(id);
+        analizer->setSourceDirName(dirname);
+        analizer->setSourceText(kumFile.visibleText + "\n" + kumFile.hiddenText);
+        QList<Shared::Analizer::Error> errors = analizer->errors();
+        const AST::DataPtr ast = analizer->compiler()->abstractSyntaxTree();
         const QString baseName = QFileInfo(filename).completeBaseName();
 
         for (int i=0; i<errors.size(); i++) {
-            Shared::Error e = errors[i];
+            Shared::Analizer::Error e = errors[i];
             QString errorMessage = tr("Error: ") +
                     QFileInfo(filename).fileName() +
                     ":" + QString::number(e.line+1) +

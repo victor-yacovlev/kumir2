@@ -46,7 +46,7 @@ public:
     QStringList unresolvedImports() const;
     void setSourceDirName(const QString & dirName);
     void buildTables(bool allowOperatorsDeclaration);
-    QList<Shared::Suggestion> suggestAutoComplete(
+    QList<Shared::Analizer::Suggestion> suggestAutoComplete(
             int lineNo,
             const TextStatementPtr statementBefore,
             const QList<Lexem*> lexemsAfter,
@@ -87,7 +87,7 @@ private /*methods*/:
 
     const TextStatement & findSourceStatementByLexem(const Lexem* lexem) const;
 
-    QList<Shared::Suggestion> suggestAssignmentAutoComplete(
+    QList<Shared::Analizer::Suggestion> suggestAssignmentAutoComplete(
             int lineNo,
             const TextStatementPtr statementBefore,
             const QList<Lexem *> lexemsAfter,
@@ -95,7 +95,7 @@ private /*methods*/:
             const AST::AlgorithmPtr contextAlgorithm
             ) const;
 
-    QList<Shared::Suggestion> suggestInputOutputAutoComplete(
+    QList<Shared::Analizer::Suggestion> suggestInputOutputAutoComplete(
             int lineNo,
             const TextStatementPtr statementBefore,
             const QList<Lexem *> lexemsAfter,
@@ -103,7 +103,7 @@ private /*methods*/:
             const AST::AlgorithmPtr contextAlgorithm
             ) const;
 
-    QList<Shared::Suggestion> suggestConditionAutoComplete(
+    QList<Shared::Analizer::Suggestion> suggestConditionAutoComplete(
             int lineNo,
             const TextStatementPtr statementBefore,
             const QList<Lexem *> lexemsAfter,
@@ -111,7 +111,7 @@ private /*methods*/:
             const AST::AlgorithmPtr contextAlgorithm
             ) const;
 
-    QList<Shared::Suggestion> suggestLoopBeginAutoComplete(
+    QList<Shared::Analizer::Suggestion> suggestLoopBeginAutoComplete(
             int lineNo,
             const TextStatementPtr statementBefore,
             const QList<Lexem *> lexemsAfter,
@@ -119,13 +119,13 @@ private /*methods*/:
             const AST::AlgorithmPtr contextAlgorithm
             ) const;
 
-    QList<Shared::Suggestion> suggestImportAutoComplete(
+    QList<Shared::Analizer::Suggestion> suggestImportAutoComplete(
             int lineNo,
             const TextStatementPtr statementBefore,
             const QList<Lexem *> lexemsAfter
             ) const;
 
-    QList<Shared::Suggestion> suggestExpressionAutoComplete(
+    QList<Shared::Analizer::Suggestion> suggestExpressionAutoComplete(
             int lineNo,
             const QList<Lexem*> lexemsBefore,
             const QList<Lexem*> lexemsAfter,
@@ -138,7 +138,7 @@ private /*methods*/:
             AST::ExpressionType expressionKind
             ) const;
 
-    QList<Shared::Suggestion> suggestValueAutoComplete(
+    QList<Shared::Analizer::Suggestion> suggestValueAutoComplete(
             int lineNo,
             const QList<Lexem*> lexemsBefore,
             const QList<Lexem*> lexemsAfter,
@@ -150,7 +150,7 @@ private /*methods*/:
             AST::VariableAccessType accessType
             ) const;
 
-    QList<Shared::Suggestion> suggestOperandAutoComplete(
+    QList<Shared::Analizer::Suggestion> suggestOperandAutoComplete(
             int lineNo,
             const QList<Lexem*> lexemsBefore,
             const QList<Lexem*> lexemsAfter,

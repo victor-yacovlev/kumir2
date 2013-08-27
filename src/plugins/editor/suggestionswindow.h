@@ -18,7 +18,7 @@ class SuggestionItem
         : public QStandardItem
 {
 public:
-    explicit SuggestionItem(const Shared::Suggestion & suggestion,
+    explicit SuggestionItem(const Shared::Analizer::Suggestion & suggestion,
                             class SuggestionsWindow * factory,
                             DocBookViewer::DocBookView * helpViewer);
     inline bool hasHelpEntry() const { return hasHelpEntry_; }
@@ -40,7 +40,7 @@ class SuggestionsWindow : public QWidget
 public:
     explicit SuggestionsWindow(QWidget *editorWidget);
     void init(const QString & before,
-              const QList<Shared::Suggestion> & suggestions,
+              const QList<Shared::Analizer::Suggestion> & suggestions,
               DocBookViewer::DocBookView * helpViewer
               );
     ~SuggestionsWindow();

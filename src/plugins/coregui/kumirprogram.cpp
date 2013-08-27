@@ -11,90 +11,94 @@ using namespace ExtensionSystem;
 
 KumirProgram::KumirProgram(QObject *parent)
     : QObject(parent)
-    , e_state(Idle)
-    , m_ast(0)
-    , m_process(0)
-    , m_terminal(0)
-    , plugin_bytcodeGenerator(0)
-    , plugin_bytecodeRun(0)
-    , plugin_editor(0)
-    , a_blindRun(0)
-    , a_regularRun(0)
-    , a_testingRun(0)
-    , a_stepRun(0)
-    , a_stepIn(0)
-    , a_stepOut(0)
-    , a_stop(0)
-    , gr_actions(0)
-    , w_mainWidget(0)
+    , state_(Idle)
+    , terminal_(0)
+    , editor_(0)
+    , mainWidget_(0)
+
+    , blindRunAction_(0)
+    , regularRunAction_(0)
+    , testingRunAction_(0)
+    , stepRunAction_(0)
+    , stepInAction_(0)
+    , stepOutAction_(0)
+    , stopAction_(0)
+    , actions_(0)
+
+    , courseManagerRequest_(false)
 {
-    b_blind = false;
-    courseManagerRequest_ = false;
-    a_regularRun = new QAction(tr("Regular run"), this);
+    createActions();
+    createConnections();
+}
+
+
+void KumirProgram::createActions()
+{
+    regularRunAction_ = new QAction(tr("Regular run"), this);
     const QString qtcreatorIconsPath = QApplication::instance()->property("sharePath")
             .toString() + "/icons/from_qtcreator/";
-    a_regularRun->setIcon(QIcon(qtcreatorIconsPath+"debugger_start.png"));
+    regularRunAction_->setIcon(QIcon(qtcreatorIconsPath+"debugger_start.png"));
 //    a_regularRun->setIcon(QIcon::fromTheme("media-playback-start", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-playback-start.png")));
-    connect(a_regularRun, SIGNAL(triggered()), this, SLOT(regularRun()));
+    connect(regularRunAction_, SIGNAL(triggered()), this, SLOT(regularRun()));
 #ifndef Q_OS_MAC
-    a_regularRun->setShortcut(QKeySequence("F9"));
+    regularRunAction_->setShortcut(QKeySequence("F9"));
 #else
     a_regularRun->setShortcut(QKeySequence("F5"));
 #endif
-    a_regularRun->setToolTip(a_regularRun->text()+" <b>"+a_regularRun->shortcut().toString()+"</b>");
+    regularRunAction_->setToolTip(regularRunAction_->text()+" <b>"+regularRunAction_->shortcut().toString()+"</b>");
 
-    a_testingRun = new QAction(tr("Testing run"), this);
-    connect(a_testingRun, SIGNAL(triggered()), this, SLOT(testingRun()));
-    a_testingRun->setShortcut(QKeySequence("Ctrl+T"));
-    a_testingRun->setToolTip(a_testingRun->text()+" <b>"+a_testingRun->shortcut().toString()+"</b>");
+    testingRunAction_ = new QAction(tr("Testing run"), this);
+    connect(testingRunAction_, SIGNAL(triggered()), this, SLOT(testingRun()));
+    testingRunAction_->setShortcut(QKeySequence("Ctrl+T"));
+    testingRunAction_->setToolTip(testingRunAction_->text()+" <b>"+testingRunAction_->shortcut().toString()+"</b>");
 
-    a_stepRun = new QAction(tr("Step over"), this);
-    a_stepRun->setIcon(QIcon(qtcreatorIconsPath+"debugger_steponeproc_small.png"));
+    stepRunAction_ = new QAction(tr("Step over"), this);
+    stepRunAction_->setIcon(QIcon(qtcreatorIconsPath+"debugger_steponeproc_small.png"));
 //    a_stepRun->setIcon(QIcon::fromTheme("debug-step-over", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));
-    connect(a_stepRun, SIGNAL(triggered()), this, SLOT(stepRun()));
+    connect(stepRunAction_, SIGNAL(triggered()), this, SLOT(stepRun()));
 #ifndef Q_OS_MAC
-    a_stepRun->setShortcut(QKeySequence("F8"));
+    stepRunAction_->setShortcut(QKeySequence("F8"));
 #else
     a_stepRun->setShortcut(QKeySequence("F6"));
 #endif
-    a_stepRun->setToolTip(tr("Do big step")+" <b>"+a_stepRun->shortcut().toString()+"</b>");
+    stepRunAction_->setToolTip(tr("Do big step")+" <b>"+stepRunAction_->shortcut().toString()+"</b>");
 
-    a_stepIn = new QAction(tr("Step in"), this);
-    a_stepIn->setIcon(QIcon(qtcreatorIconsPath+"debugger_stepinto_small.png"));
+    stepInAction_ = new QAction(tr("Step in"), this);
+    stepInAction_->setIcon(QIcon(qtcreatorIconsPath+"debugger_stepinto_small.png"));
 //    a_stepIn->setIcon(QIcon::fromTheme("debug-step-into", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-into.png")));
-    connect(a_stepIn, SIGNAL(triggered()), this, SLOT(stepIn()));
+    connect(stepInAction_, SIGNAL(triggered()), this, SLOT(stepIn()));
 #ifndef Q_OS_MAC
-    a_stepIn->setShortcut(QKeySequence("F7"));
+    stepInAction_->setShortcut(QKeySequence("F7"));
 #else
     a_stepIn->setShortcut(QKeySequence("F7"));
 #endif
-    a_stepIn->setToolTip(tr("Do small step")+" <b>"+a_stepIn->shortcut().toString()+"</b>");
+    stepInAction_->setToolTip(tr("Do small step")+" <b>"+stepInAction_->shortcut().toString()+"</b>");
 
-    a_stepOut = new QAction(tr("Step to end"), this);
-    a_stepOut->setIcon(QIcon(qtcreatorIconsPath+"debugger_stepoverproc_small.png"));
+    stepOutAction_ = new QAction(tr("Step to end"), this);
+    stepOutAction_->setIcon(QIcon(qtcreatorIconsPath+"debugger_stepoverproc_small.png"));
 //    a_stepOut->setIcon(QIcon::fromTheme("debug-step-out", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-out.png")));
-    connect(a_stepOut, SIGNAL(triggered()), this, SLOT(stepOut()));
+    connect(stepOutAction_, SIGNAL(triggered()), this, SLOT(stepOut()));
 #ifndef Q_OS_MAC
-    a_stepOut->setShortcut(QKeySequence("Shift+F8"));
+    stepOutAction_->setShortcut(QKeySequence("Shift+F8"));
 #else
     a_stepOut->setShortcut(QKeySequence("Shift+F8"));
 #endif
-    a_stepOut->setToolTip(tr("Run to end of algorhitm")+" <b>"+a_stepOut->shortcut().toString()+"</b>");
+    stepOutAction_->setToolTip(tr("Run to end of algorhitm")+" <b>"+stepOutAction_->shortcut().toString()+"</b>");
 
-    a_stop = new QAction(tr("Stop"), this);
-    a_stop->setIcon(QIcon(qtcreatorIconsPath+"stop.png"));
+    stopAction_ = new QAction(tr("Stop"), this);
+    stopAction_->setIcon(QIcon(qtcreatorIconsPath+"stop.png"));
 //    a_stop->setIcon(QIcon::fromTheme("media-playback-stop", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-playback-stop.png")));
-    connect(a_stop, SIGNAL(triggered()), this, SLOT(stop()));
+    connect(stopAction_, SIGNAL(triggered()), this, SLOT(stop()));
 #ifndef Q_OS_MAC
-    a_stop->setShortcut(QKeySequence("Esc"));
+    stopAction_->setShortcut(QKeySequence("Esc"));
 #else
     a_stop->setShortcut(QKeySequence("Esc"));
 #endif
-    a_stop->setToolTip(a_stop->text()+" <b>"+a_stop->shortcut().toString()+"</b>");
+    stopAction_->setToolTip(stopAction_->text()+" <b>"+stopAction_->shortcut().toString()+"</b>");
 
-    a_stepIn->setEnabled(false);
-    a_stepOut->setEnabled(false);
-    a_stop->setEnabled(false);
+    stepInAction_->setEnabled(false);
+    stepOutAction_->setEnabled(false);
+    stopAction_->setEnabled(false);
 
     QAction * s1 = new QAction(this);
     s1->setSeparator(true);
@@ -103,84 +107,67 @@ KumirProgram::KumirProgram(QObject *parent)
     s2->setSeparator(true);
 
 
-    a_blindRun = new QAction(tr("Blind run"), this);
-    a_blindRun->setIcon(QIcon(qtcreatorIconsPath+"run.png"));
+    blindRunAction_ = new QAction(tr("Blind run"), this);
+    blindRunAction_->setIcon(QIcon(qtcreatorIconsPath+"run.png"));
 //    a_blindRun->setIcon(QIcon::fromTheme("media-seek-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-seek-forward.png")));
-    connect(a_blindRun, SIGNAL(triggered()), this, SLOT(blindRun()));
+    connect(blindRunAction_, SIGNAL(triggered()), this, SLOT(blindRun()));
 #ifndef Q_OS_MAC
-    a_blindRun->setShortcut(QKeySequence("Shift+F9"));
+    blindRunAction_->setShortcut(QKeySequence("Shift+F9"));
 
 #else
     a_blindRun->setShortcut(QKeySequence("Ctrl+R"));
 #endif
-    a_blindRun->setToolTip(a_blindRun->text()+" <b>"+a_blindRun->shortcut().toString()+"</b>");
+    blindRunAction_->setToolTip(blindRunAction_->text()+" <b>"+blindRunAction_->shortcut().toString()+"</b>");
 
 
-    gr_actions = new QActionGroup(this);
-    gr_actions->addAction(a_blindRun);
-    gr_actions->addAction(a_regularRun);
-    gr_actions->addAction(a_testingRun);
-    gr_actions->addAction(a_stop);
-    gr_actions->addAction(s1);
-    gr_actions->addAction(a_stepRun);
-    gr_actions->addAction(a_stepIn);
-    gr_actions->addAction(a_stepOut);
-//    gr_actions->addAction(s2);
-
-    i_timerId = startTimer(1000);
+    actions_ = new QActionGroup(this);
+    actions_->addAction(blindRunAction_);
+    actions_->addAction(regularRunAction_);
+    actions_->addAction(testingRunAction_);
+    actions_->addAction(stopAction_);
+    actions_->addAction(s1);
+    actions_->addAction(stepRunAction_);
+    actions_->addAction(stepInAction_);
+    actions_->addAction(stepOutAction_);
 }
 
-void KumirProgram::setAST(const AST::DataPtr ast)
-{
-    m_ast = ast;
-}
-
-void KumirProgram::handleMarginTextReplace(int lineNo, const QString &text, bool redFgColor)
-{
-    if (lineNo!=-1 && !text.isEmpty())
-        plugin_editor->setMarginText(
-                    documentId_,
-                    lineNo,
-                    text,
-                    redFgColor ? QColor("red") : QColor("black")
-                    );
-}
-
-void KumirProgram::handleMarginTextRequest(int lineNo, const QString &text)
-{
-    if (lineNo!=-1 && !text.isEmpty())
-        plugin_editor->appendMarginText(documentId_, lineNo, text);
-}
-
-void KumirProgram::handleMarginClearRequest(int fromLine, int toLine)
-{
-    plugin_editor->clearMargin(documentId_, fromLine, toLine);
-}
-
-void KumirProgram::setTerminal(Term *t, QDockWidget * w)
+Shared::RunInterface * KumirProgram::runner()
 {
     using namespace ExtensionSystem;
     using namespace Shared;
-    m_terminal = t;
-    m_terminalWindow = w;
 
-    KPlugin * plugin_bytecodeRunObject =
-            PluginManager::instance()->findKPlugin<RunInterface>();
+    static RunInterface * RUNNER = nullptr;
 
-    connect(m_terminal, SIGNAL(inputFinished(QVariantList)),
-            plugin_bytecodeRunObject, SIGNAL(finishInput(QVariantList)));
-    connect(plugin_bytecodeRunObject, SIGNAL(inputRequest(QString)),
-            m_terminal, SLOT(input(QString)));
-    connect(plugin_bytecodeRunObject, SIGNAL(outputRequest(QString)),
-            m_terminal, SLOT(output(QString)));
-    connect(plugin_bytecodeRunObject, SIGNAL(errorOutputRequest(QString)),
-            m_terminal, SLOT(outputErrorStream(QString)));
+    if (!RUNNER) {
+        RUNNER = PluginManager::instance()->findPlugin<RunInterface>();
+    }
+
+    return RUNNER;
+}
+
+Shared::GeneratorInterface * KumirProgram::generator()
+{
+    using namespace ExtensionSystem;
+    using namespace Shared;
+
+    static GeneratorInterface * GENERATOR = nullptr;
+
+    if (!GENERATOR) {
+        GENERATOR = PluginManager::instance()->findPlugin<GeneratorInterface>();
+    }
+
+    return GENERATOR;
 }
 
 
-void KumirProgram::setBytecodeRun(KPlugin *run)
+
+void KumirProgram::createConnections()
 {
-    plugin_bytecodeRun = qobject_cast<RunInterface*>(run);
+    using namespace ExtensionSystem;
+    using namespace Shared;
+
+    KPlugin * run =
+            PluginManager::instance()->findKPlugin<RunInterface>();
 
     connect(run, SIGNAL(stopped(int)),
             this, SLOT(handleRunnerStopped(int)));
@@ -191,150 +178,155 @@ void KumirProgram::setBytecodeRun(KPlugin *run)
             this, SLOT(handleMarginTextReplace(int,QString,bool)));
 }
 
+void KumirProgram::handleMarginTextReplace(int lineNo, const QString &text, bool redFgColor)
+{
+    if (lineNo!=-1 && !text.isEmpty())
+        editor_->setMarginText(lineNo, text, redFgColor ? QColor("red") : QColor("black"));
+}
+
+void KumirProgram::handleMarginTextRequest(int lineNo, const QString &text)
+{
+    if (lineNo!=-1 && !text.isEmpty())
+        editor_->appendMarginText(lineNo, text);
+}
+
+void KumirProgram::handleMarginClearRequest(int fromLine, int toLine)
+{
+    editor_->clearMarginText(fromLine, toLine);
+}
+
+void KumirProgram::setTerminal(Term *t, QDockWidget * w)
+{
+    using namespace ExtensionSystem;
+    using namespace Shared;
+    terminal_ = t;
+
+    KPlugin * plugin_bytecodeRunObject =
+            PluginManager::instance()->findKPlugin<RunInterface>();
+
+    connect(terminal_, SIGNAL(inputFinished(QVariantList)),
+            plugin_bytecodeRunObject, SIGNAL(finishInput(QVariantList)));
+    connect(plugin_bytecodeRunObject, SIGNAL(inputRequest(QString)),
+            terminal_, SLOT(input(QString)));
+    connect(plugin_bytecodeRunObject, SIGNAL(outputRequest(QString)),
+            terminal_, SLOT(output(QString)));
+    connect(plugin_bytecodeRunObject, SIGNAL(errorOutputRequest(QString)),
+            terminal_, SLOT(outputErrorStream(QString)));
+}
+
+
 
 void KumirProgram::blindRun()
 {
-    b_blind = true;
-    s_endStatus = "";
-    if (e_state==Idle) {
+    endStatus_ = "";
+    if (state_==Idle) {
         emit giveMeAProgram();
         prepareKumirRunner(Shared::GeneratorInterface::LinesOnly);
     }
-    e_state = RegularRun;
+    state_ = BlindRun;
     PluginManager::instance()->switchGlobalState(GS_Running);
     setAllActorsAnimationFlag(false);
-    plugin_bytecodeRun->runBlind();
+    runner()->runBlind();
 }
 
 void KumirProgram::testingRun()
 {
-    using namespace ExtensionSystem;
-    using namespace Shared;
-    RunInterface * runner =
-            PluginManager::instance()->findPlugin<RunInterface>();
-
-    b_blind = true;
-    s_endStatus = "";
-    if (e_state==Idle) {
+    endStatus_ = "";
+    if (state_==Idle) {
         emit giveMeAProgram();
         prepareKumirRunner(Shared::GeneratorInterface::LinesOnly);        
-        if (!runner->hasTestingEntryPoint()) {
-            QMessageBox::information(w_mainWidget, a_testingRun->text(),
+        if (!runner()->hasTestingEntryPoint()) {
+            QMessageBox::information(mainWidget_, testingRunAction_->text(),
                                   tr("This program does not have testing algorithm")
                                   );
             return;
         }
     }
-    e_state = TestingRun;
+    state_ = TestingRun;
     PluginManager::instance()->switchGlobalState(GS_Running);
     setAllActorsAnimationFlag(false);
-    runner->runTesting();
+    runner()->runTesting();
 }
 
 void KumirProgram::regularRun()
 {
-    b_blind = false;
-    s_endStatus = "";
-    if (e_state==Idle) {
+    endStatus_ = "";
+    if (state_==Idle) {
         emit giveMeAProgram();
         prepareKumirRunner(Shared::GeneratorInterface::LinesAndVariables);
     }
-    e_state = RegularRun;
+    state_ = RegularRun;
     PluginManager::instance()->switchGlobalState(GS_Running);
     setAllActorsAnimationFlag(true);
-    plugin_bytecodeRun->runContinuous();
+    runner()->runContinuous();
 }
 
 void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel debugLevel)
 {
-    using namespace ExtensionSystem;
-    using namespace Shared;
-    AnalizerInterface * analizer =
-            PluginManager::instance()->findPlugin<AnalizerInterface>();
-    RunInterface * runner =
-            PluginManager::instance()->findPlugin<RunInterface>();
     bool ok = false;
-    QString exeFileName;
-    if (analizer->resultType() == AnalizerInterface::RT_AST) {
-        ok = true;
-        bool mustRegenerate = !m_ast->lastModified.isValid() ||
-                !runner->loadedProgramVersion().isValid() ||
-                m_ast->lastModified > runner->loadedProgramVersion();
-        if (mustRegenerate) {
-            QByteArray bufArray;
-            plugin_bytcodeGenerator->setOutputToText(false);
-            plugin_bytcodeGenerator->setDebugLevel(debugLevel);
-            QString fileNameSuffix, mimeType;
-            plugin_bytcodeGenerator->generateExecuable(m_ast, bufArray, mimeType, fileNameSuffix);
-            runner->loadProgram(s_sourceFileName, bufArray);
-        }
-        exeFileName =
-                s_sourceFileName.mid(0, s_sourceFileName.length()-4) +
-                analizer->defaultDocumentFileNameSuffix();
-        const QString newCwd = QFileInfo(exeFileName).absoluteDir().absolutePath();
-        QDir::setCurrent(newCwd);
+    QString sourceProgramPath;
+    if (editor_->analizer()->compiler()) {
+        editor_->ensureAnalized();
+        const AST::DataPtr ast = editor_->analizer()->compiler()->abstractSyntaxTree();
+        sourceProgramPath = editor_->documentContents().sourceUrl.toLocalFile();
+        QByteArray bufArray;
+        generator()->setOutputToText(false);
+        generator()->setDebugLevel(debugLevel);
+        QString fileNameSuffix, mimeType;
+        generator()->generateExecuable(ast, bufArray, mimeType, fileNameSuffix);
+        runner()->loadProgram(sourceProgramPath, bufArray);
     }
-    else if (analizer->resultType() == AnalizerInterface::RT_Source) {
-        EditorInterface * editor =
-                PluginManager::instance()->findPlugin<EditorInterface>();
-        const KumFile::Data source = editor->documentContent(documentId());
+    else {
+        const KumFile::Data source = editor_->documentContents();
+        sourceProgramPath = source.sourceUrl.toLocalFile();
         const QString sourceText = source.hasHiddenText
                 ? source.visibleText + "\n" + source.hiddenText
                 : source.visibleText;
         const QByteArray sourceData = sourceText.toUtf8();
-        exeFileName = s_sourceFileName;
-        ok = runner->loadProgram(s_sourceFileName, sourceData);
-        const QString newCwd = QFileInfo(exeFileName).absoluteDir().absolutePath();
-        QDir::setCurrent(newCwd);
+        ok = runner()->loadProgram(sourceProgramPath, sourceData);
     }
-    else if (analizer->resultType() == AnalizerInterface::RT_Binary) {
-        ok = false;  // not implemented
-    }
-    if (ok) {
-        m_terminal->start(exeFileName);
-    }
-    else {
-        handleRunnerStopped(Shared::RunInterface::SR_Error);
-    }
+    const QString newCwd = QFileInfo(sourceProgramPath).absoluteDir().absolutePath();
+    QDir::setCurrent(newCwd);
+    terminal_->start(sourceProgramPath);
 }
 
 void KumirProgram::stepRun()
 {
-    s_endStatus = "";
-    if (e_state==Idle) {
+    endStatus_ = "";
+    if (state_==Idle) {
         emit giveMeAProgram();
         prepareKumirRunner(Shared::GeneratorInterface::LinesAndVariables);
     }
-    e_state = StepRun;
-    a_stepRun->setIcon(QIcon::fromTheme("debug-step-over",  QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));
+    state_ = StepRun;
+    stepRunAction_->setIcon(QIcon::fromTheme("debug-step-over",  QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));
     PluginManager::instance()->switchGlobalState(GS_Running);
     setAllActorsAnimationFlag(true);
-    plugin_bytecodeRun->runStepOver();
+    runner()->runStepOver();
 }
 
 void KumirProgram::stepIn()
 {
-    if (e_state!=StepRun) {
+    if (state_!=StepRun) {
         stepRun();
     }
     else {
         setAllActorsAnimationFlag(true);
-        plugin_bytecodeRun->runStepInto();
+        runner()->runStepInto();
     }
 }
 
 void KumirProgram::stepOut()
 {
-    if (e_state!=StepRun)
+    if (state_!=StepRun)
         return;
     setAllActorsAnimationFlag(true);
-    plugin_bytecodeRun->runToEnd();
+    runner()->runToEnd();
 }
 
 void KumirProgram::stop()
 {
-    if (e_state==StepRun || e_state==RegularRun || e_state==TestingRun) {
-        plugin_bytecodeRun->terminate();
+    if (state_==StepRun || state_==RegularRun || state_==TestingRun || state_==BlindRun) {
+        runner()->terminate();
     }    
 }
 
@@ -354,7 +346,7 @@ void KumirProgram::setAllActorsAnimationFlag(bool animationEnabled)
 
 void KumirProgram::handleRunnerStopped(int rr)
 {
-    const State previousState = e_state;
+    const State previousState = state_;
     Shared::RunInterface::StopReason reason = Shared::RunInterface::StopReason (rr);
     if (reason==Shared::RunInterface::SR_InputRequest) {
         PluginManager::instance()->switchGlobalState(GS_Input);
@@ -365,29 +357,28 @@ void KumirProgram::handleRunnerStopped(int rr)
 //        a_stepOut->setEnabled(plugin_bytecodeRun->canStepOut());
     }
     else if (reason==Shared::RunInterface::SR_UserTerminated) {
-        s_endStatus = tr("Evaluation terminated");
-        m_terminal->finish();
+        endStatus_ = tr("Evaluation terminated");
+        terminal_->finish();
         PluginManager::instance()->switchGlobalState(GS_Observe);
-        e_state = Idle;
-        m_terminal->clearFocus();
-
-        plugin_editor->unhighlightLine(documentId_);
+        state_ = Idle;
+        terminal_->clearFocus();
+        editor_->unhighlightLine();
     }
     else if (reason==Shared::RunInterface::SR_Error) {
-        s_endStatus = tr("Evaluation error");
-        m_terminal->error(plugin_bytecodeRun->error());
-        plugin_editor->highlightLineRed(documentId_, plugin_bytecodeRun->currentLineNo(), plugin_bytecodeRun->currentColumn().first, plugin_bytecodeRun->currentColumn().second);
+        endStatus_ = tr("Evaluation error");
+        terminal_->error(runner()->error());
+        editor_->highlightLineRed(runner()->currentLineNo(), runner()->currentColumn().first, runner()->currentColumn().second);
         PluginManager::instance()->switchGlobalState(GS_Observe);
-        e_state = Idle;
-        m_terminal->clearFocus();
+        state_ = Idle;
+        terminal_->clearFocus();
     }
     else if (reason==Shared::RunInterface::SR_Done) {
-        s_endStatus = tr("Evaluation finished");
-        m_terminal->finish();
+        endStatus_ = tr("Evaluation finished");
+        terminal_->finish();
         PluginManager::instance()->switchGlobalState(GS_Observe);
-        e_state = Idle;
-        m_terminal->clearFocus();
-        plugin_editor->unhighlightLine(documentId_);
+        state_ = Idle;
+        terminal_->clearFocus();
+        editor_->unhighlightLine();
     }
 
     typedef Shared::CoursesInterface CI;
@@ -413,15 +404,14 @@ void KumirProgram::handleRunnerStopped(int rr)
 
 void KumirProgram::handleLineChanged(int lineNo, quint32 colStart, quint32 colEnd)
 {
-    emit activateDocumentTab(documentId_);
     if (lineNo!=-1) {
-        if (plugin_bytecodeRun->error().isEmpty())
-            plugin_editor->highlightLineGreen(documentId_, lineNo, colStart, colEnd);
+        if (runner()->error().isEmpty())
+            editor_->highlightLineGreen(lineNo, colStart, colEnd);
         else
-            plugin_editor->highlightLineRed(documentId_, lineNo, colStart, colEnd);
+            editor_->highlightLineRed(lineNo, colStart, colEnd);
     }
     else {
-        plugin_editor->unhighlightLine(documentId_);
+        editor_->unhighlightLine();
     }
 }
 
@@ -430,53 +420,39 @@ void KumirProgram::switchGlobalState(GlobalState prev, GlobalState cur)
 {
     if (cur==GS_Unlocked || cur==GS_Observe) {
 
-        a_blindRun->setEnabled(true);
-        a_regularRun->setEnabled(true);
-        a_testingRun->setEnabled(true);
-        a_stepRun->setEnabled(true);
+        blindRunAction_->setEnabled(true);
+        regularRunAction_->setEnabled(true);
+        testingRunAction_->setEnabled(true);
+        stepRunAction_->setEnabled(true);
 //        a_stepRun->setText(tr("Step run"));
 //        a_stepRun->setIcon(QIcon::fromTheme("media-skip-forward", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/media-skip-forward.png")));
-        a_stepIn->setEnabled(true);
-        a_stepOut->setEnabled(false);
-        a_stop->setEnabled(false);
+        stepInAction_->setEnabled(true);
+        stepOutAction_->setEnabled(false);
+        stopAction_->setEnabled(false);
 
     }
     if (cur==GS_Running || cur==GS_Input) {
 
-        a_blindRun->setEnabled(false);
-        a_regularRun->setEnabled(false);
-        a_testingRun->setEnabled(false);
-        a_stepRun->setEnabled(false);
-        a_stepIn->setEnabled(false);
-        a_stepOut->setEnabled(false);
-        a_stop->setEnabled(true);
+        blindRunAction_->setEnabled(false);
+        regularRunAction_->setEnabled(false);
+        testingRunAction_->setEnabled(false);
+        stepRunAction_->setEnabled(false);
+        stepInAction_->setEnabled(false);
+        stepOutAction_->setEnabled(false);
+        stopAction_->setEnabled(true);
     }
     if (cur==GS_Pause) {
 
-        a_blindRun->setEnabled(true);
-        a_regularRun->setEnabled(true);
-        a_stepRun->setEnabled(true);
-        a_testingRun->setEnabled(false);
+        blindRunAction_->setEnabled(true);
+        regularRunAction_->setEnabled(true);
+        stepRunAction_->setEnabled(true);
+        testingRunAction_->setEnabled(false);
 //        a_stepRun->setText(tr("Step over"));
 //        a_stepRun->setIcon(QIcon::fromTheme("debug-step-over", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));
-        a_stepIn->setEnabled(true);
-        a_stepOut->setEnabled(true);
-        a_stop->setEnabled(true);
+        stepInAction_->setEnabled(true);
+        stepOutAction_->setEnabled(true);
+        stopAction_->setEnabled(true);
     }
-}
-
-
-void KumirProgram::timerEvent(QTimerEvent *e)
-{
-    e->accept();
-}
-
-KumirProgram::~KumirProgram()
-{
-    if (m_process && m_process->state()!=QProcess::NotRunning) {
-        m_process->kill();
-    }
-    killTimer(i_timerId);
 }
 
 } // namespace CoreGui

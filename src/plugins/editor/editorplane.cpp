@@ -27,70 +27,36 @@ static const uint MARGIN_LINE_WIDTH = 4u /*px*/;
 QString EditorPlane::MarginWidthKey = "MarginWidth";
 uint EditorPlane::MarginWidthDefault = 15u /*px*/;
 
-void EditorPlane::setHelpViewer(DocBookViewer::DocBookView *viewer)
+EditorPlane::EditorPlane(Editor * editor)
+    : QWidget(editor)
+    , editor_(editor)
+    , highlightedTextLineNumber_(-1)
+    , highlightedTextColumnStartNumber_(0u)
+    , highlightedTextColumnEndNumber_(0u)
+    , highlightedLockSymbolLineNumber_ (-1)
+    , marginBackgroundAlpha_(255)
+    , delimeterRuleMousePressedPoint_(QPoint(-1000, -1000))
+    , marginMousePressedPoint_(QPoint(-1000, -1000))
+    , textMousePressedPoint_(QPoint(-1000, -1000))
+    , pnt_dropPosMarker(QPoint(-1000, -1000))
+    , pnt_dropPosCorner(QPoint(-1000, -1000))
+    , selectionInProgressFlag_(false)
 {
-    helpViewer_ = viewer;
+    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+    setFocusPolicy(Qt::StrongFocus);
+
+    setMouseTracking(true);
+    setAcceptDrops(true);          
+    initMouseCursor();
+
 }
 
-EditorPlane::EditorPlane(TextDocument * doc
-                         , Shared::AnalizerInterface * analizer
-                         , class Editor * editor
-                         , TextCursor * cursor
-                         , class Clipboard * clipboard
-                         , ExtensionSystem::SettingsPtr settings
-                         , QScrollBar * horizontalSB
-                         , QScrollBar * verticalSB
-                         , bool hasAnalizer
-                         , QWidget *parent) :
-    QWidget(parent)
+void EditorPlane::updateSettings()
 {
-    helpViewer_ = nullptr;
-    editor_ = editor;
-    analizer_ = analizer;
-    highlightedTextLineNumber_ = -1;
-    highlightedTextColumnStartNumber_ = 0u;
-    highlightedTextColumnEndNumber_ = 0u;
-    highlightedLockSymbolLineNumber_ = -1;
-    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-    marginBackgroundAlpha_ = 255;
-    document_ = doc;
-    cursor_ = cursor;
-    clipboard_ = clipboard;
-    settings_ = settings;
-    horizontalScrollBar_ = horizontalSB;
-    verticalScrollBar_ = verticalSB;
-    hasAnalizerFlag_ = hasAnalizer;
-    connect(cursor_, SIGNAL(updateRequest()), this, SLOT(updateCursor()));
-    connect(cursor_, SIGNAL(updateRequest(int,int)), this, SLOT(updateText(int,int)));
-    setFocusPolicy(Qt::StrongFocus);
     QFont defaultFont;
-    defaultFont.setFamily(settings_->value(SettingsPage::KeyFontName, SettingsPage::defaultFontFamily()).toString());
-    defaultFont.setPointSize(settings_->value(SettingsPage::KeyFontSize, SettingsPage::defaultFontSize).toInt());
+    defaultFont.setFamily(editor_->mySettings()->value(SettingsPage::KeyFontName, SettingsPage::defaultFontFamily()).toString());
+    defaultFont.setPointSize(editor_->mySettings()->value(SettingsPage::KeyFontSize, SettingsPage::defaultFontSize).toInt());
     setFont(defaultFont);
-    connect(horizontalSB, SIGNAL(valueChanged(int)), this, SLOT(update()));
-    connect(verticalSB, SIGNAL(valueChanged(int)), this, SLOT(update()));
-    updateScrollBars();
-    initMouseCursor();
-    setMouseTracking(true);
-    setAcceptDrops(true);
-    setFocusPolicy(Qt::StrongFocus);
-    delimeterRuleMousePressedPoint_ = marginMousePressedPoint_ = textMousePressedPoint_ = pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
-    selectionInProgressFlag_ = false;
-    autocompleteWidget_ = new SuggestionsWindow(this);
-    autocompleteWidget_->updateSettings(settings);
-    autocompleteWidget_->setVisible(false);
-    connect(autocompleteWidget_, SIGNAL(requestHelpForAlgorithm(QString)),
-            editor_, SIGNAL(requestHelpForAlgorithm(QString)));
-    connect(autocompleteWidget_, SIGNAL(hidden()), this, SIGNAL(enableInsertActions()));
-    connect(autocompleteWidget_, SIGNAL(acceptedSuggestion(QString)),
-            this, SLOT(finishAutoCompletion(QString)));
-    qApp->installEventFilter(this);
-
-    doNotEditAnimation_ = new QPropertyAnimation(this, "dontEditState", this);
-    doNotEditAnimation_->setDuration(1000);
-    dontEditImageOpacity_ = 0.0;
-    dontEditImage_ = QImage(qApp->property("sharePath").toString()+"/editor/dontedit.png");
-
 }
 
 void EditorPlane::addContextMenuAction(QAction *a)
@@ -98,10 +64,6 @@ void EditorPlane::addContextMenuAction(QAction *a)
     contextMenuActions_ << a;
 }
 
-void EditorPlane::setTeacherMode(bool v)
-{
-    teacherModeFlag_ = v;
-}
 
 void EditorPlane::setLineHighlighted(int lineNo, const QColor &color, quint32 colStart, quint32 colEnd)
 {
@@ -157,8 +119,8 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
 
     // Auto complete widget is a tool tip, so it must be hidden if
     // use clicks somewhere in editor
-    if (autocompleteWidget_->isVisible())
-        autocompleteWidget_->hide();
+    if (editor_->autocompleteWidget_->isVisible())
+        editor_->autocompleteWidget_->hide();
 
     // Do nothing on middle or right mouse button.
     // Right mouse button is used for context menu and processed by
@@ -169,8 +131,8 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
     }
 
     // The width of symbol "line locked" in teacher mode
-    const uint lockSymbolWidth = teacherModeFlag_ &&
-            hasAnalizerFlag_ ? LOCK_SYMBOL_WIDTH : 0;
+    const uint lockSymbolWidth = editor_->plugin_->teacherMode_ &&
+            editor_->analizerInstance_ ? LOCK_SYMBOL_WIDTH : 0;
 
     // Left border of editable area
     const uint editableAreaLeftBorder =
@@ -184,7 +146,7 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
             lockSymbolWidth;
 
     // Force text cursor (managed primarily from keyboard) to temporary hide
-    cursor_->setViewMode(TextCursor::VM_Hidden);
+    editor_->cursor()->setViewMode(TextCursor::VM_Hidden);
 
     // Unset values for mouse press points
     // TODO implement it using boost::optional !
@@ -195,7 +157,7 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
 
     // Perform an action depending on position where mouse clicked
 
-    if (hasAnalizerFlag_ && teacherModeFlag_ &&
+    if (editor_->analizerInstance_ && editor_->plugin_->teacherMode_ &&
             e->pos().x() < lockSymbolWidth)
     {
         // Toggle 'locked' line status
@@ -205,14 +167,14 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
         // Translate visible coordinates into text coordinates
         const uint textY = qMax(0u, realY/lineHeight());
 
-        if (textY < document_->linesCount()) {
+        if (textY < editor_->document()->linesCount()) {
             // Toggle status only if line exists
-            document_->undoStack()->push(
-                        new ToggleLineProtectedCommand(document_, textY)
+            editor_->document()->undoStack()->push(
+                        new ToggleLineProtectedCommand(editor_->document(), textY)
                         );
         }
     }
-    else if (hasAnalizerFlag_ &&
+    else if (editor_->analizerInstance_ &&
              // Pointer position near margin line
              marginLineRect().contains(e->pos()))
     {
@@ -229,10 +191,10 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
         // Flag to mark an action as move delimeter line between "visible"
         // and "hidden" part of editable text. False by default
         bool moveDelimeterRulerBetweenVisibleAndHiddenTextFlag = false;
-        if (hasAnalizerFlag_ && teacherModeFlag_) {
+        if (editor_->analizerInstance_ && editor_->plugin_->teacherMode_) {
             // The line number, where hidden text starts, or -1 if
             // there is no hidden text
-            const int hiddenLineStart = document_->hiddenLineStart();
+            const int hiddenLineStart = editor_->document()->hiddenLineStart();
 
             // Rectangle region for delimeter "line"
             const QRect delimeterLineRect = hiddenLineStart==-1
@@ -270,8 +232,8 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
 
 
             // Move text cursor into clicked position
-            cursor_->moveTo(textY, textX);
-            document_->checkForCompilationRequest(QPoint(cursor_->column(), cursor_->row()));
+            editor_->cursor()->moveTo(textY, textX);
+            editor_->document()->checkForCompilationRequest(QPoint(editor_->cursor()->column(), editor_->cursor()->row()));
 
             // Store text clicked position for possible
             // selection handling
@@ -306,7 +268,7 @@ void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
         const uint marginCharWidth = (width() - x) / charWidth();
 
         // Store a settings value, this will be used on paint event
-        settings_->setValue(MarginWidthKey, marginCharWidth);
+        editor_->mySettings()->setValue(MarginWidthKey, marginCharWidth);
 
         // Update scrollbars due to editable region size changed
         updateScrollBars();
@@ -326,8 +288,8 @@ void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
         int textY = y / lineHeight();
         if (y > uint(height()) - lineHeight())
             textY = -1;
-        document_->undoStack()->push(new ChangeHiddenLineDelimeterCommand(
-                                          document_,
+        editor_->document()->undoStack()->push(new ChangeHiddenLineDelimeterCommand(
+                                          editor_->document(),
                                           textY));
         update();
         delimeterRuleMousePressedPoint_ = QPoint(-1000, -1000);
@@ -340,12 +302,12 @@ void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
     }
     else {
         // If not selection in progress, remove all selections
-        cursor_->removeSelection();
-        cursor_->removeRectSelection();
+        editor_->cursor()->removeSelection();
+        editor_->cursor()->removeRectSelection();
     }
 
     // Restore cursor blink behaviour, changed while mousePressEvent
-    cursor_->setViewMode(TextCursor::VM_Blinking);
+    editor_->cursor()->setViewMode(TextCursor::VM_Blinking);
 
     // Set repaint flag due to something may be changed and accept event
     update();
@@ -376,8 +338,8 @@ bool EditorPlane::eventFilter(QObject *, QEvent *event)
 void EditorPlane::mouseMoveEvent(QMouseEvent *e)
 {
     // The width of symbol "line locked" in teacher mode
-    const uint lockSymbolWidth = teacherModeFlag_ &&
-            hasAnalizerFlag_ ? LOCK_SYMBOL_WIDTH : 0;
+    const uint lockSymbolWidth = editor_->plugin_->teacherMode_ &&
+            editor_->analizerInstance_ ? LOCK_SYMBOL_WIDTH : 0;
 
     // Left border of editable area
     const uint editableAreaLeftBorder =
@@ -397,13 +359,13 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
     // and "hidden" part of editable text. False by default
     bool moveDelimeterRulerBetweenVisibleAndHiddenTextFlag = false;
 
-    if (hasAnalizerFlag_ && teacherModeFlag_) {
+    if (editor_->analizerInstance_ && editor_->plugin_->teacherMode_) {
         // Programs in teacher mode have visible delimeter line,
         // so it is possible to move that line
 
         // The line number, where hidden text starts, or -1 if
         // there is no hidden text
-        const int hiddenLineStart = document_->hiddenLineStart();
+        const int hiddenLineStart = editor_->document()->hiddenLineStart();
 
         // Rectangle region for delimeter "line" (of course, non-zero thickness)
         const QRect delimeterLineRect = hiddenLineStart==-1
@@ -425,7 +387,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
                 delimeterLineRect.contains(e->pos());
     }
 
-    if (teacherModeFlag_ && hasAnalizerFlag_ && e->pos().x()<lockSymbolWidth) {
+    if (editor_->plugin_->teacherMode_ && editor_->analizerInstance_ && e->pos().x()<lockSymbolWidth) {
         // Programs in teacher mode have visible 'lock' symbols to the left
         // of line numbers. Mouseover these symbols causes to highlight them
 
@@ -435,7 +397,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
         // Translate visible coordinates into text coordinates
         const uint textY = qMax(0u, realY/lineHeight());
 
-        if (textY<document_->linesCount()) {
+        if (textY<editor_->document()->linesCount()) {
             // Mark corresponding highlight 'lock' symbol only if
             // there is real text line exists
             highlightedLockSymbolLineNumber_ = textY;
@@ -445,7 +407,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
 
     // Set proper mouse cursor shape depending on mouse pointer position
 
-    if (teacherModeFlag_ && hasAnalizerFlag_ &&
+    if (editor_->plugin_->teacherMode_ && editor_->analizerInstance_ &&
             ( 0 <= e->pos().x() && e->pos().x() <= lockSymbolWidth ) &&
             highlightedLockSymbolLineNumber_ != -1
             )
@@ -479,7 +441,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
         QApplication::restoreOverrideCursor();
         QApplication::setOverrideCursor(Qt::SplitVCursor);
     }
-    else if (hasAnalizerFlag_ &&
+    else if (editor_->analizerInstance_ &&
              (
                  // Pointer position near margin line
                  marginLineRect().contains(e->pos())
@@ -579,9 +541,9 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
             // Ok, let's perform a text selection
 
             // Is something selected?
-            bool cursorHasTextSelection = cursor_->hasSelection();
+            bool cursorHasTextSelection = editor_->cursor()->hasSelection();
             bool cursorHasRectSelection =
-                    analizer_==0 && cursor_->hasRectSelection();
+                    editor_->analizerInstance_==0 && editor_->cursor()->hasRectSelection();
 
             bool nothingSelected =
                     !cursorHasTextSelection && !cursorHasRectSelection;
@@ -601,7 +563,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
                 const uint textX = realX / charWidth();
                 const uint textY = realY / lineHeight();
 
-                if (analizer_==0 &&
+                if (editor_->analizerInstance_==0 &&
                         e->modifiers().testFlag(Qt::ShiftModifier))
                 {
                     // Rectangle selection (Using Shift+mouse button),
@@ -612,7 +574,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
                     QApplication::setOverrideCursor(Qt::CrossCursor);
 
                     // Perform rectangle selection
-                    cursor_->selectRangeBlock(
+                    editor_->cursor()->selectRangeBlock(
                                 textPressedPosition_.y(),
                                 textPressedPosition_.x(),
                                 textY,
@@ -625,7 +587,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
                     QApplication::restoreOverrideCursor();
 
                     // Perform regular text selection
-                    cursor_->selectRangeText(
+                    editor_->cursor()->selectRangeText(
                                 textPressedPosition_.y(),
                                 textPressedPosition_.x(),
                                 textY,
@@ -641,20 +603,20 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
 
                 if (cursorHasTextSelection) {
                     // If regular selection mode, store selected text
-                    data->setText(cursor_->selectedText());
+                    data->setText(editor_->cursor()->selectedText());
                 }
 
-                if (analizer_==0 && cursorHasRectSelection) {
+                if (editor_->analizerInstance_==0 && cursorHasRectSelection) {
                     // In case of rectangle selection, store rectangle
                     // block data ...
                     data->setData(
                                 Clipboard::BlockMimeType,
-                                cursor_->rectSelectionText().
+                                editor_->cursor()->rectSelectionText().
                                 join("\n").toUtf8());
 
                     // ... and plain text data to use in non-Kumir
                     // drop source
-                    data->setText(cursor_->selectedText());
+                    data->setText(editor_->cursor()->selectedText());
                 }
 
                 // Perform a drag action
@@ -669,10 +631,10 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
                 // then delete selected text
                 if (result==Qt::MoveAction && drag->target()!=this) {
                     if (cursorHasTextSelection) {
-                        cursor_->removeSelectedText();
+                        editor_->cursor()->removeSelectedText();
                     }
                     else if (cursorHasRectSelection) {
-                        cursor_->removeSelectedBlock();
+                        editor_->cursor()->removeSelectedBlock();
                     }
                 }
             } // end else if (cursorHasRectSelection || cursorHasTextSelection)
@@ -691,18 +653,23 @@ void EditorPlane::initMouseCursor()
     setCursor(c);
 }
 
+int EditorPlane::marginCharactersCount() const
+{
+    return editor_->mySettings()->value(MarginWidthKey, MarginWidthDefault).toInt();
+}
+
 QPoint EditorPlane::offset() const
 {
     QPoint lineNumbersOffset(charWidth() * LEFT_MARGIN_SIZE , 0);
-    QPoint lockSymbolOffset (teacherModeFlag_ ? LOCK_SYMBOL_WIDTH : 0, 0);
+    QPoint lockSymbolOffset (editor_->plugin_->teacherMode_ ? LOCK_SYMBOL_WIDTH : 0, 0);
     QPoint scrollOffset(0, 0);
-    if (horizontalScrollBar_->isEnabled()) {
-        int valX = horizontalScrollBar_->value();
+    if (editor_->scrollBar(Qt::Horizontal)->isEnabled()) {
+        int valX = editor_->scrollBar(Qt::Horizontal)->value();
         valX = ( valX / charWidth() ) * charWidth();
         scrollOffset.setX(-valX);
     }
-    if (verticalScrollBar_->isEnabled()) {
-        int valY = verticalScrollBar_->value();
+    if (editor_->scrollBar(Qt::Vertical)->isEnabled()) {
+        int valY = editor_->scrollBar(Qt::Vertical)->value();
         valY = ( valY / lineHeight() ) * lineHeight();
         scrollOffset.setY(-valY);
     }
@@ -715,39 +682,39 @@ void EditorPlane::updateScrollBars()
     QPoint prevOffset = offset();
     uint w = 1;
     uint h = 1;
-    for (int i=0 ; i<document_->linesCount(); i++) {
-        uint indent = document_->indentAt(i) * 2;
-        uint textLength = document_->textAt(i).length();
+    for (int i=0 ; i<editor_->document()->linesCount(); i++) {
+        uint indent = editor_->document()->indentAt(i) * 2;
+        uint textLength = editor_->document()->textAt(i).length();
         w = qMax(w, indent + textLength + 1);
     }
-    w = qMax(w, cursor_->column()+1);
-    h = qMax(document_->linesCount()+1, cursor_->row()+2);
+    w = qMax(w, editor_->cursor()->column()+1);
+    h = qMax(editor_->document()->linesCount()+1, editor_->cursor()->row()+2);
 
     QSize contentSize (w*charWidth(), h*lineHeight());
     QSize viewportSize (widthInChars() * charWidth(), height());
     if (contentSize.width()<=viewportSize.width()) {
-        horizontalScrollBar_->setEnabled(false);
-        horizontalScrollBar_->setVisible(false);
+        editor_->scrollBar(Qt::Horizontal)->setEnabled(false);
+        editor_->scrollBar(Qt::Horizontal)->setVisible(false);
     }
     else {
-        horizontalScrollBar_->setEnabled(true);
-        horizontalScrollBar_->setVisible(true);
-        horizontalScrollBar_->setRange(0, contentSize.width()-viewportSize.width());
-        horizontalScrollBar_->setSingleStep(charWidth());
-        horizontalScrollBar_->setPageStep(charWidth() * 8);
+        editor_->scrollBar(Qt::Horizontal)->setEnabled(true);
+        editor_->scrollBar(Qt::Horizontal)->setVisible(true);
+        editor_->scrollBar(Qt::Horizontal)->setRange(0, contentSize.width()-viewportSize.width());
+        editor_->scrollBar(Qt::Horizontal)->setSingleStep(charWidth());
+        editor_->scrollBar(Qt::Horizontal)->setPageStep(charWidth() * 8);
     }
     if (contentSize.height()<=viewportSize.height()) {
-        verticalScrollBar_->setEnabled(false);
-        verticalScrollBar_->setVisible(false);
+        editor_->scrollBar(Qt::Vertical)->setEnabled(false);
+        editor_->scrollBar(Qt::Vertical)->setVisible(false);
     }
     else {
-        verticalScrollBar_->setEnabled(true);
-        verticalScrollBar_->setVisible(true);
-        verticalScrollBar_->setRange(0, contentSize.height()-viewportSize.height());
-        verticalScrollBar_->setSingleStep(lineHeight());
-        verticalScrollBar_->setPageStep(lineHeight() * 8);
+        editor_->scrollBar(Qt::Vertical)->setEnabled(true);
+        editor_->scrollBar(Qt::Vertical)->setVisible(true);
+        editor_->scrollBar(Qt::Vertical)->setRange(0, contentSize.height()-viewportSize.height());
+        editor_->scrollBar(Qt::Vertical)->setSingleStep(lineHeight());
+        editor_->scrollBar(Qt::Vertical)->setPageStep(lineHeight() * 8);
     }
-    horizontalScrollBar_->setFixedWidth(marginLeftBound() + MARGIN_LINE_WIDTH);
+    editor_->scrollBar(Qt::Horizontal)->setFixedWidth(marginLeftBound() + MARGIN_LINE_WIDTH);
     if (prevOffset!=offset())
         update();
 }
@@ -755,48 +722,48 @@ void EditorPlane::updateScrollBars()
 void EditorPlane::ensureCursorVisible()
 {    
     const int lineNoWidth = 5;
-    uint row = cursor_->row();
-    uint column = cursor_->column();
+    uint row = editor_->cursor()->row();
+    uint column = editor_->cursor()->column();
     QRect cr(5 + column,
              row,
              2,
              2
                 );
-    if (column == 2u * document_->indentAt(row)) {
+    if (column == 2u * editor_->document()->indentAt(row)) {
         cr.setLeft(0);
         cr.setRight(2);
     }
     QRect vr;
-    vr.setLeft(horizontalScrollBar_->isEnabled()? horizontalScrollBar_->value()/charWidth() : 0);
-    vr.setTop(verticalScrollBar_->isEnabled()? verticalScrollBar_->value()/lineHeight() : 0);
+    vr.setLeft(editor_->scrollBar(Qt::Horizontal)->isEnabled()? editor_->scrollBar(Qt::Horizontal)->value()/charWidth() : 0);
+    vr.setTop(editor_->scrollBar(Qt::Vertical)->isEnabled()? editor_->scrollBar(Qt::Vertical)->value()/lineHeight() : 0);
     vr.setSize(QSize(widthInChars(), height()/lineHeight()));
     vr.translate(QPoint(lineNoWidth, 0));
 //    qDebug() << "CR: " << cr;
 //    qDebug() << "VR: " << vr;
     if (cr.left()>vr.right()) {
 //        qDebug() << "A";
-        int v = cursor_->column() - vr.width()-1 + lineNoWidth;
-        horizontalScrollBar_->setValue(v * charWidth());
+        int v = editor_->cursor()->column() - vr.width()-1 + lineNoWidth;
+        editor_->scrollBar(Qt::Horizontal)->setValue(v * charWidth());
     }
     else if (cr.left()<vr.left()) {
 //        qDebug() << "B";
-        int v = cursor_->column();
-        if (cursor_->column() == 2u * document_->indentAt(cursor_->row()))
+        int v = editor_->cursor()->column();
+        if (editor_->cursor()->column() == 2u * editor_->document()->indentAt(editor_->cursor()->row()))
             v = 0;
-        horizontalScrollBar_->setValue(v * charWidth());
+        editor_->scrollBar(Qt::Horizontal)->setValue(v * charWidth());
     }
     if (cr.top()>vr.bottom()) {
 //        qDebug() << "C";
-        int v = cursor_->row()-vr.height()+1;
+        int v = editor_->cursor()->row()-vr.height()+1;
 //        qDebug() << "v0: " << m_verticalScrollBar->value();
-        verticalScrollBar_->setValue(v*lineHeight());
+        editor_->scrollBar(Qt::Vertical)->setValue(v*lineHeight());
 //        qDebug() << "v1: " << m_verticalScrollBar->value();
     }
     else if (cr.top()<vr.top()) {
 //        qDebug() << "D";
         int v = cr.top();
 //        qDebug() << "v0: " << m_verticalScrollBar->value();
-        verticalScrollBar_->setValue(v*lineHeight());
+        editor_->scrollBar(Qt::Vertical)->setValue(v*lineHeight());
 //        qDebug() << "v1: " << m_verticalScrollBar->value();
     }
 }
@@ -809,17 +776,17 @@ void EditorPlane::ensureHighlightedLineVisible()
              2
                 );
     QRect vr;
-    vr.setLeft(horizontalScrollBar_->isEnabled()? horizontalScrollBar_->value()/charWidth() : 0);
-    vr.setTop(verticalScrollBar_->isEnabled()? verticalScrollBar_->value()/lineHeight() : 0);
+    vr.setLeft(editor_->scrollBar(Qt::Horizontal)->isEnabled()? editor_->scrollBar(Qt::Horizontal)->value()/charWidth() : 0);
+    vr.setTop(editor_->scrollBar(Qt::Vertical)->isEnabled()? editor_->scrollBar(Qt::Vertical)->value()/lineHeight() : 0);
     vr.setSize(QSize(widthInChars(), height()/lineHeight()));
 
     if (cr.top()>vr.bottom()) {
         int v = highlightedTextLineNumber_;
-        verticalScrollBar_->setValue(v*lineHeight());
+        editor_->scrollBar(Qt::Vertical)->setValue(v*lineHeight());
     }
     else if (cr.bottom()<vr.top()) {
         int v = highlightedTextLineNumber_;
-        verticalScrollBar_->setValue(v*lineHeight());
+        editor_->scrollBar(Qt::Vertical)->setValue(v*lineHeight());
     }
 }
 
@@ -903,7 +870,7 @@ void EditorPlane::paintEvent(QPaintEvent *e)
     p.restore();
     paintLineNumbers(&p, e->rect());
 
-    if (hasAnalizerFlag_) {
+    if (editor_->analizerInstance_) {
         // Fill a margin with empty backround and draw margin line
         paintMarginBackground(&p, e->rect());
 
@@ -966,8 +933,8 @@ void EditorPlane::paintEvent(QPaintEvent *e)
             uint cw = charWidth();
             uint left = cw * highlightedTextColumnStartNumber_;
             uint right = cw * highlightedTextColumnEndNumber_;
-            left += cw * 2 * document_->indentAt(highlightedTextLineNumber_);
-            right += cw * 2 * document_->indentAt(highlightedTextLineNumber_);
+            left += cw * 2 * editor_->document()->indentAt(highlightedTextLineNumber_);
+            right += cw * 2 * editor_->document()->indentAt(highlightedTextLineNumber_);
             p.drawRoundedRect(left, highlightLeftRect.top(),
                               int(right) - int(left), highlightLeftRect.height(),
                               2, 2);
@@ -980,7 +947,7 @@ void EditorPlane::paintEvent(QPaintEvent *e)
         p.restore();
     }
 
-    if (hasAnalizerFlag_) {
+    if (editor_->analizerInstance_) {
         // Paint margin text
         // This function translates coordinate system itself due to
         // margin text always visible and so has no reference on X-scroll value
@@ -1002,7 +969,7 @@ void EditorPlane::paintEvent(QPaintEvent *e)
 
 
     // Draw a delimeter ruler between visible/hidden text if need
-    if (teacherModeFlag_ && hasAnalizerFlag_) {
+    if (editor_->plugin_->teacherMode_ && editor_->analizerInstance_) {
 
         // Draw a place where ruler stays if no hidden text
         p.setPen(Qt::NoPen);
@@ -1016,17 +983,7 @@ void EditorPlane::paintEvent(QPaintEvent *e)
 
         // Draw a new ruler rect in case of moving ruler by mouse
         paintNewHiddenDelimeterLine(&p);
-    }
-
-    // Draw 'don't edit' image (if any) with opacity, determined
-    // by 'don't edit' flag
-    p.setOpacity(dontEditImageOpacity_);
-    p.drawImage((width()-dontEditImage_.width())/2,
-                (height()-dontEditImage_.height())/2,
-                dontEditImage_);
-
-    // Restore a painter opacity
-    p.setOpacity(1.0);
+    }    
 
     // Accept an event
     e->accept();
@@ -1034,8 +991,8 @@ void EditorPlane::paintEvent(QPaintEvent *e)
 
 void EditorPlane::paintHiddenTextDelimeterLine(QPainter *p)
 {
-    if (teacherModeFlag_ && hasAnalizerFlag_) {
-        int hiddenLineStart = document_->hiddenLineStart();
+    if (editor_->plugin_->teacherMode_ && editor_->analizerInstance_) {
+        int hiddenLineStart = editor_->document()->hiddenLineStart();
 
         int x1 = 5*charWidth()+LOCK_SYMBOL_WIDTH;
         int x2 = (widthInChars()+5)*charWidth();
@@ -1056,7 +1013,7 @@ uint EditorPlane::normalizedNewMarginLinePosition(uint x) const
 {
     // Bound x value
     uint minimumLeftPosition = (LEFT_MARGIN_SIZE + 1) * charWidth() +
-            (teacherModeFlag_ && hasAnalizerFlag_
+            (editor_->plugin_->teacherMode_ && editor_->analizerInstance_
              ? LOCK_SYMBOL_WIDTH : 0 );
 
     uint maximumLeftPosition = width() - charWidth() - MARGIN_LINE_WIDTH;
@@ -1154,12 +1111,12 @@ void EditorPlane::paintCursor(QPainter *p, const QRect &rect)
 
     if (rect.intersects(cr) // prevent painting of non-updated region
             &&
-            cursor_->isVisible() // determined by blink timer
+            editor_->cursor()->isVisible() // determined by blink timer
             )
     {
         p->setPen(Qt::NoPen);
         p->setBrush(QColor(Qt::black));
-        if (settings_->value(SettingsPage::KeyInvertColorsIfDarkSystemTheme,
+        if (editor_->mySettings()->value(SettingsPage::KeyInvertColorsIfDarkSystemTheme,
                             SettingsPage::DefaultInvertColorsIfDarkSystemTheme)
                 .toBool()
                 )
@@ -1181,7 +1138,7 @@ void EditorPlane::paintCursor(QPainter *p, const QRect &rect)
 void EditorPlane::keyReleaseEvent(QKeyEvent *e)
 {
     Qt::Key tempSwichLayoutKey = Qt::Key(
-                settings_->value(
+                editor_->mySettings()->value(
                     SettingsPage::KeyTempSwitchLayoutButton
                     , SettingsPage::DefaultTempSwitchLayoutButton)
                 .toUInt()
@@ -1192,7 +1149,7 @@ void EditorPlane::keyReleaseEvent(QKeyEvent *e)
     if (e->key()==Qt::Key_Shift || (e->key()==-1 && e->modifiers() & Qt::ShiftModifier)) {
         Utils::shiftKeyPressed = false;
     }
-    if (cursor_->isEnabled()) {
+    if (editor_->cursor()->isEnabled()) {
         e->accept();
     }
     else {
@@ -1283,100 +1240,100 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
     }
 
 #endif
-    if (cursor_->isEnabled() && hasFocus()) {
+    if (editor_->cursor()->isEnabled() && hasFocus()) {
         emit message(QString());
         if (MoveToNextChar) {
-            cursor_->evaluateCommand(KeyCommand::MoveToNextChar);
+            editor_->cursor()->evaluateCommand(KeyCommand::MoveToNextChar);
         }
         else if (SelectNextChar) {
-            cursor_->evaluateCommand(KeyCommand::SelectNextChar);
+            editor_->cursor()->evaluateCommand(KeyCommand::SelectNextChar);
         }
         else if (MoveToNextWord) {
-            cursor_->evaluateCommand(KeyCommand::MoveToNextLexem);
+            editor_->cursor()->evaluateCommand(KeyCommand::MoveToNextLexem);
         }
         else if (SelectNextWord) {
-            cursor_->evaluateCommand(KeyCommand::SelectNextLexem);
+            editor_->cursor()->evaluateCommand(KeyCommand::SelectNextLexem);
         }
-        else if (e->key()==Qt::Key_Right && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && analizer_==0) {
-            cursor_->evaluateCommand(KeyCommand::SelectNextColumn);
+        else if (e->key()==Qt::Key_Right && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && editor_->analizerInstance_==0) {
+            editor_->cursor()->evaluateCommand(KeyCommand::SelectNextColumn);
         }
         else if (MoveToPreviousChar) {
-            cursor_->evaluateCommand(KeyCommand::MoveToPreviousChar);
+            editor_->cursor()->evaluateCommand(KeyCommand::MoveToPreviousChar);
         }
         else if (SelectPreviousChar) {
-            cursor_->evaluateCommand(KeyCommand::SelectPreviousChar);
+            editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousChar);
         }
         else if (MoveToPreviousWord) {
-            cursor_->evaluateCommand(KeyCommand::MoveToPreviousLexem);
+            editor_->cursor()->evaluateCommand(KeyCommand::MoveToPreviousLexem);
         }
         else if (SelectPreviousWord) {
-            cursor_->evaluateCommand(KeyCommand::SelectPreviousLexem);
+            editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousLexem);
         }
-        else if (e->key()==Qt::Key_Left && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && analizer_==0) {
-            cursor_->evaluateCommand(KeyCommand::SelectPreviousColumn);
+        else if (e->key()==Qt::Key_Left && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && editor_->analizerInstance_==0) {
+            editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousColumn);
         }
         else if (MoveToNextLine) {
-            cursor_->evaluateCommand(KeyCommand::MoveToNextLine);
+            editor_->cursor()->evaluateCommand(KeyCommand::MoveToNextLine);
         }
         else if (SelectNextLine) {
-            cursor_->evaluateCommand(KeyCommand::SelectNextLine);
+            editor_->cursor()->evaluateCommand(KeyCommand::SelectNextLine);
         }
-        else if (e->key()==Qt::Key_Down && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && analizer_==0) {
-            cursor_->evaluateCommand(KeyCommand::SelectNextRow);
+        else if (e->key()==Qt::Key_Down && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && editor_->analizerInstance_==0) {
+            editor_->cursor()->evaluateCommand(KeyCommand::SelectNextRow);
         }
         else if (MoveToPreviousLine) {
-            cursor_->evaluateCommand(KeyCommand::MoveToPreviousLine);
+            editor_->cursor()->evaluateCommand(KeyCommand::MoveToPreviousLine);
         }
         else if (SelectPreviousLine) {
-            cursor_->evaluateCommand(KeyCommand::SelectPreviousLine);
+            editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousLine);
         }
-        else if (e->key()==Qt::Key_Up && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && analizer_==0) {
-            cursor_->evaluateCommand(KeyCommand::SelectPreviousRow);
+        else if (e->key()==Qt::Key_Up && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && editor_->analizerInstance_==0) {
+            editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousRow);
         }
         else if (e->matches(QKeySequence::MoveToStartOfLine)) {
-            cursor_->evaluateCommand(KeyCommand::MoveToStartOfLine);
+            editor_->cursor()->evaluateCommand(KeyCommand::MoveToStartOfLine);
         }
         else if (e->matches(QKeySequence::SelectStartOfLine)) {
-            cursor_->evaluateCommand(KeyCommand::SelectStartOfLine);
+            editor_->cursor()->evaluateCommand(KeyCommand::SelectStartOfLine);
         }
         else if (e->matches(QKeySequence::MoveToEndOfLine)) {
-            cursor_->evaluateCommand(KeyCommand::MoveToEndOfLine);
+            editor_->cursor()->evaluateCommand(KeyCommand::MoveToEndOfLine);
         }
         else if (e->matches(QKeySequence::SelectEndOfLine)) {
-            cursor_->evaluateCommand(KeyCommand::SelectEndOfLine);
+            editor_->cursor()->evaluateCommand(KeyCommand::SelectEndOfLine);
         }
         else if (e->matches(QKeySequence::MoveToPreviousPage)) {
-            cursor_->evaluateCommand(KeyCommand::MoveToPreviousPage);
+            editor_->cursor()->evaluateCommand(KeyCommand::MoveToPreviousPage);
         }
         else if (e->matches(QKeySequence::SelectPreviousPage)) {
-            cursor_->evaluateCommand(KeyCommand::SelectPreviousPage);
+            editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousPage);
         }
         else if (e->matches(QKeySequence::MoveToNextPage)) {
-            cursor_->evaluateCommand(KeyCommand::MoveToNextPage);
+            editor_->cursor()->evaluateCommand(KeyCommand::MoveToNextPage);
         }
         else if (e->matches(QKeySequence::SelectNextPage)) {
-            cursor_->evaluateCommand(KeyCommand::SelectNextPage);
+            editor_->cursor()->evaluateCommand(KeyCommand::SelectNextPage);
         }
         else if (e->matches(QKeySequence::MoveToStartOfDocument)) {
-            cursor_->evaluateCommand(KeyCommand::MoveToStartOfDocument);
+            editor_->cursor()->evaluateCommand(KeyCommand::MoveToStartOfDocument);
         }
         else if (e->matches(QKeySequence::SelectStartOfDocument)) {
-            cursor_->evaluateCommand(KeyCommand::SelectStartOfDocument);
+            editor_->cursor()->evaluateCommand(KeyCommand::SelectStartOfDocument);
         }
         else if (e->matches(QKeySequence::MoveToEndOfDocument)) {
-            cursor_->evaluateCommand(KeyCommand::MoveToEndOfDocument);
+            editor_->cursor()->evaluateCommand(KeyCommand::MoveToEndOfDocument);
         }
         else if (e->matches(QKeySequence::SelectEndOfDocument)) {
-            cursor_->evaluateCommand(KeyCommand::SelectEndOfDocument);
+            editor_->cursor()->evaluateCommand(KeyCommand::SelectEndOfDocument);
         }
         else if (e->matches(QKeySequence::InsertParagraphSeparator)) {
-            bool addIndent = analizer_ && analizer_->indentsSignificant();
+            bool addIndent = editor_->analizerPlugin_ && editor_->analizerPlugin_->indentsSignificant();
             if (!addIndent) {
-                cursor_->evaluateCommand("\n");
+                editor_->cursor()->evaluateCommand("\n");
             }
             else {
-                const QString & curText = cursor_->row() < document_->linesCount()
-                        ? document_->at(cursor_->row()).text : QString();
+                const QString & curText = editor_->cursor()->row() < editor_->document()->linesCount()
+                        ? editor_->document()->at(editor_->cursor()->row()).text : QString();
 
                 int indentSpaces = 0;
                 for (int i=0; i<curText.length(); i++) {
@@ -1388,7 +1345,7 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                     }
                 }
                 bool moveToEnd = false;
-                for (uint i=cursor_->column(); i<curText.length(); i++) {
+                for (uint i=editor_->cursor()->column(); i<curText.length(); i++) {
                     if (curText.at(i) == ' ') {
                         moveToEnd = true;
                     }
@@ -1398,73 +1355,73 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                     }
                 }
                 if (moveToEnd)
-                    cursor_->moveTo(cursor_->row(), curText.length());
+                    editor_->cursor()->moveTo(editor_->cursor()->row(), curText.length());
                 QString indent;
                 indent.fill(' ', indentSpaces);
-                cursor_->evaluateCommand("\n" + indent);
+                editor_->cursor()->evaluateCommand("\n" + indent);
             }
         }
         else if (e->key()==Qt::Key_Backspace && e->modifiers()==0) {
-            bool checkForIndent = !cursor_->hasSelection() &&
-                    analizer_ && analizer_->indentsSignificant();
+            bool checkForIndent = !editor_->cursor()->hasSelection() &&
+                    editor_->analizerPlugin_ && editor_->analizerPlugin_->indentsSignificant();
             if (!checkForIndent) {
-                cursor_->evaluateCommand(KeyCommand::Backspace);
+                editor_->cursor()->evaluateCommand(KeyCommand::Backspace);
             }
             else {
-                const QString & curText = cursor_->row() < document_->linesCount()
-                        ? document_->at(cursor_->row()).text : QString();
-                bool onlySpacesBefore = curText.left(cursor_->column()).trimmed().isEmpty();
+                const QString & curText = editor_->cursor()->row() < editor_->document()->linesCount()
+                        ? editor_->document()->at(editor_->cursor()->row()).text : QString();
+                bool onlySpacesBefore = curText.left(editor_->cursor()->column()).trimmed().isEmpty();
                 uint bsCount = 1u;
-                if (onlySpacesBefore && cursor_->column() > 0) {
-                    bsCount = qMin(4u, cursor_->column());
+                if (onlySpacesBefore && editor_->cursor()->column() > 0) {
+                    bsCount = qMin(4u, editor_->cursor()->column());
                 }
                 for (uint i=0u; i<bsCount; i++) {
-                    cursor_->evaluateCommand(KeyCommand::Backspace);
+                    editor_->cursor()->evaluateCommand(KeyCommand::Backspace);
                 }
             }
         }
         else if (e->matches(QKeySequence::Paste)) {
-            cursor_->evaluateCommand(KeyCommand::Paste);
+            editor_->cursor()->evaluateCommand(KeyCommand::Paste);
         }
         else if (e->matches(QKeySequence::Copy)) {
-            cursor_->evaluateCommand(KeyCommand::Copy);
+            editor_->cursor()->evaluateCommand(KeyCommand::Copy);
         }
         else if (e->matches(QKeySequence::Cut)) {
-            cursor_->evaluateCommand(KeyCommand::Cut);
+            editor_->cursor()->evaluateCommand(KeyCommand::Cut);
         }
         else if (e->matches(QKeySequence::SelectAll)) {
-            cursor_->evaluateCommand(KeyCommand::SelectAll);
+            editor_->cursor()->evaluateCommand(KeyCommand::SelectAll);
         }
         else if (e->key()==Qt::Key_Y && e->modifiers().testFlag(Qt::ControlModifier)) {
-            cursor_->evaluateCommand(KeyCommand::RemoveLine);
+            editor_->cursor()->evaluateCommand(KeyCommand::RemoveLine);
         }
         else if (e->key()==Qt::Key_K && e->modifiers().testFlag(Qt::ControlModifier)) {
-            cursor_->evaluateCommand(KeyCommand::RemoveTail);
+            editor_->cursor()->evaluateCommand(KeyCommand::RemoveTail);
         }
         else if (e->matches(QKeySequence::Delete)) {
-            cursor_->evaluateCommand(KeyCommand::Delete);
+            editor_->cursor()->evaluateCommand(KeyCommand::Delete);
         }
         else if (e->matches(QKeySequence::Undo)) {
-            cursor_->undo();
+            editor_->cursor()->undo();
         }
         else if (e->matches(QKeySequence::Redo)) {
-            cursor_->redo();
+            editor_->cursor()->redo();
         }
         else if (e->key()==Qt::Key_Slash && e->modifiers().testFlag(Qt::ControlModifier)) {
-            cursor_->toggleComment();
+            editor_->cursor()->toggleComment();
         }
         else if (e->key()==Qt::Key_M && e->modifiers().testFlag(Qt::ControlModifier)) {
             editor_->recordMacro_->trigger();
         }
         else if (e->key()==Qt::Key_Space && e->modifiers().testFlag(Qt::ControlModifier)) {
-            if (hasAnalizerFlag_)
+            if (editor_->analizerInstance_)
                 doAutocomplete();
         }
         else if (e->key()==Qt::Key_Tab) {
-            if (analizer_ && analizer_->indentsSignificant()) {
-                cursor_->evaluateCommand("    ");
+            if (editor_->analizerPlugin_ && editor_->analizerPlugin_->indentsSignificant()) {
+                editor_->cursor()->evaluateCommand("    ");
             }
-            else if (analizer_) {
+            else if (editor_->analizerInstance_ && editor_->analizerInstance_->helper()) {
                 doAutocomplete();
             }
         }
@@ -1472,7 +1429,7 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                  !e->modifiers().testFlag(Qt::ControlModifier) &&
                  !ignoreTextEvent
                  ) {
-            cursor_->evaluateCommand(Utils::textByKey(Qt::Key(e->key())
+            editor_->cursor()->evaluateCommand(Utils::textByKey(Qt::Key(e->key())
                                                        , e->text()
                                                        , e->modifiers().testFlag(Qt::ShiftModifier)
                                                        , editor_->isTeacherMode() && editor_->analizer()
@@ -1480,7 +1437,7 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         }
 
         Qt::Key tempSwichLayoutKey = Qt::Key(
-                    settings_->value(
+                    editor_->mySettings()->value(
                         SettingsPage::KeyTempSwitchLayoutButton
                         , SettingsPage::DefaultTempSwitchLayoutButton)
                     .toUInt()
@@ -1501,46 +1458,48 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
 
 void EditorPlane::doAutocomplete()
 {
-
+    if (!editor_->analizerInstance_ ||
+            !editor_->analizerInstance_->helper())
+        return;
     QString before, after;
-    if (cursor_->row()<document_->linesCount()) {
-        QString line = document_->textAt(cursor_->row());
-        int textPos = cursor_->column() - 2 * document_->indentAt(cursor_->row());
+    if (editor_->cursor()->row()<editor_->document()->linesCount()) {
+        QString line = editor_->document()->textAt(editor_->cursor()->row());
+        int textPos = editor_->cursor()->column() - 2 * editor_->document()->indentAt(editor_->cursor()->row());
         before = line.mid(0, textPos);
         if (textPos<line.length()) {
             after = line.mid(textPos);
         }
     }
-    QList<Shared::Suggestion> suggestions =
-            analizer_->suggestAutoComplete(document_->id_, cursor_->row(), before, after);
+    QList<Shared::Analizer::Suggestion> suggestions =
+            editor_->analizerInstance_->helper()->suggestAutoComplete(editor_->cursor()->row(), before, after);
     if (suggestions.isEmpty()) {
         emit message(tr("Can't suggest autocomplete"));
     }
     else {
         emit disableInsertActions();
-        cursor_->removeSelection();
-        cursor_->removeRectSelection();
-        autocompleteWidget_->init(before, suggestions, helpViewer_);
-        autocompleteWidget_->move(mapToGlobal(cursorRect().topLeft()+offset()));
-        autocompleteWidget_->setVisible(true);
-        autocompleteWidget_->activateWindow();
-        autocompleteWidget_->setFocus();
+        editor_->cursor()->removeSelection();
+        editor_->cursor()->removeRectSelection();
+        editor_->autocompleteWidget_->init(before, suggestions, nullptr);
+        editor_->autocompleteWidget_->move(mapToGlobal(cursorRect().topLeft()+offset()));
+        editor_->autocompleteWidget_->setVisible(true);
+        editor_->autocompleteWidget_->activateWindow();
+        editor_->autocompleteWidget_->setFocus();
     }
 }
 
 void EditorPlane::finishAutoCompletion(const QString &suggestion)
 {
 #ifdef QT_DEBUG
-    autocompleteWidget_->hide();
+    editor_->autocompleteWidget_->hide();
     QApplication::processEvents();
 #endif
     static const QString Delimeters = QString::fromAscii(
                 " ;:=()!,.@-+*/[]{}"
                 );
     QString before, after;
-    if (cursor_->row()<document_->linesCount()) {
-        QString line = document_->textAt(cursor_->row());
-        int textPos = cursor_->column() - 2 * document_->indentAt(cursor_->row());
+    if (editor_->cursor()->row()<editor_->document()->linesCount()) {
+        QString line = editor_->document()->textAt(editor_->cursor()->row());
+        int textPos = editor_->cursor()->column() - 2 * editor_->document()->indentAt(editor_->cursor()->row());
         before = line.mid(0, textPos);
         if (textPos<line.length()) {
             after = line.mid(textPos);
@@ -1583,37 +1542,37 @@ void EditorPlane::finishAutoCompletion(const QString &suggestion)
         }
     }
     for (int i=0; i<leftPart; i++) {
-        cursor_->evaluateCommand(KeyCommand::SelectPreviousChar);
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousChar);
     }
-    cursor_->evaluateCommand(KeyCommand(text));
+    editor_->cursor()->evaluateCommand(KeyCommand(text));
     emit message(QString());
 }
 
 void EditorPlane::selectAll()
 {
-    cursor_->evaluateCommand(KeyCommand::SelectAll);
+    editor_->cursor()->evaluateCommand(KeyCommand::SelectAll);
 }
 
 void EditorPlane::copy()
 {
-    cursor_->evaluateCommand(KeyCommand::Copy);
+    editor_->cursor()->evaluateCommand(KeyCommand::Copy);
 }
 
 void EditorPlane::paste()
 {
-    cursor_->evaluateCommand(KeyCommand::Paste);
+    editor_->cursor()->evaluateCommand(KeyCommand::Paste);
     findCursor();
 }
 
 void EditorPlane::cut()
 {
-    cursor_->evaluateCommand(KeyCommand::Cut);
+    editor_->cursor()->evaluateCommand(KeyCommand::Cut);
     findCursor();
 }
 
 bool EditorPlane::canDrop(const QPoint &pos, const QMimeData *data) const
 {
-    if (!cursor_->isEnabled()) {
+    if (!editor_->cursor()->isEnabled()) {
         return false;
     }
     bool result = false;
@@ -1645,7 +1604,7 @@ bool EditorPlane::canDrop(const QPoint &pos, const QMimeData *data) const
 
 void EditorPlane::dragEventHandler(QDragMoveEvent *e)
 {
-    cursor_->setViewMode(TextCursor::VM_Hidden);
+    editor_->cursor()->setViewMode(TextCursor::VM_Hidden);
     if (canDrop(e->pos(), e->mimeData())) {
         if (e->source()==this) {
             e->setDropAction(Qt::MoveAction);
@@ -1692,7 +1651,7 @@ void EditorPlane::dragEventHandler(QDragMoveEvent *e)
 
 void EditorPlane::dropEvent(QDropEvent *e)
 {
-    cursor_->setViewMode(TextCursor::VM_Blinking);
+    editor_->cursor()->setViewMode(TextCursor::VM_Blinking);
     pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
     marginBackgroundAlpha_ = 255;
     bool dropIntoSelection = false;
@@ -1701,9 +1660,9 @@ void EditorPlane::dropEvent(QDropEvent *e)
     col = qMax(col, 0);
     row = qMax(row, 0);
     int fromRow, fromCol, toRow, toCol;
-    document_->undoStack()->beginMacro("dragndrop");
-    if (cursor_->hasSelection()) {
-        cursor_->selectionBounds(fromRow, fromCol, toRow, toCol);
+    editor_->document()->undoStack()->beginMacro("dragndrop");
+    if (editor_->cursor()->hasSelection()) {
+        editor_->cursor()->selectionBounds(fromRow, fromCol, toRow, toCol);
         if (row>fromRow && row<toRow) {
             dropIntoSelection = true;
         }
@@ -1722,8 +1681,8 @@ void EditorPlane::dropEvent(QDropEvent *e)
         }
     }
     QRect r;
-    if (cursor_->hasRectSelection()) {
-        r = cursor_->selectionRect();
+    if (editor_->cursor()->hasRectSelection()) {
+        r = editor_->cursor()->selectionRect();
         dropIntoSelection = r.contains(col, row);
     }
     if (e->mimeData()->hasUrls()) {
@@ -1732,7 +1691,7 @@ void EditorPlane::dropEvent(QDropEvent *e)
         foreach (QUrl url, urls) {
             const QString fileName = url.toLocalFile();
             const QString filenameSuffix =
-                    analizer_ ? analizer_->defaultDocumentFileNameSuffix()
+                    editor_->analizerPlugin_ ? editor_->analizerPlugin_->defaultDocumentFileNameSuffix()
                               : ".txt";
             if (fileName.endsWith(filenameSuffix)) {
                 validUrls << url;
@@ -1766,31 +1725,31 @@ void EditorPlane::dropEvent(QDropEvent *e)
     }
 
     if (dropIntoSelection) {
-        if (cursor_->hasSelection()) {
-            cursor_->removeSelectedText();
+        if (editor_->cursor()->hasSelection()) {
+            editor_->cursor()->removeSelectedText();
         }
-        if (cursor_->hasRectSelection()) {
-            cursor_->removeSelectedBlock();
+        if (editor_->cursor()->hasRectSelection()) {
+            editor_->cursor()->removeSelectedBlock();
         }
     }
     else {
         if (e->source()==this) {
-            if (cursor_->hasSelection()) {
+            if (editor_->cursor()->hasSelection()) {
                 int afromRow, atoRow, afromCol, atoCol;
-                cursor_->selectionBounds(afromRow, afromCol, atoRow, atoCol);
-                cursor_->setRow(afromRow);
-                cursor_->setColumn(afromCol);
+                editor_->cursor()->selectionBounds(afromRow, afromCol, atoRow, atoCol);
+                editor_->cursor()->setRow(afromRow);
+                editor_->cursor()->setColumn(afromCol);
                 if (row>=toRow) {
-                    QString st = cursor_->selectedText();
+                    QString st = editor_->cursor()->selectedText();
                     row -= st.count("\n");
                 }
                 if (row == toRow && atoCol <= col) {
-                    QString st = cursor_->selectedText();
+                    QString st = editor_->cursor()->selectedText();
                     col -= st.length();
                 }
-                cursor_->removeSelectedText();
-                cursor_->setRow(toRow);
-                cursor_->setColumn(toCol);
+                editor_->cursor()->removeSelectedText();
+                editor_->cursor()->setRow(toRow);
+                editor_->cursor()->setColumn(toCol);
 //                if (row>=toRow) {
 //                    row -= text.count("\n");
 //                    if (row==toRow && col>=toCol) {
@@ -1798,8 +1757,8 @@ void EditorPlane::dropEvent(QDropEvent *e)
 //                    }
 //                }
             }
-            if (cursor_->hasRectSelection()) {
-                cursor_->removeSelectedBlock();
+            if (editor_->cursor()->hasRectSelection()) {
+                editor_->cursor()->removeSelectedBlock();
 //                if (row>=r.bottom()) {
 //                    row -= r.height();
 //                }
@@ -1807,31 +1766,31 @@ void EditorPlane::dropEvent(QDropEvent *e)
 
         }
         else {
-            if (cursor_->hasSelection()) {
-                cursor_->removeSelection();
+            if (editor_->cursor()->hasSelection()) {
+                editor_->cursor()->removeSelection();
             }
-            if (cursor_->hasRectSelection()) {
-                cursor_->removeRectSelection();
+            if (editor_->cursor()->hasRectSelection()) {
+                editor_->cursor()->removeRectSelection();
             }
         }
     }
-    cursor_->moveTo(row, col);
+    editor_->cursor()->moveTo(row, col);
     if (e->mimeData()->hasFormat(Clipboard::BlockMimeType)) {
-        cursor_->insertBlock(lines);
+        editor_->cursor()->insertBlock(lines);
     }
     else if (e->mimeData()->hasText()) {
-        cursor_->insertText(text);
+        editor_->cursor()->insertText(text);
     }
-    document_->undoStack()->endMacro();
+    editor_->document()->undoStack()->endMacro();
 //    m_document->flushTransaction();
-    document_->forceCompleteRecompilation(QPoint(cursor_->column(), cursor_->row()));
+    editor_->document()->forceCompleteRecompilation(QPoint(editor_->cursor()->column(), editor_->cursor()->row()));
 
     update();
 }
 
 void EditorPlane::dragLeaveEvent(QDragLeaveEvent *e)
 {
-    cursor_->setViewMode(TextCursor::VM_Blinking);
+    editor_->cursor()->setViewMode(TextCursor::VM_Blinking);
     pnt_dropPosMarker = pnt_dropPosCorner = QPoint(-1000, -1000);
     marginBackgroundAlpha_ = 255;
     update();
@@ -1857,36 +1816,36 @@ void EditorPlane::resizeEvent(QResizeEvent *e)
 void EditorPlane::focusInEvent(QFocusEvent *e)
 {
     QWidget::focusInEvent(e);
-    if (cursor_->isEnabled()) {
-        cursor_->setViewMode(TextCursor::VM_Blinking);
+    if (editor_->cursor()->isEnabled()) {
+        editor_->cursor()->setViewMode(TextCursor::VM_Blinking);
     }
 }
 
 void EditorPlane::focusOutEvent(QFocusEvent *e)
 {
     QWidget::focusOutEvent(e);
-    if (cursor_->isEnabled()) {
-        cursor_->setViewMode(TextCursor::VM_Hidden);
+    if (editor_->cursor()->isEnabled()) {
+        editor_->cursor()->setViewMode(TextCursor::VM_Hidden);
     }
 }
 
 void EditorPlane::removeLine()
 {
-    cursor_->evaluateCommand(KeyCommand::RemoveLine);
+    editor_->cursor()->evaluateCommand(KeyCommand::RemoveLine);
     findCursor();
 }
 
 void EditorPlane::removeLineTail()
 {
-    cursor_->evaluateCommand(KeyCommand::RemoveTail);
+    editor_->cursor()->evaluateCommand(KeyCommand::RemoveTail);
     findCursor();
 }
 
 QRect EditorPlane::cursorRect() const
 {
     // Text coordinates
-    uint row = cursor_->row();
-    uint col = cursor_->column();
+    uint row = editor_->cursor()->row();
+    uint col = editor_->cursor()->column();
 
     // Sizes
     uint dX = charWidth();
@@ -1894,13 +1853,13 @@ QRect EditorPlane::cursorRect() const
 
 
 
-    if (cursor_->mode()==TextCursor::EM_Overwrite) {
+    if (editor_->cursor()->mode()==TextCursor::EM_Overwrite) {
         // Return a cursor rect the same height as line in this case
         return QRect(col*dY, row*dY, dX, dY);
     }
     else {
         // Return an "underline" or "vline" cursor rect
-        return cursor_->isFreeCursorMovement()
+        return editor_->cursor()->isFreeCursorMovement()
                 ? QRect(col*dX, (row+1)*dY-1, dX, 2)
                 : QRect(col*dX, row*dY+4, 2, dY-2);
     }
@@ -1909,7 +1868,7 @@ QRect EditorPlane::cursorRect() const
 uint EditorPlane::marginLeftBound() const
 {
     return (widthInChars() + LEFT_MARGIN_SIZE) * charWidth() +
-            (teacherModeFlag_ && hasAnalizerFlag_
+            (editor_->plugin_->teacherMode_ && editor_->analizerInstance_
              ? LOCK_SYMBOL_WIDTH : 0 ) - MARGIN_LINE_WIDTH / 2 ;
 }
 
@@ -1975,14 +1934,14 @@ void EditorPlane::paintBackground(QPainter *p, const QRect &rect)
  */
 void EditorPlane::paintRectSelection(QPainter *p, const QRect &)
 {
-    if (!cursor_->hasRectSelection())
+    if (!editor_->cursor()->hasRectSelection())
         return;
     p->save();
     p->setPen(QPen(palette().brush(hasFocus()? QPalette::Active : QPalette::Inactive, QPalette::Highlight)
                    , 2
                    , Qt::SolidLine));
     p->setBrush(Qt::NoBrush);
-    QRect selRect = cursor_->selectionRect();
+    QRect selRect = editor_->cursor()->selectionRect();
     QRect r(selRect.left() * charWidth() + 1,
             selRect.top() * lineHeight() + 1,
             selRect.width() * charWidth() - 2,
@@ -2006,24 +1965,24 @@ void EditorPlane::paintSelection(QPainter *p, const QRect &rect)
     int startLine = 0;
 //    int startLine = qMax(0, rect.top() / lineHeight() - 1);
 //    int endLine = rect.bottom() / lineHeight() + 1;
-    int endLine = document_->linesCount();
+    int endLine = editor_->document()->linesCount();
     int lh = lineHeight();
     int cw = charWidth();
     bool prevLineSelected = false;
     for (int i=startLine; i<endLine+1; i++) {
-        if (i<document_->linesCount()) {
-            int indentSpace = 2 * cw * document_->indentAt(i);
+        if (i<editor_->document()->linesCount()) {
+            int indentSpace = 2 * cw * editor_->document()->indentAt(i);
             if (prevLineSelected) {
                 p->drawRect(0, i*lh, indentSpace, lh);
             }
-            QList<bool> sm = document_->selectionMaskAt(i);
+            QList<bool> sm = editor_->document()->selectionMaskAt(i);
             for (int j=0; j<sm.size(); j++) {
                 if (sm[j])
                     p->drawRect(indentSpace+j*cw, i*lh, cw, lh);
             }
-            if (document_->lineEndSelectedAt(i)) {
+            if (editor_->document()->lineEndSelectedAt(i)) {
                 prevLineSelected = true;
-                int textLength = document_->textAt(i).length()*cw;
+                int textLength = editor_->document()->textAt(i).length()*cw;
                 int xx = indentSpace + textLength;
                 int ww = widthInChars()*cw-xx;
                 p->drawRect(xx,
@@ -2049,7 +2008,7 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
     const uint startLine = qMax(0, rect.top() / int(lineHeight()) - 1);
     const uint endLine = qMax(0, rect.bottom() / int(lineHeight()) + 1);
 
-    uint lockSymbolOffset = teacherModeFlag_? LOCK_SYMBOL_WIDTH : 0;
+    uint lockSymbolOffset = editor_->plugin_->teacherMode_? LOCK_SYMBOL_WIDTH : 0;
     for (uint i=startLine; i<=endLine; i++) {
 
         // Visible line number accounting Y-scroll offset
@@ -2076,7 +2035,7 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
                     );
 
 
-        const QColor textColor = realLineNumber <= document_->linesCount()
+        const QColor textColor = realLineNumber <= editor_->document()->linesCount()
                   // If line exists, draw number using regular fg color
                 ? QColor(palette().brush(QPalette::WindowText).color())
                   // else draw using lighter color
@@ -2096,7 +2055,7 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
         int yy = i * lineHeight() - 2;
         p->drawText(xx, yy, txt);
 
-        if (teacherModeFlag_) {
+        if (editor_->plugin_->teacherMode_) {
             // Paint 'lock' symbol to the left of line number
             const QRect lockSymbolRect(
                         0,
@@ -2104,16 +2063,16 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
                         LOCK_SYMBOL_WIDTH,
                         lineHeight()
                         );
-            if (realLineNumber<document_->linesCount() &&
-                    document_->isProtected(realLineNumber))
+            if (realLineNumber<editor_->document()->linesCount() &&
+                    editor_->document()->isProtected(realLineNumber))
             {
                 // Draw 'locked' symbol if line is protected
                 paintLockSymbol(p, true, lockSymbolRect);
             }
 
             if (realLineNumber==highlightedLockSymbolLineNumber_ &&
-                    realLineNumber<document_->linesCount() &&
-                    !document_->isProtected(realLineNumber) )
+                    realLineNumber<editor_->document()->linesCount() &&
+                    !editor_->document()->isProtected(realLineNumber) )
             {
                 // Draw 'locked' symbol outline in case of mouse over
                 paintLockSymbol(p, false, lockSymbolRect);
@@ -2188,22 +2147,22 @@ void EditorPlane::wheelEvent(QWheelEvent *e)
         currentSize += steps;
         currentSize = qMin(maxSize, qMax(minSize, currentSize));
         fnt.setPointSize(currentSize);
-        settings_->setValue(SettingsPage::KeyFontSize, currentSize);
+        editor_->mySettings()->setValue(SettingsPage::KeyFontSize, currentSize);
         setFont(fnt);
         update();
 
     }
-    if (!verticalScrollBar_->isEnabled() && e->orientation()==Qt::Vertical) {
+    if (!editor_->scrollBar(Qt::Vertical)->isEnabled() && e->orientation()==Qt::Vertical) {
         e->ignore();
         return;
     }
-    if (!horizontalScrollBar_->isEnabled() && e->orientation()==Qt::Horizontal) {
+    if (!editor_->scrollBar(Qt::Horizontal)->isEnabled() && e->orientation()==Qt::Horizontal) {
         e->ignore();
         return;
     }
     int degrees = e->delta() / 8;
     int steps = degrees / 15;
-    QScrollBar * sb = e->orientation()==Qt::Vertical? verticalScrollBar_ : horizontalScrollBar_;
+    QScrollBar * sb = e->orientation()==Qt::Vertical? editor_->scrollBar(Qt::Vertical) : editor_->scrollBar(Qt::Horizontal);
     sb->setValue(sb->value()-steps*sb->singleStep()*3);
 
 }
@@ -2216,7 +2175,7 @@ void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
 {
     // Test if there is enought space for margin text
     uint marginWidth =
-            settings_->value(MarginWidthKey, MarginWidthDefault).toUInt();
+            editor_->mySettings()->value(MarginWidthKey, MarginWidthDefault).toUInt();
     if (marginWidth<3)
         return;
 
@@ -2225,12 +2184,12 @@ void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
 //    const uint endLine =
 //            qMax(0, qMin(
 //                     int(rect.bottom() / lineHeight() + 1),
-//                     int(document_->linesCount())-1
+//                     int(editor_->document()->linesCount())-1
 //                     )
 //                 );
 
     const uint startLine = 0;
-    const uint endLine = document_->linesCount();
+    const uint endLine = editor_->document()->linesCount();
 
     // Prepare colors
     QColor errorColor(Qt::red);
@@ -2251,8 +2210,8 @@ void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
             + charWidth() / 2;
 
     for (uint i=startLine; i<endLine; i++) {
-        if (document_->marginAt(i).text.length() > 0 ||
-                document_->marginAt(i).errors.size() > 0)
+        if (editor_->document()->marginAt(i).text.length() > 0 ||
+                editor_->document()->marginAt(i).errors.size() > 0)
         {
             // If something exists on margin
 
@@ -2261,12 +2220,12 @@ void EditorPlane::paintMarginText(QPainter * p, const QRect &rect)
 
             // Text to show
             const QString & text =
-                    document_->marginAt(i).text.length() > 0
-                    ? document_->marginAt(i).text
-                    : document_->marginAt(i).errors.first();
+                    editor_->document()->marginAt(i).text.length() > 0
+                    ? editor_->document()->marginAt(i).text
+                    : editor_->document()->marginAt(i).errors.first();
 
             // Set corresponding text color
-            QColor color = document_->marginAt(i).text.length() > 0
+            QColor color = editor_->document()->marginAt(i).text.length() > 0
                     ? marginColor : errorColor ;
             if (darkness / 3 <= 127 && highlightedTextLineNumber_ == i) {
                 color = QColor(Qt::black);
@@ -2290,7 +2249,7 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
     const uint endLine =
             qMax(0, qMin(
                      int(rect.bottom() / lineHeight() + 1),
-                     int(document_->linesCount())-1
+                     int(editor_->document()->linesCount())-1
                      )
                  );
 
@@ -2298,9 +2257,9 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
     // -1 value means 'not found'
     // TODO implement using std::algorithm with predicate (requires C++11)
     int hiddenLineStart = -1;
-    if (teacherModeFlag_ && hasAnalizerFlag_)
-    for (uint i=0; i<document_->linesCount(); i++) {
-        if (document_->isHidden(i)) {
+    if (editor_->plugin_->teacherMode_ && editor_->analizerInstance_)
+    for (uint i=0; i<editor_->document()->linesCount(); i++) {
+        if (editor_->document()->isHidden(i)) {
             hiddenLineStart = i;
             break;
         }
@@ -2318,7 +2277,7 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
         // The rect itself
         const QRect specialLineRect (0, y, width(), lineHeight());
 
-        if (document_->isProtected(i) && !document_->isHidden(i)) {
+        if (editor_->document()->isProtected(i) && !editor_->document()->isHidden(i)) {
             // Line is protected
             p->setBrush(PROTECTED_LINE_BACKGROUND);
             drawThisSpecialRectFlag = true;
@@ -2340,14 +2299,14 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
     for (uint i=startLine; i<=endLine; i++)
     {
         // Indent count (in logical levels)
-        uint indent = document_->indentAt(i);
+        uint indent = editor_->document()->indentAt(i);
 
         // Bottom text bound (so 'i + 1' instead of 'i')
         const uint y =  ( i + 1 )* lineHeight();
 
         // Draw black 'dots' at start of lines
         p->setBrush(QColor(Qt::black));
-        if (settings_->value(SettingsPage::KeyInvertColorsIfDarkSystemTheme,
+        if (editor_->mySettings()->value(SettingsPage::KeyInvertColorsIfDarkSystemTheme,
                             SettingsPage::DefaultInvertColorsIfDarkSystemTheme)
                 .toBool()
                 )
@@ -2372,8 +2331,8 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
         }
 
         // Requires lexem types for propertly highlighting
-        const QList<Shared::LexemType> & highlight = document_->highlightAt(i);
-        const QString& text = document_->textAt(i);
+        const QList<Shared::LexemType> & highlight = editor_->document()->highlightAt(i);
+        const QString& text = editor_->document()->textAt(i);
 
         // Calculate trailing spaces to show them in special way if need
         uint trailingSpaces = 0;
@@ -2384,7 +2343,7 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
         }
         
         // Requires selection mask due to selected text color differs
-        const QList<bool>& sm = document_->selectionMaskAt(i);
+        const QList<bool>& sm = editor_->document()->selectionMaskAt(i);
 
         // Current lexem type, by default -- regular text
         Shared::LexemType curType = Shared::LexemType(0);
@@ -2455,7 +2414,7 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
         }
 
         // Draw trailing spaces if they are visible by user settings
-        if (trailingSpaces && settings_->value(
+        if (trailingSpaces && editor_->mySettings()->value(
                     SettingsPage::KeyShowTrailingSpaces,
                     SettingsPage::DefaultShowTrailingSpaces
                     ).toBool())
@@ -2473,15 +2432,6 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
     } // end for (uint i=startLine; i<=endLine; i++)
 }
 
-void EditorPlane::signalizeNotEditable()
-{
-//    qDebug() << "AAAAA!!!!";
-    doNotEditAnimation_->stop();
-    doNotEditAnimation_->setStartValue(1.0);
-    doNotEditAnimation_->setEndValue(0.0);
-    dontEditImageOpacity_ = 1.0;
-    doNotEditAnimation_->start();
-}
 
 QPolygon EditorPlane::errorUnderline(int x, int y, int len)
 {
@@ -2543,72 +2493,72 @@ void EditorPlane::setProperFormat(
     // The code below uses settings values
     if (priKwd || secKwd) {
         // Matched keyword
-        c = settings_->value(SettingsPage::KeyColorKw,
+        c = editor_->mySettings()->value(SettingsPage::KeyColorKw,
                              SettingsPage::DefaultColorKw).toString();
-        f.setBold(settings_->value(SettingsPage::KeyBoldKw,
+        f.setBold(editor_->mySettings()->value(SettingsPage::KeyBoldKw,
                                    SettingsPage::DefaultBoldKw).toBool());
-        if (analizer_->caseInsensitiveGrammatic()) {
+        if (editor_->analizerPlugin_->caseInsensitiveGrammatic()) {
             f.setCapitalization(caseInsensitiveKw);
         }
     }
     if (nameClass) {
         // Matched name of type/class
-        c = settings_->value(SettingsPage::KeyColorType,
+        c = editor_->mySettings()->value(SettingsPage::KeyColorType,
                              SettingsPage::DefaultColorType).toString();
-        f.setBold(settings_->value(SettingsPage::KeyBoldType,
+        f.setBold(editor_->mySettings()->value(SettingsPage::KeyBoldType,
                                    SettingsPage::DefaultBoldType).toBool());
-        if (analizer_->caseInsensitiveGrammatic()) {
+        if (editor_->analizerPlugin_->caseInsensitiveGrammatic()) {
             f.setCapitalization(caseInsensitiveType);
         }
     }
     else if (nameAlg) {
         // Matched name of algorithm/procedure/function
-        c = settings_->value(SettingsPage::KeyColorAlg,
+        c = editor_->mySettings()->value(SettingsPage::KeyColorAlg,
                              SettingsPage::DefaultColorAlg).toString();
-        f.setBold(settings_->value(SettingsPage::KeyBoldAlg,
+        f.setBold(editor_->mySettings()->value(SettingsPage::KeyBoldAlg,
                                    SettingsPage::DefaultBoldAlg).toBool());
     }
     else if (nameModule) {
         // Matched name of unit/module
-        c = settings_->value(SettingsPage::KeyColorMod,
+        c = editor_->mySettings()->value(SettingsPage::KeyColorMod,
                              SettingsPage::DefaultColorMod).toString();
-        f.setBold(settings_->value(SettingsPage::KeyBoldMod,
+        f.setBold(editor_->mySettings()->value(SettingsPage::KeyBoldMod,
                                    SettingsPage::DefaultBoldMod).toBool());
     }
     else if (literalConstant) {
         // Matched literal constant
-        c = settings_->value(SettingsPage::KeyColorLiteral,
+        c = editor_->mySettings()->value(SettingsPage::KeyColorLiteral,
                              SettingsPage::DefaultColorLiteral).toString();
-        f.setBold(settings_->value(SettingsPage::KeyBoldLiteral,
+        f.setBold(editor_->mySettings()->value(SettingsPage::KeyBoldLiteral,
                                    SettingsPage::DefaultBoldLiteral).toBool());
     }
     else if (constant)
     {
         // Matched any other constant
-        c = settings_->value(SettingsPage::KeyColorNumeric,
+        c = editor_->mySettings()->value(SettingsPage::KeyColorNumeric,
                              SettingsPage::DefaultColorNumeric).toString();
-        f.setBold(settings_->value(SettingsPage::KeyBoldNumeric,
+        f.setBold(editor_->mySettings()->value(SettingsPage::KeyBoldNumeric,
                                    SettingsPage::DefaultBoldNumeric).toBool());
     }
     else if (doc) {
         // Matched documentation string
-        c = settings_->value(SettingsPage::KeyColorDoc,
+        c = editor_->mySettings()->value(SettingsPage::KeyColorDoc,
                              SettingsPage::DefaultColorDoc).toString();
-        f.setBold(settings_->value(SettingsPage::KeyBoldDoc,
+        f.setBold(editor_->mySettings()->value(SettingsPage::KeyBoldDoc,
                                    SettingsPage::DefaultBoldDoc).toBool());
     }
     else if (comment) {
         // Matched comment
-        c = settings_->value(SettingsPage::KeyColorComment,
+        c = editor_->mySettings()->value(SettingsPage::KeyColorComment,
                              SettingsPage::DefaultColorComment).toString();
-        f.setBold(settings_->value(SettingsPage::KeyBoldComment,
+        f.setBold(editor_->mySettings()->value(SettingsPage::KeyBoldComment,
                                    SettingsPage::DefaultBoldComment).toBool());
         f.setItalic(ch.isLetter() || ch.isDigit());
     }
 
     // Make letter italic if latin-italization available
-    if (analizer_ && // it is source code editor
-            !analizer_->primaryAlphabetIsLatin() &&  // italization possible
+    if (editor_->analizerPlugin_ && // it is source code editor
+            !editor_->analizerPlugin_->primaryAlphabetIsLatin() &&  // italization possible
             ch!='\0' && // char is valid
             ch.isLetter() &&  // char is a letter
             ch.toAscii()!='\0' //char is valid (see above), but its ASCII is not
@@ -2620,7 +2570,7 @@ void EditorPlane::setProperFormat(
     // Update a painter
     p->setFont(f);
 
-    if (settings_->value(SettingsPage::KeyInvertColorsIfDarkSystemTheme,
+    if (editor_->mySettings()->value(SettingsPage::KeyInvertColorsIfDarkSystemTheme,
                         SettingsPage::DefaultInvertColorsIfDarkSystemTheme)
             .toBool()
             )
@@ -2646,11 +2596,11 @@ uint EditorPlane::widthInChars() const
 {
     const uint cw = charWidth();
     uint marginWidthInPixels =
-            cw * settings_->value(MarginWidthKey, MarginWidthDefault).toUInt();
-    if (!hasAnalizerFlag_)
+            cw * editor_->mySettings()->value(MarginWidthKey, MarginWidthDefault).toUInt();
+    if (!editor_->analizerInstance_)
         marginWidthInPixels = 0;
     const uint myWidth = width();
-    const uint lockSymbolWidth = (hasAnalizerFlag_ && teacherModeFlag_)
+    const uint lockSymbolWidth = (editor_->analizerInstance_ && editor_->plugin_->teacherMode_)
             ? LOCK_SYMBOL_WIDTH
             : 0;
     const int availableWidth = myWidth - marginWidthInPixels - lockSymbolWidth;

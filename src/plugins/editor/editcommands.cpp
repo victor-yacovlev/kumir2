@@ -4,7 +4,7 @@
 
 namespace Editor {
 
-InsertCommand::InsertCommand(TextDocument *doc, class TextCursor * cursor, Shared::AnalizerInterface *analizer, int line, int pos, const QString &text)
+InsertCommand::InsertCommand(TextDocument *doc, class TextCursor * cursor, Shared::Analizer::InstanceInterface *analizer, int line, int pos, const QString &text)
 {
     this->doc = doc;
     this->cursor = cursor;
@@ -15,7 +15,7 @@ InsertCommand::InsertCommand(TextDocument *doc, class TextCursor * cursor, Share
     blankLines = blankChars = 0;
 }
 
-InsertCommand::InsertCommand(TextDocument *doc, TextCursor *cursor, Shared::AnalizerInterface *analizer)
+InsertCommand::InsertCommand(TextDocument *doc, TextCursor *cursor, Shared::Analizer::InstanceInterface *analizer)
 {
     this->doc = doc;
     this->cursor = cursor;
@@ -90,7 +90,7 @@ bool InsertCommand::mergeWith(const QUndoCommand *other)
 RemoveCommand::RemoveCommand(
     TextDocument *doc,
     class TextCursor * cursor,
-    Shared::AnalizerInterface *analizer,
+    Shared::Analizer::InstanceInterface *analizer,
     int line, int pos, int count, bool keepCursor,
         int moveToRow, int moveToCol
 
@@ -107,7 +107,7 @@ RemoveCommand::RemoveCommand(
     cursorColAfter = moveToCol;
 }
 
-RemoveCommand::RemoveCommand(TextDocument *doc, TextCursor *cursor, Shared::AnalizerInterface *analizer)
+RemoveCommand::RemoveCommand(TextDocument *doc, TextCursor *cursor, Shared::Analizer::InstanceInterface *analizer)
 {
     this->doc = doc;
     this->cursor = cursor;
@@ -220,7 +220,7 @@ bool RemoveCommand::mergeWith(const QUndoCommand *other)
 
 RemoveBlockCommand::RemoveBlockCommand(TextDocument *doc,
                                        TextCursor *cursor,
-                                       Shared::AnalizerInterface *analizer,
+                                       Shared::Analizer::InstanceInterface *analizer,
                                        const QRect &block)
 {
     this->doc = doc;
@@ -229,7 +229,7 @@ RemoveBlockCommand::RemoveBlockCommand(TextDocument *doc,
     this->block = block;
 }
 
-RemoveBlockCommand::RemoveBlockCommand(TextDocument *doc, TextCursor *cursor, Shared::AnalizerInterface *analizer)
+RemoveBlockCommand::RemoveBlockCommand(TextDocument *doc, TextCursor *cursor, Shared::Analizer::InstanceInterface *analizer)
 {
     this->doc = doc;
     this->cursor = cursor;
@@ -259,7 +259,7 @@ void RemoveBlockCommand::redo()
         for (int j=0; j<tl.text.length(); j++)
             tl.selected << false;
         if (analizer)
-            tl.highlight = analizer->lineProp(doc->id_, i, tl.text).toList();
+            tl.highlight = analizer->lineProp(i, tl.text).toList();
         else for (int j=0; j<tl.text.length(); j++)
             tl.highlight << Shared::LxTypeEmpty;
         doc->data_[i] = tl;
@@ -286,7 +286,7 @@ void RemoveBlockCommand::undo()
         for (int j=0; j<tl.text.length(); j++)
             tl.selected << false;
         if (analizer)
-            tl.highlight = analizer->lineProp(doc->id_, i, tl.text).toList();
+            tl.highlight = analizer->lineProp(i, tl.text).toList();
         else for (int j=0; j<tl.text.length(); j++)
             tl.highlight << Shared::LxTypeEmpty;
         tl.changed = true;
@@ -300,7 +300,7 @@ void RemoveBlockCommand::undo()
 InsertBlockCommand::InsertBlockCommand(
     TextDocument *doc,
     TextCursor *cursor,
-    Shared::AnalizerInterface *analizer,
+    Shared::Analizer::InstanceInterface *analizer,
     int row, int column,
     const QStringList &block)
 {
@@ -313,7 +313,7 @@ InsertBlockCommand::InsertBlockCommand(
     addedLines = 0;
 }
 
-InsertBlockCommand::InsertBlockCommand(TextDocument *doc, TextCursor *cursor, Shared::AnalizerInterface *analizer)
+InsertBlockCommand::InsertBlockCommand(TextDocument *doc, TextCursor *cursor, Shared::Analizer::InstanceInterface *analizer)
 {
     this->doc = doc;
     this->cursor = cursor;
@@ -355,7 +355,7 @@ void InsertBlockCommand::redo()
             tl.selected << false;
         }
         if (analizer) {
-            tl.highlight = analizer->lineProp(doc->id_, i, tl.text).toList();
+            tl.highlight = analizer->lineProp(i, tl.text).toList();
         }
         else {
             for (int j=0; j<tl.text.length(); j++) {
@@ -387,7 +387,7 @@ void InsertBlockCommand::undo()
             tl.selected << false;
         }
         if (analizer) {
-            tl.highlight = analizer->lineProp(doc->id_, i, tl.text).toList();
+            tl.highlight = analizer->lineProp(i, tl.text).toList();
         }
         else {
             for (int j=0; j<tl.text.length(); j++) {
@@ -414,7 +414,7 @@ void InsertBlockCommand::undo()
 InsertImportCommand::InsertImportCommand(
         TextDocument *document,
         TextCursor *cursor,
-        AnalizerInterface *analizer,
+        Shared::Analizer::InstanceInterface *analizer,
         const QString &importName)
     : QUndoCommand()
     , document_(document)
@@ -464,7 +464,7 @@ void InsertImportCommand::redo()
 
     // Now lineNo_ points to a line number where text will be inserted
     const QString textToInsert =
-            analizer_->createImportStatementLine(importName_);
+            analizer_->helper()->createImportStatementLine(importName_);
 
     document_->insertLine(textToInsert, lineNo_);
     cursor_->setRow(cursor_->row() + 1);
@@ -529,7 +529,7 @@ ToggleCommentCommand::ToggleCommentCommand(class TextDocument * Doc,
                                            uint FromLineInclusive,
                                            uint ToLineInclusive,
                                            class TextCursor * Cursor,
-                                           Shared::AnalizerInterface * Analizer)
+                                           Shared::Analizer::InstanceInterface * Analizer)
 {
     doc = Doc;
     cursor = Cursor;

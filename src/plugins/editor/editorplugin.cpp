@@ -1,3 +1,5 @@
+#include "extensionsystem/pluginmanager.h"
+
 #include <QtCore>
 #include <QtGui>
 
@@ -15,7 +17,7 @@ EditorPlugin::EditorPlugin()
     editors_ = QVector< Ed > ( 128, Ed(0,0,-1));
     settingsPage_ = 0;
     teacherMode_ = false;
-    helpViewer_ = nullptr;
+//    helpViewer_ = nullptr;
 }
 
 EditorPlugin::~EditorPlugin()
@@ -26,87 +28,138 @@ EditorPlugin::~EditorPlugin()
     }
 }
 
-void EditorPlugin::appendMarginText(int documentId, int lineNo, const QString & text)
-{
-    Editor * ed = editors_[documentId].e;
-    Q_CHECK_PTR(ed);
-    ed->appendMarginText(lineNo, text);
-}
 
-void EditorPlugin::setMarginText(int documentId, int lineNo, const QString & text, const QColor & fgColor)
-{
-    Editor * ed = editors_[documentId].e;
-    Q_CHECK_PTR(ed);
-    ed->setMarginText(lineNo, text, fgColor);
-}
 
-void EditorPlugin::clearMargin(int documentId)
+Editor::InstanceInterface * EditorPlugin::newDocument(
+        const QString & canonicalLanguageName,
+        const QString & documentDir)
 {
-    Editor * ed = editors_[documentId].e;
-    Q_CHECK_PTR(ed);
-    ed->clearMarginText();
-}
+    Shared::AnalizerInterface * analizerPlugin = nullptr;
+    Shared::Analizer::InstanceInterface * analizerInstance = nullptr;
 
-void EditorPlugin::clearMargin(int documentId, int fromLine, int toLine)
-{
-    Editor * ed = editors_[documentId].e;
-    Q_CHECK_PTR(ed);
-    ed->clearMarginText(fromLine, toLine);
-}
+    QList<Shared::AnalizerInterface*> analizers =
+            ExtensionSystem::PluginManager::instance()
+            ->findPlugins<Shared::AnalizerInterface>();
 
-void EditorPlugin::setDocBookViewer(DocBookViewer::DocBookView *viewer)
-{
-    helpViewer_ = viewer;
-    for (int i=0; i<editors_.size(); i++) {
-        if (editors_[i].e)
-            editors_[i].e->setHelpViewer(viewer);
+    for (int i=0; i<analizers.size(); i++) {
+        if (analizers[i]->defaultDocumentFileNameSuffix() == canonicalLanguageName) {
+            analizerPlugin = analizers[i];
+            analizerInstance = analizerPlugin->createInstance();
+            analizerInstance->setSourceDirName(documentDir);
+            break;
+        }
     }
-}
 
-Shared::EditorComponent EditorPlugin::newDocument(const QString &analizerName, const QString &documentDir, bool initiallyNotSaved)
-{
-    AnalizerInterface * a = 0;
-    int docId = -1;
-    if (!analizerName.isEmpty()) {
-        QObject * dep = myDependency(analizerName);
-        Q_CHECK_PTR(dep);
-        a = qobject_cast<AnalizerInterface*>( dep );
-        Q_CHECK_PTR(a);
-        docId = a->newDocument();
-        a->setSourceDirName(docId, documentDir);
-    }
-    Editor * w = new Editor(this, initiallyNotSaved, mySettings(), a, docId, 0);
-    w->setHelpViewer(helpViewer_);
-    w->setTeacherMode(teacherMode_);
-    if (analizerName.contains("kumir", Qt::CaseInsensitive)) {
-         const QString initialTextFileName =
-                mySettings()->value(SettingsPage::KeyProgramTemplateFile,
-                                    SettingsPage::DefaultProgramTemplateFile)
-                .toString();
+    Editor * editor = new Editor(this, true, analizerPlugin, analizerInstance);
+    connectGlobalSignalsToEditor(editor);
+
+    if (analizerPlugin) {
+        const QString initialTextFileName =
+                mySettings()->value(SettingsPage::KeyProgramTemplateFile
+                                    + "." + analizerPlugin->defaultDocumentFileNameSuffix(),
+                                    SettingsPage::DefaultProgramTemplateFile
+                                    + "." + analizerPlugin->defaultDocumentFileNameSuffix()
+                                    ).toString();
         QFile f(initialTextFileName);
         if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
             const QByteArray bytes = f.readAll();
             f.close();
-            const KumFile::Data data = KumFile::fromString(KumFile::readRawDataAsString(bytes, QString(), a? a->defaultDocumentFileNameSuffix() : "txt"));
-            w->setKumFile(data);
+            const KumFile::Data data =
+                    KumFile::fromString(
+                        KumFile::readRawDataAsString(
+                            bytes,
+                            QString(),
+                            analizerPlugin->defaultDocumentFileNameSuffix()
+                            )
+                        );
+            editor->setKumFile(data);
         }
     }
-    int index = 0;
-    for (int i=0; i<editors_.size(); i++) {
-        if (editors_[i].e==0 && editors_[i].a==0) {
-            index = i;
+
+    editor->setNotModified();
+    return editor;
+}
+
+Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(const KumFile::Data &data)
+{
+    Shared::AnalizerInterface * analizerPlugin = nullptr;
+    Shared::Analizer::InstanceInterface * analizerInstance = nullptr;
+
+    QList<Shared::AnalizerInterface*> analizers =
+            ExtensionSystem::PluginManager::instance()
+            ->findPlugins<Shared::AnalizerInterface>();
+
+    for (int i=0; i<analizers.size(); i++) {
+        if (analizers[i]->defaultDocumentFileNameSuffix() == data.canonicalSourceLanguageName) {
+            analizerPlugin = analizers[i];
+            analizerInstance = analizerPlugin->createInstance();
+            if (data.sourceUrl.isLocalFile()) {
+                const QString localPath = data.sourceUrl.toLocalFile();
+                const QString dirName = QFileInfo(localPath).absoluteDir().path();
+                analizerInstance->setSourceDirName(dirName);
+            }
             break;
         }
     }
-    Ed ed(w, a, docId);
-    editors_[index] = ed;
-    Shared::EditorComponent result;
-    result.id = index;
-    result.widget = w;
-    result.menus = w->menuActions();
-    result.toolbarActions = w->toolbarActions();
-//    result.statusbarWidgets = w->statusbarWidgets();
-    return result;
+
+    Editor * editor = new Editor(this, true, analizerPlugin, analizerInstance);
+    connectGlobalSignalsToEditor(editor);
+
+    editor->setKumFile(data);
+    return editor;
+}
+
+Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(
+        QIODevice *device,
+        const QString &fileNameSuffix,
+        const QString &sourceEncoding,
+        const QUrl & sourceUrl
+        )
+{
+    Shared::AnalizerInterface * analizerPlugin = nullptr;
+
+    ExtensionSystem::PluginManager * manager =
+            ExtensionSystem::PluginManager::instance();
+
+    QList<Shared::AnalizerInterface*> analizers =
+            manager->findPlugins<Shared::AnalizerInterface>();
+
+    for (int i=0; i<analizers.size(); i++) {
+        if (analizers[i]->defaultDocumentFileNameSuffix() == fileNameSuffix) {
+            analizerPlugin = analizers[i];
+            break;
+        }
+    }
+
+    bool keepIndents = analizerPlugin==nullptr || analizerPlugin->indentsSignificant();
+
+    const QByteArray bytes = device->readAll();
+
+    KumFile::Data data = KumFile::fromString(
+                KumFile::readRawDataAsString(bytes, sourceEncoding, fileNameSuffix),
+                keepIndents
+                );
+    data.canonicalSourceLanguageName = fileNameSuffix;
+    data.sourceUrl = sourceUrl;
+    return loadDocument(data);
+}
+
+Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(const QString &fileName)
+{
+    QFile f(fileName);
+    if (f.open(QIODevice::ReadOnly)) {
+        const QString localPath = QFileInfo(f).absoluteFilePath();
+        const QString suffix = QFileInfo(f).suffix();
+        const QUrl url = QUrl::fromLocalFile(localPath);
+        Shared::Editor::InstanceInterface * result =
+                loadDocument(&f, suffix, QString(), url);
+        f.close();
+        return result;
+    }
+    else {
+        throw tr("Can't open file %1 for reading").arg(fileName);
+        return nullptr;
+    }
 }
 
 int EditorPlugin::analizerDocumentId(int editorDocumentId) const
@@ -117,125 +170,13 @@ int EditorPlugin::analizerDocumentId(int editorDocumentId) const
 
 void EditorPlugin::updateSettings()
 {
-    for (int i=0; i<editors_.size(); i++) {
-        if (editors_[i].e) {
-            editors_[i].e->setSettings(mySettings());
-        }
-        else {
-            break;
-        }
-    }
     if (settingsPage_) {
         settingsPage_->changeSettings(mySettings());
     }
+
+    emit settingsUpdateRequest();
 }
 
-quint32 EditorPlugin::errorsLinesCount(int documentId) const
-{
-    Q_ASSERT(documentId>=0);
-    Q_ASSERT(documentId<editors_.size());
-    Ed ed = editors_[documentId];
-    if (ed.a) {
-        AnalizerInterface * ai = ed.a;
-        int id = ed.id;
-        QSet<int> lns;
-        QList<Error> errors = ai->errors(id);
-        foreach (const Error & e, errors) {
-            if (e.line>=0)
-                lns.insert(e.line);
-        }
-
-        return lns.size();
-
-    }
-    else {
-        return 0;
-    }
-}
-
-void EditorPlugin::closeDocument(int documentId)
-{
-    Q_ASSERT(documentId>=0);
-    Q_ASSERT(documentId<editors_.size());
-    Q_CHECK_PTR(editors_[documentId].e);
-    Ed ed = editors_[documentId];
-    ed.e->unsetAnalizer();
-    ed.e->deleteLater();
-    if (ed.a) {
-        AnalizerInterface * a = ed.a;
-        a->dropDocument(ed.id);
-    }
-
-    ed.e = 0;
-    ed.a = 0;
-    ed.id = -1;
-    editors_[documentId] = ed;
-}
-
-QString EditorPlugin::saveDocument(int documentId, const QString &fileName)
-{
-    Q_ASSERT(documentId>=0);
-    Q_ASSERT(documentId<editors_.size());
-    Q_CHECK_PTR(editors_[documentId].e);
-    Ed ed = editors_[documentId];
-    Editor * editor = ed.e;
-    QFile f(fileName);
-    if (f.open(QIODevice::WriteOnly|QIODevice::Text)) {
-        QDataStream ts(&f);
-        ts << editor->toKumFile();
-        f.close();
-    }
-    else {
-        return tr("Can't open file %1 for writing").arg(fileName);
-    }
-    return "";
-}
-
-KumFile::Data EditorPlugin::documentContent(int documentId) const
-{
-    Q_ASSERT(documentId>=0);
-    Q_ASSERT(documentId<editors_.size());
-    Q_CHECK_PTR(editors_[documentId].e);
-    Ed ed = editors_[documentId];
-    Editor * editor = ed.e;
-    return editor->toKumFile();
-}
-
-QString EditorPlugin::loadDocument(int documentId, const QString &fileName, bool keepIndents)
-{
-    Q_ASSERT(documentId>=0);
-    Q_ASSERT(documentId<editors_.size());
-    Q_CHECK_PTR(editors_[documentId].e);
-    Ed ed = editors_[documentId];
-    AnalizerInterface * a = editors_[documentId].a;
-    Editor * editor = ed.e;
-    QFile f(fileName);
-    if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
-        const QByteArray bytes = f.readAll();
-        editor->setKumFile(
-                    KumFile::fromString(
-                        KumFile::readRawDataAsString(bytes, QString(), a? a->defaultDocumentFileNameSuffix() : "txt")
-                        , keepIndents
-                        )
-                    );
-        f.close();
-    }
-    else {
-        return tr("Can't open file %1 for reading").arg(fileName);
-    }
-    return "";
-}
-
-QString EditorPlugin::loadDocument(int documentId, const KumFile::Data & data)
-{
-    Q_ASSERT(documentId>=0);
-    Q_ASSERT(documentId<editors_.size());
-    Q_CHECK_PTR(editors_[documentId].e);
-    Ed ed = editors_[documentId];
-    Editor * editor = ed.e;
-    editor->setKumFile(data);
-    return "";
-}
 
 QString EditorPlugin::initialize(const QStringList &arguments, const ExtensionSystem::CommandLine &)
 {
@@ -263,126 +204,21 @@ void EditorPlugin::stop()
 
 }
 
-bool EditorPlugin::hasUnsavedChanges(int documentId) const
-{
-    Q_ASSERT(documentId>=0);
-    Q_ASSERT(documentId<editors_.size());
-    Q_CHECK_PTR(editors_[documentId].e);
-    Editor * e = editors_[documentId].e;
-    return e->isModified();
-}
-
-void EditorPlugin::setDocumentChangesSaved(int documentId)
-{
-    Q_ASSERT(documentId>=0);
-    Q_ASSERT(documentId<editors_.size());
-    Q_CHECK_PTR(editors_[documentId].e);
-    Editor * e = editors_[documentId].e;
-    e->setNotModified();
-}
-
-AnalizerInterface * EditorPlugin::analizer(int documentId)
-{
-    Q_ASSERT(documentId>=0);
-    Q_ASSERT(documentId<editors_.size());
-    return editors_[documentId].a;
-}
 
 void EditorPlugin::changeGlobalState(ExtensionSystem::GlobalState prev, ExtensionSystem::GlobalState current)
 {
-
-    if (current==ExtensionSystem::GS_Unlocked || current==ExtensionSystem::GS_Running) {
-        for (int i=0; i<editors_.size(); i++)
-            unhighlightLine(i);
-    }
-    if (prev==ExtensionSystem::GS_Observe && current!=ExtensionSystem::GS_Observe) {
-        for (int i=0; i<editors_.size(); i++)
-            if (editors_[i].e)
-                editors_[i].e->clearMarginText();
-            else
-                break;
-    }
-    if (current==ExtensionSystem::GS_Unlocked || current==ExtensionSystem::GS_Observe) {
-        for (int i=0; i<editors_.size(); i++) {
-            if (editors_[i].e) {
-                editors_[i].e->unlock();
-            }
-            else {
-                break;
-            }
-        }
-    }
-    else {
-        for (int i=0; i<editors_.size(); i++) {
-            if (editors_[i].e) {
-                editors_[i].e->lock();
-            }
-            else {
-                break;
-            }
-        }
-    }
+    emit globalStateUpdateRequest(quint32(prev), quint32(current));
 }
 
-void EditorPlugin::highlightLineGreen(int documentId, int lineNo, quint32 colStart, quint32 colEnd)
+void EditorPlugin::connectGlobalSignalsToEditor(Editor *editor)
 {
-    if (editors_[documentId].e) {
-        const QColor bgColor = editors_[documentId].e->palette().color(QPalette::Base);
-        int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
-        QColor color;
-        if (darkness / 3 <= 127) {
-            color = QColor("palegreen");
-        }
-        else {
-            color = QColor(Qt::darkGreen);
-        }
-        editors_[documentId].e->setLineHighlighted(lineNo, color, colStart, colEnd);
-    }
+    connect(this, SIGNAL(settingsUpdateRequest()),
+            editor, SLOT(updateSettings()), Qt::DirectConnection);
+
+    connect(this, SIGNAL(globalStateUpdateRequest(quint32,quint32)),
+            editor, SLOT(changeGlobalState(quint32, quint32)), Qt::DirectConnection);
 }
 
-void EditorPlugin::highlightLineRed(int documentId, int lineNo, quint32 colStart, quint32 colEnd)
-{
-    if (editors_[documentId].e) {
-        const QColor bgColor = editors_[documentId].e->palette().color(QPalette::Base);
-        int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
-        QColor color;
-        if (darkness / 3 <= 127) {
-            color = QColor("lightcoral");
-        }
-        else {
-            color = QColor(Qt::red);
-        }
-        editors_[documentId].e->setLineHighlighted(lineNo, color, colStart, colEnd);
-    }
-}
-
-void EditorPlugin::unhighlightLine(int documentId)
-{
-    if (editors_[documentId].e)
-        editors_[documentId].e->setLineHighlighted(-1, QColor::Invalid, 0u, 0u);
-}
-
-void EditorPlugin::ensureAnalized(int documentId)
-{
-    if (editors_[documentId].a && editors_[documentId].e) {
-        editors_[documentId].e->ensureAnalized();
-    }
-}
-
-QByteArray EditorPlugin::saveState(int documentId)
-{
-    if (editors_[documentId].e)
-        return editors_[documentId].e->saveState();
-    else
-        return "";
-}
-
-void EditorPlugin::restoreState(int documentId, const QByteArray &data)
-{
-
-    if (editors_[documentId].e)
-        editors_[documentId].e->restoreState(data);
-}
 
 void EditorPlugin::updateUserMacros(const QString & analizerName, const QList<Macro> &macros, bool rewrite)
 {
