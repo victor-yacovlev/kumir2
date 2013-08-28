@@ -43,7 +43,7 @@ void KumirProgram::createActions()
 #ifndef Q_OS_MAC
     regularRunAction_->setShortcut(QKeySequence("F9"));
 #else
-    a_regularRun->setShortcut(QKeySequence("F5"));
+    regularRunAction_->setShortcut(QKeySequence("F5"));
 #endif
     regularRunAction_->setToolTip(regularRunAction_->text()+" <b>"+regularRunAction_->shortcut().toString()+"</b>");
 
@@ -59,7 +59,7 @@ void KumirProgram::createActions()
 #ifndef Q_OS_MAC
     stepRunAction_->setShortcut(QKeySequence("F8"));
 #else
-    a_stepRun->setShortcut(QKeySequence("F6"));
+    stepRunAction_->setShortcut(QKeySequence("F6"));
 #endif
     stepRunAction_->setToolTip(tr("Do big step")+" <b>"+stepRunAction_->shortcut().toString()+"</b>");
 
@@ -70,7 +70,7 @@ void KumirProgram::createActions()
 #ifndef Q_OS_MAC
     stepInAction_->setShortcut(QKeySequence("F7"));
 #else
-    a_stepIn->setShortcut(QKeySequence("F7"));
+    stepInAction_->setShortcut(QKeySequence("F7"));
 #endif
     stepInAction_->setToolTip(tr("Do small step")+" <b>"+stepInAction_->shortcut().toString()+"</b>");
 
@@ -81,7 +81,7 @@ void KumirProgram::createActions()
 #ifndef Q_OS_MAC
     stepOutAction_->setShortcut(QKeySequence("Shift+F8"));
 #else
-    a_stepOut->setShortcut(QKeySequence("Shift+F8"));
+    stepOutAction_->setShortcut(QKeySequence("Shift+F8"));
 #endif
     stepOutAction_->setToolTip(tr("Run to end of algorhitm")+" <b>"+stepOutAction_->shortcut().toString()+"</b>");
 
@@ -92,7 +92,7 @@ void KumirProgram::createActions()
 #ifndef Q_OS_MAC
     stopAction_->setShortcut(QKeySequence("Esc"));
 #else
-    a_stop->setShortcut(QKeySequence("Esc"));
+    stopAction_->setShortcut(QKeySequence("Esc"));
 #endif
     stopAction_->setToolTip(stopAction_->text()+" <b>"+stopAction_->shortcut().toString()+"</b>");
 
@@ -115,7 +115,7 @@ void KumirProgram::createActions()
     blindRunAction_->setShortcut(QKeySequence("Shift+F9"));
 
 #else
-    a_blindRun->setShortcut(QKeySequence("Ctrl+R"));
+    blindRunAction_->setShortcut(QKeySequence("Ctrl+R"));
 #endif
     blindRunAction_->setToolTip(blindRunAction_->text()+" <b>"+blindRunAction_->shortcut().toString()+"</b>");
 
