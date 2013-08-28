@@ -501,7 +501,7 @@ void Editor::createConnections()
 
     connect(doc_->undoStack(), SIGNAL(canRedoChanged(bool)), cursor_, SLOT(handleRedoChanged(bool)));
     connect(doc_->undoStack(), SIGNAL(canUndoChanged(bool)), cursor_, SLOT(handleUndoChanged(bool)));
-    connect(cursor_, SIGNAL(signalizeNotEditable()), plane_, SLOT(signalizeNotEditable()));
+
 
     connect(plane_, SIGNAL(enableInsertActions()), this, SLOT(enableInsertActions()));
     connect(plane_, SIGNAL(disableInsertActions()), this, SLOT(disableInsertActions()));

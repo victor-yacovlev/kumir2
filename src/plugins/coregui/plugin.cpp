@@ -313,59 +313,6 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     connect(debuggerWindow->toggleViewAction(), SIGNAL(toggled(bool)),
             mainWindow_->ui->actionVariables, SLOT(setChecked(bool)));
 
-//    connect(kumirRunner, SIGNAL(debuggerReset()),
-//            debugger_, SLOT(reset()));
-//    connect(kumirRunner, SIGNAL(debuggerPopContext()),
-//            debugger_, SLOT(popContext()));
-//    connect(kumirRunner,
-//            SIGNAL(debuggerPushContext(QString,QStringList,QStringList,QList<int>)),
-//            debugger_,
-//            SLOT(pushContext(QString,QStringList,QStringList,QList<int>)));
-//    connect(kumirRunner,
-//            SIGNAL(debuggerUpdateLocalVariable(QString,QString)),
-//            debugger_,
-//            SLOT(updateLocalVariable(QString,QString)));
-//    connect(kumirRunner,
-//            SIGNAL(debuggerUpdateGlobalVariable(QString,QString,QString)),
-//            debugger_,
-//            SLOT(updateGlobalVariable(QString,QString,QString)));
-//    connect(kumirRunner,
-//            SIGNAL(debuggerUpdateLocalTableBounds(QString,QList<int>)),
-//            debugger_,
-//            SLOT(updateLocalTableBounds(QString,QList<int>)));
-//    connect(kumirRunner,
-//            SIGNAL(debuggerUpdateGlobalTableBounds(QString,QString,QList<int>)),
-//            debugger_,
-//            SLOT(updateGlobalTableBounds(QString,QString,QList<int>)));
-//    connect(kumirRunner,
-//            SIGNAL(debuggerSetLocalReference(QString,QString,QList<int>,int,QString)),
-//            debugger_,
-//            SLOT(setLocalReference(QString,QString,QList<int>,int,QString)));
-//    connect(kumirRunner,
-//            SIGNAL(debuggerForceUpdateValues()),
-//            debugger_,
-//            SLOT(updateAllValues()));
-//    connect(kumirRunner,
-//            SIGNAL(debuggerUpdateLocalTableValue(QString,QList<int>)),
-//            debugger_,
-//            SLOT(updateLocalTableValue(QString,QList<int>)));
-//    connect(kumirRunner,
-//            SIGNAL(debuggerUpdateGlobalTableValue(QString,QString,QList<int>)),
-//            debugger_,
-//            SLOT(updateGlobalTableValue(QString,QString,QList<int>)));
-
-//    connect(kumirRunner,
-//            SIGNAL(debuggerSetGlobals(QString,QStringList,QStringList,QList<int>)),
-//            debugger_,
-//            SLOT(setGlobals(QString,QStringList,QStringList,QList<int>))
-//            );
-
-    connect(kumirProgram_, SIGNAL(activateDocumentTab(int)),
-            mainWindow_, SLOT(activateDocumentTab(int)));
-
-
-
-
     return "";
 }
 
