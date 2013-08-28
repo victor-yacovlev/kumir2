@@ -65,8 +65,8 @@ namespace ActorRobot {
 #define PAUSE_MODE 4
 #define DEFAULT_SIZEX 400
 #define DEFAULT_SIZEY 400    
-#define MAX_COLUMNS 33
-#define MAX_ROWS 33
+#define MAX_COLUMNS 255
+#define MAX_ROWS 128
     
     
 
@@ -439,7 +439,7 @@ namespace ActorRobot {
         QList<QGraphicsLineItem*> setka;
         //QGraphicsView * scena;
         bool markMode,wasEdit;
-        QColor LineColor,WallColor,EditColor,NormalColor,Color;
+        QColor LineColor,EditLineColor,WallColor,EditColor,NormalColor,Color;
         uint fieldSize;
         uint robo_x,robo_y;
         QWidget *Parent;
@@ -478,6 +478,7 @@ namespace ActorRobot {
         RobotView(RoboField * roboField);
         void  FindRobot();
         void showButtons(bool flag);
+        QSize	sizeHint () const;
         void setField (RoboField* field)
         {
             robotField=field;
@@ -486,6 +487,7 @@ namespace ActorRobot {
     public slots:
         void changeEditMode(bool state);
         void setDock(bool);
+        void reloadSett(ExtensionSystem::SettingsPtr settings);
       signals:
         void resizeRequest(const QSize &newGeometry);
     protected:
@@ -502,7 +504,7 @@ namespace ActorRobot {
         QToolButton * radEditBtn;
         QToolButton * tmpEditBtn;
         float c_scale;
-        
+        int CurCellSize;
     };
     
     class RobotModule
@@ -512,6 +514,7 @@ namespace ActorRobot {
     public:
         // Constructor
         RobotModule(ExtensionSystem::KPlugin * parent);
+        QSize minimumSize()const;
         public slots:
         // Reset actor state before program starts
         void reset();
@@ -565,6 +568,7 @@ namespace ActorRobot {
         void setWindowSize();
      
     private:
+        void createEmptyField(int rows,int cols);
         int LoadFromFile(QString p_FileName);
         int SaveToFile(QString p_FileName);
         QWidget* m_mainWidget;
@@ -582,6 +586,9 @@ namespace ActorRobot {
         QWidget* NewWindow;
         QMenu * rescentMenu;
         void prepareNewWindow();
+        int CurCellSize;
+        ExtensionSystem::SettingsPtr curSettings;
+        
     signals:
         void sendToPultLog(const QVariant &);
       

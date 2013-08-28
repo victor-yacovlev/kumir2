@@ -731,6 +731,7 @@ namespace ActorRobot {
         Parent=parent;
         mode=0;
         LineColor = QColor(sett->value("LineColor","#C8C800").toString());
+        EditLineColor = QColor(sett->value("LineColorEdit","#C8C800").toString());
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
         EditColor=QColor(sett->value("EditColor","#00008C").toString());
         NormalColor=QColor(sett->value("NormalColor","#289628").toString());
@@ -903,15 +904,25 @@ namespace ActorRobot {
         destroyField();
         // clear();
         //debug();
+        QColor gridColor;
         showWall = new QGraphicsLineItem(0,0,0,0);
-        if(!(mode>0))Color = NormalColor;//Normal Color
-        else Color=EditColor;//Edit Color
+        if(!(mode>0))
+        {
+        Color = NormalColor;//Normal Color
+        gridColor=LineColor;
+        }
+        else 
+        {
+        Color=EditColor;//Edit Color
+         gridColor=EditLineColor;
+        }
+        
         this->setBackgroundBrush (QBrush(Color));
         fieldSize=FieldSize;
         drawNet();
         
         BortLine = QPen(WallColor,4);
-        StLine=QPen(LineColor,3);
+        StLine=QPen(gridColor,3);
         qDebug()<<"Rows"<<rows()<< "Cols:"<<columns();
         //if(rows()==2)return;
         for(int i=0;i<rows();i++) //Cikl po kletkam
@@ -1952,7 +1963,7 @@ namespace ActorRobot {
         //	long l_Err;
         int CurX,CurY;
         int SizeX, SizeY;
-        destroyField();
+       
         // Тестовый прогон
         
         if  (!l_File.open(QIODevice::ReadOnly))
@@ -2151,7 +2162,7 @@ namespace ActorRobot {
             
         }
         l_File.close();
-        
+         destroyField();
         //реальный прогон
         //destroyField();
         
@@ -2909,16 +2920,26 @@ namespace ActorRobot {
     {
          sett=RobotModule::robotSettings();
         LineColor = QColor(sett->value("LineColor","#C8C800").toString());
+        EditLineColor = QColor(sett->value("LineColorEdit","#C8C800").toString());
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
         EditColor=QColor(sett->value("EditColor","#00008C").toString());
         NormalColor=QColor(sett->value("NormalColor","#289628").toString());
+        QColor gridColor;
         qDebug()<<"Normal color blue"<<NormalColor.blue ();
-       if(mode==NORMAL_MODE) this->setBackgroundBrush (QBrush(NormalColor));
-            else  this->setBackgroundBrush (QBrush(EditColor));
+        if(mode==NORMAL_MODE) {
+            gridColor=LineColor;
+            this->setBackgroundBrush (QBrush(NormalColor));
+            
+        }
+            else 
+            {
+                gridColor=EditLineColor;
+               this->setBackgroundBrush (QBrush(EditColor)); 
+            }
         
         for(int i=0;i<setka.count();i++)
         {
-            setka.at(i)->setPen(QPen(LineColor));
+            setka.at(i)->setPen(QPen(gridColor));
         }
     
     }
@@ -3313,12 +3334,14 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     startField=field->Clone();
     field->drawField(FIELD_SIZE_SMALL);
     field->dropWasEdit();
+    m_actionRobotEditEnvironment->setCheckable(true);
     connect(m_actionRobotLoadEnvironment,SIGNAL(triggered()) , this, SLOT(loadEnv()));
     connect(m_actionRobotRevertEnvironment,SIGNAL(triggered()) , this, SLOT(resetEnv()));
     connect(m_actionRobotSaveEnvironment,SIGNAL(triggered()) , this, SLOT(saveEnv()));
     connect(m_actionRobotEditEnvironment,SIGNAL(triggered()) , this, SLOT(editEnv())); 
     connect(m_actionRobotNewEnvironment,SIGNAL(triggered()) , this, SLOT(newEnv()));
-    
+    connect(m_actionRobotAutoWindowSize,SIGNAL(triggered()) , this, SLOT(setWindowSize()));
+
     prepareNewWindow();
     rescentMenu=new QMenu();
     m_actionRobotLoadRescent->setMenu(rescentMenu);
@@ -3373,7 +3396,7 @@ void RobotModule::reset()
     {
         field->setMode(NORMAL_MODE);
         view->showButtons(false);
-        
+        m_actionRobotEditEnvironment->setChecked(false);
       startField=field->Clone();  
     }
     field=startField->Clone();
@@ -3417,6 +3440,9 @@ void RobotModule::reloadSettings(ExtensionSystem::SettingsPtr settings)
 {
     qDebug()<<"reload settings";
     field->setColorFromSett();
+    CurCellSize=settings->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt();
+    view->reloadSett(settings);
+   
     createRescentMenu();
 }
 
@@ -3454,9 +3480,15 @@ QList<ExtensionSystem::CommandLineParameter>  RobotModule::acceptableCommandLine
     
 }
 QString RobotModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine & runtimeParameters)
-    {
+    {ExtensionSystem::SettingsPtr sett;
+      sett=robotSettings();  
         if(runtimeParameters.value("field").isValid())
             LoadFromFile(runtimeParameters.value("field").toString());
+        if(sett->value("Robot/SFF").isValid())
+        {
+            if(LoadFromFile(sett->value("Robot/SFF").toString())!=0){
+                createEmptyField(7,7);}
+        }
         return "";
     }
 void RobotModule::runGoUp()
@@ -3746,12 +3778,17 @@ bool RobotModule::runIsColor()
         field->drawField(FIELD_SIZE_SMALL);
        // if(CurrentRobotMode==ANALYZE_MODE)SetRobotMode(SEE_MODE);
         qDebug() << "File " << p_FileName ;
-        setWindowSize();
+   
         return(0);
     }
 void RobotModule::editEnv()
     {
-        if(field->isEditMode())return;
+        if(field->isEditMode())
+        {
+           //Diamond DA40 field->setMode(NORMAL_MODE);
+            reset(); //reset 2 normal mode
+            return;
+        }
         startField->setModeFlag(NEDIT_MODE);
         
         
@@ -3761,7 +3798,18 @@ void RobotModule::editEnv()
         field->setMode(NEDIT_MODE);
         startField->setModeFlag(NORMAL_MODE);
         
-    };    
+    };  
+void RobotModule::createEmptyField(int rows,int cols)
+    {
+        field->createField(7,7);
+        field->setRoboPos(0,0);
+        field->createRobot();
+        startField=field->Clone();
+        field->drawField(robotSettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt());
+        
+        mainWidget()->setWindowTitle(QString::fromUtf8("Робот - нет файла") );
+        field->dropWasEdit();
+    };
 void RobotModule::loadEnv()
     {
         if(field->WasEdit())
@@ -3789,8 +3837,17 @@ void RobotModule::loadEnv()
         if ( RobotFile.isEmpty())return;
        // CurrentFileName = RobotFile;
        
-        if( LoadFromFile(RobotFile)!=0)QMessageBox::information( mainWidget(), "", QString::fromUtf8("Ошибка открытия файла! ")+RobotFile, 0,0,0); 
-            else updateLastFiles(RobotFile);
+        if( LoadFromFile(RobotFile)!=0)//Get troubles when loading env.
+        {
+            QMessageBox::information( mainWidget(), "", QString::fromUtf8("Ошибка открытия файла! ")+RobotFile, 0,0,0); 
+            return;
+        }
+        
+        updateLastFiles(RobotFile);
+        
+        setWindowSize();
+        view->setWindowTitle(trUtf8("Робот  - ")+info.baseName ());
+        robotSettings()->setValue("Robot/SFF",QVariant(RobotFile));
         
     }
     void RobotModule::resetEnv()
@@ -3946,6 +4003,11 @@ int RobotModule::SaveToFile(QString p_FileName)
             Q_UNUSED(action);
             }
     };
+QSize RobotModule::minimumSize() const
+    {
+        return QSize(mySettings()->value("Robot/CellSize").toInt()*3, mySettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt()*3);
+        
+    };
 void RobotModule::setWindowSize()
     {
         QRect baseFieldSize; //fieldSize in pixel. Zoom 1:1
@@ -3953,20 +4015,37 @@ void RobotModule::setWindowSize()
         newSize=view->size();
         baseFieldSize.setHeight(field->rows()*mySettings()->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt());
         baseFieldSize.setWidth(field->columns()*mySettings()->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt());
-        if(baseFieldSize.height()<view->height() && baseFieldSize.height()>mySettings()->value("Robot/CellSize").toInt()*3)
+        int editEnlarge=0;
+        QWidgetList scBars=view->scrollBarWidgets(Qt::AlignLeft);
+        if(field->isEditMode())editEnlarge=1.8*mySettings()->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt();
+        view->setMinimumSize(minimumSize());
+        
+        if(baseFieldSize.height()<view->height())
         {
-            newSize.setHeight( baseFieldSize.height());
+            newSize.setHeight( baseFieldSize.height()+mySettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt()+editEnlarge);
             
             // mainWidget()->setGeometry(view->x(), view->y(), view->width(), baseFieldSize.height());
         }
         
-        if(baseFieldSize.width()<view->width() && baseFieldSize.width()>mySettings()->value("Robot/CellSize").toInt()*3)
+        if(baseFieldSize.width()<view->width())
         {
-            newSize.setWidth( baseFieldSize.width());
+            newSize.setWidth( baseFieldSize.width()+mySettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt()+editEnlarge);
            // view->setGeometry(view->x(), view->y(), baseFieldSize.width(), view->height()); 
             
         }   
-
+        
+        if(baseFieldSize.height()>view->height() && field->rows()<11)
+        {
+            newSize.setHeight( baseFieldSize.height()+mySettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt()+editEnlarge);
+            
+            // mainWidget()->setGeometry(view->x(), view->y(), view->width(), baseFieldSize.height());
+        }
+        if(baseFieldSize.width()>view->width() && field->columns()<17)
+        {
+            newSize.setWidth( baseFieldSize.width()+mySettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt()+editEnlarge);
+            // view->setGeometry(view->x(), view->y(), baseFieldSize.width(), view->height()); 
+            
+        } 
                 view->setWindowSize(newSize);
     }
   
@@ -4063,6 +4142,7 @@ void RobotModule::setWindowSize()
         connect(tmpEditBtn,SIGNAL(toggled(bool)),this,SLOT(changeEditMode(bool)));
         setMinimumWidth ( 30 );
         c_scale=1;
+        CurCellSize=FIELD_SIZE_SMALL;
       //  setRenderHint(QPainter::Antialiasing);
     };
     
@@ -4150,11 +4230,13 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
         { //if(c_scale<3 && c_scale>0.003)this->scale(1.2,1.2);
           c_scale=c_scale*1.2;
             if(c_scale>10)c_scale=10;
+                else this->scale(1.2,1.2);
         }
         else{ 
          // if(c_scale<3 && c_scale>0.01)this->scale(0.8,0.8);
           c_scale=c_scale*0.8;
             if(c_scale<0.1)c_scale=0.1;
+                else this->scale(0.8,0.8);
         }
         
     }
@@ -4166,10 +4248,23 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
     
  void RobotView::setWindowSize(const QSize newGeometry)
     {
-        
-        
-        
+        QSize oldSize=this->size();
         emit  resizeRequest(newGeometry);
+       if(newGeometry != oldSize)
+       {centerOn(newGeometry.width()/2-CurCellSize/2,newGeometry.height()/2-CurCellSize/2);
+        qDebug()<<"CenterON:"<<newGeometry.width()/2-CurCellSize/2<<newGeometry.width()/2-CurCellSize/2;
+           this->scale(1/c_scale,1/c_scale);
+    }
+    };
+    
+QSize	RobotView::sizeHint () const
+    {
+        return QSize(robotField->columns()*CurCellSize+CurCellSize, robotField->rows()*CurCellSize+CurCellSize);
+    }
+void RobotView::reloadSett(ExtensionSystem::SettingsPtr settings)
+    {
+       CurCellSize=settings->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt(); 
+        
     };
 void RobotView::setDock(bool docked)
     {

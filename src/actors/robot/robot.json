@@ -182,6 +182,11 @@
 			"default": "#C8C800",
 			"title": {"ascii": "Grid color", "ru_RU": "Цвет сетки"}
 		},
+		"LineColorEdit": {
+			"type": "color",
+			"default": "#C8C800",
+			"title": {"ascii": "Grid  color (edit mode)", "ru_RU": "Цвет сетки (редактирование)"}
+		},
 		"WallColor": {
 			"type": "color",
 			"default": "#C8C800",
