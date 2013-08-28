@@ -34,7 +34,7 @@ public /* methods */:
 public slots:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void loadActorData(QIODevice * source);
-    void reloadSettings(ExtensionSystem::SettingsPtr settings);
+    void reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList &);
     void reset();
     void setAnimationEnabled(bool enabled);
     void runSetupPen();

@@ -56,7 +56,7 @@ protected:
 
     inline virtual void start() {}
     inline virtual void stop() {}
-    inline virtual void updateSettings() { }
+    virtual void updateSettings(const QStringList & keys) = 0;
     KPlugin * myDependency(const QString & name) const;
 
     SettingsPtr mySettings() const;

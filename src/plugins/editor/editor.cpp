@@ -419,7 +419,7 @@ Editor::Editor(
     timerId_ = startTimer(50);
     autoScrollTimerId_ = startTimer(100);   
 
-    updateSettings();
+    updateSettings(QStringList());
     updatePosition(cursor_->row(), cursor_->column());
 
     plane_->updateScrollBars();
@@ -992,9 +992,9 @@ bool Editor::isTeacherMode() const
     return plugin_->teacherMode_;
 }
 
-void Editor::updateSettings()
+void Editor::updateSettings(const QStringList & keys)
 {
-    plane_->updateSettings();
+    plane_->updateSettings(keys);
     plane_->update();
 }
 

@@ -828,9 +828,7 @@ void MainWindow::createSettingsDialog()
 
 void MainWindow::showPreferences()
 {    
-    if (settingsDialog_->exec() == QDialog::Accepted) {
-        ExtensionSystem::PluginManager::instance()->updateAllSettings();
-    }
+    settingsDialog_->exec();
 }
 
 
@@ -1037,31 +1035,35 @@ void MainWindow::disableTabs()
     ui->actionSave_all->setVisible(false);
 }
 
-void MainWindow::updateSettings(SettingsPtr settings)
+void MainWindow::updateSettings(SettingsPtr settings, const QStringList & keys)
 {
 //    if (settings_) saveSettings();
     settings_ = settings;
-    centralRow_->updateSettings(settings);
-    bottomRow_->updateSettings(settings);
-    loadSettings();
+    centralRow_->updateSettings(settings, keys);
+    bottomRow_->updateSettings(settings, keys);
+    loadSettings(keys);
 }
 
-void MainWindow::loadSettings()
+void MainWindow::loadSettings(const QStringList & keys)
 {
     QRect r = settings_->value(Plugin::MainWindowGeometryKey, QRect(-1,-1,0,0)).toRect();
-    if (r.width()>0) {
+    if (r.width()>0 &&
+            (keys.contains(Plugin::MainWindowGeometryKey) || keys.isEmpty())
+            ) {
         resize(r.size());
         move(r.topLeft());
     }
-    QList<int> sizes;
-    sizes << 0 << 0;
-    sizes[0] = settings_->value(Plugin::MainWindowSplitterStateKey+"0", 0).toInt();
-    sizes[1] = settings_->value(Plugin::MainWindowSplitterStateKey+"1", 0).toInt();
-    if (sizes[0] + sizes[1] > 0) {
-        ui->splitter->setSizes(sizes);
+    if (keys.contains(Plugin::MainWindowSplitterStateKey+"0") || keys.isEmpty()) {
+        QList<int> sizes;
+        sizes << 0 << 0;
+        sizes[0] = settings_->value(Plugin::MainWindowSplitterStateKey+"0", 0).toInt();
+        sizes[1] = settings_->value(Plugin::MainWindowSplitterStateKey+"1", 0).toInt();
+        if (sizes[0] + sizes[1] > 0) {
+            ui->splitter->setSizes(sizes);
+        }
+        prevBottomSize_ = settings_->value("SavedBottomSize", 200).toInt();
+        ui->actionShow_Console_Pane->setChecked(sizes[1] > 0);
     }
-    prevBottomSize_ = settings_->value("SavedBottomSize", 200).toInt();
-    ui->actionShow_Console_Pane->setChecked(sizes[1] > 0);
 }
 
 void MainWindow::saveSettings()

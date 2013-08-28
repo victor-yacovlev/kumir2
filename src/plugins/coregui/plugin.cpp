@@ -317,14 +317,14 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 }
 
 
-void Plugin::updateSettings()
+void Plugin::updateSettings(const QStringList & keys)
 {
     foreach (Widgets::SecondaryWindow * window, secondaryWindows_) {
         window->setSettingsObject(mySettings());
     }
     if (mainWindow_)
-        mainWindow_->updateSettings(mySettings());
-    if (helpViewer_) {
+        mainWindow_->updateSettings(mySettings(), keys);
+    if (helpViewer_ && keys.contains("HelpViewer")) {
         helpViewer_->updateSettings(mySettings(), "HelpViewer");
     }
 }
@@ -399,7 +399,7 @@ void Plugin::start()
     }
     else {
         ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
-        updateSettings();
+        updateSettings(QStringList());
     }
     PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);
     mainWindow_->show();
@@ -437,16 +437,11 @@ void Plugin::restoreSession()
         }
     }
     else {
-        QObject * dep = myDependency("Analizer");
-        Q_CHECK_PTR(dep);
-        QString analizerName = QString::fromAscii(dep->metaObject()->className());
         mainWindow_->newProgram();
     }
     foreach (Widgets::SecondaryWindow * secWindow, secondaryWindows_)
         secWindow->restoreState();
-    mainWindow_->loadSettings();
-//    bottomSplitter_->restoreGeometry(mySettings()->value("BottomSplitterGeometry").toByteArray());
-//    bottomSplitter_->restoreState(mySettings()->value("BottomSplitterState").toByteArray());
+    mainWindow_->loadSettings(QStringList());
 }
 
 Plugin::~Plugin()

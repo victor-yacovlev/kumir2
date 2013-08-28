@@ -36,6 +36,7 @@ public:
 
     inline QString defaultDocumentFileNameSuffix() const { return "kum"; }
     inline QString languageName() const { return QString::fromUtf8("Кумир"); }    
+    inline void updateSettings(const QStringList &) {}
 
 protected:
     QString initialize(const QStringList &configurationArguments,

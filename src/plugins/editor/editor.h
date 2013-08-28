@@ -85,7 +85,7 @@ public slots:
     void redo();
 
     void changeGlobalState(quint32 prevv, quint32 currentt);
-    void updateSettings();
+    void updateSettings(const QStringList & keys);
 
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);

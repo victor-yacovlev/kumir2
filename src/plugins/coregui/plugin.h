@@ -69,7 +69,7 @@ protected:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void start();
     void stop();
-    void updateSettings();
+    void updateSettings(const QStringList & keys);
 
     class MainWindow * mainWindow_;
     class QLabel * m_kumirStateLabel;

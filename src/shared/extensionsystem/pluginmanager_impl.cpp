@@ -72,7 +72,7 @@ QString PluginManagerImpl::loadPlugins()
         objects[i] = plugin;
         states[i] = KPlugin::Loaded;
         settings[i] = SettingsPtr(new Settings(specs[i].name));
-        plugin->updateSettings();
+        plugin->updateSettings(QStringList());
     }
     return "";
 }
@@ -188,7 +188,7 @@ void PluginManagerImpl::changeWorkingDirectory(const QString &path)
     for (int i=0; i<objects.size(); i++) {
         KPlugin * p = objects[i];
         p->changeCurrentDirectory(path);
-        p->updateSettings();
+        p->updateSettings(QStringList());
         p->restoreSession();
     }
     mySettings->setValue(PluginManager::CurrentWorkspaceKey, path);

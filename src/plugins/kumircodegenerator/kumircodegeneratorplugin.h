@@ -32,6 +32,7 @@ public:
     void setOutputToText(bool flag);
     inline void setVerbose(bool) {}
     inline void setTemporaryDir(const QString &, bool ) {}
+    inline void updateSettings(const QStringList &) {}
 
 protected:
     QString initialize(const QStringList &configurationArguments,

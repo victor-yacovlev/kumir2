@@ -23,6 +23,7 @@ public:
     QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters() const;
     void start();
     void stop();
+    inline void updateSettings(const QStringList &) {}
 private:
     Shared::AnalizerInterface * analizer_;
     Shared::GeneratorInterface * generator_;

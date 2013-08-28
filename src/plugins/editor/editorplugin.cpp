@@ -170,13 +170,13 @@ int EditorPlugin::analizerDocumentId(int editorDocumentId) const
     return ed.id;
 }
 
-void EditorPlugin::updateSettings()
+void EditorPlugin::updateSettings(const QStringList & keys)
 {
     if (settingsPage_) {
         settingsPage_->changeSettings(mySettings());
     }
 
-    emit settingsUpdateRequest();
+    emit settingsUpdateRequest(keys);
 }
 
 
@@ -198,6 +198,8 @@ QWidget* EditorPlugin::settingsEditorPage()
 {
     settingsPage_ = new SettingsPage(mySettings());
     settingsPage_->setWindowTitle(tr("Editor"));
+    connect(settingsPage_, SIGNAL(settingsChanged(QStringList)),
+            this, SIGNAL(settingsUpdateRequest(QStringList)), Qt::DirectConnection);
     return settingsPage_;
 }
 
@@ -214,8 +216,8 @@ void EditorPlugin::changeGlobalState(ExtensionSystem::GlobalState prev, Extensio
 
 void EditorPlugin::connectGlobalSignalsToEditor(Editor *editor)
 {
-    connect(this, SIGNAL(settingsUpdateRequest()),
-            editor, SLOT(updateSettings()), Qt::DirectConnection);
+    connect(this, SIGNAL(settingsUpdateRequest(QStringList)),
+            editor, SLOT(updateSettings(QStringList)), Qt::DirectConnection);
 
     connect(this, SIGNAL(globalStateUpdateRequest(quint32,quint32)),
             editor, SLOT(changeGlobalState(quint32, quint32)), Qt::DirectConnection);

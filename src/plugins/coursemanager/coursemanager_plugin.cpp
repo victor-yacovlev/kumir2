@@ -273,7 +273,7 @@ QString Plugin::initialize(const QStringList &configurationArguments,
     return error;
 }
 
-void Plugin::updateSettings()
+void Plugin::updateSettings(const QStringList & keys)
 {
     if (settingsEditorPage_) {
         settingsEditorPage_->setSettingsObject(mySettings());

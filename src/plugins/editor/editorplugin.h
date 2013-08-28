@@ -59,10 +59,10 @@ public:
     void ensureAnalized(int documentId);
     QByteArray saveState(int documentId);
     void restoreState(int documentId, const QByteArray & data);
-    void updateSettings();
+    void updateSettings(const QStringList & keys);
 
 signals:
-    void settingsUpdateRequest();
+    void settingsUpdateRequest(const QStringList & keys);
     void globalStateUpdateRequest(quint32, quint32);
 
 protected:
@@ -72,7 +72,11 @@ protected:
     QString initialize(const QStringList &configurationArguments,
                        const ExtensionSystem::CommandLine &);
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
-    inline void changeCurrentDirectory(const QString & path) { currentDirectory_ = path; updateSettings(); updateUserMacros(QString(), QList<Macro>(), false);}
+    inline void changeCurrentDirectory(const QString & path) {
+        currentDirectory_ = path;
+        updateSettings(QStringList());
+        updateUserMacros(QString(), QList<Macro>(), false);
+    }
     void start();
     void stop();
     void updateUserMacros(const QString & analizerName, const QList<Macro> & macros, bool rewrite);

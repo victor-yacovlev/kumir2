@@ -100,7 +100,7 @@ public slots:
     void init();
     void resetToDefaults();
 signals:
-    void settingsChanged();
+    void settingsChanged(const QStringList & keys);
 private slots:
     void showColorDialog();
     void setButtonColor(QToolButton * b, const QColor &color);

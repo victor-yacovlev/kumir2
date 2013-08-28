@@ -1045,8 +1045,9 @@ class Settings:
                             mySettings(),
                             entries
                           );
+connect(%s, SIGNAL(settingsChanged(QStringList)), this, SLOT(handleSettingsChangedCppImplementation(QStringList)));
 
-        """ % variableName
+        """ % (variableName, variableName)
         return result
 
 
@@ -1857,10 +1858,10 @@ private:
         :return:    implementation of void handleSettingsChanged()
         """
         return """
-/* private slot */ void %s::handleSettingsChangedCppImplementation()
+/* private slot */ void %s::handleSettingsChangedCppImplementation(const QStringList & keys)
 {
     if (module_) {
-        module_->reloadSettings(mySettings());
+        module_->reloadSettings(mySettings(), keys);
     }
 }
         """ % self.className
@@ -1873,13 +1874,13 @@ private:
         :return:    implementation of void updateSettings()
         """
         return """
-/* private */ void %s::updateSettings()
+/* private */ void %s::updateSettings(const QStringList & keys)
 {
     if (settingsPage_) {
         settingsPage_->setSettingsObject(mySettings());
     }
     if (module_) {
-        module_->reloadSettings(mySettings());
+        module_->reloadSettings(mySettings(), keys);
     }
 }
         """ % self.className
@@ -2096,7 +2097,7 @@ class ModuleBaseCppClass(CppClassBase):
         self.classDeclarationPrefix = "    Q_OBJECT"
         self.abstractPublicSlots = [
             "void reset()",
-            "void reloadSettings(ExtensionSystem::SettingsPtr settings)",
+            "void reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)",
             "void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current)"
         ]
         if module.gui:
@@ -2537,11 +2538,13 @@ class ModuleCppClass(CppClassBase):
         :return:    implementation of void reloadSettings(ExtensionSystem::SettingsPtr)
         """
         return """
-/* public slot */ void %s::reloadSettings(ExtensionSystem::SettingsPtr settings)
+/* public slot */ void %s::reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)
 {
-    // Updates setting on module load, workspace change or appliyng settings dialog
+    // Updates setting on module load, workspace change or appliyng settings dialog.
+    // If @param keys is empty -- should reload all settings, otherwise load only setting specified by @param keys
     // TODO implement me
     Q_UNUSED(settings);  // Remove this line on implementation
+    Q_UNUSED(keys);  // Remove this line on implementation
 }
         """ % self.className
 

@@ -51,12 +51,14 @@ EditorPlane::EditorPlane(Editor * editor)
 
 }
 
-void EditorPlane::updateSettings()
+void EditorPlane::updateSettings(const QStringList & keys)
 {
-    QFont defaultFont;
-    defaultFont.setFamily(editor_->mySettings()->value(SettingsPage::KeyFontName, SettingsPage::defaultFontFamily()).toString());
-    defaultFont.setPointSize(editor_->mySettings()->value(SettingsPage::KeyFontSize, SettingsPage::defaultFontSize).toInt());
-    setFont(defaultFont);
+    if (keys.isEmpty() || keys.contains(SettingsPage::KeyFontName) || keys.contains(SettingsPage::KeyFontSize)) {
+        QFont defaultFont;
+        defaultFont.setFamily(editor_->mySettings()->value(SettingsPage::KeyFontName, SettingsPage::defaultFontFamily()).toString());
+        defaultFont.setPointSize(editor_->mySettings()->value(SettingsPage::KeyFontSize, SettingsPage::defaultFontSize).toInt());
+        setFont(defaultFont);
+    }
 }
 
 void EditorPlane::addContextMenuAction(QAction *a)

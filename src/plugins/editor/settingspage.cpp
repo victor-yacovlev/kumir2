@@ -172,7 +172,7 @@ void SettingsPage::accept()
                          );   
 
 
-    emit settingsChanged();
+    emit settingsChanged(QStringList());
 }
 
 void SettingsPage::init()

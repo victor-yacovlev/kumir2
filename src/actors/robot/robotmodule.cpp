@@ -3436,7 +3436,7 @@ void RobotModule::reset()
 
     };    
     
-void RobotModule::reloadSettings(ExtensionSystem::SettingsPtr settings)
+void RobotModule::reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)
 {
     qDebug()<<"reload settings";
     field->setColorFromSett();

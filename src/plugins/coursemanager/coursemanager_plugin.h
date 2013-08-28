@@ -53,7 +53,7 @@ private /*methods*/:
                            ExtensionSystem::GlobalState current);
     QString initialize(const QStringList &configurationArguments,
                        const ExtensionSystem::CommandLine & runtimeArguments);
-    void updateSettings();
+    void updateSettings(const QStringList & keys);
 
 private /*fields*/:
     AI * getActor(QString name);

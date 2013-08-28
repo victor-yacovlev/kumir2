@@ -29,7 +29,7 @@ public:
     // Constructor
     PainterModule(ExtensionSystem::KPlugin * parent);
     static QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters();
-    inline void reloadSettings(ExtensionSystem::SettingsPtr) {}
+    inline void reloadSettings(ExtensionSystem::SettingsPtr, const QStringList & ) {}
     inline void changeGlobalState(ExtensionSystem::GlobalState, ExtensionSystem::GlobalState) {}
 public slots:
     // Reset actor state before program starts

@@ -84,7 +84,7 @@ void DeclarativeSettingsPageImpl::accept()
             qFatal("Not implemented");
         }
     }
-    emit pClass_->settingsChanged();
+    emit pClass_->settingsChanged(entries_.keys());
 }
 
 void DeclarativeSettingsPageImpl::addIntegerField(const QString &key, const DeclarativeSettingsPage::Entry &entry)

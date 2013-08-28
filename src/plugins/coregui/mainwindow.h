@@ -65,7 +65,7 @@ public slots:
     bool saveCurrentFileTo(const QString & fileName);
     void restoreSession();
     void saveSession() const;
-    void loadSettings();
+    void loadSettings(const QStringList & keys);
     void saveSettings();
     void newProgram();
     void newText();
@@ -82,7 +82,7 @@ public slots:
     void showAbout();
     void showUserManual();
     void showHelp();
-    void updateSettings(ExtensionSystem::SettingsPtr settings);
+    void updateSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys);
     void updateBrowserTitle(const QString & title, const Shared::Browser::InstanceInterface * sender);
 
 private slots:

@@ -42,7 +42,7 @@ public slots:
     void removeLine();
     void removeLineTail();
     void setLineHighlighted(int lineNo, const QColor & color, quint32 colStart, quint32 colEnd);
-    void updateSettings();
+    void updateSettings(const QStringList & keys);
 protected:
     static QPolygon errorUnderline(int x, int y, int len);
     void dragEventHandler(QDragMoveEvent * e);

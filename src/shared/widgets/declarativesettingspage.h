@@ -46,7 +46,7 @@ public slots:
     void resetToDefaults();
 
 signals:
-    void settingsChanged();
+    void settingsChanged(const QStringList & keys);
 
 private:
     class DeclarativeSettingsPageImpl* pImpl_;

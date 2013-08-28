@@ -14,7 +14,7 @@ Row::Row(QWidget *parent, const QString &settingsKey)
     setAutoFillBackground(true);
 }
 
-void Row::updateSettings(ExtensionSystem::SettingsPtr settings)
+void Row::updateSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)
 {
 //    if (settings_) save();
     settings_ = settings;
@@ -25,8 +25,18 @@ void Row::updateSettings(ExtensionSystem::SettingsPtr settings)
         if (place) {
             place->updateSettings(settings);
         }
+    }    
+    QList<int> szs;
+    for (int i=0; i<10; i++) {
+        const QString key = settingsKey_+"/Size" + QString::number(i);
+        const QVariant value = settings_->value(key);
+        if (value.isValid())
+            szs.push_back(value.toInt());
+        else
+            break;
     }
-    restore();
+    if (szs.size() > 0)
+        setSizes(szs);
 }
 
 void Row::addComponent(QWidget *widget, bool autoResizable)

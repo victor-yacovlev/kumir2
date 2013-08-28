@@ -58,7 +58,7 @@ SettingsPtr PluginManager::globalSettings() const
 void PluginManager::updateAllSettings()
 {
     foreach (KPlugin * o, pImpl_->objects) {
-        o->updateSettings();
+        o->updateSettings(QStringList());
     }
 }
 
@@ -204,7 +204,7 @@ QString PluginManager::loadExtraModule(const std::string &canonicalFileName)
     Settings * sett = new Settings(moduleName);
     sett->changeWorkingDirectory(pImpl_->workspacePath);
     pImpl_->settings.push_back(SettingsPtr(sett));
-    plugin->updateSettings();
+    plugin->updateSettings(QStringList());
     CommandLine runtimeParameters;
     if (!pImpl_->extractRuntimeParametersForPlugin(plugin, runtimeParameters)) {
         QString error = tr("The following command line parameters required, but not set:\n");

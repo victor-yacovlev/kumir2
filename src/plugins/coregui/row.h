@@ -17,7 +17,7 @@ public:
                  const QString & settingsKey
                  );
     void addComponent(QWidget * widget, bool autoResizable);
-    void updateSettings(ExtensionSystem::SettingsPtr settings);
+    void updateSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys);
     void save();
     void restore();
     QSize sizeHint() const;

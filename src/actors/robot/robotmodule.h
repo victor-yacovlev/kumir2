@@ -554,7 +554,7 @@ namespace ActorRobot {
         QWidget* pultWidget() const;
         static ExtensionSystem::SettingsPtr robotSettings();
    public slots:
-        void reloadSettings(ExtensionSystem::SettingsPtr settings);
+        void reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys);
         void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
         void loadEnv();
         void resetEnv();

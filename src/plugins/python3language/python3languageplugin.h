@@ -29,6 +29,8 @@ public:
         return QList<ExtensionSystem::CommandLineParameter>();
     }
 
+    inline void updateSettings(const QStringList &) {}
+
     // Analizer interface methods
     int newDocument();
     inline bool primaryAlphabetIsLatin() const { return true; }
