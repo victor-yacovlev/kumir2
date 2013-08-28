@@ -14,6 +14,7 @@ struct Macro {
     QChar key;
     QList<KeyCommand> commands;
     QAction * action;
+    inline explicit Macro() { action = nullptr; }
 };
 
 extern QDomElement dumpMacro(const Macro & m, QDomDocument &document, QDomElement &root);

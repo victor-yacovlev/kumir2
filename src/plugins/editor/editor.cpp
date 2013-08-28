@@ -215,6 +215,7 @@ void Editor::loadMacros()
         }
 
         if (!availableActorNames.empty()) {
+            systemMacros_.push_back(Macro());
             for (size_t i=0; i<qMin(size_t(9), availableActorNames.size()); i++) {
                 const QString & actorName = availableActorNames.at(i);
                 const QString insertText = tr("import %1").arg(actorName);
@@ -255,12 +256,18 @@ void Editor::updateInsertMenu()
     const QString escComa = mySettings()->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()+", ";
     for (int i=0; i<systemMacros_.size(); i++) {
         Macro m = systemMacros_[i];
-        QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
-        m.action = new QAction(m.title, insertMenu_);
-        m.action->setShortcut(ks);
-        systemMacros_[i].action = m.action;
-        insertMenu_->addAction(m.action);
-        connect(m.action, SIGNAL(triggered()), this, SLOT(playMacro()));
+        if (m.title.isEmpty()) {
+            // Separator
+            systemMacros_[i].action = insertMenu_->addSeparator();
+        }
+        else {
+            QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
+            m.action = new QAction(m.title, insertMenu_);
+            m.action->setShortcut(ks);
+            systemMacros_[i].action = m.action;
+            insertMenu_->addAction(m.action);
+            connect(m.action, SIGNAL(triggered()), this, SLOT(playMacro()));
+        }
     }
     if (!userMacros_.isEmpty())
         insertMenu_->addSeparator();
