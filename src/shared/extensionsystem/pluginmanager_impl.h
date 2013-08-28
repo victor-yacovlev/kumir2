@@ -36,7 +36,7 @@ struct PluginManagerImpl {
     QString reorderSpecsAndCreateStates(const QStringList & orderedList);
     void createSettingsDialog();
     QString loadPlugins();
-    void changeWorkingDirectory(const QString &path);
+    void changeWorkingDirectory(const QString &path, bool saveChanges);
     bool extractRuntimeParametersForPlugin(const KPlugin * plugin, CommandLine & parameters);
 
     std::list<QString> namedProgramArguments;

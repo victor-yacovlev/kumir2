@@ -170,14 +170,14 @@ bool PluginManagerImpl::extractRuntimeParametersForPlugin(const KPlugin *plugin,
     return success;
 }
 
-void PluginManagerImpl::changeWorkingDirectory(const QString &path)
+void PluginManagerImpl::changeWorkingDirectory(const QString &path, bool saveChanges)
 {
     workspacePath = path;
     for (int i=0; i<objects.size(); i++) {
         KPlugin * p = objects[i];
         SettingsPtr s = settings[i];
         if (s) {
-            p->saveSession();
+            if (saveChanges) p->saveSession();
             s->changeWorkingDirectory(path);
         }
     }

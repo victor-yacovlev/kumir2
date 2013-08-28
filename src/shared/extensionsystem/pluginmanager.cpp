@@ -67,12 +67,12 @@ void PluginManager::switchToDefaultWorkspace()
     const QString workDir = pImpl_->mySettings->value(
                 CurrentWorkspaceKey,
                 QString(QDir::homePath()+"/Kumir/")).toString();
-    pImpl_->changeWorkingDirectory(workDir);
+    pImpl_->changeWorkingDirectory(workDir, false);
 }
 
 void PluginManager::switchToWorkspace(const QString &path)
 {
-    pImpl_->changeWorkingDirectory(path);
+    pImpl_->changeWorkingDirectory(path, true);
 }
 
 

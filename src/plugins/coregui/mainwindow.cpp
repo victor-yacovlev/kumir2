@@ -1038,9 +1038,7 @@ void MainWindow::disableTabs()
 void MainWindow::updateSettings(SettingsPtr settings, const QStringList & keys)
 {
 //    if (settings_) saveSettings();
-    settings_ = settings;
-    centralRow_->updateSettings(settings, keys);
-    bottomRow_->updateSettings(settings, keys);
+    settings_ = settings;    
     loadSettings(keys);
 }
 
@@ -1053,6 +1051,8 @@ void MainWindow::loadSettings(const QStringList & keys)
         resize(r.size());
         move(r.topLeft());
     }
+    centralRow_->updateSettings(settings_, keys);
+    bottomRow_->updateSettings(settings_, keys);
     if (keys.contains(Plugin::MainWindowSplitterStateKey+"0") || keys.isEmpty()) {
         QList<int> sizes;
         sizes << 0 << 0;
@@ -1063,7 +1063,7 @@ void MainWindow::loadSettings(const QStringList & keys)
         }
         prevBottomSize_ = settings_->value("SavedBottomSize", 200).toInt();
         ui->actionShow_Console_Pane->setChecked(sizes[1] > 0);
-    }
+    }    
 }
 
 void MainWindow::saveSettings()
@@ -1128,6 +1128,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
             bool notSaved = twe->editorInstance->isModified();
             if (!notSaved) {
                 e->accept();
+                ExtensionSystem::PluginManager::instance()->shutdown();
                 return;
             }
         }
@@ -1211,7 +1212,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
 
 
     e->accept();
-    qApp->quit();
+    ExtensionSystem::PluginManager::instance()->shutdown();
 }
 
 void MainWindow::switchWorkspace() {
@@ -1220,8 +1221,7 @@ void MainWindow::switchWorkspace() {
 
 void MainWindow::saveSession() const
 {
-    centralRow_->save();
-    bottomRow_->save();   
+
 }
 
 void MainWindow::showAbout()

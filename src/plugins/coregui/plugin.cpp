@@ -398,8 +398,11 @@ void Plugin::start()
         }
     }
     else {
-        ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
-        updateSettings(QStringList());
+        if (!sessionsDisableFlag_) ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
+        else {
+            updateSettings(QStringList());
+            restoreSession();
+        }
     }
     PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);
     mainWindow_->show();
@@ -413,9 +416,8 @@ void Plugin::stop()
 
 void Plugin::saveSession() const
 {
+    mainWindow_->saveSession();
     mainWindow_->saveSettings();
-//    mySettings()->setValue("BottomSplitterGeometry", bottomSplitter_->saveGeometry());
-//    mySettings()->setValue("BottomSplitterState", bottomSplitter_->saveState());
     foreach (Widgets::SecondaryWindow * secWindow, secondaryWindows_)
         secWindow->saveState();
 }
@@ -441,7 +443,6 @@ void Plugin::restoreSession()
     }
     foreach (Widgets::SecondaryWindow * secWindow, secondaryWindows_)
         secWindow->restoreState();
-    mainWindow_->loadSettings(QStringList());
 }
 
 Plugin::~Plugin()

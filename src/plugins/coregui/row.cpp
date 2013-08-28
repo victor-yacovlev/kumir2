@@ -49,6 +49,7 @@ void Row::addComponent(QWidget *widget, bool autoResizable)
 
 void Row::save()
 {
+    if (!settings_) return;
     for (int i=0; i<count(); i++) {
         QWidget * w = widget(i);
         Widgets::DockWindowPlace * place =
@@ -65,6 +66,7 @@ void Row::save()
 
 void Row::restore()
 {
+    if (!settings_) return;
     for (int i=0; i<count(); i++) {
         QWidget * w = widget(i);
         Widgets::DockWindowPlace * place =
