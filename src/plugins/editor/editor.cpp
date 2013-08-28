@@ -194,7 +194,7 @@ void Editor::loadMacros()
     }
     using namespace Shared;
     using namespace ExtensionSystem;
-    const QString analizerName = analizerPlugin_->defaultDocumentFileNameSuffix().mid(1);
+    const QString analizerName = analizerPlugin_->defaultDocumentFileNameSuffix();
 
     // System macros
     const QString sharePath = QCoreApplication::instance()->property("sharePath").toString();

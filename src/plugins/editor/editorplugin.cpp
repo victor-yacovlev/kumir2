@@ -54,12 +54,14 @@ Editor::InstanceInterface * EditorPlugin::newDocument(
     connectGlobalSignalsToEditor(editor);
 
     if (analizerPlugin) {
-        const QString initialTextFileName =
+        QString initialTextFileName =
                 mySettings()->value(SettingsPage::KeyProgramTemplateFile
                                     + "." + analizerPlugin->defaultDocumentFileNameSuffix(),
                                     SettingsPage::DefaultProgramTemplateFile
                                     + "." + analizerPlugin->defaultDocumentFileNameSuffix()
                                     ).toString();
+        static const QString resourcesRoot = QDir(qApp->applicationDirPath()+"/../share/kumir2/").canonicalPath();
+        initialTextFileName.replace("${RESOURCES}", resourcesRoot);
         QFile f(initialTextFileName);
         if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
             const QByteArray bytes = f.readAll();

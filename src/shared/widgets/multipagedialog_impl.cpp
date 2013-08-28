@@ -5,7 +5,8 @@
 #include <QMetaObject>
 #include <QMetaMethod>
 #include <QListWidgetItem>
-#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QPushButton>
 
 namespace Widgets {
 
@@ -17,14 +18,30 @@ MultiPageDialogImpl::MultiPageDialogImpl(class MultiPageDialog * parent)
 
 void MultiPageDialogImpl::setupUi()
 {
+    QGridLayout * grid = new QGridLayout;
     pClass_->setMinimumSize(400, 300);
-    pClass_->setLayout(new QHBoxLayout);
+    pClass_->setLayout(grid);
     list_ = new QListWidget(pClass_);
-    pClass_->layout()->addWidget(list_);
+    grid->addWidget(list_, 0, 0);
     stack_ = new QStackedWidget(pClass_);
-    pClass_->layout()->addWidget(stack_);
+    grid->addWidget(stack_, 0, 1);
     connect(list_, SIGNAL(currentRowChanged(int)),
             this, SLOT(handleGroupSelected(int)));    
+    buttonBox_ = new QDialogButtonBox(pClass_);
+    grid->addWidget(buttonBox_, 1, 0, 1, 2);
+
+    QPushButton * btnAccept =
+            buttonBox_->addButton(tr("OK"), QDialogButtonBox::AcceptRole);
+    connect(btnAccept, SIGNAL(clicked()), pClass_, SLOT(accept()));
+
+    QPushButton * btnCancel =
+            buttonBox_->addButton(tr("Cancel"), QDialogButtonBox::RejectRole);
+    connect(btnCancel, SIGNAL(clicked()), pClass_, SLOT(reject()));
+
+    QPushButton * btnReset =
+            buttonBox_->addButton(tr("Reset to Defaults"), QDialogButtonBox::ResetRole);
+    connect(btnReset, SIGNAL(clicked()), this, SLOT(resetAllPages()));
+
 }
 
 void MultiPageDialogImpl::acceptAllPages()
@@ -45,6 +62,27 @@ void MultiPageDialogImpl::acceptAllPages()
             m.invoke(pages_[i]);
         }
     }
+}
+
+void MultiPageDialogImpl::resetAllPages()
+{
+    for (int i=0; i<pages_.size(); i++) {
+        const QMetaObject * mo = pages_[i]->metaObject();
+        QMetaMethod m;
+        bool found = false;
+        for (int j=0; j<mo->methodCount(); j++) {
+            const QString signature = mo->method(j).signature();
+            if (signature=="resetToDefaults()") {
+                m = mo->method(j);
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            m.invoke(pages_[i]);
+        }
+    }
+    init();
 }
 
 void MultiPageDialogImpl::init()

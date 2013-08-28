@@ -249,7 +249,11 @@ void Term::clear()
 void Term::start(const QString & fileName)
 {
     int fixedWidth = -1;
-    OneSession * session = new OneSession(fixedWidth, QFileInfo(fileName).fileName(), m_plane);
+    OneSession * session = new OneSession(
+                fixedWidth,
+                fileName.isEmpty() ? tr("New Program") : QFileInfo(fileName).fileName(),
+                m_plane
+                );
     session->relayout(m_plane->width());
     connect(session, SIGNAL(updateRequest()), m_plane, SLOT(update()));
     sessions_ << session;

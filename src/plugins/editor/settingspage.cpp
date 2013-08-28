@@ -1,6 +1,9 @@
 #include "settingspage.h"
 #include "ui_settingspage.h"
 
+#include "extensionsystem/pluginmanager.h"
+#include "interfaces/analizerinterface.h"
+
 namespace Editor {
 
 QString SettingsPage::KeyInvertColorsIfDarkSystemTheme = "Highlight/InvertColorsIfDarkTheme";
@@ -256,6 +259,18 @@ void SettingsPage::init()
         ui->freeCursorPositioning->setCurrentIndex(freeCursorMovement);
 
     QString initialFileName = DefaultProgramTemplateFile;
+
+    Shared::AnalizerInterface * analizer =
+            ExtensionSystem::PluginManager::instance()
+            ->findPlugin<Shared::AnalizerInterface>();
+
+    if (analizer) {
+        initialFileName += "." + analizer->defaultDocumentFileNameSuffix();
+    }
+    else {
+        initialFileName += ".txt";
+    }
+
     static const QString resourcesRoot = QDir(qApp->applicationDirPath()+"/../share/kumir2/").canonicalPath();
     initialFileName.replace("${RESOURCES}", resourcesRoot);
     ui->templateFileName->setText(QDir::toNativeSeparators(

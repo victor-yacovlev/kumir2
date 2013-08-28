@@ -33,20 +33,21 @@ ContentView::ContentView(QWidget *parent)
             this, SLOT(clearLastAnchorUrl()));
     ignoreClearAnchorUrl_ = false;
 
-//    if (!ExtraFontsLoaded_) {
-//        const QString resourcesRoot = QCoreApplication::instance()->property("sharePath").toString();
-//        const QDir fontsDir = QDir(resourcesRoot + "/docbookviewer");
-//        const QStringList ttfFiles = fontsDir.entryList(QStringList() << "*.ttf" << "*.otf");
-//        foreach (const QString & fileName, ttfFiles) {
-//            const QString filePath = fontsDir.absoluteFilePath(fileName);
-//            int id = QFontDatabase::addApplicationFont(filePath);
-//            if (id == -1) {
-//                qWarning() << "Can't load font " << filePath;
-//            }
-//        }
-//        ExtraFontsLoaded_ = true;
-//    }
-
+#ifdef Q_OS_WIN32
+    if (!ExtraFontsLoaded_) {
+        const QString resourcesRoot = QCoreApplication::instance()->property("sharePath").toString();
+        const QDir fontsDir = QDir(resourcesRoot + "/docbookviewer");
+        const QStringList ttfFiles = fontsDir.entryList(QStringList() << "*.ttf" << "*.otf");
+        foreach (const QString & fileName, ttfFiles) {
+            const QString filePath = fontsDir.absoluteFilePath(fileName);
+            int id = QFontDatabase::addApplicationFont(filePath);
+            if (id == -1) {
+                qWarning() << "Can't load font " << filePath;
+            }
+        }
+        ExtraFontsLoaded_ = true;
+    }
+#endif
 }
 
 QSize ContentView::minimumSizeHint() const

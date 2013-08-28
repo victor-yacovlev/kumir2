@@ -5,6 +5,7 @@
 #include <QStackedWidget>
 #include <QListWidget>
 #include <QScrollArea>
+#include <QDialogButtonBox>
 
 namespace Widgets {
 
@@ -21,6 +22,7 @@ private /*methods*/:
 private slots:
     void handleGroupSelected(int index);
     void acceptAllPages();
+    void resetAllPages();
     void init();
 
 private /*fields*/:
@@ -28,6 +30,7 @@ private /*fields*/:
     QList<QWidget*> pages_;
     QStackedWidget * stack_;
     QListWidget * list_;
+    QDialogButtonBox * buttonBox_;
     
 };
 
