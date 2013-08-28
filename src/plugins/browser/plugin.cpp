@@ -8,46 +8,40 @@ namespace Browser {
 
 Plugin::Plugin()
     : KPlugin()
-    , m_directory(new Dir(this))
-    , m_networkAccessManager(nullptr)
+    , localDirectoryContents_(new Dir(this))
+    , networkAccessManager_(nullptr)
 {
 }
 
 void Plugin::changeCurrentDirectory(const QString &path)
 {
-    m_directory->m_dir = QDir(path);
+    localDirectoryContents_->m_dir = QDir(path);
 }
 
 QString Plugin::initialize(const QStringList &, const ExtensionSystem::CommandLine &)
 {
-    qRegisterMetaType<Shared::BrowserComponent>("BrowserComponent");
     LocalhostServer * localhost = new LocalhostServer(QDir(qApp->property("sharePath").toString()+"/webapps/"), this);
     NetworkAccessManager * networkAccessManager = new NetworkAccessManager(this);
     networkAccessManager->setLocalhostServer(localhost);
-    m_networkAccessManager = networkAccessManager;
+    networkAccessManager_ = networkAccessManager;
     return "";
 }
 
-Shared::BrowserComponent Plugin::createBrowser(const QUrl &url, const QMap<QString, QObject *> manageableObjects, bool enableKeyboardNavigation)
+Shared::Browser::InstanceInterface * Plugin::createBrowser(const QUrl &url, const QMap<QString, QObject *> manageableObjects, bool enableKeyboardNavigation)
 {
     Component * c = new Component(this);
     c->setMinimumSize(400, 200);
     c->setAcceptDrops(false);
     c->page()->settings()->setAttribute(QWebSettings::SpatialNavigationEnabled, enableKeyboardNavigation);
     QMap<QString,QObject*> objs = manageableObjects;
-    objs["directory"] = m_directory;
+    objs["directory"] = localDirectoryContents_;
     objs["application"] = qApp;
-    c->setManageableObjects(objs);
+    c->manageableObjects() = objs;
 
     if (!url.isEmpty())
         c->go(url);
 
-    Shared::BrowserComponent result;
-    result.widget = c;
-    result.toolbarActions = c->toolbarActions();
-    result.menus = c->menuActions();
-
-    return result;
+    return c;
 }
 
 } // namespace Browser

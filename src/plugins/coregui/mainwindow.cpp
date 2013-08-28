@@ -498,6 +498,19 @@ void MainWindow::setTitleForTab(int index)
     tabWidget_->setTabText(index, title);
 }
 
+void MainWindow::updateBrowserTitle(const QString &title, const Shared::Browser::InstanceInterface * sender)
+{
+    for (int i=0; i<tabWidget_->count(); i++) {
+        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
+        if (twe->browserInstance == sender) {
+            tabWidget_->setTabText(i, title);
+            if (tabWidget_->currentIndex() == i)
+                setTitleForTab(i);
+            return;
+        }
+    }
+}
+
 void MainWindow::setupActionsForTab()
 {
     QWidget * currentTabWidget = tabWidget_->currentWidget();
@@ -722,13 +735,6 @@ void MainWindow::handleDocumentCleanChanged(bool v)
     setTitleForTab(index);
 }
 
-void MainWindow::handleTabTitleChange(const QString &title)
-{
-    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(sender());
-    int index = tabWidget_->indexOf(twe);
-    twe->setProperty("title", title);
-    setTitleForTab(index);
-}
 
 void MainWindow::closeCurrentTab()
 {
@@ -961,7 +967,6 @@ TabWidgetElement * MainWindow::addCentralComponent(
                 );
 
 
-    connect(element, SIGNAL(changeTitle(QString)), this, SLOT(handleTabTitleChange(QString)));
     connect(element, SIGNAL(documentCleanChanged(bool)), this, SLOT(handleDocumentCleanChanged(bool)));
     createTopLevelMenus(menus, true);
     tabWidget_->addTab(element, title);
@@ -1484,18 +1489,21 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             setupContentForTab();
         }
     }        
-    else if (type==WWW) {
-        BrowserComponent browser = m_plugin->plugin_browser->createBrowser(url, m_plugin->m_browserObjects);
+    else if (type==WWW && m_plugin->plugin_browser) {
+        Shared::Browser::InstanceInterface * browser =
+                m_plugin->plugin_browser->createBrowser(url, m_plugin->m_browserObjects);
+        browser->setTitleChangeHandler(this, SLOT(updateBrowserTitle(QString, const Shared::Browser::InstanceInterface*)));
         if (b_notabs) {
             while(tabWidget_->count()) tabWidget_->removeTab(0);
         }
         result = addCentralComponent(
                     url.toString(),
-                    browser.widget,
-                    browser.toolbarActions,
-                    browser.menus,
+                    browser->widget(),
+                    QList<QAction*>(),
+                    QList<QMenu*>(),
                     WWW,
                     true);
+        result->browserInstance = browser;
         tabWidget_->setCurrentIndex(tabWidget_->count()-1);
         tabWidget_->currentWidget()->setFocus();
     }

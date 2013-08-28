@@ -24,7 +24,7 @@ Plugin::Plugin() :
     plugin_NativeGenerator = plugin_BytecodeGenerator = 0;
     sessionsDisableFlag_ = false;
     kumirProgram_ = 0;
-    startPage_.widget = 0;
+    startPage_ = 0;
     helpViewer_ = 0;
     courseManager_ = 0;
     helpWindow_ = 0;
@@ -282,10 +282,13 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     }
 
     if (!parameters.contains("nostartpage", Qt::CaseInsensitive)) {
+        startPage_ = plugin_browser->createBrowser();
+        startPage_->setTitleChangeHandler(mainWindow_, SLOT(updateBrowserTitle(QString, const Shared::Browser::InstanceInterface*)));
         const QString browserEntryPoint = QApplication::instance()->property("sharePath").toString()+"/coregui/startpage/russian/index.html";
+        (*startPage_)["mainWindow"] = mainWindow_;
+        startPage_->go(browserEntryPoint);
         m_browserObjects["mainWindow"] = mainWindow_;
-        startPage_ = plugin_browser->createBrowser(QUrl::fromLocalFile(browserEntryPoint), m_browserObjects, true);
-        startPage_.widget->setProperty("uncloseable", true);
+        dynamic_cast<QObject*>(startPage_)->setProperty("uncloseable", true);
     }
     if (parameters.contains("notabs", Qt::CaseInsensitive)) {
         mainWindow_->disableTabs();
@@ -474,16 +477,16 @@ void Plugin::saveSession() const
 void Plugin::restoreSession()
 {
     if (!sessionsDisableFlag_) {
-        if (startPage_.widget && mainWindow_->tabWidget_->count()==0) {
-            mainWindow_->addCentralComponent(
+        if (startPage_ && mainWindow_->tabWidget_->count()==0) {
+            TabWidgetElement * twe = mainWindow_->addCentralComponent(
                         tr("Start"),
-                        startPage_.widget,
-                        startPage_.toolbarActions,
-                        startPage_.menus,
-//                        QList<QWidget*>(),
+                        startPage_->widget(),
+                        QList<QAction*>(),
+                        QList<QMenu*>(),
                         MainWindow::WWW,
                         false
                         );
+            twe->browserInstance = startPage_;
         }
     }
     else {
@@ -501,7 +504,7 @@ void Plugin::restoreSession()
 
 Plugin::~Plugin()
 {
-    startPage_.widget->deleteLater();
+
 }
 
 

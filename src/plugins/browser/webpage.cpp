@@ -6,12 +6,12 @@ namespace Browser {
 WebPage::WebPage()
     : QWebPage()
 {
-    m_component = 0;
+    component_ = 0;
 }
 
 void WebPage::setComponent(Component *v)
 {
-    m_component = v;
+    component_ = v;
 }
 
 
@@ -28,11 +28,6 @@ QObject * WebPage::createPlugin(const QString &classid, const QUrl &url, const Q
         }
     }
     return result;
-}
-
-QWebPage * WebPage::createWindow(WebWindowType)
-{
-    return m_component->createChildPage();
 }
 
 

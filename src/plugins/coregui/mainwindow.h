@@ -83,6 +83,7 @@ public slots:
     void showUserManual();
     void showHelp();
     void updateSettings(ExtensionSystem::SettingsPtr settings);
+    void updateBrowserTitle(const QString & title, const Shared::Browser::InstanceInterface * sender);
 
 private slots:
     void loadRecentFile();
@@ -99,7 +100,6 @@ private slots:
 
     void addToRecent(const QString &fileName);
     void handleDocumentCleanChanged(bool v);
-    void handleTabTitleChange(const QString & title);
     void handleSplitterMoved(int, int);
 
 

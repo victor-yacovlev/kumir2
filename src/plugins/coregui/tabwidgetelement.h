@@ -28,6 +28,7 @@ public:
 //        , statusbarWidgets(sws)
         , type(t)
         , editorInstance(nullptr)
+        , browserInstance(nullptr)
         , kumirProgram_(kumir)
         , courseManagerTab_(false)
     {
@@ -95,6 +96,7 @@ public:
     QList<QMenu*> menus;
     MainWindow::DocumentType type;
     Shared::Editor::InstanceInterface * editorInstance;
+    Shared::Browser::InstanceInterface * browserInstance;
 
     inline class KumirProgram * kumirProgram() { return kumirProgram_; }
     inline bool isCourseManagerTab() const {
@@ -109,6 +111,9 @@ public:
             const QString fullPath = editorInstance->documentContents().sourceUrl.toLocalFile();
             const QString shortPath = QFileInfo(fullPath).fileName();
             return shortPath;
+        }
+        else if (browserInstance) {
+            return browserInstance->title();
         }
         else {
             return "";

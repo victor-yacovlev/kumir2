@@ -16,14 +16,16 @@ class Plugin
     Q_INTERFACES(Shared::BrowserInterface)
 public:
     Plugin();
-    Shared::BrowserComponent createBrowser(const QUrl &url, const QMap<QString, QObject *> manageableObjects, bool enableKeyboardNavigation = false);
-    inline QNetworkAccessManager * networkAccessManager() { return m_networkAccessManager; }
+    Shared::Browser::InstanceInterface * createBrowser(const QUrl & url = QUrl(),
+                                           const QMap<QString, QObject*> manageableObjects = QMap<QString,QObject*>(),
+                                           bool enableKeyboardNavigation = false);
+    inline QNetworkAccessManager * networkAccessManager() { return networkAccessManager_; }
 protected:
     QString initialize(const QStringList &, const ExtensionSystem::CommandLine &);
     void changeCurrentDirectory(const QString &path);
 private:
-    class Dir * m_directory;
-    QNetworkAccessManager * m_networkAccessManager;
+    class Dir * localDirectoryContents_;
+    QNetworkAccessManager * networkAccessManager_;
 };
 
 } // namespace Browser

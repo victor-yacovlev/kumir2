@@ -18,10 +18,9 @@ public:
 
 protected:
     QObject * createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
-    QWebPage * createWindow(WebWindowType type);
 
 private:
-    class Component * m_component;
+    class Component * component_;
 
 
 };

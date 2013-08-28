@@ -10,6 +10,7 @@
 #include <QtWebKit/QWebHistory>
 
 #include "interfaces/browserinterface.h"
+#include "interfaces/browser_instanceinterface.h"
 
 namespace Browser {
 
@@ -19,16 +20,20 @@ namespace Ui {
 
 class Component
         : public QWebView
+        , public Shared::Browser::InstanceInterface
 {
     Q_OBJECT
-
+    Q_INTERFACES(Shared::Browser::InstanceInterface)
 public:
     explicit Component(class Plugin * plugin);
-    inline void setManageableObjects(const QMap<QString, QObject*> &os) {m_manageableObjects = os; }
-    QWebPage * createChildPage();
     ~Component();
-    QList<QAction*> toolbarActions();
-    QList<QMenu*> menuActions();
+    inline QWidget * widget() { return this; }
+    QString title() const;
+    QUrl currentLocation() const;
+    void setTitleChangeHandler(const QObject *receiver, const char *method);
+    inline QMap<QString,QObject*> & manageableObjects() {
+        return manageableObjects_;
+    }
 
 public slots:
     void go(const QUrl & url);
@@ -36,26 +41,14 @@ public slots:
 protected:
     void showEvent(QShowEvent *e);
 private:
-
-    QMap<QString, QObject*> m_manageableObjects;
-    QAction * a_separator;
-    QAction * a_goBack;
-    QAction * a_reloadStop;
-
-    QMenu * menu_edit;
-    class Plugin * m_plugin;
-    QWebFrame * frame_toPrint;
-
-signals:
-    void newWindowCreated(const Shared::BrowserComponent &);
+    QMap<QString, QObject*> manageableObjects_;
 
 private slots:
     void addJavaScriptObjects();
-    void handleReloadStop();
-    void handleLoadStarted();
-    void handleLoadFinished();
-    void handlePrintRequest(QWebFrame * frame);
-    void handlePaintPrinterFrame(QPrinter * printer);
+    void handleWebPageTitleChanged(const QString & title);
+
+/*private*/ signals:
+    void titleChangeRequest(const QString & title, const Shared::Browser::InstanceInterface * instance);
 };
 
 
