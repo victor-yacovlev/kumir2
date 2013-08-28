@@ -22,6 +22,7 @@ private /*methods*/:
 
     void init();
     void accept();
+    void resetToDefaults();
     void addIntegerField(const QString & key, const DeclarativeSettingsPage::Entry & entry);
     void addColorField(const QString & key, const DeclarativeSettingsPage::Entry & entry);
     void addField(const QString & labelText, QWidget * controlWidget);

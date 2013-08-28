@@ -98,6 +98,7 @@ public:
 public slots:
     void accept();
     void init();
+    void resetToDefaults();
 signals:
     void settingsChanged();
 private slots:

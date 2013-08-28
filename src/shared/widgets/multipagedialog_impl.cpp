@@ -82,7 +82,6 @@ void MultiPageDialogImpl::resetAllPages()
             m.invoke(pages_[i]);
         }
     }
-    init();
 }
 
 void MultiPageDialogImpl::init()

@@ -47,6 +47,11 @@ void DeclarativeSettingsPage::init()
     pImpl_->init();
 }
 
+void DeclarativeSettingsPage::resetToDefaults()
+{
+    pImpl_->resetToDefaults();
+}
+
 void DeclarativeSettingsPage::accept()
 {
     pImpl_->accept();

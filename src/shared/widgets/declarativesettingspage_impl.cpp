@@ -35,6 +35,32 @@ void DeclarativeSettingsPageImpl::init()
     }
 }
 
+void DeclarativeSettingsPageImpl::resetToDefaults()
+{
+    foreach (const QString & key, entries_.keys()) {
+        const DeclarativeSettingsPage::Entry entry = entries_[key];
+        if (entry.type==DeclarativeSettingsPage::Integer) {
+            int value = entry.defaultValue.toInt();
+            QSpinBox * control = 0;
+            if (widgets_.contains(key) && QString(widgets_[key]->metaObject()->className())=="QSpinBox")
+                control = qobject_cast<QSpinBox*>(widgets_[key]);
+            if (control)
+                control->setValue(value);
+        }
+        else if (entry.type==DeclarativeSettingsPage::Color) {
+            QColor value = entry.defaultValue.toString();
+            QToolButton * control = 0;
+            if (widgets_.contains(key) && QString(widgets_[key]->metaObject()->className())=="QToolButton")
+                control = qobject_cast<QToolButton*>(widgets_[key]);
+            if (control)
+                setButtonColor(control, value);
+        }
+        else {
+            qFatal("Not implemented");
+        }
+    }
+}
+
 void DeclarativeSettingsPageImpl::accept()
 {
     if (!settings_) return;

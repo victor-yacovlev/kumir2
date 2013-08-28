@@ -43,6 +43,7 @@ public:
 public slots:
     void init();
     void accept();
+    void resetToDefaults();
 
 signals:
     void settingsChanged();

@@ -283,6 +283,95 @@ void SettingsPage::init()
     updateFontPreview();
 }
 
+void SettingsPage::resetToDefaults()
+{
+    ui->invertColors->setChecked(DefaultInvertColorsIfDarkSystemTheme);
+
+    setButtonColor(ui->kwColor, QColor(DefaultColorKw));
+    setButtonColor(ui->typeColor, QColor(DefaultColorType));
+    setButtonColor(ui->numericColor, QColor(DefaultColorNumeric));
+    setButtonColor(ui->literalColor, QColor(DefaultColorLiteral));
+    setButtonColor(ui->algorhitmColor, QColor(DefaultColorAlg));
+    setButtonColor(ui->moduleColor, QColor(DefaultColorMod));
+    setButtonColor(ui->docColor, QColor(DefaultColorDoc));
+    setButtonColor(ui->commentColor, QColor(DefaultColorComment));
+
+    ui->kwBold->setChecked(DefaultBoldKw);
+    ui->typeBold->setChecked(DefaultBoldType);
+    ui->numericBold->setChecked(DefaultBoldNumeric);
+    ui->literalBold->setChecked(DefaultBoldLiteral);
+    ui->algorhitmBold->setChecked(DefaultBoldAlg);
+    ui->moduleBold->setChecked(DefaultBoldMod);
+    ui->docBold->setChecked(DefaultBoldDoc);
+    ui->commentBold->setChecked(DefaultBoldComment);
+
+    QFont f;
+    f.setFamily(defaultFontFamily());
+    ui->fontFamily->setCurrentFont(f);
+    ui->fontSize->setValue(defaultFontSize);
+
+    Qt::Key key = Qt::Key(DefaultTempSwitchLayoutButton);
+    QString keyText = "Alt";
+    if (key==Qt::Key_AltGr)
+        keyText = "AltGr";
+    else if (key==Qt::Key_Meta)
+        keyText = "Meta";
+    else if (key==Qt::Key_Menu)
+        keyText = "Menu";
+    else if (key==Qt::Key_ScrollLock)
+        keyText = "ScrollLock";
+    else if (key==Qt::Key_Pause)
+        keyText = "Pause";
+
+    int index = 0;
+    for (int i=0; i<ui->layoutSwitchKey->count(); i++) {
+        if (ui->layoutSwitchKey->itemText(i)==keyText) {
+            index = i;
+            break;
+        }
+    }
+    ui->layoutSwitchKey->setCurrentIndex(index);
+
+    QString play = DefaultPlayMacroShortcut;
+    index = 0;
+    for (int i=0; i<ui->macroPlayKey->count(); i++) {
+        if (ui->macroPlayKey->itemText(i)==play) {
+            index = i;
+            break;
+        }
+    }
+    ui->macroPlayKey->setCurrentIndex(index);
+
+    ui->pressTextLeft->setChecked(DefaultForcePressTextToLeft);
+    ui->showTrailingSpaces->setChecked(DefaultShowTrailingSpaces);
+
+    ui->autoInsertClosingOperationalBrackets->setChecked(DefaultAutoInsertPairingBraces);
+
+    uint freeCursorMovement = DefaultFreeCursorMovement;
+
+    if (freeCursorMovement < ui->freeCursorPositioning->count())
+        ui->freeCursorPositioning->setCurrentIndex(freeCursorMovement);
+
+    QString initialFileName = DefaultProgramTemplateFile;
+
+    Shared::AnalizerInterface * analizer =
+            ExtensionSystem::PluginManager::instance()
+            ->findPlugin<Shared::AnalizerInterface>();
+
+    if (analizer) {
+        initialFileName += "." + analizer->defaultDocumentFileNameSuffix();
+    }
+    else {
+        initialFileName += ".txt";
+    }
+
+    static const QString resourcesRoot = QDir(qApp->applicationDirPath()+"/../share/kumir2/").canonicalPath();
+    initialFileName.replace("${RESOURCES}", resourcesRoot);
+    ui->templateFileName->setText(QDir::toNativeSeparators(initialFileName));
+    validateProgramTemplateFile();
+    updateFontPreview();
+}
+
 void SettingsPage::validateProgramTemplateFile()
 {
     const QString fileName = QDir::fromNativeSeparators(ui->templateFileName->text().trimmed());
