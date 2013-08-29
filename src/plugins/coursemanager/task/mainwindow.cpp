@@ -67,7 +67,9 @@ cursFile="";
 isTeacher=false;
        onTask=false;
        cursFile="";
-       
+     setWindowIcon(QIcon(qApp->property("sharePath").toString()+
+                   "/coursemanager/10.png")
+                   );
        //ui->textBrowser->setVisible(false);
  };
 QList<QAction*> MainWindowTask::getActions()
