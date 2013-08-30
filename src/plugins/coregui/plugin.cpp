@@ -307,7 +307,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         (*startPage_)["mainWindow"] = mainWindow_;
         startPage_->go(browserEntryPoint);
         m_browserObjects["mainWindow"] = mainWindow_;
-        dynamic_cast<QObject*>(startPage_)->setProperty("uncloseable", true);
+        startPage_->widget()->setProperty("uncloseable", true);
     }
     if (parameters.contains("notabs", Qt::CaseInsensitive)) {
         mainWindow_->disableTabs();
