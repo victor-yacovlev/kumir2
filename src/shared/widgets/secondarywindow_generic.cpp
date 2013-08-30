@@ -99,9 +99,38 @@ void SecondaryWindowGenericImplementation::setupWidgetsAppearance()
             "}"
             ;
 #else
-    static const QSize buttonSize = QSize(16, 16);
-    static const int titleHeight = 20;
+    static const QSize buttonSize = QSize(18, 18);
+    static const int titleHeight = 22;
+    static const char * buttonCss = ""\
+            "QPushButton {"
+            "   border: 1px solid gray;"
+            "   border-radius: 9px;"
+            "}"
+            "QPushButton:hover {"
+            "   border: 1px solid white;"
+            "}"
+            "#close { background: red; }"
+            "#close:hover { background: lightred; }"
+            "#close:pressed { background: darkred; }"
+            "#minimize { background: yellow; }"
+            "#minimize:pressed { background: darkyellow; }"
+            "#dock { background: green; }"
+            "#dock:pressed { background: darkgreen; }"
+            "#ontop { background: cyan; }"
+            "#ontop:pressed { background: darkblue; }"
+            ;
+    static const char * titleCss = ""
+            "QLabel {"
+            "   font-weight: bold;"
+            "   color: black;"
+            "}"
+            ;
 #endif
+
+    btnMinimize_->setObjectName("minimize");
+    btnDock_->setObjectName("dock");
+    btnClose_->setObjectName("close");
+    btnStayOnTop_->setObjectName("ontop");
 
     btnMinimize_->setFixedSize(buttonSize);
     btnDock_->setFixedSize(buttonSize);
@@ -123,6 +152,8 @@ void SecondaryWindowGenericImplementation::setupWidgetsAppearance()
 
 #ifndef Q_OS_MAC
     static const QString iconPrefix = "white_";
+#else
+    static const QString iconPrefix = "black_";
 #endif
     static const QString pixmapsPrefix =
             qApp->property("sharePath").toString()+"/widgets/secondarywindow/" +
@@ -310,14 +341,17 @@ void SecondaryWindowGenericImplementation::toggleDockWindow()
 
 void SecondaryWindowGenericImplementation::paintWindowFrame()
 {
-#ifndef Q_OS_MAC
+
     QPainter p(this);
     QColor bg;
+#ifndef Q_OS_MAC
     if (isActiveWindow())
         bg = QColor("#32343C");
     else
         bg = QColor("#98999D");
-
+#else
+    bg = QColor(Qt::lightGray);
+#endif
     p.setPen(Qt::NoPen);
     p.setBrush(bg);
 
@@ -338,8 +372,11 @@ void SecondaryWindowGenericImplementation::paintWindowFrame()
                    width(), layout()->contentsMargins().bottom());
     }
 
-
+#ifndef Q_OS_MAC
     p.setPen(QColor(isActiveWindow() ? Qt::black : Qt::gray));
+#else
+    p.setPen(QColor(Qt::gray));
+#endif
     p.setBrush(Qt::NoBrush);
     p.drawRect(0, 0, width()-1, height()-1);
     if (centralWidget_ && isResizable()) {
@@ -352,7 +389,7 @@ void SecondaryWindowGenericImplementation::paintWindowFrame()
         p.drawRect(x, y, w, h);
     }
     p.end();
-#endif
+
 }
 
 SecondaryWindowGenericImplementation::HitTestResult
