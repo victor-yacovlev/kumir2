@@ -3482,13 +3482,18 @@ QList<ExtensionSystem::CommandLineParameter>  RobotModule::acceptableCommandLine
 QString RobotModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine & runtimeParameters)
     {ExtensionSystem::SettingsPtr sett;
       sett=robotSettings();  
+        
         if(runtimeParameters.value("field").isValid())
+        {
+            qDebug()<<runtimeParameters.value("field").toString();
             LoadFromFile(runtimeParameters.value("field").toString());
+        }
         if(sett->value("Robot/SFF").isValid())
         {
             if(LoadFromFile(sett->value("Robot/SFF").toString())!=0){
                 createEmptyField(7,7);}
         }
+       // setWindowSize();
         return "";
     }
 void RobotModule::runGoUp()
@@ -3785,8 +3790,9 @@ void RobotModule::editEnv()
     {
         if(field->isEditMode())
         {
-           //Diamond DA40 field->setMode(NORMAL_MODE);
+           // field->setMode(NORMAL_MODE);
             reset(); //reset 2 normal mode
+            setWindowSize();
             return;
         }
         startField->setModeFlag(NEDIT_MODE);
@@ -3798,6 +3804,7 @@ void RobotModule::editEnv()
         field->setMode(NEDIT_MODE);
         startField->setModeFlag(NORMAL_MODE);
         
+        setWindowSize(); 
     };  
 void RobotModule::createEmptyField(int rows,int cols)
     {
@@ -4016,7 +4023,7 @@ void RobotModule::setWindowSize()
         baseFieldSize.setHeight(field->rows()*mySettings()->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt());
         baseFieldSize.setWidth(field->columns()*mySettings()->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt());
         int editEnlarge=0;
-        QWidgetList scBars=view->scrollBarWidgets(Qt::AlignLeft);
+        QWidgetList scBars=view->scrollBarWidgets(Qt::AlignRight);
         if(field->isEditMode())editEnlarge=1.8*mySettings()->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt();
         view->setMinimumSize(minimumSize());
         
@@ -4291,6 +4298,7 @@ void RobotView::changeEditMode(bool state)
         {
             robotField->setMode(TEMP_MODE); 
         }; 
+        
         
     };
 } // $namespace

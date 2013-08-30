@@ -321,6 +321,7 @@ int main(int argc, char **argv)
         app->setSplashScreen(splashScreen);
     }
 #endif
+    qDebug()<<qApp->arguments();
     return app->main();
 }
 
