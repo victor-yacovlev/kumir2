@@ -5,9 +5,15 @@
 #include <QObject>
 #include <QWidget>
 
+#ifdef WIDGETS_LIBRARY
+#define WIDGETS_EXPORT Q_DECL_EXPORT
+#else
+#define WIDGETS_EXPORT Q_DECL_IMPORT
+#endif
+
 namespace Widgets {
 
-class SecondaryWindow
+class WIDGETS_EXPORT SecondaryWindow
         : public QObject
 {
     Q_OBJECT
