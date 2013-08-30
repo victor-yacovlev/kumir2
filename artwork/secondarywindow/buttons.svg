@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg3584"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="buttons.svg">
+  <defs
+     id="defs3586">
+    <linearGradient
+       id="linearGradient4384-2">
+      <stop
+         style="stop-color:#000000;stop-opacity:0.50196081;"
+         offset="0"
+         id="stop4386-5" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop4388-54" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4384-4">
+      <stop
+         style="stop-color:#000000;stop-opacity:0.50196081;"
+         offset="0"
+         id="stop4386-1" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop4388-9" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4384-7">
+      <stop
+         style="stop-color:#000000;stop-opacity:0.50196081;"
+         offset="0"
+         id="stop4386-7" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop4388-2" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4384-5">
+      <stop
+         style="stop-color:#000000;stop-opacity:0.50196081;"
+         offset="0"
+         id="stop4386-2" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop4388-5" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4384">
+      <stop
+         style="stop-color:#000000;stop-opacity:0.50196081;"
+         offset="0"
+         id="stop4386" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop4388" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.8"
+     inkscape:cx="33.111093"
+     inkscape:cy="988.2915"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1680"
+     inkscape:window-height="992"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata3589">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#916f6f;stroke:none"
+       id="rect4049"
+       width="119.95561"
+       height="18.071344"
+       x="3.0304577"
+       y="43.255684"
+       ry="0" />
+    <g
+       id="g3909"
+       transform="translate(-0.00771904,0.65726716)"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/widgets/secondarywindow/black_stayontop_toggled.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         ry="0"
+         y="8.2193279"
+         x="14.968911"
+         height="10"
+         width="12"
+         id="rect3532-8"
+         style="fill:none;stroke:none" />
+      <g
+         transform="matrix(0.83779249,0,0,0.70114076,6.7463301,-87.122827)"
+         id="g3215-1-06">
+        <rect
+           style="fill:#000000;fill-opacity:1;stroke:none"
+           id="rect3209-5-1"
+           width="5.1715755"
+           height="6.9703846"
+           x="14.615322"
+           y="135.98148"
+           ry="0.7869789" />
+        <rect
+           style="fill:#000000;fill-opacity:1;stroke:none"
+           id="rect3211-2-2"
+           width="9.2188959"
+           height="2.3609366"
+           x="12.366811"
+           y="141.3779"
+           ry="0.7869789" />
+        <path
+           inkscape:connector-curvature="0"
+           style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
+           d="m 16.18928,143.06428 0.674553,6.63311 0.899405,-6.74553 -1.573958,0.11242 z"
+           id="path3213-3-71" />
+      </g>
+    </g>
+    <g
+       id="g3923"
+       transform="translate(0.19857788,0.54649067)"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/widgets/secondarywindow/black_minimize.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         ry="0"
+         y="8.3301039"
+         x="54.583519"
+         height="10"
+         width="12"
+         id="rect3532"
+         style="fill:none;stroke:none" />
+      <rect
+         rx="0"
+         transform="scale(1,-1)"
+         ry="0.82876712"
+         y="-18.330105"
+         x="55.083519"
+         height="1.6575342"
+         width="11"
+         id="rect3197-6-17"
+         style="fill:#000000;fill-opacity:1;stroke:none" />
+    </g>
+    <g
+       id="g3927"
+       transform="translate(0.93309021,0)"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/widgets/secondarywindow/black_dock.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         ry="0"
+         y="8.8765955"
+         x="72.886856"
+         height="10"
+         width="12"
+         id="rect3532-1"
+         style="fill:none;stroke:none" />
+      <g
+         transform="matrix(1.3498453,0,0,1.3498453,14.465969,-235.31231)"
+         id="g4047-3-4">
+        <rect
+           style="fill:none;stroke:#000000;stroke-width:1;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+           id="rect4027-1-2"
+           width="7.7573633"
+           height="6.4082565"
+           x="43.845966"
+           y="181.4014" />
+        <rect
+           style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+           id="rect4029-4-4"
+           width="3.6257241"
+           height="2.8106389"
+           x="47.949501"
+           y="184.8866" />
+      </g>
+    </g>
+    <g
+       id="g3933"
+       transform="translate(1.3904953,1.0226111)"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/widgets/secondarywindow/black_close.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         ry="0"
+         y="7.853982"
+         x="92.116432"
+         height="10"
+         width="12"
+         id="rect3532-4"
+         style="fill:none;stroke:none" />
+      <g
+         transform="matrix(1.338202,0,0,1.338202,-13.064709,-178.97104)"
+         id="g3205-4-69">
+        <rect
+           style="fill:#000000;fill-opacity:1;stroke:none"
+           id="rect3199-7-2"
+           width="8.9940443"
+           height="1.5739578"
+           x="-47.109299"
+           y="-160.89563"
+           ry="0.7869789"
+           transform="matrix(0.7071068,-0.7071068,-0.7071068,-0.7071068,0,0)"
+           rx="0" />
+        <rect
+           style="fill:#000000;fill-opacity:1;stroke:none"
+           id="rect3203-8-1"
+           width="8.9940443"
+           height="1.5739578"
+           x="-164.60567"
+           y="41.825302"
+           ry="0.7869789"
+           transform="matrix(-0.7071068,-0.7071068,-0.7071068,0.7071068,0,0)"
+           rx="0" />
+      </g>
+    </g>
+    <g
+       id="g3916"
+       transform="translate(-0.87640762,0.74238364)"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/widgets/secondarywindow/black_stayontop.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         ry="0"
+         y="8.1342115"
+         x="35.651966"
+         height="10"
+         width="12"
+         id="rect3532-2"
+         style="fill:none;stroke:none" />
+      <g
+         transform="matrix(0.59240875,0.59240875,-0.49578139,0.49578139,101.92855,-66.456464)"
+         id="g3215-1-06-2">
+        <rect
+           style="fill:#000000;fill-opacity:1;stroke:none"
+           id="rect3209-5-1-4"
+           width="5.1715755"
+           height="6.9703846"
+           x="14.615322"
+           y="135.98148"
+           ry="0.7869789" />
+        <rect
+           style="fill:#000000;fill-opacity:1;stroke:none"
+           id="rect3211-2-2-9"
+           width="9.2188959"
+           height="2.3609366"
+           x="12.366811"
+           y="141.3779"
+           ry="0.7869789" />
+        <path
+           inkscape:connector-curvature="0"
+           style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
+           d="m 16.18928,143.06428 0.674553,6.63311 0.899405,-6.74553 -1.573958,0.11242 z"
+           id="path3213-3-71-9" />
+      </g>
+    </g>
+    <g
+       id="g3947"
+       transform="translate(0,0.7885201)"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/widgets/secondarywindow/aero_minimize.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         ry="0"
+         y="26.067795"
+         x="53.282097"
+         height="10"
+         width="15"
+         id="rect3532-8-5-01"
+         style="fill:none;stroke:none" />
+      <rect
+         rx="0"
+         transform="scale(1,-1)"
+         ry="1.4318966"
+         y="-35.517796"
+         x="55.8321"
+         height="3.3"
+         width="9.8999996"
+         id="rect3197-61"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1.0999999;stroke-miterlimit:4;stroke-dasharray:none" />
+    </g>
+    <g
+       id="g3955"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/widgets/secondarywindow/aero_stayontop_toggled.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         ry="0"
+         y="26.856316"
+         x="13.461192"
+         height="10"
+         width="15"
+         id="rect3532-8-5"
+         style="fill:none;stroke:none" />
+      <path
+         inkscape:connector-curvature="0"
+         id="rect3209-2"
+         d="m 19.660101,27.269504 c -0.280541,0 -0.520438,0.23991 -0.520438,0.52044 l 0,2.97393 -1.226746,0 c -0.280541,0 -0.483264,0.20273 -0.483264,0.48327 l 0,0.52043 c 0,0.28054 0.202723,0.48326 0.483264,0.48326 l 2.118925,0 0.483264,3.79176 0,0.11147 a 0.35172294,0.35172294 0 0 0 0.03717,0.0743 0.35172294,0.35172294 0 0 0 0.03717,0.0744 0.35172294,0.35172294 0 0 0 0.03718,0.0371 0.35172294,0.35172294 0 0 0 0.03717,0.0371 0.35172294,0.35172294 0 0 0 0.07435,0.0371 0.35172294,0.35172294 0 0 0 0.44609,-0.14869 0.35172294,0.35172294 0 0 0 0.03717,-0.11147 l 0,-0.11146 0.63196,-3.79175 2.1561,0 c 0.280541,0 0.483264,-0.20272 0.483264,-0.48326 l 0,-0.52044 c 0,-0.28053 -0.202723,-0.48326 -0.483264,-0.48326 l -0.892179,0 0,-2.97394 c 0,-0.28054 -0.202723,-0.52043 -0.483264,-0.52043 l -2.973931,0 z"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.82609189" />
+    </g>
+    <g
+       id="g3943"
+       transform="translate(0,0.97042084)"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/widgets/secondarywindow/aero_dock.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         ry="0"
+         y="25.885895"
+         x="72.319946"
+         height="10"
+         width="15"
+         id="rect3532-8-5-1"
+         style="fill:none;stroke:none" />
+      <path
+         inkscape:connector-curvature="0"
+         id="rect4027"
+         d="m 75.117513,26.48094 a 0.59249722,0.59249722 0 0 0 -0.481356,0.592438 l 0,7.627639 a 0.59249722,0.59249722 0 0 0 0.592438,0.592438 l 9.182789,0 a 0.59249722,0.59249722 0 0 0 0.592438,-0.592438 l 0,-7.627639 A 0.59249722,0.59249722 0 0 0 84.411384,26.48094 l -9.182789,0 a 0.59249722,0.59249722 0 0 0 -0.111082,0 z m 0.70352,1.184876 7.997913,0 0,3.554628 -3.739765,0 0,2.888135 -4.258148,0 0,-6.442763 z"
+         style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1.18487597;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans" />
+    </g>
+    <g
+       id="g3951"
+       transform="translate(0,0.35373497)"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/widgets/secondarywindow/aero_stayontop.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         ry="0"
+         y="26.502581"
+         x="33.275558"
+         height="10"
+         width="15"
+         id="rect3532-8-5-0"
+         style="fill:none;stroke:none" />
+      <path
+         inkscape:connector-curvature="0"
+         id="rect3209-2-7"
+         d="m 42.52157,28.638254 c -0.198373,-0.19838 -0.537648,-0.19837 -0.736012,0 l -2.102886,2.10288 -0.867441,-0.86744 c -0.198372,-0.19837 -0.485071,-0.19836 -0.683442,10e-6 l -0.368,0.368 c -0.198372,0.19837 -0.19837,0.48506 3e-6,0.68343 l 1.498306,1.49831 -2.33946,3.0229 -0.07882,0.0788 a 0.35172294,0.35172294 0 0 0 -0.02625,0.0788 0.35172294,0.35172294 0 0 0 -0.02633,0.0789 0.35172294,0.35172294 0 0 0 5.7e-5,0.0525 0.35172294,0.35172294 0 0 0 4.9e-5,0.0525 0.35172294,0.35172294 0 0 0 0.02634,0.0788 0.35172294,0.35172294 0 0 0 0.420573,0.21029 0.35172294,0.35172294 0 0 0 0.105105,-0.0525 l 0.07881,-0.0788 3.128035,-2.23431 1.524593,1.5246 c 0.198372,0.19837 0.485064,0.19837 0.683436,0 l 0.368006,-0.36801 c 0.198365,-0.19836 0.19837,-0.48506 -3e-6,-0.68343 l -0.630865,-0.63087 2.102893,-2.10289 c 0.198371,-0.19838 0.224652,-0.51135 0.02628,-0.70972 l -2.102887,-2.10289 z"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.82609189" />
+    </g>
+    <g
+       id="g3939"
+       transform="translate(0,0.67981729)"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/widgets/secondarywindow/aero_close.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         ry="0"
+         y="26.176497"
+         x="92.006927"
+         height="10"
+         width="15"
+         id="rect3532-8-5-19"
+         style="fill:none;stroke:none" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path4494"
+         d="m 92.989146,26.764733 4.29836,4.564854 -4.29836,4.258676 4.77596,0 1.74182,-1.864911 1.741824,1.864911 4.77596,0 -4.29836,-4.258676 4.29836,-4.564854 -4.1298,0 -2.387984,2.365931 -2.38798,-2.365931 -4.1298,0 z"
+         style="fill:#ffffff;stroke:#000000;stroke-width:1.17647064px;stroke-linecap:butt;stroke-linejoin:bevel;stroke-opacity:1" />
+    </g>
+    <g
+       id="g3909-4"
+       transform="translate(0.36737455,37.829145)"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/widgets/secondarywindow/white_stayontop_toggled.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         ry="0"
+         y="8.2193279"
+         x="14.968911"
+         height="10"
+         width="12"
+         id="rect3532-8-2"
+         style="fill:none;stroke:none" />
+      <g
+         transform="matrix(0.83779249,0,0,0.70114076,6.7463301,-87.122827)"
+         id="g3215-1-06-4">
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:none"
+           id="rect3209-5-1-3"
+           width="5.1715755"
+           height="6.9703846"
+           x="14.615322"
+           y="135.98148"
+           ry="0.7869789" />
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:none"
+           id="rect3211-2-2-6"
+           width="9.2188959"
+           height="2.3609366"
+           x="12.366811"
+           y="141.3779"
+           ry="0.7869789" />
+        <path
+           inkscape:connector-curvature="0"
+           style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
+           d="m 16.18928,143.06428 0.674553,6.63311 0.899405,-6.74553 -1.573958,0.11242 z"
+           id="path3213-3-71-4" />
+      </g>
+    </g>
+    <g
+       id="g3923-5"
+       transform="translate(0.57367155,37.718368)"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/widgets/secondarywindow/white_minimize.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         ry="0"
+         y="8.3301039"
+         x="54.583519"
+         height="10"
+         width="12"
+         id="rect3532-27"
+         style="fill:none;stroke:none" />
+      <rect
+         rx="0"
+         transform="scale(1,-1)"
+         ry="0.82876712"
+         y="-18.330105"
+         x="55.083519"
+         height="1.6575342"
+         width="11"
+         id="rect3197-6-17-2"
+         style="fill:#ffffff;fill-opacity:1;stroke:none" />
+    </g>
+    <g
+       id="g3927-3"
+       transform="translate(1.3081835,37.171877)"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/widgets/secondarywindow/white_dock.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         ry="0"
+         y="8.8765955"
+         x="72.886856"
+         height="10"
+         width="12"
+         id="rect3532-1-0"
+         style="fill:none;stroke:none" />
+      <g
+         transform="matrix(1.3498453,0,0,1.3498453,14.465969,-235.31231)"
+         id="g4047-3-4-8">
+        <rect
+           style="fill:none;stroke:#ffffff;stroke-width:1;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+           id="rect4027-1-2-8"
+           width="7.7573633"
+           height="6.4082565"
+           x="43.845966"
+           y="181.4014" />
+        <rect
+           style="fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:0.50000000000000000;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+           id="rect4029-4-4-4"
+           width="3.6257241"
+           height="2.8106389"
+           x="47.949501"
+           y="184.8866" />
+      </g>
+    </g>
+    <g
+       id="g3933-4"
+       transform="translate(1.7655885,38.194489)"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/widgets/secondarywindow/white_close.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         ry="0"
+         y="7.853982"
+         x="92.116432"
+         height="10"
+         width="12"
+         id="rect3532-4-2"
+         style="fill:none;stroke:none" />
+      <g
+         transform="matrix(1.338202,0,0,1.338202,-13.064709,-178.97104)"
+         id="g3205-4-69-2">
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:none"
+           id="rect3199-7-2-8"
+           width="8.9940443"
+           height="1.5739578"
+           x="-47.109299"
+           y="-160.89563"
+           ry="0.7869789"
+           transform="matrix(0.7071068,-0.7071068,-0.7071068,-0.7071068,0,0)"
+           rx="0" />
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:none"
+           id="rect3203-8-1-2"
+           width="8.9940443"
+           height="1.5739578"
+           x="-164.60567"
+           y="41.825302"
+           ry="0.7869789"
+           transform="matrix(-0.7071068,-0.7071068,-0.7071068,0.7071068,0,0)"
+           rx="0" />
+      </g>
+    </g>
+    <g
+       id="g3916-1"
+       transform="translate(-0.50131445,37.914261)"
+       inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2/share/kumir2/widgets/secondarywindow/white_stayontop.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         ry="0"
+         y="8.1342115"
+         x="35.651966"
+         height="10"
+         width="12"
+         id="rect3532-2-6"
+         style="fill:none;stroke:none" />
+      <g
+         transform="matrix(0.59240875,0.59240875,-0.49578139,0.49578139,101.92855,-66.456464)"
+         id="g3215-1-06-2-4">
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:none"
+           id="rect3209-5-1-4-1"
+           width="5.1715755"
+           height="6.9703846"
+           x="14.615322"
+           y="135.98148"
+           ry="0.7869789" />
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:none"
+           id="rect3211-2-2-9-4"
+           width="9.2188959"
+           height="2.3609366"
+           x="12.366811"
+           y="141.3779"
+           ry="0.7869789" />
+        <path
+           inkscape:connector-curvature="0"
+           style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
+           d="m 16.18928,143.06428 0.674553,6.63311 0.899405,-6.74553 -1.573958,0.11242 z"
+           id="path3213-3-71-9-4" />
+      </g>
+    </g>
+  </g>
+</svg>

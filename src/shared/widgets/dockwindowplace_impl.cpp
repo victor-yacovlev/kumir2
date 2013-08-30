@@ -1,37 +1,29 @@
-#include "dockwindowplace_impl.h"
-#include "dockwindowplace.h"
 #include "secondarywindow.h"
+#include "dockwindowplace_impl.h"
+
+#include <QTabBar>
 
 namespace Widgets {
 
 DockWindowPlaceImpl::DockWindowPlaceImpl(DockWindowPlace *parent,
                                          const QString & settingsKey)
-    : pClass_(parent)
+    : QObject(parent)
+    , pClass_(parent)
     , settingsKey_(settingsKey)
 {
-    pClass_ = qobject_cast<DockWindowPlace*>(parent);
-    pClass_->setVisible(false);
 }
 
 void DockWindowPlaceImpl::registerWindowHere(SecondaryWindow *window)
 {
-    allWindows_.push_back(window);
+    if (window->dockContainer()) {
+        dockWidgets_.push_back(window->dockContainer());
+    }
 }
 
-QWidget * DockWindowPlaceImpl::widget()
+void DockWindowPlaceImpl::addPersistentWidget(QWidget *widget,
+                                              const QString &title)
 {
-    return pClass_;
-}
-
-void DockWindowPlaceImpl::addPersistentWidget(QWidget *widget)
-{
-    allWindows_.push_front(widget);
-    widgetsInDock_.push_front(widget);
-    pClass_->addTab(widget, widget->windowTitle());
-    preferredSize_ = widget->sizeHint();
-    pClass_->tabBar()->setVisible(widgetsInDock_.size() > 1);
-    pClass_->updateGeometry();
-    pClass_->setVisible(true);
+    pClass_->addTab(widget, title);
 }
 
 QSize DockWindowPlaceImpl::minimumSizeHint() const
@@ -40,7 +32,8 @@ QSize DockWindowPlaceImpl::minimumSizeHint() const
             ? pClass_->tabBar()->minimumSizeHint().height() : 0;
     int h = 0;
     int w = pClass_->tabBar()->minimumSizeHint().width();
-    foreach (const QWidget * window , widgetsInDock_) {
+    for (int i=0; i<pClass_->count(); i++) {
+        const QWidget * window = pClass_->widget(i);
         const QSize windowMinimumSize = window->minimumSizeHint();
         w = qMax(w, windowMinimumSize.width());
         h = qMax(h, windowMinimumSize.height());
@@ -60,85 +53,5 @@ QSize DockWindowPlaceImpl::sizeHint() const
     return size;
 }
 
-void DockWindowPlaceImpl::dockWindow(SecondaryWindow *window, bool forceVisible)
-{
-    Q_ASSERT(allWindows_.contains(window));
-    if (!widgetsInDock_.contains(window)) {
-        widgetsInDock_.push_back(window);
-        preferredSize_ = window->size();
-        pClass_->addTab(window, window->windowTitle());
-        pClass_->setCurrentIndex(pClass_->count()-1);
-        pClass_->tabBar()->setVisible(widgetsInDock_.size() > 1);
-        pClass_->updateGeometry();
-        emit pClass_->visiblityRequest(true, sizeHint());
-    }
-    else {
-        emit pClass_->visiblityRequest(true, QSize());
-    }
-    if (!forceVisible)
-        updateVisiblity();
-    else {
-        pClass_->setVisible(true);
-        window->setVisible(true);
-    }
-}
-
-void DockWindowPlaceImpl::undockWindow(SecondaryWindow *window)
-{
-    Q_ASSERT(allWindows_.contains(window));
-    if (!widgetsInDock_.contains(window))
-        return;
-    widgetsInDock_.removeAll(window);
-    pClass_->removeTab(pClass_->count()-1);
-    pClass_->tabBar()->setVisible(widgetsInDock_.size() > 1);
-    updateVisiblity();
-    if (pClass_->count() > 0)
-        pClass_->setCurrentIndex(pClass_->count()-1);
-    emit pClass_->visiblityRequest(widgetsInDock_.size() > 0, QSize());
-}
-
-void DockWindowPlaceImpl::updateVisiblity()
-{
-    bool visible = false;
-    foreach (QWidget * window , widgetsInDock_)
-        visible = visible || window->isVisible();
-    pClass_->setVisible(visible);
-}
-
-bool DockWindowPlaceImpl::isWindowDocked(const SecondaryWindow *window) const
-{
-    SecondaryWindow * w = const_cast<SecondaryWindow*>(window);
-    return widgetsInDock_.contains(w);
-}
-
-void DockWindowPlaceImpl::updateSettings(ExtensionSystem::SettingsPtr settings)
-{
-//    if (settings_) saveState();
-    settings_ = settings;
-    foreach (QWidget * window , allWindows_) {
-        SecondaryWindow * w = qobject_cast<SecondaryWindow*>(window);
-        if (w)
-            w->setSettingsObject(settings);
-    }
-    restoreState();
-}
-
-void DockWindowPlaceImpl::saveState()
-{
-    foreach (QWidget * window , allWindows_) {
-        SecondaryWindow * w = qobject_cast<SecondaryWindow*>(window);
-        if (w)
-            w->saveState();
-    }
-}
-
-void DockWindowPlaceImpl::restoreState()
-{
-    foreach (QWidget * window , allWindows_) {
-        SecondaryWindow * w = qobject_cast<SecondaryWindow*>(window);
-        if (w)
-            w->restoreState();
-    }
-}
 
 } // namespace Widgets

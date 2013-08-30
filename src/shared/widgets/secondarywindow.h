@@ -1,66 +1,71 @@
-#ifndef SECONDARY_WINDOW_H
-#define SECONDARY_WINDOW_H
+#ifndef WIDGETS_SECONDARYWINDOW_H
+#define WIDGETS_SECONDARYWINDOW_H
 
 #include "extensionsystem/settings.h"
-
-#include <QtCore>
-#include <QtGui>
-
-#ifdef WIDGETS_LIBRARY
-#define WIDGETS_EXPORT Q_DECL_EXPORT
-#else
-#define WIDGETS_EXPORT Q_DECL_IMPORT
-#endif
+#include <QObject>
+#include <QWidget>
 
 namespace Widgets {
 
-
-class WIDGETS_EXPORT SecondaryWindow :
-        public QWidget
+class SecondaryWindow
+        : public QObject
 {
-    friend class SecondaryWindowImpl;
     Q_OBJECT
-    Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle)
-    Q_PROPERTY(bool stayOnTop READ isStayOnTop WRITE setStayOnTop)
 public:
-    explicit SecondaryWindow(QWidget *centralComponent,
-                             QMainWindow * mainWindow,
-                             ExtensionSystem::SettingsPtr settings,
-                             const QString &settingsKey);
+    class SecondaryWindowImplementationInterface * dockContainer();
+    class SecondaryWindowImplementationInterface * windowContainer();
 
-    explicit SecondaryWindow(QWidget *centralComponent,
-                             class DockWindowPlace * dockPlace,
-                             QMainWindow * mainWindow,
-                             ExtensionSystem::SettingsPtr settings,
+    const QString & settingsKey() const;
+
+    static SecondaryWindow * createSecondaryWindow(
+            QWidget * centralWidget,
+            const QString & title,
+            QWidget * topLevelParent,
+            class DockWindowPlace * dockPlace,
+            const QString & settingsKey,
+            bool resizable
+            );
+
+
+
+signals:
+    
+public slots:
+    void activate();
+    void updateSettings(ExtensionSystem::SettingsPtr settings,
+                        const QStringList & keys);
+    void saveState();
+    void restoreState();
+
+private /*methods*/:
+    explicit SecondaryWindow(QWidget * topLevelParent,
+                             class SecondaryWindowImplementationInterface * windowContainer,
+                             class SecondaryWindowImplementationInterface * dockContainer,
                              const QString & settingsKey
                              );
-    ~SecondaryWindow();
-public slots:
-    void setVisible(bool visible);
-    void setWindowTitle(const QString &);
-    void close();
-    void showMinimized();
-    bool isFloating() const;
-    void toggleDocked();
-    QString windowTitle();
-    void setStayOnTop(bool v);
-    bool isStayOnTop();
-    QAction * toggleViewAction() const;
-    void setSettingsObject(ExtensionSystem::SettingsPtr settings);
-    void restoreState();
-    void saveState();
-    void paintEvent(QPaintEvent *e);
-public:
-    QSize minimumSizeHint() const;
-protected:
-    void closeEvent(QCloseEvent *);
-protected slots:
-    void activate();
-private:
-    QScopedPointer<class SecondaryWindowImpl> pImpl_;
+
+    static SecondaryWindowImplementationInterface * createWindowContainer(
+            const QString & title,
+            QWidget * topLevelParent,
+            bool resizable
+            );
+
+    static SecondaryWindowImplementationInterface * createDockContainer(
+            const QString & title,
+            class DockWindowPlace * dockPlace
+            );
+
+    class SecondaryWindowImplementationInterface * currentContainer();
+
+private /*fields*/:
+    class SecondaryWindowImplementationInterface * dockContainer_;
+    class SecondaryWindowImplementationInterface * windowContainer_;
+    QString settingsKey_;
+    ExtensionSystem::SettingsPtr settings_;
+    QWidget * topLevelParent_;
+
 };
 
+} // namespace Widgets
 
-}
-
-#endif // CUSTOMWINDOW_H
+#endif // WIDGETS_SECONDARYWINDOW_H

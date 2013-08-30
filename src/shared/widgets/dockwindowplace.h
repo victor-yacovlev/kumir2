@@ -3,7 +3,6 @@
 
 #include "extensionsystem/settings.h"
 
-#include <QSharedPointer>
 #include <QtGlobal>
 #include <QTabWidget>
 
@@ -28,15 +27,19 @@ public:
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
     void updateSettings(ExtensionSystem::SettingsPtr settings);
-    void addPersistentWidget(QWidget * widget);
+    void addPersistentWidget(QWidget * widget, const QString & title);
     void saveState();
     void restoreState();
+    void setPreferredItemSize(const QSize & size);
 signals:
     void visiblityRequest(bool visible, const QSize &size);
 protected:
     void registerWindowHere(class SecondaryWindow * window);
+    void tabInserted(int index);
+    void tabRemoved(int);
+    void resizeEvent(QResizeEvent * e);
 private:
-    QSharedPointer<class DockWindowPlaceImpl> pImpl_;
+    class DockWindowPlaceImpl * pImpl_;
 };
 
 } // namespace Widgets

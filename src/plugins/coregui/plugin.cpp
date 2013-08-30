@@ -94,7 +94,8 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     if (!plugin_editor)
         return "Can't load editor plugin!";
     terminal_ = new Term(mainWindow_);
-    mainWindow_->consoleAndCourcesPlace_->addPersistentWidget(terminal_);
+    mainWindow_->consoleAndCourcesPlace_->addPersistentWidget(terminal_,
+                                                              tr("Input/Output"));
 
     connect(terminal_, SIGNAL(showWindowRequest()),
             mainWindow_, SLOT(ensureBottomVisible()));
@@ -171,19 +172,18 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
     helpViewer_->addDocument(QUrl::fromLocalFile(helpPath + "default.xml"));
 
-
-    helpWindow_ = new Widgets::SecondaryWindow(
+    helpWindow_ = Widgets::SecondaryWindow::createSecondaryWindow(
                 helpViewer_,
-                mainWindow_->helpPlace_,
+                tr("Help"),
                 mainWindow_,
-                mySettings(),
-                "HelpViewerWindow");    
-    helpWindow_->setWindowTitle(tr("Help"));
-    helpWindow_->toggleViewAction()->setShortcut(QKeySequence("F1"));
+                mainWindow_->helpPlace_,
+                "HelpViewerWindow",
+                true
+                );
+
     connect(mainWindow_->ui->actionUsage, SIGNAL(triggered()),
-            helpWindow_->toggleViewAction(), SLOT(trigger()));
-    connect(helpWindow_->toggleViewAction(), SIGNAL(toggled(bool)),
-            mainWindow_->ui->actionUsage, SLOT(setChecked(bool)));    
+            helpWindow_, SLOT(activate()));
+    secondaryWindows_ << helpWindow_;
 
 
     courseManager_ = ExtensionSystem::PluginManager::instance()
@@ -194,16 +194,23 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             mainWindow_->ui->menubar->insertMenu(mainWindow_->ui->menuHelp->menuAction(), menu);
         }
 
-        Widgets::SecondaryWindow * coursesWindow = new Widgets::SecondaryWindow(
+        coursesWindow_ = Widgets::SecondaryWindow::createSecondaryWindow(
                     courseManager_->mainWindow(),
-                    mainWindow_->consoleAndCourcesPlace_,
+                    tr("Courses"),
                     mainWindow_,
-                    mySettings(),
-                    "CoursesWindow"
+                    mainWindow_->consoleAndCourcesPlace_,
+                    "CoursesWindow",
+                    true
                     );
 
-        mainWindow_->ui->menuWindow->addAction(coursesWindow->toggleViewAction());
-        mainWindow_->gr_otherActions->addAction(coursesWindow->toggleViewAction());
+        QAction * showCourses =
+                mainWindow_->ui->menuWindow->addAction(
+                    tr("Courses"),
+                    coursesWindow_, SLOT(activate())
+                    );
+
+        mainWindow_->gr_otherActions->addAction(showCourses);
+        secondaryWindows_ << coursesWindow_;
     }
 
     KPlugin * kumirRunner = ExtensionSystem::PluginManager::instance()
@@ -223,34 +230,34 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         if (actor->mainWidget()) {
             QWidget * actorWidget = actor->mainWidget();
             QList<QMenu*> actorMenus = actor->moduleMenus();
-            bool priv = o->property("privilegedActor").toBool();
-//            w = m_mainWindow->addSecondaryComponent(actor->name(),
-//                                                actorWidget,
-//                                                QList<QAction*>(),
-//                                                actorMenus,
-//                                                priv? MainWindow::StandardActor : MainWindow::WorldActor);
-            Widgets::SecondaryWindow * actorWindow = new Widgets::SecondaryWindow(
+
+            Widgets::SecondaryWindow * actorWindow =
+                    Widgets::SecondaryWindow::createSecondaryWindow(
                         actorWidget,
-                        mainWindow_->actorsPlace_,
+                        actor->name(),
                         mainWindow_,
-                        o->pluginSettings(),
-                        o->pluginSpec().name
+                        mainWindow_->actorsPlace_,
+                        o->pluginSpec().name,
+                        true
                         );
 
-            const QString actorName = actor->name();
-            actorWindow->setWindowTitle(actorName);
-            w = actorWindow;
-            mainWindow_->ui->menuWindow->addAction(actorWindow->toggleViewAction());
+            secondaryWindows_ << actorWindow;
+
+            QAction * showActor =
+                    mainWindow_->ui->menuWindow->addAction(
+                        actor->name(),
+                        actorWindow,
+                        SLOT(activate())
+                        );
+
+            mainWindow_->gr_otherActions->addAction(showActor);
             if (!actor->mainIconName().isEmpty()) {
                 const QString iconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->mainIconName()+".png";
                 const QString smallIconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->mainIconName()+"_22x22.png";
                 QIcon mainIcon = QIcon(iconFileName);
                 if (QFile::exists(smallIconFileName))
                     mainIcon.addFile(smallIconFileName, QSize(22,22));
-                actorWindow->setWindowIcon(mainIcon);
-                actorWindow->toggleViewAction()->setIcon(mainIcon);
-                mainWindow_->gr_otherActions->addAction(actorWindow->toggleViewAction());
-
+                showActor->setIcon(mainIcon);
             }
 
             foreach (QMenu* menu, actorMenus) {
@@ -258,22 +265,34 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             }
 
             if (actor->pultWidget()) {
-                Widgets::SecondaryWindow * pultWindow = new Widgets::SecondaryWindow(
+
+                Widgets::SecondaryWindow * pultWindow =
+                        Widgets::SecondaryWindow::createSecondaryWindow(
                             actor->pultWidget(),
+                            actor->name() + " - " + tr("Remote Control"),
                             mainWindow_,
-                            mySettings(),
-                            actor->name()+"Pult");
-                pultWindow->setWindowTitle(actor->name()+" - "+tr("Remote Control"));
-                mainWindow_->ui->menuWindow->addAction(pultWindow->toggleViewAction());
+                            nullptr,
+                            o->pluginSpec().name + "Pult",
+                            false
+                            );
+                secondaryWindows_ << pultWindow;
+
+                QAction * showPult =
+                        mainWindow_->ui->menuWindow->addAction(
+                            actor->name() + " - " + tr("Remote Control"),
+                            pultWindow,
+                            SLOT(activate())
+                            );
+
+                mainWindow_->gr_otherActions->addAction(showPult);
+
                 if (!actor->pultIconName().isEmpty()) {
                     const QString iconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->pultIconName()+".png";
                     const QString smallIconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->pultIconName()+"_22x22.png";
                     QIcon pultIcon = QIcon(iconFileName);
                     if (QFile::exists(smallIconFileName))
                         pultIcon.addFile(smallIconFileName, QSize(22,22));
-                    pultWindow->setWindowIcon(pultIcon);
-                    pultWindow->toggleViewAction()->setIcon(pultIcon);
-                    mainWindow_->gr_otherActions->addAction(pultWindow->toggleViewAction());
+                    showPult->setIcon(pultIcon);
                 }
             }
 
@@ -298,20 +317,20 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             mainWindow_, SLOT(newText(QString,QString)));
 
     debugger_ = new DebuggerView(plugin_kumirCodeRun);
-    Widgets::SecondaryWindow * debuggerWindow = new Widgets::SecondaryWindow(
+
+    Widgets::SecondaryWindow * debuggerWindow =
+            Widgets::SecondaryWindow::createSecondaryWindow(
                 debugger_,
-                mainWindow_->debuggerPlace_,
+                tr("Variables"),
                 mainWindow_,
-                mySettings(),
-                "DebuggerWindow");
+                mainWindow_->debuggerPlace_,
+                "DebuggerWindow",
+                true
+                );
+    secondaryWindows_ << debuggerWindow;
 
-
-    debuggerWindow->setWindowTitle(tr("Variables"));
-    debuggerWindow->toggleViewAction()->setShortcut(QKeySequence("F2"));
     connect(mainWindow_->ui->actionVariables, SIGNAL(triggered()),
-            debuggerWindow->toggleViewAction(), SLOT(trigger()));
-    connect(debuggerWindow->toggleViewAction(), SIGNAL(toggled(bool)),
-            mainWindow_->ui->actionVariables, SLOT(setChecked(bool)));
+            debuggerWindow, SLOT(activate()));
 
     return "";
 }
@@ -320,13 +339,26 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 void Plugin::updateSettings(const QStringList & keys)
 {
     foreach (Widgets::SecondaryWindow * window, secondaryWindows_) {
-        window->setSettingsObject(mySettings());
+        const QString prefix = window->settingsKey() + "/";
+        bool hasPrefix = false;
+        foreach (const QString & key, keys) {
+            if (key.startsWith(prefix)) {
+                hasPrefix = true;
+                break;
+            }
+        }
+        if (keys.isEmpty() || hasPrefix) {
+            QStringList windowKeys;
+            foreach (const QString & key , keys) {
+                if (key.startsWith(prefix)) {
+                    windowKeys.push_back(key);
+                }
+            }
+            window->updateSettings(mySettings(), windowKeys);
+        }
     }
     if (mainWindow_)
         mainWindow_->updateSettings(mySettings(), keys);
-    if (helpViewer_ && keys.contains("HelpViewer")) {
-        helpViewer_->updateSettings(mySettings(), "HelpViewer");
-    }
 }
 
 

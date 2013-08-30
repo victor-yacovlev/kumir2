@@ -1,241 +1,201 @@
 #include "secondarywindow.h"
-#include "secondarywindow_impl.h"
-
+#include "secondarywindow_interface.h"
 #include "dockwindowplace.h"
-#include "dockwindowplace_impl.h"
+#include "secondarywindow_generic.h"
+#include "dockwindowplace_container.h"
+#include <QApplication>
+#include <QDesktopWidget>
 
 namespace Widgets {
 
-class SecondaryWindow;
-
-
-SecondaryWindow::SecondaryWindow(QWidget *centralComponent,
-                                 DockWindowPlace * dockPlace,
-                                 QMainWindow * mainWindow,
-                                 ExtensionSystem::SettingsPtr settings,
-                                 const QString &settingsKey)
-    : QWidget(PARENT, REGULAR_FLAGS)
-{    
-    pImpl_.reset(new SecondaryWindowImpl);
-    pImpl_->pClass_ = this;
-    dockPlace->registerWindowHere(this);
-    pImpl_->init(centralComponent,
-                 dockPlace->pImpl_,
-                 mainWindow,
-                 settings, settingsKey,
-                 true, true);
-}
-
-SecondaryWindow::SecondaryWindow(QWidget *centralComponent,
-                                 QMainWindow * mainWindow,
-                                 ExtensionSystem::SettingsPtr settings,
-                                 const QString &settingsKey)
-    : QWidget(PARENT, REGULAR_FLAGS)
-{
-    pImpl_.reset(new SecondaryWindowImpl);
-    pImpl_->pClass_ = this;
-    pImpl_->init(centralComponent,
-                 QSharedPointer<class DockWindowPlaceImpl>(),
-                 mainWindow,
-                 settings, settingsKey,
-                 false, false);
-}
-
-SecondaryWindow::~SecondaryWindow()
+SecondaryWindow::SecondaryWindow(QWidget *topLevelParent,
+                                 class SecondaryWindowImplementationInterface * windowContainer,
+                                 class SecondaryWindowImplementationInterface * dockContainer,
+                                 const QString & settingsKey)
+    : QObject(topLevelParent)
+    , dockContainer_(dockContainer)
+    , windowContainer_(windowContainer)
+    , settingsKey_(settingsKey)
+    , topLevelParent_(topLevelParent)
 {
 
 }
 
-void SecondaryWindow::restoreState()
+SecondaryWindow * SecondaryWindow::createSecondaryWindow(
+        QWidget *centralWidget,
+        const QString &title,
+        QWidget *topLevelParent,
+        DockWindowPlace *dockPlace,
+        const QString &settingsKey,
+        bool resizable)
 {
-    const QVariant fl = pImpl_->settings_->value(pImpl_->settingsKey_+"/Floating");
-    bool f = fl.isValid() ? fl.toBool() : true;
-    if (f) {
-        const QRect r = pImpl_->settings_->value(
-                    pImpl_->settingsKey_+"/WindowRect", QRect()
-                    ).toRect();
-        QPoint position;
-        QSize initialSize;
-        if (r.isValid()) {
-            initialSize = r.size();
-            position = r.topLeft();
-        }
-        else {
-            int screenNumber = QApplication::desktop()->screenNumber(pImpl_->mainWindow_);
-            const QPoint screenCenter = QApplication::desktop()->screenGeometry(screenNumber).center();
-            position = screenCenter - QPoint(width()/2, height()/2);
-            initialSize = minimumSizeHint();
-        }
-#ifdef Q_OS_MAC
-        static const int MenuBarOffset = 24;
-#else
-        static const int MenuBarOffset = 0;
-#endif
-        initialSize.rwidth() = qMax(initialSize.width(), minimumSizeHint().width());
-        initialSize.rheight() = qMax(initialSize.height(), minimumSizeHint().height());
-        int screenNumber = QApplication::desktop()->screenNumber(pImpl_->mainWindow_);
-        const QRect screenRect = QApplication::desktop()->screenGeometry(screenNumber);
-        position.rx() = qMin(position.rx(), screenRect.right() - initialSize.width());
-        position.ry() = qMin(position.ry(), screenRect.bottom() - initialSize.height());
-        position.rx() = qMax(0, position.rx());
-        position.ry() = qMax(MenuBarOffset, position.ry());
-        pImpl_->floatingRect_ = QRect(position, initialSize);
+    SecondaryWindowImplementationInterface * window =
+            createWindowContainer(
+                                  title,
+                                  topLevelParent,
+                                  resizable
+                                  );
+
+    SecondaryWindowImplementationInterface * dock =
+            createDockContainer(
+                                title,
+                                dockPlace
+                                );
+
+    SecondaryWindow * result = new SecondaryWindow(topLevelParent,
+                                                   window, dock, settingsKey);
+
+    if (dock) {
+        dock->setPairedContainer(window);
+        dockPlace->registerWindowHere(result);
+        window->setPairedContainer(dock);
+    }
+
+    window->getWidgetOwnership(centralWidget);
+
+    const QMetaObject * meta = centralWidget->metaObject();
+    if (meta->indexOfSignal("resizeRequest(QSize)") != -1) {
+        connect(centralWidget, SIGNAL(resizeRequest(QSize)),
+                window->toWidget(), SLOT(handleResizeRequest(QSize)));
+    }
+
+    return result;
+}
+
+SecondaryWindowImplementationInterface *
+SecondaryWindow::createWindowContainer(const QString &title,
+                                       QWidget *topLevelParent,
+                                       bool resizable)
+{
+    SecondaryWindowImplementationInterface * result = nullptr;
+
+    result = new SecondaryWindowGenericImplementation(topLevelParent);
+    //          TODO create platform-specific implementations
+
+    result->setResizeble(resizable);
+    result->setTitle(title);
+
+    return result;
+}
+
+SecondaryWindowImplementationInterface *
+SecondaryWindow::createDockContainer(const QString &title,
+                                     DockWindowPlace *dockPlace)
+{
+    if (dockPlace) {
+        SecondaryWindowImplementationInterface * result =
+                new DockWindowPlaceContainer(dockPlace);
+
+        result->setTitle(title);
+        return result;
     }
     else {
-        bool visible = pImpl_->settings_->value(pImpl_->settingsKey_+"/Visible", false).toBool();
-        setVisible(visible);
+        return nullptr;
     }
-    pImpl_->setFloating(f);
 }
 
-void SecondaryWindow::saveState()
+SecondaryWindowImplementationInterface *
+SecondaryWindow::dockContainer()
 {
-    pImpl_->settings_->setValue(pImpl_->settingsKey_ + "/Floating",
-                                isFloating());
-    if (isFloating()) {
-        QPoint position = pos();
-        QSize sz = size();
-        const QRect r(position, sz);
-        pImpl_->settings_->setValue(pImpl_->settingsKey_+"/WindowRect", r);
-    }
-
-        pImpl_->settings_->setValue(pImpl_->settingsKey_ + "/Visible",
-                                isVisible());
-
+    return dockContainer_;
 }
 
-QSize SecondaryWindow::minimumSizeHint() const
+SecondaryWindowImplementationInterface *
+SecondaryWindow::windowContainer()
 {
-    const QSize minimumChildSize = pImpl_->centralWidget_->minimumSizeHint();
-
-    const QSize myMinimumSize = minimumChildSize +
-            QSize(pImpl_->leftBorder_->width(), 0) +
-            QSize(pImpl_->rightBorder_->width(), 0) +
-            QSize(0, pImpl_->topBorder_->height()) +
-            QSize(0, pImpl_->bottomBorder_->height());
-
-    // Reasonable minimum size in case if there is no size hints
-    const QSize reasonableMinumumSize = QSize(
-                qMax(300, myMinimumSize.width()),
-                qMax(200, myMinimumSize.height())
-                );
-
-    return reasonableMinumumSize;
+    return windowContainer_;
 }
 
-void SecondaryWindow::setVisible(bool visible)
+const QString & SecondaryWindow::settingsKey() const
 {
-    pImpl_->visibleFlag_ = visible;
-    QWidget::setVisible(visible);
-}
-
-void SecondaryWindow::setWindowTitle(const QString &title)
-{
-    pImpl_->toggleVisibleAction_->setText(title);
-    QWidget::setWindowTitle(title);
-}
-
-QString SecondaryWindow::windowTitle()
-{
-    return QWidget::windowTitle();
-}
-
-void SecondaryWindow::setStayOnTop(bool v)
-{
-    if (v) {
-        setWindowFlags(STAY_ON_TOP_FLAGS);
-        setVisible(true);
-    }
-    else {
-        setWindowFlags(REGULAR_FLAGS);
-        setVisible(true);
-    }
-    pImpl_->centralWidget_->setFocus();
-}
-
-
-bool SecondaryWindow::isStayOnTop()
-{
-    return windowFlags() & Qt::WindowStaysOnTopHint;
-}
-
-void SecondaryWindow::close()
-{  
-    setVisible(false);
-    if (!isFloating()) {
-        pImpl_->dockPlace_->undockWindow(this);
-    }
-    else {
-        pImpl_->floatingRect_ = geometry();
-    }
-    saveState();
-}
-
-void SecondaryWindow::closeEvent(QCloseEvent *e)
-{
-    QWidget::closeEvent(e);
-}
-
-
-QAction * SecondaryWindow::toggleViewAction() const
-{
-    return pImpl_->toggleVisibleAction_;
-}
-
-
-void SecondaryWindow::showMinimized()
-{
-    QWidget::showMinimized();
+    return settingsKey_;
 }
 
 void SecondaryWindow::activate()
 {
-    if (!isVisible())
-        setVisible(true);
-    if (isFloating()) {
-        setGeometry(pImpl_->floatingRect_);
-        activateWindow();
-    }
-    else {
-        pImpl_->dockPlace_->dockWindow(this, true);
+    SecondaryWindowImplementationInterface * whom = currentContainer();
+    if (whom) {
+        whom->activate(QPoint(), QSize());
     }
 }
 
-
-bool SecondaryWindow::isFloating() const
+SecondaryWindowImplementationInterface * SecondaryWindow::currentContainer()
 {
-    return pImpl_->floating_;
+    SecondaryWindowImplementationInterface * result = nullptr;
+    if (windowContainer_ && windowContainer_->hasWidgetOwnership()) {
+        result = windowContainer_;
+    }
+    else if (dockContainer_ && dockContainer_->hasWidgetOwnership()) {
+        result = dockContainer_;
+    }
+    return result;
 }
 
-void SecondaryWindow::toggleDocked()
+void SecondaryWindow::updateSettings(ExtensionSystem::SettingsPtr settings,
+                                     const QStringList &)
 {
-    SecondaryWindowButton * btn = static_cast<SecondaryWindowButton*>(pImpl_->buttonToggleDocked_);
-    btn->forceUnhighlight();
-    if (!pImpl_->dockPlace_)
-        return;
-
-    if (isFloating()) {
-        setVisible(true);
-        pImpl_->setFloating(false);
-        setVisible(true);        
-    }
-    else {
-        pImpl_->setFloating(true);
-        activate();
-    }
-
-    // Check slot to notify
-    QObject * obj = pImpl_->centralWidget_;
-    QMetaObject::invokeMethod(obj, "setDock", Q_ARG(bool, !isFloating()));
-
-}
-
-void SecondaryWindow::setSettingsObject(ExtensionSystem::SettingsPtr settings)
-{
-    pImpl_->settings_ = settings;
+    saveState();
+    settings_ = settings;
     restoreState();
 }
 
+static const char * WindowSize = "/WindowSize";
+static const char * WindowPos = "/WindowPos";
+static const char * DockSize = "/DockSize";
+static const char * IsDocked = "/IsDocked";
+static const char * IsDockVisible = "/IsDockVisible";
 
+void SecondaryWindow::saveState()
+{
+    if (!settings_) return;
+    if (windowContainer_) {
+        settings_->setValue(settingsKey_ + WindowSize,
+                            windowContainer_->toWidget()->size());
+        settings_->setValue(settingsKey_ + WindowPos,
+                            windowContainer_->toWidget()->pos());
 
+    }
+    if (dockContainer_) {
+        settings_->setValue(settingsKey_ + DockSize,
+                            dockContainer_->toWidget()->size());
+        settings_->setValue(settingsKey_ + IsDockVisible,
+                            dockContainer_->toWidget()->isVisible());
+        settings_->setValue(settingsKey_ + IsDocked,
+                            dockContainer_ == currentContainer());
+    }
 }
+
+void SecondaryWindow::restoreState()
+{
+    if (!settings_) return;
+    if (windowContainer_) {
+        QWidget * window = windowContainer_->toWidget();
+        QSize sz = settings_->value(settingsKey_ + WindowSize).toSize();
+        QPoint ps = settings_->value(settingsKey_ + WindowPos, QPoint(-1, -1)).toPoint();
+        if (ps == QPoint(-1, -1)) {
+            ps = QApplication::desktop()->availableGeometry(topLevelParent_).center();
+            ps.rx() -= sz.width() / 2;
+            ps.ry() -= sz.height() / 2;
+        }
+        window->resize(sz);
+        window->move(ps);
+    }    
+    bool docked = settings_->value(settingsKey_ + IsDocked, false).toBool();
+    if (dockContainer_ && docked) {
+        QWidget * w = currentContainer()->releaseWidgetOwnership();
+        dockContainer_->getWidgetOwnership(w);
+        bool dockVisible = settings_->value(settingsKey_ + IsDockVisible, false).toBool();
+        if (dockVisible) {
+            dockContainer_->activate(QPoint(), QSize());
+        }
+        QWidget * dock = dockContainer_->toWidget();
+        QSize sz = settings_->value(settingsKey_ + DockSize).toSize();
+        dock->resize(sz);
+    }
+    else {
+        QWidget * w = currentContainer()->releaseWidgetOwnership();
+        windowContainer_->getWidgetOwnership(w);
+    }
+}
+
+} // namespace Widgets

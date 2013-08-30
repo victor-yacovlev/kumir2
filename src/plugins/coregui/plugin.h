@@ -83,6 +83,7 @@ protected:
     Browser::InstanceInterface * startPage_;
     QList<Widgets::SecondaryWindow*> secondaryWindows_;
     Widgets::SecondaryWindow* helpWindow_;
+    Widgets::SecondaryWindow* coursesWindow_;
     Term * terminal_;
     QMap<QString,QObject*> m_browserObjects;
     KumirProgram * kumirProgram_;

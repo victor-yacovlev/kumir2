@@ -68,7 +68,7 @@ if(NOT APPLE)
     add_subdirectory(kumir2-highgrade)
     add_subdirectory(kumir2-ide)
     add_subdirectory(kumir2-teacher)
-    add_subdirectory(kumir2-python)
+    #add_subdirectory(kumir2-python)
 
 endif(NOT APPLE)
 

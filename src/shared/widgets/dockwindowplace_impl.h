@@ -1,40 +1,35 @@
 #ifndef WIDGETS_DOCKWINDOWPLACE_IMPL_H
 #define WIDGETS_DOCKWINDOWPLACE_IMPL_H
 
+#include "secondarywindow_interface.h"
 #include "extensionsystem/settings.h"
-
-#include <QList>
-#include <QSize>
-
+#include "dockwindowplace.h"
+#include <QObject>
 
 namespace Widgets {
 
-class DockWindowPlaceImpl
+class DockWindowPlaceImpl : public QObject
 {
+    Q_OBJECT
 public:
-    explicit DockWindowPlaceImpl(class DockWindowPlace *parent,
+    explicit DockWindowPlaceImpl(DockWindowPlace * parent,
                                  const QString & settingsKey);
-    void addPersistentWidget(QWidget * widget);
+
     void registerWindowHere(class SecondaryWindow * window);
-    QWidget * widget();
+    void addPersistentWidget(QWidget * widget, const QString & title);
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
-    void dockWindow(class SecondaryWindow * window, bool forceVisible);
-    void undockWindow(class SecondaryWindow * window);
-    bool isWindowDocked(const class SecondaryWindow * window) const;
-    void updateSettings(ExtensionSystem::SettingsPtr settings);
-    void saveState();
-    void restoreState();
 
-private /*methods*/:
-    void updateVisiblity();
+signals:
+    
+public slots:
 
-private /*fields*/:
-    class DockWindowPlace * pClass_;
-    ExtensionSystem::SettingsPtr settings_;
+public /*fields*/:
+    DockWindowPlace * pClass_;
     QString settingsKey_;
-    QList<QWidget *> widgetsInDock_;
-    QList<QWidget *> allWindows_;
+    ExtensionSystem::SettingsPtr settings_;
+    QList<SecondaryWindowImplementationInterface*> dockWidgets_;
+    QList<QWidget*> allWidgets_;
     QSize preferredSize_;
 };
 

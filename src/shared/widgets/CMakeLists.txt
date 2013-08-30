@@ -11,25 +11,28 @@ set(SOURCES
     groupbox.cpp
     cyrillicmenu.cpp
     secondarywindow.cpp
-    secondarywindow_impl.cpp
     dockwindowplace.cpp
     dockwindowplace_impl.cpp
+    dockwindowplace_container.cpp
     multipagedialog.cpp
     multipagedialog_impl.cpp
     declarativesettingspage.cpp
     declarativesettingspage_impl.cpp
+    secondarywindow_generic.cpp
 )
 
 set(MOC_HEADERS
     groupbox.h
     cyrillicmenu.h
     secondarywindow.h
-    secondarywindow_impl.h
     dockwindowplace.h
+    dockwindowplace_container.h
+    dockwindowplace_impl.h
     multipagedialog.h
     multipagedialog_impl.h
     declarativesettingspage.h
     declarativesettingspage_impl.h
+    secondarywindow_generic.h
 )
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})

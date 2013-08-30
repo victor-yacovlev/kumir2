@@ -43,19 +43,27 @@ MainWindow::MainWindow(Plugin * p) :
 
     helpPlace_ = new Widgets::DockWindowPlace(this, "MainWindow/HelpDockPlace");
     centralRow_->addComponent(helpPlace_, false);
-    connect(helpPlace_, SIGNAL(visiblityRequest(bool,QSize)), centralRow_, SLOT(handleVisiblityRequest(bool,QSize)));
+    connect(helpPlace_, SIGNAL(visiblityRequest(bool,QSize)),
+            centralRow_, SLOT(handleVisiblityRequest(bool,QSize)),
+            Qt::DirectConnection);
 
     debuggerPlace_ = new Widgets::DockWindowPlace(this, "MainWindow/DebuggerDockPlace");
     bottomRow_->addComponent(debuggerPlace_, false);
-    connect(debuggerPlace_, SIGNAL(visiblityRequest(bool,QSize)), bottomRow_, SLOT(handleVisiblityRequest(bool,QSize)));
+    connect(debuggerPlace_, SIGNAL(visiblityRequest(bool,QSize)),
+            bottomRow_, SLOT(handleVisiblityRequest(bool,QSize)),
+            Qt::DirectConnection);
 
     consoleAndCourcesPlace_ = new Widgets::DockWindowPlace(this, "MainWindow/ConsoleDockPlace");
     bottomRow_->addComponent(consoleAndCourcesPlace_, true);
-    connect(consoleAndCourcesPlace_, SIGNAL(visiblityRequest(bool,QSize)), bottomRow_, SLOT(handleVisiblityRequest(bool,QSize)));
+    connect(consoleAndCourcesPlace_, SIGNAL(visiblityRequest(bool,QSize)),
+            bottomRow_, SLOT(handleVisiblityRequest(bool,QSize)),
+            Qt::DirectConnection);
 
     actorsPlace_ = new Widgets::DockWindowPlace(this, "MainWindow/ActorsDockPlace");
     bottomRow_->addComponent(actorsPlace_, false);
-    connect(actorsPlace_, SIGNAL(visiblityRequest(bool,QSize)), bottomRow_, SLOT(handleVisiblityRequest(bool,QSize)));
+    connect(actorsPlace_, SIGNAL(visiblityRequest(bool,QSize)),
+            bottomRow_, SLOT(handleVisiblityRequest(bool,QSize)),
+            Qt::DirectConnection);
 
     connect(ui->actionShow_Console_Pane, SIGNAL(triggered(bool)), this, SLOT(setBottomVisible(bool)));
 
@@ -219,13 +227,13 @@ QSize MainWindow::minimumSizeHint() const
             statusBar_->minimumHeight() + 10;
     int minDockedH = m_plugin->terminal_->minimumHeight();
     int minDockedW = 0;
-    for (int i=0; i<m_plugin->secondaryWindows_.size(); i++) {
-        Widgets::SecondaryWindow * w = m_plugin->secondaryWindows_[i];
-        if (w->isVisible() && !w->isFloating()) {
-            minDockedH = qMax(minDockedH, w->minimumHeight());
-            minDockedW = qMax(minDockedW, w->minimumWidth());
-        }
-    }
+//    for (int i=0; i<m_plugin->secondaryWindows_.size(); i++) {
+//        Widgets::SecondaryWindow * w = m_plugin->secondaryWindows_[i];
+//        if (w->isVisible() && !w->isFloating()) {
+//            minDockedH = qMax(minDockedH, w->minimumHeight());
+//            minDockedW = qMax(minDockedW, w->minimumWidth());
+//        }
+//    }
     int minBottom = m_plugin->terminal_->minimumWidth() +
             minDockedW + 10;
     minW = qMax(minW, minBottom);
@@ -880,7 +888,7 @@ void MainWindow::newProgram()
 
 void MainWindow::showAlgorithmHelp(const QString &name)
 {
-    m_plugin->helpWindow_->show();
+    m_plugin->helpWindow_->activate();
     m_plugin->helpViewer_->selectAlgorithm(name);
 }
 
