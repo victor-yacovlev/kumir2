@@ -246,8 +246,9 @@ void SecondaryWindowGenericImplementation::setResizeble(bool v)
 void SecondaryWindowGenericImplementation::activate(const QPoint & ps, const QSize &sz)
 {
     if (centralWidget_) {
+        QSize newSize;
         if (sz.isValid()) {
-            QSize newSize = sz;
+            newSize = sz;
             newSize.rwidth() +=
                     layout()->contentsMargins().left() +
                     layout()->contentsMargins().right();
@@ -258,6 +259,7 @@ void SecondaryWindowGenericImplementation::activate(const QPoint & ps, const QSi
                     layout()->contentsMargins().bottom();
             resize(newSize);
         }
+
         if (!ps.isNull()) {
             QPoint newPos = ps;
             newPos.rx() -= layout()->contentsMargins().left();
@@ -268,6 +270,12 @@ void SecondaryWindowGenericImplementation::activate(const QPoint & ps, const QSi
         }
         setVisible(true);
         centralWidget_->setFocus();
+        QSize minSize = minimumSizeHint();
+        if (size().width() < minSize.width() || size().height() < minSize.height()) {
+            newSize.rwidth() = qMax(size().width(), minSize.width());
+            newSize.rheight() = qMax(size().height(), minSize.height());
+            resize(newSize);
+        }
         activateWindow();
     }
 }
@@ -550,8 +558,9 @@ void SecondaryWindowGenericImplementation::processResizeWindow(const QPoint &mou
         mousePressPoint_.ry() = mousePos.y();
     }
     const QSize newSize= size() + sizeDiff;
-    if (newSize.width() > minimumSizeHint().width() &&
-            newSize.height() > minimumSizeHint().height())
+    const QSize minSize = minimumSizeHint();
+    if (newSize.width() >= minSize.width() &&
+            newSize.height() >= minSize.height())
     {
         resize(newSize);
         move(pos() + posDiff);

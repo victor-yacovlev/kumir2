@@ -17,3 +17,10 @@ scripts/*.pyo
 /rules.txt
 /artwork/userdocs_graphics/kumir_language/table_expressions_formulas.odg
 /src/app/main.cpp.orig
+/share/kumir2/icons/from_oxygen/.directory
+/share/kumir2/icons/from_qtcreator/.directory
+/share/kumir2/icons/.directory
+/share/kumir2/editor/.directory
+/share/kumir2/widgets/secondarywindow/.directory
+/share/kumir2/widgets/secondarywindow/generic/.directory
+/share/kumir2/widgets/secondarywindow/oxygen/.directory
