@@ -669,7 +669,22 @@ void KumirRunPlugin::timerEvent(QTimerEvent *event) {
             connect(pRun_, SIGNAL(finished()), actor->mainWidget(), SLOT(close()));
         }
     }
+    connect(pRun_, SIGNAL(finished()),
+            this, SLOT(checkForErrorInConsole()));
     pRun_->start();
+}
+
+void KumirRunPlugin::checkForErrorInConsole()
+{
+    if (pRun_->error().length() > 0) {
+        const QString message = pRun_->effectiveLineNo() != -1
+                ?
+                    tr("RUNTIME ERROR AT LINE %1: %2")
+                    .arg(pRun_->effectiveLineNo())
+                    .arg(pRun_->error())
+                  : tr("RUNTIME ERROR: %1").arg(pRun_->error());
+        std::cerr << message.toLocal8Bit().constData() << std::endl;
+    }
 }
 
 void KumirRunPlugin::start()
@@ -679,6 +694,7 @@ void KumirRunPlugin::start()
             pRun_->reset();
             pRun_->start();
             pRun_->wait();
+            checkForErrorInConsole();
         }
         else {
             startTimer(0); // start thread after event loop started

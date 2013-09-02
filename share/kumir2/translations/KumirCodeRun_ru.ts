@@ -48,6 +48,14 @@ Run with --help parameter for more details</source>
         <translation>Ошибка: не указано имя файла
 Запустите с параметром --help для получения информации об использовании</translation>
     </message>
+    <message>
+        <source>RUNTIME ERROR AT LINE %1: %2</source>
+        <translation>ОШИБКА ВЫПОЛНЕНИЯ В СТРОКЕ %1: %2</translation>
+    </message>
+    <message>
+        <source>RUNTIME ERROR: %1</source>
+        <translation>ОШИБКА ВЫПОЛНЕНИЯ: %1</translation>
+    </message>
 </context>
 <context>
     <name>KumirCodeRun::Plugin</name>
