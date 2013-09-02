@@ -47,6 +47,30 @@ inline void bytecodeToDataStream(std::ostream & ds, const Data & data)
     free(buffer);
 }
 
+inline bool isValidSignature(const std::list<char> & ds)
+{
+    static const size_t MaxLineSize = 255;
+    static const char * Signature1 = "#!/usr/bin/env kumir2-run";
+    static const char * Signature2 = "#!/usr/bin/env kumir2-xrun";
+
+    char first[MaxLineSize];
+
+    typedef std::list<char>::const_iterator CIt;
+    size_t index = 0u;
+
+    for (CIt it = ds.begin(); it!=ds.end() && index<MaxLineSize; ++it, index++)
+    {
+        char ch = *it;
+        if (ch == '\n' || ch=='\0')
+            break;
+        first[index] = ch;
+    }
+
+    bool firstMatch = strncmp(Signature1, first, index) == 0;
+    bool secondMatch = strncmp(Signature2, first, index) == 0;
+    return firstMatch || secondMatch;
+}
+
 inline void bytecodeFromDataStream(std::list<char> & ds, Data & data)
 {
     if (ds.size()>0 && ds.front()=='#') {

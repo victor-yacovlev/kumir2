@@ -84,6 +84,9 @@ bool KumirRunPlugin::loadProgram(const QString & filename, const QByteArray & so
     for (int i=0; i<source.size(); i++)
         buffer.push_back(source[i]);
     ok = pRun_->loadProgramFromBinaryBuffer(buffer, filename.toStdWString());
+    if (!ok) {
+        return ok;
+    }
     const QString programDirName = QFileInfo(filename).absoluteDir().absolutePath();
     pRun_->setProgramDirectory(programDirName);
     pRun_->programLoaded = ok;
@@ -623,6 +626,9 @@ QString KumirRunPlugin::initialize(const QStringList &configurationArguments,
                 catch (const std::wstring & message) {
                     return QString::fromStdWString(message);
                 }
+            }
+            if (pRun_->error().length() > 0) {
+                return pRun_->error();
             }
         }
         else {
