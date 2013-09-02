@@ -54,6 +54,7 @@ public:
             const AST::AlgorithmPtr contextAlgorithm
             ) const;
     void processAnalisys();
+    QString suggestFileName() const;
     ~SyntaxAnalizer();
 private /*fields*/:
 

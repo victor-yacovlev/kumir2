@@ -70,6 +70,9 @@ public slots:
     const AST::DataPtr abstractSyntaxTree() const;
 
     const AST::ModulePtr findModuleByLine(int lineNo) const;
+
+    QString suggestFileName() const;
+
 private:
     const AST::AlgorithmPtr findAlgorhitmByLine(const AST::ModulePtr mod, int lineNo) const;
     struct AnalizerPrivate * d;

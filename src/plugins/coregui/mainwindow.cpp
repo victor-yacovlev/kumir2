@@ -684,7 +684,7 @@ bool MainWindow::saveCurrentFileAs()
             initialPath = QFileInfo(lastFileName).absoluteDir().absolutePath();
         }
         const QString suffix = twe->type==Program ? fileNameSuffix : ".txt";
-        initialPath += "/" + suggestNewFileName(suffix, initialPath);
+        initialPath += "/" + suggestNewFileName(suffix, twe->editorInstance->analizer(), initialPath);
     }
     else {
         initialPath = fileName;
@@ -870,7 +870,7 @@ void MainWindow::newProgram()
     connect(vc, SIGNAL(requestHelpForAlgorithm(QString)),
             this, SLOT(showAlgorithmHelp(QString)));
 
-    QString fileName = suggestNewFileName(suffix);
+    QString fileName = suggestNewFileName(suffix, editor->analizer());
     vc->setProperty("title",QFileInfo(fileName).fileName());
     vc->setProperty("fileName", QDir::current().absoluteFilePath(fileName));
     TabWidgetElement * e = addCentralComponent(
@@ -894,7 +894,7 @@ void MainWindow::showAlgorithmHelp(const QString &name)
 
 void MainWindow::newText()
 {
-    QString fileName = suggestNewFileName(".txt");
+    QString fileName = suggestNewFileName(".txt", nullptr);
     newText(fileName, "");
 }
 
@@ -924,24 +924,30 @@ void MainWindow::newText(const QString &fileName, const QString & text)
     e->setFocus();
 }
 
-QString MainWindow::suggestNewFileName(const QString &suffix, const QString & dirName) const
+QString MainWindow::suggestNewFileName(const QString &suffix,
+                                       Shared::Analizer::InstanceInterface * analizer,
+                                       const QString & dirName) const
 {
     QDir d;
     if (dirName.isEmpty())
         d = QDir::current();
     else
         d = QDir(dirName);
-    QStringList fileNames = d.entryList(QStringList() << "*"+suffix);
+    QStringList fileNames = d.entryList(QStringList() << "*."+suffix);
     for (int i=0; i<tabWidget_->count(); i++) {
         fileNames << tabWidget_->tabText(i);
     }
-    QString result = "newfile";
+    QString result;
+    if (!analizer || !analizer->helper() || analizer->helper()->suggestFileName().isEmpty())
+        result = "newfile";
+    else
+        result = analizer->helper()->suggestFileName();
     int index = 0;
-    while (fileNames.contains(result+suffix)) {
+    while (fileNames.contains(result+"."+suffix)) {
         index ++;
         result = QString("newfile_%1").arg(index);
     }
-    return result+suffix;
+    return result+"."+suffix;
 }
 
 

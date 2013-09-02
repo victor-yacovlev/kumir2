@@ -29,6 +29,7 @@ public:
     virtual QStringList importModuleSuggestion(int lineNo) const = 0;
     virtual QStringList imports() const = 0;
     virtual QString createImportStatementLine(const QString &importName) const = 0;
+    virtual QString suggestFileName() const = 0;
 };
 
 

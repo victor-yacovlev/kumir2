@@ -34,6 +34,11 @@ Analizer::Analizer(KumirAnalizerPlugin * plugin, bool teacherMode)
     d = new AnalizerPrivate(plugin, this);
 }
 
+QString Analizer::suggestFileName() const
+{
+    return d->analizer->suggestFileName();
+}
+
 QString Analizer::sourceText() const
 {
     return d->sourceText.join("\n")+"\n";

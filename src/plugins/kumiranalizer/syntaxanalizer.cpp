@@ -64,6 +64,57 @@ void SyntaxAnalizer::init(
     unresolvedImports_.clear();
 }
 
+QString SyntaxAnalizer::suggestFileName() const
+{
+    if (!ast_) return QString();
+    AST::ModulePtr mainMod;
+    for (int i=0; i<ast_->modules.size(); i++) {
+        if (ast_->modules[i]->header.type == AST::ModTypeUserMain) {
+            mainMod = ast_->modules[i];
+            break;
+        }
+    }
+    if (!mainMod) return QString();
+    AST::AlgorithmPtr mainAlg = mainMod->impl.algorhitms.size() > 0
+            ? mainMod->impl.algorhitms[0] : AST::AlgorithmPtr();
+    if (!mainAlg || mainAlg->header.name.isEmpty())
+        return QString();
+
+    const QString src = mainAlg->header.name;
+    QString result;
+
+    static const QString Rus = QString::fromUtf8(
+                "абвгдеёжзийклмнопрстуфхцчшщьыъэюя"
+                );
+    static const QStringList Lat = QStringList()
+            << "a" << "b" << "v" << "g" << "d" << "e" << "yo" << "zh" << "z"
+            << "i" << "j" << "k" << "l" << "m" << "n" << "o" << "p" << "r"
+            << "s" << "t" << "u" << "f" << "h" << "ts" << "ch" << "sh"
+            << "sch" << "" << "y" << "" << "ye" << "yu" << "ya";
+
+    Q_ASSERT(Rus.length() == Lat.size());
+
+    for (int i=0; i<src.size(); i++) {
+        const QChar ch = src[i];
+        if (ch == ' ') {
+            result += "_";
+        }
+        else if (ch.toAscii() != '\0') {
+            if (ch.isLetterOrNumber())
+                result += ch;
+        }
+        else {
+            int index = Rus.indexOf(ch, 0, Qt::CaseInsensitive);
+            QString repl = Lat.at(index);
+            if (ch.isUpper() && repl.length() > 0) {
+                repl[0] = repl[0].toUpper();
+            }
+            result += repl;
+        }
+    }
+    return result;
+}
+
 
 Lexem * SyntaxAnalizer::findLexemByType(const QList<Lexem*> lxs, LexemType type)
 {
