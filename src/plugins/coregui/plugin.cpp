@@ -303,8 +303,9 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     if (!parameters.contains("nostartpage", Qt::CaseInsensitive)) {
         startPage_ = plugin_browser->createBrowser();
         startPage_->setTitleChangeHandler(mainWindow_, SLOT(updateBrowserTitle(QString, const Shared::Browser::InstanceInterface*)));
-        const QString browserEntryPoint = QApplication::instance()->property("sharePath").toString()+"/coregui/startpage/russian/index.html";
+        const QString browserEntryPoint = QApplication::instance()->property("sharePath").toString()+"/coregui/startpage/russian/index2.html";
         (*startPage_)["mainWindow"] = mainWindow_;
+        (*startPage_)["gui"] = this;
         startPage_->go(browserEntryPoint);
         m_browserObjects["mainWindow"] = mainWindow_;
         startPage_->widget()->setProperty("uncloseable", true);
@@ -500,6 +501,35 @@ void Plugin::startTesting()
     kumirProgram_->setCourseManagerRequest();
     kumirProgram_->testingRun();
 }
+
+void Plugin::showCoursesWindow(int index)
+{
+    if (coursesWindow_) {
+        coursesWindow_->activate();
+    }
+}
+
+QStringList Plugin::coursesList() const
+{
+    return QStringList();
+}
+
+void Plugin::showHelpWindow(int index)
+{
+    if (helpWindow_) {
+        helpWindow_->activate();
+    }
+    if (helpViewer_) {
+        helpViewer_->activateBookIndex(index);
+    }
+}
+
+QStringList Plugin::helpList() const
+{
+    return helpViewer_ ? helpViewer_->booksList() : QStringList();
+}
+
+
 
 } // namespace CoreGUI
 

@@ -62,6 +62,9 @@ public slots:
     void switchToCompactMode(bool force=false);
     void switchToEnoughtSizeMode(bool force=false);
 
+    QStringList booksList() const;
+    void activateBookIndex(int index = -1);
+
 private slots:
     void updateToggleSideBarButton();
     void handleShowSideBarButton(const QString & action);

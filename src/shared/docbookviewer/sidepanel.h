@@ -24,6 +24,7 @@ public:
     explicit SidePanel(QWidget *parent = 0);
 
     void addDocument(Document document);    
+    QList<ModelPtr> loadedDocuments() const;
     void saveState(ExtensionSystem::SettingsPtr  settings, const QString & prefix);
     void restoreState(ExtensionSystem::SettingsPtr  settings, const QString & prefix);
     ModelPtr findAlgorithm(const QString & name) const;
@@ -56,6 +57,7 @@ private:
     QMap<ModelPtr, QTreeWidgetItem*> itemsOfModels_;
     QMap<QString, ModelPtr> algorithmsIndex_;
     QList<Document> loadedDocuments_;
+    QList<ModelPtr> topLevelItems_;
 
 private slots:
     void hadleButtonPressed();

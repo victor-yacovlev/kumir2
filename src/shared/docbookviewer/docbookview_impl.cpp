@@ -282,4 +282,31 @@ void DocBookViewImpl::showPrintDialog()
 
 }
 
+QStringList DocBookViewImpl::booksList() const
+{
+    QStringList result;
+    if (sidePanel_) {
+        QList<ModelPtr> docs = sidePanel_->loadedDocuments();
+        for (int i=0; i<docs.size(); i++) {
+            ModelPtr doc = docs[i];
+            result.push_back(doc->title());
+        }
+    }
+    return result;
+}
+
+void DocBookViewImpl::activateBookIndex(int index)
+{
+    ModelPtr target;
+    if (sidePanel_ && index >= 0) {
+        QList<ModelPtr> docs = sidePanel_->loadedDocuments();
+        if (index < docs.size()) {
+            target = docs[index];
+        }
+    }
+    if (target) {
+        showAnItem(target);
+    }
+}
+
 }

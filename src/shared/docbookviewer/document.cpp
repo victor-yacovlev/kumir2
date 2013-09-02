@@ -16,4 +16,9 @@ const QUrl& Document::url() const
     return url_;
 }
 
+QString Document::title() const
+{
+    return root_ ? root_->title() : QString();
+}
+
 }

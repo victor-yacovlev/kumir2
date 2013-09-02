@@ -94,4 +94,14 @@ void DocBookView::selectAlgorithm(const QString &name)
     pImpl_->selectAlgorithm(name);
 }
 
+QStringList DocBookView::booksList() const
+{
+    return pImpl_->booksList();
+}
+
+void DocBookView::activateBookIndex(int index)
+{
+    pImpl_->activateBookIndex(index);
+}
+
 }

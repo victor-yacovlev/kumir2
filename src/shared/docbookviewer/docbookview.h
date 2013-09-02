@@ -35,6 +35,9 @@ public:
     explicit DocBookView(QWidget * parent = 0);
     QAction * viewerAction(const DocBookViewAction type) const;
 
+    QStringList booksList() const;
+    void activateBookIndex(int index);
+
     void updateSettings(ExtensionSystem::SettingsPtr settings, const QString & prefix);
     bool hasAlgorithm(const QString & name) const;
     void selectAlgorithm(const QString & name);

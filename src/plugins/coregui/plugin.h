@@ -56,6 +56,13 @@ public slots:
     void startTesting();
     bool showWorkspaceChooseDialog();
 
+    // for JavaScript
+    void showCoursesWindow(int index);
+    QStringList coursesList() const;
+
+    void showHelpWindow(int index);
+    QStringList helpList() const;
+
 protected slots:
     void prepareKumirProgramToRun();
 

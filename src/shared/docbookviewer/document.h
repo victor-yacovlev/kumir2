@@ -17,6 +17,7 @@ class Document
     friend class SidePanel;
 public:
     const QUrl & url() const;
+    QString title() const;
 
 protected /* methods */:
     explicit Document(const QUrl & url, ModelPtr model);

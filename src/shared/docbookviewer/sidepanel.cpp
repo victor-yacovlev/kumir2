@@ -53,6 +53,7 @@ void SidePanel::addDocument(Document document)
         }
         loadedDocuments_.append(document);
     }
+    topLevelItems_ += topLevelItems;
     for (int i=0; i<topLevelItems.size(); i++) {
         ModelPtr model = topLevelItems[i];
         QTreeWidgetItem * item =
@@ -401,6 +402,11 @@ SidePanel::findFilteredItems(const QString &text,
 SidePanel::~SidePanel()
 {
     delete ui;
+}
+
+QList<ModelPtr> SidePanel::loadedDocuments() const
+{
+    return topLevelItems_;
 }
 
 } // namespace DocBookViewer
