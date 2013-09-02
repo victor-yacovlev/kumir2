@@ -22,6 +22,9 @@ public:
     virtual QAction* actionPerformCheck() const = 0;
     virtual QList<QMenu*> menus() const = 0;
 
+    inline virtual QStringList getListOfCourses() const { return QStringList(); }
+    inline virtual void activateCourseFromList(int index) { Q_UNUSED(index); }
+
 public slots:
     virtual void setEnabled(bool value) = 0;
     virtual void setTestingResult(ProgramRunStatus status, int value) = 0;
