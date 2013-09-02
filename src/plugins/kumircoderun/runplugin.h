@@ -83,6 +83,7 @@ protected:
 protected slots:
     void handleThreadFinished();
     void handleLineChanged(int lineNo, quint32 colStart, quint32 colEnd);
+    void checkForErrorInConsole();
 
 
 signals:
