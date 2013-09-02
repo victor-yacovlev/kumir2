@@ -3183,8 +3183,12 @@ bool KumirVM::canStepOut() const
 }
 
 bool KumirVM::loadProgramFromBinaryBuffer(std::list<char> &stream, bool isMain, const String & filename, String & error)
-{
+{    
     error.clear();
+    if (!Bytecode::isValidSignature(stream)) {
+        error = Kumir::Core::fromUtf8("Это не исполняемый файл Кумир 2.x");
+        return false;
+    }
     Bytecode::Data d;
     bool ok;
     try {

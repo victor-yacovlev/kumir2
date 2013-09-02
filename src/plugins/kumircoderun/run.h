@@ -122,6 +122,7 @@ protected :
     QString funcError_;
     mutable class Mutex * VMMutex_;
     KumVariablesModel * variablesModel_;
+    QString programLoadError_;
 
 };
 

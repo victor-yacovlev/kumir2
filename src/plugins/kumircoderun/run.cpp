@@ -341,8 +341,10 @@ bool Run::loadProgramFromBinaryBuffer(std::list<char> &stream, const String & fi
         msg = Kumir::Coder::encode(Kumir::UTF8, errorMessage);
 #endif
         std::cerr << msg << std::endl;
-        emit error(QString::fromUtf8("Ошибка загрузки программы: %1")
-                    .arg(QString::fromStdWString(errorMessage)));
+        programLoadError_ = QString::fromUtf8("Ошибка загрузки программы: %1")
+                .arg(QString::fromStdWString(errorMessage));
+        emit error(programLoadError_);
+
     }
     return ok;
 }
@@ -379,7 +381,8 @@ bool Run::isTestingRun() const
 
 QString Run::error() const
 {
-    return QString::fromStdWString(vm->error());
+    return programLoadError_.length() > 0
+            ? programLoadError_ : QString::fromStdWString(vm->error());
 }
 
 bool Run::hasTestingAlgorithm() const
