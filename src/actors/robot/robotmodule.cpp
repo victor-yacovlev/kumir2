@@ -3489,7 +3489,7 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
         {
             qDebug()<<"FIELD:|"<<runtimeParameters.value("field").toString()<<"|";
            // std::cout <<"FIELD:" <<runtimeParameters.value("field").toString().toStdString();
-            LoadFromFile(runtimeParameters.value("field").toString());
+            if(LoadFromFile(runtimeParameters.value("field").toString())!=0)return "Error loading:"+runtimeParameters.value("field").toString();
             return "";
         }
         if(sett->value("Robot/SFF").isValid())
