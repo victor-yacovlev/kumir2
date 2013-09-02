@@ -220,7 +220,9 @@ QString PluginManager::loadExtraModule(const std::string &canonicalFileName)
         }
         return error;
     }
-    return plugin->initialize(QStringList(), runtimeParameters);
+    QString result = plugin->initialize(QStringList(), runtimeParameters);
+    pImpl_->states.last() = KPlugin::Initialized;
+    return result;
 }
 
 bool PluginManager::isGuiRequired() const
@@ -320,6 +322,8 @@ QString PluginManager::initializePlugins()
 {
     Q_ASSERT(pImpl_->specs.size()==pImpl_->objects.size());
     for (int i=0; i<pImpl_->objects.size(); i++) {
+        if (pImpl_->states[i] != KPlugin::Loaded)
+            continue;
         const QString name = pImpl_->specs[i].name;
         QStringList arguments;
         for (int j=0; j<pImpl_->requests.size(); j++) {

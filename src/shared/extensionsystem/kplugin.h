@@ -31,7 +31,7 @@ class EXTENSIONSYSTEM_EXPORT KPlugin : public QObject
     friend struct PluginManagerImpl;
     Q_OBJECT
 public:
-    enum State { Disabled, Loaded, Initialized, Started, Stopped };
+    enum State { Disabled = 0x00, Loaded=0x01, Initialized=0x02, Started=0x03, Stopped=0x04 };
     KPlugin();
     PluginSpec pluginSpec() const;
     State state() const;
