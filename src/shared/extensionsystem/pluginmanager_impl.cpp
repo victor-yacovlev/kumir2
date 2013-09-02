@@ -121,7 +121,10 @@ bool PluginManagerImpl::extractRuntimeParametersForPlugin(const KPlugin *plugin,
         typedef std::list<QString>::iterator It;
         for (It it = namedProgramArguments.begin(); it != namedProgramArguments.end(); ++it) {
             QString & arg = *it;
-            if (arg.startsWith("--"+param.longName_) || arg.startsWith("-"+QString(param.shortName_))) {
+            if (param.shortName_.isNull()) {
+
+            }
+            else if (arg.startsWith("--"+param.longName_) || arg.startsWith("-"+QString(param.shortName_))) {
                 param.fillValue(arg);
                 namedProgramArguments.erase(it);
                 break;
