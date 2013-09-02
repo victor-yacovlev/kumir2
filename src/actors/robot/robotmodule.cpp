@@ -13,6 +13,7 @@ You should change it corresponding to functionality.
 #include <algorithm>
 #include "robotmodule.h"
 #include "extensionsystem/pluginmanager.h"
+//#include <iostream> 
 
 namespace ActorRobot {
 
@@ -1382,7 +1383,8 @@ namespace ActorRobot {
         Pen = QPen(LineColor,1);
         PenError = QPen(LineColor,1);
         infin = 5*BORT+10;
-        
+        int col_debug=columns();
+       // printf("Columns:%d",col_debug);
         for (int i = -1; i < columns(); i++) //Vertikalnie linii
         {
             setka.append(this->addLine(i * FIELD_SIZE_SMALL+ddx+FIELD_SIZE_SMALL/2+2 , -FIELD_SIZE_SMALL , i * FIELD_SIZE_SMALL+ddx+2+FIELD_SIZE_SMALL/2,(rows()+1) * FIELD_SIZE_SMALL,Pen ));
@@ -3485,8 +3487,10 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
         
         if(runtimeParameters.value("field").isValid())
         {
-            qDebug()<<runtimeParameters.value("field").toString();
+            qDebug()<<"FIELD:|"<<runtimeParameters.value("field").toString()<<"|";
+           // std::cout <<"FIELD:" <<runtimeParameters.value("field").toString().toStdString();
             LoadFromFile(runtimeParameters.value("field").toString());
+            return "";
         }
         if(sett->value("Robot/SFF").isValid())
         {
@@ -3762,7 +3766,7 @@ bool RobotModule::runIsColor()
         QString name = fi.fileName();
         
         QString Title = trUtf8("Robot") + " - " + name;
-
+      //  std::cout <<"Title"<<Title.toStdString();
         m_mainWidget->setWindowTitle(Title);
 
         
