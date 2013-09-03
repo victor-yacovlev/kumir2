@@ -40,6 +40,9 @@ public:
             mainWindow()->showNormal();
         }
      inline void activateCourseFromList(QString file) { Q_UNUSED(file); }
+     inline QStringList getListOfCourses() const { 
+         return mySettings()->value("Courses/LastFiles","").toString().split(";"); 
+     }
 public slots:
     void setEnabled(bool value);
     void setTestingResult(ProgramRunStatus status, int value);
