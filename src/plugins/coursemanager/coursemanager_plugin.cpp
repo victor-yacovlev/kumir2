@@ -134,6 +134,7 @@ void Plugin::selectNext(KumZadanie* task)
             actor->loadActorData(field_data);
         }   
     }
+
 void Plugin::checkNext(KumZadanie* task)
 {
     
@@ -141,6 +142,10 @@ void Plugin::checkNext(KumZadanie* task)
     selectNext(task);
     gui->startTesting();    
 };
+void Plugin::loadCource(QString file)
+    {
+        MW->loadCourseFromFile(file);
+    }
 void Plugin::startProgram(QVariant param,KumZadanie* task)
 {
     field_no=0;

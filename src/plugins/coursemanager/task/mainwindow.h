@@ -92,6 +92,7 @@ public slots:
     void aboutToQuit ();
 
     void loadCourse();
+    void loadCourseFromFile(const QString & file);
     void returnTested();
     void saveCourse();
     void saveCourseFile();

@@ -39,9 +39,9 @@ public:
         {
             mainWindow()->showNormal();
         }
-     inline void activateCourseFromList(QString file) { Q_UNUSED(file); }
+    inline void activateCourseFromList(QString file) { loadCource(file); }
      inline QStringList getListOfCourses() const { 
-         return mySettings()->value("Courses/LastFiles","").toString().split(";"); 
+         return mySettings()->value("Courses/LastFiles","").toString().split(";",QString::SkipEmptyParts); 
      }
 public slots:
     void setEnabled(bool value);
@@ -60,6 +60,7 @@ private /*methods*/:
     void updateSettings(const QStringList & keys);
 
 private /*fields*/:
+    void loadCource(QString file);
     AI * getActor(QString name);
     QWidget* mainWindow_;
     QAction* actionPerformCheck_;

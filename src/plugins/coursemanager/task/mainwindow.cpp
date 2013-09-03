@@ -222,7 +222,42 @@ for(int i=0;i<prgElListT.count();i++)
 
  };
 };
+ void MainWindowTask::loadCourseFromFile(const QString & file)
+{QFileInfo fi(file);
+    if(!fi.exists())
+    {
+        
+        return;
+    };
 
+    baseKursFile=fi;
+    curDir=fi.absolutePath ();
+    settings->setValue("Directories/Kurs", curDir);
+    qDebug()<<"curDir"<<curDir;
+    QString fileName=file;
+    progChange.clear();
+    if(fileName.right(9)==".work.xml")//Загрузка оценок и программ
+    {
+        loadMarks(fileName);
+        this->show();
+        return;
+    }else
+        cursWorkFile.setFileName("");
+    loadCourseData(fileName);
+    QString cText=course->courceDescr();
+    
+    
+    if(cText.right(4)==".htm" ||cText.right(5)==".html" )
+    {
+        loadHtml(cText);
+    }else ui->webView->setHtml(cText);
+    // if(isTeacher)ui->actionEdit->setEnabled(true);
+    setWindowTitle(course->name()+trUtf8(" - Практикум"));
+    updateLastFiles(fileName);
+    interface->lockContrls();
+    ui->checkTask->setEnabled(false);
+    this->show();
+};
 
 void MainWindowTask::loadCourse()
 {
