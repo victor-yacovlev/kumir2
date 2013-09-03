@@ -502,16 +502,28 @@ void Plugin::startTesting()
     kumirProgram_->testingRun();
 }
 
-void Plugin::showCoursesWindow(int index)
+void Plugin::showCoursesWindow(const QString & id)
 {
+    if (courseManager_ && !id.isEmpty()) {
+        courseManager_->activateCourseFromList(id);
+    }
     if (coursesWindow_) {
         coursesWindow_->activate();
     }
 }
 
-QStringList Plugin::coursesList() const
+QStringList Plugin::coursesList(bool fullPaths) const
 {
-    return QStringList();
+    const QStringList files = courseManager_->getListOfCourses();
+    if (fullPaths)
+        return files;
+    else {
+        QStringList result;
+        for (int i=0; i<files.size(); i++) {
+            result << QFileInfo(files[i]).fileName();
+        }
+        return result;
+    }
 }
 
 void Plugin::showHelpWindow(int index)

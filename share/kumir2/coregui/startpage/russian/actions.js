@@ -64,6 +64,7 @@ function loadHelpContents()
 function loadCourseContents()
 {
     var contents = gui.coursesList();
+    var paths = gui.coursesList();
     var block = document.getElementById("courses_list");
     block.innerHTML = "";
     for (var i=0; i<contents.length; i++) {
@@ -74,7 +75,7 @@ function loadCourseContents()
         if (i == contents.length - 1) {
             clazz += " last";
         }
-        var onClick = 'gui.showCoursesWindow(' + i + ')';
+        var onClick = 'gui.showCoursesWindow("' + paths[i] + '")';
         var text = contents[i];
         var line = "<button class='" + clazz + "' onclick='" + onClick + "'>" + text + "</button>\n";
         block.innerHTML += line;

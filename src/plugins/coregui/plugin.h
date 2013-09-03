@@ -57,8 +57,8 @@ public slots:
     bool showWorkspaceChooseDialog();
 
     // for JavaScript
-    void showCoursesWindow(int index);
-    QStringList coursesList() const;
+    void showCoursesWindow(const QString & id);
+    QStringList coursesList(bool fullPaths) const;
 
     void showHelpWindow(int index);
     QStringList helpList() const;
