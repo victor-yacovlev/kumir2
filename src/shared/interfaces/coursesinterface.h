@@ -23,7 +23,7 @@ public:
     virtual QList<QMenu*> menus() const = 0;
 
     inline virtual QStringList getListOfCourses() const { return QStringList(); }
-    inline virtual void activateCourseFromList(int index) { Q_UNUSED(index); }
+    inline virtual void activateCourseFromList(QString file) { Q_UNUSED(file); }
 
 public slots:
     virtual void setEnabled(bool value) = 0;
