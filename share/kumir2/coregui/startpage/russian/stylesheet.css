@@ -41,11 +41,16 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    height: 1cm;
+    height: 1.5cm;
+    margin-left: 1mm;
+    margin-right: 1mm;
+    padding-top: 1mm;
     padding-left: 5mm;
     padding-right: 5mm;
     text-align: center;
-    font-style: italic;
+    /*font-style: italic;*/
+    color: rgb(110, 110, 110);
+    border-top: 1pt solid rgb(202, 202, 202);
 }
 
 .column {
