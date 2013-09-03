@@ -16,7 +16,7 @@ Plugin::Plugin()
     courseMenu=new QMenu(trUtf8("Практикум"));
     MenuList.append(courseMenu);
     MW=new MainWindowTask();
-    MW->setup();
+    MW->setup(mySettings());
     mainWindow_=MW;
     field_no=0;
     prevFld=new QAction(trUtf8("Предыдущая обстановка"),this);
@@ -278,6 +278,7 @@ void Plugin::updateSettings(const QStringList & keys)
     if (settingsEditorPage_) {
         settingsEditorPage_->setSettingsObject(mySettings());
     }
+    MW->updateSettings(keys, mySettings());
 }
 
 

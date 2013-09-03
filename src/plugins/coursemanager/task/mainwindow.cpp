@@ -15,7 +15,7 @@ cursFile="";
     connect(qApp,SIGNAL(aboutToQuit()),this,SLOT(aboutToQuit()));
 
 }
- void MainWindowTask::setup()
+ void MainWindowTask::setup(ExtensionSystem::SettingsPtr sett)
  {
        course=NULL;
      ui->setupUi(this);
@@ -23,8 +23,7 @@ cursFile="";
      ui->treeView->setIconSize(QSize(25,25));
      ui->menu->hide();
      ui->treeView->setStyleSheet("icon-size: 25px;font-size: 14px;");
-     settings = new QSettings("NIISI RAS","Kumir");
-     settings->setIniCodec("UTF-8");
+     settings = sett;
      customMenu.hide();
      connect(ui->loadCurs,SIGNAL(activated()),this,SLOT(loadCourse()));
      connect(ui->actionSave,SIGNAL(activated()),this,SLOT(saveCourse()));
@@ -99,7 +98,19 @@ void MainWindowTask::changeEvent(QEvent *e)
         break;
     }
 }
-
+void MainWindowTask::updateLastFiles(const QString newFile )
+{
+    QStringList lastFiles= settings->value("Courses/LastFiles","").toString().split(";");
+    qDebug()<<lastFiles;
+    if(lastFiles.indexOf(newFile)<0)lastFiles.prepend(newFile);
+    int max_fid=std::min(lastFiles.count(),10);
+    QString sett="";
+    for(int i=0;i<max_fid;i++)
+    {
+        sett+= lastFiles.at(i)+";";
+    }
+    settings->setValue("Courses/LastFiles",sett); 
+};
 void MainWindowTask::loadCourseData(const QString fileName)
 {
 
@@ -257,6 +268,7 @@ void MainWindowTask::loadCourse()
   }else ui->webView->setHtml(cText);
  // if(isTeacher)ui->actionEdit->setEnabled(true);
   setWindowTitle(course->name()+trUtf8(" - Практикум"));
+    updateLastFiles(fileName);
     interface->lockContrls();
     ui->checkTask->setEnabled(false);
     this->show();

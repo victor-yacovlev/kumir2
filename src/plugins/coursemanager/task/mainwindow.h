@@ -77,11 +77,13 @@ class MainWindowTask : public QMainWindow {
     Q_OBJECT
 public:
     MainWindowTask(QWidget *parent = 0);
+
     ~MainWindowTask();
     void setInterface(CourseManager::Plugin * csInterface){interface=csInterface;};
     void setCS(QString cs){CS=cs;};
    KumZadanie task;
-    void setup();
+    void setup( ExtensionSystem::SettingsPtr sett);
+    void updateSettings(const QStringList & keys,ExtensionSystem::SettingsPtr sett){settings=sett;};
      QString getFileName(QString fileName);
      void setTeacher(bool mode);
     QList<QAction*> getActions();
@@ -117,6 +119,7 @@ public slots:
      void cancelRootEdit();
     void lockControls();
     void unlockControls();
+    void updateLastFiles(const QString newFile );
 
     
 
@@ -148,7 +151,7 @@ private:
     bool isTeacher;
     //EditDialog* editDialog;
     //newKursDialog* newDialog;
-    QSettings* settings;
+  ExtensionSystem::SettingsPtr settings;
      QLineEdit *editRoot;
      QFileInfo baseKursFile; //4 mode
        Ui::MainWindowTask *ui;
