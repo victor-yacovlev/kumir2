@@ -39,6 +39,7 @@ public:
         {
             mainWindow()->showNormal();
         }
+     inline void activateCourseFromList(QString file) { Q_UNUSED(file); }
 public slots:
     void setEnabled(bool value);
     void setTestingResult(ProgramRunStatus status, int value);
@@ -66,7 +67,7 @@ private /*fields*/:
     QList<QMenu*> MenuList;
     MainWindowTask* MW;
     bool setTextFromFile(QString fname);
-    void fixOldKumTeacherMark(QDataStream* ds);
+    void fixOldKumTeacherMark(QDataStream* ds);//Inserts into start program, techer part marker.
     int isp_no,field_no;
     void selectNext(KumZadanie* task);
     KumZadanie* cur_task;
