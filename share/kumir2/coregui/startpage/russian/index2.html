@@ -5,7 +5,8 @@
     <meta name="refresh" content="onshow">
     <title>Начало работы</title>
     <link rel="stylesheet" type="text/css" href="stylesheet.css">
-    <script type="text/javascript" src="actions.js"></script>
+    <script type="text/javascript" src="tips.js"></script>
+    <script type="text/javascript" src="actions.js"></script>    
 </head>
 <body onload="init()" onresize="resizeEventHandler()">
     <div id="header">
@@ -32,8 +33,8 @@
             </div>
         </div>
     </div>
-    <div id="footer">
-        TODO: Tip of the day
+    <div id="footer">        
+        <script type="text/javascript">document.write(tipOfTheDay());</script>
     </div>
 </body>
 </html>

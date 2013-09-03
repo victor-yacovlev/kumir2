@@ -63,8 +63,8 @@ function loadHelpContents()
 
 function loadCourseContents()
 {
-    var contents = gui.coursesList();
-    var paths = gui.coursesList();
+    var contents = gui.coursesList(false);
+    var paths = gui.coursesList(true);
     var block = document.getElementById("courses_list");
     block.innerHTML = "";
     for (var i=0; i<contents.length; i++) {
@@ -88,4 +88,30 @@ function init()
     loadRecentFiles();
     loadHelpContents();
     loadCourseContents();
+}
+
+function getRandomInt (min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function tipOfTheDay()
+{
+    var ws = gui.wsName();
+    var TIPS = ALL;
+    if (ws == "x11") {
+        TIPS = TIPS.concat(X11);
+    }
+    else if (ws == "win32") {
+        TIPS = TIPS.concat(WIN32);
+    }
+    else if (ws == "mac") {
+        TIPS = TIPS.concat(MAC);
+    }
+    if (TIPS.length > 0) {
+        var index = getRandomInt(0, TIPS.length-1);
+        return TIPS[index];
+    }
+    else {
+        return "";
+    }    
 }

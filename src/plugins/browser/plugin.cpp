@@ -36,6 +36,7 @@ Shared::Browser::InstanceInterface * Plugin::createBrowser(const QUrl &url, cons
     QMap<QString,QObject*> objs = manageableObjects;
     objs["directory"] = localDirectoryContents_;
     objs["application"] = qApp;
+    objs["browser"] = this;
     c->manageableObjects() = objs;
 
     if (!url.isEmpty())

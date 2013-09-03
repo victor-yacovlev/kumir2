@@ -20,7 +20,8 @@ public:
 					   const ObjectsMap manageableObjects = ObjectsMap(),
                                            bool enableKeyboardNavigation = false);
     inline QNetworkAccessManager * networkAccessManager() { return networkAccessManager_; }
-    inline void updateSettings(const QStringList &) {}
+    inline void updateSettings(const QStringList &) {}    
+
 protected:
     QString initialize(const QStringList &, const ExtensionSystem::CommandLine &);
     void changeCurrentDirectory(const QString &path);

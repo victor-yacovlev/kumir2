@@ -541,6 +541,19 @@ QStringList Plugin::helpList() const
     return helpViewer_ ? helpViewer_->booksList() : QStringList();
 }
 
+QString Plugin::wsName() const
+{
+#ifdef Q_WS_X11
+    return "x11";
+#endif
+#ifdef Q_WS_WIN32
+    return "win32";
+#endif
+#ifdef Q_WS_MAC
+    return "mac";
+#endif
+    return "";
+}
 
 
 } // namespace CoreGUI
