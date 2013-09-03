@@ -47,7 +47,8 @@ private /*methods*/:
     explicit SecondaryWindow(QWidget * topLevelParent,
                              class SecondaryWindowImplementationInterface * windowContainer,
                              class SecondaryWindowImplementationInterface * dockContainer,
-                             const QString & settingsKey
+                             const QString & settingsKey,
+                             QWidget * centralWidget
                              );
 
     static SecondaryWindowImplementationInterface * createWindowContainer(
@@ -69,6 +70,7 @@ private /*fields*/:
     QString settingsKey_;
     ExtensionSystem::SettingsPtr settings_;
     QWidget * topLevelParent_;
+    QWidget * centralWidget_;
 
 };
 

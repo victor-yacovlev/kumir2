@@ -14,6 +14,7 @@
 
 namespace CoreGUI {
 
+static const int DefaultConsoleHeight = 100;
 
 MainWindow::MainWindow(Plugin * p) :
     QMainWindow(0),
@@ -21,7 +22,7 @@ MainWindow::MainWindow(Plugin * p) :
     m_plugin(p),
     statusBar_(new StatusBar),
     tabWidget_(0),
-    prevBottomSize_(200)
+    prevBottomSize_(DefaultConsoleHeight)
 {
     ui->setupUi(this);
     connect(ui->splitter, SIGNAL(splitterMoved(int,int)), this, SLOT(handleSplitterMoved(int,int)));
@@ -1058,12 +1059,25 @@ void MainWindow::updateSettings(SettingsPtr settings, const QStringList & keys)
 
 void MainWindow::loadSettings(const QStringList & keys)
 {
-    QRect r = settings_->value(Plugin::MainWindowGeometryKey, QRect(-1,-1,0,0)).toRect();
+    QRect r = settings_->value(Plugin::MainWindowGeometryKey,
+                               QRect(QPoint(-1, -1), QSize(940, 540))).toRect();
     if (r.width()>0 &&
             (keys.contains(Plugin::MainWindowGeometryKey) || keys.isEmpty())
             ) {
         resize(r.size());
-        move(r.topLeft());
+        QPoint ps;
+        if (r.topLeft() != QPoint(-1, -1)) {
+            ps = r.topLeft();
+        }
+        else {
+            const QSize screenSize = QApplication::desktop()->availableGeometry().size();
+            int x = screenSize.width() - r.width();
+            int y = screenSize.height() - r.height();
+            x /= 2;
+            y /= 2;
+            ps = QPoint(x, y);
+        }
+        move(ps);
     }
     centralRow_->updateSettings(settings_, keys);
     bottomRow_->updateSettings(settings_, keys);
@@ -1072,10 +1086,14 @@ void MainWindow::loadSettings(const QStringList & keys)
         sizes << 0 << 0;
         sizes[0] = settings_->value(Plugin::MainWindowSplitterStateKey+"0", 0).toInt();
         sizes[1] = settings_->value(Plugin::MainWindowSplitterStateKey+"1", 0).toInt();
+        prevBottomSize_ = settings_->value("SavedBottomSize", DefaultConsoleHeight).toInt();
         if (sizes[0] + sizes[1] > 0) {
-            ui->splitter->setSizes(sizes);
         }
-        prevBottomSize_ = settings_->value("SavedBottomSize", 200).toInt();
+        else {
+            sizes[1] = prevBottomSize_;
+            sizes[0] = height() - sizes[1];
+        }
+        ui->splitter->setSizes(sizes);
         ui->actionShow_Console_Pane->setChecked(sizes[1] > 0);
     }    
 }

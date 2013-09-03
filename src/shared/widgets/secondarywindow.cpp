@@ -8,15 +8,18 @@
 
 namespace Widgets {
 
-SecondaryWindow::SecondaryWindow(QWidget *topLevelParent,
+SecondaryWindow::SecondaryWindow(QWidget * topLevelParent,
                                  class SecondaryWindowImplementationInterface * windowContainer,
                                  class SecondaryWindowImplementationInterface * dockContainer,
-                                 const QString & settingsKey)
+                                 const QString & settingsKey,
+                                 QWidget * centralWidget
+                                 )
     : QObject(topLevelParent)
     , dockContainer_(dockContainer)
     , windowContainer_(windowContainer)
     , settingsKey_(settingsKey)
     , topLevelParent_(topLevelParent)
+    , centralWidget_(centralWidget)
 {
 
 }
@@ -43,7 +46,9 @@ SecondaryWindow * SecondaryWindow::createSecondaryWindow(
                                 );
 
     SecondaryWindow * result = new SecondaryWindow(topLevelParent,
-                                                   window, dock, settingsKey);
+                                                   window, dock, settingsKey,
+                                                   centralWidget
+                                                   );
 
     if (dock) {
         dock->setPairedContainer(window);
@@ -170,7 +175,8 @@ void SecondaryWindow::restoreState()
     if (!settings_) return;
     if (windowContainer_) {
         QWidget * window = windowContainer_->toWidget();
-        QSize sz = settings_->value(settingsKey_ + WindowSize).toSize();
+        const QSize prefSize = centralWidget_ ? centralWidget_->sizeHint() : QSize();
+        QSize sz = settings_->value(settingsKey_ + WindowSize, prefSize).toSize();
         QPoint ps = settings_->value(settingsKey_ + WindowPos, QPoint(-1, -1)).toPoint();
         if (ps == QPoint(-1, -1)) {
             ps = QApplication::desktop()->availableGeometry(topLevelParent_).center();
