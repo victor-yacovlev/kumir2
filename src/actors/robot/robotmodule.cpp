@@ -3495,7 +3495,10 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
         if(sett->value("Robot/SFF").isValid())
         {
             if(LoadFromFile(sett->value("Robot/SFF").toString())!=0){
-                createEmptyField(7,7);}
+                createEmptyField(7,7);
+                
+                }
+            setWindowSize();
         }
        // setWindowSize();
         return "";
