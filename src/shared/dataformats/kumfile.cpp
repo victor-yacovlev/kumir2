@@ -114,12 +114,15 @@ KumFile::Data KumFile::insertTeacherMark(KumFile::Data & data)//Inserts |#%% if 
         //qDebug()<<" TM POS:"<<data.visibleText.indexOf("\n|#%%");
         return data;
     };
-    if(data.visibleText.indexOf(teacherMark)>-1)
+    if(data.hiddenText.indexOf(teacherMark)>-1)
     { // qDebug()<<" TM POS:"<<data.visibleText.indexOf("\n|#%%");
         return data;
     };   
-    static const QRegExp speclAlg(QString::fromUtf8("^\\s*алг\\s*(\\S\\S\\S)?\\s*@"));
+   // static const QRegExp speclAlg(QString::fromUtf8("^\\s*алг\\s*(\\S\\S\\S)?\\s+@"));
+    static const QRegExp speclAlg(QString::fromUtf8("^|\\s*алг\\s*(\\S\\S\\S)?\\s*@"));
+
     int pos=data.hiddenText.indexOf(speclAlg);
+    qDebug()<<data.hiddenText;
     if(pos>-1)
     {
         
