@@ -8,6 +8,7 @@ set(SOURCES
     mainwindow.cpp
     plugin.cpp
     tabwidget.cpp
+    tabwidgetelement.cpp
     kumirprogram.cpp
     terminal.cpp
     terminal_onesession.cpp

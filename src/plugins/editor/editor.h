@@ -43,6 +43,15 @@ public:
     QList<QMenu*> menus() const;
 
     KumFile::Data documentContents() const;
+
+    void loadDocument(QIODevice * device,
+                              const QString & fileNameSuffix = "",
+                              const QString & sourceEncoding = "",
+                              const QUrl & sourceUrl = QUrl()
+            ) /* throws QString */;
+    void loadDocument(const QString & fileName) /* throws QString */;
+    void loadDocument(const KumFile::Data &data) /* throws QString */;
+
     void saveDocument(const QString &fileName) const;
     void saveDocument(QIODevice * device) const;
     void setKumFile(const KumFile::Data & data);

@@ -78,6 +78,89 @@ void Editor::appendMarginText(int lineNo, const QString &text)
     update();
 }
 
+void Editor::loadDocument(QIODevice *device, const QString &fileNameSuffix,
+                          const QString &sourceEncoding, const QUrl &sourceUrl)
+{
+    Shared::AnalizerInterface * analizerPlugin = nullptr;
+
+    ExtensionSystem::PluginManager * manager =
+            ExtensionSystem::PluginManager::instance();
+
+    QList<Shared::AnalizerInterface*> analizers =
+            manager->findPlugins<Shared::AnalizerInterface>();
+
+    for (int i=0; i<analizers.size(); i++) {
+        if (analizers[i]->defaultDocumentFileNameSuffix() == fileNameSuffix) {
+            analizerPlugin = analizers[i];
+            break;
+        }
+    }
+
+    bool keepIndents = analizerPlugin==nullptr || analizerPlugin->indentsSignificant();
+
+    const QByteArray bytes = device->readAll();
+
+    KumFile::Data data = KumFile::fromString(
+                KumFile::readRawDataAsString(bytes, sourceEncoding, fileNameSuffix),
+                keepIndents
+                );
+    data.canonicalSourceLanguageName = fileNameSuffix;
+    data.sourceUrl = sourceUrl;
+    loadDocument(data);
+}
+
+void Editor::loadDocument(const QString &fileName)
+{
+    QFile f(fileName);
+    if (f.open(QIODevice::ReadOnly)) {
+        const QString localPath = QFileInfo(f).absoluteFilePath();
+        const QString suffix = QFileInfo(f).suffix();
+        const QUrl url = QUrl::fromLocalFile(localPath);
+        QString error;
+        try {
+            loadDocument(&f, suffix, QString(), url);
+        }
+        catch (const QString & e) {
+            error = e;
+        }
+        f.close();
+        if (error.length() > 0) {
+            throw error;
+        }
+    }
+    else {
+        throw tr("Can't open file %1 for reading").arg(fileName);
+    }
+}
+
+void Editor::loadDocument(const KumFile::Data &data)
+{
+    Shared::AnalizerInterface * analizerPlugin = nullptr;
+    Shared::Analizer::InstanceInterface * analizerInstance = nullptr;
+
+    QList<Shared::AnalizerInterface*> analizers =
+            ExtensionSystem::PluginManager::instance()
+            ->findPlugins<Shared::AnalizerInterface>();
+
+    for (int i=0; i<analizers.size(); i++) {
+        if (analizers[i]->defaultDocumentFileNameSuffix() == data.canonicalSourceLanguageName) {
+            analizerPlugin = analizers[i];
+            analizerInstance = analizerPlugin->createInstance();
+            if (data.sourceUrl.isLocalFile()) {
+                const QString localPath = data.sourceUrl.toLocalFile();
+                const QString dirName = QFileInfo(localPath).absoluteDir().path();
+                analizerInstance->setSourceDirName(dirName);
+            }
+            break;
+        }
+    }
+
+    analizerPlugin_ = analizerPlugin;
+    analizerInstance_ = analizerInstance;
+    documentUrl_ = data.sourceUrl;
+    setKumFile(data);
+}
+
 void Editor::setMarginText(int lineNo, const QString &text, const QColor & fgColor)
 {
     if (lineNo>=0 && lineNo<doc_->linesCount()) {
@@ -660,17 +743,12 @@ void Editor::createActions()
     connect(cursor_, SIGNAL(redoAvailable(bool)), redo_, SLOT(setEnabled(bool)));
     QObject::connect(redo_, SIGNAL(triggered()), this, SLOT(redo()));
 
-    if (analizerPlugin_) {
-        toggleComment_ = new QAction(plane_);
-        toggleComment_->setText(QObject::tr("(Un)Comment lines"));
-        toggleComment_->setShortcut(QKeySequence("Ctrl+/"));
-        toggleComment_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        QObject::connect(toggleComment_, SIGNAL(triggered()),
-                         cursor_, SLOT(toggleComment()));
-    }
-    else {
-        toggleComment_ = 0;
-    }
+    toggleComment_ = new QAction(plane_);
+    toggleComment_->setText(QObject::tr("(Un)Comment lines"));
+    toggleComment_->setShortcut(QKeySequence("Ctrl+/"));
+    toggleComment_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    QObject::connect(toggleComment_, SIGNAL(triggered()),
+                     cursor_, SLOT(toggleComment()));
 
     recordMacro_ = new QAction(plane_);
     recordMacro_->setEnabled(true);
@@ -704,10 +782,10 @@ void Editor::createActions()
     editMenu_->addAction(deleteLine_);
     editMenu_->addAction(deleteTail_);
 
-    if (analizerPlugin_) {
-        editMenu_->addSeparator();
-        editMenu_->addAction(toggleComment_);
-    }
+
+    editMenu_->addSeparator();
+    editMenu_->addAction(toggleComment_);
+
 
     editMenu_->addSeparator();
     editMenu_->addAction(recordMacro_);
@@ -886,11 +964,19 @@ void Editor::restoreState(const QByteArray &data)
 
 void Editor::setKumFile(const KumFile::Data &data)
 {
+    notSaved_ = true;
     doc_->setKumFile(data, plugin_->teacherMode_);
     if (analizerInstance_) {
+        toggleComment_->setVisible(true);
+        toggleComment_->setEnabled(true);
         analizerInstance_->setSourceText(data.visibleText + "\n" + data.hiddenText);
         updateFromAnalizer();
     }
+    else {
+        toggleComment_->setVisible(false);
+        toggleComment_->setEnabled(false);
+    }
+    updateInsertMenu();
     plane_->setLineHighlighted(-1, QColor(), 0, 0);
     plane_->update();
     checkForClean();

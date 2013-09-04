@@ -70,7 +70,7 @@ MainWindow::MainWindow(Plugin * p) :
 
     setStatusBar(statusBar_);
     setMinimumHeight(380);
-    b_notabs = false;
+    tabsDisabledFlag_ = false;
     b_workspaceSwitching = false;
 
 
@@ -283,7 +283,7 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
                         && url.scheme()=="file"
                         )
                 {
-                    static const QStringList validSuffices = b_notabs
+                    static const QStringList validSuffices = tabsDisabledFlag_
                             ? ( QStringList() << "kum" )
                             : ( QStringList() << "kum" << "txt"
                                 << "html" << "htm" );
@@ -299,7 +299,7 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
                     }
                 }
             }
-            const bool canAccept = b_notabs
+            const bool canAccept = tabsDisabledFlag_
                     ? validUrls.size() == 1
                     : validUrls.size() >= 1;
             if (canAccept) {
@@ -345,7 +345,7 @@ void MainWindow::lockActions()
 
     ui->actionPreferences->setEnabled(false);
 
-    if (b_notabs) {
+    if (tabsDisabledFlag_) {
         ui->actionNewProgram->setEnabled(false);
         ui->actionOpen->setEnabled(false);
         ui->actionRecent_files->setEnabled(false);
@@ -371,7 +371,7 @@ void MainWindow::unlockActions()
 
     ui->actionPreferences->setEnabled(true);
 
-    if (b_notabs) {
+    if (tabsDisabledFlag_) {
         ui->actionNewProgram->setEnabled(true);
         ui->actionOpen->setEnabled(true);
         ui->actionRecent_files->setEnabled(true);
@@ -856,7 +856,7 @@ void MainWindow::newProgram()
 {
     using namespace ExtensionSystem;
     using namespace Shared;
-    if (b_notabs && !closeTab(tabWidget_->currentIndex())) {
+    if (tabsDisabledFlag_ && !closeTab(tabWidget_->currentIndex())) {
         return;
     }
     AnalizerInterface * analizer =
@@ -872,15 +872,12 @@ void MainWindow::newProgram()
             this, SLOT(showAlgorithmHelp(QString)));
 
     QString fileName = suggestNewFileName(suffix, editor->analizer());
-    vc->setProperty("title",QFileInfo(fileName).fileName());
-    vc->setProperty("fileName", QDir::current().absoluteFilePath(fileName));
     TabWidgetElement * e = addCentralComponent(
                 fileName,
                 vc,
                 editor->toolBarActions(),
                 editor->menus(),
-                type,
-                true);
+                type);
     e->editorInstance = editor;
     tabWidget_->setCurrentWidget(e);
     e->setFocus();
@@ -913,8 +910,7 @@ void MainWindow::newText(const QString &fileName, const QString & text)
                 vc,
                 editor->toolBarActions(),
                 editor->menus(),
-                Text,
-                true);
+                Text);
     e->editorInstance = editor;
     tabWidget_->setCurrentWidget(e);
     if (!text.isEmpty()) {
@@ -957,36 +953,22 @@ TabWidgetElement * MainWindow::addCentralComponent(
     , QWidget *c
     , const QList<QAction*> & toolbarActions
     , const QList<QMenu*> & menus
-//    , const QList<QWidget*> & statusbarWidgets
-    , DocumentType type
-    , bool enableToolBar)
+    , DocumentType type)
 {
     class KumirProgram * kumir = 0;
-    class PascalProgram * pascal = 0;
     if (type==Program) {
         kumir = m_plugin->kumirProgram_;
     }
-    TabWidgetElement * element = new TabWidgetElement(
-                c,
-                enableToolBar,
-                toolbarActions,
-                menus,
-//                statusbarWidgets,
-                type,
-                gr_fileActions,
-                gr_otherActions,
-                kumir,
-                pascal
-                );
-
+    TabWidgetElement * element = new TabWidgetElement(c, type != WWW,
+                                                      toolbarActions, menus, type,
+                                                      gr_fileActions, gr_otherActions, kumir);
 
     connect(element, SIGNAL(documentCleanChanged(bool)), this, SLOT(handleDocumentCleanChanged(bool)));
     createTopLevelMenus(menus, true);
     tabWidget_->addTab(element, title);
-
-
     return element;
 }
+
 
 void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
 {
@@ -1041,7 +1023,7 @@ void MainWindow::setupContentForTab()
 void MainWindow::disableTabs()
 {
     tabWidget_->disableTabs();
-    b_notabs = true;
+    tabsDisabledFlag_ = true;
     ui->actionClose->setVisible(false);
     ui->actionClose->setEnabled(false);
     ui->actionNewText->setVisible(false);
@@ -1154,7 +1136,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
 {
 //    saveSettings();
 //    m_plugin->saveSession();
-    if (m_plugin->sessionsDisableFlag_ && b_notabs) {
+    if (m_plugin->sessionsDisableFlag_ && tabsDisabledFlag_) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
         if (twe->editorInstance) {
             bool notSaved = twe->editorInstance->isModified();
@@ -1277,7 +1259,7 @@ void MainWindow::fileOpen()
 {
     using namespace ExtensionSystem;
     using namespace Shared;
-    if (b_notabs) {
+    if (tabsDisabledFlag_) {
         TabWidgetElement * twe =
                 qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
         if (twe->editorInstance && twe->editorInstance->isModified()) {
@@ -1320,7 +1302,7 @@ void MainWindow::fileOpen()
     const QString languageName = analizer->languageName();
     const QString fileNameSuffix = analizer->defaultDocumentFileNameSuffix();
     filters << tr("%1 programs (*%2)").arg(languageName).arg(fileNameSuffix);
-    if (!b_notabs) {
+    if (!tabsDisabledFlag_) {
         filters << tr("Web pages (*.html *.htm)");
         filters << tr("Text files (*.txt)");
     }
@@ -1419,7 +1401,7 @@ void MainWindow::addToRecent(const QString &fileName)
 
 void MainWindow::loadRecentFile(const QString & fullPath)
 {
-    if (b_notabs) {
+    if (tabsDisabledFlag_) {
         TabWidgetElement * twe =
                 qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
         if (twe->editorInstance && twe->editorInstance->isModified()) {
@@ -1504,10 +1486,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             connect(vc, SIGNAL(requestHelpForAlgorithm(QString)),
                     this, SLOT(showAlgorithmHelp(QString)));
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
-            vc->setProperty("fileName", url.toLocalFile());
-            vc->setProperty("realFileName", url.toLocalFile());
-            vc->setProperty("title", fileName);
-            if (b_notabs) {
+            if (tabsDisabledFlag_) {
                 while(tabWidget_->count()) tabWidget_->removeTab(0);
             }
             result = addCentralComponent(
@@ -1515,8 +1494,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                         vc,
                         editor->toolBarActions(),
                         editor->menus(),
-                        type,
-                        true);
+                        type);
             result->editorInstance = editor;
             tabWidget_->setCurrentIndex(tabWidget_->count()-1);
             tabWidget_->currentWidget()->setFocus();
@@ -1527,7 +1505,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
         Shared::Browser::InstanceInterface * browser =
                 m_plugin->plugin_browser->createBrowser(url, m_plugin->m_browserObjects);
         browser->setTitleChangeHandler(this, SLOT(updateBrowserTitle(QString, const Shared::Browser::InstanceInterface*)));
-        if (b_notabs) {
+        if (tabsDisabledFlag_) {
             while(tabWidget_->count()) tabWidget_->removeTab(0);
         }
         result = addCentralComponent(
@@ -1535,8 +1513,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                     browser->widget(),
                     QList<QAction*>(),
                     QList<QMenu*>(),
-                    WWW,
-                    true);
+                    WWW);
         result->browserInstance = browser;
         tabWidget_->setCurrentIndex(tabWidget_->count()-1);
         tabWidget_->currentWidget()->setFocus();
@@ -1560,28 +1537,35 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
             break;
         }
     }
+    if (tabsDisabledFlag_) {
+        courseManagerTab = qobject_cast<TabWidgetElement*>(tabWidget_->widget(0));
+        Q_CHECK_PTR(courseManagerTab);
+    }
     if (data.language == ST::Kumir) {
-        QWidget * vc = nullptr;
-        Shared::Editor::InstanceInterface * editor =
-                m_plugin->plugin_editor->loadDocument(data.content);
+        KumFile::Data src = data.content;
+        src.canonicalSourceLanguageName = "kum";
+
         if (courseManagerTab) {
-            // Reuse opened course manager tab
-            QObject * oldEditor = dynamic_cast<QObject*>(courseManagerTab->editorInstance);
-            oldEditor->deleteLater();
-            courseManagerTab->editorInstance = editor;
+            // Reuse existing tab
+            Shared::Editor::InstanceInterface * editor =
+                    courseManagerTab->editorInstance;
         }
         else {
+            Shared::Editor::InstanceInterface * editor =
+                    m_plugin->plugin_editor->loadDocument(src);
             // Create new course manager tab
             courseManagerTab = addCentralComponent(
                         data.title,
                         editor->widget(),
                         editor->toolBarActions(),
                         editor->menus(),
-                        Program,
-                        true
+                        Program
                         );
+            courseManagerTab->editorInstance = editor;
             courseManagerTab->setCourseManagerTab(true);
+            courseManagerTab->setCourseTitle(data.title);
         }
+
     }
     tabWidget_->setCurrentWidget(courseManagerTab);
     return courseManagerTab;

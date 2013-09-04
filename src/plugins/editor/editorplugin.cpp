@@ -84,30 +84,9 @@ Editor::InstanceInterface * EditorPlugin::newDocument(
 
 Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(const KumFile::Data &data)
 {
-    Shared::AnalizerInterface * analizerPlugin = nullptr;
-    Shared::Analizer::InstanceInterface * analizerInstance = nullptr;
-
-    QList<Shared::AnalizerInterface*> analizers =
-            ExtensionSystem::PluginManager::instance()
-            ->findPlugins<Shared::AnalizerInterface>();
-
-    for (int i=0; i<analizers.size(); i++) {
-        if (analizers[i]->defaultDocumentFileNameSuffix() == data.canonicalSourceLanguageName) {
-            analizerPlugin = analizers[i];
-            analizerInstance = analizerPlugin->createInstance();
-            if (data.sourceUrl.isLocalFile()) {
-                const QString localPath = data.sourceUrl.toLocalFile();
-                const QString dirName = QFileInfo(localPath).absoluteDir().path();
-                analizerInstance->setSourceDirName(dirName);
-            }
-            break;
-        }
-    }
-
-    Editor * editor = new Editor(this, true, analizerPlugin, analizerInstance);
+    Editor * editor = new Editor(this, true, nullptr, nullptr);
     connectGlobalSignalsToEditor(editor);
-
-    editor->setKumFile(data);
+    editor->loadDocument(data);
     return editor;
 }
 
@@ -118,50 +97,18 @@ Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(
         const QUrl & sourceUrl
         )
 {
-    Shared::AnalizerInterface * analizerPlugin = nullptr;
-
-    ExtensionSystem::PluginManager * manager =
-            ExtensionSystem::PluginManager::instance();
-
-    QList<Shared::AnalizerInterface*> analizers =
-            manager->findPlugins<Shared::AnalizerInterface>();
-
-    for (int i=0; i<analizers.size(); i++) {
-        if (analizers[i]->defaultDocumentFileNameSuffix() == fileNameSuffix) {
-            analizerPlugin = analizers[i];
-            break;
-        }
-    }
-
-    bool keepIndents = analizerPlugin==nullptr || analizerPlugin->indentsSignificant();
-
-    const QByteArray bytes = device->readAll();
-
-    KumFile::Data data = KumFile::fromString(
-                KumFile::readRawDataAsString(bytes, sourceEncoding, fileNameSuffix),
-                keepIndents
-                );
-    data.canonicalSourceLanguageName = fileNameSuffix;
-    data.sourceUrl = sourceUrl;
-    return loadDocument(data);
+    Editor * editor = new Editor(this, true, nullptr, nullptr);
+    connectGlobalSignalsToEditor(editor);
+    editor->loadDocument(device, fileNameSuffix, sourceEncoding, sourceUrl);
+    return editor;
 }
 
 Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(const QString &fileName)
 {
-    QFile f(fileName);
-    if (f.open(QIODevice::ReadOnly)) {
-        const QString localPath = QFileInfo(f).absoluteFilePath();
-        const QString suffix = QFileInfo(f).suffix();
-        const QUrl url = QUrl::fromLocalFile(localPath);
-        Shared::Editor::InstanceInterface * result =
-                loadDocument(&f, suffix, QString(), url);
-        f.close();
-        return result;
-    }
-    else {
-        throw tr("Can't open file %1 for reading").arg(fileName);
-        return nullptr;
-    }
+    Editor * editor = new Editor(this, true, nullptr, nullptr);
+    connectGlobalSignalsToEditor(editor);
+    editor->loadDocument(fileName);
+    return editor;
 }
 
 int EditorPlugin::analizerDocumentId(int editorDocumentId) const

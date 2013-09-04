@@ -38,9 +38,7 @@ public:
                              , QWidget *c
                              , const QList<QAction*> & toolbarActions
                              , const QList<QMenu*> & menus
-//                             , const QList<QWidget*> & statusbarWidgets
-                             , DocumentType type
-                             , bool enableToolBar);
+                             , DocumentType type);
 
 
     ~MainWindow();
@@ -131,7 +129,7 @@ private:
     QActionGroup * gr_fileActions;
     QActionGroup * gr_otherActions;
 
-    bool b_notabs;
+    bool tabsDisabledFlag_;
 
 //    static QString StatusbarWidgetCSS;
 

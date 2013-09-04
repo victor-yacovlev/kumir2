@@ -465,8 +465,7 @@ void Plugin::restoreSession()
                         startPage_->widget(),
                         QList<QAction*>(),
                         QList<QMenu*>(),
-                        MainWindow::WWW,
-                        false
+                        MainWindow::WWW
                         );
             twe->browserInstance = startPage_;
         }
