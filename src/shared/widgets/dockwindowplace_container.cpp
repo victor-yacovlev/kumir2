@@ -14,6 +14,7 @@ DockWindowPlaceContainer::DockWindowPlaceContainer(DockWindowPlace *parent)
     setParent(parent);
     setupWidgetsAppearance();
     setupWindow();
+    setAutoFillBackground(true);
 }
 
 void DockWindowPlaceContainer::activate(const QPoint &, const QSize & sz)
