@@ -1549,6 +1549,7 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
             // Reuse existing tab
             Shared::Editor::InstanceInterface * editor =
                     courseManagerTab->editorInstance;
+            editor->loadDocument(src);
         }
         else {
             Shared::Editor::InstanceInterface * editor =
@@ -1563,8 +1564,8 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
                         );
             courseManagerTab->editorInstance = editor;
             courseManagerTab->setCourseManagerTab(true);
-            courseManagerTab->setCourseTitle(data.title);
         }
+        courseManagerTab->setCourseTitle(data.title);
 
     }
     tabWidget_->setCurrentWidget(courseManagerTab);
