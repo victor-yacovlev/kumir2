@@ -385,7 +385,8 @@ namespace ActorRobot {
         
         QPointF roboPosF()
         {
-            return robot->scenePos () ;
+            if(robot)return robot->scenePos () ;
+            return QPointF(0,0);
         };
         bool stepUp();
         bool stepDown();
