@@ -21,7 +21,7 @@ KumirCompilerToolPlugin::KumirCompilerToolPlugin()
     : KPlugin()
     , analizer_(nullptr)
     , generator_(nullptr)
-    , useAnsiWindowsOutput_(false)
+    , useAnsiWindowsOutput_(true)
 {
 }
 
@@ -30,11 +30,11 @@ KumirCompilerToolPlugin::acceptableCommandLineParameters() const
 {
     using ExtensionSystem::CommandLineParameter;
     QList<CommandLineParameter> result;
-    result << CommandLineParameter(
-                  false,
-                  'a', "ansi",
-                  tr("Show error messages in console using CP1251 encoding instead of CP866 (Windows only)")
-                  );
+//    result << CommandLineParameter(
+//                  false,
+//                  'a', "ansi",
+//                  tr("Show error messages in console using CP1251 encoding instead of CP866 (Windows only)")
+//                  );
     result << CommandLineParameter(
                   false,
                   'e', "encoding",
@@ -126,12 +126,7 @@ void KumirCompilerToolPlugin::start()
                     ": " + e.code;
 #ifdef Q_OS_WIN32
             QTextCodec * cp866 = QTextCodec::codecForName("CP866");
-            if (useAnsiWindowsOutput_) {
-                std::cerr << cp866->fromUnicode(errorMessage).data();
-            }
-            else {
-                std::cerr << errorMessage.toLocal8Bit().data();
-            }
+            fprintf(stderr, "%s\n", cp866->fromUnicode(errorMessage).constData());
 #else
             std::cerr << errorMessage.toLocal8Bit().data();
 #endif
@@ -165,15 +160,10 @@ void KumirCompilerToolPlugin::start()
         qApp->setProperty("returnCode", errors.isEmpty()? 0 : 1);
     }
     else {
-        const QString errorMessage = tr("Can't open file %1").arg(filename);
+        const QString errorMessage = tr("Can't open file %1").arg(QDir::toNativeSeparators(filename));
 #ifdef Q_OS_WIN32
         QTextCodec * cp866 = QTextCodec::codecForName("CP866");
-        if (useAnsiWindowsOutput_) {
-            std::cerr << cp866->fromUnicode(errorMessage).data();
-        }
-        else {
-            std::cerr << errorMessage.toLocal8Bit().data();
-        }
+        fprintf(stderr, "%s\n", cp866->fromUnicode(errorMessage).constData());
 #else
         std::cerr << errorMessage.toLocal8Bit().data();
 #endif
