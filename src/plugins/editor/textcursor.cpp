@@ -76,6 +76,8 @@ void TextCursor::toggleComment()
         return;
     if (editor_->analizerInstance_==0)
         return;
+    if (modifiesProtectedLiines())
+        return;
     if (hasSelection()) {
         int start = -1;
         int end = -1;
@@ -1316,6 +1318,8 @@ void TextCursor::insertImport(const QString &importableName)
         emit signalizeNotEditable();
         return;
     }
+    if (modifiesProtectedLiines())
+        return;
 
     if (editor_->analizerInstance_) {
         editor_->document()->undoStack()->push(new InsertImportCommand(
@@ -1371,6 +1375,8 @@ void TextCursor::removePreviousChar()
 {
     // TODO Undo-redo stack!
     if (!enabledFlag_)
+        return;
+    if (modifiesProtectedLiines())
         return;
     if (hasSelection()) {
         removeSelectedText();
@@ -1443,6 +1449,8 @@ void TextCursor::removeCurrentLine()
 {
     if (!enabledFlag_)
         return;
+    if (modifiesProtectedLiines())
+        return;
     if (hasSelection()) {
         removeSelectedText();
         emitPositionChanged();
@@ -1465,6 +1473,8 @@ void TextCursor::removeLineTail()
 {
     if (!enabledFlag_)
         return;
+    if (modifiesProtectedLiines())
+        return;
     if (hasSelection()) {
         removeSelection();
     }
@@ -1486,6 +1496,8 @@ void TextCursor::removeCurrentChar()
 {
     // TODO Undo-redo stack!
     if (!enabledFlag_)
+        return;
+    if (modifiesProtectedLiines())
         return;
     if (hasSelection()) {
         removeSelectedText();
