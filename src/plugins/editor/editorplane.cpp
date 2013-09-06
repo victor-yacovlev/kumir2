@@ -1467,6 +1467,7 @@ void EditorPlane::doAutocomplete()
     if (editor_->cursor()->row()<editor_->document()->linesCount()) {
         QString line = editor_->document()->textAt(editor_->cursor()->row());
         int textPos = editor_->cursor()->column() - 2 * editor_->document()->indentAt(editor_->cursor()->row());
+        textPos = qMax(0, textPos);
         before = line.mid(0, textPos);
         if (textPos<line.length()) {
             after = line.mid(textPos);
