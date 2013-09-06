@@ -193,6 +193,8 @@ MainWindow::MainWindow(Plugin * p) :
     }
 
     createSettingsDialog();
+    ui->menuFile->removeAction(ui->actionSave_all); // Not implemented yet
+    ui->menuFile->removeAction(ui->actionRestore_previous_session); // Not implemented yet
 }
 
 //QString MainWindow::StatusbarWidgetCSS =
