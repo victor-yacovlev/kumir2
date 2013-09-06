@@ -177,7 +177,13 @@ public:
         if (mustShowHelpAndExit) {
             if (splashScreen_)
                 splashScreen_->finish(0);
-            fprintf(stderr, "%s", qPrintable(manager->commandLineHelp()));
+            const QString msg = manager->commandLineHelp();
+#ifdef Q_OS_WIN32
+            QTextCodec * codec = QTextCodec::codecForName("CP866");
+            fprintf(stderr, "%s", codec->fromUnicode(msg).constData());
+#else
+            fprintf(stderr, "%s", msg.toLocal8Bit().data());
+#endif
             exit(0);
             return;
         }
