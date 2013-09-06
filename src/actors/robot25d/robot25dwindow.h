@@ -7,11 +7,8 @@
 #include "robotview.h"
 #include "sch_game.h"
 
-namespace Ui {
-    class Robot25DWindow;
-}
-
-class Robot25DWindow : public QMainWindow
+class Robot25DWindow :
+        public QGraphicsView
 {
     Q_OBJECT
 
@@ -22,9 +19,21 @@ public:
     inline void lock() { group_lockedActionsDuringEvaluate->setEnabled(false); }
     inline void unlock() { group_lockedActionsDuringEvaluate->setEnabled(true); }
 
+    QSize sizeHint() const;
+
     void loadGame(const QString &fileName);
     void loadEnvironment(const QString &fileName);
-    void statusMessage(const QString & msg);
+
+signals:
+    void resizeRequest(const QSize & sz);
+
+protected:
+    void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
+    void mouseDoubleClickEvent(QMouseEvent *event);
+
 private slots:
     void handleLoadAction();
     void handleNextAction();
@@ -33,9 +42,10 @@ private slots:
 
 private:
     Schema::Game m_game;
-    Ui::Robot25DWindow *ui;
     QActionGroup * group_lockedActionsDuringEvaluate;
     Robot25D::RobotView * m_robotView;
+
+    QPoint mousePressPosition_;
 
 };
 

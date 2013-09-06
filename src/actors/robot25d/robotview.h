@@ -45,6 +45,7 @@ public:
     inline qreal baseZOrder(int x, int y) { return m_field[y][x].baseZOrder; }
     inline int robotSpeed() const { return m_robotItem->speed(); }
     QString lastError(QLocale::Language language) const;
+
     ~RobotView();
 public slots:
         void evaluateCommand(const QString &englishName);
@@ -107,6 +108,7 @@ protected:
 
     bool b_loadingMode;
     qreal r_loadingState;
+
 
 
 

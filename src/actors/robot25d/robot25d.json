@@ -34,39 +34,6 @@
     "gui": {
         "windows": [
             { "role": "main", "icon": "robot25d" }
-        ],
-        "menus": [
-            {
-                "title": { "ascii": "IsoRobot", "ru_RU": "Вертун" },
-                "items": [
-                    {
-                        "title": {
-                            "ascii": "Load Environment Set...",
-                            "ru_RU": "Загрузить набор обстановок"
-                        },
-                        "icon": "file-open"
-                    },
-                    {
-						"title": {
-							"ascii": "Revert Environment", 
-		                    "ru_RU": "Вернуть к исходной обстановке"
-		                },
-						"icon": "file-revert"
-					},
-                    {
-                        "title": {
-                            "ascii": "Next Environment",
-                            "ru_RU": "Следующая обстановка"
-                        }
-                    },
-                    {
-                        "title": {
-                            "ascii": "Previous Environment",
-                            "ru_RU": "Предыдущая обстановка"
-                        }
-                    }
-                ]
-            }
         ]
     }
 }

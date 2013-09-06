@@ -119,8 +119,7 @@ void RobotView::setLoadingState(qreal v)
 }
 
 void RobotView::createField()
-{
-
+{    
     for (int i=0; i<l_allItems.size(); i++) {
         if (scene()) {
             scene()->removeItem(l_allItems[i]);

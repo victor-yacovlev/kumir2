@@ -41,6 +41,8 @@ public slots:
     bool runIsWallAhead();
     bool runIsFreeAhead();
 
+    void loadActorData(QIODevice *source);
+
     inline void reloadSettings(ExtensionSystem::SettingsPtr, const QStringList & ) { }
     inline void changeGlobalState(ExtensionSystem::GlobalState, ExtensionSystem::GlobalState) {}
 

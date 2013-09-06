@@ -10,6 +10,7 @@ You should change it corresponding to functionality.
 #include <QtGui>
 #include <iostream>
 #include "isometricrobotmodule.h"
+#include "sch_environment.h"
 
 namespace ActorIsometricRobot {
 
@@ -31,6 +32,17 @@ void IsometricRobotModule::reset()
     bool wasAnimated = robotView_->isAnimated();
     robotView_->reset();
     robotView_->setAnimated(wasAnimated);
+}
+
+void IsometricRobotModule::loadActorData(QIODevice *source)
+{
+    QTextStream ts(source);
+    ts.setCodec("UTF-8");
+    ts.setAutoDetectUnicode(true);
+    const QString data = ts.readAll();
+    Schema::Environment env;
+    Schema::parceKumirFil(data, env);
+    robotView_->loadEnvironment(env);
 }
 
 void IsometricRobotModule::setAnimationEnabled(bool enabled)

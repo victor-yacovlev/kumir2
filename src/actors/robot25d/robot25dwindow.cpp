@@ -1,52 +1,121 @@
 #include "robot25dwindow.h"
-#include "ui_robot25dwindow.h"
+
 #include <QtScript>
 
 Robot25DWindow::Robot25DWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::Robot25DWindow)
+    QGraphicsView(parent)
 {
-    ui->setupUi(this);
-    ui->graphicsView->setScene(new QGraphicsScene);
+    setAttribute(Qt::WA_Hover);
+    setMouseTracking(true);
+    mousePressPosition_ = QPoint(-1, -1);
+    setScene(new QGraphicsScene);
     const QString resPath = qApp->property("sharePath").toString()+"/actors/robot25d/";
-//    QImage bgImg = QImage(resPath+"background.png");
-//    QBrush bgBrush = QBrush(bgImg);
-    QBrush bgBrush = QBrush(QColor(Qt::black));
-    ui->graphicsView->setBackgroundBrush(bgBrush);
-    ui->graphicsView->setRenderHints(QPainter::Antialiasing|QPainter::TextAntialiasing);
+    QImage bgImg = QImage(resPath+"grass_0.png");
+    QBrush bgBrush = QBrush(bgImg);
+//    QBrush bgBrush = QBrush(QColor(Qt::black));
+    setBackgroundBrush(bgBrush);
+    setRenderHints(QPainter::Antialiasing|QPainter::TextAntialiasing);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_robotView = new Robot25D::RobotView(false, true, false, QSize(400,300));
-    ui->graphicsView->scene()->addItem(m_robotView);
+    scene()->addItem(m_robotView);
 
-    ui->actionLoad->setIcon(QIcon::fromTheme("document-open", QIcon(resPath+"document-open.png")));
-    ui->actionPrev->setIcon(QIcon::fromTheme("go-previous", QIcon(resPath+"go-previous.png")));
-    ui->actionNext->setIcon(QIcon::fromTheme("go-next", QIcon(resPath+"go-next.png")));
-    ui->actionReset->setIcon(QIcon::fromTheme("view-refresh", QIcon(resPath+"view-refresh.png")));
-    ui->toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    ui->toolBar->setIconSize(QSize(22,22));
     loadGame(resPath+"/default.pm.json");
-//    m_robotView->setAnimated(true);
-    connect(ui->actionLoad, SIGNAL(triggered()), this, SLOT(handleLoadAction()));
-    connect(ui->actionNext, SIGNAL(triggered()), this, SLOT(handleNextAction()));
-    connect(ui->actionPrev, SIGNAL(triggered()), this, SLOT(handlePrevAction()));
-    connect(ui->actionReset, SIGNAL(triggered()), m_robotView, SLOT(reset()));
-    group_lockedActionsDuringEvaluate = new QActionGroup(this);
-    group_lockedActionsDuringEvaluate->addAction(ui->actionLoad);
-    group_lockedActionsDuringEvaluate->addAction(ui->actionNext);
-    group_lockedActionsDuringEvaluate->addAction(ui->actionPrev);
-    group_lockedActionsDuringEvaluate->addAction(ui->actionReset);
-    ui->toolBar->setVisible(false);
-    ui->menubar->setVisible(false);
-    ui->statusbar->setVisible(false);
+//    m_robotView->setAnimated(true);    
 }
 
-void Robot25DWindow::statusMessage(const QString &msg)
+
+QSize Robot25DWindow::sizeHint() const
 {
-    statusBar()->showMessage(msg);
+    return QGraphicsView::sizeHint() + QSize(30, 40);
+}
+
+void Robot25DWindow::mousePressEvent(QMouseEvent *event)
+{
+    const QScrollBar * vert = verticalScrollBar();
+    const QScrollBar * horiz = horizontalScrollBar();
+    bool scrollable = vert->maximum() + horiz->maximum() > 0;
+    if (scrollable) {
+        if (event->button() == Qt::LeftButton) {
+            setCursor(Qt::ClosedHandCursor);
+            mousePressPosition_ = event->pos();
+        }
+        else {
+            setCursor(Qt::OpenHandCursor);
+        }
+        event->accept();
+    }
+    else {
+        setCursor(Qt::ArrowCursor);
+        event->ignore();
+    }
+}
+
+void Robot25DWindow::mouseReleaseEvent(QMouseEvent *event)
+{
+    const QScrollBar * vert = verticalScrollBar();
+    const QScrollBar * horiz = horizontalScrollBar();
+    bool scrollable = vert->maximum() + horiz->maximum() > 0;
+    if (scrollable) {
+        mousePressPosition_ = QPoint(-1, -1);
+        setCursor(Qt::OpenHandCursor);
+        event->accept();
+    }
+    else {
+        setCursor(Qt::ArrowCursor);
+        event->ignore();
+    }
+}
+
+void Robot25DWindow::mouseMoveEvent(QMouseEvent *event)
+{
+    QScrollBar * vert = verticalScrollBar();
+    QScrollBar * horiz = horizontalScrollBar();
+    bool scrollable = vert->maximum() + horiz->maximum() > 0;
+    if (scrollable) {
+        if (mousePressPosition_ != QPoint(-1, -1)) {
+            setCursor(Qt::ClosedHandCursor);
+            const QPoint diff = event->pos() - mousePressPosition_;
+            const int dx = diff.x();
+            const int dy = diff.y();
+            if (dx != 0) {
+                horiz->setValue(horiz->value() - dx);
+            }
+            if (dy != 0) {
+                vert->setValue(vert->value() - dy);
+            }
+            mousePressPosition_ = event->pos();
+        }
+        event->accept();
+    }
+    else {
+        setCursor(Qt::ArrowCursor);
+        event->ignore();
+    }
+}
+
+void Robot25DWindow::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    QScrollBar * vert = verticalScrollBar();
+    QScrollBar * horiz = horizontalScrollBar();
+    bool scrollable = vert->maximum() + horiz->maximum() > 0;
+    if (scrollable) {
+        emit resizeRequest(sizeHint());
+        event->accept();
+    }
+    else {
+        event->ignore();
+    }
+}
+
+void Robot25DWindow::wheelEvent(QWheelEvent *event)
+{
+    event->ignore();
 }
 
 Robot25DWindow::~Robot25DWindow()
 {
-    delete ui;
+
 }
 
 void Robot25DWindow::loadGame(const QString &fileName)
@@ -64,13 +133,24 @@ void Robot25DWindow::loadGame(const QString &fileName)
             setTaskIndex(g.index);
         }
         else {
-            statusBar()->showMessage(QString::fromUtf8("Невозможно загрузить %1: это не ПиктоМир-игра").arg(QFileInfo(fileName).fileName()));
+
+//            statusBar()->showMessage(QString::fromUtf8("Невозможно загрузить %1: это не ПиктоМир-игра").arg(QFileInfo(fileName).fileName()));
         }
     }
     else {
-        statusBar()->showMessage(QString::fromUtf8("Невозможно загрузить %1: файл не читается").arg(QFileInfo(fileName).fileName()));
+//        statusBar()->showMessage(QString::fromUtf8("Невозможно загрузить %1: файл не читается").arg(QFileInfo(fileName).fileName()));
     }
 }
+
+//QSize Robot25DWindow::minimumSizeHint() const
+//{
+//    return QSize(100, 100);
+//}
+
+//QSize Robot25DWindow::sizeHint() const
+//{
+//    return sizeHint() + QSize(30, 30);
+//}
 
 void Robot25DWindow::loadEnvironment(const QString &fileName)
 {
@@ -86,11 +166,11 @@ void Robot25DWindow::loadEnvironment(const QString &fileName)
             setTaskIndex(0);
         }
         else {
-            statusBar()->showMessage(QString::fromUtf8("Невозможно загрузить %1: это не обстановка Вертуна").arg(QFileInfo(fileName).fileName()));
+//            statusBar()->showMessage(QString::fromUtf8("Невозможно загрузить %1: это не обстановка Вертуна").arg(QFileInfo(fileName).fileName()));
         }
     }
     else {
-        statusBar()->showMessage(QString::fromUtf8("Невозможно загрузить %1: файл не читается").arg(QFileInfo(fileName).fileName()));
+//        statusBar()->showMessage(QString::fromUtf8("Невозможно загрузить %1: файл не читается").arg(QFileInfo(fileName).fileName()));
     }
 }
 
@@ -112,6 +192,8 @@ void Robot25DWindow::handleLoadAction()
     }
 }
 
+
+
 void Robot25DWindow::handleNextAction()
 {
     setTaskIndex(m_game.index+1);
@@ -127,7 +209,6 @@ void Robot25DWindow::setTaskIndex(int index)
     index = qMax(0, qMin(m_game.tasks.size()-1, index));
     m_robotView->loadEnvironment(m_game.tasks[index].environment);
     m_game.index = index;
-    ui->actionPrev->setEnabled(index>0);
-    ui->actionNext->setEnabled(index<m_game.tasks.size()-1);
+
     setWindowTitle(QString::fromUtf8("%1 - Вертун").arg(m_game.tasks[index].title));
 }
