@@ -633,8 +633,25 @@ AnalizerPrivate::splitIntoModules(const QList<TextStatementPtr> &statements)
     QList<TextStatementPtr> markers;
     for (int i=0; i<statements.size(); i++) {
         TextStatementPtr st = statements.at(i);
-        if (st->type == Shared::LxTypeComment &&
-                st->data.first()->data.trimmed().startsWith("|#%%"))
+        bool teacherMarker = st->type == Shared::LxTypeComment &&
+                st->data.first()->data.trimmed().startsWith("|#%%");
+        bool markedAlgHeader = false;
+        // Then next block is used for compatibility to old Kumir (1.x)
+        // programs
+        if (markers.isEmpty() && st->type == Shared::LxPriAlgHeader) {
+            const Lexem * algNameLexem = nullptr;
+            for (int j=0; j<st->data.size(); j++) {
+                const Lexem * lx = st->data.at(j);
+                if (lx->type == LxTypeName) {
+                    algNameLexem = lx;
+                    break;
+                }
+            }
+            if (algNameLexem && algNameLexem->data.startsWith('@')) {
+                markedAlgHeader = true;
+            }
+        }
+        if (teacherMarker || markedAlgHeader)
         {
             static const QString ExtraTeacherMarker = _("Extra teacher marker");
             foreach (TextStatementPtr prevMarker, markers) {
