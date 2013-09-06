@@ -160,35 +160,36 @@ void Robot25DWindow::loadEnvironment(const QString &fileName)
         f.close();
         Schema::Game g;
         Schema::Task oneTask;
-        if (Schema::parceKumirFil(content, oneTask.environment)) {
+        if (Schema::parceJSON(content, oneTask.environment)) {
             g.tasks.append(oneTask);
             m_game = g;
             setTaskIndex(0);
         }
         else {
-//            statusBar()->showMessage(QString::fromUtf8("Невозможно загрузить %1: это не обстановка Вертуна").arg(QFileInfo(fileName).fileName()));
+            const QString message =
+                    QString::fromUtf8("Невозможно загрузить %1: это не обстановка Вертуна").arg(QFileInfo(fileName).fileName());
+            QMessageBox::critical(this, tr("Can't load environment"), message);
         }
     }
     else {
-//        statusBar()->showMessage(QString::fromUtf8("Невозможно загрузить %1: файл не читается").arg(QFileInfo(fileName).fileName()));
+        const QString message =
+                QString::fromUtf8("Невозможно загрузить %1: файл не читается").arg(QFileInfo(fileName).fileName());
+        QMessageBox::critical(this, tr("Can't load environment"), message);
     }
 }
 
 void Robot25DWindow::handleLoadAction()
 {
     QSettings s;
-    QString lastDir = s.value("Robot25D/LastDir", QApplication::applicationDirPath()+"/Addons/robot25d/resources/default.pm.json").toString();
+    QString lastDir = s.value("Robot25D/LastDir", QDir::currentPath()).toString();
     const QString fileName = QFileDialog::getOpenFileName(this
                                                           , QString::fromUtf8("Загрузить обстановку")
                                                           , lastDir
-                                                          , QString::fromUtf8("Все поддерживаемые файлы (*.pm.json *.fil);;(Игры ПиктоМир >= 0.12 (*.pm.json);;Отдельные обстановки (*.fil)")
+                                                          , QString::fromUtf8("Обстановки вертуна (*.env.json)")
                                                           );
     if (!fileName.isEmpty()) {
         s.setValue("Robot25D/LastDir", fileName);
-        if (fileName.endsWith(".pm.json"))
-            loadGame(fileName);
-        else
-            loadEnvironment(fileName);
+        loadEnvironment(fileName);
     }
 }
 

@@ -342,7 +342,8 @@ extern bool parceJSON(const QScriptValue &value, Environment &environment)
 extern bool parceJSON(const QString &data, Environment &environment)
 {
     QScriptEngine engine;
-    QScriptValue value = engine.evaluate(data);
+    engine.evaluate("var data = " + data);
+    QScriptValue value = engine.evaluate("data");
     if (value.isObject()) {
         return parceJSON(value, environment);
     }

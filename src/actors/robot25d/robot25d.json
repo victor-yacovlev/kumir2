@@ -34,6 +34,20 @@
     "gui": {
         "windows": [
             { "role": "main", "icon": "robot25d" }
+        ],
+        "menus": [
+            {
+            "title": { "ascii": "Robot25D", "ru_RU": "Вертун" },
+            "items": [
+                {
+                    "title": {
+                        "ascii": "Load Environment...",
+                        "ru_RU": "Загрузить обстановку..."
+                    },
+                    "icon": "file-open"
+                }
+            ]
+            }
         ]
     }
 }

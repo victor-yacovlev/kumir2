@@ -20,6 +20,8 @@ IsometricRobotModule::IsometricRobotModule(ExtensionSystem::KPlugin * parent)
     , window_(new Robot25DWindow(0))
     , robotView_(window_->robotView())
 {
+    connect(m_actionRobot25DLoadEnvironment, SIGNAL(triggered()),
+            window_, SLOT(handleLoadAction()));
 }
 
 QList<ExtensionSystem::CommandLineParameter> IsometricRobotModule::acceptableCommandLineParameters()
