@@ -978,6 +978,7 @@ void Editor::setKumFile(const KumFile::Data &data)
     }
     updateInsertMenu();
     plane_->setLineHighlighted(-1, QColor(), 0, 0);
+    plane_->updateScrollBars();
     plane_->update();
     checkForClean();
     setNotModified();
