@@ -663,9 +663,9 @@ void KumirRunPlugin::timerEvent(QTimerEvent *event) {
         Shared::ActorInterface * actor =
                 qobject_cast<Shared::ActorInterface*>(plugin);
         if (actor)
-            actor->setAnimationEnabled(true);
+            actor->setAnimationEnabled(false);
         if (actor && actor->mainWidget()) {
-            actor->mainWidget()->show();
+//            actor->mainWidget()->show();
             connect(pRun_, SIGNAL(finished()), actor->mainWidget(), SLOT(close()));
         }
     }
