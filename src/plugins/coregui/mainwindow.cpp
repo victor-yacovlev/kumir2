@@ -897,14 +897,20 @@ void MainWindow::newText()
 }
 
 void MainWindow::newText(const QString &fileName, const QString & text)
-{
+{    
     Shared::Editor::InstanceInterface * editor =
             m_plugin->plugin_editor->newDocument("", QDir::currentPath());
+
+    KumFile::Data data;
+    data.canonicalSourceLanguageName = "";
+    data.sourceUrl = fileName.isEmpty()
+            ? QUrl() : QUrl::fromLocalFile(fileName);
+    data.visibleText = text;
+    editor->loadDocument(data);
+
     QWidget * vc = editor->widget();
     connect(vc, SIGNAL(message(QString)), this, SLOT(showMessage(QString)));
 
-    vc->setProperty("fileName", fileName);
-    vc->setProperty("title",QFileInfo(fileName).fileName());
     TabWidgetElement * e = addCentralComponent(
                 QFileInfo(fileName).fileName(),
                 vc,

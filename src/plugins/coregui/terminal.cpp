@@ -417,9 +417,12 @@ void Term::saveText(const QString &suggestedFileName, const QString &text)
 void Term::editLast()
 {
     Q_ASSERT(!sessions_.isEmpty());
-    QString suggestedFileName = QDir::current().absoluteFilePath(sessions_.last()->fileName());
-    suggestedFileName = suggestedFileName.left(suggestedFileName.length()-4)+"-out.txt";
-    emit openTextEditor(suggestedFileName, sessions_.last()->plainText(false));
+    const QString fileName = sessions_.last()->fileName();
+    const QString suggestedFileName = fileName.isEmpty()
+            ? QString()
+            : QDir::current().absoluteFilePath(sessions_.last()->fileName()) + "out.txt";
+    const QString plainText = sessions_.last()->plainText(false);
+    emit openTextEditor(suggestedFileName, plainText);
 }
 
 } // namespace Terminal

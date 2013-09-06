@@ -43,7 +43,7 @@ public:
     QSize minimumSizeHint() const;
     QSize visibleSize() const;
     QString plainText(bool footer_header) const;
-    inline QString fileName() const { return fileName_; }
+    QString fileName() const;
     inline QDateTime startTime() const { return startTime_; }
     inline QDateTime endTime() const { return endTime_; }
     inline int fixedWidth() const { return fixedWidth_; }

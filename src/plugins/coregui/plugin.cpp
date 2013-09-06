@@ -315,7 +315,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     }
 
     connect(terminal_, SIGNAL(openTextEditor(QString,QString)),
-            mainWindow_, SLOT(newText(QString,QString)));
+            mainWindow_, SLOT(newText(QString,QString)), Qt::DirectConnection);
 
     debugger_ = new DebuggerView(plugin_kumirCodeRun);
 

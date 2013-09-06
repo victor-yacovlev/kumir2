@@ -59,6 +59,11 @@ int OneSession::widthInChars(int realWidth) const
     return (realWidth-2*BodyPadding-LineWidth-ShadowOffset)/atom.width();
 }
 
+QString OneSession::fileName() const
+{
+    return fileName_.contains(".") ? fileName_ : QString();
+}
+
 QSize OneSession::visibleSize() const
 {
     const QRegion region = QRegion() +
