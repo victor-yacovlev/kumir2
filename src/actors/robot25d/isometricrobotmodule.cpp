@@ -43,7 +43,7 @@ void IsometricRobotModule::loadActorData(QIODevice *source)
     ts.setAutoDetectUnicode(true);
     const QString data = ts.readAll();
     Schema::Environment env;
-    Schema::parceKumirFil(data, env);
+    Schema::parceJSON(data, env);
     robotView_->loadEnvironment(env);
 }
 
