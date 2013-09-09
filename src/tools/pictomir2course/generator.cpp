@@ -169,7 +169,7 @@ string generator::create_env_data(const environment_t &environment)
 
 string generator::create_kum_data(const program_t &program)
 {
-    string result = "использовать Вертун\n\n";
+    string result = "использовать Вертун|@protected\n|@protected\n";
     for (size_t i=0; i<program.size(); ++i) {
         result += create_kum_algorithm(program[i], i);
     }
@@ -184,8 +184,8 @@ string generator::create_kum_algorithm(const algorithm_t &algorithm,
             ? string("программа")
             : string("команда ") + Commands[algorithm_index];
 
-    string beg = "нач\n";
-    string end = "кон\n";
+    string beg = "нач|@protected\n";
+    string end = "кон|@protected\n";
 
     if (algorithm.repeater != NO_COMMAND) {
         beg += "нц";
@@ -245,8 +245,9 @@ string generator::create_kum_algorithm(const algorithm_t &algorithm,
         else if (CALL_6 == cmd)
             body += "команда Е\n";
     }
-
-    string result = "алг " + title + "\n" + beg + body + end;
+    if (body.length() == 0)
+        body = "\n";
+    string result = "алг " + title + "|@protected\n" + beg + body + end;
     return result;
 }
 
