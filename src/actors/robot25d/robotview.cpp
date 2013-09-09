@@ -28,6 +28,7 @@ RobotView::RobotView(bool with_controls, bool with_bachground,
                      const QSize &minSize, QGraphicsItem *parent)
     : QObject(0)
     , QGraphicsRectItem(parent)
+    , m_robotItem(0)
 
 {
     Q_UNUSED(with_bachground);

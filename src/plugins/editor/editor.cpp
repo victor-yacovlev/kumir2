@@ -344,12 +344,15 @@ void Editor::updateInsertMenu()
             systemMacros_[i].action = insertMenu_->addSeparator();
         }
         else {
-            QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
+            const QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
+            const QKeySequence ks2(escComa + QString(m.key));
+            const QList<QKeySequence> shortcuts = QList<QKeySequence>() << ks << ks2;
             m.action = new QAction(m.title, insertMenu_);
-            m.action->setShortcut(ks);
+            m.action->setShortcuts(shortcuts);
             systemMacros_[i].action = m.action;
             insertMenu_->addAction(m.action);
             connect(m.action, SIGNAL(triggered()), this, SLOT(playMacro()));
+
         }
     }
     if (!userMacros_.isEmpty())
@@ -358,8 +361,10 @@ void Editor::updateInsertMenu()
         Macro m = userMacros_[i];
         m.action = new QAction(m.title, insertMenu_);
         if (!m.key.isNull()) {
-            QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
-            m.action->setShortcut(ks);
+            const QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
+            const QKeySequence ks2(escComa + QString(m.key));
+            const QList<QKeySequence> shortcuts = QList<QKeySequence>() << ks << ks2;
+            m.action->setShortcuts(shortcuts);
         }
         userMacros_[i].action = m.action;
         insertMenu_->addAction(m.action);
