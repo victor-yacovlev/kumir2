@@ -16,6 +16,8 @@ Settings::Settings(const QString & pluginName)
 
 void Settings::setValue(const QString &key, const QVariant &value_)
 {
+    if (!mutex_)
+        return;
     mutex_->lock();
     qsettings_->setValue(key, value_);
     mutex_->unlock();
@@ -23,6 +25,8 @@ void Settings::setValue(const QString &key, const QVariant &value_)
 
 QVariant Settings::value(const QString &key, const QVariant &default_) const
 {
+    if (!mutex_)
+        return QVariant();
     QVariant result;
     mutex_->lock();
     result = qsettings_->value(key, default_);
