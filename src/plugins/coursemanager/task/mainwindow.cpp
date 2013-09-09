@@ -255,6 +255,7 @@ for(int i=0;i<prgElListT.count();i++)
     setWindowTitle(course->name()+trUtf8(" - Практикум"));
     updateLastFiles(fileName);
     interface->lockContrls();
+    interface->setPreProgram(QVariant(""));
     ui->checkTask->setEnabled(false);
     this->show();
 };
@@ -294,6 +295,7 @@ void MainWindowTask::loadCourse()
      }else
      cursWorkFile.setFileName("");
      loadCourseData(fileName);
+     interface->setPreProgram(QVariant(""));
      QString cText=course->courceDescr();
 
 
