@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<macros>
+    <macro title="вверх" key="Up">
+        <command name="InsertText" text="вверх\n" />
+    </macro>
+    <macro title="вниз" key="Down">
+        <command name="InsertText" text="вниз\n" />
+    </macro>
+    <macro title="влево" key="Left">
+        <command name="InsertText" text="влево\n" />
+    </macro>
+    <macro title="вправо" key="Right">
+        <command name="InsertText" text="вправо\n" />
+    </macro>
+    <macro title="закрасить" key="Space">
+        <command name="InsertText" text="закрасить\n" />
+    </macro>
+</macros>
