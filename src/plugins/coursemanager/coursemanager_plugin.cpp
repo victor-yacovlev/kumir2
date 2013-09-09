@@ -90,7 +90,9 @@ bool  Plugin::startNewTask(QStringList isps,KumZadanie* task)
             //TODO LOAD FIELDS;
             QFile* field_data=new QFile(task->field(isps.at(i), field_no));
             qDebug()<<"Set field"<<task->field(isps.at(i), field_no);
+           if(! field_data->open(QIODevice::ReadOnly))return false;
             actor->loadActorData(field_data);
+            field_data->close();
         }
         if(task->minFieldCount()>1){
          nextFld->setEnabled(true);
