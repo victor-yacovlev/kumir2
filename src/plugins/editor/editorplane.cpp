@@ -418,16 +418,14 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
         // It is possible to toggle 'locked' status, so pointer shape should
         // be something like 'hand' of 'finger'
 
-        QApplication::restoreOverrideCursor();
-        QApplication::setOverrideCursor(Qt::PointingHandCursor);
+        setCursor(Qt::PointingHandCursor);
     }
     else if (e->pos().x()<editableAreaLeftBorder) {
         // Pointer is out of editable text, so there should be
         // regular 'arrow' shape instead of this widget default
         // 'text beam' shape
 
-        QApplication::restoreOverrideCursor();
-        QApplication::setOverrideCursor(Qt::ArrowCursor);
+        setCursor(Qt::ArrowCursor);
     }
     else if (// Pointer position in visible/hidden ruler region
              moveDelimeterRulerBetweenVisibleAndHiddenTextFlag
@@ -440,8 +438,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
         // The mouse points to delimeter ruler between visible and hidden
         // text, so there should be a pointer shape as for vertical resize
 
-        QApplication::restoreOverrideCursor();
-        QApplication::setOverrideCursor(Qt::SplitVCursor);
+        setCursor(Qt::SplitVCursor);
     }
     else if (editor_->analizerInstance_ &&
              (
@@ -458,14 +455,13 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
         // and the margin (+- 2 pixels), so there should be a pointer shape as
         // for horizontal resize
 
-        QApplication::restoreOverrideCursor();
-        QApplication::setOverrideCursor(Qt::SplitHCursor);
+        setCursor(Qt::SplitHCursor);
     }
     else {
         // Just a simple regular case: mouse pointer is over editable area
         // or text margin, so restore cursor shape to its regular "text beam"
 
-        QApplication::restoreOverrideCursor();
+        unsetCursor();
     }
 
 
