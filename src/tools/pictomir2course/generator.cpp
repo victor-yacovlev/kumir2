@@ -62,12 +62,14 @@ void generator::create_resource_files(const game_t &game,
                 resources_path + SEP + lexical_cast<string>(index) + ".kum";
         const string png_file_name =
                 resources_path + SEP + lexical_cast<string>(index) + ".png";
+        const string htm_file_name =
+                resources_path + SEP + lexical_cast<string>(index) + ".html";
 
         const environment_t & environment = game.tasks[index].environment;
         const hint_t & hint = game.tasks[index].hint;
         const program_t & program = game.tasks[index].program;
 
-        ofstream f_env, f_kum, f_png;
+        ofstream f_env, f_kum, f_png, f_htm;
 
         f_env.open(env_file_name.c_str());
         if (!f_env.is_open())
@@ -92,6 +94,13 @@ void generator::create_resource_files(const game_t &game,
             f_png.write(hint.data.data(), hint.data.size());
             f_png.close();
         }
+
+        f_htm.open(htm_file_name.c_str());
+        if (!f_htm.is_open())
+            throw string("Can't create resource file: ") + htm_file_name;
+        const string htm_data = create_desc_data(game.tasks[index], index);
+        f_htm.write(htm_data.c_str(), htm_data.length());
+        f_htm.close();
     }
 }
 
@@ -160,7 +169,7 @@ string generator::create_env_data(const environment_t &environment)
 
 string generator::create_kum_data(const program_t &program)
 {
-    string result;
+    string result = "использовать Вертун\n\n";
     for (size_t i=0; i<program.size(); ++i) {
         result += create_kum_algorithm(program[i], i);
     }
@@ -252,30 +261,11 @@ string generator::create_task(const task_t &task,
             "xmlns:xml=\"http://www.w3.org/XML/1998/namespace\"" +
             "xml:name=\""+ title + "\">\n";
     result += "        <TITLE>" + title + "</TITLE>\n";
-    result += "        <DESC>\n";
-    result += "            <html>\n";
-    result += "                <head></head>\n";
-    result += "                <body>\n";
-    result += "                    <p>" + task.title + "</p>\n";
-    if (task.hint.hint_type != NO_HINT) {
-        result += string("                    <p>") +
-                "<span style=\"text-weight: bold;\">Подсказка: </span>";
-        string hint = string(task.hint.data.data(), task.hint.data.size());
-        if (task.hint.hint_type == TEXT_HINT) {
-            hint = string(task.hint.data.data(), task.hint.data.size());
-        }
-        else {
-            const string img_src =
-                    resources_path + SEP + lexical_cast<string>(task_index) + ".png";
-            hint = "<br><img src=\"" + img_src + "\">";
-        }
-        result += hint + "</p>\n";
-    }
-    result += "                </body>\n";
-    result += "            </html>\n";
-    result += "        </DESC>\n";
+    result += "        <DESC>";
+    result += resources_path + SEP + lexical_cast<string>(task_index) + ".html";
+    result += "</DESC>\n";
     result += "        <CS>Кумир</CS>\n";
-    result += "        <ISP xml:ispname=\"IsometricRobot\" " +
+    result += "        <ISP xml:ispname=\"Вертун\" " +
             string("xmlns:xml=\"http://www.w3.org/XML/1998/namespace\">") +
             "\n            <ENV>" +
             resources_path + SEP + lexical_cast<string>(task_index) + ".env.json";
@@ -286,6 +276,39 @@ string generator::create_task(const task_t &task,
     result += "        <READY>false</READY>\n";
     result += "        <MARK>0</MARK>\n";
     result += "    </T>\n";
+    return result;
+}
+
+
+string generator::create_desc_data(const task_t &task, const size_t task_index)
+{
+    const string title = "Задание&nbsp;" + lexical_cast<string>(1 + task_index);
+    string result = string(
+                "<html>\n"
+                "   <head><title>{%title%}</title></head>\n"
+                "   <body>\n"
+                "       <p>{%ext_title%}</p>\n"
+                "       {%hint%}\n"
+                "   </body>\n"
+                "</html>\n"
+                );
+    string hint = string(
+                "       <p><span style=\"font-weight: bold;\">Подсказка: </span>\n"
+                "           {%hint_data%}\n"
+                "       </p>\n"
+                );
+    string hint_data;
+    if (NO_HINT == task.hint.hint_type)
+        hint = string();
+    else if (IMAGE_HINT == task.hint.hint_type)
+        hint_data = "<br><img src=\""+lexical_cast<string>(task_index)+".png\">";
+    else if (TEXT_HINT == task.hint.hint_type)
+        hint_data = string(task.hint.data.data(), task.hint.data.size());
+
+    replace_all(hint, "{%hint_data%}", hint_data);
+    replace_all(result, "{%hint%}", hint);
+    replace_all(result, "{%title%}", title);
+    replace_all(result, "{%ext_title%}", task.title);
     return result;
 }
 

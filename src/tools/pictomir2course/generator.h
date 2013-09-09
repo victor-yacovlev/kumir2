@@ -42,6 +42,10 @@ private:
                               const string & resources_path
                               );
 
+
+    static string create_desc_data(const task_t & task,
+                                   const size_t task_index);
+
 };
 
 }
