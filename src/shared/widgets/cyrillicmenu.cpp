@@ -59,7 +59,22 @@ QString CyrillicMenu::shortcutToText(const QKeySequence &shortcut)
     QStringList newKeys;
     for (int i=0; i<keys.size(); i++) {
         QString key = keys[i].trimmed();
-        if (key.length()>1) {
+        if (key.toLower() == "space") {
+            newKeys << QString::fromUtf8("Пробел");
+        }
+        else if (key.toLower() == "up") {
+            newKeys << QString::fromUtf8("Вверх");
+        }
+        else if (key.toLower() == "down") {
+            newKeys << QString::fromUtf8("Вниз");
+        }
+        else if (key.toLower() == "left") {
+            newKeys << QString::fromUtf8("Влево");
+        }
+        else if (key.toLower() == "right") {
+            newKeys << QString::fromUtf8("Вправо");
+        }
+        else if (key.length()>1) {
             newKeys << key;
         }
         else {

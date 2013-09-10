@@ -37,11 +37,22 @@ extern bool loadMacro(const QDomElement &v, Macro &m)
     m.action = 0;
     m.commands.clear();
     m.title = v.attribute("title");
-    const QString key = v.attribute("key");
+    const QString key = v.attribute("key").trimmed();
     if (key.length()==1)
-        m.key = key[0];
+        m.key = key[0];    
     else
         m.key = QChar(QChar::Null);
+    if ( key.toLower() == "up" )
+        m.extKey = Qt::Key_Up;
+    else if ( key.toLower() == "down" )
+        m.extKey = Qt::Key_Down;
+    else if ( key.toLower() == "left" )
+        m.extKey = Qt::Key_Left;
+    else if ( key.toLower() == "right" )
+        m.extKey = Qt::Key_Right;
+    else if ( key.toLower() == "space" )
+        m.extKey = Qt::Key_Space;
+
     const QDomNodeList commands = v.elementsByTagName("command");
     for (int i=0; i<commands.count(); i++) {
         const QDomElement cmd = commands.at(i).toElement();

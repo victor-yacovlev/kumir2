@@ -12,9 +12,10 @@ namespace Editor {
 struct Macro {
     QString title;
     QChar key;
+    Qt::Key extKey;
     QList<KeyCommand> commands;
     QAction * action;
-    inline explicit Macro() { action = nullptr; }
+    inline explicit Macro() { action = nullptr; extKey = Qt::Key(0u); }
 };
 
 extern QDomElement dumpMacro(const Macro & m, QDomDocument &document, QDomElement &root);

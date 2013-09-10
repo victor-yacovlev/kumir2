@@ -284,6 +284,22 @@ void Editor::loadMacros()
     const QString systemMacrosPath = sharePath+"/editor/macros-"+analizerName+".xml";
     systemMacros_ = loadFromFile(systemMacrosPath);
 
+    // Actor-specific macros
+    if (analizerName == "kum") {
+        const QList<const KPlugin*> actorPlugins =
+                PluginManager::instance()->loadedConstPlugins("Actor*");
+
+        foreach (const KPlugin* plugin, actorPlugins) {
+            const QString actorMacrosFileName = sharePath + "/editor/macros-" +
+                    plugin->pluginSpec().name + ".xml";
+            if (QFile::exists(actorMacrosFileName)) {
+                systemMacros_.push_back(Macro());
+                systemMacros_ += loadFromFile(actorMacrosFileName);
+            }
+        }
+    }
+
+    // Import macros
     if (analizerName == "kum") {
         const QList<const KPlugin*> actorPlugins =
                 PluginManager::instance()->loadedConstPlugins("Actor*");
@@ -344,14 +360,36 @@ void Editor::updateInsertMenu()
             systemMacros_[i].action = insertMenu_->addSeparator();
         }
         else {
-            const QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
-            const QKeySequence ks2(escComa + QString(m.key));
-            const QList<QKeySequence> shortcuts = QList<QKeySequence>() << ks << ks2;
             m.action = new QAction(m.title, insertMenu_);
-            m.action->setShortcuts(shortcuts);
             systemMacros_[i].action = m.action;
             insertMenu_->addAction(m.action);
             connect(m.action, SIGNAL(triggered()), this, SLOT(playMacro()));
+            if (!m.key.isNull()) {
+                const QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
+                const QKeySequence ks2(escComa + QString(m.key));
+                if (ks == ks2) {
+                    m.action->setShortcut(ks);
+                }
+                else {
+                    const QList<QKeySequence> shortcuts = QList<QKeySequence>() << ks << ks2;
+                    m.action->setShortcuts(shortcuts);
+                }
+            }
+            else if (uint(m.extKey) != 0u) {
+                QString repr;
+                if (m.extKey == Qt::Key_Left)
+                    repr = "Left";
+                else if (m.extKey == Qt::Key_Right)
+                    repr = "Right";
+                else if (m.extKey == Qt::Key_Up)
+                    repr = "Up";
+                else if (m.extKey == Qt::Key_Down)
+                    repr = "Down";
+                else if (m.extKey == Qt::Key_Space)
+                    repr = "Space";
+                const QKeySequence ks(escComa + repr);
+                m.action->setShortcut(ks);
+            }
 
         }
     }
