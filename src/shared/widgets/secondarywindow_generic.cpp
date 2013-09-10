@@ -26,6 +26,7 @@ SecondaryWindowGenericImplementation::SecondaryWindowGenericImplementation(QWidg
     setupWidgetsAppearance();
     setupWindow();
     titleBox_->setFocus();
+    startTimer(200);
 }
 
 QWidget * SecondaryWindowGenericImplementation::toWidget()
@@ -306,6 +307,16 @@ QString SecondaryWindowGenericImplementation::title() const
     return windowTitle_->text();
 }
 
+void SecondaryWindowGenericImplementation::setIcon(const QIcon &icon)
+{
+    setWindowIcon(icon);
+}
+
+QIcon SecondaryWindowGenericImplementation::icon() const
+{
+    return windowIcon();
+}
+
 void SecondaryWindowGenericImplementation::closeWindow()
 {
     titleBox_->setFocus();
@@ -490,6 +501,11 @@ bool SecondaryWindowGenericImplementation::event(QEvent *evt)
         }
         else if (mousePressHit_ != Nothing && isResizable()) {
             processResizeWindow(e->globalPos());
+        }
+    }
+    else if (evt->type() == QEvent::Timer) {
+        if (centralWidget_) {
+            setTitle(centralWidget_->windowTitle());
         }
     }
     return QWidget::event(evt);

@@ -31,6 +31,9 @@ public:
     virtual void setTitle(const QString &title);
     virtual QString title() const;
 
+    virtual void setIcon(const QIcon &icon);
+    virtual QIcon icon() const;
+
     virtual QSize minimumSizeHint() const;
 
 signals:

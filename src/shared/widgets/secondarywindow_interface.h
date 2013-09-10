@@ -27,6 +27,9 @@ public:
     virtual void setTitle(const QString & title) = 0;
     virtual QString title() const = 0;
 
+    virtual void setIcon(const QIcon & icon) = 0;
+    virtual QIcon icon() const = 0;
+
 };
 
 }

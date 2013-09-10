@@ -27,6 +27,7 @@ SecondaryWindow::SecondaryWindow(QWidget * topLevelParent,
 SecondaryWindow * SecondaryWindow::createSecondaryWindow(
         QWidget *centralWidget,
         const QString &title,
+        const QIcon & icon,
         QWidget *topLevelParent,
         DockWindowPlace *dockPlace,
         const QString &settingsKey,
@@ -35,6 +36,7 @@ SecondaryWindow * SecondaryWindow::createSecondaryWindow(
     SecondaryWindowImplementationInterface * window =
             createWindowContainer(
                                   title,
+                                  icon,
                                   topLevelParent,
                                   resizable
                                   );
@@ -69,6 +71,7 @@ SecondaryWindow * SecondaryWindow::createSecondaryWindow(
 
 SecondaryWindowImplementationInterface *
 SecondaryWindow::createWindowContainer(const QString &title,
+                                       const QIcon & icon,
                                        QWidget *topLevelParent,
                                        bool resizable)
 {
@@ -79,6 +82,7 @@ SecondaryWindow::createWindowContainer(const QString &title,
 
     result->setResizeble(resizable);
     result->setTitle(title);
+    result->setIcon(icon);
 
     return result;
 }

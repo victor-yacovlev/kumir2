@@ -26,6 +26,7 @@ public:
     static SecondaryWindow * createSecondaryWindow(
             QWidget * centralWidget,
             const QString & title,
+            const QIcon & icon,
             QWidget * topLevelParent,
             class DockWindowPlace * dockPlace,
             const QString & settingsKey,
@@ -53,6 +54,7 @@ private /*methods*/:
 
     static SecondaryWindowImplementationInterface * createWindowContainer(
             const QString & title,
+            const QIcon & icon,
             QWidget * topLevelParent,
             bool resizable
             );

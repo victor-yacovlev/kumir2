@@ -175,6 +175,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     helpWindow_ = Widgets::SecondaryWindow::createSecondaryWindow(
                 helpViewer_,
                 tr("Help"),
+                QIcon(), // TODO help window icon
                 mainWindow_,
                 mainWindow_->helpPlace_,
                 "HelpViewerWindow",
@@ -197,6 +198,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         coursesWindow_ = Widgets::SecondaryWindow::createSecondaryWindow(
                     courseManager_->mainWindow(),
                     tr("Courses"),
+                    QIcon(), // TODO courses icon
                     mainWindow_,
                     mainWindow_->consoleAndCourcesPlace_,
                     "CoursesWindow",
@@ -230,11 +232,17 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         if (actor->mainWidget()) {
             QWidget * actorWidget = actor->mainWidget();
             QList<QMenu*> actorMenus = actor->moduleMenus();
+            const QString iconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->mainIconName()+".png";
+            const QString smallIconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->mainIconName()+"_22x22.png";
+            QIcon mainIcon = QIcon(iconFileName);
+            if (QFile::exists(smallIconFileName))
+                mainIcon.addFile(smallIconFileName, QSize(22,22));
 
             Widgets::SecondaryWindow * actorWindow =
                     Widgets::SecondaryWindow::createSecondaryWindow(
                         actorWidget,
                         actor->name(),
+                        mainIcon,
                         mainWindow_,
                         mainWindow_->actorsPlace_,
                         o->pluginSpec().name,
@@ -252,11 +260,6 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
             mainWindow_->gr_otherActions->addAction(showActor);
             if (!actor->mainIconName().isEmpty()) {
-                const QString iconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->mainIconName()+".png";
-                const QString smallIconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->mainIconName()+"_22x22.png";
-                QIcon mainIcon = QIcon(iconFileName);
-                if (QFile::exists(smallIconFileName))
-                    mainIcon.addFile(smallIconFileName, QSize(22,22));
                 showActor->setIcon(mainIcon);
             }
 
@@ -265,11 +268,17 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             }
 
             if (actor->pultWidget()) {
+                const QString iconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->pultIconName()+".png";
+                const QString smallIconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->pultIconName()+"_22x22.png";
+                QIcon pultIcon = QIcon(iconFileName);
+                if (QFile::exists(smallIconFileName))
+                    pultIcon.addFile(smallIconFileName, QSize(22,22));
 
                 Widgets::SecondaryWindow * pultWindow =
                         Widgets::SecondaryWindow::createSecondaryWindow(
                             actor->pultWidget(),
                             actor->name() + " - " + tr("Remote Control"),
+                            pultIcon,
                             mainWindow_,
                             nullptr,
                             o->pluginSpec().name + "Pult",
@@ -287,11 +296,6 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                 mainWindow_->gr_otherActions->addAction(showPult);
 
                 if (!actor->pultIconName().isEmpty()) {
-                    const QString iconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->pultIconName()+".png";
-                    const QString smallIconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->pultIconName()+"_22x22.png";
-                    QIcon pultIcon = QIcon(iconFileName);
-                    if (QFile::exists(smallIconFileName))
-                        pultIcon.addFile(smallIconFileName, QSize(22,22));
                     showPult->setIcon(pultIcon);
                 }
             }
@@ -323,6 +327,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             Widgets::SecondaryWindow::createSecondaryWindow(
                 debugger_,
                 tr("Variables"),
+                QIcon(), // TODO window icon
                 mainWindow_,
                 mainWindow_->debuggerPlace_,
                 "DebuggerWindow",
