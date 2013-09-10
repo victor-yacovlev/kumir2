@@ -504,7 +504,7 @@ bool SecondaryWindowGenericImplementation::event(QEvent *evt)
         }
     }
     else if (evt->type() == QEvent::Timer) {
-        if (centralWidget_) {
+        if (centralWidget_ && centralWidget_->windowTitle().length() > 0) {
             setTitle(centralWidget_->windowTitle());
         }
     }

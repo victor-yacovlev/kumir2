@@ -211,5 +211,5 @@ void Robot25DWindow::setTaskIndex(int index)
     m_robotView->loadEnvironment(m_game.tasks[index].environment);
     m_game.index = index;
 
-    setWindowTitle(QString::fromUtf8("%1 - Вертун").arg(m_game.tasks[index].title));
+//    setWindowTitle(QString::fromUtf8("%1 - Вертун").arg(m_game.tasks[index].title));
 }
