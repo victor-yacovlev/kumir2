@@ -765,7 +765,7 @@ bool MainWindow::closeTab(int index)
     if (twe->type!=WWW) {
         bool notSaved = twe->editorInstance->isModified();
         QMessageBox::StandardButton r;
-        if (!notSaved) {
+        if (!notSaved || twe->isCourseManagerTab()) {
             r = QMessageBox::Discard;
         }
         else {
@@ -1148,7 +1148,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
         if (twe->editorInstance) {
             bool notSaved = twe->editorInstance->isModified();
-            if (!notSaved) {
+            if (!notSaved || twe->isCourseManagerTab()) {
                 e->accept();
                 ExtensionSystem::PluginManager::instance()->shutdown();
                 return;
@@ -1161,7 +1161,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
         if (twe->editorInstance) {
             bool notSaved = twe->editorInstance->isModified();
-            if (notSaved) {
+            if (notSaved && !twe->isCourseManagerTab()) {
                 QString title = tabWidget_->tabText(i);
                 if (title.endsWith("*")) {
                     title = title.left(title.length()-1);
@@ -1548,6 +1548,8 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
     if (tabsDisabledFlag_) {
         courseManagerTab = qobject_cast<TabWidgetElement*>(tabWidget_->widget(0));
         Q_CHECK_PTR(courseManagerTab);
+        courseManagerTab->setCourseManagerTab(true);
+        courseManagerTab->setCourseTitle(data.title);
     }
     if (data.language == ST::Kumir) {
         KumFile::Data src = data.content;
