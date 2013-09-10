@@ -712,6 +712,12 @@ Rectangle {
             hoverEnabled: true
             onEntered: btnScrollUp.color = "white"
             onExited: btnScrollUp.color = "#808080"
+            onClicked: {
+                if (scroll.contentY >= 20)
+                    scroll.contentY -= 20;
+                else
+                    scroll.contentY = 0;
+            }
             x: 0
             y: 0
             width: 24
@@ -747,6 +753,12 @@ Rectangle {
             hoverEnabled: true
             onEntered: btnScrollDown.color = "white"
             onExited: btnScrollDown.color = "#808080"
+            onClicked: {
+                if (scroll.contentY <= scroll.contentHeight - scroll.height - 20)
+                    scroll.contentY += 20;
+                else
+                    scroll.contentY = scroll.contentHeight - scroll.height;
+            }
             x: 0
             y: 0
             width: 24
