@@ -59,6 +59,7 @@ protected:
     void mousePressEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
     bool eventFilter(QObject *, QEvent *);
+    void leaveEvent(QEvent *e);
     void contextMenuEvent(QContextMenuEvent *);
     void initMouseCursor();    
     void ensureHighlightedLineVisible();
@@ -110,6 +111,9 @@ private:
     quint32 highlightedTextColumnStartNumber_;
     quint32 highlightedTextColumnEndNumber_ ;
     QList<QAction*> contextMenuActions_;
+
+    QLabel * marginHintBox_;
+
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
     void requestAutoScroll(char a);

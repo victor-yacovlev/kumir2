@@ -41,10 +41,12 @@ EditorPlane::EditorPlane(Editor * editor)
     , pnt_dropPosMarker(QPoint(-1000, -1000))
     , pnt_dropPosCorner(QPoint(-1000, -1000))
     , selectionInProgressFlag_(false)
+    , marginHintBox_(new QLabel(this, Qt::ToolTip))
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     setFocusPolicy(Qt::StrongFocus);
 
+    setAttribute(Qt::WA_Hover);
     setMouseTracking(true);
     setAcceptDrops(true);          
     initMouseCursor();
@@ -58,6 +60,7 @@ void EditorPlane::updateSettings(const QStringList & keys)
         defaultFont.setFamily(editor_->mySettings()->value(SettingsPage::KeyFontName, SettingsPage::defaultFontFamily()).toString());
         defaultFont.setPointSize(editor_->mySettings()->value(SettingsPage::KeyFontSize, SettingsPage::defaultFontSize).toInt());
         setFont(defaultFont);
+        marginHintBox_->setFont(defaultFont);
     }
 }
 
@@ -331,6 +334,14 @@ bool EditorPlane::eventFilter(QObject *, QEvent *event)
     return false;
 }
 
+void EditorPlane::leaveEvent(QEvent *e)
+{
+    if (e->type() == QEvent::HoverLeave) {
+        marginHintBox_->setVisible(false);
+    }
+    QWidget::leaveEvent(e);
+}
+
 
 /** Handles mouse move (while button pressed or not) enent.
  * The reason to handle the event while button is not pressed is
@@ -461,7 +472,10 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
         // Just a simple regular case: mouse pointer is over editable area
         // or text margin, so restore cursor shape to its regular "text beam"
 
-        unsetCursor();
+        if (e->pos().x() < editableAreaRightBorder )
+            setCursor(Qt::IBeamCursor);
+        else
+            unsetCursor();
     }
 
 
@@ -638,6 +652,39 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
             } // end else if (cursorHasRectSelection || cursorHasTextSelection)
         } // end if (reallyMovingMouse && mousePressedInText...)
     }
+
+    // Check if there is must be shown tooltlip for a margin line
+    bool visibleMarginBox = false;
+    if (e->pos().x() >= editableAreaRightBorder
+            && e->button() == Qt::NoButton)
+    {
+            // Translate coordinates considering scroll values
+            const uint realY = qMax(0, e->pos().y() - offset().y());
+
+            // Translate pointer pixel-coordinates into text coordinates
+            const uint textY = realY / lineHeight();
+
+            static const QString empty;
+            const TextLine::Margin & margin = editor_->document()->marginAt(textY);
+            const QString & text = margin.text.length() > 0
+                    ? margin.text : margin.errors.size() > 0
+                      ? margin.errors.first() : empty;
+
+            if (text.length() > 0) {
+                QFontMetrics fm(font());
+                const uint w = fm.width(text);
+                const QRect marginRect = marginBackgroundRect();
+                if (w > marginRect.width()) {
+                    visibleMarginBox = true;
+                    marginHintBox_->setText(text);
+                    const uint y = ( e->pos().y() / lineHeight() + 1)* lineHeight();
+                    const uint x = width() - marginHintBox_->width();
+                    marginHintBox_->move(mapToGlobal(QPoint(x, y)));
+                }
+            }
+    }
+    marginHintBox_->setVisible(visibleMarginBox);
+
 
     // Set repaint flag due to something may be changed and accept event
     update();
@@ -1167,9 +1214,13 @@ bool EditorPlane::event(QEvent *e)
             return true;
         }
     }
+    else if (e->type() == QEvent::HoverLeave) {
+        marginHintBox_->setVisible(false);
+    }
     else if (e->type()==QEvent::FocusOut) {
         Utils::altKeyPressed = false;
         Utils::shiftKeyPressed = false;
+        marginHintBox_->setVisible(false);
     }
     return QWidget::event(e);
 }
