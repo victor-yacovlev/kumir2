@@ -3,6 +3,6 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 endif()
 add_subdirectory(run)
 
-if(UNIX AND NOT APPLE)
+if(NOT APPLE)
     add_subdirectory(pictomir2course)
 endif()

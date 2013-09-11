@@ -19,7 +19,7 @@ using namespace std;
 static bool make_dir(const string & name)
 {
 #if defined(WIN32) || defined(_WIN32)
-    DWORD dwAttrib = ::GetFileAttributesA(fileName.c_str());
+    DWORD dwAttrib = ::GetFileAttributesA(name.c_str());
     BOOL exists = (dwAttrib!=INVALID_FILE_ATTRIBUTES &&
              (dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
     if (exists)
