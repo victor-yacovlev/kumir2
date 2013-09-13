@@ -3332,6 +3332,7 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     connect(pult, SIGNAL(checkFreeRight()), this, SLOT(runIsFreeAtRight()));
     connect(pult, SIGNAL(checkFreeTop()), this, SLOT(runIsFreeAtTop()));
     connect(pult, SIGNAL(checkFreeBottom()), this, SLOT(runIsFreeAtBottom()));
+    connect(pult, SIGNAL(copyTextToKumir(QString)), this, SLOT(copyFromPult(QString)));
     connect(this, SIGNAL(sendToPultLog(QVariant)), pult, SLOT(addToResultLog(QVariant)));
     startField=field->Clone();
     field->drawField(FIELD_SIZE_SMALL);
@@ -3350,7 +3351,13 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     view->setWindowTitle(trUtf8("Робот - нет файла"));
     
 } 
-
+void RobotModule::copyFromPult(QString log)
+    {
+        QClipboard *clipboard = QApplication::clipboard();
+        QString originalText = clipboard->text();
+       
+        clipboard->setText(log); 
+    };
 
 /* public slot */ void RobotModule::loadActorData(QIODevice * source)
 {

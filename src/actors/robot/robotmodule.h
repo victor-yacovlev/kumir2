@@ -567,6 +567,7 @@ namespace ActorRobot {
         void updateLastFiles(const QString newFile );
         void openRecent();
         void setWindowSize();
+        void copyFromPult(QString log);
      
     private:
         void createEmptyField(int rows,int cols);

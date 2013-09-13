@@ -19,7 +19,7 @@ Rectangle {
     signal checkFreeRight
     signal checkFreeTop
     signal checkFreeBottom
-    signal copyTextToKumir
+    signal copyTextToKumir(string hjghjgjh)
     property bool buttonsLocked: false
 
     function addToResultLog(s) {
