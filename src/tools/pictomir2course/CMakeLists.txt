@@ -19,7 +19,7 @@ else()
     find_package(ZLIB REQUIRED)
     include_directories(${ZLIB_INCLUDE_DIRS})
     set(3RDPARTY_LIBS ${ZLIB_LIBRARIES})
-    set(3RDPARTY_LIBS )
+    set(3RDPARTY_SOURCES )
 endif()
 
 set(SOURCES
