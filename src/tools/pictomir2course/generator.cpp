@@ -71,7 +71,7 @@ void generator::create_resource_files(const game_t &game,
 
         ofstream f_env, f_kum, f_png, f_htm;
 
-        f_env.open(env_file_name.c_str());
+        f_env.open(env_file_name.c_str(), ios_base::out|ios_base::binary);
         if (!f_env.is_open())
             throw string("Can't create resource file: ") + env_file_name;
         const string env_data = create_env_data(environment);
@@ -79,7 +79,7 @@ void generator::create_resource_files(const game_t &game,
         f_env.write(env_data.c_str(), env_data.length());
         f_env.close();
 
-        f_kum.open(kum_file_name.c_str());
+        f_kum.open(kum_file_name.c_str(), ios_base::out|ios_base::binary);
         if (!f_kum.is_open())
             throw string("Can't create resource file: ") + kum_file_name;
         const string kum_data = create_kum_data(program);
@@ -88,14 +88,14 @@ void generator::create_resource_files(const game_t &game,
         f_kum.close();
 
         if (hint.hint_type == IMAGE_HINT) {
-            f_png.open(png_file_name.c_str());
+            f_png.open(png_file_name.c_str(), ios_base::out|ios_base::binary);
             if (!f_png.is_open())
                 throw string("Can't create resource file: ") + png_file_name;
             f_png.write(hint.data.data(), hint.data.size());
             f_png.close();
         }
 
-        f_htm.open(htm_file_name.c_str());
+        f_htm.open(htm_file_name.c_str(), ios_base::out|ios_base::binary);
         if (!f_htm.is_open())
             throw string("Can't create resource file: ") + htm_file_name;
         const string htm_data = create_desc_data(game.tasks[index], index);

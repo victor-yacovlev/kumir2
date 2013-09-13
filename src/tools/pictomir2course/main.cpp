@@ -1,6 +1,7 @@
 #include "data.h"
 #include "parser.h"
 #include "generator.h"
+#include "options.h"
 
 #include <string>
 #include <fstream>
@@ -19,7 +20,7 @@ using namespace std;
 static bool make_dir(const string & name)
 {
 #if defined(WIN32) || defined(_WIN32)
-    DWORD dwAttrib = ::GetFileAttributesA(fileName.c_str());
+    DWORD dwAttrib = ::GetFileAttributesA(name.c_str());
     BOOL exists = (dwAttrib!=INVALID_FILE_ATTRIBUTES &&
              (dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
     if (exists)
@@ -45,6 +46,7 @@ static int process_file(const string & input_filename,
     stream.open(input_filename.c_str(), ios::in);
     if (!stream.is_open()) {
         cerr << "Can't open file: " << input_filename << endl;
+        return 1;
     }
     game_t game;
     try {
@@ -52,7 +54,7 @@ static int process_file(const string & input_filename,
     }
     catch (const string & e) {
         cerr << "Can't parse source file: " << e << endl;
-        status = 1;
+        status = 2;
     }
     stream.close();
     if (status != 0) {
@@ -61,7 +63,7 @@ static int process_file(const string & input_filename,
     if (!make_dir(output_filename + ".resources")) {
         cerr << "Can't create directory for storing course resources: "
              << output_filename + ".resources" << endl;
-        return 2;
+        return 3;
     }
     try {
         generator::create_course(game,
@@ -70,7 +72,7 @@ static int process_file(const string & input_filename,
     }
     catch (const string & e) {
         cerr << "Can't create course: " << e << endl;
-        status = 3;
+        status = 4;
     }
     return status;
 }
@@ -79,18 +81,14 @@ static int process_file(const string & input_filename,
 
 int main(int argc, char * argv[])
 {
-    using namespace std;
+    using namespace pictomir2course;
 
-    // TODO program options handler
+    options::parse(argc, argv);
 
-    const string input_filename = string(argv[1]);
-    string output_filename = input_filename;
-    size_t dot_pos = output_filename.rfind(".pm.json");
-    if (dot_pos != string::npos)
-        output_filename.resize(dot_pos);
-    output_filename += ".kurs.xml";
+    if (options::show_help_and_exit || options::exit_code) {
+        options::print_help();
+        return options::exit_code;
+    }
 
-    pictomir2course::process_file(input_filename, output_filename);
-
-    return 0;
+    return process_file(options::input_file_name, options::output_file_name);
 }

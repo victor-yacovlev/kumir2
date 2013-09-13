@@ -30,7 +30,7 @@ void MacroEditor::setUsedSymbols(const QString &symbols, const QStringList & nam
         for (int column=0; column < ui->tableWidget->columnCount(); column++) {
             QTableWidgetItem * item = ui->tableWidget->item(row, column);
             if (item) {
-                item->setFlags(Enabled);
+                item->setFlags(item->text().trimmed().length() > 0 ? Enabled : Disabled);
                 item->setToolTip(QString::fromAscii("%1%2").arg(macroPrefix_).arg(item->text()));
             }
         }
