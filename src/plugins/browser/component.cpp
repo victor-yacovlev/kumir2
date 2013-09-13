@@ -46,7 +46,7 @@ Component::Component(class Plugin * plugin) :
         page()->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
     }
     connect(page()->mainFrame(), SIGNAL(titleChanged(QString)),
-            this, SLOT(handleWebPageTitleChanged(QString)));
+            this, SLOT(handleWebPageTitleChanged(QString)), Qt::DirectConnection);
 }
 
 void Component::handleWebPageTitleChanged(const QString &title)
@@ -90,7 +90,7 @@ QUrl Component::currentLocation() const
 void Component::setTitleChangeHandler(const QObject *receiver, const char *method)
 {
     connect(this, SIGNAL(titleChangeRequest(QString,const Shared::Browser::InstanceInterface*)),
-            receiver, method);
+            receiver, method, Qt::DirectConnection);
 }
 
 Component::~Component()
