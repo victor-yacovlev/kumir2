@@ -69,6 +69,9 @@ isTeacher=false;
      setWindowIcon(QIcon(qApp->property("sharePath").toString()+
                    "/coursemanager/10.png")
                    );
+#ifdef QT_DEBUG
+     ui->webView->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+#endif
        //ui->textBrowser->setVisible(false);
  };
 QList<QAction*> MainWindowTask::getActions()

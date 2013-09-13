@@ -310,13 +310,23 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
     if (!parameters.contains("nostartpage", Qt::CaseInsensitive)) {
         startPage_ = plugin_browser->createBrowser();
-        startPage_->setTitleChangeHandler(mainWindow_, SLOT(updateBrowserTitle(QString, const Shared::Browser::InstanceInterface*)));
-        const QString browserEntryPoint = QApplication::instance()->property("sharePath").toString()+"/coregui/startpage/russian/index2.html";
+        startPage_->setTitleChangeHandler(mainWindow_, SLOT(updateBrowserTitle(QString, const Shared::Browser::InstanceInterface*)));        
         (*startPage_)["mainWindow"] = mainWindow_;
         (*startPage_)["gui"] = this;
-        startPage_->go(browserEntryPoint);
         m_browserObjects["mainWindow"] = mainWindow_;
         startPage_->widget()->setProperty("uncloseable", true);
+        if (startPage_ && mainWindow_->tabWidget_->count()==0) {
+            TabWidgetElement * twe = mainWindow_->addCentralComponent(
+                        tr("Start"),
+                        startPage_->widget(),
+                        QList<QAction*>(),
+                        QList<QMenu*>(),
+                        MainWindow::WWW
+                        );
+            twe->browserInstance = startPage_;
+            const QString browserEntryPoint = QApplication::instance()->property("sharePath").toString()+"/coregui/startpage/russian/index2.html";
+            startPage_->go(browserEntryPoint);
+        }
     }
     if (parameters.contains("notabs", Qt::CaseInsensitive)) {
         mainWindow_->disableTabs();
@@ -467,17 +477,7 @@ void Plugin::saveSession() const
 
 void Plugin::restoreSession()
 {
-    if (!sessionsDisableFlag_) {
-        if (startPage_ && mainWindow_->tabWidget_->count()==0) {
-            TabWidgetElement * twe = mainWindow_->addCentralComponent(
-                        tr("Start"),
-                        startPage_->widget(),
-                        QList<QAction*>(),
-                        QList<QMenu*>(),
-                        MainWindow::WWW
-                        );
-            twe->browserInstance = startPage_;
-        }
+    if (!sessionsDisableFlag_) {        
     }
     else {
         mainWindow_->newProgram();
