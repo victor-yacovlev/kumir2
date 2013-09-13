@@ -7,7 +7,7 @@ You should change it corresponding to functionality.
 */
 
 // Self include
-#include "drawmodule.h"
+#include "vodoleymodule.h"
 
 // Kumir includes
 #include "extensionsystem/kplugin.h"
@@ -16,22 +16,22 @@ You should change it corresponding to functionality.
 #include <QtCore>
 #include <QtGui>
 
-namespace ActorDraw {
+namespace ActorVodoley {
 
-DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
-    : DrawModuleBase(parent)
+VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
+    : VodoleyModuleBase(parent)
 {
     // Module constructor, called once on plugin load
     // TODO implement me
 }
 
-/* public static */ QList<ExtensionSystem::CommandLineParameter> DrawModule::acceptableCommandLineParameters()
+/* public static */ QList<ExtensionSystem::CommandLineParameter> VodoleyModule::acceptableCommandLineParameters()
 {
     // See "src/shared/extensionsystem/commandlineparameter.h" for constructor details
     return QList<ExtensionSystem::CommandLineParameter>();
 }
 
-/* public slot */ void DrawModule::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current)
+/* public slot */ void VodoleyModule::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current)
 {
     // Called when changed kumir state. The states are defined as enum ExtensionSystem::GlobalState:
     /*
@@ -51,7 +51,7 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     Q_UNUSED(current);  // Remove this line on implementation
 }
 
-/* public slot */ void DrawModule::loadActorData(QIODevice * source)
+/* public slot */ void VodoleyModule::loadActorData(QIODevice * source)
 {
     // Set actor specific data (like environment)
     // The source should be ready-to-read QIODevice like QBuffer or QFile
@@ -59,7 +59,7 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
 
 }
 
-/* public */ QWidget* DrawModule::mainWidget() const
+/* public */ QWidget* VodoleyModule::mainWidget() const
 {
     // Returns module main view widget, or nullptr if there is no any views
     // NOTE: the method is const and might be called at any time,
@@ -68,7 +68,7 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     return nullptr;
 }
 
-/* public */ QWidget* DrawModule::pultWidget() const
+/* public */ QWidget* VodoleyModule::pultWidget() const
 {
     // Returns module control view widget, or nullptr if there is no control view
     // NOTE: the method is const and might be called at any time,
@@ -77,7 +77,7 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     return nullptr;
 }
 
-/* public slot */ void DrawModule::reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)
+/* public slot */ void VodoleyModule::reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)
 {
     // Updates setting on module load, workspace change or appliyng settings dialog.
     // If @param keys is empty -- should reload all settings, otherwise load only setting specified by @param keys
@@ -86,13 +86,13 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     Q_UNUSED(keys);  // Remove this line on implementation
 }
 
-/* public slot */ void DrawModule::reset()
+/* public slot */ void VodoleyModule::reset()
 {
     // Resets module to initial state before program execution
     // TODO implement me
 }
 
-/* public slot */ void DrawModule::setAnimationEnabled(bool enabled)
+/* public slot */ void VodoleyModule::setAnimationEnabled(bool enabled)
 {
     // Sets GUI animation flag on run
     // NOTE this method just setups a flag and might be called anytime, even module not needed
@@ -100,74 +100,98 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     Q_UNUSED(enabled);  // Remove this line on implementation
 }
 
-/* public slot */ void DrawModule::runSetupPen()
+/* public slot */ void VodoleyModule::runFillA()
 {
-    /* алг опустить перо */
+    /* алг наполни A */
     // TODO implement me
     
 }
 
-/* public slot */ void DrawModule::runReleasePen()
+/* public slot */ void VodoleyModule::runFillB()
 {
-    /* алг поднять перо */
+    /* алг наполни B */
     // TODO implement me
     
 }
 
-/* public slot */ void DrawModule::runSetPenColor(const Color& color)
+/* public slot */ void VodoleyModule::runFillC()
 {
-    /* алг установить цвет(цвет color) */
+    /* алг наполни C */
     // TODO implement me
-    Q_UNUSED(color)  // Remove this line on implementation;
     
 }
 
-/* public slot */ void DrawModule::runMoveTo(const qreal x, const qreal y)
+/* public slot */ void VodoleyModule::runEmptyA()
 {
-    /* алг сместиться в точку(вещ x, вещ y) */
+    /* алг вылей A */
     // TODO implement me
-    Q_UNUSED(x)  // Remove this line on implementation;
-    Q_UNUSED(y)  // Remove this line on implementation;
     
 }
 
-/* public slot */ void DrawModule::runMoveBy(const qreal dX, const qreal dY)
+/* public slot */ void VodoleyModule::runEmptyB()
 {
-    /* алг сместиться на вектор(вещ dX, вещ dY) */
+    /* алг вылей B */
     // TODO implement me
-    Q_UNUSED(dX)  // Remove this line on implementation;
-    Q_UNUSED(dY)  // Remove this line on implementation;
     
 }
 
-/* public slot */ void DrawModule::runAddCaption(const qreal width, const QString& text)
+/* public slot */ void VodoleyModule::runEmptyC()
 {
-    /* алг надпись(вещ width, лит text) */
+    /* алг вылей C */
     // TODO implement me
-    Q_UNUSED(width)  // Remove this line on implementation;
-    Q_UNUSED(text)  // Remove this line on implementation;
     
 }
 
-/* public slot */ Color DrawModule::runOperatorINPUT(const QString& x, bool& ok)
+/* public slot */ void VodoleyModule::runFromAToB()
 {
-    /* алг цвет ввод(лит x, рез лог ok) */
+    /* алг перелей из A в B */
     // TODO implement me
-    Q_UNUSED(x)  // Remove this line on implementation;
-    Q_UNUSED(ok)  // Remove this line on implementation;
-    return Color();
     
 }
 
-/* public slot */ QString DrawModule::runOperatorOUTPUT(const Color& x)
+/* public slot */ void VodoleyModule::runFromAToC()
 {
-    /* алг лит вывод(цвет x) */
+    /* алг перелей из A в C */
     // TODO implement me
-    Q_UNUSED(x)  // Remove this line on implementation;
-    return QString();
+    
+}
+
+/* public slot */ void VodoleyModule::runFromBToA()
+{
+    /* алг перелей из B в A */
+    // TODO implement me
+    
+}
+
+/* public slot */ void VodoleyModule::runFromBToC()
+{
+    /* алг перелей из B в C */
+    // TODO implement me
+    
+}
+
+/* public slot */ void VodoleyModule::runFromCToB()
+{
+    /* алг перелей из C в B */
+    // TODO implement me
+    
+}
+
+/* public slot */ void VodoleyModule::runFromCToA()
+{
+    /* алг перелей из C в A */
+    // TODO implement me
+    
+}
+
+/* public slot */ bool VodoleyModule::runTaskComplited()
+{
+    /* алг лог @@задание выполненно */
+    // TODO implement me
+    return false;
     
 }
 
 
 
-} // namespace ActorDraw
+} // namespace ActorVodoley
