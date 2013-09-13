@@ -102,7 +102,7 @@ function tipOfTheDay()
         TIPS = TIPS.concat(X11);
     }
     else if (ws == "win32") {
-        TIPS = TIPS.concat(WIN32);
+        TIPS = TIPS.concat(WIN);
     }
     else if (ws == "mac") {
         TIPS = TIPS.concat(MAC);
