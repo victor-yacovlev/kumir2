@@ -211,6 +211,10 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                     coursesWindow_, SLOT(activate())
                     );
 
+        const QString courseIconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/course.png";
+        QIcon courseIcon(courseIconFileName);
+        showCourses->setIcon(courseIcon);
+
         mainWindow_->gr_otherActions->addAction(showCourses);
         secondaryWindows_ << coursesWindow_;
     }
