@@ -168,6 +168,9 @@ void EditorPlugin::connectGlobalSignalsToEditor(Editor *editor)
 
     connect(this, SIGNAL(globalStateUpdateRequest(quint32,quint32)),
             editor, SLOT(changeGlobalState(quint32, quint32)), Qt::DirectConnection);
+
+    connect(this, SIGNAL(updateInsertMenuRequest()),
+            editor, SLOT(updateInsertMenu()), Qt::DirectConnection);
 }
 
 
@@ -195,11 +198,7 @@ void EditorPlugin::updateUserMacros(const QString & analizerName, const QList<Ma
         }
     }
 
-    for (int i=0; i<editors_.size(); i++) {
-        if (editors_[i].e) {
-            editors_[i].e->updateInsertMenu();
-        }
-    }
+    emit updateInsertMenuRequest();
 }
 
 }

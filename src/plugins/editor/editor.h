@@ -87,7 +87,6 @@ public:
     void setForceNotSavedFlag(bool v);
     void paintEvent(QPaintEvent *);
     bool eventFilter(QObject *, QEvent *);
-    void updateInsertMenu();
     inline QWidget * widget() { return this; }
 public slots:
     void undo();
@@ -95,6 +94,7 @@ public slots:
 
     void changeGlobalState(quint32 prevv, quint32 currentt);
     void updateSettings(const QStringList & keys);
+    void updateInsertMenu();
 
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);

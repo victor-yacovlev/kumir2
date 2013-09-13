@@ -64,6 +64,7 @@ public:
 signals:
     void settingsUpdateRequest(const QStringList & keys);
     void globalStateUpdateRequest(quint32, quint32);
+    void updateInsertMenuRequest();
 
 protected:
 

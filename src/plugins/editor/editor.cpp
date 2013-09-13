@@ -919,7 +919,7 @@ void Editor::toggleRecordMacro(bool on)
             if (editor->exec() == QDialog::Accepted) {
                 Macro newMacro = *macro;
                 userMacros_.push_back(newMacro);
-                plugin_->updateUserMacros(analizerPlugin_ ? analizerPlugin_->defaultDocumentFileNameSuffix().mid(1) : QString(), userMacros_, true);
+                plugin_->updateUserMacros(analizerPlugin_ ? analizerPlugin_->defaultDocumentFileNameSuffix() : QString(), userMacros_, true);
             }
             editor->deleteLater();
         }
@@ -936,7 +936,7 @@ void Editor::editMacros()
                        mySettings()->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()+", ");
     editor->exec();
     userMacros_ = editor->result();
-    plugin_->updateUserMacros(analizerPlugin_ ? analizerPlugin_->defaultDocumentFileNameSuffix().mid(1) : QString(), userMacros_, true);
+    plugin_->updateUserMacros(analizerPlugin_ ? analizerPlugin_->defaultDocumentFileNameSuffix() : QString(), userMacros_, true);
     editor->deleteLater();
 }
 
