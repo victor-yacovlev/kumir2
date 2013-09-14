@@ -11,7 +11,7 @@ You should change it corresponding to functionality.
 
 // Base class include
 #include "vodoleymodulebase.h"
-
+#include "vodoley.h"
 // Kumir includes
 #include "extensionsystem/kplugin.h"
 
@@ -55,7 +55,8 @@ public slots:
 
     /* ========= CLASS PRIVATE ========= */
 
-
+private:
+    Vodoley *MainWindow;
 
 
 

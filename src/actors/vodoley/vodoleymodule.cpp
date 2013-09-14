@@ -21,6 +21,7 @@ namespace ActorVodoley {
 VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
     : VodoleyModuleBase(parent)
 {
+    MainWindow=new Vodoley();
     // Module constructor, called once on plugin load
     // TODO implement me
 }
@@ -61,10 +62,7 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 
 /* public */ QWidget* VodoleyModule::mainWidget() const
 {
-    // Returns module main view widget, or nullptr if there is no any views
-    // NOTE: the method is const and might be called at any time,
-    //       so DO NOT create widget here, just return!
-    // TODO implement me
+    return  MainWindow;
     return nullptr;
 }
 
