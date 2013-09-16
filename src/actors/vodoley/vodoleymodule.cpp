@@ -24,6 +24,12 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
     MainWindow=new Vodoley();
     // Module constructor, called once on plugin load
     // TODO implement me
+    QList<QAction*> actions;
+    actions.append(m_actionVodoleyNewEnvironment);
+    actions.append(m_actionVodoleyLoadEnvironment);
+    actions.append(m_actionVodoleySaveEnvironment);
+    MainWindow->createActions(actions);
+   // m_actionVodoleyNewEnvironment
 }
 
 /* public static */ QList<ExtensionSystem::CommandLineParameter> VodoleyModule::acceptableCommandLineParameters()
@@ -89,6 +95,7 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     // Resets module to initial state before program execution
     // TODO implement me
+    MainWindow->reset();
 }
 
 /* public slot */ void VodoleyModule::setAnimationEnabled(bool enabled)
@@ -126,6 +133,7 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг вылей A */
     // TODO implement me
+    MainWindow->MoveFromTo(0,3);//Move water from A to ....
     
 }
 
@@ -133,6 +141,7 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг вылей B */
     // TODO implement me
+    MainWindow->MoveFromTo(1,3);
     
 }
 
@@ -140,6 +149,7 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг вылей C */
     // TODO implement me
+    MainWindow->MoveFromTo(1,3);
     
 }
 
@@ -147,6 +157,7 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг перелей из A в B */
     // TODO implement me
+    MainWindow->MoveFromTo(0,1);
     
 }
 
@@ -154,20 +165,21 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг перелей из A в C */
     // TODO implement me
-    
+    MainWindow->MoveFromTo(0,2);
 }
 
 /* public slot */ void VodoleyModule::runFromBToA()
 {
     /* алг перелей из B в A */
     // TODO implement me
-    
+    MainWindow->MoveFromTo(1,0);
 }
 
 /* public slot */ void VodoleyModule::runFromBToC()
 {
     /* алг перелей из B в C */
     // TODO implement me
+    MainWindow->MoveFromTo(1,2);
     
 }
 
@@ -175,13 +187,14 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг перелей из C в B */
     // TODO implement me
-    
+    MainWindow->MoveFromTo(2,1);
 }
 
 /* public slot */ void VodoleyModule::runFromCToA()
 {
     /* алг перелей из C в A */
     // TODO implement me
+    MainWindow->MoveFromTo(2,0);
     
 }
 

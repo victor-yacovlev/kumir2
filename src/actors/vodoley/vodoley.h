@@ -179,6 +179,7 @@ public:
 	QAction * actNew;
 	QAction * actLoad;
 	QAction * actSave;
+    void createActions(QList<QAction*> actions);
 protected:
     void mousePressEvent(QMouseEvent *event);
     void closeEvent ( QCloseEvent * event );
@@ -206,7 +207,7 @@ private:
     void updateMenzur();
     void updateNeedBirka();
 
-    void createActions();
+    
     QMenu * menu;
     QMenuBar * menuBar;
     void drawTail();
