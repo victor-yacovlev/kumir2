@@ -134,6 +134,7 @@ Vodoley::Vodoley()
 //	vodHeader=new WHeader();
 	createActions();
 	autoClose=false;
+    pult=new VodoleyPult();
 	menuBar=new QMenuBar(this);
 //	menuBar->move(0,HEADER_SIZE);
 	setMenuBar(menuBar);
@@ -221,10 +222,10 @@ Vodoley::Vodoley()
 		loadFile(curFile);
 	else {
 #ifndef Q_OS_MAC
-		loadFile(QApplication::applicationDirPath()+"/Addons/vodoley/resources/test.vod");
+		//loadFile(QApplication::applicationDirPath()+"/Addons/vodoley/resources/test.vod");
 #endif
 #ifdef Q_OS_MAC
-		loadFile(QApplication::applicationDirPath()+"/../Resources/Addons/vodoley/resources/test.vod");
+		//loadFile(QApplication::applicationDirPath()+"/../Resources/Addons/vodoley/resources/test.vod");
 #endif
 	}
 }

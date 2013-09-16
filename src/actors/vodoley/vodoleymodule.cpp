@@ -63,7 +63,7 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 /* public */ QWidget* VodoleyModule::mainWidget() const
 {
     return  MainWindow;
-    return nullptr;
+    //return nullptr;
 }
 
 /* public */ QWidget* VodoleyModule::pultWidget() const
@@ -72,7 +72,8 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
     // NOTE: the method is const and might be called at any time,
     //       so DO NOT create widget here, just return!
     // TODO implement me
-    return nullptr;
+    return (QWidget*)MainWindow->pult;
+   // return nullptr;
 }
 
 /* public slot */ void VodoleyModule::reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)
@@ -102,13 +103,14 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг наполни A */
     // TODO implement me
-    
+   MainWindow->FillA();
 }
 
 /* public slot */ void VodoleyModule::runFillB()
 {
     /* алг наполни B */
     // TODO implement me
+    MainWindow->FillB();
     
 }
 
@@ -116,6 +118,7 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг наполни C */
     // TODO implement me
+    MainWindow->FillC();
     
 }
 
