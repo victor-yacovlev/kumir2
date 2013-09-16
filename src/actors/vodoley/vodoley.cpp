@@ -132,7 +132,7 @@ void Menzurka::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 Vodoley::Vodoley()
 {
 //	vodHeader=new WHeader();
-	createActions();
+	//createActions();
 	autoClose=false;
     pult=new VodoleyPult();
 	menuBar=new QMenuBar(this);
@@ -263,13 +263,15 @@ void Vodoley::CreateVodoley(void)
 }
 
 //-----------------------------------
-void Vodoley::createActions()
+void Vodoley::createActions(QList<QAction*> actions)
 {
-    actNew=new QAction(trUtf8("Новое"),this);
+    if(actions.count()<3){qDebug()<<"Vodoley: cant create actions!";return;}
+    
+    actNew=actions.at(0);
     connect(actNew, SIGNAL(triggered()), this, SLOT(newZ()));
-    actLoad=new QAction(trUtf8("Загрузить"),this);
+    actLoad=actions.at(1);
     connect(actLoad, SIGNAL(triggered()), this, SLOT(loadZ()));
-    actSave=new QAction(trUtf8("Сохранить"),this);
+    actSave=actions.at(2);
     connect(actSave, SIGNAL(triggered()), this, SLOT(saveZ()));
 
 };
