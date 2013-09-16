@@ -57,9 +57,9 @@ extern bool loadMacro(const QDomElement &v, Macro &m)
     for (int i=0; i<commands.count(); i++) {
         const QDomElement cmd = commands.at(i).toElement();
         QString text = cmd.attribute("text");
-        text.replace("\\\n", "\n");
-        text.replace("\\\"", "\"");
-        text.replace("\\\\", "\\");
+        text = text.replace(QString("\\n"), QString("\n"));
+        text = text.replace(QString("\\\""), QString("\""));
+        text = text.replace(QString("\\\\"), QString("\\"));
         KeyCommand command(
                     loadKeyCommandType(cmd.attribute("name")),
                     text

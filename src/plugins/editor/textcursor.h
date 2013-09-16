@@ -61,6 +61,7 @@ public:
     void evaluateCommand(const KeyCommand & command);
 
     bool isFreeCursorMovement() const;
+    bool modifiesProtectedLiines() const;
 
 public slots:
     void toggleComment();
@@ -85,8 +86,7 @@ protected:
 
     class Editor * editor_;
 
-    int justifyLeft(const QString & text) const;
-    bool modifiesProtectedLiines() const;
+    int justifyLeft(const QString & text) const;    
 
     void findLexemBound(uint & row,  uint & column, const qint8 dir) const;
 

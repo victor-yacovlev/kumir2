@@ -1252,6 +1252,13 @@ bool TextCursor::modifiesProtectedLiines() const
             }
         }
     }
+    const uint linesCount = editor_->document()->linesCount();
+    if (linesCount > 0u) {
+        TextLine * lastLine = & editor_->document()->at(linesCount-1);
+        if (lastLine->protecteed && row_ >= linesCount) {
+            return true;
+        }
+    }
     for (int i=0; i<editor_->document()->linesCount(); i++) {
         if (editor_->document()->isProtected(i)) {
             if (editor_->document()->lineEndSelectedAt(i))

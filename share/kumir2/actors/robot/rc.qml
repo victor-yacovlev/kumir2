@@ -706,12 +706,29 @@ Rectangle {
         color: "#808080"
         radius: 4
         border.color: "#000000"
-
+        states: [
+            State {
+                name: "hovered"
+                PropertyChanges {
+                    target: btnScrollUp
+                    color: "white"
+                }
+            },
+            State {
+                name: "clicked"
+                PropertyChanges {
+                    target: btnScrollUp
+                    color: "black"
+                }
+            }
+        ]
         MouseArea {
             id: mouse_area1
             hoverEnabled: true
-            onEntered: btnScrollUp.color = "white"
-            onExited: btnScrollUp.color = "#808080"
+            onEntered: parent.state = 'hovered'
+            onReleased: parent.state = 'hovered'
+            onPressed: parent.state = 'clicked'
+            onExited: parent.state = ''
             onClicked: {
                 if (scroll.contentY >= 20)
                     scroll.contentY -= 20;
@@ -747,12 +764,29 @@ Rectangle {
             y: 3
             source: "arrow-down.png"
         }
-
+        states: [
+            State {
+                name: "hovered"
+                PropertyChanges {
+                    target: btnScrollDown
+                    color: "white"
+                }
+            },
+            State {
+                name: "clicked"
+                PropertyChanges {
+                    target: btnScrollDown
+                    color: "black"
+                }
+            }
+        ]
         MouseArea {
             id: mouse_area2
             hoverEnabled: true
-            onEntered: btnScrollDown.color = "white"
-            onExited: btnScrollDown.color = "#808080"
+            onEntered: parent.state = 'hovered'
+            onReleased: parent.state = 'hovered'
+            onPressed: parent.state = 'clicked'
+            onExited: parent.state = ''
             onClicked: {
                 if (scroll.contentY <= scroll.contentHeight - scroll.height - 20)
                     scroll.contentY += 20;
@@ -776,11 +810,29 @@ Rectangle {
         color: "#808080"
         radius: 4
         border.color: "#000000"
+        states: [
+            State {
+                name: "hovered"
+                PropertyChanges {
+                    target: btnCopy
+                    color: "white"
+                }
+            },
+            State {
+                name: "clicked"
+                PropertyChanges {
+                    target: btnCopy
+                    color: "black"
+                }
+            }
+        ]
         MouseArea {
             id: mouse_area3
             hoverEnabled: true
-            onEntered: btnCopy.color = "white"
-            onExited: btnCopy.color = "#808080"
+            onEntered: parent.state = 'hovered'
+            onReleased: parent.state = 'hovered'
+            onPressed: parent.state = 'clicked'
+            onExited: parent.state = ''
             onClicked: {
                 var programText = commandLog.text;
                 pult.copyTextToKumir(programText);
@@ -809,11 +861,29 @@ Rectangle {
         color: "#808080"
         radius: 4
         border.color: "#000000"
+        states: [
+            State {
+                name: "hovered"
+                PropertyChanges {
+                    target: btnClear
+                    color: "white"
+                }
+            },
+            State {
+                name: "clicked"
+                PropertyChanges {
+                    target: btnClear
+                    color: "black"
+                }
+            }
+        ]
         MouseArea {
             id: mouse_area4
             hoverEnabled: true
-            onEntered: btnClear.color = "white"
-            onExited: btnClear.color = "#808080"
+            onEntered: parent.state = 'hovered'
+            onReleased: parent.state = 'hovered'
+            onPressed: parent.state = 'clicked'
+            onExited: parent.state = ''
             onClicked: {
                 commandLog.text = ""
                 resultLog.text = ""

@@ -247,7 +247,8 @@ string generator::create_kum_algorithm(const algorithm_t &algorithm,
     }
     if (body.length() == 0)
         body = "\n";
-    string result = "алг " + title + "|@protected\n" + beg + body + end;
+    string result = "алг " + title + "|@protected\n" +
+            beg + body + end + "|@protected";
     return result;
 }
 
