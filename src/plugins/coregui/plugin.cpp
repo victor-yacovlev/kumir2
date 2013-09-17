@@ -242,6 +242,13 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             if (QFile::exists(smallIconFileName))
                 mainIcon.addFile(smallIconFileName, QSize(22,22));
 
+            const QSizePolicy actorSizePolicy = actorWidget->sizePolicy();
+            const QSizePolicy::Policy horz = actorSizePolicy.horizontalPolicy();
+            const QSizePolicy::Policy vert = actorSizePolicy.verticalPolicy();
+            bool resizableX = horz != QSizePolicy::Fixed;
+            bool resizableY = vert != QSizePolicy::Fixed;
+            bool resizable = resizableX && resizableY;
+
             Widgets::SecondaryWindow * actorWindow =
                     Widgets::SecondaryWindow::createSecondaryWindow(
                         actorWidget,
@@ -250,7 +257,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                         mainWindow_,
                         mainWindow_->actorsPlace_,
                         o->pluginSpec().name,
-                        true
+                        resizable
                         );
 
             secondaryWindows_ << actorWindow;
