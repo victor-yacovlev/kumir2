@@ -959,9 +959,7 @@ public:
         if (decimals>0) {
             sprintfFormat.push_back('.');
             sprintfFormat.append(sprintfInt(decimals, 10, 0, 'l'));
-        }
-        std::cerr << "Sprintf format: ";
-        std::cerr << Coder::encode(ASCII, sprintfFormat) << std::endl;
+        }        
         if (expform)
             sprintfFormat.push_back('e');
         else
