@@ -531,7 +531,7 @@ VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WFlags fl )
 	greenLight->move(15,29);
 	greenLight->resize(12,104);
 
-	UpB->hide();
+	UpB->show();
 	BtoC=new MainButton(this);
 	BtoC->move(UpB->pos());
 	BtoC->setGeometry(UpB->geometry());

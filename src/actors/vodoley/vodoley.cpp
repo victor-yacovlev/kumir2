@@ -135,13 +135,13 @@ Vodoley::Vodoley()
 	//createActions();
 	autoClose=false;
     pult=new VodoleyPult();
-	menuBar=new QMenuBar(this);
+	//menuBar=new QMenuBar(this);
 //	menuBar->move(0,HEADER_SIZE);
-	setMenuBar(menuBar);
-	menu=menu = menuBar->addMenu(trUtf8("Задание"));
-	menu->addAction(actNew);
-	menu->addAction(actSave);
-	menu->addAction(actLoad);
+	//setMenuBar(menuBar);
+	//menu=menu = menuBar->addMenu(trUtf8("Задание"));
+	//menu->addAction(actNew);
+	//menu->addAction(actSave);
+	//menu->addAction(actLoad);
 //	menuBar->show();
 
 	scene = new QGraphicsScene(this);
@@ -169,8 +169,8 @@ Vodoley::Vodoley()
 	setCentralWidget(view);
 //	view->move(0,menuBar->height ()+HEADER_SIZE);
 	//qDebug()<<menuBar->height ();
-        this->setBaseSize (374,235+menuBar->height());
-        this->resize(390,245+menuBar->height()+1);
+        this->setBaseSize (374,235);
+        this->resize(390,245+1);
 
 
 

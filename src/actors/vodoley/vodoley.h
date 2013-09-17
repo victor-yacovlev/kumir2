@@ -208,8 +208,8 @@ private:
     void updateNeedBirka();
 
     
-    QMenu * menu;
-    QMenuBar * menuBar;
+   // QMenu * menu;
+    //QMenuBar * menuBar;
     void drawTail();
     void showCurTurtle();
     void rotateImages();
