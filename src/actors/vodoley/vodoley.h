@@ -168,6 +168,7 @@ public:
 			max=Csize();
 		return max;
 	};
+    bool loadIoDevice(QIODevice * source);
 	bool loadFile(QString fileName);
 	void AutoClose() {
 		autoClose=true;
@@ -180,6 +181,8 @@ public:
 	QAction * actLoad;
 	QAction * actSave;
     void createActions(QList<QAction*> actions);
+    bool ready()
+    {return ((Curfill[0]==AfillR)||(Curfill[1]==BfillR)||(Curfill[1]==AfillR));};
 protected:
     void mousePressEvent(QMouseEvent *event);
     void closeEvent ( QCloseEvent * event );
@@ -193,7 +196,7 @@ public slots:
     void FillA();
     void FillB();
     void FillC();
-
+    
     void MoveFromTo(uint from,uint to);
 
 

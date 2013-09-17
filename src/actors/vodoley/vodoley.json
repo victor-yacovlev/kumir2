@@ -18,7 +18,7 @@
 
 
 		{
-			"name": {"ascii": "task complited", "ru_RU": "@@задание выполненно"},
+			"name": {"ascii": "task complited", "ru_RU": "@решено"},
 			"async": false,
 			"returnType": "bool"
 		}		

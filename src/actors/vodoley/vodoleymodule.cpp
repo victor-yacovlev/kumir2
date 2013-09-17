@@ -62,7 +62,9 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     // Set actor specific data (like environment)
     // The source should be ready-to-read QIODevice like QBuffer or QFile
-    Q_UNUSED(source);  // By default do nothing
+    
+    MainWindow->loadIoDevice(source);
+    MainWindow->reset();
 
 }
 
@@ -202,7 +204,7 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг лог @@задание выполненно */
     // TODO implement me
-    return false;
+    return MainWindow->ready();
     
 }
 

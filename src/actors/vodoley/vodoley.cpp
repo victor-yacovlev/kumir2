@@ -176,6 +176,7 @@ Vodoley::Vodoley()
 
 	this->setMinimumSize(this->size());
 	this->setMaximumSize(this->size());
+    this->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	this->statusBar()->hide();
 //	vodHeader->setChildWidget(this);
 
@@ -361,6 +362,74 @@ void Vodoley::newZ()
     setWindowTitle(QString::fromUtf8("Водолей - новое"));
 };
 
+bool Vodoley::loadIoDevice(QIODevice * source)
+{
+    QString curLine;
+	bool size=false;
+	bool fill=false;
+	bool need=false;
+    
+	while(!source->atEnd()) //Читаем файл
+	{
+		curLine = source->readLine().simplified();
+		if((curLine.isEmpty()) || (curLine[0]==';')){qDebug()<<"Continue";continue;};
+        //		int A,B,C;
+        
+		QStringList data=curLine.split(" ");
+		if(data.count()!=3)
+			QMessageBox::information( 0, "", trUtf8("Ошибка чтения задания! "), 0,0,0);
+		if(!size)//Читаем размер
+		{
+			bool ok;
+			Maxfill[0]=data[0].toInt(&ok);
+			if(!ok)
+				QMessageBox::information( 0, "", trUtf8("Ошибка чтения задания: размер не верен!"), 0,0,0);
+            
+			Maxfill[1]=data[1].toInt(&ok);
+            if(!ok)QMessageBox::information( 0, "", trUtf8("Ошибка чтения задания: размер не верен! ") , 0,0,0);
+			Maxfill[2]=data[2].toInt(&ok);
+			if(!ok)QMessageBox::information( 0, "", trUtf8("Ошибка чтения задания: размер не верен!"), 0,0,0);
+			size=true;
+			continue;
+		};
+        
+		if(!fill)//Читаем наполненность
+		{
+			bool ok;
+			Afill=data[0].toInt(&ok);
+			if(!ok)QMessageBox::information( 0, "", trUtf8("Ошибка чтения:наполненость A не верна! ") , 0,0,0);
+			Bfill=data[1].toInt(&ok);
+			if(!ok)QMessageBox::information( 0, "", trUtf8("Ошибка чтения:наполненость B не верна!") , 0,0,0);
+			Cfill=data[2].toInt(&ok);
+			if(!ok)QMessageBox::information( 0, "", trUtf8("Ошибка чтения:наполненость C не верна!") , 0,0,0);
+			fill=true;
+			continue;
+		};
+		if(!need)//Читаем задание
+		{
+			bool ok;
+			AfillR=data[0].toInt(&ok);
+			if(!ok){
+				QMessageBox::information( 0, "", trUtf8("Ошибка чтения: необходимое количество!") , 0,0,0);
+				return false;
+			};
+			BfillR=data[1].toInt(&ok);
+			if(!ok){
+				QMessageBox::information( 0, "", trUtf8("Ошибка чтения:необходимое количество! ") , 0,0,0);
+				return false;
+			};
+			CfillR=data[2].toInt(&ok);
+			if(!ok){
+				QMessageBox::information( 0, "", trUtf8("Ошибка чтения: необходимое количество!") , 0,0,0);
+				return false;
+			};
+			need=true;
+			continue;
+		};
+	};
+
+    return true;
+};
 bool Vodoley::loadFile(QString fileName)
 {
     QFile VodFile(fileName);
