@@ -958,8 +958,10 @@ public:
         sprintfFormat.push_back('%');
         if (decimals>0) {
             sprintfFormat.push_back('.');
-            sprintfFormat.append(sprintfInt(decimals + 1, 10, 0, 'l'));
+            sprintfFormat.append(sprintfInt(decimals, 10, 0, 'l'));
         }
+        std::cerr << "Sprintf format: ";
+        std::cerr << Coder::encode(ASCII, sprintfFormat) << std::endl;
         if (expform)
             sprintfFormat.push_back('e');
         else
@@ -983,6 +985,9 @@ public:
         }
 
         if (width>0) {
+            while (result.length()>width && result.find('.')!=std::string::npos) {
+                result.resize(result.length()-1);
+            }
             int leftSpaces = 0;
             int rightSpaces = 0;
             if (al=='l') {
