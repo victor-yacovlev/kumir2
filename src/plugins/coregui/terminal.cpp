@@ -52,9 +52,17 @@ Term::Term(QWidget *parent) :
             .toString() + "/icons/from_oxygen/";
 
     a_saveLast = new QAction(tr("Save last output"), this);
-    a_saveLast->setIcon(QIcon(oxygenIconsPath+"document-save.png"));
+//    a_saveLast->setIcon(QIcon(oxygenIconsPath+"document-save.png"));
     a_saveLast->setEnabled(false);
     connect(a_saveLast, SIGNAL(triggered()), this, SLOT(saveLast()));
+
+    a_copyLast = new QAction(tr("Copy last output"), this);
+    a_copyLast->setEnabled(false);
+    connect(a_copyLast, SIGNAL(triggered()), this, SLOT(copyLast()));
+
+    a_copyAll = new QAction(tr("Copy all output"), this);
+    a_copyAll->setEnabled(false);
+    connect(a_copyAll, SIGNAL(triggered()), this, SLOT(copyAll()));
 //    tb->addAction(a_saveLast);
 
     a_editLast = new QAction(tr("Open last output in editor"), this);
@@ -66,7 +74,7 @@ Term::Term(QWidget *parent) :
 //    tb->addSeparator();
 
     a_saveAll = new QAction(tr("Save all output"), this);
-    a_saveAll->setIcon(QIcon(oxygenIconsPath+"document-save-all.png"));
+//    a_saveAll->setIcon(QIcon(oxygenIconsPath+"document-save-all.png"));
     a_saveAll->setEnabled(false);
     connect(a_saveAll, SIGNAL(triggered()), this, SLOT(saveAll()));
 //    tb->addAction(a_saveAll);
@@ -186,12 +194,16 @@ void Term::changeGlobalState(ExtensionSystem::GlobalState , ExtensionSystem::Glo
     if (current==ExtensionSystem::GS_Unlocked || current==ExtensionSystem::GS_Observe) {
         a_saveAll->setEnabled(sessions_.size()>0);
         a_saveLast->setEnabled(sessions_.size()>0);
+        a_copyAll->setEnabled(sessions_.size()>0);
+        a_copyLast->setEnabled(sessions_.size()>0);
         a_editLast->setEnabled(sessions_.size()>0);
         a_clear->setEnabled(sessions_.size()>0);
     }
     else {
         a_saveAll->setEnabled(false);
         a_saveLast->setEnabled(false);
+        a_copyAll->setEnabled(false);
+        a_copyLast->setEnabled(false);
         a_editLast->setEnabled(false);
         a_clear->setEnabled(false);
     }
@@ -388,6 +400,22 @@ void Term::saveLast()
     QString suggestedFileName = QDir::current().absoluteFilePath(sessions_.last()->fileName());
     suggestedFileName = suggestedFileName.left(suggestedFileName.length()-4)+"-out.txt";
     saveText(suggestedFileName, sessions_.last()->plainText(false));
+}
+
+void Term::copyAll()
+{
+    QString allText;
+    for (int i=0; i<sessions_.size(); i++) {
+        allText += sessions_[i]->plainText(true);
+    }
+    QClipboard * clipboard = QApplication::clipboard();
+    clipboard->setText(allText);
+}
+
+void Term::copyLast()
+{
+    QClipboard * clipboard = QApplication::clipboard();
+    clipboard->setText(sessions_.last()->plainText(false));
 }
 
 void Term::saveText(const QString &suggestedFileName, const QString &text)
