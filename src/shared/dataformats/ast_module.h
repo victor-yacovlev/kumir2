@@ -2,6 +2,7 @@
 #define AST_MODULE_H
 
 #include "ast_type.h"
+#include "interfaces/actorinterface.h"
 
 #include <QString>
 #include <QList>
@@ -21,6 +22,7 @@ namespace AST {
 
 typedef QSharedPointer<struct Module> ModulePtr;
 typedef QWeakPointer<struct Module> ModuleWPtr;
+typedef Shared::ActorInterface * ActorPtr;
 
 typedef QSharedPointer<struct Algorithm> AlgorithmPtr;
 
@@ -92,6 +94,10 @@ struct ModuleImplementation {
 
     /** Module end lexems */
     QList<struct Lexem*> endLexems;
+
+    ActorPtr actor;
+
+    explicit ModuleImplementation() { actor = nullptr; }
 
 };
 

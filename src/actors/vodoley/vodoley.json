@@ -18,7 +18,7 @@
 
 
 		{
-			"name": {"ascii": "task complited", "ru_RU": "@@задание выполненно"},
+			"name": {"ascii": "task complited", "ru_RU": "@решено"},
 			"async": false,
 			"returnType": "bool"
 		}		
@@ -36,49 +36,35 @@
 					{
 						"title": {
 							"ascii": "Load Environment...", 
-		                    "ru_RU": "Загрузить обстановку..."
+		                    "ru_RU": "Загрузить задание..."
 		                },
 						"icon": "file-open"
 					},	
                     {
 						"title": {
 							"ascii": "Load Rescent...", 
-		                    "ru_RU": "Недавние обстановки"
+		                    "ru_RU": "Недавние задания"
 		                },
 						"icon": "file-rescent"
 					},
 					{
 						"title": {
 							"ascii": "Revert Environment", 
-		                    "ru_RU": "Вернуть исходную обстановку"
+		                    "ru_RU": "Вернуть исходное задание"
 		                },
 						"icon": "file-revert"
 					},
 					{
 						"title": {
 							"ascii": "Save Environment...", 
-		                    "ru_RU": "Сохранить обстановку..."
+		                    "ru_RU": "Сохранить..."
 		                },
 						"icon": "file-save-as"
 					},
-                    {
-						"title": {
-							"ascii": "Edit Environment...", 
-		                    "ru_RU": "Редактировать обстановку..."
-		            				    },
-						"icon": "file-save-as"
-		    },
-                    {
-						"title": {
-							"ascii": "Auto window size.", 
-		                    "ru_RU": "Авто размер окна"
-		            				    },
-						"icon": "file-save-as"
-		    },
-                          {
+                                                      {
                           "title": {
                           "ascii": "New Environment...", 
-                          "ru_RU": "Новая обстановка..."
+                          "ru_RU": "Новое задание…"
                           },
                           "icon": "file-new"
                           }

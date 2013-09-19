@@ -120,13 +120,24 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     QToolButton * btnSaveTerm = new QToolButton(mainWindow_);
     btnSaveTerm->setPopupMode(QToolButton::InstantPopup);
     QMenu * menuSaveTerm = new QMenu(btnSaveTerm);
-    btnSaveTerm->setToolTip("Save console output");
+    btnSaveTerm->setToolTip(tr("Save console output"));
     btnSaveTerm->setMenu(menuSaveTerm);
-    btnSaveTerm->setIcon(terminal_->actionSaveLast()->icon());
+    btnSaveTerm->setIcon(QIcon(qtcreatorIconsPath + "filesave.png"));
     menuSaveTerm->addAction(terminal_->actionSaveLast());
     menuSaveTerm->addAction(terminal_->actionSaveAll());
 //    mainWindow_->statusBar()->insertWidget(0, btnSaveTerm);
     mainWindow_->statusBar_->addButtonToLeft(btnSaveTerm);
+
+    QToolButton * btnCopyTerm = new QToolButton(mainWindow_);
+    btnCopyTerm->setPopupMode(QToolButton::InstantPopup);
+    QMenu * menuCopyTerm = new QMenu(btnCopyTerm);
+    btnCopyTerm->setToolTip(tr("Copy to clipboard console output"));
+    btnCopyTerm->setMenu(menuCopyTerm);
+    btnCopyTerm->setIcon(QIcon(qtcreatorIconsPath + "editcopy.png"));
+    menuCopyTerm->addAction(terminal_->actionCopyLast());
+    menuCopyTerm->addAction(terminal_->actionCopyAll());
+    mainWindow_->statusBar_->addButtonToLeft(btnCopyTerm);
+
     QToolButton * btnClearTerm = new QToolButton(mainWindow_);
     terminal_->actionClear()->setIcon(cleanConsoleIcon);
     btnClearTerm->setDefaultAction(terminal_->actionClear());
@@ -242,6 +253,13 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             if (QFile::exists(smallIconFileName))
                 mainIcon.addFile(smallIconFileName, QSize(22,22));
 
+            const QSizePolicy actorSizePolicy = actorWidget->sizePolicy();
+            const QSizePolicy::Policy horz = actorSizePolicy.horizontalPolicy();
+            const QSizePolicy::Policy vert = actorSizePolicy.verticalPolicy();
+            bool resizableX = horz != QSizePolicy::Fixed;
+            bool resizableY = vert != QSizePolicy::Fixed;
+            bool resizable = resizableX && resizableY;
+
             Widgets::SecondaryWindow * actorWindow =
                     Widgets::SecondaryWindow::createSecondaryWindow(
                         actorWidget,
@@ -250,7 +268,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                         mainWindow_,
                         mainWindow_->actorsPlace_,
                         o->pluginSpec().name,
-                        true
+                        resizable
                         );
 
             secondaryWindows_ << actorWindow;

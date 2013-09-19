@@ -8,6 +8,7 @@ You should change it corresponding to functionality.
 
 // Self include
 #include "vodoleymodule.h"
+#include "pult.h"
 
 // Kumir includes
 #include "extensionsystem/kplugin.h"
@@ -21,8 +22,15 @@ namespace ActorVodoley {
 VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
     : VodoleyModuleBase(parent)
 {
+    MainWindow=new Vodoley();
     // Module constructor, called once on plugin load
     // TODO implement me
+    QList<QAction*> actions;
+    actions.append(m_actionVodoleyNewEnvironment);
+    actions.append(m_actionVodoleyLoadEnvironment);
+    actions.append(m_actionVodoleySaveEnvironment);
+    MainWindow->createActions(actions);
+   // m_actionVodoleyNewEnvironment
 }
 
 /* public static */ QList<ExtensionSystem::CommandLineParameter> VodoleyModule::acceptableCommandLineParameters()
@@ -55,18 +63,29 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     // Set actor specific data (like environment)
     // The source should be ready-to-read QIODevice like QBuffer or QFile
-    Q_UNUSED(source);  // By default do nothing
+    
+    MainWindow->loadIoDevice(source);
+    MainWindow->reset();
 
 }
 
 /* public */ QWidget* VodoleyModule::mainWidget() const
 {
-    // Returns module main view widget, or nullptr if there is no any views
-    // NOTE: the method is const and might be called at any time,
-    //       so DO NOT create widget here, just return!
-    // TODO implement me
-    return nullptr;
+    return  MainWindow;
+    //return nullptr;
 }
+
+class AAA : public QWidget {
+public:
+    inline explicit AAA(QWidget * pult): QWidget(), pult_(pult) {
+        setLayout(new QVBoxLayout);
+        layout()->setContentsMargins(0, 0, 0, 0);
+        layout()->addWidget(pult);
+    }
+    inline QSize minimumSizeHint() const { return pult_->minimumSizeHint(); }
+private:
+    QWidget * pult_;
+};
 
 /* public */ QWidget* VodoleyModule::pultWidget() const
 {
@@ -74,7 +93,14 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
     // NOTE: the method is const and might be called at any time,
     //       so DO NOT create widget here, just return!
     // TODO implement me
-    return nullptr;
+    qDebug()<<"Pult"<<MainWindow->pult->size();
+    qDebug() << "Pult visible " << MainWindow->pult->isVisible();
+
+
+    static QWidget * dummy = new AAA(MainWindow->pult);
+    return dummy;
+//    return MainWindow->pult;
+   // return nullptr;
 }
 
 /* public slot */ void VodoleyModule::reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)
@@ -90,6 +116,7 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     // Resets module to initial state before program execution
     // TODO implement me
+    MainWindow->reset();
 }
 
 /* public slot */ void VodoleyModule::setAnimationEnabled(bool enabled)
@@ -104,13 +131,14 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг наполни A */
     // TODO implement me
-    
+   MainWindow->FillA();
 }
 
 /* public slot */ void VodoleyModule::runFillB()
 {
     /* алг наполни B */
     // TODO implement me
+    MainWindow->FillB();
     
 }
 
@@ -118,6 +146,7 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг наполни C */
     // TODO implement me
+    MainWindow->FillC();
     
 }
 
@@ -125,6 +154,7 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг вылей A */
     // TODO implement me
+    MainWindow->MoveFromTo(0,3);//Move water from A to ....
     
 }
 
@@ -132,6 +162,7 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг вылей B */
     // TODO implement me
+    MainWindow->MoveFromTo(1,3);
     
 }
 
@@ -139,6 +170,7 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг вылей C */
     // TODO implement me
+    MainWindow->MoveFromTo(1,3);
     
 }
 
@@ -146,6 +178,7 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг перелей из A в B */
     // TODO implement me
+    MainWindow->MoveFromTo(0,1);
     
 }
 
@@ -153,20 +186,21 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг перелей из A в C */
     // TODO implement me
-    
+    MainWindow->MoveFromTo(0,2);
 }
 
 /* public slot */ void VodoleyModule::runFromBToA()
 {
     /* алг перелей из B в A */
     // TODO implement me
-    
+    MainWindow->MoveFromTo(1,0);
 }
 
 /* public slot */ void VodoleyModule::runFromBToC()
 {
     /* алг перелей из B в C */
     // TODO implement me
+    MainWindow->MoveFromTo(1,2);
     
 }
 
@@ -174,13 +208,14 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг перелей из C в B */
     // TODO implement me
-    
+    MainWindow->MoveFromTo(2,1);
 }
 
 /* public slot */ void VodoleyModule::runFromCToA()
 {
     /* алг перелей из C в A */
     // TODO implement me
+    MainWindow->MoveFromTo(2,0);
     
 }
 
@@ -188,7 +223,7 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг лог @@задание выполненно */
     // TODO implement me
-    return false;
+    return MainWindow->ready();
     
 }
 

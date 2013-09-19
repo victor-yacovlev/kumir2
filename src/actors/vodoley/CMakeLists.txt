@@ -6,12 +6,22 @@ include(../../kumir2_plugin.cmake)
 
 set(SOURCES
     vodoleymodule.cpp
+    vodoley.cpp
+    pult.cpp
+    dialog.cpp
 )
 
 set(MOC_HEADERS
     vodoleymodule.h
+    vodoley.h
+    pult.h
+    dialog.h
 )
 
+set(FORMS
+    dialog.ui
+    pult.ui
+    )
 add_custom_command(
     OUTPUT
         ${CMAKE_CURRENT_BINARY_DIR}/vodoleymodulebase.cpp

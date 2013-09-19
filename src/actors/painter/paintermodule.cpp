@@ -485,55 +485,6 @@ void PainterModule::runEllipse(const int x, const int y, const int r1, const int
         view->update();
 }
 
-Color PainterModule::runOperatorINPUT(const QString& x, bool& ok)
-{
-    QStringList validValues;
-    validValues << QString::fromUtf8("прозрачный");
-    validValues << QString::fromUtf8("белый");
-    validValues << QString::fromUtf8("черный");
-    validValues << QString::fromUtf8("чёрный");
-    validValues << QString::fromUtf8("серый");
-    validValues << QString::fromUtf8("фиолетовый");
-    validValues << QString::fromUtf8("синий");
-    validValues << QString::fromUtf8("голубой");
-    validValues << QString::fromUtf8("зелёный");
-    validValues << QString::fromUtf8("зеленый");
-    validValues << QString::fromUtf8("жёлтый");
-    validValues << QString::fromUtf8("желтый");
-    validValues << QString::fromUtf8("оранжевый");
-    validValues << QString::fromUtf8("красный");
-    ok = validValues.contains(x.trimmed());
-    Color result;
-    if (ok) {
-        QColor c = parseColor(x.trimmed());
-        result.cssValue = c.name();
-    }
-    return result;
-}
-
-QString PainterModule::runOperatorOUTPUT(const Color& x)
-{
-    QString result;
-    QMap<QString,QString> standardColorNames;
-    standardColorNames[parseColor(QString::fromUtf8("прозрачный")).name()] = (QString::fromUtf8("прозрачный"));
-    standardColorNames[parseColor(QString::fromUtf8("белый")).name()] = (QString::fromUtf8("белый"));
-    standardColorNames[parseColor(QString::fromUtf8("чёрный")).name()] = (QString::fromUtf8("чёрный"));
-    standardColorNames[parseColor(QString::fromUtf8("серый")).name()] = (QString::fromUtf8("серый"));
-    standardColorNames[parseColor(QString::fromUtf8("фиолетовый")).name()] = (QString::fromUtf8("фиолетовый"));
-    standardColorNames[parseColor(QString::fromUtf8("синий")).name()] = (QString::fromUtf8("синий"));
-    standardColorNames[parseColor(QString::fromUtf8("голубой")).name()] = (QString::fromUtf8("голубой"));
-    standardColorNames[parseColor(QString::fromUtf8("зелёный")).name()] = (QString::fromUtf8("зелёный"));
-    standardColorNames[parseColor(QString::fromUtf8("жёлтый")).name()] = (QString::fromUtf8("жёлтый"));
-    standardColorNames[parseColor(QString::fromUtf8("оранжевый")).name()] = (QString::fromUtf8("оранжевый"));
-    standardColorNames[parseColor(QString::fromUtf8("красный")).name()] = (QString::fromUtf8("красный"));
-    if (standardColorNames.contains(x.cssValue)) {
-        result = standardColorNames[x.cssValue];
-    }
-    else {
-        result = x.cssValue;
-    }
-    return result;
-}
 
     
 } // $namespace

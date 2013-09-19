@@ -6,12 +6,12 @@ Generated file is just a skeleton for module contents.
 You should change it corresponding to functionality.
 */
 
-#ifndef VODOLEYMODULE_H
-#define VODOLEYMODULE_H
+#ifndef _COLORERMODULE_H
+#define _COLORERMODULE_H
 
 // Base class include
-#include "vodoleymodulebase.h"
-#include "vodoley.h"
+#include "_colorermodulebase.h"
+
 // Kumir includes
 #include "extensionsystem/kplugin.h"
 
@@ -19,44 +19,29 @@ You should change it corresponding to functionality.
 #include <QtCore>
 #include <QtGui>
 
-namespace ActorVodoley {
+namespace Actor_Colorer {
 
 
-class VodoleyModule
-    : public VodoleyModuleBase
+class _ColorerModule
+    : public _ColorerModuleBase
 {
     Q_OBJECT
 public /* methods */:
-    VodoleyModule(ExtensionSystem::KPlugin * parent);
+    _ColorerModule(ExtensionSystem::KPlugin * parent);
     static QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters();
-    QWidget* mainWidget() const;
-    QWidget* pultWidget() const;
 public slots:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void loadActorData(QIODevice * source);
     void reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys);
     void reset();
-    void setAnimationEnabled(bool enabled);
-    void runFillA();
-    void runFillB();
-    void runFillC();
-    void runEmptyA();
-    void runEmptyB();
-    void runEmptyC();
-    void runFromAToB();
-    void runFromAToC();
-    void runFromBToA();
-    void runFromBToC();
-    void runFromCToB();
-    void runFromCToA();
-    bool runTaskComplited();
+    Color runOperatorINPUT(const QString& x, bool& ok);
+    QString runOperatorOUTPUT(const Color& x);
 
 
 
     /* ========= CLASS PRIVATE ========= */
 
-private:
-    Vodoley *MainWindow;
+
 
 
 
@@ -64,6 +49,6 @@ private:
 };
         
 
-} // namespace ActorVodoley
+} // namespace Actor_Colorer
 
-#endif // VODOLEYMODULE_H
+#endif // _COLORERMODULE_H

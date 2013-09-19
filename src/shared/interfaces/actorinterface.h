@@ -29,6 +29,7 @@ public:
     typedef QList<CustomType> TypeList;
     inline virtual QStringList funcList() const { return QStringList(); } // List of public functions;
     inline virtual TypeList typeList() const { return TypeList(); }
+    inline virtual QList<ActorInterface*> usesList() const { return QList<ActorInterface*>(); }
     inline virtual void loadActorData(QIODevice * source) { Q_UNUSED(source); }
     inline virtual QString customValueToString(
             const CustomType & clazz,

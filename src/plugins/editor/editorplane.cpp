@@ -1376,38 +1376,41 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
             editor_->cursor()->evaluateCommand(KeyCommand::SelectEndOfDocument);
         }
         else if (e->matches(QKeySequence::InsertParagraphSeparator)) {
-            bool addIndent = editor_->analizerPlugin_ && editor_->analizerPlugin_->indentsSignificant();
-            if (!addIndent) {
-                editor_->cursor()->evaluateCommand("\n");
-            }
-            else {
-                const QString & curText = editor_->cursor()->row() < editor_->document()->linesCount()
-                        ? editor_->document()->at(editor_->cursor()->row()).text : QString();
+            const bool protecteed = editor_->cursor()->modifiesProtectedLiines();
+            if (!protecteed) {
+                bool addIndent = editor_->analizerPlugin_ && editor_->analizerPlugin_->indentsSignificant();
+                if (!addIndent) {
+                    editor_->cursor()->evaluateCommand("\n");
+                }
+                else {
+                    const QString & curText = editor_->cursor()->row() < editor_->document()->linesCount()
+                            ? editor_->document()->at(editor_->cursor()->row()).text : QString();
 
-                int indentSpaces = 0;
-                for (int i=0; i<curText.length(); i++) {
-                    if (curText.at(i) == ' ') {
-                        indentSpaces += 1;
+                    int indentSpaces = 0;
+                    for (int i=0; i<curText.length(); i++) {
+                        if (curText.at(i) == ' ') {
+                            indentSpaces += 1;
+                        }
+                        else {
+                            break;
+                        }
                     }
-                    else {
-                        break;
+                    bool moveToEnd = false;
+                    for (uint i=editor_->cursor()->column(); i<curText.length(); i++) {
+                        if (curText.at(i) == ' ') {
+                            moveToEnd = true;
+                        }
+                        else {
+                            moveToEnd = false;
+                            break;
+                        }
                     }
+                    if (moveToEnd)
+                        editor_->cursor()->moveTo(editor_->cursor()->row(), curText.length());
+                    QString indent;
+                    indent.fill(' ', indentSpaces);
+                    editor_->cursor()->evaluateCommand("\n" + indent);
                 }
-                bool moveToEnd = false;
-                for (uint i=editor_->cursor()->column(); i<curText.length(); i++) {
-                    if (curText.at(i) == ' ') {
-                        moveToEnd = true;
-                    }
-                    else {
-                        moveToEnd = false;
-                        break;
-                    }
-                }
-                if (moveToEnd)
-                    editor_->cursor()->moveTo(editor_->cursor()->row(), curText.length());
-                QString indent;
-                indent.fill(' ', indentSpaces);
-                editor_->cursor()->evaluateCommand("\n" + indent);
             }
         }
         else if (e->key()==Qt::Key_Backspace && e->modifiers()==0) {
@@ -2327,7 +2330,9 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
         // The rect itself
         const QRect specialLineRect (0, y, width(), lineHeight());
 
-        if (editor_->document()->isProtected(i) && !editor_->document()->isHidden(i)) {
+        bool protectedLine = editor_->document()->isProtected(i) && !editor_->document()->isHidden(i);
+
+        if (protectedLine) {
             // Line is protected
             p->setBrush(PROTECTED_LINE_BACKGROUND);
             drawThisSpecialRectFlag = true;
@@ -2340,6 +2345,19 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
 
         if (drawThisSpecialRectFlag) {
             // Perform drawing a rect
+            p->setPen(Qt::NoPen);
+            p->drawRect(specialLineRect);
+        }
+    }
+
+    // Draw remaining text area in case of last line is protected
+    if (!editor_->isTeacherMode() && editor_->document()->linesCount() > 0) {
+        const TextLine & lastLine =
+                editor_->document()->at(editor_->document()->linesCount()-1);
+        if (lastLine.protecteed) {
+            const uint y = lineHeight() * editor_->document()->linesCount();
+            const QRect specialLineRect (0, y, width(), height() - y - offset().y());
+            p->setBrush(PROTECTED_LINE_BACKGROUND);
             p->setPen(Qt::NoPen);
             p->drawRect(specialLineRect);
         }
@@ -2644,9 +2662,12 @@ void EditorPlane::setProperFormat(
  */
 uint EditorPlane::widthInChars() const
 {
+    ExtensionSystem::SettingsPtr sett = editor_->mySettings();
+    if (!sett)
+        return 0u;
     const uint cw = charWidth();
     uint marginWidthInPixels =
-            cw * editor_->mySettings()->value(MarginWidthKey, MarginWidthDefault).toUInt();
+            cw * sett->value(MarginWidthKey, MarginWidthDefault).toUInt();
     if (!editor_->analizerInstance_)
         marginWidthInPixels = 0;
     const uint myWidth = width();

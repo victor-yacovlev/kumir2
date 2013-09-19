@@ -143,18 +143,27 @@ AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin,
     builtinModules.resize(16);
     ActorInterface * stdFunct = new StdLibModules::RTL;
     builtinModules[0] = stdFunct;
-    createModuleFromActor(stdFunct, 0xF0);
+    createModuleFromActor_stage1(stdFunct, 0xF0);
+    createModuleFromActor_stage2(stdFunct);
     ActorInterface * filesFunct = new StdLibModules::Files;
     builtinModules[1] = filesFunct;
-    createModuleFromActor(filesFunct, 0xF1);
+    createModuleFromActor_stage1(filesFunct, 0xF1);
+    createModuleFromActor_stage2(filesFunct);
     ActorInterface * stringsFunct = new StdLibModules::Strings;
     builtinModules[2] = stringsFunct;
-    createModuleFromActor(stringsFunct, 0xF2);
+    createModuleFromActor_stage1(stringsFunct, 0xF2);
+    createModuleFromActor_stage2(stringsFunct);
     QList<ExtensionSystem::KPlugin*> actors = plugin->loadedPlugins("Actor*");
     foreach (QObject *o, actors) {
         ActorInterface * actor = qobject_cast<ActorInterface*>(o);
         if (actor) {
-            createModuleFromActor(actor, 0);
+            createModuleFromActor_stage1(actor, 0);
+        }
+    }
+    foreach (QObject *o, actors) {
+        ActorInterface * actor = qobject_cast<ActorInterface*>(o);
+        if (actor) {
+            createModuleFromActor_stage2(actor);
         }
     }
 }
@@ -240,6 +249,16 @@ QStringList Analizer::importModuleSuggestion(int lineNo) const
     return QStringList();
 }
 
+static AST::ModulePtr moduleByActor(AST::DataPtr ast, Shared::ActorInterface* actor)
+{
+    foreach (AST::ModulePtr mod, ast->modules) {
+        if (mod->impl.actor && mod->impl.actor == actor) {
+            return mod;
+        }
+    }
+    return AST::ModulePtr();
+}
+
 void Analizer::setSourceText(const QString & text)
 {
     QList<AST::ModulePtr>::iterator it = d->ast->modules.begin();
@@ -277,7 +296,18 @@ void Analizer::setSourceText(const QString & text)
                             if (!extraTypeNames.contains(typeName))
                                 extraTypeNames.append(typeName);
                         }
-                    }
+                        QList<Shared::ActorInterface*> deps =
+                                pmod->impl.actor->usesList();
+                        foreach (Shared::ActorInterface* actor, deps) {
+                            AST::ModulePtr dmod = moduleByActor(d->ast, actor);
+                            foreach (const AST::Type ptype, dmod->header.types) {
+                                const QString typeName = ptype.name;
+                                if (!extraTypeNames.contains(typeName))
+                                    extraTypeNames.append(typeName);
+                            }
+                        }
+                    }                    
+
                 }
             }
         }
@@ -305,12 +335,14 @@ void Analizer::setSourceText(const QString & text)
 
 QStringList AnalizerPrivate::AlwaysAvailableModulesName;
 
-void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor, quint8 forcedId)
+void AnalizerPrivate::createModuleFromActor_stage1(Shared::ActorInterface * actor, quint8 forcedId)
 {
+    // Stage 1 -- add to table and build type list
     AST::ModulePtr mod = AST::ModulePtr(new AST::Module());
     mod->builtInID = forcedId;
     mod->header.type = AST::ModTypeExternal;
     mod->header.name = actor->name();
+    mod->impl.actor = AST::ActorPtr(actor);
     ast->modules << ModulePtr(mod);
     const Shared::ActorInterface::TypeList typeList = actor->typeList();
     for (int i=0; i<typeList.size(); i++) {
@@ -318,7 +350,7 @@ void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor
         AI::CustomType ct = typeList[i];
         AST::Type tp;
         tp.name = ct.first;
-        tp.moduleName = actor->name();
+        tp.actor = AST::ActorPtr(actor);
         AI::Record record = ct.second;
         for (int j=0; j<record.size(); j++) {
             AI::Field field = record[j];
@@ -338,6 +370,17 @@ void AnalizerPrivate::createModuleFromActor(const Shared::ActorInterface * actor
         }
         tp.kind = AST::TypeUser;
         mod->header.types << tp;
+    }    
+}
+
+void AnalizerPrivate::createModuleFromActor_stage2(Shared::ActorInterface * actor)
+{
+    // Stage 2 -- build functions list
+    AST::ModulePtr mod = moduleByActor(ast, actor);
+    QList<Shared::ActorInterface*> deps = actor->usesList();
+    foreach (Shared::ActorInterface* dep, deps) {
+        AST::ModulePtr dmod = moduleByActor(ast, dep);
+        dmod->header.usedBy.append(mod.toWeakRef());
     }
     const QStringList funcList = actor->funcList();
     for (int i=0; i<funcList.size(); i++) {
@@ -932,6 +975,16 @@ QStringList AnalizerPrivate::gatherExtraTypeNames(const AST::ModulePtr currentMo
                 for (int j=0; j<module->header.types.size(); j++) {
                     AST::Type tp = module->header.types[j];
                     result << tp.name;
+                }
+                if (module->impl.actor) {
+                    QList<Shared::ActorInterface*> deps = module->impl.actor->usesList();
+                    foreach (Shared::ActorInterface * actor, deps) {
+                        const AST::ModulePtr actorMod = moduleByActor(ast, actor);
+                        for (int j=0; j<actorMod->header.types.size(); j++) {
+                            AST::Type tp = actorMod->header.types[j];
+                            result << tp.name;
+                        }
+                    }
                 }
             }
         }

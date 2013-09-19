@@ -956,15 +956,23 @@ public:
         String sprintfFormat;
         sprintfFormat.reserve(10);
         sprintfFormat.push_back('%');
-        if (decimals>0) {
+        real v = fabs(value);
+        int p = 0;
+        while (v >= 1.0) {
+            v /= 10;
+            p++;
+        }
+        if (decimals>0 && p < 7) {
             sprintfFormat.push_back('.');
-            sprintfFormat.append(sprintfInt(decimals + 1, 10, 0, 'l'));
+            sprintfFormat.append(sprintfInt(decimals + p, 10, 0, 'l'));
         }
         if (expform)
             sprintfFormat.push_back('e');
         else
             sprintfFormat.push_back('g');
-        sprintf(buffer, Coder::encode(ASCII, sprintfFormat).c_str(), value);
+        const std::string formatAscii = Coder::encode(ASCII, sprintfFormat);
+        const char * fmt = formatAscii.c_str();
+        sprintf(buffer, fmt, value);
         std::string result(reinterpret_cast<char*>(&buffer));
 
         size_t epos = result.find('e');
@@ -983,6 +991,9 @@ public:
         }
 
         if (width>0) {
+            while (result.length()>width && result.find('.')!=std::string::npos) {
+                result.resize(result.length()-1);
+            }
             int leftSpaces = 0;
             int rightSpaces = 0;
             if (al=='l') {

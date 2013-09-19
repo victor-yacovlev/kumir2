@@ -1,3 +1,4 @@
+add_subdirectory(_colorer)
 add_subdirectory(painter)
 add_subdirectory(robot)
 add_subdirectory(complexnumbers)

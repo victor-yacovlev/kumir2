@@ -588,13 +588,15 @@ QSize SecondaryWindowGenericImplementation::minimumSizeHint() const
     int w = 200;
     int h = 120;
     if (centralWidget_) {
+        int minWidgetW = centralWidget_->minimumSizeHint().width();
+        int minWidgetH = centralWidget_->minimumSizeHint().height();
         w = qMax(w,
-                 centralWidget_->minimumSizeHint().width() +
+                 minWidgetW +
                  layout()->contentsMargins().left() +
                  layout()->contentsMargins().right()
                  );
         h = qMax(h,
-                 centralWidget_->minimumSizeHint().height() +
+                 minWidgetH +
                  layout()->contentsMargins().top() +
                  layout()->contentsMargins().bottom() +
                  layout()->spacing() +

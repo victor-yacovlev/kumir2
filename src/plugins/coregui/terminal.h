@@ -33,10 +33,14 @@ public slots:
     void input(const QString & format);
     void saveLast();
     void saveAll();
+    void copyLast();
+    void copyAll();
     void editLast();
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     inline QAction * actionSaveAll() const { return a_saveAll; }
     inline QAction * actionSaveLast() const { return a_saveLast; }
+    inline QAction * actionCopyAll() const { return a_copyAll; }
+    inline QAction * actionCopyLast() const { return a_copyLast; }
     inline QAction * actionEditLast() const { return a_editLast; }
     inline QAction * actionClear() const { return a_clear; }
 
@@ -61,6 +65,8 @@ private:
     class Plane * m_plane;
     QAction * a_saveAll;
     QAction * a_saveLast;
+    QAction * a_copyAll;
+    QAction * a_copyLast;
     QAction * a_editLast;
     QAction * a_clear;
 //    QToolBar * m_toolBar;
