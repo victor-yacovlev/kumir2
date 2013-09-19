@@ -518,13 +518,13 @@ VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WFlags fl )
 {
 	autoClose=false;
 	setupUi ( this );
-	libMode=false;
-	setWindowFlags(Qt::Dialog);
+	libMode=true;
+	//setWindowFlags(Qt::Dialog);
 
 	Logger=new pultLogger(this);
 
 
-
+    this->setMinimumSize(250,450);
 	Logger->setSizes(164,150);
 	Logger->Move(40,5);	
 	greenLight=new linkLight(this);
