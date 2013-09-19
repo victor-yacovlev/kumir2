@@ -649,7 +649,7 @@ VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WFlags fl )
 	connect(aFill,SIGNAL(clicked()),this,SLOT(FillAs()));
 	connect(bFill,SIGNAL(clicked()),this,SLOT(FillBs()));
 	connect(cFill,SIGNAL(clicked()),this,SLOT(FillCs()));
-
+    this->setMinimumSize(QSize(250,400));
 
 	link=true;
 }
