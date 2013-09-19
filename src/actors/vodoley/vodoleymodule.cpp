@@ -8,6 +8,7 @@ You should change it corresponding to functionality.
 
 // Self include
 #include "vodoleymodule.h"
+#include "pult.h"
 
 // Kumir includes
 #include "extensionsystem/kplugin.h"
@@ -80,7 +81,8 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
     // NOTE: the method is const and might be called at any time,
     //       so DO NOT create widget here, just return!
     // TODO implement me
-    return (QWidget*)MainWindow->pult;
+    qDebug()<<"Pult"<<MainWindow->pult->size();
+    return MainWindow->pult;
    // return nullptr;
 }
 
