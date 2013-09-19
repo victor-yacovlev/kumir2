@@ -3,7 +3,11 @@
 
 #include <QString>
 #include <QPair>
+#include <QSharedPointer>
+#include <QWeakPointer>
 #include "ast_variabletype.h"
+#include "interfaces/actorinterface.h"
+
 
 #undef ABSTRACTSYNTAXTREE_EXPORT
 #ifdef DATAFORMATS_LIBRARY
@@ -14,14 +18,14 @@
 
 namespace AST {
 
+    typedef Shared::ActorInterface* ActorPtr;
     typedef QPair<QString,struct Type>  Field;
 
     struct Type {
         /** Base type */
         VariableBaseType kind;
 
-        /** A module providing custon type */
-        QString moduleName;
+        ActorPtr actor;
 
         /** Type name (if user defined)*/
         QString name;
@@ -44,9 +48,9 @@ namespace AST {
         inline bool operator==(const VariableBaseType & otherType) const {
             return kind!=TypeUser && kind==otherType;
         }
-        inline Type() { kind = TypeNone; }
-        inline Type(AST::VariableBaseType bt) { kind = bt; }
-        inline Type(const QString & userTypeName) { kind = AST::TypeUser; name = userTypeName; }
+        inline Type() { kind = TypeNone; actor = nullptr; }
+        inline Type(AST::VariableBaseType bt) { kind = bt; actor = nullptr; }
+        inline Type(const QString & userTypeName) { kind = AST::TypeUser; name = userTypeName; actor = nullptr; }
     };
 
 }

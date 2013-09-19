@@ -73,8 +73,6 @@ public slots:
     int runTextWidth(const QString& text);
     void runSetFont(const QString& family, const int size, const bool bold, const bool italic);
     void runEllipse(const int x, const int y, const int r1, const int r2);
-    Color runOperatorINPUT(const QString& x, bool& ok);
-    QString runOperatorOUTPUT(const Color& x);
 
 public:
     // GUI access methods

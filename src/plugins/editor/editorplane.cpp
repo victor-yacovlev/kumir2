@@ -2662,9 +2662,12 @@ void EditorPlane::setProperFormat(
  */
 uint EditorPlane::widthInChars() const
 {
+    ExtensionSystem::SettingsPtr sett = editor_->mySettings();
+    if (!sett)
+        return 0u;
     const uint cw = charWidth();
     uint marginWidthInPixels =
-            cw * editor_->mySettings()->value(MarginWidthKey, MarginWidthDefault).toUInt();
+            cw * sett->value(MarginWidthKey, MarginWidthDefault).toUInt();
     if (!editor_->analizerInstance_)
         marginWidthInPixels = 0;
     const uint myWidth = width();

@@ -309,18 +309,23 @@ class BaseType:
     """
     _typeTable = dict()  # a table of actor's custom types
 
-    def __init__(self, jsonNode):
+    def __init__(self, module, jsonNode):
         """
         Initializes from  JSON value or uses existing type
 
-        :type   jsonNode: dict, str, unicode
-        :param  jsonNode: JSON node for custom type or name for standard type
+        :type   module:     Module
+        :param  module:     module, where type declared
+        :type   jsonNode:   dict, str, unicode
+        :param  jsonNode:   JSON node for custom type or name for standard type
         """
         assert isinstance(jsonNode, dict) or isinstance(jsonNode, str) or isinstance(jsonNode, unicode)
+        self._module = None
         if isinstance(jsonNode, dict):
             self.__init__from_dict(jsonNode)
         else:
             self.__init__from_string(str(jsonNode))
+        if self._module is None:
+            self._module = module
 
     def __init__from_dict(self, jsonNode):
         """
@@ -340,7 +345,7 @@ class BaseType:
             assert isinstance(field, dict)
             assert "name" in field and "baseType" in field
             fieldName = Name(field["name"])
-            fieldType = BaseType(field["baseType"])
+            fieldType = BaseType(None, field["baseType"])
             pair = fieldName, fieldType
             self._fields.append(pair)
         BaseType._typeTable[self._name.asciiValue()] = self
@@ -359,6 +364,7 @@ class BaseType:
             self._name = copy.deepcopy(existingType._name)
             self._fields = copy.deepcopy(existingType._fields)
             self._standard = existingType._standard
+            self._module = existingType._module
         else:
             self._standard = True
             self._fields = []
@@ -470,7 +476,7 @@ $fields
             result += "}\n"
             return result
 
-    def cppCustomTypeInlineEncodeDecode(self):
+    def cppCustomTypeEncodeDecode(self):
         """
         Generates encode/decode to/from QVariant inline functions for custom type methods
 
@@ -512,19 +518,29 @@ $fields
                 "bodyDecode": bodyDecode
             }
             return _renderTemplate("""
-inline QVariant encode(const $typeName & record) {
+QVariant encode(const $typeName & record) {
     QVariantList result;
 $bodyEncode
     return result;
 }
 
-inline $typeName decode(const QVariant & raw) {
+$typeName decode(const QVariant & raw) {
     $typeName result;
     const QVariantList alist = raw.toList();
 $bodyDecode
     return result;
 }
             """, substitutions)
+
+    def typeDef(self):
+        """Creates  typedef in case of external namespace"""
+        if self._module:
+            return "typedef %s::%s %s;" % (
+                self._module.namespace(),
+                self.qtName(), self.qtName()
+            )
+        else:
+            return ""
 
 
 class Argument:
@@ -541,7 +557,7 @@ class Argument:
         """
         assert isinstance(jsonNode, dict)
         self.name = Name(jsonNode["name"])
-        self.baseType = BaseType(jsonNode["baseType"])
+        self.baseType = BaseType(None, jsonNode["baseType"])
         self.dimension = 0
         if "dim" in jsonNode:
             self.dimension = int(jsonNode["dim"])
@@ -632,13 +648,11 @@ class Method:
     An actor static method
     """
 
-    _methodTable = list()
-
     def __init__(self, jsonNode):
         assert isinstance(jsonNode, dict)
         self.name = Name(jsonNode["name"])
         if "returnType" in jsonNode:
-            self.returnType = BaseType(jsonNode["returnType"])
+            self.returnType = BaseType(None, jsonNode["returnType"])
         else:
             self.returnType = None
         if "async" in jsonNode:
@@ -651,18 +665,6 @@ class Method:
                 assert isinstance(arg, dict)
                 argument = Argument(arg)
                 self.arguments.append(argument)
-        if not self in Method._methodTable:
-            Method._methodTable.append(self)
-
-    def indexInTable(self):
-        """
-        Returns an index of this method in table
-
-        :rtype:     int
-        :return:    method index
-        """
-        assert self in Method._methodTable
-        return Method._methodTable.index(self)
 
     def cppDeclaration(self):
         """
@@ -843,21 +845,27 @@ class Module:
     A Kumir module.
     """
 
-    def __init__(self, jsonNode):
+    def __init__(self, moduleDir, jsonNode):
         """
         Initializes from JSON value
 
+        :type   moduleDir:  str
+        :param  moduleDir:  module root directory
         :type   jsonNode:   dict
-        :param  jsonNode:   Module specification (JSON root)
+        :param  jsonNode:   module specification (JSON root)
         """
         assert isinstance(jsonNode, dict)
         assert "name" in jsonNode
         assert "methods" in jsonNode
         self.name = Name(jsonNode["name"])
         self.types = []
+        self.usesList = []
         if "types" in jsonNode:
             for typee in jsonNode["types"]:
-                self.types.append(BaseType(typee))
+                self.types.append(BaseType(self, typee))
+        if "uses" in jsonNode:
+            self.usesList = jsonNode["uses"]
+            self._read_dependencies(moduleDir, self.usesList)
         self.methods = []
         for method in jsonNode["methods"]:
             self.methods.append(Method(method))
@@ -869,6 +877,18 @@ class Module:
             self.settings = Settings(jsonNode["settings"])
         else:
             self.settings = None
+
+    def _read_dependencies(self, moduleDir, usesList):
+        """
+        Read custom types provided by used actors
+        :param moduleDir: module directory
+        :param usesList: a list of ASCII actor names
+        """
+        updir = os.path.normpath(moduleDir + os.path.sep + ".." + os.path.sep)
+        for use in usesList:
+            filename = updir + os.path.sep + use.lower() + os.path.sep + use.lower() + ".json"
+            useModule = Module.read(filename)
+            self.types += useModule.types
 
     @classmethod
     def read(cls, fileName):
@@ -883,7 +903,10 @@ class Module:
         f = open(fileName, 'r')
         data = json.load(f, "utf-8")
         f.close()
-        return Module(data)
+        absPath = os.path.abspath(fileName)
+        moduleDir = os.path.dirname(absPath)
+        result = Module(moduleDir, data)
+        return result
 
     def className(self):
         """
@@ -1116,6 +1139,7 @@ class CppClassBase:
         public_virtuals = []
         public_virtual_slots = []
         constructor = None
+        public_typedefs = []
         nonInspectable = map(lambda x: ("CppImplementation", x), self.extraImplementations)
         for key, value in inspect.getmembers(self) + nonInspectable:
             assert isinstance(key, str)
@@ -1405,8 +1429,9 @@ private:
         """
             for typee in self._module.types:
                 assert isinstance(typee, BaseType)
-                if typee.cppCustomTypeCreation("result"):
-                    body += typee.cppCustomTypeCreation("result")
+                if typee._module == self._module:
+                    if typee.cppCustomTypeCreation("result"):
+                        body += typee.cppCustomTypeCreation("result")
         return """
 /* public */ Shared::ActorInterface::TypeList %s::typeList() const
 {
@@ -1624,7 +1649,8 @@ private:
         switchBody = ""
         for method in self._module.methods:
             assert isinstance(method, Method)
-            switchBody += "case 0x%04x: {\n" % method.indexInTable()
+            methodIndex = self._module.methods.index(method)
+            switchBody += "case 0x%04x: {\n" % methodIndex
             switchBody += "    /* %s */\n" % method.name.asciiValue()
             if method.async:
                 switchBody += "    asyncRunThread_->init(index, args);\n"
@@ -1915,6 +1941,33 @@ private:
 }
         """ % (self.className, self._module.className())
 
+    def usesListCppImplementation(self):
+        if not self._module.usesList:
+            return """
+/* public */ QList<Shared::ActorInterface*> %s::usesList() const
+{
+    static const QList<ActorInterface*> empty = QList<ActorInterface*>();
+    return empty;
+}
+            """ % self.className
+        else:
+            pluginsList = map(lambda s: "\"Actor" + s + "\"", self._module.usesList)
+            return """
+/* public */ QList<Shared::ActorInterface*> %s::usesList() const
+{
+    static const QStringList usesNames = QStringList()
+        << %s ;
+    QList<Shared::ActorInterface*> result;
+    foreach (const QString & name, usesNames) {
+        ExtensionSystem::KPlugin * plugin = myDependency(name);
+        Shared::ActorInterface * actor =
+                qobject_cast<Shared::ActorInterface*>(plugin);
+        result.push_back(actor);
+    }
+    return result;
+}
+            """ % (self.className, string.join(pluginsList, " << "))
+
 
 class AsyncThreadCppClass(CppClassBase):
     """
@@ -2022,7 +2075,8 @@ class AsyncThreadCppClass(CppClassBase):
         methods = filter(lambda method: method.async, self._module.methods)
         for method in methods:
             assert isinstance(method, Method)
-            switchBody += "case 0x%04x: {\n" % method.indexInTable()
+            methodIndex = self._module.methods.index(method)
+            switchBody += "case 0x%04x: {\n" % methodIndex
             switchBody += "    /* %s */\n" % method.name.asciiValue()
             args = []
             for index, argument in enumerate(method.arguments):
@@ -2079,6 +2133,7 @@ class AsyncThreadCppClass(CppClassBase):
     }
 }
         """ % (self.className, _addIndent(_addIndent(switchBody)))
+
 
 
 class ModuleBaseCppClass(CppClassBase):
@@ -2662,6 +2717,51 @@ def _updateFile(fileName, targetDir, text):
         f.close()
 
 
+def createModuleTypeHeaderFile(module, basetype, targetDir=""):
+    """
+    :type   module:     Module
+    :param  module:     actor module tree root
+    :type   basetype:   BaseType
+    :param  basetype:   base type definition
+    :type   targetDir:  str
+    :param  targetDir:  directory path to store (optional, by default uses current dir)
+    """
+    assert isinstance(module, Module)
+    assert isinstance(basetype, BaseType)
+    assert isinstance(targetDir, str)
+    filename = "type" + basetype.qtName().lower() + ".h"
+    substitutions = {
+        "headerGuard": "TYPE" + basetype.qtName().upper() + "_H",
+        "namespace": module.namespace(),
+        "typeDeclaration": basetype.cppDeclaration()
+    }
+    data = _renderTemplate("""
+/*
+DO NOT EDIT THIS FILE!
+
+This file is autogenerated from "--update" and will be replaced
+every build time
+
+*/
+
+#ifndef $headerGuard
+#define $headerGuard
+
+// Qt includes
+#include <QtCore>
+#include <QtGui>
+
+namespace $namespace {
+
+$typeDeclaration
+
+} // namespace $namespace
+
+#endif // $headerGuard
+    """, substitutions).strip() + "\n"
+    _updateFile(filename, targetDir, data)
+
+
 def createPluginHeaderFile(module, targetDir=""):
     """
     Creates or updates module plugin header file
@@ -2727,11 +2827,17 @@ def createPluginSourceFile(module, targetDir=""):
     assert isinstance(module, Module)
     assert isinstance(targetDir, str)
     fileBaseName = module.pluginClassName().lower()
+    staticFunctions = ""
+    for customType in module.types:
+        assert isinstance(customType, BaseType)
+        staticFunctions += customType.cppCustomTypeEncodeDecode() + "\n"
+
     substitutions = {
         "headerFileName": fileBaseName + ".h",
         "moduleBaseHeaderFileName": module.baseClassName().lower() + ".h",
         "moduleHeaderFileName": module.className().lower() + ".h",
         "namespace": module.namespace(),
+        "staticFunctions": staticFunctions,
         "pluginClassImplementation": PluginCppClass(module).cppImplementation(),
         "threadClassImplementation": AsyncThreadCppClass(module).cppImplementation(),
         "pluginClassName": module.pluginClassName()
@@ -2751,6 +2857,8 @@ every build time
 #include "$moduleHeaderFileName"
 
 namespace $namespace {
+
+$staticFunctions
 
 $pluginClassImplementation
 
@@ -2776,13 +2884,19 @@ def createModuleBaseHeaderFile(module, targetDir=""):
     assert isinstance(module, Module)
     fileBaseName = module.baseClassName().lower()
     customTypeDeclarations = ""
+    typedefs = ""
     for typee in module.types:
         assert isinstance(typee, BaseType)
         if not typee.isStandardType():
-            customTypeDeclarations += typee.cppDeclaration()
-            customTypeDeclarations += typee.cppCustomTypeInlineEncodeDecode()
+            filenamePrefix = ""
+            if typee._module and typee._module != module:
+                filenamePrefix = "../" + typee._module.name.asciiValue().lower() + "/"
+                typedefs += typee.typeDef() + "\n"
+            typeHeaderName = filenamePrefix + "type" + typee.qtName().lower() + ".h"
+            customTypeDeclarations += "#include \"%s\"\n" % typeHeaderName
     substitutions = {
         "headerGuard": fileBaseName.upper() + "_H",
+        "typeDefs": typedefs,
         "customTypeDeclarations": customTypeDeclarations,
         "namespace": module.namespace(),
         "classDeclaration": ModuleBaseCppClass(module).cppDeclaration()
@@ -2799,6 +2913,9 @@ every build time
 #ifndef $headerGuard
 #define $headerGuard
 
+// Custom types declaration headers (if any)
+$customTypeDeclarations
+
 // Kumir includes
 #include "extensionsystem/kplugin.h"
 
@@ -2808,8 +2925,7 @@ every build time
 
 namespace $namespace {
 
-$customTypeDeclarations
-
+$typeDefs
 $classDeclaration
 
 } // namespace $namespace
@@ -2974,6 +3090,10 @@ def createPluginSpecFile(module, targetDir=""):
     """
     fileName = "Actor" + module.name.cppCamelCaseValue() + ".pluginspec"
     name = "Actor" + module.name.cppCamelCaseValue()
+    requires = ""
+    if module.usesList:
+        pluginNames = map(lambda s: "Actor" + s, module.usesList)
+        requires = "requires = " + string.join(pluginNames, ", ")
     if module.gui:
         gui = "true"
     else:
@@ -2981,7 +3101,8 @@ def createPluginSpecFile(module, targetDir=""):
     data = """
 name    = %s
 gui     = %s
-    """ % (name, gui)
+%s
+    """ % (name, gui, requires)
     _updateFile(fileName, targetDir, unicode(data.strip() + "\n"))
 
 
@@ -3158,10 +3279,9 @@ def main_update(args):
             fileName = arg
     if not fileName:
         return main_help(args)
-    f = open(fileName, 'r')
-    data = json.load(f, "utf-8")
-    f.close()
-    module = Module(data)
+    module = Module.read(fileName)
+    for customType in module.types:
+        createModuleTypeHeaderFile(module, customType)
     createPluginHeaderFile(module)
     createPluginSourceFile(module)
     createModuleBaseHeaderFile(module)
@@ -3185,10 +3305,7 @@ def main_project(args):
             fileName = arg
     if not fileName:
         return main_help(args)
-    f = open(fileName, 'r')
-    data = json.load(f, "utf-8")
-    f.close()
-    module = Module(data)
+    module = Module.read(fileName)
     createModuleHeaderFile(module)
     createModuleSourceFile(module)
     createCMakeListsTxt(module, fileName)

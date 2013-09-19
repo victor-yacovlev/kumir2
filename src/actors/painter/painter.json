@@ -1,13 +1,6 @@
 {
 	"name": { "ascii": "Painter", "ru_RU": "Рисователь" },
-	"types": [
-		{
-			"name": { "ascii": "color", "ru_RU": "цвет" },
-			"fields": [
-				{ "name": "cssValue", "baseType": "string" }
-			]
-		}
-	],
+	"uses": [ "_Colorer" ],
 	"methods": [
 		{
 			"name": "CMYK",
@@ -318,21 +311,6 @@
 				{ "name": "y", "baseType": "int" },
 				{ "name": "r1", "baseType": "int" },
 				{ "name": "r2", "baseType": "int" }
-			]
-		},
-		{
-			"name": {"ascii": "input", "ru_RU": "ввод"},
-			"returnType": "color",
-			"arguments": [
-				{ "name": "x", "baseType": "string" },
-				{ "name": "ok", "baseType": "bool", "access": "out" }
-			]
-		},
-		{
-			"name": {"ascii": "output", "ru_RU": "вывод"},
-			"returnType": "string",
-			"arguments": [
-				{ "name": "x", "baseType": "color" }
 			]
 		}
 	],
