@@ -1,0 +1,25 @@
+{
+    "name": { "ascii": "_Colorer", "ru_RU": "_Цветник" },
+    "types": [
+        {
+            "name" : { "ascii": "color", "ru_RU": "цвет" },
+            "fields": [ { "name": "cssValue", "baseType": "string" } ]
+        }],
+    "methods": [
+        {
+            "name": {"ascii": "input", "ru_RU": "ввод"},
+            "returnType": "color",
+            "arguments": [
+                { "name": "x", "baseType": "string" },
+                { "name": "ok", "baseType": "bool", "access": "out" }
+            ]
+        },
+        {
+            "name": {"ascii": "output", "ru_RU": "вывод"},
+            "returnType": "string",
+            "arguments": [
+                { "name": "x", "baseType": "color" }
+            ]
+        }
+    ]
+}

@@ -35,7 +35,8 @@ struct AnalizerPrivate
 
     static QStringList AlwaysAvailableModulesName;
 
-    void createModuleFromActor(const Shared::ActorInterface * actor, quint8 forcedId);
+    void createModuleFromActor_stage1(Shared::ActorInterface * actor, quint8 forcedId);
+    void createModuleFromActor_stage2(Shared::ActorInterface * actor);
     QStringList gatherExtraTypeNames(const AST::ModulePtr currentModule) const;
 
 

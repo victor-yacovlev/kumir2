@@ -422,7 +422,7 @@ void Generator::addKumirModule(int id, const AST::ModulePtr mod)
         glob.dimension = quint8(var->dimension);
         glob.vtype = valueType(var->baseType).toStdList();
         glob.refvalue = valueKind(var->accessType);
-        glob.recordModuleName = var->baseType.moduleName.toStdWString();
+        glob.recordModuleName = var->baseType.actor->name().toStdWString();
         glob.recordClassName = var->baseType.name.toStdWString();
         byteCode_->d.push_back(glob);
     }
@@ -550,7 +550,8 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
             load.arg = constantValue(valueType(var->baseType),
                                      0,
                                      var->initialValue,
-                                     var->baseType.moduleName,
+                                     var->baseType.actor ?
+                                         var->baseType.actor->name() : "",
                                      var->baseType.name
                                      );
             instrs << load;
@@ -738,7 +739,7 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
         loc.dimension = var->dimension;
         loc.vtype = valueType(var->baseType).toStdList();
         loc.refvalue = valueKind(var->accessType);
-        loc.recordModuleName = var->baseType.moduleName.toStdWString();
+        loc.recordModuleName = var->baseType.actor->name().toStdWString();
         loc.recordClassName = var->baseType.name.toStdWString();
         byteCode_->d.push_back(loc);
     }
@@ -1151,7 +1152,8 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
     QList<Bytecode::Instruction> result;
     if (st->kind==AST::ExprConst) {
         int constId = constantValue(valueType(st->baseType), st->dimension, st->constant,
-                                    st->baseType.moduleName, st->baseType.name
+                                    st->baseType.actor ? st->baseType.actor->name() : "",
+                                    st->baseType.name
                                     );
         Bytecode::Instruction instr;
         instr.type = Bytecode::LOAD;
@@ -1368,7 +1370,8 @@ void Generator::INIT(int modId, int algId, int level, const AST::StatementPtr  s
             load.type = Bytecode::LOAD;
             load.scope = Bytecode::CONSTT;
             load.arg = constantValue(valueType(var->baseType), var->dimension, var->initialValue,
-                                     var->baseType.moduleName, var->baseType.name
+                                     var->baseType.actor ? var->baseType.actor->name() : "",
+                                     var->baseType.name
                                      );
             result << load;
             Bytecode::Instruction store = init;
@@ -1430,7 +1433,8 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
             if (varExpr->kind==AST::ExprConst) {
                 ref.scope = Bytecode::CONSTT;
                 ref.arg = constantValue(valueType(varExpr->baseType), 0, varExpr->constant,
-                                        varExpr->baseType.moduleName, varExpr->baseType.name
+                                        varExpr->baseType.actor ? varExpr->baseType.actor->name() : "",
+                                        varExpr->baseType.name
                                         );
             }
             else {

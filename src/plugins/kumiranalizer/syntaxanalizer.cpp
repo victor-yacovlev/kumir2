@@ -1504,6 +1504,16 @@ void SyntaxAnalizer::setSourceDirName(const QString &dirName)
     sourceDirName_ = dirName;
 }
 
+static AST::ModulePtr findModuleByActor(AST::DataPtr ast,
+                                        Shared::ActorInterface* actor)
+{
+    foreach (AST::ModulePtr mod, ast->modules) {
+        if (mod->impl.actor == actor)
+            return mod;
+    }
+    return AST::ModulePtr();
+}
+
 void SyntaxAnalizer::parseImport(int str)
 {
     if (statements_[str].hasError())
@@ -1590,7 +1600,7 @@ void SyntaxAnalizer::parseImport(int str)
         }
         name = st.data[1]->data.simplified();
         foreach (AST::ModulePtr module, ast_->modules) {
-            if (module->header.name == name) {
+            if (module->header.name == name && !module->header.name.startsWith("_")) {
                 moduleToImport = module;
                 break;
             }
@@ -1604,6 +1614,14 @@ void SyntaxAnalizer::parseImport(int str)
         }
         else {
             moduleToImport->header.usedBy.append(st.mod.toWeakRef());
+            if (moduleToImport->impl.actor) {
+                QList<Shared::ActorInterface*> deps =
+                        moduleToImport->impl.actor->usesList();
+                foreach (Shared::ActorInterface * actor, deps) {
+                    AST::ModulePtr actorMod = findModuleByActor(ast_, actor);
+                    actorMod->header.usedBy.append(st.mod.toWeakRef());
+                }
+            }
         }
     }
     else {
@@ -2807,7 +2825,7 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool internalBuildFl
         AST::Type typee;
         QVariant cvalue;
         if (tryInputOperatorAlgorithm(name, typee, cvalue, st.mod)) {
-            const QString error = _("Name is used by module %1", typee.moduleName);
+            const QString error = _("Name is used by module %1", typee.actor->name());
             for (int i=1; i<st.data.size(); i++) {
                 if (st.data[i]->type==LxNameAlg)
                     st.data[i]->error = error;
@@ -3327,7 +3345,7 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                 AST::Type typee;
                 QVariant cvalue;
                 if (tryInputOperatorAlgorithm(cName, typee, cvalue, mod)) {
-                    group.lexems[nameStart]->error = _("Name is used by module %1", typee.moduleName);
+                    group.lexems[nameStart]->error = _("Name is used by module %1", typee.actor->name());
                     return result;
                 }
                 var = AST::VariablePtr(new AST::Variable);
@@ -4132,7 +4150,7 @@ bool SyntaxAnalizer::tryInputOperatorAlgorithm(
                     constantValue = actor->customValueFromString(clazz, lexem);
                     if (constantValue.isValid()) {
                         type.kind = AST::TypeUser;
-                        type.moduleName = actor->name();
+                        type.actor = AST::ActorPtr(actor);
                         type.name = clazz.first;
                         for (int f=0; f<clazz.second.size(); f++) {
                             const Shared::ActorInterface::Field & field =
