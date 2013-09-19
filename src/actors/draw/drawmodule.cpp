@@ -119,7 +119,10 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     /* алг установить цвет(цвет color) */
     // TODO implement me
     Q_UNUSED(color)  // Remove this line on implementation;
-    
+    qDebug()
+            << "DrawModule::runSetPenColor( { cssValue = \""
+            << color.cssValue
+            << "\" } )";
 }
 
 /* public slot */ void DrawModule::runMoveTo(const qreal x, const qreal y)
@@ -146,25 +149,6 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     // TODO implement me
     Q_UNUSED(width)  // Remove this line on implementation;
     Q_UNUSED(text)  // Remove this line on implementation;
-    
-}
-
-/* public slot */ Color DrawModule::runOperatorINPUT(const QString& x, bool& ok)
-{
-    /* алг цвет ввод(лит x, рез лог ok) */
-    // TODO implement me
-    Q_UNUSED(x)  // Remove this line on implementation;
-    Q_UNUSED(ok)  // Remove this line on implementation;
-    return Color();
-    
-}
-
-/* public slot */ QString DrawModule::runOperatorOUTPUT(const Color& x)
-{
-    /* алг лит вывод(цвет x) */
-    // TODO implement me
-    Q_UNUSED(x)  // Remove this line on implementation;
-    return QString();
     
 }
 

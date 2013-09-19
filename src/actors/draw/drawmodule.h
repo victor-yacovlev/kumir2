@@ -43,8 +43,6 @@ public slots:
     void runMoveTo(const qreal x, const qreal y);
     void runMoveBy(const qreal dX, const qreal dY);
     void runAddCaption(const qreal width, const QString& text);
-    Color runOperatorINPUT(const QString& x, bool& ok);
-    QString runOperatorOUTPUT(const Color& x);
 
 
 

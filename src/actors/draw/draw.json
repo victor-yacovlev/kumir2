@@ -1,13 +1,6 @@
 {
     "name": { "ascii": "Draw", "ru_RU": "Чертежник" },
-    "types": [
-		{
-			"name": { "ascii": "color", "ru_RU": "цвет" },
-			"fields": [
-				{ "name": "cssValue", "baseType": "string" }
-			]
-		}
-	],
+    "uses": [ "_Colorer" ],
     "methods": [
         {
             "name": {"ascii": "setup pen", "ru_RU": "опустить перо"},
@@ -44,22 +37,7 @@
                 {"baseType": "double", "name": "width"},
                 {"baseType": "string", "name": "text"}
             ]
-        },
-        {
-			"name": {"ascii": "input", "ru_RU": "ввод"},
-			"returnType": "color",
-			"arguments": [
-				{ "name": "x", "baseType": "string" },
-				{ "name": "ok", "baseType": "bool", "access": "out" }
-			]
-		},
-		{
-			"name": {"ascii": "output", "ru_RU": "вывод"},
-			"returnType": "string",
-			"arguments": [
-				{ "name": "x", "baseType": "color" }
-			]
-		}
+        }        
     ],
     "gui": {
         "windows": [
