@@ -185,7 +185,7 @@ public:
     {return ((Curfill[0]==AfillR)||(Curfill[1]==BfillR)||(Curfill[1]==AfillR));};
 protected:
     void mousePressEvent(QMouseEvent *event);
-    void closeEvent ( QCloseEvent * event );
+//    void closeEvent ( QCloseEvent * event );
 public slots:
     void reset();
 

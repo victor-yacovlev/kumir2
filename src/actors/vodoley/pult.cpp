@@ -790,27 +790,27 @@ void VodoleyPult::logToKumir()
 
 
 
-void VodoleyPult::closeEvent ( QCloseEvent * event )
-{
-	if((libMode)||(autoClose))
-	{
-		close();
-		event->accept();
-		return;
-	}
-	int ret = QMessageBox::warning(this, QString::fromUtf8("Водолей"),
-								   QString::fromUtf8("Закрыть исполнитель Водолей?"),
-								   QMessageBox::Yes | QMessageBox::Default,
-								   QMessageBox::No,
-								   QMessageBox::Cancel | QMessageBox::Escape);
-	if (ret == QMessageBox::Yes) {
-		VodoleyObj->AutoClose();
-		VodoleyObj->close();
-		event->accept();
-	} else {
-		event->ignore();
-	}
-}
+//void VodoleyPult::closeEvent ( QCloseEvent * event )
+//{
+//	if((libMode)||(autoClose))
+//	{
+//		close();
+//		event->accept();
+//		return;
+//	}
+//	int ret = QMessageBox::warning(this, QString::fromUtf8("Водолей"),
+//								   QString::fromUtf8("Закрыть исполнитель Водолей?"),
+//								   QMessageBox::Yes | QMessageBox::Default,
+//								   QMessageBox::No,
+//								   QMessageBox::Cancel | QMessageBox::Escape);
+//	if (ret == QMessageBox::Yes) {
+//		VodoleyObj->AutoClose();
+//		VodoleyObj->close();
+//		event->accept();
+//	} else {
+//		event->ignore();
+//	}
+//}
 
 
 void VodoleyPult::lockCButtons()

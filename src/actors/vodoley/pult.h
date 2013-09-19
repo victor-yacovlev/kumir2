@@ -288,6 +288,7 @@ class VodoleyPult : public QWidget, public Ui::VodoleyPult
 		 * @param fl флаги окна
 		 */
 		VodoleyPult ( QWidget* parent = 0, Qt::WFlags fl = 0 );
+        inline QSize minimumSizeHint() const { return QSize(250, 450); }
 		/**
 		 * Деструктор
 		 */
@@ -359,7 +360,7 @@ public
 	void PultCmd(QString text);
 	void sendText(QString text);
  protected: 
- virtual void closeEvent ( QCloseEvent * event );
+// virtual void closeEvent ( QCloseEvent * event );
  virtual void paintEvent(QPaintEvent *);
 private:
  bool link;

@@ -670,24 +670,24 @@ NewDialog::NewDialog()
 	layout->addWidget(buttonFrame);
 	this->setLayout(layout);
 };
-void Vodoley::closeEvent ( QCloseEvent * event )
-{
-	if((pult->libMode)||(autoClose))
-	{
-		close();
-		event->accept();
-		return;
-	};
-	int ret = QMessageBox::warning(this, QString::fromUtf8("Водолей"),
-								   QString::fromUtf8("Закрыть исполнитель Водолей?"),
-								   QMessageBox::Yes | QMessageBox::Default,
-								   QMessageBox::No,
-								   QMessageBox::Cancel | QMessageBox::Escape);
-	if (ret == QMessageBox::Yes) {
-		pult->AutoClose();
-		pult->close();
-		event->accept();
-	} else {
-		event->ignore();
-	}
-};
+//void Vodoley::closeEvent ( QCloseEvent * event )
+//{
+//	if((pult->libMode)||(autoClose))
+//	{
+//		close();
+//		event->accept();
+//		return;
+//	};
+//	int ret = QMessageBox::warning(this, QString::fromUtf8("Водолей"),
+//								   QString::fromUtf8("Закрыть исполнитель Водолей?"),
+//								   QMessageBox::Yes | QMessageBox::Default,
+//								   QMessageBox::No,
+//								   QMessageBox::Cancel | QMessageBox::Escape);
+//	if (ret == QMessageBox::Yes) {
+//		pult->AutoClose();
+//		pult->close();
+//		event->accept();
+//	} else {
+//		event->ignore();
+//	}
+//};

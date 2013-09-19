@@ -75,6 +75,18 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
     //return nullptr;
 }
 
+class AAA : public QWidget {
+public:
+    inline explicit AAA(QWidget * pult): QWidget(), pult_(pult) {
+        setLayout(new QVBoxLayout);
+        layout()->setContentsMargins(0, 0, 0, 0);
+        layout()->addWidget(pult);
+    }
+    inline QSize minimumSizeHint() const { return pult_->minimumSizeHint(); }
+private:
+    QWidget * pult_;
+};
+
 /* public */ QWidget* VodoleyModule::pultWidget() const
 {
     // Returns module control view widget, or nullptr if there is no control view
@@ -82,7 +94,12 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
     //       so DO NOT create widget here, just return!
     // TODO implement me
     qDebug()<<"Pult"<<MainWindow->pult->size();
-    return MainWindow->pult;
+    qDebug() << "Pult visible " << MainWindow->pult->isVisible();
+
+
+    static QWidget * dummy = new AAA(MainWindow->pult);
+    return dummy;
+//    return MainWindow->pult;
    // return nullptr;
 }
 
