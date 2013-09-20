@@ -422,7 +422,8 @@ void Generator::addKumirModule(int id, const AST::ModulePtr mod)
         glob.dimension = quint8(var->dimension);
         glob.vtype = valueType(var->baseType).toStdList();
         glob.refvalue = valueKind(var->accessType);
-        glob.recordModuleName = var->baseType.actor->name().toStdWString();
+        glob.recordModuleName = var->baseType.actor ?
+                    var->baseType.actor->name().toStdWString() : std::wstring();
         glob.recordClassName = var->baseType.name.toStdWString();
         byteCode_->d.push_back(glob);
     }
