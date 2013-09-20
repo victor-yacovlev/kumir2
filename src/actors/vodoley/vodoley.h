@@ -227,7 +227,7 @@ private:
     QList<QGraphicsLineItem*> lines;
 
     void CreateVodoley(void);
-
+    void CreateDummyTask();
     qreal ang;
     QList<QLineF> desertBorders;
     bool tail;
