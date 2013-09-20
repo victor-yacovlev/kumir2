@@ -114,6 +114,12 @@ private:
     bool b_workspaceSwitching;
 
     QAction * a_notAvailable;
+    QAction * a_notAvailable2;
+    QAction * a_notAvailable3;
+
+    QMenu * menuNA1_;
+    QMenu * menuNA2_;
+    QMenu * menuNA3_;
 
     QList<QWidget*> l_tabDependentStatusbarWidgets;
 

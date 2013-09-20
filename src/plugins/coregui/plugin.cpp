@@ -334,11 +334,17 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         m_browserObjects["mainWindow"] = mainWindow_;
         startPage_->widget()->setProperty("uncloseable", true);
         if (startPage_ && mainWindow_->tabWidget_->count()==0) {
+            QMenu * editMenu = new QMenu(mainWindow_->ui->menuEdit->title(), mainWindow_);
+            QMenu * insertMenu = new QMenu(mainWindow_->ui->menuInsert->title(), mainWindow_);
+            QAction * editNotAvailable = editMenu->addAction(mainWindow_->tr("No actions for this tab"));
+            QAction * insertNotAvailable = insertMenu->addAction(mainWindow_->tr("No actions for this tab"));
+            editNotAvailable->setEnabled(false);
+            insertNotAvailable->setEnabled(false);
             TabWidgetElement * twe = mainWindow_->addCentralComponent(
                         tr("Start"),
                         startPage_->widget(),
                         QList<QAction*>(),
-                        QList<QMenu*>(),
+                        QList<QMenu*>() << editMenu << insertMenu,
                         MainWindow::WWW
                         );
             twe->browserInstance = startPage_;

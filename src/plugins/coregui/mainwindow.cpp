@@ -120,6 +120,23 @@ MainWindow::MainWindow(Plugin * p) :
     a_notAvailable->setText(tr("No actions for this tab"));
     a_notAvailable->setEnabled(false);
 
+    menuNA1_ = new QMenu(this);
+    menuNA1_->addAction(a_notAvailable);
+
+    a_notAvailable2 = new QAction(this);
+    a_notAvailable2->setText(tr("No actions for this tab"));
+    a_notAvailable2->setEnabled(false);
+
+    menuNA2_ = new QMenu(this);
+    menuNA2_->addAction(a_notAvailable2);
+
+    a_notAvailable3 = new QAction(this);
+    a_notAvailable3->setText(tr("No actions for this tab"));
+    a_notAvailable3->setEnabled(false);
+
+    menuNA3_ = new QMenu(this);
+    menuNA3_->addAction(a_notAvailable3);
+
     menu_empty = new QMenu(this);
     menu_empty->addAction(a_notAvailable);
 
@@ -623,21 +640,22 @@ void MainWindow::prepareEditMenu()
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
     QMenu * tabMenu = 0;
 
-    if (twe->type!=WWW) {
+//    if (twe->type!=WWW) {
         for (int i=0; i<twe->menus.size(); i++) {
             if (twe->menus[i]->title().trimmed()==ui->menuEdit->title().trimmed()) {
                 tabMenu = twe->menus[i];
                 break;
             }
         }
-    }
+//    }
 
     if (tabMenu) {
         ui->menuEdit->menuAction()->setMenu(tabMenu);
     }
     else {
+        ui->menuEdit->menuAction()->setMenu(menuNA2_);
         ui->menuEdit->clear();
-        ui->menuEdit->addAction(a_notAvailable);
+        ui->menuEdit->addAction(a_notAvailable2);
     }
 }
 
@@ -649,21 +667,21 @@ void MainWindow::prepareInsertMenu()
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
     QMenu * tabMenu = 0;
 
-    if (twe->type!=WWW) {
+//    if (twe->type!=WWW) {
         for (int i=0; i<twe->menus.size(); i++) {
             if (twe->menus[i]->title().trimmed()==ui->menuInsert->title().trimmed()) {
                 tabMenu = twe->menus[i];
                 break;
             }
         }
-    }
+//    }
 
     if (tabMenu) {
         ui->menuInsert->menuAction()->setMenu(tabMenu);
     }
     else {
         ui->menuInsert->clear();
-        ui->menuInsert->addAction(a_notAvailable);
+        ui->menuInsert->addAction(a_notAvailable3);
     }
 }
 
