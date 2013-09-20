@@ -21,12 +21,16 @@ Section "Kumir" Kumir
 
 	SetOutPath "$INSTDIR"
 	File LICENSE_RU.rtf
+	File vcredist_x86.exe
 	SetOutPath "$INSTDIR\bin"
 	File /r bin\*
 	SetOutPath "$INSTDIR\lib"
 	File /r lib\*
 	SetOutPath "$INSTDIR\share"
 	File /r share\*
+	
+	ExecWait '"$INSTDIR\vcredist_x86.exe" /passive'
+	Delete /REBOOTOK "$INSTDIR\vcredist_x86.exe"
 
 	CreateDirectory "$SMPROGRAMS\Кумир2"
 	CreateShortCut "$SMPROGRAMS\Кумир2\Кумир-Стандарт.lnk" "$INSTDIR\bin\kumir2-classic.exe"
