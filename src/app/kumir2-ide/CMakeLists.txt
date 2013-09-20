@@ -7,7 +7,7 @@ set(CONFIGURATION_TEMPLATE
 )
 
 set(SPLASHSCREEN
-    SPLASHSCREEN=coregui/splashscreens/professional.png
+    "coregui/splashscreens/professional.png"
 )
 
 set(SRC ../main.cpp)
