@@ -241,7 +241,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         l_plugin_actors << actor;
         QWidget * w = 0;
         const QString actorHelpFile = helpPath + o->pluginSpec().name + ".xml";
-        if (QFile(actorHelpFile).exists()) {
+        if (!actor->name().startsWith("_") && QFile(actorHelpFile).exists()) {
             helpViewer_->addDocument(QUrl::fromLocalFile(actorHelpFile));
         }
         if (actor->mainWidget()) {
