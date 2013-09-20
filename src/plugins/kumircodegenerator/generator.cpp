@@ -739,7 +739,8 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
         loc.dimension = var->dimension;
         loc.vtype = valueType(var->baseType).toStdList();
         loc.refvalue = valueKind(var->accessType);
-        loc.recordModuleName = var->baseType.actor->name().toStdWString();
+        loc.recordModuleName = var->baseType.actor ?
+                    var->baseType.actor->name().toStdWString() : std::wstring();
         loc.recordClassName = var->baseType.name.toStdWString();
         byteCode_->d.push_back(loc);
     }
