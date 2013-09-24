@@ -290,7 +290,7 @@ void Vodoley::CreateVodoley(void)
     Ctext=scene->addSimpleText("C");
     Ctext->setPos(255,15+(maxSize()-Csize())*literSize);
     // Amen->move(20,20);
-
+    
 }
 
 //-----------------------------------

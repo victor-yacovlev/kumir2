@@ -600,6 +600,7 @@ VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WFlags fl )
 
 	QIcon toKumirIco(qApp->property("sharePath").toString()+"/actors/vodoley/edit-copy.png");
 	toKumir->setIcon(toKumirIco);
+    toKumir->setEnabled(true);
 	ClearLog->setIcon(QIcon(qApp->property("sharePath").toString()+"/actors/vodoley/edit-clear-list..png"));
 
 
@@ -785,8 +786,11 @@ void VodoleyPult::clientDisconnect()
 
 void VodoleyPult::logToKumir()
 {
-	emit sendText(Logger->log());
-
+	//emit sendText(Logger->log());
+    QClipboard *clipboard = QApplication::clipboard();
+    QString originalText = clipboard->text();
+    
+    clipboard->setText(Logger->log()); 
 }
 
 
