@@ -18,9 +18,49 @@ You should change it corresponding to functionality.
 
 namespace ActorDraw {
 
+    
+    void DrawScene::drawNet(double startx ,double endx,double starty,double endy,QColor color,double step)
+    {
+        for ( int i = 0; i < Netlines.count(); i++)delete Netlines[i];
+        
+        Netlines.clear();
+        double fx1=startx,fx2,fy1,fy2; 
+        while (fx1 < endx)
+		{
+			fx1 = fx1 + step;
+			fx2 = fx1;
+			fy1 = starty;
+			fy2 = endy;
+            
+			Netlines.append(addLine(fx1, fy1 , fx2, fy2 ));
+			Netlines.last()->setZValue(0.5);
+			Netlines.last()->setPen(QPen(color));
+		}
+    }
+void DrawScene::resizeEvent ( QResizeEvent * event )
+    {
+        qDebug()<<"resizeEvent";
+    };
+void DrawView:: scrollContentsBy ( int dx, int dy )
+    {
+        Q_UNUSED(dx);
+        Q_UNUSED(dy);
+        qDebug() << QString("SCROLL EVENT ") << dx << " " << dy;
+    }    
+    
+    
 DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     : DrawModuleBase(parent)
 {
+    //QVBoxLayout *layout = new QVBoxLayout;
+ 
+    CurView=new DrawView();
+    netStep=10;
+    netColor=QColor("gray");
+   // layout->addWidget(CurView);
+    CurScene=new DrawScene(CurView);
+    CurScene->drawNet(-10000, 20, -10, 20, netColor,netStep);
+    CurScene->setBackgroundBrush (QBrush(QColor("lightgreen")));
     // Module constructor, called once on plugin load
     // TODO implement me
 }
@@ -65,7 +105,8 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     // NOTE: the method is const and might be called at any time,
     //       so DO NOT create widget here, just return!
     // TODO implement me
-    return nullptr;
+    return  CurView;
+    //return nullptr;
 }
 
 /* public */ QWidget* DrawModule::pultWidget() const
@@ -151,6 +192,7 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     Q_UNUSED(text)  // Remove this line on implementation;
     
 }
+
 
 
 
