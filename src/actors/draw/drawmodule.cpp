@@ -21,31 +21,68 @@ namespace ActorDraw {
     
     void DrawScene::drawNet(double startx ,double endx,double starty,double endy,QColor color,double step)
     {
-        for ( int i = 0; i < Netlines.count(); i++)delete Netlines[i];
+        for ( int i = 0; i < Netlines.count(); i++)
+        {
+         if(i==0)
+         {
+             QPointF pos=Netlines[0]->line().p1 () ;
+              QPointF tail=Netlines.last()->line().p2 () ;
+             //qDebug()<<"POS"<<pos<<"Tail"<<tail;
+             if((pos.x()<startx  && pos.y()<starty)&&(tail.x()>endx-2*step && tail.y()>endy-2*step))return;
+         }
+         delete Netlines[i];   
+        }
         
         Netlines.clear();
-        double fx1=startx,fx2,fy1,fy2; 
-        while (fx1 < endx)
+        double fx1=startx-5*step,fx2,fy1,fy2; 
+        while (fx1 < endx+2*step)
 		{
 			fx1 = fx1 + step;
 			fx2 = fx1;
-			fy1 = starty;
+			fy1 = starty-step;
 			fy2 = endy;
             
 			Netlines.append(addLine(fx1, fy1 , fx2, fy2 ));
 			Netlines.last()->setZValue(0.5);
 			Netlines.last()->setPen(QPen(color));
+            if(fx1==0)
+            {
+                QPen axisPen=QPen(color);
+                axisPen.setWidth(3);
+                Netlines.last()->setPen(axisPen);   
+            }
+		}
+        fy1 = starty-5*step;
+        
+		while (fy1 < endy+2*step)
+		{
+			fy1 = fy1 + step;
+			fy2 = fy1;
+			fx1 = startx-step;
+			fx2 = endx;
+            
+            Netlines.append(addLine(fx1, fy1 , fx2, fy2 ));
+			Netlines.last()->setZValue(0.5);
+			Netlines.last()->setPen(QPen(color));
+            if(fy1==0)
+            {
+                QPen axisPen=QPen(color);
+                axisPen.setWidth(3);
+                Netlines.last()->setPen(axisPen);   
+            }
+            
 		}
     }
-void DrawScene::resizeEvent ( QResizeEvent * event )
+void DrawView::resizeEvent ( QResizeEvent * event )
     {
-        qDebug()<<"resizeEvent";
+      //  qDebug()<<"resizeEvent";
+         DRAW->drawNet();
     };
 void DrawView:: scrollContentsBy ( int dx, int dy )
     {
         Q_UNUSED(dx);
         Q_UNUSED(dy);
-        qDebug() << QString("SCROLL EVENT ") << dx << " " << dy;
+    //    qDebug() << QString("SCROLL EVENT ") << dx << " " << dy;
     }    
     
     
@@ -59,7 +96,11 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     netColor=QColor("gray");
    // layout->addWidget(CurView);
     CurScene=new DrawScene(CurView);
-    CurScene->drawNet(-10000, 20, -10, 20, netColor,netStep);
+    CurView->setScene(CurScene);
+   // CurScene->addItem(new QGraphicsLineItem(-10000, -10000,10000,1000));
+    CurView->setDraw(this);
+    CurView->centerOn(0,0);
+    drawNet();
     CurScene->setBackgroundBrush (QBrush(QColor("lightgreen")));
     // Module constructor, called once on plugin load
     // TODO implement me
@@ -192,7 +233,12 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     Q_UNUSED(text)  // Remove this line on implementation;
     
 }
-
+void DrawModule::drawNet()
+    {
+        QPointF start=CurView->mapToScene(CurView->viewport()->rect().topLeft().x(),CurView->viewport()->rect().topLeft().y());
+        QPointF end=CurView->mapToScene(CurView->viewport()->rect().bottomRight().x(),CurView->viewport()->rect().bottomRight().y());
+           CurScene->drawNet(start.x(),end.x(),start.y(),end.y(), netColor,netStep); 
+    };
 
 
 

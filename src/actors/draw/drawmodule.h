@@ -20,16 +20,19 @@ You should change it corresponding to functionality.
 #include <QtGui>
 
 namespace ActorDraw {
-
+    class DrawModule;
     class DrawView
     : public QGraphicsView
     {
     public:
         DrawView( QWidget * parent = 0 ){};
+        void setDraw(DrawModule* draw){DRAW=draw;};
     protected:
         void scrollContentsBy ( int dx, int dy );
+        void resizeEvent ( QResizeEvent * event );
     
-    
+    private:
+        DrawModule* DRAW;
     };    
     class DrawScene
     : public QGraphicsScene
@@ -38,7 +41,7 @@ namespace ActorDraw {
         DrawScene ( QObject * parent = 0 ){};
         void drawNet(double startx,double endx,double starty,double endy,QColor color,double step); 
     protected:
-        void resizeEvent ( QResizeEvent * event );
+       // void resizeEvent ( QResizeEvent * event );
     private:
         QList<QGraphicsLineItem*> lines;
         QList<QGraphicsLineItem*> Netlines;
@@ -66,6 +69,9 @@ public slots:
     void runMoveTo(const qreal x, const qreal y);
     void runMoveBy(const qreal dX, const qreal dY);
     void runAddCaption(const qreal width, const QString& text);
+    
+    
+    void drawNet();
 
 
 
