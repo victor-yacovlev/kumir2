@@ -3,6 +3,8 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 endif()
 add_subdirectory(run)
 
-if(NOT APPLE)
+if(NOT APPLE AND NOT WIN32)
     add_subdirectory(pictomir2course)
 endif()
+
+add_subdirectory(docbook2latex)

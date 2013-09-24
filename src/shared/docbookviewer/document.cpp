@@ -21,4 +21,9 @@ QString Document::title() const
     return root_ ? root_->title() : QString();
 }
 
+ModelPtr Document::documentRoot() const
+{
+    return root_;
+}
+
 }
