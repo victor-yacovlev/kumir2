@@ -10,6 +10,12 @@
 #include <QSvgRenderer>
 #include <QImage>
 
+#ifdef LIBRARY_BUILD
+#define EXTERN Q_DECL_EXPORT
+#else
+#define EXTERN Q_DECL_IMPORT
+#endif
+
 namespace DocBookViewer {
 
 static const quint8 MAX_SECTION_LEVEL_IN_TOC = 2u;
@@ -17,7 +23,7 @@ typedef QSharedPointer<class DocBookModel> ModelPtr;
 typedef QList<ModelPtr>::iterator ModelIterator;
 typedef QSharedPointer<QSvgRenderer> SvgRendererPtr;
 
-class DocBookModel
+class EXTERN DocBookModel
 {
     friend class DocBookFactory;
     friend class MathMLRenderer;

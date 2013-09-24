@@ -9,9 +9,16 @@
 #include <QXmlSimpleReader>
 #include <QUrl>
 
+
+#ifdef LIBRARY_BUILD
+#define EXTERN Q_DECL_EXPORT
+#else
+#define EXTERN Q_DECL_IMPORT
+#endif
+
 namespace DocBookViewer {
 
-class DocBookFactory
+class EXTERN DocBookFactory
         : public QXmlDefaultHandler
 {
 
