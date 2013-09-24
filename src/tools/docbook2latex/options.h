@@ -14,8 +14,7 @@ public:
     static std::string input_file_name;
     static std::string output_file_name;
 
-    static std::string page_size;
-    static bool two_side;
+    static std::string profile;
 
     static bool show_help_and_exit;
     static int exit_code;

@@ -56,9 +56,54 @@ void generator::renderData(ModelPtr data)
 {
     root_ = data;
     QString preambule = QString::fromUtf8(PREAMBULE);
-    QString paper = QString::fromStdString(options::page_size).toLower() + "paper";
+    QString paper, clazz, clazzparam, tmargin, bmargin, lmargin, rmargin, omargin, imargin;
+    const QString profile = QString::fromStdString(options::profile).toLower();
+    static const QStringList ValidProfiles = QStringList() << "a4" << "a5" <<
+                                                              "a4ts" << "a5ts" <<
+                                                              "tablet";
+    if (!ValidProfiles.contains(profile)) {
+        throw string("Not valid profile: ") + options::profile;
+    }
+    if (profile.startsWith("a4")) {
+        paper = "a4paper";
+        tmargin = "2cm";
+        bmargin = "2cm";
+        imargin = "2cm";
+        omargin = "3cm";
+    }
+    else if (profile != "tablet") {
+        paper = "a5paper";
+        tmargin = "2cm";
+        bmargin = "2cm";
+        imargin = "2cm";
+        omargin = "3cm";
+    }
+    else {
+        paper = "a5paper";
+        tmargin = "0.1cm";
+        bmargin = "0.1cm";
+        imargin = "0.5cm";
+        omargin = "0.5cm";
+    }
+    clazzparam = paper;
+    if (profile.endsWith("ts")) {
+        clazzparam += ",twoside";
+        lmargin = imargin;
+        rmargin = omargin;
+    }
+    else {
+        clazzparam += ",oneside";
+        lmargin = imargin;
+        rmargin = omargin;
+    }
+    clazz = root_ == DocBookModel::Book ? "book" : "article";
     preambule.replace("%%paper%%", paper);
-    preambule.replace("%%class%%", root_ == DocBookModel::Book ? "book" : "article");
+    preambule.replace("%%class%%", clazz);
+    preambule.replace("%%classparam%%", clazzparam);
+    preambule.replace("%%tmargin%%", tmargin);
+    preambule.replace("%%bmargin%%", bmargin);
+    preambule.replace("%%lmargin%%", lmargin);
+    preambule.replace("%%rmargin%%", rmargin);
     data_ = preambule + "\n";
     data_ += "\\begin{document}\n\n";
     data_ += DOCUMENT_BEGIN;
@@ -146,7 +191,9 @@ QString generator::renderChapter(ModelPtr data)
     QString result;
     result = QString::fromAscii("\\chapter{%1}\n").arg(normalizeText(data->title()));
     result += "\\thispagestyle{fancy}\n";
-    result += "\\setcounter{example}{1}\n";
+    result += "\\setcounter{Example}{0}\n";
+    result += "\\setcounter{Figure}{0}\n";
+    result += "\\setcounter{Table}{0}\n";
     Q_FOREACH(ModelPtr child, data->children()) {
         result += renderElement(child);
     }
@@ -253,18 +300,18 @@ QString generator::renderCode(ModelPtr data)
 QString generator::renderExample(ModelPtr data)
 {
     QString result;
-    result += QString::fromAscii("\\begin{example}{%1}\n").arg(normalizeText(data->title()));
-    Q_FOREACH(ModelPtr child, data->children()) {
-        result += renderElement(child);
-    }
-    result += "\\end{example}\n";
-//    result += QString::fromAscii("\\begin{table}\n");
-//    result += "\\centering\n";
+//    result += QString::fromAscii("\\begin{example}{%1}\n").arg(normalizeText(data->title()));
 //    Q_FOREACH(ModelPtr child, data->children()) {
 //        result += renderElement(child);
 //    }
-//    result += QString::fromAscii("\\caption{\\textbf{Пример.} %1}\n").arg(normalizeText(data->title()));
-//    result += "\\end{table}\n";
+//    result += "\\end{example}\n";
+
+    result += QString::fromAscii("\\begin{Example}\n");
+    Q_FOREACH(ModelPtr child, data->children()) {
+        result += renderElement(child);
+    }
+    result += QString::fromAscii("\\caption{%1}\n").arg(normalizeText(data->title()));
+    result += "\\end{Example}\n";
     return result;
 }
 

@@ -10,8 +10,7 @@ using namespace std;
 string options::input_file_name = string();
 string options::output_file_name = string();
 
-string options::page_size = "a4";
-bool options::two_side = false;
+string options::profile = "a4";
 
 bool options::show_help_and_exit = true;
 int options::exit_code = 127;
@@ -118,6 +117,10 @@ bool options::parse_named_parameter(const std::string & prefix,
         output_file_name = value;
         return true;
     }
+    else if ("profile" == key || "p" == key) {
+        profile = value;
+        return true;
+    }
     else {
         cerr << "Unknown parameter: " << prefix << key;
         if (value.length() > 0) {
@@ -141,10 +144,17 @@ void options::print_help()
 {
     cerr << "Usage:" << endl;
     cerr << "\t" << program_name_
-         << " [--output=FILENAME.tex] FILENAME.xml" << endl << endl;
+         << " [--output=FILENAME.tex] [--profile=PROFILE] FILENAME.xml" << endl << endl;
     cerr << "Options:" << endl;
     cerr << "\tFILENAME.tex\tForce output file name (optional)" << endl;
     cerr << "\tFILENAME.xml\tInput file name (required)" << endl;
+    cerr << "\tPROFILE\t\tOutput profile: " << endl;
+    cerr << "\t\t\t\ta4\t- one side printing on A4 paper" << endl;
+    cerr << "\t\t\t\ta5\t- one side printing on A5 paper" << endl;
+    cerr << "\t\t\t\ta4ts\t- two side printing on A4 paper" << endl;
+    cerr << "\t\t\t\ta5ts\t- two side printing on A5 paper" << endl;
+    cerr << "\t\t\t\ttablet\t- optimized for 7-inch tablets" << endl;
+    cerr << "\t\t\tDefault is a4" << endl;
 }
 
 }
