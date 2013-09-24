@@ -21,7 +21,30 @@ You should change it corresponding to functionality.
 
 namespace ActorDraw {
 
-
+    class DrawView
+    : public QGraphicsView
+    {
+    public:
+        DrawView( QWidget * parent = 0 ){};
+    protected:
+        void scrollContentsBy ( int dx, int dy );
+    
+    
+    };    
+    class DrawScene
+    : public QGraphicsScene
+    {
+    public:
+        DrawScene ( QObject * parent = 0 ){};
+        void drawNet(double startx,double endx,double starty,double endy,QColor color,double step); 
+    protected:
+        void resizeEvent ( QResizeEvent * event );
+    private:
+        QList<QGraphicsLineItem*> lines;
+        QList<QGraphicsLineItem*> Netlines;
+        QList<QGraphicsLineItem*> linesDubl; 
+    
+    }; 
 class DrawModule
     : public DrawModuleBase
 {
@@ -47,8 +70,14 @@ public slots:
 
 
     /* ========= CLASS PRIVATE ========= */
+private:
+    DrawScene* CurScene;
+    DrawView* CurView;
 
+    double netStep;
+    QColor netColor;
 
+    
 
 
 

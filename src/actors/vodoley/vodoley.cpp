@@ -135,6 +135,7 @@ Vodoley::Vodoley()
 	//createActions();
 	autoClose=false;
     pult=new VodoleyPult();
+    pult->VodoleyObj=this;
 	//menuBar=new QMenuBar(this);
 //	menuBar->move(0,HEADER_SIZE);
 	//setMenuBar(menuBar);
@@ -219,9 +220,12 @@ Vodoley::Vodoley()
 	needLabel->setAlignment(Qt::AlignHCenter);
 	needLabel->show();
 	CreateVodoley();
-	if(curFile!="" && QFile::exists(curFile))
-		loadFile(curFile);
+      CreateDummyTask();
+	if(curFile!="" && QFile::exists(curFile)){
+		//loadFile(curFile);
+    }
 	else {
+        CreateDummyTask();
 #ifndef Q_OS_MAC
 		//loadFile(QApplication::applicationDirPath()+"/Addons/vodoley/resources/test.vod");
 #endif
@@ -229,6 +233,32 @@ Vodoley::Vodoley()
 		//loadFile(QApplication::applicationDirPath()+"/../Resources/Addons/vodoley/resources/test.vod");
 #endif
 	}
+}
+//--------------------------------
+void Vodoley::CreateDummyTask()
+{
+    Maxfill[0]=3;
+    Maxfill[1]=5;
+    Maxfill[2]=7;
+    qDebug()<<"ASize"<<Asize();
+    
+    
+    
+    AfillR=1;
+    //  BfillR=newZdialog->BNeed();
+    //CfillR=newZdialog->CNeed();
+    
+    Amen->setNeedFill(1);
+    Bmen->setNeedFill(1);
+    Cmen->setNeedFill(1);
+    
+    setBaseFill(0,0,0);
+    Afill=0;Bfill=0;Cfill=0;
+    Curfill[0]=0;
+    Curfill[1]=0;
+    Curfill[2]=0;
+    updateMenzur();
+ 
 }
 //-----------------------------------
 void Vodoley::CreateVodoley(void)
@@ -260,7 +290,7 @@ void Vodoley::CreateVodoley(void)
     Ctext=scene->addSimpleText("C");
     Ctext->setPos(255,15+(maxSize()-Csize())*literSize);
     // Amen->move(20,20);
-
+    
 }
 
 //-----------------------------------
