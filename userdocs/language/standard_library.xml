@@ -753,7 +753,10 @@
             </funcsynopsis>
             <para>
                 Самое большое целое число, которое можно использовать в языке Кумир:
-                <code>2<superscript>31</superscript>-1</code>.
+                <mathml:math><mathml:mrow>
+                    <mathml:mn>2</mathml:mn>
+                    <mathml:msup><mathml:mn>31</mathml:mn></mathml:msup>
+                </mathml:mrow></mathml:math>.
                 Величина этого числа определяется способом представления чисел в современных
                 компьютерах и примерно одинаковая в большинстве современных языков программирования.
             </para>
@@ -768,7 +771,10 @@
             </funcsynopsis>
             <para>
                 Самое большое вещественное число, которое можно использовать в языке Кумир: значение, несколько
-                меньшее чем <code>2<superscript>1024</superscript></code>.
+                меньшее чем <mathml:math><mathml:mrow>
+                <mathml:mn>2</mathml:mn>
+                <mathml:msup><mathml:mn>1024</mathml:mn></mathml:msup>
+            </mathml:mrow></mathml:math>.
             </para>
         </section>
     </section>
