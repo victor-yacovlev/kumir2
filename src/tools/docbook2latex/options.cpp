@@ -153,7 +153,7 @@ void options::print_help()
     cerr << "\t\t\t\ta5\t- one side printing on A5 paper" << endl;
     cerr << "\t\t\t\ta4ts\t- two side printing on A4 paper" << endl;
     cerr << "\t\t\t\ta5ts\t- two side printing on A5 paper" << endl;
-    cerr << "\t\t\t\ttablet\t- optimized for 7-inch tablets" << endl;
+    cerr << "\t\t\t\ttablet\t- optimized for 9-inch tablets" << endl;
     cerr << "\t\t\tDefault is a4" << endl;
 }
 

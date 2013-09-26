@@ -802,7 +802,18 @@ QString generator::renderBookTitle()
 {
     QString result;
     result += QString::fromAscii("\\title{%1}\n").arg(root_->title());
-    result += "\\maketitle\n";
+    result += "\\thispagestyle{empty}\n";
+    result += "\\vspace*{\\fill}\n";
+    result += "\\begin{center}\n";
+    result += QString::fromAscii("\\Large\\textbf{\\MakeUppercase{%1}}\n\n").arg(normalizeText(root_->title()));
+    if (root_->subtitle().length() > 0) {
+        result += "\\vspace*{18pt}\n";
+        result += QString::fromAscii("\\Large\\textbf{%1}\n\n").arg(normalizeText(root_->subtitle()));
+    }
+    result += "\\end{center}\n";
+    result += "\\vspace*{\\fill}\n";
+    result += "\\newpage\n";
+    result += "\\tableofcontents\n\n";
     return result;
 }
 
@@ -812,9 +823,14 @@ QString generator::renderArticleTitle()
     result += QString::fromAscii("\\title{%1}\n").arg(root_->title());
     result += "\\thispagestyle{fancy}\n";
 
-//    result += "\\twocolumn[\\begin{@twocolumnfalse}\n";
+    result += "\\begin{center}\n";
+    result += QString::fromAscii("\\Large\\textbf{\\MakeUppercase{%1}}\n\n").arg(normalizeText(root_->title()));
+    if (root_->subtitle().length() > 0) {
+        result += "\\vspace*{18pt}\n";
+        result += QString::fromAscii("\\Large\\textbf{%1}\n\n").arg(normalizeText(root_->subtitle()));
+    }
+    result += "\\end{center}\n";
 
-    result += "\\maketitle\n";
     ModelPtr abstract;
     Q_FOREACH(ModelPtr child, root_->children()) {
         if (child == DocBookModel::Abstract || child == DocBookModel::Preface)
