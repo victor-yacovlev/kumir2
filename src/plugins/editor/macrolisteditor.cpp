@@ -31,21 +31,19 @@ void MacroListEditor::handleItemChanged(QListWidgetItem *current, QListWidgetIte
 }
 
 void MacroListEditor::initialize(const QList<Macro> &macros,
-                                 const QList<Macro> &systemMacros,
-                                 const QString & keyPrefix)
+                                 const QList<Macro> &systemMacros)
 {
     ui->btnRemove->setEnabled(false);
     ui->btnEdit->setEnabled(false);
     ui->listWidget->clear();
     macros_ = macros;
     systemMacros_ = systemMacros;
-    prefix_ = keyPrefix;
     for (int i=0; i<macros_.size(); i++) {
         Macro & macro = macros_[i];
         QListWidgetItem * item = new QListWidgetItem;
         QString text = macro.title.trimmed();
         if (!macro.key.isNull()) {
-            text += " (" + keyPrefix + macro.key + ")";
+            text += QString(" (Esc, ") + macro.key + ")";
         }
         item->setText(text);
         ui->listWidget->addItem(item);
@@ -86,7 +84,6 @@ void MacroListEditor::editMacro()
             usedNames.push_back(m.title);
         }
     }
-    editor->setMacroPrefix(prefix_);
     editor->setUsedSymbols(usedLetters, usedNames);
     editor->setMacro(&macro);
 

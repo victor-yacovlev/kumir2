@@ -352,7 +352,7 @@ void Editor::updateInsertMenu()
 {
     loadMacros();
     insertMenu_->clear();
-    const QString escComa = mySettings()->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()+", ";
+    const QString escComa = "Esc, ";
     for (int i=0; i<systemMacros_.size(); i++) {
         Macro m = systemMacros_[i];
         if (m.title.isEmpty()) {
@@ -913,7 +913,6 @@ void Editor::toggleRecordMacro(bool on)
                     usedNames.push_back(m.title);
                 }
             }
-            editor->setMacroPrefix(mySettings()->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()+", ");
             editor->setUsedSymbols(usedLetters, usedNames);
             editor->setMacro(macro);
             if (editor->exec() == QDialog::Accepted) {
@@ -932,8 +931,7 @@ void Editor::editMacros()
 {
     MacroListEditor * editor = new MacroListEditor(this);
     editor->initialize(userMacros_,
-                       systemMacros_,
-                       mySettings()->value(SettingsPage::KeyPlayMacroShortcut, SettingsPage::DefaultPlayMacroShortcut).toString()+", ");
+                       systemMacros_);
     editor->exec();
     userMacros_ = editor->result();
     plugin_->updateUserMacros(analizerPlugin_ ? analizerPlugin_->defaultDocumentFileNameSuffix() : QString(), userMacros_, true);

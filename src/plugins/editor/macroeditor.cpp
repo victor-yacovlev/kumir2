@@ -31,7 +31,7 @@ void MacroEditor::setUsedSymbols(const QString &symbols, const QStringList & nam
             QTableWidgetItem * item = ui->tableWidget->item(row, column);
             if (item) {
                 item->setFlags(item->text().trimmed().length() > 0 ? Enabled : Disabled);
-                item->setToolTip(QString::fromAscii("%1%2").arg(macroPrefix_).arg(item->text()));
+                item->setToolTip(QString::fromAscii("Esc, %1").arg(item->text()));
             }
         }
     }
@@ -71,17 +71,13 @@ void MacroEditor::setMacro(Macro *macro)
     }
     if (item != defItem) {
         item->setFlags(Enabled);
-        item->setToolTip(QString::fromAscii("%1%2").arg(macroPrefix_).arg(item->text()));
+        item->setToolTip(QString::fromAscii("Esc, %1").arg(item->text()));
     }
     ui->tableWidget->setCurrentItem(item);
     ui->lineEdit->setText(macro->title.trimmed());
     checkMacroTitle(ui->lineEdit->text());
 }
 
-void MacroEditor::setMacroPrefix(const QString &prefix)
-{
-    macroPrefix_ = prefix;
-}
 
 void MacroEditor::checkMacroTitle(const QString &title)
 {

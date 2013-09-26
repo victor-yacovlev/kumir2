@@ -19,7 +19,6 @@ public:
     ~MacroEditor();
     void setUsedSymbols(const QString &symbols, const QStringList & names);
     void setMacro(class Macro * macro);
-    void setMacroPrefix(const QString & prefix);
 
 private slots:
     void checkMacroTitle(const QString & title);
@@ -28,7 +27,6 @@ private slots:
 private:
     Ui::MacroEditor *ui;
     class Macro * macro_;
-    QString macroPrefix_;
 };
 
 

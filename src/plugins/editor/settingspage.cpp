@@ -55,9 +55,6 @@ bool SettingsPage::DefaultBoldComment = true;
 QString SettingsPage::KeyTempSwitchLayoutButton = "Keyboard/TemporarySwitchLayoutButton";
 quint32 SettingsPage::DefaultTempSwitchLayoutButton = Qt::Key_Alt;
 
-QString SettingsPage::KeyPlayMacroShortcut = "Keyboard/PlayMacroShortcut";
-QString SettingsPage::DefaultPlayMacroShortcut = "Esc";
-
 QString SettingsPage::KeyForcePressTextToLeft = "Other/PressTextToLeft";
 bool SettingsPage::DefaultForcePressTextToLeft = false;
 
@@ -149,8 +146,6 @@ void SettingsPage::accept()
     else
         settings_->setValue(KeyTempSwitchLayoutButton, quint32(Qt::Key_Alt));
 
-    const QString play = ui->macroPlayKey->currentText();
-    settings_->setValue(KeyPlayMacroShortcut, play);
 
     settings_->setValue(KeyForcePressTextToLeft, ui->pressTextLeft->isChecked());
     settings_->setValue(KeyShowTrailingSpaces, ui->showTrailingSpaces->isChecked());
@@ -231,15 +226,6 @@ void SettingsPage::init()
     }
     ui->layoutSwitchKey->setCurrentIndex(index);
 
-    QString play = settings_->value(KeyPlayMacroShortcut, DefaultPlayMacroShortcut).toString();
-    index = 0;
-    for (int i=0; i<ui->macroPlayKey->count(); i++) {
-        if (ui->macroPlayKey->itemText(i)==play) {
-            index = i;
-            break;
-        }
-    }
-    ui->macroPlayKey->setCurrentIndex(index);
 
     ui->pressTextLeft->setChecked(settings_->value(KeyForcePressTextToLeft, DefaultForcePressTextToLeft).toBool());
     ui->showTrailingSpaces->setChecked(settings_->value(KeyShowTrailingSpaces, DefaultShowTrailingSpaces).toBool());
@@ -332,15 +318,6 @@ void SettingsPage::resetToDefaults()
     }
     ui->layoutSwitchKey->setCurrentIndex(index);
 
-    QString play = DefaultPlayMacroShortcut;
-    index = 0;
-    for (int i=0; i<ui->macroPlayKey->count(); i++) {
-        if (ui->macroPlayKey->itemText(i)==play) {
-            index = i;
-            break;
-        }
-    }
-    ui->macroPlayKey->setCurrentIndex(index);
 
     ui->pressTextLeft->setChecked(DefaultForcePressTextToLeft);
     ui->showTrailingSpaces->setChecked(DefaultShowTrailingSpaces);
