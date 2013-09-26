@@ -736,7 +736,7 @@ Right click to navigate target</source>
         <source>The following files have changes:
 %1
 Save them?</source>
-        <translation>Это файлы были изменены:
+        <translation type="unfinished">Эти файлы были изменены:
 %1
 Сохранить их?</translation>
     </message>
