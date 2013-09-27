@@ -21,7 +21,6 @@ cursFile="";
      ui->setupUi(this);
      ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
      ui->treeView->setIconSize(QSize(25,25));
-     ui->menu->hide();
      ui->treeView->setStyleSheet("icon-size: 25px;font-size: 14px;");
      settings = sett;
      customMenu.hide();
@@ -54,14 +53,12 @@ cursFile="";
           // connect(ui->actionNewK,SIGNAL(triggered()),this,SLOT(newKurs()));
          //  editDialog = new EditDialog(this);
           // connect(ui->actionEdit,SIGNAL(triggered()),this,SLOT(editTask()));
-           ui->menuKurs->menuAction()->setVisible(false);
           // ui->menuKurs->menuAction()->setEnabled(false);
            setEditTaskEnabled(false);
            ui->treeView->setSelectionMode(QAbstractItemView::SingleSelection);
            editRoot=new QLineEdit(ui->treeView);
            editRoot->hide();
            connect(editRoot,SIGNAL(editingFinished ()),this,SLOT(endRootEdit()));
-           ui->menuKurs->hide();
            ui->treeView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 isTeacher=false;
        onTask=false;
@@ -843,7 +840,7 @@ void MainWindowTask::saveKursAs()
 ;
 };
 void MainWindowTask:: setTeacher(bool mode)
-{ui->menuKurs->menuAction()->setVisible(false);
+{
     ui->actionup->setVisible(false);
      ui->actionDown->setVisible(false);
     isTeacher=mode;};

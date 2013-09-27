@@ -21,10 +21,13 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout_2">
+    <property name="margin">
+     <number>0</number>
+    </property>
+    <property name="spacing">
+     <number>0</number>
+    </property>
     <item row="0" column="0">
-     <layout class="QGridLayout" name="gridLayout"/>
-    </item>
-    <item row="0" column="1">
      <widget class="QSplitter" name="splitter">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
@@ -55,8 +58,8 @@
         <bool>true</bool>
        </property>
       </widget>
-      <widget class="QWebView" name="webView" native="true">
-       <property name="url" stdset="0">
+      <widget class="QWebView" name="webView">
+       <property name="url">
         <url>
          <string>about:blank</string>
         </url>
@@ -65,67 +68,6 @@
      </widget>
     </item>
    </layout>
-  </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>0</width>
-     <height>0</height>
-    </rect>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>0</width>
-     <height>0</height>
-    </size>
-   </property>
-   <widget class="QMenu" name="menu">
-    <property name="title">
-     <string>Практикум</string>
-    </property>
-    <addaction name="loadCurs"/>
-    <addaction name="actionSave"/>
-    <addaction name="separator"/>
-    <addaction name="actionClose"/>
-    <addaction name="separator"/>
-   </widget>
-   <widget class="QMenu" name="menu_2">
-    <property name="title">
-     <string>Задание</string>
-    </property>
-    <addaction name="do_task"/>
-    <addaction name="checkTask"/>
-    <addaction name="action_4"/>
-    <addaction name="actionReset"/>
-    <addaction name="actionTested"/>
-   </widget>
-   <widget class="QMenu" name="menuKurs">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="title">
-     <string>Редактирование</string>
-    </property>
-    <addaction name="actionAdd"/>
-    <addaction name="actionRemove"/>
-    <addaction name="actionEdit"/>
-    <addaction name="addDeep"/>
-    <addaction name="separator"/>
-    <addaction name="actionSaveK"/>
-    <addaction name="actionSaveKas"/>
-    <addaction name="actionNewK"/>
-    <addaction name="separator"/>
-    <addaction name="actionup"/>
-    <addaction name="actionDown"/>
-   </widget>
-   <addaction name="menu"/>
-   <addaction name="menu_2"/>
-   <addaction name="menuKurs"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -289,8 +231,6 @@
    <header>QtWebKit/QWebView</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="marks.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
