@@ -423,7 +423,7 @@ QString generator::renderMath(ModelPtr data)
     addSpace_ = false;
     QString result;
     if (data->children().size() > 1) {
-        result += "\begin{equation}\n";
+        result += "\\begin{equation}\n";
     }
     else {
         result += " $";
@@ -432,7 +432,7 @@ QString generator::renderMath(ModelPtr data)
         result += renderElement(child);
     }
     if (data->children().size() > 1) {
-        result += "\end{equation}\n";
+        result += "\\end{equation}\n";
     }
     else {
         result += "$ ";
