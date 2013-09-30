@@ -25,14 +25,20 @@ namespace ActorDraw {
     : public QGraphicsView
     {
     public:
-        DrawView( QWidget * parent = 0 ){};
+        DrawView( QWidget * parent = 0 ){c_scale=1;pressed=false;press_pos=QPoint();};
         void setDraw(DrawModule* draw){DRAW=draw;};
     protected:
-        void scrollContentsBy ( int dx, int dy );
+       // void scrollContentsBy ( int dx, int dy );
         void resizeEvent ( QResizeEvent * event );
-    
+        void wheelEvent ( QWheelEvent * event );
+        void mousePressEvent ( QMouseEvent * event );
+        void mouseReleaseEvent ( QMouseEvent * event );
+        void mouseMoveEvent ( QMouseEvent * event ); 
     private:
         DrawModule* DRAW;
+        double c_scale;
+        bool pressed;
+        QPoint press_pos;
     };    
     class DrawScene
     : public QGraphicsScene
@@ -45,7 +51,8 @@ namespace ActorDraw {
     private:
         QList<QGraphicsLineItem*> lines;
         QList<QGraphicsLineItem*> Netlines;
-        QList<QGraphicsLineItem*> linesDubl; 
+        QList<QGraphicsLineItem*> linesDubl;
+       
     
     }; 
 class DrawModule
