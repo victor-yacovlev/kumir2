@@ -186,11 +186,11 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     netStep=1;
     autoNet=true;
     netColor=QColor("gray");
-
+    penIsDrawing=false;
     CurScene=new DrawScene(CurView);
     CurScene->setDraw(this);
     CurView->setScene(CurScene);
-
+    penColor.cssValue="black";
     CurView->setDraw(this);
     CurView->centerOn(5,-5);
     CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);//For better perfomance; Manual Update;
@@ -270,7 +270,10 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
 {
     // Resets module to initial state before program execution
     // TODO implement me
+    mPen->setBrush(QBrush(QColor("white")));
+    penIsDrawing=false;
     mPen->setPos(0,0);
+    CurScene->reset();
     CurView->update();
 }
 
@@ -286,13 +289,16 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг опустить перо */
     // TODO implement me
-    
+    mPen->setBrush(QBrush(QColor("black")));
+    penIsDrawing=true;
 }
 
 /* public slot */ void DrawModule::runReleasePen()
 {
     /* алг поднять перо */
     // TODO implement me
+    mPen->setBrush(QBrush(QColor(penColor.cssValue)));
+    penIsDrawing=false;
     
 }
 
@@ -301,6 +307,7 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     /* алг установить цвет(цвет color) */
     // TODO implement me
     Q_UNUSED(color)  // Remove this line on implementation;
+    penColor=color;
     qDebug()
             << "DrawModule::runSetPenColor( { cssValue = \""
             << color.cssValue
@@ -309,17 +316,24 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
 
 /* public slot */ void DrawModule::runMoveTo(const qreal x, const qreal y)
 {
-    /* алг сместиться в точку(вещ x, вещ y) */
-    // TODO implement me
-
-    
-}
+    QPointF start=mPen->pos();
+    mPen->setPos(x, -y);
+    if(penIsDrawing)
+    {
+        CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(QString(penColor.cssValue)));
+    }
+    CurView->update();}
 
 /* public slot */ void DrawModule::runMoveBy(const qreal dX, const qreal dY)
 {
     /* алг сместиться на вектор(вещ dX, вещ dY) */
     // TODO implement me
+    QPointF start=mPen->pos();
     mPen->moveBy(dX, -dY);
+    if(penIsDrawing)
+        {
+            CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(QString(penColor.cssValue)));
+        }
     CurView->update();
 }
 

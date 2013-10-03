@@ -50,6 +50,17 @@ namespace ActorDraw {
         DrawScene ( QObject * parent = 0 ){};
         void drawNet(double startx,double endx,double starty,double endy,QColor color,double step); 
         void setDraw(DrawModule* draw){DRAW=draw;};
+        void addDrawLine(QLineF lineF,QColor color)
+        {
+            QGraphicsLineItem* line=addLine(lineF);
+            line->setPen(QPen(QColor(color)));
+            lines.append(line); 
+        }
+        void reset()
+        {
+            for(int i=0;i<lines.count();i++)
+                removeItem(lines.at(i));
+        }
     protected:
        // void resizeEvent ( QResizeEvent * event );
     private:
@@ -112,7 +123,8 @@ private:
     double netStep;
     QColor netColor;
     bool autoNet;
-    
+    bool penIsDrawing;
+    Color penColor;
 
 
 
