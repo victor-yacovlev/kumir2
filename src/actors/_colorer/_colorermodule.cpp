@@ -181,34 +181,67 @@ static QColor parseColor(const QString &css)
     ok = validValues.contains(x.trimmed());
     Color result;
     if (ok) {
-        QColor c = parseColor(x.trimmed());
-        result.cssValue = c.name();
+        QColor c = parseColor(x.trimmed()).toRgb();
+        result.r = c.red();
+        result.g = c.green();
+        result.b = c.blue();
+        result.a = c.alpha();
     }
     return result;
     
+}
+
+static Color colorFromCss(const QString & css)
+{
+    QColor qColor = parseColor(css);
+    QColor qRgbColor = qColor.toRgb();
+    Color result;
+    result.r = qRgbColor.red();
+    result.g = qRgbColor.green();
+    result.b = qRgbColor.blue();
+    result.a = qRgbColor.alpha();
+    return result;
+}
+
+static quint32 colorToUintValue(const Color &x)
+{
+    quint32 result = 0u;
+    quint8 r = quint8(x.r);
+    quint8 g = quint8(x.g);
+    quint8 b = quint8(x.b);
+    quint8 a = quint8(x.a);
+    result =
+            (r << 24) |
+            (g << 16) |
+            (b <<  8) |
+            (a      )
+            ;
+    return result;
 }
 
 /* public slot */ QString _ColorerModule::runOperatorOUTPUT(const Color& x)
 {
     /* алг лит вывод(цвет x) */
     QString result;
-    QMap<QString,QString> standardColorNames;
-    standardColorNames[parseColor(QString::fromUtf8("прозрачный")).name()] = (QString::fromUtf8("прозрачный"));
-    standardColorNames[parseColor(QString::fromUtf8("белый")).name()] = (QString::fromUtf8("белый"));
-    standardColorNames[parseColor(QString::fromUtf8("чёрный")).name()] = (QString::fromUtf8("чёрный"));
-    standardColorNames[parseColor(QString::fromUtf8("серый")).name()] = (QString::fromUtf8("серый"));
-    standardColorNames[parseColor(QString::fromUtf8("фиолетовый")).name()] = (QString::fromUtf8("фиолетовый"));
-    standardColorNames[parseColor(QString::fromUtf8("синий")).name()] = (QString::fromUtf8("синий"));
-    standardColorNames[parseColor(QString::fromUtf8("голубой")).name()] = (QString::fromUtf8("голубой"));
-    standardColorNames[parseColor(QString::fromUtf8("зелёный")).name()] = (QString::fromUtf8("зелёный"));
-    standardColorNames[parseColor(QString::fromUtf8("жёлтый")).name()] = (QString::fromUtf8("жёлтый"));
-    standardColorNames[parseColor(QString::fromUtf8("оранжевый")).name()] = (QString::fromUtf8("оранжевый"));
-    standardColorNames[parseColor(QString::fromUtf8("красный")).name()] = (QString::fromUtf8("красный"));
-    if (standardColorNames.contains(x.cssValue)) {
-        result = standardColorNames[x.cssValue];
+    QMap<quint32,QString> standardColorNames;
+    standardColorNames[colorToUintValue(colorFromCss(QString::fromUtf8("прозрачный")))] = (QString::fromUtf8("прозрачный"));
+    standardColorNames[colorToUintValue(colorFromCss(QString::fromUtf8("белый")))] = (QString::fromUtf8("белый"));
+    standardColorNames[colorToUintValue(colorFromCss(QString::fromUtf8("чёрный")))] = (QString::fromUtf8("чёрный"));
+    standardColorNames[colorToUintValue(colorFromCss(QString::fromUtf8("серый")))] = (QString::fromUtf8("серый"));
+    standardColorNames[colorToUintValue(colorFromCss(QString::fromUtf8("фиолетовый")))] = (QString::fromUtf8("фиолетовый"));
+    standardColorNames[colorToUintValue(colorFromCss(QString::fromUtf8("синий")))] = (QString::fromUtf8("синий"));
+    standardColorNames[colorToUintValue(colorFromCss(QString::fromUtf8("голубой")))] = (QString::fromUtf8("голубой"));
+    standardColorNames[colorToUintValue(colorFromCss(QString::fromUtf8("жёлтый")))] = (QString::fromUtf8("жёлтый"));
+    standardColorNames[colorToUintValue(colorFromCss(QString::fromUtf8("зелёный")))] = (QString::fromUtf8("зелёный"));
+    standardColorNames[colorToUintValue(colorFromCss(QString::fromUtf8("оранжевый")))] = (QString::fromUtf8("оранжевый"));
+    standardColorNames[colorToUintValue(colorFromCss(QString::fromUtf8("красный")))] = (QString::fromUtf8("красный"));
+    quint32 hash = colorToUintValue(x);
+    if (standardColorNames.contains(hash)) {
+        result = standardColorNames[hash];
     }
     else {
-        result = x.cssValue;
+        QColor qc(x.r, x.g, x.b, x.a);
+        result = qc.name();
     }
     return result;
     

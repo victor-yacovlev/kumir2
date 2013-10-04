@@ -169,6 +169,19 @@ void PainterWindow::handleColorTextModeChanged()
         e_showColorMode = "HTML";
 }
 
+static Color colorFromCss(const QString & css)
+{
+    QColor qColor = parseColor(css);
+    QColor qRgbColor = qColor.toRgb();
+    Color result;
+    result.r = qRgbColor.red();
+    result.g = qRgbColor.green();
+    result.b = qRgbColor.blue();
+    result.a = qRgbColor.alpha();
+    return result;
+}
+
+
 void PainterWindow::newImage()
 {
     if (m_newImageDialog->exec()==QDialog::Accepted) {
@@ -182,8 +195,7 @@ void PainterWindow::newImage()
             m_module->runLoadPage(resourcesRoot+s_templateName);
         }
         else {
-            Color c;
-            c.cssValue = m_newImageDialog->color();
+            Color c = colorFromCss(m_newImageDialog->color());
             m_module->runNewPage(w, h, c);
         }
         if (m_newImageDialog->isTemplate()) {

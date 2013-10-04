@@ -3,7 +3,12 @@
     "types": [
         {
             "name" : { "ascii": "color", "ru_RU": "цвет" },
-            "fields": [ { "name": "cssValue", "baseType": "string" } ]
+            "fields": [
+                { "name": "r", "baseType": "int" },
+                { "name": "g", "baseType": "int" },
+                { "name": "b", "baseType": "int" },
+                { "name": "a", "baseType": "int" }
+            ]
         }],
     "methods": [
         {
