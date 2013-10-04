@@ -181,8 +181,8 @@ string generator::create_kum_algorithm(const algorithm_t &algorithm,
 {
     static const char * Commands = " АБВГДЕ";
     const string title = algorithm_index == 0u
-            ? string("программа")
-            : string("команда ") + Commands[algorithm_index];
+            ? string("Главный")
+            : string("Команда ") + Commands[algorithm_index];
 
     string beg = "нач|@protected\n";
     string end = "кон|@protected\n";
@@ -233,17 +233,17 @@ string generator::create_kum_algorithm(const algorithm_t &algorithm,
         else if (DO_ACTION == cmd)
             body += "закрасить\n";
         else if (CALL_1 == cmd)
-            body += "команда А\n";
+            body += "Команда А\n";
         else if (CALL_2 == cmd)
-            body += "команда Б\n";
+            body += "Команда Б\n";
         else if (CALL_3 == cmd)
-            body += "команда В\n";
+            body += "Команда В\n";
         else if (CALL_4 == cmd)
-            body += "команда Г\n";
+            body += "Команда Г\n";
         else if (CALL_5 == cmd)
-            body += "команда Д\n";
+            body += "Команда Д\n";
         else if (CALL_6 == cmd)
-            body += "команда Е\n";
+            body += "Команда Е\n";
     }
     if (body.length() == 0)
         body = "\n";
