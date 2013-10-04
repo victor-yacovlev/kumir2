@@ -76,8 +76,11 @@ SecondaryWindow::createWindowContainer(const QString &title,
                                        bool resizable)
 {
     SecondaryWindowImplementationInterface * result = nullptr;
-
-    result = new SecondaryWindowGenericImplementation(topLevelParent);
+    QWidget * parent = topLevelParent;
+#ifdef Q_WS_WIN32
+    parent = 0;
+#endif
+    result = new SecondaryWindowGenericImplementation(parent);
     //          TODO create platform-specific implementations
 
     result->setResizeble(resizable);
