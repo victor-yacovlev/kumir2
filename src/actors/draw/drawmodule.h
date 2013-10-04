@@ -25,14 +25,23 @@ namespace ActorDraw {
     : public QGraphicsView
     {
     public:
-        DrawView( QWidget * parent = 0 ){};
+        DrawView( QWidget * parent = 0 ){c_scale=1;pressed=false;press_pos=QPoint();};
         void setDraw(DrawModule* draw){DRAW=draw;};
+        double zoom()const
+        {return c_scale;};
+        void setZoom(double zoom);
     protected:
-        void scrollContentsBy ( int dx, int dy );
+       // void scrollContentsBy ( int dx, int dy );
         void resizeEvent ( QResizeEvent * event );
-    
+        void wheelEvent ( QWheelEvent * event );
+        void mousePressEvent ( QMouseEvent * event );
+        void mouseReleaseEvent ( QMouseEvent * event );
+        void mouseMoveEvent ( QMouseEvent * event ); 
     private:
         DrawModule* DRAW;
+        double c_scale;
+        bool pressed;
+        QPoint press_pos;
     };    
     class DrawScene
     : public QGraphicsScene
@@ -40,12 +49,26 @@ namespace ActorDraw {
     public:
         DrawScene ( QObject * parent = 0 ){};
         void drawNet(double startx,double endx,double starty,double endy,QColor color,double step); 
+        void setDraw(DrawModule* draw){DRAW=draw;};
+        void addDrawLine(QLineF lineF,QColor color)
+        {
+            QGraphicsLineItem* line=addLine(lineF);
+            line->setPen(QPen(QColor(color)));
+            lines.append(line); 
+        }
+        void reset()
+        {
+            for(int i=0;i<lines.count();i++)
+                removeItem(lines.at(i));
+        }
     protected:
        // void resizeEvent ( QResizeEvent * event );
     private:
         QList<QGraphicsLineItem*> lines;
         QList<QGraphicsLineItem*> Netlines;
-        QList<QGraphicsLineItem*> linesDubl; 
+        QList<QGraphicsLineItem*> linesDubl;
+        DrawModule* DRAW;
+       
     
     }; 
 class DrawModule
@@ -57,6 +80,22 @@ public /* methods */:
     static QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters();
     QWidget* mainWidget() const;
     QWidget* pultWidget() const;
+    bool isAutoNet() const
+    {
+        return autoNet;
+    }
+    double NetStep() const
+    {
+        return netStep;
+    }
+    void setNetStep(double step)
+    {
+        netStep=step;
+    }
+    double zoom()
+    {
+        return CurView->zoom();
+    }
 public slots:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void loadActorData(QIODevice * source);
@@ -77,13 +116,15 @@ public slots:
 
     /* ========= CLASS PRIVATE ========= */
 private:
+    void CreatePen(void);
     DrawScene* CurScene;
     DrawView* CurView;
-
+    QGraphicsPolygonItem* mPen;
     double netStep;
     QColor netColor;
-
-    
+    bool autoNet;
+    bool penIsDrawing;
+    Color penColor;
 
 
 

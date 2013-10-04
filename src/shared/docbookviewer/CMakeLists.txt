@@ -59,7 +59,7 @@ qt4_wrap_ui(UI_SOURCES ${FORMS})
 
 add_library(DocBookViewer SHARED  ${SOURCES} ${MOC_SOURCES} ${UI_SOURCES})
 target_link_libraries(DocBookViewer ${QT_LIBRARIES} ExtensionSystem)
-set_property(TARGET DocBookViewer APPEND PROPERTY COMPILE_DEFINITIONS BUILD_LIBRARY)
+set_property(TARGET DocBookViewer APPEND PROPERTY COMPILE_DEFINITIONS LIBRARY_BUILD)
 
 if(${BUILD_AS_PART_OF_KUMIR})
     handleTranslation(DocBookViewer)

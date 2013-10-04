@@ -21,21 +21,29 @@ namespace ActorDraw {
     
     void DrawScene::drawNet(double startx ,double endx,double starty,double endy,QColor color,double step)
     {
+        
+        QPointF pos,tail;    
+        
         for ( int i = 0; i < Netlines.count(); i++)
         {
          if(i==0)
          {
-             QPointF pos=Netlines[0]->line().p1 () ;
-              QPointF tail=Netlines.last()->line().p2 () ;
-             //qDebug()<<"POS"<<pos<<"Tail"<<tail;
-             if((pos.x()<startx  && pos.y()<starty)&&(tail.x()>endx-2*step && tail.y()>endy-2*step))return;
+              pos=Netlines[0]->line().p1 () ;
+              tail=Netlines.last()->line().p2 () ;
+             qDebug()<<"POS"<<pos<<"Tail"<<tail<<"start"<<startx<<"end"<<endx;
+             qDebug()<<"Range"<<tail.x()-pos.x()<<"Zoom"<<2000*(DRAW->zoom());
+             if((pos.x()<startx  && pos.y()<starty)&&(tail.x()>endx-3*step && tail.y()>endy-3*step))return;
          }
          delete Netlines[i];   
-        }
-        
+       }
+        qDebug()<<"RedrawNet";
         Netlines.clear();
-        double fx1=startx-5*step,fx2,fy1,fy2; 
-        while (fx1 < endx+2*step)
+        int lines=startx/step;
+        startx=lines*step;
+        double fx1=startx-7*step,fx2,fy1,fy2; 
+
+       // return;
+        while (fx1 < endx+7*step)
 		{
 			fx1 = fx1 + step;
 			fx2 = fx1;
@@ -47,14 +55,18 @@ namespace ActorDraw {
 			Netlines.last()->setPen(QPen(color));
             if(fx1==0)
             {
-                QPen axisPen=QPen(color);
-                axisPen.setWidth(3);
+                QPen axisPen=QPen("blue");
+               // axisPen.setWidth(3/DRAW->zoom());
                 Netlines.last()->setPen(axisPen);   
             }
 		}
-        fy1 = starty-5*step;
+        Netlines.append(addLine(-1, -1 , 1, 1 ));
+        Netlines.append(addLine(1, -1 , -1, 1 ));
+        lines=starty/step;
+        starty=lines*step;
+        fy1 = starty-7*step;
         
-		while (fy1 < endy+2*step)
+		while (fy1 < endy+7*step)
 		{
 			fy1 = fy1 + step;
 			fy2 = fy1;
@@ -66,44 +78,130 @@ namespace ActorDraw {
 			Netlines.last()->setPen(QPen(color));
             if(fy1==0)
             {
-                QPen axisPen=QPen(color);
-                axisPen.setWidth(3);
+                QPen axisPen=QPen("blue");
+               // axisPen.setWidth(6/(DRAW->zoom()*2));
+               // qDebug()<<"Width"<<6/(DRAW->zoom()*2);
                 Netlines.last()->setPen(axisPen);   
             }
             
 		}
+
     }
 void DrawView::resizeEvent ( QResizeEvent * event )
     {
-      //  qDebug()<<"resizeEvent";
-         DRAW->drawNet();
+        qDebug()<<"resizeEvent";
+       // setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
+       if(!pressed)  DRAW->drawNet();
+        update();
+       // setViewportUpdateMode (QGraphicsView::SmartViewportUpdate);
     };
-void DrawView:: scrollContentsBy ( int dx, int dy )
+  
+    
+    void DrawView::mousePressEvent ( QMouseEvent * event )
     {
-        Q_UNUSED(dx);
-        Q_UNUSED(dy);
-    //    qDebug() << QString("SCROLL EVENT ") << dx << " " << dy;
+        pressed=true;
+        press_pos=event->pos();
+        qDebug()<<"Mouse press"<<mapToScene(press_pos);
+    
+    };
+    void DrawView::mouseReleaseEvent ( QMouseEvent * event )
+    {
+        pressed=false;
+        DRAW->drawNet();
+    };
+    void DrawView::mouseMoveEvent ( QMouseEvent * event )
+    {
+        if(pressed)
+        {
+            setViewportUpdateMode (QGraphicsView::SmartViewportUpdate);
+            QPointF delta=mapToScene(press_pos)-mapToScene(event->pos());
+            QPointF center = mapToScene(viewport()->rect().center());
+            centerOn(center+delta/2);
+           // press_pos=mapToScene(press_pos)+delta;
+           // qDebug()<<"CenterOn"<<center+delta;
+            update();
+        }
+    }; 
+    void DrawView::setZoom(double zoom)
+    {
+       this->scale(zoom/c_scale,zoom/c_scale);
+        c_scale=zoom;
+    };
+    void	DrawView::wheelEvent ( QWheelEvent * event )
+    {
+        float numDegrees = event->delta() / 8;
+        qDebug()<<"whell:"<<numDegrees;
+        //        c_scale=c_scale*0.8;
+        qDebug()<<"Scale"<<c_scale;
+        
+        //setRenderHint(QPainter::Antialiasing);
+        if(numDegrees>0)
+        { //if(c_scale<3 && c_scale>0.003)this->scale(1.2,1.2);
+           // QBrush curBackground=QBrush(QColor("lightgreen"));
+           // curBackground.setStyle(Qt::CrossPattern);
+            if(c_scale>5){
+             //   QTransform transform;
+              //  transform.scale(0.3, 0.3);
+              //  curBackground.setTransform(transform);
+            }
+          //  setBackgroundBrush (curBackground);
+
+            c_scale=c_scale*1.2;
+            if(c_scale>10000)c_scale=10000;
+            else this->scale(1.2,1.2);
+            if(DRAW->isAutoNet())
+            {
+                if(c_scale*DRAW->NetStep()>30)
+                {
+                    DRAW->setNetStep(DRAW->NetStep()*0.5);
+                    DRAW->drawNet();
+                }
+                qDebug()<<"c_scale"<<c_scale<<"NetStep"<<DRAW->NetStep();
+            }
+        }
+        else{ 
+            // if(c_scale<3 && c_scale>0.01)this->scale(0.8,0.8);
+            c_scale=c_scale*0.8;
+            if(c_scale<0.01000)c_scale=0.01000;
+            else this->scale(0.8,0.8);
+            if(DRAW->isAutoNet())
+            {
+                if(c_scale*DRAW->NetStep()<5)
+                {
+                    DRAW->setNetStep(DRAW->NetStep()*2);
+                    DRAW->drawNet();
+                }
+                qDebug()<<"c_scale"<<c_scale<<"NetStep"<<DRAW->NetStep();
+            }
+        }
+        
     }    
-    
-    
+
 DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     : DrawModuleBase(parent)
 {
-    //QVBoxLayout *layout = new QVBoxLayout;
+   
  
     CurView=new DrawView();
-    netStep=10;
+    netStep=1;
+    autoNet=true;
     netColor=QColor("gray");
-   // layout->addWidget(CurView);
+    penIsDrawing=false;
     CurScene=new DrawScene(CurView);
+    CurScene->setDraw(this);
     CurView->setScene(CurScene);
-   // CurScene->addItem(new QGraphicsLineItem(-10000, -10000,10000,1000));
+    penColor.cssValue="black";
     CurView->setDraw(this);
-    CurView->centerOn(0,0);
+    CurView->centerOn(5,-5);
+    CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);//For better perfomance; Manual Update;
     drawNet();
-    CurScene->setBackgroundBrush (QBrush(QColor("lightgreen")));
-    // Module constructor, called once on plugin load
-    // TODO implement me
+    CreatePen();
+    CurView->setZoom(30);
+    //QBrush curBackground=QBrush(QColor("lightgreen"));
+
+  //  CurScene->setBackgroundBrush (curBackground);
+
+   
 }
 
 /* public static */ QList<ExtensionSystem::CommandLineParameter> DrawModule::acceptableCommandLineParameters()
@@ -172,6 +270,11 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
 {
     // Resets module to initial state before program execution
     // TODO implement me
+    mPen->setBrush(QBrush(QColor("white")));
+    penIsDrawing=false;
+    mPen->setPos(0,0);
+    CurScene->reset();
+    CurView->update();
 }
 
 /* public slot */ void DrawModule::setAnimationEnabled(bool enabled)
@@ -186,13 +289,16 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг опустить перо */
     // TODO implement me
-    
+    mPen->setBrush(QBrush(QColor("black")));
+    penIsDrawing=true;
 }
 
 /* public slot */ void DrawModule::runReleasePen()
 {
     /* алг поднять перо */
     // TODO implement me
+    mPen->setBrush(QBrush(QColor(penColor.cssValue)));
+    penIsDrawing=false;
     
 }
 
@@ -201,6 +307,7 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     /* алг установить цвет(цвет color) */
     // TODO implement me
     Q_UNUSED(color)  // Remove this line on implementation;
+    penColor=color;
     qDebug()
             << "DrawModule::runSetPenColor( { cssValue = \""
             << color.cssValue
@@ -209,20 +316,25 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
 
 /* public slot */ void DrawModule::runMoveTo(const qreal x, const qreal y)
 {
-    /* алг сместиться в точку(вещ x, вещ y) */
-    // TODO implement me
-    Q_UNUSED(x)  // Remove this line on implementation;
-    Q_UNUSED(y)  // Remove this line on implementation;
-    
-}
+    QPointF start=mPen->pos();
+    mPen->setPos(x, -y);
+    if(penIsDrawing)
+    {
+        CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(QString(penColor.cssValue)));
+    }
+    CurView->update();}
 
 /* public slot */ void DrawModule::runMoveBy(const qreal dX, const qreal dY)
 {
     /* алг сместиться на вектор(вещ dX, вещ dY) */
     // TODO implement me
-    Q_UNUSED(dX)  // Remove this line on implementation;
-    Q_UNUSED(dY)  // Remove this line on implementation;
-    
+    QPointF start=mPen->pos();
+    mPen->moveBy(dX, -dY);
+    if(penIsDrawing)
+        {
+            CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(QString(penColor.cssValue)));
+        }
+    CurView->update();
 }
 
 /* public slot */ void DrawModule::runAddCaption(const qreal width, const QString& text)
@@ -235,11 +347,39 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
 }
 void DrawModule::drawNet()
     {
-        QPointF start=CurView->mapToScene(CurView->viewport()->rect().topLeft().x(),CurView->viewport()->rect().topLeft().y());
-        QPointF end=CurView->mapToScene(CurView->viewport()->rect().bottomRight().x(),CurView->viewport()->rect().bottomRight().y());
+        QPointF start_d=CurView->mapToScene(CurView->geometry().topLeft());
+        QPointF end_d=CurView->mapToScene(CurView->geometry().bottomRight());
+        qDebug()<<"StartDeb"<<start_d<<end_d;
+        // QPointF end=CurView->mapToScene(CurView->viewport()->rect().bottomRight().x(),CurView->viewport()->rect().bottomRight().y());
+        QPointF start=CurView->sceneRect().topLeft();
+        QPointF end=CurView->sceneRect().bottomRight();
            CurScene->drawNet(start.x(),end.x(),start.y(),end.y(), netColor,netStep); 
+        CurView->setSceneRect(QRectF(QPointF(start_d.x()-(CurView->geometry().width()/2)*(1/zoom()),start_d.y()-(CurView->geometry().height()/2)*(1/zoom())),
+                                     QPointF(end_d.x()+200*(1/zoom()),end_d.y()+200*(1/zoom()))));
     };
 
-
+    void DrawModule::CreatePen(void)
+    {
+        
+        
+        static const int points[] = {  0,0, 6,-3, 18,-15, 15,-18, 3,-6 };
+        QPolygon polygon;
+        polygon.setPoints(5, points);
+        QPolygonF polygonf = QPolygonF(polygon);
+        
+        mPen = new QGraphicsPolygonItem ( );
+        mPen->setPolygon(polygonf);
+        mPen->setZValue(100);
+        mPen->setBrush(QBrush(QColor("black")));
+        CurScene->addItem(mPen);
+        mPen->scale(0.5,0.5);
+        mPen->scale(0.5,0.5);
+        mPen->scale(0.5,0.5);
+        mPen->scale(0.5,0.5);
+        mPen->scale(0.5,0.5);
+        mPen->scale(0.5,0.5);
+        
+        
+    }
 
 } // namespace ActorDraw
