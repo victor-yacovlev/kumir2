@@ -18,6 +18,7 @@ You should change it corresponding to functionality.
 
 namespace ActorDraw {
 
+    static const qreal MAX_ZOOM = 100000;
     
     void DrawScene::drawNet(double startx ,double endx,double starty,double endy,QColor color,double step)
     {

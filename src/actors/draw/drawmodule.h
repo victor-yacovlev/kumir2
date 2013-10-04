@@ -19,7 +19,6 @@ You should change it corresponding to functionality.
 #include <QtCore>
 #include <QtGui>
 
-#define  MAX_ZOOM 100000
 namespace ActorDraw {
 
     class DrawModule;
