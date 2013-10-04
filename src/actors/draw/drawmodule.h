@@ -19,7 +19,9 @@ You should change it corresponding to functionality.
 #include <QtCore>
 #include <QtGui>
 
+#define  MAX_ZOOM 100000
 namespace ActorDraw {
+
     class DrawModule;
     class DrawView
     : public QGraphicsView
@@ -52,14 +54,18 @@ namespace ActorDraw {
         void setDraw(DrawModule* draw){DRAW=draw;};
         void addDrawLine(QLineF lineF,QColor color)
         {
-            QGraphicsLineItem* line=addLine(lineF);
+            QGraphicsLineItem* line=addLine(lineF);//CRASH TUT
             line->setPen(QPen(QColor(color)));
+            line->setZValue(100);
             lines.append(line); 
+            
+            qDebug()<<"Lines count:"<<lines.count();
         }
         void reset()
         {
             for(int i=0;i<lines.count();i++)
                 removeItem(lines.at(i));
+            lines.clear();
         }
     protected:
        // void resizeEvent ( QResizeEvent * event );
@@ -125,6 +131,7 @@ private:
     bool autoNet;
     bool penIsDrawing;
     Color penColor;
+    QMutex mutex;
 
 
 

@@ -32,7 +32,7 @@ namespace ActorDraw {
               tail=Netlines.last()->line().p2 () ;
              qDebug()<<"POS"<<pos<<"Tail"<<tail<<"start"<<startx<<"end"<<endx;
              qDebug()<<"Range"<<tail.x()-pos.x()<<"Zoom"<<2000*(DRAW->zoom());
-             if((pos.x()<startx  && pos.y()<starty)&&(tail.x()>endx-3*step && tail.y()>endy-3*step))return;
+            // if((pos.x()<startx  && pos.y()<starty)&&(tail.x()>endx-3*step && tail.y()>endy-3*step))return;
          }
          delete Netlines[i];   
        }
@@ -47,8 +47,8 @@ namespace ActorDraw {
 		{
 			fx1 = fx1 + step;
 			fx2 = fx1;
-			fy1 = starty-step;
-			fy2 = endy;
+			fy1 = starty-7*step;
+			fy2 = endy+7*step;
             
 			Netlines.append(addLine(fx1, fy1 , fx2, fy2 ));
 			Netlines.last()->setZValue(0.5);
@@ -70,8 +70,8 @@ namespace ActorDraw {
 		{
 			fy1 = fy1 + step;
 			fy2 = fy1;
-			fx1 = startx-step;
-			fx2 = endx;
+			fx1 = startx-7*step;
+			fx2 = endx+7*step;
             
             Netlines.append(addLine(fx1, fy1 , fx2, fy2 ));
 			Netlines.last()->setZValue(0.5);
@@ -147,31 +147,44 @@ void DrawView::resizeEvent ( QResizeEvent * event )
           //  setBackgroundBrush (curBackground);
 
             c_scale=c_scale*1.2;
-            if(c_scale>10000)c_scale=10000;
+            if(c_scale>MAX_ZOOM)
+            {c_scale=MAX_ZOOM;}
             else this->scale(1.2,1.2);
             if(DRAW->isAutoNet())
             {
-                if(c_scale*DRAW->NetStep()>30)
+                double pixel_per_cell=DRAW->NetStep()/(1/c_scale);
+                if(pixel_per_cell>70)
                 {
                     DRAW->setNetStep(DRAW->NetStep()*0.5);
                     DRAW->drawNet();
-                }
-                qDebug()<<"c_scale"<<c_scale<<"NetStep"<<DRAW->NetStep();
+                                    }
+                qDebug()<<"c_scale"<<c_scale<<"NetStep"<<DRAW->NetStep()<<"PPC"<<pixel_per_cell;
             }
         }
         else{ 
             // if(c_scale<3 && c_scale>0.01)this->scale(0.8,0.8);
             c_scale=c_scale*0.8;
-            if(c_scale<0.01000)c_scale=0.01000;
+            if(c_scale<1/MAX_ZOOM){c_scale=1/MAX_ZOOM;}
             else this->scale(0.8,0.8);
             if(DRAW->isAutoNet())
-            {
-                if(c_scale*DRAW->NetStep()<5)
+            {//if(c_scale>1)
+                double pixel_per_cell=DRAW->NetStep()/(1/c_scale);
+                if(c_scale*DRAW->NetStep()<10)
                 {
                     DRAW->setNetStep(DRAW->NetStep()*2);
                     DRAW->drawNet();
+                    update();
                 }
-                qDebug()<<"c_scale"<<c_scale<<"NetStep"<<DRAW->NetStep();
+            // else
+                 if(c_scale*DRAW->NetStep()<20)
+                 {
+                     DRAW->setNetStep(DRAW->NetStep()*2);
+                     DRAW->drawNet();
+                      update();
+                 }
+                 
+             
+               qDebug()<<"c_scale"<<c_scale<<"NetStep"<<DRAW->NetStep()<<"PPC"<<pixel_per_cell;
             }
         }
         
@@ -297,8 +310,10 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг поднять перо */
     // TODO implement me
+    mutex.lock();
     mPen->setBrush(QBrush(QColor(penColor.cssValue)));
     penIsDrawing=false;
+    mutex.unlock();
     
 }
 
@@ -316,18 +331,22 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
 
 /* public slot */ void DrawModule::runMoveTo(const qreal x, const qreal y)
 {
+    mutex.lock();
     QPointF start=mPen->pos();
     mPen->setPos(x, -y);
     if(penIsDrawing)
     {
         CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(QString(penColor.cssValue)));
     }
-    CurView->update();}
+    CurView->update();
+    mutex.unlock();
+}
 
 /* public slot */ void DrawModule::runMoveBy(const qreal dX, const qreal dY)
 {
     /* алг сместиться на вектор(вещ dX, вещ dY) */
     // TODO implement me
+    mutex.lock();
     QPointF start=mPen->pos();
     mPen->moveBy(dX, -dY);
     if(penIsDrawing)
@@ -335,6 +354,7 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
             CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(QString(penColor.cssValue)));
         }
     CurView->update();
+    mutex.unlock();
 }
 
 /* public slot */ void DrawModule::runAddCaption(const qreal width, const QString& text)
@@ -347,6 +367,7 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
 }
 void DrawModule::drawNet()
     {
+        mutex.lock();
         QPointF start_d=CurView->mapToScene(CurView->geometry().topLeft());
         QPointF end_d=CurView->mapToScene(CurView->geometry().bottomRight());
         qDebug()<<"StartDeb"<<start_d<<end_d;
@@ -355,7 +376,8 @@ void DrawModule::drawNet()
         QPointF end=CurView->sceneRect().bottomRight();
            CurScene->drawNet(start.x(),end.x(),start.y(),end.y(), netColor,netStep); 
         CurView->setSceneRect(QRectF(QPointF(start_d.x()-(CurView->geometry().width()/2)*(1/zoom()),start_d.y()-(CurView->geometry().height()/2)*(1/zoom())),
-                                     QPointF(end_d.x()+200*(1/zoom()),end_d.y()+200*(1/zoom()))));
+                                     QPointF(end_d.x()+2000*(1/zoom()),end_d.y()+2000*(1/zoom()))));
+        mutex.unlock();
     };
 
     void DrawModule::CreatePen(void)
