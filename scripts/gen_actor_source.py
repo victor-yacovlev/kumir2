@@ -501,7 +501,7 @@ $fields
                     conversion = "toDouble()"
                     defvalue = "0.0"
                 else:
-                    conversion = "to" + typee[0:].upper() + typee[1:] + "()"
+                    conversion = "to" + typee[0].upper() + typee[1:] + "()"
                 if not defvalue:
                     if typee == "int":
                         defvalue = "0"

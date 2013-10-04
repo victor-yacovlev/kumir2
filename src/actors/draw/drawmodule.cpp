@@ -203,7 +203,8 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     CurScene=new DrawScene(CurView);
     CurScene->setDraw(this);
     CurView->setScene(CurScene);
-    penColor.cssValue="black";
+    penColor.r = penColor.g = penColor.b = 0;
+    penColor.a = 255;
     CurView->setDraw(this);
     CurView->centerOn(5,-5);
     CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);//For better perfomance; Manual Update;
@@ -310,8 +311,11 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг поднять перо */
     // TODO implement me
+
     mutex.lock();
-    mPen->setBrush(QBrush(QColor(penColor.cssValue)));
+
+    mPen->setBrush(QBrush(QColor(penColor.r, penColor.g, penColor.b, penColor.a)));
+
     penIsDrawing=false;
     mutex.unlock();
     
@@ -325,7 +329,7 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     penColor=color;
     qDebug()
             << "DrawModule::runSetPenColor( { cssValue = \""
-            << color.cssValue
+            << QColor(color.r, color.g, color.b, color.a).name()
             << "\" } )";
 }
 
@@ -336,7 +340,7 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     mPen->setPos(x, -y);
     if(penIsDrawing)
     {
-        CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(QString(penColor.cssValue)));
+        CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a));
     }
     CurView->update();
     mutex.unlock();
@@ -351,7 +355,7 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     mPen->moveBy(dX, -dY);
     if(penIsDrawing)
         {
-            CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(QString(penColor.cssValue)));
+            CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a));
         }
     CurView->update();
     mutex.unlock();
