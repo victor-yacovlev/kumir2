@@ -22,6 +22,77 @@ You should change it corresponding to functionality.
 namespace ActorDraw {
 
     class DrawModule;
+    
+    class DrawNavigator : public QGraphicsView
+    {
+        Q_OBJECT
+    public:
+        DrawNavigator( QWidget * parent = 0 ){
+            myScene=new QGraphicsScene(this);
+            this->setScene(myScene);
+            zoomText=myScene->addText("Test");
+            QBrush curBackground=QBrush(QColor("lightgreen"));
+            
+            myScene->setBackgroundBrush (curBackground);
+            mainLineX=myScene->addLine(5,5,5,25);
+            setSceneRect(0,0,140,190);
+            netStepXS=new QDoubleSpinBox(this);
+            netStepYS=new QDoubleSpinBox(this);
+            netStepXS->move(15,10);
+            netStepYS->move(5,mainLineX->line().y2()+15);
+            zoomText->setPos(0,netStepYS->pos ().y()+40);
+            mainLineY = myScene->addLine(mainLineX->line().x2(),
+                                        mainLineX->line().y2(),
+                                        mainLineX->line().x2()+10,
+                                        mainLineX->line().y2());
+            //centerOn(70,70);
+            netStepXS->setDecimals(4);
+            netStepYS->setDecimals(4);
+            netStepXS->setMinimum(0.0001);
+            netStepYS->setMinimum(0.0001);
+            netStepXS->setMaximum(1000);
+            netStepYS->setMaximum(1000);            
+            connect(netStepXS,SIGNAL(valueChanged(double)),this,SLOT(XvalueChange(double)));
+            connect(netStepYS,SIGNAL(valueChanged(double)),this,SLOT(YvalueChange(double)));
+            };
+        void setZoom(double zoom)
+        {
+            Zoom=zoom;
+        }
+        void reDraw(const double zoom ,const double netStepX,const double netStepY)
+        {
+            setZoom(zoom);
+            updateSelf(netStepX,netStepY);
+        }
+        void updateSelf(double netStepX,double netStepY)
+        {
+            zoomText->setPlainText(QString::number(1/Zoom));
+            mainLineX->setLine(5,5,5,5+netStepX*Zoom);
+            mainLineY->setLine(mainLineX->line().x2(),
+                               mainLineX->line().y2(),
+                               mainLineX->line().x2()+netStepY*Zoom,
+                               mainLineX->line().y2());
+            netStepYS->move(mainLineY->line().x1()+netStepY*Zoom/2,mainLineX->line().y2()+10);
+            netStepXS->move(15,mainLineX->line().x2()-5+netStepX*Zoom/2);
+            netStepXS->setValue(netStepX);
+            netStepYS->setValue(netStepY);
+            update();
+        }
+        void setDraw(DrawModule* draw){DRAW=draw;};
+    public slots:
+        void XvalueChange(double value);
+        void YvalueChange(double value);
+    private:
+        double Zoom;
+        QGraphicsScene* myScene;
+        QGraphicsLineItem * mainLineX,*mainLineY;
+        QGraphicsTextItem * zoomText;
+        QDoubleSpinBox* netStepXS;
+        QDoubleSpinBox* netStepYS;
+        DrawModule* DRAW;
+        
+    };
+    
     class DrawView
     : public QGraphicsView
     {
@@ -49,16 +120,16 @@ namespace ActorDraw {
     {
     public:
         DrawScene ( QObject * parent = 0 ){};
-        void drawNet(double startx,double endx,double starty,double endy,QColor color,double step); 
+        void drawNet(double startx,double endx,double starty,double endy,QColor color,const double step,const double stepY); 
         void setDraw(DrawModule* draw){DRAW=draw;};
         void addDrawLine(QLineF lineF,QColor color)
         {
             QGraphicsLineItem* line=addLine(lineF);//CRASH TUT
             line->setPen(QPen(QColor(color)));
-            line->setZValue(100);
+            line->setZValue(90);
             lines.append(line); 
             
-            qDebug()<<"Lines count:"<<lines.count();
+            //qDebug()<<"Lines count:"<<lines.count();
         }
         void reset()
         {
@@ -89,17 +160,36 @@ public /* methods */:
     {
         return autoNet;
     }
-    double NetStep() const
+    double NetStepX() const
     {
-        return netStep;
+        return netStepX;
     }
-    void setNetStep(double step)
+    void setNetStepX(double step)
     {
-        netStep=step;
+        netStepX=step;
+    }
+    double NetStepY() const
+    {
+        return netStepY;
+    }
+    void setNetStepY(double step)
+    {
+        netStepY=step;
     }
     double zoom()
     {
         return CurView->zoom();
+    }
+    
+    QGraphicsPolygonItem* Pen()
+    {
+        return mPen;
+    }
+    void scalePen(double factor)
+    {
+        mutex.lock();
+        mPen->scale(factor,factor);
+        mutex.unlock();
     }
 public slots:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
@@ -125,12 +215,13 @@ private:
     DrawScene* CurScene;
     DrawView* CurView;
     QGraphicsPolygonItem* mPen;
-    double netStep;
+    double netStepX,netStepY;
     QColor netColor;
     bool autoNet;
     bool penIsDrawing;
     Color penColor;
     QMutex mutex;
+    DrawNavigator* navigator;
 
 
 
