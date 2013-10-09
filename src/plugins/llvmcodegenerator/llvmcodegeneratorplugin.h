@@ -5,6 +5,8 @@
 #include "interfaces/generatorinterface.h"
 
 #include <QObject>
+#include <llvm/Module.h>
+#include <llvm/ADT/Triple.h>
 
 namespace LLVMCodeGenerator {
 
@@ -39,8 +41,16 @@ protected:
                        const ExtensionSystem::CommandLine &runtimeArguments);
     void start();
     void stop();
+
+//    static std::string generateNativeExecutable(llvm::Module * module);
+    static QByteArray runExternalToolsToGenerateExecutable(const QByteArray & bitcode);
+//    static llvm::Triple getNativeTriple();
+    static QString findUtil(const QString & name);
+
 private:
     class LLVMGenerator * d;
+    bool compileOnly_;
+    bool textForm_;
 
 };
 
