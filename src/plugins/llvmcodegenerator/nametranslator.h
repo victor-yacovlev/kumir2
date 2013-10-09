@@ -19,6 +19,7 @@ public:
     void endNamespace();
     CString add(const QString & name);
     CString find(const QString & name) const;
+    static QString suggestName(const QString &x);
 private:
     typedef struct {
         QString sName;
@@ -30,7 +31,6 @@ private:
     Namespace& ns();
 
     bool inUse(const CString &x) const;
-    QString suggestName(const QString &x) const;
     static bool isReservedName(const QString &x);
 
     QStack<Namespace> _;

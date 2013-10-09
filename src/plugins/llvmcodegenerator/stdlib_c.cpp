@@ -4,6 +4,8 @@
 #include <string.h>
 #include <wchar.h>
 
+static Kumir::FileType __kumir_scalar_to_file_type(const __kumir_scalar & scalar);
+
 EXTERN void __use_all_types()
 {
     __kumir_bool        b;
@@ -71,6 +73,45 @@ EXTERN __kumir_scalar __kumir_create_string(const char * utf8)
     return result;
 }
 
+EXTERN __kumir_variant __kumir_copy_variant(const __kumir_variant rvalue, __kumir_scalar_type type)
+{
+    __kumir_variant lvalue;
+    switch (type) {
+    case __KUMIR_INT:
+        lvalue.i = rvalue.i;
+        break;
+    case __KUMIR_REAL:
+        lvalue.r = rvalue.r;
+        break;
+    case __KUMIR_BOOL:
+        lvalue.b = rvalue.b;
+        break;
+    case __KUMIR_CHAR:
+        lvalue.c = rvalue.c;
+        break;
+    case __KUMIR_STRING: {
+        size_t sz = wcslen(rvalue.s);
+        lvalue.s = reinterpret_cast<wchar_t*>(calloc(sz+1u, sizeof(wchar_t)));
+        wcsncpy(lvalue.s, rvalue.s, sz);
+        lvalue.s[sz] = L'\0';
+        break;
+    }
+    case __KUMIR_RECORD: {
+        lvalue.u.nfields = rvalue.u.nfields;
+        lvalue.u.types = reinterpret_cast<__kumir_scalar_type*>(calloc(lvalue.u.nfields, sizeof(__kumir_scalar_type)));
+        lvalue.u.fields = reinterpret_cast<__kumir_variant*>(calloc(lvalue.u.nfields, sizeof(__kumir_variant)));
+        __kumir_variant * lfields = reinterpret_cast<__kumir_variant*>(lvalue.u.fields);
+        __kumir_variant * rfields = reinterpret_cast<__kumir_variant*>(rvalue.u.fields);
+        for (size_t i=0u; i<rvalue.u.nfields; i++) {
+            __kumir_scalar_type type = lvalue.u.types[i] = rvalue.u.types[i];
+            lfields[i] = __kumir_copy_variant(rfields[i], type);
+        }
+        break;
+    }
+    }
+    return lvalue;
+}
+
 EXTERN __kumir_scalar __kumir_copy_scalar(const __kumir_scalar rvalue)
 {
     __kumir_scalar lvalue;
@@ -78,26 +119,7 @@ EXTERN __kumir_scalar __kumir_copy_scalar(const __kumir_scalar rvalue)
     lvalue.type = rvalue.type;
     __kumir_check_value_defined(rvalue);
     if (lvalue.defined) {
-        switch (lvalue.type) {
-        case __KUMIR_INT:
-            lvalue.data.i = rvalue.data.i;
-            break;
-        case __KUMIR_REAL:
-            lvalue.data.r = rvalue.data.r;
-            break;
-        case __KUMIR_BOOL:
-            lvalue.data.b = rvalue.data.b;
-            break;
-        case __KUMIR_CHAR:
-            lvalue.data.c = rvalue.data.c;
-            break;
-        case __KUMIR_STRING:
-            size_t sz = wcslen(rvalue.data.s);
-            lvalue.data.s = reinterpret_cast<wchar_t*>(calloc(sz+1u, sizeof(wchar_t)));
-            wcsncpy(lvalue.data.s, rvalue.data.s, sz);
-            lvalue.data.s[sz] = L'\0';
-            break;
-        }
+        lvalue.data = __kumir_copy_variant(rvalue.data, rvalue.type);
     }
     return lvalue;
 }
@@ -113,6 +135,17 @@ EXTERN void __kumir_free_scalar(__kumir_scalar scalar)
 {
     if (scalar.defined && __KUMIR_STRING == scalar.type) {
         free(scalar.data.s);
+    }
+    else if (scalar.defined && __KUMIR_RECORD == scalar.type) {
+        __kumir_scalar_type * types = scalar.data.u.types;
+        __kumir_variant * fields = reinterpret_cast<__kumir_variant*>(scalar.data.u.fields);
+        for (size_t i=0; i<scalar.data.u.nfields; i++) {
+            if (__KUMIR_STRING == types[i]) {
+                free(fields[i].s);
+            }
+        }
+        free(types);
+        free(fields);
     }
 }
 
@@ -135,6 +168,8 @@ EXTERN void __kumir_output_stdout_ii(const __kumir_scalar value, const int forma
     case __KUMIR_STRING:
         Kumir::IO::writeString(format2, std::wstring(value.data.s));
         break;
+    default:
+        break;
     }
 }
 
@@ -155,6 +190,117 @@ EXTERN void __kumir_output_stdout_ss(const __kumir_scalar value, const __kumir_s
     __kumir_check_value_defined(format1);
     __kumir_check_value_defined(format2);
     __kumir_output_stdout_ii(value, format1.data.i, format2.data.i);
+}
+
+EXTERN void __kumir_output_file_ii(const __kumir_scalar handle, const __kumir_scalar value, const int format1, const int format2)
+{
+    __kumir_check_value_defined(handle);
+    __kumir_check_value_defined(value);
+    Kumir::FileType f = __kumir_scalar_to_file_type(handle);
+    switch (value.type) {
+    case __KUMIR_INT:
+        Kumir::IO::writeInteger(format2, value.data.i, f, false);
+        break;
+    case __KUMIR_REAL:
+        Kumir::IO::writeReal(format2, format1, value.data.r, f, false);
+        break;
+    case __KUMIR_BOOL:
+        Kumir::IO::writeBool(format2, value.data.b, f, false);
+        break;
+    case __KUMIR_CHAR:
+        Kumir::IO::writeChar(format2, value.data.c, f, false);
+        break;
+    case __KUMIR_STRING:
+        Kumir::IO::writeString(format2, std::wstring(value.data.s), f, false);
+        break;
+    default:
+        break;
+    }
+}
+
+EXTERN void __kumir_output_file_is(const __kumir_scalar handle, const __kumir_scalar value, const int format1, const __kumir_scalar format2)
+{
+    __kumir_check_value_defined(format2);
+    __kumir_output_file_ii(handle, value, format1, format2.data.i);
+}
+
+EXTERN void __kumir_output_file_si(const __kumir_scalar handle, const __kumir_scalar value, const __kumir_scalar format1, const int format2)
+{
+    __kumir_check_value_defined(format1);
+    __kumir_output_file_ii(handle, value, format1.data.i, format2);
+}
+
+EXTERN void __kumir_output_file_ss(const __kumir_scalar handle, const __kumir_scalar value, const __kumir_scalar format1, const __kumir_scalar format2)
+{
+    __kumir_check_value_defined(format1);
+    __kumir_check_value_defined(format2);
+    __kumir_output_file_ii(handle, value, format1.data.i, format2.data.i);
+}
+
+static __kumir_scalar __kumir_file_type_to_scalar(const Kumir::FileType &f)
+{
+    __kumir_scalar result;
+    result.defined = true;
+    result.type = __KUMIR_RECORD;
+    result.data.u.nfields = 4u;
+    __kumir_scalar_type * types = reinterpret_cast<__kumir_scalar_type*>(
+                calloc(result.data.u.nfields, sizeof(__kumir_scalar_type))
+                );
+    __kumir_variant * fields = reinterpret_cast<__kumir_variant*>(
+                calloc(result.data.u.nfields, sizeof(__kumir_variant))
+                );
+
+    types[0] = __KUMIR_STRING;
+    types[1] = __KUMIR_INT;
+    types[2] = __KUMIR_INT;
+    types[3] = __KUMIR_BOOL;
+
+    fields[0].s = reinterpret_cast<wchar_t*>(calloc(f.fullPath.length() + 1u, sizeof(wchar_t)));
+    wcsncpy(fields[0].s, f.fullPath.c_str(), f.fullPath.length());
+    fields[0].s[f.fullPath.length()] = L'\0';
+
+    fields[1].i = f.mode;
+    fields[2].i = f.type;
+    fields[3].b = f.valid;
+
+    result.data.u.fields = fields;
+    result.data.u.types = types;
+
+    return result;
+}
+
+static Kumir::FileType __kumir_scalar_to_file_type(const __kumir_scalar & scalar)
+{
+    Kumir::FileType f;
+    __kumir_variant * fields = reinterpret_cast<__kumir_variant*>(scalar.data.u.fields);
+    f.fullPath = std::wstring(fields[0].s);
+    f.mode = fields[1].i;
+    f.type = fields[2].i;
+    f.valid = fields[3].b;
+    return f;
+}
+
+EXTERN __kumir_scalar __kumir__stdlib__otkryit_na_chtenie(const __kumir_scalar name)
+{
+    __kumir_check_value_defined(name);
+    std::wstring wsname(name.data.s);
+    Kumir::FileType f = Kumir::Files::open(wsname, Kumir::FileType::Read);
+    return __kumir_file_type_to_scalar(f);
+}
+
+EXTERN __kumir_scalar __kumir__stdlib__otkryit_na_zapis(const __kumir_scalar name)
+{
+    __kumir_check_value_defined(name);
+    std::wstring wsname(name.data.s);
+    Kumir::FileType f = Kumir::Files::open(wsname, Kumir::FileType::Write);
+    return __kumir_file_type_to_scalar(f);
+}
+
+EXTERN void __kumir__stdlib__zakryit(const __kumir_scalar handle)
+{
+    __kumir_check_value_defined(handle);
+    Kumir::FileType f = __kumir_scalar_to_file_type(handle);
+    Kumir::Files::close(f);
 }
 
 EXTERN void __kumir_init_stdlib()

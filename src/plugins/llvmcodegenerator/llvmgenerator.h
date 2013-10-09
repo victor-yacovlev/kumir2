@@ -74,6 +74,11 @@ private:
     llvm::Function* kumirOutputStdoutIS_;
     llvm::Function* kumirOutputStdoutSS_;
 
+    llvm::Function* kumirOutputFileII_;
+    llvm::Function* kumirOutputFileSI_;
+    llvm::Function* kumirOutputFileIS_;
+    llvm::Function* kumirOutputFileSS_;
+
     std::list<llvm::Value*> tempValsToFree_;
     bool linkStdLibModule_;
 

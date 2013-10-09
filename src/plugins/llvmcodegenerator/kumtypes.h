@@ -15,9 +15,18 @@ typedef enum {
     __KUMIR_REAL,
     __KUMIR_BOOL,
     __KUMIR_CHAR,
-    __KUMIR_STRING
+    __KUMIR_STRING,
+    __KUMIR_RECORD
 }
 __kumir_scalar_type;
+
+typedef struct {
+    size_t                  nfields;
+    void*                   fields; // of type __kumir_variant
+    __kumir_scalar_type*    types;
+}
+__kumir_record;
+
 
 typedef struct { // TODO replace struct with union
     __kumir_int i;
@@ -25,6 +34,7 @@ typedef struct { // TODO replace struct with union
     __kumir_bool b;
     __kumir_char c;
     __kumir_string s;
+    __kumir_record u;
 }
 __kumir_variant;
 

@@ -362,7 +362,7 @@ void LLVMGenerator::createAssign(llvm::IRBuilder<> &builder, const AST::Statemen
 {
     const AST::ExpressionPtr rvalue = st->expressions.at(0);
     llvm::Value * llvm_rvalue = calculate(builder, rvalue, false);
-    if (st->expressions.size() > 0) {
+    if (st->expressions.size() > 1) {
         const AST::ExpressionPtr lvalue = st->expressions.at(1);
         if (lvalue->kind == AST::ExprVariable) {
             llvm::Value * var = 0;
@@ -389,15 +389,15 @@ void LLVMGenerator::createOutput(llvm::IRBuilder<> &builder, const AST::Statemen
 {
     const int lexemsCount = st->expressions.size() / 3;
     const bool fileHandleProvided = st->expressions.size() % 3 > 0;
+    llvm::Value * fileHandle = 0;
+    if (fileHandleProvided) {
+        fileHandle = calculate(builder, st->expressions.last(), false);
+        Q_ASSERT(fileHandle);
+    }
     for (int i=0; i<lexemsCount; i++) {
         int exprIndex = 3 * i;
         int format1Index = 3 * i + 1;
         int format2Index = 3 * i + 2;
-        if (fileHandleProvided) {
-            exprIndex ++;
-            format1Index ++;
-            format2Index ++;
-        }
         const AST::ExpressionPtr & expr = st->expressions.at(exprIndex);
         const AST::ExpressionPtr & format1 = st->expressions.at(format1Index);
         const AST::ExpressionPtr & format2 = st->expressions.at(format2Index);
@@ -409,7 +409,21 @@ void LLVMGenerator::createOutput(llvm::IRBuilder<> &builder, const AST::Statemen
         std::vector<llvm::Value*> args;
 
         if (fileHandleProvided) {
-            // TODO implement me
+            args.push_back(fileHandle);
+            args.push_back(lexpr);
+            if (format1->kind == AST::ExprConst && format2->kind == AST::ExprConst) {
+                llvm::Value * lformat1 = llvm::ConstantInt::getSigned(
+                            llvm::Type::getInt32Ty(*context_),
+                            format1->constant.toInt()
+                            );
+                llvm::Value * lformat2 = llvm::ConstantInt::getSigned(
+                            llvm::Type::getInt32Ty(*context_),
+                            format2->constant.toInt()
+                            );
+                outFunc = kumirOutputFileII_;
+                args.push_back(lformat1);
+                args.push_back(lformat2);
+            }
         }
         else {
             args.push_back(lexpr);
@@ -522,12 +536,11 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
     }
     else {
         std::vector<llvm::Type*> formalArgs(alg->header.arguments.size());
-        QString cFuncName = alg->header.cHeader;
-        if (cFuncName.isEmpty()) {
-            cFuncName = alg->header.name;
-            cFuncName.replace(' ', "_");
+        funcName = alg->header.cHeader.toStdString();
+        if (funcName.empty()) {
+            funcName = "__kumir__stdlib__" ; // TODO implement non-std algorithms
+            funcName += NameTranslator::suggestName(alg->header.name).toStdString();
         }
-        QString ns = "__stdlib__"; // TODO implement non-std algorithms
         QStringList params;
         for (int i=0; i<alg->header.arguments.size(); i++) {
             const AST::VariablePtr & arg = alg->header.arguments[i];
@@ -540,7 +553,6 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
             params.push_back(param);
             formalArgs[i] = findOrRegisterType(arg->baseType, ref, arg->dimension);
         }
-        funcName = buildCXXName(ns, "", cFuncName, params);
         llvm::Type * rtype = findOrRegisterType(alg->header.returnType, false, 0u);
         llvm::FunctionType * ftype = llvm::FunctionType::get(rtype, formalArgs, false);
         func = currentModule_->getFunction(funcName); // maybe already used
@@ -614,7 +626,7 @@ llvm::Type * LLVMGenerator::findOrRegisterType(const AST::Type &bt, const bool r
     if (bt.kind == AST::TypeNone) {
         return llvm::Type::getVoidTy(*context_);
     }
-    else if (bt.kind != AST::TypeUser) {
+    else {
         return findStandardType(bt.kind, reference, dim);
     }
 
@@ -685,6 +697,18 @@ void LLVMGenerator::createInternalExternsTable()
 
     kumirOutputStdoutSS_ = stdlibModule_->getFunction("__kumir_output_stdout_ss");
     Q_ASSERT(kumirOutputStdoutSS_);
+
+    kumirOutputFileII_ = stdlibModule_->getFunction("__kumir_output_file_ii");
+    Q_ASSERT(kumirOutputFileII_);
+
+    kumirOutputFileIS_ = stdlibModule_->getFunction("__kumir_output_file_is");
+    Q_ASSERT(kumirOutputFileIS_);
+
+    kumirOutputFileSI_ = stdlibModule_->getFunction("__kumir_output_file_si");
+    Q_ASSERT(kumirOutputFileSI_);
+
+    kumirOutputFileSS_ = stdlibModule_->getFunction("__kumir_output_file_ss");
+    Q_ASSERT(kumirOutputFileSS_);
 }
 
 CString LLVMGenerator::buildCXXName(const QString &ns,

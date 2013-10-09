@@ -63,7 +63,7 @@ NameTranslator::Namespace& NameTranslator::ns()
     return _.back();
 }
 
-QString NameTranslator::suggestName(const QString &x) const
+QString NameTranslator::suggestName(const QString &x)
 {
     QString result;
     static QMap<QChar,QString> RusToLat;

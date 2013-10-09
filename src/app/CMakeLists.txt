@@ -70,6 +70,10 @@ if(NOT APPLE)
     add_subdirectory(kumir2-teacher)
     #add_subdirectory(kumir2-python)
 
+    if(NOT WIN32)
+        add_subdirectory(kumir2-llvmc)
+    endif()
+
 endif(NOT APPLE)
 
 if(APPLE)
