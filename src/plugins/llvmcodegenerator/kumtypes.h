@@ -11,12 +11,12 @@ typedef wchar_t         __kumir_char;
 typedef wchar_t*        __kumir_string;
 
 typedef enum {
-    __KUMIR_INT,
-    __KUMIR_REAL,
-    __KUMIR_BOOL,
-    __KUMIR_CHAR,
-    __KUMIR_STRING,
-    __KUMIR_RECORD
+    __KUMIR_INT     = 0x01,
+    __KUMIR_REAL    = 0x02,
+    __KUMIR_BOOL    = 0x03,
+    __KUMIR_CHAR    = 0x04,
+    __KUMIR_STRING  = 0x05,
+    __KUMIR_RECORD  = 0x06
 }
 __kumir_scalar_type;
 
@@ -29,12 +29,12 @@ __kumir_record;
 
 
 typedef struct { // TODO replace struct with union
-    __kumir_int i;
-    __kumir_real r;
-    __kumir_bool b;
-    __kumir_char c;
-    __kumir_string s;
-    __kumir_record u;
+    __kumir_int     i;
+    __kumir_real    r;
+    __kumir_bool    b;
+    __kumir_char    c;
+    __kumir_string  s;
+    __kumir_record  u;
 }
 __kumir_variant;
 

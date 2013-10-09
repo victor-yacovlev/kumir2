@@ -317,6 +317,7 @@ void LLVMGenerator::addFunctionBody(const QList<AST::StatementPtr> & statements,
             createAssign(builder, statement, alg);
             break;
         case AST::StAssert:
+            createAssert(builder, statement, alg);
             break;
         case AST::StOutput:
             createOutput(builder, statement, alg);
@@ -385,6 +386,17 @@ void LLVMGenerator::createAssign(llvm::IRBuilder<> &builder, const AST::Statemen
     createFreeTempScalars(builder);
 }
 
+void LLVMGenerator::createAssert(llvm::IRBuilder<> &builder, const AST::StatementPtr &st, const AST::AlgorithmPtr &alg)
+{
+    for (int i=0; i<st->expressions.size(); i++) {
+        const AST::ExpressionPtr & expr = st->expressions[i];
+        llvm::Value * assertionValue = calculate(builder, expr, false);
+        Q_ASSERT(assertionValue);
+        builder.CreateCall(kumirAssert_, assertionValue);
+        createFreeTempScalars(builder);
+    }
+}
+
 void LLVMGenerator::createOutput(llvm::IRBuilder<> &builder, const AST::StatementPtr &st, const AST::AlgorithmPtr &alg)
 {
     const int lexemsCount = st->expressions.size() / 3;
@@ -443,6 +455,7 @@ void LLVMGenerator::createOutput(llvm::IRBuilder<> &builder, const AST::Statemen
         }
         Q_ASSERT(outFunc);
         builder.CreateCall(outFunc, args);
+        createFreeTempScalars(builder);
     }
 }
 
@@ -601,22 +614,24 @@ llvm::Value * LLVMGenerator::createSubExpession(llvm::IRBuilder<> &builder, cons
         operands[i] = operand;
     }
 
-    llvm::Value * result = 0;
+    llvm::Value * result = builder.CreateAlloca(findOrRegisterType(ex->baseType, false, 0u));
+    llvm::Function * opFunc = 0;
+    size_t operandsCount = operands.size();
     switch (ex->operatorr) {
-    case AST::OpSumm:
-        result = builder.CreateAdd(operands[0], operands[1]);
-        break;
-    case AST::OpSubstract:
-        result = builder.CreateSub(operands[0], operands[1]);
-        break;
-    case AST::OpMultiply:
-        result = builder.CreateMul(operands[0], operands[1]);
-        break;
-    case AST::OpDivision:
-        result = builder.CreateFDiv(operands[0], operands[1]);
-        break;
+    case AST::OpEqual:          opFunc = kumirOpEq_;    break;
+    case AST::OpNotEqual:       opFunc = kumirOpNeq_;   break;
+    case AST::OpLess:           opFunc = kumirOpLs_;    break;
+    case AST::OpGreater:        opFunc = kumirOpGt_;    break;
+    case AST::OpLessOrEqual:    opFunc = kumirOpLq_;    break;
+    case AST::OpGreaterOrEqual: opFunc = kumirOpGq_;    break;
     default:
         break;
+    }
+    if (1u == operandsCount) {
+        builder.CreateCall2(opFunc, result, operands[0]);
+    }
+    else if (2u == operandsCount) {
+        builder.CreateCall3(opFunc, result, operands[0], operands[1]);
     }
     return result;
 }
@@ -709,6 +724,28 @@ void LLVMGenerator::createInternalExternsTable()
 
     kumirOutputFileSS_ = stdlibModule_->getFunction("__kumir_output_file_ss");
     Q_ASSERT(kumirOutputFileSS_);
+
+    kumirAssert_ = stdlibModule_->getFunction("__kumir_assert");
+    Q_ASSERT(kumirAssert_);
+
+    kumirOpEq_ = stdlibModule_->getFunction("__kumir_operator_eq");
+    Q_ASSERT(kumirOpEq_);
+
+    kumirOpNeq_ = stdlibModule_->getFunction("__kumir_operator_neq");
+    Q_ASSERT(kumirOpNeq_);
+
+    kumirOpLs_ = stdlibModule_->getFunction("__kumir_operator_ls");
+    Q_ASSERT(kumirOpLs_);
+
+    kumirOpGt_ = stdlibModule_->getFunction("__kumir_operator_gt");
+    Q_ASSERT(kumirOpGt_);
+
+    kumirOpLq_ = stdlibModule_->getFunction("__kumir_operator_lq");
+    Q_ASSERT(kumirOpLq_);
+
+    kumirOpGq_ = stdlibModule_->getFunction("__kumir_operator_gq");
+    Q_ASSERT(kumirOpGq_);
+
 }
 
 CString LLVMGenerator::buildCXXName(const QString &ns,

@@ -78,7 +78,7 @@ EXTERN __kumir_variant __kumir_copy_variant(const __kumir_variant rvalue, __kumi
     __kumir_variant lvalue;
     switch (type) {
     case __KUMIR_INT:
-        lvalue.i = rvalue.i;
+        lvalue.i = rvalue.i;        
         break;
     case __KUMIR_REAL:
         lvalue.r = rvalue.r;
@@ -124,10 +124,24 @@ EXTERN __kumir_scalar __kumir_copy_scalar(const __kumir_scalar rvalue)
     return lvalue;
 }
 
+static void __kumir_handle_abort()
+{
+    const std::wstring message = Kumir::Core::fromUtf8("ОШИБКА ВЫПОЛНЕНИЯ: ") +
+            Kumir::Core::getError();
+    Kumir::Encoding enc = Kumir::UTF8;
+#if defined(WIN32) || defined(_WIN32)
+    enc = Kumir::CP866;
+#endif
+    const std::string loc_message = Kumir::Coder::encode(enc, message);
+    std::cerr << loc_message << std::endl;
+    exit(1);
+}
+
 EXTERN void __kumir_check_value_defined(const __kumir_scalar value)
 {
     if (!value.defined) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Значение величины не определено"));
+        __kumir_handle_abort();
     }
 }
 
@@ -301,6 +315,153 @@ EXTERN void __kumir__stdlib__zakryit(const __kumir_scalar handle)
     __kumir_check_value_defined(handle);
     Kumir::FileType f = __kumir_scalar_to_file_type(handle);
     Kumir::Files::close(f);
+}
+
+static __kumir_real __kumir_scalar_as_real(const __kumir_scalar scalar)
+{
+    __kumir_real result = 0.;
+    if (__KUMIR_REAL == scalar.type) {
+        result = scalar.data.r;
+    }
+    else if (__KUMIR_INT == scalar.type) {
+        result = static_cast<__kumir_real>(scalar.data.i);
+    }
+    return result;
+}
+
+static std::wstring __kumir_scalar_as_wstring(const __kumir_scalar scalar)
+{
+    std::wstring result;
+    if (__KUMIR_CHAR == scalar.type) {
+        result.push_back(scalar.data.c);
+    }
+    else if (__KUMIR_STRING == scalar.type) {
+        result = std::wstring(scalar.data.s);
+    }
+    return result;
+}
+
+static signed char __kumir_compare_scalars(const __kumir_scalar left, const __kumir_scalar right)
+{
+    signed char result = 0;
+    if (__KUMIR_INT == left.type && __KUMIR_INT == right.type) {
+        const __kumir_int l = left.data.i;
+        const __kumir_int r = right.data.i;
+        if (l < r) result = 1;
+        else if (l > r) result = -1;
+        else if (l == r) result = 0;
+    }
+    else if (__KUMIR_REAL == left.type || __KUMIR_REAL == right.type) {
+        const __kumir_real l = __kumir_scalar_as_real(left);
+        const __kumir_real r = __kumir_scalar_as_real(right);
+        if (l < r) result = 1;
+        else if (l > r) result = -1;
+        else if (l == r) result = 0;
+    }
+    else if (__KUMIR_BOOL == left.type && __KUMIR_BOOL == right.type) {
+        const __kumir_bool l = left.data.b;
+        const __kumir_bool r = right.data.b;
+        if (l == r) result = 0;
+        else result = 1;
+    }
+    else if (__KUMIR_STRING == left.type || __KUMIR_STRING == right.type) {
+        const std::wstring l = __kumir_scalar_as_wstring(left);
+        const std::wstring r = __kumir_scalar_as_wstring(right);
+        if (l < r) result = 1;
+        else if (l > r) result = -1;
+        else if (l == r) result = 0;
+    }
+    else if (__KUMIR_CHAR == left.type && __KUMIR_CHAR == right.type) {
+        const __kumir_char l = left.data.c;
+        const __kumir_char r = right.data.c;
+        if (l < r) result = 1;
+        else if (l > r) result = -1;
+        else if (l == r) result = 0;
+    }
+    return result;
+}
+
+EXTERN __kumir_scalar __kumir_operator_eq(const __kumir_scalar left, const __kumir_scalar right)
+{
+    __kumir_check_value_defined(left);
+    __kumir_check_value_defined(right);
+
+    __kumir_scalar result;
+    result.defined = true;
+    result.type = __KUMIR_BOOL;
+    signed char v = __kumir_compare_scalars(left, right);
+    result.data.b = v == 0;
+
+    return result;
+}
+
+EXTERN __kumir_scalar __kumir_operator_ls(const __kumir_scalar left, const __kumir_scalar right)
+{
+    __kumir_check_value_defined(left);
+    __kumir_check_value_defined(right);
+
+    __kumir_scalar result;
+    result.defined = true;
+    result.type = __KUMIR_BOOL;
+    result.data.b = __kumir_compare_scalars(left, right) == 1;
+
+    return result;
+}
+
+EXTERN __kumir_scalar __kumir_operator_gt(const __kumir_scalar left, const __kumir_scalar right)
+{
+    __kumir_check_value_defined(left);
+    __kumir_check_value_defined(right);
+
+    __kumir_scalar result;
+    result.defined = true;
+    result.type = __KUMIR_BOOL;
+    result.data.b = __kumir_compare_scalars(left, right) == -1;
+
+    return result;
+}
+
+EXTERN __kumir_scalar __kumir_operator_lq(const __kumir_scalar left, const __kumir_scalar right)
+{
+    __kumir_check_value_defined(left);
+    __kumir_check_value_defined(right);
+
+    __kumir_scalar result;
+    result.defined = true;
+    result.type = __KUMIR_BOOL;
+    result.data.b = __kumir_compare_scalars(left, right) >= 0;
+
+    return result;
+}
+
+EXTERN __kumir_scalar __kumir_operator_gq(const __kumir_scalar left, const __kumir_scalar right)
+{
+    __kumir_check_value_defined(left);
+    __kumir_check_value_defined(right);
+
+    __kumir_scalar result;
+    result.defined = true;
+    result.type = __KUMIR_BOOL;
+    result.data.b = __kumir_compare_scalars(left, right) <= 0;
+
+    return result;
+}
+
+EXTERN __kumir_scalar __kumir_operator_neq(const __kumir_scalar left, const __kumir_scalar right)
+{
+    __kumir_scalar result = __kumir_operator_eq(left, right);
+    result.data.b = !result.data.b;
+    return result;
+}
+
+EXTERN void __kumir_assert(const __kumir_scalar assumption)
+{
+    __kumir_check_value_defined(assumption);
+    bool value = assumption.data.b;
+    if (!value) {
+        Kumir::Core::abort(Kumir::Core::fromUtf8("Утверждение ложно"));
+        __kumir_handle_abort();
+    }
 }
 
 EXTERN void __kumir_init_stdlib()

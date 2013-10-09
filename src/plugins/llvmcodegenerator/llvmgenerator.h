@@ -79,6 +79,15 @@ private:
     llvm::Function* kumirOutputFileIS_;
     llvm::Function* kumirOutputFileSS_;
 
+    llvm::Function* kumirAssert_;
+
+    llvm::Function* kumirOpEq_;
+    llvm::Function* kumirOpNeq_;
+    llvm::Function* kumirOpLs_;
+    llvm::Function* kumirOpGt_;
+    llvm::Function* kumirOpLq_;
+    llvm::Function* kumirOpGq_;
+
     std::list<llvm::Value*> tempValsToFree_;
     bool linkStdLibModule_;
 

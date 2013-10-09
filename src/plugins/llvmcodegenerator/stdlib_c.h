@@ -33,6 +33,15 @@ EXTERN void __kumir_output_file_is(const __kumir_scalar handle, const __kumir_sc
 EXTERN void __kumir_output_file_si(const __kumir_scalar handle, const __kumir_scalar value, const __kumir_scalar format1, const int format2);
 EXTERN void __kumir_output_file_ss(const __kumir_scalar handle, const __kumir_scalar value, const __kumir_scalar format1, const __kumir_scalar format2);
 
+EXTERN void __kumir_assert(const __kumir_scalar assumption);
+
+EXTERN __kumir_scalar __kumir_operator_eq(const __kumir_scalar left, const __kumir_scalar right);
+EXTERN __kumir_scalar __kumir_operator_ls(const __kumir_scalar left, const __kumir_scalar right);
+EXTERN __kumir_scalar __kumir_operator_gt(const __kumir_scalar left, const __kumir_scalar right);
+EXTERN __kumir_scalar __kumir_operator_lq(const __kumir_scalar left, const __kumir_scalar right);
+EXTERN __kumir_scalar __kumir_operator_gq(const __kumir_scalar left, const __kumir_scalar right);
+EXTERN __kumir_scalar __kumir_operator_neq(const __kumir_scalar left, const __kumir_scalar right);
+
 extern void __kumir_init_array_1(__kumir_array * array,
                                  __kumir_int left_1,
                                  __kumir_int right_1
