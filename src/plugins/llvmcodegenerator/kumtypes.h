@@ -46,14 +46,10 @@ typedef struct {
 __kumir_scalar;
 
 typedef struct {
-    int32_t         dim;
-    int32_t         left_1;
-    int32_t         right_1;
-    int32_t         left_2;
-    int32_t         right_2;
-    int32_t         left_3;
-    int32_t         right_3;
-    __kumir_scalar* data;
+    unsigned char       dim;
+    int32_t             left;
+    int32_t             right;
+    void*               data;
 } __kumir_array;
 
 #endif // KUMTYPES_H

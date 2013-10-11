@@ -176,7 +176,7 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     // ====== Link the code with libstdc++
 
     const QStringList clangArguments = QStringList()
-            << "-o" << exeFileName << sFileName << "-lstdc++";
+            << "-o" << exeFileName << sFileName << "-lstdc++" << "-lm";
 
     const int clang_status = QProcess::execute(CLang, clangArguments);
 
