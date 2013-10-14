@@ -41,8 +41,12 @@ private:
     void createAssign(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createAssert(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createOutput(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
+    void createInput(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createLoop(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
-    llvm::Value* calculate(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex);
+    void createIfThenElse(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
+    void createSwitchCaseElse(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
+    void createBreak(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
+    llvm::Value* calculate(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex, bool isLvalue = false);
     llvm::Value* createConstant(llvm::IRBuilder<> & builder, const AST::Type kty, const QVariant & value);
     QByteArray createArray_0_ConstantData(const AST::VariableBaseType bt, const QVariant & value, bool addDefFlag);
     QByteArray createArray_1_ConstantData(const AST::VariableBaseType bt, const QVariantList & list);
@@ -51,7 +55,9 @@ private:
     llvm::Value* createArrayConstant(llvm::IRBuilder<> & builder, const AST::VariableBaseType bt, const uint8_t dim, const QVariant & value);
     llvm::Value* createFunctionCall(llvm::IRBuilder<> & builder, const AST::AlgorithmPtr & alg, const QList<AST::ExpressionPtr> & arguments);
     llvm::Value* createSubExpession(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex);
-    llvm::Value* createArrayElementGet(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex);
+    llvm::Value* createShortCircuitOperation(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & left, const AST::ExpressionPtr & right, const AST::ExpressionOperator op);
+    llvm::Value* createArrayElementGet(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex, bool isLvalue);
+    llvm::Value* findVariableAtCurrentContext(const AST::VariablePtr & var);
     void createFreeTempScalars(llvm::IRBuilder<> & builder);
 
     llvm::Type * findOrRegisterType(const AST::Type &bt, const bool reference, const uint8_t dim);
@@ -59,12 +65,17 @@ private:
 
     llvm::Module* currentModule_;
     llvm::Function* currentFunction_;
+    AST::AlgorithmPtr currentAlgorithm_;
     llvm::LLVMContext* context_;
     QScopedPointer<NameTranslator> nameTranslator_;
     llvm::Module* stdlibModule_;
     QScopedPointer<llvm::MemoryBuffer> stdlibContents_;
     llvm::BasicBlock* currentBlock_;
-    QStack<llvm::BasicBlock*> loopEnds_;
+    llvm::BasicBlock* currentLoopEnd_;
+    llvm::BasicBlock* currentFunctionExit_;
+    uint32_t ifThenElseCounter_;
+    uint32_t switchCaseCounter_;
+    uint32_t loopCounter_;
 
 
     llvm::Function* kumirInitStdLib_;
@@ -84,13 +95,12 @@ private:
     llvm::Function* kumirCreateChar_;
     llvm::Function* kumirCreateString_;
     llvm::Function* kumirAssignScalarToScalar_;
+    llvm::Function* kumirAssignScalarToArrayElement_;
+    llvm::Function* kumirMoveScalar_;
     llvm::Function* kumirFreeScalar_;
     llvm::Function* kumirGetArray1Element_;
     llvm::Function* kumirGetArray2Element_;
     llvm::Function* kumirGetArray3Element_;
-    llvm::Function* kumirSetArray1Element_;
-    llvm::Function* kumirSetArray2Element_;
-    llvm::Function* kumirSetArray3Element_;
 
     llvm::Function* kumirLoopForFromToInitCounter_;
     llvm::Function* kumirLoopForFromToStepInitCounter_;
@@ -103,7 +113,7 @@ private:
 
     llvm::Function* kumirLoopEndCounter_;
 
-
+    llvm::Function* kumirScalarAsBool_;
 
     llvm::Function* kumirOutputStdoutII_;
     llvm::Function* kumirOutputStdoutSI_;
@@ -114,6 +124,9 @@ private:
     llvm::Function* kumirOutputFileSI_;
     llvm::Function* kumirOutputFileIS_;
     llvm::Function* kumirOutputFileSS_;
+
+    llvm::Function* kumirInputStdin_;
+    llvm::Function* kumirInputFile_;
 
     llvm::Function* kumirAssert_;
 
