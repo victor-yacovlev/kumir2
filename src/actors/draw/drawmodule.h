@@ -27,34 +27,7 @@ namespace ActorDraw {
     {
         Q_OBJECT
     public:
-        DrawNavigator( QWidget * parent = 0 ){
-            myScene=new QGraphicsScene(this);
-            this->setScene(myScene);
-            zoomText=myScene->addText("Test");
-            QBrush curBackground=QBrush(QColor("lightgreen"));
-            
-            myScene->setBackgroundBrush (curBackground);
-            mainLineX=myScene->addLine(5,5,5,25);
-            setSceneRect(0,0,140,190);
-            netStepXS=new QDoubleSpinBox(this);
-            netStepYS=new QDoubleSpinBox(this);
-            netStepXS->move(15,10);
-            netStepYS->move(5,mainLineX->line().y2()+15);
-            zoomText->setPos(0,netStepYS->pos ().y()+40);
-            mainLineY = myScene->addLine(mainLineX->line().x2(),
-                                        mainLineX->line().y2(),
-                                        mainLineX->line().x2()+10,
-                                        mainLineX->line().y2());
-            //centerOn(70,70);
-            netStepXS->setDecimals(4);
-            netStepYS->setDecimals(4);
-            netStepXS->setMinimum(0.0001);
-            netStepYS->setMinimum(0.0001);
-            netStepXS->setMaximum(1000);
-            netStepYS->setMaximum(1000);            
-            connect(netStepXS,SIGNAL(valueChanged(double)),this,SLOT(XvalueChange(double)));
-            connect(netStepYS,SIGNAL(valueChanged(double)),this,SLOT(YvalueChange(double)));
-            };
+        DrawNavigator( QWidget * parent = 0 );
         void setZoom(double zoom)
         {
             Zoom=zoom;
@@ -66,19 +39,29 @@ namespace ActorDraw {
         }
         void updateSelf(double netStepX,double netStepY)
         {
-            zoomText->setPlainText(QString::number(1/Zoom));
-            mainLineX->setLine(5,5,5,5+netStepX*Zoom);
+            if(50/Zoom>=1)zoomText->setPlainText("1:"+QString::number(50/Zoom));
+             else zoomText->setPlainText(QString::number(Zoom/50)+":1");
+        
+            mainLineX->setLine(5,netLab->pos().y()+30,5,5+netStepX*Zoom+netLab->pos().y()+30);
             mainLineY->setLine(mainLineX->line().x2(),
                                mainLineX->line().y2(),
                                mainLineX->line().x2()+netStepY*Zoom,
                                mainLineX->line().y2());
             netStepYS->move(mainLineY->line().x1()+netStepY*Zoom/2,mainLineX->line().y2()+10);
-            netStepXS->move(15,mainLineX->line().x2()-5+netStepX*Zoom/2);
+            netStepXS->move(15,mainLineX->line().x2()+15+netStepX*Zoom/2);
             netStepXS->setValue(netStepX);
             netStepYS->setValue(netStepY);
+            
+            zoomLab->setPos(5,mainLineX->line().y2()+10);
+            zoomText->setPos(5,mainLineX->line().y2()+25);
+            zoomUp->move(zoomText->pos().x()+5,zoomText->pos().y()+25 );
+            zoomNormal->move(zoomText->pos().x()+27,zoomText->pos().y()+25 );
+            zoomDown->move(zoomText->pos().x()+57,zoomText->pos().y()+25 );
             update();
         }
-        void setDraw(DrawModule* draw){DRAW=draw;};
+        void setDraw(DrawModule* draw);
+           
+        
     public slots:
         void XvalueChange(double value);
         void YvalueChange(double value);
@@ -86,10 +69,12 @@ namespace ActorDraw {
         double Zoom;
         QGraphicsScene* myScene;
         QGraphicsLineItem * mainLineX,*mainLineY;
-        QGraphicsTextItem * zoomText;
+        QGraphicsTextItem * zoomText,*zoomLab,*netLab;
         QDoubleSpinBox* netStepXS;
         QDoubleSpinBox* netStepYS;
         DrawModule* DRAW;
+        QToolButton *zoomUp,*zoomDown,*zoomNormal;
+
         
     };
     
@@ -102,6 +87,7 @@ namespace ActorDraw {
         double zoom()const
         {return c_scale;};
         void setZoom(double zoom);
+        void setNet();//RESIZE NET
     protected:
        // void scrollContentsBy ( int dx, int dy );
         void resizeEvent ( QResizeEvent * event );
@@ -114,6 +100,7 @@ namespace ActorDraw {
         double c_scale;
         bool pressed;
         QPoint press_pos;
+ 
     };    
     class DrawScene
     : public QGraphicsScene
@@ -144,6 +131,7 @@ namespace ActorDraw {
         QList<QGraphicsLineItem*> Netlines;
         QList<QGraphicsLineItem*> linesDubl;
         DrawModule* DRAW;
+        
        
     
     }; 
@@ -206,12 +194,17 @@ public slots:
     
     
     void drawNet();
+    
+    void zoomIn();
+    void zoomOut();
+    void zoomNorm();
 
 
 
     /* ========= CLASS PRIVATE ========= */
 private:
     void CreatePen(void);
+    
     DrawScene* CurScene;
     DrawView* CurView;
     QGraphicsPolygonItem* mPen;
