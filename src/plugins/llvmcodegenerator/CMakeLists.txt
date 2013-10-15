@@ -11,6 +11,7 @@ find_library(LLVM_CodeGen_LIBRARY NAMES LLVMCodeGen)
 find_library(LLVM_BitReader_LIBRARY NAMES LLVMBitReader)
 find_library(LLVM_BitWriter_LIBRARY NAMES LLVMBitWriter)
 find_library(LLVM_Linker_LIBRARY NAMES LLVMLinker)
+find_library(LLVM_AsmParser_LIBRARY NAMES LLVMAsmParser)
 find_library(LLVM_TransformUtils_LIBRARY NAMES LLVMTransformUtils)
 find_library(LLVM_ipa_LIBRARY NAMES LLVMipa)
 find_library(LLVM_Analysis_LIBRARY NAMES LLVMAnalysis)
@@ -84,6 +85,7 @@ target_link_libraries(LLVMCodeGenerator
     ${LLVM_Archive_LIBRARY}
     ${LLVM_BitReader_LIBRARY}
     ${LLVM_BitWriter_LIBRARY}
+    ${LLVM_AsmParser_LIBRARY}
 #    ${LLVM_X86Utils_LIBRARY}
     ${LLVM_Core_LIBRARY}
     ${LLVM_Support_LIBRARY}
@@ -98,7 +100,7 @@ add_custom_target(
     stdlib.llvm
     ALL
     DEPENDS stdlib_c.h stdlib_c.cpp
-    COMMAND clang -c -std=c++0x -emit-llvm
+    COMMAND clang -c -g -std=c++0x -emit-llvm
         -I${CMAKE_SOURCE_DIR}/src/shared
         -o ${SHARE_PATH}/llvmcodegenerator/stdlib.bc
         ${CMAKE_CURRENT_SOURCE_DIR}/stdlib_c.cpp

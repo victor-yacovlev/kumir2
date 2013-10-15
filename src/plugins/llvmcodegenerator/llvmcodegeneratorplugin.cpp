@@ -9,6 +9,8 @@
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Support/FormattedStream.h>
 #include <llvm/Linker.h>
+#include <llvm/Assembly/Parser.h>
+#include <llvm/Support/SourceMgr.h>
 
 #include <llvm/LLVMContext.h>
 #include <llvm/Target/TargetMachine.h>
@@ -65,7 +67,7 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
             QString & fileSuffix
             )
 {
-    d->reset(!compileOnly_ || (compileOnly_ && textForm_));
+    d->reset(true /*!compileOnly_ || (compileOnly_ && textForm_)*/);
 
     QList<AST::ModulePtr> & modules = tree->modules;
 
@@ -104,26 +106,41 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
     llvm::raw_string_ostream ostream(buf);
 
     if (compileOnly_) {
+        lmainModule->print(ostream, 0);
+        buf = ostream.str();
+        const QByteArray bufData(buf.c_str(), buf.size());
         if (textForm_) {
-            lmainModule->print(ostream, 0);
+            out = bufData;
             mimeType = "text/llvm";
             fileSuffix = ".ll";
         }
         else {
-            llvm::WriteBitcodeToFile(lmainModule, ostream);
+            llvm::SMDiagnostic lerr;
+            llvm::LLVMContext &lctx = llvm::getGlobalContext();
+            llvm::Module * reparsedModule = llvm::ParseAssemblyString(buf.c_str(),
+                                                                      0,
+                                                                      lerr, lctx);
+            if (reparsedModule == 0) {
+                lerr.print("kumir2-llvmc", llvm::errs());
+                qApp->quit();
+            }
+            buf.clear();
+            llvm::raw_string_ostream bstream(buf);
+            llvm::WriteBitcodeToFile(reparsedModule, bstream);
+            bstream.flush();
+            buf = bstream.str();
+            const QByteArray binBufData(buf.c_str(), buf.size());
+            out = binBufData;
             mimeType = "binary/llvm";
             fileSuffix = ".bc";
         }
-        buf = ostream.str();
-        const QByteArray bufData(buf.c_str(), buf.size());
-        out = bufData;
     }
     else {
         lmainModule->print(ostream, 0);
         buf = ostream.str();
         const QByteArray bitcode(buf.c_str(), buf.size());
         out = runExternalToolsToGenerateExecutable(bitcode);
-        mimeType = "binary/executable";
+        mimeType = "executable";
 #ifndef Q_OS_WIN32
         fileSuffix = "";
 #else
