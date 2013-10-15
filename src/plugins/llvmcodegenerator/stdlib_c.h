@@ -12,6 +12,7 @@
 EXTERN void __kumir_init_stdlib();
 static void __kumir_handle_abort();
 EXTERN void __kumir_create_undefined_scalar(__kumir_scalar * result);
+EXTERN void __kumir_create_undefined_array(__kumir_array * result);
 EXTERN void __kumir_create_defined_scalar(__kumir_scalar * lvalue, const __kumir_scalar * value);
 EXTERN void __kumir_create_int(__kumir_scalar * result, const __kumir_int value);
 EXTERN void __kumir_create_real(__kumir_scalar * result, const __kumir_real value);
@@ -24,7 +25,7 @@ EXTERN void __kumir_move_scalar(__kumir_scalar  * lvalue, __kumir_scalar * rvalu
 EXTERN void __kumir_store_scalar(__kumir_scalar  ** lvalue, const __kumir_scalar * rvalue);
 EXTERN void __kumir_check_value_defined(const __kumir_scalar * value);
 EXTERN __kumir_bool __kumir_scalar_as_bool(const __kumir_scalar * scalar);
-EXTERN void __kumir_free_scalar(__kumir_scalar scalar);
+EXTERN void __kumir_free_scalar(__kumir_scalar * scalar);
 
 EXTERN void __kumir_output_stdout_ii(const __kumir_scalar * value, const int format1, const int format2);
 EXTERN void __kumir_output_stdout_is(const __kumir_scalar * value, const int format1, const __kumir_scalar * format2);
@@ -55,27 +56,25 @@ EXTERN void __kumir_operator_div(__kumir_scalar * result, const __kumir_scalar *
 EXTERN void __kumir_operator_pow(__kumir_scalar * result, const __kumir_scalar * left, const __kumir_scalar * right);
 
 EXTERN void __kumir_operator_neg(__kumir_scalar * result, const __kumir_scalar * left);
-EXTERN void __kumir_operator_and(__kumir_scalar * result, const __kumir_scalar * left, const __kumir_scalar * right);
-EXTERN void __kumir_operator_or(__kumir_scalar * result, const __kumir_scalar * left, const __kumir_scalar * right);
 
 EXTERN void __kumir_create_array_1(__kumir_array * result,
                                  const __kumir_scalar * left_1,
                                  const __kumir_scalar * right_1
                                  );
-EXTERN void __kumir_create_array_2(__kumir_array * result,
+
+EXTERN void __kumir_create_array_ref_1(__kumir_array * result,
                                  const __kumir_scalar * left_1,
-                                 const __kumir_scalar * right_1,
-                                 const __kumir_scalar * left_2,
-                                 const __kumir_scalar * right_2
+                                 const __kumir_scalar * right_1
                                  );
-EXTERN void __kumir_create_array_3(__kumir_array * result,
+
+EXTERN void __kumir_create_array_copy_1(__kumir_array * result,
                                  const __kumir_scalar * left_1,
-                                 const __kumir_scalar * right_1,
-                                 const __kumir_scalar * left_2,
-                                 const __kumir_scalar * right_2,
-                                 const __kumir_scalar * left_3,
-                                 const __kumir_scalar * right_3
+                                 const __kumir_scalar * right_1
                                  );
+
+
+EXTERN void __kumir_link_array(__kumir_array * result, const __kumir_array * from);
+EXTERN void __kumir_free_array(__kumir_array * array);
 
 EXTERN void __kumir_fill_array_i(__kumir_array array, const char * data);
 EXTERN void __kumir_fill_array_r(__kumir_array array, const char * data);
@@ -84,8 +83,6 @@ EXTERN void __kumir_fill_array_c(__kumir_array array, const char * data);
 EXTERN void __kumir_fill_array_s(__kumir_array array, const char * data);
 
 EXTERN void __kumir_get_array_1_element(__kumir_scalar ** result, bool value_expected, __kumir_array * array, const __kumir_scalar * x);
-EXTERN void __kumir_get_array_2_element(__kumir_scalar ** result, bool value_expected, __kumir_array * array, const __kumir_scalar * y, const __kumir_scalar * x);
-EXTERN void __kumir_get_array_3_element(__kumir_scalar ** result, bool value_expected, __kumir_array * array, const __kumir_scalar * z, const __kumir_scalar * y, const __kumir_scalar * x);
 
 EXTERN void __kumir_loop_for_from_to_init_counter(const __kumir_scalar from);
 EXTERN void __kumir_loop_for_from_to_step_init_counter(const __kumir_scalar from, const __kumir_scalar step);
@@ -106,6 +103,7 @@ EXTERN void __kumir__stdlib__mod(__kumir_scalar  * result, const __kumir_scalar 
 EXTERN void __kumir__stdlib__ln(__kumir_scalar  * result, const __kumir_scalar * value);
 EXTERN void __kumir__stdlib__lg(__kumir_scalar  * result, const __kumir_scalar * value);
 EXTERN void __kumir__stdlib__exp(__kumir_scalar  * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__rnd(__kumir_scalar * result, const __kumir_scalar * value);
 
 // Files
 EXTERN void __kumir__stdlib__est_dannyie(__kumir_scalar  * result, const __kumir_scalar * handle);
@@ -113,6 +111,9 @@ EXTERN void __kumir__stdlib__KATALOG_PROGRAMMYi(__kumir_scalar  * result);
 EXTERN void __kumir__stdlib__otkryit_na_chtenie(__kumir_scalar  * result, const __kumir_scalar * name);
 EXTERN void __kumir__stdlib__otkryit_na_zapis(__kumir_scalar  * result, const __kumir_scalar * name);
 EXTERN void __kumir__stdlib__zakryit(const __kumir_scalar * handle);
+
+// System
+EXTERN void __kumir__stdlib__vremya(__kumir_scalar * result);
 
 EXTERN void test_123();
 EXTERN void test_456(__kumir_scalar arg);

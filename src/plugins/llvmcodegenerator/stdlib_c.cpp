@@ -6,6 +6,11 @@
 #include <stack>
 #include <stdarg.h>
 
+#if defined(WIN32) || defined(_WIN32)
+#else
+#   include <sys/resource.h>
+#endif
+
 static Kumir::FileType __kumir_scalar_to_file_type(const __kumir_scalar & scalar);
 static void __kumir_create_string(__kumir_scalar * result, const std::wstring & wstr);
 static __kumir_real __kumir_scalar_as_real(const __kumir_scalar * scalar);
@@ -24,6 +29,13 @@ EXTERN void __use_all_types()
 EXTERN void __kumir_create_undefined_scalar(__kumir_scalar * result)
 {
     result->defined = false;
+    result->data.s = nullptr;
+}
+
+EXTERN void __kumir_create_undefined_array(__kumir_array * result)
+{
+    result->data = nullptr;
+    result->dim = 0;
 }
 
 EXTERN void __kumir_create_defined_scalar(__kumir_scalar * lvalue, const __kumir_scalar * rvalue)
@@ -175,21 +187,21 @@ EXTERN __kumir_bool __kumir_scalar_as_bool(const __kumir_scalar * scalar)
     return scalar->data.b;
 }
 
-EXTERN void __kumir_free_scalar(__kumir_scalar scalar)
+EXTERN void __kumir_free_scalar(__kumir_scalar * scalar)
 {
-    if (scalar.defined && __KUMIR_STRING == scalar.type) {
-        free(scalar.data.s);
+    if (scalar->defined && __KUMIR_STRING == scalar->type && scalar->data.s) {
+        free(scalar->data.s);
     }
-    else if (scalar.defined && __KUMIR_RECORD == scalar.type) {
-        __kumir_scalar_type * types = scalar.data.u.types;
-        __kumir_variant * fields = reinterpret_cast<__kumir_variant*>(scalar.data.u.fields);
-        for (size_t i=0; i<scalar.data.u.nfields; i++) {
+    else if (scalar->defined && __KUMIR_RECORD == scalar->type) {
+        __kumir_scalar_type * types = scalar->data.u.types;
+        __kumir_variant * fields = reinterpret_cast<__kumir_variant*>(scalar->data.u.fields);
+        for (size_t i=0; i<scalar->data.u.nfields; i++) {
             if (__KUMIR_STRING == types[i]) {
                 free(fields[i].s);
             }
         }
-        free(types);
-        free(fields);
+        free(scalar->data.u.types);
+        free(scalar->data.u.fields);
     }
 }
 
@@ -354,6 +366,9 @@ static __kumir_scalar __kumir_file_type_to_scalar(const Kumir::FileType &f)
                 calloc(result.data.u.nfields, sizeof(__kumir_variant))
                 );
 
+    result.data.u.fields = fields;
+    result.data.u.types = types;
+
     types[0] = __KUMIR_STRING;
     types[1] = __KUMIR_INT;
     types[2] = __KUMIR_INT;
@@ -367,8 +382,6 @@ static __kumir_scalar __kumir_file_type_to_scalar(const Kumir::FileType &f)
     fields[2].i = f.type;
     fields[3].b = f.valid;
 
-    result.data.u.fields = fields;
-    result.data.u.types = types;
 
     return result;
 }
@@ -429,6 +442,16 @@ EXTERN void __kumir__stdlib__exp(__kumir_scalar * result, const __kumir_scalar *
     __kumir_create_real(result, Kumir::Math::exp(__kumir_scalar_as_real(value)));
 }
 
+EXTERN void __kumir__stdlib__rnd(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_real(result,
+                        Kumir::Random::rrnd(
+                            __kumir_scalar_as_real(value)
+                            )
+                        );
+}
+
 // Files
 EXTERN void __kumir__stdlib__est_dannyie(__kumir_scalar * result, const __kumir_scalar * handle)
 {
@@ -465,6 +488,11 @@ EXTERN void __kumir__stdlib__zakryit(const __kumir_scalar * handle)
     __kumir_check_value_defined(handle);
     Kumir::FileType f = __kumir_scalar_to_file_type(*handle);
     Kumir::Files::close(f);    
+}
+
+EXTERN void __kumir__stdlib__vremya(__kumir_scalar * result)
+{
+    __kumir_create_int(result, Kumir::System::time());
 }
 
 static __kumir_real __kumir_scalar_as_real(const __kumir_scalar * scalar)
@@ -712,20 +740,6 @@ EXTERN void __kumir_operator_neg(__kumir_scalar * result, const __kumir_scalar *
     }
 }
 
-EXTERN void __kumir_operator_and(__kumir_scalar * result, const __kumir_scalar * left, const __kumir_scalar * right)
-{
-    __kumir_check_value_defined(left);
-    __kumir_check_value_defined(right);
-    __kumir_create_bool(result, left->data.b && right->data.b);
-}
-
-EXTERN void __kumir_operator_or(__kumir_scalar * result, const __kumir_scalar * left, const __kumir_scalar * right)
-{
-    __kumir_check_value_defined(left);
-    __kumir_check_value_defined(right);
-    __kumir_create_bool(result, left->data.b || right->data.b);
-}
-
 EXTERN void __kumir_assert(const __kumir_scalar * assumption)
 {
     __kumir_check_value_defined(assumption);
@@ -738,7 +752,30 @@ EXTERN void __kumir_assert(const __kumir_scalar * assumption)
 
 EXTERN void __kumir_init_stdlib()
 {
+    // Set stack size some greater...
+#if defined(WIN32) || defined(_WIN32)
+#else
+    static const rlim_t kStackSize = 32 * 1024 * 1024;
+    struct rlimit rl;
+    int result;
+    result = getrlimit(RLIMIT_STACK, &rl);
+    if (result == 0) {
+        if (rl.rlim_cur < kStackSize) {
+            rl.rlim_cur = kStackSize;
+            result = setrlimit(RLIMIT_STACK, &rl);
+            if (result != 0) {
+                std::cerr << "Warning: Can't set rlimit stack size\n";
+            }
+        }
+    }
+    else {
+        std::cerr << "Warning: Can't get rlimit stack size\n";
+    }
+#endif
+    // Init Standard library
     Kumir::initStandardLibrary();
+
+    // Set abort and print message on error handler
     Kumir::Core::AbortHandler = &__kumir_handle_abort;
 }
 
@@ -750,12 +787,15 @@ EXTERN void __kumir_create_array_1(__kumir_array * result,
     __kumir_check_value_defined(left_1);
     __kumir_check_value_defined(right_1);
     result->dim = 1u;
-    result->left = left_1->data.i;
-    result->right = right_1->data.i;
+    result->shape_left[0] = result->size_left[0] = left_1->data.i;
+    result->shape_right[0] = result->size_right[0] = right_1->data.i;
+    result->shape_left[1] = result->size_left[1] = 0;
+    result->shape_right[1] = result->size_right[1] = 0;
+    result->shape_left[2] = result->size_left[2] = 0;
+    result->shape_right[2] = result->size_right[2] = 0;
     int isz = 1 + right_1->data.i - left_1->data.i;
     if (isz < 0) {
-        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
-        __kumir_handle_abort();
+        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));        
     }
     else {
         size_t sz = static_cast<size_t>(isz);
@@ -771,75 +811,55 @@ EXTERN void __kumir_create_array_1(__kumir_array * result,
     }
 }
 
-EXTERN void __kumir_create_array_2(__kumir_array * result,
+EXTERN void __kumir_create_array_ref_1(__kumir_array * result,
                                  const __kumir_scalar * left_1,
-                                 const __kumir_scalar * right_1,
-                                 const __kumir_scalar * left_2,
-                                 const __kumir_scalar * right_2
+                                 const __kumir_scalar * right_1
                                  )
 {
     __kumir_check_value_defined(left_1);
     __kumir_check_value_defined(right_1);
-    __kumir_check_value_defined(left_2);
-    __kumir_check_value_defined(right_2);
-    result->dim = 2u;
-    result->left = left_1->data.i;
-    result->right = right_1->data.i;
-    int isz = 1 + right_1->data.i - left_1->data.i;
-    if (isz < 0) {
+    if (left_1->data.i < result->shape_left[0] || left_1->data.i > right_1->data.i) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
-        __kumir_handle_abort();
     }
-    else {
-        size_t sz = static_cast<size_t>(isz);
-        if (sz) {
-            __kumir_array * subarrays = reinterpret_cast<__kumir_array*>(
-                    calloc(sz, sizeof(__kumir_array))
-                    );
-            result->data = subarrays;
-            for (size_t i=0; i<sz; i++) {
-                __kumir_create_array_1(&subarrays[i], left_2, right_2);
-            }
-        }
+    if (right_1->data.i < left_1->data.i || right_1->data.i > result->shape_right[0]) {
+        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
     }
+    result->shape_left[0] = left_1->data.i;
+    result->shape_right[0] = right_1->data.i;
 }
 
-EXTERN void __kumir_create_array_3(__kumir_array * result,
+EXTERN void __kumir_create_array_copy_1(__kumir_array * result,
                                  const __kumir_scalar * left_1,
-                                 const __kumir_scalar * right_1,
-                                 const __kumir_scalar * left_2,
-                                 const __kumir_scalar * right_2,
-                                 const __kumir_scalar * left_3,
-                                 const __kumir_scalar * right_3
+                                 const __kumir_scalar * right_1
                                  )
 {
-    __kumir_check_value_defined(left_1);
-    __kumir_check_value_defined(right_1);
-    __kumir_check_value_defined(left_2);
-    __kumir_check_value_defined(right_2);
-    __kumir_check_value_defined(left_3);
-    __kumir_check_value_defined(right_3);
-    result->dim = 3u;
-    result->left = left_1->data.i;
-    result->right = right_1->data.i;
-    int isz = 1 + right_1->data.i - left_1->data.i;
-    if (isz < 0) {
-        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
-        __kumir_handle_abort();
-    }
-    else {
-        size_t sz = static_cast<size_t>(isz);
-        if (sz) {
-            __kumir_array * subarrays = reinterpret_cast<__kumir_array*>(
-                    calloc(sz, sizeof(__kumir_array))
-                    );
-            result->data = subarrays;
-            for (size_t i=0; i<sz; i++) {
-                __kumir_create_array_2(&subarrays[i], left_2, right_2, left_3, right_3);
+    __kumir_create_array_ref_1(result, left_1, right_1);
+    size_t start_pos = static_cast<size_t>(result->shape_left[0] - result->size_left[0]);
+    size_t items_count = start_pos +
+            static_cast<size_t>(result->shape_right[0] - result->shape_left[0] + 1);
+    __kumir_scalar * data = reinterpret_cast<__kumir_scalar*>(
+                calloc(items_count, sizeof(__kumir_scalar))
+                );
+    const __kumir_scalar * const source = result->data + start_pos;
+    memcpy(data, source, items_count * sizeof(__kumir_scalar));
+    const __kumir_scalar & first = source[0];
+    if (__KUMIR_STRING == first.type) {
+        for (size_t i=0; i<items_count; i++) {
+            const __kumir_scalar & from = source[i];
+            __kumir_scalar & to = data[i];
+            if (from.defined) {
+                const size_t strl = wcslen(from.data.s);
+                to.data.s = reinterpret_cast<wchar_t*>(calloc(strl+1, sizeof(wchar_t)));
+                wcsncpy(to.data.s, from.data.s, strl);
+                to.data.s[strl] = L'\0';
             }
         }
     }
+    result->data = data;
+    result->size_left[0] = result->shape_left[0];
+    result->size_right[0] = result->shape_right[0];
 }
+
 
 template<typename T>
 static T __eat(const char ** pdata)
@@ -876,49 +896,30 @@ static void __kumir_fill_array_1(__kumir_array array, const char *data, const __
     }
 }
 
-static void __kumir_fill_array_2(__kumir_array array, const char *data, const __kumir_scalar_type type)
-{
-
-}
-
-static void __kumir_fill_array_3(__kumir_array array, const char *data, const __kumir_scalar_type type)
-{
-
-}
 
 EXTERN void __kumir_fill_array_i(__kumir_array array, const char * data)
 {
     if      (1u == array.dim) __kumir_fill_array_1(array, data, __KUMIR_INT);
-    else if (2u == array.dim) __kumir_fill_array_2(array, data, __KUMIR_INT);
-    else if (3u == array.dim) __kumir_fill_array_3(array, data, __KUMIR_INT);
 }
 
 EXTERN void __kumir_fill_array_r(__kumir_array array, const char * data)
 {
     if      (1u == array.dim) __kumir_fill_array_1(array, data, __KUMIR_REAL);
-    else if (2u == array.dim) __kumir_fill_array_2(array, data, __KUMIR_REAL);
-    else if (3u == array.dim) __kumir_fill_array_3(array, data, __KUMIR_REAL);
 }
 
 EXTERN void __kumir_fill_array_b(__kumir_array array, const char * data)
 {
     if      (1u == array.dim) __kumir_fill_array_1(array, data, __KUMIR_BOOL);
-    else if (2u == array.dim) __kumir_fill_array_2(array, data, __KUMIR_BOOL);
-    else if (3u == array.dim) __kumir_fill_array_3(array, data, __KUMIR_BOOL);
 }
 
 EXTERN void __kumir_fill_array_c(__kumir_array array, const char * data)
 {
     if      (1u == array.dim) __kumir_fill_array_1(array, data, __KUMIR_CHAR);
-    else if (2u == array.dim) __kumir_fill_array_2(array, data, __KUMIR_CHAR);
-    else if (3u == array.dim) __kumir_fill_array_3(array, data, __KUMIR_CHAR);
 }
 
 EXTERN void __kumir_fill_array_s(__kumir_array array, const char * data)
 {
     if      (1u == array.dim) __kumir_fill_array_1(array, data, __KUMIR_STRING);
-    else if (2u == array.dim) __kumir_fill_array_2(array, data, __KUMIR_STRING);
-    else if (3u == array.dim) __kumir_fill_array_3(array, data, __KUMIR_STRING);
 }
 
 EXTERN void __kumir_get_array_1_element(__kumir_scalar ** result, bool value_expected, __kumir_array * array, const __kumir_scalar * x)
@@ -926,12 +927,11 @@ EXTERN void __kumir_get_array_1_element(__kumir_scalar ** result, bool value_exp
     __kumir_scalar * data = reinterpret_cast<__kumir_scalar*>(array->data);
     __kumir_check_value_defined(x);
     __kumir_int xx = x->data.i;
-    if (xx < array->left || xx > array->right) {        
+    if (xx < array->shape_left[0] || xx > array->shape_right[0]) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Выход за границу таблицы"));
-        __kumir_handle_abort();
     }
     else {
-        size_t index = static_cast<size_t>(xx - array->left);
+        size_t index = static_cast<size_t>(xx - array->size_left[0]);
         if (value_expected) {
             __kumir_check_value_defined(&data[index]);
         }
@@ -939,88 +939,28 @@ EXTERN void __kumir_get_array_1_element(__kumir_scalar ** result, bool value_exp
     }
 }
 
-EXTERN void __kumir_get_array_2_element(__kumir_scalar ** result, bool value_expected, __kumir_array * array, const __kumir_scalar * y, const __kumir_scalar * x)
+EXTERN void __kumir_link_array(__kumir_array * result, const __kumir_array * from)
 {
-    __kumir_check_value_defined(x);
-    __kumir_check_value_defined(y);
-    __kumir_int yy = y->data.i;
-    __kumir_array * data = reinterpret_cast<__kumir_array*>(array->data);
-    if (yy < array->left || yy > array->right) {
-        Kumir::Core::abort(Kumir::Core::fromUtf8("Выход за границу таблицы"));
-        __kumir_handle_abort();
-    }
-    else {
-        size_t index = static_cast<size_t>(yy - array->left);
-        __kumir_get_array_1_element(result, value_expected, &data[index], x);
-    }
+    memcpy(result, from, sizeof(__kumir_array));
 }
 
-EXTERN void __kumir_get_array_3_element(__kumir_scalar ** result, bool value_expected, __kumir_array * array, const __kumir_scalar * z, const __kumir_scalar * y, const __kumir_scalar * x)
+EXTERN void __kumir_free_array(__kumir_array * array)
 {
-    __kumir_check_value_defined(x);
-    __kumir_check_value_defined(y);
-    __kumir_check_value_defined(z);
-    __kumir_int zz = z->data.i;
-    __kumir_array * data = reinterpret_cast<__kumir_array*>(array->data);
-    if (zz < array->left || zz > array->right) {
-        Kumir::Core::abort(Kumir::Core::fromUtf8("Выход за границу таблицы"));
-        __kumir_handle_abort();
-    }
-    else {
-        size_t index = static_cast<size_t>(zz - array->left);
-        __kumir_get_array_2_element(result, value_expected, &data[index], y, x);
+    if (array->dim > 0u && array->data) {
+        const __kumir_scalar & first = array->data[0];
+        if (__KUMIR_STRING == first.type) {
+            size_t elems = 0u;
+            if (1 == array->dim) {
+                elems = static_cast<size_t>(1 + array->size_right[0] - array->size_left[0]);
+            }
+            // TODO dim 2, 3
+            for (size_t i=0; i<elems; i++) {
+                __kumir_free_scalar(&(array->data[i]));
+            }
+        }
+        free(array->data);
     }
 }
-
-//EXTERN void __kumir_set_array_1_element(__kumir_array array, const __kumir_scalar x, const __kumir_scalar value)
-//{
-//    __kumir_scalar * data = reinterpret_cast<__kumir_scalar*>(array.data);
-//    __kumir_check_value_defined(x);
-//    __kumir_int xx = x.data.i;
-//    if (xx < array.left || xx > array.right) {
-//        Kumir::Core::abort(Kumir::Core::fromUtf8("Выход за границу таблицы"));
-//        __kumir_handle_abort();
-//    }
-//    else {
-//        size_t index = static_cast<size_t>(xx - array.left);
-//        __kumir_scalar * lvalue = &data[index];
-//        const __kumir_scalar * rvalue = &value;
-//        __kumir_copy_scalar(lvalue, rvalue);
-//    }
-//}
-
-//EXTERN void __kumir_set_array_2_element(__kumir_array array, const __kumir_scalar y, const __kumir_scalar x, const __kumir_scalar value)
-//{
-//    __kumir_check_value_defined(x);
-//    __kumir_check_value_defined(y);
-//    __kumir_int yy = y.data.i;
-//    __kumir_array * data = reinterpret_cast<__kumir_array*>(array.data);
-//    if (yy < array.left || yy > array.right) {
-//        Kumir::Core::abort(Kumir::Core::fromUtf8("Выход за границу таблицы"));
-//        __kumir_handle_abort();
-//    }
-//    else {
-//        size_t index = static_cast<size_t>(yy - array.left);
-//        __kumir_set_array_1_element(data[index], x, value);
-//    }
-//}
-
-//EXTERN void __kumir_set_array_3_element(__kumir_array array, const __kumir_scalar z, const __kumir_scalar y, const __kumir_scalar x, const __kumir_scalar value)
-//{
-//    __kumir_check_value_defined(x);
-//    __kumir_check_value_defined(y);
-//    __kumir_check_value_defined(z);
-//    __kumir_int zz = z.data.i;
-//    __kumir_array * data = reinterpret_cast<__kumir_array*>(array.data);
-//    if (zz < array.left || zz > array.right) {
-//        Kumir::Core::abort(Kumir::Core::fromUtf8("Выход за границу таблицы"));
-//        __kumir_handle_abort();
-//    }
-//    else {
-//        size_t index = static_cast<size_t>(zz - array.left);
-//        __kumir_set_array_2_element(data[index], y, x, value);
-//    }
-//}
 
 static std::stack<int32_t> for_counters;
 

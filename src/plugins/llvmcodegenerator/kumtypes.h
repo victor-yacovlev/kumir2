@@ -28,7 +28,7 @@ typedef struct {
 __kumir_record;
 
 
-typedef struct { // TODO replace struct with union
+typedef union { // TODO replace struct with union
     __kumir_int     i;
     __kumir_real    r;
     __kumir_bool    b;
@@ -47,9 +47,11 @@ __kumir_scalar;
 
 typedef struct {
     unsigned char       dim;
-    int32_t             left;
-    int32_t             right;
-    void*               data;
+    int32_t             size_left[3];
+    int32_t             size_right[3];
+    int32_t             shape_left[3];
+    int32_t             shape_right[3];
+    __kumir_scalar*     data;
 } __kumir_array;
 
 #endif // KUMTYPES_H

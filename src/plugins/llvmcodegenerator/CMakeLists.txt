@@ -100,7 +100,7 @@ add_custom_target(
     stdlib.llvm
     ALL
     DEPENDS stdlib_c.h stdlib_c.cpp
-    COMMAND clang -c -g -std=c++0x -emit-llvm
+    COMMAND clang -c -std=c++0x -emit-llvm
         -I${CMAKE_SOURCE_DIR}/src/shared
         -o ${SHARE_PATH}/llvmcodegenerator/stdlib.bc
         ${CMAKE_CURRENT_SOURCE_DIR}/stdlib_c.cpp

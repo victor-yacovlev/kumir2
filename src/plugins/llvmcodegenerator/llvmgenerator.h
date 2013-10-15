@@ -80,10 +80,14 @@ private:
 
     llvm::Function* kumirInitStdLib_;
     llvm::Function* kumirCreateUndefinedScalar_;
+    llvm::Function* kumirCreateUndefinedArray_;
     llvm::Function* kumirCreateDefinedScalar_;
     llvm::Function* kumirCreateArray1_;
-    llvm::Function* kumirCreateArray2_;
-    llvm::Function* kumirCreateArray3_;
+    llvm::Function* kumirLinkArray_;
+    llvm::Function* kumirRefArray1_;
+    llvm::Function* kumirCloneArray1_;
+    llvm::Function* kumirFreeArray_;
+
     llvm::Function* kumirFillArrayI_;
     llvm::Function* kumirFillArrayR_;
     llvm::Function* kumirFillArrayB_;
@@ -99,8 +103,6 @@ private:
     llvm::Function* kumirMoveScalar_;
     llvm::Function* kumirFreeScalar_;
     llvm::Function* kumirGetArray1Element_;
-    llvm::Function* kumirGetArray2Element_;
-    llvm::Function* kumirGetArray3Element_;
 
     llvm::Function* kumirLoopForFromToInitCounter_;
     llvm::Function* kumirLoopForFromToStepInitCounter_;
@@ -144,8 +146,6 @@ private:
     llvm::Function* kumirOpPow_;
 
     llvm::Function* kumirOpNeg_;
-    llvm::Function* kumirOpAnd_;
-    llvm::Function* kumirOpOr_;
 
 
     std::list<llvm::Value*> tempValsToFree_;
