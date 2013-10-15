@@ -68,12 +68,7 @@ if(NOT APPLE)
     add_subdirectory(kumir2-highgrade)
     add_subdirectory(kumir2-ide)
     add_subdirectory(kumir2-teacher)
-    #add_subdirectory(kumir2-python)
-
-    if(NOT WIN32)
-        add_subdirectory(kumir2-llvmc)
-    endif()
-
+    #add_subdirectory(kumir2-python)    
 endif(NOT APPLE)
 
 if(APPLE)
@@ -86,3 +81,9 @@ endif(APPLE)
 add_subdirectory(kumir2-bc)
 add_subdirectory(kumir2-xrun)
 
+find_package(LLVM)
+if(LLVM_FOUND)
+    add_subdirectory(kumir2-llvmc)
+else()
+    message(WARNING "LLVM developer libraries not found, building of LLVM support disabled")
+endif(LLVM_FOUND)
