@@ -51,6 +51,7 @@ private:
     class LLVMGenerator * d;
     bool compileOnly_;
     bool textForm_;
+    bool linkStdLib_;
 
 };
 

@@ -29,6 +29,7 @@ LLVMCodeGeneratorPlugin::LLVMCodeGeneratorPlugin()
     , d(new LLVMGenerator)
     , compileOnly_(false)
     , textForm_(false)
+    , linkStdLib_(false)
 {
 }
 
@@ -52,6 +53,12 @@ LLVMCodeGeneratorPlugin::acceptableCommandLineParameters() const
                   'S', "assembly",
                   tr("[only with -c] Generate LLVM bitcode in text form")
                   );
+//    result << CommandLineParameter(
+//                  false,
+//                  'l', "linkstdlib",
+//                  tr("[only with -c] Link standard Kumir library into bitcode")
+//                  );
+    // TODO implement it
     return result;
 }
 
@@ -67,7 +74,7 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
             QString & fileSuffix
             )
 {
-    d->reset(true /*!compileOnly_ || (compileOnly_ && textForm_)*/);
+    d->reset(!compileOnly_ || linkStdLib_);
 
     QList<AST::ModulePtr> & modules = tree->modules;
 
@@ -105,114 +112,87 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
     std::string buf;
     llvm::raw_string_ostream ostream(buf);
 
+
+    lmainModule->print(ostream, 0);
+    buf = ostream.str();
+    const QByteArray bufData(buf.c_str(), buf.size());
+    if (compileOnly_ && textForm_) {
+        out = bufData;
+        mimeType = "text/llvm";
+        fileSuffix = ".ll";
+        return;
+    }
+
+    llvm::SMDiagnostic lerr;
+    llvm::LLVMContext &lctx = llvm::getGlobalContext();
+    llvm::Module * reparsedModule = llvm::ParseAssemblyString(buf.c_str(),
+                                                              0,
+                                                              lerr, lctx);
+    if (reparsedModule == 0) {
+        lerr.print("kumir2-llvmc", llvm::errs());
+        qApp->quit();
+    }
+    buf.clear();
+    llvm::raw_string_ostream bstream(buf);
+    llvm::WriteBitcodeToFile(reparsedModule, bstream);
+    bstream.flush();
+    buf = bstream.str();
+    const QByteArray binBufData(buf.c_str(), buf.size());
     if (compileOnly_) {
-        lmainModule->print(ostream, 0);
-        buf = ostream.str();
-        const QByteArray bufData(buf.c_str(), buf.size());
-        if (textForm_) {
-            out = bufData;
-            mimeType = "text/llvm";
-            fileSuffix = ".ll";
-        }
-        else {
-            llvm::SMDiagnostic lerr;
-            llvm::LLVMContext &lctx = llvm::getGlobalContext();
-            llvm::Module * reparsedModule = llvm::ParseAssemblyString(buf.c_str(),
-                                                                      0,
-                                                                      lerr, lctx);
-            if (reparsedModule == 0) {
-                lerr.print("kumir2-llvmc", llvm::errs());
-                qApp->quit();
-            }
-            buf.clear();
-            llvm::raw_string_ostream bstream(buf);
-            llvm::WriteBitcodeToFile(reparsedModule, bstream);
-            bstream.flush();
-            buf = bstream.str();
-            const QByteArray binBufData(buf.c_str(), buf.size());
-            out = binBufData;
-            mimeType = "binary/llvm";
-            fileSuffix = ".bc";
-        }
+        out = binBufData;
+        mimeType = "binary/llvm";
+        fileSuffix = ".bc";
+        return;
     }
-    else {
-        lmainModule->print(ostream, 0);
-        buf = ostream.str();
-        const QByteArray bitcode(buf.c_str(), buf.size());
-        out = runExternalToolsToGenerateExecutable(bitcode);
-        mimeType = "executable";
+
+    out = runExternalToolsToGenerateExecutable(binBufData);
+    mimeType = "executable";
 #ifndef Q_OS_WIN32
-        fileSuffix = "";
+    fileSuffix = "";
 #else
-        fileSuffix = ".exe";
+    fileSuffix = ".exe";
 #endif
-    }
+
 }
 
 QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const QByteArray &bitcode)
 {
-//    static const QString LLVM_AS = findUtil();
-    static const QString LLC = findUtil("llc");
     static const QString CLang = findUtil("clang");
 
     // ====== Compile bitcote to machine assembly code
 
-    QTemporaryFile bitcodeFile(QDir::tempPath() + "/XXXXXX.ll");
+    QTemporaryFile bitcodeFile(QDir::tempPath() + "/XXXXXX.bc");
 
     bitcodeFile.open();
     bitcodeFile.write(bitcode);
     bitcodeFile.close();
 
     const QString bcFileName = QFileInfo(bitcodeFile).absoluteFilePath();
-    const QString sFileName = bcFileName.left(bcFileName.length()-2) + "s";
     const QString exeFileName = bcFileName.left(bcFileName.length()-2) + "exe";
 
-    const QStringList llcArguments = QStringList()
-            << "-o" << sFileName << bcFileName;
-
-    const int llc_status = QProcess::execute(LLC, llcArguments);
-    QString errorMessage;
-    if (llc_status == -2) {
-        errorMessage = QString("Can't start LLVM bitcode to native compiler: %1 %2")
-                .arg(LLC).arg(llcArguments.join(" "));
-    }
-    else if (llc_status == -1) {
-        errorMessage = QString("LLVM bitcode to native compiler crashed while executing: %1 %2")
-                .arg(LLC).arg(llcArguments.join(" "));
-    }
-    else if (llc_status != 0) {
-        errorMessage = QString("Command exited with status %3: %1 %2")
-                .arg(LLC).arg(llcArguments.join(" ")).arg(llc_status);
-    }
-    if (errorMessage.length() > 0) {
-        std::cerr << errorMessage.toStdString() << std::endl;
-        qApp->setProperty("exitStatus", 5);
-        qApp->quit();
-    }
-
-    // ====== Link the code with libstdc++
+    // ====== Use CLang toolchain to produce executable
 
     const QStringList clangArguments = QStringList()
-            << "-o" << exeFileName << sFileName << "-lstdc++" << "-lm";
+            << "-O3"
+            << "-o" << exeFileName << bcFileName << "-lstdc++" << "-lm";
 
     const int clang_status = QProcess::execute(CLang, clangArguments);
-
+    QString errorMessage;
     if (clang_status == -2) {
-        errorMessage = QString("Can't start object linker: %1 %2")
-                .arg(LLC).arg(llcArguments.join(" "));
+        errorMessage = QString("Can't start CLang: %1 %2")
+                .arg(CLang).arg(clangArguments.join(" "));
     }
     else if (clang_status == -1) {
-        errorMessage = QString("Object linker crashed while executing: %1 %2")
-                .arg(LLC).arg(llcArguments.join(" "));
+        errorMessage = QString("CLang crashed while executing: %1 %2")
+                .arg(CLang).arg(clangArguments.join(" "));
     }
     else if (clang_status != 0) {
         errorMessage = QString("Command exited with status %3: %1 %2")
-                .arg(LLC).arg(llcArguments.join(" ")).arg(clang_status);
+                .arg(CLang).arg(clangArguments.join(" ")).arg(clang_status);
     }
     if (errorMessage.length() > 0) {
-        QFile::remove(sFileName);
         std::cerr << errorMessage.toStdString() << std::endl;
-        qApp->setProperty("exitStatus", 5);
+        qApp->setProperty("returnCode", 5);
         qApp->quit();
     }
 
@@ -220,8 +200,7 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     QFile executableFile(exeFileName);
     executableFile.open(QIODevice::ReadOnly);
     const QByteArray result = executableFile.readAll();
-    executableFile.close();
-    QFile::remove(sFileName);
+    executableFile.close();    
     QFile::remove(exeFileName);
     return result;
 }
@@ -343,6 +322,9 @@ QString LLVMCodeGeneratorPlugin::initialize(
 {
     compileOnly_ = runtimeArguments.hasFlag('c');
     textForm_ = runtimeArguments.hasFlag('S');
+    linkStdLib_ = true;
+//    linkStdLib_ = runtimeArguments.hasFlag('l');
+    // TODO implement it
     return "";
 }
 
