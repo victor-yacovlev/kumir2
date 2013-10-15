@@ -57,6 +57,8 @@ namespace ActorDraw {
             zoomUp->move(zoomText->pos().x()+5,zoomText->pos().y()+25 );
             zoomNormal->move(zoomText->pos().x()+27,zoomText->pos().y()+25 );
             zoomDown->move(zoomText->pos().x()+57,zoomText->pos().y()+25 );
+            zoomFullDraw->move(zoomUp->pos().x(),zoomDown->pos().y()+zoomDown->height() );
+            
             update();
         }
         void setDraw(DrawModule* draw);
@@ -73,7 +75,7 @@ namespace ActorDraw {
         QDoubleSpinBox* netStepXS;
         QDoubleSpinBox* netStepYS;
         DrawModule* DRAW;
-        QToolButton *zoomUp,*zoomDown,*zoomNormal;
+        QToolButton *zoomUp,*zoomDown,*zoomNormal,*zoomFullDraw;
 
         
     };
@@ -111,7 +113,7 @@ namespace ActorDraw {
         void setDraw(DrawModule* draw){DRAW=draw;};
         void addDrawLine(QLineF lineF,QColor color)
         {
-            QGraphicsLineItem* line=addLine(lineF);//CRASH TUT
+            QGraphicsLineItem* line=addLine(lineF);
             line->setPen(QPen(QColor(color)));
             line->setZValue(90);
             lines.append(line); 
@@ -124,6 +126,8 @@ namespace ActorDraw {
                 removeItem(lines.at(i));
             lines.clear();
         }
+        QRectF getRect();
+
     protected:
        // void resizeEvent ( QResizeEvent * event );
     private:
@@ -191,7 +195,7 @@ public slots:
     void runMoveTo(const qreal x, const qreal y);
     void runMoveBy(const qreal dX, const qreal dY);
     void runAddCaption(const qreal width, const QString& text);
-    
+    void zoomFullDraw();
     
     void drawNet();
     

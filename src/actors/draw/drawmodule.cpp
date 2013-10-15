@@ -63,6 +63,11 @@ namespace ActorDraw {
          zoomNormal->move(zoomText->pos().x()+25,zoomText->pos().y()+25 );
          zoomDown->move(zoomText->pos().x()+50,zoomText->pos().y()+25 );
          
+         
+         zoomFullDraw=new QToolButton(this);
+         zoomFullDraw->setText(trUtf8("Весь чертеж"));
+        zoomFullDraw->move(zoomUp->pos().x(),zoomDown->pos().y()+zoomDown->height() );
+         
     };
     
     void DrawNavigator::setDraw(DrawModule* draw){
@@ -70,6 +75,7 @@ namespace ActorDraw {
         connect(zoomUp,SIGNAL(pressed()),DRAW,SLOT(zoomIn()));
         connect(zoomDown,SIGNAL(pressed()),DRAW,SLOT(zoomOut()));  
         connect(zoomNormal,SIGNAL(pressed()),DRAW,SLOT(zoomNorm()));
+        connect(zoomFullDraw,SIGNAL(pressed()),DRAW,SLOT(zoomFullDraw()));
     };
     void DrawNavigator::XvalueChange(double value)
     {
@@ -91,7 +97,78 @@ namespace ActorDraw {
         netStepXS->setSingleStep(value/10);
         
     }
-    
+    QRectF DrawScene::getRect()
+    {
+        QRectF boundRect=QRect(10,10,20,20);
+  
+        for(int i=0;i<lines.count();i++)
+        {
+
+            if(lines.at(i)->line().dx()>0)
+            {
+                if(lines.at(i)->line().p1().x()<boundRect.left() || (i==0))
+                {
+                    boundRect.setLeft(lines.at(i)->line().p1().x()); 
+                    
+                }
+                if(lines.at(i)->line().p2().x()>boundRect.right() || (i==0))
+                {
+                    boundRect.setRight(lines.at(i)->line().p2().x()); 
+                    
+                }
+         
+            }
+            if(lines.at(i)->line().dx()<0)
+            {
+                if(lines.at(i)->line().p2().x()<boundRect.left() || (i==0))
+                {
+                    boundRect.setLeft(lines.at(i)->line().p2().x()); 
+                } 
+                if(lines.at(i)->line().p1().x()>boundRect.right() || (i==0))
+                {
+                    boundRect.setRight(lines.at(i)->line().p1().x()); 
+                    
+                }
+             
+            }
+            if(lines.at(i)->line().dy()>0)
+            {
+                qDebug()<<"Bott"<<boundRect.bottom()<<"Top:"<<boundRect.top()<<"line p1y:"<<lines.at(i)->line().p1().y()<<"line p2y:"<<lines.at(i)->line().p2().y();
+                if(-lines.at(i)->line().p1().y()>boundRect.bottom() || (i==0))
+                {
+                    boundRect.setBottom(-lines.at(i)->line().p1().y()); 
+                }
+                if(lines.at(i)->line().p2().x()>boundRect.top() || (i==0))
+                {
+                    boundRect.setTop(-lines.at(i)->line().p2().y()); 
+                    
+                }
+            }
+            if(lines.at(i)->line().dy()<0)
+            {
+                qDebug()<<"Bott"<<boundRect.bottom()<<"Top:"<<boundRect.top()<<"line p1y:"<<lines.at(i)->line().p1().y()<<"line p2y:"<<lines.at(i)->line().p2().y();
+                if(lines.at(i)->line().p2().y()<boundRect.bottom())
+                {
+                    boundRect.setBottom(-lines.at(i)->line().p2().y()); 
+                } 
+                if(lines.at(i)->line().p1().y()<boundRect.top() || (i==0))
+                {
+                    boundRect.setTop(lines.at(i)->line().p1().y()); 
+                    
+                }
+            }
+        }
+        
+        if(boundRect.width()!=boundRect.height())
+        {
+            qreal size=fmax(boundRect.width(),boundRect.width());
+            boundRect.setWidth(size);
+            boundRect.setHeight(size);
+            
+        }
+        
+        return(boundRect);
+    };
     
     void DrawScene::drawNet(double startx ,double endx,double starty,double endy,QColor color,double stepX,double stepY)
     {
@@ -209,7 +286,7 @@ void DrawView::resizeEvent ( QResizeEvent * event )
         if(zoom<1/MAX_ZOOM)
         {return;}
        this->scale(zoom/c_scale,zoom/c_scale);
-        setNet();
+        
         c_scale=zoom;
     };
     
@@ -252,11 +329,13 @@ void DrawView::resizeEvent ( QResizeEvent * event )
             
  
             setZoom(zoom()*1.2);
+            setNet();
               DRAW->drawNet();
         }
         else
         { 
             setZoom(zoom()*0.8);
+            setNet();
             DRAW->drawNet();
             
         }
@@ -292,6 +371,7 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     drawNet();
     CreatePen();
     CurView->setZoom(50);
+    CurView->setNet();
     netStepX=1;
     netStepY=1;
     
@@ -492,6 +572,7 @@ void DrawModule::drawNet()
        
         mPen->scale(zoom()/50,zoom()/50);
         CurView->setZoom(50);
+        CurView->setNet();
         setNetStepX(1);
         setNetStepY(1);
         CurView->centerOn(5,-5);
@@ -499,7 +580,29 @@ void DrawModule::drawNet()
         drawNet();
     };
     
-    
+     void DrawModule::zoomFullDraw()
+    {
+        
+        QPointF start_d=CurView->mapToScene(CurView->geometry().topLeft());
+        QPointF end_d=CurView->mapToScene(CurView->geometry().bottomRight());
+        qreal width=end_d.x()-start_d.x();
+
+        QRectF sceneInfoRect=CurScene->getRect();
+        qDebug()<<"SceneInfoRect:"<<sceneInfoRect<<"L"<<sceneInfoRect.left()<<"R"<<sceneInfoRect.right()<<"t"<<sceneInfoRect.top()<<"B"<<sceneInfoRect.bottom();
+        //CurView->fitInView(sceneInfoRect);
+        qreal width2=sceneInfoRect.width();
+        CurView->setZoom((CurView->zoom()*(width/width2))*0.64);
+        
+        QRectF newRect(2*sceneInfoRect.left(),2*sceneInfoRect.top(),2*sceneInfoRect.right(),2*sceneInfoRect.bottom());
+        qDebug()<<newRect;
+       // CurView->setSceneRect(newRect);
+       // CurView->setZoom((CurView->zoom()*(width/width2))*0.8);
+        CurView->centerOn((sceneInfoRect.right()+sceneInfoRect.left())/2,(sceneInfoRect.bottom()+sceneInfoRect.top())/2);
+        CurView->setNet();
+        drawNet();       // CurView->centerOn(0,0);
+        
+        
+    };
     void DrawModule::CreatePen(void)
     {
         
