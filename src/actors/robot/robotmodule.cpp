@@ -1443,12 +1443,7 @@ namespace ActorRobot {
         int SizeX, SizeY;
         destroyField();
         // Тестовый прогон
-        
-        if  (!l_File->open(QIODevice::ReadOnly))
-        {
-            
-            return 1;
-        }
+      
         
         
         
