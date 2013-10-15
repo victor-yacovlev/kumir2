@@ -160,6 +160,7 @@ class Core {
     friend class IO;
     friend class VM::Variable;
 public:
+    static void (*AbortHandler)();
     inline static void init() { error.clear(); }
     inline static void finalize() {}
     inline static const String & getError() { return error; }
@@ -307,6 +308,9 @@ public:
 
     inline static void abort(const String & err) {
         error = err;
+        if (AbortHandler) {
+            AbortHandler();
+        }
     }
 protected:
     inline static void unsetError() {
@@ -2735,6 +2739,7 @@ inline void finalizeStandardLibrary() {
 
 #ifndef DO_NOT_DECLARE_STATIC
 String Core::error = String();
+void (*Core::AbortHandler)() = 0;
 std::deque<FileType> Files::openedFiles;
 std::deque<FILE*> Files::openedFileHandles;
 AbstractInputBuffer* Files::consoleInputBuffer = 0;
