@@ -152,7 +152,7 @@ void KumirCompilerToolPlugin::start()
         binOut.open(QIODevice::WriteOnly);
         binOut.write(outData);
         binOut.close();
-        if (!mimeType.contains("text") && QFile::exists(outFileName)) {
+        if (mimeType.startsWith("executable") && QFile::exists(outFileName)) {
             QFile::Permissions ps = binOut.permissions();
             ps |= QFile::ExeGroup | QFile::ExeOwner | QFile::ExeOther;
             QFile::setPermissions(outFileName, ps);
