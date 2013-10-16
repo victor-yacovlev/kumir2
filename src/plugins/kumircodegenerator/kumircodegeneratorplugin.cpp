@@ -10,7 +10,7 @@
 using namespace KumirCodeGenerator;
 using namespace Bytecode;
 
-static const QString MIME_BYTECODE_BINARY   = QString::fromAscii("application/vnd.niisi.kumir2.bytecode.binary");
+static const QString MIME_BYTECODE_BINARY   = QString::fromAscii("executable/kumir2-bytecode");
 static const QString MIME_BYTECODE_TEXT     = QString::fromAscii("text/plain");
 
 KumirCodeGeneratorPlugin::KumirCodeGeneratorPlugin()
