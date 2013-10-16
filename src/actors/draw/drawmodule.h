@@ -41,7 +41,12 @@ namespace ActorDraw {
         {
             if(50/Zoom>=1)zoomText->setPlainText("1:"+QString::number(50/Zoom));
              else zoomText->setPlainText(QString::number(Zoom/50)+":1");
-        
+            qDebug()<<"Zoom"<<Zoom;
+            //double pixel_per_cell=DRAW->NetStepX()/(1/c_scale);
+            netStepXS->setMaximum(50*(1/Zoom));
+            netStepXS->setMinimum(10*(1/Zoom));
+            netStepYS->setMaximum(50*(1/Zoom));
+            netStepYS->setMinimum(10*(1/Zoom));
             mainLineX->setLine(5,netLab->pos().y()+30,5,5+netStepX*Zoom+netLab->pos().y()+30);
             mainLineY->setLine(mainLineX->line().x2(),
                                mainLineX->line().y2(),
@@ -84,7 +89,7 @@ namespace ActorDraw {
     : public QGraphicsView
     {
     public:
-        DrawView( QWidget * parent = 0 ){c_scale=1;pressed=false;press_pos=QPoint();};
+        DrawView( QWidget * parent = 0 ){c_scale=1;pressed=false;press_pos=QPoint();firstResize=true;};
         void setDraw(DrawModule* draw){DRAW=draw;};
         double zoom()const
         {return c_scale;};
@@ -102,6 +107,7 @@ namespace ActorDraw {
         double c_scale;
         bool pressed;
         QPoint press_pos;
+        bool firstResize;
  
     };    
     class DrawScene
@@ -202,6 +208,8 @@ public slots:
     void zoomIn();
     void zoomOut();
     void zoomNorm();
+    
+    void showNavigator(bool state);
 
 
 
@@ -219,7 +227,7 @@ private:
     Color penColor;
     QMutex mutex;
     DrawNavigator* navigator;
-
+    QToolButton *showToolsBut;
 
 
 

@@ -15,6 +15,7 @@ You should change it corresponding to functionality.
 // Qt includes
 #include <QtCore>
 #include <QtGui>
+#include <math.h>
 
 namespace ActorDraw {
 
@@ -31,7 +32,7 @@ namespace ActorDraw {
         netLab=myScene->addText(trUtf8("Сетка:"));
         zoomLab=myScene->addText(trUtf8("Масштаб:"));
         mainLineX=myScene->addLine(5,netLab->pos().y()+10,5,25);
-        setSceneRect(0,0,140,190);
+        setSceneRect(0,0,120,190);
         netStepXS=new QDoubleSpinBox(this);
         netStepYS=new QDoubleSpinBox(this);
         netStepXS->move(15,10);
@@ -99,7 +100,7 @@ namespace ActorDraw {
     }
     QRectF DrawScene::getRect()
     {
-        QRectF boundRect=QRect(10,10,20,20);
+        QRectF boundRect=QRect(-2,-10,10,10);
   
         for(int i=0;i<lines.count();i++)
         {
@@ -246,6 +247,14 @@ namespace ActorDraw {
     }
 void DrawView::resizeEvent ( QResizeEvent * event )
     {
+        if(firstResize)
+        {
+                  qDebug()<<"FirstresizeEvent";
+           QPointF maxRight=mapToScene(geometry().bottomRight());
+            
+            centerOn(maxRight.x()/2-maxRight.x()/5,-maxRight.y()/2+maxRight.y()/4);
+        }
+        firstResize=false;
         qDebug()<<"resizeEvent";
        // setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
        if(!pressed)  DRAW->drawNet();
@@ -355,11 +364,18 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     penIsDrawing=false;
     CurScene=new DrawScene(CurView);
     navigator=new DrawNavigator(CurView);
+    showToolsBut=new QToolButton(CurView);
+    showToolsBut->move(20,20);
+    showToolsBut->setCheckable(true);
+    
+    
+    connect(showToolsBut,SIGNAL(toggled (bool)),this,SLOT(showNavigator(bool)));
+    
     navigator->setDraw(this);
     navigator->setParent(CurView);
-    navigator->setFixedSize(QSize(150,200));
-    navigator->move(40,40);
-    navigator->show();
+    navigator->setFixedSize(QSize(130,200));
+    navigator->move(20,showToolsBut->pos().y()+showToolsBut->height());
+    navigator->hide();
     
     CurScene->setDraw(this);
     CurView->setScene(CurScene);
@@ -385,7 +401,11 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
 
    
 }
-
+void DrawModule::showNavigator(bool state)
+    {
+        navigator->setVisible(state);
+    };
+    
 /* public static */ QList<ExtensionSystem::CommandLineParameter> DrawModule::acceptableCommandLineParameters()
 {
     // See "src/shared/extensionsystem/commandlineparameter.h" for constructor details
@@ -600,7 +620,7 @@ void DrawModule::drawNet()
         CurView->centerOn((sceneInfoRect.right()+sceneInfoRect.left())/2,(sceneInfoRect.bottom()+sceneInfoRect.top())/2);
         CurView->setNet();
         drawNet();       // CurView->centerOn(0,0);
-        
+        mPen->scale(zoom()/50,zoom()/50);
         
     };
     void DrawModule::CreatePen(void)
