@@ -58,5 +58,23 @@
                 ]
             }
         ]
-    }
+    },
+            "settings": {
+                "BackColor": {
+                        "type": "color",
+                        "default": "#FFFFFF",
+                        "title": {"ascii": "Background color", "ru_RU": "Цвет фона"}
+                },
+                "LineColor": {
+                        "type": "color",
+                        "default": "#C8C800",
+                        "title": {"ascii": "Grid color", "ru_RU": "Цвет сетки"}
+                },
+                "AxisColor": {
+                        "type": "color",
+                        "default": "#C8C800",
+                        "title": {"ascii": "Axis color", "ru_RU": "Цвет осей"}
+                }
+
+        }  
 }

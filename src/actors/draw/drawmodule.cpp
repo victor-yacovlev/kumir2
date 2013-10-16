@@ -11,14 +11,23 @@ You should change it corresponding to functionality.
 
 // Kumir includes
 #include "extensionsystem/kplugin.h"
+#include "extensionsystem/pluginmanager.h"
 
 // Qt includes
 #include <QtCore>
 #include <QtGui>
-#include <math.h>
+
 
 namespace ActorDraw {
 
+    
+    ExtensionSystem::SettingsPtr DrawModule::DrawSettings()
+    {
+        ExtensionSystem::PluginManager * pluginManager = ExtensionSystem::PluginManager::instance();
+        ExtensionSystem::KPlugin * plugin = pluginManager->loadedPlugins("ActorDraw")[0];
+        return pluginManager->settingsByObject(plugin);
+    }
+    
     static const qreal MAX_ZOOM = 1000000;
     
     
@@ -26,7 +35,7 @@ namespace ActorDraw {
         myScene=new QGraphicsScene(this);
         this->setScene(myScene);
         zoomText=myScene->addText("Test");
-        QBrush curBackground=QBrush(QColor("lightgreen"));
+        QBrush curBackground=QBrush(QColor("lightblue"));
         
         myScene->setBackgroundBrush (curBackground);
         netLab=myScene->addText(trUtf8("Сетка:"));
@@ -175,22 +184,16 @@ namespace ActorDraw {
     {
         
         QPointF pos,tail;    
-        
+        QColor AxisColor=DRAW->axisColor();
         for ( int i = 0; i < Netlines.count(); i++)
         {
-         if(i==0)
-         {
-              pos=Netlines[0]->line().p1 () ;
-              tail=Netlines.last()->line().p2 () ;
-            // qDebug()<<"POS"<<pos<<"Tail"<<tail<<"start"<<startx<<"end"<<endx;
-            // qDebug()<<"Range"<<tail.x()-pos.x()<<"Zoom"<<2000*(DRAW->zoom());
-            // if((pos.x()<startx  && pos.y()<starty)&&(tail.x()>endx-3*step && tail.y()>endy-3*step))return;
-         }
+       
          delete Netlines[i];   
        }
+        
         qDebug()<<"RedrawNet";
         Netlines.clear();
-        int lines=round(startx/stepX);
+        int lines=qRound(startx/stepX);
         startx=lines*stepX;
         double fx1=startx-7*stepX,fx2,fy1,fy2; 
 
@@ -207,16 +210,17 @@ namespace ActorDraw {
 			Netlines.last()->setPen(QPen(color));
             if(fx1>0-1/DRAW->zoom() && fx1<0+1/DRAW->zoom())
             {
-                QPen axisPen=QPen("blue");
+                QPen axisPen=QPen(AxisColor);
                // axisPen.setWidth(3/DRAW->zoom());
-                Netlines.last()->setPen(axisPen);   
+                Netlines.last()->setPen(axisPen); 
+                Netlines.last()->setZValue(1);
                 Netlines.append(addLine(fx1+1/DRAW->zoom(), fy1 , fx2+1/DRAW->zoom(), fy2 ));
-                Netlines.last()->setZValue(0.5);
+                Netlines.last()->setZValue(1);
                 Netlines.last()->setPen(axisPen); 
             }
 		}
-        Netlines.append(addLine(-1, -1 , 1, 1 ));
-        Netlines.append(addLine(1, -1 , -1, 1 ));
+      //  Netlines.append(addLine(-1, -1 , 1, 1 ));
+       // Netlines.append(addLine(1, -1 , -1, 1 ));
         lines=starty/stepY;
         starty=lines*stepY;
         fy1 = starty-7*stepY;
@@ -233,12 +237,13 @@ namespace ActorDraw {
 			Netlines.last()->setPen(QPen(color));
             if(fy1>0-1/DRAW->zoom() && fy1<0+1/DRAW->zoom())
             {
-                QPen axisPen=QPen("blue");
+                QPen axisPen=QPen(AxisColor);
                // axisPen.setWidth(6/(DRAW->zoom()*2));
                // qDebug()<<"Width"<<6/(DRAW->zoom()*2);
                 Netlines.last()->setPen(axisPen);
+                Netlines.last()->setZValue(1);
                 Netlines.append(addLine(fx1, fy1+1/DRAW->zoom() , fx2, fy2+1/DRAW->zoom() ));
-                Netlines.last()->setZValue(0.5);
+                Netlines.last()->setZValue(1);
                 Netlines.last()->setPen(axisPen);  
             }
             
@@ -393,11 +398,11 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     
     
     
- 
+   
     
-    //QBrush curBackground=QBrush(QColor("lightgreen"));
+    QBrush curBackground=QBrush(QColor(DrawSettings()->value("Draw/BackColor","lightgreen").toString()));
 
-  //  CurScene->setBackgroundBrush (curBackground);
+    CurScene->setBackgroundBrush (curBackground);
 
    
 }
@@ -464,7 +469,11 @@ void DrawModule::showNavigator(bool state)
     // Updates setting on module load, workspace change or appliyng settings dialog.
     // If @param keys is empty -- should reload all settings, otherwise load only setting specified by @param keys
     // TODO implement me
-    Q_UNUSED(settings);  // Remove this line on implementation
+    QBrush curBackground=QBrush(QColor(settings->value("Draw/BackColor","lightgreen").toString()));
+    
+    CurScene->setBackgroundBrush (curBackground);
+    netColor=QColor(settings->value("LineColor","gray").toString());
+    drawNet();
     Q_UNUSED(keys);  // Remove this line on implementation
 }
 

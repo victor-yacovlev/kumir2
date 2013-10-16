@@ -189,6 +189,11 @@ public /* methods */:
         mPen->scale(factor,factor);
         mutex.unlock();
     }
+    static ExtensionSystem::SettingsPtr DrawSettings();
+    QColor axisColor()
+    {
+        return QColor(DrawSettings()->value("AxisColor","blue").toString());
+    }
 public slots:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void loadActorData(QIODevice * source);
