@@ -12,7 +12,7 @@ void DeclarativeSettingsPageImpl::init()
 {
     if (!settings_) return;
     foreach (const QString & key, entries_.keys()) {
-        const DeclarativeSettingsPage::Entry entry = entries_[key];
+        const DeclarativeSettingsPage::Entry & entry = entries_[key];
         if (entry.type==DeclarativeSettingsPage::Integer) {
             int value = settings_->value(key, entry.defaultValue).toInt();
             QSpinBox * control = 0;
@@ -28,6 +28,30 @@ void DeclarativeSettingsPageImpl::init()
                 control = qobject_cast<QToolButton*>(widgets_[key]);
             if (control)
                 setButtonColor(control, value);
+        }
+        else if (entry.type==DeclarativeSettingsPage::Double) {
+            qreal value = settings_->value(key, entry.defaultValue).toDouble();
+            QDoubleSpinBox * control = 0;
+            if (widgets_.contains(key) && QString(widgets_[key]->metaObject()->className())=="QDoubleSpinBox")
+                control = qobject_cast<QDoubleSpinBox*>(widgets_[key]);
+            if (control)
+                control->setValue(value);
+        }
+        else if (entry.type==DeclarativeSettingsPage::String) {
+            const QString value = settings_->value(key, entry.defaultValue).toString();
+            QLineEdit * control = 0;
+            if (widgets_.contains(key) && QString(widgets_[key]->metaObject()->className())=="QLineEdit")
+                control = qobject_cast<QLineEdit*>(widgets_[key]);
+            if (control)
+                control->setText(value);
+        }
+        else if (entry.type==DeclarativeSettingsPage::Bool) {
+            bool value = settings_->value(key, entry.defaultValue).toBool();
+            QCheckBox * control = 0;
+            if (widgets_.contains(key) && QString(widgets_[key]->metaObject()->className())=="QCheckBox")
+                control = qobject_cast<QCheckBox*>(widgets_[key]);
+            if (control)
+                control->setChecked(value);
         }
         else {
             qFatal("Not implemented");
@@ -55,6 +79,30 @@ void DeclarativeSettingsPageImpl::resetToDefaults()
             if (control)
                 setButtonColor(control, value);
         }
+        else if (entry.type==DeclarativeSettingsPage::Double) {
+            qreal value = entry.defaultValue.toDouble();
+            QDoubleSpinBox * control = 0;
+            if (widgets_.contains(key) && QString(widgets_[key]->metaObject()->className())=="QDoubleSpinBox")
+                control = qobject_cast<QDoubleSpinBox*>(widgets_[key]);
+            if (control)
+                control->setValue(value);
+        }
+        else if (entry.type==DeclarativeSettingsPage::String) {
+            const QString value = entry.defaultValue.toString();
+            QLineEdit * control = 0;
+            if (widgets_.contains(key) && QString(widgets_[key]->metaObject()->className())=="QLineEdit")
+                control = qobject_cast<QLineEdit*>(widgets_[key]);
+            if (control)
+                control->setText(value);
+        }
+        else if (entry.type==DeclarativeSettingsPage::Bool) {
+            bool value = entry.defaultValue.toBool();
+            QCheckBox * control = 0;
+            if (widgets_.contains(key) && QString(widgets_[key]->metaObject()->className())=="QCheckBox")
+                control = qobject_cast<QCheckBox*>(widgets_[key]);
+            if (control)
+                control->setChecked(value);
+        }
         else {
             qFatal("Not implemented");
         }
@@ -80,6 +128,27 @@ void DeclarativeSettingsPageImpl::accept()
             if (control)
                 settings_->setValue(key, buttonColor(control).name());
         }
+        else if (entry.type==DeclarativeSettingsPage::Double) {
+            QDoubleSpinBox * control = 0;
+            if (widgets_.contains(key) && QString(widgets_[key]->metaObject()->className())=="QDoubleSpinBox")
+                control = qobject_cast<QDoubleSpinBox*>(widgets_[key]);
+            if (control)
+                settings_->setValue(key, control->value());
+        }
+        else if (entry.type==DeclarativeSettingsPage::String) {
+            QLineEdit * control = 0;
+            if (widgets_.contains(key) && QString(widgets_[key]->metaObject()->className())=="QLineEdit")
+                control = qobject_cast<QLineEdit*>(widgets_[key]);
+            if (control)
+                settings_->setValue(key, control->text());
+        }
+        else if (entry.type==DeclarativeSettingsPage::Bool) {
+            QCheckBox * control = 0;
+            if (widgets_.contains(key) && QString(widgets_[key]->metaObject()->className())=="QCheckBox")
+                control = qobject_cast<QCheckBox*>(widgets_[key]);
+            if (control)
+                settings_->setValue(key, control->isChecked());
+        }
         else {
             qFatal("Not implemented");
         }
@@ -100,6 +169,38 @@ void DeclarativeSettingsPageImpl::addIntegerField(const QString &key, const Decl
     addField(entry.title, control);
 }
 
+void DeclarativeSettingsPageImpl::addRealField(const QString &key, const DeclarativeSettingsPage::Entry &entry)
+{
+    QDoubleSpinBox * control = new QDoubleSpinBox(pClass_);
+    control->setDecimals(6);
+    if (entry.defaultValue.isValid())
+        control->setValue(entry.defaultValue.toDouble());
+    if (entry.minimumValue.isValid())
+        control->setMinimum(entry.minimumValue.toDouble());
+    if (entry.maximumValue.isValid())
+        control->setMaximum(entry.maximumValue.toDouble());
+    widgets_[key] = control;
+    addField(entry.title, control);
+}
+
+void DeclarativeSettingsPageImpl::addStringField(const QString &key, const DeclarativeSettingsPage::Entry &entry)
+{
+    QLineEdit * control = new QLineEdit(pClass_);
+    if (entry.defaultValue.isValid())
+        control->setText(entry.defaultValue.toString());
+    widgets_[key] = control;
+    addField(entry.title, control);
+}
+
+void DeclarativeSettingsPageImpl::addBoolField(const QString &key, const DeclarativeSettingsPage::Entry &entry)
+{
+    QCheckBox * control = new QCheckBox(entry.title, pClass_);
+    if (entry.defaultValue.isValid())
+        control->setChecked(entry.defaultValue.toBool());
+    widgets_[key] = control;
+    addField("", control);
+}
+
 void DeclarativeSettingsPageImpl::addColorField(const QString &key, const DeclarativeSettingsPage::Entry &entry)
 {
     QToolButton * control = new QToolButton(pClass_);
@@ -118,9 +219,11 @@ void DeclarativeSettingsPageImpl::addField(const QString &labelText, QWidget *co
     QWidget * c = new QWidget(pClass_);
     QHBoxLayout * cl = new QHBoxLayout(c);
     c->setLayout(cl);
-    QLabel * lbl = new QLabel(labelText+":");
-    cl->addWidget(lbl);
-    cl->addStretch();
+    if (!labelText.isEmpty()) {
+        QLabel * lbl = new QLabel(labelText+":");
+        cl->addWidget(lbl);
+        cl->addStretch();
+    }
     cl->addWidget(controlWidget);
     pClass_->layout()->addWidget(c);
 }
