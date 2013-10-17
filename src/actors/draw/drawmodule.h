@@ -41,7 +41,12 @@ namespace ActorDraw {
         {
             if(50/Zoom>=1)zoomText->setPlainText("1:"+QString::number(50/Zoom));
              else zoomText->setPlainText(QString::number(Zoom/50)+":1");
-        
+            qDebug()<<"Zoom"<<Zoom;
+            //double pixel_per_cell=DRAW->NetStepX()/(1/c_scale);
+            netStepXS->setMaximum(50*(1/Zoom));
+            netStepXS->setMinimum(10*(1/Zoom));
+            netStepYS->setMaximum(50*(1/Zoom));
+            netStepYS->setMinimum(10*(1/Zoom));
             mainLineX->setLine(5,netLab->pos().y()+30,5,5+netStepX*Zoom+netLab->pos().y()+30);
             mainLineY->setLine(mainLineX->line().x2(),
                                mainLineX->line().y2(),
@@ -57,6 +62,8 @@ namespace ActorDraw {
             zoomUp->move(zoomText->pos().x()+5,zoomText->pos().y()+25 );
             zoomNormal->move(zoomText->pos().x()+27,zoomText->pos().y()+25 );
             zoomDown->move(zoomText->pos().x()+57,zoomText->pos().y()+25 );
+            zoomFullDraw->move(zoomUp->pos().x(),zoomDown->pos().y()+zoomDown->height() );
+            
             update();
         }
         void setDraw(DrawModule* draw);
@@ -73,7 +80,7 @@ namespace ActorDraw {
         QDoubleSpinBox* netStepXS;
         QDoubleSpinBox* netStepYS;
         DrawModule* DRAW;
-        QToolButton *zoomUp,*zoomDown,*zoomNormal;
+        QToolButton *zoomUp,*zoomDown,*zoomNormal,*zoomFullDraw;
 
         
     };
@@ -82,7 +89,7 @@ namespace ActorDraw {
     : public QGraphicsView
     {
     public:
-        DrawView( QWidget * parent = 0 ){c_scale=1;pressed=false;press_pos=QPoint();};
+        DrawView( QWidget * parent = 0 ){c_scale=1;pressed=false;press_pos=QPoint();firstResize=true;};
         void setDraw(DrawModule* draw){DRAW=draw;};
         double zoom()const
         {return c_scale;};
@@ -100,6 +107,7 @@ namespace ActorDraw {
         double c_scale;
         bool pressed;
         QPoint press_pos;
+        bool firstResize;
  
     };    
     class DrawScene
@@ -111,7 +119,7 @@ namespace ActorDraw {
         void setDraw(DrawModule* draw){DRAW=draw;};
         void addDrawLine(QLineF lineF,QColor color)
         {
-            QGraphicsLineItem* line=addLine(lineF);//CRASH TUT
+            QGraphicsLineItem* line=addLine(lineF);
             line->setPen(QPen(QColor(color)));
             line->setZValue(90);
             lines.append(line); 
@@ -124,6 +132,8 @@ namespace ActorDraw {
                 removeItem(lines.at(i));
             lines.clear();
         }
+        QRectF getRect();
+
     protected:
        // void resizeEvent ( QResizeEvent * event );
     private:
@@ -179,6 +189,11 @@ public /* methods */:
         mPen->scale(factor,factor);
         mutex.unlock();
     }
+    static ExtensionSystem::SettingsPtr DrawSettings();
+    QColor axisColor()
+    {
+        return QColor(DrawSettings()->value("AxisColor","blue").toString());
+    }
 public slots:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void loadActorData(QIODevice * source);
@@ -191,13 +206,15 @@ public slots:
     void runMoveTo(const qreal x, const qreal y);
     void runMoveBy(const qreal dX, const qreal dY);
     void runAddCaption(const qreal width, const QString& text);
-    
+    void zoomFullDraw();
     
     void drawNet();
     
     void zoomIn();
     void zoomOut();
     void zoomNorm();
+    
+    void showNavigator(bool state);
 
 
 
@@ -215,7 +232,7 @@ private:
     Color penColor;
     QMutex mutex;
     DrawNavigator* navigator;
-
+    QToolButton *showToolsBut;
 
 
 

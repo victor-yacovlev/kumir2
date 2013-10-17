@@ -11,13 +11,23 @@ You should change it corresponding to functionality.
 
 // Kumir includes
 #include "extensionsystem/kplugin.h"
+#include "extensionsystem/pluginmanager.h"
 
 // Qt includes
 #include <QtCore>
 #include <QtGui>
 
+
 namespace ActorDraw {
 
+    
+    ExtensionSystem::SettingsPtr DrawModule::DrawSettings()
+    {
+        ExtensionSystem::PluginManager * pluginManager = ExtensionSystem::PluginManager::instance();
+        ExtensionSystem::KPlugin * plugin = pluginManager->loadedPlugins("ActorDraw")[0];
+        return pluginManager->settingsByObject(plugin);
+    }
+    
     static const qreal MAX_ZOOM = 1000000;
     
     
@@ -25,13 +35,13 @@ namespace ActorDraw {
         myScene=new QGraphicsScene(this);
         this->setScene(myScene);
         zoomText=myScene->addText("Test");
-        QBrush curBackground=QBrush(QColor("lightgreen"));
+        QBrush curBackground=QBrush(QColor("lightblue"));
         
         myScene->setBackgroundBrush (curBackground);
         netLab=myScene->addText(trUtf8("Сетка:"));
         zoomLab=myScene->addText(trUtf8("Масштаб:"));
         mainLineX=myScene->addLine(5,netLab->pos().y()+10,5,25);
-        setSceneRect(0,0,140,190);
+        setSceneRect(0,0,120,190);
         netStepXS=new QDoubleSpinBox(this);
         netStepYS=new QDoubleSpinBox(this);
         netStepXS->move(15,10);
@@ -63,6 +73,11 @@ namespace ActorDraw {
          zoomNormal->move(zoomText->pos().x()+25,zoomText->pos().y()+25 );
          zoomDown->move(zoomText->pos().x()+50,zoomText->pos().y()+25 );
          
+         
+         zoomFullDraw=new QToolButton(this);
+         zoomFullDraw->setText(trUtf8("Весь чертеж"));
+        zoomFullDraw->move(zoomUp->pos().x(),zoomDown->pos().y()+zoomDown->height() );
+         
     };
     
     void DrawNavigator::setDraw(DrawModule* draw){
@@ -70,6 +85,7 @@ namespace ActorDraw {
         connect(zoomUp,SIGNAL(pressed()),DRAW,SLOT(zoomIn()));
         connect(zoomDown,SIGNAL(pressed()),DRAW,SLOT(zoomOut()));  
         connect(zoomNormal,SIGNAL(pressed()),DRAW,SLOT(zoomNorm()));
+        connect(zoomFullDraw,SIGNAL(pressed()),DRAW,SLOT(zoomFullDraw()));
     };
     void DrawNavigator::XvalueChange(double value)
     {
@@ -91,28 +107,93 @@ namespace ActorDraw {
         netStepXS->setSingleStep(value/10);
         
     }
-    
+    QRectF DrawScene::getRect()
+    {
+        QRectF boundRect=QRect(-2,-10,10,10);
+  
+        for(int i=0;i<lines.count();i++)
+        {
+
+            if(lines.at(i)->line().dx()>0)
+            {
+                if(lines.at(i)->line().p1().x()<boundRect.left() || (i==0))
+                {
+                    boundRect.setLeft(lines.at(i)->line().p1().x()); 
+                    
+                }
+                if(lines.at(i)->line().p2().x()>boundRect.right() || (i==0))
+                {
+                    boundRect.setRight(lines.at(i)->line().p2().x()); 
+                    
+                }
+         
+            }
+            if(lines.at(i)->line().dx()<0)
+            {
+                if(lines.at(i)->line().p2().x()<boundRect.left() || (i==0))
+                {
+                    boundRect.setLeft(lines.at(i)->line().p2().x()); 
+                } 
+                if(lines.at(i)->line().p1().x()>boundRect.right() || (i==0))
+                {
+                    boundRect.setRight(lines.at(i)->line().p1().x()); 
+                    
+                }
+             
+            }
+            if(lines.at(i)->line().dy()>0)
+            {
+                qDebug()<<"Bott"<<boundRect.bottom()<<"Top:"<<boundRect.top()<<"line p1y:"<<lines.at(i)->line().p1().y()<<"line p2y:"<<lines.at(i)->line().p2().y();
+                if(-lines.at(i)->line().p1().y()>boundRect.bottom() || (i==0))
+                {
+                    boundRect.setBottom(-lines.at(i)->line().p1().y()); 
+                }
+                if(lines.at(i)->line().p2().x()>boundRect.top() || (i==0))
+                {
+                    boundRect.setTop(-lines.at(i)->line().p2().y()); 
+                    
+                }
+            }
+            if(lines.at(i)->line().dy()<0)
+            {
+                qDebug()<<"Bott"<<boundRect.bottom()<<"Top:"<<boundRect.top()<<"line p1y:"<<lines.at(i)->line().p1().y()<<"line p2y:"<<lines.at(i)->line().p2().y();
+                if(lines.at(i)->line().p2().y()<boundRect.bottom())
+                {
+                    boundRect.setBottom(-lines.at(i)->line().p2().y()); 
+                } 
+                if(lines.at(i)->line().p1().y()<boundRect.top() || (i==0))
+                {
+                    boundRect.setTop(lines.at(i)->line().p1().y()); 
+                    
+                }
+            }
+        }
+        
+        if(boundRect.width()!=boundRect.height())
+        {
+            qreal size=fmax(boundRect.width(),boundRect.width());
+            boundRect.setWidth(size);
+            boundRect.setHeight(size);
+            
+        }
+        
+        return(boundRect);
+    };
     
     void DrawScene::drawNet(double startx ,double endx,double starty,double endy,QColor color,double stepX,double stepY)
     {
         
         QPointF pos,tail;    
-        
+        QColor AxisColor=DRAW->axisColor();
         for ( int i = 0; i < Netlines.count(); i++)
         {
-         if(i==0)
-         {
-              pos=Netlines[0]->line().p1 () ;
-              tail=Netlines.last()->line().p2 () ;
-            // qDebug()<<"POS"<<pos<<"Tail"<<tail<<"start"<<startx<<"end"<<endx;
-            // qDebug()<<"Range"<<tail.x()-pos.x()<<"Zoom"<<2000*(DRAW->zoom());
-            // if((pos.x()<startx  && pos.y()<starty)&&(tail.x()>endx-3*step && tail.y()>endy-3*step))return;
-         }
+       
          delete Netlines[i];   
        }
+        
         qDebug()<<"RedrawNet";
         Netlines.clear();
-        int lines=round(startx/stepX);
+        int lines=qRound(startx/stepX);
         startx=lines*stepX;
         double fx1=startx-7*stepX,fx2,fy1,fy2; 
 
@@ -129,16 +210,17 @@ namespace ActorDraw {
 			Netlines.last()->setPen(QPen(color));
             if(fx1>0-1/DRAW->zoom() && fx1<0+1/DRAW->zoom())
             {
-                QPen axisPen=QPen("blue");
+                QPen axisPen=QPen(AxisColor);
                // axisPen.setWidth(3/DRAW->zoom());
-                Netlines.last()->setPen(axisPen);   
+                Netlines.last()->setPen(axisPen); 
+                Netlines.last()->setZValue(1);
                 Netlines.append(addLine(fx1+1/DRAW->zoom(), fy1 , fx2+1/DRAW->zoom(), fy2 ));
-                Netlines.last()->setZValue(0.5);
+                Netlines.last()->setZValue(1);
                 Netlines.last()->setPen(axisPen); 
             }
 		}
-        Netlines.append(addLine(-1, -1 , 1, 1 ));
-        Netlines.append(addLine(1, -1 , -1, 1 ));
+      //  Netlines.append(addLine(-1, -1 , 1, 1 ));
+       // Netlines.append(addLine(1, -1 , -1, 1 ));
         lines=starty/stepY;
         starty=lines*stepY;
         fy1 = starty-7*stepY;
@@ -155,12 +237,13 @@ namespace ActorDraw {
 			Netlines.last()->setPen(QPen(color));
             if(fy1>0-1/DRAW->zoom() && fy1<0+1/DRAW->zoom())
             {
-                QPen axisPen=QPen("blue");
+                QPen axisPen=QPen(AxisColor);
                // axisPen.setWidth(6/(DRAW->zoom()*2));
                // qDebug()<<"Width"<<6/(DRAW->zoom()*2);
                 Netlines.last()->setPen(axisPen);
+                Netlines.last()->setZValue(1);
                 Netlines.append(addLine(fx1, fy1+1/DRAW->zoom() , fx2, fy2+1/DRAW->zoom() ));
-                Netlines.last()->setZValue(0.5);
+                Netlines.last()->setZValue(1);
                 Netlines.last()->setPen(axisPen);  
             }
             
@@ -169,6 +252,14 @@ namespace ActorDraw {
     }
 void DrawView::resizeEvent ( QResizeEvent * event )
     {
+        if(firstResize)
+        {
+                  qDebug()<<"FirstresizeEvent";
+           QPointF maxRight=mapToScene(geometry().bottomRight());
+            
+            centerOn(maxRight.x()/2-maxRight.x()/5,-maxRight.y()/2+maxRight.y()/4);
+        }
+        firstResize=false;
         qDebug()<<"resizeEvent";
        // setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
        if(!pressed)  DRAW->drawNet();
@@ -209,7 +300,7 @@ void DrawView::resizeEvent ( QResizeEvent * event )
         if(zoom<1/MAX_ZOOM)
         {return;}
        this->scale(zoom/c_scale,zoom/c_scale);
-        setNet();
+        
         c_scale=zoom;
     };
     
@@ -252,11 +343,13 @@ void DrawView::resizeEvent ( QResizeEvent * event )
             
  
             setZoom(zoom()*1.2);
+            setNet();
               DRAW->drawNet();
         }
         else
         { 
             setZoom(zoom()*0.8);
+            setNet();
             DRAW->drawNet();
             
         }
@@ -276,11 +369,18 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     penIsDrawing=false;
     CurScene=new DrawScene(CurView);
     navigator=new DrawNavigator(CurView);
+    showToolsBut=new QToolButton(CurView);
+    showToolsBut->move(20,20);
+    showToolsBut->setCheckable(true);
+    
+    
+    connect(showToolsBut,SIGNAL(toggled (bool)),this,SLOT(showNavigator(bool)));
+    
     navigator->setDraw(this);
     navigator->setParent(CurView);
-    navigator->setFixedSize(QSize(150,200));
-    navigator->move(40,40);
-    navigator->show();
+    navigator->setFixedSize(QSize(130,200));
+    navigator->move(20,showToolsBut->pos().y()+showToolsBut->height());
+    navigator->hide();
     
     CurScene->setDraw(this);
     CurView->setScene(CurScene);
@@ -292,20 +392,25 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     drawNet();
     CreatePen();
     CurView->setZoom(50);
+    CurView->setNet();
     netStepX=1;
     netStepY=1;
     
     
     
- 
+   
     
-    //QBrush curBackground=QBrush(QColor("lightgreen"));
+    QBrush curBackground=QBrush(QColor(DrawSettings()->value("Draw/BackColor","lightgreen").toString()));
 
-  //  CurScene->setBackgroundBrush (curBackground);
+    CurScene->setBackgroundBrush (curBackground);
 
    
 }
-
+void DrawModule::showNavigator(bool state)
+    {
+        navigator->setVisible(state);
+    };
+    
 /* public static */ QList<ExtensionSystem::CommandLineParameter> DrawModule::acceptableCommandLineParameters()
 {
     // See "src/shared/extensionsystem/commandlineparameter.h" for constructor details
@@ -364,7 +469,11 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     // Updates setting on module load, workspace change or appliyng settings dialog.
     // If @param keys is empty -- should reload all settings, otherwise load only setting specified by @param keys
     // TODO implement me
-    Q_UNUSED(settings);  // Remove this line on implementation
+    QBrush curBackground=QBrush(QColor(settings->value("Draw/BackColor","lightgreen").toString()));
+    
+    CurScene->setBackgroundBrush (curBackground);
+    netColor=QColor(settings->value("LineColor","gray").toString());
+    drawNet();
     Q_UNUSED(keys);  // Remove this line on implementation
 }
 
@@ -492,6 +601,7 @@ void DrawModule::drawNet()
        
         mPen->scale(zoom()/50,zoom()/50);
         CurView->setZoom(50);
+        CurView->setNet();
         setNetStepX(1);
         setNetStepY(1);
         CurView->centerOn(5,-5);
@@ -499,7 +609,29 @@ void DrawModule::drawNet()
         drawNet();
     };
     
-    
+     void DrawModule::zoomFullDraw()
+    {
+        
+        QPointF start_d=CurView->mapToScene(CurView->geometry().topLeft());
+        QPointF end_d=CurView->mapToScene(CurView->geometry().bottomRight());
+        qreal width=end_d.x()-start_d.x();
+
+        QRectF sceneInfoRect=CurScene->getRect();
+        qDebug()<<"SceneInfoRect:"<<sceneInfoRect<<"L"<<sceneInfoRect.left()<<"R"<<sceneInfoRect.right()<<"t"<<sceneInfoRect.top()<<"B"<<sceneInfoRect.bottom();
+        //CurView->fitInView(sceneInfoRect);
+        qreal width2=sceneInfoRect.width();
+        CurView->setZoom((CurView->zoom()*(width/width2))*0.64);
+        
+        QRectF newRect(2*sceneInfoRect.left(),2*sceneInfoRect.top(),2*sceneInfoRect.right(),2*sceneInfoRect.bottom());
+        qDebug()<<newRect;
+       // CurView->setSceneRect(newRect);
+       // CurView->setZoom((CurView->zoom()*(width/width2))*0.8);
+        CurView->centerOn((sceneInfoRect.right()+sceneInfoRect.left())/2,(sceneInfoRect.bottom()+sceneInfoRect.top())/2);
+        CurView->setNet();
+        drawNet();       // CurView->centerOn(0,0);
+        mPen->scale(zoom()/50,zoom()/50);
+        
+    };
     void DrawModule::CreatePen(void)
     {
         
