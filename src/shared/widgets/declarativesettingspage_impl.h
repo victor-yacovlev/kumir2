@@ -25,6 +25,9 @@ private /*methods*/:
     void resetToDefaults();
     void addIntegerField(const QString & key, const DeclarativeSettingsPage::Entry & entry);
     void addColorField(const QString & key, const DeclarativeSettingsPage::Entry & entry);
+    void addRealField(const QString & key, const DeclarativeSettingsPage::Entry & entry);
+    void addBoolField(const QString & key, const DeclarativeSettingsPage::Entry & entry);
+    void addStringField(const QString & key, const DeclarativeSettingsPage::Entry & entry);
     void addField(const QString & labelText, QWidget * controlWidget);
        
 private slots:
