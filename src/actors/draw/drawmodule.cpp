@@ -171,7 +171,7 @@ namespace ActorDraw {
         
         if(boundRect.width()!=boundRect.height())
         {
-            qreal size=fmax(boundRect.width(),boundRect.width());
+            qreal size=qMax(boundRect.width(),boundRect.width());
             boundRect.setWidth(size);
             boundRect.setHeight(size);
             
