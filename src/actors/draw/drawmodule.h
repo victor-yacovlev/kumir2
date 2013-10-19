@@ -131,7 +131,12 @@ namespace ActorDraw {
             for(int i=0;i<lines.count();i++)
                 removeItem(lines.at(i));
             lines.clear();
+            for(int i=0;i<texts.count();i++)
+                removeItem(texts.at(i));
+            texts.clear();
+            
         }
+        qreal drawText(const QString &Text, qreal widthChar,QPointF from,QColor color);//Returns offset of pen.
         QRectF getRect();
 
     protected:
@@ -140,6 +145,7 @@ namespace ActorDraw {
         QList<QGraphicsLineItem*> lines;
         QList<QGraphicsLineItem*> Netlines;
         QList<QGraphicsLineItem*> linesDubl;
+        QList<QGraphicsSimpleTextItem*> texts;
         DrawModule* DRAW;
         
        

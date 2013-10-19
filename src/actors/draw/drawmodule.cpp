@@ -179,7 +179,38 @@ namespace ActorDraw {
         
         return(boundRect);
     };
-    
+    qreal DrawScene::drawText(const QString &Text,qreal widthChar,QPointF from,QColor color)
+    {
+        QFont font ( "Courier", 12);
+        font.setPointSizeF(2000.0);
+        QFontMetricsF fontMetric(font);
+        qreal bs=fontMetric.boundingRect("OOOXX").width()/3;
+        qreal inc=0.999;
+        if((widthChar*100)>bs)inc=1.001;
+        
+        while(!((bs+(bs*0.003)>widthChar*1000)&&(bs-(bs*0.003)<widthChar*1000)))
+        {
+            qreal psizeF=font.pointSizeF();
+            if(psizeF<0.001)
+            {
+                break;
+                qDebug("ERROR SET FONT SIZE");
+            }
+          font.setPointSizeF(psizeF*inc);
+            fontMetric=QFontMetricsF(font);
+            bs=fontMetric.boundingRect("OOOXX").width()/5;
+        }
+       
+        fontMetric=QFontMetricsF(font);
+        qDebug()<<"Char Size:"<<fontMetric.boundingRect("OOOXX").width()/5000;
+        
+        
+        texts.append(addSimpleText(Text,font));
+        texts.last()->scale(0.001,0.001); 
+        texts.last()->setPos(from.x(), from.y()-fontMetric.boundingRect("OOOXX").height()/1000);
+        texts.last()->setPen(QPen(color));
+        return widthChar*Text.length();
+    };
     void DrawScene::drawNet(double startx ,double endx,double starty,double endy,QColor color,double stepX,double stepY)
     {
         
@@ -562,6 +593,9 @@ void DrawModule::showNavigator(bool state)
 {
     /* алг надпись(вещ width, лит text) */
     // TODO implement me
+    
+    qreal offset=CurScene->drawText(text, width, mPen->pos(),QColor(penColor.r, penColor.g, penColor.b, penColor.a));
+    mPen->moveBy(offset, 0);
     Q_UNUSED(width)  // Remove this line on implementation;
     Q_UNUSED(text)  // Remove this line on implementation;
     
