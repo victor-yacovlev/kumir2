@@ -72,6 +72,7 @@ namespace ActorDraw {
     public slots:
         void XvalueChange(double value);
         void YvalueChange(double value);
+    
     private:
         double Zoom;
         QGraphicsScene* myScene;
@@ -139,7 +140,8 @@ namespace ActorDraw {
         bool isLineAt(const QPointF &pos,qreal radius);
         qreal drawText(const QString &Text, qreal widthChar,QPointF from,QColor color);//Returns offset of pen.
         QRectF getRect();
-
+        int saveToFile(const QString& p_FileName);
+        int loadFromFile(const QString& p_FileName);
     protected:
        // void resizeEvent ( QResizeEvent * event );
     private:
@@ -224,7 +226,8 @@ public slots:
     void zoomNorm();
     
     void showNavigator(bool state);
-
+    void openFile();
+    void saveFile();
 
 
     /* ========= CLASS PRIVATE ========= */
@@ -242,6 +245,7 @@ private:
     QMutex mutex;
     DrawNavigator* navigator;
     QToolButton *showToolsBut;
+    QDir curDir;
 
 
 
