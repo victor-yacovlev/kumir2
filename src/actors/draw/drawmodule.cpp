@@ -693,7 +693,7 @@ void DrawView::resizeEvent ( QResizeEvent * event )
                 DRAW->setNetStepX(DRAW->NetStepX()*0.5);
                 DRAW->setNetStepY(DRAW->NetStepY()*0.5);
                 
-                DRAW->scalePen(0.5);
+               // DRAW->scalePen(0.5);
                 
             }
             if(pixel_per_cell<20)
@@ -701,7 +701,7 @@ void DrawView::resizeEvent ( QResizeEvent * event )
                 DRAW->setNetStepX(DRAW->NetStepX()*2);
                 DRAW->setNetStepY(DRAW->NetStepY()*2);
                 DRAW->drawNet();
-                DRAW->scalePen(2);
+                //DRAW->scalePen(1.2);
                 update();
             }
 
@@ -723,12 +723,14 @@ void DrawView::resizeEvent ( QResizeEvent * event )
  
             setZoom(zoom()*1.2);
             setNet();
+            DRAW->scalePen(DRAW->Pen()->scale()*(1/1.2));
               DRAW->drawNet();
         }
         else
         { 
             setZoom(zoom()*0.8);
             setNet();
+            DRAW->scalePen(DRAW->Pen()->scale()*((1/0.8)));
             DRAW->drawNet();
             
         }
@@ -780,8 +782,8 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     
     
     
-   
-    
+    CurView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    CurView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     QBrush curBackground=QBrush(QColor(DrawSettings()->value("Draw/BackColor","lightgreen").toString()));
 
     CurScene->setBackgroundBrush (curBackground);
@@ -1011,7 +1013,7 @@ void DrawModule::drawNet()
         mutex.lock();
         QPointF start_d=CurView->mapToScene(CurView->geometry().topLeft());
         QPointF end_d=CurView->mapToScene(CurView->geometry().bottomRight());
-        qDebug()<<"StartDeb"<<start_d<<end_d;
+       // qDebug()<<"StartDeb"<<start_d<<end_d;
         // QPointF end=CurView->mapToScene(CurView->viewport()->rect().bottomRight().x(),CurView->viewport()->rect().bottomRight().y());
         QPointF start=CurView->sceneRect().topLeft();
         QPointF end=CurView->sceneRect().bottomRight();

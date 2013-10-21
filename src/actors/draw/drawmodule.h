@@ -196,7 +196,8 @@ public /* methods */:
     void scalePen(double factor)
     {
         mutex.lock();
-        mPen->scale(factor,factor);
+        mPen->setScale(factor);
+        qDebug()<<"PenScale"<<factor<<"mPen->scale"<<mPen->scale();
         mutex.unlock();
     }
     static ExtensionSystem::SettingsPtr DrawSettings();
