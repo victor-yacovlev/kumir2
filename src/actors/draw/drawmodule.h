@@ -136,12 +136,14 @@ namespace ActorDraw {
             texts.clear();
             
         }
+        bool isLineAt(const QPointF &pos,qreal radius);
         qreal drawText(const QString &Text, qreal widthChar,QPointF from,QColor color);//Returns offset of pen.
         QRectF getRect();
 
     protected:
        // void resizeEvent ( QResizeEvent * event );
     private:
+        bool isUserLine(QGraphicsItem*);//Return true if item is user item;
         QList<QGraphicsLineItem*> lines;
         QList<QGraphicsLineItem*> Netlines;
         QList<QGraphicsLineItem*> linesDubl;
@@ -212,6 +214,7 @@ public slots:
     void runMoveTo(const qreal x, const qreal y);
     void runMoveBy(const qreal dX, const qreal dY);
     void runAddCaption(const qreal width, const QString& text);
+    bool runIsLineAtCircle(const qreal x, const qreal y, const qreal radius);
     void zoomFullDraw();
     
     void drawNet();

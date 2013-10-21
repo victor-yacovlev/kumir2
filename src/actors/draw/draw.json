@@ -37,7 +37,18 @@
                 {"baseType": "double", "name": "width"},
                 {"baseType": "string", "name": "text"}
             ]
-        }        
+        }, 
+           {
+            "name": {"ascii": "@is line at circle", "ru_RU": "@есть отрезок в области"},
+            "returnType": "bool",
+            "arguments": [
+                {"baseType": "double", "name": "x"},
+                {"baseType": "double", "name": "y"},
+                {"baseType": "double", "name": "radius"}
+            ]
+        } 
+               
+        
     ],
     "gui": {
         "windows": [

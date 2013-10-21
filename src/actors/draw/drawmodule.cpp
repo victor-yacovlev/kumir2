@@ -179,6 +179,30 @@ namespace ActorDraw {
         
         return(boundRect);
     };
+    bool DrawScene::isUserLine(QGraphicsItem* obj)
+    {
+        for(int i=0;i<lines.count();i++)
+        {
+            if(lines.at(i)==obj)return true;
+        }
+        return false;
+    };
+    bool DrawScene::isLineAt(const QPointF &pos,qreal radius)
+    {
+        QGraphicsEllipseItem * testCirc=addEllipse(QRectF(pos.x()-radius,pos.y()-radius,radius*2,radius*2));
+        QList<QGraphicsItem *> colItems=collidingItems(testCirc);
+        delete testCirc;
+     
+        for (int i=0;i<colItems.count();i++)
+            {
+             
+             if(isUserLine(colItems.at(i)))
+                return true;
+                   
+            }
+        return false;
+        
+    };
     qreal DrawScene::drawText(const QString &Text,qreal widthChar,QPointF from,QColor color)
     {
         QFont font ( "Courier", 12);
@@ -600,6 +624,13 @@ void DrawModule::showNavigator(bool state)
     Q_UNUSED(text)  // Remove this line on implementation;
     
 }
+    
+    
+bool DrawModule::runIsLineAtCircle(const qreal x, const qreal y, const qreal radius)
+    {
+        return CurScene->isLineAt(QPointF(x,-y), radius);
+    };    
+    
 void DrawModule::drawNet()
     {
         mutex.lock();
