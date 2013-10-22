@@ -1029,26 +1029,31 @@ void DrawModule::drawNet()
     void DrawModule::zoomIn()
     {
         CurView->setZoom(CurView->zoom()*2);
+        scalePen(Pen()->scale()*(0.5));
         CurView->setNet();
         drawNet();
     };
     void DrawModule::zoomOut()
     {
         CurView->setZoom(CurView->zoom()*0.5);
+        scalePen(Pen()->scale()*(2));
         CurView->setNet();
         drawNet(); 
     };
     void DrawModule::zoomNorm()
     {
        
-        mPen->scale(zoom()/50,zoom()/50);
+       // mPen->scale(zoom()/50,zoom()/50);
         CurView->setZoom(50);
         CurView->setNet();
+        scalePen(1.5);
         setNetStepX(1);
         setNetStepY(1);
+       
         CurView->centerOn(5,-5);
         CurView->setNet();
         drawNet();
+        navigator->updateSelf(1,1);
     };
     
      void DrawModule::zoomFullDraw()
@@ -1069,10 +1074,10 @@ void DrawModule::drawNet()
        // CurView->setSceneRect(newRect);
        // CurView->setZoom((CurView->zoom()*(width/width2))*0.8);
         CurView->centerOn((sceneInfoRect.right()+sceneInfoRect.left())/2,(sceneInfoRect.bottom()+sceneInfoRect.top())/2);
-        CurView->setNet();
-        drawNet();       // CurView->centerOn(0,0);
-        mPen->scale(zoom()/50,zoom()/50);
         
+        drawNet();       // CurView->centerOn(0,0);
+        scalePen(zoom()*.003);
+        navigator->updateSelf(NetStepX(),NetStepY());
     };
     void DrawModule::CreatePen(void)
     {
