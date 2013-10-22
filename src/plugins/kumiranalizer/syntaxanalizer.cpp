@@ -5120,8 +5120,14 @@ AST::ExpressionPtr  SyntaxAnalizer::parseFunctionCall(const QList<Lexem *> &lexe
     if (diff>0) {
         for (int i=0; i<diff; i++) {
             QList<Lexem*> lxs = arguments[arguments.size()-1-i];
-            foreach (Lexem * lx, lxs) {
-                lx->error = _("Extra algorithm arguments");
+            if (lxs.isEmpty()) {
+                Lexem * lx = comas[comas.size()-1-i];
+                lx->error = _("Extra coma");
+            }
+            else {
+                foreach (Lexem * lx, lxs) {
+                    lx->error = _("Extra algorithm arguments");
+                }
             }
         }
         return AST::ExpressionPtr();
