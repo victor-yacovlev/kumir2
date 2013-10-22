@@ -72,6 +72,7 @@ namespace ActorDraw {
     public slots:
         void XvalueChange(double value);
         void YvalueChange(double value);
+    
     private:
         double Zoom;
         QGraphicsScene* myScene;
@@ -131,15 +132,24 @@ namespace ActorDraw {
             for(int i=0;i<lines.count();i++)
                 removeItem(lines.at(i));
             lines.clear();
+            for(int i=0;i<texts.count();i++)
+                removeItem(texts.at(i));
+            texts.clear();
+            
         }
+        bool isLineAt(const QPointF &pos,qreal radius);
+        qreal drawText(const QString &Text, qreal widthChar,QPointF from,QColor color);//Returns offset of pen.
         QRectF getRect();
-
+        int saveToFile(const QString& p_FileName);
+        int loadFromFile(const QString& p_FileName);
     protected:
        // void resizeEvent ( QResizeEvent * event );
     private:
+        bool isUserLine(QGraphicsItem*);//Return true if item is user item;
         QList<QGraphicsLineItem*> lines;
         QList<QGraphicsLineItem*> Netlines;
         QList<QGraphicsLineItem*> linesDubl;
+        QList<QGraphicsSimpleTextItem*> texts;
         DrawModule* DRAW;
         
        
@@ -186,7 +196,8 @@ public /* methods */:
     void scalePen(double factor)
     {
         mutex.lock();
-        mPen->scale(factor,factor);
+        mPen->setScale(factor);
+        qDebug()<<"PenScale"<<factor<<"mPen->scale"<<mPen->scale();
         mutex.unlock();
     }
     static ExtensionSystem::SettingsPtr DrawSettings();
@@ -206,6 +217,7 @@ public slots:
     void runMoveTo(const qreal x, const qreal y);
     void runMoveBy(const qreal dX, const qreal dY);
     void runAddCaption(const qreal width, const QString& text);
+    bool runIsLineAtCircle(const qreal x, const qreal y, const qreal radius);
     void zoomFullDraw();
     
     void drawNet();
@@ -215,7 +227,8 @@ public slots:
     void zoomNorm();
     
     void showNavigator(bool state);
-
+    void openFile();
+    void saveFile();
 
 
     /* ========= CLASS PRIVATE ========= */
@@ -233,6 +246,7 @@ private:
     QMutex mutex;
     DrawNavigator* navigator;
     QToolButton *showToolsBut;
+    QDir curDir;
 
 
 
