@@ -1,7 +1,0 @@
-.gwt/*
-war/WEB-INF/*
-war/test/*
-gwt-unitCache
-war/*.log
-war/ru.niisi.kumir2.*
-*.iml

@@ -1,2 +1,0 @@
-name    = PascalAnalizer
-provides= Analizer
