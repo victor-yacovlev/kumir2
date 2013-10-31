@@ -168,6 +168,25 @@ EXTERN void __kumir__stdlib__ln(__kumir_scalar  * result, const __kumir_scalar *
 EXTERN void __kumir__stdlib__lg(__kumir_scalar  * result, const __kumir_scalar * value);
 EXTERN void __kumir__stdlib__exp(__kumir_scalar  * result, const __kumir_scalar * value);
 EXTERN void __kumir__stdlib__rnd(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__iabs(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__abs(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__sign(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__int(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__arcsin(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__arccos(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__arctg(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__arcctg(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__tg(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__ctg(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__sin(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__cos(__kumir_scalar * result, const __kumir_scalar * value);
+
+// String
+EXTERN void __kumir__stdlib__tsel_v_lit(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__vesch_v_lit(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__dlin(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__lit_v_vesch(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success);
+EXTERN void __kumir__stdlib__lit_v_tsel(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success);
 
 // Files
 EXTERN void __kumir__stdlib__est_dannyie(__kumir_scalar  * result, const __kumir_scalar * handle);
@@ -178,6 +197,7 @@ EXTERN void __kumir__stdlib__zakryit(const __kumir_scalar * handle);
 
 // System
 EXTERN void __kumir__stdlib__vremya(__kumir_scalar * result);
+EXTERN void __kumir__stdlib__zhdat(const __kumir_scalar * value);
 
 EXTERN void test_123();
 EXTERN void test_456(__kumir_scalar arg);

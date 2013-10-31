@@ -14,6 +14,7 @@
 static Kumir::FileType __kumir_scalar_to_file_type(const __kumir_scalar & scalar);
 static void __kumir_create_string(__kumir_scalar * result, const std::wstring & wstr);
 static __kumir_real __kumir_scalar_as_real(const __kumir_scalar * scalar);
+static std::wstring __kumir_scalar_as_wstring(const __kumir_scalar * scalar);
 
 EXTERN void __use_all_types()
 {
@@ -176,7 +177,7 @@ static void __kumir_handle_abort()
 EXTERN void __kumir_check_value_defined(const __kumir_scalar * value)
 {
     if (value == nullptr || !value->defined) {
-        Kumir::Core::abort(Kumir::Core::fromUtf8("Значение величины не определено"));
+        Kumir::Core::abort(Kumir::Core::fromUtf8("Нет значения у величины"));
         __kumir_handle_abort();
     }
 }
@@ -452,6 +453,152 @@ EXTERN void __kumir__stdlib__rnd(__kumir_scalar * result, const __kumir_scalar *
                         );
 }
 
+EXTERN void __kumir__stdlib__iabs(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_int(result,
+                       Kumir::Math::iabs(
+                           value->data.i
+                           )
+                       );
+}
+
+EXTERN void __kumir__stdlib__abs(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_real(result,
+                       Kumir::Math::abs(
+                           __kumir_scalar_as_real(value)
+                           )
+                       );
+}
+
+EXTERN void __kumir__stdlib__sign(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_int(result,
+                       Kumir::Math::sign(
+                           __kumir_scalar_as_real(value)
+                           )
+                       );
+}
+
+EXTERN void __kumir__stdlib__int(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_int(result,
+                       Kumir::Math::intt(
+                           __kumir_scalar_as_real(value)
+                           )
+                       );
+}
+
+EXTERN void __kumir__stdlib__arcsin(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_real(result,
+                        Kumir::Math::arcsin(__kumir_scalar_as_real(value))
+                        );
+}
+
+EXTERN void __kumir__stdlib__arccos(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_real(result,
+                        Kumir::Math::arccos(__kumir_scalar_as_real(value))
+                        );
+}
+
+EXTERN void __kumir__stdlib__arctg(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_real(result,
+                        Kumir::Math::arctg(__kumir_scalar_as_real(value))
+                        );
+}
+
+EXTERN void __kumir__stdlib__arcctg(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_real(result,
+                        Kumir::Math::arcctg(__kumir_scalar_as_real(value))
+                        );
+}
+
+EXTERN void __kumir__stdlib__tg(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_real(result,
+                        Kumir::Math::tg(__kumir_scalar_as_real(value))
+                        );
+}
+
+EXTERN void __kumir__stdlib__ctg(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_real(result,
+                        Kumir::Math::ctg(__kumir_scalar_as_real(value))
+                        );
+}
+
+EXTERN void __kumir__stdlib__sin(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_real(result,
+                        Kumir::Math::sin(__kumir_scalar_as_real(value))
+                        );
+}
+
+EXTERN void __kumir__stdlib__cos(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_real(result,
+                        Kumir::Math::cos(__kumir_scalar_as_real(value))
+                        );
+}
+
+EXTERN void __kumir__stdlib__tsel_v_lit(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_string(result,
+                       Kumir::Converter::intToString(value->data.i)
+                       );
+}
+
+EXTERN void __kumir__stdlib__vesch_v_lit(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_string(result,
+                       Kumir::Converter::realToString(__kumir_scalar_as_real(value))
+                       );
+}
+
+EXTERN void __kumir__stdlib__dlin(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_int(result,
+                       Kumir::StringUtils::length(__kumir_scalar_as_wstring(value))
+                );
+}
+
+EXTERN void __kumir__stdlib__lit_v_vesch(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success)
+{
+    __kumir_check_value_defined(value);
+    bool ok;
+    double res = Kumir::Converter::stringToReal(__kumir_scalar_as_wstring(value), ok);
+    __kumir_create_real(result, res);
+    __kumir_create_bool(success, ok);
+}
+
+EXTERN void __kumir__stdlib__lit_v_tsel(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success)
+{
+    __kumir_check_value_defined(value);
+    bool ok;
+    int res = Kumir::Converter::stringToInt(__kumir_scalar_as_wstring(value), ok);
+    __kumir_create_int(result, res);
+    __kumir_create_bool(success, ok);
+}
+
 // Files
 EXTERN void __kumir__stdlib__est_dannyie(__kumir_scalar * result, const __kumir_scalar * handle)
 {
@@ -493,6 +640,26 @@ EXTERN void __kumir__stdlib__zakryit(const __kumir_scalar * handle)
 EXTERN void __kumir__stdlib__vremya(__kumir_scalar * result)
 {
     __kumir_create_int(result, Kumir::System::time());
+}
+
+EXTERN void __kumir__stdlib__zhdat(const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    if (value->data.i < 0) {
+        Kumir::Core::abort(Kumir::Core::fromUtf8("Отрицательное время"));
+        __kumir_handle_abort();
+    }
+    uint32_t msec = static_cast<uint32_t>(value->data.i);
+#if defined(WIN32) || defined(_WIN32)
+    Sleep(msec);
+#else
+    uint32_t sec = msec / 1000;
+    uint32_t usec = (msec - sec * 1000) * 1000;
+    // usleep works in range [0, 1000000), so
+    // call sleep(sec) first for long periods
+    sleep(sec);
+    usleep(usec);
+#endif
 }
 
 static __kumir_real __kumir_scalar_as_real(const __kumir_scalar * scalar)
