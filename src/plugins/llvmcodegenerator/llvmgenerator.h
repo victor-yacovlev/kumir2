@@ -82,10 +82,16 @@ private:
     llvm::Function* kumirCreateUndefinedScalar_;
     llvm::Function* kumirCreateUndefinedArray_;
     llvm::Function* kumirCreateDefinedScalar_;
-    llvm::Function* kumirCreateArray1_;
     llvm::Function* kumirLinkArray_;
+    llvm::Function* kumirCreateArray1_;
     llvm::Function* kumirRefArray1_;
     llvm::Function* kumirCloneArray1_;
+    llvm::Function* kumirCreateArray2_;
+    llvm::Function* kumirRefArray2_;
+    llvm::Function* kumirCloneArray2_;
+    llvm::Function* kumirCreateArray3_;
+    llvm::Function* kumirRefArray3_;
+    llvm::Function* kumirCloneArray3_;
     llvm::Function* kumirFreeArray_;
 
     llvm::Function* kumirFillArrayI_;
@@ -103,6 +109,8 @@ private:
     llvm::Function* kumirMoveScalar_;
     llvm::Function* kumirFreeScalar_;
     llvm::Function* kumirGetArray1Element_;
+    llvm::Function* kumirGetArray2Element_;
+    llvm::Function* kumirGetArray3Element_;
 
     llvm::Function* kumirLoopForFromToInitCounter_;
     llvm::Function* kumirLoopForFromToStepInitCounter_;

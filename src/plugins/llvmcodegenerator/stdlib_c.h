@@ -58,19 +58,67 @@ EXTERN void __kumir_operator_pow(__kumir_scalar * result, const __kumir_scalar *
 EXTERN void __kumir_operator_neg(__kumir_scalar * result, const __kumir_scalar * left);
 
 EXTERN void __kumir_create_array_1(__kumir_array * result,
-                                 const __kumir_scalar * left_1,
-                                 const __kumir_scalar * right_1
-                                 );
+                                   const __kumir_scalar * left_1,
+                                   const __kumir_scalar * right_1
+                                   );
 
 EXTERN void __kumir_create_array_ref_1(__kumir_array * result,
-                                 const __kumir_scalar * left_1,
-                                 const __kumir_scalar * right_1
-                                 );
+                                       const __kumir_scalar * left_1,
+                                       const __kumir_scalar * right_1
+                                       );
 
 EXTERN void __kumir_create_array_copy_1(__kumir_array * result,
-                                 const __kumir_scalar * left_1,
-                                 const __kumir_scalar * right_1
-                                 );
+                                        const __kumir_scalar * left_1,
+                                        const __kumir_scalar * right_1
+                                        );
+
+EXTERN void __kumir_create_array_2(__kumir_array * result,
+                                   const __kumir_scalar * left_1,
+                                   const __kumir_scalar * right_1,
+                                   const __kumir_scalar * left_2,
+                                   const __kumir_scalar * right_2
+                                   );
+
+EXTERN void __kumir_create_array_ref_2(__kumir_array * result,
+                                       const __kumir_scalar * left_1,
+                                       const __kumir_scalar * right_1,
+                                       const __kumir_scalar * left_2,
+                                       const __kumir_scalar * right_2
+                                       );
+
+EXTERN void __kumir_create_array_copy_2(__kumir_array * result,
+                                        const __kumir_scalar * left_1,
+                                        const __kumir_scalar * right_1,
+                                        const __kumir_scalar * left_2,
+                                        const __kumir_scalar * right_2
+                                        );
+
+EXTERN void __kumir_create_array_3(__kumir_array * result,
+                                   const __kumir_scalar * left_1,
+                                   const __kumir_scalar * right_1,
+                                   const __kumir_scalar * left_2,
+                                   const __kumir_scalar * right_2,
+                                   const __kumir_scalar * left_3,
+                                   const __kumir_scalar * right_3
+                                   );
+
+EXTERN void __kumir_create_array_ref_3(__kumir_array * result,
+                                       const __kumir_scalar * left_1,
+                                       const __kumir_scalar * right_1,
+                                       const __kumir_scalar * left_2,
+                                       const __kumir_scalar * right_2,
+                                       const __kumir_scalar * left_3,
+                                       const __kumir_scalar * right_3
+                                       );
+
+EXTERN void __kumir_create_array_copy_3(__kumir_array * result,
+                                        const __kumir_scalar * left_1,
+                                        const __kumir_scalar * right_1,
+                                        const __kumir_scalar * left_2,
+                                        const __kumir_scalar * right_2,
+                                        const __kumir_scalar * left_3,
+                                        const __kumir_scalar * right_3
+                                        );
 
 
 EXTERN void __kumir_link_array(__kumir_array * result, const __kumir_array * from);
@@ -82,7 +130,23 @@ EXTERN void __kumir_fill_array_b(__kumir_array array, const char * data);
 EXTERN void __kumir_fill_array_c(__kumir_array array, const char * data);
 EXTERN void __kumir_fill_array_s(__kumir_array array, const char * data);
 
-EXTERN void __kumir_get_array_1_element(__kumir_scalar ** result, bool value_expected, __kumir_array * array, const __kumir_scalar * x);
+EXTERN void __kumir_get_array_1_element(__kumir_scalar ** result,
+                                        bool value_expected,
+                                        __kumir_array * array,
+                                        const __kumir_scalar * x);
+
+EXTERN void __kumir_get_array_2_element(__kumir_scalar ** result,
+                                        bool value_expected,
+                                        __kumir_array * array,
+                                        const __kumir_scalar * y,
+                                        const __kumir_scalar * x);
+
+EXTERN void __kumir_get_array_3_element(__kumir_scalar ** result,
+                                        bool value_expected,
+                                        __kumir_array * array,
+                                        const __kumir_scalar * z,
+                                        const __kumir_scalar * y,
+                                        const __kumir_scalar * x);
 
 EXTERN void __kumir_loop_for_from_to_init_counter(const __kumir_scalar from);
 EXTERN void __kumir_loop_for_from_to_step_init_counter(const __kumir_scalar from, const __kumir_scalar step);

@@ -366,12 +366,14 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
                     initArgs.push_back(lright);
                 }
                 if (karg->accessType == AST::AccessArgumentIn) {
-                    if (1u == karg->dimension) initFunc = kumirCloneArray1_;
-                    // TODO implement 2D/3D
+                    if      (1u == karg->dimension) initFunc = kumirCloneArray1_;
+                    else if (2u == karg->dimension) initFunc = kumirCloneArray2_;
+                    else if (3u == karg->dimension) initFunc = kumirCloneArray3_;
                 }
                 else {
-                    if (1u == karg->dimension) initFunc = kumirRefArray1_;
-                    // TODO implement 2D/3D
+                    if      (1u == karg->dimension) initFunc = kumirRefArray1_;
+                    else if (2u == karg->dimension) initFunc = kumirRefArray2_;
+                    else if (3u == karg->dimension) initFunc = kumirRefArray3_;
                 }
                 Q_ASSERT(initFunc);
                 builder.CreateCall(initFunc, initArgs);
@@ -508,8 +510,9 @@ llvm::Value* LLVMGenerator::createVarInitialize(llvm::IRBuilder<> &builder, cons
     }
     else {
         llvm::Function * kumirInitArray = 0;
-        if (1u == var->dimension) kumirInitArray = kumirCreateArray1_;
-        // TODO implement 2D/3D
+        if      (1u == var->dimension) kumirInitArray = kumirCreateArray1_;
+        else if (2u == var->dimension) kumirInitArray = kumirCreateArray2_;
+        else if (3u == var->dimension) kumirInitArray = kumirCreateArray3_;
         Q_ASSERT(kumirInitArray);
         initFunc = kumirInitArray;
         for (quint8 boundIndex=0; boundIndex<var->dimension; boundIndex++) {
@@ -1107,7 +1110,8 @@ llvm::Value * LLVMGenerator::createArrayElementGet(llvm::IRBuilder<> &builder, c
     }
     llvm::Function * getPtrFunc = 0;
     if      (1u == ex->variable->dimension) getPtrFunc = kumirGetArray1Element_;
-    // TODO implement 2D/3D
+    else if (2u == ex->variable->dimension) getPtrFunc = kumirGetArray2Element_;
+    else if (3u == ex->variable->dimension) getPtrFunc = kumirGetArray3Element_;
     Q_ASSERT(getPtrFunc);
     builder.CreateCall(getPtrFunc, args);
     if (isLvalue) {
@@ -1472,6 +1476,24 @@ void LLVMGenerator::createInternalExternsTable()
     kumirCloneArray1_ = stdlibModule_->getFunction("__kumir_create_array_copy_1");
     Q_ASSERT(kumirCloneArray1_);
 
+    kumirCreateArray2_ = stdlibModule_->getFunction("__kumir_create_array_2");
+    Q_ASSERT(kumirCreateArray2_);
+
+    kumirRefArray2_ = stdlibModule_->getFunction("__kumir_create_array_ref_2");
+    Q_ASSERT(kumirRefArray2_);
+
+    kumirCloneArray2_ = stdlibModule_->getFunction("__kumir_create_array_copy_2");
+    Q_ASSERT(kumirCloneArray2_);
+
+    kumirCreateArray3_ = stdlibModule_->getFunction("__kumir_create_array_3");
+    Q_ASSERT(kumirCreateArray3_);
+
+    kumirRefArray3_ = stdlibModule_->getFunction("__kumir_create_array_ref_3");
+    Q_ASSERT(kumirRefArray3_);
+
+    kumirCloneArray3_ = stdlibModule_->getFunction("__kumir_create_array_copy_3");
+    Q_ASSERT(kumirCloneArray3_);
+
     kumirLinkArray_ = stdlibModule_->getFunction("__kumir_link_array");
     Q_ASSERT(kumirLinkArray_);
 
@@ -1591,6 +1613,12 @@ void LLVMGenerator::createInternalExternsTable()
 
     kumirGetArray1Element_ = stdlibModule_->getFunction("__kumir_get_array_1_element");
     Q_ASSERT(kumirGetArray1Element_);    
+
+    kumirGetArray2Element_ = stdlibModule_->getFunction("__kumir_get_array_2_element");
+    Q_ASSERT(kumirGetArray2Element_);
+
+    kumirGetArray3Element_ = stdlibModule_->getFunction("__kumir_get_array_3_element");
+    Q_ASSERT(kumirGetArray3Element_);
 
     kumirLoopForFromToInitCounter_ = stdlibModule_->getFunction("__kumir_loop_for_from_to_init_counter");
     kumirLoopForFromToStepInitCounter_ = stdlibModule_->getFunction("__kumir_loop_for_from_to_step_init_counter");
