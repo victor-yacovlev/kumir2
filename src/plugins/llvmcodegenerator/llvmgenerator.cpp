@@ -1353,7 +1353,11 @@ llvm::Value * LLVMGenerator::createSubExpession(llvm::IRBuilder<> &builder, cons
     case AST::OpLessOrEqual:    opFunc = kumirOpLq_;    break;
     case AST::OpGreaterOrEqual: opFunc = kumirOpGq_;    break;
     case AST::OpSumm:           opFunc = kumirOpAdd_;   break;
-    case AST::OpSubstract:      opFunc = kumirOpSub_;   break;
+    case AST::OpSubstract:
+        opFunc = operands.size() == 2u
+                ? kumirOpSub_
+                : kumirOpNeg_;
+        break;
     case AST::OpMultiply:       opFunc = kumirOpMul_;   break;
     case AST::OpDivision:       opFunc = kumirOpDiv_;   break;
     case AST::OpPower:          opFunc = kumirOpPow_;   break;
