@@ -40,7 +40,9 @@ EXTERN void __kumir_output_file_ss(const __kumir_scalar * handle, const __kumir_
 EXTERN void __kumir_input_stdin(const __kumir_int format, __kumir_scalar ** ptr);
 EXTERN void __kumir_input_file(const __kumir_scalar * handle, const __kumir_int format, __kumir_scalar ** ptr);
 
+EXTERN void __kumir_set_current_line_number(const int32_t line_no);
 EXTERN void __kumir_assert(const __kumir_scalar * assumption);
+EXTERN void __kumir_abort_on_error(const char * message);
 
 EXTERN void __kumir_operator_eq(__kumir_scalar * result, const __kumir_scalar * left, const __kumir_scalar * right);
 EXTERN void __kumir_operator_ls(__kumir_scalar * result, const __kumir_scalar * left, const __kumir_scalar * right);

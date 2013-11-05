@@ -7,6 +7,7 @@
 #include "dataformats/ast_expression.h"
 #include "dataformats/ast_type.h"
 
+#include "interfaces/generatorinterface.h"
 
 #include <llvm/Module.h>
 #include <llvm/LLVMContext.h>
@@ -23,7 +24,7 @@ class LLVMGenerator
 {
 public:
     explicit LLVMGenerator();
-    void reset(bool linkStdLibModule);
+    void reset(bool linkStdLibModule, Shared::GeneratorInterface::DebugLevel debugLevel);
     llvm::Module* createModule(const AST::ModulePtr kmod);
 private:
     void createStdLibModule();
@@ -46,6 +47,7 @@ private:
     void createIfThenElse(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createSwitchCaseElse(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createBreak(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
+    void createError(llvm::IRBuilder<> & builder, const AST::StatementPtr & st);
     llvm::Value* calculate(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex, bool isLvalue = false);
     llvm::Value* createConstant(llvm::IRBuilder<> & builder, const AST::Type kty, const QVariant & value);
     QByteArray createArray_0_ConstantData(const AST::VariableBaseType bt, const QVariant & value, bool addDefFlag);
@@ -139,6 +141,8 @@ private:
     llvm::Function* kumirInputFile_;
 
     llvm::Function* kumirAssert_;
+    llvm::Function* kumirAbortOnError_;
+    llvm::Function* kumirSetCurrentLineNumber_;
 
     llvm::Function* kumirOpEq_;
     llvm::Function* kumirOpNeq_;
@@ -159,6 +163,8 @@ private:
     std::list<llvm::Value*> tempValsToFree_;
     bool linkStdLibModule_;
     std::list<llvm::Function*> initFunctions_;
+
+    Shared::GeneratorInterface::DebugLevel debugLevel_;
 
 
     /**

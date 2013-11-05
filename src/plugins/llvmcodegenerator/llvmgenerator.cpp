@@ -5,6 +5,8 @@
 #include "dataformats/ast_algorhitm.h"
 #include "dataformats/ast_statement.h"
 #include "dataformats/ast_expression.h"
+#include "errormessages/errormessages.h"
+#include "dataformats/lexem.h"
 
 #include <llvm/Type.h>
 #include <llvm/TypeBuilder.h>
@@ -53,9 +55,10 @@ LLVMGenerator::LLVMGenerator()
 }
 
 
-void LLVMGenerator::reset(bool linkStdLibModule)
+void LLVMGenerator::reset(bool linkStdLibModule, Shared::GeneratorInterface::DebugLevel debugLevel)
 {
     linkStdLibModule_ = linkStdLibModule;
+    debugLevel_ = debugLevel;
     context_ = new llvm::LLVMContext();
     currentModule_ = 0;
     currentFunction_ = 0;    
@@ -435,37 +438,56 @@ void LLVMGenerator::addFunctionBody(const QList<AST::StatementPtr> & statements,
         builder.SetInsertPoint(block);
         const AST::StatementPtr & statement = statements.at(i);
         const AST::StatementType type = statement->type;
+        if (statement->lexems.size() > 0) {
+            const AST::Lexem * frontLexem = statement->lexems.front();
+            int lineNo = frontLexem->lineNo + 1;
+            Q_ASSERT(kumirSetCurrentLineNumber_);
+            if (debugLevel_ != Shared::GeneratorInterface::NoDebug) {
+                builder.CreateCall(kumirSetCurrentLineNumber_,
+                                   llvm::ConstantInt::getSigned(
+                                       llvm::Type::getInt32Ty(ctx),
+                                       lineNo)
+                                   );
+            }
+        }
+        if (!statement->error.isEmpty()) {
+            createError(builder, statement);
+        }
+        else {
         switch (type) {
-        case AST::StVarInitialize:
-            createVarInitialize(builder, statement, alg.isNull());
-            break;
-        case AST::StAssign:
-            createAssign(builder, statement, alg);
-            break;
-        case AST::StAssert:
-            createAssert(builder, statement, alg);
-            break;
-        case AST::StOutput:
-            createOutput(builder, statement, alg);
-            break;
-        case AST::StInput:
-            createInput(builder, statement, alg);
-            break;
-        case AST::StLoop:
-            createLoop(builder, statement, alg);
-            break;
-        case AST::StIfThenElse:
-            createIfThenElse(builder, statement, alg);
-            break;
-        case AST::StSwitchCaseElse:
-            createSwitchCaseElse(builder, statement, alg);
-            break;
-        case AST::StBreak:
-            createBreak(builder, statement, alg);
-            break;
-        default:
-            qFatal("Not implemented!");
-            break;
+            case AST::StVarInitialize:
+                createVarInitialize(builder, statement, alg.isNull());
+                break;
+            case AST::StAssign:
+                createAssign(builder, statement, alg);
+                break;
+            case AST::StAssert:
+                createAssert(builder, statement, alg);
+                break;
+            case AST::StOutput:
+                createOutput(builder, statement, alg);
+                break;
+            case AST::StInput:
+                createInput(builder, statement, alg);
+                break;
+            case AST::StLoop:
+                createLoop(builder, statement, alg);
+                break;
+            case AST::StIfThenElse:
+                createIfThenElse(builder, statement, alg);
+                break;
+            case AST::StSwitchCaseElse:
+                createSwitchCaseElse(builder, statement, alg);
+                break;
+            case AST::StBreak:
+                createBreak(builder, statement, alg);
+                break;
+            case AST::StError:
+                createError(builder, statement);
+            default:
+                qFatal("Not implemented!");
+                break;
+            }
         }
     }
 }
@@ -1015,6 +1037,16 @@ void LLVMGenerator::createBreak(llvm::IRBuilder<> &builder, const AST::Statement
     else {
         builder.CreateBr(currentFunctionExit_); // break ends function
     }
+}
+
+void LLVMGenerator::createError(llvm::IRBuilder<> &builder, const AST::StatementPtr &st)
+{
+    const QString qError = Shared::ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->error);
+    const std::string error = std::string(qError.toUtf8().data());
+    llvm::Value * arg = builder.CreateGlobalStringPtr(error);
+    Q_ASSERT(arg);
+    Q_ASSERT(kumirAbortOnError_);
+    builder.CreateCall(kumirAbortOnError_, arg);
 }
 
 void LLVMGenerator::createFreeTempScalars(llvm::IRBuilder<> &builder)
@@ -1578,6 +1610,12 @@ void LLVMGenerator::createInternalExternsTable()
 
     kumirAssert_ = stdlibModule_->getFunction("__kumir_assert");
     Q_ASSERT(kumirAssert_);
+
+    kumirAbortOnError_ = stdlibModule_->getFunction("__kumir_abort_on_error");
+    Q_ASSERT(kumirAbortOnError_);
+
+    kumirSetCurrentLineNumber_ = stdlibModule_->getFunction("__kumir_set_current_line_number");
+    Q_ASSERT(kumirSetCurrentLineNumber_);
 
     kumirOpEq_ = stdlibModule_->getFunction("__kumir_operator_eq");
     Q_ASSERT(kumirOpEq_);

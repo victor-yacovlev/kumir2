@@ -52,6 +52,7 @@ private:
     bool compileOnly_;
     bool textForm_;
     bool linkStdLib_;
+    DebugLevel debugLevel_;
 
 };
 

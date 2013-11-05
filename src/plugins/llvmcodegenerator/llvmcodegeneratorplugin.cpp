@@ -30,6 +30,7 @@ LLVMCodeGeneratorPlugin::LLVMCodeGeneratorPlugin()
     , compileOnly_(false)
     , textForm_(false)
     , linkStdLib_(false)
+    , debugLevel_(LinesOnly)
 {
 }
 
@@ -53,6 +54,12 @@ LLVMCodeGeneratorPlugin::acceptableCommandLineParameters() const
                   'S', "assembly",
                   tr("[only with -c] Generate LLVM bitcode in text form")
                   );
+    result << CommandLineParameter(
+                  false,
+                  'g', "debuglevel",
+                  tr("Generate code with debug level from 0 (nothing) to 2 (maximum debug information)"),
+                  QVariant::Int, false
+                  );
 //    result << CommandLineParameter(
 //                  false,
 //                  'l', "linkstdlib",
@@ -64,7 +71,7 @@ LLVMCodeGeneratorPlugin::acceptableCommandLineParameters() const
 
 void LLVMCodeGeneratorPlugin::setDebugLevel(DebugLevel debugLevel)
 {
-
+    debugLevel_ = debugLevel;
 }
 
 void LLVMCodeGeneratorPlugin::generateExecuable(
@@ -74,7 +81,7 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
             QString & fileSuffix
             )
 {
-    d->reset(!compileOnly_ || linkStdLib_);
+    d->reset(!compileOnly_ || linkStdLib_, debugLevel_);
 
     QList<AST::ModulePtr> & modules = tree->modules;
 
@@ -317,12 +324,20 @@ void LLVMCodeGeneratorPlugin::setOutputToText(bool flag)
 }
 
 QString LLVMCodeGeneratorPlugin::initialize(
-        const QStringList &configurationArguments,
+        const QStringList &,
         const ExtensionSystem::CommandLine &runtimeArguments)
 {
     compileOnly_ = runtimeArguments.hasFlag('c');
     textForm_ = runtimeArguments.hasFlag('S');
     linkStdLib_ = true;
+    DebugLevel debugLevel = LinesOnly;
+    if (runtimeArguments.value('g').isValid()) {
+        int level = runtimeArguments.value('g').toInt();
+        level = qMax(0, level);
+        level = qMin(2, level);
+        debugLevel = DebugLevel(level);
+    }
+    setDebugLevel(debugLevel);
 //    linkStdLib_ = runtimeArguments.hasFlag('l');
     // TODO implement it
     return "";

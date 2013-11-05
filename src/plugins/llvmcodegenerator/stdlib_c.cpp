@@ -73,8 +73,7 @@ EXTERN void __kumir_create_char(__kumir_scalar * result, const char * utf8)
         wstr = Kumir::Core::fromUtf8(utf8string);
     }
     catch (Kumir::EncodingError) {
-        Kumir::Core::abort(Kumir::Core::fromAscii("Encoding error"));
-        __kumir_handle_abort();
+        Kumir::Core::abort(Kumir::Core::fromAscii("Encoding error"));        
     }
     result->defined = true;
     result->type = __KUMIR_CHAR;
@@ -90,7 +89,6 @@ EXTERN void __kumir_create_string(__kumir_scalar  * result, const char * utf8)
     }
     catch (Kumir::EncodingError) {
         Kumir::Core::abort(Kumir::Core::fromAscii("Encoding error"));
-        __kumir_handle_abort();
     }
     result->defined = true;
     result->type = __KUMIR_STRING;
@@ -161,10 +159,16 @@ EXTERN void __kumir_store_scalar(__kumir_scalar ** lvalue_ptr, const __kumir_sca
     __kumir_copy_scalar(lvalue, rvalue);
 }
 
+static int32_t __kumir_current_line_number = -1;
+
 static void __kumir_handle_abort()
 {
-    const std::wstring message = Kumir::Core::fromUtf8("ОШИБКА ВЫПОЛНЕНИЯ: ") +
-            Kumir::Core::getError();
+    const std::wstring message = __kumir_current_line_number == -1
+            ? Kumir::Core::fromUtf8("ОШИБКА ВЫПОЛНЕНИЯ: ") + Kumir::Core::getError()
+            : Kumir::Core::fromUtf8("ОШИБКА ВЫПОЛНЕНИЯ В СТРОКЕ ") +
+              Kumir::Converter::sprintfInt(__kumir_current_line_number, 10, 0, 0) +
+              Kumir::Core::fromAscii(": ") +
+              Kumir::Core::getError();
     Kumir::Encoding enc = Kumir::UTF8;
 #if defined(WIN32) || defined(_WIN32)
     enc = Kumir::CP866;
@@ -174,11 +178,15 @@ static void __kumir_handle_abort()
     exit(1);
 }
 
+EXTERN void __kumir_set_current_line_number(const int32_t line_no)
+{
+    __kumir_current_line_number = line_no;
+}
+
 EXTERN void __kumir_check_value_defined(const __kumir_scalar * value)
 {
     if (value == nullptr || !value->defined) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Нет значения у величины"));
-        __kumir_handle_abort();
     }
 }
 
@@ -647,7 +655,6 @@ EXTERN void __kumir__stdlib__zhdat(const __kumir_scalar * value)
     __kumir_check_value_defined(value);
     if (value->data.i < 0) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Отрицательное время"));
-        __kumir_handle_abort();
     }
     uint32_t msec = static_cast<uint32_t>(value->data.i);
 #if defined(WIN32) || defined(_WIN32)
@@ -790,7 +797,6 @@ EXTERN void __kumir_operator_sum(__kumir_scalar * result, const __kumir_scalar *
     if (__KUMIR_INT == left->type && __KUMIR_INT == right->type) {
         if (!Kumir::Math::checkSumm(left->data.i, right->data.i)) {
             Kumir::Core::abort(Kumir::Core::fromUtf8("Целочисленное переполнение"));
-            __kumir_handle_abort();
         }
         __kumir_create_int(result, left->data.i + right->data.i);
     }
@@ -799,7 +805,6 @@ EXTERN void __kumir_operator_sum(__kumir_scalar * result, const __kumir_scalar *
         const __kumir_real r = __kumir_scalar_as_real(right);
         if (!Kumir::Math::checkSumm(l, r)) {
             Kumir::Core::abort(Kumir::Core::fromUtf8("Вещественное переполнение"));
-            __kumir_handle_abort();
         }
         __kumir_create_real(result, l + r);
     }
@@ -819,7 +824,6 @@ EXTERN void __kumir_operator_sub(__kumir_scalar * result, const __kumir_scalar *
     if (__KUMIR_INT == left->type && __KUMIR_INT == right->type) {
         if (!Kumir::Math::checkDiff(left->data.i, right->data.i)) {
             Kumir::Core::abort(Kumir::Core::fromUtf8("Целочисленное переполнение"));
-            __kumir_handle_abort();
         }
         __kumir_create_int(result, left->data.i - right->data.i);
     }
@@ -828,7 +832,6 @@ EXTERN void __kumir_operator_sub(__kumir_scalar * result, const __kumir_scalar *
         const __kumir_real r = __kumir_scalar_as_real(right);
         if (!Kumir::Math::checkDiff(l, r)) {
             Kumir::Core::abort(Kumir::Core::fromUtf8("Вещественное переполнение"));
-            __kumir_handle_abort();
         }
         __kumir_create_real(result, l - r);
     }
@@ -842,7 +845,6 @@ EXTERN void __kumir_operator_mul(__kumir_scalar * result, const __kumir_scalar *
     if (__KUMIR_INT == left->type && __KUMIR_INT == right->type) {
         if (!Kumir::Math::checkProd(left->data.i, right->data.i)) {
             Kumir::Core::abort(Kumir::Core::fromUtf8("Целочисленное переполнение"));
-            __kumir_handle_abort();
         }
         __kumir_create_int(result, left->data.i * right->data.i);
     }
@@ -852,7 +854,6 @@ EXTERN void __kumir_operator_mul(__kumir_scalar * result, const __kumir_scalar *
         __kumir_create_real(result, l * r);
         if (!Kumir::Math::isCorrectReal(result->data.r)) {
             Kumir::Core::abort(Kumir::Core::fromUtf8("Вещественное переполнение"));
-            __kumir_handle_abort();
         }
     }
 }
@@ -864,7 +865,6 @@ EXTERN void __kumir_operator_div(__kumir_scalar * result, const __kumir_scalar *
 
     if ( (__KUMIR_INT == right->type && 0 == right->data.i) || (__KUMIR_REAL == right->type && 0. == right->data.r) ) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Деление на ноль"));
-        __kumir_handle_abort();
     }
 
     const __kumir_real l = __kumir_scalar_as_real(left);
@@ -872,7 +872,6 @@ EXTERN void __kumir_operator_div(__kumir_scalar * result, const __kumir_scalar *
     __kumir_create_real(result, l/r);
     if (!Kumir::Math::isCorrectReal(result->data.r)) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Вещественное переполнение"));
-        __kumir_handle_abort();
     }
 }
 
@@ -913,8 +912,12 @@ EXTERN void __kumir_assert(const __kumir_scalar * assumption)
     bool value = assumption->data.b;
     if (!value) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Утверждение ложно"));
-        __kumir_handle_abort();
     }
+}
+
+EXTERN void __kumir_abort_on_error(const char * message)
+{
+    Kumir::Core::abort(Kumir::Core::fromUtf8(std::string(message)));
 }
 
 EXTERN void __kumir_init_stdlib()
