@@ -189,6 +189,10 @@ EXTERN void __kumir__stdlib__vesch_v_lit(__kumir_scalar * result, const __kumir_
 EXTERN void __kumir__stdlib__dlin(__kumir_scalar * result, const __kumir_scalar * value);
 EXTERN void __kumir__stdlib__lit_v_vesch(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success);
 EXTERN void __kumir__stdlib__lit_v_tsel(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success);
+EXTERN void __kumir__stdlib__yunikod(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__kod(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__simvol(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__simvol2(__kumir_scalar * result, const __kumir_scalar * value);
 
 // Files
 EXTERN void __kumir__stdlib__est_dannyie(__kumir_scalar  * result, const __kumir_scalar * handle);

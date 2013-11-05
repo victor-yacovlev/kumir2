@@ -589,6 +589,38 @@ EXTERN void __kumir__stdlib__dlin(__kumir_scalar * result, const __kumir_scalar 
                 );
 }
 
+EXTERN void __kumir__stdlib__yunikod(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_int(result,
+                       Kumir::StringUtils::unicode(value->data.c)
+                );
+}
+
+EXTERN void __kumir__stdlib__kod(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_int(result,
+                       Kumir::StringUtils::code(value->data.c)
+                );
+}
+
+EXTERN void __kumir__stdlib__simvol(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    result->defined = true;
+    result->type = __KUMIR_CHAR;
+    result->data.c = Kumir::StringUtils::symbol(value->data.i);
+}
+
+EXTERN void __kumir__stdlib__simvol2(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    result->defined = true;
+    result->type = __KUMIR_CHAR;
+    result->data.c = Kumir::StringUtils::unisymbol(value->data.i);
+}
+
 EXTERN void __kumir__stdlib__lit_v_vesch(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success)
 {
     __kumir_check_value_defined(value);
