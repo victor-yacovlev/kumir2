@@ -60,10 +60,11 @@ void LLVMGenerator::reset(bool linkStdLibModule, Shared::GeneratorInterface::Deb
     linkStdLibModule_ = linkStdLibModule;
     debugLevel_ = debugLevel;
     context_ = new llvm::LLVMContext();
-    currentModule_ = 0;
+    currentModule_ = new llvm::Module("", *context_);
     currentFunction_ = 0;    
     nameTranslator_->reset();
     createStdLibModule();
+    createExternsTable();
 }
 
 void LLVMGenerator::createStdLibModule()
@@ -78,21 +79,30 @@ void LLVMGenerator::createStdLibModule()
 
 }
 
-llvm::Module* LLVMGenerator::createModule(const AST::ModulePtr kmod)
+llvm::Module* LLVMGenerator::getResult()
 {
+    return currentModule_;
+}
 
-    const CString moduleName = nameTranslator_->add(
-                !kmod->header.name.isEmpty()
-                ? QString("__self__")
-                : kmod->header.name
-                  );
+void LLVMGenerator::addKumirModule(const AST::ModulePtr kmod)
+{
+    for (int i=0; i<kmod->impl.algorhitms.size(); i++) {
+        const AST::AlgorithmPtr func = kmod->impl.algorhitms.at(i);
+        addFunction(func, false);
+    }
+}
 
+void LLVMGenerator::createKumirModuleImplementation(const AST::ModulePtr kmod)
+{
     nameTranslator_->beginNamespace();
 
-    llvm::Module * lmod = new llvm::Module(moduleName, *context_);
-    currentModule_ = lmod;
-    createExternsTable();
-    std::cerr << lmod->getModuleIdentifier() << std::endl;
+    const CString moduleName = nameTranslator_->addGlobal(
+                kmod->header.name.isEmpty() ? QString("__self__")
+                                            : kmod->header.name
+                );
+    nameTranslator_->beginNamespace();
+
+    llvm::Module * lmod = currentModule_;
 
     llvm::Function * initFunc = llvm::Function::Create(
                 llvm::FunctionType::get(llvm::Type::getVoidTy(*context_), false),
@@ -119,23 +129,17 @@ llvm::Module* LLVMGenerator::createModule(const AST::ModulePtr kmod)
 
     for (int i=0; i<kmod->impl.algorhitms.size(); i++) {
         const AST::AlgorithmPtr func = kmod->impl.algorhitms.at(i);
-        addFunction(func, false);
-    }
-
-    for (int i=0; i<kmod->impl.algorhitms.size(); i++) {
-        const AST::AlgorithmPtr func = kmod->impl.algorhitms.at(i);
         addFunction(func, true);
     }
 
-    if (kmod->header.type == AST::ModTypeUser ||
-            kmod->header.type == AST::ModTypeTeacher)
+    if (kmod->header.type == AST::ModTypeUserMain ||
+            kmod->header.type == AST::ModTypeTeacherMain)
     {
         createMainFunction(kmod->impl.algorhitms.first());
     }
 
     nameTranslator_->endNamespace();
 
-    return currentModule_;
 }
 
 void LLVMGenerator::addGlobalVariable(llvm::IRBuilder<> & builder, const AST::VariablePtr kvar, bool constant)
@@ -221,7 +225,7 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
     CString name = createBody
             ? nameTranslator_->find(actualName)
                 // already added at previous stage
-            : nameTranslator_->add(actualName)
+            : nameTranslator_->addGlobal(actualName)
                 // create new name
               ;
 

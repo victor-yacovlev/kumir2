@@ -25,7 +25,9 @@ class LLVMGenerator
 public:
     explicit LLVMGenerator();
     void reset(bool linkStdLibModule, Shared::GeneratorInterface::DebugLevel debugLevel);
-    llvm::Module* createModule(const AST::ModulePtr kmod);
+    void addKumirModule(const AST::ModulePtr kmod);
+    void createKumirModuleImplementation(const AST::ModulePtr kmod);
+    llvm::Module * getResult();
 private:
     void createStdLibModule();
 

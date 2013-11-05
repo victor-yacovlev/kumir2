@@ -83,10 +83,12 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
 {
     d->reset(!compileOnly_ || linkStdLib_, debugLevel_);
 
-    QList<AST::ModulePtr> & modules = tree->modules;
+    const QList<AST::ModulePtr> & modules = tree->modules;
+    QList<AST::ModulePtr> kmodules;
 
     AST::ModulePtr userModule, teacherModule;
-    AST::ModulePtr linkedModule = AST::ModulePtr(new AST::Module);
+    AST::ModulePtr startupKumirModule = AST::ModulePtr(new AST::Module);
+    startupKumirModule->header.type = AST::ModTypeUserMain;
     for (int i=0; i<modules.size(); i++) {
         AST::ModulePtr mod = modules[i];
         if (mod->header.type == AST::ModTypeUserMain) {
@@ -95,27 +97,31 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
         else if (mod->header.type == AST::ModTypeTeacherMain) {
             teacherModule = mod;
         }        
+        else if (mod->header.type != AST::ModTypeExternal) {
+            kmodules.push_back(mod);
+        }
     }
-    linkedModule->impl.globals = userModule->impl.globals;
-    linkedModule->impl.initializerBody = userModule->impl.initializerBody;
-    linkedModule->impl.algorhitms = userModule->impl.algorhitms;
-    linkedModule->header.algorhitms = userModule->header.algorhitms;
-    modules.removeAll(userModule);
+    startupKumirModule->impl.globals = userModule->impl.globals;
+    startupKumirModule->impl.initializerBody = userModule->impl.initializerBody;
+    startupKumirModule->impl.algorhitms = userModule->impl.algorhitms;
+    startupKumirModule->header.algorhitms = userModule->header.algorhitms;
     if (teacherModule) {
-        linkedModule->impl.globals += teacherModule->impl.globals;
-        linkedModule->impl.initializerBody += teacherModule->impl.initializerBody;
-        linkedModule->impl.algorhitms += teacherModule->impl.algorhitms;
-        linkedModule->header.algorhitms += teacherModule->header.algorhitms;
-        modules.removeAll(teacherModule);
+        startupKumirModule->impl.globals += teacherModule->impl.globals;
+        startupKumirModule->impl.initializerBody += teacherModule->impl.initializerBody;
+        startupKumirModule->impl.algorhitms += teacherModule->impl.algorhitms;
+        startupKumirModule->header.algorhitms += teacherModule->header.algorhitms;
     }
-    modules.push_back(linkedModule);
-    llvm::Module * lmainModule = d->createModule(linkedModule);
-    modules.pop_back();
-    modules.push_back(userModule);
-    if (teacherModule) {
-        modules.push_back(teacherModule);
+    kmodules.push_back(startupKumirModule);
+
+    foreach (AST::ModulePtr kmod, kmodules) {
+        d->addKumirModule(kmod);
     }
 
+    foreach (AST::ModulePtr kmod, kmodules) {
+        d->createKumirModuleImplementation(kmod);
+    }
+
+    llvm::Module * lmainModule = d->getResult();
     std::string buf;
     llvm::raw_string_ostream ostream(buf);
 
