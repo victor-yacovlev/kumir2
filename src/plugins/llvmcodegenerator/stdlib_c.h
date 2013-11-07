@@ -62,6 +62,8 @@ EXTERN void __kumir_operator_pow(__kumir_scalar * result, const __kumir_scalar *
 
 EXTERN void __kumir_operator_neg(__kumir_scalar * result, const __kumir_scalar * left);
 
+EXTERN void __kumir_cleanup_array_in_shape(__kumir_array * result);
+
 EXTERN void __kumir_create_array_1(__kumir_array * result,
                                    const __kumir_scalar * left_1,
                                    const __kumir_scalar * right_1

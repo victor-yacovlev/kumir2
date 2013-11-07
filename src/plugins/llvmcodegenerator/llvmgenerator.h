@@ -96,6 +96,7 @@ private:
     llvm::Function* kumirRefArray3_;
     llvm::Function* kumirCloneArray3_;
     llvm::Function* kumirFreeArray_;
+    llvm::Function* kumirCleanUpArrayInShape_;
 
     llvm::Function* kumirFillArrayI_;
     llvm::Function* kumirFillArrayR_;

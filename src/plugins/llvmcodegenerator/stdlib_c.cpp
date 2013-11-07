@@ -253,6 +253,7 @@ EXTERN void __kumir_free_scalar(__kumir_scalar * scalar)
 {
     if (scalar->defined && __KUMIR_STRING == scalar->type && scalar->data.s) {
         free(scalar->data.s);
+        scalar->data.s = 0;
     }
     else if (scalar->defined && __KUMIR_RECORD == scalar->type) {
         __kumir_scalar_type * types = scalar->data.u.types;
@@ -264,7 +265,10 @@ EXTERN void __kumir_free_scalar(__kumir_scalar * scalar)
         }
         free(scalar->data.u.types);
         free(scalar->data.u.fields);
+        scalar->data.u.types = 0;
+        scalar->data.u.fields = 0;
     }
+    scalar->defined = false;
 }
 
 EXTERN void __kumir_input_stdin(const __kumir_int format, __kumir_scalar ** pptr)
@@ -1212,6 +1216,65 @@ EXTERN void __kumir_create_array_ref_3(__kumir_array * result,
     result->shape_right[1] = IMIN(result->shape_right[1], right_2->data.i);
     result->shape_left[2] = IMAX(result->shape_left[2], left_3->data.i);
     result->shape_right[2] = IMIN(result->shape_right[2], right_3->data.i);
+}
+
+EXTERN void __kumir_cleanup_array_in_shape(__kumir_array * result)
+{
+    switch (result->dim) {
+    case 1u: {
+        const size_t start_pos = static_cast<size_t>(result->shape_left[0] - result->size_left[0]);
+        const size_t items_count = start_pos +
+                static_cast<size_t>(result->shape_right[0] - result->shape_left[0] + 1);
+        for (size_t x = start_pos; x<items_count; x++) {
+            __kumir_free_scalar(result->data + x);
+        }
+        break;
+    }
+    case 2u: {
+        const size_t size1 = static_cast<size_t>(
+                    1 + result->shape_right[0] - result->shape_left[0]
+                    );
+
+        const size_t size2 = static_cast<size_t>(
+                    1 + result->shape_right[1] - result->shape_left[1]
+                    );
+        const size_t start_pos1 = static_cast<size_t>(result->shape_left[0] - result->size_left[0]);
+        const size_t start_pos2 = static_cast<size_t>(result->shape_left[1] - result->size_left[1]);
+        for (size_t y = start_pos1; y<size1; y++) {
+            for (size_t x = start_pos2; x<size2; x++) {
+                const size_t index = y * size1 + x;
+                __kumir_free_scalar(result->data + index);
+            }
+        }
+        break;
+    }
+    case 3u: {
+        const size_t size1 = static_cast<size_t>(
+                    1 + result->shape_right[0] - result->shape_left[0]
+                    );
+
+        const size_t size2 = static_cast<size_t>(
+                    1 + result->shape_right[1] - result->shape_left[1]
+                    );
+
+        const size_t size3 = static_cast<size_t>(
+                    1 + result->shape_right[2] - result->shape_left[2]
+                    );
+        const size_t start_pos1 = static_cast<size_t>(result->shape_left[0] - result->size_left[0]);
+        const size_t start_pos2 = static_cast<size_t>(result->shape_left[1] - result->size_left[1]);
+        const size_t start_pos3 = static_cast<size_t>(result->shape_left[2] - result->size_left[2]);
+        for (size_t z = start_pos1; z<size1; z++) {
+            for (size_t y = start_pos2; y<size2; y++) {
+                for (size_t x = start_pos3; x<size3; x++) {
+                    const size_t index = z * size1 * size2 + y * size1 + x;
+                    __kumir_free_scalar(result->data + index);
+                }
+            }
+        }
+        break;
+    }
+    default: break;
+    }
 }
 
 EXTERN void __kumir_create_array_copy_1(__kumir_array * result,

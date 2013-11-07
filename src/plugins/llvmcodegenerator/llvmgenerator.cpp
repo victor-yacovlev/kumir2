@@ -388,6 +388,9 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
                 }
                 Q_ASSERT(initFunc);
                 builder.CreateCall(initFunc, initArgs);
+                if (karg->accessType == AST::AccessArgumentOut) {
+                    builder.CreateCall(kumirCleanUpArrayInShape_, lvar);
+                }
             }
         }
         builder.SetInsertPoint(currentBlock_);
@@ -1675,6 +1678,9 @@ void LLVMGenerator::createInternalExternsTable()
 
     kumirFreeArray_ = stdlibModule_->getFunction("__kumir_free_array");
     Q_ASSERT(kumirFreeArray_);
+
+    kumirCleanUpArrayInShape_ = stdlibModule_->getFunction("__kumir_cleanup_array_in_shape");
+    Q_ASSERT(kumirCleanUpArrayInShape_);
 
     kumirFillArrayI_ = stdlibModule_->getFunction("__kumir_fill_array_i");
     Q_ASSERT(kumirFillArrayI_);
