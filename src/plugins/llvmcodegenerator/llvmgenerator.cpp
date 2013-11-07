@@ -973,6 +973,26 @@ void LLVMGenerator::createIfThenElse(llvm::IRBuilder<> &builder, const AST::Stat
 
 void LLVMGenerator::createSwitchCaseElse(llvm::IRBuilder<> &builder, const AST::StatementPtr &st, const AST::AlgorithmPtr &alg)
 {
+    if (st->headerError.size() > 0) {
+        if (debugLevel_ != Shared::GeneratorInterface::NoDebug) {
+            builder.CreateCall(kumirSetCurrentLineNumber_,
+                               llvm::ConstantInt::getSigned(
+                                   llvm::Type::getInt32Ty(ctx),
+                                   st->headerErrorLine
+                                   ));
+        }
+        builder.CreateCall(kumirAbortOnError_,
+                           builder.CreateGlobalStringPtr(
+                               std::string(
+                                   Shared::ErrorMessages::message(
+                                       "KumirAnalizer",
+                                       QLocale::Russian,
+                                        st->headerError
+                                       ).toUtf8().data()
+                                   )
+                               ));
+    }
+
     Q_ASSERT(st->conditionals.size() > 0);
 
     // --- create program blocks
