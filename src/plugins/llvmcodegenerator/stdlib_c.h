@@ -9,6 +9,7 @@
 
 #include "kumtypes.h"
 
+EXTERN void __kumir_internal_debug(int32_t code);
 EXTERN void __kumir_init_stdlib();
 static void __kumir_handle_abort();
 EXTERN void __kumir_halt();
@@ -170,13 +171,13 @@ EXTERN void __kumir_get_string_element(__kumir_scalar * result,
                                        const __kumir_scalar ** sptr,
                                        const __kumir_scalar * at);
 
-EXTERN void __kumir_loop_for_from_to_init_counter(const __kumir_scalar from);
-EXTERN void __kumir_loop_for_from_to_step_init_counter(const __kumir_scalar from, const __kumir_scalar step);
+EXTERN void __kumir_loop_for_from_to_init_counter(const __kumir_scalar * from);
+EXTERN void __kumir_loop_for_from_to_step_init_counter(const __kumir_scalar * from, const __kumir_scalar * step);
 
-EXTERN __kumir_bool __kumir_loop_for_from_to_check_counter(__kumir_scalar * variable, const __kumir_scalar from, const __kumir_scalar to);
-EXTERN __kumir_bool __kumir_loop_for_from_to_step_check_counter(__kumir_scalar * variable, const __kumir_scalar from, const __kumir_scalar to, const __kumir_scalar step);
+EXTERN __kumir_bool __kumir_loop_for_from_to_check_counter(__kumir_scalar * variable, const __kumir_scalar * from, const __kumir_scalar * to);
+EXTERN __kumir_bool __kumir_loop_for_from_to_step_check_counter(__kumir_scalar * variable, const __kumir_scalar * from, const __kumir_scalar * to, const __kumir_scalar * step);
 
-EXTERN void __kumir_loop_times_init_counter(const __kumir_scalar from);
+EXTERN void __kumir_loop_times_init_counter(const __kumir_scalar * from);
 EXTERN __kumir_bool __kumir_loop_times_check_counter();
 
 EXTERN void __kumir_loop_end_counter();
@@ -225,8 +226,6 @@ EXTERN void __kumir__stdlib__zakryit(const __kumir_scalar * handle);
 EXTERN void __kumir__stdlib__vremya(__kumir_scalar * result);
 EXTERN void __kumir__stdlib__zhdat(const __kumir_scalar * value);
 
-EXTERN void test_123();
-EXTERN void test_456(__kumir_scalar arg);
-EXTERN __kumir_scalar test_890();
+
 
 #endif // STDLIB_C_H

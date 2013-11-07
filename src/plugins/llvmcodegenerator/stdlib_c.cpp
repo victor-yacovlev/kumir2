@@ -16,6 +16,11 @@ static void __kumir_create_string(__kumir_scalar * result, const std::wstring & 
 static __kumir_real __kumir_scalar_as_real(const __kumir_scalar * scalar);
 static std::wstring __kumir_scalar_as_wstring(const __kumir_scalar * scalar);
 
+EXTERN void __kumir_internal_debug(int32_t code)
+{
+    std::cerr << "Debug " << code << std::endl;
+}
+
 inline __kumir_int IMAX(const __kumir_int a, const __kumir_int b)
 {
     return a < b ? b : a;
@@ -1677,24 +1682,24 @@ EXTERN void __kumir_get_string_element(__kumir_scalar * result,
 
 static std::stack<int32_t> for_counters;
 
-EXTERN void __kumir_loop_for_from_to_init_counter(const __kumir_scalar from)
+EXTERN void __kumir_loop_for_from_to_init_counter(const __kumir_scalar * from)
 {
-    int32_t val = from.data.i - 1;
+    int32_t val = from->data.i - 1;
     for_counters.push(val);
 }
 
-EXTERN void __kumir_loop_for_from_to_step_init_counter(const __kumir_scalar from, const __kumir_scalar step)
+EXTERN void __kumir_loop_for_from_to_step_init_counter(const __kumir_scalar * from, const __kumir_scalar * step)
 {
-    int32_t val = from.data.i - step.data.i;
+    int32_t val = from->data.i - step->data.i;
     for_counters.push(val);
 }
 
-EXTERN __kumir_bool __kumir_loop_for_from_to_check_counter(__kumir_scalar * variable, const __kumir_scalar from, const __kumir_scalar to)
+EXTERN __kumir_bool __kumir_loop_for_from_to_check_counter(__kumir_scalar * variable, const __kumir_scalar * from, const __kumir_scalar * to)
 {
     int32_t & i = for_counters.top();
     i += 1;
-    int32_t f = from.data.i;
-    int32_t t = to.data.i;
+    int32_t f = from->data.i;
+    int32_t t = to->data.i;
     bool result = f <= i && i <= t;
     if (result) {
         variable->data.i = i;
@@ -1704,16 +1709,16 @@ EXTERN __kumir_bool __kumir_loop_for_from_to_check_counter(__kumir_scalar * vari
     return result;
 }
 
-EXTERN __kumir_bool __kumir_loop_for_from_to_step_check_counter(__kumir_scalar * variable, const __kumir_scalar from, const __kumir_scalar to, const __kumir_scalar step)
+EXTERN __kumir_bool __kumir_loop_for_from_to_step_check_counter(__kumir_scalar * variable, const __kumir_scalar * from, const __kumir_scalar * to, const __kumir_scalar * step)
 {
     int32_t & i = for_counters.top();
-    int32_t f = from.data.i;
-    int32_t t = to.data.i;
-    int32_t s = step.data.i;
+    int32_t f = from->data.i;
+    int32_t t = to->data.i;
+    int32_t s = step->data.i;
     i += s;
     bool result = s >= 0
             ? f <= i && i <= t
-            : t >= i && i >= f;
+            : t <= i && i <= f;
     if (result) {
         variable->data.i = i;
         variable->defined = true;
@@ -1722,9 +1727,9 @@ EXTERN __kumir_bool __kumir_loop_for_from_to_step_check_counter(__kumir_scalar *
     return result;
 }
 
-EXTERN void __kumir_loop_times_init_counter(const __kumir_scalar from)
+EXTERN void __kumir_loop_times_init_counter(const __kumir_scalar * from)
 {
-    int32_t val = from.data.i;
+    int32_t val = from->data.i;
     for_counters.push(val);
 }
 
@@ -1751,22 +1756,3 @@ EXTERN void __kumir_stdlib_init()
     Kumir::initStandardLibrary();
 }
 
-EXTERN void test_456(__kumir_scalar abc)
-{
-    std::cout << abc.data.i;
-}
-
-EXTERN void test_123()
-{    
-    __kumir_scalar aaa = test_890();
-    //    test_456(aaa);
-    //    __kumir_scalar bbb = __kumir_create_string("Превед, Медвед!");
-
-}
-
-EXTERN __kumir_scalar test_890()
-{
-    __kumir_scalar aaa;
-    aaa.data.i = 12345678;
-    return aaa;
-}
