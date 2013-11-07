@@ -888,6 +888,13 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
                                             basicName + CString("times_check")
                                             );
     }
+    else if (loop.type == AST::LoopWhile && loop.whileCondition) {
+        Q_ASSERT(kumirScalarAsBool_);
+        loop_pre_check = builder.CreateCall(kumirScalarAsBool_,
+                                            calculate(builder, loop.whileCondition),
+                                            basicName + CString("while_check")
+                                            );
+    }
 
     if (loop_pre_check) {
         builder.CreateCondBr(loop_pre_check, loop_body, loop_clean);
