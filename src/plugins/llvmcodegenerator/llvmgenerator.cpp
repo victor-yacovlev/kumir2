@@ -1,5 +1,6 @@
 #include "llvmgenerator.h"
 #include "nametranslator.h"
+#include "kumtypes.h"
 
 #include "dataformats/ast_variable.h"
 #include "dataformats/ast_algorhitm.h"
@@ -640,6 +641,30 @@ void LLVMGenerator::createOutput(llvm::IRBuilder<> &builder, const AST::Statemen
         const AST::ExpressionPtr & format1 = st->expressions.at(format2Index);
         const AST::ExpressionPtr & format2 = st->expressions.at(format1Index);
 
+        __kumir_scalar_type typee = __kumir_scalar_type(0x00);
+        if (expr->baseType.kind == AST::TypeBoolean) {
+            typee = __KUMIR_BOOL;
+        }
+        else if (expr->baseType.kind == AST::TypeInteger) {
+            typee = __KUMIR_INT;
+        }
+        else if (expr->baseType.kind == AST::TypeReal) {
+            typee = __KUMIR_REAL;
+        }
+        else if (expr->baseType.kind == AST::TypeCharect) {
+            typee = __KUMIR_CHAR;
+        }
+        else if (expr->baseType.kind == AST::TypeString) {
+            typee = __KUMIR_STRING;
+        }
+        else if (expr->baseType.kind == AST::TypeUser) {
+            typee = __KUMIR_RECORD;
+        }
+
+        llvm::Value * ltype = llvm::ConstantInt::getSigned(
+                    llvm::Type::getInt32Ty(ctx), typee
+                    );
+
         llvm::Value * lexpr = calculate(builder, expr);      
 
         llvm::Function * outFunc = 0;
@@ -648,6 +673,7 @@ void LLVMGenerator::createOutput(llvm::IRBuilder<> &builder, const AST::Statemen
         if (fileHandleProvided) {
             args.push_back(fileHandle);
             args.push_back(lexpr);
+            args.push_back(ltype);
             if (format1->kind == AST::ExprConst && format2->kind == AST::ExprConst) {
                 llvm::Value * lformat1 = llvm::ConstantInt::getSigned(
                             llvm::Type::getInt32Ty(*context_),
@@ -664,6 +690,7 @@ void LLVMGenerator::createOutput(llvm::IRBuilder<> &builder, const AST::Statemen
         }
         else {
             args.push_back(lexpr);
+            args.push_back(ltype);
             if (format1->kind == AST::ExprConst && format2->kind == AST::ExprConst) {
                 llvm::Value * lformat1 = llvm::ConstantInt::getSigned(
                             llvm::Type::getInt32Ty(*context_),

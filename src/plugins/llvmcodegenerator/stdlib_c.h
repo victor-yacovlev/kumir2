@@ -30,15 +30,15 @@ EXTERN void __kumir_check_value_defined(const __kumir_scalar * value);
 EXTERN __kumir_bool __kumir_scalar_as_bool(const __kumir_scalar * scalar);
 EXTERN void __kumir_free_scalar(__kumir_scalar * scalar);
 
-EXTERN void __kumir_output_stdout_ii(const __kumir_scalar * value, const int format1, const int format2);
-EXTERN void __kumir_output_stdout_is(const __kumir_scalar * value, const int format1, const __kumir_scalar * format2);
-EXTERN void __kumir_output_stdout_si(const __kumir_scalar * value, const __kumir_scalar * format1, const int format2);
-EXTERN void __kumir_output_stdout_ss(const __kumir_scalar * value, const __kumir_scalar * format1, const __kumir_scalar * format2);
+EXTERN void __kumir_output_stdout_ii(const __kumir_scalar * value, const __kumir_scalar_type type, const int format1, const int format2);
+EXTERN void __kumir_output_stdout_is(const __kumir_scalar * value, const __kumir_scalar_type type, const int format1, const __kumir_scalar * format2);
+EXTERN void __kumir_output_stdout_si(const __kumir_scalar * value, const __kumir_scalar_type type, const __kumir_scalar * format1, const int format2);
+EXTERN void __kumir_output_stdout_ss(const __kumir_scalar * value, const __kumir_scalar_type type, const __kumir_scalar * format1, const __kumir_scalar * format2);
 
-EXTERN void __kumir_output_file_ii(const __kumir_scalar * handle, const __kumir_scalar * value, const int format1, const int format2);
-EXTERN void __kumir_output_file_is(const __kumir_scalar * handle, const __kumir_scalar * value, const int format1, const __kumir_scalar * format2);
-EXTERN void __kumir_output_file_si(const __kumir_scalar * handle, const __kumir_scalar * value, const __kumir_scalar * format1, const int format2);
-EXTERN void __kumir_output_file_ss(const __kumir_scalar * handle, const __kumir_scalar * value, const __kumir_scalar * format1, const __kumir_scalar * format2);
+EXTERN void __kumir_output_file_ii(const __kumir_scalar * handle, const __kumir_scalar * value, const __kumir_scalar_type type, const int format1, const int format2);
+EXTERN void __kumir_output_file_is(const __kumir_scalar * handle, const __kumir_scalar * value, const __kumir_scalar_type type, const int format1, const __kumir_scalar * format2);
+EXTERN void __kumir_output_file_si(const __kumir_scalar * handle, const __kumir_scalar * value, const __kumir_scalar_type type, const __kumir_scalar * format1, const int format2);
+EXTERN void __kumir_output_file_ss(const __kumir_scalar * handle, const __kumir_scalar * value, const __kumir_scalar_type type, const __kumir_scalar * format1, const __kumir_scalar * format2);
 
 EXTERN void __kumir_input_stdin(const __kumir_int format, __kumir_scalar ** ptr);
 EXTERN void __kumir_input_file(const __kumir_scalar * handle, const __kumir_int format, __kumir_scalar ** ptr);

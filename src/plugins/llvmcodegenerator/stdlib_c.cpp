@@ -327,15 +327,15 @@ EXTERN void __kumir_input_file(const __kumir_scalar * handle, const __kumir_int 
 
 }
 
-EXTERN void __kumir_output_stdout_ii(const __kumir_scalar * value, const int format1, const int format2)
+EXTERN void __kumir_output_stdout_ii(const __kumir_scalar * value, const __kumir_scalar_type type, const int format1, const int format2)
 {    
     __kumir_check_value_defined(value);
-    switch (value->type) {
+    switch (type) {
     case __KUMIR_INT:
         Kumir::IO::writeInteger(format2, value->data.i);
         break;
     case __KUMIR_REAL:
-        Kumir::IO::writeReal(format2, format1, value->data.r);
+        Kumir::IO::writeReal(format2, format1, __kumir_scalar_as_real(value));
         break;
     case __KUMIR_BOOL:
         Kumir::IO::writeBool(format2, value->data.b);
@@ -344,43 +344,43 @@ EXTERN void __kumir_output_stdout_ii(const __kumir_scalar * value, const int for
         Kumir::IO::writeChar(format2, value->data.c);
         break;
     case __KUMIR_STRING:
-        Kumir::IO::writeString(format2, std::wstring(value->data.s));
+        Kumir::IO::writeString(format2, __kumir_scalar_as_wstring(value));
         break;
     default:
         break;
     }
 }
 
-EXTERN void __kumir_output_stdout_is(const __kumir_scalar * value, const int format1, const __kumir_scalar * format2)
+EXTERN void __kumir_output_stdout_is(const __kumir_scalar * value, const __kumir_scalar_type type, const int format1, const __kumir_scalar * format2)
 {
     __kumir_check_value_defined(format2);
-    __kumir_output_stdout_ii(value, format1, format2->data.i);
+    __kumir_output_stdout_ii(value, type, format1, format2->data.i);
 }
 
-EXTERN void __kumir_output_stdout_si(const __kumir_scalar * value, const __kumir_scalar * format1, const int format2)
+EXTERN void __kumir_output_stdout_si(const __kumir_scalar * value, const __kumir_scalar_type type, const __kumir_scalar * format1, const int format2)
 {
     __kumir_check_value_defined(format1);
-    __kumir_output_stdout_ii(value, format1->data.i, format2);
+    __kumir_output_stdout_ii(value, type, format1->data.i, format2);
 }
 
-EXTERN void __kumir_output_stdout_ss(const __kumir_scalar * value, const __kumir_scalar * format1, const __kumir_scalar * format2)
+EXTERN void __kumir_output_stdout_ss(const __kumir_scalar * value, const __kumir_scalar_type type, const __kumir_scalar * format1, const __kumir_scalar * format2)
 {
     __kumir_check_value_defined(format1);
     __kumir_check_value_defined(format2);
-    __kumir_output_stdout_ii(value, format1->data.i, format2->data.i);
+    __kumir_output_stdout_ii(value, type, format1->data.i, format2->data.i);
 }
 
-EXTERN void __kumir_output_file_ii(const __kumir_scalar * handle, const __kumir_scalar * value, const int format1, const int format2)
+EXTERN void __kumir_output_file_ii(const __kumir_scalar * handle, const __kumir_scalar * value, const __kumir_scalar_type type, const int format1, const int format2)
 {
     __kumir_check_value_defined(handle);
     __kumir_check_value_defined(value);
     Kumir::FileType f = __kumir_scalar_to_file_type(*handle);
-    switch (value->type) {
+    switch (type) {
     case __KUMIR_INT:
         Kumir::IO::writeInteger(format2, value->data.i, f, false);
         break;
     case __KUMIR_REAL:
-        Kumir::IO::writeReal(format2, format1, value->data.r, f, false);
+        Kumir::IO::writeReal(format2, format1, __kumir_scalar_as_real(value), f, false);
         break;
     case __KUMIR_BOOL:
         Kumir::IO::writeBool(format2, value->data.b, f, false);
@@ -389,30 +389,30 @@ EXTERN void __kumir_output_file_ii(const __kumir_scalar * handle, const __kumir_
         Kumir::IO::writeChar(format2, value->data.c, f, false);
         break;
     case __KUMIR_STRING:
-        Kumir::IO::writeString(format2, std::wstring(value->data.s), f, false);
+        Kumir::IO::writeString(format2, __kumir_scalar_as_wstring(value), f, false);
         break;
     default:
         break;
     }
 }
 
-EXTERN void __kumir_output_file_is(const __kumir_scalar * handle, const __kumir_scalar * value, const int format1, const __kumir_scalar * format2)
+EXTERN void __kumir_output_file_is(const __kumir_scalar * handle, const __kumir_scalar * value, const __kumir_scalar_type type, const int format1, const __kumir_scalar * format2)
 {
     __kumir_check_value_defined(format2);
-    __kumir_output_file_ii(handle, value, format1, format2->data.i);
+    __kumir_output_file_ii(handle, value, type, format1, format2->data.i);
 }
 
-EXTERN void __kumir_output_file_si(const __kumir_scalar * handle, const __kumir_scalar * value, const __kumir_scalar * format1, const int format2)
+EXTERN void __kumir_output_file_si(const __kumir_scalar * handle, const __kumir_scalar * value, const __kumir_scalar_type type, const __kumir_scalar * format1, const int format2)
 {
     __kumir_check_value_defined(format1);
-    __kumir_output_file_ii(handle, value, format1->data.i, format2);
+    __kumir_output_file_ii(handle, value, type, format1->data.i, format2);
 }
 
-EXTERN void __kumir_output_file_ss(const __kumir_scalar * handle, const __kumir_scalar * value, const __kumir_scalar * format1, const __kumir_scalar * format2)
+EXTERN void __kumir_output_file_ss(const __kumir_scalar * handle, const __kumir_scalar * value, const __kumir_scalar_type type, const __kumir_scalar * format1, const __kumir_scalar * format2)
 {
     __kumir_check_value_defined(format1);
     __kumir_check_value_defined(format2);
-    __kumir_output_file_ii(handle, value, format1->data.i, format2->data.i);
+    __kumir_output_file_ii(handle, value, type, format1->data.i, format2->data.i);
 }
 
 static __kumir_scalar __kumir_file_type_to_scalar(const Kumir::FileType &f)
