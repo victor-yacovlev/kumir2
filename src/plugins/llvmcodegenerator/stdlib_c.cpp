@@ -159,6 +159,30 @@ EXTERN void __kumir_store_scalar(__kumir_scalar ** lvalue_ptr, const __kumir_sca
     __kumir_copy_scalar(lvalue, rvalue);
 }
 
+EXTERN void __kumir_modify_string(__kumir_stringref * lvalue, const __kumir_scalar * rvalue)
+{
+    __kumir_check_value_defined(rvalue);
+    __kumir_check_value_defined(lvalue->ref);
+    const std::wstring r = __kumir_scalar_as_wstring(rvalue);
+    std::wstring l = __kumir_scalar_as_wstring(lvalue->ref);
+    switch (lvalue->op) {
+    case __KUMIR_STRINGREF_APPEND:
+        l.append(r);
+        break;
+    case __KUMIR_STRINGREF_PREPEND:
+        l = r + l;
+        break;
+    case __KUMIR_STRINGREF_INSERT:
+        l.insert(lvalue->from, r);
+        break;
+    case __KUMIR_STRINGREF_REPLACE:
+        l.replace(lvalue->from, lvalue->length, r);
+        break;
+    }
+    free(lvalue->ref->data.s);
+    __kumir_create_string(lvalue->ref, l);
+}
+
 static int32_t __kumir_current_line_number = -1;
 
 static void __kumir_handle_abort()
@@ -1480,6 +1504,133 @@ EXTERN void __kumir_free_array(__kumir_array * array)
             }
         }
         free(array->data);
+    }
+}
+
+EXTERN void __kumir_get_string_slice_ref(__kumir_stringref * result,
+                                     __kumir_scalar ** sptr,
+                                     const __kumir_scalar * from,
+                                     const __kumir_scalar * to)
+{
+    __kumir_scalar * sval = *sptr;
+    __kumir_check_value_defined(sval);
+    __kumir_check_value_defined(from);
+    __kumir_check_value_defined(to);
+    const std::wstring s = __kumir_scalar_as_wstring(sval);
+    const int kfrom = from->data.i;
+    const int kto = to->data.i;
+    const int klength = s.length();
+    result->ref = sval;
+    if (kto < kfrom && kfrom == 0) {
+        result->from = result->length = 0u;
+        result->op = __KUMIR_STRINGREF_PREPEND;
+    }
+    else if (kfrom > klength) {
+        Kumir::Core::abort(Kumir::Core::fromUtf8("Левая граница вырезки за пределами строки"));
+    }
+    else if (kto < kfrom && kfrom > 0) {
+        result->from = static_cast<size_t>(kfrom);
+        result->length = 0u;
+        result->op = __KUMIR_STRINGREF_INSERT;
+    }
+    else if (kfrom == klength + 1 && kto <= kfrom) {
+        result->from = result->length = 0u;
+        result->op = __KUMIR_STRINGREF_APPEND;
+    }
+    else if (kto < 1 || kto > klength) {
+        Kumir::Core::abort(Kumir::Core::fromUtf8("Правая граница вырезки за пределами строки"));
+    }
+    else if (kfrom < 1 || kfrom > klength) {
+        Kumir::Core::abort(Kumir::Core::fromUtf8("Левая граница вырезки за пределами строки"));
+    }
+    else if (kto < kfrom) {
+        Kumir::Core::abort(Kumir::Core::fromUtf8("Ошибка в границах вырезки"));
+    }
+    else {
+        result->from = static_cast<size_t>(kfrom - 1);
+        result->length = static_cast<size_t>(kto - kfrom);
+        result->op = __KUMIR_STRINGREF_REPLACE;
+    }
+}
+
+EXTERN void __kumir_get_string_element_ref(__kumir_stringref * result,
+                                     __kumir_scalar ** sptr,
+                                     const __kumir_scalar * at)
+{
+    __kumir_scalar * sval = *sptr;
+    __kumir_check_value_defined(sval);
+    __kumir_check_value_defined(at);
+    const std::wstring s = __kumir_scalar_as_wstring(sval);
+    const int kindex = at->data.i;
+    const int klength = s.length();
+    if (kindex < 1) {
+        Kumir::Core::abort(Kumir::Core::fromUtf8("Индекс символа меньше 1"));
+    }
+    else if (kindex > klength) {
+        Kumir::Core::abort(Kumir::Core::fromUtf8("Индекс символа больше длины строки"));
+    }
+    else {
+        const size_t index = static_cast<size_t>(kindex - 1);
+        result->ref = sval;
+        result->op = __KUMIR_STRINGREF_REPLACE;
+        result->from = index;
+        result->length = 1u;
+    }
+}
+
+EXTERN void __kumir_get_string_slice(__kumir_scalar * result,
+                                     const __kumir_scalar ** sptr,
+                                     const __kumir_scalar * from,
+                                     const __kumir_scalar * to)
+{
+    const __kumir_scalar * sval = *sptr;
+    __kumir_check_value_defined(sval);
+    __kumir_check_value_defined(from);
+    __kumir_check_value_defined(to);
+    const std::wstring s = __kumir_scalar_as_wstring(sval);
+    const int kfrom = from->data.i;
+    const int kto = to->data.i;
+    const int klength = s.length();
+    std::wstring res;
+    if (kfrom < 1 || kfrom > klength) {
+        Kumir::Core::abort(Kumir::Core::fromUtf8("Левая граница вырезки за пределами строки"));
+    }
+    else if (kto < kfrom) {
+        // keep empty string
+    }
+    else if (kto < 1 || kto > klength) {
+        Kumir::Core::abort(Kumir::Core::fromUtf8("Правая граница вырезки за пределами строки"));
+    }
+    else {
+        const size_t index_from = static_cast<size_t>(kfrom - 1);
+        const size_t res_length = static_cast<size_t>(kto - kfrom + 1);
+        res = s.substr(index_from, res_length);
+    }
+    __kumir_create_string(result, res);
+}
+
+EXTERN void __kumir_get_string_element(__kumir_scalar * result,
+                                       const __kumir_scalar ** sptr,
+                                       const __kumir_scalar * at)
+{
+    const __kumir_scalar * sval = *sptr;
+    __kumir_check_value_defined(sval);
+    __kumir_check_value_defined(at);
+    const std::wstring s = __kumir_scalar_as_wstring(sval);
+    const int kindex = at->data.i;
+    const int klength = s.length();
+    if (kindex < 1) {
+        Kumir::Core::abort(Kumir::Core::fromUtf8("Индекс символа меньше 1"));
+    }
+    else if (kindex > klength) {
+        Kumir::Core::abort(Kumir::Core::fromUtf8("Индекс символа больше длины строки"));
+    }
+    else {
+        const size_t index = static_cast<size_t>(kindex - 1);
+        const wchar_t ch = s.at(index);
+        result->defined = true;
+        result->type = __KUMIR_CHAR;
+        result->data.c = ch;
     }
 }
 

@@ -23,6 +23,7 @@ EXTERN __kumir_variant __kumir_copy_variant(const __kumir_variant rvalue, __kumi
 EXTERN void __kumir_copy_scalar(__kumir_scalar  * lvalue_ptr, const __kumir_scalar * rvalue);
 EXTERN void __kumir_move_scalar(__kumir_scalar  * lvalue, __kumir_scalar * rvalue);
 EXTERN void __kumir_store_scalar(__kumir_scalar  ** lvalue, const __kumir_scalar * rvalue);
+EXTERN void __kumir_modify_string(__kumir_stringref * lvalue, const __kumir_scalar * rvalue);
 EXTERN void __kumir_check_value_defined(const __kumir_scalar * value);
 EXTERN __kumir_bool __kumir_scalar_as_bool(const __kumir_scalar * scalar);
 EXTERN void __kumir_free_scalar(__kumir_scalar * scalar);
@@ -149,6 +150,24 @@ EXTERN void __kumir_get_array_3_element(__kumir_scalar ** result,
                                         const __kumir_scalar * z,
                                         const __kumir_scalar * y,
                                         const __kumir_scalar * x);
+
+EXTERN void __kumir_get_string_slice_ref(__kumir_stringref * result,
+                                     __kumir_scalar ** sptr,
+                                     const __kumir_scalar * from,
+                                     const __kumir_scalar * to);
+
+EXTERN void __kumir_get_string_element_ref(__kumir_stringref * result,
+                                     __kumir_scalar ** sptr,
+                                     const __kumir_scalar * at);
+
+EXTERN void __kumir_get_string_slice(__kumir_scalar * result,
+                                     const __kumir_scalar ** sptr,
+                                     const __kumir_scalar * from,
+                                     const __kumir_scalar * to);
+
+EXTERN void __kumir_get_string_element(__kumir_scalar * result,
+                                       const __kumir_scalar ** sptr,
+                                       const __kumir_scalar * at);
 
 EXTERN void __kumir_loop_for_from_to_init_counter(const __kumir_scalar from);
 EXTERN void __kumir_loop_for_from_to_step_init_counter(const __kumir_scalar from, const __kumir_scalar step);

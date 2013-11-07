@@ -61,11 +61,9 @@ private:
     llvm::Value* createSubExpession(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex);
     llvm::Value* createShortCircuitOperation(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & left, const AST::ExpressionPtr & right, const AST::ExpressionOperator op);
     llvm::Value* createArrayElementGet(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex, bool isLvalue);
+    llvm::Value* createStringSliceGet(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex, bool isLvalue);
     llvm::Value* findVariableAtCurrentContext(const AST::VariablePtr & var);
     void createFreeTempScalars(llvm::IRBuilder<> & builder);
-
-    llvm::Type * findOrRegisterType(const AST::Type &bt, const bool reference, const uint8_t dim);
-    llvm::Type * findStandardType(const AST::VariableBaseType bt, const bool reference, const uint8_t dim);
 
     llvm::Module* currentModule_;
     llvm::Function* currentFunction_;
@@ -109,12 +107,17 @@ private:
     llvm::Function* kumirCreateChar_;
     llvm::Function* kumirCreateString_;
     llvm::Function* kumirAssignScalarToScalar_;
+    llvm::Function* kumirAssignScalarToStringRef_;
     llvm::Function* kumirAssignScalarToArrayElement_;
     llvm::Function* kumirMoveScalar_;
     llvm::Function* kumirFreeScalar_;
     llvm::Function* kumirGetArray1Element_;
     llvm::Function* kumirGetArray2Element_;
     llvm::Function* kumirGetArray3Element_;
+    llvm::Function* kumirGetStringElement_;
+    llvm::Function* kumirGetStringSlice_;
+    llvm::Function* kumirGetStringElementRef_;
+    llvm::Function* kumirGetStringSliceRef_;
 
     llvm::Function* kumirLoopForFromToInitCounter_;
     llvm::Function* kumirLoopForFromToStepInitCounter_;
@@ -160,6 +163,10 @@ private:
     llvm::Function* kumirOpPow_;
 
     llvm::Function* kumirOpNeg_;
+
+    llvm::StructType* kumirScalarType_;
+    llvm::StructType* kumirArrayType_;
+    llvm::StructType* kumirStringRefType_;
 
 
     std::list<llvm::Value*> tempValsToFree_;

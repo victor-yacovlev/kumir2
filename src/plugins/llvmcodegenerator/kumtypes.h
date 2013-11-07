@@ -27,7 +27,6 @@ typedef struct {
 }
 __kumir_record;
 
-
 typedef union { // TODO replace struct with union
     __kumir_int     i;
     __kumir_real    r;
@@ -44,6 +43,22 @@ typedef struct {
     __kumir_variant     data;
 }
 __kumir_scalar;
+
+typedef enum {
+    __KUMIR_STRINGREF_REPLACE   = 0x00,
+    __KUMIR_STRINGREF_PREPEND   = 0x01,
+    __KUMIR_STRINGREF_APPEND    = 0x02,
+    __KUMIR_STRINGREF_INSERT    = 0x03
+}
+__kumir_stringref_operation;
+
+typedef struct {
+    __kumir_scalar*             ref;
+    __kumir_stringref_operation op;
+    size_t                      from;
+    size_t                      length;
+}
+__kumir_stringref;
 
 typedef struct {
     unsigned char       dim;
