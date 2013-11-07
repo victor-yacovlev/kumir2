@@ -1014,7 +1014,7 @@ void LLVMGenerator::createSwitchCaseElse(llvm::IRBuilder<> &builder, const AST::
             builder.CreateCall(kumirSetCurrentLineNumber_,
                                llvm::ConstantInt::getSigned(
                                    llvm::Type::getInt32Ty(ctx),
-                                   st->headerErrorLine
+                                   st->headerErrorLine + 1
                                    ));
         }
         builder.CreateCall(kumirAbortOnError_,
