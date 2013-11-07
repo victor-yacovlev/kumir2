@@ -148,6 +148,7 @@ private:
     llvm::Function* kumirAssert_;
     llvm::Function* kumirAbortOnError_;
     llvm::Function* kumirSetCurrentLineNumber_;
+    llvm::Function* kumirCheckValueDefined_;
 
     llvm::Function* kumirOpEq_;
     llvm::Function* kumirOpNeq_;

@@ -1427,6 +1427,9 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
             // Scalar value
             const AST::ExpressionPtr & argExpr = arguments.at(i);
             arg = calculate(builder, argExpr);
+            if (alg->header.arguments[i]->accessType == AST::AccessArgumentIn) {
+                builder.CreateCall(kumirCheckValueDefined_, arg);
+            }
         }
         else {
             // Array
@@ -1698,6 +1701,9 @@ void LLVMGenerator::createInternalExternsTable()
 
     kumirSetCurrentLineNumber_ = stdlibModule_->getFunction("__kumir_set_current_line_number");
     Q_ASSERT(kumirSetCurrentLineNumber_);
+
+    kumirCheckValueDefined_ = stdlibModule_->getFunction("__kumir_check_value_defined");
+    Q_ASSERT(kumirCheckValueDefined_);
 
     kumirOpEq_ = stdlibModule_->getFunction("__kumir_operator_eq");
     Q_ASSERT(kumirOpEq_);
