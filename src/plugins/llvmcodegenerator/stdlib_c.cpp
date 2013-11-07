@@ -1594,7 +1594,7 @@ EXTERN void __kumir_get_string_slice_ref(__kumir_stringref * result,
     }
     else {
         result->from = static_cast<size_t>(kfrom - 1);
-        result->length = static_cast<size_t>(kto - kfrom);
+        result->length = static_cast<size_t>(kto - kfrom + 1);
         result->op = __KUMIR_STRINGREF_REPLACE;
     }
 }
