@@ -424,9 +424,11 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
                 else if (kvar->baseType.kind == AST::TypeString ||
                          kvar->baseType.kind == AST::TypeUser)
                 {
-                    llvm::Value * lvar = findVariableAtCurrentContext(kvar);
-                    Q_ASSERT(lvar);
-                    builder.CreateCall(kumirFreeScalar_, lvar);
+                    if (kvar->accessType != AST::AccessArgumentIn) {
+                        llvm::Value * lvar = findVariableAtCurrentContext(kvar);
+                        Q_ASSERT(lvar);
+                        builder.CreateCall(kumirFreeScalar_, lvar);
+                    }
                 }
             }
 
