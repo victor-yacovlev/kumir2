@@ -388,7 +388,7 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
                 }
                 Q_ASSERT(initFunc);
                 builder.CreateCall(initFunc, initArgs);
-                if (karg->accessType == AST::AccessArgumentOut) {
+                if (karg->accessType == AST::AccessArgumentOut && karg->dimension > 0u) {
                     builder.CreateCall(kumirCleanUpArrayInShape_, lvar);
                 }
             }
@@ -417,7 +417,8 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
         for (int i=0; i<kfunc->impl.locals.size(); i++) {
             const AST::VariablePtr & kvar = kfunc->impl.locals[i];
             if (kvar->accessType != AST::AccessArgumentInOut &&
-                    kvar->accessType != AST::AccessArgumentOut)
+                    kvar->accessType != AST::AccessArgumentOut &&
+                    kvar->name != kfunc->header.name)
             {
                 if (kvar->dimension > 0u)
                 {
