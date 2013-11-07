@@ -1445,8 +1445,8 @@ EXTERN void __kumir_get_array_1_element(__kumir_scalar ** result,
     }
     else {
         const size_t index = static_cast<size_t>(xx - array->size_left[0]);
-        if (value_expected) {
-            __kumir_check_value_defined(&data[index]);
+        if (value_expected && !data[index].defined) {
+            Kumir::Core::abort(Kumir::Core::fromUtf8("Значение элемента таблицы не определено"));
         }
         *result = &data[index];
     }
@@ -1477,8 +1477,8 @@ EXTERN void __kumir_get_array_2_element(__kumir_scalar ** result,
                     ( size_y * (yy - array->size_left[0]) ) +
                     ( xx - array->size_left[1] )
                 );
-        if (value_expected) {
-            __kumir_check_value_defined(&data[index]);
+        if (value_expected && !data[index].defined) {
+            Kumir::Core::abort(Kumir::Core::fromUtf8("Значение элемента таблицы не определено"));
         }
         *result = &data[index];
     }
@@ -1519,8 +1519,8 @@ EXTERN void __kumir_get_array_3_element(__kumir_scalar ** result,
                     ( size_y * (yy - array->size_left[1]) ) +
                     ( xx - array->size_left[2] )
                 );
-        if (value_expected) {
-            __kumir_check_value_defined(&data[index]);
+        if (value_expected && !data[index].defined) {
+            Kumir::Core::abort(Kumir::Core::fromUtf8("Значение элемента таблицы не определено"));
         }
         *result = &data[index];
     }
