@@ -196,6 +196,19 @@ EXTERN void __kumir_modify_string(__kumir_stringref * lvalue, const __kumir_scal
 
 static int32_t __kumir_current_line_number = -1;
 
+EXTERN void __kumir_halt()
+{
+    const std::wstring message =
+            Kumir::Core::fromUtf8("\nСТОП.");
+    Kumir::Encoding enc = Kumir::UTF8;
+#if defined(WIN32) || defined(_WIN32)
+    enc = Kumir::CP866;
+#endif
+    const std::string loc_message = Kumir::Coder::encode(enc, message);
+    std::cerr << loc_message << std::endl;
+    exit(0);
+}
+
 static void __kumir_handle_abort()
 {
     const std::wstring message = __kumir_current_line_number == -1

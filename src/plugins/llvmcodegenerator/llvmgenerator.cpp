@@ -493,6 +493,10 @@ void LLVMGenerator::addFunctionBody(const QList<AST::StatementPtr> & statements,
                 break;
             case AST::StError:
                 createError(builder, statement);
+                break;
+            case AST::StHalt:
+                createHalt(builder, statement, alg);
+                break;
             default:
                 qFatal("Not implemented!");
                 break;
@@ -678,6 +682,11 @@ void LLVMGenerator::createOutput(llvm::IRBuilder<> &builder, const AST::Statemen
         builder.CreateCall(outFunc, args);
         createFreeTempScalars(builder);
     }
+}
+
+void LLVMGenerator::createHalt(llvm::IRBuilder<> &builder, const AST::StatementPtr &, const AST::AlgorithmPtr &)
+{
+    builder.CreateCall(kumirHalt_);
 }
 
 void LLVMGenerator::createInput(llvm::IRBuilder<> &builder, const AST::StatementPtr &st, const AST::AlgorithmPtr &alg)
@@ -1726,6 +1735,9 @@ void LLVMGenerator::createInternalExternsTable()
 
     kumirCheckValueDefined_ = stdlibModule_->getFunction("__kumir_check_value_defined");
     Q_ASSERT(kumirCheckValueDefined_);
+
+    kumirHalt_ = stdlibModule_->getFunction("__kumir_halt");
+    Q_ASSERT(kumirHalt_);
 
     kumirOpEq_ = stdlibModule_->getFunction("__kumir_operator_eq");
     Q_ASSERT(kumirOpEq_);

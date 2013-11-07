@@ -44,6 +44,7 @@ private:
     void createAssign(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createAssert(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createOutput(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
+    void createHalt(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createInput(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createLoop(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createIfThenElse(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
@@ -149,6 +150,7 @@ private:
     llvm::Function* kumirAbortOnError_;
     llvm::Function* kumirSetCurrentLineNumber_;
     llvm::Function* kumirCheckValueDefined_;
+    llvm::Function* kumirHalt_;
 
     llvm::Function* kumirOpEq_;
     llvm::Function* kumirOpNeq_;

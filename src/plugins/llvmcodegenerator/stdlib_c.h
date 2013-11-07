@@ -11,6 +11,7 @@
 
 EXTERN void __kumir_init_stdlib();
 static void __kumir_handle_abort();
+EXTERN void __kumir_halt();
 EXTERN void __kumir_create_undefined_scalar(__kumir_scalar * result);
 EXTERN void __kumir_create_undefined_array(__kumir_array * result);
 EXTERN void __kumir_create_defined_scalar(__kumir_scalar * lvalue, const __kumir_scalar * value);
