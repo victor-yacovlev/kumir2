@@ -468,7 +468,7 @@ void LLVMGenerator::addFunctionBody(const QList<AST::StatementPtr> & statements,
             createError(builder, statement);
         }
         else {
-        switch (type) {
+            switch (type) {
             case AST::StVarInitialize:
                 createVarInitialize(builder, statement, alg.isNull());
                 break;
@@ -502,6 +502,8 @@ void LLVMGenerator::addFunctionBody(const QList<AST::StatementPtr> & statements,
             case AST::StHalt:
                 createHalt(builder, statement, alg);
                 break;
+            case AST::StPause:
+                break; // not used in console mode
             default:
                 qFatal("Not implemented!");
                 break;
