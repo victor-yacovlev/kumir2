@@ -735,7 +735,7 @@ EXTERN void __kumir__stdlib__poz_posle(__kumir_scalar * result, const __kumir_sc
     const std::wstring pattern = __kumir_scalar_as_wstring(fragment);
     const std::wstring source = __kumir_scalar_as_wstring(stroka);
     __kumir_create_int(result,
-                       Kumir::StringUtils::find(from, pattern, source)
+                       Kumir::StringUtils::find(from + 1, pattern, source)
                        );
 }
 
