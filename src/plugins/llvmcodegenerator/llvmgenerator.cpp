@@ -125,6 +125,7 @@ void LLVMGenerator::createKumirModuleImplementation(const AST::ModulePtr kmod)
     initFunctions_.push_back(initFunc);
     initFunc->addFnAttr(llvm::Attributes::NoUnwind);
     initFunc->addFnAttr(llvm::Attributes::UWTable);
+    tempValsToFree_.clear();
     llvm::BasicBlock * initBlock = llvm::BasicBlock::Create(*context_, "", initFunc);
     currentBlock_ = initBlock;
     llvm::IRBuilder<> initBuilder(initBlock);
@@ -400,6 +401,7 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
     }
 
     if (createBody) {
+        tempValsToFree_.clear();
         nameTranslator_->beginNamespace();
         currentFunction_ = lfn;
 
@@ -551,7 +553,6 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
         }
         builder.CreateRetVoid();
         nameTranslator_->endNamespace();
-        tempValsToFree_.clear();
     }
 }
 
@@ -623,7 +624,7 @@ void LLVMGenerator::addFunctionBody(const QList<AST::StatementPtr> & statements,
                 qFatal("Not implemented!");
                 break;
             }
-        }
+        }        
     }
 }
 
@@ -1362,7 +1363,7 @@ void LLVMGenerator::createFreeTempScalars(llvm::IRBuilder<> &builder)
     for (size_t i=from; i<tempValsToFree_.size(); i++) {
         builder.CreateCall(kumirFreeScalar_, tempValsToFree_.at(i));
     }
-    if (from > tempValsToFree_.size()) {
+    if (from < tempValsToFree_.size()) {
         tempValsToFree_.resize(from);
     }
 }
