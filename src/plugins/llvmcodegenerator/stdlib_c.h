@@ -205,6 +205,11 @@ EXTERN void __kumir__stdlib__tg(__kumir_scalar * result, const __kumir_scalar * 
 EXTERN void __kumir__stdlib__ctg(__kumir_scalar * result, const __kumir_scalar * value);
 EXTERN void __kumir__stdlib__sin(__kumir_scalar * result, const __kumir_scalar * value);
 EXTERN void __kumir__stdlib__cos(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__sqrt(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__max(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
+EXTERN void __kumir__stdlib__min(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
+EXTERN void __kumir__stdlib__imax(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
+EXTERN void __kumir__stdlib__imin(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
 
 // String
 EXTERN void __kumir__stdlib__tsel_v_lit(__kumir_scalar * result, const __kumir_scalar * value);
