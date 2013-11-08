@@ -1092,6 +1092,35 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
                              );
     }
     else {
+        QString endErr;
+        int endErrLine;
+        foreach (const AST::Lexem * lx, loop.endLexems) {
+            if (lx->error.length() > 0) {
+                endErr = lx->error;
+                endErrLine = lx->lineNo + 1;
+                break;
+            }
+        }
+        if (endErr.length() > 0) {
+            if (debugLevel_ != Shared::GeneratorInterface::NoDebug) {
+                builder.CreateCall(kumirSetCurrentLineNumber_,
+                                   llvm::ConstantInt::getSigned(
+                                       llvm::Type::getInt32Ty(ctx),
+                                       endErrLine
+                                       )
+                                   );
+            }
+            builder.CreateCall(kumirAbortOnError_,
+                               builder.CreateGlobalStringPtr(
+                                   std::string(
+                                       Shared::ErrorMessages::message(
+                                           "KumirAnalizer", QLocale::Russian,
+                                           endErr
+                                           )
+                                       .toUtf8().constData()
+                                       )
+                                   ));
+        }
         createFreeTempScalars(builder);
         builder.CreateBr(loop_begin);
     }
