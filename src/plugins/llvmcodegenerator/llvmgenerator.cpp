@@ -748,8 +748,19 @@ void LLVMGenerator::createOutput(llvm::IRBuilder<> &builder, const AST::Statemen
     llvm::Value * fileHandle = 0;
     if (fileHandleProvided) {
         fileHandle = calculate(builder, st->expressions.last());
+        builder.CreateCall(kumirCheckValueDefined_, fileHandle);
         Q_ASSERT(fileHandle);
     }
+    std::vector<llvm::Value *> values;
+    std::vector<llvm::Value *> types;
+    typedef struct {
+        bool c;
+        llvm::Value *s;
+    } format_t ;
+
+    std::vector<format_t> f1s;
+    std::vector<format_t> f2s;
+
     for (int i=0; i<lexemsCount; i++) {
         int exprIndex = 3 * i;
         int format1Index = 3 * i + 1;
@@ -782,50 +793,77 @@ void LLVMGenerator::createOutput(llvm::IRBuilder<> &builder, const AST::Statemen
                     llvm::Type::getInt32Ty(ctx), typee
                     );
 
-        llvm::Value * lexpr = calculate(builder, expr);      
+        types.push_back(ltype);
+
+        llvm::Value * lexpr = calculate(builder, expr);
+        builder.CreateCall(kumirCheckValueDefined_, lexpr);
+        values.push_back(lexpr);
 
         llvm::Function * outFunc = 0;
         std::vector<llvm::Value*> args;
+        format_t f1, f2;
 
-        if (fileHandleProvided) {
-            args.push_back(fileHandle);
-            args.push_back(lexpr);
-            args.push_back(ltype);
-            if (format1->kind == AST::ExprConst && format2->kind == AST::ExprConst) {
-                llvm::Value * lformat1 = llvm::ConstantInt::getSigned(
-                            llvm::Type::getInt32Ty(*context_),
-                            format1->constant.toInt()
-                            );
-                llvm::Value * lformat2 = llvm::ConstantInt::getSigned(
-                            llvm::Type::getInt32Ty(*context_),
-                            format2->constant.toInt()
-                            );
-                outFunc = kumirOutputFileII_;
-                args.push_back(lformat1);
-                args.push_back(lformat2);
-            }
+        if (format1->kind == AST::ExprConst) {
+            llvm::Value * format = llvm::ConstantInt::getSigned(
+                        llvm::Type::getInt32Ty(*context_),
+                        format1->constant.toInt()
+                        );
+            f1.s = format;
+            f1.c = true;
         }
         else {
-            args.push_back(lexpr);
-            args.push_back(ltype);
-            if (format1->kind == AST::ExprConst && format2->kind == AST::ExprConst) {
-                llvm::Value * lformat1 = llvm::ConstantInt::getSigned(
-                            llvm::Type::getInt32Ty(*context_),
-                            format1->constant.toInt()
-                            );
-                llvm::Value * lformat2 = llvm::ConstantInt::getSigned(
-                            llvm::Type::getInt32Ty(*context_),
-                            format2->constant.toInt()
-                            );
-                outFunc = kumirOutputStdoutII_;
-                args.push_back(lformat1);
-                args.push_back(lformat2);
-            }
+            llvm::Value * format = calculate(builder, format1);
+            f1.s = format;
+            f1.c = false;
         }
-        Q_ASSERT(outFunc);
-        builder.CreateCall(outFunc, args);
-        createFreeTempScalars(builder);
+
+        if (format2->kind == AST::ExprConst) {
+            llvm::Value * format = llvm::ConstantInt::getSigned(
+                        llvm::Type::getInt32Ty(*context_),
+                        format2->constant.toInt()
+                        );
+            f2.s = format;
+            f2.c = true;
+        }
+        else {
+            llvm::Value * format = calculate(builder, format2);
+            f2.s = format;
+            f2.c = false;
+        }
+        f1s.push_back(f1);
+        f2s.push_back(f2);
     }
+
+    Q_ASSERT(values.size() == types.size());
+    Q_ASSERT(f1s.size() == f2s.size());
+    Q_ASSERT(f1s.size() == values.size());
+
+    for (size_t i=0u; i<values.size(); i++) {
+        const format_t & f1 = f1s.at(i);
+        const format_t & f2 = f2s.at(i);
+        llvm::Function * outFunc = 0;
+        std::vector<llvm::Value*> args;
+        if (fileHandleProvided) {
+            if      (f1.c && f2.c)      outFunc = kumirOutputFileII_;
+            else if (f1.c && !f2.c)     outFunc = kumirOutputFileIS_;
+            else if (!f1.c && f2.c)     outFunc = kumirOutputFileSI_;
+            else if (!f1.c && !f2.c)    outFunc = kumirOutputFileSS_;
+            args.push_back(fileHandle);
+        }
+        else {
+            if      (f1.c && f2.c)      outFunc = kumirOutputStdoutII_;
+            else if (f1.c && !f2.c)     outFunc = kumirOutputStdoutIS_;
+            else if (!f1.c && f2.c)     outFunc = kumirOutputStdoutSI_;
+            else if (!f1.c && !f2.c)    outFunc = kumirOutputStdoutSS_;
+        }
+        args.push_back(values[i]);
+        args.push_back(types[i]);
+        args.push_back(f1.s);
+        args.push_back(f2.s);
+        builder.CreateCall(outFunc, args);
+    }
+
+    createFreeTempScalars(builder);
 }
 
 void LLVMGenerator::createHalt(llvm::IRBuilder<> &builder, const AST::StatementPtr &, const AST::AlgorithmPtr &)
