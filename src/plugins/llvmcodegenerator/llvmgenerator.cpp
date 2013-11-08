@@ -786,6 +786,43 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
 {
     const AST::LoopSpec & loop = st->loop;
 
+    int errNo = -1;
+    QString err;
+
+    if (st->headerError.length() > 0) {
+        errNo = st->headerErrorLine + 1;
+        err = st->headerError;
+    }
+    else {
+        foreach (const AST::Lexem * lx, st->lexems) {
+            if (lx->error.length() > 0) {
+                err = lx->error;
+                errNo = lx->lineNo + 1;
+                break;
+            }
+        }
+    }
+
+    if (err.length() > 0) {
+        if (debugLevel_ != Shared::GeneratorInterface::NoDebug) {
+            builder.CreateCall(kumirSetCurrentLineNumber_,
+                               llvm::ConstantInt::getSigned(
+                                   llvm::Type::getInt32Ty(ctx),
+                                   errNo
+                                   )
+                               );
+        }
+        builder.CreateCall(kumirAbortOnError_,
+                           builder.CreateGlobalStringPtr(
+                               std::string(
+                                   Shared::ErrorMessages::message(
+                                       "KumirAnalizer", QLocale::Russian,
+                                       err
+                                       )
+                                   .toUtf8().constData()
+                                   )
+                               ));
+    }
 
     llvm::Value * for_from = 0;
     llvm::Value * for_to = 0;
@@ -832,7 +869,7 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
 
     // --- initialization
     builder.SetInsertPoint(loop_init);
-    if (loop.type == AST::LoopFor) {
+    if (loop.type == AST::LoopFor && loop.forVariable) {
         const AST::VariablePtr & kvar = loop.forVariable;
         const CString name = nameTranslator_->find(kvar->name);
         Q_ASSERT(!name.empty());
@@ -875,7 +912,7 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
     // --- loop pre-check
     builder.SetInsertPoint(loop_begin);
     llvm::Value * loop_pre_check = 0;
-    if (loop.type == AST::LoopFor) {
+    if (loop.type == AST::LoopFor && loop_variable && for_from && for_to) {
         if (loop.stepValue) {
             loop_pre_check = builder.CreateCall4(kumirLoopForFromToStepCheckCounter_,
                                                  loop_variable,
