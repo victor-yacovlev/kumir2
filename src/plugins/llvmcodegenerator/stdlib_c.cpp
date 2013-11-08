@@ -339,6 +339,70 @@ EXTERN void __kumir_output_stdout(const char * utf8)
     __kumir_free_scalar(&sc);
 }
 
+EXTERN void __kumir_print_scalar_variable(const char * name,
+                                   const __kumir_scalar_type type,
+                                   const __kumir_scalar * value)
+{
+    if (value->defined) {
+        const std::wstring wname = Kumir::Core::fromUtf8(name);
+        const std::wstring msg = wname.empty()
+                ? Kumir::Core::fromUtf8("Значение функции = ")
+                : wname + Kumir::Core::fromAscii(" = ");
+        Kumir::IO::writeString(0, msg);
+        __kumir_output_stdout_ii(value, type, 0, 0);
+    }
+}
+
+EXTERN void __kumir_input_scalar_variable(const char * name,
+                                   const __kumir_scalar_type format,
+                                   __kumir_scalar * ptr)
+{
+    const std::wstring msg =
+            Kumir::Core::fromUtf8("Введите ") +
+            Kumir::Core::fromUtf8(name) +
+            Kumir::Core::fromAscii(": ");
+
+    Kumir::IO::writeString(0, msg);
+
+    unsigned int f = static_cast<unsigned int>(format);
+    if (__KUMIR_CHAR == f) {
+        __kumir_char c = Kumir::IO::readChar();
+        ptr->defined = true;
+        ptr->type = __KUMIR_CHAR;
+        ptr->data.c = c;
+    }
+    else if (__KUMIR_REAL == f) {
+        __kumir_real r = Kumir::IO::readReal();
+        __kumir_create_real(ptr, r);
+    }
+    else if (__KUMIR_INT == f) {
+        __kumir_int v = Kumir::IO::readInteger();
+        __kumir_create_int(ptr, v);
+    }
+    else if (__KUMIR_BOOL == f) {
+        __kumir_bool b = Kumir::IO::readBool();
+        __kumir_create_bool(ptr, b);
+    }
+    else if (__KUMIR_STRING == f) {
+        std::wstring ws = Kumir::IO::readString();
+        __kumir_create_string(ptr, ws);
+    }
+}
+
+EXTERN void __kumir_print_array_variable(const char * name,
+                                   const __kumir_scalar_type type,
+                                   const __kumir_array * value)
+{
+    // TODO implement me
+}
+
+EXTERN void __kumir_input_array_variable(const char * name,
+                                   const __kumir_scalar_type type,
+                                   __kumir_array * ptr)
+{
+    // TODO implement me
+}
+
 EXTERN void __kumir_output_stdout_ii(const __kumir_scalar * value, const __kumir_scalar_type type, const int format1, const int format2)
 {    
     __kumir_check_value_defined(value);

@@ -184,6 +184,22 @@ EXTERN __kumir_bool __kumir_loop_times_check_counter();
 
 EXTERN void __kumir_loop_end_counter();
 
+EXTERN void __kumir_print_scalar_variable(const char * name,
+                                   const __kumir_scalar_type type,
+                                   const __kumir_scalar * value);
+
+EXTERN void __kumir_input_scalar_variable(const char * name,
+                                   const __kumir_scalar_type type,
+                                   __kumir_scalar * value);
+
+EXTERN void __kumir_print_array_variable(const char * name,
+                                   const __kumir_scalar_type type,
+                                   const __kumir_array * value);
+
+EXTERN void __kumir_input_array_variable(const char * name,
+                                   const __kumir_scalar_type type,
+                                   __kumir_array * ptr);
+
 
 // Math
 

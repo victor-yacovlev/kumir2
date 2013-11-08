@@ -66,8 +66,8 @@ private:
     llvm::Value* createStringSliceGet(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex, bool isLvalue);
     llvm::Value* findVariableAtCurrentContext(const AST::VariablePtr & var);
     void createFreeTempScalars(llvm::IRBuilder<> & builder);
-    void createOutputValue(Builder & builder, llvm::Value * value, const AST::VariableBaseType type, const bool isArray);
-    void createInputValue(Builder & builder, llvm::Value * value, const AST::VariableBaseType type, const bool isArray);
+    void createOutputValue(Builder & builder, const QString & name, llvm::Value * value, const AST::VariableBaseType type, const bool isArray);
+    void createInputValue(Builder & builder, const QString & name, llvm::Value * value, const AST::VariableBaseType type, const bool isArray);
 
     llvm::Module* currentModule_;
     llvm::Function* currentFunction_;
@@ -141,6 +141,11 @@ private:
     llvm::Function* kumirOutputStdoutIS_;
     llvm::Function* kumirOutputStdoutSS_;
     llvm::Function* kumirOutputStdout_;
+
+    llvm::Function* kumirPrintScalarVariable_;
+    llvm::Function* kumirInputScalarVariable_;
+    llvm::Function* kumirPrintArrayVariable_;
+    llvm::Function* kumirInputArrayVariable_;
 
     llvm::Function* kumirOutputFileII_;
     llvm::Function* kumirOutputFileSI_;
