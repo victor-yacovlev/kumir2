@@ -230,6 +230,7 @@ EXTERN void __kumir__stdlib__KATALOG_PROGRAMMYi(__kumir_scalar  * result);
 EXTERN void __kumir__stdlib__otkryit_na_chtenie(__kumir_scalar  * result, const __kumir_scalar * name);
 EXTERN void __kumir__stdlib__otkryit_na_zapis(__kumir_scalar  * result, const __kumir_scalar * name);
 EXTERN void __kumir__stdlib__zakryit(const __kumir_scalar * handle);
+EXTERN void __kumir__stdlib__suschestvuet(__kumir_scalar  * result, const __kumir_scalar * name);
 
 // System
 EXTERN void __kumir__stdlib__vremya(__kumir_scalar * result);

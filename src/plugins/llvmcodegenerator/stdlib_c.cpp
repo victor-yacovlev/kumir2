@@ -806,6 +806,13 @@ EXTERN void __kumir__stdlib__zakryit(const __kumir_scalar * handle)
     Kumir::Files::close(f);
 }
 
+EXTERN void __kumir__stdlib__suschestvuet(__kumir_scalar  * result, const __kumir_scalar * name)
+{
+    __kumir_check_value_defined(name);
+    const std::wstring sname = __kumir_scalar_as_wstring(name);
+    __kumir_create_bool(result, Kumir::Files::exist(sname));
+}
+
 EXTERN void __kumir__stdlib__vremya(__kumir_scalar * result)
 {
     __kumir_create_int(result, Kumir::System::time());
