@@ -1753,7 +1753,19 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
             arg = calculate(builder, argExpr);
             if (alg->header.arguments[i]->accessType == AST::AccessArgumentIn) {
                 builder.CreateCall(kumirCheckValueDefined_, arg);
-            }
+                // Copy variable to prevent it changing
+                // if passed as another value out-parameter
+                if (argExpr->kind == AST::ExprVariable) {
+                    llvm::Value * argCopy = builder.CreateAlloca(
+                                kumirScalarType_,
+                                0,
+                                arg->getName() + std::string("_copy")
+                                );
+                    builder.CreateCall2(kumirAssignScalarToScalar_,
+                                        argCopy, arg);
+                    arg = argCopy;
+                }
+            }            
         }
         else {
             // Array
