@@ -66,7 +66,8 @@ private:
     llvm::Value* createStringSliceGet(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex, bool isLvalue);
     llvm::Value* findVariableAtCurrentContext(const AST::VariablePtr & var);
     void createFreeTempScalars(llvm::IRBuilder<> & builder);
-    void createOutputValue(Builder & builder, llvm::Value * value, const AST::VariableBaseType type);
+    void createOutputValue(Builder & builder, llvm::Value * value, const AST::VariableBaseType type, const bool isArray);
+    void createInputValue(Builder & builder, llvm::Value * value, const AST::VariableBaseType type, const bool isArray);
 
     llvm::Module* currentModule_;
     llvm::Function* currentFunction_;

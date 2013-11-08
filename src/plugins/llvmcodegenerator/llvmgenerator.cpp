@@ -227,6 +227,23 @@ void LLVMGenerator::createMainFunction(const AST::AlgorithmPtr &entryPoint)
             args.push_back(ret);
         }
 
+        for (int i=0; i<entryPoint->header.arguments.size(); i++) {
+            const AST::VariablePtr & arg = entryPoint->header.arguments.at(i);
+            llvm::Value * larg = builder.CreateAlloca(
+                        arg->dimension > 0u ? kumirArrayType_ : kumirScalarType_
+                        );
+            args.push_back(larg);
+            if (arg->accessType!=AST::AccessArgumentOut) {
+                const std::string greeting = std::string(
+                            QString::fromUtf8("Введите %1: ").arg(arg->name)
+                            .toUtf8().constData()
+                            );
+                builder.CreateCall(kumirOutputStdout_, builder.CreateGlobalStringPtr(greeting));
+                createInputValue(builder, larg, arg->baseType.kind, arg->dimension > 0u);
+            }
+        }
+
+
         builder.CreateCall(entryPointFunc, args);
 
         if (ret) {
@@ -238,7 +255,7 @@ void LLVMGenerator::createMainFunction(const AST::AlgorithmPtr &entryPoint)
 
             builder.CreateCall(kumirOutputStdout_, builder.CreateGlobalStringPtr(prefix));
 
-            createOutputValue(builder, ret, entryPoint->header.returnType.kind);
+            createOutputValue(builder, ret, entryPoint->header.returnType.kind, false);
 
             builder.CreateCall(kumirOutputStdout_, builder.CreateGlobalStringPtr(postfix));
         }
@@ -250,41 +267,78 @@ void LLVMGenerator::createMainFunction(const AST::AlgorithmPtr &entryPoint)
                 );
 }
 
-void LLVMGenerator::createOutputValue(Builder &builder, llvm::Value *value, const AST::VariableBaseType type)
+void LLVMGenerator::createOutputValue(Builder &builder, llvm::Value *value, const AST::VariableBaseType type, const bool isArray)
 {
-    __kumir_scalar_type typee = __kumir_scalar_type(0x00);
-    if (type == AST::TypeBoolean) {
-        typee = __KUMIR_BOOL;
-    }
-    else if (type == AST::TypeInteger) {
-        typee = __KUMIR_INT;
-    }
-    else if (type == AST::TypeReal) {
-        typee = __KUMIR_REAL;
-    }
-    else if (type == AST::TypeCharect) {
-        typee = __KUMIR_CHAR;
-    }
-    else if (type == AST::TypeString) {
-        typee = __KUMIR_STRING;
-    }
-    else if (type == AST::TypeUser) {
-        typee = __KUMIR_RECORD;
-    }
+    if (!isArray) {
+        __kumir_scalar_type typee = __kumir_scalar_type(0x00);
+        if (type == AST::TypeBoolean) {
+            typee = __KUMIR_BOOL;
+        }
+        else if (type == AST::TypeInteger) {
+            typee = __KUMIR_INT;
+        }
+        else if (type == AST::TypeReal) {
+            typee = __KUMIR_REAL;
+        }
+        else if (type == AST::TypeCharect) {
+            typee = __KUMIR_CHAR;
+        }
+        else if (type == AST::TypeString) {
+            typee = __KUMIR_STRING;
+        }
+        else if (type == AST::TypeUser) {
+            typee = __KUMIR_RECORD;
+        }
 
-    llvm::Value * ltype = llvm::ConstantInt::getSigned(
-                llvm::Type::getInt32Ty(ctx), typee
-                );
+        llvm::Value * ltype = llvm::ConstantInt::getSigned(
+                    llvm::Type::getInt32Ty(ctx), typee
+                    );
 
-    llvm::Value * zero = llvm::ConstantInt::getSigned(
-                llvm::Type::getInt32Ty(ctx), 0
-                );
+        llvm::Value * zero = llvm::ConstantInt::getSigned(
+                    llvm::Type::getInt32Ty(ctx), 0
+                    );
 
-    llvm::Value * six = llvm::ConstantInt::getSigned(
-                llvm::Type::getInt32Ty(ctx), 6
-                );
+        llvm::Value * six = llvm::ConstantInt::getSigned(
+                    llvm::Type::getInt32Ty(ctx), 6
+                    );
 
-    builder.CreateCall4(kumirOutputStdoutII_, value, ltype, six, zero);
+        builder.CreateCall4(kumirOutputStdoutII_, value, ltype, six, zero);
+    }
+}
+
+void LLVMGenerator::createInputValue(Builder &builder, llvm::Value *value, const AST::VariableBaseType type, const bool isArray)
+{
+    if (!isArray) {
+        __kumir_scalar_type typee = __kumir_scalar_type(0x00);
+        if (type == AST::TypeBoolean) {
+            typee = __KUMIR_BOOL;
+        }
+        else if (type == AST::TypeInteger) {
+            typee = __KUMIR_INT;
+        }
+        else if (type == AST::TypeReal) {
+            typee = __KUMIR_REAL;
+        }
+        else if (type == AST::TypeCharect) {
+            typee = __KUMIR_CHAR;
+        }
+        else if (type == AST::TypeString) {
+            typee = __KUMIR_STRING;
+        }
+        else if (type == AST::TypeUser) {
+            typee = __KUMIR_RECORD;
+        }
+
+        llvm::Type * ptrType = kumirScalarType_->getPointerTo();
+        llvm::Value * ptr = builder.CreateAlloca(ptrType);
+        builder.CreateStore(value, ptr);
+
+        llvm::Value * ltype = llvm::ConstantInt::getSigned(
+                    llvm::Type::getInt32Ty(ctx), typee
+                    );
+
+        builder.CreateCall2(kumirInputStdin_, ltype, ptr);
+    }
 }
 
 void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
