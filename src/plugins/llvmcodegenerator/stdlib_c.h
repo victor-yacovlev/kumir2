@@ -221,6 +221,8 @@ EXTERN void __kumir__stdlib__yunikod(__kumir_scalar * result, const __kumir_scal
 EXTERN void __kumir__stdlib__kod(__kumir_scalar * result, const __kumir_scalar * value);
 EXTERN void __kumir__stdlib__simvol(__kumir_scalar * result, const __kumir_scalar * value);
 EXTERN void __kumir__stdlib__simvol2(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir__stdlib__poz_posle(__kumir_scalar * result, const __kumir_scalar * ot, const __kumir_scalar * fragment, const __kumir_scalar * stroka);
+EXTERN void __kumir__stdlib__poz(__kumir_scalar * result, const __kumir_scalar * fragment, const __kumir_scalar * stroka);
 
 // Files
 EXTERN void __kumir__stdlib__est_dannyie(__kumir_scalar  * result, const __kumir_scalar * handle);

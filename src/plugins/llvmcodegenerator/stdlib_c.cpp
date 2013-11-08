@@ -726,6 +726,30 @@ EXTERN void __kumir__stdlib__simvol2(__kumir_scalar * result, const __kumir_scal
     result->data.c = Kumir::StringUtils::unisymbol(value->data.i);
 }
 
+EXTERN void __kumir__stdlib__poz_posle(__kumir_scalar * result, const __kumir_scalar * ot, const __kumir_scalar * fragment, const __kumir_scalar * stroka)
+{
+    __kumir_check_value_defined(ot);
+    __kumir_check_value_defined(fragment);
+    __kumir_check_value_defined(stroka);
+    const int from = ot->data.i;
+    const std::wstring pattern = __kumir_scalar_as_wstring(fragment);
+    const std::wstring source = __kumir_scalar_as_wstring(stroka);
+    __kumir_create_int(result,
+                       Kumir::StringUtils::find(from, pattern, source)
+                       );
+}
+
+EXTERN void __kumir__stdlib__poz(__kumir_scalar * result, const __kumir_scalar * fragment, const __kumir_scalar * stroka)
+{
+    __kumir_check_value_defined(fragment);
+    __kumir_check_value_defined(stroka);
+    const std::wstring pattern = __kumir_scalar_as_wstring(fragment);
+    const std::wstring source = __kumir_scalar_as_wstring(stroka);
+    __kumir_create_int(result,
+                       Kumir::StringUtils::find(pattern, source)
+                       );
+}
+
 EXTERN void __kumir__stdlib__lit_v_vesch(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success)
 {
     __kumir_check_value_defined(value);
