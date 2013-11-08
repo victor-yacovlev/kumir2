@@ -1408,6 +1408,16 @@ llvm::Value * LLVMGenerator::calculate(llvm::IRBuilder<> &builder, const AST::Ex
     }
     else if (ex->kind == AST::ExprFunctionCall) {
         result = createFunctionCall(builder, ex->function, ex->operands);
+        if (ex->function->header.implType == AST::AlgorhitmCompiled &&
+                Shared::GeneratorInterface::NoDebug != debugLevel_)
+        {
+            builder.CreateCall(kumirSetCurrentLineNumber_,
+                               llvm::ConstantInt::getSigned(
+                                   llvm::Type::getInt32Ty(ctx),
+                                   ex->lexems.first()->lineNo + 1
+                                   )
+                               );
+        }
     }
     else if (ex->kind == AST::ExprSubexpression) {
         result = createSubExpession(builder, ex);
