@@ -87,9 +87,18 @@ llvm::Module* LLVMGenerator::getResult()
 
 void LLVMGenerator::addKumirModule(const AST::ModulePtr kmod)
 {
+    bool voidNameFunctionDeclared = false;
     for (int i=0; i<kmod->impl.algorhitms.size(); i++) {
         const AST::AlgorithmPtr func = kmod->impl.algorhitms.at(i);
-        addFunction(func, false);
+        if (!func->header.broken &&
+                !(voidNameFunctionDeclared && func->header.name.isEmpty())
+                )
+        {
+            addFunction(func, false);
+            if (func->header.name.isEmpty()) {
+                voidNameFunctionDeclared = true;
+            }
+        }
     }
 }
 
@@ -130,7 +139,9 @@ void LLVMGenerator::createKumirModuleImplementation(const AST::ModulePtr kmod)
 
     for (int i=0; i<kmod->impl.algorhitms.size(); i++) {
         const AST::AlgorithmPtr func = kmod->impl.algorhitms.at(i);
-        addFunction(func, true);
+        if (!func->header.broken) {
+            addFunction(func, true);
+        }
     }
 
     if (kmod->header.type == AST::ModTypeUserMain ||
