@@ -436,7 +436,10 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
         std::list<AST::VariablePtr>::iterator kIt = namedArgs.begin();
 
         if (kfunc->header.returnType != AST::TypeNone) {
-            lIt ++; // skip first argument used by retval
+            llvm::Argument & larg = *lIt;
+            larg.setName(lfn->getName());
+            lIt ++;
+            builder.CreateCall(kumirCreateUndefinedScalar_, &larg);
         }
 
         std::vector<llvm::Value*> argumentValues;
@@ -548,6 +551,7 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
         }
         builder.CreateRetVoid();
         nameTranslator_->endNamespace();
+        tempValsToFree_.clear();
     }
 }
 
@@ -1351,11 +1355,16 @@ void LLVMGenerator::createError(llvm::IRBuilder<> &builder, const AST::Statement
 
 void LLVMGenerator::createFreeTempScalars(llvm::IRBuilder<> &builder)
 {
-    typedef std::list<llvm::Value*>::iterator It;
-    for (It it = tempValsToFree_.begin(); it != tempValsToFree_.end(); ++it) {
-        builder.CreateCall(kumirFreeScalar_, *it);
+    size_t from = 0u;
+    if (!tempValsToFreeStartPos_.empty()) {
+        from = tempValsToFreeStartPos_.top();
     }
-    tempValsToFree_.clear();
+    for (size_t i=from; i<tempValsToFree_.size(); i++) {
+        builder.CreateCall(kumirFreeScalar_, tempValsToFree_.at(i));
+    }
+    if (from > tempValsToFree_.size()) {
+        tempValsToFree_.resize(from);
+    }
 }
 
 llvm::Value * LLVMGenerator::findVariableAtCurrentContext(const AST::VariablePtr &kvar)
@@ -1804,6 +1813,7 @@ llvm::Value * LLVMGenerator::createSubExpession(llvm::IRBuilder<> &builder, cons
 
 llvm::Value * LLVMGenerator::createShortCircuitOperation(llvm::IRBuilder<> &builder, const AST::ExpressionPtr &left, const AST::ExpressionPtr &right, const AST::ExpressionOperator op)
 {
+    tempValsToFreeStartPos_.push(tempValsToFree_.size());
     Q_ASSERT(op == AST::OpAnd || op == AST::OpOr);
     llvm::Value * result = builder.CreateAlloca(kumirScalarType_);
     llvm::Value * leftResult = calculate(builder, left);
@@ -1849,6 +1859,7 @@ llvm::Value * LLVMGenerator::createShortCircuitOperation(llvm::IRBuilder<> &buil
     // --- done
     currentBlock_ = done;
     builder.SetInsertPoint(done);
+    tempValsToFreeStartPos_.pop();
     return result;
 }
 

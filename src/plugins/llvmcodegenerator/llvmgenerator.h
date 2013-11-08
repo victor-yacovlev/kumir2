@@ -15,6 +15,7 @@
 #include <llvm/IRBuilder.h>
 
 #include <cstdint>
+#include <stack>
 
 namespace LLVMCodeGenerator {
 
@@ -181,7 +182,8 @@ private:
     llvm::StructType* kumirStringRefType_;
 
 
-    std::list<llvm::Value*> tempValsToFree_;
+    std::vector<llvm::Value*> tempValsToFree_;
+    std::stack<size_t> tempValsToFreeStartPos_;
     bool linkStdLibModule_;
     std::list<llvm::Function*> initFunctions_;
 
