@@ -1385,12 +1385,12 @@ EXTERN void __kumir_create_array_copy_1(__kumir_array * result,
                                         )
 {    
     __kumir_create_array_ref_1(result, left_1, right_1);
-    if (left_1->data.i < result->shape_left[0] || left_1->data.i > right_1->data.i) {
-        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
-    }
-    if (right_1->data.i < left_1->data.i || right_1->data.i > result->shape_right[0]) {
-        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
-    }
+//    if (left_1->data.i < result->shape_left[0] || left_1->data.i > right_1->data.i) {
+//        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
+//    }
+//    if (right_1->data.i < left_1->data.i || right_1->data.i > result->shape_right[0]) {
+//        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
+//    }
     size_t start_pos = static_cast<size_t>(result->shape_left[0] - result->size_left[0]);
     size_t items_count = start_pos +
             static_cast<size_t>(result->shape_right[0] - result->shape_left[0] + 1);
@@ -1425,18 +1425,18 @@ EXTERN void __kumir_create_array_copy_2(__kumir_array * result,
                                         )
 {
     __kumir_create_array_ref_2(result, left_1, right_1, left_2, right_2);
-    if (left_1->data.i < result->shape_left[0] || left_1->data.i > right_1->data.i) {
-        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
-    }
-    if (right_1->data.i < left_1->data.i || right_1->data.i > result->shape_right[0]) {
-        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
-    }
-    if (left_2->data.i < result->shape_left[1] || left_2->data.i > right_2->data.i) {
-        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
-    }
-    if (right_2->data.i < left_2->data.i || right_2->data.i > result->shape_right[1]) {
-        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
-    }
+//    if (left_1->data.i < result->shape_left[0] || left_1->data.i > right_1->data.i) {
+//        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
+//    }
+//    if (right_1->data.i < left_1->data.i || right_1->data.i > result->shape_right[0]) {
+//        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
+//    }
+//    if (left_2->data.i < result->shape_left[1] || left_2->data.i > right_2->data.i) {
+//        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
+//    }
+//    if (right_2->data.i < left_2->data.i || right_2->data.i > result->shape_right[1]) {
+//        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
+//    }
 
     const size_t size1 = static_cast<size_t>(
                 1 + result->shape_right[0] - result->shape_left[0]
@@ -1478,24 +1478,24 @@ EXTERN void __kumir_create_array_copy_3(__kumir_array * result,
                                         )
 {
     __kumir_create_array_ref_3(result, left_1, right_1, left_2, right_2, left_3, right_3);
-    if (left_1->data.i < result->shape_left[0] || left_1->data.i > right_1->data.i) {
-        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
-    }
-    if (right_1->data.i < left_1->data.i || right_1->data.i > result->shape_right[0]) {
-        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
-    }
-    if (left_2->data.i < result->shape_left[1] || left_2->data.i > right_2->data.i) {
-        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
-    }
-    if (right_2->data.i < left_2->data.i || right_2->data.i > result->shape_right[1]) {
-        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
-    }
-    if (left_3->data.i < result->shape_left[2] || left_3->data.i > right_3->data.i) {
-        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
-    }
-    if (right_3->data.i < left_3->data.i || right_3->data.i > result->shape_right[2]) {
-        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
-    }
+//    if (left_1->data.i < result->shape_left[0] || left_1->data.i > right_1->data.i) {
+//        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
+//    }
+//    if (right_1->data.i < left_1->data.i || right_1->data.i > result->shape_right[0]) {
+//        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
+//    }
+//    if (left_2->data.i < result->shape_left[1] || left_2->data.i > right_2->data.i) {
+//        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
+//    }
+//    if (right_2->data.i < left_2->data.i || right_2->data.i > result->shape_right[1]) {
+//        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
+//    }
+//    if (left_3->data.i < result->shape_left[2] || left_3->data.i > right_3->data.i) {
+//        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
+//    }
+//    if (right_3->data.i < left_3->data.i || right_3->data.i > result->shape_right[2]) {
+//        Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
+//    }
     const size_t size1 = static_cast<size_t>(
                 1 + result->shape_right[0] - result->shape_left[0]
                 );
