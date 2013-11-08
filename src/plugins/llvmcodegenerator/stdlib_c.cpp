@@ -1665,10 +1665,12 @@ static void __kumir_fill_array_1(__kumir_array array, const char *data, const __
 {
     const char * p = data;
     __kumir_int isz = __eat<__kumir_int>(&p);
+//    std::cerr << "Size = " << isz << "\n";
     size_t index = 0u;
     __kumir_scalar * adata = reinterpret_cast<__kumir_scalar*>(array.data);
     while (isz) {
         adata[index].defined = __eat<__kumir_bool>(&p);
+//        std::cerr << "defined = " << adata[index].defined << "\n";
         adata[index].type = type;
         if (__KUMIR_INT == type) {
             adata[index].data.i = __eat<__kumir_int>(&p);
@@ -1678,6 +1680,11 @@ static void __kumir_fill_array_1(__kumir_array array, const char *data, const __
         }
         else if (__KUMIR_BOOL == type) {
             adata[index].data.b = __eat<__kumir_bool>(&p);
+        }
+        else if (__KUMIR_CHAR == type) {
+            uint16_t code = __eat<uint16_t>(&p);
+//            std::cerr << "code = " << code << "\n";
+            adata[index].data.c = code;
         }
         isz--;
         index++;

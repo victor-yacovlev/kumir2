@@ -1614,7 +1614,7 @@ QByteArray LLVMGenerator::createArray_0_ConstantData(const AST::VariableBaseType
     }
     char * ptr = 0;
     size_t sz = 0;
-    int32_t ival; double rval; bool bval; QByteArray sval;
+    int32_t ival; double rval; bool bval; QByteArray sval; uint16_t cval;
     if (AST::TypeInteger == bt) {
         ival = value.isValid() ? value.toInt() : 0;
         ptr = reinterpret_cast<char*>(&ival);
@@ -1629,6 +1629,11 @@ QByteArray LLVMGenerator::createArray_0_ConstantData(const AST::VariableBaseType
         bval = value.isValid() ? value.toBool() : false;
         ptr = reinterpret_cast<char*>(&bval);
         sz = sizeof(bool);
+    }
+    else if (AST::TypeCharect == bt) {
+        cval = value.isValid() ? uint16_t(value.toChar().unicode()) : 0u;
+        ptr = reinterpret_cast<char*>(&cval);
+        sz = sizeof(uint16_t);
     }
     else {
         const QString s = value.isValid() ? value.toString() : QString();
