@@ -210,7 +210,7 @@ EXTERN void __kumir_halt()
     enc = Kumir::CP866;
 #endif
     const std::string loc_message = Kumir::Coder::encode(enc, message);
-    std::cerr << loc_message << std::endl;
+    std::cout << loc_message;
     exit(0);
 }
 
