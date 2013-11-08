@@ -819,6 +819,29 @@ static signed char __kumir_compare_scalars(const __kumir_scalar * left, const __
         else if (l > r) result = -1;
         else if (l == r) result = 0;
     }
+    else if (__KUMIR_RECORD == left->type && __KUMIR_RECORD == right->type &&
+             left->data.u.nfields == right->data.u.nfields)
+    {
+        // Check for equality only, otherwise return 1
+        result = 0;
+        const __kumir_variant * L = reinterpret_cast<const __kumir_variant*>(left->data.u.fields);
+        const __kumir_variant * R = reinterpret_cast<const __kumir_variant*>(right->data.u.fields);
+        const __kumir_scalar_type * LT = left->data.u.types;
+        const __kumir_scalar_type * RT = right->data.u.types;
+        for (size_t i = 0u; i<left->data.u.nfields; i++) {
+            __kumir_scalar l, r;
+            l.defined = true;
+            l.data = L[i];
+            l.type = LT[i];
+            r.defined = true;
+            r.data = R[i];
+            r.type = RT[i];
+            signed char field_result = __kumir_compare_scalars(&l, &r);
+            if (field_result != 0) {
+                return 1;
+            }
+        }
+    }
     return result;
 }
 

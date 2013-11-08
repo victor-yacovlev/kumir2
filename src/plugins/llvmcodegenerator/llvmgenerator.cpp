@@ -814,7 +814,7 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
                                      currentFunction_);
 
     currentLoopEnd_ = loop_clean;
-
+    createFreeTempScalars(builder);
     builder.CreateBr(loop_init);
 
     // --- initialization
@@ -856,7 +856,7 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
         Q_ASSERT(kumirLoopTimesInitCounter_);
         builder.CreateCall(kumirLoopTimesInitCounter_, times);
     }
-
+    createFreeTempScalars(builder);
     builder.CreateBr(loop_begin);
 
     // --- loop pre-check
@@ -896,6 +896,7 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
                                             );
     }
 
+    createFreeTempScalars(builder);
     if (loop_pre_check) {
         builder.CreateCondBr(loop_pre_check, loop_body, loop_clean);
     }
@@ -912,6 +913,7 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
         // do not add 'done' break
     }
     else {
+        createFreeTempScalars(builder);
         builder.CreateBr(loop_end);
     }
 
@@ -933,6 +935,7 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
                              );
     }
     else {
+        createFreeTempScalars(builder);
         builder.CreateBr(loop_begin);
     }
 
@@ -941,6 +944,7 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
     if (loop.type == AST::LoopFor || loop.type == AST::LoopTimes) {
         builder.CreateCall(kumirLoopEndCounter_);
     }
+    createFreeTempScalars(builder);
     builder.CreateBr(loop_done);
 
     // --- loop done
@@ -984,6 +988,7 @@ void LLVMGenerator::createIfThenElse(llvm::IRBuilder<> &builder, const AST::Stat
     llvm::Value * condBool = builder.CreateCall(kumirScalarAsBool_, cond,
                                                 basicName + CString("condition_boolean"));
     Q_ASSERT(condBool);
+    createFreeTempScalars(builder);
     builder.CreateCondBr(condBool, then, elze);
 
     // --- create then body
@@ -1010,6 +1015,7 @@ void LLVMGenerator::createIfThenElse(llvm::IRBuilder<> &builder, const AST::Stat
         // do not add 'done' break
     }
     else {
+        createFreeTempScalars(builder);
         builder.CreateBr(done);
     }
 
@@ -1068,7 +1074,7 @@ void LLVMGenerator::createSwitchCaseElse(llvm::IRBuilder<> &builder, const AST::
                 basicName + CString("done"),
                 currentFunction_
                 );
-
+    createFreeTempScalars(builder);
     builder.CreateBr(cases.first()); // Jump to first case
 
     for (int i=0; i<st->conditionals.size(); i++) {
@@ -1089,9 +1095,11 @@ void LLVMGenerator::createSwitchCaseElse(llvm::IRBuilder<> &builder, const AST::
             llvm::Value * condBool = builder.CreateCall(kumirScalarAsBool_, cond,
                                                         cond->getName() + CString("_boolean"));
             Q_ASSERT(condBool);
+            createFreeTempScalars(builder);
             builder.CreateCondBr(condBool, body, nextBlock);
         }
         else {
+            createFreeTempScalars(builder);
             builder.CreateBr(body);
         }
 
@@ -1104,6 +1112,7 @@ void LLVMGenerator::createSwitchCaseElse(llvm::IRBuilder<> &builder, const AST::
             // do not add 'done' break
         }
         else {
+            createFreeTempScalars(builder);
             builder.CreateBr(done);
         }
     }
@@ -1116,9 +1125,11 @@ void LLVMGenerator::createSwitchCaseElse(llvm::IRBuilder<> &builder, const AST::
 void LLVMGenerator::createBreak(llvm::IRBuilder<> &builder, const AST::StatementPtr &st, const AST::AlgorithmPtr &alg)
 {
     if (currentLoopEnd_) {
+        createFreeTempScalars(builder);
         builder.CreateBr(currentLoopEnd_); // break ends loop
     }
     else {
+        createFreeTempScalars(builder);
         builder.CreateBr(currentFunctionExit_); // break ends function
     }
 }
@@ -1446,11 +1457,25 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
         Q_ASSERT(func);
     }
     else {
+        static const QStringList operators = QStringList()
+                << "=" << "<>" << "<" << ">" << "+" << "-" << "*" << "/"
+                << QString::fromUtf8("ввод") << QString::fromUtf8("вывод");
+        static const QStringList operatorNames = QStringList()
+                << "eq" << "neq" << "lt" << "gt" << "plus" << "minus" << "astarisk" << "slash"
+                << QString::fromUtf8("input") << QString::fromUtf8("output");
+        Q_ASSERT(operators.size() == operatorNames.size());
         std::vector<llvm::Type*> formalArgs(alg->header.arguments.size());
         funcName = alg->header.cHeader.toStdString();
         if (funcName.empty()) {
             funcName = "__kumir__stdlib__" ; // TODO implement non-std algorithms
-            funcName += NameTranslator::suggestName(alg->header.name).toStdString();
+            if (operators.contains(alg->header.name)) {
+                int index = operators.indexOf(alg->header.name);
+                const CString cname = operatorNames[index].toStdString();
+                funcName = CString("__kumir_operator_") + cname;
+            }
+            else {
+                funcName += NameTranslator::suggestName(alg->header.name).toStdString();
+            }
         }
         QStringList params;
         for (int i=0; i<alg->header.arguments.size(); i++) {
@@ -1604,6 +1629,7 @@ llvm::Value * LLVMGenerator::createShortCircuitOperation(llvm::IRBuilder<> &buil
                                                scName + "_false_but_check_next",
                                                currentFunction_);
     }
+    createFreeTempScalars(builder);
     builder.CreateCondBr(leftBool, jumpOnTrue, jumpOnFalse);
 
     // --- check right operand
@@ -1612,6 +1638,7 @@ llvm::Value * LLVMGenerator::createShortCircuitOperation(llvm::IRBuilder<> &buil
 
     llvm::Value * rightResult = calculate(builder, right);
     builder.CreateCall2(kumirMoveScalar_, result, rightResult);
+    createFreeTempScalars(builder);
     builder.CreateBr(done);
 
     // --- done
