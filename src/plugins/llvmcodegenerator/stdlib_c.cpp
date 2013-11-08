@@ -1853,45 +1853,50 @@ EXTERN void __kumir_get_string_element(__kumir_scalar * result,
     }
 }
 
-static std::stack<int32_t> for_counters;
+typedef struct {
+    int32_t     counter;
+    int32_t     from;
+    int32_t     to;
+    int32_t     step;
+}
+for_spec;
 
-EXTERN void __kumir_loop_for_from_to_init_counter(const __kumir_scalar * from)
+static std::stack<for_spec> for_counters;
+
+EXTERN void __kumir_loop_for_from_to_init_counter(const __kumir_scalar * from, const __kumir_scalar * to)
 {
-    int32_t val = from->data.i - 1;
-    for_counters.push(val);
+    for_spec spec;
+    spec.counter = from->data.i - 1;
+    spec.from = from->data.i;
+    spec.to = to->data.i;
+    spec.step = 1;
+//    std::cerr << "\n=== init for ? from " << spec.from << " to " << spec.to << " step " << spec.step << "\n";
+    for_counters.push(spec);
 }
 
-EXTERN void __kumir_loop_for_from_to_step_init_counter(const __kumir_scalar * from, const __kumir_scalar * step)
+EXTERN void __kumir_loop_for_from_to_step_init_counter(const __kumir_scalar * from, const __kumir_scalar * to, const __kumir_scalar * step)
 {
-    int32_t val = from->data.i - step->data.i;
-    for_counters.push(val);
+    for_spec spec;
+    spec.counter = from->data.i - step->data.i;
+    spec.from = from->data.i;
+    spec.to = to->data.i;
+    spec.step = step->data.i;
+//    std::cerr << "\n=== init for ? from " << spec.from << " to " << spec.to << " step " << spec.step << "\n";
+    for_counters.push(spec);
 }
 
-EXTERN __kumir_bool __kumir_loop_for_from_to_check_counter(__kumir_scalar * variable, const __kumir_scalar * from, const __kumir_scalar * to)
+EXTERN __kumir_bool __kumir_loop_for_check_counter(__kumir_scalar * variable)
 {
-    int32_t & i = for_counters.top();
-    i += 1;
-    int32_t f = from->data.i;
-    int32_t t = to->data.i;
-    bool result = f <= i && i <= t;
-    if (result) {
-        variable->data.i = i;
-        variable->defined = true;
-        variable->type = __KUMIR_INT;
-    }
-    return result;
-}
-
-EXTERN __kumir_bool __kumir_loop_for_from_to_step_check_counter(__kumir_scalar * variable, const __kumir_scalar * from, const __kumir_scalar * to, const __kumir_scalar * step)
-{
-    int32_t & i = for_counters.top();
-    int32_t f = from->data.i;
-    int32_t t = to->data.i;
-    int32_t s = step->data.i;
+    for_spec & spec = for_counters.top();
+    int32_t & i = spec.counter;
+    const int32_t f = spec.from;
+    const int32_t t = spec.to;
+    const int32_t s = spec.step;
     i += s;
     bool result = s >= 0
             ? f <= i && i <= t
             : t <= i && i <= f;
+//    std::cerr << "\n=== check for " << spec.counter << " from " << spec.from << " to " << spec.to << " step " << spec.step << " : " << result << "\n";
     if (result) {
         variable->data.i = i;
         variable->defined = true;
@@ -1902,15 +1907,16 @@ EXTERN __kumir_bool __kumir_loop_for_from_to_step_check_counter(__kumir_scalar *
 
 EXTERN void __kumir_loop_times_init_counter(const __kumir_scalar * from)
 {
-    int32_t val = from->data.i;
-    for_counters.push(val);
+    for_spec spec;
+    spec.counter = from->data.i;
+    for_counters.push(spec);
 }
 
 EXTERN __kumir_bool __kumir_loop_times_check_counter()
 {
-    int32_t & times = for_counters.top();
-    if (times > 0) {
-        times --;
+    for_spec & times = for_counters.top();
+    if (times.counter > 0) {
+        times.counter --;
         return true;
     }
     else {

@@ -174,11 +174,10 @@ EXTERN void __kumir_get_string_element(__kumir_scalar * result,
                                        const __kumir_scalar ** sptr,
                                        const __kumir_scalar * at);
 
-EXTERN void __kumir_loop_for_from_to_init_counter(const __kumir_scalar * from);
-EXTERN void __kumir_loop_for_from_to_step_init_counter(const __kumir_scalar * from, const __kumir_scalar * step);
+EXTERN void __kumir_loop_for_from_to_init_counter(const __kumir_scalar * from, const __kumir_scalar * to);
+EXTERN void __kumir_loop_for_from_to_step_init_counter(const __kumir_scalar * from, const __kumir_scalar * to, const __kumir_scalar * step);
 
-EXTERN __kumir_bool __kumir_loop_for_from_to_check_counter(__kumir_scalar * variable, const __kumir_scalar * from, const __kumir_scalar * to);
-EXTERN __kumir_bool __kumir_loop_for_from_to_step_check_counter(__kumir_scalar * variable, const __kumir_scalar * from, const __kumir_scalar * to, const __kumir_scalar * step);
+EXTERN __kumir_bool __kumir_loop_for_check_counter(__kumir_scalar * variable);
 
 EXTERN void __kumir_loop_times_init_counter(const __kumir_scalar * from);
 EXTERN __kumir_bool __kumir_loop_times_check_counter();

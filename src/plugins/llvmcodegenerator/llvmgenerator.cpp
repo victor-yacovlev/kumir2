@@ -954,12 +954,12 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
             if (loop.stepValue->kind != AST::ExprVariable)
                 for_step->setName(basicName + CString("step"));
             Q_ASSERT(kumirLoopForFromToStepInitCounter_);
-            builder.CreateCall2(kumirLoopForFromToStepInitCounter_,
-                                for_from, for_step);
+            builder.CreateCall3(kumirLoopForFromToStepInitCounter_,
+                                for_from, for_to, for_step);
         }
         else {
             Q_ASSERT(kumirLoopForFromToInitCounter_);
-            builder.CreateCall(kumirLoopForFromToInitCounter_, for_from);
+            builder.CreateCall2(kumirLoopForFromToInitCounter_, for_from, for_to);
         }
     }
     else if (loop.type == AST::LoopTimes) {
@@ -974,25 +974,12 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
     // --- loop pre-check
     builder.SetInsertPoint(loop_begin);
     llvm::Value * loop_pre_check = 0;
-    if (loop.type == AST::LoopFor && loop_variable && for_from && for_to) {
-        if (loop.stepValue) {
-            loop_pre_check = builder.CreateCall4(kumirLoopForFromToStepCheckCounter_,
-                                                 loop_variable,
-                                                 for_from,
-                                                 for_to,
-                                                 for_step,
-                                                 basicName + CString("for_check")
-                                                 );
-        }
-        else {
-            loop_pre_check = builder.CreateCall3(kumirLoopForFromToCheckCounter_,
-                                                 loop_variable,
-                                                 for_from,
-                                                 for_to,
-                                                 basicName + CString("for_check")
-                                                 );
-            Q_ASSERT(loop_pre_check);
-        }
+    if (loop.type == AST::LoopFor && loop_variable && for_from && for_to) {        
+        loop_pre_check = builder.CreateCall (kumirLoopForCheckCounter_,
+                                             loop_variable,
+                                             basicName + CString("for_check")
+                                             );
+        Q_ASSERT(loop_pre_check);
     }
     else if (loop.type == AST::LoopTimes) {
         Q_ASSERT(kumirLoopTimesCheckCounter_);
@@ -1981,15 +1968,13 @@ void LLVMGenerator::createInternalExternsTable()
 
     kumirLoopForFromToInitCounter_ = stdlibModule_->getFunction("__kumir_loop_for_from_to_init_counter");
     kumirLoopForFromToStepInitCounter_ = stdlibModule_->getFunction("__kumir_loop_for_from_to_step_init_counter");
-    kumirLoopForFromToCheckCounter_ = stdlibModule_->getFunction("__kumir_loop_for_from_to_check_counter");
-    kumirLoopForFromToStepCheckCounter_ = stdlibModule_->getFunction("__kumir_loop_for_from_to_step_check_counter");
+    kumirLoopForCheckCounter_ = stdlibModule_->getFunction("__kumir_loop_for_check_counter");
     kumirLoopTimesInitCounter_ = stdlibModule_->getFunction("__kumir_loop_times_init_counter");
     kumirLoopTimesCheckCounter_ = stdlibModule_->getFunction("__kumir_loop_times_check_counter");
     kumirLoopEndCounter_ = stdlibModule_->getFunction("__kumir_loop_end_counter");
     Q_ASSERT(kumirLoopForFromToInitCounter_);
     Q_ASSERT(kumirLoopForFromToStepInitCounter_);
-    Q_ASSERT(kumirLoopForFromToCheckCounter_);
-    Q_ASSERT(kumirLoopForFromToStepCheckCounter_);
+    Q_ASSERT(kumirLoopForCheckCounter_);
     Q_ASSERT(kumirLoopTimesInitCounter_);
     Q_ASSERT(kumirLoopTimesCheckCounter_);
     Q_ASSERT(kumirLoopEndCounter_);

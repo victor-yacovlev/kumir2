@@ -126,8 +126,7 @@ private:
     llvm::Function* kumirLoopForFromToInitCounter_;
     llvm::Function* kumirLoopForFromToStepInitCounter_;
 
-    llvm::Function* kumirLoopForFromToCheckCounter_;
-    llvm::Function* kumirLoopForFromToStepCheckCounter_;
+    llvm::Function* kumirLoopForCheckCounter_;
 
     llvm::Function* kumirLoopTimesInitCounter_;
     llvm::Function* kumirLoopTimesCheckCounter_;
