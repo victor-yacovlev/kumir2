@@ -1310,7 +1310,7 @@ llvm::Value * LLVMGenerator::calculate(llvm::IRBuilder<> &builder, const AST::Ex
     else if (ex->kind == AST::ExprSubexpression) {
         result = createSubExpession(builder, ex);
     }
-    if (!isLvalue) {
+    if (!isLvalue && ex->kind != AST::ExprArrayElement) {
         bool notPlainScalar = ex->baseType.kind == AST::TypeString || ex->baseType.kind == AST::TypeUser;
         if (notPlainScalar && ex->dimension == 0u) {
             tempValsToFree_.push_back(result);
