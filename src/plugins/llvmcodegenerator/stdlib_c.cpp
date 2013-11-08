@@ -1417,61 +1417,79 @@ EXTERN void __kumir_create_array_ref_3(__kumir_array * result,
 
 EXTERN void __kumir_cleanup_array_in_shape(__kumir_array * result)
 {
-    switch (result->dim) {
-    case 1u: {
-        const size_t start_pos = static_cast<size_t>(result->shape_left[0] - result->size_left[0]);
-        const size_t items_count = start_pos +
-                static_cast<size_t>(result->shape_right[0] - result->shape_left[0] + 1);
-        for (size_t x = start_pos; x<items_count; x++) {
-            __kumir_free_scalar(result->data + x);
-        }
-        break;
-    }
-    case 2u: {
-        const size_t size1 = static_cast<size_t>(
-                    1 + result->shape_right[0] - result->shape_left[0]
-                    );
+    // TODO Must clean everything or just in shape ???
 
-        const size_t size2 = static_cast<size_t>(
-                    1 + result->shape_right[1] - result->shape_left[1]
-                    );
-        const size_t start_pos1 = static_cast<size_t>(result->shape_left[0] - result->size_left[0]);
-        const size_t start_pos2 = static_cast<size_t>(result->shape_left[1] - result->size_left[1]);
-        for (size_t y = start_pos1; y<size1; y++) {
-            for (size_t x = start_pos2; x<size2; x++) {
-                const size_t index = y * size1 + x;
-                __kumir_free_scalar(result->data + index);
-            }
-        }
-        break;
+    // ===== clean everithing implementation
+    size_t size = static_cast<size_t>(result->size_right[0] - result->size_left[0] + 1);
+    if (result->dim > 1u) {
+        size *= static_cast<size_t>(result->size_right[1] - result->size_left[1] + 1);
     }
-    case 3u: {
-        const size_t size1 = static_cast<size_t>(
-                    1 + result->shape_right[0] - result->shape_left[0]
-                    );
+    if (result->dim > 2u) {
+        size *= static_cast<size_t>(result->size_right[2] - result->size_left[2] + 1);
+    }
+    for (size_t i=0; i<size; i++) {
+        __kumir_scalar * s = result->data + i;
+        __kumir_free_scalar(s);
+    }
 
-        const size_t size2 = static_cast<size_t>(
-                    1 + result->shape_right[1] - result->shape_left[1]
-                    );
 
-        const size_t size3 = static_cast<size_t>(
-                    1 + result->shape_right[2] - result->shape_left[2]
-                    );
-        const size_t start_pos1 = static_cast<size_t>(result->shape_left[0] - result->size_left[0]);
-        const size_t start_pos2 = static_cast<size_t>(result->shape_left[1] - result->size_left[1]);
-        const size_t start_pos3 = static_cast<size_t>(result->shape_left[2] - result->size_left[2]);
-        for (size_t z = start_pos1; z<size1; z++) {
-            for (size_t y = start_pos2; y<size2; y++) {
-                for (size_t x = start_pos3; x<size3; x++) {
-                    const size_t index = z * size1 * size2 + y * size1 + x;
-                    __kumir_free_scalar(result->data + index);
-                }
-            }
-        }
-        break;
-    }
-    default: break;
-    }
+    // ===== below is clean share implementation
+
+//    switch (result->dim) {
+//    case 1u: {
+//        const size_t start_pos = static_cast<size_t>(result->shape_left[0] - result->size_left[0]);
+//        const size_t items_count = start_pos +
+//                static_cast<size_t>(result->shape_right[0] - result->shape_left[0] + 1);
+//        for (size_t x = start_pos; x<items_count; x++) {
+//            __kumir_free_scalar(result->data + x);
+//        }
+//        break;
+//    }
+//    case 2u: {
+//        const size_t size1 = static_cast<size_t>(
+//                    1 + result->shape_right[0] - result->shape_left[0]
+//                    );
+
+//        const size_t size2 = static_cast<size_t>(
+//                    1 + result->shape_right[1] - result->shape_left[1]
+//                    );
+//        const size_t start_pos1 = static_cast<size_t>(result->shape_left[0] - result->size_left[0]);
+//        const size_t start_pos2 = static_cast<size_t>(result->shape_left[1] - result->size_left[1]);
+//        for (size_t y = start_pos1; y<size1; y++) {
+//            for (size_t x = start_pos2; x<size2; x++) {
+//                const size_t index = y * size1 + x;
+//                __kumir_free_scalar(result->data + index);
+//            }
+//        }
+//        break;
+//    }
+//    case 3u: {
+//        const size_t size1 = static_cast<size_t>(
+//                    1 + result->shape_right[0] - result->shape_left[0]
+//                    );
+
+//        const size_t size2 = static_cast<size_t>(
+//                    1 + result->shape_right[1] - result->shape_left[1]
+//                    );
+
+//        const size_t size3 = static_cast<size_t>(
+//                    1 + result->shape_right[2] - result->shape_left[2]
+//                    );
+//        const size_t start_pos1 = static_cast<size_t>(result->shape_left[0] - result->size_left[0]);
+//        const size_t start_pos2 = static_cast<size_t>(result->shape_left[1] - result->size_left[1]);
+//        const size_t start_pos3 = static_cast<size_t>(result->shape_left[2] - result->size_left[2]);
+//        for (size_t z = start_pos1; z<size1; z++) {
+//            for (size_t y = start_pos2; y<size2; y++) {
+//                for (size_t x = start_pos3; x<size3; x++) {
+//                    const size_t index = z * size1 * size2 + y * size1 + x;
+//                    __kumir_free_scalar(result->data + index);
+//                }
+//            }
+//        }
+//        break;
+//    }
+//    default: break;
+//    }
 }
 
 EXTERN void __kumir_create_array_copy_1(__kumir_array * result,
