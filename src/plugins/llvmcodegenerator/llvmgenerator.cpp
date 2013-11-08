@@ -521,6 +521,9 @@ void LLVMGenerator::addFunctionBody(const QList<AST::StatementPtr> & statements,
     for (int i=0; i<statements.size(); i++) {
         llvm::BasicBlock * block = currentBlock_;
         Q_ASSERT(block);
+        if (!block->empty() && block->back().isTerminator()) {
+            break; // the remaining code is unreachable
+        }
         llvm::IRBuilder<> builder(block);
         builder.SetInsertPoint(block);
         const AST::StatementPtr & statement = statements.at(i);
