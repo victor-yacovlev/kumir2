@@ -29,6 +29,7 @@ public:
     void createKumirModuleImplementation(const AST::ModulePtr kmod);
     llvm::Module * getResult();
 private:
+    typedef llvm::IRBuilder<> Builder;
     void createStdLibModule();
 
     void addGlobalVariable(llvm::IRBuilder<> & builder, const AST::VariablePtr kvar, bool constant);
@@ -65,6 +66,7 @@ private:
     llvm::Value* createStringSliceGet(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex, bool isLvalue);
     llvm::Value* findVariableAtCurrentContext(const AST::VariablePtr & var);
     void createFreeTempScalars(llvm::IRBuilder<> & builder);
+    void createOutputValue(Builder & builder, llvm::Value * value, const AST::VariableBaseType type);
 
     llvm::Module* currentModule_;
     llvm::Function* currentFunction_;
@@ -138,6 +140,7 @@ private:
     llvm::Function* kumirOutputStdoutSI_;
     llvm::Function* kumirOutputStdoutIS_;
     llvm::Function* kumirOutputStdoutSS_;
+    llvm::Function* kumirOutputStdout_;
 
     llvm::Function* kumirOutputFileII_;
     llvm::Function* kumirOutputFileSI_;

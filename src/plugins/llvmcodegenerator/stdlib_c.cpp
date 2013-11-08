@@ -331,6 +331,14 @@ EXTERN void __kumir_input_file(const __kumir_scalar * handle, const __kumir_int 
 
 }
 
+EXTERN void __kumir_output_stdout(const char * utf8)
+{
+    __kumir_scalar sc;
+    __kumir_create_string(&sc, utf8);
+    __kumir_output_stdout_ii(&sc, __KUMIR_STRING, 0, 0);
+    __kumir_free_scalar(&sc);
+}
+
 EXTERN void __kumir_output_stdout_ii(const __kumir_scalar * value, const __kumir_scalar_type type, const int format1, const int format2)
 {    
     __kumir_check_value_defined(value);
