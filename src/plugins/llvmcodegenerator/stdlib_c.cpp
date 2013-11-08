@@ -798,6 +798,11 @@ EXTERN void __kumir__stdlib__simvol2(__kumir_scalar * result, const __kumir_scal
     result->data.c = Kumir::StringUtils::unisymbol(value->data.i);
 }
 
+EXTERN void __kumir__stdlib__pozitsiya_posle(__kumir_scalar * result, const __kumir_scalar * ot, const __kumir_scalar * fragment, const __kumir_scalar * stroka)
+{
+    __kumir__stdlib__poz_posle(result, ot, fragment, stroka);
+}
+
 EXTERN void __kumir__stdlib__poz_posle(__kumir_scalar * result, const __kumir_scalar * ot, const __kumir_scalar * fragment, const __kumir_scalar * stroka)
 {
     __kumir_check_value_defined(ot);
@@ -809,6 +814,11 @@ EXTERN void __kumir__stdlib__poz_posle(__kumir_scalar * result, const __kumir_sc
     __kumir_create_int(result,
                        Kumir::StringUtils::find(from + 1, pattern, source)
                        );
+}
+
+EXTERN void __kumir__stdlib__pozitsiya(__kumir_scalar * result, const __kumir_scalar * fragment, const __kumir_scalar * stroka)
+{
+    __kumir__stdlib__poz(result, fragment, stroka);
 }
 
 EXTERN void __kumir__stdlib__poz(__kumir_scalar * result, const __kumir_scalar * fragment, const __kumir_scalar * stroka)
@@ -834,6 +844,19 @@ EXTERN void __kumir__stdlib__verhnij_registr(__kumir_scalar * result, const __ku
     __kumir_check_value_defined(stroka);
     const std::wstring source = __kumir_scalar_as_wstring(stroka);
     __kumir_create_string(result, Kumir::StringUtils::toLowerCase(source));
+}
+
+EXTERN void __kumir__stdlib__vstavit(const __kumir_scalar * fragment, __kumir_scalar * stroka, const __kumir_scalar * pozitsiya)
+{
+    __kumir_check_value_defined(fragment);
+    __kumir_check_value_defined(stroka);
+    __kumir_check_value_defined(pozitsiya);
+    const std::wstring sub = __kumir_scalar_as_wstring(fragment);
+    const int pos = pozitsiya->data.i;
+    std::wstring s = __kumir_scalar_as_wstring(stroka);
+    Kumir::StringUtils::insert(sub, s, pos);
+    __kumir_free_scalar(stroka);
+    __kumir_create_string(stroka, s);
 }
 
 
