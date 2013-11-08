@@ -587,7 +587,7 @@ public:
     inline static void init() {
     }
     inline static void finalize() {}
-#ifdef APPLE
+#ifndef WIN32
     inline static int irand(int a, int b) {
         if (a>b) {
             Core::abort(Core::fromUtf8("Неверный диапазон чисел"));
