@@ -830,6 +830,13 @@ EXTERN void __kumir__stdlib__zakryit(const __kumir_scalar * handle)
     Kumir::Files::close(f);
 }
 
+EXTERN void __kumir__stdlib__nachat_chtenie(const __kumir_scalar * handle)
+{
+    __kumir_check_value_defined(handle);
+    Kumir::FileType f = __kumir_scalar_to_file_type(*handle);
+    Kumir::Files::reset(f);
+}
+
 EXTERN void __kumir__stdlib__suschestvuet(__kumir_scalar  * result, const __kumir_scalar * name)
 {
     __kumir_check_value_defined(name);
