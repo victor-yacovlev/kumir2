@@ -884,6 +884,7 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
                                    .toUtf8().constData()
                                    )
                                ));
+        return;
     }
 
     llvm::Value * for_from = 0;

@@ -758,6 +758,22 @@ EXTERN void __kumir__stdlib__poz(__kumir_scalar * result, const __kumir_scalar *
                        );
 }
 
+EXTERN void __kumir__stdlib__nizhnij_registr(__kumir_scalar * result, const __kumir_scalar * stroka)
+{
+    __kumir_check_value_defined(stroka);
+    const std::wstring source = __kumir_scalar_as_wstring(stroka);
+    __kumir_create_string(result, Kumir::StringUtils::toLowerCase(source));
+}
+
+EXTERN void __kumir__stdlib__verhnij_registr(__kumir_scalar * result, const __kumir_scalar * stroka)
+{
+    __kumir_check_value_defined(stroka);
+    const std::wstring source = __kumir_scalar_as_wstring(stroka);
+    __kumir_create_string(result, Kumir::StringUtils::toLowerCase(source));
+}
+
+
+
 EXTERN void __kumir__stdlib__lit_v_vesch(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success)
 {
     __kumir_check_value_defined(value);
