@@ -472,7 +472,7 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
             }
         }
 
-        // Initialize array arguments
+        // Initialize array arguments and wash-up out-parameters
         for (int i=0; i<kfunc->header.arguments.size(); i++) {
             const AST::VariablePtr & karg = kfunc->header.arguments[i];
             if (karg->dimension > 0u) {
@@ -505,7 +505,12 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
                     builder.CreateCall(kumirCleanUpArrayInShape_, lvar);
                 }
             }
+            else if (karg->accessType == AST::AccessArgumentOut) {
+                llvm::Value * lvar = argumentValues[i];
+                builder.CreateCall(kumirFreeScalar_, lvar);
+            }
         }
+
         builder.SetInsertPoint(currentBlock_);
         builder.CreateBr(functionPre);
 
