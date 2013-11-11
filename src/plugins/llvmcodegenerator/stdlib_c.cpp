@@ -948,6 +948,13 @@ EXTERN void __kumir__stdlib__suschestvuet(__kumir_scalar  * result, const __kumi
     __kumir_create_bool(result, Kumir::Files::exist(sname));
 }
 
+EXTERN void __kumir__stdlib__konets_fajla(__kumir_scalar  * result, const __kumir_scalar * handle)
+{
+    __kumir_check_value_defined(handle);
+    Kumir::FileType f = __kumir_scalar_to_file_type(*handle);
+    __kumir_create_bool(result, Kumir::Files::eof(f));
+}
+
 EXTERN void __kumir__stdlib__vremya(__kumir_scalar * result)
 {
     __kumir_create_int(result, Kumir::System::time());
