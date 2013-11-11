@@ -557,6 +557,7 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
             }
 
         }
+        builder.CreateCall(kumirPopCallStackCounter_);
         builder.CreateRetVoid();
         nameTranslator_->endNamespace();
     }
@@ -1687,6 +1688,7 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
     CString funcName;
 
     if (alg->header.implType == AST::AlgorhitmCompiled) {
+        builder.CreateCall(kumirCheckCallStack_);
         funcName = nameTranslator_->find(alg->header.name);
         Q_ASSERT(funcName.length() > 0);
         func = currentModule_->getFunction(funcName);
@@ -2069,6 +2071,11 @@ void LLVMGenerator::createInternalExternsTable()
 
     kumirHalt_ = stdlibModule_->getFunction("__kumir_halt");
     Q_ASSERT(kumirHalt_);
+
+    kumirCheckCallStack_ = stdlibModule_->getFunction("__kumir_check_call_stack");
+    kumirPopCallStackCounter_ = stdlibModule_->getFunction("__kumir_pop_call_stack_counter");
+    Q_ASSERT(kumirCheckCallStack_);
+    Q_ASSERT(kumirPopCallStackCounter_);
 
     kumirOpEq_ = stdlibModule_->getFunction("__kumir_operator_eq");
     Q_ASSERT(kumirOpEq_);

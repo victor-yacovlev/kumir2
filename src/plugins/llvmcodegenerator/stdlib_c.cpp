@@ -215,6 +215,22 @@ EXTERN void __kumir_halt()
     exit(0);
 }
 
+static int __kumir_call_stack_size = 0;
+static const int __KUMIR_MAX_CALL_STACK_SIZE = 4000;
+
+EXTERN void __kumir_check_call_stack()
+{
+    __kumir_call_stack_size ++;
+    if (__kumir_call_stack_size >= __KUMIR_MAX_CALL_STACK_SIZE) {
+        Kumir::Core::abort(Kumir::Core::fromUtf8("Слишком много вложенных вызовов алгоритмов"));
+    }
+}
+
+EXTERN void __kumir_pop_call_stack_counter()
+{
+    __kumir_call_stack_size --;
+}
+
 static void __kumir_handle_abort()
 {
     const std::wstring message = __kumir_current_line_number == -1

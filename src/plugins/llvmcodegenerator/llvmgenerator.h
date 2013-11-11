@@ -161,6 +161,8 @@ private:
     llvm::Function* kumirSetCurrentLineNumber_;
     llvm::Function* kumirCheckValueDefined_;
     llvm::Function* kumirHalt_;
+    llvm::Function* kumirCheckCallStack_;
+    llvm::Function* kumirPopCallStackCounter_;
 
     llvm::Function* kumirOpEq_;
     llvm::Function* kumirOpNeq_;

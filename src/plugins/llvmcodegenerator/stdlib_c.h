@@ -11,6 +11,8 @@
 
 EXTERN void __kumir_internal_debug(int32_t code);
 EXTERN void __kumir_init_stdlib();
+EXTERN void __kumir_check_call_stack();
+EXTERN void __kumir_pop_call_stack_counter();
 static void __kumir_handle_abort();
 EXTERN void __kumir_halt();
 EXTERN void __kumir_create_undefined_scalar(__kumir_scalar * result);
