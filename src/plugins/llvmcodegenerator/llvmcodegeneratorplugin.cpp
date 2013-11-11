@@ -186,7 +186,7 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     // ====== Use CLang toolchain to produce executable
 
     const QStringList clangArguments = QStringList()
-            << "-O0"
+            << "-O3"
             << "-o" << exeFileName << bcFileName << "-lstdc++" << "-lm";
 
     const int clang_status = QProcess::execute(CLang, clangArguments);
