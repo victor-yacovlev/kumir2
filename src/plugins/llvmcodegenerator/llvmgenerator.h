@@ -71,6 +71,7 @@ private:
     void createInputValue(Builder & builder, const QString & name, llvm::Value * value, const AST::VariableBaseType type, const bool isArray);
 
     llvm::Module* currentModule_;
+    AST::ModulePtr currentKModule_;
     llvm::Function* currentFunction_;
     AST::AlgorithmPtr currentAlgorithm_;
     llvm::LLVMContext* context_;

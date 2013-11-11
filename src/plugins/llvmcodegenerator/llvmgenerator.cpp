@@ -105,7 +105,7 @@ void LLVMGenerator::addKumirModule(const AST::ModulePtr kmod)
 void LLVMGenerator::createKumirModuleImplementation(const AST::ModulePtr kmod)
 {
     nameTranslator_->beginNamespace();
-
+    currentKModule_ = kmod;
     const CString moduleName = nameTranslator_->addGlobal(
                 kmod->header.name.isEmpty() ? QString("__self__")
                                             : kmod->header.name
@@ -154,6 +154,7 @@ void LLVMGenerator::createKumirModuleImplementation(const AST::ModulePtr kmod)
                            : kmod->impl.algorhitms.first());
     }
 
+    currentKModule_ = AST::ModulePtr();
     nameTranslator_->endNamespace();
 
 }
@@ -163,7 +164,11 @@ void LLVMGenerator::addGlobalVariable(llvm::IRBuilder<> & builder, const AST::Va
     Q_ASSERT(context_);
     Q_ASSERT(currentModule_);
 
-    CString name = nameTranslator_->add(kvar->name);
+    const QString qn = currentKModule_->header.name.isEmpty()
+            ? kvar->name
+            : currentKModule_->header.name + "__" + kvar->name;
+
+    CString name = nameTranslator_->add(qn);
     llvm::Type * ty = kvar->dimension > 0u
             ? kumirArrayType_ : kumirScalarType_;
 
@@ -1022,12 +1027,13 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
     builder.SetInsertPoint(loop_init);
     if (loop.type == AST::LoopFor && loop.forVariable) {
         const AST::VariablePtr & kvar = loop.forVariable;
-        const CString name = nameTranslator_->find(kvar->name);
-        Q_ASSERT(!name.empty());
-        loop_variable = currentBlock_->getValueSymbolTable()->lookup(name);
-        if (!loop_variable) {
-            loop_variable = currentModule_->getGlobalVariable(name, true);
-        }
+//        const CString name = nameTranslator_->find(kvar->name);
+//        Q_ASSERT(!name.empty());
+//        loop_variable = currentBlock_->getValueSymbolTable()->lookup(name);
+//        if (!loop_variable) {
+//            loop_variable = currentModule_->getGlobalVariable(name, true);
+//        }
+        loop_variable = findVariableAtCurrentContext(kvar);
         Q_ASSERT(loop_variable);
         for_from = calculate(builder, loop.fromValue);
         Q_ASSERT(for_from);
@@ -1389,6 +1395,11 @@ llvm::Value * LLVMGenerator::findVariableAtCurrentContext(const AST::VariablePtr
     }
     else {
         CString varName = nameTranslator_->find(kvar->name);
+        if (varName.empty() && currentKModule_->header.name.length() > 0) {
+            varName = nameTranslator_->find(currentKModule_->header.name +
+                                            "__" +
+                                            kvar->name);
+        }
         Q_ASSERT(varName.length() > 0);
         var = currentBlock_->getValueSymbolTable()->lookup(varName);
         if (!var) {
@@ -1441,12 +1452,13 @@ llvm::Value * LLVMGenerator::calculate(llvm::IRBuilder<> &builder, const AST::Ex
 
 llvm::Value * LLVMGenerator::createArrayElementGet(llvm::IRBuilder<> &builder, const AST::ExpressionPtr &ex, bool isLvalue)
 {
-    CString varName = nameTranslator_->find(ex->variable->name);
-    Q_ASSERT(varName.length() > 0);
-    llvm::Value * var = currentBlock_->getValueSymbolTable()->lookup(varName);
-    if (!var) {
-        var = currentModule_->getGlobalVariable(varName, true);
-    }
+//    CString varName = nameTranslator_->find(ex->variable->name);
+//    Q_ASSERT(varName.length() > 0);
+//    llvm::Value * var = currentBlock_->getValueSymbolTable()->lookup(varName);
+//    if (!var) {
+//        var = currentModule_->getGlobalVariable(varName, true);
+//    }
+    llvm::Value * var = findVariableAtCurrentContext(ex->variable);
     Q_ASSERT(var);
     std::vector<llvm::Value*> args;
     llvm::Value * elemPtr = builder.CreateAlloca(kumirScalarType_->getPointerTo());
