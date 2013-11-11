@@ -332,7 +332,7 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
     ifThenElseCounter_ = 0u;
     switchCaseCounter_ = 0u;
     loopCounter_ = 0u;
-    currentLoopEnd_ = nullptr;
+    currentLoopEnd_.clear();
     currentFunctionExit_ = nullptr;
 
     const QString actualName = kfunc->header.name.isEmpty()
@@ -1013,7 +1013,7 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
                                      basicName + CString("done"),
                                      currentFunction_);
 
-    currentLoopEnd_ = loop_clean;
+    currentLoopEnd_.push_back(loop_clean);
     createFreeTempScalars(builder);
     builder.CreateBr(loop_init);
 
@@ -1166,7 +1166,7 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
     // --- loop done
     currentBlock_ = loop_done;
     builder.SetInsertPoint(loop_done);
-    currentLoopEnd_ = nullptr;
+    currentLoopEnd_.pop_back();
 }
 
 void LLVMGenerator::createIfThenElse(llvm::IRBuilder<> &builder, const AST::StatementPtr &st, const AST::AlgorithmPtr &alg)
@@ -1340,9 +1340,9 @@ void LLVMGenerator::createSwitchCaseElse(llvm::IRBuilder<> &builder, const AST::
 
 void LLVMGenerator::createBreak(llvm::IRBuilder<> &builder, const AST::StatementPtr &st, const AST::AlgorithmPtr &alg)
 {
-    if (currentLoopEnd_) {
+    if (!currentLoopEnd_.isEmpty()) {
         createFreeTempScalars(builder);
-        builder.CreateBr(currentLoopEnd_); // break ends loop
+        builder.CreateBr(currentLoopEnd_.back()); // break ends loop
     }
     else {
         createFreeTempScalars(builder);

@@ -78,7 +78,7 @@ private:
     llvm::Module* stdlibModule_;
     QScopedPointer<llvm::MemoryBuffer> stdlibContents_;
     llvm::BasicBlock* currentBlock_;
-    llvm::BasicBlock* currentLoopEnd_;
+    QStack<llvm::BasicBlock*> currentLoopEnd_;
     llvm::BasicBlock* currentFunctionExit_;
     uint32_t ifThenElseCounter_;
     uint32_t switchCaseCounter_;
