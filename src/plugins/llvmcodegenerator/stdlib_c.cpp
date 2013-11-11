@@ -1113,10 +1113,11 @@ EXTERN void __kumir_operator_sum(__kumir_scalar * result, const __kumir_scalar *
     else if (__KUMIR_REAL == left->type || __KUMIR_REAL == right->type) {
         const __kumir_real l = __kumir_scalar_as_real(left);
         const __kumir_real r = __kumir_scalar_as_real(right);
-        if (!Kumir::Math::checkSumm(l, r)) {
+        const __kumir_real res = l + r;
+        if (!Kumir::Math::isCorrectReal(res)) {
             Kumir::Core::abort(Kumir::Core::fromUtf8("Вещественное переполнение"));
         }
-        __kumir_create_real(result, l + r);
+        __kumir_create_real(result, res);
     }
     else if (__KUMIR_STRING == left->type || __KUMIR_CHAR == left->type) {
         const std::wstring l = __kumir_scalar_as_wstring(left);
@@ -1140,10 +1141,11 @@ EXTERN void __kumir_operator_sub(__kumir_scalar * result, const __kumir_scalar *
     else if (__KUMIR_REAL == left->type || __KUMIR_REAL == right->type) {
         const __kumir_real l = __kumir_scalar_as_real(left);
         const __kumir_real r = __kumir_scalar_as_real(right);
-        if (!Kumir::Math::checkDiff(l, r)) {
+        const __kumir_real res = l - r;
+        if (!Kumir::Math::isCorrectReal(res)) {
             Kumir::Core::abort(Kumir::Core::fromUtf8("Вещественное переполнение"));
         }
-        __kumir_create_real(result, l - r);
+        __kumir_create_real(result, res);
     }
 }
 
