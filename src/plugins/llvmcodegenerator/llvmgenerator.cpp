@@ -136,6 +136,7 @@ void LLVMGenerator::createKumirModuleImplementation(const AST::ModulePtr kmod)
     }
 
     addFunctionBody(kmod->impl.initializerBody, AST::AlgorithmPtr());
+    initBuilder.SetInsertPoint(currentBlock_); // Might be changed
     initBuilder.CreateRetVoid();
 
     for (int i=0; i<kmod->impl.algorhitms.size(); i++) {
