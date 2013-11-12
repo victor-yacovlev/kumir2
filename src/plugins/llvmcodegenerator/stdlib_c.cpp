@@ -311,7 +311,7 @@ EXTERN void __kumir_input_stdin(const __kumir_int format, __kumir_scalar ** pptr
         __kumir_create_bool(ptr, b);
     }
     else if (__KUMIR_STRING == f) {
-        std::wstring ws = Kumir::IO::readString();
+        std::wstring ws = Kumir::IO::readLine();
         __kumir_create_string(ptr, ws);
     }
 }
@@ -342,7 +342,7 @@ EXTERN void __kumir_input_file(const __kumir_scalar * handle, const __kumir_int 
         __kumir_create_bool(ptr, b);
     }
     else if (__KUMIR_STRING == f) {
-        std::wstring ws = Kumir::IO::readString(ft, false);
+        std::wstring ws = Kumir::IO::readLine(ft, false);
         __kumir_create_string(ptr, ws);
     }
 
