@@ -39,6 +39,7 @@ public:
 protected:
     QString initialize(const QStringList &configurationArguments,
                        const ExtensionSystem::CommandLine &runtimeArguments);
+    static void fixMultipleTypeDeclarations(QByteArray & data);
     void start();
     void stop();
 
@@ -48,9 +49,11 @@ protected:
 
 private:
     class LLVMGenerator * d;
-    bool compileOnly_;
+    bool createMain_;
+    bool linkStdLib_;
+    bool linkAllUnits_;
     bool textForm_;
-    bool unitMode_;
+    bool runToolChain_;
     DebugLevel debugLevel_;
 
 };

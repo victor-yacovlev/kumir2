@@ -56,12 +56,10 @@ LLVMGenerator::LLVMGenerator()
 }
 
 
-void LLVMGenerator::reset(bool linkStdLibModule,
-                          bool addMainEntryPoint,
+void LLVMGenerator::reset(bool addMainEntryPoint,
                           Shared::GeneratorInterface::DebugLevel debugLevel)
 {
     externs_.clear();
-    linkStdLibModule_ = linkStdLibModule;
     debugLevel_ = debugLevel;
     context_ = new llvm::LLVMContext();
     currentModule_ = new llvm::Module("", *context_);
@@ -69,10 +67,8 @@ void LLVMGenerator::reset(bool linkStdLibModule,
     addMainEntryPoint_ = addMainEntryPoint;
     nameTranslator_->reset();
     createStdLibModule();
-    if (!linkStdLibModule_) {
-        createExternsTable(stdlibModule_, CString("__kumir_"));
-        externs_.clear();
-    }
+    createExternsTable(stdlibModule_, CString("__kumir_"));
+    externs_.clear();
     readStdLibFunctions();
 }
 
@@ -91,6 +87,11 @@ void LLVMGenerator::createStdLibModule()
 llvm::Module* LLVMGenerator::getResult()
 {
     return currentModule_;
+}
+
+llvm::Module* LLVMGenerator::getStdLibModule()
+{
+    return stdlibModule_;
 }
 
 void LLVMGenerator::addKumirModule(const AST::ModulePtr kmod)
@@ -226,11 +227,7 @@ void LLVMGenerator::createMainFunction(const AST::AlgorithmPtr &entryPoint)
     }
 
     if (entryPoint) {
-        const QString entryPointQName =
-                entryPoint->header.name.isEmpty()
-                ? QString("__main__") : entryPoint->header.name;
-
-//        const CString entryPointName = nameTranslator_->find(entryPointQName);
+        const QString entryPointQName = "__kumir_function_" + entryPoint->header.name;
         const CString entryPointName =
                 CString(entryPointQName.toUtf8().constData());
         Q_ASSERT(entryPointName.length() > 0);
@@ -353,15 +350,7 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
     currentLoopEnd_.clear();
     currentFunctionExit_ = nullptr;
 
-    const QString actualName = kfunc->header.name.isEmpty()
-            ? QString("__main__") : kfunc->header.name;
-
-//    CString name = createBody
-//            ? nameTranslator_->find(actualName)
-//                // already added at previous stage
-//            : nameTranslator_->addGlobal(actualName)
-//                // create new name
-//              ;
+    const QString actualName = "__kumir_function_" + kfunc->header.name;
 
     // Use UTF-8 names to prevent unambiguous linkage between files
     CString name = CString(actualName.toUtf8().data());
@@ -1718,9 +1707,8 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
 
     if (alg->header.implType == AST::AlgorhitmCompiled) {
         builder.CreateCall(kumirCheckCallStack_);
-        funcName = nameTranslator_->find(alg->header.name);
-//        Q_ASSERT(funcName.length() > 0);
-        funcName = CString(alg->header.name.toUtf8().constData());
+        funcName = CString("__kumir_function_") +
+                CString(alg->header.name.toUtf8().constData());
         func = currentModule_->getFunction(funcName);
         Q_ASSERT(func);
     }
@@ -1730,6 +1718,8 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
             )
     {
         funcName = CString(alg->header.name.toUtf8().constData());
+        funcName = CString("__kumir_function_") +
+                CString(alg->header.name.toUtf8().constData());
         func = currentModule_->getFunction(funcName);
         Q_ASSERT(func);
     }
@@ -1745,7 +1735,7 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
         std::vector<llvm::Type*> formalArgs(alg->header.arguments.size());
         funcName = alg->header.cHeader.toStdString();
         if (funcName.empty()) {
-            funcName = "__kumir__stdlib__" ; // TODO implement non-std algorithms
+            funcName = "__kumir_stdlib_" ; // TODO implement non-std algorithms
             if (operators.contains(alg->header.name)) {
                 int index = operators.indexOf(alg->header.name);
                 const CString cname = operatorNames[index].toStdString();
@@ -1949,14 +1939,9 @@ void LLVMGenerator::createExternsTable(const llvm::Module * const source,
         const llvm::Function & func = *it;
         if (func.hasExternalLinkage()) {
             const CString name = func.getName();
-            if (prefix.empty()) {
-                // kumir public extern
-                if ('_' != name.at(0)) {
-                    externs_.push_back(&func);
-                }
-            }
-            else {
-                if (0u == name.find(prefix)) {
+            if (0u == name.find(prefix)) {
+                const CString realName = name.substr(prefix.length());
+                if (realName.length() > 0 && '_' != realName.at(0)) {
                     externs_.push_back(&func);
                 }
             }
@@ -2013,10 +1998,6 @@ llvm::StructType * LLVMGenerator::getStringRefType()
 
 void LLVMGenerator::readStdLibFunctions()
 {
-    if (linkStdLibModule_) {
-        llvm::Linker::LinkModules(currentModule_, stdlibModule_, 0, 0);
-    }
-
     kumirInitStdLib_ = stdlibModule_->getFunction("__kumir_init_stdlib");
     Q_ASSERT(kumirInitStdLib_);
 

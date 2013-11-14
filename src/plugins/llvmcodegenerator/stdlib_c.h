@@ -205,61 +205,61 @@ EXTERN void __kumir_input_array_variable(const char * name,
 
 // Math
 
-EXTERN void __kumir__stdlib__div(__kumir_scalar  * result, const __kumir_scalar * left, const __kumir_scalar * right);
-EXTERN void __kumir__stdlib__mod(__kumir_scalar  * result, const __kumir_scalar * left, const __kumir_scalar * right);
-EXTERN void __kumir__stdlib__ln(__kumir_scalar  * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__lg(__kumir_scalar  * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__exp(__kumir_scalar  * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__rnd(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__iabs(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__abs(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__sign(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__int(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__arcsin(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__arccos(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__arctg(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__arcctg(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__tg(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__ctg(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__sin(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__cos(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__sqrt(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__max(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
-EXTERN void __kumir__stdlib__min(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
-EXTERN void __kumir__stdlib__imax(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
-EXTERN void __kumir__stdlib__imin(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
+EXTERN void __kumir_stdlib_div(__kumir_scalar  * result, const __kumir_scalar * left, const __kumir_scalar * right);
+EXTERN void __kumir_stdlib_mod(__kumir_scalar  * result, const __kumir_scalar * left, const __kumir_scalar * right);
+EXTERN void __kumir_stdlib_ln(__kumir_scalar  * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_lg(__kumir_scalar  * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_exp(__kumir_scalar  * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_rnd(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_iabs(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_abs(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_sign(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_int(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_arcsin(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_arccos(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_arctg(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_arcctg(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_tg(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_ctg(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_sin(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_cos(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_sqrt(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_max(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
+EXTERN void __kumir_stdlib_min(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
+EXTERN void __kumir_stdlib_imax(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
+EXTERN void __kumir_stdlib_imin(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
 
 // String
-EXTERN void __kumir__stdlib__tsel_v_lit(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__vesch_v_lit(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__dlin(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__lit_v_vesch(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success);
-EXTERN void __kumir__stdlib__lit_v_tsel(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success);
-EXTERN void __kumir__stdlib__yunikod(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__kod(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__simvol(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__simvol2(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir__stdlib__poz_posle(__kumir_scalar * result, const __kumir_scalar * ot, const __kumir_scalar * fragment, const __kumir_scalar * stroka);
-EXTERN void __kumir__stdlib__poz(__kumir_scalar * result, const __kumir_scalar * fragment, const __kumir_scalar * stroka);
-EXTERN void __kumir__stdlib__pozitsiya_posle(__kumir_scalar * result, const __kumir_scalar * ot, const __kumir_scalar * fragment, const __kumir_scalar * stroka);
-EXTERN void __kumir__stdlib__pozitsiya(__kumir_scalar * result, const __kumir_scalar * fragment, const __kumir_scalar * stroka);
-EXTERN void __kumir__stdlib__nizhnij_registr(__kumir_scalar * result, const __kumir_scalar * stroka);
-EXTERN void __kumir__stdlib__verhnij_registr(__kumir_scalar * result, const __kumir_scalar * stroka);
-EXTERN void __kumir__stdlib__vstavit(const __kumir_scalar * fragment, __kumir_scalar * stroka, const __kumir_scalar * pozitsiya);
+EXTERN void __kumir_stdlib_tsel_v_lit(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_vesch_v_lit(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_dlin(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_lit_v_vesch(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success);
+EXTERN void __kumir_stdlib_lit_v_tsel(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success);
+EXTERN void __kumir_stdlib_yunikod(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_kod(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_simvol(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_simvol2(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_poz_posle(__kumir_scalar * result, const __kumir_scalar * ot, const __kumir_scalar * fragment, const __kumir_scalar * stroka);
+EXTERN void __kumir_stdlib_poz(__kumir_scalar * result, const __kumir_scalar * fragment, const __kumir_scalar * stroka);
+EXTERN void __kumir_stdlib_pozitsiya_posle(__kumir_scalar * result, const __kumir_scalar * ot, const __kumir_scalar * fragment, const __kumir_scalar * stroka);
+EXTERN void __kumir_stdlib_pozitsiya(__kumir_scalar * result, const __kumir_scalar * fragment, const __kumir_scalar * stroka);
+EXTERN void __kumir_stdlib_nizhnij_registr(__kumir_scalar * result, const __kumir_scalar * stroka);
+EXTERN void __kumir_stdlib_verhnij_registr(__kumir_scalar * result, const __kumir_scalar * stroka);
+EXTERN void __kumir_stdlib_vstavit(const __kumir_scalar * fragment, __kumir_scalar * stroka, const __kumir_scalar * pozitsiya);
 
 // Files
-EXTERN void __kumir__stdlib__est_dannyie(__kumir_scalar  * result, const __kumir_scalar * handle);
-EXTERN void __kumir__stdlib__KATALOG_PROGRAMMYi(__kumir_scalar  * result);
-EXTERN void __kumir__stdlib__otkryit_na_chtenie(__kumir_scalar  * result, const __kumir_scalar * name);
-EXTERN void __kumir__stdlib__otkryit_na_zapis(__kumir_scalar  * result, const __kumir_scalar * name);
-EXTERN void __kumir__stdlib__zakryit(const __kumir_scalar * handle);
-EXTERN void __kumir__stdlib__nachat_chtenie(const __kumir_scalar * handle);
-EXTERN void __kumir__stdlib__suschestvuet(__kumir_scalar  * result, const __kumir_scalar * name);
-EXTERN void __kumir__stdlib__konets_fajla(__kumir_scalar  * result, const __kumir_scalar * handle);
+EXTERN void __kumir_stdlib_est_dannyie(__kumir_scalar  * result, const __kumir_scalar * handle);
+EXTERN void __kumir_stdlib_KATALOG_PROGRAMMYi(__kumir_scalar  * result);
+EXTERN void __kumir_stdlib_otkryit_na_chtenie(__kumir_scalar  * result, const __kumir_scalar * name);
+EXTERN void __kumir_stdlib_otkryit_na_zapis(__kumir_scalar  * result, const __kumir_scalar * name);
+EXTERN void __kumir_stdlib_zakryit(const __kumir_scalar * handle);
+EXTERN void __kumir_stdlib_nachat_chtenie(const __kumir_scalar * handle);
+EXTERN void __kumir_stdlib_suschestvuet(__kumir_scalar  * result, const __kumir_scalar * name);
+EXTERN void __kumir_stdlib_konets_fajla(__kumir_scalar  * result, const __kumir_scalar * handle);
 
 // System
-EXTERN void __kumir__stdlib__vremya(__kumir_scalar * result);
-EXTERN void __kumir__stdlib__zhdat(const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_vremya(__kumir_scalar * result);
+EXTERN void __kumir_stdlib_zhdat(const __kumir_scalar * value);
 
 
 

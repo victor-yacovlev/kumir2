@@ -27,9 +27,11 @@ namespace LLVMCodeGenerator {
 LLVMCodeGeneratorPlugin::LLVMCodeGeneratorPlugin()
     : ExtensionSystem::KPlugin()
     , d(new LLVMGenerator)
-    , compileOnly_(false)
     , textForm_(false)
-    , unitMode_(false)
+    , createMain_(false)
+    , linkStdLib_(false)
+    , linkAllUnits_(false)
+    , runToolChain_(false)
     , debugLevel_(LinesOnly)
 {
 }
@@ -47,12 +49,12 @@ LLVMCodeGeneratorPlugin::acceptableCommandLineParameters() const
     result << CommandLineParameter(
                   false,
                   'c', "compile",
-                  tr("Compile file to LLVM bitcode module, but not make executable")
+                  tr("Just compile file to external LLVM bitcode module unit")
                   );
     result << CommandLineParameter(
                   false,
                   'S', "assembly",
-                  tr("Generate LLVM bitcode in text form")
+                  tr("Generate LLVM bitcode in text form (in conjuntion with -c flag)")
                   );
     result << CommandLineParameter(
                   false,
@@ -62,8 +64,18 @@ LLVMCodeGeneratorPlugin::acceptableCommandLineParameters() const
                   );
     result << CommandLineParameter(
                   false,
-                  'u', "unit",
-                  tr("Comiles kumir program as an unit (assumes -c flag)")
+                  'm', "main",
+                  tr("Comiles kumir program as an unit (in conjuntion with -c flag)")
+                  );
+    result << CommandLineParameter(
+                  false,
+                  'l', "link",
+                  tr("Link in all used units from external sources (in conjuntion with -c flag)")
+                  );
+    result << CommandLineParameter(
+                  false,
+                  't', "stdlib",
+                  tr("Link stdlib here (in conjuntion with -c flag)")
                   );
     return result;
 }
@@ -80,10 +92,11 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
             QString & fileSuffix
             )
 {
-    d->reset(!unitMode_, !unitMode_, debugLevel_);
+    d->reset(createMain_, debugLevel_);
 
     const QList<AST::ModulePtr> & modules = tree->modules;
     QList<AST::ModulePtr> kmodules;
+    QList<llvm::Module*> usedUnits;
 
     foreach (const AST::ModulePtr & kmod, modules) {
         if (kmod->header.type == AST::ModTypeCached)
@@ -130,7 +143,8 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
                 qApp->quit();
                 return;
             }
-            d->createExternsTable(unitModule, CString());
+            d->createExternsTable(unitModule, CString("__kumir_function_"));
+            usedUnits.push_back(unitModule);
         }
     }
 
@@ -177,17 +191,12 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
 
     lmainModule->print(ostream, 0);
     buf = ostream.str();
-    const QByteArray bufData(buf.c_str(), buf.size());
-    if (compileOnly_ && textForm_) {
-        out = bufData;
-        mimeType = "text/llvm";
-        fileSuffix = ".ll";
-        return;
-    }
+    QByteArray bufData(buf.c_str(), buf.size());
+    fixMultipleTypeDeclarations(bufData);
 
     llvm::SMDiagnostic lerr;
     llvm::LLVMContext &lctx = llvm::getGlobalContext();
-    llvm::Module * reparsedModule = llvm::ParseAssemblyString(buf.c_str(),
+    llvm::Module * reparsedModule = llvm::ParseAssemblyString(bufData.constData(),
                                                               0,
                                                               lerr, lctx);
     if (reparsedModule == 0) {
@@ -197,12 +206,50 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
         return;
     }
     buf.clear();
+
+    if (linkAllUnits_) {
+        for (int i=0; i<usedUnits.size(); i++) {
+            std::string localErr;
+            llvm::Linker::LinkModules(reparsedModule, usedUnits[i], 0, &localErr);
+            if (localErr.length() > 0) {
+                std::cerr << localErr << std::endl;
+                qApp->setProperty("returnCode", 5);
+                qApp->quit();
+                return;
+            }
+        }
+    }
+
+    if (linkStdLib_) {
+        std::string localErr;
+        llvm::Linker::LinkModules(reparsedModule, d->getStdLibModule(), 0, &localErr);
+        if (localErr.length() > 0) {
+            std::cerr << localErr << std::endl;
+            qApp->setProperty("returnCode", 5);
+            qApp->quit();
+            return;
+        }
+    }
+
+    if (textForm_) {
+        std::string tbuf;
+        llvm::raw_string_ostream tstream(tbuf);
+        reparsedModule->print(tstream, 0);
+        tbuf = tstream.str();
+        QByteArray tBufData(tbuf.c_str(), tbuf.size());
+        out = tBufData;
+        mimeType = "text/llvm";
+        fileSuffix = ".ll";
+        return;
+    }
+
+    buf.clear();
     llvm::raw_string_ostream bstream(buf);
     llvm::WriteBitcodeToFile(reparsedModule, bstream);
     bstream.flush();
     buf = bstream.str();
     const QByteArray binBufData(buf.c_str(), buf.size());
-    if (compileOnly_) {
+    if (!runToolChain_) {
         out = binBufData;
         mimeType = "binary/llvm";
         fileSuffix = ".bc";
@@ -238,7 +285,7 @@ bool LLVMCodeGeneratorPlugin::compileExternalUnit(const QString &fileName)
         #endif
             ;
     const QStringList llvmcArguments = QStringList()
-            << "-u" << kumFileName;
+            << "-c" << kumFileName;
     const int status = QProcess::execute(llvmc, llvmcArguments);
     if (status != 0) {
         return false;
@@ -298,6 +345,29 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     return result;
 }
 
+void LLVMCodeGeneratorPlugin::fixMultipleTypeDeclarations(QByteArray &data)
+{
+    QStringList lines = QString::fromAscii(data).split('\n', QString::KeepEmptyParts);
+    QRegExp rxTypeDecl("%((struct|union)\\.__kumir_(\\S+))\\s=\\stype.+");
+    QSet<QString> kumTypes;
+    for (int i=0; i<lines.size(); i++) {
+        QString line = lines[i];
+        if (line.startsWith("declare ")) {
+            break;
+        }
+        if (rxTypeDecl.indexIn(line) != -1) {
+            const QString kumType = rxTypeDecl.cap(1);
+            if (kumTypes.contains(kumType)) {
+                lines[i].clear();
+            }
+            else {
+                kumTypes.insert(kumType);
+            }
+        }
+    }
+    data = lines.join("\n").toAscii();
+}
+
 QString LLVMCodeGeneratorPlugin::findUtil(const QString &name)
 {
     QString exec = name;
@@ -323,12 +393,21 @@ QString LLVMCodeGeneratorPlugin::initialize(
         const QStringList &,
         const ExtensionSystem::CommandLine &runtimeArguments)
 {
-    compileOnly_ = runtimeArguments.hasFlag('c');
-    textForm_ = runtimeArguments.hasFlag('S');
-    unitMode_ = runtimeArguments.hasFlag('u');
-    if (unitMode_) {
-        compileOnly_ = true;
+    if (runtimeArguments.hasFlag('c')) {
+        runToolChain_ = false;
+        createMain_ = runtimeArguments.hasFlag('m');
+        textForm_ = runtimeArguments.hasFlag('S');
+        linkStdLib_ = runtimeArguments.hasFlag('t');
+        linkAllUnits_ = runtimeArguments.hasFlag('l');
     }
+    else {
+        runToolChain_ = true;
+        createMain_ = true;
+        textForm_ = false;
+        linkStdLib_ = true;
+        linkAllUnits_ = true;
+    }
+
     DebugLevel debugLevel = LinesOnly;
     if (runtimeArguments.value('g').isValid()) {
         int level = runtimeArguments.value('g').toInt();

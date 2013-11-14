@@ -25,10 +25,11 @@ class LLVMGenerator
 {
 public:
     explicit LLVMGenerator();
-    void reset(bool linkStdLibModule, bool addMainEntryPoint, Shared::GeneratorInterface::DebugLevel debugLevel);
+    void reset(bool addMainEntryPoint, Shared::GeneratorInterface::DebugLevel debugLevel);
     void addKumirModule(const AST::ModulePtr kmod);
     void createKumirModuleImplementation(const AST::ModulePtr kmod);
     llvm::Module * getResult();
+    llvm::Module * getStdLibModule();
     void createExternsTable(const llvm::Module * const source, const CString & prefix);
 private:
     typedef llvm::IRBuilder<> Builder;
@@ -187,7 +188,6 @@ private:
 
     std::vector<llvm::Value*> tempValsToFree_;
     std::stack<size_t> tempValsToFreeStartPos_;
-    bool linkStdLibModule_;
     bool addMainEntryPoint_;
     std::list<llvm::Function*> initFunctions_;
 
