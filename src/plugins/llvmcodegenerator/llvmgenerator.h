@@ -25,21 +25,26 @@ class LLVMGenerator
 {
 public:
     explicit LLVMGenerator();
-    void reset(bool linkStdLibModule, Shared::GeneratorInterface::DebugLevel debugLevel);
+    void reset(bool linkStdLibModule, bool addMainEntryPoint, Shared::GeneratorInterface::DebugLevel debugLevel);
     void addKumirModule(const AST::ModulePtr kmod);
     void createKumirModuleImplementation(const AST::ModulePtr kmod);
     llvm::Module * getResult();
+    void createExternsTable(const llvm::Module * const source, const CString & prefix);
 private:
     typedef llvm::IRBuilder<> Builder;
     void createStdLibModule();
+
+    llvm::StructType * getScalarType();
+    llvm::StructType * getArrayType();
+    llvm::StructType * getStringRefType();
 
     void addGlobalVariable(llvm::IRBuilder<> & builder, const AST::VariablePtr kvar, bool constant);
     void addFunction(const AST::AlgorithmPtr kfunc, bool createBody);
     void addFunctionBody(const QList<AST::StatementPtr> & statements, const AST::AlgorithmPtr & alg);
     void createMainFunction(const AST::AlgorithmPtr & entryPoint);
 
-    void createExternsTable();
-    void createInternalExternsTable();
+    void addExternsToModule(llvm::Module * const target);
+    void readStdLibFunctions();
 
     void createVarInitialize(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, bool global);
     llvm::Value* createVarInitialize(llvm::IRBuilder<> & builder, const AST::VariablePtr & var, const QString &overrideName, bool global);
@@ -180,17 +185,15 @@ private:
 
     llvm::Function* kumirOpNeg_;
 
-    llvm::StructType* kumirScalarType_;
-    llvm::StructType* kumirArrayType_;
-    llvm::StructType* kumirStringRefType_;
-
-
     std::vector<llvm::Value*> tempValsToFree_;
     std::stack<size_t> tempValsToFreeStartPos_;
     bool linkStdLibModule_;
+    bool addMainEntryPoint_;
     std::list<llvm::Function*> initFunctions_;
 
     Shared::GeneratorInterface::DebugLevel debugLevel_;
+
+    QList<const llvm::Function*> externs_;
 
 
     /**

@@ -148,7 +148,7 @@ QString NameTranslator::suggestName(const QString &x)
     }
     for (int i=0; i<x.length(); i++) {
         const QChar src = x.at(i);
-        if (src == ' ') {
+        if (src == ' ' || src == '.') {
             result += "_";
         }
         else if (src.unicode() <= 0x7F) {

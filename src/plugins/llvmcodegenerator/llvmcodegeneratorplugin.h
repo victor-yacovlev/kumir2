@@ -42,16 +42,15 @@ protected:
     void start();
     void stop();
 
-//    static std::string generateNativeExecutable(llvm::Module * module);
     static QByteArray runExternalToolsToGenerateExecutable(const QByteArray & bitcode);
-//    static llvm::Triple getNativeTriple();
+    static bool compileExternalUnit(const QString & fileName);
     static QString findUtil(const QString & name);
 
 private:
     class LLVMGenerator * d;
     bool compileOnly_;
     bool textForm_;
-    bool linkStdLib_;
+    bool unitMode_;
     DebugLevel debugLevel_;
 
 };

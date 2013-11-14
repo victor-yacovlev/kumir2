@@ -29,7 +29,7 @@ LLVMCodeGeneratorPlugin::LLVMCodeGeneratorPlugin()
     , d(new LLVMGenerator)
     , compileOnly_(false)
     , textForm_(false)
-    , linkStdLib_(false)
+    , unitMode_(false)
     , debugLevel_(LinesOnly)
 {
 }
@@ -52,7 +52,7 @@ LLVMCodeGeneratorPlugin::acceptableCommandLineParameters() const
     result << CommandLineParameter(
                   false,
                   'S', "assembly",
-                  tr("[only with -c] Generate LLVM bitcode in text form")
+                  tr("Generate LLVM bitcode in text form")
                   );
     result << CommandLineParameter(
                   false,
@@ -60,12 +60,11 @@ LLVMCodeGeneratorPlugin::acceptableCommandLineParameters() const
                   tr("Generate code with debug level from 0 (nothing) to 2 (maximum debug information)"),
                   QVariant::Int, false
                   );
-//    result << CommandLineParameter(
-//                  false,
-//                  'l', "linkstdlib",
-//                  tr("[only with -c] Link standard Kumir library into bitcode")
-//                  );
-    // TODO implement it
+    result << CommandLineParameter(
+                  false,
+                  'u', "unit",
+                  tr("Comiles kumir program as an unit (assumes -c flag)")
+                  );
     return result;
 }
 
@@ -81,10 +80,59 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
             QString & fileSuffix
             )
 {
-    d->reset(!compileOnly_ || linkStdLib_, debugLevel_);
+    d->reset(!unitMode_, !unitMode_, debugLevel_);
 
     const QList<AST::ModulePtr> & modules = tree->modules;
     QList<AST::ModulePtr> kmodules;
+
+    foreach (const AST::ModulePtr & kmod, modules) {
+        if (kmod->header.type == AST::ModTypeCached)
+        {
+            const QString & kumFileName = kmod->header.name;
+            if (!compileExternalUnit(kumFileName)) {
+                qApp->setProperty("returnCode", 5);
+                qApp->quit();
+                return;
+            }
+            const QString bcFileName =
+                    kumFileName.left(kumFileName.length()-4) + ".bc";
+            QFile unitFile(bcFileName);
+            if (!unitFile.open(QIODevice::ReadOnly)) {
+                const QString message = QString::fromUtf8(
+                            "Не могу прочитать файл: "
+                            ).arg(bcFileName);
+                std::cerr << message.toUtf8().constData() << std::endl;
+                qApp->setProperty("returnCode", 5);
+                qApp->quit();
+                return;
+            }
+            const QByteArray unitBytes = unitFile.readAll();
+            unitFile.close();
+            const std::string unitStrData(unitBytes.constData(),
+                                          unitBytes.size());
+            llvm::MemoryBuffer * unitBuffer =
+                    llvm::MemoryBuffer::getMemBufferCopy(
+                        unitStrData,
+                        std::string(bcFileName.toUtf8().constData())
+                        );
+
+            llvm::Module * unitModule = llvm::ParseBitcodeFile(
+                        unitBuffer, llvm::getGlobalContext(), 0
+                        );
+
+            if (!unitModule)
+            {
+                const QString message = QString::fromUtf8(
+                            "Файл внешнего модуля поврежден: "
+                            ).arg(bcFileName);
+                std::cerr << message.toUtf8().constData() << std::endl;
+                qApp->setProperty("returnCode", 5);
+                qApp->quit();
+                return;
+            }
+            d->createExternsTable(unitModule, CString());
+        }
+    }
 
     AST::ModulePtr userModule, teacherModule;
     AST::ModulePtr startupKumirModule = AST::ModulePtr(new AST::Module);
@@ -105,6 +153,7 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
     startupKumirModule->impl.initializerBody = userModule->impl.initializerBody;
     startupKumirModule->impl.algorhitms = userModule->impl.algorhitms;
     startupKumirModule->header.algorhitms = userModule->header.algorhitms;
+    startupKumirModule->header.sourceFileName = userModule->header.sourceFileName;
     if (teacherModule) {
         startupKumirModule->impl.globals += teacherModule->impl.globals;
         startupKumirModule->impl.initializerBody += teacherModule->impl.initializerBody;
@@ -143,7 +192,9 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
                                                               lerr, lctx);
     if (reparsedModule == 0) {
         lerr.print("kumir2-llvmc", llvm::errs());
+        qApp->setProperty("returnCode", 5);
         qApp->quit();
+        return;
     }
     buf.clear();
     llvm::raw_string_ostream bstream(buf);
@@ -166,6 +217,35 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
     fileSuffix = ".exe";
 #endif
 
+}
+
+bool LLVMCodeGeneratorPlugin::compileExternalUnit(const QString &fileName)
+{
+    const QString kumFileName = fileName.endsWith(".kum")
+            ? fileName : fileName.left(fileName.length()-4) + ".kum";
+    // change from .kod
+    if (!QFile::exists(kumFileName)) {
+        const QString errorMessage = QString::fromUtf8(
+                    "Не найден исходный файл внешнего модуля: "
+                    ).arg(kumFileName);
+        std::cerr << errorMessage.toLocal8Bit().constData() << std::endl;
+        return false;
+    }
+    const QString llvmc = QCoreApplication::applicationDirPath() +
+            "/kumir2-llvmc"
+        #ifdef Q_OS_WIN32
+            + ".exe"
+        #endif
+            ;
+    const QStringList llvmcArguments = QStringList()
+            << "-u" << kumFileName;
+    const int status = QProcess::execute(llvmc, llvmcArguments);
+    if (status != 0) {
+        return false;
+    }
+    else {
+        return true;
+    }
 }
 
 QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const QByteArray &bitcode)
@@ -234,96 +314,6 @@ QString LLVMCodeGeneratorPlugin::findUtil(const QString &name)
     return exec;
 }
 
-//std::string LLVMCodeGeneratorPlugin::generateNativeExecutable(llvm::Module *mod)
-//{
-//    std::string outbuf;
-//    using namespace llvm;
-
-//    LLVMContext &context = getGlobalContext();
-//    InitializeNativeTarget();
-//    InitializeNativeTargetAsmPrinter();
-//    InitializeNativeTargetAsmParser();
-
-//    Triple triple = getNativeTriple();
-//    mod->setTargetTriple(triple.str());
-//    std::string err;
-//    const Target * theTarget = TargetRegistry::lookupTarget(triple.str(), err);
-//    if (!theTarget) {
-//        std::cerr << err << std::endl;
-//        return outbuf;
-//    }
-
-//    CodeGenOpt::Level OLvl = CodeGenOpt::Default;
-//    std::string FeaturesStr;
-//    TargetOptions Options;
-
-//    TargetMachine * target = theTarget->createTargetMachine(
-//                triple.getTriple(), // triple
-//                "", // mcpu
-//                FeaturesStr, // features
-//                Options, // options
-//                Reloc::Default,
-//                CodeModel::Default,
-//                OLvl // opt level
-//                );
-
-//    Q_ASSERT(target);
-
-//    PassManager PM;
-//    PM.add(new TargetLibraryInfo(triple));
-//    PM.add(new TargetTransformInfo(target->getScalarTargetTransformInfo(),
-//                                   target->getVectorTargetTransformInfo()));
-//    PM.add(new DataLayout(*target->getDataLayout()));
-
-//    raw_string_ostream stream(outbuf);
-//    formatted_raw_ostream ostream(stream);
-
-//    bool success = !target->addPassesToEmitFile(
-//                PM,
-//                ostream,
-//                TargetMachine::CGFT_AssemblyFile
-//                );
-
-//    if (!success) {
-//        return outbuf;
-//    }
-
-//    PM.run(*mod);
-
-//    return stream.str();
-//}
-
-//llvm::Triple LLVMCodeGeneratorPlugin::getNativeTriple()
-//{
-//    llvm::Triple::ArchType arch;
-//    if (sizeof(void*) == 8u) {
-//        arch = llvm::Triple::x86_64;
-//    }
-//    else {
-//        arch = llvm::Triple::x86;
-//    }
-//    llvm::Triple::VendorType vendor;
-//    llvm::Triple::OSType os;
-//#ifdef Q_OS_MAC
-//    vendor = llvm::Triple::Apple;
-//    os = llvm::Triple::MacOSX;
-//#else
-//    vendor = llvm::Triple::PC;
-//#endif
-//#ifdef Q_OS_WIN32
-//    os = llvm::Triple::Win32;
-//#endif
-//#ifdef Q_OS_LINUX
-//    os = llvm::Triple::Linux;
-//#endif
-//#ifdef Q_OS_FREEBSD
-//    os = llvm::Triple::FreeBSD;
-//#endif
-//    return llvm::Triple(llvm::Triple::getArchTypeName(arch),
-//                        llvm::Triple::getVendorTypeName(vendor),
-//                        llvm::Triple::getOSTypeName(os));
-//}
-
 void LLVMCodeGeneratorPlugin::setOutputToText(bool flag)
 {
     textForm_ = flag;
@@ -335,7 +325,10 @@ QString LLVMCodeGeneratorPlugin::initialize(
 {
     compileOnly_ = runtimeArguments.hasFlag('c');
     textForm_ = runtimeArguments.hasFlag('S');
-    linkStdLib_ = true;
+    unitMode_ = runtimeArguments.hasFlag('u');
+    if (unitMode_) {
+        compileOnly_ = true;
+    }
     DebugLevel debugLevel = LinesOnly;
     if (runtimeArguments.value('g').isValid()) {
         int level = runtimeArguments.value('g').toInt();
@@ -344,8 +337,7 @@ QString LLVMCodeGeneratorPlugin::initialize(
         debugLevel = DebugLevel(level);
     }
     setDebugLevel(debugLevel);
-//    linkStdLib_ = runtimeArguments.hasFlag('l');
-    // TODO implement it
+
     return "";
 }
 
