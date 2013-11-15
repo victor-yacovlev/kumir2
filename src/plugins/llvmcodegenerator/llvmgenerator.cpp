@@ -1849,7 +1849,9 @@ static bool isBuiltInModuleAlgorithm(const AST::DataPtr ast,
     }
     AST::ModulePtr module;
     foreach (const AST::ModulePtr mod, ast->modules) {
-        foreach (const AST::AlgorithmPtr alg, mod->header.algorhitms) {
+        QList<AST::AlgorithmPtr> externs =
+                mod->header.algorhitms + mod->header.operators;
+        foreach (const AST::AlgorithmPtr alg, externs) {
             if (alg.data() == algorithm.data()) {
                 module = mod;
                 break;
