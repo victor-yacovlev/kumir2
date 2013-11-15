@@ -1,15 +1,17 @@
+# -- linux
+if(NOT APPLE AND NOT MSVC)
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-new-dtags -Wl,-rpath,'\$ORIGIN/..'")
+endif(NOT APPLE AND NOT MSVC)
+# -- mac
+if(APPLE)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-new-dtags -Wl,-rpath,'abracadabra'")
+endif(APPLE)
+
 add_definitions(-DQT_PLUGIN)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/src/shared)
 include_directories(${CMAKE_SOURCE_DIR}/src/plugins)
-
-if(NOT APPLE)
-    set(CMAKE_INSTALL_RPATH
-        "$ORIGIN/../"
-    )
-endif()
-
 
 set(LIBRARY_OUTPUT_PATH ${PLUGIN_OUTPUT_PATH})
 if (MSVC_IDE)
