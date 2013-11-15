@@ -1311,7 +1311,7 @@ EXTERN void __kumir_create_array_1(__kumir_array * result,
     result->shape_left[2] = result->size_left[2] = 0;
     result->shape_right[2] = result->size_right[2] = 0;
     int isz = 1 + right_1->data.i - left_1->data.i;
-    if (isz < 0) {
+    if (isz < 1) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
     }
     else {
@@ -1348,7 +1348,7 @@ EXTERN void __kumir_create_array_2(__kumir_array * result,
     result->shape_right[2] = result->size_right[2] = 0;
     int isz1 = 1 + right_1->data.i - left_1->data.i;
     int isz2 = 1 + right_2->data.i - left_2->data.i;
-    if (isz1 < 0 || isz2 < 0) {
+    if (isz1 < 1 || isz2 < 1) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
     }
     else {
@@ -1390,7 +1390,7 @@ EXTERN void __kumir_create_array_3(__kumir_array * result,
     int isz1 = 1 + right_1->data.i - left_1->data.i;
     int isz2 = 1 + right_2->data.i - left_2->data.i;
     int isz3 = 1 + right_3->data.i - left_3->data.i;
-    if (isz1 < 0 || isz2 < 0 || isz3 < 0) {
+    if (isz1 < 1 || isz2 < 1 || isz3 < 1) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
     }
     else {
