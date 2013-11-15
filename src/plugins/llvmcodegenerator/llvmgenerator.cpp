@@ -1930,6 +1930,15 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
                                           currentModule_);
         }                
     }
+    else {
+        const QString moduleName = alg->header.external.moduleName;
+        const CString message = CString(QString::fromUtf8(
+                    "Невозможно использовать \"%1\": исполнители не поддерживаются"
+                    ).arg(moduleName).toUtf8().constData());
+        builder.CreateCall(kumirAbortOnError_,
+                           builder.CreateGlobalStringPtr(message));
+        return 0;
+    }
 
     size_t largsCount = alg->header.arguments.size();
     size_t loffset = 0u;
@@ -1986,17 +1995,10 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
         args[0] = rval;
         result = rval;
     }
-    if (!func) {
-        const QString moduleName = alg->header.external.moduleName;
-        const CString message = CString(QString::fromUtf8(
-                    "Невозможно использовать \"%1\": исполнители не поддерживаются"
-                    ).arg(moduleName).toUtf8().constData());
-        builder.CreateCall(kumirAbortOnError_,
-                           builder.CreateGlobalStringPtr(message));
-    }
-    else {
-        builder.CreateCall(func, args);
-    }
+
+    Q_ASSERT(func);
+    builder.CreateCall(func, args);
+
     return result;
 }
 

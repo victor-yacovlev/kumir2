@@ -211,6 +211,9 @@ EXTERN void __kumir_stdlib_ln(__kumir_scalar  * result, const __kumir_scalar * v
 EXTERN void __kumir_stdlib_lg(__kumir_scalar  * result, const __kumir_scalar * value);
 EXTERN void __kumir_stdlib_exp(__kumir_scalar  * result, const __kumir_scalar * value);
 EXTERN void __kumir_stdlib_rnd(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_irnd(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void __kumir_stdlib_rand(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b);
+EXTERN void __kumir_stdlib_irand(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b);
 EXTERN void __kumir_stdlib_iabs(__kumir_scalar * result, const __kumir_scalar * value);
 EXTERN void __kumir_stdlib_abs(__kumir_scalar * result, const __kumir_scalar * value);
 EXTERN void __kumir_stdlib_sign(__kumir_scalar * result, const __kumir_scalar * value);
@@ -246,6 +249,7 @@ EXTERN void __kumir_stdlib_pozitsiya(__kumir_scalar * result, const __kumir_scal
 EXTERN void __kumir_stdlib_nizhnij_registr(__kumir_scalar * result, const __kumir_scalar * stroka);
 EXTERN void __kumir_stdlib_verhnij_registr(__kumir_scalar * result, const __kumir_scalar * stroka);
 EXTERN void __kumir_stdlib_vstavit(const __kumir_scalar * fragment, __kumir_scalar * stroka, const __kumir_scalar * pozitsiya);
+EXTERN void __kumir_stdlib_udalit(__kumir_scalar * stroka, const __kumir_scalar * pozitsiya, const __kumir_scalar * dlina);
 
 // Files
 EXTERN void __kumir_stdlib_est_dannyie(__kumir_scalar  * result, const __kumir_scalar * handle);
