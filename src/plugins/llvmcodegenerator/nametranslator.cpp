@@ -10,9 +10,9 @@ NameTranslator::NameTranslator()
 
 void NameTranslator::reset()
 {
-    _.clear();
+    l_.clear();
     Namespace root;
-    _.push_back(root);
+    l_.push_back(root);
 }
 
 CString NameTranslator::add(const QString &name)
@@ -31,36 +31,55 @@ CString NameTranslator::add(const QString &name)
     return result;
 }
 
+CString NameTranslator::addGlobal(const QString &name)
+{
+    const QString baseCname = suggestName(name);
+    QString cname = baseCname;
+
+    uint16_t counter = 1;
+    while (isReservedName(cname) || !find(cname).empty()) {
+        cname = QString("%1_%2").arg(baseCname).arg(counter);
+    }
+
+    CString result = cname.toStdString();
+    g_.rmap.insert(result, name);
+    g_.map.insert(name, result);
+    return result;
+}
+
 void NameTranslator::beginNamespace()
 {
     Namespace newNS;
-    _.push_back(newNS);
+    l_.push_back(newNS);
 }
 
 
 void NameTranslator::endNamespace()
 {
-    _.pop_back();
+    l_.pop_back();
 }
 
 CString NameTranslator::find(const QString &name) const
 {
-    int nsIndex = _.size() - 1;
+    int nsIndex = l_.size() - 1;
     CString result;
     while (nsIndex >= 0) {
-        const Namespace &ns = _.at(nsIndex);
+        const Namespace &ns = l_.at(nsIndex);
         if (ns.map.contains(name)) {
             result = ns.map[name];
             break;
         }
         nsIndex --;
     }
+    if (result.empty() && g_.map.contains(name)) {
+        result = g_.map[name];
+    }
     return result;
 }
 
 NameTranslator::Namespace& NameTranslator::ns()
 {
-    return _.back();
+    return l_.back();
 }
 
 QString NameTranslator::suggestName(const QString &x)
@@ -129,7 +148,7 @@ QString NameTranslator::suggestName(const QString &x)
     }
     for (int i=0; i<x.length(); i++) {
         const QChar src = x.at(i);
-        if (src == ' ') {
+        if (src == ' ' || src == '.') {
             result += "_";
         }
         else if (src.unicode() <= 0x7F) {
@@ -142,6 +161,18 @@ QString NameTranslator::suggestName(const QString &x)
                 if (src.isUpper())
                     letter[0] = letter[0].toUpper();
                 result += letter;
+            }
+            else if (QString::fromUtf8("ь").contains(src) && result.isEmpty()) {
+                result += "soft_sign";
+            }
+            else if (QString::fromUtf8("ъ").contains(src) && result.isEmpty()) {
+                result += "hard_sign";
+            }
+            else if (QString::fromUtf8("Ь").contains(src) && result.isEmpty()) {
+                result += "Soft_sign";
+            }
+            else if (QString::fromUtf8("Ъ").contains(src) && result.isEmpty()) {
+                result += "Hard_sign";
             }
         }
     }

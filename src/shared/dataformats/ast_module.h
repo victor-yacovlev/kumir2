@@ -58,6 +58,9 @@ struct ModuleHeader {
     /** Module name, may be empty (for program itself)*/
     QString name;
 
+    /** Module source file name (might be used in case of name is empty) */
+    QString sourceFileName;
+
     /** Module type */
     enum ModuleType type;
 

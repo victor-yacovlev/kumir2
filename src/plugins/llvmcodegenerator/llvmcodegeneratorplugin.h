@@ -39,19 +39,22 @@ public:
 protected:
     QString initialize(const QStringList &configurationArguments,
                        const ExtensionSystem::CommandLine &runtimeArguments);
+    static void fixMultipleTypeDeclarations(QByteArray & data);
     void start();
     void stop();
 
-//    static std::string generateNativeExecutable(llvm::Module * module);
     static QByteArray runExternalToolsToGenerateExecutable(const QByteArray & bitcode);
-//    static llvm::Triple getNativeTriple();
+    static bool compileExternalUnit(const QString & fileName);
     static QString findUtil(const QString & name);
 
 private:
     class LLVMGenerator * d;
-    bool compileOnly_;
-    bool textForm_;
+    bool createMain_;
     bool linkStdLib_;
+    bool linkAllUnits_;
+    bool textForm_;
+    bool runToolChain_;
+    DebugLevel debugLevel_;
 
 };
 

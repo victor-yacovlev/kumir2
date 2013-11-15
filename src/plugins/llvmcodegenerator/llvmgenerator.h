@@ -7,6 +7,7 @@
 #include "dataformats/ast_expression.h"
 #include "dataformats/ast_type.h"
 
+#include "interfaces/generatorinterface.h"
 
 #include <llvm/Module.h>
 #include <llvm/LLVMContext.h>
@@ -14,6 +15,7 @@
 #include <llvm/IRBuilder.h>
 
 #include <cstdint>
+#include <stack>
 
 namespace LLVMCodeGenerator {
 
@@ -23,29 +25,40 @@ class LLVMGenerator
 {
 public:
     explicit LLVMGenerator();
-    void reset(bool linkStdLibModule);
-    llvm::Module* createModule(const AST::ModulePtr kmod);
+    void reset(bool addMainEntryPoint, Shared::GeneratorInterface::DebugLevel debugLevel);
+    void addKumirModule(const AST::ModulePtr kmod);
+    void createKumirModuleImplementation(const AST::ModulePtr kmod);
+    llvm::Module * getResult();
+    llvm::Module * getStdLibModule();
+    void createExternsTable(const llvm::Module * const source, const CString & prefix);
 private:
+    typedef llvm::IRBuilder<> Builder;
     void createStdLibModule();
+
+    llvm::StructType * getScalarType();
+    llvm::StructType * getArrayType();
+    llvm::StructType * getStringRefType();
 
     void addGlobalVariable(llvm::IRBuilder<> & builder, const AST::VariablePtr kvar, bool constant);
     void addFunction(const AST::AlgorithmPtr kfunc, bool createBody);
     void addFunctionBody(const QList<AST::StatementPtr> & statements, const AST::AlgorithmPtr & alg);
     void createMainFunction(const AST::AlgorithmPtr & entryPoint);
 
-    void createExternsTable();
-    void createInternalExternsTable();
+    void addExternsToModule(llvm::Module * const target);
+    void readStdLibFunctions();
 
     void createVarInitialize(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, bool global);
     llvm::Value* createVarInitialize(llvm::IRBuilder<> & builder, const AST::VariablePtr & var, const QString &overrideName, bool global);
     void createAssign(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createAssert(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createOutput(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
+    void createHalt(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createInput(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createLoop(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createIfThenElse(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createSwitchCaseElse(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createBreak(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
+    void createError(llvm::IRBuilder<> & builder, const AST::StatementPtr & st);
     llvm::Value* calculate(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex, bool isLvalue = false);
     llvm::Value* createConstant(llvm::IRBuilder<> & builder, const AST::Type kty, const QVariant & value);
     QByteArray createArray_0_ConstantData(const AST::VariableBaseType bt, const QVariant & value, bool addDefFlag);
@@ -57,13 +70,14 @@ private:
     llvm::Value* createSubExpession(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex);
     llvm::Value* createShortCircuitOperation(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & left, const AST::ExpressionPtr & right, const AST::ExpressionOperator op);
     llvm::Value* createArrayElementGet(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex, bool isLvalue);
+    llvm::Value* createStringSliceGet(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex, bool isLvalue);
     llvm::Value* findVariableAtCurrentContext(const AST::VariablePtr & var);
     void createFreeTempScalars(llvm::IRBuilder<> & builder);
-
-    llvm::Type * findOrRegisterType(const AST::Type &bt, const bool reference, const uint8_t dim);
-    llvm::Type * findStandardType(const AST::VariableBaseType bt, const bool reference, const uint8_t dim);
+    void createOutputValue(Builder & builder, const QString & name, llvm::Value * value, const AST::VariableBaseType type, const bool isArray);
+    void createInputValue(Builder & builder, const QString & name, llvm::Value * value, const AST::VariableBaseType type, const bool isArray);
 
     llvm::Module* currentModule_;
+    AST::ModulePtr currentKModule_;
     llvm::Function* currentFunction_;
     AST::AlgorithmPtr currentAlgorithm_;
     llvm::LLVMContext* context_;
@@ -71,7 +85,7 @@ private:
     llvm::Module* stdlibModule_;
     QScopedPointer<llvm::MemoryBuffer> stdlibContents_;
     llvm::BasicBlock* currentBlock_;
-    llvm::BasicBlock* currentLoopEnd_;
+    QStack<llvm::BasicBlock*> currentLoopEnd_;
     llvm::BasicBlock* currentFunctionExit_;
     uint32_t ifThenElseCounter_;
     uint32_t switchCaseCounter_;
@@ -93,6 +107,7 @@ private:
     llvm::Function* kumirRefArray3_;
     llvm::Function* kumirCloneArray3_;
     llvm::Function* kumirFreeArray_;
+    llvm::Function* kumirCleanUpArrayInShape_;
 
     llvm::Function* kumirFillArrayI_;
     llvm::Function* kumirFillArrayR_;
@@ -105,18 +120,22 @@ private:
     llvm::Function* kumirCreateChar_;
     llvm::Function* kumirCreateString_;
     llvm::Function* kumirAssignScalarToScalar_;
+    llvm::Function* kumirAssignScalarToStringRef_;
     llvm::Function* kumirAssignScalarToArrayElement_;
     llvm::Function* kumirMoveScalar_;
     llvm::Function* kumirFreeScalar_;
     llvm::Function* kumirGetArray1Element_;
     llvm::Function* kumirGetArray2Element_;
     llvm::Function* kumirGetArray3Element_;
+    llvm::Function* kumirGetStringElement_;
+    llvm::Function* kumirGetStringSlice_;
+    llvm::Function* kumirGetStringElementRef_;
+    llvm::Function* kumirGetStringSliceRef_;
 
     llvm::Function* kumirLoopForFromToInitCounter_;
     llvm::Function* kumirLoopForFromToStepInitCounter_;
 
-    llvm::Function* kumirLoopForFromToCheckCounter_;
-    llvm::Function* kumirLoopForFromToStepCheckCounter_;
+    llvm::Function* kumirLoopForCheckCounter_;
 
     llvm::Function* kumirLoopTimesInitCounter_;
     llvm::Function* kumirLoopTimesCheckCounter_;
@@ -129,6 +148,12 @@ private:
     llvm::Function* kumirOutputStdoutSI_;
     llvm::Function* kumirOutputStdoutIS_;
     llvm::Function* kumirOutputStdoutSS_;
+    llvm::Function* kumirOutputStdout_;
+
+    llvm::Function* kumirPrintScalarVariable_;
+    llvm::Function* kumirInputScalarVariable_;
+    llvm::Function* kumirPrintArrayVariable_;
+    llvm::Function* kumirInputArrayVariable_;
 
     llvm::Function* kumirOutputFileII_;
     llvm::Function* kumirOutputFileSI_;
@@ -139,6 +164,12 @@ private:
     llvm::Function* kumirInputFile_;
 
     llvm::Function* kumirAssert_;
+    llvm::Function* kumirAbortOnError_;
+    llvm::Function* kumirSetCurrentLineNumber_;
+    llvm::Function* kumirCheckValueDefined_;
+    llvm::Function* kumirHalt_;
+    llvm::Function* kumirCheckCallStack_;
+    llvm::Function* kumirPopCallStackCounter_;
 
     llvm::Function* kumirOpEq_;
     llvm::Function* kumirOpNeq_;
@@ -155,10 +186,14 @@ private:
 
     llvm::Function* kumirOpNeg_;
 
-
-    std::list<llvm::Value*> tempValsToFree_;
-    bool linkStdLibModule_;
+    std::vector<llvm::Value*> tempValsToFree_;
+    std::stack<size_t> tempValsToFreeStartPos_;
+    bool addMainEntryPoint_;
     std::list<llvm::Function*> initFunctions_;
+
+    Shared::GeneratorInterface::DebugLevel debugLevel_;
+
+    QList<const llvm::Function*> externs_;
 
 
     /**

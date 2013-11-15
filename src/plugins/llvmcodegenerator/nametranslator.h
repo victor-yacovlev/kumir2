@@ -18,6 +18,7 @@ public:
     void beginNamespace();
     void endNamespace();
     CString add(const QString & name);
+    CString addGlobal(const QString &name);
     CString find(const QString & name) const;
     static QString suggestName(const QString &x);
 private:
@@ -33,7 +34,8 @@ private:
     bool inUse(const CString &x) const;
     static bool isReservedName(const QString &x);
 
-    QStack<Namespace> _;
+    QStack<Namespace> l_;
+    Namespace g_;
 };
 
 } // namespace LLVMCodeGenerator

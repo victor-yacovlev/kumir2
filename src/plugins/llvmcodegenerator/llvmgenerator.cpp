@@ -1,10 +1,13 @@
 #include "llvmgenerator.h"
 #include "nametranslator.h"
+#include "kumtypes.h"
 
 #include "dataformats/ast_variable.h"
 #include "dataformats/ast_algorhitm.h"
 #include "dataformats/ast_statement.h"
 #include "dataformats/ast_expression.h"
+#include "errormessages/errormessages.h"
+#include "dataformats/lexem.h"
 
 #include <llvm/Type.h>
 #include <llvm/TypeBuilder.h>
@@ -53,14 +56,20 @@ LLVMGenerator::LLVMGenerator()
 }
 
 
-void LLVMGenerator::reset(bool linkStdLibModule)
+void LLVMGenerator::reset(bool addMainEntryPoint,
+                          Shared::GeneratorInterface::DebugLevel debugLevel)
 {
-    linkStdLibModule_ = linkStdLibModule;
+    externs_.clear();
+    debugLevel_ = debugLevel;
     context_ = new llvm::LLVMContext();
-    currentModule_ = 0;
-    currentFunction_ = 0;    
+    currentModule_ = new llvm::Module("", *context_);
+    currentFunction_ = 0;
+    addMainEntryPoint_ = addMainEntryPoint;
     nameTranslator_->reset();
     createStdLibModule();
+    createExternsTable(stdlibModule_, CString("__kumir_"));
+    externs_.clear();
+    readStdLibFunctions();
 }
 
 void LLVMGenerator::createStdLibModule()
@@ -75,25 +84,49 @@ void LLVMGenerator::createStdLibModule()
 
 }
 
-llvm::Module* LLVMGenerator::createModule(const AST::ModulePtr kmod)
+llvm::Module* LLVMGenerator::getResult()
 {
+    return currentModule_;
+}
 
-    const CString moduleName = nameTranslator_->add(
-                !kmod->header.name.isEmpty()
-                ? QString("__self__")
-                : kmod->header.name
-                  );
+llvm::Module* LLVMGenerator::getStdLibModule()
+{
+    return stdlibModule_;
+}
 
+void LLVMGenerator::addKumirModule(const AST::ModulePtr kmod)
+{
+    bool voidNameFunctionDeclared = false;
+    for (int i=0; i<kmod->impl.algorhitms.size(); i++) {
+        const AST::AlgorithmPtr func = kmod->impl.algorhitms.at(i);
+        if (!func->header.broken &&
+                !(voidNameFunctionDeclared && func->header.name.isEmpty())
+                )
+        {
+            addFunction(func, false);
+            if (func->header.name.isEmpty()) {
+                voidNameFunctionDeclared = true;
+            }
+        }
+    }
+
+}
+
+void LLVMGenerator::createKumirModuleImplementation(const AST::ModulePtr kmod)
+{
+    nameTranslator_->beginNamespace();
+    currentKModule_ = kmod;
+    const CString moduleName = CString(QString(
+                kmod->header.name.isEmpty() ? kmod->header.sourceFileName
+                                            : kmod->header.name
+                ).toUtf8().constData());
     nameTranslator_->beginNamespace();
 
-    llvm::Module * lmod = new llvm::Module(moduleName, *context_);
-    currentModule_ = lmod;
-    createExternsTable();
-    std::cerr << lmod->getModuleIdentifier() << std::endl;
+    llvm::Module * lmod = currentModule_;
 
     llvm::Function * initFunc = llvm::Function::Create(
                 llvm::FunctionType::get(llvm::Type::getVoidTy(*context_), false),
-                llvm::GlobalValue::LinkerPrivateLinkage,
+                llvm::GlobalValue::ExternalLinkage,
                 CString("__init__" + moduleName),
                 currentModule_
                 );
@@ -102,6 +135,7 @@ llvm::Module* LLVMGenerator::createModule(const AST::ModulePtr kmod)
     initFunctions_.push_back(initFunc);
     initFunc->addFnAttr(llvm::Attributes::NoUnwind);
     initFunc->addFnAttr(llvm::Attributes::UWTable);
+    tempValsToFree_.clear();
     llvm::BasicBlock * initBlock = llvm::BasicBlock::Create(*context_, "", initFunc);
     currentBlock_ = initBlock;
     llvm::IRBuilder<> initBuilder(initBlock);
@@ -112,27 +146,29 @@ llvm::Module* LLVMGenerator::createModule(const AST::ModulePtr kmod)
     }
 
     addFunctionBody(kmod->impl.initializerBody, AST::AlgorithmPtr());
+    initBuilder.SetInsertPoint(currentBlock_); // Might be changed
     initBuilder.CreateRetVoid();
 
     for (int i=0; i<kmod->impl.algorhitms.size(); i++) {
         const AST::AlgorithmPtr func = kmod->impl.algorhitms.at(i);
-        addFunction(func, false);
+        if (!func->header.broken) {
+            addFunction(func, true);
+        }
     }
 
-    for (int i=0; i<kmod->impl.algorhitms.size(); i++) {
-        const AST::AlgorithmPtr func = kmod->impl.algorhitms.at(i);
-        addFunction(func, true);
+    if (addMainEntryPoint_) {
+        if (kmod->header.type == AST::ModTypeUserMain ||
+                kmod->header.type == AST::ModTypeTeacherMain)
+        {
+            createMainFunction(kmod->impl.algorhitms.isEmpty()
+                               ? AST::AlgorithmPtr()
+                               : kmod->impl.algorhitms.first());
+        }
     }
 
-    if (kmod->header.type == AST::ModTypeUser ||
-            kmod->header.type == AST::ModTypeTeacher)
-    {
-        createMainFunction(kmod->impl.algorhitms.first());
-    }
-
+    currentKModule_ = AST::ModulePtr();
     nameTranslator_->endNamespace();
 
-    return currentModule_;
 }
 
 void LLVMGenerator::addGlobalVariable(llvm::IRBuilder<> & builder, const AST::VariablePtr kvar, bool constant)
@@ -140,8 +176,13 @@ void LLVMGenerator::addGlobalVariable(llvm::IRBuilder<> & builder, const AST::Va
     Q_ASSERT(context_);
     Q_ASSERT(currentModule_);
 
-    CString name = nameTranslator_->add(kvar->name);
-    llvm::Type * ty = findOrRegisterType(kvar->baseType, false, kvar->dimension);
+    const QString qn = currentKModule_->header.name.isEmpty()
+            ? kvar->name
+            : currentKModule_->header.name + "__" + kvar->name;
+
+    CString name = nameTranslator_->add(qn);
+    llvm::Type * ty = kvar->dimension > 0u
+            ? getArrayType() : getScalarType();
 
     llvm::GlobalVariable * lvar = new llvm::GlobalVariable(
                 *currentModule_,
@@ -155,6 +196,8 @@ void LLVMGenerator::addGlobalVariable(llvm::IRBuilder<> & builder, const AST::Va
     Q_ASSERT(lvar);
 
 }
+
+
 
 void LLVMGenerator::createMainFunction(const AST::AlgorithmPtr &entryPoint)
 {
@@ -176,16 +219,6 @@ void LLVMGenerator::createMainFunction(const AST::AlgorithmPtr &entryPoint)
 
     builder.CreateCall(kumirInitStdLib_);
 
-    const QString entryPointQName =
-            entryPoint->header.name.isEmpty()
-            ? QString("__main__") : entryPoint->header.name;
-
-    const CString entryPointName = nameTranslator_->find(entryPointQName);
-    Q_ASSERT(entryPointName.length() > 0);
-
-    llvm::Function * entryPointFunc = currentModule_->getFunction(entryPointName);
-    Q_ASSERT(entryPointFunc);
-
     typedef std::list<llvm::Function*>::const_iterator It;
     for (It it = initFunctions_.begin(); it != initFunctions_.end(); ++it) {
         llvm::Function * initFunc = *it;
@@ -193,12 +226,117 @@ void LLVMGenerator::createMainFunction(const AST::AlgorithmPtr &entryPoint)
         builder.CreateCall(initFunc);
     }
 
-    builder.CreateCall(entryPointFunc);
+    if (entryPoint) {
+        const QString entryPointQName = "__kumir_function_" + entryPoint->header.name;
+        const CString entryPointName =
+                CString(entryPointQName.toUtf8().constData());
+        Q_ASSERT(entryPointName.length() > 0);
+
+        llvm::Function * entryPointFunc = currentModule_->getFunction(entryPointName);
+        Q_ASSERT(entryPointFunc);
+
+        std::vector<llvm::Value*> args;
+
+        llvm::Value * ret = 0;
+
+        if (entryPoint->header.returnType != AST::TypeNone) {
+            ret = builder.CreateAlloca(getScalarType());
+            args.push_back(ret);
+        }
+
+        for (int i=0; i<entryPoint->header.arguments.size(); i++) {
+            const AST::VariablePtr & arg = entryPoint->header.arguments.at(i);
+            llvm::Value * larg = builder.CreateAlloca(
+                        arg->dimension > 0u ? getArrayType() : getScalarType()
+                        );
+            args.push_back(larg);
+            if (arg->accessType!=AST::AccessArgumentOut) {
+                createInputValue(builder, arg->name, larg, arg->baseType.kind, arg->dimension > 0u);
+            }
+        }
+
+
+        builder.CreateCall(entryPointFunc, args);
+
+        if (ret) {
+            createOutputValue(builder, "", ret, entryPoint->header.returnType.kind, false);
+        }
+    }
     builder.CreateRet(
                 llvm::ConstantInt::getSigned(
                     llvm::Type::getInt32Ty(*context_),
                     0)
                 );
+}
+
+void LLVMGenerator::createOutputValue(Builder &builder, const QString &name, llvm::Value *value, const AST::VariableBaseType type, const bool isArray)
+{
+    if (!isArray) {
+        __kumir_scalar_type typee = __kumir_scalar_type(0x00);
+        if (type == AST::TypeBoolean) {
+            typee = __KUMIR_BOOL;
+        }
+        else if (type == AST::TypeInteger) {
+            typee = __KUMIR_INT;
+        }
+        else if (type == AST::TypeReal) {
+            typee = __KUMIR_REAL;
+        }
+        else if (type == AST::TypeCharect) {
+            typee = __KUMIR_CHAR;
+        }
+        else if (type == AST::TypeString) {
+            typee = __KUMIR_STRING;
+        }
+        else if (type == AST::TypeUser) {
+            typee = __KUMIR_RECORD;
+        }
+
+        llvm::Value * lname = builder.CreateGlobalStringPtr(
+                    std::string(name.toUtf8().constData())
+                    );
+
+        llvm::Value * ltype = llvm::ConstantInt::getSigned(
+                    llvm::Type::getInt32Ty(ctx), typee
+                    );
+
+        builder.CreateCall3(kumirPrintScalarVariable_, lname, ltype, value);
+    }
+}
+
+void LLVMGenerator::createInputValue(Builder &builder, const QString & name, llvm::Value *value, const AST::VariableBaseType type, const bool isArray)
+{
+    if (!isArray) {
+        __kumir_scalar_type typee = __kumir_scalar_type(0x00);
+        if (type == AST::TypeBoolean) {
+            typee = __KUMIR_BOOL;
+        }
+        else if (type == AST::TypeInteger) {
+            typee = __KUMIR_INT;
+        }
+        else if (type == AST::TypeReal) {
+            typee = __KUMIR_REAL;
+        }
+        else if (type == AST::TypeCharect) {
+            typee = __KUMIR_CHAR;
+        }
+        else if (type == AST::TypeString) {
+            typee = __KUMIR_STRING;
+        }
+        else if (type == AST::TypeUser) {
+            typee = __KUMIR_RECORD;
+        }
+
+        llvm::Value * lname = builder.CreateGlobalStringPtr(
+                    std::string(name.toUtf8().constData())
+                    );
+
+        llvm::Value * ltype = llvm::ConstantInt::getSigned(
+                    llvm::Type::getInt32Ty(ctx), typee
+                    );
+
+        builder.CreateCall3(kumirInputScalarVariable_, lname, ltype, value);
+    }
 }
 
 void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
@@ -209,18 +347,14 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
     ifThenElseCounter_ = 0u;
     switchCaseCounter_ = 0u;
     loopCounter_ = 0u;
-    currentLoopEnd_ = nullptr;
+    currentLoopEnd_.clear();
     currentFunctionExit_ = nullptr;
 
-    const QString actualName = kfunc->header.name.isEmpty()
-            ? QString("__main__") : kfunc->header.name;
+    const QString actualName = "__kumir_function_" + kfunc->header.name;
 
-    CString name = createBody
-            ? nameTranslator_->find(actualName)
-                // already added at previous stage
-            : nameTranslator_->add(actualName)
-                // create new name
-              ;
+    // Use UTF-8 names to prevent unambiguous linkage between files
+    CString name = CString(actualName.toUtf8().data());
+
 
     size_t largsCount = 0u;
     size_t largsOffset = 0u;
@@ -236,18 +370,15 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
     std::vector<llvm::Type*> args(largsCount);
     for (size_t i=0; i<kfunc->header.arguments.size(); i++) {
         const AST::VariablePtr kvar = kfunc->header.arguments.at(i);
-        llvm::Type * lvar = findOrRegisterType(kvar->baseType,
-                                         true,
-                                         kvar->dimension);
+        llvm::Type * lvar = kvar->dimension > 0u
+                ? getArrayType()->getPointerTo()
+                : getScalarType()->getPointerTo();
         args[i+largsOffset] = lvar;
     }
 
     if (kfunc->header.returnType != AST::TypeNone) {
         llvm::Type * rtype = 0;
-        rtype = findOrRegisterType(kfunc->header.returnType,
-                                                false,
-                                                0u);
-        rtype = rtype->getPointerTo();
+        rtype = getScalarType()->getPointerTo();
         args[0] = rtype;
     }
 
@@ -282,6 +413,7 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
     }
 
     if (createBody) {
+        tempValsToFree_.clear();
         nameTranslator_->beginNamespace();
         currentFunction_ = lfn;
 
@@ -318,7 +450,10 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
         std::list<AST::VariablePtr>::iterator kIt = namedArgs.begin();
 
         if (kfunc->header.returnType != AST::TypeNone) {
-            lIt ++; // skip first argument used by retval
+            llvm::Argument & larg = *lIt;
+            larg.setName(lfn->getName());
+            lIt ++;
+            builder.CreateCall(kumirCreateUndefinedScalar_, &larg);
         }
 
         std::vector<llvm::Value*> argumentValues;
@@ -340,7 +475,8 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
                 const QString qname = kvar->name;
                 const CString cname = nameTranslator_->add(qname);
                 Q_ASSERT(!cname.empty());
-                llvm::Type * ty = findOrRegisterType(kvar->baseType, false, kvar->dimension);
+                llvm::Type * ty = kvar->dimension > 0u
+                        ? getArrayType() : getScalarType();
                 llvm::Value * arg = builder.CreateAlloca(ty, 0, cname);
                 llvm::Function * initFunc = kvar->dimension == 0u
                         ? kumirCreateUndefinedScalar_ : kumirCreateUndefinedArray_;
@@ -348,7 +484,7 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
             }
         }
 
-        // Initialize array arguments
+        // Initialize array arguments and wash-up out-parameters
         for (int i=0; i<kfunc->header.arguments.size(); i++) {
             const AST::VariablePtr & karg = kfunc->header.arguments[i];
             if (karg->dimension > 0u) {
@@ -377,8 +513,16 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
                 }
                 Q_ASSERT(initFunc);
                 builder.CreateCall(initFunc, initArgs);
+                if (karg->accessType == AST::AccessArgumentOut && karg->dimension > 0u) {
+                    builder.CreateCall(kumirCleanUpArrayInShape_, lvar);
+                }
+            }
+            else if (karg->accessType == AST::AccessArgumentOut) {
+                llvm::Value * lvar = argumentValues[i];
+                builder.CreateCall(kumirFreeScalar_, lvar);
             }
         }
+
         builder.SetInsertPoint(currentBlock_);
         builder.CreateBr(functionPre);
 
@@ -403,7 +547,8 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
         for (int i=0; i<kfunc->impl.locals.size(); i++) {
             const AST::VariablePtr & kvar = kfunc->impl.locals[i];
             if (kvar->accessType != AST::AccessArgumentInOut &&
-                    kvar->accessType != AST::AccessArgumentOut)
+                    kvar->accessType != AST::AccessArgumentOut &&
+                    kvar->name != kfunc->header.name)
             {
                 if (kvar->dimension > 0u)
                 {
@@ -414,13 +559,16 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
                 else if (kvar->baseType.kind == AST::TypeString ||
                          kvar->baseType.kind == AST::TypeUser)
                 {
-                    llvm::Value * lvar = findVariableAtCurrentContext(kvar);
-                    Q_ASSERT(lvar);
-                    builder.CreateCall(kumirFreeScalar_, lvar);
+                    if (kvar->accessType != AST::AccessArgumentIn) {
+                        llvm::Value * lvar = findVariableAtCurrentContext(kvar);
+                        Q_ASSERT(lvar);
+                        builder.CreateCall(kumirFreeScalar_, lvar);
+                    }
                 }
             }
 
         }
+        builder.CreateCall(kumirPopCallStackCounter_);
         builder.CreateRetVoid();
         nameTranslator_->endNamespace();
     }
@@ -428,45 +576,132 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
 
 void LLVMGenerator::addFunctionBody(const QList<AST::StatementPtr> & statements, const AST::AlgorithmPtr & alg)
 {
+    llvm::IRBuilder<> builder(currentBlock_);
+
+    if (alg) {
+        QString headerError =  "";
+        QString beginError = "";
+        int headerLine = -1;
+        int beginLine = -1;
+
+        if (alg->impl.headerLexems.size()>0) {
+            for (int i=0; i<alg->impl.headerLexems.size();i++) {
+                if (alg->impl.headerLexems[i]->error.size()>0) {
+                    headerError = Shared::ErrorMessages::message("KumirAnalizer", QLocale::Russian, alg->impl.headerLexems[i]->error);
+                    headerLine = alg->impl.headerLexems[i]->lineNo + 1;
+                    break;
+                }
+            }
+        }
+
+        if (alg->impl.beginLexems.size()>0) {
+            for (int i=0; i<alg->impl.beginLexems.size();i++) {
+                if (alg->impl.beginLexems[i]->error.size()>0) {
+                    beginError = Shared::ErrorMessages::message("KumirAnalizer", QLocale::Russian, alg->impl.beginLexems[i]->error);
+                    beginLine = alg->impl.beginLexems[i]->lineNo + 1;
+                    break;
+                }
+            }
+        }
+
+        QString err;
+        int errLine = -1;
+        if (headerError.length() > 0) {
+            err = headerError;
+            errLine = headerLine;
+        }
+        else {
+            err = beginError;
+            errLine = beginLine;
+        }
+
+        if (err.length() > 0) {
+            if (debugLevel_ != Shared::GeneratorInterface::NoDebug) {
+                builder.CreateCall(kumirSetCurrentLineNumber_,
+                                   llvm::ConstantInt::getSigned(
+                                       llvm::Type::getInt32Ty(ctx),
+                                       errLine)
+                                   );
+            }
+            const std::string error = std::string(err.toUtf8().data());
+            llvm::Value * arg = builder.CreateGlobalStringPtr(error);
+            Q_ASSERT(arg);
+            Q_ASSERT(kumirAbortOnError_);
+            builder.CreateCall(kumirAbortOnError_, arg);
+            return;
+        }
+    }
+
     for (int i=0; i<statements.size(); i++) {
         llvm::BasicBlock * block = currentBlock_;
         Q_ASSERT(block);
-        llvm::IRBuilder<> builder(block);
+        if (!block->empty() && block->back().isTerminator()) {
+            break; // the remaining code is unreachable
+        }
         builder.SetInsertPoint(block);
         const AST::StatementPtr & statement = statements.at(i);
         const AST::StatementType type = statement->type;
-        switch (type) {
-        case AST::StVarInitialize:
-            createVarInitialize(builder, statement, alg.isNull());
-            break;
-        case AST::StAssign:
-            createAssign(builder, statement, alg);
-            break;
-        case AST::StAssert:
-            createAssert(builder, statement, alg);
-            break;
-        case AST::StOutput:
-            createOutput(builder, statement, alg);
-            break;
-        case AST::StInput:
-            createInput(builder, statement, alg);
-            break;
-        case AST::StLoop:
-            createLoop(builder, statement, alg);
-            break;
-        case AST::StIfThenElse:
-            createIfThenElse(builder, statement, alg);
-            break;
-        case AST::StSwitchCaseElse:
-            createSwitchCaseElse(builder, statement, alg);
-            break;
-        case AST::StBreak:
-            createBreak(builder, statement, alg);
-            break;
-        default:
-            qFatal("Not implemented!");
-            break;
+        if (statement->lexems.size() > 0) {
+            const AST::Lexem * frontLexem = statement->lexems.front();
+            int lineNo = frontLexem->lineNo + 1;
+            Q_ASSERT(kumirSetCurrentLineNumber_);
+            if (debugLevel_ != Shared::GeneratorInterface::NoDebug) {
+                builder.CreateCall(kumirSetCurrentLineNumber_,
+                                   llvm::ConstantInt::getSigned(
+                                       llvm::Type::getInt32Ty(ctx),
+                                       lineNo)
+                                   );
+            }
         }
+        if (!statement->error.isEmpty()) {
+            if (!statement->skipErrorEvaluation) {
+                createError(builder, statement);
+            }
+        }
+        else {
+            switch (type) {
+            case AST::StVarInitialize:
+                createVarInitialize(builder, statement, alg.isNull());
+                break;
+            case AST::StAssign:
+                createAssign(builder, statement, alg);
+                break;
+            case AST::StAssert:
+                createAssert(builder, statement, alg);
+                break;
+            case AST::StOutput:
+                createOutput(builder, statement, alg);
+                break;
+            case AST::StInput:
+                createInput(builder, statement, alg);
+                break;
+            case AST::StLoop:
+                createLoop(builder, statement, alg);
+                break;
+            case AST::StIfThenElse:
+                createIfThenElse(builder, statement, alg);
+                break;
+            case AST::StSwitchCaseElse:
+                createSwitchCaseElse(builder, statement, alg);
+                break;
+            case AST::StBreak:
+                createBreak(builder, statement, alg);
+                break;
+            case AST::StError:
+                if (!statement->skipErrorEvaluation) {
+                    createError(builder, statement);
+                }
+                break;
+            case AST::StHalt:
+                createHalt(builder, statement, alg);
+                break;
+            case AST::StPause:
+                break; // not used in console mode
+            default:
+                qFatal("Not implemented!");
+                break;
+            }
+        }        
     }
 }
 
@@ -482,7 +717,8 @@ void LLVMGenerator::createVarInitialize(llvm::IRBuilder<> &builder, const AST::S
 
 llvm::Value* LLVMGenerator::createVarInitialize(llvm::IRBuilder<> &builder, const AST::VariablePtr & var, const QString & overrideName, bool global)
 {
-    llvm::Type * ty = findOrRegisterType(var->baseType, false, var->dimension);
+    llvm::Type * ty = var->dimension > 0u
+            ? getArrayType() : getScalarType();
     CString name;
     llvm::Value * result = 0;
     if (overrideName.length() == 0) {
@@ -557,8 +793,15 @@ void LLVMGenerator::createAssign(llvm::IRBuilder<> &builder, const AST::Statemen
         if (lvalue->kind == AST::ExprVariable) {
             storeFunc = kumirAssignScalarToScalar_;
         }
-        else if (lvalue->kind == AST::ExprArrayElement) {
+        else if (lvalue->kind == AST::ExprArrayElement &&
+                 lvalue->variable->dimension == lvalue->operands.size())
+        {
             storeFunc = kumirAssignScalarToArrayElement_;
+        }
+        else if (lvalue->kind == AST::ExprArrayElement &&
+                 lvalue->variable->dimension < lvalue->operands.size())
+        {
+            storeFunc = kumirAssignScalarToStringRef_;
         }
         else {
             qFatal("Not implemented yet");
@@ -587,8 +830,19 @@ void LLVMGenerator::createOutput(llvm::IRBuilder<> &builder, const AST::Statemen
     llvm::Value * fileHandle = 0;
     if (fileHandleProvided) {
         fileHandle = calculate(builder, st->expressions.last());
+        builder.CreateCall(kumirCheckValueDefined_, fileHandle);
         Q_ASSERT(fileHandle);
     }
+    std::vector<llvm::Value *> values;
+    std::vector<llvm::Value *> types;
+    typedef struct {
+        bool c;
+        llvm::Value *s;
+    } format_t ;
+
+    std::vector<format_t> f1s;
+    std::vector<format_t> f2s;
+
     for (int i=0; i<lexemsCount; i++) {
         int exprIndex = 3 * i;
         int format1Index = 3 * i + 1;
@@ -597,48 +851,106 @@ void LLVMGenerator::createOutput(llvm::IRBuilder<> &builder, const AST::Statemen
         const AST::ExpressionPtr & format1 = st->expressions.at(format2Index);
         const AST::ExpressionPtr & format2 = st->expressions.at(format1Index);
 
-        llvm::Value * lexpr = calculate(builder, expr);      
+        __kumir_scalar_type typee = __kumir_scalar_type(0x00);
+        if (expr->baseType.kind == AST::TypeBoolean) {
+            typee = __KUMIR_BOOL;
+        }
+        else if (expr->baseType.kind == AST::TypeInteger) {
+            typee = __KUMIR_INT;
+        }
+        else if (expr->baseType.kind == AST::TypeReal) {
+            typee = __KUMIR_REAL;
+        }
+        else if (expr->baseType.kind == AST::TypeCharect) {
+            typee = __KUMIR_CHAR;
+        }
+        else if (expr->baseType.kind == AST::TypeString) {
+            typee = __KUMIR_STRING;
+        }
+        else if (expr->baseType.kind == AST::TypeUser) {
+            typee = __KUMIR_RECORD;
+        }
+
+        llvm::Value * ltype = llvm::ConstantInt::getSigned(
+                    llvm::Type::getInt32Ty(ctx), typee
+                    );
+
+        types.push_back(ltype);
+
+        llvm::Value * lexpr = calculate(builder, expr);
+        builder.CreateCall(kumirCheckValueDefined_, lexpr);
+        values.push_back(lexpr);
 
         llvm::Function * outFunc = 0;
         std::vector<llvm::Value*> args;
+        format_t f1, f2;
 
-        if (fileHandleProvided) {
-            args.push_back(fileHandle);
-            args.push_back(lexpr);
-            if (format1->kind == AST::ExprConst && format2->kind == AST::ExprConst) {
-                llvm::Value * lformat1 = llvm::ConstantInt::getSigned(
-                            llvm::Type::getInt32Ty(*context_),
-                            format1->constant.toInt()
-                            );
-                llvm::Value * lformat2 = llvm::ConstantInt::getSigned(
-                            llvm::Type::getInt32Ty(*context_),
-                            format2->constant.toInt()
-                            );
-                outFunc = kumirOutputFileII_;
-                args.push_back(lformat1);
-                args.push_back(lformat2);
-            }
+        if (format1->kind == AST::ExprConst) {
+            llvm::Value * format = llvm::ConstantInt::getSigned(
+                        llvm::Type::getInt32Ty(*context_),
+                        format1->constant.toInt()
+                        );
+            f1.s = format;
+            f1.c = true;
         }
         else {
-            args.push_back(lexpr);
-            if (format1->kind == AST::ExprConst && format2->kind == AST::ExprConst) {
-                llvm::Value * lformat1 = llvm::ConstantInt::getSigned(
-                            llvm::Type::getInt32Ty(*context_),
-                            format1->constant.toInt()
-                            );
-                llvm::Value * lformat2 = llvm::ConstantInt::getSigned(
-                            llvm::Type::getInt32Ty(*context_),
-                            format2->constant.toInt()
-                            );
-                outFunc = kumirOutputStdoutII_;
-                args.push_back(lformat1);
-                args.push_back(lformat2);
-            }
+            llvm::Value * format = calculate(builder, format1);
+            f1.s = format;
+            f1.c = false;
         }
-        Q_ASSERT(outFunc);
-        builder.CreateCall(outFunc, args);
-        createFreeTempScalars(builder);
+
+        if (format2->kind == AST::ExprConst) {
+            llvm::Value * format = llvm::ConstantInt::getSigned(
+                        llvm::Type::getInt32Ty(*context_),
+                        format2->constant.toInt()
+                        );
+            f2.s = format;
+            f2.c = true;
+        }
+        else {
+            llvm::Value * format = calculate(builder, format2);
+            f2.s = format;
+            f2.c = false;
+        }
+        f1s.push_back(f1);
+        f2s.push_back(f2);
     }
+
+    Q_ASSERT(values.size() == types.size());
+    Q_ASSERT(f1s.size() == f2s.size());
+    Q_ASSERT(f1s.size() == values.size());
+
+    for (size_t i=0u; i<values.size(); i++) {
+        const format_t & f1 = f1s.at(i);
+        const format_t & f2 = f2s.at(i);
+        llvm::Function * outFunc = 0;
+        std::vector<llvm::Value*> args;
+        if (fileHandleProvided) {
+            if      (f1.c && f2.c)      outFunc = kumirOutputFileII_;
+            else if (f1.c && !f2.c)     outFunc = kumirOutputFileIS_;
+            else if (!f1.c && f2.c)     outFunc = kumirOutputFileSI_;
+            else if (!f1.c && !f2.c)    outFunc = kumirOutputFileSS_;
+            args.push_back(fileHandle);
+        }
+        else {
+            if      (f1.c && f2.c)      outFunc = kumirOutputStdoutII_;
+            else if (f1.c && !f2.c)     outFunc = kumirOutputStdoutIS_;
+            else if (!f1.c && f2.c)     outFunc = kumirOutputStdoutSI_;
+            else if (!f1.c && !f2.c)    outFunc = kumirOutputStdoutSS_;
+        }
+        args.push_back(values[i]);
+        args.push_back(types[i]);
+        args.push_back(f1.s);
+        args.push_back(f2.s);
+        builder.CreateCall(outFunc, args);
+    }
+
+    createFreeTempScalars(builder);
+}
+
+void LLVMGenerator::createHalt(llvm::IRBuilder<> &builder, const AST::StatementPtr &, const AST::AlgorithmPtr &)
+{
+    builder.CreateCall(kumirHalt_);
 }
 
 void LLVMGenerator::createInput(llvm::IRBuilder<> &builder, const AST::StatementPtr &st, const AST::AlgorithmPtr &alg)
@@ -669,7 +981,7 @@ void LLVMGenerator::createInput(llvm::IRBuilder<> &builder, const AST::Statement
         else if (AST::TypeString    == varExpr->variable->baseType.kind)   fmt = 0x05;
         args.push_back(llvm::ConstantInt::getSigned(llvm::Type::getInt32Ty(ctx), fmt));
         llvm::Value * ptr = 0;
-        llvm::Type * const ptrTy = findOrRegisterType(varExpr->variable->baseType, false ,0u)->getPointerTo();
+        llvm::Type * const ptrTy = getScalarType()->getPointerTo();
         if (varExpr->kind == AST::ExprVariable) {
             llvm::Value * var = findVariableAtCurrentContext(varExpr->variable);
             Q_ASSERT(var);
@@ -694,6 +1006,44 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
 {
     const AST::LoopSpec & loop = st->loop;
 
+    int errNo = -1;
+    QString err;
+
+    if (st->headerError.length() > 0) {
+        errNo = st->headerErrorLine + 1;
+        err = st->headerError;
+    }
+    else {
+        foreach (const AST::Lexem * lx, st->lexems) {
+            if (lx->error.length() > 0) {
+                err = lx->error;
+                errNo = lx->lineNo + 1;
+                break;
+            }
+        }
+    }
+
+    if (err.length() > 0) {
+        if (debugLevel_ != Shared::GeneratorInterface::NoDebug) {
+            builder.CreateCall(kumirSetCurrentLineNumber_,
+                               llvm::ConstantInt::getSigned(
+                                   llvm::Type::getInt32Ty(ctx),
+                                   errNo
+                                   )
+                               );
+        }
+        builder.CreateCall(kumirAbortOnError_,
+                           builder.CreateGlobalStringPtr(
+                               std::string(
+                                   Shared::ErrorMessages::message(
+                                       "KumirAnalizer", QLocale::Russian,
+                                       err
+                                       )
+                                   .toUtf8().constData()
+                                   )
+                               ));
+        return;
+    }
 
     llvm::Value * for_from = 0;
     llvm::Value * for_to = 0;
@@ -734,20 +1084,21 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
                                      basicName + CString("done"),
                                      currentFunction_);
 
-    currentLoopEnd_ = loop_clean;
-
+    currentLoopEnd_.push_back(loop_clean);
+    createFreeTempScalars(builder);
     builder.CreateBr(loop_init);
 
     // --- initialization
     builder.SetInsertPoint(loop_init);
-    if (loop.type == AST::LoopFor) {
+    if (loop.type == AST::LoopFor && loop.forVariable) {
         const AST::VariablePtr & kvar = loop.forVariable;
-        const CString name = nameTranslator_->find(kvar->name);
-        Q_ASSERT(!name.empty());
-        loop_variable = currentBlock_->getValueSymbolTable()->lookup(name);
-        if (!loop_variable) {
-            loop_variable = currentModule_->getGlobalVariable(name, true);
-        }
+//        const CString name = nameTranslator_->find(kvar->name);
+//        Q_ASSERT(!name.empty());
+//        loop_variable = currentBlock_->getValueSymbolTable()->lookup(name);
+//        if (!loop_variable) {
+//            loop_variable = currentModule_->getGlobalVariable(name, true);
+//        }
+        loop_variable = findVariableAtCurrentContext(kvar);
         Q_ASSERT(loop_variable);
         for_from = calculate(builder, loop.fromValue);
         Q_ASSERT(for_from);
@@ -763,12 +1114,12 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
             if (loop.stepValue->kind != AST::ExprVariable)
                 for_step->setName(basicName + CString("step"));
             Q_ASSERT(kumirLoopForFromToStepInitCounter_);
-            builder.CreateCall2(kumirLoopForFromToStepInitCounter_,
-                                for_from, for_step);
+            builder.CreateCall3(kumirLoopForFromToStepInitCounter_,
+                                for_from, for_to, for_step);
         }
         else {
             Q_ASSERT(kumirLoopForFromToInitCounter_);
-            builder.CreateCall(kumirLoopForFromToInitCounter_, for_from);
+            builder.CreateCall2(kumirLoopForFromToInitCounter_, for_from, for_to);
         }
     }
     else if (loop.type == AST::LoopTimes) {
@@ -777,31 +1128,18 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
         Q_ASSERT(kumirLoopTimesInitCounter_);
         builder.CreateCall(kumirLoopTimesInitCounter_, times);
     }
-
+    createFreeTempScalars(builder);
     builder.CreateBr(loop_begin);
 
     // --- loop pre-check
     builder.SetInsertPoint(loop_begin);
     llvm::Value * loop_pre_check = 0;
-    if (loop.type == AST::LoopFor) {
-        if (loop.stepValue) {
-            loop_pre_check = builder.CreateCall4(kumirLoopForFromToStepCheckCounter_,
-                                                 loop_variable,
-                                                 for_from,
-                                                 for_to,
-                                                 for_step,
-                                                 basicName + CString("for_check")
-                                                 );
-        }
-        else {
-            loop_pre_check = builder.CreateCall3(kumirLoopForFromToCheckCounter_,
-                                                 loop_variable,
-                                                 for_from,
-                                                 for_to,
-                                                 basicName + CString("for_check")
-                                                 );
-            Q_ASSERT(loop_pre_check);
-        }
+    if (loop.type == AST::LoopFor && loop_variable && for_from && for_to) {        
+        loop_pre_check = builder.CreateCall (kumirLoopForCheckCounter_,
+                                             loop_variable,
+                                             basicName + CString("for_check")
+                                             );
+        Q_ASSERT(loop_pre_check);
     }
     else if (loop.type == AST::LoopTimes) {
         Q_ASSERT(kumirLoopTimesCheckCounter_);
@@ -809,7 +1147,15 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
                                             basicName + CString("times_check")
                                             );
     }
+    else if (loop.type == AST::LoopWhile && loop.whileCondition) {
+        Q_ASSERT(kumirScalarAsBool_);
+        loop_pre_check = builder.CreateCall(kumirScalarAsBool_,
+                                            calculate(builder, loop.whileCondition),
+                                            basicName + CString("while_check")
+                                            );
+    }
 
+    createFreeTempScalars(builder);
     if (loop_pre_check) {
         builder.CreateCondBr(loop_pre_check, loop_body, loop_clean);
     }
@@ -826,6 +1172,7 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
         // do not add 'done' break
     }
     else {
+        createFreeTempScalars(builder);
         builder.CreateBr(loop_end);
     }
 
@@ -847,6 +1194,36 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
                              );
     }
     else {
+        QString endErr;
+        int endErrLine;
+        foreach (const AST::Lexem * lx, loop.endLexems) {
+            if (lx->error.length() > 0) {
+                endErr = lx->error;
+                endErrLine = lx->lineNo + 1;
+                break;
+            }
+        }
+        if (endErr.length() > 0) {
+            if (debugLevel_ != Shared::GeneratorInterface::NoDebug) {
+                builder.CreateCall(kumirSetCurrentLineNumber_,
+                                   llvm::ConstantInt::getSigned(
+                                       llvm::Type::getInt32Ty(ctx),
+                                       endErrLine
+                                       )
+                                   );
+            }
+            builder.CreateCall(kumirAbortOnError_,
+                               builder.CreateGlobalStringPtr(
+                                   std::string(
+                                       Shared::ErrorMessages::message(
+                                           "KumirAnalizer", QLocale::Russian,
+                                           endErr
+                                           )
+                                       .toUtf8().constData()
+                                       )
+                                   ));
+        }
+        createFreeTempScalars(builder);
         builder.CreateBr(loop_begin);
     }
 
@@ -855,12 +1232,13 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
     if (loop.type == AST::LoopFor || loop.type == AST::LoopTimes) {
         builder.CreateCall(kumirLoopEndCounter_);
     }
+    createFreeTempScalars(builder);
     builder.CreateBr(loop_done);
 
     // --- loop done
     currentBlock_ = loop_done;
     builder.SetInsertPoint(loop_done);
-    currentLoopEnd_ = nullptr;
+    currentLoopEnd_.pop_back();
 }
 
 void LLVMGenerator::createIfThenElse(llvm::IRBuilder<> &builder, const AST::StatementPtr &st, const AST::AlgorithmPtr &alg)
@@ -898,6 +1276,7 @@ void LLVMGenerator::createIfThenElse(llvm::IRBuilder<> &builder, const AST::Stat
     llvm::Value * condBool = builder.CreateCall(kumirScalarAsBool_, cond,
                                                 basicName + CString("condition_boolean"));
     Q_ASSERT(condBool);
+    createFreeTempScalars(builder);
     builder.CreateCondBr(condBool, then, elze);
 
     // --- create then body
@@ -924,6 +1303,7 @@ void LLVMGenerator::createIfThenElse(llvm::IRBuilder<> &builder, const AST::Stat
         // do not add 'done' break
     }
     else {
+        createFreeTempScalars(builder);
         builder.CreateBr(done);
     }
 
@@ -934,6 +1314,26 @@ void LLVMGenerator::createIfThenElse(llvm::IRBuilder<> &builder, const AST::Stat
 
 void LLVMGenerator::createSwitchCaseElse(llvm::IRBuilder<> &builder, const AST::StatementPtr &st, const AST::AlgorithmPtr &alg)
 {
+    if (st->headerError.size() > 0) {
+        if (debugLevel_ != Shared::GeneratorInterface::NoDebug) {
+            builder.CreateCall(kumirSetCurrentLineNumber_,
+                               llvm::ConstantInt::getSigned(
+                                   llvm::Type::getInt32Ty(ctx),
+                                   st->headerErrorLine + 1
+                                   ));
+        }
+        builder.CreateCall(kumirAbortOnError_,
+                           builder.CreateGlobalStringPtr(
+                               std::string(
+                                   Shared::ErrorMessages::message(
+                                       "KumirAnalizer",
+                                       QLocale::Russian,
+                                        st->headerError
+                                       ).toUtf8().data()
+                                   )
+                               ));
+    }
+
     Q_ASSERT(st->conditionals.size() > 0);
 
     // --- create program blocks
@@ -962,7 +1362,7 @@ void LLVMGenerator::createSwitchCaseElse(llvm::IRBuilder<> &builder, const AST::
                 basicName + CString("done"),
                 currentFunction_
                 );
-
+    createFreeTempScalars(builder);
     builder.CreateBr(cases.first()); // Jump to first case
 
     for (int i=0; i<st->conditionals.size(); i++) {
@@ -983,9 +1383,11 @@ void LLVMGenerator::createSwitchCaseElse(llvm::IRBuilder<> &builder, const AST::
             llvm::Value * condBool = builder.CreateCall(kumirScalarAsBool_, cond,
                                                         cond->getName() + CString("_boolean"));
             Q_ASSERT(condBool);
+            createFreeTempScalars(builder);
             builder.CreateCondBr(condBool, body, nextBlock);
         }
         else {
+            createFreeTempScalars(builder);
             builder.CreateBr(body);
         }
 
@@ -998,6 +1400,7 @@ void LLVMGenerator::createSwitchCaseElse(llvm::IRBuilder<> &builder, const AST::
             // do not add 'done' break
         }
         else {
+            createFreeTempScalars(builder);
             builder.CreateBr(done);
         }
     }
@@ -1009,21 +1412,38 @@ void LLVMGenerator::createSwitchCaseElse(llvm::IRBuilder<> &builder, const AST::
 
 void LLVMGenerator::createBreak(llvm::IRBuilder<> &builder, const AST::StatementPtr &st, const AST::AlgorithmPtr &alg)
 {
-    if (currentLoopEnd_) {
-        builder.CreateBr(currentLoopEnd_); // break ends loop
+    if (!currentLoopEnd_.isEmpty()) {
+        createFreeTempScalars(builder);
+        builder.CreateBr(currentLoopEnd_.back()); // break ends loop
     }
     else {
+        createFreeTempScalars(builder);
         builder.CreateBr(currentFunctionExit_); // break ends function
     }
 }
 
+void LLVMGenerator::createError(llvm::IRBuilder<> &builder, const AST::StatementPtr &st)
+{
+    const QString qError = Shared::ErrorMessages::message("KumirAnalizer", QLocale::Russian, st->error);
+    const std::string error = std::string(qError.toUtf8().data());
+    llvm::Value * arg = builder.CreateGlobalStringPtr(error);
+    Q_ASSERT(arg);
+    Q_ASSERT(kumirAbortOnError_);
+    builder.CreateCall(kumirAbortOnError_, arg);
+}
+
 void LLVMGenerator::createFreeTempScalars(llvm::IRBuilder<> &builder)
 {
-    typedef std::list<llvm::Value*>::iterator It;
-    for (It it = tempValsToFree_.begin(); it != tempValsToFree_.end(); ++it) {
-        builder.CreateCall(kumirFreeScalar_, *it);
+    size_t from = 0u;
+    if (!tempValsToFreeStartPos_.empty()) {
+        from = tempValsToFreeStartPos_.top();
     }
-    tempValsToFree_.clear();
+    for (size_t i=from; i<tempValsToFree_.size(); i++) {
+        builder.CreateCall(kumirFreeScalar_, tempValsToFree_.at(i));
+    }
+    if (from < tempValsToFree_.size()) {
+        tempValsToFree_.resize(from);
+    }
 }
 
 llvm::Value * LLVMGenerator::findVariableAtCurrentContext(const AST::VariablePtr &kvar)
@@ -1040,13 +1460,18 @@ llvm::Value * LLVMGenerator::findVariableAtCurrentContext(const AST::VariablePtr
     }
     else {
         CString varName = nameTranslator_->find(kvar->name);
+        if (varName.empty() && currentKModule_->header.name.length() > 0) {
+            varName = nameTranslator_->find(currentKModule_->header.name +
+                                            "__" +
+                                            kvar->name);
+        }
         Q_ASSERT(varName.length() > 0);
         var = currentBlock_->getValueSymbolTable()->lookup(varName);
         if (!var) {
             var = currentModule_->getGlobalVariable(varName, true);
         }
         if (!var) {
-            currentFunction_->dump();
+//            currentFunction_->dump();
         }
     }
     Q_ASSERT(var);
@@ -1067,11 +1492,21 @@ llvm::Value * LLVMGenerator::calculate(llvm::IRBuilder<> &builder, const AST::Ex
     }
     else if (ex->kind == AST::ExprFunctionCall) {
         result = createFunctionCall(builder, ex->function, ex->operands);
+        if (ex->function->header.implType == AST::AlgorhitmCompiled &&
+                Shared::GeneratorInterface::NoDebug != debugLevel_)
+        {
+            builder.CreateCall(kumirSetCurrentLineNumber_,
+                               llvm::ConstantInt::getSigned(
+                                   llvm::Type::getInt32Ty(ctx),
+                                   ex->lexems.first()->lineNo + 1
+                                   )
+                               );
+        }
     }
     else if (ex->kind == AST::ExprSubexpression) {
         result = createSubExpession(builder, ex);
     }
-    if (!isLvalue) {
+    if (!isLvalue && ex->kind != AST::ExprArrayElement) {
         bool notPlainScalar = ex->baseType.kind == AST::TypeString || ex->baseType.kind == AST::TypeUser;
         if (notPlainScalar && ex->dimension == 0u) {
             tempValsToFree_.push_back(result);
@@ -1082,51 +1517,125 @@ llvm::Value * LLVMGenerator::calculate(llvm::IRBuilder<> &builder, const AST::Ex
 
 llvm::Value * LLVMGenerator::createArrayElementGet(llvm::IRBuilder<> &builder, const AST::ExpressionPtr &ex, bool isLvalue)
 {
-    CString varName = nameTranslator_->find(ex->variable->name);
-    Q_ASSERT(varName.length() > 0);
-    llvm::Value * var = currentBlock_->getValueSymbolTable()->lookup(varName);
-    if (!var) {
-        var = currentModule_->getGlobalVariable(varName, true);
-    }
+//    CString varName = nameTranslator_->find(ex->variable->name);
+//    Q_ASSERT(varName.length() > 0);
+//    llvm::Value * var = currentBlock_->getValueSymbolTable()->lookup(varName);
+//    if (!var) {
+//        var = currentModule_->getGlobalVariable(varName, true);
+//    }
+    llvm::Value * var = findVariableAtCurrentContext(ex->variable);
     Q_ASSERT(var);
     std::vector<llvm::Value*> args;
-    llvm::Value * elemPtr = builder.CreateAlloca(
-                findOrRegisterType(ex->variable->baseType, false, 0u)->getPointerTo()
-                );
+    llvm::Value * elemPtr = builder.CreateAlloca(getScalarType()->getPointerTo());
     Q_ASSERT(elemPtr);
-    args.push_back(elemPtr);
-    if (!isLvalue) {
-        args.push_back(llvm::ConstantInt::getTrue(ctx));
+    if (ex->variable->dimension > 0u) {
+        args.push_back(elemPtr);
+        if (!isLvalue) {
+            args.push_back(llvm::ConstantInt::getTrue(ctx));
+        }
+        else {
+            args.push_back(llvm::ConstantInt::getFalse(ctx));
+        }
+        args.push_back(var);
+        for (int i=0; i<ex->variable->dimension; i++) {
+            const AST::ExpressionPtr& indexOperand = ex->operands[i];
+            llvm::Value * index = calculate(builder, indexOperand);
+            Q_ASSERT(index);
+            args.push_back(index);
+        }
+        llvm::Function * getPtrFunc = 0;
+        if      (1u == ex->variable->dimension) getPtrFunc = kumirGetArray1Element_;
+        else if (2u == ex->variable->dimension) getPtrFunc = kumirGetArray2Element_;
+        else if (3u == ex->variable->dimension) getPtrFunc = kumirGetArray3Element_;
+        Q_ASSERT(getPtrFunc);
+        builder.CreateCall(getPtrFunc, args);
     }
     else {
-        args.push_back(llvm::ConstantInt::getFalse(ctx));
+        llvm::Value * variableArg = findVariableAtCurrentContext(ex->variable);
+        Q_ASSERT(variableArg);
+        builder.CreateStore(variableArg, elemPtr);
     }
-    args.push_back(var);
-    for (int i=0; i<ex->operands.size(); i++) {
-        const AST::ExpressionPtr& indexOperand = ex->operands[i];
+    const size_t diff = static_cast<size_t>(ex->operands.size()) - ex->variable->dimension;
+    if (diff == 0u) {
+        // Array element access
+        if (isLvalue) {
+            return elemPtr;
+        }
+        else {
+            llvm::Value * result = builder.CreateLoad(elemPtr);
+            return result;
+        }
+    }
+    else if (diff == 1u) {
+        // String char element
+        const AST::ExpressionPtr & indexOperand =
+                ex->operands[ex->variable->dimension];
         llvm::Value * index = calculate(builder, indexOperand);
         Q_ASSERT(index);
-        args.push_back(index);
-    }
-    llvm::Function * getPtrFunc = 0;
-    if      (1u == ex->variable->dimension) getPtrFunc = kumirGetArray1Element_;
-    else if (2u == ex->variable->dimension) getPtrFunc = kumirGetArray2Element_;
-    else if (3u == ex->variable->dimension) getPtrFunc = kumirGetArray3Element_;
-    Q_ASSERT(getPtrFunc);
-    builder.CreateCall(getPtrFunc, args);
-    if (isLvalue) {
-        return elemPtr;
-    }
-    else {
-        llvm::Value * result = builder.CreateLoad(elemPtr);
+        llvm::Value * result = 0;
+        if (isLvalue) {
+            llvm::StructType * struct_stringref =
+                    stdlibModule_->getTypeByName("struct.__kumir_stringref");
+            Q_ASSERT(struct_stringref);
+            result = builder.CreateAlloca(struct_stringref);
+            builder.CreateCall3(kumirGetStringElementRef_,
+                                result, elemPtr, index);
+        }
+        else {
+            llvm::StructType * struct_scalar =
+                    stdlibModule_->getTypeByName("struct.__kumir_scalar");
+            Q_ASSERT(struct_scalar);
+            result = builder.CreateAlloca(struct_scalar);
+            builder.CreateCall3(kumirGetStringElement_,
+                                result, elemPtr, index);
+        }
+        Q_ASSERT(result);
         return result;
     }
+    else if (diff == 2u) {
+        // String slice
+        const AST::ExpressionPtr & index1Operand =
+                ex->operands[ex->variable->dimension];
+        llvm::Value * index1 = calculate(builder, index1Operand);
+        Q_ASSERT(index1);
+        const AST::ExpressionPtr & index2Operand =
+                ex->operands[ex->variable->dimension + 1];
+        llvm::Value * index2 = calculate(builder, index2Operand);
+        Q_ASSERT(index2);
+        llvm::Value * result = 0;
+        if (isLvalue) {
+            llvm::StructType * struct_stringref =
+                    stdlibModule_->getTypeByName("struct.__kumir_stringref");
+            Q_ASSERT(struct_stringref);
+            result = builder.CreateAlloca(struct_stringref);
+            builder.CreateCall4(kumirGetStringSliceRef_,
+                                result, elemPtr, index1, index2);
+        }
+        else {
+            llvm::StructType * struct_scalar =
+                    stdlibModule_->getTypeByName("struct.__kumir_scalar");
+            Q_ASSERT(struct_scalar);
+            result = builder.CreateAlloca(struct_scalar);
+            builder.CreateCall4(kumirGetStringSlice_,
+                                result, elemPtr, index1, index2);
+        }
+        Q_ASSERT(result);
+        return result;
+    }
+    else {
+        return 0;
+    }
+}
+
+llvm::Value * LLVMGenerator::createStringSliceGet(llvm::IRBuilder<> &builder, const AST::ExpressionPtr &ex, bool isLvalue)
+{
+    return 0;
 }
 
 llvm::Value * LLVMGenerator::createConstant(llvm::IRBuilder<> & builder, const AST::Type kty, const QVariant &value)
 {
     llvm::Value * result = 0;
-    llvm::Type * ty = findOrRegisterType(kty, false, 0);
+    llvm::Type * ty = getScalarType();
     llvm::Value * arg = 0;
     llvm::Function * func = 0;
     Q_ASSERT(ty);
@@ -1184,7 +1693,7 @@ QByteArray LLVMGenerator::createArray_0_ConstantData(const AST::VariableBaseType
     }
     char * ptr = 0;
     size_t sz = 0;
-    int32_t ival; double rval; bool bval; QByteArray sval;
+    int32_t ival; double rval; bool bval; QByteArray sval; uint16_t cval;
     if (AST::TypeInteger == bt) {
         ival = value.isValid() ? value.toInt() : 0;
         ptr = reinterpret_cast<char*>(&ival);
@@ -1199,6 +1708,11 @@ QByteArray LLVMGenerator::createArray_0_ConstantData(const AST::VariableBaseType
         bval = value.isValid() ? value.toBool() : false;
         ptr = reinterpret_cast<char*>(&bval);
         sz = sizeof(bool);
+    }
+    else if (AST::TypeCharect == bt) {
+        cval = value.isValid() ? uint16_t(value.toChar().unicode()) : 0u;
+        ptr = reinterpret_cast<char*>(&cval);
+        sz = sizeof(uint16_t);
     }
     else {
         const QString s = value.isValid() ? value.toString() : QString();
@@ -1251,31 +1765,63 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
     CString funcName;
 
     if (alg->header.implType == AST::AlgorhitmCompiled) {
-        funcName = nameTranslator_->find(alg->header.name);
-        Q_ASSERT(funcName.length() > 0);
+        builder.CreateCall(kumirCheckCallStack_);
+        funcName = CString("__kumir_function_") +
+                CString(alg->header.name.toUtf8().constData());
         func = currentModule_->getFunction(funcName);
         Q_ASSERT(func);
     }
-    else {
+    else if (alg->header.implType == AST::AlgorhitmExternal && (
+            alg->header.external.moduleName.endsWith(".kum") ||
+            alg->header.external.moduleName.endsWith(".kod") )
+            )
+    {
+        funcName = CString(alg->header.name.toUtf8().constData());
+        funcName = CString("__kumir_function_") +
+                CString(alg->header.name.toUtf8().constData());
+        func = currentModule_->getFunction(funcName);
+        Q_ASSERT(func);
+    }
+    else if (alg->header.implType == AST::AlgorhitmExternal)
+    {
+        static const QStringList operators = QStringList()
+                << "=" << "<>" << "<" << ">" << "+" << "-" << "*" << "/"
+                << QString::fromUtf8("ввод") << QString::fromUtf8("вывод");
+        static const QStringList operatorNames = QStringList()
+                << "eq" << "neq" << "lt" << "gt" << "plus" << "minus" << "astarisk" << "slash"
+                << QString::fromUtf8("input") << QString::fromUtf8("output");
+        Q_ASSERT(operators.size() == operatorNames.size());
         std::vector<llvm::Type*> formalArgs(alg->header.arguments.size());
         funcName = alg->header.cHeader.toStdString();
         if (funcName.empty()) {
-            funcName = "__kumir__stdlib__" ; // TODO implement non-std algorithms
-            funcName += NameTranslator::suggestName(alg->header.name).toStdString();
-        }
-        QStringList params;
-        for (int i=0; i<alg->header.arguments.size(); i++) {
-            const AST::VariablePtr & arg = alg->header.arguments[i];
-            QString param = arg->dimension == 0u? "__kumir_scalar" : "__kumir_array";
-            bool ref = false;
-            if (arg->accessType == AST::AccessArgumentInOut || arg->accessType == AST::AccessArgumentOut) {
-                param += "&";
-                ref = true;
+            funcName = "__kumir_stdlib_" ; // TODO implement non-std algorithms
+            if (operators.contains(alg->header.name)) {
+                int index = operators.indexOf(alg->header.name);
+                const CString cname = operatorNames[index].toStdString();
+                funcName = CString("__kumir_operator_") + cname;
             }
-            params.push_back(param);
-            formalArgs[i] = findOrRegisterType(arg->baseType, ref, arg->dimension);
+            else {
+                funcName += NameTranslator::suggestName(alg->header.name).toStdString();
+            }
         }
-        llvm::Type * rtype = findOrRegisterType(alg->header.returnType, false, 0u);
+//        QStringList params;
+//        for (int i=0; i<alg->header.arguments.size(); i++) {
+//            const AST::VariablePtr & arg = alg->header.arguments[i];
+//            QString param = arg->dimension == 0u? "__kumir_scalar" : "__kumir_array";
+//            bool ref = false;
+//            if (arg->accessType == AST::AccessArgumentInOut || arg->accessType == AST::AccessArgumentOut) {
+//                param += "&";
+//                ref = true;
+//            }
+//            params.push_back(param);
+//            formalArgs[i] =
+//                    arg->dimension > 0 ? getArrayType() : getScalarType();
+//            if (ref) {
+//                formalArgs[i] = formalArgs[i]->getPointerTo();
+//            }
+//        }
+        llvm::Type * rtype = alg->header.returnType.kind == AST::TypeNone
+                ? llvm::Type::getVoidTy(ctx) : getScalarType();
         llvm::FunctionType * ftype = llvm::FunctionType::get(rtype, formalArgs, false);
         func = currentModule_->getFunction(funcName); // maybe already used
         if (!func) {
@@ -1302,6 +1848,21 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
             // Scalar value
             const AST::ExpressionPtr & argExpr = arguments.at(i);
             arg = calculate(builder, argExpr);
+            if (alg->header.arguments[i]->accessType == AST::AccessArgumentIn) {
+                builder.CreateCall(kumirCheckValueDefined_, arg);
+                // Copy variable to prevent it changing
+                // if passed as another value out-parameter
+                if (argExpr->kind == AST::ExprVariable) {
+                    llvm::Value * argCopy = builder.CreateAlloca(
+                                getScalarType(),
+                                0,
+                                arg->getName() + std::string("_copy")
+                                );
+                    builder.CreateCall2(kumirAssignScalarToScalar_,
+                                        argCopy, arg);
+                    arg = argCopy;
+                }
+            }            
         }
         else {
             // Array
@@ -1310,7 +1871,7 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
             Q_ASSERT(varExpr);
             llvm::Value * var = findVariableAtCurrentContext(varExpr);
             Q_ASSERT(kumirLinkArray_);
-            arg = builder.CreateAlloca(findOrRegisterType(varExpr->baseType, false, 1u));
+            arg = builder.CreateAlloca(getArrayType());
             arg->setName(var->getName() + CString("_array_link"));
             builder.CreateCall2(kumirLinkArray_, arg, var);
         }
@@ -1321,7 +1882,7 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
     llvm::Value * result = 0;
 
     if (alg->header.returnType != AST::TypeNone) {
-        llvm::Type * rtype = findOrRegisterType(alg->header.returnType, false, 0u);
+        llvm::Type * rtype = getScalarType();
         llvm::Value * rval = builder.CreateAlloca(rtype);
         args[0] = rval;
         result = rval;
@@ -1342,7 +1903,7 @@ llvm::Value * LLVMGenerator::createSubExpession(llvm::IRBuilder<> &builder, cons
         operands[i] = operand;
     }
 
-    llvm::Value * result = builder.CreateAlloca(findOrRegisterType(ex->baseType, false, 0u));
+    llvm::Value * result = builder.CreateAlloca(getScalarType());
     llvm::Function * opFunc = 0;
     size_t operandsCount = operands.size();
     switch (ex->operatorr) {
@@ -1377,8 +1938,9 @@ llvm::Value * LLVMGenerator::createSubExpession(llvm::IRBuilder<> &builder, cons
 
 llvm::Value * LLVMGenerator::createShortCircuitOperation(llvm::IRBuilder<> &builder, const AST::ExpressionPtr &left, const AST::ExpressionPtr &right, const AST::ExpressionOperator op)
 {
+    tempValsToFreeStartPos_.push(tempValsToFree_.size());
     Q_ASSERT(op == AST::OpAnd || op == AST::OpOr);
-    llvm::Value * result = builder.CreateAlloca(findOrRegisterType(left->baseType, false, 0u));
+    llvm::Value * result = builder.CreateAlloca(getScalarType());
     llvm::Value * leftResult = calculate(builder, left);
     Q_ASSERT(kumirScalarAsBool_);
     Q_ASSERT(kumirMoveScalar_);
@@ -1407,6 +1969,7 @@ llvm::Value * LLVMGenerator::createShortCircuitOperation(llvm::IRBuilder<> &buil
                                                scName + "_false_but_check_next",
                                                currentFunction_);
     }
+    createFreeTempScalars(builder);
     builder.CreateCondBr(leftBool, jumpOnTrue, jumpOnFalse);
 
     // --- check right operand
@@ -1415,50 +1978,85 @@ llvm::Value * LLVMGenerator::createShortCircuitOperation(llvm::IRBuilder<> &buil
 
     llvm::Value * rightResult = calculate(builder, right);
     builder.CreateCall2(kumirMoveScalar_, result, rightResult);
+    createFreeTempScalars(builder);
     builder.CreateBr(done);
 
     // --- done
     currentBlock_ = done;
     builder.SetInsertPoint(done);
+    tempValsToFreeStartPos_.pop();
     return result;
 }
 
-llvm::Type * LLVMGenerator::findOrRegisterType(const AST::Type &bt, const bool reference, const uint8_t dim)
+
+void LLVMGenerator::createExternsTable(const llvm::Module * const source,
+                                       const CString & prefix)
 {
-    if (bt.kind == AST::TypeNone) {
-        return llvm::Type::getVoidTy(*context_);
+    typedef llvm::Module::const_iterator Fit;
+
+    for (Fit it = source->begin(); it!=source->end(); ++it) {
+        const llvm::Function & func = *it;
+        if (func.hasExternalLinkage()) {
+            const CString name = func.getName();
+            if (0u == name.find(prefix)) {
+                const CString realName = name.substr(prefix.length());
+                if (realName.length() > 0 && '_' != realName.at(0)) {
+                    externs_.push_back(&func);
+                }
+            }
+        }
     }
-    else {
-        return findStandardType(bt.kind, reference, dim);
+    if (currentModule_) {
+        addExternsToModule(currentModule_);
     }
-    return 0;
 }
 
-llvm::Type * LLVMGenerator::findStandardType(const AST::VariableBaseType bt, const bool reference, const uint8_t dim)
+void LLVMGenerator::addExternsToModule(llvm::Module * const target)
 {
-    llvm::Type * result = 0;
-    const CString cTypeName = dim == 0
-            ? std::string("struct.__kumir_scalar") : std::string("struct.__kumir_array");
+    for (int i=0; i<externs_.size(); i++) {
+        const llvm::Function * const srcFunc = externs_[i];
+        llvm::FunctionType * const srcFuncType = srcFunc->getFunctionType();
+        const llvm::StringRef srcFuncName = srcFunc->getName();
+        const llvm::GlobalValue::LinkageTypes srcLinkage = srcFunc->getLinkage();
 
-    result = stdlibModule_->getTypeByName(llvm::StringRef(cTypeName));
-    if (reference)
-        result = result->getPointerTo();
+        llvm::Function * targetFunc =
+                llvm::Function::Create(srcFuncType, srcLinkage, srcFuncName, target);
 
+    }
+}
+
+llvm::StructType * LLVMGenerator::getScalarType()
+{
+    llvm::StructType * result = currentModule_->getTypeByName("struct.__kumir_scalar");
+    if (!result) {
+        result = stdlibModule_->getTypeByName("struct.__kumir_scalar");
+    }
+    Q_ASSERT(result);
     return result;
 }
 
-void LLVMGenerator::createExternsTable()
+llvm::StructType * LLVMGenerator::getArrayType()
 {
-    // Type handling functions
-    createInternalExternsTable();
+    llvm::StructType * result = currentModule_->getTypeByName("struct.__kumir_array");
+    if (!result) {
+        result = stdlibModule_->getTypeByName("struct.__kumir_array");
+    }
+    Q_ASSERT(result);
+    return result;
 }
 
-void LLVMGenerator::createInternalExternsTable()
+llvm::StructType * LLVMGenerator::getStringRefType()
 {
-    if (linkStdLibModule_) {
-        llvm::Linker::LinkModules(currentModule_, stdlibModule_, 0, 0);
+    llvm::StructType * result = currentModule_->getTypeByName("struct.__kumir_stringref");
+    if (!result) {
+        result = stdlibModule_->getTypeByName("struct.__kumir_stringref");
     }
+    Q_ASSERT(result);
+    return result;
+}
 
+void LLVMGenerator::readStdLibFunctions()
+{
     kumirInitStdLib_ = stdlibModule_->getFunction("__kumir_init_stdlib");
     Q_ASSERT(kumirInitStdLib_);
 
@@ -1504,6 +2102,9 @@ void LLVMGenerator::createInternalExternsTable()
     kumirFreeArray_ = stdlibModule_->getFunction("__kumir_free_array");
     Q_ASSERT(kumirFreeArray_);
 
+    kumirCleanUpArrayInShape_ = stdlibModule_->getFunction("__kumir_cleanup_array_in_shape");
+    Q_ASSERT(kumirCleanUpArrayInShape_);
+
     kumirFillArrayI_ = stdlibModule_->getFunction("__kumir_fill_array_i");
     Q_ASSERT(kumirFillArrayI_);
 
@@ -1537,6 +2138,9 @@ void LLVMGenerator::createInternalExternsTable()
     kumirAssignScalarToScalar_ = stdlibModule_->getFunction("__kumir_copy_scalar");
     Q_ASSERT(kumirAssignScalarToScalar_);
 
+    kumirAssignScalarToStringRef_ = stdlibModule_->getFunction("__kumir_modify_string");
+    Q_ASSERT(kumirAssignScalarToStringRef_);
+
     kumirAssignScalarToArrayElement_ = stdlibModule_->getFunction("__kumir_store_scalar");
     Q_ASSERT(kumirAssignScalarToArrayElement_);
 
@@ -1558,6 +2162,19 @@ void LLVMGenerator::createInternalExternsTable()
     kumirOutputStdoutSS_ = stdlibModule_->getFunction("__kumir_output_stdout_ss");
     Q_ASSERT(kumirOutputStdoutSS_);
 
+    kumirOutputStdout_ = stdlibModule_->getFunction("__kumir_output_stdout");
+    Q_ASSERT(kumirOutputStdout_);
+
+    kumirPrintScalarVariable_ = stdlibModule_->getFunction("__kumir_print_scalar_variable");
+    kumirInputScalarVariable_ = stdlibModule_->getFunction("__kumir_input_scalar_variable");
+    kumirPrintArrayVariable_ = stdlibModule_->getFunction("__kumir_print_array_variable");;
+    kumirInputArrayVariable_ = stdlibModule_->getFunction("__kumir_input_array_variable");
+
+    Q_ASSERT(kumirPrintScalarVariable_);
+    Q_ASSERT(kumirInputScalarVariable_);
+    Q_ASSERT(kumirPrintArrayVariable_);
+    Q_ASSERT(kumirInputArrayVariable_);
+
     kumirOutputFileII_ = stdlibModule_->getFunction("__kumir_output_file_ii");
     Q_ASSERT(kumirOutputFileII_);
 
@@ -1578,6 +2195,23 @@ void LLVMGenerator::createInternalExternsTable()
 
     kumirAssert_ = stdlibModule_->getFunction("__kumir_assert");
     Q_ASSERT(kumirAssert_);
+
+    kumirAbortOnError_ = stdlibModule_->getFunction("__kumir_abort_on_error");
+    Q_ASSERT(kumirAbortOnError_);
+
+    kumirSetCurrentLineNumber_ = stdlibModule_->getFunction("__kumir_set_current_line_number");
+    Q_ASSERT(kumirSetCurrentLineNumber_);
+
+    kumirCheckValueDefined_ = stdlibModule_->getFunction("__kumir_check_value_defined");
+    Q_ASSERT(kumirCheckValueDefined_);
+
+    kumirHalt_ = stdlibModule_->getFunction("__kumir_halt");
+    Q_ASSERT(kumirHalt_);
+
+    kumirCheckCallStack_ = stdlibModule_->getFunction("__kumir_check_call_stack");
+    kumirPopCallStackCounter_ = stdlibModule_->getFunction("__kumir_pop_call_stack_counter");
+    Q_ASSERT(kumirCheckCallStack_);
+    Q_ASSERT(kumirPopCallStackCounter_);
 
     kumirOpEq_ = stdlibModule_->getFunction("__kumir_operator_eq");
     Q_ASSERT(kumirOpEq_);
@@ -1624,23 +2258,34 @@ void LLVMGenerator::createInternalExternsTable()
     kumirGetArray3Element_ = stdlibModule_->getFunction("__kumir_get_array_3_element");
     Q_ASSERT(kumirGetArray3Element_);
 
+    kumirGetStringElement_ = stdlibModule_->getFunction("__kumir_get_string_element");
+    Q_ASSERT(kumirGetStringElement_);
+
+    kumirGetStringSlice_ = stdlibModule_->getFunction("__kumir_get_string_slice");
+    Q_ASSERT(kumirGetStringSlice_);
+
+    kumirGetStringElementRef_ = stdlibModule_->getFunction("__kumir_get_string_element_ref");
+    Q_ASSERT(kumirGetStringElementRef_);
+
+    kumirGetStringSliceRef_ = stdlibModule_->getFunction("__kumir_get_string_slice_ref");
+    Q_ASSERT(kumirGetStringSliceRef_);
+
     kumirLoopForFromToInitCounter_ = stdlibModule_->getFunction("__kumir_loop_for_from_to_init_counter");
     kumirLoopForFromToStepInitCounter_ = stdlibModule_->getFunction("__kumir_loop_for_from_to_step_init_counter");
-    kumirLoopForFromToCheckCounter_ = stdlibModule_->getFunction("__kumir_loop_for_from_to_check_counter");
-    kumirLoopForFromToStepCheckCounter_ = stdlibModule_->getFunction("__kumir_loop_for_from_to_step_check_counter");
+    kumirLoopForCheckCounter_ = stdlibModule_->getFunction("__kumir_loop_for_check_counter");
     kumirLoopTimesInitCounter_ = stdlibModule_->getFunction("__kumir_loop_times_init_counter");
     kumirLoopTimesCheckCounter_ = stdlibModule_->getFunction("__kumir_loop_times_check_counter");
     kumirLoopEndCounter_ = stdlibModule_->getFunction("__kumir_loop_end_counter");
     Q_ASSERT(kumirLoopForFromToInitCounter_);
     Q_ASSERT(kumirLoopForFromToStepInitCounter_);
-    Q_ASSERT(kumirLoopForFromToCheckCounter_);
-    Q_ASSERT(kumirLoopForFromToStepCheckCounter_);
+    Q_ASSERT(kumirLoopForCheckCounter_);
     Q_ASSERT(kumirLoopTimesInitCounter_);
     Q_ASSERT(kumirLoopTimesCheckCounter_);
     Q_ASSERT(kumirLoopEndCounter_);
 
     kumirScalarAsBool_ = stdlibModule_->getFunction("__kumir_scalar_as_bool");
     Q_ASSERT(kumirScalarAsBool_);
+
 
 }
 

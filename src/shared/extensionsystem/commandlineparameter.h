@@ -76,12 +76,16 @@ class EXTENSIONSYSTEM_EXPORT CommandLine
 public:
     /** returns true if command line contains @param shortName flag */
     bool hasFlag(const QChar & shortName) const;
+    inline bool hasFlag(const char shortName) const
+    { return hasFlag(QChar(shortName)); }
 
     /** returns true if command line contains @param longName flag */
     bool hasFlag(const QString & longName) const;
 
     /** returns value of command line parameter @param shortName */
     QVariant value(const QChar &shortName) const;
+    inline QVariant value(const char shortName) const
+    { return value(QChar(shortName)); }
 
     /** returns value of command line parameter @param longName */
     QVariant value(const QString &longName) const;
