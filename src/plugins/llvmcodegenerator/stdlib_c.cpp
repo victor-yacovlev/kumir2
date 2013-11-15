@@ -318,7 +318,9 @@ EXTERN void __kumir_input_stdin(const __kumir_int format, __kumir_scalar ** pptr
 
 EXTERN void __kumir_input_file(const __kumir_scalar * handle, const __kumir_int format, __kumir_scalar ** pptr)
 {
-    __kumir_check_value_defined(handle);
+    if (!handle->defined) {
+        __kumir_abort_on_error("Нет значения у ключа файла");
+    }
     Kumir::FileType ft = __kumir_scalar_to_file_type(*handle);
 
     unsigned int f = static_cast<unsigned int>(format);
@@ -465,7 +467,9 @@ EXTERN void __kumir_output_stdout_ss(const __kumir_scalar * value, const __kumir
 
 EXTERN void __kumir_output_file_ii(const __kumir_scalar * handle, const __kumir_scalar * value, const __kumir_scalar_type type, const int format1, const int format2)
 {
-    __kumir_check_value_defined(handle);
+    if (!handle->defined) {
+        __kumir_abort_on_error("Нет значения у ключа файла");
+    }
     __kumir_check_value_defined(value);
     Kumir::FileType f = __kumir_scalar_to_file_type(*handle);
     switch (type) {

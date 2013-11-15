@@ -576,13 +576,68 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
 
 void LLVMGenerator::addFunctionBody(const QList<AST::StatementPtr> & statements, const AST::AlgorithmPtr & alg)
 {
+    llvm::IRBuilder<> builder(currentBlock_);
+
+    if (alg) {
+        QString headerError =  "";
+        QString beginError = "";
+        int headerLine = -1;
+        int beginLine = -1;
+
+        if (alg->impl.headerLexems.size()>0) {
+            for (int i=0; i<alg->impl.headerLexems.size();i++) {
+                if (alg->impl.headerLexems[i]->error.size()>0) {
+                    headerError = Shared::ErrorMessages::message("KumirAnalizer", QLocale::Russian, alg->impl.headerLexems[i]->error);
+                    headerLine = alg->impl.headerLexems[i]->lineNo + 1;
+                    break;
+                }
+            }
+        }
+
+        if (alg->impl.beginLexems.size()>0) {
+            for (int i=0; i<alg->impl.beginLexems.size();i++) {
+                if (alg->impl.beginLexems[i]->error.size()>0) {
+                    beginError = Shared::ErrorMessages::message("KumirAnalizer", QLocale::Russian, alg->impl.beginLexems[i]->error);
+                    beginLine = alg->impl.beginLexems[i]->lineNo + 1;
+                    break;
+                }
+            }
+        }
+
+        QString err;
+        int errLine = -1;
+        if (headerError.length() > 0) {
+            err = headerError;
+            errLine = headerLine;
+        }
+        else {
+            err = beginError;
+            errLine = beginLine;
+        }
+
+        if (err.length() > 0) {
+            if (debugLevel_ != Shared::GeneratorInterface::NoDebug) {
+                builder.CreateCall(kumirSetCurrentLineNumber_,
+                                   llvm::ConstantInt::getSigned(
+                                       llvm::Type::getInt32Ty(ctx),
+                                       errLine)
+                                   );
+            }
+            const std::string error = std::string(err.toUtf8().data());
+            llvm::Value * arg = builder.CreateGlobalStringPtr(error);
+            Q_ASSERT(arg);
+            Q_ASSERT(kumirAbortOnError_);
+            builder.CreateCall(kumirAbortOnError_, arg);
+            return;
+        }
+    }
+
     for (int i=0; i<statements.size(); i++) {
         llvm::BasicBlock * block = currentBlock_;
         Q_ASSERT(block);
         if (!block->empty() && block->back().isTerminator()) {
             break; // the remaining code is unreachable
         }
-        llvm::IRBuilder<> builder(block);
         builder.SetInsertPoint(block);
         const AST::StatementPtr & statement = statements.at(i);
         const AST::StatementType type = statement->type;
@@ -599,7 +654,9 @@ void LLVMGenerator::addFunctionBody(const QList<AST::StatementPtr> & statements,
             }
         }
         if (!statement->error.isEmpty()) {
-            createError(builder, statement);
+            if (!statement->skipErrorEvaluation) {
+                createError(builder, statement);
+            }
         }
         else {
             switch (type) {
@@ -631,7 +688,9 @@ void LLVMGenerator::addFunctionBody(const QList<AST::StatementPtr> & statements,
                 createBreak(builder, statement, alg);
                 break;
             case AST::StError:
-                createError(builder, statement);
+                if (!statement->skipErrorEvaluation) {
+                    createError(builder, statement);
+                }
                 break;
             case AST::StHalt:
                 createHalt(builder, statement, alg);
