@@ -93,6 +93,7 @@ private slots:
     void setupContentForTab();
     void setupStatusbarForTab();
     void setTitleForTab(int index);
+    void handleTabTitleChanged();
     void checkCounterValue();
     void showAlgorithmHelp(const QString & name);
 

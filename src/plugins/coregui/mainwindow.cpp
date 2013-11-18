@@ -499,6 +499,15 @@ bool MainWindow::saveCurrentFile()
     return result;
 }
 
+void MainWindow::handleTabTitleChanged()
+{
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(sender());
+    Q_ASSERT(twe);
+    int index = tabWidget_->indexOf(twe);
+    Q_ASSERT(index >= 0 && index < tabWidget_->count());
+    setTitleForTab(index);
+}
+
 void MainWindow::setTitleForTab(int index)
 {
     if (index<0 || index>=tabWidget_->count())
@@ -510,12 +519,7 @@ void MainWindow::setTitleForTab(int index)
 
     TabWidgetElement * twe = currentTab();
     QString title = twe->title();
-    if (title.isEmpty() && twe->type==Program) {
-        title = tr("New Program");
-    }
-    else if (title.isEmpty() && twe->type==Text) {
-        title = tr("New Text");
-    }
+
     QString appName = tr("Kumir");
     using namespace Shared;
     using namespace ExtensionSystem;
@@ -755,15 +759,15 @@ bool MainWindow::saveCurrentFileTo(const QString &fileName)
 
 void MainWindow::handleDocumentCleanChanged(bool v)
 {
-    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(sender());
-    int index = tabWidget_->indexOf(twe);
-    QString text = tabWidget_->tabText(index);
-    if (text.endsWith("*"))
-        text = text.left(text.length()-1);
-    if (!v)
-        text += "*";
-    twe->setProperty("title", text);
-    setTitleForTab(index);
+//    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(sender());
+//    int index = tabWidget_->indexOf(twe);
+//    QString text = tabWidget_->tabText(index);
+//    if (text.endsWith("*"))
+//        text = text.left(text.length()-1);
+//    if (!v)
+//        text += "*";
+//    twe->setProperty("title", text);
+//    setTitleForTab(index);
 }
 
 
@@ -902,6 +906,7 @@ void MainWindow::newProgram()
                 type);
     e->editorInstance = editor;
     tabWidget_->setCurrentWidget(e);
+    setTitleForTab(tabWidget_->indexOf(e));
     e->setFocus();
 
 }
@@ -940,12 +945,8 @@ void MainWindow::newText(const QString &fileName, const QString & text)
                 editor->menus(),
                 Text);
     e->editorInstance = editor;
-    tabWidget_->setCurrentWidget(e);
-    if (!text.isEmpty()) {
-        tabWidget_->setTabText(tabWidget_->currentIndex(),
-                                  tabWidget_->tabText(tabWidget_->currentIndex())
-                                  +"*");
-    }
+    tabWidget_->setCurrentWidget(e);   
+    setTitleForTab(tabWidget_->indexOf(e));
     e->setFocus();
 }
 
@@ -992,6 +993,7 @@ TabWidgetElement * MainWindow::addCentralComponent(
                                                       gr_fileActions, gr_otherActions, kumir);
 
     connect(element, SIGNAL(documentCleanChanged(bool)), this, SLOT(handleDocumentCleanChanged(bool)));
+    connect(element, SIGNAL(titleChanged(QString)), this, SLOT(handleTabTitleChanged()));
     createTopLevelMenus(menus, true);
     tabWidget_->addTab(element, title);
     return element;

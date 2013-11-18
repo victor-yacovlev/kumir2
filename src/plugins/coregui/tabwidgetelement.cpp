@@ -21,6 +21,7 @@ TabWidgetElement::TabWidgetElement(QWidget * w
     , browserInstance(nullptr)
     , kumirProgram_(kumir)
     , courseManagerTab_(false)
+    , documentHasChanges_(false)
 {
     kumirProgram_ = nullptr;
     Q_CHECK_PTR(w);
@@ -82,6 +83,19 @@ TabWidgetElement::TabWidgetElement(QWidget * w
     l->addWidget(w);
 }
 
+
+void TabWidgetElement::setDocumentChangesClean(bool clean)
+{
+    bool oldDocumentHasChanges = documentHasChanges_;
+    documentHasChanges_ = ! clean;
+    if (editorInstance &&
+            !isCourseManagerTab() &&
+            documentHasChanges_ != oldDocumentHasChanges)
+    {
+        emit titleChanged(title());
+    }
+}
+
 QString TabWidgetElement::title() const
 {
     if (editorInstance) {
@@ -90,13 +104,30 @@ QString TabWidgetElement::title() const
         if (url.isValid()) {
             const QString fullPath = editorInstance->documentContents().sourceUrl.toLocalFile();
             const QString shortPath = QFileInfo(fullPath).fileName();
-            return shortPath;
+            QString title;
+            if (documentHasChanges_ && !isCourseManagerTab()) {
+                title = shortPath + "*";
+            }
+            else {
+                title = shortPath;
+            }
+            return title;
         }
         else if (isCourseManagerTab()) {
             return tr("%1 (Course)").arg(courseTitle_).trimmed();
         }
         else {
-            return "";
+            QString title;
+            if (MainWindow::Program == type) {
+                title = tr("New Program");
+            }
+            else if (MainWindow::Text == type) {
+                title = tr("New Text");
+            }
+            if (title.length() > 0 && documentHasChanges_) {
+                title += "*";
+            }
+            return title;
         }
     }
     else if (browserInstance) {
