@@ -4,7 +4,7 @@
 # For manual build change this line to something line:
 #  OutFile "kumir2-...exe"
 #!include outfilename.nsh
-OutFile kumir2-2.1.0-beta1.exe
+OutFile kumir2-2.1.0-beta2.exe
 
 Name "Кумир-2.x"
 InstallDir "$PROGRAMFILES\Kumir2x"
