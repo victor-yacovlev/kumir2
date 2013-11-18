@@ -77,7 +77,7 @@ MainWindow::MainWindow(Plugin * p) :
     const QString qtcreatorIconsPath = QApplication::instance()->property("sharePath")
             .toString() + "/icons/from_qtcreator/";
 
-//    ui->actionNewProgram->setIcon(actionIcon("document-new"));
+    ui->actionNewProgram->setIcon(QIcon(qtcreatorIconsPath+"filenew.png"));
     ui->actionOpen->setIcon(QIcon(qtcreatorIconsPath+"fileopen.png"));
     ui->actionSave->setIcon(QIcon(qtcreatorIconsPath+"filesave.png"));
 
@@ -109,6 +109,8 @@ MainWindow::MainWindow(Plugin * p) :
     connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(showPreferences()));
 
     gr_fileActions = new QActionGroup(this);
+    gr_fileActions->addAction(ui->actionNewProgram);
+    gr_fileActions->addAction(ui->actionOpen);
     gr_fileActions->addAction(ui->actionSave);
     connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(saveCurrentFile()));
     connect(ui->actionSave_as, SIGNAL(triggered()), this, SLOT(saveCurrentFileAs()));
