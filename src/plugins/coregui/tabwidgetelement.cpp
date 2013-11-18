@@ -22,6 +22,7 @@ TabWidgetElement::TabWidgetElement(QWidget * w
     , kumirProgram_(kumir)
     , courseManagerTab_(false)
     , documentHasChanges_(false)
+    , actionSave_(nullptr)
 {
     kumirProgram_ = nullptr;
     Q_CHECK_PTR(w);
@@ -81,6 +82,11 @@ TabWidgetElement::TabWidgetElement(QWidget * w
 
     }
     l->addWidget(w);
+    foreach (QAction * a, gr_fileActions->actions()) {
+        if (a->property("role").toString() == QString("save")) {
+            actionSave_ = a;
+        }
+    }
 }
 
 
@@ -93,6 +99,14 @@ void TabWidgetElement::setDocumentChangesClean(bool clean)
             documentHasChanges_ != oldDocumentHasChanges)
     {
         emit titleChanged(title());
+    }
+    if (actionSave_) {
+        foreach (QWidget * w, actionSave_->associatedWidgets()) {
+            if (QString(w->metaObject()->className()) == "QToolButton") {
+                QToolButton * btn = qobject_cast<QToolButton*>(w);
+                btn->setAutoRaise(clean);
+            }
+        }
     }
 }
 
