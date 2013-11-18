@@ -611,6 +611,37 @@ EXTERN void __kumir_stdlib_rnd(__kumir_scalar * result, const __kumir_scalar * v
                         );
 }
 
+EXTERN void __kumir_stdlib_irnd(__kumir_scalar * result, const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    __kumir_create_int(result, Kumir::Random::irnd(value->data.i));
+}
+
+EXTERN void __kumir_stdlib_rand(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b)
+{
+    __kumir_check_value_defined(a);
+    __kumir_check_value_defined(b);
+    __kumir_create_real(result,
+                        Kumir::Random::rrand(
+                            __kumir_scalar_as_real(a),
+                            __kumir_scalar_as_real(b)
+                            )
+                        );
+}
+
+EXTERN void __kumir_stdlib_irand(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b)
+{
+    __kumir_check_value_defined(a);
+    __kumir_check_value_defined(b);
+    __kumir_create_int(result,
+                        Kumir::Random::irand(
+                            a->data.i,
+                            b->data.i
+                            )
+                        );
+}
+
+
 EXTERN void __kumir_stdlib_iabs(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
@@ -876,6 +907,19 @@ EXTERN void __kumir_stdlib_vstavit(const __kumir_scalar * fragment, __kumir_scal
     const int pos = pozitsiya->data.i;
     std::wstring s = __kumir_scalar_as_wstring(stroka);
     Kumir::StringUtils::insert(sub, s, pos);
+    __kumir_free_scalar(stroka);
+    __kumir_create_string(stroka, s);
+}
+
+EXTERN void __kumir_stdlib_udalit(__kumir_scalar * stroka, const __kumir_scalar * pozitsiya, const __kumir_scalar * dlina)
+{
+    __kumir_check_value_defined(stroka);
+    __kumir_check_value_defined(pozitsiya);
+    __kumir_check_value_defined(dlina);
+    std::wstring s = __kumir_scalar_as_wstring(stroka);
+    int pos = pozitsiya->data.i;
+    int len = dlina->data.i;
+    Kumir::StringUtils::remove(s, pos, len);
     __kumir_free_scalar(stroka);
     __kumir_create_string(stroka, s);
 }
@@ -1311,7 +1355,7 @@ EXTERN void __kumir_create_array_1(__kumir_array * result,
     result->shape_left[2] = result->size_left[2] = 0;
     result->shape_right[2] = result->size_right[2] = 0;
     int isz = 1 + right_1->data.i - left_1->data.i;
-    if (isz < 0) {
+    if (isz < 1) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
     }
     else {
@@ -1348,7 +1392,7 @@ EXTERN void __kumir_create_array_2(__kumir_array * result,
     result->shape_right[2] = result->size_right[2] = 0;
     int isz1 = 1 + right_1->data.i - left_1->data.i;
     int isz2 = 1 + right_2->data.i - left_2->data.i;
-    if (isz1 < 0 || isz2 < 0) {
+    if (isz1 < 1 || isz2 < 1) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
     }
     else {
@@ -1390,7 +1434,7 @@ EXTERN void __kumir_create_array_3(__kumir_array * result,
     int isz1 = 1 + right_1->data.i - left_1->data.i;
     int isz2 = 1 + right_2->data.i - left_2->data.i;
     int isz3 = 1 + right_3->data.i - left_3->data.i;
-    if (isz1 < 0 || isz2 < 0 || isz3 < 0) {
+    if (isz1 < 1 || isz2 < 1 || isz3 < 1) {
         Kumir::Core::abort(Kumir::Core::fromUtf8("Неверный размер таблицы"));
     }
     else {

@@ -597,6 +597,16 @@ public:
 class Random {
 public:
     inline static void init() {
+#ifndef WIN32
+        FILE * urandom = fopen("/dev/urandom", "rb");
+        char buffer[sizeof(unsigned)];
+        fread(buffer, 1u, sizeof(unsigned), urandom);
+        fclose(urandom);
+        unsigned seed;
+        unsigned * seed_data_ptr = reinterpret_cast<unsigned*>(buffer);
+        seed = *seed_data_ptr;
+        srand(seed);
+#endif
     }
     inline static void finalize() {}
 #ifndef WIN32

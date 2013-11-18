@@ -92,7 +92,7 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
             QString & fileSuffix
             )
 {
-    d->reset(createMain_, debugLevel_);
+    d->reset(tree, createMain_, debugLevel_);
 
     const QList<AST::ModulePtr> & modules = tree->modules;
     QList<AST::ModulePtr> kmodules;
