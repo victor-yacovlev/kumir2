@@ -52,8 +52,8 @@ public:
     void loadDocument(const QString & fileName) /* throws QString */;
     void loadDocument(const KumFile::Data &data) /* throws QString */;
 
-    void saveDocument(const QString &fileName) const;
-    void saveDocument(QIODevice * device) const;
+    void saveDocument(const QString &fileName);
+    void saveDocument(QIODevice * device);
     void setKumFile(const KumFile::Data & data);
     void setPlainText(const QString & data);
     void setDocumentId(int id);
@@ -182,7 +182,7 @@ private /* fields */:
 
     bool notSaved_;
 
-    mutable QUrl documentUrl_;
+    QUrl documentUrl_;
 };
 
 QDataStream & operator<< (QDataStream & stream, const Editor & editor);

@@ -80,6 +80,7 @@ MainWindow::MainWindow(Plugin * p) :
     ui->actionNewProgram->setIcon(QIcon(qtcreatorIconsPath+"filenew.png"));
     ui->actionOpen->setIcon(QIcon(qtcreatorIconsPath+"fileopen.png"));
     ui->actionSave->setIcon(QIcon(qtcreatorIconsPath+"filesave.png"));
+    ui->actionSave->setProperty("role", "save");
 
 
     ui->menuFile->setWindowTitle(ui->menuFile->title());
@@ -945,7 +946,7 @@ void MainWindow::newText(const QString &fileName, const QString & text)
                 editor->menus(),
                 Text);
     e->editorInstance = editor;
-    tabWidget_->setCurrentWidget(e);   
+    tabWidget_->setCurrentWidget(e);
     setTitleForTab(tabWidget_->indexOf(e));
     e->setFocus();
 }

@@ -52,6 +52,7 @@ private:
     bool courseManagerTab_;
     QString courseTitle_;
     bool documentHasChanges_;
+    QAction * actionSave_;
 };
 }
 
