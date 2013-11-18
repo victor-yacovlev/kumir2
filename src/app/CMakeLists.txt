@@ -4,7 +4,7 @@ if(NOT APPLE AND NOT MSVC)
 endif(NOT APPLE AND NOT MSVC)
 # -- mac
 if(APPLE)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-new-dtags -Wl,-rpath,'abracadabra'")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,'../Plugins'")
 endif(APPLE)
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/version_info.cmake")

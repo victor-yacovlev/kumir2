@@ -1,7 +1,7 @@
 set(QT_USE_QTMAIN 1)
 find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui REQUIRED)
 include (${QT_USE_FILE})
-
+set(CMAKE_MACOSX_RPATH 1)
 
 set(CONFIGURATION_TEMPLATE
     "CourseManager,Editor,Browser,Actor*,KumirAnalizer,KumirCodeGenerator,KumirCodeRun,!CoreGUI"
@@ -25,8 +25,11 @@ else()
 endif(XCODE)
 
 add_executable(Kumir MACOSX_BUNDLE ${SRC})
+set_target_properties(Kumir PROPERTIES RPATH "@loader_path/../lib")
 target_link_libraries(Kumir ${QT_LIBRARIES} ExtensionSystem)
+
 set_property(TARGET Kumir APPEND PROPERTY COMPILE_DEFINITIONS CONFIGURATION_TEMPLATE="${CONFIGURATION_TEMPLATE}")
 set_property(TARGET Kumir APPEND PROPERTY COMPILE_DEFINITIONS SPLASHSCREEN="${SPLASHSCREEN}")
+
 install(TARGETS Kumir DESTINATION  ./)
 
