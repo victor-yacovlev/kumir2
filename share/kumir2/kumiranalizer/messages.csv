@@ -100,6 +100,7 @@
 "Can't string:=boolean";"Нельзя “лит := лог”";"";"";"";"";
 "Can't string:=integer";"Нельзя “лит := цел”";"";"";"";"";
 "Can't string:=real";"Нельзя “лит := вещ”";"";"";"";"";
+"Can't use input parameter as for-variable";"Нельзя использовать арг как величину цикла";"";"";"";"";
 "Condition after '%1' not boolean";"Условие после “%1” не логическое";"";"";"";"";
 "Condition if not boolean";"Условие после “если” не логическое";"";"";"";"";
 "Condition is not boolean";"Это не условие";"";"";"";"";

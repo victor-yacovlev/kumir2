@@ -37,7 +37,7 @@ public:
     inline void setCourseTitle(const QString & title) { courseTitle_ = title; }
 
 signals:
-    void changeTitle(const QString & txt);
+    void titleChanged(const QString &);
     void documentCleanChanged(bool v);
 protected:
     inline void focusInEvent(QFocusEvent *e) {
@@ -45,19 +45,14 @@ protected:
         component->setFocus();
     }
 protected slots:
-    inline void setDocumentChangesClean(bool clean) {
-        if (clean) {
-
-        }
-        else {
-
-        }
-    }
+    void setDocumentChangesClean(bool clean);
 
 private:
     class KumirProgram * kumirProgram_;
     bool courseManagerTab_;
     QString courseTitle_;
+    bool documentHasChanges_;
+    QAction * actionSave_;
 };
 }
 

@@ -286,11 +286,11 @@ bytes parser::decompress(const bytes &src)
             ((unsigned char)src[2] << 8 ) |
             ((unsigned char)src[3]      ) ;
 
-#if defined(WIN32)
+
     uLongf size;
-#else
-    size_t size;
-#endif
+
+
+
     size = expected_size > 1ul ? expected_size : 1ul;
     static const size_t Max = 16 * 1024 * 1024;
         // 16Mb is enought for even very large picture

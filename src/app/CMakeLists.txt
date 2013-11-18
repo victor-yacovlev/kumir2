@@ -1,3 +1,12 @@
+# -- linux
+if(NOT APPLE AND NOT MSVC)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-new-dtags -Wl,-rpath,'\$ORIGIN/../${LIB_BASENAME}/kumir2'")
+endif(NOT APPLE AND NOT MSVC)
+# -- mac
+if(APPLE)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,'../Plugins'")
+endif(APPLE)
+
 if(EXISTS "${CMAKE_SOURCE_DIR}/version_info.cmake")
     message(STATUS "Found explicit version info")
     include(${CMAKE_SOURCE_DIR}/version_info.cmake)
@@ -59,11 +68,6 @@ if (MSVC_IDE)
 endif (MSVC_IDE)
 
 if(NOT APPLE)
-
-    set(CMAKE_INSTALL_RPATH
-        "$ORIGIN/../${LIBS_DIR}/"
-    )
-
     add_subdirectory(kumir2-classic)
     add_subdirectory(kumir2-highgrade)
     add_subdirectory(kumir2-ide)
@@ -74,8 +78,6 @@ endif(NOT APPLE)
 if(APPLE)
     add_subdirectory(kumir2-macx)
 endif(APPLE)
-
-
 
 #add_subdirectory(kumir2-cc)
 add_subdirectory(kumir2-bc)

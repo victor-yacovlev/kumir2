@@ -1044,7 +1044,7 @@ KumFile::Data Editor::documentContents() const
     return data;
 }
 
-void Editor::saveDocument(const QString &fileName) const
+void Editor::saveDocument(const QString &fileName)
 {
     QFile f(fileName);
     if (f.open(QIODevice::WriteOnly|QIODevice::Text)) {
@@ -1057,10 +1057,13 @@ void Editor::saveDocument(const QString &fileName) const
     }
 }
 
-void Editor::saveDocument(QIODevice *device) const
+void Editor::saveDocument(QIODevice *device)
 {
     QDataStream ds(device);
-    ds << documentContents();
+    ds << documentContents();    
+    notSaved_ = false;
+    checkForClean();
+    doc_->undoStack()->setClean();
 }
 
 quint32 Editor::errorLinesCount() const

@@ -77,9 +77,10 @@ MainWindow::MainWindow(Plugin * p) :
     const QString qtcreatorIconsPath = QApplication::instance()->property("sharePath")
             .toString() + "/icons/from_qtcreator/";
 
-//    ui->actionNewProgram->setIcon(actionIcon("document-new"));
+    ui->actionNewProgram->setIcon(QIcon(qtcreatorIconsPath+"filenew.png"));
     ui->actionOpen->setIcon(QIcon(qtcreatorIconsPath+"fileopen.png"));
     ui->actionSave->setIcon(QIcon(qtcreatorIconsPath+"filesave.png"));
+    ui->actionSave->setProperty("role", "save");
 
 
     ui->menuFile->setWindowTitle(ui->menuFile->title());
@@ -109,6 +110,8 @@ MainWindow::MainWindow(Plugin * p) :
     connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(showPreferences()));
 
     gr_fileActions = new QActionGroup(this);
+    gr_fileActions->addAction(ui->actionNewProgram);
+    gr_fileActions->addAction(ui->actionOpen);
     gr_fileActions->addAction(ui->actionSave);
     connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(saveCurrentFile()));
     connect(ui->actionSave_as, SIGNAL(triggered()), this, SLOT(saveCurrentFileAs()));
@@ -497,6 +500,15 @@ bool MainWindow::saveCurrentFile()
     return result;
 }
 
+void MainWindow::handleTabTitleChanged()
+{
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(sender());
+    Q_ASSERT(twe);
+    int index = tabWidget_->indexOf(twe);
+    Q_ASSERT(index >= 0 && index < tabWidget_->count());
+    setTitleForTab(index);
+}
+
 void MainWindow::setTitleForTab(int index)
 {
     if (index<0 || index>=tabWidget_->count())
@@ -508,12 +520,7 @@ void MainWindow::setTitleForTab(int index)
 
     TabWidgetElement * twe = currentTab();
     QString title = twe->title();
-    if (title.isEmpty() && twe->type==Program) {
-        title = tr("New Program");
-    }
-    else if (title.isEmpty() && twe->type==Text) {
-        title = tr("New Text");
-    }
+
     QString appName = tr("Kumir");
     using namespace Shared;
     using namespace ExtensionSystem;
@@ -753,15 +760,15 @@ bool MainWindow::saveCurrentFileTo(const QString &fileName)
 
 void MainWindow::handleDocumentCleanChanged(bool v)
 {
-    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(sender());
-    int index = tabWidget_->indexOf(twe);
-    QString text = tabWidget_->tabText(index);
-    if (text.endsWith("*"))
-        text = text.left(text.length()-1);
-    if (!v)
-        text += "*";
-    twe->setProperty("title", text);
-    setTitleForTab(index);
+//    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(sender());
+//    int index = tabWidget_->indexOf(twe);
+//    QString text = tabWidget_->tabText(index);
+//    if (text.endsWith("*"))
+//        text = text.left(text.length()-1);
+//    if (!v)
+//        text += "*";
+//    twe->setProperty("title", text);
+//    setTitleForTab(index);
 }
 
 
@@ -900,6 +907,7 @@ void MainWindow::newProgram()
                 type);
     e->editorInstance = editor;
     tabWidget_->setCurrentWidget(e);
+    setTitleForTab(tabWidget_->indexOf(e));
     e->setFocus();
 
 }
@@ -939,11 +947,7 @@ void MainWindow::newText(const QString &fileName, const QString & text)
                 Text);
     e->editorInstance = editor;
     tabWidget_->setCurrentWidget(e);
-    if (!text.isEmpty()) {
-        tabWidget_->setTabText(tabWidget_->currentIndex(),
-                                  tabWidget_->tabText(tabWidget_->currentIndex())
-                                  +"*");
-    }
+    setTitleForTab(tabWidget_->indexOf(e));
     e->setFocus();
 }
 
@@ -990,6 +994,7 @@ TabWidgetElement * MainWindow::addCentralComponent(
                                                       gr_fileActions, gr_otherActions, kumir);
 
     connect(element, SIGNAL(documentCleanChanged(bool)), this, SLOT(handleDocumentCleanChanged(bool)));
+    connect(element, SIGNAL(titleChanged(QString)), this, SLOT(handleTabTitleChanged()));
     createTopLevelMenus(menus, true);
     tabWidget_->addTab(element, title);
     return element;

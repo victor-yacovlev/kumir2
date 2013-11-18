@@ -114,7 +114,15 @@ void KumirCompilerToolPlugin::start()
         analizer->setSourceDirName(dirname);
         analizer->setSourceText(kumFile.visibleText + "\n" + kumFile.hiddenText);
         QList<Shared::Analizer::Error> errors = analizer->errors();
-        const AST::DataPtr ast = analizer->compiler()->abstractSyntaxTree();
+        AST::DataPtr ast = analizer->compiler()->abstractSyntaxTree();
+        foreach (AST::ModulePtr mod, ast->modules) {
+            if (mod->header.type != AST::ModTypeCached &&
+                    mod->header.type != AST::ModTypeExternal)
+            {
+                mod->header.sourceFileName = QFileInfo(sourceFileName_).fileName();
+            }
+        }
+
         const QString baseName = QFileInfo(filename).completeBaseName();
 
         for (int i=0; i<errors.size(); i++) {
@@ -137,6 +145,10 @@ void KumirCompilerToolPlugin::start()
         QString mimeType;
         QByteArray outData;
         generator_->generateExecuable(ast, outData, mimeType, suffix);
+
+        if (qApp->property("returnCode").toInt() != 0) {
+            return;
+        }
 
         QString outFileName = QFileInfo(filename).dir().absoluteFilePath(baseName+suffix);
 

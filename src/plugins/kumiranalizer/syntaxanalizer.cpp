@@ -2321,6 +2321,10 @@ void SyntaxAnalizer::parseLoopBegin(int str)
             foreach (Lexem *l, forr) l->error = _("Variable not found");
             return;
         }
+        if (st.statement->loop.forVariable->accessType == AST::AccessArgumentIn) {
+            foreach (Lexem *l, forr) l->error = _("Can't use input parameter as for-variable");
+            return;
+        }
         if (st.statement->loop.forVariable->baseType.kind!=AST::TypeInteger
                 || st.statement->loop.forVariable->dimension>0) {
             foreach (Lexem *l, forr) l->error = _("Not integer for-loop variable");

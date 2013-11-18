@@ -21,6 +21,8 @@ TabWidgetElement::TabWidgetElement(QWidget * w
     , browserInstance(nullptr)
     , kumirProgram_(kumir)
     , courseManagerTab_(false)
+    , documentHasChanges_(false)
+    , actionSave_(nullptr)
 {
     kumirProgram_ = nullptr;
     Q_CHECK_PTR(w);
@@ -80,6 +82,32 @@ TabWidgetElement::TabWidgetElement(QWidget * w
 
     }
     l->addWidget(w);
+    foreach (QAction * a, gr_fileActions->actions()) {
+        if (a->property("role").toString() == QString("save")) {
+            actionSave_ = a;
+        }
+    }
+}
+
+
+void TabWidgetElement::setDocumentChangesClean(bool clean)
+{
+    bool oldDocumentHasChanges = documentHasChanges_;
+    documentHasChanges_ = ! clean;
+    if (editorInstance &&
+            !isCourseManagerTab() &&
+            documentHasChanges_ != oldDocumentHasChanges)
+    {
+        emit titleChanged(title());
+    }
+    if (actionSave_) {
+        foreach (QWidget * w, actionSave_->associatedWidgets()) {
+            if (QString(w->metaObject()->className()) == "QToolButton") {
+                QToolButton * btn = qobject_cast<QToolButton*>(w);
+                btn->setAutoRaise(clean);
+            }
+        }
+    }
 }
 
 QString TabWidgetElement::title() const
@@ -90,13 +118,30 @@ QString TabWidgetElement::title() const
         if (url.isValid()) {
             const QString fullPath = editorInstance->documentContents().sourceUrl.toLocalFile();
             const QString shortPath = QFileInfo(fullPath).fileName();
-            return shortPath;
+            QString title;
+            if (documentHasChanges_ && !isCourseManagerTab()) {
+                title = shortPath + "*";
+            }
+            else {
+                title = shortPath;
+            }
+            return title;
         }
         else if (isCourseManagerTab()) {
             return tr("%1 (Course)").arg(courseTitle_).trimmed();
         }
         else {
-            return "";
+            QString title;
+            if (MainWindow::Program == type) {
+                title = tr("New Program");
+            }
+            else if (MainWindow::Text == type) {
+                title = tr("New Text");
+            }
+            if (title.length() > 0 && documentHasChanges_) {
+                title += "*";
+            }
+            return title;
         }
     }
     else if (browserInstance) {

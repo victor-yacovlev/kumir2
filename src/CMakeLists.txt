@@ -11,10 +11,16 @@ if(MSVC)
         endif()
 else()
     if(NOT APPLE)
-        set(CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS}"-Wl,--no-undefined")
+        set(CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS}"-Wl,--no-undefined")        
     endif(NOT APPLE)
 endif(MSVC)
 
+
+# clear default CMake RPATH values
+set(CMAKE_SKIP_BUILD_RPATH  FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+set(CMAKE_INSTALL_RPATH "")
 
 if(NOT MSVC)
     if(APPLE)

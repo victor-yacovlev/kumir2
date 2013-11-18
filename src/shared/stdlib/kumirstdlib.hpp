@@ -326,6 +326,7 @@ public:
 
     inline static bool checkSumm(int32_t lhs, int32_t rhs) {
         // Check for integer overflow
+#if !defined(__clang__)
         int32_t sum = lhs+rhs;
         if (lhs>=0) {
             return sum >= rhs;
@@ -333,6 +334,17 @@ public:
         else {
             return sum < rhs;
         }
+#else
+        // CLang completely removes the check above due to optimization.
+        // Use another method: cast to 64 bit
+        const int64_t l = lhs;
+        const int64_t r = rhs;
+        const int64_t sum = l + r;
+        static const int64_t Right = 2147483647LL;
+        static const int64_t Left = -2147483647LL;
+        bool result = sum >= Left && sum <= Right;
+        return result;
+#endif
     }
 
     inline static bool checkDiff(int32_t lhs, int32_t rhs) {
@@ -587,7 +599,7 @@ public:
     inline static void init() {
     }
     inline static void finalize() {}
-#ifdef APPLE
+#ifndef WIN32
     inline static int irand(int a, int b) {
         if (a>b) {
             Core::abort(Core::fromUtf8("Неверный диапазон чисел"));

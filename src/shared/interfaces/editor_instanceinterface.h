@@ -24,8 +24,8 @@ public:
     virtual void loadDocument(const QString & fileName) /* throws QString */ = 0;
     virtual void loadDocument(const KumFile::Data &data) /* throws QString */ = 0;
 
-    virtual void saveDocument(const QString & fileName) const /* throws QString */ = 0;
-    virtual void saveDocument(QIODevice * device) const /* throws QString */ = 0;
+    virtual void saveDocument(const QString & fileName) /* throws QString */ = 0;
+    virtual void saveDocument(QIODevice * device) /* throws QString */ = 0;
 
     virtual KumFile::Data documentContents() const = 0;
 
