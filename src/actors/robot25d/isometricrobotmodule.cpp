@@ -22,6 +22,8 @@ IsometricRobotModule::IsometricRobotModule(ExtensionSystem::KPlugin * parent)
 {
     connect(m_actionRobot25DLoadEnvironment, SIGNAL(triggered()),
             window_, SLOT(handleLoadAction()));
+    connect(m_actionRobot25DResetEnvironment, SIGNAL(triggered()),
+            this, SLOT(reset()));
 }
 
 QList<ExtensionSystem::CommandLineParameter> IsometricRobotModule::acceptableCommandLineParameters()
