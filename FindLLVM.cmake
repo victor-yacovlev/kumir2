@@ -18,10 +18,11 @@
 
 # ------------------ implementation
 
-find_program(LLVM_CONFIG_EXECUTABLE NAMES llvm-config PATHS LLVM_ROOT)
+find_program(LLVM_CONFIG_EXECUTABLE NAMES llvm-config PATHS ${LLVM_ROOT})
 
 if(LLVM_CONFIG_EXECUTABLE)
     exec_program(${LLVM_CONFIG_EXECUTABLE} ARGS "--version" OUTPUT_VARIABLE LLVM_VERSION)
+    set(LLVM_DEFINITIONS " ")
     if(EXISTS /usr/${LIB_BASENAME}/llvm/libLLVM-${LLVM_VERSION}.so)
         # Fedora-specific .so-version
         set(LLVM_LIBRARIES "-L/usr/${LIB_BASENAME}/llvm -lLLVM-${LLVM_VERSION}")
@@ -32,8 +33,10 @@ if(LLVM_CONFIG_EXECUTABLE)
                 set(LLVM_DEFINITIONS "-D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS")
             endif(NOT WIN32)
     endif()
-    find_path(LLVM_INCLUDE_DIR llvm/Config/llvm-config.h HINTS LLVM_ROOT)
+    find_path(LLVM_INCLUDE_DIR llvm/Config/llvm-config.h HINTS ${LLVM_ROOT})
     if (LLVM_INCLUDE_DIR)
+        message(STATUS "Found LLVM includes: ${LLVM_INCLUDE_DIR}")
+        message(STATUS "Found LLVM libs: ${LLVM_LIBRARIES}")
         set(LLVM_FOUND 1)
     endif()
 endif()
