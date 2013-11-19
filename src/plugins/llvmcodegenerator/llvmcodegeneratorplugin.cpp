@@ -3,7 +3,14 @@
 
 #include <QtPlugin>
 
+#include <llvm/Config/llvm-config.h>
+#if LLVM_VERSION_MINOR >= 3
+#include <llvm/IR/Module.h>
+#include <llvm/IR/LLVMContext.h>
+#else
 #include <llvm/Module.h>
+#include <llvm/LLVMContext.h>
+#endif
 #include <llvm/Bitcode/ReaderWriter.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/raw_os_ostream.h>
@@ -12,7 +19,6 @@
 #include <llvm/Assembly/Parser.h>
 #include <llvm/Support/SourceMgr.h>
 
-#include <llvm/LLVMContext.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/TargetSelect.h>

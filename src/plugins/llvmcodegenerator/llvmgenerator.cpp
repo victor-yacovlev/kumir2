@@ -9,17 +9,29 @@
 #include "errormessages/errormessages.h"
 #include "dataformats/lexem.h"
 
+#include <llvm/Config/llvm-config.h>
+#if LLVM_VERSION_MINOR >= 3
+#include <llvm/IR/Type.h>
+#include <llvm/IR/TypeBuilder.h>
+#include <llvm/IR/GlobalVariable.h>
+#include <llvm/IR/Constants.h>
+#include <llvm/IR/ValueSymbolTable.h>
+#include <llvm/IR/Value.h>
+#include <llvm/IR/Attributes.h>
+#else
 #include <llvm/Type.h>
 #include <llvm/TypeBuilder.h>
 #include <llvm/GlobalVariable.h>
-#include <llvm/Bitcode/ReaderWriter.h>
-#include <llvm/Support/system_error.h>
 #include <llvm/Constants.h>
 #include <llvm/ValueSymbolTable.h>
 #include <llvm/Value.h>
+#include <llvm/Attributes.h>
+#endif
+
+#include <llvm/Bitcode/ReaderWriter.h>
+#include <llvm/Support/system_error.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Linker.h>
-#include <llvm/Attributes.h>
 
 #include <string>
 #include <iostream>
@@ -133,8 +145,13 @@ void LLVMGenerator::createKumirModuleImplementation(const AST::ModulePtr kmod)
 
     currentFunction_ = initFunc;
     initFunctions_.push_back(initFunc);
+#if LLVM_VERSION_MINOR >= 3
+    initFunc->addFnAttr(llvm::Attribute::NoUnwind);
+    initFunc->addFnAttr(llvm::Attribute::UWTable);
+#else
     initFunc->addFnAttr(llvm::Attributes::NoUnwind);
     initFunc->addFnAttr(llvm::Attributes::UWTable);
+#endif
     tempValsToFree_.clear();
     llvm::BasicBlock * initBlock = llvm::BasicBlock::Create(*context_, "", initFunc);
     currentBlock_ = initBlock;
@@ -403,13 +420,25 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
                 );
         if (kfunc->header.returnType != AST::TypeNone) {
             llvm::Argument & firstArg = lfn->getArgumentList().front();
+#if LLVM_VERSION_MINOR >= 3
+            llvm::AttributeSet aset;
+            aset.addAttribute(ctx, 0, llvm::Attribute::StructRet);
+            aset.addAttribute(ctx, 1, llvm::Attribute::NoAlias);
+            firstArg.addAttr(aset);
+#else
             std::vector<llvm::Attributes::AttrVal> attrs(2);
             attrs[0] = llvm::Attributes::StructRet;
             attrs[1] = llvm::Attributes::NoAlias;
             firstArg.addAttr(llvm::Attributes::get(*context_, attrs));
+#endif
         }
+#if LLVM_VERSION_MINOR >= 3
+        lfn->addFnAttr(llvm::Attribute::NoUnwind);
+        lfn->addFnAttr(llvm::Attribute::UWTable);
+#else
         lfn->addFnAttr(llvm::Attributes::NoUnwind);
         lfn->addFnAttr(llvm::Attributes::UWTable);
+#endif
     }
 
     if (createBody) {

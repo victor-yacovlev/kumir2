@@ -8,11 +8,17 @@
 #include "dataformats/ast_type.h"
 
 #include "interfaces/generatorinterface.h"
-
+#include <llvm/Config/llvm-config.h>
+#if LLVM_VERSION_MINOR >= 3
+#include <llvm/IR/Module.h>
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/IRBuilder.h>
+#else
 #include <llvm/Module.h>
 #include <llvm/LLVMContext.h>
-#include <llvm/Support/MemoryBuffer.h>
 #include <llvm/IRBuilder.h>
+#endif
+#include <llvm/Support/MemoryBuffer.h>
 
 #include <cstdint>
 #include <stack>

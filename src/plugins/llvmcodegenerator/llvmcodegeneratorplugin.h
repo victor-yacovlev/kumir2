@@ -5,7 +5,12 @@
 #include "interfaces/generatorinterface.h"
 
 #include <QObject>
+#include <llvm/Config/llvm-config.h>
+#if LLVM_VERSION_MAJOR >= 3
+#include <llvm/IR/Module.h>
+#else
 #include <llvm/Module.h>
+#endif
 #include <llvm/ADT/Triple.h>
 
 namespace LLVMCodeGenerator {
