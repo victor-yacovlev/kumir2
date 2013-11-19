@@ -173,6 +173,9 @@ string generator::create_kum_data(const program_t &program)
     for (size_t i=0; i<program.size(); ++i) {
         result += create_kum_algorithm(program[i], i);
     }
+    if (! program.empty()) {
+        result += "\n" + create_testing_algorithm();
+    }
     return result;
 }
 
@@ -254,10 +257,40 @@ string generator::create_kum_algorithm(const algorithm_t &algorithm,
 
 string generator::create_testing_algorithm()
 {
-    static const string testing = ""
-            "алг цел @тестирование\n"
-            "нач\n"
-            "кон\n"
+    static const string testing =
+            "алг цел @тестирование |@hidden\n"
+            "нач |@hidden\n"
+            "Главный | вызов главного алгоритма |@hidden\n"
+            "вещ мин оценка, макс оценка |@hidden\n"
+            "|Минимум и максимум в случае, если  |@hidden\n"
+            "|Робот не разбился, но не все клетки |@hidden\n"
+            "|закрашены |@hidden\n"
+            "мин оценка:=1 |@hidden\n"
+            "макс оценка:=9 |@hidden\n"
+            "цел y, x |@hidden\n"
+            "цел отмеченных клеток, закрашенных клеток |@hidden\n"
+            "вещ доля закрашенных |@hidden\n"
+            "отмеченных клеток:=0 |@hidden\n"
+            "закрашенных клеток:=0 |@hidden\n"
+            "нц для y от 1 до @@размер поля y |@hidden\n"
+            "нц для x от 1 до @@размер поля x |@hidden\n"
+            "если @@есть точка(x, y) то |@hidden\n"
+            "отмеченных клеток:=отмеченных клеток + 1 |@hidden\n"
+            "если @@клетка закрашена(x, y) то |@hidden\n"
+            "закрашенных клеток:=закрашенных клеток + 1 |@hidden\n"
+            "все |@hidden\n"
+            "все |@hidden\n"
+            "кц |@hidden\n"
+            "кц |@hidden\n"
+            "если закрашенных клеток < отмеченных клеток то |@hidden\n"
+            "доля закрашенных:=закрашенных клеток/отмеченных клеток |@hidden\n"
+            "знач:=int(мин оценка + доля закрашенных * (макс оценка - мин оценка)) |@hidden\n"
+            "иначе  |@hidden\n"
+            "знач:=10 | максимально возможная оценка практикумов |@hidden\n"
+            "все |@hidden\n"
+            "кон |@hidden\n"
+            "|@hidden\n"
+            "|@hidden\n"
             ;
     return testing;
 }
