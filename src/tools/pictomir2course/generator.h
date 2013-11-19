@@ -36,6 +36,8 @@ private:
     static string create_kum_algorithm(const algorithm_t & algorithm,
                                        const size_t algorithm_index);
 
+    static string create_testing_algorithm();
+
 
     static string create_task(const task_t & task,
                               const size_t task_index,
