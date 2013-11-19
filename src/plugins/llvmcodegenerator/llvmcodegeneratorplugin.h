@@ -6,7 +6,7 @@
 
 #include <QObject>
 #include <llvm/Config/llvm-config.h>
-#if LLVM_VERSION_MAJOR >= 3
+#if LLVM_VERSION_MINOR >= 3
 #include <llvm/IR/Module.h>
 #else
 #include <llvm/Module.h>
