@@ -18,6 +18,13 @@
 #include <llvm/IR/ValueSymbolTable.h>
 #include <llvm/IR/Value.h>
 #include <llvm/IR/Attributes.h>
+#elif LLVM_VERSION_MINOR == 0
+#include <llvm/Support/TypeBuilder.h>
+#include <llvm/GlobalVariable.h>
+#include <llvm/Constants.h>
+#include <llvm/ValueSymbolTable.h>
+#include <llvm/Value.h>
+#include <llvm/Attributes.h>
 #else
 #include <llvm/Type.h>
 #include <llvm/TypeBuilder.h>
@@ -146,6 +153,9 @@ void LLVMGenerator::createKumirModuleImplementation(const AST::ModulePtr kmod)
     currentFunction_ = initFunc;
     initFunctions_.push_back(initFunc);
 #if LLVM_VERSION_MINOR >= 3
+    initFunc->addFnAttr(llvm::Attribute::NoUnwind);
+    initFunc->addFnAttr(llvm::Attribute::UWTable);
+#elif LLVM_VERSION_MINOR == 0
     initFunc->addFnAttr(llvm::Attribute::NoUnwind);
     initFunc->addFnAttr(llvm::Attribute::UWTable);
 #else
@@ -425,6 +435,11 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
             aset.addAttribute(ctx, 0, llvm::Attribute::StructRet);
             aset.addAttribute(ctx, 1, llvm::Attribute::NoAlias);
             firstArg.addAttr(aset);
+#elif LLVM_VERSION_MINOR == 0
+            llvm::Attributes attrs = 0x00;
+            attrs |= llvm::Attribute::StructRet;
+            attrs |= llvm::Attribute::NoAlias;
+            firstArg.addAttr(attrs);
 #else
             std::vector<llvm::Attributes::AttrVal> attrs(2);
             attrs[0] = llvm::Attributes::StructRet;
@@ -433,6 +448,9 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
 #endif
         }
 #if LLVM_VERSION_MINOR >= 3
+        lfn->addFnAttr(llvm::Attribute::NoUnwind);
+        lfn->addFnAttr(llvm::Attribute::UWTable);
+#elif LLVM_VERSION_MINOR == 0
         lfn->addFnAttr(llvm::Attribute::NoUnwind);
         lfn->addFnAttr(llvm::Attribute::UWTable);
 #else
