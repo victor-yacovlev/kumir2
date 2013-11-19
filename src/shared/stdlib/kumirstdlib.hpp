@@ -326,36 +326,43 @@ public:
 
     inline static bool checkSumm(int32_t lhs, int32_t rhs) {
         // Check for integer overflow
-#if !defined(__clang__)
-        int32_t sum = lhs+rhs;
-        if (lhs>=0) {
-            return sum >= rhs;
-        }
-        else {
-            return sum < rhs;
-        }
-#else
+//#if !defined(__clang__)
+//        int32_t sum = lhs+rhs;
+//        if (lhs>=0) {
+//            return sum >= rhs;
+//        }
+//        else {
+//            return sum < rhs;
+//        }
+//#else
         // CLang completely removes the check above due to optimization.
         // Use another method: cast to 64 bit
         const int64_t l = lhs;
         const int64_t r = rhs;
         const int64_t sum = l + r;
         static const int64_t Right = 2147483647LL;
-        static const int64_t Left = -2147483647LL;
+        static const int64_t Left = -2147483648LL;
         bool result = sum >= Left && sum <= Right;
         return result;
-#endif
+//#endif
     }
 
     inline static bool checkDiff(int32_t lhs, int32_t rhs) {
-        // Check for integer overflow
-        int32_t diff = lhs-rhs;
-        if (rhs>=0) {
-            return diff <= lhs;
-        }
-        else {
-            return diff > lhs;
-        }
+//        // Check for integer overflow
+//        int32_t diff = lhs-rhs;
+//        if (rhs>=0) {
+//            return diff <= lhs;
+//        }
+//        else {
+//            return diff > lhs;
+//        }
+        const int64_t l = lhs;
+        const int64_t r = rhs;
+        const int64_t diff = l - r;
+        static const int64_t Right = 2147483647LL;
+        static const int64_t Left = -2147483648LL;
+        bool result = diff >= Left && diff <= Right;
+        return result;
     }
 
     inline static bool checkProd(int32_t lhs, int32_t rhs) {
@@ -535,7 +542,7 @@ public:
 #endif
     }
     inline static int maxint() {
-        return 0x80000000;
+        return int(0x7FFFFFFF);
     }
     inline static real maxreal() {
 #ifdef NO_FPU
@@ -943,21 +950,27 @@ public:
         static const char * digits = "0123456789abcdefghijklmnopqrstuvwxyz";
         int q, r;
         bool negative = value < 0;
-        q = value>=0? value : -value;
-        if (q>0) {
-            while (q>0) {
-                r = q % base;
-                result.insert(0, 1, digits[r]);
-                q = q / base;
-            }
+        if (int64_t(value) == -2147483648LL) {
+            if (base == 10)
+                result = Core::fromAscii(std::string("-2147483648"));
         }
         else {
-            result.insert(0, 1, '0');
+            q = negative? -value : value;
+            if (q>0) {
+                while (q>0) {
+                    r = q % base;
+                    result.insert(0, 1, digits[r]);
+                    q = q / base;
+                }
+            }
+            else {
+                result.insert(0, 1, '0');
+            }
+            if (base==16)
+                result.insert(0, 1, '$');
+            if (negative)
+                result.insert(0, 1, '-');
         }
-        if (base==16)
-            result.insert(0, 1, '$');
-        if (negative)
-            result.insert(0, 1, '-');
         if (width>0) {
             int leftSpaces = 0;
             int rightSpaces = 0;
