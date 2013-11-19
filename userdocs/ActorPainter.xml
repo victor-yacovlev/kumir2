@@ -75,14 +75,6 @@
 ]]>
             </programlisting>
         </example>
-        <para>
-            <mediaobject>
-                <imageobject>
-                    <imagedata format="PNG" fileref="ActorPainter/example_rainbow.png"/>
-                </imageobject>
-                <caption>Результат работы этой программы из примера</caption>
-            </mediaobject>
-        </para>
     </section>
     <section id="Алгоритмы для работы с цветом">
         <title>Алгоритмы для работы с цветом</title>
