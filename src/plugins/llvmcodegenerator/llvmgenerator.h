@@ -16,7 +16,11 @@
 #else
 #include <llvm/Module.h>
 #include <llvm/LLVMContext.h>
+#if LLVM_VERSION_MINOR == 0
+#include <llvm/Support/IRBuilder.h>
+#else
 #include <llvm/IRBuilder.h>
+#endif
 #endif
 #include <llvm/Support/MemoryBuffer.h>
 
