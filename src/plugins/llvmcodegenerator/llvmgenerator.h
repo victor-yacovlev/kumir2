@@ -8,11 +8,17 @@
 #include "dataformats/ast_type.h"
 
 #include "interfaces/generatorinterface.h"
-
+#include <llvm/Config/llvm-config.h>
+#if LLVM_VERSION_MINOR >= 3
+#include <llvm/IR/Module.h>
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/IRBuilder.h>
+#else
 #include <llvm/Module.h>
 #include <llvm/LLVMContext.h>
-#include <llvm/Support/MemoryBuffer.h>
 #include <llvm/IRBuilder.h>
+#endif
+#include <llvm/Support/MemoryBuffer.h>
 
 #include <cstdint>
 #include <stack>
@@ -25,7 +31,7 @@ class LLVMGenerator
 {
 public:
     explicit LLVMGenerator();
-    void reset(AST::DataPtr ast, bool addMainEntryPoint, Shared::GeneratorInterface::DebugLevel debugLevel);
+    void reset(bool addMainEntryPoint, Shared::GeneratorInterface::DebugLevel debugLevel);
     void addKumirModule(const AST::ModulePtr kmod);
     void createKumirModuleImplementation(const AST::ModulePtr kmod);
     llvm::Module * getResult();
@@ -189,13 +195,11 @@ private:
     std::vector<llvm::Value*> tempValsToFree_;
     std::stack<size_t> tempValsToFreeStartPos_;
     bool addMainEntryPoint_;
-    AST::DataPtr ast_;
     std::list<llvm::Function*> initFunctions_;
 
     Shared::GeneratorInterface::DebugLevel debugLevel_;
 
     QList<const llvm::Function*> externs_;
-    QMap<AST::Algorithm*, llvm::Function*> kumirFunctions_;
 
 
     /**

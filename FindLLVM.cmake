@@ -20,14 +20,19 @@
 
 find_program(LLVM_CONFIG_EXECUTABLE NAMES llvm-config PATHS LLVM_ROOT)
 
-if(LLVM_CONFIG_EXECUTABLE)        
-    exec_program(${LLVM_CONFIG_EXECUTABLE} ARGS "--libs ${COMPONENTS}" OUTPUT_VARIABLE LLVM_LIBRARIES)
-    if(NOT WIN32)
-        set(LLVM_LIBRARIES "${LLVM_LIBRARIES} -ldl -lm")
-        set(LLVM_DEFINITIONS "-D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS")
-        # TODO implement correct def-parsing
-    endif(NOT WIN32)
-    find_path(LLVM_INCLUDE_DIR llvm/LLVMContext.h HINTS LLVM_ROOT)
+if(LLVM_CONFIG_EXECUTABLE)
+    exec_program(${LLVM_CONFIG_EXECUTABLE} ARGS "--version" OUTPUT_VARIABLE LLVM_VERSION)
+    if(EXISTS /usr/${LIB_BASENAME}/llvm/libLLVM-${LLVM_VERSION}.so)
+        # Fedora-specific .so-version
+        set(LLVM_LIBRARIES "-L/usr/${LIB_BASENAME}/llvm -lLLVM-${LLVM_VERSION}")
+    else()
+        exec_program(${LLVM_CONFIG_EXECUTABLE} ARGS "--libs Linker BitReader BitWriter" OUTPUT_VARIABLE LLVM_LIBRARIES)
+            if(NOT WIN32)
+                set(LLVM_LIBRARIES "${LLVM_LIBRARIES} -ldl -lm")
+                set(LLVM_DEFINITIONS "-D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS")
+            endif(NOT WIN32)
+    endif()
+    find_path(LLVM_INCLUDE_DIR llvm/Config/llvm-config.h HINTS LLVM_ROOT)
     if (LLVM_INCLUDE_DIR)
         set(LLVM_FOUND 1)
     endif()
