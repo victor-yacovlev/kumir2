@@ -114,10 +114,13 @@ AI * Plugin::getActor(QString name)
 {
     QList<AI*> Actors= ExtensionSystem::PluginManager::instance()->findPlugins<AI>();
     if(name=="Robot")name=QString::fromUtf8("Робот");//Pach for K1
+    qDebug()<<"ActorName"<<name;
     for(int i=0;i<Actors.count();i++)
     {   
+        qDebug()<<"Cname:"<<Actors.at(i)->name();
         if(Actors.at(i)->name()==name)return  Actors.at(i); 
     }
+    
     return NULL;
 }
 void Plugin::selectNext(KumZadanie* task)
@@ -133,7 +136,12 @@ void Plugin::selectNext(KumZadanie* task)
             }
             //TODO LOAD FIELDS;
             QFile* field_data=new QFile(task->field(task->isps.at(i), field_no));
+            if(!field_data->open(QIODevice::ReadOnly)){
+                QMessageBox::information( NULL, "", QString::fromUtf8("Ошибка открытия обстановки!"), 0,0,0); 
+                return;   
+            }
             actor->loadActorData(field_data);
+            field_data->close();
         }   
     }
 
