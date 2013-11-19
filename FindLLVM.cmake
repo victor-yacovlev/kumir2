@@ -26,6 +26,10 @@ if(LLVM_CONFIG_EXECUTABLE)
         # Fedora-specific .so-version
         set(LLVM_LIBRARIES "-L/usr/${LIB_BASENAME}/llvm -lLLVM-${LLVM_VERSION}")
         set(LLVM_DEFINITIONS "-D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS")
+    elseif(EXISTS /usr/${LIB_BASENAME}/llvm-${LLVM_VERSION}/${LIB_BASENAME}/libLLVM-${LLVM_VERSION}.so)
+        # Ubuntu-specific .so-version
+        set(LLVM_LIBRARIES "-L/usr/${LIB_BASENAME}/llvm-${LLVM_VERSION}/${LIB_BASENAME} -lLLVM-${LLVM_VERSION}")
+        set(LLVM_DEFINITIONS "-D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS")
     else()
         exec_program(${LLVM_CONFIG_EXECUTABLE} ARGS "--libs Linker BitReader BitWriter" OUTPUT_VARIABLE LLVM_LIBRARIES)
         if(NOT WIN32)
