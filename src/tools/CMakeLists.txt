@@ -11,7 +11,8 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 endif()
 add_subdirectory(run)
 
-if(NOT APPLE AND NOT WIN32)
+find_package(Boost)
+if(Boost_FOUND)
     add_subdirectory(pictomir2course)
 endif()
 
