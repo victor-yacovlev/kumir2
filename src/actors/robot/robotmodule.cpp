@@ -3755,9 +3755,11 @@ bool RobotModule::runIsColor()
         qDebug()<<field->cellAt(row-1,col-1)->upChar;
         return field->cellAt(row-1,col-1)->upChar;  
     };
-    QChar RobotModule::runDownChar(const int row, const int col)
-    {qDebug()<<field->cellAt(col-1,row-1)->downChar;
-        return field->cellAt(col-1,row-1)->downChar;
+
+    
+QChar RobotModule::runDownChar(const int row, const int col)
+    {qDebug()<<field->cellAt(row-1,col-1)->downChar;
+        return field->cellAt(row-1,col-1)->downChar;
     };   
     
  int RobotModule::LoadFromFile(QString p_FileName)
