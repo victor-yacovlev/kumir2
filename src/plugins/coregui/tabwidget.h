@@ -13,7 +13,7 @@ public:
     explicit TabWidget(QWidget *parent = 0);
     void disableTabs();
 protected:
-
+    void paintEvent(QPaintEvent *);
 };
 
 } // namespace CoreGUI
