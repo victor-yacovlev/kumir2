@@ -28,6 +28,38 @@
         {
             "name": { "ascii": "is free ahead", "ru_RU": "впереди свободно" },
             "returnType": "bool"
+        },
+        {
+            "name": { "ascii": "@@is marked", "ru_RU": "@@есть точка" },
+            "returnType": "bool",
+            "arguments": [
+                { "name": "x", "baseType": "int" },
+                { "name": "y", "baseType": "int" }
+            ]
+        },
+        {
+            "name": { "ascii": "@@is painted", "ru_RU": "@@клетка закрашена" },
+            "returnType": "bool",
+            "arguments": [
+                { "name": "x", "baseType": "int" },
+                { "name": "y", "baseType": "int" }
+            ]
+        },
+        {
+            "name": { "ascii": "@@position x", "ru_RU": "@@положение робота x" },
+            "returnType": "int"
+        },
+        {
+            "name": { "ascii": "@@position y", "ru_RU": "@@положение робота y" },
+            "returnType": "int"
+        },
+        {
+            "name": { "ascii": "@@size x", "ru_RU": "@@размер поля x" },
+            "returnType": "int"
+        },
+        {
+            "name": { "ascii": "@@size y", "ru_RU": "@@размер поля y" },
+            "returnType": "int"
         }
     ],
     

@@ -40,6 +40,12 @@ public slots:
     bool runIsCellClean();
     bool runIsWallAhead();
     bool runIsFreeAhead();
+    bool runIsMarked(const int x, const int y);
+    bool runIsPainted(const int x, const int y);
+    int runPositionX();
+    int runPositionY();
+    int runSizeX();
+    int runSizeY();
 
     void loadActorData(QIODevice *source);
 

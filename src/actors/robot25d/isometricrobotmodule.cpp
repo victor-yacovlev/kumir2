@@ -115,5 +115,35 @@ bool IsometricRobotModule::runIsFreeAhead()
     return ! robotView_->isWall();
 }
 
+bool IsometricRobotModule::runIsPainted(const int x, const int y)
+{
+    return robotView_->isPainted(x - 1, y - 1);
+}
+
+bool IsometricRobotModule::runIsMarked(const int x, const int y)
+{
+    return robotView_->isPointed(x - 1, y - 1);
+}
+
+int IsometricRobotModule::runPositionX()
+{
+    return robotView_->positionX() + 1;
+}
+
+int IsometricRobotModule::runPositionY()
+{
+    return robotView_->positionY() + 1;
+}
+
+int IsometricRobotModule::runSizeX()
+{
+    return robotView_->sizeX();
+}
+
+int IsometricRobotModule::runSizeY()
+{
+    return robotView_->sizeY();
+}
+
     
 } // $namespace
