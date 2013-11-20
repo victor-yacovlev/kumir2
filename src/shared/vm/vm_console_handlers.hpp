@@ -187,6 +187,7 @@ public:
         , locale_(UTF8)
     #endif
         , customTypeToString_(nullptr)
+        , quietMode_(false)
     {}
     inline void operator()(const VM::Variable & reference);
     inline void setLocale(const Encoding loc) { locale_ = loc; }
@@ -194,9 +195,11 @@ public:
     {
         customTypeToString_ = f;
     }
+    inline void setQuietMode(bool v) { quietMode_ = v; }
 private:
     Encoding locale_;
     VM::CustomTypeToStringFunctor * customTypeToString_;
+    bool quietMode_;
 };
 
 class GetMainArgumentFunctor
@@ -205,13 +208,14 @@ class GetMainArgumentFunctor
 public:
     inline GetMainArgumentFunctor()
         : VM::GetMainArgumentFunctor()
-        , i_currentArgument(0)
+        , currentArgument_(0)
     #if defined(WIN32) || defined(_WIN32)
         , locale_(CP866)
     #else
         , locale_(UTF8)
     #endif
         , customTypeFromString_(nullptr)
+        , quietMode_(false)
     {}
     inline void operator()(VM::Variable & reference);
     inline void init(const std::deque<std::string> args);
@@ -221,6 +225,7 @@ public:
     {
         customTypeFromString_ = f;
     }
+    inline void setQuietMode(bool v) { quietMode_ = v; }
 private:
     inline bool readScalarArgument(const String & message,
                                    const String & name,
@@ -231,14 +236,15 @@ private:
                                    );
     inline static String decodeHttpStringValue(const std::string & s);
     std::deque< String > m_arguments;
-    size_t i_currentArgument;
+    size_t currentArgument_;
     Encoding locale_;
     VM::CustomTypeFromStringFunctor * customTypeFromString_;
+    bool quietMode_;
 };
 
 void GetMainArgumentFunctor::init(const std::deque<std::string> args)
 {
-    i_currentArgument = 0;
+    currentArgument_ = 0;
     bool argumentsScope = false;
     for (int i=1; i<args.size(); i++) {
         const std::string & arg = args[i];
@@ -330,14 +336,16 @@ bool GetMainArgumentFunctor::readScalarArgument(
     }
 #endif
     if (!foundValue) {
-        if (i_currentArgument<m_arguments.size()) {
-            stream = IO::InputStream(m_arguments[i_currentArgument]);
-            i_currentArgument ++;
+        if (currentArgument_<m_arguments.size()) {
+            stream = IO::InputStream(m_arguments[currentArgument_]);
+            currentArgument_ ++;
             foundValue = true;
         }
     }
     if (!foundValue) {
-        IO::writeString(0, message);
+        if (!quietMode_) {
+            IO::writeString(0, message);
+        }
         stream = IO::InputStream(stdin, locale_);
     }
     if      (type==VM::VT_int)
@@ -468,7 +476,9 @@ void ReturnMainValueFunctor::operator()(const VM::Variable & reference) {
         static VM::CustomTypeToStringFunctor def;
         f = &def;
     }
-    do_output(reference.name()+Core::fromAscii(" = "), locale_);
+    if (!quietMode_) {
+        do_output(reference.name()+Core::fromAscii(" = "), locale_);
+    }
     if (reference.dimension()==0) {
         if (reference.hasValue()) {
             repr = reference.value().toString();
@@ -560,7 +570,9 @@ void ReturnMainValueFunctor::operator()(const VM::Variable & reference) {
         }
         do_output(" }", locale_);
     }
-    do_output("\n", locale_);
+    if (!quietMode_) {
+        do_output("\n", locale_);
+    }
 }
 
 

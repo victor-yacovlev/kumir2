@@ -583,7 +583,7 @@ KumirRunPlugin::acceptableCommandLineParameters() const
     return result;
 }
 
-QString KumirRunPlugin::initialize(const QStringList &configurationArguments,
+QString KumirRunPlugin::initialize(const QStringList &,
                                    const ExtensionSystem::CommandLine & runtimeArguments)
 {
     pRun_->programLoaded = false;
@@ -595,14 +595,20 @@ QString KumirRunPlugin::initialize(const QStringList &configurationArguments,
     if (ExtensionSystem::PluginManager::instance()->startupModule()==this) {
 
         prepareConsoleRun();
-        onlyOneTryToInput_ = runtimeArguments.hasFlag('p');
+
+        if (runtimeArguments.hasFlag(QChar('p'))) {
+            console_->returnMainValue.setQuietMode(true);
+            console_->getMainArgument.setQuietMode(true);
+        }
+
+        onlyOneTryToInput_ = runtimeArguments.hasFlag(QChar('p'));
 
 #ifndef Q_OS_WIN32
         setlocale(LC_CTYPE, "ru_RU.UTF-8");
 #else
         setlocale(LC_CTYPE, ".1251");
 #endif
-        onlyOneTryToInput_ = qApp->arguments().contains("-p");
+
         QString fileName;
         QStringList programArguments;
         for (int i=1; i<qApp->arguments().size(); i++) {
