@@ -82,6 +82,13 @@ EXTERN void __kumir_create_bool(__kumir_scalar * result, const __kumir_bool valu
     result->data.b = value;
 }
 
+static void __kumir_create_char(__kumir_scalar *result, const __kumir_char value)
+{
+    result->defined = true;
+    result->type = __KUMIR_CHAR;
+    result->data.c = value;
+}
+
 EXTERN void __kumir_create_char(__kumir_scalar * result, const char * utf8)
 {
     std::string utf8string(utf8);
@@ -350,6 +357,198 @@ EXTERN void __kumir_input_file(const __kumir_scalar * handle, const __kumir_int 
 
 }
 
+static std::list<std::wstring> __kumir_main_arguments;
+static bool __kumir_pipe_mode = false;
+
+EXTERN void __kumir_set_main_arguments(int argc, char ** argv)
+{
+    for (int i=1; i<argc; i++) {
+        const std::string arg = std::string(argv[i]);
+        const Kumir::String warg = Kumir::Core::fromUtf8(arg);
+        static const Kumir::String PIPE_MODE_SHORT = Kumir::Core::fromAscii("--kumir-p");
+        static const Kumir::String PIPE_MODE_LONG = Kumir::Core::fromAscii("--kumir-pipe");
+        if (warg == PIPE_MODE_SHORT || warg == PIPE_MODE_LONG) {
+            __kumir_pipe_mode = true;
+        }
+        else {
+            __kumir_main_arguments.push_back(warg);
+        }
+    }
+}
+
+#define IS_HEX(x) ( (x>='0' && x<='9') || (x>='A' && x<='F') || (x>='a' && x<='f') )
+
+static std::wstring __kumir_decodeHttpStringValue(const std::string & s)
+{
+    std::wstring result;
+    size_t cpos = 0;
+    std::string utf8string;
+    utf8string.reserve(s.length());
+    while (cpos<s.length()) {
+        if (s[cpos]=='%'
+                && cpos+2 < s.length()
+                && IS_HEX(s[cpos+1])
+                && IS_HEX(s[cpos+2])
+                )
+        {
+            std::string hexcode = std::string("0x")+s.substr(cpos+1,2);
+            bool ok;
+            int value = Kumir::Converter::stringToInt(Kumir::Coder::decode(Kumir::ASCII,hexcode), ok);
+            char ch = (char)value;
+            utf8string.push_back(ch);
+            cpos += 3;
+        }
+        else {
+            utf8string.push_back(s[cpos]);
+            cpos += 1;
+        }
+
+    }
+    result = Kumir::Coder::decode(Kumir::UTF8, utf8string);
+    return result;
+}
+
+EXTERN void __kumir_get_scalar_argument(const char * argNameUtf8, const __kumir_int format, __kumir_scalar * res)
+{
+    using namespace Kumir;
+    IO::InputStream stream;
+    const String name = Core::fromUtf8(std::string(argNameUtf8));
+    bool foundValue = false;
+#if !defined(WIN32) && !defined(_WIN32)
+    char * REQUEST_METHOD = getenv("REQUEST_METHOD");
+    char * QUERY_STRING = getenv("QUERY_STRING");
+    if (REQUEST_METHOD && std::string(REQUEST_METHOD)==std::string("GET") && QUERY_STRING) {
+        String query_string = __kumir_decodeHttpStringValue(std::string(QUERY_STRING));
+        StringList pairs = Core::splitString(query_string, Char('&'), true);
+        for (size_t i=0; i<pairs.size(); i++) {
+            StringList apair = Core::splitString(pairs[i], Char('='), true);
+            if (apair.size()==2) {
+                String aname = apair[0];
+                String avalue = apair[1];
+                if (aname==name) {
+                    stream = IO::InputStream(avalue);
+                    foundValue = true;
+                    break;
+                }
+            }
+        }
+    }
+#endif
+    if (!foundValue && !__kumir_main_arguments.empty()) {
+        const String arg = __kumir_main_arguments.front();
+        __kumir_main_arguments.pop_front();
+        stream = IO::InputStream(arg);
+        foundValue = true;
+    }
+    if (!foundValue) {
+        if (!__kumir_pipe_mode) {
+            __kumir_output_stdout("Введите ");
+            __kumir_output_stdout(argNameUtf8);
+            __kumir_output_stdout(": ");
+        }
+        stream = IO::InputStream(stdin, UTF8);
+    }
+    Kumir::Core::AbortHandler = 0; // temporary disable
+    if (__KUMIR_INT == format) {
+        int val = IO::readInteger(stream);
+        __kumir_create_int(res, val);
+    }
+    else if (__KUMIR_REAL == format) {
+        double val = IO::readInteger(stream);
+        __kumir_create_real(res, val);
+    }
+    else if (__KUMIR_BOOL == format) {
+        bool val = IO::readBool(stream);
+        __kumir_create_bool(res, val);
+    }
+    else if (__KUMIR_CHAR == format) {
+        Char val = IO::readChar(stream);
+        __kumir_create_char(res, val);
+    }
+    else if (__KUMIR_STRING == format) {
+        String val = IO::readString(stream);
+        __kumir_create_string(res, val);
+    }
+    Kumir::Core::AbortHandler = &__kumir_handle_abort; // enable handler again
+    if (Core::getError().size() > 0) {
+        __kumir_abort_on_error("Не все аргументы первого алгоритма введены корректно");
+    }
+}
+
+EXTERN void __kumir_get_array_argument(const char * argName, const __kumir_int format, __kumir_array * res)
+{
+    std::wstring wn = Kumir::Core::fromUtf8(std::string(argName));
+    if (1u == res->dim) {
+        int32_t start_x = res->shape_left[0];
+        int32_t end_x = res->shape_right[0];
+        for (int32_t x = start_x; x<=end_x; x++) {
+            Kumir::String qwn = wn + Kumir::Core::fromAscii("[");
+            qwn += Kumir::Converter::intToString(x);
+            qwn += Kumir::Core::fromAscii("]");
+            std::string utf8n = Kumir::Coder::encode(Kumir::UTF8, qwn);
+            __kumir_scalar * elem = 0;
+            __kumir_scalar ** elem_ptr = & elem;
+            __kumir_scalar xx;
+            __kumir_create_int(&xx, x);
+            __kumir_get_array_1_element(elem_ptr, false, res, &xx);
+            __kumir_get_scalar_argument(utf8n.c_str(), format, elem);
+        }
+    }
+    else if (2u == res->dim) {
+        int32_t start_y = res->shape_left[0];
+        int32_t end_y = res->shape_right[0];
+        for (int32_t y = start_y; y<=end_y; y++) {
+            int32_t start_x = res->shape_left[1];
+            int32_t end_x = res->shape_right[1];
+            for (int32_t x = start_x; x<=end_x; x++) {
+                Kumir::String qwn = wn + Kumir::Core::fromAscii("[");
+                qwn += Kumir::Converter::intToString(y);
+                qwn += Kumir::Core::fromAscii(",");
+                qwn += Kumir::Converter::intToString(x);
+                qwn += Kumir::Core::fromAscii("]");
+                std::string utf8n = Kumir::Coder::encode(Kumir::UTF8, qwn);
+                __kumir_scalar * elem = 0;
+                __kumir_scalar ** elem_ptr = & elem;
+                __kumir_scalar xx, yy;
+                __kumir_create_int(&xx, x);
+                __kumir_create_int(&yy, y);
+                __kumir_get_array_2_element(elem_ptr, false, res, &yy, &xx);
+                __kumir_get_scalar_argument(utf8n.c_str(), format, elem);
+            }
+        }
+    }
+    else if (3u == res->dim) {
+        int32_t start_z = res->shape_left[0];
+        int32_t end_z = res->shape_right[0];
+        for (int32_t z = start_z; z<=end_z; z++) {
+            int32_t start_y = res->shape_left[0];
+            int32_t end_y = res->shape_right[0];
+            for (int32_t y = start_y; y<=end_y; y++) {
+                int32_t start_x = res->shape_left[1];
+                int32_t end_x = res->shape_right[1];
+                for (int32_t x = start_x; x<=end_x; x++) {
+                    Kumir::String qwn = wn + Kumir::Core::fromAscii("[");
+                    qwn += Kumir::Converter::intToString(z);
+                    qwn += Kumir::Core::fromAscii(",");
+                    qwn += Kumir::Converter::intToString(y);
+                    qwn += Kumir::Core::fromAscii(",");
+                    qwn += Kumir::Converter::intToString(x);
+                    qwn += Kumir::Core::fromAscii("]");
+                    std::string utf8n = Kumir::Coder::encode(Kumir::UTF8, qwn);
+                    __kumir_scalar * elem = 0;
+                    __kumir_scalar ** elem_ptr = & elem;
+                    __kumir_scalar xx, yy, zz;
+                    __kumir_create_int(&xx, x);
+                    __kumir_create_int(&yy, y);
+                    __kumir_create_int(&zz, y);
+                    __kumir_get_array_3_element(elem_ptr, false, res, &zz, &yy, &xx);
+                    __kumir_get_scalar_argument(utf8n.c_str(), format, elem);
+                }
+            }
+        }
+    }
+}
+
 EXTERN void __kumir_output_stdout(const char * utf8)
 {
     __kumir_scalar sc;
@@ -358,16 +557,25 @@ EXTERN void __kumir_output_stdout(const char * utf8)
     __kumir_free_scalar(&sc);
 }
 
+EXTERN void __kumir_stdlib_ustanovit_kodirovku(const __kumir_scalar * encoding)
+{
+    __kumir_check_value_defined(encoding);
+    const std::wstring enc = __kumir_scalar_as_wstring(encoding);
+    Kumir::Files::setFileEncoding(enc);
+}
+
 EXTERN void __kumir_print_scalar_variable(const char * name,
                                    const __kumir_scalar_type type,
                                    const __kumir_scalar * value)
 {
     if (value->defined) {
-        const std::wstring wname = Kumir::Core::fromUtf8(name);
-        const std::wstring msg = wname.empty()
-                ? Kumir::Core::fromUtf8("Значение функции = ")
-                : wname + Kumir::Core::fromAscii(" = ");
-        Kumir::IO::writeString(0, msg);
+        if (!__kumir_pipe_mode) {
+            const std::wstring wname = Kumir::Core::fromUtf8(name);
+            const std::wstring msg = wname.empty()
+                    ? Kumir::Core::fromUtf8("Значение функции = ")
+                    : wname + Kumir::Core::fromAscii(" = ");
+            Kumir::IO::writeString(0, msg);
+        }
         __kumir_output_stdout_ii(value, type, 0, 0);
     }
 }
@@ -1884,7 +2092,7 @@ EXTERN void __kumir_get_array_1_element(__kumir_scalar ** result,
         if (value_expected && !data[index].defined) {
             Kumir::Core::abort(Kumir::Core::fromUtf8("Значение элемента таблицы не определено"));
         }
-        *result = &data[index];
+        *result = data + index;
     }
 }
 
