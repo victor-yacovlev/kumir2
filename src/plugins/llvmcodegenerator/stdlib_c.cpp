@@ -358,6 +358,13 @@ EXTERN void __kumir_output_stdout(const char * utf8)
     __kumir_free_scalar(&sc);
 }
 
+EXTERN void __kumir_stdlib_ustanovit_kodirovku(const __kumir_scalar * encoding)
+{
+    __kumir_check_value_defined(encoding);
+    const std::wstring enc = __kumir_scalar_as_wstring(encoding);
+    Kumir::Files::setFileEncoding(enc);
+}
+
 EXTERN void __kumir_print_scalar_variable(const char * name,
                                    const __kumir_scalar_type type,
                                    const __kumir_scalar * value)
