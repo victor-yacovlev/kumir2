@@ -174,6 +174,7 @@ private:
     llvm::Function* kumirInputStdin_;
     llvm::Function* kumirInputFile_;
     llvm::Function* kumirGetScalarArgument_;
+    llvm::Function* kumirGetArrayArgument_;
 
     llvm::Function* kumirAssert_;
     llvm::Function* kumirAbortOnError_;

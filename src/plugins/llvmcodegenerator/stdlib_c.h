@@ -48,6 +48,7 @@ EXTERN void __kumir_input_file(const __kumir_scalar * handle, const __kumir_int 
 EXTERN void __kumir_stdlib_ustanovit_kodirovku(const __kumir_scalar * encoding);
 
 EXTERN void __kumir_get_scalar_argument(const char * argName, const __kumir_int format, __kumir_scalar * res);
+EXTERN void __kumir_get_array_argument(const char * argName, const __kumir_int format, __kumir_array * res);
 EXTERN void __kumir_set_main_arguments(int argc, char ** argv);
 
 EXTERN void __kumir_set_current_line_number(const int32_t line_no);
