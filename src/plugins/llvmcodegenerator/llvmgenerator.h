@@ -103,6 +103,7 @@ private:
 
 
     llvm::Function* kumirInitStdLib_;
+    llvm::Function* kumirSetMainArguments_;
     llvm::Function* kumirCreateUndefinedScalar_;
     llvm::Function* kumirCreateUndefinedArray_;
     llvm::Function* kumirCreateDefinedScalar_;
@@ -172,6 +173,7 @@ private:
 
     llvm::Function* kumirInputStdin_;
     llvm::Function* kumirInputFile_;
+    llvm::Function* kumirGetScalarArgument_;
 
     llvm::Function* kumirAssert_;
     llvm::Function* kumirAbortOnError_;

@@ -244,6 +244,10 @@ void LLVMGenerator::createMainFunction(const AST::AlgorithmPtr &entryPoint)
             llvm::BasicBlock::Create(*context_, "", lfn);
     llvm::IRBuilder<> builder(functionBlock);
 
+    builder.CreateCall2(kumirSetMainArguments_,
+                        &lfn->getArgumentList().front(),
+                        &lfn->getArgumentList().back());
+
     builder.CreateCall(kumirInitStdLib_);
 
     typedef std::list<llvm::Function*>::const_iterator It;
@@ -362,7 +366,7 @@ void LLVMGenerator::createInputValue(Builder &builder, const QString & name, llv
                     llvm::Type::getInt32Ty(ctx), typee
                     );
 
-        builder.CreateCall3(kumirInputScalarVariable_, lname, ltype, value);
+        builder.CreateCall3(kumirGetScalarArgument_, lname, ltype, value);
     }
 }
 
@@ -2107,6 +2111,9 @@ void LLVMGenerator::readStdLibFunctions()
     kumirInitStdLib_ = stdlibModule_->getFunction("__kumir_init_stdlib");
     Q_ASSERT(kumirInitStdLib_);
 
+    kumirSetMainArguments_ = stdlibModule_->getFunction("__kumir_set_main_arguments");
+    Q_ASSERT(kumirSetMainArguments_);
+
     kumirCreateUndefinedScalar_ = stdlibModule_->getFunction("__kumir_create_undefined_scalar");
     Q_ASSERT(kumirCreateUndefinedScalar_);
 
@@ -2239,6 +2246,9 @@ void LLVMGenerator::readStdLibFunctions()
 
     kumirInputStdin_ = stdlibModule_->getFunction("__kumir_input_stdin");
     Q_ASSERT(kumirInputStdin_);
+
+    kumirGetScalarArgument_ = stdlibModule_->getFunction("__kumir_get_scalar_argument");
+    Q_ASSERT(kumirGetScalarArgument_);
 
     kumirAssert_ = stdlibModule_->getFunction("__kumir_assert");
     Q_ASSERT(kumirAssert_);
