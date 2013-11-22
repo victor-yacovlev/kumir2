@@ -29,8 +29,8 @@ class AnyValue
 {
     friend class Variable;
 public:
-    inline explicit AnyValue() { __init__(); }
-    inline AnyValue(const AnyValue & other) {
+    inline explicit AnyValue(): svalue_(0), avalue_(0) { __init__(); }
+    inline AnyValue(const AnyValue & other): svalue_(0), avalue_(0) {
         __init__();
         type_ = other.type_;
         if (other.svalue_) {
@@ -39,8 +39,8 @@ public:
         if (other.uvalue_) {
             uvalue_ = new Record(*(other.uvalue_));
         }
-        if (other.avalue) {
-            avalue = new std::vector<class AnyValue>(*(other.avalue));
+        if (other.avalue_) {
+            avalue_ = new std::vector<class AnyValue>(*(other.avalue_));
         }
         if (type_==VT_int)
             ivalue_ = other.ivalue_;
@@ -52,17 +52,17 @@ public:
             cvalue_ = other.cvalue_;
     }
 
-    inline explicit AnyValue(ValueType t) { __init__(); type_ = t;  svalue_ = t==VT_string? new String() : 0; ivalue_ = 0; }
-    inline explicit AnyValue(int v) {
+    inline explicit AnyValue(ValueType t): svalue_(0), avalue_(0) { __init__(); type_ = t;  svalue_ = t==VT_string? new String() : 0; ivalue_ = 0; }
+    inline explicit AnyValue(int v): svalue_(0), avalue_(0) {
         __init__();
         type_ = VT_int;
         ivalue_ = v;
     }
-    inline explicit AnyValue(real v) { __init__(); type_ = VT_real;  rvalue_ = v; }
-    inline explicit AnyValue(bool v) { __init__(); type_ = VT_bool; bvalue_ = v; }
-    inline explicit AnyValue(Char v) { __init__(); type_ = VT_char; cvalue_ = v; }
-    inline explicit AnyValue(const String & v) { __init__(); type_ = VT_string; svalue_ = new String(v); }
-    inline explicit AnyValue(const Record & value) {
+    inline explicit AnyValue(real v): svalue_(0), avalue_(0) { __init__(); type_ = VT_real;  rvalue_ = v; }
+    inline explicit AnyValue(bool v): svalue_(0), avalue_(0) { __init__(); type_ = VT_bool; bvalue_ = v; }
+    inline explicit AnyValue(Char v): svalue_(0), avalue_(0) { __init__(); type_ = VT_char; cvalue_ = v; }
+    inline explicit AnyValue(const String & v): svalue_(0), avalue_(0) { __init__(); type_ = VT_string; svalue_ = new String(v); }
+    inline explicit AnyValue(const Record & value): svalue_(0), avalue_(0) {
         __init__();
         type_ = VT_record;
         uvalue_ = new Record(value);
@@ -88,8 +88,8 @@ public:
         if (other.uvalue_) {
             uvalue_ = new Record(*(other.uvalue_));
         }
-        if (other.avalue) {
-            avalue = new std::vector<class AnyValue>(*(other.avalue));
+        if (other.avalue_) {
+            avalue_ = new std::vector<class AnyValue>(*(other.avalue_));
         }
         if (type_==VT_int)
             ivalue_ = other.ivalue_;
@@ -145,21 +145,21 @@ public:
     }
 
 
-    inline bool isValid() const { return type_!=VT_void || ( avalue && avalue->size()>0 ); }
+    inline bool isValid() const { return type_!=VT_void || ( avalue_ && avalue_->size()>0 ); }
 
     inline ValueType type() const { return type_; }
-    inline const AnyValue & at(size_t index) const { return avalue->at(index); }
+    inline const AnyValue & at(size_t index) const { return avalue_->at(index); }
     inline const AnyValue & operator[](size_t index) const { return at(index); }
-    inline AnyValue & at(size_t index) { return avalue->at(index); }
+    inline AnyValue & at(size_t index) { return avalue_->at(index); }
     inline AnyValue & operator[](size_t index) { return at(index); }
 
-    inline size_t rawSize() const { return avalue? avalue->size() : 0; }
+    inline size_t rawSize() const { return avalue_? avalue_->size() : 0; }
     inline ~AnyValue() {
         if (svalue_)
             delete svalue_;
-        if (avalue) {
-            avalue->clear();
-            delete avalue;
+        if (avalue_) {
+            avalue_->clear();
+            delete avalue_;
         }
         if (uvalue_) {
             delete uvalue_;
@@ -170,27 +170,34 @@ public:
 protected:
 
     inline void resize(size_t size) {
-        if (!avalue)
-            avalue = new std::vector<class AnyValue>(size);
+        if (!avalue_)
+            avalue_ = new std::vector<class AnyValue>(size);
         if (size==0) {
-            if (avalue->size())
-                avalue->clear();
+            if (avalue_->size())
+                avalue_->clear();
         }
         else {
-            if (size != avalue->size()) {
-                size_t asize = avalue->size();
-                avalue->resize(size);
+            if (size != avalue_->size()) {
+                size_t asize = avalue_->size();
+                avalue_->resize(size);
             }
         }
     }
 
 private:
     inline void __init__() {
+        if (avalue_) {
+            avalue_->clear();
+            delete avalue_;
+        }
+        if (svalue_) {
+            delete svalue_;
+        }
         type_ = VT_void;
         svalue_ = 0;
         ivalue_ = 0;
         uvalue_ = 0;
-        avalue = 0;
+        avalue_ = 0;
     }
 
     ValueType type_;
@@ -202,7 +209,7 @@ private:
     };
     Record * uvalue_;
     String * svalue_;
-    std::vector<class AnyValue> * avalue;
+    std::vector<class AnyValue> * avalue_;
 };
 
 
@@ -332,9 +339,9 @@ public:
     inline AnyValue value(int indeces[4]) const;
 
     inline size_t rawSize() const { return value_.rawSize(); }
-    inline const AnyValue & at(size_t index) const { return value_.avalue->at(index); }
+    inline const AnyValue & at(size_t index) const { return value_.avalue_->at(index); }
     inline const AnyValue & operator[](size_t index) const { return at(index); }
-    inline AnyValue & at(size_t index) { return value_.avalue->at(index); }
+    inline AnyValue & at(size_t index) { return value_.avalue_->at(index); }
     inline AnyValue & operator[](size_t index) { return at(index); }
 
     inline bool isReference() const { return reference_!=0; }
