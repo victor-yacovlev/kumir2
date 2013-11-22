@@ -2603,7 +2603,7 @@ void KumirVM::do_pop(uint8_t r)
     AnyValue & registerToStore = r==0u
             ? register0_
            : currentContext().registers[r];
-    if (v.hasValue()) {
+    if (v.hasValue() && v.dimension() == 0u) {
         registerToStore = v.value();
     }
 
