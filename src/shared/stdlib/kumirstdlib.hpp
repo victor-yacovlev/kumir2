@@ -940,7 +940,7 @@ public:
         mantissa += fraction;
         exponenta = fromDecimal(sExponenta);
         real result = mantissa * ::pow(10, exponenta);
-        if (negative)
+        if (negative && result != 0)
             result *= -1;
         if (!Math::isCorrectDouble(result))
             error = Overflow;
