@@ -3866,10 +3866,14 @@ QVariant SyntaxAnalizer::parseConstant(const std::list<Lexem*> &constant,
                 if (!isHex) {
                     // Check for leading zeroes
                     int startPos = 0;
-                    if (val.startsWith('-'))
+                    std::list<Lexem*>::const_iterator it = constant.begin();
+                    if (val.startsWith('-')) {
                         startPos += 1;
-                    if (val.mid(startPos).startsWith('0') && val.length()>startPos+1) {
-                        for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
+                        it ++;
+                    }
+                    const QString digits = val.mid(startPos);
+                    if (digits != "0" && digits.startsWith("0")) {
+                        for (; it!=constant.end(); it++) {
                             Lexem * lx = * it;
                             lx->error = _("Leading zeroes not allowed in constants");
                             return QVariant::Invalid;
@@ -4046,6 +4050,10 @@ QVariant SyntaxAnalizer::createConstValue(const QString & str
         bool ok;
         if (str.startsWith("$")) {
             result = QVariant(str.mid(1).toInt(&ok, 16));
+        }
+        else if (str.startsWith("-$")) {
+            result = QVariant(str.mid(2).toInt(&ok, 16));
+            result = QVariant(-1 * result.toULongLong());
         }
         else {
             result = QVariant(str.toInt());
@@ -4549,7 +4557,6 @@ AST::ExpressionPtr  SyntaxAnalizer::parseExpression(
             block << lexems[curPos];
         }
 
-
         if (oper && oper->type==LxOperLeftBr) {
             if (block.size()>0 && block[0]->type!=LxSecNot)
                 blockType = Function;
@@ -4714,40 +4721,22 @@ AST::ExpressionPtr  SyntaxAnalizer::parseExpression(
                  }
             }
 
-            bool hasUnaryMinusBefore = false;
-            if (prevOper && prevOper->type == LxOperMinus) {
-                // check if '-' is unary
-                int minusIndex = lexems.indexOf(prevOper);
-                hasUnaryMinusBefore = true;
-                for (int k=minusIndex-1; k>=0; k--) {
-                    const Lexem * plx = lexems[k];
-                    if (plx->type == LxOperLeftBr ||
-                            plx->type == LxOperLeftSqBr ||
-                            plx->type == LxOperEqual ||
-                            plx->type == LxOperNotEqual ||
-                            plx->type == LxOperLess ||
-                            plx->type == LxOperLessOrEqual ||
-                            plx->type == LxOperGreater ||
-                            plx->type == LxOperGreaterOrEqual ||
-                            plx->type == LxOperColon)
-                    {
-                        break;
-                    }
-                    else {
-                        hasUnaryMinusBefore = false;
-                        break;
-                    }
-                }
-            }
+            bool hasUnaryMinusBefore =
+                    subexpression.size() == 1 &&
+                    subexpression[subexpression.size()-1].o &&
+                    subexpression[subexpression.size()-1].o->type == LxOperMinus
+                    ;
 
             if (block.size() == 1 &&
                     (block.at(0)->type == LxConstInteger ||
                      block.at(0)->type == LxConstReal)) {
                 if (hasUnaryMinusBefore) {
+                    subexpression.pop_back();
                     block.prepend(prevOper);
                     prevOper->type = block.at(1)->type;
                 }
             }
+
 
             AST::ExpressionPtr  operand = parseSimpleName(block.toStdList(),
                                                           mod,
@@ -4940,8 +4929,7 @@ AST::ExpressionPtr  SyntaxAnalizer::parseExpression(
         else if (blockType==None) {
             if (oper) {
                 if (oper->type==LxOperPlus || oper->type==LxOperMinus) {
-                    if (curPos == lexems.size() - 1)
-                        subexpression << oper;
+                    subexpression << oper;
                 }
                 else {
                     oper->error = _("Extra operator");
