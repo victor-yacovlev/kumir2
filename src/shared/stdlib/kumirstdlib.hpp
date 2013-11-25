@@ -415,7 +415,8 @@ public:
             start += 1;
         const String digits = value.substr(start);
         static const String maxHex = Core::fromAscii("80000000");
-        static const String maxDecimal = Core::fromAscii("2147483648");
+        static const String maxPositiveDecimal = Core::fromAscii("2147483647");
+        static const String maxNegativeDecimal = Core::fromAscii("2147483648");
         if (isHex) {
             if (digits.length()==maxHex.length())
                 return digits < maxHex;
@@ -423,8 +424,10 @@ public:
                 return digits.length()<maxHex.length();
         }
         else {
+            const String & maxDecimal =
+                    isNegative ? maxNegativeDecimal : maxPositiveDecimal;
             if (digits.length()==maxDecimal.length())
-                return digits < maxDecimal;
+                return digits <= maxDecimal;
             else
                 return digits.length()<maxDecimal.length();
         }

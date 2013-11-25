@@ -3680,7 +3680,9 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                     return result;
                 }
                 int maxDim = 0;
-                QVariant constValue = parseConstant(initValue.toStdList(), var->baseType.kind, maxDim);
+                QVariant constValue = parseConstant(initValue.toStdList(),
+                                                    var->baseType.kind,
+                                                    maxDim);
                 if (constValue==QVariant::Invalid) {
                     return result;
                 }
@@ -3740,10 +3742,10 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
     return result;
 }
 
-QVariant SyntaxAnalizer::parseConstant(const std::list<Lexem*> &constant
-                                              , const AST::VariableBaseType pt
-                                              , int& maxDim
-                                              ) const
+QVariant SyntaxAnalizer::parseConstant(const std::list<Lexem*> &constant,
+                                       const AST::VariableBaseType pt,
+                                       int& maxDim
+                                       ) const
 {
     int localErr = 0;
     AST::VariableBaseType ct;
@@ -4017,7 +4019,8 @@ AST::VariableBaseType SyntaxAnalizer::testConst(const std::list<Lexem*> &lxs, in
         Lexem * llx = *it;
         it++;
         lx = *it;
-        if (llx->type==LxOperPlus || llx->type==LxOperMinus) {
+        static const QString PlusMinus = QString::fromAscii("-+");
+        if (llx->data.length() == 1 && PlusMinus.contains(llx->data[0])) {
             if (lx->type==LxConstInteger)
                 return AST::TypeInteger;
             else if (lx->type==LxConstReal)
@@ -4710,7 +4713,45 @@ AST::ExpressionPtr  SyntaxAnalizer::parseExpression(
                     continue;
                  }
             }
-            AST::ExpressionPtr  operand = parseSimpleName(block.toStdList(), mod, alg);
+
+            bool hasUnaryMinusBefore = false;
+            if (prevOper && prevOper->type == LxOperMinus) {
+                // check if '-' is unary
+                int minusIndex = lexems.indexOf(prevOper);
+                hasUnaryMinusBefore = true;
+                for (int k=minusIndex-1; k>=0; k--) {
+                    const Lexem * plx = lexems[k];
+                    if (plx->type == LxOperLeftBr ||
+                            plx->type == LxOperLeftSqBr ||
+                            plx->type == LxOperEqual ||
+                            plx->type == LxOperNotEqual ||
+                            plx->type == LxOperLess ||
+                            plx->type == LxOperLessOrEqual ||
+                            plx->type == LxOperGreater ||
+                            plx->type == LxOperGreaterOrEqual ||
+                            plx->type == LxOperColon)
+                    {
+                        break;
+                    }
+                    else {
+                        hasUnaryMinusBefore = false;
+                        break;
+                    }
+                }
+            }
+
+            if (block.size() == 1 &&
+                    (block.at(0)->type == LxConstInteger ||
+                     block.at(0)->type == LxConstReal)) {
+                if (hasUnaryMinusBefore) {
+                    block.prepend(prevOper);
+                    prevOper->type = block.at(1)->type;
+                }
+            }
+
+            AST::ExpressionPtr  operand = parseSimpleName(block.toStdList(),
+                                                          mod,
+                                                          alg);
             if (!operand) {
                 return AST::ExpressionPtr();
             }
@@ -4899,7 +4940,8 @@ AST::ExpressionPtr  SyntaxAnalizer::parseExpression(
         else if (blockType==None) {
             if (oper) {
                 if (oper->type==LxOperPlus || oper->type==LxOperMinus) {
-                    subexpression << oper;
+                    if (curPos == lexems.size() - 1)
+                        subexpression << oper;
                 }
                 else {
                     oper->error = _("Extra operator");
@@ -5573,7 +5615,9 @@ AST::ExpressionPtr  SyntaxAnalizer::parseElementAccess(const QList<Lexem *> &lex
 }
 
 
-AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<Lexem *> &lexems, const AST::ModulePtr mod, const AST::AlgorithmPtr alg) const
+AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<Lexem *> &lexems,
+                                                    const AST::ModulePtr mod,
+                                                    const AST::AlgorithmPtr alg) const
 {
     AST::ExpressionPtr  result;
     if (lexems.size()==1 && lexems.front()->type==LxSecCurrentStringLength) {
@@ -5586,7 +5630,7 @@ AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<Lexem *> &le
         findAlgorhitm(QString::fromUtf8("длин"), dummy, AST::AlgorithmPtr(), result->function);
         return result;
     }
-    if (lexems.size()==1 &&
+    if (lexems.size()>=1 &&
             lexems.front()->type & LxTypeConstant &&
             lexems.front()->type != LxTypeConstant // Exact type of constant is known
             ) {
