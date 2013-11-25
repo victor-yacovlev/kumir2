@@ -212,7 +212,9 @@ private /*methods*/:
     QVariant createConstValue(const QString &str, const AST::VariableBaseType type) const;
     AST::ExpressionPtr parseFunctionCall(const QList<Lexem*> &lexems, const AST::ModulePtr mod, const AST::AlgorithmPtr alg) const;
 
-    AST::ExpressionPtr parseSimpleName(const std::list<Lexem*> &lexems, const AST::ModulePtr mod, const AST::AlgorithmPtr alg) const;
+    AST::ExpressionPtr parseSimpleName(const std::list<Lexem*> &lexems,
+                                       const AST::ModulePtr mod,
+                                       const AST::AlgorithmPtr alg) const;
     void updateSliceDSCall(AST::ExpressionPtr expr, AST::VariablePtr var) const;
     AST::ExpressionPtr parseElementAccess(const QList<Lexem*> &lexems, const AST::ModulePtr mod, const AST::AlgorithmPtr alg) const;
     AST::ExpressionPtr makeExpressionTree(const QList<SubexpressionElement> & s, const AST::ModulePtr currentModule) const;

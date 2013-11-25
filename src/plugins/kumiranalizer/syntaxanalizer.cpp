@@ -3680,7 +3680,9 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                     return result;
                 }
                 int maxDim = 0;
-                QVariant constValue = parseConstant(initValue.toStdList(), var->baseType.kind, maxDim);
+                QVariant constValue = parseConstant(initValue.toStdList(),
+                                                    var->baseType.kind,
+                                                    maxDim);
                 if (constValue==QVariant::Invalid) {
                     return result;
                 }
@@ -3740,10 +3742,10 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
     return result;
 }
 
-QVariant SyntaxAnalizer::parseConstant(const std::list<Lexem*> &constant
-                                              , const AST::VariableBaseType pt
-                                              , int& maxDim
-                                              ) const
+QVariant SyntaxAnalizer::parseConstant(const std::list<Lexem*> &constant,
+                                       const AST::VariableBaseType pt,
+                                       int& maxDim
+                                       ) const
 {
     int localErr = 0;
     AST::VariableBaseType ct;
@@ -3864,10 +3866,14 @@ QVariant SyntaxAnalizer::parseConstant(const std::list<Lexem*> &constant
                 if (!isHex) {
                     // Check for leading zeroes
                     int startPos = 0;
-                    if (val.startsWith('-'))
+                    std::list<Lexem*>::const_iterator it = constant.begin();
+                    if (val.startsWith('-')) {
                         startPos += 1;
-                    if (val.mid(startPos).startsWith('0') && val.length()>startPos+1) {
-                        for (std::list<Lexem*>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
+                        it ++;
+                    }
+                    const QString digits = val.mid(startPos);
+                    if (digits != "0" && digits.startsWith("0")) {
+                        for (; it!=constant.end(); it++) {
                             Lexem * lx = * it;
                             lx->error = _("Leading zeroes not allowed in constants");
                             return QVariant::Invalid;
@@ -4017,7 +4023,8 @@ AST::VariableBaseType SyntaxAnalizer::testConst(const std::list<Lexem*> &lxs, in
         Lexem * llx = *it;
         it++;
         lx = *it;
-        if (llx->type==LxOperPlus || llx->type==LxOperMinus) {
+        static const QString PlusMinus = QString::fromAscii("-+");
+        if (llx->data.length() == 1 && PlusMinus.contains(llx->data[0])) {
             if (lx->type==LxConstInteger)
                 return AST::TypeInteger;
             else if (lx->type==LxConstReal)
@@ -4043,6 +4050,10 @@ QVariant SyntaxAnalizer::createConstValue(const QString & str
         bool ok;
         if (str.startsWith("$")) {
             result = QVariant(str.mid(1).toInt(&ok, 16));
+        }
+        else if (str.startsWith("-$")) {
+            result = QVariant(str.mid(2).toInt(&ok, 16));
+            result = QVariant(-1 * result.toULongLong());
         }
         else {
             result = QVariant(str.toInt());
@@ -4546,7 +4557,6 @@ AST::ExpressionPtr  SyntaxAnalizer::parseExpression(
             block << lexems[curPos];
         }
 
-
         if (oper && oper->type==LxOperLeftBr) {
             if (block.size()>0 && block[0]->type!=LxSecNot)
                 blockType = Function;
@@ -4710,7 +4720,35 @@ AST::ExpressionPtr  SyntaxAnalizer::parseExpression(
                     continue;
                  }
             }
-            AST::ExpressionPtr  operand = parseSimpleName(block.toStdList(), mod, alg);
+
+            bool hasUnaryMinusBefore =
+                    subexpression.size() == 1 &&
+                    subexpression[subexpression.size()-1].o &&
+                    subexpression[subexpression.size()-1].o->type == LxOperMinus
+                    ;
+
+            if (block.size() == 1 &&
+                    (block.at(0)->type == LxConstInteger ||
+                     block.at(0)->type == LxConstReal)) {
+                bool nextOperHasHigherPriority = false;
+                bool hex = block.at(0)->data.trimmed().startsWith("$");
+                if (oper) {
+                    nextOperHasHigherPriority =
+                            oper->type == LxOperAsterisk ||
+                            oper->type == LxOperSlash ||
+                            oper->type == LxOperPower;
+                }
+                if (hasUnaryMinusBefore && !nextOperHasHigherPriority && !hex) {
+                    subexpression.pop_back();
+                    block.prepend(prevOper);
+                    prevOper->type = block.at(1)->type;
+                }
+            }
+
+
+            AST::ExpressionPtr  operand = parseSimpleName(block.toStdList(),
+                                                          mod,
+                                                          alg);
             if (!operand) {
                 return AST::ExpressionPtr();
             }
@@ -5573,7 +5611,9 @@ AST::ExpressionPtr  SyntaxAnalizer::parseElementAccess(const QList<Lexem *> &lex
 }
 
 
-AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<Lexem *> &lexems, const AST::ModulePtr mod, const AST::AlgorithmPtr alg) const
+AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<Lexem *> &lexems,
+                                                    const AST::ModulePtr mod,
+                                                    const AST::AlgorithmPtr alg) const
 {
     AST::ExpressionPtr  result;
     if (lexems.size()==1 && lexems.front()->type==LxSecCurrentStringLength) {
@@ -5586,7 +5626,7 @@ AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<Lexem *> &le
         findAlgorhitm(QString::fromUtf8("длин"), dummy, AST::AlgorithmPtr(), result->function);
         return result;
     }
-    if (lexems.size()==1 &&
+    if (lexems.size()>=1 &&
             lexems.front()->type & LxTypeConstant &&
             lexems.front()->type != LxTypeConstant // Exact type of constant is known
             ) {
