@@ -4731,13 +4731,14 @@ AST::ExpressionPtr  SyntaxAnalizer::parseExpression(
                     (block.at(0)->type == LxConstInteger ||
                      block.at(0)->type == LxConstReal)) {
                 bool nextOperHasHigherPriority = false;
+                bool hex = block.at(0)->data.trimmed().startsWith("$");
                 if (oper) {
                     nextOperHasHigherPriority =
                             oper->type == LxOperAsterisk ||
                             oper->type == LxOperSlash ||
                             oper->type == LxOperPower;
                 }
-                if (hasUnaryMinusBefore && !nextOperHasHigherPriority) {
+                if (hasUnaryMinusBefore && !nextOperHasHigherPriority && !hex) {
                     subexpression.pop_back();
                     block.prepend(prevOper);
                     prevOper->type = block.at(1)->type;
