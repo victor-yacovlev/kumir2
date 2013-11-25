@@ -4730,7 +4730,14 @@ AST::ExpressionPtr  SyntaxAnalizer::parseExpression(
             if (block.size() == 1 &&
                     (block.at(0)->type == LxConstInteger ||
                      block.at(0)->type == LxConstReal)) {
-                if (hasUnaryMinusBefore) {
+                bool nextOperHasHigherPriority = false;
+                if (oper) {
+                    nextOperHasHigherPriority =
+                            oper->type == LxOperAsterisk ||
+                            oper->type == LxOperSlash ||
+                            oper->type == LxOperPower;
+                }
+                if (hasUnaryMinusBefore && !nextOperHasHigherPriority) {
                     subexpression.pop_back();
                     block.prepend(prevOper);
                     prevOper->type = block.at(1)->type;
