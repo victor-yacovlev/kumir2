@@ -16,3 +16,6 @@ if(NOT APPLE AND NOT WIN32)
 endif()
 
 add_subdirectory(docbook2latex)
+if (NOT APPLE)
+    add_subdirectory(open)
+endif()

@@ -16,6 +16,9 @@
 #include "docbookviewer/docbookview.h"
 #include "terminal.h"
 #include "kumirprogram.h"
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+    #include <signal.h>
+#endif
 
 
 
@@ -68,10 +71,12 @@ public slots:
 
 protected slots:
     void prepareKumirProgramToRun();
+    void handleExternalProcessCommand(const QString & command);
 
 
 
 protected:
+    QList<CommandLineParameter> acceptableCommandLineParameters() const;
     QString initialize(const QStringList &configurationArguments,
                        const ExtensionSystem::CommandLine &runtimeArguments);
     void saveSession() const;
@@ -80,6 +85,10 @@ protected:
     void start();
     void stop();
     void updateSettings(const QStringList & keys);
+
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+    static void handleSIGUSR1(int, siginfo_t *, void *);
+#endif
 
     class MainWindow * mainWindow_;
     class QLabel * m_kumirStateLabel;
@@ -101,6 +110,11 @@ protected:
     DocBookViewer::DocBookView * helpViewer_;  
     Shared::CoursesInterface* courseManager_;
     bool sessionsDisableFlag_;
+    static Plugin * instance_;
+    QString fileNameToOpenOnReady_;
+
+signals:
+    void externalProcessCommandReceived(const QString & command);
 
 };
 
