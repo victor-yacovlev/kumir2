@@ -340,7 +340,38 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
                 insertBlock(data.block);
             }
             else if (data.type == ClipboardData::Text) {
-                insertText(data.text);
+                QString textToInsert = data.text;
+                bool removeLeadingSpaces = false;
+                if (editor_->analizer()) {
+                    // Check if must remove leading spaces
+                    if (row() >= editor_->document()->linesCount()) {
+                        removeLeadingSpaces = true;
+                    }
+                    else {
+                        const QString currentLineText =
+                                editor_->document()->at(row()).text;
+                        bool spacesOnlyBeforeCursor = true;
+                        for (uint i=0; i<column(); i++) {
+                            if (currentLineText.length() >= i)
+                                break;
+                            if (!currentLineText.at(i).isSpace()) {
+                                spacesOnlyBeforeCursor = false;
+                                break;
+                            }
+                        }
+                        if (spacesOnlyBeforeCursor) {
+                            removeLeadingSpaces = true;
+                        }
+                    }
+                }
+                if (removeLeadingSpaces) {
+                    QStringList lines = textToInsert.split("\n", QString::KeepEmptyParts);
+                    for (int i=0; i<lines.size(); i++) {
+                        lines[i] = lines[i].trimmed();
+                    }
+                    textToInsert = lines.join("\n");
+                }
+                insertText(textToInsert);
                 clearCurrentLineError = !data.text.contains("\n");
             }
         }
