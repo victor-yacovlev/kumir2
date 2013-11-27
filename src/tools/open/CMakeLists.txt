@@ -12,6 +12,7 @@ set(SOURCES
     dialog.cpp
     appmanager.cpp
     procmanager.cpp
+    settings.cpp
 )
 
 set(HEADERS
@@ -19,6 +20,7 @@ set(HEADERS
     dialog.h
     appmanager.h
     procmanager.h
+    settings.h
 )
 
 set(FORMS

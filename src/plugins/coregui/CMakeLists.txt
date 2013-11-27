@@ -19,6 +19,7 @@ set(SOURCES
     debuggerview.cpp
     row.cpp
     switchworkspacedialog.cpp
+    systemopenfilesettings.cpp
 )
 
 set(EXTRA_LIBS
@@ -47,12 +48,14 @@ set(MOC_HEADERS
     debuggerview.h
     row.h
     switchworkspacedialog.h
+    systemopenfilesettings.h
 )
 
 set(FORMS
     mainwindow.ui
     aboutdialog.ui
     switchworkspacedialog.ui
+    systemopenfilesettings.ui
 )
 
 set(RESOURCES

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>417</width>
-    <height>140</height>
+    <width>432</width>
+    <height>209</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -36,19 +36,6 @@
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
     <widget class="QComboBox" name="comboBox">
      <property name="font">
       <font>
@@ -64,6 +51,23 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="checkBox">
+     <property name="text">
+      <string>Запомнить и больше не спрашивать</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="hint">
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Выбрать программу для запуска можно из раздела &lt;br/&gt;&lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Открытие файлов&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; в настройках Кумир.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -71,7 +75,7 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>40</height>
+       <height>20</height>
       </size>
      </property>
     </spacer>
@@ -93,15 +97,36 @@
      </item>
      <item>
       <widget class="QPushButton" name="pushButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
-        <string>OK</string>
+        <string>Открыть</string>
+       </property>
+       <property name="shortcut">
+        <string>Return</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="pushButton_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>Отмена</string>
+       </property>
+       <property name="shortcut">
+        <string>Esc</string>
        </property>
       </widget>
      </item>
@@ -109,6 +134,11 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>pushButton</tabstop>
+  <tabstop>pushButton_2</tabstop>
+  <tabstop>comboBox</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
@@ -118,8 +148,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>319</x>
-     <y>114</y>
+     <x>344</x>
+     <y>235</y>
     </hint>
     <hint type="destinationlabel">
      <x>221</x>
@@ -134,12 +164,28 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>396</x>
-     <y>121</y>
+     <x>421</x>
+     <y>235</y>
     </hint>
     <hint type="destinationlabel">
      <x>103</x>
      <y>104</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>hint</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>15</x>
+     <y>124</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>57</x>
+     <y>153</y>
     </hint>
    </hints>
   </connection>

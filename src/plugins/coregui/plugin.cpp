@@ -441,12 +441,10 @@ void Plugin::handleExternalProcessCommand(const QString &command)
 }
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MACX)
-void Plugin::handleSIGUSR1(int signal, siginfo_t * info, void * )
+void Plugin::handleSIGUSR1(int , siginfo_t * info, void * )
 {
     sigval_t val = info->si_value;
-    qDebug() << "Received signal " << signal;
-    qDebug() << "Data available at port: " << val.sival_int;
-    ::sleep(1);
+    ::usleep(1000u);
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
@@ -466,9 +464,7 @@ void Plugin::handleSIGUSR1(int signal, siginfo_t * info, void * )
         data += block;
     }
     const QString message = QString::fromUtf8(data);
-    qDebug() << "Received message: " << message;
     emit instance_->externalProcessCommandReceived(message);
-
 }
 
 #endif

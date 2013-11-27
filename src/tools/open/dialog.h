@@ -15,6 +15,7 @@ class OpenDialog
 public:
     explicit OpenDialog(const QList<Application> & apps);
     quintptr selectedApplicationId() const;
+    void accept();
 private:
     Ui::OpenDialog * ui_;
 };

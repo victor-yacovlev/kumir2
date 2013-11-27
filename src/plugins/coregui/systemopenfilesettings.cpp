@@ -1,23 +1,20 @@
-#include "appmanager.h"
-#include "procmanager.h"
-#include "messager.h"
-#include "settings.h"
+#include "systemopenfilesettings.h"
+#include "ui_systemopenfilesettings.h"
 
-#include <QApplication>
 #include <QDir>
-#include <QFile>
+#include <QFileInfo>
 #include <QTextStream>
-#include <QProcess>
+#include <QRadioButton>
+#include <QSpacerItem>
 
+namespace CoreGUI {
 
-ApplicationManager & ApplicationManager::get()
+SystemOpenFileSettings::SystemOpenFileSettings(QWidget *parent) :
+    QWidget(parent),
+    ui(new Ui::SystemOpenFileSettings)
 {
-    static ApplicationManager manager;
-    return manager;
-}
+    ui->setupUi(this);
 
-ApplicationManager::ApplicationManager()
-{
     const QString appsDir =
             QDir::cleanPath(QApplication::applicationDirPath() +
                             "/../share/applications");
@@ -25,23 +22,54 @@ ApplicationManager::ApplicationManager()
             QDir::cleanPath(QApplication::applicationDirPath() +
                             "/../share/icons/hicolor");
     scanForApplications(appsDir, iconsDir);
-}
 
-QList<Application> ApplicationManager::applications() const
-{
-    QList<Application> result;
-    foreach (const ApplicationPrivate & app_p, applications_) {
-        Application app;
-        app.name = app_p.name;
-        app.icon = app_p.icon;
-        app.id = quintptr(&app_p);
-        app.key = QFileInfo(app_p.executableFileName).baseName();
-        result.push_back(app);
+    chooseAtRunOption_ = new QRadioButton(tr("Choose on run"), this);
+    ui->groupBox->layout()->addWidget(chooseAtRunOption_);
+    ui->groupBox->layout()->addItem(new QSpacerItem(10, 10, QSizePolicy::Fixed, QSizePolicy::Fixed));
+
+    foreach (const Application & app, applications_) {
+        ui->groupBox->layout()->addWidget(app.button);
     }
-    return result;
+
+    ui->groupBox->layout()->addItem(new QSpacerItem(10, 50, QSizePolicy::Fixed, QSizePolicy::MinimumExpanding));
+
+    sett_ = new QSettings("kumir2", "kumir2-open");
+    sett_->setIniCodec("UTF-8");
 }
 
-void ApplicationManager::scanForApplications(const QString &appsDirPath,
+void SystemOpenFileSettings::init()
+{
+    const bool skipDialog = sett_->value("SkipOpenDialog", false).toBool();
+    const QString lastKey = sett_->value("LastSelected", "").toString();
+    QRadioButton * btn = chooseAtRunOption_;
+    if (skipDialog && lastKey.length() > 0) {
+        foreach (const Application & app, applications_) {
+            if (app.key == lastKey) {
+                btn = app.button;
+                break;
+            }
+        }
+    }
+    btn->setChecked(true);
+}
+
+void SystemOpenFileSettings::accept()
+{
+    if (chooseAtRunOption_->isChecked()) {
+        sett_->setValue("SkipOpenDialog", false);
+    }
+    else {
+        sett_->setValue("SkipOpenDialog", true);
+        foreach (const Application & app, applications_) {
+            if (app.button->isChecked()) {
+                sett_->setValue("LastSelected", app.key);
+                break;
+            }
+        }
+    }
+}
+
+void SystemOpenFileSettings::scanForApplications(const QString &appsDirPath,
                                              const QString &iconsDirPath)
 {
     QDir appsDir(appsDirPath);
@@ -53,8 +81,7 @@ void ApplicationManager::scanForApplications(const QString &appsDirPath,
             QTextStream ts(&f);
             QStringList lines = ts.readAll().split("\n");
             f.close();
-            ApplicationPrivate app;
-            app.mdiInterface = false;
+            Application app;
             bool isApp = false;
             foreach (const QString & line, lines) {
                 int eqPos = line.indexOf('=');
@@ -77,24 +104,21 @@ void ApplicationManager::scanForApplications(const QString &appsDirPath,
                         app.icon = QIcon(iconFileName);
                     }
                     else if (key == "exec") {
+                        QString executableFileName;
                         QString cleanName = value;
                         int spacePos = cleanName.indexOf(' ');
                         if (spacePos != -1) {
                             cleanName = cleanName.left(spacePos);
                         }
-                        app.executableFileName =
+                        executableFileName =
                                 QDir::cleanPath(
                                     QApplication::applicationDirPath() +
                                     "/" + cleanName
                                     );
 #ifdef Q_OS_WIN32
-                        app.executableFileName += ".exe";
+                        executableFileName += ".exe";
 #endif
-                    }
-                    else if (key == "x-kumir-mdi") {
-                        app.mdiInterface =
-                                value.toLower() == "true" ||
-                                value.toLower() == "1";
+                        app.key = QFileInfo(executableFileName).baseName();
                     }
                 }
             }
@@ -103,42 +127,16 @@ void ApplicationManager::scanForApplications(const QString &appsDirPath,
             }
         }
     }
+
+    for (int i=0 ; i<applications_.size(); i++) {
+        Application & app = applications_[i];
+        app.button = new QRadioButton(app.name, this);
+    }
 }
 
-void ApplicationManager::open(quintptr applicationId, const QUrl &url)
+SystemOpenFileSettings::~SystemOpenFileSettings()
 {
-    ApplicationPrivate * app = reinterpret_cast<ApplicationPrivate*>(applicationId);
-    const QString sUrl = url.toLocalFile();
-    bool startNewProcess = true;
-    pid_t pid = 0;
-    if (app->mdiInterface) {
-        ProcessManager & procMan = ProcessManager::get();
-        pid = procMan.find(app->executableFileName);
-        startNewProcess = pid == 0;
-    }
-    if (startNewProcess) {
-        const QString executable = app->executableFileName;
-        const QStringList arguments = QStringList() << sUrl;
-        QProcess::startDetached(executable, arguments);
-    }
-    else {
-        Messager & messager = Messager::get();
-        messager.sendMessage(pid, "OPEN " + sUrl);
-    }
-
-    Settings & sett = Settings::get();
-    sett.setLastSelectedKey(QFileInfo(app->executableFileName).baseName());
+    delete ui;
 }
 
-Application ApplicationManager::find(const QString &key) const
-{
-    QList<Application> apps = applications();
-    Application result; result.id = 0u;
-    foreach (const Application & app, apps) {
-        if (app.key == key) {
-            result = app;
-            break;
-        }
-    }
-    return result;
-}
+} // namespace CoreGUI

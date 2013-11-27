@@ -8,6 +8,7 @@
 
 struct Application {
     quintptr id;
+    QString key;
     QString name;
     QIcon icon;
 };
@@ -20,6 +21,8 @@ public:
     inline void open(const Application & application,
                      const QUrl & url) { open(application.id, url); }
     void open(quintptr applicationId, const QUrl & url);
+
+    Application find(const QString & key) const;
 
 private:
     explicit ApplicationManager();
