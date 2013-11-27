@@ -51,6 +51,7 @@ void ApplicationManager::scanForApplications(const QString &appsDirPath,
         QFile f(appsDir.absoluteFilePath(fileName));
         if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
             QTextStream ts(&f);
+            ts.setCodec("UTF-8");
             QStringList lines = ts.readAll().split("\n");
             f.close();
             ApplicationPrivate app;
@@ -110,7 +111,7 @@ void ApplicationManager::open(quintptr applicationId, const QUrl &url)
     ApplicationPrivate * app = reinterpret_cast<ApplicationPrivate*>(applicationId);
     const QString sUrl = url.toLocalFile();
     bool startNewProcess = true;
-    pid_t pid = 0;
+    Pid pid = 0;
     if (app->mdiInterface) {
         ProcessManager & procMan = ProcessManager::get();
         pid = procMan.find(app->executableFileName);

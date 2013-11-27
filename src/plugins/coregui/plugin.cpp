@@ -418,8 +418,16 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     act.sa_mask = set;
     act.sa_flags = SA_SIGINFO;
     sigaction(SIGUSR1, &act, 0);
+#endif  
+#if defined(Q_OS_WIN32)
+    ipcShm_ = new QSharedMemory(QFileInfo(qApp->arguments().at(0)).fileName(), this);
+    if (ipcShm_->create(2048, QSharedMemory::ReadWrite)) {
+        ipcShm_->lock();
+        memset(ipcShm_->data(), 0, ipcShm_->size());
+        ipcShm_->unlock();
+        startTimer(250);
+    }
 #endif
-
     return "";
 }
 
@@ -466,8 +474,23 @@ void Plugin::handleSIGUSR1(int , siginfo_t * info, void * )
     const QString message = QString::fromUtf8(data);
     emit instance_->externalProcessCommandReceived(message);
 }
-
 #endif
+
+#if defined(Q_OS_WIN32)
+void Plugin::timerEvent(QTimerEvent *e)
+{
+    e->accept();
+    ipcShm_->lock();
+    QString command = QString::fromUtf8((char*)ipcShm_->data());
+    if (command.length() > 0 ) {
+        qDebug() << "Have a message in SHM : " << command;
+        emit externalProcessCommandReceived(command);
+    }
+    memset(ipcShm_->data(), 0, ipcShm_->size());
+    ipcShm_->unlock();
+}
+#endif
+
 
 void Plugin::updateSettings(const QStringList & keys)
 {

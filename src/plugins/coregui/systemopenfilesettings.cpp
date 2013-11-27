@@ -79,6 +79,7 @@ void SystemOpenFileSettings::scanForApplications(const QString &appsDirPath,
         QFile f(appsDir.absoluteFilePath(fileName));
         if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
             QTextStream ts(&f);
+            ts.setCodec("UTF-8");
             QStringList lines = ts.readAll().split("\n");
             f.close();
             Application app;

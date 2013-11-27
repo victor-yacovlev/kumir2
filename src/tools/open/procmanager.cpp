@@ -3,6 +3,9 @@
 #ifdef Q_OS_LINUX
 #include "procmanager_linux.h"
 #endif
+#ifdef Q_OS_WIN32
+#include "procmanager_winapi.h"
+#endif
 
 ProcessManager::ProcessManager() {}
 
@@ -13,11 +16,14 @@ ProcessManager & ProcessManager::get()
 #ifdef Q_OS_LINUX
         manager.pImpl_.reset(new ProcManagerLinux);
 #endif
+#ifdef Q_OS_WIN32
+        manager.pImpl_.reset(new ProcManagerWindows);
+#endif
     }
     return manager;
 }
 
-pid_t ProcessManager::find(const QString &executable)
+Pid ProcessManager::find(const QString &executable)
 {
     if (pImpl_) {
         return pImpl_->find(executable);

@@ -19,6 +19,9 @@
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
     #include <signal.h>
 #endif
+#if defined(Q_OS_WIN32)
+    #include <Windows.h>
+#endif
 
 
 
@@ -31,6 +34,7 @@ class Plugin
         : public ExtensionSystem::KPlugin
         , public Shared::GuiInterface
 {
+    friend class MessageReceiver;
     friend class MainWindow;
     Q_OBJECT
     Q_INTERFACES(Shared::GuiInterface)
@@ -88,6 +92,10 @@ protected:
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
     static void handleSIGUSR1(int, siginfo_t *, void *);
+#endif
+#if defined(Q_OS_WIN32)
+    void timerEvent(QTimerEvent *);
+    QSharedMemory * ipcShm_;
 #endif
 
     class MainWindow * mainWindow_;

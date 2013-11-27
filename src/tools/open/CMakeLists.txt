@@ -39,8 +39,16 @@ if(NOT WIN32 AND NOT APPLE)
     set(HEADERS ${HEADERS} messager_unix.h procmanager_linux.h)
 endif()
 
+if(WIN32)
+    add_definitions(-DPSAPI_VERSION=1)
+    set(SOURCES ${SOURCES} procmanager_winapi.cpp messager_shm.cpp)
+    set(HEADERS ${HEADERS} procmanager_winapi.h messager_shm.h)
+    set(USED_LIBS ${USED_LIBS} psapi kernel32)
+endif()
+
+
 add_executable(kumir2-open ${UI_SOURCES} ${MOC_SOURCES} ${SOURCES})
-target_link_libraries(kumir2-open ${QT_LIBRARIES})
+target_link_libraries(kumir2-open ${USED_LIBS})
 if (XCODE OR MSVC_IDE)
     set_target_properties (kumir2-open PROPERTIES PREFIX "../")
 endif(XCODE OR MSVC_IDE)

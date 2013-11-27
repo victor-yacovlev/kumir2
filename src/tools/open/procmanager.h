@@ -4,8 +4,10 @@
 #include <QtGlobal>
 #ifdef Q_OS_WIN32
 #include <Windows.h>
+typedef DWORD Pid;
 #else
 #include <sys/types.h>
+typedef pid_t Pid;
 #endif
 
 #include <QScopedPointer>
@@ -14,11 +16,11 @@ class ProcessManager
 {
 public:
     static ProcessManager & get();
-    pid_t find(const QString & executable);
+    Pid find(const QString & executable);
 
     class ImplInterface {
     public:
-        virtual pid_t find(const QString &executable) = 0;
+        virtual Pid find(const QString &executable) = 0;
     };
 
 private:

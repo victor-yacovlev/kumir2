@@ -37,7 +37,7 @@ int main(int argc, char ** argv)
         }
 
     }
-    else if (appManager.applications().size() == 0) {
+    else if (appManager.applications().size() == 1) {
         const quintptr id = appManager.applications().at(0).id;
         appManager.open(id, url);
     }
