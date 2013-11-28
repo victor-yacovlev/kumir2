@@ -69,12 +69,12 @@ void Analizer::setSourceDirName(const QString &dirName)
 Shared::Analizer::LineProp Analizer::lineProp(int lineNo, const QString &text) const
 {
     AST::ModulePtr currentModule = findModuleByLine(lineNo);
-    QList<Lexem*> lexems;
+    QList<LexemPtr> lexems;
     d->lexer->splitIntoLexems(text, lexems, d->gatherExtraTypeNames(currentModule));
     Shared::Analizer::LineProp lp(text.length(), LxTypeEmpty);
     bool delimFound = false;
     for (int i=0; i<lexems.size(); i++) {
-        Lexem * lx = lexems[i];
+        LexemPtr lx = lexems[i];
         if (lx->type==LxTypeName) {
             if (algorithmsAvailabaleForModule(currentModule).contains(lx->data.trimmed())) {
                 lx->type = LxNameAlg;
@@ -101,8 +101,6 @@ Shared::Analizer::LineProp Analizer::lineProp(int lineNo, const QString &text) c
                 lp[index] = lx->type;
         }
     }
-    for (int i=0; i<lexems.size(); i++)
-        delete lexems[i];
     return lp;
 }
 
@@ -175,7 +173,7 @@ void AnalizerPrivate::setHiddenText(const QString &text, int baseLineNo)
 
 //    // Clean old teacher algorhitms
 //    foreach (Statement * st, teacherStatements) {
-//        foreach (Lexem * lx, st->data) {
+//        foreach (LexemPtr lx, st->data) {
 //            delete lx;
 //        }
 //        delete st;
@@ -400,7 +398,7 @@ void AnalizerPrivate::createModuleFromActor_stage2(Shared::ActorInterface * acto
         sts[0]->mod = mod;
         analizer->init(sts, ast);
         analizer->buildTables(true);
-        foreach (const Lexem *lx, sts[0]->data) {
+        foreach (const LexemPtr lx, sts[0]->data) {
             if (!lx->error.isEmpty()) {
                 Q_ASSERT_X(sts.size()==1
                            , "AnalizerPrivate::createModuleFromActor"
@@ -421,8 +419,8 @@ AST::AlgorithmPtr AnalizerPrivate::findAlgorhitmByPos(AST::DataPtr data, int pos
     }
     foreach (const AST::ModulePtr mod, data.data()->modules) {
         foreach (const AST::AlgorithmPtr alg, mod->impl.algorhitms) {
-            QList<Lexem*> begin = alg->impl.beginLexems;
-            QList<Lexem*> end = alg->impl.endLexems;
+            QList<LexemPtr> begin = alg->impl.beginLexems;
+            QList<LexemPtr> end = alg->impl.endLexems;
             if (!begin.isEmpty() && !end.isEmpty()) {
                 int algBegin = begin.first()->lineNo;
                 int algEnd = end.first()->lineNo;
@@ -445,7 +443,7 @@ QList<Shared::Analizer::Error> Analizer::errors() const
     QList<Shared::Analizer::Error> result;
     QList<TextStatementPtr> all = d->statements;
     for (int i=0; i<all.size(); i++) {
-        foreach (const Lexem * lx, all[i]->data) {
+        foreach (const LexemPtr lx, all[i]->data) {
             if (!lx->error.isEmpty()) {
                 Shared::Analizer::Error err;
                 err.line = lx->lineNo;
@@ -483,7 +481,7 @@ QList<Shared::Analizer::LineProp> Analizer::lineProperties() const
     QList<TextStatementPtr> all = d->statements;
 
     for (int i=0; i<all.size(); i++) {
-        foreach (const Lexem * lx, all[i]->data) {
+        foreach (const LexemPtr lx, all[i]->data) {
             for (int j=lx->linePos; j<lx->linePos+lx->length; j++) {
                 unsigned int value = lx->type;
                 const unsigned int errorMask = LxTypeError;
@@ -523,7 +521,7 @@ QList<QPoint> Analizer::lineRanks() const
     QList<TextStatementPtr> all = d->statements;
     for (int i=0; i<all.size(); i++) {
         Q_ASSERT (!all[i]->data.isEmpty());
-        const Lexem * lx = all[i]->data.first();
+        const LexemPtr lx = all[i]->data.first();
         const int lineNo = lx->lineNo;
         const QPoint rank = all[i]->indentRank;
         if (lineNo>=0 && lineNo<result.size()) {
@@ -544,10 +542,10 @@ bool findAlgorhitmBounds( const QList<TextStatement*> & statements
                          , int &beginIndex
                          , int &endIndex)
 {
-    Lexem * lxFirst = alg.data()->impl.headerLexems.isEmpty()
+    LexemPtr lxFirst = alg.data()->impl.headerLexems.isEmpty()
             ? alg.data()->impl.beginLexems.first()
             : alg.data()->impl.headerLexems.first();
-    Lexem * lxLast = alg.data()->impl.endLexems.first();
+    LexemPtr lxLast = alg.data()->impl.endLexems.first();
     TextStatement * begin = 0;
     TextStatement * end = 0;
     foreach (TextStatement * st, statements) {
@@ -682,9 +680,9 @@ AnalizerPrivate::splitIntoModules(const QList<TextStatementPtr> &statements)
         // Then next block is used for compatibility to old Kumir (1.x)
         // programs
         if (markers.isEmpty() && st->type == Shared::LxPriAlgHeader) {
-            const Lexem * algNameLexem = nullptr;
+            LexemPtr algNameLexem;
             for (int j=0; j<st->data.size(); j++) {
-                const Lexem * lx = st->data.at(j);
+                const LexemPtr lx = st->data.at(j);
                 if (lx->type == LxTypeName) {
                     algNameLexem = lx;
                     break;
@@ -785,7 +783,7 @@ void AnalizerPrivate::doCompilation(QList<TextStatementPtr> & allStatements, Ana
 {   
     if (stage == CS_StructureAndNames) {
         foreach (TextStatementPtr st, allStatements) {
-            foreach (Lexem * lx, st->data) {
+            foreach (LexemPtr lx, st->data) {
                 if (lx->errorStage!=AST::Lexem::Lexer)
                     lx->error = "";
             }
@@ -914,7 +912,7 @@ QList<Shared::Analizer::Suggestion> Analizer::suggestAutoComplete(int lineNo, co
     beforeProgram << before;
     QList<TextStatementPtr> beforeStatements;
     d->lexer->splitIntoStatements(beforeProgram, 0, beforeStatements, QStringList());
-    QList<Lexem*> afterLexems;
+    QList<LexemPtr> afterLexems;
     d->lexer->splitIntoLexems(after, afterLexems, QStringList());
     const TextStatementPtr lastStatement = beforeStatements.size()>0? beforeStatements.last() : TextStatementPtr();
     QList<Shared::Analizer::Suggestion> result = d->analizer->suggestAutoComplete(lineNo, lastStatement, afterLexems, mod, alg);
@@ -941,8 +939,6 @@ QList<Shared::Analizer::Suggestion> Analizer::suggestAutoComplete(int lineNo, co
             filteredResult.push_back(s);
         }
     }
-    foreach ( Lexem * lx , afterLexems )
-        delete lx;
 
     QList<Shared::Analizer::Suggestion> cleanResult;
         // Remove duplicates

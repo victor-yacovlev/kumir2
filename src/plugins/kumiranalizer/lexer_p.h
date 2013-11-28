@@ -10,6 +10,7 @@
 #include <QtCore>
 
 using AST::Lexem;
+using AST::LexemPtr;
 
 namespace KumirAnalizer {
 
@@ -20,14 +21,14 @@ struct LexerPrivate {
       * String "normalization"
       */
     void splitLineIntoLexems(const QString &text
-                             , QList<Lexem*> & lexems
+                             , QList<LexemPtr> & lexems
                              , const QStringList & extraTypeNames
                              ) const;
 
     /**
       * SplitFStringList in the terms of Kumir 1.x
       */
-    void groupLexemsByStatements(const QList<Lexem*> & lexems
+    void groupLexemsByStatements(const QList<LexemPtr> & lexems
                                  , QList<TextStatementPtr> & statements
                                  ) const;
 
