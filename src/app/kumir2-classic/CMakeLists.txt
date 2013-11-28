@@ -17,7 +17,7 @@ endif(WIN32)
 #include(${QT_USE_FILE})
 
 add_executable(kumir2-classic WIN32 ${SRC})
-target_link_libraries(kumir2-classic ${QT_LIBRARIES} ExtensionSystem)
+target_link_libraries(kumir2-classic ${QT_LIBRARIES} ExtensionSystem ${STDCXX_LIB})
 set_property(TARGET kumir2-classic APPEND PROPERTY COMPILE_DEFINITIONS CONFIGURATION_TEMPLATE="${CONFIGURATION_TEMPLATE}")
 set_property(TARGET kumir2-classic APPEND PROPERTY COMPILE_DEFINITIONS SPLASHSCREEN="${SPLASHSCREEN}")
 if (XCODE OR MSVC_IDE)

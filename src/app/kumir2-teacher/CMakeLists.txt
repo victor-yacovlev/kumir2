@@ -17,7 +17,7 @@ if(WIN32)
 endif(WIN32)
 
 add_executable(kumir2-teacher WIN32 ${SRC})
-target_link_libraries(kumir2-teacher ${QT_LIBRARIES} ExtensionSystem)
+target_link_libraries(kumir2-teacher ${QT_LIBRARIES} ExtensionSystem ${STDCXX_LIB})
 set_property(TARGET kumir2-teacher APPEND PROPERTY COMPILE_DEFINITIONS CONFIGURATION_TEMPLATE="${CONFIGURATION_TEMPLATE}")
 set_property(TARGET kumir2-teacher APPEND PROPERTY COMPILE_DEFINITIONS SPLASHSCREEN="${SPLASHSCREEN}")
 if (XCODE OR MSVC_IDE)

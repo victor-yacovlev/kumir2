@@ -46,5 +46,5 @@ if(NOT MSVC)
 endif()
 
 add_executable(pictomir2course ${SOURCES} ${3RDPARTY_SOURCES})
-target_link_libraries(pictomir2course ${3RDPARTY_LIBS})
+target_link_libraries(pictomir2course ${3RDPARTY_LIBS} ${STDCXX_LIB})
 install(TARGETS pictomir2course DESTINATION ${EXEC_DIR})
