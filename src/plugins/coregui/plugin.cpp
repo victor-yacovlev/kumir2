@@ -71,7 +71,7 @@ QList<CommandLineParameter> Plugin::acceptableCommandLineParameters() const
 QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem::CommandLine & cmd)
 {
     instance_ = this;
-    if (cmd.size() > 0) {
+    if (cmd.size() > 0 && cmd.value(size_t(0)).isValid()) {
         fileNameToOpenOnReady_ = cmd.value(size_t(0)).toString();
         if (! QFileInfo(fileNameToOpenOnReady_).isAbsolute()) {
             fileNameToOpenOnReady_ =
