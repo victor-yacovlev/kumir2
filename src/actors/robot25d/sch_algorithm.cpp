@@ -81,7 +81,7 @@ extern QString generateJSON(const Algorhitm &algorhitm)
                 hint += ", ";
             }
         }
-        hint == " ]";
+        hint += " ]";
     }
     QString data = "[ ";
     if (!data.isEmpty())
