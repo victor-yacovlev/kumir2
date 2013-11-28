@@ -242,7 +242,7 @@ public:
         }
         else {
             return ret;
-        }
+        }        
     }   
 
 private:
@@ -327,6 +327,9 @@ int main(int argc, char **argv)
         app->setSplashScreen(splashScreen);
     }
 #endif
-    return app->main();
+    int ret = app->main();
+    ExtensionSystem::PluginManager::destroy();
+    delete app;
+    return ret;
 }
 

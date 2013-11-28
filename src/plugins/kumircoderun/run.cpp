@@ -12,37 +12,21 @@ namespace KumirCodeRun {
 using namespace VM;
 using namespace Kumir;
 
-class Mutex: public CriticalSectionLocker
-{
-public:
-    inline Mutex() { m = new QMutex; }
-    inline void lock() {
-        m->lock();
-    }
-    inline void unlock() {
-        m->unlock();
-    }
-    inline ~Mutex() { delete m; }
-private:
-    QMutex * m;
-};
-
-
 Run::Run(QObject *parent) :
     QThread(parent)
 {
     programLoaded = false;
-    vm = new KumirVM();
-    VMMutex_ = new Mutex;
+    vm.reset(new KumirVM);
+    VMMutex_.reset(new Mutex);
     vm->setMutex(VMMutex_);
     variablesModel_ = new KumVariablesModel(vm, VMMutex_, this);
 
     originFunctionDeep_ = 0;
     interactDoneFlag_ = stoppingFlag_ = stepDoneFlag_ = algDoneFlag_ = false;
-    stoppingMutex_ = new QMutex;
-    stepDoneMutex_ = new QMutex;
-    algDoneMutex_ = new QMutex;
-    interactDoneMutex_ = new QMutex;
+    stoppingMutex_.reset(new QMutex);
+    stepDoneMutex_.reset(new QMutex);
+    algDoneMutex_.reset(new QMutex);
+    interactDoneMutex_.reset(new QMutex);
     runMode_ = RM_ToEnd;
 
     vm->setDebuggingHandler(this);
@@ -61,7 +45,7 @@ void Run::unlockVMMutex()
 
 void Run::stop()
 {
-    QMutexLocker l(stoppingMutex_);
+    QMutexLocker l(stoppingMutex_.data());
     stoppingFlag_ = true;
     if (!isRunning()) {
         emit lineChanged(-1, 0u, 0u);

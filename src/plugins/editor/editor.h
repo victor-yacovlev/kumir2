@@ -148,7 +148,7 @@ private /* fields */:
     QScrollBar * verticalScrollBar_;
 
     class FindReplace * findReplace_;
-    class SuggestionsWindow * autocompleteWidget_;
+    QScopedPointer<class SuggestionsWindow> autocompleteWidget_;
 
     QAction * copy_;
     QAction * paste_;
