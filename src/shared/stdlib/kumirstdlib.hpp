@@ -1293,7 +1293,7 @@ public:
         size_t start = static_cast<size_t>(from-1);
         size_t pos = s.find(substr, start);
         if (pos==String::npos)
-            return -1;
+            return 0;
         else
             return static_cast<int>(pos+1);
     }
@@ -1306,8 +1306,11 @@ public:
         if (pos<1) {
             Core::abort(Core::fromUtf8("Индекс меньше 1"));
         }
-        else if (pos-1 >= s.length()) {
+        else if (pos-1 == s.length()) {
             s.append(substr);
+        }
+        else if (pos >= s.length()) {
+            Core::abort(Core::fromUtf8("Индекс больше длины исходной строки + 1"));
         }
         else {
             size_t spos = static_cast<size_t>(pos-1);
