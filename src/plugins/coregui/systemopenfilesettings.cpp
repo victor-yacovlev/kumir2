@@ -122,7 +122,7 @@ void SystemOpenFileSettings::scanForApplications(const QString &appsDirPath,
 #endif
                         app.key = QFileInfo(executableFileName).baseName();
                     }
-                    else if (key == "nodysplay") {
+                    else if (key == "nodisplay") {
                         noDisplay =
                                 value.toLower() == "true" ||
                                 value.toLower() == "1";

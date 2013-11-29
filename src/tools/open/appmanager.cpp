@@ -98,7 +98,7 @@ void ApplicationManager::scanForApplications(const QString &appsDirPath,
                                 value.toLower() == "true" ||
                                 value.toLower() == "1";
                     }
-                    else if (key == "nodysplay") {
+                    else if (key == "nodisplay") {
                         noDysplay =
                                 value.toLower() == "true" ||
                                 value.toLower() == "1";
