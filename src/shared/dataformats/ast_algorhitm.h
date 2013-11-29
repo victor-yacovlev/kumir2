@@ -9,6 +9,8 @@
 #include "ast_variable.h"
 #include "ast_type.h"
 
+#include "lexem.h"
+
 #undef ABSTRACTSYNTAXTREE_EXPORT
 #ifdef DATAFORMATS_LIBRARY
 #define ABSTRACTSYNTAXTREE_EXPORT Q_DECL_EXPORT
@@ -106,13 +108,13 @@ struct AlgorhitmImplementation {
     QList<StatementPtr> body;
 
     /** Header lexems */
-    QList<struct Lexem*> headerLexems;
+    QList<LexemPtr> headerLexems;
 
     /** Begin lexems */
-    QList<struct Lexem*> beginLexems;
+    QList<LexemPtr> beginLexems;
 
     /** End lexems */
-    QList<struct Lexem*> endLexems;
+    QList<LexemPtr> endLexems;
 
     QString headerRuntimeError;
     int headerRuntimeErrorLine;

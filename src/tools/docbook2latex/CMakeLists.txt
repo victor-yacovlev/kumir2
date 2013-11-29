@@ -8,4 +8,4 @@ set(SOURCES
 )
 
 add_executable(docbook2latex ${SOURCES})
-target_link_libraries(docbook2latex ${QT_LIBRARIES} DocBookViewer)
+target_link_libraries(docbook2latex ${QT_LIBRARIES} DocBookViewer  ${STDCXX_LIB})

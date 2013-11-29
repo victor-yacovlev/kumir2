@@ -33,6 +33,12 @@ if(NOT MSVC)
     endif()
 endif()
 
+if(NOT APPLE AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lstdc++")
+    set(STDCXX_LIB "stdc++")
+    set(STDMATH_LIB "m")
+endif()
 
 if(MSVC_IDE)
 	#set(CMAKE_SHARED_LIBRARY_PREFIX "../")

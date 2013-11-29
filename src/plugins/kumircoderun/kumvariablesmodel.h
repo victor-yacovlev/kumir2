@@ -69,8 +69,8 @@ signals:
 public slots:
 
 protected:
-    explicit KumVariablesModel(VM::KumirVM * vm,
-                               VM::CriticalSectionLocker * mutex,
+    explicit KumVariablesModel(std::shared_ptr<VM::KumirVM> vm,
+                               std::shared_ptr<VM::CriticalSectionLocker> mutex,
                                QObject *parent = 0);
 
     QModelIndex valueIndex(int row, int column, TableOfVariables * table) const;
@@ -81,8 +81,8 @@ protected:
     void emitValueChanged(const VM::Variable & variable, const QVector<int> & indeces);
 
 private:
-    VM::KumirVM * vm_;
-    VM::CriticalSectionLocker * mutex_;
+    std::shared_ptr<VM::KumirVM> vm_;
+    std::shared_ptr<VM::CriticalSectionLocker> mutex_;
     QHash<QModelIndex, QModelIndex> parents_;
     mutable QList<KumVariableItem*> cache_;
     mutable QHash<KumVariableItem*, QModelIndex> modelIndeces_;

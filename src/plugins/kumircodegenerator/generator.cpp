@@ -1041,7 +1041,7 @@ void Generator::findFunction(const AST::AlgorithmPtr alg, quint8 &module, quint1
     }
 }
 
-QList<Bytecode::Instruction> Generator::makeLineInstructions(const QList<AST::Lexem *> &lexems) const
+QList<Bytecode::Instruction> Generator::makeLineInstructions(const QList<AST::LexemPtr> &lexems) const
 {
     QList<Bytecode::Instruction> result;
     if (debugLevel_ != GeneratorInterface::NoDebug) {
@@ -1049,9 +1049,9 @@ QList<Bytecode::Instruction> Generator::makeLineInstructions(const QList<AST::Le
         lineNoInstruction.type = lineColInstruction.type = Bytecode::LINE;
         lineNoInstruction.lineSpec = Bytecode::LINE_NUMBER;
         if (lexems.size() > 0 && lexems.first()->lineNo != -1) {
-            AST::Lexem * first = lexems.first();
-            AST::Lexem * last = first;
-            foreach (AST::Lexem * lx, lexems) {
+            AST::LexemPtr first = lexems.first();
+            AST::LexemPtr last = first;
+            foreach (AST::LexemPtr lx, lexems) {
                 if (lx->type != Shared::LxTypeComment)
                     last = lx;
             }

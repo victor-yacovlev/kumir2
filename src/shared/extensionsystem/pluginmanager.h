@@ -133,6 +133,8 @@ public:
     /** Stops all plugins in reverse-order of creation */
     void shutdown();
 
+    static void destroy();
+
 public /*constants*/:
 
     static const QString WorkspacesListKey;

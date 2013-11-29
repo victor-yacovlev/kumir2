@@ -29,7 +29,7 @@ int Lexer::splitIntoStatements(const QStringList &lines
     int errorsCount = 0;
     for (int i=0; i<lines.size(); i++) {
         const QString line = lines[i];
-        QList<Lexem*> lexems;
+        QList<LexemPtr> lexems;
         d->splitLineIntoLexems(line, lexems, extraTypeNames);
         QList<TextStatementPtr> sts;
         d->groupLexemsByStatements(lexems, sts);        
@@ -43,7 +43,7 @@ int Lexer::splitIntoStatements(const QStringList &lines
     return errorsCount;
 }
 
-void Lexer::splitIntoLexems(const QString &text, QList<Lexem *> &lexems, const QStringList & extraTypeNames)
+void Lexer::splitIntoLexems(const QString &text, QList<LexemPtr> &lexems, const QStringList & extraTypeNames)
 {
     d->splitLineIntoLexems(text, lexems, extraTypeNames);
 }
@@ -553,11 +553,11 @@ bool isHexIntegerConstant(const QString &s)  {
 }
 
 
-void searchNumericConstants(QList<Lexem*> & lexems) {
-    QList<Lexem*>::iterator it = lexems.begin();
-    QList<Lexem*>::iterator itt;
+void searchNumericConstants(QList<LexemPtr> & lexems) {
+    QList<LexemPtr>::iterator it = lexems.begin();
+    QList<LexemPtr>::iterator itt;
     while (it!=lexems.end()) {
-        Lexem * lx = (*it);
+        LexemPtr lx = (*it);
         if ( lx->type==LxTypeName ) {
             itt = it + 1;
             const QString s = lx->data;
@@ -575,12 +575,11 @@ void searchNumericConstants(QList<Lexem*> & lexems) {
                 const QString d = lx->data;
                 if ( d.endsWith('e') ) {
                     if (itt!=lexems.end()) {
-                        Lexem * lxx = (*itt);
+                        LexemPtr lxx = (*itt);
                         if ( lxx->type==LxOperPlus || lxx->type==LxOperMinus ) {
                             lx->data += lxx->data;
                             lx->length += lxx->length;
-                            delete lxx;
-                            lxx = 0;
+                            lxx.clear();
                             itt = lexems.erase(itt);
                             if (itt!=lexems.end()) {
                                 lxx = (*itt);
@@ -588,8 +587,7 @@ void searchNumericConstants(QList<Lexem*> & lexems) {
 //                                if (isDecimalRealConstant(ss)) {
                                     lx->data += lxx->data;
                                     lx->length += lxx->length;
-                                    delete lxx;
-                                    lxx = 0;
+                                    lxx.clear();
                                     lexems.erase(itt);
 //                                }
                             }
@@ -607,11 +605,11 @@ void searchNumericConstants(QList<Lexem*> & lexems) {
     }
 }
 
-void searchEndLoopIf(QList<Lexem*> & lexems) {
-    QList<Lexem*>::iterator it;
+void searchEndLoopIf(QList<LexemPtr> & lexems) {
+    QList<LexemPtr>::iterator it;
     for (it=lexems.begin(); it!=lexems.end(); ) {
-        Lexem * lx = (*it);
-        Lexem * lxx = 0;
+        LexemPtr lx = (*it);
+        LexemPtr lxx;
         if (lx->type==LxPriEndLoop) {
             if (lx->data.contains("_") || lx->data.contains(" ")) {
                 int underscorePos = lx->data.indexOf("_");
@@ -620,7 +618,7 @@ void searchEndLoopIf(QList<Lexem*> & lexems) {
                 QString caseText = lx->data.mid(underscorePos);
                 lx->data = lx->data.left(underscorePos);
                 lx->length -= caseText.length();
-                lxx = new Lexem;
+                lxx = LexemPtr(new Lexem);
                 lxx->data = caseText;
                 lxx->lineNo = lx->lineNo;
                 lxx->linePos = lx->linePos + lx->length;
@@ -635,10 +633,10 @@ void searchEndLoopIf(QList<Lexem*> & lexems) {
     }
 }
 
-void searchUserTypeNames(QList<Lexem*> & lexems, const QStringList & names) {
-    QList<Lexem*>::iterator it;
+void searchUserTypeNames(QList<LexemPtr> & lexems, const QStringList & names) {
+    QList<LexemPtr>::iterator it;
     for (it=lexems.begin(); it!=lexems.end(); ) {
-        Lexem * lx = (*it);
+        LexemPtr lx = (*it);
         if (lx->type==LxTypeName) {
             for (int i=0; i<names.size(); i++) {
                 const QString typeName = names[i];
@@ -648,7 +646,7 @@ void searchUserTypeNames(QList<Lexem*> & lexems, const QStringList & names) {
                     QString left, right;
                     if (p>0) {
                         left = lx->data.left(p);
-                        Lexem * lxx = new Lexem;
+                        LexemPtr lxx = LexemPtr(new Lexem);
                         lxx->data = left;
                         lxx->type = LxTypeName;
                         lxx->lineNo = lx->lineNo;
@@ -657,7 +655,7 @@ void searchUserTypeNames(QList<Lexem*> & lexems, const QStringList & names) {
                         it = lexems.insert(it, lxx);
                         it++;
                     }
-                    Lexem *tl = new Lexem;
+                    LexemPtr tl = LexemPtr(new Lexem);
                     tl->data = typeName;
                     tl->type = LxNameClass;
                     tl->lineNo = lx->lineNo;
@@ -676,7 +674,7 @@ void searchUserTypeNames(QList<Lexem*> & lexems, const QStringList & names) {
 }
 
 void LexerPrivate::splitLineIntoLexems(const QString &text
-                                       , QList<Lexem*> &lexems
+                                       , QList<LexemPtr> &lexems
                                        , const QStringList & extraTypeNames
                                        ) const
 {
@@ -698,7 +696,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                     lexems.last()->data += app;
                 }
                 else {
-                    Lexem * lx = new Lexem;
+                    LexemPtr lx = LexemPtr(new Lexem);
                     lx->linePos = qMax(prev, 0);
                     lx->type = LxTypeName;
                     lx->data = text.mid(qMax(prev,0), prev>=0? cur-prev : cur-prev-1);
@@ -717,7 +715,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
             }
             else {
                 if (symb=="|") {
-                    Lexem * lx = new Lexem;
+                    LexemPtr lx = LexemPtr(new Lexem);
                     lx->type = LxTypeComment;
                     lx->data = text.mid(cur);
                     lx->linePos = cur;
@@ -725,7 +723,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                     break;
                 }
                 else if (symb=="#") {
-                    Lexem * lx = new Lexem;
+                    LexemPtr lx = LexemPtr(new Lexem);
                     lx->type = LxTypeDoc;
                     lx->data = text.mid(cur);
                     lx->linePos = cur;
@@ -734,7 +732,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                 }
                 else if (symb=="\"" || symb=="'") {
                     litSimb = symb[0];
-                    Lexem * lx = new Lexem;
+                    LexemPtr lx = LexemPtr(new Lexem);
                     lx->type = LxConstLiteral;
                     lx->linePos = cur;
                     inLit = true;
@@ -744,7 +742,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                     QString simplifiedSymb = symb;
                     simplifiedSymb.remove(' ');
                     simplifiedSymb.remove('_');
-                    Lexem * lx = new Lexem;
+                    LexemPtr lx = LexemPtr(new Lexem);
                     lx->type = kwdMap[simplifiedSymb];
                     lx->data = symb;
                     lx->linePos = cur;
@@ -762,12 +760,12 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
             }
             else {
                 if (!lexems.isEmpty()) {
-                    Lexem * lx = lexems.last();
+                    LexemPtr lx = lexems.last();
                     if (lx->type==LxTypeComment || lx->type==LxTypeDoc)
                         lexems.last()->data += text.mid(prev+1);
                     else {
                         if (prev<text.length()) {
-                            Lexem * llx = new Lexem;
+                            LexemPtr llx = LexemPtr(new Lexem);
                             llx->type = LxTypeName;
                             llx->linePos = qMax(prev, 0);
                             llx->data = text.mid(prev);
@@ -776,7 +774,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                     }
                 }
                 else {
-                    Lexem * lx = new Lexem;
+                    LexemPtr lx = LexemPtr(new Lexem);
                     lx->type = LxTypeName;
                     lx->linePos = 0;
                     lx->data = text;
@@ -805,15 +803,15 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
             lexems[i]->length += 2;
         }
     }
-    QList<Lexem*>::iterator it = lexems.begin();
+    QList<LexemPtr>::iterator it = lexems.begin();
     while (it!=lexems.end()) {
-        Lexem * lx = (*it);
+        LexemPtr lx = (*it);
         if (lx->data.isEmpty() &&
                 lx->errorStage!=AST::Lexem::Lexer &&
                 lx->type!=LxConstLiteral &&
                 lx->type!=LxTypeDoc
                 ) {
-            delete lx;
+            lx.clear();
             it = lexems.erase(it);
         }
         else {
@@ -826,15 +824,15 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
 
 }
 
-void popFirstStatement(QList<Lexem*> & lexems, TextStatement & result );
-void popFirstStatementByKeyword(QList<Lexem*> & lexems, TextStatement & result );
+void popFirstStatement(QList<LexemPtr> & lexems, TextStatement & result );
+void popFirstStatementByKeyword(QList<LexemPtr> & lexems, TextStatement & result );
 
 void LexerPrivate::groupLexemsByStatements(
-    const QList<Lexem*> &lexems
+    const QList<LexemPtr> &lexems
     , QList<TextStatementPtr> &statements
     ) const
 {
-    QList<Lexem*> lexemsCopy = lexems;
+    QList<LexemPtr> lexemsCopy = lexems;
     while (lexemsCopy.size()>0) {
         TextStatement statement;
         popFirstStatement(lexemsCopy, statement);
@@ -845,7 +843,7 @@ void LexerPrivate::groupLexemsByStatements(
 
 
 
-void popFirstStatement(QList<Lexem*> & lexems, TextStatement & result )
+void popFirstStatement(QList<LexemPtr> & lexems, TextStatement & result )
 {
     if (lexems.isEmpty())
         return;
@@ -867,7 +865,7 @@ void popFirstStatement(QList<Lexem*> & lexems, TextStatement & result )
         // Generic assignment (or algothitm call) statement
         result.type = LxPriAssign;
         while (lexems.size()>0) {
-            Lexem * lx = lexems[0];
+            LexemPtr lx = lexems[0];
             if (lx->type==LxOperSemicolon
                     || lx->type==LxPriElse
                     || lx->type==LxPriFi
@@ -886,37 +884,37 @@ void popFirstStatement(QList<Lexem*> & lexems, TextStatement & result )
     }
 }
 
-void popModuleStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popEndModuleStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popAlgHeaderStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popAlgBeginStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popAlgEndStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popPreStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popPostStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popIfStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popThenStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popElseStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popFiStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popSwitchStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popCaseStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popLoopStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popEndLoopStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popInputStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popOutputStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popFinputStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popFoutputStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popAssertStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popImportStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popExitStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popPauseStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popHaltStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popVarDeclStatement(QList<Lexem*> & lexems, TextStatement &result);
-void popAssignFileStatement(QList<Lexem*> & lexems, TextStatement & result);
+void popModuleStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popEndModuleStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popAlgHeaderStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popAlgBeginStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popAlgEndStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popPreStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popPostStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popIfStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popThenStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popElseStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popFiStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popSwitchStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popCaseStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popLoopStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popEndLoopStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popInputStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popOutputStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popFinputStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popFoutputStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popAssertStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popImportStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popExitStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popPauseStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popHaltStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popVarDeclStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popAssignFileStatement(QList<LexemPtr> & lexems, TextStatement & result);
 
-void popLexemsUntilPrimaryKeyword(QList<Lexem*> & lexems, TextStatement &result)
+void popLexemsUntilPrimaryKeyword(QList<LexemPtr> & lexems, TextStatement &result)
 {
     while (lexems.size()>0) {
-        Lexem * lx = lexems[0];
+        LexemPtr lx = lexems[0];
         if (lx->type==LxOperSemicolon || (lx->type & LxTypePrimaryKwd && lx->type!=LxPriAssign))
             break;
         lexems.pop_front();
@@ -924,10 +922,10 @@ void popLexemsUntilPrimaryKeyword(QList<Lexem*> & lexems, TextStatement &result)
     }
 }
 
-void popLexemsUntilSemicolonOrBegin(QList<Lexem*> & lexems, TextStatement &result)
+void popLexemsUntilSemicolonOrBegin(QList<LexemPtr> & lexems, TextStatement &result)
 {
     while (lexems.size()>0) {
-        Lexem * lx = lexems[0];
+        LexemPtr lx = lexems[0];
         if (lx->type==LxOperSemicolon || lx->type==LxPriAlgBegin)
             break;
         lexems.pop_front();
@@ -936,10 +934,10 @@ void popLexemsUntilSemicolonOrBegin(QList<Lexem*> & lexems, TextStatement &resul
 }
 
 
-void popLexemsUntilSemicolonOrBlockClose(QList<Lexem*> & lexems, TextStatement &result)
+void popLexemsUntilSemicolonOrBlockClose(QList<LexemPtr> & lexems, TextStatement &result)
 {
     while (lexems.size()>0) {
-        Lexem * lx = lexems[0];
+        LexemPtr lx = lexems[0];
         if (lx->type==LxOperSemicolon
                 || lx->type==LxPriElse
                 || lx->type==LxPriEndLoop
@@ -950,10 +948,10 @@ void popLexemsUntilSemicolonOrBlockClose(QList<Lexem*> & lexems, TextStatement &
         result.data << lx;
     }
 }
-void popLexemsUntilPrimaryKeywordExclIO(QList<Lexem*> & lexems, TextStatement &result)
+void popLexemsUntilPrimaryKeywordExclIO(QList<LexemPtr> & lexems, TextStatement &result)
 {
     while (lexems.size()>0) {
-        Lexem * lx = lexems[0];
+        LexemPtr lx = lexems[0];
         if (lx->type==LxOperSemicolon || lx->type & LxTypePrimaryKwd) {
             if (lx->type!=LxPriInput && lx->type!=LxPriOutput)
                 break;
@@ -963,10 +961,10 @@ void popLexemsUntilPrimaryKeywordExclIO(QList<Lexem*> & lexems, TextStatement &r
     }
 }
 
-void popLexemsUntilPrimaryKeywordOrVarDecl(QList<Lexem*> &lexems, TextStatement &result)
+void popLexemsUntilPrimaryKeywordOrVarDecl(QList<LexemPtr> &lexems, TextStatement &result)
 {
     while (lexems.size()>0) {
-        Lexem * lx = lexems[0];
+        LexemPtr lx = lexems[0];
         if (lx->type==LxOperSemicolon ||
                 (lx->type & LxTypePrimaryKwd && lx->type!=LxPriAssign) ||
                 lx->type==LxNameClass)
@@ -976,10 +974,10 @@ void popLexemsUntilPrimaryKeywordOrVarDecl(QList<Lexem*> &lexems, TextStatement 
     }
 }
 
-void popLexemsUntilPrimaryKeywordOrColon(QList<Lexem*> &lexems, TextStatement &result)
+void popLexemsUntilPrimaryKeywordOrColon(QList<LexemPtr> &lexems, TextStatement &result)
 {
     while (lexems.size()>0) {
-        Lexem * lx = lexems[0];
+        LexemPtr lx = lexems[0];
         if (lx->type==LxOperSemicolon ||
                 (lx->type & LxTypePrimaryKwd && lx->type!=LxPriAssign))
             break;
@@ -990,10 +988,10 @@ void popLexemsUntilPrimaryKeywordOrColon(QList<Lexem*> &lexems, TextStatement &r
     }
 }
 
-void popLexemsUntilSemicolon(QList<Lexem*> &lexems, TextStatement &result)
+void popLexemsUntilSemicolon(QList<LexemPtr> &lexems, TextStatement &result)
 {
     while (lexems.size()>0) {
-        Lexem * lx = lexems[0];
+        LexemPtr lx = lexems[0];
         if (lx->type==LxOperSemicolon)
             break;
         lexems.pop_front();
@@ -1001,7 +999,7 @@ void popLexemsUntilSemicolon(QList<Lexem*> &lexems, TextStatement &result)
     }
 }
 
-void popFirstStatementByKeyword(QList<Lexem*> &lexems, TextStatement &result)
+void popFirstStatementByKeyword(QList<LexemPtr> &lexems, TextStatement &result)
 {
     Q_ASSERT(!lexems.isEmpty());
     if (lexems[0]->type==LxPriModule) {
@@ -1081,7 +1079,7 @@ void popFirstStatementByKeyword(QList<Lexem*> &lexems, TextStatement &result)
 
 
 
-void popModuleStatement(QList<Lexem*> & lexems, TextStatement &result)
+void popModuleStatement(QList<LexemPtr> & lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1089,7 +1087,7 @@ void popModuleStatement(QList<Lexem*> & lexems, TextStatement &result)
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popEndModuleStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popEndModuleStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1097,7 +1095,7 @@ void popEndModuleStatement(QList<Lexem*> &lexems, TextStatement &result)
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popAlgHeaderStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popAlgHeaderStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1105,7 +1103,7 @@ void popAlgHeaderStatement(QList<Lexem*> &lexems, TextStatement &result)
     popLexemsUntilSemicolonOrBegin(lexems, result);
 }
 
-void popAlgBeginStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popAlgBeginStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1113,7 +1111,7 @@ void popAlgBeginStatement(QList<Lexem*> &lexems, TextStatement &result)
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popAlgEndStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popAlgEndStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1121,7 +1119,7 @@ void popAlgEndStatement(QList<Lexem*> &lexems, TextStatement &result)
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popExitStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popExitStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1129,7 +1127,7 @@ void popExitStatement(QList<Lexem*> &lexems, TextStatement &result)
     popLexemsUntilSemicolonOrBlockClose(lexems, result);
 }
 
-void popPauseStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popPauseStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1137,7 +1135,7 @@ void popPauseStatement(QList<Lexem*> &lexems, TextStatement &result)
     popLexemsUntilSemicolonOrBlockClose(lexems, result);
 }
 
-void popHaltStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popHaltStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1146,7 +1144,7 @@ void popHaltStatement(QList<Lexem*> &lexems, TextStatement &result)
 }
 
 
-void popPreStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popPreStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1154,7 +1152,7 @@ void popPreStatement(QList<Lexem*> &lexems, TextStatement &result)
     popLexemsUntilSemicolon(lexems, result);
 }
 
-void popPostStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popPostStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1162,7 +1160,7 @@ void popPostStatement(QList<Lexem*> &lexems, TextStatement &result)
     popLexemsUntilSemicolon(lexems, result);
 }
 
-void popIfStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popIfStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1170,7 +1168,7 @@ void popIfStatement(QList<Lexem*> &lexems, TextStatement &result)
     popLexemsUntilPrimaryKeyword(lexems, result);
 }
 
-void popThenStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popThenStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1178,7 +1176,7 @@ void popThenStatement(QList<Lexem*> &lexems, TextStatement &result)
 //    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popElseStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popElseStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1186,7 +1184,7 @@ void popElseStatement(QList<Lexem*> &lexems, TextStatement &result)
 //    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popFiStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popFiStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1194,7 +1192,7 @@ void popFiStatement(QList<Lexem*> &lexems, TextStatement &result)
     popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
-void popSwitchStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popSwitchStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1202,7 +1200,7 @@ void popSwitchStatement(QList<Lexem*> &lexems, TextStatement &result)
     popLexemsUntilPrimaryKeyword(lexems, result);
 }
 
-void popCaseStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popCaseStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1210,7 +1208,7 @@ void popCaseStatement(QList<Lexem*> &lexems, TextStatement &result)
     popLexemsUntilPrimaryKeywordOrColon(lexems, result);
 }
 
-void popLoopStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popLoopStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1218,13 +1216,13 @@ void popLoopStatement(QList<Lexem*> &lexems, TextStatement &result)
     popLexemsUntilPrimaryKeyword(lexems, result);
 }
 
-void popEndLoopStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popEndLoopStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
     if (lexems.size()>0) {
-        Lexem * lx = lexems[0];
+        LexemPtr lx = lexems[0];
         if (lx->type==LxPriCase) {
             lx->type = LxSecIf;
             result.data << lx;
@@ -1234,7 +1232,7 @@ void popEndLoopStatement(QList<Lexem*> &lexems, TextStatement &result)
     popLexemsUntilPrimaryKeyword(lexems, result);
 }
 
-void popInputStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popInputStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1242,7 +1240,7 @@ void popInputStatement(QList<Lexem*> &lexems, TextStatement &result)
     popLexemsUntilSemicolonOrBlockClose(lexems, result);
 }
 
-void popOutputStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popOutputStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1251,7 +1249,7 @@ void popOutputStatement(QList<Lexem*> &lexems, TextStatement &result)
 }
 
 
-void popAssertStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popAssertStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1259,7 +1257,7 @@ void popAssertStatement(QList<Lexem*> &lexems, TextStatement &result)
     popLexemsUntilPrimaryKeyword(lexems, result);
 }
 
-void popImportStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popImportStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
@@ -1267,7 +1265,7 @@ void popImportStatement(QList<Lexem*> &lexems, TextStatement &result)
     popLexemsUntilSemicolon(lexems, result);
 }
 
-void popVarDeclStatement(QList<Lexem*> &lexems, TextStatement &result)
+void popVarDeclStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
     result.data << lexems[0];
