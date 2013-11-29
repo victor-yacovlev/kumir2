@@ -48,7 +48,7 @@ endif()
 
 
 add_executable(kumir2-open ${UI_SOURCES} ${MOC_SOURCES} ${SOURCES})
-target_link_libraries(kumir2-open ${USED_LIBS})
+target_link_libraries(kumir2-open ${USED_LIBS} ${STDCXX_LIB})
 if (XCODE OR MSVC_IDE)
     set_target_properties (kumir2-open PROPERTIES PREFIX "../")
 endif(XCODE OR MSVC_IDE)
