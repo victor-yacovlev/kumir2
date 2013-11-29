@@ -5,6 +5,8 @@
 #include <QSharedPointer>
 #include <QWeakPointer>
 
+#include "lexem.h"
+
 #undef ABSTRACTSYNTAXTREE_EXPORT
 #ifdef DATAFORMATS_LIBRARY
 #define ABSTRACTSYNTAXTREE_EXPORT Q_DECL_EXPORT
@@ -115,7 +117,7 @@ struct LoopSpec {
     QList<StatementPtr> body;
 
     /** Loop end lexems */
-    QList<struct Lexem*> endLexems;
+    QList<LexemPtr> endLexems;
 
 };
 
@@ -131,7 +133,7 @@ struct ConditionSpec {
     QList<StatementPtr> body;
 
     /** Condition source lexems */
-    QList<struct Lexem*> lexems;
+    QList<LexemPtr> lexems;
 
     QString conditionError;
 };
@@ -147,8 +149,8 @@ struct ABSTRACTSYNTAXTREE_EXPORT Statement {
     StatementWPtr parent;
 
     /** Statement source lexems */
-    QList<struct Lexem*> lexems;
-    QList<struct Lexem*> endBlockLexems;
+    QList<LexemPtr> lexems;
+    QList<LexemPtr> endBlockLexems;
 
     /** Compile-time error */
     QString error;

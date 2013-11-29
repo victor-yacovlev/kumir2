@@ -8,6 +8,7 @@
 #include <QSharedPointer>
 #include <QWeakPointer>
 
+#include "lexem.h"
 #include "ast_variabletype.h"
 #include "ast_type.h"
 
@@ -118,7 +119,7 @@ struct ABSTRACTSYNTAXTREE_EXPORT Expression {
     enum ExpressionOperator operatorr;
 
     /** Expression source lexems */
-    QList<struct Lexem*> lexems;
+    QList<LexemPtr> lexems;
 
     explicit Expression();
     explicit Expression(const ExpressionPtr src);

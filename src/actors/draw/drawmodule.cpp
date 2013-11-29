@@ -109,15 +109,16 @@ namespace ActorDraw {
     }
     QRectF DrawScene::getRect()
     {
-        QRectF boundRect=QRect(-2,-10,10,10);
+        QRectF boundRect=QRect(0,0.5,0.5,0.5);
   
         for(int i=0;i<lines.count();i++)
         {
-
-            if(lines.at(i)->line().dx()>0)
+            qreal deb=0;
+            if(lines.at(i)->line().dx()>=0)
             {
                 if(lines.at(i)->line().p1().x()<boundRect.left() || (i==0))
                 {
+                    deb=lines.at(i)->line().p1().x();
                     boundRect.setLeft(lines.at(i)->line().p1().x()); 
                     
                 }
@@ -141,11 +142,12 @@ namespace ActorDraw {
                 }
              
             }
-            if(lines.at(i)->line().dy()>0)
+            if(lines.at(i)->line().dy()>=0)
             {
                 qDebug()<<"Bott"<<boundRect.bottom()<<"Top:"<<boundRect.top()<<"line p1y:"<<lines.at(i)->line().p1().y()<<"line p2y:"<<lines.at(i)->line().p2().y();
                 if(-lines.at(i)->line().p1().y()>boundRect.bottom() || (i==0))
                 {
+                    deb=-lines.at(i)->line().p1().y();
                     boundRect.setBottom(-lines.at(i)->line().p1().y()); 
                 }
                 if(lines.at(i)->line().p2().x()>boundRect.top() || (i==0))
@@ -157,25 +159,25 @@ namespace ActorDraw {
             if(lines.at(i)->line().dy()<0)
             {
                 qDebug()<<"Bott"<<boundRect.bottom()<<"Top:"<<boundRect.top()<<"line p1y:"<<lines.at(i)->line().p1().y()<<"line p2y:"<<lines.at(i)->line().p2().y();
-                if(lines.at(i)->line().p2().y()<boundRect.bottom())
+                if(lines.at(i)->line().p2().y()<boundRect.top())
                 {
-                    boundRect.setBottom(-lines.at(i)->line().p2().y()); 
+                    boundRect.setTop(-lines.at(i)->line().p2().y()); 
                 } 
-                if(lines.at(i)->line().p1().y()<boundRect.top() || (i==0))
+                if(lines.at(i)->line().p1().y()>boundRect.bottom() || (i==0))
                 {
-                    boundRect.setTop(lines.at(i)->line().p1().y()); 
+                    boundRect.setBottom(lines.at(i)->line().p1().y()); 
                     
                 }
             }
         }
         
-        if(boundRect.width()!=boundRect.height())
-        {
-            qreal size=qMax(boundRect.width(),boundRect.width());
-            boundRect.setWidth(size);
-            boundRect.setHeight(size);
+        //if(boundRect.width()!=boundRect.height())
+       // {
+       //     qreal size=qMax(boundRect.width(),boundRect.width());
+       //     boundRect.setWidth(size);
+       //     boundRect.setHeight(size);
             
-        }
+      //  }
         
         return(boundRect);
     };
@@ -665,6 +667,8 @@ void DrawView::resizeEvent ( QResizeEvent * event )
         {
             setViewportUpdateMode (QGraphicsView::SmartViewportUpdate);
             QPointF delta=mapToScene(press_pos)-mapToScene(event->pos());
+            if(qAbs(delta.x())>100)press_pos.setX(event->pos().x());
+            if(qAbs(delta.y())>100)press_pos.setY(event->pos().y());
             QPointF center = mapToScene(viewport()->rect().center());
             centerOn(center+delta/2);
            // press_pos=mapToScene(press_pos)+delta;
@@ -918,6 +922,7 @@ void DrawModule::showNavigator(bool state)
     mPen->setPos(0,0);
     CurScene->reset();
     CurView->update();
+    CurView->show();
 }
 
 /* public slot */ void DrawModule::setAnimationEnabled(bool enabled)
@@ -1062,21 +1067,24 @@ void DrawModule::drawNet()
         QPointF start_d=CurView->mapToScene(CurView->geometry().topLeft());
         QPointF end_d=CurView->mapToScene(CurView->geometry().bottomRight());
         qreal width=end_d.x()-start_d.x();
-
+        qreal heigth=end_d.y()-start_d.y();
+        qreal size=qMax(width,heigth);
         QRectF sceneInfoRect=CurScene->getRect();
         qDebug()<<"SceneInfoRect:"<<sceneInfoRect<<"L"<<sceneInfoRect.left()<<"R"<<sceneInfoRect.right()<<"t"<<sceneInfoRect.top()<<"B"<<sceneInfoRect.bottom();
         //CurView->fitInView(sceneInfoRect);
         qreal width2=sceneInfoRect.width();
-        CurView->setZoom((CurView->zoom()*(width/width2))*0.64);
+        qreal size2=qMax(sceneInfoRect.height(),width2);
+        CurView->setZoom((CurView->zoom()*(size/size2))*0.9);
         
         QRectF newRect(2*sceneInfoRect.left(),2*sceneInfoRect.top(),2*sceneInfoRect.right(),2*sceneInfoRect.bottom());
         qDebug()<<newRect;
-       // CurView->setSceneRect(newRect);
+        CurView->setSceneRect(newRect);
        // CurView->setZoom((CurView->zoom()*(width/width2))*0.8);
-        CurView->centerOn((sceneInfoRect.right()+sceneInfoRect.left())/2,(sceneInfoRect.bottom()+sceneInfoRect.top())/2);
+         drawNet();
+        CurView->centerOn((sceneInfoRect.right()+sceneInfoRect.left())/2,(sceneInfoRect.top()+sceneInfoRect.bottom())/2);
         
-        drawNet();       // CurView->centerOn(0,0);
-        scalePen(zoom()*.003);
+               // CurView->centerOn(0,0);
+        scalePen(zoom()*.03);
         navigator->updateSelf(NetStepX(),NetStepY());
     };
     void DrawModule::CreatePen(void)

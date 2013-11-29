@@ -8,6 +8,7 @@
 #include "dataformats/kumfile.h"
 #include "statusbar.h"
 #include "tabwidget.h"
+#include "systemopenfilesettings.h"
 
 #include <algorithm>
 #include <QSharedPointer>
@@ -711,7 +712,7 @@ bool MainWindow::saveCurrentFileAs()
         else {
             initialPath = QFileInfo(lastFileName).absoluteDir().absolutePath();
         }
-        const QString suffix = twe->type==Program ? fileNameSuffix : ".txt";
+        const QString suffix = twe->type==Program ? fileNameSuffix : "txt";
         initialPath += "/" + suggestNewFileName(suffix, twe->editorInstance->analizer(), initialPath);
     }
     else {
@@ -719,7 +720,7 @@ bool MainWindow::saveCurrentFileAs()
     }
     QStringList filter;    
     if (twe->type==Program) {
-        filter << tr("%1 programs (*%2)").arg(languageName).arg(fileNameSuffix);
+        filter << tr("%1 programs (*.%2)").arg(languageName).arg(fileNameSuffix);
     }    
     if (twe->type==Text) {
         filter << tr("Text files (*.txt)");
@@ -727,8 +728,8 @@ bool MainWindow::saveCurrentFileAs()
     filter << tr("All files (*)");
     fileName = QFileDialog::getSaveFileName(this, tr("Save file"), initialPath, filter.join(";;"));
     if (!fileName.isEmpty()) {
-        if (twe->type==Program && !fileName.endsWith(fileNameSuffix))
-            fileName += fileNameSuffix;
+        if (twe->type==Program && !fileName.endsWith("." + fileNameSuffix))
+            fileName += "." + fileNameSuffix;
         if (saveCurrentFileTo(fileName)) {
             m_plugin->mySettings()->setValue(Plugin::RecentFileKey, fileName);
             twe->setProperty("fileName", fileName);
@@ -860,6 +861,10 @@ void MainWindow::createSettingsDialog()
             settingsDialog_->addPage(page);
         }
     }
+#ifndef Q_OS_MACX
+    SystemOpenFileSettings * openFileSettings = new SystemOpenFileSettings;
+    settingsDialog_->addPage(openFileSettings);
+#endif
 }
 
 void MainWindow::showPreferences()

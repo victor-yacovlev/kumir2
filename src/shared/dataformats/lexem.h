@@ -23,6 +23,8 @@ namespace AST {
         QString error;
     };
 
+    typedef QSharedPointer<Lexem> LexemPtr;
+
 }
 
 #endif // LEXEM_H

@@ -23,6 +23,8 @@
 #define MAX_RECURSION_SIZE 4000
 #endif
 
+#define ShPtr std::shared_ptr
+
 namespace VM {
 
 
@@ -33,7 +35,7 @@ public /*typedefs*/:
 public /*methods*/:
     /** Set parsed Kumir bytecode */
     inline void setProgram(const Bytecode::Data & data, bool isMain, const String & filename);
-    inline void setProgramDirectory(const Kumir::String & path) { programDirectory_ = path; }
+    inline void setProgramDirectory(const Kumir::String & path) { programDirectory_.clear(); programDirectory_ = path; }
 
     inline bool loadProgramFromBinaryBuffer(std::list<char> & stream, bool isMain, const String & filename, String & error);
     inline bool loadProgramFromTextBuffer(const std::string & stream, bool isMain, const String & filename, String & error);
@@ -68,7 +70,7 @@ public /*methods*/:
      *     You must set actual Mutex implementation object
      *     (Qt or C++11) with methods: lock() and unlock()
      */
-    inline void setMutex(CriticalSectionLocker * m)
+    inline void setMutex(ShPtr<CriticalSectionLocker> m)
     { stacksMutex_ = m;}
 
     /**
@@ -131,7 +133,7 @@ private /*fields*/:
     EntryPoint entryPoint_;
     bool blindMode_;
     bool nextCallInto_;
-    CriticalSectionLocker * stacksMutex_;
+    ShPtr<CriticalSectionLocker> stacksMutex_;
     DebuggingInteractionHandler * debugHandler_;
     ExternalModuleLoadFunctor * externalModuleLoad_;
     ExternalModuleResetFunctor * externalModuleReset_;
@@ -857,9 +859,9 @@ void KumirVM::reset()
     }
     Kumir::Files::setConsoleInputBuffer(consoleInputBuffer_);
     Kumir::Files::setConsoleOutputBuffer(consoleOutputBuffer_);
-    if (stacksMutex_ == nullptr) {
+    if (! stacksMutex_) {
         static CriticalSectionLocker dummyMutex;
-        stacksMutex_ = &dummyMutex;
+        stacksMutex_.reset(&dummyMutex);
     }
 }
 
@@ -2603,7 +2605,7 @@ void KumirVM::do_pop(uint8_t r)
     AnyValue & registerToStore = r==0u
             ? register0_
            : currentContext().registers[r];
-    if (v.hasValue()) {
+    if (v.hasValue() && v.dimension() == 0u) {
         registerToStore = v.value();
     }
 

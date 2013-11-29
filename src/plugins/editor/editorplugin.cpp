@@ -26,6 +26,9 @@ EditorPlugin::~EditorPlugin()
         if (e.e)
             delete e.e;
     }
+    if (settingsPage_) {
+        delete settingsPage_;
+    }
 }
 
 

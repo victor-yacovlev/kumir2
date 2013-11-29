@@ -9,8 +9,8 @@ namespace KumirCodeRun {
 static const int MAXIMUM_SHOWN_TABLE_ITEMS_COUNT = 255;
 
 KumVariablesModel::KumVariablesModel(
-        VM::KumirVM * vm,
-        VM::CriticalSectionLocker * mutex,
+        std::shared_ptr<VM::KumirVM> vm,
+        std::shared_ptr<VM::CriticalSectionLocker> mutex,
         QObject *parent)
 
         : QAbstractItemModel(parent)

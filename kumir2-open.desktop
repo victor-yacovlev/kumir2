@@ -1,0 +1,8 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Exec=kumir2-open %U
+Name=Kumir .kum file open helper
+Name[ru]=Обработчик открытия файлов Кумир .kum
+NoDisplay=true
+MimeType=application/vnd.niisi.kumir2.program

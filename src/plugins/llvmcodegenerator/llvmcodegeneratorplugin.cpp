@@ -206,7 +206,11 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
                                                               0,
                                                               lerr, lctx);
     if (reparsedModule == 0) {
+#if LLVM_VERSION_MINOR >= 2
         lerr.print("kumir2-llvmc", llvm::errs());
+#else
+        std::cerr << "Something wrong in LLVM code" << std::endl;
+#endif
         qApp->setProperty("returnCode", 5);
         qApp->quit();
         return;

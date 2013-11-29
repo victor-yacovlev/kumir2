@@ -57,7 +57,7 @@ public:
     void generateExternTable();
     void setDebugLevel(DebugLevel debugLevel);
 private:
-    QList<Bytecode::Instruction> makeLineInstructions(const QList<AST::Lexem*> & lexems) const;
+    QList<Bytecode::Instruction> makeLineInstructions(const QList<AST::LexemPtr> & lexems) const;
     quint16 constantValue(Bytecode::ValueType type, quint8 dimension, const QVariant & value,
                           const QString & recordModule, const QString & recordClass
                           );

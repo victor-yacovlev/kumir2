@@ -130,9 +130,10 @@ void KumirCodeGeneratorPlugin::generateExecuable(
         std::ostringstream stream;
         Bytecode::bytecodeToTextStream(stream, data);
         const std::string text = stream.str();
-        out = QByteArray::fromRawData(text.c_str(), text.size());
+        out = QByteArray(text.c_str(), text.size());
         mimeType = MIME_BYTECODE_TEXT;
         fileSuffix = ".kod.txt";
+        qDebug() << QString::fromAscii(out);
     }
     else {
         out.clear();

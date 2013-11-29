@@ -69,7 +69,7 @@ void PDAutomata::init(const QList<TextStatementPtr> & statements, AST::ModulePtr
     foreach (TextStatementPtr st, statements) {
         bool hasPrePDError = false;
         if (st->hasError()) {
-            foreach (AST::Lexem * lx, st->data) {
+            foreach (AST::LexemPtr lx, st->data) {
                 if (lx->errorStage == AST::Lexem::BeforePDAutomata) {
                     hasPrePDError = true;
                     break;
@@ -1824,7 +1824,7 @@ void PDAutomata::processAlgWithNoBegin()
         errorText = _("No 'begin' after 'post'");
     errorStatement->setError(errorText, Lexem::PDAutomata, Lexem::Header);
     if (currentAlgorhitm_) {
-        foreach (Lexem * lx, currentAlgorhitm_->impl.headerLexems) {
+        foreach (LexemPtr lx, currentAlgorhitm_->impl.headerLexems) {
             lx->error = errorText;
             lx->errorRaisePosition = Lexem::Header;
             lx->errorStage = Lexem::PDAutomata;
@@ -1875,7 +1875,7 @@ void PDAutomata::appendSimpleLine()
                             || st->type==AST::StIfThenElse
                             || st->type==AST::StSwitchCaseElse)
                     {
-                        foreach (Lexem *lx, statement->lexems) {
+                        foreach (LexemPtr lx, statement->lexems) {
                             lx->error = _("Can't declare variables at this level");
                             lx->errorStage = AST::Lexem::PDAutomata;
                         }
@@ -2211,7 +2211,7 @@ void PDAutomata::processCorrectElse()
         ste->type = AST::StError;
         ste->error = _("No then before else");
         ste->lexems = source_.at(currentPosition_)->data;
-        foreach (Lexem * lx, source_.at(currentPosition_)->data) {
+        foreach (LexemPtr lx, source_.at(currentPosition_)->data) {
             lx->error = ste->error;
         }
         currentContext_.top()->append(ste);
@@ -2481,8 +2481,8 @@ AST::StatementPtr PDAutomata::findASTStatementBySourceStatement(const TextStatem
             if (astStatement->lexems.size() == st->data.size()) {
                 bool allMatch = st->data.size() > 0;
                 for (int k=0; k<st->data.size(); k++) {
-                    const Lexem * a = st->data[k];
-                    const Lexem * b = astStatement->lexems[k];
+                    const LexemPtr a = st->data[k];
+                    const LexemPtr b = astStatement->lexems[k];
                     allMatch = allMatch && a==b;
                 }
                 if (allMatch) {

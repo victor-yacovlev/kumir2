@@ -6,6 +6,7 @@
 #include "vm/vm.hpp"
 #include "interfaces/actorinterface.h"
 #include "kumvariablesmodel.h"
+#include <memory>
 
 namespace KumirCodeRun {
 
@@ -13,6 +14,21 @@ using Kumir::String;
 using Kumir::real;
 using VM::Variable;
 using VM::AnyValue;
+
+class Mutex: public VM::CriticalSectionLocker
+{
+public:
+    inline Mutex() { m = new QMutex; }
+    inline void lock() {
+        m->lock();
+    }
+    inline void unlock() {
+        m->unlock();
+    }
+    inline ~Mutex() { delete m; }
+private:
+    QMutex * m;
+};
 
 class Run
         : public QThread
@@ -22,7 +38,7 @@ class Run
 public:
     enum RunMode { RM_StepOver, RM_ToEnd, RM_StepOut, RM_StepIn };
     explicit Run(QObject *parent);
-    VM::KumirVM * vm;
+    std::shared_ptr<VM::KumirVM> vm;
     bool programLoaded;
     inline bool stopped() const { return stoppingFlag_; }
     bool mustStop() const;
@@ -103,24 +119,24 @@ protected :
     RunMode runMode_;
 
     bool stoppingFlag_;
-    QMutex * stoppingMutex_;
+    QScopedPointer<QMutex> stoppingMutex_;
 
     bool stepDoneFlag_;
-    QMutex * stepDoneMutex_;
+    QScopedPointer<QMutex> stepDoneMutex_;
 
     bool algDoneFlag_;
-    QMutex * algDoneMutex_;
+    QScopedPointer<QMutex> algDoneMutex_;
 
     int originFunctionDeep_;
 
-    QMutex * interactDoneMutex_;
+    QScopedPointer<QMutex> interactDoneMutex_;
     bool interactDoneFlag_;
 
     QVariantList inputResult_;
     QVariantList funcOptResults_;
     QVariant funcResult_;
     QString funcError_;
-    mutable class Mutex * VMMutex_;
+    mutable class std::shared_ptr<Mutex> VMMutex_;
     KumVariablesModel * variablesModel_;
     QString programLoadError_;
 
