@@ -17,3 +17,6 @@ if(Boost_FOUND)
 endif()
 
 add_subdirectory(docbook2latex)
+if (NOT APPLE)
+    add_subdirectory(open)
+endif()

@@ -8,6 +8,7 @@
 #include "dataformats/kumfile.h"
 #include "statusbar.h"
 #include "tabwidget.h"
+#include "systemopenfilesettings.h"
 
 #include <algorithm>
 #include <QSharedPointer>
@@ -860,6 +861,10 @@ void MainWindow::createSettingsDialog()
             settingsDialog_->addPage(page);
         }
     }
+#ifndef Q_OS_MACX
+    SystemOpenFileSettings * openFileSettings = new SystemOpenFileSettings;
+    settingsDialog_->addPage(openFileSettings);
+#endif
 }
 
 void MainWindow::showPreferences()
