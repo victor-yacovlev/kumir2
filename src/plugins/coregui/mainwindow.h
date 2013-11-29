@@ -52,7 +52,7 @@ public slots:
     void setBottomVisible(bool v);
     QStringList recentFiles(bool fullPaths) const;
     void loadRecentFile(const QString & fullPath);
-    inline void loadFromUrl(const QString &s) { loadFromUrl(QUrl(s), true); }
+    inline void loadFromUrl(const QString &s) { loadFromUrl(QUrl::fromLocalFile(s), true); }
     class TabWidgetElement * loadFromUrl(const QUrl & url, bool addToRecentFiles);
     class TabWidgetElement * loadFromCourseManager(
             const Shared::GuiInterface::ProgramSourceText &data

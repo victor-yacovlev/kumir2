@@ -1479,7 +1479,7 @@ void MainWindow::loadRecentFile(const QString & fullPath)
 //    if (index>=0 && index<r.size())
 //        loadFromUrl("file://"+r[index]);
     if (!fn.isEmpty() && QFile(fn).exists())
-        loadFromUrl("file://"+fn);
+        loadFromUrl(fn);
 }
 
 TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFiles)
