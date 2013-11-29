@@ -32,6 +32,7 @@ public slots:
     void setRecordIndicator(bool on);
 
 private:
+    int fontHeight() const;
     void paintEvent(QPaintEvent *event);
     void paintModeItem(QPainter &p, int x);
     void paintCounterItem(QPainter &p, int x);
@@ -49,6 +50,7 @@ private:
     QSize modeItemSize() const;
     QSize counterItemSize() const;
     QSize messageItemSize() const;
+    int messageWidth_;
     ExtensionSystem::GlobalState state_;
     uint errorsCount_;
     uint stepsDone_;
