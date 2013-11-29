@@ -1293,7 +1293,7 @@ public:
         size_t start = static_cast<size_t>(from-1);
         size_t pos = s.find(substr, start);
         if (pos==String::npos)
-            return -1;
+            return 0;
         else
             return static_cast<int>(pos+1);
     }
