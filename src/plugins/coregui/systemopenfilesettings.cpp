@@ -84,6 +84,7 @@ void SystemOpenFileSettings::scanForApplications(const QString &appsDirPath,
             f.close();
             Application app;
             bool isApp = false;
+            bool noDisplay = false;
             foreach (const QString & line, lines) {
                 int eqPos = line.indexOf('=');
                 if (eqPos != -1) {
@@ -121,9 +122,14 @@ void SystemOpenFileSettings::scanForApplications(const QString &appsDirPath,
 #endif
                         app.key = QFileInfo(executableFileName).baseName();
                     }
+                    else if (key == "nodysplay") {
+                        noDisplay =
+                                value.toLower() == "true" ||
+                                value.toLower() == "1";
+                    }
                 }
             }
-            if (isApp) {
+            if (isApp && !noDisplay) {
                 applications_.push_back(app);
             }
         }

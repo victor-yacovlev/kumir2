@@ -57,6 +57,7 @@ void ApplicationManager::scanForApplications(const QString &appsDirPath,
             ApplicationPrivate app;
             app.mdiInterface = false;
             bool isApp = false;
+            bool noDysplay = false;
             foreach (const QString & line, lines) {
                 int eqPos = line.indexOf('=');
                 if (eqPos != -1) {
@@ -97,9 +98,14 @@ void ApplicationManager::scanForApplications(const QString &appsDirPath,
                                 value.toLower() == "true" ||
                                 value.toLower() == "1";
                     }
+                    else if (key == "nodysplay") {
+                        noDysplay =
+                                value.toLower() == "true" ||
+                                value.toLower() == "1";
+                    }
                 }
             }
-            if (isApp) {
+            if (isApp && !noDysplay) {
                 applications_.push_back(app);
             }
         }
