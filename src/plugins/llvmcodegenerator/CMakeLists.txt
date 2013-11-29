@@ -15,14 +15,6 @@ include(../../kumir2_plugin.cmake)
 #find_library(LLVM_Linker_LIBRARY NAMES LLVMLinker PATHS LLVM_ROOT)
 #find_library(LLVM_AsmParser_LIBRARY NAMES LLVMAsmParser PATHS LLVM_ROOT)
 #find_library(LLVM_TransformUtils_LIBRARY NAMES LLVMTransformUtils PATHS LLVM_ROOT)
-<<<<<<< HEAD
-#find_library(LLVM_Analysis_LIBRARY NAMES LLVMAnalysis PATHS LLVM_ROOT)
-#find_library(LLVM_Target_LIBRARY NAMES LLVMTarget PATHS LLVM_ROOT)
-#find_library(LLVM_Object_LIBRARY NAMES LLVMObject PATHS LLVM_ROOT)
-#find_library(LLVM_Archive_LIBRARY NAMES LLVMArchive PATHS LLVM_ROOT)
-#find_library(LLVM_CodeGen_LIBRARY NAMES LLVMCodeGen PATHS LLVM_ROOT)
-
-=======
 #find_library(LLVM_ipa_LIBRARY NAMES LLVMipa PATHS LLVM_ROOT)
 #find_library(LLVM_Analysis_LIBRARY NAMES LLVMAnalysis PATHS LLVM_ROOT)
 #find_library(LLVM_Target_LIBRARY NAMES LLVMTarget PATHS LLVM_ROOT)
@@ -42,7 +34,6 @@ include(../../kumir2_plugin.cmake)
 #find_library(LLVM_X86Info_LIBRARY NAMES LLVMX86Info PATHS LLVM_ROOT)
 #find_library(LLVM_X86AsmPrinter_LIBRARY NAMES LLVMX86AsmPrinter PATHS LLVM_ROOT)
 #find_library(LLVM_X86Utils_LIBRARY NAMES LLVMX86Utils PATHS LLVM_ROOT)
->>>>>>> overflows
 
 
 if(NOT MSVC)
@@ -74,15 +65,6 @@ qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 copySpecFile(LLVMCodeGenerator)
 add_library(LLVMCodeGenerator SHARED ${MOC_SOURCES} ${SOURCES})
 #handleTranslation(LLVMCodeGenerator)
-<<<<<<< HEAD
-target_link_libraries(LLVMCodeGenerator    
-#    ${LLVM_CodeGen_LIBRARY}
-#    ${LLVM_Linker_LIBRARY}
-#    ${LLVM_TransformUtils_LIBRARY}
-#    ${LLVM_ipa_LIBRARY}
-#    ${LLVM_Analysis_LIBRARY}
-#    ${LLVM_Target_LIBRARY}
-=======
 target_link_libraries(LLVMCodeGenerator
 #    ${LLVM_X86AsmParser_LIBRARY}
 #    ${LLVM_X86CodeGen_LIBRARY}
@@ -102,24 +84,17 @@ target_link_libraries(LLVMCodeGenerator
 #    ${LLVM_Analysis_LIBRARY}
 #    ${LLVM_Target_LIBRARY}
 ##    ${LLVM_MC_LIBRARY}
->>>>>>> overflows
 #    ${LLVM_Object_LIBRARY}
 #    ${LLVM_Archive_LIBRARY}
 #    ${LLVM_BitReader_LIBRARY}
 #    ${LLVM_BitWriter_LIBRARY}
 #    ${LLVM_AsmParser_LIBRARY}
-<<<<<<< HEAD
-#    ${LLVM_Core_LIBRARY}
-#    ${LLVM_Support_LIBRARY}
-=======
 ##    ${LLVM_X86Utils_LIBRARY}
 #    ${LLVM_Core_LIBRARY}
 #    ${LLVM_Support_LIBRARY}
     ${LLVM_LIBRARIES}
->>>>>>> overflows
     ${DEP_LIBS}
     ${QT_LIBRARIES}
-    ${LLVM_LIBRARIES}
     ExtensionSystem
     DataFormats
     ErrorMessages
