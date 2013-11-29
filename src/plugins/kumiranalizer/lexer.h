@@ -33,7 +33,7 @@ public slots:
                              , QList<TextStatementPtr> &statements
                              , const QStringList & extraTypeNames
                              ) const;
-    void splitIntoLexems(const QString & text, QList<Lexem*> & lexems,
+    void splitIntoLexems(const QString & text, QList<LexemPtr> & lexems,
                          const QStringList & extraTypeNames);
 private:
     struct LexerPrivate * d;

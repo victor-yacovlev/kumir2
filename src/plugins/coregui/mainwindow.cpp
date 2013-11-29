@@ -8,6 +8,7 @@
 #include "dataformats/kumfile.h"
 #include "statusbar.h"
 #include "tabwidget.h"
+#include "systemopenfilesettings.h"
 
 #include <algorithm>
 #include <QSharedPointer>
@@ -860,6 +861,10 @@ void MainWindow::createSettingsDialog()
             settingsDialog_->addPage(page);
         }
     }
+#ifndef Q_OS_MACX
+    SystemOpenFileSettings * openFileSettings = new SystemOpenFileSettings;
+    settingsDialog_->addPage(openFileSettings);
+#endif
 }
 
 void MainWindow::showPreferences()
@@ -1474,7 +1479,7 @@ void MainWindow::loadRecentFile(const QString & fullPath)
 //    if (index>=0 && index<r.size())
 //        loadFromUrl("file://"+r[index]);
     if (!fn.isEmpty() && QFile(fn).exists())
-        loadFromUrl("file://"+fn);
+        loadFromUrl(fn);
 }
 
 TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFiles)

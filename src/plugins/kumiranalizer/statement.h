@@ -19,6 +19,7 @@ typedef QSharedPointer<Variable> VariablePtr;
 }
 
 using AST::Lexem;
+using AST::LexemPtr;
 
 namespace KumirAnalizer {
 
@@ -27,7 +28,7 @@ typedef QSharedPointer<struct TextStatement> TextStatementPtr;
 struct TextStatement
 {
     inline TextStatement(Shared::LexemType lt) : type(lt), conditionalIndex(0) {}
-    QList<Lexem*> data;
+    QList< LexemPtr > data;
     QPoint indentRank;
     Shared::LexemType type;
     AST::StatementPtr statement;

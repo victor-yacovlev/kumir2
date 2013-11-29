@@ -25,7 +25,7 @@ else()
 endif(XCODE)
 
 add_executable(Kumir MACOSX_BUNDLE ${SRC})
-set_target_properties(Kumir PROPERTIES RPATH "@loader_path/../lib")
+set_target_properties(Kumir PROPERTIES RPATH "@loader_path/../abrac")
 target_link_libraries(Kumir ${QT_LIBRARIES} ExtensionSystem)
 
 set_property(TARGET Kumir APPEND PROPERTY COMPILE_DEFINITIONS CONFIGURATION_TEMPLATE="${CONFIGURATION_TEMPLATE}")

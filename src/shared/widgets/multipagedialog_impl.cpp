@@ -127,7 +127,7 @@ void MultiPageDialogImpl::addPage(QWidget* page)
 
 void MultiPageDialogImpl::updateListWidth()
 {
-    int w = 100;
+    int w = 200;
     static const int Padding = 4;
     for (int i=0; i<list_->count(); i++) {
         QListWidgetItem * item = list_->item(i);

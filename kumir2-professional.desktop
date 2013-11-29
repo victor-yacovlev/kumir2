@@ -6,3 +6,4 @@ Icon=kumir2
 Name=Kumir Professional Edition
 Name[ru]=Кумир-Про
 Categories=Qt;KDE;Education;X-KDE-Edu-Misc;Math;
+X-Kumir-MDI=true

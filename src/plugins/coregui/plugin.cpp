@@ -11,6 +11,15 @@
 #ifdef Q_OS_MACX
 #include "mac-fixes.h"
 #endif
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+    #include <signal.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+    #include <stdlib.h>
+    #include <string.h>
+    #include <sys/socket.h>
+    #include <unistd.h>
+#endif
 
 namespace CoreGUI {
 
@@ -44,11 +53,31 @@ QString Plugin::DockFloatingKey = "DockWindow/Floating";
 QString Plugin::DockGeometryKey = "DockWindow/Geometry";
 QString Plugin::DockSideKey = "DockWindow/Side";
 
+Plugin* Plugin::instance_ = 0;
 
-
-QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem::CommandLine &)
+QList<CommandLineParameter> Plugin::acceptableCommandLineParameters() const
 {
+    QList<CommandLineParameter> result;
+    result << CommandLineParameter(
+                  true,
+                  tr("PROGRAM.kum"),
+                  tr("Source file name"),
+                  QVariant::String,
+                  false
+                  );
+    return result;
+}
 
+QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem::CommandLine & cmd)
+{
+    instance_ = this;
+    if (cmd.size() > 0 && cmd.value(size_t(0)).isValid()) {
+        fileNameToOpenOnReady_ = cmd.value(size_t(0)).toString();
+        if (! QFileInfo(fileNameToOpenOnReady_).isAbsolute()) {
+            fileNameToOpenOnReady_ =
+                    QDir::current().absoluteFilePath(fileNameToOpenOnReady_);
+        }
+    }
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
     qRegisterMetaType<KumFile::Data>("KumirFile.Data");
@@ -56,6 +85,10 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             ("Gui.ProgramSourceText.Language");
     qRegisterMetaType<Shared::GuiInterface::ProgramSourceText>
             ("Gui.ProgramSourceText");
+
+    connect(this, SIGNAL(externalProcessCommandReceived(QString)),
+            this, SLOT(handleExternalProcessCommand(QString)),
+            Qt::QueuedConnection);
 
 
     const QStringList BlacklistedThemes = QStringList()
@@ -376,8 +409,87 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     connect(mainWindow_->ui->actionVariables, SIGNAL(triggered()),
             debuggerWindow, SLOT(activate()));
 
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MACX)
+    struct sigaction act;
+    act.sa_sigaction = handleSIGUSR1;
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, SIGUSR1);
+    act.sa_mask = set;
+    act.sa_flags = SA_SIGINFO;
+    sigaction(SIGUSR1, &act, 0);
+#endif  
+#if defined(Q_OS_WIN32)
+    ipcShm_ = new QSharedMemory(QFileInfo(qApp->arguments().at(0)).fileName(), this);
+    if (ipcShm_->create(2048, QSharedMemory::ReadWrite)) {
+        ipcShm_->lock();
+        memset(ipcShm_->data(), 0, ipcShm_->size());
+        ipcShm_->unlock();
+        startTimer(250);
+    }
+#endif
     return "";
 }
+
+void Plugin::handleExternalProcessCommand(const QString &command)
+{
+    int spacePos = command.indexOf(' ');
+    QString cmd;
+    QString arg;
+    if (spacePos == -1) {
+        cmd = command.trimmed();
+    }
+    else {
+        cmd = command.left(spacePos).trimmed();
+        arg = command.mid(spacePos+1).trimmed();
+    }
+    if (cmd.toLower() == QString("open")) {
+        mainWindow_->loadFromUrl(QUrl::fromLocalFile(arg), true);
+    }
+}
+
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MACX)
+void Plugin::handleSIGUSR1(int , siginfo_t * info, void * )
+{
+    sigval_t val = info->si_value;
+    ::usleep(1000u);
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(val.sival_int);
+    addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    ::connect(sock, (const sockaddr*) &addr, sizeof(addr));
+    QByteArray data;
+    char buf[256];
+    ssize_t sz;
+    while (1) {
+        sz = recv(sock, buf, 256, 0);
+        if (sz <= 0) {
+            break;
+        }
+        QByteArray block(buf, sz);
+        data += block;
+    }
+    const QString message = QString::fromUtf8(data);
+    emit instance_->externalProcessCommandReceived(message);
+}
+#endif
+
+#if defined(Q_OS_WIN32)
+void Plugin::timerEvent(QTimerEvent *e)
+{
+    e->accept();
+    ipcShm_->lock();
+    QString command = QString::fromUtf8((char*)ipcShm_->data());
+    if (command.length() > 0 ) {
+        qDebug() << "Have a message in SHM : " << command;
+        emit externalProcessCommandReceived(command);
+    }
+    memset(ipcShm_->data(), 0, ipcShm_->size());
+    ipcShm_->unlock();
+}
+#endif
 
 
 void Plugin::updateSettings(const QStringList & keys)
@@ -482,6 +594,9 @@ void Plugin::start()
     }
     PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);
     mainWindow_->show();
+    if (fileNameToOpenOnReady_.length() > 0) {
+        mainWindow_->loadFromUrl(QUrl::fromLocalFile(fileNameToOpenOnReady_), true);
+    }
 }
 
 void Plugin::stop()

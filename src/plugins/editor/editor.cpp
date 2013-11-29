@@ -645,10 +645,10 @@ void Editor::createConnections()
     connect(cursor_, SIGNAL(updateRequest()), plane_, SLOT(updateCursor()));
     connect(cursor_, SIGNAL(updateRequest(int,int)), plane_, SLOT(updateText(int,int)));
 
-    connect(autocompleteWidget_, SIGNAL(requestHelpForAlgorithm(QString)),
+    connect(autocompleteWidget_.data(), SIGNAL(requestHelpForAlgorithm(QString)),
             this, SIGNAL(requestHelpForAlgorithm(QString)));
-    connect(autocompleteWidget_, SIGNAL(hidden()), plane_, SIGNAL(enableInsertActions()));
-    connect(autocompleteWidget_, SIGNAL(acceptedSuggestion(QString)),
+    connect(autocompleteWidget_.data(), SIGNAL(hidden()), plane_, SIGNAL(enableInsertActions()));
+    connect(autocompleteWidget_.data(), SIGNAL(acceptedSuggestion(QString)),
             plane_, SLOT(finishAutoCompletion(QString)));
 
 }

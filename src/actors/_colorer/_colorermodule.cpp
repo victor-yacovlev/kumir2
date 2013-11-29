@@ -179,7 +179,7 @@ static QColor parseColor(const QString &css)
     validValues << QString::fromUtf8("оранжевый");
     validValues << QString::fromUtf8("красный");
     ok = validValues.contains(x.trimmed());
-    Color result;
+    Color result; result.r = result.g = result.b = result.a = 0;
     if (ok) {
         QColor c = parseColor(x.trimmed()).toRgb();
         result.r = c.red();
