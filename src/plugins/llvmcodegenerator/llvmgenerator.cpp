@@ -63,7 +63,7 @@ LLVMGenerator::LLVMGenerator()
     if (!StdLibFile.open(QIODevice::ReadOnly)) {
         const QString message = QString::fromAscii("Can't open %1")
                 .arg(StdLibFileName);
-        qFatal(message.toStdString().c_str());
+        qFatal("%s", message.toStdString().c_str());
     }
 
     QByteArray stdLibBytes = StdLibFile.readAll();
@@ -706,7 +706,7 @@ void LLVMGenerator::addFunctionBody(const QList<AST::StatementPtr> & statements,
         const AST::StatementPtr & statement = statements.at(i);
         const AST::StatementType type = statement->type;
         if (statement->lexems.size() > 0) {
-            const AST::Lexem * frontLexem = statement->lexems.front();
+            const AST::LexemPtr frontLexem = statement->lexems.front();
             int lineNo = frontLexem->lineNo + 1;
             Q_ASSERT(kumirSetCurrentLineNumber_);
             if (debugLevel_ != Shared::GeneratorInterface::NoDebug) {
@@ -1078,7 +1078,7 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
         err = st->headerError;
     }
     else {
-        foreach (const AST::Lexem * lx, st->lexems) {
+        foreach (const AST::LexemPtr lx, st->lexems) {
             if (lx->error.length() > 0) {
                 err = lx->error;
                 errNo = lx->lineNo + 1;
@@ -1260,7 +1260,7 @@ void LLVMGenerator::createLoop(llvm::IRBuilder<> &builder, const AST::StatementP
     else {
         QString endErr;
         int endErrLine;
-        foreach (const AST::Lexem * lx, loop.endLexems) {
+        foreach (const AST::LexemPtr lx, loop.endLexems) {
             if (lx->error.length() > 0) {
                 endErr = lx->error;
                 endErrLine = lx->lineNo + 1;

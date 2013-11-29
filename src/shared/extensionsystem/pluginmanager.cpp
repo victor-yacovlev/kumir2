@@ -8,6 +8,7 @@ const QString PluginManager::WorkspacesListKey = "WorkspacesList";
 const QString PluginManager::CurrentWorkspaceKey = "CurrentWorkspace";
 const QString PluginManager::SkipChooseWorkspaceKey = "SkipChooseWorkspace";
 
+
 PluginManager::PluginManager()
     : QObject()
     , pImpl_(new PluginManagerImpl)
@@ -48,6 +49,15 @@ PluginManager::PluginManager()
 PluginManager::~PluginManager()
 {
 
+}
+
+void PluginManager::destroy()
+{
+    PluginManager * pm = instance();
+    foreach (KPlugin * o, pm->pImpl_->objects) {
+        delete o;
+    }
+    pm->pImpl_->objects.clear();
 }
 
 SettingsPtr PluginManager::globalSettings() const

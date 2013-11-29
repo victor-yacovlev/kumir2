@@ -30,10 +30,15 @@ else()
             OUTPUT_VARIABLE GIT_HASH
         )
         execute_process(
-            COMMAND ${GIT} tag
+            COMMAND ${GIT} describe --abbrev=0 --tags
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             OUTPUT_VARIABLE GIT_TAG
+            RESULT_VARIABLE GIT_TAG_ERROR
+            ERROR_VARIABLE NULL
         )
+        if(NOT "${GIT_TAG_ERROR}" EQUAL "0")
+            set(GIT_TAG unknown)
+        endif()
         execute_process(
             COMMAND ${GIT} --no-pager log -1 --pretty=format:%ct
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}

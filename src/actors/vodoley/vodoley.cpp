@@ -92,7 +92,7 @@ void Menzurka::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     if ( ((uint)needFill>0)&&((uint)needFill<= SizeInLiters))
     {
 
-        QBrush gold();
+
         painter->setPen(QColor(20,237,17));
         painter->drawLine(offsetX+1,offsetY+size-literSize*needFill,offsetX+X_SIZE/3,offsetY+size-literSize*needFill);
         //QString sizeN=QString::number(needFill);
