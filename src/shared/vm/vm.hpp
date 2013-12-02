@@ -1077,10 +1077,12 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
             nextCallInto_ = false;
             valuesStack_.pop(); // current implementation doesn't requere args count
             currentLocals_ = &(contextsStack_.top().locals);
-            currentGlobals_ =
-                    &(moduleContexts_[c.moduleContextNo].globals[c.moduleId]);
-            currentConstants_ =
-                    &(moduleContexts_[c.moduleContextNo].constants);
+            ModuleContext & currentModuleContext = moduleContexts_[c.moduleContextNo];
+            currentConstants_ = &currentModuleContext.constants;
+            const size_t globalTablesCount = currentModuleContext.globals.size();
+            currentGlobals_ = c.moduleId < globalTablesCount
+                    ? &currentModuleContext.globals[c.moduleId]
+                    : nullptr;
             if (stacksMutex_)
                 stacksMutex_->unlock();
         }
@@ -1106,8 +1108,13 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
                 c.moduleContextNo = reference.moduleContext;
                 contextsStack_.push(c);
                 currentLocals_ = &(contextsStack_.top().locals);
-                currentGlobals_ =
-                        &(moduleContexts_[c.moduleContextNo].globals[c.moduleId]);
+
+                ModuleContext & currentModuleContext = moduleContexts_[c.moduleContextNo];
+                const size_t globalTablesCount = currentModuleContext.globals.size();
+                currentGlobals_ = c.moduleId < globalTablesCount
+                        ? &currentModuleContext.globals[c.moduleId]
+                        : nullptr;
+
                 currentConstants_ =
                         &(moduleContexts_[reference.moduleContext].constants);
                 nextCallInto_ = false;
