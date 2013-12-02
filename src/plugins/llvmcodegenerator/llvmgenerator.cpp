@@ -448,10 +448,11 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
         if (kfunc->header.returnType != AST::TypeNone) {
             llvm::Argument & firstArg = lfn->getArgumentList().front();
 #if LLVM_VERSION_MINOR >= 3
-            llvm::AttributeSet aset;
-            aset.addAttribute(ctx, 0, llvm::Attribute::StructRet);
-            aset.addAttribute(ctx, 1, llvm::Attribute::NoAlias);
-            firstArg.addAttr(aset);
+            llvm::AttrBuilder abuilder;
+            abuilder.addAttribute(llvm::Attribute::StructRet);
+            abuilder.addAttribute(llvm::Attribute::NoAlias);
+            firstArg.addAttr(llvm::AttributeSet::get(ctx, 0, abuilder));
+            firstArg.addAttr(llvm::AttributeSet::get(ctx, 1, abuilder));
 #elif LLVM_VERSION_MINOR == 0
             llvm::Attributes attrs = 0x00;
             attrs |= llvm::Attribute::StructRet;
