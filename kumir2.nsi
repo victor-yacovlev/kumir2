@@ -33,6 +33,11 @@ Section "Kumir" Kumir
 	ExecWait '"$INSTDIR\vcredist_x86.exe" /passive'
 	Delete /REBOOTOK "$INSTDIR\vcredist_x86.exe"
 
+        ExecWait 'assoc .kum=niisi.kumir2.program'
+        ExecWait 'assoc .kod=niisi.kumir2.bytecode'
+        ExecWait 'ftype niisi.kumir2.program="$INSTDIR\bin\kumir2-open.exe" "%1"'
+        ExecWait 'ftype niisi.kumir2.bytecode="$INSTDIR\bin\kumir2-run.exe" "%1" "%*"'
+
 	CreateDirectory "$SMPROGRAMS\Кумир2"
 	CreateShortCut "$SMPROGRAMS\Кумир2\Кумир-Стандарт.lnk" "$INSTDIR\bin\kumir2-classic.exe"
 	CreateShortCut "$SMPROGRAMS\Кумир2\Кумир для старших классов.lnk" "$INSTDIR\bin\kumir2-highgrade.exe"
