@@ -11,7 +11,7 @@ if(MSVC)
         endif()
 else()
     if(NOT APPLE)
-        set(CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS}"-Wl,--no-undefined")        
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-undefined")
     endif(NOT APPLE)
 endif(MSVC)
 
