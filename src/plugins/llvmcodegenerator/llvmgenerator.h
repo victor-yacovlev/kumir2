@@ -86,9 +86,12 @@ private:
     void createOutputValue(Builder & builder, const QString & name, llvm::Value * value, const AST::VariableBaseType type, const bool isArray);
     void createInputValue(Builder & builder, const QString & name, llvm::Value * value, const AST::VariableBaseType type, const bool isArray);
 
+    llvm::AllocaInst * CreateAlloca(Builder & builder, llvm::Type * ty, const CString & name = CString());
+
     llvm::Module* currentModule_;
     AST::ModulePtr currentKModule_;
     llvm::Function* currentFunction_;
+    llvm::BasicBlock * currentFunctionEntry_;
     AST::AlgorithmPtr currentAlgorithm_;
     llvm::LLVMContext* context_;
     QScopedPointer<NameTranslator> nameTranslator_;
@@ -99,8 +102,7 @@ private:
     llvm::BasicBlock* currentFunctionExit_;
     uint32_t ifThenElseCounter_;
     uint32_t switchCaseCounter_;
-    uint32_t loopCounter_;
-
+    uint32_t loopCounter_;            
 
     llvm::Function* kumirInitStdLib_;
     llvm::Function* kumirSetMainArguments_;

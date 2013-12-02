@@ -52,6 +52,7 @@ namespace LLVMCodeGenerator {
 LLVMGenerator::LLVMGenerator()
     : currentModule_(0)
     , currentFunction_(0)
+    , currentFunctionEntry_(0)
     , context_(0)
     , nameTranslator_(new NameTranslator)
     , stdlibModule_(0)
@@ -163,9 +164,14 @@ void LLVMGenerator::createKumirModuleImplementation(const AST::ModulePtr kmod)
     initFunc->addFnAttr(llvm::Attributes::UWTable);
 #endif
     tempValsToFree_.clear();
-    llvm::BasicBlock * initBlock = llvm::BasicBlock::Create(*context_, "", initFunc);
-    currentBlock_ = initBlock;
-    llvm::IRBuilder<> initBuilder(initBlock);
+    llvm::BasicBlock * initEntry = llvm::BasicBlock::Create(ctx, "__init__entry", initFunc);
+    llvm::BasicBlock * initBody = llvm::BasicBlock::Create(ctx, "__init__body", initFunc);
+    currentBlock_ = initEntry;
+    currentFunctionEntry_ = initEntry;
+    llvm::IRBuilder<> initBuilder(initEntry);
+    initBuilder.CreateBr(initBody);
+    currentBlock_ = initBody;
+    initBuilder.SetInsertPoint(initBody);
 
     for (int i=0; i<kmod->impl.globals.size(); i++) {
         const AST::VariablePtr glob = kmod->impl.globals.at(i);
@@ -273,17 +279,17 @@ void LLVMGenerator::createMainFunction(const AST::AlgorithmPtr &entryPoint)
         llvm::Value * ret = 0;
 
         if (entryPoint->header.returnType != AST::TypeNone) {
-            ret = builder.CreateAlloca(getScalarType());
+            ret = CreateAlloca(builder, getScalarType(), CString("__main__return_value__"));
             args.push_back(ret);
         }
 
         for (int i=0; i<entryPoint->header.arguments.size(); i++) {
             const AST::VariablePtr & arg = entryPoint->header.arguments.at(i);
-            llvm::Value * larg = builder.CreateAlloca(
-                        arg->dimension > 0u ? getArrayType() : getScalarType()
-                        );
             const CString argName = nameTranslator_->add(arg->name);
-            larg->setName(argName);
+            llvm::Value * larg = CreateAlloca(builder,
+                        arg->dimension > 0u ? getArrayType() : getScalarType(),
+                                              argName
+                        );
             args.push_back(larg);
             if (1u == arg->dimension) {
                 llvm::Value * x_start = calculate(builder, arg->bounds[0].first);
@@ -493,6 +499,8 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
         llvm::BasicBlock * functionExit =
                 llvm::BasicBlock::Create(ctx, "function_exit", lfn);
 
+        currentFunctionEntry_ = functionEntry;
+
         currentFunctionExit_ = functionExit;
         llvm::IRBuilder<> builder(currentBlock_);
         currentBlock_ = functionEntry;
@@ -542,7 +550,7 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
                 Q_ASSERT(!cname.empty());
                 llvm::Type * ty = kvar->dimension > 0u
                         ? getArrayType() : getScalarType();
-                llvm::Value * arg = builder.CreateAlloca(ty, 0, cname);
+                llvm::Value * arg = CreateAlloca(builder, ty, cname);
                 llvm::Function * initFunc = kvar->dimension == 0u
                         ? kumirCreateUndefinedScalar_ : kumirCreateUndefinedArray_;
                 builder.CreateCall(initFunc, arg);
@@ -793,7 +801,7 @@ llvm::Value* LLVMGenerator::createVarInitialize(llvm::IRBuilder<> &builder, cons
     else {
         name = nameTranslator_->add(overrideName);
         Q_ASSERT(!name.empty());
-        result = builder.CreateAlloca(ty, 0, name);
+        result = CreateAlloca(builder, ty, name);
     }
     Q_ASSERT(result);
     llvm::Function * initFunc = 0;
@@ -1050,8 +1058,7 @@ void LLVMGenerator::createInput(llvm::IRBuilder<> &builder, const AST::Statement
         if (varExpr->kind == AST::ExprVariable) {
             llvm::Value * var = findVariableAtCurrentContext(varExpr->variable);
             Q_ASSERT(var);
-            ptr = builder.CreateAlloca(ptrTy);
-            ptr->setName(var->getName() + CString("_ptr"));
+            ptr = CreateAlloca(builder, ptrTy);
             builder.CreateStore(var, ptr);
         }
         else if (varExpr->kind == AST::ExprArrayElement) {
@@ -1591,7 +1598,7 @@ llvm::Value * LLVMGenerator::createArrayElementGet(llvm::IRBuilder<> &builder, c
     llvm::Value * var = findVariableAtCurrentContext(ex->variable);
     Q_ASSERT(var);
     std::vector<llvm::Value*> args;
-    llvm::Value * elemPtr = builder.CreateAlloca(getScalarType()->getPointerTo());
+    llvm::Value * elemPtr = CreateAlloca(builder, getScalarType()->getPointerTo());
     Q_ASSERT(elemPtr);
     if (ex->variable->dimension > 0u) {
         args.push_back(elemPtr);
@@ -1642,7 +1649,7 @@ llvm::Value * LLVMGenerator::createArrayElementGet(llvm::IRBuilder<> &builder, c
             llvm::StructType * struct_stringref =
                     stdlibModule_->getTypeByName("struct.__kumir_stringref");
             Q_ASSERT(struct_stringref);
-            result = builder.CreateAlloca(struct_stringref);
+            result = CreateAlloca(builder, struct_stringref);
             builder.CreateCall3(kumirGetStringElementRef_,
                                 result, elemPtr, index);
         }
@@ -1650,7 +1657,7 @@ llvm::Value * LLVMGenerator::createArrayElementGet(llvm::IRBuilder<> &builder, c
             llvm::StructType * struct_scalar =
                     stdlibModule_->getTypeByName("struct.__kumir_scalar");
             Q_ASSERT(struct_scalar);
-            result = builder.CreateAlloca(struct_scalar);
+            result = CreateAlloca(builder, struct_scalar);
             builder.CreateCall3(kumirGetStringElement_,
                                 result, elemPtr, index);
         }
@@ -1672,7 +1679,7 @@ llvm::Value * LLVMGenerator::createArrayElementGet(llvm::IRBuilder<> &builder, c
             llvm::StructType * struct_stringref =
                     stdlibModule_->getTypeByName("struct.__kumir_stringref");
             Q_ASSERT(struct_stringref);
-            result = builder.CreateAlloca(struct_stringref);
+            result = CreateAlloca(builder, struct_stringref);
             builder.CreateCall4(kumirGetStringSliceRef_,
                                 result, elemPtr, index1, index2);
         }
@@ -1680,7 +1687,7 @@ llvm::Value * LLVMGenerator::createArrayElementGet(llvm::IRBuilder<> &builder, c
             llvm::StructType * struct_scalar =
                     stdlibModule_->getTypeByName("struct.__kumir_scalar");
             Q_ASSERT(struct_scalar);
-            result = builder.CreateAlloca(struct_scalar);
+            result = CreateAlloca(builder, struct_scalar);
             builder.CreateCall4(kumirGetStringSlice_,
                                 result, elemPtr, index1, index2);
         }
@@ -1730,7 +1737,7 @@ llvm::Value * LLVMGenerator::createConstant(llvm::IRBuilder<> & builder, const A
         arg = builder.CreateGlobalStringPtr(strval);
         func = kumirCreateString_;
     }
-    llvm::Value * tmp = builder.CreateAlloca(ty);
+    llvm::Value * tmp = CreateAlloca(builder, ty);
     result = builder.CreateCall2(func, tmp, arg);
     Q_ASSERT(result);
     return tmp;
@@ -1918,11 +1925,8 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
                 // Copy variable to prevent it changing
                 // if passed as another value out-parameter
                 if (argExpr->kind == AST::ExprVariable) {
-                    llvm::Value * argCopy = builder.CreateAlloca(
-                                getScalarType(),
-                                0,
-                                arg->getName() + std::string("_copy")
-                                );
+                    llvm::Value * argCopy = CreateAlloca(builder,
+                                                         getScalarType());
                     builder.CreateCall2(kumirAssignScalarToScalar_,
                                         argCopy, arg);
                     arg = argCopy;
@@ -1936,8 +1940,7 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
             Q_ASSERT(varExpr);
             llvm::Value * var = findVariableAtCurrentContext(varExpr);
             Q_ASSERT(kumirLinkArray_);
-            arg = builder.CreateAlloca(getArrayType());
-            arg->setName(var->getName() + CString("_array_link"));
+            arg = CreateAlloca(builder, getArrayType());
             builder.CreateCall2(kumirLinkArray_, arg, var);
         }
         Q_ASSERT(arg);
@@ -1948,7 +1951,7 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
 
     if (alg->header.returnType != AST::TypeNone) {
         llvm::Type * rtype = getScalarType();
-        llvm::Value * rval = builder.CreateAlloca(rtype);
+        llvm::Value * rval = CreateAlloca(builder, rtype);
         args[0] = rval;
         result = rval;
     }
@@ -1968,7 +1971,7 @@ llvm::Value * LLVMGenerator::createSubExpession(llvm::IRBuilder<> &builder, cons
         operands[i] = operand;
     }
 
-    llvm::Value * result = builder.CreateAlloca(getScalarType());
+    llvm::Value * result = CreateAlloca(builder, getScalarType());
     llvm::Function * opFunc = 0;
     size_t operandsCount = operands.size();
     switch (ex->operatorr) {
@@ -2005,7 +2008,7 @@ llvm::Value * LLVMGenerator::createShortCircuitOperation(llvm::IRBuilder<> &buil
 {
     tempValsToFreeStartPos_.push(tempValsToFree_.size());
     Q_ASSERT(op == AST::OpAnd || op == AST::OpOr);
-    llvm::Value * result = builder.CreateAlloca(getScalarType());
+    llvm::Value * result = CreateAlloca(builder, getScalarType());
     llvm::Value * leftResult = calculate(builder, left);
     Q_ASSERT(kumirScalarAsBool_);
     Q_ASSERT(kumirMoveScalar_);
@@ -2117,6 +2120,33 @@ llvm::StructType * LLVMGenerator::getStringRefType()
         result = stdlibModule_->getTypeByName("struct.__kumir_stringref");
     }
     Q_ASSERT(result);
+    return result;
+}
+
+/** Create alloca instruction at function begin to avoid stack grow in loops */
+llvm::AllocaInst * LLVMGenerator::CreateAlloca(Builder &builder, llvm::Type *ty, const CString &name)
+{
+    Q_ASSERT(currentFunctionEntry_);
+
+    llvm::BasicBlock * currentBlock = builder.GetInsertBlock();
+
+    if (currentFunctionEntry_->size() > 0 &&
+            currentFunctionEntry_->back().isTerminator())
+    {
+        // insert before "br" terminator
+        builder.SetInsertPoint(&currentFunctionEntry_->back());
+    }
+    else {
+        // append to end of function entry block
+        builder.SetInsertPoint(currentFunctionEntry_);
+    }
+
+    llvm::AllocaInst * result = 0;
+    result = builder.CreateAlloca(ty, 0, name);
+
+    // Restore insert point
+    builder.SetInsertPoint(currentBlock);
+
     return result;
 }
 

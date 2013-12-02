@@ -1524,7 +1524,7 @@ EXTERN void __kumir_init_stdlib()
     // Set stack size some greater...
 #if defined(WIN32) || defined(_WIN32)
 #else
-    static const rlim_t kStackSize = 1024 * 1024 * 1024;
+    static const rlim_t kStackSize = 32 * 1024 * 1024;
     struct rlimit rl;
     int result;
     result = getrlimit(RLIMIT_STACK, &rl);
