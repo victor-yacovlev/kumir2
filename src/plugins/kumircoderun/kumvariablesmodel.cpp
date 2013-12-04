@@ -61,7 +61,7 @@ QModelIndex KumVariablesModel::topLevelIndex(int row) const
     TableOfVariables * globalsTable = vm_->getMainModuleGlobals();
     bool hasGlobals = globalsTable && globalsTable->size() > 0;
     mutex_->unlock();
-    int globalsOffset = hasGlobals? -1 : 0;
+    size_t globalsOffset = hasGlobals? 1u : 0u;
     KumVariableItem * result = nullptr;
     if (hasGlobals && row == 0) {
         for (int i=0; i<cache_.size(); i++) {
@@ -96,15 +96,15 @@ QModelIndex KumVariablesModel::topLevelIndex(int row) const
             locals = &(mainContext->locals);
         }
         else {
-            int offset = globalsOffset;
-            if (mainContext)
-                offset += 1;
-            int index = row - offset;
-            int counter = 0;
+            size_t offset = globalsOffset;
+//            if (mainContext)
+//                offset += 1;
+            size_t index = row - offset;
+            size_t counter = 0;
             for (int i=0; i<stack.size(); i++) {
                 const VM::Context & context = stack.at(i);
                 if (context.type == Bytecode::EL_FUNCTION) {
-                    counter += 1;
+                    counter += 1u;
                     if (index == counter) {
                         algorithmName = QString::fromStdWString(context.name);
                         locals = &(context.locals);
