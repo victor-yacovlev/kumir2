@@ -105,7 +105,7 @@ MainWindow::MainWindow(Plugin * p) :
     QObject * runnerObject =
             ExtensionSystem::PluginManager::instance()->findKPlugin<Shared::RunInterface>();
     if (runnerObject) {
-        connect(runnerObject, SIGNAL(updateStepsCounter(quint64)), this, SLOT(checkCounterValue()));
+//        connect(runnerObject, SIGNAL(updateStepsCounter(quint64)), this, SLOT(checkCounterValue()));
     }
 
     connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(showPreferences()));
@@ -174,7 +174,7 @@ MainWindow::MainWindow(Plugin * p) :
 //    m_message->setStyleSheet(StatusbarWidgetCSS);
 //    statusBar()->addWidget(m_message, 1);
 
-    i_timerId = startTimer(1000);
+    i_timerId = startTimer(250);
 
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(showAbout()));
     connect(ui->actionUsage, SIGNAL(triggered()), this, SLOT(showUserManual()));
