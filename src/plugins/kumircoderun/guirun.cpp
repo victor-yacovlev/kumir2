@@ -238,14 +238,14 @@ void OutputFunctor::operator ()(
     }
     QString data = QString::fromStdWString(os.getBuffer());
     emit requestOutput(data);
-    Util::SleepFunctions::usleep(1000);
+    Util::SleepFunctions::msleep(10);
 }
 
 void OutputFunctor::writeRawString(const String &s)
 {
     const QString data = QString::fromStdWString(s);
     emit requestOutput(data);
-    Util::SleepFunctions::usleep(1000);
+    Util::SleepFunctions::msleep(10);
 }
 
 GetMainArgumentFunctor::GetMainArgumentFunctor()
