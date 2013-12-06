@@ -75,56 +75,64 @@ QSize StatusBar::minimumSizeHint() const
 
 void StatusBar::setState(ExtensionSystem::GlobalState state)
 {
+    bool upd = state_ != state;
     state_ = state;
-    update();
+    if (upd) update();
 }
 
 void StatusBar::setMessage(const QString &message, MessageRole role)
 {
+    bool upd = message_ != message || messageRole_ != role;
     message_ = message;
     messageRole_ = role;
-    update();
+    if (upd) update();
 }
 
 void StatusBar::unsetMessage()
 {
+    bool upd = message_.length() > 0;
     message_.clear();
     messageRole_ = Normal;
-    update();
+    if (upd) update();
 }
 
 void StatusBar::setRecordIndicator(bool on)
 {
+    bool upd = editorRecord_ != on;
     editorRecord_ = on;
-    update();
+    if (upd) update();
 }
 
 void StatusBar::setStepsDoneCounter(uint value)
 {
+    bool upd = stepsDone_ != value;
     stepsDone_ = value;
-    repaint();
+    if (upd) repaint();
 }
 
 void StatusBar::setErrorsCounter(uint value)
 {
+    bool upd = errorsCount_ != value;
     errorsCount_ = value;
-    repaint();
+    if (upd) repaint();
 }
 
 void StatusBar::setEditorCursorPosition(uint row, uint column)
 {
+    bool upd = editorRow_ != row || editorColumn_ != column;
     editorRow_ = row;
     editorColumn_ = column;
-    update();
+    if (upd) update();
 }
 
 void StatusBar::setEditorKeyboardLayout(QLocale::Language lang, bool capslock, bool shift, bool alt)
 {
+    bool upd = keyboardLayout_ != lang || keyboardCaps_ != capslock  || keyboardShift_ != shift || keyboardAlt_ != alt;
     keyboardLayout_ = lang;
     keyboardCaps_ = capslock;
     keyboardShift_ = shift;
     keyboardAlt_ = alt;
-    update();
+    if (upd) update();
 }
 
 QSize StatusBar::keyboardLayoutItemSize() const
