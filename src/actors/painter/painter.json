@@ -179,7 +179,7 @@
 			"async": false,
 			"arguments": [
 				{ "name": {"ascii": "width", "ru_RU": "толщина"}, "baseType": "int" },
-				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "color" }
+                { "name": {"ascii": "color_", "ru_RU": "цвет_"}, "baseType": "color" }
 			]
 		},
 		{
@@ -188,7 +188,7 @@
 			"arguments": [
 				{ "name": "x", "baseType": "int" },
 				{ "name": "y", "baseType": "int" },
-				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "color" }
+                { "name": {"ascii": "color_", "ru_RU": "цвет_"}, "baseType": "color" }
 			]
 		},
 		{
@@ -212,7 +212,7 @@
 			"name": {"ascii": "split to CMYK", "ru_RU": "разложить в CMYK"},
 			"async": false,
 			"arguments": [
-				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "color" },
+                { "name": {"ascii": "color_", "ru_RU": "цвет_"}, "baseType": "color" },
 				{ "name": "c", "baseType": "int", "access": "out" },
 				{ "name": "m", "baseType": "int", "access": "out" },
 				{ "name": "y", "baseType": "int", "access": "out" },
@@ -223,7 +223,7 @@
 			"name": {"ascii": "split to HSL", "ru_RU": "разложить в HSL"},
 			"async": false,
 			"arguments": [
-				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "color" },
+                { "name": {"ascii": "color_", "ru_RU": "цвет_"}, "baseType": "color" },
 				{ "name": "h", "baseType": "int", "access": "out" },
 				{ "name": "s", "baseType": "int", "access": "out" },
 				{ "name": "l", "baseType": "int", "access": "out" }
@@ -233,7 +233,7 @@
 			"name": {"ascii": "split to HSV", "ru_RU": "разложить в HSV"},
 			"async": false,
 			"arguments": [
-				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "color" },
+                { "name": {"ascii": "color_", "ru_RU": "цвет_"}, "baseType": "color" },
 				{ "name": "h", "baseType": "int", "access": "out" },
 				{ "name": "s", "baseType": "int", "access": "out" },
 				{ "name": "v", "baseType": "int", "access": "out" }
@@ -243,7 +243,7 @@
 			"name": {"ascii": "split to RGB", "ru_RU": "разложить в RGB"},
 			"async": false,
 			"arguments": [
-				{ "name": {"ascii": "color", "ru_RU": "цвет"}, "baseType": "color" },
+                { "name": {"ascii": "color_", "ru_RU": "цвет_"}, "baseType": "color" },
 				{ "name": "r", "baseType": "int", "access": "out" },
 				{ "name": "g", "baseType": "int", "access": "out" },
 				{ "name": "b", "baseType": "int", "access": "out" }
