@@ -36,7 +36,7 @@ public slots:
     void reset();
     Color runOperatorINPUT(const QString& x, bool& ok);
     QString runOperatorOUTPUT(const Color& x);
-
+    bool runOperatorEQUAL(const Color& x, const Color& y);
 
 
     /* ========= CLASS PRIVATE ========= */
