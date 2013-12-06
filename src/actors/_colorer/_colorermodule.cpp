@@ -247,6 +247,14 @@ static quint32 colorToUintValue(const Color &x)
     
 }
 
+bool _ColorerModule::runOperatorEQUAL(const Color &x, const Color &y)
+{
+    return x.a == y.a &&
+            x.r == y.r &&
+            x.g == y.g &&
+            x.b == y.b;
+}
+
 
 
 } // namespace Actor_Colorer
