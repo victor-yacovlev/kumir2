@@ -1617,7 +1617,7 @@ void KumirVM::do_filescall(uint16_t alg)
     /* алг удалить_файл(лит имя файла) */
     case 0x000e: {
         const String x = valuesStack_.pop().toString();
-        Kumir::Files::unlink(x);
+        valuesStack_.push(Variable(Kumir::Files::unlink(x)));
         break;
     }
     /* алг НАЗНАЧИТЬ ВВОД(лит имя файла) */
@@ -1653,7 +1653,7 @@ void KumirVM::do_filescall(uint16_t alg)
     /* алг удалить_каталог(лит имя файла) */
     case 0x0013: {
         const String x = valuesStack_.pop().toString();
-        Kumir::Files::rmdir(x);
+        valuesStack_.push(Variable(Kumir::Files::rmdir(x)));
         break;
     }
     /* алг файл консоль */
