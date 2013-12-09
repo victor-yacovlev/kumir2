@@ -386,7 +386,7 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
                 moduleContexts_[currentModuleContext].globals.resize(e.module+1);
                 moduleContexts_[currentModuleContext].globals[e.module].reserve(256);
                 moduleContexts_[currentModuleContext].moduleNames.resize(e.module+1);
-                moduleContexts_[currentModuleContext].moduleNames[e.module] = e.moduleName;
+                moduleContexts_[currentModuleContext].moduleNames[e.module] = e.moduleLocalizedName;
             }
             if (moduleContexts_[currentModuleContext].globals[e.module].size() <= e.id) {
                 moduleContexts_[currentModuleContext].globals[e.module].resize(e.id+1);
@@ -490,7 +490,7 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
             reference.funcKey = extKey;
             reference.moduleContext = externModuleContext;
             reference.fileName = e.fileName;
-            reference.moduleName = e.moduleName.length()>0
+            reference.moduleLocalizedName = e.moduleLocalizedName.length()>0
                     ? e.name
                     : e.fileName;
             moduleContexts_[currentModuleContext].externs[key] = reference;
@@ -499,7 +499,8 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
             ExternReference reference;
             reference.platformDependent = true;
             reference.funcKey = 0xFFFFFFFF;
-            reference.moduleName = e.moduleName;
+            reference.moduleAsciiName = e.moduleAsciiName;
+            reference.moduleLocalizedName = e.moduleLocalizedName;
             reference.fileName = e.fileName;
             reference.platformModuleName = Kumir::Coder::encode(
                         VM_LOCALE,
@@ -507,7 +508,7 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
                         );
             moduleContexts_[currentModuleContext].externInits.push_back(reference);
             if (externalModuleLoad_)
-                (*externalModuleLoad_)(reference.moduleName, reference.platformModuleName);
+                (*externalModuleLoad_)(reference.moduleAsciiName, reference.moduleLocalizedName);
         }
         else if (e.type==EL_EXTERN) {
             ExternReference reference;
@@ -518,7 +519,8 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
             key = mod | alg;
             reference.platformDependent = true;
             reference.funcKey = alg;
-            reference.moduleName = e.moduleName;
+            reference.moduleAsciiName = e.moduleAsciiName;
+            reference.moduleLocalizedName = e.moduleLocalizedName;
             reference.fileName = e.fileName;
             reference.platformModuleName = Kumir::Coder::encode(
                         VM_LOCALE,
@@ -526,10 +528,10 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
                         );
             moduleContexts_[currentModuleContext].externs[key] = reference;
             if (externalModuleLoad_) {
-                std::list< Kumir::String > algorithms =
+                std::deque< std::string > algorithms =
                         (*externalModuleLoad_)(
-                            reference.moduleName,
-                            reference.platformModuleName
+                            reference.moduleAsciiName,
+                            reference.moduleLocalizedName
                             );
             }
         }
@@ -608,9 +610,10 @@ Variable KumirVM::fromTableElem(const Bytecode::TableElem &e) {
     r.setBaseType(e.vtype.front());
     r.setName(e.name);
     r.setConstantFlag(e.type==EL_CONST);
-    r.setModuleName(e.moduleName);
-    r.setRecordModuleName(e.recordModuleName);
-    r.setRecordClassName(e.recordClassName);
+    r.setModuleName(e.moduleLocalizedName);
+    r.setRecordModuleLocalizedName(e.recordModuleLocalizedName);
+    r.setRecordClassAsciiName(e.recordClassAsciiName);
+    r.setRecordClassLocalizedName(e.recordClassLocalizedName);
     return r;
 }
 
@@ -798,7 +801,9 @@ void KumirVM::reset()
         }
     }
 
-    std::set<Kumir::String> usedExternalModules;
+    typedef std::pair<std::string, Kumir::String> ModuleRef;
+
+    std::set<ModuleRef> usedExternalModules;
 
     // Push globals to debugger and make a list of used external modules
     for (size_t i_context=0; i_context<moduleContexts_.size(); i_context++) {
@@ -811,10 +816,11 @@ void KumirVM::reset()
         {
             const ExternReference & externReference = itExtern->second;
             if (externReference.platformDependent) {
-                const Kumir::String & externModuleName =
-                        externReference.moduleName;
-                if (!usedExternalModules.count(externModuleName))
-                    usedExternalModules.insert(externModuleName);
+                ModuleRef ref;
+                ref.first = externReference.moduleAsciiName;
+                ref.second = externReference.moduleLocalizedName;
+                if (!usedExternalModules.count(ref))
+                    usedExternalModules.insert(ref);
             }
         }
 
@@ -823,10 +829,11 @@ void KumirVM::reset()
         {
             const ExternReference & externReference = *itExtern;
             if (externReference.platformDependent) {
-                const Kumir::String & externModuleName =
-                        externReference.moduleName;
-                if (!usedExternalModules.count(externModuleName))
-                    usedExternalModules.insert(externModuleName);
+                ModuleRef ref;
+                ref.first = externReference.moduleAsciiName;
+                ref.second = externReference.moduleLocalizedName;
+                if (!usedExternalModules.count(ref))
+                    usedExternalModules.insert(ref);
             }
         }
     }
@@ -836,14 +843,16 @@ void KumirVM::reset()
 
     // Reset used external modules
     if (externalModuleReset_) {
-        for (std::set<Kumir::String>::const_iterator it=usedExternalModules.begin();
+        for (std::set<ModuleRef>::const_iterator it=usedExternalModules.begin();
              it!=usedExternalModules.end();
              ++it
              )
         {
-            const Kumir::String & moduleName = *it;
+            const ModuleRef & ref = * it;
+            const std::string & moduleAsciiName = ref.first;
+            const Kumir::String & moduleLocalizedName = ref.second;
             try {
-                (*externalModuleReset_)(moduleName);
+                (*externalModuleReset_)(moduleAsciiName, moduleLocalizedName);
             }
             catch (const std::string & msg) {
                 error_ = Kumir::Core::fromUtf8(msg);
@@ -1123,7 +1132,8 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
             }
             else if (externalModuleCall_) {
                 uint16_t algKey = reference.funcKey & 0xffff;
-                const Kumir::String moduleName = reference.moduleName;
+                const std::string moduleAsciiName = reference.moduleAsciiName;
+                const Kumir::String moduleLocalizedName = reference.moduleLocalizedName;
                 if (stacksMutex_) stacksMutex_->lock();
                 int argsCount = valuesStack_.pop().toInt();
                 std::deque<Variable> args;
@@ -1136,7 +1146,7 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
                 Kumir::String localError;
                 try {
                     algResult = (*externalModuleCall_)(
-                                moduleName, algKey, args
+                                moduleAsciiName, moduleLocalizedName, algKey, args
                                 );
                 }
                 catch (const std::string & error) {
@@ -1500,7 +1510,7 @@ void KumirVM::do_filescall(uint16_t alg)
         const String x = valuesStack_.pop().toString();
         Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Read);
         Record yy = toRecordValue(y);
-        Variable res(yy, Kumir::Core::fromUtf8("файл"));
+        Variable res(yy, Kumir::Core::fromUtf8("файл"), std::string("file"));
         valuesStack_.push(res);
         error_ = Kumir::Core::getError();
         break;
@@ -1510,7 +1520,7 @@ void KumirVM::do_filescall(uint16_t alg)
         const String x = valuesStack_.pop().toString();
         Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Write);
         Record yy = toRecordValue(y);
-        valuesStack_.push(Variable(yy, Kumir::Core::fromUtf8("файл")));
+        valuesStack_.push(Variable(yy, Kumir::Core::fromUtf8("файл"), std::string("file")));
         error_ = Kumir::Core::getError();
         break;
     }
@@ -1519,7 +1529,7 @@ void KumirVM::do_filescall(uint16_t alg)
         const String x = valuesStack_.pop().toString();
         Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Append);
         Record yy = toRecordValue(y);
-        valuesStack_.push(Variable(yy, Kumir::Core::fromUtf8("файл")));
+        valuesStack_.push(Variable(yy, Kumir::Core::fromUtf8("файл"), std::string("file")));
         error_ = Kumir::Core::getError();
         break;
     }
@@ -1614,7 +1624,7 @@ void KumirVM::do_filescall(uint16_t alg)
     /* алг удалить_файл(лит имя файла) */
     case 0x000e: {
         const String x = valuesStack_.pop().toString();
-        Kumir::Files::unlink(x);
+        valuesStack_.push(Variable(Kumir::Files::unlink(x)));
         break;
     }
     /* алг НАЗНАЧИТЬ ВВОД(лит имя файла) */
@@ -1650,14 +1660,14 @@ void KumirVM::do_filescall(uint16_t alg)
     /* алг удалить_каталог(лит имя файла) */
     case 0x0013: {
         const String x = valuesStack_.pop().toString();
-        Kumir::Files::rmdir(x);
+        valuesStack_.push(Variable(Kumir::Files::rmdir(x)));
         break;
     }
     /* алг файл консоль */
     case 0x0014: {
         const Kumir::FileType console = Kumir::Files::getConsoleBuffer();
         const Record record = toRecordValue(console);
-        valuesStack_.push(Variable(record, Kumir::Core::fromUtf8("файл")));
+        valuesStack_.push(Variable(record, Kumir::Core::fromUtf8("файл"), std::string("file")));
         break;
     }
     /* алг лог =(фaйл ф1, файл ф2) */
@@ -1811,7 +1821,7 @@ void KumirVM::do_specialcall(uint16_t alg)
         for (int i=0; i<varsCount; i++) {
             const Variable & ref = valuesStack_.pop();
             if (ref.baseType()==VT_record
-                    && ref.recordClassName()==Kumir::Core::fromUtf8("файл")) {
+                    && ref.recordClassAsciiName()==std::string("file")) {
                 fileIO = true;
                 if (!ref.isValid()) {
                     error_ = Kumir::Core::fromUtf8("Нет значения у ключа файла");

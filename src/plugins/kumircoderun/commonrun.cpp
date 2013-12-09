@@ -33,11 +33,11 @@ void ExternalModuleResetFunctor::setCallFunctor(ExternalModuleCallFunctor *callF
     callFunctor_ = callFunctor;
 }
 
-void ExternalModuleResetFunctor::operator ()(const Kumir::String & moduleName)
+void ExternalModuleResetFunctor::operator ()(const std::string & moduleAsciiName, const Kumir::String & moduleLocalizedName)
 {
     using namespace ExtensionSystem;
 
-    ActorInterface * actor = Util::findActor(moduleName);
+    ActorInterface * actor = Util::findActor(moduleAsciiName);
 
     if (actor) {
         actor->reset();
@@ -46,7 +46,7 @@ void ExternalModuleResetFunctor::operator ()(const Kumir::String & moduleName)
         }
     }
     else {
-        const QString qModuleName = QString::fromStdWString(moduleName);
+        const QString qModuleName = QString::fromStdWString(moduleLocalizedName);
         const Kumir::String errorMessage =
                 QString::fromUtf8(
                     "Ошибка инициализации исполнителя: нет исполнителя "
@@ -70,6 +70,7 @@ ExternalModuleCallFunctor::~ExternalModuleCallFunctor()
 
 AnyValue ExternalModuleCallFunctor::operator ()
 (
+    const std::string & asciiModuleName,
     const String & moduleName,
     const uint16_t algKey,
     VariableReferencesList alist
@@ -88,7 +89,7 @@ AnyValue ExternalModuleCallFunctor::operator ()
     }
 
     // Find an actor (or throw)
-    Shared::ActorInterface * actor = Util::findActor(moduleName);
+    Shared::ActorInterface * actor = Util::findActor(asciiModuleName);
 
     if (! actor) {
         const String errorMessage = QString::fromUtf8(
@@ -166,23 +167,23 @@ void ExternalModuleCallFunctor::handleActorSync()
 String CustomTypeToStringFunctor::operator ()(const Variable & variable)
         /*throws Kumir::String, std::string*/
 {
-    const QString modName =
-            QString::fromStdWString(variable.recordModuleName());
-    const QString className =
-            QString::fromStdWString(variable.recordClassName());
+    const QByteArray modAsciiName =
+            QByteArray(variable.recordModuleAsciiName().c_str());
+    const QString modLocalizedName =
+            QString::fromStdWString(variable.recordModuleLocalizedName());
+    const QByteArray classAsciiName =
+            QByteArray(variable.recordClassAsciiName().c_str());
 
-    ActorInterface * actor = Util::findActor(variable.recordModuleName());
+    ActorInterface * actor = Util::findActor(modAsciiName);
 
     String result;
     if (actor) {
-        Shared::ActorInterface::CustomType ct;
-        ct.first = className;
         QVariant value = Util::VariableToQVariant(variable);
-        const QString qString = actor->customValueToString(ct, value);
+        const QString qString = actor->customValueToString(classAsciiName, value);
         result = qString.toStdWString();
     }
     else {
-        throw QString::fromUtf8("Нет такого исполнителя: %1").arg(modName)
+        throw QString::fromUtf8("Нет такого исполнителя: %1").arg(modLocalizedName)
                 .toStdWString();
     }
     return result;
@@ -190,7 +191,9 @@ String CustomTypeToStringFunctor::operator ()(const Variable & variable)
 
 AnyValue CustomTypeFromStringFunctor::operator ()(
         const String & source,
+        const std::string & moduleAsciiName,
         const String & moduleName,
+        const std::string & typeAsciiName,
         const String & typeName
         ) /*throws Kumir::String, std::string*/
 {
@@ -202,11 +205,9 @@ AnyValue CustomTypeFromStringFunctor::operator ()(
             QString::fromStdWString(typeName);
     const QString qString = QString::fromStdWString(source);
 
-    ActorInterface * actor = Util::findActor(moduleName);
+    ActorInterface * actor = Util::findActor(moduleAsciiName);
     if (actor) {
-        ActorInterface::CustomType ct;
-        ct.first = className;
-        const QVariant value = actor->customValueFromString(ct, qString);
+        const QVariant value = actor->customValueFromString(QByteArray(typeAsciiName.c_str()), qString);
         if (value.isValid()) {
             result = Util::QVariantToValue(value, 0);
         }

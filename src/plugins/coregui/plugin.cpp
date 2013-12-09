@@ -274,7 +274,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         l_plugin_actors << actor;
         QWidget * w = 0;
         const QString actorHelpFile = helpPath + o->pluginSpec().name + ".xml";
-        if (!actor->name().startsWith("_") && QFile(actorHelpFile).exists()) {
+        if (!actor->localizedModuleName(QLocale::Russian).startsWith("_") && QFile(actorHelpFile).exists()) {
             helpViewer_->addDocument(QUrl::fromLocalFile(actorHelpFile));
         }
         if (actor->mainWidget()) {
@@ -296,7 +296,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             Widgets::SecondaryWindow * actorWindow =
                     Widgets::SecondaryWindow::createSecondaryWindow(
                         actorWidget,
-                        actor->name(),
+                        actor->localizedModuleName(QLocale::Russian),
                         mainIcon,
                         mainWindow_,
                         mainWindow_->actorsPlace_,
@@ -308,7 +308,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
             QAction * showActor =
                     mainWindow_->ui->menuWindow->addAction(
-                        actor->name(),
+                        actor->localizedModuleName(QLocale::Russian),
                         actorWindow,
                         SLOT(activate())
                         );
@@ -332,7 +332,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                 Widgets::SecondaryWindow * pultWindow =
                         Widgets::SecondaryWindow::createSecondaryWindow(
                             actor->pultWidget(),
-                            actor->name() + " - " + tr("Remote Control"),
+                            actor->localizedModuleName(QLocale::Russian) + " - " + tr("Remote Control"),
                             pultIcon,
                             mainWindow_,
                             nullptr,
@@ -343,7 +343,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
                 QAction * showPult =
                         mainWindow_->ui->menuWindow->addAction(
-                            actor->name() + " - " + tr("Remote Control"),
+                            actor->localizedModuleName(QLocale::Russian) + " - " + tr("Remote Control"),
                             pultWindow,
                             SLOT(activate())
                             );

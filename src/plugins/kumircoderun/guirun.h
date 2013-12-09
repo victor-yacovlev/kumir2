@@ -20,8 +20,8 @@ class ExternalModuleLoadFunctor
 {
 public:
     NamesList operator()(
-                const String & moduleName,
-                const std::string & canonicalModuleFileName)
+            const std::string & moduleAsciiName,
+            const Kumir::String & moduleName)
                 /* throws std::string, Kumir::String */ ;
 };
 

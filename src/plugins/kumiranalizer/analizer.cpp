@@ -342,17 +342,22 @@ void AnalizerPrivate::createModuleFromActor_stage1(Shared::ActorInterface * acto
     AST::ModulePtr mod = AST::ModulePtr(new AST::Module());
     mod->builtInID = forcedId;
     mod->header.type = AST::ModTypeExternal;
-    mod->header.name = actor->name();
+    mod->header.name = actor->localizedModuleName(QLocale::Russian);
+    mod->header.asciiName = actor->asciiModuleName();
     mod->impl.actor = AST::ActorPtr(actor);
     ast->modules << ModulePtr(mod);
     const Shared::ActorInterface::TypeList typeList = actor->typeList();
     for (int i=0; i<typeList.size(); i++) {
         typedef Shared::ActorInterface AI;
-        AI::CustomType ct = typeList[i];
+        AI::RecordSpecification ct = typeList[i];
         AST::Type tp;
-        tp.name = ct.first;
+        if (ct.localizedNames.contains(QLocale::Russian))
+            tp.name = ct.localizedNames[QLocale::Russian];
+        else
+            tp.name = QString::fromAscii(ct.asciiName);
         tp.actor = AST::ActorPtr(actor);
-        AI::Record record = ct.second;
+        tp.asciiName = ct.asciiName;
+        AI::Record record = ct.record;
         for (int j=0; j<record.size(); j++) {
             AI::Field field = record[j];
             AI::FieldType ft = field.second;
@@ -374,6 +379,44 @@ void AnalizerPrivate::createModuleFromActor_stage1(Shared::ActorInterface * acto
     }    
 }
 
+static AST::Type actorTypeToASTType(const Shared::ActorInterface::FieldType ft,
+                                    const Shared::ActorInterface::RecordSpecification & spec)
+{
+    AST::Type result;
+    if (ft == Shared::ActorInterface::Void) {
+        result = AST::TypeNone;
+    }
+    else if (ft == Shared::ActorInterface::Bool) {
+        result = AST::TypeBoolean;
+    }
+    else if (ft == Shared::ActorInterface::Char) {
+        result = AST::TypeCharect;
+    }
+    else if (ft == Shared::ActorInterface::Int) {
+        result = AST::TypeInteger;
+    }
+    else if (ft == Shared::ActorInterface::Real) {
+        result = AST::TypeReal;
+    }
+    else if (ft == Shared::ActorInterface::String) {
+        result = AST::TypeString;
+    }
+    else if (ft == Shared::ActorInterface::RecordType) {
+        result.kind = AST::TypeUser;
+        result.name = spec.localizedNames.contains(QLocale::Russian)
+                ? spec.localizedNames[QLocale::Russian]
+                : QString::fromAscii(spec.asciiName);
+        result.asciiName = spec.asciiName;
+        foreach (const Shared::ActorInterface::Field & field, spec.record) {
+            AST::Field kfield;
+            kfield.first = QString::fromAscii(field.first);
+            kfield.second = actorTypeToASTType(field.second, Shared::ActorInterface::RecordSpecification());
+            result.userTypeFields.push_back(kfield);
+        }
+    }
+    return result;
+}
+
 void AnalizerPrivate::createModuleFromActor_stage2(Shared::ActorInterface * actor)
 {
     // Stage 2 -- build functions list
@@ -383,32 +426,50 @@ void AnalizerPrivate::createModuleFromActor_stage2(Shared::ActorInterface * acto
         AST::ModulePtr dmod = moduleByActor(ast, dep);
         dmod->header.usedBy.append(mod.toWeakRef());
     }
-    const QStringList funcList = actor->funcList();
-    for (int i=0; i<funcList.size(); i++) {
+    foreach (const Shared::ActorInterface::Function & function, actor->functionList()) {
+
+        static const QList<QByteArray> Operators = QList<QByteArray>()
+                << "input" << "output" << "+" << "-" << "*" << "/" << "**"
+                << "=" << "<>" << "<" << ">";
+
         AST::AlgorithmPtr alg = AST::AlgorithmPtr(new AST::Algorithm);
         alg->header.implType = AST::AlgorhitmExternal;
-        alg->header.external.moduleName = actor->name();
-        alg->header.external.id = i;
-        QList<TextStatementPtr> sts;
-        lexer->splitIntoStatements(QStringList() << funcList[i], -1, sts, gatherExtraTypeNames(mod));
-        Q_ASSERT_X(sts.size()==1
-                   , "AnalizerPrivate::createModuleFromActor"
-                   , QString("Algorhitm %1 in module %2 has syntax error")
-                   .arg(funcList[i])
-                   .arg(actor->name()).toLocal8Bit().data());
-        alg->impl.headerLexems = sts[0]->data;
-        sts[0]->alg = alg;
-        sts[0]->mod = mod;
-        analizer->init(sts, ast);
-        analizer->buildTables(true);
-        foreach (const LexemPtr lx, sts[0]->data) {
-            if (!lx->error.isEmpty()) {
-                Q_ASSERT_X(sts.size()==1
-                           , "AnalizerPrivate::createModuleFromActor"
-                           , QString("Algorhitm %1 in module %2 has syntax error")
-                           .arg(funcList[i])
-                           .arg(actor->name()).toLocal8Bit().data());
+        alg->header.external.moduleName = actor->localizedModuleName(QLocale::Russian);
+        alg->header.external.moduleAsciiName = actor->asciiModuleName();
+        alg->header.external.id = function.id;
+        alg->header.name = function.localizedNames.contains(QLocale::Russian)
+                ? function.localizedNames[QLocale::Russian]
+                : QString::fromAscii(function.asciiName);
+        alg->header.external.algorithmAsciiName = function.asciiName;
+        alg->header.broken = false;
+        alg->header.specialType = function.accessType == Shared::ActorInterface::TeacherModeFunction
+                ? AST::AlgorithmTypeTeacher : AST::AlgorithmTypeRegular;
+
+        alg->header.returnType = actorTypeToASTType(function.returnType, function.returnTypeSpecification);
+        foreach (const Shared::ActorInterface::Argument & arg, function.arguments) {
+            AST::VariablePtr karg = AST::VariablePtr(new AST::Variable);
+            karg->name = arg.localizedNames.contains(QLocale::Russian)
+                    ? arg.localizedNames[QLocale::Russian]
+                    : QString::fromAscii(arg.asciiName);
+            karg->baseType = actorTypeToASTType(arg.type, arg.typeSpecification);
+            karg->dimension = arg.dimension;
+            if (arg.accessType == Shared::ActorInterface::InOutArgument) {
+                karg->accessType = AST::AccessArgumentInOut;
             }
+            else if (arg.accessType == Shared::ActorInterface::OutArgument) {
+                karg->accessType = AST::AccessArgumentOut;
+            }
+            else {
+                karg->accessType = AST::AccessArgumentIn;
+            }
+            alg->header.arguments.push_back(karg);
+        }
+
+        if (Operators.contains(function.asciiName)) {
+            mod->header.operators.push_back(alg);
+        }
+        else {
+            mod->header.algorhitms.push_back(alg);
         }
     }
 }

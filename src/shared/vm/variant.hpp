@@ -240,11 +240,12 @@ public:
     inline explicit Variable(Char & v) { create(); baseType_ = VT_char; value_ = v; }
     inline explicit Variable(const String & v) { create(); baseType_ = VT_string; value_ = v; }
     inline explicit Variable(bool v) { create(); baseType_ = VT_bool; value_ = v; }
-    inline explicit Variable(const Record & value, const String & clazz) {
+    inline explicit Variable(const Record & value, const String & clazz, const std::string & asciiClazz) {
         create();
         baseType_ = VT_record;
         value_ = value;
-        setRecordClassName(clazz);
+        setRecordClassLocalizedName(clazz);
+        setRecordClassAsciiName(asciiClazz);
     }
     inline explicit Variable(Variable * ref) { create(); reference_ = ref; }
     inline explicit Variable(const AnyValue & v) {
@@ -278,29 +279,53 @@ public:
     inline const String & myName() const {
         return name_;
     }
-    inline const String & recordModuleName() const {
+    inline const String & recordModuleLocalizedName() const {
         if (reference_)
-            return reference_->recordModuleName();
+            return reference_->recordModuleLocalizedName();
         else
-            return recordModuleName_;
+            return recordModuleLocalizedName_;
     }
-    inline const String & recordClassName() const {
+    inline const std::string & recordModuleAsciiName() const {
         if (reference_)
-            return reference_->recordClassName();
+            return reference_->recordModuleAsciiName();
         else
-            return recordClassName_;
+            return recordModuleAsciiName_;
     }
-    inline void setRecordModuleName(const String & n) {
+    inline const std::string & recordClassAsciiName() const {
         if (reference_)
-            reference_->setRecordModuleName(n);
+            return reference_->recordClassAsciiName();
         else
-            recordModuleName_ = n;
+            return recordClassAsciiName_;
     }
-    inline void setRecordClassName(const String & n) {
+    inline const String & recordClassLocalizedName() const {
         if (reference_)
-            reference_->setRecordClassName(n);
+            return reference_->recordClassLocalizedName();
         else
-            recordClassName_ = n;
+            return recordClassLocalizedName_;
+    }
+    inline void setRecordModuleLocalizedName(const String & n) {
+        if (reference_)
+            reference_->setRecordModuleLocalizedName(n);
+        else
+            recordModuleLocalizedName_ = n;
+    }
+    inline void setRecordModuleAsciiName(const std::string & n) {
+        if (reference_)
+            reference_->setRecordModuleAsciiName(n);
+        else
+            recordModuleAsciiName_ = n;
+    }
+    inline void setRecordClassAsciiName(const std::string & n) {
+        if (reference_)
+            reference_->setRecordClassAsciiName(n);
+        else
+            recordClassAsciiName_ = n;
+    }
+    inline void setRecordClassLocalizedName(const String & n) {
+        if (reference_)
+            reference_->setRecordClassLocalizedName(n);
+        else
+            recordClassLocalizedName_ = n;
     }
 
     inline void setAlgorhitmName(const String & n) {
@@ -419,8 +444,10 @@ private:
     String name_;
     String algorhitmName_;
     String moduleName_;
-    String recordModuleName_;
-    String recordClassName_;
+    std::string recordModuleAsciiName_;
+    String recordModuleLocalizedName_;
+    std::string recordClassAsciiName_;
+    String recordClassLocalizedName_;
     bool constant_;
     int referenceStackContextNo_;
 };

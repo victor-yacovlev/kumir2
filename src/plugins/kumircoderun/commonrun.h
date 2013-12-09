@@ -34,6 +34,7 @@ class ExternalModuleCallFunctor:
 public:
     explicit ExternalModuleCallFunctor(QObject * parent = 0);
     AnyValue operator()(
+            const std::string & asciiModuleName,
             const String & moduleName,
             const uint16_t algKey,
             VariableReferencesList alist
@@ -54,7 +55,7 @@ class ExternalModuleResetFunctor
         : public VM::ExternalModuleResetFunctor
 {
 public:
-    void operator()(const Kumir::String & moduleName)
+    void operator()(const std::string & moduleName, const String & localizedName)
         /* throws std::string, Kumir::String */ ;
     void setCallFunctor(ExternalModuleCallFunctor * callFunctor);
 private:
@@ -75,7 +76,9 @@ class CustomTypeFromStringFunctor
 public:
     AnyValue operator()(
                 const String & source,
+                const std::string & moduleAsciiName,
                 const String & moduleName,
+                const std::string & typeAsciiName,
                 const String & typeName
                 ) /*throws Kumir::String, std::string*/;
 };

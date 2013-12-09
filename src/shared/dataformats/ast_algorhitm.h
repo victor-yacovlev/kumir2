@@ -32,13 +32,13 @@ typedef QSharedPointer<struct Data> DataPtr;
 enum AlgorhitmType {
 
     /** Regular algorhitm */
-    AlgorhitmTypeRegular,
+    AlgorithmTypeRegular,
 
     /** Available to write only by teacher */
-    AlgorhitmTypeTeacher,
+    AlgorithmTypeTeacher,
 
     /** Testing mode entry point */
-    AlgorhitmTypeTesting
+    AlgorithmTypeTesting
 };
 
 /** Algorhitm implementation type */
@@ -55,7 +55,9 @@ enum AlgorhitmImplementationType {
 /** External reference for out-of module algorhitm */
 struct AlgorhitmExternalReference {
     QString moduleName;
-    int id;
+    QByteArray moduleAsciiName;
+    QByteArray algorithmAsciiName;
+    quint16 id;
 };
 
 /** Algorhitm public header */
@@ -63,10 +65,6 @@ struct AlgorhitmHeader {
 
     /** Algorhitm name, may be empty (for first algorhitm) */
     QString name;
-
-    QString cHeader;
-
-    QString pascalHeader;
 
     /** Algorhitm special type */
     enum AlgorhitmType specialType;
