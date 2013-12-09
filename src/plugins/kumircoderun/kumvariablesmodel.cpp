@@ -546,7 +546,7 @@ QString KumVariableItem::variableTypeName() const
     QString result;
     if (variable_) {
         if (variable_->baseType() == VM::VT_record) {
-            result = QString::fromStdWString(variable_->recordClassName());
+            result = QString::fromStdWString(variable_->recordClassLocalizedName());
         }
         else if (variable_->baseType() == VM::VT_int) {
             result = QString::fromUtf8("цел");

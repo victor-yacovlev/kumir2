@@ -120,14 +120,14 @@ static Bytecode::TableElem makeConstant(const ConstValue & val)
     e.type = Bytecode::EL_CONST;
     e.vtype = val.baseType.toStdList();
     e.dimension = val.dimension;
-    e.recordModuleName = val.recordModuleName.toStdWString();
-    e.recordClassName  = val.recordClassName.toStdWString();
+    e.recordModuleLocalizedName = val.recordModuleName.toStdWString();
+    e.recordClassLocalizedName  = val.recordClassLocalizedName.toStdWString();
     if (val.dimension==0) {
         VM::Variable var;
         VM::AnyValue vv = makeAnyValue(val.value,
                                        val.baseType,
                                        val.recordModuleName,
-                                       val.recordClassName
+                                       val.recordClassLocalizedName
                                        );
         var.setValue(vv);
         var.setBaseType(val.baseType.front());
@@ -153,7 +153,7 @@ static Bytecode::TableElem makeConstant(const ConstValue & val)
                                  listX[x-1],
                                  val.baseType,
                                  val.recordModuleName,
-                                 val.recordClassName
+                                 val.recordClassLocalizedName
                                  ));
                 }
                 else {
@@ -172,7 +172,7 @@ static Bytecode::TableElem makeConstant(const ConstValue & val)
                                          listX[x-1],
                                          val.baseType,
                                          val.recordModuleName,
-                                         val.recordClassName
+                                         val.recordClassLocalizedName
                                          ));
                         }
                         else {
@@ -201,7 +201,7 @@ static Bytecode::TableElem makeConstant(const ConstValue & val)
                                                  listX[x-1],
                                                  val.baseType,
                                                  val.recordModuleName,
-                                                 val.recordClassName
+                                                 val.recordClassLocalizedName
                                                  ));
                                 }
                                 else {
@@ -240,6 +240,71 @@ void Generator::generateConstantTable()
     }
 }
 
+static const Shared::ActorInterface::Function & functionByInternalId(const Shared::ActorInterface * actor, uint32_t id)
+{
+    static Shared::ActorInterface::Function dummy;
+    const Shared::ActorInterface::FunctionList & alist = actor->functionList();
+    foreach (const Shared::ActorInterface::Function & func, alist) {
+        if (func.id == id) {
+            return func;
+        }
+    }
+    return dummy;
+}
+
+static QString typeToSignature(const AST::Type & t) {
+    QString result;
+    if (t.kind == AST::TypeNone)
+        result = "void";
+    else if (t.kind == AST::TypeBoolean)
+        result = "bool";
+    else if (t.kind == AST::TypeInteger)
+        result = "int";
+    else if (t.kind == AST::TypeReal)
+        result = "real";
+    else if (t.kind == AST::TypeCharect)
+        result = "char";
+    else if (t.kind == AST::TypeString)
+        result = "string";
+    else if (t.kind == AST::TypeUser) {
+        result = "record{";
+        for (int i=0; i<t.userTypeFields.size(); i++) {
+            if (i > 0)
+                result += ";";
+            result += typeToSignature(t.userTypeFields.at(i).second);
+        }
+        result += "}";
+    }
+    Q_ASSERT(result.length() > 0);
+    return result;
+}
+
+static QString createMethodSignature(const AST::AlgorithmPtr alg)
+{
+    const QString rt = typeToSignature(alg->header.returnType);
+    QStringList args;
+    for (int i=0; i<alg->header.arguments.size(); i++) {
+        QString sarg;
+        const AST::VariablePtr karg = alg->header.arguments[i];
+        if (karg->accessType == AST::AccessArgumentInOut)
+            sarg = "inout ";
+        else if (karg->accessType == AST::AccessArgumentOut)
+            sarg = "out ";
+        else
+            sarg = "in ";
+        sarg += typeToSignature(karg->baseType);
+        for (uint8_t j=0; j<karg->dimension; j++) {
+            sarg += "[]";
+        }
+        args << sarg;
+    }
+    const QString argline = args.size() > 0
+            ? args.join(",") : QString();
+    const QString result = argline.length() > 0
+            ? rt + ":" + argline : rt;
+    return result;
+}
+
 void Generator::generateExternTable()
 {
     QSet<AST::ModulePtr> modulesImplicitlyImported;
@@ -248,18 +313,25 @@ void Generator::generateExternTable()
         Bytecode::TableElem e;
         e.type = Bytecode::EL_EXTERN;
         e.module = ext.first;
-        e.algId = e.id = ext.second;
         const AST::ModulePtr  mod = ast_->modules[ext.first];
         const QList<AST::AlgorithmPtr> table = mod->header.algorhitms + mod->header.operators;
         const AST::AlgorithmPtr  alg = table[ext.second];
+        if (alg->header.external.moduleName.endsWith(".kum") ||
+                alg->header.external.moduleName.endsWith(".kod"))
+        {
+            e.algId = e.id = ext.second;
+        }
+        else {
+            e.algId = e.id = alg->header.external.id;
+        }
         QList<ExtensionSystem::KPlugin*> plugins =
                 ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
         QString moduleFileName;
         QString signature;
         for (int m=0; m<plugins.size(); m++) {
             Shared::ActorInterface * actor = qobject_cast<Shared::ActorInterface*>(plugins[m]);
-            if (actor && actor->name()==mod->header.name) {
-                signature = actor->funcList()[e.id];
+            if (actor && actor->asciiModuleName()==mod->header.asciiName) {
+                signature = createMethodSignature(alg);
                 moduleFileName = plugins[m]->pluginSpec().libraryFileName;
                 // Make filename relative
                 int slashP = moduleFileName.lastIndexOf("/");
@@ -272,7 +344,8 @@ void Generator::generateExternTable()
             modulesImplicitlyImported.insert(mod);
         if (mod->header.type==AST::ModTypeCached)
             moduleFileName = mod->header.name;
-        e.moduleName = mod->header.name.toStdWString();
+        e.moduleAsciiName = std::string(mod->header.asciiName.constData());
+        e.moduleLocalizedName = mod->header.name.toStdWString();
         e.name = alg->header.name.toStdWString();
         e.signature = signature.toStdWString();
         e.fileName = moduleFileName.toStdWString();
@@ -305,13 +378,13 @@ void Generator::generateExternTable()
         e.type = Bytecode::EL_EXTERN_INIT;
         e.module = 0xFF;
         e.algId = e.id = 0xFFFF;
-        e.moduleName = module->header.name.toStdWString();
+        e.moduleLocalizedName = module->header.name.toStdWString();
         QString moduleFileName;
         QList<ExtensionSystem::KPlugin*> plugins =
                 ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
         for (int m=0; m<plugins.size(); m++) {
             Shared::ActorInterface * actor = qobject_cast<Shared::ActorInterface*>(plugins[m]);
-            if (actor && actor->name()==module->header.name) {
+            if (actor && actor->localizedModuleName(QLocale::Russian)==module->header.name) {
                 moduleFileName = plugins[m]->pluginSpec().libraryFileName;
                 // Make filename relative
                 int slashP = moduleFileName.lastIndexOf("/");
@@ -320,6 +393,8 @@ void Generator::generateExternTable()
                 }
             }
         }
+        e.moduleAsciiName = std::string(module->header.asciiName.constData());
+        e.moduleLocalizedName = module->header.name.toStdWString();
         e.fileName = moduleFileName.toStdWString();
         byteCode_->d.push_front(e);
     }
@@ -422,9 +497,11 @@ void Generator::addKumirModule(int id, const AST::ModulePtr mod)
         glob.dimension = quint8(var->dimension);
         glob.vtype = valueType(var->baseType).toStdList();
         glob.refvalue = valueKind(var->accessType);
-        glob.recordModuleName = var->baseType.actor ?
-                    var->baseType.actor->name().toStdWString() : std::wstring();
-        glob.recordClassName = var->baseType.name.toStdWString();
+        glob.recordModuleAsciiName = var->baseType.actor ?
+                    std::string(var->baseType.actor->asciiModuleName().constData()) : std::string();
+        glob.recordModuleLocalizedName = var->baseType.actor ?
+                    var->baseType.actor->localizedModuleName(QLocale::Russian).toStdWString() : std::wstring();
+        glob.recordClassLocalizedName = var->baseType.name.toStdWString();
         byteCode_->d.push_back(glob);
     }
     Bytecode::TableElem initElem;
@@ -432,7 +509,7 @@ void Generator::addKumirModule(int id, const AST::ModulePtr mod)
     returnFromInit.type = Bytecode::RET;
     initElem.type = Bytecode::EL_INIT;
     initElem.module = quint8(id);
-    initElem.moduleName = mod->header.name.toStdWString();
+    initElem.moduleLocalizedName = mod->header.name.toStdWString();
     initElem.instructions = instructions(id, -1, 0, mod->impl.initializerBody).toVector().toStdVector();
     if (!initElem.instructions.empty())
         initElem.instructions << returnFromInit;
@@ -455,7 +532,7 @@ void Generator::addKumirModule(int id, const AST::ModulePtr mod)
                 mainAlgorhitmId = i;
             }
         }
-        if (alg->header.specialType==AST::AlgorhitmTypeTesting) {
+        if (alg->header.specialType==AST::AlgorithmTypeTesting) {
             ft = Bytecode::EL_TESTING;
         }
         addFunction(i, id, ft, mod, alg);
@@ -552,7 +629,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
                                      0,
                                      var->initialValue,
                                      var->baseType.actor ?
-                                         var->baseType.actor->name() : "",
+                                         var->baseType.actor->localizedModuleName(QLocale::Russian) : "",
                                      var->baseType.name
                                      );
             instrs << load;
@@ -647,7 +724,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
     func.type = Bytecode::EL_BELOWMAIN;
     func.algId = func.id = algId;
     func.module = moduleId;
-    func.moduleName = mod->header.name.toStdWString();
+    func.moduleLocalizedName = mod->header.name.toStdWString();
     func.name = QString::fromAscii("@below_main").toStdWString();
     func.instructions = instrs.toVector().toStdVector();
     byteCode_->d.push_back(func);
@@ -740,9 +817,12 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
         loc.dimension = var->dimension;
         loc.vtype = valueType(var->baseType).toStdList();
         loc.refvalue = valueKind(var->accessType);
-        loc.recordModuleName = var->baseType.actor ?
-                    var->baseType.actor->name().toStdWString() : std::wstring();
-        loc.recordClassName = var->baseType.name.toStdWString();
+        loc.recordModuleAsciiName = var->baseType.actor ?
+                    std::string(var->baseType.actor->asciiModuleName().constData()) : std::string();
+        loc.recordModuleLocalizedName = var->baseType.actor ?
+                    var->baseType.actor->localizedModuleName(QLocale::Russian).toStdWString() : std::wstring();
+        loc.recordClassAsciiName = std::string(var->baseType.asciiName);
+        loc.recordClassLocalizedName = var->baseType.name.toStdWString();
         byteCode_->d.push_back(loc);
     }
     Bytecode::TableElem func;
@@ -751,7 +831,7 @@ void Generator::addFunction(int id, int moduleId, Bytecode::ElemType type, const
     func.algId = func.id = id;
     func.name = alg->header.name.toStdWString();
     func.signature = signature.toStdWString();
-    func.moduleName = mod->header.name.toStdWString();
+    func.moduleLocalizedName = mod->header.name.toStdWString();
     QList<Bytecode::Instruction> argHandle;
 
     argHandle += makeLineInstructions(alg->impl.headerLexems);
@@ -972,7 +1052,7 @@ quint16 Generator::constantValue(const QList<Bytecode::ValueType> & type, quint8
     c.dimension = dimension;
     c.value = value;
     c.recordModuleName = moduleName;
-    c.recordClassName = className;
+    c.recordClassLocalizedName = className;
     if (!constants_.contains(c)) {
         constants_ << c;
         return constants_.size()-1;
@@ -1027,8 +1107,12 @@ void Generator::findFunction(const AST::AlgorithmPtr alg, quint8 &module, quint1
             if (alg==table[j]) {
                 module = i;
                 id = j;
+                if (mod->header.type == AST::ModTypeExternal) {
+                    id = alg->header.external.id;
+                }
                 if (mod->header.type==AST::ModTypeCached ||
-                        (mod->header.type==AST::ModTypeExternal && (mod->builtInID & 0xF0) == 0) ) {
+                        (mod->header.type==AST::ModTypeExternal && (mod->builtInID & 0xF0) == 0) )
+                {
                     QPair<quint8,quint16> ext(module, id);
                     if (!externs_.contains(ext))
                         externs_ << ext;
@@ -1154,7 +1238,7 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
     QList<Bytecode::Instruction> result;
     if (st->kind==AST::ExprConst) {
         int constId = constantValue(valueType(st->baseType), st->dimension, st->constant,
-                                    st->baseType.actor ? st->baseType.actor->name() : "",
+                                    st->baseType.actor ? st->baseType.actor->localizedModuleName(QLocale::Russian) : "",
                                     st->baseType.name
                                     );
         Bytecode::Instruction instr;
@@ -1372,7 +1456,7 @@ void Generator::INIT(int modId, int algId, int level, const AST::StatementPtr  s
             load.type = Bytecode::LOAD;
             load.scope = Bytecode::CONSTT;
             load.arg = constantValue(valueType(var->baseType), var->dimension, var->initialValue,
-                                     var->baseType.actor ? var->baseType.actor->name() : "",
+                                     var->baseType.actor ? var->baseType.actor->localizedModuleName(QLocale::Russian) : "",
                                      var->baseType.name
                                      );
             result << load;
@@ -1435,7 +1519,7 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
             if (varExpr->kind==AST::ExprConst) {
                 ref.scope = Bytecode::CONSTT;
                 ref.arg = constantValue(valueType(varExpr->baseType), 0, varExpr->constant,
-                                        varExpr->baseType.actor ? varExpr->baseType.actor->name() : "",
+                                        varExpr->baseType.actor ? varExpr->baseType.actor->localizedModuleName(QLocale::Russian) : "",
                                         varExpr->baseType.name
                                         );
             }

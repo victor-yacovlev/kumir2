@@ -308,8 +308,8 @@ void Editor::loadMacros()
 
         foreach (const KPlugin* plugin, actorPlugins) {
             ActorInterface * actor = qobject_cast<ActorInterface*>(plugin);
-            if (actor && !actor->name().startsWith("_")) {
-                availableActorNames.push_back(actor->name());
+            if (actor && !actor->localizedModuleName(QLocale::Russian).startsWith("_")) {
+                availableActorNames.push_back(actor->localizedModuleName(QLocale::Russian));
             }
         }
 

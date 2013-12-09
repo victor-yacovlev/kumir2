@@ -117,8 +117,8 @@ AI * Plugin::getActor(QString name)
     qDebug()<<"ActorName"<<name;
     for(int i=0;i<Actors.count();i++)
     {   
-        qDebug()<<"Cname:"<<Actors.at(i)->name();
-        if(Actors.at(i)->name()==name)return  Actors.at(i); 
+        qDebug()<<"Cname:"<<Actors.at(i)->localizedModuleName(QLocale::Russian);
+        if(Actors.at(i)->localizedModuleName(QLocale::Russian)==name)return  Actors.at(i);
     }
     
     return NULL;

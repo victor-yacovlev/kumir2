@@ -1864,7 +1864,18 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
                 << QString::fromUtf8("input") << QString::fromUtf8("output");
         Q_ASSERT(operators.size() == operatorNames.size());
         std::vector<llvm::Type*> formalArgs(alg->header.arguments.size());
-        funcName = alg->header.cHeader.toStdString();
+        QByteArray fn;
+        for (int i=0; i<alg->header.external.algorithmAsciiName.size(); i++) {
+            char ch = alg->header.external.algorithmAsciiName[i];
+            const QChar qch(ch);
+            if (qch.isLetterOrNumber() || ch == '_') {
+                fn.push_back(ch);
+            }
+        }
+        if (fn == "input" || fn == "output") { // operators
+            fn.clear();
+        }
+        funcName = std::string(fn.constData());
         if (funcName.empty()) {
             funcName = "__kumir_stdlib_" ; // TODO implement non-std algorithms
             if (operators.contains(alg->header.name)) {

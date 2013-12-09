@@ -31,11 +31,14 @@ struct TableElem {
     uint16_t id; // element id
 
     String name; // variable or function name
-    String signature; // external method signature
-    String moduleName; // external module name
+    std::string moduleAsciiName;
+    String moduleLocalizedName; // external module name
     String fileName;
-    String recordModuleName;
-    String recordClassName;
+    String signature;
+    std::string recordModuleAsciiName;
+    String recordModuleLocalizedName;
+    std::string recordClassAsciiName;
+    String recordClassLocalizedName;
     Variable initialValue; // constant value
     std::vector<Instruction> instructions; // for local defined function
     inline TableElem() {
@@ -231,10 +234,16 @@ inline void tableElemToBinaryStream(std::list<char> & ds, const TableElem &e)
     valueToDataStream(ds, uint8_t(e.refvalue));
     valueToDataStream(ds, uint8_t(e.module));
     if (e.type==EL_EXTERN) {
+        String ma = Kumir::Core::fromAscii(e.moduleAsciiName);
+        stringToDataStream(ds, ma);
+        stringToDataStream(ds, e.moduleLocalizedName);
         stringToDataStream(ds, e.fileName);
         stringToDataStream(ds, e.signature);
     }
     if (e.type==EL_EXTERN_INIT) {
+        String ma = Kumir::Core::fromAscii(e.moduleAsciiName);
+        stringToDataStream(ds, ma);
+        stringToDataStream(ds, e.moduleLocalizedName);
         stringToDataStream(ds, e.fileName);
     }
     if (e.type==EL_FUNCTION || e.type==EL_MAIN) {
@@ -242,11 +251,18 @@ inline void tableElemToBinaryStream(std::list<char> & ds, const TableElem &e)
     }
     valueToDataStream(ds, uint16_t(e.algId));
     valueToDataStream(ds, uint16_t(e.id));
-    stringToDataStream(ds, e.name);    
-    stringToDataStream(ds, e.moduleName);
+    stringToDataStream(ds, e.name);
+    String mods = Kumir::Coder::decode(Kumir::ASCII, e.moduleAsciiName);
+    stringToDataStream(ds, mods);
+    stringToDataStream(ds, e.moduleLocalizedName);
     if (e.type==EL_GLOBAL || e.type==EL_LOCAL || e.type==EL_CONST) {
-        stringToDataStream(ds, e.recordModuleName);
-        stringToDataStream(ds, e.recordClassName);
+        String ms = Kumir::Coder::decode(Kumir::ASCII, e.recordModuleAsciiName);
+        stringToDataStream(ds, ms);
+        stringToDataStream(ds, e.recordModuleLocalizedName);
+        String us = Kumir::Coder::decode(Kumir::ASCII, e.recordClassAsciiName);
+        stringToDataStream(ds, us);
+        stringToDataStream(ds, e.recordClassLocalizedName);
+
     }
     if (e.type==EL_CONST) {
         constantToDataStream(ds, e.vtype, e.initialValue, e.dimension);
@@ -371,10 +387,18 @@ inline void tableElemFromBinaryStream(std::list<char> & ds, TableElem &e)
     valueFromDataStream(ds, m);
     e.module = m;
     if (e.type==EL_EXTERN) {
+        String ma;
+        stringFromDataStream(ds, ma);
+        e.moduleAsciiName = Kumir::Coder::encode(Kumir::ASCII, ma);
+        stringFromDataStream(ds, e.moduleLocalizedName);
         stringFromDataStream(ds, e.fileName);
         stringFromDataStream(ds, e.signature);
     }
     if (e.type==EL_EXTERN_INIT) {
+        String ma;
+        stringFromDataStream(ds, ma);
+        e.moduleAsciiName = Kumir::Coder::encode(Kumir::ASCII, ma);
+        stringFromDataStream(ds, e.moduleLocalizedName);
         stringFromDataStream(ds, e.fileName);
     }
     if (e.type==EL_FUNCTION || e.type==EL_MAIN) {
@@ -385,12 +409,20 @@ inline void tableElemFromBinaryStream(std::list<char> & ds, TableElem &e)
     valueFromDataStream(ds, id);
     e.id = id;
     stringFromDataStream(ds, s);
-    e.name = s;
+    e.name = s;    
     stringFromDataStream(ds, s);
-    e.moduleName = s;
+    e.moduleAsciiName = Kumir::Coder::encode(Kumir::ASCII, s);
+    stringFromDataStream(ds, s);
+    e.moduleLocalizedName = s;
     if (e.type==EL_GLOBAL || e.type==EL_LOCAL || e.type==EL_CONST) {
-        stringFromDataStream(ds, e.recordModuleName);
-        stringFromDataStream(ds, e.recordClassName);
+        String ms;
+        stringFromDataStream(ds, ms);
+        e.recordModuleAsciiName = Kumir::Coder::encode(Kumir::ASCII, ms);
+        stringFromDataStream(ds, e.recordModuleLocalizedName);
+        String us;
+        stringFromDataStream(ds, us);
+        e.recordClassAsciiName = Kumir::Coder::encode(Kumir::ASCII, us);
+        stringFromDataStream(ds, e.recordClassLocalizedName);
     }
     if (e.type==EL_CONST) {
         constantFromDataStream(ds, e.vtype, e.initialValue, e.dimension);
@@ -692,7 +724,7 @@ inline std::string externToTextStream(const TableElem & e)
     os.setf(std::ios::showbase);
     os << ".extern ";
     os << "module=";
-    os << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.moduleName)) << "\"";
+    os << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.moduleLocalizedName)) << "\"";
     os << " function=";
     os << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\"";
     return os.str();
@@ -804,7 +836,7 @@ inline void tableElemFromTextStream(std::istream& ts, TableElem& e)
     if (e.type==EL_EXTERN) {
         if (attrs.count("module")==0)
             throw std::string("No module name specified for external algorithm");
-        e.moduleName = unscreenString(Kumir::Coder::decode(Kumir::UTF8, attrs["module"].substr(1,attrs["module"].length()-2)));
+        e.moduleLocalizedName = unscreenString(Kumir::Coder::decode(Kumir::UTF8, attrs["module"].substr(1,attrs["module"].length()-2)));
         if (attrs.count("algorithm")==0)
             throw std::string("No algorithm name specified for external reference");
         e.name = unscreenString(Kumir::Coder::decode(Kumir::UTF8,attrs["algorithm"].substr(1,attrs["algorithm"].length()-2)));

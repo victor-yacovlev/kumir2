@@ -33,6 +33,14 @@
                 { "name": "x", "baseType": "color" },
                 { "name": "y", "baseType": "color" }
             ]
+        },
+        {
+            "name": {"ascii": "<>"},
+            "returnType": "bool",
+            "arguments": [
+                { "name": "x", "baseType": "color" },
+                { "name": "y", "baseType": "color" }
+            ]
         }
     ]
 }

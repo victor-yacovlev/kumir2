@@ -80,9 +80,11 @@ bool InputFunctor::operator() (VariableReferencesList alist)
                     static VM::CustomTypeFromStringFunctor def;
                     f = &def;
                 }
-                const String & modName = var.recordModuleName();
-                const String & clsName = var.recordClassName();
-                var.setValue((*f)(s, modName, clsName));
+                const std::string & modAsciiName = var.recordModuleAsciiName();
+                const String & modName = var.recordModuleLocalizedName();
+                const String & clsName = var.recordClassLocalizedName();
+                const std::string & asciiClsName = var.recordClassAsciiName();
+                var.setValue((*f)(s, modAsciiName, modName, asciiClsName, clsName));
             }
         }
 
@@ -230,8 +232,10 @@ private:
     inline bool readScalarArgument(const String & message,
                                    const String & name,
                                    VM::ValueType type,
+                                   const std::string & customModuleAsciiName,
                                    const String & customModuleName,
-                                   const String & customTypeName,
+                                   const std::string & customTypeAsciiName,
+                                   const String & customTypeLocalizedName,
                                    VM::AnyValue & val
                                    );
     inline static String decodeHttpStringValue(const std::string & s);
@@ -308,8 +312,10 @@ bool GetMainArgumentFunctor::readScalarArgument(
         const String &message,
         const String &name,
         VM::ValueType type,
+        const std::string & customModuleAsciiName,
         const String & customModuleName,
-        const String & customTypeName,
+        const std::string & customTypeAsciiName,
+        const String & customTypeLocalizedName,
         VM::AnyValue &val
         )
 {
@@ -366,7 +372,7 @@ bool GetMainArgumentFunctor::readScalarArgument(
             f = &def;
         }
         try {
-            val = (*f)(s, customModuleName, customTypeName);
+            val = (*f)(s, customModuleAsciiName, customModuleName, customTypeAsciiName, customTypeLocalizedName);
         }
         catch (const String & message) {
             Core::abort(message);
@@ -388,8 +394,10 @@ void GetMainArgumentFunctor::operator()(VM::Variable &reference)
         if (readScalarArgument(message,
                                reference.name(),
                                reference.baseType(),
-                               reference.recordModuleName(),
-                               reference.recordClassName(),
+                               reference.recordModuleAsciiName(),
+                               reference.recordModuleLocalizedName(),
+                               reference.recordClassAsciiName(),
+                               reference.recordClassLocalizedName(),
                                val))
             reference.setValue(val);
         else
@@ -407,8 +415,10 @@ void GetMainArgumentFunctor::operator()(VM::Variable &reference)
             if (readScalarArgument(message,
                                    reference.name(),
                                    reference.baseType(),
-                                   reference.recordModuleName(),
-                                   reference.recordClassName(),
+                                   reference.recordModuleAsciiName(),
+                                   reference.recordModuleLocalizedName(),
+                                   reference.recordClassAsciiName(),
+                                   reference.recordClassLocalizedName(),
                                    val))
                 reference.setValue(x,val);
             else
@@ -430,8 +440,10 @@ void GetMainArgumentFunctor::operator()(VM::Variable &reference)
                 if (readScalarArgument(message,
                                        reference.name(),
                                        reference.baseType(),
-                                       reference.recordModuleName(),
-                                       reference.recordClassName(),
+                                       reference.recordModuleAsciiName(),
+                                       reference.recordModuleLocalizedName(),
+                                       reference.recordClassAsciiName(),
+                                       reference.recordClassLocalizedName(),
                                        val))
                     reference.setValue(y,x,val);
                 else
@@ -455,8 +467,10 @@ void GetMainArgumentFunctor::operator()(VM::Variable &reference)
                     if (readScalarArgument(message,
                                            reference.name(),
                                            reference.baseType(),
-                                           reference.recordModuleName(),
-                                           reference.recordClassName(),
+                                           reference.recordModuleAsciiName(),
+                                           reference.recordModuleLocalizedName(),
+                                           reference.recordClassAsciiName(),
+                                           reference.recordClassLocalizedName(),
                                            val))
                         reference.setValue(z,y,x,val);
                     else

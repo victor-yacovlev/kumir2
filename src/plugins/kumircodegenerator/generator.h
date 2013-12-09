@@ -29,14 +29,15 @@ struct ConstValue {
     QVariant value;
     QList<Bytecode::ValueType> baseType;
     QString recordModuleName;
-    QString recordClassName;
+    QString recordClassLocalizedName;
+    QByteArray recordClassAsciiName;
     quint8 dimension;
     inline bool operator==(const ConstValue & other) {
         return
                 baseType == other.baseType &&
                 dimension == other.dimension &&
                 recordModuleName == other.recordModuleName &&
-                recordClassName == other.recordClassName &&
+                recordClassAsciiName == other.recordClassAsciiName &&
                 value == other.value;
     }
     inline ConstValue() {

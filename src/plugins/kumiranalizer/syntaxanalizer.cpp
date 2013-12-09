@@ -245,7 +245,7 @@ SyntaxAnalizer::suggestInputOutputAutoComplete(
             }
         }
         if (filesModuleAvailable) {
-            static const AST::Type FileType = AST::Type(QString::fromUtf8("файл"));
+            static const AST::Type FileType = AST::Type(QString::fromUtf8("файл"), QByteArray("file"));
             QList<Shared::Analizer::Suggestion> fileSuggestions =
                     suggestExpressionAutoComplete(
                         lineNo,
@@ -2829,7 +2829,7 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool internalBuildFl
         AST::Type typee;
         QVariant cvalue;
         if (tryInputOperatorAlgorithm(name, typee, cvalue, st.mod)) {
-            const QString error = _("Name is used by module %1", typee.actor->name());
+            const QString error = _("Name is used by module %1", typee.actor->localizedModuleName(QLocale::Russian));
             for (int i=1; i<st.data.size(); i++) {
                 if (st.data[i]->type==LxNameAlg)
                     st.data[i]->error = error;
@@ -2875,17 +2875,17 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool internalBuildFl
     }
 
     if (/*alg->header.specialType==AST::AlgorhitmTypeTeacher && */alg->header.name==lexer_->testingAlgorhitmName()) {
-        alg->header.specialType = AST::AlgorhitmTypeTesting;
+        alg->header.specialType = AST::AlgorithmTypeTesting;
     }
 
     if (teacherMode_ && alg->header.name==lexer_->testingAlgorhitmName()) {
-        alg->header.specialType = AST::AlgorhitmTypeTesting;
+        alg->header.specialType = AST::AlgorithmTypeTesting;
     }
     else if ( (teacherMode_ || internalBuildFlag) && alg->header.name.startsWith("@")) {
-        alg->header.specialType = AST::AlgorhitmTypeTeacher;
+        alg->header.specialType = AST::AlgorithmTypeTeacher;
     }
 
-    if (!(teacherMode_ || internalBuildFlag) && alg->header.specialType!=AST::AlgorhitmTypeTesting
+    if (!(teacherMode_ || internalBuildFlag) && alg->header.specialType!=AST::AlgorithmTypeTesting
             && alg->header.name.startsWith("@"))
     {
         for (int i=1; i<st.data.size(); i++) {
@@ -3348,7 +3348,7 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                 AST::Type typee;
                 QVariant cvalue;
                 if (tryInputOperatorAlgorithm(cName, typee, cvalue, mod)) {
-                    group.lexems[nameStart]->error = _("Name is used by module %1", typee.actor->name());
+                    group.lexems[nameStart]->error = _("Name is used by module %1", typee.actor->localizedModuleName(QLocale::Russian));
                     return result;
                 }
                 var = AST::VariablePtr(new AST::Variable);
@@ -4151,7 +4151,7 @@ bool SyntaxAnalizer::tryInputOperatorAlgorithm(
                 for (int k=0; k<actors.size(); k++) {
                     actor = qobject_cast<Shared::ActorInterface*>(actors[k]);
                     if (!actor) continue;
-                    if (actor->name()==mod->header.name)
+                    if (actor->localizedModuleName(QLocale::Russian)==mod->header.name)
                         break;
                     else
                         actor = 0;
@@ -4160,15 +4160,18 @@ bool SyntaxAnalizer::tryInputOperatorAlgorithm(
                     continue;
                 const Shared::ActorInterface::TypeList tList = actor->typeList();
                 for (int k=0; k<tList.size(); k++) {
-                    const Shared::ActorInterface::CustomType & clazz = tList[k];
-                    constantValue = actor->customValueFromString(clazz, lexem);
+                    const Shared::ActorInterface::RecordSpecification & clazz = tList[k];
+                    constantValue = actor->customValueFromString(clazz.asciiName, lexem);
                     if (constantValue.isValid()) {
                         type.kind = AST::TypeUser;
                         type.actor = AST::ActorPtr(actor);
-                        type.name = clazz.first;
-                        for (int f=0; f<clazz.second.size(); f++) {
+                        type.name = clazz.localizedNames.contains(QLocale::Russian)
+                                ? clazz.localizedNames[QLocale::Russian]
+                                : QString::fromAscii(clazz.asciiName);
+                        type.asciiName = clazz.asciiName;
+                        for (int f=0; f<clazz.record.size(); f++) {
                             const Shared::ActorInterface::Field & field =
-                                    clazz.second[f];
+                                    clazz.record[f];
                             const QString & fieldName = field.first;
                             const ActorInterface::FieldType & fieldType =
                                     field.second;

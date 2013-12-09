@@ -255,6 +255,11 @@ bool _ColorerModule::runOperatorEQUAL(const Color &x, const Color &y)
             x.b == y.b;
 }
 
+bool _ColorerModule::runOperatorNOTEQUAL(const Color &x, const Color &y)
+{
+    return ! runOperatorEQUAL(x, y);
+}
+
 
 
 } // namespace Actor_Colorer

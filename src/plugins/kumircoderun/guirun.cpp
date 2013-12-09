@@ -8,14 +8,15 @@ namespace Gui {
 
 
 VM::ExternalModuleLoadFunctor::NamesList
-ExternalModuleLoadFunctor::operator ()(const String & moduleName, const std::string&)
+ExternalModuleLoadFunctor::operator ()(const std::string & moduleAsciiName,
+                                       const Kumir::String & moduleName)
 {
     // In GUI mode this functor should not throw in any case
     NamesList result;
-    Shared::ActorInterface * actor = Util::findActor(moduleName);
+    Shared::ActorInterface * actor = Util::findActor(moduleAsciiName);
     if (actor) {
-        foreach (const QString & name, actor->funcList()) {
-            result.push_back(name.toStdWString());
+        foreach (const Shared::ActorInterface::Function & function, actor->functionList()) {
+            result.push_back(std::string(function.asciiName));
         }
     }
     return result;
@@ -88,9 +89,11 @@ bool InputFunctor::operator ()(VariableReferencesList references)
         else if (references[i].baseType()==VT_record) {
             const Variable & variable = references[i];
             const String typeFullName =
-                    variable.recordModuleName()+
+                    variable.recordModuleLocalizedName()+
                     Kumir::Core::fromAscii("::")+
-                    variable.recordClassName();
+                    Kumir::Core::fromAscii(variable.recordClassAsciiName())+
+                    Kumir::Core::fromAscii("::")+
+                    variable.recordClassLocalizedName();
             format.append(typeFullName);
         }
         if (i<references.size()-1) format.push_back(';');
