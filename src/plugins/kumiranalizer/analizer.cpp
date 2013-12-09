@@ -440,6 +440,7 @@ void AnalizerPrivate::createModuleFromActor_stage2(Shared::ActorInterface * acto
         alg->header.name = function.localizedNames.contains(QLocale::Russian)
                 ? function.localizedNames[QLocale::Russian]
                 : QString::fromAscii(function.asciiName);
+        alg->header.external.algorithmAsciiName = function.asciiName;
         alg->header.broken = false;
         alg->header.specialType = function.accessType == Shared::ActorInterface::TeacherModeFunction
                 ? AST::AlgorithmTypeTeacher : AST::AlgorithmTypeRegular;
