@@ -95,6 +95,7 @@ target_link_libraries(
     ${QT_LIBRARIES}
     ExtensionSystem
     Widgets
+    ${STDCXX_LIB} ${STDMATH_LIB}
 )
 
 copyResources(actors/vodoley)

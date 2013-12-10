@@ -33,7 +33,7 @@ set(HEADERS
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 
 add_library(ExtensionSystem SHARED ${SOURCES} ${MOC_SOURCES})
-target_link_libraries(ExtensionSystem ${QT_LIBRARIES})
+target_link_libraries(ExtensionSystem ${QT_LIBRARIES} ${STDCXX_LIB})
 
 set_property(TARGET ExtensionSystem APPEND PROPERTY COMPILE_DEFINITIONS EXTENSIONSYSTEM_LIBRARY)
 
