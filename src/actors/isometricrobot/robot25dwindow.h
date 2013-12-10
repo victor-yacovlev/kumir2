@@ -13,7 +13,7 @@ class Robot25DWindow :
     Q_OBJECT
 
 public:
-    explicit Robot25DWindow(QWidget *parent = 0);
+    explicit Robot25DWindow(const QDir & imagesDir, QWidget *parent = 0);
     ~Robot25DWindow();
     inline Robot25D::RobotView * robotView() { return m_robotView; }
     inline void lock() { group_lockedActionsDuringEvaluate->setEnabled(false); }

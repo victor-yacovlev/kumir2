@@ -14,7 +14,7 @@
 #include "findreplace.h"
 #include "macroeditor.h"
 #include "macrolisteditor.h"
-
+#include "extensionsystem/pluginmanager.h"
 namespace Editor {
 
 using namespace Shared;
@@ -280,8 +280,7 @@ void Editor::loadMacros()
     const QString analizerName = analizerPlugin_->defaultDocumentFileNameSuffix();
 
     // System macros
-    const QString sharePath = QCoreApplication::instance()->property("sharePath").toString();
-    const QString systemMacrosPath = sharePath+"/editor/macros-"+analizerName+".xml";
+    const QString systemMacrosPath = plugin_->myResourcesDir().absoluteFilePath("editor/macros-"+analizerName+".xml");
     systemMacros_ = loadFromFile(systemMacrosPath);
 
     // Actor-specific macros
@@ -290,8 +289,8 @@ void Editor::loadMacros()
                 PluginManager::instance()->loadedConstPlugins("Actor*");
 
         foreach (const KPlugin* plugin, actorPlugins) {
-            const QString actorMacrosFileName = sharePath + "/editor/macros-" +
-                    plugin->pluginSpec().name + ".xml";
+            const QString actorMacrosFileName = plugin_->myResourcesDir().absoluteFilePath(
+                        "editor/macros-" + plugin->pluginSpec().name + ".xml");
             if (QFile::exists(actorMacrosFileName)) {
                 systemMacros_.push_back(Macro());
                 systemMacros_ += loadFromFile(actorMacrosFileName);
@@ -526,7 +525,7 @@ Editor::Editor(
     , cursor_(new TextCursor(this))
     , plane_(new EditorPlane(this))
     , notSaved_(initiallyNotSaved)
-    , findReplace_(new FindReplace(this))
+    , findReplace_(new FindReplace(plugin->myResourcesDir(), this))
     , autocompleteWidget_(new SuggestionsWindow(this))
     , autoScrollStateX_(0)
     , autoScrollStateY_(0)
@@ -705,12 +704,12 @@ bool Editor::eventFilter(QObject *obj, QEvent *evt)
 
 void Editor::createActions()
 {
-    const QString qtcreatorIconsPath = QApplication::instance()->property("sharePath")
-            .toString() + "/icons/from_qtcreator/";
+    const QString qtcreatorIconsPath =
+            ExtensionSystem::PluginManager::instance()->sharePath()
+            + "/icons/from_qtcreator/";
 
     selectAll_ = new QAction(plane_);
     selectAll_->setText(QObject::tr("Select all text in editor"));
-//    selectAll->setIcon(QIcon::fromTheme("edit-select-all", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-select-all.png")));
     selectAll_->setShortcut(QKeySequence(QKeySequence::SelectAll));
     selectAll_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(selectAll_, SIGNAL(triggered()), plane_, SLOT(selectAll()));
@@ -738,7 +737,6 @@ void Editor::createActions()
 
     find_ = new QAction(plane_);
     find_->setText(QObject::tr("Find..."));
-//    finsetIcon(QIcon::fromTheme("edit-find", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-find.png")));
     find_->setShortcut(QKeySequence(QKeySequence::Find));
     find_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(find_, SIGNAL(triggered()),
@@ -746,7 +744,6 @@ void Editor::createActions()
 
     replace_ = new QAction(plane_);
     replace_->setText(QObject::tr("Replace..."));
-//    replace->setIcon(QIcon::fromTheme("edit-find-replace", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-find-replace.png")));
     replace_->setShortcut(QKeySequence(QKeySequence::Replace));
     replace_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(replace_, SIGNAL(triggered()),
@@ -756,14 +753,12 @@ void Editor::createActions()
 
     deleteLine_ = new QAction(plane_);
     deleteLine_->setText(QObject::tr("Delete line under cursor"));
-//    deleteLine->setIcon(QIcon::fromTheme("edit-delete", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-delete.png")));
     deleteLine_->setShortcut(QKeySequence("Ctrl+Y"));
     deleteLine_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(deleteLine_, SIGNAL(triggered()), plane_, SLOT(removeLine()));
 
     deleteTail_ = new QAction(plane_);
     deleteTail_->setText(QObject::tr("Delete text from cursor to end of line"));
-//    deleteTail->setIcon(QIcon::fromTheme("edit-clear", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-clear.png")));
     deleteTail_->setShortcut(QKeySequence("Ctrl+K"));
     deleteTail_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(deleteTail_, SIGNAL(triggered()), plane_, SLOT(removeLineTail()));
@@ -929,7 +924,7 @@ void Editor::toggleRecordMacro(bool on)
 
 void Editor::editMacros()
 {
-    MacroListEditor * editor = new MacroListEditor(this);
+    MacroListEditor * editor = new MacroListEditor(plugin_->myResourcesDir(), this);
     editor->initialize(userMacros_,
                        systemMacros_);
     editor->exec();
@@ -1134,13 +1129,15 @@ void Editor::changeGlobalState(quint32 prevv, quint32 currentt)
     ExtensionSystem::GlobalState prev = ExtensionSystem::GlobalState(prevv);
     ExtensionSystem::GlobalState current = ExtensionSystem::GlobalState(currentt);
 
-    if (current==ExtensionSystem::GS_Unlocked || current==ExtensionSystem::GS_Running) {
+    using Shared::PluginInterface;
+
+    if (current==PluginInterface::GS_Unlocked || current==PluginInterface::GS_Running) {
         unhighlightLine();
     }
-    if (prev==ExtensionSystem::GS_Observe && current!=ExtensionSystem::GS_Observe) {
+    if (prev==PluginInterface::GS_Observe && current!=PluginInterface::GS_Observe) {
         clearMarginText();
     }
-    if (current==ExtensionSystem::GS_Unlocked || current==ExtensionSystem::GS_Observe) {
+    if (current==PluginInterface::GS_Unlocked || current==PluginInterface::GS_Observe) {
         unlock();
     }
     else {

@@ -37,7 +37,7 @@ public:
       * Set application-wide (while initialization)
       * Kumir source language (Russian, Ukrainian, etc.)
       */
-    static void setSourceLanguage(const QLocale::Language & language);
+    static void setSourceLanguage(const QDir & resourcesRoot, const QLocale::Language & language);
     static void setModuleAlwaysAvailable(const QString & moduleName);
 
 public slots:

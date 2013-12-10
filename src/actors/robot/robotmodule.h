@@ -68,59 +68,9 @@ namespace ActorRobot {
 #define MAX_COLUMNS 255
 #define MAX_ROWS 128
     
-    
+    class EditLine;
 
-    class EditLine:public QGraphicsObject
-    {
-        Q_OBJECT;
-    public:
-        EditLine(QGraphicsItem *parent = 0);
-        QRectF boundingRect() const;
-        bool isTemp()
-        {
-            return istemp;
-        }
-        bool isRad()
-        {
-            return !istemp;
-        }
-        void setRad()
-        {
-            istemp=false;
-            
-            iconPath=QUrl::fromLocalFile(
-                                         qApp->property("sharePath").toString()+
-                                         "/actors/robot/btn_radiation.png"
-                                         );
-           // rad=QImage(iconPath.toLocalFile ());
-            
-           // rad.load(iconPath.toLocalFile ());
-        }
-        void setTemp()
-        {
-            istemp=true;
-            iconPath=QUrl::fromLocalFile(
-                                         qApp->property("sharePath").toString()+
-                                         "/actors/robot/temp.png"
-                                         );
-            rad=QImage(iconPath.toLocalFile ());
-            
-           // rad.load(iconPath.toLocalFile ());
-        }
-        void setValue(float value)
-        {
-            Value=value;
-        }
-        
-        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                   QWidget *widget);
-        private:
-        QUrl iconPath;
-        float Value;
-        bool istemp;
-        QImage rad;
-        QPicture radiation,temp;
-    };
+
     
     class SimpleRobot:
     public QGraphicsObject
@@ -467,7 +417,7 @@ namespace ActorRobot {
     
     
     
-    
+
     
     
     
@@ -515,6 +465,7 @@ namespace ActorRobot {
     public:
         // Constructor
         RobotModule(ExtensionSystem::KPlugin * parent);
+        static RobotModule * self;
         QSize minimumSize()const;
         public slots:
         // Reset actor state before program starts
@@ -595,6 +546,56 @@ namespace ActorRobot {
         void sendToPultLog(const QVariant &);
       
     }; // RobotModule
+
+    class EditLine:public QGraphicsObject
+    {
+        Q_OBJECT;
+    public:
+        EditLine(QGraphicsItem *parent = 0);
+        QRectF boundingRect() const;
+        bool isTemp()
+        {
+            return istemp;
+        }
+        bool isRad()
+        {
+            return !istemp;
+        }
+        void setRad()
+        {
+            istemp=false;
+
+            iconPath=QUrl::fromLocalFile(RobotModule::self->myResourcesDir()
+                                         .absoluteFilePath("btn_radiation.png")
+                                         );
+           // rad=QImage(iconPath.toLocalFile ());
+
+           // rad.load(iconPath.toLocalFile ());
+        }
+        void setTemp()
+        {
+            istemp=true;
+            iconPath=QUrl::fromLocalFile(RobotModule::self->myResourcesDir()
+                                         .absoluteFilePath("temp.png")
+                                         );
+            rad=QImage(iconPath.toLocalFile ());
+
+           // rad.load(iconPath.toLocalFile ());
+        }
+        void setValue(float value)
+        {
+            Value=value;
+        }
+
+        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+                   QWidget *widget);
+        private:
+        QUrl iconPath;
+        float Value;
+        bool istemp;
+        QImage rad;
+        QPicture radiation,temp;
+    };
 
 } // ActorRobot
 

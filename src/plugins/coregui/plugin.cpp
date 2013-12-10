@@ -105,7 +105,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             iconSuffix = "-"+param.mid(5);
         }
     }
-    QApplication::setWindowIcon(QIcon(QApplication::instance()->property("sharePath").toString()+"/coregui/kumir2-icon"+iconSuffix+".png"));
+    QApplication::setWindowIcon(QIcon(myResourcesDir().absoluteFilePath("kumir2-icon"+iconSuffix+".png")));
 
 
     sessionsDisableFlag_ = parameters.contains("nosessions",Qt::CaseInsensitive);
@@ -135,8 +135,9 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
 
 
-    const QString qtcreatorIconsPath = QApplication::instance()->property("sharePath")
-            .toString() + "/icons/from_qtcreator/";
+    const QString qtcreatorIconsPath =
+            ExtensionSystem::PluginManager::instance()->sharePath()
+            + "/icons/from_qtcreator/";
 
     const QString showConsoleIconPath = qtcreatorIconsPath + "category_core.png";
     const QString clearConsoleIconPath = qtcreatorIconsPath + "clean_pane_small.png";
@@ -211,7 +212,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     helpViewer_ = new DocBookViewer::DocBookView(mainWindow_);
     helpViewer_->updateSettings(mySettings(), "HelpViewer");
     static const QString helpPath =
-            QApplication::instance()->property("sharePath").toString() +
+           ExtensionSystem::PluginManager::instance()->sharePath() +
             "/userdocs/";
 
     helpViewer_->addDocument(QUrl::fromLocalFile(helpPath + "default.xml"));
@@ -255,7 +256,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                     coursesWindow_, SLOT(activate())
                     );
 
-        const QString courseIconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/course.png";
+        const QString courseIconFileName = ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/course.png";
         QIcon courseIcon(courseIconFileName);
         showCourses->setIcon(courseIcon);
 
@@ -280,8 +281,8 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         if (actor->mainWidget()) {
             QWidget * actorWidget = actor->mainWidget();
             QList<QMenu*> actorMenus = actor->moduleMenus();
-            const QString iconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->mainIconName()+".png";
-            const QString smallIconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->mainIconName()+"_22x22.png";
+            const QString iconFileName = ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/actors/"+actor->mainIconName()+".png";
+            const QString smallIconFileName = ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/actors/"+actor->mainIconName()+"_22x22.png";
             QIcon mainIcon = QIcon(iconFileName);
             if (QFile::exists(smallIconFileName))
                 mainIcon.addFile(smallIconFileName, QSize(22,22));
@@ -323,8 +324,8 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             }
 
             if (actor->pultWidget()) {
-                const QString iconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->pultIconName()+".png";
-                const QString smallIconFileName = QCoreApplication::instance()->property("sharePath").toString()+"/icons/actors/"+actor->pultIconName()+"_22x22.png";
+                const QString iconFileName = ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/actors/"+actor->pultIconName()+".png";
+                const QString smallIconFileName = ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/actors/"+actor->pultIconName()+"_22x22.png";
                 QIcon pultIcon = QIcon(iconFileName);
                 if (QFile::exists(smallIconFileName))
                     pultIcon.addFile(smallIconFileName, QSize(22,22));
@@ -381,7 +382,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                         MainWindow::WWW
                         );
             twe->browserInstance = startPage_;
-            const QString browserEntryPoint = QApplication::instance()->property("sharePath").toString()+"/coregui/startpage/russian/index2.html";
+            const QString browserEntryPoint = myResourcesDir().absoluteFilePath("startpage/russian/index2.html");
             startPage_->go(browserEntryPoint);
         }
     }
@@ -520,7 +521,8 @@ void Plugin::updateSettings(const QStringList & keys)
 
 void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState state)
 {
-    if (state==ExtensionSystem::GS_Unlocked) {
+    using Shared::PluginInterface;
+    if (state==PluginInterface::GS_Unlocked) {
 //        m_kumirStateLabel->setText(tr("Editing"));
         mainWindow_->clearMessage();
         mainWindow_->setFocusOnCentralWidget();
@@ -528,23 +530,23 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
         debugger_->reset();
         debugger_->setDebuggerEnabled(false);
     }
-    else if (state==ExtensionSystem::GS_Observe) {
+    else if (state==PluginInterface::GS_Observe) {
 //        m_kumirStateLabel->setText(tr("Observe"));
         mainWindow_->showMessage(kumirProgram_->endStatus());
         mainWindow_->setFocusOnCentralWidget();
         mainWindow_->unlockActions();
     }
-    else if (state==ExtensionSystem::GS_Running) {
+    else if (state==PluginInterface::GS_Running) {
 //        m_kumirStateLabel->setText(tr("Running"));
         mainWindow_->clearMessage();
         mainWindow_->lockActions();
     }
-    else if (state==ExtensionSystem::GS_Pause) {
+    else if (state==PluginInterface::GS_Pause) {
 //        m_kumirStateLabel->setText(tr("Pause"));
         mainWindow_->lockActions();
         debugger_->setDebuggerEnabled(true);
     }
-    else if (state==ExtensionSystem::GS_Input) {
+    else if (state==PluginInterface::GS_Input) {
 //        m_kumirStateLabel->setText(tr("Pause"));
         mainWindow_->lockActions();
     }
@@ -592,7 +594,7 @@ void Plugin::start()
             restoreSession();
         }
     }
-    PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);
+    PluginManager::instance()->switchGlobalState(PluginInterface::GS_Unlocked);
     mainWindow_->show();
     if (fileNameToOpenOnReady_.length() > 0) {
         mainWindow_->loadFromUrl(QUrl::fromLocalFile(fileNameToOpenOnReady_), true);

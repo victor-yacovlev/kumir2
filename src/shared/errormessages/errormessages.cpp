@@ -1,4 +1,5 @@
 #include "errormessages.h"
+#include "extensionsystem/pluginmanager.h"
 
 #include <QtCore>
 
@@ -45,7 +46,7 @@ QStringList ErrorMessages::readCSVRow(const QString &line)
 
 bool ErrorMessages::loadMessages(const QString &plugin)
 {
-    const QString fileName = qApp->property("sharePath").toString()
+    const QString fileName = ExtensionSystem::PluginManager::instance()->sharePath() +
             + "/" + plugin.toLower() + "/messages.csv";
     QFile f(fileName);
 

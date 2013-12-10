@@ -20,9 +20,10 @@ namespace ActorRobot {
 
     ExtensionSystem::SettingsPtr RobotModule::robotSettings()
     {
-        ExtensionSystem::PluginManager * pluginManager = ExtensionSystem::PluginManager::instance();
-        ExtensionSystem::KPlugin * plugin = pluginManager->loadedPlugins("ActorRobot")[0];
-        return pluginManager->settingsByObject(plugin);
+        return RobotModule::self->mySettings();
+//        ExtensionSystem::PluginManager * pluginManager = ExtensionSystem::PluginManager::instance();
+//        ExtensionSystem::KPlugin * plugin = pluginManager->loadedPlugins("ActorRobot")[0];
+//        return pluginManager->settingsByObject(plugin);
     }
 
     FieldItm::FieldItm(QWidget *parent, QGraphicsScene *scene)
@@ -3136,9 +3137,8 @@ namespace ActorRobot {
     {
         Value=0;
         istemp=false;
-        iconPath=QUrl::fromLocalFile(
-                                     qApp->property("sharePath").toString()+
-                                     "/actors/robot/btn_radiation.png"
+        iconPath=QUrl::fromLocalFile(RobotModule::self->myResourcesDir()
+                                     .absoluteFilePath("btn_radiation.png")
                                      );
         rad=QImage(iconPath.toLocalFile ());
         
@@ -3288,12 +3288,13 @@ namespace ActorRobot {
     }
     
     
-    
+    RobotModule* RobotModule::self = 0;
    
     
 RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
 	: RobotModuleBase(parent)
 {
+    self = this;
 	/* TODO 
 	implement class Constructor
 	*/
@@ -3308,8 +3309,7 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     view=new RobotView(field);
     m_mainWidget = view;
     const QUrl rcUrl = QUrl::fromLocalFile(
-                qApp->property("sharePath").toString()+
-                "/actors/robot/rc.qml"
+                myResourcesDir().absoluteFilePath("rc.qml")
                 );
     m_pultWidget = new QDeclarativeView(rcUrl);
     m_pultWidget->setRenderHints(QPainter::Antialiasing|QPainter::TextAntialiasing);
@@ -3415,8 +3415,9 @@ void RobotModule::reset()
 }
 
     void RobotModule::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current){
+        using Shared::PluginInterface;
     qDebug()<<"RobotModuleBase::changeGlobalState";
-        if(current==ExtensionSystem::GS_Running)
+        if(current==PluginInterface::GS_Running)
           {
               m_actionRobotRevertEnvironment->setEnabled(false);
               m_actionRobotLoadEnvironment->setEnabled(false);
@@ -3426,7 +3427,7 @@ void RobotModule::reset()
               m_actionRobotEditEnvironment->setEnabled(false);
               m_actionRobotNewEnvironment->setEnabled(false);
           }
-        if(current==ExtensionSystem::GS_Unlocked || current==ExtensionSystem::GS_Observe)
+        if(current==PluginInterface::GS_Unlocked || current==PluginInterface::GS_Observe)
         {
             m_actionRobotRevertEnvironment->setEnabled(true);
             m_actionRobotLoadEnvironment->setEnabled(true);
@@ -4139,11 +4140,12 @@ void RobotModule::setWindowSize()
         textEditBtn=new QToolButton(this);
         textEditBtn->hide();
         textEditBtn->setCheckable ( true );
-        textEditBtn->setIcon(QIcon(qApp->property("sharePath").toString()+
-                                  "/actors/robot/text.png"));
+        textEditBtn->setIcon(QIcon(RobotModule::self->myResourcesDir()
+                                   .absoluteFilePath("text.png")));
+
         radEditBtn=new QToolButton(this);
-        radEditBtn->setIcon(QIcon(qApp->property("sharePath").toString()+
-                                  "/actors/robot/btn_radiation.png"));
+        radEditBtn->setIcon(QIcon(RobotModule::self->myResourcesDir()
+                                  .absoluteFilePath("btn_radiation.png")));
 
         radEditBtn->hide();
         radEditBtn->setCheckable ( true );
@@ -4151,8 +4153,8 @@ void RobotModule::setWindowSize()
         tmpEditBtn=new QToolButton(this);
         tmpEditBtn->hide();
         tmpEditBtn->setCheckable ( true );
-        tmpEditBtn->setIcon(QIcon(qApp->property("sharePath").toString()+
-                                   "/actors/robot/btn_temperature.png"));
+        tmpEditBtn->setIcon(QIcon(RobotModule::self->myResourcesDir()
+                                   .absoluteFilePath("btn_temperature.png")));
         tmpEditBtn->move(textEditBtn->height()*2+2,0);
         
         connect(textEditBtn,SIGNAL(toggled(bool)),this,SLOT(changeEditMode(bool)));

@@ -427,6 +427,8 @@ QString LLVMCodeGeneratorPlugin::initialize(
     }
     setDebugLevel(debugLevel);
 
+    d->initialize(myResourcesDir());
+
     return "";
 }
 

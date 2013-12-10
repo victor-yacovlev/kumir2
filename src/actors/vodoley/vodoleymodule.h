@@ -28,6 +28,7 @@ class VodoleyModule
     Q_OBJECT
 public /* methods */:
     VodoleyModule(ExtensionSystem::KPlugin * parent);
+    static VodoleyModule * self;
     static QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters();
     QWidget* mainWidget() const;
     QWidget* pultWidget() const;

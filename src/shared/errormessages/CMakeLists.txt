@@ -10,7 +10,7 @@ set(SOURCES
 )
 
 add_library(ErrorMessages SHARED  ${SOURCES})
-target_link_libraries(ErrorMessages ${QT_LIBRARIES})
+target_link_libraries(ErrorMessages ${QT_LIBRARIES} ExtensionSystem)
 set_property(TARGET ErrorMessages APPEND PROPERTY COMPILE_DEFINITIONS ERRORMESSAGES_LIBRARY)
 
 handleTranslation(ErrorMessages)

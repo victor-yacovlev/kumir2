@@ -70,8 +70,7 @@ PainterWindow::PainterWindow(PainterModule * module, QWidget *parent) :
 
     handleCursorMoved(-1,-1,"");
     ui->zoomLabel->setText(QString::number(int(ui->view->zoom()*100))+"%");
-    static const QString resourcesRoot = QApplication::instance()->property("sharePath").toString()+
-            "/actors/painter/";
+    static const QString resourcesRoot = m_module->myResourcesDir().absolutePath();
     QSettings templates(QDir(resourcesRoot).absoluteFilePath("templates.ini"), QSettings::IniFormat);
     templates.setIniCodec("UTF-8");
     const QString defName = templates.value("Names/default.png", "new page").toString();
@@ -189,8 +188,7 @@ void PainterWindow::newImage()
         int h = m_newImageDialog->h();
         s_fileName = "";
         s_templateName = m_newImageDialog->templateFileName();
-        static const QString resourcesRoot = QApplication::instance()->property("sharePath").toString()+
-                "/actors/painter/";
+        static const QString resourcesRoot = m_module->myResourcesDir().absolutePath();
         if (m_newImageDialog->isTemplate()) {
             m_module->runLoadPage(resourcesRoot+s_templateName);
         }

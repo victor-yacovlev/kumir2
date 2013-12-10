@@ -126,8 +126,9 @@ public /*methods*/:
      * @param receiver  QObject-derived signal receiver
      * @param methid  parameterless Qt slot created by macro SLOT(...)
      */
-    inline virtual void connectSync(QObject * receiver, const char * method) {}
-
+    inline virtual void connectSync(QObject * receiver, const char * method) {
+        Q_UNUSED(receiver); Q_UNUSED(method);
+    }
 
     /* === Actor utilities === */
 
@@ -135,13 +136,13 @@ public /*methods*/:
     inline virtual QString customValueToString(
             const QByteArray & clazz,
             const QVariant & value /* invalid value of a list of field values */
-            ) const { return QString(); }
+            ) const { Q_UNUSED(clazz); Q_UNUSED(value); return QString(); }
 
     /** Converts string representation in custom-type value */
     inline virtual QVariant customValueFromString(
             const QByteArray & clazz,
             const QString & stringg
-            ) const { return QVariant::Invalid; }
+            ) const { Q_UNUSED(clazz); Q_UNUSED(stringg); return QVariant::Invalid; }
 
 
     /* === Method execution === */

@@ -25,6 +25,7 @@ class EXTENSIONSYSTEM_EXPORT Settings
 {
     friend class PluginManager;
     friend class PluginManagerImpl;
+    friend class KPlugin;
 public:
 
     QVariant value(const QString & key, const QVariant & default_ = QVariant()) const;

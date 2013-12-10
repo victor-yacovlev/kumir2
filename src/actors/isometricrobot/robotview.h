@@ -34,7 +34,7 @@ public:
         Paint,
         Points
     };
-    RobotView(bool withConrols, bool withBackground,
+    RobotView(const QDir & imagesDir, bool withConrols, bool withBackground,
               bool teacherMode,
               const QSize &minSize, QGraphicsItem *parent=NULL);
     inline void waitForAnimated() { m_robotItem->waitForAnimated(); }
@@ -108,6 +108,7 @@ protected:
 
     bool b_loadingMode;
     qreal r_loadingState;
+    QDir imagesDir_;
 
 
 

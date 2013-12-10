@@ -2,6 +2,8 @@
 #include "docbookmodel.h"
 #include "mathmlrenderer.h"
 
+#include "extensionsystem/pluginmanager.h"
+
 #include <QtCore>
 #include <QtGui>
 
@@ -35,7 +37,7 @@ ContentView::ContentView(QWidget *parent)
 
 #ifdef Q_OS_WIN32
     if (!ExtraFontsLoaded_) {
-        const QString resourcesRoot = QCoreApplication::instance()->property("sharePath").toString();
+        const QString resourcesRoot = ExtensionSystem::PluginManager::instance()->sharePath();
         const QDir fontsDir = QDir(resourcesRoot + "/docbookviewer");
         const QStringList ttfFiles = fontsDir.entryList(QStringList() << "*.ttf" << "*.otf");
         foreach (const QString & fileName, ttfFiles) {

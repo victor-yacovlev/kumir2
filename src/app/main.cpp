@@ -140,7 +140,7 @@ public:
         addLibraryPath(PLUGINS_PATH);
         ExtensionSystem::PluginManager * manager = ExtensionSystem::PluginManager::instance();
         manager->setPluginPath(PLUGINS_PATH);
-        manager->setSharePath(SHARE_PATH);
+        manager->setSharePath(sharePath);
         QString error;
 
     #ifdef CONFIGURATION_TEMPLATE

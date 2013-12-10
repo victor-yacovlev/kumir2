@@ -1,5 +1,10 @@
 #ifndef COURSE_MODEL_H
 #define COURSE_MODEL_H
+
+#include "extensionsystem/pluginmanager.h"
+#include "extensionsystem/kplugin.h"
+#include "shared/interfaces/coursesinterface.h"
+
 #include <QAbstractItemModel>
 #include <QApplication>
 #include <QFile>
@@ -100,85 +105,39 @@ public:
 //           markIcons.append(QIcon(":/folder_open.png"));
 //           return;
 //#endif
-         QUrl::fromLocalFile(qApp->property("sharePath").toString()+
-                                            "/coursemanager/out_stand.svg"
-                                            );    
-           markIcons.append(QIcon( qApp->property("sharePath").toString()+
-                                                           "/coursemanager/out_stand.png"
-                                                           ));
-               markIcons.append(QIcon(qApp->property("sharePath").toString()+
-                                      "/coursemanager/1.png"
-                                      ));
-
-               markIcons.append(QIcon(qApp->property("sharePath").toString()+
-                                      "/coursemanager/2.png"
-                                      ));
-         
-               markIcons.append(QIcon(qApp->property("sharePath").toString()+
-                                      "/coursemanager/3.png"
-                                      ));
-             
-               markIcons.append(QIcon(qApp->property("sharePath").toString()+
-                                      "/coursemanager/4.png"
-                                      ));
-              
-               markIcons.append(QIcon(qApp->property("sharePath").toString()+
-                                      "/coursemanager/5.png"
-                                      ));
-             
-               markIcons.append(QIcon(qApp->property("sharePath").toString()+
-                                      "/coursemanager/6.png"
-                                      ));
-            
-               markIcons.append(QIcon(qApp->property("sharePath").toString()+
-                                      "/coursemanager/7.png"
-                                      ));
-           
-               markIcons.append(QIcon(qApp->property("sharePath").toString()+
-                                      "/coursemanager/8.png"
-                                      ));
-           
-               markIcons.append(QIcon(qApp->property("sharePath").toString()+
-                                      "/coursemanager/9.png"
-                                      ));
-            
-               markIcons.append(QIcon(qApp->property("sharePath").toString()+
-                                      "/coursemanager/10.png"
-                                      ));
+           const ExtensionSystem::KPlugin * csmanager =
+                   ExtensionSystem::PluginManager::instance()
+                   ->findKPlugin<Shared::CoursesInterface>();
+           Q_ASSERT(csmanager);
+           const QDir resourcesRoot = csmanager->myResourcesDir();
+           Q_ASSERT(resourcesRoot.exists());
+//         QUrl::fromLocalFile(qApp->property("sharePath").toString()+
+//                                            "/coursemanager/out_stand.svg"
+//                                            );     // WTF?
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("out_stand.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("1.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("2.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("3.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("4.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("5.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("6.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("7.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("8.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("9.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("10.png")));
            markIcons.append(QIcon(":/m.png"));
-
-               markIcons.append(QIcon( qApp->property("sharePath").toString()+
-                                      "/coursemanager/folder_close.png"
-                                      ));
-               
-          markIcons.append(QIcon( qApp->property("sharePath").toString()+
-                                      "/coursemanager/folder_1.png"
-                                      ));
-               markIcons.append(QIcon( qApp->property("sharePath").toString()+
-                                      "/coursemanager/folder_2.png"
-                                      ));
-               markIcons.append(QIcon( qApp->property("sharePath").toString()+
-                                      "/coursemanager/folder_3.svg"
-                                      ));         
-               markIcons.append(QIcon( qApp->property("sharePath").toString()+
-                                       "/coursemanager/folder_4.svg"));
-               markIcons.append(QIcon( qApp->property("sharePath").toString()+
-                                      "/coursemanager/folder_5.svg"
-                                      ));
-               markIcons.append(QIcon( qApp->property("sharePath").toString()+
-                                      "/coursemanager/folder_6.svg"
-                                      ));         
-               markIcons.append(QIcon( qApp->property("sharePath").toString()+
-                                      "/coursemanager/folder_7.svg"));
-               markIcons.append(QIcon( qApp->property("sharePath").toString()+
-                                      "/coursemanager/folder_8.svg"));
-               markIcons.append(QIcon( qApp->property("sharePath").toString()+
-                                      "/coursemanager/folder_9.svg"));
-               markIcons.append(QIcon( qApp->property("sharePath").toString()+
-                                      "/coursemanager/folder_10.png"));
-               markIcons.append(QIcon( qApp->property("sharePath").toString()+
-                                      "/coursemanager/folder_open.svg"));
-
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_close.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_1.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_2.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_3.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_4.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_5.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_6.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_7.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_8.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_9.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_10.png")));
+           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_open.png")));
            isTeacher=false;
 
 

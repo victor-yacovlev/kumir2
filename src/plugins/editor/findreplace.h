@@ -2,6 +2,7 @@
 #define EDITOR_FINDREPLACE_H
 
 #include <QWidget>
+#include <QDir>
 
 namespace Editor {
 
@@ -18,7 +19,7 @@ class FindReplace
     Q_OBJECT
     
 public:
-    explicit FindReplace(class Editor * editor);
+    explicit FindReplace(const QDir & resourcesRoot, class Editor * editor);
     ~FindReplace();
 
 public slots:

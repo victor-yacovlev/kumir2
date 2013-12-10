@@ -7,7 +7,7 @@
 
 namespace Robot25D {
 
-RobotItem::RobotItem(RobotView *view)
+RobotItem::RobotItem(const QDir & imagesDir, RobotView *view)
     : QThread(NULL)
     , m_view(view)
     , i_timerId(0)
@@ -17,8 +17,7 @@ RobotItem::RobotItem(RobotView *view)
     i_currentStep = 0;
     b_animated = false;
     b_broken = false;
-    const QString imagesRoot =
-            qApp->property("sharePath").toString()+"/actors/robot25d/";
+    const QString imagesRoot = imagesDir.absolutePath() + "/";
     i_framesPerTurn = 4;
     qint16 framesCount = i_framesPerTurn * 4;
     for ( int i=1; i<=framesCount; i++ ) {

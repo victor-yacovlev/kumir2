@@ -1,5 +1,6 @@
 #include "dockwindowplace.h"
 #include "dockwindowplace_container.h"
+#include "extensionsystem/pluginmanager.h"
 
 #include <QApplication>
 #include <QIcon>
@@ -97,7 +98,7 @@ void DockWindowPlaceContainer::setupWidgetsAppearance()
 
     static const QString iconPrefix = "black_";
     static const QString pixmapsPrefix =
-            qApp->property("sharePath").toString()+"/widgets/secondarywindow/" +
+            ExtensionSystem::PluginManager::instance()->sharePath()+"/widgets/secondarywindow/" +
             iconPrefix;
 
     QIcon dockIcon, closeIcon;
