@@ -7,7 +7,7 @@
         <location filename="../../../src/actors/isometricrobot/robot25dwindow.ui" line="14"/>
         <location filename="../../../src/actors/isometricrobot/robot25dwindow.cpp" line="25"/>
         <source>Isometric Robot</source>
-        <translation type="unfinished"></translation>
+        <translation>Вертун</translation>
     </message>
     <message utf8="true">
         <location filename="../../../src/actors/isometricrobot/robot25dwindow.ui" line="23"/>
@@ -58,17 +58,17 @@
         <location filename="../../../src/actors/isometricrobot/robot25dwindow.cpp" line="172"/>
         <location filename="../../../src/actors/isometricrobot/robot25dwindow.cpp" line="178"/>
         <source>Can&apos;t load environment</source>
-        <translation type="unfinished"></translation>
+        <translation>Не могу загрузить обстановку</translation>
     </message>
     <message>
         <location filename="../../../src/actors/isometricrobot/robot25dwindow.cpp" line="187"/>
         <source>Load environment</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузить обстановку</translation>
     </message>
     <message>
         <location filename="../../../src/actors/isometricrobot/robot25dwindow.cpp" line="189"/>
         <source>Environments</source>
-        <translation type="unfinished"></translation>
+        <translation>Обстановки</translation>
     </message>
 </context>
 </TS>

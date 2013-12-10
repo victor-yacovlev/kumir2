@@ -11,58 +11,13 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Вертун</string>
+   <string>Isometric Robot</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout">
-    <property name="margin">
-     <number>0</number>
-    </property>
-    <item row="0" column="0">
-     <widget class="QGraphicsView" name="graphicsView"/>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>507</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menu">
-    <property name="title">
-     <string>Обстановка</string>
-    </property>
-    <addaction name="actionLoad"/>
-    <addaction name="separator"/>
-    <addaction name="actionPrev"/>
-    <addaction name="actionNext"/>
-    <addaction name="separator"/>
-    <addaction name="actionReset"/>
-   </widget>
-   <addaction name="menu"/>
-  </widget>
-  <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-   <addaction name="actionLoad"/>
-   <addaction name="separator"/>
-   <addaction name="actionPrev"/>
-   <addaction name="actionNext"/>
-   <addaction name="separator"/>
-   <addaction name="actionReset"/>
-  </widget>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGraphicsView" name="graphicsView"/>
+   </item>
+  </layout>
   <action name="actionLoad">
    <property name="text">
     <string>Загрузить...</string>

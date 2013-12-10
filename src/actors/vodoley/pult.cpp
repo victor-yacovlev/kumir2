@@ -643,7 +643,7 @@ VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WFlags fl )
 	connect(buttTemp,SIGNAL(clicked()),this,SLOT(TempS()));
 
 	//connect(askStena,SIGNAL(clicked()),this,SLOT(SwStena()));
-	connect(askFree,SIGNAL(clicked()),this,SLOT(SwSvobodno()));
+//	connect(askFree,SIGNAL(clicked()),this,SLOT(SwSvobodno()));
 	//connect(CenterB,SIGNAL(clicked()),this,SLOT(CenterButton()));
 
 	connect(ClearLog,SIGNAL(clicked()),Logger,SLOT(ClearLog()));
