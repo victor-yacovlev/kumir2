@@ -56,7 +56,7 @@ public /*types*/:
         RecordSpecification typeSpecification; /* optional; might be empty */
         QByteArray asciiName; /* optional; might be empty; might contain spaces */
         QMap<QLocale::Language, QString> localizedNames; /* optional */
-        uint8_t dimension; /* array dimension (from 1 to 3) or 0 in scalar case */
+        quint8 dimension; /* array dimension (from 1 to 3) or 0 in scalar case */
 
         inline Argument()
             : accessType(InArgument), type(Void), dimension(0u) {}
