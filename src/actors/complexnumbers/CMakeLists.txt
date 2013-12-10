@@ -50,7 +50,7 @@ qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 install(FILES ${PLUGIN_OUTPUT_PATH}/ActorComplexNumbers.pluginspec DESTINATION ${PLUGINS_DIR})
 handleTranslation(ActorComplexNumbers)
 add_library(ActorComplexNumbers SHARED ${MOC_SOURCES} ${SOURCES} ${MOC_SOURCES2} ${SOURCES2})
-target_link_libraries(ActorComplexNumbers ${QT_LIBRARIES} ExtensionSystem Widgets)
+target_link_libraries(ActorComplexNumbers ${QT_LIBRARIES} ExtensionSystem Widgets  ${STDCXX_LIB} ${STDMATH_LIB})
 
 install(TARGETS ActorComplexNumbers DESTINATION ${PLUGINS_DIR})
 

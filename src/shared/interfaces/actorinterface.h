@@ -184,6 +184,11 @@ public /*methods*/:
 
     /** List of toplevel GUI-menus provided by actor */
     inline virtual QList<class QMenu*> moduleMenus() const { return QList<class QMenu*>(); }
+
+
+    /*=== Generic C++ methods === */
+    /** The destructor. Must be declared virtual */
+    inline virtual ~ActorInterface() {}
 };
 
 }
