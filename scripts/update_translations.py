@@ -7,6 +7,7 @@ TS_MODULES = {
         "Widgets": "src/shared/widgets",
         "ActorPainter": "src/actors/painter",
         "ActorRobot": "src/actors/robot",
+        "ActorIsometricRobot": "src/actors/isometricrobot",
         "Browser": "src/plugins/browser",
         "CoreGUI": "src/plugins/coregui",
         "Editor": "src/plugins/editor",
