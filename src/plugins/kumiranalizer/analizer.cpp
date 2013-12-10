@@ -13,9 +13,9 @@ namespace KumirAnalizer {
 
 QLocale::Language AnalizerPrivate::nativeLanguage = QLocale::Russian;
 
-void Analizer::setSourceLanguage(const QLocale::Language &language)
+void Analizer::setSourceLanguage(const QDir & resourcesRoot, const QLocale::Language &language)
 {
-    Lexer::setLanguage(language);
+    Lexer::setLanguage(resourcesRoot, language);
     AnalizerPrivate::nativeLanguage = language;
 }
 
@@ -129,14 +129,14 @@ QStringList Analizer::moduleNames() const
     return result;
 }
 
-AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin,
+AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin_,
                                  Analizer *qq)
 {
     hiddenBaseLine = -1;
     q = qq;
     ast = AST::DataPtr(new AST::Data());
     lexer = new Lexer(q);
-    pdAutomata = new PDAutomata(q);
+    pdAutomata = new PDAutomata(plugin_->myResourcesDir(), q);
     analizer = new SyntaxAnalizer(lexer, AlwaysAvailableModulesName, qq->teacherMode_, q);
     builtinModules.resize(16);
     ActorInterface * stdFunct = new StdLibModules::RTL;
@@ -151,7 +151,7 @@ AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin,
     builtinModules[2] = stringsFunct;
     createModuleFromActor_stage1(stringsFunct, 0xF2);
     createModuleFromActor_stage2(stringsFunct);
-    QList<ExtensionSystem::KPlugin*> actors = plugin->loadedPlugins("Actor*");
+    QList<ExtensionSystem::KPlugin*> actors = plugin_->loadedPlugins("Actor*");
     foreach (QObject *o, actors) {
         ActorInterface * actor = qobject_cast<ActorInterface*>(o);
         if (actor) {

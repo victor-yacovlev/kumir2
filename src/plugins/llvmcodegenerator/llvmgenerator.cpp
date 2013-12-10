@@ -57,8 +57,12 @@ LLVMGenerator::LLVMGenerator()
     , nameTranslator_(new NameTranslator)
     , stdlibModule_(0)
 {
-    static const QString StdLibFileName =
-            qApp->property("sharePath").toString() + "/llvmcodegenerator/stdlib.bc";
+
+}
+
+void LLVMGenerator::initialize(const QDir &resourcesRoot)
+{
+    const QString StdLibFileName = resourcesRoot.absoluteFilePath("stdlib.bc");
 
     QFile StdLibFile(StdLibFileName);
     if (!StdLibFile.open(QIODevice::ReadOnly)) {
@@ -72,7 +76,6 @@ LLVMGenerator::LLVMGenerator()
 
     std::string strdata(stdLibBytes.constData(), stdLibBytes.size());
     stdlibContents_.reset(llvm::MemoryBuffer::getMemBufferCopy(strdata, "stdlib.bc"));
-
 }
 
 

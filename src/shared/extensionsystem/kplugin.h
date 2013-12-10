@@ -5,6 +5,7 @@
 #include "pluginspec.h"
 #include "settings.h"
 #include "commandlineparameter.h"
+#include "interfaces/plugininterface.h"
 
 #ifdef EXTENSIONSYSTEM_LIBRARY
 #define EXTENSIONSYSTEM_EXPORT Q_DECL_EXPORT
@@ -17,20 +18,18 @@ class QIcon;
 
 namespace ExtensionSystem {
 
-enum GlobalState {
-    GS_Unlocked, // Edit mode
-    GS_Observe, // Observe mode
-    GS_Running, // Running mode
-    GS_Input,  // User input required
-    GS_Pause  // Running paused
-};
+typedef Shared::PluginInterface::GlobalState GlobalState;
 
-class EXTENSIONSYSTEM_EXPORT KPlugin : public QObject
+class EXTENSIONSYSTEM_EXPORT KPlugin
+        : public QObject
+        , public Shared::PluginInterface
 {
     friend class PluginManager;
     friend struct PluginManagerImpl;
     Q_OBJECT
+    Q_INTERFACES(Shared::PluginInterface)
 public:
+    virtual QByteArray pluginName() const;
     enum State { Disabled = 0x00, Loaded=0x01, Initialized=0x02, Started=0x03, Stopped=0x04 };
     KPlugin();
     PluginSpec pluginSpec() const;
@@ -39,6 +38,10 @@ public:
     inline virtual QWidget* settingsEditorPage() { return 0; }
     SettingsPtr pluginSettings() const { return mySettings(); }
     virtual ~KPlugin();
+
+    SettingsPtr mySettings() const;
+    QDir myResourcesDir() const;
+
 protected:
     inline virtual void saveSession() const { }
     inline virtual void restoreSession() { }
@@ -48,8 +51,8 @@ protected:
     {
         return QList<CommandLineParameter>();
     }
-
-    inline virtual QString initialize(
+    void initialize(const QString & pluginResourcesRootPath);
+    virtual QString initialize(
             const QStringList & /*configurationArguments*/,
             const CommandLine & /*runtimeArguments*/
             ) = 0;
@@ -57,12 +60,14 @@ protected:
     inline virtual void start() {}
     inline virtual void stop() {}
     virtual void updateSettings(const QStringList & keys) = 0;
-    KPlugin * myDependency(const QString & name) const;
-
-    SettingsPtr mySettings() const;
+    KPlugin * myDependency(const QString & name) const;    
 
     QList<KPlugin*> loadedPlugins(const QString &pattern = "*");
     QList<const KPlugin*> loadedPlugins(const QString &pattern = "*") const;
+
+private:
+    SettingsPtr settings_;
+    QString resourcesDir_;
 
 };
 

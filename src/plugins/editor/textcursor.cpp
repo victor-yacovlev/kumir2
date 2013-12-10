@@ -434,10 +434,10 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
             }
         }
     }
-    if (ExtensionSystem::PluginManager::instance()->currentGlobalState()==ExtensionSystem::GS_Observe
+    if (ExtensionSystem::PluginManager::instance()->currentGlobalState()==PluginInterface::GS_Observe
             && command.type & KeyCommand::CommandModifiesTextMask
             )
-        ExtensionSystem::PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);
+        ExtensionSystem::PluginManager::instance()->switchGlobalState(PluginInterface::GS_Unlocked);
 }
 
 void TextCursor::moveTo(int row, int col)

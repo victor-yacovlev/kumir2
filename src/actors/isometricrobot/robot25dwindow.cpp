@@ -2,14 +2,14 @@
 
 #include <QtScript>
 
-Robot25DWindow::Robot25DWindow(QWidget *parent) :
+Robot25DWindow::Robot25DWindow(const QDir & imagesDir, QWidget *parent) :
     QGraphicsView(parent)
 {
     setAttribute(Qt::WA_Hover);
     setMouseTracking(true);
     mousePressPosition_ = QPoint(-1, -1);
     setScene(new QGraphicsScene);
-    const QString resPath = qApp->property("sharePath").toString()+"/actors/robot25d/";
+    const QString resPath = imagesDir.absolutePath();
     QImage bgImg = QImage(resPath+"grass_0.png");
     QBrush bgBrush = QBrush(bgImg);
 //    QBrush bgBrush = QBrush(QColor(Qt::black));
@@ -17,7 +17,7 @@ Robot25DWindow::Robot25DWindow(QWidget *parent) :
     setRenderHints(QPainter::Antialiasing|QPainter::TextAntialiasing);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_robotView = new Robot25D::RobotView(false, true, false, QSize(400,300));
+    m_robotView = new Robot25D::RobotView(imagesDir, false, true, false, QSize(400,300));
     scene()->addItem(m_robotView);
 
     loadGame(resPath+"/default.pm.json");

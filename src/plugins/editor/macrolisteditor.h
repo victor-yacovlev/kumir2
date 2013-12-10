@@ -17,7 +17,7 @@ class MacroListEditor : public QDialog
     Q_OBJECT
     
 public:
-    explicit MacroListEditor(QWidget *parent = 0);
+    explicit MacroListEditor(const QDir & resourcesRoot, QWidget *parent = 0);
     void initialize(const QList<Macro> & macros,
                     const QList<Macro> &systemMacros);
     QList<Macro> result() const;

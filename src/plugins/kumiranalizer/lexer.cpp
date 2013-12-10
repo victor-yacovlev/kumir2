@@ -82,11 +82,10 @@ QString Lexer::classNameByBaseType(const AST::VariableBaseType &type) const
     return result;
 }
 
-void Lexer::setLanguage(const QLocale::Language &language)
+void Lexer::setLanguage(const QDir & resourcesRoot, const QLocale::Language &language)
 {
     const QString langName = QLocale::languageToString(language);
-    const QString resourcesRoot = qApp->property("sharePath").toString()+"/kumiranalizer/";
-    const QString fileName = resourcesRoot+langName.toLower()+".keywords";
+    const QString fileName = resourcesRoot.absoluteFilePath(langName.toLower()+".keywords");
     LexerPrivate::initNormalizator(fileName);
 }
 

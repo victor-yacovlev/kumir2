@@ -5,15 +5,13 @@
 
 namespace Editor {
 
-MacroListEditor::MacroListEditor(QWidget *parent) :
+MacroListEditor::MacroListEditor(const QDir & resourcesRoot, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::MacroListEditor)
 {
     ui->setupUi(this);
-    static const QString iconsRoot =
-            qApp->property("sharePath").toString() + "/editor/";
-    ui->btnRemove->setIcon(QIcon(iconsRoot+"find-close.png"));
-    ui->btnEdit->setIcon(QIcon(iconsRoot+"find-options.png"));
+    ui->btnRemove->setIcon(QIcon(resourcesRoot.absoluteFilePath("find-close.png")));
+    ui->btnEdit->setIcon(QIcon(resourcesRoot.absoluteFilePath("find-options.png")));
     ui->btnRemove->setEnabled(false);
     ui->btnEdit->setEnabled(false);
 

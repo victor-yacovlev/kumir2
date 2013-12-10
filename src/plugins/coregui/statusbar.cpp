@@ -20,7 +20,7 @@ static const int ItemPadding = 8;
 
 StatusBar::StatusBar(QWidget *parent)
     : QStatusBar(parent)
-    , state_(ExtensionSystem::GS_Unlocked)
+    , state_(Shared::PluginInterface::GS_Unlocked)
     , errorsCount_(0u)
     , stepsDone_(0u)
     , messageRole_(Normal)
@@ -172,6 +172,7 @@ QSize StatusBar::modeItemSize() const
 
 QSize StatusBar::counterItemSize() const
 {
+    using Shared::PluginInterface;
     static const QString errorsText = tr("ww errors");
     static const QString noErrorsText = tr("No errors");
     static const QString stepsDoneText = tr("wwwww steps done") + "wwwwww";
@@ -183,7 +184,7 @@ QSize StatusBar::counterItemSize() const
 
     int textWidthOther = statusBarFontMetrics().width(stepsDoneText);
 
-    const int textWidth = state_ == ExtensionSystem::GS_Unlocked
+    const int textWidth = state_ == PluginInterface::GS_Unlocked
             ? maxTextWidthEdit : textWidthOther;
 
     const int height = qMax(14, textHeight);
@@ -229,6 +230,7 @@ void StatusBar::paintItemRect(QPainter &p, const QSize &sz, int x)
 
 void StatusBar::paintEvent(QPaintEvent *event)
 {
+    using Shared::PluginInterface;
     QPainter p(this);
     QStyle * st = style();
     QStyleOption opt;
@@ -252,7 +254,7 @@ void StatusBar::paintEvent(QPaintEvent *event)
     x += modeItemSize().width();
     paintCounterItem(p, x);
     x += counterItemSize().width();
-    if (state_ == ExtensionSystem::GS_Unlocked) {
+    if (state_ == PluginInterface::GS_Unlocked) {
         const QSize remaining =
                 cursorPositionItemSize() + keyboardLayoutItemSize();
         const QSize message = messageItemSize();
@@ -284,17 +286,17 @@ void StatusBar::paintEvent(QPaintEvent *event)
 void StatusBar::paintModeItem(QPainter &p, int x)
 {
     paintItemRect(p, modeItemSize(), x);
-    using namespace ExtensionSystem;
+    using Shared::PluginInterface;
     p.save();
     uint xoffset = 0;
     QString modeText;
-    if (state_ == GS_Input || state_ == GS_Pause) {
+    if (state_ == PluginInterface::GS_Input || state_ == PluginInterface::GS_Pause) {
         modeText = tr("Pause");
     }
-    else if (state_ == GS_Observe) {
+    else if (state_ == PluginInterface::GS_Observe) {
         modeText = tr("Analisys");
     }
-    else if (state_ == GS_Running) {
+    else if (state_ == PluginInterface::GS_Running) {
         modeText = tr("Running");
     }
     else {
@@ -306,7 +308,7 @@ void StatusBar::paintModeItem(QPainter &p, int x)
     QTextOption opt;
     opt.setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
     p.drawText(textRect, modeText, opt);
-    if (state_ == GS_Unlocked && editorRecord_) {
+    if (state_ == PluginInterface::GS_Unlocked && editorRecord_) {
         p.setRenderHint(QPainter::Antialiasing, true);
         p.setPen(QPen(palette().brush(QPalette::WindowText).color()));
         p.setBrush(alternateColor());
@@ -322,10 +324,10 @@ void StatusBar::paintModeItem(QPainter &p, int x)
 void StatusBar::paintCounterItem(QPainter &p, int x)
 {
     paintItemRect(p, counterItemSize(), x);
-    using namespace ExtensionSystem;
+    using Shared::PluginInterface;
     p.save();
     QString text;
-    if (state_ == GS_Unlocked) {
+    if (state_ == PluginInterface::GS_Unlocked) {
         p.setPen(QPen(errorsCount_==0? normalColor() : alternateColor()));
         if (errorsCount_ == 0)
             text = tr("No errors");

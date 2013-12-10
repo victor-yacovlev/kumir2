@@ -15,7 +15,7 @@ cursFile="";
     connect(qApp,SIGNAL(aboutToQuit()),this,SLOT(aboutToQuit()));
 
 }
- void MainWindowTask::setup(ExtensionSystem::SettingsPtr sett)
+ void MainWindowTask::setup(const QDir & resourcesRoot, ExtensionSystem::SettingsPtr sett)
  {
        course=NULL;
      ui->setupUi(this);
@@ -63,9 +63,7 @@ cursFile="";
 isTeacher=false;
        onTask=false;
        cursFile="";
-     setWindowIcon(QIcon(qApp->property("sharePath").toString()+
-                   "/coursemanager/10.png")
-                   );
+       setWindowIcon(QIcon(resourcesRoot.absoluteFilePath("10.png")));
 #ifdef QT_DEBUG
      ui->webView->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
 #endif

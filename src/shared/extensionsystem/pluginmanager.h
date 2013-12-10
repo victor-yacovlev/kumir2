@@ -26,6 +26,8 @@ public:
     /** Set path to search settings etc. */
     void setSharePath(const QString &path);
 
+    QString sharePath() const;
+
     void switchGlobalState(GlobalState state);
 
     GlobalState currentGlobalState() const;

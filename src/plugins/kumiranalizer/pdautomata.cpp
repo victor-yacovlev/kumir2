@@ -50,11 +50,11 @@ PDAutomata::~PDAutomata()
     }
 }
 
-PDAutomata::PDAutomata(QObject *parent) :
+PDAutomata::PDAutomata(const QDir & resourcesRoot, QObject *parent) :
     QObject(parent)
 {
 
-    QString rulesPath = qApp->property("sharePath").toString()+"/kumiranalizer/"; // TODO set me
+    const QString rulesPath = resourcesRoot.absolutePath();
     loadRules(rulesPath);
 }
 

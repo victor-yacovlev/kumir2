@@ -82,7 +82,7 @@ public:
     void setInterface(CourseManager::Plugin * csInterface){interface=csInterface;};
     void setCS(QString cs){CS=cs;};
    KumZadanie task;
-    void setup( ExtensionSystem::SettingsPtr sett);
+    void setup(const QDir & resourcesRoot, ExtensionSystem::SettingsPtr sett);
     void updateSettings(const QStringList & keys,ExtensionSystem::SettingsPtr sett){settings=sett;};
      QString getFileName(QString fileName);
      void setTeacher(bool mode);

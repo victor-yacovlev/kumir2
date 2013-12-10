@@ -19,9 +19,12 @@ You should change it corresponding to functionality.
 
 namespace ActorVodoley {
 
+VodoleyModule * VodoleyModule::self = 0;
+
 VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
     : VodoleyModuleBase(parent)
 {
+    self = this;
     MainWindow=new Vodoley();
     // Module constructor, called once on plugin load
     // TODO implement me

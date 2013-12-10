@@ -16,7 +16,7 @@ Plugin::Plugin()
     courseMenu=new QMenu(trUtf8("Практикум"));
     MenuList.append(courseMenu);
     MW=new MainWindowTask();
-    MW->setup(mySettings());
+    MW->setup(myResourcesDir(), mySettings());
     mainWindow_=MW;
     field_no=0;
     prevFld=new QAction(trUtf8("Предыдущая обстановка"),this);
@@ -54,7 +54,7 @@ void Plugin::setPreProgram(QVariant param)
    text.language=Shared::GuiInterface::ProgramSourceText::Kumir;
    gui->setProgramSource(text);
      
-      ExtensionSystem::PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);   
+      ExtensionSystem::PluginManager::instance()->switchGlobalState(PluginInterface::GS_Unlocked);
   }
 }   
 void Plugin::fixOldKumTeacherMark(QDataStream* ds)
@@ -255,12 +255,12 @@ void Plugin::lockContrls()
 void Plugin::changeGlobalState(ExtensionSystem::GlobalState old,
                                ExtensionSystem::GlobalState current)
 {
-    if(current==ExtensionSystem::GS_Running)
+    if(current==PluginInterface::GS_Running)
     {MW->lockControls();
         nextFld->setEnabled(false);
         prevFld->setEnabled(false);
     };
-   if(current==ExtensionSystem::GS_Observe)
+   if(current==PluginInterface::GS_Observe)
    {MW->unlockControls();
        prevFld->setEnabled(field_no>0);
        nextFld->setEnabled(cur_task && field_no<cur_task->minFieldCount() && cur_task->minFieldCount()>0);

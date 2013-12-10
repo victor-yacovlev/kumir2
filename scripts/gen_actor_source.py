@@ -2500,10 +2500,19 @@ class ModuleBaseCppClass(CppClassBase):
         :return:    implementation of ExtensionSystem::SettingsPtr mySettings() const
         """
         return """
-/* protected */ ExtensionSystem::SettingsPtr %s::mySettings() const
+/* public */ ExtensionSystem::SettingsPtr %s::mySettings() const
 {
     %s* plugin = qobject_cast<%s*>(parent());
     return plugin->mySettings();
+}
+        """ % (self.className, self._module.pluginClassName(), self._module.pluginClassName())
+
+    def myResourcesDirCppImplementation(self):
+        return """
+/* public */ QDir %s::myResourcesDir() const
+{
+    %s* plugin = qobject_cast<%s*>(parent());
+    return plugin->myResourcesDir();
 }
         """ % (self.className, self._module.pluginClassName(), self._module.pluginClassName())
 

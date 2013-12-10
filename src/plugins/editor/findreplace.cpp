@@ -14,7 +14,7 @@
 
 namespace Editor {
 
-FindReplace::FindReplace(Editor * editor)
+FindReplace::FindReplace(const QDir & resourcesRoot, Editor * editor)
     : QWidget(editor)
     , ui(new Ui::FindReplace)
     , editor_(editor)
@@ -59,12 +59,10 @@ FindReplace::FindReplace(Editor * editor)
 
     setVisible(false);
 
-    static const QString iconsRoot =
-            qApp->property("sharePath").toString() + "/editor/";
-    ui->btnNext->setIcon(QIcon(iconsRoot+"find-next.png"));
-    ui->btnPrev->setIcon(QIcon(iconsRoot+"find-previous.png"));
-    ui->btnClose->setIcon(QIcon(iconsRoot+"find-close.png"));
-    ui->btnMore->setIcon(QIcon(iconsRoot+"find-options.png"));
+    ui->btnNext->setIcon(QIcon(resourcesRoot.absoluteFilePath("find-next.png")));
+    ui->btnPrev->setIcon(QIcon(resourcesRoot.absoluteFilePath("find-previous.png")));
+    ui->btnClose->setIcon(QIcon(resourcesRoot.absoluteFilePath("find-close.png")));
+    ui->btnMore->setIcon(QIcon(resourcesRoot.absoluteFilePath("find-options.png")));
     setCursor(Qt::ArrowCursor);
 }
 

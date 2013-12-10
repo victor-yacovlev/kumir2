@@ -75,8 +75,8 @@ MainWindow::MainWindow(Plugin * p) :
     b_workspaceSwitching = false;
 
 
-    const QString qtcreatorIconsPath = QApplication::instance()->property("sharePath")
-            .toString() + "/icons/from_qtcreator/";
+    const QString qtcreatorIconsPath = ExtensionSystem::PluginManager::instance()->sharePath()
+            + "/icons/from_qtcreator/";
 
     ui->actionNewProgram->setIcon(QIcon(qtcreatorIconsPath+"filenew.png"));
     ui->actionOpen->setIcon(QIcon(qtcreatorIconsPath+"fileopen.png"));
@@ -422,8 +422,8 @@ void MainWindow::checkCounterValue()
 {
     using namespace ExtensionSystem;
     using namespace Shared;
-    GlobalState state = PluginManager::instance()->currentGlobalState();
-    if (state==GS_Unlocked) {
+    PluginInterface::GlobalState state = PluginManager::instance()->currentGlobalState();
+    if (state==PluginInterface::GS_Unlocked) {
         TabWidgetElement * twe = currentTab();
         if (!twe)
             return;
@@ -442,7 +442,7 @@ void MainWindow::checkCounterValue()
         if (runner) {
             ulong stepsCounted = runner->stepsCounted();
             ulong stepsDone =
-                    state==GS_Observe && runner->error().length()==0
+                    state==PluginInterface::GS_Observe && runner->error().length()==0
                     ? stepsCounted  // all steps successfully finished
                     : stepsCounted - 1; // all but last unfinished step
             if (stepsCounted == 0) {
@@ -875,7 +875,7 @@ void MainWindow::showPreferences()
 
 QIcon MainWindow::actionIcon(const QString &name)
 {
-    const QString iconsPath = qApp->property("sharePath").toString()+"/icons/";
+    const QString iconsPath = ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/";
     return QIcon::fromTheme(name, QIcon(iconsPath+name+".png"));
 }
 
@@ -1555,7 +1555,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
         tabWidget_->currentWidget()->setFocus();
     }
     setTitleForTab(tabWidget_->currentIndex());
-    ExtensionSystem::PluginManager::instance()->switchGlobalState(ExtensionSystem::GS_Unlocked);
+    ExtensionSystem::PluginManager::instance()->switchGlobalState(PluginInterface::GS_Unlocked);
     return result;
 }
 

@@ -1,4 +1,5 @@
 #include "secondarywindow_generic.h"
+#include "extensionsystem/pluginmanager.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -157,7 +158,7 @@ void SecondaryWindowGenericImplementation::setupWidgetsAppearance()
     static const QString iconPrefix = "black_";
 #endif
     static const QString pixmapsPrefix =
-            qApp->property("sharePath").toString()+"/widgets/secondarywindow/" +
+            ExtensionSystem::PluginManager::instance()->sharePath()+"/widgets/secondarywindow/" +
             iconPrefix;
 
     QIcon minimizeIcon, dockIcon, closeIcon;

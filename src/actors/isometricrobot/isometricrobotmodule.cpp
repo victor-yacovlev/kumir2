@@ -17,7 +17,7 @@ namespace ActorIsometricRobot {
 
 IsometricRobotModule::IsometricRobotModule(ExtensionSystem::KPlugin * parent)
     : IsometricRobotModuleBase(parent)
-    , window_(new Robot25DWindow(0))
+    , window_(new Robot25DWindow(parent->myResourcesDir(), 0))
     , robotView_(window_->robotView())
 {
     connect(m_actionRobot25DLoadEnvironment, SIGNAL(triggered()),
