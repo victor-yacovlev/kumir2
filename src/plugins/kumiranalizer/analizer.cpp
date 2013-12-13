@@ -215,7 +215,7 @@ void AnalizerPrivate::setHiddenText(const QString &text, int baseLineNo)
 AnalizerPrivate::~AnalizerPrivate()
 {
     delete lexer;
-    delete pdAutomata;
+    delete pdAutomata;  
     delete builtinModules[0];
     delete builtinModules[1];
     delete builtinModules[2];
