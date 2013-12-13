@@ -4271,7 +4271,7 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
         QSize oldSize=this->size();
         emit  resizeRequest(newGeometry);
        if(newGeometry != oldSize)
-       {centerOn(newGeometry.width()/2-CurCellSize/2,newGeometry.height()/2-CurCellSize/2);
+       {centerOn(newGeometry.width()/2-CurCellSize,newGeometry.height()/2-CurCellSize);
         qDebug()<<"CenterON:"<<newGeometry.width()/2-CurCellSize/2<<newGeometry.width()/2-CurCellSize/2;
            this->scale(1/c_scale,1/c_scale);
     }
