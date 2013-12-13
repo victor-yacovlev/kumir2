@@ -280,7 +280,7 @@ void Editor::loadMacros()
     const QString analizerName = analizerPlugin_->defaultDocumentFileNameSuffix();
 
     // System macros
-    const QString systemMacrosPath = plugin_->myResourcesDir().absoluteFilePath("editor/macros-"+analizerName+".xml");
+    const QString systemMacrosPath = plugin_->myResourcesDir().absoluteFilePath("macros-"+analizerName+".xml");
     systemMacros_ = loadFromFile(systemMacrosPath);
 
     // Actor-specific macros
