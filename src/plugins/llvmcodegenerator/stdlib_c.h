@@ -9,6 +9,7 @@
 
 #include "kumtypes.h"
 
+
 EXTERN void __kumir_internal_debug(int32_t code);
 EXTERN void __kumir_init_stdlib();
 EXTERN void __kumir_check_call_stack();
@@ -23,6 +24,21 @@ EXTERN void __kumir_create_real(__kumir_scalar * result, const __kumir_real valu
 EXTERN void __kumir_create_bool(__kumir_scalar * result, const __kumir_bool value);
 EXTERN void __kumir_create_char(__kumir_scalar * result, const char * utf8);
 EXTERN void __kumir_create_string(__kumir_scalar * result, const char * utf8);
+
+EXTERN void __kumir_create_string_from_wcs(__kumir_scalar * result, const wchar_t * wcs);
+EXTERN void __kumir_create_string_from_cs(__kumir_scalar * result, const char * cs);
+
+EXTERN void __kumir_create_char_from_char(__kumir_scalar * result, const char ch);
+EXTERN void __kumir_create_char_from_wchar(__kumir_scalar * result, const wchar_t wch);
+
+EXTERN int32_t __kumir_export_int_scalar(const __kumir_scalar * value);
+EXTERN bool    __kumir_export_bool_scalar(const __kumir_scalar * value);
+EXTERN double  __kumir_export_double_scalar(const __kumir_scalar * value);
+EXTERN char    __kumir_export_char_scalar(const __kumir_scalar * value);
+EXTERN wchar_t __kumir_export_wchar_scalar(const __kumir_scalar * value);
+EXTERN char*   __kumir_export_pchar_scalar(const __kumir_scalar * value, void * allocator);
+EXTERN wchar_t* __kumir_export_pwchar_scalar(const __kumir_scalar * value, void * allocator);
+
 EXTERN __kumir_variant __kumir_copy_variant(const __kumir_variant rvalue, __kumir_scalar_type type);
 EXTERN void __kumir_copy_scalar(__kumir_scalar  * lvalue_ptr, const __kumir_scalar * rvalue);
 EXTERN void __kumir_move_scalar(__kumir_scalar  * lvalue, __kumir_scalar * rvalue);

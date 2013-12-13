@@ -1,5 +1,6 @@
 #include "llvmcodegeneratorplugin.h"
 #include "llvmgenerator.h"
+#include "externgenerator.h"
 
 #include <QtPlugin>
 
@@ -33,18 +34,29 @@ namespace LLVMCodeGenerator {
 LLVMCodeGeneratorPlugin::LLVMCodeGeneratorPlugin()
     : ExtensionSystem::KPlugin()
     , d(new LLVMGenerator)
+    , x(0)
     , textForm_(false)
     , createMain_(false)
     , linkStdLib_(false)
     , linkAllUnits_(false)
-    , runToolChain_(false)
+    , createExecutable_(false)
+    , createNativeUnit_(false)
+    , createCExterns_(false)
+    , useWCharForExterns_(false)
     , debugLevel_(LinesOnly)
 {
+    const QString appVersion = qApp->applicationVersion();
+    if (!appVersion.startsWith("2.1")) {
+        // Extern generator is not ready to be included in 2.1 realease
+        x = new ExternGenerator;
+    }
 }
 
 LLVMCodeGeneratorPlugin::~LLVMCodeGeneratorPlugin()
 {
     delete d;
+    if (x)
+        delete x;
 }
 
 QList<ExtensionSystem::CommandLineParameter>
@@ -54,13 +66,18 @@ LLVMCodeGeneratorPlugin::acceptableCommandLineParameters() const
     QList<CommandLineParameter> result;
     result << CommandLineParameter(
                   false,
-                  'c', "compile",
+                  'b', "bitcompile",
                   tr("Just compile file to external LLVM bitcode module unit")
                   );
     result << CommandLineParameter(
                   false,
+                  'c', "compile",
+                  tr("Just compile file to native module object")
+                  );
+    result << CommandLineParameter(
+                  false,
                   'S', "assembly",
-                  tr("Generate LLVM bitcode in text form (in conjuntion with -c flag)")
+                  tr("Generate LLVM bitcode in text form (in conjunction with -b flag)")
                   );
     result << CommandLineParameter(
                   false,
@@ -71,18 +88,30 @@ LLVMCodeGeneratorPlugin::acceptableCommandLineParameters() const
     result << CommandLineParameter(
                   false,
                   'm', "main",
-                  tr("Comiles kumir program as an unit (in conjuntion with -c flag)")
+                  tr("Compiles kumir program as an executable unit (in conjunction with -b or -c flag)")
                   );
     result << CommandLineParameter(
                   false,
                   'l', "link",
-                  tr("Link in all used units from external sources (in conjuntion with -c flag)")
+                  tr("Link in all used units from external sources (in conjunction with -b or -c flag)")
                   );
     result << CommandLineParameter(
                   false,
                   't', "stdlib",
-                  tr("Link stdlib here (in conjuntion with -c flag)")
+                  tr("Link stdlib here (in conjunction with -b or -c flag)")
                   );
+    if (x) {
+        result << CommandLineParameter(
+                      false,
+                      'x', "export",
+                      tr("Creates external C-wrappers for public functions and prints header to stdout (in conjunction with -b or -c flag)")
+                      );
+        result << CommandLineParameter(
+                      false,
+                      'w', "widechars",
+                      tr("Use unicode (wchar_t) character representation for C-exported function (in conjunction with -x flag)")
+                      );
+    }
     return result;
 }
 
@@ -180,10 +209,21 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
         startupKumirModule->impl.algorhitms += teacherModule->impl.algorhitms;
         startupKumirModule->header.algorhitms += teacherModule->header.algorhitms;
     }
-    kmodules.push_back(startupKumirModule);
+    kmodules.push_back(startupKumirModule);   
+
+    if (createCExterns_) {
+        Q_ASSERT(x);
+        x->reset(d->getStdLibModule());
+    }
 
     foreach (AST::ModulePtr kmod, kmodules) {
-        d->addKumirModule(kmod);
+        QList<LLVMGenerator::FunctionTwine> externFunctions = d->addKumirModule(kmod);
+        if (createCExterns_) {
+            Q_ASSERT(x);
+            foreach (LLVMGenerator::FunctionTwine func, externFunctions) {
+                x->addFunction(kmod, func.first, func.second);
+            }
+        }
     }
 
     foreach (AST::ModulePtr kmod, kmodules) {
@@ -191,6 +231,12 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
     }
 
     llvm::Module * lmainModule = d->getResult();
+
+    if (createCExterns_) {
+        Q_ASSERT(x);
+        x->generateBody(llvm::getGlobalContext(), lmainModule, useWCharForExterns_);
+    }
+
     std::string buf;
     llvm::raw_string_ostream ostream(buf);
 
@@ -205,6 +251,7 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
     llvm::Module * reparsedModule = llvm::ParseAssemblyString(bufData.constData(),
                                                               0,
                                                               lerr, lctx);
+
     if (reparsedModule == 0) {
 #if LLVM_VERSION_MINOR >= 2
         lerr.print("kumir2-llvmc", llvm::errs());
@@ -259,14 +306,21 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
     bstream.flush();
     buf = bstream.str();
     const QByteArray binBufData(buf.c_str(), buf.size());
-    if (!runToolChain_) {
-        out = binBufData;
-        mimeType = "binary/llvm";
-        fileSuffix = ".bc";
+    if (!createExecutable_) {
+        if (createNativeUnit_) {
+            out = runExternalToolsToGenerateExecutable(binBufData, true);
+            mimeType = "binary/object";
+            fileSuffix = ".o";
+        }
+        else {
+            out = binBufData;
+            mimeType = "binary/llvm";
+            fileSuffix = ".bc";
+        }
         return;
     }
 
-    out = runExternalToolsToGenerateExecutable(binBufData);
+    out = runExternalToolsToGenerateExecutable(binBufData, false);
     mimeType = "executable";
 #ifndef Q_OS_WIN32
     fileSuffix = "";
@@ -295,7 +349,7 @@ bool LLVMCodeGeneratorPlugin::compileExternalUnit(const QString &fileName)
         #endif
             ;
     const QStringList llvmcArguments = QStringList()
-            << "-c" << kumFileName;
+            << "-b" << kumFileName;
     const int status = QProcess::execute(llvmc, llvmcArguments);
     if (status != 0) {
         return false;
@@ -305,7 +359,10 @@ bool LLVMCodeGeneratorPlugin::compileExternalUnit(const QString &fileName)
     }
 }
 
-QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const QByteArray &bitcode)
+QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(
+        const QByteArray &bitcode,
+        bool compileOnly
+        )
 {
     static const QString CLang = findUtil("clang");
 
@@ -318,13 +375,22 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     bitcodeFile.close();
 
     const QString bcFileName = QFileInfo(bitcodeFile).absoluteFilePath();
-    const QString exeFileName = bcFileName.left(bcFileName.length()-2) + "exe";
+    const QString outFileName = bcFileName.left(bcFileName.length()-2) +
+            (compileOnly ? "o" : "exe");
 
     // ====== Use CLang toolchain to produce executable
 
-    const QStringList clangArguments = QStringList()
-            << "-O3"
-            << "-o" << exeFileName << bcFileName << "-lstdc++" << "-lm";
+    QStringList clangArguments = QStringList();
+
+    if (compileOnly) {
+        clangArguments << "-c";
+    }
+
+    clangArguments << "-O3" << "-o" << outFileName << bcFileName;
+
+    if (!compileOnly) {
+        clangArguments << "-lstdc++" << "-lm";
+    }
 
     const int clang_status = QProcess::execute(CLang, clangArguments);
     QString errorMessage;
@@ -347,11 +413,11 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     }
 
     // ====== Read result
-    QFile executableFile(exeFileName);
-    executableFile.open(QIODevice::ReadOnly);
-    const QByteArray result = executableFile.readAll();
-    executableFile.close();    
-    QFile::remove(exeFileName);
+    QFile outputFile(outFileName);
+    outputFile.open(QIODevice::ReadOnly);
+    const QByteArray result = outputFile.readAll();
+    outputFile.close();
+    QFile::remove(outFileName);
     return result;
 }
 
@@ -403,15 +469,18 @@ QString LLVMCodeGeneratorPlugin::initialize(
         const QStringList &,
         const ExtensionSystem::CommandLine &runtimeArguments)
 {
-    if (runtimeArguments.hasFlag('c')) {
-        runToolChain_ = false;
+    if (runtimeArguments.hasFlag('b') || runtimeArguments.hasFlag('b')) {
+        createExecutable_ = false;
+        createNativeUnit_ = runtimeArguments.hasFlag('c');
         createMain_ = runtimeArguments.hasFlag('m');
         textForm_ = runtimeArguments.hasFlag('S');
         linkStdLib_ = runtimeArguments.hasFlag('t');
         linkAllUnits_ = runtimeArguments.hasFlag('l');
+        createCExterns_ = runtimeArguments.hasFlag('x');
+        useWCharForExterns_ = runtimeArguments.hasFlag('w');
     }
     else {
-        runToolChain_ = true;
+        createExecutable_ = true;
         createMain_ = true;
         textForm_ = false;
         linkStdLib_ = true;

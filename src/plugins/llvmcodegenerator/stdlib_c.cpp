@@ -122,6 +122,110 @@ EXTERN void __kumir_create_string(__kumir_scalar  * result, const char * utf8)
     result->data.s[wstr.length()] = L'\0';
 }
 
+EXTERN void __kumir_create_string_from_cs(__kumir_scalar * result, const char * cs)
+{
+    // Most programming text editors supports UTF-8, so use it by default
+    __kumir_create_string(result, cs);
+}
+
+EXTERN void __kumir_create_string_from_wcs(__kumir_scalar * result, const wchar_t * wcs)
+{
+    std::wstring wstr(wcs);
+    __kumir_create_string(result, wstr);
+}
+
+EXTERN void __kumir_create_char_from_char(__kumir_scalar * result, const char ch)
+{
+    wchar_t wch = L'\0';
+    unsigned char uch = (unsigned char)(ch);
+    if (uch < 128u) {
+        wch = wchar_t(ch);
+    }
+    else {
+        Kumir::Core::abort(Kumir::Core::fromUtf8("В параметр типа char C-функции передан не-ASCII символ. Используйте wchar_t реализацию"));
+    }
+    result->data.c = wch;
+    result->defined = true;
+    result->type = __KUMIR_CHAR;
+}
+
+EXTERN void __kumir_create_char_from_wchar(__kumir_scalar * result, const wchar_t wch)
+{
+    result->data.c = wch;
+    result->defined = true;
+    result->type = __KUMIR_CHAR;
+}
+
+
+EXTERN int32_t __kumir_export_int_scalar(const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    return value->data.i;
+}
+
+EXTERN bool    __kumir_export_bool_scalar(const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    return value->data.b;
+}
+
+EXTERN double  __kumir_export_double_scalar(const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    return value->data.r;
+}
+
+EXTERN char    __kumir_export_char_scalar(const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    char result = '0';
+    if (uint32_t(value->data.c) > 127u) {
+        Kumir::Core::abort(Kumir::Core::fromUtf8("Возвращается значение не-ASCII символа. Используйте wchar_t реализацию"));
+    }
+    else {
+        result = char(value->data.c);
+    }
+    return result;
+}
+
+EXTERN wchar_t __kumir_export_wchar_scalar(const __kumir_scalar * value)
+{
+    __kumir_check_value_defined(value);
+    return value->data.c;
+}
+
+EXTERN char*   __kumir_export_pchar_scalar(const __kumir_scalar * value, void * allocator)
+{
+    __kumir_check_value_defined(value);
+    const std::string utf8 = Kumir::Coder::encode(Kumir::UTF8, value->data.s);
+    typedef void* (*allocator_t)(size_t);
+    char * result = 0;
+    allocator_t f = reinterpret_cast<allocator_t>(allocator);
+    if (!f) {
+        f = &malloc; // default allocator
+    }
+    result = reinterpret_cast<char*> ( f(utf8.length() + 1u) );
+    memcpy(result, utf8.c_str(), utf8.length());
+    result[utf8.length()] = '\0';
+    return result;
+}
+
+EXTERN wchar_t* __kumir_export_pwchar_scalar(const __kumir_scalar * value, void * allocator)
+{
+    __kumir_check_value_defined(value);
+    typedef void* (*allocator_t)(size_t);
+    wchar_t * result = 0;
+    allocator_t f = reinterpret_cast<allocator_t>(allocator);
+    if (!f) {
+        f = &malloc; // default allocator
+    }
+    result = reinterpret_cast<wchar_t*> ( f(wcslen(value->data.s) + 1u) );
+    memcpy(result, value->data.s, wcslen(value->data.s));
+    result[wcslen(value->data.s)] = L'\0';
+    return result;
+}
+
+
 EXTERN __kumir_variant __kumir_copy_variant(const __kumir_variant rvalue, __kumir_scalar_type type)
 {
     __kumir_variant lvalue;

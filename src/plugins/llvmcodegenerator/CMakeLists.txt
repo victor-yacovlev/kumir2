@@ -51,6 +51,7 @@ set(SOURCES
     llvmcodegeneratorplugin.cpp
     llvmgenerator.cpp
     nametranslator.cpp
+    externgenerator.cpp
 )
 
 set(MOC_HEADERS

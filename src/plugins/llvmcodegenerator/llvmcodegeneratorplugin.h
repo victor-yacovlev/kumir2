@@ -48,17 +48,22 @@ protected:
     void start();
     void stop();
 
-    static QByteArray runExternalToolsToGenerateExecutable(const QByteArray & bitcode);
+    static QByteArray runExternalToolsToGenerateExecutable(const QByteArray & bitcode,
+                                                           bool compileOnly);
     static bool compileExternalUnit(const QString & fileName);
     static QString findUtil(const QString & name);
 
 private:
     class LLVMGenerator * d;
+    class ExternGenerator * x;
     bool createMain_;
     bool linkStdLib_;
     bool linkAllUnits_;
     bool textForm_;
-    bool runToolChain_;
+    bool createExecutable_;
+    bool createNativeUnit_;
+    bool createCExterns_;
+    bool useWCharForExterns_;
     DebugLevel debugLevel_;
 
 };

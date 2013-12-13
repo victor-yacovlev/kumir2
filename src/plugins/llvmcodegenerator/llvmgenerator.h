@@ -38,7 +38,8 @@ public:
     explicit LLVMGenerator();
     void initialize(const QDir & resourcesRoot);
     void reset(bool addMainEntryPoint, Shared::GeneratorInterface::DebugLevel debugLevel);
-    void addKumirModule(const AST::ModulePtr kmod);
+    typedef QPair<AST::AlgorithmPtr, llvm::Function*> FunctionTwine;
+    QList<FunctionTwine> addKumirModule(const AST::ModulePtr kmod);
     void createKumirModuleImplementation(const AST::ModulePtr kmod);
     llvm::Module * getResult();
     llvm::Module * getStdLibModule();
@@ -52,7 +53,7 @@ private:
     llvm::StructType * getStringRefType();
 
     void addGlobalVariable(llvm::IRBuilder<> & builder, const AST::VariablePtr kvar, bool constant);
-    void addFunction(const AST::AlgorithmPtr kfunc, bool createBody);
+    llvm::Function * addFunction(const AST::AlgorithmPtr kfunc, bool createBody);
     void addFunctionBody(const QList<AST::StatementPtr> & statements, const AST::AlgorithmPtr & alg);
     void createMainFunction(const AST::AlgorithmPtr & entryPoint);
 
@@ -87,6 +88,7 @@ private:
     void createFreeTempScalars(llvm::IRBuilder<> & builder);
     void createOutputValue(Builder & builder, const QString & name, llvm::Value * value, const AST::VariableBaseType type, const bool isArray);
     void createInputValue(Builder & builder, const QString & name, llvm::Value * value, const AST::VariableBaseType type, const bool isArray);
+    static CString createAsciiName(const QString & unicodeName);
 
     llvm::AllocaInst * CreateAlloca(Builder & builder, llvm::Type * ty, const CString & name = CString());
 
@@ -95,8 +97,7 @@ private:
     llvm::Function* currentFunction_;
     llvm::BasicBlock * currentFunctionEntry_;
     AST::AlgorithmPtr currentAlgorithm_;
-    llvm::LLVMContext* context_;
-    QScopedPointer<NameTranslator> nameTranslator_;
+    llvm::LLVMContext* context_;    
     llvm::Module* stdlibModule_;
     QScopedPointer<llvm::MemoryBuffer> stdlibContents_;
     llvm::BasicBlock* currentBlock_;

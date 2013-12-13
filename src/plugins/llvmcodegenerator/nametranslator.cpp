@@ -162,18 +162,20 @@ QString NameTranslator::suggestName(const QString &x)
                     letter[0] = letter[0].toUpper();
                 result += letter;
             }
-            else if (QString::fromUtf8("ь").contains(src) && result.isEmpty()) {
-                result += "soft_sign";
-            }
-            else if (QString::fromUtf8("ъ").contains(src) && result.isEmpty()) {
-                result += "hard_sign";
-            }
-            else if (QString::fromUtf8("Ь").contains(src) && result.isEmpty()) {
-                result += "Soft_sign";
-            }
-            else if (QString::fromUtf8("Ъ").contains(src) && result.isEmpty()) {
-                result += "Hard_sign";
-            }
+        }
+    }
+    if (result.isEmpty()) {
+        if (QString::fromUtf8("ь") == x) {
+            result += "soft_sign";
+        }
+        else if (QString::fromUtf8("ъ") == x) {
+            result += "hard_sign";
+        }
+        else if (QString::fromUtf8("Ь") == x) {
+            result += "Soft_sign";
+        }
+        else if (QString::fromUtf8("Ъ") == x) {
+            result += "Hard_sign";
         }
     }
     return result;

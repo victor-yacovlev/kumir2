@@ -1,5 +1,4 @@
 #include "llvmgenerator.h"
-#include "nametranslator.h"
 #include "kumtypes.h"
 
 #include "dataformats/ast_variable.h"
@@ -54,7 +53,6 @@ LLVMGenerator::LLVMGenerator()
     , currentFunction_(0)
     , currentFunctionEntry_(0)
     , context_(0)
-    , nameTranslator_(new NameTranslator)
     , stdlibModule_(0)
 {
 
@@ -88,7 +86,6 @@ void LLVMGenerator::reset(bool addMainEntryPoint,
     currentModule_ = new llvm::Module("", *context_);
     currentFunction_ = 0;
     addMainEntryPoint_ = addMainEntryPoint;
-    nameTranslator_->reset();
     createStdLibModule();
     createExternsTable(stdlibModule_, CString("__kumir_"));
     externs_.clear();
@@ -117,8 +114,9 @@ llvm::Module* LLVMGenerator::getStdLibModule()
     return stdlibModule_;
 }
 
-void LLVMGenerator::addKumirModule(const AST::ModulePtr kmod)
+QList<LLVMGenerator::FunctionTwine> LLVMGenerator::addKumirModule(const AST::ModulePtr kmod)
 {
+    QList<FunctionTwine> result;
     bool voidNameFunctionDeclared = false;
     for (int i=0; i<kmod->impl.algorhitms.size(); i++) {
         const AST::AlgorithmPtr func = kmod->impl.algorhitms.at(i);
@@ -126,24 +124,30 @@ void LLVMGenerator::addKumirModule(const AST::ModulePtr kmod)
                 !(voidNameFunctionDeclared && func->header.name.isEmpty())
                 )
         {
-            addFunction(func, false);
+            llvm::Function * lfunc = addFunction(func, false);
             if (func->header.name.isEmpty()) {
                 voidNameFunctionDeclared = true;
             }
+            if (
+                    func->header.name.length() > 0 &&
+                    func->header.implType == AST::AlgorhitmCompiled &&
+                    !func->header.name.startsWith("_")
+                    )
+            {
+                result.push_back(FunctionTwine(func, lfunc));
+            }
         }
     }
-
+    return result;
 }
 
 void LLVMGenerator::createKumirModuleImplementation(const AST::ModulePtr kmod)
 {
-    nameTranslator_->beginNamespace();
     currentKModule_ = kmod;
     const CString moduleName = CString(QString(
                 kmod->header.name.isEmpty() ? kmod->header.sourceFileName
                                             : kmod->header.name
                 ).toUtf8().constData());
-    nameTranslator_->beginNamespace();
 
     llvm::Module * lmod = currentModule_;
 
@@ -203,7 +207,6 @@ void LLVMGenerator::createKumirModuleImplementation(const AST::ModulePtr kmod)
     }
 
     currentKModule_ = AST::ModulePtr();
-    nameTranslator_->endNamespace();
 
 }
 
@@ -216,7 +219,7 @@ void LLVMGenerator::addGlobalVariable(llvm::IRBuilder<> & builder, const AST::Va
             ? kvar->name
             : currentKModule_->header.name + "__" + kvar->name;
 
-    CString name = nameTranslator_->add(qn);
+    CString name = CString("__kumir_global_") + CString(qn.toUtf8().constData());
     llvm::Type * ty = kvar->dimension > 0u
             ? getArrayType() : getScalarType();
 
@@ -250,7 +253,7 @@ void LLVMGenerator::createMainFunction(const AST::AlgorithmPtr &entryPoint)
     lfn->getArgumentList().front().setName("argc");
     lfn->getArgumentList().back().setName("argv");
     currentFunction_ = lfn;
-    nameTranslator_->beginNamespace();
+
     llvm::BasicBlock * functionBlock =
             llvm::BasicBlock::Create(*context_, "", lfn);
     llvm::IRBuilder<> builder(functionBlock);
@@ -288,7 +291,7 @@ void LLVMGenerator::createMainFunction(const AST::AlgorithmPtr &entryPoint)
 
         for (int i=0; i<entryPoint->header.arguments.size(); i++) {
             const AST::VariablePtr & arg = entryPoint->header.arguments.at(i);
-            const CString argName = nameTranslator_->add(arg->name);
+            const CString argName = CString(arg->name.toUtf8().constData());
             llvm::Value * larg = CreateAlloca(builder,
                         arg->dimension > 0u ? getArrayType() : getScalarType(),
                                               argName
@@ -316,7 +319,7 @@ void LLVMGenerator::createMainFunction(const AST::AlgorithmPtr &entryPoint)
                     llvm::Type::getInt32Ty(*context_),
                     0)
                 );
-    nameTranslator_->endNamespace();
+
 }
 
 void LLVMGenerator::createOutputValue(Builder &builder, const QString &name, llvm::Value *value, const AST::VariableBaseType type, const bool isArray)
@@ -392,7 +395,7 @@ void LLVMGenerator::createInputValue(Builder &builder, const QString & name, llv
     }
 }
 
-void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
+llvm::Function * LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
 {
     Q_ASSERT(context_);
     Q_ASSERT(currentModule_);
@@ -488,7 +491,7 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
 
     if (createBody) {
         tempValsToFree_.clear();
-        nameTranslator_->beginNamespace();
+
         currentFunction_ = lfn;
 
         llvm::BasicBlock * functionEntry =
@@ -539,7 +542,7 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
             llvm::Argument & larg = *lIt;
             const AST::VariablePtr & karg = *kIt;
             const QString kArgName = karg->name;
-            const CString lArgName = nameTranslator_->add(kArgName);
+            const CString lArgName = CString(kArgName.toUtf8().constData());
             larg.setName(lArgName);
             argumentValues.push_back(&larg);
         }
@@ -549,7 +552,7 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
             const AST::VariablePtr & kvar = kfunc->impl.locals[i];
             if (kvar->accessType == AST::AccessRegular && kvar->name != kfunc->header.name) {
                 const QString qname = kvar->name;
-                const CString cname = nameTranslator_->add(qname);
+                const CString cname = CString(qname.toUtf8().constData());
                 Q_ASSERT(!cname.empty());
                 llvm::Type * ty = kvar->dimension > 0u
                         ? getArrayType() : getScalarType();
@@ -646,8 +649,9 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
         }
         builder.CreateCall(kumirPopCallStackCounter_);
         builder.CreateRetVoid();
-        nameTranslator_->endNamespace();
+
     }
+    return lfn;
 }
 
 void LLVMGenerator::addFunctionBody(const QList<AST::StatementPtr> & statements, const AST::AlgorithmPtr & alg)
@@ -802,7 +806,7 @@ llvm::Value* LLVMGenerator::createVarInitialize(llvm::IRBuilder<> &builder, cons
         name = result->getName();
     }
     else {
-        name = nameTranslator_->add(overrideName);
+        name = CString(overrideName.toUtf8().constData());
         Q_ASSERT(!name.empty());
         result = CreateAlloca(builder, ty, name);
     }
@@ -1534,19 +1538,18 @@ llvm::Value * LLVMGenerator::findVariableAtCurrentContext(const AST::VariablePtr
         var = &firstArg;
     }
     else {
-        CString varName = nameTranslator_->find(kvar->name);
-        if (varName.empty() && currentKModule_->header.name.length() > 0) {
-            varName = nameTranslator_->find(currentKModule_->header.name +
-                                            "__" +
-                                            kvar->name);
-        }
-        Q_ASSERT(varName.length() > 0);
+        CString varName = CString(kvar->name.toUtf8().constData());
         var = currentBlock_->getValueSymbolTable()->lookup(varName);
         if (!var) {
-            var = currentModule_->getGlobalVariable(varName, true);
+            const QString qn = currentKModule_->header.name.isEmpty()
+                    ? kvar->name
+                    : currentKModule_->header.name + "__" + kvar->name;
+            CString name = CString("__kumir_global_") + CString(qn.toUtf8().constData());
+            var = currentModule_->getGlobalVariable(name, true);
         }
         if (!var) {
-//            currentFunction_->dump();
+            // Something wrong -- write debug information
+            currentFunction_->dump();
         }
     }
     Q_ASSERT(var);
@@ -2516,6 +2519,24 @@ CString LLVMGenerator::buildCXXName(const QString &ns,
         }
     }
     return result.toStdString();
+}
+
+CString LLVMGenerator::createAsciiName(const QString &unicodeName)
+{
+    QByteArray buf;
+    for (int i=0; i<unicodeName.length(); i++) {
+        const QChar ch = unicodeName[i];
+        if (ch.toAscii() != '\0') {
+            buf.push_back(ch.toAscii());
+        }
+        else {
+            uint16_t code = ch.unicode();
+            buf.push_back('$');
+            buf.push_back(QByteArray::number(code, 16));
+        }
+    }
+    const CString result = CString(buf.constData());
+    return result;
 }
 
 }
