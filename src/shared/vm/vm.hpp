@@ -1161,8 +1161,10 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
                         error_ = localError;
                 }
                 else {
-                    if (algResult.isValid())
+                    if (algResult.isValid()) {
                         valuesStack_.push(Variable(algResult));
+                        register0_ = algResult;
+                    }
                 }
                 if (stacksMutex_) stacksMutex_->unlock();
             }
