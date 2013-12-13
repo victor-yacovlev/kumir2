@@ -866,14 +866,15 @@ void OneSession::tryFinishInput()
         else if (format.contains("::")) {
             const QStringList typeName = format.split("::", QString::KeepEmptyParts);
             const QString & moduleName = typeName[0];
-            const QString & className  = typeName[1];
+            const QByteArray classAsciiName = typeName[1].toAscii();
+            const QString & className  = typeName[2];
             QList<ExtensionSystem::KPlugin*> plugins =
                     ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");
             Shared::ActorInterface * actor = 0;
             for (int i=0; i<plugins.size(); i++) {
                 actor = qobject_cast<Shared::ActorInterface*>(plugins[i]);
                 if (actor) {
-                    if (actor->name()==moduleName)
+                    if (actor->localizedModuleName(QLocale::Russian)==moduleName)
                         break;
                     else
                         actor = 0;
@@ -885,9 +886,7 @@ void OneSession::tryFinishInput()
                 QString lexem = QString::fromStdWString(Kumir::IO::readString(stream));
                 QVariant value;
                 if (!stream.hasError()) {
-                    Shared::ActorInterface::CustomType ct;
-                    ct.first = className;
-                    value = actor->customValueFromString(ct, lexem);
+                    value = actor->customValueFromString(classAsciiName, lexem);
                     if (!value.isValid()) {
                         conversionError = true;
                         conversionErrorLength = lexem.length();

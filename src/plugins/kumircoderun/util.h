@@ -17,7 +17,8 @@ using namespace Shared;
 QVariant VariableToQVariant(const Variable & var);
 AnyValue QVariantToValue(const QVariant & var, int dim);
 
-ActorInterface* findActor(const String & moduleName);
+ActorInterface* findActor(const std::string & moduleAsciiName);
+ActorInterface* findActor(const QByteArray & moduleAsciiName);
 
 class SleepFunctions: private QThread
 {

@@ -109,7 +109,7 @@ namespace ActorDraw {
     }
     QRectF DrawScene::getRect()
     {
-        QRectF boundRect=QRect(0,0.5,0.5,0.5);
+        QRectF boundRect=QRectF(0,0.5,0.5,0.5);
   
         for(int i=0;i<lines.count();i++)
         {

@@ -30,6 +30,9 @@ namespace AST {
         /** Type name (if user defined)*/
         QString name;
 
+        /** Type ASCII name (if user defined) */
+        QByteArray asciiName;
+
         /** User type fields (if user defined)*/
         QList< Field > userTypeFields;
 
@@ -37,11 +40,11 @@ namespace AST {
             if (kind!=TypeUser)
                 return kind == other.kind;
             else
-                return name == other.name;
+                return asciiName == other.asciiName;
         }
         inline bool operator!=(const Type & other) const {
             if (kind==TypeUser)
-                return name!=other.name;
+                return asciiName!=other.asciiName;
             else
                 return kind!=other.kind;
         }
@@ -50,7 +53,12 @@ namespace AST {
         }
         inline Type() { kind = TypeNone; actor = nullptr; }
         inline Type(AST::VariableBaseType bt) { kind = bt; actor = nullptr; }
-        inline Type(const QString & userTypeName) { kind = AST::TypeUser; name = userTypeName; actor = nullptr; }
+        inline Type(const QString & userTypeName, const QByteArray & userTypeAsciiName) {
+            kind = AST::TypeUser;
+            name = userTypeName;
+            asciiName = userTypeAsciiName;
+            actor = nullptr;
+        }
     };
 
 }

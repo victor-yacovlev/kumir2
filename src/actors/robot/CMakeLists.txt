@@ -51,7 +51,7 @@ qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 install(FILES ${PLUGIN_OUTPUT_PATH}/ActorRobot.pluginspec DESTINATION ${PLUGINS_DIR})
 handleTranslation(ActorRobot)
 add_library(ActorRobot SHARED ${MOC_SOURCES} ${SOURCES} ${MOC_SOURCES2} ${SOURCES2})
-target_link_libraries(ActorRobot ${QT_LIBRARIES} ExtensionSystem Widgets)
+target_link_libraries(ActorRobot ${QT_LIBRARIES} ExtensionSystem Widgets ${STDCXX_LIB} ${STDMATH_LIB})
 copyResources(actors/robot)
 install(TARGETS ActorRobot DESTINATION ${PLUGINS_DIR})
 

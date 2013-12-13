@@ -21,7 +21,8 @@ typedef std::pair<String,String> TwoStrings;
 struct ExternReference {
     int moduleContext;
     uint32_t funcKey;
-    String moduleName;
+    std::string moduleAsciiName;
+    String moduleLocalizedName;
     bool platformDependent;
     String fileName;
     std::string platformModuleName;

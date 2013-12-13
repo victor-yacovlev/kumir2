@@ -20,7 +20,8 @@ static const int ItemPadding = 8;
 
 StatusBar::StatusBar(QWidget *parent)
     : QStatusBar(parent)
-    , state_(ExtensionSystem::GS_Unlocked)
+    , messageWidth_(0)
+    , state_(Shared::PluginInterface::GS_Unlocked)
     , errorsCount_(0u)
     , stepsDone_(0u)
     , messageRole_(Normal)
@@ -75,56 +76,66 @@ QSize StatusBar::minimumSizeHint() const
 
 void StatusBar::setState(ExtensionSystem::GlobalState state)
 {
+    bool upd = state_ != state;
     state_ = state;
-    update();
+    if (upd) update();
 }
 
 void StatusBar::setMessage(const QString &message, MessageRole role)
 {
+    bool upd = message_ != message || messageRole_ != role;
     message_ = message;
+    messageWidth_ = statusBarFontMetrics().width(message);
     messageRole_ = role;
-    update();
+    if (upd) update();
 }
 
 void StatusBar::unsetMessage()
 {
+    bool upd = message_.length() > 0;
     message_.clear();
+    messageWidth_ = 0;
     messageRole_ = Normal;
-    update();
+    if (upd) update();
 }
 
 void StatusBar::setRecordIndicator(bool on)
 {
+    bool upd = editorRecord_ != on;
     editorRecord_ = on;
-    update();
+    if (upd) update();
 }
 
 void StatusBar::setStepsDoneCounter(uint value)
 {
+    bool upd = stepsDone_ != value;
     stepsDone_ = value;
-    repaint();
+    if (upd) repaint();
 }
 
 void StatusBar::setErrorsCounter(uint value)
 {
+    bool upd = errorsCount_ != value;
     errorsCount_ = value;
-    repaint();
+    if (upd) repaint();
 }
 
 void StatusBar::setEditorCursorPosition(uint row, uint column)
 {
+    bool upd = editorRow_ != row || editorColumn_ != column;
     editorRow_ = row;
     editorColumn_ = column;
-    update();
+    if (upd) update();
 }
 
 void StatusBar::setEditorKeyboardLayout(QLocale::Language lang, bool capslock, bool shift, bool alt)
 {
+    bool upd = keyboardLayout_ != lang || keyboardCaps_ != capslock  || keyboardShift_ != shift || keyboardAlt_ != alt;
     keyboardLayout_ = lang;
     keyboardCaps_ = capslock;
     keyboardShift_ = shift;
     keyboardAlt_ = alt;
-    update();
+    if (upd) update();
 }
 
 QSize StatusBar::keyboardLayoutItemSize() const
@@ -132,10 +143,12 @@ QSize StatusBar::keyboardLayoutItemSize() const
     static const QStringList items = QStringList()
             << tr("rus") << tr("rus").toUpper()
             << tr("lat") << tr("lat").toUpper();
-    int maxTextWidth = 0;
-    const int textHeight = statusBarFontMetrics().height();
-    foreach (const QString &text, items) {
-        maxTextWidth = qMax(maxTextWidth, statusBarFontMetrics().width(text));
+    static int maxTextWidth = 0;
+    const int textHeight = fontHeight();
+    if (0 == maxTextWidth) {
+        foreach (const QString &text, items) {
+            maxTextWidth = qMax(maxTextWidth, statusBarFontMetrics().width(text));
+        }
     }
     const int width = 2*(12 + 1) + maxTextWidth;
     const int height = qMax(14, textHeight);
@@ -145,18 +158,21 @@ QSize StatusBar::keyboardLayoutItemSize() const
 QSize StatusBar::cursorPositionItemSize() const
 {
     static const QString text = tr("Row: ww, Col.: ww");
-    return QSize(statusBarFontMetrics().width(text) + 2 * ItemPadding,
-                 qMax(14, statusBarFontMetrics().height()));
+    static const int textW = statusBarFontMetrics().width(text);
+    return QSize(textW + 2 * ItemPadding,
+                 qMax(14, fontHeight()));
 }
 
 QSize StatusBar::modeItemSize() const
 {
     static QStringList items = QStringList()
             << tr("Edit") << tr("Analisys") << tr("Run") << tr("Pause");
-    int maxTextWidth = 0;
-    const int textHeight = statusBarFontMetrics().height();
-    foreach (const QString &text, items) {
-        maxTextWidth = qMax(maxTextWidth, statusBarFontMetrics().width(text));
+    static int maxTextWidth = 0;
+    const int textHeight = fontHeight();
+    if (0 == maxTextWidth) {
+        foreach (const QString &text, items) {
+            maxTextWidth = qMax(maxTextWidth, statusBarFontMetrics().width(text));
+        }
     }
     const int height = qMax(14, textHeight);
     return QSize(20 + maxTextWidth + 2*ItemPadding, height);
@@ -164,18 +180,21 @@ QSize StatusBar::modeItemSize() const
 
 QSize StatusBar::counterItemSize() const
 {
+    using Shared::PluginInterface;
     static const QString errorsText = tr("ww errors");
     static const QString noErrorsText = tr("No errors");
     static const QString stepsDoneText = tr("wwwww steps done") + "wwwwww";
-    const int textHeight = statusBarFontMetrics().height();
+    const int textHeight = fontHeight();
 
-    int maxTextWidthEdit = 0;
-    maxTextWidthEdit = qMax(maxTextWidthEdit, statusBarFontMetrics().width(errorsText));
-    maxTextWidthEdit = qMax(maxTextWidthEdit, statusBarFontMetrics().width(noErrorsText));
+    static int maxTextWidthEdit = 0;
+    if (0 == maxTextWidthEdit) {
+        maxTextWidthEdit = qMax(maxTextWidthEdit, statusBarFontMetrics().width(errorsText));
+        maxTextWidthEdit = qMax(maxTextWidthEdit, statusBarFontMetrics().width(noErrorsText));
+    }
 
-    int textWidthOther = statusBarFontMetrics().width(stepsDoneText);
+    static const int textWidthOther = statusBarFontMetrics().width(stepsDoneText);
 
-    const int textWidth = state_ == ExtensionSystem::GS_Unlocked
+    const int textWidth = state_ == PluginInterface::GS_Unlocked
             ? maxTextWidthEdit : textWidthOther;
 
     const int height = qMax(14, textHeight);
@@ -188,10 +207,9 @@ QSize StatusBar::counterItemSize() const
 
 QSize StatusBar::messageItemSize() const
 {
-    const int textHeight = statusBarFontMetrics().height();
-    const int messageWidth = statusBarFontMetrics().width(message_);
+    const int textHeight = fontHeight();
     const int height = qMax(14, textHeight);
-    return QSize(messageWidth + 2*ItemPadding, height);
+    return QSize(messageWidth_ + 2*ItemPadding, height);
 }
 
 QFont StatusBar::statusBarFont() const
@@ -205,6 +223,20 @@ QFontMetrics StatusBar::statusBarFontMetrics() const
 {
     QFontMetrics fm(statusBarFont());
     return fm;
+}
+
+int StatusBar::fontHeight() const
+{
+    /*
+     * Calling QFontMetrics::height() on Win32 causes to memory leaks,
+     * so it is required to cache it once
+     */
+
+    static int result = 0;
+    if (0 == result) {
+        result = statusBarFontMetrics().height();
+    }
+    return result;
 }
 
 void StatusBar::paintItemRect(QPainter &p, const QSize &sz, int x)
@@ -221,6 +253,7 @@ void StatusBar::paintItemRect(QPainter &p, const QSize &sz, int x)
 
 void StatusBar::paintEvent(QPaintEvent *event)
 {
+    using Shared::PluginInterface;
     QPainter p(this);
     QStyle * st = style();
     QStyleOption opt;
@@ -244,7 +277,7 @@ void StatusBar::paintEvent(QPaintEvent *event)
     x += modeItemSize().width();
     paintCounterItem(p, x);
     x += counterItemSize().width();
-    if (state_ == ExtensionSystem::GS_Unlocked) {
+    if (state_ == PluginInterface::GS_Unlocked) {
         const QSize remaining =
                 cursorPositionItemSize() + keyboardLayoutItemSize();
         const QSize message = messageItemSize();
@@ -276,29 +309,29 @@ void StatusBar::paintEvent(QPaintEvent *event)
 void StatusBar::paintModeItem(QPainter &p, int x)
 {
     paintItemRect(p, modeItemSize(), x);
-    using namespace ExtensionSystem;
+    using Shared::PluginInterface;
     p.save();
     uint xoffset = 0;
     QString modeText;
-    if (state_ == GS_Input || state_ == GS_Pause) {
+    if (state_ == PluginInterface::GS_Input || state_ == PluginInterface::GS_Pause) {
         modeText = tr("Pause");
     }
-    else if (state_ == GS_Observe) {
+    else if (state_ == PluginInterface::GS_Observe) {
         modeText = tr("Analisys");
     }
-    else if (state_ == GS_Running) {
+    else if (state_ == PluginInterface::GS_Running) {
         modeText = tr("Running");
     }
     else {
         xoffset = 10;
         modeText = tr("Edit");
     }
-    const QRect textRect(QPoint(x + ItemPadding + xoffset, (height() - statusBarFontMetrics().height()) / 2),
+    const QRect textRect(QPoint(x + ItemPadding + xoffset, (height() - fontHeight()) / 2),
                          modeItemSize() - QSize(2*ItemPadding, 0));
     QTextOption opt;
     opt.setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
     p.drawText(textRect, modeText, opt);
-    if (state_ == GS_Unlocked && editorRecord_) {
+    if (state_ == PluginInterface::GS_Unlocked && editorRecord_) {
         p.setRenderHint(QPainter::Antialiasing, true);
         p.setPen(QPen(palette().brush(QPalette::WindowText).color()));
         p.setBrush(alternateColor());
@@ -314,10 +347,10 @@ void StatusBar::paintModeItem(QPainter &p, int x)
 void StatusBar::paintCounterItem(QPainter &p, int x)
 {
     paintItemRect(p, counterItemSize(), x);
-    using namespace ExtensionSystem;
+    using Shared::PluginInterface;
     p.save();
     QString text;
-    if (state_ == GS_Unlocked) {
+    if (state_ == PluginInterface::GS_Unlocked) {
         p.setPen(QPen(errorsCount_==0? normalColor() : alternateColor()));
         if (errorsCount_ == 0)
             text = tr("No errors");
@@ -346,7 +379,7 @@ void StatusBar::paintCounterItem(QPainter &p, int x)
         else
             text = tr("%1 steps done", "5, 6, 15, 16, etc").arg(stepsDone_);
     }
-    const QRect textRect(QPoint(x + ItemPadding, (height() - statusBarFontMetrics().height()) / 2),
+    const QRect textRect(QPoint(x + ItemPadding, (height() - fontHeight()) / 2),
                          counterItemSize() - QSize(2*ItemPadding, 0));
     QTextOption opt;
     opt.setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
@@ -359,7 +392,7 @@ void StatusBar::paintMessageItem(QPainter &p, int x)
     paintItemRect(p, messageItemSize(), x);
     p.save();
     p.setPen(QPen(QColor(messageRole_==Normal? normalColor() : alternateColor())));
-    QRect textRect(QPoint(x + ItemPadding, (height() - statusBarFontMetrics().height()) / 2),
+    QRect textRect(QPoint(x + ItemPadding, (height() - fontHeight()) / 2),
                          messageItemSize() - QSize(2*ItemPadding, 0));
     if (textRect.right() > this->width() - ItemPadding) {
         textRect.setRight(this->width() - ItemPadding);
@@ -416,7 +449,7 @@ void StatusBar::paintCursorItem(QPainter &p, int x)
 {
     paintItemRect(p, cursorPositionItemSize(), x);
     p.save();
-    const QRect textRect(QPoint(x + ItemPadding, (height() - statusBarFontMetrics().height()) / 2),
+    const QRect textRect(QPoint(x + ItemPadding, (height() - fontHeight()) / 2),
                          cursorPositionItemSize() - QSize(2*ItemPadding, 0));
     QTextOption opt;
     const QString text = tr("Row: %1, Column: %2").arg(editorRow_ + 1).arg(editorColumn_ + 1);
@@ -444,7 +477,7 @@ void StatusBar::paintKeyboardItem(QPainter &p, int x)
     p.save();
     p.drawImage(x + ItemPadding, (height() - 12) / 2, shiftImage);
     p.drawImage(x + 12 + ItemPadding, (height() - 12) / 2, altImage);
-    const QRect textRect(QPoint(x + 25 + ItemPadding, (height() - statusBarFontMetrics().height()) / 2),
+    const QRect textRect(QPoint(x + 25 + ItemPadding, (height() - fontHeight()) / 2),
                          keyboardLayoutItemSize() - QSize(25 + 2*ItemPadding, 0));
     QTextOption opt;
     QString text;

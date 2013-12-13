@@ -42,8 +42,8 @@ QString PainterNewImageDialog::color() const
 
 int PainterNewImageDialog::exec()
 {
-    static const QString resourcesRoot = QApplication::instance()->property("sharePath").toString();
-    static const QString templatesDir = resourcesRoot+"/actors/painter/";
+    static const QString resourcesRoot = m_module->myResourcesDir().absolutePath();
+    static const QString templatesDir = resourcesRoot;
     QDir dir(templatesDir);
     sl_templateFiles = dir.entryList(QStringList() << "*.png");
     const QString directory_ini = dir.absoluteFilePath("templates.ini");
@@ -111,8 +111,8 @@ void PainterNewImageDialog::handleTemplateClicked(QListWidgetItem *item)
     if (item) {
         int index = ui->listWidget->currentRow();
         const QString baseName = sl_templateFiles[index];
-        static const QString resourcesRoot = QApplication::instance()->property("sharePath").toString();
-        static const QString templatesDir = resourcesRoot+"/actors/painter/";
+        static const QString resourcesRoot = m_module->myResourcesDir().absolutePath();
+        static const QString templatesDir = resourcesRoot;
         QDir dir(templatesDir);
         const QString fileName = dir.absoluteFilePath(baseName);
         if (QFile::exists(fileName)) {

@@ -14,6 +14,9 @@
 **
 ****************************************************************************/
 #include "pult.h"
+
+#include "vodoleymodule.h"
+
 const double DegreesPerMinute = 7.0;
 const double DegreesPerSecond = DegreesPerMinute / 60;
 const int MaxMinutes = 45;
@@ -341,8 +344,8 @@ loggerButton::loggerButton ( QWidget* parent) :
 	isUpArrow=false;
 	posX=1;
 	posY=1;
-	buttonImageUp.load(qApp->property("sharePath").toString()+"/actors/vodoley/butt_v.png");
-	buttonImageDown.load(qApp->property("sharePath").toString()+"/actors/vodoley/buttd_v.png");
+    buttonImageUp.load(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("butt_v.png"));
+    buttonImageDown.load(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("buttd_v.png"));
 	downFlag=false;
 	Parent=parent;
 	int mid=buttonImageUp.width()/2;
@@ -536,27 +539,27 @@ VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WFlags fl )
 	BtoC->move(UpB->pos());
 	BtoC->setGeometry(UpB->geometry());
   
-	BtoC->loadIcon(qApp->property("sharePath").toString()+"/actors/vodoley/b2c.png");
+    BtoC->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("b2c.png"));
 
 	DownB->hide();
 	buttBack=new MainButton(this);
 	buttBack->move(DownB->pos());
 	buttBack->setGeometry(DownB->geometry());
-	qDebug()<<qApp->property("sharePath").toString()+"/actors/vodoley/bout.png"<<buttBack->loadIcon(qApp->property("sharePath").toString()+"/actors/vodoley/bout.png");
+    buttBack->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("bout.png"));
 
 	AtoCb->hide();
 	AtoC=new MainButton(this);
 	AtoC->setGeometry(AtoCb->geometry());
-	AtoC->loadIcon(qApp->property("sharePath").toString()+"/actors/vodoley/a2c.png");
+    AtoC->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("a2c.png"));
 
 	AoutB->hide();
 	turnRight=new MainButton(this);
 	turnRight->setGeometry(AoutB->geometry());
-	turnRight->loadIcon(qApp->property("sharePath").toString()+"/actors/vodoley/aout.png");
+    turnRight->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("aout.png"));
 	CoutB->hide();
 	Coutb=new MainButton(this);
 	Coutb->setGeometry(CoutB->geometry());
-	Coutb->loadIcon(qApp->property("sharePath").toString()+"/actors/vodoley/cout.png");
+    Coutb->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("cout.png"));
 
 	//        StenaB->hide();
 
@@ -566,7 +569,7 @@ VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WFlags fl )
 	//        askFree->move(SvobodnoB->pos());
 	askFree->setCheckable(true);
 	askFree->setText(trUtf8(" "));
-	askFree->loadIcon(qApp->property("sharePath").toString()+"/actors/vodoley/svobodno.png");
+    askFree->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("svobodno.png"));
 	askFree->setCheckable(true);
 	askFree->hide();
 
@@ -576,32 +579,32 @@ VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WFlags fl )
 	AtoB=new MainButton(this);
 	AtoB->setGeometry(AtoBb->geometry());
 	AtoB->setText(trUtf8(" "));
-	if(!AtoB->loadIcon(qApp->property("sharePath").toString()+"/actors/vodoley/a2b.png"))qWarning("Image not loaded!");
+    if(!AtoB->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("a2b.png")))qWarning("Image not loaded!");
 	
 	CtoBb->hide();
 	CtoB=new MainButton(this);
 	CtoB->setGeometry(CtoBb->geometry());
 	CtoB->setText(trUtf8(" "));
-	if(!CtoB->loadIcon(qApp->property("sharePath").toString()+"/actors/vodoley/c2b.png"))qWarning("Image not loaded!");
+    if(!CtoB->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("c2b.png")))qWarning("Image not loaded!");
 
 
 	CtoAb->hide();
 	CtoA=new MainButton(this);
 	CtoA->setGeometry(CtoAb->geometry());
 	CtoA->setText(trUtf8(" "));
-	if(!CtoA->loadIcon(qApp->property("sharePath").toString()+"/actors/vodoley/c2a.png"))qWarning("Image not loaded!");
+    if(!CtoA->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("c2a.png")))qWarning("Image not loaded!");
 
 	TempB->hide();
 	buttTemp=new MainButton(this);
 	buttTemp->setGeometry(TempB->geometry());
     
 	buttTemp->setText(" ");
-	buttTemp->loadIcon(qApp->property("sharePath").toString()+"/actors/vodoley/b2a.png");
+    buttTemp->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("b2a.png"));
 
-	QIcon toKumirIco(qApp->property("sharePath").toString()+"/actors/vodoley/edit-copy.png");
+    QIcon toKumirIco(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("edit-copy.png"));
 	toKumir->setIcon(toKumirIco);
     toKumir->setEnabled(true);
-	ClearLog->setIcon(QIcon(qApp->property("sharePath").toString()+"/actors/vodoley/edit-clear-list..png"));
+    ClearLog->setIcon(QIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("edit-clear-list..png")));
 
 
 	FillA->hide();
@@ -609,19 +612,19 @@ VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WFlags fl )
 	//        askFree->move(SvobodnoB->pos());
 	//aFill->setCheckable(false);
 	aFill->setText(trUtf8(" "));
-	aFill->loadIcon(qApp->property("sharePath").toString()+"/actors/vodoley/afill.png");
+    aFill->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("afill.png"));
 	aFill->setGeometry(FillA->geometry());
 
 	FillB->hide();
 	bFill=new MainButton(this);
 	bFill->setText(trUtf8(" "));
-	bFill->loadIcon(qApp->property("sharePath").toString()+"/actors/vodoley/bfill.png");
+    bFill->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("bfill.png"));
 	bFill->setGeometry(FillB->geometry());
 
 	FillC->hide();
 	cFill=new MainButton(this);
 	cFill->setText(trUtf8(" "));
-	cFill->loadIcon(qApp->property("sharePath").toString()+"/actors/vodoley/cfill.png");
+    cFill->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("cfill.png"));
 	cFill->setGeometry(FillC->geometry());
 
 	//	CenterB->setIcon(QIcon(":/icons/robo_field.png"));
@@ -640,7 +643,7 @@ VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WFlags fl )
 	connect(buttTemp,SIGNAL(clicked()),this,SLOT(TempS()));
 
 	//connect(askStena,SIGNAL(clicked()),this,SLOT(SwStena()));
-	connect(askFree,SIGNAL(clicked()),this,SLOT(SwSvobodno()));
+//	connect(askFree,SIGNAL(clicked()),this,SLOT(SwSvobodno()));
 	//connect(CenterB,SIGNAL(clicked()),this,SLOT(CenterButton()));
 
 	connect(ClearLog,SIGNAL(clicked()),Logger,SLOT(ClearLog()));

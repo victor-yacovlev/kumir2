@@ -2,26 +2,27 @@
 
 #include <QtScript>
 
-Robot25DWindow::Robot25DWindow(QWidget *parent) :
+Robot25DWindow::Robot25DWindow(const QDir & imagesDir, QWidget *parent) :
     QGraphicsView(parent)
 {
     setAttribute(Qt::WA_Hover);
     setMouseTracking(true);
     mousePressPosition_ = QPoint(-1, -1);
     setScene(new QGraphicsScene);
-    const QString resPath = qApp->property("sharePath").toString()+"/actors/robot25d/";
-    QImage bgImg = QImage(resPath+"grass_0.png");
+    const QString resPath = imagesDir.absolutePath();
+    QImage bgImg = QImage(resPath+"/grass_0.png");
     QBrush bgBrush = QBrush(bgImg);
 //    QBrush bgBrush = QBrush(QColor(Qt::black));
     setBackgroundBrush(bgBrush);
     setRenderHints(QPainter::Antialiasing|QPainter::TextAntialiasing);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_robotView = new Robot25D::RobotView(false, true, false, QSize(400,300));
+    m_robotView = new Robot25D::RobotView(imagesDir, false, true, false, QSize(400,300));
     scene()->addItem(m_robotView);
 
     loadGame(resPath+"/default.pm.json");
 //    m_robotView->setAnimated(true);    
+    setWindowTitle(tr("Isometric Robot"));
 }
 
 
@@ -183,9 +184,9 @@ void Robot25DWindow::handleLoadAction()
     QSettings s;
     QString lastDir = s.value("Robot25D/LastDir", QDir::currentPath()).toString();
     const QString fileName = QFileDialog::getOpenFileName(this
-                                                          , QString::fromUtf8("Загрузить обстановку")
+                                                          , tr("Load environment")
                                                           , lastDir
-                                                          , QString::fromUtf8("Обстановки вертуна (*.env.json)")
+                                                          , tr("Environments")+QString::fromAscii(" (*.env.json)")
                                                           );
     if (!fileName.isEmpty()) {
         s.setValue("Robot25D/LastDir", fileName);
@@ -210,6 +211,4 @@ void Robot25DWindow::setTaskIndex(int index)
     index = qMax(0, qMin(m_game.tasks.size()-1, index));
     m_robotView->loadEnvironment(m_game.tasks[index].environment);
     m_game.index = index;
-
-//    setWindowTitle(QString::fromUtf8("%1 - Вертун").arg(m_game.tasks[index].title));
 }

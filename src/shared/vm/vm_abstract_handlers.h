@@ -80,12 +80,12 @@ protected:
 class ExternalModuleResetFunctor: public Functor {
 public:
     inline Type type() const { return ExternalModuleReset; }
-    inline virtual void operator()(const Kumir::String & moduleName)
+    inline virtual void operator()(const std::string & moduleName, const Kumir::String & localizedName)
     /* throws std::string, Kumir::String */
     {
         const Kumir::String errorMessage =
                 Kumir::Core::fromUtf8("Невозможно использовать \"")+
-                moduleName+
+                localizedName+
                 Kumir::Core::fromUtf8("\": исполнители не поддерживаются");
         throw errorMessage;
     }
@@ -109,10 +109,11 @@ public:
 class ExternalModuleLoadFunctor: public Functor {
 public:
     inline Type type() const { return ExternalModuleLoad; }
-    typedef std::list<Kumir::String> NamesList;
+    typedef std::deque<std::string> NamesList;
     inline virtual NamesList operator()(
-            const Kumir::String & moduleName,
-            const std::string & /*canonicalModuleFileName*/)
+            const std::string & /*moduleAsciiName*/,
+            const Kumir::String & moduleName
+            )
             /* throws std::string, Kumir::String */
     {
         const Kumir::String errorMessage =
@@ -139,14 +140,15 @@ public:
     inline Type type() const { return ExternalModuleCall; }
     typedef const std::deque<Variable> & VariableReferencesList;
     inline virtual AnyValue operator()(
-            const Kumir::String & moduleName,
+            const std::string & /*asciiModuleName*/,
+            const Kumir::String & localizedModuleName,
             const uint16_t /*alogrithmId*/,
             VariableReferencesList /*arguments*/
             ) /* throws std::string, Kumir::String */
     {
         const Kumir::String errorMessage =
                 Kumir::Core::fromUtf8("Невозможно вызвать алгоритм исполнителя \"")+
-                moduleName+
+                localizedModuleName+
                 Kumir::Core::fromUtf8("\": исполнители не поддерживаются");
         throw errorMessage;
         return AnyValue();
@@ -161,7 +163,7 @@ public:
             ) /*throws Kumir::String, std::string*/
     {
         throw Kumir::Core::fromUtf8("Не могу вывести значение типа \"") +
-                variable.recordClassName()+Kumir::Core::fromAscii("\"");
+                variable.recordClassLocalizedName()+Kumir::Core::fromAscii("\"");
         return Kumir::String();
     }
 };
@@ -171,12 +173,14 @@ public:
     inline Type type() const { return ConvertFromString; }
     inline virtual VM::AnyValue operator()(
             const Kumir::String & /*source*/,
+            const std::string & /*moduleAsciiName*/,
             const Kumir::String & /*moduleName*/,
-            const Kumir::String & typeName
+            const std::string & /* typeAsciiName */,
+            const Kumir::String & typeLocalizedName
             ) /*throws Kumir::String, std::string*/
     {
         throw Kumir::Core::fromUtf8("Не могу разобрать значение типа \"") +
-                typeName+Kumir::Core::fromAscii("\"");
+                typeLocalizedName+Kumir::Core::fromAscii("\"");
         return VM::AnyValue();
     }
 };

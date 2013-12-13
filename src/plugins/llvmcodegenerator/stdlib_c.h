@@ -45,7 +45,6 @@ EXTERN void __kumir_output_file_ss(const __kumir_scalar * handle, const __kumir_
 
 EXTERN void __kumir_input_stdin(const __kumir_int format, __kumir_scalar ** ptr);
 EXTERN void __kumir_input_file(const __kumir_scalar * handle, const __kumir_int format, __kumir_scalar ** ptr);
-EXTERN void __kumir_stdlib_ustanovit_kodirovku(const __kumir_scalar * encoding);
 
 EXTERN void __kumir_get_scalar_argument(const char * argName, const __kumir_int format, __kumir_scalar * res);
 EXTERN void __kumir_get_array_argument(const char * argName, const __kumir_int format, __kumir_array * res);
@@ -208,67 +207,82 @@ EXTERN void __kumir_input_array_variable(const char * name,
                                    __kumir_array * ptr);
 
 
-// Math
+// "Kumir Standard Library" module
 
-EXTERN void __kumir_stdlib_div(__kumir_scalar  * result, const __kumir_scalar * left, const __kumir_scalar * right);
-EXTERN void __kumir_stdlib_mod(__kumir_scalar  * result, const __kumir_scalar * left, const __kumir_scalar * right);
-EXTERN void __kumir_stdlib_ln(__kumir_scalar  * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_lg(__kumir_scalar  * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_exp(__kumir_scalar  * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_rnd(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_irnd(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_rand(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b);
-EXTERN void __kumir_stdlib_irand(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b);
-EXTERN void __kumir_stdlib_iabs(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_abs(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_sign(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_int(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_arcsin(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_arccos(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_arctg(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_arcctg(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_tg(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_ctg(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_sin(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_cos(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_sqrt(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_max(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
-EXTERN void __kumir_stdlib_min(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
-EXTERN void __kumir_stdlib_imax(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
-EXTERN void __kumir_stdlib_imin(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
+EXTERN void Kumir_Standard_Library_div(__kumir_scalar  * result, const __kumir_scalar * left, const __kumir_scalar * right);
+EXTERN void Kumir_Standard_Library_mod(__kumir_scalar  * result, const __kumir_scalar * left, const __kumir_scalar * right);
+EXTERN void Kumir_Standard_Library_ln(__kumir_scalar  * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_lg(__kumir_scalar  * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_exp(__kumir_scalar  * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_rnd(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_irnd(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_rand(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b);
+EXTERN void Kumir_Standard_Library_irand(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b);
+EXTERN void Kumir_Standard_Library_iabs(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_abs(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_sign(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_int(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_arcsin(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_arccos(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_arctg(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_arcctg(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_tg(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_ctg(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_sin(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_cos(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_sqrt(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_max(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
+EXTERN void Kumir_Standard_Library_min(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
+EXTERN void Kumir_Standard_Library_imax(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
+EXTERN void Kumir_Standard_Library_imin(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2);
 
-// String
-EXTERN void __kumir_stdlib_tsel_v_lit(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_vesch_v_lit(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_dlin(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_lit_v_vesch(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success);
-EXTERN void __kumir_stdlib_lit_v_tsel(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success);
-EXTERN void __kumir_stdlib_yunikod(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_kod(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_simvol(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_simvol2(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void __kumir_stdlib_poz_posle(__kumir_scalar * result, const __kumir_scalar * ot, const __kumir_scalar * fragment, const __kumir_scalar * stroka);
-EXTERN void __kumir_stdlib_poz(__kumir_scalar * result, const __kumir_scalar * fragment, const __kumir_scalar * stroka);
-EXTERN void __kumir_stdlib_pozitsiya_posle(__kumir_scalar * result, const __kumir_scalar * ot, const __kumir_scalar * fragment, const __kumir_scalar * stroka);
-EXTERN void __kumir_stdlib_pozitsiya(__kumir_scalar * result, const __kumir_scalar * fragment, const __kumir_scalar * stroka);
-EXTERN void __kumir_stdlib_nizhnij_registr(__kumir_scalar * result, const __kumir_scalar * stroka);
-EXTERN void __kumir_stdlib_verhnij_registr(__kumir_scalar * result, const __kumir_scalar * stroka);
-EXTERN void __kumir_stdlib_vstavit(const __kumir_scalar * fragment, __kumir_scalar * stroka, const __kumir_scalar * pozitsiya);
-EXTERN void __kumir_stdlib_udalit(__kumir_scalar * stroka, const __kumir_scalar * pozitsiya, const __kumir_scalar * dlina);
+EXTERN void Kumir_Standard_Library_time(__kumir_scalar * result);
+EXTERN void Kumir_Standard_Library_wait(const __kumir_scalar * value);
 
-// Files
-EXTERN void __kumir_stdlib_est_dannyie(__kumir_scalar  * result, const __kumir_scalar * handle);
-EXTERN void __kumir_stdlib_KATALOG_PROGRAMMYi(__kumir_scalar  * result);
-EXTERN void __kumir_stdlib_otkryit_na_chtenie(__kumir_scalar  * result, const __kumir_scalar * name);
-EXTERN void __kumir_stdlib_otkryit_na_zapis(__kumir_scalar  * result, const __kumir_scalar * name);
-EXTERN void __kumir_stdlib_zakryit(const __kumir_scalar * handle);
-EXTERN void __kumir_stdlib_nachat_chtenie(const __kumir_scalar * handle);
-EXTERN void __kumir_stdlib_suschestvuet(__kumir_scalar  * result, const __kumir_scalar * name);
-EXTERN void __kumir_stdlib_konets_fajla(__kumir_scalar  * result, const __kumir_scalar * handle);
+EXTERN void Kumir_Standard_Library_string_of_int(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_string_of_real(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_length(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_string_to_real(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success);
+EXTERN void Kumir_Standard_Library_string_to_int(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success);
+EXTERN void Kumir_Standard_Library_unicode(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_code(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_simbol(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_unisymbol(__kumir_scalar * result, const __kumir_scalar * value);
 
-// System
-EXTERN void __kumir_stdlib_vremya(__kumir_scalar * result);
-EXTERN void __kumir_stdlib_zhdat(const __kumir_scalar * value);
+
+// "String Utilities" module
+
+EXTERN void String_Utilities_find_after(__kumir_scalar * result, const __kumir_scalar * ot, const __kumir_scalar * fragment, const __kumir_scalar * thestring);
+EXTERN void String_Utilities_find(__kumir_scalar * result, const __kumir_scalar * fragment, const __kumir_scalar * thestring);
+EXTERN void String_Utilities_index_after(__kumir_scalar * result, const __kumir_scalar * ot, const __kumir_scalar * fragment, const __kumir_scalar * thestring);
+EXTERN void String_Utilities_index(__kumir_scalar * result, const __kumir_scalar * fragment, const __kumir_scalar * thestring);
+EXTERN void String_Utilities_lowercase(__kumir_scalar * result, const __kumir_scalar * thestring);
+EXTERN void String_Utilities_uppercase(__kumir_scalar * result, const __kumir_scalar * thestring);
+EXTERN void String_Utilities_insert(const __kumir_scalar * fragment, __kumir_scalar * thestring, const __kumir_scalar * position);
+EXTERN void String_Utilities_remove(__kumir_scalar * source, const __kumir_scalar * position, const __kumir_scalar * thelength);
+EXTERN void String_Utilities_replace(__kumir_scalar * source, const __kumir_scalar * before, const __kumir_scalar * after, const __kumir_scalar * each);
+
+// "Files" module
+
+EXTERN void Files_nonempty(__kumir_scalar  * result, const __kumir_scalar * handle);
+EXTERN void Files_PROGRAM_DIR(__kumir_scalar  * result);
+EXTERN void Files_CURRENT_DIR(__kumir_scalar  * result);
+EXTERN void Files_read_open(__kumir_scalar  * result, const __kumir_scalar * name);
+EXTERN void Files_write_open(__kumir_scalar  * result, const __kumir_scalar * name);
+EXTERN void Files_append_open(__kumir_scalar  * result, const __kumir_scalar * name);
+EXTERN void Files_readable(__kumir_scalar  * result, const __kumir_scalar * name);
+EXTERN void Files_writable(__kumir_scalar  * result, const __kumir_scalar * name);
+EXTERN void Files_close(const __kumir_scalar * handle);
+EXTERN void Files_start_reading(const __kumir_scalar * handle);
+EXTERN void Files_exists(__kumir_scalar  * result, const __kumir_scalar * name);
+EXTERN void Files_isdir(__kumir_scalar  * result, const __kumir_scalar * name);
+EXTERN void Files_mkdir(__kumir_scalar  * result, const __kumir_scalar * name);
+EXTERN void Files_rm(__kumir_scalar  * result, const __kumir_scalar * name);
+EXTERN void Files_rmdir(__kumir_scalar  * result, const __kumir_scalar * name);
+EXTERN void Files_abspath(__kumir_scalar  * result, const __kumir_scalar * name);
+EXTERN void Files_eof(__kumir_scalar  * result, const __kumir_scalar * handle);
+EXTERN void Files_set_encoding(const __kumir_scalar * encoding);
+EXTERN void Files_get_console(__kumir_scalar * result);
 
 
 

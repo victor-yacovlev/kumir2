@@ -13,7 +13,7 @@ PluginManager::PluginManager()
     : QObject()
     , pImpl_(new PluginManagerImpl)
 {
-    pImpl_->globalState = GS_Unlocked;
+    pImpl_->globalState = Shared::PluginInterface::GS_Unlocked;
     pImpl_->mySettings = SettingsPtr(new Settings("ExtensionSystem"));
 
     int unnamedArgumentsIndexBegin = 1;
@@ -96,6 +96,11 @@ void PluginManager::setSharePath(const QString &path)
     pImpl_->sharePath = path;
 }
 
+
+QString PluginManager::sharePath() const
+{
+    return pImpl_->sharePath;
+}
 
 
 

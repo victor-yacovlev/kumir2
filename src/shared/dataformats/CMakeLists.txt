@@ -34,7 +34,7 @@ set(SOURCES
 )
 
 add_library(DataFormats SHARED  ${SOURCES})
-target_link_libraries(DataFormats ${QT_LIBRARIES} ${EXTRA_LIBS})
+target_link_libraries(DataFormats ${QT_LIBRARIES} ${EXTRA_LIBS} ${STDCXX_LIB})
 set_property(TARGET DataFormats APPEND PROPERTY COMPILE_DEFINITIONS DATAFORMATS_LIBRARY)
 
 handleTranslation(DataFormats)

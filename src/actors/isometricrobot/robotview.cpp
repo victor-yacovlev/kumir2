@@ -23,7 +23,7 @@ qreal RobotView::m_wallHeight = 10.0;
 
 
 
-RobotView::RobotView(bool with_controls, bool with_bachground,
+RobotView::RobotView(const QDir & imagesDir, bool with_controls, bool with_bachground,
                      bool teacherMode,
                      const QSize &minSize, QGraphicsItem *parent)
     : QObject(0)
@@ -34,6 +34,7 @@ RobotView::RobotView(bool with_controls, bool with_bachground,
     Q_UNUSED(with_bachground);
     Q_UNUSED(minSize);
     setPen(Qt::NoPen);
+    imagesDir_ = imagesDir;
 
     b_loadingMode = false;
     r_loadingState = 0.0;
@@ -49,7 +50,7 @@ RobotView::RobotView(bool with_controls, bool with_bachground,
 //    setRenderHint(QPainter::Antialiasing, true);
 //    setScene(m_scene)
     m_robotItem = NULL;
-    const QString imagesRoot = qApp->property("sharePath").toString()+"/actors/robot25d/";
+    const QString imagesRoot = imagesDir.absolutePath();
 //#ifdef Q_OS_WINCE
 //    with_bachground = false;
 //#endif
@@ -685,7 +686,7 @@ void RobotView::createRobot(int x, int y, RobotItem::Direction direction)
         m_robotItem->prepareForDelete();
         m_robotItem->deleteLater();
     }
-    m_robotItem = new RobotItem(this);
+    m_robotItem = new RobotItem(imagesDir_, this);
     connect(m_robotItem, SIGNAL(evaluationFinished()), this, SLOT(handleRobotEvaluationFinised()));
     m_robotItem->setAnimated(false);
     m_robotItem->setDirection(direction);

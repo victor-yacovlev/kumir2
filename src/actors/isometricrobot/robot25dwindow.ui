@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Robot25DWindow</class>
+ <widget class="QWidget" name="Robot25DWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>507</width>
+    <height>406</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Isometric Robot</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGraphicsView" name="graphicsView"/>
+   </item>
+  </layout>
+  <action name="actionLoad">
+   <property name="text">
+    <string>Загрузить...</string>
+   </property>
+   <property name="iconText">
+    <string>Загрузить</string>
+   </property>
+   <property name="toolTip">
+    <string>Загрузить обстановку или набор из файла</string>
+   </property>
+  </action>
+  <action name="actionNext">
+   <property name="text">
+    <string>Следующая обстановка</string>
+   </property>
+   <property name="iconText">
+    <string>Вперед</string>
+   </property>
+  </action>
+  <action name="actionPrev">
+   <property name="text">
+    <string>Предыдущая обстановка</string>
+   </property>
+   <property name="iconText">
+    <string>Назад</string>
+   </property>
+  </action>
+  <action name="actionReset">
+   <property name="text">
+    <string>Вернуть обстановку к начальной</string>
+   </property>
+   <property name="iconText">
+    <string>Вернуть обстановку</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

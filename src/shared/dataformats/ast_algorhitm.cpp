@@ -6,7 +6,7 @@ namespace AST {
 
 Algorithm::Algorithm()
 {
-    header.specialType = AlgorhitmTypeRegular;
+    header.specialType = AlgorithmTypeRegular;
     header.returnType.kind = TypeNone;
     header.implType = AlgorhitmCompiled;
     header.broken = false;

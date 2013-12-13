@@ -2,6 +2,8 @@
 #include "terminal_plane.h"
 #include "terminal_onesession.h"
 
+#include "extensionsystem/pluginmanager.h"
+
 namespace Terminal {
 
 
@@ -44,15 +46,9 @@ Term::Term(QWidget *parent) :
     sb_vertical->installEventFilter(this);
     sb_horizontal = new QScrollBar(Qt::Horizontal, this);
     l->addWidget(sb_horizontal, 2, 1, 1, 1);
-//    QToolBar * tb = m_toolBar = new QToolBar(this);
-//    tb->setOrientation(Qt::Vertical);
-//    l->addWidget(tb, 1, 0, 2, 1);
 
-    const QString oxygenIconsPath = QApplication::instance()->property("sharePath")
-            .toString() + "/icons/from_oxygen/";
 
     a_saveLast = new QAction(tr("Save last output"), this);
-//    a_saveLast->setIcon(QIcon(oxygenIconsPath+"document-save.png"));
     a_saveLast->setEnabled(false);
     connect(a_saveLast, SIGNAL(triggered()), this, SLOT(saveLast()));
 
@@ -63,30 +59,20 @@ Term::Term(QWidget *parent) :
     a_copyAll = new QAction(tr("Copy all output"), this);
     a_copyAll->setEnabled(false);
     connect(a_copyAll, SIGNAL(triggered()), this, SLOT(copyAll()));
-//    tb->addAction(a_saveLast);
 
     a_editLast = new QAction(tr("Open last output in editor"), this);
-    a_editLast->setIcon(QIcon::fromTheme("document-edit", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/document-edit.png")));
+    a_editLast->setIcon(QIcon::fromTheme("document-edit", QIcon(ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/document-edit.png")));
     a_editLast->setEnabled(false);
     connect(a_editLast, SIGNAL(triggered()), this, SLOT(editLast()));
-//    tb->addAction(a_editLast);
-
-//    tb->addSeparator();
 
     a_saveAll = new QAction(tr("Save all output"), this);
-//    a_saveAll->setIcon(QIcon(oxygenIconsPath+"document-save-all.png"));
     a_saveAll->setEnabled(false);
     connect(a_saveAll, SIGNAL(triggered()), this, SLOT(saveAll()));
-//    tb->addAction(a_saveAll);
-
-//    tb->addSeparator();
 
     a_clear = new QAction(tr("Clear output"), this);
-//    a_clear->setIcon(QIcon::fromTheme("edit-delete", QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/edit-delete.png")));
     a_clear->setEnabled(false);
     connect(a_clear, SIGNAL(triggered()), this, SLOT(clear()));
 
-//    tb->addAction(a_clear);
     m_plane->updateScrollBars();
 
     connect(sb_vertical,SIGNAL(valueChanged(int)),m_plane, SLOT(update()));
@@ -101,10 +87,6 @@ Term::Term(QWidget *parent) :
 
     connect(m_plane, SIGNAL(inputFinishRequest()),
             this, SLOT(handleInputFinishRequested()));
-//    start("debug");
-//    output("this is output");
-//    output("this is another output");
-//    error("this is error");
 
 }
 
@@ -191,7 +173,8 @@ bool Term::eventFilter(QObject *obj, QEvent *evt)
 
 void Term::changeGlobalState(ExtensionSystem::GlobalState , ExtensionSystem::GlobalState current)
 {
-    if (current==ExtensionSystem::GS_Unlocked || current==ExtensionSystem::GS_Observe) {
+    using Shared::PluginInterface;
+    if (current==PluginInterface::GS_Unlocked || current==PluginInterface::GS_Observe) {
         a_saveAll->setEnabled(sessions_.size()>0);
         a_saveLast->setEnabled(sessions_.size()>0);
         a_copyAll->setEnabled(sessions_.size()>0);

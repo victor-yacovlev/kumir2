@@ -30,11 +30,13 @@
 namespace LLVMCodeGenerator {
 
 class NameTranslator;
+class LLVMCodeGeneratorPlugin;
 
 class LLVMGenerator
 {
 public:
     explicit LLVMGenerator();
+    void initialize(const QDir & resourcesRoot);
     void reset(bool addMainEntryPoint, Shared::GeneratorInterface::DebugLevel debugLevel);
     void addKumirModule(const AST::ModulePtr kmod);
     void createKumirModuleImplementation(const AST::ModulePtr kmod);

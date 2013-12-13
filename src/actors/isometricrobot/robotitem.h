@@ -33,7 +33,7 @@ class RobotItem :
     Q_PROPERTY(qreal pulse READ pulse WRITE setPulse);
     Q_PROPERTY(int speed READ speed WRITE setSpeed);
 public:
-    RobotItem(class RobotView *view);
+    RobotItem(const QDir & imagesDir, class RobotView *view);
     enum Direction { South, North, West, East };
     Point3Dr position() const;
     Point2Di scenePosition() const;

@@ -34,8 +34,8 @@ set(FORMS
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/isometricrobotmodulebase.cpp ${CMAKE_CURRENT_BINARY_DIR}/isometricrobotmodulebase.h ${CMAKE_CURRENT_BINARY_DIR}/isometricrobotplugin.cpp ${CMAKE_CURRENT_BINARY_DIR}/isometricrobotplugin.h ${CMAKE_CURRENT_BINARY_DIR}/ActorIsometricRobot.pluginspec
-    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py --update ${CMAKE_CURRENT_SOURCE_DIR}/robot25d.json
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/robot25d.json ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py --update ${CMAKE_CURRENT_SOURCE_DIR}/isometricrobot.json
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/isometricrobot.json ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py
 )
 
 add_custom_target(ActorIsometricRobotPluginSpec ALL ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/ActorIsometricRobot.pluginspec ${PLUGIN_OUTPUT_PATH}
@@ -70,7 +70,7 @@ qt4_wrap_ui(UI_SOURCES ${FORMS})
 install(FILES ${PLUGIN_OUTPUT_PATH}/ActorIsometricRobot.pluginspec DESTINATION ${PLUGINS_DIR})
 handleTranslation(ActorIsometricRobot)
 add_library(ActorIsometricRobot SHARED ${MOC_SOURCES} ${SOURCES} ${MOC_SOURCES2} ${SOURCES2} ${UI_SOURCES})
-target_link_libraries(ActorIsometricRobot ${QT_LIBRARIES} ExtensionSystem Widgets)
-copyResources(actors/robot25d)
+target_link_libraries(ActorIsometricRobot ${QT_LIBRARIES} ExtensionSystem Widgets  ${STDCXX_LIB} ${STDMATH_LIB})
+copyResources(actors/isometricrobot)
 install(TARGETS ActorIsometricRobot DESTINATION ${PLUGINS_DIR})
 

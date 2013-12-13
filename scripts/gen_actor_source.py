@@ -270,6 +270,8 @@ class Name:
             return "OperatorSLASH"
         elif ascii == "=":
             return "OperatorEQUAL"
+        elif ascii == "<>":
+            return "OperatorNOTEQUAL"
         elif ascii == "<":
             return "OperatorLESS"
         elif ascii == ">":
@@ -444,7 +446,7 @@ $fields
 };
             """, {"name": nameDecl, "fields": fieldsDecl})
 
-    def cppCustomTypeCreation(self, variableToAppend):
+    def cppCustomTypeCreation(self, variableToAppend, variableToAssign):
         """
         For non-standard types creates kumir type declaration, an empty string otherwise
 
@@ -456,7 +458,9 @@ $fields
         if self._standard:
             return ""
         else:
-            assert isinstance(variableToAppend, str)
+            assert variableToAppend is None or isinstance(variableToAppend, str)
+            assert variableToAssign is None or isinstance(variableToAssign, str)
+            assert variableToAssign or variableToAppend
             result = "{\n"
             result += "    Shared::ActorInterface::CustomType custom;\n"
             result += "    Shared::ActorInterface::Record record;\n"
@@ -469,10 +473,54 @@ $fields
                 if typee[0].lower() == 'q':
                     typee = typee[1:]
                 typee = typee[0].upper() + typee[1:]
-                result += "    record.push_back(Field(QString::fromUtf8(\"%s\"), %s));\n" % (name, typee)
+                result += "    record.push_back(Field(QByteArray(\"%s\"), %s));\n" % (name, typee)
             typeName = self._name.kumirValue()
             result += "    custom = Shared::ActorInterface::CustomType(QString::fromUtf8(\"%s\"), record);\n" % typeName
-            result += "    %s.push_back(custom);\n" % variableToAppend
+            if variableToAppend:
+                result += "    %s.push_back(custom);\n" % variableToAppend
+            elif variableToAssign:
+                result += "    %s = custom;\n" % variableToAssign
+            result += "}\n"
+            return result
+
+    def cppRecordSpecCreation(self, variableToAppend, variableToAssign):
+        """
+        For non-standard types creates kumir type declaration, an empty string otherwise
+
+        :type variableToAppend:     str
+        :param variableToAppend:    C++ variable name (std::list or QList) to store result
+        :rtype:     unicode
+        :return:    an empty string for standard type or Shared::ActorInterface::CustomType implementation code
+        """
+        if self._standard:
+            return ""
+        else:
+            assert variableToAppend is None or isinstance(variableToAppend, str)
+            assert variableToAssign is None or isinstance(variableToAssign, str)
+            assert variableToAssign or variableToAppend
+            result = "{\n"
+            result += "    Shared::ActorInterface::RecordSpecification recordSpec;\n"
+            for fieldName, fieldType in self._fields:
+                assert isinstance(fieldName, Name)
+                assert isinstance(fieldType, BaseType)
+                assert fieldType.qtName() in ["int", "qreal", "bool", "QChar", "QString"]
+                name = fieldName.kumirValue()
+                typee = fieldType.qtName()
+                if typee[0].lower() == 'q':
+                    typee = typee[1:]
+                typee = typee[0].upper() + typee[1:]
+                result += "    recordSpec.record.push_back(Field(QByteArray(\"%s\"), %s));\n" % (name, typee)
+            result += "    recordSpec.asciiName = QByteArray(\"%s\");\n" % self._name.asciiValue()
+            for key, value in self._name.data.items():
+                qlocale = None
+                if key == "ru_RU":
+                    qlocale = "QLocale::Russian"
+                if qlocale:
+                    result += "     recordSpec.localizedNames[%s] = QString::fromUtf8(\"%s\");\n" % (qlocale, value)
+            if variableToAppend:
+                result += "    %s.push_back(recordSpec);\n" % variableToAppend
+            elif variableToAssign:
+                result += "    %s = recordSpec;\n" % variableToAssign
             result += "}\n"
             return result
 
@@ -1064,7 +1112,7 @@ class Settings:
             result += entry.cppEntryImplementation("entries")
         result += """
 %s = new Widgets::DeclarativeSettingsPage(
-                            name(),
+                            localizedModuleName(QLocale::Russian),
                             mySettings(),
                             entries
                           );
@@ -1381,7 +1429,15 @@ private:
 }
         """ % (self.className, guiRequired)
 
-    def nameCppImplementation(self):
+    def asciiModuleNameCppImplementation(self):
+        return """
+/* public */ QByteArray %s::asciiModuleName() const
+{
+    return QByteArray("%s");
+}
+        """ % (self.className, self._module.name.asciiValue())
+
+    def localizedModuleNameCppImplementation(self):
         """
         Creates implementation of name
 
@@ -1389,32 +1445,83 @@ private:
         :return:    implementation of QString name() const
         """
         # TODO non-Russian language implementation
-        body = "return QString::fromUtf8(\"%s\");" % self._module.name.kumirValue()
         return """
-/* public */ QString %s::name() const
+/* public */ QString %s::localizedModuleName(const QLocale::Language ) const
 {
-%s
+    // TODO non-Russian languages not implemented yet
+    return QString::fromUtf8("%s");
 }
-        """ % (self.className, _addIndent(body))
+        """ % (self.className, self._module.name.kumirValue())
 
-    def funcListCppImplementation(self):
-        """
-        Creates implementation of funcList
-
-        :rtype:     unicode
-        :return:    implementation of QStringList funcList() const
-        """
+    @property
+    def functionListCppImplementation(self):
         methods = self._module.methods
-        lines = map(lambda x: "result << QString::fromUtf8(\"" + x.kumirDeclaration() + "\");", methods)
-        body = _addIndent(string.join(lines, '\n'))
+        body = ""
+        for method in methods:
+            body += "\n/* " + method.kumirDeclaration() + " */\n"
+            body += "result.push_back(Function());\n"
+            body += "result.last().id = result.size() - 1;\n"
+            if method.name.kumirValue().startswith("@"):
+                body += "result.last().accessType = TeacherModeFunction;\n"
+            else:
+                body += "result.last().accessType = PublicFunction;\n"
+            body += 'result.last().asciiName = QByteArray("%s");\n' % method.name.asciiValue()
+            assert isinstance(method.name.data, dict)
+            for key, value in method.name.data.items():
+                qlocale = None
+                if key == "ru_RU":
+                    qlocale = "QLocale::Russian"
+                if qlocale:
+                    body += 'result.last().localizedNames[%s] = QString::fromUtf8("%s");\n' % (qlocale, value)
+            if method.returnType:
+                assert isinstance(method.returnType, BaseType)
+                if method.returnType._name.asciiValue() == "int":
+                    body += "result.last().returnType = Int;\n"
+                elif method.returnType._name.asciiValue() == "double":
+                    body += "result.last().returnType = Real;\n"
+                elif method.returnType._name.asciiValue() == "bool":
+                    body += "result.last().returnType = Bool;\n"
+                elif method.returnType._name.asciiValue() == "char":
+                    body += "result.last().returnType = Char;\n"
+                elif method.returnType._name.asciiValue() == "string":
+                    body += "result.last().returnType = String;\n"
+                else:
+                    body += "result.last().returnType = RecordType;\n"
+                    body += method.returnType.cppRecordSpecCreation(None, "result.last().returnTypeSpecification")
+            else:
+                body += "result.last().returnType = Void;\n"
+            for argument in method.arguments:
+                body += "result.last().arguments.push_back(Argument());\n"
+                if argument.kumirArgumentDeclaration().startswith(u'аргрез '):
+                    body += "result.last().arguments.last().accessType = InOutArgument;\n"
+                elif argument.kumirArgumentDeclaration().startswith(u'рез '):
+                    body += "result.last().arguments.last().accessType = OutArgument;\n"
+                else:
+                    body += "result.last().arguments.last().accessType = InArgument;\n"
+                assert isinstance(argument.baseType._name, Name)
+                if argument.baseType._name.asciiValue() == "int":
+                    body += "result.last().arguments.last().type = Int;\n"
+                elif argument.baseType._name.asciiValue() == "double":
+                    body += "result.last().arguments.last().type = Real;\n"
+                elif argument.baseType._name.asciiValue() == "bool":
+                    body += "result.last().arguments.last().type = Bool;\n"
+                elif argument.baseType._name.asciiValue() == "char":
+                    body += "result.last().arguments.last().type = Char;\n"
+                elif argument.baseType._name.asciiValue() == "string":
+                    body += "result.last().arguments.last().type = String;\n"
+                else:
+                    body += "result.last().arguments.last().type = RecordType;\n"
+                    body += argument.baseType.cppRecordSpecCreation(None, "result.last().arguments.last().typeSpecification")
+                body += "result.last().arguments.last().dimension = %du;\n" % argument.dimension
+
         return """
-/* public */ QStringList %s::funcList() const
+/* public */ Shared::ActorInterface::FunctionList %s::functionList() const
 {
-    QStringList result;
+    FunctionList result;
 %s;
     return result;
 }
-        """ % (self.className, body)
+        """ % (self.className, _addIndent(body))
 
     def typeListCppImplementation(self):
         """
@@ -1430,8 +1537,8 @@ private:
             for typee in self._module.types:
                 assert isinstance(typee, BaseType)
                 if typee._module == self._module:
-                    if typee.cppCustomTypeCreation("result"):
-                        body += typee.cppCustomTypeCreation("result")
+                    if typee.cppRecordSpecCreation("result", None):
+                        body += typee.cppRecordSpecCreation("result", None)
         return """
 /* public */ Shared::ActorInterface::TypeList %s::typeList() const
 {
@@ -1462,11 +1569,11 @@ private:
                 assert not argument.baseType.isStandardType()
                 if body:
                     body += "    else "
-                body += "    if (clazz.first==QString::fromUtf8(\"%s\")) {\n" % argument.baseType.kumirName()
+                body += "    if (clazz==QByteArray(\"%s\")) {\n" % argument.baseType._name.asciiValue()
                 body += "        %s x = decode(value);\n" % argument.baseType.qtName()
                 body += "        result = module_->runOperatorOUTPUT(x);\n    }\n"
         return """
-/* public */ QString %s::customValueToString(const CustomType & %s, const QVariant & %s) const
+/* public */ QString %s::customValueToString(const QByteArray & %s, const QVariant & %s) const
 {
     QString result;
 %s
@@ -1497,7 +1604,7 @@ private:
                 assert argument.baseType.qtName() == "QString"
                 if body:
                     body += "    else "
-                body += "    if (clazz.first==QString::fromUtf8(\"%s\")) {\n" % rtype.kumirName()
+                body += "    if (clazz==QByteArray(\"%s\")) {\n" % rtype._name.asciiValue()
                 body += "        %s x; bool ok = false;\n" % rtype.qtName()
                 body += "        x = module_->runOperatorINPUT(stringg, ok);\n"
                 body += "        if (ok) {\n"
@@ -1505,7 +1612,7 @@ private:
                 body += "        }\n"
                 body += "    }\n"
         return """
-/* public */ QVariant %s::customValueFromString(const CustomType & %s, const QString & %s) const
+/* public */ QVariant %s::customValueFromString(const QByteArray & %s, const QString & %s) const
 {
     QVariant result;
 %s
@@ -2393,10 +2500,19 @@ class ModuleBaseCppClass(CppClassBase):
         :return:    implementation of ExtensionSystem::SettingsPtr mySettings() const
         """
         return """
-/* protected */ ExtensionSystem::SettingsPtr %s::mySettings() const
+/* public */ ExtensionSystem::SettingsPtr %s::mySettings() const
 {
     %s* plugin = qobject_cast<%s*>(parent());
     return plugin->mySettings();
+}
+        """ % (self.className, self._module.pluginClassName(), self._module.pluginClassName())
+
+    def myResourcesDirCppImplementation(self):
+        return """
+/* public */ QDir %s::myResourcesDir() const
+{
+    %s* plugin = qobject_cast<%s*>(parent());
+    return plugin->myResourcesDir();
 }
         """ % (self.className, self._module.pluginClassName(), self._module.pluginClassName())
 
@@ -3213,6 +3329,7 @@ target_link_libraries(
     ${QT_LIBRARIES}
     ExtensionSystem
     Widgets
+    ${STDCXX_LIB} ${STDMATH_LIB}
 )
 
 copyResources(actors/$actorDir)

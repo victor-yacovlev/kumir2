@@ -12,6 +12,7 @@
 #endif
 
 static Kumir::FileType __kumir_scalar_to_file_type(const __kumir_scalar & scalar);
+static __kumir_scalar __kumir_file_type_to_scalar(const Kumir::FileType &f);
 static void __kumir_create_string(__kumir_scalar * result, const std::wstring & wstr);
 static __kumir_real __kumir_scalar_as_real(const __kumir_scalar * scalar);
 static std::wstring __kumir_scalar_as_wstring(const __kumir_scalar * scalar);
@@ -357,11 +358,25 @@ EXTERN void __kumir_input_file(const __kumir_scalar * handle, const __kumir_int 
 
 }
 
+static std::wstring __kumir_program_directory;
 static std::list<std::wstring> __kumir_main_arguments;
 static bool __kumir_pipe_mode = false;
 
 EXTERN void __kumir_set_main_arguments(int argc, char ** argv)
 {
+#if defined(WIN32) || defined(_WIN32)
+    __kumir_program_directory = Kumir::Coder::decode(Kumir::CP1251, std::string(argv[0]));
+    const std::wstring::size_type slashPos = __kumir_program_directory.find_last_of(L'\\');
+#else
+    __kumir_program_directory = Kumir::Coder::decode(Kumir::UTF8, std::string(argv[0]));
+    const std::wstring::size_type slashPos = __kumir_program_directory.find_last_of(L'/');
+#endif
+    if (slashPos != std::wstring::npos) {
+        __kumir_program_directory.resize(slashPos);
+    }
+    else {
+        __kumir_program_directory.clear();
+    }
     for (int i=1; i<argc; i++) {
         const std::string arg = std::string(argv[i]);
         const Kumir::String warg = Kumir::Core::fromUtf8(arg);
@@ -557,12 +572,19 @@ EXTERN void __kumir_output_stdout(const char * utf8)
     __kumir_free_scalar(&sc);
 }
 
-EXTERN void __kumir_stdlib_ustanovit_kodirovku(const __kumir_scalar * encoding)
+EXTERN void Files_set_encoding(const __kumir_scalar * encoding)
 {
     __kumir_check_value_defined(encoding);
     const std::wstring enc = __kumir_scalar_as_wstring(encoding);
     Kumir::Files::setFileEncoding(enc);
 }
+
+EXTERN void Files_get_console(__kumir_scalar * result)
+{
+    const Kumir::FileType console = Kumir::Files::getConsoleBuffer();
+    *result = __kumir_file_type_to_scalar(console);
+}
+
 
 EXTERN void __kumir_print_scalar_variable(const char * name,
                                    const __kumir_scalar_type type,
@@ -777,39 +799,39 @@ static void __kumir_create_string(__kumir_scalar * result, const std::wstring & 
 
 // Math
 
-EXTERN void __kumir_stdlib_div(__kumir_scalar  * result, const __kumir_scalar * left, const __kumir_scalar * right)
+EXTERN void Kumir_Standard_Library_div(__kumir_scalar  * result, const __kumir_scalar * left, const __kumir_scalar * right)
 {
     __kumir_check_value_defined(left);
     __kumir_check_value_defined(right);
     __kumir_create_int(result, Kumir::Math::div(left->data.i, right->data.i));
 }
 
-EXTERN void __kumir_stdlib_mod(__kumir_scalar * result, const __kumir_scalar * left, const __kumir_scalar * right)
+EXTERN void Kumir_Standard_Library_mod(__kumir_scalar * result, const __kumir_scalar * left, const __kumir_scalar * right)
 {
     __kumir_check_value_defined(left);
     __kumir_check_value_defined(right);
     __kumir_create_int(result, Kumir::Math::mod(left->data.i, right->data.i));
 }
 
-EXTERN void __kumir_stdlib_ln(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_ln(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_real(result, Kumir::Math::ln(__kumir_scalar_as_real(value)));
 }
 
-EXTERN void __kumir_stdlib_lg(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_lg(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_real(result, Kumir::Math::lg(__kumir_scalar_as_real(value)));
 }
 
-EXTERN void __kumir_stdlib_exp(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_exp(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_real(result, Kumir::Math::exp(__kumir_scalar_as_real(value)));
 }
 
-EXTERN void __kumir_stdlib_rnd(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_rnd(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_real(result,
@@ -819,13 +841,13 @@ EXTERN void __kumir_stdlib_rnd(__kumir_scalar * result, const __kumir_scalar * v
                         );
 }
 
-EXTERN void __kumir_stdlib_irnd(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_irnd(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_int(result, Kumir::Random::irnd(value->data.i));
 }
 
-EXTERN void __kumir_stdlib_rand(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b)
+EXTERN void Kumir_Standard_Library_rand(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b)
 {
     __kumir_check_value_defined(a);
     __kumir_check_value_defined(b);
@@ -837,7 +859,7 @@ EXTERN void __kumir_stdlib_rand(__kumir_scalar * result, const __kumir_scalar * 
                         );
 }
 
-EXTERN void __kumir_stdlib_irand(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b)
+EXTERN void Kumir_Standard_Library_irand(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b)
 {
     __kumir_check_value_defined(a);
     __kumir_check_value_defined(b);
@@ -850,7 +872,7 @@ EXTERN void __kumir_stdlib_irand(__kumir_scalar * result, const __kumir_scalar *
 }
 
 
-EXTERN void __kumir_stdlib_iabs(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_iabs(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_int(result,
@@ -860,7 +882,7 @@ EXTERN void __kumir_stdlib_iabs(__kumir_scalar * result, const __kumir_scalar * 
                        );
 }
 
-EXTERN void __kumir_stdlib_abs(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_abs(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_real(result,
@@ -870,7 +892,7 @@ EXTERN void __kumir_stdlib_abs(__kumir_scalar * result, const __kumir_scalar * v
                        );
 }
 
-EXTERN void __kumir_stdlib_sign(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_sign(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_int(result,
@@ -880,7 +902,7 @@ EXTERN void __kumir_stdlib_sign(__kumir_scalar * result, const __kumir_scalar * 
                        );
 }
 
-EXTERN void __kumir_stdlib_int(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_int(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_int(result,
@@ -890,7 +912,7 @@ EXTERN void __kumir_stdlib_int(__kumir_scalar * result, const __kumir_scalar * v
                        );
 }
 
-EXTERN void __kumir_stdlib_arcsin(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_arcsin(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_real(result,
@@ -898,7 +920,7 @@ EXTERN void __kumir_stdlib_arcsin(__kumir_scalar * result, const __kumir_scalar 
                         );
 }
 
-EXTERN void __kumir_stdlib_arccos(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_arccos(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_real(result,
@@ -906,7 +928,7 @@ EXTERN void __kumir_stdlib_arccos(__kumir_scalar * result, const __kumir_scalar 
                         );
 }
 
-EXTERN void __kumir_stdlib_arctg(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_arctg(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_real(result,
@@ -914,7 +936,7 @@ EXTERN void __kumir_stdlib_arctg(__kumir_scalar * result, const __kumir_scalar *
                         );
 }
 
-EXTERN void __kumir_stdlib_arcctg(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_arcctg(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_real(result,
@@ -922,7 +944,7 @@ EXTERN void __kumir_stdlib_arcctg(__kumir_scalar * result, const __kumir_scalar 
                         );
 }
 
-EXTERN void __kumir_stdlib_tg(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_tg(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_real(result,
@@ -930,7 +952,7 @@ EXTERN void __kumir_stdlib_tg(__kumir_scalar * result, const __kumir_scalar * va
                         );
 }
 
-EXTERN void __kumir_stdlib_ctg(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_ctg(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_real(result,
@@ -938,7 +960,7 @@ EXTERN void __kumir_stdlib_ctg(__kumir_scalar * result, const __kumir_scalar * v
                         );
 }
 
-EXTERN void __kumir_stdlib_sin(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_sin(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_real(result,
@@ -946,7 +968,7 @@ EXTERN void __kumir_stdlib_sin(__kumir_scalar * result, const __kumir_scalar * v
                         );
 }
 
-EXTERN void __kumir_stdlib_cos(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_cos(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_real(result,
@@ -954,7 +976,7 @@ EXTERN void __kumir_stdlib_cos(__kumir_scalar * result, const __kumir_scalar * v
                         );
 }
 
-EXTERN void __kumir_stdlib_sqrt(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_sqrt(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_real(result,
@@ -962,7 +984,7 @@ EXTERN void __kumir_stdlib_sqrt(__kumir_scalar * result, const __kumir_scalar * 
                         );
 }
 
-EXTERN void __kumir_stdlib_max(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2)
+EXTERN void Kumir_Standard_Library_max(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2)
 {
     __kumir_check_value_defined(value1);
     __kumir_check_value_defined(value2);
@@ -973,7 +995,7 @@ EXTERN void __kumir_stdlib_max(__kumir_scalar * result, const __kumir_scalar * v
                             ));
 }
 
-EXTERN void __kumir_stdlib_min(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2)
+EXTERN void Kumir_Standard_Library_min(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2)
 {
     __kumir_check_value_defined(value1);
     __kumir_check_value_defined(value2);
@@ -984,7 +1006,7 @@ EXTERN void __kumir_stdlib_min(__kumir_scalar * result, const __kumir_scalar * v
                             ));
 }
 
-EXTERN void __kumir_stdlib_imax(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2)
+EXTERN void Kumir_Standard_Library_imax(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2)
 {
     __kumir_check_value_defined(value1);
     __kumir_check_value_defined(value2);
@@ -993,7 +1015,7 @@ EXTERN void __kumir_stdlib_imax(__kumir_scalar * result, const __kumir_scalar * 
                             );
 }
 
-EXTERN void __kumir_stdlib_imin(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2)
+EXTERN void Kumir_Standard_Library_imin(__kumir_scalar * result, const __kumir_scalar * value1, const __kumir_scalar * value2)
 {
     __kumir_check_value_defined(value1);
     __kumir_check_value_defined(value2);
@@ -1002,7 +1024,7 @@ EXTERN void __kumir_stdlib_imin(__kumir_scalar * result, const __kumir_scalar * 
                             );
 }
 
-EXTERN void __kumir_stdlib_tsel_v_lit(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_string_of_int(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_string(result,
@@ -1010,7 +1032,7 @@ EXTERN void __kumir_stdlib_tsel_v_lit(__kumir_scalar * result, const __kumir_sca
                        );
 }
 
-EXTERN void __kumir_stdlib_vesch_v_lit(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_string_of_real(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_string(result,
@@ -1018,7 +1040,7 @@ EXTERN void __kumir_stdlib_vesch_v_lit(__kumir_scalar * result, const __kumir_sc
                        );
 }
 
-EXTERN void __kumir_stdlib_dlin(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_length(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_int(result,
@@ -1026,7 +1048,7 @@ EXTERN void __kumir_stdlib_dlin(__kumir_scalar * result, const __kumir_scalar * 
                 );
 }
 
-EXTERN void __kumir_stdlib_yunikod(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_unicode(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_int(result,
@@ -1034,7 +1056,7 @@ EXTERN void __kumir_stdlib_yunikod(__kumir_scalar * result, const __kumir_scalar
                 );
 }
 
-EXTERN void __kumir_stdlib_kod(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_code(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     __kumir_create_int(result,
@@ -1042,7 +1064,7 @@ EXTERN void __kumir_stdlib_kod(__kumir_scalar * result, const __kumir_scalar * v
                 );
 }
 
-EXTERN void __kumir_stdlib_simvol(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_simbol(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     result->defined = true;
@@ -1050,7 +1072,7 @@ EXTERN void __kumir_stdlib_simvol(__kumir_scalar * result, const __kumir_scalar 
     result->data.c = Kumir::StringUtils::symbol(value->data.i);
 }
 
-EXTERN void __kumir_stdlib_simvol2(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_unisymbol(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     result->defined = true;
@@ -1058,83 +1080,98 @@ EXTERN void __kumir_stdlib_simvol2(__kumir_scalar * result, const __kumir_scalar
     result->data.c = Kumir::StringUtils::unisymbol(value->data.i);
 }
 
-EXTERN void __kumir_stdlib_pozitsiya_posle(__kumir_scalar * result, const __kumir_scalar * ot, const __kumir_scalar * fragment, const __kumir_scalar * stroka)
+EXTERN void String_Utilities_index_after(__kumir_scalar * result, const __kumir_scalar * ot, const __kumir_scalar * fragment, const __kumir_scalar * thestring)
 {
-    __kumir_stdlib_poz_posle(result, ot, fragment, stroka);
+    String_Utilities_find_after(result, ot, fragment, thestring);
 }
 
-EXTERN void __kumir_stdlib_poz_posle(__kumir_scalar * result, const __kumir_scalar * ot, const __kumir_scalar * fragment, const __kumir_scalar * stroka)
+EXTERN void String_Utilities_find_after(__kumir_scalar * result, const __kumir_scalar * ot, const __kumir_scalar * fragment, const __kumir_scalar * thestring)
 {
     __kumir_check_value_defined(ot);
     __kumir_check_value_defined(fragment);
-    __kumir_check_value_defined(stroka);
+    __kumir_check_value_defined(thestring);
     const int from = ot->data.i;
     const std::wstring pattern = __kumir_scalar_as_wstring(fragment);
-    const std::wstring source = __kumir_scalar_as_wstring(stroka);
+    const std::wstring source = __kumir_scalar_as_wstring(thestring);
     __kumir_create_int(result,
                        Kumir::StringUtils::find(from + 1, pattern, source)
                        );
 }
 
-EXTERN void __kumir_stdlib_pozitsiya(__kumir_scalar * result, const __kumir_scalar * fragment, const __kumir_scalar * stroka)
+EXTERN void String_Utilities_index(__kumir_scalar * result, const __kumir_scalar * fragment, const __kumir_scalar * thestring)
 {
-    __kumir_stdlib_poz(result, fragment, stroka);
+    String_Utilities_find(result, fragment, thestring);
 }
 
-EXTERN void __kumir_stdlib_poz(__kumir_scalar * result, const __kumir_scalar * fragment, const __kumir_scalar * stroka)
+EXTERN void String_Utilities_find(__kumir_scalar * result, const __kumir_scalar * fragment, const __kumir_scalar * thestring)
 {
     __kumir_check_value_defined(fragment);
-    __kumir_check_value_defined(stroka);
+    __kumir_check_value_defined(thestring);
     const std::wstring pattern = __kumir_scalar_as_wstring(fragment);
-    const std::wstring source = __kumir_scalar_as_wstring(stroka);
+    const std::wstring source = __kumir_scalar_as_wstring(thestring);
     __kumir_create_int(result,
                        Kumir::StringUtils::find(pattern, source)
                        );
 }
 
-EXTERN void __kumir_stdlib_nizhnij_registr(__kumir_scalar * result, const __kumir_scalar * stroka)
+EXTERN void String_Utilities_lowercase(__kumir_scalar * result, const __kumir_scalar * thestring)
 {
-    __kumir_check_value_defined(stroka);
-    const std::wstring source = __kumir_scalar_as_wstring(stroka);
+    __kumir_check_value_defined(thestring);
+    const std::wstring source = __kumir_scalar_as_wstring(thestring);
     __kumir_create_string(result, Kumir::StringUtils::toLowerCase(source));
 }
 
-EXTERN void __kumir_stdlib_verhnij_registr(__kumir_scalar * result, const __kumir_scalar * stroka)
+EXTERN void String_Utilities_uppercase(__kumir_scalar * result, const __kumir_scalar * thestring)
 {
-    __kumir_check_value_defined(stroka);
-    const std::wstring source = __kumir_scalar_as_wstring(stroka);
+    __kumir_check_value_defined(thestring);
+    const std::wstring source = __kumir_scalar_as_wstring(thestring);
     __kumir_create_string(result, Kumir::StringUtils::toLowerCase(source));
 }
 
-EXTERN void __kumir_stdlib_vstavit(const __kumir_scalar * fragment, __kumir_scalar * stroka, const __kumir_scalar * pozitsiya)
+EXTERN void String_Utilities_insert(const __kumir_scalar * fragment, __kumir_scalar * thestring, const __kumir_scalar * position)
 {
     __kumir_check_value_defined(fragment);
-    __kumir_check_value_defined(stroka);
-    __kumir_check_value_defined(pozitsiya);
+    __kumir_check_value_defined(thestring);
+    __kumir_check_value_defined(position);
     const std::wstring sub = __kumir_scalar_as_wstring(fragment);
-    const int pos = pozitsiya->data.i;
-    std::wstring s = __kumir_scalar_as_wstring(stroka);
+    const int pos = position->data.i;
+    std::wstring s = __kumir_scalar_as_wstring(thestring);
     Kumir::StringUtils::insert(sub, s, pos);
-    __kumir_free_scalar(stroka);
-    __kumir_create_string(stroka, s);
+    __kumir_free_scalar(thestring);
+    __kumir_create_string(thestring, s);
 }
 
-EXTERN void __kumir_stdlib_udalit(__kumir_scalar * stroka, const __kumir_scalar * pozitsiya, const __kumir_scalar * dlina)
+EXTERN void String_Utilities_remove(__kumir_scalar * thestring, const __kumir_scalar * position, const __kumir_scalar * thelength)
 {
-    __kumir_check_value_defined(stroka);
-    __kumir_check_value_defined(pozitsiya);
-    __kumir_check_value_defined(dlina);
-    std::wstring s = __kumir_scalar_as_wstring(stroka);
-    int pos = pozitsiya->data.i;
-    int len = dlina->data.i;
+    __kumir_check_value_defined(thestring);
+    __kumir_check_value_defined(position);
+    __kumir_check_value_defined(thelength);
+    std::wstring s = __kumir_scalar_as_wstring(thestring);
+    int pos = position->data.i;
+    int len = thelength->data.i;
     Kumir::StringUtils::remove(s, pos, len);
-    __kumir_free_scalar(stroka);
-    __kumir_create_string(stroka, s);
+    __kumir_free_scalar(thestring);
+    __kumir_create_string(thestring, s);
+}
+
+EXTERN void String_Utilities_replace(__kumir_scalar * source, const __kumir_scalar * before, const __kumir_scalar * after, const __kumir_scalar * each)
+{
+    __kumir_check_value_defined(source);
+    __kumir_check_value_defined(before);
+    __kumir_check_value_defined(after);
+    __kumir_check_value_defined(each);
+    std::wstring s = __kumir_scalar_as_wstring(source);
+    const std::wstring b = __kumir_scalar_as_wstring(before);
+    const std::wstring a = __kumir_scalar_as_wstring(after);
+    const bool e = __kumir_scalar_as_bool(each);
+    Kumir::StringUtils::replace(s, b, a, e);
+    __kumir_free_scalar(source);
+    __kumir_create_string(source, s);
 }
 
 
 
-EXTERN void __kumir_stdlib_lit_v_vesch(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success)
+EXTERN void Kumir_Standard_Library_string_to_real(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success)
 {
     __kumir_check_value_defined(value);
     bool ok;
@@ -1143,7 +1180,7 @@ EXTERN void __kumir_stdlib_lit_v_vesch(__kumir_scalar * result, const __kumir_sc
     __kumir_create_bool(success, ok);
 }
 
-EXTERN void __kumir_stdlib_lit_v_tsel(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success)
+EXTERN void Kumir_Standard_Library_string_to_int(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success)
 {
     __kumir_check_value_defined(value);
     bool ok;
@@ -1153,7 +1190,7 @@ EXTERN void __kumir_stdlib_lit_v_tsel(__kumir_scalar * result, const __kumir_sca
 }
 
 // Files
-EXTERN void __kumir_stdlib_est_dannyie(__kumir_scalar * result, const __kumir_scalar * handle)
+EXTERN void Files_nonempty(__kumir_scalar * result, const __kumir_scalar * handle)
 {
     __kumir_check_value_defined(handle);
     Kumir::FileType f = __kumir_scalar_to_file_type(*handle);
@@ -1161,13 +1198,21 @@ EXTERN void __kumir_stdlib_est_dannyie(__kumir_scalar * result, const __kumir_sc
     __kumir_create_bool(result, res);
 }
 
-EXTERN void __kumir_stdlib_KATALOG_PROGRAMMYi(__kumir_scalar * result)
+EXTERN void Files_PROGRAM_DIR(__kumir_scalar * result)
+{
+    const std::wstring res = __kumir_program_directory.empty()
+            ? Kumir::Files::CurrentWorkingDirectory() : __kumir_program_directory;
+    __kumir_create_string(result, res);
+}
+
+EXTERN void Files_CURRENT_DIR(__kumir_scalar  * result)
 {
     const std::wstring res = Kumir::Files::CurrentWorkingDirectory();
     __kumir_create_string(result, res);
 }
 
-EXTERN void __kumir_stdlib_otkryit_na_chtenie(__kumir_scalar * result, const __kumir_scalar * name)
+
+EXTERN void Files_read_open(__kumir_scalar * result, const __kumir_scalar * name)
 {
     __kumir_check_value_defined(name);
     std::wstring wsname(name->data.s);
@@ -1175,7 +1220,7 @@ EXTERN void __kumir_stdlib_otkryit_na_chtenie(__kumir_scalar * result, const __k
     *result = __kumir_file_type_to_scalar(f);
 }
 
-EXTERN void __kumir_stdlib_otkryit_na_zapis(__kumir_scalar * result, const __kumir_scalar * name)
+EXTERN void Files_write_open(__kumir_scalar * result, const __kumir_scalar * name)
 {
     __kumir_check_value_defined(name);
     std::wstring wsname(name->data.s);
@@ -1183,40 +1228,101 @@ EXTERN void __kumir_stdlib_otkryit_na_zapis(__kumir_scalar * result, const __kum
     *result = __kumir_file_type_to_scalar(f);
 }
 
-EXTERN void __kumir_stdlib_zakryit(const __kumir_scalar * handle)
+EXTERN void Files_append_open(__kumir_scalar  * result, const __kumir_scalar * name)
+{
+    __kumir_check_value_defined(name);
+    std::wstring wsname(name->data.s);
+    Kumir::FileType f = Kumir::Files::open(wsname, Kumir::FileType::Append);
+    *result = __kumir_file_type_to_scalar(f);
+}
+
+EXTERN void Files_readable(__kumir_scalar  * result, const __kumir_scalar * name)
+{
+    __kumir_check_value_defined(name);
+    std::wstring wsname(name->data.s);
+    __kumir_create_bool(result,
+                        Kumir::Files::canOpenForRead(wsname)
+                        );
+}
+
+EXTERN void Files_writable(__kumir_scalar  * result, const __kumir_scalar * name)
+{
+    __kumir_check_value_defined(name);
+    std::wstring wsname(name->data.s);
+    __kumir_create_bool(result,
+                        Kumir::Files::canOpenForWrite(wsname)
+                        );
+}
+
+EXTERN void Files_close(const __kumir_scalar * handle)
 {
     __kumir_check_value_defined(handle);
     Kumir::FileType f = __kumir_scalar_to_file_type(*handle);
     Kumir::Files::close(f);
 }
 
-EXTERN void __kumir_stdlib_nachat_chtenie(const __kumir_scalar * handle)
+EXTERN void Files_start_reading(const __kumir_scalar * handle)
 {
     __kumir_check_value_defined(handle);
     Kumir::FileType f = __kumir_scalar_to_file_type(*handle);
     Kumir::Files::reset(f);
 }
 
-EXTERN void __kumir_stdlib_suschestvuet(__kumir_scalar  * result, const __kumir_scalar * name)
+EXTERN void Files_exists(__kumir_scalar  * result, const __kumir_scalar * name)
 {
     __kumir_check_value_defined(name);
     const std::wstring sname = __kumir_scalar_as_wstring(name);
     __kumir_create_bool(result, Kumir::Files::exist(sname));
 }
 
-EXTERN void __kumir_stdlib_konets_fajla(__kumir_scalar  * result, const __kumir_scalar * handle)
+EXTERN void Files_isdir(__kumir_scalar  * result, const __kumir_scalar * name)
+{
+    __kumir_check_value_defined(name);
+    const std::wstring sname = __kumir_scalar_as_wstring(name);
+    __kumir_create_bool(result, Kumir::Files::isDirectory(sname));
+}
+
+EXTERN void Files_mkdir(__kumir_scalar  * result, const __kumir_scalar * name)
+{
+    __kumir_check_value_defined(name);
+    const std::wstring sname = __kumir_scalar_as_wstring(name);
+    __kumir_create_bool(result, Kumir::Files::mkdir(sname));
+}
+
+EXTERN void Files_rm(__kumir_scalar  * result, const __kumir_scalar * name)
+{
+    __kumir_check_value_defined(name);
+    const std::wstring sname = __kumir_scalar_as_wstring(name);
+    __kumir_create_bool(result, Kumir::Files::unlink(sname));
+}
+
+EXTERN void Files_rmdir(__kumir_scalar  * result, const __kumir_scalar * name)
+{
+    __kumir_check_value_defined(name);
+    const std::wstring sname = __kumir_scalar_as_wstring(name);
+    __kumir_create_bool(result, Kumir::Files::rmdir(sname));
+}
+
+EXTERN void Files_abspath(__kumir_scalar  * result, const __kumir_scalar * name)
+{
+    __kumir_check_value_defined(name);
+    const std::wstring sname = __kumir_scalar_as_wstring(name);
+    __kumir_create_string(result, Kumir::Files::getAbsolutePath(sname));
+}
+
+EXTERN void Files_eof(__kumir_scalar  * result, const __kumir_scalar * handle)
 {
     __kumir_check_value_defined(handle);
     Kumir::FileType f = __kumir_scalar_to_file_type(*handle);
     __kumir_create_bool(result, Kumir::Files::eof(f));
 }
 
-EXTERN void __kumir_stdlib_vremya(__kumir_scalar * result)
+EXTERN void Kumir_Standard_Library_time(__kumir_scalar * result)
 {
     __kumir_create_int(result, Kumir::System::time());
 }
 
-EXTERN void __kumir_stdlib_zhdat(const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_wait(const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     if (value->data.i < 0) {
@@ -2401,7 +2507,7 @@ EXTERN void __kumir_loop_end_counter()
 }
 
 
-EXTERN void __kumir_stdlib_init()
+EXTERN void Kumir_Standard_Library___init__()
 {
     Kumir::initStandardLibrary();
 }

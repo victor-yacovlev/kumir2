@@ -3,6 +3,7 @@
 #include "dir.h"
 #include "localhostserver.h"
 #include "networkaccessmanager.h"
+#include "extensionsystem/pluginmanager.h"
 
 namespace Browser {
 
@@ -20,7 +21,7 @@ void Plugin::changeCurrentDirectory(const QString &path)
 
 QString Plugin::initialize(const QStringList &, const ExtensionSystem::CommandLine &)
 {
-    LocalhostServer * localhost = new LocalhostServer(QDir(qApp->property("sharePath").toString()+"/webapps/"), this);
+    LocalhostServer * localhost = new LocalhostServer(QDir(ExtensionSystem::PluginManager::instance()->sharePath()+"/webapps/"), this);
     NetworkAccessManager * networkAccessManager = new NetworkAccessManager(this);
     networkAccessManager->setLocalhostServer(localhost);
     networkAccessManager_ = networkAccessManager;

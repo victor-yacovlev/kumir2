@@ -90,21 +90,26 @@ AnyValue QVariantToValue(const QVariant & var, int dim)
     return aval;
 }
 
-ActorInterface* findActor(const String & moduleName)
+ActorInterface* findActor(const std::string & moduleAsciiName)
+{
+    const QByteArray qModuleName = QByteArray(moduleAsciiName.c_str());
+    return findActor(qModuleName);
+}
+
+ActorInterface* findActor(const QByteArray & qModuleName)
 {
     using namespace ExtensionSystem;
 
     const QList<KPlugin*> actorPlugins =
             PluginManager::instance()->loadedPlugins("Actor*");
 
-    const QString qModuleName = QString::fromStdWString(moduleName);
-
     ActorInterface * actor = nullptr;
     foreach ( KPlugin * p, actorPlugins ) {
         actor = qobject_cast<ActorInterface*>(p);
-        if (actor && actor->name()==qModuleName) {
+        if (actor && actor->asciiModuleName()==qModuleName) {
             break;
         }
+        actor = nullptr;
     }
 
     return actor;

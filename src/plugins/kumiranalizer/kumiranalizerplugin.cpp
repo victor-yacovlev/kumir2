@@ -45,7 +45,7 @@ QString KumirAnalizerPlugin::initialize(const QStringList &configurationArgument
         }
     }
 
-    Analizer::setSourceLanguage(language);
+    Analizer::setSourceLanguage(myResourcesDir(), language);
 
     Shared::ErrorMessages::loadMessages("KumirAnalizer");
     teacherMode_ = configurationArguments.contains("teacher", Qt::CaseInsensitive);

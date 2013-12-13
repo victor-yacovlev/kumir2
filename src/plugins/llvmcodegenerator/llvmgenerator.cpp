@@ -57,8 +57,12 @@ LLVMGenerator::LLVMGenerator()
     , nameTranslator_(new NameTranslator)
     , stdlibModule_(0)
 {
-    static const QString StdLibFileName =
-            qApp->property("sharePath").toString() + "/llvmcodegenerator/stdlib.bc";
+
+}
+
+void LLVMGenerator::initialize(const QDir &resourcesRoot)
+{
+    const QString StdLibFileName = resourcesRoot.absoluteFilePath("stdlib.bc");
 
     QFile StdLibFile(StdLibFileName);
     if (!StdLibFile.open(QIODevice::ReadOnly)) {
@@ -72,7 +76,6 @@ LLVMGenerator::LLVMGenerator()
 
     std::string strdata(stdLibBytes.constData(), stdLibBytes.size());
     stdlibContents_.reset(llvm::MemoryBuffer::getMemBufferCopy(strdata, "stdlib.bc"));
-
 }
 
 
@@ -1831,6 +1834,35 @@ QByteArray LLVMGenerator::createArray_3_ConstantData(const AST::VariableBaseType
     return result;
 }
 
+static CString createNormalizedAsciiName(const QByteArray & source)
+{
+    static const QList<QByteArray> operators = QList<QByteArray>()
+            << "=" << "<>" << "<" << ">" << "+" << "-" << "*" << "/";
+    static const QList<CString> operatorNames = QList<CString>()
+            << "eq" << "neq" << "lt" << "gt" << "plus" << "minus" << "astarisk" << "slash";
+
+    Q_ASSERT(operators.size() == operatorNames.size());
+
+    CString result;
+    for (int i=0; i<source.length(); i++) {
+        const char ch = source[i];
+        const QChar qch(ch);
+        if (qch.isLetterOrNumber() || ch == '_') {
+            result.push_back(ch);
+        }
+        else if (ch == ' ') {
+            result.push_back('_');
+        }
+    }
+
+    if (result.empty() && operators.contains(source)) {
+        int index = operators.indexOf(source);
+        result = CString("operator_") + operatorNames[index];
+    }
+
+    return result;
+}
+
 llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, const AST::AlgorithmPtr &alg, const QList<AST::ExpressionPtr> & arguments)
 {
     llvm::Function * func = 0;
@@ -1856,45 +1888,40 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
     }
     else if (alg->header.implType == AST::AlgorhitmExternal)
     {
-        static const QStringList operators = QStringList()
-                << "=" << "<>" << "<" << ">" << "+" << "-" << "*" << "/"
-                << QString::fromUtf8("ввод") << QString::fromUtf8("вывод");
-        static const QStringList operatorNames = QStringList()
-                << "eq" << "neq" << "lt" << "gt" << "plus" << "minus" << "astarisk" << "slash"
-                << QString::fromUtf8("input") << QString::fromUtf8("output");
-        Q_ASSERT(operators.size() == operatorNames.size());
-        std::vector<llvm::Type*> formalArgs(alg->header.arguments.size());
-        funcName = alg->header.cHeader.toStdString();
-        if (funcName.empty()) {
-            funcName = "__kumir_stdlib_" ; // TODO implement non-std algorithms
-            if (operators.contains(alg->header.name)) {
-                int index = operators.indexOf(alg->header.name);
-                const CString cname = operatorNames[index].toStdString();
-                funcName = CString("__kumir_operator_") + cname;
-            }
-            else {
-                funcName += NameTranslator::suggestName(alg->header.name).toStdString();
-            }
+        funcName =
+                createNormalizedAsciiName(alg->header.external.moduleAsciiName) +
+                CString("_") +
+                createNormalizedAsciiName(alg->header.external.algorithmAsciiName);        
+
+        size_t argsSize = alg->header.arguments.size();
+        size_t argsOffset = 0u;
+
+        if (alg->header.returnType.kind != AST::TypeNone) {
+            argsSize += 1u;
+            argsOffset = 1u;
         }
-//        QStringList params;
-//        for (int i=0; i<alg->header.arguments.size(); i++) {
-//            const AST::VariablePtr & arg = alg->header.arguments[i];
-//            QString param = arg->dimension == 0u? "__kumir_scalar" : "__kumir_array";
-//            bool ref = false;
-//            if (arg->accessType == AST::AccessArgumentInOut || arg->accessType == AST::AccessArgumentOut) {
-//                param += "&";
-//                ref = true;
-//            }
-//            params.push_back(param);
-//            formalArgs[i] =
-//                    arg->dimension > 0 ? getArrayType() : getScalarType();
-//            if (ref) {
-//                formalArgs[i] = formalArgs[i]->getPointerTo();
-//            }
-//        }
-        llvm::Type * rtype = alg->header.returnType.kind == AST::TypeNone
-                ? llvm::Type::getVoidTy(ctx) : getScalarType();
-        llvm::FunctionType * ftype = llvm::FunctionType::get(rtype, formalArgs, false);
+
+        std::vector<llvm::Type*> formalArgs(argsSize);
+
+        if (alg->header.returnType.kind != AST::TypeNone) {
+            llvm::Type * rtype = getScalarType()->getPointerTo();
+            Q_ASSERT(rtype);
+            formalArgs[0] = rtype;
+
+        }
+
+        for (int i=0; i<alg->header.arguments.size(); i++) {
+            const AST::VariablePtr karg = alg->header.arguments[i];
+            llvm::Type * largType = karg->dimension > 0u
+                    ? getArrayType()->getPointerTo()
+                    : getScalarType()->getPointerTo();
+            Q_ASSERT(largType);
+            formalArgs[i+argsOffset] = largType;
+        }
+
+        llvm::FunctionType * ftype = llvm::FunctionType::get(
+                    llvm::Type::getVoidTy(ctx), formalArgs, false);
+        Q_ASSERT(ftype);
         func = currentModule_->getFunction(funcName); // maybe already used
         if (!func) {
             func = llvm::Function::Create(ftype,
@@ -1902,6 +1929,7 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
                                           funcName,
                                           currentModule_);
         }
+        Q_ASSERT(func);
     }
 
     size_t largsCount = alg->header.arguments.size();

@@ -117,7 +117,7 @@ void AboutDialog::addLoadedModules()
     QList<const ExtensionSystem::KPlugin*> all = pm->loadedConstPlugins();
     QStringList names;
     for (int i=0; i<all.size(); i++) {
-        names << all[i]->pluginSpec().name;
+        names << QString::fromAscii(all[i]->pluginName());
     }
     ui->tableWidget->setRowCount(ui->tableWidget->rowCount()+1);
     ui->tableWidget->setItem(ui->tableWidget->rowCount()-1, 0, new QTableWidgetItem(tr("Loaded Modules")));

@@ -1735,7 +1735,7 @@ public:
         return result;
     }
 
-    inline static int rmdir(const String & fileName) {
+    inline static bool rmdir(const String & fileName) {
         char * path;
 #   ifdef NO_UNICODE
         path = const_cast<char*>(fileName.c_str());

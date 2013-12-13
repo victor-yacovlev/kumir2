@@ -16,7 +16,7 @@ class PDAutomata : public QObject
 {
     Q_OBJECT
 public:
-    explicit PDAutomata(QObject *parent = 0);
+    explicit PDAutomata(const QDir & resourcesRoot, QObject *parent = 0);
     ~PDAutomata();
 
     /** Automata initialization.
