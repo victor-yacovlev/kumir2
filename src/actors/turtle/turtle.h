@@ -37,7 +37,7 @@ class turtle:public QMainWindow
       Q_OBJECT
 
 public:
-      turtle();
+      turtle(QDir mresd);
       ~turtle();
 	QGraphicsScene *scene;
       QGraphicsView *view;
@@ -45,6 +45,7 @@ public:
  qreal grad;	
  pultLogger* logger;
  TurtlePult* Tpult;
+ QDir myresdir;
  void AutoClose(){autoClose=true;close();};
  void showTurtle(){setVisible(true);};
  void hideTurtle(){setVisible(false);};
@@ -99,6 +100,7 @@ QGraphicsSvgItem * curTurtle;
  bool autoClose,obod;
  int FIELD_SX;
  int FIELD_SY;
+ 
 // WHeader* turtleHeader;
 };
 

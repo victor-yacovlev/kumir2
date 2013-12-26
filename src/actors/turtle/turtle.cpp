@@ -17,14 +17,16 @@
 
 #include <QtGui>
 #include "turtle.h"
+
 #include "pult.h"
 #include <QTextEdit>
 #include <QTextStream>
 #include <QCloseEvent>
 #include <QFileDialog>
 static const double Pi = 3.14159265358979323846264338327950288419717;
-turtle::turtle()
+turtle::turtle(QDir mresd)
 {
+    myresdir=mresd;
     FIELD_SX=500;
     FIELD_SY=500;
    loadIniFile();
@@ -137,7 +139,7 @@ step=30;
 tail=true;
 curX=0;
 curY=0;
-t1= new QGraphicsSvgItem(":/img/Trtl1.svg");
+t1= new QGraphicsSvgItem(myresdir.absoluteFilePath("Trtl1.svg"));
 scene->addItem(t1);
 
 t2= new QGraphicsSvgItem(":/trtl_obod.svg");
@@ -172,7 +174,7 @@ t1->scale(zoom ,zoom);
 //-----------------------------------
 void turtle::rotate(void)
 {
-
+   
 ang+=grad;
 //qDebug()<<"ang"<<ang;
 if(ang<0)ang=360+ang;
@@ -188,22 +190,22 @@ void turtle::rotateImages()
 //qDebug()<<"Ang"<<ang;
 if((!ang==60)&&(!ang==120)&&(!ang==240)&&(!ang==320)){
 t1->setTransform(QTransform().translate(AncX*zoom, AncY*zoom).rotate(ang).translate(-AncX*zoom, -AncY*zoom));
- }else
+//    t1->setRotation(ang); 
+}else
  {
  //qDebug()<<"Ang bugfix"<<ang;
 t1->setTransform(QTransform().translate(AncX*zoom, AncY*zoom).rotate(ang-1).translate(-AncX*zoom, -AncY*zoom));
+//     t1->setRotation(ang);
  };
 t1->scale(zoom,zoom);
 
-//t2->setTransform(QTransform().translate(AncX*zoom, AncY*zoom).rotate(ang).translate(-AncX*zoom, -AncY*zoom));
-//t2->scale(zoom,zoom);
-//t3->setTransform(QTransform().translate(AncX*zoom, AncY*zoom).rotate(ang).translate(-AncX*zoom, -AncY*zoom));
-//t3->scale(zoom,zoom);
+
 
 };
 
 bool turtle::moveT(void)
 {
+   
 bool toret=true;
 qreal oldX=curX;
 qreal oldY=curY;
@@ -224,16 +226,14 @@ if(!checkPos())
    curY=curY-step*cos(ang*(Pi/180));
    };
 t1->moveBy(moveX,moveY);
-//t2->moveBy(moveX,moveY);
-//t3->moveBy(moveX,moveY);
+
 
 Tail->moveBy(moveX,moveY);
 if(tail){
 lines.append(new QGraphicsLineItem(oldX,oldY,curX,curY));//Add line to lines list 
 scene->addItem(lines.last());};
 showCurTurtle();
-if(!toret)
-	emit Otkaz(QString::fromUtf8("Край пустыни"));else emit Ok();
+
 return toret;
 }
 
@@ -351,6 +351,7 @@ turtle::~turtle()
 	};
  void turtle:: DoMove(int range)
         {
+   
 	step=range;
 	moveT();
 	};

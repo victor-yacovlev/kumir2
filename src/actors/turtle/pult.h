@@ -151,12 +151,13 @@ public:
 		 * @param parent ссыка на объект-владелец
 		 * 
 		 */
-	loggerButton ( QWidget* parent =0);
+	loggerButton (QDir resource_dir=QDir(), QWidget* parent =0);
 	/**
 		 * Деструктор
 		 */
 	~loggerButton(){};
 	void upArrowType(bool b){isUpArrow=b;};
+    void loadButtons(QDir dir);
 signals:
 	void pressed();
 protected:
@@ -231,7 +232,7 @@ public:
 		 * @param parent ссыка на объект-владелец
 		 * @param fl флаги окна
 		 */
-	pultLogger ( QWidget* parent = 0);
+	pultLogger (QDir resDir=QDir(), QWidget* parent = 0);
 	/**
 		 * Деструктор
 		 */
@@ -284,7 +285,7 @@ public:
 		 * @param parent ссыка на объект-владелец
 		 * @param fl флаги окна
 		 */
-	TurtlePult ( QWidget* parent = 0, Qt::WFlags fl = 0 );
+	TurtlePult (QDir resDir=QDir(), QWidget* parent = 0, Qt::WFlags fl = 0 );
 	/**
 		 * Деструктор
 		 */

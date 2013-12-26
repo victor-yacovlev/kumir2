@@ -15,6 +15,7 @@
 ****************************************************************************/
 
 #include "pult.h"
+
 const double DegreesPerMinute = 7.0;
 const double DegreesPerSecond = DegreesPerMinute / 60;
 const int MaxMinutes = 45;
@@ -336,13 +337,13 @@ void MainButton::leaveEvent ( QEvent * event )
 
 
 
-loggerButton::loggerButton ( QWidget* parent):QWidget(parent)
+loggerButton::loggerButton (QDir dir, QWidget* parent):QWidget(parent)
 {isUpArrow=false;
 	posX=1;
 	posY=1;
-	buttonImageUp.load(":/img/butt.png");
-	buttonImageDown.load(":/img/buttd.png");
-	downFlag=false;
+    buttonImageUp.load(dir.absoluteFilePath("butt.png"));
+	buttonImageDown.load(dir.absoluteFilePath("buttd.png")); 
+    downFlag=false;
 	Parent=parent;
 	int mid=buttonImageUp.width()/2;
 	upArrow.append(QLine(mid,10,mid-11,15));
@@ -350,7 +351,13 @@ loggerButton::loggerButton ( QWidget* parent):QWidget(parent)
 	downArrow.append(QLine(mid,15,mid-11,10));
 	downArrow.append(QLine(mid,15,mid+11,10));
 };
-
+void loggerButton::loadButtons(QDir dir)
+{
+    
+//    qDebug()<<"Dir"<<dir.absoluteFilePath("butt.png");
+//	  //  buttonImageUp.load("/Volumes/Untitled 1/Users/mordol/Kumir2.0/SshGitRep/BuildSecSt12/Debug/Kumir.app/Contents/Resources/actors/turtle/butt.png");
+//	buttonImageDown.load(dir.absoluteFilePath("buttd.png"));    
+}
 void loggerButton::paintEvent ( QPaintEvent * event )
 {
     Q_UNUSED(event);
@@ -393,7 +400,7 @@ void loggerButton::mouseReleaseEvent ( QMouseEvent * event )
 
 
 
-pultLogger::pultLogger ( QWidget* parent):QWidget(parent)
+pultLogger::pultLogger ( QDir resDir,QWidget* parent):QWidget(parent)
 {
 	mainFrame= new QFrame(parent);
 	mainFrame->setLineWidth(2);
@@ -422,11 +429,13 @@ pultLogger::pultLogger ( QWidget* parent):QWidget(parent)
 	respFrame->move(W-RESP_PANEL,2);
 
 
-	downButton=new loggerButton(parent);
+	downButton=new loggerButton(resDir,parent);
+  //  upButton->loadButtons(resDir);
 	downButton->move(0,H-24);
 	downButton->resize(140,24);
 	downButton->show();
-	upButton=new loggerButton(parent);
+	upButton=new loggerButton(resDir,parent);
+  //  upButton->loadButtons(resDir);
 	upButton->move(0,8);
 	upButton->resize(140,26);
 	upButton->upArrowType(true);
@@ -507,14 +516,14 @@ void pultLogger::CopyLog()
     for(int i=0;i<lines.count();i++)if(!lines[i].KumCommand().isEmpty())text+=lines[i].KumCommand()+"\n";
     cp->setText(text);
 };
-TurtlePult::TurtlePult ( QWidget* parent, Qt::WFlags fl )
+TurtlePult::TurtlePult ( QDir resdir,QWidget* parent, Qt::WFlags fl )
 	: QWidget ( parent, fl ), Ui::TurtlePult()
 {
 	autoClose=false;	
 	setupUi ( this );
 	//setWindowFlags(Qt::CustomizeWindowHint|Qt::WindowSystemMenuHint|Qt::WindowMinimizeButtonHint);
 	libMode=false;
-	Logger=new pultLogger(this);
+	Logger=new pultLogger(resdir,this);
 
 	GradInput=new OvenTimer(this);
 	GradInput->setGeometry(gradProto->geometry());
@@ -530,32 +539,32 @@ TurtlePult::TurtlePult ( QWidget* parent, Qt::WFlags fl )
 	buttFwd=new MainButton(this);
 	buttFwd->move(UpB->pos());
 	buttFwd->setGeometry(UpB->geometry());
-	buttFwd->loadIcon(":/img/vpered.png");
+	buttFwd->loadIcon(resdir.absoluteFilePath("vpered.png"));
 
 	DownB->hide();
 	buttBack=new MainButton(this);
 	buttBack->move(DownB->pos());
 	buttBack->setGeometry(DownB->geometry());
-	buttBack->loadIcon(":/img/nazad.png");
+	buttBack->loadIcon(resdir.absoluteFilePath("nazad.png"));
 
 	LeftB->hide();
 	turnLeft=new MainButton(this);
 	turnLeft->move(LeftB->pos());
 	turnLeft->setGeometry(RightB->geometry());
-	turnLeft->loadIcon(":/img/vlevo.png");
+	turnLeft->loadIcon(resdir.absoluteFilePath("vlevo.png"));
 
 	RightB->hide();
 	turnRight=new MainButton(this);
 	turnRight->move(RightB->pos());
 	turnRight->setGeometry(LeftB->geometry());
-	turnRight->loadIcon(":/img/vpravo.png");
+	turnRight->loadIcon(resdir.absoluteFilePath("vpravo.png"));
 
 	//        StenaB->hide();
 	askStena=new MainButton(this);
 	//        askStena->move(StenaB->pos());
 	askStena->setCheckable(true);
 	askStena->setText(trUtf8("  "));
-	askStena->loadIcon(":/icons/stena.png");
+	askStena->loadIcon(resdir.absoluteFilePath("stena.png"));
 	askStena->setCheckable(true);
 	askStena->hide();
 	//        SvobodnoB->hide();
@@ -563,7 +572,7 @@ TurtlePult::TurtlePult ( QWidget* parent, Qt::WFlags fl )
 	//        askFree->move(SvobodnoB->pos());
 	askFree->setCheckable(true);
 	askFree->setText(trUtf8(" "));
-	askFree->loadIcon(":/icons/svobodno.png");
+	askFree->loadIcon(resdir.absoluteFilePath("svobodno.png"));
 	askFree->setCheckable(true);
 	askFree->hide();
 
@@ -572,14 +581,14 @@ TurtlePult::TurtlePult ( QWidget* parent, Qt::WFlags fl )
 	buttRad->setGeometry(RadB->geometry());
 
 	buttRad->setText(trUtf8(" "));
-	if(!buttRad->loadIcon(":/img/tailup.png"))qWarning("Image not loaded!");
+	if(!buttRad->loadIcon(resdir.absoluteFilePath("tailup.png")))qWarning("Image not loaded!");
 	TempB->hide();
 	buttTemp=new MainButton(this);
 	buttTemp->setGeometry(TempB->geometry());
     
 	buttTemp->setText(" ");
-	buttTemp->loadIcon(":/img/taildown.png");
-	QIcon toKumirIco(":/img/kumir.png");
+	buttTemp->loadIcon(resdir.absoluteFilePath("taildown.png"));
+	QIcon toKumirIco(resdir.absoluteFilePath("kumir.png"));
 	toKumir->setIcon(toKumirIco);
 	
 	//	CenterB->setIcon(QIcon(":/icons/robo_field.png"));
@@ -602,7 +611,7 @@ TurtlePult::TurtlePult ( QWidget* parent, Qt::WFlags fl )
 
 	connect(toKumir,SIGNAL(clicked()),this,SLOT(logToKumir()));
 	//	connect(CopyLog,SIGNAL(clicked()),Logger,SLOT(CopyLog()));
-
+    //setMinimumSize(100,200);
 	link=true;
 	toKumir->setEnabled(true);
 };

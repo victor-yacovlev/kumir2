@@ -8,7 +8,7 @@ You should change it corresponding to functionality.
 
 // Self include
 #include "turtlemodule.h"
-
+#include "turtle.h"
 // Kumir includes
 #include "extensionsystem/kplugin.h"
 
@@ -17,13 +17,25 @@ You should change it corresponding to functionality.
 #include <QtGui>
 
 namespace ActorTurtle {
-
+    class AAA : public QWidget {
+    public:
+        inline explicit AAA(QWidget * pult): QWidget(), pult_(pult) {
+            setLayout(new QVBoxLayout);
+            layout()->setContentsMargins(0, 0, 0, 0);
+            layout()->addWidget(pult);
+        }
+        inline QSize minimumSizeHint() const { return pult_->minimumSizeHint(); }
+    private:
+        QWidget * pult_;
+    };
 TurtleModule::TurtleModule(ExtensionSystem::KPlugin * parent)
     : TurtleModuleBase(parent)
 {
-    Turtle=new turtle();
-    Tpult=new TurtlePult();
+    Turtle=new turtle(myResourcesDir());
+    Tpult=new TurtlePult(myResourcesDir());
     Tpult->turtleObj=Turtle;
+   
+    animation=false;
     // Module constructor, called once on plugin load
     // TODO implement me
 }
@@ -73,8 +85,11 @@ TurtleModule::TurtleModule(ExtensionSystem::KPlugin * parent)
     // Returns module control view widget, or nullptr if there is no control view
     // NOTE: the method is const and might be called at any time,
     //       so DO NOT create widget here, just return!
+    
     // TODO implement me
-    return Tpult;
+    static QWidget * dummy = new AAA(Tpult);
+    return dummy;
+   
 }
 
 /* public slot */ void TurtleModule::reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)
@@ -88,8 +103,7 @@ TurtleModule::TurtleModule(ExtensionSystem::KPlugin * parent)
 
 /* public slot */ void TurtleModule::reset()
 {
-    // Resets module to initial state before program execution
-    // TODO implement me
+    Turtle->reset();
 }
 
 /* public slot */ void TurtleModule::setAnimationEnabled(bool enabled)
@@ -97,52 +111,54 @@ TurtleModule::TurtleModule(ExtensionSystem::KPlugin * parent)
     // Sets GUI animation flag on run
     // NOTE this method just setups a flag and might be called anytime, even module not needed
     // TODO implement me
-    Q_UNUSED(enabled);  // Remove this line on implementation
+    animation=enabled;
+    qDebug()<<"Anim"<<animation;
+   
 }
 
 /* public slot */ void TurtleModule::runTailUp()
 {
-    /* алг поднять хвост */
-    // TODO implement me
+Turtle->TailUp();
     
 }
 
 /* public slot */ void TurtleModule::runTailDown()
 {
-    /* алг опустить хвост */
-    // TODO implement me
+    Turtle->TailDown();
     
 }
 
 /* public slot */ void TurtleModule::runForward(const int dist)
 {
-    /* алг вперед(цел dist) */
-    // TODO implement me
-    Q_UNUSED(dist)  // Remove this line on implementation;
+    if(animation)msleep(250);
+    Turtle->step=dist;
+    if(!Turtle->moveT())
+        setError(trUtf8("Нельзя вперед!"));
     
 }
 
 /* public slot */ void TurtleModule::runBack(const int dist)
 {
-    /* алг назад(цел dist) */
-    // TODO implement me
-    Q_UNUSED(dist)  // Remove this line on implementation;
+    if(animation)msleep(250);
+    Turtle->step=-dist;
+    if(!Turtle->moveT())
+        setError(trUtf8("Нельзя назад!"));
     
 }
 
 /* public slot */ void TurtleModule::runLeft(const int angle)
 {
-    /* алг влево(цел angle) */
-    // TODO implement me
-    Q_UNUSED(angle)  // Remove this line on implementation;
+    if(animation)msleep(250);
+    Turtle->grad=-angle;
+    Turtle->rotate();
     
 }
 
 /* public slot */ void TurtleModule::runRight(const int angle)
 {
-    /* алг вправо(цел angle) */
-    // TODO implement me
-    Q_UNUSED(angle)  // Remove this line on implementation;
+    if(animation)msleep(250);
+    Turtle->grad=angle;
+    Turtle->rotate();
     
 }
 

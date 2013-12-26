@@ -14,12 +14,12 @@ You should change it corresponding to functionality.
 
 // Kumir includes
 #include "extensionsystem/kplugin.h"
-#include "turtle.h"
+//#include "turtle.h"
 #include "pult.h"
 // Qt includes
 #include <QtCore>
 #include <QtGui>
-
+class turtle;
 namespace ActorTurtle {
 
 
@@ -52,6 +52,7 @@ public slots:
 private:
     turtle* Turtle;
     TurtlePult* Tpult;
+    bool animation;
 
 
 

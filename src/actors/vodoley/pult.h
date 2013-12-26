@@ -151,7 +151,7 @@ class  loggerButton : public QWidget
 		 * @param parent ссыка на объект-владелец
 		 * 
 		 */
-		loggerButton ( QWidget* parent =0);
+    loggerButton ( QWidget* parent =0);
 		/**
 		 * Деструктор
 		 */

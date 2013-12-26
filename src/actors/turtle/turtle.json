@@ -5,6 +5,7 @@
 		{ "name": {"ascii": "tailDown", "ru_RU": "опустить хвост" } },
 		{ 
 		"name": {"ascii": "forward", "ru_RU": "вперед" },
+		 "async": false,
 		"arguments": [
                      { "name": "dist", "baseType": "int" }
                        ]
@@ -29,6 +30,7 @@
 		},
 		{ 
 		"name": {"ascii": "right", "ru_RU": "вправо" },
+		 "async": false,
 		"arguments": [
                      { "name": "angle", "baseType": "int" }
                        ]
