@@ -65,6 +65,9 @@ qt4_wrap_ui(UI_SOURCES ${FORMS})
 install(FILES ${PLUGIN_OUTPUT_PATH}/ActorPainter.pluginspec DESTINATION ${PLUGINS_DIR})
 handleTranslation(ActorPainter)
 add_library(ActorPainter SHARED ${MOC_SOURCES} ${SOURCES} ${MOC_SOURCES2} ${SOURCES2} ${UI_SOURCES})
+
+add_dependencies(ActorPainter Actor_Colorer)
+
 target_link_libraries(ActorPainter ${QT_LIBRARIES} ExtensionSystem Widgets ${STDCXX_LIB} ${STDMATH_LIB})
 copyResources(actors/painter)
 install(TARGETS ActorPainter DESTINATION ${PLUGINS_DIR})
