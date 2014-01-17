@@ -521,7 +521,7 @@ void Plugin::updateSettings(const QStringList & keys)
 
 void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState state)
 {
-    using Shared::PluginInterface;
+    using namespace Shared;
     if (state==PluginInterface::GS_Unlocked) {
 //        m_kumirStateLabel->setText(tr("Editing"));
         mainWindow_->clearMessage();
