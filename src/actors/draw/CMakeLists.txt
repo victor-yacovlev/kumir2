@@ -80,6 +80,8 @@ add_library(
     ${MOC_SOURCES_GENERATED} ${SOURCES_GENERATED}
 )
 
+add_dependencies(ActorDraw Actor_Colorer)
+
 target_link_libraries(
     ActorDraw
     ${QT_LIBRARIES}
