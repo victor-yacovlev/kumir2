@@ -187,17 +187,17 @@ showCurTurtle();
 }
 void turtle::rotateImages()
 {
-//qDebug()<<"Ang"<<ang;
-if((!ang==60)&&(!ang==120)&&(!ang==240)&&(!ang==320)){
-t1->setTransform(QTransform().translate(AncX*zoom, AncY*zoom).rotate(ang).translate(-AncX*zoom, -AncY*zoom));
-//    t1->setRotation(ang); 
-}else
- {
- //qDebug()<<"Ang bugfix"<<ang;
-t1->setTransform(QTransform().translate(AncX*zoom, AncY*zoom).rotate(ang-1).translate(-AncX*zoom, -AncY*zoom));
-//     t1->setRotation(ang);
- };
-t1->scale(zoom,zoom);
+    //qDebug()<<"Ang"<<ang;
+    if ( ang!=60 && ang!=120 && ang!=240 && ang!=320 ) {
+        t1->setTransform(QTransform().translate(AncX*zoom, AncY*zoom).rotate(ang).translate(-AncX*zoom, -AncY*zoom));
+        //    t1->setRotation(ang);
+    }else
+    {
+        //qDebug()<<"Ang bugfix"<<ang;
+        t1->setTransform(QTransform().translate(AncX*zoom, AncY*zoom).rotate(ang-1).translate(-AncX*zoom, -AncY*zoom));
+        //     t1->setRotation(ang);
+    };
+    t1->scale(zoom,zoom);
 
 
 
