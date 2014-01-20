@@ -225,7 +225,7 @@ void RobotItem::moveTo(const Point2Di &point)
         //        emit startAnimationRequest();
     }
     else {
-        //        setPosition(target);
+        setPosition(target);
 //        qDebug() << "Emit command finished";
         emit evaluationFinished();
     }
@@ -257,7 +257,7 @@ void RobotItem::turnLeft()
         //        emit startAnimationRequest();
     }
     else {
-        //        setFrameNo(i_endFrame);
+        setFrameNo(i_endFrame);
 //        qDebug() << "Emit command finished";
         emit evaluationFinished();
     }
@@ -293,7 +293,7 @@ void RobotItem::turnRight()
         //        emit startAnimationRequest();
     }
     else {
-        //        setFrameNo(i_endFrame);
+        setFrameNo(i_endFrame);
 //        qDebug() << "Emit command finished";
         emit evaluationFinished();
     }
