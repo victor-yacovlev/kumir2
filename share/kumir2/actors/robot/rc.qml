@@ -19,6 +19,10 @@ Rectangle {
     signal checkFreeRight
     signal checkFreeTop
     signal checkFreeBottom
+    signal checkRadiation
+    signal checkTemp
+    signal checkColored
+    signal checkClear
     signal copyTextToKumir(string hjghjgjh)
     property bool buttonsLocked: false
 
@@ -373,6 +377,14 @@ Rectangle {
             source: "btn_temperature.png"
             opacity: 0
         }
+                 onClicked: {
+            if (buttonsLocked)
+                return;
+            buttonsLocked = true;
+            commandLog.text += "температура\n";
+            scroll.updateScroll();
+            parent.checkTemp();
+        }
     }
 
     Button {
@@ -388,6 +400,14 @@ Rectangle {
             y: 6
             source: "btn_radiation.png"
             opacity: 0
+        }
+         onClicked: {
+            if (buttonsLocked)
+                return;
+            buttonsLocked = true;
+            commandLog.text += "радиация\n";
+            scroll.updateScroll();
+            parent.checkRadiation();
         }
     }
 
@@ -405,6 +425,14 @@ Rectangle {
             source: "btn_painted.png"
             opacity: 0
         }
+                 onClicked: {
+            if (buttonsLocked)
+                return;
+            buttonsLocked = true;
+            commandLog.text += "закрашена\n";
+            scroll.updateScroll();
+            parent.checkColored();
+        }
     }
 
     Button {
@@ -420,6 +448,14 @@ Rectangle {
             y: 12
             source: "btn_clean.png"
             opacity: 0
+        }
+        onClicked: {
+            if (buttonsLocked)
+                return;
+            buttonsLocked = true;
+            commandLog.text += "клетка чистая\n";
+            scroll.updateScroll();
+            parent.checkClear();
         }
     }
 

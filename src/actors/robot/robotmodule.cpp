@@ -3327,6 +3327,10 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     connect(pult, SIGNAL(checkFreeRight()), this, SLOT(runIsFreeAtRight()));
     connect(pult, SIGNAL(checkFreeTop()), this, SLOT(runIsFreeAtTop()));
     connect(pult, SIGNAL(checkFreeBottom()), this, SLOT(runIsFreeAtBottom()));
+    connect(pult, SIGNAL(checkRadiation()), this, SLOT(runRadiation()));
+    connect(pult, SIGNAL(checkTemp()), this, SLOT(runTemperature()));
+    connect(pult, SIGNAL(checkColored()), this, SLOT(runIsColor()));
+    connect(pult, SIGNAL(checkClear()), this, SLOT(runIsClear()));
     connect(pult, SIGNAL(copyTextToKumir(QString)), this, SLOT(copyFromPult(QString)));
     connect(this, SIGNAL(sendToPultLog(QVariant)), pult, SLOT(addToResultLog(QVariant)));
     startField=field->Clone();
@@ -3712,7 +3716,7 @@ bool RobotModule::runIsColor()
     };
     double RobotModule::runRadiation(){    
         double result = field->currentCell()->radiation;
-        QString status = result? trUtf8("да") : trUtf8("нет");
+        QString status = QString::number(result);
         if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
             emit sendToPultLog(status);
         }
@@ -3720,7 +3724,7 @@ bool RobotModule::runIsColor()
     };
     int RobotModule::runTemperature(){       
         int result = field->currentCell()->temperature;
-        QString status = result? trUtf8("да") : trUtf8("нет");
+        QString status = QString::number(result);
         if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
             emit sendToPultLog(status);
         }
