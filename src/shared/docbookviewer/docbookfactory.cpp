@@ -387,6 +387,13 @@ bool DocBookFactory::skippedEntity(const QString &name)
     else if (name == "gamma") {
         buffer_.push_back(QChar(0x03B3));
     }
+    // Arrows from http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent
+    else if (name == "rarr") {
+        buffer_.push_back(QChar(0x2192));
+    }
+    else if (name == "larr") {
+        buffer_.push_back(QChar(0x2190));
+    }
     return true;
 }
 
