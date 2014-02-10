@@ -70,7 +70,7 @@ private:
     QString renderRow(ModelPtr data) const;
     QString renderEntry(ModelPtr data) const;
 
-    QString renderCaption(ModelPtr data) const;
+    QString renderCaption(ModelPtr data, const QString &captionPrefix) const;
     QString renderMediaObject(ModelPtr data) const;
     QString renderInlineMediaObject(ModelPtr data) const;
     QString renderImageObject(ModelPtr data) const;

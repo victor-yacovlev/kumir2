@@ -277,7 +277,7 @@ QString ContentView::renderElement(ModelPtr data) const
         return renderMediaObject(data);
     }
     else if (data == DocBookModel::Caption) {
-        return renderCaption(data);
+        return renderCaption(data, QString());
     }
     else if (data == DocBookModel::InlineMediaObject) {
         return renderInlineMediaObject(data);
@@ -984,17 +984,24 @@ QString ContentView::renderMediaObject(ModelPtr data) const
         result += "<div align='center' width='100%' padding='10'>" +
                 renderElement(mediaObject);
         if (caption) {
-            result += renderCaption(caption);
+            const QString index = chapterNumber(data) > 0
+                    ? QString("%1.%2")
+                      .arg(chapterNumber(data))
+                      .arg(elementNumber(data))
+                    : QString::number(elementNumber(data));
+            const QString prefix = "<b>" + tr("Figure&nbsp;%1 ").arg(index) + "</b>";
+            result += renderCaption(caption, prefix);
         }
         result += "</div>\n";
     }
     return result;
 }
 
-QString ContentView::renderCaption(ModelPtr data) const
+QString ContentView::renderCaption(ModelPtr data, const QString &captionPrefix) const
 {
     QString result;
     result += "<div align='center' width='100%'>";
+    result += captionPrefix;
     result += renderChilds(data);
     result += "</div>";
     return result;
