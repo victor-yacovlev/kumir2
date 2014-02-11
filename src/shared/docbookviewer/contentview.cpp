@@ -1326,6 +1326,13 @@ ModelPtr ContentView::findImageData(ModelPtr parent) const
 }
 
 
+static const QList<DocBookModel::ModelType> TOC_types =
+        QList<DocBookModel::ModelType>()
+        << DocBookModel::ListOfExamples << DocBookModel::ListOfFunctions
+        << DocBookModel::ListOfTables << DocBookModel::Book
+        << DocBookModel::Article << DocBookModel::Set
+        << DocBookModel::Chapter << DocBookModel::Section;
+
 QString ContentView::renderTOC(ModelPtr data) const
 {
     QString result;
@@ -1356,7 +1363,10 @@ QString ContentView::renderTOC(ModelPtr data) const
     }
     result += "<hr/>\n";
     foreach (ModelPtr child, data->children()) {
-        result += renderTOCElement(child, 0, true);
+        const DocBookModel::ModelType childType = child->modelType();
+        if (TOC_types.contains(childType)) {
+            result += renderTOCElement(child, 0, true);
+        }
     }
     result += "<hr/>\n";
     return result;
@@ -1419,7 +1429,10 @@ QString ContentView::renderTOCElement(ModelPtr data, quint8 level, bool enumerat
     result += "<p align='left' margin='5'><a href=\"" + href + "\">" + indent + title + "</p>";
     if (!isPlainPage(data)) {
         foreach (ModelPtr child, data->children()) {
-            result += renderTOCElement(child, level + 1, enumerate);
+            DocBookModel::ModelType childType = child->modelType();
+            if (TOC_types.contains(childType)) {
+                result += renderTOCElement(child, level + 1, enumerate);
+            }
         }
     }
     return result + "</li>\n";
