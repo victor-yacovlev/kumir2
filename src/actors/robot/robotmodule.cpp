@@ -3760,7 +3760,30 @@ bool RobotModule::runIsColor()
         qDebug()<<field->cellAt(row-1,col-1)->upChar;
         return field->cellAt(row-1,col-1)->upChar;  
     };
-
+    int RobotModule::runCellTemp(const int row, const int col)
+    {
+        if(row-1>field->rows() ||col-1>field->columns())
+        {
+            
+            setError(trUtf8("Нет какой клетки!"));
+            
+            return ' ';
+        }
+        qDebug()<<field->cellAt(row-1,col-1)->upChar;
+        return field->cellAt(row-1,col-1)->temperature;  
+    };
+    qreal RobotModule::runCellRad(const int row, const int col)
+    {
+        if(row-1>field->rows() ||col-1>field->columns())
+        {
+            
+            setError(trUtf8("Нет какой клетки!"));
+            
+            return ' ';
+        }
+        qDebug()<<field->cellAt(row-1,col-1)->upChar;
+        return field->cellAt(row-1,col-1)->radiation; 
+    };
     
 QChar RobotModule::runDownChar(const int row, const int col)
     {qDebug()<<field->cellAt(row-1,col-1)->downChar;
