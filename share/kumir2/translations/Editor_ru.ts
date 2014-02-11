@@ -4,29 +4,39 @@
 <context>
     <name>Editor::Editor</name>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="239"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="132"/>
+        <source>Can&apos;t open file %1 for reading</source>
+        <translation type="unfinished">Не могу открыть %1 для чтения</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="319"/>
         <source>import %1</source>
         <translation>использовать %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="644"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="794"/>
         <source>Record keyboard sequence</source>
         <translation>Запись последовательности нажатий клавиш</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="650"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="800"/>
         <source>Edit saved keyboard sequences...</source>
         <translation>Изменить записанные последовательности...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="657"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="807"/>
         <source>Edit</source>
         <translation>Редактирование</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="682"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="832"/>
         <source>Insert</source>
         <translation>Вставка</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="1051"/>
+        <source>Can&apos;t open file %1 for writing</source>
+        <translation type="unfinished">Не могу открыть %1 для записи</translation>
     </message>
     <message>
         <source>Add sequence</source>
@@ -37,7 +47,7 @@
         <translation type="obsolete">Отмена</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="766"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="901"/>
         <source>New keyboard sequence...</source>
         <translation>Новая последовательность действий...</translation>
     </message>
@@ -45,7 +55,7 @@
 <context>
     <name>Editor::EditorPlane</name>
     <message>
-        <location filename="../../../src/plugins/editor/editorplane.cpp" line="1508"/>
+        <location filename="../../../src/plugins/editor/editorplane.cpp" line="1529"/>
         <source>Can&apos;t suggest autocomplete</source>
         <translation>Нет вариантов автодополнения</translation>
     </message>
@@ -53,17 +63,15 @@
 <context>
     <name>Editor::EditorPlugin</name>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="189"/>
         <source>Can&apos;t open file %1 for writing</source>
-        <translation>Не могу открыть %1 для записи</translation>
+        <translation type="obsolete">Не могу открыть %1 для записи</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="224"/>
         <source>Can&apos;t open file %1 for reading</source>
-        <translation>Не могу открыть %1 для чтения</translation>
+        <translation type="obsolete">Не могу открыть %1 для чтения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="257"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="150"/>
         <source>Editor</source>
         <translation>Редактор</translation>
     </message>
@@ -540,7 +548,7 @@
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/macrolisteditor.cpp" line="79"/>
+        <location filename="../../../src/plugins/editor/macrolisteditor.cpp" line="75"/>
         <source>Edit recorded keyboard sequence...</source>
         <translation>Изменить записанную последовательность клавиш...</translation>
     </message>
@@ -563,179 +571,168 @@
         <translation>Кнопка для временного переключения раскладки:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="107"/>
         <source>Shortcut for play macro:</source>
-        <translation>Комбинация перед выполнением вставки:</translation>
+        <translation type="obsolete">Комбинация перед выполнением вставки:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="149"/>
-        <source>Esc</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="154"/>
-        <source>Ctrl+M</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="167"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="108"/>
         <source>Font</source>
         <translation>Шрифт</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="175"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="116"/>
         <source>Family:</source>
         <translation>Гарнитура:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="196"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="137"/>
         <source>Size:</source>
         <translation>Размер:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="218"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="159"/>
         <source>Preview:</source>
         <translation>Просмотр:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="225"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="166"/>
         <source>The keywords of Kumir are: alg, begin, end and others</source>
         <translation>Ключевые слова языка Кумир - это алг, нач, кон и другие</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="235"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="176"/>
         <source>Syntax highlighting</source>
         <translation>Подсветка кода</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="241"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="182"/>
         <source>Invert colors if system color scheme has dark background</source>
         <translation>Инвертировать цвета, если фон темный</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="250"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="191"/>
         <source>Keywords:</source>
         <translation>Конструкции языка:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="277"/>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="315"/>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="353"/>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="391"/>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="429"/>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="467"/>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="505"/>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="543"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="218"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="256"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="294"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="332"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="370"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="408"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="446"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="484"/>
         <source>Bold</source>
         <translation>Жирный</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="288"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="229"/>
         <source>Type names:</source>
         <translation>Имена типов величин:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="326"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="267"/>
         <source>Numeric constants:</source>
         <translation>Числовые значения:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="364"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="305"/>
         <source>Literal constants::</source>
         <translation>Литеральные значения:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="402"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="343"/>
         <source>Module names:</source>
         <translation>Имена исполнителей:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="440"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="381"/>
         <source>Algorhitm names:</source>
         <translation>Имена алгоритмов:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="478"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="419"/>
         <source>Algorhitm descriptions after #:</source>
         <translation>Описания алгоритмов после #:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="516"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="457"/>
         <source>Comments:</source>
         <translation>Комментарии:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="555"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="496"/>
         <source>Initial Text</source>
         <translation>Текст исходной программы</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="561"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="502"/>
         <source>Browse...</source>
         <translation>Найти...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="623"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="564"/>
         <source>Initial program template file:</source>
         <translation>Имя файла с текстом исходной программы:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="636"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="577"/>
         <source>Other</source>
         <translation>Другое</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="642"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="583"/>
         <source>Force press program text to the left</source>
         <translation>Прижимать текст программы к левому краю</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="649"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="590"/>
         <source>Show trailing spaces</source>
         <translation>Отображать пробелы в конце строк</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="656"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="597"/>
         <source>Auto insert pairing operational brackets</source>
         <translation>Автоматически дописывать конструкции программы</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="666"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="607"/>
         <source>Free cursor positioning:</source>
         <translation>Свободное перемещение курсора:</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="674"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="615"/>
         <source>Texts and comments</source>
         <translation>В текстовых файлах и комментариях</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="679"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="620"/>
         <source>Always</source>
         <translation>В текстовых файлах и программах</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.ui" line="684"/>
+        <location filename="../../../src/plugins/editor/settingspage.ui" line="625"/>
         <source>Texts only</source>
         <translation>Только в текстовых файлах</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.cpp" line="278"/>
+        <location filename="../../../src/plugins/editor/settingspage.cpp" line="359"/>
         <source>File not exists</source>
         <translation>Файл не найден</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.cpp" line="281"/>
+        <location filename="../../../src/plugins/editor/settingspage.cpp" line="362"/>
         <source>File access denied</source>
         <translation>Нет доступа к файлу</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.cpp" line="290"/>
+        <location filename="../../../src/plugins/editor/settingspage.cpp" line="371"/>
         <source>Choose initial program file</source>
         <translation>Выбор файла с исходным текстом программы</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/settingspage.cpp" line="349"/>
+        <location filename="../../../src/plugins/editor/settingspage.cpp" line="430"/>
         <source>Choose color</source>
         <translation>Выберете цвет</translation>
     </message>
@@ -814,59 +811,59 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="552"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="712"/>
         <source>Select all text in editor</source>
         <translation>Выбрать весь текст</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="559"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="718"/>
         <source>Copy selection to clipboard</source>
         <translation>Скопировать</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="566"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="725"/>
         <source>Cut selection to clipboard</source>
         <translation>Вырезать</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="573"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="732"/>
         <source>Paste from clipboard</source>
         <translation>Вставить</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="580"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="739"/>
         <source>Find...</source>
         <translation>Найти...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="588"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="746"/>
         <source>Replace...</source>
         <translation>Заменить...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="598"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="755"/>
         <source>Delete line under cursor</source>
         <translation>Удалить строку</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="605"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="761"/>
         <source>Delete text from cursor to end of line</source>
         <translation>Удалить текст до конца строки</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="613"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="768"/>
         <source>Undo last action</source>
         <translation>Отменить последнее действие</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="622"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="777"/>
         <source>Redo last undoed action</source>
         <translation>Повторить отмененное действие</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="631"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="785"/>
         <source>(Un)Comment lines</source>
-        <translation>(Раз)комменировать строки</translation>
+        <translation type="unfinished">(Рас)комменировать строки</translation>
     </message>
 </context>
 </TS>
