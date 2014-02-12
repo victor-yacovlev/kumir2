@@ -59,56 +59,52 @@ void generator::renderData(ModelPtr data)
 {
     root_ = data;
     QString preambule = QString::fromUtf8(PREAMBULE);
-    QString paper, clazz, clazzparam, tmargin, bmargin, lmargin, rmargin, omargin, imargin;
+    QString paper, clazz, clazzparam, lmargin, rmargin;
+    QString geometry;
+    QString colorlinks = "false";
     const QString profile = QString::fromStdString(options::profile).toLower();
     static const QStringList ValidProfiles = QStringList() << "a4" << "a5" <<
                                                               "a4ts" << "a5ts" <<
-                                                              "tablet";
+                                                              "tablet" << "ebook";
     if (!ValidProfiles.contains(profile)) {
         throw string("Not valid profile: ") + options::profile;
     }
     if (profile.startsWith("a4")) {
         paper = "a4paper";
-        tmargin = "2cm";
-        bmargin = "2cm";
-        imargin = "2cm";
-        omargin = "3cm";
+        geometry = "tmargin=2cm,bmargin=2cm,imargin=2cm,omargin=3cm";
+        lmargin = "2cm";
+        rmargin = "3cm";
     }
-    else if (profile != "tablet") {
+    else if (profile.startsWith("a5")) {
         paper = "a5paper";
-        tmargin = "2cm";
-        bmargin = "2cm";
-        imargin = "2cm";
-        omargin = "3cm";
+        geometry = "tmargin=2cm,bmargin=2cm,imargin=2cm,omargin=3cm";
+        lmargin = "2cm";
+        rmargin = "3cm";
+    }
+    else if (profile.startsWith("e") && profile.endsWith("book")) {
+        paper = "a6paper";
+        geometry = "papersize={110mm,142mm},total={110mm,142mm}";
     }
     else {
         paper = "a5paper";
-        tmargin = "0.1cm";
-        bmargin = "0.1cm";
-        imargin = "0.5cm";
-        omargin = "0.5cm";
+        geometry = "tmargin=0.1cm,bmargin=0.1cm,imargin=0.5cm,omargin=0.5cm";
         allowRasterImages_ = true;
+        colorlinks = "true";
     }
     clazzparam = paper;
     if (profile.endsWith("ts")) {
-        clazzparam += ",twoside";
-        lmargin = imargin;
-        rmargin = omargin;
+        clazzparam += ",twoside";        
     }
     else {
-        clazzparam += ",oneside";
-        lmargin = imargin;
-        rmargin = omargin;
+        clazzparam += ",oneside";        
     }
     clazz = root_ == DocBookModel::Book ? "book" : "article";
 
     preambule.replace("%%paper%%", paper);
     preambule.replace("%%class%%", clazz);
     preambule.replace("%%classparam%%", clazzparam);
-    preambule.replace("%%tmargin%%", tmargin);
-    preambule.replace("%%bmargin%%", bmargin);
-    preambule.replace("%%lmargin%%", lmargin);
-    preambule.replace("%%rmargin%%", rmargin);
+    preambule.replace("%%geometry%%", geometry);
+    preambule.replace("%%colorlinks%%", colorlinks);
     data_ = preambule + "\n";
     data_ += "\\begin{document}\n\n";
     if (clazz == "article" && paper == "a4paper") {
