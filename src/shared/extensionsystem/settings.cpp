@@ -2,14 +2,19 @@
 
 #include <QDir>
 #include <QCoreApplication>
+#include <QDesktopServices>
 
 namespace ExtensionSystem {
 
 Settings::Settings(const QString & pluginName)
     : pluginName_(pluginName)
     , mutex_(new QMutex)
+#ifdef Q_OS_WIN32
+    , qsettings_(new QSettings(QDesktopServices::storageLocation(QDesktopServices::DataLocation)+"/"+defaultSettingsScope()+"/"+pluginName+".conf", QSettings::IniFormat))
+#else
     , qsettings_(new QSettings(defaultSettingsScope(), pluginName))
-{
+#endif
+{    
     qsettings_->setIniCodec("UTF-8");
     settingsFile_ = qsettings_->fileName();
 }
@@ -75,11 +80,16 @@ QString Settings::defaultSettingsScope()
     static const QString result = QString::fromAscii("kumir2");
     return result;
 #else
-    static const QString applicationLanucher = qApp->arguments().at(0);
-    static const QString applicationName =
+    static const QString applicationLanucher = QDir::fromNativeSeparators(qApp->arguments().at(0));
+    static QString applicationName =
             applicationLanucher.startsWith(qApp->applicationDirPath())
             ? applicationLanucher.mid(qApp->applicationDirPath().length() + 1)
             : applicationLanucher;
+#ifdef Q_OS_WIN32
+    if (applicationName.endsWith(".exe")) {
+        applicationName.remove(applicationName.length()-4, 4);
+    }
+#endif
     return applicationName;
 #endif
 }

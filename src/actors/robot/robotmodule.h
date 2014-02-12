@@ -498,6 +498,8 @@ namespace ActorRobot {
         bool runMark(const int row, const int col) ;
         bool runColored(const int row, const int col);
         void runRobotPos(int& row, int& col);
+        int runCellTemp(const int row, const int col);
+        qreal runCellRad(const int row, const int col);
         QChar runUpChar(const int row, const int col);
         QChar runDownChar(const int row, const int col);
     public:

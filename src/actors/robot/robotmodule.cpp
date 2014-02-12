@@ -3507,6 +3507,10 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
                 }
             setWindowSize();
         }
+        if(sett->value("Robot/Dir").isValid())
+        {
+            curDir=sett->value("Robot/Dir").toString();
+        }
        // setWindowSize();
         return "";
     }
@@ -3760,7 +3764,30 @@ bool RobotModule::runIsColor()
         qDebug()<<field->cellAt(row-1,col-1)->upChar;
         return field->cellAt(row-1,col-1)->upChar;  
     };
-
+    int RobotModule::runCellTemp(const int row, const int col)
+    {
+        if(row-1>field->rows() ||col-1>field->columns())
+        {
+            
+            setError(trUtf8("Нет какой клетки!"));
+            
+            return ' ';
+        }
+        qDebug()<<field->cellAt(row-1,col-1)->upChar;
+        return field->cellAt(row-1,col-1)->temperature;  
+    };
+    qreal RobotModule::runCellRad(const int row, const int col)
+    {
+        if(row-1>field->rows() ||col-1>field->columns())
+        {
+            
+            setError(trUtf8("Нет какой клетки!"));
+            
+            return ' ';
+        }
+        qDebug()<<field->cellAt(row-1,col-1)->upChar;
+        return field->cellAt(row-1,col-1)->radiation; 
+    };
     
 QChar RobotModule::runDownChar(const int row, const int col)
     {qDebug()<<field->cellAt(row-1,col-1)->downChar;
@@ -3851,12 +3878,13 @@ void RobotModule::loadEnv()
         
         QString	RobotFile=QFileDialog::getOpenFileName(mainWidget(), QString::fromUtf8 ("Открыть файл"), curDir, "(*.fil)");
         
-        
+        qDebug()<<"CurDir"<<curDir;
         
         QFileInfo info(RobotFile);
         QDir dir=info.absoluteDir();
         
-        
+        curDir=dir.path();
+        robotSettings()->setValue("Robot/Dir",QVariant(curDir));
         if ( RobotFile.isEmpty())return;
        // CurrentFileName = RobotFile;
        
@@ -3979,6 +4007,7 @@ void RobotModule::saveEnv()
         QFileInfo info(RobotFile);
         QDir dir=info.absoluteDir();
         curDir=dir.path();
+        robotSettings()->setValue("Robot/Dir",QVariant(curDir));
         if (RobotFile.contains("*") || RobotFile.contains("?"))
         {
             QMessageBox::information( 0, "", QString::fromUtf8("Недопустимый символ в имени файла!"), 0,0,0);

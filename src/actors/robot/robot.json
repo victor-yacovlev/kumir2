@@ -97,7 +97,25 @@
 				{ "name": "row", "baseType": "int"},
 				{ "name": "col", "baseType": "int"}
 			]
-		},		
+		},
+		{
+			"name": {"ascii": "cellTemp", "ru_RU": "@@температура"},
+			"async": false,
+			"returnType": "int",
+			"arguments": [
+				{ "name": "row", "baseType": "int"},
+				{ "name": "col", "baseType": "int"}
+			]
+		},
+		{
+			"name": {"ascii": "cellRad", "ru_RU": "@@радиация"},
+			"async": false,
+			"returnType": "double",
+			"arguments": [
+				{ "name": "row", "baseType": "int"},
+				{ "name": "col", "baseType": "int"}
+			]
+		},	
 		{
 			"name": {"ascii": "downChar", "ru_RU": "@@нижняя буква"},
 			"async": false,
