@@ -57,6 +57,7 @@ protected:
             const CommandLine & /*runtimeArguments*/
             ) = 0;
 
+    inline virtual bool isSafeToQuit() const { return true; }
     inline virtual void start() {}
     inline virtual void stop() {}
     virtual void updateSettings(const QStringList & keys) = 0;
