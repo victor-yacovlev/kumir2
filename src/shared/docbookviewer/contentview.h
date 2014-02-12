@@ -57,6 +57,9 @@ private:
     QString renderCode(ModelPtr data) const;
     QString renderKeyCombo(ModelPtr data) const;
     QString renderKeySym(ModelPtr data) const;
+    QString renderGuiMenu(ModelPtr data) const;
+    QString renderGuiMenuItem(ModelPtr data) const;
+    QString renderGuiButton(ModelPtr data) const;
     QString renderSubscript(ModelPtr data) const;
     QString renderSuperscript(ModelPtr data) const;
     static QString& wrapInlineElement(ModelPtr data, QString & result,

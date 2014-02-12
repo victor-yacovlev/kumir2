@@ -234,6 +234,15 @@ bool DocBookFactory::startElement(
     else if (element == "package") {
         model = new DocBookModel(root_, DocBookModel::Package);
     }
+    else if (element == "guimenu") {
+        model = new DocBookModel(root_, DocBookModel::GuiMenu);
+    }
+    else if (element == "guimenuitem") {
+        model = new DocBookModel(root_, DocBookModel::GuiMenuItem);
+    }
+    else if (element == "guibutton") {
+        model = new DocBookModel(root_, DocBookModel::GuiButton);
+    }
     else if (element == "xref") {
         model = new DocBookModel(root_, DocBookModel::Xref);
         model->xrefLinkEnd_ = atts.value("linkend");
@@ -294,7 +303,7 @@ bool DocBookFactory::startElement(
     }
     else if (element == "msup" && MathML.indexIn(namespaceURI) != -1) {
         model = new DocBookModel(root_, DocBookModel::MathML_MSup);
-    }
+    }    
     else {
         model = new DocBookModel(root_, DocBookModel::Unknown);
         buffer_.clear();

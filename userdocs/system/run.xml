@@ -1,0 +1,165 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+        "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+<chapter>
+    <title>Выполнение программ на языке Кумир</title>
+    <section>
+        <title>Общие сведения</title>
+        <para>
+            Выполнение программы на языке Кумир состоит в том, что последовательно выполняются:
+            <orderedlist>
+                <listitem>
+                    <para>Загрузка и инициализация используемых исполнителей, если они использовались</para>
+                </listitem>
+                <listitem>
+                    <para>Выполнение вступления к программе, если оно есть</para>
+                </listitem>
+                <listitem>
+                    <para>Выполнение<emphasis role="italic">стартового алгоритма</emphasis>.
+                    </para>
+                </listitem>
+            </orderedlist>
+        </para>
+        <para>Стартовым алгоритмом может являться:
+            <itemizedlist>
+                <listitem>
+                    <para>первый алгоритм программы при запуске обычного выполнения, выполнения без
+                        показа на полях или пошагового выполнения;
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>алгоритм<code language="kumir">@тестирование</code>,
+                        которые может находится в скрытой части программы, -- при активации действия
+                        <guimenuitem>Выполнение&rarr;Запустить тестирование</guimenuitem>
+                        или выполнения
+                        проверки задания из Практикума.
+                    </para>
+                </listitem>
+            </itemizedlist>
+        </para>
+        <para>
+            Выполнение может производиться по шагам, когда одному шагу соответствует выполнимая строка программы.
+            Особую роль играют вызовы вспомогательных алгоритмов, представленных в текущей программе. По желанию
+            пользователя, такой вызов может трактоваться как один шаг (крупный<guimenuitem>ШАГ</guimenuitem>).
+            В то же время, можно и &quot;войти внутрь вызова&quot;. Тогда очередной
+            шаг (мелкий<guimenuitem>шаг</guimenuitem>) будет состоять в выполнении очередной строки вспомогательного
+            алгоритма.
+        </para>
+    </section>
+    <section>
+        <title>Выполнение программ и состояния системы &quot;Кумир&quot;</title>
+        <para>
+            Напомним, что система Кумир может находиться в таких состояниях:
+            <itemizedlist>
+                <listitem>
+                    <para>
+                        <emphasis role="bold">Редактирование</emphasis>
+                        -- происходит подготовка программы, выполнения нет;
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis role="bold">Выполнение</emphasis>
+                        -- происходит выполнение программы, редактирование текста запрещено;
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis role="bold">Пауза</emphasis>
+                        -- выполнение программы приостановлено, но может быть продолжено;
+                        редактирование текста программы запрещено;
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis role="bold">Анализ</emphasis>
+                        -- выполнение завершено, одноко все сообщения программы доступны для наблюдения и
+                        анализа; по любому действию, изменяющему исходную программу или состояние одного из
+                        исполнителей, система переходит в состояние<emphasis role="bold">Редактирование</emphasis>;
+                    </para>
+                </listitem>
+            </itemizedlist>
+        </para>
+        <para>
+            Переход в состояние
+            <emphasis role="bold">Выполнение</emphasis>
+            возможно из состояний:
+            <itemizedlist>
+                <listitem>
+                    <para>
+                    <emphasis role="bold">Редактирование</emphasis>,
+                    <emphasis role="bold">Анализ</emphasis>
+                    -- с помощью действий из меню<guimenu>Выполнение</guimenu>;
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                    <emphasis role="bold">Пауза</emphasis>,
+                    <emphasis role="bold">Анализ</emphasis>
+                    -- с помощью действий из меню<guimenu>Выполнение</guimenu>, за исключением
+                    <guimenuitem>Остановить выполнение</guimenuitem>.
+                    </para>
+                </listitem>
+            </itemizedlist>
+        </para>
+        <para>
+            Из состояния
+            <emphasis role="bold">Выполнение</emphasis>
+            система может перейти в одно из состояний:
+            <itemizedlist>
+                <listitem>
+                    <para>
+                        <emphasis role="bold">Анализ</emphasis>, если выполнение программы завершено (аварийно или
+                        успешно);
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis role="bold">Пауза</emphasis>, при выполнении команды<code language="kumir">
+                        пауза</code>,
+                        или при завершении выполнения очередного шага во время пошагового выполнения.
+                    </para>
+                </listitem>
+            </itemizedlist>
+        </para>
+    </section>
+    <section>
+        <title>Вывод значений на поля</title>
+        <para>
+            Как правило, при выполнении Кумир-программы, на поля выводятся значения, присваиваемые величинам и
+            результаты проверок. Вывод значений на поля производится при выполнении следующих команд:
+            <itemizedlist>
+                <listitem>
+                    <para>команда присваивания;</para>
+                </listitem>
+                <listitem>
+                    <para>команда<code language="kumir">ввод</code>;
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>заголовок цикла<code language="kumir">для</code>;
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>заголовок цикла<code language="kumir">раз</code>;
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>команды контроля выполнения:<code language="kumir">утв</code>,
+                        <code language="kumir">дано</code>,<code language="kumir">надо</code>;
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>конструкции проверки условий:<code language="kumir">пока</code>,
+                        <code language="kumir">если</code>,<code language="kumir">выбор..при:</code>,
+                        <code language="kumir">кц при</code>.
+                    </para>
+                </listitem>
+            </itemizedlist>
+        </para>
+        <para>
+            Если в одной строке записано несколько команд, то на поля выводится несколько сообщений, разделенных точкой
+            с запятой.
+        </para>
+    </section>
+</chapter>

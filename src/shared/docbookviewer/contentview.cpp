@@ -11,12 +11,16 @@ namespace DocBookViewer {
 
 static const QString MainFontFamily =
         "Droid Serif,PT Serif,Garamond,Times New Roman,serif";
+static const QString GuiElementsFontFamily =
+        "Droid Sans, PT Sans, Tahoma, Arial, sans-serif";
 
 #ifdef Q_OS_MAC
 static const QString MainFontSize = "14pt";
+static const QString GuiElementsFontSize = "16pt";
 static const QString CodeFontSize = "14pt";
 #else
 static const QString MainFontSize = "12pt";
+static const QString GuiElementsFontSize = "14pt";
 static const QString CodeFontSize = "12pt";
 #endif
 
@@ -149,6 +153,14 @@ QString ContentView::wrapHTML(const QString &body) const
             "   font-size: " + MainFontSize + ";"
             "   margin: 10;"
             "}"
+            ".guimenu {"
+            "   font-family: " + GuiElementsFontFamily + ";"
+            "   font-size: " + GuiElementsFontSize + ";"
+            "}"
+            ".guibutton {"
+            "   font-family: " + GuiElementsFontFamily + ";"
+            "   font-size: " + GuiElementsFontSize + ";"
+            "}"
             ".code {"
             "   font-family: " + CodeFontFamily + ";"
             "   font-size: " + CodeFontSize + ";"
@@ -158,6 +170,7 @@ QString ContentView::wrapHTML(const QString &body) const
             "   margin: 30;"
             "}"
             "kbd {"
+            "   font-family: " + GuiElementsFontFamily + ";"
             "   background-color: lightgray;"
             "}"
             "</style></head>"
@@ -309,6 +322,15 @@ QString ContentView::renderElement(ModelPtr data) const
     else if (data == DocBookModel::ListOfFunctions) {
         return renderListOfFunctions(data);
     }
+    else if (data == DocBookModel::GuiMenu) {
+        return renderGuiMenu(data);
+    }
+    else if (data == DocBookModel::GuiMenuItem) {
+        return renderGuiMenuItem(data);
+    }
+    else if (data == DocBookModel::GuiButton) {
+        return renderGuiButton(data);
+    }
     else {
         return "";
     }
@@ -323,7 +345,7 @@ QString ContentView::renderKeyCombo(ModelPtr data) const
         }
         result += renderElement(data->children().at(i));
     }
-    return result;
+    return " " + result + " ";
 }
 
 QString ContentView::renderKeySym(ModelPtr data) const
@@ -343,6 +365,37 @@ QString ContentView::renderKeySym(ModelPtr data) const
     }
     result = parts.join("+");
     return result;
+}
+
+QString ContentView::renderGuiMenu(ModelPtr data) const
+{
+    QString result;
+    foreach (ModelPtr  child, data->children()) {
+        QString txt = child->text();
+        txt.replace(" ", "&nbsp;");
+        if (result.length() > 0)
+            result += "&nbsp;";
+        result += txt;
+    }
+    return " <span class='guimenu'>" + result + "</span> ";
+}
+
+QString ContentView::renderGuiButton(ModelPtr data) const
+{
+    QString result;
+    foreach (ModelPtr  child, data->children()) {
+        QString txt = child->text();
+        txt.replace(" ", "&nbsp;");
+        if (result.length() > 0)
+            result += "&nbsp;";
+        result += txt;
+    }
+    return " <span class='guibutton'>" + result + "</span> ";
+}
+
+QString ContentView::renderGuiMenuItem(ModelPtr data) const
+{
+    return renderGuiMenu(data); // At present it uses the same appearance
 }
 
 QString ContentView::programTextForLanguage(const QString &source,

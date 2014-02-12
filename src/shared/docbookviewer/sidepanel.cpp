@@ -212,7 +212,8 @@ void SidePanel::createNavigationItems(QTreeWidgetItem *item,
             itemsOfModels_[child] = childItem;
             createNavigationItems(childItem, child);
             item->addChild(childItem);
-            item->setExpanded(true);
+            const DocBookModel::ModelType type = child->modelType();
+            item->setExpanded(type == DocBookModel::Book);
         }
     }
 }
