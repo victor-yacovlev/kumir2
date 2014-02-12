@@ -58,6 +58,12 @@ private:
     QString renderParameter(ModelPtr data);
     QString renderType(ModelPtr data);
 
+    QString renderGuiMenu(ModelPtr data);
+    QString renderGuiMenuItem(ModelPtr data);
+    QString renderGuiButton(ModelPtr data);
+    QString renderKeyCombo(ModelPtr data);
+    QString renderKeySym(ModelPtr data);
+
 
     QString renderMath(ModelPtr data);
     QString renderMRow(ModelPtr data);
