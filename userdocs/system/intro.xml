@@ -40,9 +40,9 @@
                         <imageobject>
                             <imagedata format="PNG" fileref="classic.png"/>
                         </imageobject>
-                        <imageobject>
-                            <imagedata format="PDF" fileref="classic.pdf"/>
-                        </imageobject>
+                        <!--<imageobject>-->
+                            <!--<imagedata format="PDF" fileref="classic.pdf"/>-->
+                        <!--</imageobject>-->
                         <caption>Заставка запуска классической конфигурации &quot;Кумир&quot; (фон темно-синего цвета)</caption>
                     </mediaobject>
                 </para>
@@ -61,9 +61,9 @@
                         <imageobject>
                             <imagedata format="PNG" fileref="highgrade.png"/>
                         </imageobject>
-                        <imageobject>
-                            <imagedata format="PDF" fileref="highgrade.pdf"/>
-                        </imageobject>
+                        <!--<imageobject>-->
+                            <!--<imagedata format="PDF" fileref="highgrade.pdf"/>-->
+                        <!--</imageobject>-->
                         <caption>Заставка запуска конфигурации &quot;Кумир&quot; для старших классов (фон оранжевого цвета)</caption>
                     </mediaobject>
                 </para>
@@ -86,9 +86,9 @@
                         <imageobject>
                             <imagedata format="PNG" fileref="professional.png"/>
                         </imageobject>
-                        <imageobject>
-                            <imagedata format="PDF" fileref="professional.pdf"/>
-                        </imageobject>
+                        <!--<imageobject>-->
+                            <!--<imagedata format="PDF" fileref="professional.pdf"/>-->
+                        <!--</imageobject>-->
                         <caption>Заставка запуска профессиональной конфигурации &quot;Кумир&quot;  (фон зеленого цвета)</caption>
                     </mediaobject>
                 </para>
@@ -101,9 +101,9 @@
                         <imageobject>
                             <imagedata format="PNG" fileref="teacher.png"/>
                         </imageobject>
-                        <imageobject>
-                            <imagedata format="PDF" fileref="teacher.pdf"/>
-                        </imageobject>
+                        <!--<imageobject>-->
+                            <!--<imagedata format="PDF" fileref="teacher.pdf"/>-->
+                        <!--</imageobject>-->
                         <caption>Заставка запуска конфигурации &quot;Кумир&quot; для учителей  (фон красного цвета)</caption>
                     </mediaobject>
                 </para>
@@ -133,9 +133,9 @@
                 <imageobject>
                     <imagedata format="SVG" fileref="launch_icons.svg"/>
                 </imageobject>
-                <imageobject>
-                    <imagedata format="PDF" fileref="launch_icons.pdf"/>
-                </imageobject>
+                <!--<imageobject>-->
+                    <!--<imagedata format="PDF" fileref="launch_icons.pdf"/>-->
+                <!--</imageobject>-->
                 <caption>Значки запуска конфигураций (слева направо): а)&nbsp;классическая; б)&nbsp;для старших классов;
                     в)&nbsp;профессиональная; г)&nbsp;для учителей</caption>
             </mediaobject>
