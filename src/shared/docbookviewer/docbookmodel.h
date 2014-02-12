@@ -89,6 +89,10 @@ public:
         MathML_MText,
         MathML_MSup,
 
+        GuiMenu,
+        GuiMenuItem,
+        GuiButton,
+
         // virtual entries
         ListOfExamples,
         ListOfTables,

@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<chapter>
+    <title>Введение</title>
+    <section>
+        <title>Общие сведения</title>
+        <para>Система Кумир позволяет создавать, отлаживать и выполнять программы на универсальном языке
+            программирования Кумир.
+        </para>
+        <para>Кумир -- учебная система. Она сводит к минимуму &quot;накладные расходы&quot; на освоение, имеет развитую
+            систему диагностики ошибок, средства, позволяющие ученику следить за
+            выполнением программы и т. п. Ученик, никогда ранее не программировавший, может
+            начать писать и выполнять алгоритмически относительно сложные программы через 1--2 часа после первого
+            знакомства с Кумиром. В то же время система Кумир позволяет
+            создавать достаточно большие и сложные программы (сотни строк).
+        </para>
+        <para>Во время редактирования программы система Кумир после каждого перевода курсора
+            на новую строку автоматически производит синтаксический разбор и сообщает о найденных ошибках.
+        </para>
+    </section>
+    <section>
+        <title>Конфигурации системы</title>
+        <para>Система &quot;Кумир&quot; предназначена как для начинающих программировать, так и для более опытных
+            пользователей. Пользовательский интерфейс системы представлен в нескольких конфигурациях для различных вариантов
+            использования.
+        </para>
+        <orderedlist>
+            <listitem>
+                <para>
+                    <emphasis role="bold">Классический</emphasis>
+                    -- предназначена для первичного школьного обучения, для использования совместно с одним из учебников:
+                    <orderedlist>
+                        <listitem><para><emphasis role="italic">А.Г.Кушниренко, Г.В.Лебедев, Р.А.Сворень</emphasis>
+                            Основы информатики и вычислительной техники. Учебник для средних учебных заведений</para></listitem>
+                        <listitem><para><emphasis role="italic">А.Г.Кушниренко, Г.В.Лебедев, Я.Н.Зайдельман</emphasis>
+                            Информатика 7-9 классы. Учебник для общеобразовательных учебных заведений</para></listitem>
+                    </orderedlist>
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata format="PNG" fileref="classic.png"/>
+                        </imageobject>
+                        <imageobject>
+                            <imagedata format="PDF" fileref="classic.pdf"/>
+                        </imageobject>
+                        <caption>Заставка запуска классической конфигурации &quot;Кумир&quot; (фон темно-синего цвета)</caption>
+                    </mediaobject>
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <emphasis role="bold">Для старшей школы</emphasis>
+                    -- предназначена для использования в старших классах, для использования совместно с одним из учебников:
+                    <orderedlist>
+                        <listitem><para><emphasis role="italic">К.Ю.Поляков, Е.А.Еремин</emphasis>
+                            Информатика. Углубленный уровень. Учебник для 10 класса в 2-х частях</para></listitem>
+                        <listitem><para><emphasis role="italic">К.Ю.Поляков, Е.А.Еремин</emphasis>
+                            Информатика. Углубленный уровень. Учебник для 11 класса в 2-х частях</para></listitem>
+                    </orderedlist>
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata format="PNG" fileref="highgrade.png"/>
+                        </imageobject>
+                        <imageobject>
+                            <imagedata format="PDF" fileref="highgrade.pdf"/>
+                        </imageobject>
+                        <caption>Заставка запуска конфигурации &quot;Кумир&quot; для старших классов (фон оранжевого цвета)</caption>
+                    </mediaobject>
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <emphasis role="bold">Профессиональная</emphasis>
+                    -- предназначена для использования в старших классах, для использования совместно с одним из учебников:
+                    <orderedlist>
+                        <listitem><para><emphasis role="italic">К.Ю.Поляков, Е.А.Еремин</emphasis>
+                            Информатика. Углубленный уровень. Учебник для 10 класса в 2-х частях</para></listitem>
+                        <listitem><para><emphasis role="italic">К.Ю.Поляков, Е.А.Еремин</emphasis>
+                            Информатика. Углубленный уровень. Учебник для 11 класса в 2-х частях</para></listitem>
+                    </orderedlist>
+                </para>
+                <para>
+                    В отличии от конфигурации <emphasis role="bold">Для старшей школы</emphasis>, данная конфигурация
+                    позволяет открывать одновременно несколько файлов программ.
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata format="PNG" fileref="professional.png"/>
+                        </imageobject>
+                        <imageobject>
+                            <imagedata format="PDF" fileref="professional.pdf"/>
+                        </imageobject>
+                        <caption>Заставка запуска профессиональной конфигурации &quot;Кумир&quot;  (фон зеленого цвета)</caption>
+                    </mediaobject>
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <emphasis role="bold">Для учителей</emphasis>
+                    -- предназначена для подготовки заданий и практикумов.
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata format="PNG" fileref="teacher.png"/>
+                        </imageobject>
+                        <imageobject>
+                            <imagedata format="PDF" fileref="teacher.pdf"/>
+                        </imageobject>
+                        <caption>Заставка запуска конфигурации &quot;Кумир&quot; для учителей  (фон красного цвета)</caption>
+                    </mediaobject>
+                </para>
+            </listitem>
+        </orderedlist>
+    </section>
+    <section>
+        <title>Запуск &quot;Кумир&quot;</title>
+        <para>
+            Запуск системы осуществляется с помощью одной из иконок, цвет которой совпадает с цветом заставки
+            соответствующей конфигурации:
+            <orderedlist>
+                <listitem><para><emphasis role="bold">Темно-синяя</emphasis>
+                -- классическая конфигурация;
+                </para></listitem>
+                <listitem><para><emphasis role="bold">Оранжевая</emphasis>
+                    -- классическая для старших классов;
+                </para></listitem>
+                <listitem><para><emphasis role="bold">Зеленая</emphasis>
+                    -- профессинональная конфигурация;
+                </para></listitem>
+                <listitem><para><emphasis role="bold">Красная</emphasis>
+                    -- конфигурация для учителей.
+                </para></listitem>
+            </orderedlist>
+            <mediaobject>
+                <imageobject>
+                    <imagedata format="SVG" fileref="launch_icons.svg"/>
+                </imageobject>
+                <imageobject>
+                    <imagedata format="PDF" fileref="launch_icons.pdf"/>
+                </imageobject>
+                <caption>Значки запуска конфигураций (слева направо): а)&nbsp;классическая; б)&nbsp;для старших классов;
+                    в)&nbsp;профессиональная; г)&nbsp;для учителей</caption>
+            </mediaobject>
+        </para>
+    </section>
+</chapter>

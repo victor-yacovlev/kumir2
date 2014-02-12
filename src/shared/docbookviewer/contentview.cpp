@@ -11,12 +11,16 @@ namespace DocBookViewer {
 
 static const QString MainFontFamily =
         "Droid Serif,PT Serif,Garamond,Times New Roman,serif";
+static const QString GuiElementsFontFamily =
+        "Droid Sans, PT Sans, Tahoma, Arial, sans-serif";
 
 #ifdef Q_OS_MAC
 static const QString MainFontSize = "14pt";
+static const QString GuiElementsFontSize = "16pt";
 static const QString CodeFontSize = "14pt";
 #else
 static const QString MainFontSize = "12pt";
+static const QString GuiElementsFontSize = "14pt";
 static const QString CodeFontSize = "12pt";
 #endif
 
@@ -149,6 +153,14 @@ QString ContentView::wrapHTML(const QString &body) const
             "   font-size: " + MainFontSize + ";"
             "   margin: 10;"
             "}"
+            ".guimenu {"
+            "   font-family: " + GuiElementsFontFamily + ";"
+            "   font-size: " + GuiElementsFontSize + ";"
+            "}"
+            ".guibutton {"
+            "   font-family: " + GuiElementsFontFamily + ";"
+            "   font-size: " + GuiElementsFontSize + ";"
+            "}"
             ".code {"
             "   font-family: " + CodeFontFamily + ";"
             "   font-size: " + CodeFontSize + ";"
@@ -158,6 +170,7 @@ QString ContentView::wrapHTML(const QString &body) const
             "   margin: 30;"
             "}"
             "kbd {"
+            "   font-family: " + GuiElementsFontFamily + ";"
             "   background-color: lightgray;"
             "}"
             "</style></head>"
@@ -277,7 +290,7 @@ QString ContentView::renderElement(ModelPtr data) const
         return renderMediaObject(data);
     }
     else if (data == DocBookModel::Caption) {
-        return renderCaption(data);
+        return renderCaption(data, QString());
     }
     else if (data == DocBookModel::InlineMediaObject) {
         return renderInlineMediaObject(data);
@@ -309,6 +322,15 @@ QString ContentView::renderElement(ModelPtr data) const
     else if (data == DocBookModel::ListOfFunctions) {
         return renderListOfFunctions(data);
     }
+    else if (data == DocBookModel::GuiMenu) {
+        return renderGuiMenu(data);
+    }
+    else if (data == DocBookModel::GuiMenuItem) {
+        return renderGuiMenuItem(data);
+    }
+    else if (data == DocBookModel::GuiButton) {
+        return renderGuiButton(data);
+    }
     else {
         return "";
     }
@@ -323,7 +345,7 @@ QString ContentView::renderKeyCombo(ModelPtr data) const
         }
         result += renderElement(data->children().at(i));
     }
-    return result;
+    return " " + result + " ";
 }
 
 QString ContentView::renderKeySym(ModelPtr data) const
@@ -343,6 +365,37 @@ QString ContentView::renderKeySym(ModelPtr data) const
     }
     result = parts.join("+");
     return result;
+}
+
+QString ContentView::renderGuiMenu(ModelPtr data) const
+{
+    QString result;
+    foreach (ModelPtr  child, data->children()) {
+        QString txt = child->text();
+        txt.replace(" ", "&nbsp;");
+        if (result.length() > 0)
+            result += "&nbsp;";
+        result += txt;
+    }
+    return " <span class='guimenu'>" + result + "</span> ";
+}
+
+QString ContentView::renderGuiButton(ModelPtr data) const
+{
+    QString result;
+    foreach (ModelPtr  child, data->children()) {
+        QString txt = child->text();
+        txt.replace(" ", "&nbsp;");
+        if (result.length() > 0)
+            result += "&nbsp;";
+        result += txt;
+    }
+    return " <span class='guibutton'>" + result + "</span> ";
+}
+
+QString ContentView::renderGuiMenuItem(ModelPtr data) const
+{
+    return renderGuiMenu(data); // At present it uses the same appearance
 }
 
 QString ContentView::programTextForLanguage(const QString &source,
@@ -984,17 +1037,24 @@ QString ContentView::renderMediaObject(ModelPtr data) const
         result += "<div align='center' width='100%' padding='10'>" +
                 renderElement(mediaObject);
         if (caption) {
-            result += renderCaption(caption);
+            const QString index = chapterNumber(data) > 0
+                    ? QString("%1.%2")
+                      .arg(chapterNumber(data))
+                      .arg(elementNumber(data))
+                    : QString::number(elementNumber(data));
+            const QString prefix = "<b>" + tr("Figure&nbsp;%1 ").arg(index) + "</b>";
+            result += renderCaption(caption, prefix);
         }
         result += "</div>\n";
     }
     return result;
 }
 
-QString ContentView::renderCaption(ModelPtr data) const
+QString ContentView::renderCaption(ModelPtr data, const QString &captionPrefix) const
 {
     QString result;
     result += "<div align='center' width='100%'>";
+    result += captionPrefix;
     result += renderChilds(data);
     result += "</div>";
     return result;
@@ -1319,6 +1379,13 @@ ModelPtr ContentView::findImageData(ModelPtr parent) const
 }
 
 
+static const QList<DocBookModel::ModelType> TOC_types =
+        QList<DocBookModel::ModelType>()
+        << DocBookModel::ListOfExamples << DocBookModel::ListOfFunctions
+        << DocBookModel::ListOfTables << DocBookModel::Book
+        << DocBookModel::Article << DocBookModel::Set
+        << DocBookModel::Chapter << DocBookModel::Section;
+
 QString ContentView::renderTOC(ModelPtr data) const
 {
     QString result;
@@ -1349,7 +1416,10 @@ QString ContentView::renderTOC(ModelPtr data) const
     }
     result += "<hr/>\n";
     foreach (ModelPtr child, data->children()) {
-        result += renderTOCElement(child, 0, true);
+        const DocBookModel::ModelType childType = child->modelType();
+        if (TOC_types.contains(childType)) {
+            result += renderTOCElement(child, 0, true);
+        }
     }
     result += "<hr/>\n";
     return result;
@@ -1412,7 +1482,10 @@ QString ContentView::renderTOCElement(ModelPtr data, quint8 level, bool enumerat
     result += "<p align='left' margin='5'><a href=\"" + href + "\">" + indent + title + "</p>";
     if (!isPlainPage(data)) {
         foreach (ModelPtr child, data->children()) {
-            result += renderTOCElement(child, level + 1, enumerate);
+            DocBookModel::ModelType childType = child->modelType();
+            if (TOC_types.contains(childType)) {
+                result += renderTOCElement(child, level + 1, enumerate);
+            }
         }
     }
     return result + "</li>\n";
