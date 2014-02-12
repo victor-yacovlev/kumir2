@@ -204,6 +204,21 @@ QString generator::renderElement(ModelPtr data)
     else if (data == DocBookModel::Superscript) {
         result = renderSuperscript(data);
     }
+    else if (data == DocBookModel::GuiMenu) {
+        result = renderGuiMenu(data);
+    }
+    else if (data == DocBookModel::GuiMenuItem) {
+        result = renderGuiMenuItem(data);
+    }
+    else if (data == DocBookModel::GuiButton) {
+        result = renderGuiButton(data);
+    }
+    else if (data == DocBookModel::KeyCombo) {
+        result = renderKeyCombo(data);
+    }
+    else if (data == DocBookModel::KeySym) {
+        result = renderKeySym(data);
+    }
     else if (data == DocBookModel::MathML_Math) {
         result = renderMath(data);
     }
@@ -418,6 +433,65 @@ QString generator::renderSuperscript(ModelPtr data)
     return result;
 }
 
+QString generator::renderGuiButton(ModelPtr data)
+{
+    QString result = "\\textsc{";
+    Q_FOREACH(ModelPtr child, data->children()) {
+        result += renderElement(child);
+    }
+    result += "}";
+    return result;
+}
+
+QString generator::renderGuiMenu(ModelPtr data)
+{
+    return renderGuiMenuItem(data);
+}
+
+QString generator::renderGuiMenuItem(ModelPtr data)
+{
+    QString result = "\\textsc{";
+    Q_FOREACH(ModelPtr child, data->children()) {
+        result += renderElement(child);
+    }
+    result += "}";
+    return result;
+}
+
+QString generator::renderKeyCombo(ModelPtr data)
+{
+    addSpace_ = true;
+    QString result;
+    for (int i=0; i<data->children().size(); i++) {
+        if (i>0) {
+            result += " ";
+        }
+        result += renderElement(data->children().at(i));
+    }
+    return " " + result + " ";
+}
+
+QString generator::renderKeySym(ModelPtr data)
+{
+    addSpace_ = false;
+    QString result;
+    QString keysym;
+    foreach (ModelPtr  child, data->children()) {
+        keysym += child->text();
+    }
+    const QStringList keys = keysym.split("+", QString::SkipEmptyParts);
+    QStringList parts;
+    foreach (const QString & key, keys) {
+        QString part = "\\textsc{";
+        part += key.toUpper();
+        part += "}";
+        parts.push_back(part);
+    }
+    result = parts.join("+");
+    return result;
+
+}
+
 QString generator::renderMath(ModelPtr data)
 {
     addSpace_ = false;
@@ -561,6 +635,8 @@ QString generator::normalizeText(QString textData) const
         replacements[QString(QChar(0x2265))] = "$>=$";
         replacements[QString(QChar(0x00D7))] = "$\\times$";
         replacements[QString(QChar(0x2026))] = "$\\ldots$";
+        replacements[QString(QChar(0x2192))] = "$\\rightarrow$";
+        replacements[QString(QChar(0x2190))] = "$\\leftarrow$";
     }
     foreach (const QString & key, replacements.keys())
     {

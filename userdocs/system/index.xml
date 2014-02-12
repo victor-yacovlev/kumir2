@@ -9,4 +9,6 @@
     <xi:include href="session.xml"/>
     <xi:include href="editor.xml"/>
     <xi:include href="run.xml"/>
+    <xi:include href="courses.xml"/>
+    <xi:include href="teacher.xml"/>
 </book>
