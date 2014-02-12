@@ -132,8 +132,10 @@ public:
     void switchToDefaultWorkspace();
     void switchToWorkspace(const QString & path);
 
-    /** Stops all plugins in reverse-order of creation */
-    void shutdown();
+    /** Stops all plugins in reverse-order of creation
+     * @returns true if there is not module blocking exit, false elsewhere
+     */
+    bool shutdown();
 
     static void destroy();
 

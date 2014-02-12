@@ -508,8 +508,15 @@ PluginManager * PluginManager::instance()
     return &INSTANCE;
 }
 
-void PluginManager::shutdown()
+bool PluginManager::shutdown()
 {
+    Q_FOREACH(const KPlugin * plugin, pImpl_->objects) {
+        bool moduleSafeToQuit = plugin->isSafeToQuit();
+        if (!moduleSafeToQuit) {
+            return false;
+        }
+    }
+
     for (int i=pImpl_->objects.size()-1; i>=0; i--) {
         if (pImpl_->states[i] != KPlugin::Stopped) {
             KPlugin * p = pImpl_->objects[i];
@@ -523,6 +530,7 @@ void PluginManager::shutdown()
             pImpl_->settings[i].clear();
         }
     }
+    return true;
 }
 
 

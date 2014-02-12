@@ -1921,6 +1921,14 @@ private:
 }
         """ % (self.className, _addIndent(body))
 
+    def isSafeToQuitCppImplementation(self):
+        return """
+/* public */ bool %s::isSafeToQuit() const
+{
+    return module_->isSafeToQuit();
+}
+        """ % self.className
+
     def sleepCppImplementation(self):
         """
         Creates sleep implementation
@@ -2606,6 +2614,14 @@ class ModuleBaseCppClass(CppClassBase):
 
     // Return error text or an empty string on successfull  initialization
     return QString();
+}
+        """ % self.className
+
+    def isSafeToQuitCppImplementation(self):
+        return """
+/* public virtual */ bool %s::isSafeToQuit() const
+{
+    return true;
 }
         """ % self.className
 
