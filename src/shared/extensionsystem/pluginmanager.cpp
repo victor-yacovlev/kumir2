@@ -510,7 +510,7 @@ PluginManager * PluginManager::instance()
 
 bool PluginManager::shutdown()
 {
-    Q_FOREACH(const KPlugin * plugin, pImpl_->objects) {
+    Q_FOREACH(KPlugin * plugin, pImpl_->objects) {
         bool moduleSafeToQuit = plugin->isSafeToQuit();
         if (!moduleSafeToQuit) {
             return false;
