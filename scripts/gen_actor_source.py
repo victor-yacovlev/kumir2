@@ -1923,7 +1923,7 @@ private:
 
     def isSafeToQuitCppImplementation(self):
         return """
-/* public */ bool %s::isSafeToQuit() const
+/* public */ bool %s::isSafeToQuit()
 {
     return module_->isSafeToQuit();
 }
@@ -2619,7 +2619,7 @@ class ModuleBaseCppClass(CppClassBase):
 
     def isSafeToQuitCppImplementation(self):
         return """
-/* public virtual */ bool %s::isSafeToQuit() const
+/* public virtual */ bool %s::isSafeToQuit()
 {
     return true;
 }
