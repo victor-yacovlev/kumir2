@@ -1912,6 +1912,7 @@ namespace ActorRobot {
         
         
         
+        
         wasEdit=false;
         
         
@@ -3364,6 +3365,7 @@ void RobotModule::copyFromPult(QString log)
     // The source should be ready-to-read QIODevice like QBuffer or QFile
        qDebug()<<"Load env";
     if(field->loadFromDataStream(source)!=0)return ;
+     m_mainWidget->setWindowTitle("Робот - "+source->objectName());
     startField=field->Clone();
     field->dropWasEdit();
     //   ajustWindowSize();//NEW ROBOT
