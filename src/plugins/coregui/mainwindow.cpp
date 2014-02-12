@@ -1177,8 +1177,12 @@ void MainWindow::closeEvent(QCloseEvent *e)
         if (twe->editorInstance) {
             bool notSaved = twe->editorInstance->isModified();
             if (!notSaved || twe->isCourseManagerTab()) {
-                e->accept();
-                ExtensionSystem::PluginManager::instance()->shutdown();
+                if (ExtensionSystem::PluginManager::instance()->shutdown()) {
+                    e->accept();
+                }
+                else {
+                    e->ignore();
+                }
                 return;
             }
         }
@@ -1261,8 +1265,12 @@ void MainWindow::closeEvent(QCloseEvent *e)
     }
 
 
-    e->accept();
-    ExtensionSystem::PluginManager::instance()->shutdown();
+    if (ExtensionSystem::PluginManager::instance()->shutdown()) {
+        e->accept();
+    }
+    else {
+        e->ignore();
+    }
 }
 
 void MainWindow::switchWorkspace() {
