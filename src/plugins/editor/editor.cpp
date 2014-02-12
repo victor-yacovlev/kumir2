@@ -96,7 +96,8 @@ void Editor::loadDocument(QIODevice *device, const QString &fileNameSuffix,
         }
     }
 
-    bool keepIndents = analizerPlugin==nullptr || analizerPlugin->indentsSignificant();
+//    bool keepIndents = analizerPlugin==nullptr || analizerPlugin->indentsSignificant();
+    bool keepIndents = true;
 
     const QByteArray bytes = device->readAll();
 
