@@ -156,6 +156,7 @@ private:
      QLineEdit *editRoot;
      QFileInfo baseKursFile; //4 mode
        Ui::MainWindowTask *ui;
+    bool isReadOnly;
 
 };
 
