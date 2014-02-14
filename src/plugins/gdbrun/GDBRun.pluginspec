@@ -1,0 +1,2 @@
+name    = GDBRun
+provides= Runner

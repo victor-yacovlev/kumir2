@@ -30,14 +30,14 @@ public:
     virtual unsigned long int stepsCounted() const = 0;
     virtual QAbstractItemModel * debuggerVariablesViewModel() const = 0;
 
-    virtual QMap<QString,QVariant> getScalarLocalValues(int frameNo) const = 0;
-    virtual QMap<QString,QVariant> getScalarGlobalValues(const QString & moduleName) const = 0;
-    virtual QVariantList getLocalTableValues(int frameNo, int maxCount, const QString & name,
-                                             const QList< QPair<int,int> > & ranges, bool & complete) const = 0;
-    virtual QVariantList getGlobalTableValues(const QString & moduleName, int maxCount, const QString & name,
-                                             const QList< QPair<int,int> > & ranges, bool & complete) const = 0;
-    virtual QVariant getLocalTableValue(int frameNo, const QString & name, const QList<int> & indeces) const = 0;
-    virtual QVariant getGlobalTableValue(const QString & moduleName, const QString & name, const QList<int> & indeces) const = 0;
+//    virtual QMap<QString,QVariant> getScalarLocalValues(int frameNo) const = 0;
+//    virtual QMap<QString,QVariant> getScalarGlobalValues(const QString & moduleName) const = 0;
+//    virtual QVariantList getLocalTableValues(int frameNo, int maxCount, const QString & name,
+//                                             const QList< QPair<int,int> > & ranges, bool & complete) const = 0;
+//    virtual QVariantList getGlobalTableValues(const QString & moduleName, int maxCount, const QString & name,
+//                                             const QList< QPair<int,int> > & ranges, bool & complete) const = 0;
+//    virtual QVariant getLocalTableValue(int frameNo, const QString & name, const QList<int> & indeces) const = 0;
+//    virtual QVariant getGlobalTableValue(const QString & moduleName, const QString & name, const QList<int> & indeces) const = 0;
 };
 
 }

@@ -7,6 +7,9 @@
 #include "utils.h"
 #include "suggestionswindow.h"
 #include "editor.h"
+
+#include <extensionsystem/pluginmanager.h>
+
 #ifdef Q_OS_UNIX
 #include <unistd.h>
 #endif
@@ -42,6 +45,9 @@ EditorPlane::EditorPlane(Editor * editor)
     , pnt_dropPosCorner(QPoint(-1000, -1000))
     , selectionInProgressFlag_(false)
     , marginHintBox_(new QLabel(this, Qt::ToolTip))
+    , indentSize_(0u)
+    , hardIndents_(true)
+    , caseInsensitive_(false)
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     setFocusPolicy(Qt::StrongFocus);
@@ -50,6 +56,14 @@ EditorPlane::EditorPlane(Editor * editor)
     setMouseTracking(true);
     setAcceptDrops(true);          
     initMouseCursor();
+
+    Shared::AnalizerInterface * analizer =
+            ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
+    if (analizer && editor->analizer()) {
+        indentSize_ = analizer->indentSize();
+        hardIndents_ = ! analizer->indentsSignificant();
+        caseInsensitive_ = analizer->caseInsensitiveGrammatic();
+    }
 
 }
 
@@ -728,7 +742,7 @@ void EditorPlane::updateScrollBars()
     uint w = 1;
     uint h = 1;
     for (int i=0 ; i<editor_->document()->linesCount(); i++) {
-        uint indent = editor_->document()->indentAt(i) * 2;
+        uint indent = editor_->document()->indentAt(i) * indentSize_;
         uint textLength = editor_->document()->textAt(i).length();
         w = qMax(w, indent + textLength + 1);
     }
@@ -774,9 +788,9 @@ void EditorPlane::ensureCursorVisible()
              2,
              2
                 );
-    if (column == 2u * editor_->document()->indentAt(row)) {
+    if (column == indentSize_ * editor_->document()->indentAt(row)) {
         cr.setLeft(0);
-        cr.setRight(2);
+        cr.setRight(indentSize_);
     }
     QRect vr;
     vr.setLeft(editor_->scrollBar(Qt::Horizontal)->isEnabled()? editor_->scrollBar(Qt::Horizontal)->value()/charWidth() : 0);
@@ -793,7 +807,7 @@ void EditorPlane::ensureCursorVisible()
     else if (cr.left()<vr.left()) {
 //        qDebug() << "B";
         int v = editor_->cursor()->column();
-        if (editor_->cursor()->column() == 2u * editor_->document()->indentAt(editor_->cursor()->row()))
+        if (editor_->cursor()->column() == indentSize_ * editor_->document()->indentAt(editor_->cursor()->row()))
             v = 0;
         editor_->scrollBar(Qt::Horizontal)->setValue(v * charWidth());
     }
@@ -978,8 +992,8 @@ void EditorPlane::paintEvent(QPaintEvent *e)
             uint cw = charWidth();
             uint left = cw * highlightedTextColumnStartNumber_;
             uint right = cw * highlightedTextColumnEndNumber_;
-            left += cw * 2 * editor_->document()->indentAt(highlightedTextLineNumber_);
-            right += cw * 2 * editor_->document()->indentAt(highlightedTextLineNumber_);
+            left += cw * indentSize_ * editor_->document()->indentAt(highlightedTextLineNumber_);
+            right += cw * indentSize_ * editor_->document()->indentAt(highlightedTextLineNumber_);
             p.drawRoundedRect(left, highlightLeftRect.top(),
                               int(right) - int(left), highlightLeftRect.height(),
                               2, 2);
@@ -1408,7 +1422,11 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                     if (moveToEnd)
                         editor_->cursor()->moveTo(editor_->cursor()->row(), curText.length());
                     QString indent;
-                    indent.fill(' ', indentSpaces);
+                    const TextLine &tl = editor_->document()->at(editor_->cursor()->row());
+                    int endRank = tl.indentEnd;
+                    indentSpaces += endRank * indentSize_;
+                    if (indentSpaces > 0)
+                        indent.fill(' ', indentSpaces);
                     editor_->cursor()->evaluateCommand("\n" + indent);
                 }
             }
@@ -1471,7 +1489,10 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         }
         else if (e->key()==Qt::Key_Tab) {
             if (editor_->analizerPlugin_ && editor_->analizerPlugin_->indentsSignificant()) {
-                editor_->cursor()->evaluateCommand("    ");
+                QString indent;
+                indent.resize(indentSize_);
+                indent.fill(' ');
+                editor_->cursor()->evaluateCommand(indent);
             }
             else if (editor_->analizerInstance_ && editor_->analizerInstance_->helper()) {
                 doAutocomplete();
@@ -1516,7 +1537,7 @@ void EditorPlane::doAutocomplete()
     QString before, after;
     if (editor_->cursor()->row()<editor_->document()->linesCount()) {
         QString line = editor_->document()->textAt(editor_->cursor()->row());
-        int textPos = editor_->cursor()->column() - 2 * editor_->document()->indentAt(editor_->cursor()->row());
+        int textPos = editor_->cursor()->column() - indentSize_ * editor_->document()->indentAt(editor_->cursor()->row());
         textPos = qMax(0, textPos);
         before = line.mid(0, textPos);
         if (textPos<line.length()) {
@@ -1552,7 +1573,7 @@ void EditorPlane::finishAutoCompletion(const QString &suggestion)
     QString before, after;
     if (editor_->cursor()->row()<editor_->document()->linesCount()) {
         QString line = editor_->document()->textAt(editor_->cursor()->row());
-        int textPos = editor_->cursor()->column() - 2 * editor_->document()->indentAt(editor_->cursor()->row());
+        int textPos = editor_->cursor()->column() - indentSize_ * editor_->document()->indentAt(editor_->cursor()->row());
         before = line.mid(0, textPos);
         if (textPos<line.length()) {
             after = line.mid(textPos);
@@ -2024,7 +2045,7 @@ void EditorPlane::paintSelection(QPainter *p, const QRect &rect)
     bool prevLineSelected = false;
     for (int i=startLine; i<endLine+1; i++) {
         if (i<editor_->document()->linesCount()) {
-            int indentSpace = 2 * cw * editor_->document()->indentAt(i);
+            int indentSpace = hardIndents_? indentSize_ * cw * editor_->document()->indentAt(i) : 0;
             if (prevLineSelected) {
                 p->drawRect(0, i*lh, indentSpace, lh);
             }
@@ -2389,13 +2410,15 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
             }
         }
         p->setPen(Qt::NoPen);
-        for (uint j=0; j<indent; j++) {
-            const uint dotSize = qMin(lineHeight() / 3u,
-                                      charWidth() / 3u);
-            const uint dotX = j * charWidth() * 2 + (charWidth()-dotSize);
-            const uint dotY = y - lineHeight() + (lineHeight()-dotSize);
-            const QRect dotRect(dotX, dotY, dotSize, dotSize);
-            p->drawRect(dotRect);
+        if (hardIndents_) {
+            for (uint j=0; j<indent; j++) {
+                const uint dotSize = qMin(lineHeight() / 3u,
+                                          charWidth() / 3u);
+                const uint dotX = j * charWidth() * 2 + (charWidth()-dotSize);
+                const uint dotY = y - lineHeight() + (lineHeight()-dotSize);
+                const QRect dotRect(dotX, dotY, dotSize, dotSize);
+                p->drawRect(dotRect);
+            }
         }
 
         // Requires lexem types for propertly highlighting
@@ -2423,7 +2446,13 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
         for (uint j=0; j<uint(qMax(0, text.size()-int(trailingSpaces))); j++) {
 
             // Offet by indent
-            uint offset = ( indent * 2 + j ) * charWidth();
+            uint offset = 0u;
+            if (hardIndents_) {
+                offset = ( indent * indentSize_ + j ) * charWidth();
+            }
+            else {
+                offset = j * charWidth();
+            }
 
             // Get current lexem type
             if (j<uint(highlight.size()))
@@ -2464,7 +2493,26 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
             }
             else {
                 // Draw a symbol using obtained format
-                p->drawText(offset, y,  QString(text[j]));
+                QChar ch = text[j];
+                if (curType & LxTypeName || curType == LxTypePrimaryKwd || curType == LxTypeSecondaryKwd) {
+                    if (caseInsensitive_ && text[j].isLetterOrNumber()) {
+                        int wordStart = j;
+                        int wordEnd = j;
+                        while (text[wordStart].isLetterOrNumber() && wordStart > 0)
+                            wordStart--;
+                        if (!text[wordStart].isLetterOrNumber())
+                            wordStart++;
+                        while (wordEnd < text.length() && text[wordEnd].isLetterOrNumber())
+                            wordEnd++;
+                        int wordLen = wordEnd - wordStart;
+                        if (wordLen > 0) {
+                            const QString word = text.mid(wordStart, wordLen);
+                            const QString capWord = editor_->analizer()->correctCapitalization(word, curType);
+                            ch = capWord[j-wordStart];
+                        }
+                    }
+                }
+                p->drawText(offset, y,  QString(ch));
             }
 
             // If there is an error then draw underline

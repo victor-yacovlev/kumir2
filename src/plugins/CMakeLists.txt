@@ -1,6 +1,8 @@
 add_subdirectory(kumiranalizer)
 add_subdirectory(kumircodegenerator)
 #add_subdirectory(kumirnativegenerator)
+add_subdirectory(fpcanalizer)
+add_subdirectory(gdbrun)
 add_subdirectory(kumircoderun)
 add_subdirectory(kumircompilertool)
 add_subdirectory(browser)

@@ -30,10 +30,11 @@ public:
     uint normalizedNewMarginLinePosition(uint x) const;
     static QString MarginWidthKey;
     static uint MarginWidthDefault;
-    void addContextMenuAction(QAction * a);
+    void addContextMenuAction(QAction * a);    
     void updateScrollBars();
     void findCursor();
     void ensureCursorVisible();
+    inline unsigned int indentSize() const { return indentSize_; }
 public slots:
     void selectAll();
     void copy();
@@ -113,6 +114,9 @@ private:
     QList<QAction*> contextMenuActions_;
 
     QLabel * marginHintBox_;
+    unsigned int indentSize_;
+    bool hardIndents_;
+    bool caseInsensitive_;
 
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);

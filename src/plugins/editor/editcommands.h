@@ -40,6 +40,8 @@ private:
     int blankChars;
     int cursorRow;
     int cursorCol;
+    int indentSize;
+    bool hardIndents;
 
 };
 
@@ -80,6 +82,8 @@ private:
     int cursorCol;
     int cursorRowAfter;
     int cursorColAfter;
+    int indentSize;
+    bool hardIndents;
 };
 
 class InsertBlockCommand:
@@ -112,6 +116,8 @@ private:
     int cursorCol;
     QStringList previousLines;
     int addedLines;
+    int indentSize;
+    bool hardIndents;
 };
 
 class RemoveBlockCommand:
@@ -139,6 +145,8 @@ private:
     int cursorRow;
     int cursorCol;
     QStringList previousLines;
+    int indentSize;
+    bool hardIndents;
 };
 
 class InsertImportCommand
@@ -164,6 +172,8 @@ private:
     Shared::Analizer::InstanceInterface * analizer_;
     QString importName_;
     uint lineNo_;
+    int indentSize;
+    bool hardIndents;
 };
 
 class ToggleLineProtectedCommand:
@@ -222,6 +232,7 @@ private:
     uint toLineInclusive;
     QSet<int> commentedLines;
     QSet< QPair<int,int> > uncommentedLines;
+    int indentSize;
 };
 
 }

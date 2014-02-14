@@ -104,6 +104,8 @@ protected:
 
     QRect selectionRect_;
     Macro * recordingMacro_;
+    unsigned int indentSize_;
+    bool hardIndents_;
 
 };
 

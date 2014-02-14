@@ -20,13 +20,20 @@ TextCursor::TextCursor(Editor * editor)
     , column_(0)
     , keptColumn_(-1)
     , recordingMacro_(nullptr)
-
+    , indentSize_(0u)
+    , hardIndents_(true)
 {
     teacherModeFlag_ = false;
     blinkTimerId_ = startTimer(QApplication::cursorFlashTime()/2);
     emitPositionChanged();
 
     selectionRect_ = QRect(-1,-1,0,0);
+    Shared::AnalizerInterface * analizer =
+            ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
+    if (analizer && editor->analizer()) {
+        indentSize_ = analizer->indentSize();
+        hardIndents_ = ! analizer->indentsSignificant();
+    }
 }
 
 void TextCursor::setViewMode(ViewMode mode)
@@ -313,7 +320,7 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
         removePreviousChar();
         break;
     case KeyCommand::Delete:
-        clearCurrentLineError = column_>=2*editor_->document()->indentAt(row_) || hasSelection() || hasRectSelection();
+        clearCurrentLineError = (hardIndents_ && column_>=indentSize_*editor_->document()->indentAt(row_)) || hasSelection() || hasRectSelection();
         removeCurrentChar();
         break;
     case KeyCommand::RemoveLine:
@@ -342,7 +349,7 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
             else if (data.type == ClipboardData::Text) {
                 QString textToInsert = data.text;
                 bool removeLeadingSpaces = false;
-                if (editor_->analizer()) {
+                if (editor_->analizer() && hardIndents_) {
                     // Check if must remove leading spaces
                     if (row() >= editor_->document()->linesCount()) {
                         removeLeadingSpaces = true;
@@ -447,7 +454,8 @@ void TextCursor::moveTo(int row, int col)
     row_ = qMax(0, row);
     column_ = qMax(0, col);
     if (!isFreeCursorMovement()) {
-        uint indent = qMax(0, int(2*editor_->document()->indentAt(row_)));
+        uint indent = qMax(0, int(indentSize_*editor_->document()->indentAt(row_)));
+        if (!hardIndents_) indent = 0u;
         uint maxColumn = indent + editor_->document()->textAt(row_).length();
         column_ = qMin(column_, maxColumn);
     }
@@ -553,7 +561,7 @@ void TextCursor::selectRangeText(int fromRow, int fromCol, int toRow, int toCol)
     row_ = endY;
     column_ = endX;
     if (!isFreeCursorMovement()) {
-        uint indent = qMax(0, int(2*editor_->document()->indentAt(row_)));
+        uint indent = qMax(0, int(indentSize_*editor_->document()->indentAt(row_)));
         uint maxColumn = indent + editor_->document()->textAt(row_).length();
         column_ = qMin(column_, maxColumn);
     }
@@ -612,8 +620,8 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                     column_ ++;
                 }
                 else {
-                    uint indent = qMax(0, 2 * int(editor_->document()->indentAt(row_)));
-                    uint textPos = qMax(0, int(column_) - int(indent));
+                    int indent = hardIndents_? qMax(0, int(indentSize_) * int(editor_->document()->indentAt(row_))) : 0;
+                    int textPos = qMax(0, int(column_) - int(indent));
                     if ( textPos < editor_->document()->textAt(row_).length()
                          ||
                          column_ < indent
@@ -628,7 +636,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                 }
             }
             else if (m==MM_Select) {
-                int indent = 2 * editor_->document()->indentAt(row_);
+                int indent = hardIndents_? indentSize_ * editor_->document()->indentAt(row_) : 0;
                 if (row_<editor_->document()->linesCount()) {
                     int textPos = column_-indent;
                     if (textPos<0) {
@@ -665,7 +673,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                 if (column_==0 && row_==0) {}
                 else if (column_==0 && row_>0) {
                     row_ --;
-                    int indent = editor_->document()->indentAt(row_) * 2;
+                    int indent = hardIndents_? editor_->document()->indentAt(row_) * indentSize_ : 0;
                     int textPos = 0;
                     if (row_<editor_->document()->linesCount())
                         textPos = editor_->document()->textAt(row_).length();
@@ -676,18 +684,18 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                     column_--;
             }
             else if (m==MM_Select) {
-                int indent = editor_->document()->indentAt(row_)*2;
+                int indent = hardIndents_? editor_->document()->indentAt(row_)*indentSize_ : 0;
                 if (column_<=indent && row_==0) {}
                 else if (row_>=editor_->document()->linesCount()) {
                     row_ = editor_->document()->linesCount()-1;
-                    column_ = editor_->document()->indentAt(row_) * 2
+                    column_ = (hardIndents_? editor_->document()->indentAt(row_) * indentSize_ : 0)
                             + editor_->document()->textAt(row_).length();
                     editor_->document()->setEndOfLineSelected(row_, !editor_->document()->lineEndSelectedAt(row_));
                 }
                 else if (row_<editor_->document()->linesCount()
                          && column_>indent+editor_->document()->textAt(row_).length())
                 {
-                    column_ = editor_->document()->indentAt(row_) * 2
+                    column_ = (hardIndents_? editor_->document()->indentAt(row_) * indentSize_ : 0)
                             + editor_->document()->textAt(row_).length()-1;
                     editor_->document()->setSelected(row_, editor_->document()->selectionMaskAt(row_).size()-1,
                                             !editor_->document()->selectionMaskAt(row_).last());
@@ -696,10 +704,10 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                     editor_->document()->setEndOfLineSelected(row_-1, !editor_->document()->lineEndSelectedAt(row_-1));
                     row_ --;
                     column_ = editor_->document()->textAt(row_).length() +
-                            editor_->document()->indentAt(row_) * 2;
+                            (hardIndents_? editor_->document()->indentAt(row_) * indentSize_ : 0);
                 }
                 else {
-                    int textPos = column_ - editor_->document()->indentAt(row_)*2;
+                    int textPos = column_ - (hardIndents_? editor_->document()->indentAt(row_)*indentSize_ : 0);
                     if (textPos>0) {
                         editor_->document()->setSelected(row_, textPos-1, !editor_->document()->selectionMaskAt(row_)[textPos-1]);
                         column_ --;
@@ -726,8 +734,8 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                     if (keptColumn_ == -1) {
                         keptColumn_ = column_;
                     }
-                    uint indent = qMax(0, 2 * int(editor_->document()->indentAt(row_)));
-                    uint textPos = qMax(0, keptColumn_ - int(indent));
+                    int indent = hardIndents_? qMax(0, int(indentSize_) * int(editor_->document()->indentAt(row_))) : 0;
+                    int textPos = qMax(0, keptColumn_ - int(indent));
                     if ( textPos < editor_->document()->textAt(row_).length()
                          ||
                          keptColumn_ < indent
@@ -747,7 +755,8 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             else if (m==MM_Select) {
                 if (row_<editor_->document()->linesCount()) {
                     editor_->document()->setEndOfLineSelected(row_, !editor_->document()->lineEndSelectedAt(row_));
-                    int textPos = column_ - editor_->document()->indentAt(row_) * 2;
+                    int textPos = column_ -
+                            (hardIndents_? editor_->document()->indentAt(row_) * indentSize_ : 0);
                     if (textPos<0)
                         textPos = 0;
                     for (int i=textPos; i<editor_->document()->textAt(row_).length(); i++) {
@@ -755,7 +764,8 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                     }
 
                     row_++;
-                    textPos = column_ - editor_->document()->indentAt(row_) * 2;
+                    textPos = column_ -
+                            (hardIndents_? editor_->document()->indentAt(row_) * indentSize_ : 0);
                     if (textPos<0)
                         textPos = 0;
                     if (row_>=editor_->document()->linesCount())
@@ -786,8 +796,8 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                         if (keptColumn_ == -1) {
                             keptColumn_ = column_;
                         }
-                        uint indent = qMax(0, 2 * int(editor_->document()->indentAt(row_)));
-                        uint textPos = qMax(0, keptColumn_ - int(indent));
+                        int indent = hardIndents_? qMax(0, int(indentSize_) * int(editor_->document()->indentAt(row_))) : 0;
+                        int textPos = qMax(0, keptColumn_ - int(indent));
                         if ( textPos < editor_->document()->textAt(row_).length()
                              ||
                              keptColumn_ < indent
@@ -807,14 +817,16 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                 }
                 else if (m==MM_Select) {
                     if (row_==0) {
-                        int textPos = column_ - editor_->document()->indentAt(row_) * 2;
+                        int textPos = column_ -
+                                (hardIndents_? editor_->document()->indentAt(row_) * indentSize_ : 0);
                         for (int i=0; i<qMin(textPos, editor_->document()->textAt(row_).length()); i++) {
                             editor_->document()->setSelected(row_, i, !editor_->document()->selectionMaskAt(row_)[i]);
                         }
-                        column_ = editor_->document()->indentAt(0)*2;
+                        column_ = hardIndents_? editor_->document()->indentAt(0)*indentSize_ : 0;
                     }
                     else {
-                        int textPos = column_ - editor_->document()->indentAt(row_) * 2;
+                        int textPos = column_ -
+                                (hardIndents_? editor_->document()->indentAt(row_) * indentSize_ : 0);
                         if (row_<editor_->document()->linesCount()) {
                             for (int i=0; i<qMin(textPos, editor_->document()->textAt(row_).length()); i++) {
                                 editor_->document()->setSelected(row_, i, !editor_->document()->selectionMaskAt(row_)[i]);
@@ -824,7 +836,8 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                         else {
                             row_ = editor_->document()->linesCount()-1;
                         }
-                        textPos = column_ - editor_->document()->indentAt(row_) * 2;
+                        textPos = column_ -
+                                (hardIndents_? editor_->document()->indentAt(row_) * indentSize_ : 0);
                         if (textPos<0)
                             textPos = 0;
                         for (int i=textPos; i<editor_->document()->textAt(row_).length(); i++) {
@@ -850,7 +863,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                 if (row_>=editor_->document()->linesCount())
                     column_ = 0;
                 else {
-                    int indent = editor_->document()->indentAt(row_) * 2;
+                    int indent = hardIndents_? editor_->document()->indentAt(row_) * 2 : 0;
                     const QString textLine = editor_->document()->textAt(row_);
                     int nonSpacePos = 0;
                     for (; nonSpacePos<textLine.length(); nonSpacePos++) {
@@ -868,13 +881,13 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             }
             else if (m==MM_Select) {
                 if (row_<editor_->document()->linesCount()) {
-                    int textPos = column_ - editor_->document()->indentAt(row_);
+                    int textPos = column_ - (hardIndents_? editor_->document()->indentAt(row_) : 0);
                     textPos = qMax(0, textPos);
                     textPos = qMin(editor_->document()->textAt(row_).length(), textPos);
                     for (int i=0; i<textPos; i++) {
                         editor_->document()->setSelected(row_, i, !editor_->document()->selectionMaskAt(row_)[i]);
                     }
-                    column_ = editor_->document()->indentAt(row_) * 2;
+                    column_ = hardIndents_? editor_->document()->indentAt(row_) * 2 : 0;
                 }
                 else {
                     column_ = 0;
@@ -887,7 +900,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                 if (row_>=editor_->document()->linesCount()) { column_ = 0; }
                 else {
                     const QString textLine = editor_->document()->textAt(row_);
-                    int indent = editor_->document()->indentAt(row_) * 2;
+                    int indent = hardIndents_? editor_->document()->indentAt(row_) * 2 : 0;
                     int nonSpacePos = textLine.length();
                     for (int i=textLine.length()-1; i>=0; i--) {
                         if (textLine[i].isSpace())
@@ -902,12 +915,12 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             }
             else if (m==MM_Select) {
                 if (row_<editor_->document()->linesCount()) {
-                    int textPos = column_ - editor_->document()->indentAt(row_) * 2;
+                    int textPos = column_ - (hardIndents_? editor_->document()->indentAt(row_) * 2 : 0);
                     textPos = qMax(0, textPos);
                     for (int i=textPos; i<editor_->document()->textAt(row_).length(); i++) {
                         editor_->document()->setSelected(row_, i, !editor_->document()->selectionMaskAt(row_)[i]);
                     }
-                    column_ = editor_->document()->indentAt(row_) * 2 +
+                    column_ = (hardIndents_? editor_->document()->indentAt(row_) * 2 : 0 ) +
                             editor_->document()->textAt(row_).length();
                 }
             }
@@ -920,7 +933,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             }
             else if (m==MM_Select) {
                 if (row_<editor_->document()->linesCount()) {
-                    int textPos = column_ - editor_->document()->indentAt(row_) * 2;
+                    int textPos = hardIndents_? column_ - editor_->document()->indentAt(row_) * 2 : 0;
                     textPos = qMax(0, textPos);
                     textPos = qMin(editor_->document()->textAt(row_).length(), textPos);
                     for (int i=0; i<textPos; i++) {
@@ -992,16 +1005,18 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
             else if (m==MM_Select && (row_>0 || column_>0) ) {
                 if (row_>=editor_->document()->linesCount()) {
                     row_ = editor_->document()->linesCount() - 1;
-                    column_ = 2*editor_->document()->indentAt(row_) +
+                    uint indent = hardIndents_? indentSize_*editor_->document()->indentAt(row_) : 0u;
+                    column_ = indent +
                             editor_->document()->at(row_).text.length()+1;
                 }
                 column_ -= 1;
                     // Selection starts from left of current column
 
                 forever {
-                    int stopAt = row_==toRow? toColumn : 2*editor_->document()->indentAt(row_);
+                    uint indent = hardIndents_? indentSize_*editor_->document()->indentAt(row_) : 0u;
+                    int stopAt = row_==toRow? toColumn : indent;
                     forever {
-                        int linePos = column_ - 2*editor_->document()->indentAt(row_);
+                        int linePos = column_ - indent;
                         if (linePos>=0 && linePos<editor_->document()->at(row_).text.length())
                             editor_->document()->at(row_).selected[linePos] = !editor_->document()->at(row_).selected[linePos];
                         if (column_>stopAt)
@@ -1013,7 +1028,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                         break;
                     row_ -= 1;
                     editor_->document()->at(row_).lineEndSelected = !editor_->document()->at(row_).lineEndSelected;
-                    column_ = 2*editor_->document()->indentAt(row_) +
+                    column_ = indent +
                             editor_->document()->at(row_).text.length();
                 }
             }
@@ -1030,7 +1045,8 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                     forever {
                         if (row_==toRow && column_==toColumn)
                             break;
-                        int linePos = column_ - 2*editor_->document()->indentAt(row_);
+                        uint indent = hardIndents_? indentSize_*editor_->document()->indentAt(row_) : 0u;
+                        int linePos = column_ - indent;
                         if (linePos>=0 && linePos<editor_->document()->at(row_).text.length())
                             editor_->document()->at(row_).selected[linePos] = !editor_->document()->at(row_).selected[linePos];
                         if (linePos<editor_->document()->at(row_).text.length())
@@ -1060,13 +1076,14 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
 void TextCursor::findLexemBound(uint &row, uint &column, const qint8 dir) const
 {
     row = row_; column = column_;
+    uint indent = hardIndents_? indentSize_*editor_->document()->indentAt(0) : 0u;
 
     if (dir>0 && row_>=editor_->document()->linesCount())
         return;
-    if (dir<0 && row_==0 && row_<editor_->document()->linesCount() && column_<=2*editor_->document()->indentAt(0))
+    if (dir<0 && row_==0 && row_<editor_->document()->linesCount() && column_<=indent)
         return;
-
-    int linePos = column - 2*editor_->document()->indentAt(row);
+    indent = hardIndents_? indentSize_*editor_->document()->indentAt(row) : 0u;
+    int linePos = column - indent;
 
     if (dir<0) {
         // search backward
@@ -1082,12 +1099,14 @@ void TextCursor::findLexemBound(uint &row, uint &column, const qint8 dir) const
         if (linePos>realTextEndPos || row>realTextRow) {
             // try to act like 'End' key
             row = realTextRow;
-            column = realTextEndPos + 2*editor_->document()->indentAt(row);
+            indent = hardIndents_? indentSize_*editor_->document()->indentAt(row) : 0u;
+            column = realTextEndPos + indent;
             return;
         }
 
         forever {
-            linePos = column - 2*editor_->document()->indentAt(row);
+            indent = hardIndents_? indentSize_*editor_->document()->indentAt(row) : 0u;
+            linePos = column - indent;
             linePos = qMax(0, qMin(linePos, editor_->document()->at(row).text.length()));
                 // Normalization of linePos
 
@@ -1102,7 +1121,8 @@ void TextCursor::findLexemBound(uint &row, uint &column, const qint8 dir) const
                 while (linePos>0 && editor_->document()->at(row).text.at(linePos-1).isSpace()) {
                     linePos -= 1;
                 }
-                column = linePos + 2*editor_->document()->indentAt(row);
+                indent = hardIndents_? indentSize_*editor_->document()->indentAt(row) : 0u;
+                column = linePos + indent;
                 return;
             }
             else {
@@ -1113,8 +1133,8 @@ void TextCursor::findLexemBound(uint &row, uint &column, const qint8 dir) const
                     curLexemType = editor_->document()->at(row).highlight.at(linePos-1);
                     while (linePos>0 && curLexemType==LxTypeEmpty) {
                         // ignore whitespaces
-                        linePos -= 1;
-                        curLexemType = editor_->document()->at(row).highlight.at(linePos-1);
+                        linePos -= 1;                        
+                        curLexemType = linePos > 0 ? editor_->document()->at(row).highlight.at(linePos-1) : LxTypeEmpty;
                     }
                     while (linePos>0) {
                         // linePos==0 is : line bound is a delimeter too
@@ -1153,7 +1173,8 @@ void TextCursor::findLexemBound(uint &row, uint &column, const qint8 dir) const
                         linePos -= 1;
                     }
                 }
-                column = linePos + 2*editor_->document()->indentAt(row);
+                indent = hardIndents_? indentSize_*editor_->document()->indentAt(row) : 0u;
+                column = linePos + indent;
                 return;
             }
         }
@@ -1161,7 +1182,8 @@ void TextCursor::findLexemBound(uint &row, uint &column, const qint8 dir) const
     else if (dir>0) {
         // search forward
         forever {
-            linePos = column - 2*editor_->document()->indentAt(row);
+            indent = hardIndents_? indentSize_*editor_->document()->indentAt(row) : 0u;
+            linePos = column - indent;
             linePos = qMax(linePos, 0);
                 // skip indent pos
 
@@ -1187,7 +1209,8 @@ void TextCursor::findLexemBound(uint &row, uint &column, const qint8 dir) const
                 while (linePos<lineText.length() && lineText.at(linePos).isSpace()) {
                     linePos += 1;
                 }
-                column = linePos + 2*editor_->document()->indentAt(row);
+                indent = hardIndents_? indentSize_*editor_->document()->indentAt(row) : 0u;
+                column = linePos + indent;
                 return;
             }
             else {
@@ -1228,7 +1251,8 @@ void TextCursor::findLexemBound(uint &row, uint &column, const qint8 dir) const
                         linePos += 1;
                     }
                 }
-                column = linePos + 2*editor_->document()->indentAt(row);
+                indent = hardIndents_? indentSize_*editor_->document()->indentAt(row) : 0u;
+                column = linePos + indent;
                 return;
             }
         }
@@ -1329,15 +1353,15 @@ void TextCursor::insertText(const QString &text)
 
     int fromLineUpdate = row_;
 
-    const int indent = editor_->document()->indentAt(row_);
+    const int indent = hardIndents_? editor_->document()->indentAt(row_) : 0;
 
     // move cursor from protected part
-    column_ = qMax(column_, indent * 2u);
+    column_ = qMax(column_, hardIndents_? indent * indentSize_ : 0u);
 
     if (editor_->document()->editor_->mySettings()->value(SettingsPage::KeyForcePressTextToLeft, SettingsPage::DefaultForcePressTextToLeft).toBool())
         column_ = justifyLeft(text);
 
-    int textPos = column_ - indent * 2;
+    int textPos = column_ - (hardIndents_? indent * indentSize_ : 0);
     editor_->document()->undoStack()->push(new InsertCommand(editor_->document(), this, editor_->analizerInstance_, row_, textPos, text));
 
     int toLineUpdate = -1;
@@ -1380,7 +1404,7 @@ int TextCursor::justifyLeft(const QString &text) const
 
     // Emulate text change and get line property
 
-    const int indent = editor_->document()->indentAt(row_) * 2;
+    const int indent = hardIndents_? editor_->document()->indentAt(row_) * indentSize_ : 0;
     int col = column_;
     int textPos = col - indent;
     if (textPos<=0) {
@@ -1432,8 +1456,8 @@ void TextCursor::removePreviousChar()
     int fromLineUpdate = -1;
     int toLineUpdate = -1;
 
-    const int indent = editor_->document()->indentAt(row_);
-    int textPos = column_ - indent * 2;
+    const int indent = hardIndents_? editor_->document()->indentAt(row_) : 0;
+    int textPos = column_ - indent * indentSize_;
     if (textPos>0) {
         // remove previous char in current line
         if ( row_<editor_->document()->linesCount() &&
@@ -1455,7 +1479,7 @@ void TextCursor::removePreviousChar()
         }
         else {
             row_ --;
-            column_ = 2 * editor_->document()->indentAt(row_);
+            column_ = hardIndents_? indentSize_ * editor_->document()->indentAt(row_) : 0;
         }
     }
     else {
@@ -1470,7 +1494,8 @@ void TextCursor::removePreviousChar()
                                                                 1,
                                                                 false,
                                                                 row_-1,
-                                                                editor_->document()->textAt(row_-1).length() + 2*editor_->document()->indentAt(row_-1)
+                                                                editor_->document()->textAt(row_-1).length() +
+                                                                         (hardIndents_? indentSize_*editor_->document()->indentAt(row_-1) : 0)
                                                                 ));
             }
         }
@@ -1519,7 +1544,7 @@ void TextCursor::removeLineTail()
 
     if (row_<editor_->document()->linesCount()) {
 
-        int textPos = column_ - editor_->document()->indentAt(row_)*2;
+        int textPos = column_ - (hardIndents_? editor_->document()->indentAt(row_)*indentSize_ : 0);
         if (textPos<editor_->document()->textAt(row_).length()) {
             editor_->document()->undoStack()->push(new RemoveCommand(editor_->document(), this, editor_->analizerInstance_, row_, textPos, editor_->document()->textAt(row_).length()-textPos, true, row_, column_));
             emit updateRequest(-1, -1);
@@ -1553,14 +1578,14 @@ void TextCursor::removeCurrentChar()
     int fromLineUpdate = -1;
     int toLineUpdate = -1;
 
-    const int indent = editor_->document()->indentAt(row_);
-    int textPos = column_ - indent * 2;
+    const int indent = hardIndents_? editor_->document()->indentAt(row_) : 0;
+    int textPos = column_ - indent * indentSize_;
     if (row_>=editor_->document()->linesCount())
         return;
     if (textPos>=editor_->document()->textAt(row_).length() && row_>=editor_->document()->linesCount()-1)
         return;
     if (textPos<0) {
-        column_ = 2*editor_->document()->indentAt(row_);
+        column_ = hardIndents_? indentSize_*editor_->document()->indentAt(row_) : 0;
         return;
     }
     editor_->document()->undoStack()->push(new RemoveCommand(editor_->document(), this, editor_->analizerInstance_, row_, textPos, 1, true, row_, column_));
@@ -1658,7 +1683,8 @@ void TextCursor::removeSelectedText()
                                                         count,
                                                         true,
                                                         cursorStartLine,
-                                                        editor_->document()->indentAt(row_)*2 + cursorTextPos
+                                                        (hardIndents_? editor_->document()->indentAt(row_)*indentSize_ : 0)
+                                                                 + cursorTextPos
                                                         ));
     }
 
@@ -1727,11 +1753,11 @@ QString TextCursor::selectedText() const
         uint startPos = selectionRect_.left();
         uint endPos = selectionRect_.right();
         for (uint i=startLine; i<endLine; i++) {
-            uint indent = editor_->document()->indentAt(i);
-            uint textStart = qMax(0, int(startPos) - int(indent) * 2);
-            uint textEnd = qMax(0, int(endPos) - int(indent) * 2);
-            textStart = qMin(textStart, uint(editor_->document()->textAt(i).length()));
-            textEnd = qMin(textEnd, uint(editor_->document()->textAt(i).length()));
+            int indent = editor_->document()->indentAt(i);
+            int textStart = hardIndents_? qMax(0, int(startPos - indent * indentSize_)) : 0;
+            int textEnd = hardIndents_? qMax(0, int(endPos - indent * indentSize_)) : 0;
+            textStart = qMin(textStart, editor_->document()->textAt(i).length());
+            textEnd = qMin(textEnd, editor_->document()->textAt(i).length());
             result += editor_->document()->textAt(i).mid(textStart, textEnd-textStart);
             if (i<endLine-1) {
                 result += "\n";
@@ -1753,8 +1779,8 @@ QStringList TextCursor::rectSelectionText() const
         int endPos = selectionRect_.right()+1;
         for (int i=startLine; i<endLine; i++) {
             int indent = editor_->document()->indentAt(i);
-            int textStart = startPos - indent * 2;
-            int textEnd = endPos - indent * 2;
+            int textStart = startPos - (hardIndents_? indent * indentSize_ : 0);
+            int textEnd = endPos - (hardIndents_? indent * indentSize_ : 0);
             textStart = qMin(textStart, editor_->document()->textAt(i).length());
             textEnd = qMin(textEnd, editor_->document()->textAt(i).length());
             textStart = qMax(0, textStart);
@@ -1795,7 +1821,7 @@ void TextCursor::selectionBounds(int &fromRow, int &fromCol, int &toRow, int &to
         toCol = last.lastIndexOf(true);
         if (toCol==-1)
             toCol=0;
-        toCol += 2 * editor_->document()->indentAt(toRow);
+        if (hardIndents_) toCol += indentSize_ * editor_->document()->indentAt(toRow);
     }
     else {
         toRow = editor_->document()->linesCount();

@@ -36,6 +36,7 @@ public:
     virtual QList<LineProp> lineProperties() const = 0;
     virtual QList<QPoint> lineRanks() const = 0;
     virtual LineProp lineProp(int lineNo, const QString & text) const = 0;
+    virtual QString correctCapitalization(const QString & name, LexemType lxType) const { return name; }
 
     inline virtual ASTCompilerInterface * compiler() {
         QObject * me = dynamic_cast<QObject*>(this);

@@ -1,0 +1,2 @@
+name    = FPCAnalizer
+provides= Analizer
