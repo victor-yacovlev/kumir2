@@ -222,7 +222,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                 tr("Help"),
                 QIcon(), // TODO help window icon
                 mainWindow_,
-                mainWindow_->helpPlace_,
+                mainWindow_->helpAndCourcesPlace_,
                 "HelpViewerWindow",
                 true
                 );
@@ -245,7 +245,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                     tr("Courses"),
                     QIcon(), // TODO courses icon
                     mainWindow_,
-                    mainWindow_->consoleAndCourcesPlace_,
+                    mainWindow_->helpAndCourcesPlace_,
                     "CoursesWindow",
                     true
                     );

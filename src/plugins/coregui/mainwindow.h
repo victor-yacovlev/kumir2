@@ -148,7 +148,7 @@ private:
     class Row * bottomRow_;
     class Row * centralRow_;
     class TabWidget * tabWidget_;
-    Widgets::DockWindowPlace * helpPlace_;
+    Widgets::DockWindowPlace * helpAndCourcesPlace_;
     Widgets::DockWindowPlace * debuggerPlace_;
     Widgets::DockWindowPlace * actorsPlace_;
     Widgets::DockWindowPlace * consoleAndCourcesPlace_;
