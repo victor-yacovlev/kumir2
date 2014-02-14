@@ -74,10 +74,10 @@ namespace Ui {
 }  
 
 class MainWindowTask : public QMainWindow {
-    Q_OBJECT
+    Q_OBJECT 
 public:
     MainWindowTask(QWidget *parent = 0);
-
+  
     ~MainWindowTask();
     void setInterface(CourseManager::Plugin * csInterface){interface=csInterface;};
     void setCS(QString cs){CS=cs;};
