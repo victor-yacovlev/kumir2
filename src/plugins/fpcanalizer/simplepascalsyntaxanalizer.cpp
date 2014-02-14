@@ -114,9 +114,9 @@ SimplePascalSyntaxAnalizer* SimplePascalSyntaxAnalizer::create(QObject *parent)
             << "integer" << "real" << "char" << "string" << "pchar"
             << "boolean" << "word" << "longint";
     static const QString pattern = "\\b" + kwds.join("\\b|\\b") + "\\b" +
-            "|\\*|//|/|\\+|\\-|:=|\\(|\\)|\\[|\\]|,|;|\\.|\\^|<|>|=|'|\\{|\\}|\\s+";
+            "|\\*|//|/|\\+|\\-|:=|\\(|\\)|\\[|\\]|,|:|;|\\.|\\^|<|>|=|'|\\{|\\}|\\s+";
     QRegExp rx(pattern);
-    rx.setMinimal(false);
+    rx.setMinimal(true);
     SimplePascalSyntaxAnalizer* self =
             new SimplePascalSyntaxAnalizer(parent, kwds, ops, tps, rx);
     return self;
@@ -147,9 +147,9 @@ void SimplePascalSyntaxAnalizer::reset()
 
 void SimplePascalSyntaxAnalizer::processSyntaxAnalysis(
         const QStringList &lines
-        , const QStringList & unitNames
-        , const QStringList & functionNames
-        , const QStringList & typeNames
+        , const QSet<QString> & unitNames
+        , const QSet<QString> & functionNames
+        , const QSet<QString> & typeNames
         , QList<LineProp> &lineProps
         , QList<QPoint> &lineRanks
         )
@@ -159,31 +159,36 @@ void SimplePascalSyntaxAnalizer::processSyntaxAnalysis(
     functionNames_ = functionNames;
     typeNames_ = typeNames;
     State currentState = Program;
+    QString previousKeyword;
     for (int i=0; i<lines.size(); i++) {
         const QString line = lines[i].toLower();
         LineProp & lineProp = lineProps[i];
         QPoint lineRank(0,0);
         State nextState;
-        processLine(line, currentState, lineProp, lineRank, nextState);
+        lineStartKeywords_.append(previousKeyword);
+        processLine(line, currentState, lineProp, lineRank, nextState, previousKeyword);
         lineStartStates_.append(currentState);
         lineRanks[i] = lineRank;
         currentState = nextState;
     }
     lineStartStates_.append(currentState);
+    lineStartKeywords_.append(previousKeyword);
 }
 
 void SimplePascalSyntaxAnalizer::processLineProp(const QString& line,
-                     const QStringList & unitNames,
-                     const QStringList & functionNames,
-                     const QStringList & typeNames,
+                     const QSet<QString> & unitNames,
+                     const QSet<QString> & functionNames,
+                     const QSet<QString> & typeNames,
                      int lineNo,
                      LineProp & lineProp
                      )
 {
     State initialState = lineNo < lineStartStates_.size() ? lineStartStates_.at(lineNo) : Program;
+//    QString previousKeyword = lineNo < lineStartKeywords_.size() ? lineStartKeywords_.at(lineNo) : "";
+    QString previousKeyword = "";
     QPoint dummy;
     State dummyState;
-    processLine(line, initialState, lineProp, dummy, dummyState);
+    processLine(line, initialState, lineProp, dummy, dummyState, previousKeyword);
 }
 
 SimplePascalSyntaxAnalizer::Lexem
@@ -210,7 +215,7 @@ SimplePascalSyntaxAnalizer::takeLexem
         }
     }
     else if (String == startState) {
-        int end = line.indexOf('\'', startPos+1);
+        int end = line.indexOf('\'', startPos);
         if (-1 == end)
             end = line.length();
         result.start = startPos;
@@ -218,13 +223,25 @@ SimplePascalSyntaxAnalizer::takeLexem
         result.stateAfter = Program;
     }
     else if (Program == startState) {
-        int end = Delimeters.indexIn(line, startPos+1);
+        int start = Delimeters.indexIn(line, startPos);
+        int end = start + 1;
         QString next;
+        if (-1 == start) {
+            start = startPos;
+            end = Delimeters.indexIn(line, startPos+1);
+            next = Delimeters.cap();
+        }
+        else if (start > startPos && line.mid(startPos, start-startPos).trimmed().length()>0) {
+            end = start;
+            start = startPos;
+            next = Delimeters.cap();
+        }
+        else {
+            end = start + Delimeters.matchedLength();
+        }
         if (-1 == end)
             end = line.length();
-        else
-            next = Delimeters.cap();
-        result.start = startPos;
+        result.start = start;
         while (result.start < end && line.at(result.start).isSpace()) {
             result.start ++;
         }
@@ -246,12 +263,16 @@ SimplePascalSyntaxAnalizer::takeLexem
 
 void SimplePascalSyntaxAnalizer::processLine
 (const QString &line, const State initialState,
- LineProp &lineProp, QPoint &rank, State &endState) const
+ LineProp &lineProp, QPoint &rank, State &endState, QString & previousKeyword)
 {
     State currentState = initialState;
     int currentPos = 0;
     Q_FOREVER {
         Lexem lx = takeLexem(line, currentPos, currentState);
+        if (0 == lx.length) {
+            currentPos ++;
+            continue;
+        }
         QString lxText = line.mid(lx.start, lx.length).trimmed();
         LexemType tp = LxTypeName;
         if (String == currentState) {
@@ -263,10 +284,37 @@ void SimplePascalSyntaxAnalizer::processLine
         else {
             if (Operators.contains(lxText)) {
                 tp = LxTypeOperator;
+                if (lxText=="." || lxText==";" || lxText=="(" || lxText == "[") {
+                    if ("procedure" == previousKeyword
+                            || "function" == previousKeyword
+                            || "program" == previousKeyword
+                            || "unit" == previousKeyword
+                            || "uses" == previousKeyword
+                            ) {
+                        previousKeyword = "";
+                    }
+                }
             }
             else if (Keywords.contains(lxText)) {
                 tp = LxTypePrimaryKwd;
                 rank += keywordRank(lxText);
+                QString kwd = lxText.toLower();
+                if ("procedure" == kwd || "function" == kwd || "type" == kwd ||
+                        "program" == kwd || "unit" == kwd || "uses" == kwd ||
+                        "record" == kwd || "object" == kwd || "class" == kwd)
+                {
+                    previousKeyword = kwd;
+                }
+                else if ("var" == kwd || "begin" == kwd || "interface" == kwd
+                         || "implementation" == kwd)
+                {
+                    previousKeyword = "";
+                }
+                else if ("end" == kwd) {
+                    if ("record" == previousKeyword || "object" == previousKeyword || "class" == previousKeyword) {
+                        previousKeyword = "type";
+                    }
+                }
             }
             else if (StandardTypes.contains(lxText) || typeNames_.contains(lxText)) {
                 tp = LxNameClass;
@@ -278,8 +326,27 @@ void SimplePascalSyntaxAnalizer::processLine
                 tp = LxNameModule;
             }
         }
-        for (int i=lx.start; i<lx.start+lx.length; i++)
-            lineProp[i] = tp;
+        if (LxTypeName == tp && previousKeyword.length() > 0) {
+            if ("type" == previousKeyword) {
+                tp = LxNameClass;
+                typeNames_.insert(lxText.toLower());
+            }
+            else if ("procedure" == previousKeyword || "function" == previousKeyword) {
+                tp = LxNameAlg;
+                functionNames_.insert(lxText.toLower());
+                previousKeyword = "";
+            }
+            else if ("program" == previousKeyword || "unit" == previousKeyword) {
+                tp = LxNameModule;
+                unitNames_.insert(lxText.toLower());
+                previousKeyword = "";
+            }
+            else if ("uses" == previousKeyword) {
+                tp = LxNameModule;
+                unitNames_.insert(lxText.toLower());
+            }
+        }
+        for (int i=lx.start; i<lx.start+lx.length; i++) lineProp[i] = tp;
         currentPos = lx.start + lx.length;
         currentState = lx.stateAfter;
         if (currentPos >= line.length())

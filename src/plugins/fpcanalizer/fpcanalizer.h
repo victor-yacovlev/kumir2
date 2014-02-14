@@ -22,14 +22,17 @@ public:
     void setSourceDirName(const QString &path);
     void setSourceText(const QString &plainText);
     virtual std::string rawSourceData() const;
-    inline virtual QList<Analizer::Error> errors() const { return errors_; }
-    virtual QList<Analizer::LineProp> lineProperties() const { return lineProps_; }
-    virtual QList<QPoint> lineRanks() const { return lineRanks_; }
-    virtual Analizer::LineProp lineProp(int lineNo, const QString & text) const;
+    QList<Analizer::Error> errors() const;
+    QList<Analizer::LineProp> lineProperties() const;
+    QList<QPoint> lineRanks() const { return lineRanks_; }
+    Analizer::LineProp lineProp(int lineNo, const QString & text) const;
     inline QString correctCapitalization(const QString & name, LexemType lxType) const
     { return syntaxAnalizer_->correctCapitalization(name, lxType); }
 
 protected:
+    QPair<QByteArray,QString> startFpcProcessToCheck();
+    void parseFpcErrors(const QByteArray & bytes, const QString & fileName);
+    void parseFpcOutput(const QByteArray & bytes);
     explicit FpcAnalizer(QObject * plugin);
     QProcess* fpc_;
     QTextCodec* textCodec_;
@@ -40,9 +43,9 @@ protected:
     QList<Analizer::Error> errors_;
     QList<Analizer::LineProp> lineProps_;
     QList<QPoint> lineRanks_;
-    QStringList unitNames_;
-    QStringList functionNames_;
-    QStringList typeNames_;
+    QSet<QString> unitNames_;
+    QSet<QString> functionNames_;
+    QSet<QString> typeNames_;
 };
 
 }

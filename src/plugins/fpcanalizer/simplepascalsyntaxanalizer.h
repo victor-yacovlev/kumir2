@@ -17,15 +17,15 @@ public:
     static SimplePascalSyntaxAnalizer* create(QObject *parent);
     void reset();
     void processSyntaxAnalysis(const QStringList & lines,
-                               const QStringList & unitNames,
-                               const QStringList & functionNames,
-                               const QStringList & typeNames,
+                               const QSet<QString> & unitNames,
+                               const QSet<QString> & functionNames,
+                               const QSet<QString> & typeNames,
                                QList<LineProp> & lineProps,
                                QList<QPoint> & lineRanks);
     void processLineProp(const QString& line,
-                         const QStringList & unitNames,
-                         const QStringList & functionNames,
-                         const QStringList & typeNames,
+                         const QSet<QString> & unitNames,
+                         const QSet<QString> & functionNames,
+                         const QSet<QString> & typeNames,
                          int lineNo,
                          LineProp & lineProp
                          );
@@ -57,18 +57,20 @@ private:
     };
     Lexem takeLexem(const QString &line, int startPos, State startState) const;
     void processLine(const QString &line, const State initialState,
-                     LineProp & lineProp, QPoint& rank, State& endState
-                     ) const;
+                     LineProp & lineProp, QPoint& rank, State& endState,
+                     QString & previousKeyword
+                     ) ;
     static QPoint keywordRank(const QString &keyword);
     const QStringList Keywords;
     const QStringList Operators;
     const QRegExp Delimeters;
     const QStringList StandardTypes;
-    QStringList unitNames_;
-    QStringList functionNames_;
-    QStringList typeNames_;
+    QSet<QString> unitNames_;
+    QSet<QString> functionNames_;
+    QSet<QString> typeNames_;
 
     QList<State> lineStartStates_;
+    QStringList lineStartKeywords_;
 
 };
 
