@@ -1189,6 +1189,36 @@ EXTERN void Kumir_Standard_Library_string_to_int(__kumir_scalar * result, const 
     __kumir_create_bool(success, ok);
 }
 
+EXTERN void Kumir_Standard_Library_Integer(__kumir_scalar * result, const __kumir_scalar * lexem, const __kumir_scalar * def)
+{
+    __kumir_check_value_defined(lexem);
+    __kumir_check_value_defined(def);
+    const std::wstring s = __kumir_scalar_as_wstring(lexem);
+    const int d = def->data.i;
+    const int v = Kumir::Converter::stringToIntDef(s, d);
+    __kumir_create_int(result, v);
+}
+
+EXTERN void Kumir_Standard_Library_Real(__kumir_scalar * result, const __kumir_scalar * lexem, const __kumir_scalar * def)
+{
+    __kumir_check_value_defined(lexem);
+    __kumir_check_value_defined(def);
+    const std::wstring s = __kumir_scalar_as_wstring(lexem);
+    const double d = def->data.r;
+    const double v = Kumir::Converter::stringToRealDef(s, d);
+    __kumir_create_real(result, v);
+}
+
+EXTERN void Kumir_Standard_Library_Boolean(__kumir_scalar * result, const __kumir_scalar * lexem, const __kumir_scalar * def)
+{
+    __kumir_check_value_defined(lexem);
+    __kumir_check_value_defined(def);
+    const std::wstring s = __kumir_scalar_as_wstring(lexem);
+    const bool d = def->data.b;
+    const bool v = Kumir::Converter::stringToBoolDef(s, d);
+    __kumir_create_bool(result, v);
+}
+
 // Files
 EXTERN void Files_nonempty(__kumir_scalar * result, const __kumir_scalar * handle)
 {

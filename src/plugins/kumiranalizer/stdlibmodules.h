@@ -382,6 +382,39 @@ public:
         func.arguments << Argument("ch", Char);
         result << func;
 
+        /* алг цел Цел(лит строка, цел по умолчанию) */
+        func.localizedNames.clear();
+        func.arguments.clear();
+        func.id = 0x0027;
+        func.asciiName = "Integer";
+        func.localizedNames[QLocale::Russian] = QString::fromUtf8("Цел");
+        func.returnType = Int;
+        func.arguments << Argument("lexem", String);
+        func.arguments << Argument("defvalue", Int);
+        result << func;
+
+        /* алг вещ Вещ(лит строка, вещ по умолчанию) */
+        func.localizedNames.clear();
+        func.arguments.clear();
+        func.id = 0x0028;
+        func.asciiName = "Real";
+        func.localizedNames[QLocale::Russian] = QString::fromUtf8("Вещ");
+        func.returnType = Int;
+        func.arguments << Argument("lexem", String);
+        func.arguments << Argument("defvalue", Real);
+        result << func;
+
+        /* алг лог Лог(лит строка, лог по умолчанию) */
+        func.localizedNames.clear();
+        func.arguments.clear();
+        func.id = 0x0029;
+        func.asciiName = "Boolean";
+        func.localizedNames[QLocale::Russian] = QString::fromUtf8("Лог");
+        func.returnType = Int;
+        func.arguments << Argument("lexem", String);
+        func.arguments << Argument("defvalue", Bool);
+        result << func;
+
 
         return result;
     }
