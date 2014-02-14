@@ -193,7 +193,7 @@ void SecondaryWindow::restoreState()
         window->resize(sz);
         window->move(ps);
     }    
-    bool docked = settings_->value(settingsKey_ + IsDocked, false).toBool();
+    bool docked = settings_->value(settingsKey_ + IsDocked, true).toBool();
     if (dockContainer_ && docked) {
         QWidget * w = currentContainer()->releaseWidgetOwnership();
         dockContainer_->getWidgetOwnership(w);
