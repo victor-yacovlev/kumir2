@@ -1,4 +1,5 @@
 #include "simplepascalsyntaxanalizer.h"
+#include "fpcanalizerplugin.h"
 
 namespace FpcAnalizer {
 
@@ -133,8 +134,7 @@ SimplePascalSyntaxAnalizer::SimplePascalSyntaxAnalizer
     , StandardTypes(tps)
     , Delimeters(rx)
 {
-
-
+    capitalizationHints_ = FpcAnalizerPlugin::self()->readCapitalizationHints();
 }
 
 void SimplePascalSyntaxAnalizer::reset()
@@ -528,24 +528,15 @@ QPoint SimplePascalSyntaxAnalizer::keywordRank(const QString &keyword)
 QString SimplePascalSyntaxAnalizer::correctCapitalization
 (const QString &name, LexemType lxType) const
 {
+    if (capitalizationHints_.contains(name.toLower())) {
+        return capitalizationHints_[name.toLower()];
+    }
     QString result;
     if (lxType == LxTypePrimaryKwd || lxType == LxTypeSecondaryKwd) {
         result = name.toLower();
     }
     else if (lxType == LxNameClass) {
-        if ("longint" == name.toLower()) {
-            result = "LongInt";
-        }
-        else if ("shortint" == name.toLower()) {
-            result = "ShortInt";
-        }
-        else if ("shortstring" == name.toLower()) {
-            result = "ShortString";
-        }
-        else if ("text" == name.toLower()) {
-            result = "Text";
-        }
-        else if ((name.toLower().startsWith("t") || name.toLower().startsWith("p"))&& name.length() > 1) {
+        if ((name.toLower().startsWith("t") || name.toLower().startsWith("p"))&& name.length() > 1) {
             result.append(name.at(0).toUpper());
             result.append(name.at(1).toUpper());
             result.append(name.mid(2));
@@ -556,9 +547,7 @@ QString SimplePascalSyntaxAnalizer::correctCapitalization
         }
     }
     else if (lxType == LxNameAlg) {
-        if (name.toLower() == "readln") result = "ReadLn";
-        else if (name.toLower() == "writeln") result = "WriteLn";
-        else if (name.toLower().startsWith("get") && name.length() > 3) {
+        if (name.toLower().startsWith("get") && name.length() > 3) {
             result = "Get" + QString(name.at(3).toUpper()) + name.mid(4);
         }
         else if (name.toLower().startsWith("set") && name.length() > 3) {

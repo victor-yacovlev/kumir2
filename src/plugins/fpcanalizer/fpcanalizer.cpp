@@ -3,6 +3,7 @@
 
 #include <QTemporaryFile>
 #include <QFileInfo>
+#include <QDesktopServices>
 
 
 namespace FpcAnalizer {
@@ -70,13 +71,17 @@ void FpcAnalizer::setSourceText(const QString &plainText)
 QPair<QByteArray,QString> FpcAnalizer::startFpcProcessToCheck()
 {
 
-    QTemporaryFile programFile(sourceDirName_ + QString::fromAscii("/.editor-XXXXXX-%1.pas").arg(instanceIndex_));
+    QDir tempDir =
+            QDir(QDesktopServices::storageLocation(QDesktopServices::TempLocation));
+    tempDir.mkdir("kumir2-fpcanalizer");
+    QTemporaryFile programFile(tempDir.absoluteFilePath("kumir2-fpcanalizer")
+                + QString::fromAscii("/.editor-XXXXXX-%1.pas").arg(instanceIndex_));
     programFile.open();
     programFile.write(rawSourceData().c_str());
     QFileInfo fi(programFile);
     QString dirName = fi.absoluteDir().absolutePath();
     programFile.close();
-    fpc_->setWorkingDirectory(sourceDirName_);
+    fpc_->setWorkingDirectory(tempDir.absoluteFilePath("kumir2-fpcanalizer"));
     static const QString fpcpluginLibexecs = QDir::toNativeSeparators(
                 QDir::cleanPath(
                     QCoreApplication::applicationDirPath()+"/../libexec/kumir2/fpcanalizer/"
@@ -87,6 +92,7 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcProcessToCheck()
             << "-E"  // do not linkage
             << "-AAS" // use 'as' command for assembler
             << "-ap" // use pipes to comminicate with "assembler"
+            << "-Fu"+QDir::toNativeSeparators(sourceDirName_) // Add unit path
             << "-e" + fpcpluginLibexecs // override 'as' with provided fake assembler
             << fi.fileName();
     fpc_->setProcessChannelMode(QProcess::SeparateChannels);

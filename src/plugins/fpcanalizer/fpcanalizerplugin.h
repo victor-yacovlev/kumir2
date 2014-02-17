@@ -25,8 +25,11 @@ public:
     inline QString languageName() const { return "Pascal"; }
     inline QString defaultDocumentFileNameSuffix() const { return "pas"; }
     Analizer::InstanceInterface* createInstance();
+    QMap<QString,QString> readCapitalizationHints() const;
+    static FpcAnalizerPlugin* self();
 private:
     uint lastInstanceIndex_;
+    static FpcAnalizerPlugin* me_;
 };
 
 

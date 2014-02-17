@@ -75,6 +75,7 @@ private:
     QList<State> lineStartStates_;
     QStringList lineStartKeywords_;
     QString thisUnitName_;
+    QMap<QString,QString> capitalizationHints_;
 
 };
 
