@@ -32,7 +32,9 @@ public:
 protected:
     QPair<QByteArray,QString> startFpcProcessToCheck();
     void parseFpcErrors(const QByteArray & bytes, const QString & fileName);
-    void parseFpcOutput(const QByteArray & bytes);
+    void parseFpcOutput(const QByteArray & bytes, const QString & fileName);
+    void parseCallLine(const QString &line);
+    void parseDefinition(const QString &line);
     explicit FpcAnalizer(QObject * plugin);
     QProcess* fpc_;
     QTextCodec* textCodec_;

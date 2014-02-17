@@ -20,7 +20,7 @@ SimplePascalSyntaxAnalizer* SimplePascalSyntaxAnalizer::create(QObject *parent)
             << "downto"
             << "else"
             << "end"
-            << "false"
+//            << "false"
             << "file"
             << "for"
             << "function"
@@ -32,7 +32,7 @@ SimplePascalSyntaxAnalizer* SimplePascalSyntaxAnalizer::create(QObject *parent)
             << "interface"
             << "label"
             << "mod"
-            << "nil"
+//            << "nil"
             << "not"
             << "object"
             << "of"
@@ -49,7 +49,7 @@ SimplePascalSyntaxAnalizer* SimplePascalSyntaxAnalizer::create(QObject *parent)
             << "shr"
             << "then"
             << "to"
-            << "true"
+//            << "true"
             << "type"
             << "unit"
             << "until"
@@ -109,10 +109,10 @@ SimplePascalSyntaxAnalizer* SimplePascalSyntaxAnalizer::create(QObject *parent)
     static const QStringList ops = QStringList()
             << "*" << "/" << "+" << "-" << ":="
             << "(" << ")" << "[" << "]" << "," << ";"
-            << "." << "^" << "<" << ">" << "=";
+            << "." << "^" << "<" << ">" << "=" << "'";
     static const QStringList tps = QStringList()
             << "integer" << "real" << "char" << "string" << "pchar"
-            << "boolean" << "word" << "longint";
+            << "boolean" << "word" << "longint" << "smallint" << "text" << "file";
     static const QString pattern = "\\b" + kwds.join("\\b|\\b") + "\\b" +
             "|\\*|//|/|\\+|\\-|:=|\\(|\\)|\\[|\\]|,|:|;|\\.|\\^|<|>|=|'|\\{|\\}|\\s+";
     QRegExp rx(pattern);
@@ -216,28 +216,33 @@ SimplePascalSyntaxAnalizer::takeLexem
     }
     else if (String == startState) {
         int end = line.indexOf('\'', startPos);
-        if (-1 == end)
-            end = line.length();
-        result.start = startPos;
-        result.length = end - startPos;
+        if (-1 == end) {
+            result.start = startPos;
+            result.length = line.length() - startPos;
+        }
+        else {
+            result.start = startPos;
+            result.length = 1 + end - startPos;
+        }
         result.stateAfter = Program;
     }
     else if (Program == startState) {
         int start = Delimeters.indexIn(line, startPos);
         int end = start + 1;
-        QString next;
+        QString lxText;
         if (-1 == start) {
             start = startPos;
             end = Delimeters.indexIn(line, startPos+1);
-            next = Delimeters.cap();
+            lxText = Delimeters.cap();
         }
         else if (start > startPos && line.mid(startPos, start-startPos).trimmed().length()>0) {
             end = start;
             start = startPos;
-            next = Delimeters.cap();
+            lxText = Delimeters.cap();
         }
         else {
             end = start + Delimeters.matchedLength();
+            lxText = Delimeters.cap();
         }
         if (-1 == end)
             end = line.length();
@@ -246,11 +251,11 @@ SimplePascalSyntaxAnalizer::takeLexem
             result.start ++;
         }
         result.length = end - result.start;
-        if ("//" == next)
+        if ("//" == lxText)
             result.stateAfter = LineComment;
-        else if ("{" == next)
+        else if ("{" == lxText)
             result.stateAfter = BlockComment;
-        else if ("'" == next)
+        else if ("'" == lxText)
             result.stateAfter = String;
         else
             result.stateAfter = Program;
@@ -293,6 +298,9 @@ void SimplePascalSyntaxAnalizer::processLine
                             ) {
                         previousKeyword = "";
                     }
+                }
+                if ("'" == lxText) {
+                    tp = LxConstLiteral;
                 }
             }
             else if (Keywords.contains(lxText)) {
@@ -346,6 +354,28 @@ void SimplePascalSyntaxAnalizer::processLine
                 unitNames_.insert(lxText.toLower());
             }
         }
+        if (LxTypeName == tp && "true" == lxText.toLower()) {
+            tp = LxConstBoolTrue;
+        }
+        if (LxTypeName == tp && "false" == lxText.toLower()) {
+            tp = LxConstBoolFalse;
+        }
+        if (LxTypeName == tp && "nil" == lxText.toLower()) {
+            tp = LxTypeConstant;
+        }
+        if (LxTypeName == tp) {
+            bool ok;
+            lxText.toLongLong(&ok);
+            if (ok) {
+                tp = LxConstInteger;
+            }
+            else {
+                lxText.toDouble(&ok);
+                if (ok) {
+                    tp = LxConstReal;
+                }
+            }
+        }
         for (int i=lx.start; i<lx.start+lx.length; i++) lineProp[i] = tp;
         currentPos = lx.start + lx.length;
         currentState = lx.stateAfter;
@@ -393,6 +423,15 @@ QString SimplePascalSyntaxAnalizer::correctCapitalization
     else if (lxType == LxNameClass) {
         if ("longint" == name.toLower()) {
             result = "LongInt";
+        }
+        else if ("shortint" == name.toLower()) {
+            result = "ShortInt";
+        }
+        else if ("shortstring" == name.toLower()) {
+            result = "ShortString";
+        }
+        else if ("text" == name.toLower()) {
+            result = "Text";
         }
         else if ((name.toLower().startsWith("t") || name.toLower().startsWith("p"))&& name.length() > 1) {
             result.append(name.at(0).toUpper());
