@@ -1400,7 +1400,9 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                     const QString & curText = editor_->cursor()->row() < editor_->document()->linesCount()
                             ? editor_->document()->at(editor_->cursor()->row()).text : QString();
 
+
                     int indentSpaces = 0;
+
                     for (int i=0; i<curText.length(); i++) {
                         if (curText.at(i) == ' ') {
                             indentSpaces += 1;
@@ -1424,7 +1426,8 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                     QString indent;
                     const TextLine &tl = editor_->document()->at(editor_->cursor()->row());
                     int endRank = tl.indentEnd;
-                    indentSpaces += endRank * indentSize_;
+                    if (moveToEnd)
+                        indentSpaces += endRank * indentSize_;
                     if (indentSpaces > 0)
                         indent.fill(' ', indentSpaces);
                     editor_->cursor()->evaluateCommand("\n" + indent);

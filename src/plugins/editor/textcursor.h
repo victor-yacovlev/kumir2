@@ -40,6 +40,8 @@ public:
     void setViewMode(ViewMode mode);
     void setEnabled(bool v);
     bool hasSelection() const;
+    inline bool hardIndents() const { return hardIndents_; }
+    inline uint indentSize() const { return indentSize_; }
     inline bool hasRectSelection() const { return selectionRect_.x()!=-1 && selectionRect_.y()!=-1; }
     inline QRect selectionRect() const { return selectionRect_; }
     void selectionBounds(int &fromRow, int &fromCol, int &toRow, int &toCol) const;

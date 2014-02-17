@@ -497,11 +497,15 @@ void Editor::updateFromAnalizer()
             doc_->setHighlightAt(i, props[i].toList());
         }
         doc_->marginAt(i).errors.clear();
+
         int newIndent = doc_->indentAt(i);
         int diffIndent = newIndent - oldIndent;
         if (cursor_->row()==i) {
-            cursor_->setColumn(qMax(cursor_->column()+2*diffIndent, 0u));
+            int cpos = cursor_->column()+cursor_->indentSize()*diffIndent;
+            if (cpos < 0) cpos = 0;
+            cursor_->setColumn(cpos);
         }
+
     }
     for (int i=0; i<errors.size(); i++) {
         Shared::Analizer::Error err = errors[i];

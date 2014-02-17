@@ -41,8 +41,9 @@ void InsertCommand::redo()
     QStringList lines = text.split("\n", QString::KeepEmptyParts);
     if (lines.size()>1) {
         cursor->setRow(cursor->row()+lines.size()-1);
-        cursor->setColumn(lines.last().length() +
-                          (hardIndents? doc->indentAt(cursor->row())*indentSize : 0));
+        uint indent = hardIndents? doc->indentAt(cursor->row())*indentSize : 0u;
+        uint column = uint(lines.last().length()) + indent;
+        cursor->setColumn(column);
     }
     else {
         cursor->setColumn(cursor->column()+text.length());

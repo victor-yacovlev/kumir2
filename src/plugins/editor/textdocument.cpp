@@ -34,7 +34,7 @@ void TextDocument::insertText(const QString &text, const Shared::Analizer::Insta
         tl.hidden = blankLinesAreHidden;
         data_.append(tl);
     }
-    TextLine tl = data_[line];
+    TextLine & tl = data_[line];
     uint nlOffset = text == "\n" ? 1 : 0;
     while (pos>tl.text.length() + nlOffset) {
         blankChars ++;
@@ -43,7 +43,7 @@ void TextDocument::insertText(const QString &text, const Shared::Analizer::Insta
         tl.highlight << Shared::LxTypeEmpty;
     }
     tl.changed = true;
-    data_[line] = tl;
+//    data_[line] = tl;
 
     const QStringList lines = text.split("\n", QString::KeepEmptyParts);
     if (lines.size()==1) {
