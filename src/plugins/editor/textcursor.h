@@ -108,6 +108,7 @@ protected:
     Macro * recordingMacro_;
     unsigned int indentSize_;
     bool hardIndents_;
+    bool denyAutoCloseBraces_;
 
 };
 

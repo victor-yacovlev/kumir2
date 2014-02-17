@@ -5,6 +5,7 @@ namespace FpcAnalizer {
 
 QString FpcAnalizerPlugin::initialize(const QStringList &, const CommandLine &)
 {
+    lastInstanceIndex_ = 0;
     return "";
 }
 
@@ -15,7 +16,8 @@ void FpcAnalizerPlugin::updateSettings(const QStringList &)
 
 Analizer::InstanceInterface* FpcAnalizerPlugin::createInstance()
 {
-    return new FpcAnalizer(this);
+    lastInstanceIndex_ ++;
+    return new FpcAnalizer(this, lastInstanceIndex_);
 }
 
 }

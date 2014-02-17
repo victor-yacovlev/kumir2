@@ -15,9 +15,11 @@ using namespace Shared;
 class FpcAnalizer
         : public QObject
         , public Analizer::InstanceInterface
+        , public Analizer::HelperInterface
 {
+    Q_OBJECT
+    Q_INTERFACES(Shared::Analizer::InstanceInterface Shared::Analizer::HelperInterface)
     friend class FpcAnalizerPlugin;
-
 public:
     void setSourceDirName(const QString &path);
     void setSourceText(const QString &plainText);
@@ -29,13 +31,21 @@ public:
     inline QString correctCapitalization(const QString & name, LexemType lxType) const
     { return syntaxAnalizer_->correctCapitalization(name, lxType); }
 
+    QList<Suggestion> suggestAutoComplete(int lineNo, const QString & before, const QString & after) const;
+    TextAppend closingBracketSuggestion(int lineNo) const;
+    QStringList importModuleSuggestion(int lineNo) const;
+    QStringList imports() const;
+    QString createImportStatementLine(const QString &importName) const;
+    QString suggestFileName() const;
+
+
 protected:
     QPair<QByteArray,QString> startFpcProcessToCheck();
     void parseFpcErrors(const QByteArray & bytes, const QString & fileName);
     void parseFpcOutput(const QByteArray & bytes, const QString & fileName);
     void parseCallLine(const QString &line);
     void parseDefinition(const QString &line);
-    explicit FpcAnalizer(QObject * plugin);
+    explicit FpcAnalizer(QObject * plugin, uint instanceIndex);
     QProcess* fpc_;
     QTextCodec* textCodec_;
     SimplePascalSyntaxAnalizer * syntaxAnalizer_;
@@ -48,6 +58,7 @@ protected:
     QSet<QString> unitNames_;
     QSet<QString> functionNames_;
     QSet<QString> typeNames_;
+    uint instanceIndex_;
 };
 
 }

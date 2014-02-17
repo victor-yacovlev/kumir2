@@ -22,6 +22,7 @@ TextCursor::TextCursor(Editor * editor)
     , recordingMacro_(nullptr)
     , indentSize_(0u)
     , hardIndents_(true)
+    , denyAutoCloseBraces_(false)
 {
     teacherModeFlag_ = false;
     blinkTimerId_ = startTimer(QApplication::cursorFlashTime()/2);
@@ -399,6 +400,7 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
     if (prevRow!=row_ || prevLines != editor_->document()->linesCount()) {
         editor_->document()->checkForCompilationRequest(QPoint(column(), row()));
         if (editor_->analizerInstance_ && editor_->analizerInstance_->helper()
+                && !denyAutoCloseBraces_
                 && editor_->mySettings()->value(
                     SettingsPage::KeyAutoInsertPairingBraces,
                     SettingsPage::DefaultAutoInsertPairingBraces).toBool()
@@ -412,6 +414,7 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
             if (append.first.length()>0) {
                 // If found suggesstion
                 const QStringList extraLines = append.first.split('\n', QString::KeepEmptyParts);
+                denyAutoCloseBraces_ = true;
                 for (int i=0; i<extraLines.size(); i++) {
                     // insert closing bracket text lines
                     QString line = extraLines[i];
@@ -427,6 +430,7 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
                 if (editor_->document()->textAt(row_).trimmed().length()>0) {
                     evaluateCommand(" ");
                 }
+                denyAutoCloseBraces_ = false;
             }
 
             // Try to import module used
@@ -900,7 +904,7 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                 if (row_>=editor_->document()->linesCount()) { column_ = 0; }
                 else {
                     const QString textLine = editor_->document()->textAt(row_);
-                    int indent = hardIndents_? editor_->document()->indentAt(row_) * 2 : 0;
+                    int indent = hardIndents_? editor_->document()->indentAt(row_) * indentSize_ : 0;
                     int nonSpacePos = textLine.length();
                     for (int i=textLine.length()-1; i>=0; i--) {
                         if (textLine[i].isSpace())
@@ -908,7 +912,12 @@ void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
                         else
                             break;
                     }
-                    column_ = indent + nonSpacePos;
+                    if (column_ == indent + nonSpacePos) {
+                        column_ = indent + textLine.length();
+                    }
+                    else {
+                        column_ = indent + nonSpacePos;
+                    }
 //                    i_column = m_document->indentAt(i_row) * 2 +
 //                            m_document->textAt(i_row).length();
                 }

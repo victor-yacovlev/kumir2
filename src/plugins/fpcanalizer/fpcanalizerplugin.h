@@ -25,6 +25,8 @@ public:
     inline QString languageName() const { return "Pascal"; }
     inline QString defaultDocumentFileNameSuffix() const { return "pas"; }
     Analizer::InstanceInterface* createInstance();
+private:
+    uint lastInstanceIndex_;
 };
 
 

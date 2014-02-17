@@ -2,6 +2,7 @@
 #define FPCANALIZER_SIMPLEPASCALSYNTAXANALIZER_H
 
 #include "interfaces/analizer_instanceinterface.h"
+#include "interfaces/analizer_helperinterface.h"
 
 #include <QObject>
 
@@ -16,6 +17,7 @@ class SimplePascalSyntaxAnalizer : public QObject
 public:
     static SimplePascalSyntaxAnalizer* create(QObject *parent);
     void reset();
+    inline QString thisUnitName() const { return thisUnitName_; }
     void processSyntaxAnalysis(const QStringList & lines,
                                const QSet<QString> & unitNames,
                                const QSet<QString> & functionNames,
@@ -30,6 +32,7 @@ public:
                          LineProp & lineProp
                          );
     QString correctCapitalization(const QString & name, LexemType lxType) const ;
+    Analizer::TextAppend closingBracketSuggestion(int lineNo, const QStringList &lines) const;
 
 
 private /*methods*/:
@@ -71,6 +74,7 @@ private:
 
     QList<State> lineStartStates_;
     QStringList lineStartKeywords_;
+    QString thisUnitName_;
 
 };
 

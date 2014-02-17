@@ -7,11 +7,12 @@
 
 namespace FpcAnalizer {
 
-FpcAnalizer::FpcAnalizer(QObject * plugin)
+FpcAnalizer::FpcAnalizer(QObject * plugin, uint instanceIndex)
     : QObject(plugin)
     , fpc_(new QProcess(this))
     , textCodec_(QTextCodec::codecForName("CP866"))
     , syntaxAnalizer_(0)
+    , instanceIndex_(instanceIndex)
 {
     syntaxAnalizer_ = SimplePascalSyntaxAnalizer::create(this);
 
@@ -68,13 +69,14 @@ void FpcAnalizer::setSourceText(const QString &plainText)
 
 QPair<QByteArray,QString> FpcAnalizer::startFpcProcessToCheck()
 {
-    QTemporaryFile programFile("kumir-XXXXXX.pas");
+
+    QTemporaryFile programFile(sourceDirName_ + QString::fromAscii("/.editor-XXXXXX-%1.pas").arg(instanceIndex_));
     programFile.open();
     programFile.write(rawSourceData().c_str());
     QFileInfo fi(programFile);
     QString dirName = fi.absoluteDir().absolutePath();
     programFile.close();
-    fpc_->setWorkingDirectory(dirName);
+    fpc_->setWorkingDirectory(sourceDirName_);
     static const QString fpcpluginLibexecs = QDir::toNativeSeparators(
                 QDir::cleanPath(
                     QCoreApplication::applicationDirPath()+"/../libexec/kumir2/fpcanalizer/"
@@ -267,5 +269,37 @@ Analizer::LineProp FpcAnalizer::lineProp(int lineNo, const QString &text) const
                 );
     return lp;
 }
+
+QString FpcAnalizer::suggestFileName() const
+{
+    return syntaxAnalizer_->thisUnitName();
+}
+
+QList<Analizer::Suggestion> FpcAnalizer::suggestAutoComplete(int lineNo, const QString &before, const QString &after) const
+{
+    return QList<Analizer::Suggestion>();
+}
+
+Analizer::TextAppend FpcAnalizer::closingBracketSuggestion(int lineNo) const
+{
+    return syntaxAnalizer_->closingBracketSuggestion(lineNo, sourceLines_);
+}
+
+QStringList FpcAnalizer::importModuleSuggestion(int lineNo) const
+{
+    return QStringList();
+}
+
+QStringList FpcAnalizer::imports() const
+{
+    return QStringList();
+}
+
+QString FpcAnalizer::createImportStatementLine(const QString &importName) const
+{
+    return QString::fromAscii("uses %1").arg(importName);
+}
+
+
 
 }

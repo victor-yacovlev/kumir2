@@ -143,6 +143,7 @@ void SimplePascalSyntaxAnalizer::reset()
     functionNames_.clear();
     lineStartStates_.clear();
     typeNames_.clear();
+    thisUnitName_.clear();
 }
 
 void SimplePascalSyntaxAnalizer::processSyntaxAnalysis(
@@ -348,6 +349,7 @@ void SimplePascalSyntaxAnalizer::processLine
                 tp = LxNameModule;
                 unitNames_.insert(lxText.toLower());
                 previousKeyword = "";
+                thisUnitName_ = lxText.toLower();
             }
             else if ("uses" == previousKeyword) {
                 tp = LxNameModule;
@@ -385,10 +387,120 @@ void SimplePascalSyntaxAnalizer::processLine
     endState = currentState;
 }
 
+Analizer::TextAppend
+SimplePascalSyntaxAnalizer::closingBracketSuggestion
+(int lineNo, const QStringList & lines)
+const
+{
+    State currentState = Program;
+    QString currentKeyword;
+    QString headKeyword;
+    QStack<QString> headKeywordsStack;
+    int beginCount = 0;
+    int beginLineNo = -1;
+
+    // Count begin/end before end of line
+    for (int i=0; i<=lineNo; i++) {
+        const QString & line = lines[i];
+        int currentPos = 0;
+        Q_FOREVER {
+            Lexem lx = takeLexem(line, currentPos, currentState);
+            if (0 == lx.length) {
+                currentPos ++;
+                continue;
+            }
+            QString lxText = line.mid(lx.start, lx.length).trimmed().toLower();
+            if (Program == currentState && Keywords.contains(lxText)) {
+                currentKeyword = lxText;
+                if ("procedure" == currentKeyword
+                        || "function" == currentKeyword
+                        || "do" == currentKeyword
+                        || "then" == currentKeyword
+                        || "else" == currentKeyword
+                        )
+                    headKeyword = currentKeyword;
+                if ("begin" == currentKeyword) {
+                    beginCount ++;
+                    beginLineNo = i;
+                    headKeywordsStack.push_back(headKeyword);
+                    headKeyword = "";
+                }
+                else if ("end" == currentKeyword) {
+                    beginCount --;
+                    if (headKeywordsStack.size() > 0)
+                        headKeywordsStack.pop_back();
+                    headKeyword = "";
+                }
+            }
+            currentPos = lx.start + lx.length;
+            currentState = lx.stateAfter;
+            if (currentPos >= line.length())
+                break;
+        }
+    }
+
+    // Count begin/end after line
+    if (beginCount > 0) {
+        for (int i=lineNo+1; i<lines.size(); i++) {
+            const QString & line = lines[i];
+            int currentPos = 0;
+            Q_FOREVER {
+                Lexem lx = takeLexem(line, currentPos, currentState);
+                if (0 == lx.length) {
+                    currentPos ++;
+                    continue;
+                }
+                QString lxText = line.mid(lx.start, lx.length).trimmed().toLower();
+                if (Program == currentState && Keywords.contains(lxText)) {
+                    currentKeyword = lxText;
+                    if ("begin" == currentKeyword)
+                        beginCount ++;
+                    else if ("end" == currentKeyword)
+                        beginCount --;
+                }
+                currentPos = lx.start + lx.length;
+                currentState = lx.stateAfter;
+                if (currentPos >= line.length())
+                    break;
+            }
+        }
+    }
+
+    Analizer::TextAppend result;
+    if (beginCount > 0) {
+        // Insert pairing 'end'
+        result.first += "\n";
+        QString indent;
+        const QString & begin = lines[beginLineNo];
+        for (int i=0; i<begin.length(); i++) {
+            if (begin[i].isSpace()) {
+                result.first += ' ';
+                indent += ' ';
+            }
+            else
+                break;
+        }
+        indent += "  ";
+        result.first += "end";
+        if (headKeywordsStack.size() > 0) {
+            if (headKeywordsStack.top().length() > 0) {
+                result.first += ";";
+            }
+            else {
+                result.first += ".";
+            }
+        }
+        result.first.prepend(indent);
+        result.first += "\n";
+        result.second = 2u;
+    }
+    return result;
+}
+
 QPoint SimplePascalSyntaxAnalizer::keywordRank(const QString &keyword)
 {
     if ("procedure" == keyword || "function" == keyword) {
-        return QPoint(-1, 1);
+        return QPoint(0, 0);
     }
     else if ("var" == keyword) {
         return QPoint(-1, 1);
