@@ -253,7 +253,7 @@ void Term::start(const QString & fileName)
     connect(session, SIGNAL(updateRequest()), m_plane, SLOT(update()));
     sessions_ << session;
     connect (sessions_.last(), SIGNAL(message(QString)),
-             this, SIGNAL(message(QString)));
+             this, SIGNAL(message(QString)), Qt::DirectConnection);
     connect (sessions_.last(), SIGNAL(inputDone(QVariantList)),
              this, SLOT(handleInputDone(QVariantList)));
     m_plane->updateScrollBars();

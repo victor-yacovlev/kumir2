@@ -132,8 +132,8 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
     connect(terminal_, SIGNAL(showWindowRequest()),
             mainWindow_, SLOT(ensureBottomVisible()));
-
-
+    connect(terminal_, SIGNAL(message(QString)),
+            mainWindow_, SLOT(showMessage(QString)));
 
     const QString qtcreatorIconsPath =
             ExtensionSystem::PluginManager::instance()->sharePath()
