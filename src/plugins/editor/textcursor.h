@@ -23,6 +23,7 @@ public:
     enum MoveMode { MM_Move, MM_Select, MM_RectSelect };
     enum ViewMode { VM_Blinking, VM_Hidden, VM_Visible };
     explicit TextCursor(class Editor * editor);
+    void setAnalizer(Shared::Analizer::InstanceInterface * analizer);
 
     ~TextCursor();
     inline uint row() const { return row_; }

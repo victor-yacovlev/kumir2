@@ -57,6 +57,7 @@ public:
     void setKumFile(const KumFile::Data & data);
     void setPlainText(const QString & data);
     void setDocumentId(int id);
+    void setAnalizer(Shared::Analizer::InstanceInterface * analizer);
 
     quint32 errorLinesCount() const;
 

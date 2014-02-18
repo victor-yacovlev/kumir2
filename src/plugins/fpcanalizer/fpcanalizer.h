@@ -16,9 +16,13 @@ class FpcAnalizer
         : public QObject
         , public Analizer::InstanceInterface
         , public Analizer::HelperInterface
+        , public Analizer::ExternalExecutableCompilerInterface
 {
     Q_OBJECT
-    Q_INTERFACES(Shared::Analizer::InstanceInterface Shared::Analizer::HelperInterface)
+    Q_INTERFACES(Shared::Analizer::InstanceInterface
+                 Shared::Analizer::HelperInterface
+                 Shared::Analizer::ExternalExecutableCompilerInterface
+                 )
     friend class FpcAnalizerPlugin;
 public:
     void setSourceDirName(const QString &path);
@@ -38,9 +42,14 @@ public:
     QString createImportStatementLine(const QString &importName) const;
     QString suggestFileName() const;
 
+    void prepareToRun();
+    inline bool compiledWithoutErrors() const { return compiledWithoutErrors_; }
+    QString executableFilePath() const { return executableFilePath_; }
+
 
 protected:
     QPair<QByteArray,QString> startFpcProcessToCheck();
+    QPair<QByteArray,QString> startFpcToPrepareRun();
     void parseFpcErrors(const QByteArray & bytes, const QString & fileName);
     void parseFpcOutput(const QByteArray & bytes, const QString & fileName);
     void parseCallLine(const QString &line);
@@ -59,6 +68,9 @@ protected:
     QSet<QString> functionNames_;
     QSet<QString> typeNames_;
     uint instanceIndex_;
+
+    bool compiledWithoutErrors_;
+    QString executableFilePath_;
 };
 
 }

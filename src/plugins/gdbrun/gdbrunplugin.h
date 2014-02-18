@@ -6,21 +6,27 @@
 
 #include <QProcess>
 #include <QFile>
+#include <QMutex>
+#include <QMutexLocker>
+#include <QThread>
 
-namespace GDBRun {
+
+namespace GdbRun {
 
 using namespace ExtensionSystem;
 using namespace Shared;
 
-class GDBRunPlugin
+
+
+class GdbRunPlugin
         : public KPlugin
         , public RunInterface
 {
     Q_OBJECT
     Q_INTERFACES(Shared::RunInterface)
 public:
-    explicit GDBRunPlugin();
-    QString initialize(const QStringList &, const CommandLine &);
+    explicit GdbRunPlugin();
+    QString initialize(const QStringList &conf, const CommandLine &);
     void updateSettings(const QStringList &);
     bool loadProgram(const QString &fileName, const QByteArray &source);
     QDateTime loadedProgramVersion() const;
@@ -42,10 +48,71 @@ public:
     unsigned long int stepsCounted() const;
     inline QAbstractItemModel * debuggerVariablesViewModel() const { return variablesModel_; }
 
-private:
-    QProcess* gdb_;
-    QFile* programFile_;
+signals:
+    void stopped(int reason);
+    void outputRequest(const QString & output);
+    void errorOutputRequest(const QString &);
+    void inputRequest(const QString & format);
+
+protected slots:
+    void handleGdbClientReadStdOut();
+    void handleGdbClientReadStdErr();
+
+    void handleGdbServerReadStdOut();
+    void handleGdbServerReadStdErr();
+
+    void handleGdbStatusStream(const QByteArray & resultStream);
+    void handleGdbInteractionStream(const QByteArray & resultStream);
+    void handleGdbLogOutputStream(const QByteArray & resultStream);
+    void handleGdbAsyncMessageStream(const QByteArray & resultStream);
+    void handleGdbAsyncLogStream(const QByteArray & resultStream);
+
+protected:
+    virtual void extractInputFormat();
+    virtual void processGdbQueryResponse(const QMap<QString,QVariant>& response);
+
+
+private:    
+    enum GdbState {
+        NotStarted,
+        StartedServer,
+        StartedBoth,
+        Querying,
+        Paused,
+        Running,
+        Terminating
+    };
+
+
+    void sendGdbCommand(const QByteArray& command);
+    void queueGdbCommand(const QByteArray& command, GdbState condition);
+    void queueGdbCommands(const QList<QByteArray>& command, GdbState condition);
+    void flushGdbCommands();
+    static QMap<QString,QVariant> parseGdbMiCommandOutput(const QString & out);
+    static QStringList splitByTopLevelComas(const QString &in);
+
+
+    QProcess* gdbClient_;
+    QProcess* gdbServer_;
+    QString programFileName_;    
     QStandardItemModel* variablesModel_;
+    Q_PID inferiorPid_;
+    QTextCodec* ioCodec_;
+    GdbState gdbState_;
+    QMutex* gdbStateLocker_;
+    struct StateWaiter: public QThread {
+        inline StateWaiter(GdbRunPlugin* parent): QThread(parent), p(parent) {}
+        GdbRunPlugin* p;
+        GdbState t;
+        void run();
+        void waitForState(GdbState targetState);
+    }* stateWaiter_;
+    struct ConditionalCommand {
+        QByteArray command;
+        GdbState cond;
+    };
+    QLinkedList<ConditionalCommand> gdbCommandsQueue_;
+    QMutex* gdbCommandsQueueLocker_;
 
 };
 

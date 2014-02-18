@@ -14,6 +14,7 @@ FpcAnalizer::FpcAnalizer(QObject * plugin, uint instanceIndex)
     , textCodec_(QTextCodec::codecForName("CP866"))
     , syntaxAnalizer_(0)
     , instanceIndex_(instanceIndex)
+    , compiledWithoutErrors_(false)
 {
     syntaxAnalizer_ = SimplePascalSyntaxAnalizer::create(this);
 
@@ -42,6 +43,8 @@ QList<Analizer::LineProp> FpcAnalizer::lineProperties() const
 
 void FpcAnalizer::setSourceText(const QString &plainText)
 {
+    compiledWithoutErrors_ = false;
+    executableFilePath_.clear();
     sourceText_ = plainText;
     sourceLines_ = sourceText_.split('\n');
     if (sourceLines_.last().isEmpty())
@@ -107,6 +110,63 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcProcessToCheck()
         fpc_->setReadChannel(QProcess::StandardError);
         out += fpc_->readAll();
         return QPair<QByteArray,QString>(out, fi.fileName());
+    }
+}
+
+QPair<QByteArray,QString> FpcAnalizer::startFpcToPrepareRun()
+{
+    QDir tempDir =
+            QDir(QDesktopServices::storageLocation(QDesktopServices::TempLocation));
+    tempDir.mkdir("kumir2-fpcanalizer");
+    QTemporaryFile programFile(tempDir.absoluteFilePath("kumir2-fpcanalizer")
+                + QString::fromAscii("/.editor-XXXXXX-%1.pas").arg(instanceIndex_));
+    programFile.open();
+    programFile.write(rawSourceData().c_str());
+    QFileInfo fi(programFile);
+    QString outFileName = fi.absoluteFilePath();
+#ifdef Q_OS_WIN32
+    outFileName += ".exe";
+#else
+    outFileName += ".bin";
+#endif
+    programFile.close();
+    fpc_->setWorkingDirectory(tempDir.absoluteFilePath("kumir2-fpcanalizer"));
+    QStringList arguments;
+    arguments
+            << "-g"  // generate debug info
+            << "-Ci"  // generate i/o checking
+            << "-Cr"  // generate range checking
+            << "-Ct"  // generate stack checking
+            << "-Fu"+QDir::toNativeSeparators(sourceDirName_) // Add unit path
+            << "-FU"+QDir::toNativeSeparators(sourceDirName_) // Add output unit path
+            << "-o"+QDir::toNativeSeparators(outFileName) // Override output file name
+            << fi.fileName();
+    fpc_->setProcessChannelMode(QProcess::SeparateChannels);
+    fpc_->start("fpc", arguments);
+    if (!fpc_->waitForFinished()) {
+        qDebug() << fpc_->errorString();
+        return QPair<QByteArray,QString>(QByteArray(), outFileName);
+    }
+    else {
+        fpc_->setReadChannel(QProcess::StandardOutput);
+        QByteArray out = fpc_->readAll();
+        fpc_->setReadChannel(QProcess::StandardError);
+        out += fpc_->readAll();
+        return QPair<QByteArray,QString>(out, outFileName);
+    }
+}
+
+void FpcAnalizer::prepareToRun()
+{
+    compiledWithoutErrors_ = false;
+    executableFilePath_.clear();
+    QPair<QByteArray,QString> runRes = startFpcToPrepareRun();
+    if (fpc_->exitCode() == 0) {
+        compiledWithoutErrors_ = true;
+        executableFilePath_ = runRes.second;
+    }
+    else {
+        qDebug() << QString::fromAscii(runRes.first);
     }
 }
 

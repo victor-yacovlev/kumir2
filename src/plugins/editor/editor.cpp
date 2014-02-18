@@ -108,6 +108,14 @@ void Editor::loadDocument(QIODevice *device, const QString &fileNameSuffix,
     data.canonicalSourceLanguageName = fileNameSuffix;
     data.sourceUrl = sourceUrl;
     loadDocument(data);
+    setAnalizer(analizerPlugin->createInstance());
+}
+
+void Editor::setAnalizer(Analizer::InstanceInterface *analizer)
+{
+    analizerInstance_ = analizer;
+    plane_->setAnalizer(analizer);
+    cursor_->setAnalizer(analizer);
 }
 
 void Editor::loadDocument(const QString &fileName)

@@ -41,7 +41,15 @@ public:
     inline virtual ASTCompilerInterface * compiler() {
         QObject * me = dynamic_cast<QObject*>(this);
         if (!me) return 0;
-        return qobject_cast<ASTCompilerInterface*>(me);
+        ASTCompilerInterface* i = qobject_cast<ASTCompilerInterface*>(me);
+        return i;
+    }
+
+    inline virtual ExternalExecutableCompilerInterface * externalExecutableCompiler() {
+        QObject * me = dynamic_cast<QObject*>(this);
+        if (!me) return 0;
+        ExternalExecutableCompilerInterface* i = qobject_cast<ExternalExecutableCompilerInterface*>(me);
+        return i;
     }
 
     inline virtual HelperInterface * helper() {

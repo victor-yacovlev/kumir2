@@ -262,16 +262,27 @@ void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel deb
 {
     bool ok = false;
     QString sourceProgramPath;
-    if (editor_->analizer()->compiler()) {
+    using namespace Shared::Analizer;
+    InstanceInterface* analizer = editor_->analizer();
+    ASTCompilerInterface* astCompiler = analizer->compiler();
+    ExternalExecutableCompilerInterface* exeCompiler = analizer->externalExecutableCompiler();
+    if (analizer) {
+        Q_ASSERT(astCompiler!=0 || exeCompiler!=0);
         editor_->ensureAnalized();
-        const AST::DataPtr ast = editor_->analizer()->compiler()->abstractSyntaxTree();
-        sourceProgramPath = editor_->documentContents().sourceUrl.toLocalFile();
-        QByteArray bufArray;
-        generator()->setOutputToText(false);
-        generator()->setDebugLevel(debugLevel);
-        QString fileNameSuffix, mimeType;
-        generator()->generateExecuable(ast, bufArray, mimeType, fileNameSuffix);
-        runner()->loadProgram(sourceProgramPath, bufArray);
+        if (astCompiler) {
+            const AST::DataPtr ast = editor_->analizer()->compiler()->abstractSyntaxTree();
+            sourceProgramPath = editor_->documentContents().sourceUrl.toLocalFile();
+            QByteArray bufArray;
+            generator()->setOutputToText(false);
+            generator()->setDebugLevel(debugLevel);
+            QString fileNameSuffix, mimeType;
+            generator()->generateExecuable(ast, bufArray, mimeType, fileNameSuffix);
+            runner()->loadProgram(sourceProgramPath, bufArray);
+        }
+        else if (exeCompiler) {
+            editor_->analizer()->externalExecutableCompiler()->prepareToRun();
+            ok = runner()->loadProgram(editor_->analizer()->externalExecutableCompiler()->executableFilePath(), QByteArray());
+        }
     }
     else {
         const KumFile::Data source = editor_->documentContents();

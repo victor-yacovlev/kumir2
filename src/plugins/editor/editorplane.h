@@ -18,7 +18,7 @@ class EditorPlane : public QWidget
     Q_OBJECT
 public:
     explicit EditorPlane(class Editor * editor);
-
+    void setAnalizer(Shared::Analizer::InstanceInterface * analizer);
     uint widthInChars() const;
     uint charWidth() const;
     uint lineHeight() const;

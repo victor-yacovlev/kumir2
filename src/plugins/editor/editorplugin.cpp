@@ -110,7 +110,7 @@ Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(const QString &fi
 {
     Editor * editor = new Editor(this, true, nullptr, nullptr);
     connectGlobalSignalsToEditor(editor);
-    editor->loadDocument(fileName);
+    editor->loadDocument(fileName);    
     return editor;
 }
 

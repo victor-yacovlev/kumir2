@@ -3,6 +3,9 @@
 #include "analizer.h"
 #include "errormessages/errormessages.h"
 #include "lexer.h"
+#include "interfaces/analizer_compilerinterface.h"
+#include "interfaces/analizer_helperinterface.h"
+#include "interfaces/analizer_instanceinterface.h"
 
 #include <QtCore>
 
@@ -65,7 +68,17 @@ void KumirAnalizerPlugin::stop()
 Shared::Analizer::InstanceInterface * KumirAnalizerPlugin::createInstance()
 {
     Analizer * instance = new Analizer(this, teacherMode_);
-    return instance;
+    Shared::Analizer::InstanceInterface* ins = qobject_cast<Shared::Analizer::InstanceInterface*>(instance);
+    Shared::Analizer::HelperInterface* hlp = qobject_cast<Shared::Analizer::HelperInterface*>(instance);
+    Shared::Analizer::ASTCompilerInterface* ast = qobject_cast<Shared::Analizer::ASTCompilerInterface*>(instance);
+    Q_ASSERT(ins);
+    Q_ASSERT(hlp);
+    Q_ASSERT(ast);
+    hlp = ins->helper();
+    ast = ins->compiler();
+    Q_ASSERT(hlp);
+    Q_ASSERT(ast);
+    return ins;
 }
 
 Q_EXPORT_PLUGIN2(KumirAnalizerPlugin, KumirAnalizer::KumirAnalizerPlugin)

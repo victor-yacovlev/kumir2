@@ -5,6 +5,7 @@
 #include "interfaces/analizerinterface.h"
 #include "interfaces/analizer_instanceinterface.h"
 
+
 namespace FpcAnalizer {
 
 using namespace ExtensionSystem;

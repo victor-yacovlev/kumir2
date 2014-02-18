@@ -29,9 +29,14 @@ TextCursor::TextCursor(Editor * editor)
     emitPositionChanged();
 
     selectionRect_ = QRect(-1,-1,0,0);
+    setAnalizer(editor->analizer());
+}
+
+void TextCursor::setAnalizer(Shared::Analizer::InstanceInterface *analizerInstance)
+{
     Shared::AnalizerInterface * analizer =
             ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
-    if (analizer && editor->analizer()) {
+    if (analizer && analizerInstance) {
         indentSize_ = analizer->indentSize();
         hardIndents_ = ! analizer->indentsSignificant();
     }

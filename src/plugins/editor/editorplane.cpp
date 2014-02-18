@@ -56,15 +56,21 @@ EditorPlane::EditorPlane(Editor * editor)
     setMouseTracking(true);
     setAcceptDrops(true);          
     initMouseCursor();
+    setAnalizer(editor->analizer());
 
+
+
+}
+
+void EditorPlane::setAnalizer(Shared::Analizer::InstanceInterface *analizerInstance)
+{
     Shared::AnalizerInterface * analizer =
             ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
-    if (analizer && editor->analizer()) {
+    if (analizer && analizerInstance) {
         indentSize_ = analizer->indentSize();
         hardIndents_ = ! analizer->indentsSignificant();
         caseInsensitive_ = analizer->caseInsensitiveGrammatic();
     }
-
 }
 
 void EditorPlane::updateSettings(const QStringList & keys)
