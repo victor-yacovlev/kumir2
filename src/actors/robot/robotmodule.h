@@ -502,6 +502,8 @@ namespace ActorRobot {
         qreal runCellRad(const int row, const int col);
         QChar runUpChar(const int row, const int col);
         QChar runDownChar(const int row, const int col);
+        bool isSafeToQuit();
+
     public:
         // GUI access methods
         QWidget* mainWidget() const;

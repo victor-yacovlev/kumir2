@@ -248,6 +248,9 @@ EXTERN void Kumir_Standard_Library_unicode(__kumir_scalar * result, const __kumi
 EXTERN void Kumir_Standard_Library_code(__kumir_scalar * result, const __kumir_scalar * value);
 EXTERN void Kumir_Standard_Library_simbol(__kumir_scalar * result, const __kumir_scalar * value);
 EXTERN void Kumir_Standard_Library_unisymbol(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_Integer(__kumir_scalar * result, const __kumir_scalar * lexem, const __kumir_scalar * def);
+EXTERN void Kumir_Standard_Library_Real(__kumir_scalar * result, const __kumir_scalar * lexem, const __kumir_scalar * def);
+EXTERN void Kumir_Standard_Library_Boolean(__kumir_scalar * result, const __kumir_scalar * lexem, const __kumir_scalar * def);
 
 
 // "String Utilities" module

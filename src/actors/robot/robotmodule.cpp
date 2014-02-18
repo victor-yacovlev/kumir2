@@ -1432,7 +1432,7 @@ namespace ActorRobot {
         
         
 
-        
+        wasEdit=false;
         
         
         
@@ -1908,6 +1908,7 @@ namespace ActorRobot {
         }
         
        l_File->close();
+        
         
         
         
@@ -2774,6 +2775,7 @@ namespace ActorRobot {
                 old_cell=QPair<int,int>(rowClicked, colClicked); 
             };
         };
+        wasEdit=true;
 //        if(wasEdit)emit was_edit();
     };
     void RoboField::mouseReleaseEvent ( QGraphicsSceneMouseEvent * mouseEvent )
@@ -3364,6 +3366,7 @@ void RobotModule::copyFromPult(QString log)
     // The source should be ready-to-read QIODevice like QBuffer or QFile
        qDebug()<<"Load env";
     if(field->loadFromDataStream(source)!=0)return ;
+     m_mainWidget->setWindowTitle(trUtf8("Робот - ")+source->objectName());
     startField=field->Clone();
     field->dropWasEdit();
     //   ajustWindowSize();//NEW ROBOT
@@ -3860,6 +3863,42 @@ void RobotModule::createEmptyField(int rows,int cols)
         mainWidget()->setWindowTitle(QString::fromUtf8("Робот - нет файла") );
         field->dropWasEdit();
     };
+bool RobotModule::isSafeToQuit() 
+    {
+        if(field->WasEdit())
+        {
+            QMessageBox::StandardButton r;
+        
+        QMessageBox messageBox(
+                               QMessageBox::Question,
+                               trUtf8("Робот"),
+                               trUtf8("Сохранить изменения?"),
+                               QMessageBox::NoButton,mainWidget()
+                               );
+        
+        QPushButton * btnSave =
+        messageBox.addButton(trUtf8("Да"), QMessageBox::AcceptRole);
+        QPushButton * btnDiscard =
+        messageBox.addButton(trUtf8("Нет"), QMessageBox::DestructiveRole);
+        QPushButton * btnCancel =
+        messageBox.addButton(trUtf8("Отмена"), QMessageBox::RejectRole);
+        
+        messageBox.setDefaultButton(btnSave);
+        messageBox.exec();
+        if (messageBox.clickedButton()==btnSave) {
+            r = QMessageBox::Save;
+        }
+        if (messageBox.clickedButton()==btnDiscard) {
+            r = QMessageBox::Discard;
+        }
+        if (messageBox.clickedButton()==btnCancel) {
+            r = QMessageBox::Cancel;
+        }
+        if (r==QMessageBox::Save) {saveEnv();};
+        if (r==QMessageBox::Cancel) {return false;};
+        }
+        return true; 
+    }
 void RobotModule::loadEnv()
     {
         if(field->WasEdit())
@@ -4022,6 +4061,7 @@ void RobotModule::saveEnv()
         SaveToFile(RobotFile);
          RobotModule::robotSettings()->setValue("Robot/StartField/File",RobotFile);
         updateLastFiles(RobotFile);
+        
 
     }
     

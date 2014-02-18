@@ -1487,6 +1487,30 @@ void KumirVM::do_stdcall(uint16_t alg)
         error_ = Kumir::Core::getError();
         break;
     }
+    /* алг цел Цел(лит строка, цел по умолчанию) */
+    case 0x0027: {
+        int def = valuesStack_.pop().toInt();
+        String sv = valuesStack_.pop().toString();
+        int v = Kumir::Converter::stringToIntDef(sv, def);
+        valuesStack_.push(Variable(v));
+        break;
+    }
+    /* алг вещ Вещ(лит строка, вещ по умолчанию) */
+    case 0x0028: {
+        Kumir::real def = valuesStack_.pop().toReal();
+        String sv = valuesStack_.pop().toString();
+        Kumir::real v = Kumir::Converter::stringToRealDef(sv, def);
+        valuesStack_.push(Variable(v));
+        break;
+    }
+    /* алг лог Лог(лит строка, лог по умолчанию) */
+    case 0x0029: {
+        bool def = valuesStack_.pop().toBool();
+        String sv = valuesStack_.pop().toString();
+        bool v = Kumir::Converter::stringToBoolDef(sv, def);
+        valuesStack_.push(Variable(v));
+        break;
+    }
     default: {
         error_ = Kumir::Core::fromUtf8("Вызов неизвестного алгоримта, возможно из более новой версии Кумир");
     }

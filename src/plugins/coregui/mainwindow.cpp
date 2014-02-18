@@ -43,9 +43,9 @@ MainWindow::MainWindow(Plugin * p) :
     tabWidget_ = new TabWidget(this);
     centralRow_->addComponent(tabWidget_, true);
 
-    helpPlace_ = new Widgets::DockWindowPlace(this, "MainWindow/HelpDockPlace");
-    centralRow_->addComponent(helpPlace_, false);
-    connect(helpPlace_, SIGNAL(visiblityRequest(bool,QSize)),
+    helpAndCourcesPlace_ = new Widgets::DockWindowPlace(this, "MainWindow/HelpDockPlace");
+    centralRow_->addComponent(helpAndCourcesPlace_, false);
+    connect(helpAndCourcesPlace_, SIGNAL(visiblityRequest(bool,QSize)),
             centralRow_, SLOT(handleVisiblityRequest(bool,QSize)),
             Qt::DirectConnection);
 
