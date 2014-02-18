@@ -1,5 +1,7 @@
 #include "gdbrunplugin.h"
 
+
+
 namespace GdbRun {
 
 GdbRunPlugin::GdbRunPlugin()
@@ -12,7 +14,8 @@ GdbRunPlugin::GdbRunPlugin()
     , stateWaiter_(new StateWaiter(this))
     , gdbCommandsQueueLocker_(new QMutex)
 {
-
+    connect(this, SIGNAL(finishInput(QVariantList)),
+            this, SLOT(handleInputDone(QVariantList)));
 }
 
 QString GdbRunPlugin::initialize(const QStringList &conf, const CommandLine &)
@@ -33,7 +36,18 @@ QString GdbRunPlugin::initialize(const QStringList &conf, const CommandLine &)
             this, SLOT(handleGdbServerReadStdErr()), Qt::DirectConnection);
 
     variablesModel_ = 0;
-    ioCodec_ = QTextCodec::codecForLocale();
+    QString ioCodec;
+    for (int i=0; i<conf.size(); i++) {
+        if (conf[i].toLower().startsWith("io=")) {
+            ioCodec = conf[i].mid(3).toUpper();
+        }
+    }
+    if (ioCodec.length() > 0) {
+        ioCodec_ = QTextCodec::codecForName(ioCodec.toAscii());
+    }
+    else {
+        ioCodec_ = QTextCodec::codecForLocale();
+    }
     return "";
 }
 
@@ -83,9 +97,26 @@ QDateTime GdbRunPlugin::loadedProgramVersion() const
     }
 }
 
+void GdbRunPlugin::handleInputDone(const QVariantList &data)
+{
+    QString inputString;
+    for (int i=0; i<data.size(); i++) {
+        QString lexem = data[i].toString().trimmed();
+        if (lexem.length() == 0 && data[i].type() == QVariant::Char)
+            lexem = " ";
+        inputString += lexem;
+        if (i<data.size()-1)
+            inputString += " ";
+    }
+    const QByteArray rawString = ioCodec_->fromUnicode(inputString) + "\n";
+    gdbServer_->write(rawString);
+    gdbServer_->waitForBytesWritten();
+    sendGdbCommand("exec-continue");
+    gdbState_ = Running;
+}
+
 void GdbRunPlugin::handleGdbServerReadStdErr()
 {
-    QMutexLocker lock(gdbStateLocker_);
     QByteArray serverOut = gdbServer_->readAllStandardError();
     if (StartedServer == gdbState_ && QProcess::Running!=gdbClient_->state()) {
         // take pid and port name, and start gdb client
@@ -104,9 +135,12 @@ void GdbRunPlugin::handleGdbServerReadStdErr()
         }
         queueGdbCommand("target-select remote localhost:"+portNumber.toAscii(),
                         StartedBoth);
+//        queueGdbCommand("exec-arguments >"+QDir::toNativeSeparators(programFileName_+".out").toLocal8Bit(), StartedBoth);
         queueGdbCommand("file-symbol-file "+QDir::toNativeSeparators(programFileName_).toLocal8Bit(),
                         StartedBoth);
         queueGdbCommand("break-insert fpc_get_input", StartedBoth);
+        queueGdbCommand("break-insert fpc_write_end", StartedBoth);
+        queueGdbCommand("break-insert fpc_writeln_end", StartedBoth);
     }
     else if (Running == gdbState_) {
         QStringList message = ioCodec_->toUnicode(serverOut).split('\n', QString::SkipEmptyParts);
@@ -125,7 +159,6 @@ void GdbRunPlugin::handleGdbServerReadStdErr()
 
 void GdbRunPlugin::handleGdbServerReadStdOut()
 {
-    QMutexLocker lock(gdbStateLocker_);
     QByteArray serverOut = gdbServer_->readAllStandardOutput();
     QString message = ioCodec_->toUnicode(serverOut);
     emit outputRequest(message);
@@ -174,7 +207,11 @@ bool GdbRunPlugin::isTestingRun() const
 
 void GdbRunPlugin::terminate()
 {
-    sendGdbCommand("exec-interrupt");
+    gdbState_ = Terminating;
+    gdbServer_->terminate();
+    gdbClient_->terminate();
+    gdbState_ = NotStarted;
+    emit stopped(SR_UserTerminated);
 }
 
 bool GdbRunPlugin::hasMoreInstructions() const
@@ -447,6 +484,10 @@ void GdbRunPlugin::handleGdbAsyncMessageStream(const QByteArray &resultStream)
                     stopReason = SR_Error;
                 }
             }
+            else if (msg["reason"] == "exited" && msg.contains("exit-code")) {
+                int exitCode = msg.value("exit-code").toInt();
+                stopReason = exitCode == 0? SR_Done : SR_Error;
+            }
             else if (msg["reason"] == "exited-normally") {
                 stopReason = SR_Done;
             }
@@ -454,23 +495,33 @@ void GdbRunPlugin::handleGdbAsyncMessageStream(const QByteArray &resultStream)
                 const QMap<QString,QVariant> frame = msg["frame"].toMap();
                 const QString func = frame.value("func").toString();
                 if ("fpc_get_input" == func) {
+                    gdbState_ = Querying;
                     extractInputFormat();
                     stopReason = SR_InputRequest;
-                    gdbState_ = Querying;
+                }
+                else if ("fpc_write_end" == func || "fpc_writeln_end" == func) {
+                    gdbState_ = Running;
+                    sendGdbCommand("exec-finish");
+                    handleGdbServerReadStdOut();
+                    sendGdbCommand("exec-continue");
                 }
                 else {
-                    stopReason = SR_UserInteraction;
                     gdbState_ = Paused;
+                    stopReason = SR_UserInteraction;
                 }
             }
-            if (SR_InputRequest!=stopReason)
-                emit stopped(stopReason);  // not enought information yet
+            else if (msg["reason"] == "function-finished") {
+                gdbState_ = Querying;
+                stopReason = SR_InputRequest;
+            }
+            if (Querying != gdbState_ || Running != gdbState_)
+                emit stopped(stopReason);  // not a stop
         }
         else {
             gdbState_ = Paused;
         }
     }
-    else if (msg.contains("running")) {
+    else if (msg.contains("running") && Querying!=gdbState_) {
         gdbState_ = Running;
     }
 }
@@ -479,7 +530,7 @@ void GdbRunPlugin::extractInputFormat()
 {
     // FPC implementation!
     // for other languagese -- reimplement this method
-    const QByteArray execReturn = "exec-return";
+    const QByteArray execReturn = "exec-finish";
     const QByteArray dissassemble = "data-disassemble -s $pc -e \"$pc+200\" -- 0";
     const QList<QByteArray> cmds = QList<QByteArray>()
             << execReturn << dissassemble;

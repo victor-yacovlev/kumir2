@@ -3,7 +3,7 @@ find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui REQUIRED)
 include (${QT_USE_FILE})
 
 set(CONFIGURATION_TEMPLATE
-    "Editor,Browser,FPCAnalizer,GDBRun(pascal),!CoreGUI\(notabs,icon=pascal,nostartpage,nosessions\)"
+    "CourseManager,Editor,Browser,FPCAnalizer,GDBRun\(subsystem=fpc,io=cp866\),!CoreGUI\(icon=pascal\)"
 )
 set(SPLASHSCREEN
     "coregui/splashscreens/pascal.png"

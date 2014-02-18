@@ -134,7 +134,7 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcToPrepareRun()
     QStringList arguments;
     arguments
             << "-g"  // generate debug info
-            << "-Ci"  // generate i/o checking
+//            << "-Ci"  // generate i/o checking
             << "-Cr"  // generate range checking
             << "-Ct"  // generate stack checking
             << "-Fu"+QDir::toNativeSeparators(sourceDirName_) // Add unit path

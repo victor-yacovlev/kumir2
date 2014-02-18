@@ -53,8 +53,11 @@ signals:
     void outputRequest(const QString & output);
     void errorOutputRequest(const QString &);
     void inputRequest(const QString & format);
+    void finishInput(const QVariantList & data);
 
 protected slots:
+    void handleInputDone(const QVariantList &data);
+
     void handleGdbClientReadStdOut();
     void handleGdbClientReadStdErr();
 
