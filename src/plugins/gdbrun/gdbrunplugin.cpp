@@ -1,7 +1,5 @@
 #include "gdbrunplugin.h"
 
-
-
 namespace GdbRun {
 
 GdbRunPlugin::GdbRunPlugin()
@@ -59,22 +57,23 @@ void GdbRunPlugin::updateSettings(const QStringList &)
 bool GdbRunPlugin::loadProgram(const QString &fileName, const QByteArray &)
 {
     inferiorPid_ = Q_PID();
-    if (QProcess::Running == gdbClient_->state()) {
-        gdbClient_->terminate();
-        gdbClient_->waitForFinished();
-    }
     if (QProcess::Running == gdbServer_->state()) {
         gdbServer_->terminate();
-        gdbClient_->waitForFinished();
+        gdbServer_->waitForFinished();
     }
+//    if (QProcess::Running == gdbClient_->state()) {
+//        gdbClient_->terminate();
+//        gdbClient_->waitForFinished();
+//    }
     if (variablesModel_) {
         variablesModel_->deleteLater();
     }
+    QString comm = "localhost:0";
     QStringList gdbServerArguemnts = QStringList()
-            << "localhost:0"
+            << comm
             << QDir::toNativeSeparators(fileName)
                ;
-    gdbServer_->start("gdbserver", gdbServerArguemnts);
+    gdbServer_->start(gdbServerCommand(), gdbServerArguemnts);
     gdbServer_->waitForStarted();
 
     programFileName_ = fileName;
@@ -83,6 +82,32 @@ bool GdbRunPlugin::loadProgram(const QString &fileName, const QByteArray &)
     QMutexLocker lock(gdbStateLocker_);
     gdbState_ = ok? StartedServer : NotStarted;
     return ok;
+}
+
+QString GdbRunPlugin::gdbCommand()
+{
+#ifdef Q_OS_WIN32
+    QString path = QCoreApplication::applicationDirPath() +
+            "/../mingw/bin/gdb.exe";
+    path = QDir::cleanPath(path);
+    path = QDir::toNativeSeparators(path);
+    return path;
+#else
+    return "gdb";
+#endif
+}
+
+QString GdbRunPlugin::gdbServerCommand()
+{
+#ifdef Q_OS_WIN32
+    QString path = QCoreApplication::applicationDirPath() +
+            "/../mingw/bin/gdbserver.exe";
+    path = QDir::cleanPath(path);
+    path = QDir::toNativeSeparators(path);
+    return path;
+#else
+    return "gdb";
+#endif
 }
 
 
@@ -99,6 +124,11 @@ QDateTime GdbRunPlugin::loadedProgramVersion() const
 
 void GdbRunPlugin::handleInputDone(const QVariantList &data)
 {
+#ifdef Q_OS_WIN32
+    static const QByteArray NL = "\r\n";
+#else
+    static const QByteArray NL = "\n";
+#endif
     QString inputString;
     for (int i=0; i<data.size(); i++) {
         QString lexem = data[i].toString().trimmed();
@@ -108,7 +138,7 @@ void GdbRunPlugin::handleInputDone(const QVariantList &data)
         if (i<data.size()-1)
             inputString += " ";
     }
-    const QByteArray rawString = ioCodec_->fromUnicode(inputString) + "\n";
+    const QByteArray rawString = ioCodec_->fromUnicode(inputString) + NL;
     gdbServer_->write(rawString);
     gdbServer_->waitForBytesWritten();
     sendGdbCommand("exec-continue");
@@ -117,14 +147,16 @@ void GdbRunPlugin::handleInputDone(const QVariantList &data)
 
 void GdbRunPlugin::handleGdbServerReadStdErr()
 {
-    QByteArray serverOut = gdbServer_->readAllStandardError();
-    if (StartedServer == gdbState_ && QProcess::Running!=gdbClient_->state()) {
+    QByteArray serverOut = gdbServer_->readAllStandardError().replace('\r',"");
+    if (StartedServer == gdbState_ && QProcess::Running==gdbServer_->state()) {
         // take pid and port name, and start gdb client
         QStringList gdbClientArguments = QStringList()
                 << "--interpreter=mi"
                    ;
-        gdbClient_->start("gdb", gdbClientArguments);
-        gdbClient_->waitForStarted();
+        if (QProcess::Running != gdbClient_->state()) {
+            gdbClient_->start(gdbCommand(), gdbClientArguments);
+            gdbClient_->waitForStarted();
+        }
         gdbState_ = StartedBoth;
 
         QString gdbServerOutput = QString::fromAscii(serverOut);
@@ -133,14 +165,19 @@ void GdbRunPlugin::handleGdbServerReadStdErr()
         if (-1 != rxPortNum.indexIn(gdbServerOutput)) {
             portNumber = rxPortNum.cap(1);
         }
-        queueGdbCommand("target-select remote localhost:"+portNumber.toAscii(),
+        QByteArray comm = "localhost:" + portNumber.toAscii();
+        queueGdbCommand("target-select remote "+comm,
                         StartedBoth);
 //        queueGdbCommand("exec-arguments >"+QDir::toNativeSeparators(programFileName_+".out").toLocal8Bit(), StartedBoth);
-        queueGdbCommand("file-symbol-file "+QDir::toNativeSeparators(programFileName_).toLocal8Bit(),
+        QByteArray symbolFile = QDir::toNativeSeparators(programFileName_).toLocal8Bit();
+#ifdef Q_OS_WIN32
+        symbolFile.replace("\\", "\\\\");
+#endif
+        queueGdbCommand("file-symbol-file "+symbolFile,
                         StartedBoth);
         queueGdbCommand("break-insert fpc_get_input", StartedBoth);
-        queueGdbCommand("break-insert fpc_write_end", StartedBoth);
-        queueGdbCommand("break-insert fpc_writeln_end", StartedBoth);
+//        queueGdbCommand("break-insert fpc_write_end", StartedBoth);
+//        queueGdbCommand("break-insert fpc_writeln_end", StartedBoth);
     }
     else if (Running == gdbState_) {
         QStringList message = ioCodec_->toUnicode(serverOut).split('\n', QString::SkipEmptyParts);
@@ -159,7 +196,7 @@ void GdbRunPlugin::handleGdbServerReadStdErr()
 
 void GdbRunPlugin::handleGdbServerReadStdOut()
 {
-    QByteArray serverOut = gdbServer_->readAllStandardOutput();
+    QByteArray serverOut = gdbServer_->readAllStandardOutput().replace('\r',"");
     QString message = ioCodec_->toUnicode(serverOut);
     emit outputRequest(message);
 }
@@ -231,7 +268,12 @@ unsigned long int GdbRunPlugin::stepsCounted() const
 
 void GdbRunPlugin::sendGdbCommand(const QByteArray &command)
 {
-    gdbClient_->write("-" + command + "\n");
+#ifdef Q_OS_WIN32
+    static const QByteArray NL = "\r\n";
+#else
+    static const QByteArray NL = "\n";
+#endif
+    gdbClient_->write("-" + command + NL);
 }
 
 void GdbRunPlugin::queueGdbCommand(const QByteArray &command, GdbState condition)
@@ -294,14 +336,14 @@ QVariant GdbRunPlugin::valueStackTopItem() const
 void GdbRunPlugin::handleGdbClientReadStdErr()
 {
     QMutexLocker lock(gdbStateLocker_);
-    qDebug() << "GDB STDERR: " << gdbClient_->readAllStandardError();
+    qDebug() << "GDB STDERR: " << gdbClient_->readAllStandardError().replace('\r',"");
 }
 
 void GdbRunPlugin::handleGdbClientReadStdOut()
 {
     QMutexLocker lock(gdbStateLocker_);
-    QList<QByteArray> lines = gdbClient_->readAllStandardOutput().split('\n');
-    qDebug() << lines;
+    QList<QByteArray> lines = gdbClient_->readAllStandardOutput().replace('\r',"").split('\n');
+//    qDebug() << lines;
     for (int i=0; i<lines.size(); i++) {
         if (lines[i].length()>0) {
             const char first = lines.at(i).at(0);
@@ -496,6 +538,7 @@ void GdbRunPlugin::handleGdbAsyncMessageStream(const QByteArray &resultStream)
                 const QString func = frame.value("func").toString();
                 if ("fpc_get_input" == func) {
                     gdbState_ = Querying;
+                    handleGdbServerReadStdOut();
                     extractInputFormat();
                     stopReason = SR_InputRequest;
                 }
@@ -519,6 +562,9 @@ void GdbRunPlugin::handleGdbAsyncMessageStream(const QByteArray &resultStream)
         }
         else {
             gdbState_ = Paused;
+        }
+        if (Terminating == gdbState_) {
+            sendGdbCommand("gdb-exit");
         }
     }
     else if (msg.contains("running") && Querying!=gdbState_) {
@@ -581,7 +627,7 @@ void GdbRunPlugin::processGdbQueryResponse(const QMap<QString, QVariant> &respon
         }
         // Prepare format for input request
         QStringList formats;
-        qDebug() << callees;
+//        qDebug() << callees;
         for (int i=0; i<callees.size(); i++) {
             const QString & s = callees[i];
             if ("fpc_read_text_sint"==s || "fpc_read_text_lint"==s)

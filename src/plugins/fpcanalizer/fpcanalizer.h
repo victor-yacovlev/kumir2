@@ -48,6 +48,8 @@ public:
 
 
 protected:
+    static QString fpcCommandName();
+    static QStringList fpcPlatformFlags();
     QPair<QByteArray,QString> startFpcProcessToCheck();
     QPair<QByteArray,QString> startFpcToPrepareRun();
     void parseFpcErrors(const QByteArray & bytes, const QString & fileName);

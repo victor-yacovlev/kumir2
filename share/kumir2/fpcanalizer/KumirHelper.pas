@@ -2,8 +2,8 @@ unit KumirHelper;
 interface
 implementation
 
-{ Required to initialize Crt to unset ouput buffer }
-uses Crt;
-
+var
+  Buf: array [1..1] of byte;
 begin
+  SetTextBuf(Output, Buf, 1);
 end.

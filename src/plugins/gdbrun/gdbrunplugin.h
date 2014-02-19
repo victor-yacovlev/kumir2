@@ -93,6 +93,8 @@ private:
     void flushGdbCommands();
     static QMap<QString,QVariant> parseGdbMiCommandOutput(const QString & out);
     static QStringList splitByTopLevelComas(const QString &in);
+    static QString gdbCommand();
+    static QString gdbServerCommand();
 
 
     QProcess* gdbClient_;

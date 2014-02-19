@@ -90,7 +90,7 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcProcessToCheck()
                 QDir::cleanPath(
                     QCoreApplication::applicationDirPath()+"/../libexec/kumir2/fpcanalizer/"
                     ));
-    QStringList arguments;
+    QStringList arguments = fpcPlatformFlags();
     arguments
             << "-g"  // generate debug info
             << "-E"  // do not linkage
@@ -102,7 +102,7 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcProcessToCheck()
             << "-e" + fpcpluginLibexecs // override 'as' with provided fake assembler
             << fi.fileName();
     fpc_->setProcessChannelMode(QProcess::SeparateChannels);
-    fpc_->start("fpc", arguments);
+    fpc_->start(fpcCommandName(), arguments);
     if (!fpc_->waitForFinished()) {
         qDebug() << fpc_->errorString();
         return QPair<QByteArray,QString>(QByteArray(), fi.fileName());
@@ -151,7 +151,7 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcToPrepareRun()
 #endif
     programFile.close();
     fpc_->setWorkingDirectory(tempDir.absoluteFilePath("kumir2-fpcanalizer"));
-    QStringList arguments;
+    QStringList arguments = fpcPlatformFlags();
     arguments
             << "-g"  // generate debug info
 //            << "-Ci"  // generate i/o checking
@@ -163,7 +163,7 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcToPrepareRun()
             << "-o"+QDir::toNativeSeparators(outFileName) // Override output file name
             << fi.fileName();
     fpc_->setProcessChannelMode(QProcess::SeparateChannels);
-    fpc_->start("fpc", arguments);
+    fpc_->start(fpcCommandName(), arguments);
     if (!fpc_->waitForFinished()) {
         qDebug() << fpc_->errorString();
         return QPair<QByteArray,QString>(QByteArray(), outFileName);
@@ -175,6 +175,47 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcToPrepareRun()
         out += fpc_->readAll();
         return QPair<QByteArray,QString>(out, outFileName);
     }
+}
+
+QString FpcAnalizer::fpcCommandName()
+{
+#ifdef Q_OS_WIN32
+    QString path = QCoreApplication::applicationDirPath() +
+            "/../fpc/bin/i386-win32/fpc.exe";
+    path = QDir::cleanPath(path);
+    path = QDir::toNativeSeparators(path);
+    return path;
+#else
+    return "fpc";
+#endif
+}
+
+QStringList FpcAnalizer::fpcPlatformFlags()
+{
+#ifdef Q_OS_WIN32
+    QString unitsBase = QCoreApplication::applicationDirPath() +
+            "/../fpc/units/i386-win32";
+    unitsBase = QDir::cleanPath(unitsBase);
+    unitsBase = QDir::toNativeSeparators(unitsBase);
+    QString libBase = QCoreApplication::applicationDirPath() +
+            "/../fpc/lib/i386-win32";
+    libBase = QDir::cleanPath(libBase);
+    libBase = QDir::toNativeSeparators(libBase);
+    QString binBase = QCoreApplication::applicationDirPath() +
+            "/../fpc/bin/i386-win32";
+    binBase = QDir::cleanPath(binBase);
+    binBase = QDir::toNativeSeparators(binBase);
+    const QStringList result = QStringList()
+            << "-Fu" + unitsBase
+            << "-Fu" + unitsBase + "/*"
+            << "-Fu" + unitsBase + "/rtl"
+            << "-Fl" + libBase
+            << "-FD" + binBase
+               ;
+    return result;
+#else
+    return QStringList();
+#endif
 }
 
 void FpcAnalizer::prepareToRun()
@@ -200,6 +241,7 @@ void FpcAnalizer::parseFpcErrors(const QByteArray &bytes, const QString &fileNam
     QRegExp errorsSummary("There were \\d+ errors compiling module, stopping");
     bool asOut = false;
     Q_FOREACH (QString line, lines) {
+        line.replace('\r', "");
         if (!asOut) {
             if ("===BEGIN_FAKE_AS_OUTPUT" == line) {
                 asOut = true;
