@@ -106,7 +106,7 @@ QString GdbRunPlugin::gdbServerCommand()
     path = QDir::toNativeSeparators(path);
     return path;
 #else
-    return "gdb";
+    return "gdbserver";
 #endif
 }
 
