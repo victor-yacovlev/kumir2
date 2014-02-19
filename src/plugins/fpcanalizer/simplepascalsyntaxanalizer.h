@@ -15,6 +15,11 @@ class SimplePascalSyntaxAnalizer : public QObject
 {    
     Q_OBJECT
 public:
+    enum SourceType {
+        PascalProgram,
+        PascalUnit
+    };
+
     static SimplePascalSyntaxAnalizer* create(QObject *parent);
     void reset();
     inline QString thisUnitName() const { return thisUnitName_; }
@@ -31,6 +36,7 @@ public:
                          int lineNo,
                          LineProp & lineProp
                          );
+    QString makePreprocessedSourceText(const QStringList & lines) const;
     QString correctCapitalization(const QString & name, LexemType lxType) const ;
     Analizer::TextAppend closingBracketSuggestion(int lineNo, const QStringList &lines) const;
 
@@ -47,6 +53,17 @@ signals:
 public slots:
 
 private:
+    struct InsertPosition {
+        inline explicit InsertPosition() : valid(false) {}
+        inline void clear() { valid = false; suffix.clear(); prefix.clear();}
+        inline operator bool() const { return valid; }
+        bool valid;
+        uint line;
+        uint col;
+        QString prefix;
+        QString suffix;
+    };
+
     enum State {
         Program,
         String,
@@ -58,10 +75,11 @@ private:
         int length;
         State stateAfter;
     };
+
     Lexem takeLexem(const QString &line, int startPos, State startState) const;
     void processLine(const QString &line, const State initialState,
                      LineProp & lineProp, QPoint& rank, State& endState,
-                     QString & previousKeyword
+                     QString & previousKeyword, bool fullText, uint lineNumber
                      ) ;
     static QPoint keywordRank(const QString &keyword);
     const QStringList Keywords;
@@ -76,6 +94,7 @@ private:
     QStringList lineStartKeywords_;
     QString thisUnitName_;
     QMap<QString,QString> capitalizationHints_;
+    InsertPosition addHelperUnitPosition_;
 
 };
 

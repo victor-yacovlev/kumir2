@@ -28,6 +28,7 @@ public:
     Analizer::InstanceInterface* createInstance();
     QMap<QString,QString> readCapitalizationHints() const;
     static FpcAnalizerPlugin* self();
+    inline QDir resoursesDir() { return myResourcesDir(); }
 private:
     uint lastInstanceIndex_;
     static FpcAnalizerPlugin* me_;

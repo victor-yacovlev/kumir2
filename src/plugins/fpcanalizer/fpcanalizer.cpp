@@ -1,5 +1,6 @@
 #include "fpcanalizer.h"
 #include "simplepascalsyntaxanalizer.h"
+#include "fpcanalizerplugin.h"
 
 #include <QTemporaryFile>
 #include <QFileInfo>
@@ -96,6 +97,8 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcProcessToCheck()
             << "-AAS" // use 'as' command for assembler
             << "-ap" // use pipes to comminicate with "assembler"
             << "-Fu"+QDir::toNativeSeparators(sourceDirName_) // Add unit path
+            << "-Fo"+QDir::toNativeSeparators(tempDir.absoluteFilePath("kumir2-fpcanalizer")) // Add obj path
+            << "-FU"+QDir::toNativeSeparators(sourceDirName_) // Add output unit path
             << "-e" + fpcpluginLibexecs // override 'as' with provided fake assembler
             << fi.fileName();
     fpc_->setProcessChannelMode(QProcess::SeparateChannels);
@@ -121,7 +124,24 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcToPrepareRun()
     QTemporaryFile programFile(tempDir.absoluteFilePath("kumir2-fpcanalizer")
                 + QString::fromAscii("/.editor-XXXXXX-%1.pas").arg(instanceIndex_));
     programFile.open();
-    programFile.write(rawSourceData().c_str());
+    if (!QFileInfo(tempDir.absoluteFilePath("kumir2-fpcanalizer/KumirHelper.pas")).exists()) {
+        const QString srcPath = FpcAnalizerPlugin::self()->resoursesDir()
+                .absoluteFilePath("KumirHelper.pas");
+        QFile src(srcPath);
+        src.open(QIODevice::ReadOnly|QIODevice::Text);
+        const QByteArray data = src.readAll();
+        src.close();
+        QFile dst(tempDir.absoluteFilePath("kumir2-fpcanalizer/KumirHelper.pas"));
+        dst.open(QIODevice::WriteOnly|QIODevice::Text);
+        dst.write(data);
+        dst.close();
+    }
+    const QString preprocessedSource =
+            syntaxAnalizer_->makePreprocessedSourceText(sourceLines_);
+    const QByteArray preprocessedRawSource =
+            textCodec_->fromUnicode(preprocessedSource);
+    programFile.write(preprocessedRawSource);
+    programFile.close();
     QFileInfo fi(programFile);
     QString outFileName = fi.absoluteFilePath();
 #ifdef Q_OS_WIN32
@@ -138,6 +158,7 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcToPrepareRun()
             << "-Cr"  // generate range checking
             << "-Ct"  // generate stack checking
             << "-Fu"+QDir::toNativeSeparators(sourceDirName_) // Add unit path
+            << "-Fo"+QDir::toNativeSeparators(tempDir.absoluteFilePath("kumir2-fpcanalizer")) // Add obj path
             << "-FU"+QDir::toNativeSeparators(sourceDirName_) // Add output unit path
             << "-o"+QDir::toNativeSeparators(outFileName) // Override output file name
             << fi.fileName();
@@ -201,10 +222,10 @@ void FpcAnalizer::parseFpcErrors(const QByteArray &bytes, const QString &fileNam
                         line = qMin(line, sourceLines_.size()-1);
                         int col = pattern1.cap(3).toInt() - 1;
                         const QString message = pattern1.cap(5);
-                        int start = col;
-                        int end = col+1;
+                        int start = qMin(col, sourceLines_[line].length()-1);
+                        int end = start+1;
                         LineProp & lp = lineProps_[line];
-                        LexemType tp = lp.at(col);
+                        LexemType tp = lp.at(start);
                         while (start>0 && lp[start] == tp) {
                             start--;
                         }

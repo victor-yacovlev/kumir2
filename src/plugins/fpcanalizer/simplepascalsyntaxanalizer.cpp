@@ -144,6 +144,7 @@ void SimplePascalSyntaxAnalizer::reset()
     lineStartStates_.clear();
     typeNames_.clear();
     thisUnitName_.clear();
+    addHelperUnitPosition_.clear();
 }
 
 void SimplePascalSyntaxAnalizer::processSyntaxAnalysis(
@@ -167,7 +168,7 @@ void SimplePascalSyntaxAnalizer::processSyntaxAnalysis(
         QPoint lineRank(0,0);
         State nextState;
         lineStartKeywords_.append(previousKeyword);
-        processLine(line, currentState, lineProp, lineRank, nextState, previousKeyword);
+        processLine(line, currentState, lineProp, lineRank, nextState, previousKeyword, true, i);
         lineStartStates_.append(currentState);
         lineRanks[i] = lineRank;
         currentState = nextState;
@@ -189,7 +190,25 @@ void SimplePascalSyntaxAnalizer::processLineProp(const QString& line,
     QString previousKeyword = "";
     QPoint dummy;
     State dummyState;
-    processLine(line, initialState, lineProp, dummy, dummyState, previousKeyword);
+    processLine(line, initialState, lineProp, dummy, dummyState, previousKeyword, false, lineNo);
+}
+
+QString SimplePascalSyntaxAnalizer::makePreprocessedSourceText(const QStringList &lines) const
+{
+    QString result;
+    for (uint i=0; i<lines.size(); i++) {
+        QString line = lines[i];
+        if (addHelperUnitPosition_.valid && addHelperUnitPosition_.line==i) {
+            QString insertion =
+                    addHelperUnitPosition_.prefix +
+                    "KumirHelper" +
+                    addHelperUnitPosition_.suffix;
+            line.insert(addHelperUnitPosition_.col, insertion);
+        }
+        result += line;
+        if (i < lines.size()-1) result += "\n";
+    }
+    return result;
 }
 
 SimplePascalSyntaxAnalizer::Lexem
@@ -269,7 +288,8 @@ SimplePascalSyntaxAnalizer::takeLexem
 
 void SimplePascalSyntaxAnalizer::processLine
 (const QString &line, const State initialState,
- LineProp &lineProp, QPoint &rank, State &endState, QString & previousKeyword)
+ LineProp &lineProp, QPoint &rank, State &endState, QString & previousKeyword,
+ bool fullText, uint lineNumber)
 {
     State currentState = initialState;
     int currentPos = 0;
@@ -349,11 +369,28 @@ void SimplePascalSyntaxAnalizer::processLine
                 tp = LxNameModule;
                 unitNames_.insert(lxText.toLower());
                 previousKeyword = "";
-                thisUnitName_ = lxText.toLower();
+                if (fullText) {
+                    thisUnitName_ = lxText.toLower();
+                    int semicolonPos = line.indexOf(";", currentPos+lxText.length());
+                    if (-1 != semicolonPos) {
+                        addHelperUnitPosition_.valid = true;
+                        addHelperUnitPosition_.line = lineNumber;
+                        addHelperUnitPosition_.col = uint(semicolonPos);
+                        addHelperUnitPosition_.prefix = "; uses ";
+                        addHelperUnitPosition_.suffix = "";
+                    }
+                }
             }
             else if ("uses" == previousKeyword) {
                 tp = LxNameModule;
                 unitNames_.insert(lxText.toLower());
+                if (fullText) {
+                    addHelperUnitPosition_.valid = true;
+                    addHelperUnitPosition_.line = lineNumber;
+                    addHelperUnitPosition_.col = currentPos;
+                    addHelperUnitPosition_.prefix = "";
+                    addHelperUnitPosition_.suffix = ", ";
+                }
             }
         }
         if (LxTypeName == tp && "true" == lxText.toLower()) {
