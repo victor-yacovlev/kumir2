@@ -334,7 +334,7 @@ void GdbRunPlugin::handleGdbAsyncLogStream(const QByteArray &resultStream)
     const QString rawMsg = QString::fromLocal8Bit(resultStream);
     QMap<QString,QVariant> msg = parseGdbMiCommandOutput(rawMsg);
     if (msg.contains("thread-group-started")) {
-        inferiorPid_ = msg["pid"].toULongLong();
+        inferiorPid_ = (Q_PID)(msg["pid"].toULongLong());
         gdbState_ = StartedBoth;
     }
 }
