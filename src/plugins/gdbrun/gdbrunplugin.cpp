@@ -11,6 +11,8 @@ GdbRunPlugin::GdbRunPlugin()
     , gdbStateLocker_(new QMutex)
     , stateWaiter_(new StateWaiter(this))
     , gdbCommandsQueueLocker_(new QMutex)
+    , symbolsLoaded_(false)
+    , breakLine1Inserted_(false)
 {
     connect(this, SIGNAL(finishInput(QVariantList)),
             this, SLOT(handleInputDone(QVariantList)));
@@ -56,6 +58,7 @@ void GdbRunPlugin::updateSettings(const QStringList &)
 
 bool GdbRunPlugin::loadProgram(const QString &fileName, const QByteArray &)
 {
+    breakLine1Inserted_ = symbolsLoaded_ = false;
     inferiorPid_ = Q_PID();
     if (QProcess::Running == gdbServer_->state()) {
         gdbServer_->terminate();
@@ -208,28 +211,52 @@ bool GdbRunPlugin::canStepOut() const
 
 void GdbRunPlugin::runBlind()
 {
-//    stateWaiter_->waitForState(Paused);
     queueGdbCommand("exec-continue", Paused);
+    flushGdbCommands();
 }
 
 void GdbRunPlugin::runContinuous()
-{
-    runBlind(); // not implemented
+{    
+    if (!symbolsLoaded_) {
+        loadSymbols();
+    }
+    queueGdbCommand("exec-continue", Paused);
+    flushGdbCommands();
 }
 
 void GdbRunPlugin::runStepInto()
 {
-    runBlind(); // not implemented
+    if (!symbolsLoaded_) {
+        loadSymbols();
+    }
+    if (!breakLine1Inserted_) {
+        queueGdbCommand("break-insert main", Paused);
+        breakLine1Inserted_ = true;
+    }
+    queueGdbCommand("exec-step", Paused);
+    flushGdbCommands();
 }
 
 void GdbRunPlugin::runStepOver()
 {
-    runBlind(); // not implemented
+    if (!breakLine1Inserted_) {
+        queueGdbCommand("break-insert main", Paused);
+        breakLine1Inserted_ = true;
+    }
+    if (!symbolsLoaded_) {
+        loadSymbols();
+    }
+    queueGdbCommand("exec-next", Paused);
+    flushGdbCommands();
 }
 
 void GdbRunPlugin::runToEnd()
 {
-    runBlind(); // not implemented
+    if (!symbolsLoaded_) {
+        loadSymbols();
+    }
+    queueGdbCommand("exec-finish", Paused);
+    flushGdbCommands();
 }
 
 void GdbRunPlugin::runTesting()
@@ -240,6 +267,11 @@ void GdbRunPlugin::runTesting()
 bool GdbRunPlugin::isTestingRun() const
 {
     return false;
+}
+
+void GdbRunPlugin::loadSymbols()
+{
+
 }
 
 void GdbRunPlugin::terminate()
@@ -343,7 +375,9 @@ void GdbRunPlugin::handleGdbClientReadStdOut()
 {
     QMutexLocker lock(gdbStateLocker_);
     QList<QByteArray> lines = gdbClient_->readAllStandardOutput().replace('\r',"").split('\n');
-//    qDebug() << lines;
+#if !defined(NDEBUG) && !defined(QT_NO_DEBUG)
+    qDebug() << lines;
+#endif
     for (int i=0; i<lines.size(); i++) {
         if (lines[i].length()>0) {
             const char first = lines.at(i).at(0);
@@ -454,14 +488,17 @@ QMap<QString,QVariant> GdbRunPlugin::parseGdbMiCommandOutput(const QString &out)
                     if (selem.startsWith('"')) {
                         elem = selem.mid(1, selem.length()-2);
                     }
-                    else if (selem.startsWith("{")) {
-                        elem = parseGdbMiCommandOutput(selem.mid(1, selem.length()-2));
+                    else {
+                        if (selem.startsWith("{"))
+                            selem = selem.mid(1, selem.length()-2);
+                        elem = parseGdbMiCommandOutput(selem);
                     }
                     alist.append(elem);
 
                 }
                 buffer.clear();
                 value = alist;
+                currentMode = Value;
 
             }
             else {
@@ -549,13 +586,30 @@ void GdbRunPlugin::handleGdbAsyncMessageStream(const QByteArray &resultStream)
                     sendGdbCommand("exec-continue");
                 }
                 else {
-                    gdbState_ = Paused;
-                    stopReason = SR_UserInteraction;
+                    if (frame.contains("line")) {
+                        gdbState_ = Paused;
+                        stopReason = SR_UserInteraction;
+                        int lineNo = frame.value("line").toInt() - 1;
+                        emit lineChanged(lineNo, 0u, 0u);
+                    }
+                    else {
+                        gdbState_ = Querying;
+                        stopReason = SR_UserInteraction;
+                        bkptNoQuery_ = msg.value("bkptno").toString().toAscii();
+                        sendGdbCommand("break-info " + bkptNoQuery_);
+                    }
                 }
             }
             else if (msg["reason"] == "function-finished") {
                 gdbState_ = Querying;
                 stopReason = SR_InputRequest;
+            }
+            else if (msg["reason"] == "end-stepping-range") {
+                const QMap<QString,QVariant> frame = msg["frame"].toMap();
+                gdbState_ = Paused;
+                stopReason = SR_UserInteraction;
+                int lineNo = frame.value("line").toInt() - 1;
+                emit lineChanged(lineNo, 0u, 0u);
             }
             if (Querying != gdbState_ || Running != gdbState_)
                 emit stopped(stopReason);  // not a stop
@@ -643,6 +697,25 @@ void GdbRunPlugin::processGdbQueryResponse(const QMap<QString, QVariant> &respon
         const QString format = formats.join(";");
         emit stopped(SR_InputRequest);
         emit inputRequest(format);
+    }
+    else if (Querying == gdbState_ &&
+             response.contains("done") &&
+             response.contains("BreakpointTable")
+             )
+    {
+        const QMap<QString,QVariant> table = response.value("BreakpointTable").toMap();
+        const QVariantList body = table.value("body").toList();
+        Q_FOREACH(QVariant record, body) {
+            const QMap<QString,QVariant> bkpt = record.toMap().value("bkpt").toMap();
+            const QByteArray number = bkpt.value("number").toByteArray();
+            const QByteArray line = bkpt.value("line").toByteArray();
+            if (bkptNoQuery_ == number) {
+                int lineNo = line.toInt() - 1;
+                emit lineChanged(lineNo, 0u, 0u);
+                gdbState_ = Paused;
+                emit stopped(SR_UserInteraction);
+            }
+        }
     }
 }
 

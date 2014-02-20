@@ -54,6 +54,7 @@ signals:
     void errorOutputRequest(const QString &);
     void inputRequest(const QString & format);
     void finishInput(const QVariantList & data);
+    void lineChanged(int lineNo, quint32 colStart, quint32 colEnd);
 
 protected slots:
     void handleInputDone(const QVariantList &data);
@@ -73,6 +74,7 @@ protected slots:
 protected:
     virtual void extractInputFormat();
     virtual void processGdbQueryResponse(const QMap<QString,QVariant>& response);
+    virtual void loadSymbols();
 
 
 private:    
@@ -118,6 +120,9 @@ private:
     };
     QLinkedList<ConditionalCommand> gdbCommandsQueue_;
     QMutex* gdbCommandsQueueLocker_;
+    bool symbolsLoaded_;
+    bool breakLine1Inserted_;
+    QByteArray bkptNoQuery_;
 
 };
 
