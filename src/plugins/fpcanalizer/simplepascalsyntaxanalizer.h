@@ -16,8 +16,10 @@ class SimplePascalSyntaxAnalizer : public QObject
     Q_OBJECT
 public:
     enum SourceType {
+        UnknownSourceType,
         PascalProgram,
-        PascalUnit
+        PascalUnit,
+        PascalLibrary
     };
 
     static SimplePascalSyntaxAnalizer* create(QObject *parent);
@@ -29,6 +31,7 @@ public:
                                const QSet<QString> & typeNames,
                                QList<LineProp> & lineProps,
                                QList<QPoint> & lineRanks);
+    QPair<QString,SourceType> processUntilUnitInformation(const QStringList & lines);
     void processLineProp(const QString& line,
                          const QSet<QString> & unitNames,
                          const QSet<QString> & functionNames,
@@ -95,6 +98,7 @@ private:
     QString thisUnitName_;
     QMap<QString,QString> capitalizationHints_;
     InsertPosition addHelperUnitPosition_;
+    SourceType thisSourceType_;
 
 };
 

@@ -15,7 +15,6 @@ FpcAnalizer::FpcAnalizer(QObject * plugin, uint instanceIndex)
     , textCodec_(QTextCodec::codecForName("CP866"))
     , syntaxAnalizer_(0)
     , instanceIndex_(instanceIndex)
-    , compiledWithoutErrors_(false)
 {
     syntaxAnalizer_ = SimplePascalSyntaxAnalizer::create(this);
 
@@ -44,7 +43,6 @@ QList<Analizer::LineProp> FpcAnalizer::lineProperties() const
 
 void FpcAnalizer::setSourceText(const QString &plainText)
 {
-    compiledWithoutErrors_ = false;
     executableFilePath_.clear();
     sourceText_ = plainText;
     sourceLines_ = sourceText_.split('\n');
@@ -72,33 +70,45 @@ void FpcAnalizer::setSourceText(const QString &plainText)
     parseFpcErrors(fpcOut.first, fpcOut.second);
 }
 
+QString FpcAnalizer::analizerWorkSubdir() const
+{
+    uint index = instanceIndex_;
+    qint64 pid = QCoreApplication::applicationPid();
+    return QString::fromAscii("kumir2-fpcanalizer/editor-%1-%2")
+            .arg(pid).arg(index);
+}
+
 QPair<QByteArray,QString> FpcAnalizer::startFpcProcessToCheck()
 {
 
     QDir tempDir =
             QDir(QDesktopServices::storageLocation(QDesktopServices::TempLocation));
-    tempDir.mkdir("kumir2-fpcanalizer");
-    QTemporaryFile programFile(tempDir.absoluteFilePath("kumir2-fpcanalizer")
-                + QString::fromAscii("/.editor-XXXXXX-%1.pas").arg(instanceIndex_));
-    programFile.open();
+    QString subdir = analizerWorkSubdir();
+    tempDir.mkpath(subdir);
+    QDir workDir(tempDir.absoluteFilePath(subdir));
+    QPair<QString,SimplePascalSyntaxAnalizer::SourceType> sourceInfo
+            = syntaxAnalizer_->processUntilUnitInformation(sourceLines_);
+    QString sourceFileName = workDir.absoluteFilePath(sourceInfo.first).toLower() + ".pas";
+    QFile programFile(sourceFileName);
+    programFile.open(QIODevice::WriteOnly|QIODevice::Text);
     programFile.write(rawSourceData().c_str());
     QFileInfo fi(programFile);
-    QString dirName = fi.absoluteDir().absolutePath();
     programFile.close();
-    fpc_->setWorkingDirectory(tempDir.absoluteFilePath("kumir2-fpcanalizer"));
+    fpc_->setWorkingDirectory(workDir.absolutePath());
     static const QString fpcpluginLibexecs = QDir::toNativeSeparators(
                 QDir::cleanPath(
                     QCoreApplication::applicationDirPath()+"/../libexec/kumir2/fpcanalizer/"
                     ));
+    QString unitPath = sourceDirName_.isEmpty() ? workDir.absolutePath() : sourceDirName_;
     QStringList arguments = fpcPlatformFlags();
     arguments
             << "-g"  // generate debug info
             << "-E"  // do not linkage
             << "-AAS" // use 'as' command for assembler
             << "-ap" // use pipes to comminicate with "assembler"
-            << "-Fu"+QDir::toNativeSeparators(sourceDirName_) // Add unit path
-            << "-Fo"+QDir::toNativeSeparators(tempDir.absoluteFilePath("kumir2-fpcanalizer")) // Add obj path
-            << "-FU"+QDir::toNativeSeparators(sourceDirName_) // Add output unit path
+            << "-Fu"+QDir::toNativeSeparators(unitPath) // Add unit path
+            << "-Fo"+QDir::toNativeSeparators(workDir.absolutePath()) // Add obj path
+            << "-FU"+QDir::toNativeSeparators(unitPath) // Add output unit path
             << "-e" + fpcpluginLibexecs // override 'as' with provided fake assembler
             << fi.fileName();
     fpc_->setProcessChannelMode(QProcess::SeparateChannels);
@@ -116,31 +126,50 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcProcessToCheck()
     }
 }
 
-QPair<QByteArray,QString> FpcAnalizer::startFpcToPrepareRun()
+QPair<QByteArray,QString> FpcAnalizer::startFpcToPrepareRun(RunTarget target, QString &error)
 {
     QDir tempDir =
             QDir(QDesktopServices::storageLocation(QDesktopServices::TempLocation));
-    tempDir.mkdir("kumir2-fpcanalizer");
-    QTemporaryFile programFile(tempDir.absoluteFilePath("kumir2-fpcanalizer")
-                + QString::fromAscii("/.editor-XXXXXX-%1.pas").arg(instanceIndex_));
-    programFile.open();
-    if (!QFileInfo(tempDir.absoluteFilePath("kumir2-fpcanalizer/KumirHelper.pas")).exists()) {
+    QString subdir = analizerWorkSubdir();
+    tempDir.mkpath(subdir);
+    QDir workDir(tempDir.absoluteFilePath(subdir));
+    QPair<QString,SimplePascalSyntaxAnalizer::SourceType> sourceInfo
+            = syntaxAnalizer_->processUntilUnitInformation(sourceLines_);
+    if (sourceInfo.second == SimplePascalSyntaxAnalizer::PascalLibrary) {
+        error = tr("Library is not runnable");
+        return QPair<QByteArray,QString>();
+    }
+    QString sourceFileName = workDir.absoluteFilePath(sourceInfo.first).toLower() + ".pas";
+    QString ppuFileName = workDir.absoluteFilePath(sourceInfo.first).toLower() + ".ppu";
+    if (QFile(ppuFileName).exists()) {
+        QFile(ppuFileName).remove();
+    }
+    QFile programFile(sourceFileName);
+    programFile.open(QIODevice::WriteOnly|QIODevice::Text);
+    programFile.write(rawSourceData().c_str());
+    programFile.close();
+    if (!QFileInfo(workDir.absoluteFilePath("KumirHelper.pas")).exists()) {
         const QString srcPath = FpcAnalizerPlugin::self()->resoursesDir()
                 .absoluteFilePath("KumirHelper.pas");
         QFile src(srcPath);
         src.open(QIODevice::ReadOnly|QIODevice::Text);
         const QByteArray data = src.readAll();
         src.close();
-        QFile dst(tempDir.absoluteFilePath("kumir2-fpcanalizer/KumirHelper.pas"));
+        QFile dst(workDir.absoluteFilePath("KumirHelper.pas"));
         dst.open(QIODevice::WriteOnly|QIODevice::Text);
         dst.write(data);
         dst.close();
+    }    
+    if (sourceInfo.second == SimplePascalSyntaxAnalizer::PascalUnit) {
+        QString execFileName = workDir.absoluteFilePath(sourceInfo.first).toLower()+"_exec.pas";
+        QFile execFile(execFileName);
+        execFile.open(QIODevice::WriteOnly|QIODevice::Text);
+        QString src = QString::fromAscii("program %1_Exec; uses %1; begin end.")
+                .arg(sourceInfo.first);
+        execFile.write(src.toAscii());
+        execFile.close();
+        sourceFileName = execFileName;
     }
-    const QString preprocessedSource =
-            syntaxAnalizer_->makePreprocessedSourceText(sourceLines_);
-    const QByteArray preprocessedRawSource =
-            textCodec_->fromUnicode(preprocessedSource);
-    programFile.write(preprocessedRawSource);
     programFile.close();
     QFileInfo fi(programFile);
     QString outFileName = fi.absoluteFilePath();
@@ -149,20 +178,23 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcToPrepareRun()
 #else
     outFileName += ".bin";
 #endif
-    programFile.close();
-    fpc_->setWorkingDirectory(tempDir.absoluteFilePath("kumir2-fpcanalizer"));
+    QString unitPath = sourceDirName_.isEmpty() ? workDir.absolutePath() : sourceDirName_;
+    fpc_->setWorkingDirectory(workDir.absolutePath());
     QStringList arguments = fpcPlatformFlags();
     arguments
             << "-g"  // generate debug info
 //            << "-Ci"  // generate i/o checking
             << "-Cr"  // generate range checking
             << "-Ct"  // generate stack checking
-            << "-Fu"+QDir::toNativeSeparators(sourceDirName_) // Add unit path
-            << "-Fo"+QDir::toNativeSeparators(tempDir.absoluteFilePath("kumir2-fpcanalizer")) // Add obj path
-            << "-FU"+QDir::toNativeSeparators(sourceDirName_) // Add output unit path
+            << "-FaKumirHelper" // force add unit "KumirHelper"
+            << "-Fu"+QDir::toNativeSeparators(unitPath) // Add unit path
+            << "-Fo"+QDir::toNativeSeparators(workDir.absolutePath()) // Add obj path
+            << "-FU"+QDir::toNativeSeparators(unitPath) // Add output unit path
             << "-o"+QDir::toNativeSeparators(outFileName) // Override output file name
-            << fi.fileName();
+            << QFileInfo(sourceFileName).fileName();
     fpc_->setProcessChannelMode(QProcess::SeparateChannels);
+//    class SThread: public QThread { public: inline static void pause() { msleep(10000); } };
+//    SThread::pause();
     fpc_->start(fpcCommandName(), arguments);
     if (!fpc_->waitForFinished()) {
         qDebug() << fpc_->errorString();
@@ -173,6 +205,10 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcToPrepareRun()
         QByteArray out = fpc_->readAll();
         fpc_->setReadChannel(QProcess::StandardError);
         out += fpc_->readAll();
+        qDebug() << out;
+        error = fpc_->exitCode() == 0
+                ? ""
+                : tr("The program can not be run while it has compile errors");
         return QPair<QByteArray,QString>(out, outFileName);
     }
 }
@@ -218,18 +254,24 @@ QStringList FpcAnalizer::fpcPlatformFlags()
 #endif
 }
 
-void FpcAnalizer::prepareToRun()
+QString FpcAnalizer::prepareToRun(RunTarget target)
 {
-    compiledWithoutErrors_ = false;
+    if (TestingRun == target) {
+        return "Testing not implemented yet for Pascal language";
+    }
+    QString errorMessage;
     executableFilePath_.clear();
-    QPair<QByteArray,QString> runRes = startFpcToPrepareRun();
-    if (fpc_->exitCode() == 0) {
-        compiledWithoutErrors_ = true;
+    QPair<QByteArray,QString> runRes = startFpcToPrepareRun(target, errorMessage);
+    if (errorMessage.isEmpty()) {
         executableFilePath_ = runRes.second;
     }
-    else {
-        qDebug() << QString::fromAscii(runRes.first);
-    }
+    syntaxAnalizer_->processSyntaxAnalysis(sourceLines_,
+                                           unitNames_,
+                                           functionNames_,
+                                           typeNames_,
+                                           lineProps_,
+                                           lineRanks_);
+    return errorMessage;
 }
 
 void FpcAnalizer::parseFpcErrors(const QByteArray &bytes, const QString &fileName)

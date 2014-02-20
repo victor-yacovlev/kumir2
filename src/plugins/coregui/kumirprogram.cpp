@@ -216,7 +216,14 @@ void KumirProgram::blindRun()
     endStatus_ = "";
     if (state_==Idle) {
         emit giveMeAProgram();
-        prepareKumirRunner(GeneratorInterface::LinesOnly);
+        QString message = prepareKumirRunner(GeneratorInterface::LinesOnly,
+                                             Analizer::RegularRun);
+        if (!message.isEmpty()) {
+            QMessageBox::information(mainWidget_,
+                                     tr("Can't run"),
+                                     message);
+            return;
+        }
     }
     state_ = BlindRun;
     PluginManager::instance()->switchGlobalState(PluginInterface::GS_Running);
@@ -230,7 +237,14 @@ void KumirProgram::testingRun()
     endStatus_ = "";
     if (state_==Idle) {
         emit giveMeAProgram();
-        prepareKumirRunner(GeneratorInterface::LinesOnly);
+        QString message = prepareKumirRunner(GeneratorInterface::LinesOnly,
+                                             Analizer::TestingRun);
+        if (!message.isEmpty()) {
+            QMessageBox::information(mainWidget_,
+                                     tr("Can't run"),
+                                     message);
+            return;
+        }
         if (!runner()->hasTestingEntryPoint()) {
             QMessageBox::information(mainWidget_, testingRunAction_->text(),
                                   tr("This program does not have testing algorithm")
@@ -250,7 +264,14 @@ void KumirProgram::regularRun()
     endStatus_ = "";
     if (state_==Idle) {
         emit giveMeAProgram();
-        prepareKumirRunner(GeneratorInterface::LinesAndVariables);
+        QString message = prepareKumirRunner(GeneratorInterface::LinesAndVariables,
+                                             Analizer::RegularRun);
+        if (!message.isEmpty()) {
+            QMessageBox::information(mainWidget_,
+                                     tr("Can't run"),
+                                     message);
+            return;
+        }
     }
     state_ = RegularRun;
     PluginManager::instance()->switchGlobalState(PluginInterface::GS_Running);
@@ -258,10 +279,12 @@ void KumirProgram::regularRun()
     runner()->runContinuous();
 }
 
-void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel debugLevel)
+QString KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel debugLevel,
+                                      Shared::Analizer::RunTarget target)
 {
     bool ok = false;
     QString sourceProgramPath;
+    QString errorMessage;
     using namespace Shared::Analizer;
     InstanceInterface* analizer = editor_->analizer();
     ASTCompilerInterface* astCompiler = analizer->compiler();
@@ -280,8 +303,17 @@ void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel deb
             runner()->loadProgram(sourceProgramPath, bufArray);
         }
         else if (exeCompiler) {
-            editor_->analizer()->externalExecutableCompiler()->prepareToRun();
-            ok = runner()->loadProgram(editor_->analizer()->externalExecutableCompiler()->executableFilePath(), QByteArray());
+            errorMessage = editor_->analizer()->externalExecutableCompiler()->prepareToRun(target);
+            ok = errorMessage.isEmpty();
+            if (ok) {
+                ok = runner()->loadProgram(
+                            editor_->analizer()->externalExecutableCompiler()->
+                            executableFilePath(), QByteArray()
+                            );
+                if (!ok) {
+                    errorMessage = runner()->error();
+                }
+            }
         }
     }
     else {
@@ -292,10 +324,18 @@ void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel deb
                 : source.visibleText;
         const QByteArray sourceData = sourceText.toUtf8();
         ok = runner()->loadProgram(sourceProgramPath, sourceData);
+        if (!ok) {
+            if (!ok) {
+                errorMessage = runner()->error();
+            }
+        }
     }
-    const QString newCwd = QFileInfo(sourceProgramPath).absoluteDir().absolutePath();
-    QDir::setCurrent(newCwd);
-    terminal_->start(sourceProgramPath);
+    if (ok) {
+        const QString newCwd = QFileInfo(sourceProgramPath).absoluteDir().absolutePath();
+        QDir::setCurrent(newCwd);
+        terminal_->start(sourceProgramPath);
+    }
+    return errorMessage;
 }
 
 void KumirProgram::stepRun()
@@ -304,7 +344,14 @@ void KumirProgram::stepRun()
     endStatus_ = "";
     if (state_==Idle) {
         emit giveMeAProgram();
-        prepareKumirRunner(GeneratorInterface::LinesAndVariables);
+        QString message = prepareKumirRunner(GeneratorInterface::LinesAndVariables,
+                                             Analizer::RegularRun);
+        if (!message.isEmpty()) {
+            QMessageBox::information(mainWidget_,
+                                     tr("Can't run"),
+                                     message);
+            return;
+        }
     }
     state_ = StepRun;
 //    stepRunAction_->setIcon(QIcon::fromTheme("debug-step-over",  QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));

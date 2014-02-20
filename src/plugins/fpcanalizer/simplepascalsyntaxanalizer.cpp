@@ -133,6 +133,7 @@ SimplePascalSyntaxAnalizer::SimplePascalSyntaxAnalizer
     , Operators(ops)
     , StandardTypes(tps)
     , Delimeters(rx)
+    , thisSourceType_(UnknownSourceType)
 {
     capitalizationHints_ = FpcAnalizerPlugin::self()->readCapitalizationHints();
 }
@@ -145,6 +146,30 @@ void SimplePascalSyntaxAnalizer::reset()
     typeNames_.clear();
     thisUnitName_.clear();
     addHelperUnitPosition_.clear();
+    thisSourceType_ = UnknownSourceType;
+}
+
+QPair<QString,SimplePascalSyntaxAnalizer::SourceType>
+SimplePascalSyntaxAnalizer::processUntilUnitInformation(const QStringList &lines)
+{
+    reset();
+    State currentState = Program;
+    QString previousKeyword;
+    for (int i=0; i<lines.size(); i++) {
+        const QString line = lines[i].toLower();
+        LineProp fakeLineProp;
+        fakeLineProp.resize(line.length());
+        QPoint lineRank(0,0);
+        State nextState;
+        lineStartKeywords_.append(previousKeyword);
+        processLine(line, currentState, fakeLineProp, lineRank, nextState, previousKeyword, true, i);
+        lineStartStates_.append(currentState);
+        currentState = nextState;
+        if (UnknownSourceType!=thisSourceType_ && thisUnitName_.length()>0) {
+            break;
+        }
+    }
+    return QPair<QString,SourceType>(thisUnitName_, thisSourceType_);
 }
 
 void SimplePascalSyntaxAnalizer::processSyntaxAnalysis(
@@ -315,6 +340,7 @@ void SimplePascalSyntaxAnalizer::processLine
                             || "function" == previousKeyword
                             || "program" == previousKeyword
                             || "unit" == previousKeyword
+                            || "library" == previousKeyword
                             || "uses" == previousKeyword
                             ) {
                         previousKeyword = "";
@@ -330,6 +356,7 @@ void SimplePascalSyntaxAnalizer::processLine
                 QString kwd = lxText.toLower();
                 if ("procedure" == kwd || "function" == kwd || "type" == kwd ||
                         "program" == kwd || "unit" == kwd || "uses" == kwd ||
+                        "library" == kwd ||
                         "record" == kwd || "object" == kwd || "class" == kwd)
                 {
                     previousKeyword = kwd;
@@ -344,6 +371,7 @@ void SimplePascalSyntaxAnalizer::processLine
                         previousKeyword = "type";
                     }
                 }
+
             }
             else if (StandardTypes.contains(lxText) || typeNames_.contains(lxText)) {
                 tp = LxNameClass;
@@ -365,8 +393,14 @@ void SimplePascalSyntaxAnalizer::processLine
                 functionNames_.insert(lxText.toLower());
                 previousKeyword = "";
             }
-            else if ("program" == previousKeyword || "unit" == previousKeyword) {
+            else if ("program" == previousKeyword || "unit" == previousKeyword || "library" == previousKeyword) {
                 tp = LxNameModule;
+                if ("program" == previousKeyword)
+                    thisSourceType_ = PascalProgram;
+                else if ("unit" == previousKeyword)
+                    thisSourceType_ = PascalUnit;
+                else if ("library" == previousKeyword)
+                    thisSourceType_ = PascalLibrary;
                 unitNames_.insert(lxText.toLower());
                 previousKeyword = "";
                 if (fullText) {

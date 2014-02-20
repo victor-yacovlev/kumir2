@@ -67,7 +67,8 @@ private:
     static Shared::GeneratorInterface * generator();
 
     void setAllActorsAnimationFlag(bool animationEnabled);
-    void prepareKumirRunner(Shared::GeneratorInterface::DebugLevel);
+    QString prepareKumirRunner(Shared::GeneratorInterface::DebugLevel,
+                               Shared::Analizer::RunTarget target);
 
 private /*fields*/:
     enum State { Idle, RegularRun, BlindRun, StepRun, TestingRun } state_;

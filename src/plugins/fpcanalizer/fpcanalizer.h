@@ -42,16 +42,16 @@ public:
     QString createImportStatementLine(const QString &importName) const;
     QString suggestFileName() const;
 
-    void prepareToRun();
-    inline bool compiledWithoutErrors() const { return compiledWithoutErrors_; }
+    QString prepareToRun(RunTarget target);
     QString executableFilePath() const { return executableFilePath_; }
 
 
 protected:
     static QString fpcCommandName();
     static QStringList fpcPlatformFlags();
+    QString analizerWorkSubdir() const;
     QPair<QByteArray,QString> startFpcProcessToCheck();
-    QPair<QByteArray,QString> startFpcToPrepareRun();
+    QPair<QByteArray,QString> startFpcToPrepareRun(RunTarget target, QString &error);
     void parseFpcErrors(const QByteArray & bytes, const QString & fileName);
     void parseFpcOutput(const QByteArray & bytes, const QString & fileName);
     void parseCallLine(const QString &line);
@@ -71,7 +71,6 @@ protected:
     QSet<QString> typeNames_;
     uint instanceIndex_;
 
-    bool compiledWithoutErrors_;
     QString executableFilePath_;
 };
 

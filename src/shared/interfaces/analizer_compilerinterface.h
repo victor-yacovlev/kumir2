@@ -11,6 +11,10 @@
 
 namespace Shared { namespace Analizer {
 
+enum RunTarget {
+    RegularRun,
+    TestingRun
+};
 
 class ASTCompilerInterface
 {
@@ -19,10 +23,9 @@ public:
 };
 
 class ExternalExecutableCompilerInterface
-{
+{    
 public:
-    virtual void prepareToRun() = 0;
-    virtual bool compiledWithoutErrors() const = 0;
+    virtual QString prepareToRun(RunTarget target) = 0;
     virtual QString executableFilePath() const = 0;
 };
 
