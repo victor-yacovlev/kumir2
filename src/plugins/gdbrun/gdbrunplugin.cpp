@@ -13,6 +13,8 @@ GdbRunPlugin::GdbRunPlugin()
     , gdbCommandsQueueLocker_(new QMutex)
     , symbolsLoaded_(false)
     , breakLine1Inserted_(false)
+    , interactionQuery_(NoInteractionQuery)
+    , showVariablesMode_(false)
 {
     connect(this, SIGNAL(finishInput(QVariantList)),
             this, SLOT(handleInputDone(QVariantList)));
@@ -56,18 +58,23 @@ void GdbRunPlugin::updateSettings(const QStringList &)
 
 }
 
-bool GdbRunPlugin::loadProgram(const QString &fileName, const QByteArray &)
+bool GdbRunPlugin::loadProgram(const QString &fileName, const QByteArray &, const SourceInfo &sourceInfo)
 {
+    interactionBuffer_.clear();
+    gdbCommandsQueue_.clear();
+    showVariablesMode_ = false;
+    mainProgramSourceFileName_ = QFileInfo(sourceInfo.sourceFileName).fileName();
     breakLine1Inserted_ = symbolsLoaded_ = false;
+    interactionQuery_ = NoInteractionQuery;
     inferiorPid_ = Q_PID();
     if (QProcess::Running == gdbServer_->state()) {
         gdbServer_->terminate();
         gdbServer_->waitForFinished();
     }
-//    if (QProcess::Running == gdbClient_->state()) {
-//        gdbClient_->terminate();
-//        gdbClient_->waitForFinished();
-//    }
+    if (QProcess::Running == gdbClient_->state()) {
+        gdbClient_->terminate();
+        gdbClient_->waitForFinished();
+    }
     if (variablesModel_) {
         variablesModel_->deleteLater();
     }
@@ -80,7 +87,10 @@ bool GdbRunPlugin::loadProgram(const QString &fileName, const QByteArray &)
     gdbServer_->waitForStarted();
 
     programFileName_ = fileName;
-    variablesModel_ = new QStandardItemModel(this);    
+    if (variablesModel_) {
+        variablesModel_->deleteLater();
+    }
+    variablesModel_ = new PascalVariablesModel(this);
     bool ok = QProcess::Running == gdbServer_->state();
     QMutexLocker lock(gdbStateLocker_);
     gdbState_ = ok? StartedServer : NotStarted;
@@ -211,50 +221,40 @@ bool GdbRunPlugin::canStepOut() const
 
 void GdbRunPlugin::runBlind()
 {
+    showVariablesMode_ = false;
     queueGdbCommand("exec-continue", Paused);
     flushGdbCommands();
 }
 
 void GdbRunPlugin::runContinuous()
 {    
-    if (!symbolsLoaded_) {
-        loadSymbols();
-    }
+    showVariablesMode_ = true;
+    loadGlobalSymbols();
     queueGdbCommand("exec-continue", Paused);
     flushGdbCommands();
 }
 
 void GdbRunPlugin::runStepInto()
 {
-    if (!symbolsLoaded_) {
-        loadSymbols();
-    }
-    if (!breakLine1Inserted_) {
-        queueGdbCommand("break-insert main", Paused);
-        breakLine1Inserted_ = true;
-    }
+    showVariablesMode_ = true;
+    setBreak1();
+    loadGlobalSymbols();
     queueGdbCommand("exec-step", Paused);
     flushGdbCommands();
 }
 
 void GdbRunPlugin::runStepOver()
 {
-    if (!breakLine1Inserted_) {
-        queueGdbCommand("break-insert main", Paused);
-        breakLine1Inserted_ = true;
-    }
-    if (!symbolsLoaded_) {
-        loadSymbols();
-    }
+    showVariablesMode_ = true;
+    setBreak1();
+    loadGlobalSymbols();
     queueGdbCommand("exec-next", Paused);
     flushGdbCommands();
 }
 
 void GdbRunPlugin::runToEnd()
 {
-    if (!symbolsLoaded_) {
-        loadSymbols();
-    }
+    loadGlobalSymbols();
     queueGdbCommand("exec-finish", Paused);
     flushGdbCommands();
 }
@@ -269,13 +269,32 @@ bool GdbRunPlugin::isTestingRun() const
     return false;
 }
 
-void GdbRunPlugin::loadSymbols()
+void GdbRunPlugin::loadGlobalSymbols()
 {
+    if (!symbolsLoaded_) {
+        queueInteractionCommand(GetGlobalSymbolsTable);
+    }
+}
 
+void GdbRunPlugin::setBreak1()
+{
+    if (!breakLine1Inserted_) {
+        queueGdbCommand("break-insert main", Paused);
+        flushGdbCommands();
+        breakLine1Inserted_ = true;
+    }
 }
 
 void GdbRunPlugin::terminate()
 {
+    symbolsLoaded_ = false;
+    breakLine1Inserted_ = false;
+    bkptNoQuery_.clear();
+    mainProgramSourceFileName_.clear();
+    interactionQuery_ = NoInteractionQuery;
+    interactionBuffer_.clear();
+    sendGdbCommand("gdb-exit");
+    gdbClient_->waitForBytesWritten();
     gdbState_ = Terminating;
     gdbServer_->terminate();
     gdbClient_->terminate();
@@ -308,13 +327,25 @@ void GdbRunPlugin::sendGdbCommand(const QByteArray &command)
     gdbClient_->write("-" + command + NL);
 }
 
-void GdbRunPlugin::queueGdbCommand(const QByteArray &command, GdbState condition)
+void GdbRunPlugin::queueGdbCommand(const QByteArray &command, GdbState condition, InteractionQuery query)
 {
     QMutexLocker l(gdbCommandsQueueLocker_);
     ConditionalCommand cmd;
     cmd.command = command;
     cmd.cond = condition;
+    cmd.query = query;
     gdbCommandsQueue_.push_back(cmd);
+}
+
+void GdbRunPlugin::queueInteractionCommand(InteractionQuery query)
+{
+    QByteArray cmd;
+    if (GetGlobalSymbolsTable == query) {
+        cmd = "info variables";
+    }
+    if (cmd.length() > 0) {
+        queueGdbCommand("interpreter-exec console \"" + cmd + "\"", Paused, query);
+    }
 }
 
 void GdbRunPlugin::queueGdbCommands(const QList<QByteArray> &commands, GdbState condition)
@@ -331,13 +362,19 @@ void GdbRunPlugin::queueGdbCommands(const QList<QByteArray> &commands, GdbState 
 void GdbRunPlugin::flushGdbCommands()
 {
     QMutexLocker l(gdbCommandsQueueLocker_);
+    if (NoInteractionQuery != interactionQuery_) {
+        return; // wait to process "-interpreter-exec"
+    }
     for (QLinkedList<ConditionalCommand>::iterator it=gdbCommandsQueue_.begin();
          it!=gdbCommandsQueue_.end(); )
     {
         ConditionalCommand cmd = *it;
         if (cmd.cond == gdbState_) {
+            interactionQuery_ = cmd.query;
             sendGdbCommand(cmd.command);
             it = gdbCommandsQueue_.erase(it);
+            if (NoInteractionQuery != cmd.query)
+                break; // wait to process "-interpreter-exec"
         }
         else {
             it ++;
@@ -379,14 +416,22 @@ void GdbRunPlugin::handleGdbClientReadStdOut()
     qDebug() << lines;
 #endif
     for (int i=0; i<lines.size(); i++) {
-        if (lines[i].length()>0) {
+        if ("(gdb)" == lines[i].trimmed()) {
+            if (!interactionBuffer_.isEmpty()) {
+                if (NoInteractionQuery != interactionQuery_) {
+                    handleGdbInteractionStream(interactionBuffer_);
+                }
+                interactionBuffer_.clear();
+            }
+        }
+        else if (lines[i].length()>0) {
             const char first = lines.at(i).at(0);
             switch (first) {
             case '^':
                 handleGdbStatusStream(lines.at(i).mid(1));
                 break;
             case '~':
-                handleGdbInteractionStream(lines.at(i).mid(1));
+                interactionBuffer_ += lines.at(i).mid(2, lines.at(i).length()-3).replace("\\n", "\n");
                 break;
             case '&':
                 handleGdbLogOutputStream(lines.at(i).mid(1));
@@ -400,7 +445,7 @@ void GdbRunPlugin::handleGdbClientReadStdOut()
             default:
                 break;
             }
-        }
+        }        
     }
     flushGdbCommands();
 }
@@ -638,8 +683,39 @@ void GdbRunPlugin::extractInputFormat()
 }
 
 void GdbRunPlugin::handleGdbInteractionStream(const QByteArray &resultStream)
-{
+{    
+    if (GetGlobalSymbolsTable == interactionQuery_) {
+        const QStringList responseLines = ioCodec_->toUnicode(resultStream).split('\n', QString::SkipEmptyParts);
+        processInfoVariablesResponse(responseLines);
+    }
+    interactionQuery_ = NoInteractionQuery;
+    gdbState_ = Paused;
+    flushGdbCommands();
+}
 
+void GdbRunPlugin::processInfoVariablesResponse(const QStringList &rawLines)
+{
+    static const QString NonDebugging = "Non-debugging symbols:";
+    static const QRegExp rxFile("^File\\s+(.+):$");
+    QString currentFileName;
+    Q_FOREACH(QString line, rawLines) {
+        line = line.trimmed();
+        if (line.isEmpty()) continue;
+        if (rxFile.exactMatch(line)) {
+            currentFileName = rxFile.cap(1);
+        }
+        else if (NonDebugging == line) {
+            break;
+        }
+        else if (currentFileName == mainProgramSourceFileName_) {
+            if (line.startsWith("static ")) {
+                int colonPos = line.indexOf(':');
+                QString varName = line.mid(7, line.length()-colonPos-9).trimmed().toLower();
+                QString varType = line.mid(colonPos+1, line.length()-colonPos-2).trimmed().toLower();
+                variablesModel_->addGlobalVariable(varName, varType);
+            }
+        }
+    }
 }
 
 void GdbRunPlugin::handleGdbLogOutputStream(const QByteArray &resultStream)

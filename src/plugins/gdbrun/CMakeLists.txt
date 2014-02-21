@@ -6,6 +6,7 @@ include(../../kumir2_plugin.cmake)
 
 set(SOURCES
     gdbrunplugin.cpp
+    pascalvariablesmodel.cpp
 )
 
 set(HEADERS
@@ -13,6 +14,7 @@ set(HEADERS
 
 set(MOC_HEADERS
     gdbrunplugin.h
+    pascalvariablesmodel.h
 )
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})

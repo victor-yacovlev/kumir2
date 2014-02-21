@@ -27,6 +27,7 @@ class ExternalExecutableCompilerInterface
 public:
     virtual QString prepareToRun(RunTarget target) = 0;
     virtual QString executableFilePath() const = 0;
+    virtual QString debuggableSourceFileName() const = 0;
 };
 
 

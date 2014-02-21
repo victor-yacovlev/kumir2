@@ -140,6 +140,7 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcToPrepareRun(RunTarget target, QS
         return QPair<QByteArray,QString>();
     }
     QString sourceFileName = workDir.absoluteFilePath(sourceInfo.first).toLower() + ".pas";
+    mainSourceFilePath_ = sourceFileName; // file name for GDB debugger
     QString ppuFileName = workDir.absoluteFilePath(sourceInfo.first).toLower() + ".ppu";
     if (QFile(ppuFileName).exists()) {
         QFile(ppuFileName).remove();

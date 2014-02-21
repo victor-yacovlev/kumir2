@@ -6,10 +6,14 @@
 
 namespace Shared {
 
-class RunInterface {
+class RunInterface {        
 public:
+    struct SourceInfo {
+        QString sourceFileName;
+    };
+
     enum StopReason { SR_Done, SR_UserInteraction, SR_InputRequest, SR_Error, SR_UserTerminated };
-    virtual bool loadProgram(const QString &fileName, const QByteArray & source) = 0;
+    virtual bool loadProgram(const QString &fileName, const QByteArray &source, const SourceInfo &sourceInfo) = 0;
     virtual QDateTime loadedProgramVersion() const = 0;
 
     virtual bool canStepOut() const = 0;

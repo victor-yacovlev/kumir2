@@ -4,6 +4,8 @@
 #include "extensionsystem/kplugin.h"
 #include "interfaces/runinterface.h"
 
+#include "pascalvariablesmodel.h"
+
 #include <QProcess>
 #include <QFile>
 #include <QMutex>
@@ -28,7 +30,7 @@ public:
     explicit GdbRunPlugin();
     QString initialize(const QStringList &conf, const CommandLine &);
     void updateSettings(const QStringList &);
-    bool loadProgram(const QString &fileName, const QByteArray &source);
+    bool loadProgram(const QString &fileName, const QByteArray &source, const SourceInfo &sourceInfo);
     QDateTime loadedProgramVersion() const;
     bool canStepOut() const;
     void runBlind();
@@ -74,7 +76,9 @@ protected slots:
 protected:
     virtual void extractInputFormat();
     virtual void processGdbQueryResponse(const QMap<QString,QVariant>& response);
-    virtual void loadSymbols();
+    virtual void loadGlobalSymbols();
+    virtual void processInfoVariablesResponse(const QStringList & rawLines);
+    virtual void setBreak1();
 
 
 private:    
@@ -87,10 +91,15 @@ private:
         Running,
         Terminating
     };
+    enum InteractionQuery {
+        NoInteractionQuery,
+        GetGlobalSymbolsTable
+    };
 
 
     void sendGdbCommand(const QByteArray& command);
-    void queueGdbCommand(const QByteArray& command, GdbState condition);
+    void queueGdbCommand(const QByteArray& command, GdbState condition, InteractionQuery query = NoInteractionQuery);
+    void queueInteractionCommand(InteractionQuery query);
     void queueGdbCommands(const QList<QByteArray>& command, GdbState condition);
     void flushGdbCommands();
     static QMap<QString,QVariant> parseGdbMiCommandOutput(const QString & out);
@@ -102,7 +111,7 @@ private:
     QProcess* gdbClient_;
     QProcess* gdbServer_;
     QString programFileName_;    
-    QStandardItemModel* variablesModel_;
+    PascalVariablesModel* variablesModel_;
     Q_PID inferiorPid_;
     QTextCodec* ioCodec_;
     GdbState gdbState_;
@@ -117,12 +126,18 @@ private:
     struct ConditionalCommand {
         QByteArray command;
         GdbState cond;
+        InteractionQuery query;
     };
     QLinkedList<ConditionalCommand> gdbCommandsQueue_;
+
     QMutex* gdbCommandsQueueLocker_;
     bool symbolsLoaded_;
     bool breakLine1Inserted_;
     QByteArray bkptNoQuery_;
+    QString mainProgramSourceFileName_;
+    InteractionQuery interactionQuery_;
+    QByteArray interactionBuffer_;
+    bool showVariablesMode_;
 
 };
 

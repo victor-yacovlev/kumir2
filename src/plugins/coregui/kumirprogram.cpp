@@ -286,9 +286,11 @@ QString KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel 
     QString sourceProgramPath;
     QString errorMessage;
     using namespace Shared::Analizer;
+    using Shared::RunInterface;
     InstanceInterface* analizer = editor_->analizer();
     ASTCompilerInterface* astCompiler = analizer->compiler();
-    ExternalExecutableCompilerInterface* exeCompiler = analizer->externalExecutableCompiler();
+    ExternalExecutableCompilerInterface* exeCompiler = analizer->externalExecutableCompiler();    
+    RunInterface::SourceInfo sourceInfo;
     if (analizer) {
         Q_ASSERT(astCompiler!=0 || exeCompiler!=0);
         editor_->ensureAnalized();
@@ -300,15 +302,16 @@ QString KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel 
             generator()->setDebugLevel(debugLevel);
             QString fileNameSuffix, mimeType;
             generator()->generateExecuable(ast, bufArray, mimeType, fileNameSuffix);
-            runner()->loadProgram(sourceProgramPath, bufArray);
+            runner()->loadProgram(sourceProgramPath, bufArray, sourceInfo);
         }
         else if (exeCompiler) {
             errorMessage = editor_->analizer()->externalExecutableCompiler()->prepareToRun(target);
+            sourceInfo.sourceFileName = exeCompiler->debuggableSourceFileName();
             ok = errorMessage.isEmpty();
             if (ok) {
                 ok = runner()->loadProgram(
                             editor_->analizer()->externalExecutableCompiler()->
-                            executableFilePath(), QByteArray()
+                            executableFilePath(), QByteArray(), sourceInfo
                             );
                 if (!ok) {
                     errorMessage = runner()->error();
@@ -323,7 +326,7 @@ QString KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel 
                 ? source.visibleText + "\n" + source.hiddenText
                 : source.visibleText;
         const QByteArray sourceData = sourceText.toUtf8();
-        ok = runner()->loadProgram(sourceProgramPath, sourceData);
+        ok = runner()->loadProgram(sourceProgramPath, sourceData, sourceInfo);
         if (!ok) {
             if (!ok) {
                 errorMessage = runner()->error();

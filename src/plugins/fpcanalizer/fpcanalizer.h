@@ -44,6 +44,7 @@ public:
 
     QString prepareToRun(RunTarget target);
     QString executableFilePath() const { return executableFilePath_; }
+    QString debuggableSourceFileName() const { return mainSourceFilePath_; }
 
 
 protected:
@@ -72,6 +73,7 @@ protected:
     uint instanceIndex_;
 
     QString executableFilePath_;
+    QString mainSourceFilePath_;
 };
 
 }

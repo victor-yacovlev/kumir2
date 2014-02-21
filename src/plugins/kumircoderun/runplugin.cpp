@@ -77,7 +77,7 @@ QPair<quint32,quint32> KumirRunPlugin::currentColumn() const
     return QPair<quint32,quint32>(pRun_->vm->effectiveColumn().first, pRun_->vm->effectiveColumn().second);
 }
 
-bool KumirRunPlugin::loadProgram(const QString & filename, const QByteArray & source)
+bool KumirRunPlugin::loadProgram(const QString & filename, const QByteArray & source, const SourceInfo & )
 {
     bool ok = false;
     std::list<char> buffer;
@@ -627,7 +627,8 @@ QString KumirRunPlugin::initialize(const QStringList &,
             if (f.open(QIODevice::ReadOnly)) {
                 const QByteArray data = f.readAll();
                 try {
-                    loadProgram(fileName, data);
+                    SourceInfo sourceInfo;
+                    loadProgram(fileName, data, sourceInfo);
                 }
                 catch (const std::wstring & message) {
                     return QString::fromStdWString(message);
