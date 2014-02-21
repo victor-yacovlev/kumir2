@@ -72,6 +72,8 @@ bool GdbRunPlugin::loadProgram(const QString &fileName, const QByteArray &, cons
         gdbServer_->waitForFinished();
     }
     if (QProcess::Running == gdbClient_->state()) {
+        sendGdbCommand("gdb-exit");
+        gdbClient_->waitForBytesWritten();
         gdbClient_->terminate();
         gdbClient_->waitForFinished();
     }
@@ -94,6 +96,10 @@ bool GdbRunPlugin::loadProgram(const QString &fileName, const QByteArray &, cons
     bool ok = QProcess::Running == gdbServer_->state();
     QMutexLocker lock(gdbStateLocker_);
     gdbState_ = ok? StartedServer : NotStarted;
+    if (!ok) {
+        QString err = gdbServer_->errorString();
+        emit errorOutputRequest("Can't start gdbserver: " + err);
+    }
     return ok;
 }
 
@@ -169,6 +175,10 @@ void GdbRunPlugin::handleGdbServerReadStdErr()
         if (QProcess::Running != gdbClient_->state()) {
             gdbClient_->start(gdbCommand(), gdbClientArguments);
             gdbClient_->waitForStarted();
+        }
+        if (QProcess::Running != gdbClient_->state()) {
+            QString err = gdbClient_->errorString();
+            emit errorOutputRequest("Can't start gdb: " + err);
         }
         gdbState_ = StartedBoth;
 
@@ -656,7 +666,7 @@ void GdbRunPlugin::handleGdbAsyncMessageStream(const QByteArray &resultStream)
                 int lineNo = frame.value("line").toInt() - 1;
                 emit lineChanged(lineNo, 0u, 0u);
             }
-            if (Querying != gdbState_ || Running != gdbState_)
+            if (Querying != gdbState_ && Running != gdbState_)
                 emit stopped(stopReason);  // not a stop
         }
         else {
@@ -728,6 +738,13 @@ void GdbRunPlugin::handleGdbStatusStream(const QByteArray &resultStream)
     if (Querying == gdbState_) {
         QMap<QString,QVariant> response = parseGdbMiCommandOutput(ioCodec_->toUnicode(resultStream));
         processGdbQueryResponse(response);
+    }
+    else {
+        QMap<QString,QVariant> response = parseGdbMiCommandOutput(ioCodec_->toUnicode(resultStream));
+        if (response.contains("error")) {
+            QString msg = "Error from GDB response: " + ioCodec_->toUnicode(resultStream);
+            emit errorOutputRequest(msg);
+        }
     }
 }
 
