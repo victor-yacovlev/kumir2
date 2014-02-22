@@ -60,6 +60,7 @@ void GdbRunPlugin::updateSettings(const QStringList &)
 
 bool GdbRunPlugin::loadProgram(const QString &fileName, const QByteArray &, const SourceInfo &sourceInfo)
 {
+    queryFpcInput_ = false;
     interactionBuffer_.clear();
     gdbCommandsQueue_.clear();
     showVariablesMode_ = false;
@@ -247,18 +248,26 @@ void GdbRunPlugin::runContinuous()
 void GdbRunPlugin::runStepInto()
 {
     showVariablesMode_ = true;
+    bool initialRun = !breakLine1Inserted_;
     setBreak1();
     loadGlobalSymbols();
-    queueGdbCommand("exec-step", Paused);
+    if (initialRun)
+        queueGdbCommand("exec-continue", Paused);
+    else
+        queueGdbCommand("exec-step", Paused);
     flushGdbCommands();
 }
 
 void GdbRunPlugin::runStepOver()
 {
     showVariablesMode_ = true;
+    bool initialRun = !breakLine1Inserted_;
     setBreak1();
     loadGlobalSymbols();
-    queueGdbCommand("exec-next", Paused);
+    if (initialRun)
+        queueGdbCommand("exec-continue", Paused);
+    else
+        queueGdbCommand("exec-next", Paused);
     flushGdbCommands();
 }
 
@@ -422,9 +431,9 @@ void GdbRunPlugin::handleGdbClientReadStdOut()
 {
     QMutexLocker lock(gdbStateLocker_);
     QList<QByteArray> lines = gdbClient_->readAllStandardOutput().replace('\r',"").split('\n');
-#if !defined(NDEBUG) && !defined(QT_NO_DEBUG)
+//#if !defined(NDEBUG) && !defined(QT_NO_DEBUG)
     qDebug() << lines;
-#endif
+//#endif
     for (int i=0; i<lines.size(); i++) {
         if ("(gdb)" == lines[i].trimmed()) {
             if (!interactionBuffer_.isEmpty()) {
@@ -629,10 +638,10 @@ void GdbRunPlugin::handleGdbAsyncMessageStream(const QByteArray &resultStream)
                 const QMap<QString,QVariant> frame = msg["frame"].toMap();
                 const QString func = frame.value("func").toString();
                 if ("fpc_get_input" == func) {
-                    gdbState_ = Querying;
+                    gdbState_ = Running;
+                    queryFpcInput_ = true;
                     handleGdbServerReadStdOut();
-                    extractInputFormat();
-                    stopReason = SR_InputRequest;
+                    sendGdbCommand("exec-finish");
                 }
                 else if ("fpc_write_end" == func || "fpc_writeln_end" == func) {
                     gdbState_ = Running;
@@ -656,8 +665,12 @@ void GdbRunPlugin::handleGdbAsyncMessageStream(const QByteArray &resultStream)
                 }
             }
             else if (msg["reason"] == "function-finished") {
-                gdbState_ = Querying;
-                stopReason = SR_InputRequest;
+                if (queryFpcInput_) {
+                    queryFpcInput_ = false;
+                    gdbState_ = Querying;
+                    stopReason = SR_InputRequest;
+                    extractInputFormat();
+                }
             }
             else if (msg["reason"] == "end-stepping-range") {
                 const QMap<QString,QVariant> frame = msg["frame"].toMap();
@@ -685,10 +698,9 @@ void GdbRunPlugin::extractInputFormat()
 {
     // FPC implementation!
     // for other languagese -- reimplement this method
-    const QByteArray execReturn = "exec-finish";
     const QByteArray dissassemble = "data-disassemble -s $pc -e \"$pc+200\" -- 0";
     const QList<QByteArray> cmds = QList<QByteArray>()
-            << execReturn << dissassemble;
+            << dissassemble;
     queueGdbCommands(cmds, Querying);
 }
 

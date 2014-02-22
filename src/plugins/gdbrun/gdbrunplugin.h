@@ -138,7 +138,7 @@ private:
     InteractionQuery interactionQuery_;
     QByteArray interactionBuffer_;
     bool showVariablesMode_;
-
+    bool queryFpcInput_;
 };
 
 }
