@@ -173,12 +173,20 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcToPrepareRun(RunTarget target, QS
     }
     programFile.close();
     QFileInfo fi(programFile);
-    QString outFileName = fi.absoluteFilePath();
+    QString outFileName = fi.absoluteFilePath();    
+    QString suffix;
+    uint counter = 0;
 #ifdef Q_OS_WIN32
-    outFileName += ".exe";
+    suffix += ".exe";
 #else
-    outFileName += ".bin";
+    suffix += ".bin";
 #endif
+    QString testName = fi.absoluteFilePath() + suffix;
+    while (QFile(testName).exists() && !QFile(testName).isWritable()) {
+        counter += 1;
+        testName = QString("%1-%2%3").arg(fi.absoluteFilePath()).arg(counter).arg(suffix);
+    }
+    outFileName = testName;
     QString unitPath = sourceDirName_.isEmpty() ? workDir.absolutePath() : sourceDirName_;
     fpc_->setWorkingDirectory(workDir.absolutePath());
     QStringList arguments = fpcPlatformFlags();
