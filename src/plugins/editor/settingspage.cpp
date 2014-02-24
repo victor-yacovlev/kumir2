@@ -37,7 +37,7 @@ QString SettingsPage::DefaultColorType = "#c05800";
 QString SettingsPage::DefaultColorNumeric = "#0095ff";
 QString SettingsPage::DefaultColorLiteral = "#0095ff";
 QString SettingsPage::DefaultColorAlg = "#0000c8";
-QString SettingsPage::DefaultColorMod = "#00aa00";
+QString SettingsPage::DefaultColorMod = "#008c00";
 QString SettingsPage::DefaultColorDoc = "#a3acff";
 QString SettingsPage::DefaultColorComment = "#888888";
 
