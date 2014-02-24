@@ -88,7 +88,9 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcProcessToCheck()
     QDir workDir(tempDir.absoluteFilePath(subdir));
     QPair<QString,SimplePascalSyntaxAnalizer::SourceType> sourceInfo
             = syntaxAnalizer_->processUntilUnitInformation(sourceLines_);
-    QString sourceFileName = workDir.absoluteFilePath(sourceInfo.first).toLower() + ".pas";
+    const QString unitFileName = sourceInfo.first.isEmpty()
+            ? "unnamed" : sourceInfo.first.toLower();
+    QString sourceFileName = workDir.absoluteFilePath(unitFileName+".pas");
     QFile programFile(sourceFileName);
     programFile.open(QIODevice::WriteOnly|QIODevice::Text);
     programFile.write(rawSourceData().c_str());
@@ -139,7 +141,9 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcToPrepareRun(RunTarget target, QS
         error = tr("Library is not runnable");
         return QPair<QByteArray,QString>();
     }
-    QString sourceFileName = workDir.absoluteFilePath(sourceInfo.first).toLower() + ".pas";
+    const QString unitFileName = sourceInfo.first.isEmpty()
+            ? "unnamed" : sourceInfo.first.toLower();
+    QString sourceFileName = workDir.absoluteFilePath(unitFileName+".pas");
     mainSourceFilePath_ = sourceFileName; // file name for GDB debugger
     QString ppuFileName = workDir.absoluteFilePath(sourceInfo.first).toLower() + ".ppu";
     if (QFile(ppuFileName).exists()) {
