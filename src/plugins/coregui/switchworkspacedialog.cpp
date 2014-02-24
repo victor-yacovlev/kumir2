@@ -24,6 +24,9 @@ SwitchWorkspaceDialog::SwitchWorkspaceDialog(ExtensionSystem::SettingsPtr settin
         if (minusPos!=-1) {
             QString lang = appName.mid(minusPos+1).toLower();
             lang[0] = lang[0].toUpper();
+            if (lang.endsWith(".exe")) {
+                lang = lang.mid(0, lang.length()-4);
+            }
             defaultSuffix = "/" + lang;
         }
     }
