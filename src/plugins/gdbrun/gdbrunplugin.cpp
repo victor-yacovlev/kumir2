@@ -755,7 +755,10 @@ void GdbRunPlugin::handleGdbStatusStream(const QByteArray &resultStream)
         QMap<QString,QVariant> response = parseGdbMiCommandOutput(ioCodec_->toUnicode(resultStream));
         if (response.contains("error")) {
             QString msg = "Error from GDB response: " + ioCodec_->toUnicode(resultStream);
-            emit errorOutputRequest(msg);
+            if (msg.contains("localhost")) {
+                // for debug on win32 -- show connection error
+                emit errorOutputRequest(msg);
+            }
         }
     }
 }
