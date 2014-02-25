@@ -57,6 +57,7 @@ signals:
     void inputRequest(const QString & format);
     void finishInput(const QVariantList & data);
     void lineChanged(int lineNo, quint32 colStart, quint32 colEnd);
+    void marginText(int lineNo, const QString & text);
 
 protected slots:
     void handleInputDone(const QVariantList &data);
@@ -78,6 +79,7 @@ protected:
     virtual void processGdbQueryResponse(const QMap<QString,QVariant>& response);
     virtual void loadGlobalSymbols();
     virtual void processInfoVariablesResponse(const QStringList & rawLines);
+    virtual void processInfoFuncResponse(const QStringList & rawLines);
     virtual void setBreak1();
 
 
@@ -93,7 +95,8 @@ private:
     };
     enum InteractionQuery {
         NoInteractionQuery,
-        GetGlobalSymbolsTable
+        GetGlobalSymbolsTable,
+        GetFunctionsTable
     };
 
 
@@ -139,6 +142,8 @@ private:
     QByteArray interactionBuffer_;
     bool showVariablesMode_;
     bool queryFpcInput_;
+    QByteArray lastRunCommand_;
+    int currentFrameLevel_;
 };
 
 }

@@ -59,7 +59,9 @@ void GdbRunPlugin::updateSettings(const QStringList &)
 }
 
 bool GdbRunPlugin::loadProgram(const QString &fileName, const QByteArray &, const SourceInfo &sourceInfo)
-{
+{    
+    currentFrameLevel_ = 0;
+    lastRunCommand_.clear();
     queryFpcInput_ = false;
     interactionBuffer_.clear();
     gdbCommandsQueue_.clear();
@@ -200,6 +202,7 @@ void GdbRunPlugin::handleGdbServerReadStdErr()
         queueGdbCommand("file-symbol-file "+symbolFile,
                         StartedBoth);
         queueGdbCommand("break-insert fpc_get_input", StartedBoth);
+        queueGdbCommand("gdb-set can-use-hw-watchpoints 0", StartedBoth);
 //        queueGdbCommand("break-insert fpc_write_end", StartedBoth);
 //        queueGdbCommand("break-insert fpc_writeln_end", StartedBoth);
     }
@@ -233,7 +236,8 @@ bool GdbRunPlugin::canStepOut() const
 void GdbRunPlugin::runBlind()
 {
     showVariablesMode_ = false;
-    queueGdbCommand("exec-continue", Paused);
+    lastRunCommand_ = "exec-continue";
+    queueGdbCommand(lastRunCommand_, Paused);
     flushGdbCommands();
 }
 
@@ -241,7 +245,9 @@ void GdbRunPlugin::runContinuous()
 {    
     showVariablesMode_ = true;
     loadGlobalSymbols();
-    queueGdbCommand("exec-continue", Paused);
+    lastRunCommand_ = "exec-continue";
+    queueGdbCommand("stack-info-frame", Paused);
+    queueGdbCommand(lastRunCommand_, Paused);
     flushGdbCommands();
 }
 
@@ -251,10 +257,14 @@ void GdbRunPlugin::runStepInto()
     bool initialRun = !breakLine1Inserted_;
     setBreak1();
     loadGlobalSymbols();
-    if (initialRun)
-        queueGdbCommand("exec-continue", Paused);
-    else
-        queueGdbCommand("exec-step", Paused);
+    queueGdbCommand("stack-info-frame", Paused);
+    if (initialRun) {
+        lastRunCommand_ = "exec-continue";
+    }
+    else {
+        lastRunCommand_ = "exec-step";
+    }
+    queueGdbCommand(lastRunCommand_, Paused);
     flushGdbCommands();
 }
 
@@ -264,10 +274,14 @@ void GdbRunPlugin::runStepOver()
     bool initialRun = !breakLine1Inserted_;
     setBreak1();
     loadGlobalSymbols();
-    if (initialRun)
-        queueGdbCommand("exec-continue", Paused);
-    else
-        queueGdbCommand("exec-next", Paused);
+    sendGdbCommand("stack-info-frame");
+    if (initialRun) {
+        lastRunCommand_ = "exec-continue";
+    }
+    else {
+        lastRunCommand_ = "exec-next";
+    }
+    queueGdbCommand(lastRunCommand_, Paused);
     flushGdbCommands();
 }
 
@@ -292,6 +306,7 @@ void GdbRunPlugin::loadGlobalSymbols()
 {
     if (!symbolsLoaded_) {
         queueInteractionCommand(GetGlobalSymbolsTable);
+        queueInteractionCommand(GetFunctionsTable);
     }
 }
 
@@ -344,6 +359,7 @@ void GdbRunPlugin::sendGdbCommand(const QByteArray &command)
     static const QByteArray NL = "\n";
 #endif
     gdbClient_->write("-" + command + NL);
+    qDebug() << "GGGG --- " << command;
 }
 
 void GdbRunPlugin::queueGdbCommand(const QByteArray &command, GdbState condition, InteractionQuery query)
@@ -361,6 +377,9 @@ void GdbRunPlugin::queueInteractionCommand(InteractionQuery query)
     QByteArray cmd;
     if (GetGlobalSymbolsTable == query) {
         cmd = "info variables";
+    }
+    else if (GetFunctionsTable == query) {
+        cmd = "info func";
     }
     if (cmd.length() > 0) {
         queueGdbCommand("interpreter-exec console \"" + cmd + "\"", Paused, query);
@@ -649,19 +668,21 @@ void GdbRunPlugin::handleGdbAsyncMessageStream(const QByteArray &resultStream)
                     handleGdbServerReadStdOut();
                     sendGdbCommand("exec-continue");
                 }
+                else if ("main" == func) {
+                    gdbState_ = Paused;
+                    stopReason = SR_UserInteraction;
+                    int lineNo = frame.value("line").toInt() - 1;
+                    emit lineChanged(lineNo, 0u, 0u);
+                }
                 else {
                     if (frame.contains("line")) {
-                        gdbState_ = Paused;
-                        stopReason = SR_UserInteraction;
-                        int lineNo = frame.value("line").toInt() - 1;
-                        emit lineChanged(lineNo, 0u, 0u);
-                    }
-                    else {
                         gdbState_ = Querying;
-                        stopReason = SR_UserInteraction;
-                        bkptNoQuery_ = msg.value("bkptno").toString().toAscii();
-                        sendGdbCommand("break-info " + bkptNoQuery_);
-                    }
+                        sendGdbCommand("stack-info-frame");
+//                        gdbState_ = Paused;
+//                        stopReason = SR_UserInteraction;
+//                        int lineNo = frame.value("line").toInt() - 1;
+//                        emit lineChanged(lineNo, 0u, 0u);
+                    }                    
                 }
             }
             else if (msg["reason"] == "function-finished") {
@@ -678,6 +699,20 @@ void GdbRunPlugin::handleGdbAsyncMessageStream(const QByteArray &resultStream)
                 stopReason = SR_UserInteraction;
                 int lineNo = frame.value("line").toInt() - 1;
                 emit lineChanged(lineNo, 0u, 0u);
+            }
+            else if (msg["reason"] == "watchpoint-trigger") {
+                const QMap<QString,QVariant> frame = msg["frame"].toMap();
+
+                gdbState_ = Querying;
+                stopReason = SR_UserInteraction;
+                int lineNo = frame.value("line").toInt() - 1;
+                const QMap<QString,QVariant> wpt = msg["wpt"].toMap();
+                const QMap<QString,QVariant> value = msg["value"].toMap();
+                const QString exp = wpt.value("exp").toString();
+                const QString val = value.value("new").toString();
+                const QString outMessage = exp + "=" + val;
+                emit marginText(lineNo, outMessage);
+                sendGdbCommand("stack-info-frame");
             }
             if (Querying != gdbState_ && Running != gdbState_)
                 emit stopped(stopReason);  // not a stop
@@ -710,9 +745,40 @@ void GdbRunPlugin::handleGdbInteractionStream(const QByteArray &resultStream)
         const QStringList responseLines = ioCodec_->toUnicode(resultStream).split('\n', QString::SkipEmptyParts);
         processInfoVariablesResponse(responseLines);
     }
+    else if (GetFunctionsTable == interactionQuery_) {
+        const QStringList responseLines = ioCodec_->toUnicode(resultStream).split('\n', QString::SkipEmptyParts);
+        processInfoFuncResponse(responseLines);
+    }
     interactionQuery_ = NoInteractionQuery;
     gdbState_ = Paused;
     flushGdbCommands();
+}
+
+void GdbRunPlugin::processInfoFuncResponse(const QStringList &rawLines)
+{
+    static const QString NonDebugging = "Non-debugging symbols:";
+    static const QRegExp rxFile("^File\\s+(.+):$");
+    QString currentFileName;
+    Q_FOREACH(QString line, rawLines) {
+        line = line.trimmed();
+        if (line.isEmpty()) continue;
+        if (rxFile.exactMatch(line)) {
+            currentFileName = rxFile.cap(1);
+        }
+        else if (NonDebugging == line) {
+            break;
+        }
+        else if (currentFileName == mainProgramSourceFileName_) {
+            if (line.startsWith("procedure ")) {
+                int delimPos = line.indexOf(';');
+                QString procName = line.left(delimPos).trimmed().toUpper().mid(10);
+                if ("MAIN" != procName) {
+//                    sendGdbCommand("break-insert " + procName.toLocal8Bit());
+                }
+            }
+        }
+    }
+    symbolsLoaded_ = true;
 }
 
 void GdbRunPlugin::processInfoVariablesResponse(const QStringList &rawLines)
@@ -735,9 +801,11 @@ void GdbRunPlugin::processInfoVariablesResponse(const QStringList &rawLines)
                 QString varName = line.mid(7, line.length()-colonPos-9).trimmed().toLower();
                 QString varType = line.mid(colonPos+1, line.length()-colonPos-2).trimmed().toLower();
                 variablesModel_->addGlobalVariable(varName, varType);
+                sendGdbCommand("break-watch " + varName.toLocal8Bit());
             }
         }
     }
+    symbolsLoaded_ = true;
 }
 
 void GdbRunPlugin::handleGdbLogOutputStream(const QByteArray &resultStream)
@@ -747,7 +815,7 @@ void GdbRunPlugin::handleGdbLogOutputStream(const QByteArray &resultStream)
 
 void GdbRunPlugin::handleGdbStatusStream(const QByteArray &resultStream)
 {
-    if (Querying == gdbState_) {
+    if (Querying == gdbState_ || Paused == gdbState_) {
         QMap<QString,QVariant> response = parseGdbMiCommandOutput(ioCodec_->toUnicode(resultStream));
         processGdbQueryResponse(response);
     }
@@ -823,6 +891,32 @@ void GdbRunPlugin::processGdbQueryResponse(const QMap<QString, QVariant> &respon
                 gdbState_ = Paused;
                 emit stopped(SR_UserInteraction);
             }
+        }
+    }
+    if (response.contains("done") && response.contains("frame")) {
+        const QMap<QString,QVariant> frame = response.value("frame").toMap();
+        int newFrameLevel = frame.value("level").toInt();
+        if (Paused == gdbState_) {
+            // Save frame level on run button pressed
+            currentFrameLevel_ = newFrameLevel;
+        }
+        else if (Querying == gdbState_) {
+            // Frame level request from watchpoint break
+            // Check what command should be next
+            if ("exec-continue" == lastRunCommand_) {
+                queueGdbCommand("exec-continue", Paused);
+            }
+            else {
+                if (newFrameLevel > currentFrameLevel_) {
+                    queueGdbCommand("exec-finish", Paused);
+                }
+                else {
+                    int lineNo = frame.value("line").toInt() - 1;
+                    emit lineChanged(lineNo, 0u, 0u);
+                    emit stopped(SR_UserInteraction);
+                }
+            }
+            gdbState_ = Paused;
         }
     }
 }
