@@ -19,6 +19,7 @@ set(SOURCES
     declarativesettingspage.cpp
     declarativesettingspage_impl.cpp
     secondarywindow_generic.cpp
+    utf8textbrowser.cpp
 )
 
 set(MOC_HEADERS
