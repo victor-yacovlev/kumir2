@@ -3685,6 +3685,32 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                 if (constValue==QVariant::Invalid) {
                     return result;
                 }
+                if (QVariant::Double == constValue.type()
+                        && AST::TypeInteger == cType.kind)
+                {
+                    static const QString realSpecificSymbols =
+                            QString::fromUtf8("еЕeE.");
+                    bool isRealConstant = false;
+                    QString strValue;
+                    foreach (const AST::LexemPtr clx, initValue) {
+                        if (strValue.length()>0)
+                            strValue.append(' ');
+                        strValue += clx->data;
+                    }
+
+                    for (int ss=0; ss<realSpecificSymbols.length(); ss++) {
+                        if (strValue.contains(realSpecificSymbols[ss])) {
+                            isRealConstant = true;
+                            break;
+                        }
+                    }
+                    if (!isRealConstant) {
+                        foreach (AST::LexemPtr clx, initValue) {
+                            clx->error = _("Integer constant too big");
+                        }
+                        return result;
+                    }
+                }
                 if (var->dimension==0 && lexer_->isArrayClassName(group.lexems[typePos]->data)) {
                     if (maxDim>3) {
                         for (int a=z-1; a<=curPos; a++) {
