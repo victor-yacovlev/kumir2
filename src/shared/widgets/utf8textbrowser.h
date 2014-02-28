@@ -3,9 +3,15 @@
 
 #include <QTextBrowser>
 
+#ifdef WIDGETS_LIBRARY
+#define WIDGETS_EXPORT Q_DECL_EXPORT
+#else
+#define WIDGETS_EXPORT Q_DECL_IMPORT
+#endif
+
 namespace Widgets {
 
-class Utf8TextBrowser : public QTextBrowser
+class WIDGETS_EXPORT Utf8TextBrowser : public QTextBrowser
 {
 public:
     inline Utf8TextBrowser(QWidget* parent = 0) : QTextBrowser(parent) {}
