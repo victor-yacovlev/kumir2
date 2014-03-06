@@ -3683,7 +3683,26 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                                                     var->baseType.kind,
                                                     maxDim);
                 if (constValue==QVariant::Invalid) {
-                    return result;
+                    // Try to parse constant of custom typee
+                    AST::Type userConstType;
+                    QVariant userConstValue;
+                    QString longLexem;
+                    foreach (const LexemPtr lx, initValue) {
+                        if (longLexem.length() > 0) longLexem += " ";
+                        longLexem += lx->data;
+                    }
+                    if (tryInputOperatorAlgorithm(longLexem, userConstType, userConstValue, mod) &&
+                            userConstType == cType
+                            ) {
+                        constValue = userConstValue;
+                        foreach (LexemPtr lx, initValue) {
+                            lx->type = Shared::LxTypeConstant;
+                            lx->error.clear();
+                        }
+                    }
+                    else {
+                        return result;
+                    }
                 }
                 if (QVariant::Double == constValue.type()
                         && AST::TypeInteger == cType.kind)
