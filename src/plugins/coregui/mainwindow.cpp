@@ -1179,6 +1179,9 @@ void MainWindow::closeEvent(QCloseEvent *e)
             if (!notSaved || twe->isCourseManagerTab()) {
                 if (ExtensionSystem::PluginManager::instance()->shutdown()) {
                     e->accept();
+#ifdef Q_OS_WIN32
+                    qApp->quit();
+#endif
                 }
                 else {
                     e->ignore();
@@ -1267,6 +1270,9 @@ void MainWindow::closeEvent(QCloseEvent *e)
 
     if (ExtensionSystem::PluginManager::instance()->shutdown()) {
         e->accept();
+#ifdef Q_OS_WIN32
+        qApp->quit();
+#endif
     }
     else {
         e->ignore();
