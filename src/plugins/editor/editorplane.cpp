@@ -22,7 +22,7 @@ static const uint LEFT_MARGIN_SIZE = 5u /*symbols*/;
 static const uint HIGHTLIGHT_LINE_VERTICAL_PADDING = 5u /*px*/;
 static const QColor PROTECTED_LINE_BACKGROUND(0x15, 0x79, 0x63, 0x40);
 static const QColor HIDDEN_LINE_BACKGROUND(0x00, 0x00, 0x00, 0x40);
-static const uint MARGIN_LINE_WIDTH = 4u /*px*/;
+static const uint MARGIN_LINE_WIDTH = 3u /*px*/;
 
 QString EditorPlane::MarginWidthKey = "MarginWidth";
 uint EditorPlane::MarginWidthDefault = 15u /*px*/;
@@ -1972,7 +1972,8 @@ void EditorPlane::paintMarginBackground(QPainter *p, const QRect &rect)
     p->drawRect(marginBackgroundRect().intersected(rect));
 
     // Draw margin line
-    QColor marginLineColor(0xFF, 0x80, 0x80);
+//    QColor marginLineColor(0xFF, 0x80, 0x80);
+    QColor marginLineColor = palette().color(hasFocus()? QPalette::Highlight : QPalette::Mid);
     marginLineColor.setAlpha(marginBackgroundAlpha_);
     p->setBrush(marginLineColor);
     p->drawRect(marginLineRect().intersected(rect));
