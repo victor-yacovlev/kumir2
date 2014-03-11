@@ -1107,7 +1107,7 @@ void popAlgBeginStatement(QList<LexemPtr> &lexems, TextStatement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
+//    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
 void popAlgEndStatement(QList<LexemPtr> &lexems, TextStatement &result)

@@ -424,11 +424,12 @@ void Plane::paintEvent(QPaintEvent *e)
     p.setBrush(Qt::NoBrush);
     const QBrush br = hasFocus()
             ? palette().brush(QPalette::Highlight)
-            : palette().brush(QPalette::Window);
+            : palette().brush(QPalette::Mid);
     p.setPen(QPen(br, 3));
     p.drawLine(0, 0, width(), 0);
     p.drawLine(0, height()-1, width(), height()-1);
     p.drawLine(0, 0, 0, height()-1);
+    p.drawLine(width()-1, 0, width()-1, height());
     e->accept();
 }
 

@@ -3683,7 +3683,52 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                                                     var->baseType.kind,
                                                     maxDim);
                 if (constValue==QVariant::Invalid) {
-                    return result;
+                    // Try to parse constant of custom typee
+                    AST::Type userConstType;
+                    QVariant userConstValue;
+                    QString longLexem;
+                    foreach (const LexemPtr lx, initValue) {
+                        if (longLexem.length() > 0) longLexem += " ";
+                        longLexem += lx->data;
+                    }
+                    if (tryInputOperatorAlgorithm(longLexem, userConstType, userConstValue, mod) &&
+                            userConstType == cType
+                            ) {
+                        constValue = userConstValue;
+                        foreach (LexemPtr lx, initValue) {
+                            lx->type = Shared::LxTypeConstant;
+                            lx->error.clear();
+                        }
+                    }
+                    else {
+                        return result;
+                    }
+                }
+                if (QVariant::Double == constValue.type()
+                        && AST::TypeInteger == cType.kind)
+                {
+                    static const QString realSpecificSymbols =
+                            QString::fromUtf8("еЕeE.");
+                    bool isRealConstant = false;
+                    QString strValue;
+                    foreach (const AST::LexemPtr clx, initValue) {
+                        if (strValue.length()>0)
+                            strValue.append(' ');
+                        strValue += clx->data;
+                    }
+
+                    for (int ss=0; ss<realSpecificSymbols.length(); ss++) {
+                        if (strValue.contains(realSpecificSymbols[ss])) {
+                            isRealConstant = true;
+                            break;
+                        }
+                    }
+                    if (!isRealConstant) {
+                        foreach (AST::LexemPtr clx, initValue) {
+                            clx->error = _("Integer constant too big");
+                        }
+                        return result;
+                    }
                 }
                 if (var->dimension==0 && lexer_->isArrayClassName(group.lexems[typePos]->data)) {
                     if (maxDim>3) {
