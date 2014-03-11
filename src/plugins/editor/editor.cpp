@@ -561,51 +561,51 @@ void Editor::setupUi()
     setLayout(l);
     l->addWidget(plane_, 0, 0);
     l->addWidget(verticalScrollBar_, 0, 1);
-    l->addWidget(horizontalScrollBar_, 1, 0);
+    l->addWidget(horizontalScrollBar_, 1, 0);    
     autocompleteWidget_->setVisible(false);
 }
 
 void Editor::setupStyleSheets()
 {
-    static const char * ScrollBarCSS = ""
-            "QScrollBar {"
-            "   width: 12px;"
-            "   background-color: transparent;"
-            "   padding-right: 4px;"
-            "   border: 0;"
-            "}"
-            "QScrollBar:handle {"
-            "   background-color: gray;"
-            "   border-radius: 4px;"
-            "}"
-            "QScrollBar:add-line {"
-            "   height: 0;"
-            "}"
-            "QScrollBar:sub-line {"
-            "   height: 0;"
-            "}"
-            ;
-    static const char * HorizontalScrollBarCSS = ""
-            "QScrollBar {"
-            "   height: 12px;"
-            "   background-color: transparent;"
-            "   padding-right: 4px;"
-            "   border: 0;"
-            "   border-right: 4px solid #FF8080;"
-            "}"
-            "QScrollBar:handle {"
-            "   background-color: gray;"
-            "   border-radius: 4px;"
-            "}"
-            "QScrollBar:add-line {"
-            "   height: 0;"
-            "}"
-            "QScrollBar:sub-line {"
-            "   height: 0;"
-            "}"
-            ;
-    verticalScrollBar_->setStyleSheet(ScrollBarCSS);
-    horizontalScrollBar_->setStyleSheet(HorizontalScrollBarCSS);
+//    static const char * ScrollBarCSS = ""
+//            "QScrollBar {"
+//            "   width: 12px;"
+//            "   background-color: transparent;"
+//            "   padding-right: 4px;"
+//            "   border: 0;"
+//            "}"
+//            "QScrollBar:handle {"
+//            "   background-color: gray;"
+//            "   border-radius: 4px;"
+//            "}"
+//            "QScrollBar:add-line {"
+//            "   height: 0;"
+//            "}"
+//            "QScrollBar:sub-line {"
+//            "   height: 0;"
+//            "}"
+//            ;
+//    static const char * HorizontalScrollBarCSS = ""
+//            "QScrollBar {"
+//            "   height: 12px;"
+//            "   background-color: transparent;"
+//            "   padding-right: 4px;"
+//            "   border: 0;"
+//            "   border-right: 4px solid #FF8080;"
+//            "}"
+//            "QScrollBar:handle {"
+//            "   background-color: gray;"
+//            "   border-radius: 4px;"
+//            "}"
+//            "QScrollBar:add-line {"
+//            "   height: 0;"
+//            "}"
+//            "QScrollBar:sub-line {"
+//            "   height: 0;"
+//            "}"
+//            ;
+//    verticalScrollBar_->setStyleSheet(ScrollBarCSS);
+//    horizontalScrollBar_->setStyleSheet(HorizontalScrollBarCSS);
 }
 
 void Editor::createConnections()
@@ -667,17 +667,15 @@ void Editor::paintEvent(QPaintEvent * e)
 {
     QPainter p(this);
     p.setPen(Qt::NoPen);
-    p.setBrush(palette().brush(QPalette::Base));
+    p.setBrush(palette().brush(QPalette::Window));
     p.drawRect(0, 0, width(), height());
+    p.end();
     QWidget::paintEvent(e);
-    p.end();
-    p.begin(this);
-    const QBrush br = plane_->hasFocus()
-            ? palette().brush(QPalette::Highlight)
-            : palette().brush(QPalette::Window);
-    p.setPen(QPen(br, 3));
-    p.drawLine(width()-1, 0, width()-1, height()-1);
-    p.end();
+//    const QBrush br = plane_->hasFocus()
+//            ? palette().brush(QPalette::Highlight)
+//            : palette().brush(QPalette::Window);
+//    p.setPen(QPen(br, 3));
+//    p.drawLine(width()-1, 0, width()-1, height()-1);
     e->accept();
 }
 
