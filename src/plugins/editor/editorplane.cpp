@@ -256,6 +256,12 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
  */
 void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
 {
+#ifdef Q_OS_WIN32
+    if (Qt::RightButton == e->button()) {
+        e->ignore();
+        return;
+    }
+#endif
     // Ensure auto scrolling by timer is stopped
     emit requestAutoScroll(0);
     emit requestAutoScrollX(0);
