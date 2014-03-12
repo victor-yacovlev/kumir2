@@ -6,5 +6,7 @@
         <file>horizontal-splitter-handle.png</file>
         <file>statusbar_alt_indicator.png</file>
         <file>statusbar_shift_indicator.png</file>
+        <file>layout-rows-first.png</file>
+        <file>layout-columns-first.png</file>
     </qresource>
 </RCC>

@@ -8,6 +8,9 @@
 #include "ui_mainwindow.h"
 #include "statusbar.h"
 #include "tabwidget.h"
+
+#include "guisettingspage.h"
+
 #ifdef Q_OS_MACX
 #include "mac-fixes.h"
 #endif
@@ -37,6 +40,7 @@ Plugin::Plugin() :
     helpViewer_ = 0;
     courseManager_ = 0;
     helpWindow_ = 0;
+    guiSettingsPage_ = 0;
 }
 
 QString Plugin::InitialTextKey = "InitialText";
@@ -108,11 +112,15 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     QApplication::setWindowIcon(QIcon(myResourcesDir().absoluteFilePath("kumir2-icon"+iconSuffix+".png")));
 
 
+
     sessionsDisableFlag_ = parameters.contains("nosessions",Qt::CaseInsensitive);
 
     m_kumirStateLabel = new QLabel();
     m_genericCounterLabel = new QLabel();
     mainWindow_ = new MainWindow(this);
+
+
+
 #ifdef Q_OS_MACX
    // void * mac_mainWindow = (class NSView*)(m_mainWindow->winId());
     //MacFixes::setLionFullscreenButton(mac_mainWindow);
@@ -127,7 +135,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     if (!plugin_editor)
         return "Can't load editor plugin!";
     terminal_ = new Term(mainWindow_);
-    mainWindow_->consoleAndCourcesPlace_->addPersistentWidget(terminal_,
+    mainWindow_->consolePlace_->addPersistentWidget(terminal_,
                                                               tr("Input/Output"));
 
     connect(terminal_, SIGNAL(showWindowRequest()),
@@ -222,7 +230,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                 tr("Help"),
                 QIcon(), // TODO help window icon
                 mainWindow_,
-                mainWindow_->helpAndCourcesPlace_,
+                mainWindow_->helpAndCoursesPlace_,
                 "HelpViewerWindow",
                 true
                 );
@@ -245,7 +253,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                     tr("Courses"),
                     QIcon(), // TODO courses icon
                     mainWindow_,
-                    mainWindow_->helpAndCourcesPlace_,
+                    mainWindow_->helpAndCoursesPlace_,
                     "CoursesWindow",
                     true
                     );
@@ -405,10 +413,20 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                 "DebuggerWindow",
                 true
                 );
+    mainWindow_->debuggerWindow_ = debuggerWindow;
     secondaryWindows_ << debuggerWindow;
 
     connect(mainWindow_->ui->actionVariables, SIGNAL(triggered()),
             debuggerWindow, SLOT(activate()));
+
+    const QString layoutChoice =
+            mySettings()->value(GUISettingsPage::LayoutKey, GUISettingsPage::RowsFirstValue).toString();
+    if (layoutChoice == GUISettingsPage::ColumnsFirstValue) {
+        mainWindow_->switchToColumnFirstLayout();
+    }
+    else {
+        mainWindow_->switchToRowFirstLayout();
+    }
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MACX)
     struct sigaction act;
@@ -518,6 +536,15 @@ void Plugin::updateSettings(const QStringList & keys)
         mainWindow_->updateSettings(mySettings(), keys);
 }
 
+QWidget* Plugin::settingsEditorPage()
+{
+    if (!guiSettingsPage_) {
+        guiSettingsPage_ = new GUISettingsPage(mySettings(), 0);
+        connect(guiSettingsPage_, SIGNAL(settingsChanged(QStringList)),
+                this, SLOT(updateSettings(QStringList)));
+    }
+    return guiSettingsPage_;
+}
 
 void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState state)
 {

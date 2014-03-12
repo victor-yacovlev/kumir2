@@ -33,6 +33,8 @@ public:
             bool resizable
             );
 
+    void changeDockPlace(class DockWindowPlace * dockPlace);
+
 
 
 signals:
