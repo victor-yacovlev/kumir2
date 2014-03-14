@@ -130,7 +130,7 @@ Turtle->TailUp();
 
 /* public slot */ void TurtleModule::runForward(const int dist)
 {
-    if(animation)msleep(250);
+    if(animation)msleep(5550);
     Turtle->step=dist;
     if(!Turtle->moveT())
         setError(trUtf8("Нельзя вперед!"));
