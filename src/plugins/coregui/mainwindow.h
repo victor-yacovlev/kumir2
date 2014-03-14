@@ -3,6 +3,7 @@
 
 #include "plugin.h"
 #include "widgets/dockwindowplace.h"
+#include "widgets/secondarywindow.h"
 #include "widgets/multipagedialog.h"
 
 #include <QtCore>
@@ -46,10 +47,14 @@ public:
     void disableTabs();
     QSize minimumSizeHint() const;
 public slots:
+
+    void switchToRowFirstLayout();
+    void switchToColumnFirstLayout();
+
     void lockActions();
     void unlockActions();
     void ensureBottomVisible();
-    void setBottomVisible(bool v);
+    void setConsoleVisible(bool v);
     QStringList recentFiles(bool fullPaths) const;
     void loadRecentFile(const QString & fullPath);
     inline void loadFromUrl(const QString &s) { loadFromUrl(QUrl::fromLocalFile(s), true); }
@@ -81,7 +86,7 @@ public slots:
     void showUserManual();
     void showHelp();
     void updateSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys);
-    void updateBrowserTitle(const QString & title, const Shared::Browser::InstanceInterface * sender);
+    void updateBrowserTitle(const QString & title, const Shared::Browser::InstanceInterface * sender);   
 
 private slots:
     void loadRecentFile();
@@ -99,11 +104,15 @@ private slots:
 
     void addToRecent(const QString &fileName);
     void handleDocumentCleanChanged(bool v);
-    void handleSplitterMoved(int, int);
+    void checkForConsoleHiddenBySplitter(int, int);
 
 
 private:
-    void createSettingsDialog();        
+    void createSettingsDialog();
+
+    void prepareLayoutChange();
+    QMap<QWidget*,QSize> saveSizes() const;
+    void restoreSizes(const QMap<QWidget*,QSize> &sizes, const Qt::Orientation o);
 
 
     void timerEvent(QTimerEvent *e);
@@ -145,16 +154,17 @@ private:
     Ui::MainWindow *ui;
     Plugin *m_plugin;
     class StatusBar * statusBar_;
-    class Row * bottomRow_;
-    class Row * centralRow_;
+    class Side * secondarySide_;
+    class Side * centralSide_;
     class TabWidget * tabWidget_;
-    Widgets::DockWindowPlace * helpAndCourcesPlace_;
+    Widgets::DockWindowPlace * helpAndCoursesPlace_;
     Widgets::DockWindowPlace * debuggerPlace_;
     Widgets::DockWindowPlace * actorsPlace_;
-    Widgets::DockWindowPlace * consoleAndCourcesPlace_;
+    Widgets::DockWindowPlace * consolePlace_;
     Widgets::MultiPageDialog * settingsDialog_;
     ExtensionSystem::SettingsPtr settings_;
     int prevBottomSize_;
+    Widgets::SecondaryWindow * debuggerWindow_; // changes place on layout change
 };
 
 

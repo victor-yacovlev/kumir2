@@ -1,4 +1,4 @@
-#include "row.h"
+#include "side.h"
 #include "widgets/dockwindowplace.h"
 
 #include <QDebug>
@@ -6,7 +6,7 @@
 
 namespace CoreGUI {
 
-Row::Row(QWidget *parent, const QString &settingsKey)
+Side::Side(QWidget *parent, const QString &settingsKey)
     : QSplitter(Qt::Horizontal, parent)
     , settingsKey_(settingsKey)
 {
@@ -14,7 +14,7 @@ Row::Row(QWidget *parent, const QString &settingsKey)
     setAutoFillBackground(true);
 }
 
-void Row::updateSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)
+void Side::updateSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)
 {
 //    if (settings_) save();
     settings_ = settings;
@@ -39,7 +39,7 @@ void Row::updateSettings(ExtensionSystem::SettingsPtr settings, const QStringLis
         setSizes(szs);
 }
 
-void Row::addComponent(QWidget *widget, bool autoResizable)
+void Side::addComponent(QWidget *widget, bool autoResizable)
 {
     addWidget(widget);
     autoResizable_.push_back(autoResizable);
@@ -47,7 +47,7 @@ void Row::addComponent(QWidget *widget, bool autoResizable)
     updateGeometry();
 }
 
-void Row::save()
+void Side::save()
 {
     if (!settings_) return;
     for (int i=0; i<count(); i++) {
@@ -64,7 +64,7 @@ void Row::save()
     }
 }
 
-void Row::restore()
+void Side::restore()
 {
     if (!settings_) return;
     for (int i=0; i<count(); i++) {
@@ -88,7 +88,7 @@ void Row::restore()
         setSizes(szs);
 }
 
-QSize Row::sizeHint() const
+QSize Side::sizeHint() const
 {
     int w = (count() - 1) * handleWidth();
     int h = 0;
@@ -99,19 +99,29 @@ QSize Row::sizeHint() const
     return QSize(w, h);
 }
 
-QSize Row::minimumSizeHint() const
+QSize Side::minimumSizeHint() const
 {
-    int w = (count() - 1) * handleWidth();
-    int h = 0;
-    for (int i=0; i<count(); i++) {
-        const QSize sz = widget(i)->minimumSizeHint();
-        w += sz.width();
-        h = qMax(h, sz.height());
+    int w = 0, h = 0;
+    if (orientation() == Qt::Horizontal) {
+        w = (count() - 1) * handleWidth();
+        for (int i=0; i<count(); i++) {
+            const QSize sz = widget(i)->minimumSizeHint();
+            w += sz.width();
+            h = qMax(h, sz.height());
+        }
+    }
+    else {
+        h = (count() - 1) * handleWidth();
+        for (int i=0; i<count(); i++) {
+            const QSize sz = widget(i)->minimumSizeHint();
+            h += sz.height();
+            w = qMax(w, sz.width());
+        }
     }
     return QSize(w, h);
 }
 
-void Row::handleVisiblityRequest(bool visible, const QSize & size)
+void Side::handleVisiblityRequest(bool visible, const QSize & size)
 {
     QWidget * component = qobject_cast<QWidget*>(sender());
     if (visible)
@@ -124,7 +134,7 @@ void Row::handleVisiblityRequest(bool visible, const QSize & size)
     }
 }
 
-void Row::ensureEnoughtSpaceForComponent(QWidget *component, const QSize &size)
+void Side::ensureEnoughtSpaceForComponent(QWidget *component, const QSize &size)
 {
     int index = indexOf(component);
     QList<int> szs = sizes();
@@ -178,7 +188,7 @@ void Row::ensureEnoughtSpaceForComponent(QWidget *component, const QSize &size)
     setSizes(szs);
 }
 
-void Row::releaseSpaceUsesByComponent(QWidget *component)
+void Side::releaseSpaceUsesByComponent(QWidget *component)
 {
     int index = indexOf(component);
     QList<int> szs = sizes();
@@ -191,7 +201,7 @@ void Row::releaseSpaceUsesByComponent(QWidget *component)
     setSizes(szs);
 }
 
-void Row::resizeEvent(QResizeEvent *event)
+void Side::resizeEvent(QResizeEvent *event)
 {
     if (event->size().width() < minimumSizeHint().width() || event->size().height() < minimumSizeHint().height()) {
         event->ignore();
@@ -199,23 +209,31 @@ void Row::resizeEvent(QResizeEvent *event)
     }
     QList<int> szs = sizes();
     QSplitter::resizeEvent(event);
-    if (event->size().width() > event->oldSize().width())
-        increaseSize(event->size().width() - event->oldSize().width(), szs);
-    else if (event->size().width() < event->oldSize().width())
-        decreaseSize(event->oldSize().width() - event->size().width(), szs);
+    if (orientation() == Qt::Horizontal) {
+        if (event->size().width() > event->oldSize().width())
+            increaseSize(event->size().width() - event->oldSize().width(), szs);
+        else if (event->size().width() < event->oldSize().width())
+            decreaseSize(event->oldSize().width() - event->size().width(), szs);
+    }
+    else {
+        if (event->size().height() > event->oldSize().height())
+            increaseSize(event->size().height() - event->oldSize().height(), szs);
+        else if (event->size().height() < event->oldSize().height())
+            decreaseSize(event->oldSize().height() - event->size().height(), szs);
+    }
 }
 
-void Row::increaseSize(int diff, QList<int> & szs)
+void Side::increaseSize(int diff, QList<int> & szs)
 {
     int resizableIndex = autoResizable_.indexOf(true);
-    if (resizableIndex) {
+    if (resizableIndex != -1 && resizableIndex < szs.length()) {
         QList<int> szs = sizes();
         szs[resizableIndex] = szs[resizableIndex] + diff;
         setSizes(szs);
     }
 }
 
-void Row::decreaseSize(int diff, QList<int> & szs)
+void Side::decreaseSize(int diff, QList<int> & szs)
 {
 
 }

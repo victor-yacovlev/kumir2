@@ -9,11 +9,11 @@
 
 namespace CoreGUI {
 
-class Row : public QSplitter
+class Side : public QSplitter
 {
     Q_OBJECT
 public:
-    explicit Row(QWidget *parent,
+    explicit Side(QWidget *parent,
                  const QString & settingsKey
                  );
     void addComponent(QWidget * widget, bool autoResizable);
