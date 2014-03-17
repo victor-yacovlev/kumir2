@@ -53,6 +53,7 @@ void AboutDialog::copySystemInformationToClipboard()
 {
     QString textToCopy;
     textToCopy += "Version: "+ui->version->text()+"\n";
+    textToCopy += "Last Modified: "+ui->lastModified->text()+"\n";
     for (int i=0; i<ui->tableWidget->rowCount(); i++) {
         const QString key = ui->tableWidget->item(i, 0)->text();
         const QString value = ui->tableWidget->item(i, 1)->text();
