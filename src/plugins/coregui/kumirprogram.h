@@ -24,6 +24,13 @@ class KumirProgram : public QObject
 {
     Q_OBJECT
 public:
+    enum RunEndStatus {
+        Running,
+        Finished,
+        Terminated,
+        Exception
+    };
+
     explicit KumirProgram(QObject *parent = 0);
 
     inline Shared::Editor::InstanceInterface * editorInstance() const {
@@ -38,7 +45,8 @@ public:
     inline void setMainWidget(QWidget * w) { mainWidget_ = w; }
     void setTerminal(Term * t, QDockWidget * w);
 
-    inline QString endStatus() const { return endStatus_; }
+    inline QString endStatusText() const { return endStatusText_; }
+    inline RunEndStatus endStatus() const { return endStatus_; }
     inline void setCourseManagerRequest() { courseManagerRequest_ = true; }
 signals:
     void giveMeAProgram();
@@ -71,7 +79,8 @@ private:
 
 private /*fields*/:
     enum State { Idle, RegularRun, BlindRun, StepRun, TestingRun } state_;
-    QString endStatus_;
+    RunEndStatus endStatus_;
+    QString endStatusText_;
     Term * terminal_;
     Shared::Editor::InstanceInterface * editor_;
     QWidget * mainWidget_;

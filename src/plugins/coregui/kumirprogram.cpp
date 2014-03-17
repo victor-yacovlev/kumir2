@@ -12,6 +12,7 @@ using namespace ExtensionSystem;
 KumirProgram::KumirProgram(QObject *parent)
     : QObject(parent)
     , state_(Idle)
+    , endStatus_(Running)
     , terminal_(0)
     , editor_(0)
     , mainWidget_(0)
@@ -213,7 +214,8 @@ void KumirProgram::setTerminal(Term *t, QDockWidget * w)
 void KumirProgram::blindRun()
 {
     using namespace Shared;
-    endStatus_ = "";
+    endStatusText_ = "";
+    endStatus_ = Running;
     if (state_==Idle) {
         emit giveMeAProgram();
         prepareKumirRunner(GeneratorInterface::LinesOnly);
@@ -227,7 +229,8 @@ void KumirProgram::blindRun()
 void KumirProgram::testingRun()
 {
     using namespace Shared;
-    endStatus_ = "";
+    endStatusText_ = "";
+    endStatus_ = Running;
     if (state_==Idle) {
         emit giveMeAProgram();
         prepareKumirRunner(GeneratorInterface::LinesOnly);
@@ -247,7 +250,8 @@ void KumirProgram::testingRun()
 void KumirProgram::regularRun()
 {
     using namespace Shared;
-    endStatus_ = "";
+    endStatusText_ = "";
+    endStatus_ = Running;
     if (state_==Idle) {
         emit giveMeAProgram();
         prepareKumirRunner(GeneratorInterface::LinesAndVariables);
@@ -290,7 +294,8 @@ void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel deb
 void KumirProgram::stepRun()
 {
     using namespace Shared;
-    endStatus_ = "";
+    endStatusText_ = "";
+    endStatus_ = Running;
     if (state_==Idle) {
         emit giveMeAProgram();
         prepareKumirRunner(GeneratorInterface::LinesAndVariables);
@@ -356,7 +361,8 @@ void KumirProgram::handleRunnerStopped(int rr)
 //        a_stepOut->setEnabled(plugin_bytecodeRun->canStepOut());
     }
     else if (reason==RunInterface::SR_UserTerminated) {
-        endStatus_ = tr("Evaluation terminated");
+        endStatusText_ = tr("Evaluation terminated");
+        endStatus_ = Terminated;
         terminal_->finish();
         PluginManager::instance()->switchGlobalState(PluginInterface::GS_Observe);
         state_ = Idle;
@@ -364,7 +370,8 @@ void KumirProgram::handleRunnerStopped(int rr)
         editor_->unhighlightLine();
     }
     else if (reason==RunInterface::SR_Error) {
-        endStatus_ = tr("Evaluation error");
+        endStatusText_ = tr("Evaluation error");
+        endStatus_ = Exception;
         terminal_->error(runner()->error());
         editor_->highlightLineRed(runner()->currentLineNo(), runner()->currentColumn().first, runner()->currentColumn().second);
         PluginManager::instance()->switchGlobalState(PluginInterface::GS_Observe);
@@ -372,7 +379,8 @@ void KumirProgram::handleRunnerStopped(int rr)
         terminal_->clearFocus();
     }
     else if (reason==RunInterface::SR_Done) {
-        endStatus_ = tr("Evaluation finished");
+        endStatusText_ = tr("Evaluation finished");
+        endStatus_ = Finished;
         terminal_->finish();
         PluginManager::instance()->switchGlobalState(PluginInterface::GS_Observe);
         state_ = Idle;

@@ -559,9 +559,10 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
     }
     else if (state==PluginInterface::GS_Observe) {
 //        m_kumirStateLabel->setText(tr("Observe"));
-        mainWindow_->showMessage(kumirProgram_->endStatus());
+        mainWindow_->showMessage(kumirProgram_->endStatusText());
         mainWindow_->setFocusOnCentralWidget();
         mainWindow_->unlockActions();
+        debugger_->setDebuggerEnabled(kumirProgram_->endStatus() == KumirProgram::Exception);
     }
     else if (state==PluginInterface::GS_Running) {
 //        m_kumirStateLabel->setText(tr("Running"));
