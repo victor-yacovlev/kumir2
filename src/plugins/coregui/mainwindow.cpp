@@ -1266,7 +1266,7 @@ void MainWindow::loadSettings(const QStringList & keys)
 {
     if (keys.contains(GUISettingsPage::LayoutKey)) {
         const QString layoutChoice =
-                settings_->value(GUISettingsPage::LayoutKey, GUISettingsPage::RowsFirstValue).toString();
+                settings_->value(GUISettingsPage::LayoutKey, GUISettingsPage::ColumnsFirstValue).toString();
         if (layoutChoice == GUISettingsPage::ColumnsFirstValue) {
             switchToColumnFirstLayout();
         }

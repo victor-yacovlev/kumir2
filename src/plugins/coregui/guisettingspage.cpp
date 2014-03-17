@@ -24,7 +24,7 @@ GUISettingsPage::GUISettingsPage(ExtensionSystem::SettingsPtr settings, QWidget 
 
 void GUISettingsPage::init()
 {
-    const QString layoutValue = settings_->value(LayoutKey, RowsFirstValue).toString();
+    const QString layoutValue = settings_->value(LayoutKey, ColumnsFirstValue).toString();
     if (layoutValue == ColumnsFirstValue) {
         ui->btnColumnsFirst->setChecked(true);
     }
@@ -35,7 +35,7 @@ void GUISettingsPage::init()
 
 void GUISettingsPage::accept()
 {
-    const QString layoutValue = settings_->value(LayoutKey, RowsFirstValue).toString();
+    const QString layoutValue = settings_->value(LayoutKey, ColumnsFirstValue).toString();
     if (ui->btnColumnsFirst->isChecked()) {
         settings_->setValue(LayoutKey, ColumnsFirstValue);
     }
@@ -49,7 +49,7 @@ void GUISettingsPage::accept()
 
 void GUISettingsPage::resetToDefaults()
 {
-    const QString layoutValue = settings_->value(LayoutKey, RowsFirstValue).toString();
+    const QString layoutValue = settings_->value(LayoutKey, ColumnsFirstValue).toString();
     ui->btnRowsFirst->setChecked(true);
     settings_->setValue(LayoutKey, RowsFirstValue);
     if (layoutValue != settings_->value(LayoutKey, RowsFirstValue).toString()) {
