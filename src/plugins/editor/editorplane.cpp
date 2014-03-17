@@ -1975,9 +1975,15 @@ void EditorPlane::paintMarginBackground(QPainter *p, const QRect &rect)
     unsigned errorsCount = editor_->analizer() ? editor_->analizer()->errors().size() : 0u;
     QColor marginLineColor = palette().color(hasFocus()? QPalette::Highlight : QPalette::Mid);
     if (errorsCount) {
-        QColor marginLineColorHSV = marginLineColor.toHsv();
-        marginLineColorHSV.setHsv(0, marginLineColorHSV.saturation(), marginLineColor.value());
-        marginLineColor = marginLineColorHSV;
+        const QColor bgColor = palette().color(QPalette::Base);
+        int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
+        if (darkness / 3 <= 127) {
+            // Invert color for dark backround
+            marginLineColor = QColor("orangered");
+        }
+        else {
+            marginLineColor = QColor("red");
+        }
     }
     marginLineColor.setAlpha(marginBackgroundAlpha_);
     p->setBrush(marginLineColor);
