@@ -241,7 +241,7 @@ Right click to navigate target</source>
     <message>
         <location filename="../../../src/plugins/coregui/guisettingspage.ui" line="62"/>
         <source>Columns first</source>
-        <translation type="unfinished">Исполнители 
+        <translation>Исполнители 
 в одном столбце 
 с Практикумом</translation>
     </message>
@@ -1043,25 +1043,25 @@ Using Qt version %2</source>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="374"/>
         <source>%1 steps done</source>
         <comment>10 &lt;= x &lt;= 20</comment>
-        <translation>Выполнено %1 шагов</translation>
+        <translation>Выполнено шагов: %1</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="376"/>
         <source>%1 steps done</source>
         <comment>1, 21, 31, etc.</comment>
-        <translation>Выполнен %1 шаг</translation>
+        <translation>Выполнено шагов: %1</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="378"/>
         <source>%1 steps done</source>
         <comment>2, 3, 4, 22, 23, 24,  etc.</comment>
-        <translation>Выполнено %1 шага</translation>
+        <translation>Выполнено шагов: %1</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="380"/>
         <source>%1 steps done</source>
         <comment>5, 6, 15, 16, etc</comment>
-        <translation>Выполнено %1 шагов</translation>
+        <translation>Выполнено шагов: %1</translation>
     </message>
     <message>
         <source>%1 errors</source>
@@ -1070,12 +1070,12 @@ Using Qt version %2</source>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="370"/>
         <source>0 steps done</source>
-        <translation>Выполнено 0 шагов</translation>
+        <translation>Выполнено шагов: 1</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/statusbar.cpp" line="372"/>
         <source>1 step done</source>
-        <translation>Выполнен 1 шаг</translation>
+        <translation>Выполнено шагов: 1</translation>
     </message>
     <message>
         <source>%1 steps done</source>
