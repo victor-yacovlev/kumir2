@@ -34,6 +34,7 @@ public:
     enum DocumentType { Text, Program, WWW };
     enum DockWindowType { Terminal, Help, StandardActor, WorldActor, Control, SubControl, Other };
     explicit MainWindow(Plugin * p);
+    bool isColumnFirstLayout() const;
 
     class TabWidgetElement * addCentralComponent(const QString &title
                              , QWidget *c
@@ -53,7 +54,7 @@ public slots:
 
     void lockActions();
     void unlockActions();
-    void ensureBottomVisible();
+    void ensureSeconrarySideVisible();
     void setConsoleVisible(bool v);
     QStringList recentFiles(bool fullPaths) const;
     void loadRecentFile(const QString & fullPath);

@@ -37,8 +37,9 @@ MainWindow::MainWindow(Plugin * p) :
 
     centralSide_ = new Side(this, "MainWindow/CentralRow");
     secondarySide_ = new Side(this, "MainWindow/BottomRow");
+    ui->splitter->setCollapsible(1, true);
 
-    connect(secondarySide_, SIGNAL(visiblityRequest()), this, SLOT(ensureBottomVisible()));
+    connect(secondarySide_, SIGNAL(visiblityRequest()), this, SLOT(ensureSeconrarySideVisible()));
     connect(ui->actionShow_Console_Pane, SIGNAL(triggered(bool)), this, SLOT(setConsoleVisible(bool)));
 
 //    centralContainer->setLayout(new QVBoxLayout);
@@ -382,6 +383,11 @@ void MainWindow::switchToRowFirstLayout()
 
     connect(ui->splitter, SIGNAL(splitterMoved(int,int)), this, SLOT(checkForConsoleHiddenBySplitter(int,int)));
 
+    centralSide_->setCollapsible(0, false);
+    centralSide_->setCollapsible(1, true);
+    secondarySide_->setCollapsible(0, true);
+    secondarySide_->setCollapsible(1, true);
+
     restoreSizes(visibleSizes, Qt::Vertical);
 
 }
@@ -426,6 +432,11 @@ void MainWindow::switchToColumnFirstLayout()
             Qt::DirectConnection);
 
     connect(centralSide_, SIGNAL(splitterMoved(int,int)), this, SLOT(checkForConsoleHiddenBySplitter(int,int)));
+
+    centralSide_->setCollapsible(0, false);
+    centralSide_->setCollapsible(1, true);
+    secondarySide_->setCollapsible(0, true);
+    secondarySide_->setCollapsible(1, true);
 
     restoreSizes(visibleSizes, Qt::Horizontal);
 }
@@ -1262,12 +1273,18 @@ void MainWindow::updateSettings(SettingsPtr settings, const QStringList & keys)
     loadSettings(keys);
 }
 
+bool MainWindow::isColumnFirstLayout() const
+{
+    if (!settings_) return true;
+    const QString layoutChoice =
+            settings_->value(GUISettingsPage::LayoutKey, GUISettingsPage::ColumnsFirstValue).toString();
+    return layoutChoice == GUISettingsPage::ColumnsFirstValue;
+}
+
 void MainWindow::loadSettings(const QStringList & keys)
 {
     if (keys.contains(GUISettingsPage::LayoutKey)) {
-        const QString layoutChoice =
-                settings_->value(GUISettingsPage::LayoutKey, GUISettingsPage::ColumnsFirstValue).toString();
-        if (layoutChoice == GUISettingsPage::ColumnsFirstValue) {
+        if (isColumnFirstLayout()) {
             switchToColumnFirstLayout();
         }
         else {
@@ -1575,10 +1592,22 @@ void MainWindow::fileOpen()
 
 
 
-void MainWindow::ensureBottomVisible()
+void MainWindow::ensureSeconrarySideVisible()
 {
-    ui->actionShow_Console_Pane->setChecked(true);
-    setConsoleVisible(true);
+    QList<int> szs = ui->splitter->sizes();
+    if (szs.size() > 0 && 0 == szs[1]) {
+        if (isColumnFirstLayout()) {
+            szs[0] -= secondarySide_->minimumSizeHint().width();
+            szs[1] = secondarySide_->minimumSizeHint().width();
+        }
+        if (isColumnFirstLayout()) {
+            szs[0] -= secondarySide_->minimumSizeHint().height();
+            szs[1] = secondarySide_->minimumSizeHint().height();
+        }
+        ui->splitter->setSizes(szs);
+    }
+//    ui->actionShow_Console_Pane->setChecked(true);
+//    setConsoleVisible(true);
 }
 
 void MainWindow::checkForConsoleHiddenBySplitter(int, int)

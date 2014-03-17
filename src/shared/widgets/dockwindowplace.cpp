@@ -35,6 +35,11 @@ void DockWindowPlace::tabRemoved(int)
     emit visiblityRequest(isVisible(), QSize());
 }
 
+void DockWindowPlace::activate(const QSize &)
+{
+    emit visiblityRequest(true, QSize());
+}
+
 void DockWindowPlace::resizeEvent(QResizeEvent *e)
 {
     const QSize minSize = minimumSizeHint();

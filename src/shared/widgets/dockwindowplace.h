@@ -31,6 +31,8 @@ public:
     void saveState();
     void restoreState();
     void setPreferredItemSize(const QSize & size);
+public slots:
+    void activate(const QSize & prefSize);
 signals:
     void visiblityRequest(bool visible, const QSize &size);
 protected:
