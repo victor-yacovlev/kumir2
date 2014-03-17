@@ -1972,8 +1972,13 @@ void EditorPlane::paintMarginBackground(QPainter *p, const QRect &rect)
     p->drawRect(marginBackgroundRect().intersected(rect));
 
     // Draw margin line
-//    QColor marginLineColor(0xFF, 0x80, 0x80);
+    unsigned errorsCount = editor_->analizer() ? editor_->analizer()->errors().size() : 0u;
     QColor marginLineColor = palette().color(hasFocus()? QPalette::Highlight : QPalette::Mid);
+    if (errorsCount) {
+        QColor marginLineColorHSV = marginLineColor.toHsv();
+        marginLineColorHSV.setHsv(0, marginLineColorHSV.saturation(), marginLineColor.value());
+        marginLineColor = marginLineColorHSV;
+    }
     marginLineColor.setAlpha(marginBackgroundAlpha_);
     p->setBrush(marginLineColor);
     p->drawRect(marginLineRect().intersected(rect));
