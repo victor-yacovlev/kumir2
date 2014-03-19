@@ -15,16 +15,16 @@ enum CharSpec {
     CS_Error        = 0x10
 };
 
-typedef std::deque<CharSpec> LineProp;
+typedef QVector<CharSpec> LineProp;
 
 struct VisibleLine {
-    LineProp & prop;
-    const QString & text;
-    bool & endSelected;
+    LineProp prop;
+    QString text;
+    bool * endSelected;
     size_t from;
     size_t to;
 
-    inline explicit VisibleLine(const QString & tx, LineProp & lp, bool & es, size_t f, size_t t)
+    inline explicit VisibleLine(const QString &tx, const LineProp &lp, bool * es, size_t f, size_t t)
         : text(tx), prop(lp), endSelected(es), from(f), to(t) {}
 
     inline VisibleLine& operator=(const VisibleLine & other)
@@ -66,7 +66,7 @@ public:
     QString selectedRtf() const;
     void selectAll();
     bool isEditable() const;
-    void relayout(uint realWidth);
+    void relayout(uint realWidth, size_t fromLine, bool headerAndFooter);
 public slots:
     void output(const QString & text, const CharSpec cs);
     void input(const QString & format);
@@ -92,7 +92,8 @@ private:
     QWidget * parent_;
     QStringList lines_;
     std::deque<LineProp> props_;
-    QList<VisibleLine> visibleLines_;
+    std::deque<VisibleLine> visibleLines_;
+    mutable uint maxLineLength_; // cached to faster "relayout" method
     QList<bool> selectedLineEnds_;
     QRect mainTextRegion_;
     QString fileName_;

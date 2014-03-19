@@ -22,6 +22,7 @@ OneSession::OneSession(int fixedWidth, const QString & fileName, QWidget * paren
     , fileName_(fileName)
     , fixedWidth_(fixedWidth)
     , relayoutMutex_(new QMutex)
+    , maxLineLength_(0u)
 {
     inputLineStart_ = inputPosStart_ = -1;
     inputCursorPosition_ = -1;
@@ -97,19 +98,24 @@ QSize OneSession::minimumSizeHint() const
     return QSize(qMax(minW, maxHeadingWidth), minH);
 }
 
-void OneSession::relayout(uint realWidth)
+void OneSession::relayout(uint realWidth, size_t fromLine, bool headerAndFooter)
 {
     QMutexLocker lock(relayoutMutex_.data());
-
+    if (0==fromLine) {
+        maxLineLength_ = 0;
+        visibleLines_.clear();
+    }
+    else {
+        while (visibleLines_.size() > fromLine)
+            visibleLines_.pop_back();
+    }
     // 1. Main text
     Q_ASSERT(lines_.size()==props_.size());
     Q_ASSERT(lines_.size()==selectedLineEnds_.size());
-    visibleLines_.clear();
-    uint maxLineLength = 0;
-    for (int i=0; i<lines_.size(); i++) {
-        const QString & text = lines_[i];
-        LineProp & prop = props_[i];
-        bool & selectedEnd = selectedLineEnds_[i];
+    for (size_t i=fromLine; i<lines_.size(); i++) {
+        const QString text = lines_.at(i);
+        LineProp prop = props_.at(i);
+        bool * selectedEnd = &selectedLineEnds_[i];
         Q_ASSERT(text.length()==prop.size());
         const uint charsInLine = text.length();
         const uint charsInVisibleLine = fixedWidth_ == -1
@@ -133,7 +139,7 @@ void OneSession::relayout(uint realWidth)
                                    charsInLine)
                               );
             visibleLines_.push_back(vline);
-            maxLineLength = qMax(maxLineLength, charsInVisibleLine);
+            maxLineLength_ = qMax(maxLineLength_, charsInVisibleLine);
             currentOffset += charsInVisibleLine;
         }
     }
@@ -141,37 +147,38 @@ void OneSession::relayout(uint realWidth)
             QFontMetrics(utilityFont()).height() + HeaderPadding + BodyPadding;
     uint height = charSize().height() * visibleLines_.size();
     uint left = BodyPadding;
-    uint width = charSize().width() * maxLineLength;
+    uint width = charSize().width() * maxLineLength_;
     mainTextRegion_ = QRect(left, top, width, height);
 
-    // 2. Header
-    visibleHeader_ = headerText();
-    headerProp_.clear();
-    for (size_t i=0; i<visibleHeader_.length(); i++) {
-        headerProp_.push_back(CS_Output);
-    }
-    headerRect_ = QRect(BodyPadding,
+    if (headerAndFooter) {
+
+        // 2. Header
+        visibleHeader_ = headerText();
+        headerProp_.clear();
+        for (size_t i=0; i<visibleHeader_.length(); i++) {
+            headerProp_.push_back(CS_Output);
+        }
+        headerRect_ = QRect(BodyPadding,
+                            0,
+                            QFontMetrics(utilityFont()).width(visibleHeader_),
+                            QFontMetrics(utilityFont()).height() + HeaderPadding);
+
+        // 3. Footer
+        visibleFooter_ = footerText();
+        footerProp_.clear();
+        for (size_t i=0; i<visibleFooter_.length(); i++) {
+            footerProp_.push_back(CS_Output);
+        }
+        footerRect_ = footerText().isEmpty()
+                ? QRect(BodyPadding,
+                        mainTextRegion_.bottom() + HeaderPadding + BodyPadding,
                         0,
-                        QFontMetrics(utilityFont()).width(visibleHeader_),
-                        QFontMetrics(utilityFont()).height() + HeaderPadding);
-
-    // 3. Footer
-    visibleFooter_ = footerText();
-    footerProp_.clear();
-    for (size_t i=0; i<visibleFooter_.length(); i++) {
-        footerProp_.push_back(CS_Output);
+                        0)
+                : QRect(BodyPadding,
+                        mainTextRegion_.bottom() + HeaderPadding + BodyPadding,
+                        QFontMetrics(utilityFont()).width(visibleFooter_),
+                        QFontMetrics(utilityFont()).height());
     }
-    footerRect_ = footerText().isEmpty()
-            ? QRect(BodyPadding,
-                    mainTextRegion_.bottom() + HeaderPadding + BodyPadding,
-                    0,
-                    0)
-            : QRect(BodyPadding,
-                    mainTextRegion_.bottom() + HeaderPadding + BodyPadding,
-                    QFontMetrics(utilityFont()).width(visibleFooter_),
-                    QFontMetrics(utilityFont()).height());
-
-
 }
 
 void OneSession::draw(QPainter &p) const
@@ -342,7 +349,7 @@ uint OneSession::drawMainText(QPainter &p, const QPoint & topLeft) const
             p.drawText(xx, yy, QString(symbol));
             xx += atom.width();
         }
-        if (vline.text.length() == 0 && vline.endSelected) {
+        if (vline.text.length() == 0 && *vline.endSelected) {
             p.setPen(Qt::NoPen);
             p.setBrush(selectionBackroundBrush);
             p.drawRect(xx, yy-atom.height(), atom.width() / 2, atom.height());
@@ -624,7 +631,7 @@ void OneSession::triggerTextSelection(const QPoint &fromPos, const QPoint &toPos
 
     // Main text
     for (int l = 0; l < visibleLines_.size(); l++) {
-        const VisibleLine & line = visibleLines_[l];
+        VisibleLine & line = visibleLines_[l];
         const QString thisLineText = line.text.mid(line.from, line.to - line.from);
         const QRect thisLineRect = QRect(
                     mainTextRegion_.left(),
@@ -640,11 +647,13 @@ void OneSession::triggerTextSelection(const QPoint &fromPos, const QPoint &toPos
             if (toY <= thisLineRect.bottom())
                 toChar = line.from + (toX - thisLineRect.left()) / mfm.width('m');
             if (toY > thisLineRect.bottom() || toX > thisLineRect.right())
-                line.endSelected = true;
+                *line.endSelected = true;
             fromChar = qMax(line.from, fromChar);
             toChar = qMin(line.to, toChar);
             for (size_t i=fromChar; i<toChar; i++) {
-                line.prop[i] = Terminal::CharSpec(line.prop[i] | SelectionMask);
+                line.prop[i] =
+                                  Terminal::CharSpec(line.prop.at(i) | SelectionMask)
+                                  ;
             }
         }
     }
@@ -702,6 +711,7 @@ QFont OneSession::utilityFont() const
 
 void OneSession::output(const QString &text, const CharSpec cs)
 {
+    size_t relayoutStartLine = lines_.size() > 0? lines_.size()-1 : 0;
     int curLine = lines_.size()-1;
     int curCol = lines_.isEmpty()? 0 : lines_[curLine].length();
     for (int i=0; i<text.length(); i++) {
@@ -718,7 +728,7 @@ void OneSession::output(const QString &text, const CharSpec cs)
             props_[curLine].push_back(cs);
         }
     }
-    relayout(parent_->width() - 2 * SessionMargin);
+    relayout(parent_->width() - 2 * SessionMargin, relayoutStartLine, false);
     emit updateRequest();
 }
 
@@ -788,6 +798,7 @@ void OneSession::changeCursorPosition(quint16 pos)
 void OneSession::changeInputText(const QString &text)
 {
     lines_ = lines_.mid(0, inputLineStart_+1);
+    size_t relayoutStartLine = lines_.size() > 0? lines_.size()-1 : 0;
     props_.resize(inputLineStart_+1);
     selectedLineEnds_ = selectedLineEnds_.mid(0, inputLineStart_ + 1);
     if (!lines_.isEmpty()) {
@@ -810,7 +821,7 @@ void OneSession::changeInputText(const QString &text)
             props_[curLine].push_back(CS_Input);
         }
     }
-    relayout(parent_->width() - 2 * SessionMargin);
+    relayout(parent_->width() - 2 * SessionMargin, relayoutStartLine, false);
     emit updateRequest();
 }
 
@@ -971,6 +982,7 @@ void OneSession::tryFinishInput()
 void OneSession::error(const QString &message)
 {
     inputLineStart_ = inputPosStart_ = inputCursorPosition_ = -1;
+    size_t relayoutStartLine = lines_.size() > 0? lines_.size()-1 : 0;
     lines_.append(tr("RUNTIME ERROR: %1").arg(message));
     props_.push_back(LineProp());
     selectedLineEnds_.append(false);
@@ -978,25 +990,27 @@ void OneSession::error(const QString &message)
         props_[props_.size()-1].push_back(CS_Error);
     }
     endTime_ = QDateTime::currentDateTime();
-    relayout(parent_->width() - 2 * SessionMargin);
+    relayout(parent_->width() - 2 * SessionMargin, relayoutStartLine, true);
     emit updateRequest();
 }
 
 void OneSession::terminate()
 {
+    size_t relayoutStartLine = lines_.size();
     endTime_ = QDateTime::currentDateTime();
     if (timerId_!=-1)
         killTimer(timerId_);
     inputLineStart_ = inputPosStart_ = inputCursorPosition_ = -1;
-    relayout(parent_->width() - 2 * SessionMargin);
+    relayout(parent_->width() - 2 * SessionMargin, relayoutStartLine, true);
     emit updateRequest();
 }
 
 void OneSession::finish()
 {
+    size_t relayoutStartLine = lines_.size();
     endTime_ = QDateTime::currentDateTime();
     inputLineStart_ = inputPosStart_ = inputCursorPosition_ = -1;
-    relayout(parent_->width() - 2 * SessionMargin);
+    relayout(parent_->width() - 2 * SessionMargin, relayoutStartLine, true);
     emit updateRequest();
 }
 

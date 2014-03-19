@@ -364,7 +364,7 @@ void Plane::updateScrollBars()
 void Plane::resizeEvent(QResizeEvent *e)
 {
     foreach (OneSession * session, terminal_->sessions_) {
-        session->relayout(e->size().width() - 2 * SessionMargin);
+        session->relayout(e->size().width() - 2 * SessionMargin, 0, true);
     }
 
     QWidget::resizeEvent(e);
