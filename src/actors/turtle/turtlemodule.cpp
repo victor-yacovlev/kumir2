@@ -130,16 +130,18 @@ Turtle->TailUp();
 
 /* public slot */ void TurtleModule::runForward(const int dist)
 {
-    if(animation)msleep(250);
+   // if(animation)msleep(50);
     Turtle->step=dist;
+     mutex.lock();
     if(!Turtle->moveT())
         setError(trUtf8("Нельзя вперед!"));
+    mutex.unlock();
     
 }
 
 /* public slot */ void TurtleModule::runBack(const int dist)
 {
-    if(animation)msleep(250);
+   // if(animation)msleep(50);
     Turtle->step=-dist;
     if(!Turtle->moveT())
         setError(trUtf8("Нельзя назад!"));
@@ -148,17 +150,21 @@ Turtle->TailUp();
 
 /* public slot */ void TurtleModule::runLeft(const int angle)
 {
-    if(animation)msleep(250);
+   // if(animation)msleep(50);
     Turtle->grad=-angle;
+    mutex.lock();
     Turtle->rotate();
+    mutex.unlock();
     
 }
 
 /* public slot */ void TurtleModule::runRight(const int angle)
 {
-    if(animation)msleep(250);
+   // if(animation)msleep(50);
     Turtle->grad=angle;
+    mutex.unlock();
     Turtle->rotate();
+    mutex.lock();
     
 }
 

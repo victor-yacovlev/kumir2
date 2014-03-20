@@ -53,6 +53,7 @@ private:
     turtle* Turtle;
     TurtlePult* Tpult;
     bool animation;
+    QMutex mutex;
 
 
 

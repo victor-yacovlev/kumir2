@@ -199,7 +199,7 @@ void turtle::rotateImages()
     };
     t1->scale(zoom,zoom);
 
-
+    scene->update();
 
 };
 
@@ -233,6 +233,7 @@ if(tail){
 lines.append(new QGraphicsLineItem(oldX,oldY,curX,curY));//Add line to lines list 
 scene->addItem(lines.last());};
 showCurTurtle();
+scene->update();
 
 return toret;
 }
