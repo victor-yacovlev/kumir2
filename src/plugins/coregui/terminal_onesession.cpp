@@ -181,7 +181,7 @@ void OneSession::relayout(uint realWidth, size_t fromLine, bool headerAndFooter)
     }
 }
 
-void OneSession::draw(QPainter &p) const
+void OneSession::draw(QPainter &p, const QRect & dirtyRect) const
 {
     QMutexLocker lock(relayoutMutex_.data());
 //    p.save();
@@ -194,7 +194,7 @@ void OneSession::draw(QPainter &p) const
 //    p.restore();
     drawUtilityText(p, visibleHeader_, headerProp_, headerRect_.topLeft());
 //    drawInputRect(p, 0);
-    drawMainText(p, mainTextRegion_.topLeft());
+    drawMainText(p, mainTextRegion_.topLeft(), dirtyRect);
     drawUtilityText(p, visibleFooter_, footerProp_, footerRect_.topLeft());
     drawCursor(p);
 }
@@ -298,7 +298,7 @@ void OneSession::drawInputRect(QPainter &p, const uint mainTextY) const
     }
 }
 
-uint OneSession::drawMainText(QPainter &p, const QPoint & topLeft) const
+uint OneSession::drawMainText(QPainter &p, const QPoint & topLeft, const QRect & dirtyRect) const
 {
     const QSize atom = charSize();
     const QBrush selectionBackroundBrush = parent_->palette().brush(
@@ -325,6 +325,10 @@ uint OneSession::drawMainText(QPainter &p, const QPoint & topLeft) const
     for (size_t i=0; i<visibleLines_.size(); i++) {
         uint xx = topLeft.x();
         uint yy = topLeft.y() + i * atom.height() + atom.height();
+        const QRect thisLineFullWidthRect(0, yy-atom.height(), dirtyRect.width(), atom.height());
+        if (!dirtyRect.intersects(thisLineFullWidthRect)) {
+            continue;
+        }
         const VisibleLine & vline = visibleLines_.at(i);
         const QString & text = vline.text;
         const LineProp & prop = vline.prop;

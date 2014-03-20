@@ -47,14 +47,14 @@ public:
     inline QDateTime startTime() const { return startTime_; }
     inline QDateTime endTime() const { return endTime_; }
     inline int fixedWidth() const { return fixedWidth_; }
-    void draw(QPainter &p) const;
+    void draw(QPainter &p, const QRect & dirtyRect) const;
     void drawInputRect(QPainter &p, const uint mainTextY) const;
     uint drawUtilityText(QPainter &p,
                          const QString & text,
                          const LineProp & prop,
                          const QPoint & topLeft
                          ) const;
-    uint drawMainText(QPainter &p, const QPoint & topLeft) const;
+    uint drawMainText(QPainter &p, const QPoint & topLeft, const QRect & dirtyRect) const;
     void drawCursor(QPainter &p) const;
     void triggerTextSelection(const QPoint & fromPos, const QPoint & toPos);
     void clearSelection();
