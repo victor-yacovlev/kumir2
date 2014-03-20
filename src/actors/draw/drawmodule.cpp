@@ -667,11 +667,11 @@ void DrawView::resizeEvent ( QResizeEvent * event )
         {
             setViewportUpdateMode (QGraphicsView::SmartViewportUpdate);
             QPointF delta=mapToScene(press_pos)-mapToScene(event->pos());
-            if(qAbs(delta.x())>100)press_pos.setX(event->pos().x());
-            if(qAbs(delta.y())>100)press_pos.setY(event->pos().y());
+            //if(qAbs(delta.x())>100)press_pos.setX(event->pos().x());
+            //if(qAbs(delta.y())>100)press_pos.setY(event->pos().y());
             QPointF center = mapToScene(viewport()->rect().center());
             centerOn(center+delta/2);
-           // press_pos=mapToScene(press_pos)+delta;
+             press_pos=event->pos();
            // qDebug()<<"CenterOn"<<center+delta;
             update();
         }
