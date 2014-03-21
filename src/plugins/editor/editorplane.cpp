@@ -2480,7 +2480,7 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
             if (curType==LxTypeComment && text[j]=='|') {
                 // A comment symbol '|' must be drawn as accessible as possible
                 p->setPen(QPen(p->pen().brush(), 2));
-                p->drawLine(offset, y, offset, y-lineHeight()+2);
+                p->drawLine(offset+charWidth()/2, y, offset+charWidth()/2, y-lineHeight()+2);
             }
             else {
                 // Draw a symbol using obtained format

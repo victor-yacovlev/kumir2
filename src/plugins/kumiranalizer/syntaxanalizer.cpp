@@ -1628,6 +1628,54 @@ void SyntaxAnalizer::parseImport(int str)
         st.data[1]->error = _("No such module");
         return;
     }
+    const QStringList conflictNames = checkForConflictingNames(moduleToImport, st.mod);
+    if (conflictNames.size() > 0) {
+        st.data[1]->error = _("Name conflict with modules: %1",
+                    conflictNames.join(", ")
+                    );
+        moduleToImport->header.usedBy.removeAll(st.mod.toWeakRef());
+        return;
+    }
+}
+
+QStringList SyntaxAnalizer::checkForConflictingNames(const ModulePtr &moduleToCheck, const ModulePtr & parentModule) const
+{
+    QSet<QString> result;
+
+    QStringList thisModuleNames;
+    Q_FOREACH(const AST::AlgorithmPtr & alg, moduleToCheck->header.algorhitms) {
+        thisModuleNames << alg->header.name;
+    }
+    Q_FOREACH(const AST::Type & type, moduleToCheck->header.types) {
+        thisModuleNames << type.name;
+    }
+
+    Q_FOREACH(const QString & nameToCheck, thisModuleNames) {
+        Q_FOREACH(const AST::ModulePtr & module, ast_->modules) {
+            bool moduleAvailable =
+                    module->builtInID == 0xF0 ||
+                    module->isEnabledFor(parentModule) ||
+                    alwaysEnabledModules_.contains(module->header.name)
+                    ;
+            if (moduleAvailable && module != moduleToCheck) {
+                Q_FOREACH(const AST::AlgorithmPtr & alg, module->header.algorhitms) {
+                    const QString & algName = alg->header.name;
+                    if (algName == nameToCheck) {
+                        result.insert(module->header.name);
+                        break;
+                    }
+                }
+                Q_FOREACH(const AST::Type & type, module->header.types) {
+                    const QString & typeName = type.name;
+                    if (typeName == nameToCheck) {
+                        result.insert(module->header.name);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return result.toList();
 }
 
 AST::ModulePtr SyntaxAnalizer::loadKodFile(const QString &name, QString &error)

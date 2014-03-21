@@ -206,6 +206,7 @@
 "Must be a file name or empty string";"Должно быть имя файла или пустая строка";"";"";"";"";
 "Must be a scalar constant";"Нельзя присвоить список значений";"";"";"";"";
 "Must be a variable name";"Это не имя величины";"";"";"";"";
+"Name conflict with modules: %1";"Конфликт имен с: %1";"";"";"";"";
 "Name contains keyword";"Ключевое слово в имени";"";"";"";"";
 "Name contains quotation symbol";"Имя содержит кавычку";"";"";"";"";
 "Name does not match header";"Несоответствие имени с заголовком";"";"";"";"";
