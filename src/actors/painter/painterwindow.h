@@ -20,6 +20,7 @@ class PainterWindow : public QWidget
 public:
     explicit PainterWindow(PainterModule * module, QWidget *parent = 0);
     void setCanvas(QImage * canvas, QMutex * locker);
+    inline QSize minimumSizeHint() const { return QSize(360, 300); }
     QWidget * view();
     ~PainterWindow();
 public slots:
