@@ -233,7 +233,7 @@ if(tail){
 lines.append(new QGraphicsLineItem(oldX,oldY,curX,curY));//Add line to lines list 
 scene->addItem(lines.last());};
 showCurTurtle();
-scene->update();
+//scene->update();
 
 return toret;
 }
