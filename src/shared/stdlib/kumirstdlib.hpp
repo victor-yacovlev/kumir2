@@ -797,7 +797,7 @@ public:
         }
         word = word.substr(pos, word.length()-pos);
         if (word.length()==0) {
-            error = WrongHex;
+            error = pos>0 ? EmptyWord : WrongHex;
             return 0;
         }
         int result = 0;
