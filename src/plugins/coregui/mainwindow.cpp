@@ -406,6 +406,8 @@ void MainWindow::switchToColumnFirstLayout()
 
     ui->splitter->addWidget(centralSide_);
     ui->splitter->addWidget(secondarySide_);
+    ui->splitter->setCollapsible(0, false);
+    ui->splitter->setCollapsible(1, true);
 
     centralSide_->addComponent(tabWidget_, true);
     centralSide_->addComponent(consolePlace_, true);
