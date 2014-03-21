@@ -199,7 +199,7 @@ void turtle::rotateImages()
     };
     t1->scale(zoom,zoom);
 
-    scene->update();
+//    scene->update();
 
 };
 
