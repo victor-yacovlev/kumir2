@@ -248,6 +248,8 @@ private /*methods*/:
     }
     static LexemPtr findLexemByType(const QList<LexemPtr> lxs, LexemType type);
 
+    QStringList checkForConflictingNames(const AST::ModulePtr & moduleToCheck, const ModulePtr & parentModule) const;
+
 };
 
 } // namespace KumirAnalizer
