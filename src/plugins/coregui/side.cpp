@@ -9,7 +9,8 @@ namespace CoreGUI {
 Side::Side(QWidget *parent, const QString &settingsKey)
     : QSplitter(Qt::Horizontal, parent)
     , settingsKey_(settingsKey)
-{
+{   
+    setVisible(false);
     setHandleWidth(10);
     setAutoFillBackground(true);
 }
@@ -37,6 +38,9 @@ void Side::updateSettings(ExtensionSystem::SettingsPtr settings, const QStringLi
     }
     if (szs.size() > 0)
         setSizes(szs);
+    int sum = 0;
+    Q_FOREACH(int v, szs) sum += v;
+    setVisible(sum > 0);
 }
 
 void Side::addComponent(QWidget *widget, bool autoResizable)
@@ -186,6 +190,9 @@ void Side::ensureEnoughtSpaceForComponent(QWidget *component, const QSize &size)
 
     szs[index] = w;
     setSizes(szs);
+    int sum = 0;
+    Q_FOREACH(int v, szs) sum += v;
+    setVisible(sum > 0);
 }
 
 void Side::releaseSpaceUsesByComponent(QWidget *component)
@@ -199,6 +206,9 @@ void Side::releaseSpaceUsesByComponent(QWidget *component)
         szs[resizableIndex] = szs[resizableIndex] + freed + handleWidth();
     }
     setSizes(szs);
+    int sum = 0;
+    Q_FOREACH(int v, szs) sum += v;
+    setVisible(sum > 0);
 }
 
 void Side::resizeEvent(QResizeEvent *event)

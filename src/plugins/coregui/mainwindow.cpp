@@ -387,7 +387,7 @@ void MainWindow::switchToRowFirstLayout()
     centralSide_->setCollapsible(1, true);
     secondarySide_->setCollapsible(0, true);
     secondarySide_->setCollapsible(1, true);
-
+    centralSide_->setVisible(true);
     restoreSizes(visibleSizes, Qt::Vertical);
 
 }
@@ -439,7 +439,7 @@ void MainWindow::switchToColumnFirstLayout()
     centralSide_->setCollapsible(1, true);
     secondarySide_->setCollapsible(0, true);
     secondarySide_->setCollapsible(1, true);
-
+    centralSide_->setVisible(true);
     restoreSizes(visibleSizes, Qt::Horizontal);
 }
 
