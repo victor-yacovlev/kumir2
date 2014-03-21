@@ -47,7 +47,7 @@ turtle::turtle(QDir mresd)
         view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         setFixedSize(FIELD_SX+2*BORDER_SZ+5,FIELD_SY+2*BORDER_SZ+5);
         setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
+        view->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
 
 //        turtleHeader->setChildWidget(this);
         setCentralWidget(view);
@@ -90,6 +90,7 @@ delta=100*zoom;
 // 	   };
 	CreateTurtle();
 	drawTail();
+    timer.start(50,this);
 }
 void turtle::loadIniFile()
 {
@@ -199,7 +200,7 @@ void turtle::rotateImages()
     };
     t1->scale(zoom,zoom);
 
-//    scene->update();
+//view->update();
 
 };
 
@@ -233,7 +234,7 @@ if(tail){
 lines.append(new QGraphicsLineItem(oldX,oldY,curX,curY));//Add line to lines list 
 scene->addItem(lines.last());};
 showCurTurtle();
-//scene->update();
+//view->update();
 
 return toret;
 }
@@ -367,7 +368,12 @@ turtle::~turtle()
 
 
  };
-
+void turtle::timerEvent(QTimerEvent *event)
+{
+    if (event->timerId() == timer.timerId()) {
+        Repaint();
+    }
+};
 void turtle:: closeEvent ( QCloseEvent * event )
 {
 qDebug()<<"libM"<<Tpult->libMode<<" autoClose"<<autoClose;

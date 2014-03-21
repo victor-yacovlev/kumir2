@@ -52,6 +52,7 @@ public:
 
 protected:
  void mousePressEvent(QMouseEvent *event);
+ void timerEvent(QTimerEvent *event);
 void closeEvent ( QCloseEvent * event );
 public slots:
  void rotate();
@@ -62,7 +63,9 @@ public slots:
  void DoRotate(double deg);
  void DoMove(int range);
  void hideTurtle(QPoint pos);
- void Repaint(){view->repaint();qDebug()<<"Repaint VIEW";scene->update();};
+ void Repaint(){
+     view->repaint();
+     scene->update();};
  signals:
  void Otkaz(QString msg);
  void Ok();
@@ -100,7 +103,7 @@ QGraphicsSvgItem * curTurtle;
  bool autoClose,obod;
  int FIELD_SX;
  int FIELD_SY;
- 
+ QBasicTimer timer;
 // WHeader* turtleHeader;
 };
 
