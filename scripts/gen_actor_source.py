@@ -1341,7 +1341,7 @@ class PluginCppClass(CppClassBase):
             "QVariantList optResults_",
             "ExtensionSystem::CommandLine commandLineParameters_"
         ]
-        self.signals = ["void sync()"]
+        self.signals = ["void sync()", "void asyncRun(quint32, const QVariantList &)"]
         self.classDeclarationPrefix = """
     friend class %s;
     friend class %s;
@@ -1408,6 +1408,11 @@ private:
     , asyncRunThread_(nullptr)
     , settingsPage_(nullptr)
 {
+    QObject::connect(
+        this, SIGNAL(asyncRun(quint32,QVariantList)),
+        this, SLOT(asyncEvaluate(quint32,QVariantList)),
+        Qt::QueuedConnection
+    );
 }
         """ % (self.className, self.className)
 
@@ -1760,8 +1765,9 @@ private:
             switchBody += "case 0x%04x: {\n" % methodIndex
             switchBody += "    /* %s */\n" % method.name.asciiValue()
             if method.async:
-                switchBody += "    asyncRunThread_->init(index, args);\n"
-                switchBody += "    asyncRunThread_->start();\n"
+                # switchBody += "    asyncRunThread_->init(index, args);\n"
+                # switchBody += "    asyncRunThread_->start();\n"
+                switchBody += "    emit asyncRun(index, args);\n"
                 switchBody += "    return ES_Async;\n"
             else:
                 args = []
@@ -1836,6 +1842,84 @@ private:
             return ES_Error;
         }
     }
+}
+        """ % (self.className, _addIndent(_addIndent(switchBody)))
+
+    def asyncEvaluateCppImplementation(self):
+        """
+        Creates evaluate C++ implementation
+
+        :rtype:     unicode
+        :return:    implementation of void asyncEvaluate(quint32, const QVariantList&)
+        """
+        switchBody = ""
+        for method in self._module.methods:
+            assert isinstance(method, Method)
+            methodIndex = self._module.methods.index(method)
+            if method.async:
+                switchBody += "case 0x%04x: {\n" % methodIndex
+                switchBody += "    /* %s */\n" % method.name.asciiValue()
+                args = []
+                for index, argument in enumerate(method.arguments):
+                    assert isinstance(argument, Argument)
+                    switchBody += "    %s = " % argument.cppLocalVariableDeclaration()
+                    if argument.dimension > 0:
+                        switchBody += "toVector%d<%s>(args[%d])" % (
+                            argument.dimension,
+                            argument.baseType.qtName(),
+                            index
+                        )
+                    elif argument.baseType.qtName() in ["int", "qreal", "bool", "QString", "QChar"]:
+                        switchBody += "qvariant_cast<%s>(args[%d])" % (argument.baseType.qtName(), index)
+                    else:
+                        switchBody += "decode(args[%d])" % index
+                    switchBody += ";\n"
+                    args += [argument.name.cppValue()]
+                if method.returnType:
+                    returnType = method.returnType
+                    assert isinstance(returnType, BaseType)
+                    switchBody += "    result_ = "
+                    if returnType.qtName() in ["int", "qreal", "bool", "QString", "QChar"]:
+                        switchBody += "QVariant::fromValue("
+                    else:
+                        switchBody += "encode("
+                else:
+                    switchBody += "    "
+                switchBody += "module_->run%s(%s)" % (method.name.cppCamelCaseValue(), string.join(args, ", "))
+                if method.returnType:
+                    switchBody += ");\n"
+                else:
+                    switchBody += ";\n"
+                returnsAnyArgument = False
+                for argument in method.arguments:
+                    assert isinstance(argument, Argument)
+                    switchBody += "    optResults_ << "
+                    if argument.reference and not argument.constant:
+                        returnsAnyArgument = True
+                        plainType = argument.baseType.qtName() in ["int", "qreal", "bool", "QString", "QChar"]
+                        if plainType or argument.dimension > 0:
+                            switchBody += "QVariant::fromValue(%s);\n" % argument.name.cppValue()
+                        else:
+                            switchBody += "encode(%s);\n" % argument.name.cppValue()
+                    else:
+                        switchBody += "QVariant::Invalid;\n"
+                switchBody += "    break;\n"
+                switchBody += "}\n\n"
+
+        return """
+/* private slot */ void %s::asyncEvaluate(quint32 index, const QVariantList & args)
+{
+    using namespace Shared;
+    errorText_.clear();
+    result_ = QVariant::Invalid;
+    optResults_.clear();
+    switch (index) {
+%s
+        default : {
+            errorText_ = "Unknown method index for async evaluation";
+        }
+    }
+    emit sync();
 }
         """ % (self.className, _addIndent(_addIndent(switchBody)))
 
