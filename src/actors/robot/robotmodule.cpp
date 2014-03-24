@@ -2535,7 +2535,7 @@ namespace ActorRobot {
 //        if (m_robot && !property("fromPult").toBool())
 //            m_robot->showHideWindow(true);
         
-        setProperty("fromPult", false);
+        // setProperty("fromPult", false);
         
         if(getFieldItem(robo_y,robo_x)->canUp())
         {
@@ -2552,7 +2552,7 @@ namespace ActorRobot {
 //        if (m_robot && !property("fromPult").toBool())
 //            m_robot->showHideWindow(true);
         
-        setProperty("fromPult", false);
+        // setProperty("fromPult", false);
         
         if(getFieldItem(robo_y,robo_x)->canDown())
         {
@@ -2566,7 +2566,7 @@ namespace ActorRobot {
     {
 //        if (m_robot && !property("fromPult").toBool())
 //            m_robot->showHideWindow(true);
-        setProperty("fromPult", false);
+        // setProperty("fromPult", false);
         
         if(getFieldItem(robo_y,robo_x)->canLeft())
         {
@@ -2581,7 +2581,7 @@ namespace ActorRobot {
     {
 //        if (m_robot && !property("fromPult").toBool())
 //            m_robot->showHideWindow(true);
-        setProperty("fromPult", false);
+        // setProperty("fromPult", false);
         
         if(getFieldItem(robo_y,robo_x)->canRight())
         {
