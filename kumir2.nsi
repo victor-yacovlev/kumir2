@@ -1,15 +1,11 @@
-п»ї!include MUI2.nsh
+!include MUI2.nsh
  
 # This include is used only by build system
-# This file encoded in UTF-8 to use
-# within NSIS-Unicode fork
-# http://www.scratchpaper.com/
-
 # For manual build change this line to something line:
 #  OutFile "kumir2-...exe"
 !include outfilename.nsh
 
-Name "РљСѓРјРёСЂ-2.x"
+Name "Кумир-2.x"
 InstallDir "$PROGRAMFILES\Kumir2x"
 RequestExecutionLevel admin
 
@@ -46,20 +42,20 @@ Section "Kumir" Kumir
 	Delete /REBOOTOK "$INSTDIR\vcredist_x86.exe"
 	
         WriteRegStr HKCR ".kum" "" "ru.niisi.kumir2.program"
-        WriteRegStr HKCR "ru.niisi.kumir2.program" "" "РџСЂРѕРіСЂР°РјРјР° РљСѓРјРёСЂ"
+        WriteRegStr HKCR "ru.niisi.kumir2.program" "" "Программа Кумир"
         WriteRegStr HKCR "ru.niisi.kumir2.program\shell\open\command" "" '"$INSTDIR\bin\kumir2-open.exe" "%1"'
         WriteRegStr HKCR "ru.niisi.kumir2.program\DefaultIcon" "" "$INSTDIR\share\icons\kumir2-kum.ico"
         WriteRegStr HKCR ".kod" "" "ru.niisi.kumir2.bytecode"
-        WriteRegStr HKCR "ru.niisi.kumir2.bytecode" "" "Р’С‹РїРѕР»РЅСЏРµРјС‹Р№ Р±Р°Р№С‚РєРѕРґ РљСѓРјРёСЂ"        
+        WriteRegStr HKCR "ru.niisi.kumir2.bytecode" "" "Выполняемый байткод Кумир"        
         WriteRegStr HKCR "ru.niisi.kumir2.bytecode\shell\open\command" "" '"$INSTDIR\bin\kumir2-run.exe" "%1" "%*"'
         WriteRegStr HKCR "ru.niisi.kumir2.bytecode\DefaultIcon" "" "$INSTDIR\share\icons\kumir2-kod.ico"
         
         Call RefreshShellIcons
 
-	CreateDirectory "$SMPROGRAMS\РљСѓРјРёСЂ2"
-	CreateShortCut "$SMPROGRAMS\РљСѓРјРёСЂ2\РљСѓРјРёСЂ-РЎС‚Р°РЅРґР°СЂС‚.lnk" "$INSTDIR\bin\kumir2-classic.exe"
-	CreateShortCut "$SMPROGRAMS\РљСѓРјРёСЂ2\РљСѓРјРёСЂ РґР»СЏ СЃС‚Р°СЂС€РёС… РєР»Р°СЃСЃРѕРІ.lnk" "$INSTDIR\bin\kumir2-highgrade.exe"
-	CreateShortCut "$SMPROGRAMS\РљСѓРјРёСЂ2\РљСѓРјРёСЂ-РџСЂРѕ.lnk" "$INSTDIR\bin\kumir2-ide.exe"
-	CreateShortCut "$SMPROGRAMS\РљСѓРјРёСЂ2\РљСѓРјРёСЂ РґР»СЏ СѓС‡РёС‚РµР»РµР№.lnk" "$INSTDIR\bin\kumir2-teacher.exe"
+	CreateDirectory "$SMPROGRAMS\Кумир2"
+	CreateShortCut "$SMPROGRAMS\Кумир2\Кумир-Стандарт.lnk" "$INSTDIR\bin\kumir2-classic.exe"
+	CreateShortCut "$SMPROGRAMS\Кумир2\Кумир для старших классов.lnk" "$INSTDIR\bin\kumir2-highgrade.exe"
+	CreateShortCut "$SMPROGRAMS\Кумир2\Кумир-Про.lnk" "$INSTDIR\bin\kumir2-ide.exe"
+	CreateShortCut "$SMPROGRAMS\Кумир2\Кумир для учителей.lnk" "$INSTDIR\bin\kumir2-teacher.exe"
 	
 SectionEnd
