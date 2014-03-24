@@ -420,7 +420,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             debuggerWindow, SLOT(activate()));
 
     const QString layoutChoice =
-            mySettings()->value(GUISettingsPage::LayoutKey, GUISettingsPage::RowsFirstValue).toString();
+            mySettings()->value(GUISettingsPage::LayoutKey, GUISettingsPage::ColumnsFirstValue).toString();
     if (layoutChoice == GUISettingsPage::ColumnsFirstValue) {
         mainWindow_->switchToColumnFirstLayout();
     }

@@ -1318,6 +1318,7 @@ void MainWindow::loadSettings(const QStringList & keys)
     }
     else {
         centralSide_->updateSettings(settings_, keys);
+        centralSide_->setVisible(true); // always visible even has null default settings
         secondarySide_->updateSettings(settings_, keys);
     }
     if (keys.contains(Plugin::MainWindowSplitterStateKey+"0") || keys.isEmpty()) {
