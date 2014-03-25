@@ -1214,7 +1214,7 @@ void popLoopStatement(QList<LexemPtr> &lexems, TextStatement &result)
     lexems.pop_front();
     bool isFreeLoop = true;
     static const QList<LexemType> LoopKeywords = QList<LexemType>()
-            << LxSecFor << LxSecFrom << LxSecTo << LxSecTimes << LxSecStep;
+            << LxSecFor << LxSecFrom << LxSecTo << LxSecTimes << LxSecStep << LxSecWhile;
     Q_FOREACH(const LexemPtr lx, lexems) {
         if (lx->type & LxTypePrimaryKwd) break;
         if (LoopKeywords.contains(lx->type)) {
