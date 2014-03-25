@@ -1212,7 +1212,15 @@ void popLoopStatement(QList<LexemPtr> &lexems, TextStatement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeyword(lexems, result);
+    while (lexems.size()>0) {
+        LexemPtr lx = lexems[0];
+        if (lx->type==LxOperSemicolon || (lx->type & LxTypePrimaryKwd && lx->type!=LxPriAssign))
+            break;
+        if (result.data.size() > 0 && LxSecTimes==result.data.last()->type)
+            break;
+        lexems.pop_front();
+        result.data << lx;
+    }
 }
 
 void popEndLoopStatement(QList<LexemPtr> &lexems, TextStatement &result)
