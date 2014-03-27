@@ -1415,7 +1415,7 @@ void TextCursor::removePreviousChar()
     if (!enabledFlag_)
         return;
     if (modifiesProtectedLiines())
-        return;
+        return;   
     if (hasSelection()) {
         removeSelectedText();
         emitPositionChanged();
@@ -1462,6 +1462,11 @@ void TextCursor::removePreviousChar()
         // remove current line and set cursor to end of previous line
         if (row_>0) {
             if (row_<editor_->document()->linesCount()) {
+
+                // Check if previous char position is protected
+                if (editor_->document()->isProtected(row_-1))
+                    return;
+
                 editor_->document()->undoStack()->push(new RemoveCommand(editor_->document(),
                                                                 this,
                                                                 editor_->analizerInstance_,
@@ -1563,6 +1568,16 @@ void TextCursor::removeCurrentChar()
         column_ = 2*editor_->document()->indentAt(row_);
         return;
     }
+
+    // Check if deletes next protected line
+    if (textPos >= editor_->document()->textAt(row_).length()) {
+        if (row_+1 < editor_->document()->linesCount()) {
+            if (editor_->document()->isProtected(row_+1)) {
+                return;
+            }
+        }
+    }
+
     editor_->document()->undoStack()->push(new RemoveCommand(editor_->document(), this, editor_->analizerInstance_, row_, textPos, 1, true, row_, column_));
 
     visibleFlag_ = true;
