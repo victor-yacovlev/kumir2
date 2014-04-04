@@ -1322,7 +1322,7 @@ namespace ActorRobot {
     void RoboField::reverseColorCurrent()
     {
         reverseColor(robo_y,robo_x);
-        wasEdit=true;
+        if(mode!=NORMAL_MODE)wasEdit=true;
     }
     
     void RoboField::reverseMark(int row, int col)
