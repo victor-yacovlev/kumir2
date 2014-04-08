@@ -1,0 +1,48 @@
+{
+	"name": { "ascii": "Grasshopper %d %d", "ru_RU": "Кузнечик %d %d" },
+	"methods": [
+        {
+            "name": {"ascii": "go forward %1", "ru_RU": "вперед %1" },
+            "async": true,
+            "arguments": [
+                { "name": "distance", "baseType": "int" }
+            ]
+        },
+        {
+            "name": {"ascii": "go backward %2", "ru_RU": "назад %2" },
+            "async": true,
+            "arguments": [
+                { "name": "distance", "baseType": "int" }
+            ]
+        },
+        { "name": {"ascii": "do repaint", "ru_RU": "перекрасить" }, "async": false }
+	],
+	"gui": {
+		"windows": [
+			{ "role": "main", "icon": "grasshopper" },
+			{ "role": "pult", "icon": "grasshopper-rc" }
+		]
+	},
+	"settings": {
+		"BackgroundColor": {
+			"type": "color",
+			"default": "#green",
+			"title": {"ascii": "Background Color", "ru_RU": "Цвет фона"}
+		},
+        "RulerColor": {
+			"type": "color",
+			"default": "#white",
+			"title": {"ascii": "Ruler Color", "ru_RU": "Цвет линейки"}
+		},
+        "GrasshopperColor": {
+			"type": "color",
+			"default": "#white",
+			"title": {"ascii": "Grasshopper Color", "ru_RU": "Цвет кузнечика"}
+		},
+        "TrackColor": {
+			"type": "color",
+			"default": "#gray",
+			"title": {"ascii": "Track Color", "ru_RU": "Цвет следа"}
+		}
+	}
+}
