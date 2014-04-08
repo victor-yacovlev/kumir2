@@ -178,6 +178,7 @@
 "Here must be \"input\" or \"output\"";"";"";"";"";"";
 "Hidden part must contain only algorithm";"";"";"";"";"";
 "Incompatible types";"Плохой тип параметра";"";"";"";"";
+"Incomplete module name";"Не полное имя исполнителя";"";"";"";"";
 "Incorrect algorithm name";"Некорректное имя алгоритма";"";"";"";"";
 "Indeces was specified before";"Повторное указание индексов";"";"";"";"";
 "Index is not integer";"Индекс – не целое число";"";"";"";"";

@@ -184,11 +184,21 @@ private /*methods*/:
                                   , AST::ExpressionPtr argument
                                   , const AST::ModulePtr currentModule
                                   ) const;
-    bool findAlgorhitm(const QString &name
+    bool findAlgorithm(const QString &name
                        , const AST::ModulePtr currentModule
                        , const AST::AlgorithmPtr currentAlgorithm
                        , AST::AlgorithmPtr & algorhitm
+                       , QVariantList & templateParameters
                        ) const;
+
+    bool findAlgorithmInModule(const QString &name
+                               , const AST::ModulePtr & module
+                               , const bool allowPrivate
+                               , const bool allowBroken
+                               , AST::AlgorithmPtr & algorithm
+                               , QVariantList & templateParameters
+                               ) const;
+
     bool findGlobalVariable(const QString &name, const AST::ModulePtr module, AST::VariablePtr & var) const;
     bool findLocalVariable(const QString &name
                            , const AST::AlgorithmPtr alg

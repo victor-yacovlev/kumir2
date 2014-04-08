@@ -248,6 +248,7 @@ class Name:
         """
         return str(self.data["ascii"])
 
+    @property
     def cppValue(self):
         """
         Returns a valid C++ name based on source name
@@ -285,6 +286,8 @@ class Name:
         for c in ascii:
             if c == ' ':
                 nextIsCap = True
+            elif c in "\\%":
+                break
             else:
                 if nextIsCap:
                     result += c.upper()
@@ -301,7 +304,7 @@ class Name:
         :rtype:     str
         :return:    valid C++ identifier
         """
-        cpp = self.cppValue()
+        cpp = self.cppValue
         return cpp[0].upper() + cpp[1:]
 
 
@@ -438,7 +441,7 @@ class BaseType:
                 assert isinstance(baseType, BaseType)
                 fieldsDecl += "    "
                 fieldsDecl += baseType.qtName() + " "
-                fieldsDecl += name.cppValue() + ";"
+                fieldsDecl += name.cppValue + ";"
                 fieldsDecl += "\n"
             return _renderTemplate("""
 struct $name {
@@ -555,7 +558,7 @@ $fields
                         defvalue = "0"
                     elif typee == "bool":
                         defvalue = "false"
-                field = fieldName.cppValue()
+                field = fieldName.cppValue
                 bodyEncode += "    result << QVariant(record.%s);\n" % field
                 bodyDecode += "    result.%s = alist.size() > %i ? alist.at(%i).%s : %s;\n" % (
                     field, index, index, conversion, defvalue
@@ -650,7 +653,7 @@ class Argument:
             result += self.baseType.qtName()
         if self.dimension > 0 or not self.baseType.qtName() in ["int", "qreal", "bool"] or self.reference:
             result += "&"
-        result += " " + self.name.cppValue()
+        result += " " + self.name.cppValue
         return result
 
     def cppLocalVariableDeclaration(self):
@@ -665,7 +668,7 @@ class Argument:
             result += self._makeVectorType()
         else:
             result += self.baseType.qtName()
-        result += " " + self.name.cppValue()
+        result += " " + self.name.cppValue
         return result
 
     def kumirArgumentDeclaration(self):
@@ -800,7 +803,7 @@ class Method:
                 else:
                     argumentLine += ")"
                 result += argumentLine
-                body += "Q_UNUSED(" + argument.name.cppValue() + ")  // Remove this line on implementation;\n"
+                body += "Q_UNUSED(" + argument.name.cppValue + ")  // Remove this line on implementation;\n"
             result += "\n"
         if retval:
             body += "return " + retval + ";\n"
@@ -1440,7 +1443,7 @@ private:
 {
     return QByteArray("%s");
 }
-        """ % (self.className, self._module.name.asciiValue())
+        """ % (self.className, self._module.name.asciiValue().replace("\\", "\\\\"))
 
     def localizedModuleNameCppImplementation(self):
         """
@@ -1456,7 +1459,7 @@ private:
     // TODO non-Russian languages not implemented yet
     return QString::fromUtf8("%s");
 }
-        """ % (self.className, self._module.name.kumirValue())
+        """ % (self.className, self._module.name.kumirValue().replace("\\", "\\\\"))
 
     @property
     def functionListCppImplementation(self):
@@ -1470,14 +1473,14 @@ private:
                 body += "result.last().accessType = TeacherModeFunction;\n"
             else:
                 body += "result.last().accessType = PublicFunction;\n"
-            body += 'result.last().asciiName = QByteArray("%s");\n' % method.name.asciiValue()
+            body += 'result.last().asciiName = QByteArray("%s");\n' % method.name.asciiValue().replace("\\", "\\\\")
             assert isinstance(method.name.data, dict)
             for key, value in method.name.data.items():
                 qlocale = None
                 if key == "ru_RU":
                     qlocale = "QLocale::Russian"
                 if qlocale:
-                    body += 'result.last().localizedNames[%s] = QString::fromUtf8("%s");\n' % (qlocale, value)
+                    body += 'result.last().localizedNames[%s] = QString::fromUtf8("%s");\n' % (qlocale, value.replace("\\", "\\\\"))
             if method.returnType:
                 assert isinstance(method.returnType, BaseType)
                 if method.returnType._name.asciiValue() == "int":
@@ -1785,7 +1788,7 @@ private:
                     else:
                         switchBody += "decode(args[%d])" % index
                     switchBody += ";\n"
-                    args += [argument.name.cppValue()]
+                    args += [argument.name.cppValue]
                 if method.returnType:
                     returnType = method.returnType
                     assert isinstance(returnType, BaseType)
@@ -1809,9 +1812,9 @@ private:
                         returnsAnyArgument = True
                         plainType = argument.baseType.qtName() in ["int", "qreal", "bool", "QString", "QChar"]
                         if plainType or argument.dimension > 0:
-                            switchBody += "QVariant::fromValue(%s);\n" % argument.name.cppValue()
+                            switchBody += "QVariant::fromValue(%s);\n" % argument.name.cppValue
                         else:
-                            switchBody += "encode(%s);\n" % argument.name.cppValue()
+                            switchBody += "encode(%s);\n" % argument.name.cppValue
                     else:
                         switchBody += "QVariant::Invalid;\n"
                 switchBody += "    if (errorText_.length() > 0) {\n"
@@ -1874,7 +1877,7 @@ private:
                     else:
                         switchBody += "decode(args[%d])" % index
                     switchBody += ";\n"
-                    args += [argument.name.cppValue()]
+                    args += [argument.name.cppValue]
                 if method.returnType:
                     returnType = method.returnType
                     assert isinstance(returnType, BaseType)
@@ -1898,9 +1901,9 @@ private:
                         returnsAnyArgument = True
                         plainType = argument.baseType.qtName() in ["int", "qreal", "bool", "QString", "QChar"]
                         if plainType or argument.dimension > 0:
-                            switchBody += "QVariant::fromValue(%s);\n" % argument.name.cppValue()
+                            switchBody += "QVariant::fromValue(%s);\n" % argument.name.cppValue
                         else:
-                            switchBody += "encode(%s);\n" % argument.name.cppValue()
+                            switchBody += "encode(%s);\n" % argument.name.cppValue
                     else:
                         switchBody += "QVariant::Invalid;\n"
                 switchBody += "    break;\n"
@@ -2280,7 +2283,7 @@ class AsyncThreadCppClass(CppClassBase):
             args = []
             for index, argument in enumerate(method.arguments):
                 assert isinstance(argument, Argument)
-                args += [argument.name.cppValue()]
+                args += [argument.name.cppValue]
                 switchBody += "    %s = " % argument.cppLocalVariableDeclaration()
                 if argument.dimension > 0:
                     switchBody += "toVector%d<%s>(args[%d])" % (
@@ -2314,9 +2317,9 @@ class AsyncThreadCppClass(CppClassBase):
                 if argument.reference and not argument.constant:
                     plainType = argument.baseType.qtName() in ["int", "qreal", "bool", "QString", "QChar"]
                     if plainType or argument.dimension > 0:
-                        switchBody += "QVariant::fromValue(%s);\n" % argument.name.cppValue()
+                        switchBody += "QVariant::fromValue(%s);\n" % argument.name.cppValue
                     else:
-                        switchBody += "encode(%s);\n" % argument.name.cppValue()
+                        switchBody += "encode(%s);\n" % argument.name.cppValue
                 else:
                     switchBody += "QVariant::Invalid;\n"
             switchBody += "    break;\n"
