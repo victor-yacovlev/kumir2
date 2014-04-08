@@ -4249,23 +4249,13 @@ bool SyntaxAnalizer::findAlgorithm(
                     )
             {
                 // The same module - find includes private members
-                for (int j=0; j<ast_->modules[i]->impl.algorhitms.size(); j++) {
-                    AST::AlgorithmPtr alg = ast_->modules[i]->impl.algorhitms[j];
-                    if (alg->header.name==name) {
-                        algorithm = alg;
-                        return true;
-                    }
-                }
+                if (findAlgorithmInModule(name, ast_->modules[i], true, true, algorithm, templateParameters))
+                    return true;
             }
             else {
                 // Find only public algorhitm
-                for (int j=0; j<ast_->modules[i]->header.algorhitms.size(); j++) {
-                    AST::AlgorithmPtr alg = ast_->modules[i]->header.algorhitms[j];
-                    if (alg->header.name==name && !alg->header.broken) {
-                        algorithm = alg;
-                        return true;
-                    }
-                }
+                if (findAlgorithmInModule(name, ast_->modules[i], false, false, algorithm, templateParameters))
+                    return true;
             }
         }
     }
@@ -4291,12 +4281,16 @@ bool SyntaxAnalizer::findAlgorithmInModule(const QString &name,
         if (module->header.nameTemplate.length() > 0) {
             // construct fully-qualified name and search by regexp
             QString pattern = a->header.name;
+            QVariantList params;
             for (int t=0; t<module->header.templateParameters.size(); t++) {
-                pattern.replace("%" + QString::number(t+1), module->header.templateParameters[t].toString());
+                if (-1 != pattern.indexOf("%" + QString::number(t+1))) {
+                    pattern.replace("%" + QString::number(t+1), module->header.templateParameters[t].toString());
+                    params.append(module->header.templateParameters[t]);
+                }
             }
             pattern = pattern.simplified();
             if (name == pattern) {
-                templateParameters = QVariantList(module->header.templateParameters);
+                templateParameters = params;
                 algorithm = a;
                 return true;
             }
@@ -5463,7 +5457,8 @@ AST::ExpressionPtr  SyntaxAnalizer::parseFunctionCall(const QList<LexemPtr> &lex
     result->baseType = function->header.returnType;
     result->dimension = 0;
     result->function = function;
-    result->operands = realArguments;
+    addTemplateParametersToFunctionCall(result, functionTemplateParameters);
+    result->operands.append(realArguments);
     result->lexems = lexems;
     return result;
 }
@@ -6006,6 +6001,7 @@ AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<LexemPtr> &l
                     result->kind = AST::ExprFunctionCall;
                     result->function = a;
                     result->baseType = a->header.returnType;
+                    addTemplateParametersToFunctionCall(result, aTemplateParameters);
                     return result;
                 }
             }
@@ -6042,7 +6038,21 @@ AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<LexemPtr> &l
     return result;
 }
 
-
+void SyntaxAnalizer::addTemplateParametersToFunctionCall(ExpressionPtr &callNode, const QVariantList &parameters)
+{
+    const AST::AlgorithmPtr & func = callNode->function;
+    Q_ASSERT(func);
+    Q_ASSERT(func->header.arguments.size() >= parameters.size());
+    Q_ASSERT(callNode->operands.isEmpty());
+    for (int i=0; i<parameters.size(); i++) {
+        AST::ExpressionPtr paramConst = AST::ExpressionPtr(new AST::Expression());
+        paramConst->kind = AST::ExprConst;
+        paramConst->baseType = func->header.arguments[i]->baseType;
+        paramConst->dimension = func->header.arguments[i]->dimension;
+        paramConst->constant = parameters[i];
+        callNode->operands.append(paramConst);
+    }
+}
 
 int findOperatorByPriority(const QList<SubexpressionElement> & s)
 {

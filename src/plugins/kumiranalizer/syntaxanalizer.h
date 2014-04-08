@@ -199,6 +199,9 @@ private /*methods*/:
                                , QVariantList & templateParameters
                                ) const;
 
+    static void addTemplateParametersToFunctionCall(AST::ExpressionPtr & callNode,
+                                             const QVariantList & parameters);
+
     bool findGlobalVariable(const QString &name, const AST::ModulePtr module, AST::VariablePtr & var) const;
     bool findLocalVariable(const QString &name
                            , const AST::AlgorithmPtr alg
