@@ -30,6 +30,10 @@ public:
     virtual QStringList imports() const = 0;
     virtual QString createImportStatementLine(const QString &importName) const = 0;
     virtual QString suggestFileName() const = 0;
+    virtual void connectSignalImportsChanged(
+            QObject * receiver,
+            const char * slot /* void (QStringList localizedNames) */
+            ) { Q_UNUSED(receiver); Q_UNUSED(slot); }
 };
 
 

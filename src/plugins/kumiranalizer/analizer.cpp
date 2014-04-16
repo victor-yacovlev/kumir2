@@ -13,6 +13,12 @@ namespace KumirAnalizer {
 
 QLocale::Language AnalizerPrivate::nativeLanguage = QLocale::Russian;
 
+void Analizer::connectSignalImportsChanged(QObject *receiver, const char *slot)
+{
+    QObject::connect(d->analizer, SIGNAL(importsChanged(QStringList)),
+                     receiver, slot);
+}
+
 void Analizer::setSourceLanguage(const QDir & resourcesRoot, const QLocale::Language &language)
 {
     Lexer::setLanguage(resourcesRoot, language);

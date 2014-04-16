@@ -4,6 +4,7 @@
 #include <extensionsystem/settings.h>
 
 #include <QWidget>
+#include <QCheckBox>
 
 namespace CoreGUI {
 
@@ -23,15 +24,17 @@ public:
     ~GUISettingsPage();
 
 public slots:
+    void createVisibleIconsGrid();
     void accept();
     void init();
     void resetToDefaults();
 signals:
     void settingsChanged(const QStringList & keys);
 
-private:
+private:   
     Ui::GUISettingsPage *ui;
     ExtensionSystem::SettingsPtr settings_;
+    QList<QCheckBox*> toolbarVisibleItems_;
 
 };
 

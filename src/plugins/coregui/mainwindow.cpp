@@ -60,9 +60,11 @@ MainWindow::MainWindow(Plugin * p) :
             + "/icons/from_qtcreator/";
 
     ui->actionNewProgram->setIcon(QIcon(qtcreatorIconsPath+"filenew.png"));
+    ui->actionNewProgram->setObjectName("file-new");
     ui->actionOpen->setIcon(QIcon(qtcreatorIconsPath+"fileopen.png"));
+    ui->actionOpen->setObjectName("file-open");
     ui->actionSave->setIcon(QIcon(qtcreatorIconsPath+"filesave.png"));
-    ui->actionSave->setProperty("role", "save");
+    ui->actionSave->setObjectName("file-save");
 
 
     ui->menuFile->setWindowTitle(ui->menuFile->title());
@@ -627,8 +629,8 @@ void MainWindow::checkCounterValue()
         TabWidgetElement * twe = currentTab();
         if (!twe)
             return;
-        if (twe->editorInstance) {
-            Editor::InstanceInterface * editor = twe->editorInstance;
+        if (twe->editor()) {
+            Editor::InstanceInterface * editor = twe->editor();
             quint32 errorsCount = editor->errorLinesCount();
             statusBar_->setErrorsCounter(errorsCount);
         }
@@ -685,9 +687,9 @@ void MainWindow::timerEvent(QTimerEvent *e)
 bool MainWindow::saveCurrentFile()
 {
     TabWidgetElement * twe = currentTab();
-    if (!twe->editorInstance)
+    if (!twe->editor())
         return true;
-    const QString fileName = twe->editorInstance->documentContents().sourceUrl.toLocalFile();
+    const QString fileName = twe->editor()->documentContents().sourceUrl.toLocalFile();
     bool result = 0;
     if (fileName.isEmpty()) {
         result = saveCurrentFileAs();
@@ -738,7 +740,7 @@ void MainWindow::updateBrowserTitle(const QString &title, const Shared::Browser:
 {
     for (int i=0; i<tabWidget_->count(); i++) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
-        if (twe->browserInstance == sender) {
+        if (twe->browser() == sender) {
             tabWidget_->setTabText(i, title);
             if (tabWidget_->currentIndex() == i)
                 setTitleForTab(i);
@@ -902,7 +904,7 @@ bool MainWindow::saveCurrentFileAs()
     const QString languageName = analizer->languageName();
     const QString fileNameSuffix = analizer->defaultDocumentFileNameSuffix();
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
-    QString fileName = twe->editorInstance->documentContents().sourceUrl.toLocalFile();
+    QString fileName = twe->editor()->documentContents().sourceUrl.toLocalFile();
     QString initialPath;
     if (fileName.isEmpty()) {
         QString lastFileName = m_plugin->mySettings()->value(Plugin::RecentFileKey).toString();
@@ -913,7 +915,7 @@ bool MainWindow::saveCurrentFileAs()
             initialPath = QFileInfo(lastFileName).absoluteDir().absolutePath();
         }
         const QString suffix = twe->type==Program ? fileNameSuffix : "txt";
-        initialPath += "/" + suggestNewFileName(suffix, twe->editorInstance->analizer(), initialPath);
+        initialPath += "/" + suggestNewFileName(suffix, twe->editor()->analizer(), initialPath);
     }
     else {
         initialPath = fileName;
@@ -950,7 +952,7 @@ bool MainWindow::saveCurrentFileTo(const QString &fileName)
 {
     TabWidgetElement * twe = currentTab();
     try {
-        twe->editorInstance->saveDocument(fileName);
+        twe->editor()->saveDocument(fileName);
     }
     catch (const QString & error) {
         QMessageBox::critical(this, tr("Can't save file"), error);
@@ -989,7 +991,7 @@ bool MainWindow::closeTab(int index)
         return false;
     }
     if (twe->type!=WWW) {
-        bool notSaved = twe->editorInstance->isModified();
+        bool notSaved = twe->editor()->isModified();
         QMessageBox::StandardButton r;
         if (!notSaved || twe->isCourseManagerTab()) {
             r = QMessageBox::Discard;
@@ -1052,7 +1054,7 @@ void MainWindow::createSettingsDialog()
     using namespace ExtensionSystem;
     settingsDialog_ = new Widgets::MultiPageDialog(this);
     settingsDialog_->setWindowTitle(tr("Preferences"));
-    settingsDialog_->setMinimumSize(700, 500);
+    settingsDialog_->setMinimumSize(800, 500);
     PluginManager * manager = PluginManager::instance();
     QList<KPlugin*> plugins = manager->loadedPlugins();
     foreach (KPlugin * p, plugins) {
@@ -1110,7 +1112,7 @@ void MainWindow::newProgram()
                 editor->toolBarActions(),
                 editor->menus(),
                 type);
-    e->editorInstance = editor;
+    e->setEditor(editor);
     tabWidget_->setCurrentWidget(e);
     setTitleForTab(tabWidget_->indexOf(e));
     e->setFocus();
@@ -1150,7 +1152,7 @@ void MainWindow::newText(const QString &fileName, const QString & text)
                 editor->toolBarActions(),
                 editor->menus(),
                 Text);
-    e->editorInstance = editor;
+    e->setEditor(editor);
     tabWidget_->setCurrentWidget(e);
     setTitleForTab(tabWidget_->indexOf(e));
     e->setFocus();
@@ -1194,7 +1196,9 @@ TabWidgetElement * MainWindow::addCentralComponent(
     if (type==Program) {
         kumir = m_plugin->kumirProgram_;
     }
-    TabWidgetElement * element = new TabWidgetElement(c, type != WWW,
+    TabWidgetElement * element = new TabWidgetElement(c,
+                                                      m_plugin->mySettings(),
+                                                      type != WWW,
                                                       toolbarActions, menus, type,
                                                       gr_fileActions, gr_otherActions, kumir);
 
@@ -1253,7 +1257,7 @@ void MainWindow::setupContentForTab()
         return;
 
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
-    m_plugin->kumirProgram_->setEditorInstance(twe->editorInstance);
+    m_plugin->kumirProgram_->setEditorInstance(twe->editor());
 }
 
 void MainWindow::disableTabs()
@@ -1273,6 +1277,12 @@ void MainWindow::updateSettings(SettingsPtr settings, const QStringList & keys)
 //    if (settings_) saveSettings();
     settings_ = settings;    
     loadSettings(keys);
+    for (int i=0; i<tabWidget_->count(); i++) {
+        TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
+        if (twe) {
+            twe->updateSettingsObject(settings);
+        }
+    }
 }
 
 bool MainWindow::isColumnFirstLayout() const
@@ -1359,8 +1369,8 @@ void MainWindow::restoreSession()
     bool hasUnsavedChanges = false;
     for (int i=0; i<tabWidget_->count(); i++) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
-        if (twe->editorInstance) {
-            hasUnsavedChanges = hasUnsavedChanges || twe->editorInstance->isModified();
+        if (twe->editor()) {
+            hasUnsavedChanges = hasUnsavedChanges || twe->editor()->isModified();
         }
         if (hasUnsavedChanges)
             break;
@@ -1396,8 +1406,8 @@ void MainWindow::closeEvent(QCloseEvent *e)
 //    m_plugin->saveSession();
     if (m_plugin->sessionsDisableFlag_ && tabsDisabledFlag_) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
-        if (twe->editorInstance) {
-            bool notSaved = twe->editorInstance->isModified();
+        if (twe->editor()) {
+            bool notSaved = twe->editor()->isModified();
             if (!notSaved || twe->isCourseManagerTab()) {
                 if (ExtensionSystem::PluginManager::instance()->shutdown()) {
                     e->accept();
@@ -1416,8 +1426,8 @@ void MainWindow::closeEvent(QCloseEvent *e)
     QStringList unsavedFiles;
     for (int i=0; i<tabWidget_->count(); i++) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
-        if (twe->editorInstance) {
-            bool notSaved = twe->editorInstance->isModified();
+        if (twe->editor()) {
+            bool notSaved = twe->editor()->isModified();
             if (notSaved && !twe->isCourseManagerTab()) {
                 QString title = tabWidget_->tabText(i);
                 if (title.endsWith("*")) {
@@ -1534,7 +1544,7 @@ void MainWindow::fileOpen()
     if (tabsDisabledFlag_) {
         TabWidgetElement * twe =
                 qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
-        if (twe->editorInstance && twe->editorInstance->isModified()) {
+        if (twe->editor() && twe->editor()->isModified()) {
             QMessageBox::StandardButton r = QMessageBox::Cancel;
             QMessageBox messageBox(
                         QMessageBox::Question,
@@ -1723,7 +1733,7 @@ void MainWindow::loadRecentFile(const QString & fullPath)
     if (tabsDisabledFlag_) {
         TabWidgetElement * twe =
                 qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
-        if (twe->editorInstance && twe->editorInstance->isModified()) {
+        if (twe->editor() && twe->editor()->isModified()) {
             QMessageBox::StandardButton r = QMessageBox::Cancel;
             QMessageBox messageBox(
                         QMessageBox::Question,
@@ -1814,7 +1824,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                         editor->toolBarActions(),
                         editor->menus(),
                         type);
-            result->editorInstance = editor;
+            result->setEditor(editor);
             tabWidget_->setCurrentIndex(tabWidget_->count()-1);
             tabWidget_->currentWidget()->setFocus();
             setupContentForTab();
@@ -1833,7 +1843,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                     QList<QAction*>(),
                     QList<QMenu*>(),
                     WWW);
-        result->browserInstance = browser;
+        result->setBrowser(browser);
         tabWidget_->setCurrentIndex(tabWidget_->count()-1);
         tabWidget_->currentWidget()->setFocus();
     }
@@ -1869,7 +1879,7 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
         if (courseManagerTab) {
             // Reuse existing tab
             Shared::Editor::InstanceInterface * editor =
-                    courseManagerTab->editorInstance;
+                    courseManagerTab->editor();
             editor->loadDocument(src);
         }
         else {
@@ -1883,7 +1893,7 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
                         editor->menus(),
                         Program
                         );
-            courseManagerTab->editorInstance = editor;
+            courseManagerTab->setEditor(editor);
             courseManagerTab->setCourseManagerTab(true);
         }
         courseManagerTab->setCourseTitle(data.title);
@@ -1909,7 +1919,7 @@ MainWindow::courseManagerProgramSource() const
         }
     }
     if (courseManagerTab) {
-        result.content = courseManagerTab->editorInstance->documentContents();
+        result.content = courseManagerTab->editor()->documentContents();
         result.url = result.content.sourceUrl;
         result.title = courseManagerTab->title();
     }

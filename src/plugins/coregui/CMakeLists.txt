@@ -21,6 +21,7 @@ set(SOURCES
     switchworkspacedialog.cpp
     systemopenfilesettings.cpp
     guisettingspage.cpp
+    toolbarcontextmenu.cpp
 )
 
 set(EXTRA_LIBS
@@ -51,6 +52,7 @@ set(MOC_HEADERS
     switchworkspacedialog.h
     systemopenfilesettings.h
     guisettingspage.h
+    toolbarcontextmenu.h
 )
 
 set(FORMS

@@ -714,6 +714,7 @@ void Editor::createActions()
     QObject::connect(selectAll_, SIGNAL(triggered()), plane_, SLOT(selectAll()));
 
     copy_ = new QAction(plane_);
+    copy_->setObjectName("edit-copy");
     copy_->setText(QObject::tr("Copy selection to clipboard"));
     copy_->setIcon(QIcon(qtcreatorIconsPath+"editcopy.png"));
     copy_->setShortcut(QKeySequence(QKeySequence::Copy));
@@ -721,6 +722,7 @@ void Editor::createActions()
     QObject::connect(copy_, SIGNAL(triggered()), plane_, SLOT(copy()));
 
     cut_ = new QAction(plane_);
+    cut_->setObjectName("edit-cut");
     cut_->setText(QObject::tr("Cut selection to clipboard"));
     cut_->setIcon(QIcon(qtcreatorIconsPath+"editcut.png"));
     cut_->setShortcut(QKeySequence(QKeySequence::Cut));
@@ -728,6 +730,7 @@ void Editor::createActions()
     QObject::connect(cut_, SIGNAL(triggered()), plane_, SLOT(cut()));
 
     paste_ = new QAction(plane_);
+    paste_->setObjectName("edit-paste");
     paste_->setText(QObject::tr("Paste from clipboard"));
     paste_->setIcon(QIcon(qtcreatorIconsPath+"editpaste.png"));
     paste_->setShortcut(QKeySequence(QKeySequence::Paste));
@@ -764,6 +767,7 @@ void Editor::createActions()
 
     undo_ = new QAction(plane_);
     undo_->setEnabled(false);
+    undo_->setObjectName("edit-undo");
     undo_->setText(QObject::tr("Undo last action"));
     undo_->setIcon(QIcon(qtcreatorIconsPath+"undo.png"));
     undo_->setShortcut(QKeySequence::Undo);
@@ -773,6 +777,7 @@ void Editor::createActions()
 
     redo_ = new QAction(plane_);
     redo_->setEnabled(false);
+    redo_->setObjectName("edit-redo");
     redo_->setText(QObject::tr("Redo last undoed action"));
     redo_->setIcon(QIcon(qtcreatorIconsPath+"redo.png"));
     redo_->setShortcut(QKeySequence::Redo);

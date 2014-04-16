@@ -1306,6 +1306,31 @@ void SyntaxAnalizer::buildTables(bool isInternalBuild)
         }
     }
 
+    checkForEmitImportsSignal();
+}
+
+void SyntaxAnalizer::checkForEmitImportsSignal()
+{
+    QStringList imports;
+    AST::ModulePtr mainModule;
+    for (int i=0; i<ast_->modules.size(); i++) {
+        const AST::ModulePtr module = ast_->modules[i];
+        if (AST::ModTypeUserMain == module->header.type ||
+                AST::ModTypeTeacherMain == module->header.type)
+        {
+            mainModule = module;
+            break;
+        }
+    }
+    if (mainModule) {
+        for (int i=0; i<ast_->modules.size(); i++) {
+            const AST::ModulePtr module = ast_->modules[i];
+            if (module->isEnabledFor(mainModule) && module->header.name.length() > 0) {
+                imports << Shared::actorCanonicalName(module->header.name);
+            }
+        }
+    }
+    emit importsChanged(imports);
 }
 
 void SyntaxAnalizer::processAnalisys()

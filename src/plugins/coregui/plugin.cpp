@@ -263,6 +263,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                     tr("Courses"),
                     coursesWindow_, SLOT(activate())
                     );
+        showCourses->setObjectName("window-courses");
 
         const QString courseIconFileName = ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/course.png";
         QIcon courseIcon(courseIconFileName);
@@ -280,6 +281,8 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     actors += loadedPlugins("st_funct");
     foreach (ExtensionSystem::KPlugin* o, actors) {
         ActorInterface * actor = qobject_cast<ActorInterface*>(o);
+        const QString actorName = Shared::actorCanonicalName(actor->localizedModuleName(QLocale::Russian));
+        const QString actorObjectName = Shared::actorCanonicalName(actor->asciiModuleName()).replace(" ", "-").toLower();
         l_plugin_actors << actor;
         QWidget * w = 0;
         const QString actorHelpFile = helpPath + o->pluginSpec().name + ".xml";
@@ -305,7 +308,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             Widgets::SecondaryWindow * actorWindow =
                     Widgets::SecondaryWindow::createSecondaryWindow(
                         actorWidget,
-                        actor->localizedModuleName(QLocale::Russian),
+                        actorName,
                         mainIcon,
                         mainWindow_,
                         mainWindow_->actorsPlace_,
@@ -317,11 +320,11 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
             QAction * showActor =
                     mainWindow_->ui->menuWindow->addAction(
-                        actor->localizedModuleName(QLocale::Russian),
+                        actorName,
                         actorWindow,
                         SLOT(activate())
                         );
-
+            showActor->setObjectName("window-actor-" + actorObjectName);
             mainWindow_->gr_otherActions->addAction(showActor);
             if (!actor->mainIconName().isEmpty()) {
                 showActor->setIcon(mainIcon);
@@ -341,7 +344,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                 Widgets::SecondaryWindow * pultWindow =
                         Widgets::SecondaryWindow::createSecondaryWindow(
                             actor->pultWidget(),
-                            actor->localizedModuleName(QLocale::Russian) + " - " + tr("Remote Control"),
+                            actorName + " - " + tr("Remote Control"),
                             pultIcon,
                             mainWindow_,
                             nullptr,
@@ -352,10 +355,11 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
                 QAction * showPult =
                         mainWindow_->ui->menuWindow->addAction(
-                            actor->localizedModuleName(QLocale::Russian) + " - " + tr("Remote Control"),
+                            actorName + " - " + tr("Remote Control"),
                             pultWindow,
                             SLOT(activate())
                             );
+                showPult->setObjectName("window-control-" + actorObjectName);
 
                 mainWindow_->gr_otherActions->addAction(showPult);
 
@@ -389,7 +393,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                         QList<QMenu*>() << editMenu << insertMenu,
                         MainWindow::WWW
                         );
-            twe->browserInstance = startPage_;
+            twe->setBrowser(startPage_);
             const QString browserEntryPoint = myResourcesDir().absoluteFilePath("startpage/russian/index2.html");
             startPage_->go(browserEntryPoint);
         }
@@ -588,7 +592,7 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
 void Plugin::prepareKumirProgramToRun()
 {
     TabWidgetElement * twe = mainWindow_->currentTab();
-    kumirProgram_->setEditorInstance(twe->editorInstance);
+    kumirProgram_->setEditorInstance(twe->editor());
 }
 
 bool Plugin::showWorkspaceChooseDialog()

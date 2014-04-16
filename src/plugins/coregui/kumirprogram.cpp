@@ -36,6 +36,7 @@ KumirProgram::KumirProgram(QObject *parent)
 void KumirProgram::createActions()
 {
     regularRunAction_ = new QAction(tr("Regular run"), this);
+    regularRunAction_->setObjectName("run-regular");
     const QString qtcreatorIconsPath = ExtensionSystem::PluginManager::instance()->sharePath()
             + "/icons/from_qtcreator/";
     regularRunAction_->setIcon(QIcon(qtcreatorIconsPath+"debugger_start.png"));
@@ -53,6 +54,7 @@ void KumirProgram::createActions()
     testingRunAction_->setToolTip(testingRunAction_->text()+" <b>"+testingRunAction_->shortcut().toString()+"</b>");
 
     stepRunAction_ = new QAction(tr("Step over"), this);
+    stepRunAction_->setObjectName("run-step-over");
     stepRunAction_->setIcon(QIcon(qtcreatorIconsPath+"debugger_steponeproc_small.png"));
     connect(stepRunAction_, SIGNAL(triggered()), this, SLOT(stepRun()));
 #ifndef Q_OS_MAC
@@ -63,6 +65,7 @@ void KumirProgram::createActions()
     stepRunAction_->setToolTip(tr("Do big step")+" <b>"+stepRunAction_->shortcut().toString()+"</b>");
 
     stepInAction_ = new QAction(tr("Step in"), this);
+    stepInAction_->setObjectName("run-step-in");
     stepInAction_->setIcon(QIcon(qtcreatorIconsPath+"debugger_stepinto_small.png"));
     connect(stepInAction_, SIGNAL(triggered()), this, SLOT(stepIn()));
 #ifndef Q_OS_MAC
@@ -73,6 +76,7 @@ void KumirProgram::createActions()
     stepInAction_->setToolTip(tr("Do small step")+" <b>"+stepInAction_->shortcut().toString()+"</b>");
 
     stepOutAction_ = new QAction(tr("Step to end"), this);
+    stepOutAction_->setObjectName("run-step-out");
     stepOutAction_->setIcon(QIcon(qtcreatorIconsPath+"debugger_stepoverproc_small.png"));
     connect(stepOutAction_, SIGNAL(triggered()), this, SLOT(stepOut()));
 #ifndef Q_OS_MAC
@@ -83,6 +87,7 @@ void KumirProgram::createActions()
     stepOutAction_->setToolTip(tr("Run to end of algorhitm")+" <b>"+stepOutAction_->shortcut().toString()+"</b>");
 
     stopAction_ = new QAction(tr("Stop"), this);
+    stopAction_->setObjectName("run-stop");
     stopAction_->setIcon(QIcon(qtcreatorIconsPath+"stop.png"));
     connect(stopAction_, SIGNAL(triggered()), this, SLOT(stop()));
 #ifndef Q_OS_MAC
@@ -104,6 +109,7 @@ void KumirProgram::createActions()
 
 
     blindRunAction_ = new QAction(tr("Blind run"), this);
+    blindRunAction_->setObjectName("run-blind");
     blindRunAction_->setIcon(QIcon(qtcreatorIconsPath+"run.png"));
     connect(blindRunAction_, SIGNAL(triggered()), this, SLOT(blindRun()));
 #ifndef Q_OS_MAC

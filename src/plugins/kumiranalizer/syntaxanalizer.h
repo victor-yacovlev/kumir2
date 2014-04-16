@@ -56,6 +56,10 @@ public:
     void processAnalisys();
     QString suggestFileName() const;
     ~SyntaxAnalizer();
+
+Q_SIGNALS:
+    void importsChanged(const QStringList & names);
+
 private /*fields*/:
 
     Lexer * lexer_;
@@ -70,6 +74,8 @@ private /*fields*/:
     bool teacherMode_;
 
 private /*methods*/:
+    void checkForEmitImportsSignal();
+
     void parseImport(int str);
     void parseModuleHeader(int str);
     void parseAlgHeader(int str, bool onlyName, bool allowOperatorsDeclaration);

@@ -191,6 +191,15 @@ public /*methods*/:
     inline virtual ~ActorInterface() {}
 };
 
+template <class StringType>
+StringType actorCanonicalName(const StringType & fullyQualifiedName)
+{
+    if (! fullyQualifiedName.contains("%") )
+        return fullyQualifiedName;
+    int pos = fullyQualifiedName.indexOf("%");
+    return fullyQualifiedName.left(pos).simplified();
+}
+
 }
 Q_DECLARE_INTERFACE(Shared::ActorInterface, "kumir2.Actor")
 #endif // ACTORINTERFACE_H

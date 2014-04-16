@@ -3,6 +3,8 @@
 
 #include <QtCore>
 #include <QtGui>
+
+#include "extensionsystem/settings.h"
 #include "mainwindow.h"
 
 namespace CoreGUI {
@@ -12,21 +14,25 @@ class TabWidgetElement
     Q_OBJECT
 public:
     explicit TabWidgetElement(QWidget * w
-                                     , bool enableToolBar
-                                     , QList<QAction*> toolbarActions
-                                     , QList<QMenu*> ms
-//                                     , QList<QWidget*> sws
-                                     , MainWindow::DocumentType t
-                                     , QActionGroup * gr_fileActions
-                                     , QActionGroup * gr_otherActions
-                                     , class KumirProgram * kumir
-                                     );
+                              , ExtensionSystem::SettingsPtr settings
+                              , bool enableToolBar
+                              , QList<QAction*> toolbarActions
+                              , QList<QMenu*> ms
+                              , MainWindow::DocumentType t
+                              , QActionGroup * gr_fileActions
+                              , QActionGroup * gr_otherActions
+                              , class KumirProgram * kumir
+                              );
 
     QWidget * component;
     QList<QMenu*> menus;
     MainWindow::DocumentType type;
-    Shared::Editor::InstanceInterface * editorInstance;
-    Shared::Browser::InstanceInterface * browserInstance;
+
+    inline Shared::Editor::InstanceInterface* editor() const { return editorInstance_; }
+    void setEditor(Shared::Editor::InstanceInterface* editor);
+
+    inline Shared::Browser::InstanceInterface* browser() const { return browserInstance_; }
+    inline void setBrowser(Shared::Browser::InstanceInterface* browser) { browserInstance_ = browser; }
 
     inline class KumirProgram * kumirProgram() { return kumirProgram_; }
     inline bool isCourseManagerTab() const { return courseManagerTab_; }
@@ -35,6 +41,7 @@ public:
     }
     QString title() const;
     inline void setCourseTitle(const QString & title) { courseTitle_ = title; }
+    void updateSettingsObject(ExtensionSystem::SettingsPtr settings);
 
 signals:
     void titleChanged(const QString &);
@@ -44,15 +51,20 @@ protected:
         QWidget::focusInEvent(e);
         component->setFocus();
     }
+    bool eventFilter(QObject *obj, QEvent *evt); // for toolbar context menu event
 protected slots:
     void setDocumentChangesClean(bool clean);
+    void updateCompilerImportsList(const QStringList & localizedNames);
 
 private:
+    Shared::Editor::InstanceInterface * editorInstance_;
+    Shared::Browser::InstanceInterface * browserInstance_;
     class KumirProgram * kumirProgram_;
     bool courseManagerTab_;
     QString courseTitle_;
     bool documentHasChanges_;
     QAction * actionSave_;
+    class ToolbarContextMenu * toolbarContextMenu_;
 };
 }
 
