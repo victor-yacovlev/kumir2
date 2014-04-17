@@ -1115,7 +1115,7 @@ class Settings:
             result += entry.cppEntryImplementation("entries")
         result += """
 %s = new Widgets::DeclarativeSettingsPage(
-                            localizedModuleName(QLocale::Russian),
+                            Shared::actorCanonicalName(localizedModuleName(QLocale::Russian)),
                             mySettings(),
                             entries
                           );
