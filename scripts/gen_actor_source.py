@@ -67,7 +67,7 @@ and '|' is 'or'):
 
     class Argument :=
         name: class Name
-        baseType: class BaseType
+        base_type: class BaseType
         dimension: [0, 1, 2, 3]
         constatnt: bool
         reference: bool
@@ -173,9 +173,18 @@ MODULE_BASE_CLASS_SUFFIX = "ModuleBase"
 MODULE_RUN_THREAD_SUFFIX = "AsyncRunThread"
 MODULE_PLUGIN_CLASS_SUFFIX = "Plugin"
 MODULE_NAMESPACE_PREFIX = "Actor"
+SETTINGS_TYPES = {
+    "int": "Integer",
+    "double": "Double",
+    "string": "String",
+    "char": "Char",
+    "bool": "Bool",
+    "color": "Color",
+    "font": "Font"
+}
 
 
-def _renderTemplate(template, values):
+def _render_template(template, values):
     """
     Renders simple template using $-substitutions
 
@@ -193,19 +202,19 @@ def _renderTemplate(template, values):
     return template
 
 
-def _addIndent(text):
+def _add_indent(text):
     """
     Adds a one indent (4 spaces) to each line of text
 
     :type text:     unicode or str
     :param text:    text to indent
-    :rtype:         unicode
+    :rtype:         unicode or str
     :return:        4-space indented text
     """
     assert isinstance(text, unicode) or isinstance(text, str)
     lines = text.split('\n')
-    indentedLines = map(lambda x: "    " + x, lines)
-    return string.join(indentedLines, '\n')
+    indented_lines = map(lambda x: "    " + x, lines)
+    return string.join(indented_lines, '\n')
 
 
 # The group of module description tree classes
@@ -215,19 +224,19 @@ class Name:
     A class representing localizable name.
     """
 
-    def __init__(self, jsonNode):
+    def __init__(self, json_node):
         """
         Initializes from JSON value
         """
-        assert isinstance(jsonNode, dict) or isinstance(jsonNode, str) or isinstance(jsonNode, unicode)
-        if isinstance(jsonNode, dict):
-            assert "ascii" in jsonNode
-            self.data = jsonNode
+        assert isinstance(json_node, dict) or isinstance(json_node, str) or isinstance(json_node, unicode)
+        if isinstance(json_node, dict):
+            assert "ascii" in json_node
+            self.data = json_node
         else:
             self.data = dict()
-            self.data["ascii"] = unicode(jsonNode)
+            self.data["ascii"] = unicode(json_node)
 
-    def kumirValue(self):
+    def get_kumir_value(self):
         """
         Returns an Unicode representation for Russian language or ASCII
 
@@ -239,7 +248,7 @@ class Name:
         else:
             return unicode(self.data["ascii"])
 
-    def asciiValue(self):
+    def get_ascii_value(self):
         """
         Returns an ASCII representation
 
@@ -248,8 +257,7 @@ class Name:
         """
         return str(self.data["ascii"])
 
-    @property
-    def cppValue(self):
+    def get_cpp_value(self):
         """
         Returns a valid C++ name based on source name
 
@@ -257,7 +265,7 @@ class Name:
         :return:    valid C++ identifier
         """
         result = ""
-        nextIsCap = False
+        next_is_capital = False
         ascii = self.data["ascii"]
         if ascii == "+":
             return "OperatorPLUS"
@@ -285,26 +293,26 @@ class Name:
             return "OperatorOUTPUT"
         for c in ascii:
             if c == ' ':
-                nextIsCap = True
+                next_is_capital = True
             elif c in "\\%":
                 break
             else:
-                if nextIsCap:
+                if next_is_capital:
                     result += c.upper()
                 elif c.upper() in "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_":
                     result += c
-                nextIsCap = False
+                next_is_capital = False
         result = result.replace("#", "").replace("?", "").replace("!", "")
         return result
 
-    def cppCamelCaseValue(self):
+    def get_camel_case_cpp_value(self):
         """
         Returns a valid CamelCase C++ name based on source name
 
         :rtype:     str
         :return:    valid C++ identifier
         """
-        cpp = self.cppValue
+        cpp = self.get_cpp_value()
         return cpp[0].upper() + cpp[1:]
 
 
@@ -314,46 +322,49 @@ class BaseType:
     """
     _typeTable = dict()  # a table of actor's custom types
 
-    def __init__(self, module, jsonNode):
+    def __init__(self, module, json_node):
         """
         Initializes from  JSON value or uses existing type
 
-        :type   module:     Module
+        :type   module:     Module or None
         :param  module:     module, where type declared
-        :type   jsonNode:   dict, str, unicode
-        :param  jsonNode:   JSON node for custom type or name for standard type
+        :type   json_node:   dict, str, unicode
+        :param  json_node:   JSON node for custom type or name for standard type
         """
-        assert isinstance(jsonNode, dict) or isinstance(jsonNode, str) or isinstance(jsonNode, unicode)
+        assert isinstance(json_node, dict) or isinstance(json_node, str) or isinstance(json_node, unicode)
         self._module = None
-        if isinstance(jsonNode, dict):
-            self.__init__from_dict(jsonNode)
+        self._standard = None
+        self._name = None
+        self._fields = None
+        if isinstance(json_node, dict):
+            self.__init__from_dict(json_node)
         else:
-            self.__init__from_string(str(jsonNode))
+            self.__init__from_string(str(json_node))
         if self._module is None:
             self._module = module
 
-    def __init__from_dict(self, jsonNode):
+    def __init__from_dict(self, json_node):
         """
         Initializes a custom type from detailed specification
 
-        :type   jsonNode:   dict
-        :param  jsonNode:   JSON node for custom type details
+        :type   json_node:   dict
+        :param  json_node:   JSON node for custom type details
         """
-        assert isinstance(jsonNode, dict)
-        assert "name" in jsonNode and "fields" in jsonNode
+        assert isinstance(json_node, dict)
+        assert "name" in json_node and "fields" in json_node
         self._standard = False
-        self._name = Name(jsonNode["name"])
+        self._name = Name(json_node["name"])
         self._fields = []
-        nodeFields = jsonNode["fields"]
-        assert isinstance(nodeFields, list)
-        for field in nodeFields:
+        node_fields = json_node["fields"]
+        assert isinstance(node_fields, list)
+        for field in node_fields:
             assert isinstance(field, dict)
             assert "name" in field and "baseType" in field
-            fieldName = Name(field["name"])
-            fieldType = BaseType(None, field["baseType"])
-            pair = fieldName, fieldType
+            field_name = Name(field["name"])
+            field_type = BaseType(None, field["baseType"])
+            pair = field_name, field_type
             self._fields.append(pair)
-        BaseType._typeTable[self._name.asciiValue()] = self
+        BaseType._typeTable[self._name.get_ascii_value()] = self
 
     def __init__from_string(self, name):
         """
@@ -364,31 +375,40 @@ class BaseType:
         """
         assert isinstance(name, str) or isinstance(name, unicode)
         if name in BaseType._typeTable:
-            existingType = BaseType._typeTable[name]
-            assert isinstance(existingType, BaseType)
-            self._name = copy.deepcopy(existingType._name)
-            self._fields = copy.deepcopy(existingType._fields)
-            self._standard = existingType._standard
-            self._module = existingType._module
+            existing_type = BaseType._typeTable[name]
+            assert isinstance(existing_type, BaseType)
+            self._name = copy.deepcopy(existing_type.get_name())
+            self._fields = copy.deepcopy(existing_type.get_fields())
+            self._standard = existing_type.is_standard_type()
+            self._module = existing_type.get_module()
         else:
             self._standard = True
             self._fields = []
-            qualifiedName = dict()
-            qualifiedName["ascii"] = name
+            qualified_name = dict()
+            qualified_name["ascii"] = name
             if name == "int":
-                qualifiedName["ru_RU"] = u"цел"
+                qualified_name["ru_RU"] = u"цел"
             elif name == "double":
-                qualifiedName["ru_RU"] = u"вещ"
+                qualified_name["ru_RU"] = u"вещ"
             elif name == "bool":
-                qualifiedName["ru_RU"] = u"лог"
+                qualified_name["ru_RU"] = u"лог"
             elif name == "char":
-                qualifiedName["ru_RU"] = u"сим"
+                qualified_name["ru_RU"] = u"сим"
             elif name == "string":
-                qualifiedName["ru_RU"] = u"лит"
-            self._name = Name(qualifiedName)
-            BaseType._typeTable[self._name.asciiValue()] = self
+                qualified_name["ru_RU"] = u"лит"
+            self._name = Name(qualified_name)
+            BaseType._typeTable[self._name.get_ascii_value()] = self
 
-    def isStandardType(self):
+    def get_name(self):
+        return self._name
+
+    def get_fields(self):
+        return self._fields
+
+    def get_module(self):
+        return self._module
+
+    def is_standard_type(self):
         """
         Is a standard Qt base type
 
@@ -397,16 +417,19 @@ class BaseType:
         """
         return self._standard
 
-    def kumirName(self):
+    def get_kumir_name(self):
         """
         Kumir name for the type
 
         :rtype:     unicode
         :return:    russian type name
         """
-        return self._name.kumirValue()
+        return self._name.get_kumir_value()
 
-    def qtName(self):
+    def get_ascii_name(self):
+        return self._name.get_ascii_value()
+
+    def get_qt_name(self):
         """
         Qt-style type name
 
@@ -414,17 +437,17 @@ class BaseType:
         :return:    ASCII name matched to Qt/C++ type
         """
         if not self._standard:
-            return self._name.cppCamelCaseValue()
-        elif self._name.asciiValue() == "string":
+            return self._name.get_camel_case_cpp_value()
+        elif self._name.get_ascii_value() == "string":
             return "QString"
-        elif self._name.asciiValue() == "char":
+        elif self._name.get_ascii_value() == "char":
             return "QChar"
-        elif self._name.asciiValue() == "double":
+        elif self._name.get_ascii_value() == "double":
             return "qreal"
         else:
-            return self._name.asciiValue()
+            return self._name.get_ascii_value()
 
-    def cppDeclaration(self):
+    def get_cpp_declaration(self):
         """
         For non-standard types creates type declaration or an empty string
 
@@ -434,100 +457,101 @@ class BaseType:
         if self._standard:
             return ""
         else:
-            nameDecl = self.qtName()
-            fieldsDecl = ""
-            for name, baseType in self._fields:
+            name_decl = self.get_qt_name()
+            fields_decl = ""
+            for name, base_type in self._fields:
                 assert isinstance(name, Name)
-                assert isinstance(baseType, BaseType)
-                fieldsDecl += "    "
-                fieldsDecl += baseType.qtName() + " "
-                fieldsDecl += name.cppValue + ";"
-                fieldsDecl += "\n"
-            return _renderTemplate("""
+                assert isinstance(base_type, BaseType)
+                fields_decl += "    "
+                fields_decl += base_type.get_qt_name() + " "
+                fields_decl += name.get_cpp_value() + ";"
+                fields_decl += "\n"
+            return _render_template("""
 struct $name {
 $fields
 };
-            """, {"name": nameDecl, "fields": fieldsDecl})
+            """, {"name": name_decl, "fields": fields_decl})
 
-    def cppCustomTypeCreation(self, variableToAppend, variableToAssign):
+    def get_cpp_custom_type_creation(self, variable_to_append, variable_to_assign):
         """
         For non-standard types creates kumir type declaration, an empty string otherwise
 
-        :type variableToAppend:     str
-        :param variableToAppend:    C++ variable name (std::list or QList) to store result
+        :type variable_to_append:    str
+        :para variable_to_append:    C++ variable name (std::list or QList) to store result
         :rtype:     unicode
         :return:    an empty string for standard type or Shared::ActorInterface::CustomType implementation code
         """
         if self._standard:
             return ""
         else:
-            assert variableToAppend is None or isinstance(variableToAppend, str)
-            assert variableToAssign is None or isinstance(variableToAssign, str)
-            assert variableToAssign or variableToAppend
+            assert variable_to_append is None or isinstance(variable_to_append, str)
+            assert variable_to_assign is None or isinstance(variable_to_assign, str)
+            assert variable_to_assign or variable_to_append
             result = "{\n"
             result += "    Shared::ActorInterface::CustomType custom;\n"
             result += "    Shared::ActorInterface::Record record;\n"
             for fieldName, fieldType in self._fields:
                 assert isinstance(fieldName, Name)
                 assert isinstance(fieldType, BaseType)
-                assert fieldType.qtName() in ["int", "qreal", "bool", "QChar", "QString"]
-                name = fieldName.kumirValue()
-                typee = fieldType.qtName()
+                assert fieldType.get_qt_name() in ["int", "qreal", "bool", "QChar", "QString"]
+                name = fieldName.get_kumir_value()
+                typee = fieldType.get_qt_name()
                 if typee[0].lower() == 'q':
                     typee = typee[1:]
                 typee = typee[0].upper() + typee[1:]
                 result += "    record.push_back(Field(QByteArray(\"%s\"), %s));\n" % (name, typee)
-            typeName = self._name.kumirValue()
-            result += "    custom = Shared::ActorInterface::CustomType(QString::fromUtf8(\"%s\"), record);\n" % typeName
-            if variableToAppend:
-                result += "    %s.push_back(custom);\n" % variableToAppend
-            elif variableToAssign:
-                result += "    %s = custom;\n" % variableToAssign
+            type_name = self._name.get_kumir_value()
+            result += \
+                "    custom = Shared::ActorInterface::CustomType(QString::fromUtf8(\"%s\"), record);\n" % type_name
+            if variable_to_append:
+                result += "    %s.push_back(custom);\n" % variable_to_append
+            elif variable_to_assign:
+                result += "    %s = custom;\n" % variable_to_assign
             result += "}\n"
             return result
 
-    def cppRecordSpecCreation(self, variableToAppend, variableToAssign):
+    def get_cpp_record_spec_creation(self, variable_to_append, variable_to_assign):
         """
         For non-standard types creates kumir type declaration, an empty string otherwise
 
-        :type variableToAppend:     str
-        :param variableToAppend:    C++ variable name (std::list or QList) to store result
+        :type variable_to_append:    str or None
+        :para variable_to_append:    C++ variable name (std::list or QList) to store result
         :rtype:     unicode
         :return:    an empty string for standard type or Shared::ActorInterface::CustomType implementation code
         """
         if self._standard:
             return ""
         else:
-            assert variableToAppend is None or isinstance(variableToAppend, str)
-            assert variableToAssign is None or isinstance(variableToAssign, str)
-            assert variableToAssign or variableToAppend
+            assert variable_to_append is None or isinstance(variable_to_append, str)
+            assert variable_to_assign is None or isinstance(variable_to_assign, str)
+            assert variable_to_assign or variable_to_append
             result = "{\n"
             result += "    Shared::ActorInterface::RecordSpecification recordSpec;\n"
-            for fieldName, fieldType in self._fields:
-                assert isinstance(fieldName, Name)
-                assert isinstance(fieldType, BaseType)
-                assert fieldType.qtName() in ["int", "qreal", "bool", "QChar", "QString"]
-                name = fieldName.kumirValue()
-                typee = fieldType.qtName()
+            for field_name, field_type in self._fields:
+                assert isinstance(field_name, Name)
+                assert isinstance(field_type, BaseType)
+                assert field_type.get_qt_name() in ["int", "qreal", "bool", "QChar", "QString"]
+                name = field_name.get_kumir_value()
+                typee = field_type.get_qt_name()
                 if typee[0].lower() == 'q':
                     typee = typee[1:]
                 typee = typee[0].upper() + typee[1:]
                 result += "    recordSpec.record.push_back(Field(QByteArray(\"%s\"), %s));\n" % (name, typee)
-            result += "    recordSpec.asciiName = QByteArray(\"%s\");\n" % self._name.asciiValue()
+            result += "    recordSpec.asciiName = QByteArray(\"%s\");\n" % self._name.get_ascii_value()
             for key, value in self._name.data.items():
                 qlocale = None
                 if key == "ru_RU":
                     qlocale = "QLocale::Russian"
                 if qlocale:
                     result += "     recordSpec.localizedNames[%s] = QString::fromUtf8(\"%s\");\n" % (qlocale, value)
-            if variableToAppend:
-                result += "    %s.push_back(recordSpec);\n" % variableToAppend
-            elif variableToAssign:
-                result += "    %s = recordSpec;\n" % variableToAssign
+            if variable_to_append:
+                result += "    %s.push_back(recordSpec);\n" % variable_to_append
+            elif variable_to_assign:
+                result += "    %s = recordSpec;\n" % variable_to_assign
             result += "}\n"
             return result
 
-    def cppCustomTypeEncodeDecode(self):
+    def get_cpp_custom_type_encode_decode(self):
         """
         Generates encode/decode to/from QVariant inline functions for custom type methods
 
@@ -537,13 +561,13 @@ $fields
         if self._standard:
             return ""
         else:
-            bodyEncode = ""
-            bodyDecode = ""
-            for index, (fieldName, fieldType) in enumerate(self._fields):
-                assert isinstance(fieldName, Name)
-                assert isinstance(fieldType, BaseType)
-                assert fieldType.qtName() in ["int", "qreal", "bool", "QChar", "QString"]
-                typee = fieldType.qtName()
+            body_encode = ""
+            body_decode = ""
+            for index, (field_name, field_type) in enumerate(self._fields):
+                assert isinstance(field_name, Name)
+                assert isinstance(field_type, BaseType)
+                assert field_type.get_qt_name() in ["int", "qreal", "bool", "QChar", "QString"]
+                typee = field_type.get_qt_name()
                 defvalue = ""
                 if typee[0] == 'Q':
                     conversion = "to" + typee[1].upper() + typee[2:] + "()"
@@ -558,17 +582,17 @@ $fields
                         defvalue = "0"
                     elif typee == "bool":
                         defvalue = "false"
-                field = fieldName.cppValue
-                bodyEncode += "    result << QVariant(record.%s);\n" % field
-                bodyDecode += "    result.%s = alist.size() > %i ? alist.at(%i).%s : %s;\n" % (
+                field = field_name.get_cpp_value()
+                body_encode += "    result << QVariant(record.%s);\n" % field
+                body_decode += "    result.%s = alist.size() > %i ? alist.at(%i).%s : %s;\n" % (
                     field, index, index, conversion, defvalue
                 )
             substitutions = {
-                "typeName": self.qtName(),
-                "bodyEncode": bodyEncode,
-                "bodyDecode": bodyDecode
+                "typeName": self.get_qt_name(),
+                "bodyEncode": body_encode,
+                "bodyDecode": body_decode
             }
-            return _renderTemplate("""
+            return _render_template("""
 QVariant encode(const $typeName & record) {
     QVariantList result;
 $bodyEncode
@@ -583,12 +607,12 @@ $bodyDecode
 }
             """, substitutions)
 
-    def typeDef(self):
+    def get_typedef(self):
         """Creates  typedef in case of external namespace"""
         if self._module:
             return "typedef %s::%s %s;" % (
-                self._module.namespace(),
-                self.qtName(), self.qtName()
+                self._module.get_module_cpp_namespace(),
+                self.get_qt_name(), self.get_qt_name()
             )
         else:
             return ""
@@ -599,45 +623,45 @@ class Argument:
     An actor method argument
     """
 
-    def __init__(self, jsonNode):
+    def __init__(self, json_node):
         """
         Initializes from JSON node value
 
-        :type   jsonNode:   dict
-        :param  jsonNode:   an argument specification
+        :type   json_node:   dict
+        :param  json_node:   an argument specification
         """
-        assert isinstance(jsonNode, dict)
-        self.name = Name(jsonNode["name"])
-        self.baseType = BaseType(None, jsonNode["baseType"])
+        assert isinstance(json_node, dict)
+        self.name = Name(json_node["name"])
+        self.base_type = BaseType(None, json_node["baseType"])
         self.dimension = 0
-        if "dim" in jsonNode:
-            self.dimension = int(jsonNode["dim"])
+        if "dim" in json_node:
+            self.dimension = int(json_node["dim"])
         assert 0 <= self.dimension <= 3
-        if "access" in jsonNode:
-            self.constant = jsonNode["access"] in ["in"]
-            self.reference = jsonNode["access"] in ["out", "in/out"]
-            self.readable = jsonNode["access"] in ["in", "in/out"]
+        if "access" in json_node:
+            self.constant = json_node["access"] in ["in"]
+            self.reference = json_node["access"] in ["out", "in/out"]
+            self.readable = json_node["access"] in ["in", "in/out"]
         else:
             self.constant = True
             self.reference = False
             self.readable = True
 
-    def _makeVectorType(self):
+    def _get_vector_type(self):
         """
         Creates Qt-vector type declaration
 
         :rtype:     str
         :return:    C++ argument declaration
         """
-        baseType = self.baseType.qtName()
+        base_type = self.base_type.get_qt_name()
         dimension = self.dimension
-        assert isinstance(baseType, str)
+        assert isinstance(base_type, str)
         assert isinstance(dimension, int)
         assert 0 < dimension <= 3
-        result = "QVector< " * dimension + baseType + " >" * dimension
+        result = "QVector< " * dimension + base_type + " >" * dimension
         return result
 
-    def cppArgumentDeclaration(self):
+    def get_cpp_argument_declaration(self):
         """
         Creates C++ function argument declaration
 
@@ -648,15 +672,15 @@ class Argument:
         if self.constant:
             result += "const "
         if self.dimension > 0:
-            result += self._makeVectorType()
+            result += self._get_vector_type()
         else:
-            result += self.baseType.qtName()
-        if self.dimension > 0 or not self.baseType.qtName() in ["int", "qreal", "bool"] or self.reference:
+            result += self.base_type.get_qt_name()
+        if self.dimension > 0 or not self.base_type.get_qt_name() in ["int", "qreal", "bool"] or self.reference:
             result += "&"
-        result += " " + self.name.cppValue
+        result += " " + self.name.get_cpp_value()
         return result
 
-    def cppLocalVariableDeclaration(self):
+    def get_cpp_local_variable_declaration(self):
         """
         Creates C++ local variable declaration
 
@@ -665,13 +689,13 @@ class Argument:
         """
         result = ""
         if self.dimension > 0:
-            result += self._makeVectorType()
+            result += self._get_vector_type()
         else:
-            result += self.baseType.qtName()
-        result += " " + self.name.cppValue
+            result += self.base_type.get_qt_name()
+        result += " " + self.name.get_cpp_value()
         return result
 
-    def kumirArgumentDeclaration(self):
+    def get_kumir_argument_declaration(self):
         """
         Creates Kumir argument declaration
 
@@ -685,10 +709,10 @@ class Argument:
             result += u"аргрез "
         elif self.reference:
             result += u"рез "
-        result += self.baseType.kumirName()
+        result += self.base_type.get_kumir_name()
         if self.dimension > 0:
             result += u"таб"
-        result += " " + self.name.kumirValue()
+        result += " " + self.name.get_kumir_value()
         if self.dimension > 0:
             result += "[" + "0:0," * (self.dimension - 1) + "0:0]"
         return result
@@ -699,25 +723,25 @@ class Method:
     An actor static method
     """
 
-    def __init__(self, jsonNode):
-        assert isinstance(jsonNode, dict)
-        self.name = Name(jsonNode["name"])
-        if "returnType" in jsonNode:
-            self.returnType = BaseType(None, jsonNode["returnType"])
+    def __init__(self, json_node):
+        assert isinstance(json_node, dict)
+        self.name = Name(json_node["name"])
+        if "returnType" in json_node:
+            self.return_type = BaseType(None, json_node["returnType"])
         else:
-            self.returnType = None
-        if "async" in jsonNode:
-            self.async = bool(jsonNode["async"])
+            self.return_type = None
+        if "async" in json_node:
+            self.async = bool(json_node["async"])
         else:
-            self.async = self.returnType is None
+            self.async = self.return_type is None
         self.arguments = []
-        if "arguments" in jsonNode:
-            for arg in jsonNode["arguments"]:
+        if "arguments" in json_node:
+            for arg in json_node["arguments"]:
                 assert isinstance(arg, dict)
                 argument = Argument(arg)
                 self.arguments.append(argument)
 
-    def cppDeclaration(self):
+    def get_cpp_declaration(self):
         """
         C++ method declaraion
 
@@ -725,17 +749,17 @@ class Method:
         return:     C++ header declaration for this method
         """
         result = ""
-        if self.returnType is None:
+        if self.return_type is None:
             result += "void "
         else:
-            rtype = self.returnType
+            rtype = self.return_type
             assert isinstance(rtype, BaseType)
-            result += rtype.qtName() + " "
-        argDeclarations = map(lambda x: x.cppArgumentDeclaration(), self.arguments)
-        result += "run" + self.name.cppCamelCaseValue() + "(" + string.join(argDeclarations, ", ") + ")"
+            result += rtype.get_qt_name() + " "
+        arg_declarations = map(lambda x: x.get_cpp_argument_declaration(), self.arguments)
+        result += "run" + self.name.get_camel_case_cpp_value() + "(" + string.join(arg_declarations, ", ") + ")"
         return result
 
-    def kumirDeclaration(self):
+    def get_kumir_declaration(self):
         """
         Kumir method declaration
 
@@ -743,51 +767,51 @@ class Method:
         return:     Kumir header to be parsed by Kumir analizer as text program
         """
         result = u"алг "
-        if not self.returnType is None:
-            rtype = self.returnType
+        if not self.return_type is None:
+            rtype = self.return_type
             assert isinstance(rtype, BaseType)
-            result += rtype.kumirName() + " "
-        result += self.name.kumirValue()
+            result += rtype.get_kumir_name() + " "
+        result += self.name.get_kumir_value()
         if self.arguments:
-            argDeclarations = map(lambda x: x.kumirArgumentDeclaration(), self.arguments)
-            result += "(" + string.join(argDeclarations, ", ") + ")"
+            arg_declarations = map(lambda x: x.get_kumir_argument_declaration(), self.arguments)
+            result += "(" + string.join(arg_declarations, ", ") + ")"
         return result
 
-    def cppImplementationStub(self, className):
+    def get_cpp_implementation_stub(self, class_name):
         """
         Creates default method implementation stub
 
-        :type className:    str
-        :param className:   module class name used in C++ before ::
+        :type  class_name:  str
+        :param class_name:  module class name used in C++ before ::
         :rtype:             unicode
         :return:            C++ implementation stub
         """
-        kumirRtype = ""
+        kumir_return_type = ""
         retval = None
         result = "/* public slot */ "
-        if not self.returnType is None:
-            kumirRtype = self.returnType.kumirName() + " "
-            if self.returnType.qtName() == "qreal":
+        if not self.return_type is None:
+            kumir_return_type = self.return_type.get_kumir_name() + " "
+            if self.return_type.get_qt_name() == "qreal":
                 retval = "0.0"
-            elif self.returnType.qtName() == "int":
+            elif self.return_type.get_qt_name() == "int":
                 retval = "0"
-            elif self.returnType.qtName() == "bool":
+            elif self.return_type.get_qt_name() == "bool":
                 retval = "false"
             else:
-                retval = self.returnType.qtName() + "()"
-        if self.returnType is None:
+                retval = self.return_type.get_qt_name() + "()"
+        if self.return_type is None:
             result += "void "
         else:
-            result += self.returnType.qtName() + " "
-        result += className + "::run" + self.name.cppCamelCaseValue()
-        body = u"/* алг " + kumirRtype + self.name.kumirValue()
+            result += self.return_type.get_qt_name() + " "
+        result += class_name + "::run" + self.name.get_camel_case_cpp_value()
+        body = u"/* алг " + kumir_return_type + self.name.get_kumir_value()
         if self.arguments:
             body += "("
             for index, argument in enumerate(self.arguments):
                 assert isinstance(argument, Argument)
                 if index:
                     body += ", "
-                body += argument.kumirArgumentDeclaration()
+                body += argument.get_kumir_argument_declaration()
             body += ")"
         body += " */\n"
         body += "// TODO implement me\n"
@@ -797,17 +821,17 @@ class Method:
             result += "("
             for argument in self.arguments:
                 assert isinstance(argument, Argument)
-                argumentLine = argument.cppArgumentDeclaration()
+                argument_line = argument.get_cpp_argument_declaration()
                 if argument != self.arguments[-1]:
-                    argumentLine += ", "
+                    argument_line += ", "
                 else:
-                    argumentLine += ")"
-                result += argumentLine
-                body += "Q_UNUSED(" + argument.name.cppValue + ")  // Remove this line on implementation;\n"
+                    argument_line += ")"
+                result += argument_line
+                body += "Q_UNUSED(" + argument.name.get_cpp_value() + ")  // Remove this line on implementation;\n"
             result += "\n"
         if retval:
             body += "return " + retval + ";\n"
-        result += "{\n" + _addIndent(body) + "\n}\n\n"
+        result += "{\n" + _add_indent(body) + "\n}\n\n"
         return result
 
 
@@ -816,16 +840,16 @@ class Window:
     A windows of GUI part.
     """
 
-    def __init__(self, jsonNode):
+    def __init__(self, json_node):
         """
         Initializes from JSON value
 
-        :type   jsonNode:   dict
-        :param  jsonNode:   window specification
+        :type   json_node:   dict
+        :param  json_node:   window specification
         """
-        assert isinstance(jsonNode, dict)
-        self.role = str(jsonNode["role"])
-        self.icon = str(jsonNode["icon"])
+        assert isinstance(json_node, dict)
+        self.role = str(json_node["role"])
+        self.icon = str(json_node["icon"])
 
 
 class MenuItem:
@@ -833,22 +857,22 @@ class MenuItem:
     An item of GUI menu.
     """
 
-    def __init__(self, jsonNode):
+    def __init__(self, json_node):
         """
         Initializes from JSON value
 
-        :type   jsonNode:   dict
-        :param  jsonNode:   menu item specification
+        :type   json_node:   dict
+        :param  json_node:   menu item specification
         """
-        assert isinstance(jsonNode, dict)
-        assert "title" in jsonNode
-        self.title = Name(jsonNode["title"])
+        assert isinstance(json_node, dict)
+        assert "title" in json_node
+        self.title = Name(json_node["title"])
         self.items = []
-        if "items" in jsonNode:
-            for item in jsonNode["items"]:
+        if "items" in json_node:
+            for item in json_node["items"]:
                 self.items.append(MenuItem(item))
-        if "icon" in jsonNode:
-            self.icon = str(jsonNode["icon"])
+        if "icon" in json_node:
+            self.icon = str(json_node["icon"])
         else:
             self.icon = None
 
@@ -858,24 +882,24 @@ class Gui:
     GUI part of module.
     """
 
-    def __init__(self, jsonNode):
+    def __init__(self, json_node):
         """
         Initializes from JSON value
 
-        :type   jsonNode:   dict
-        :param  jsonNode:   GUI specification
+        :type   json_node:   dict
+        :param  json_node:   GUI specification
         """
-        assert isinstance(jsonNode, dict)
+        assert isinstance(json_node, dict)
         self.windows = []
         self.menus = []
-        if "windows" in jsonNode:
-            for window in jsonNode["windows"]:
+        if "windows" in json_node:
+            for window in json_node["windows"]:
                 self.windows.append(Window(window))
-        if "menus" in jsonNode:
-            for menu in jsonNode["menus"]:
+        if "menus" in json_node:
+            for menu in json_node["menus"]:
                 self.menus.append(MenuItem(menu))
 
-    def iconName(self, role):
+    def get_icon_name(self, role):
         """
         Icon name for specified window role
 
@@ -896,167 +920,160 @@ class Module:
     A Kumir module.
     """
 
-    def __init__(self, moduleDir, jsonNode):
+    def __init__(self, module_dir, json_node):
         """
         Initializes from JSON value
 
-        :type   moduleDir:  str
-        :param  moduleDir:  module root directory
-        :type   jsonNode:   dict
-        :param  jsonNode:   module specification (JSON root)
+        :type   module_dir:  str or unicode
+        :param  module_dir:  module root directory
+        :type   json_node:   dict
+        :param  json_node:   module specification (JSON root)
         """
-        assert isinstance(jsonNode, dict)
-        assert "name" in jsonNode
-        assert "methods" in jsonNode
-        self.name = Name(jsonNode["name"])
+        assert isinstance(json_node, dict)
+        assert "name" in json_node
+        assert "methods" in json_node
+        self.name = Name(json_node["name"])
         self.types = []
-        self.usesList = []
-        if "types" in jsonNode:
-            for typee in jsonNode["types"]:
+        self.uses_list = []
+        if "types" in json_node:
+            for typee in json_node["types"]:
                 self.types.append(BaseType(self, typee))
-        if "uses" in jsonNode:
-            self.usesList = jsonNode["uses"]
-            self._read_dependencies(moduleDir, self.usesList)
+        if "uses" in json_node:
+            self.uses_list = json_node["uses"]
+            self._read_dependencies(module_dir, self.uses_list)
         self.methods = []
-        for method in jsonNode["methods"]:
+        for method in json_node["methods"]:
             self.methods.append(Method(method))
-        if "gui" in jsonNode:
-            self.gui = Gui(jsonNode["gui"])
+        if "gui" in json_node:
+            self.gui = Gui(json_node["gui"])
         else:
             self.gui = None
-        if "settings" in jsonNode:
-            self.settings = Settings(jsonNode["settings"])
+        if "settings" in json_node:
+            self.settings = Settings(json_node["settings"])
         else:
             self.settings = None
 
-    def _read_dependencies(self, moduleDir, usesList):
+    def _read_dependencies(self, module_dir, uses_list):
         """
         Read custom types provided by used actors
-        :param moduleDir: module directory
-        :param usesList: a list of ASCII actor names
+        :param module_dir: module directory
+        :param uses_list: a list of ASCII actor names
         """
-        updir = os.path.normpath(moduleDir + os.path.sep + ".." + os.path.sep)
-        for use in usesList:
+        updir = os.path.normpath(module_dir + os.path.sep + ".." + os.path.sep)
+        for use in uses_list:
             filename = updir + os.path.sep + use.lower() + os.path.sep + use.lower() + ".json"
-            useModule = Module.read(filename)
-            self.types += useModule.types
+            use_module = Module.read(filename)
+            self.types += use_module.types
 
     @classmethod
-    def read(cls, fileName):
+    def read(cls, file_name):
         """
         Reads module definition from JSON file
 
-        :type fileName:     unicode
-        :param fileName:    a file name to read from
+        :type   file_name:  unicode
+        :param  file_name:  a file name to read from
         :rtype:             Module
         :return:            Kumir module object
         """
-        f = open(fileName, 'r')
+        f = open(file_name, 'r')
         data = json.load(f, "utf-8")
         f.close()
-        absPath = os.path.abspath(fileName)
-        moduleDir = os.path.dirname(absPath)
-        result = Module(moduleDir, data)
+        absolute_path = os.path.abspath(file_name)
+        module_dir = os.path.dirname(absolute_path)
+        result = Module(module_dir, data)
         return result
 
-    def className(self):
+    def get_module_cpp_class_name(self):
         """
         Module class name to be implemented by developer
 
         :rtype:     str
         :return:    class name
         """
-        return self.name.cppCamelCaseValue() + MODULE_CLASS_SUFFIX
+        return self.name.get_camel_case_cpp_value() + MODULE_CLASS_SUFFIX
 
-    def baseClassName(self):
+    def get_base_cpp_class_name(self):
         """
         Base module class name generated and updated by script
 
         :rtype:     str
         :return:    class name
         """
-        return self.name.cppCamelCaseValue() + MODULE_BASE_CLASS_SUFFIX
+        return self.name.get_camel_case_cpp_value() + MODULE_BASE_CLASS_SUFFIX
 
-    def pluginClassName(self):
+    def get_plugin_cpp_class_name(self):
         """
         Plugin class name generated and updated by script
 
         :rtype:     str
         :return:    class name
         """
-        return self.name.cppCamelCaseValue() + MODULE_PLUGIN_CLASS_SUFFIX
+        return self.name.get_camel_case_cpp_value() + MODULE_PLUGIN_CLASS_SUFFIX
 
-    def runThreadClassName(self):
+    def get_run_thread_cpp_class_name(self):
         """
         Class name for asynchronuous thread
 
         :rtype:     str
         :return:    class name
         """
-        return self.name.cppCamelCaseValue() + MODULE_RUN_THREAD_SUFFIX
+        return self.name.get_camel_case_cpp_value() + MODULE_RUN_THREAD_SUFFIX
 
-    def namespace(self):
+    def get_module_cpp_namespace(self):
         """
         Module namespace
 
         :rtype:     str
         :return:    namespace
         """
-        return MODULE_NAMESPACE_PREFIX + self.name.cppCamelCaseValue()
+        return MODULE_NAMESPACE_PREFIX + self.name.get_camel_case_cpp_value()
 
 
 class SettingsEntry:
     """
     An entry for actor settings page
     """
-    def __init__(self, key, jsonEntry):
+
+    def __init__(self, key, json_entry):
         """
         Initializes from JSON value
 
         :type   key:        str
         :param  key:        an unique settings key string
-        :type   jsonEntry:  dict
-        :param  jsonEntry:  settings entry specification
+        :type   json_entry:  dict
+        :param  json_entry:  settings entry specification
         """
         assert isinstance(key, str) or isinstance(key, unicode)
-        assert isinstance(jsonEntry, dict)
+        assert isinstance(json_entry, dict)
         self._key = key
-        self._type = jsonEntry["type"]
-        self._default = jsonEntry["default"]
-        if "minimum" in jsonEntry:
-            self._minimum = jsonEntry["minimum"]
+        self._type = json_entry["type"]
+        self._default = json_entry["default"]
+        if "minimum" in json_entry:
+            self._minimum = json_entry["minimum"]
         else:
             self._minimum = None
-        if "maximum" in jsonEntry:
-            self._maximum = jsonEntry["maximum"]
+        if "maximum" in json_entry:
+            self._maximum = json_entry["maximum"]
         else:
             self._maximum = None
-        self._title = Name(jsonEntry["title"])
+        self._title = Name(json_entry["title"])
 
-    def cppEntryImplementation(self, mapToAdd):
+    def get_entry_cpp_implementation(self, map_to_add):
         """
         Creates C++ implementation for creation of settings entry
 
-        :type   mapToAdd:   str
-        :param  mapToAdd:   C++ valid name of variable of type QMap<QString,Entry> to store result
+        :type   map_to_add: str
+        :param  map_to_add: C++ valid name of variable of type QMap<QString,Entry> to store result
         :rtype:             unicode
         :return:            C++ code for settings entry creation
         """
-        assert isinstance(mapToAdd, str)
+        assert isinstance(map_to_add, str)
         if "ru_RU" in self._title.data:
             title = self._title.data["ru_RU"]
         else:
             title = self._title.data["ascii"]
-        Types = {
-            "int": "Integer",
-            "double": "Double",
-            "string": "String",
-            "char": "Char",
-            "bool": "Bool",
-            "color": "Color",
-            "font": "Font"
-        }
-        typee = Types[self._type]
+        global SETTINGS_TYPES
+        typee = SETTINGS_TYPES[self._type]
         if typee in ["String", "Color", "Font"]:
             default = "QString::fromUtf8(\"%s\")" % unicode(self._default)
         else:
@@ -1079,40 +1096,39 @@ class SettingsEntry:
     entry.maximumValue = %s;
     %s["%s"] = entry;
 }
-        """ % (title, typee, default, minimum, maximum, mapToAdd, self._key)
+        """ % (title, typee, default, minimum, maximum, map_to_add, self._key)
 
 
 class Settings:
     """
     Settings entries specification
     """
-    def __init__(self, jsonNode):
+
+    def __init__(self, json_node):
         """
         Initializes from JSON node
 
-        :type   jsonNode:   dict
-        :param  jsonNode:   settings specification
+        :type   json_node:   dict
+        :param  json_node:   settings specification
         """
-        assert isinstance(jsonNode, dict)
+        assert isinstance(json_node, dict)
         self._entries = []
-        for key, value in jsonNode.items():
+        for key, value in json_node.items():
             self._entries.append(SettingsEntry(key, value))
 
-    def createSettingsPage(self, variableName, actorAsciiName):
+    def get_settings_page_creation(self, variable_name):
         """
         Creates a C++ code for settings page creation
 
-        :type   variableName:   str
-        :param  variableName:   DeclarativeSettingsPage* type C++ variable name to store
-        :type   actorAsciiName: str
-        :param  actorAsciiName: ASCII actor name used to create settings page
+        :type   variable_name:  str
+        :param  variable_name:  DeclarativeSettingsPage* type C++ variable name to store
         :rtype:                 unicode
         :return:                C++ code for settings page creation
         """
         result = "QMap<QString,Widgets::DeclarativeSettingsPage::Entry> entries;\n"
         for entry in self._entries:
             assert isinstance(entry, SettingsEntry)
-            result += entry.cppEntryImplementation("entries")
+            result += entry.get_entry_cpp_implementation("entries")
         result += """
 %s = new Widgets::DeclarativeSettingsPage(
                             Shared::actorCanonicalName(localizedModuleName(QLocale::Russian)),
@@ -1121,7 +1137,7 @@ class Settings:
                           );
 connect(%s, SIGNAL(settingsChanged(QStringList)), this, SLOT(handleSettingsChangedCppImplementation(QStringList)));
 
-        """ % (variableName, variableName)
+        """ % (variable_name, variable_name)
         return result
 
 
@@ -1141,32 +1157,32 @@ class CppClassBase:
         """
         Field initialization
         """
-        self.className = None
-        self.classDeclarationPrefix = ""
-        self.classDeclarationSuffix = ""
+        self.class_name = None
+        self.class_declaration_prefix = ""
+        self.class_declaration_suffix = ""
         self.fields = []
         self.signals = []
-        self.baseClasses = []
-        self.abstractPublicMethods = []
-        self.abstractPublicSlots = []
-        self.extraImplementations = []
+        self.base_classes = []
+        self.abstract_public_methods = []
+        self.abstract_public_slots = []
+        self.extra_implementations = []
 
-    def __implementation_of_method__(self, methodName):
+    def __implementation_of_method__(self, method_name):
         """
         Calls method implementation creation and returns a result.
 
         Each implemented C++ method should have corresponding Python method named
         the same + suffix 'CppImplementation'
 
-        :type   methodName: str
-        :param  methodName: С++ method name to find an call its Pythonic creator
+        :type   method_name: str
+        :param  method_name: С++ method name to find an call its Pythonic creator
         :rtype:             unicode
         :return:            C++ code
         """
-        assert isinstance(methodName, str)
-        pythonMethodName = methodName + "CppImplementation"
+        assert isinstance(method_name, str)
+        python_method_name = method_name + "CppImplementation"
         try:
-            method = getattr(self, pythonMethodName).__func__
+            method = getattr(self, python_method_name).__func__
         except AttributeError:
             method = None
         if method:
@@ -1174,7 +1190,7 @@ class CppClassBase:
         else:
             return ""
 
-    def cppDeclaration(self):
+    def get_cpp_declaration(self):
         """
         Generates C++ (with Qt extensions) class declaration for header file
 
@@ -1191,50 +1207,51 @@ class CppClassBase:
         public_virtual_slots = []
         constructor = None
         public_typedefs = []
-        nonInspectable = map(lambda x: ("CppImplementation", x), self.extraImplementations)
-        for key, value in inspect.getmembers(self) + nonInspectable:
+        non_inspectable = map(lambda x: ("CppImplementation", x), self.extra_implementations)
+        for key, value in inspect.getmembers(self) + non_inspectable:
             assert isinstance(key, str)
             if key.endswith("CppImplementation"):
                 if isinstance(value, str) or isinstance(value, unicode):
                     implementation = value
                 else:
-                    implMethod = value.__func__
-                    implementation = implMethod(self)
+                    implementation_get_method = value.__func__
+                    implementation = implementation_get_method(self)
                 assert isinstance(implementation, str) or isinstance(implementation, unicode)
-                firstLine = implementation.strip().split('\n')[0].strip()
-                assert isinstance(firstLine, str) or isinstance(firstLine, unicode)
-                if not firstLine:
+                first_line = implementation.strip().split('\n')[0].strip()
+                assert isinstance(first_line, str) or isinstance(first_line, unicode)
+                if not first_line:
                     continue  # pure virtual method
-                groupEndPos = firstLine.index("*/")
-                groupName = firstLine[2:groupEndPos].strip().replace(" ", "_")
-                rtypeEndPos = firstLine.index(" " + self.className + "::", groupEndPos+3)
-                returnType = firstLine[groupEndPos+2:rtypeEndPos].strip()
-                signatureBeginPos = firstLine.index(self.className + "::", rtypeEndPos) + 2 + len(self.className)
-                signature = firstLine[signatureBeginPos:]
-                assert groupName in ["public", "protected", "private", "public_slot", "protected_slot", "private_slot",
-                                     "public_virtual", "public_virtual_slot", "public_static"]
-                if "virtual" in groupName:
+                group_end_pos = first_line.index("*/")
+                group_name = first_line[2:group_end_pos].strip().replace(" ", "_")
+                return_type_end_pos = first_line.index(" " + self.class_name + "::", group_end_pos + 3)
+                return_type = first_line[group_end_pos + 2:return_type_end_pos].strip()
+                signature_begin_pos = first_line.index(self.class_name + "::", return_type_end_pos) + 2 + len(
+                    self.class_name)
+                signature = first_line[signature_begin_pos:]
+                assert group_name in ["public", "protected", "private", "public_slot", "protected_slot", "private_slot",
+                                      "public_virtual", "public_virtual_slot", "public_static"]
+                if "virtual" in group_name:
                     modifier = "virtual "
-                    group = locals()[groupName + 's']
-                elif "static" in groupName:
+                    group = locals()[group_name + 's']
+                elif "static" in group_name:
                     modifier = "static "
-                    group = locals()[groupName[0:-7] + 's']
+                    group = locals()[group_name[0:-7] + 's']
                 else:
                     modifier = ""
-                    group = locals()[groupName + 's']
-                group += [_addIndent(modifier + returnType + " " + signature + ";")]
+                    group = locals()[group_name + 's']
+                group += [_add_indent(modifier + return_type + " " + signature + ";")]
             elif key == "constructorImplementation":
-                implMethod = value.__func__
-                implementation = implMethod(self)
+                implementation_get_method = value.__func__
+                implementation = implementation_get_method(self)
                 assert isinstance(implementation, str) or isinstance(implementation, unicode)
-                firstLine = implementation.strip().split('\n')[0].strip()
-                assert isinstance(firstLine, str) or isinstance(firstLine, unicode)
-                assert "::" in firstLine
-                start = firstLine.index("::") + 2
-                signature = firstLine[start:].strip()
-                publics.insert(0, _addIndent(signature + ";"))
-        publics += map(lambda x: _addIndent("virtual " + x + " = 0;"), self.abstractPublicMethods)
-        public_slots += map(lambda x: _addIndent("virtual " + x + " = 0;"), self.abstractPublicSlots)
+                first_line = implementation.strip().split('\n')[0].strip()
+                assert isinstance(first_line, str) or isinstance(first_line, unicode)
+                assert "::" in first_line
+                start = first_line.index("::") + 2
+                signature = first_line[start:].strip()
+                publics.insert(0, _add_indent(signature + ";"))
+        publics += map(lambda x: _add_indent("virtual " + x + " = 0;"), self.abstract_public_methods)
+        public_slots += map(lambda x: _add_indent("virtual " + x + " = 0;"), self.abstract_public_slots)
         if publics or public_virtuals:
             publics = ["public /* methods */:"] + publics + public_virtuals
         if public_slots or public_virtual_slots:
@@ -1246,22 +1263,22 @@ class CppClassBase:
         if private_slots:
             private_slots = ["private slots:"] + private_slots
         if self.signals:
-            signals = string.join(["signals:"] + map(lambda x: _addIndent(x + ";"), self.signals), '\n')
+            signals = string.join(["signals:"] + map(lambda x: _add_indent(x + ";"), self.signals), '\n')
         else:
             signals = ""
         if self.fields:
-            fields = string.join(["protected /* fields */:"] + map(lambda x: _addIndent(x + ";"), self.fields), '\n')
+            fields = string.join(["protected /* fields */:"] + map(lambda x: _add_indent(x + ";"), self.fields), '\n')
         else:
             fields = ""
-        if self.baseClasses:
-            baseClasses = "\n    : public " + string.join(self.baseClasses, "\n    , public ")
+        if self.base_classes:
+            base_classes = "\n    : public " + string.join(self.base_classes, "\n    , public ")
         else:
-            baseClasses = ""
+            base_classes = ""
         substitutions = {
-            "className": self.className,
-            "classDeclarationPrefix": self.classDeclarationPrefix,
-            "classDeclarationSuffix": self.classDeclarationSuffix,
-            "baseClasses": baseClasses,
+            "className": self.class_name,
+            "classDeclarationPrefix": self.class_declaration_prefix,
+            "classDeclarationSuffix": self.class_declaration_suffix,
+            "baseClasses": base_classes,
             "publicMethods": string.join(publics, "\n"),
             "publicSlots": string.join(public_slots, "\n"),
             "protectedMethods": string.join(protecteds, "\n"),
@@ -1271,7 +1288,7 @@ class CppClassBase:
             "privateFields": fields,
             "signals": signals
         }
-        return _renderTemplate("""
+        return _render_template("""
 class $className$baseClasses
 {
 $classDeclarationPrefix
@@ -1290,7 +1307,7 @@ $classDeclarationSuffix
 };
         """, substitutions)
 
-    def cppImplementation(self):
+    def get_cpp_implementation(self):
         """
         Generates complete C++ class implementation for all the methods
 
@@ -1298,15 +1315,15 @@ $classDeclarationSuffix
         :return:    C++ class implementation code
         """
         result = ""
-        nonInspectable = map(lambda x: ("CppImplementation", x), self.extraImplementations)
-        for key, value in inspect.getmembers(self) + nonInspectable:
+        non_inspectable = map(lambda x: ("CppImplementation", x), self.extra_implementations)
+        for key, value in inspect.getmembers(self) + non_inspectable:
             assert isinstance(key, str)
             if key.endswith("CppImplementation") or key == "constructorImplementation":
                 if isinstance(value, str) or isinstance(value, unicode):
                     implementation = value
                 else:
-                    implMethod = value.__func__
-                    implementation = implMethod(self)
+                    implementation_get_method = value.__func__
+                    implementation = implementation_get_method(self)
                 assert isinstance(implementation, str) or isinstance(implementation, unicode)
                 if key == "constructorImplementation":
                     result = implementation.strip() + "\n\n" + result
@@ -1330,14 +1347,14 @@ class PluginCppClass(CppClassBase):
         CppClassBase.__init__(self)
         assert isinstance(module, Module)
         self._module = module
-        self.className = module.pluginClassName()
-        self.baseClasses = [
+        self.class_name = module.get_plugin_cpp_class_name()
+        self.base_classes = [
             "ExtensionSystem::KPlugin",
             "Shared::ActorInterface"
         ]
         self.fields = [
-            "class %s* module_" % module.baseClassName(),
-            "class %s* asyncRunThread_" % module.runThreadClassName(),
+            "class %s* module_" % module.get_base_cpp_class_name(),
+            "class %s* asyncRunThread_" % module.get_run_thread_cpp_class_name(),
             "class Widgets::DeclarativeSettingsPage* settingsPage_",
             "QString errorText_",
             "QVariant result_",
@@ -1345,13 +1362,13 @@ class PluginCppClass(CppClassBase):
             "ExtensionSystem::CommandLine commandLineParameters_"
         ]
         self.signals = ["void sync()", "void asyncRun(quint32, const QVariantList &)"]
-        self.classDeclarationPrefix = """
+        self.class_declaration_prefix = """
     friend class %s;
     friend class %s;
     Q_OBJECT
     Q_INTERFACES(Shared::ActorInterface)
-        """ % (self._module.runThreadClassName(), self._module.baseClassName())
-        self.classDeclarationSuffix = """
+        """ % (self._module.get_run_thread_cpp_class_name(), self._module.get_base_cpp_class_name())
+        self.class_declaration_suffix = """
 private:
     template <typename T> inline static QVector<T> toVector1(const QVariant & v)
     {
@@ -1397,6 +1414,7 @@ private:
     }
         """
 
+    # noinspection PyPep8Naming
     def constructorImplementation(self):
         """
         Returns implementation of class constructor
@@ -1417,8 +1435,9 @@ private:
         Qt::QueuedConnection
     );
 }
-        """ % (self.className, self.className)
+        """ % (self.class_name, self.class_name)
 
+    # noinspection PyPep8Naming
     def isGuiRequiredCppImplementation(self):
         """
         Creates implementation of isGuiRequired
@@ -1435,16 +1454,18 @@ private:
 {
     return %s;
 }
-        """ % (self.className, guiRequired)
+        """ % (self.class_name, guiRequired)
 
+    # noinspection PyPep8Naming
     def asciiModuleNameCppImplementation(self):
         return """
 /* public */ QByteArray %s::asciiModuleName() const
 {
     return QByteArray("%s");
 }
-        """ % (self.className, self._module.name.asciiValue().replace("\\", "\\\\"))
+        """ % (self.class_name, self._module.name.get_ascii_value().replace("\\", "\\\\"))
 
+    # noinspection PyPep8Naming
     def localizedModuleNameCppImplementation(self):
         """
         Creates implementation of name
@@ -1459,67 +1480,75 @@ private:
     // TODO non-Russian languages not implemented yet
     return QString::fromUtf8("%s");
 }
-        """ % (self.className, self._module.name.kumirValue().replace("\\", "\\\\"))
+        """ % (self.class_name, self._module.name.get_kumir_value().replace("\\", "\\\\"))
 
-    @property
+    # noinspection PyPep8Naming
     def functionListCppImplementation(self):
         methods = self._module.methods
         body = ""
         for method in methods:
-            body += "\n/* " + method.kumirDeclaration() + " */\n"
+            assert isinstance(method, Method)
+            body += "\n/* " + method.get_kumir_declaration() + " */\n"
             body += "result.push_back(Function());\n"
             body += "result.last().id = result.size() - 1;\n"
-            if method.name.kumirValue().startswith("@"):
+            if method.name.get_kumir_value().startswith("@"):
                 body += "result.last().accessType = TeacherModeFunction;\n"
             else:
                 body += "result.last().accessType = PublicFunction;\n"
-            body += 'result.last().asciiName = QByteArray("%s");\n' % method.name.asciiValue().replace("\\", "\\\\")
+            body += 'result.last().asciiName = QByteArray("%s");\n' % method.name.get_ascii_value().replace("\\",
+                                                                                                            "\\\\")
             assert isinstance(method.name.data, dict)
             for key, value in method.name.data.items():
                 qlocale = None
                 if key == "ru_RU":
                     qlocale = "QLocale::Russian"
                 if qlocale:
-                    body += 'result.last().localizedNames[%s] = QString::fromUtf8("%s");\n' % (qlocale, value.replace("\\", "\\\\"))
-            if method.returnType:
-                assert isinstance(method.returnType, BaseType)
-                if method.returnType._name.asciiValue() == "int":
+                    body += 'result.last().localizedNames[%s] = QString::fromUtf8("%s");\n' % (
+                        qlocale, value.replace("\\", "\\\\"))
+            if method.return_type:
+                assert isinstance(method.return_type, BaseType)
+                if method.return_type.get_ascii_name() == "int":
                     body += "result.last().returnType = Int;\n"
-                elif method.returnType._name.asciiValue() == "double":
+                elif method.return_type.get_ascii_name() == "double":
                     body += "result.last().returnType = Real;\n"
-                elif method.returnType._name.asciiValue() == "bool":
+                elif method.return_type.get_ascii_name() == "bool":
                     body += "result.last().returnType = Bool;\n"
-                elif method.returnType._name.asciiValue() == "char":
+                elif method.return_type.get_ascii_name() == "char":
                     body += "result.last().returnType = Char;\n"
-                elif method.returnType._name.asciiValue() == "string":
+                elif method.return_type.get_ascii_name() == "string":
                     body += "result.last().returnType = String;\n"
                 else:
                     body += "result.last().returnType = RecordType;\n"
-                    body += method.returnType.cppRecordSpecCreation(None, "result.last().returnTypeSpecification")
+                    body += method.return_type.get_cpp_record_spec_creation(None,
+                                                                            "result.last().returnTypeSpecification")
             else:
                 body += "result.last().returnType = Void;\n"
             for argument in method.arguments:
+                assert isinstance(argument, Argument)
+                assert isinstance(argument.base_type, BaseType)
                 body += "result.last().arguments.push_back(Argument());\n"
-                if argument.kumirArgumentDeclaration().startswith(u'аргрез '):
+                if argument.get_kumir_argument_declaration().startswith(u'аргрез '):
                     body += "result.last().arguments.last().accessType = InOutArgument;\n"
-                elif argument.kumirArgumentDeclaration().startswith(u'рез '):
+                elif argument.get_kumir_argument_declaration().startswith(u'рез '):
                     body += "result.last().arguments.last().accessType = OutArgument;\n"
                 else:
                     body += "result.last().arguments.last().accessType = InArgument;\n"
-                assert isinstance(argument.baseType._name, Name)
-                if argument.baseType._name.asciiValue() == "int":
+                if argument.base_type.get_ascii_name() == "int":
                     body += "result.last().arguments.last().type = Int;\n"
-                elif argument.baseType._name.asciiValue() == "double":
+                elif argument.base_type.get_ascii_name() == "double":
                     body += "result.last().arguments.last().type = Real;\n"
-                elif argument.baseType._name.asciiValue() == "bool":
+                elif argument.base_type.get_ascii_name() == "bool":
                     body += "result.last().arguments.last().type = Bool;\n"
-                elif argument.baseType._name.asciiValue() == "char":
+                elif argument.base_type.get_ascii_name() == "char":
                     body += "result.last().arguments.last().type = Char;\n"
-                elif argument.baseType._name.asciiValue() == "string":
+                elif argument.base_type.get_ascii_name() == "string":
                     body += "result.last().arguments.last().type = String;\n"
                 else:
                     body += "result.last().arguments.last().type = RecordType;\n"
-                    body += argument.baseType.cppRecordSpecCreation(None, "result.last().arguments.last().typeSpecification")
+                    body += argument.base_type.get_cpp_record_spec_creation(
+                        None,
+                        "result.last().arguments.last().typeSpecification"
+                    )
                 body += "result.last().arguments.last().dimension = %du;\n" % argument.dimension
 
         return """
@@ -1529,8 +1558,9 @@ private:
 %s;
     return result;
 }
-        """ % (self.className, _addIndent(body))
+        """ % (self.class_name, _add_indent(body))
 
+    # noinspection PyPep8Naming
     def typeListCppImplementation(self):
         """
         Creates implementation of typeList
@@ -1544,9 +1574,9 @@ private:
         """
             for typee in self._module.types:
                 assert isinstance(typee, BaseType)
-                if typee._module == self._module:
-                    if typee.cppRecordSpecCreation("result", None):
-                        body += typee.cppRecordSpecCreation("result", None)
+                if typee.get_module() == self._module:
+                    if typee.get_cpp_record_spec_creation("result", None):
+                        body += typee.get_cpp_record_spec_creation("result", None)
         return """
 /* public */ Shared::ActorInterface::TypeList %s::typeList() const
 {
@@ -1554,8 +1584,9 @@ private:
 %s
     return result;
 }
-        """ % (self.className, _addIndent(body))
+        """ % (self.class_name, _add_indent(body))
 
+    # noinspection PyPep8Naming
     def customValueToStringCppImplementation(self):
         """
         Creates implementation of customValueToString
@@ -1568,17 +1599,17 @@ private:
         value = ""
         for method in self._module.methods:
             assert isinstance(method, Method)
-            if method.name.asciiValue() == "output":
+            if method.name.get_ascii_value() == "output":
                 clazz = "clazz"
                 value = "value"
                 assert len(method.arguments) == 1
                 argument = method.arguments[0]
                 assert isinstance(argument, Argument)
-                assert not argument.baseType.isStandardType()
+                assert not argument.base_type.is_standard_type()
                 if body:
                     body += "    else "
-                body += "    if (clazz==QByteArray(\"%s\")) {\n" % argument.baseType._name.asciiValue()
-                body += "        %s x = decode(value);\n" % argument.baseType.qtName()
+                body += "    if (clazz==QByteArray(\"%s\")) {\n" % argument.base_type.get_ascii_name()
+                body += "        %s x = decode(value);\n" % argument.base_type.get_qt_name()
                 body += "        result = module_->runOperatorOUTPUT(x);\n    }\n"
         return """
 /* public */ QString %s::customValueToString(const QByteArray & %s, const QVariant & %s) const
@@ -1587,8 +1618,9 @@ private:
 %s
     return result;
 }
-        """ % (self.className, clazz, value, body)
+        """ % (self.class_name, clazz, value, body)
 
+    # noinspection PyPep8Naming
     def customValueFromStringCppImplementation(self):
         """
         Creates implementation of customValueFromString
@@ -1601,19 +1633,19 @@ private:
         stringg = ""
         for method in self._module.methods:
             assert isinstance(method, Method)
-            if method.name.asciiValue() == "input":
+            if method.name.get_ascii_value() == "input":
                 clazz = "clazz"
                 stringg = "stringg"
-                rtype = method.returnType
-                assert isinstance(rtype, BaseType)
+                return_type = method.return_type
+                assert isinstance(return_type, BaseType)
                 assert len(method.arguments) == 2
                 argument = method.arguments[0]
                 assert isinstance(argument, Argument)
-                assert argument.baseType.qtName() == "QString"
+                assert argument.base_type.get_qt_name() == "QString"
                 if body:
                     body += "    else "
-                body += "    if (clazz==QByteArray(\"%s\")) {\n" % rtype._name.asciiValue()
-                body += "        %s x; bool ok = false;\n" % rtype.qtName()
+                body += "    if (clazz==QByteArray(\"%s\")) {\n" % return_type.get_ascii_name()
+                body += "        %s x; bool ok = false;\n" % return_type.get_qt_name()
                 body += "        x = module_->runOperatorINPUT(stringg, ok);\n"
                 body += "        if (ok) {\n"
                 body += "            result = encode(x);\n"
@@ -1626,8 +1658,9 @@ private:
 %s
     return result;
 }
-        """ % (self.className, clazz, stringg, body)
+        """ % (self.class_name, clazz, stringg, body)
 
+    # noinspection PyPep8Naming
     def mainIconNameCppImplementation(self):
         """
         Creates mainIconName C++ implementation
@@ -1635,18 +1668,19 @@ private:
         :rtype:     str
         :return:    implementation of QString mainIconName() const
         """
-        iconName = ""
+        icon_name = ""
         if self._module.gui:
             gui = self._module.gui
             assert isinstance(gui, Gui)
-            iconName = gui.iconName("main")
+            icon_name = gui.get_icon_name("main")
         return """
 /* public */ QString %s::mainIconName() const
 {
     return QString::fromAscii(\"%s\");
 }
-        """ % (self.className, iconName)
+        """ % (self.class_name, icon_name)
 
+    # noinspection PyPep8Naming
     def pultIconNameCppImplementation(self):
         """
         Creates pultIconName C++ implementation
@@ -1654,18 +1688,19 @@ private:
         :rtype:     str
         :return:    implementation of QString pultIconName() const
         """
-        iconName = ""
+        icon_name = ""
         if self._module.gui:
             gui = self._module.gui
             assert isinstance(gui, Gui)
-            iconName = gui.iconName("pult")
+            icon_name = gui.get_icon_name("pult")
         return """
 /* public */ QString %s::pultIconName() const
 {
     return QString::fromAscii(\"%s\");
 }
-        """ % (self.className, iconName)
+        """ % (self.class_name, icon_name)
 
+    # noinspection PyPep8Naming
     def mainWidgetCppImplementation(self):
         """
         Creates mainWidget C++ implementation
@@ -1678,8 +1713,9 @@ private:
 {
     return module_->mainWidget();
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def pultWidgetCppImplementation(self):
         """
         Creates pultWidget C++ implementation
@@ -1692,8 +1728,9 @@ private:
 {
     return module_->pultWidget();
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def moduleMenusCppImplementation(self):
         """
         Creates moduleMenus C++ implementation
@@ -1706,8 +1743,9 @@ private:
 {
     return module_->moduleMenus();
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def settingsEditorPageCppImplementation(self):
         """
         Creates settingsEditorPage C++ implementation
@@ -1720,8 +1758,9 @@ private:
 {
     return settingsPage_;
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def resetCppImplementation(self):
         """
         Creates reset C++ implementation
@@ -1734,8 +1773,9 @@ private:
 {
     module_->reset();
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def setAnimationEnabledCppImplementation(self):
         """
         Creates setAnimationEnabled C++ implementation
@@ -1752,8 +1792,9 @@ private:
         module_->setAnimationEnabled(enabled);
     }
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def evaluateCppImplementation(self):
         """
         Creates evaluate C++ implementation
@@ -1761,76 +1802,73 @@ private:
         :rtype:     unicode
         :return:    implementation of EvaluationStatus evaluate(quint32, const QVariantList&)
         """
-        switchBody = ""
+        switch_body = ""
         for method in self._module.methods:
             assert isinstance(method, Method)
-            methodIndex = self._module.methods.index(method)
-            switchBody += "case 0x%04x: {\n" % methodIndex
-            switchBody += "    /* %s */\n" % method.name.asciiValue()
+            method_index = self._module.methods.index(method)
+            switch_body += "case 0x%04x: {\n" % method_index
+            switch_body += "    /* %s */\n" % method.name.get_ascii_value()
             if method.async:
-                # switchBody += "    asyncRunThread_->init(index, args);\n"
-                # switchBody += "    asyncRunThread_->start();\n"
-                switchBody += "    emit asyncRun(index, args);\n"
-                switchBody += "    return ES_Async;\n"
+                switch_body += "    emit asyncRun(index, args);\n"
+                switch_body += "    return ES_Async;\n"
             else:
                 args = []
                 for index, argument in enumerate(method.arguments):
                     assert isinstance(argument, Argument)
-                    switchBody += "    %s = " % argument.cppLocalVariableDeclaration()
+                    switch_body += "    %s = " % argument.get_cpp_local_variable_declaration()
                     if argument.dimension > 0:
-                        switchBody += "toVector%d<%s>(args[%d])" % (
+                        switch_body += "toVector%d<%s>(args[%d])" % (
                             argument.dimension,
-                            argument.baseType.qtName(),
+                            argument.base_type.get_qt_name(),
                             index
                         )
-                    elif argument.baseType.qtName() in ["int", "qreal", "bool", "QString", "QChar"]:
-                        switchBody += "qvariant_cast<%s>(args[%d])" % (argument.baseType.qtName(), index)
+                    elif argument.base_type.get_qt_name() in ["int", "qreal", "bool", "QString", "QChar"]:
+                        switch_body += "qvariant_cast<%s>(args[%d])" % (argument.base_type.get_qt_name(), index)
                     else:
-                        switchBody += "decode(args[%d])" % index
-                    switchBody += ";\n"
-                    args += [argument.name.cppValue]
-                if method.returnType:
-                    returnType = method.returnType
-                    assert isinstance(returnType, BaseType)
-                    switchBody += "    result_ = "
-                    if returnType.qtName() in ["int", "qreal", "bool", "QString", "QChar"]:
-                        switchBody += "QVariant::fromValue("
+                        switch_body += "decode(args[%d])" % index
+                    switch_body += ";\n"
+                    args += [argument.name.get_cpp_value()]
+                if method.return_type:
+                    return_type = method.return_type
+                    assert isinstance(return_type, BaseType)
+                    switch_body += "    result_ = "
+                    if return_type.get_qt_name() in ["int", "qreal", "bool", "QString", "QChar"]:
+                        switch_body += "QVariant::fromValue("
                     else:
-                        switchBody += "encode("
+                        switch_body += "encode("
                 else:
-                    switchBody += "    "
-                switchBody += "module_->run%s(%s)" % (method.name.cppCamelCaseValue(), string.join(args, ", "))
-                if method.returnType:
-                    switchBody += ");\n"
+                    switch_body += "    "
+                switch_body += "module_->run%s(%s)" % (method.name.get_camel_case_cpp_value(), string.join(args, ", "))
+                if method.return_type:
+                    switch_body += ");\n"
                 else:
-                    switchBody += ";\n"
-                returnsAnyArgument = False
+                    switch_body += ";\n"
+                returns_any_argument = False
                 for argument in method.arguments:
                     assert isinstance(argument, Argument)
-                    switchBody += "    optResults_ << "
+                    switch_body += "    optResults_ << "
                     if argument.reference and not argument.constant:
-                        returnsAnyArgument = True
-                        plainType = argument.baseType.qtName() in ["int", "qreal", "bool", "QString", "QChar"]
-                        if plainType or argument.dimension > 0:
-                            switchBody += "QVariant::fromValue(%s);\n" % argument.name.cppValue
+                        returns_any_argument = True
+                        plain_type = argument.base_type.get_qt_name() in ["int", "qreal", "bool", "QString", "QChar"]
+                        if plain_type or argument.dimension > 0:
+                            switch_body += "QVariant::fromValue(%s);\n" % argument.name.get_cpp_value()
                         else:
-                            switchBody += "encode(%s);\n" % argument.name.cppValue
+                            switch_body += "encode(%s);\n" % argument.name.get_cpp_value()
                     else:
-                        switchBody += "QVariant::Invalid;\n"
-                switchBody += "    if (errorText_.length() > 0) {\n"
-                switchBody += "        return ES_Error;\n"
-                switchBody += "    }\n"
-                if returnsAnyArgument and method.returnType:
-                    switchBody += "    return ES_StackRezResult;\n"
-                elif returnsAnyArgument:
-                    switchBody += "    return ES_RezResult;\n"
-                elif method.returnType:
-                    switchBody += "    return ES_StackResult;\n"
+                        switch_body += "QVariant::Invalid;\n"
+                switch_body += "    if (errorText_.length() > 0) {\n"
+                switch_body += "        return ES_Error;\n"
+                switch_body += "    }\n"
+                if returns_any_argument and method.return_type:
+                    switch_body += "    return ES_StackRezResult;\n"
+                elif returns_any_argument:
+                    switch_body += "    return ES_RezResult;\n"
+                elif method.return_type:
+                    switch_body += "    return ES_StackResult;\n"
                 else:
-                    switchBody += "    return ES_NoResult;\n"
-            switchBody += "    break;\n"
-            switchBody += "}\n\n"
-
+                    switch_body += "    return ES_NoResult;\n"
+            switch_body += "    break;\n"
+            switch_body += "}\n\n"
         return """
 /* public */ Shared::EvaluationStatus %s::evaluate(quint32 index, const QVariantList & args)
 {
@@ -1846,8 +1884,9 @@ private:
         }
     }
 }
-        """ % (self.className, _addIndent(_addIndent(switchBody)))
+        """ % (self.class_name, _add_indent(_add_indent(switch_body)))
 
+    # noinspection PyPep8Naming
     def asyncEvaluateCppImplementation(self):
         """
         Creates evaluate C++ implementation
@@ -1855,59 +1894,57 @@ private:
         :rtype:     unicode
         :return:    implementation of void asyncEvaluate(quint32, const QVariantList&)
         """
-        switchBody = ""
+        switch_body = ""
         for method in self._module.methods:
             assert isinstance(method, Method)
-            methodIndex = self._module.methods.index(method)
+            method_index = self._module.methods.index(method)
             if method.async:
-                switchBody += "case 0x%04x: {\n" % methodIndex
-                switchBody += "    /* %s */\n" % method.name.asciiValue()
+                switch_body += "case 0x%04x: {\n" % method_index
+                switch_body += "    /* %s */\n" % method.name.get_ascii_value()
                 args = []
                 for index, argument in enumerate(method.arguments):
                     assert isinstance(argument, Argument)
-                    switchBody += "    %s = " % argument.cppLocalVariableDeclaration()
+                    switch_body += "    %s = " % argument.get_cpp_local_variable_declaration()
                     if argument.dimension > 0:
-                        switchBody += "toVector%d<%s>(args[%d])" % (
+                        switch_body += "toVector%d<%s>(args[%d])" % (
                             argument.dimension,
-                            argument.baseType.qtName(),
+                            argument.base_type.get_qt_name(),
                             index
                         )
-                    elif argument.baseType.qtName() in ["int", "qreal", "bool", "QString", "QChar"]:
-                        switchBody += "qvariant_cast<%s>(args[%d])" % (argument.baseType.qtName(), index)
+                    elif argument.base_type.get_qt_name() in ["int", "qreal", "bool", "QString", "QChar"]:
+                        switch_body += "qvariant_cast<%s>(args[%d])" % (argument.base_type.get_qt_name(), index)
                     else:
-                        switchBody += "decode(args[%d])" % index
-                    switchBody += ";\n"
-                    args += [argument.name.cppValue]
-                if method.returnType:
-                    returnType = method.returnType
-                    assert isinstance(returnType, BaseType)
-                    switchBody += "    result_ = "
-                    if returnType.qtName() in ["int", "qreal", "bool", "QString", "QChar"]:
-                        switchBody += "QVariant::fromValue("
+                        switch_body += "decode(args[%d])" % index
+                    switch_body += ";\n"
+                    args += [argument.name.get_cpp_value()]
+                if method.return_type:
+                    return_type = method.return_type
+                    assert isinstance(return_type, BaseType)
+                    switch_body += "    result_ = "
+                    if return_type.get_qt_name() in ["int", "qreal", "bool", "QString", "QChar"]:
+                        switch_body += "QVariant::fromValue("
                     else:
-                        switchBody += "encode("
+                        switch_body += "encode("
                 else:
-                    switchBody += "    "
-                switchBody += "module_->run%s(%s)" % (method.name.cppCamelCaseValue(), string.join(args, ", "))
-                if method.returnType:
-                    switchBody += ");\n"
+                    switch_body += "    "
+                switch_body += "module_->run%s(%s)" % (method.name.get_camel_case_cpp_value(), string.join(args, ", "))
+                if method.return_type:
+                    switch_body += ");\n"
                 else:
-                    switchBody += ";\n"
-                returnsAnyArgument = False
+                    switch_body += ";\n"
                 for argument in method.arguments:
                     assert isinstance(argument, Argument)
-                    switchBody += "    optResults_ << "
+                    switch_body += "    optResults_ << "
                     if argument.reference and not argument.constant:
-                        returnsAnyArgument = True
-                        plainType = argument.baseType.qtName() in ["int", "qreal", "bool", "QString", "QChar"]
-                        if plainType or argument.dimension > 0:
-                            switchBody += "QVariant::fromValue(%s);\n" % argument.name.cppValue
+                        plain_type = argument.base_type.get_qt_name() in ["int", "qreal", "bool", "QString", "QChar"]
+                        if plain_type or argument.dimension > 0:
+                            switch_body += "QVariant::fromValue(%s);\n" % argument.name.get_cpp_value()
                         else:
-                            switchBody += "encode(%s);\n" % argument.name.cppValue
+                            switch_body += "encode(%s);\n" % argument.name.get_cpp_value()
                     else:
-                        switchBody += "QVariant::Invalid;\n"
-                switchBody += "    break;\n"
-                switchBody += "}\n\n"
+                        switch_body += "QVariant::Invalid;\n"
+                switch_body += "    break;\n"
+                switch_body += "}\n\n"
 
         return """
 /* private slot */ void %s::asyncEvaluate(quint32 index, const QVariantList & args)
@@ -1924,8 +1961,9 @@ private:
     }
     emit sync();
 }
-        """ % (self.className, _addIndent(_addIndent(switchBody)))
+        """ % (self.class_name, _add_indent(_add_indent(switch_body)))
 
+    # noinspection PyPep8Naming
     def resultCppImplementation(self):
         """
         Creates result C++ implementation
@@ -1938,8 +1976,9 @@ private:
 {
     return result_;
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def algOptResultsCppImplementation(self):
         """
         Creates algOptResult C++ implementation
@@ -1952,8 +1991,9 @@ private:
 {
     return optResults_;
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def errorTextCppImplementation(self):
         """
         Creates errorText C++ implementation
@@ -1966,8 +2006,9 @@ private:
 {
     return errorText_;
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def connectSyncCppImplementation(self):
         """
         Creates connectSync C++ implementation
@@ -1980,8 +2021,9 @@ private:
 {
     QObject::connect(this, SIGNAL(sync()), receiver, method, Qt::DirectConnection);
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def initializeCppImplementation(self):
         """
         Creates initialize C++ implementation
@@ -1989,15 +2031,13 @@ private:
         :rtype:     str
         :return:    implementation of QString initialize(const QStringList&)
         """
-        body = "module_ = new %s(this);\n" % self._module.className()
+        body = "module_ = new %s(this);\n" % self._module.get_module_cpp_class_name()
         methods = self._module.methods
-        asyncMethods = filter(lambda method: method.async, methods)
+        async_methods = filter(lambda method: method.async, methods)
         if self._module.settings:
-            moduleName = self._module.name.cppCamelCaseValue()
-            body += self._module.settings.createSettingsPage("settingsPage_", moduleName).strip() + "\n\n"
-
-        if asyncMethods:
-            body += "asyncRunThread_ = new %s(this, module_);\n" % self._module.runThreadClassName()
+            body += self._module.settings.get_settings_page_creation("settingsPage_").strip() + "\n\n"
+        if async_methods:
+            body += "asyncRunThread_ = new %s(this, module_);\n" % self._module.get_run_thread_cpp_class_name()
             body += "QObject::connect(asyncRunThread_, SIGNAL(finished()),\n"
             body += "                 this, SIGNAL(sync()));\n"
         return """
@@ -2006,16 +2046,18 @@ private:
 %s
     return module_->initialize(a, b);
 }
-        """ % (self.className, _addIndent(body))
+        """ % (self.class_name, _add_indent(body))
 
+    # noinspection PyPep8Naming
     def isSafeToQuitCppImplementation(self):
         return """
 /* public */ bool %s::isSafeToQuit()
 {
     return module_->isSafeToQuit();
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def sleepCppImplementation(self):
         """
         Creates sleep implementation
@@ -2030,8 +2072,9 @@ private:
         asyncRunThread_->asleep(secs);
     }
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def msleepCppImplementation(self):
         """
         Creates msleep implementation
@@ -2046,8 +2089,9 @@ private:
         asyncRunThread_->amsleep(secs);
     }
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def usleepCppImplementation(self):
         """
         Creates usleep implementation
@@ -2062,8 +2106,9 @@ private:
         asyncRunThread_->ausleep(secs);
     }
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def changeGlobalStateCppImplementation(self):
         """
         Creates changeGlobalState implementation
@@ -2076,8 +2121,9 @@ private:
 {
     module_->changeGlobalState(old, current);
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def handleSettingsChangedCppImplementation(self):
         """
         Creates handleSettingsChanged implementation
@@ -2092,8 +2138,9 @@ private:
         module_->reloadSettings(mySettings(), keys);
     }
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def updateSettingsCppImplementation(self):
         """
         Creates updateSettings implementation
@@ -2111,8 +2158,9 @@ private:
         module_->reloadSettings(mySettings(), keys);
     }
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def loadActorDataCppImplementation(self):
         """
         Creates loadActorData implementation
@@ -2127,8 +2175,9 @@ private:
         module_->loadActorData(source);
     }
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def acceptableCommandLineParametersCppImplementation(self):
         """
         Implementation of ExtensionSystem::KPlugin::acceptableCommandLineParameters()
@@ -2141,19 +2190,20 @@ private:
 {
     return %s::acceptableCommandLineParameters();
 }
-        """ % (self.className, self._module.className())
+        """ % (self.class_name, self._module.get_module_cpp_class_name())
 
+    # noinspection PyPep8Naming
     def usesListCppImplementation(self):
-        if not self._module.usesList:
+        if not self._module.uses_list:
             return """
 /* public */ QList<Shared::ActorInterface*> %s::usesList() const
 {
     static const QList<ActorInterface*> empty = QList<ActorInterface*>();
     return empty;
 }
-            """ % self.className
+            """ % self.class_name
         else:
-            pluginsList = map(lambda s: "\"Actor" + s + "\"", self._module.usesList)
+            plugins_list = map(lambda s: "\"Actor" + s + "\"", self._module.uses_list)
             return """
 /* public */ QList<Shared::ActorInterface*> %s::usesList() const
 {
@@ -2168,13 +2218,14 @@ private:
     }
     return result;
 }
-            """ % (self.className, string.join(pluginsList, " << "))
+            """ % (self.class_name, string.join(plugins_list, " << "))
 
 
 class AsyncThreadCppClass(CppClassBase):
     """
     Class for asynchronous method evaluation in separate thread
     """
+
     def __init__(self, module):
         """
         Initializes from actor module tree
@@ -2182,15 +2233,16 @@ class AsyncThreadCppClass(CppClassBase):
         CppClassBase.__init__(self)
         assert isinstance(module, Module)
         self._module = module
-        self.className = module.runThreadClassName()
+        self.class_name = module.get_run_thread_cpp_class_name()
         self.fields = [
             "quint32 index_",
             "QVariantList args_",
-            "class %s* plugin_" % module.pluginClassName(),
-            "class %s* module_" % module.baseClassName()
+            "class %s* plugin_" % module.get_plugin_cpp_class_name(),
+            "class %s* module_" % module.get_base_cpp_class_name()
         ]
-        self.baseClasses = ["QThread"]
+        self.base_classes = ["QThread"]
 
+    # noinspection PyPep8Naming
     def constructorImplementation(self):
         """
         Creates C++ constructor implementation
@@ -2207,8 +2259,10 @@ class AsyncThreadCppClass(CppClassBase):
     , module_(module)
 {
 }
-        """ % (self.className, self.className, self._module.pluginClassName(), self._module.baseClassName())
+        """ % (self.class_name, self.class_name, self._module.get_plugin_cpp_class_name(),
+               self._module.get_base_cpp_class_name())
 
+    # noinspection PyPep8Naming
     def initCppImplementation(self):
         """
         Creates init implementation
@@ -2222,8 +2276,9 @@ class AsyncThreadCppClass(CppClassBase):
     index_ = index;
     args_ = args;
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def asleepCppImplementation(self):
         """
         Creates asleep implementation
@@ -2236,8 +2291,9 @@ class AsyncThreadCppClass(CppClassBase):
 {
     sleep(secs);
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def amsleepCppImplementation(self):
         """
         Creates amsleep implementation
@@ -2250,8 +2306,9 @@ class AsyncThreadCppClass(CppClassBase):
 {
     msleep(secs);
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def ausleepCppImplementation(self):
         """
         Creates ausleep implementation
@@ -2264,8 +2321,9 @@ class AsyncThreadCppClass(CppClassBase):
 {
     usleep(secs);
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def runCppImplementation(self):
         """
         Creates thread run implementation
@@ -2273,57 +2331,57 @@ class AsyncThreadCppClass(CppClassBase):
         :rtype:     unicode
         :return:    implementation of void run()
         """
-        switchBody = ""
-        methods = filter(lambda method: method.async, self._module.methods)
+        switch_body = ""
+        methods = filter(lambda module_method: module_method.async, self._module.methods)
         for method in methods:
             assert isinstance(method, Method)
-            methodIndex = self._module.methods.index(method)
-            switchBody += "case 0x%04x: {\n" % methodIndex
-            switchBody += "    /* %s */\n" % method.name.asciiValue()
+            method_index = self._module.methods.index(method)
+            switch_body += "case 0x%04x: {\n" % method_index
+            switch_body += "    /* %s */\n" % method.name.get_ascii_value()
             args = []
             for index, argument in enumerate(method.arguments):
                 assert isinstance(argument, Argument)
-                args += [argument.name.cppValue]
-                switchBody += "    %s = " % argument.cppLocalVariableDeclaration()
+                args += [argument.name.get_cpp_value()]
+                switch_body += "    %s = " % argument.get_cpp_local_variable_declaration()
                 if argument.dimension > 0:
-                    switchBody += "toVector%d<%s>(args[%d])" % (
+                    switch_body += "toVector%d<%s>(args[%d])" % (
                         argument.dimension,
-                        argument.baseType.qtName(),
+                        argument.base_type.get_qt_name(),
                         index
                     )
-                elif argument.baseType.qtName() in ["int", "qreal", "bool", "QString", "QChar"]:
-                    switchBody += "qvariant_cast<%s>(args_[%d])" % (argument.baseType.qtName(), index)
+                elif argument.base_type.get_qt_name() in ["int", "qreal", "bool", "QString", "QChar"]:
+                    switch_body += "qvariant_cast<%s>(args_[%d])" % (argument.base_type.get_qt_name(), index)
                 else:
-                    switchBody += "decode(args_[%d])" % index
-                switchBody += ";\n"
-            if method.returnType:
-                returnType = method.returnType
-                assert isinstance(returnType, BaseType)
-                switchBody += "    plugin_->result_ = "
-                if returnType.qtName() in ["int", "qreal", "bool", "QString", "QChar"]:
-                    switchBody += "QVariant::fromValue("
+                    switch_body += "decode(args_[%d])" % index
+                switch_body += ";\n"
+            if method.return_type:
+                return_type = method.return_type
+                assert isinstance(return_type, BaseType)
+                switch_body += "    plugin_->result_ = "
+                if return_type.get_qt_name() in ["int", "qreal", "bool", "QString", "QChar"]:
+                    switch_body += "QVariant::fromValue("
                 else:
-                    switchBody += "encode("
+                    switch_body += "encode("
             else:
-                switchBody += "    "
-            switchBody += "module_->run%s(%s)" % (method.name.cppCamelCaseValue(), string.join(args, ", "))
-            if method.returnType:
-                switchBody += ");\n"
+                switch_body += "    "
+            switch_body += "module_->run%s(%s)" % (method.name.get_camel_case_cpp_value(), string.join(args, ", "))
+            if method.return_type:
+                switch_body += ");\n"
             else:
-                switchBody += ";\n"
+                switch_body += ";\n"
             for argument in method.arguments:
                 assert isinstance(argument, Argument)
-                switchBody += "    plugin_->optResults_ << "
+                switch_body += "    plugin_->optResults_ << "
                 if argument.reference and not argument.constant:
-                    plainType = argument.baseType.qtName() in ["int", "qreal", "bool", "QString", "QChar"]
-                    if plainType or argument.dimension > 0:
-                        switchBody += "QVariant::fromValue(%s);\n" % argument.name.cppValue
+                    plain_type = argument.base_type.get_qt_name() in ["int", "qreal", "bool", "QString", "QChar"]
+                    if plain_type or argument.dimension > 0:
+                        switch_body += "QVariant::fromValue(%s);\n" % argument.name.get_cpp_value()
                     else:
-                        switchBody += "encode(%s);\n" % argument.name.cppValue
+                        switch_body += "encode(%s);\n" % argument.name.get_cpp_value()
                 else:
-                    switchBody += "QVariant::Invalid;\n"
-            switchBody += "    break;\n"
-            switchBody += "}\n"
+                    switch_body += "QVariant::Invalid;\n"
+            switch_body += "    break;\n"
+            switch_body += "}\n"
         return """
 /* private */ void %s::run()
 {
@@ -2334,52 +2392,52 @@ class AsyncThreadCppClass(CppClassBase):
         }
     }
 }
-        """ % (self.className, _addIndent(_addIndent(switchBody)))
-
+        """ % (self.class_name, _add_indent(_add_indent(switch_body)))
 
 
 class ModuleBaseCppClass(CppClassBase):
     """
     C++ base class for module implementation
     """
+
     def __init__(self, module):
         """
         Initializes from actor module tree
         """
         assert isinstance(module, Module)
         CppClassBase.__init__(self)
-        self.baseClasses = ["QObject"]
+        self.base_classes = ["QObject"]
         self._module = module
-        self.className = module.baseClassName()
-        self.classDeclarationPrefix = "    Q_OBJECT"
-        self.abstractPublicSlots = [
+        self.class_name = module.get_base_cpp_class_name()
+        self.class_declaration_prefix = "    Q_OBJECT"
+        self.abstract_public_slots = [
             "void reset()",
             "void reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)",
             "void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current)"
         ]
         if module.gui:
-            self.abstractPublicMethods += [
+            self.abstract_public_methods += [
                 "QWidget* mainWidget() const",
                 "QWidget* pultWidget() const",
             ]
-            self.abstractPublicSlots += [
+            self.abstract_public_slots += [
                 "void setAnimationEnabled(bool enabled)"
             ]
         for method in module.methods:
             assert isinstance(method, Method)
-            self.abstractPublicSlots += [method.cppDeclaration()]
+            self.abstract_public_slots += [method.get_cpp_declaration()]
         if module.gui:
             for menu in module.gui.menus:
                 self.fields += self._add_menu_actions_as_fields(menu)
 
-    def _add_menu_actions_as_fields(self, menu, parentPrefix="", toplevel=True):
+    def _add_menu_actions_as_fields(self, menu, parent_prefix="", toplevel=True):
         """
         Walks on menu item tree and yields menu items as QMenu* or QAction* fields
 
         :type   menu:           MenuItem
         :param  menu:           current top level menu item
-        :type   parentPrefix:   str
-        :param  parentPrefix:   parent prefix name constructed from top level items
+        :type   parent_prefix:  str
+        :param  parent_prefix:  parent prefix name constructed from top level items
         :type   toplevel:       bool
         :param  toplevel:       True if menu item is a top level
         :rtype:                 list
@@ -2391,20 +2449,21 @@ class ModuleBaseCppClass(CppClassBase):
             root = "QMenu* m_menu"
         else:
             root = "QAction* m_action"
-        root += parentPrefix + menu.title.cppCamelCaseValue()
+        root += parent_prefix + menu.title.get_camel_case_cpp_value()
         result += [root]
         for child in menu.items:
-            result += self._add_menu_actions_as_fields(child, parentPrefix + menu.title.cppCamelCaseValue(), False)
+            result += self._add_menu_actions_as_fields(child, parent_prefix + menu.title.get_camel_case_cpp_value(),
+                                                       False)
         return result
 
-    def _add_menu_actions_creation(self, menu, parentPrefix="", deep=0):
+    def _add_menu_actions_creation(self, menu, parent_prefix="", deep=0):
         """
         Walks on menu item tree and yields menu items creation code
 
         :type   menu:           MenuItem
         :param  menu:           current top level menu item
-        :type   parentPrefix:   str
-        :param  parentPrefix:   parent prefix name constructed from top level items
+        :type   parent_prefix:  str
+        :param  parent_prefix:  parent prefix name constructed from top level items
         :type   deep:           int
         :param  deep:           the deep of current menu item tree
         :rtype:                 unicode
@@ -2413,53 +2472,54 @@ class ModuleBaseCppClass(CppClassBase):
         assert isinstance(menu, MenuItem)
         result = ""
         if deep == 0:
-            result += "m_menu%s = new QMenu();\n" % menu.title.cppCamelCaseValue()
-            setTitle = "m_menu%s->setTitle" % menu.title.cppCamelCaseValue()
+            result += "m_menu%s = new QMenu();\n" % menu.title.get_camel_case_cpp_value()
+            set_title = "m_menu%s->setTitle" % menu.title.get_camel_case_cpp_value()
         else:
-            assert parentPrefix
+            assert parent_prefix
             if deep == 1:
-                parent = "m_menu" + parentPrefix
+                parent = "m_menu" + parent_prefix
             else:
-                parent = "m_action%s->menu()" % parentPrefix
+                parent = "m_action%s->menu()" % parent_prefix
             result += "m_action%s = %s->addAction(\"\");\n" % (
-                parentPrefix + menu.title.cppCamelCaseValue(),
+                parent_prefix + menu.title.get_camel_case_cpp_value(),
                 parent
             )
-            setTitle = "m_action%s->setText" % (parentPrefix + menu.title.cppCamelCaseValue())
-        asciiName = ""
-        otherNames = {}
+            set_title = "m_action%s->setText" % (parent_prefix + menu.title.get_camel_case_cpp_value())
+        ascii_name = ""
+        other_names = {}
         for key, value in menu.title.data.items():
             assert isinstance(key, str) or isinstance(key, unicode)
             assert isinstance(value, str) or isinstance(value, unicode)
             if key == "ascii":
-                asciiName = value
+                ascii_name = value
             else:
-                otherNames[key] = value
-        assert asciiName
-        for index, (key, value) in enumerate(otherNames.items()):
+                other_names[key] = value
+        assert ascii_name
+        for index, (key, value) in enumerate(other_names.items()):
             if index > 0:
                 result += "else "
             result += "if (currentLocaleName==\"%s\") {\n" % key
-            result += "    %s(QString::fromUtf8(\"%s\"));\n" % (setTitle, value)
+            result += "    %s(QString::fromUtf8(\"%s\"));\n" % (set_title, value)
             result += "}\n"
-        default = "%s(QString::fromAscii(\"%s\"));\n" % (setTitle, asciiName)
-        if otherNames:
+        default = "%s(QString::fromAscii(\"%s\"));\n" % (set_title, ascii_name)
+        if other_names:
             result += "else {\n    %s}\n" % default
         else:
             result += default
         result += "\n"
         if deep > 0 and menu.items:
-            result += "m_action%s->setMenu(new QMenu);\n" % (parentPrefix + menu.title.cppCamelCaseValue())
+            result += "m_action%s->setMenu(new QMenu);\n" % (parent_prefix + menu.title.get_camel_case_cpp_value())
             result += "m_action%s->menu()->setTitle(m_action%s->text());\n" % (
-                parentPrefix + menu.title.cppCamelCaseValue(),
-                parentPrefix + menu.title.cppCamelCaseValue()
+                parent_prefix + menu.title.get_camel_case_cpp_value(),
+                parent_prefix + menu.title.get_camel_case_cpp_value()
             )
         for child in menu.items:
             result += self._add_menu_actions_creation(child,
-                                                      parentPrefix + menu.title.cppCamelCaseValue(),
+                                                      parent_prefix + menu.title.get_camel_case_cpp_value(),
                                                       deep + 1)
         return result
 
+    # noinspection PyPep8Naming
     def constructorImplementation(self):
         """
         Creates C++ constructor implementation
@@ -2468,7 +2528,6 @@ class ModuleBaseCppClass(CppClassBase):
         :return:    implementation of C++ constructor
         """
         body = ""
-        nongui = ""
         if self._module.gui:
             body += "static const QString currentLocaleName = QLocale().name();\n\n"
             for menu in self._module.gui.menus:
@@ -2486,8 +2545,9 @@ class ModuleBaseCppClass(CppClassBase):
 %s
     }
 }
-        """ % (self.className, self.className, _addIndent(_addIndent(body)))
+        """ % (self.class_name, self.class_name, _add_indent(_add_indent(body)))
 
+    # noinspection PyPep8Naming
     def setAnimationEnabledCppImplementation(self):
         """
         Creates setAnimationEnabled implementation or returns an empty string for
@@ -2504,8 +2564,9 @@ class ModuleBaseCppClass(CppClassBase):
 {
     Q_UNUSED(enabled);
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def mainWidgetCppImplementation(self):
         """
         Creates mainWidget implementation or returns an empty string for
@@ -2522,8 +2583,9 @@ class ModuleBaseCppClass(CppClassBase):
 {
     return nullptr;
 }
-            """ % self.className
+            """ % self.class_name
 
+    # noinspection PyPep8Naming
     def pultWidgetCppImplementation(self):
         """
         Creates pultWidget implementation or returns an empty string for
@@ -2540,8 +2602,9 @@ class ModuleBaseCppClass(CppClassBase):
 {
     return nullptr;
 }
-            """ % self.className
+            """ % self.class_name
 
+    # noinspection PyPep8Naming
     def moduleMenusCppImplementation(self):
         """
         Creates moduleMenus implementation
@@ -2553,7 +2616,7 @@ class ModuleBaseCppClass(CppClassBase):
         if self._module.gui:
             for menu in self._module.gui.menus:
                 assert isinstance(menu, MenuItem)
-                body += "result.push_back(m_menu%s);\n" % menu.title.cppCamelCaseValue()
+                body += "result.push_back(m_menu%s);\n" % menu.title.get_camel_case_cpp_value()
         return """
 /* public */ QList<QMenu*> %s::moduleMenus() const
 {
@@ -2570,8 +2633,9 @@ class ModuleBaseCppClass(CppClassBase):
         return QList<QMenu*>();
     }
 }
-        """ % (self.className, _addIndent(_addIndent(body)))
+        """ % (self.class_name, _add_indent(_add_indent(body)))
 
+    # noinspection PyPep8Naming
     def setErrorCppImplementation(self):
         """
         Creates setError implementation
@@ -2585,8 +2649,9 @@ class ModuleBaseCppClass(CppClassBase):
     %s* plugin = qobject_cast<%s*>(parent());
     plugin->errorText_ = errorText;
 }
-        """ % (self.className, self._module.pluginClassName(), self._module.pluginClassName())
+        """ % (self.class_name, self._module.get_plugin_cpp_class_name(), self._module.get_plugin_cpp_class_name())
 
+    # noinspection PyPep8Naming
     def mySettingsCppImplementation(self):
         """
         Creates mySettings implementation
@@ -2600,8 +2665,9 @@ class ModuleBaseCppClass(CppClassBase):
     %s* plugin = qobject_cast<%s*>(parent());
     return plugin->mySettings();
 }
-        """ % (self.className, self._module.pluginClassName(), self._module.pluginClassName())
+        """ % (self.class_name, self._module.get_plugin_cpp_class_name(), self._module.get_plugin_cpp_class_name())
 
+    # noinspection PyPep8Naming
     def myResourcesDirCppImplementation(self):
         return """
 /* public */ QDir %s::myResourcesDir() const
@@ -2609,8 +2675,9 @@ class ModuleBaseCppClass(CppClassBase):
     %s* plugin = qobject_cast<%s*>(parent());
     return plugin->myResourcesDir();
 }
-        """ % (self.className, self._module.pluginClassName(), self._module.pluginClassName())
+        """ % (self.class_name, self._module.get_plugin_cpp_class_name(), self._module.get_plugin_cpp_class_name())
 
+    # noinspection PyPep8Naming
     def sleepCppImplementation(self):
         """
         Creates sleep implementation
@@ -2624,8 +2691,9 @@ class ModuleBaseCppClass(CppClassBase):
     %s* plugin = qobject_cast<%s*>(parent());
     plugin->sleep(secs);
 }
-        """ % (self.className, self._module.pluginClassName(), self._module.pluginClassName())
+        """ % (self.class_name, self._module.get_plugin_cpp_class_name(), self._module.get_plugin_cpp_class_name())
 
+    # noinspection PyPep8Naming
     def msleepCppImplementation(self):
         """
         Creates msleep implementation
@@ -2639,8 +2707,9 @@ class ModuleBaseCppClass(CppClassBase):
     %s* plugin = qobject_cast<%s*>(parent());
     plugin->msleep(msecs);
 }
-        """ % (self.className, self._module.pluginClassName(), self._module.pluginClassName())
+        """ % (self.class_name, self._module.get_plugin_cpp_class_name(), self._module.get_plugin_cpp_class_name())
 
+    # noinspection PyPep8Naming
     def usleepCppImplementation(self):
         """
         Creates usleep implementation
@@ -2654,8 +2723,9 @@ class ModuleBaseCppClass(CppClassBase):
     %s* plugin = qobject_cast<%s*>(parent());
     plugin->usleep(usecs);
 }
-        """ % (self.className, self._module.pluginClassName(), self._module.pluginClassName())
+        """ % (self.class_name, self._module.get_plugin_cpp_class_name(), self._module.get_plugin_cpp_class_name())
 
+    # noinspection PyPep8Naming
     def loadActorDataCppImplementation(self):
         """
         Creates loadActorData implementation
@@ -2669,8 +2739,9 @@ class ModuleBaseCppClass(CppClassBase):
     Q_UNUSED(source);  // By default do nothing
 
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def commandLineParametersCppImplementation(self):
         """
         Get command line parameters passed to an actor
@@ -2684,8 +2755,9 @@ class ModuleBaseCppClass(CppClassBase):
     %s * plugin = qobject_cast<%s*>(parent());
     return plugin->commandLineParameters_;
 }
-        """ % (self.className, self._module.pluginClassName(), self._module.pluginClassName())
+        """ % (self.class_name, self._module.get_plugin_cpp_class_name(), self._module.get_plugin_cpp_class_name())
 
+    # noinspection PyPep8Naming
     def initializeCppImplementation(self):
         """
         Pass initialization to module itself
@@ -2693,8 +2765,8 @@ class ModuleBaseCppClass(CppClassBase):
         :rtype:     str
         :return:    default implementaion (does nothing)
         """
-        return """
-/* public virtual */ QString %s::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine & runtimeParameters)
+        return "/* public virtual */ QString %s::initialize" % self.class_name + \
+               """(const QStringList &configurationParameters, const ExtensionSystem::CommandLine & runtimeParameters)
 {
     Q_UNUSED(configurationParameters);
     Q_UNUSED(runtimeParameters);
@@ -2702,21 +2774,23 @@ class ModuleBaseCppClass(CppClassBase):
     // Return error text or an empty string on successfull  initialization
     return QString();
 }
-        """ % self.className
+"""
 
+    # noinspection PyPep8Naming
     def isSafeToQuitCppImplementation(self):
         return """
 /* public virtual */ bool %s::isSafeToQuit()
 {
     return true;
 }
-        """ % self.className
+        """ % self.class_name
 
 
 class ModuleCppClass(CppClassBase):
     """
     Actor module implementation C++ derived class
     """
+
     def __init__(self, module):
         """
         Initialized from actor module tree
@@ -2724,13 +2798,14 @@ class ModuleCppClass(CppClassBase):
         assert isinstance(module, Module)
         self._module = module
         CppClassBase.__init__(self)
-        self.baseClasses = [module.baseClassName()]
-        self.className = module.className()
-        self.classDeclarationPrefix = "    Q_OBJECT"
+        self.base_classes = [module.get_base_cpp_class_name()]
+        self.class_name = module.get_module_cpp_class_name()
+        self.class_declaration_prefix = "    Q_OBJECT"
         for method in self._module.methods:
-            stub = method.cppImplementationStub(self.className)
-            self.extraImplementations.append(stub)
+            stub = method.get_cpp_implementation_stub(self.class_name)
+            self.extra_implementations.append(stub)
 
+    # noinspection PyPep8Naming
     def constructorImplementation(self):
         """
         Creates C++ constructor implementation stub
@@ -2745,8 +2820,9 @@ class ModuleCppClass(CppClassBase):
     // Module constructor, called once on plugin load
     // TODO implement me
 }
-        """ % (self.className, self.className, self._module.baseClassName())
+        """ % (self.class_name, self.class_name, self._module.get_base_cpp_class_name())
 
+    # noinspection PyPep8Naming
     def mainWidgetCppImplementation(self):
         """
         Creates mainWidget implementation stub or en empty string if derived class has no implementation
@@ -2766,8 +2842,9 @@ class ModuleCppClass(CppClassBase):
     // TODO implement me
     return nullptr;
 }
-            """ % self.className
+            """ % self.class_name
 
+    # noinspection PyPep8Naming
     def pultWidgetCppImplementation(self):
         """
         Creates pultWidget implementation stub or en empty string if derived class has no implementation
@@ -2787,8 +2864,9 @@ class ModuleCppClass(CppClassBase):
     // TODO implement me
     return nullptr;
 }
-            """ % self.className
+            """ % self.class_name
 
+    # noinspection PyPep8Naming
     def resetCppImplementation(self):
         """
         Creates reset implementation stub
@@ -2802,8 +2880,9 @@ class ModuleCppClass(CppClassBase):
     // Resets module to initial state before program execution
     // TODO implement me
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def reloadSettingsCppImplementation(self):
         """
         Creates reloadSettings implementation stub
@@ -2820,8 +2899,9 @@ class ModuleCppClass(CppClassBase):
     Q_UNUSED(settings);  // Remove this line on implementation
     Q_UNUSED(keys);  // Remove this line on implementation
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def changeGlobalStateCppImplementation(self):
         """
         Creates changeGlobalState implementation stub
@@ -2849,8 +2929,9 @@ class ModuleCppClass(CppClassBase):
     Q_UNUSED(old);  // Remove this line on implementation
     Q_UNUSED(current);  // Remove this line on implementation
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def setAnimationEnabledCppImplementation(self):
         """
         Creates setAnimationEnabled implementation stub or an empty string if derived class has no implementation
@@ -2869,8 +2950,9 @@ class ModuleCppClass(CppClassBase):
     // TODO implement me
     Q_UNUSED(enabled);  // Remove this line on implementation
 }
-            """ % self.className
+            """ % self.class_name
 
+    # noinspection PyPep8Naming
     def loadActorDataCppImplementation(self):
         """
         Creates loadActorData implementation
@@ -2886,8 +2968,9 @@ class ModuleCppClass(CppClassBase):
     Q_UNUSED(source);  // By default do nothing
 
 }
-        """ % self.className
+        """ % self.class_name
 
+    # noinspection PyPep8Naming
     def acceptableCommandLineParametersCppImplementation(self):
         """
         Empty implementation to get acceptable command line parameters
@@ -2902,59 +2985,59 @@ class ModuleCppClass(CppClassBase):
     // See "src/shared/extensionsystem/commandlineparameter.h" for constructor details
     return QList<ExtensionSystem::CommandLineParameter>();
 }
-        """ % self.className
+        """ % self.class_name
 
 
 # Script workflow functions
 
-def _updateFile(fileName, targetDir, text):
+def _update_file(file_name, target_dir, text):
     """
     Creates (if not exists) or updates (if content differs) a text file
 
-    :type   fileName:   str
-    :param  fileName:   file name to update
-    :type   targetDir:  str
-    :param  targetDir:  directory to store a file
+    :type   file_name:  str
+    :param  file_name:  file name to update
+    :type   target_dir: str
+    :param  target_dir: directory to store a file
     :type   text:       unicode
     :param  text:       a new text contents of file
     """
-    forceRewrite = True
+    force_rewrite = True
     assert isinstance(text, unicode)
     data = text.encode("utf-8")
-    if targetDir:
-        if not os.path.exists(targetDir):
-            os.makedirs(targetDir)
-        fileName = os.path.normpath(targetDir + os.path.sep + fileName)
-    if os.path.exists(fileName):
-        f = open(fileName, 'r')
-        oldData = f.read()
+    if target_dir:
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
+        file_name = os.path.normpath(target_dir + os.path.sep + file_name)
+    if os.path.exists(file_name):
+        f = open(file_name, 'r')
+        old_data = f.read()
         f.close()
-        forceRewrite = oldData != data
-    if forceRewrite:
-        f = open(fileName, 'w')
+        force_rewrite = old_data != data
+    if force_rewrite:
+        f = open(file_name, 'w')
         f.write(data)
         f.close()
 
 
-def createModuleTypeHeaderFile(module, basetype, targetDir=""):
+def create_module_type_header_file(module, basetype, target_dir=""):
     """
     :type   module:     Module
     :param  module:     actor module tree root
     :type   basetype:   BaseType
     :param  basetype:   base type definition
-    :type   targetDir:  str
-    :param  targetDir:  directory path to store (optional, by default uses current dir)
+    :type   target_dir: str
+    :param  target_dir: directory path to store (optional, by default uses current dir)
     """
     assert isinstance(module, Module)
     assert isinstance(basetype, BaseType)
-    assert isinstance(targetDir, str)
-    filename = "type" + basetype.qtName().lower() + ".h"
+    assert isinstance(target_dir, str)
+    filename = "type" + basetype.get_qt_name().lower() + ".h"
     substitutions = {
-        "headerGuard": "TYPE" + basetype.qtName().upper() + "_H",
-        "namespace": module.namespace(),
-        "typeDeclaration": basetype.cppDeclaration()
+        "headerGuard": "TYPE" + basetype.get_qt_name().upper() + "_H",
+        "namespace": module.get_module_cpp_namespace(),
+        "typeDeclaration": basetype.get_cpp_declaration()
     }
-    data = _renderTemplate("""
+    data = _render_template("""
 /*
 DO NOT EDIT THIS FILE!
 
@@ -2978,28 +3061,28 @@ $typeDeclaration
 
 #endif // $headerGuard
     """, substitutions).strip() + "\n"
-    _updateFile(filename, targetDir, data)
+    _update_file(filename, target_dir, data)
 
 
-def createPluginHeaderFile(module, targetDir=""):
+def create_plugin_header_file(module, target_dir=""):
     """
     Creates or updates module plugin header file
 
     :type   module:     Module
     :param  module:     actor module tree root
-    :type   targetDir:  str
-    :param  targetDir:  directory path to store (optional, by default uses current dir)
+    :type   target_dir: str
+    :param  target_dir: directory path to store (optional, by default uses current dir)
     """
     assert isinstance(module, Module)
-    assert isinstance(targetDir, str)
-    fileBaseName = module.pluginClassName().lower()
+    assert isinstance(target_dir, str)
+    file_base_name = module.get_plugin_cpp_class_name().lower()
     substitutions = {
-        "headerGuard": fileBaseName.upper() + "_H",
-        "namespace": module.namespace(),
-        "pluginClassDeclaration": PluginCppClass(module).cppDeclaration(),
-        "threadClassDeclaration": AsyncThreadCppClass(module).cppDeclaration()
+        "headerGuard": file_base_name.upper() + "_H",
+        "namespace": module.get_module_cpp_namespace(),
+        "pluginClassDeclaration": PluginCppClass(module).get_cpp_declaration(),
+        "threadClassDeclaration": AsyncThreadCppClass(module).get_cpp_declaration()
     }
-    data = _renderTemplate("""
+    data = _render_template("""
 /*
 DO NOT EDIT THIS FILE!
 
@@ -3031,37 +3114,37 @@ $threadClassDeclaration
 #endif // $headerGuard
 
     """, substitutions).strip() + "\n"
-    _updateFile(fileBaseName + ".h", targetDir, data)
+    _update_file(file_base_name + ".h", target_dir, data)
 
 
-def createPluginSourceFile(module, targetDir=""):
+def create_plugin_source_file(module, target_dir=""):
     """
     Creates or updates module plugin source file
 
     :type   module:     Module
     :param  module:     actor module tree root
-    :type   targetDir:  str
-    :param  targetDir:  directory path to store (optional, by default uses current dir)
+    :type   target_dir: str
+    :param  target_dir: directory path to store (optional, by default uses current dir)
     """
     assert isinstance(module, Module)
-    assert isinstance(targetDir, str)
-    fileBaseName = module.pluginClassName().lower()
-    staticFunctions = ""
+    assert isinstance(target_dir, str)
+    file_base_name = module.get_plugin_cpp_class_name().lower()
+    static_functions = ""
     for customType in module.types:
         assert isinstance(customType, BaseType)
-        staticFunctions += customType.cppCustomTypeEncodeDecode() + "\n"
+        static_functions += customType.get_cpp_custom_type_encode_decode() + "\n"
 
     substitutions = {
-        "headerFileName": fileBaseName + ".h",
-        "moduleBaseHeaderFileName": module.baseClassName().lower() + ".h",
-        "moduleHeaderFileName": module.className().lower() + ".h",
-        "namespace": module.namespace(),
-        "staticFunctions": staticFunctions,
-        "pluginClassImplementation": PluginCppClass(module).cppImplementation(),
-        "threadClassImplementation": AsyncThreadCppClass(module).cppImplementation(),
-        "pluginClassName": module.pluginClassName()
+        "headerFileName": file_base_name + ".h",
+        "moduleBaseHeaderFileName": module.get_base_cpp_class_name().lower() + ".h",
+        "moduleHeaderFileName": module.get_module_cpp_class_name().lower() + ".h",
+        "namespace": module.get_module_cpp_namespace(),
+        "staticFunctions": static_functions,
+        "pluginClassImplementation": PluginCppClass(module).get_cpp_implementation(),
+        "threadClassImplementation": AsyncThreadCppClass(module).get_cpp_implementation(),
+        "pluginClassName": module.get_plugin_cpp_class_name()
     }
-    data = _renderTemplate("""
+    data = _render_template("""
 /*
 DO NOT EDIT THIS FILE!
 
@@ -3088,39 +3171,39 @@ $threadClassImplementation
 Q_EXPORT_PLUGIN($namespace::$pluginClassName)
 
     """, substitutions).strip() + "\n"
-    _updateFile(fileBaseName + ".cpp", targetDir, data)
+    _update_file(file_base_name + ".cpp", target_dir, data)
 
 
-def createModuleBaseHeaderFile(module, targetDir=""):
+def create_module_base_header_file(module, target_dir=""):
     """
     Creates or updates module implementation C++ base header file
 
     :type   module:     Module
     :param  module:     actor module tree root
-    :type   targetDir:  str
-    :param  targetDir:  directory path to store (optional, by default uses current dir)
+    :type   target_dir: str
+    :param  target_dir: directory path to store (optional, by default uses current dir)
     """
     assert isinstance(module, Module)
-    fileBaseName = module.baseClassName().lower()
-    customTypeDeclarations = ""
+    file_base_name = module.get_base_cpp_class_name().lower()
+    custom_type_declarations = ""
     typedefs = ""
     for typee in module.types:
         assert isinstance(typee, BaseType)
-        if not typee.isStandardType():
-            filenamePrefix = ""
-            if typee._module and typee._module != module:
-                filenamePrefix = "../" + typee._module.name.asciiValue().lower() + "/"
-                typedefs += typee.typeDef() + "\n"
-            typeHeaderName = filenamePrefix + "type" + typee.qtName().lower() + ".h"
-            customTypeDeclarations += "#include \"%s\"\n" % typeHeaderName
+        if not typee.is_standard_type():
+            filename_prefix = ""
+            if typee.get_module() and typee.get_module() != module:
+                filename_prefix = "../" + typee.get_module().name.get_ascii_value().lower() + "/"
+                typedefs += typee.get_typedef() + "\n"
+            type_header_name = filename_prefix + "type" + typee.get_qt_name().lower() + ".h"
+            custom_type_declarations += "#include \"%s\"\n" % type_header_name
     substitutions = {
-        "headerGuard": fileBaseName.upper() + "_H",
+        "headerGuard": file_base_name.upper() + "_H",
         "typeDefs": typedefs,
-        "customTypeDeclarations": customTypeDeclarations,
-        "namespace": module.namespace(),
-        "classDeclaration": ModuleBaseCppClass(module).cppDeclaration()
+        "customTypeDeclarations": custom_type_declarations,
+        "namespace": module.get_module_cpp_namespace(),
+        "classDeclaration": ModuleBaseCppClass(module).get_cpp_declaration()
     }
-    data = _renderTemplate("""
+    data = _render_template("""
 /*
 DO NOT EDIT THIS FILE!
 
@@ -3152,27 +3235,27 @@ $classDeclaration
 #endif // $headerGuard
 
     """, substitutions).strip() + "\n"
-    _updateFile(fileBaseName + ".h", targetDir, data)
+    _update_file(file_base_name + ".h", target_dir, data)
 
 
-def createModuleBaseSourceFile(module, targetDir=""):
+def create_module_base_source_file(module, target_dir=""):
     """
     Creates or updates module implementation C++ base source file
 
     :type   module:     Module
     :param  module:     actor module tree root
-    :type   targetDir:  str
-    :param  targetDir:  directory path to store (optional, by default uses current dir)
+    :type   target_dir: str
+    :param  target_dir: directory path to store (optional, by default uses current dir)
     """
     assert isinstance(module, Module)
-    fileBaseName = module.baseClassName().lower()
+    file_base_name = module.get_base_cpp_class_name().lower()
     substitutions = {
-        "selfInclude": fileBaseName + ".h",
-        "pluginInclude": module.pluginClassName().lower() + ".h",
-        "namespace": module.namespace(),
-        "classImplementation": ModuleBaseCppClass(module).cppImplementation()
+        "selfInclude": file_base_name + ".h",
+        "pluginInclude": module.get_plugin_cpp_class_name().lower() + ".h",
+        "namespace": module.get_module_cpp_namespace(),
+        "classImplementation": ModuleBaseCppClass(module).get_cpp_implementation()
     }
-    data = _renderTemplate("""
+    data = _render_template("""
 /*
 DO NOT EDIT THIS FILE!
 
@@ -3200,27 +3283,27 @@ $classImplementation
 
 
     """, substitutions).strip() + "\n"
-    _updateFile(fileBaseName + ".cpp", targetDir, data)
+    _update_file(file_base_name + ".cpp", target_dir, data)
 
 
-def createModuleHeaderFile(module, targetDir=""):
+def create_module_header_file(module, target_dir=""):
     """
     Creates or updates module implementation header file
 
     :type   module:     Module
     :param  module:     actor module tree root
-    :type   targetDir:  str
-    :param  targetDir:  directory path to store (optional, by default uses current dir)
+    :type   target_dir: str
+    :param  target_dir: directory path to store (optional, by default uses current dir)
     """
     assert isinstance(module, Module)
-    fileBaseName = module.className().lower()
+    file_base_name = module.get_module_cpp_class_name().lower()
     substitutions = {
-        "headerGuard": fileBaseName.upper() + "_H",
-        "namespace": module.namespace(),
-        "baseClassHeader": module.baseClassName().lower() + ".h",
-        "classDeclaration": ModuleCppClass(module).cppDeclaration()
+        "headerGuard": file_base_name.upper() + "_H",
+        "namespace": module.get_module_cpp_namespace(),
+        "baseClassHeader": module.get_base_cpp_class_name().lower() + ".h",
+        "classDeclaration": ModuleCppClass(module).get_cpp_declaration()
     }
-    data = _renderTemplate("""
+    data = _render_template("""
 /*
 This file is generated, but you can safely change it
 until you run "gen_actor_source.py" with "--project" flag.
@@ -3250,26 +3333,26 @@ $classDeclaration
 
 #endif // $headerGuard
     """, substitutions).strip() + "\n"
-    _updateFile(fileBaseName + ".h", targetDir, data)
+    _update_file(file_base_name + ".h", target_dir, data)
 
 
-def createModuleSourceFile(module, targetDir=""):
+def create_module_source_file(module, target_dir=""):
     """
     Creates or updates module implementation source file
 
     :type   module:     Module
     :param  module:     actor module tree root
-    :type   targetDir:  str
-    :param  targetDir:  directory path to store (optional, by default uses current dir)
+    :type   target_dir: str
+    :param  target_dir: directory path to store (optional, by default uses current dir)
     """
     assert isinstance(module, Module)
-    fileBaseName = module.className().lower()
+    file_base_name = module.get_module_cpp_class_name().lower()
     substitutions = {
-        "namespace": module.namespace(),
-        "selfHeader": module.className().lower() + ".h",
-        "classImplementation": ModuleCppClass(module).cppImplementation()
+        "namespace": module.get_module_cpp_namespace(),
+        "selfHeader": module.get_module_cpp_class_name().lower() + ".h",
+        "classImplementation": ModuleCppClass(module).get_cpp_implementation()
     }
-    data = _renderTemplate("""
+    data = _render_template("""
 /*
 This file is generated, but you can safely change it
 until you run "gen_actor_source.py" with "--project" flag.
@@ -3295,24 +3378,24 @@ $classImplementation
 } // namespace $namespace
 
     """, substitutions).strip() + "\n"
-    _updateFile(fileBaseName + ".cpp", targetDir, data)
+    _update_file(file_base_name + ".cpp", target_dir, data)
 
 
-def createPluginSpecFile(module, targetDir=""):
+def create_plugin_spec_file(module, target_dir=""):
     """
     Creates or updates module plugin specification file
 
     :type   module:     Module
     :param  module:     actor module tree root
-    :type   targetDir:  str
-    :param  targetDir:  directory path to store (optional, by default uses current dir)
+    :type   target_dir: str
+    :param  target_dir: directory path to store (optional, by default uses current dir)
     """
-    fileName = "Actor" + module.name.cppCamelCaseValue() + ".pluginspec"
-    name = "Actor" + module.name.cppCamelCaseValue()
+    file_name = "Actor" + module.name.get_camel_case_cpp_value() + ".pluginspec"
+    name = "Actor" + module.name.get_camel_case_cpp_value()
     requires = ""
-    if module.usesList:
-        pluginNames = map(lambda s: "Actor" + s, module.usesList)
-        requires = "requires = " + string.join(pluginNames, ", ")
+    if module.uses_list:
+        plugin_names = map(lambda s: "Actor" + s, module.uses_list)
+        requires = "requires = " + string.join(plugin_names, ", ")
     if module.gui:
         gui = "true"
     else:
@@ -3322,29 +3405,29 @@ name    = %s
 gui     = %s
 %s
     """ % (name, gui, requires)
-    _updateFile(fileName, targetDir, unicode(data.strip() + "\n"))
+    _update_file(file_name, target_dir, unicode(data.strip() + "\n"))
 
 
-def createCMakeListsTxt(module, jsonFileName, targetDir=""):
+def create_cmakelists_txt(module, json_file_name, target_dir=""):
     """
     Creates or updates project CMakeLists.txt file
 
     :type   module:         Module
     :param  module:         actor module tree root
-    :type   jsonFileName:   str
-    :param  jsonFileName:   name of source JSON file used to watch for changes
-    :type   targetDir:      str
-    :param  targetDir:      directory path to store (optional, by default uses current dir)
+    :type   json_file_name: str
+    :param  json_file_name: name of source JSON file used to watch for changes
+    :type   target_dir:     str
+    :param  target_dir:     directory path to store (optional, by default uses current dir)
     """
     substitutions = {
-        "moduleFileName": module.className().lower(),
-        "moduleBaseFileName": module.baseClassName().lower(),
-        "pluginFileName": module.pluginClassName().lower(),
-        "specFileName": "Actor%s" % module.name.cppCamelCaseValue(),
-        "jsonFileName": os.path.basename(jsonFileName),
-        "actorDir": module.name.cppCamelCaseValue().lower()
+        "moduleFileName": module.get_module_cpp_class_name().lower(),
+        "moduleBaseFileName": module.get_base_cpp_class_name().lower(),
+        "pluginFileName": module.get_plugin_cpp_class_name().lower(),
+        "specFileName": "Actor%s" % module.name.get_camel_case_cpp_value(),
+        "jsonFileName": os.path.basename(json_file_name),
+        "actorDir": module.name.get_camel_case_cpp_value().lower()
     }
-    data = _renderTemplate(r"""
+    data = _render_template(r"""
 set(QT_USE_QTMAIN 1)
 find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui REQUIRED)
 find_package(PythonInterp 2.6 REQUIRED)
@@ -3442,27 +3525,27 @@ install(
     DESTINATION ${PLUGINS_DIR}
 )
     """, substitutions).strip() + "\n"
-    _updateFile("CMakeLists.txt", targetDir, data)
+    _update_file("CMakeLists.txt", target_dir, data)
 
 
-def createDocbookFile(module, targetDir):
+def create_docbook_file(module, target_dir):
     """
     Creates or updates module documentation DocBook XML file
 
     :type   module:     Module
     :param  module:     actor module tree root
-    :type   targetDir:  str
-    :param  targetDir:  directory path to store (optional, by default uses current dir)
+    :type   target_dir: str
+    :param  target_dir: directory path to store (optional, by default uses current dir)
     """
-    fileName = "Actor" + module.name.cppCamelCaseValue() + ".xml"
+    file_name = "Actor" + module.name.get_camel_case_cpp_value() + ".xml"
     if "ru_RU" in module.name.data:
-        moduleName = module.name.data["ru_RU"]
+        module_name = module.name.data["ru_RU"]
     else:
-        moduleName = module.name.asciiValue()
+        module_name = module.name.get_ascii_value()
     substitutions = {
-        "moduleName": moduleName
+        "moduleName": module_name
     }
-    data = _renderTemplate("""
+    data = _render_template("""
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE book
     PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
@@ -3481,7 +3564,7 @@ def createDocbookFile(module, targetDir):
 </article>
 
         """, substitutions).strip() + "\n"
-    _updateFile(fileName, targetDir, data)
+    _update_file(file_name, target_dir, data)
 
 
 def main_update(args):
@@ -3493,20 +3576,20 @@ def main_update(args):
     :rtype:         int
     :return:        exit status
     """
-    fileName = ""
+    file_name = ""
     for arg in args[1:]:
         if not arg.startswith("-"):
-            fileName = arg
-    if not fileName:
+            file_name = arg
+    if not file_name:
         return main_help(args)
-    module = Module.read(fileName)
+    module = Module.read(file_name)
     for customType in module.types:
-        createModuleTypeHeaderFile(module, customType)
-    createPluginHeaderFile(module)
-    createPluginSourceFile(module)
-    createModuleBaseHeaderFile(module)
-    createModuleBaseSourceFile(module)
-    createPluginSpecFile(module)
+        create_module_type_header_file(module, customType)
+    create_plugin_header_file(module)
+    create_plugin_source_file(module)
+    create_module_base_header_file(module)
+    create_module_base_source_file(module)
+    create_plugin_spec_file(module)
     return 0
 
 
@@ -3519,17 +3602,17 @@ def main_project(args):
     :rtype:         int
     :return:        exit status
     """
-    fileName = ""
+    file_name = ""
     for arg in args[1:]:
         if not arg.startswith("-"):
-            fileName = arg
-    if not fileName:
+            file_name = arg
+    if not file_name:
         return main_help(args)
-    module = Module.read(fileName)
-    createModuleHeaderFile(module)
-    createModuleSourceFile(module)
-    createCMakeListsTxt(module, fileName)
-    createDocbookFile(module, "../../../userdocs")
+    module = Module.read(file_name)
+    create_module_header_file(module)
+    create_module_source_file(module)
+    create_cmakelists_txt(module, file_name)
+    create_docbook_file(module, "../../../userdocs")
     return 0
 
 
