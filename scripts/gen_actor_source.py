@@ -935,6 +935,9 @@ class Module:
         self.name = Name(json_node["name"])
         self.types = []
         self.uses_list = []
+        self.default_template_parameters = []
+        if "templateDefaults" in json_node:
+            self.default_template_parameters = json_node["templateDefaults"]
         if "types" in json_node:
             for typee in json_node["types"]:
                 self.types.append(BaseType(self, typee))
@@ -1481,6 +1484,26 @@ private:
     return QString::fromUtf8("%s");
 }
         """ % (self.class_name, self._module.name.get_kumir_value().replace("\\", "\\\\"))
+
+    # noinspection PyPep8Naming
+    def defaultTemplateParametersCppImplementation(self):
+        body = "QVariantList result;\n"
+        for value in self._module.default_template_parameters:
+            body += "result.append(QVariant("
+            if isinstance(value, unicode):
+                body += "QString::fromUtf8(\"" + value + "\")"
+            elif isinstance(value, str):
+                body += "QString::fromAscii(\"" + value + "\")"
+            else:
+                body += str(value)
+            body += "));\n"
+        body += "return result;"
+        return """
+/* public */ QVariantList %s::defaultTemplateParameters() const
+{
+%s
+}
+        """ % (self.class_name, _add_indent(body))
 
     # noinspection PyPep8Naming
     def functionListCppImplementation(self):

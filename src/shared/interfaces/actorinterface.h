@@ -104,6 +104,9 @@ public /*methods*/:
     /** List of actor dependencies */
     inline virtual QList<ActorInterface*> usesList() const { return QList<ActorInterface*>(); }
 
+    /** Default parameters for template names */
+    inline virtual QVariantList defaultTemplateParameters() const { return QVariantList(); }
+
 
     /* === Actor control methods === */
 
