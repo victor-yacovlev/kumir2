@@ -1,17 +1,26 @@
 set(QT_USE_QTMAIN 1)
-find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui REQUIRED)
+find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtSvg REQUIRED)
 find_package(PythonInterp 2.6 REQUIRED)
 include (${QT_USE_FILE})
 include(../../kumir2_plugin.cmake)
 
 set(SOURCES
     grasshoppermodule.cpp
+    kuznec.cpp
+    pult.cpp
+    dialog.cpp
 )
 
 set(MOC_HEADERS
     grasshoppermodule.h
+    kuznec.h
+    dialog.h
+    pult.h
 )
-
+set(FORMS
+    dialog.ui
+    pult.ui
+    )
 add_custom_command(
     OUTPUT
         ${CMAKE_CURRENT_BINARY_DIR}/grasshoppermodulebase.cpp
@@ -65,7 +74,7 @@ set(MOC_SOURCES_GENERATED
 )
 
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
-
+qt4_wrap_ui(UI_SOURCES ${FORMS})
 install(
     FILES ${PLUGIN_OUTPUT_PATH}/ActorGrasshopper.pluginspec
     DESTINATION ${PLUGINS_DIR}
@@ -76,7 +85,7 @@ handleTranslation(ActorGrasshopper)
 add_library(
     ActorGrasshopper
     SHARED
-    ${MOC_SOURCES} ${SOURCES}
+    ${MOC_SOURCES} ${SOURCES} ${UI_SOURCES}
     ${MOC_SOURCES_GENERATED} ${SOURCES_GENERATED}
 )
 

@@ -21,6 +21,7 @@ namespace ActorGrasshopper {
 GrasshopperModule::GrasshopperModule(ExtensionSystem::KPlugin * parent)
     : GrasshopperModuleBase(parent)
 {
+    kuznec=new KumKuznec();
     // Module constructor, called once on plugin load
     // TODO implement me
 }
@@ -65,7 +66,7 @@ GrasshopperModule::GrasshopperModule(ExtensionSystem::KPlugin * parent)
     // NOTE: the method is const and might be called at any time,
     //       so DO NOT create widget here, just return!
     // TODO implement me
-    return nullptr;
+    return kuznec->mainWindow();
 }
 
 /* public */ QWidget* GrasshopperModule::pultWidget() const
@@ -98,13 +99,16 @@ GrasshopperModule::GrasshopperModule(ExtensionSystem::KPlugin * parent)
     // NOTE this method just setups a flag and might be called anytime, even module not needed
     // TODO implement me
     Q_UNUSED(enabled);  // Remove this line on implementation
+    kuznec->Reset();
 }
 
 /* public slot */ void GrasshopperModule::runGoForward(const int distance)
 {
     /* алг вперед \1(цел distance) */
     // TODO implement me
-    Q_UNUSED(distance)  // Remove this line on implementation;
+    //Q_UNUSED(distance)  // Remove this line on implementation;
+    kuznec->setFwdStep(distance);
+    kuznec->MoveFwd();
     qDebug() << "GrasshopperModule::runGoForward(" << distance << ")";        
 }
 
@@ -113,6 +117,8 @@ GrasshopperModule::GrasshopperModule(ExtensionSystem::KPlugin * parent)
     /* алг назад \2(цел distance) */
     // TODO implement me
     Q_UNUSED(distance)  // Remove this line on implementation;
+    kuznec->setBackStep(distance);
+    kuznec->MoveBack();
     qDebug() << "GrasshopperModule::runGoBackward(" << distance << ")";
 }
 
@@ -120,6 +126,7 @@ GrasshopperModule::GrasshopperModule(ExtensionSystem::KPlugin * parent)
 {
     /* алг перекрасить */
     // TODO implement me
+   kuznec->ColorUncolor();
     
 }
 
