@@ -168,7 +168,9 @@ void TabWidgetElement::updateCompilerImportsList(const QStringList &localizedNam
 
 void TabWidgetElement::updateSettingsObject(SettingsPtr settings)
 {
-    toolbarContextMenu_->setSettingsObject(settings, "MainToolBar");
+    if (toolbarContextMenu_) {
+        toolbarContextMenu_->setSettingsObject(settings, "MainToolBar");
+    }
 }
 
 bool TabWidgetElement::eventFilter(QObject *obj, QEvent *evt)
