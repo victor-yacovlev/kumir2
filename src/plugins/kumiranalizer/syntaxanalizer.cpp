@@ -2877,7 +2877,7 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool internalBuildFl
 
     }
     for (int i=nameStartLexem; i<st.data.size(); i++) {
-        if (st.data[i]->type==LxNameClass) {
+        if (st.data[i]->type==LxNameClass || st.data[i]->type==LxConstBoolFalse || st.data[i]->type==LxConstBoolTrue) {
             st.data[i]->error = _("Name contains keyword");
             return;
         }
@@ -2886,6 +2886,25 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool internalBuildFl
                 name += " ";
             name += st.data[i]->data;
             st.data[i]->type=LxNameAlg;
+        }
+        else if (LxConstInteger == st.data[i]->type || LxConstReal == st.data[i]->type) {
+            if (i==nameStartLexem) {
+                st.data[i]->error = _("Name starts with digit");
+                return;
+            }
+            if (st.data[i]->data.contains('.') ||
+                     st.data[i]->data.contains('+') ||
+                     st.data[i]->data.contains('-')
+                     )
+            {
+                st.data[i]->error = _("Bad symbol in name");
+                return;
+            }
+            if (i>nameStartLexem) {
+                name += " ";
+                name += st.data[i]->data;
+                st.data[i]->type=LxNameAlg;
+            }
         }
         else if (st.data[i]->type == LxOperLeftBr ) {
             argsStartLexem = i+1;
@@ -2904,7 +2923,7 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool internalBuildFl
             st.data[i]->error = _("Keyword in name");
             return;
         }
-        else {
+        else if (st.data[i]->type & LxTypeOperator) {
             st.data[i]->error = _("Operator in name");
             return;
         }
@@ -2937,6 +2956,20 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool internalBuildFl
                 st.data[i]->error = _("No algorithm name");
             }
             return ;
+        }
+    }
+
+    if (name.length() > 0) {
+        // process generic name test
+        const QString error = lexer_->testName(name);
+        if (error.length() > 0) {
+            const int start = nameStartLexem;
+            const int end = argsStartLexem == -1
+                    ? st.data.length() : argsStartLexem-1;
+            for (int i=start; i<end; i++) {
+                st.data[i]->error = error;
+            }
+            return;
         }
     }
 
