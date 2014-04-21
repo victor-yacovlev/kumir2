@@ -14,7 +14,8 @@ You should change it corresponding to functionality.
 
 // Kumir includes
 #include "extensionsystem/kplugin.h"
-
+//module includes
+#include "kuznec.h"
 // Qt includes
 #include <QtCore>
 #include <QtGui>
@@ -46,8 +47,9 @@ public slots:
     /* ========= CLASS PRIVATE ========= */
 
 
-
-
+private:
+ KumKuznec*  kuznec;
+    
 
 
 };
