@@ -300,9 +300,9 @@ public:
 	redrawFlags();
       };
 
-    QMainWindow* mainWindow()
+    QWidget* mainWindow()
     {
-        return MV;
+        return view;
     }
     bool canBack()
 	{
