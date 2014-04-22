@@ -730,7 +730,7 @@ QByteArray ttt;
         while(ttt[0]==';')ttt = l_File.readLine();
 	qDebug()<<ttt;
 	l_String = QString::fromUtf8(ttt);
-	l_String.simplified();
+    l_String = l_String.simplified();
 	QStringList zadanie=l_String.split(" ");
 	if(zadanie.count()<2) return 1;
         Fstep=zadanie[0].toInt();
@@ -751,7 +751,7 @@ QByteArray ttt;
  	while(ttt[0]==';')ttt = l_File.readLine();
 	qDebug()<<ttt;
 	l_String = QString::fromUtf8(ttt);
-        l_String.simplified();
+        l_String = l_String.simplified();
 	zadanie=l_String.split(" ");
 	if(zadanie.count()<2) return 3;
         leftBorder=zadanie[0].toInt(&ok);
@@ -768,7 +768,7 @@ QByteArray ttt;
 	
 	qDebug()<<ttt;
 	l_String = QString::fromUtf8(ttt);
-	l_String.simplified();
+    l_String = l_String.simplified();
 	zadanie=l_String.split(" ",QString::SkipEmptyParts);
 	for(int i=0;i<zadanie.count()-1;i++)
 		{
@@ -1642,7 +1642,7 @@ bool KumKuznec::PrintToPDF(void)
 // 	}
 // 
 // RPainter->end();
-
+    return false;
 }
 
 
@@ -2268,7 +2268,7 @@ if((abs(x-OldX)<5)&&(abs(y - OldY)<5)){qDebug()<<"return 1";return;};
 //QApplication::setOverrideCursor(Qt::PointingHandCursor);  
 qreal centY=center().y();
 WindowX0 = WindowX0+(view->mapToScene(QPoint(OldX,OldY)).x()-view->mapToScene(QPoint(x,y)).x());
-WindowY0 =WindowY0;
+//WindowY0 =WindowY0;
 QRectF curentRect;
 
 

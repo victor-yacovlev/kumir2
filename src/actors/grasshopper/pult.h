@@ -184,6 +184,7 @@ public:
 	{
 	if(textLabel)delete textLabel;
 	if(respLabel)delete respLabel;
+    return 0;
 	};
     QString KumCommand(){return kumCommand;};
 private:
