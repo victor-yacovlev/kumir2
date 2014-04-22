@@ -1692,15 +1692,41 @@ void SyntaxAnalizer::parseImport(int str)
         foreach (AST::ModulePtr module, ast_->modules) {
             if (module->header.nameTemplate.length() > 0) {
                 if (name == module->header.name) {
+                    moduleToImport = module;
                     incompleteName = true;
+                    break;
                 }
             }
-        }
+        }        
         if (incompleteName) {
-            for (int i=1; i<st.data.size(); i++) {
-                st.data[i]->error = _("Incomplete module name");
+            // Try to use default template parameters
+            if (moduleToImport->impl.actor) {
+                const ActorInterface * actor = moduleToImport->impl.actor;
+                if (actor->defaultTemplateParameters().size() > 0) {
+                    incompleteName = false;
+                    moduleToImport->header.templateParameters = actor->defaultTemplateParameters();
+                }
             }
-            return;
+            if (incompleteName) {
+                for (int i=1; i<st.data.size(); i++) {
+                    st.data[i]->error = _("Incomplete module name");
+                }
+                return;
+            }
+            else {
+                moduleToImport->header.usedBy.append(st.mod.toWeakRef());
+                if (moduleToImport->impl.actor) {
+                    QList<Shared::ActorInterface*> deps =
+                            moduleToImport->impl.actor->usesList();
+                    Q_FOREACH (Shared::ActorInterface * actor, deps) {
+                        AST::ModulePtr actorMod = findModuleByActor(ast_, actor);
+                        actorMod->header.usedBy.append(st.mod.toWeakRef());
+                    }
+                }
+                for (int i=1; i<st.data.size(); i++) {
+                    st.data[i]->type = LxNameModule;
+                }
+            }
         }
         else {
             for (int i=1; i<st.data.size(); i++) {
