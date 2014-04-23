@@ -184,6 +184,18 @@ Macro* TextCursor::endRecordMacro()
     return result;
 }
 
+void TextCursor::normalizePlainText(QString &s)
+{
+    static const QString from = QString::fromUtf8("–«»“”");
+    static const QString to = QString::fromAscii("-\"\"\"\"");
+    Q_ASSERT(from.length() == to.length());
+    for (int i=0; i<from.length(); i++) {
+        const QChar & f = from[i];
+        const QChar & t = to[i];
+        s = s.replace(f, t);
+    }
+}
+
 void TextCursor::evaluateCommand(const KeyCommand &command)
 {
     if (recordingMacro_)
@@ -343,6 +355,7 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
                 QString textToInsert = data.text;
                 bool removeLeadingSpaces = false;
                 if (editor_->analizer()) {
+                    normalizePlainText(textToInsert);
                     // Check if must remove leading spaces
                     if (row() >= editor_->document()->linesCount()) {
                         removeLeadingSpaces = true;
