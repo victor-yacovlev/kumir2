@@ -371,6 +371,8 @@ public:
         return (prod >> 32)==(prod >> 31);
     }
 
+#ifndef NO_X86_FPU
+
     inline static bool isCorrectDouble(double val) {
         // !!!!!!!!!!! WARNING !!!!!!!!!!
         // this works ONLY for x86/x86_64 platform!
@@ -388,9 +390,16 @@ public:
         return !Inf && !NaN;
     }
 
+#endif
+
     inline static bool isCorrectReal(real val) {
+#ifndef NO_X86_FPU
         return isCorrectDouble(val);
+#else
+        (void)(val);
+        return true;
         // TODO: implement for ARM/AVR platform!!!!
+#endif
     }
 
     inline static bool isCorrectIntegerConstant(const String & value) {
@@ -942,7 +951,7 @@ public:
         real result = mantissa * ::pow(10, exponenta);
         if (negative && result != 0)
             result *= -1;
-        if (!Math::isCorrectDouble(result))
+        if (!Math::isCorrectReal(result))
             error = Overflow;
         return result;
     }
