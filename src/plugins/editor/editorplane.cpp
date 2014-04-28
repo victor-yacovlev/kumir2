@@ -2112,7 +2112,8 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
                   // If line exists, draw number using regular fg color
                 ? QColor(palette().brush(QPalette::WindowText).color())
                   // else draw using lighter color
-                : QColor(Qt::lightGray);
+                : QColor(palette().brush(QPalette::Disabled, QPalette::WindowText).color());
+//                : QColor(Qt::lightGray);
 
         p->setPen(textColor);
         const QColor bgColor = palette().color(QPalette::Base);
